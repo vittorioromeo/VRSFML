@@ -7,19 +7,21 @@
 #include "ShapeDimension.hpp"
 
 #include "SFML/Base/Array.hpp"
+#include "SFML/Base/IntTypes.hpp"
 
 
 namespace tsurv
 {
 ////////////////////////////////////////////////////////////
-enum class ShapeBlock : unsigned char
+enum class ShapeBlock : sf::base::U8
 {
-    _ = 0,
-    A = 1,
-    B = 2,
-    C = 3,
-    D = 4,
+    _ = 0u,
+    A = 1u,
+    B = 2u,
+    C = 3u,
+    D = 4u,
 };
+
 
 ////////////////////////////////////////////////////////////
 using ShapeMatrix = sf::base::Array<ShapeBlock, shapeDimension * shapeDimension>;

@@ -7,6 +7,10 @@
 #include "ShapeDimension.hpp"
 #include "ShapeMatrix.hpp"
 
+#include "SFML/System/Vec2.hpp"
+
+#include "SFML/Base/IntTypes.hpp"
+
 
 namespace tsurv::tetramino_shapes
 {
@@ -119,14 +123,14 @@ inline constexpr ShapeMatrix sR1{_, C, _, _,
                                  _, _, B, _,
                                  _, _, _, _};
 
-inline constexpr ShapeMatrix sR2{_, D, C, _,
+inline constexpr ShapeMatrix sR2{_, _, _, _,
+                                 _, D, C, _,
                                  B, A, _, _,
-                                 _, _, _, _,
                                  _, _, _, _};
 
-inline constexpr ShapeMatrix sR3{_, B, _, _,
-                                 _, A, D, _,
-                                 _, _, C, _,
+inline constexpr ShapeMatrix sR3{B, _, _, _,
+                                 A, D, _, _,
+                                 _, C, _, _,
                                  _, _, _, _};
 
 
@@ -165,14 +169,14 @@ inline constexpr ShapeMatrix zR1{_, _, A, _,
                                  _, D, _, _,
                                  _, _, _, _};
 
-inline constexpr ShapeMatrix zR2{D, C, _, _,
+inline constexpr ShapeMatrix zR2{_, _, _, _,
+                                 D, C, _, _,
                                  _, B, A, _,
-                                 _, _, _, _,
                                  _, _, _, _};
 
-inline constexpr ShapeMatrix zR3{_, _, D, _,
-                                 _, B, C, _,
-                                 _, A, _, _,
+inline constexpr ShapeMatrix zR3{_, D, _, _,
+                                 B, C, _, _,
+                                 A, _, _, _,
                                  _, _, _, _};
 
 
@@ -181,15 +185,15 @@ inline constexpr ShapeMatrix zR3{_, _, D, _,
 
 
 ////////////////////////////////////////////////////////////
-enum class TetraminoType : unsigned char
+enum class TetraminoType : sf::base::U8
 {
-    I = 0,
-    J = 1,
-    L = 2,
-    O = 3,
-    S = 4,
-    T = 5,
-    Z = 6,
+    I = 0u,
+    J = 1u,
+    L = 2u,
+    O = 3u,
+    S = 4u,
+    T = 5u,
+    Z = 6u,
 };
 
 
@@ -210,12 +214,48 @@ inline constexpr sf::base::Array<sf::base::Array<ShapeMatrix, shapeDimension>, t
     {zR0, zR1, zR2, zR3}, // 6: Z-Piece
 }};
 
+
+////////////////////////////////////////////////////////////
+// These tables define the "kick" offsets to test for wall/floor collisions during rotation.
+// There are 5 tests for each rotation. The first valid one is used.
+using KickTable = sf::base::Array<sf::Vec2i, 5>;
+
+
+////////////////////////////////////////////////////////////
+// Kick data for J, L, S, T, Z pieces
+inline constexpr sf::base::Array<KickTable, 8> kickDataJLSTZ = {{
+    /* 0 -> 1 */ {{{0, 0}, {-1, 0}, {-1, -1}, {0, 2}, {-1, 2}}},
+    /* 1 -> 0 */ {{{0, 0}, {1, 0}, {1, 1}, {0, -2}, {1, -2}}},
+    /* 1 -> 2 */ {{{0, 0}, {1, 0}, {1, 1}, {0, -2}, {1, -2}}},
+    /* 2 -> 1 */ {{{0, 0}, {-1, 0}, {-1, -1}, {0, 2}, {-1, 2}}},
+    /* 2 -> 3 */ {{{0, 0}, {1, 0}, {1, -1}, {0, 2}, {1, -2}}},
+    /* 3 -> 2 */ {{{0, 0}, {-1, 0}, {-1, 1}, {0, -2}, {-1, 2}}},
+    /* 3 -> 0 */ {{{0, 0}, {-1, 0}, {-1, 1}, {0, -2}, {-1, 2}}},
+    /* 0 -> 3 */ {{{0, 0}, {1, 0}, {1, -1}, {0, 2}, {1, -2}}},
+}};
+
+
+////////////////////////////////////////////////////////////
+// Kick data for the I piece
+inline constexpr sf::base::Array<KickTable, 8> kickDataI = {{
+    /* 0 -> 1 */ {{{0, 0}, {-2, 0}, {1, 0}, {-2, 1}, {1, -2}}},
+    /* 1 -> 0 */ {{{0, 0}, {2, 0}, {-1, 0}, {2, -1}, {-1, 2}}},
+    /* 1 -> 2 */ {{{0, 0}, {-1, 0}, {2, 0}, {-1, -2}, {2, 1}}},
+    /* 2 -> 1 */ {{{0, 0}, {1, 0}, {-2, 0}, {1, 2}, {-2, -1}}},
+    /* 2 -> 3 */ {{{0, 0}, {2, 0}, {-1, 0}, {2, -1}, {-1, 2}}},
+    /* 3 -> 2 */ {{{0, 0}, {-2, 0}, {1, 0}, {-2, 1}, {1, -2}}},
+    /* 3 -> 0 */ {{{0, 0}, {1, 0}, {-2, 0}, {1, 2}, {-2, -1}}},
+    /* 0 -> 3 */ {{{0, 0}, {-1, 0}, {2, 0}, {-1, -2}, {2, 1}}},
+}};
+
 } // namespace tsurv::tetramino_shapes
 
 
 namespace tsurv
 {
 ////////////////////////////////////////////////////////////
+using tetramino_shapes::kickDataI;
+using tetramino_shapes::kickDataJLSTZ;
 using tetramino_shapes::srsTetraminoShapes;
 using tetramino_shapes::tetraminoShapeCount;
 using tetramino_shapes::TetraminoType;

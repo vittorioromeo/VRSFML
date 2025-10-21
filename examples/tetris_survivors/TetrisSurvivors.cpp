@@ -208,13 +208,11 @@ private:
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] int calculateGhostY()
+    [[nodiscard]] int calculateGhostY(const Tetramino& tetramino) const
     {
-        SFML_BASE_ASSERT(m_world.currentTetramino.hasValue());
+        int ghostY = tetramino.position.y;
 
-        int ghostY = m_world.currentTetramino->position.y;
-        while (m_world.blockGrid.isValidMove(m_world.currentTetramino->shape,
-                                             {m_world.currentTetramino->position.x, ghostY + 1}))
+        while (m_world.blockGrid.isValidMove(tetramino.shape, {tetramino.position.x, ghostY + 1}))
             ++ghostY;
 
         return ghostY;
@@ -236,6 +234,11 @@ private:
             blockMap[static_cast<sf::base::SizeT>(id) - 1u] = *block;
         }
 
+        SFML_BASE_ASSERT(blockMap[0].shapeBlock == ShapeBlock::A);
+        SFML_BASE_ASSERT(blockMap[1].shapeBlock == ShapeBlock::B);
+        SFML_BASE_ASSERT(blockMap[2].shapeBlock == ShapeBlock::C);
+        SFML_BASE_ASSERT(blockMap[3].shapeBlock == ShapeBlock::D);
+
         BlockMatrix newBlockMatrix;
 
         for (sf::base::SizeT i = 0u; i < newBlockMatrix.size(); ++i)
@@ -243,6 +246,29 @@ private:
                 newBlockMatrix[i].emplace(blockMap[static_cast<sf::base::SizeT>(id) - 1u]);
 
         return newBlockMatrix;
+    }
+
+    ////////////////////////////////////////////////////////////
+    void drawBlock(const Block& block, const sf::Vec2f& position, const float opacity)
+    {
+        const auto alpha = static_cast<sf::base::U8>(opacity * 255.f);
+
+        m_rtGame.draw(sf::RectangleShapeData{
+            .position         = position,
+            .fillColor        = blockPalette[block.paletteIdx].withAlpha(alpha),
+            .outlineColor     = blockPalette[block.paletteIdx].withLightness(0.3f).withAlpha(alpha),
+            .outlineThickness = 2.f,
+            .size             = {32.f, 32.f},
+        });
+
+        m_rtGame.draw(m_font,
+                      sf::TextData{
+                          .position         = position + sf::Vec2f{8.f, -8.f},
+                          .string           = std::to_string(static_cast<unsigned int>(block.shapeBlock)),
+                          .fillColor        = sf::Color::White,
+                          .outlineColor     = sf::Color::Black,
+                          .outlineThickness = 2.f,
+                      });
     }
 
 public:
@@ -285,7 +311,7 @@ public:
 
                         Tetramino& current = *m_world.currentTetramino;
 
-                        const auto nextRotationState = static_cast<unsigned char>(
+                        const auto nextRotationState = static_cast<sf::base::U8>(
                             (current.rotationState + (clockwise ? 1 : 3)) % 4u);
 
                         const auto& targetShapeTemplate = srsTetraminoShapes[static_cast<sf::base::SizeT>(
@@ -294,26 +320,37 @@ public:
                         // Create the new stateful shape by re-mapping the blocks
                         const BlockMatrix rotatedShape = mapBlocksToNewShape(current, targetShapeTemplate);
 
-                        const auto testPosition = current.position;
+                        const bool  isIPiece  = (current.tetraminoType == TetraminoType::I);
+                        const auto& kickTable = isIPiece ? kickDataI : kickDataJLSTZ;
 
-                        if (m_world.blockGrid.isValidMove(rotatedShape, testPosition))
+                        int kickTableIndex = current.rotationState;
+
+                        if (!clockwise)
+                            kickTableIndex = nextRotationState;
+
+                        kickTableIndex = kickTableIndex * 2 + (clockwise ? 0 : 1);
+
+                        for (const sf::Vec2i& offset : kickTable[static_cast<sf::base::SizeT>(kickTableIndex)])
                         {
+                            // SRS kick data assumes a Y-down coordinate system. Your grid logic uses Y-down.
+                            // However, the kick values are defined as (original_test_point - rotated_test_point).
+                            // We apply this difference to the current position to find the new test position.
+                            // The kick data is set up to be added directly for from->to transitions.
+                            sf::Vec2i finalOffset = offset;
+
+                            // In SRS, the offsets for reverse rotations (e.g., 1->0) are the inverse
+                            // of the forward rotations (e.g., 0->1). The tables already account for this.
+
+                            const sf::Vec2i testPosition = current.position + finalOffset;
+
+                            if (!m_world.blockGrid.isValidMove(rotatedShape, testPosition))
+                                continue;
+
                             current.shape         = rotatedShape;
-                            current.rotationState = nextRotationState;
-                        }
-                        else if (m_world.blockGrid.isValidMove(rotatedShape, testPosition.addX(1)))
-                        {
-                            current.shape         = rotatedShape;
+                            current.position      = testPosition;
                             current.rotationState = nextRotationState;
 
-                            ++current.position.x;
-                        }
-                        else if (m_world.blockGrid.isValidMove(rotatedShape, testPosition.addX(-1)))
-                        {
-                            current.shape         = rotatedShape;
-                            current.rotationState = nextRotationState;
-
-                            --current.position.x;
+                            return;
                         }
                     };
 
@@ -343,7 +380,7 @@ public:
 
                     if (eKeyPressed->code == sf::Keyboard::Key::Space)
                     {
-                        const int endY = calculateGhostY();
+                        const int endY = calculateGhostY(*m_world.currentTetramino);
 
                         m_world.currentTetramino->position.y = endY;
 
@@ -362,22 +399,11 @@ public:
             ////////////////////////////////////////////////////////////
             // ---
             const auto      deltaTime      = m_tickClock.restart();
-            constexpr float ticksPerSecond = 240.f;
+            constexpr float ticksPerSecond = 120.f;
             m_timeAccumulator += deltaTime.asSeconds();
 
             {
                 SFEX_PROFILE_SCOPE("update");
-
-                const auto shapeMatrixToBlockMatrix = [](const ShapeMatrix& shapeMatrix, const Block& block) -> BlockMatrix
-                {
-                    BlockMatrix blockMatrix;
-
-                    for (sf::base::SizeT i = 0u; i < shapeMatrix.size(); ++i)
-                        if (const auto shapeBlock = shapeMatrix[i]; shapeBlock != ShapeBlock::_)
-                            blockMatrix[i].emplace(block).shapeBlock = shapeBlock;
-
-                    return blockMatrix;
-                };
 
                 // Refill block matrix bag if needed
                 if (m_world.blockMatrixBag.empty())
@@ -385,7 +411,7 @@ public:
                     constexpr sf::base::SizeT bagMult = 2u;
 
                     for (sf::base::SizeT i = 0u; i < bagMult; ++i)
-                        for (sf::base::SizeT j = 0u; j < tetraminoShapeCount; ++j)
+                        for (sf::base::U8 j = 0u; j < tetraminoShapeCount; ++j)
                         {
                             const Block block{
                                 .health     = 1,
@@ -406,8 +432,8 @@ public:
                     const TaggedBlockMatrix taggedBlockMatrix = drawFromBag(m_world.blockMatrixBag);
 
                     m_world.currentTetramino.emplace(Tetramino{
-                        .shape = taggedBlockMatrix.blockMatrix,
-                        .position = sf::Vec2i{static_cast<int>(m_world.blockGrid.getWidth() / 2u - shapeDimension / 2u), 0u},
+                        .shape         = taggedBlockMatrix.blockMatrix,
+                        .position      = sf::Vec2uz{(m_world.blockGrid.getWidth() - shapeDimension) / 2u, 0u}.toVec2i(),
                         .tetraminoType = taggedBlockMatrix.tetraminoType,
                         .rotationState = 0u,
                     });
@@ -422,7 +448,7 @@ public:
                     {
                         if (m_world.currentTetramino.hasValue())
                         {
-                            const auto newPosition = m_world.currentTetramino->position + sf::Vec2u{0u, 1u};
+                            const auto newPosition = m_world.currentTetramino->position + sf::Vec2i{0, 1};
 
                             if (m_world.blockGrid.isValidMove(m_world.currentTetramino->shape, newPosition))
                             {
@@ -464,8 +490,8 @@ public:
                     SFEX_PROFILE_SCOPE("rtGame");
 
                     // Draw grid background and lines
-                    for (sf::base::SizeT x = 0; x < m_world.blockGrid.getWidth(); ++x)
-                        for (sf::base::SizeT y = 0; y < m_world.blockGrid.getHeight(); ++y)
+                    for (sf::base::SizeT x = 0u; x < m_world.blockGrid.getWidth(); ++x)
+                        for (sf::base::SizeT y = 0u; y < m_world.blockGrid.getHeight(); ++y)
                         {
                             const sf::Vec2f position = {static_cast<float>(x * 32), static_cast<float>(y * 32)};
 
@@ -478,38 +504,18 @@ public:
                             });
                         }
 
-                    const auto drawBlock = [this](const Block& block, const sf::Vec2f& position)
-                    {
-                        m_rtGame.draw(sf::RectangleShapeData{
-                            .position         = position,
-                            .fillColor        = blockPalette[block.paletteIdx],
-                            .outlineColor     = blockPalette[block.paletteIdx].withLightness(0.3f),
-                            .outlineThickness = 2.f,
-                            .size             = {32.f, 32.f},
-                        });
-
-                        m_rtGame.draw(m_font,
-                                      sf::TextData{
-                                          .position     = position + sf::Vec2f{8.f, -8.f},
-                                          .string       = std::to_string(static_cast<unsigned int>(block.shapeBlock)),
-                                          .fillColor    = sf::Color::White,
-                                          .outlineColor = sf::Color::Black,
-                                          .outlineThickness = 2.f,
-                                      });
-                    };
-
                     // Draw pieces embedded in grid
-                    for (sf::base::SizeT x = 0; x < m_world.blockGrid.getWidth(); ++x)
-                        for (sf::base::SizeT y = 0; y < m_world.blockGrid.getHeight(); ++y)
+                    for (sf::base::SizeT x = 0u; x < m_world.blockGrid.getWidth(); ++x)
+                        for (sf::base::SizeT y = 0u; y < m_world.blockGrid.getHeight(); ++y)
                         {
-                            const sf::base::Optional<Block>& blockOpt = m_world.blockGrid.at(sf::Vec2uz{x, y}.toVec2u());
+                            const sf::Vec2uz                 gridPosition{x, y};
+                            const sf::base::Optional<Block>& blockOpt = m_world.blockGrid.at(gridPosition.toVec2u());
 
-                            if (blockOpt.hasValue())
-                            {
-                                const Block&    block    = *blockOpt;
-                                const sf::Vec2f position = {static_cast<float>(x * 32), static_cast<float>(y * 32)};
-                                drawBlock(block, position);
-                            }
+                            if (!blockOpt.hasValue())
+                                continue;
+
+                            const auto drawPosition = gridPosition.toVec2f() * 32.f;
+                            drawBlock(*blockOpt, drawPosition, /* opacity */ 1.f);
                         }
 
                     // Draw current piece
@@ -517,17 +523,24 @@ public:
                     {
                         const Tetramino& tetramino = *m_world.currentTetramino;
 
-                        for (sf::base::SizeT y = 0; y < shapeDimension; ++y)
-                            for (sf::base::SizeT x = 0; x < shapeDimension; ++x)
+                        for (sf::base::SizeT x = 0u; x < shapeDimension; ++x)
+                            for (sf::base::SizeT y = 0u; y < shapeDimension; ++y)
                             {
                                 const sf::base::Optional<Block>& blockOpt = tetramino.shape[y * shapeDimension + x];
 
-                                if (blockOpt.hasValue())
-                                {
-                                    const Block& block = *blockOpt;
-                                    const auto position = (tetramino.position + sf::Vec2uz{x, y}.toVec2i()).toVec2f() * 32.f;
-                                    drawBlock(block, position);
-                                }
+                                if (!blockOpt.hasValue())
+                                    continue;
+
+                                const auto gridPosition = tetramino.position.toVec2uz() + sf::Vec2uz{x, y};
+                                const auto drawPosition = gridPosition.toVec2f() * 32.f;
+                                drawBlock(*blockOpt, drawPosition, /* opacity */ 1.f);
+
+                                const auto gridGhostPosition = gridPosition.withY(
+                                    static_cast<sf::base::SizeT>(calculateGhostY(tetramino)) + y);
+
+                                const auto drawGhostPosition = gridGhostPosition.toVec2f() * 32.f;
+
+                                drawBlock(*blockOpt, drawGhostPosition, /* opacity */ 0.25f);
                             }
                     }
                 }
