@@ -5,17 +5,18 @@
 
 
 ////////////////////////////////////////////////////////////
+template <typename T>
 class Sampler
 {
 public:
     ////////////////////////////////////////////////////////////
-    explicit Sampler(const sf::base::SizeT capacity) : m_data(capacity, 0.f), m_capacity(capacity)
+    explicit Sampler(const sf::base::SizeT capacity) : m_data(capacity, T(0)), m_capacity(capacity)
     {
     }
 
 
     ////////////////////////////////////////////////////////////
-    void record(const float value)
+    void record(const T value)
     {
         if (m_size < m_capacity)
         {
@@ -37,9 +38,10 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] double getAverage() const
+    template <typename U>
+    [[nodiscard, gnu::always_inline]] U getAverageAs() const
     {
-        return m_size == 0u ? 0.0 : static_cast<double>(m_sum) / static_cast<double>(m_size);
+        return m_size == 0u ? U(0) : static_cast<U>(m_sum) / static_cast<U>(m_size);
     }
 
 
@@ -51,7 +53,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] const float* data() const
+    [[nodiscard, gnu::always_inline]] const T* data() const
     {
         return m_data.data();
     }
@@ -60,17 +62,14 @@ public:
     ////////////////////////////////////////////////////////////
     void clear()
     {
-        for (float& x : m_data)
-            x = 0.f;
-
         m_size  = 0u;
         m_index = 0u;
-        m_sum   = 0.f;
+        m_sum   = T(0);
     }
 
 
     ////////////////////////////////////////////////////////////
-    void writeSamplesInOrder(float* target) const
+    void writeSamplesInOrder(T* target) const
     {
         if (m_size < m_capacity)
         {
@@ -99,10 +98,10 @@ public:
     }
 
 private:
-    sf::base::Vector<float> m_data;
-    const sf::base::SizeT   m_capacity;
+    sf::base::Vector<T>   m_data;
+    const sf::base::SizeT m_capacity;
 
-    sf::base::SizeT m_size  = 0;   // Number of valid samples currently in the buffer
-    sf::base::SizeT m_index = 0;   // Next index for insertion
-    float           m_sum   = 0.f; // Running sum for fast averaging
+    sf::base::SizeT m_size  = 0; // Number of valid samples currently in the buffer
+    sf::base::SizeT m_index = 0; // Next index for insertion
+    T               m_sum   = 0; // Running sum for fast averaging
 };

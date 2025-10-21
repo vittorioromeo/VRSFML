@@ -621,9 +621,10 @@ public:
 };
 
 // Define the most common types
-using Vec2i = Vec2<int>;
-using Vec2u = Vec2<unsigned int>;
-using Vec2f = Vec2<float>;
+using Vec2i  = Vec2<int>;
+using Vec2u  = Vec2<unsigned int>;
+using Vec2f  = Vec2<float>;
+using Vec2uz = Vec2<decltype(sizeof(int))>; // `SizeT`, avoid include
 
 ////////////////////////////////////////////////////////////
 /// \relates Vec2
