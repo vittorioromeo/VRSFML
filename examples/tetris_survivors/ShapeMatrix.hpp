@@ -12,6 +12,16 @@
 namespace tsurv
 {
 ////////////////////////////////////////////////////////////
-using ShapeMatrix = sf::base::Array<bool, shapeDimension * shapeDimension>;
+enum class ShapeBlock : unsigned char
+{
+    _ = 0,
+    A = 1,
+    B = 2,
+    C = 3,
+    D = 4,
+};
+
+////////////////////////////////////////////////////////////
+using ShapeMatrix = sf::base::Array<ShapeBlock, shapeDimension * shapeDimension>;
 
 } // namespace tsurv

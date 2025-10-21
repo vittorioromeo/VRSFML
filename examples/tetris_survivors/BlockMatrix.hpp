@@ -17,6 +17,7 @@ namespace tsurv
 using BlockMatrix = sf::base::Array<sf::base::Optional<Block>, shapeDimension * shapeDimension>;
 
 
+#if 0
 ////////////////////////////////////////////////////////////
 [[nodiscard]] inline BlockMatrix rotateBlockMatrixClockwise(const BlockMatrix& originalMatrix)
 {
@@ -41,5 +42,6 @@ using BlockMatrix = sf::base::Array<sf::base::Optional<Block>, shapeDimension * 
 
     return rotatedMatrix;
 }
+#endif
 
 } // namespace tsurv
