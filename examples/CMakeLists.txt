@@ -32,6 +32,7 @@ if(SFML_BUILD_GRAPHICS)
         add_subdirectory(rockets)
         add_subdirectory(shader)
         add_subdirectory(showcase)
+        add_subdirectory(tetris_survivors)
         add_subdirectory(text_benchmark)
 
         if (NOT SFML_OS_EMSCRIPTEN)

@@ -23,7 +23,11 @@ namespace sfex::priv
 {
 ////////////////////////////////////////////////////////////
 using ChildrenMap = sf::base::Vector<sf::base::Vector<sfex::NodeId>>;
-using SamplerVec  = sf::base::Vector<Sampler>;
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+using SamplerVec = sf::base::Vector<Sampler<T>>;
 
 
 ////////////////////////////////////////////////////////////
@@ -41,27 +45,27 @@ using SamplerVec  = sf::base::Vector<Sampler>;
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] inline int calcDelta(const SamplerVec&      timeSamplers,
-                                   const SamplerVec&      percentSamplers,
-                                   const sfex::ScopeInfo& infoA,
-                                   const sfex::ScopeInfo& infoB,
-                                   const unsigned int     columnUserID)
+[[nodiscard]] inline int calcDelta(const SamplerVec<sf::base::U64>& timeSamplers,
+                                   const SamplerVec<double>&        percentSamplers,
+                                   const sfex::ScopeInfo&           infoA,
+                                   const sfex::ScopeInfo&           infoB,
+                                   const unsigned int               columnUserID)
 {
     if (columnUserID == 0u) // Sort by label
         return infoA.label.compare(infoB.label);
 
     if (columnUserID == 1u) // Sort by time
     {
-        const double timeA = timeSamplers[infoA.nodeId].getAverage();
-        const double timeB = timeSamplers[infoB.nodeId].getAverage();
+        const auto timeA = timeSamplers[infoA.nodeId].getAverageAs<double>();
+        const auto timeB = timeSamplers[infoB.nodeId].getAverageAs<double>();
 
         return (timeA > timeB) ? 1 : (timeA < timeB) ? -1 : 0;
     }
 
     if (columnUserID == 2u) // Sort by percent
     {
-        const double percentA = percentSamplers[infoA.nodeId].getAverage();
-        const double percentB = percentSamplers[infoB.nodeId].getAverage();
+        const auto percentA = percentSamplers[infoA.nodeId].getAverageAs<double>();
+        const auto percentB = percentSamplers[infoB.nodeId].getAverageAs<double>();
 
         return (percentA > percentB) ? 1 : (percentA < percentB) ? -1 : 0;
     }
@@ -78,8 +82,8 @@ using SamplerVec  = sf::base::Vector<Sampler>;
 
 
 ////////////////////////////////////////////////////////////
-inline void renderNode(const SamplerVec&                            timeSamplers,
-                       const SamplerVec&                            percentSamplers,
+inline void renderNode(const SamplerVec<sf::base::U64>&             timeSamplers,
+                       const SamplerVec<double>&                    percentSamplers,
                        sfex::NodeId                                 nodeId,
                        const sf::base::Span<const sfex::ScopeInfo>& allNodes,
                        const ChildrenMap&                           childrenMap)
@@ -109,16 +113,15 @@ inline void renderNode(const SamplerVec&                            timeSamplers
     //
     // Column 2: time
     ImGui::TableSetColumnIndex(1);
-    ImGui::Text("%s%.3f", spacesPtr, static_cast<double>(timeSamplers[nodeId].getAverage())); // Already in ms
+    ImGui::Text("%s%.3f", spacesPtr, timeSamplers[nodeId].getAverageAs<double>() / 1000.0); // Convert to ms
 
     //
     // Column 3: % of parent
     ImGui::TableSetColumnIndex(2);
     if (info.parentNodeId != sfex::nullNode)
     {
-
         if (const auto& parentInfo = allNodes[info.parentNodeId]; parentInfo.timeUs > 0)
-            ImGui::Text("%s%.1f%%", spacesPtr + 1, percentSamplers[nodeId].getAverage());
+            ImGui::Text("%s%.1f%%", spacesPtr + 1, percentSamplers[nodeId].getAverageAs<double>());
         else
             ImGui::Text("%sN/A", spacesPtr + 1);
     }
@@ -160,17 +163,21 @@ inline void showImguiProfiler()
     }
 
     // Pre-process the flat list into a tree structure
-    static thread_local priv::ChildrenMap              childrenMap(sfex::maxNodes);
-    static thread_local sf::base::Vector<sfex::NodeId> rootNodes;
-    static thread_local priv::SamplerVec               nodeTimeSamplers(sfex::maxNodes, Sampler{/* capacity */ 64u});
-    static thread_local priv::SamplerVec               nodePercentSamplers(sfex::maxNodes, Sampler{/* capacity */ 64u});
+    static thread_local priv::ChildrenMap               childrenMap(sfex::maxNodes);
+    static thread_local sf::base::Vector<sfex::NodeId>  rootNodes;
+    static thread_local priv::SamplerVec<sf::base::U64> nodeTimeSamplers(sfex::maxNodes,
+                                                                         Sampler<sf::base::U64>{/* capacity */ 64u});
+    static thread_local priv::SamplerVec<double> nodePercentSamplers(sfex::maxNodes, Sampler<double>{/* capacity */ 64u});
 
     sfex::populateNodes(scopeInfos, childrenMap, rootNodes); // Clears as the first step
 
     for (sfex::NodeId i = 0; i < static_cast<sfex::NodeId>(scopeInfos.size()); ++i)
     {
-        nodeTimeSamplers[i].record(static_cast<float>(scopeInfos[i].timeUs) / 1000.f); // Convert to ms
-        nodePercentSamplers[i].record(static_cast<float>(priv::calcNodePercentage(scopeInfos, scopeInfos[i])));
+        if (scopeInfos[i].timeUs < 0)
+            continue;
+
+        nodeTimeSamplers[i].record(static_cast<sf::base::U64>(scopeInfos[i].timeUs));
+        nodePercentSamplers[i].record(priv::calcNodePercentage(scopeInfos, scopeInfos[i]));
     }
 
     // Set up the table for display

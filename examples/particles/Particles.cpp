@@ -353,10 +353,10 @@ int main()
     sf::Clock clock;
     sf::Clock fpsClock;
 
-    Sampler samplesUpdateMs(/* capacity */ 64u);
-    Sampler samplesDrawMs(/* capacity */ 64u);
-    Sampler samplesDisplayMs(/* capacity */ 64u);
-    Sampler samplesFPS(/* capacity */ 64u);
+    Sampler<float> samplesUpdateMs(/* capacity */ 64u);
+    Sampler<float> samplesDrawMs(/* capacity */ 64u);
+    Sampler<float> samplesDisplayMs(/* capacity */ 64u);
+    Sampler<float> samplesFPS(/* capacity */ 64u);
 
     //
     //
@@ -720,13 +720,13 @@ int main()
 
             ImGui::NewLine();
 
-            const auto plotGraph = [&](const char* label, const char* unit, const Sampler& samples, float upperBound)
+            const auto plotGraph = [&](const char* label, const char* unit, const Sampler<float>& samples, float upperBound)
             {
                 ImGui::PlotLines(label,
                                  samples.data(),
                                  static_cast<int>(samples.size()),
                                  0,
-                                 (std::to_string(samples.getAverage()) + unit).c_str(),
+                                 (std::to_string(samples.getAverageAs<double>()) + unit).c_str(),
                                  0.f,
                                  upperBound,
                                  ImVec2{256.f, 32.f});

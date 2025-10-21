@@ -14,9 +14,10 @@
 
 #ifdef SFEX_PROFILER_ENABLED
     #include "SFML/System/Clock.hpp"
+    #include "SFML/System/IO.hpp"
     #include "SFML/System/Time.hpp"
 
-    #include "SFML/Base/Assert.hpp"
+    #include "SFML/Base/Abort.hpp"
 #endif
 
 
@@ -27,8 +28,9 @@ using NodeId = sf::base::SizeT;
 
 
 ////////////////////////////////////////////////////////////
-inline constexpr auto   nullNode = static_cast<NodeId>(-1u);
-inline constexpr NodeId maxNodes = 128u;
+inline constexpr auto          nullNode = static_cast<NodeId>(-1u);
+inline constexpr NodeId        maxNodes = 512u;
+inline constexpr sf::base::I64 nullTime = -1;
 
 
 ////////////////////////////////////////////////////////////
@@ -73,15 +75,20 @@ struct [[nodiscard]] Database
                                       const sf::base::StringView func,
                                       const int                  line)
     {
+        if (nextNodeId >= maxNodes) [[unlikely]]
+        {
+            sf::cErr() << "SFEX Profiler: exceeded maximum number of nodes (" << maxNodes << ")\n";
+            sf::base::abort();
+        }
+
         const NodeId id = nextNodeId++;
-        SFML_BASE_ASSERT(id < maxNodes);
 
         nodes[id] = ScopeInfo{
             .label        = label,
             .file         = file,
             .func         = func,
             .line         = line,
-            .timeUs       = -1,
+            .timeUs       = nullTime,
             .nodeId       = id,
             .parentNodeId = nullNode,
             .depth        = currentDepth,
@@ -163,7 +170,7 @@ inline void populateNodes([[maybe_unused]] sf::base::Span<const ScopeInfo>      
 
     for (const auto& info : scopeInfos)
     {
-        if (info.timeUs == -1)
+        if (info.timeUs == nullTime)
             continue;
 
         if (info.parentNodeId == nullNode) // top-level node
@@ -180,7 +187,7 @@ inline void resetNodes()
 {
 #ifdef SFEX_PROFILER_ENABLED
     for (auto& node : priv::tlDatabase.nodes)
-        node.timeUs = -1;
+        node.timeUs = nullTime;
 #endif
 }
 

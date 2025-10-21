@@ -1568,15 +1568,15 @@ int main()
     // Set up clock and time sampling
     sf::Clock fpsClock;
 
-    Sampler samplesUpdateMs(/* capacity */ 32u);
-    Sampler samplesDrawMs(/* capacity */ 32u);
-    Sampler samplesDisplayMs(/* capacity */ 32u);
-    Sampler samplesFPS(/* capacity */ 32u);
+    Sampler<float> samplesUpdateMs(/* capacity */ 32u);
+    Sampler<float> samplesDrawMs(/* capacity */ 32u);
+    Sampler<float> samplesDisplayMs(/* capacity */ 32u);
+    Sampler<float> samplesFPS(/* capacity */ 32u);
 
     struct [[nodiscard]] SamplerScopeGuard
     {
-        Sampler& sampler;
-        sf::Time startTime = sf::Clock::now();
+        Sampler<float>& sampler;
+        sf::Time        startTime = sf::Clock::now();
 
         ~SamplerScopeGuard()
         {
@@ -1733,7 +1733,7 @@ int main()
 
             imGuiContext.update(window, fpsClock.getElapsedTime());
 
-            const auto plotGraphNoOverlay = [&](const char* label, const Sampler& samples, float upperBound)
+            const auto plotGraphNoOverlay = [&](const char* label, const Sampler<float>& samples, float upperBound)
             {
                 ImGui::PlotLines(label,
                                  samples.data(),
@@ -1756,15 +1756,15 @@ int main()
 
             plotGraphNoOverlay("##infofps", samplesFPS, 144.f);
             ImGui::SameLine();
-            ImGui::Text("    FPS: %.1f", samplesFPS.getAverage());
+            ImGui::Text("    FPS: %.1f", samplesFPS.getAverageAs<double>());
 
             plotGraphNoOverlay("##infoupdate", samplesUpdateMs, 30.f);
             ImGui::SameLine();
-            ImGui::Text(" Update: %.1f ms", samplesUpdateMs.getAverage());
+            ImGui::Text(" Update: %.1f ms", samplesUpdateMs.getAverageAs<double>());
 
             plotGraphNoOverlay("##infodraw", samplesDrawMs, 30.f);
             ImGui::SameLine();
-            ImGui::Text("   Draw: %.1f ms", samplesDrawMs.getAverage());
+            ImGui::Text("   Draw: %.1f ms", samplesDrawMs.getAverageAs<double>());
 
             ImGui::Separator();
             setFontScale(1.f);

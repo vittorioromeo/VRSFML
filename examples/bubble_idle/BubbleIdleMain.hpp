@@ -1180,9 +1180,9 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // $ps sampler
-    MoneyType     moneyGainedLastSecond{0u};
-    Sampler       samplerMoneyPerSecond{/* capacity */ 60u};
-    sf::base::I64 moneyGainedUsAccumulator{0};
+    MoneyType      moneyGainedLastSecond{0u};
+    Sampler<float> samplerMoneyPerSecond{/* capacity */ 60u};
+    sf::base::I64  moneyGainedUsAccumulator{0};
 
     ////////////////////////////////////////////////////////////
     // Bomb-cat tracker for money earned
@@ -8722,7 +8722,7 @@ struct Main
             samplerMoneyPerSecond.record(static_cast<float>(moneyGainedLastSecond));
             moneyGainedLastSecond = 0u;
 
-            statHighestDPS(static_cast<sf::base::U64>(samplerMoneyPerSecond.getAverage()));
+            statHighestDPS(static_cast<sf::base::U64>(samplerMoneyPerSecond.getAverageAs<double>()));
         }
     }
 
