@@ -17,7 +17,7 @@
 namespace tsurv
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] inline sf::base::SizeT getIndex2Dto1D(const sf::Vec2u position, const sf::base::SizeT width)
+[[nodiscard]] inline sf::base::SizeT getIndex2Dto1D(const sf::Vec2uz position, const sf::base::SizeT width)
 {
     return position.y * width + position.x;
 }
@@ -46,6 +46,20 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::base::Optional<Block>& at(const sf::Vec2u position)
     {
+        return at(position.toVec2uz());
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] const sf::base::Optional<Block>& at(const sf::Vec2u position) const
+    {
+        return at(position.toVec2uz());
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] sf::base::Optional<Block>& at(const sf::Vec2uz position)
+    {
         SFML_BASE_ASSERT(position.x < m_width);
         SFML_BASE_ASSERT(position.y < m_height);
 
@@ -57,7 +71,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const sf::base::Optional<Block>& at(const sf::Vec2u position) const
+    [[nodiscard]] const sf::base::Optional<Block>& at(const sf::Vec2uz position) const
     {
         return const_cast<BlockGrid*>(this)->at(position);
     }
@@ -120,6 +134,22 @@ public:
                     at(gridPos.toVec2u()) = tetramino.shape[index];
                 }
             }
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    void shiftRowDown(const sf::base::SizeT rowIndex)
+    {
+        SFML_BASE_ASSERT(rowIndex < m_height);
+
+        // shift all rows down to cover the removed row
+        for (sf::base::SizeT y = rowIndex; y > 0; --y)
+            for (sf::base::SizeT x = 0u; x < m_width; ++x)
+                at(sf::Vec2uz{x, y}) = at(sf::Vec2uz{x, y - 1});
+
+        // clear the top row
+        for (sf::base::SizeT x = 0u; x < m_width; ++x)
+            at(sf::Vec2uz{x, 0u}).reset();
     }
 };
 
