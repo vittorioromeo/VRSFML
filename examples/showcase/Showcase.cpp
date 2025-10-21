@@ -796,12 +796,12 @@ private:
     sf::Clock m_fpsClock;
 
     ////////////////////////////////////////////////////////////
-    Sampler m_samplesEventMs{/* capacity */ 64u};
-    Sampler m_samplesUpdateMs{/* capacity */ 64u};
-    Sampler m_samplesImGuiMs{/* capacity */ 64u};
-    Sampler m_samplesDrawMs{/* capacity */ 64u};
-    Sampler m_samplesDisplayMs{/* capacity */ 64u};
-    Sampler m_samplesFPS{/* capacity */ 64u};
+    Sampler<float> m_samplesEventMs{/* capacity */ 64u};
+    Sampler<float> m_samplesUpdateMs{/* capacity */ 64u};
+    Sampler<float> m_samplesImGuiMs{/* capacity */ 64u};
+    Sampler<float> m_samplesDrawMs{/* capacity */ 64u};
+    Sampler<float> m_samplesDisplayMs{/* capacity */ 64u};
+    Sampler<float> m_samplesFPS{/* capacity */ 64u};
 
     ////////////////////////////////////////////////////////////
     unsigned int    m_lastFrameDrawCallCount = 0u;
@@ -853,13 +853,13 @@ private:
     }
 
     ////////////////////////////////////////////////////////////
-    void plotSamples(const char* label, const char* unit, const Sampler& samples, float upperBound)
+    void plotSamples(const char* label, const char* unit, const Sampler<float>& samples, float upperBound)
     {
         ImGui::PlotLines(label,
                          samples.data(),
                          static_cast<int>(samples.size()),
                          0,
-                         (std::to_string(samples.getAverage()) + unit).c_str(),
+                         (std::to_string(samples.getAverageAs<double>()) + unit).c_str(),
                          0.f,
                          upperBound,
                          ImVec2{256.f, 32.f});

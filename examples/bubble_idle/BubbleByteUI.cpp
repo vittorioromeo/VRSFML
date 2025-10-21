@@ -1445,7 +1445,7 @@ void Main::uiDpsMeter()
     static thread_local sf::base::Vector<float> sampleBuffer(60);
     samplerMoneyPerSecond.writeSamplesInOrder(sampleBuffer.data());
 
-    const auto average = static_cast<MoneyType>(samplerMoneyPerSecond.getAverage());
+    const auto average = static_cast<MoneyType>(samplerMoneyPerSecond.getAverageAs<double>());
 
     static thread_local char avgBuffer[64];
     std::sprintf(avgBuffer, "%s $/s", toStringWithSeparators(average));
