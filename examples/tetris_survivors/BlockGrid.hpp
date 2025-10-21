@@ -80,8 +80,8 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isValidMove(const BlockMatrix& blockMatrix, const sf::Vec2i newPosition) const
     {
-        for (sf::base::SizeT y = 0; y < shapeDimension; ++y)
-            for (sf::base::SizeT x = 0; x < shapeDimension; ++x)
+        for (sf::base::SizeT y = 0u; y < shapeDimension; ++y)
+            for (sf::base::SizeT x = 0u; x < shapeDimension; ++x)
             {
                 if (!blockMatrix[y * shapeDimension + x].hasValue())
                     continue;
@@ -103,8 +103,8 @@ public:
     ////////////////////////////////////////////////////////////
     void embedTetramino(const Tetramino& tetramino)
     {
-        for (sf::base::SizeT y = 0; y < shapeDimension; ++y)
-            for (sf::base::SizeT x = 0; x < shapeDimension; ++x)
+        for (sf::base::SizeT y = 0u; y < shapeDimension; ++y)
+            for (sf::base::SizeT x = 0u; x < shapeDimension; ++x)
             {
                 const auto index = y * shapeDimension + x;
 

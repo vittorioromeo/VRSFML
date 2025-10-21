@@ -17,31 +17,16 @@ namespace tsurv
 using BlockMatrix = sf::base::Array<sf::base::Optional<Block>, shapeDimension * shapeDimension>;
 
 
-#if 0
 ////////////////////////////////////////////////////////////
-[[nodiscard]] inline BlockMatrix rotateBlockMatrixClockwise(const BlockMatrix& originalMatrix)
+[[nodiscard]] inline BlockMatrix shapeMatrixToBlockMatrix(const ShapeMatrix& shapeMatrix, const Block& block)
 {
-    BlockMatrix rotatedMatrix;
+    BlockMatrix blockMatrix;
 
-    for (sf::base::SizeT y = 0u; y < shapeDimension; ++y)
-        for (sf::base::SizeT x = 0u; x < shapeDimension; ++x)
-            rotatedMatrix[x * shapeDimension + (shapeDimension - 1u - y)] = originalMatrix[y * shapeDimension + x];
+    for (sf::base::SizeT i = 0u; i < shapeMatrix.size(); ++i)
+        if (const auto shapeBlock = shapeMatrix[i]; shapeBlock != ShapeBlock::_)
+            blockMatrix[i].emplace(block).shapeBlock = shapeBlock;
 
-    return rotatedMatrix;
+    return blockMatrix;
 }
-
-
-////////////////////////////////////////////////////////////
-[[nodiscard]] inline BlockMatrix rotateBlockMatrixCounterClockwise(const BlockMatrix& originalMatrix)
-{
-    BlockMatrix rotatedMatrix;
-
-    for (sf::base::SizeT y = 0u; y < shapeDimension; ++y)
-        for (sf::base::SizeT x = 0u; x < shapeDimension; ++x)
-            rotatedMatrix[(shapeDimension - 1u - x) * shapeDimension + y] = originalMatrix[y * shapeDimension + x];
-
-    return rotatedMatrix;
-}
-#endif
 
 } // namespace tsurv
