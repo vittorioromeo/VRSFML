@@ -14,6 +14,7 @@
 #include "SFML/Base/Math/Cos.hpp"
 #include "SFML/Base/Math/Sin.hpp"
 #include "SFML/Base/Math/Sqrt.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Trait/IsFloatingPoint.hpp"
 
 
@@ -527,7 +528,27 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Returns a new vec2 with `addedX` added to the X component
+    /// \brief Returns a new vec2 with `newX` instead of the current X component
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2 withX(const T newX) const
+    {
+        return {newX, y};
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Returns a new vec2 with `newY` instead of the current Y component
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2 withY(const T newY) const
+    {
+        return {x, newY};
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Returns a new vec2 with `newX` added to the X component
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2 addX(const T addedX) const
@@ -601,6 +622,16 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Convert `*this` to a `Vec2<base::SizeT>`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2<base::SizeT> toVec2uz() const
+    {
+        return {static_cast<base::SizeT>(x), static_cast<base::SizeT>(y)};
+    }
+
+
+    ////////////////////////////////////////////////////////////
     /// \brief Overload of binary `operator==`
     ///
     /// This operator compares strict equality between two vec2s.
@@ -624,7 +655,7 @@ public:
 using Vec2i  = Vec2<int>;
 using Vec2u  = Vec2<unsigned int>;
 using Vec2f  = Vec2<float>;
-using Vec2uz = Vec2<decltype(sizeof(int))>; // `SizeT`, avoid include
+using Vec2uz = Vec2<base::SizeT>;
 
 ////////////////////////////////////////////////////////////
 /// \relates Vec2
