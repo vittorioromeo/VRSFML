@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "ShapeMatrix.hpp"
+#include "ShapeBlockSequence.hpp"
 #include "TetraminoShapes.hpp"
 
 #include "SFML/Graphics/Color.hpp"
@@ -28,11 +28,14 @@ inline constexpr sf::base::Array<sf::Color, tetraminoShapeCount> blockPalette{
 
 
 ////////////////////////////////////////////////////////////
-struct Block
+struct [[nodiscard]] Block
 {
-    sf::base::U8 health;
-    sf::base::U8 paletteIdx;
-    ShapeBlock   shapeBlock;
+    sf::base::U32 tetraminoId;
+    sf::base::U32 blockId;
+
+    sf::base::U8       health;
+    sf::base::U8       paletteIdx;
+    ShapeBlockSequence shapeBlockSequence;
 };
 
 } // namespace tsurv

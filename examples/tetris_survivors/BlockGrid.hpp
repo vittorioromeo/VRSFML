@@ -5,6 +5,8 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Block.hpp"
+#include "ControlFlow.hpp"
+#include "IndexUtils.hpp"
 #include "ShapeDimension.hpp"
 #include "Tetramino.hpp"
 
@@ -17,14 +19,7 @@
 namespace tsurv
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] inline sf::base::SizeT getIndex2Dto1D(const sf::Vec2uz position, const sf::base::SizeT width)
-{
-    return position.y * width + position.x;
-}
-
-
-////////////////////////////////////////////////////////////
-class BlockGrid
+class [[nodiscard]] BlockGrid
 {
 private:
     ////////////////////////////////////////////////////////////
@@ -40,6 +35,15 @@ public:
         m_width{width},
         m_height{height}
     {
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    template <typename T>
+    [[nodiscard]] bool isInBounds(const sf::Vec2<T> position) const
+    {
+        return position.x >= T{0} && position.x < static_cast<T>(m_width) && position.y >= T{0} &&
+               position.y < static_cast<T>(m_height);
     }
 
 
@@ -150,6 +154,24 @@ public:
         // clear the top row
         for (sf::base::SizeT x = 0u; x < m_width; ++x)
             at(sf::Vec2uz{x, 0u}).reset();
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    void forBlocks(auto&& func)
+    {
+        for (sf::base::SizeT y = 0u; y < m_height; ++y)
+            for (sf::base::SizeT x = 0u; x < m_width; ++x)
+                if (auto& optBlock = at(sf::Vec2uz{x, y}); optBlock.hasValue())
+                    if (func(*optBlock, sf::Vec2uz{x, y}) == ControlFlow::Break)
+                        return;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    auto& getBlocks() noexcept
+    {
+        return m_blocks;
     }
 };
 

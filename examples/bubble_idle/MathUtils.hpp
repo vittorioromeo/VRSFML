@@ -24,9 +24,18 @@
     const float b,
     const float value) noexcept
 {
-    SFML_BASE_ASSERT_AND_ASSUME(value >= 0.f && value <= 1.f);
     return a + (b - a) * value;
 }
+
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr sf::Vec2f blendVec(
+    const sf::Vec2f a,
+    const sf::Vec2f b,
+    const float     value) noexcept
+{
+    return a + (b - a) * value;
+}
+
 
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float exponentialApproach(

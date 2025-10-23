@@ -468,7 +468,7 @@ struct Main
         refreshWindowAutoBatchModeFromProfile();
         window.clear(sf::Color::Black);
 
-        sf::TextData loadingTextData{.position         = window.getSize() / 2.f,
+        sf::TextData loadingTextData{.position         = window.getSize().toVec2f() / 2.f,
                                      .string           = "Loading...",
                                      .characterSize    = 48u,
                                      .fillColor        = sf::Color::White,

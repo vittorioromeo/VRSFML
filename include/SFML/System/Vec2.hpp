@@ -617,6 +617,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2<unsigned int> toVec2u() const
     {
+        SFML_BASE_ASSERT(x >= 0 && y >= 0 && "Vec2::toVec2u() cannot convert negative values to unsigned int");
         return {static_cast<unsigned int>(x), static_cast<unsigned int>(y)};
     }
 
@@ -627,6 +628,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2<base::SizeT> toVec2uz() const
     {
+        SFML_BASE_ASSERT(x >= 0 && y >= 0 && "Vec2::toVec2uz() cannot convert negative values to base::SizeT");
         return {static_cast<base::SizeT>(x), static_cast<base::SizeT>(y)};
     }
 

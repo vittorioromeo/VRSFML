@@ -14,7 +14,7 @@ namespace tsurv
 {
 ////////////////////////////////////////////////////////////
 template <typename Container>
-void shuffleBag(Container& bag, auto&& rng)
+void shuffleBag(Container& bag, auto&& rng) // TODO P1: to base algos
 {
     const sf::base::SizeT n = bag.size();
 

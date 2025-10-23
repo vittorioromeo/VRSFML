@@ -681,16 +681,18 @@ private:
     static inline constexpr float shadowTextureResMult = 0.75f;
 
     //////////////////////////////////////////////////////////////
-    sf::RenderTexture m_rtSpriteBg{sf::RenderTexture::create(m_window.getSize() * 2.f * shadowTextureResMult,
-                                                             {.antiAliasingLevel = 0u, .sRgbCapable = false})
-                                       .value()};
+    sf::RenderTexture m_rtSpriteBg{
+        sf::RenderTexture::create((m_window.getSize().toVec2f() * 2.f * shadowTextureResMult).toVec2u(),
+                                  {.antiAliasingLevel = 0u, .sRgbCapable = false})
+            .value()};
 
-    sf::RenderTexture m_rtSpriteBgTemp{sf::RenderTexture::create(m_window.getSize() * 2.f * shadowTextureResMult,
-                                                                 {.antiAliasingLevel = 0u, .sRgbCapable = false})
-                                           .value()};
+    sf::RenderTexture m_rtSpriteBgTemp{
+        sf::RenderTexture::create((m_window.getSize().toVec2f() * 2.f * shadowTextureResMult).toVec2u(),
+                                  {.antiAliasingLevel = 0u, .sRgbCapable = false})
+            .value()};
 
     sf::RenderTexture m_rtGame{
-        sf::RenderTexture::create(m_window.getSize() * 2.f, {.antiAliasingLevel = 0u, .sRgbCapable = false}).value()};
+        sf::RenderTexture::create(m_window.getSize() * 2u, {.antiAliasingLevel = 0u, .sRgbCapable = false}).value()};
 
     //////////////////////////////////////////////////////////////
     sf::Texture m_txUndo        = sf::Texture::create(m_rtGame.getSize(), {.smooth = true}).value();

@@ -140,6 +140,21 @@ struct [[nodiscard]] Timer // TODO P2: turn to free funcs?
     {
         return min + easingFn(value) * (max - min);
     }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr float remapBounced(const float min, const float max) const noexcept
+    {
+        return min + getProgressBounced() * (max - min);
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr float remapBouncedEased(
+        auto&&      easingFn,
+        const float min,
+        const float max) const noexcept
+    {
+        return min + easingFn(getProgressBounced()) * (max - min);
+    }
 };
 
 ////////////////////////////////////////////////////////////
