@@ -6,6 +6,7 @@
 ////////////////////////////////////////////////////////////
 #include "Block.hpp"
 
+#include "SFML/Base/FixedFunction.hpp"
 #include "SFML/Base/Variant.hpp"
 #include "SFML/Base/Vector.hpp"
 
@@ -103,6 +104,14 @@ struct [[nodiscard]] AnimColumnClear
 
 
 ////////////////////////////////////////////////////////////
+struct [[nodiscard]] AnimAction
+{
+    sf::base::FixedFunction<void(), 64> action;
+    float                               duration;
+};
+
+
+////////////////////////////////////////////////////////////
 using AnimationCommand = sf::base::Variant<
     AnimWait, //
     AnimHardDrop,
@@ -114,6 +123,7 @@ using AnimationCommand = sf::base::Variant<
     AnimVerticalDrill,
     AnimHorizontalDrillLeft,
     AnimHorizontalDrillRight,
-    AnimColumnClear>;
+    AnimColumnClear,
+    AnimAction>;
 
 } // namespace tsurv
