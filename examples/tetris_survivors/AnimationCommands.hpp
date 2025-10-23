@@ -35,6 +35,13 @@ struct [[nodiscard]] AnimSquish
 
 
 ////////////////////////////////////////////////////////////
+struct [[nodiscard]] AnimEmbed
+{
+    float duration;
+};
+
+
+////////////////////////////////////////////////////////////
 struct [[nodiscard]] AnimClearLines
 {
     sf::base::Vector<sf::base::SizeT> rows;
@@ -74,14 +81,39 @@ struct [[nodiscard]] AnimVerticalDrill
 
 
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] AnimHorizontalDrill
+struct [[nodiscard]] AnimHorizontalDrillLeft
 {
     float duration;
 };
 
 
 ////////////////////////////////////////////////////////////
-using AnimationCommand = sf::base::
-    Variant<AnimWait, AnimHardDrop, AnimSquish, AnimClearLines, AnimFadeBlocks, AnimCollapseGrid, AnimVerticalDrill, AnimHorizontalDrill>;
+struct [[nodiscard]] AnimHorizontalDrillRight
+{
+    float duration;
+};
+
+
+////////////////////////////////////////////////////////////
+struct [[nodiscard]] AnimColumnClear
+{
+    sf::Vec2uz position;
+    float      duration;
+};
+
+
+////////////////////////////////////////////////////////////
+using AnimationCommand = sf::base::Variant<
+    AnimWait, //
+    AnimHardDrop,
+    AnimSquish,
+    AnimEmbed,
+    AnimClearLines,
+    AnimFadeBlocks,
+    AnimCollapseGrid,
+    AnimVerticalDrill,
+    AnimHorizontalDrillLeft,
+    AnimHorizontalDrillRight,
+    AnimColumnClear>;
 
 } // namespace tsurv
