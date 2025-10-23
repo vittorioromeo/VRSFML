@@ -27,7 +27,7 @@ struct [[nodiscard]] TaggedBlockMatrix // NOLINT(cppcoreguidelines-pro-type-memb
 ////////////////////////////////////////////////////////////
 [[nodiscard]] inline sf::base::U64 getXPNeededForLevelUp(const sf::base::U32 level)
 {
-    constexpr double baseXP   = 40.0;
+    constexpr double baseXP   = 30.0;
     constexpr double exponent = 1.075;
 
     return static_cast<sf::base::U64>(baseXP * sf::base::pow(static_cast<double>(level), exponent));
@@ -50,7 +50,7 @@ struct [[nodiscard]] TaggedBlockMatrix // NOLINT(cppcoreguidelines-pro-type-memb
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::base::Array<sf::base::U64, 4> generateTetrominoHealthDistribution(const sf::base::U64 difficultyFactor, auto&& rng)
+[[nodiscard]] sf::base::Array<sf::base::U64, 4> generateTetraminoHealthDistribution(sf::base::U64 difficultyFactor, auto&& rng)
 {
     const auto minHealth = 1;
     const auto maxHealth = 4;
@@ -90,7 +90,7 @@ struct [[nodiscard]] TaggedBlockMatrix // NOLINT(cppcoreguidelines-pro-type-memb
             //    Adds up to 20% chance over ~16 mins of gameplay (difficulty 10k).
             const float difficultyModifier = (static_cast<float>(difficultyFactor) - 1775.f) / 5000.f;
 
-            // c) Intra-tetromino penalty makes multiple high-HP blocks on one piece rare.
+            // c) Intra-tetramino penalty makes multiple high-HP blocks on one piece rare.
             //    Each existing block with >= targetHealth reduces the chance by 30%.
             int highHpBlocksCount = 0;
             for (sf::base::SizeT j = 0u; j < healths.size(); ++j)
@@ -133,7 +133,7 @@ struct [[nodiscard]] World
     sf::base::U32 nextTetraminoId = 0u;
     sf::base::U32 nextBlockId     = 0u;
 
-    BlockGrid blockGrid{10u, 20u};
+    BlockGrid blockGrid{10u, 20u + gridGraceY};
 
     sf::base::Vector<TaggedBlockMatrix> blockMatrixBag;
 
@@ -153,7 +153,7 @@ struct [[nodiscard]] World
     sf::base::U64 linesCleared    = 0u;
     sf::base::U64 tetaminosPlaced = 0u;
 
-    int perkRandomBlockHit = 0;
+    int perkRndHitOnClear = 0;
 
     struct VerticalDrill
     {
@@ -185,6 +185,18 @@ struct [[nodiscard]] World
 
     sf::base::Optional<HorizontalDrill> perkHorizontalDrillLeft;
     sf::base::Optional<HorizontalDrill> perkHorizontalDrillRight;
+
+    int perkNPeek = 1;
+
+    struct RndHitPerNTetraminos
+    {
+        int nTetraminos;
+        int tetraminosPlacedCount = 0;
+    };
+
+    sf::base::Optional<RndHitPerNTetraminos> perkRndHitPerNTetraminos;
+
+    int perkChainLightning = 0;
 };
 
 } // namespace tsurv
