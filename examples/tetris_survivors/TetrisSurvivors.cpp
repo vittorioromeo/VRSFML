@@ -1,4 +1,5 @@
 #include "../bubble_idle/ControlFlow.hpp" // TODO P1: avoid the relative path...?
+#include "../bubble_idle/Countdown.hpp"   // TODO P1: avoid the relative path...?
 #include "../bubble_idle/Easing.hpp"      // TODO P1: avoid the relative path...?
 #include "../bubble_idle/HueColor.hpp"    // TODO P1: avoid the relative path...?
 #include "../bubble_idle/MathUtils.hpp"   // TODO P1: avoid the relative path...?
@@ -7,6 +8,7 @@
 
 #include "SFML/Graphics/CircleShape.hpp"
 #include "SFML/Graphics/CircleShapeData.hpp"
+#include "SFML/Graphics/PrimitiveType.hpp"
 
 #include "SFML/Audio/PlaybackDevice.hpp"
 
@@ -17,6 +19,7 @@
 #include "SFML/Base/AssertAndAssume.hpp"
 #include "SFML/Base/FixedFunction.hpp"
 #include "SFML/Base/InPlaceVector.hpp"
+#include "SFML/Base/Math/Atan2.hpp"
 #include "SFML/Base/Math/Fmod.hpp"
 
 #include <algorithm>
@@ -154,6 +157,197 @@ struct EarnedXPParticle
 
 
 ////////////////////////////////////////////////////////////
+struct [[nodiscard]] DrawBlockOptions
+{
+    float opacity      = 1.f;
+    float squishMult   = 0.f;
+    float rotation     = 0.f;
+    float scale        = 1.f;
+    bool  drawText     = true;
+    bool  applyYOffset = true;
+};
+
+
+////////////////////////////////////////////////////////////
+class LightningBolt
+{
+public:
+    ////////////////////////////////////////////////////////////
+    struct Segment
+    {
+        sf::Vec2f start;
+        sf::Vec2f end;
+    };
+
+    ////////////////////////////////////////////////////////////
+    explicit LightningBolt(auto&&          rng,
+                           const sf::Vec2f start,
+                           const sf::Vec2f end,
+                           const sf::Color color = sf::Color(200, 220, 255)) :
+        m_color(color),
+        m_duration(sf::seconds(0.27f))
+    {
+        // --- Tuning Parameters ---
+        const float mainBoltJaggedness = 0.2f; // Percentage of segment length
+        const float mainBoltThickness  = 4.0f;
+        const float branchChance       = 0.3f; // 30% chance to branch
+        const float branchLengthMin    = 0.3f; // 30% of original segment
+        const float branchLengthMax    = 0.7f; // 70% of original segment
+
+        // Create the main bolt line segments
+        sf::base::Vector<Segment> segments;
+        segments.pushBack({start, end});
+
+        // Generate the jagged points for the main bolt
+        generateSegments(rng, segments, mainBoltJaggedness);
+
+        // From the main bolt segments, generate branches
+        for (auto& segment : segments)
+        {
+            if (rng.getF(0.f, 1.f) < branchChance)
+            {
+                sf::Vec2f dir          = segment.end - segment.start;
+                float     length       = dir.length();
+                float     branchLength = length * rng.getF(branchLengthMin, branchLengthMax);
+
+                // Add a random angle to the branch direction
+                float angle = sf::base::atan2(dir.y, dir.x);
+                angle += rng.getF(-0.8f, 0.8f); // Radians
+
+                sf::Vec2f branchEnd = segment.start + sf::Vec2f(sf::base::cos(angle), sf::base::sin(angle)) * branchLength;
+
+                m_branches.emplaceBack(rng, segment.start, branchEnd, color);
+            }
+        }
+
+
+        // Convert the final list of points into a thick vertex array for drawing
+        createVertexArray(segments, mainBoltThickness);
+    }
+
+    ////////////////////////////////////////////////////////////
+    void update(sf::Time dt)
+    {
+        m_lifetime += dt;
+        for (auto& branch : m_branches)
+            branch.update(dt);
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isFinished() const
+    {
+        return m_lifetime >= m_duration;
+    }
+
+    ////////////////////////////////////////////////////////////
+    void draw(sf::RenderTarget& target, const sf::RenderStates states) const
+    {
+        if (isFinished())
+            return;
+
+        // Calculate the current alpha based on lifetime
+        float progress = m_lifetime.asSeconds() / m_duration.asSeconds();
+        auto  alpha    = static_cast<sf::base::U8>(255 * (1.f - progress));
+
+        // Draw the outer glow
+        sf::base::Vector<sf::Vertex> glow = m_verticesGlow;
+        for (auto& i : glow)
+            i.color.a = alpha / 3;
+        target.draw(glow, sf::PrimitiveType::Triangles, states);
+
+        // Draw the inner core
+        sf::base::Vector<sf::Vertex> core = m_verticesCore;
+        for (auto& i : core)
+            i.color.a = alpha;
+        target.draw(core, sf::PrimitiveType::Triangles, states);
+
+        // Draw the branches
+        for (const auto& branch : m_branches)
+            branch.draw(target, states);
+    }
+
+private:
+    ////////////////////////////////////////////////////////////
+    void generateSegments(auto&& rng, sf::base::Vector<Segment>& segments, float jaggedness, int recursionDepth = 5)
+    {
+        if (recursionDepth <= 0)
+            return;
+
+        sf::base::Vector<Segment> newSegments;
+
+        for (const auto& segment : segments)
+        {
+            sf::Vec2f midpoint = (segment.start + segment.end) * 0.5f;
+
+            // Displace the midpoint perpendicularly
+
+            if ((segment.end - segment.start).length() < 1.f)
+                continue;
+
+            sf::Vec2f dir    = (segment.end - segment.start).normalized();
+            sf::Vec2f normal = {-dir.y, dir.x}; // Perpendicular vector
+
+            float offset = rng.getF(-1.f, 1.f) * (segment.end - segment.start).length() * jaggedness;
+            midpoint += normal * offset;
+
+            newSegments.pushBack({segment.start, midpoint});
+            newSegments.pushBack({midpoint, segment.end});
+        }
+
+        segments = newSegments;
+        generateSegments(rng, segments, jaggedness, recursionDepth - 1);
+    }
+
+    ////////////////////////////////////////////////////////////
+    void createVertexArray(const sf::base::Vector<Segment>& segments, float thickness)
+    {
+        float glowThickness = thickness * 4.f;
+
+        for (const auto& segment : segments)
+        {
+            sf::Vec2f dir    = (segment.end - segment.start).normalized();
+            sf::Vec2f normal = {-dir.y, dir.x};
+
+            // Core vertices
+            m_verticesCore.pushBack({segment.start - normal * thickness * 0.5f, m_color}); // A
+            m_verticesCore.pushBack({segment.end - normal * thickness * 0.5f, m_color});   // B
+            m_verticesCore.pushBack({segment.end + normal * thickness * 0.5f, m_color});   // C
+            m_verticesCore.pushBack({segment.start - normal * thickness * 0.5f, m_color}); // A
+            m_verticesCore.pushBack({segment.start + normal * thickness * 0.5f, m_color}); // D
+            m_verticesCore.pushBack({segment.end + normal * thickness * 0.5f, m_color});   // C
+
+            // Glow vertices
+            m_verticesGlow.pushBack({segment.start - normal * glowThickness * 0.5f, m_color}); // A
+            m_verticesGlow.pushBack({segment.end - normal * glowThickness * 0.5f, m_color});   // B
+            m_verticesGlow.pushBack({segment.end + normal * glowThickness * 0.5f, m_color});   // C
+            m_verticesGlow.pushBack({segment.start - normal * glowThickness * 0.5f, m_color}); // A
+            m_verticesGlow.pushBack({segment.start + normal * glowThickness * 0.5f, m_color}); // D
+            m_verticesGlow.pushBack({segment.end + normal * glowThickness * 0.5f, m_color});   // C
+        }
+    }
+
+    ////////////////////////////////////////////////////////////
+    sf::Color m_color;
+    sf::Time  m_lifetime;
+    sf::Time  m_duration;
+
+    sf::base::Vector<sf::Vertex> m_verticesCore;
+    sf::base::Vector<sf::Vertex> m_verticesGlow;
+
+    sf::base::Vector<LightningBolt> m_branches;
+};
+
+
+////////////////////////////////////////////////////////////
+// Delayed actions
+struct DelayedAction
+{
+    Countdown                            delayCountdown;
+    sf::base::FixedFunction<void(), 128> action;
+};
+
+
+////////////////////////////////////////////////////////////
 class Game
 {
 private:
@@ -185,6 +379,7 @@ private:
     sf::SoundBuffer m_sbHold     = sf::SoundBuffer::loadFromFile("resources/Hold.wav").value();
     sf::SoundBuffer m_sbHit      = sf::SoundBuffer::loadFromFile("resources/Hit.wav").value();
     sf::SoundBuffer m_sbBonus    = sf::SoundBuffer::loadFromFile("resources/Bonus.wav").value();
+    sf::SoundBuffer m_sbStrike   = sf::SoundBuffer::loadFromFile("resources/Strike.wav").value();
 
     ////////////////////////////////////////////////////////////
     sf::base::Array<sf::base::Optional<sf::Sound>, 8> m_soundPool;
@@ -205,7 +400,7 @@ private:
 
     ////////////////////////////////////////////////////////////
     sf::ImGuiContext m_imGuiContext;
-    ImFont* const    m_imguiFont{ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/Born2bSportyFS.ttf", 32.f)};
+    ImFont* const    m_imguiFont{ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/Born2bSportyFS.ttf", 64.f)};
 
     ////////////////////////////////////////////////////////////
     sf::Clock m_tickClock;
@@ -221,6 +416,8 @@ private:
     sf::base::Vector<float>           m_rowYOffsets;
     bool                              m_inLevelUpScreen = false;
     sf::base::Vector<sf::base::SizeT> m_perkIndicesSelectedThisLevel;
+    sf::base::Vector<LightningBolt>   m_lightningBolts;
+    sf::base::Vector<DelayedAction>   m_delayedActions;
 
     ////////////////////////////////////////////////////////////
     struct [[nodiscard]] QuakeSinEffect
@@ -330,7 +527,7 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    static inline constexpr auto drawOffset    = sf::Vec2f{32.f, 32.f};
+    static inline constexpr auto drawOffset    = sf::Vec2f{32.f, 32.f - 32.f * gridGraceY};
     static inline constexpr auto drawBlockSize = sf::Vec2f{32.f, 32.f};
 
 
@@ -343,23 +540,24 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    void drawBlock(const Block&     block,
-                   const sf::Vec2f& position,
-                   const float      opacity,
-                   const float      squishMult = 0.f,
-                   const float      rotation   = 0.f,
-                   const float      scale      = 1.f,
-                   const bool       drawText   = true)
+    void drawBlock(const Block& block, const sf::Vec2f& position, const DrawBlockOptions& options = {})
     {
         float yOffset = 0.f;
 
-        if (m_animationTimeline.isPlaying<AnimCollapseGrid>() && !m_rowYOffsets.empty())
-            yOffset = m_rowYOffsets[static_cast<sf::base::SizeT>(position.y / drawBlockSize.y)] *
-                      easeInBack(m_animationTimeline.getProgress());
+        if (options.applyYOffset)
+        {
+            if (m_animationTimeline.isPlaying<AnimCollapseGrid>() && !m_rowYOffsets.empty())
+                yOffset = m_rowYOffsets[static_cast<sf::base::SizeT>(position.y / drawBlockSize.y)] *
+                          easeInBack(m_animationTimeline.getProgress());
+        }
+        else
+        {
+            yOffset = -(m_quakeSinEffectHardDrop.getValue() + m_quakeSinEffectLineClear.getValue());
+        }
 
-        const auto alpha = static_cast<sf::base::U8>(opacity * 255.f);
+        const auto alpha = static_cast<sf::base::U8>(options.opacity * 255.f);
 
-        float finalSquishMult = 1.f + squishMult;
+        float finalSquishMult = 1.f + options.squishMult;
         if (const auto* it = m_blockEffects.find(block.blockId); it != m_blockEffects.end())
         {
             const BlockEffect& effect = it->second;
@@ -370,16 +568,16 @@ private:
 
         m_rtGame.draw(sf::RectangleShapeData{
             .position         = drawOffset + position.addY(yOffset),
-            .scale            = sf::Vec2f{finalSquishMult, finalSquishMult} * scale,
+            .scale            = sf::Vec2f{finalSquishMult, finalSquishMult} * options.scale,
             .origin           = drawBlockSize / 2.f,
-            .rotation         = sf::degrees(rotation),
+            .rotation         = sf::degrees(options.rotation),
             .fillColor        = blockPalette[block.paletteIdx].withAlpha(alpha),
             .outlineColor     = blockPalette[block.paletteIdx].withAlpha(alpha).withLightness(0.3f),
             .outlineThickness = 2.f,
             .size             = drawBlockSize,
         });
 
-        if (block.powerup != BlockPowerup::None && drawText)
+        if (block.powerup != BlockPowerup::None && options.drawText)
         {
             std::string txt;
 
@@ -392,7 +590,7 @@ private:
 
             sf::Text text{m_font,
                           {
-                              .scale            = sf::Vec2f{finalSquishMult, finalSquishMult} * scale * 0.75f,
+                              .scale            = sf::Vec2f{finalSquishMult, finalSquishMult} * options.scale * 0.75f,
                               .origin           = drawBlockSize / 2.f,
                               .string           = txt,
                               .fillColor        = sf::Color::Black.withAlpha(alpha),
@@ -404,11 +602,11 @@ private:
             m_rtGame.draw(text);
         }
 
-        if (block.health > 1u && drawText)
+        if (block.health > 1u && options.drawText)
         {
             sf::Text text{m_font,
                           {
-                              .scale            = sf::Vec2f{finalSquishMult, finalSquishMult} * scale,
+                              .scale            = sf::Vec2f{finalSquishMult, finalSquishMult} * options.scale,
                               .origin           = drawBlockSize / 2.f,
                               .string           = std::to_string(static_cast<unsigned int>(block.health - 1u)),
                               .fillColor        = sf::Color::White.withAlpha(alpha),
@@ -533,7 +731,7 @@ private:
     {
         sf::base::Vector<sf::base::SizeT> fullRows;
 
-        for (sf::base::SizeT y = 0u; y < m_world.blockGrid.getHeight(); ++y)
+        for (sf::base::SizeT y = gridGraceY; y < m_world.blockGrid.getHeight(); ++y)
         {
             bool isFull = true;
 
@@ -729,6 +927,17 @@ private:
 
         ++m_world.tetaminosPlaced;
 
+        if (auto* rndHitPerNTetraminos = m_world.perkRndHitPerNTetraminos.asPtr())
+        {
+            ++(rndHitPerNTetraminos->tetraminosPlacedCount);
+
+            if (rndHitPerNTetraminos->tetraminosPlacedCount >= rndHitPerNTetraminos->nTetraminos)
+            {
+                strikeNRandomBlocks(1u);
+                rndHitPerNTetraminos->tetraminosPlacedCount = 0;
+            }
+        }
+
         findAndClearLines();
 
         if (auto* deleteFloorNTetraminos = m_world.perkDeleteFloorPerNTetraminos.asPtr())
@@ -834,6 +1043,13 @@ private:
 
             return;
         }
+
+        if (eKeyPressed.code == sf::Keyboard::Key::R)
+        {
+            // Restart the game
+            m_world = World{};
+            return;
+        }
     }
 
 
@@ -883,6 +1099,7 @@ private:
     void damageBlock(const sf::Vec2uz position, Block& block)
     {
         SFML_BASE_ASSERT(block.health > 1u);
+
         --block.health;
 
         playSound(m_sbHit, 0.75f);
@@ -930,6 +1147,72 @@ private:
         });
     }
 
+    /////////////////////////////////////////////////////////////
+    struct EligibleBlock // NOLINT(cppcoreguidelines-pro-type-member-init)
+    {
+        Block*     block;
+        sf::Vec2uz position;
+    };
+
+
+    /////////////////////////////////////////////////////////////
+    void strikeNRandomBlocks(const sf::base::SizeT n)
+    {
+        sf::base::Vector<EligibleBlock> eligibleBlocks;
+
+        m_world.blockGrid.forBlocks([&](Block& block, const sf::Vec2uz position)
+        {
+            if (block.health > 1u)
+                eligibleBlocks.pushBack({&block, position});
+
+            return ControlFlow::Continue;
+        });
+
+        const auto actualNBlocksToHit = sf::base::min(n, eligibleBlocks.size());
+
+        for (sf::base::SizeT i = 0u; i < actualNBlocksToHit; ++i)
+        {
+            const auto randomIndex = m_rngFast.getI<sf::base::SizeT>(0u, eligibleBlocks.size() - 1u);
+            auto&      blockInfo   = eligibleBlocks[randomIndex];
+
+            if (i > 0u)
+                m_animationTimeline.add(AnimWait{0.15f});
+
+            m_animationTimeline.add(AnimAction{
+                .action =
+                    [this, pos = blockInfo.position]
+            {
+                m_lightningBolts.emplaceBack(m_rngFast,
+                                             sf::Vec2f{m_rngFast.getF(0.f, 400.f), 0.f},
+                                             toDrawCoordinates(pos) + drawOffset);
+
+                playSound(m_sbStrike, 0.75f);
+            },
+                .duration = 0.2f,
+            });
+
+            m_animationTimeline.add(AnimAction{
+                .action   = [this, pos = blockInfo.position, &block = *blockInfo.block] { damageBlock(pos, block); },
+                .duration = 0.1f,
+            });
+
+            eligibleBlocks.erase(eligibleBlocks.begin() + randomIndex);
+        }
+
+        if (m_world.perkChainLightning > 0)
+        {
+            const auto roll = m_rngFast.getI(0, 100);
+
+            if (roll < m_world.perkChainLightning)
+            {
+                m_animationTimeline.add(AnimAction{
+                    .action   = [this, n = actualNBlocksToHit] { strikeNRandomBlocks(n); },
+                    .duration = 0.01f,
+                });
+            }
+        }
+    }
+
 
     /////////////////////////////////////////////////////////////
     void updateStep(const sf::Time deltaTime, const float xTicksPerSecond)
@@ -965,7 +1248,7 @@ private:
         }
 
         // Deal with animations
-        if (m_animationTimeline.anyAnimationPlaying())
+        if (!m_inLevelUpScreen && m_animationTimeline.anyAnimationPlaying())
         {
             m_animationTimeline.timeOnCurrentCommand += deltaTime.asSeconds();
 
@@ -1082,10 +1365,11 @@ private:
 
                                 if (blockOpt->powerup == BlockPowerup::XPBonus)
                                 {
-                                    addXP(5u);
+                                    addXP(5u * m_world.playerLevel);
                                     playSound(m_sbBonus, 0.5f);
 
-                                    spawnXPEarnedParticle(toDrawCoordinates(sf::Vec2uz{x, y}) + drawBlockSize / 2.f,
+                                    spawnXPEarnedParticle(toDrawCoordinates(sf::Vec2uz{x, y}) + drawBlockSize / 2.f -
+                                                              sf::Vec2f{0.f, 32.f * gridGraceY},
                                                           blockOpt->paletteIdx);
                                 }
                                 else if (blockOpt->powerup == BlockPowerup::ColumnDrill)
@@ -1166,37 +1450,8 @@ private:
                         }
 
                         // Random block hit perk
-                        {
-                            const sf::base::SizeT nBlocksToHit = static_cast<sf::base::SizeT>(m_world.perkRandomBlockHit) *
-                                                                 numCleared;
-
-                            struct EligibleBlock // NOLINT(cppcoreguidelines-pro-type-member-init)
-                            {
-                                Block*     block;
-                                sf::Vec2uz position;
-                            };
-
-                            sf::base::Vector<EligibleBlock> eligibleBlocks;
-                            m_world.blockGrid.forBlocks([&](Block& block, const sf::Vec2uz position)
-                            {
-                                if (block.health > 1u)
-                                    eligibleBlocks.pushBack({&block, position});
-
-                                return ControlFlow::Continue;
-                            });
-
-                            auto actualNBlocksToHit = sf::base::min(nBlocksToHit, eligibleBlocks.size());
-
-                            while (actualNBlocksToHit > 0u)
-                            {
-                                const auto randomIndex = m_rngFast.getI<sf::base::SizeT>(0u, eligibleBlocks.size() - 1u);
-
-                                damageBlock(eligibleBlocks[randomIndex].position, *eligibleBlocks[randomIndex].block);
-                                eligibleBlocks.erase(eligibleBlocks.begin() + randomIndex);
-
-                                --actualNBlocksToHit;
-                            }
-                        }
+                        if (m_world.perkRndHitOnClear > 0 && numCleared > 1u)
+                            strikeNRandomBlocks(static_cast<sf::base::SizeT>(m_world.perkRndHitOnClear));
                     }
 
                     sf::base::quickSort(trulyClearedRows.begin(),
@@ -1249,7 +1504,7 @@ private:
                     int clearedCount = 0;
 
                     // iterate in reverse
-                    for (int y = static_cast<int>(height) - 1; y >= 0; --y)
+                    for (int y = static_cast<int>(height) - 1; y >= static_cast<int>(gridGraceY); --y)
                     {
                         const bool wasCleared = sf::base::find(collapseGrid->clearedRows.begin(),
                                                                collapseGrid->clearedRows.end(),
@@ -1321,6 +1576,14 @@ private:
                     m_animationTimeline.popFrontCommand();
                 }
             }
+            else if (auto* action = currentCmd.getIf<AnimAction>())
+            {
+                if (m_animationTimeline.getProgress() >= 1.f)
+                {
+                    action->action();
+                    m_animationTimeline.popFrontCommand();
+                }
+            }
         }
 
         // Deal with block effects
@@ -1371,6 +1634,7 @@ private:
                         .health             = 1u,
                         .paletteIdx         = static_cast<sf::base::U8>(j),
                         .shapeBlockSequence = ShapeBlockSequence::_, // set by `shapeMatrixToBlockMatrix`
+                        .powerup            = BlockPowerup::None,
                     };
 
                     auto& [blockMatrix, tetraminoType] = m_world.blockMatrixBag.pushBack({
@@ -1380,7 +1644,7 @@ private:
                         .tetraminoType = j,
                     });
 
-                    const auto healthDist = generateTetrominoHealthDistribution(getDifficultyFactor(m_world.tick), m_rngFast);
+                    const auto healthDist = generateTetraminoHealthDistribution(getDifficultyFactor(m_world.tick), m_rngFast);
                     sf::base::SizeT nextHealthDistIdx = 0u;
 
                     for (sf::base::Optional<Block>& b : blockMatrix)
@@ -1452,6 +1716,27 @@ private:
                 }
             }
         }
+
+        //
+        // Delayed actions
+        {
+            const auto deltaTimeMs = static_cast<float>(deltaTime.asMicroseconds()) / 1000.f;
+
+            for (auto& [delayCountdown, func] : m_delayedActions)
+                if (delayCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+                    func();
+
+            sf::base::vectorEraseIf(m_delayedActions, [](const auto& delayedAction) {
+                return delayedAction.delayCountdown.isDone();
+            });
+        }
+
+        //
+        // Lightning bolts
+        for (auto& lb : m_lightningBolts)
+            lb.update(deltaTime);
+
+        sf::base::vectorEraseIf(m_lightningBolts, [](const LightningBolt& lb) { return lb.isFinished(); });
     }
 
 
@@ -1477,15 +1762,42 @@ private:
 
         /////////////////////////////////////////////////////////////
         PerkSelector{
-            .fnName = [&] { return makeTitle("Random Block Hit", m_world.perkRandomBlockHit, 1); },
+            .fnName = [&] { return makeTitle("Chain Lightning", m_world.perkChainLightning, 10); },
             .fnDescription =
                 [&]
     {
-        return std::string{"Each time you clear a line, randomly damage " +
-                           std::to_string(m_world.perkRandomBlockHit + 1) + " additional block(s)."};
+        return std::string{"Each time lightning strikes, add a " + std::to_string(m_world.perkChainLightning + 10) +
+                           "% chance to hit an additional block."};
+    },
+            .fnPrerequisites =
+                [&]
+    {
+        return (m_world.perkRndHitPerNTetraminos.hasValue() || m_world.perkRndHitOnClear > 0) &&
+               m_world.perkChainLightning < 50;
+    },
+            .fnApply = [&] { m_world.perkChainLightning += 10; },
+        },
+
+        /////////////////////////////////////////////////////////////
+        PerkSelector{
+            .fnName        = [&] { return makeTitle("Peek Next Tetraminos", m_world.perkNPeek, 1); },
+            .fnDescription = [&]
+    { return std::string{"See the next " + std::to_string(m_world.perkNPeek + 1) + " upcoming tetraminos."}; },
+            .fnPrerequisites = [&] { return m_world.perkNPeek < 3; },
+            .fnApply         = [&] { ++m_world.perkNPeek; },
+        },
+
+        /////////////////////////////////////////////////////////////
+        PerkSelector{
+            .fnName = [&] { return makeTitle("On-Double Lightning Strike", m_world.perkRndHitOnClear, 1); },
+            .fnDescription =
+                [&]
+    {
+        return std::string{"Each time you full-clear two lines or more, randomly damage " +
+                           std::to_string(m_world.perkRndHitOnClear + 1) + " block(s) with a lightning strike."};
     },
             .fnPrerequisites = [&] { return true; },
-            .fnApply         = [&] { ++m_world.perkRandomBlockHit; },
+            .fnApply         = [&] { ++m_world.perkRndHitOnClear; },
         },
 
         /////////////////////////////////////////////////////////////
@@ -1515,7 +1827,7 @@ private:
         /////////////////////////////////////////////////////////////
         PerkSelector{
             .fnName        = [&] { return "Hard-Drop Drill - Blunt Force"; },
-            .fnDescription = [&] { return "The entire surface of the tetromino acts as a drill when hard-dropping."; },
+            .fnDescription = [&] { return "The entire surface of the tetramino acts as a drill when hard-dropping."; },
             .fnPrerequisites = [&]
     { return m_world.perkVerticalDrill.hasValue() && !m_world.perkVerticalDrill->multiHit; },
             .fnApply = [&] { m_world.perkVerticalDrill->multiHit = true; },
@@ -1545,28 +1857,28 @@ private:
 
         /////////////////////////////////////////////////////////////
         PerkSelector{
-            .fnName = [&] { return makeTitle("XP per Tetramino Placed", m_world.perkXPPerTetraminoPlaced, 2); },
+            .fnName = [&] { return makeTitle("XP per Tetramino Placed", m_world.perkXPPerTetraminoPlaced, 3); },
             .fnDescription =
                 [&]
     {
-        return std::string{"Gain "} + std::to_string(m_world.perkXPPerTetraminoPlaced + 2) +
+        return std::string{"Gain "} + std::to_string(m_world.perkXPPerTetraminoPlaced + 3) +
                " XP for each tetramino you place.";
     },
             .fnPrerequisites = [&] { return true; },
-            .fnApply         = [&] { m_world.perkXPPerTetraminoPlaced += 2; },
+            .fnApply         = [&] { m_world.perkXPPerTetraminoPlaced += 3; },
         },
 
         /////////////////////////////////////////////////////////////
         PerkSelector{
-            .fnName = [&] { return makeTitle("XP per Block Damaged", m_world.perkXPPerBlockDamaged, 8); },
+            .fnName = [&] { return makeTitle("XP per Block Damaged", m_world.perkXPPerBlockDamaged, 10); },
             .fnDescription =
                 [&]
     {
-        return std::string{"Gain "} + std::to_string(m_world.perkXPPerBlockDamaged + 8) +
+        return std::string{"Gain "} + std::to_string(m_world.perkXPPerBlockDamaged + 10) +
                " XP for each block you damage.";
     },
             .fnPrerequisites = [&] { return true; },
-            .fnApply         = [&] { m_world.perkXPPerBlockDamaged += 8; },
+            .fnApply         = [&] { m_world.perkXPPerBlockDamaged += 10; },
         },
 
         /////////////////////////////////////////////////////////////
@@ -1594,6 +1906,31 @@ private:
             m_world.perkDeleteFloorPerNTetraminos.emplace(30);
         else
             --(m_world.perkDeleteFloorPerNTetraminos->nTetraminos);
+    },
+        },
+
+        /////////////////////////////////////////////////////////////
+        PerkSelector{
+            .fnName = [&]() -> std::string
+    {
+        if (!m_world.perkRndHitPerNTetraminos.hasValue())
+            return "On-N-Placed Lightning Strike";
+
+        return std::string{"On-N-Placed Lightning Strike"} + " (" +
+               std::to_string(m_world.perkRndHitPerNTetraminos->nTetraminos) + " -> " +
+               std::to_string(m_world.perkRndHitPerNTetraminos->nTetraminos - 1) + ")";
+    },
+            .fnDescription = [&]
+    { return "Each time you place a certain amount of tetraminos, randomly damage a block with a lightning strike."; },
+            .fnPrerequisites = [&]
+    { return !m_world.perkRndHitPerNTetraminos.hasValue() || m_world.perkRndHitPerNTetraminos->nTetraminos > 10; },
+            .fnApply =
+                [&]
+    {
+        if (!m_world.perkRndHitPerNTetraminos.hasValue())
+            m_world.perkRndHitPerNTetraminos.emplace(20);
+        else
+            --(m_world.perkRndHitPerNTetraminos->nTetraminos);
     },
         },
 
@@ -1694,23 +2031,42 @@ private:
         SFEX_PROFILE_SCOPE("imgui");
         m_imGuiContext.update(m_window, deltaTime);
 
+        const auto setFontScale = [&](const float x) { ImGui::SetWindowFontScale(x * 0.75f); };
+
+        const auto textCentered = [&](const std::string& text)
+        {
+            auto windowWidth = ImGui::GetWindowSize().x;
+            auto textWidth   = ImGui::CalcTextSize(text.c_str()).x;
+
+            ImGui::SetCursorPosX((windowWidth - textWidth) * 0.5f);
+            ImGui::Text("%s", text.c_str());
+        };
 
         if (m_inLevelUpScreen)
         {
             SFML_BASE_ASSERT(m_world.committedPlayerLevel < m_world.playerLevel);
 
-            ImGui::SetNextWindowBgAlpha(0.75f);
+            ImGui::SetNextWindowBgAlpha(0.95f);
 
             ImGui::PushFont(m_imguiFont);
 
             ImGui::Begin("Level Up!", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
 
-            ImGui::SetWindowPos(ImVec2{resolution.x / 2.f - 300.f, resolution.y / 2.f - 150.f});
-            ImGui::SetWindowSize(ImVec2{600.f, 300.f});
+            ImGui::SetWindowPos(ImVec2{resolution.x / 2.f - 400.f, resolution.y / 2.f - 300.f});
+            ImGui::SetWindowSize(ImVec2{800.f, 600.f});
 
-            ImGui::Text("Choose a perk:");
+            setFontScale(0.85f);
+            textCentered("*** LEVEL UP ***");
+            setFontScale(0.65f);
+            textCentered("CHOOSE A PERK");
+            ImGui::Spacing();
+            ImGui::Spacing();
+            ImGui::Spacing();
+            ImGui::Spacing();
+            ImGui::Spacing();
 
-            static int selectedPerk = -1;
+            static int  selectedPerk = -1;
+            static bool sep          = false;
 
             for (const sf::base::SizeT psIndex : m_perkIndicesSelectedThisLevel)
             {
@@ -1719,15 +2075,24 @@ private:
                 std::string perkName        = perkSelector.fnName();
                 std::string perkDescription = perkSelector.fnDescription();
 
+                if (sep)
+                    ImGui::Separator();
+
+                setFontScale(0.8f);
                 if (ImGui::Selectable(perkName.c_str(), selectedPerk == static_cast<int>(psIndex)))
                     selectedPerk = static_cast<int>(psIndex);
 
-                if (ImGui::IsItemHovered())
-                    ImGui::SetTooltip("%s", perkDescription.c_str());
+                setFontScale(0.55f);
+                ImGui::TextWrapped("%s", perkDescription.c_str());
+
+                sep = true;
             }
 
             if (selectedPerk != -1)
             {
+                ImGui::Spacing();
+                ImGui::Spacing();
+                setFontScale(0.65f);
                 if (ImGui::Button("Confirm"))
                 {
                     m_inLevelUpScreen = false;
@@ -1757,7 +2122,7 @@ private:
 
             // Draw grid background and lines
             for (sf::base::SizeT x = 0u; x < m_world.blockGrid.getWidth(); ++x)
-                for (sf::base::SizeT y = 0u; y < m_world.blockGrid.getHeight(); ++y)
+                for (sf::base::SizeT y = gridGraceY; y < m_world.blockGrid.getHeight(); ++y)
                 {
                     const auto position = toDrawCoordinates(sf::Vec2uz{x, y});
 
@@ -1773,7 +2138,7 @@ private:
 
             // Draw pieces embedded in grid
             for (sf::base::SizeT x = 0u; x < m_world.blockGrid.getWidth(); ++x)
-                for (sf::base::SizeT y = 0u; y < m_world.blockGrid.getHeight(); ++y)
+                for (sf::base::SizeT y = gridGraceY; y < m_world.blockGrid.getHeight(); ++y)
                 {
                     const sf::Vec2uz                 gridPosition{x, y};
                     const sf::base::Optional<Block>& blockOpt = m_world.blockGrid.at(gridPosition);
@@ -1781,7 +2146,7 @@ private:
                     if (!blockOpt.hasValue())
                         continue;
 
-                    drawBlock(*blockOpt, toDrawCoordinates(gridPosition), /* opacity */ 1.f);
+                    drawBlock(*blockOpt, toDrawCoordinates(gridPosition), {.opacity = 1.f});
                 }
 
             // Draw fading blocks
@@ -1793,8 +2158,10 @@ private:
                 {
                     drawBlock(fadingBlock.block,
                               fadingBlock.position,
-                              1.f - easeInOutSine(progress),
-                              /* squishMult */ 0.f);
+                              {
+                                  .opacity    = 1.f - easeInOutSine(progress),
+                                  .squishMult = 0.f,
+                              });
                 }
             }
 
@@ -1967,12 +2334,14 @@ private:
             {
                 const Tetramino& tetramino = *m_world.currentTetramino;
 
-                // Draw drill arrow
+                // Draw vertical drill arrow
                 if (m_world.perkVerticalDrill.hasValue())
                     for (const auto bPos : findVerticalDrillBlocks())
                     {
                         const sf::base::Optional<Block>& blockOpt = tetramino.shape[bPos.y * shapeDimension + bPos.x];
-                        const auto drawPosition = m_currentTetraminoVisualPosition + toDrawCoordinates(bPos).addY(16.f);
+
+                        const auto drawPosition = m_currentTetraminoVisualPosition +
+                                                  toDrawCoordinates(bPos).addY(16.f) + drawOffset;
 
                         sf::CircleShape spike{{
                             .scale            = sf::Vec2f{0.5f, 0.25f},
@@ -1983,16 +2352,17 @@ private:
                             .pointCount       = 3u,
                         }};
 
-                        spike.setTopCenter({drawPosition.x + 32.f, drawPosition.y + 32.f});
+                        spike.setTopCenter(drawPosition);
                         m_rtGame.draw(spike);
 
                         const auto gridPosition      = (tetramino.position + bPos.toVec2i()).toVec2uz();
                         const auto gridGhostPosition = gridPosition.withY(
                             static_cast<sf::base::SizeT>(calculateGhostY(tetramino)) + bPos.y);
 
-                        const auto ghostDrawPos = toDrawCoordinates(gridGhostPosition).withX(drawPosition.x).addY(16.f);
+                        const auto ghostDrawPos = toDrawCoordinates(gridGhostPosition).withX(drawPosition.x - 32.f).addY(16.f) +
+                                                  drawOffset;
 
-                        spike.setTopCenter({ghostDrawPos.x + 32.f, ghostDrawPos.y + 32.f});
+                        spike.setTopCenter(ghostDrawPos);
                         spike.setFillColor(blockPalette[blockOpt->paletteIdx].withAlpha(64));
                         spike.setOutlineColor(blockPalette[blockOpt->paletteIdx].withLightness(0.3f).withAlpha(64));
 
@@ -2014,23 +2384,25 @@ private:
                             .pointCount       = 3u,
                         }};
 
-                        const auto drawPosLeft = m_currentTetraminoVisualPosition + toDrawCoordinates(bPos).addX(-16.f);
+                        const auto drawPosLeft = m_currentTetraminoVisualPosition +
+                                                 toDrawCoordinates(bPos).addX(-16.f) + drawOffset;
 
                         spike.rotation = sf::degrees(90);
-                        spike.setCenterRight(drawPosLeft + sf::Vec2f{32.f, 32.f});
+                        spike.setCenterRight(drawPosLeft);
                         m_rtGame.draw(spike);
 
                         const auto gridPosition      = (tetramino.position + bPos.toVec2i()).toVec2uz();
                         const auto gridGhostPosition = gridPosition.withY(
                             static_cast<sf::base::SizeT>(calculateGhostY(tetramino)) + bPos.y);
 
-                        const auto ghostDrawPosLeft  = toDrawCoordinates(gridGhostPosition).withX(drawPosLeft.x);
+                        const auto ghostDrawPosLeft = toDrawCoordinates(gridGhostPosition).withX(drawPosLeft.x - 32.f) +
+                                                      drawOffset;
 
                         spike.setFillColor(blockPalette[blockOpt->paletteIdx].withAlpha(64));
                         spike.setOutlineColor(blockPalette[blockOpt->paletteIdx].withLightness(0.3f).withAlpha(64));
 
                         spike.rotation = sf::degrees(90);
-                        spike.setCenterRight(ghostDrawPosLeft + sf::Vec2f{32.f, 32.f});
+                        spike.setCenterRight(ghostDrawPosLeft);
                         m_rtGame.draw(spike);
                     }
 
@@ -2049,23 +2421,25 @@ private:
                             .pointCount       = 3u,
                         }};
 
-                        const auto drawPosRight = m_currentTetraminoVisualPosition + toDrawCoordinates(bPos).addX(16.f);
+                        const auto drawPosRight = m_currentTetraminoVisualPosition +
+                                                  toDrawCoordinates(bPos).addX(16.f) + drawOffset;
 
                         spike.rotation = sf::degrees(270);
-                        spike.setCenterLeft(drawPosRight + sf::Vec2f{32.f, 32.f});
+                        spike.setCenterLeft(drawPosRight);
                         m_rtGame.draw(spike);
 
                         const auto gridPosition      = (tetramino.position + bPos.toVec2i()).toVec2uz();
                         const auto gridGhostPosition = gridPosition.withY(
                             static_cast<sf::base::SizeT>(calculateGhostY(tetramino)) + bPos.y);
 
-                        const auto ghostDrawPosRight = toDrawCoordinates(gridGhostPosition).withX(drawPosRight.x);
+                        const auto ghostDrawPosRight = toDrawCoordinates(gridGhostPosition).withX(drawPosRight.x - 32.f) +
+                                                       drawOffset;
 
                         spike.setFillColor(blockPalette[blockOpt->paletteIdx].withAlpha(64));
                         spike.setOutlineColor(blockPalette[blockOpt->paletteIdx].withLightness(0.3f).withAlpha(64));
 
                         spike.rotation = sf::degrees(270);
-                        spike.setCenterLeft(ghostDrawPosRight + sf::Vec2f{32.f, 32.f});
+                        spike.setCenterLeft(ghostDrawPosRight);
                         m_rtGame.draw(spike);
                     }
 
@@ -2081,23 +2455,30 @@ private:
                         const auto gridPosition = (tetramino.position + sf::Vec2uz{x, y}.toVec2i()).toVec2uz();
                         const auto drawPosition = m_currentTetraminoVisualPosition + toDrawCoordinates(sf::Vec2uz{x, y});
 
-                        drawBlock(*blockOpt, drawPosition, /* opacity */ 1.f, m_squishMult);
+                        drawBlock(*blockOpt,
+                                  drawPosition,
+                                  {
+                                      .squishMult = m_squishMult,
+                                  });
 
                         const auto gridGhostPosition = gridPosition.withY(
                             static_cast<sf::base::SizeT>(calculateGhostY(tetramino)) + y);
 
                         drawBlock(*blockOpt,
                                   toDrawCoordinates(gridGhostPosition).withX(drawPosition.x),
-                                  /* opacity */ 0.25f,
-                                  m_squishMult);
+                                  {
+                                      .opacity    = 0.25f,
+                                      .squishMult = m_squishMult,
+                                  });
                     }
             }
 
-            const sf::base::SizeT nPeek = 2u;
 
-            // Draw next piece(s) (TODO: make perk?)
-            if (m_world.blockMatrixBag.size() >= nPeek) // TODO: adjust for peek
+            // Draw next piece(s)
             {
+                const sf::base::SizeT nPeek = sf::base::min(static_cast<sf::base::SizeT>(m_world.perkNPeek),
+                                                            m_world.blockMatrixBag.size());
+
                 for (sf::base::SizeT iPeek = 0u; iPeek < nPeek; ++iPeek)
                 {
                     const auto& shape = m_world.blockMatrixBag[m_world.blockMatrixBag.size() - nPeek + iPeek].blockMatrix;
@@ -2110,15 +2491,19 @@ private:
                             if (!blockOpt.hasValue())
                                 continue;
 
-                            const auto drawPosition = sf::Vec2f{386.f, 456.f - static_cast<float>(iPeek) * 96.f} +
+                            const auto drawPosition = sf::Vec2f{386.f, 700.f - static_cast<float>(iPeek) * 96.f} +
                                                       toDrawCoordinates(sf::Vec2uz{x, y});
 
-                            drawBlock(*blockOpt, drawPosition, /* opacity */ 1.f, 0.f);
+                            drawBlock(*blockOpt,
+                                      drawPosition,
+                                      {
+                                          .applyYOffset = false,
+                                      });
                         }
                 }
             }
 
-            // Draw held piece (TODO: make perk?)
+            // Draw held piece
             if (m_world.heldTetramino.hasValue())
             {
                 const auto& shape = m_world.heldTetramino->shape;
@@ -2133,10 +2518,13 @@ private:
 
                         const auto drawPosition = sf::Vec2f{606.f, 456.f} + toDrawCoordinates(sf::Vec2uz{x, y});
 
-                        drawBlock(*blockOpt, drawPosition, /* opacity */ 1.f, 0.f);
+                        drawBlock(*blockOpt, drawPosition);
                     }
             }
         }
+
+        for (auto& lb : m_lightningBolts)
+            lb.draw(m_rtGame, {});
 
         m_rtGame.display();
 
@@ -2148,6 +2536,18 @@ private:
                           .position = {0.f, m_quakeSinEffectHardDrop.getValue() + m_quakeSinEffectLineClear.getValue()},
                           .scale    = {1.f, 1.f},
                       });
+
+        {
+            const sf::base::SizeT nPeek = sf::base::min(static_cast<sf::base::SizeT>(m_world.perkNPeek),
+                                                        m_world.blockMatrixBag.size());
+            m_window.draw(m_font,
+                          sf::TextData{
+                              .position      = {386.f, 700.f - static_cast<float>(nPeek + 1) * 96.f + 32.f},
+                              .string        = "Next:",
+                              .characterSize = 26,
+                              .outlineColor  = sf::Color::White,
+                          });
+        }
 
         std::string stats;
 
@@ -2168,10 +2568,10 @@ private:
         stats += std::to_string(getDifficultyFactor(m_world.tick));
         stats += "\n";
 
-        if (m_world.perkRandomBlockHit > 0)
+        if (m_world.perkRndHitOnClear > 0)
         {
             stats += "- Random Block Hit (";
-            stats += std::to_string(m_world.perkRandomBlockHit);
+            stats += std::to_string(m_world.perkRndHitOnClear);
             stats += "x)\n";
         }
 
@@ -2214,6 +2614,17 @@ private:
             stats += ")\n";
         }
 
+        if (m_world.perkRndHitPerNTetraminos.hasValue())
+        {
+            stats += "- Random Hit per ";
+            stats += std::to_string(m_world.perkRndHitPerNTetraminos->nTetraminos);
+            stats += " Tetramino Placed (";
+            stats += std::to_string(m_world.perkRndHitPerNTetraminos->tetraminosPlacedCount);
+            stats += " / ";
+            stats += std::to_string(m_world.perkRndHitPerNTetraminos->nTetraminos);
+            stats += ")\n";
+        }
+
         if (m_world.perkExtraLinePiecesInPool > 0)
         {
             stats += "- Extra Line Pieces in Pool (";
@@ -2239,11 +2650,18 @@ private:
             stats += ")\n";
         }
 
+        if (m_world.perkChainLightning > 0)
+        {
+            stats += "- Chain Lightning (";
+            stats += std::to_string(m_world.perkChainLightning);
+            stats += "% chance)\n";
+        }
+
         m_window.draw(m_font,
                       sf::TextData{
                           .position      = {400.f, 32.f},
                           .string        = stats,
-                          .characterSize = 32,
+                          .characterSize = 26,
                           .outlineColor  = sf::Color::White,
                       });
 
@@ -2288,6 +2706,7 @@ private:
         }
 
         m_imGuiContext.render(m_window);
+
 
         m_window.display();
     }
