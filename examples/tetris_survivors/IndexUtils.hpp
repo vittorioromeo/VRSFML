@@ -4,15 +4,15 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "ShapeBlockSequence.hpp"
-#include "ShapeDimension.hpp"
-
-#include "SFML/Base/Array.hpp"
+#include "SFML/System/Vec2.hpp"
 
 
 namespace tsurv
 {
 ////////////////////////////////////////////////////////////
-using ShapeMatrix = sf::base::Array<ShapeBlockSequence, shapeDimension * shapeDimension>;
+[[nodiscard]] inline sf::base::SizeT getIndex2Dto1D(const sf::Vec2uz position, const sf::base::SizeT width)
+{
+    return position.y * width + position.x;
+}
 
 } // namespace tsurv
