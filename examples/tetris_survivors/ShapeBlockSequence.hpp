@@ -4,15 +4,19 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "ShapeBlockSequence.hpp"
-#include "ShapeDimension.hpp"
-
-#include "SFML/Base/Array.hpp"
+#include "SFML/Base/IntTypes.hpp"
 
 
 namespace tsurv
 {
 ////////////////////////////////////////////////////////////
-using ShapeMatrix = sf::base::Array<ShapeBlockSequence, shapeDimension * shapeDimension>;
+enum class [[nodiscard]] ShapeBlockSequence : sf::base::U8
+{
+    _ = 0u,
+    A = 1u,
+    B = 2u,
+    C = 3u,
+    D = 4u,
+};
 
 } // namespace tsurv

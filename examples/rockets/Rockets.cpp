@@ -1601,8 +1601,8 @@ int main()
         window.setResizable(true);
         window.setHasTitlebar(true);
 
-        window.setSize(sf::VideoModeUtils::getDesktopMode().size / 2.f);
-        window.setCenter(sf::VideoModeUtils::getDesktopMode().size / 2.f);
+        window.setSize(sf::VideoModeUtils::getDesktopMode().size / 2u);
+        window.setCenter(sf::VideoModeUtils::getDesktopMode().size.toVec2f() / 2.f);
     };
 
     //
