@@ -28,7 +28,7 @@
 }
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr sf::Vec2f blendVec(
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr sf::Vec2f blend(
     const sf::Vec2f a,
     const sf::Vec2f b,
     const float     value) noexcept
