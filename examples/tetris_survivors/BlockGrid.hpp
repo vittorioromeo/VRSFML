@@ -48,6 +48,26 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard]] sf::base::Optional<Block>& at(const sf::Vec2i position)
+    {
+        SFML_BASE_ASSERT(position.x >= 0);
+        SFML_BASE_ASSERT(position.y >= 0);
+
+        return at(position.toVec2uz());
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] const sf::base::Optional<Block>& at(const sf::Vec2i position) const
+    {
+        SFML_BASE_ASSERT(position.x >= 0);
+        SFML_BASE_ASSERT(position.y >= 0);
+
+        return at(position.toVec2uz());
+    }
+
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::base::Optional<Block>& at(const sf::Vec2u position)
     {
         return at(position.toVec2uz());
@@ -106,11 +126,10 @@ public:
 
                 const auto gridPos = newPosition + sf::Vec2uz{x, y}.toVec2i();
 
-                if (gridPos.x < 0 || gridPos.x >= static_cast<int>(m_width) || gridPos.y < 0 ||
-                    gridPos.y >= static_cast<int>(m_height))
+                if (!isInBounds(gridPos))
                     return false;
 
-                if (at(gridPos.toVec2u()).hasValue())
+                if (at(gridPos).hasValue())
                     return false;
             }
 
@@ -131,12 +150,11 @@ public:
 
                 const auto gridPos = tetramino.position + sf::Vec2uz{x, y}.toVec2i();
 
-                if (gridPos.x >= 0 && gridPos.x < static_cast<int>(m_width) && gridPos.y >= 0 &&
-                    gridPos.y < static_cast<int>(m_height))
-                {
-                    SFML_BASE_ASSERT(!at(gridPos.toVec2u()).hasValue());
-                    at(gridPos.toVec2u()) = tetramino.shape[index];
-                }
+                if (!isInBounds(gridPos))
+                    continue;
+
+                SFML_BASE_ASSERT(!at(gridPos).hasValue());
+                at(gridPos) = tetramino.shape[index];
             }
     }
 

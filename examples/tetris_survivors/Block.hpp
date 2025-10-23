@@ -28,6 +28,16 @@ inline constexpr sf::base::Array<sf::Color, tetraminoShapeCount> blockPalette{
 
 
 ////////////////////////////////////////////////////////////
+enum class BlockPowerup : sf::base::U8
+{
+    None          = 0u,
+    XPBonus       = 1u,
+    ColumnDrill   = 2u,
+    ThreeRowDrill = 3u,
+};
+
+
+////////////////////////////////////////////////////////////
 struct [[nodiscard]] Block
 {
     sf::base::U32 tetraminoId;
@@ -36,6 +46,8 @@ struct [[nodiscard]] Block
     sf::base::U8       health;
     sf::base::U8       paletteIdx;
     ShapeBlockSequence shapeBlockSequence;
+
+    BlockPowerup powerup;
 };
 
 } // namespace tsurv

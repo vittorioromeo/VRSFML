@@ -45,12 +45,12 @@ struct [[nodiscard]] TaggedBlockMatrix // NOLINT(cppcoreguidelines-pro-type-memb
 [[nodiscard]] inline sf::base::U64 getDifficultyFactor(const sf::base::U64 ticks)
 {
     constexpr sf::base::U64 baseDifficulty = 1000u;
-    return baseDifficulty + getElapsedSeconds(ticks) * 6u;
+    return baseDifficulty + getElapsedSeconds(ticks) * 5u;
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::base::Array<sf::base::U64, 4> generateTetrominoHealthDistribution(sf::base::U64 difficultyFactor, auto&& rng)
+[[nodiscard]] sf::base::Array<sf::base::U64, 4> generateTetrominoHealthDistribution(const sf::base::U64 difficultyFactor, auto&& rng)
 {
     const auto minHealth = 1;
     const auto maxHealth = 4;
@@ -88,7 +88,7 @@ struct [[nodiscard]] TaggedBlockMatrix // NOLINT(cppcoreguidelines-pro-type-memb
 
             // b) Difficulty modifier makes upgrades more likely over time.
             //    Adds up to 20% chance over ~16 mins of gameplay (difficulty 10k).
-            const float difficultyModifier = (static_cast<float>(difficultyFactor) - 1800.f) / 5000.f;
+            const float difficultyModifier = (static_cast<float>(difficultyFactor) - 1775.f) / 5000.f;
 
             // c) Intra-tetromino penalty makes multiple high-HP blocks on one piece rare.
             //    Each existing block with >= targetHealth reduces the chance by 30%.
@@ -155,13 +155,13 @@ struct [[nodiscard]] World
 
     int perkRandomBlockHit = 0;
 
-    struct HardDrill
+    struct VerticalDrill
     {
         int  maxPenetration = 1;
         bool multiHit       = false;
     };
 
-    sf::base::Optional<HardDrill> perkVerticalDrill;
+    sf::base::Optional<VerticalDrill> perkVerticalDrill;
 
     int perkCanHoldTetramino     = 0;
     int perkXPPerTetraminoPlaced = 0;
@@ -183,7 +183,8 @@ struct [[nodiscard]] World
         int maxPenetration = 1;
     };
 
-    sf::base::Optional<HorizontalDrill> perkHorizontalDrill;
+    sf::base::Optional<HorizontalDrill> perkHorizontalDrillLeft;
+    sf::base::Optional<HorizontalDrill> perkHorizontalDrillRight;
 };
 
 } // namespace tsurv
