@@ -4,9 +4,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Base/Algorithm/Shuffle.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Swap.hpp"
 #include "SFML/Base/Vector.hpp"
 
 
@@ -14,18 +14,11 @@ namespace tsurv
 {
 ////////////////////////////////////////////////////////////
 template <typename Container>
-void shuffleBag(Container& bag, auto&& rng) // TODO P1: to base algos
+void shuffleBag(Container& bag, auto&& rng)
 {
-    const sf::base::SizeT n = bag.size();
-
-    if (n <= 1)
-        return;
-
-    for (sf::base::SizeT i = n - 1; i > 0; --i)
-    {
-        const sf::base::SizeT j = rng.getI(sf::base::SizeT{0}, i);
-        sf::base::swap(bag[i], bag[j]);
-    }
+    sf::base::shuffle(bag.begin(), bag.end(), [&rng](sf::base::SizeT min, sf::base::SizeT max) {
+        return rng.getI(min, max);
+    });
 }
 
 

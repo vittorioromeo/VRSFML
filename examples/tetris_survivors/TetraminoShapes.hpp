@@ -20,7 +20,7 @@ using enum ShapeBlockSequence;
 
 
 ////////////////////////////////////////////////////////////
-// --- I-Piece Rotations ---
+// I-Piece Rotations
 inline constexpr ShapeMatrix iR0{_, _, _, _,
                                  A, B, C, D,
                                  _, _, _, _,
@@ -43,7 +43,7 @@ inline constexpr ShapeMatrix iR3{_, D, _, _,
 
 
 ////////////////////////////////////////////////////////////
-// --- J-Piece Rotations ---
+// J-Piece Rotations
 inline constexpr ShapeMatrix jR0{A, _, _, _,
                                  B, C, D, _,
                                  _, _, _, _,
@@ -66,7 +66,7 @@ inline constexpr ShapeMatrix jR3{_, D, _, _,
 
 
 ////////////////////////////////////////////////////////////
-// --- L-Piece Rotations ---
+// L-Piece Rotations
 inline constexpr ShapeMatrix lR0{_, _, A, _,
                                  D, C, B, _,
                                  _, _, _, _,
@@ -89,7 +89,7 @@ inline constexpr ShapeMatrix lR3{A, B, _, _,
 
 
 ////////////////////////////////////////////////////////////
-// --- O-Piece Rotations ---
+// O-Piece Rotations
 inline constexpr ShapeMatrix oR0{_, A, B, _,
                                  _, D, C, _,
                                  _, _, _, _,
@@ -112,7 +112,7 @@ inline constexpr ShapeMatrix oR3{_, B, C, _,
 
 
 ////////////////////////////////////////////////////////////
-// --- S-Piece Rotations ---
+// S-Piece Rotations
 inline constexpr ShapeMatrix sR0{_, A, B, _,
                                  C, D, _, _,
                                  _, _, _, _,
@@ -135,7 +135,7 @@ inline constexpr ShapeMatrix sR3{B, _, _, _,
 
 
 ////////////////////////////////////////////////////////////
-// --- T-Piece Rotations ---
+// T-Piece Rotations
 inline constexpr ShapeMatrix tR0{_, A, _, _,
                                  B, C, D, _,
                                  _, _, _, _,
@@ -158,7 +158,7 @@ inline constexpr ShapeMatrix tR3{_, D, _, _,
 
 
 ////////////////////////////////////////////////////////////
-// --- Z-Piece Rotations ---
+// Z-Piece Rotations
 inline constexpr ShapeMatrix zR0{A, B, _, _,
                                  _, C, D, _,
                                  _, _, _, _,
@@ -216,8 +216,8 @@ inline constexpr sf::base::Array<sf::base::Array<ShapeMatrix, shapeDimension>, t
 
 
 ////////////////////////////////////////////////////////////
-// These tables define the "kick" offsets to test for wall/floor collisions during rotation.
-// There are 5 tests for each rotation. The first valid one is used.
+// These tables define the "kick" offsets to test for wall/floor collisions during rotation
+// There are 5 tests for each rotation (the first valid one is used)
 using KickTable = sf::base::Array<sf::Vec2i, 5>;
 
 

@@ -28,7 +28,7 @@ struct [[nodiscard]] TaggedBlockMatrix // NOLINT(cppcoreguidelines-pro-type-memb
 [[nodiscard]] inline sf::base::U64 getXPNeededForLevelUp(const sf::base::U32 level)
 {
     constexpr double baseXP   = 30.0;
-    constexpr double exponent = 1.075;
+    constexpr double exponent = 1.05;
 
     return static_cast<sf::base::U64>(baseXP * sf::base::pow(static_cast<double>(level), exponent));
 }
