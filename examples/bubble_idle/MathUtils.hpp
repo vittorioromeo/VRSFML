@@ -57,8 +57,8 @@
     const float     deltaTimeMs,
     const float     speed) noexcept
 {
-    // TODO P2: this is axis independent, should be fixed
+    SFML_BASE_ASSERT_AND_ASSUME(speed >= 0.f);
 
-    return {exponentialApproach(current.x, target.x, deltaTimeMs, speed),
-            exponentialApproach(current.y, target.y, deltaTimeMs, speed)};
+    const float factor = 1.f - sf::base::exp(-deltaTimeMs / speed);
+    return current + (target - current) * factor;
 }
