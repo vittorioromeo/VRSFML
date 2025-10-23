@@ -1239,12 +1239,13 @@ private:
         {
             const sf::Vec2f targetPosition = toDrawCoordinates(m_world.currentTetramino->position);
 
-            const float interpolationSpeed = 0.0005f;
+            const float interpolationSpeed = 50.f;
+            const auto  deltaTimeMs        = static_cast<float>(deltaTime.asMicroseconds()) / 1000.f;
 
             m_currentTetraminoVisualPosition = exponentialApproach(m_currentTetraminoVisualPosition,
                                                                    targetPosition,
-                                                                   interpolationSpeed,
-                                                                   deltaTime.asSeconds());
+                                                                   deltaTimeMs,
+                                                                   interpolationSpeed);
         }
 
         // Deal with animations
@@ -1450,7 +1451,7 @@ private:
                         }
 
                         // Random block hit perk
-                        if (m_world.perkRndHitOnClear > 0 && numCleared > 1u)
+                        if (m_world.perkRndHitOnClear > 0)
                             strikeNRandomBlocks(static_cast<sf::base::SizeT>(m_world.perkRndHitOnClear));
                     }
 
@@ -1462,6 +1463,37 @@ private:
                         .clearedRows = trulyClearedRows,
                         .duration    = 0.1f,
                     });
+                }
+                else if (!fadingBlocks.empty())
+                {
+                    const auto numPartiallyCleared = clearLines->rows.size();
+
+                    const sf::base::U64 amount = [&]() noexcept
+                    {
+                        if (numPartiallyCleared == 1)
+                            return 4u;
+
+                        if (numPartiallyCleared == 2)
+                            return 10u;
+
+                        if (numPartiallyCleared == 3)
+                            return 16u;
+
+                        return 20u;
+                    }();
+
+                    addXP(amount);
+                    playSound(m_sbExp, 0.5f);
+
+                    for (sf::base::U64 i = 0u; i < fadingBlocks.size() * 4u; ++i)
+                    {
+                        const auto& block = fadingBlocks[i % fadingBlocks.size()];
+
+                        const auto startPosition = block.position + drawBlockSize / 2.f +
+                                                   m_rngFast.getVec2f({-16.f, -16.f}, {16.f, 16.f});
+
+                        spawnXPEarnedParticle(startPosition, block.block.paletteIdx);
+                    }
                 }
 
                 for (const auto columnClearPos : columnClearPositions)
@@ -1773,7 +1805,7 @@ private:
                 [&]
     {
         return (m_world.perkRndHitPerNTetraminos.hasValue() || m_world.perkRndHitOnClear > 0) &&
-               m_world.perkChainLightning < 50;
+               m_world.perkChainLightning < 60;
     },
             .fnApply = [&] { m_world.perkChainLightning += 10; },
         },
@@ -1789,11 +1821,11 @@ private:
 
         /////////////////////////////////////////////////////////////
         PerkSelector{
-            .fnName = [&] { return makeTitle("On-Double Lightning Strike", m_world.perkRndHitOnClear, 1); },
+            .fnName = [&] { return makeTitle("On-Clear Lightning Strike", m_world.perkRndHitOnClear, 1); },
             .fnDescription =
                 [&]
     {
-        return std::string{"Each time you full-clear two lines or more, randomly damage " +
+        return std::string{"Each time you full-clear a line or more, randomly damage " +
                            std::to_string(m_world.perkRndHitOnClear + 1) + " block(s) with a lightning strike."};
     },
             .fnPrerequisites = [&] { return true; },
@@ -1886,7 +1918,7 @@ private:
             .fnName = [&]() -> std::string
     {
         if (!m_world.perkDeleteFloorPerNTetraminos.hasValue())
-            return "Delete Floor per 30 Tetramino Placed";
+            return "Delete Floor per 25 Tetramino Placed";
 
         return std::string{"Delete Floor per Tetramino Placed"} + " (" +
                std::to_string(m_world.perkDeleteFloorPerNTetraminos->nTetraminos) + " -> " +
@@ -1903,7 +1935,7 @@ private:
                 [&]
     {
         if (!m_world.perkDeleteFloorPerNTetraminos.hasValue())
-            m_world.perkDeleteFloorPerNTetraminos.emplace(30);
+            m_world.perkDeleteFloorPerNTetraminos.emplace(25);
         else
             --(m_world.perkDeleteFloorPerNTetraminos->nTetraminos);
     },
@@ -1914,7 +1946,7 @@ private:
             .fnName = [&]() -> std::string
     {
         if (!m_world.perkRndHitPerNTetraminos.hasValue())
-            return "On-N-Placed Lightning Strike";
+            return "On-N-Placed Lightning Strike (15)";
 
         return std::string{"On-N-Placed Lightning Strike"} + " (" +
                std::to_string(m_world.perkRndHitPerNTetraminos->nTetraminos) + " -> " +
@@ -1923,12 +1955,12 @@ private:
             .fnDescription = [&]
     { return "Each time you place a certain amount of tetraminos, randomly damage a block with a lightning strike."; },
             .fnPrerequisites = [&]
-    { return !m_world.perkRndHitPerNTetraminos.hasValue() || m_world.perkRndHitPerNTetraminos->nTetraminos > 10; },
+    { return !m_world.perkRndHitPerNTetraminos.hasValue() || m_world.perkRndHitPerNTetraminos->nTetraminos > 8; },
             .fnApply =
                 [&]
     {
         if (!m_world.perkRndHitPerNTetraminos.hasValue())
-            m_world.perkRndHitPerNTetraminos.emplace(20);
+            m_world.perkRndHitPerNTetraminos.emplace(15);
         else
             --(m_world.perkRndHitPerNTetraminos->nTetraminos);
     },
@@ -2767,3 +2799,11 @@ int main()
 // - combo system for line clears
 // - random powerups
 // - bombs?
+// - every X damage deal, remove line from bottom
+// - rerolls
+// - perk to choose one more perk
+// - lightning = random block
+// - fire = random row
+// - water = random column
+// - earth = janitor?
+// - make everything more chance based? roll func with luck parameter?
