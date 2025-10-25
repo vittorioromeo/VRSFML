@@ -1,0 +1,19 @@
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static sf::Vec2f findClosestPoint(const sf::Vec2f target, const sf::base::Vector<sf::Vec2f>& points)
+    {
+        sf::Vec2f closestPoint  = target;
+        float     minDistanceSq = SFML_BASE_FLOAT_MAX;
+
+        for (const auto& p : points)
+        {
+            const float distSq = (p - target).lengthSquared();
+
+            if (distSq >= minDistanceSq)
+                continue;
+
+            minDistanceSq = distSq;
+            closestPoint  = p;
+        }
+
+        return closestPoint;
+    }
