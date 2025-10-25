@@ -60,10 +60,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const sf::base::Optional<Block>& at(const sf::Vec2i position) const
     {
-        SFML_BASE_ASSERT(position.x >= 0);
-        SFML_BASE_ASSERT(position.y >= 0);
-
-        return at(position.toVec2uz());
+        return const_cast<BlockGrid*>(this)->at(position);
     }
 
 
@@ -77,7 +74,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const sf::base::Optional<Block>& at(const sf::Vec2u position) const
     {
-        return at(position.toVec2uz());
+        return const_cast<BlockGrid*>(this)->at(position);
     }
 
 
