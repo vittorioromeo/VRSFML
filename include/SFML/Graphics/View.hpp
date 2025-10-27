@@ -130,6 +130,101 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
         return getTransform().getInverse();
     }
 
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Transform a 2D point from world coordinates to target (pixel) coordinates.
+    ///
+    /// This function is the forward projection of a camera. It takes a
+    /// point in the 2D world and finds its corresponding location in
+    /// absolute pixels on the render target.
+    ///
+    /// This can be useful for tasks such as attaching a UI element
+    /// (e.g., a name tag or health bar) to a sprite in the world,
+    /// by calculating its screen position every frame.
+    ///
+    /// This function is the inverse of `unproject`.
+    ///
+    /// \param point The point to transform, in world coordinates.
+    /// \param targetSize The size of the render target the view is applied to.
+    ///
+    /// \return The transformed point, in target (pixel) coordinates.
+    ///
+    /// \see unproject
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::pure]] Vec2f project(const Vec2f point, const Vec2f targetSize) const
+    {
+        // First, transform the point by the view matrix into normalized device coordinates `[-1, 1]`
+        const Vec2f normalized = getTransform().transformPoint(point);
+
+        // Then convert from normalized coordinates to absolute pixel coordinates
+
+        // 1. Map from `[-1, 1]` to `[0, 1]` and flip Y axis
+        const Vec2f relativePos = (normalized.componentWiseMul({1.f, -1.f}) + Vec2f{1.f, 1.f}) * 0.5f;
+
+        // 2. Scale by viewport size to get position relative to viewport's origin
+        const Vec2f viewportPixelPos = relativePos.componentWiseMul(viewport.size.componentWiseMul(targetSize));
+
+        // 3. Add viewport's origin to get absolute pixel position
+        const Vec2f absolutePixelPos = viewportPixelPos + viewport.position.componentWiseMul(targetSize);
+
+        return absolutePixelPos;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Transform a 2D point from target (pixel) coordinates to world coordinates.
+    ///
+    /// This function is the inverse projection, also known as "unprojection".
+    /// It takes a pixel coordinate on the render target and finds its
+    /// corresponding location in the 2D world.
+    ///
+    /// This is most commonly used to translate a mouse click on the screen
+    /// into a position in the game world, for object selection, character
+    /// movement, etc.
+    ///
+    /// This function is the inverse of `project`.
+    ///
+    /// Usage example:
+    /// \code
+    /// // Create a view and a hypothetical render target size
+    /// sf::View gameView({100, 100}, {200, 150}); // Centered at (100, 100), showing 200x150 world units
+    /// sf::Vec2f targetSize(800, 600);
+    ///
+    /// // Simulate a mouse click at pixel (400, 300), the center of the screen
+    /// sf::Vec2f mousePixelPos(400, 300);
+    ///
+    /// // Find out where that click corresponds to in the game world
+    /// sf::Vec2f worldPos = gameView.unproject(mousePixelPos, targetSize);
+    /// // worldPos will be approximately (100, 100), the center of the view.
+    ///
+    /// // Now, let's go the other way to confirm.
+    /// // Where would the world origin (0, 0) appear on the screen?
+    /// sf::Vec2f originPixelPos = gameView.project({0, 0}, targetSize);
+    /// // originPixelPos will be approximately (0, 0), the top-left of the screen.
+    /// \endcode
+    ///
+    /// \param point The point to transform, in target (pixel) coordinates.
+    /// \param targetSize The size of the render target the view is applied to.
+    ///
+    /// \return The transformed point, in world coordinates.
+    ///
+    /// \see project
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::pure]] Vec2f unproject(const Vec2f point, const Vec2f targetSize) const
+    {
+        // First, convert from absolute pixel coordinates to normalized device coordinates `[-1, 1]`
+        const Vec2f normalized = Vec2f(-1.f, 1.f) +
+                                 Vec2f(2.f, -2.f)
+                                     .componentWiseMul(point - viewport.position.componentWiseMul(targetSize))
+                                     .componentWiseDiv(viewport.size.componentWiseMul(targetSize));
+
+        // Then transform by the inverse of the view matrix to get world coordinates
+        return getInverseTransform().transformPoint(normalized);
+    }
+
+
     ////////////////////////////////////////////////////////////
     /// \brief Compare strict equality between two `View` objects
     ///

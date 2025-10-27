@@ -156,6 +156,7 @@ SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
 ////////////////////////////////////////////////////////////
 #undef SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN
 
+
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline sf::IntRect getMultipliedBySizeAndRoundedRect(
     const sf::Vec2u      renderTargetSize,
@@ -553,14 +554,7 @@ Vec2f RenderTarget::mapPixelToCoords(const Vec2i point) const
 ////////////////////////////////////////////////////////////
 Vec2f RenderTarget::mapPixelToCoords(const Vec2i point, const View& view) const
 {
-    // First, convert from viewport coordinates to homogeneous coordinates
-    const auto  viewport   = getViewport(view).to<FloatRect>();
-    const Vec2f normalized = Vec2f(-1.f, 1.f) + Vec2f(2.f, -2.f)
-                                                    .componentWiseMul(point.toVec2f() - viewport.position)
-                                                    .componentWiseDiv(viewport.size);
-
-    // Then transform by the inverse of the view matrix
-    return view.getInverseTransform().transformPoint(normalized);
+    return view.unproject(point.toVec2f(), getSize().toVec2f());
 }
 
 
@@ -574,16 +568,7 @@ Vec2i RenderTarget::mapCoordsToPixel(const Vec2f point) const
 ////////////////////////////////////////////////////////////
 Vec2i RenderTarget::mapCoordsToPixel(const Vec2f point, const View& view) const
 {
-    // First, transform the point by the view matrix
-    const Vec2f normalized = view.getTransform().transformPoint(point);
-
-    // Then convert to viewport coordinates
-    const auto viewport = getViewport(view).to<FloatRect>();
-    return ((normalized.componentWiseMul({1.f, -1.f}) + sf::Vec2f{1.f, 1.f})
-                .componentWiseMul({0.5f, 0.5f})
-                .componentWiseMul(viewport.size) +
-            viewport.position)
-        .toVec2i();
+    return view.project(point.toVec2f(), getSize().toVec2f()).toVec2i();
 }
 
 

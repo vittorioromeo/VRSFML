@@ -717,7 +717,7 @@ struct [[nodiscard]] ImGuiContext::Impl
     }
 
     ////////////////////////////////////////////////////////////
-    void update(Window& theWindow, RenderTarget& target, Time dt)
+    void updateMouseCursor(Window& theWindow)
     {
         // update OS/hardware mouse cursor if imgui isn't drawing a software cursor
         const ImGuiMouseCursor mouseCursor = ::ImGui::GetIO().MouseDrawCursor ? ImGuiMouseCursor_None
@@ -728,6 +728,12 @@ struct [[nodiscard]] ImGuiContext::Impl
             lastCursor = mouseCursor;
             updateMouseCursor(theWindow, mouseCursor);
         }
+    }
+
+    ////////////////////////////////////////////////////////////
+    void update(Window& theWindow, RenderTarget& target, Time dt)
+    {
+        updateMouseCursor(theWindow);
 
         if (!mouseMoved) // TODO P1: needed?
         {
@@ -1042,10 +1048,33 @@ void ImGuiContext::processEvent(const Window& window, const Event& event)
 
 
 ////////////////////////////////////////////////////////////
-void ImGuiContext::update(RenderWindow& window, Time dt)
+void ImGuiContext::updateMouseCursor(Window& window)
 {
     ::ImGui::SetCurrentContext(m_impl->imContext);
-    m_impl->update(window, window, dt);
+    m_impl->updateMouseCursor(window);
+}
+
+
+////////////////////////////////////////////////////////////
+void ImGuiContext::update(RenderWindow& renderWindow, Time dt)
+{
+    update(renderWindow, static_cast<RenderTarget&>(renderWindow), dt);
+}
+
+
+////////////////////////////////////////////////////////////
+void ImGuiContext::update(Window& window, RenderTarget& renderTarget, Time dt)
+{
+    ::ImGui::SetCurrentContext(m_impl->imContext);
+    m_impl->update(window, renderTarget, dt);
+}
+
+
+////////////////////////////////////////////////////////////
+void ImGuiContext::update(Vec2i mousePos, Vec2f displaySize, Time dt)
+{
+    ::ImGui::SetCurrentContext(m_impl->imContext);
+    m_impl->update(mousePos, displaySize, dt);
 }
 
 

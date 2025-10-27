@@ -57,8 +57,8 @@ struct [[nodiscard]] AnimFadeBlocks
 {
     struct FadingBlock // NOLINT(cppcoreguidelines-pro-type-member-init)
     {
-        Block     block;
-        sf::Vec2f position;
+        Block      block;
+        sf::Vec2uz position;
     };
 
     sf::base::Vector<FadingBlock> fadingBlocks;
