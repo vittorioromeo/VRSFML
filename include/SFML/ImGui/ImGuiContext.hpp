@@ -89,7 +89,15 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void update(RenderWindow& window, Time dt);
+    void updateMouseCursor(Window& window);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void update(RenderWindow& renderWindow, Time dt);
+    void update(Window& window, RenderTarget& renderTarget, Time dt);
+    void update(Vec2i mousePos, Vec2f displaySize, Time dt);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
