@@ -14,11 +14,11 @@
 
 #include "SFML/Base/Algorithm/AdjacentFind.hpp"
 #include "SFML/Base/Algorithm/Find.hpp"
+#include "SFML/Base/Algorithm/Sort.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Sort.hpp"
 #include "SFML/Base/Vector.hpp"
 
 

@@ -106,6 +106,7 @@ struct [[nodiscard]] Array
     [[nodiscard]] constexpr bool operator==(const Array& rhs) const = default;
 };
 
+
 ////////////////////////////////////////////////////////////
 template <typename T, typename... Elements>
 Array(T, Elements...) -> Array<T, 1 + sizeof...(Elements)>;

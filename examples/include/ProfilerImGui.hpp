@@ -9,8 +9,8 @@
 #include "../bubble_idle/Sampler.hpp" // TODO P1: avoid the relative path...?
 #include "Profiler.hpp"
 
+#include "SFML/Base/Algorithm/Sort.hpp"
 #include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Sort.hpp"
 #include "SFML/Base/Span.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Vector.hpp"
