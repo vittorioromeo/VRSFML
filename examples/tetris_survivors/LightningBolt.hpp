@@ -28,10 +28,11 @@ private:
     ////////////////////////////////////////////////////////////
     struct BoltSegment
     {
-        sf::Vec2f start;
-        sf::Vec2f end;
-        float     thickness;
-        int       depth;
+        sf::Vec2f    start;
+        sf::Vec2f    end;
+        float        thickness;
+        int          depth;
+        sf::base::U8 alpha;
     };
 
 public:
@@ -51,8 +52,10 @@ public:
         constexpr float branchLengthMax      = 0.7f;
         constexpr float branchThicknessDecay = 0.45f;
         constexpr int   jaggednessDepth      = 6;
+        constexpr float branchAlphaDecay     = 0.45f;
 
-        sf::base::Vector<BoltSegment> segmentsToProcess{{start, end, mainBoltThickness, 0}};
+
+        sf::base::Vector<BoltSegment> segmentsToProcess{{start, end, mainBoltThickness, 0, 255u}};
         sf::base::Vector<sf::Vec2f>   pointChainBuffer;
 
         while (!segmentsToProcess.empty())
@@ -74,15 +77,20 @@ public:
 
                 // Create the new branch and add it to the queue.
                 const float     branchLength = dir.length() * rng.getF(branchLengthMin, branchLengthMax);
-                const sf::Angle angle        = dir.angle() + sf::radians(rng.getF(-0.9f, 0.9f));
+                const sf::Angle angle        = dir.angle() + sf::radians(rng.getF(-0.5f, 0.5f));
                 const sf::Vec2f branchEnd    = branchStart + sf::Vec2f::fromAngle(branchLength, angle);
 
-                segmentsToProcess
-                    .emplaceBack(branchStart, branchEnd, current.thickness * branchThicknessDecay, current.depth + 1);
+                const auto decayedAlpha = static_cast<sf::base::U8>(static_cast<float>(current.alpha) * branchAlphaDecay);
+
+                segmentsToProcess.emplaceBack(branchStart,
+                                              branchEnd,
+                                              current.thickness * branchThicknessDecay,
+                                              current.depth + 1,
+                                              decayedAlpha);
             }
 
             // Step 3: Convert the final point chain into vertices.
-            createVertexArray(pointChainBuffer, current.thickness, m_color);
+            createVertexArray(pointChainBuffer, current.thickness, m_color.withAlpha(current.alpha));
         }
     }
 
@@ -91,15 +99,14 @@ public:
     {
         m_lifetime += dt;
 
-        // Calculate the current alpha based on lifetime
         const float progress = m_lifetime.asSeconds() / m_duration.asSeconds();
-        const auto  alpha    = static_cast<sf::base::U8>(255.f * (1.f - progress));
+        const float fade     = 1.f - progress;
 
-        for (sf::Vertex& v : m_verticesGlow)
-            v.color.a = alpha / 3u;
+        for (sf::base::SizeT i = 0u; i < m_verticesCore.size(); ++i)
+            m_verticesCore[i].color.a = static_cast<sf::base::U8>(static_cast<float>(m_originalCoreAlphas[i]) * fade);
 
-        for (sf::Vertex& v : m_verticesCore)
-            v.color.a = alpha;
+        for (sf::base::SizeT i = 0u; i < m_verticesGlow.size(); ++i)
+            m_verticesGlow[i].color.a = static_cast<sf::base::U8>(static_cast<float>(m_originalGlowAlphas[i]) * fade);
     }
 
     ////////////////////////////////////////////////////////////
@@ -242,12 +249,16 @@ private:
             m_verticesCore.emplaceBack(p2 - normalP2 * thickness * 0.5f, color);
             m_verticesCore.emplaceBack(p2 + normalP2 * thickness * 0.5f, color);
             m_verticesCore.emplaceBack(p1 + normalP1 * thickness * 0.5f, color);
+            m_originalCoreAlphas.pushBackMultiple(color.a, color.a, color.a, color.a);
 
             // Glow vertices
-            m_verticesGlow.emplaceBack(p1 - normalP1 * glowThickness * 0.5f, color);
-            m_verticesGlow.emplaceBack(p2 - normalP2 * glowThickness * 0.5f, color);
-            m_verticesGlow.emplaceBack(p2 + normalP2 * glowThickness * 0.5f, color);
-            m_verticesGlow.emplaceBack(p1 + normalP1 * glowThickness * 0.5f, color);
+            const auto glowColor = color.withAlpha(color.a / 3u);
+
+            m_verticesGlow.emplaceBack(p1 - normalP1 * glowThickness * 0.5f, glowColor);
+            m_verticesGlow.emplaceBack(p2 - normalP2 * glowThickness * 0.5f, glowColor);
+            m_verticesGlow.emplaceBack(p2 + normalP2 * glowThickness * 0.5f, glowColor);
+            m_verticesGlow.emplaceBack(p1 + normalP1 * glowThickness * 0.5f, glowColor);
+            m_originalGlowAlphas.pushBackMultiple(glowColor.a, glowColor.a, glowColor.a, glowColor.a);
 
             // Indices
             m_indices.pushBackMultiple(baseIndex + 0u, baseIndex + 1u, baseIndex + 2u, baseIndex + 0u, baseIndex + 2u, baseIndex + 3u);
@@ -260,8 +271,12 @@ private:
     sf::Time m_lifetime;
     sf::Time m_duration;
 
-    sf::base::Vector<sf::Vertex>    m_verticesCore;
-    sf::base::Vector<sf::Vertex>    m_verticesGlow;
+    sf::base::Vector<sf::Vertex> m_verticesCore;
+    sf::base::Vector<sf::Vertex> m_verticesGlow;
+
+    sf::base::Vector<sf::base::U8> m_originalCoreAlphas;
+    sf::base::Vector<sf::base::U8> m_originalGlowAlphas;
+
     sf::base::Vector<sf::IndexType> m_indices;
 };
 
