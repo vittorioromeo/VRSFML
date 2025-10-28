@@ -386,8 +386,8 @@ TEMPLATE_TEST_CASE("[System] sf::Vec2", "", int, float)
         const sf::Vec2<TestType> vec(1, 2);
 
         const auto result = vec.withY(3);
-        CHECK(result.x == 3);
-        CHECK(result.y == 5);
+        CHECK(result.x == 1);
+        CHECK(result.y == 3);
     }
 
     SECTION("clampX")
