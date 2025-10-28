@@ -44,7 +44,7 @@ public:
         m_duration(sf::seconds(0.27f))
     {
         constexpr float mainBoltJaggedness   = 0.35f;
-        constexpr float mainBoltThickness    = 4.0f;
+        constexpr float mainBoltThickness    = 3.0f;
         constexpr float branchChance         = 0.9f;
         constexpr int   maxBranchDepth       = 8;
         constexpr float branchLengthMin      = 0.4f;
