@@ -7,7 +7,7 @@
 #include "AnimationCommands.hpp"
 
 #include "SFML/Base/Clamp.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "SFML/Base/InPlaceVector.hpp"
 
 
 namespace tsurv
@@ -16,8 +16,8 @@ namespace tsurv
 struct [[nodiscard]] AnimationTimeline
 {
     ////////////////////////////////////////////////////////////
-    sf::base::Vector<AnimationCommand> commands;
-    float                              timeOnCurrentCommand = 0.f;
+    sf::base::InPlaceVector<AnimationCommand, 128> commands;
+    float                                          timeOnCurrentCommand = 0.f;
 
 
     ////////////////////////////////////////////////////////////

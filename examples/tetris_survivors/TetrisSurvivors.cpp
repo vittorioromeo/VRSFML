@@ -1104,7 +1104,7 @@ private:
             if (m_perks[i]->meetsPrerequisites(m_world))
                 m_perkIndicesSelectedThisLevel.pushBack(i);
 
-        while (m_perkIndicesSelectedThisLevel.size() > 4u)
+        while (m_perkIndicesSelectedThisLevel.size() > 3u)
         {
             const auto removeIdx = m_rngFast.getI<sf::base::SizeT>(0u, m_perkIndicesSelectedThisLevel.size() - 1u);
             m_perkIndicesSelectedThisLevel.erase(m_perkIndicesSelectedThisLevel.begin() + removeIdx);
@@ -1994,14 +1994,16 @@ private:
 
             ImGui::Begin("Level Up!", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
 
-            const ImVec2 menuSize{300.f * scale, 200.f * scale};
+            const ImVec2 menuSize{100.f * scale, 200.f * scale};
             const ImVec2 menuPos{windowSize.x / 2.f - menuSize.x / 2.f, windowSize.y / 2.f - menuSize.y / 2.f};
 
             ImGui::SetWindowPos(menuPos);
             ImGui::SetWindowSize(menuSize);
 
             setFontScale(1.f);
+            ImGui::PushFont(m_imguiFontBig);
             textCentered("*** LEVEL UP ***");
+            ImGui::PopFont();
             setFontScale(1.f);
             textCentered("CHOOSE A PERK");
             ImGui::Spacing();
@@ -2032,19 +2034,43 @@ private:
 
                 ImGui::PopFont();
 
+                setFontScale(0.5f);
+                if (!perkProgression.empty())
+                    ImGui::Text("(%s)\n", perkProgression.c_str());
+                else
+                    ImGui::Text("\n");
                 setFontScale(1.f);
-                ImGui::TextWrapped("(%s)", perkProgression.c_str());
-                ImGui::TextWrapped("\n%s", perkDescription.c_str());
+                ImGui::TextWrapped("%s", perkDescription.c_str());
 
                 sep = true;
             }
 
-            if (selectedPerk != -1)
+
+            auto buttonCenteredOnLine = [&](const char* label, float alignment = 0.5f)
             {
+                ImGuiStyle& style = ImGui::GetStyle();
+
+                float size  = ImGui::CalcTextSize(label).x + style.FramePadding.x * 2.0f;
+                float avail = ImGui::GetContentRegionAvail().x;
+
+                float off = (avail - size) * alignment;
+                if (off > 0.0f)
+                    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + off);
+
+                return ImGui::Button(label);
+            };
+
+            {
+                ImGui::Separator();
                 ImGui::Spacing();
                 ImGui::Spacing();
-                setFontScale(2.f);
-                if (ImGui::Button("Confirm"))
+                ImGui::PushFont(m_imguiFontBig);
+                setFontScale(1.f);
+
+                if (selectedPerk == -1)
+                    ImGui::BeginDisabled();
+
+                if (buttonCenteredOnLine("Confirm"))
                 {
                     m_inLevelUpScreen = false;
                     m_perkIndicesSelectedThisLevel.clear();
@@ -2053,6 +2079,11 @@ private:
 
                     m_perks[static_cast<sf::base::SizeT>(selectedPerk)]->apply(m_world);
                 }
+
+                if (selectedPerk == -1)
+                    ImGui::EndDisabled();
+
+                ImGui::PopFont();
             }
 
             ImGui::PopFont();

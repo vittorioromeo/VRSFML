@@ -21,7 +21,21 @@ namespace
 // and elsewhere where it is 32. Otherwise the tests would only work on
 // one OS or the other.
 template <typename T>
-auto select(const std::basic_string<T>& string16, const std::basic_string<T>& string32)
+auto selectAnsi(const std::basic_string<T>& stringWin, const std::basic_string<T>& stringUnix)
+{
+    SFML_BASE_ASSERT(stringWin != stringUnix && "Invalid to select between identical inputs");
+#if defined(_WIN32) // TODO P1: fails under CLANG64 env
+    return stringWin;
+#else
+    return stringUnix;
+#endif
+}
+
+// Return either argument depending on whether wchar_t is 16 or 32 bits.
+// Lets us write tests that work on both Windows (MSVC) where wchar_t is 16 bits
+// and other platforms where it is 32 bits.
+template <typename T>
+auto selectWide(const std::basic_string<T>& string16, const std::basic_string<T>& string32)
 {
     SFML_BASE_ASSERT(string16 != string32 && "Invalid to select between identical inputs");
     if constexpr (sizeof(wchar_t) == 2)
@@ -36,6 +50,7 @@ auto toHex(const char32_t character)
     stream << "[\\x" << std::uppercase << std::hex << static_cast<sf::base::U32>(character) << ']';
     return stream.str();
 }
+
 } // namespace
 
 // Specialize StringMaker for alternative std::basic_string<T> specializations
@@ -132,7 +147,7 @@ TEST_CASE("[System] sf::String")
         SECTION("Wide character constructor")
         {
             const sf::String string = L'\xFA';
-            CHECK(string.toAnsiString<std::string>() == select("\xFA"s, "\0"s));
+            CHECK(string.toAnsiString<std::string>() == selectAnsi("\xFA"s, "\0"s));
             CHECK(string.toWideString<std::wstring>() == L"\xFA"s);
             CHECK(string.toUtf8<std::u8string>() == std::u8string{0xC3, 0xBA});
             CHECK(string.toUtf16<std::u16string>() == u"\xFA"s);
@@ -145,7 +160,7 @@ TEST_CASE("[System] sf::String")
         SECTION("Wide C string constructor")
         {
             const sf::String string = L"j\xFAl";
-            CHECK(string.toAnsiString<std::string>() == select("j\xFAl"s, "j\0l"s));
+            CHECK(string.toAnsiString<std::string>() == selectAnsi("j\xFAl"s, "j\0l"s));
             CHECK(string.toWideString<std::wstring>() == L"j\xFAl"s);
             CHECK(string.toUtf8<std::u8string>() == std::u8string{'j', 0xC3, 0xBA, 'l'});
             CHECK(string.toUtf16<std::u16string>() == u"j\xFAl"s);
@@ -158,7 +173,7 @@ TEST_CASE("[System] sf::String")
         SECTION("Wide string constructor")
         {
             const sf::String string = L"mno\xFA"s;
-            CHECK(string.toAnsiString<std::string>() == select("mno\xFA"s, "mno\0"s));
+            CHECK(string.toAnsiString<std::string>() == selectAnsi("mno\xFA"s, "mno\0"s));
             CHECK(string.toWideString<std::wstring>() == L"mno\xFA"s);
             CHECK(string.toUtf8<std::u8string>() == std::u8string{'m', 'n', 'o', 0xC3, 0XBA});
             CHECK(string.toUtf16<std::u16string>() == u"mno\xFA"s);
@@ -172,7 +187,7 @@ TEST_CASE("[System] sf::String")
         {
             const sf::String string = U'\U0010AFAF';
             CHECK(string.toAnsiString<std::string>() == "\0"s);
-            CHECK(string.toWideString<std::wstring>() == select(L""s, L"\U0010AFAF"s));
+            CHECK(string.toWideString<std::wstring>() == selectWide(L""s, L"\U0010AFAF"s));
             CHECK(string.toUtf8<std::u8string>() == std::u8string{0xF4, 0x8A, 0xBE, 0xAF});
             CHECK(string.toUtf16<std::u16string>() == u"\U0010AFAF"s);
             CHECK(string.toUtf32<std::u32string>() == U"\U0010AFAF"s);
@@ -185,7 +200,7 @@ TEST_CASE("[System] sf::String")
         {
             const sf::String string = U"\U0010ABCDrs";
             CHECK(string.toAnsiString<std::string>() == "\0rs"s);
-            CHECK(string.toWideString<std::wstring>() == select(L"rs"s, L"\U0010ABCDrs"s));
+            CHECK(string.toWideString<std::wstring>() == selectWide(L"rs"s, L"\U0010ABCDrs"s));
             CHECK(string.toUtf8<std::u8string>() == std::u8string{0xF4, 0x8A, 0xAF, 0x8D, 'r', 's'});
             CHECK(string.toUtf16<std::u16string>() == u"\U0010ABCDrs"s);
             CHECK(string.toUtf32<std::u32string>() == U"\U0010ABCDrs"s);
@@ -198,7 +213,7 @@ TEST_CASE("[System] sf::String")
         {
             const sf::String string = U"tuv\U00104321"s;
             CHECK(string.toAnsiString<std::string>() == "tuv\0"s);
-            CHECK(string.toWideString<std::wstring>() == select(L"tuv"s, L"tuv\U00104321"s));
+            CHECK(string.toWideString<std::wstring>() == selectWide(L"tuv"s, L"tuv\U00104321"s));
             CHECK(string.toUtf8<std::u8string>() == std::u8string{'t', 'u', 'v', 0xF4, 0x84, 0x8C, 0xA1});
             CHECK(string.toUtf16<std::u16string>() == u"tuv\U00104321"s);
             CHECK(string.toUtf32<std::u32string>() == U"tuv\U00104321"s);
@@ -238,7 +253,7 @@ TEST_CASE("[System] sf::String")
     {
         constexpr char16_t characters[4]{0xF1, 'x', 'y', 'z'};
         const sf::String   string = sf::StringUtfUtils::fromUtf16(characters, characters + 4);
-        CHECK(string.toAnsiString<std::string>() == select("\xF1xyz"s, "\0xyz"s));
+        CHECK(string.toAnsiString<std::string>() == selectAnsi("\xF1xyz"s, "\0xyz"s));
         CHECK(string.toWideString<std::wstring>() == L"\xF1xyz"s);
         CHECK(string.toUtf8<std::u8string>() == std::u8string{0xC3, 0xB1, 'x', 'y', 'z'});
         CHECK(string.toUtf16<std::u16string>() == u"\xF1xyz"s);
@@ -253,7 +268,7 @@ TEST_CASE("[System] sf::String")
         constexpr char32_t characters[4]{'w', 0x10'43'21, 'y', 'z'};
         const sf::String   string = sf::StringUtfUtils::fromUtf32(characters, characters + 4);
         CHECK(string.toAnsiString<std::string>() == "w\0yz"s);
-        CHECK(string.toWideString<std::wstring>() == select(L"wyz"s, L"w\U00104321yz"s));
+        CHECK(string.toWideString<std::wstring>() == selectWide(L"wyz"s, L"w\U00104321yz"s));
         CHECK(string.toUtf8<std::u8string>() == std::u8string{'w', 0xF4, 0x84, 0x8C, 0xA1, 'y', 'z'});
         CHECK(string.toUtf16<std::u16string>() == u"w\U00104321yz"s);
         CHECK(string.toUtf32<std::u32string>() == U"w\U00104321yz"s);

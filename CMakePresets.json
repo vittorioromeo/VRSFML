@@ -200,6 +200,18 @@
         "CMAKE_TOOLCHAIN_FILE": "/usr/lib/emscripten/cmake/Modules/Platform/Emscripten.cmake",
         "SFML_OPENGL_ES": "ON"
       }
+    },
+    {
+      "name": "vrdev_clang_clangenv",
+      "inherits": "build_base_debug",
+      "binaryDir": "build_vrdev_clang_clangenv",
+      "installDir": "${sourceDir}/build_vrdev_clang_clangenv/install",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_C_FLAGS": "-fuse-ld=lld $env{CXX_WARNINGS} -fsanitize=address -fsanitize=undefined",
+        "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace -flto=thin $env{CXX_WARNINGS} -fsanitize=address -fsanitize=undefined"
+      }
     }
   ]
 }
