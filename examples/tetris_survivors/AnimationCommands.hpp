@@ -5,6 +5,8 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Block.hpp"
+#include "DrillDirection.hpp"
+#include "Tetramino.hpp"
 
 #include "SFML/Base/FixedFunction.hpp"
 #include "SFML/Base/Variant.hpp"
@@ -21,24 +23,19 @@ struct [[nodiscard]] AnimWait
 
 
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] AnimHardDrop
+struct [[nodiscard]] AnimHardDrop // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    float duration;
-    int   endY;
+    Tetramino tetramino;
+    float     duration;
+    int       endY;
 };
 
 
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] AnimSquish
+struct [[nodiscard]] AnimSquish // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    float duration;
-};
-
-
-////////////////////////////////////////////////////////////
-struct [[nodiscard]] AnimEmbed
-{
-    float duration;
+    Tetramino tetramino;
+    float     duration;
 };
 
 
@@ -75,28 +72,16 @@ struct [[nodiscard]] AnimCollapseGrid
 
 
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] AnimVerticalDrill
+struct [[nodiscard]] AnimDrill // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    float duration;
+    Tetramino            tetramino;
+    DrillDirection::Enum direction;
+    float                duration;
 };
 
 
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] AnimHorizontalDrillLeft
-{
-    float duration;
-};
-
-
-////////////////////////////////////////////////////////////
-struct [[nodiscard]] AnimHorizontalDrillRight
-{
-    float duration;
-};
-
-
-////////////////////////////////////////////////////////////
-struct [[nodiscard]] AnimColumnClear
+struct [[nodiscard]] AnimColumnClear // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
     sf::Vec2uz position;
     float      duration;
@@ -112,18 +97,14 @@ struct [[nodiscard]] AnimAction
 
 
 ////////////////////////////////////////////////////////////
-using AnimationCommand = sf::base::Variant<
-    AnimWait, //
-    AnimHardDrop,
-    AnimSquish,
-    AnimEmbed,
-    AnimClearLines,
-    AnimFadeBlocks,
-    AnimCollapseGrid,
-    AnimVerticalDrill,
-    AnimHorizontalDrillLeft,
-    AnimHorizontalDrillRight,
-    AnimColumnClear,
-    AnimAction>;
+using AnimationCommand = sf::base::Variant<AnimWait, //
+                                           AnimHardDrop,
+                                           AnimSquish,
+                                           AnimClearLines,
+                                           AnimFadeBlocks,
+                                           AnimCollapseGrid,
+                                           AnimDrill,
+                                           AnimColumnClear,
+                                           AnimAction>;
 
 } // namespace tsurv

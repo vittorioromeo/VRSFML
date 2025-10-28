@@ -7,6 +7,8 @@
 #include "BlockGrid.hpp"
 #include "BlockMatrix.hpp"
 #include "Constants.hpp"
+#include "DrillDirection.hpp"
+#include "RandomBag.hpp"
 #include "Tetramino.hpp"
 
 #include "SFML/Base/Math/Pow.hpp"
@@ -52,6 +54,8 @@ struct [[nodiscard]] TaggedBlockMatrix // NOLINT(cppcoreguidelines-pro-type-memb
 ////////////////////////////////////////////////////////////
 [[nodiscard]] sf::base::Array<sf::base::U64, 4> generateTetraminoHealthDistribution(sf::base::U64 difficultyFactor, auto&& rng)
 {
+    // difficultyFactor = 2500;
+
     const auto minHealth = 1;
     const auto maxHealth = 4;
 
@@ -155,14 +159,6 @@ struct [[nodiscard]] World
 
     int perkRndHitOnClear = 0;
 
-    struct VerticalDrill
-    {
-        int  maxPenetration = 1;
-        bool multiHit       = false;
-    };
-
-    sf::base::Optional<VerticalDrill> perkVerticalDrill;
-
     int perkCanHoldTetramino     = 0;
     int perkXPPerTetraminoPlaced = 0;
     int perkXPPerBlockDamaged    = 0;
@@ -177,14 +173,13 @@ struct [[nodiscard]] World
 
     int perkExtraLinePiecesInPool = 0;
 
-    struct HorizontalDrill
+    struct DrillData
     {
-        int maxBlocks      = 1;
+        int coverage       = 1;
         int maxPenetration = 1;
     };
 
-    sf::base::Optional<HorizontalDrill> perkHorizontalDrillLeft;
-    sf::base::Optional<HorizontalDrill> perkHorizontalDrillRight;
+    sf::base::Optional<DrillData> perkDrill[drillDirectionCount];
 
     int perkNPeek = 1;
 

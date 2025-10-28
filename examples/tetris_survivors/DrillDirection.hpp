@@ -1,0 +1,28 @@
+#pragma once
+
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/SizeT.hpp"
+
+
+namespace tsurv
+{
+/////////////////////////////////////////////////////////////
+struct DrillDirection
+{
+    enum [[nodiscard]] Enum : sf::base::U8
+    {
+        Left  = 0u,
+        Right = 1u,
+        Down  = 2u
+    };
+};
+
+
+/////////////////////////////////////////////////////////////
+inline constexpr sf::base::SizeT drillDirectionCount = 3u;
+
+} // namespace tsurv
