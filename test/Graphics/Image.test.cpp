@@ -89,7 +89,7 @@ TEST_CASE("[Graphics] sf::Image")
 
     SECTION("loadFromFile()")
     {
-        SECTION("Invalid file")
+        SECTION("Invalid file") // TODO P1: fails under CLANG64 env
         {
             CHECK(!sf::Image::loadFromFile(".").hasValue());
             CHECK(!sf::Image::loadFromFile("this/does/not/exist.jpg").hasValue());
