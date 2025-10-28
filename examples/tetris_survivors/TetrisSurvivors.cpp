@@ -64,6 +64,7 @@
 
 #include "SFML/Base/Algorithm/Erase.hpp"
 #include "SFML/Base/Algorithm/Find.hpp"
+#include "SFML/Base/Algorithm/Sort.hpp"
 #include "SFML/Base/Algorithm/Unique.hpp"
 #include "SFML/Base/AnkerlUnorderedDense.hpp"
 #include "SFML/Base/Assert.hpp"
@@ -74,7 +75,6 @@
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/Remainder.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Sort.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
 

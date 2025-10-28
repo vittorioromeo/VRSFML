@@ -1,4 +1,4 @@
-#include "SFML/Base/Sort.hpp"
+#include "SFML/Base/Algorithm/Sort.hpp"
 
 #include "StringifyStringUtil.hpp" // used
 #include "StringifyVectorUtil.hpp" // used
