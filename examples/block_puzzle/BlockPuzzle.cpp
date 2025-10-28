@@ -46,6 +46,7 @@
 
 #include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Algorithm/Erase.hpp"
+#include "SFML/Base/Algorithm/Sort.hpp"
 #include "SFML/Base/Algorithm/Unique.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Clamp.hpp"
@@ -55,7 +56,6 @@
 #include "SFML/Base/Math/Fmod.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Sort.hpp"
 #include "SFML/Base/Variant.hpp"
 #include "SFML/Base/Vector.hpp"
 

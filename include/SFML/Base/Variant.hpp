@@ -24,6 +24,7 @@
 #include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
 #include "SFML/Base/Trait/RemoveCVRef.hpp"
 #include "SFML/Base/TypePackElement.hpp"
+#include "SFML/Base/TypePackIndex.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -51,28 +52,6 @@ namespace sf::base::priv
 
         return result;
     }
-}
-
-
-////////////////////////////////////////////////////////////
-enum : SizeT
-{
-    badIndex = static_cast<SizeT>(-1)
-};
-
-
-////////////////////////////////////////////////////////////
-template <typename T, typename... Ts>
-[[nodiscard]] consteval SizeT indexOf() noexcept
-// TODO P0: is this the fastest way? Extract to separate header in case
-{
-    constexpr bool matches[]{SFML_BASE_IS_SAME(T, Ts)...};
-
-    for (SizeT i = 0u; i < sizeof...(Ts); ++i)
-        if (matches[i])
-            return i;
-
-    return badIndex;
 }
 
 
@@ -143,7 +122,7 @@ private:
 public:
     ////////////////////////////////////////////////////////////
     template <typename T>
-    static constexpr SizeT indexOf = priv::indexOf<T, Alternatives...>();
+    static constexpr SizeT indexOf = getTypePackIndex<T, Alternatives...>();
 
 
 private:
@@ -157,8 +136,8 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-#define SFML_BASE_VARIANT_STATIC_ASSERT_INDEX_VALIDITY(I)                              \
-    static_assert((I) != priv::badIndex, "Alternative type not supported by variant"); \
+#define SFML_BASE_VARIANT_STATIC_ASSERT_INDEX_VALIDITY(I)                                            \
+    static_assert((I) != ::sf::base::badTypePackIndex, "Alternative type not supported by variant"); \
     static_assert((I) >= 0 && (I) < alternativeCount, "Alternative index out of range")
 
 

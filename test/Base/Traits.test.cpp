@@ -1,3 +1,5 @@
+#include "SFML/Base/Trait/CommonType.hpp"
+#include "SFML/Base/Trait/Decay.hpp"
 #include "SFML/Base/Trait/IsBaseOf.hpp"
 #include "SFML/Base/Trait/IsEnum.hpp"
 #include "SFML/Base/Trait/IsFloatingPoint.hpp"
@@ -80,7 +82,7 @@ struct NonTrivial
     {
     }
 
-    int& i;
+    int& i; // NOLINT(cppcoreguidelines-use-default-member-init, modernize-use-default-member-init)
 };
 
 static_assert(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(int));
@@ -121,5 +123,20 @@ static_assert(SFML_BASE_IS_SAME(SFML_BASE_REMOVE_REFERENCE(const volatile int&&)
 ////////////////////////////////////////////////////////////
 static_assert(SFML_BASE_IS_SAME(SFML_BASE_UNDERLYING_TYPE(E), int));
 static_assert(SFML_BASE_IS_SAME(SFML_BASE_UNDERLYING_TYPE(EC), int));
+
+
+////////////////////////////////////////////////////////////
+static_assert(SFML_BASE_IS_SAME(SFML_BASE_COMMON_TYPE(int, int), int));
+static_assert(SFML_BASE_IS_SAME(SFML_BASE_COMMON_TYPE(int, float), float));
+static_assert(SFML_BASE_IS_SAME(SFML_BASE_COMMON_TYPE(double, float), double));
+
+////////////////////////////////////////////////////////////
+static_assert(SFML_BASE_IS_SAME(SFML_BASE_DECAY(int), int));
+static_assert(SFML_BASE_IS_SAME(SFML_BASE_DECAY(int*), int*));
+static_assert(SFML_BASE_IS_SAME(SFML_BASE_DECAY(int (&)[1]), int*));
+static_assert(SFML_BASE_IS_SAME(SFML_BASE_DECAY(int (&)[2]), int*));
+static_assert(SFML_BASE_IS_SAME(SFML_BASE_DECAY(const int), int));
+static_assert(SFML_BASE_IS_SAME(SFML_BASE_DECAY(const int&), int));
+static_assert(SFML_BASE_IS_SAME(SFML_BASE_DECAY(int&), int));
 
 } // namespace

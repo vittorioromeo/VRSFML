@@ -100,7 +100,7 @@ public:
     template <typename T>
     IOStreamOutput& operator<<(const T& value);
 
-    template <decltype(sizeof(int)) N>
+    template <base::SizeT N>
     IOStreamOutput& operator<<(const char (&value)[N])
     {
         return operator<<(static_cast<const char*>(value));
