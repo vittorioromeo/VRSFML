@@ -5,25 +5,6 @@
 #include "../bubble_idle/RNGFast.hpp"   // TODO P1: avoid the relative path...?
 #include "../bubble_idle/Timer.hpp"     // TODO P1: avoid the relative path...?
 
-#include "SFML/Graphics/CircleShapeData.hpp"
-
-#include "SFML/Audio/PlaybackDevice.hpp"
-
-#include "SFML/Window/VideoMode.hpp"
-
-#include "SFML/System/Time.hpp"
-
-#include "SFML/Base/Algorithm/Erase.hpp"
-#include "SFML/Base/Constants.hpp"
-#include "SFML/Base/FixedFunction.hpp"
-#include "SFML/Base/InPlaceVector.hpp"
-#include "SFML/Base/Math/Fmod.hpp"
-#include "SFML/Base/Remainder.hpp"
-
-#include <imgui_internal.h>
-
-#include <string>
-
 #define SFEX_PROFILER_ENABLED
 #include "Profiler.hpp"
 
@@ -35,7 +16,10 @@
 #include "BlockMatrix.hpp"
 #include "Constants.hpp"
 #include "ControlFlow.hpp"
+#include "DefaultPerks.hpp"
+#include "DrillDirection.hpp"
 #include "LightningBolt.hpp"
+#include "Perk.hpp"
 #include "RandomBag.hpp"
 #include "ShapeDimension.hpp"
 #include "Tetramino.hpp"
@@ -44,6 +28,7 @@
 
 #include "SFML/ImGui/ImGuiContext.hpp"
 
+#include "SFML/Graphics/CircleShapeData.hpp"
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
@@ -62,30 +47,43 @@
 #include "SFML/Audio/AudioContext.hpp"
 #include "SFML/Audio/Music.hpp"
 #include "SFML/Audio/MusicReader.hpp"
+#include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
+#include "SFML/Window/VideoMode.hpp"
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Rect.hpp"
+#include "SFML/System/Time.hpp"
 #include "SFML/System/Vec2.hpp"
 
+#include "SFML/Base/Algorithm/Erase.hpp"
 #include "SFML/Base/Algorithm/Find.hpp"
+#include "SFML/Base/Algorithm/Unique.hpp"
 #include "SFML/Base/AnkerlUnorderedDense.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Constants.hpp"
+#include "SFML/Base/FixedFunction.hpp"
+#include "SFML/Base/InPlaceVector.hpp"
+#include "SFML/Base/Math/Fmod.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/Remainder.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Sort.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #include "ExampleUtils.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
+
+#include <string>
 
 
 namespace tsurv
@@ -150,12 +148,13 @@ struct [[nodiscard]] EarnedXPParticle // NOLINT(cppcoreguidelines-pro-type-membe
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] DrawBlockOptions
 {
-    float opacity      = 1.f;
-    float squishMult   = 0.f;
-    float rotation     = 0.f;
-    float scale        = 1.f;
-    bool  drawText     = true;
-    bool  applyYOffset = true;
+    float opacity          = 1.f;
+    float squishMult       = 0.f;
+    float rotation         = 0.f;
+    float scale            = 1.f;
+    bool  drawText         = true;
+    bool  applyYOffset     = true;
+    bool  applyQuakeOffset = true;
 };
 
 
@@ -254,6 +253,7 @@ private:
     sf::SoundBuffer m_sbBonus    = sf::SoundBuffer::loadFromFile("resources/Bonus.wav").value();
     sf::SoundBuffer m_sbStrike   = sf::SoundBuffer::loadFromFile("resources/Strike.wav").value();
     sf::SoundBuffer m_sbDrill    = sf::SoundBuffer::loadFromFile("resources/Drill.wav").value();
+    sf::SoundBuffer m_sbError    = sf::SoundBuffer::loadFromFile("resources/Error.wav").value();
 
     ////////////////////////////////////////////////////////////
     sf::base::Array<sf::base::Optional<sf::Sound>, 8> m_soundPool;
@@ -286,14 +286,22 @@ private:
     World m_world;
 
     ////////////////////////////////////////////////////////////
-    sf::Vec2f                         m_currentTetraminoVisualCenter;
-    float                             m_squishMult = 0.f;
-    AnimationTimeline                 m_animationTimeline;
-    sf::base::Vector<float>           m_rowYOffsets;
-    bool                              m_inLevelUpScreen = false;
-    sf::base::Vector<sf::base::SizeT> m_perkIndicesSelectedThisLevel;
-    sf::base::Vector<LightningBolt>   m_lightningBolts;
-    sf::base::Vector<DelayedAction>   m_delayedActions;
+    sf::Vec2f               m_currentTetraminoVisualCenter;
+    AnimationTimeline       m_animationTimeline;
+    sf::base::Vector<float> m_rowYOffsets;
+
+    ////////////////////////////////////////////////////////////
+    bool m_inLevelUpScreen = false;
+
+    ////////////////////////////////////////////////////////////
+    sf::base::Vector<sf::base::UniquePtr<const Perk>> m_perks;
+    sf::base::Vector<sf::base::SizeT>                 m_perkIndicesSelectedThisLevel;
+
+    ////////////////////////////////////////////////////////////
+    sf::base::Vector<LightningBolt> m_lightningBolts;
+
+    ////////////////////////////////////////////////////////////
+    sf::base::Vector<DelayedAction> m_delayedActions;
 
     ////////////////////////////////////////////////////////////
     QuakeSinEffect m_quakeSinEffectLineClear;
@@ -315,7 +323,8 @@ private:
 
     ////////////////////////////////////////////////////////////
     sf::base::Vector<EarnedXPParticle> m_earnedXPParticles;
-    sf::base::Vector<ParticleData>     m_circleShapeParticles;
+    sf::base::Vector<ParticleData>     m_hueColorCircleShapeParticles;
+    sf::base::Vector<ParticleData>     m_fixedColorCircleShapeParticles;
 
     ////////////////////////////////////////////////////////////
     RNGFast m_rngFast{static_cast<RNGFast::SeedType>(
@@ -333,7 +342,6 @@ private:
     const sf::FloatRect m_txrDrill    = addImgResourceToAtlas("drill.png");
     const sf::FloatRect m_txrRedDot   = addImgResourceToAtlas("reddot.png");
 
-
     //////////////////////////////////////////////////////////////
     sf::RenderTexture m_rtGame{
         sf::RenderTexture::create(resolution.toVec2u(), {.antiAliasingLevel = 0u, .sRgbCapable = false}).value()};
@@ -342,6 +350,7 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] inline constexpr sf::CircleShapeData particleToCircleData(const ParticleData& particle)
     {
+        SFML_BASE_ASSERT(particle.opacity >= 0.f && particle.opacity <= 1.f);
         const auto opacityAsAlpha = static_cast<sf::base::U8>(particle.opacity * 255.f);
 
         return {
@@ -364,12 +373,64 @@ private:
 
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool tetraminosIntersect(const BlockMatrix& shape1,
+                                                  const sf::Vec2i&   pos1,
+                                                  const BlockMatrix& shape2,
+                                                  const sf::Vec2i&   pos2)
+    {
+        for (sf::base::SizeT y1 = 0; y1 < shapeDimension; ++y1)
+            for (sf::base::SizeT x1 = 0; x1 < shapeDimension; ++x1)
+            {
+                if (!shape1[y1 * shapeDimension + x1].hasValue())
+                    continue;
+
+                const sf::Vec2i worldPos1 = pos1 + sf::Vec2uz{x1, y1}.toVec2i();
+
+                for (sf::base::SizeT y2 = 0; y2 < shapeDimension; ++y2)
+                    for (sf::base::SizeT x2 = 0; x2 < shapeDimension; ++x2)
+                    {
+                        if (!shape2[y2 * shapeDimension + x2].hasValue())
+                            continue;
+
+                        const sf::Vec2i worldPos2 = pos2 + sf::Vec2uz{x2, y2}.toVec2i();
+
+                        if (worldPos1 == worldPos2)
+                            return true; // Found an overlap!
+                    }
+            }
+
+        return false; // No overlap found
+    }
+
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] int calculateGhostY(const Tetramino& tetramino) const
     {
+        sf::base::Optional<Tetramino> finalHardDropState;
+
+        if (const auto* hardDrop = m_animationTimeline.getIfPlaying<AnimHardDrop>())
+        {
+            finalHardDropState.emplace(hardDrop->tetramino);
+            finalHardDropState->position.y = hardDrop->endY;
+        }
+        else if (const auto* squish = m_animationTimeline.getIfPlaying<AnimSquish>())
+            finalHardDropState.emplace(squish->tetramino);
+
         int ghostY = tetramino.position.y;
 
-        while (m_world.blockGrid.isValidMove(tetramino.shape, {tetramino.position.x, ghostY + 1}))
+        while (true)
+        {
+            const sf::Vec2i nextGhostPos = {tetramino.position.x, ghostY + 1};
+
+            if (!m_world.blockGrid.isValidMove(tetramino.shape, nextGhostPos))
+                break;
+
+            if (finalHardDropState.hasValue() &&
+                tetraminosIntersect(tetramino.shape, nextGhostPos, finalHardDropState->shape, finalHardDropState->position))
+                break;
+
             ++ghostY;
+        }
 
         return ghostY;
     }
@@ -398,9 +459,7 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::Color hueColorFromPaletteIdx(const sf::base::SizeT paletteIdx, const sf::base::U8 alpha)
     {
-        const auto hueInc = 360.f / 7.f;
-        const auto hue    = sf::base::positiveRemainder(static_cast<float>(paletteIdx) * hueInc, 360.f);
-
+        const auto hue = sf::base::positiveRemainder(blockPalette[paletteIdx].toHSL().hue, 360.f);
         return hueColor(hue, 255u).withAlpha(alpha);
     }
 
@@ -412,13 +471,26 @@ private:
 
         if (options.applyYOffset)
         {
-            if (m_animationTimeline.isPlaying<AnimCollapseGrid>() && !m_rowYOffsets.empty())
-                yOffset = m_rowYOffsets[static_cast<sf::base::SizeT>(position.y / drawBlockSize.y)] *
-                          easeInBack(m_animationTimeline.getProgress());
+            if (!m_rowYOffsets.empty())
+            {
+                float progress = 0.f;
+
+                if (m_animationTimeline.isPlaying<AnimCollapseGrid>())
+                    progress = m_animationTimeline.getProgress();
+
+                const auto gridPos = toGridCoordinates(position);
+
+                if (gridPos.y >= 0 && static_cast<sf::base::SizeT>(gridPos.y) < m_rowYOffsets.size())
+                {
+                    const float initialOffset = m_rowYOffsets[static_cast<sf::base::SizeT>(gridPos.y)];
+                    yOffset += initialOffset * (1.f - easeInBack(progress));
+                }
+            }
         }
-        else
+
+        if (options.applyQuakeOffset)
         {
-            yOffset = -(m_quakeSinEffectHardDrop.getValue() + m_quakeSinEffectLineClear.getValue());
+            yOffset += -(m_quakeSinEffectHardDrop.getValue() + m_quakeSinEffectLineClear.getValue());
         }
 
         const auto alpha = static_cast<sf::base::U8>(options.opacity * 255.f);
@@ -432,27 +504,14 @@ private:
             finalSquishMult += easeInOutSine(bounce(progress)) * 0.5f;
         }
 
-        const auto color = hueColorFromPaletteIdx(block.paletteIdx, alpha);
-
-        //      test.position += sf::Vec2f{0.5f, 0.5f};
-        //      test.size + -= sf::Vec2f{0.5f, 0.5f};
-
-        //  const sf::Vec2f halfTexel{0.5f / m_textureAtlas.getTexture().getSize().x,
-        //                            0.5f / m_textureAtlas.getTexture().getSize().y};
-
-
-        auto test = m_txrBlock1;
-        // test.position += halfTexel;
-        // test.size += (halfTexel * 2.f); // Subtract a full texel from the size (half from top-left, half from bottom-right)
-
         m_rtGame.draw(
             sf::Sprite{
                 .position    = floorVec2(position.addY(yOffset)).addX(1.f).addY(1.f),
                 .scale       = sf::Vec2f{finalSquishMult, finalSquishMult} * options.scale,
                 .origin      = floorVec2(drawBlockSize / 2.f),
                 .rotation    = sf::degrees(options.rotation),
-                .textureRect = test,
-                .color       = color,
+                .textureRect = m_txrBlock1,
+                .color       = hueColorFromPaletteIdx(block.paletteIdx, alpha),
             },
             {
                 .texture = &m_textureAtlas.getTexture(),
@@ -523,9 +582,9 @@ private:
         for (sf::base::SizeT x = 0u; x < shapeDimension; ++x)
             for (sf::base::SizeT y = 0u; y < shapeDimension; ++y)
             {
-                const sf::base::Optional<Block>& blockOpt = shape[y * shapeDimension + x];
+                const sf::base::Optional<Block>& optBlock = shape[y * shapeDimension + x];
 
-                if (!blockOpt.hasValue())
+                if (!optBlock.hasValue())
                     continue;
 
                 // 2. Calculate this block's local center position, relative to the top-left corner.
@@ -543,7 +602,7 @@ private:
                 const sf::Vec2f finalDrawPosition = floorVec2(centerPosition + positionRelativeToPivot);
 
                 // 6. Call drawBlock, passing all the necessary transform properties.
-                drawBlock(*blockOpt,
+                drawBlock(*optBlock,
                           finalDrawPosition,
                           {
                               .opacity      = options.opacity,
@@ -687,7 +746,7 @@ private:
         if (!fullRows.empty())
             m_animationTimeline.add(AnimClearLines{
                 .rows       = fullRows,
-                .duration   = 0.3f,
+                .duration   = 0.01f,
                 .awardXP    = true,
                 .forceClear = false,
             });
@@ -695,35 +754,25 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::InPlaceVector<sf::Vec2uz, shapeDimension> findVerticalDrillBlocks() const
+    [[nodiscard]] sf::base::InPlaceVector<sf::Vec2uz, shapeDimension> findDrillBlocks(const Tetramino& tetramino,
+                                                                                      const DrillDirection::Enum direction) const
     {
-        auto downmostBlocksXY = findDownmostBlocks(m_world.currentTetramino->shape);
+        if (direction == DrillDirection::Down)
+        {
+            auto downmostBlocksXY = findDownmostBlocks(tetramino.shape);
 
-        if (downmostBlocksXY.size() > 1u && !m_world.perkVerticalDrill->multiHit)
-            return {};
+            if (downmostBlocksXY.size() > 1u && m_world.perkDrill[DrillDirection::Down]->coverage == 1u)
+                return {};
 
-        return downmostBlocksXY;
+            return downmostBlocksXY;
+        }
+
+        return findHorizontalBlocks(tetramino.shape, static_cast<sf::base::SizeT>(m_world.perkDrill[direction]->coverage));
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::InPlaceVector<sf::Vec2uz, shapeDimension> findHorizontalDrillLeftBlocks() const
-    {
-        return findHorizontalBlocks(m_world.currentTetramino->shape,
-                                    static_cast<sf::base::SizeT>(m_world.perkHorizontalDrillLeft->maxBlocks));
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::InPlaceVector<sf::Vec2uz, shapeDimension> findHorizontalDrillRightBlocks() const
-    {
-        return findHorizontalBlocks(m_world.currentTetramino->shape,
-                                    static_cast<sf::base::SizeT>(m_world.perkHorizontalDrillRight->maxBlocks));
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    struct [[nodiscard]] BlockAndPosition
+    struct [[nodiscard]] BlockAndPosition // NOLINT(cppcoreguidelines-pro-type-member-init)
     {
         Block*     block;
         sf::Vec2uz position;
@@ -731,38 +780,54 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::Vector<BlockAndPosition> findVerticalDrillTargetBlocks()
+    [[nodiscard]] sf::base::Vector<BlockAndPosition> findDrillTargetBlocks(const Tetramino&           tetramino,
+                                                                           const DrillDirection::Enum direction)
     {
         sf::base::Vector<BlockAndPosition> result;
 
-        auto nToHit = static_cast<sf::base::SizeT>(m_world.perkVerticalDrill->maxPenetration);
+        // 1. Guard Clause: Exit early if this drill perk isn't active.
+        if (!m_world.perkDrill[direction].hasValue())
+            return result;
 
-        for (const auto bPos : findVerticalDrillBlocks())
+        // 2. Get the number of blocks to penetrate.
+        auto nToHit = static_cast<sf::base::SizeT>(m_world.perkDrill[direction]->maxPenetration);
+        if (nToHit == 0)
+            return result;
+
+        // 3. Determine the iteration step based on direction.
+        const sf::Vec2i step = drillDirectionToVec2i(direction);
+
+        // 4. Iterate over the source blocks on the current tetramino.
+        for (const auto bPos : findDrillBlocks(tetramino, direction))
         {
-            const auto currPos = m_world.currentTetramino->position + bPos.toVec2i().addY(1);
+            // 5. Start probing from the block adjacent to the source block.
+            sf::Vec2i probePos = tetramino.position + bPos.toVec2i() + step;
 
-            if (currPos.y == static_cast<int>(m_world.blockGrid.getHeight()))
-                continue;
-
-            SFML_BASE_ASSERT(m_world.blockGrid.isInBounds(currPos));
-
-            for (auto y = currPos.y; y < static_cast<int>(m_world.blockGrid.getHeight()); ++y)
+            // 6. Traverse the grid in the given direction until we hit a boundary.
+            while (m_world.blockGrid.isInBounds(probePos))
             {
-                const auto blockPos = sf::Vec2i{currPos.x, y}.toVec2uz();
+                const auto blockGridPos = probePos.toVec2uz();
+                auto&      optBlock     = m_world.blockGrid.at(blockGridPos);
 
-                auto& optBlock = m_world.blockGrid.at(blockPos);
-
+                // If we hit empty space, the drill path is blocked.
                 if (!optBlock.hasValue())
                     break;
 
-                if (optBlock->health == 1u)
-                    continue;
+                // If the block is damageable (health > 1), add it to our list.
+                if (optBlock->health > 1u)
+                {
+                    result.pushBack({optBlock.asPtr(), blockGridPos});
+                    if (--nToHit == 0u)
+                        break; // Stop probing if we've reached the penetration limit.
+                }
 
-                result.pushBack({optBlock.asPtr(), blockPos});
-
-                if (--nToHit == 0u)
-                    break;
+                // Move to the next block in the line.
+                probePos += step;
             }
+
+            // If we've found all the blocks we can hit, we can stop checking other source blocks.
+            if (nToHit == 0u)
+                break;
         }
 
         return result;
@@ -770,94 +835,24 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::Vector<BlockAndPosition> findHorizontalDrillTargetBlocksLeft()
+    void embedTetraminoAndClearLines(const Tetramino& tetramino)
     {
-        sf::base::Vector<BlockAndPosition> result;
-
-        auto nToHitLeft = static_cast<sf::base::SizeT>(m_world.perkHorizontalDrillLeft->maxPenetration);
-
-        for (const auto bPos : findHorizontalDrillLeftBlocks())
-        {
-            const auto currPos = m_world.currentTetramino->position + bPos.toVec2i();
-
-            for (auto x = currPos.x - 1; x >= 0; --x)
-            {
-                const auto blockPos = sf::Vec2i{x, currPos.y}.toVec2uz();
-                auto&      optBlock = m_world.blockGrid.at(blockPos);
-
-                if (!optBlock.hasValue())
-                    break;
-
-                if (optBlock->health == 1u)
-                    continue;
-
-                result.pushBack({optBlock.asPtr(), blockPos});
-
-                if (--nToHitLeft == 0u)
-                    break;
-            }
-        }
-
-        return result;
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::Vector<BlockAndPosition> findHorizontalDrillTargetBlocksRight()
-    {
-        sf::base::Vector<BlockAndPosition> result;
-
-        auto nToHitRight = static_cast<sf::base::SizeT>(m_world.perkHorizontalDrillRight->maxPenetration);
-
-        for (const auto bPos : findHorizontalDrillRightBlocks())
-        {
-            const auto currPos = m_world.currentTetramino->position + bPos.toVec2i();
-
-            for (auto x = currPos.x + 1; x < static_cast<int>(m_world.blockGrid.getWidth()); ++x)
-            {
-                const auto blockPos = sf::Vec2i{x, currPos.y}.toVec2uz();
-                auto&      optBlock = m_world.blockGrid.at(blockPos);
-
-                if (!optBlock.hasValue())
-                    break;
-
-                if (optBlock->health == 1u)
-                    continue;
-
-                result.pushBack({optBlock.asPtr(), blockPos});
-
-                if (--nToHitRight == 0u)
-                    break;
-            }
-        }
-
-        return result;
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    void embedCurrentTetraminoAndClearLines()
-    {
-        SFML_BASE_ASSERT(m_world.currentTetramino.hasValue());
-
         if (m_world.perkXPPerTetraminoPlaced > 0)
         {
             addXP(static_cast<sf::base::U64>(m_world.perkXPPerTetraminoPlaced));
 
-            const auto downmostBlocksXY = findDownmostBlocks(m_world.currentTetramino->shape);
+            const auto downmostBlocksXY = findDownmostBlocks(tetramino.shape);
 
             for (const auto& bPos : downmostBlocksXY)
             {
-                const sf::base::Optional<Block>& blockOpt = m_world.currentTetramino->shape[bPos.y * shapeDimension + bPos.x];
-                SFML_BASE_ASSERT(blockOpt.hasValue());
+                const sf::base::Optional<Block>& optBlock = tetramino.shape[bPos.y * shapeDimension + bPos.x];
+                SFML_BASE_ASSERT(optBlock.hasValue());
 
-                spawnXPEarnedParticle(toDrawCoordinates(m_world.currentTetramino->position + bPos.toVec2i()),
-                                      blockOpt->paletteIdx);
+                spawnXPEarnedParticle(toDrawCoordinates(tetramino.position + bPos.toVec2i()), optBlock->paletteIdx);
             }
         }
 
-        m_world.blockGrid.embedTetramino(*m_world.currentTetramino);
-        m_world.currentTetramino.reset();
+        m_world.blockGrid.embedTetramino(tetramino);
         m_world.graceDropMoves = 0u;
 
         ++m_world.tetaminosPlaced;
@@ -884,7 +879,7 @@ private:
                 // Delete bottom line
                 m_animationTimeline.add(AnimClearLines{
                     .rows       = {m_world.blockGrid.getHeight() - 1u},
-                    .duration   = 0.3f,
+                    .duration   = 0.01f,
                     .awardXP    = false,
                     .forceClear = true,
                 });
@@ -921,6 +916,17 @@ private:
     /////////////////////////////////////////////////////////////
     void handleKeyPressedEvent(const sf::Event::KeyPressed& eKeyPressed)
     {
+        const bool inMenu = m_inLevelUpScreen;
+
+        if (inMenu)
+            return;
+
+        const bool inAnimation = (m_animationTimeline.anyAnimationPlaying() &&
+                                  !m_animationTimeline.isPlaying<AnimFadeBlocks>() &&
+                                  !m_animationTimeline.isPlaying<AnimCollapseGrid>()) ||
+                                 m_animationTimeline.isEnqueued<AnimHardDrop>() ||
+                                 m_animationTimeline.isEnqueued<AnimSquish>();
+
         if (eKeyPressed.code == sf::Keyboard::Key::Right)
         {
             moveCurrentTetraminoBy({1, 0});
@@ -929,6 +935,12 @@ private:
 
         if (eKeyPressed.code == sf::Keyboard::Key::Down)
         {
+            if (inAnimation)
+            {
+                playSound(m_sbError, 0.75f);
+                return;
+            }
+
             moveCurrentTetraminoBy({0, 1});
             return;
         }
@@ -959,18 +971,35 @@ private:
 
         if (eKeyPressed.code == sf::Keyboard::Key::Space)
         {
+            if (inAnimation)
+            {
+                playSound(m_sbError, 1.f);
+                return;
+            }
+
             const int endY = calculateGhostY(*m_world.currentTetramino);
 
             m_animationTimeline.add(AnimHardDrop{
-                .duration = 0.15f,
-                .endY     = endY,
+                .tetramino = *m_world.currentTetramino,
+                .duration  = 0.125f,
+                .endY      = endY,
             });
+
+            m_world.currentTetramino.reset();
+            initializeCurrentTetraminoFromBag();
+            m_world.holdUsedThisTurn = false;
 
             return;
         }
 
         if (eKeyPressed.code == sf::Keyboard::Key::LShift)
         {
+            if (inAnimation)
+            {
+                playSound(m_sbError, 0.75f);
+                return;
+            }
+
             if (m_world.perkCanHoldTetramino == 1)
                 holdCurrentTetramino();
             else if (m_world.perkCanHoldTetramino == 2)
@@ -981,6 +1010,12 @@ private:
 
         if (eKeyPressed.code == sf::Keyboard::Key::R)
         {
+            if (inAnimation)
+            {
+                playSound(m_sbError, 0.75f);
+                return;
+            }
+
             // Restart the game
             m_world = World{};
             return;
@@ -1015,7 +1050,6 @@ private:
         });
 
         m_currentTetraminoVisualCenter = toDrawCoordinates(m_world.currentTetramino->position);
-        m_squishMult                   = 0.f;
     }
 
 
@@ -1032,11 +1066,8 @@ private:
             if (handlePixelPerfectResize(*event, resolution, m_window))
                 continue;
 
-            if (isInPlayableState())
-            {
-                if (auto* eKeyPressed = event->getIf<sf::Event::KeyPressed>())
-                    handleKeyPressedEvent(*eKeyPressed);
-            }
+            if (auto* eKeyPressed = event->getIf<sf::Event::KeyPressed>())
+                handleKeyPressedEvent(*eKeyPressed);
         }
 
         return ControlFlow::Continue;
@@ -1069,8 +1100,8 @@ private:
     {
         m_perkIndicesSelectedThisLevel.clear();
 
-        for (sf::base::SizeT i = 0u; i < m_perkSelectors.size(); ++i)
-            if (m_perkSelectors[i].fnPrerequisites())
+        for (sf::base::SizeT i = 0u; i < m_perks.size(); ++i)
+            if (m_perks[i]->meetsPrerequisites(m_world))
                 m_perkIndicesSelectedThisLevel.pushBack(i);
 
         while (m_perkIndicesSelectedThisLevel.size() > 4u)
@@ -1163,13 +1194,14 @@ private:
                 .action =
                     [this, blockInfo]
             {
-                m_lightningBolts.emplaceBack(m_rngFast,
-                                             sf::Vec2f{m_rngFast.getF(0.f, 400.f), 0.f},
-                                             toDrawCoordinates(blockInfo.position));
+                m_lightningBolts
+                    .emplaceBack(m_rngFast,
+                                 sf::Vec2f{9.f + m_rngFast.getF(0.f, drawBlockSize.x * m_world.blockGrid.getWidth()), 0.f},
+                                 toDrawCoordinates(blockInfo.position));
 
                 for (int i = 0; i < 16; ++i)
                 {
-                    m_circleShapeParticles.emplaceBack(ParticleData{
+                    m_fixedColorCircleShapeParticles.emplaceBack(ParticleData{
                         .position      = toDrawCoordinates(blockInfo.position),
                         .velocity      = m_rngFast.getVec2f({-0.75f, -2.15f}, {0.75f, -0.25f}) * 0.25f,
                         .scale         = m_rngFast.getF(0.08f, 0.27f) * 0.75f,
@@ -1184,7 +1216,7 @@ private:
                         .pointCount    = 5u,
                     });
 
-                    m_circleShapeParticles.emplaceBack(ParticleData{
+                    m_fixedColorCircleShapeParticles.emplaceBack(ParticleData{
                         .position      = toDrawCoordinates(blockInfo.position),
                         .velocity      = m_rngFast.getVec2f({-0.75f, -2.15f}, {0.75f, -0.25f}) * 0.075f,
                         .scale         = m_rngFast.getF(0.08f, 0.27f) * 0.25f,
@@ -1267,20 +1299,19 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    void updateStepInterpolateVisualTetraminoPosition(const sf::Time deltaTime)
+    void updateStepInterpolateVisualTetraminoPosition(const sf::base::Optional<Tetramino>& optTetramino,
+                                                      sf::Vec2f&                           visualCenter,
+                                                      const sf::Time                       deltaTime)
     {
-        if (!m_world.currentTetramino.hasValue())
+        if (!optTetramino.hasValue())
             return;
 
-        const sf::Vec2f targetPosition = getTetraminoCenterDrawPosition(m_world.currentTetramino->position);
+        const sf::Vec2f targetPosition = getTetraminoCenterDrawPosition(optTetramino->position);
 
         const float interpolationSpeed = 50.f;
         const auto  deltaTimeMs        = static_cast<float>(deltaTime.asMicroseconds()) / 1000.f;
 
-        m_currentTetraminoVisualCenter = exponentialApproach(m_currentTetraminoVisualCenter,
-                                                             targetPosition,
-                                                             deltaTimeMs,
-                                                             interpolationSpeed);
+        visualCenter = exponentialApproach(visualCenter, targetPosition, deltaTimeMs, interpolationSpeed);
     }
 
 
@@ -1290,29 +1321,26 @@ private:
         if (m_inLevelUpScreen || !m_animationTimeline.anyAnimationPlaying())
             return;
 
-        const bool justStarted = m_animationTimeline.timeOnCurrentCommand == 0.f;
-
-        m_animationTimeline.timeOnCurrentCommand += deltaTime.asSeconds();
-
         auto& cmd = m_animationTimeline.commands.front();
 
-        updateAnimWait(cmd, justStarted);
-        updateAnimHardDrop(cmd, justStarted);
-        updateAnimSquish(cmd, justStarted);
-        updateAnimEmbed(cmd, justStarted);
-        updateAnimClearLines(cmd, justStarted);
-        updateAnimFadeBlocks(cmd, justStarted);
-        updateAnimCollapseGrid(cmd, justStarted);
-        updateAnimVerticalDrill(cmd, justStarted);
-        updateAnimHorizontalDrillLeft(cmd, justStarted);
-        updateAnimHorizontalDrillRight(cmd, justStarted);
-        updateAnimColumnClear(cmd, justStarted);
-        updateAnimAction(cmd, justStarted);
+        updateAnimWait(cmd);
+        updateAnimHardDrop(cmd);
+        updateAnimSquish(cmd);
+        updateAnimClearLines(cmd);
+        updateAnimFadeBlocks(cmd);
+        updateAnimCollapseGrid(cmd);
+        updateAnimDrill(DrillDirection::Left, cmd);
+        updateAnimDrill(DrillDirection::Right, cmd);
+        updateAnimDrill(DrillDirection::Down, cmd);
+        updateAnimColumnClear(cmd);
+        updateAnimAction(cmd);
+
+        m_animationTimeline.timeOnCurrentCommand += deltaTime.asSeconds();
     }
 
 
     /////////////////////////////////////////////////////////////
-    void updateAnimWait(AnimationCommand& cmd, [[maybe_unused]] const bool justStarted)
+    void updateAnimWait(AnimationCommand& cmd)
     {
         auto* wait = cmd.getIf<AnimWait>();
 
@@ -1324,127 +1352,68 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    void updateAnimHardDrop(AnimationCommand& cmd, [[maybe_unused]] const bool justStarted)
+    void updateAnimHardDrop(AnimationCommand& cmd)
     {
         auto* hardDrop = cmd.getIf<AnimHardDrop>();
 
-        if (hardDrop == nullptr)
+        if (hardDrop == nullptr || m_animationTimeline.getProgress() < 1.f)
             return;
 
-        SFML_BASE_ASSERT(m_world.currentTetramino.hasValue());
+        hardDrop->tetramino.position.y = hardDrop->endY;
 
-        const float progress = m_animationTimeline.getProgress();
-
-        const float targetVisualY = toDrawCoordinates(m_world.currentTetramino->position.withY(hardDrop->endY)).y +
-                                    drawBlockSize.y / 2.f;
-
-        const float startVisualY = toDrawCoordinates(m_world.currentTetramino->position).y + drawBlockSize.y * 2.f;
-
-        m_currentTetraminoVisualCenter.y = startVisualY + (targetVisualY - startVisualY) * easeInBack(progress);
-
-        if (progress < 1.f)
-            return;
-
-        m_world.currentTetramino->position.y = hardDrop->endY;
-
-        m_animationTimeline.popFrontCommand();
         m_animationTimeline.add(AnimSquish{
-            .duration = 0.1f,
+            .tetramino = hardDrop->tetramino,
+            .duration  = 0.15f,
         });
 
-        m_quakeSinEffectHardDrop.start(6.f, 4.f);
+        m_quakeSinEffectHardDrop.start(4.f, 4.f);
 
         playSound(m_sbLanded);
+
+        m_animationTimeline.popFrontCommand();
     }
 
 
     /////////////////////////////////////////////////////////////
-    void updateAnimSquish(AnimationCommand& cmd, [[maybe_unused]] const bool justStarted)
+    void updateAnimSquish(AnimationCommand& cmd)
     {
         auto* squish = cmd.getIf<AnimSquish>();
 
         if (squish == nullptr)
             return;
 
-        SFML_BASE_ASSERT(m_world.currentTetramino.hasValue());
-
-        const float progress = m_animationTimeline.getProgress();
-
-        m_squishMult = easeInOutSine(bounce(progress)) * 0.5f;
-
-        if (progress < 1.f)
+        if (m_animationTimeline.getProgress() < 1.f)
             return;
 
-        if (m_world.perkVerticalDrill.hasValue() && !findVerticalDrillTargetBlocks().empty())
+        const auto processDrill = [&](const DrillDirection::Enum direction)
         {
+            if (!m_world.perkDrill[direction].hasValue() || findDrillTargetBlocks(squish->tetramino, direction).empty())
+                return;
+
             int maxDrilledBlocks = 0;
 
-            for (const auto bPos : findVerticalDrillBlocks())
+            for (const auto bPos : findDrillBlocks(squish->tetramino, direction))
             {
-                const auto startPos                   = m_world.currentTetramino->position + bPos.toVec2i();
-                const auto [nDrillableBlocks, endPos] = countDrillableBlocks(startPos, DrillDirection::Down);
+                const auto startPos                   = squish->tetramino.position + bPos.toVec2i();
+                const auto [nDrillableBlocks, endPos] = countDrillableBlocks(startPos, direction);
 
                 maxDrilledBlocks = sf::base::max(maxDrilledBlocks, nDrillableBlocks);
             }
 
-            m_animationTimeline.add(AnimVerticalDrill{
-                .duration = 0.3f + (0.1f * static_cast<float>(maxDrilledBlocks)),
+            m_animationTimeline.add(AnimDrill{
+                .tetramino = squish->tetramino,
+                .direction = direction,
+                .duration  = 0.3f + (0.1f * static_cast<float>(maxDrilledBlocks)),
             });
-        }
+        };
 
-        if (m_world.perkHorizontalDrillLeft.hasValue() && !findHorizontalDrillTargetBlocksLeft().empty())
-        {
-            int maxDrilledBlocks = 0;
+        processDrill(DrillDirection::Down);
+        processDrill(DrillDirection::Left);
+        processDrill(DrillDirection::Right);
 
-            for (const auto bPos : findHorizontalDrillLeftBlocks())
-            {
-                const auto startPos                   = m_world.currentTetramino->position + bPos.toVec2i();
-                const auto [nDrillableBlocks, endPos] = countDrillableBlocks(startPos, DrillDirection::Left);
-
-                maxDrilledBlocks = sf::base::max(maxDrilledBlocks, nDrillableBlocks);
-            }
-
-            m_animationTimeline.add(AnimHorizontalDrillLeft{
-                .duration = 0.3f + (0.1f * static_cast<float>(maxDrilledBlocks)),
-            });
-        }
-
-        if (m_world.perkHorizontalDrillRight.hasValue() && !findHorizontalDrillTargetBlocksRight().empty())
-        {
-            int maxDrilledBlocks = 0;
-
-            for (const auto bPos : findHorizontalDrillRightBlocks())
-            {
-                const auto startPos                   = m_world.currentTetramino->position + bPos.toVec2i();
-                const auto [nDrillableBlocks, endPos] = countDrillableBlocks(startPos, DrillDirection::Right);
-
-                maxDrilledBlocks = sf::base::max(maxDrilledBlocks, nDrillableBlocks);
-            }
-
-            m_animationTimeline.add(AnimHorizontalDrillRight{
-                .duration = 0.3f + (0.1f * static_cast<float>(maxDrilledBlocks)),
-            });
-        }
-
-        m_animationTimeline.add(AnimEmbed{
-            .duration = 0.01f,
-        });
+        embedTetraminoAndClearLines(squish->tetramino);
 
         m_animationTimeline.popFrontCommand();
-    }
-
-
-    /////////////////////////////////////////////////////////////
-    void updateAnimEmbed(AnimationCommand& cmd, [[maybe_unused]] const bool justStarted)
-    {
-        auto* embed = cmd.getIf<AnimEmbed>();
-
-        if (embed == nullptr || m_animationTimeline.getProgress() < 1.f)
-            return;
-
-        m_animationTimeline.popFrontCommand();
-
-        embedCurrentTetraminoAndClearLines();
     }
 
 
@@ -1459,7 +1428,7 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    void updateAnimClearLines(AnimationCommand& cmd, [[maybe_unused]] const bool justStarted)
+    void updateAnimClearLines(AnimationCommand& cmd)
     {
         auto* clearLines = cmd.getIf<AnimClearLines>();
 
@@ -1482,34 +1451,34 @@ private:
 
             for (sf::base::SizeT x = 0u; x < m_world.blockGrid.getWidth(); ++x)
             {
-                if (auto& blockOpt = m_world.blockGrid.at(sf::Vec2uz{x, y}); blockOpt.hasValue())
+                if (auto& optBlock = m_world.blockGrid.at(sf::Vec2uz{x, y}); optBlock.hasValue())
                 {
                     // TODO: powerup
-                    if (!clearLines->forceClear && blockOpt->health > 1u)
+                    if (!clearLines->forceClear && optBlock->health > 1u)
                     {
-                        damageBlock(sf::Vec2uz{x, y}, *blockOpt);
+                        damageBlock(sf::Vec2uz{x, y}, *optBlock);
                         rowIsFullyCleared = false;
                     }
                     else
                     {
                         fadingBlocks.pushBack(AnimFadeBlocks::FadingBlock{
-                            .block    = *blockOpt,
+                            .block    = *optBlock,
                             .position = sf::Vec2uz{x, y},
                         });
 
-                        if (blockOpt->powerup == BlockPowerup::XPBonus)
+                        if (optBlock->powerup == BlockPowerup::XPBonus)
                         {
                             addXP(5u * m_world.playerLevel);
                             playSound(m_sbBonus, 0.5f);
 
-                            spawnXPEarnedParticle(toDrawCoordinates(sf::Vec2uz{x, y}), blockOpt->paletteIdx);
+                            spawnXPEarnedParticle(toDrawCoordinates(sf::Vec2uz{x, y}), optBlock->paletteIdx);
                         }
-                        else if (blockOpt->powerup == BlockPowerup::ColumnDrill)
+                        else if (optBlock->powerup == BlockPowerup::ColumnDrill)
                         {
                             columnClearPositions.emplaceBack(x, y);
                             playSound(m_sbBonus, 0.5f);
                         }
-                        else if (blockOpt->powerup == BlockPowerup::ThreeRowDrill)
+                        else if (optBlock->powerup == BlockPowerup::ThreeRowDrill)
                         {
                             addRowIfNotExistent(y);
 
@@ -1522,7 +1491,7 @@ private:
                             playSound(m_sbBonus, 0.5f);
                         }
 
-                        blockOpt.reset();
+                        optBlock.reset();
                     }
                 }
             }
@@ -1535,7 +1504,7 @@ private:
         {
             m_animationTimeline.add(AnimFadeBlocks{
                 .fadingBlocks = fadingBlocks,
-                .duration     = clearLines->duration,
+                .duration     = 0.15f,
             });
         }
 
@@ -1586,9 +1555,47 @@ private:
                                 trulyClearedRows.end(),
                                 [](const sf::base::SizeT a, const sf::base::SizeT b) { return a < b; });
 
+            trulyClearedRows.erase(sf::base::unique(trulyClearedRows.begin(), trulyClearedRows.end()),
+                                   trulyClearedRows.end());
+
+            const auto height = m_world.blockGrid.getHeight();
+            m_rowYOffsets.resize(height);
+
+            for (sf::base::SizeT y = 0u; y < height; ++y)
+                m_rowYOffsets[y] = 0.f;
+
+            sf::base::SizeT dropAmount = 0;
+
+            // Iterate from the bottom of the grid upwards to calculate offsets.
+            // This calculates the correct offset for each row's FINAL position.
+            for (int y = static_cast<int>(height) - 1; y >= 0; --y)
+            {
+                // Check if the current row 'y' (from the original grid) is being cleared.
+                const bool isCleared = sf::base::find(trulyClearedRows.begin(),
+                                                      trulyClearedRows.end(),
+                                                      static_cast<sf::base::SizeT>(y)) != trulyClearedRows.end();
+
+                if (isCleared)
+                {
+                    // If it is, increment the number of lines that rows above this one must drop.
+                    ++dropAmount;
+                }
+                else if (dropAmount > 0)
+                {
+                    // If this row is being kept, the row that lands at its *new* position
+                    // (which is y + dropAmount) needs an initial offset.
+                    const sf::base::SizeT finalY = static_cast<sf::base::SizeT>(y) + dropAmount;
+                    if (finalY < height)
+                        m_rowYOffsets[finalY] = -static_cast<float>(dropAmount) * drawBlockSize.y;
+                }
+            }
+
+            for (const auto rowIndex : trulyClearedRows)
+                m_world.blockGrid.shiftRowDown(rowIndex);
+
             m_animationTimeline.add(AnimCollapseGrid{
                 .clearedRows = trulyClearedRows,
-                .duration    = 0.1f,
+                .duration    = 0.15f,
             });
 
             // Random block hit perk
@@ -1631,7 +1638,7 @@ private:
         {
             m_animationTimeline.add(AnimColumnClear{
                 .position = columnClearPos.addY(1),
-                .duration = clearLines->duration,
+                .duration = 0.3f,
             });
         }
 
@@ -1640,7 +1647,7 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    void updateAnimFadeBlocks(AnimationCommand& cmd, [[maybe_unused]] const bool justStarted)
+    void updateAnimFadeBlocks(AnimationCommand& cmd)
     {
         auto* fadeBlocks = cmd.getIf<AnimFadeBlocks>();
 
@@ -1652,7 +1659,7 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    void updateAnimCollapseGrid(AnimationCommand& cmd, [[maybe_unused]] const bool justStarted)
+    void updateAnimCollapseGrid(AnimationCommand& cmd)
     {
         auto* collapseGrid = cmd.getIf<AnimCollapseGrid>();
 
@@ -1661,47 +1668,24 @@ private:
 
         if (m_animationTimeline.getProgress() >= 1.f)
         {
-            for (const auto rowIndex : collapseGrid->clearedRows)
-                m_world.blockGrid.shiftRowDown(rowIndex);
+            for (auto& rowOffset : m_rowYOffsets)
+                rowOffset = 0.f;
 
             m_animationTimeline.popFrontCommand();
-
             return;
         }
-
-        const auto height = m_world.blockGrid.getHeight();
-
-        m_rowYOffsets.resize(height);
-
-        for (sf::base::SizeT y = 0u; y < height; ++y)
-            m_rowYOffsets[y] = 0.f;
-
-        int clearedCount = 0;
-
-        // iterate in reverse
-        for (int y = static_cast<int>(height) - 1; y >= static_cast<int>(gridGraceY); --y)
-        {
-            const bool wasCleared = sf::base::find(collapseGrid->clearedRows.begin(),
-                                                   collapseGrid->clearedRows.end(),
-                                                   static_cast<sf::base::SizeT>(y)) != collapseGrid->clearedRows.end();
-
-            if (wasCleared)
-                ++clearedCount;
-            else if (clearedCount > 0)
-                m_rowYOffsets[static_cast<sf::base::SizeT>(y)] = static_cast<float>(clearedCount) * drawBlockSize.y;
-        }
     }
 
 
     /////////////////////////////////////////////////////////////
-    void updateAnimVerticalDrill(AnimationCommand& cmd, [[maybe_unused]] const bool justStarted)
+    void updateAnimDrill(DrillDirection::Enum direction, AnimationCommand& cmd)
     {
-        auto* verticalDrill = cmd.getIf<AnimVerticalDrill>();
+        auto* drill = cmd.getIf<AnimDrill>();
 
-        if (verticalDrill == nullptr)
+        if (drill == nullptr || drill->direction != direction)
             return;
 
-        if (justStarted)
+        if (m_animationTimeline.justStarted())
             playSound(m_sbDrill, 0.75f);
 
         m_screenShakeAmount = 0.85f;
@@ -1710,63 +1694,15 @@ private:
         if (m_animationTimeline.getProgress() < 1.f)
             return;
 
-        m_animationTimeline.popFrontCommand();
-
-        for (auto [blockPtr, position] : findVerticalDrillTargetBlocks())
+        for (auto [blockPtr, position] : findDrillTargetBlocks(drill->tetramino, direction))
             damageBlock(position, *blockPtr);
+
+        m_animationTimeline.popFrontCommand();
     }
 
 
     /////////////////////////////////////////////////////////////
-    void updateAnimHorizontalDrillLeft(AnimationCommand& cmd, [[maybe_unused]] const bool justStarted)
-    {
-        auto* horizontalDrillLeft = cmd.getIf<AnimHorizontalDrillLeft>();
-
-        if (horizontalDrillLeft == nullptr)
-            return;
-
-        if (justStarted)
-            playSound(m_sbDrill, 0.75f);
-
-        m_screenShakeAmount = 0.85f;
-        m_screenShakeTimer  = 0.05f;
-
-        if (m_animationTimeline.getProgress() < 1.f)
-            return;
-
-        m_animationTimeline.popFrontCommand();
-
-        for (auto [blockPtr, position] : findHorizontalDrillTargetBlocksLeft())
-            damageBlock(position, *blockPtr);
-    }
-
-
-    /////////////////////////////////////////////////////////////
-    void updateAnimHorizontalDrillRight(AnimationCommand& cmd, [[maybe_unused]] const bool justStarted)
-    {
-        auto* horizontalDrillRight = cmd.getIf<AnimHorizontalDrillRight>();
-
-        if (horizontalDrillRight == nullptr)
-            return;
-
-        if (justStarted)
-            playSound(m_sbDrill, 0.75f);
-
-        m_screenShakeAmount = 0.85f;
-        m_screenShakeTimer  = 0.05f;
-
-        if (m_animationTimeline.getProgress() < 1.f)
-            return;
-
-        m_animationTimeline.popFrontCommand();
-
-        for (auto [blockPtr, position] : findHorizontalDrillTargetBlocksRight())
-            damageBlock(position, *blockPtr);
-    }
-
-
-    /////////////////////////////////////////////////////////////
-    void updateAnimColumnClear(AnimationCommand& cmd, [[maybe_unused]] const bool justStarted)
+    void updateAnimColumnClear(AnimationCommand& cmd)
     {
         auto* columnClear = cmd.getIf<AnimColumnClear>();
 
@@ -1776,20 +1712,20 @@ private:
         sf::base::Vector<AnimFadeBlocks::FadingBlock> fadingBlocks;
 
         for (sf::base::SizeT y = columnClear->position.y; y < m_world.blockGrid.getHeight(); ++y)
-            if (auto& blockOpt = m_world.blockGrid.at(sf::Vec2uz{columnClear->position.x, y}); blockOpt.hasValue())
+            if (auto& optBlock = m_world.blockGrid.at(sf::Vec2uz{columnClear->position.x, y}); optBlock.hasValue())
             {
                 fadingBlocks.pushBack(AnimFadeBlocks::FadingBlock{
-                    .block    = *blockOpt,
+                    .block    = *optBlock,
                     .position = sf::Vec2uz{columnClear->position.x, y},
                 });
 
-                blockOpt.reset();
+                optBlock.reset();
             }
 
         if (!fadingBlocks.empty())
             m_animationTimeline.add(AnimFadeBlocks{
                 .fadingBlocks = fadingBlocks,
-                .duration     = 0.2f,
+                .duration     = 0.15f,
             });
 
         m_animationTimeline.popFrontCommand();
@@ -1797,7 +1733,7 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    void updateAnimAction(AnimationCommand& cmd, [[maybe_unused]] const bool justStarted)
+    void updateAnimAction(AnimationCommand& cmd)
     {
         auto* action = cmd.getIf<AnimAction>();
 
@@ -1848,11 +1784,11 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    void updateStepCircleDataParticles(const sf::Time deltaTime)
+    void updateStepCircleDataParticles(auto& vec, const sf::Time deltaTime)
     {
         const auto deltaTimeMs = static_cast<float>(deltaTime.asMicroseconds()) / 1000.f;
 
-        for (auto& p : m_circleShapeParticles)
+        for (auto& p : vec)
         {
             p.velocity.y += p.accelerationY * deltaTimeMs;
             p.position += p.velocity * deltaTimeMs;
@@ -1864,9 +1800,7 @@ private:
             p.scale   = sf::base::max(p.scale - p.scaleDecay * deltaTimeMs, 0.f);
         }
 
-        sf::base::vectorEraseIf(m_circleShapeParticles, [](const auto& particleLike) {
-            return particleLike.opacity <= 0.f;
-        });
+        sf::base::vectorEraseIf(vec, [](const auto& particleLike) { return particleLike.opacity <= 0.f; });
     }
 
 
@@ -1953,7 +1887,8 @@ private:
                             ++m_world.graceDropMoves;
                         else
                         {
-                            embedCurrentTetraminoAndClearLines();
+                            embedTetraminoAndClearLines(*m_world.currentTetramino);
+                            m_world.currentTetramino.reset();
                             playSound(m_sbPlace, 0.5f);
                         }
                     }
@@ -1996,11 +1931,12 @@ private:
         updateStepQuakeEffect(deltaTime);
         updateStepScreenShake(deltaTime);
         updateStepShowLevelUpScreenIfNeeded();
-        updateStepInterpolateVisualTetraminoPosition(deltaTime);
+        updateStepInterpolateVisualTetraminoPosition(m_world.currentTetramino, m_currentTetraminoVisualCenter, deltaTime);
         updateStepAnimations(deltaTime);
         updateStepBlockEffects(deltaTime);
         updateStepEarnedXPParticles(deltaTime);
-        updateStepCircleDataParticles(deltaTime);
+        updateStepCircleDataParticles(m_hueColorCircleShapeParticles, deltaTime);
+        updateStepCircleDataParticles(m_fixedColorCircleShapeParticles, deltaTime);
 
         if (isInPlayableState())
         {
@@ -2022,288 +1958,10 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    struct [[nodiscard]] PerkSelector
-    {
-        sf::base::FixedFunction<std::string(), 32> fnName;
-        sf::base::FixedFunction<std::string(), 32> fnDescription;
-        sf::base::FixedFunction<bool(), 32>        fnPrerequisites;
-        sf::base::FixedFunction<void(), 32>        fnApply;
-    };
-
-
-    /////////////////////////////////////////////////////////////
     [[nodiscard]] std::string makeTitle(const std::string& prefix, const auto& value, const auto inc)
     {
         return prefix + " (" + std::to_string(value) + " -> " + std::to_string(value + inc) + ")";
     }
-
-
-    /////////////////////////////////////////////////////////////
-    sf::base::Vector<PerkSelector> m_perkSelectors = {
-
-        /////////////////////////////////////////////////////////////
-        {
-            .fnName = [&] { return makeTitle("Chain Lightning", m_world.perkChainLightning, 10); },
-            .fnDescription =
-                [&]
-    {
-        return std::string{"Each time lightning strikes, add a " + std::to_string(m_world.perkChainLightning + 10) +
-                           "% chance to hit an additional block."};
-    },
-            .fnPrerequisites =
-                [&]
-    {
-        return (m_world.perkRndHitPerNTetraminos.hasValue() || m_world.perkRndHitOnClear > 0) &&
-               m_world.perkChainLightning < 60;
-    },
-            .fnApply = [&] { m_world.perkChainLightning += 10; },
-        },
-
-        /////////////////////////////////////////////////////////////
-        {
-            .fnName        = [&] { return makeTitle("Peek Next Tetraminos", m_world.perkNPeek, 1); },
-            .fnDescription = [&]
-    { return std::string{"See the next " + std::to_string(m_world.perkNPeek + 1) + " upcoming tetraminos."}; },
-            .fnPrerequisites = [&] { return m_world.perkNPeek < 3; },
-            .fnApply         = [&] { ++m_world.perkNPeek; },
-        },
-
-        /////////////////////////////////////////////////////////////
-        {
-            .fnName = [&] { return makeTitle("On-Clear Lightning Strike", m_world.perkRndHitOnClear, 1); },
-            .fnDescription =
-                [&]
-    {
-        return std::string{"Each time you full-clear a line or more, randomly damage " +
-                           std::to_string(m_world.perkRndHitOnClear + 1) + " block(s) with a lightning strike."};
-    },
-            .fnPrerequisites = [&] { return true; },
-            .fnApply         = [&] { ++m_world.perkRndHitOnClear; },
-        },
-
-        /////////////////////////////////////////////////////////////
-        {
-            .fnName        = [&] { return "Hard-Drop Drill"; },
-            .fnDescription = [&]
-    { return "When hard dropping, automatically damage blocks directly connected below the tetramino's sharp edges."; },
-            .fnPrerequisites = [&] { return !m_world.perkVerticalDrill.hasValue(); },
-            .fnApply         = [&] { m_world.perkVerticalDrill.emplace(); },
-        },
-
-        /////////////////////////////////////////////////////////////
-        {
-            .fnName = [&]
-    { return makeTitle("Hard-Drop Drill - Penetration", m_world.perkVerticalDrill->maxPenetration, 1); },
-            .fnDescription =
-                [&]
-    {
-        return std::string{"Increase the maximum number of blocks damaged to "} +
-               std::to_string(m_world.perkVerticalDrill->maxPenetration + 1) + ".";
-    },
-            .fnPrerequisites = [&]
-    { return m_world.perkVerticalDrill.hasValue() && m_world.perkVerticalDrill->maxPenetration < 10; },
-            .fnApply = [&] { ++m_world.perkVerticalDrill->maxPenetration; },
-        },
-
-        /////////////////////////////////////////////////////////////
-        {
-            .fnName        = [&] { return "Hard-Drop Drill - Blunt Force"; },
-            .fnDescription = [&] { return "The entire surface of the tetramino acts as a drill when hard-dropping."; },
-            .fnPrerequisites = [&]
-    { return m_world.perkVerticalDrill.hasValue() && !m_world.perkVerticalDrill->multiHit; },
-            .fnApply = [&] { m_world.perkVerticalDrill->multiHit = true; },
-        },
-
-        /////////////////////////////////////////////////////////////
-        {
-            .fnName =
-                [&]
-    {
-        if (m_world.perkCanHoldTetramino == 0)
-            return "Hold Tetramino";
-
-        return "Skip Tetramino (Hold -> Skip)";
-    },
-            .fnDescription =
-                [&]
-    {
-        if (m_world.perkCanHoldTetramino == 0)
-            return "Gain the ability to hold your current tetramino. Can later be updated to skip a tetramino.";
-
-        return "Gain the ability to completely skip your current tetramino.";
-    },
-            .fnPrerequisites = [&] { return m_world.perkCanHoldTetramino < 2; },
-            .fnApply         = [this] { ++m_world.perkCanHoldTetramino; },
-        },
-
-        /////////////////////////////////////////////////////////////
-        {
-            .fnName = [&] { return makeTitle("XP per Tetramino Placed", m_world.perkXPPerTetraminoPlaced, 3); },
-            .fnDescription =
-                [&]
-    {
-        return std::string{"Gain "} + std::to_string(m_world.perkXPPerTetraminoPlaced + 3) +
-               " XP for each tetramino you place.";
-    },
-            .fnPrerequisites = [&] { return true; },
-            .fnApply         = [&] { m_world.perkXPPerTetraminoPlaced += 3; },
-        },
-
-        /////////////////////////////////////////////////////////////
-        {
-            .fnName = [&] { return makeTitle("XP per Block Damaged", m_world.perkXPPerBlockDamaged, 10); },
-            .fnDescription =
-                [&]
-    {
-        return std::string{"Gain "} + std::to_string(m_world.perkXPPerBlockDamaged + 10) +
-               " XP for each block you damage.";
-    },
-            .fnPrerequisites = [&] { return true; },
-            .fnApply         = [&] { m_world.perkXPPerBlockDamaged += 10; },
-        },
-
-        /////////////////////////////////////////////////////////////
-        {
-            .fnName = [&]() -> std::string
-    {
-        if (!m_world.perkDeleteFloorPerNTetraminos.hasValue())
-            return "Delete Floor per 25 Tetramino Placed";
-
-        return std::string{"Delete Floor per Tetramino Placed"} + " (" +
-               std::to_string(m_world.perkDeleteFloorPerNTetraminos->nTetraminos) + " -> " +
-               std::to_string(m_world.perkDeleteFloorPerNTetraminos->nTetraminos - 1) + ")";
-    },
-            .fnDescription = [&]
-    { return "Each time you place a certain amount of tetraminos, delete the bottom row of the grid."; },
-            .fnPrerequisites =
-                [&]
-    {
-        return !m_world.perkDeleteFloorPerNTetraminos.hasValue() || m_world.perkDeleteFloorPerNTetraminos->nTetraminos > 10;
-    },
-            .fnApply =
-                [&]
-    {
-        if (!m_world.perkDeleteFloorPerNTetraminos.hasValue())
-            m_world.perkDeleteFloorPerNTetraminos.emplace(25);
-        else
-            --(m_world.perkDeleteFloorPerNTetraminos->nTetraminos);
-    },
-        },
-
-        /////////////////////////////////////////////////////////////
-        {
-            .fnName = [&]() -> std::string
-    {
-        if (!m_world.perkRndHitPerNTetraminos.hasValue())
-            return "On-N-Placed Lightning Strike (15)";
-
-        return std::string{"On-N-Placed Lightning Strike"} + " (" +
-               std::to_string(m_world.perkRndHitPerNTetraminos->nTetraminos) + " -> " +
-               std::to_string(m_world.perkRndHitPerNTetraminos->nTetraminos - 1) + ")";
-    },
-            .fnDescription = [&]
-    { return "Each time you place a certain amount of tetraminos, randomly damage a block with a lightning strike."; },
-            .fnPrerequisites = [&]
-    { return !m_world.perkRndHitPerNTetraminos.hasValue() || m_world.perkRndHitPerNTetraminos->nTetraminos > 8; },
-            .fnApply =
-                [&]
-    {
-        if (!m_world.perkRndHitPerNTetraminos.hasValue())
-            m_world.perkRndHitPerNTetraminos.emplace(15);
-        else
-            --(m_world.perkRndHitPerNTetraminos->nTetraminos);
-    },
-        },
-
-        /////////////////////////////////////////////////////////////
-        {
-            .fnName = [&] { return makeTitle("Extra Line Pieces in Pool", m_world.perkExtraLinePiecesInPool, 1); },
-            .fnDescription =
-                [&]
-    {
-        return std::string{"Increase the number of line pieces in the tetramino pool by "} +
-               std::to_string(m_world.perkExtraLinePiecesInPool + 1) + ".";
-    },
-            .fnPrerequisites = [&] { return m_world.perkExtraLinePiecesInPool < 3; },
-            .fnApply         = [&] { ++m_world.perkExtraLinePiecesInPool; },
-        },
-
-        /////////////////////////////////////////////////////////////
-        {
-            .fnName          = [&] { return "Left Horizontal Drill"; },
-            .fnDescription   = [&] { return "Damage all blocks directly adjacent left to the tetramino."; },
-            .fnPrerequisites = [&] { return !m_world.perkHorizontalDrillLeft.hasValue(); },
-            .fnApply         = [&] { m_world.perkHorizontalDrillLeft.emplace(); },
-        },
-
-        /////////////////////////////////////////////////////////////
-        {
-            .fnName          = [&] { return "Right Horizontal Drill"; },
-            .fnDescription   = [&] { return "Damage all blocks directly adjacent right to the tetramino."; },
-            .fnPrerequisites = [&] { return !m_world.perkHorizontalDrillRight.hasValue(); },
-            .fnApply         = [&] { m_world.perkHorizontalDrillRight.emplace(); },
-        },
-
-        /////////////////////////////////////////////////////////////
-        {
-            .fnName = [&]
-    { return makeTitle("Left Horizontal Drill - Penetration", m_world.perkHorizontalDrillLeft->maxPenetration, 1); },
-            .fnDescription =
-                [&]
-    {
-        return std::string{"Increase the maximum number of blocks damaged to "} +
-               std::to_string(m_world.perkHorizontalDrillLeft->maxPenetration + 1) + ".";
-    },
-            .fnPrerequisites = [&]
-    { return m_world.perkHorizontalDrillLeft.hasValue() && m_world.perkHorizontalDrillLeft->maxPenetration < 4; },
-            .fnApply = [&] { ++m_world.perkHorizontalDrillLeft->maxPenetration; },
-        },
-
-        /////////////////////////////////////////////////////////////
-        {
-            .fnName = [&]
-    { return makeTitle("Left Horizontal Drill - Length", m_world.perkHorizontalDrillLeft->maxBlocks, 1); },
-            .fnDescription =
-                [&]
-    {
-        return std::string{"Increase the maximum length of the drill to "} +
-               std::to_string(m_world.perkHorizontalDrillLeft->maxBlocks + 1) + ".";
-    },
-            .fnPrerequisites = [&]
-    { return m_world.perkHorizontalDrillLeft.hasValue() && m_world.perkHorizontalDrillLeft->maxBlocks < 4; },
-            .fnApply = [&] { ++m_world.perkHorizontalDrillLeft->maxBlocks; },
-        },
-
-        /////////////////////////////////////////////////////////////
-        {
-            .fnName = [&]
-    { return makeTitle("Right Horizontal Drill - Penetration", m_world.perkHorizontalDrillRight->maxPenetration, 1); },
-            .fnDescription =
-                [&]
-    {
-        return std::string{"Increase the maximum number of blocks damaged to "} +
-               std::to_string(m_world.perkHorizontalDrillRight->maxPenetration + 1) + ".";
-    },
-            .fnPrerequisites = [&]
-    { return m_world.perkHorizontalDrillRight.hasValue() && m_world.perkHorizontalDrillRight->maxPenetration < 4; },
-            .fnApply = [&] { ++m_world.perkHorizontalDrillRight->maxPenetration; },
-        },
-
-        /////////////////////////////////////////////////////////////
-        {
-            .fnName = [&]
-    { return makeTitle("Right Horizontal Drill - Length", m_world.perkHorizontalDrillRight->maxBlocks, 1); },
-            .fnDescription =
-                [&]
-    {
-        return std::string{"Increase the maximum length of the drill to "} +
-               std::to_string(m_world.perkHorizontalDrillRight->maxBlocks + 1) + ".";
-    },
-            .fnPrerequisites = [&]
-    { return m_world.perkHorizontalDrillRight.hasValue() && m_world.perkHorizontalDrillRight->maxBlocks < 4; },
-            .fnApply = [&] { ++m_world.perkHorizontalDrillRight->maxBlocks; },
-        },
-    };
 
 
     /////////////////////////////////////////////////////////////
@@ -2357,10 +2015,11 @@ private:
 
             for (const sf::base::SizeT psIndex : m_perkIndicesSelectedThisLevel)
             {
-                PerkSelector& perkSelector = m_perkSelectors[psIndex];
+                const Perk& perk = *(m_perks[psIndex]);
 
-                std::string perkName        = perkSelector.fnName();
-                std::string perkDescription = perkSelector.fnDescription();
+                std::string perkName        = perk.getName();
+                std::string perkDescription = perk.getDescription(m_world);
+                std::string perkProgression = perk.getProgressionStr(m_world);
 
                 if (sep)
                     ImGui::Separator();
@@ -2374,7 +2033,8 @@ private:
                 ImGui::PopFont();
 
                 setFontScale(1.f);
-                ImGui::TextWrapped("%s", perkDescription.c_str());
+                ImGui::TextWrapped("(%s)", perkProgression.c_str());
+                ImGui::TextWrapped("\n%s", perkDescription.c_str());
 
                 sep = true;
             }
@@ -2391,7 +2051,7 @@ private:
 
                     ++m_world.committedPlayerLevel;
 
-                    m_perkSelectors[static_cast<sf::base::SizeT>(selectedPerk)].fnApply();
+                    m_perks[static_cast<sf::base::SizeT>(selectedPerk)]->apply(m_world);
                 }
             }
 
@@ -2450,12 +2110,17 @@ private:
             for (sf::base::SizeT y = gridGraceY; y < m_world.blockGrid.getHeight(); ++y)
             {
                 const sf::Vec2uz                 gridPosition{x, y};
-                const sf::base::Optional<Block>& blockOpt = m_world.blockGrid.at(gridPosition);
+                const sf::base::Optional<Block>& optBlock = m_world.blockGrid.at(gridPosition);
 
-                if (!blockOpt.hasValue())
+                if (!optBlock.hasValue())
                     continue;
 
-                drawBlock(*blockOpt, toDrawCoordinates(gridPosition), {.opacity = 1.f});
+                drawBlock(*optBlock,
+                          toDrawCoordinates(gridPosition),
+                          {
+                              .opacity          = 1.f,
+                              .applyQuakeOffset = false,
+                          });
             }
     }
 
@@ -2474,17 +2139,19 @@ private:
             drawBlock(fadingBlock.block,
                       toDrawCoordinates(fadingBlock.position),
                       {
-                          .opacity    = 1.f - easeInOutSine(progress),
-                          .squishMult = 0.f,
+                          .opacity          = 1.f - easeInOutSine(progress),
+                          .squishMult       = 0.f,
+                          .applyYOffset     = false,
+                          .applyQuakeOffset = false,
                       });
         }
     }
 
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::U8 getCurrentTetraminoPaletteIdx() const
+    [[nodiscard]] sf::base::U8 getTetraminoPaletteIdx(const Tetramino& tetramino) const
     {
-        for (const auto& b : m_world.currentTetramino->shape)
+        for (const auto& b : tetramino.shape)
             if (b.hasValue())
                 return b->paletteIdx;
 
@@ -2493,16 +2160,7 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    enum class [[nodiscard]] DrillDirection
-    {
-        Left,
-        Right,
-        Down
-    };
-
-
-    /////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Vec2i drillDirectionToVec2i(const DrillDirection direction)
+    [[nodiscard]] sf::Vec2i drillDirectionToVec2i(const DrillDirection::Enum direction)
     {
         switch (direction)
         {
@@ -2527,11 +2185,29 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] DrillableBlocksInfo countDrillableBlocks(const sf::Vec2i startPos, const DrillDirection direction)
+    [[nodiscard]] DrillableBlocksInfo countDrillableBlocks(const sf::Vec2i startPos, const DrillDirection::Enum direction)
     {
         DrillableBlocksInfo info{
             .count  = 0,
             .endPos = startPos + drillDirectionToVec2i(direction),
+        };
+
+        const auto horizontalIteration = [&](const int iX) -> ControlFlow
+        {
+            auto& optBlock = m_world.blockGrid.at(sf::Vec2i{iX, info.endPos.y});
+
+            if (!optBlock.hasValue())
+                return ControlFlow::Break;
+
+            if (optBlock->health == 1u)
+                return ControlFlow::Continue;
+
+            info.endPos.x = iX;
+
+            if (++info.count >= m_world.perkDrill[direction]->maxPenetration)
+                return ControlFlow::Break;
+
+            return ControlFlow::Continue;
         };
 
         if (direction == DrillDirection::Left)
@@ -2539,20 +2215,8 @@ private:
             info.endPos.x = sf::base::max(info.endPos.x, 0);
 
             for (int iX = info.endPos.x; iX >= 0; --iX)
-            {
-                auto& blockOpt = m_world.blockGrid.at(sf::Vec2i{iX, info.endPos.y});
-
-                if (!blockOpt.hasValue())
+                if (horizontalIteration(iX) == ControlFlow::Break)
                     break;
-
-                if (blockOpt->health == 1u)
-                    continue;
-
-                info.endPos.x = iX;
-
-                if (++info.count >= m_world.perkHorizontalDrillLeft->maxPenetration)
-                    break;
-            }
         }
         else if (direction == DrillDirection::Right)
         {
@@ -2560,20 +2224,8 @@ private:
             info.endPos.x        = sf::base::min(info.endPos.x, gridWidth - 1);
 
             for (int iX = info.endPos.x; iX < gridWidth; ++iX)
-            {
-                auto& blockOpt = m_world.blockGrid.at(sf::Vec2i{iX, info.endPos.y});
-
-                if (!blockOpt.hasValue())
+                if (horizontalIteration(iX) == ControlFlow::Break)
                     break;
-
-                if (blockOpt->health == 1u)
-                    continue;
-
-                info.endPos.x = iX;
-
-                if (++info.count >= m_world.perkHorizontalDrillRight->maxPenetration)
-                    break;
-            }
         }
         else if (direction == DrillDirection::Down)
         {
@@ -2582,17 +2234,17 @@ private:
 
             for (int iY = info.endPos.y; iY < gridHeight; ++iY)
             {
-                auto& blockOpt = m_world.blockGrid.at(sf::Vec2i{info.endPos.x, iY});
+                auto& optBlock = m_world.blockGrid.at(sf::Vec2i{info.endPos.x, iY});
 
-                if (!blockOpt.hasValue())
+                if (!optBlock.hasValue())
                     break;
 
-                if (blockOpt->health == 1u)
+                if (optBlock->health == 1u)
                     continue;
 
                 info.endPos.y = iY;
 
-                if (++info.count >= m_world.perkVerticalDrill->maxPenetration)
+                if (++info.count >= m_world.perkDrill[DrillDirection::Down]->maxPenetration)
                     break;
             }
         }
@@ -2602,21 +2254,21 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    template <typename TAnim>
-    void drawStepDrillImpl(auto&&               findDrillBlocksFn,
-                           const DrillDirection direction,
-                           const sf::Vec2f      drillDrawOffset,
-                           sf::Angle            rotation)
+    void drawStepDrill(const DrillDirection::Enum direction, const sf::Vec2f drillDrawOffset, sf::Angle rotation)
     {
-        if (!m_animationTimeline.isPlaying<TAnim>())
+        auto* drillAnim = m_animationTimeline.getIfPlaying<AnimDrill>();
+
+        if (drillAnim == nullptr || drillAnim->direction != direction)
             return;
 
-        const float progress   = m_animationTimeline.getProgress();
-        const auto  paletteIdx = getCurrentTetraminoPaletteIdx();
+        const auto& tetramino = drillAnim->tetramino;
 
-        for (const auto bPos : findDrillBlocksFn())
+        const float progress   = m_animationTimeline.getProgress();
+        const auto  paletteIdx = getTetraminoPaletteIdx(tetramino);
+
+        for (const auto bPos : findDrillBlocks(tetramino, direction))
         {
-            const auto startPos = m_world.currentTetramino->position + bPos.toVec2i();
+            const auto startPos = tetramino.position + bPos.toVec2i();
 
             const auto [nDrillableBlocks, endPos] = countDrillableBlocks(startPos, direction);
 
@@ -2650,7 +2302,7 @@ private:
 
             if (optBlock.hasValue())
             {
-                m_circleShapeParticles.emplaceBack(ParticleData{
+                m_hueColorCircleShapeParticles.emplaceBack(ParticleData{
                     .position = lastDrawPos - drillDrawOffset + drillDirectionToVec2i(direction).toVec2f() * (radius / 2.f) +
                                 m_rngFast.getVec2f({-3.f, -3.f}, {3.f, 3.f}),
                     .velocity      = m_rngFast.getVec2f({-0.75f, -2.15f}, {0.75f, -0.25f}) * 0.05f,
@@ -2680,47 +2332,6 @@ private:
                 m_rtGame.draw(spike, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
             }
         }
-    }
-
-
-    /////////////////////////////////////////////////////////////
-    void drawStepVerticalDrill()
-    {
-        if (!m_animationTimeline.isPlaying<AnimVerticalDrill>())
-            return;
-
-        const auto downmostBlocksXY = findDownmostBlocks(m_world.currentTetramino->shape);
-
-        if (downmostBlocksXY.size() > 1u && !m_world.perkVerticalDrill->multiHit)
-            return;
-
-        drawStepDrillImpl<AnimVerticalDrill>(
-            /* findDrillBlocksFn */ [&]() -> const auto& { return downmostBlocksXY; },
-            /* direction         */ DrillDirection::Down,
-            /* drillDrawOffset   */ {1.f, drawBlockSize.y},
-            /* rotation          */ sf::degrees(0));
-    }
-
-
-    /////////////////////////////////////////////////////////////
-    void drawStepHorizontalDrillLeft()
-    {
-        drawStepDrillImpl<AnimHorizontalDrillLeft>(
-            /* findDrillBlocksFn */ [this] { return findHorizontalDrillLeftBlocks(); },
-            /* direction         */ DrillDirection::Left,
-            /* drillDrawOffset   */ {-drawBlockSize.x / 2.f - 3.f, 1.f},
-            /* rotation          */ sf::degrees(90));
-    }
-
-
-    /////////////////////////////////////////////////////////////
-    void drawStepHorizontalDrillRight()
-    {
-        drawStepDrillImpl<AnimHorizontalDrillRight>(
-            /* findDrillBlocksFn */ [this] { return findHorizontalDrillRightBlocks(); },
-            /* direction         */ DrillDirection::Right,
-            /* drillDrawOffset   */ {drawBlockSize.x, 2.f},
-            /* rotation          */ sf::degrees(270));
     }
 
 
@@ -2796,62 +2407,107 @@ private:
         }
     }
 
+
     /////////////////////////////////////////////////////////////
-    void drawStepCurrentTetramino()
+    void drawStepAnimHardDrop()
     {
-        if (!m_world.currentTetramino.hasValue())
+        auto* hardDrop = m_animationTimeline.getIfPlaying<AnimHardDrop>();
+
+        if (hardDrop == nullptr)
             return;
 
-        const Tetramino& tetramino = *m_world.currentTetramino;
+        const float progress = m_animationTimeline.getProgress();
 
-        const auto color = hueColorFromPaletteIdx(getCurrentTetraminoPaletteIdx(), 255u);
+        const float targetVisualY = toDrawCoordinates(hardDrop->tetramino.position.withY(hardDrop->endY)).y +
+                                    drawBlockSize.y / 2.f;
 
-        const auto tetraminoDrawPosition = floorVec2(m_currentTetraminoVisualCenter - drawBlockSize / 2.f) + sf::Vec2f{1, 1};
+        const float startVisualY = toDrawCoordinates(hardDrop->tetramino.position).y + drawBlockSize.y * 2.f;
+
+        const auto visualCenterY = startVisualY + (targetVisualY - startVisualY) * easeInBack(progress);
+        const auto visualCenterX = toDrawCoordinates(hardDrop->tetramino.position).x + drawBlockSize.x * 2.f;
+
+        drawStepActiveTetramino(hardDrop->tetramino,
+                                sf::Vec2f{visualCenterX, visualCenterY},
+                                /* squishMult */ 0.f,
+                                /* drawGhost */ false);
+    }
+
+
+    /////////////////////////////////////////////////////////////
+    void drawStepAnimSquish()
+    {
+        auto* squish = m_animationTimeline.getIfPlaying<AnimSquish>();
+
+        if (squish == nullptr)
+            return;
+
+        const float progress = m_animationTimeline.getProgress();
+
+        const float squishMult = easeInOutSine(bounce(progress)) * 0.5f;
+
+        drawStepActiveTetramino(squish->tetramino,
+                                toDrawCoordinates(squish->tetramino.position) +
+                                    sf::Vec2f{drawBlockSize.x * 2.f, drawBlockSize.y * 2.f},
+                                /* squishMult */ squishMult,
+                                /* drawGhost */ false);
+    }
+
+
+    /////////////////////////////////////////////////////////////
+    void drawStepActiveTetramino(const Tetramino& tetramino, const sf::Vec2f visualCenter, const float squishMult, const bool drawGhost)
+    {
+        const auto color = hueColorFromPaletteIdx(getTetraminoPaletteIdx(tetramino), 255u);
+
+        auto tetraminoDrawPosition = floorVec2(visualCenter - drawBlockSize / 2.f) + sf::Vec2f{1, 1};
+        tetraminoDrawPosition.y += m_quakeSinEffectHardDrop.getValue();
 
         const sf::Vec2f ghostGridPosition = tetramino.position.toVec2f().withY(
             static_cast<float>(calculateGhostY(tetramino)));
 
-        const sf::Vec2f ghostCenterDrawPosition = getTetraminoCenterDrawPosition(ghostGridPosition)
-                                                      .withX(tetraminoDrawPosition.x)
-                                                      .addY(-drawBlockSize.y / 2.f)
-                                                      .addY(1.f);
+        sf::Vec2f ghostCenterDrawPosition = getTetraminoCenterDrawPosition(ghostGridPosition)
+                                                .withX(tetraminoDrawPosition.x)
+                                                .addY(-drawBlockSize.y / 2.f)
+                                                .addY(1.f);
 
-        if (m_world.perkVerticalDrill.hasValue())
-            drawDrillSpikesForPerk(findVerticalDrillBlocks(),
+        ghostCenterDrawPosition.y += m_quakeSinEffectHardDrop.getValue();
+
+        if (m_world.perkDrill[DrillDirection::Down].hasValue())
+            drawDrillSpikesForPerk(findDrillBlocks(tetramino, DrillDirection::Down),
                                    floorVec2(sf::Vec2f{0.f, drawBlockSize.y / 2.f}),
                                    color,
                                    sf::degrees(0.f),
-                                   m_currentTetraminoVisualCenter,
+                                   visualCenter,
                                    ghostCenterDrawPosition);
 
-        if (m_world.perkHorizontalDrillLeft.hasValue())
-            drawDrillSpikesForPerk(findHorizontalDrillLeftBlocks(),
+        if (m_world.perkDrill[DrillDirection::Left].hasValue())
+            drawDrillSpikesForPerk(findDrillBlocks(tetramino, DrillDirection::Left),
                                    floorVec2(sf::Vec2f{-drawBlockSize.x / 2.f, -drawBlockSize.y / 2.f}),
                                    color,
                                    sf::degrees(90.f),
-                                   m_currentTetraminoVisualCenter,
+                                   visualCenter,
                                    ghostCenterDrawPosition);
 
-        if (m_world.perkHorizontalDrillRight.hasValue())
-            drawDrillSpikesForPerk(findHorizontalDrillRightBlocks(),
+        if (m_world.perkDrill[DrillDirection::Right].hasValue())
+            drawDrillSpikesForPerk(findDrillBlocks(tetramino, DrillDirection::Right),
                                    floorVec2(sf::Vec2f{drawBlockSize.x, -1.f}),
                                    color,
                                    sf::degrees(270.f),
-                                   m_currentTetraminoVisualCenter,
+                                   visualCenter,
                                    ghostCenterDrawPosition);
 
         drawTetramino(tetramino.shape,
                       tetraminoDrawPosition,
                       {
-                          .squishMult = m_squishMult,
+                          .squishMult = squishMult,
                       });
 
-        drawTetramino(tetramino.shape,
-                      ghostCenterDrawPosition,
-                      {
-                          .opacity    = 0.25f,
-                          .squishMult = m_squishMult,
-                      });
+        if (drawGhost)
+            drawTetramino(tetramino.shape,
+                          ghostCenterDrawPosition,
+                          {
+                              .opacity    = 0.25f,
+                              .squishMult = squishMult,
+                          });
     }
 
 
@@ -2872,9 +2528,10 @@ private:
             drawTetramino(shape,
                           uiBoxCenter + sf::Vec2f{16.f, 16.f},
                           {
-                              .scale        = uiTetraminoScale,
-                              .drawText     = true,
-                              .applyYOffset = false,
+                              .scale            = uiTetraminoScale,
+                              .drawText         = true,
+                              .applyYOffset     = false,
+                              .applyQuakeOffset = false,
                           });
         }
     }
@@ -2923,18 +2580,23 @@ private:
 
             const auto alpha = static_cast<sf::base::U8>((particle.progress.remapBouncedEased(easeInOutQuint, 64.f, 255.f)));
 
-            m_rtGame.draw(sf::CircleShapeData{
-                .position = {blend(newPos2.x, newPos.x, 0.5f), newPos.y},
-                .scale    = sf::Vec2f{0.25f, 0.25f} * particle.progress.remapBounced(0.6f, 2.f),
-                .origin   = {12.f, 12.f},
-                .rotation = sf::radians(
-                    sf::base::fmod(particle.startRotation + particle.progress.remap(0.f, sf::base::tau * 2.f), sf::base::tau)),
-                .fillColor        = blockPalette[particle.paletteIdx].withAlpha(alpha),
-                .outlineColor     = blockPalette[particle.paletteIdx].withAlpha(alpha).withLightness(0.3f),
-                .outlineThickness = 1.f,
-                .radius           = 12.f,
-                .pointCount       = 3u,
-            });
+            m_rtGame.draw(
+                sf::CircleShapeData{
+                    .position = {blend(newPos2.x, newPos.x, 0.5f), newPos.y},
+                    .scale    = sf::Vec2f{0.25f, 0.25f} * particle.progress.remapBounced(0.6f, 2.f),
+                    .origin   = {12.f, 12.f},
+                    .rotation = sf::radians(
+                        sf::base::fmod(particle.startRotation + particle.progress.remap(0.f, sf::base::tau * 2.f),
+                                       sf::base::tau)),
+                    .textureRect = m_txrRedDot,
+                    .fillColor   = hueColorFromPaletteIdx(particle.paletteIdx, alpha),
+                    .radius      = 12.f,
+                    .pointCount  = 3u,
+                },
+                {
+                    .texture = &m_textureAtlas.getTexture(),
+                    .shader  = &m_shader,
+                });
         }
     }
 
@@ -2942,8 +2604,11 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepCircleDataParticles()
     {
-        for (const auto& particle : m_circleShapeParticles)
+        for (const auto& particle : m_hueColorCircleShapeParticles)
             m_rtGame.draw(particleToCircleData(particle), {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+
+        for (const auto& particle : m_fixedColorCircleShapeParticles)
+            m_rtGame.draw(particleToCircleData(particle), {});
     }
 
 
@@ -3098,12 +2763,24 @@ private:
             drawStepBackground();
             drawStepEmbeddedBlocks();
             drawStepFadingBlocks();
-            drawStepCurrentTetramino();
+
+            drawStepAnimHardDrop();
+            drawStepAnimSquish();
+
+            if (m_world.currentTetramino.hasValue())
+                drawStepActiveTetramino(*m_world.currentTetramino,
+                                        m_currentTetraminoVisualCenter,
+                                        /* squishMult */ 0.f,
+                                        /* drawGhost */ true);
+            // /* drawGhost */ !m_animationTimeline.anyAnimationPlaying());
+
             drawStepEarnedXPParticles();
             drawStepCircleDataParticles();
-            drawStepVerticalDrill();
-            drawStepHorizontalDrillLeft();
-            drawStepHorizontalDrillRight();
+
+            drawStepDrill(DrillDirection::Down, {1.f, drawBlockSize.y}, sf::degrees(0));
+            drawStepDrill(DrillDirection::Left, {-drawBlockSize.x / 2.f - 3.f, 1.f}, sf::degrees(90));
+            drawStepDrill(DrillDirection::Right, {drawBlockSize.x, 2.f}, sf::degrees(270));
+
             drawStepUINextTetraminos();
             drawStepUIHeldTetramino();
             drawStepLightningBolts();
@@ -3163,6 +2840,25 @@ public:
         m_window.setSize((resolution * scale).toVec2u());
         m_window.setPosition(
             (sf::VideoModeUtils::getDesktopMode().size / 2u - (resolution * (scale * 0.5f)).toVec2u()).toVec2i());
+
+        m_perks.emplaceBack(sf::base::makeUnique<PerkChainLightning>());
+        m_perks.emplaceBack(sf::base::makeUnique<PerkPeekNextTetraminos>());
+        m_perks.emplaceBack(sf::base::makeUnique<PerkOnClearLightningStrike>());
+        m_perks.emplaceBack(sf::base::makeUnique<PerkHardDropDrillUnlock>());
+        m_perks.emplaceBack(sf::base::makeUnique<PerkHardDropDrillPenetration>());
+        m_perks.emplaceBack(sf::base::makeUnique<PerkHardDropDrillBluntForce>());
+        m_perks.emplaceBack(sf::base::makeUnique<PerkHoldSkipTetramino>());
+        m_perks.emplaceBack(sf::base::makeUnique<PerkXpPerTetraminoPlaced>());
+        m_perks.emplaceBack(sf::base::makeUnique<PerkXpPerBlockDamaged>());
+        m_perks.emplaceBack(sf::base::makeUnique<PerkDeleteFloorPerNTetraminos>());
+        m_perks.emplaceBack(sf::base::makeUnique<PerkRndHitPerNTetraminos>());
+        m_perks.emplaceBack(sf::base::makeUnique<PerkExtraLinePieces>());
+        m_perks.emplaceBack(sf::base::makeUnique<PerkHorizontalDrillLeftUnlock>());
+        m_perks.emplaceBack(sf::base::makeUnique<PerkHorizontalDrillRightUnlock>());
+        m_perks.emplaceBack(sf::base::makeUnique<PerkHorizontalDrillLeftPenetration>());
+        m_perks.emplaceBack(sf::base::makeUnique<PerkHorizontalDrillLeftCoverage>());
+        m_perks.emplaceBack(sf::base::makeUnique<PerkHorizontalDrillRightPenetration>());
+        m_perks.emplaceBack(sf::base::makeUnique<PerkHorizontalDrillRightCoverage>());
     }
 
 
@@ -3222,3 +2918,6 @@ int main()
 // - max perks
 // - remove CC
 // - damaging a block damages a random adjacent block
+// - diagonal left/right lasers + bounce perk
+// - separate weapon perks from utility perks
+// - change of drill block, change of lightning block, chance of laser block
