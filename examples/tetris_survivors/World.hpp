@@ -31,7 +31,7 @@ struct [[nodiscard]] TaggedBlockMatrix // NOLINT(cppcoreguidelines-pro-type-memb
 [[nodiscard]] inline sf::base::U64 getXPNeededForLevelUp(const sf::base::U32 level)
 {
     constexpr double baseXP   = 30.0;
-    constexpr double exponent = 1.05;
+    constexpr double exponent = 1.035;
 
     return static_cast<sf::base::U64>(baseXP * sf::base::pow(static_cast<double>(level), exponent));
 }
@@ -55,7 +55,7 @@ struct [[nodiscard]] TaggedBlockMatrix // NOLINT(cppcoreguidelines-pro-type-memb
 ////////////////////////////////////////////////////////////
 [[nodiscard]] sf::base::Array<sf::base::U64, 4> generateTetraminoHealthDistribution(sf::base::U64 difficultyFactor, auto&& rng)
 {
-    difficultyFactor += 1200;
+    // difficultyFactor = 2000;
 
     const auto minHealth = 1;
     const auto maxHealth = 4;
@@ -180,7 +180,11 @@ struct [[nodiscard]] World
         int maxPenetration = 1;
     };
 
-    sf::base::Optional<DrillData> perkDrill[drillDirectionCount];
+    sf::base::Optional<DrillData> perkDrill[drillDirectionCount]{
+        // sf::base::Optional<DrillData>{DrillData{}},
+        // sf::base::Optional<DrillData>{DrillData{}},
+        // sf::base::Optional<DrillData>{DrillData{}},
+    };
 
     int perkNPeek = 1;
 
@@ -196,11 +200,14 @@ struct [[nodiscard]] World
 
     struct LaserData
     {
-        int maxPenetration = 15;
+        int  maxPenetration = 1;
+        bool bounce         = false;
     };
 
-    sf::base::Optional<LaserData> perkLaser[laserDirectionCount]{sf::base::Optional<LaserData>{LaserData{}},
-                                                                 sf::base::Optional<LaserData>{LaserData{}}};
+    sf::base::Optional<LaserData> perkLaser[laserDirectionCount]{
+        // sf::base::Optional<LaserData>{LaserData{}},
+        // sf::base::Optional<LaserData>{LaserData{}},
+    };
 };
 
 } // namespace tsurv
