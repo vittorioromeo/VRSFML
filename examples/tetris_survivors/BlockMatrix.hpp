@@ -59,6 +59,32 @@ inline sf::base::InPlaceVector<sf::Vec2uz, shapeDimension> findDownmostBlocks(co
 
 
 ////////////////////////////////////////////////////////////
+inline sf::base::InPlaceVector<sf::Vec2uz, shapeDimension> findTopmostBlocks(const BlockMatrix& shape)
+{
+    sf::base::InPlaceVector<sf::Vec2uz, shapeDimension> result;
+
+    bool foundFirstRow = false;
+
+    for (sf::base::SizeT y = 0; y < shapeDimension; ++y)
+    {
+        for (sf::base::SizeT x = 0; x < shapeDimension; ++x)
+        {
+            if (shape[y * shapeDimension + x].hasValue())
+            {
+                foundFirstRow = true;
+                result.emplaceBack(x, y);
+            }
+        }
+
+        if (foundFirstRow)
+            break;
+    }
+
+    return result;
+}
+
+
+////////////////////////////////////////////////////////////
 inline sf::base::InPlaceVector<sf::Vec2uz, shapeDimension> findHorizontalBlocks(const BlockMatrix&    shape,
                                                                                 const sf::base::SizeT maxDepth)
 {
