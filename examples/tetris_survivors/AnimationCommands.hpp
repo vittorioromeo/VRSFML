@@ -104,20 +104,32 @@ struct [[nodiscard]] AnimLaser // NOLINT(cppcoreguidelines-pro-type-member-init)
     LaserDirection::Enum direction;
     sf::Vec2i            gridStartPos;
     sf::Vec2i            gridTargetPos;
+    bool                 onlyVisual;
     float                duration;
 };
 
 
 ////////////////////////////////////////////////////////////
-using AnimationCommand = sf::base::Variant<AnimWait, //
-                                           AnimHardDrop,
-                                           AnimSquish,
-                                           AnimClearLines,
-                                           AnimFadeBlocks,
-                                           AnimCollapseGrid,
-                                           AnimDrill,
-                                           AnimColumnClear,
-                                           AnimAction,
-                                           AnimLaser>;
+struct [[nodiscard]] AnimFadeAttachments // NOLINT(cppcoreguidelines-pro-type-member-init)
+{
+    Tetramino tetramino;
+    float     duration;
+};
+
+////////////////////////////////////////////////////////////
+using AnimationCommandP0 = sf::base::Variant<AnimWait, //
+                                             AnimDrill,
+                                             AnimAction,
+                                             AnimLaser,
+                                             AnimFadeAttachments>;
+
+
+////////////////////////////////////////////////////////////
+using AnimationCommandP1 = sf::base::Variant<AnimHardDrop, //
+                                             AnimSquish,
+                                             AnimClearLines,
+                                             AnimFadeBlocks,
+                                             AnimCollapseGrid,
+                                             AnimColumnClear>;
 
 } // namespace tsurv
