@@ -167,6 +167,58 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    template <typename... Ts>
+    [[gnu::always_inline]] TItem* emplace(TItem* const pos, Ts&&... xs)
+    {
+        SFML_BASE_ASSERT(m_size < N);
+        SFML_BASE_ASSERT(pos >= begin() && pos <= end());
+
+        const auto index = static_cast<SizeT>(pos - data());
+
+        if (pos == end())
+        {
+            unsafeEmplaceBack(static_cast<Ts&&>(xs)...);
+        }
+        else
+        {
+            if constexpr (SFML_BASE_IS_TRIVIALLY_COPYABLE(TItem))
+            {
+                SFML_BASE_MEMMOVE(pos + 1, pos, static_cast<SizeT>(end() - pos) * sizeof(TItem));
+            }
+            else
+            {
+                SFML_BASE_PLACEMENT_NEW(end()) TItem(static_cast<TItem&&>(back()));
+
+                for (TItem* p = end() - 1; p > pos; --p)
+                    *p = static_cast<TItem&&>(*(p - 1));
+
+                if constexpr (!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(TItem))
+                    pos->~TItem();
+            }
+
+            SFML_BASE_PLACEMENT_NEW(pos) TItem(static_cast<Ts&&>(xs)...);
+            ++m_size;
+        }
+
+        return data() + index;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] TItem* insert(TItem* const pos, const TItem& value)
+    {
+        return emplace(pos, value);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] TItem* insert(TItem* const pos, TItem&& value)
+    {
+        return emplace(pos, static_cast<TItem&&>(value));
+    }
+
+
+    ////////////////////////////////////////////////////////////
     void shrinkToFit() noexcept
     {
         // no-op, just for compatibility

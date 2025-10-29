@@ -129,6 +129,29 @@
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
+[[nodiscard]] inline bool handleNonScalingResize(const sf::Event&                 event,
+                                                 [[maybe_unused]] const sf::Vec2f originalSize,
+                                                 sf::RenderWindow&                renderWindow)
+{
+    const auto* eResized = event.getIf<sf::Event::Resized>();
+    if (eResized == nullptr)
+        return false;
+
+    auto view = renderWindow.getView();
+
+    view.size   = renderWindow.getSize().toVec2f();
+    view.center = view.size / 2.f;
+
+    renderWindow.setView(view);
+
+    return true;
+}
+
+
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
 [[nodiscard]] inline bool handleAspectRatioAwareResize(const sf::Event&  event,
                                                        const sf::Vec2f   originalSize,
                                                        sf::RenderWindow& renderWindow)

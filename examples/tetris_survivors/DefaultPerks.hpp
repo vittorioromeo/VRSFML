@@ -733,6 +733,45 @@ struct [[nodiscard]] PerkDiagonalLaserPenetration : Perk
 
 
 /////////////////////////////////////////////////////////////
+template <LaserDirection::Enum TDirection>
+struct [[nodiscard]] PerkDiagonalLaserBounce : Perk
+{
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] std::string getName() const override
+    {
+        const auto* upperCaseDirectionStr = (TDirection == LaserDirection::Left) ? "SW" : "SE";
+        return std::format("{} Diagonal - Bounce", upperCaseDirectionStr);
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] std::string getDescription(const World&) const override
+    {
+        const auto* lowerCaseDirectionStr = (TDirection == LaserDirection::Left) ? "southwest" : "southeast";
+
+        return std::format("Lasers fired {} will now bounce off the sides of the grid once.", lowerCaseDirectionStr);
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] std::string getProgressionStr(const World&) const override
+    {
+        return "";
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] bool meetsPrerequisites(const World& world) const override
+    {
+        return world.perkLaser[TDirection].hasValue() && !world.perkLaser[TDirection]->bounce;
+    }
+
+    /////////////////////////////////////////////////////////////
+    void apply(World& world) const override
+    {
+        world.perkLaser[TDirection]->bounce = true;
+    }
+};
+
+
+/////////////////////////////////////////////////////////////
 using PerkDiagonalLaserLeftUnlock  = PerkDiagonalLaserUnlock<LaserDirection::Left>;
 using PerkDiagonalLaserRightUnlock = PerkDiagonalLaserUnlock<LaserDirection::Right>;
 
@@ -740,5 +779,10 @@ using PerkDiagonalLaserRightUnlock = PerkDiagonalLaserUnlock<LaserDirection::Rig
 /////////////////////////////////////////////////////////////
 using PerkDiagonalLaserLeftPenetration  = PerkDiagonalLaserPenetration<LaserDirection::Left>;
 using PerkDiagonalLaserRightPenetration = PerkDiagonalLaserPenetration<LaserDirection::Right>;
+
+
+/////////////////////////////////////////////////////////////
+using PerkDiagonalLaserLeftBounce  = PerkDiagonalLaserBounce<LaserDirection::Left>;
+using PerkDiagonalLaserRightBounce = PerkDiagonalLaserBounce<LaserDirection::Right>;
 
 } // namespace tsurv

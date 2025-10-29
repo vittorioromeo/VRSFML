@@ -4,8 +4,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "AnimationCommands.hpp"
-
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/InPlaceVector.hpp"
 
@@ -13,11 +11,12 @@
 namespace tsurv
 {
 ////////////////////////////////////////////////////////////
+template <typename TCommand>
 struct [[nodiscard]] AnimationTimeline
 {
     ////////////////////////////////////////////////////////////
-    sf::base::InPlaceVector<AnimationCommand, 128> commands;
-    float                                          timeOnCurrentCommand = 0.f;
+    sf::base::InPlaceVector<TCommand, 128> commands;
+    float                                  timeOnCurrentCommand = 0.f;
 
 
     ////////////////////////////////////////////////////////////
@@ -48,14 +47,14 @@ struct [[nodiscard]] AnimationTimeline
     template <typename T>
     [[nodiscard]] T* getIfPlaying()
     {
-        return commands.empty() ? nullptr : commands.front().getIf<T>();
+        return commands.empty() ? nullptr : commands.front().template getIf<T>();
     }
 
     ////////////////////////////////////////////////////////////
     template <typename T>
     [[nodiscard]] const T* getIfPlaying() const
     {
-        return commands.empty() ? nullptr : commands.front().getIf<T>();
+        return commands.empty() ? nullptr : commands.front().template getIf<T>();
     }
 
 
@@ -63,7 +62,7 @@ struct [[nodiscard]] AnimationTimeline
     template <typename T>
     [[nodiscard]] bool isPlaying() const
     {
-        return !commands.empty() && commands.front().is<T>();
+        return !commands.empty() && commands.front().template is<T>();
     }
 
 
@@ -72,7 +71,7 @@ struct [[nodiscard]] AnimationTimeline
     [[nodiscard]] bool isEnqueued() const
     {
         for (const auto& cmd : commands)
-            if (cmd.is<T>())
+            if (cmd.template is<T>())
                 return true;
 
         return false;
