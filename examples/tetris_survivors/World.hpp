@@ -8,6 +8,7 @@
 #include "BlockMatrix.hpp"
 #include "Constants.hpp"
 #include "DrillDirection.hpp"
+#include "LaserDirection.hpp"
 #include "RandomBag.hpp"
 #include "Tetramino.hpp"
 
@@ -54,7 +55,7 @@ struct [[nodiscard]] TaggedBlockMatrix // NOLINT(cppcoreguidelines-pro-type-memb
 ////////////////////////////////////////////////////////////
 [[nodiscard]] sf::base::Array<sf::base::U64, 4> generateTetraminoHealthDistribution(sf::base::U64 difficultyFactor, auto&& rng)
 {
-    difficultyFactor += 200;
+    difficultyFactor += 1200;
 
     const auto minHealth = 1;
     const auto maxHealth = 4;
@@ -192,6 +193,14 @@ struct [[nodiscard]] World
     sf::base::Optional<RndHitPerNTetraminos> perkRndHitPerNTetraminos;
 
     int perkChainLightning = 0;
+
+    struct LaserData
+    {
+        int maxPenetration = 15;
+    };
+
+    sf::base::Optional<LaserData> perkLaser[laserDirectionCount]{sf::base::Optional<LaserData>{LaserData{}},
+                                                                 sf::base::Optional<LaserData>{LaserData{}}};
 };
 
 } // namespace tsurv

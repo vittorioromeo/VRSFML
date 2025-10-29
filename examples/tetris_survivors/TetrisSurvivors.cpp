@@ -5,6 +5,7 @@
 #include "../bubble_idle/RNGFast.hpp"   // TODO P1: avoid the relative path...?
 #include "../bubble_idle/Timer.hpp"     // TODO P1: avoid the relative path...?
 
+
 #define SFEX_PROFILER_ENABLED
 #include "Profiler.hpp"
 
@@ -18,6 +19,9 @@
 #include "ControlFlow.hpp"
 #include "DefaultPerks.hpp"
 #include "DrillDirection.hpp"
+#include "LaserBeam.hpp"
+#include "LaserDirection.hpp"
+#include "LaserableBlocksInfo.hpp"
 #include "LightningBolt.hpp"
 #include "Perk.hpp"
 #include "RandomBag.hpp"
@@ -34,6 +38,7 @@
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
+#include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/RectangleShapeData.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderTexture.hpp"
@@ -75,6 +80,7 @@
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/Remainder.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Trait/IsConst.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
 
@@ -254,6 +260,7 @@ private:
     sf::SoundBuffer m_sbStrike   = sf::SoundBuffer::loadFromFile("resources/Strike.wav").value();
     sf::SoundBuffer m_sbDrill    = sf::SoundBuffer::loadFromFile("resources/Drill.wav").value();
     sf::SoundBuffer m_sbError    = sf::SoundBuffer::loadFromFile("resources/Error.wav").value();
+    sf::SoundBuffer m_sbLaser    = sf::SoundBuffer::loadFromFile("resources/Laser.wav").value();
 
     ////////////////////////////////////////////////////////////
     sf::base::Array<sf::base::Optional<sf::Sound>, 8> m_soundPool;
@@ -308,6 +315,9 @@ private:
     QuakeSinEffect m_quakeSinEffectHardDrop;
 
     ////////////////////////////////////////////////////////////
+    sf::base::Optional<LaserBeam> m_testBeam;
+
+    ////////////////////////////////////////////////////////////
     // Screen shake effect state
     float m_screenShakeAmount{0.f};
     float m_screenShakeTimer{0.f};
@@ -341,6 +351,7 @@ private:
     const sf::FloatRect m_txrDivider  = addImgResourceToAtlas("divider.png");
     const sf::FloatRect m_txrDrill    = addImgResourceToAtlas("drill.png");
     const sf::FloatRect m_txrRedDot   = addImgResourceToAtlas("reddot.png");
+    const sf::FloatRect m_txrEmitter  = addImgResourceToAtlas("emitter.png");
 
     //////////////////////////////////////////////////////////////
     sf::RenderTexture m_rtGame{
@@ -768,6 +779,57 @@ private:
         }
 
         return findHorizontalBlocks(tetramino.shape, static_cast<sf::base::SizeT>(m_world.perkDrill[direction]->coverage));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] sf::base::InPlaceVector<sf::Vec2uz, shapeDimension> findLaserBlocks(const Tetramino& tetramino,
+                                                                                      const LaserDirection::Enum direction) const
+    {
+        const auto inBounds = [](const sf::base::SizeT idx) { return idx < shapeDimension * shapeDimension; };
+
+        sf::base::InPlaceVector<sf::Vec2uz, shapeDimension> result;
+
+        for (const auto bPos : findTopmostBlocks(tetramino.shape))
+        {
+            if (direction == LaserDirection::Left)
+            {
+                if (bPos.x == 0u) // to avoid unsigned wraparound shenanigans
+                {
+                    result.pushBack(bPos);
+                }
+                else
+                {
+                    const auto bottomLeftIdx   = getIndex2Dto1D({bPos.x - 1u, bPos.y + 1u}, shapeDimension);
+                    const auto leftIdx         = getIndex2Dto1D({bPos.x - 1u, bPos.y}, shapeDimension);
+                    const bool leftValid       = !inBounds(leftIdx) || !tetramino.shape[leftIdx].hasValue();
+                    const bool bottomLeftValid = !inBounds(bottomLeftIdx) || !tetramino.shape[bottomLeftIdx].hasValue();
+
+                    if (leftValid && bottomLeftValid)
+                        result.pushBack(bPos);
+                }
+            }
+
+            if (direction == LaserDirection::Right)
+            {
+                if (bPos.x == shapeDimension - 1u) // to avoid unsigned wraparound shenanigans
+                {
+                    result.pushBack(bPos);
+                }
+                else
+                {
+                    const auto rightIdx       = getIndex2Dto1D({bPos.x + 1u, bPos.y}, shapeDimension);
+                    const auto bottomRightIdx = getIndex2Dto1D({bPos.x + 1u, bPos.y + 1u}, shapeDimension);
+                    const bool rightValid     = !inBounds(rightIdx) || !tetramino.shape[rightIdx].hasValue();
+                    const bool bottomRightValid = !inBounds(bottomRightIdx) || !tetramino.shape[bottomRightIdx].hasValue();
+
+                    if (rightValid && bottomRightValid)
+                        result.pushBack(bPos);
+                }
+            }
+        }
+
+        return result;
     }
 
 
@@ -1321,48 +1383,36 @@ private:
         if (m_inLevelUpScreen || !m_animationTimeline.anyAnimationPlaying())
             return;
 
-        auto& cmd = m_animationTimeline.commands.front();
+        auto& anim = m_animationTimeline.commands.front();
 
-        updateAnimWait(cmd);
-        updateAnimHardDrop(cmd);
-        updateAnimSquish(cmd);
-        updateAnimClearLines(cmd);
-        updateAnimFadeBlocks(cmd);
-        updateAnimCollapseGrid(cmd);
-        updateAnimDrill(DrillDirection::Left, cmd);
-        updateAnimDrill(DrillDirection::Right, cmd);
-        updateAnimDrill(DrillDirection::Down, cmd);
-        updateAnimColumnClear(cmd);
-        updateAnimAction(cmd);
+        if (anim.linearVisit([&]<typename T>(T& innerAnim)
+                                 requires(!sf::base::isConst<T>) { return updateAnimation(innerAnim); }))
+        {
+            m_animationTimeline.popFrontCommand();
+            return;
+        }
 
         m_animationTimeline.timeOnCurrentCommand += deltaTime.asSeconds();
     }
 
 
     /////////////////////////////////////////////////////////////
-    void updateAnimWait(AnimationCommand& cmd)
+    [[nodiscard]] bool updateAnimation(AnimWait&)
     {
-        auto* wait = cmd.getIf<AnimWait>();
-
-        if (wait == nullptr || m_animationTimeline.getProgress() < 1.f)
-            return;
-
-        m_animationTimeline.popFrontCommand();
+        return m_animationTimeline.getProgress() >= 1.f;
     }
 
 
     /////////////////////////////////////////////////////////////
-    void updateAnimHardDrop(AnimationCommand& cmd)
+    [[nodiscard]] bool updateAnimation(AnimHardDrop& hardDrop)
     {
-        auto* hardDrop = cmd.getIf<AnimHardDrop>();
+        if (m_animationTimeline.getProgress() < 1.f)
+            return false;
 
-        if (hardDrop == nullptr || m_animationTimeline.getProgress() < 1.f)
-            return;
-
-        hardDrop->tetramino.position.y = hardDrop->endY;
+        hardDrop.tetramino.position.y = hardDrop.endY;
 
         m_animationTimeline.add(AnimSquish{
-            .tetramino = hardDrop->tetramino,
+            .tetramino = hardDrop.tetramino,
             .duration  = 0.15f,
         });
 
@@ -1370,50 +1420,77 @@ private:
 
         playSound(m_sbLanded);
 
-        m_animationTimeline.popFrontCommand();
+        return true;
     }
 
 
     /////////////////////////////////////////////////////////////
-    void updateAnimSquish(AnimationCommand& cmd)
+    [[nodiscard]] bool updateAnimation(AnimSquish& squish)
     {
-        auto* squish = cmd.getIf<AnimSquish>();
-
-        if (squish == nullptr)
-            return;
-
         if (m_animationTimeline.getProgress() < 1.f)
-            return;
+            return false;
 
         const auto processDrill = [&](const DrillDirection::Enum direction)
         {
-            if (!m_world.perkDrill[direction].hasValue() || findDrillTargetBlocks(squish->tetramino, direction).empty())
+            if (!m_world.perkDrill[direction].hasValue() || findDrillTargetBlocks(squish.tetramino, direction).empty())
                 return;
 
             int maxDrilledBlocks = 0;
 
-            for (const auto bPos : findDrillBlocks(squish->tetramino, direction))
+            for (const auto bPos : findDrillBlocks(squish.tetramino, direction))
             {
-                const auto startPos                   = squish->tetramino.position + bPos.toVec2i();
+                const auto startPos                   = squish.tetramino.position + bPos.toVec2i();
                 const auto [nDrillableBlocks, endPos] = countDrillableBlocks(startPos, direction);
 
                 maxDrilledBlocks = sf::base::max(maxDrilledBlocks, nDrillableBlocks);
             }
 
             m_animationTimeline.add(AnimDrill{
-                .tetramino = squish->tetramino,
+                .tetramino = squish.tetramino,
                 .direction = direction,
                 .duration  = 0.3f + (0.1f * static_cast<float>(maxDrilledBlocks)),
             });
+        };
+
+        const auto processLaser = [&](const LaserDirection::Enum direction)
+        {
+            if (!m_world.perkLaser[direction].hasValue())
+                return;
+
+            const auto maxPenetration = static_cast<sf::base::SizeT>(m_world.perkLaser[direction]->maxPenetration);
+
+            for (const auto bPos : findLaserBlocks(squish.tetramino, direction))
+            {
+                const auto startPos            = squish.tetramino.position + bPos.toVec2i();
+                auto       laserableBlocksInfo = findLaserableBlocks(startPos, direction);
+
+                if (laserableBlocksInfo.positions.empty())
+                    continue;
+
+                if (laserableBlocksInfo.positions.size() > maxPenetration)
+                    laserableBlocksInfo.positions.resize(maxPenetration);
+
+                for (const auto targetPos : laserableBlocksInfo.positions)
+                    m_animationTimeline.add(AnimLaser{
+                        .tetramino     = squish.tetramino,
+                        .direction     = direction,
+                        .gridStartPos  = startPos,
+                        .gridTargetPos = targetPos,
+                        .duration      = 0.175f,
+                    });
+            }
         };
 
         processDrill(DrillDirection::Down);
         processDrill(DrillDirection::Left);
         processDrill(DrillDirection::Right);
 
-        embedTetraminoAndClearLines(squish->tetramino);
+        processLaser(LaserDirection::Left);
+        processLaser(LaserDirection::Right);
 
-        m_animationTimeline.popFrontCommand();
+        embedTetraminoAndClearLines(squish.tetramino);
+
+        return true;
     }
 
 
@@ -1428,13 +1505,8 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    void updateAnimClearLines(AnimationCommand& cmd)
+    [[nodiscard]] bool updateAnimation(AnimClearLines& clearLines)
     {
-        auto* clearLines = cmd.getIf<AnimClearLines>();
-
-        if (clearLines == nullptr)
-            return;
-
         sf::base::Vector<sf::base::SizeT>             trulyClearedRows;
         sf::base::Vector<AnimFadeBlocks::FadingBlock> fadingBlocks;
         sf::base::Vector<sf::Vec2uz>                  columnClearPositions;
@@ -1445,7 +1517,7 @@ private:
                 trulyClearedRows.pushBack(row);
         };
 
-        for (sf::base::SizeT y : clearLines->rows)
+        for (sf::base::SizeT y : clearLines.rows)
         {
             bool rowIsFullyCleared = true;
 
@@ -1454,7 +1526,7 @@ private:
                 if (auto& optBlock = m_world.blockGrid.at(sf::Vec2uz{x, y}); optBlock.hasValue())
                 {
                     // TODO: powerup
-                    if (!clearLines->forceClear && optBlock->health > 1u)
+                    if (!clearLines.forceClear && optBlock->health > 1u)
                     {
                         damageBlock(sf::Vec2uz{x, y}, *optBlock);
                         rowIsFullyCleared = false;
@@ -1514,7 +1586,7 @@ private:
 
             const sf::base::SizeT numCleared = trulyClearedRows.size();
 
-            if (clearLines->awardXP)
+            if (clearLines.awardXP)
             {
                 m_world.linesCleared += numCleared;
 
@@ -1599,12 +1671,12 @@ private:
             });
 
             // Random block hit perk
-            if (clearLines->awardXP && m_world.perkRndHitOnClear > 0)
+            if (clearLines.awardXP && m_world.perkRndHitOnClear > 0)
                 enqueueLightningStrikeRandomBlocks(static_cast<sf::base::SizeT>(m_world.perkRndHitOnClear));
         }
         else if (!fadingBlocks.empty())
         {
-            const auto numPartiallyCleared = clearLines->rows.size();
+            const auto numPartiallyCleared = clearLines.rows.size();
 
             const sf::base::U64 amount = [&]
             {
@@ -1642,49 +1714,33 @@ private:
             });
         }
 
-        m_animationTimeline.popFrontCommand();
+        return true;
     }
 
 
     /////////////////////////////////////////////////////////////
-    void updateAnimFadeBlocks(AnimationCommand& cmd)
+    [[nodiscard]] bool updateAnimation(AnimFadeBlocks&)
     {
-        auto* fadeBlocks = cmd.getIf<AnimFadeBlocks>();
-
-        if (fadeBlocks == nullptr || m_animationTimeline.getProgress() < 1.f)
-            return;
-
-        m_animationTimeline.popFrontCommand();
+        return m_animationTimeline.getProgress() >= 1.f;
     }
 
 
     /////////////////////////////////////////////////////////////
-    void updateAnimCollapseGrid(AnimationCommand& cmd)
+    [[nodiscard]] bool updateAnimation(AnimCollapseGrid&)
     {
-        auto* collapseGrid = cmd.getIf<AnimCollapseGrid>();
+        if (m_animationTimeline.getProgress() < 1.f)
+            return false;
 
-        if (collapseGrid == nullptr)
-            return;
+        for (auto& rowOffset : m_rowYOffsets)
+            rowOffset = 0.f;
 
-        if (m_animationTimeline.getProgress() >= 1.f)
-        {
-            for (auto& rowOffset : m_rowYOffsets)
-                rowOffset = 0.f;
-
-            m_animationTimeline.popFrontCommand();
-            return;
-        }
+        return true;
     }
 
 
     /////////////////////////////////////////////////////////////
-    void updateAnimDrill(DrillDirection::Enum direction, AnimationCommand& cmd)
+    [[nodiscard]] bool updateAnimation(AnimDrill& drill)
     {
-        auto* drill = cmd.getIf<AnimDrill>();
-
-        if (drill == nullptr || drill->direction != direction)
-            return;
-
         if (m_animationTimeline.justStarted())
             playSound(m_sbDrill, 0.75f);
 
@@ -1692,31 +1748,60 @@ private:
         m_screenShakeTimer  = 0.05f;
 
         if (m_animationTimeline.getProgress() < 1.f)
-            return;
+            return false;
 
-        for (auto [blockPtr, position] : findDrillTargetBlocks(drill->tetramino, direction))
+        for (auto [blockPtr, position] : findDrillTargetBlocks(drill.tetramino, drill.direction))
             damageBlock(position, *blockPtr);
 
-        m_animationTimeline.popFrontCommand();
+        return true;
     }
 
 
     /////////////////////////////////////////////////////////////
-    void updateAnimColumnClear(AnimationCommand& cmd)
+    [[nodiscard]] bool updateAnimation(AnimLaser& laser)
     {
-        auto* columnClear = cmd.getIf<AnimColumnClear>();
+        if (m_animationTimeline.justStarted())
+        {
+            playSound(m_sbLaser, 0.75f);
 
-        if (columnClear == nullptr || m_animationTimeline.getProgress() < 1.f)
-            return;
+            const auto startPos = toDrawCoordinates(laser.gridStartPos);
+
+            SFML_BASE_ASSERT(!m_testBeam.hasValue());
+            m_testBeam.emplace(startPos, startPos, blockPalette[getTetraminoPaletteIdx(laser.tetramino)]);
+        }
+
+        m_screenShakeAmount = 0.65f;
+        m_screenShakeTimer  = 0.05f;
+
+        if (m_animationTimeline.getProgress() < 1.f)
+            return false;
+
+        auto& optBlock = m_world.blockGrid.at(laser.gridTargetPos);
+        SFML_BASE_ASSERT(optBlock.hasValue());
+
+        damageBlock(laser.gridTargetPos.toVec2uz(), *optBlock);
+
+        SFML_BASE_ASSERT(m_testBeam.hasValue());
+        m_testBeam.reset();
+
+        return true;
+    }
+
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] bool updateAnimation(AnimColumnClear& columnClear)
+    {
+        if (m_animationTimeline.getProgress() < 1.f)
+            return false;
 
         sf::base::Vector<AnimFadeBlocks::FadingBlock> fadingBlocks;
 
-        for (sf::base::SizeT y = columnClear->position.y; y < m_world.blockGrid.getHeight(); ++y)
-            if (auto& optBlock = m_world.blockGrid.at(sf::Vec2uz{columnClear->position.x, y}); optBlock.hasValue())
+        for (sf::base::SizeT y = columnClear.position.y; y < m_world.blockGrid.getHeight(); ++y)
+            if (auto& optBlock = m_world.blockGrid.at(sf::Vec2uz{columnClear.position.x, y}); optBlock.hasValue())
             {
                 fadingBlocks.pushBack(AnimFadeBlocks::FadingBlock{
                     .block    = *optBlock,
-                    .position = sf::Vec2uz{columnClear->position.x, y},
+                    .position = sf::Vec2uz{columnClear.position.x, y},
                 });
 
                 optBlock.reset();
@@ -1728,20 +1813,19 @@ private:
                 .duration     = 0.15f,
             });
 
-        m_animationTimeline.popFrontCommand();
+        return true;
     }
 
 
     /////////////////////////////////////////////////////////////
-    void updateAnimAction(AnimationCommand& cmd)
+    [[nodiscard]] bool updateAnimation(AnimAction& action)
     {
-        auto* action = cmd.getIf<AnimAction>();
+        if (m_animationTimeline.getProgress() < 1.f)
+            return false;
 
-        if (action == nullptr || m_animationTimeline.getProgress() < 1.f)
-            return;
+        action.action();
 
-        action->action();
-        m_animationTimeline.popFrontCommand();
+        return true;
     }
 
 
@@ -1920,6 +2004,9 @@ private:
             lb.update(deltaTime);
 
         sf::base::vectorEraseIf(m_lightningBolts, [](const LightningBolt& lb) { return lb.isFinished(); });
+
+        if (m_testBeam.hasValue())
+            m_testBeam->update(deltaTime);
     }
 
 
@@ -2285,23 +2372,75 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    void drawStepDrill(const DrillDirection::Enum direction, const sf::Vec2f drillDrawOffset, sf::Angle rotation)
+    [[nodiscard]] sf::Vec2i laserDirectionToVec2i(const LaserDirection::Enum direction) const
+    {
+        switch (direction)
+        {
+            case LaserDirection::Left:
+                return sf::Vec2i{-1, 1};
+            case LaserDirection::Right:
+                return sf::Vec2i{1, 1};
+            default:
+                SFML_BASE_UNREACHABLE();
+        }
+    }
+
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] LaserableBlocksInfo findLaserableBlocks(const sf::Vec2i startPos, const LaserDirection::Enum direction)
+    {
+        LaserableBlocksInfo result;
+
+        const auto dir = laserDirectionToVec2i(direction);
+        sf::Vec2i  pos = startPos + dir;
+
+        while (m_world.blockGrid.isInBounds(pos))
+        {
+            auto& optBlock = m_world.blockGrid.at(pos);
+
+            if (optBlock.hasValue() && optBlock->health > 1u)
+                result.positions.emplaceBack(pos);
+
+            pos += dir;
+        }
+
+        return result;
+    }
+
+
+    /////////////////////////////////////////////////////////////
+    void drawStepAnimDrill()
     {
         auto* drillAnim = m_animationTimeline.getIfPlaying<AnimDrill>();
 
-        if (drillAnim == nullptr || drillAnim->direction != direction)
+        if (drillAnim == nullptr)
             return;
+
+        const sf::Vec2f offsetByDirection[] = {
+            {-drawBlockSize.x / 2.f - 3.f, 1.f}, // Left
+            {drawBlockSize.x, 2.f},              // Right
+            {1.f, drawBlockSize.y},              // Down
+        };
+
+        const sf::Angle arrayByDirection[] = {
+            sf::degrees(90.f),  // Left
+            sf::degrees(270.f), // Right
+            sf::degrees(0.f),   // Down
+        };
+
+        const auto drillDrawOffset = offsetByDirection[static_cast<sf::base::SizeT>(drillAnim->direction)];
+        const auto rotation        = arrayByDirection[static_cast<sf::base::SizeT>(drillAnim->direction)];
 
         const auto& tetramino = drillAnim->tetramino;
 
         const float progress   = m_animationTimeline.getProgress();
         const auto  paletteIdx = getTetraminoPaletteIdx(tetramino);
 
-        for (const auto bPos : findDrillBlocks(tetramino, direction))
+        for (const auto bPos : findDrillBlocks(tetramino, drillAnim->direction))
         {
             const auto startPos = tetramino.position + bPos.toVec2i();
 
-            const auto [nDrillableBlocks, endPos] = countDrillableBlocks(startPos, direction);
+            const auto [nDrillableBlocks, endPos] = countDrillableBlocks(startPos, drillAnim->direction);
 
             if (nDrillableBlocks == 0)
                 continue;
@@ -2334,7 +2473,8 @@ private:
             if (optBlock.hasValue())
             {
                 m_hueColorCircleShapeParticles.emplaceBack(ParticleData{
-                    .position = lastDrawPos - drillDrawOffset + drillDirectionToVec2i(direction).toVec2f() * (radius / 2.f) +
+                    .position = lastDrawPos - drillDrawOffset +
+                                drillDirectionToVec2i(drillAnim->direction).toVec2f() * (radius / 2.f) +
                                 m_rngFast.getVec2f({-3.f, -3.f}, {3.f, 3.f}),
                     .velocity      = m_rngFast.getVec2f({-0.75f, -2.15f}, {0.75f, -0.25f}) * 0.05f,
                     .scale         = m_rngFast.getF(0.08f, 0.27f) * 0.95f,
@@ -2363,6 +2503,41 @@ private:
                 m_rtGame.draw(spike, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
             }
         }
+    }
+
+
+    /////////////////////////////////////////////////////////////
+    void drawStepAnimLaser()
+    {
+        auto* laserAnim = m_animationTimeline.getIfPlaying<AnimLaser>();
+
+        if (laserAnim == nullptr)
+            return;
+
+        if (!m_testBeam.hasValue())
+            return;
+
+        const auto targetPos = toDrawCoordinates(laserAnim->gridTargetPos) +
+                               m_rngFast.getVec2f(-drawBlockSize, drawBlockSize) / 4.f;
+
+        const auto progress = m_animationTimeline.getProgress();
+        m_testBeam->end     = m_testBeam->start + (targetPos - m_testBeam->start) * easeInOutBack(progress);
+
+        for (int i = 0; i < 3; ++i)
+            m_fixedColorCircleShapeParticles.emplaceBack(ParticleData{
+                .position      = m_testBeam->end,
+                .velocity      = m_rngFast.getVec2f({-0.75f, -2.15f}, {0.75f, -0.25f}) * 0.25f,
+                .scale         = m_rngFast.getF(0.08f, 0.27f) * 0.75f,
+                .scaleDecay    = 0.f,
+                .accelerationY = 0.0004f,
+                .opacity       = 0.75f,
+                .opacityDecay  = m_rngFast.getF(0.001f, 0.002f) * 0.7f,
+                .rotation      = m_rngFast.getF(0.f, sf::base::tau),
+                .torque        = m_rngFast.getF(-0.001f, 0.001f),
+                .color         = blockPalette[getTetraminoPaletteIdx(laserAnim->tetramino)],
+                .radius        = m_rngFast.getF(4.f, 7.f),
+                .pointCount    = 5u,
+            });
     }
 
 
@@ -2440,6 +2615,163 @@ private:
 
 
     /////////////////////////////////////////////////////////////
+    [[nodiscard]] sf::Vec2f calculateLaserGridIntersection(const sf::Vec2f& startPos, const LaserDirection::Enum direction) const
+    {
+        // 1. Define grid boundaries in draw coordinates. The playable grid area starts below gridGraceY.
+        const float left  = toDrawCoordinates(sf::Vec2f{0.f, 0.f}).x;
+        const float right = toDrawCoordinates(sf::Vec2f{static_cast<float>(m_world.blockGrid.getWidth() - 1), 0.f}).x;
+        const float top   = toDrawCoordinates(sf::Vec2f{0.f, static_cast<float>(gridGraceY)}).y;
+        const float bottom = toDrawCoordinates(sf::Vec2f{0.f, static_cast<float>(m_world.blockGrid.getHeight() - 1)}).y + 1.f;
+
+        // 2. Define the ray using its starting position and direction vector in draw space.
+        const sf::Vec2f rayDirGrid = laserDirectionToVec2i(direction).toVec2f();
+        const sf::Vec2f rayDirDraw = rayDirGrid.componentWiseMul(drawBlockSize);
+
+        // Avoid division by zero if direction is a zero vector.
+        if (rayDirDraw.x == 0.f && rayDirDraw.y == 0.f)
+            return startPos;
+
+        float minT = 10000.f;
+
+        // 3. Calculate the parametric 't' value for intersection with each of the four boundary lines.
+        // A valid intersection occurs if t > 0 (in front of the ray) and the intersection
+        // point lies on the boundary segment. The smallest valid 't' is the first point of impact.
+
+        // Check intersection with vertical walls (left/right).
+        if (rayDirDraw.x != 0.f)
+        {
+            if (direction == LaserDirection::Left)
+            {
+                const float tLeft = (left - startPos.x) / rayDirDraw.x;
+                if (tLeft > 0.f)
+                {
+                    const float y = startPos.y + tLeft * rayDirDraw.y;
+                    if (y >= top && y <= bottom)
+                        minT = sf::base::min(minT, tLeft);
+                }
+            }
+            else
+            {
+                const float tRight = (right - startPos.x) / rayDirDraw.x;
+                if (tRight > 0.f)
+                {
+                    const float y = startPos.y + tRight * rayDirDraw.y;
+                    if (y >= top && y <= bottom)
+                        minT = sf::base::min(minT, tRight);
+                }
+            }
+        }
+
+        // Check intersection with horizontal walls (top/bottom).
+        if (rayDirDraw.y != 0.f)
+        {
+            const float tBottom = (bottom - startPos.y) / rayDirDraw.y;
+            if (tBottom > 0.f)
+            {
+                const float x = startPos.x + tBottom * rayDirDraw.x;
+                if (x >= left && x <= right)
+                    minT = sf::base::min(minT, tBottom);
+            }
+        }
+
+        // 4. If a valid intersection was found (minT is not infinity), calculate the precise point.
+        if (minT < 10000.f)
+            return startPos + minT * rayDirDraw;
+
+        // Fallback: If no intersection is found (e.g., ray points away from grid),
+        // return a point far along the ray's direction.
+        return startPos + 5.f * rayDirDraw;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    void drawLaserEmittersForPerk(const sf::base::InPlaceVector<sf::Vec2uz, shapeDimension>& localBlockPositions,
+                                  const sf::Vec2f                                            offset,
+                                  const sf::Color                                            color,
+                                  const sf::Angle                                            rotation,
+                                  const sf::Vec2f                                            mainTetraminoCenter,
+                                  const sf::Vec2f                                            ghostTetraminoCenter)
+    {
+        const auto mainColor  = color;
+        const auto ghostColor = mainColor.withAlpha(64);
+
+        const auto laserDirection = rotation == sf::degrees(45.f) ? LaserDirection::Left : LaserDirection::Right;
+        const auto laserDir       = laserDirectionToVec2i(laserDirection);
+
+        sf::Sprite spike{
+            .origin      = floorVec2(sf::Vec2f{drawBlockSize.x / 2.f, drawBlockSize.y / 2.f} - sf::Vec2f{2.f, 2.f}),
+            .rotation    = rotation + sf::degrees(180.f + 45.f),
+            .textureRect = m_txrEmitter,
+        };
+
+        const auto drawGuide = [&](const sf::Vec2f anchor)
+        {
+            const auto guideOffset = laserDir.toVec2f() * 2.f;
+
+            auto endPos = calculateLaserGridIntersection(anchor - laserDir.toVec2f() * 6.f, laserDirection) +
+                          laserDir.toVec2f() * 5.f - guideOffset;
+
+            {
+                sf::RectangleShape guide{{
+                    .rotation    = (rotation).wrapUnsigned(),
+                    .textureRect = m_txrRedDot,
+                    .fillColor   = mainColor.withAlpha(32),
+                    .size        = sf::Vec2f{1.f, (endPos - anchor).length()},
+                }};
+
+                if (laserDirection == LaserDirection::Left)
+                    guide.setTopRight(anchor + guideOffset);
+                else
+                    guide.setTopLeft(anchor + guideOffset);
+
+                m_rtGame.draw(guide, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+            }
+
+            {
+                sf::RectangleShape guide{{
+                    .rotation    = (rotation).wrapUnsigned(),
+                    .textureRect = m_txrRedDot,
+                    .fillColor   = mainColor.withAlpha(16),
+                    .size        = sf::Vec2f{2.f, (endPos - anchor).length()},
+                }};
+
+                if (laserDirection == LaserDirection::Left)
+                    guide.setTopRight(anchor + guideOffset);
+                else
+                    guide.setTopLeft(anchor + guideOffset);
+
+                m_rtGame.draw(guide, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+            }
+        };
+
+        for (const auto& bPos : localBlockPositions)
+        {
+            const sf::Vec2f mainBlockDrawPos  = getDrawPositionOfLocalBlock(bPos, mainTetraminoCenter);
+            const sf::Vec2f ghostBlockDrawPos = getDrawPositionOfLocalBlock(bPos, ghostTetraminoCenter);
+
+            const auto mainSpikePos = floorVec2(offset + mainBlockDrawPos.addX(sf::base::floor(-drawBlockSize.x / 2.f)));
+
+            // Draw main spike
+            spike.position = mainSpikePos + (laserDir * 4).toVec2f();
+            spike.color    = mainColor;
+            m_rtGame.draw(spike, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+
+            drawGuide(mainSpikePos);
+
+            const auto ghostSpikePos = floorVec2(offset + ghostBlockDrawPos.addY(sf::base::floor(drawBlockSize.y / 2.f))) -
+                                       sf::Vec2f{1.f, 1.f};
+
+            // Draw ghost spike
+            spike.position = ghostSpikePos + (laserDir * 4).toVec2f();
+            spike.color    = ghostColor;
+            m_rtGame.draw(spike, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+
+            drawGuide(ghostSpikePos);
+        }
+    }
+
+
+    /////////////////////////////////////////////////////////////
     void drawStepAnimHardDrop()
     {
         auto* hardDrop = m_animationTimeline.getIfPlaying<AnimHardDrop>();
@@ -2512,7 +2844,7 @@ private:
 
         if (m_world.perkDrill[DrillDirection::Left].hasValue())
             drawDrillSpikesForPerk(findDrillBlocks(tetramino, DrillDirection::Left),
-                                   floorVec2(sf::Vec2f{-drawBlockSize.x / 2.f, -drawBlockSize.y / 2.f}),
+                                   {},
                                    color,
                                    sf::degrees(90.f),
                                    visualCenter,
@@ -2539,6 +2871,23 @@ private:
                               .opacity    = 0.25f,
                               .squishMult = squishMult,
                           });
+
+
+        if (m_world.perkLaser[LaserDirection::Left].hasValue())
+            drawLaserEmittersForPerk(findLaserBlocks(tetramino, LaserDirection::Left),
+                                     {0.f, -1.f},
+                                     color,
+                                     sf::degrees(45.f),
+                                     visualCenter,
+                                     ghostCenterDrawPosition);
+
+        if (m_world.perkLaser[LaserDirection::Right].hasValue())
+            drawLaserEmittersForPerk(findLaserBlocks(tetramino, LaserDirection::Right),
+                                     floorVec2(sf::Vec2f{drawBlockSize.x / 2.f, -1.f}),
+                                     color,
+                                     sf::degrees(315.f),
+                                     visualCenter,
+                                     ghostCenterDrawPosition);
     }
 
 
@@ -2586,7 +2935,10 @@ private:
     void drawStepLightningBolts()
     {
         for (auto& lb : m_lightningBolts)
-            lb.draw(m_rtGame, {});
+            lb.draw(m_rtGame, {.blendMode = sf::BlendAdd});
+
+        if (m_testBeam.hasValue())
+            m_testBeam->draw(m_rtGame, {.blendMode = sf::BlendAdd});
     }
 
 
@@ -2803,14 +3155,12 @@ private:
                                         m_currentTetraminoVisualCenter,
                                         /* squishMult */ 0.f,
                                         /* drawGhost */ true);
-            // /* drawGhost */ !m_animationTimeline.anyAnimationPlaying());
 
             drawStepEarnedXPParticles();
             drawStepCircleDataParticles();
 
-            drawStepDrill(DrillDirection::Down, {1.f, drawBlockSize.y}, sf::degrees(0));
-            drawStepDrill(DrillDirection::Left, {-drawBlockSize.x / 2.f - 3.f, 1.f}, sf::degrees(90));
-            drawStepDrill(DrillDirection::Right, {drawBlockSize.x, 2.f}, sf::degrees(270));
+            drawStepAnimDrill();
+            drawStepAnimLaser();
 
             drawStepUINextTetraminos();
             drawStepUIHeldTetramino();
@@ -2890,6 +3240,10 @@ public:
         m_perks.emplaceBack(sf::base::makeUnique<PerkHorizontalDrillLeftCoverage>());
         m_perks.emplaceBack(sf::base::makeUnique<PerkHorizontalDrillRightPenetration>());
         m_perks.emplaceBack(sf::base::makeUnique<PerkHorizontalDrillRightCoverage>());
+        m_perks.emplaceBack(sf::base::makeUnique<PerkDiagonalLaserLeftUnlock>());
+        m_perks.emplaceBack(sf::base::makeUnique<PerkDiagonalLaserRightUnlock>());
+        m_perks.emplaceBack(sf::base::makeUnique<PerkDiagonalLaserLeftPenetration>());
+        m_perks.emplaceBack(sf::base::makeUnique<PerkDiagonalLaserRightPenetration>());
     }
 
 

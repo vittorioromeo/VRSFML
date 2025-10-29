@@ -6,6 +6,7 @@
 ////////////////////////////////////////////////////////////
 #include "Block.hpp"
 #include "DrillDirection.hpp"
+#include "LaserDirection.hpp"
 #include "Tetramino.hpp"
 
 #include "SFML/Base/FixedFunction.hpp"
@@ -97,6 +98,17 @@ struct [[nodiscard]] AnimAction
 
 
 ////////////////////////////////////////////////////////////
+struct [[nodiscard]] AnimLaser // NOLINT(cppcoreguidelines-pro-type-member-init)
+{
+    Tetramino            tetramino;
+    LaserDirection::Enum direction;
+    sf::Vec2i            gridStartPos;
+    sf::Vec2i            gridTargetPos;
+    float                duration;
+};
+
+
+////////////////////////////////////////////////////////////
 using AnimationCommand = sf::base::Variant<AnimWait, //
                                            AnimHardDrop,
                                            AnimSquish,
@@ -105,6 +117,7 @@ using AnimationCommand = sf::base::Variant<AnimWait, //
                                            AnimCollapseGrid,
                                            AnimDrill,
                                            AnimColumnClear,
-                                           AnimAction>;
+                                           AnimAction,
+                                           AnimLaser>;
 
 } // namespace tsurv

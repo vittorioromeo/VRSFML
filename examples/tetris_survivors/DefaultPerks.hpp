@@ -5,6 +5,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "DrillDirection.hpp"
+#include "LaserDirection.hpp"
 #include "Perk.hpp"
 #include "World.hpp"
 
@@ -647,5 +648,97 @@ using PerkHorizontalDrillRightPenetration = PerkHorizontalDrillPenetration<Drill
 /////////////////////////////////////////////////////////////
 using PerkHorizontalDrillLeftCoverage  = PerkHorizontalDrillCoverage<DrillDirection::Left>;
 using PerkHorizontalDrillRightCoverage = PerkHorizontalDrillCoverage<DrillDirection::Right>;
+
+
+/////////////////////////////////////////////////////////////
+template <LaserDirection::Enum TDirection>
+struct [[nodiscard]] PerkDiagonalLaserUnlock : Perk
+{
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] std::string getName() const override
+    {
+        const auto* upperCaseDirectionStr = (TDirection == LaserDirection::Left) ? "SW" : "SE";
+        return std::format("{} Diagonal Laser", upperCaseDirectionStr);
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] std::string getDescription(const World&) const override
+    {
+        const auto* lowerCaseDirectionStr = (TDirection == LaserDirection::Left) ? "southwest" : "southeast";
+        return std::format("Damage blocks placed diagonally to the {} of the placed tetramino.", lowerCaseDirectionStr);
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] std::string getProgressionStr(const World&) const override
+    {
+        return "";
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] bool meetsPrerequisites(const World& world) const override
+    {
+        return !world.perkLaser[TDirection].hasValue();
+    }
+
+    /////////////////////////////////////////////////////////////
+    void apply(World& world) const override
+    {
+        world.perkLaser[TDirection].emplace();
+    }
+};
+
+
+/////////////////////////////////////////////////////////////
+template <LaserDirection::Enum TDirection>
+struct [[nodiscard]] PerkDiagonalLaserPenetration : Perk
+{
+    /////////////////////////////////////////////////////////////
+    static constexpr int penetrationIncrease = 1;
+    static constexpr int maxPenetration      = 4;
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] std::string getName() const override
+    {
+        const auto* upperCaseDirectionStr = (TDirection == LaserDirection::Left) ? "SW" : "SE";
+        return std::format("{} Diagonal - Penetration", upperCaseDirectionStr);
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] std::string getDescription(const World& world) const override
+    {
+        return std::format("Increase the maximum number of blocks damaged to {}.",
+                           world.perkLaser[TDirection]->maxPenetration + penetrationIncrease);
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] std::string getProgressionStr(const World& world) const override
+    {
+        return std::format("{} -> {}",
+                           world.perkLaser[TDirection]->maxPenetration,
+                           world.perkLaser[TDirection]->maxPenetration + penetrationIncrease);
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] bool meetsPrerequisites(const World& world) const override
+    {
+        return world.perkLaser[TDirection].hasValue() && world.perkLaser[TDirection]->maxPenetration < maxPenetration;
+    }
+
+    /////////////////////////////////////////////////////////////
+    void apply(World& world) const override
+    {
+        ++world.perkLaser[TDirection]->maxPenetration;
+    }
+};
+
+
+/////////////////////////////////////////////////////////////
+using PerkDiagonalLaserLeftUnlock  = PerkDiagonalLaserUnlock<LaserDirection::Left>;
+using PerkDiagonalLaserRightUnlock = PerkDiagonalLaserUnlock<LaserDirection::Right>;
+
+
+/////////////////////////////////////////////////////////////
+using PerkDiagonalLaserLeftPenetration  = PerkDiagonalLaserPenetration<LaserDirection::Left>;
+using PerkDiagonalLaserRightPenetration = PerkDiagonalLaserPenetration<LaserDirection::Right>;
 
 } // namespace tsurv
