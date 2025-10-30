@@ -407,19 +407,19 @@ public:
         if (!object.hasValue() || !object->is<Block>())
             return;
 
-        if (const auto e = getBlockByPosition(object->as<Block>().position + sf::Vec2i{0, 1}); e.hasValue())
+        if (const auto e = getBlockByPosition(object->as<Block>().position.addY(1)); e.hasValue())
             if (f(*e) == ControlFlow::Break)
                 return;
 
-        if (const auto w = getBlockByPosition(object->as<Block>().position + sf::Vec2i{1, 0}); w.hasValue())
+        if (const auto w = getBlockByPosition(object->as<Block>().position.addX(1)); w.hasValue())
             if (f(*w) == ControlFlow::Break)
                 return;
 
-        if (const auto n = getBlockByPosition(object->as<Block>().position + sf::Vec2i{0, -1}); n.hasValue())
+        if (const auto n = getBlockByPosition(object->as<Block>().position.addY(-1)); n.hasValue())
             if (f(*n) == ControlFlow::Break)
                 return;
 
-        if (const auto s = getBlockByPosition(object->as<Block>().position + sf::Vec2i{-1, 0}); s.hasValue())
+        if (const auto s = getBlockByPosition(object->as<Block>().position.addX(-1)); s.hasValue())
             if (f(*s) == ControlFlow::Break)
                 return;
     }
@@ -917,7 +917,7 @@ private:
             const bool mustDelete2 = f(m_turnEvents[i]);
             if (mustDelete2)
             {
-                m_turnEvents.erase(m_turnEvents.begin() + i);
+                m_turnEvents.eraseAt(i);
                 --i;
             }
         }
@@ -1725,16 +1725,16 @@ public:
                         {
                             unsigned int neighbors = 0u;
 
-                            if (m_world.isWall(block.position + sf::Vec2i{0, -1}))
+                            if (m_world.isWall(block.position.addY(-1)))
                                 neighbors |= 1u << 0;
 
-                            if (m_world.isWall(block.position + sf::Vec2i{-1, 0}))
+                            if (m_world.isWall(block.position.addX(-1)))
                                 neighbors |= 1u << 1;
 
-                            if (m_world.isWall(block.position + sf::Vec2i{1, 0}))
+                            if (m_world.isWall(block.position.addX(1)))
                                 neighbors |= 1u << 2;
 
-                            if (m_world.isWall(block.position + sf::Vec2i{0, 1}))
+                            if (m_world.isWall(block.position.addY(1)))
                                 neighbors |= 1u << 3;
 
                             const auto tileX = static_cast<float>(neighbors % 4u);

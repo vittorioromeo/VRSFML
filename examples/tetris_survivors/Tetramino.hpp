@@ -29,7 +29,7 @@ struct [[nodiscard]] Tetramino // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
     sf::base::Array<Block, 4> blockMap; // NOLINT(cppcoreguidelines-pro-type-member-init)
 
-    for (const auto& block : tetramino.shape)
+    for (const auto& block : tetramino.shape.data)
     {
         if (!block.hasValue())
             continue;
@@ -47,9 +47,9 @@ struct [[nodiscard]] Tetramino // NOLINT(cppcoreguidelines-pro-type-member-init)
 
     BlockMatrix newBlockMatrix;
 
-    for (sf::base::SizeT i = 0u; i < newBlockMatrix.size(); ++i)
+    for (sf::base::SizeT i = 0u; i < newBlockMatrix.data.size(); ++i)
         if (const ShapeBlockSequence id = targetShapeTemplate[i]; id != ShapeBlockSequence::_)
-            newBlockMatrix[i].emplace(blockMap[static_cast<sf::base::SizeT>(id) - 1u]);
+            newBlockMatrix.data[i].emplace(blockMap[static_cast<sf::base::SizeT>(id) - 1u]);
 
     return newBlockMatrix;
 }

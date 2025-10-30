@@ -558,7 +558,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
         CHECK(tv[4].value == 5);
     }
 
-    SECTION("emplaceRange and unsafeEmplaceRange")
+    SECTION("emplaceRange and unsafeEmplaceBackRange")
     {
         resetCounters();
         sf::base::InPlaceVector<Obj, 10> tv;
@@ -578,7 +578,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
         CHECK(intCtorCount == 2);
         resetCounters();
 
-        tv.unsafeEmplaceRange(source2, 2); // Assumes capacity
+        tv.unsafeEmplaceBackRange(source2, 2); // Assumes capacity
         CHECK(tv.size() == 5);
         CHECK(copyCtorCount == 2);
         CHECK(tv[3].value == 40);
@@ -605,6 +605,106 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
         sf::base::InPlaceVector<NonMovable, 5> tv;
         tv.emplaceBack();
         CHECK(tv.size() == 1);
+    }
+
+    SECTION("emplace")
+    {
+        SUBCASE("Emplace into empty vector")
+        {
+            resetCounters();
+            sf::base::InPlaceVector<Obj, defaultCapacity> tv;
+
+            Obj* itRet = tv.emplace(tv.begin(), 42);
+
+            CHECK(tv.size() == 1);
+            CHECK(tv[0].value == 42);
+            CHECK(itRet == tv.begin());
+            CHECK(intCtorCount == 1);
+            CHECK(moveCtorCount == 0);
+            CHECK(moveAssignCount == 0);
+            CHECK(dtorCount == 0);
+        }
+
+        SUBCASE("Emplace at the end")
+        {
+            resetCounters();
+            sf::base::InPlaceVector<Obj, defaultCapacity> tv;
+            tv.emplaceBack(10);
+            tv.emplaceBack(20);
+            resetCounters();
+
+            Obj* itRet = tv.emplace(tv.end(), 30);
+
+            CHECK(tv.size() == 3);
+            CHECK(tv[0].value == 10);
+            CHECK(tv[1].value == 20);
+            CHECK(tv[2].value == 30);
+            CHECK(itRet == tv.begin() + 2);
+
+            // Directly constructs at end, no shifts needed.
+            CHECK(intCtorCount == 1);
+            CHECK(moveCtorCount == 0);
+            CHECK(moveAssignCount == 0);
+            CHECK(dtorCount == 0);
+        }
+
+        SUBCASE("Emplace in the middle")
+        {
+            resetCounters();
+            sf::base::InPlaceVector<Obj, defaultCapacity> tv;
+            tv.emplaceBack(10);
+            tv.emplaceBack(30);
+            tv.emplaceBack(40);
+            REQUIRE(tv.size() == 3);
+            resetCounters();
+
+            Obj* itRet = tv.emplace(tv.begin() + 1, 20);
+
+            CHECK(tv.size() == 4);
+            CHECK(tv[0].value == 10);
+            CHECK(tv[1].value == 20); // new element
+            CHECK(tv[2].value == 30);
+            CHECK(tv[3].value == 40);
+            CHECK(itRet == tv.begin() + 1);
+
+            // Analysis: Shift 2 elements (30, 40)
+            // 1. Move-construct '40' to new end.
+            // 2. Move-assign '30' over old '40'.
+            // 3. Destroy moved-from '30' at insertion point.
+            // 4. In-place construct '20'.
+            CHECK(intCtorCount == 1);
+            CHECK(moveCtorCount == 1);
+            CHECK(moveAssignCount == 1);
+            CHECK(dtorCount == 1);
+        }
+
+        SUBCASE("Emplace at the beginning")
+        {
+            resetCounters();
+            sf::base::InPlaceVector<Obj, defaultCapacity> tv;
+            tv.emplaceBack(20);
+            tv.emplaceBack(30);
+            REQUIRE(tv.size() == 2);
+            resetCounters();
+
+            Obj* itRet = tv.emplace(tv.begin(), 10);
+
+            CHECK(tv.size() == 3);
+            CHECK(tv[0].value == 10);
+            CHECK(tv[1].value == 20);
+            CHECK(tv[2].value == 30);
+            CHECK(itRet == tv.begin());
+
+            // Analysis: Shift 2 elements (20, 30)
+            // 1. Move-construct '30' to new end.
+            // 2. Move-assign '20' over old '30'.
+            // 3. Destroy moved-from '20' at insertion point.
+            // 4. In-place construct '10'.
+            CHECK(intCtorCount == 1);
+            CHECK(moveCtorCount == 1);
+            CHECK(moveAssignCount == 1);
+            CHECK(dtorCount == 1);
+        }
     }
 }
 

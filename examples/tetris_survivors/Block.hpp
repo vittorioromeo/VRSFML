@@ -28,7 +28,7 @@ inline constexpr sf::base::Array<sf::Color, tetraminoShapeCount> blockPalette{
 
 
 ////////////////////////////////////////////////////////////
-enum class BlockPowerup : sf::base::U8
+enum class [[nodiscard]] BlockPowerup : sf::base::U8
 {
     None          = 0u,
     XPBonus       = 1u,

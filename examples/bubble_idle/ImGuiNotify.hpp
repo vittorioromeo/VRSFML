@@ -449,7 +449,7 @@ namespace ImGui
      */
     inline void RemoveNotification(int index)
     {
-        notifications.erase(notifications.begin() + index);
+        notifications.eraseAt(static_cast<sf::base::SizeT>(index));
     }
 
     /**

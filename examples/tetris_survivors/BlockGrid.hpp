@@ -118,7 +118,7 @@ public:
         for (sf::base::SizeT y = 0u; y < shapeDimension; ++y)
             for (sf::base::SizeT x = 0u; x < shapeDimension; ++x)
             {
-                if (!blockMatrix[y * shapeDimension + x].hasValue())
+                if (!blockMatrix.at(x, y).hasValue())
                     continue;
 
                 const auto gridPos = newPosition + sf::Vec2uz{x, y}.toVec2i();
@@ -140,9 +140,7 @@ public:
         for (sf::base::SizeT y = 0u; y < shapeDimension; ++y)
             for (sf::base::SizeT x = 0u; x < shapeDimension; ++x)
             {
-                const auto index = y * shapeDimension + x;
-
-                if (!tetramino.shape[index].hasValue())
+                if (!tetramino.shape.at(x, y).hasValue())
                     continue;
 
                 const auto gridPos = tetramino.position + sf::Vec2uz{x, y}.toVec2i();
@@ -151,7 +149,7 @@ public:
                     continue;
 
                 SFML_BASE_ASSERT(!at(gridPos).hasValue());
-                at(gridPos) = tetramino.shape[index];
+                at(gridPos) = tetramino.shape.at(x, y);
             }
     }
 

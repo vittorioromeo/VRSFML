@@ -22,11 +22,11 @@
 namespace tsurv
 {
 ////////////////////////////////////////////////////////////
-class LightningBolt
+class [[nodiscard]] LightningBolt
 {
 private:
     ////////////////////////////////////////////////////////////
-    struct BoltSegment
+    struct [[nodiscard]] BoltSegment
     {
         sf::Vec2f    start;
         sf::Vec2f    end;

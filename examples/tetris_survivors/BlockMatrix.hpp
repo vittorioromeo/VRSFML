@@ -16,7 +16,62 @@
 namespace tsurv
 {
 ////////////////////////////////////////////////////////////
-using BlockMatrix = sf::base::Array<sf::base::Optional<Block>, shapeDimension * shapeDimension>;
+struct [[nodiscard]] BlockMatrix
+{
+    ////////////////////////////////////////////////////////////
+    sf::base::Array<sf::base::Optional<Block>, shapeDimension * shapeDimension> data;
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] sf::base::Optional<Block>& at(const sf::base::SizeT x, const sf::base::SizeT y)
+    {
+        SFML_BASE_ASSERT(x < shapeDimension);
+        SFML_BASE_ASSERT(y < shapeDimension);
+
+        const auto index = getIndex2Dto1D(sf::Vec2uz{x, y}, shapeDimension);
+        SFML_BASE_ASSERT(index < data.size());
+
+        return data[index];
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] const sf::base::Optional<Block>& at(const sf::base::SizeT x, const sf::base::SizeT y) const
+    {
+        return const_cast<BlockMatrix*>(this)->at(x, y);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] sf::base::Optional<Block>& at(const int x, const int y)
+    {
+        SFML_BASE_ASSERT(x >= 0);
+        SFML_BASE_ASSERT(y >= 0);
+
+        return at(static_cast<sf::base::SizeT>(x), static_cast<sf::base::SizeT>(y));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] const sf::base::Optional<Block>& at(const int x, const int y) const
+    {
+        return const_cast<BlockMatrix*>(this)->at(x, y);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isInBounds(const sf::base::SizeT x, const sf::base::SizeT y) const
+    {
+        return x < shapeDimension && y < shapeDimension;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isInBounds(const int x, const int y) const
+    {
+        return x >= 0 && x < static_cast<int>(shapeDimension) && y >= 0 && y < static_cast<int>(shapeDimension);
+    }
+};
 
 
 ////////////////////////////////////////////////////////////
@@ -26,16 +81,20 @@ using BlockMatrix = sf::base::Array<sf::base::Optional<Block>, shapeDimension * 
 
     for (sf::base::SizeT i = 0u; i < shapeMatrix.size(); ++i)
         if (const auto shapeBlockSequence = shapeMatrix[i]; shapeBlockSequence != ShapeBlockSequence::_)
-            blockMatrix[i].emplace(block).shapeBlockSequence = shapeBlockSequence;
+            blockMatrix.data[i].emplace(block).shapeBlockSequence = shapeBlockSequence;
 
     return blockMatrix;
 }
 
 
 ////////////////////////////////////////////////////////////
-inline sf::base::InPlaceVector<sf::Vec2uz, shapeDimension> findDownmostBlocks(const BlockMatrix& shape)
+using ShapeBlockPositionVector = sf::base::InPlaceVector<sf::Vec2uz, shapeDimension>;
+
+
+////////////////////////////////////////////////////////////
+inline ShapeBlockPositionVector findDownmostBlocks(const BlockMatrix& shape)
 {
-    sf::base::InPlaceVector<sf::Vec2uz, shapeDimension> result;
+    ShapeBlockPositionVector result;
 
     bool foundLastRow = false;
 
@@ -43,7 +102,7 @@ inline sf::base::InPlaceVector<sf::Vec2uz, shapeDimension> findDownmostBlocks(co
     {
         for (sf::base::SizeT x = 0; x < shapeDimension; ++x)
         {
-            if (shape[y * shapeDimension + x].hasValue())
+            if (shape.at(x, y).hasValue())
             {
                 foundLastRow = true;
                 result.emplaceBack(x, y);
@@ -59,9 +118,9 @@ inline sf::base::InPlaceVector<sf::Vec2uz, shapeDimension> findDownmostBlocks(co
 
 
 ////////////////////////////////////////////////////////////
-inline sf::base::InPlaceVector<sf::Vec2uz, shapeDimension> findTopmostBlocks(const BlockMatrix& shape)
+[[nodiscard]] inline ShapeBlockPositionVector findTopmostBlocks(const BlockMatrix& shape)
 {
-    sf::base::InPlaceVector<sf::Vec2uz, shapeDimension> result;
+    ShapeBlockPositionVector result;
 
     bool foundFirstRow = false;
 
@@ -69,7 +128,7 @@ inline sf::base::InPlaceVector<sf::Vec2uz, shapeDimension> findTopmostBlocks(con
     {
         for (sf::base::SizeT x = 0; x < shapeDimension; ++x)
         {
-            if (shape[y * shapeDimension + x].hasValue())
+            if (shape.at(x, y).hasValue())
             {
                 foundFirstRow = true;
                 result.emplaceBack(x, y);
@@ -85,13 +144,9 @@ inline sf::base::InPlaceVector<sf::Vec2uz, shapeDimension> findTopmostBlocks(con
 
 
 ////////////////////////////////////////////////////////////
-inline sf::base::InPlaceVector<sf::Vec2uz, shapeDimension> findHorizontalBlocks(const BlockMatrix&    shape,
-                                                                                const sf::base::SizeT maxDepth)
+[[nodiscard]] inline ShapeBlockPositionVector findHorizontalBlocks(const BlockMatrix& shape, const sf::base::SizeT maxDepth)
 {
-    const auto idx = [](sf::base::SizeT x, sf::base::SizeT y) -> sf::base::SizeT
-    { return getIndex2Dto1D(sf::Vec2uz{x, y}, shapeDimension); };
-
-    sf::base::InPlaceVector<sf::Vec2uz, shapeDimension> result;
+    ShapeBlockPositionVector result;
 
     sf::base::SizeT foundY = 0u;
 
@@ -101,20 +156,16 @@ inline sf::base::InPlaceVector<sf::Vec2uz, shapeDimension> findHorizontalBlocks(
 
         for (sf::base::SizeT x = 0; x < shapeDimension; ++x)
         {
-            const auto iCenter = idx(x, y);
-            const auto iLeft   = idx(x - 1, y);
-            const auto iRight  = idx(x + 1, y);
+            const bool leftEmpty  = (x == 0) || !shape.at(x - 1, y).hasValue();
+            const bool rightEmpty = (x == shapeDimension - 1) || !shape.at(x + 1, y).hasValue();
 
-            const bool leftEmpty  = (x == 0) || !shape[iLeft].hasValue();
-            const bool rightEmpty = (x == shapeDimension - 1) || !shape[iRight].hasValue();
-
-            if (shape[iCenter].hasValue() && leftEmpty && rightEmpty)
+            if (shape.at(x, y).hasValue() && leftEmpty && rightEmpty)
             {
                 result.emplaceBack(x, y);
                 ++foundY;
             }
 
-            if (shape[iCenter].hasValue())
+            if (shape.at(x, y).hasValue())
                 ++xCount;
         }
 

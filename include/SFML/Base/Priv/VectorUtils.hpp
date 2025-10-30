@@ -175,6 +175,39 @@ template <typename T>
 
 
 ////////////////////////////////////////////////////////////
+template <typename T>
+[[gnu::always_inline, gnu::flatten]] inline void makeHole(T* const pos, T* const end)
+{
+    // Moves elements in `[pos, end)` to `[pos + 1, end + 1)`.
+    // Assumes capacity is sufficient.
+    SFML_BASE_ASSERT(pos <= end);
+
+    if (pos == end)
+        return; // Inserting at the end, no move needed.
+
+    if constexpr (SFML_BASE_IS_TRIVIALLY_COPYABLE(T))
+    {
+        SFML_BASE_MEMMOVE(pos + 1, pos, static_cast<SizeT>(end - pos) * sizeof(T));
+    }
+    else
+    {
+        // Move-construct a new element at the end from the old last element.
+        SFML_BASE_PLACEMENT_NEW(end) T(static_cast<T&&>(*(end - 1)));
+
+        // Move-assign elements backwards to shift them to the right.
+        for (T* p = end - 1; p > pos; --p)
+            *p = static_cast<T&&>(*(p - 1));
+
+        // The element at `pos` has been moved from, but its memory is still valid.
+        // It will be overwritten by the new element. If it's not trivially
+        // destructible, we should destroy it first to release its resources.
+        if constexpr (!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(T))
+            pos->~T();
+    }
+}
+
+
+////////////////////////////////////////////////////////////
 #define SFML_BASE_PRIV_DEFINE_COMMON_VECTOR_OPERATIONS(vectorType)                                                   \
                                                                                                                      \
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem& operator[](const SizeT i) noexcept             \
@@ -278,7 +311,7 @@ template <typename T>
     }                                                                                                                \
                                                                                                                      \
     template <typename... Ts>                                                                                        \
-    [[gnu::always_inline]] TItem& reEmplaceByIndex(const base::SizeT index, Ts&&... xs)                              \
+    [[gnu::always_inline]] TItem& reEmplaceByIndex(const SizeT index, Ts&&... xs)                                    \
     {                                                                                                                \
         return reEmplaceByIterator(data() + index, static_cast<Ts&&>(xs)...);                                        \
     }                                                                                                                \
@@ -293,12 +326,12 @@ template <typename T>
     [[gnu::always_inline]] void emplaceRange(const TItem* const ptr, const SizeT count)                              \
     {                                                                                                                \
         reserveMore(count);                                                                                          \
-        unsafeEmplaceRange(ptr, count);                                                                              \
+        unsafeEmplaceBackRange(ptr, count);                                                                          \
     }                                                                                                                \
                                                                                                                      \
     [[gnu::always_inline, gnu::flatten]] void unsafeEmplaceOther(const vectorType& rhs) noexcept                     \
     {                                                                                                                \
-        unsafeEmplaceRange(rhs.data(), rhs.size());                                                                  \
+        unsafeEmplaceBackRange(rhs.data(), rhs.size());                                                              \
     }                                                                                                                \
                                                                                                                      \
     [[gnu::always_inline]] void assignRange(const TItem* const b, const TItem* const e)                              \
@@ -314,6 +347,12 @@ template <typename T>
         priv::VectorUtils::copyRange(data(), b, e);                                                                  \
                                                                                                                      \
         unsafeSetSize(count);                                                                                        \
+    }                                                                                                                \
+                                                                                                                     \
+    [[gnu::always_inline]] void eraseAt(const SizeT index)                                                           \
+    {                                                                                                                \
+        SFML_BASE_ASSERT(index < size());                                                                            \
+        erase(data() + index);                                                                                       \
     }                                                                                                                \
                                                                                                                      \
     static_assert(true)
