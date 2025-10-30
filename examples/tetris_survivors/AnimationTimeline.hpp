@@ -20,9 +20,16 @@ struct [[nodiscard]] AnimationTimeline
 
 
     ////////////////////////////////////////////////////////////
-    void add(const auto& cmd)
+    void add(const float duration, const auto& cmd)
     {
-        commands.emplaceBack(cmd);
+        commands.emplaceBack(typename TCommand::VariantType{cmd}, duration);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    void addInstantaneous(const auto& cmd)
+    {
+        commands.emplaceBack(typename TCommand::VariantType{cmd}, 0.f);
     }
 
 
@@ -47,14 +54,15 @@ struct [[nodiscard]] AnimationTimeline
     template <typename T>
     [[nodiscard]] T* getIfPlaying()
     {
-        return commands.empty() ? nullptr : commands.front().template getIf<T>();
+        return commands.empty() ? nullptr : commands.front().data.template getIf<T>();
     }
+
 
     ////////////////////////////////////////////////////////////
     template <typename T>
     [[nodiscard]] const T* getIfPlaying() const
     {
-        return commands.empty() ? nullptr : commands.front().template getIf<T>();
+        return commands.empty() ? nullptr : commands.front().data.template getIf<T>();
     }
 
 
@@ -62,7 +70,7 @@ struct [[nodiscard]] AnimationTimeline
     template <typename T>
     [[nodiscard]] bool isPlaying() const
     {
-        return !commands.empty() && commands.front().template is<T>();
+        return !commands.empty() && commands.front().data.template is<T>();
     }
 
 
@@ -71,7 +79,7 @@ struct [[nodiscard]] AnimationTimeline
     [[nodiscard]] bool isEnqueued() const
     {
         for (const auto& cmd : commands)
-            if (cmd.template is<T>())
+            if (cmd.data.template is<T>())
                 return true;
 
         return false;
@@ -81,10 +89,13 @@ struct [[nodiscard]] AnimationTimeline
     ////////////////////////////////////////////////////////////
     [[nodiscard]] float getProgress() const
     {
-        if (commands.empty())
-            return 0.f;
+        SFML_BASE_ASSERT(!commands.empty());
 
-        const float duration = commands.front().linearMatch([](auto&& cmd) { return cmd.duration; });
+        const float duration = commands.front().duration;
+
+        if (duration <= 0.f)
+            return 1.f;
+
         return sf::base::clamp(timeOnCurrentCommand / duration, 0.f, 1.f);
     }
 

@@ -211,6 +211,43 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    template <typename... Ts>
+    [[gnu::always_inline]] TItem* emplace(TItem* const pos, Ts&&... xs)
+    {
+        SFML_BASE_ASSERT(pos >= begin() && pos <= end());
+
+        // Save the index before `reserve` potentially invalidates `pos`.
+        const auto index = static_cast<SizeT>(pos - m_data);
+
+        reserve(size() + 1);
+
+        // Restore the insertion position iterator, which may point to new memory.
+        TItem* const currentPos = m_data + index;
+
+        priv::VectorUtils::makeHole(currentPos, m_endSize);
+
+        SFML_BASE_PLACEMENT_NEW(currentPos) TItem(static_cast<Ts&&>(xs)...);
+        ++m_endSize;
+
+        return currentPos;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] TItem* insert(TItem* const pos, const TItem& value)
+    {
+        return emplace(pos, value);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] TItem* insert(TItem* const pos, TItem&& value)
+    {
+        return emplace(pos, static_cast<TItem&&>(value));
+    }
+
+
+    ////////////////////////////////////////////////////////////
     void shrinkToFit()
     {
         const SizeT currentSize = size();
@@ -259,7 +296,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void unsafeEmplaceRange(const TItem* const ptr, const SizeT count) noexcept
+    [[gnu::always_inline, gnu::flatten]] void unsafeEmplaceBackRange(const TItem* const ptr, const SizeT count) noexcept
     {
         SFML_BASE_ASSERT(size() + count <= capacity());
         SFML_BASE_ASSERT(m_data != nullptr);

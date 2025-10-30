@@ -55,7 +55,7 @@ struct [[nodiscard]] TaggedBlockMatrix // NOLINT(cppcoreguidelines-pro-type-memb
 ////////////////////////////////////////////////////////////
 [[nodiscard]] sf::base::Array<sf::base::U64, 4> generateTetraminoHealthDistribution(sf::base::U64 difficultyFactor, auto&& rng)
 {
-    // difficultyFactor = 2000;
+    difficultyFactor = 2000; // TODO
 
     const auto minHealth = 1;
     const auto maxHealth = 4;
