@@ -449,6 +449,172 @@ TEST_CASE("[Base] Base/Vector.hpp")
         CHECK(moveAssignCount == 0);
         CHECK(dtorCount == 1);
     }
+
+
+    SECTION("emplace")
+    {
+        SUBCASE("Emplace into empty vector")
+        {
+            resetCounters();
+            sf::base::Vector<Obj> tv;
+            tv.reserve(5);
+            resetCounters();
+
+            Obj* itRet = tv.emplace(tv.begin(), 42);
+
+            CHECK(tv.size() == 1);
+            CHECK(tv[0].value == 42);
+            CHECK(itRet == tv.begin());
+            CHECK(intCtorCount == 1);
+            CHECK(moveCtorCount == 0);
+            CHECK(moveAssignCount == 0);
+            CHECK(dtorCount == 0);
+        }
+
+        SUBCASE("Emplace at the end with capacity")
+        {
+            resetCounters();
+            sf::base::Vector<Obj> tv;
+            tv.emplaceBack(10);
+            tv.emplaceBack(20);
+            tv.reserve(5);
+            resetCounters();
+
+            Obj* itRet = tv.emplace(tv.end(), 30);
+
+            CHECK(tv.size() == 3);
+            CHECK(tv[0].value == 10);
+            CHECK(tv[1].value == 20);
+            CHECK(tv[2].value == 30);
+            CHECK(itRet == tv.begin() + 2);
+
+            // Directly constructs at end, no shifts needed.
+            CHECK(intCtorCount == 1);
+            CHECK(moveCtorCount == 0);
+            CHECK(moveAssignCount == 0);
+            CHECK(dtorCount == 0);
+        }
+
+        SUBCASE("Emplace in the middle with capacity")
+        {
+            resetCounters();
+            sf::base::Vector<Obj> tv;
+            tv.emplaceBack(10);
+            tv.emplaceBack(30);
+            tv.emplaceBack(40);
+            tv.reserve(5);
+            REQUIRE(tv.size() == 3);
+            resetCounters();
+
+            Obj* itRet = tv.emplace(tv.begin() + 1, 20);
+
+            CHECK(tv.size() == 4);
+            CHECK(tv[0].value == 10);
+            CHECK(tv[1].value == 20); // new element
+            CHECK(tv[2].value == 30);
+            CHECK(tv[3].value == 40);
+            CHECK(itRet == tv.begin() + 1);
+
+            // Analysis: Shift 2 elements (30, 40)
+            // 1. Move-construct '40' to new end.
+            // 2. Move-assign '30' over old '40'.
+            // 3. Destroy moved-from '30' at insertion point.
+            // 4. In-place construct '20'.
+            CHECK(intCtorCount == 1);
+            CHECK(moveCtorCount == 1);
+            CHECK(moveAssignCount == 1);
+            CHECK(dtorCount == 1);
+        }
+
+        SUBCASE("Emplace at the beginning with capacity")
+        {
+            resetCounters();
+            sf::base::Vector<Obj> tv;
+            tv.emplaceBack(20);
+            tv.emplaceBack(30);
+            tv.reserve(5);
+            REQUIRE(tv.size() == 2);
+            resetCounters();
+
+            Obj* itRet = tv.emplace(tv.begin(), 10);
+
+            CHECK(tv.size() == 3);
+            CHECK(tv[0].value == 10);
+            CHECK(tv[1].value == 20);
+            CHECK(tv[2].value == 30);
+            CHECK(itRet == tv.begin());
+
+            // Analysis: Shift 2 elements (20, 30)
+            // 1. Move-construct '30' to new end.
+            // 2. Move-assign '20' over old '30'.
+            // 3. Destroy moved-from '20' at insertion point.
+            // 4. In-place construct '10'.
+            CHECK(intCtorCount == 1);
+            CHECK(moveCtorCount == 1);
+            CHECK(moveAssignCount == 1);
+            CHECK(dtorCount == 1);
+        }
+
+        SUBCASE("Emplace in the middle with reallocation")
+        {
+            resetCounters();
+            sf::base::Vector<Obj> tv;
+            tv.emplaceBack(10);
+            tv.emplaceBack(30);
+            tv.shrinkToFit(); // size == 2, capacity == 2
+            REQUIRE(tv.size() == 2);
+            REQUIRE(tv.capacity() == 2);
+            resetCounters();
+
+            Obj* itRet = tv.emplace(tv.begin() + 1, 20);
+
+            CHECK(tv.size() == 3);
+            CHECK(tv.capacity() >= 3);
+            CHECK(tv[0].value == 10);
+            CHECK(tv[1].value == 20);
+            CHECK(tv[2].value == 30);
+            CHECK(itRet == tv.begin() + 1);
+
+            // Analysis: N=2 elements
+            // 1. Reallocation: 2 move-constructs, 2 destructors.
+            // 2. Shift 1 element ('30'): 1 move-construct, 1 destructor.
+            // 3. In-place construct '20': 1 int-constructor.
+            CHECK(intCtorCount == 1);
+            CHECK(moveCtorCount == 3); // 2 for realloc, 1 for shift
+            CHECK(moveAssignCount == 0);
+            CHECK(dtorCount == 3); // 2 for realloc, 1 for shift
+        }
+
+        SUBCASE("Emplace at the end with reallocation")
+        {
+            resetCounters();
+            sf::base::Vector<Obj> tv;
+            tv.emplaceBack(10);
+            tv.emplaceBack(20);
+            tv.shrinkToFit(); // size == 2, capacity == 2
+            REQUIRE(tv.size() == 2);
+            REQUIRE(tv.capacity() == 2);
+            resetCounters();
+
+            Obj* itRet = tv.emplace(tv.end(), 30);
+
+            CHECK(tv.size() == 3);
+            CHECK(tv.capacity() >= 3);
+            CHECK(tv[0].value == 10);
+            CHECK(tv[1].value == 20);
+            CHECK(tv[2].value == 30);
+            CHECK(itRet == tv.begin() + 2);
+
+            // Analysis: N=2 elements
+            // 1. Reallocation: 2 move-constructs, 2 destructors.
+            // 2. No shifts needed for emplace at end.
+            // 3. In-place construct '30': 1 int-constructor.
+            CHECK(intCtorCount == 1);
+            CHECK(moveCtorCount == 2);
+            CHECK(moveAssignCount == 0);
+            CHECK(dtorCount == 2);
+        }
+    }
 }
 
 } // namespace NonTrivialVectorTest

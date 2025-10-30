@@ -175,30 +175,9 @@ public:
 
         const auto index = static_cast<SizeT>(pos - data());
 
-        if (pos == end())
-        {
-            unsafeEmplaceBack(static_cast<Ts&&>(xs)...);
-        }
-        else
-        {
-            if constexpr (SFML_BASE_IS_TRIVIALLY_COPYABLE(TItem))
-            {
-                SFML_BASE_MEMMOVE(pos + 1, pos, static_cast<SizeT>(end() - pos) * sizeof(TItem));
-            }
-            else
-            {
-                SFML_BASE_PLACEMENT_NEW(end()) TItem(static_cast<TItem&&>(back()));
-
-                for (TItem* p = end() - 1; p > pos; --p)
-                    *p = static_cast<TItem&&>(*(p - 1));
-
-                if constexpr (!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(TItem))
-                    pos->~TItem();
-            }
-
-            SFML_BASE_PLACEMENT_NEW(pos) TItem(static_cast<Ts&&>(xs)...);
-            ++m_size;
-        }
+        priv::VectorUtils::makeHole(pos, end());
+        SFML_BASE_PLACEMENT_NEW(pos) TItem(static_cast<Ts&&>(xs)...);
+        ++m_size;
 
         return data() + index;
     }
@@ -241,7 +220,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void unsafeEmplaceRange(const TItem* const ptr, const SizeT count) noexcept
+    [[gnu::always_inline, gnu::flatten]] void unsafeEmplaceBackRange(const TItem* const ptr, const SizeT count) noexcept
     {
         SFML_BASE_ASSERT(m_size + count <= N);
         SFML_BASE_ASSERT(ptr != nullptr);

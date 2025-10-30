@@ -13,12 +13,18 @@
 namespace tsurv
 {
 ////////////////////////////////////////////////////////////
+template <typename Iter>
+void shuffleBag(Iter begin, Iter end, auto&& rng)
+{
+    sf::base::shuffle(begin, end, [&rng](sf::base::SizeT min, sf::base::SizeT max) { return rng.getI(min, max); });
+}
+
+
+////////////////////////////////////////////////////////////
 template <typename Container>
 void shuffleBag(Container& bag, auto&& rng)
 {
-    sf::base::shuffle(bag.begin(), bag.end(), [&rng](sf::base::SizeT min, sf::base::SizeT max) {
-        return rng.getI(min, max);
-    });
+    shuffleBag(bag.begin(), bag.end(), rng);
 }
 
 

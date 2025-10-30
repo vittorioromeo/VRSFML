@@ -78,7 +78,7 @@ struct SoundStream::Impl
             {
                 impl.sampleBuffer.clear();
                 impl.sampleBuffer.reserve(chunk.sampleCount);
-                impl.sampleBuffer.unsafeEmplaceRange(chunk.samples, chunk.sampleCount);
+                impl.sampleBuffer.unsafeEmplaceBackRange(chunk.samples, chunk.sampleCount);
 
                 impl.sampleBufferCursor = 0;
             }

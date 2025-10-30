@@ -6,7 +6,7 @@
 ////////////////////////////////////////////////////////////
 #include "World.hpp"
 
-#include <string>
+#include "SFML/Base/FwdStdString.hpp" // used
 
 
 namespace tsurv
