@@ -36,10 +36,10 @@ template <typename In, typename Out>
 inline constexpr Out copyBits(In begin, In end, Out output)
 {
     using InputType = SFML_BASE_REMOVE_CVREF(decltype(*begin));
-    static_assert(base::isIntegral<InputType>);
+    static_assert(SFML_BASE_IS_INTEGRAL(InputType));
 
     using OutputType = typename Out::container_type::value_type;
-    static_assert(base::isIntegral<OutputType>);
+    static_assert(SFML_BASE_IS_INTEGRAL(OutputType));
 
     static_assert(sizeof(OutputType) >= sizeof(InputType));
 

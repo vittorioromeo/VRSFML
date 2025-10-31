@@ -17,7 +17,7 @@
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Constants.hpp"
@@ -77,12 +77,12 @@ int main()
     //
     //
     // Add images to texture atlas
-    const sf::FloatRect spriteTextureRects[]{textureAtlas.add(imgElephant).value(),
-                                             textureAtlas.add(imgGiraffe).value(),
-                                             textureAtlas.add(imgMonkey).value(),
-                                             textureAtlas.add(imgPig).value(),
-                                             textureAtlas.add(imgRabbit).value(),
-                                             textureAtlas.add(imgSnake).value()};
+    const sf::Rect2f spriteTextureRects[]{textureAtlas.add(imgElephant).value(),
+                                          textureAtlas.add(imgGiraffe).value(),
+                                          textureAtlas.add(imgMonkey).value(),
+                                          textureAtlas.add(imgPig).value(),
+                                          textureAtlas.add(imgRabbit).value(),
+                                          textureAtlas.add(imgSnake).value()};
 
     //
     //
@@ -104,7 +104,7 @@ int main()
         for (sf::base::SizeT i = 0u; i < n; ++i)
         {
             const sf::base::SizeT type        = i % 6u;
-            const sf::FloatRect&  textureRect = spriteTextureRects[type];
+            const sf::Rect2f&     textureRect = spriteTextureRects[type];
 
             auto& [text, sprite, torque] = entities.emplaceBack(sf::Text{i % 2u == 0u ? fontTuffy : fontMouldyCheese,
                                                                          {.string           = "abcdefABCDEF",

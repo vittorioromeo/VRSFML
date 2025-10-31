@@ -147,14 +147,14 @@ namespace
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline ImVec2 getTopLeftAbsolute(const FloatRect& rect)
+[[nodiscard, gnu::always_inline]] inline ImVec2 getTopLeftAbsolute(const Rect2f& rect)
 {
     return toImVec2(toSfVec2f(::ImGui::GetCursorScreenPos()) + rect.position);
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline ImVec2 getDownRightAbsolute(const FloatRect& rect)
+[[nodiscard, gnu::always_inline]] inline ImVec2 getDownRightAbsolute(const Rect2f& rect)
 {
     return toImVec2(toSfVec2f(::ImGui::GetCursorScreenPos()) + rect.position + rect.size);
 }
@@ -1188,7 +1188,7 @@ void ImGuiContext::drawLine(Vec2f a, Vec2f b, Color color, float thickness)
 
 
 ////////////////////////////////////////////////////////////
-void ImGuiContext::drawRect(const FloatRect& rect, Color color, float rounding, int roundingCorners, float thickness)
+void ImGuiContext::drawRect(const Rect2f& rect, Color color, float rounding, int roundingCorners, float thickness)
 {
     ImDrawList* const drawList = ::ImGui::GetWindowDrawList();
     SFML_BASE_ASSERT(drawList != nullptr);
@@ -1203,7 +1203,7 @@ void ImGuiContext::drawRect(const FloatRect& rect, Color color, float rounding, 
 
 
 ////////////////////////////////////////////////////////////
-void ImGuiContext::drawRectFilled(const FloatRect& rect, Color color, float rounding, int roundingCorners)
+void ImGuiContext::drawRectFilled(const Rect2f& rect, Color color, float rounding, int roundingCorners)
 {
     ImDrawList* const drawList = ::ImGui::GetWindowDrawList();
     SFML_BASE_ASSERT(drawList != nullptr);

@@ -21,7 +21,7 @@ struct StencilMode;
 struct Transform;
 
 template <typename>
-class Rect;
+class Rect2;
 
 std::ostream& operator<<(std::ostream& os, const BlendMode& blendMode);
 std::ostream& operator<<(std::ostream& os, const StencilComparison& comparison);
@@ -32,14 +32,14 @@ std::ostream& operator<<(std::ostream& os, Approx<Color> color);
 std::ostream& operator<<(std::ostream& os, const Transform& transform);
 
 template <typename T>
-std::ostream& operator<<(std::ostream& os, const Rect<T>& rect);
+std::ostream& operator<<(std::ostream& os, const Rect2<T>& rect);
 } // namespace sf
 
 bool operator==(const sf::Transform& lhs, const Approx<sf::Transform>& rhs);
 bool operator==(const sf::Color& lhs, const Approx<sf::Color>& rhs);
 
 template <typename T>
-bool operator==(const sf::Rect<T>& lhs, const Approx<sf::Rect<T>>& rhs)
+bool operator==(const sf::Rect2<T>& lhs, const Approx<sf::Rect2<T>>& rhs)
 {
     return lhs.position == Approx(rhs.value.position) && lhs.size == Approx(rhs.value.size);
 }

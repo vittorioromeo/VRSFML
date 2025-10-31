@@ -32,7 +32,7 @@
 #include "SFML/GLUtils/Glad.hpp"
 
 #include "SFML/System/Err.hpp"
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/OffsetOf.hpp"
@@ -158,17 +158,17 @@ SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline sf::IntRect getMultipliedBySizeAndRoundedRect(
-    const sf::Vec2u      renderTargetSize,
-    const sf::FloatRect& inputRect)
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline sf::Rect2i getMultipliedBySizeAndRoundedRect(
+    const sf::Vec2u   renderTargetSize,
+    const sf::Rect2f& inputRect)
 {
     const auto [width, height] = renderTargetSize.toVec2f();
 
-    return sf::Rect<long>({SFML_BASE_MATH_LROUNDF(width * inputRect.position.x),
-                           SFML_BASE_MATH_LROUNDF(height * inputRect.position.y)},
-                          {SFML_BASE_MATH_LROUNDF(width * inputRect.size.x),
-                           SFML_BASE_MATH_LROUNDF(height * inputRect.size.y)})
-        .to<sf::IntRect>();
+    return sf::Rect2<long>({SFML_BASE_MATH_LROUNDF(width * inputRect.position.x),
+                            SFML_BASE_MATH_LROUNDF(height * inputRect.position.y)},
+                           {SFML_BASE_MATH_LROUNDF(width * inputRect.size.x),
+                            SFML_BASE_MATH_LROUNDF(height * inputRect.size.y)})
+        .toRect2i();
 }
 
 
@@ -531,14 +531,14 @@ base::SizeT RenderTarget::getAutoBatchVertexThreshold() const
 
 
 ////////////////////////////////////////////////////////////
-IntRect RenderTarget::getViewport(const View& view) const
+Rect2i RenderTarget::getViewport(const View& view) const
 {
     return RenderTargetImpl::getMultipliedBySizeAndRoundedRect(getSize(), view.viewport);
 }
 
 
 ////////////////////////////////////////////////////////////
-IntRect RenderTarget::getScissor(const View& view) const
+Rect2i RenderTarget::getScissor(const View& view) const
 {
     return RenderTargetImpl::getMultipliedBySizeAndRoundedRect(getSize(), view.scissor);
 }
@@ -612,7 +612,7 @@ void RenderTarget::draw(const Texture& texture, const TextureDrawParams& params,
             .scale       = params.scale,
             .origin      = params.origin,
             .rotation    = params.rotation,
-            .textureRect = (params.textureRect == FloatRect{}) ? texture.getRect() : params.textureRect,
+            .textureRect = (params.textureRect == Rect2f{}) ? texture.getRect() : params.textureRect,
             .color       = params.color,
         });
     }
@@ -624,7 +624,7 @@ void RenderTarget::draw(const Texture& texture, const TextureDrawParams& params,
 
         DrawableBatchUtils::
             appendPreTransformedSpriteQuadVertices(Transform::from(params.position, params.scale, params.origin, sine, cosine),
-                                                   (params.textureRect == FloatRect{}) ? texture.getRect() : params.textureRect,
+                                                   (params.textureRect == Rect2f{}) ? texture.getRect() : params.textureRect,
                                                    params.color,
                                                    buffer);
 
@@ -1325,12 +1325,12 @@ void RenderTarget::syncGPUEndFrame()
 void RenderTarget::applyView(const View& view)
 {
     // Set the viewport
-    const IntRect viewport    = getViewport(view);
-    const int     viewportTop = static_cast<int>(getSize().y) - (viewport.position.y + viewport.size.y);
+    const Rect2i viewport    = getViewport(view);
+    const int    viewportTop = static_cast<int>(getSize().y) - (viewport.position.y + viewport.size.y);
     glCheck(glViewport(viewport.position.x, viewportTop, viewport.size.x, viewport.size.y));
 
     // Set the scissor rectangle and enable/disable scissor testing
-    if (view.scissor == FloatRect{{0.f, 0.f}, {1.f, 1.f}})
+    if (view.scissor == Rect2f{{0.f, 0.f}, {1.f, 1.f}})
     {
         if (!m_impl->cache.enable || m_impl->cache.scissorEnabled)
         {
@@ -1340,8 +1340,8 @@ void RenderTarget::applyView(const View& view)
     }
     else
     {
-        const IntRect pixelScissor = getScissor(view);
-        const int     scissorTop   = static_cast<int>(getSize().y) - (pixelScissor.position.y + pixelScissor.size.y);
+        const Rect2i pixelScissor = getScissor(view);
+        const int    scissorTop   = static_cast<int>(getSize().y) - (pixelScissor.position.y + pixelScissor.size.y);
 
         glCheck(glScissor(pixelScissor.position.x, scissorTop, pixelScissor.size.x, pixelScissor.size.y));
 

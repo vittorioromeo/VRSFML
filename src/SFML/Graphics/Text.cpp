@@ -16,7 +16,7 @@
 #include "SFML/Graphics/TextUtils.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/String.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
@@ -326,7 +326,7 @@ Vec2f Text::findCharacterPos(base::SizeT index) const
 
 
 ////////////////////////////////////////////////////////////
-const FloatRect& Text::getLocalBounds() const
+const Rect2f& Text::getLocalBounds() const
 {
     ensureGeometryUpdate(*m_font);
 
@@ -335,7 +335,7 @@ const FloatRect& Text::getLocalBounds() const
 
 
 ////////////////////////////////////////////////////////////
-FloatRect Text::getGlobalBounds() const
+Rect2f Text::getGlobalBounds() const
 {
     return getTransform().transformRect(getLocalBounds());
 }

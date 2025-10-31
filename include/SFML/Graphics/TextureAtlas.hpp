@@ -10,7 +10,7 @@
 
 #include "SFML/Graphics/Texture.hpp"
 
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/RectPacker.hpp"
 #include "SFML/System/Vec2.hpp"
 
@@ -46,9 +46,9 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<FloatRect> add(const base::U8* pixels, Vec2u size, Vec2u padding = {});
-    [[nodiscard]] base::Optional<FloatRect> add(const Image& image, Vec2u padding = {});
-    [[nodiscard]] base::Optional<FloatRect> add(const Texture& texture, Vec2u padding = {});
+    [[nodiscard]] base::Optional<Rect2f> add(const base::U8* pixels, Vec2u size, Vec2u padding = {});
+    [[nodiscard]] base::Optional<Rect2f> add(const Image& image, Vec2u padding = {});
+    [[nodiscard]] base::Optional<Rect2f> add(const Texture& texture, Vec2u padding = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs

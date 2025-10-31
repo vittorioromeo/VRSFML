@@ -408,13 +408,13 @@ inline auto createTextGeometryAndGetBounds(
 
     if constexpr (CalculateBounds)
     {
-        return FloatRect{{minX, minY}, {maxX - minX, maxY - minY}};
+        return Rect2f{{minX, minY}, {maxX - minX, maxY - minY}};
     }
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] inline FloatRect precomputeTextLocalBounds(const Font& font, const TextData& textData)
+[[nodiscard]] inline Rect2f precomputeTextLocalBounds(const Font& font, const TextData& textData)
 {
     return createTextGeometryAndGetBounds</* CalculateBounds */ true>(
         /* outlineVertexCount */ 0u,
@@ -433,7 +433,7 @@ inline auto createTextGeometryAndGetBounds(
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] inline FloatRect precomputeTextLocalBounds(const Font& font, const Text& text)
+[[nodiscard]] inline Rect2f precomputeTextLocalBounds(const Font& font, const Text& text)
 {
     return createTextGeometryAndGetBounds</* CalculateBounds */ true>(
         /* outlineVertexCount */ 0u,

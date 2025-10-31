@@ -135,6 +135,6 @@ private:
 /// want to place. `pack()` returns the top-left position within the bin where
 /// the rectangle was placed, or `nullOpt` if it couldn't fit.
 ///
-/// \see sf::Rect
+/// \see sf::Rect2
 ///
 ////////////////////////////////////////////////////////////

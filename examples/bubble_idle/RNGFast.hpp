@@ -192,7 +192,7 @@ public:
     template <typename T>
     [[nodiscard, gnu::always_inline, gnu::flatten]] inline T getI(const T min, const T max)
     {
-        static_assert(sf::base::isIntegral<T>);
+        static_assert(SFML_BASE_IS_INTEGRAL(T));
 
         SFML_BASE_ASSERT_AND_ASSUME(min <= max);
 

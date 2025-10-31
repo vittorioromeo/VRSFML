@@ -474,7 +474,7 @@ struct tuple_hash_helper {
     // If it isn't an integral we need to hash it.
     template <typename Arg>
     [[nodiscard]] constexpr static auto to64(Arg const& arg) -> sf::base::U64 {
-        if constexpr (sf::base::isIntegral<Arg> || SFML_BASE_IS_ENUM(Arg)) {
+        if constexpr (SFML_BASE_IS_INTEGRAL(Arg) || SFML_BASE_IS_ENUM(Arg)) {
             return static_cast<sf::base::U64>(arg);
         } else {
             return hash<Arg>{}(arg);

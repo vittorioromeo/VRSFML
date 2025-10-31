@@ -6,9 +6,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Config.hpp"
-
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 
 #include "SFML/Base/MinMaxMacros.hpp"
 #include "SFML/Base/Optional.hpp"
@@ -26,7 +24,7 @@ namespace sf
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::pure]] constexpr base::Optional<Rect<T>> findIntersection(const Rect<T>& rect0, const Rect<T>& rect1)
+[[nodiscard, gnu::pure]] constexpr base::Optional<Rect2<T>> findIntersection(const Rect2<T>& rect0, const Rect2<T>& rect1)
 {
     // Rectangles with negative dimensions are allowed, so we must handle them correctly
 
@@ -65,14 +63,15 @@ template <typename T>
         return base::nullOpt;
 
     // Intersection found
-    return base::makeOptional<Rect<T>>(Vec2<T>{interLeft, interTop}, Vec2<T>{interRight - interLeft, interBottom - interTop});
+    return base::makeOptional<Rect2<T>>(Vec2<T>{interLeft, interTop},
+                                        Vec2<T>{interRight - interLeft, interBottom - interTop});
 }
 
 } // namespace sf
 
 
 ////////////////////////////////////////////////////////////
-/// \fn `sf::findIntersection(const Rect<T>&, const Rect<T>&)`
+/// \fn `sf::findIntersection(const Rect2<T>&, const Rect2<T>&)`
 /// \ingroup system
 ///
 /// Checks if two rectangles overlap and, if they do, returns the

@@ -454,7 +454,7 @@ void Image::createMaskFromColor(Color color, base::U8 alpha)
 
 
 ////////////////////////////////////////////////////////////
-bool Image::copy(const Image& source, Vec2u dest, const IntRect& sourceRect, bool applyAlpha)
+bool Image::copy(const Image& source, Vec2u dest, const Rect2i& sourceRect, bool applyAlpha)
 {
     // Make sure that both images are valid
     SFML_BASE_ASSERT(source.m_size.x > 0 && source.m_size.y > 0 && m_size.x > 0 && m_size.y > 0);
@@ -463,12 +463,12 @@ bool Image::copy(const Image& source, Vec2u dest, const IntRect& sourceRect, boo
     if (sourceRect.position.x < 0 || sourceRect.position.y < 0 || sourceRect.size.x < 0 || sourceRect.size.y < 0)
         return false;
 
-    auto srcRect = sourceRect.to<Rect<unsigned int>>();
+    auto srcRect = sourceRect.toRect2u();
 
     // Use the whole source image as srcRect if the provided source rectangle is empty
     if (srcRect.size.x == 0 || srcRect.size.y == 0)
     {
-        srcRect = Rect<unsigned int>({0, 0}, source.m_size);
+        srcRect = Rect2u({0, 0}, source.m_size);
     }
     // Otherwise make sure the provided source rectangle fits into the source image
     else

@@ -89,7 +89,7 @@
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Vec2.hpp"
 
@@ -242,7 +242,7 @@ inline void drawMinimap(
     const float             hudScale,
     const float             hueMod,
     const sf::base::U8      shouldDrawUIAlpha,
-    sf::FloatRect&          minimapRect)
+    sf::Rect2f&             minimapRect)
 {
     //
     // Screen position of minimap's top-left corner
@@ -282,11 +282,11 @@ inline void drawMinimap(
                                        .clampX(0.f, (1.f - minimapScaledPosition.x) / progressRatio)
                                        .clampY(0.f, 1.f - minimapScaledPosition.y);
 
-    const sf::FloatRect preClampScissorRect{minimapScaledPosition, // Scissor rectangle position (normalized)
-                                            {
-                                                progressRatio * minimapScaledSize.x, // Only show accessible width
-                                                minimapScaledSize.y                  // Full height
-                                            }};
+    const sf::Rect2f preClampScissorRect{minimapScaledPosition, // Scissor rectangle position (normalized)
+                                         {
+                                             progressRatio * minimapScaledSize.x, // Only show accessible width
+                                             minimapScaledSize.y                  // Full height
+                                         }};
 
     const auto clampedScissorRect = sf::View::ScissorRect::fromRectClamped(preClampScissorRect);
 
@@ -596,49 +596,49 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Quick toolbar icons
-    sf::FloatRect txrIconVolume{addImgResourceToUIAtlas("iconvolumeon.png")};
-    sf::FloatRect txrIconBGM{addImgResourceToUIAtlas("iconmusicon.png")};
-    sf::FloatRect txrIconBg{addImgResourceToUIAtlas("iconbg.png")};
-    sf::FloatRect txrIconCfg{addImgResourceToUIAtlas("iconcfg.png")};
-    sf::FloatRect txrIconCopyCat{addImgResourceToUIAtlas("iconcopycat.png")};
+    sf::Rect2f txrIconVolume{addImgResourceToUIAtlas("iconvolumeon.png")};
+    sf::Rect2f txrIconBGM{addImgResourceToUIAtlas("iconmusicon.png")};
+    sf::Rect2f txrIconBg{addImgResourceToUIAtlas("iconbg.png")};
+    sf::Rect2f txrIconCfg{addImgResourceToUIAtlas("iconcfg.png")};
+    sf::Rect2f txrIconCopyCat{addImgResourceToUIAtlas("iconcopycat.png")};
 
     ////////////////////////////////////////////////////////////
     // Shop menu separator textures
-    sf::FloatRect txrMenuSeparator0{addImgResourceToUIAtlas("menuseparator0.png")};
-    sf::FloatRect txrMenuSeparator1{addImgResourceToUIAtlas("menuseparator1.png")};
-    sf::FloatRect txrMenuSeparator2{addImgResourceToUIAtlas("menuseparator2.png")};
-    sf::FloatRect txrMenuSeparator3{addImgResourceToUIAtlas("menuseparator3.png")};
-    sf::FloatRect txrMenuSeparator4{addImgResourceToUIAtlas("menuseparator4.png")};
-    sf::FloatRect txrMenuSeparator5{addImgResourceToUIAtlas("menuseparator5.png")};
-    sf::FloatRect txrMenuSeparator6{addImgResourceToUIAtlas("menuseparator6.png")};
-    sf::FloatRect txrMenuSeparator7{addImgResourceToUIAtlas("menuseparator7.png")};
-    sf::FloatRect txrMenuSeparator8{addImgResourceToUIAtlas("menuseparator8.png")};
+    sf::Rect2f txrMenuSeparator0{addImgResourceToUIAtlas("menuseparator0.png")};
+    sf::Rect2f txrMenuSeparator1{addImgResourceToUIAtlas("menuseparator1.png")};
+    sf::Rect2f txrMenuSeparator2{addImgResourceToUIAtlas("menuseparator2.png")};
+    sf::Rect2f txrMenuSeparator3{addImgResourceToUIAtlas("menuseparator3.png")};
+    sf::Rect2f txrMenuSeparator4{addImgResourceToUIAtlas("menuseparator4.png")};
+    sf::Rect2f txrMenuSeparator5{addImgResourceToUIAtlas("menuseparator5.png")};
+    sf::Rect2f txrMenuSeparator6{addImgResourceToUIAtlas("menuseparator6.png")};
+    sf::Rect2f txrMenuSeparator7{addImgResourceToUIAtlas("menuseparator7.png")};
+    sf::Rect2f txrMenuSeparator8{addImgResourceToUIAtlas("menuseparator8.png")};
 
     ////////////////////////////////////////////////////////////
     // Prestige menu separator textures
-    sf::FloatRect txrPrestigeSeparator0{addImgResourceToUIAtlas("prestigeseparator0.png")};
-    sf::FloatRect txrPrestigeSeparator1{addImgResourceToUIAtlas("prestigeseparator1.png")};
-    sf::FloatRect txrPrestigeSeparator2{addImgResourceToUIAtlas("prestigeseparator2.png")};
-    sf::FloatRect txrPrestigeSeparator3{addImgResourceToUIAtlas("prestigeseparator3.png")};
-    sf::FloatRect txrPrestigeSeparator4{addImgResourceToUIAtlas("prestigeseparator4.png")};
-    sf::FloatRect txrPrestigeSeparator5{addImgResourceToUIAtlas("prestigeseparator5.png")};
-    sf::FloatRect txrPrestigeSeparator6{addImgResourceToUIAtlas("prestigeseparator6.png")};
-    sf::FloatRect txrPrestigeSeparator7{addImgResourceToUIAtlas("prestigeseparator7.png")};
-    sf::FloatRect txrPrestigeSeparator8{addImgResourceToUIAtlas("prestigeseparator8.png")};
-    sf::FloatRect txrPrestigeSeparator9{addImgResourceToUIAtlas("prestigeseparator9.png")};
-    sf::FloatRect txrPrestigeSeparator10{addImgResourceToUIAtlas("prestigeseparator10.png")};
-    sf::FloatRect txrPrestigeSeparator11{addImgResourceToUIAtlas("prestigeseparator11.png")};
-    sf::FloatRect txrPrestigeSeparator12{addImgResourceToUIAtlas("prestigeseparator12.png")};
-    sf::FloatRect txrPrestigeSeparator13{addImgResourceToUIAtlas("prestigeseparator13.png")};
-    sf::FloatRect txrPrestigeSeparator14{addImgResourceToUIAtlas("prestigeseparator14.png")};
-    sf::FloatRect txrPrestigeSeparator15{addImgResourceToUIAtlas("prestigeseparator15.png")};
+    sf::Rect2f txrPrestigeSeparator0{addImgResourceToUIAtlas("prestigeseparator0.png")};
+    sf::Rect2f txrPrestigeSeparator1{addImgResourceToUIAtlas("prestigeseparator1.png")};
+    sf::Rect2f txrPrestigeSeparator2{addImgResourceToUIAtlas("prestigeseparator2.png")};
+    sf::Rect2f txrPrestigeSeparator3{addImgResourceToUIAtlas("prestigeseparator3.png")};
+    sf::Rect2f txrPrestigeSeparator4{addImgResourceToUIAtlas("prestigeseparator4.png")};
+    sf::Rect2f txrPrestigeSeparator5{addImgResourceToUIAtlas("prestigeseparator5.png")};
+    sf::Rect2f txrPrestigeSeparator6{addImgResourceToUIAtlas("prestigeseparator6.png")};
+    sf::Rect2f txrPrestigeSeparator7{addImgResourceToUIAtlas("prestigeseparator7.png")};
+    sf::Rect2f txrPrestigeSeparator8{addImgResourceToUIAtlas("prestigeseparator8.png")};
+    sf::Rect2f txrPrestigeSeparator9{addImgResourceToUIAtlas("prestigeseparator9.png")};
+    sf::Rect2f txrPrestigeSeparator10{addImgResourceToUIAtlas("prestigeseparator10.png")};
+    sf::Rect2f txrPrestigeSeparator11{addImgResourceToUIAtlas("prestigeseparator11.png")};
+    sf::Rect2f txrPrestigeSeparator12{addImgResourceToUIAtlas("prestigeseparator12.png")};
+    sf::Rect2f txrPrestigeSeparator13{addImgResourceToUIAtlas("prestigeseparator13.png")};
+    sf::Rect2f txrPrestigeSeparator14{addImgResourceToUIAtlas("prestigeseparator14.png")};
+    sf::Rect2f txrPrestigeSeparator15{addImgResourceToUIAtlas("prestigeseparator15.png")};
 
     ////////////////////////////////////////////////////////////
     // Magic menu separator textures
-    sf::FloatRect txrMagicSeparator0{addImgResourceToUIAtlas("magicseparator0.png")};
-    sf::FloatRect txrMagicSeparator1{addImgResourceToUIAtlas("magicseparator1.png")};
-    sf::FloatRect txrMagicSeparator2{addImgResourceToUIAtlas("magicseparator2.png")};
-    sf::FloatRect txrMagicSeparator3{addImgResourceToUIAtlas("magicseparator3.png")};
+    sf::Rect2f txrMagicSeparator0{addImgResourceToUIAtlas("magicseparator0.png")};
+    sf::Rect2f txrMagicSeparator1{addImgResourceToUIAtlas("magicseparator1.png")};
+    sf::Rect2f txrMagicSeparator2{addImgResourceToUIAtlas("magicseparator2.png")};
+    sf::Rect2f txrMagicSeparator3{addImgResourceToUIAtlas("magicseparator3.png")};
 
     ////////////////////////////////////////////////////////////
     // Background hues
@@ -660,128 +660,128 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Texture atlas rects
-    sf::FloatRect txrWhiteDot{textureAtlas.add(sf::GraphicsContext::getBuiltInWhiteDotTexture()).value()};
-    sf::FloatRect txrBubble{addImgResourceToAtlas("bubble2.png")};
-    sf::FloatRect txrBubbleStar{addImgResourceToAtlas("bubble3.png")};
-    sf::FloatRect txrBubbleNova{addImgResourceToAtlas("bubble4.png")};
-    sf::FloatRect txrCat{addImgResourceToAtlas("cat.png")};
-    sf::FloatRect txrUniCat{addImgResourceToAtlas("unicat3.png")};
-    sf::FloatRect txrUniCat2{addImgResourceToAtlas("unicat2.png")};
-    sf::FloatRect txrUniCatWings{addImgResourceToAtlas("unicatwings.png")};
-    sf::FloatRect txrDevilCat2{addImgResourceToAtlas("devilcat2.png")};
-    sf::FloatRect txrDevilCat3{addImgResourceToAtlas("devilcat3.png")};
-    sf::FloatRect txrDevilCat3Arm{addImgResourceToAtlas("devilcat3arm.png")};
-    sf::FloatRect txrDevilCat3Book{addImgResourceToAtlas("devilcat3book.png")};
-    sf::FloatRect txrDevilCat3Tail{addImgResourceToAtlas("devilcat3tail.png")};
-    sf::FloatRect txrDevilCat2Book{addImgResourceToAtlas("devilcat2book.png")};
-    sf::FloatRect txrCatPaw{addImgResourceToAtlas("catpaw.png")};
-    sf::FloatRect txrCatTail{addImgResourceToAtlas("cattail.png")};
-    sf::FloatRect txrSmartCatHat{addImgResourceToAtlas("smartcathat.png")};
-    sf::FloatRect txrSmartCatDiploma{addImgResourceToAtlas("smartcatdiploma.png")};
-    sf::FloatRect txrBrainBack{addImgResourceToAtlas("brainback.png")};
-    sf::FloatRect txrBrainFront{addImgResourceToAtlas("brainfront.png")};
-    sf::FloatRect txrUniCatTail{addImgResourceToAtlas("unicattail.png")};
-    sf::FloatRect txrUniCat2Tail{addImgResourceToAtlas("unicat2tail.png")};
-    sf::FloatRect txrDevilCatTail2{addImgResourceToAtlas("devilcattail2.png")};
-    sf::FloatRect txrAstroCatTail{addImgResourceToAtlas("astrocattail.png")};
-    sf::FloatRect txrAstroCatFlag{addImgResourceToAtlas("astrocatflag.png")};
-    sf::FloatRect txrWitchCatTail{addImgResourceToAtlas("witchcattail.png")};
-    sf::FloatRect txrWizardCatTail{addImgResourceToAtlas("wizardcattail.png")};
-    sf::FloatRect txrMouseCatTail{addImgResourceToAtlas("mousecattail.png")};
-    sf::FloatRect txrMouseCatMouse{addImgResourceToAtlas("mousecatmouse.png")};
-    sf::FloatRect txrEngiCatTail{addImgResourceToAtlas("engicattail.png")};
-    sf::FloatRect txrEngiCatWrench{addImgResourceToAtlas("engicatwrench.png")};
-    sf::FloatRect txrRepulsoCatTail{addImgResourceToAtlas("repulsocattail.png")};
-    sf::FloatRect txrAttractoCatTail{addImgResourceToAtlas("attractocattail.png")};
-    sf::FloatRect txrCopyCatTail{addImgResourceToAtlas("copycattail.png")};
-    sf::FloatRect txrAttractoCatMagnet{addImgResourceToAtlas("attractocatmagnet.png")};
-    sf::FloatRect txrUniCatPaw{addImgResourceToAtlas("unicatpaw.png")};
-    sf::FloatRect txrDevilCatPaw{addImgResourceToAtlas("devilcatpaw.png")};
-    sf::FloatRect txrDevilCatPaw2{addImgResourceToAtlas("devilcatpaw2.png")};
-    sf::FloatRect txrParticle{addImgResourceToAtlas("particle.png")};
-    sf::FloatRect txrStarParticle{addImgResourceToAtlas("starparticle.png")};
-    sf::FloatRect txrFireParticle{addImgResourceToAtlas("fireparticle.png")};
-    sf::FloatRect txrFireParticle2{addImgResourceToAtlas("fireparticle2.png")};
-    sf::FloatRect txrSmokeParticle{addImgResourceToAtlas("smokeparticle.png")};
-    sf::FloatRect txrExplosionParticle{addImgResourceToAtlas("explosionparticle.png")};
-    sf::FloatRect txrTrailParticle{addImgResourceToAtlas("trailparticle.png")};
-    sf::FloatRect txrHexParticle{addImgResourceToAtlas("hexparticle.png")};
-    sf::FloatRect txrShrineParticle{addImgResourceToAtlas("shrineparticle.png")};
-    sf::FloatRect txrCogParticle{addImgResourceToAtlas("cogparticle.png")};
-    sf::FloatRect txrWitchCat{addImgResourceToAtlas("witchcat.png")};
-    sf::FloatRect txrWitchCatPaw{addImgResourceToAtlas("witchcatpaw.png")};
-    sf::FloatRect txrAstroCat{addImgResourceToAtlas("astromeow.png")};
-    sf::FloatRect txrBomb{addImgResourceToAtlas("bomb.png")};
-    sf::FloatRect txrShrine{addImgResourceToAtlas("shrine.png")};
-    sf::FloatRect txrWizardCat{addImgResourceToAtlas("wizardcat.png")};
-    sf::FloatRect txrWizardCatPaw{addImgResourceToAtlas("wizardcatpaw.png")};
-    sf::FloatRect txrMouseCat{addImgResourceToAtlas("mousecat.png")};
-    sf::FloatRect txrMouseCatPaw{addImgResourceToAtlas("mousecatpaw.png")};
-    sf::FloatRect txrEngiCat{addImgResourceToAtlas("engicat.png")};
-    sf::FloatRect txrEngiCatPaw{addImgResourceToAtlas("engicatpaw.png")};
-    sf::FloatRect txrRepulsoCat{addImgResourceToAtlas("repulsocat.png")};
-    sf::FloatRect txrRepulsoCatPaw{addImgResourceToAtlas("repulsocatpaw.png")};
-    sf::FloatRect txrAttractoCat{addImgResourceToAtlas("attractocat.png")};
-    sf::FloatRect txrCopyCat{addImgResourceToAtlas("copycat.png")};
-    sf::FloatRect txrDuckCat{addImgResourceToAtlas("duck.png")};
-    sf::FloatRect txrDuckFlag{addImgResourceToAtlas("duckflag.png")};
-    sf::FloatRect txrAttractoCatPaw{addImgResourceToAtlas("attractocatpaw.png")};
-    sf::FloatRect txrCopyCatPaw{addImgResourceToAtlas("copycatpaw.png")};
-    sf::FloatRect txrDollNormal{addImgResourceToAtlas("dollnormal.png")};
-    sf::FloatRect txrDollUni{addImgResourceToAtlas("dolluni.png")};
-    sf::FloatRect txrDollDevil{addImgResourceToAtlas("dolldevil.png")};
-    sf::FloatRect txrDollAstro{addImgResourceToAtlas("dollastro.png")};
-    sf::FloatRect txrDollWizard{addImgResourceToAtlas("dollwizard.png")};
-    sf::FloatRect txrDollMouse{addImgResourceToAtlas("dollmouse.png")};
-    sf::FloatRect txrDollEngi{addImgResourceToAtlas("dollengi.png")};
-    sf::FloatRect txrDollRepulso{addImgResourceToAtlas("dollrepulso.png")};
-    sf::FloatRect txrDollAttracto{addImgResourceToAtlas("dollattracto.png")};
-    sf::FloatRect txrCoin{addImgResourceToAtlas("bytecoin.png")};
-    sf::FloatRect txrCatSoul{addImgResourceToAtlas("catsoul.png")};
-    sf::FloatRect txrHellPortal{addImgResourceToAtlas("hellportal.png")};
-    sf::FloatRect txrCatEyeLid0{addImgResourceToAtlas("cateyelid0.png")};
-    sf::FloatRect txrCatEyeLid1{addImgResourceToAtlas("cateyelid1.png")};
-    sf::FloatRect txrCatEyeLid2{addImgResourceToAtlas("cateyelid2.png")};
-    sf::FloatRect txrCatWhiteEyeLid0{addImgResourceToAtlas("catwhiteeyelid0.png")};
-    sf::FloatRect txrCatWhiteEyeLid1{addImgResourceToAtlas("catwhiteeyelid1.png")};
-    sf::FloatRect txrCatWhiteEyeLid2{addImgResourceToAtlas("catwhiteeyelid2.png")};
-    sf::FloatRect txrCatDarkEyeLid0{addImgResourceToAtlas("catdarkeyelid0.png")};
-    sf::FloatRect txrCatDarkEyeLid1{addImgResourceToAtlas("catdarkeyelid1.png")};
-    sf::FloatRect txrCatDarkEyeLid2{addImgResourceToAtlas("catdarkeyelid2.png")};
-    sf::FloatRect txrCatGrayEyeLid0{addImgResourceToAtlas("catgrayeyelid0.png")};
-    sf::FloatRect txrCatGrayEyeLid1{addImgResourceToAtlas("catgrayeyelid1.png")};
-    sf::FloatRect txrCatGrayEyeLid2{addImgResourceToAtlas("catgrayeyelid2.png")};
-    sf::FloatRect txrCatEars0{addImgResourceToAtlas("catears0.png")};
-    sf::FloatRect txrCatEars1{addImgResourceToAtlas("catears1.png")};
-    sf::FloatRect txrCatEars2{addImgResourceToAtlas("catears2.png")};
-    sf::FloatRect txrCatYawn0{addImgResourceToAtlas("catyawn0.png")};
-    sf::FloatRect txrCatYawn1{addImgResourceToAtlas("catyawn1.png")};
-    sf::FloatRect txrCatYawn2{addImgResourceToAtlas("catyawn2.png")};
-    sf::FloatRect txrCatYawn3{addImgResourceToAtlas("catyawn3.png")};
-    sf::FloatRect txrCatYawn4{addImgResourceToAtlas("catyawn4.png")};
-    sf::FloatRect txrCCMaskWitch{addImgResourceToAtlas("ccmaskwitch.png")};
-    sf::FloatRect txrCCMaskWizard{addImgResourceToAtlas("ccmaskwizard.png")};
-    sf::FloatRect txrCCMaskMouse{addImgResourceToAtlas("ccmaskmouse.png")};
-    sf::FloatRect txrCCMaskEngi{addImgResourceToAtlas("ccmaskengi.png")};
-    sf::FloatRect txrCCMaskRepulso{addImgResourceToAtlas("ccmaskrepulso.png")};
-    sf::FloatRect txrCCMaskAttracto{addImgResourceToAtlas("ccmaskattracto.png")};
-    sf::FloatRect txrMMNormal{addImgResourceToAtlas("mmcatnormal.png")};
-    sf::FloatRect txrMMUni{addImgResourceToAtlas("mmcatuni.png")};
-    sf::FloatRect txrMMDevil{addImgResourceToAtlas("mmcatdevil.png")};
-    sf::FloatRect txrMMAstro{addImgResourceToAtlas("mmcatastro.png")};
-    sf::FloatRect txrMMWitch{addImgResourceToAtlas("mmcatwitch.png")};
-    sf::FloatRect txrMMWizard{addImgResourceToAtlas("mmcatwizard.png")};
-    sf::FloatRect txrMMMouse{addImgResourceToAtlas("mmcatmouse.png")};
-    sf::FloatRect txrMMEngi{addImgResourceToAtlas("mmcatengi.png")};
-    sf::FloatRect txrMMRepulso{addImgResourceToAtlas("mmcatrepulso.png")};
-    sf::FloatRect txrMMAttracto{addImgResourceToAtlas("mmcatattracto.png")};
-    sf::FloatRect txrMMCopy{addImgResourceToAtlas("mmcatcopy.png")};
-    sf::FloatRect txrMMDuck{addImgResourceToAtlas("mmduck.png")};
-    sf::FloatRect txrMMShrine{addImgResourceToAtlas("mmshrine.png")};
+    sf::Rect2f txrWhiteDot{textureAtlas.add(sf::GraphicsContext::getBuiltInWhiteDotTexture()).value()};
+    sf::Rect2f txrBubble{addImgResourceToAtlas("bubble2.png")};
+    sf::Rect2f txrBubbleStar{addImgResourceToAtlas("bubble3.png")};
+    sf::Rect2f txrBubbleNova{addImgResourceToAtlas("bubble4.png")};
+    sf::Rect2f txrCat{addImgResourceToAtlas("cat.png")};
+    sf::Rect2f txrUniCat{addImgResourceToAtlas("unicat3.png")};
+    sf::Rect2f txrUniCat2{addImgResourceToAtlas("unicat2.png")};
+    sf::Rect2f txrUniCatWings{addImgResourceToAtlas("unicatwings.png")};
+    sf::Rect2f txrDevilCat2{addImgResourceToAtlas("devilcat2.png")};
+    sf::Rect2f txrDevilCat3{addImgResourceToAtlas("devilcat3.png")};
+    sf::Rect2f txrDevilCat3Arm{addImgResourceToAtlas("devilcat3arm.png")};
+    sf::Rect2f txrDevilCat3Book{addImgResourceToAtlas("devilcat3book.png")};
+    sf::Rect2f txrDevilCat3Tail{addImgResourceToAtlas("devilcat3tail.png")};
+    sf::Rect2f txrDevilCat2Book{addImgResourceToAtlas("devilcat2book.png")};
+    sf::Rect2f txrCatPaw{addImgResourceToAtlas("catpaw.png")};
+    sf::Rect2f txrCatTail{addImgResourceToAtlas("cattail.png")};
+    sf::Rect2f txrSmartCatHat{addImgResourceToAtlas("smartcathat.png")};
+    sf::Rect2f txrSmartCatDiploma{addImgResourceToAtlas("smartcatdiploma.png")};
+    sf::Rect2f txrBrainBack{addImgResourceToAtlas("brainback.png")};
+    sf::Rect2f txrBrainFront{addImgResourceToAtlas("brainfront.png")};
+    sf::Rect2f txrUniCatTail{addImgResourceToAtlas("unicattail.png")};
+    sf::Rect2f txrUniCat2Tail{addImgResourceToAtlas("unicat2tail.png")};
+    sf::Rect2f txrDevilCatTail2{addImgResourceToAtlas("devilcattail2.png")};
+    sf::Rect2f txrAstroCatTail{addImgResourceToAtlas("astrocattail.png")};
+    sf::Rect2f txrAstroCatFlag{addImgResourceToAtlas("astrocatflag.png")};
+    sf::Rect2f txrWitchCatTail{addImgResourceToAtlas("witchcattail.png")};
+    sf::Rect2f txrWizardCatTail{addImgResourceToAtlas("wizardcattail.png")};
+    sf::Rect2f txrMouseCatTail{addImgResourceToAtlas("mousecattail.png")};
+    sf::Rect2f txrMouseCatMouse{addImgResourceToAtlas("mousecatmouse.png")};
+    sf::Rect2f txrEngiCatTail{addImgResourceToAtlas("engicattail.png")};
+    sf::Rect2f txrEngiCatWrench{addImgResourceToAtlas("engicatwrench.png")};
+    sf::Rect2f txrRepulsoCatTail{addImgResourceToAtlas("repulsocattail.png")};
+    sf::Rect2f txrAttractoCatTail{addImgResourceToAtlas("attractocattail.png")};
+    sf::Rect2f txrCopyCatTail{addImgResourceToAtlas("copycattail.png")};
+    sf::Rect2f txrAttractoCatMagnet{addImgResourceToAtlas("attractocatmagnet.png")};
+    sf::Rect2f txrUniCatPaw{addImgResourceToAtlas("unicatpaw.png")};
+    sf::Rect2f txrDevilCatPaw{addImgResourceToAtlas("devilcatpaw.png")};
+    sf::Rect2f txrDevilCatPaw2{addImgResourceToAtlas("devilcatpaw2.png")};
+    sf::Rect2f txrParticle{addImgResourceToAtlas("particle.png")};
+    sf::Rect2f txrStarParticle{addImgResourceToAtlas("starparticle.png")};
+    sf::Rect2f txrFireParticle{addImgResourceToAtlas("fireparticle.png")};
+    sf::Rect2f txrFireParticle2{addImgResourceToAtlas("fireparticle2.png")};
+    sf::Rect2f txrSmokeParticle{addImgResourceToAtlas("smokeparticle.png")};
+    sf::Rect2f txrExplosionParticle{addImgResourceToAtlas("explosionparticle.png")};
+    sf::Rect2f txrTrailParticle{addImgResourceToAtlas("trailparticle.png")};
+    sf::Rect2f txrHexParticle{addImgResourceToAtlas("hexparticle.png")};
+    sf::Rect2f txrShrineParticle{addImgResourceToAtlas("shrineparticle.png")};
+    sf::Rect2f txrCogParticle{addImgResourceToAtlas("cogparticle.png")};
+    sf::Rect2f txrWitchCat{addImgResourceToAtlas("witchcat.png")};
+    sf::Rect2f txrWitchCatPaw{addImgResourceToAtlas("witchcatpaw.png")};
+    sf::Rect2f txrAstroCat{addImgResourceToAtlas("astromeow.png")};
+    sf::Rect2f txrBomb{addImgResourceToAtlas("bomb.png")};
+    sf::Rect2f txrShrine{addImgResourceToAtlas("shrine.png")};
+    sf::Rect2f txrWizardCat{addImgResourceToAtlas("wizardcat.png")};
+    sf::Rect2f txrWizardCatPaw{addImgResourceToAtlas("wizardcatpaw.png")};
+    sf::Rect2f txrMouseCat{addImgResourceToAtlas("mousecat.png")};
+    sf::Rect2f txrMouseCatPaw{addImgResourceToAtlas("mousecatpaw.png")};
+    sf::Rect2f txrEngiCat{addImgResourceToAtlas("engicat.png")};
+    sf::Rect2f txrEngiCatPaw{addImgResourceToAtlas("engicatpaw.png")};
+    sf::Rect2f txrRepulsoCat{addImgResourceToAtlas("repulsocat.png")};
+    sf::Rect2f txrRepulsoCatPaw{addImgResourceToAtlas("repulsocatpaw.png")};
+    sf::Rect2f txrAttractoCat{addImgResourceToAtlas("attractocat.png")};
+    sf::Rect2f txrCopyCat{addImgResourceToAtlas("copycat.png")};
+    sf::Rect2f txrDuckCat{addImgResourceToAtlas("duck.png")};
+    sf::Rect2f txrDuckFlag{addImgResourceToAtlas("duckflag.png")};
+    sf::Rect2f txrAttractoCatPaw{addImgResourceToAtlas("attractocatpaw.png")};
+    sf::Rect2f txrCopyCatPaw{addImgResourceToAtlas("copycatpaw.png")};
+    sf::Rect2f txrDollNormal{addImgResourceToAtlas("dollnormal.png")};
+    sf::Rect2f txrDollUni{addImgResourceToAtlas("dolluni.png")};
+    sf::Rect2f txrDollDevil{addImgResourceToAtlas("dolldevil.png")};
+    sf::Rect2f txrDollAstro{addImgResourceToAtlas("dollastro.png")};
+    sf::Rect2f txrDollWizard{addImgResourceToAtlas("dollwizard.png")};
+    sf::Rect2f txrDollMouse{addImgResourceToAtlas("dollmouse.png")};
+    sf::Rect2f txrDollEngi{addImgResourceToAtlas("dollengi.png")};
+    sf::Rect2f txrDollRepulso{addImgResourceToAtlas("dollrepulso.png")};
+    sf::Rect2f txrDollAttracto{addImgResourceToAtlas("dollattracto.png")};
+    sf::Rect2f txrCoin{addImgResourceToAtlas("bytecoin.png")};
+    sf::Rect2f txrCatSoul{addImgResourceToAtlas("catsoul.png")};
+    sf::Rect2f txrHellPortal{addImgResourceToAtlas("hellportal.png")};
+    sf::Rect2f txrCatEyeLid0{addImgResourceToAtlas("cateyelid0.png")};
+    sf::Rect2f txrCatEyeLid1{addImgResourceToAtlas("cateyelid1.png")};
+    sf::Rect2f txrCatEyeLid2{addImgResourceToAtlas("cateyelid2.png")};
+    sf::Rect2f txrCatWhiteEyeLid0{addImgResourceToAtlas("catwhiteeyelid0.png")};
+    sf::Rect2f txrCatWhiteEyeLid1{addImgResourceToAtlas("catwhiteeyelid1.png")};
+    sf::Rect2f txrCatWhiteEyeLid2{addImgResourceToAtlas("catwhiteeyelid2.png")};
+    sf::Rect2f txrCatDarkEyeLid0{addImgResourceToAtlas("catdarkeyelid0.png")};
+    sf::Rect2f txrCatDarkEyeLid1{addImgResourceToAtlas("catdarkeyelid1.png")};
+    sf::Rect2f txrCatDarkEyeLid2{addImgResourceToAtlas("catdarkeyelid2.png")};
+    sf::Rect2f txrCatGrayEyeLid0{addImgResourceToAtlas("catgrayeyelid0.png")};
+    sf::Rect2f txrCatGrayEyeLid1{addImgResourceToAtlas("catgrayeyelid1.png")};
+    sf::Rect2f txrCatGrayEyeLid2{addImgResourceToAtlas("catgrayeyelid2.png")};
+    sf::Rect2f txrCatEars0{addImgResourceToAtlas("catears0.png")};
+    sf::Rect2f txrCatEars1{addImgResourceToAtlas("catears1.png")};
+    sf::Rect2f txrCatEars2{addImgResourceToAtlas("catears2.png")};
+    sf::Rect2f txrCatYawn0{addImgResourceToAtlas("catyawn0.png")};
+    sf::Rect2f txrCatYawn1{addImgResourceToAtlas("catyawn1.png")};
+    sf::Rect2f txrCatYawn2{addImgResourceToAtlas("catyawn2.png")};
+    sf::Rect2f txrCatYawn3{addImgResourceToAtlas("catyawn3.png")};
+    sf::Rect2f txrCatYawn4{addImgResourceToAtlas("catyawn4.png")};
+    sf::Rect2f txrCCMaskWitch{addImgResourceToAtlas("ccmaskwitch.png")};
+    sf::Rect2f txrCCMaskWizard{addImgResourceToAtlas("ccmaskwizard.png")};
+    sf::Rect2f txrCCMaskMouse{addImgResourceToAtlas("ccmaskmouse.png")};
+    sf::Rect2f txrCCMaskEngi{addImgResourceToAtlas("ccmaskengi.png")};
+    sf::Rect2f txrCCMaskRepulso{addImgResourceToAtlas("ccmaskrepulso.png")};
+    sf::Rect2f txrCCMaskAttracto{addImgResourceToAtlas("ccmaskattracto.png")};
+    sf::Rect2f txrMMNormal{addImgResourceToAtlas("mmcatnormal.png")};
+    sf::Rect2f txrMMUni{addImgResourceToAtlas("mmcatuni.png")};
+    sf::Rect2f txrMMDevil{addImgResourceToAtlas("mmcatdevil.png")};
+    sf::Rect2f txrMMAstro{addImgResourceToAtlas("mmcatastro.png")};
+    sf::Rect2f txrMMWitch{addImgResourceToAtlas("mmcatwitch.png")};
+    sf::Rect2f txrMMWizard{addImgResourceToAtlas("mmcatwizard.png")};
+    sf::Rect2f txrMMMouse{addImgResourceToAtlas("mmcatmouse.png")};
+    sf::Rect2f txrMMEngi{addImgResourceToAtlas("mmcatengi.png")};
+    sf::Rect2f txrMMRepulso{addImgResourceToAtlas("mmcatrepulso.png")};
+    sf::Rect2f txrMMAttracto{addImgResourceToAtlas("mmcatattracto.png")};
+    sf::Rect2f txrMMCopy{addImgResourceToAtlas("mmcatcopy.png")};
+    sf::Rect2f txrMMDuck{addImgResourceToAtlas("mmduck.png")};
+    sf::Rect2f txrMMShrine{addImgResourceToAtlas("mmshrine.png")};
 
     ////////////////////////////////////////////////////////////
     // Cat animation rects: eye blinking
-    const sf::FloatRect* eyeLidRects[8]{
+    const sf::Rect2f* eyeLidRects[8]{
         &txrCatEyeLid2,
         &txrCatEyeLid1,
         &txrCatEyeLid0,
@@ -796,7 +796,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Cat animation rects: eye blinking (white)
-    const sf::FloatRect* whiteEyeLidRects[8]{
+    const sf::Rect2f* whiteEyeLidRects[8]{
         &txrCatWhiteEyeLid2,
         &txrCatWhiteEyeLid1,
         &txrCatWhiteEyeLid0,
@@ -811,7 +811,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Cat animation rects: eye blinking (dark)
-    const sf::FloatRect* darkEyeLidRects[8]{
+    const sf::Rect2f* darkEyeLidRects[8]{
         &txrCatDarkEyeLid2,
         &txrCatDarkEyeLid1,
         &txrCatDarkEyeLid0,
@@ -826,7 +826,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Cat animation rects: eye blinking (gray)
-    const sf::FloatRect* grayEyeLidRects[8]{
+    const sf::Rect2f* grayEyeLidRects[8]{
         &txrCatGrayEyeLid2,
         &txrCatGrayEyeLid1,
         &txrCatGrayEyeLid0,
@@ -841,7 +841,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Cat animation rects: ear flapping
-    const sf::FloatRect* earRects[8]{
+    const sf::Rect2f* earRects[8]{
         &txrCatEars0,
         &txrCatEars1,
         &txrCatEars2,
@@ -856,7 +856,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Cat animation rects: yawning
-    const sf::FloatRect* catYawnRects[14]{
+    const sf::Rect2f* catYawnRects[14]{
         &txrCatYawn0,
         &txrCatYawn1,
         &txrCatYawn2,
@@ -876,7 +876,7 @@ struct Main
     static inline constexpr auto nYawnRects = sf::base::getArraySize(&Main::catYawnRects);
 
     ///////////////////////////////////////////////////////////
-    const sf::FloatRect particleRects[nParticleTypes] = {
+    const sf::Rect2f particleRects[nParticleTypes] = {
         txrParticle,
         txrStarParticle,
         txrFireParticle,
@@ -1257,7 +1257,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Minimap navigation
-    sf::FloatRect minimapRect;
+    sf::Rect2f minimapRect;
 
     ////////////////////////////////////////////////////////////
     // Input management
@@ -1607,13 +1607,13 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::FloatRect addImgResourceToAtlas(const sf::Path& path)
+    [[nodiscard]] sf::Rect2f addImgResourceToAtlas(const sf::Path& path)
     {
         return textureAtlas.add(sf::Image::loadFromFile("resources" / path).value()).value();
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::FloatRect addImgResourceToUIAtlas(const sf::Path& path)
+    [[nodiscard]] sf::Rect2f addImgResourceToUIAtlas(const sf::Path& path)
     {
         return uiTextureAtlas.add(sf::Image::loadFromFile("resources" / path).value()).value();
     }
@@ -1783,18 +1783,18 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] float getAspectRatioScalingFactor(const sf::Vec2f& originalSize, const sf::Vec2f& windowSize) const
+    [[nodiscard]] float getAspectRatioScalingFactor(const sf::Vec2f originalSize, const sf::Vec2f windowSize) const
     {
         // Calculate the scale factors for both dimensions
         const float scaleX = windowSize.x / originalSize.x;
         const float scaleY = windowSize.y / originalSize.y;
 
         // Use the smaller scale factor to maintain aspect ratio
-        return std::min(scaleX, scaleY);
+        return sf::base::min(scaleX, scaleY);
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::View createScaledGameView(const sf::Vec2f& originalSize, const sf::Vec2f& windowSize) const
+    [[nodiscard]] sf::View createScaledGameView(const sf::Vec2f originalSize, const sf::Vec2f windowSize) const
     {
         const float     scale      = getAspectRatioScalingFactor(originalSize, windowSize);
         const sf::Vec2f scaledSize = originalSize * scale;
@@ -1806,7 +1806,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::View createScaledTopGameView(const sf::Vec2f& originalSize, const sf::Vec2f& windowSize) const
+    [[nodiscard]] sf::View createScaledTopGameView(const sf::Vec2f originalSize, const sf::Vec2f windowSize) const
     {
         const float     scale      = getAspectRatioScalingFactor(originalSize, windowSize);
         const sf::Vec2f scaledSize = originalSize * scale;
@@ -1831,7 +1831,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::View makeScaledHUDView(const sf::Vec2f& resolution, float scale) const
+    [[nodiscard]] sf::View makeScaledHUDView(const sf::Vec2f resolution, float scale) const
     {
         return {.center = {resolution.x / (2.f * scale), resolution.y / (2.f * scale)}, .size = resolution / scale};
     }
@@ -2065,9 +2065,9 @@ struct Main
     void                    uiTabBar();
     void                    uiSetUnlockLabelY(sf::base::SizeT unlockId);
     [[nodiscard]] bool      checkUiUnlock(sf::base::SizeT unlockId, bool unlockCondition);
-    void uiImageFromAtlas(const sf::FloatRect& txr, const sf::RenderTarget::TextureDrawParams& drawParams);
-    void uiImgsep(const sf::FloatRect& txr, const char* sepLabel, bool first = false);
-    void uiImgsep2(const sf::FloatRect& txr, const char* sepLabel);
+    void uiImageFromAtlas(const sf::Rect2f& txr, const sf::RenderTarget::TextureDrawParams& drawParams);
+    void uiImgsep(const sf::Rect2f& txr, const char* sepLabel, bool first = false);
+    void uiImgsep2(const sf::Rect2f& txr, const char* sepLabel);
     void uiTabBarShop();
     bool uiCheckbox(const char* label, bool* b);
     bool uiRadio(const char* label, int* i, int value);
@@ -2077,12 +2077,12 @@ struct Main
     void uiTabBarSettings();
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::Optional<sf::FloatRect> getAoEDragRect(const sf::Vec2f mousePos) const
+    [[nodiscard]] sf::base::Optional<sf::Rect2f> getAoEDragRect(const sf::Vec2f mousePos) const
     {
         if (!catDragOrigin.hasValue())
             return sf::base::nullOpt;
 
-        return sf::base::makeOptional<sf::FloatRect>(*catDragOrigin, mousePos - *catDragOrigin);
+        return sf::base::makeOptional<sf::Rect2f>(*catDragOrigin, mousePos - *catDragOrigin);
     }
 
     ////////////////////////////////////////////////////////////
@@ -3861,7 +3861,7 @@ struct Main
 
             statRitual(selected->type);
 
-            const auto isPositionFarFromOtherDolls = [&](const sf::Vec2f& position) -> bool
+            const auto isPositionFarFromOtherDolls = [&](const sf::Vec2f position) -> bool
             {
                 for (const Doll& d : dollsToUse)
                     if ((d.position - position).lengthSquared() < (256.f * 256.f))
@@ -3870,7 +3870,7 @@ struct Main
                 return true;
             };
 
-            const auto isOnTopOfAnyCat = [&](const sf::Vec2f& position) -> bool
+            const auto isOnTopOfAnyCat = [&](const sf::Vec2f position) -> bool
             {
                 for (const Cat& c : pt->cats)
                     if ((c.position - position).lengthSquared() < c.getRadiusSquared())
@@ -3879,7 +3879,7 @@ struct Main
                 return false;
             };
 
-            const auto isOnTopOfAnyShrine = [&](const sf::Vec2f& position) -> bool
+            const auto isOnTopOfAnyShrine = [&](const sf::Vec2f position) -> bool
             {
                 for (const Shrine& s : pt->shrines)
                     if ((s.position - position).lengthSquared() < s.getRadiusSquared())
@@ -6275,7 +6275,7 @@ struct Main
             return sf::base::remainder(static_cast<float>(idx) * 2.f - hueRange / 2.f, hueRange) + magnetHueMod;
         };
 
-        const sf::FloatRect bubbleRects[]{txrBubble, txrBubbleStar, txrBomb, txrBubbleNova};
+        const sf::Rect2f bubbleRects[]{txrBubble, txrBubbleStar, txrBomb, txrBubbleNova};
         static_assert(sf::base::getArraySize(bubbleRects) == nBubbleTypes);
 
         sf::CPUDrawableBatch* batchToUseByType[]{&bubbleDrawableBatch,
@@ -6360,7 +6360,7 @@ struct Main
     {
         minimapDrawableBatch.clear();
 
-        const sf::FloatRect* mmCatTxrs[]{
+        const sf::Rect2f* mmCatTxrs[]{
             &txrMMNormal,
             &txrMMUni,
             &txrMMDevil,
@@ -6484,15 +6484,15 @@ struct Main
     void gameLoopDrawCats(const sf::Vec2f mousePos, const float deltaTimeMs)
     {
         ////////////////////////////////////////////////////////////
-        const sf::FloatRect* const uniCatTxr     = isUnicatTranscendenceActive() ? &txrUniCat2 : &txrUniCat;
-        const sf::FloatRect* const uniCatTailTxr = isUnicatTranscendenceActive() ? &txrUniCat2Tail : &txrUniCatTail;
+        const sf::Rect2f* const uniCatTxr     = isUnicatTranscendenceActive() ? &txrUniCat2 : &txrUniCat;
+        const sf::Rect2f* const uniCatTailTxr = isUnicatTranscendenceActive() ? &txrUniCat2Tail : &txrUniCatTail;
 
-        const sf::FloatRect* const devilCatTxr    = isDevilcatHellsingedActive() ? &txrDevilCat2 : &txrDevilCat3;
-        const sf::FloatRect* const devilCatPawTxr = isDevilcatHellsingedActive() ? &txrDevilCatPaw2 : &txrDevilCat3Arm;
-        const sf::FloatRect* const devilCatTailTxr = isDevilcatHellsingedActive() ? &txrDevilCatTail2 : &txrDevilCat3Tail;
+        const sf::Rect2f* const devilCatTxr     = isDevilcatHellsingedActive() ? &txrDevilCat2 : &txrDevilCat3;
+        const sf::Rect2f* const devilCatPawTxr  = isDevilcatHellsingedActive() ? &txrDevilCatPaw2 : &txrDevilCat3Arm;
+        const sf::Rect2f* const devilCatTailTxr = isDevilcatHellsingedActive() ? &txrDevilCatTail2 : &txrDevilCat3Tail;
 
         ////////////////////////////////////////////////////////////
-        const sf::FloatRect* const catTxrsByType[] = {
+        const sf::Rect2f* const catTxrsByType[] = {
             &txrCat,      // Normal
             uniCatTxr,    // Uni
             devilCatTxr,  // Devil
@@ -6511,7 +6511,7 @@ struct Main
         static_assert(sf::base::getArraySize(catTxrsByType) == nCatTypes);
 
         ////////////////////////////////////////////////////////////
-        const sf::FloatRect* const catPawTxrsByType[] = {
+        const sf::Rect2f* const catPawTxrsByType[] = {
             &txrCatPaw,     // Normal
             &txrUniCatPaw,  // Uni
             devilCatPawTxr, // Devil
@@ -6530,7 +6530,7 @@ struct Main
         static_assert(sf::base::getArraySize(catPawTxrsByType) == nCatTypes);
 
         ////////////////////////////////////////////////////////////
-        const sf::FloatRect* const catTailTxrsByType[] = {
+        const sf::Rect2f* const catTailTxrsByType[] = {
             &txrCatTail,      // Normal
             uniCatTailTxr,    // Uni
             devilCatTailTxr,  // Devil
@@ -6602,16 +6602,16 @@ struct Main
     void gameLoopDrawCat(Cat&            cat,
                          const float     deltaTimeMs,
                          const sf::Vec2f mousePos,
-                         const sf::FloatRect* const (&catTxrsByType)[nCatTypes],
-                         const sf::FloatRect* const (&catPawTxrsByType)[nCatTypes],
-                         const sf::FloatRect* const (&catTailTxrsByType)[nCatTypes],
+                         const sf::Rect2f* const (&catTxrsByType)[nCatTypes],
+                         const sf::Rect2f* const (&catPawTxrsByType)[nCatTypes],
+                         const sf::Rect2f* const (&catTailTxrsByType)[nCatTypes],
                          const sf::Vec2f (&catTailOffsetsByType)[nCatTypes],
                          const float (&catHueByType)[nCatTypes])
     {
         auto& batchToUse     = catToPlace == &cat ? cpuTopDrawableBatch : cpuDrawableBatch;
         auto& textBatchToUse = catToPlace == &cat ? catTextTopDrawableBatch : catTextDrawableBatch;
 
-        const sf::FloatRect& catTxr = *catTxrsByType[asIdx(cat.type)];
+        const sf::Rect2f& catTxr = *catTxrsByType[asIdx(cat.type)];
 
         if (catToPlace != &cat && !bubbleCullingBoundaries.isInside(cat.position))
             return;
@@ -6621,7 +6621,7 @@ struct Main
 
         const bool beingDragged = isCatBeingDragged(cat);
 
-        const sf::base::Optional<sf::FloatRect> dragRect = getAoEDragRect(mousePos);
+        const sf::base::Optional<sf::Rect2f> dragRect = getAoEDragRect(mousePos);
 
         const bool insideDragRect = dragRect.hasValue() && dragRect->contains(cat.position);
 
@@ -6632,9 +6632,9 @@ struct Main
 
         const U8 rangeInnerAlpha = shouldDisplayRangeCircle ? 75u : 0u;
 
-        const sf::FloatRect& catPawTxr = *catPawTxrsByType[asIdx(isCopyCatWithType(CatType::Mouse) ? CatType::Mouse : cat.type)];
-        const sf::FloatRect& catTailTxr    = *catTailTxrsByType[asIdx(cat.type)];
-        const sf::Vec2f      catTailOffset = catTailOffsetsByType[asIdx(cat.type)];
+        const sf::Rect2f& catPawTxr = *catPawTxrsByType[asIdx(isCopyCatWithType(CatType::Mouse) ? CatType::Mouse : cat.type)];
+        const sf::Rect2f& catTailTxr    = *catTailTxrsByType[asIdx(cat.type)];
+        const sf::Vec2f   catTailOffset = catTailOffsetsByType[asIdx(cat.type)];
 
         const float maxCooldown  = getComputedCooldownByCatTypeOrCopyCat(cat.type);
         const float cooldownDiff = cat.cooldown.value;
@@ -7045,7 +7045,7 @@ struct Main
 
                 const float foo = easeInOutBack(copycatMaskAnim.getProgressBounced(3000.f)) * 0.5f;
 
-                const auto* txrMaskToUse = [&]() -> const sf::FloatRect*
+                const auto* txrMaskToUse = [&]() -> const sf::Rect2f*
                 {
                     if (pt->copycatCopiedCatType == CatType::Witch)
                         return &txrCCMaskWitch;
@@ -7285,7 +7285,7 @@ struct Main
     void gameLoopDrawDolls(const sf::Vec2f mousePos)
     {
         ////////////////////////////////////////////////////////////
-        const sf::FloatRect* dollTxrs[] = {
+        const sf::Rect2f* dollTxrs[] = {
             &txrDollNormal,   // Normal
             &txrDollUni,      // Uni
             &txrDollDevil,    // Devil
@@ -7429,7 +7429,7 @@ struct Main
 
         const auto targetPosition = moneyText.getCenterRight();
 
-        const auto bezier = [](const sf::Vec2f& start, const sf::Vec2f& end, const float t)
+        const auto bezier = [](const sf::Vec2f start, const sf::Vec2f end, const float t)
         {
             const sf::Vec2f control(start.x, end.y);
             const float     u = 1.f - t;
@@ -7696,7 +7696,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Helper function to convert a view's normalized viewport to pixel bounds relative to a target size (e.g. window size)
-    [[nodiscard]] sf::FloatRect getViewportPixelBounds(const sf::View& view, const sf::Vec2f targetSize) const
+    [[nodiscard]] sf::Rect2f getViewportPixelBounds(const sf::View& view, const sf::Vec2f targetSize) const
     {
         return {{view.viewport.position.x * targetSize.x, view.viewport.position.y * targetSize.y},
                 {view.viewport.size.x * targetSize.x, view.viewport.size.y * targetSize.y}};
@@ -7704,7 +7704,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Returns a random position along the edges of the provided bounds.
-    [[nodiscard]] sf::Vec2f getEdgeSpawnPosition(const sf::FloatRect& bounds, const float thickness)
+    [[nodiscard]] sf::Vec2f getEdgeSpawnPosition(const sf::Rect2f& bounds, const float thickness)
     {
         // Randomly select one of the four edges: 0=top, 1=bottom, 2=left, 3=right.
         const int edge = rngFast.getI<int>(0, 3);
@@ -7737,8 +7737,8 @@ struct Main
 
         for (int i = 0; i < 10; ++i)
         {
-            const sf::FloatRect gameViewBounds = getViewportPixelBounds(gameView, getResolution());
-            const sf::Vec2f     spawnPos       = getEdgeSpawnPosition(gameViewBounds, 10.f);
+            const sf::Rect2f gameViewBounds = getViewportPixelBounds(gameView, getResolution());
+            const sf::Vec2f  spawnPos       = getEdgeSpawnPosition(gameViewBounds, 10.f);
 
             spawnHUDBottomParticle({.position      = spawnPos,
                                     .velocity      = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),

@@ -10,7 +10,7 @@
 
 #include "SFML/Graphics/Color.hpp"
 
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
@@ -181,7 +181,7 @@ public:
     /// \return `true` if the operation was successful, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool copy(const Image& source, Vec2u dest, const IntRect& sourceRect = {}, bool applyAlpha = false);
+    [[nodiscard]] bool copy(const Image& source, Vec2u dest, const Rect2i& sourceRect = {}, bool applyAlpha = false);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the color of a pixel

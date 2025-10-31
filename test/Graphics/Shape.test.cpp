@@ -5,7 +5,7 @@
 // Other 1st party headers
 #include "SFML/Graphics/Texture.hpp"
 
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 
 #include <Doctest.hpp>
 
@@ -46,19 +46,19 @@ TEST_CASE("[Graphics] sf::Shape" * doctest::skip(skipDisplayTests))
     SECTION("Default constructor")
     {
         const TriangleShape triangleShape({0, 0});
-        CHECK(triangleShape.getTextureRect() == sf::FloatRect());
+        CHECK(triangleShape.getTextureRect() == sf::Rect2f());
         CHECK(triangleShape.getFillColor() == sf::Color::White);
         CHECK(triangleShape.getOutlineColor() == sf::Color::White);
         CHECK(triangleShape.getOutlineThickness() == 0.f);
-        CHECK(triangleShape.getLocalBounds() == sf::FloatRect());
-        CHECK(triangleShape.getGlobalBounds() == sf::FloatRect());
+        CHECK(triangleShape.getLocalBounds() == sf::Rect2f());
+        CHECK(triangleShape.getGlobalBounds() == sf::Rect2f());
     }
 
     SECTION("Set/get texture rect")
     {
         TriangleShape triangleShape({});
         triangleShape.setTextureRect({{4, 5}, {6, 7}});
-        CHECK(triangleShape.getTextureRect() == sf::FloatRect({4, 5}, {6, 7}));
+        CHECK(triangleShape.getTextureRect() == sf::Rect2f({4, 5}, {6, 7}));
     }
 
     SECTION("Set/get fill color")
@@ -85,30 +85,30 @@ TEST_CASE("[Graphics] sf::Shape" * doctest::skip(skipDisplayTests))
     SECTION("Get bounds")
     {
         TriangleShape triangleShape({30, 40});
-        CHECK(triangleShape.getLocalBounds() == sf::FloatRect({0, 0}, {30, 40}));
-        CHECK(triangleShape.getGlobalBounds() == sf::FloatRect({0, 0}, {30, 40}));
+        CHECK(triangleShape.getLocalBounds() == sf::Rect2f({0, 0}, {30, 40}));
+        CHECK(triangleShape.getGlobalBounds() == sf::Rect2f({0, 0}, {30, 40}));
 
         SECTION("Move and rotate")
         {
             triangleShape.position += {1, 1};
             triangleShape.rotation += sf::degrees(90);
-            CHECK(triangleShape.getLocalBounds() == sf::FloatRect({0, 0}, {30, 40}));
-            CHECK(triangleShape.getGlobalBounds() == Approx(sf::FloatRect({-39, 1}, {40, 30})));
+            CHECK(triangleShape.getLocalBounds() == sf::Rect2f({0, 0}, {30, 40}));
+            CHECK(triangleShape.getGlobalBounds() == Approx(sf::Rect2f({-39, 1}, {40, 30})));
         }
 
         SECTION("Add outline")
         {
             triangleShape.setOutlineThickness(5);
-            CHECK(triangleShape.getLocalBounds() == Approx(sf::FloatRect({-7.2150f, -14.2400f}, {44.4300f, 59.2400f})));
-            CHECK(triangleShape.getGlobalBounds() == Approx(sf::FloatRect({-7.2150f, -14.2400f}, {44.4300f, 59.2400f})));
+            CHECK(triangleShape.getLocalBounds() == Approx(sf::Rect2f({-7.2150f, -14.2400f}, {44.4300f, 59.2400f})));
+            CHECK(triangleShape.getGlobalBounds() == Approx(sf::Rect2f({-7.2150f, -14.2400f}, {44.4300f, 59.2400f})));
         }
 
         SECTION("Add beveled outline")
         {
             triangleShape.setMiterLimit(2);
             triangleShape.setOutlineThickness(5);
-            CHECK(triangleShape.getLocalBounds() == Approx(sf::FloatRect({-7.2150f, -10.f}, {44.4300f, 55.f})));
-            CHECK(triangleShape.getGlobalBounds() == Approx(sf::FloatRect({-7.2150f, -10.f}, {44.4300f, 55.f})));
+            CHECK(triangleShape.getLocalBounds() == Approx(sf::Rect2f({-7.2150f, -10.f}, {44.4300f, 55.f})));
+            CHECK(triangleShape.getGlobalBounds() == Approx(sf::Rect2f({-7.2150f, -10.f}, {44.4300f, 55.f})));
         }
     }
 }

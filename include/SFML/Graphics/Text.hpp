@@ -17,7 +17,7 @@
 
 #include "SFML/System/AnchorPointMixin.hpp"
 #include "SFML/System/LifetimeDependant.hpp"
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/String.hpp"
 #include "SFML/System/Vec2.hpp"
 
@@ -433,7 +433,7 @@ public:
     /// \return Local bounding rectangle of the entity
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const FloatRect& getLocalBounds() const;
+    [[nodiscard]] const Rect2f& getLocalBounds() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the global bounding rectangle of the entity
@@ -447,7 +447,7 @@ public:
     /// \return Global bounding rectangle of the entity
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] FloatRect getGlobalBounds() const;
+    [[nodiscard]] Rect2f getGlobalBounds() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw the text to a render target
@@ -515,7 +515,7 @@ private:
     /* Ordered to minimize padding */
     String                       m_string;            //!< String to display
     mutable base::Vector<Vertex> m_vertices;          //!< Vertex array containing the outline and fill geometry
-    mutable FloatRect            m_bounds;            //!< Bounding rectangle of the text (in local coordinates)
+    mutable Rect2f               m_bounds;            //!< Bounding rectangle of the text (in local coordinates)
     const Font*                  m_font{};            //!< Font used to display the string
     mutable base::SizeT m_fillVerticesStartIndex{};   //!< Index in the vertex array where the fill vertices start
     unsigned int        m_characterSize{30u};         //!< Base size of characters, in pixels

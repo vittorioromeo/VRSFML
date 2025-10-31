@@ -9,7 +9,7 @@
 #include "SFML/Graphics/Vertex.hpp"
 #include "SFML/Graphics/VertexUtils.hpp"
 
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Span.hpp"
@@ -44,7 +44,7 @@ struct VertexSpanImpl : base::Span<T>
     /// \return A rect representing the bounding rectangle.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr FloatRect getGlobalBounds() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr Rect2f getGlobalBounds() const noexcept
     {
         return VertexUtils::getVertexRangeBounds(this->theData, this->theSize);
     }

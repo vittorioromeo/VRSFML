@@ -22,7 +22,7 @@
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Path.hpp"
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Exchange.hpp"
@@ -301,7 +301,7 @@ base::Optional<Texture> Texture::loadFromImage(const Image& image, const Texture
     SFML_BASE_ASSERT(settings.area.position.y < size.y);
 
     // Adjust the rectangle to the size of the image
-    IntRect rectangle    = settings.area;
+    Rect2i rectangle     = settings.area;
     rectangle.position.x = base::max(rectangle.position.x, 0);
     rectangle.position.y = base::max(rectangle.position.y, 0);
     rectangle.size.x     = base::min(rectangle.size.x, size.x - rectangle.position.x);
@@ -790,7 +790,7 @@ unsigned int Texture::getNativeHandle() const
 
 
 ////////////////////////////////////////////////////////////
-FloatRect Texture::getRect() const
+Rect2f Texture::getRect() const
 {
     return {{0, 0}, getSize().toVec2f()};
 }

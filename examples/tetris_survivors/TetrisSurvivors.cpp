@@ -11,6 +11,8 @@
 //
 #include "AnimationCommands.hpp"
 #include "AnimationTimeline.hpp"
+#include "BitmapTextAlignment.hpp"
+#include "BitmapTextUtils.hpp"
 #include "Block.hpp"
 #include "BlockGrid.hpp"
 #include "BlockMatrix.hpp"
@@ -22,6 +24,7 @@
 #include "LaserDirection.hpp"
 #include "LaserableBlocksInfo.hpp"
 #include "LightningBolt.hpp"
+#include "MonospaceBitmapFont.hpp"
 #include "Perk.hpp"
 #include "RandomBag.hpp"
 #include "ShapeDimension.hpp"
@@ -38,6 +41,8 @@
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
+#include "SFML/Graphics/IndexType.hpp"
+#include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/RectangleShapeData.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
@@ -48,6 +53,8 @@
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/TextureAtlas.hpp"
+#include "SFML/Graphics/Transform.hpp"
+#include "SFML/Graphics/Vertex.hpp"
 
 #include "SFML/Audio/AudioContext.hpp"
 #include "SFML/Audio/Music.hpp"
@@ -63,7 +70,7 @@
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Path.hpp"
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Vec2.hpp"
 
@@ -78,15 +85,18 @@
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/Remainder.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Trait/IsConst.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #include "ExampleUtils.hpp"
 
+
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 
+#include <format>
 #include <string>
 
 
@@ -248,18 +258,20 @@ private:
     float m_fUlVignetteStrength             = 0.2f;
     float m_fUlVignetteInnerRadius          = 0.5f;
     float m_fUlVignetteOuterRadius          = 1.f;
-    float m_fUlScanlineStrength             = 0.3f;
+    float m_fUlScanlineStrength             = 0.25f;
     float m_fUlScanlineBrightnessModulation = 1.2f;
-    float m_fUlScanlineScrollSpeed          = 5.f;
+    float m_fUlScanlineScrollSpeed          = 1.f;
     float m_fUlScanlineThickness            = 4.f;
     float m_fUlScanlineHeight               = 2.f;
     float m_fUlNoiseStrength                = 2.5f;
-    float m_fUlMaskStrength                 = 0.2f;
+    float m_fUlMaskStrength                 = 0.15f;
     float m_fUlMaskScale                    = 0.25f;
-    float m_fUlBloomStrength                = 0.2f;
+    float m_fUlBloomStrength                = 0.1f;
     float m_fUlInputGamma                   = 2.3f;
     float m_fUlOutputGamma                  = 2.6f;
     float m_fUlSaturation                   = 1.15f;
+
+    bool m_mustSyncShaderUniforms = true;
 
     ////////////////////////////////////////////////////////////
     // Shader with post-processing effects
@@ -283,6 +295,8 @@ private:
     ////////////////////////////////////////////////////////////
     sf::Font m_font      = sf::Font::openFromFile("resources/monogram.ttf").value();
     sf::Font m_fontMago2 = sf::Font::openFromFile("resources/petty5.bdf").value();
+    sf::Font m_font3     = sf::Font::openFromFile("resources/ChikareGo.ttf").value();
+    sf::Font m_font4     = sf::Font::openFromFile("resources/TinyUnicode.ttf").value();
 
     ////////////////////////////////////////////////////////////
     sf::PlaybackDevice m_playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};
@@ -329,6 +343,7 @@ private:
     ////////////////////////////////////////////////////////////
     sf::Clock m_tickClock;
     float     m_timeAccumulator = 0.f;
+    float     m_totalTime       = 0.f;
 
     ////////////////////////////////////////////////////////////
     World m_world;
@@ -435,17 +450,47 @@ private:
     sf::TextureAtlas m_textureAtlas{sf::Texture::create({512u, 512u}, {.smooth = false}).value()};
 
     ////////////////////////////////////////////////////////////
-    const sf::FloatRect m_txrWhiteDotTrue = m_textureAtlas.add(sf::GraphicsContext::getBuiltInWhiteDotTexture()).value();
-    const sf::FloatRect m_txrWhiteDot    = {{0.f, 0.f}, {1.f, 1.f}};
-    const sf::FloatRect m_txrBlock0      = addImgResourceToAtlas("block0.png");
-    const sf::FloatRect m_txrBlock1      = addImgResourceToAtlas("block1.png");
-    const sf::FloatRect m_txrBlock2      = addImgResourceToAtlas("block2.png");
-    const sf::FloatRect m_txrDivider     = addImgResourceToAtlas("divider.png");
-    const sf::FloatRect m_txrDrill       = addImgResourceToAtlas("drill.png");
-    const sf::FloatRect m_txrRedDot      = addImgResourceToAtlas("reddot.png");
-    const sf::FloatRect m_txrEmitter     = addImgResourceToAtlas("emitter.png");
-    const sf::FloatRect m_txrPowerupXP   = addImgResourceToAtlas("powerupxp.png");
-    const sf::FloatRect m_txrPowerupBomb = addImgResourceToAtlas("powerupbomb.png");
+    const sf::Rect2f m_txrWhiteDotTrue   = m_textureAtlas.add(sf::GraphicsContext::getBuiltInWhiteDotTexture()).value();
+    const sf::Rect2f m_txrWhiteDot       = {{0.f, 0.f}, {1.f, 1.f}};
+    const sf::Rect2f m_txrBlock0         = addImgResourceToAtlas("block0.png");
+    const sf::Rect2f m_txrBlock1         = addImgResourceToAtlas("block1.png");
+    const sf::Rect2f m_txrBlock2         = addImgResourceToAtlas("block2.png");
+    const sf::Rect2f m_txrDivider        = addImgResourceToAtlas("divider.png");
+    const sf::Rect2f m_txrDrill          = addImgResourceToAtlas("drill.png");
+    const sf::Rect2f m_txrRedDot         = addImgResourceToAtlas("reddot.png");
+    const sf::Rect2f m_txrEmitter        = addImgResourceToAtlas("emitter.png");
+    const sf::Rect2f m_txrPowerupXP      = addImgResourceToAtlas("powerupxp.png");
+    const sf::Rect2f m_txrPowerupBomb    = addImgResourceToAtlas("powerupbomb.png");
+    const sf::Rect2f m_txrBFMinogram6x10 = addImgResourceToAtlas("minogram_6x10.png");
+
+
+    //////////////////////////////////////////////////////////////
+    [[nodiscard]] MonospaceBitmapFont loadMinogramData()
+    {
+        MonospaceBitmapFont result{{6u, 10u}};
+
+        constexpr sf::base::Array<sf::base::StringView, 7>
+            glyphRows{"ABCDEFGHIJKLM",
+                      "NOPQRSTUVWXYZ",
+                      "abcdefghijklm",
+                      "nopqrstuvwxyz",
+                      "0123456789+-=",
+                      "()[]{}<>/*:#%",
+                      "!?.,'\"@&$"};
+
+        for (sf::base::SizeT iY = 0; iY < glyphRows.size(); ++iY)
+            for (sf::base::SizeT iX = 0; iX < glyphRows[iY].size(); ++iX)
+            {
+                const char c = glyphRows[iY][iX];
+                result.addGlyph(c, {iX, iY});
+            }
+
+        return result;
+    }
+
+    //////////////////////////////////////////////////////////////
+    MonospaceBitmapFont m_bitmapFontMinogram{loadMinogramData()};
+
 
     //////////////////////////////////////////////////////////////
     sf::RenderTexture m_rtGame{
@@ -474,7 +519,7 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::FloatRect addImgResourceToAtlas(const sf::Path& path)
+    [[nodiscard]] sf::Rect2f addImgResourceToAtlas(const sf::Path& path)
     {
         return m_textureAtlas.add(sf::Image::loadFromFile("resources" / path).value(), /* padding */ {2u, 2u}).value();
     }
@@ -482,9 +527,9 @@ private:
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static bool tetraminosIntersect(const BlockMatrix& shape1,
-                                                  const sf::Vec2i&   pos1,
+                                                  const sf::Vec2i    pos1,
                                                   const BlockMatrix& shape2,
-                                                  const sf::Vec2i&   pos2)
+                                                  const sf::Vec2i    pos2)
     {
         for (sf::base::SizeT y1 = 0; y1 < shapeDimension; ++y1)
             for (sf::base::SizeT x1 = 0; x1 < shapeDimension; ++x1)
@@ -570,7 +615,7 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    void drawBlock(const Block& block, const sf::Vec2f& position, const DrawBlockOptions& options = {})
+    void drawBlock(const Block& block, const sf::Vec2f position, const DrawBlockOptions& options = {})
     {
         float yOffset = 0.f;
 
@@ -677,7 +722,7 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    void drawTetramino(const BlockMatrix& shape, const sf::Vec2f& centerPosition, const DrawBlockOptions& options = {})
+    void drawTetramino(const BlockMatrix& shape, const sf::Vec2f centerPosition, const DrawBlockOptions& options = {})
     {
         const float     scale    = options.scale;
         constexpr float rotation = 0.f;
@@ -748,7 +793,7 @@ private:
         int kickTableIndex = clockwise ? tetramino.rotationState : nextRotationState;
         kickTableIndex     = kickTableIndex * 2 + (clockwise ? 0 : 1);
 
-        for (const sf::Vec2i& offset : kickTable[static_cast<sf::base::SizeT>(kickTableIndex)])
+        for (const sf::Vec2i offset : kickTable[static_cast<sf::base::SizeT>(kickTableIndex)])
         {
             const sf::Vec2i testPosition = tetramino.position + offset;
 
@@ -784,6 +829,19 @@ private:
 
 
     ////////////////////////////////////////////////////////////
+    void resetAndRedrawCurrentTetramino(const bool usedHold)
+    {
+        SFML_BASE_ASSERT(m_world.currentTetramino.hasValue());
+
+        m_world.currentTetramino.reset();
+        m_world.holdUsedThisTurn = usedHold;
+
+        updateStepRefillBlockMatrixIfNeeded();
+        initializeCurrentTetraminoFromBag();
+    }
+
+
+    ////////////////////////////////////////////////////////////
     void skipCurrentTetramino()
     {
         if (m_world.holdUsedThisTurn)
@@ -792,12 +850,7 @@ private:
         SFML_BASE_ASSERT(m_world.currentTetramino.hasValue());
 
         playSound(m_sbHold, 0.75f);
-
-        m_world.currentTetramino.reset();
-        m_world.holdUsedThisTurn = true;
-
-        updateStepRefillBlockMatrixIfNeeded();
-        initializeCurrentTetraminoFromBag();
+        resetAndRedrawCurrentTetramino(/* usedHold */ true);
     }
 
 
@@ -818,16 +871,13 @@ private:
         {
             m_world.currentTetramino = temp;
             m_world.currentTetramino->position = sf::Vec2uz{(m_world.blockGrid.getWidth() - shapeDimension) / 2u, 0u}.toVec2i();
+
+            m_world.holdUsedThisTurn = true;
         }
         else
         {
-            m_world.currentTetramino.reset();
-
-            updateStepRefillBlockMatrixIfNeeded();
-            initializeCurrentTetraminoFromBag();
+            resetAndRedrawCurrentTetramino(/* usedHold */ true);
         }
-
-        m_world.holdUsedThisTurn = true;
     }
 
 
@@ -1153,12 +1203,7 @@ private:
                                           .endY      = endY,
                                       });
 
-            m_world.currentTetramino.reset();
-            m_world.holdUsedThisTurn = false;
-
-            updateStepRefillBlockMatrixIfNeeded();
-            initializeCurrentTetraminoFromBag();
-
+            resetAndRedrawCurrentTetramino(/* usedHold */ false);
             return;
         }
 
@@ -1208,8 +1253,10 @@ private:
     void initializeCurrentTetraminoFromBag()
     {
         SFML_BASE_ASSERT(!m_world.currentTetramino.hasValue());
+        SFML_BASE_ASSERT(!m_world.blockMatrixBag.empty());
 
-        const TaggedBlockMatrix taggedBlockMatrix = drawFromBag(m_world.blockMatrixBag);
+        const TaggedBlockMatrix taggedBlockMatrix = m_world.blockMatrixBag.front();
+        m_world.blockMatrixBag.eraseAt(0u);
 
         m_world.currentTetramino.emplace(Tetramino{
             .shape         = taggedBlockMatrix.blockMatrix,
@@ -1402,9 +1449,9 @@ private:
 
         const auto processTimeline = [&](auto& timeline)
         {
-            auto& anim    = timeline.commands.front();
+            auto& anim = timeline.commands.front();
 
-            auto  visitor = [&]<typename T>(T& innerAnim)
+            auto visitor = [&]<typename T>(T& innerAnim)
                 requires(!sf::base::isConst<T>) { return updateAnimation(timeline, innerAnim); };
 
             if (anim.data.linearVisit(visitor))
@@ -2072,33 +2119,49 @@ private:
 
 
     /////////////////////////////////////////////////////////////
+    void applyGravityToCurrentTetramino()
+    {
+        SFML_BASE_ASSERT(m_world.currentTetramino.hasValue());
+
+        const auto newPosition = m_world.currentTetramino->position.addY(1);
+
+        if (m_world.blockGrid.isValidMove(m_world.currentTetramino->shape, newPosition))
+        {
+            m_world.currentTetramino->position = newPosition;
+            return;
+        }
+
+        if (m_world.graceDropMoves < m_world.maxGraceDropMoves)
+        {
+            ++m_world.graceDropMoves;
+            return;
+        }
+
+        embedTetraminoAndClearLines(*m_world.currentTetramino);
+        resetAndRedrawCurrentTetramino(/* usedHold */ false);
+
+        playSound(m_sbPlace, 0.4f);
+    }
+
+
+    /////////////////////////////////////////////////////////////
     void updateStepProcessSimulation(const float xTicksPerSecond)
     {
         for (unsigned int i = 0; i < static_cast<unsigned int>(m_timeAccumulator * xTicksPerSecond); ++i)
         {
-            ++m_world.tick;
             m_timeAccumulator -= 1.f / xTicksPerSecond;
 
-            if (m_world.tick % 60 == 0) // TODO: make adjustable, maybe perks to increase (greed)
-            {
-                if (m_world.currentTetramino.hasValue())
-                {
-                    const auto newPosition = m_world.currentTetramino->position.addY(1);
+            ++m_world.tick;
 
-                    if (m_world.blockGrid.isValidMove(m_world.currentTetramino->shape, newPosition))
-                        m_world.currentTetramino->position = newPosition;
-                    else
-                    {
-                        if (m_world.graceDropMoves < m_world.maxGraceDropMoves)
-                            ++m_world.graceDropMoves;
-                        else
-                        {
-                            embedTetraminoAndClearLines(*m_world.currentTetramino);
-                            m_world.currentTetramino.reset();
-                            playSound(m_sbPlace, 0.5f);
-                        }
-                    }
-                }
+            SFML_BASE_ASSERT(m_world.dropTickAccumulator < m_world.dropTickTarget);
+            SFML_BASE_ASSERT(m_world.dropTickTarget > 0u);
+
+            ++m_world.dropTickAccumulator;
+
+            if (m_world.dropTickAccumulator == m_world.dropTickTarget)
+            {
+                m_world.dropTickAccumulator = 0u;
+                applyGravityToCurrentTetramino();
             }
         }
     }
@@ -2146,11 +2209,44 @@ private:
 
 
     /////////////////////////////////////////////////////////////
+    void syncShaderUniforms()
+    {
+        if (!m_mustSyncShaderUniforms)
+            return;
+
+        m_mustSyncShaderUniforms = false;
+
+        m_shaderCRT.setUniform(m_ulCurvature, m_fUlCurvature);
+        m_shaderCRT.setUniform(m_ulVignetteStrength, m_fUlVignetteStrength);
+        m_shaderCRT.setUniform(m_ulVignetteInnerRadius, m_fUlVignetteInnerRadius);
+        m_shaderCRT.setUniform(m_ulVignetteOuterRadius, m_fUlVignetteOuterRadius);
+        m_shaderCRT.setUniform(m_ulScanlineStrength, m_fUlScanlineStrength);
+        m_shaderCRT.setUniform(m_ulScanlineBrightnessModulation, m_fUlScanlineBrightnessModulation);
+        m_shaderCRT.setUniform(m_ulScanlineScrollSpeed, m_fUlScanlineScrollSpeed);
+        m_shaderCRT.setUniform(m_ulScanlineThickness, m_fUlScanlineThickness);
+        m_shaderCRT.setUniform(m_ulScanlineHeight, m_fUlScanlineHeight);
+        m_shaderCRT.setUniform(m_ulNoiseStrength, m_fUlNoiseStrength);
+        m_shaderCRT.setUniform(m_ulMaskStrength, m_fUlMaskStrength);
+        m_shaderCRT.setUniform(m_ulMaskScale, m_fUlMaskScale);
+        m_shaderCRT.setUniform(m_ulBloomStrength, m_fUlBloomStrength);
+        m_shaderCRT.setUniform(m_ulInputGamma, m_fUlInputGamma);
+        m_shaderCRT.setUniform(m_ulOutputGamma, m_fUlOutputGamma);
+        m_shaderCRT.setUniform(m_ulSaturation, m_fUlSaturation);
+
+        m_shaderPostProcess.setUniform(m_ulPPVibrance, m_fUlPPVibrance);
+        m_shaderPostProcess.setUniform(m_ulPPSaturation, m_fUlPPSaturation);
+        m_shaderPostProcess.setUniform(m_ulPPLightness, m_fUlPPLightness);
+        m_shaderPostProcess.setUniform(m_ulPPSharpness, m_fUlPPSharpness);
+    }
+
+
+    /////////////////////////////////////////////////////////////
     void imguiStep(const sf::Time deltaTime)
     {
         SFEX_PROFILE_SCOPE("imgui");
 
         m_imGuiContext.update(m_window, deltaTime);
+        return;
 
         {
             ImGui::Begin("Graphics settings", nullptr);
@@ -2167,7 +2263,15 @@ private:
                     m_rtPostProcess.setSmooth(textureFilteringPost);
 
                 const auto makeSlider = [&](float& value, const char* label, const float min, const float max)
-                { return ImGui::SliderFloat(label, &value, min, max); };
+                {
+                    if (ImGui::SliderFloat(label, &value, min, max))
+                    {
+                        m_mustSyncShaderUniforms = true;
+                        return true;
+                    }
+
+                    return false;
+                };
 
                 makeSlider(m_fUlCurvature, "Curvature", -0.5, 0.5);
                 makeSlider(m_fUlVignetteStrength, "Vignette Strength", 0.f, 1.f);
@@ -2190,28 +2294,6 @@ private:
                 makeSlider(m_fUlPPSaturation, "Saturation (post)", -3.f, 3.f);
                 makeSlider(m_fUlPPLightness, "Lightness (post)", -3.f, 3.f);
                 makeSlider(m_fUlPPSharpness, "Sharpness (post)", -3.f, 3.f);
-
-                m_shaderCRT.setUniform(m_ulCurvature, m_fUlCurvature);
-                m_shaderCRT.setUniform(m_ulVignetteStrength, m_fUlVignetteStrength);
-                m_shaderCRT.setUniform(m_ulVignetteInnerRadius, m_fUlVignetteInnerRadius);
-                m_shaderCRT.setUniform(m_ulVignetteOuterRadius, m_fUlVignetteOuterRadius);
-                m_shaderCRT.setUniform(m_ulScanlineStrength, m_fUlScanlineStrength);
-                m_shaderCRT.setUniform(m_ulScanlineBrightnessModulation, m_fUlScanlineBrightnessModulation);
-                m_shaderCRT.setUniform(m_ulScanlineScrollSpeed, m_fUlScanlineScrollSpeed);
-                m_shaderCRT.setUniform(m_ulScanlineThickness, m_fUlScanlineThickness);
-                m_shaderCRT.setUniform(m_ulScanlineHeight, m_fUlScanlineHeight);
-                m_shaderCRT.setUniform(m_ulNoiseStrength, m_fUlNoiseStrength);
-                m_shaderCRT.setUniform(m_ulMaskStrength, m_fUlMaskStrength);
-                m_shaderCRT.setUniform(m_ulMaskScale, m_fUlMaskScale);
-                m_shaderCRT.setUniform(m_ulBloomStrength, m_fUlBloomStrength);
-                m_shaderCRT.setUniform(m_ulInputGamma, m_fUlInputGamma);
-                m_shaderCRT.setUniform(m_ulOutputGamma, m_fUlOutputGamma);
-                m_shaderCRT.setUniform(m_ulSaturation, m_fUlSaturation);
-
-                m_shaderPostProcess.setUniform(m_ulPPVibrance, m_fUlPPVibrance);
-                m_shaderPostProcess.setUniform(m_ulPPSaturation, m_fUlPPSaturation);
-                m_shaderPostProcess.setUniform(m_ulPPLightness, m_fUlPPLightness);
-                m_shaderPostProcess.setUniform(m_ulPPSharpness, m_fUlPPSharpness);
             }
 
             ImGui::End();
@@ -2376,6 +2458,15 @@ private:
             .outlineColor     = {35, 35, 35},
             .outlineThickness = 1.f,
             .size             = gridSize.toVec2f().componentWiseMul(drawBlockSize).addX(4.f).addY(4.f),
+        });
+
+        m_rtGame.draw(sf::RectangleShapeData{
+            .position         = toDrawCoordinates(sf::Vec2uz{0, gridGraceY}) - sf::Vec2f{3.f, 3.f},
+            .origin           = floorVec2(drawBlockSize / 2.f),
+            .fillColor        = sf::Color::Transparent,
+            .outlineColor     = {135, 135, 135},
+            .outlineThickness = 1.f,
+            .size             = gridSize.toVec2f().componentWiseMul(drawBlockSize).addX(8.f).addY(8.f),
         });
     }
 
@@ -2742,7 +2833,7 @@ private:
     ////////////////////////////////////////////////////////////
     template <typename T>
     [[nodiscard]] sf::Vec2f getDrawPositionOfLocalBlock(const sf::Vec2<T>& localBlockGridPos,
-                                                        const sf::Vec2f&   tetraminoCenter) const
+                                                        const sf::Vec2f    tetraminoCenter) const
     {
         // 1. The pivot is the center of the 4x4 shape in its own local space.
         const sf::Vec2f localPivot = tetraminoVisualCenterOffset;
@@ -2805,7 +2896,7 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Vec2f calculateLaserGridIntersection(const sf::Vec2f& startPos, const LaserDirection::Enum direction) const
+    [[nodiscard]] sf::Vec2f calculateLaserGridIntersection(const sf::Vec2f startPos, const LaserDirection::Enum direction) const
     {
         // 1. Define grid boundaries in draw coordinates. The playable grid area starts below gridGraceY.
         const float left  = toDrawCoordinates(sf::Vec2f{0.f, 0.f}).x;
@@ -3118,6 +3209,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepUINextTetraminos()
     {
+        SFML_BASE_ASSERT(m_world.blockMatrixBag.size() >= static_cast<sf::base::SizeT>(m_world.perkNPeek));
+
         const sf::base::SizeT nPeek = sf::base::min(static_cast<sf::base::SizeT>(m_world.perkNPeek),
                                                     m_world.blockMatrixBag.size());
 
@@ -3125,8 +3218,8 @@ private:
 
         for (sf::base::SizeT iPeek = 0u; iPeek < nPeek; ++iPeek)
         {
-            const auto&     shape  = m_world.blockMatrixBag[m_world.blockMatrixBag.size() - nPeek + iPeek].blockMatrix;
-            const auto      hudPos = getHudPos();
+            const auto&     shape       = m_world.blockMatrixBag[iPeek].blockMatrix;
+            const auto      hudPos      = getHudPos();
             const sf::Vec2f uiBoxCenter = {hudPos.x, hudPos.y + 100.f + static_cast<float>(nPeek - iPeek) * 24.f};
 
             drawTetramino(shape,
@@ -3172,7 +3265,7 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepEarnedXPParticles()
     {
-        const auto bezier = [](const sf::Vec2f& start, const sf::Vec2f& end, const float t)
+        const auto bezier = [](const sf::Vec2f start, const sf::Vec2f end, const float t)
         {
             const sf::Vec2f control(start.x, end.y);
             const float     u = 1.f - t;
@@ -3238,6 +3331,7 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepStatsText()
     {
+
         std::string stats;
 
         stats += "Level ";
@@ -3257,11 +3351,23 @@ private:
         stats += std::to_string(getDifficultyFactor(m_world.tick));
         stats += "\n";
 
-        m_rtGame.draw(m_font,
+        sf::RectangleShape statsBorder{{
+            .position         = getHudPos().addY(4.f).addX(-1.f),
+            .fillColor        = sf::Color::Transparent,
+            .outlineColor     = {135, 135, 135},
+            .outlineThickness = 1.f,
+            .size             = {128.f, 96.f},
+        }};
+
+        m_rtGame.draw(statsBorder);
+        return;
+
+        m_rtGame.draw(m_font4,
                       sf::TextData{
-                          .position      = getHudPos(),
+                          .position      = statsBorder.getTopLeft() + sf::Vec2f{4.f, 4.f},
                           .string        = stats,
                           .characterSize = 16u,
+                          .lineSpacing   = 10.f / m_font4.getLineSpacing(16u),
                           .outlineColor  = sf::Color::White,
                       });
     }
@@ -3272,7 +3378,9 @@ private:
     {
         SFEX_PROFILE_SCOPE("draw");
 
-        m_rtGame.clear();
+        syncShaderUniforms();
+
+        m_rtGame.clear(sf::Color{9, 9, 9});
 
         {
             SFEX_PROFILE_SCOPE("rtGame");
@@ -3325,6 +3433,88 @@ private:
                               .outlineColor  = sf::Color::White,
                           });
 
+        sf::base::StringView testString =
+            "Hello world!\nThis is a ^bold[](test)^ of ^color[255,0,0](bitmap ()fonts)^!\nHello world!\nThis is a test "
+            "of "
+            "^color[255,0,0](bitmap ^wobble[1.5,10.0,1.1](fonts)^  heh)^!\n"
+            "Sussy ^wobble[1.5,30.0,1.1](^color[0,0,255](amogus)^)^ baka";
+
+        static sf::base::Vector<sf::Vertex>    textVertices;
+        static sf::base::Vector<sf::IndexType> textIndices;
+
+#if 0
+        textVertices.clear();
+        textIndices.clear();
+
+        monospaceBitmapTextToVertices({
+            .outVertices         = textVertices,
+            .outIndices          = textIndices,
+            .monospaceBitmapFont = m_bitmapFontMinogram,
+            .fontTextureRect     = m_txrBFMinogram6x10,
+            .alignment           = BitmapTextAlignment::Center,
+            .baseColor           = sf::Color::White,
+            .time                = m_totalTime,
+            .string              = testString,
+        });
+
+        m_rtGame.drawIndexedVertices({
+            .vertexData    = textVertices.data(),
+            .vertexCount   = textVertices.size(),
+            .indexData     = textIndices.data(),
+            .indexCount    = textIndices.size(),
+            .primitiveType = sf::PrimitiveType::Triangles,
+            .renderStates =
+                {
+                    .transform = sf::Transform::from({50.f, 150.f}, {1.f, 1.f}, {0.f, 0.f}),
+                    .texture   = &m_textureAtlas.getTexture(),
+                },
+        });
+#endif
+
+        auto statsStr = std::format(
+            "^bold[](Level)^: {}\n"
+            "^bold[](XP)^: {} / {}\n"
+            "^bold[](Clock)^: {}s\n"
+            "^bold[](Lines Cleared)^: {}\n"
+            "^bold[](Pieces Placed)^: {}\n"
+            "^bold[](Difficulty)^: {}",
+
+            m_world.playerLevel,
+            m_world.currentXP,
+            getXPNeededForLevelUp(m_world.playerLevel),
+            getElapsedSeconds(m_world.tick),
+            m_world.linesCleared,
+            m_world.tetaminosPlaced,
+            getDifficultyFactor(m_world.tick));
+
+        textVertices.clear();
+        textIndices.clear();
+
+        monospaceBitmapTextToVertices({
+            .outVertices         = textVertices,
+            .outIndices          = textIndices,
+            .monospaceBitmapFont = m_bitmapFontMinogram,
+            .fontTextureRect     = m_txrBFMinogram6x10,
+            .alignment           = BitmapTextAlignment::Left,
+            .baseColor           = sf::Color::White,
+            .time                = m_totalTime,
+            .string              = statsStr,
+        });
+
+        m_rtGame.drawIndexedVertices({
+            .vertexData    = textVertices.data(),
+            .vertexCount   = textVertices.size(),
+            .indexData     = textIndices.data(),
+            .indexCount    = textIndices.size(),
+            .primitiveType = sf::PrimitiveType::Triangles,
+            .renderStates =
+                {
+                    .transform = sf::Transform::from(getHudPos().addY(4.f).addX(-1.f) + sf::Vec2f{4.f, 3.f}, {1.f, 1.f}, {0.f, 0.f}),
+                    .texture = &m_textureAtlas.getTexture(),
+                },
+        });
+
+
         m_rtGame.display();
 
 
@@ -3347,10 +3537,7 @@ private:
         const sf::Vec2f rtGameSize = m_rtGame.getSize().toVec2f() * scale;
 
         m_shaderCRT.setUniform(m_ulInputSize, m_rtGame.getSize().toVec2f());
-        static float time = 0.f;
-        time += 0.0016f;
-
-        m_shaderCRT.setUniform(m_ulTime, time);
+        m_shaderCRT.setUniform(m_ulTime, m_totalTime);
 
         if (m_rtPostProcess.getSize() != rtGameSize.toVec2u())
             m_rtPostProcess = sf::RenderTexture::create(rtGameSize.toVec2u()).value();
@@ -3398,6 +3585,8 @@ public:
                 return false;
 
             const auto deltaTime = m_tickClock.restart();
+
+            m_totalTime += deltaTime.asSeconds();
 
             if (isInPlayableState())
                 m_timeAccumulator += deltaTime.asSeconds();

@@ -41,7 +41,7 @@
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Path.hpp"
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Abort.hpp"
@@ -520,9 +520,9 @@ struct [[nodiscard]] ParticleData
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline sf::Sprite particleToSprite(const ParticleData&  particle,
-                                                                     const sf::FloatRect& textureRect,
-                                                                     const sf::Color&     color)
+[[nodiscard, gnu::always_inline]] inline sf::Sprite particleToSprite(const ParticleData& particle,
+                                                                     const sf::Rect2f&   textureRect,
+                                                                     const sf::Color&    color)
 {
     const auto opacityAsAlpha = static_cast<sf::base::U8>(particle.opacity * 255.f);
 
@@ -637,32 +637,32 @@ private:
     sf::TextureAtlas m_textureAtlas{sf::Texture::create({4096u, 4096u}, {.smooth = true}).value()};
 
     ////////////////////////////////////////////////////////////
-    const sf::FloatRect m_txrWhiteDotTrue = m_textureAtlas.add(sf::GraphicsContext::getBuiltInWhiteDotTexture()).value();
-    const sf::FloatRect m_txrWhiteDot     = {{0.f, 0.f}, {1.f, 1.f}};
-    const sf::FloatRect m_txrGrid         = addImgResourceToAtlas("grid.png");
-    const sf::FloatRect m_txrGrid0        = addImgResourceToAtlas("grid0.png");
-    const sf::FloatRect m_txrGrid1        = addImgResourceToAtlas("grid1.png");
-    const sf::FloatRect m_txrFixed        = addImgResourceToAtlas("fixed.png");
-    const sf::FloatRect m_txrLocked       = addImgResourceToAtlas("locked.png");
-    const sf::FloatRect m_txrGravArrow    = addImgResourceToAtlas("gravarrow.png");
-    const sf::FloatRect m_txrKey0         = addImgResourceToAtlas("key0.png");
-    const sf::FloatRect m_txrKey1         = addImgResourceToAtlas("key1.png");
-    const sf::FloatRect m_txrKey2         = addImgResourceToAtlas("key2.png");
-    const sf::FloatRect m_txrKeyBg        = addImgResourceToAtlas("keybg.png");
-    const sf::FloatRect m_txrBlock0       = addImgResourceToAtlas("block0.png");
-    const sf::FloatRect m_txrBlock1       = addImgResourceToAtlas("block1.png");
-    const sf::FloatRect m_txrBlock2       = addImgResourceToAtlas("block2.png");
-    const sf::FloatRect m_txrBlockBg      = addImgResourceToAtlas("blockbg.png");
-    const sf::FloatRect m_txrWall         = addImgResourceToAtlas("wall.png");
-    const sf::FloatRect m_txrWallCorner   = addImgResourceToAtlas("wallcorner.png");
-    const sf::FloatRect m_txrWallH        = addImgResourceToAtlas("wallh.png");
-    const sf::FloatRect m_txrWallV        = addImgResourceToAtlas("wallv.png");
-    const sf::FloatRect m_txrWallBg       = addImgResourceToAtlas("wallbg.png");
-    const sf::FloatRect m_txrWallSet      = addImgResourceToAtlas("wallset.png");
-    const sf::FloatRect m_txrWallBits     = addImgResourceToAtlas("wallbits.png");
-    const sf::FloatRect m_txrLavaParticle = addImgResourceToAtlas("lavaparticle.png");
-    const sf::FloatRect m_txrLock0        = addImgResourceToAtlas("lock0.png");
-    const sf::FloatRect m_txrPinned       = addImgResourceToAtlas("pinned.png");
+    const sf::Rect2f m_txrWhiteDotTrue = m_textureAtlas.add(sf::GraphicsContext::getBuiltInWhiteDotTexture()).value();
+    const sf::Rect2f m_txrWhiteDot     = {{0.f, 0.f}, {1.f, 1.f}};
+    const sf::Rect2f m_txrGrid         = addImgResourceToAtlas("grid.png");
+    const sf::Rect2f m_txrGrid0        = addImgResourceToAtlas("grid0.png");
+    const sf::Rect2f m_txrGrid1        = addImgResourceToAtlas("grid1.png");
+    const sf::Rect2f m_txrFixed        = addImgResourceToAtlas("fixed.png");
+    const sf::Rect2f m_txrLocked       = addImgResourceToAtlas("locked.png");
+    const sf::Rect2f m_txrGravArrow    = addImgResourceToAtlas("gravarrow.png");
+    const sf::Rect2f m_txrKey0         = addImgResourceToAtlas("key0.png");
+    const sf::Rect2f m_txrKey1         = addImgResourceToAtlas("key1.png");
+    const sf::Rect2f m_txrKey2         = addImgResourceToAtlas("key2.png");
+    const sf::Rect2f m_txrKeyBg        = addImgResourceToAtlas("keybg.png");
+    const sf::Rect2f m_txrBlock0       = addImgResourceToAtlas("block0.png");
+    const sf::Rect2f m_txrBlock1       = addImgResourceToAtlas("block1.png");
+    const sf::Rect2f m_txrBlock2       = addImgResourceToAtlas("block2.png");
+    const sf::Rect2f m_txrBlockBg      = addImgResourceToAtlas("blockbg.png");
+    const sf::Rect2f m_txrWall         = addImgResourceToAtlas("wall.png");
+    const sf::Rect2f m_txrWallCorner   = addImgResourceToAtlas("wallcorner.png");
+    const sf::Rect2f m_txrWallH        = addImgResourceToAtlas("wallh.png");
+    const sf::Rect2f m_txrWallV        = addImgResourceToAtlas("wallv.png");
+    const sf::Rect2f m_txrWallBg       = addImgResourceToAtlas("wallbg.png");
+    const sf::Rect2f m_txrWallSet      = addImgResourceToAtlas("wallset.png");
+    const sf::Rect2f m_txrWallBits     = addImgResourceToAtlas("wallbits.png");
+    const sf::Rect2f m_txrLavaParticle = addImgResourceToAtlas("lavaparticle.png");
+    const sf::Rect2f m_txrLock0        = addImgResourceToAtlas("lock0.png");
+    const sf::Rect2f m_txrPinned       = addImgResourceToAtlas("pinned.png");
 
     //////////////////////////////////////////////////////////////
     sf::Texture m_txLava = sf::Texture::loadFromFile("resources/lava.png", {.smooth = true}).value();
@@ -702,7 +702,7 @@ private:
     int m_moves = 0;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::FloatRect addImgResourceToAtlas(const sf::Path& path)
+    [[nodiscard]] sf::Rect2f addImgResourceToAtlas(const sf::Path& path)
     {
         return m_textureAtlas.add(sf::Image::loadFromFile("resources" / path).value(), /* padding */ {2u, 2u}).value();
     }
@@ -1740,7 +1740,7 @@ public:
                             const auto tileX = static_cast<float>(neighbors % 4u);
                             const auto tileY = static_cast<float>(neighbors / 4u);
 
-                            const sf::FloatRect txr{
+                            const sf::Rect2f txr{
                                 .position = m_txrWallSet.position + sf::Vec2f{tileX * 128.f, tileY * 128.f},
                                 .size     = {128.f, 128.f},
                             };
@@ -1784,9 +1784,9 @@ public:
                         },
                             [&](const BColored& bColored)
                         {
-                            const sf::FloatRect* txr = bColored.kind == BlockKind::A
-                                                           ? &m_txrBlock0
-                                                           : (bColored.kind == BlockKind::B ? &m_txrBlock1 : &m_txrBlock2);
+                            const sf::Rect2f* txr = bColored.kind == BlockKind::A
+                                                        ? &m_txrBlock0
+                                                        : (bColored.kind == BlockKind::B ? &m_txrBlock1 : &m_txrBlock2);
 
                             m_dbObject.add(sf::Sprite{
                                 .position    = drawPosition,
@@ -1801,9 +1801,9 @@ public:
                         },
                             [&](const BKey& bKey)
                         {
-                            const sf::FloatRect* txr = bKey.kind == BlockKind::A
-                                                           ? &m_txrKey0
-                                                           : (bKey.kind == BlockKind::B ? &m_txrKey1 : &m_txrKey2);
+                            const sf::Rect2f* txr = bKey.kind == BlockKind::A
+                                                        ? &m_txrKey0
+                                                        : (bKey.kind == BlockKind::B ? &m_txrKey1 : &m_txrKey2);
 
                             m_dbObject.add(sf::Sprite{
                                 .position    = drawPosition,
@@ -1818,7 +1818,7 @@ public:
                         },
                             [&](const BPadlock& /* bPadlock */)
                         {
-                            const sf::FloatRect* txr = &m_txrLock0;
+                            const sf::Rect2f* txr = &m_txrLock0;
 
                             m_dbObject.add(sf::Sprite{
                                 .position    = drawPosition,
@@ -1849,7 +1849,7 @@ public:
                         if (m_world.isLava({iX, iY}))
                             continue;
 
-                        const sf::FloatRect* txr = (iX % 2 == 0) ^ (iY % 2 == 0) ? &m_txrGrid1 : &m_txrGrid0;
+                        const sf::Rect2f* txr = (iX % 2 == 0) ^ (iY % 2 == 0) ? &m_txrGrid1 : &m_txrGrid0;
 
                         m_dbBackground.add(sf::Sprite{
                             .position    = {static_cast<float>(iX) * 128.f, static_cast<float>(iY) * 128.f},

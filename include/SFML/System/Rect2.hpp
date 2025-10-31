@@ -9,6 +9,7 @@
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/MinMaxMacros.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Trait/IsSame.hpp"
 
 
@@ -24,7 +25,7 @@ namespace sf
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-class [[nodiscard]] Rect
+class [[nodiscard]] Rect2
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -58,16 +59,56 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert to another `Rect` of type `OtherRect`
+    /// \brief Convert to another `Rect2` of type `U`
     ///
-    /// `OtherRect` must be a `Rect<...>` type.
+    /// `U` must be a `Rect2<...>` type.
     ///
     ////////////////////////////////////////////////////////////
     template <typename U>
     [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr U to() const
     {
         using ValueType = decltype(U{}.position.x);
-        return Rect<ValueType>{position.template to<Vec2<ValueType>>(), size.template to<Vec2<ValueType>>()};
+        return Rect2<ValueType>{position.template to<Vec2<ValueType>>(), size.template to<Vec2<ValueType>>()};
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Convert `*this` to a `Rect2<int>`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Rect2<int> toRect2i() const
+    {
+        return {position.toVec2i(), size.toVec2i()};
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Convert `*this` to a `Rect2<float>`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Rect2<float> toRect2f() const
+    {
+        return {position.toVec2f(), size.toVec2f()};
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Convert `*this` to a `Rect2<unsigned int>`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Rect2<unsigned int> toRect2u() const
+    {
+        return {position.toVec2u(), size.toVec2u()};
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Convert `*this` to a `Rect2<base::SizeT>`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Rect2<base::SizeT> toRect2uz() const
+    {
+        return {position.toVec2uz(), size.toVec2uz()};
     }
 
 
@@ -81,7 +122,7 @@ public:
     /// \return `true` if \a lhs is equal to \a rhs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator==(const Rect<T>& rhs) const = default;
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator==(const Rect2<T>& rhs) const = default;
 
 
     ////////////////////////////////////////////////////////////
@@ -407,10 +448,11 @@ public:
     Vec2<T> size;     //!< Size of the rectangle
 };
 
-// Create type aliases for the most common types
-using IntRect   = Rect<int>;
-using FloatRect = Rect<float>;
-using UIntRect  = Rect<unsigned int>;
+// Aliases for the most common types
+using Rect2i  = Rect2<int>;
+using Rect2f  = Rect2<float>;
+using Rect2u  = Rect2<unsigned int>;
+using Rect2uz = Rect2<base::SizeT>;
 
 } // namespace sf
 
@@ -418,15 +460,16 @@ using UIntRect  = Rect<unsigned int>;
 ////////////////////////////////////////////////////////////
 // Explicit instantiation declarations
 ////////////////////////////////////////////////////////////
-extern template class sf::Rect<float>;
-extern template class sf::Rect<double>;
-extern template class sf::Rect<long double>;
-extern template class sf::Rect<int>;
-extern template class sf::Rect<unsigned int>;
+extern template class sf::Rect2<float>;
+extern template class sf::Rect2<double>;
+extern template class sf::Rect2<long double>;
+extern template class sf::Rect2<int>;
+extern template class sf::Rect2<unsigned int>;
+extern template class sf::Rect2<sf::base::SizeT>;
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::Rect
+/// \class sf::Rect2
 /// \ingroup graphics
 ///
 /// A rectangle is defined by its top-left corner and its size.
@@ -435,43 +478,43 @@ extern template class sf::Rect<unsigned int>;
 /// and can be accessed directly, just like the vector classes
 /// (`Vec2` and `Vec3`).
 ///
-/// To keep things simple, `sf::Rect` doesn't define
+/// To keep things simple, `sf::Rect2` doesn't define
 /// functions to emulate the properties that are not directly
 /// members (such as right, bottom, etc.), it rather
 /// only provides intersection functions.
 ///
-/// `sf::Rect` uses the usual rules for its boundaries:
+/// `sf::Rect2` uses the usual rules for its boundaries:
 /// \li The left and top edges are included in the rectangle's area
 /// \li The right and bottom edges are excluded from the rectangle's area
 ///
-/// This means that `sf::IntRect({0, 0}, {1, 1})` and `sf::IntRect({1, 1}, {1, 1})`
+/// This means that `sf::Rect2i({0, 0}, {1, 1})` and `sf::Rect2i({1, 1}, {1, 1})`
 /// don't intersect.
 ///
-/// `sf::Rect` is a template and may be used with any numeric type, but
+/// `sf::Rect2` is a template and may be used with any numeric type, but
 /// for simplicity type aliases for the instantiations used by SFML are given:
-/// \li `sf::Rect<int>` is `sf::IntRect`
-/// \li `sf::Rect<float>` is `sf::FloatRect`
+/// \li `sf::Rect2<int>` is `sf::Rect2i`
+/// \li `sf::Rect2<float>` is `sf::Rect2f`
 ///
 /// So that you don't have to care about the template syntax.
 ///
 /// Usage example:
 /// \code
 /// // Define a rectangle, located at (0, 0) with a size of 20x5
-/// sf::IntRect r1({0, 0}, {20, 5});
+/// sf::Rect2i r1({0, 0}, {20, 5});
 ///
 /// // Define another rectangle, located at (4, 2) with a size of 18x10
 /// sf::Vec2i position(4, 2);
 /// sf::Vec2i size(18, 10);
-/// sf::IntRect r2(position, size);
+/// sf::Rect2i r2(position, size);
 ///
 /// // Test intersections with the point (3, 1)
 /// bool b1 = r1.contains({3, 1}); // true
 /// bool b2 = r2.contains({3, 1}); // false
 ///
 /// // Test the intersection between r1 and r2
-/// sf::base::Optional<sf::IntRect> result = sf::findIntersection(r1, r2);
+/// sf::base::Optional<sf::Rect2i> result = sf::findIntersection(r1, r2);
 /// // result.hasValue() == true
-/// // result.value() == sf::IntRect({4, 2}, {16, 3})
+/// // result.value() == sf::Rect2i({4, 2}, {16, 3})
 /// \endcode
 ///
 ////////////////////////////////////////////////////////////

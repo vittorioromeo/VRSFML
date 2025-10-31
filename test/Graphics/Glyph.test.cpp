@@ -21,7 +21,7 @@ TEST_CASE("[Graphics] sf::Glyph")
         STATIC_CHECK(glyph.advance == 0.f);
         STATIC_CHECK(glyph.lsbDelta == 0);
         STATIC_CHECK(glyph.rsbDelta == 0);
-        STATIC_CHECK(glyph.bounds == sf::FloatRect());
-        STATIC_CHECK(glyph.textureRect == sf::FloatRect());
+        STATIC_CHECK(glyph.bounds == sf::Rect2f());
+        STATIC_CHECK(glyph.textureRect == sf::Rect2f());
     }
 }

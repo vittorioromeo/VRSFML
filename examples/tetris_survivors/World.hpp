@@ -55,8 +55,6 @@ struct [[nodiscard]] TaggedBlockMatrix // NOLINT(cppcoreguidelines-pro-type-memb
 ////////////////////////////////////////////////////////////
 [[nodiscard]] sf::base::Array<sf::base::U64, 4> generateTetraminoHealthDistribution(sf::base::U64 difficultyFactor, auto&& rng)
 {
-    difficultyFactor = 2000; // TODO
-
     const auto minHealth = 1;
     const auto maxHealth = 4;
 
@@ -147,7 +145,11 @@ struct [[nodiscard]] World
 
     bool holdUsedThisTurn = false;
 
-    sf::base::U64 tick              = 0u;
+    sf::base::U64 tick = 0u;
+
+    sf::base::U64 dropTickAccumulator = 0u;
+    sf::base::U64 dropTickTarget      = 60u;
+
     sf::base::U64 graceDropMoves    = 0u;
     sf::base::U64 maxGraceDropMoves = 2u;
 
@@ -160,11 +162,11 @@ struct [[nodiscard]] World
 
     int perkRndHitOnClear = 0;
 
-    int perkCanHoldTetramino     = 0;
+    int perkCanHoldTetramino     = 1;
     int perkXPPerTetraminoPlaced = 0;
     int perkXPPerBlockDamaged    = 0;
 
-    struct DeleteFloorPerNTetraminos
+    struct [[nodiscard]] DeleteFloorPerNTetraminos
     {
         int nTetraminos;
         int tetraminosPlacedCount = 0;
@@ -174,7 +176,7 @@ struct [[nodiscard]] World
 
     int perkExtraLinePiecesInPool = 0;
 
-    struct DrillData
+    struct [[nodiscard]] DrillData
     {
         int coverage       = 1;
         int maxPenetration = 1;
@@ -188,7 +190,7 @@ struct [[nodiscard]] World
 
     int perkNPeek = 1;
 
-    struct RndHitPerNTetraminos
+    struct [[nodiscard]] RndHitPerNTetraminos
     {
         int nTetraminos;
         int tetraminosPlacedCount = 0;
@@ -198,7 +200,7 @@ struct [[nodiscard]] World
 
     int perkChainLightning = 0;
 
-    struct LaserData
+    struct [[nodiscard]] LaserData
     {
         int  maxPenetration = 1;
         bool bounce         = false;

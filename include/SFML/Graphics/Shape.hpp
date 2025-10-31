@@ -15,7 +15,7 @@
 #include "SFML/Graphics/VertexUtils.hpp"
 
 #include "SFML/System/AnchorPointMixin.hpp"
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Vector.hpp"
@@ -77,7 +77,7 @@ public:
     /// \see `getTextureRect`
     ///
     ////////////////////////////////////////////////////////////
-    void setTextureRect(const FloatRect& rect);
+    void setTextureRect(const Rect2f& rect);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the sub-rectangle of the texture that the shape outline will display
@@ -91,7 +91,7 @@ public:
     /// \see getOutlineTextureRect
     ///
     ////////////////////////////////////////////////////////////
-    void setOutlineTextureRect(const FloatRect& rect);
+    void setOutlineTextureRect(const Rect2f& rect);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the fill color of the shape
@@ -176,7 +176,7 @@ public:
     /// \see `setTextureRect`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const FloatRect& getTextureRect() const;
+    [[nodiscard]] const Rect2f& getTextureRect() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the sub-rectangle of the texture displayed by the shape outline
@@ -186,7 +186,7 @@ public:
     /// \see setTextureRect
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const FloatRect& getOutlineTextureRect() const;
+    [[nodiscard]] const Rect2f& getOutlineTextureRect() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the fill color of the shape
@@ -240,7 +240,7 @@ public:
     /// \return Local bounding rectangle of the entity
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const FloatRect& getLocalBounds() const;
+    [[nodiscard]] const Rect2f& getLocalBounds() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the global (non-minimal) bounding rectangle of the entity
@@ -261,7 +261,7 @@ public:
     /// \return Global bounding rectangle of the entity
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] FloatRect getGlobalBounds() const;
+    [[nodiscard]] Rect2f getGlobalBounds() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -373,10 +373,10 @@ private:
     base::Vector<Vertex> m_vertices;              //!< Vertex array containing the fill and outline geometry
     base::SizeT          m_verticesEndIndex = 0u; //!< Index where the fill vertices end and outline vertices begin
 
-    FloatRect m_textureRect{};        //!< Area of the source texture to display for the fill
-    FloatRect m_outlineTextureRect{}; //!< Area of the source texture to display for the outline
-    FloatRect m_insideBounds;         //!< Bounding rectangle of the inside (fill)
-    FloatRect m_bounds;               //!< Bounding rectangle of the whole shape (outline + fill)
+    Rect2f m_textureRect{};        //!< Area of the source texture to display for the fill
+    Rect2f m_outlineTextureRect{}; //!< Area of the source texture to display for the outline
+    Rect2f m_insideBounds;         //!< Bounding rectangle of the inside (fill)
+    Rect2f m_bounds;               //!< Bounding rectangle of the whole shape (outline + fill)
 
     float m_outlineThickness{}; //!< Thickness of the shape's outline
     float m_miterLimit{4.f};    //!< Limit on the ratio between miter length and outline thickness

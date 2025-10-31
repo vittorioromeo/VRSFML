@@ -369,8 +369,8 @@ window.draw(batch, commonRenderStates);
 ```cpp
 sf::TextureAtlas atlas{sf::Texture::create({1024u, 1024u}, {.smooth = true}).value()};
 
-const sf::FloatRect txrSpriteA = atlas.add(sf::Image::loadFromFile("spriteA.png").value()).value();
-const sf::FloatRect txrSpriteB = atlas.add(sf::Image::loadFromFile("spriteB.png").value()).value();
+const sf::Rect2f txrSpriteA = atlas.add(sf::Image::loadFromFile("spriteA.png").value()).value();
+const sf::Rect2f txrSpriteB = atlas.add(sf::Image::loadFromFile("spriteB.png").value()).value();
 
 const auto fontTuffy = sf::Font::openFromFile("resources/tuffy.ttf", &atlas).value();
 
