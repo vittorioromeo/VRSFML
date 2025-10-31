@@ -15,7 +15,7 @@
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/VertexSpan.hpp"
 
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/FixedFunction.hpp"
@@ -274,7 +274,7 @@ public:
     /// \return Viewport rectangle, expressed in pixels
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] IntRect getViewport(const View& view) const;
+    [[nodiscard]] Rect2i getViewport(const View& view) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the scissor rectangle of a view, applied to this render target
@@ -289,7 +289,7 @@ public:
     /// \return Scissor rectangle, expressed in pixels
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] IntRect getScissor(const View& view) const;
+    [[nodiscard]] Rect2i getScissor(const View& view) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert a point from target coordinates to world
@@ -402,8 +402,8 @@ public:
         // NOLINTNEXTLINE(readability-redundant-member-init)
         Angle rotation{}; //!< Orientation of the object
 
-        FloatRect textureRect{};       //!< Rectangle defining the area of the source texture to display
-        Color     color{Color::White}; //!< Color of the sprite
+        Rect2f textureRect{};       //!< Rectangle defining the area of the source texture to display
+        Color  color{Color::White}; //!< Color of the sprite
     };
 
     ////////////////////////////////////////////////////////////

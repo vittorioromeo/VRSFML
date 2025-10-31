@@ -116,7 +116,7 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    using IndexType = unsigned char; // Support up to 255 alternatives
+    using DiscriminatorType = unsigned char; // Support up to 255 alternatives
 
 
 public:
@@ -132,7 +132,7 @@ private:
 
     ////////////////////////////////////////////////////////////
     alignas(maxAlignment) Byte m_buffer[maxSize];
-    IndexType m_index;
+    DiscriminatorType m_index;
 
 
     ////////////////////////////////////////////////////////////
@@ -160,7 +160,7 @@ private:
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[nodiscard, gnu::always_inline]] explicit Variant(const priv::InPlaceType<T>, priv::InPlaceIndex<I>, Args&&... args) noexcept
         :
-        m_index{static_cast<IndexType>(I)}
+        m_index{static_cast<DiscriminatorType>(I)}
     {
         SFML_BASE_VARIANT_STATIC_ASSERT_INDEX_VALIDITY(I);
         SFML_BASE_PLACEMENT_NEW(m_buffer) T{static_cast<Args&&>(args)...};
@@ -412,7 +412,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] bool hasIndex(const IndexType index) const noexcept
+    [[nodiscard, gnu::always_inline]] bool hasIndex(const DiscriminatorType index) const noexcept
     {
         return m_index == index;
     }

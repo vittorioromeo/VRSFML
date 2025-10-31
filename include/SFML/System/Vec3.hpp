@@ -1,4 +1,5 @@
 #pragma once
+#include "SFML/Base/SizeT.hpp"
 #pragma once
 // LICENSE AND COPYRIGHT (C) INFORMATION
 // https://github.com/vittorioromeo/VRSFML/blob/master/license.md
@@ -358,9 +359,10 @@ template <typename T>
 }
 
 // Aliases for the most common types
-using Vec3i = Vec3<int>;
-using Vec3u = Vec3<unsigned int>;
-using Vec3f = Vec3<float>;
+using Vec3i  = Vec3<int>;
+using Vec3u  = Vec3<unsigned int>;
+using Vec3f  = Vec3<float>;
+using Vec3uz = Vec3<base::SizeT>;
 
 } // namespace sf
 
@@ -374,6 +376,7 @@ extern template class sf::Vec3<long double>;
 extern template class sf::Vec3<bool>;
 extern template class sf::Vec3<int>;
 extern template class sf::Vec3<unsigned int>;
+extern template class sf::Vec3<sf::base::SizeT>;
 
 
 ////////////////////////////////////////////////////////////

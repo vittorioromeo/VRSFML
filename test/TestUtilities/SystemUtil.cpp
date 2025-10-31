@@ -1,5 +1,5 @@
 #include "SFML/System/Angle.hpp"
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/String.hpp"
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Vec2.hpp"
@@ -82,7 +82,7 @@ bool operator==(const sf::Angle& lhs, const Approx<sf::Angle>& rhs)
     return lhs.asRadians() == Approx(rhs.value.asRadians());
 }
 
-bool operator==(const sf::FloatRect& lhs, const Approx<sf::FloatRect>& rhs)
+bool operator==(const sf::Rect2f& lhs, const Approx<sf::Rect2f>& rhs)
 {
     return lhs.position == Approx(rhs.value.position) && lhs.size == Approx(rhs.value.size);
 }
@@ -99,5 +99,5 @@ template std::ostream& operator<<(std::ostream&, const Approx<double>&);
 template std::ostream& operator<<(std::ostream&, const Approx<sf::Vec2<float>>&);
 template std::ostream& operator<<(std::ostream&, const Approx<sf::Vec3<float>>&);
 template std::ostream& operator<<(std::ostream&, const Approx<sf::Transform>&);
-template std::ostream& operator<<(std::ostream&, const Approx<sf::Rect<float>>&);
+template std::ostream& operator<<(std::ostream&, const Approx<sf::Rect2<float>>&);
 template std::ostream& operator<<(std::ostream&, const Approx<sf::Angle>&);

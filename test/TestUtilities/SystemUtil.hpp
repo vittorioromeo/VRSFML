@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 
 #include <iosfwd>
 
@@ -66,7 +66,7 @@ bool operator==(const float& lhs, const Approx<float>& rhs);
 bool operator==(sf::Vec2<float> lhs, const Approx<sf::Vec2<float>>& rhs);
 bool operator==(const sf::Vec3<float>& lhs, const Approx<sf::Vec3<float>>& rhs);
 bool operator==(const sf::Angle& lhs, const Approx<sf::Angle>& rhs);
-bool operator==(const sf::FloatRect& lhs, const Approx<sf::FloatRect>& rhs);
+bool operator==(const sf::Rect2f& lhs, const Approx<sf::Rect2f>& rhs);
 
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const Approx<T>& approx);

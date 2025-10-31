@@ -120,18 +120,17 @@ TEST_CASE("[Graphics] sf::Transform")
     SECTION("transformRect()")
     {
         STATIC_CHECK(sf::Transform::Identity.transformRect({{-200.f, -200.f}, {-100.f, -100.f}}) ==
-                     sf::FloatRect({-300.f, -300.f}, {100.f, 100.f}));
-        STATIC_CHECK(sf::Transform::Identity.transformRect({{0.f, 0.f}, {0.f, 0.f}}) ==
-                     sf::FloatRect({0.f, 0.f}, {0.f, 0.f}));
+                     sf::Rect2f({-300.f, -300.f}, {100.f, 100.f}));
+        STATIC_CHECK(sf::Transform::Identity.transformRect({{0.f, 0.f}, {0.f, 0.f}}) == sf::Rect2f({0.f, 0.f}, {0.f, 0.f}));
         STATIC_CHECK(sf::Transform::Identity.transformRect({{100.f, 100.f}, {200.f, 200.f}}) ==
-                     sf::FloatRect({100.f, 100.f}, {200.f, 200.f}));
+                     sf::Rect2f({100.f, 100.f}, {200.f, 200.f}));
 
         constexpr sf::Transform transform(1.f, 2.f, 3.f, 4.f, 5.f, 4.f);
         STATIC_CHECK(transform.transformRect({{-100.f, -100.f}, {200.f, 200.f}}) ==
-                     sf::FloatRect({-297.f, -896.f}, {600.f, 1800.f}));
-        STATIC_CHECK(transform.transformRect({{0.f, 0.f}, {0.f, 0.f}}) == sf::FloatRect({3.f, 4.f}, {0.f, 0.f}));
+                     sf::Rect2f({-297.f, -896.f}, {600.f, 1800.f}));
+        STATIC_CHECK(transform.transformRect({{0.f, 0.f}, {0.f, 0.f}}) == sf::Rect2f({3.f, 4.f}, {0.f, 0.f}));
         STATIC_CHECK(transform.transformRect({{100.f, 100.f}, {200.f, 200.f}}) ==
-                     sf::FloatRect({303.f, 904.f}, {600.f, 1800.f}));
+                     sf::Rect2f({303.f, 904.f}, {600.f, 1800.f}));
     }
 
     SECTION("combine()")

@@ -421,11 +421,11 @@ TEST_CASE("[Graphics] sf::Image")
             }
         }
 
-        SECTION("Copy (Image, Vec2u, IntRect)")
+        SECTION("Copy (Image, Vec2u, Rect2i)")
         {
             const auto image1 = sf::Image::create(sf::Vec2u{5, 5}, sf::Color::Blue).value();
             auto       image2 = sf::Image::create(sf::Vec2u{10, 10}).value();
-            CHECK(image2.copy(image1, sf::Vec2u{0, 0}, sf::IntRect(sf::Vec2i{0, 0}, sf::Vec2i{5, 5})));
+            CHECK(image2.copy(image1, sf::Vec2u{0, 0}, sf::Rect2i(sf::Vec2i{0, 0}, sf::Vec2i{5, 5})));
 
             for (sf::base::U32 i = 0; i < 10; ++i)
             {
@@ -439,7 +439,7 @@ TEST_CASE("[Graphics] sf::Image")
             }
         }
 
-        SECTION("Copy (Image, Vec2u, IntRect, bool)")
+        SECTION("Copy (Image, Vec2u, Rect2i, bool)")
         {
             const sf::Color dest(255, 0, 0, 255);
             const sf::Color source(5, 255, 78, 232);
@@ -456,7 +456,7 @@ TEST_CASE("[Graphics] sf::Image")
 
             auto       image1 = sf::Image::create(sf::Vec2u{10, 10}, dest).value();
             const auto image2 = sf::Image::create(sf::Vec2u{10, 10}, source).value();
-            CHECK(image1.copy(image2, sf::Vec2u{0, 0}, sf::IntRect(sf::Vec2i{0, 0}, sf::Vec2i{10, 10}), true));
+            CHECK(image1.copy(image2, sf::Vec2u{0, 0}, sf::Rect2i(sf::Vec2i{0, 0}, sf::Vec2i{10, 10}), true));
 
             for (sf::base::U32 i = 0; i < 10; ++i)
             {
@@ -471,7 +471,7 @@ TEST_CASE("[Graphics] sf::Image")
         {
             const auto image1 = sf::Image::create(sf::Vec2u{5, 5}, sf::Color::Blue).value();
             auto       image2 = sf::Image::create(sf::Vec2u{10, 10}, sf::Color::Red).value();
-            CHECK(!image2.copy(image1, sf::Vec2u{0, 0}, sf::IntRect(sf::Vec2i{5, 5}, sf::Vec2i{9, 9})));
+            CHECK(!image2.copy(image1, sf::Vec2u{0, 0}, sf::Rect2i(sf::Vec2i{5, 5}, sf::Vec2i{9, 9})));
 
             for (sf::base::U32 i = 0; i < 10; ++i)
             {

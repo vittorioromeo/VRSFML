@@ -72,7 +72,7 @@ namespace sf::DrawableBatchUtils
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendPreTransformedSpriteQuadVertices(
     const Transform& transform,
-    const FloatRect& textureRect,
+    const Rect2f&    textureRect,
     const Color      color,
     Vertex* const    vertexPtr)
 {

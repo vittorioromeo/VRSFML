@@ -6,7 +6,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/Vec2.hpp"
 
 
@@ -31,7 +31,7 @@ namespace sf::priv
 /// \note Uses `GL_NEAREST` filtering - appropriate for same-size copies.
 ///
 ////////////////////////////////////////////////////////////
-void blitFramebuffer(bool invertYAxis, UIntRect src, UIntRect dst);
+void blitFramebuffer(bool invertYAxis, Rect2u src, Rect2u dst);
 
 ////////////////////////////////////////////////////////////
 /// \brief Blit equal-sized regions between framebuffers with optional Y-axis inversion

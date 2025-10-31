@@ -1,6 +1,6 @@
 #include "SFML/System/AnchorPointMixin.hpp"
 
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 
 #include <Doctest.hpp>
 
@@ -10,7 +10,7 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-constexpr sf::FloatRect testRect{{53.f, 88.f}, {512.f, 5839.f}};
+constexpr sf::Rect2f testRect{{53.f, 88.f}, {512.f, 5839.f}};
 
 
 ////////////////////////////////////////////////////////////
@@ -18,12 +18,12 @@ struct TestLayoutObject : sf::AnchorPointMixin<TestLayoutObject>
 {
     constexpr TestLayoutObject() = default;
 
-    [[nodiscard]] constexpr sf::FloatRect getLocalBounds() const
+    [[nodiscard]] constexpr sf::Rect2f getLocalBounds() const
     {
         return {{0.f, 0.f}, {512.f, 5839.f}};
     }
 
-    [[nodiscard]] constexpr sf::FloatRect getGlobalBounds() const
+    [[nodiscard]] constexpr sf::Rect2f getGlobalBounds() const
     {
         const auto localBounds = getLocalBounds();
         return {position + localBounds.position, localBounds.size};

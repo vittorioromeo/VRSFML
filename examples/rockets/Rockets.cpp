@@ -33,7 +33,7 @@
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Path.hpp"
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Algorithm/SwapAndPop.hpp"
@@ -133,10 +133,10 @@ RNGFast rng;
 
 
 ////////////////////////////////////////////////////////////
-sf::Texture*  txAtlas = nullptr;
-sf::FloatRect txrSmoke;
-sf::FloatRect txrFire;
-sf::FloatRect txrRocket;
+sf::Texture* txAtlas = nullptr;
+sf::Rect2f   txrSmoke;
+sf::Rect2f   txrFire;
+sf::Rect2f   txrRocket;
 
 
 ////////////////////////////////////////////////////////////
@@ -155,12 +155,12 @@ sf::FloatRect txrRocket;
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline]] inline void drawParticleImpl(
-    sf::RenderTarget&   rt,
-    const sf::Vec2f     position,
-    const sf::Vec2f     scale,
-    const float         rotation,
-    const sf::FloatRect txr,
-    const float         opacity)
+    sf::RenderTarget& rt,
+    const sf::Vec2f   position,
+    const sf::Vec2f   scale,
+    const float       rotation,
+    const sf::Rect2f  txr,
+    const float       opacity)
 {
     rt.draw(
         sf::Sprite{
@@ -639,7 +639,7 @@ struct World
     void draw(sf::RenderTarget& rt)
     {
         const auto drawParticlesInstanced =
-            [&](const auto& instanceBuffer, const sf::base::SizeT vboIndexOffset, const sf::FloatRect& txr)
+            [&](const auto& instanceBuffer, const sf::base::SizeT vboIndexOffset, const sf::Rect2f& txr)
         {
             auto setupSpriteInstanceAttribs = [&](sf::RenderTarget::InstanceAttributeBinder& binder)
             {
@@ -893,7 +893,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
     void draw(sf::RenderTarget& rt)
     {
         const auto drawParticlesInstanced =
-            [&](const sf::base::SizeT vboIndexOffset, const sf::FloatRect& txr, const auto& particles)
+            [&](const sf::base::SizeT vboIndexOffset, const sf::Rect2f& txr, const auto& particles)
         {
             const auto nParticles = particles.size();
 
@@ -1154,7 +1154,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
     void draw(sf::RenderTarget& rt)
     {
         const auto drawParticlesInstanced =
-            [&](const sf::base::SizeT vboIndexOffset, const sf::FloatRect& txr, const auto& particles)
+            [&](const sf::base::SizeT vboIndexOffset, const sf::Rect2f& txr, const auto& particles)
         {
             const auto nParticles = particles.positions.size();
 
@@ -1265,7 +1265,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
             soa.withAll(
                 [&](sf::Vec2f&       position,
                     sf::Vec2f&       velocity,
-                    const sf::Vec2f& acceleration,
+                    const sf::Vec2f acceleration,
                     float&           scale,
                     float&           opacity,
                     float&           rotation,
@@ -1373,7 +1373,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
     void draw(sf::RenderTarget& rt)
     {
         const auto drawParticlesInstanced =
-            [&](const sf::base::SizeT vboIndexOffset, const sf::FloatRect& txr, const auto& particles)
+            [&](const sf::base::SizeT vboIndexOffset, const sf::Rect2f& txr, const auto& particles)
         {
             const auto nParticles = particles.getSize();
 

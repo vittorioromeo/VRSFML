@@ -22,7 +22,7 @@
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Path.hpp"
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Clamp.hpp"
@@ -106,7 +106,7 @@ int main()
     //
     //
     // Load images and add to texture atlas
-    const sf::FloatRect spriteTextureRects[]{
+    const sf::Rect2f spriteTextureRects[]{
         addImgResourceToAtlas("elephant.png"),
         addImgResourceToAtlas("giraffe.png"),
         addImgResourceToAtlas("monkey.png"),
@@ -146,7 +146,7 @@ int main()
         for (sf::base::SizeT i = 0u; i < n; ++i)
         {
             const sf::base::SizeT type        = i % 6u;
-            const sf::FloatRect&  textureRect = spriteTextureRects[type];
+            const sf::Rect2f&  textureRect = spriteTextureRects[type];
 
             std::snprintf(labelBuffer, 64, "%s #%zu", names[type], (i / (type + 1u)) + 1u);
 

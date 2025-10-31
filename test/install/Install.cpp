@@ -14,7 +14,7 @@
 #include "SFML/Window/Window.hpp"
 #include "SFML/Window/WindowContext.hpp"
 
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/String.hpp"
 
 // Instantiate some types from each module to test for linker issues. This program is not meant be ran.
@@ -24,9 +24,9 @@ int main()
     [[maybe_unused]] const auto audioContext = sf::AudioContext::create();
 
     // Graphics
-    [[maybe_unused]] auto              graphicsContext = sf::GraphicsContext::create().value();
-    [[maybe_unused]] const sf::Color   color{};
-    [[maybe_unused]] const sf::IntRect rect{};
+    [[maybe_unused]] auto             graphicsContext = sf::GraphicsContext::create().value();
+    [[maybe_unused]] const sf::Color  color{};
+    [[maybe_unused]] const sf::Rect2i rect{};
     // [[maybe_unused]] const sf::RenderWindow   renderWindow;
     [[maybe_unused]] const sf::RectangleShape rectangleShape{{}};
     [[maybe_unused]] const sf::Vertex         vertex{};

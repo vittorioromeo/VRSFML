@@ -23,7 +23,7 @@
 
     #include "SFML/System/Err.hpp"
     #include "SFML/System/Path.hpp"
-    #include "SFML/System/Rect.hpp"
+    #include "SFML/System/Rect2.hpp"
     #include "SFML/System/String.hpp"
     #include "SFML/System/Time.hpp"
     #include "SFML/System/Vec2.hpp"

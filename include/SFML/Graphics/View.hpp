@@ -12,7 +12,7 @@
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/AutoWrapAngle.hpp"
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Assert.hpp"
@@ -32,11 +32,11 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     /// \brief Scissor rectangle
     ///
     ////////////////////////////////////////////////////////////
-    struct [[nodiscard]] ScissorRect : FloatRect
+    struct [[nodiscard]] ScissorRect : Rect2f
     {
         ////////////////////////////////////////////////////////////
         [[nodiscard, gnu::always_inline]] constexpr ScissorRect(Vec2f thePosition, Vec2f theSize) :
-            FloatRect{thePosition, theSize}
+            Rect2f{thePosition, theSize}
         {
             SFML_BASE_ASSERT(position.x >= 0.f && position.x <= 1.f && "position.x must lie within [0, 1]");
             SFML_BASE_ASSERT(position.y >= 0.f && position.y <= 1.f && "position.y must lie within [0, 1]");
@@ -47,13 +47,13 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
         }
 
         ////////////////////////////////////////////////////////////
-        [[nodiscard, gnu::always_inline]] constexpr explicit(false) ScissorRect(const FloatRect& rect) :
+        [[nodiscard, gnu::always_inline]] constexpr explicit(false) ScissorRect(const Rect2f& rect) :
             ScissorRect{rect.position, rect.size}
         {
         }
 
         ////////////////////////////////////////////////////////////
-        [[nodiscard]] static constexpr ScissorRect fromRectClamped(sf::FloatRect rect)
+        [[nodiscard]] static constexpr ScissorRect fromRectClamped(sf::Rect2f rect)
         {
             // Clamp the position to the range `[0, 1]`
             rect.position.x = SFML_BASE_CLAMP(rect.position.x, 0.f, 1.f);
@@ -80,7 +80,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     /// \param rectangle Rectangle defining the zone to display
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::const]] static constexpr View fromRect(const FloatRect& rectangle)
+    [[nodiscard, gnu::const]] static constexpr View fromRect(const Rect2f& rectangle)
     {
         return {.center = rectangle.position + rectangle.size / 2.f, .size = rectangle.size};
     }
@@ -240,7 +240,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     // NOLINTNEXTLINE(readability-redundant-member-init)
     AutoWrapAngle rotation{}; //!< Angle of rotation of the view rectangle
 
-    FloatRect viewport{{0.f, 0.f}, {1.f, 1.f}}; //!< Viewport rectangle, expressed as a factor of the render-target's size
+    Rect2f viewport{{0.f, 0.f}, {1.f, 1.f}}; //!< Viewport rectangle, expressed as a factor of the render-target's size
     ScissorRect scissor{{0.f, 0.f}, {1.f, 1.f}}; //!< Scissor rectangle, expressed as a factor of the render-target's size
 };
 

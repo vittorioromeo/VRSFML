@@ -36,7 +36,7 @@ Shape::Shape(const Data& data) :
 
 
 ////////////////////////////////////////////////////////////
-void Shape::setTextureRect(const FloatRect& rect)
+void Shape::setTextureRect(const Rect2f& rect)
 {
     if (m_textureRect == rect)
         return;
@@ -47,7 +47,7 @@ void Shape::setTextureRect(const FloatRect& rect)
 
 
 ////////////////////////////////////////////////////////////
-void Shape::setOutlineTextureRect(const FloatRect& rect)
+void Shape::setOutlineTextureRect(const Rect2f& rect)
 {
     if (m_outlineTextureRect == rect)
         return;
@@ -58,14 +58,14 @@ void Shape::setOutlineTextureRect(const FloatRect& rect)
 
 
 ////////////////////////////////////////////////////////////
-const FloatRect& Shape::getTextureRect() const
+const Rect2f& Shape::getTextureRect() const
 {
     return m_textureRect;
 }
 
 
 ////////////////////////////////////////////////////////////
-const FloatRect& Shape::getOutlineTextureRect() const
+const Rect2f& Shape::getOutlineTextureRect() const
 {
     return m_outlineTextureRect;
 }
@@ -147,14 +147,14 @@ float Shape::getOutlineThickness() const
 
 
 ////////////////////////////////////////////////////////////
-const FloatRect& Shape::getLocalBounds() const
+const Rect2f& Shape::getLocalBounds() const
 {
     return m_bounds;
 }
 
 
 ////////////////////////////////////////////////////////////
-FloatRect Shape::getGlobalBounds() const
+Rect2f Shape::getGlobalBounds() const
 {
     return getTransform().transformRect(getLocalBounds());
 }

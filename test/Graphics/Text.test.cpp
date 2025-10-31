@@ -51,8 +51,8 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             CHECK(text.getOutlineColor() == sf::Color::Black);
             CHECK(text.getOutlineThickness() == 0);
             CHECK(text.findCharacterPos(0) == sf::Vec2f{});
-            CHECK(text.getLocalBounds() == sf::FloatRect());
-            CHECK(text.getGlobalBounds() == sf::FloatRect());
+            CHECK(text.getLocalBounds() == sf::Rect2f());
+            CHECK(text.getGlobalBounds() == sf::Rect2f());
         }
 
         SECTION("Font and string constructor")
@@ -68,8 +68,8 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             CHECK(text.getOutlineColor() == sf::Color::Black);
             CHECK(text.getOutlineThickness() == 0);
             CHECK(text.findCharacterPos(0) == sf::Vec2f{});
-            CHECK(text.getLocalBounds() == sf::FloatRect({1, 8}, {357, 28}));
-            CHECK(text.getGlobalBounds() == sf::FloatRect({1, 8}, {357, 28}));
+            CHECK(text.getLocalBounds() == sf::Rect2f({1, 8}, {357, 28}));
+            CHECK(text.getGlobalBounds() == sf::Rect2f({1, 8}, {357, 28}));
         }
 
         SECTION("Font, string, and character size constructor")
@@ -85,8 +85,8 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             CHECK(text.getOutlineColor() == sf::Color::Black);
             CHECK(text.getOutlineThickness() == 0);
             CHECK(text.findCharacterPos(0) == sf::Vec2f{});
-            CHECK(text.getLocalBounds() == sf::FloatRect({1, 7}, {290, 22}));
-            CHECK(text.getGlobalBounds() == sf::FloatRect({1, 7}, {290, 22}));
+            CHECK(text.getLocalBounds() == sf::Rect2f({1, 7}, {290, 22}));
+            CHECK(text.getGlobalBounds() == sf::Rect2f({1, 7}, {290, 22}));
         }
     }
 
@@ -173,28 +173,28 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
     {
         sf::Text text(font, {.string = "Test", .characterSize = 18u});
         text.position = {100, 200};
-        CHECK(text.getLocalBounds() == sf::FloatRect({1, 5}, {33, 13}));
-        CHECK(text.getGlobalBounds() == sf::FloatRect({101, 205}, {33, 13}));
+        CHECK(text.getLocalBounds() == sf::Rect2f({1, 5}, {33, 13}));
+        CHECK(text.getGlobalBounds() == sf::Rect2f({101, 205}, {33, 13}));
 
         SECTION("Add underline")
         {
             text.setStyle(sf::Text::Style::Underlined);
-            CHECK(text.getLocalBounds() == sf::FloatRect({1, 5}, {33, 13}));
-            CHECK(text.getGlobalBounds() == sf::FloatRect({101, 205}, {33, 13}));
+            CHECK(text.getLocalBounds() == sf::Rect2f({1, 5}, {33, 13}));
+            CHECK(text.getGlobalBounds() == sf::Rect2f({101, 205}, {33, 13}));
         }
 
         SECTION("Add strikethrough")
         {
             text.setStyle(sf::Text::Style::StrikeThrough);
-            CHECK(text.getLocalBounds() == sf::FloatRect({1, 5}, {33, 13}));
-            CHECK(text.getGlobalBounds() == sf::FloatRect({101, 205}, {33, 13}));
+            CHECK(text.getLocalBounds() == sf::Rect2f({1, 5}, {33, 13}));
+            CHECK(text.getGlobalBounds() == sf::Rect2f({101, 205}, {33, 13}));
         }
 
         SECTION("Change rotation")
         {
             text.rotation = sf::degrees(180);
-            CHECK(text.getLocalBounds() == sf::FloatRect({1, 5}, {33, 13}));
-            CHECK(text.getGlobalBounds() == Approx(sf::FloatRect({66, 182}, {33, 13})));
+            CHECK(text.getLocalBounds() == sf::Rect2f({1, 5}, {33, 13}));
+            CHECK(text.getGlobalBounds() == Approx(sf::Rect2f({66, 182}, {33, 13})));
         }
     }
 

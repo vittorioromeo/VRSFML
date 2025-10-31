@@ -43,7 +43,7 @@ TEST_CASE("[Graphics] sf::RenderTarget")
         CHECK(renderTarget.getView().center == sf::Vec2f{500, 500});
         CHECK(renderTarget.getView().size == sf::Vec2f{1000, 1000});
         CHECK(renderTarget.getView().rotation == sf::Angle::Zero);
-        CHECK(renderTarget.getView().viewport == sf::FloatRect({0, 0}, {1, 1}));
+        CHECK(renderTarget.getView().viewport == sf::Rect2f({0, 0}, {1, 1}));
         CHECK(renderTarget.getView().getTransform() == sf::Transform(.002f, 0, -1, 0, -.002f, 1));
         CHECK(!renderTarget.isSrgb());
     }
@@ -82,27 +82,25 @@ TEST_CASE("[Graphics] sf::RenderTarget")
     SECTION("getViewport(const View&)")
     {
         const TestRenderTarget renderTarget;
-        CHECK(renderTarget.getViewport(makeView(sf::FloatRect({0, 0}, {1, 1}))) == sf::IntRect({0, 0}, {640, 480}));
-        CHECK(renderTarget.getViewport(makeView(sf::FloatRect({1, 1}, {.5f, .25f}))) ==
-              sf::IntRect({640, 480}, {320, 120}));
-        CHECK(renderTarget.getViewport(makeView(sf::FloatRect({.5f, .5f}, {.25f, .75f}))) ==
-              sf::IntRect({320, 240}, {160, 360}));
+        CHECK(renderTarget.getViewport(makeView(sf::Rect2f({0, 0}, {1, 1}))) == sf::Rect2i({0, 0}, {640, 480}));
+        CHECK(renderTarget.getViewport(makeView(sf::Rect2f({1, 1}, {.5f, .25f}))) == sf::Rect2i({640, 480}, {320, 120}));
+        CHECK(renderTarget.getViewport(makeView(sf::Rect2f({.5f, .5f}, {.25f, .75f}))) ==
+              sf::Rect2i({320, 240}, {160, 360}));
     }
 
     SECTION("getScissor(const View&)")
     {
         const TestRenderTarget renderTarget;
-        CHECK(renderTarget.getScissor(makeView(sf::FloatRect({0, 0}, {1, 1}))) == sf::IntRect({0, 0}, {640, 480}));
-        CHECK(renderTarget.getScissor(makeView(sf::FloatRect({1, 1}, {.5f, .25f}))) == sf::IntRect({0, 0}, {640, 480}));
-        CHECK(renderTarget.getScissor(makeView(sf::FloatRect({.5f, .5f}, {.25f, .75f}))) ==
-              sf::IntRect({0, 0}, {640, 480}));
+        CHECK(renderTarget.getScissor(makeView(sf::Rect2f({0, 0}, {1, 1}))) == sf::Rect2i({0, 0}, {640, 480}));
+        CHECK(renderTarget.getScissor(makeView(sf::Rect2f({1, 1}, {.5f, .25f}))) == sf::Rect2i({0, 0}, {640, 480}));
+        CHECK(renderTarget.getScissor(makeView(sf::Rect2f({.5f, .5f}, {.25f, .75f}))) == sf::Rect2i({0, 0}, {640, 480}));
     }
 
     SECTION("mapPixelToCoords(Vec2i)")
     {
         sf::View view;
         view.center += {5, 5};
-        view.viewport = sf::FloatRect({0, 0}, {.5f, 1});
+        view.viewport = sf::Rect2f({0, 0}, {.5f, 1});
         TestRenderTarget renderTarget;
         renderTarget.setView(view);
         const auto [x1, y1] = renderTarget.mapPixelToCoords({0, 0});
@@ -120,7 +118,7 @@ TEST_CASE("[Graphics] sf::RenderTarget")
     {
         sf::View view;
         view.center += {5, 5};
-        view.viewport = sf::FloatRect({.5f, .5f}, {.5f, 1});
+        view.viewport = sf::Rect2f({.5f, .5f}, {.5f, 1});
         const TestRenderTarget renderTarget;
         const auto [x1, y1] = renderTarget.mapPixelToCoords({0, 0}, view);
         CHECK_THAT(x1, Catch::Matchers::WithinRel(-995, 1e-5));
@@ -134,7 +132,7 @@ TEST_CASE("[Graphics] sf::RenderTarget")
     {
         sf::View view;
         view.center += {5, 5};
-        view.viewport = sf::FloatRect({.25f, 0}, {1, 1});
+        view.viewport = sf::Rect2f({.25f, 0}, {1, 1});
         TestRenderTarget renderTarget;
         renderTarget.setView(view);
         CHECK(renderTarget.mapCoordsToPixel({0, 0}) == sf::Vec2i(156, -2));
@@ -146,7 +144,7 @@ TEST_CASE("[Graphics] sf::RenderTarget")
     {
         sf::View view;
         view.center += {5, 5};
-        view.viewport = sf::FloatRect({0, 0}, {.5, .25f});
+        view.viewport = sf::Rect2f({0, 0}, {.5, .25f});
         TestRenderTarget renderTarget;
         renderTarget.setView(view);
         CHECK(renderTarget.mapCoordsToPixel({0, 0}) == sf::Vec2i(-1, 0));
