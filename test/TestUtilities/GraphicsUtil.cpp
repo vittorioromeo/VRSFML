@@ -3,7 +3,7 @@
 #include "SFML/Graphics/StencilMode.hpp"
 #include "SFML/Graphics/Transform.hpp"
 
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 
 #include "SFML/Base/Math/Fabs.hpp"
 
@@ -107,7 +107,7 @@ std::ostream& operator<<(std::ostream& os, const Transform& transform)
 }
 
 template <typename T>
-std::ostream& operator<<(std::ostream& os, const Rect<T>& rect)
+std::ostream& operator<<(std::ostream& os, const Rect2<T>& rect)
 {
     const auto flags = os.flags();
     setStreamPrecision(os, std::numeric_limits<T>::max_digits10);
@@ -116,8 +116,8 @@ std::ostream& operator<<(std::ostream& os, const Rect<T>& rect)
     return os;
 }
 
-template std::ostream& operator<<(std::ostream&, const Rect<int>&);
-template std::ostream& operator<<(std::ostream&, const Rect<float>&);
+template std::ostream& operator<<(std::ostream&, const Rect2<int>&);
+template std::ostream& operator<<(std::ostream&, const Rect2<float>&);
 
 } // namespace sf
 

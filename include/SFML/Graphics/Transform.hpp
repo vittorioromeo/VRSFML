@@ -9,7 +9,7 @@
 #include "SFML/Graphics/Export.hpp"
 
 #include "SFML/System/Angle.hpp"
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/AssertAndAssume.hpp"
@@ -36,10 +36,10 @@ struct [[nodiscard]] Transform
     {
         return {/* a00 */ scale.x,
                 /* a01 */ 0.f,
-                /* a02 */ -origin.x * scale.x - position.x,
+                /* a02 */ position.x - origin.x * scale.x,
                 /* a10 */ 0.f,
                 /* a11 */ scale.y,
-                /* a12 */ -origin.y * scale.y + position.y};
+                /* a12 */ position.y - origin.y * scale.y};
     }
 
 
@@ -153,7 +153,7 @@ struct [[nodiscard]] Transform
     /// \return Transformed rectangle
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr FloatRect transformRect(const FloatRect& rectangle) const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Rect2f transformRect(const Rect2f& rectangle) const
     {
         const Vec2f p0 = transformPoint(rectangle.position);
 
@@ -174,7 +174,7 @@ struct [[nodiscard]] Transform
         const float minY = SFML_BASE_MIN(SFML_BASE_MIN(p0.y, p1.y), SFML_BASE_MIN(p2.y, p3.y));
         const float maxY = SFML_BASE_MAX(SFML_BASE_MAX(p0.y, p1.y), SFML_BASE_MAX(p2.y, p3.y));
 
-        return FloatRect{{minX, minY}, {maxX - minX, maxY - minY}};
+        return Rect2f{{minX, minY}, {maxX - minX, maxY - minY}};
     }
 
 
@@ -482,7 +482,7 @@ inline constexpr Transform Transform::Identity{};
 ///
 /// // use the result to transform stuff...
 /// sf::Vec2f point = transform.transformPoint({10, 20});
-/// sf::FloatRect rect = transform.transformRect(sf::FloatRect({0, 0}, {10, 100}));
+/// sf::Rect2f rect = transform.transformRect(sf::Rect2f({0, 0}, {10, 100}));
 /// \endcode
 ///
 /// \see `sf::Transformable`, `sf::RenderStates`

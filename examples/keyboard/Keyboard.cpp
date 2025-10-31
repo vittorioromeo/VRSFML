@@ -25,7 +25,7 @@
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Abort.hpp"
@@ -595,7 +595,7 @@ class KeyboardView : public sf::Transformable
 {
 public:
     explicit KeyboardView(const sf::Font& font) :
-    m_labels(sf::Keyboard::ScancodeCount, sf::Text(font, {.characterSize = 14u}))
+        m_labels(sf::Keyboard::ScancodeCount, sf::Text(font, {.characterSize = 14u}))
     {
         // Check all the scancodes are in the matrix exactly once
         {
@@ -615,7 +615,7 @@ public:
         }
 
         // Initialize keys color and label
-        forEachKey([this](sf::Keyboard::Scancode scancode, const sf::FloatRect& rect)
+        forEachKey([this](sf::Keyboard::Scancode scancode, const sf::Rect2f& rect)
         {
             const auto scancodeIndex = static_cast<sf::base::SizeT>(scancode);
 
@@ -638,9 +638,9 @@ public:
             while (rect.size.x < label.getLocalBounds().size.x + padding * 2.f + 2.f)
                 label.setCharacterSize(label.getCharacterSize() - 2);
 
-            const sf::FloatRect bounds = label.getLocalBounds();
-            label.origin               = {sf::base::round(bounds.position.x + bounds.size.x / 2.f),
-                                          sf::base::round(static_cast<float>(label.getCharacterSize()) / 2.f)};
+            const sf::Rect2f bounds = label.getLocalBounds();
+            label.origin            = {sf::base::round(bounds.position.x + bounds.size.x / 2.f),
+                                       sf::base::round(static_cast<float>(label.getCharacterSize()) / 2.f)};
         });
     }
 
@@ -670,7 +670,7 @@ public:
         }
 
         // Update vertices positions from m_moveFactors and opacity from real-time keyboard state
-        forEachKey([this](sf::Keyboard::Scancode scancode, const sf::FloatRect& rect)
+        forEachKey([this](sf::Keyboard::Scancode scancode, const sf::Rect2f& rect)
         {
             const auto scancodeIndex = static_cast<sf::base::SizeT>(scancode);
 
@@ -691,7 +691,7 @@ public:
             for (sf::base::SizeT vertexIndex = 0u; vertexIndex < 6u; ++vertexIndex)
             {
                 sf::Vertex&                vertex = m_triangles[6u * scancodeIndex + vertexIndex];
-                const sf::Vec2f&           corner = square[cornerIndexes[vertexIndex]];
+                const sf::Vec2f           corner = square[cornerIndexes[vertexIndex]];
                 static constexpr sf::Vec2f pad(padding, padding);
                 vertex.position = rect.position + pad + (rect.size - 2.f * pad).componentWiseMul(corner) + move;
                 vertex.color.a  = pressed ? 96 : 48;
@@ -719,7 +719,7 @@ private:
         {
             for (const auto& [scancode, size, marginRight] : cells)
             {
-                function(scancode, sf::FloatRect(pos, size));
+                function(scancode, sf::Rect2f(pos, size));
                 pos.x += size.x + marginRight;
             }
             pos.x = 0.f;
@@ -733,9 +733,9 @@ private:
     struct Cell
     {
         Cell(sf::Keyboard::Scancode theScancode, sf::Vec2f sizeRatio = {1.f, 1.f}, float marginRightRatio = 0.f) :
-        scancode(theScancode),
-        size(sizeRatio * keySize),
-        marginRight(marginRightRatio * keySize)
+            scancode(theScancode),
+            size(sizeRatio * keySize),
+            marginRight(marginRightRatio * keySize)
         {
         }
 
@@ -752,8 +752,8 @@ private:
     struct Row
     {
         Row(sf::base::Vector<Cell> theCells, float marginBottomRatio = 0.f) :
-        cells(SFML_BASE_MOVE(theCells)),
-        marginBottom(marginBottomRatio * keySize)
+            cells(SFML_BASE_MOVE(theCells)),
+            marginBottom(marginBottomRatio * keySize)
         {
         }
 

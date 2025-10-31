@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Vertex.hpp"
 
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/AssertAndAssume.hpp"
@@ -30,8 +30,7 @@ namespace sf::VertexUtils
 /// \return A rect representing the bounding rectangle.
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::pure]] inline constexpr FloatRect getVertexRangeBounds(const Vertex* const data,
-                                                                         const base::SizeT   nVertices) noexcept
+[[nodiscard, gnu::pure]] inline constexpr Rect2f getVertexRangeBounds(const Vertex* const data, const base::SizeT nVertices) noexcept
 {
     SFML_BASE_ASSERT_AND_ASSUME(data != nullptr);
     SFML_BASE_ASSERT_AND_ASSUME(nVertices > 0u);

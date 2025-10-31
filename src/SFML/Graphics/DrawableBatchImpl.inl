@@ -31,7 +31,7 @@
 #include "SFML/Graphics/Vertex.hpp"
 #include "SFML/Graphics/VertexSpan.hpp"
 
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Assert.hpp"
@@ -63,7 +63,7 @@ namespace
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline]] inline void generateRingVertices(
-    const sf::FloatRect&  textureRect,
+    const sf::Rect2f&  textureRect,
     const sf::Color&      fillColor,
     const float           outerRadius,
     const float           innerRadius,

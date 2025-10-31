@@ -12,7 +12,7 @@
 
 #include "SFML/Window/Joystick.hpp"
 
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Vec2.hpp"
 
@@ -176,13 +176,13 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void drawRect(const FloatRect& rect, Color color, float rounding = 0.f, int roundingCorners = 0x0F, float thickness = 1.f);
+    void drawRect(const Rect2f& rect, Color color, float rounding = 0.f, int roundingCorners = 0x0F, float thickness = 1.f);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void drawRectFilled(const FloatRect& rect, Color color, float rounding = 0.f, int roundingCorners = 0x0F);
+    void drawRectFilled(const Rect2f& rect, Color color, float rounding = 0.f, int roundingCorners = 0x0F);
 
 private:
     ////////////////////////////////////////////////////////////

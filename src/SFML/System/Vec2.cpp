@@ -23,6 +23,7 @@ template class sf::Vec2<long double>;
     template sf::Vec2<type> sf::Vec2<type>::componentWiseMul(Vec2) const; \
     template sf::Vec2<type> sf::Vec2<type>::componentWiseDiv(Vec2) const;
 
+SFML_INSTANTIATE_VECTOR2_INTEGRAL_MEMBER_FUNCTIONS(bool)
 SFML_INSTANTIATE_VECTOR2_INTEGRAL_MEMBER_FUNCTIONS(int)
 SFML_INSTANTIATE_VECTOR2_INTEGRAL_MEMBER_FUNCTIONS(unsigned int)
 SFML_INSTANTIATE_VECTOR2_INTEGRAL_MEMBER_FUNCTIONS(::sf::base::SizeT)

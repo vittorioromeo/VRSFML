@@ -653,7 +653,7 @@ public:
     T y{}; //!< Y coordinate of the vec2
 };
 
-// Define the most common types
+// Aliases for the most common types
 using Vec2i  = Vec2<int>;
 using Vec2u  = Vec2<unsigned int>;
 using Vec2f  = Vec2<float>;
@@ -884,6 +884,7 @@ extern template class sf::Vec2<long double>;
 extern template class sf::Vec2<bool>;
 extern template class sf::Vec2<int>;
 extern template class sf::Vec2<unsigned int>;
+extern template class sf::Vec2<sf::base::SizeT>;
 
 
 ////////////////////////////////////////////////////////////

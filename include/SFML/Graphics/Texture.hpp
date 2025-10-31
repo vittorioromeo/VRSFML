@@ -10,7 +10,7 @@
 
 #include "SFML/Graphics/TextureWrapMode.hpp"
 
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
@@ -52,7 +52,7 @@ struct [[nodiscard]] TextureCreateSettings
 struct [[nodiscard]] TextureLoadSettings
 {
     bool            sRgb     = false;
-    IntRect         area     = {};
+    Rect2i          area     = {};
     bool            smooth   = false;
     TextureWrapMode wrapMode = TextureWrapMode::Clamp;
 };
@@ -112,7 +112,7 @@ public:
     ///
     /// The `area` argument can be used to load only a sub-rectangle
     /// of the whole image. If you want the entire image then leave
-    /// the default value (which is an empty `IntRect`).
+    /// the default value (which is an empty `Rect2i`).
     /// If the `area` rectangle crosses the bounds of the image, it
     /// is adjusted to fit the image size.
     ///
@@ -137,7 +137,7 @@ public:
     ///
     /// The `area` argument can be used to load only a sub-rectangle
     /// of the whole image. If you want the entire image then leave
-    /// the default value (which is an empty `IntRect`).
+    /// the default value (which is an empty `Rect2i`).
     /// If the `area` rectangle crosses the bounds of the image, it
     /// is adjusted to fit the image size.
     ///
@@ -165,7 +165,7 @@ public:
     ///
     /// The `area` argument can be used to load only a sub-rectangle
     /// of the whole image. If you want the entire image then leave
-    /// the default value (which is an empty `IntRect`).
+    /// the default value (which is an empty `Rect2i`).
     /// If the `area` rectangle crosses the bounds of the image, it
     /// is adjusted to fit the image size.
     ///
@@ -191,7 +191,7 @@ public:
     ///
     /// The `area` argument can be used to load only a sub-rectangle
     /// of the whole image. If you want the entire image then leave
-    /// the default value (which is an empty `IntRect`).
+    /// the default value (which is an empty `Rect2i`).
     /// If the `area` rectangle crosses the bounds of the image, it
     /// is adjusted to fit the image size.
     ///
@@ -443,7 +443,7 @@ public:
     /// \return Rectangle covering the entire texture, from {0, 0} to {width, height}
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] FloatRect getRect() const;
+    [[nodiscard]] Rect2f getRect() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Bind a texture for rendering

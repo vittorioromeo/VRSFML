@@ -845,7 +845,7 @@ String SDLLayer::getDisplayName(const SDL_DisplayID displayID) const
 
 
 ////////////////////////////////////////////////////////////
-IntRect SDLLayer::getDisplayBounds(const SDL_DisplayID displayID) const
+Rect2i SDLLayer::getDisplayBounds(const SDL_DisplayID displayID) const
 {
     SFML_BASE_ASSERT(displayID != 0u);
 
@@ -853,15 +853,15 @@ IntRect SDLLayer::getDisplayBounds(const SDL_DisplayID displayID) const
     if (!SDL_GetDisplayBounds(displayID, &out))
     {
         err() << "`SDL_GetDisplayBounds` failed: " << SDL_GetError();
-        return IntRect{};
+        return Rect2i{};
     }
 
-    return IntRect{{out.x, out.y}, {out.w, out.h}};
+    return Rect2i{{out.x, out.y}, {out.w, out.h}};
 }
 
 
 ////////////////////////////////////////////////////////////
-IntRect SDLLayer::getDisplayUsableBounds(const SDL_DisplayID displayID) const
+Rect2i SDLLayer::getDisplayUsableBounds(const SDL_DisplayID displayID) const
 {
     SFML_BASE_ASSERT(displayID != 0u);
 
@@ -869,10 +869,10 @@ IntRect SDLLayer::getDisplayUsableBounds(const SDL_DisplayID displayID) const
     if (!SDL_GetDisplayUsableBounds(displayID, &out))
     {
         err() << "`SDL_GetDisplayUsableBounds` failed: " << SDL_GetError();
-        return IntRect{};
+        return Rect2i{};
     }
 
-    return IntRect{{out.x, out.y}, {out.w, out.h}};
+    return Rect2i{{out.x, out.y}, {out.w, out.h}};
 }
 
 

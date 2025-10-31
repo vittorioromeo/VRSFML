@@ -13,7 +13,7 @@
 #include "SFML/Window/WindowHandle.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
@@ -281,10 +281,10 @@ public:
     [[nodiscard]] String getDisplayName(SDL_DisplayID displayID) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] IntRect getDisplayBounds(SDL_DisplayID displayID) const;
+    [[nodiscard]] Rect2i getDisplayBounds(SDL_DisplayID displayID) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] IntRect getDisplayUsableBounds(SDL_DisplayID displayID) const;
+    [[nodiscard]] Rect2i getDisplayUsableBounds(SDL_DisplayID displayID) const;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] DisplayOrientation getNaturalDisplayOrientation(SDL_DisplayID displayID) const;

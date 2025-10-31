@@ -1,6 +1,6 @@
 #include "SFML/Graphics/View.hpp"
 
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 
 #include <Doctest.hpp>
 
@@ -33,8 +33,8 @@ TEST_CASE("[Graphics] sf::View")
             CHECK(view.center == sf::Vec2f{500, 500});
             CHECK(view.size == sf::Vec2f{1000, 1000});
             CHECK(view.rotation == sf::Angle::Zero);
-            CHECK(view.viewport == sf::FloatRect({0, 0}, {1, 1}));
-            CHECK(view.scissor == sf::FloatRect({0, 0}, {1, 1}));
+            CHECK(view.viewport == sf::Rect2f({0, 0}, {1, 1}));
+            CHECK(view.scissor == sf::Rect2f({0, 0}, {1, 1}));
             CHECK(view.getTransform() == sf::Transform(0.002f, 0, -1, 0, -0.002f, 1));
             CHECK(view.getInverseTransform() == Approx(sf::Transform(500, 0, 500, 0, -500, 500)));
         }
@@ -45,8 +45,8 @@ TEST_CASE("[Graphics] sf::View")
             CHECK(view.center == sf::Vec2f{210, 320});
             CHECK(view.size == sf::Vec2f{400, 600});
             CHECK(view.rotation == sf::Angle::Zero);
-            CHECK(view.viewport == sf::FloatRect({0, 0}, {1, 1}));
-            CHECK(view.scissor == sf::FloatRect({0, 0}, {1, 1}));
+            CHECK(view.viewport == sf::Rect2f({0, 0}, {1, 1}));
+            CHECK(view.scissor == sf::Rect2f({0, 0}, {1, 1}));
             CHECK(view.getTransform() == Approx(sf::Transform(0.005f, 0, -1.05f, 0, -0.00333333f, 1.06667f)));
             CHECK(view.getInverseTransform() == Approx(sf::Transform(200, 0, 210, 0, -300, 320)));
         }
@@ -57,8 +57,8 @@ TEST_CASE("[Graphics] sf::View")
             CHECK(view.center == sf::Vec2f{520, 960});
             CHECK(view.size == sf::Vec2f{1080, 1920});
             CHECK(view.rotation == sf::Angle::Zero);
-            CHECK(view.viewport == sf::FloatRect({0, 0}, {1, 1}));
-            CHECK(view.scissor == sf::FloatRect({0, 0}, {1, 1}));
+            CHECK(view.viewport == sf::Rect2f({0, 0}, {1, 1}));
+            CHECK(view.scissor == sf::Rect2f({0, 0}, {1, 1}));
             CHECK(view.getTransform() == Approx(sf::Transform(0.00185185f, 0, -0.962963f, 0, -0.00104167f, 1)));
             CHECK(view.getInverseTransform() == Approx(sf::Transform(540, 0, 520, 0, -960, 960)));
         }
@@ -101,18 +101,18 @@ TEST_CASE("[Graphics] sf::View")
     {
         sf::View view;
         view.viewport = {{150, 250}, {500, 750}};
-        CHECK(view.viewport == sf::FloatRect({150, 250}, {500, 750}));
+        CHECK(view.viewport == sf::Rect2f({150, 250}, {500, 750}));
         CHECK(view.getTransform() == Approx(sf::Transform(0.002f, 0, -1, 0, -0.002f, 1)));
         CHECK(view.getInverseTransform() == Approx(sf::Transform(500, 0, 500, 0, -500, 500)));
-        CHECK(view.scissor == sf::FloatRect({0, 0}, {1, 1}));
+        CHECK(view.scissor == sf::Rect2f({0, 0}, {1, 1}));
     }
 
     SECTION("Set/get scissor")
     {
         sf::View view;
-        view.scissor = sf::FloatRect{{0, 0}, {0.5f, 1}};
-        CHECK(view.scissor == sf::FloatRect({0, 0}, {0.5, 1}));
-        CHECK(view.viewport == sf::FloatRect({0, 0}, {1, 1}));
+        view.scissor = sf::Rect2f{{0, 0}, {0.5f, 1}};
+        CHECK(view.scissor == sf::Rect2f({0, 0}, {0.5, 1}));
+        CHECK(view.viewport == sf::Rect2f({0, 0}, {1, 1}));
     }
 
     SECTION("rotate()")

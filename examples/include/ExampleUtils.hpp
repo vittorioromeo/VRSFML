@@ -23,7 +23,7 @@
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] inline sf::FloatRect getAspectRatioAwareViewport(const sf::Vec2f newSize, const sf::Vec2f originalSize)
+[[nodiscard]] inline sf::Rect2f getAspectRatioAwareViewport(const sf::Vec2f newSize, const sf::Vec2f originalSize)
 {
     SFML_BASE_ASSERT(newSize.x > 0.f && newSize.y > 0.f);
     SFML_BASE_ASSERT(originalSize.x > 0.f && originalSize.y > 0.f);
@@ -80,10 +80,10 @@
 /// \param windowSize The current size of the window or render target.
 /// \param nativeResolution The original, internal resolution of the content.
 ///
-/// \return A `sf::FloatRect` defining the viewport in normalized coordinates.
+/// \return A `sf::Rect2f` defining the viewport in normalized coordinates.
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] inline sf::FloatRect getPixelPerfectViewport(const sf::Vec2f windowSize, const sf::Vec2f nativeResolution)
+[[nodiscard]] inline sf::Rect2f getPixelPerfectViewport(const sf::Vec2f windowSize, const sf::Vec2f nativeResolution)
 {
     const float scale = getPixelPerfectScale(windowSize, nativeResolution);
 

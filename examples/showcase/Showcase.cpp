@@ -40,7 +40,7 @@
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Path.hpp"
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Algorithm/Find.hpp"
@@ -276,7 +276,7 @@ private:
     sf::RenderWindow&       m_window;
     const sf::Font&         m_font;
     const sf::TextureAtlas& m_textureAtlas;
-    const sf::FloatRect (&m_bunnyTextureRects)[8];
+    const sf::Rect2f (&m_bunnyTextureRects)[8];
 
     ////////////////////////////////////////////////////////////
     float m_time = 0.f;
@@ -304,7 +304,7 @@ public:
     explicit ExampleBunnyMark(sf::RenderWindow&       window,
                               const sf::Font&         font,
                               const sf::TextureAtlas& textureAtlas,
-                              const sf::FloatRect (&bunnyTextureRects)[8]) :
+                              const sf::Rect2f (&bunnyTextureRects)[8]) :
         m_window{window},
         m_font{font},
         m_textureAtlas{textureAtlas},
@@ -811,14 +811,14 @@ private:
     sf::TextureAtlas m_textureAtlas{sf::Texture::create({2048u, 2048u}, {.smooth = true}).value()};
 
     ////////////////////////////////////////////////////////////
-    const sf::FloatRect m_txrWhiteDot = m_textureAtlas.add(sf::GraphicsContext::getBuiltInWhiteDotTexture()).value();
+    const sf::Rect2f m_txrWhiteDot = m_textureAtlas.add(sf::GraphicsContext::getBuiltInWhiteDotTexture()).value();
 
     ////////////////////////////////////////////////////////////
     ImFont*        m_imGuiFont{ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/Born2bSportyFS.ttf", 18.f)};
     const sf::Font m_font = sf::Font::openFromFile("resources/tuffy.ttf", &m_textureAtlas).value();
 
     ////////////////////////////////////////////////////////////
-    const sf::FloatRect m_bunnyTextureRects[8] = {
+    const sf::Rect2f m_bunnyTextureRects[8] = {
         addImgToAtlasWithRotatedHue("resources/bunny0.png", 0.f),
         addImgToAtlasWithRotatedHue("resources/bunny0.png", 45.f),
         addImgToAtlasWithRotatedHue("resources/bunny0.png", 90.f),
@@ -866,13 +866,13 @@ private:
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::FloatRect addImgToAtlas(const sf::Path& path)
+    [[nodiscard]] sf::Rect2f addImgToAtlas(const sf::Path& path)
     {
         return m_textureAtlas.add(sf::Image::loadFromFile(path).value()).value();
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::FloatRect addImgToAtlasWithRotatedHue(const sf::Path& path, const float hueDegrees)
+    [[nodiscard]] sf::Rect2f addImgToAtlasWithRotatedHue(const sf::Path& path, const float hueDegrees)
     {
         auto img = sf::Image::loadFromFile(path).value();
         img.rotateHue(hueDegrees);

@@ -21,7 +21,7 @@
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Path.hpp"
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Algorithm/Erase.hpp"
@@ -73,7 +73,7 @@ namespace
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline]] inline void drawParticleImpl(
     const sf::Texture&   texture,
-    const sf::FloatRect& txr,
+    const sf::Rect2f& txr,
     const sf::Vec2f      origin,
     const sf::Vec2f      position,
     const float          scale,
@@ -144,7 +144,7 @@ int main()
     //
     //
     // Load images and add to texture atlas
-    const sf::FloatRect spriteTextureRects[]{
+    const sf::Rect2f spriteTextureRects[]{
         addImgResourceToAtlas("pCircle.png"),
         addImgResourceToAtlas("pExplosion.png"),
         addImgResourceToAtlas("pFire.png"),
@@ -523,7 +523,7 @@ int main()
                     }
                     else
                     {
-                        particlesSoA.with<1, 2>([](sf::Vec2f& velocity, const sf::Vec2f& acc)
+                        particlesSoA.with<1, 2>([](sf::Vec2f& velocity, const sf::Vec2f acc)
                                                     SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN { velocity += acc; });
 
                         particlesSoA.with<0, 1>([](sf::Vec2f& position, sf::Vec2f& velocity)
@@ -578,7 +578,7 @@ int main()
                         {
                             particlesSoA.withSubRange<1, 2>(batchStartIdx,
                                                             batchEndIdx,
-                                                            [](sf::Vec2f& velocity, const sf::Vec2f& acc)
+                                                            [](sf::Vec2f& velocity, const sf::Vec2f acc)
                                                                 SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
                             { velocity += acc; });
 
@@ -750,7 +750,7 @@ int main()
         {
             window.clear();
 
-            const sf::FloatRect& textureRect = spriteTextureRects[0];
+            const sf::Rect2f& textureRect = spriteTextureRects[0];
             const auto           origin      = textureRect.size / 2.f;
 
             const auto drawNthParticle = [&](const sf::base::SizeT& i, auto&& drawFn)

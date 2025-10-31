@@ -34,7 +34,7 @@ namespace sf::priv
 
 
 ////////////////////////////////////////////////////////////
-void blitFramebuffer(const bool invertYAxis, const UIntRect src, const UIntRect dst)
+void blitFramebuffer(const bool invertYAxis, const Rect2u src, const Rect2u dst)
 {
     auto srcY0 = static_cast<GLint>(src.position.y);
     auto srcY1 = static_cast<GLint>(src.position.y + src.size.y);

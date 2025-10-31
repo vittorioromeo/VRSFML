@@ -39,7 +39,7 @@
 #include "SFML/Window/Keyboard.hpp"
 
 #include "SFML/System/Clock.hpp"
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Algorithm/AnyOf.hpp"
@@ -1732,7 +1732,7 @@ bool Main::checkUiUnlock(const sf::base::SizeT unlockId, const bool unlockCondit
 
 
 ////////////////////////////////////////////////////////////
-void Main::uiImageFromAtlas(const sf::FloatRect& txr, const sf::RenderTarget::TextureDrawParams& drawParams)
+void Main::uiImageFromAtlas(const sf::Rect2f& txr, const sf::RenderTarget::TextureDrawParams& drawParams)
 {
     imGuiContext.image(
         sf::Sprite{
@@ -1746,7 +1746,7 @@ void Main::uiImageFromAtlas(const sf::FloatRect& txr, const sf::RenderTarget::Te
 }
 
 ////////////////////////////////////////////////////////////
-void Main::uiImgsep(const sf::FloatRect& txr, const char* sepLabel, const bool first)
+void Main::uiImgsep(const sf::Rect2f& txr, const char* sepLabel, const bool first)
 {
     if (profile.hideCategorySeparators)
         return;
@@ -1777,7 +1777,7 @@ void Main::uiImgsep(const sf::FloatRect& txr, const char* sepLabel, const bool f
 }
 
 ////////////////////////////////////////////////////////////
-void Main::uiImgsep2(const sf::FloatRect& txr, const char* sepLabel)
+void Main::uiImgsep2(const sf::Rect2f& txr, const char* sepLabel)
 {
     if (profile.hideCategorySeparators)
         return;

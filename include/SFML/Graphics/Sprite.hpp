@@ -12,7 +12,7 @@
 #include "SFML/Graphics/TransformableMixin.hpp"
 
 #include "SFML/System/AnchorPointMixin.hpp"
-#include "SFML/System/Rect.hpp"
+#include "SFML/System/Rect2.hpp"
 
 
 namespace sf
@@ -36,7 +36,7 @@ struct SFML_GRAPHICS_API Sprite : TransformableMixin<Sprite>, AnchorPointMixin<S
     /// \return Local bounding rectangle of the entity
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::pure]] FloatRect getLocalBounds() const;
+    [[nodiscard, gnu::pure]] Rect2f getLocalBounds() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the global bounding rectangle of the entity
@@ -50,14 +50,14 @@ struct SFML_GRAPHICS_API Sprite : TransformableMixin<Sprite>, AnchorPointMixin<S
     /// \return Global bounding rectangle of the entity
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::pure]] FloatRect getGlobalBounds() const;
+    [[nodiscard, gnu::pure]] Rect2f getGlobalBounds() const;
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     SFML_DEFINE_TRANSFORMABLE_DATA_MEMBERS;
-    FloatRect textureRect;         //!< Rectangle defining the area of the source texture to display
-    Color     color{Color::White}; //!< Color of the sprite
+    Rect2f textureRect;         //!< Rectangle defining the area of the source texture to display
+    Color  color{Color::White}; //!< Color of the sprite
 };
 
 } // namespace sf
