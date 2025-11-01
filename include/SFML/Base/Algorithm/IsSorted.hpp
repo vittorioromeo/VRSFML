@@ -15,19 +15,19 @@ namespace sf::base
 /// \return `true` if the range is sorted, `false` otherwise
 ///
 ////////////////////////////////////////////////////////////
-template <typename Iter, typename Comparer>
-[[nodiscard]] constexpr bool isSorted(Iter first, Iter last, Comparer&& comp)
+template <typename ForwardIt, typename Comparer>
+[[nodiscard]] constexpr bool isSorted(ForwardIt first, const ForwardIt last, Comparer&& comp)
 {
-    if (first != last)
-    {
-        Iter next = first;
-        while (++next != last)
-        {
-            if (comp(*next, *first))
-                return false;
+    if (first == last)
+        return true;
 
-            first = next;
-        }
+    ForwardIt next = first;
+    while (++next != last)
+    {
+        if (comp(*next, *first))
+            return false;
+
+        first = next;
     }
 
     return true;

@@ -7,12 +7,15 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Swap.hpp"
 
 
 namespace sf::base::priv
 {
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Default less-than comparison function object.
+///
+/// Used by sorting algorithms when no custom comparator is provided.
 ///
 ////////////////////////////////////////////////////////////
 inline constexpr auto cmpLess = [](const auto& a, const auto& b) { return a < b; };
@@ -23,11 +26,20 @@ inline constexpr auto cmpLess = [](const auto& a, const auto& b) { return a < b;
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Sorts a range of elements using the insertion sort algorithm.
+///
+/// Insertion sort is efficient for small collections or nearly-sorted data.
+/// It is used internally by `quickSort` for small partitions.
+///
+/// \tparam RandomIt The type of the iterators, must meet the requirements of a random access iterator.
+///
+/// \param first Iterator to the first element of the range to sort.
+/// \param last  Iterator to the element following the last element of the range to sort.
+/// \param comp  A binary predicate that returns `true` if the first argument should be ordered before the second.
 ///
 ////////////////////////////////////////////////////////////
 template <typename RandomIt>
-void insertionSort(const RandomIt first, const RandomIt last, auto&& comp)
+constexpr void insertionSort(const RandomIt first, const RandomIt last, auto&& comp)
 {
     if (first >= last)
         return;
@@ -49,11 +61,19 @@ void insertionSort(const RandomIt first, const RandomIt last, auto&& comp)
 
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Sorts a range of elements using the insertion sort algorithm with `operator<`.
+///
+/// This is an overload of `insertionSort` that uses the default less-than
+/// operator for comparison.
+///
+/// \tparam RandomIt The type of the iterators, must meet the requirements of a random access iterator.
+///
+/// \param first Iterator to the first element of the range to sort.
+/// \param last  Iterator to the element following the last element of the range to sort.
 ///
 ////////////////////////////////////////////////////////////
 template <typename RandomIt>
-[[gnu::always_inline]] inline void insertionSort(const RandomIt first, const RandomIt last)
+[[gnu::always_inline]] inline constexpr void insertionSort(const RandomIt first, const RandomIt last)
 {
     insertionSort(first, last, priv::cmpLess);
 }
@@ -64,20 +84,20 @@ template <typename RandomIt>
 namespace sf::base::priv
 {
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Internal implementation of the introspective quicksort algorithm.
 ///
-////////////////////////////////////////////////////////////
-template <typename RandomIt>
-[[gnu::always_inline]] inline void iterSwap(const RandomIt a, const RandomIt b)
-{
-    auto temp = SFML_BASE_MOVE(*a);
-    *a        = SFML_BASE_MOVE(*b);
-    *b        = SFML_BASE_MOVE(temp);
-}
-
-
-////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// This function implements a hybrid sorting strategy:
+/// 1.  It uses median-of-three pivot selection to improve pivot choice and avoid worst-case behavior.
+/// 2.  It employs a Hoare-like partitioning scheme.
+/// 3.  It switches to `insertionSort` for small partitions, which is more efficient for small data sets.
+/// 4.  It uses an explicit loop with tail-call optimization to recurse on the smaller partition,
+///     limiting recursion depth to O(log n) and preventing stack overflow.
+///
+/// \tparam RandomIt The type of the iterators.
+///
+/// \param first Iterator to the first element of the range.
+/// \param last  Iterator to the element following the last element of the range.
+/// \param comp  The comparison function object.
 ///
 ////////////////////////////////////////////////////////////
 template <typename RandomIt>
@@ -158,7 +178,16 @@ void quickSortImpl(RandomIt first, RandomIt last, auto&& comp)
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Sorts a range of elements into non-descending order using a hybrid quicksort.
+///
+/// This algorithm is not stable, meaning the relative order of equal elements
+/// is not guaranteed to be preserved. It has an average time complexity of O(n log n).
+///
+/// \tparam RandomIt The type of the iterators, must meet the requirements of a random access iterator.
+///
+/// \param first Iterator to the first element of the range to sort.
+/// \param last  Iterator to the element following the last element of the range to sort.
+/// \param comp  A binary predicate that returns `true` if the first argument should be ordered before the second.
 ///
 ////////////////////////////////////////////////////////////
 template <typename RandomIt>
@@ -172,7 +201,15 @@ template <typename RandomIt>
 
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Sorts a range of elements into non-descending order using `operator<`.
+///
+/// This is an overload of `quickSort` that uses the default less-than
+/// operator for comparison.
+///
+/// \tparam RandomIt The type of the iterators, must meet the requirements of a random access iterator.
+///
+/// \param first Iterator to the first element of the range to sort.
+/// \param last  Iterator to the element following the last element of the range to sort.
 ///
 ////////////////////////////////////////////////////////////
 template <typename RandomIt>

@@ -66,6 +66,7 @@ endif()
 sfml_add_library(GLUtils
                  SOURCES ${SRC} ${PLATFORM_SRC}
                  DEPENDENCIES "Dependencies.cmake.in")
+
 # DRM libraries
 if(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
     if(SFML_USE_DRM)

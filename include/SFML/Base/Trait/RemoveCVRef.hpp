@@ -55,6 +55,6 @@ using RemoveCVRef = SFML_BASE_REMOVE_CVREF(T);
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-using RemoveCVRefIndirect = typename priv::RemoveCVRefImpl<T>::type; // requires` constraints cannot use builtins
+using RemoveCVRefIndirect = typename priv::RemoveCVRefImpl<T>::type; // `requires` constraints cannot use builtins
 
 } // namespace sf::base

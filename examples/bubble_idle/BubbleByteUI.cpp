@@ -45,6 +45,7 @@
 #include "SFML/Base/Algorithm/AnyOf.hpp"
 #include "SFML/Base/Algorithm/Count.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/FloatMax.hpp"

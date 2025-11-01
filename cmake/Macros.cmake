@@ -123,6 +123,9 @@ macro(sfml_add_library module)
     if (SFML_ENABLE_PCH AND (NOT ${target} STREQUAL "sfml-system"))
         message(VERBOSE "enabling PCH for SFML library '${target}'")
         target_precompile_headers(${target} REUSE_FROM sfml-system)
+
+        find_package(Threads REQUIRED)
+        target_link_libraries(${target} PRIVATE Threads::Threads)
     endif()
 
     # define the export symbol of the module
@@ -382,6 +385,9 @@ macro(sfml_add_example target)
     if (SFML_ENABLE_PCH)
         message(VERBOSE "enabling PCH for SFML example '${target}'")
         target_precompile_headers(${target} REUSE_FROM sfml-system)
+
+        find_package(Threads REQUIRED)
+        target_link_libraries(${target} PRIVATE Threads::Threads)
     endif()
 
     # target_include_directories(${target} PRIVATE ${PROJECT_SOURCE_DIR}/tracy/public/tracy/)
@@ -459,6 +465,9 @@ function(sfml_add_test target SOURCES DEPENDS)
     if (SFML_ENABLE_PCH)
         message(VERBOSE "enabling PCH for SFML test '${target}'")
         target_precompile_headers(${target} REUSE_FROM sfml-system)
+
+        find_package(Threads REQUIRED)
+        target_link_libraries(${target} PRIVATE Threads::Threads)
     endif()
 
     # target_include_directories(${target} PRIVATE ${PROJECT_SOURCE_DIR}/tracy/public/tracy/)

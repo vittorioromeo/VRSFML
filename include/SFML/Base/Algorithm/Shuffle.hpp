@@ -13,11 +13,24 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Randomly shuffles the elements in a range using the Fisher-Yates algorithm.
+///
+/// Rearranges the elements in the range `[rangeBegin, rangeEnd)` into a pseudo-random
+/// order. This implementation uses the Durstenfeld variation of the Fisher-Yates shuffle,
+/// which guarantees a uniform permutation of the elements, provided that the supplied
+/// random number generator is uniform.
+///
+/// \tparam RandomIt The type of the iterators, must meet the requirements of a random access iterator.
+/// \tparam RngFunc        The type of the random number generator function object.
+///
+/// \param rangeBegin Iterator to the beginning of the range to shuffle.
+/// \param rangeEnd   Iterator to the end of the range to shuffle.
+/// \param rngFunc    A function object that takes two arguments `(min, max)` of type `sf::base::SizeT`
+///                   and returns a random integer in the inclusive range `[min, max]`.
 ///
 ////////////////////////////////////////////////////////////
-template <typename Iter, typename RngFunc>
-[[gnu::always_inline]] constexpr void shuffle(Iter rangeBegin, Iter rangeEnd, RngFunc&& rngFunc)
+template <typename RandomIt, typename RngFunc>
+[[gnu::always_inline]] constexpr void shuffle(const RandomIt rangeBegin, const RandomIt rangeEnd, RngFunc&& rngFunc)
 {
     auto n = rangeEnd - rangeBegin;
 

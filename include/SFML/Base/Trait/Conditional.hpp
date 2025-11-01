@@ -6,17 +6,19 @@
 namespace sf::base::priv
 {
 ////////////////////////////////////////////////////////////
-template <bool, typename TTrue, typename TFalse>
-struct ConditionalImpl
+template <bool>
+struct SelectImpl
 {
+    template <typename TTrue, typename TFalse>
     using type = TFalse;
 };
 
 
 ////////////////////////////////////////////////////////////
-template <typename TTrue, typename TFalse>
-struct ConditionalImpl<true, TTrue, TFalse>
+template <>
+struct SelectImpl<true>
 {
+    template <typename TTrue, typename TFalse>
     using type = TTrue;
 };
 
@@ -27,6 +29,6 @@ namespace sf::base
 {
 ////////////////////////////////////////////////////////////
 template <bool B, typename TTrue, typename TFalse>
-using Conditional = typename priv::ConditionalImpl<B, TTrue, TFalse>::type;
+using Conditional = typename priv::SelectImpl<B>::template type<TTrue, TFalse>;
 
 } // namespace sf::base
