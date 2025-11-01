@@ -36,7 +36,7 @@
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/OffsetOf.hpp"
-#include "SFML/Base/FastSinCos.hpp"
+#include "SFML/Base/SinCosLookup.hpp"
 #include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Lround.hpp"
@@ -586,12 +586,7 @@ void RenderTarget::draw(const Texture& texture, RenderStates states)
     {
         Vertex buffer[4];
 
-        DrawableBatchUtils::appendPreTransformedSpriteQuadVertices(Transform::from(/* position */ {0.f, 0.f},
-                                                                                   /* scale */ {1.f, 1.f},
-                                                                                   /* origin */ {0.f, 0.f}),
-                                                                   texture.getRect(),
-                                                                   Color::White,
-                                                                   buffer);
+        DrawableBatchUtils::appendPreTransformedSpriteQuadVertices(Transform{}, texture.getRect(), Color::White, buffer);
 
         draw(buffer, PrimitiveType::TriangleStrip, states);
     }
@@ -618,15 +613,19 @@ void RenderTarget::draw(const Texture& texture, const TextureDrawParams& params,
     }
     else
     {
-        const auto [sine, cosine] = base::fastSinCos(params.rotation.wrapUnsigned().asRadians());
+        const auto [sine, cosine] = base::sinCosLookup(params.rotation.wrapUnsigned().asRadians());
 
         Vertex buffer[4];
 
-        DrawableBatchUtils::
-            appendPreTransformedSpriteQuadVertices(Transform::from(params.position, params.scale, params.origin, sine, cosine),
-                                                   (params.textureRect == Rect2f{}) ? texture.getRect() : params.textureRect,
-                                                   params.color,
-                                                   buffer);
+        DrawableBatchUtils::appendPreTransformedSpriteQuadVertices(Transform::fromPositionScaleOriginSinCos(params.position,
+                                                                                                            params.scale,
+                                                                                                            params.origin,
+                                                                                                            sine,
+                                                                                                            cosine),
+                                                                   (params.textureRect == Rect2f{}) ? texture.getRect()
+                                                                                                    : params.textureRect,
+                                                                   params.color,
+                                                                   buffer);
 
         draw(buffer, PrimitiveType::TriangleStrip, states);
     }

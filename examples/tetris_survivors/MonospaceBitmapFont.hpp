@@ -48,13 +48,13 @@ public:
         const auto glyphRect = getGlyphRect(c).toRect2f();
 
         return {
-            .position = fontTextureRect.position + glyphRect.position.toVec2f(),
-            .size     = glyphRect.size.toVec2f(),
+            .position = fontTextureRect.position + glyphRect.position,
+            .size     = glyphRect.size,
         };
     }
 
     //////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Vec2uz getGlyphSize() const
+    [[nodiscard]] sf::Vec2uz getGlyphSize([[maybe_unused]] const char c) const
     {
         return m_glyphSize;
     }

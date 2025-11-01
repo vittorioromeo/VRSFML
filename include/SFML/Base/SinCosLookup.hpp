@@ -30,16 +30,16 @@ inline constexpr float radToIndex = static_cast<float>(sinCount) / tau;
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr U32 fastSinIdx(const float radians) noexcept
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr U32 sinLookupIdx(const float radians) noexcept
 {
     return static_cast<U32>(radians * radToIndex);
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr U32 fastCosIdx(const float radians) noexcept
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr U32 cosLookupIdx(const float radians) noexcept
 {
-    return fastSinIdx(radians) + 16'384u;
+    return sinLookupIdx(radians) + 16'384u;
 }
 
 
@@ -53,7 +53,7 @@ static_assert(sizeof(sinTableData) == sinCount * sizeof(float));
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-/// \brief Fast sine calculation using a lookup table.
+/// \brief Return sine by using a lookup table.
 ///
 /// Calculates an approximation of `sin(radians)` using a precomputed lookup table.
 /// This is faster than `std::sin` but less precise.
@@ -61,19 +61,19 @@ namespace sf::base
 /// \param radians Angle in radians. Must be in the range `[0, 2*Pi]`.
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float fastSin(const float radians) noexcept
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float sinLookup(const float radians) noexcept
 {
     SFML_BASE_ASSERT_AND_ASSUME(radians >= 0.f && radians <= tau);
 
     if (SFML_BASE_IS_CONSTANT_EVALUATED())
         return priv::constexprSin(radians);
 
-    return priv::sinTableData[priv::fastSinIdx(radians) & priv::sinMask];
+    return priv::sinTableData[priv::sinLookupIdx(radians) & priv::sinMask];
 }
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Fast cosine calculation using a lookup table.
+/// \brief Return cosine by using a lookup table.
 ///
 /// Calculates an approximation of `cos(radians)` using a precomputed lookup table.
 /// This is faster than `std::cos` but less precise.
@@ -81,28 +81,28 @@ namespace sf::base
 /// \param radians Angle in radians. Must be in the range `[0, 2*Pi]`.
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float fastCos(const float radians) noexcept
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float cosLookup(const float radians) noexcept
 {
     SFML_BASE_ASSERT_AND_ASSUME(radians >= 0.f && radians <= tau);
 
     if (SFML_BASE_IS_CONSTANT_EVALUATED())
         return priv::constexprCos(radians);
 
-    return priv::sinTableData[priv::fastCosIdx(radians) & priv::sinMask];
+    return priv::sinTableData[priv::cosLookupIdx(radians) & priv::sinMask];
 }
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Fast sine and cosine calculation using a lookup table.
+/// \brief Return sine and cosine by using a lookup table.
 ///
 /// Calculates approximations of `sin(radians)` and `cos(radians)` simultaneously
-/// using a precomputed lookup table. Faster than separate calls to `fastSin` and `fastCos`.
+/// using a precomputed lookup table. Faster than separate calls to `sinLookup` and `cosLookup`.
 ///
 /// \param radians Angle in radians. Must be in the range `[0, 2*Pi]`.
 /// \return A struct containing the `sin` and `cos` results.
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr auto fastSinCos(const float radians) noexcept
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr auto sinCosLookup(const float radians) noexcept
 {
     SFML_BASE_ASSERT_AND_ASSUME(radians >= 0.f && radians <= tau);
 

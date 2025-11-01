@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Angle.hpp"
 
-#include "SFML/Base/Assert.hpp"
+#include "SFML/Base/AssertAndAssume.hpp"
 #include "SFML/Base/ClampMacro.hpp"
 #include "SFML/Base/Math/Atan2.hpp"
 #include "SFML/Base/Math/Cos.hpp"
@@ -83,7 +83,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr T lengthSquared() const
     {
-        return dot(*this);
+        return x * x + y * y;
     }
 
 
@@ -97,9 +97,12 @@ public:
     {
         static_assert(SFML_BASE_IS_FLOATING_POINT(T), "Vec2::normalized() is only supported for floating point types");
 
-        SFML_BASE_ASSERT(*this != Vec2<T>() && "Vec2::normalized() cannot normalize a zero vec2");
+        SFML_BASE_ASSERT_AND_ASSUME((x != T{0} || y != T{0}) && "Vec2::normalized() cannot normalize a zero vec2");
 
-        return (*this) / length();
+        const T len    = length();
+        const T invLen = T{1} / len;
+
+        return {x * invLen, y * invLen};
     }
 
     ////////////////////////////////////////////////////////////
@@ -115,8 +118,11 @@ public:
     {
         static_assert(SFML_BASE_IS_FLOATING_POINT(T), "Vec2::angleTo() is only supported for floating point types");
 
-        SFML_BASE_ASSERT(*this != Vec2<T>() && "Vec2::angleTo() cannot calculate angle from a zero vec2");
-        SFML_BASE_ASSERT(rhs != Vec2<T>() && "Vec2::angleTo() cannot calculate angle to a zero vec2");
+        SFML_BASE_ASSERT_AND_ASSUME((x != T{0} || y != T{0}) &&
+                                    "Vec2::angleTo() cannot calculate angle to a zero "
+                                    "vec2");
+        SFML_BASE_ASSERT_AND_ASSUME(
+            (rhs.x != T{0} || rhs.y != T{0}) && "Vec2::angleTo() cannot calculate angle to a zero vec2");
 
         return radians(static_cast<float>(base::atan2(cross(rhs), dot(rhs))));
     }
@@ -134,7 +140,8 @@ public:
     {
         static_assert(SFML_BASE_IS_FLOATING_POINT(T), "Vec2::angle() is only supported for floating point types");
 
-        SFML_BASE_ASSERT(*this != Vec2<T>() && "Vec2::angle() cannot calculate angle from a zero vec2");
+        SFML_BASE_ASSERT_AND_ASSUME((x != T{0} || y != T{0}) && "Vec2::angle() cannot calculate angle from a zero "
+                                                                "vec2");
 
         return radians(static_cast<float>(base::atan2(y, x)));
     }
@@ -190,7 +197,8 @@ public:
         static_assert(SFML_BASE_IS_FLOATING_POINT(T),
                       "Vec2::projectedOnto() is only supported for floating point types");
 
-        SFML_BASE_ASSERT(axis != Vec2<T>() && "Vec2::projectedOnto() cannot project onto a zero vec2");
+        SFML_BASE_ASSERT_AND_ASSUME((axis.x != T{0} || axis.y != T{0}) && "Vec2::projectedOnto() cannot project onto a zero vec2");
+
         return dot(axis) / axis.lengthSquared() * axis;
     }
 
@@ -212,7 +220,8 @@ public:
     {
         static_assert(SFML_BASE_IS_FLOATING_POINT(T),
                       "Vec2::clampMaxLength() is only supported for floating point types");
-        SFML_BASE_ASSERT(maxLength >= T{0} && "Vec2::clampMaxLength() requires non-negative maxLength");
+
+        SFML_BASE_ASSERT_AND_ASSUME(maxLength >= T{0} && "Vec2::clampMaxLength() requires non-negative maxLength");
 
         const T currentLengthSquared = lengthSquared();
 
@@ -242,8 +251,9 @@ public:
     {
         static_assert(SFML_BASE_IS_FLOATING_POINT(T),
                       "Vec2::clampMaxLengthSquared() is only supported for floating point types");
-        SFML_BASE_ASSERT(maxLengthSquared >= T{0} &&
-                         "Vec2::clampMaxLengthSquared() requires non-negative maxLengthSquared");
+
+        SFML_BASE_ASSERT_AND_ASSUME(
+            maxLengthSquared >= T{0} && "Vec2::clampMaxLengthSquared() requires non-negative maxLengthSquared");
 
         const T currentLengthSquared = lengthSquared();
 
@@ -272,13 +282,14 @@ public:
     {
         static_assert(SFML_BASE_IS_FLOATING_POINT(T),
                       "Vec2::clampMinLength() is only supported for floating point types");
-        SFML_BASE_ASSERT(minLength >= T{0} && "Vec2::clampMinLength() requires non-negative minLength");
+
+        SFML_BASE_ASSERT_AND_ASSUME(minLength >= T{0} && "Vec2::clampMinLength() requires non-negative minLength");
 
         const T currentLengthSquared = lengthSquared();
 
-        SFML_BASE_ASSERT((currentLengthSquared != T{0} || minLength == T{0}) &&
-                         "Vec2::clampMinLength() cannot clamp zero vec2 to a "
-                         "positive minimum length");
+        SFML_BASE_ASSERT_AND_ASSUME((currentLengthSquared != T{0} || minLength == T{0}) &&
+                                    "Vec2::clampMinLength() cannot clamp zero vec2 to a "
+                                    "positive minimum length");
 
         if (currentLengthSquared >= minLength * minLength)
             return *this;
@@ -307,14 +318,15 @@ public:
     {
         static_assert(SFML_BASE_IS_FLOATING_POINT(T),
                       "Vec2::clampMinLengthSquared() is only supported for floating point types");
-        SFML_BASE_ASSERT(minLengthSquared >= T{0} &&
-                         "Vec2::clampMinLengthSquared() requires non-negative minLengthSquared");
+
+        SFML_BASE_ASSERT_AND_ASSUME(
+            minLengthSquared >= T{0} && "Vec2::clampMinLengthSquared() requires non-negative minLengthSquared");
 
         const T currentLengthSquared = lengthSquared();
 
-        SFML_BASE_ASSERT((currentLengthSquared != T{0} || minLengthSquared == T{0}) &&
-                         "Vec2::clampMinLengthSquared() cannot clamp zero "
-                         "vec2 to a positive minimum squared length");
+        SFML_BASE_ASSERT_AND_ASSUME((currentLengthSquared != T{0} || minLengthSquared == T{0}) &&
+                                    "Vec2::clampMinLengthSquared() cannot clamp zero "
+                                    "vec2 to a positive minimum squared length");
 
         if (currentLengthSquared >= minLengthSquared)
             return *this;
@@ -344,14 +356,15 @@ public:
                                                                                                  const T maxLength) const
     {
         static_assert(SFML_BASE_IS_FLOATING_POINT(T), "Vec2::clampLength() is only supported for floating point types");
-        SFML_BASE_ASSERT(minLength >= T{0} && minLength <= maxLength &&
-                         "Vec2::clampLength() requires 0 <= minLength <= maxLength");
+
+        SFML_BASE_ASSERT_AND_ASSUME(
+            minLength >= T{0} && minLength <= maxLength && "Vec2::clampLength() requires 0 <= minLength <= maxLength");
 
         const T currentLengthSquared = lengthSquared();
 
-        SFML_BASE_ASSERT((currentLengthSquared != T{0} || minLength == T{0}) &&
-                         "Vec2::clampLength() cannot clamp zero vec2 to a "
-                         "positive minimum length");
+        SFML_BASE_ASSERT_AND_ASSUME((currentLengthSquared != T{0} || minLength == T{0}) &&
+                                    "Vec2::clampLength() cannot clamp zero vec2 to a "
+                                    "positive minimum length");
 
         const T minLengthSquared = minLength * minLength;
         const T maxLengthSquared = maxLength * maxLength;
@@ -398,14 +411,15 @@ public:
     {
         static_assert(SFML_BASE_IS_FLOATING_POINT(T),
                       "Vec2::clampLengthSquared() is only supported for floating point types");
-        SFML_BASE_ASSERT(minLengthSquared >= T{0} && minLengthSquared <= maxLengthSquared &&
-                         "Vec2::clampLengthSquared() requires 0 <= minLengthSquared <= maxLengthSquared");
+
+        SFML_BASE_ASSERT_AND_ASSUME(minLengthSquared >= T{0} && minLengthSquared <= maxLengthSquared &&
+                                    "Vec2::clampLengthSquared() requires 0 <= minLengthSquared <= maxLengthSquared");
 
         const T currentLengthSquared = lengthSquared();
 
-        SFML_BASE_ASSERT((currentLengthSquared != T{0} || minLengthSquared == T{0}) &&
-                         "Vec2::clampLengthSquared() cannot clamp zero vec2 "
-                         "to a positive minimum squared length");
+        SFML_BASE_ASSERT_AND_ASSUME((currentLengthSquared != T{0} || minLengthSquared == T{0}) &&
+                                    "Vec2::clampLengthSquared() cannot clamp zero vec2 "
+                                    "to a positive minimum squared length");
 
         if (currentLengthSquared >= minLengthSquared && currentLengthSquared <= maxLengthSquared)
             return *this;
@@ -489,8 +503,8 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2 componentWiseDiv(const Vec2 rhs) const
     {
-        SFML_BASE_ASSERT(rhs.x != 0 && "Vec2::componentWiseDiv() cannot divide by 0 (x coordinate)");
-        SFML_BASE_ASSERT(rhs.y != 0 && "Vec2::componentWiseDiv() cannot divide by 0 (y coordinate)");
+        SFML_BASE_ASSERT_AND_ASSUME(rhs.x != 0 && "Vec2::componentWiseDiv() cannot divide by 0 (x coordinate)");
+        SFML_BASE_ASSERT_AND_ASSUME(rhs.y != 0 && "Vec2::componentWiseDiv() cannot divide by 0 (y coordinate)");
 
         return Vec2<T>(x / rhs.x, y / rhs.y);
     }
@@ -617,7 +631,9 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2<unsigned int> toVec2u() const
     {
-        SFML_BASE_ASSERT(x >= 0 && y >= 0 && "Vec2::toVec2u() cannot convert negative values to unsigned int");
+        SFML_BASE_ASSERT_AND_ASSUME(
+            x >= 0 && y >= 0 && "Vec2::toVec2u() cannot convert negative values to unsigned int");
+
         return {static_cast<unsigned int>(x), static_cast<unsigned int>(y)};
     }
 
@@ -628,7 +644,9 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2<base::SizeT> toVec2uz() const
     {
-        SFML_BASE_ASSERT(x >= 0 && y >= 0 && "Vec2::toVec2uz() cannot convert negative values to base::SizeT");
+        SFML_BASE_ASSERT_AND_ASSUME(
+            x >= 0 && y >= 0 && "Vec2::toVec2uz() cannot convert negative values to base::SizeT");
+
         return {static_cast<base::SizeT>(x), static_cast<base::SizeT>(y)};
     }
 
@@ -842,7 +860,7 @@ template <typename T>
 template <typename T>
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr Vec2<T> operator/(const Vec2<T> lhs, const T rhs)
 {
-    SFML_BASE_ASSERT(rhs != 0 && "Vec2::operator/ cannot divide by 0");
+    SFML_BASE_ASSERT_AND_ASSUME(rhs != 0 && "Vec2::operator/ cannot divide by 0");
 
     return Vec2<T>(lhs.x / rhs, lhs.y / rhs);
 }
@@ -864,7 +882,7 @@ template <typename T>
 template <typename T>
 [[gnu::always_inline, gnu::flatten]] constexpr Vec2<T>& operator/=(Vec2<T>& lhs, const T rhs)
 {
-    SFML_BASE_ASSERT(rhs != 0 && "Vec2::operator/= cannot divide by 0");
+    SFML_BASE_ASSERT_AND_ASSUME(rhs != 0 && "Vec2::operator/= cannot divide by 0");
 
     lhs.x /= rhs;
     lhs.y /= rhs;

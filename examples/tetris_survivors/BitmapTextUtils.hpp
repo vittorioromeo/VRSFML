@@ -8,6 +8,7 @@
 #include "MonospaceBitmapFont.hpp"
 
 #include "SFML/Graphics/IndexType.hpp"
+#include "SFML/Graphics/Transform.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
 #include "SFML/System/Rect2.hpp"
@@ -15,6 +16,7 @@
 
 #include "SFML/Base/FromChars.hpp"
 #include "SFML/Base/InPlaceVector.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Vector.hpp"
 
@@ -36,7 +38,8 @@ struct [[nodiscard]] MonospaceBitmapTextToVerticesOptions // NOLINT(cppcoreguide
 
 
 //////////////////////////////////////////////////////////////
-inline void monospaceBitmapTextToVertices(const MonospaceBitmapTextToVerticesOptions& options)
+template <bool TBoundsOnly = false>
+inline auto monospaceBitmapTextToVertices(const MonospaceBitmapTextToVerticesOptions& options)
 {
     const auto& [outVertices, outIndices, monospaceBitmapFont, fontTextureRect, alignment, baseColor, time, str] = options;
 
@@ -52,6 +55,8 @@ inline void monospaceBitmapTextToVertices(const MonospaceBitmapTextToVerticesOpt
         sf::Color color;
         Wobble    wobble;
         bool      bold;
+        float     hSpace;
+        float     vSpace;
     };
 
     using sf::base::StringView::nPos;
@@ -73,6 +78,8 @@ inline void monospaceBitmapTextToVertices(const MonospaceBitmapTextToVerticesOpt
             .color  = baseColor,
             .wobble = {.frequency = 0.f, .amplitude = 0.f, .phase = 0.f},
             .bold   = false,
+            .hSpace = 0.f,
+            .vSpace = 0.f,
         }};
 
         for (sf::base::SizeT i = 0u; i < str.size(); ++i)
@@ -105,8 +112,8 @@ inline void monospaceBitmapTextToVertices(const MonospaceBitmapTextToVerticesOpt
                     {
                         auto args = str.substrByPosLen(funcEnd + 1, argsEnd - (funcEnd + 1));
 
-                        parseArg(args, newState.wobble.amplitude);
                         parseArg(args, newState.wobble.frequency);
+                        parseArg(args, newState.wobble.amplitude);
                         parseArg(args, newState.wobble.phase);
 
                         tagHandled = true;
@@ -115,6 +122,22 @@ inline void monospaceBitmapTextToVertices(const MonospaceBitmapTextToVerticesOpt
                     {
                         newState.bold = true;
                         tagHandled    = true;
+                    }
+                    else if (funcName == "hspace")
+                    {
+                        auto args = str.substrByPosLen(funcEnd + 1, argsEnd - (funcEnd + 1));
+
+                        parseArg(args, newState.hSpace);
+
+                        tagHandled = true;
+                    }
+                    else if (funcName == "vspace")
+                    {
+                        auto args = str.substrByPosLen(funcEnd + 1, argsEnd - (funcEnd + 1));
+
+                        parseArg(args, newState.vSpace);
+
+                        tagHandled = true;
                     }
 
                     if (tagHandled)
@@ -148,7 +171,10 @@ inline void monospaceBitmapTextToVertices(const MonospaceBitmapTextToVerticesOpt
     linePixelWidths.emplaceBack(0u); // Width of the first line
 
     sf::base::SizeT maxPixelWidth = 0;
-    const auto      glyphSize     = monospaceBitmapFont.getGlyphSize();
+
+    sf::Vec2f maxs;
+
+    const auto [hSpacing, vSpacing] = monospaceBitmapFont.getGlyphSize('a');
 
     parseText([&](const sf::base::SizeT /* charIdx */, const char c, const FormattingState& fs)
     {
@@ -159,7 +185,19 @@ inline void monospaceBitmapTextToVertices(const MonospaceBitmapTextToVerticesOpt
             return;
         }
 
-        linePixelWidths.back() += (c == '\t') ? glyphSize.x * 4 : (fs.bold ? glyphSize.x + 1 : glyphSize.x);
+        if (c == '\t')
+        {
+            linePixelWidths.back() += hSpacing * 4;
+            return;
+        }
+
+        if (c == ' ')
+        {
+            linePixelWidths.back() += hSpacing;
+            return;
+        }
+
+        linePixelWidths.back() += (fs.bold ? hSpacing + 1 : hSpacing);
     });
 
     maxPixelWidth = sf::base::max(maxPixelWidth, linePixelWidths.back());
@@ -198,13 +236,11 @@ inline void monospaceBitmapTextToVertices(const MonospaceBitmapTextToVerticesOpt
         outIndices.pushBackMultiple(baseIndex + 0u, baseIndex + 1u, baseIndex + 2u, baseIndex + 0u, baseIndex + 2u, baseIndex + 3u);
     };
 
-    const auto fGlyphSize = glyphSize.toVec2f();
-
     parseText([&](const sf::base::SizeT charIdx, const char c, const FormattingState& fs)
     {
         if (c == '\n')
         {
-            cursor.y += static_cast<float>(glyphSize.y);
+            cursor.y += static_cast<float>(vSpacing);
 
             ++currentLineIdx;
 
@@ -214,22 +250,56 @@ inline void monospaceBitmapTextToVertices(const MonospaceBitmapTextToVerticesOpt
             return;
         }
 
-        if (c != ' ' && c != '\t')
+        if (c == '\t')
         {
-            const auto texRect = monospaceBitmapFont.getGlyphTextureRect(fontTextureRect, c);
-
-            const auto wobbleAmount = fs.wobble.amplitude * sf::base::sin(fs.wobble.frequency * time +
-                                                                          static_cast<float>(charIdx) * fs.wobble.phase);
-
-            emitQuad(cursor.addY(wobbleAmount), fGlyphSize, texRect, fs.color);
-
-            if (fs.bold)
-                emitQuad(cursor.addY(wobbleAmount).addX(1), fGlyphSize, texRect, fs.color);
+            cursor.x += static_cast<float>(hSpacing) * 4.f;
+            return;
         }
 
-        // Advance cursor
-        cursor.x += (c == '\t') ? fGlyphSize.x * 4.f : (fs.bold ? fGlyphSize.x + 1.f : fGlyphSize.x);
+        if (c == ' ')
+        {
+            cursor.x += static_cast<float>(hSpacing);
+            return;
+        }
+
+        const auto texRect = monospaceBitmapFont.getGlyphTextureRect(fontTextureRect, c);
+
+        const auto wobbleAmount = fs.wobble.amplitude *
+                                  sf::base::sin(fs.wobble.frequency * time + static_cast<float>(charIdx) * fs.wobble.phase);
+
+        const auto fGlyphSize = monospaceBitmapFont.getGlyphSize(c).toVec2f();
+
+        const auto adjustedCursor = cursor.addX(fs.hSpace).addY(wobbleAmount + fs.vSpace);
+
+        if constexpr (!TBoundsOnly)
+        {
+            emitQuad(adjustedCursor, fGlyphSize, texRect, fs.color);
+
+            if (fs.bold)
+                emitQuad(adjustedCursor.addX(1), fGlyphSize, texRect, fs.color);
+        }
+
+        cursor.x += fs.bold ? fGlyphSize.x + 1.f : fGlyphSize.x;
+
+        maxs.x = sf::base::max(maxs.x, cursor.x + fs.hSpace);
+        maxs.y = sf::base::max(maxs.y, cursor.y + fs.vSpace + fGlyphSize.y);
     });
+
+    return maxs;
+}
+
+
+//////////////////////////////////////////////////////////////
+inline sf::Rect2f monospaceBitmapTextToVerticesPretransformed(const MonospaceBitmapTextToVerticesOptions& options,
+                                                              const sf::Transform&                        transform)
+{
+    const auto prevVerticesSize = options.outVertices.size();
+    const auto localBoundsSize  = monospaceBitmapTextToVertices</* TBoundsOnly */ false>(options);
+
+    for (sf::base::SizeT i = prevVerticesSize; i < options.outVertices.size(); ++i)
+        options.outVertices[i].position = transform.transformPoint(options.outVertices[i].position);
+
+    return transform.transformRect({{0.f, 0.f}, localBoundsSize});
 }
 
 } // namespace tsurv
