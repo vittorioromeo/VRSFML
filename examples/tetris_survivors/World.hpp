@@ -145,6 +145,9 @@ struct [[nodiscard]] World
 
     bool holdUsedThisTurn = false;
 
+    sf::base::SizeT rerollsPerLevel      = 3u;
+    sf::base::SizeT nPerkChoicesPerLevel = 3u;
+
     sf::base::U64 tick = 0u;
 
     sf::base::U64 dropTickAccumulator = 0u;

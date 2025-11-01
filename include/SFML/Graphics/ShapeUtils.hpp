@@ -13,7 +13,7 @@
 #include "SFML/Base/AssertAndAssume.hpp"
 #include "SFML/Base/Builtin/Restrict.hpp"
 #include "SFML/Base/Constants.hpp"
-#include "SFML/Base/FastSinCos.hpp"
+#include "SFML/Base/SinCosLookup.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Math/Sqrt.hpp"
 #include "SFML/Base/MinMaxMacros.hpp"
@@ -46,7 +46,7 @@ namespace sf::ShapeUtils
     const float       vRadius) noexcept
 {
     const float wrappedAngle = base::positiveRemainder(startRadians + static_cast<float>(index) * angleStep, base::tau);
-    const auto [sine, cosine] = base::fastSinCos(wrappedAngle);
+    const auto [sine, cosine] = base::sinCosLookup(wrappedAngle);
 
     SFML_BASE_ASSERT_AND_ASSUME(sine >= -1.f && sine <= 1.f);
     SFML_BASE_ASSERT_AND_ASSUME(cosine >= -1.f && cosine <= 1.f);
@@ -180,7 +180,7 @@ namespace sf::ShapeUtils
     const Vec2f center{(centerIndex == 0 || centerIndex == 3) ? size.x - cornerRadius : cornerRadius,
                        (centerIndex < 2) ? cornerRadius : size.y - cornerRadius};
 
-    const auto [sine, cosine] = base::fastSinCos(deltaAngle * static_cast<float>(index - centerIndex));
+    const auto [sine, cosine] = base::sinCosLookup(deltaAngle * static_cast<float>(index - centerIndex));
     return center + Vec2f{cornerRadius * cosine, -cornerRadius * sine};
 }
 
@@ -289,7 +289,7 @@ namespace sf::ShapeUtils
 
     const auto  arcPointStep  = static_cast<float>(index - 1u);
     const float wrappedAngle  = base::positiveRemainder(startAngle + arcPointStep * arcAngleStep, base::tau);
-    const auto [sine, cosine] = base::fastSinCos(wrappedAngle);
+    const auto [sine, cosine] = base::sinCosLookup(wrappedAngle);
 
     SFML_BASE_ASSERT_AND_ASSUME(sine >= -1.f && sine <= 1.f);
     SFML_BASE_ASSERT_AND_ASSUME(cosine >= -1.f && cosine <= 1.f);
@@ -368,7 +368,7 @@ namespace sf::ShapeUtils
 
     const float radius = (index % 2u == 0u) ? outerRadius : innerRadius;
 
-    const auto [sine, cosine] = base::fastSinCos(angle);
+    const auto [sine, cosine] = base::sinCosLookup(angle);
 
     SFML_BASE_ASSERT_AND_ASSUME(sine >= -1.f && sine <= 1.f);
     SFML_BASE_ASSERT_AND_ASSUME(cosine >= -1.f && cosine <= 1.f);
@@ -425,7 +425,7 @@ namespace sf::ShapeUtils
     SFML_BASE_ASSERT_AND_ASSUME(innerRadius >= 0.f);
 
     const float wrappedAngle = base::positiveRemainder(startRadians + static_cast<float>(index) * angleStep, base::tau);
-    const auto [sine, cosine] = base::fastSinCos(wrappedAngle);
+    const auto [sine, cosine] = base::sinCosLookup(wrappedAngle);
 
     SFML_BASE_ASSERT_AND_ASSUME(sine >= -1.f && sine <= 1.f);
     SFML_BASE_ASSERT_AND_ASSUME(cosine >= -1.f && cosine <= 1.f);

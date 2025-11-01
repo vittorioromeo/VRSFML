@@ -28,7 +28,7 @@ void copyMatrix(const Transform& source, Matrix<3, 3>& dest)
 ////////////////////////////////////////////////////////////
 void copyMatrix(const Transform& source, Matrix<4, 4>& dest)
 {
-    source.getMatrix(dest.array);
+    source.writeTo4x4Matrix(dest.array);
     dest.array[10] = 1.f;
     dest.array[15] = 1.f;
 }

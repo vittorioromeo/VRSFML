@@ -43,7 +43,7 @@ TEST_CASE("[Graphics] sf::Transform")
                            {},  {},  0.f, 1.f};
             // clang-format on
 
-            transform.getMatrix(matrix);
+            transform.writeTo4x4Matrix(matrix);
 
             CHECK(matrix[0] == 10.f);
             CHECK(matrix[1] == 13.f);
@@ -73,7 +73,7 @@ TEST_CASE("[Graphics] sf::Transform")
                        {},  {},  0.f, 1.f};
         // clang-format on
 
-        sf::Transform::Identity.getMatrix(matrix);
+        sf::Transform::Identity.writeTo4x4Matrix(matrix);
 
         CHECK(matrix[0] == 1.f);
         CHECK(matrix[1] == 0.f);

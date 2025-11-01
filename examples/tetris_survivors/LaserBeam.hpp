@@ -14,7 +14,7 @@
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Vec2.hpp"
 
-#include "SFML/Base/FastSinCos.hpp"
+#include "SFML/Base/SinCosLookup.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
 #include "SFML/Base/Remainder.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -109,11 +109,11 @@ public:
 
             // Calculate the displacement from the first (primary) wave
             const float sineInput1 = sf::base::positiveRemainder(timeOffset1 + distance * spatialFrequency1, sf::base::tau);
-            const float displacement1 = sf::base::fastSin(sineInput1) * wobbleAmplitude1;
+            const float displacement1 = sf::base::sinLookup(sineInput1) * wobbleAmplitude1;
 
             // Calculate the displacement from the second (detail) wave
             const float sineInput2 = sf::base::positiveRemainder(timeOffset2 + distance * spatialFrequency2, sf::base::tau);
-            const float displacement2 = sf::base::fastSin(sineInput2) * wobbleAmplitude2;
+            const float displacement2 = sf::base::sinLookup(sineInput2) * wobbleAmplitude2;
 
             // The final displacement is the sum of both waves
             const float totalDisplacement = displacement1 + displacement2;

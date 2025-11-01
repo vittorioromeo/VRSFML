@@ -97,7 +97,7 @@ std::ostream& operator<<(std::ostream& os, const Transform& transform)
                    {},  {},  0.f, 1.f};
     // clang-format on
 
-    transform.getMatrix(matrix);
+    transform.writeTo4x4Matrix(matrix);
 
     os << matrix[0] << ", " << matrix[4] << ", " << matrix[12] << ", ";
     os << matrix[1] << ", " << matrix[5] << ", " << matrix[13] << ", ";
@@ -135,8 +135,8 @@ bool operator==(const sf::Transform& lhs, const Approx<sf::Transform>& rhs)
                       {},  {},  0.f, 1.f};
     // clang-format on
 
-    lhs.getMatrix(lhsMatrix);
-    rhs.value.getMatrix(rhsMatrix);
+    lhs.writeTo4x4Matrix(lhsMatrix);
+    rhs.value.writeTo4x4Matrix(rhsMatrix);
 
     return lhsMatrix[0] == Approx(rhsMatrix[0]) && lhsMatrix[4] == Approx(rhsMatrix[4]) &&
            lhsMatrix[12] == Approx(rhsMatrix[12]) && lhsMatrix[1] == Approx(rhsMatrix[1]) &&

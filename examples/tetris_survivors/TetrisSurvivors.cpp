@@ -28,6 +28,7 @@
 #include "Perk.hpp"
 #include "RandomBag.hpp"
 #include "ShapeDimension.hpp"
+#include "StringUtils.hpp"
 #include "Tetramino.hpp"
 #include "TetraminoShapes.hpp"
 #include "Utils.hpp"
@@ -96,6 +97,7 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 
+#include <algorithm>
 #include <format>
 #include <string>
 
@@ -302,20 +304,23 @@ private:
     sf::PlaybackDevice m_playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};
 
     ////////////////////////////////////////////////////////////
-    sf::SoundBuffer m_sbLanded   = sf::SoundBuffer::loadFromFile("resources/Landed.wav").value();
-    sf::SoundBuffer m_sbNewLevel = sf::SoundBuffer::loadFromFile("resources/NewLevel.wav").value();
-    sf::SoundBuffer m_sbRotate   = sf::SoundBuffer::loadFromFile("resources/Rotate.wav").value();
-    sf::SoundBuffer m_sbSingle   = sf::SoundBuffer::loadFromFile("resources/Single.wav").value();
-    sf::SoundBuffer m_sbExp      = sf::SoundBuffer::loadFromFile("resources/Exp.wav").value();
-    sf::SoundBuffer m_sbPlace    = sf::SoundBuffer::loadFromFile("resources/Place.wav").value();
-    sf::SoundBuffer m_sbHold     = sf::SoundBuffer::loadFromFile("resources/Hold.wav").value();
-    sf::SoundBuffer m_sbHit      = sf::SoundBuffer::loadFromFile("resources/Hit.wav").value();
-    sf::SoundBuffer m_sbBonus    = sf::SoundBuffer::loadFromFile("resources/Bonus.wav").value();
-    sf::SoundBuffer m_sbStrike   = sf::SoundBuffer::loadFromFile("resources/Strike.wav").value();
-    sf::SoundBuffer m_sbDrill    = sf::SoundBuffer::loadFromFile("resources/Drill.wav").value();
-    sf::SoundBuffer m_sbError    = sf::SoundBuffer::loadFromFile("resources/Error.wav").value();
-    sf::SoundBuffer m_sbLaser    = sf::SoundBuffer::loadFromFile("resources/Laser.wav").value();
-    sf::SoundBuffer m_sbBounce   = sf::SoundBuffer::loadFromFile("resources/Bounce.wav").value();
+    sf::SoundBuffer m_sbLanded      = sf::SoundBuffer::loadFromFile("resources/Landed.wav").value();
+    sf::SoundBuffer m_sbNewLevel    = sf::SoundBuffer::loadFromFile("resources/NewLevel.wav").value();
+    sf::SoundBuffer m_sbRotate      = sf::SoundBuffer::loadFromFile("resources/Rotate.wav").value();
+    sf::SoundBuffer m_sbSingle      = sf::SoundBuffer::loadFromFile("resources/Single.wav").value();
+    sf::SoundBuffer m_sbExp         = sf::SoundBuffer::loadFromFile("resources/Exp.wav").value();
+    sf::SoundBuffer m_sbPlace       = sf::SoundBuffer::loadFromFile("resources/Place.wav").value();
+    sf::SoundBuffer m_sbHold        = sf::SoundBuffer::loadFromFile("resources/Hold.wav").value();
+    sf::SoundBuffer m_sbHit         = sf::SoundBuffer::loadFromFile("resources/Hit.wav").value();
+    sf::SoundBuffer m_sbBonus       = sf::SoundBuffer::loadFromFile("resources/Bonus.wav").value();
+    sf::SoundBuffer m_sbStrike      = sf::SoundBuffer::loadFromFile("resources/Strike.wav").value();
+    sf::SoundBuffer m_sbDrill       = sf::SoundBuffer::loadFromFile("resources/Drill.wav").value();
+    sf::SoundBuffer m_sbError       = sf::SoundBuffer::loadFromFile("resources/Error.wav").value();
+    sf::SoundBuffer m_sbLaser       = sf::SoundBuffer::loadFromFile("resources/Laser.wav").value();
+    sf::SoundBuffer m_sbBounce      = sf::SoundBuffer::loadFromFile("resources/Bounce.wav").value();
+    sf::SoundBuffer m_sbMenuSelect  = sf::SoundBuffer::loadFromFile("resources/MenuSelect.ogg").value();
+    sf::SoundBuffer m_sbMenuConfirm = sf::SoundBuffer::loadFromFile("resources/MenuConfirm.ogg").value();
+    sf::SoundBuffer m_sbMenuReroll  = sf::SoundBuffer::loadFromFile("resources/MenuReroll.ogg").value();
 
     ////////////////////////////////////////////////////////////
     sf::base::Array<sf::base::Optional<sf::Sound>, 8> m_soundPool;
@@ -355,7 +360,10 @@ private:
     sf::base::Vector<float>               m_rowYOffsets;
 
     ////////////////////////////////////////////////////////////
-    bool m_inLevelUpScreen = false;
+    bool            m_inLevelUpScreen      = false;
+    sf::base::SizeT m_selectedPerk         = 0u;
+    float           m_menuDelayProgress    = 0.f; // delay before accepting input in menus
+    sf::base::SizeT m_rerollsLeftThisLevel = 0u;
 
     ////////////////////////////////////////////////////////////
     PerkChainLightning                  m_perkChainLightning;
@@ -1127,12 +1135,60 @@ private:
 
 
     /////////////////////////////////////////////////////////////
+    void handleMenuKeyPressedEvent(const sf::Event::KeyPressed& eKeyPressed)
+    {
+        SFML_BASE_ASSERT(m_inLevelUpScreen);
+
+        if (m_menuDelayProgress < 1.f)
+            return;
+
+        const auto nPerks = m_perkIndicesSelectedThisLevel.size();
+
+        if (eKeyPressed.code == sf::Keyboard::Key::Down)
+        {
+            ++m_selectedPerk;
+
+            if (m_selectedPerk >= nPerks)
+                m_selectedPerk = 0u;
+
+            playSound(m_sbMenuSelect, 0.75f);
+        }
+        else if (eKeyPressed.code == sf::Keyboard::Key::Up)
+        {
+            --m_selectedPerk;
+
+            if (m_selectedPerk >= nPerks)
+                m_selectedPerk = nPerks - 1u;
+
+            playSound(m_sbMenuSelect, 0.75f);
+        }
+        else if (eKeyPressed.code == sf::Keyboard::Key::Enter || eKeyPressed.code == sf::Keyboard::Key::Space)
+        {
+            m_inLevelUpScreen = false;
+
+            ++m_world.committedPlayerLevel;
+
+            m_perks[m_perkIndicesSelectedThisLevel[m_selectedPerk]]->apply(m_world);
+            m_perkIndicesSelectedThisLevel.clear();
+
+            playSound(m_sbMenuConfirm, 0.75f);
+        }
+        else if (m_rerollsLeftThisLevel > 0 && eKeyPressed.code == sf::Keyboard::Key::LShift)
+        {
+            --m_rerollsLeftThisLevel;
+
+            m_menuDelayProgress = 0.5f;
+            rerollPerks();
+
+            playSound(m_sbMenuReroll, 0.75f);
+        }
+    }
+
+
+    /////////////////////////////////////////////////////////////
     void handleKeyPressedEvent(const sf::Event::KeyPressed& eKeyPressed)
     {
-        const bool inMenu = m_inLevelUpScreen;
-
-        if (inMenu)
-            return;
+        SFML_BASE_ASSERT(!m_inLevelUpScreen);
 
         const bool isP0TimelineBusy = m_animationTimelineP0.anyAnimationPlaying() &&
                                       !m_animationTimelineP0.isPlaying<AnimFadeAttachments>(); // skippable
@@ -1283,7 +1339,12 @@ private:
                 continue;
 
             if (auto* eKeyPressed = event->getIf<sf::Event::KeyPressed>())
-                handleKeyPressedEvent(*eKeyPressed);
+            {
+                if (m_inLevelUpScreen)
+                    handleMenuKeyPressedEvent(*eKeyPressed);
+                else
+                    handleKeyPressedEvent(*eKeyPressed);
+            }
         }
 
         return ControlFlow::Continue;
@@ -1320,7 +1381,7 @@ private:
             if (m_perks[i]->meetsPrerequisites(m_world))
                 m_perkIndicesSelectedThisLevel.pushBack(i);
 
-        while (m_perkIndicesSelectedThisLevel.size() > 3u)
+        while (m_perkIndicesSelectedThisLevel.size() > m_world.nPerkChoicesPerLevel)
         {
             const auto removeIdx = m_rngFast.getI<sf::base::SizeT>(0u, m_perkIndicesSelectedThisLevel.size() - 1u);
             m_perkIndicesSelectedThisLevel.eraseAt(removeIdx);
@@ -1416,7 +1477,11 @@ private:
 
         if (m_world.committedPlayerLevel < m_world.playerLevel && !m_inLevelUpScreen)
         {
-            m_inLevelUpScreen = true;
+            m_inLevelUpScreen      = true;
+            m_selectedPerk         = 0u;
+            m_menuDelayProgress    = 0.f;
+            m_rerollsLeftThisLevel = m_world.rerollsPerLevel;
+
             rerollPerks();
 
             playSound(m_sbNewLevel);
@@ -2205,6 +2270,13 @@ private:
 
         updateStepLightningBolts(deltaTime);
         updateStepLaserBeam(deltaTime);
+
+        // TODO:
+        if (m_menuDelayProgress < 1.f)
+        {
+            m_menuDelayProgress += deltaTime.asSeconds();
+            m_menuDelayProgress = sf::base::min(m_menuDelayProgress, 1.f);
+        }
     }
 
 
@@ -2237,6 +2309,164 @@ private:
         m_shaderPostProcess.setUniform(m_ulPPSaturation, m_fUlPPSaturation);
         m_shaderPostProcess.setUniform(m_ulPPLightness, m_fUlPPLightness);
         m_shaderPostProcess.setUniform(m_ulPPSharpness, m_fUlPPSharpness);
+    }
+
+
+    /////////////////////////////////////////////////////////////
+    void drawShop()
+    {
+        if (!m_inLevelUpScreen)
+            return;
+
+        SFML_BASE_ASSERT(m_world.committedPlayerLevel < m_world.playerLevel);
+
+        const auto darkenAlpha = static_cast<sf::base::U8>((0.65f * m_menuDelayProgress) * 255.f);
+
+        m_rtGame.draw(sf::RectangleShapeData{
+            .position  = {0.f, 0.f},
+            .fillColor = sf::Color::blackMask(darkenAlpha),
+            .size      = resolution,
+        });
+
+        sf::Vec2f shopSize{280.f, 161.f};
+
+        if (m_perkIndicesSelectedThisLevel.size() == 4u)
+            shopSize.y += 53.f;
+
+        const auto centeredShopPos = resolution * 0.5f;
+
+        const float menuScale = easeInOutBack(m_menuDelayProgress);
+
+        const auto menuTransform = sf::Transform::fromPositionScaleOrigin(centeredShopPos, {menuScale, menuScale}, shopSize * 0.5f);
+
+        m_rtGame.draw(
+            sf::RectangleShapeData{
+                .position         = {0.f, 0.f},
+                .origin           = {0.f, 0.f},
+                .fillColor        = {0, 0, 0},
+                .outlineColor     = {135, 135, 135},
+                .outlineThickness = 1.f,
+                .size             = shopSize,
+            },
+            {.transform = menuTransform});
+
+        static sf::base::Vector<sf::Vertex>    textVertices;
+        static sf::base::Vector<sf::IndexType> textIndices;
+
+        textVertices.clear();
+        textIndices.clear();
+
+        std::string levelUpString = "^bold[](^wobble[5,1.2,0.5](LEVEL UP)^)^";
+
+        if (m_rerollsLeftThisLevel > 0u)
+            levelUpString += std::format("^color[190,190,190]( - Press SHIFT to reroll ({} left))^", m_rerollsLeftThisLevel);
+
+        const MonospaceBitmapTextToVerticesOptions titleOpts = {
+            .outVertices         = textVertices,
+            .outIndices          = textIndices,
+            .monospaceBitmapFont = m_bitmapFontMinogram,
+            .fontTextureRect     = m_txrBFMinogram6x10,
+            .alignment           = BitmapTextAlignment::Center,
+            .baseColor           = sf::Color::White,
+            .time                = m_totalTime,
+            .string              = levelUpString,
+        };
+
+        auto            bounds       = monospaceBitmapTextToVertices<true>(titleOpts);
+        const sf::Vec2f textPosition = {(shopSize.x - bounds.x) * 0.5f, -8.f};
+
+        const auto titleGlobalBounds = monospaceBitmapTextToVerticesPretransformed(titleOpts,
+                                                                                   sf::Transform::fromPosition(textPosition));
+
+        m_rtGame.draw(sf::RectangleShapeData{.position         = titleGlobalBounds.position - sf::Vec2f{8.f, 5.f},
+                                             .origin           = {0.f, 0.f},
+                                             .fillColor        = {0, 0, 0},
+                                             .outlineColor     = {135, 135, 135},
+                                             .outlineThickness = 1.f,
+                                             .size             = titleGlobalBounds.size + sf::Vec2f{16.f, 8.f}},
+                      {.transform = menuTransform});
+
+        /*
+
+        m_rtGame.draw(
+            sf::RectangleShapeData{
+                .position  = {4.f, titleGlobalBounds.getBottom() + 4.f},
+                .origin    = {0.f, 0.f},
+                .fillColor = {135, 135, 135},
+                .size      = {shopSize.x - 8.f, 1.f},
+            },
+            {.transform = menuTransform});
+
+        */
+
+        auto perkDrawPos = sf::Vec2f{48.f, titleGlobalBounds.getBottom() + 8.f};
+
+        sf::base::SizeT iPerk = 0u;
+
+        for (const sf::base::SizeT psIndex : m_perkIndicesSelectedThisLevel)
+        {
+            const Perk& perk = *(m_perks[psIndex]);
+
+            std::string perkName        = perk.getName();
+            std::string perkDescription = wrapText(perk.getDescription(m_world), 38u);
+            std::string perkProgression = wrapText(perk.getProgressionStr(m_world), 38u);
+
+            const auto perkStr = std::format("^bold[]({})^\n^hspace[0](^color[190,190,190]({})^)^", perkName, perkDescription);
+
+            const auto transform = sf::Transform::fromPosition(perkDrawPos);
+
+            const auto globalBounds = monospaceBitmapTextToVerticesPretransformed(
+                {
+                    .outVertices         = textVertices,
+                    .outIndices          = textIndices,
+                    .monospaceBitmapFont = m_bitmapFontMinogram,
+                    .fontTextureRect     = m_txrBFMinogram6x10,
+                    .alignment           = BitmapTextAlignment::Left,
+                    .baseColor           = sf::Color::White,
+                    .time                = m_totalTime,
+                    .string              = perkStr,
+                },
+                transform);
+
+            m_rtGame.draw(sf::RectangleShapeData{.position  = globalBounds.position.withX(8),
+                                                 .origin    = {0.f, 0.f},
+                                                 .fillColor = sf::Color::VeryDarkBrown.withAlpha(100),
+                                                 .size      = {32.f, 32.f}},
+                          {.transform = menuTransform});
+
+            m_rtGame.draw(sf::RectangleShapeData{.position  = globalBounds.position - sf::Vec2f{1.f, 1.f},
+                                                 .origin    = {0.f, 0.f},
+                                                 .fillColor = sf::Color::VeryDarkBrown.withAlpha(100),
+                                                 .size = globalBounds.size.withY(sf::base::max(40.f, globalBounds.size.y)) +
+                                                         sf::Vec2f{2.f, 2.f}},
+                          {.transform = menuTransform});
+
+            if (m_selectedPerk == iPerk)
+            {
+                m_rtGame.draw(sf::RectangleShapeData{.position  = globalBounds.position - sf::Vec2f{1.f, 1.f},
+                                                     .origin    = {0.f, 0.f},
+                                                     .fillColor = sf::Color::VeryDarkGreen,
+                                                     .size      = globalBounds.size + sf::Vec2f{2.f, 2.f}},
+                              {.transform = menuTransform});
+            }
+
+            perkDrawPos.y += sf::base::max(40.f, globalBounds.size.y) + 12.f;
+
+            ++iPerk;
+        }
+
+        m_rtGame.drawIndexedVertices({
+            .vertexData    = textVertices.data(),
+            .vertexCount   = textVertices.size(),
+            .indexData     = textIndices.data(),
+            .indexCount    = textIndices.size(),
+            .primitiveType = sf::PrimitiveType::Triangles,
+            .renderStates =
+                {
+                    .transform = menuTransform,
+                    .texture   = &m_textureAtlas.getTexture(),
+                },
+        });
     }
 
 
@@ -2372,7 +2602,6 @@ private:
 
                 sep = true;
             }
-
 
             auto buttonCenteredOnLine = [&](const char* label, float alignment = 0.5f)
             {
@@ -3209,8 +3438,6 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepUINextTetraminos()
     {
-        SFML_BASE_ASSERT(m_world.blockMatrixBag.size() >= static_cast<sf::base::SizeT>(m_world.perkNPeek));
-
         const sf::base::SizeT nPeek = sf::base::min(static_cast<sf::base::SizeT>(m_world.perkNPeek),
                                                     m_world.blockMatrixBag.size());
 
@@ -3331,26 +3558,6 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepStatsText()
     {
-
-        std::string stats;
-
-        stats += "Level ";
-        stats += std::to_string(m_world.playerLevel);
-        stats += "\nXP: ";
-        stats += std::to_string(m_world.currentXP);
-        stats += " / ";
-        stats += std::to_string(getXPNeededForLevelUp(m_world.playerLevel));
-        stats += "\nTime: ";
-        stats += std::to_string(getElapsedSeconds(m_world.tick));
-        stats += "s\n";
-        stats += "Lines Cleared: ";
-        stats += std::to_string(m_world.linesCleared);
-        stats += "\nTetraminos Placed: ";
-        stats += std::to_string(m_world.tetaminosPlaced);
-        stats += "\nDifficulty: ";
-        stats += std::to_string(getDifficultyFactor(m_world.tick));
-        stats += "\n";
-
         sf::RectangleShape statsBorder{{
             .position         = getHudPos().addY(4.f).addX(-1.f),
             .fillColor        = sf::Color::Transparent,
@@ -3360,16 +3567,51 @@ private:
         }};
 
         m_rtGame.draw(statsBorder);
-        return;
 
-        m_rtGame.draw(m_font4,
-                      sf::TextData{
-                          .position      = statsBorder.getTopLeft() + sf::Vec2f{4.f, 4.f},
-                          .string        = stats,
-                          .characterSize = 16u,
-                          .lineSpacing   = 10.f / m_font4.getLineSpacing(16u),
-                          .outlineColor  = sf::Color::White,
-                      });
+
+        static sf::base::Vector<sf::Vertex>    textVertices;
+        static sf::base::Vector<sf::IndexType> textIndices;
+
+        auto statsStr = std::format(
+            "^bold[](Level)^: {}\n"
+            "^bold[](XP)^: {} / {}\n"
+            "^bold[](Clock)^: {}s\n"
+            "^bold[](Lines Cleared)^: {}\n"
+            "^bold[](Pieces Placed)^: {}\n"
+            "^bold[](Difficulty)^: {}",
+
+            m_world.playerLevel,
+            m_world.currentXP,
+            getXPNeededForLevelUp(m_world.playerLevel),
+            getElapsedSeconds(m_world.tick),
+            m_world.linesCleared,
+            m_world.tetaminosPlaced,
+            getDifficultyFactor(m_world.tick));
+
+        textVertices.clear();
+        textIndices.clear();
+
+        (void)monospaceBitmapTextToVerticesPretransformed(
+            {
+                .outVertices         = textVertices,
+                .outIndices          = textIndices,
+                .monospaceBitmapFont = m_bitmapFontMinogram,
+                .fontTextureRect     = m_txrBFMinogram6x10,
+                .alignment           = BitmapTextAlignment::Left,
+                .baseColor           = sf::Color::White,
+                .time                = m_totalTime,
+                .string              = statsStr,
+            },
+            sf::Transform::fromPosition(statsBorder.getTopLeft() + sf::Vec2f{4.f, 2.f}));
+
+        m_rtGame.drawIndexedVertices({
+            .vertexData    = textVertices.data(),
+            .vertexCount   = textVertices.size(),
+            .indexData     = textIndices.data(),
+            .indexCount    = textIndices.size(),
+            .primitiveType = sf::PrimitiveType::Triangles,
+            .renderStates  = {.texture = &m_textureAtlas.getTexture()},
+        });
     }
 
 
@@ -3413,107 +3655,28 @@ private:
             drawStepLightningBolts();
 
             drawStepStatsText();
+
+            if (m_world.perkNPeek > 0)
+                m_rtGame.draw(m_font,
+                              sf::TextData{
+                                  .position      = getHudPos().addY(100.f),
+                                  .string        = "Next:",
+                                  .characterSize = 16u,
+                                  .outlineColor  = sf::Color::White,
+                              });
+
+            if (m_world.perkCanHoldTetramino == 1)
+                m_rtGame.draw(m_font,
+                              sf::TextData{
+                                  .position      = getHudPos().addY(100.f).addX(64.f),
+                                  .string        = "Held:",
+                                  .characterSize = 16u,
+                                  .outlineColor  = sf::Color::White,
+                              });
+
+
+            drawShop();
         }
-
-        if (m_world.perkNPeek > 0)
-            m_rtGame.draw(m_font,
-                          sf::TextData{
-                              .position      = getHudPos().addY(100.f),
-                              .string        = "Next:",
-                              .characterSize = 16u,
-                              .outlineColor  = sf::Color::White,
-                          });
-
-        if (m_world.perkCanHoldTetramino == 1)
-            m_rtGame.draw(m_font,
-                          sf::TextData{
-                              .position      = getHudPos().addY(100.f).addX(64.f),
-                              .string        = "Held:",
-                              .characterSize = 16u,
-                              .outlineColor  = sf::Color::White,
-                          });
-
-        sf::base::StringView testString =
-            "Hello world!\nThis is a ^bold[](test)^ of ^color[255,0,0](bitmap ()fonts)^!\nHello world!\nThis is a test "
-            "of "
-            "^color[255,0,0](bitmap ^wobble[1.5,10.0,1.1](fonts)^  heh)^!\n"
-            "Sussy ^wobble[1.5,30.0,1.1](^color[0,0,255](amogus)^)^ baka";
-
-        static sf::base::Vector<sf::Vertex>    textVertices;
-        static sf::base::Vector<sf::IndexType> textIndices;
-
-#if 0
-        textVertices.clear();
-        textIndices.clear();
-
-        monospaceBitmapTextToVertices({
-            .outVertices         = textVertices,
-            .outIndices          = textIndices,
-            .monospaceBitmapFont = m_bitmapFontMinogram,
-            .fontTextureRect     = m_txrBFMinogram6x10,
-            .alignment           = BitmapTextAlignment::Center,
-            .baseColor           = sf::Color::White,
-            .time                = m_totalTime,
-            .string              = testString,
-        });
-
-        m_rtGame.drawIndexedVertices({
-            .vertexData    = textVertices.data(),
-            .vertexCount   = textVertices.size(),
-            .indexData     = textIndices.data(),
-            .indexCount    = textIndices.size(),
-            .primitiveType = sf::PrimitiveType::Triangles,
-            .renderStates =
-                {
-                    .transform = sf::Transform::from({50.f, 150.f}, {1.f, 1.f}, {0.f, 0.f}),
-                    .texture   = &m_textureAtlas.getTexture(),
-                },
-        });
-#endif
-
-        auto statsStr = std::format(
-            "^bold[](Level)^: {}\n"
-            "^bold[](XP)^: {} / {}\n"
-            "^bold[](Clock)^: {}s\n"
-            "^bold[](Lines Cleared)^: {}\n"
-            "^bold[](Pieces Placed)^: {}\n"
-            "^bold[](Difficulty)^: {}",
-
-            m_world.playerLevel,
-            m_world.currentXP,
-            getXPNeededForLevelUp(m_world.playerLevel),
-            getElapsedSeconds(m_world.tick),
-            m_world.linesCleared,
-            m_world.tetaminosPlaced,
-            getDifficultyFactor(m_world.tick));
-
-        textVertices.clear();
-        textIndices.clear();
-
-        monospaceBitmapTextToVertices({
-            .outVertices         = textVertices,
-            .outIndices          = textIndices,
-            .monospaceBitmapFont = m_bitmapFontMinogram,
-            .fontTextureRect     = m_txrBFMinogram6x10,
-            .alignment           = BitmapTextAlignment::Left,
-            .baseColor           = sf::Color::White,
-            .time                = m_totalTime,
-            .string              = statsStr,
-        });
-
-        m_rtGame.drawIndexedVertices({
-            .vertexData    = textVertices.data(),
-            .vertexCount   = textVertices.size(),
-            .indexData     = textIndices.data(),
-            .indexCount    = textIndices.size(),
-            .primitiveType = sf::PrimitiveType::Triangles,
-            .renderStates =
-                {
-                    .transform = sf::Transform::from(getHudPos().addY(4.f).addX(-1.f) + sf::Vec2f{4.f, 3.f}, {1.f, 1.f}, {0.f, 0.f}),
-                    .texture = &m_textureAtlas.getTexture(),
-                },
-        });
-
 
         m_rtGame.display();
 

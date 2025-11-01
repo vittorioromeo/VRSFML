@@ -63,7 +63,7 @@ namespace
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline]] inline void generateRingVertices(
-    const sf::Rect2f&  textureRect,
+    const sf::Rect2f&     textureRect,
     const sf::Color&      fillColor,
     const float           outerRadius,
     const float           innerRadius,
@@ -378,8 +378,8 @@ VertexSpan DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
     if (nPoints < 3u) [[unlikely]]
         return {};
 
-    const auto [sine, cosine] = base::fastSinCos(descriptor.rotation.asRadians());
-    const auto transform      = Transform::from(descriptor.position, descriptor.scale, descriptor.origin, sine, cosine);
+    const auto [sine, cosine] = base::sinCosLookup(descriptor.rotation.asRadians());
+    const auto transform = Transform::fromPositionScaleOriginSinCos(descriptor.position, descriptor.scale, descriptor.origin, sine, cosine);
 
     // TODO P1: improve, also add to RenderTarget
 
@@ -520,8 +520,8 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const CurvedArrowShapeData& sd)
 
     const auto adjustedOrigin = sd.origin - Vec2f{sd.outerRadius, sd.outerRadius};
 
-    const auto [tfSine, tfCosine] = base::fastSinCos(sd.rotation.asRadians());
-    const auto transform          = Transform::from(sd.position, sd.scale, adjustedOrigin, tfSine, tfCosine);
+    const auto [tfSine, tfCosine] = base::sinCosLookup(sd.rotation.asRadians());
+    const auto transform = Transform::fromPositionScaleOriginSinCos(sd.position, sd.scale, adjustedOrigin, tfSine, tfCosine);
 
     const float sweepAngleRadians    = sd.sweepAngle.asRadians();
     const float absSweepAngleRadians = base::fabs(sweepAngleRadians);
@@ -592,7 +592,7 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const CurvedArrowShapeData& sd)
 
     const float endAngleRad = base::positiveRemainder(startRadians + static_cast<float>(numArcPoints - 1u) * angleStep,
                                                       base::tau);
-    const auto [endAngleRadSin, endAngleRadCos] = base::fastSinCos(endAngleRad);
+    const auto [endAngleRadSin, endAngleRadCos] = base::sinCosLookup(endAngleRad);
 
     // Centerline point at the end of the body's curve (local, untransformed)
     // This uses the ringLocalCenter from `computeRingPointsFromAngleStep` as the reference.
@@ -802,8 +802,8 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const RingShapeData& sdRing)
         sdRing.pointCount < 3u) [[unlikely]]
         return {};
 
-    const auto [sine, cosine] = base::fastSinCos(sdRing.rotation.asRadians());
-    const auto transform      = Transform::from(sdRing.position, sdRing.scale, sdRing.origin, sine, cosine);
+    const auto [sine, cosine] = base::sinCosLookup(sdRing.rotation.asRadians());
+    const auto transform = Transform::fromPositionScaleOriginSinCos(sdRing.position, sdRing.scale, sdRing.origin, sine, cosine);
 
     const unsigned int nPoints   = sdRing.pointCount;
     const float        angleStep = base::tau / static_cast<float>(nPoints);
@@ -938,8 +938,12 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const RingPieSliceShapeData& sdRingP
             .pointCount         = sdRingPieSlice.pointCount - 1u,
         });
 
-    const auto [sine, cosine] = base::fastSinCos(sdRingPieSlice.rotation.asRadians());
-    const auto transform = Transform::from(sdRingPieSlice.position, sdRingPieSlice.scale, sdRingPieSlice.origin, sine, cosine);
+    const auto [sine, cosine] = base::sinCosLookup(sdRingPieSlice.rotation.asRadians());
+    const auto transform      = Transform::fromPositionScaleOriginSinCos(sdRingPieSlice.position,
+                                                                    sdRingPieSlice.scale,
+                                                                    sdRingPieSlice.origin,
+                                                                    sine,
+                                                                    cosine);
 
     const float absSweepAngle = SFML_BASE_MATH_FABSF(sdRingPieSlice.sweepAngle.asRadians());
     const float sweepRadians  = sdRingPieSlice.sweepAngle.asRadians();
@@ -1071,8 +1075,8 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const Font& font, const TextData& te
     for (IndexType i = 0u; i < numQuads; ++i)
         DrawableBatchUtils::appendQuadIndices(indexPtr, nextIndex + (i * 4u));
 
-    const auto [sine, cosine] = base::fastSinCos(textData.rotation.asRadians());
-    const auto transform      = Transform::from(textData.position, textData.scale, textData.origin, sine, cosine);
+    const auto [sine, cosine] = base::sinCosLookup(textData.rotation.asRadians());
+    const auto transform = Transform::fromPositionScaleOriginSinCos(textData.position, textData.scale, textData.origin, sine, cosine);
 
     Vertex* const vertexPtr = m_storage.reserveMoreVertices(4u * numQuads);
 
