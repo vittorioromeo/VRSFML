@@ -72,13 +72,13 @@ namespace
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline]] inline void drawParticleImpl(
-    const sf::Texture&   texture,
-    const sf::Rect2f& txr,
-    const sf::Vec2f      origin,
-    const sf::Vec2f      position,
-    const float          scale,
-    const float          rotation,
-    auto&&               drawFn)
+    const sf::Texture& texture,
+    const sf::Rect2f&  txr,
+    const sf::Vec2f    origin,
+    const sf::Vec2f    position,
+    const float        scale,
+    const float        rotation,
+    auto&&             drawFn)
 {
     drawFn(
         sf::Sprite{
@@ -751,7 +751,7 @@ int main()
             window.clear();
 
             const sf::Rect2f& textureRect = spriteTextureRects[0];
-            const auto           origin      = textureRect.size / 2.f;
+            const auto        origin      = textureRect.size / 2.f;
 
             const auto drawNthParticle = [&](const sf::base::SizeT& i, auto&& drawFn)
             {

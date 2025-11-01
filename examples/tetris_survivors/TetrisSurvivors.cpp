@@ -11,6 +11,7 @@
 //
 #include "AnimationCommands.hpp"
 #include "AnimationTimeline.hpp"
+#include "BitmapFont.hpp"
 #include "BitmapTextAlignment.hpp"
 #include "BitmapTextUtils.hpp"
 #include "Block.hpp"
@@ -24,7 +25,6 @@
 #include "LaserDirection.hpp"
 #include "LaserableBlocksInfo.hpp"
 #include "LightningBolt.hpp"
-#include "MonospaceBitmapFont.hpp"
 #include "Perk.hpp"
 #include "RandomBag.hpp"
 #include "ShapeDimension.hpp"
@@ -470,12 +470,13 @@ private:
     const sf::Rect2f m_txrPowerupXP      = addImgResourceToAtlas("powerupxp.png");
     const sf::Rect2f m_txrPowerupBomb    = addImgResourceToAtlas("powerupbomb.png");
     const sf::Rect2f m_txrBFMinogram6x10 = addImgResourceToAtlas("minogram_6x10.png");
+    const sf::Rect2f m_txrBFTiny5        = addImgResourceToAtlas("tiny5.png");
 
 
     //////////////////////////////////////////////////////////////
-    [[nodiscard]] MonospaceBitmapFont loadMinogramData()
+    [[nodiscard]] BitmapFont loadMinogramData()
     {
-        MonospaceBitmapFont result{{6u, 10u}};
+        BitmapFont result{};
 
         constexpr sf::base::Array<sf::base::StringView, 7>
             glyphRows{"ABCDEFGHIJKLM",
@@ -490,14 +491,115 @@ private:
             for (sf::base::SizeT iX = 0; iX < glyphRows[iY].size(); ++iX)
             {
                 const char c = glyphRows[iY][iX];
-                result.addGlyph(c, {iX, iY});
+                result.addGlyph(c, {iX * 6u, iY * 10u}, {6u, 10u});
             }
 
         return result;
     }
 
+
     //////////////////////////////////////////////////////////////
-    MonospaceBitmapFont m_bitmapFontMinogram{loadMinogramData()};
+    [[nodiscard]] BitmapFont loadTiny5Data()
+    {
+        BitmapFont result{};
+
+        constexpr sf::base::Array<sf::base::StringView, 7>
+            glyphRows{"ABCDEFGHIJKLM",
+                      "NOPQRSTUVWXYZ",
+                      "abcdefghijklm",
+                      "nopqrstuvwxyz",
+                      "0123456789+-=",
+                      "()[]{}<>/*:#%",
+                      "!?.,'\"@&$"};
+
+        sf::base::SizeT stepX = 15;
+        sf::base::SizeT stepY = 17;
+
+        for (sf::base::SizeT iY = 0; iY < glyphRows.size(); ++iY)
+            for (sf::base::SizeT iX = 0; iX < glyphRows[iY].size(); ++iX)
+            {
+                const char c = glyphRows[iY][iX];
+                result.addGlyph(c, {4 + (stepX * iX), 7 + (stepY * iY)}, {6u, 8u});
+            }
+
+        result.adjustSize('I', {-3, 0});
+        result.adjustSize('i', {-3, 0});
+        result.adjustSize('l', {-3, 0});
+        result.adjustSize(':', {-3, 0});
+        result.adjustSize('!', {-3, 0});
+
+        result.adjustSize('a', {-1, 0});
+        result.adjustSize('b', {-1, 0});
+        result.adjustSize('c', {-1, 0});
+        result.adjustSize('d', {-1, 0});
+        result.adjustSize('e', {-1, 0});
+        result.adjustSize('f', {-2, 0});
+        result.adjustSize('g', {-1, 0});
+        result.adjustSize('h', {-1, 0});
+        result.adjustSize('k', {-1, 0});
+        result.adjustSize('n', {-1, 0});
+        result.adjustSize('o', {-1, 0});
+        result.adjustSize('p', {-1, 0});
+        result.adjustSize('q', {-1, 0});
+        result.adjustSize('r', {-2, 0});
+        result.adjustSize('t', {-2, 0});
+        result.adjustSize('u', {-1, 0});
+        result.adjustSize('v', {-1, 0});
+        result.adjustSize('x', {-1, 0});
+        result.adjustSize('y', {-1, 0});
+        result.adjustSize('z', {-1, 0});
+        result.adjustSize('j', {-2, 0});
+
+        result.adjustSize('J', {-1, 0});
+        result.adjustSize('L', {-1, 0});
+        result.adjustSize('T', {-1, 0});
+        result.adjustSize('V', {-1, 0});
+        result.adjustSize('X', {-1, 0});
+        result.adjustSize('Y', {-1, 0});
+        result.adjustSize('Z', {-1, 0});
+
+        result.adjustSize('0', {-1, 0});
+        result.adjustSize('1', {-2, 0});
+        result.adjustSize('2', {-1, 0});
+        result.adjustSize('3', {-1, 0});
+        result.adjustSize('4', {-1, 0});
+        result.adjustSize('5', {-1, 0});
+        result.adjustSize('6', {-1, 0});
+        result.adjustSize('7', {-1, 0});
+        result.adjustSize('8', {-1, 0});
+        result.adjustSize('9', {-1, 0});
+
+        result.adjustSize('(', {-2, 0});
+        result.adjustSize(')', {-2, 0});
+        result.adjustSize('[', {-2, 0});
+        result.adjustSize(']', {-2, 0});
+
+        result.adjustSize('{', {-1, 0});
+        result.adjustSize('}', {-1, 0});
+        result.adjustSize('<', {-1, 0});
+        result.adjustSize('>', {-1, 0});
+        result.adjustSize('+', {-1, 0});
+        result.adjustSize('-', {-1, 0});
+        result.adjustSize('=', {-1, 0});
+        result.adjustSize('*', {-1, 0});
+        result.adjustSize('?', {-1, 0});
+
+        result.adjustSize('.', {-3, 0});
+        result.adjustSize(',', {-3, 0});
+        result.adjustSize('\'', {-3, 0});
+        result.adjustSize('"', {-1, 0});
+        result.adjustSize('@', {-1, 0});
+        result.adjustSize('$', {-1, 0});
+
+        result.adjustSize('/', {-2, 0});
+
+
+        return result;
+    }
+
+    //////////////////////////////////////////////////////////////
+    BitmapFont m_bitmapFontMinogram{loadMinogramData()};
+    BitmapFont m_bitmapFontTiny5{loadTiny5Data()};
 
 
     //////////////////////////////////////////////////////////////
@@ -2361,22 +2463,22 @@ private:
         if (m_rerollsLeftThisLevel > 0u)
             levelUpString += std::format("^color[190,190,190]( - Press SHIFT to reroll ({} left))^", m_rerollsLeftThisLevel);
 
-        const MonospaceBitmapTextToVerticesOptions titleOpts = {
-            .outVertices         = textVertices,
-            .outIndices          = textIndices,
-            .monospaceBitmapFont = m_bitmapFontMinogram,
-            .fontTextureRect     = m_txrBFMinogram6x10,
-            .alignment           = BitmapTextAlignment::Center,
-            .baseColor           = sf::Color::White,
-            .time                = m_totalTime,
-            .string              = levelUpString,
+        const BitmapTextToVerticesOptions titleOpts = {
+            .outVertices     = textVertices,
+            .outIndices      = textIndices,
+            .bitmapFont      = m_bitmapFontMinogram,
+            .fontTextureRect = m_txrBFMinogram6x10,
+            .alignment       = BitmapTextAlignment::Center,
+            .baseColor       = sf::Color::White,
+            .time            = m_totalTime,
+            .string          = levelUpString,
         };
 
-        auto            bounds       = monospaceBitmapTextToVertices<true>(titleOpts);
+        auto            bounds       = bitmapTextToVertices<true>(titleOpts);
         const sf::Vec2f textPosition = {(shopSize.x - bounds.x) * 0.5f, -8.f};
 
-        const auto titleGlobalBounds = monospaceBitmapTextToVerticesPretransformed(titleOpts,
-                                                                                   sf::Transform::fromPosition(textPosition));
+        const auto titleGlobalBounds = bitmapTextToVerticesPretransformed(titleOpts,
+                                                                          sf::Transform::fromPosition(textPosition));
 
         m_rtGame.draw(sf::RectangleShapeData{.position         = titleGlobalBounds.position - sf::Vec2f{8.f, 5.f},
                                              .origin           = {0.f, 0.f},
@@ -2415,16 +2517,16 @@ private:
 
             const auto transform = sf::Transform::fromPosition(perkDrawPos);
 
-            const auto globalBounds = monospaceBitmapTextToVerticesPretransformed(
+            const auto globalBounds = bitmapTextToVerticesPretransformed(
                 {
-                    .outVertices         = textVertices,
-                    .outIndices          = textIndices,
-                    .monospaceBitmapFont = m_bitmapFontMinogram,
-                    .fontTextureRect     = m_txrBFMinogram6x10,
-                    .alignment           = BitmapTextAlignment::Left,
-                    .baseColor           = sf::Color::White,
-                    .time                = m_totalTime,
-                    .string              = perkStr,
+                    .outVertices     = textVertices,
+                    .outIndices      = textIndices,
+                    .bitmapFont      = m_bitmapFontMinogram,
+                    .fontTextureRect = m_txrBFMinogram6x10,
+                    .alignment       = BitmapTextAlignment::Left,
+                    .baseColor       = sf::Color::White,
+                    .time            = m_totalTime,
+                    .string          = perkStr,
                 },
                 transform);
 
@@ -3447,7 +3549,7 @@ private:
         {
             const auto&     shape       = m_world.blockMatrixBag[iPeek].blockMatrix;
             const auto      hudPos      = getHudPos();
-            const sf::Vec2f uiBoxCenter = {hudPos.x, hudPos.y + 100.f + static_cast<float>(nPeek - iPeek) * 24.f};
+            const sf::Vec2f uiBoxCenter = {hudPos.x, hudPos.y + 68.f + static_cast<float>(nPeek - iPeek) * 24.f};
 
             drawTetramino(shape,
                           uiBoxCenter + sf::Vec2f{16.f, 16.f},
@@ -3469,7 +3571,7 @@ private:
 
         const auto&     shape       = m_world.heldTetramino->shape;
         const auto      hudPos      = getHudPos();
-        const sf::Vec2f uiBoxCenter = {hudPos.x, hudPos.y + 100.f};
+        const sf::Vec2f uiBoxCenter = {hudPos.x, hudPos.y + 68.f};
 
         drawTetramino(shape, uiBoxCenter + sf::Vec2f{16.f + 64.f, 16.f + 24.f + 2.f});
     }
@@ -3563,7 +3665,7 @@ private:
             .fillColor        = sf::Color::Transparent,
             .outlineColor     = {135, 135, 135},
             .outlineThickness = 1.f,
-            .size             = {128.f, 96.f},
+            .size             = {128.f, 64.f},
         }};
 
         m_rtGame.draw(statsBorder);
@@ -3591,16 +3693,115 @@ private:
         textVertices.clear();
         textIndices.clear();
 
-        (void)monospaceBitmapTextToVerticesPretransformed(
+        (void)bitmapTextToVerticesPretransformed(
             {
-                .outVertices         = textVertices,
-                .outIndices          = textIndices,
-                .monospaceBitmapFont = m_bitmapFontMinogram,
-                .fontTextureRect     = m_txrBFMinogram6x10,
-                .alignment           = BitmapTextAlignment::Left,
-                .baseColor           = sf::Color::White,
-                .time                = m_totalTime,
-                .string              = statsStr,
+                .outVertices     = textVertices,
+                .outIndices      = textIndices,
+                .bitmapFont      = m_bitmapFontMinogram,
+                .fontTextureRect = m_txrBFMinogram6x10,
+                .alignment       = BitmapTextAlignment::Left,
+                .baseColor       = sf::Color::White,
+                .time            = m_totalTime,
+                .string          = statsStr,
+            },
+            sf::Transform::fromPosition(statsBorder.getTopLeft() + sf::Vec2f{4.f, 2.f}));
+
+        m_rtGame.drawIndexedVertices({
+            .vertexData    = textVertices.data(),
+            .vertexCount   = textVertices.size(),
+            .indexData     = textIndices.data(),
+            .indexCount    = textIndices.size(),
+            .primitiveType = sf::PrimitiveType::Triangles,
+            .renderStates  = {.texture = &m_textureAtlas.getTexture()},
+        });
+    }
+
+
+    /////////////////////////////////////////////////////////////
+    void drawStepPerksText()
+    {
+        sf::RectangleShape statsBorder{{
+            .position         = getHudPos().addY(168.f).addX(-1.f),
+            .fillColor        = sf::Color::Transparent,
+            .outlineColor     = {135, 135, 135},
+            .outlineThickness = 1.f,
+            .size             = {164.f, 64.f},
+        }};
+
+        m_rtGame.draw(statsBorder);
+
+        std::string perksStr;
+
+
+        if (m_world.perkRndHitOnClear > 0)
+            perksStr += std::format("- On-Clear Lightning Strike (x{})\n", m_world.perkRndHitOnClear);
+
+        if (m_world.perkCanHoldTetramino == 1)
+            perksStr += "- Can Hold Tetramino\n";
+
+        if (m_world.perkXPPerTetraminoPlaced > 0)
+            perksStr += std::format("- Per-Tetramino XP Gain (+{})\n", m_world.perkXPPerTetraminoPlaced);
+
+        if (m_world.perkXPPerBlockDamaged > 0)
+            perksStr += std::format("- Per-Block Damage XP Gain (+{})\n", m_world.perkXPPerBlockDamaged);
+
+        if (m_world.perkDeleteFloorPerNTetraminos.hasValue())
+            perksStr += std::format("- Janitor (every {})\n", m_world.perkDeleteFloorPerNTetraminos->nTetraminos);
+
+        if (m_world.perkExtraLinePiecesInPool > 0)
+            perksStr += std::format("- Extra Line Pieces in Pool (+{})\n", m_world.perkExtraLinePiecesInPool);
+
+        if (m_world.perkDrill[DrillDirection::Left].hasValue())
+            perksStr += std::format("- Drill Left (c: {}, p: {})\n",
+                                    m_world.perkDrill[DrillDirection::Left]->coverage,
+                                    m_world.perkDrill[DrillDirection::Left]->maxPenetration);
+
+        if (m_world.perkDrill[DrillDirection::Right].hasValue())
+            perksStr += std::format("- Drill Right (c: {}, p: {})\n",
+                                    m_world.perkDrill[DrillDirection::Right]->coverage,
+                                    m_world.perkDrill[DrillDirection::Right]->maxPenetration);
+
+        if (m_world.perkDrill[DrillDirection::Down].hasValue())
+            perksStr += std::format("- Drill Down (c: {}, p: {})\n",
+                                    m_world.perkDrill[DrillDirection::Down]->coverage,
+                                    m_world.perkDrill[DrillDirection::Down]->maxPenetration);
+
+        if (m_world.perkNPeek > 1)
+            perksStr += std::format("- Peek More Tetraminos ({})\n", m_world.perkNPeek);
+
+        if (m_world.perkRndHitPerNTetraminos.hasValue())
+            perksStr += std::format("- On-Placement Lightning Strike (every {})\n",
+                                    m_world.perkRndHitPerNTetraminos->nTetraminos);
+
+        if (m_world.perkChainLightning > 1)
+            perksStr += std::format("- Chain Lightning ({}% chance)\n", m_world.perkChainLightning);
+
+        if (m_world.perkLaser[LaserDirection::Left].hasValue())
+            perksStr += std::format("- Laser Left (p: {}, b: {})\n",
+                                    m_world.perkLaser[LaserDirection::Left]->maxPenetration,
+                                    m_world.perkLaser[LaserDirection::Left]->bounce ? "yes" : "no");
+
+        if (m_world.perkLaser[LaserDirection::Right].hasValue())
+            perksStr += std::format("- Laser Right (p: {}, b: {})\n",
+                                    m_world.perkLaser[LaserDirection::Right]->maxPenetration,
+                                    m_world.perkLaser[LaserDirection::Right]->bounce ? "yes" : "no");
+
+        static sf::base::Vector<sf::Vertex>    textVertices;
+        static sf::base::Vector<sf::IndexType> textIndices;
+
+        textVertices.clear();
+        textIndices.clear();
+
+        (void)bitmapTextToVerticesPretransformed(
+            {
+                .outVertices     = textVertices,
+                .outIndices      = textIndices,
+                .bitmapFont      = m_bitmapFontTiny5,
+                .fontTextureRect = m_txrBFTiny5,
+                .alignment       = BitmapTextAlignment::Left,
+                .baseColor       = sf::Color::White,
+                .time            = m_totalTime,
+                .string          = perksStr,
             },
             sf::Transform::fromPosition(statsBorder.getTopLeft() + sf::Vec2f{4.f, 2.f}));
 
@@ -3655,11 +3856,12 @@ private:
             drawStepLightningBolts();
 
             drawStepStatsText();
+            drawStepPerksText();
 
             if (m_world.perkNPeek > 0)
                 m_rtGame.draw(m_font,
                               sf::TextData{
-                                  .position      = getHudPos().addY(100.f),
+                                  .position      = getHudPos().addY(68.f),
                                   .string        = "Next:",
                                   .characterSize = 16u,
                                   .outlineColor  = sf::Color::White,
@@ -3668,12 +3870,11 @@ private:
             if (m_world.perkCanHoldTetramino == 1)
                 m_rtGame.draw(m_font,
                               sf::TextData{
-                                  .position      = getHudPos().addY(100.f).addX(64.f),
+                                  .position      = getHudPos().addY(68.f).addX(64.f),
                                   .string        = "Held:",
                                   .characterSize = 16u,
                                   .outlineColor  = sf::Color::White,
                               });
-
 
             drawShop();
         }

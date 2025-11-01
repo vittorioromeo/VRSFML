@@ -79,13 +79,7 @@ struct ParticleSoA
 
     void swapNth(std::size_t i, std::size_t j)
     {
-        withNth(i, [&](auto&... valuesI)
-        {
-            withNth(j, [&](auto&... valuesJ)
-            {
-                (..., std::swap(valuesI, valuesJ));
-            });
-        });
+        withNth(i, [&](auto&... valuesI) { withNth(j, [&](auto&... valuesJ) { (..., std::swap(valuesI, valuesJ)); }); });
     }
 
     void cleanup()
