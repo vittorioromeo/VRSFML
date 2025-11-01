@@ -17,7 +17,7 @@
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/ClampMacro.hpp"
-#include "SFML/Base/FastSinCos.hpp"
+#include "SFML/Base/SinCosLookup.hpp"
 
 
 namespace sf
@@ -100,7 +100,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     {
         // Rotation components
         const float angle         = rotation.asRadians();
-        const auto [sine, cosine] = base::fastSinCos(angle);
+        const auto [sine, cosine] = base::sinCosLookup(angle);
 
         const float tx = -center.x * cosine - center.y * sine + center.x;
         const float ty = center.x * sine - center.y * cosine + center.y;

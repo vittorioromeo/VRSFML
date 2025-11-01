@@ -77,8 +77,8 @@ TEST_CASE("[Graphics] sf::Transformable")
                           {},  {},  0.f, 1.f};
         // clang-format on
 
-        transformable.getTransform().getMatrix(lhsMatrix);
-        transform.getMatrix(rhsMatrix);
+        transformable.getTransform().writeTo4x4Matrix(lhsMatrix);
+        transform.writeTo4x4Matrix(rhsMatrix);
 
         CHECK(lhsMatrix[0] == Approx(rhsMatrix[0]));
         CHECK(lhsMatrix[1] == Approx(rhsMatrix[1]));
@@ -98,8 +98,8 @@ TEST_CASE("[Graphics] sf::Transformable")
         CHECK(lhsMatrix[15] == Approx(rhsMatrix[15]));
 
         const sf::Transform inverseTransform = transform.getInverse();
-        transformable.getInverseTransform().getMatrix(lhsMatrix);
-        inverseTransform.getMatrix(rhsMatrix);
+        transformable.getInverseTransform().writeTo4x4Matrix(lhsMatrix);
+        inverseTransform.writeTo4x4Matrix(rhsMatrix);
 
         CHECK(lhsMatrix[0] == Approx(rhsMatrix[0]));
         CHECK(lhsMatrix[1] == Approx(rhsMatrix[1]));

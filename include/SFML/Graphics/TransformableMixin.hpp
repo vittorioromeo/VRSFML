@@ -12,7 +12,7 @@
 #include "SFML/Graphics/Transform.hpp"
 
 #include "SFML/Base/AssertAndAssume.hpp"
-#include "SFML/Base/FastSinCos.hpp"
+#include "SFML/Base/SinCosLookup.hpp"
 
 
 namespace sf
@@ -29,14 +29,15 @@ struct SFML_GRAPHICS_API TransformableMixinBase
         const Vec2f origin,
         const float radians) const
     {
-        const auto [sine, cosine] = base::fastSinCos(radians);
+        const auto [sine, cosine] = base::sinCosLookup(radians);
 
         SFML_BASE_ASSERT_AND_ASSUME(sine >= -1.f && sine <= 1.f);
         SFML_BASE_ASSERT_AND_ASSUME(cosine >= -1.f && cosine <= 1.f);
 
-        return Transform::from(position, scale, origin, sine, cosine);
+        return Transform::fromPositionScaleOriginSinCos(position, scale, origin, sine, cosine);
     }
 };
+
 
 ////////////////////////////////////////////////////////////
 /// \brief Decomposed transform defined by a position, a rotation and a scale
@@ -61,7 +62,7 @@ struct SFML_GRAPHICS_API TransformableMixin : TransformableMixinBase
     /// \see `setScale`
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] constexpr void scaleBy(Vec2f factor)
+    [[gnu::always_inline]] constexpr void scaleBy(const Vec2f factor)
     {
         static_cast<T&>(*this).scale.x *= factor.x;
         static_cast<T&>(*this).scale.y *= factor.y;

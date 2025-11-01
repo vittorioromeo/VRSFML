@@ -13,7 +13,7 @@
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/AssertAndAssume.hpp"
-#include "SFML/Base/FastSinCos.hpp"
+#include "SFML/Base/SinCosLookup.hpp"
 #include "SFML/Base/MinMaxMacros.hpp"
 
 
@@ -29,17 +29,16 @@ struct [[nodiscard]] Transform
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] static constexpr Transform from(
-        const Vec2f position,
-        const Vec2f scale,
-        const Vec2f origin)
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] static constexpr Transform fromPosition(const Vec2f position)
     {
-        return {/* a00 */ scale.x,
-                /* a01 */ 0.f,
-                /* a02 */ position.x - origin.x * scale.x,
-                /* a10 */ 0.f,
-                /* a11 */ scale.y,
-                /* a12 */ position.y - origin.y * scale.y};
+        return {
+            .a00 = 1.f,
+            .a01 = 0.f,
+            .a02 = position.x,
+            .a10 = 0.f,
+            .a11 = 1.f,
+            .a12 = position.y,
+        };
     }
 
 
@@ -47,7 +46,27 @@ struct [[nodiscard]] Transform
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] static constexpr Transform from(
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] static constexpr Transform fromPositionScaleOrigin(
+        const Vec2f position,
+        const Vec2f scale,
+        const Vec2f origin)
+    {
+        return {
+            .a00 = scale.x,
+            .a01 = 0.f,
+            .a02 = position.x - origin.x * scale.x,
+            .a10 = 0.f,
+            .a11 = scale.y,
+            .a12 = position.y - origin.y * scale.y,
+        };
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] static constexpr Transform fromPositionScaleOriginSinCos(
         const Vec2f position,
         const Vec2f scale,
         const Vec2f origin,
@@ -64,26 +83,40 @@ struct [[nodiscard]] Transform
         const float tx  = -origin.x * sxc - origin.y * sys + position.x;
         const float ty  = origin.x * sxs - origin.y * syc + position.y;
 
-        return {/* a00 */ sxc, /* a01 */ sys, /* a02 */ tx, -/* a10 */ sxs, /* a11 */ syc, /* a12 */ ty};
+        return {
+            .a00 = sxc,
+            .a01 = sys,
+            .a02 = tx,
+            .a10 = -sxs,
+            .a11 = syc,
+            .a12 = ty,
+        };
     }
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Return the transform as a 4x4 matrix
+    /// \brief Write the transform's salient values to a 4x4 matrix
     ///
-    /// This function returns a pointer to an array of 16 floats
-    /// containing the transform elements as a 4x4 matrix, which
-    /// is directly compatible with OpenGL functions.
+    /// Given an identity 4x4 float matrix, this function writes
+    /// the salient transform elements to some of the spots of the
+    /// matrix, such that it is directly compatible with OpenGL functions.
     ///
     /// \code
     /// sf::Transform transform = ...;
-    /// glLoadMatrixf(transform.getMatrix());
+    ///
+    /// float matrix[]{{},  {},  0.f, 0.f,
+    ///                {},  {},  0.f, 0.f,
+    ///                0.f, 0.f, 1.f, 0.f,
+    ///                {},  {},  0.f, 1.f};
+    ///
+    /// transform.writeTo4x4Matrix(matrix);
+    /// glLoadMatrixf(matrix);
     /// \endcode
     ///
     /// \return Pointer to a 4x4 matrix
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] constexpr void getMatrix(float (&target)[16]) const
+    [[gnu::always_inline]] constexpr void writeTo4x4Matrix(float (&target)[16]) const
     {
         target[0]  = a00;
         target[1]  = a10;
@@ -103,7 +136,7 @@ struct [[nodiscard]] Transform
     /// \return A new transform which is the inverse of self
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::pure]] constexpr Transform getInverse() const
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Transform getInverse() const
     {
         // clang-format off
         // Compute the determinant
@@ -115,7 +148,16 @@ struct [[nodiscard]] Transform
         if (det == 0.f)
             return Identity;
 
-        return {a11 / det, -a01 / det, (a12 * a01 - a11 * a02) / det, -a10 / det, a00 / det, -(a12 * a00 - a10 * a02) / det};
+        const float invDet = 1.f / det;
+
+        return {
+            .a00 = a11 * invDet,
+            .a01 = -a01 * invDet,
+            .a02 = (a12 * a01 - a11 * a02) * invDet,
+            .a10 = -a10 * invDet,
+            .a11 = a00 * invDet,
+            .a12 = -(a12 * a00 - a10 * a02) * invDet,
+        };
     }
 
 
@@ -135,7 +177,10 @@ struct [[nodiscard]] Transform
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec2f transformPoint(const Vec2f point) const
     {
-        return {a00 * point.x + a01 * point.y + a02, a10 * point.x + a11 * point.y + a12};
+        return {
+            .x = a00 * point.x + a01 * point.y + a02,
+            .y = a10 * point.x + a11 * point.y + a12,
+        };
     }
 
 
@@ -192,12 +237,14 @@ struct [[nodiscard]] Transform
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr Transform operator*(const Transform& lhs, const Transform& rhs)
     {
-        return {lhs.a00 * rhs.a00 + lhs.a01 * rhs.a10,
-                lhs.a00 * rhs.a01 + lhs.a01 * rhs.a11,
-                lhs.a00 * rhs.a02 + lhs.a01 * rhs.a12 + lhs.a02,
-                lhs.a10 * rhs.a00 + lhs.a11 * rhs.a10,
-                lhs.a10 * rhs.a01 + lhs.a11 * rhs.a11,
-                lhs.a10 * rhs.a02 + lhs.a11 * rhs.a12 + lhs.a12};
+        return {
+            .a00 = lhs.a00 * rhs.a00 + lhs.a01 * rhs.a10,
+            .a01 = lhs.a00 * rhs.a01 + lhs.a01 * rhs.a11,
+            .a02 = lhs.a00 * rhs.a02 + lhs.a01 * rhs.a12 + lhs.a02,
+            .a10 = lhs.a10 * rhs.a00 + lhs.a11 * rhs.a10,
+            .a11 = lhs.a10 * rhs.a01 + lhs.a11 * rhs.a11,
+            .a12 = lhs.a10 * rhs.a02 + lhs.a11 * rhs.a12 + lhs.a12,
+        };
     }
 
 
@@ -213,7 +260,7 @@ struct [[nodiscard]] Transform
     /// \return The combined transform
     ///
     ////////////////////////////////////////////////////////////
-    friend constexpr Transform& operator*=(Transform& lhs, const Transform& rhs)
+    [[gnu::always_inline, gnu::flatten]] friend constexpr Transform& operator*=(Transform& lhs, const Transform& rhs)
     {
         return lhs.combine(rhs);
     }
@@ -231,7 +278,8 @@ struct [[nodiscard]] Transform
     /// \return New transformed point
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr Vec2f operator*(const Transform& lhs, Vec2f rhs)
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr Vec2f operator*(const Transform& lhs,
+                                                                                                const Vec2f      rhs)
     {
         return lhs.transformPoint(rhs);
     }
@@ -255,7 +303,7 @@ struct [[nodiscard]] Transform
     /// \return Reference to `*this`
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] constexpr Transform& combine(const Transform& transform)
+    [[gnu::always_inline, gnu::flatten]] constexpr Transform& combine(const Transform& transform)
     {
         return *this = operator*(*this, transform);
     }
@@ -280,12 +328,10 @@ struct [[nodiscard]] Transform
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] constexpr Transform& translate(const Vec2f offset)
     {
-        // clang-format off
-        const Transform translation(1.f, 0.f, offset.x,
-                                    0.f, 1.f, offset.y);
-        // clang-format on
+        a02 += a00 * offset.x + a01 * offset.y;
+        a12 += a10 * offset.x + a11 * offset.y;
 
-        return combine(translation);
+        return *this;
     }
 
 
@@ -308,14 +354,19 @@ struct [[nodiscard]] Transform
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] constexpr Transform& rotate(const Angle angle)
     {
-        const auto [sine, cosine] = base::fastSinCos(angle.wrapUnsigned().asRadians());
+        const auto [sine, cosine] = base::sinCosLookup(angle.wrapUnsigned().asRadians());
 
-        // clang-format off
-    const Transform rotation(cosine, -sine, 0.f,
-                             sine,  cosine, 0.f);
-        // clang-format on
+        const float m00 = a00;
+        const float m01 = a01;
+        const float m10 = a10;
+        const float m11 = a11;
 
-        return combine(rotation);
+        a00 = m00 * cosine + m01 * sine;
+        a01 = m00 * -sine + m01 * cosine;
+        a10 = m10 * cosine + m11 * sine;
+        a11 = m10 * -sine + m11 * cosine;
+
+        return *this;
     }
 
 
@@ -342,13 +393,13 @@ struct [[nodiscard]] Transform
     /// \see `translate`, `scale`
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] constexpr Transform& rotate(const Angle angle, const Vec2f center)
+    [[gnu::always_inline, gnu::flatten]] constexpr Transform& rotate(const Angle angle, const Vec2f center)
     {
-        const auto [sine, cosine] = base::fastSinCos(angle.wrapUnsigned().asRadians());
+        const auto [sine, cosine] = base::sinCosLookup(angle.wrapUnsigned().asRadians());
 
         // clang-format off
-            const Transform rotation(cosine, -sine, center.x * (1.f - cosine) + center.y * sine,
-                                     sine,  cosine, center.y * (1.f - cosine) - center.x * sine);
+        const Transform rotation{cosine, -sine, center.x * (1.f - cosine) + center.y * sine,
+                                 sine,  cosine, center.y * (1.f - cosine) - center.x * sine};
         // clang-format on
 
         return combine(rotation);
@@ -374,12 +425,12 @@ struct [[nodiscard]] Transform
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] constexpr Transform& scaleBy(const Vec2f factors)
     {
-        // clang-format off
-        const Transform scaling(factors.x, 0.f,       0.f,
-                                0.f,       factors.y, 0.f);
-        // clang-format on
+        a00 *= factors.x;
+        a01 *= factors.y;
+        a10 *= factors.x;
+        a11 *= factors.y;
 
-        return combine(scaling);
+        return *this;
     }
 
 
@@ -408,12 +459,18 @@ struct [[nodiscard]] Transform
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] constexpr Transform& scaleBy(const Vec2f factors, const Vec2f center)
     {
-        // clang-format off
-        const Transform scaling(factors.x, 0.f,       center.x * (1.f - factors.x),
-                                0.f,       factors.y, center.y * (1.f - factors.y));
-        // clang-format on
+        const float s02 = center.x * (1.f - factors.x);
+        const float s12 = center.y * (1.f - factors.y);
 
-        return combine(scaling);
+        a02 += a00 * s02 + a01 * s12;
+        a12 += a10 * s02 + a11 * s12;
+
+        a00 *= factors.x;
+        a01 *= factors.y;
+        a10 *= factors.x;
+        a11 *= factors.y;
+
+        return *this;
     }
 
 
