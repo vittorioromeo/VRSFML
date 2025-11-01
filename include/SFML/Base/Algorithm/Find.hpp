@@ -15,8 +15,10 @@ namespace sf::base
 /// \return Iterator to the first element equal to target, or `rangeEnd` if not found
 ///
 ////////////////////////////////////////////////////////////
-template <typename Iter, typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Iter find(Iter rangeBegin, Iter rangeEnd, const T& target) noexcept
+template <typename ForwardIt, typename T>
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr ForwardIt find(ForwardIt       rangeBegin,
+                                                                      const ForwardIt rangeEnd,
+                                                                      const T&        target) noexcept
 {
     for (; rangeBegin != rangeEnd; ++rangeBegin)
         if (*rangeBegin == target)
@@ -36,8 +38,10 @@ template <typename Iter, typename T>
 /// \return Iterator to the first element for which predicate returns true, or `rangeEnd` if not found
 ///
 ////////////////////////////////////////////////////////////
-template <typename Iter, typename Predicate>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Iter findIf(Iter rangeBegin, Iter rangeEnd, Predicate&& predicate) noexcept
+template <typename ForwardIt, typename Predicate>
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr ForwardIt findIf(ForwardIt       rangeBegin,
+                                                                        const ForwardIt rangeEnd,
+                                                                        Predicate&&     predicate) noexcept
 {
     for (; rangeBegin != rangeEnd; ++rangeBegin)
         if (predicate(*rangeBegin))

@@ -16,8 +16,6 @@
 #include "SFML/Base/Math/Floor.hpp"
 #include "SFML/Base/MinMax.hpp"
 
-#include <iostream>
-
 
 ////////////////////////////////////////////////////////////
 /// \brief TODO P1: docs

@@ -4,18 +4,18 @@
 
 
 ////////////////////////////////////////////////////////////
-#include "SFML/Base/Math/Impl.hpp"
+#include "SFML/Base/Math/Priv/Impl.hpp"
 
 
 ////////////////////////////////////////////////////////////
 #if SFML_BASE_PRIV_HAS_MATH_BUILTIN(floor)
-    #include "SFML/Base/Math/ImplBuiltinWrapper.hpp"
+    #include "SFML/Base/Math/Priv/ImplBuiltinWrapper.hpp"
 
     #define SFML_BASE_MATH_FLOOR(...)  __builtin_floor(__VA_ARGS__)
     #define SFML_BASE_MATH_FLOORF(...) __builtin_floorf(__VA_ARGS__)
     #define SFML_BASE_MATH_FLOORL(...) __builtin_floorl(__VA_ARGS__)
 #else
-    #include "SFML/Base/Math/ImplStdForwarder.hpp"
+    #include "SFML/Base/Math/Priv/ImplStdForwarder.hpp"
 
     #define SFML_BASE_MATH_FLOOR(...)  ::std::floor(__VA_ARGS__)
     #define SFML_BASE_MATH_FLOORF(...) ::std::floorf(__VA_ARGS__)
@@ -28,4 +28,4 @@ SFML_BASE_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_1ARG(floor)
 
 
 ////////////////////////////////////////////////////////////
-#include "SFML/Base/Math/ImplUndef.hpp"
+#include "SFML/Base/Math/Priv/ImplUndef.hpp"

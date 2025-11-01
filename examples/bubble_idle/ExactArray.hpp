@@ -1,8 +1,6 @@
 #pragma once
 
-#include "SFML/Base/Array.hpp"
 #include "SFML/Base/InitializerList.hpp" // used
-#include "SFML/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////

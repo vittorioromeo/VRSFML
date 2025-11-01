@@ -8,8 +8,6 @@
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#include <algorithm>
-
 
 ////////////////////////////////////////////////////////////
 inline constexpr const char* normalCatNames[] =
@@ -192,18 +190,7 @@ inline constexpr EXACT_ARRAY(
         {duckCatNames, sf::base::getArraySize(duckCatNames)},         // Duck
     });
 
+
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::base::Vector<sf::base::StringView> getShuffledCatNames(const CatType catType, auto&& randomEngine)
-{
-    const auto span = catNamesPerType[asIdx(catType)];
-
-    sf::base::Vector<sf::base::StringView> names;
-    names.reserve(span.size());
-
-    for (const char* str : span)
-        names.emplaceBack(str);
-
-    std::shuffle(names.begin(), names.end(), randomEngine);
-
-    return names;
-}
+template <typename TRng>
+[[nodiscard]] sf::base::Vector<sf::base::StringView> getShuffledCatNames(CatType catType, TRng& randomEngine);

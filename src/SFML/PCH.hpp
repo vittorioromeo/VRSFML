@@ -36,7 +36,6 @@
     #include "SFML/Base/Optional.hpp"
     #include "SFML/Base/UniquePtr.hpp"
 
-    #include <algorithm>
     #include <atomic>
     #include <chrono>
     #include <mutex>

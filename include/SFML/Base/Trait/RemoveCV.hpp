@@ -13,35 +13,12 @@
 namespace sf::base::priv
 {
 ////////////////////////////////////////////////////////////
-template <typename T>
-struct RemoveCVImpl
-{
-    using type = T;
-};
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-struct RemoveCVImpl<const T>
-{
-    using type = T;
-};
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-struct RemoveCVImpl<volatile T>
-{
-    using type = T;
-};
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-struct RemoveCVImpl<const volatile T>
-{
-    using type = T;
-};
+// clang-format off
+template <typename T> struct RemoveCVImpl                   { using type = T; };
+template <typename T> struct RemoveCVImpl<const T>          { using type = T; };
+template <typename T> struct RemoveCVImpl<volatile T>       { using type = T; };
+template <typename T> struct RemoveCVImpl<const volatile T> { using type = T; };
+// clang-format on
 
 } // namespace sf::base::priv
 

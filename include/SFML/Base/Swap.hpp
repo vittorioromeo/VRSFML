@@ -16,8 +16,8 @@ template <typename T>
 
 
 ////////////////////////////////////////////////////////////
-template <typename Iter1, typename Iter2>
-[[gnu::always_inline]] inline constexpr void iterSwap(Iter1 a, Iter2 b)
+template <typename ForwardIt1, typename ForwardIt2>
+[[gnu::always_inline]] inline constexpr void iterSwap(const ForwardIt1 a, const ForwardIt2 b)
 {
     using base::swap;
     swap(*a, *b);
@@ -25,8 +25,8 @@ template <typename Iter1, typename Iter2>
 
 
 ////////////////////////////////////////////////////////////
-template <typename Iter1, typename Iter2>
-[[gnu::always_inline]] inline constexpr Iter2 swapRanges(Iter1 first1, Iter1 last1, Iter2 first2)
+template <typename ForwardIt1, typename ForwardIt2>
+[[gnu::always_inline]] inline constexpr ForwardIt2 swapRanges(ForwardIt1 first1, const ForwardIt1 last1, ForwardIt2 first2)
 {
     for (; first1 != last1; ++first1, ++first2)
         iterSwap(first1, first2);

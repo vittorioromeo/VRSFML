@@ -17,84 +17,25 @@ template <typename T>
 inline constexpr bool isIntegralImpl = false;
 
 
+// clang-format off
 ////////////////////////////////////////////////////////////
-template <>
-inline constexpr bool isIntegralImpl<bool> = true;
-
-
-////////////////////////////////////////////////////////////
-template <>
-inline constexpr bool isIntegralImpl<char> = true;
-
-
-////////////////////////////////////////////////////////////
-template <>
-inline constexpr bool isIntegralImpl<signed char> = true;
-
-
-////////////////////////////////////////////////////////////
-template <>
-inline constexpr bool isIntegralImpl<unsigned char> = true;
-
-
-////////////////////////////////////////////////////////////
-template <>
-inline constexpr bool isIntegralImpl<wchar_t> = true;
-
-
-////////////////////////////////////////////////////////////
-template <>
-inline constexpr bool isIntegralImpl<char8_t> = true;
-
-
-////////////////////////////////////////////////////////////
-template <>
-inline constexpr bool isIntegralImpl<char16_t> = true;
-
-
-////////////////////////////////////////////////////////////
-template <>
-inline constexpr bool isIntegralImpl<char32_t> = true;
-
-
-////////////////////////////////////////////////////////////
-template <>
-inline constexpr bool isIntegralImpl<short> = true;
-
-
-////////////////////////////////////////////////////////////
-template <>
-inline constexpr bool isIntegralImpl<unsigned short> = true;
-
-
-////////////////////////////////////////////////////////////
-template <>
-inline constexpr bool isIntegralImpl<int> = true;
-
-
-////////////////////////////////////////////////////////////
-template <>
-inline constexpr bool isIntegralImpl<unsigned int> = true;
-
-
-////////////////////////////////////////////////////////////
-template <>
-inline constexpr bool isIntegralImpl<long> = true;
-
-
-////////////////////////////////////////////////////////////
-template <>
-inline constexpr bool isIntegralImpl<unsigned long> = true;
-
-
-////////////////////////////////////////////////////////////
-template <>
-inline constexpr bool isIntegralImpl<long long> = true;
-
-
-////////////////////////////////////////////////////////////
-template <>
-inline constexpr bool isIntegralImpl<unsigned long long> = true;
+template <> inline constexpr bool isIntegralImpl<bool>               = true;
+template <> inline constexpr bool isIntegralImpl<char>               = true;
+template <> inline constexpr bool isIntegralImpl<signed char>        = true;
+template <> inline constexpr bool isIntegralImpl<unsigned char>      = true;
+template <> inline constexpr bool isIntegralImpl<wchar_t>            = true;
+template <> inline constexpr bool isIntegralImpl<char8_t>            = true;
+template <> inline constexpr bool isIntegralImpl<char16_t>           = true;
+template <> inline constexpr bool isIntegralImpl<char32_t>           = true;
+template <> inline constexpr bool isIntegralImpl<short>              = true;
+template <> inline constexpr bool isIntegralImpl<unsigned short>     = true;
+template <> inline constexpr bool isIntegralImpl<int>                = true;
+template <> inline constexpr bool isIntegralImpl<unsigned int>       = true;
+template <> inline constexpr bool isIntegralImpl<long>               = true;
+template <> inline constexpr bool isIntegralImpl<unsigned long>      = true;
+template <> inline constexpr bool isIntegralImpl<long long>          = true;
+template <> inline constexpr bool isIntegralImpl<unsigned long long> = true;
+// clang-format on
 
 } // namespace sf::base::priv
 

@@ -106,12 +106,13 @@
 #include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
 #include "SFML/Base/Trait/IsVoid.hpp"
 #include "SFML/Base/Trait/RemoveCVRef.hpp"
+#include "SFML/Base/Trait/UnderlyingType.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #include <cstdint> // uintptr_t
 
 #    include <tuple>            // for forward_as_tuple
-#    include <utility>          // for pair, as_const, piece...
+#    include <utility>          // for pair, piece...
 
 #    if defined(_MSC_VER) && defined(_M_X64)
 #        include <intrin.h>
@@ -452,7 +453,7 @@ template <typename Enum>
 struct hash<Enum, sf::base::EnableIf<SFML_BASE_IS_ENUM(Enum)>> {
     using is_avalanching = void;
     auto operator()(Enum e) const noexcept -> sf::base::U64 {
-        using underlying = typename std::underlying_type_t<Enum>;
+        using underlying = SFML_BASE_UNDERLYING_TYPE(Enum);
         return detail::wyhash::hash(static_cast<underlying>(e));
     }
 };

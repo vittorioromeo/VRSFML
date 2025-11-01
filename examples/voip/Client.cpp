@@ -19,8 +19,6 @@
 
 #include <string>
 
-#include <cstddef>
-
 
 constexpr sf::base::U8 clientAudioData   = 1;
 constexpr sf::base::U8 clientEndOfStream = 2;
