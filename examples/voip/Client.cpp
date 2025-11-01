@@ -41,9 +41,9 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     explicit NetworkRecorder(sf::IpAddress host, unsigned short port) :
-    m_host(host),
-    m_port(port),
-    m_socket(/* isBlocking */ true)
+        m_host(host),
+        m_port(port),
+        m_socket(/* isBlocking */ true)
     {
     }
 

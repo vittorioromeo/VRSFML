@@ -66,10 +66,10 @@ class Pixelate : public Effect
 {
 public:
     explicit Pixelate(sf::Texture&& texture, sf::Shader&& shader) :
-    m_texture(SFML_BASE_MOVE(texture)),
-    m_shader(SFML_BASE_MOVE(shader)),
-    m_ulTexture(m_shader.getUniformLocation("sf_u_texture").value()),
-    m_ulPixelThreshold(m_shader.getUniformLocation("pixel_threshold").value())
+        m_texture(SFML_BASE_MOVE(texture)),
+        m_shader(SFML_BASE_MOVE(shader)),
+        m_ulTexture(m_shader.getUniformLocation("sf_u_texture").value()),
+        m_ulPixelThreshold(m_shader.getUniformLocation("pixel_threshold").value())
     {
         m_shader.setUniform(m_ulTexture, sf::Shader::CurrentTexture);
     }
@@ -113,32 +113,33 @@ public:
     }
 
     explicit WaveBlur(const sf::Font& font, sf::Shader&& shader) :
-    m_text(font,
-           {.position      = {30.f, 20.f},
-            .string        = "Praesent suscipit augue in velit pulvinar hendrerit varius purus aliquam.\n"
-                             "Mauris mi odio, bibendum quis fringilla a, laoreet vel orci. Proin vitae vulputate tortor.\n"
-                             "Praesent cursus ultrices justo, ut feugiat ante vehicula quis.\n"
-                             "Donec fringilla scelerisque mauris et viverra.\n"
-                             "Maecenas adipiscing ornare scelerisque. Nullam at libero elit.\n"
-                             "Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.\n"
-                             "Nullam leo urna, tincidunt id semper eget, ultricies sed mi.\n"
-                             "Morbi mauris massa, commodo id dignissim vel, lobortis et elit.\n"
-                             "Fusce vel libero sed neque scelerisque venenatis.\n"
-                             "Integer mattis tincidunt quam vitae iaculis.\n"
-                             "Vivamus fringilla sem non velit venenatis fermentum.\n"
-                             "Vivamus varius tincidunt nisi id vehicula.\n"
-                             "Integer ullamcorper, enim vitae euismod rutrum, massa nisl semper ipsum,\n"
-                             "vestibulum sodales sem ante in massa.\n"
-                             "Vestibulum in augue non felis convallis viverra.\n"
-                             "Mauris ultricies dolor sed massa convallis sed aliquet augue fringilla.\n"
-                             "Duis erat eros, porta in accumsan in, blandit quis sem.\n"
-                             "In hac habitasse platea dictumst. Etiam fringilla est id odio dapibus sit amet semper dui "
-                             "laoreet.\n",
-            .characterSize = 22u}),
-    m_shader(SFML_BASE_MOVE(shader)),
-    m_ulWavePhase(m_shader.getUniformLocation("wave_phase").value()),
-    m_ulWaveAmplitude(m_shader.getUniformLocation("wave_amplitude").value()),
-    m_ulBlurRadius(m_shader.getUniformLocation("blur_radius").value())
+        m_text(font,
+               {.position      = {30.f, 20.f},
+                .string        = "Praesent suscipit augue in velit pulvinar hendrerit varius purus aliquam.\n"
+                                 "Mauris mi odio, bibendum quis fringilla a, laoreet vel orci. Proin vitae vulputate tortor.\n"
+                                 "Praesent cursus ultrices justo, ut feugiat ante vehicula quis.\n"
+                                 "Donec fringilla scelerisque mauris et viverra.\n"
+                                 "Maecenas adipiscing ornare scelerisque. Nullam at libero elit.\n"
+                                 "Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis "
+                                 "egestas.\n"
+                                 "Nullam leo urna, tincidunt id semper eget, ultricies sed mi.\n"
+                                 "Morbi mauris massa, commodo id dignissim vel, lobortis et elit.\n"
+                                 "Fusce vel libero sed neque scelerisque venenatis.\n"
+                                 "Integer mattis tincidunt quam vitae iaculis.\n"
+                                 "Vivamus fringilla sem non velit venenatis fermentum.\n"
+                                 "Vivamus varius tincidunt nisi id vehicula.\n"
+                                 "Integer ullamcorper, enim vitae euismod rutrum, massa nisl semper ipsum,\n"
+                                 "vestibulum sodales sem ante in massa.\n"
+                                 "Vestibulum in augue non felis convallis viverra.\n"
+                                 "Mauris ultricies dolor sed massa convallis sed aliquet augue fringilla.\n"
+                                 "Duis erat eros, porta in accumsan in, blandit quis sem.\n"
+                                 "In hac habitasse platea dictumst. Etiam fringilla est id odio dapibus sit amet semper dui "
+                                 "laoreet.\n",
+                .characterSize = 22u}),
+        m_shader(SFML_BASE_MOVE(shader)),
+        m_ulWavePhase(m_shader.getUniformLocation("wave_phase").value()),
+        m_ulWaveAmplitude(m_shader.getUniformLocation("wave_amplitude").value()),
+        m_ulBlurRadius(m_shader.getUniformLocation("blur_radius").value())
     {
     }
 
@@ -174,11 +175,11 @@ public:
     }
 
     explicit StormBlink(sf::Shader&& shader) :
-    m_shader(SFML_BASE_MOVE(shader)),
-    m_ulStormPosition(m_shader.getUniformLocation("storm_position").value()),
-    m_ulStormInnerRadius(m_shader.getUniformLocation("storm_inner_radius").value()),
-    m_ulStormTotalRadius(m_shader.getUniformLocation("storm_total_radius").value()),
-    m_ulBlinkAlpha(m_shader.getUniformLocation("blink_alpha").value())
+        m_shader(SFML_BASE_MOVE(shader)),
+        m_ulStormPosition(m_shader.getUniformLocation("storm_position").value()),
+        m_ulStormInnerRadius(m_shader.getUniformLocation("storm_inner_radius").value()),
+        m_ulStormTotalRadius(m_shader.getUniformLocation("storm_total_radius").value()),
+        m_ulBlinkAlpha(m_shader.getUniformLocation("blink_alpha").value())
     {
         std::uniform_real_distribution<float>        xDistribution(0, 800);
         std::uniform_real_distribution<float>        yDistribution(0, 600);
@@ -248,11 +249,11 @@ public:
     }
 
     explicit Edge(sf::RenderTexture&& surface, sf::Texture&& backgroundTexture, sf::Texture&& entityTexture, sf::Shader&& shader) :
-    m_surface(SFML_BASE_MOVE(surface)),
-    m_backgroundTexture(SFML_BASE_MOVE(backgroundTexture)),
-    m_entityTexture(SFML_BASE_MOVE(entityTexture)),
-    m_shader(SFML_BASE_MOVE(shader)),
-    m_ulEdgeThreshold(m_shader.getUniformLocation("edge_threshold").value())
+        m_surface(SFML_BASE_MOVE(surface)),
+        m_backgroundTexture(SFML_BASE_MOVE(backgroundTexture)),
+        m_entityTexture(SFML_BASE_MOVE(entityTexture)),
+        m_shader(SFML_BASE_MOVE(shader)),
+        m_ulEdgeThreshold(m_shader.getUniformLocation("edge_threshold").value())
     {
     }
 
@@ -301,10 +302,10 @@ public:
     }
 
     explicit Geometry(sf::Texture&& logoTexture, sf::Shader&& shader) :
-    m_logoTexture(SFML_BASE_MOVE(logoTexture)),
-    m_shader(SFML_BASE_MOVE(shader)),
-    m_ulSize(m_shader.getUniformLocation("size").value()),
-    m_pointCloud(10'000)
+        m_logoTexture(SFML_BASE_MOVE(logoTexture)),
+        m_shader(SFML_BASE_MOVE(shader)),
+        m_ulSize(m_shader.getUniformLocation("size").value()),
+        m_pointCloud(10'000)
     {
         // Move the points in the point cloud to random positions
         for (sf::base::SizeT i = 0; i < 10'000; ++i)

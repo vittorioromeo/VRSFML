@@ -4,8 +4,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "BitmapFont.hpp"
 #include "BitmapTextAlignment.hpp"
-#include "MonospaceBitmapFont.hpp"
 
 #include "SFML/Graphics/IndexType.hpp"
 #include "SFML/Graphics/Transform.hpp"
@@ -24,11 +24,11 @@
 namespace tsurv
 {
 //////////////////////////////////////////////////////////////
-struct [[nodiscard]] MonospaceBitmapTextToVerticesOptions // NOLINT(cppcoreguidelines-pro-type-member-init)
+struct [[nodiscard]] BitmapTextToVerticesOptions // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
     sf::base::Vector<sf::Vertex>&    outVertices;
     sf::base::Vector<sf::IndexType>& outIndices;
-    const MonospaceBitmapFont&       monospaceBitmapFont;
+    const BitmapFont&                bitmapFont;
     sf::Rect2f                       fontTextureRect;
     BitmapTextAlignment              alignment;
     sf::Color                        baseColor;
@@ -39,9 +39,9 @@ struct [[nodiscard]] MonospaceBitmapTextToVerticesOptions // NOLINT(cppcoreguide
 
 //////////////////////////////////////////////////////////////
 template <bool TBoundsOnly = false>
-inline auto monospaceBitmapTextToVertices(const MonospaceBitmapTextToVerticesOptions& options)
+inline auto bitmapTextToVertices(const BitmapTextToVerticesOptions& options)
 {
-    const auto& [outVertices, outIndices, monospaceBitmapFont, fontTextureRect, alignment, baseColor, time, str] = options;
+    const auto& [outVertices, outIndices, bitmapFont, fontTextureRect, alignment, baseColor, time, str] = options;
 
     struct [[nodiscard]] Wobble
     {
@@ -174,7 +174,7 @@ inline auto monospaceBitmapTextToVertices(const MonospaceBitmapTextToVerticesOpt
 
     sf::Vec2f maxs;
 
-    const auto [hSpacing, vSpacing] = monospaceBitmapFont.getGlyphSize('a');
+    const auto [hSpacing, vSpacing] = bitmapFont.getGlyphSize('i');
 
     parseText([&](const sf::base::SizeT /* charIdx */, const char c, const FormattingState& fs)
     {
@@ -262,12 +262,12 @@ inline auto monospaceBitmapTextToVertices(const MonospaceBitmapTextToVerticesOpt
             return;
         }
 
-        const auto texRect = monospaceBitmapFont.getGlyphTextureRect(fontTextureRect, c);
+        const auto texRect = bitmapFont.getGlyphTextureRect(fontTextureRect, c);
 
         const auto wobbleAmount = fs.wobble.amplitude *
                                   sf::base::sin(fs.wobble.frequency * time + static_cast<float>(charIdx) * fs.wobble.phase);
 
-        const auto fGlyphSize = monospaceBitmapFont.getGlyphSize(c).toVec2f();
+        const auto fGlyphSize = bitmapFont.getGlyphSize(c).toVec2f();
 
         const auto adjustedCursor = cursor.addX(fs.hSpace).addY(wobbleAmount + fs.vSpace);
 
@@ -290,11 +290,10 @@ inline auto monospaceBitmapTextToVertices(const MonospaceBitmapTextToVerticesOpt
 
 
 //////////////////////////////////////////////////////////////
-inline sf::Rect2f monospaceBitmapTextToVerticesPretransformed(const MonospaceBitmapTextToVerticesOptions& options,
-                                                              const sf::Transform&                        transform)
+inline sf::Rect2f bitmapTextToVerticesPretransformed(const BitmapTextToVerticesOptions& options, const sf::Transform& transform)
 {
     const auto prevVerticesSize = options.outVertices.size();
-    const auto localBoundsSize  = monospaceBitmapTextToVertices</* TBoundsOnly */ false>(options);
+    const auto localBoundsSize  = bitmapTextToVertices</* TBoundsOnly */ false>(options);
 
     for (sf::base::SizeT i = prevVerticesSize; i < options.outVertices.size(); ++i)
         options.outVertices[i].position = transform.transformPoint(options.outVertices[i].position);

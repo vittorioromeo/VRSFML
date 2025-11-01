@@ -153,20 +153,20 @@ private:
 
 public:
     Game() :
-    m_ball{{.position         = resolution / 2.f,
-            .origin           = {6.f, 6.f},
-            .fillColor        = sf::Color::DarkGreen,
-            .outlineColor     = sf::Color::Green,
-            .outlineThickness = 2.f,
-            .radius           = 12.f}},
-    m_ballVelocity{ballSpeed, ballSpeed},
-    m_player{{.position         = {resolution.x / 2.f, resolution.y - 24.f * 2},
-              .origin           = {64.f, 12.f},
-              .fillColor        = sf::Color::DarkGreen,
-              .outlineColor     = sf::Color::Green,
-              .outlineThickness = 2.f,
-              .size             = {128.f, 24.f}}},
-    m_playerVelocity{0.f, 0.f}
+        m_ball{{.position         = resolution / 2.f,
+                .origin           = {6.f, 6.f},
+                .fillColor        = sf::Color::DarkGreen,
+                .outlineColor     = sf::Color::Green,
+                .outlineThickness = 2.f,
+                .radius           = 12.f}},
+        m_ballVelocity{ballSpeed, ballSpeed},
+        m_player{{.position         = {resolution.x / 2.f, resolution.y - 24.f * 2},
+                  .origin           = {64.f, 12.f},
+                  .fillColor        = sf::Color::DarkGreen,
+                  .outlineColor     = sf::Color::Green,
+                  .outlineThickness = 2.f,
+                  .size             = {128.f, 24.f}}},
+        m_playerVelocity{0.f, 0.f}
     {
         createBrickGrid();
     }

@@ -13,8 +13,8 @@
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/AssertAndAssume.hpp"
-#include "SFML/Base/SinCosLookup.hpp"
 #include "SFML/Base/MinMaxMacros.hpp"
+#include "SFML/Base/SinCosLookup.hpp"
 
 
 namespace sf
