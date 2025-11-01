@@ -1263,15 +1263,15 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
         auto updateParticles = [&](auto& soa)
         {
             soa.withAll(
-                [&](sf::Vec2f&       position,
-                    sf::Vec2f&       velocity,
+                [&](sf::Vec2f&      position,
+                    sf::Vec2f&      velocity,
                     const sf::Vec2f acceleration,
-                    float&           scale,
-                    float&           opacity,
-                    float&           rotation,
-                    const float&     scaleRate,
-                    const float&     opacityChange,
-                    const float&     angularVelocity)
+                    float&          scale,
+                    float&          opacity,
+                    float&          rotation,
+                    const float&    scaleRate,
+                    const float&    opacityChange,
+                    const float&    angularVelocity)
             {
                 velocity += acceleration * dt;
                 position += velocity * dt;

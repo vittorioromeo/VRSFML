@@ -691,7 +691,7 @@ public:
             for (sf::base::SizeT vertexIndex = 0u; vertexIndex < 6u; ++vertexIndex)
             {
                 sf::Vertex&                vertex = m_triangles[6u * scancodeIndex + vertexIndex];
-                const sf::Vec2f           corner = square[cornerIndexes[vertexIndex]];
+                const sf::Vec2f            corner = square[cornerIndexes[vertexIndex]];
                 static constexpr sf::Vec2f pad(padding, padding);
                 vertex.position = rect.position + pad + (rect.size - 2.f * pad).componentWiseMul(corner) + move;
                 vertex.color.a  = pressed ? 96 : 48;

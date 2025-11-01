@@ -36,12 +36,12 @@
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/OffsetOf.hpp"
-#include "SFML/Base/SinCosLookup.hpp"
 #include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Lround.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/ScopeGuard.hpp"
+#include "SFML/Base/SinCosLookup.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 #include <atomic>

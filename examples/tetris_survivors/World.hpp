@@ -165,7 +165,7 @@ struct [[nodiscard]] World
 
     int perkRndHitOnClear = 0;
 
-    int perkCanHoldTetramino     = 1;
+    int perkCanHoldTetramino     = 0;
     int perkXPPerTetraminoPlaced = 0;
     int perkXPPerBlockDamaged    = 0;
 

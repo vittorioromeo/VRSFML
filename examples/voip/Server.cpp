@@ -45,9 +45,9 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     NetworkAudioStream(sf::PlaybackDevice& playbackDevice) :
-    sf::SoundStream{playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, 44'100u},
-    m_listener(/* isBlocking */ true),
-    m_client(/* isBlocking */ true)
+        sf::SoundStream{playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, 44'100u},
+        m_listener(/* isBlocking */ true),
+        m_client(/* isBlocking */ true)
     {
     }
 

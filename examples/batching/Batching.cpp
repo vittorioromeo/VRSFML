@@ -146,7 +146,7 @@ int main()
         for (sf::base::SizeT i = 0u; i < n; ++i)
         {
             const sf::base::SizeT type        = i % 6u;
-            const sf::Rect2f&  textureRect = spriteTextureRects[type];
+            const sf::Rect2f&     textureRect = spriteTextureRects[type];
 
             std::snprintf(labelBuffer, 64, "%s #%zu", names[type], (i / (type + 1u)) + 1u);
 

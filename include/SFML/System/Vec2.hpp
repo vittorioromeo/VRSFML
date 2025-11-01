@@ -140,8 +140,9 @@ public:
     {
         static_assert(SFML_BASE_IS_FLOATING_POINT(T), "Vec2::angle() is only supported for floating point types");
 
-        SFML_BASE_ASSERT_AND_ASSUME((x != T{0} || y != T{0}) && "Vec2::angle() cannot calculate angle from a zero "
-                                                                "vec2");
+        SFML_BASE_ASSERT_AND_ASSUME((x != T{0} || y != T{0}) &&
+                                    "Vec2::angle() cannot calculate angle from a zero "
+                                    "vec2");
 
         return radians(static_cast<float>(base::atan2(y, x)));
     }
@@ -197,7 +198,8 @@ public:
         static_assert(SFML_BASE_IS_FLOATING_POINT(T),
                       "Vec2::projectedOnto() is only supported for floating point types");
 
-        SFML_BASE_ASSERT_AND_ASSUME((axis.x != T{0} || axis.y != T{0}) && "Vec2::projectedOnto() cannot project onto a zero vec2");
+        SFML_BASE_ASSERT_AND_ASSUME(
+            (axis.x != T{0} || axis.y != T{0}) && "Vec2::projectedOnto() cannot project onto a zero vec2");
 
         return dot(axis) / axis.lengthSquared() * axis;
     }

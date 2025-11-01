@@ -13,11 +13,11 @@
 #include "SFML/Base/AssertAndAssume.hpp"
 #include "SFML/Base/Builtin/Restrict.hpp"
 #include "SFML/Base/Constants.hpp"
-#include "SFML/Base/SinCosLookup.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Math/Sqrt.hpp"
 #include "SFML/Base/MinMaxMacros.hpp"
 #include "SFML/Base/Remainder.hpp"
+#include "SFML/Base/SinCosLookup.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 
