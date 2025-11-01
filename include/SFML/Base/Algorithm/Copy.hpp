@@ -15,8 +15,8 @@ namespace sf::base
 /// \return Iterator to the element past the last element copied
 ///
 ////////////////////////////////////////////////////////////
-template <typename Iter, typename TargetIter>
-[[gnu::always_inline]] constexpr TargetIter copy(Iter rangeBegin, Iter rangeEnd, TargetIter targetIter)
+template <typename ForwardIt, typename TargetForwardIt>
+[[gnu::always_inline]] constexpr TargetForwardIt copy(ForwardIt rangeBegin, const ForwardIt rangeEnd, TargetForwardIt targetIter)
 {
     while (rangeBegin != rangeEnd)
         *targetIter++ = *rangeBegin++;

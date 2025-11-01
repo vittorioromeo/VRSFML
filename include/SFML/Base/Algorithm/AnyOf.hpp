@@ -15,8 +15,10 @@ namespace sf::base
 /// \return `true` if predicate returns true for at least one element, `false` otherwise
 ///
 ////////////////////////////////////////////////////////////
-template <typename Iter, typename Predicate>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool anyOf(Iter rangeBegin, Iter rangeEnd, Predicate&& predicate) noexcept
+template <typename ForwardIt, typename Predicate>
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool anyOf(ForwardIt       rangeBegin,
+                                                                  const ForwardIt rangeEnd,
+                                                                  Predicate&&     predicate) noexcept
 {
     for (; rangeBegin != rangeEnd; ++rangeBegin)
         if (predicate(*rangeBegin))

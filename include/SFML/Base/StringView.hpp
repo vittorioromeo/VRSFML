@@ -7,11 +7,14 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Builtin/Strlen.hpp"
-#include "SFML/Base/Builtin/Strncmp.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Swap.hpp"
+
+#ifndef __GNUC__
+    #include "SFML/Base/Builtin/Strlen.hpp"
+    #include "SFML/Base/Builtin/Strncmp.hpp"
+#endif
 
 
 namespace sf::base
@@ -32,7 +35,10 @@ private:
     }
 
     ////////////////////////////////////////////////////////////
-#ifdef __GNUC__
+#ifndef __GNUC__
+    #define SFML_BASE_PRIV_CONSTEXPR_STRLEN  SFML_BASE_STRLEN
+    #define SFML_BASE_PRIV_CONSTEXPR_STRNCMP SFML_BASE_STRNCMP
+#else
     [[nodiscard, gnu::always_inline, gnu::const]] static constexpr SizeT constexprStrLen(const char* const cStr) noexcept
     {
         const char* end = cStr;
@@ -60,9 +66,6 @@ private:
 
     #define SFML_BASE_PRIV_CONSTEXPR_STRLEN  constexprStrLen
     #define SFML_BASE_PRIV_CONSTEXPR_STRNCMP constexprStrNCmp
-#else
-    #define SFML_BASE_PRIV_CONSTEXPR_STRLEN  SFML_BASE_STRLEN
-    #define SFML_BASE_PRIV_CONSTEXPR_STRNCMP SFML_BASE_STRNCMP
 #endif
 
 

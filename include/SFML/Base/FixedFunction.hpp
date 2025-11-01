@@ -121,7 +121,9 @@ public:
             }
         };
 
-        m_allocPtr(objStorage, &f, isRvalueReference<TFFwd&&> ? Operation::MoveConstruct : Operation::CopyConstruct);
+        m_allocPtr(objStorage,
+                   &f,
+                   SFML_BASE_IS_RVALUE_REFERENCE(TFFwd&&) ? Operation::MoveConstruct : Operation::CopyConstruct);
     }
 
 

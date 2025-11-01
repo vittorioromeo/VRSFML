@@ -28,13 +28,13 @@ namespace sf::base
 /// \return Iterator to the new logical end of the range
 ///
 ////////////////////////////////////////////////////////////
-template <typename Iter, typename Predicate>
-[[nodiscard, gnu::always_inline]] inline constexpr Iter removeIf(Iter first, Iter last, Predicate&& predicate)
+template <typename ForwardIt, typename Predicate>
+[[nodiscard, gnu::always_inline]] inline constexpr ForwardIt removeIf(ForwardIt first, const ForwardIt last, Predicate&& predicate)
 {
     first = findIf(first, last, predicate);
 
     if (first != last)
-        for (Iter i = first; ++i != last;)
+        for (ForwardIt i = first; ++i != last;)
             if (!predicate(*i))
                 *first++ = SFML_BASE_MOVE(*i);
 

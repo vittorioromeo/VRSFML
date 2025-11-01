@@ -4,18 +4,18 @@
 
 
 ////////////////////////////////////////////////////////////
-#include "SFML/Base/Math/Impl.hpp"
+#include "SFML/Base/Math/Priv/Impl.hpp"
 
 
 ////////////////////////////////////////////////////////////
 #if SFML_BASE_PRIV_HAS_MATH_BUILTIN(sin)
-    #include "SFML/Base/Math/ImplBuiltinWrapper.hpp"
+    #include "SFML/Base/Math/Priv/ImplBuiltinWrapper.hpp"
 
     #define SFML_BASE_MATH_SIN(...)  __builtin_sin(__VA_ARGS__)
     #define SFML_BASE_MATH_SINF(...) __builtin_sinf(__VA_ARGS__)
     #define SFML_BASE_MATH_SINL(...) __builtin_sinl(__VA_ARGS__)
 #else
-    #include "SFML/Base/Math/ImplStdForwarder.hpp"
+    #include "SFML/Base/Math/Priv/ImplStdForwarder.hpp"
 
     #define SFML_BASE_MATH_SIN(...)  ::std::sin(__VA_ARGS__)
     #define SFML_BASE_MATH_SINF(...) ::std::sinf(__VA_ARGS__)
@@ -28,4 +28,4 @@ SFML_BASE_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_1ARG(sin)
 
 
 ////////////////////////////////////////////////////////////
-#include "SFML/Base/Math/ImplUndef.hpp"
+#include "SFML/Base/Math/Priv/ImplUndef.hpp"

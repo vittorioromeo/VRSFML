@@ -23,8 +23,8 @@ namespace sf::base
 /// \return The number of elements evaluating to true
 ///
 ////////////////////////////////////////////////////////////
-template <typename Iter>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT countTruthy(Iter rangeBegin, Iter rangeEnd)
+template <typename ForwardIt>
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT countTruthy(ForwardIt rangeBegin, const ForwardIt rangeEnd)
 {
     SizeT result = 0u;
 
@@ -46,8 +46,8 @@ template <typename Iter>
 /// \return The number of elements equal to value
 ///
 ////////////////////////////////////////////////////////////
-template <typename Iter, typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT count(Iter rangeBegin, Iter rangeEnd, const T& value)
+template <typename ForwardIt, typename T>
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT count(ForwardIt rangeBegin, const ForwardIt rangeEnd, const T& value)
 {
     SizeT result = 0u;
 
@@ -69,8 +69,10 @@ template <typename Iter, typename T>
 /// \return The number of elements for which predicate returns true
 ///
 ////////////////////////////////////////////////////////////
-template <typename Iter, typename Predicate>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT countIf(Iter rangeBegin, Iter rangeEnd, Predicate&& predicate)
+template <typename ForwardIt, typename Predicate>
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT countIf(ForwardIt       rangeBegin,
+                                                                     const ForwardIt rangeEnd,
+                                                                     Predicate&&     predicate)
 {
     SizeT result = 0u;
 

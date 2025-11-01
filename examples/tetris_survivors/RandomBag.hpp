@@ -11,8 +11,8 @@
 namespace tsurv
 {
 ////////////////////////////////////////////////////////////
-template <typename Iter>
-void shuffleBag(Iter begin, Iter end, auto&& rng)
+template <typename RandomIt>
+constexpr void shuffleBag(const RandomIt begin, const RandomIt end, auto&& rng)
 {
     sf::base::shuffle(begin, end, [&rng](sf::base::SizeT min, sf::base::SizeT max) { return rng.getI(min, max); });
 }
@@ -20,7 +20,7 @@ void shuffleBag(Iter begin, Iter end, auto&& rng)
 
 ////////////////////////////////////////////////////////////
 template <typename Container>
-void shuffleBag(Container& bag, auto&& rng)
+constexpr void shuffleBag(Container& bag, auto&& rng)
 {
     shuffleBag(bag.begin(), bag.end(), rng);
 }

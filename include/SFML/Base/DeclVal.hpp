@@ -7,6 +7,6 @@ namespace sf::base
 {
 ////////////////////////////////////////////////////////////
 template <typename T>
-T&& declVal();
+T&& declVal() noexcept;
 
 } // namespace sf::base

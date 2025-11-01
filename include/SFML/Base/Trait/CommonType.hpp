@@ -44,12 +44,16 @@ struct CommonTypeImpl : __builtin_common_type<CommonType, TypeIdentityImpl, Empt
 
 #else
 
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
     #include "SFML/Base/DeclVal.hpp"
     #include "SFML/Base/Trait/Conditional.hpp"
     #include "SFML/Base/Trait/Decay.hpp"
     #include "SFML/Base/Trait/IsSame.hpp"
     #include "SFML/Base/Trait/RemoveCVRef.hpp"
     #include "SFML/Base/Trait/VoidT.hpp"
+
 
 namespace sf::base::priv
 {

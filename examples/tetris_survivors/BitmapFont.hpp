@@ -63,7 +63,7 @@ public:
 
 
     //////////////////////////////////////////////////////////////
-    [[nodiscard]] void adjustSize(const char c, const sf::Vec2i offset)
+    void adjustSize(const char c, const sf::Vec2i offset)
     {
         SFML_BASE_ASSERT(static_cast<sf::base::SizeT>(c) < m_glyphRects.size());
 

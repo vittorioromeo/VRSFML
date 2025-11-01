@@ -4,18 +4,18 @@
 
 
 ////////////////////////////////////////////////////////////
-#include "SFML/Base/Math/Impl.hpp"
+#include "SFML/Base/Math/Priv/Impl.hpp"
 
 
 ////////////////////////////////////////////////////////////
 #if SFML_BASE_PRIV_HAS_MATH_BUILTIN(log10)
-    #include "SFML/Base/Math/ImplBuiltinWrapper.hpp"
+    #include "SFML/Base/Math/Priv/ImplBuiltinWrapper.hpp"
 
     #define SFML_BASE_MATH_LOG10(...)  __builtin_log10(__VA_ARGS__)
     #define SFML_BASE_MATH_LOG10F(...) __builtin_log10f(__VA_ARGS__)
     #define SFML_BASE_MATH_LOG10L(...) __builtin_log10l(__VA_ARGS__)
 #else
-    #include "SFML/Base/Math/ImplStdForwarder.hpp"
+    #include "SFML/Base/Math/Priv/ImplStdForwarder.hpp"
 
     #define SFML_BASE_MATH_LOG10(...)  ::std::log10(__VA_ARGS__)
     #define SFML_BASE_MATH_LOG10F(...) ::std::log10f(__VA_ARGS__)
@@ -28,4 +28,4 @@ SFML_BASE_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_1ARG(log10)
 
 
 ////////////////////////////////////////////////////////////
-#include "SFML/Base/Math/ImplUndef.hpp"
+#include "SFML/Base/Math/Priv/ImplUndef.hpp"

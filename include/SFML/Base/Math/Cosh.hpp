@@ -4,18 +4,18 @@
 
 
 ////////////////////////////////////////////////////////////
-#include "SFML/Base/Math/Impl.hpp"
+#include "SFML/Base/Math/Priv/Impl.hpp"
 
 
 ////////////////////////////////////////////////////////////
 #if SFML_BASE_PRIV_HAS_MATH_BUILTIN(cosh)
-    #include "SFML/Base/Math/ImplBuiltinWrapper.hpp"
+    #include "SFML/Base/Math/Priv/ImplBuiltinWrapper.hpp"
 
     #define SFML_BASE_MATH_COSH(...)  __builtin_cosh(__VA_ARGS__)
     #define SFML_BASE_MATH_COSHF(...) __builtin_coshf(__VA_ARGS__)
     #define SFML_BASE_MATH_COSHL(...) __builtin_coshl(__VA_ARGS__)
 #else
-    #include "SFML/Base/Math/ImplStdForwarder.hpp"
+    #include "SFML/Base/Math/Priv/ImplStdForwarder.hpp"
 
     #define SFML_BASE_MATH_COSH(...)  ::std::cosh(__VA_ARGS__)
     #define SFML_BASE_MATH_COSHF(...) ::std::coshf(__VA_ARGS__)
@@ -28,4 +28,4 @@ SFML_BASE_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_1ARG(cosh)
 
 
 ////////////////////////////////////////////////////////////
-#include "SFML/Base/Math/ImplUndef.hpp"
+#include "SFML/Base/Math/Priv/ImplUndef.hpp"

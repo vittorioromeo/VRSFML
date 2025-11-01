@@ -25,7 +25,7 @@ namespace sf::base
 ///
 ////////////////////////////////////////////////////////////
 template <typename ForwardIt>
-ForwardIt unique(ForwardIt first, const ForwardIt last)
+constexpr ForwardIt unique(ForwardIt first, const ForwardIt last)
 {
     if (first == last)
         return last;

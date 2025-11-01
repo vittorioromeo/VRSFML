@@ -21,6 +21,7 @@ struct EnableIfImpl<true, T>
 
 } // namespace sf::base::priv
 
+
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////

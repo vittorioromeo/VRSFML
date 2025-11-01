@@ -4,18 +4,18 @@
 
 
 ////////////////////////////////////////////////////////////
-#include "SFML/Base/Math/Impl.hpp"
+#include "SFML/Base/Math/Priv/Impl.hpp"
 
 
 ////////////////////////////////////////////////////////////
 #if SFML_BASE_PRIV_HAS_MATH_BUILTIN(pow)
-    #include "SFML/Base/Math/ImplBuiltinWrapper.hpp"
+    #include "SFML/Base/Math/Priv/ImplBuiltinWrapper.hpp"
 
     #define SFML_BASE_MATH_POW(...)  __builtin_pow(__VA_ARGS__)
     #define SFML_BASE_MATH_POWF(...) __builtin_powf(__VA_ARGS__)
     #define SFML_BASE_MATH_POWL(...) __builtin_powl(__VA_ARGS__)
 #else
-    #include "SFML/Base/Math/ImplStdForwarder.hpp"
+    #include "SFML/Base/Math/Priv/ImplStdForwarder.hpp"
 
     #define SFML_BASE_MATH_POW(...)  ::std::pow(__VA_ARGS__)
     #define SFML_BASE_MATH_POWF(...) ::std::powf(__VA_ARGS__)
@@ -28,4 +28,4 @@ SFML_BASE_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_2ARG(pow)
 
 
 ////////////////////////////////////////////////////////////
-#include "SFML/Base/Math/ImplUndef.hpp"
+#include "SFML/Base/Math/Priv/ImplUndef.hpp"

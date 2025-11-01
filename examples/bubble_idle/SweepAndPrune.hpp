@@ -1,11 +1,11 @@
 #pragma once
 
+#include "SFML/Base/Algorithm/Sort.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#include <algorithm>
 #include <latch>
 
 #include <cassert>
@@ -121,6 +121,6 @@ public:
                                       i);
         }
 
-        std::sort(m_aabbs.begin(), m_aabbs.end(), [](const AABB& a, const AABB& b) { return a.minX < b.minX; });
+        sf::base::quickSort(m_aabbs.begin(), m_aabbs.end(), [](const AABB& a, const AABB& b) { return a.minX < b.minX; });
     }
 };
