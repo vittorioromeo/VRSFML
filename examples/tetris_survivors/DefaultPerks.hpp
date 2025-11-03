@@ -41,6 +41,18 @@ struct [[nodiscard]] PerkChainLightning : Perk
     }
 
     /////////////////////////////////////////////////////////////
+    [[nodiscard]] std::string getInventoryStr(const World& world) const override
+    {
+        return std::format("({}% chance)", world.perkChainLightning);
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isActive(const World& world) const override
+    {
+        return world.perkChainLightning > 0;
+    }
+
+    /////////////////////////////////////////////////////////////
     [[nodiscard]] bool meetsPrerequisites(const World& world) const override
     {
         return (world.perkRndHitPerNTetraminos.hasValue() || world.perkRndHitOnClear > 0) && world.perkChainLightning < 60;
@@ -77,6 +89,18 @@ struct [[nodiscard]] PerkPeekNextTetraminos : Perk
     [[nodiscard]] std::string getProgressionStr(const World& world) const override
     {
         return std::format("{} -> {}", world.perkNPeek, world.perkNPeek + peekIncrease);
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] std::string getInventoryStr(const World& world) const override
+    {
+        return std::format("(see {} tetraminos)", world.perkNPeek);
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isActive(const World& world) const override
+    {
+        return world.perkNPeek > 1;
     }
 
     /////////////////////////////////////////////////////////////
@@ -120,9 +144,21 @@ struct [[nodiscard]] PerkOnClearLightningStrike : Perk
     }
 
     /////////////////////////////////////////////////////////////
+    [[nodiscard]] std::string getInventoryStr(const World& world) const override
+    {
+        return std::format("({} tetraminos per clear)", world.perkRndHitOnClear);
+    }
+
+    /////////////////////////////////////////////////////////////
     [[nodiscard]] bool meetsPrerequisites(const World&) const override
     {
         return true; // Always available to upgrade
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isActive(const World& world) const override
+    {
+        return world.perkRndHitOnClear > 0;
     }
 
     /////////////////////////////////////////////////////////////
@@ -155,9 +191,23 @@ struct [[nodiscard]] PerkHardDropDrillUnlock : Perk
     }
 
     /////////////////////////////////////////////////////////////
+    [[nodiscard]] std::string getInventoryStr(const World& world) const override
+    {
+        return std::format("(penetration: {}, coverage: {})",
+                           world.perkDrill[DrillDirection::Down]->maxPenetration,
+                           world.perkDrill[DrillDirection::Down]->coverage);
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isActive(const World& world) const override
+    {
+        return world.perkDrill[DrillDirection::Down].hasValue();
+    }
+
+    /////////////////////////////////////////////////////////////
     [[nodiscard]] bool meetsPrerequisites(const World& world) const override
     {
-        return !world.perkDrill[DrillDirection::Down].hasValue();
+        return !isActive(world);
     }
 
     /////////////////////////////////////////////////////////////
@@ -197,6 +247,19 @@ struct [[nodiscard]] PerkHardDropDrillPenetration : Perk
     }
 
     /////////////////////////////////////////////////////////////
+    [[nodiscard]] std::string getInventoryStr(const World&) const override
+    {
+        return ""; // handled by main perk
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isActive(const World& world) const override
+    {
+        return world.perkDrill[DrillDirection::Down].hasValue() &&
+               world.perkDrill[DrillDirection::Down]->maxPenetration > 1;
+    }
+
+    /////////////////////////////////////////////////////////////
     [[nodiscard]] bool meetsPrerequisites(const World& world) const override
     {
         return world.perkDrill[DrillDirection::Down].hasValue() &&
@@ -233,15 +296,27 @@ struct [[nodiscard]] PerkHardDropDrillBluntForce : Perk
     }
 
     /////////////////////////////////////////////////////////////
+    [[nodiscard]] std::string getInventoryStr(const World&) const override
+    {
+        return ""; // handled by main perk
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isActive(const World& world) const override
+    {
+        return world.perkDrill[DrillDirection::Down].hasValue() && world.perkDrill[DrillDirection::Down]->coverage == 2;
+    }
+
+    /////////////////////////////////////////////////////////////
     [[nodiscard]] bool meetsPrerequisites(const World& world) const override
     {
-        return world.perkDrill[DrillDirection::Down].hasValue() && world.perkDrill[DrillDirection::Down]->coverage == 1u;
+        return world.perkDrill[DrillDirection::Down].hasValue() && world.perkDrill[DrillDirection::Down]->coverage == 1;
     }
 
     /////////////////////////////////////////////////////////////
     void apply(World& world) const override
     {
-        world.perkDrill[DrillDirection::Down]->coverage = 2u; // special case value meaning "full coverage"
+        world.perkDrill[DrillDirection::Down]->coverage = 2; // special case value meaning "full coverage"
     }
 };
 
@@ -272,9 +347,23 @@ struct [[nodiscard]] PerkHoldSkipTetramino : Perk
     {
         if (world.perkCanHoldTetramino == 0)
             return "Unlock Hold";
+
         if (world.perkCanHoldTetramino == 1)
             return "Hold -> Skip";
+
         return "";
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] std::string getInventoryStr(const World& world) const override
+    {
+        return std::format("{}", (world.perkCanHoldTetramino == 0) ? "Hold" : "Skip");
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isActive(const World& world) const override
+    {
+        return world.perkCanHoldTetramino > 0;
     }
 
     /////////////////////////////////////////////////////////////
@@ -317,6 +406,18 @@ struct [[nodiscard]] PerkXpPerTetraminoPlaced : Perk
     }
 
     /////////////////////////////////////////////////////////////
+    [[nodiscard]] std::string getInventoryStr(const World& world) const override
+    {
+        return std::format("({} XP)", world.perkXPPerTetraminoPlaced);
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isActive(const World& world) const override
+    {
+        return world.perkXPPerTetraminoPlaced > 0;
+    }
+
+    /////////////////////////////////////////////////////////////
     [[nodiscard]] bool meetsPrerequisites(const World&) const override
     {
         return true;
@@ -352,6 +453,18 @@ struct [[nodiscard]] PerkXpPerBlockDamaged : Perk
     [[nodiscard]] std::string getProgressionStr(const World& world) const override
     {
         return std::format("{} -> {}", world.perkXPPerBlockDamaged, world.perkXPPerBlockDamaged + xpIncrease);
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] std::string getInventoryStr(const World& world) const override
+    {
+        return std::format("({} XP)", world.perkXPPerBlockDamaged);
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isActive(const World& world) const override
+    {
+        return world.perkXPPerBlockDamaged > 0;
     }
 
     /////////////////////////////////////////////////////////////
@@ -399,6 +512,18 @@ struct [[nodiscard]] PerkDeleteFloorPerNTetraminos : Perk
         return std::format("{} -> {}",
                            world.perkDeleteFloorPerNTetraminos->nTetraminos,
                            world.perkDeleteFloorPerNTetraminos->nTetraminos - 1);
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] std::string getInventoryStr(const World& world) const override
+    {
+        return std::format("(every {} tetraminos)", world.perkDeleteFloorPerNTetraminos->nTetraminos);
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isActive(const World& world) const override
+    {
+        return world.perkDeleteFloorPerNTetraminos.hasValue();
     }
 
     /////////////////////////////////////////////////////////////
@@ -454,6 +579,18 @@ struct [[nodiscard]] PerkRndHitPerNTetraminos : Perk
     }
 
     /////////////////////////////////////////////////////////////
+    [[nodiscard]] std::string getInventoryStr(const World& world) const override
+    {
+        return std::format("(every {} tetraminos)", world.perkRndHitPerNTetraminos->nTetraminos);
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isActive(const World& world) const override
+    {
+        return world.perkRndHitPerNTetraminos.hasValue();
+    }
+
+    /////////////////////////////////////////////////////////////
     [[nodiscard]] bool meetsPrerequisites(const World& world) const override
     {
         return !world.perkRndHitPerNTetraminos.hasValue() || world.perkRndHitPerNTetraminos->nTetraminos > minThreshold;
@@ -496,6 +633,18 @@ struct [[nodiscard]] PerkExtraLinePieces : Perk
     }
 
     /////////////////////////////////////////////////////////////
+    [[nodiscard]] std::string getInventoryStr(const World& world) const override
+    {
+        return std::format("(+{})", world.perkExtraLinePiecesInPool);
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isActive(const World& world) const override
+    {
+        return world.perkExtraLinePiecesInPool > 0;
+    }
+
+    /////////////////////////////////////////////////////////////
     [[nodiscard]] bool meetsPrerequisites(const World& world) const override
     {
         return world.perkExtraLinePiecesInPool < maxExtraPieces;
@@ -531,6 +680,20 @@ struct [[nodiscard]] PerkHorizontalDrillUnlock : Perk
     [[nodiscard]] std::string getProgressionStr(const World&) const override
     {
         return "";
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] std::string getInventoryStr(const World& world) const override
+    {
+        return std::format("(penetration: {}, coverage: {})",
+                           world.perkDrill[TDirection]->maxPenetration,
+                           world.perkDrill[TDirection]->coverage);
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isActive(const World& world) const override
+    {
+        return world.perkDrill[TDirection].hasValue();
     }
 
     /////////////////////////////////////////////////////////////
@@ -578,6 +741,18 @@ struct [[nodiscard]] PerkHorizontalDrillPenetration : Perk
     }
 
     /////////////////////////////////////////////////////////////
+    [[nodiscard]] std::string getInventoryStr(const World&) const override
+    {
+        return ""; // handled by main perk
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isActive(const World& world) const override
+    {
+        return world.perkDrill[TDirection].hasValue() && world.perkDrill[TDirection]->maxPenetration > 1;
+    }
+
+    /////////////////////////////////////////////////////////////
     [[nodiscard]] bool meetsPrerequisites(const World& world) const override
     {
         return world.perkDrill[TDirection].hasValue() && world.perkDrill[TDirection]->maxPenetration < maxPenetration;
@@ -619,6 +794,18 @@ struct [[nodiscard]] PerkHorizontalDrillCoverage : Perk
         return std::format("{} -> {}",
                            world.perkDrill[TDirection]->coverage,
                            world.perkDrill[TDirection]->coverage + lengthIncrease);
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] std::string getInventoryStr(const World&) const override
+    {
+        return ""; // handled by main perk
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isActive(const World& world) const override
+    {
+        return world.perkDrill[TDirection].hasValue() && world.perkDrill[TDirection]->coverage > 1;
     }
 
     /////////////////////////////////////////////////////////////
@@ -675,9 +862,23 @@ struct [[nodiscard]] PerkDiagonalLaserUnlock : Perk
     }
 
     /////////////////////////////////////////////////////////////
+    [[nodiscard]] std::string getInventoryStr(const World& world) const override
+    {
+        return std::format("(penetration: {}, bounce: {})",
+                           world.perkLaser[TDirection]->maxPenetration,
+                           world.perkLaser[TDirection]->bounce ? "yes" : "no");
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isActive(const World& world) const override
+    {
+        return world.perkLaser[TDirection].hasValue();
+    }
+
+    /////////////////////////////////////////////////////////////
     [[nodiscard]] bool meetsPrerequisites(const World& world) const override
     {
-        return !world.perkLaser[TDirection].hasValue();
+        return !isActive(world);
     }
 
     /////////////////////////////////////////////////////////////
@@ -719,6 +920,18 @@ struct [[nodiscard]] PerkDiagonalLaserPenetration : Perk
     }
 
     /////////////////////////////////////////////////////////////
+    [[nodiscard]] std::string getInventoryStr(const World&) const override
+    {
+        return ""; // handled by main perk
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isActive(const World& world) const override
+    {
+        return world.perkLaser[TDirection].hasValue() && world.perkLaser[TDirection]->maxPenetration > 1;
+    }
+
+    /////////////////////////////////////////////////////////////
     [[nodiscard]] bool meetsPrerequisites(const World& world) const override
     {
         return world.perkLaser[TDirection].hasValue() && world.perkLaser[TDirection]->maxPenetration < maxPenetration;
@@ -755,6 +968,18 @@ struct [[nodiscard]] PerkDiagonalLaserBounce : Perk
     [[nodiscard]] std::string getProgressionStr(const World&) const override
     {
         return "";
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] std::string getInventoryStr(const World&) const override
+    {
+        return ""; // handled by main perk
+    }
+
+    /////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isActive(const World& world) const override
+    {
+        return world.perkLaser[TDirection].hasValue() && world.perkLaser[TDirection]->bounce;
     }
 
     /////////////////////////////////////////////////////////////

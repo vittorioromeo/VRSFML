@@ -5,6 +5,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "BlockMatrix.hpp"
+#include "StrongTypedef.hpp"
 #include "TetraminoShapes.hpp"
 
 #include "SFML/System/Vec2.hpp"
@@ -15,12 +16,16 @@
 namespace tsurv
 {
 ////////////////////////////////////////////////////////////
+TSURV_DEFINE_STRONG_TYPEDEF(RotationState, sf::base::U8);
+
+
+////////////////////////////////////////////////////////////
 struct [[nodiscard]] Tetramino // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
     BlockMatrix   shape;
     sf::Vec2i     position;
     TetraminoType tetraminoType;
-    sf::base::U8  rotationState; // [0-3]
+    RotationState rotationState; // [0-3]
 };
 
 

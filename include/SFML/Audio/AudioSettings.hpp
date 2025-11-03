@@ -52,6 +52,9 @@ struct AudioSettings
     bool looping{false}; //!< Whether the audio is looping
 
     bool spatializationEnabled{true}; //!< Whether spatialization is enabled
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool operator==(const AudioSettings&) const noexcept = default;
 };
 
 // TODO P0: also save cursor? or maybe have start,current,end? maybe rename to AudioState?

@@ -102,6 +102,9 @@ public:
         const float progress = m_lifetime.asSeconds() / m_duration.asSeconds();
         const float fade     = 1.f - progress;
 
+        if (progress > 1.f)
+            return;
+
         for (sf::base::SizeT i = 0u; i < m_verticesCore.size(); ++i)
             m_verticesCore[i].color.a = static_cast<sf::base::U8>(static_cast<float>(m_originalCoreAlphas[i]) * fade);
 
