@@ -86,6 +86,7 @@
 #include "SFML/Base/InPlaceVector.hpp"
 #include "SFML/Base/Math/Fmod.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/OverloadSet.hpp"
 #include "SFML/Base/Remainder.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StringView.hpp"
@@ -343,6 +344,220 @@ struct Sounds
 
 
 ////////////////////////////////////////////////////////////
+struct EveryNCounter
+{
+    sf::base::SizeT requiredCount;
+    sf::base::SizeT currentCount = 0u;
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool incrementAndCheck(const sf::base::SizeT n)
+    {
+        currentCount += n;
+
+        if (currentCount < requiredCount)
+            return false;
+
+        currentCount = 0u;
+        return true;
+    }
+};
+
+
+////////////////////////////////////////////////////////////
+struct TriggerTetraminoPlaced
+{
+    sf::base::Optional<TetraminoType> requiredType;
+
+    EveryNCounter counter;
+};
+
+
+////////////////////////////////////////////////////////////
+struct TriggerLinesCleared
+{
+    EveryNCounter counter;
+
+    // TODO: also detect doubles/triples? or different trigger
+};
+
+
+////////////////////////////////////////////////////////////
+struct TriggerDrillHit
+{
+    EveryNCounter counter;
+};
+
+
+////////////////////////////////////////////////////////////
+struct TriggerLaserHit
+{
+    EveryNCounter counter;
+};
+
+
+////////////////////////////////////////////////////////////
+struct TriggerLightningHit
+{
+    EveryNCounter counter;
+};
+
+
+////////////////////////////////////////////////////////////
+struct TriggerBlockDamaged
+{
+    EveryNCounter counter;
+};
+
+
+////////////////////////////////////////////////////////////
+struct TriggerPowerUpCollected
+{
+    EveryNCounter counter;
+};
+
+
+////////////////////////////////////////////////////////////
+using DynamicPerkTrigger = sf::base::Variant< //
+    TriggerTetraminoPlaced,
+    TriggerLinesCleared,
+    TriggerDrillHit,
+    TriggerLaserHit,
+    TriggerLightningHit,
+    TriggerBlockDamaged,
+    TriggerPowerUpCollected>;
+
+
+////////////////////////////////////////////////////////////
+struct EffectGainXP
+{
+    sf::base::U64 amount;
+    // TODO: effect spawn position
+};
+
+
+////////////////////////////////////////////////////////////
+using DynamicPerkEffect = sf::base::Variant< //
+    EffectGainXP>;
+
+
+////////////////////////////////////////////////////////////
+struct DynamicPerk
+{
+    DynamicPerkTrigger                  trigger;
+    sf::base::Vector<DynamicPerkEffect> effects;
+
+    sf::base::Vector<DynamicPerkEffect> pendingEffects{};
+
+    ////////////////////////////////////////////////////////////
+    void onTetraminoPlaced(const Tetramino& tetramino)
+    {
+        auto* t = trigger.getIf<TriggerTetraminoPlaced>();
+
+        if (t == nullptr)
+            return;
+
+        if (t->requiredType.hasValue() && tetramino.tetraminoType != t->requiredType.value())
+            return;
+
+        if (!t->counter.incrementAndCheck(1u))
+            return;
+
+        apply();
+    }
+
+    ////////////////////////////////////////////////////////////
+    void onLinesCleared(const sf::base::SizeT nLinesCleared)
+    {
+        auto* t = trigger.getIf<TriggerLinesCleared>();
+
+        if (t == nullptr)
+            return;
+
+        if (!t->counter.incrementAndCheck(nLinesCleared))
+            return;
+
+        apply();
+    }
+
+    ////////////////////////////////////////////////////////////
+    void onDrillHit()
+    {
+        auto* t = trigger.getIf<TriggerDrillHit>();
+
+        if (t == nullptr)
+            return;
+
+        if (!t->counter.incrementAndCheck(1u))
+            return;
+
+        apply();
+    }
+
+    ////////////////////////////////////////////////////////////
+    void onLaserHit()
+    {
+        auto* t = trigger.getIf<TriggerLaserHit>();
+
+        if (t == nullptr)
+            return;
+
+        if (!t->counter.incrementAndCheck(1u))
+            return;
+
+        apply();
+    }
+
+    ////////////////////////////////////////////////////////////
+    void onLightningHit()
+    {
+        auto* t = trigger.getIf<TriggerLightningHit>();
+
+        if (t == nullptr)
+            return;
+
+        if (!t->counter.incrementAndCheck(1u))
+            return;
+
+        apply();
+    }
+
+    ////////////////////////////////////////////////////////////
+    void onBlockDamaged([[maybe_unused]] const sf::Vec2uz position, [[maybe_unused]] Block& block)
+    {
+        auto* t = trigger.getIf<TriggerBlockDamaged>();
+
+        if (t == nullptr)
+            return;
+
+        if (!t->counter.incrementAndCheck(1u))
+            return;
+
+        apply();
+    }
+
+    ////////////////////////////////////////////////////////////
+    void onPowerupCollected([[maybe_unused]] Block& block)
+    {
+        auto* t = trigger.getIf<TriggerPowerUpCollected>();
+
+        if (t == nullptr)
+            return;
+
+        if (!t->counter.incrementAndCheck(1u))
+            return;
+
+        apply();
+    }
+
+    ////////////////////////////////////////////////////////////
+    void apply()
+    {
+        pendingEffects.emplaceRange(effects.begin(), effects.size());
+    }
+};
+
+
+////////////////////////////////////////////////////////////
 class Game
 {
 private:
@@ -475,6 +690,7 @@ private:
     sf::Vec2f                             m_currentTetraminoVisualCenter;
     AnimationTimeline<AnimationCommandP0> m_animationTimelineP0;
     AnimationTimeline<AnimationCommandP1> m_animationTimelineP1;
+    AnimationTimeline<AnimationCommandP2> m_animationTimelineP2;
     sf::base::Vector<float>               m_rowYOffsets;
 
     ////////////////////////////////////////////////////////////
@@ -538,6 +754,9 @@ private:
     };
 
     sf::base::Vector<sf::base::SizeT> m_perkIndicesSelectedThisLevel;
+
+    ////////////////////////////////////////////////////////////
+    sf::base::Vector<DynamicPerk> m_dynamicPerks; // TODO: to world
 
     ////////////////////////////////////////////////////////////
     sf::base::Vector<LightningBolt> m_lightningBolts;
@@ -1239,8 +1458,30 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    void embedTetraminoAndClearLines(const Tetramino& tetramino)
+    void handleEffects()
     {
+        const auto visitor = sf::base::OverloadSet{
+            [&](const EffectGainXP& e) { addXP(e.amount); },
+        };
+
+        for (auto& dp : m_dynamicPerks)
+        {
+            for (auto& e : dp.pendingEffects)
+                e.linearVisit(visitor);
+
+            dp.pendingEffects.clear();
+        }
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    void handleTriggerTetraminoPlaced(const Tetramino& tetramino)
+    {
+        for (auto& dp : m_dynamicPerks)
+            dp.onTetraminoPlaced(tetramino);
+
+        handleEffects();
+
         if (m_world.perkXPPerTetraminoPlaced > 0)
         {
             addXP(static_cast<sf::base::U64>(m_world.perkXPPerTetraminoPlaced));
@@ -1256,11 +1497,6 @@ private:
             }
         }
 
-        m_world.blockGrid.embedTetramino(tetramino);
-        m_world.graceDropMoves = 0u;
-
-        ++m_world.tetaminosPlaced;
-
         if (auto* rndHitPerNTetraminos = m_world.perkRndHitPerNTetraminos.asPtr())
         {
             ++(rndHitPerNTetraminos->tetraminosPlacedCount);
@@ -1272,21 +1508,14 @@ private:
             }
         }
 
-        if (const auto fullRows = findFullRows(); !fullRows.empty())
-            m_animationTimelineP1.addInstantaneous(AnimClearLines{
-                .rows       = fullRows,
-                .awardXP    = true,
-                .forceClear = false,
-            });
-
         if (auto* deleteFloorNTetraminos = m_world.perkDeleteFloorPerNTetraminos.asPtr())
         {
             ++(deleteFloorNTetraminos->tetraminosPlacedCount);
 
             if (deleteFloorNTetraminos->tetraminosPlacedCount >= deleteFloorNTetraminos->nTetraminos)
             {
-                // Delete bottom line
-                m_animationTimelineP1.addInstantaneous(AnimClearLines{
+                // Delete bottom line (must happen after regular clear)
+                m_animationTimelineP2.addInstantaneous(AnimClearLines{
                     .rows       = {m_world.blockGrid.getHeight() - 1u},
                     .awardXP    = false,
                     .forceClear = true,
@@ -1299,10 +1528,109 @@ private:
 
 
     ////////////////////////////////////////////////////////////
+    void handleTriggerLinesCleared(const sf::base::SizeT nLinesCleared)
+    {
+        for (auto& dp : m_dynamicPerks)
+            dp.onLinesCleared(nLinesCleared);
+
+        handleEffects();
+
+        if (m_world.perkRndHitOnClear > 0)
+        {
+            m_animationTimelineP0.addInstantaneous(
+                AnimLightningStrike{.numStrikes = static_cast<sf::base::SizeT>(m_world.perkRndHitOnClear)});
+        }
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    void handleTriggerDrillHit()
+    {
+        for (auto& dp : m_dynamicPerks)
+            dp.onDrillHit();
+
+        handleEffects();
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    void handleTriggerLaserHit()
+    {
+        for (auto& dp : m_dynamicPerks)
+            dp.onLaserHit();
+
+        handleEffects();
+
+        if (roll100(m_world.perkChainLightning))
+            m_animationTimelineP0.addInstantaneous(AnimLightningStrike{.numStrikes = 1u});
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    void handleTriggerLightningHit()
+    {
+        for (auto& dp : m_dynamicPerks)
+            dp.onLightningHit();
+
+        handleEffects();
+
+        if (roll100(m_world.perkChainLightning))
+            m_animationTimelineP0.addInstantaneous(AnimLightningStrike{.numStrikes = 1u});
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    void handleTriggerBlockDamaged(const sf::Vec2uz position, Block& block)
+    {
+        for (auto& dp : m_dynamicPerks)
+            dp.onBlockDamaged(position, block);
+
+        handleEffects();
+
+        if (m_world.perkXPPerBlockDamaged > 0)
+        {
+            addXP(static_cast<sf::base::U64>(m_world.perkXPPerBlockDamaged));
+            playSound(m_sounds.exp);
+
+            spawnXPEarnedParticle(toDrawCoordinates(position) + drawBlockSize / 2.f, block.paletteIdx);
+        }
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    void handleTriggerPowerupCollected(Block& block)
+    {
+        for (auto& dp : m_dynamicPerks)
+            dp.onPowerupCollected(block);
+
+        handleEffects();
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    void embedTetraminoAndClearLines(const Tetramino& tetramino)
+    {
+        handleTriggerTetraminoPlaced(tetramino);
+
+        m_world.blockGrid.embedTetramino(tetramino);
+        m_world.graceDropMoves = 0u;
+
+        ++m_world.tetaminosPlaced;
+
+        if (const auto fullRows = findFullRows(); !fullRows.empty())
+            m_animationTimelineP1.addInstantaneous(AnimClearLines{
+                .rows       = fullRows,
+                .awardXP    = true,
+                .forceClear = false,
+            });
+    }
+
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isInPlayableState() const
     {
         return !m_animationTimelineP0.anyAnimationPlaying() && !m_animationTimelineP1.anyAnimationPlaying() &&
-               !m_inLevelUpScreen;
+               !m_animationTimelineP2.anyAnimationPlaying() && !m_inLevelUpScreen;
     }
 
 
@@ -1327,6 +1655,16 @@ private:
 
         updateStepRefillBlockMatrixIfNeeded();
         initializeCurrentTetraminoFromBag();
+
+        m_dynamicPerks.clear();
+
+        m_dynamicPerks.pushBack(DynamicPerk{
+            .trigger = DynamicPerkTrigger{TriggerLightningHit{2u}},
+            .effects =
+                {
+                    DynamicPerkEffect{EffectGainXP{10u}},
+                },
+        });
     }
 
 
@@ -1395,7 +1733,9 @@ private:
                                       m_animationTimelineP1.isEnqueued<AnimHardDrop>() ||      // important
                                       m_animationTimelineP1.isEnqueued<AnimSquish>();          // important
 
-        const bool inAnimation = isP0TimelineBusy || isP1TimelineBusy;
+        const bool isP2TimelineBusy = m_animationTimelineP2.anyAnimationPlaying();
+
+        const bool inAnimation = isP0TimelineBusy || isP1TimelineBusy || isP2TimelineBusy;
 
         if (eKeyPressed.code == sf::Keyboard::Key::Right)
         {
@@ -1498,6 +1838,15 @@ private:
             m_animationTimelineP0.addInstantaneous(AnimLightningStrike{.numStrikes = 1u});
             return;
         }
+
+        if (eKeyPressed.code == sf::Keyboard::Key::E)
+        {
+            m_world.tick += 2000;
+            m_world.blockMatrixBag.clear();
+            updateStepRefillBlockMatrixIfNeeded();
+
+            return;
+        }
     }
 
 
@@ -1555,14 +1904,6 @@ private:
         playSound(m_sounds.hit);
 
         m_blockEffects[block.blockId] = BlockEffect{};
-
-        if (m_world.perkXPPerBlockDamaged > 0)
-        {
-            addXP(static_cast<sf::base::U64>(m_world.perkXPPerBlockDamaged));
-            playSound(m_sounds.exp);
-
-            spawnXPEarnedParticle(toDrawCoordinates(position) + drawBlockSize / 2.f, block.paletteIdx);
-        }
     }
 
 
@@ -1738,6 +2079,12 @@ private:
             processTimeline(m_animationTimelineP1);
             return;
         }
+
+        if (m_animationTimelineP2.anyAnimationPlaying())
+        {
+            processTimeline(m_animationTimelineP2);
+            return;
+        }
     }
 
 
@@ -1895,6 +2242,9 @@ private:
                             .position = {x, y},
                         });
 
+                        if (optBlock->powerup != BlockPowerup::None)
+                            handleTriggerPowerupCollected(*optBlock);
+
                         if (optBlock->powerup == BlockPowerup::XPBonus)
                         {
                             addXP(5u * m_world.playerLevel);
@@ -2016,12 +2366,8 @@ private:
 
             m_animationTimelineP1.add(0.15f, AnimCollapseGrid{.clearedRows = trulyClearedRows});
 
-            // Random block hit perk
-            if (clearLines.awardXP && m_world.perkRndHitOnClear > 0)
-            {
-                m_animationTimelineP0.addInstantaneous(
-                    AnimLightningStrike{.numStrikes = static_cast<sf::base::SizeT>(m_world.perkRndHitOnClear)});
-            }
+            if (clearLines.awardXP)
+                handleTriggerLinesCleared(numCleared);
         }
         else if (!fadingBlocks.empty())
         {
@@ -2095,7 +2441,10 @@ private:
             return false;
 
         for (auto [blockPtr, position] : findDrillTargetBlocks(drill.tetramino, drill.direction))
+        {
             damageBlock(position, *blockPtr);
+            handleTriggerDrillHit();
+        }
 
         return true;
     }
@@ -2134,6 +2483,8 @@ private:
         {
             SFML_BASE_ASSERT(optBlock.hasValue());
             damageBlock(laser.gridTargetPos.toVec2uz(), *optBlock);
+
+            handleTriggerLaserHit();
         }
         else
         {
@@ -2246,8 +2597,7 @@ private:
 
         m_animationTimelineP0.add(0.15f, AnimWait{});
 
-        if (roll100(m_world.perkChainLightning))
-            m_animationTimelineP0.addInstantaneous(AnimLightningStrike{.numStrikes = 1u});
+        handleTriggerLightningHit();
 
         if (lightningStrike.numStrikes > 1u)
             m_animationTimelineP0.addInstantaneous(AnimLightningStrike{.numStrikes = lightningStrike.numStrikes - 1u});
@@ -4125,3 +4475,4 @@ int main()
 // - timed powerups
 // - perks that affect the timers
 // - tutorial modals
+// - active perks/items with cooldowns or restrictions (e.g. one-time undo)
