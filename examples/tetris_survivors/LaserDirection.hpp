@@ -34,9 +34,9 @@ inline constexpr sf::base::SizeT laserDirectionCount = 2u;
     switch (direction)
     {
         case LaserDirection::Left:
-            return sf::Vec2i{-1, 1};
+            return {-1, 1};
         case LaserDirection::Right:
-            return sf::Vec2i{1, 1};
+            return {1, 1};
         default:
             SFML_BASE_UNREACHABLE();
     }

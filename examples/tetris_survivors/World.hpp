@@ -4,6 +4,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Block.hpp"
 #include "BlockGrid.hpp"
 #include "BlockMatrix.hpp"
 #include "Constants.hpp"
@@ -47,7 +48,7 @@ struct [[nodiscard]] TaggedBlockMatrix // NOLINT(cppcoreguidelines-pro-type-memb
 ////////////////////////////////////////////////////////////
 [[nodiscard]] inline sf::base::U64 getDifficultyFactor(const sf::base::U64 ticks)
 {
-    constexpr sf::base::U64 baseDifficulty = 1000u;
+    constexpr sf::base::U64 baseDifficulty = 800u;
     return baseDifficulty + getElapsedSeconds(ticks) * 5u;
 }
 
@@ -77,12 +78,15 @@ struct [[nodiscard]] TaggedBlockMatrix // NOLINT(cppcoreguidelines-pro-type-memb
             switch (targetHealth)
             {
                 case 2:
-                    baseUpgradeChance = 0.15f;
+                    baseUpgradeChance = 0.2f;
                     break; // 50%
                 case 3:
-                    baseUpgradeChance = 0.15f;
+                    baseUpgradeChance = 0.4f;
                     break; // 20%
                 case 4:
+                    baseUpgradeChance = 0.15f;
+                    break; // 10%
+                case 5:
                     baseUpgradeChance = 0.15f;
                     break; // 10%
                 default:
@@ -133,8 +137,8 @@ struct [[nodiscard]] TaggedBlockMatrix // NOLINT(cppcoreguidelines-pro-type-memb
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] World
 {
-    sf::base::U32 nextTetraminoId = 0u;
-    sf::base::U32 nextBlockId     = 0u;
+    TetraminoId nextTetraminoId{0u};
+    BlockId     nextBlockId{0u};
 
     BlockGrid blockGrid{10u, 20u + gridGraceY};
 
