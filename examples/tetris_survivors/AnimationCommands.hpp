@@ -141,4 +141,15 @@ struct AnimationCommandP1
     float       duration;
 };
 
+
+////////////////////////////////////////////////////////////
+struct AnimationCommandP2
+{
+    using VariantType = sf::base::Variant< //
+        AnimClearLines>;
+
+    VariantType data;
+    float       duration;
+};
+
 } // namespace tsurv
