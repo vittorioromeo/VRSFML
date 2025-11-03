@@ -1,8 +1,10 @@
-#include "../bubble_idle/Easing.hpp"    // TODO P1: avoid the relative path...?
-#include "../bubble_idle/HueColor.hpp"  // TODO P1: avoid the relative path...?
-#include "../bubble_idle/MathUtils.hpp" // TODO P1: avoid the relative path...?
-#include "../bubble_idle/RNGFast.hpp"   // TODO P1: avoid the relative path...?
-#include "../bubble_idle/Timer.hpp"     // TODO P1: avoid the relative path...?
+#include "../bubble_idle/Easing.hpp"       // TODO P1: avoid the relative path...?
+#include "../bubble_idle/HueColor.hpp"     // TODO P1: avoid the relative path...?
+#include "../bubble_idle/LoadedSound.hpp"  // TODO P1: avoid the relative path...?
+#include "../bubble_idle/MathUtils.hpp"    // TODO P1: avoid the relative path...?
+#include "../bubble_idle/RNGFast.hpp"      // TODO P1: avoid the relative path...?
+#include "../bubble_idle/SoundManager.hpp" // TODO P1: avoid the relative path...?
+#include "../bubble_idle/Timer.hpp"        // TODO P1: avoid the relative path...?
 
 
 #define SFEX_PROFILER_ENABLED
@@ -93,7 +95,6 @@
 
 #include "ExampleUtils.hpp"
 
-
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 
@@ -103,8 +104,128 @@
 
 namespace tsurv
 {
-////////////////////////////////////////////////////////////
-constexpr sf::Vec2f resolution{320.f, 240.f};
+//////////////////////////////////////////////////////////////
+[[nodiscard]] static BitmapFont loadMinogramData()
+{
+    BitmapFont result;
+
+    constexpr sf::base::Array<sf::base::StringView, 7>
+        glyphRows{"ABCDEFGHIJKLM",
+                  "NOPQRSTUVWXYZ",
+                  "abcdefghijklm",
+                  "nopqrstuvwxyz",
+                  "0123456789+-=",
+                  "()[]{}<>/*:#%",
+                  "!?.,'\"@&$"};
+
+    for (sf::base::SizeT iY = 0; iY < glyphRows.size(); ++iY)
+        for (sf::base::SizeT iX = 0; iX < glyphRows[iY].size(); ++iX)
+        {
+            const char c = glyphRows[iY][iX];
+            result.addGlyph(c, {iX * 6u, iY * 10u}, {6u, 10u});
+        }
+
+    return result;
+}
+
+
+//////////////////////////////////////////////////////////////
+[[nodiscard]] static BitmapFont loadTiny5Data()
+{
+    BitmapFont result;
+
+    constexpr sf::base::Array<sf::base::StringView, 7>
+        glyphRows{"ABCDEFGHIJKLM",
+                  "NOPQRSTUVWXYZ",
+                  "abcdefghijklm",
+                  "nopqrstuvwxyz",
+                  "0123456789+-=",
+                  "()[]{}<>/*:#%",
+                  "!?.,'\"@&$"};
+
+    sf::base::SizeT stepX = 15;
+    sf::base::SizeT stepY = 17;
+
+    for (sf::base::SizeT iY = 0; iY < glyphRows.size(); ++iY)
+        for (sf::base::SizeT iX = 0; iX < glyphRows[iY].size(); ++iX)
+        {
+            const char c = glyphRows[iY][iX];
+            result.addGlyph(c, {4 + (stepX * iX), 7 + (stepY * iY)}, {6u, 8u});
+        }
+
+    result.adjustSize('I', {-3, 0});
+    result.adjustSize('i', {-3, 0});
+    result.adjustSize('l', {-3, 0});
+    result.adjustSize(':', {-3, 0});
+    result.adjustSize('!', {-3, 0});
+
+    result.adjustSize('a', {-1, 0});
+    result.adjustSize('b', {-1, 0});
+    result.adjustSize('c', {-1, 0});
+    result.adjustSize('d', {-1, 0});
+    result.adjustSize('e', {-1, 0});
+    result.adjustSize('f', {-2, 0});
+    result.adjustSize('g', {-1, 0});
+    result.adjustSize('h', {-1, 0});
+    result.adjustSize('k', {-1, 0});
+    result.adjustSize('n', {-1, 0});
+    result.adjustSize('o', {-1, 0});
+    result.adjustSize('p', {-1, 0});
+    result.adjustSize('q', {-1, 0});
+    result.adjustSize('r', {-2, 0});
+    result.adjustSize('t', {-2, 0});
+    result.adjustSize('u', {-1, 0});
+    result.adjustSize('v', {-1, 0});
+    result.adjustSize('x', {-1, 0});
+    result.adjustSize('y', {-1, 0});
+    result.adjustSize('z', {-1, 0});
+    result.adjustSize('j', {-2, 0});
+
+    result.adjustSize('J', {-1, 0});
+    result.adjustSize('L', {-1, 0});
+    result.adjustSize('T', {-1, 0});
+    result.adjustSize('V', {-1, 0});
+    result.adjustSize('X', {-1, 0});
+    result.adjustSize('Y', {-1, 0});
+    result.adjustSize('Z', {-1, 0});
+
+    result.adjustSize('0', {-1, 0});
+    result.adjustSize('1', {-2, 0});
+    result.adjustSize('2', {-1, 0});
+    result.adjustSize('3', {-1, 0});
+    result.adjustSize('4', {-1, 0});
+    result.adjustSize('5', {-1, 0});
+    result.adjustSize('6', {-1, 0});
+    result.adjustSize('7', {-1, 0});
+    result.adjustSize('8', {-1, 0});
+    result.adjustSize('9', {-1, 0});
+
+    result.adjustSize('(', {-2, 0});
+    result.adjustSize(')', {-2, 0});
+    result.adjustSize('[', {-2, 0});
+    result.adjustSize(']', {-2, 0});
+
+    result.adjustSize('{', {-1, 0});
+    result.adjustSize('}', {-1, 0});
+    result.adjustSize('<', {-1, 0});
+    result.adjustSize('>', {-1, 0});
+    result.adjustSize('+', {-1, 0});
+    result.adjustSize('-', {-1, 0});
+    result.adjustSize('=', {-1, 0});
+    result.adjustSize('*', {-1, 0});
+    result.adjustSize('?', {-1, 0});
+
+    result.adjustSize('.', {-3, 0});
+    result.adjustSize(',', {-3, 0});
+    result.adjustSize('\'', {-3, 0});
+    result.adjustSize('"', {-1, 0});
+    result.adjustSize('@', {-1, 0});
+    result.adjustSize('$', {-1, 0});
+
+    result.adjustSize('/', {-2, 0});
+
+    return result;
+}
 
 
 ////////////////////////////////////////////////////////////
@@ -134,9 +255,9 @@ struct [[nodiscard]] ParticleData
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] EarnedXPParticle // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    sf::Vec2f    startPosition;
-    sf::Vec2f    targetPosition;
-    sf::base::U8 paletteIdx;
+    sf::Vec2f  startPosition;
+    sf::Vec2f  targetPosition;
+    PaletteIdx paletteIdx;
 
     float delay;
     float startRotation = 0.f;
@@ -155,6 +276,7 @@ struct [[nodiscard]] DrawBlockOptions
     bool  drawText         = true;
     bool  applyYOffset     = true;
     bool  applyQuakeOffset = true;
+    bool  drawTimer        = false;
 };
 
 
@@ -198,6 +320,29 @@ struct [[nodiscard]] QuakeSinEffect
 
 
 ////////////////////////////////////////////////////////////
+struct Sounds
+{
+    LoadedSound landed{"Landed.wav"};
+    LoadedSound newLevel{"NewLevel.wav"};
+    LoadedSound rotate{"Rotate.wav"};
+    LoadedSound single{"Single.wav"};
+    LoadedSound exp{"Exp.wav"};
+    LoadedSound place{"Place.wav"};
+    LoadedSound hold{"Hold.wav"};
+    LoadedSound hit{"Hit.wav"};
+    LoadedSound bonus{"Bonus.wav"};
+    LoadedSound strike{"Strike.wav"};
+    LoadedSound drill{"Drill.wav"};
+    LoadedSound error{"Error.wav"};
+    LoadedSound laser{"Laser.wav"};
+    LoadedSound bounce{"Bounce.wav"};
+    LoadedSound menuSelect{"MenuSelect.ogg"};
+    LoadedSound menuConfirm{"MenuConfirm.ogg"};
+    LoadedSound menuReroll{"MenuReroll.ogg"};
+};
+
+
+////////////////////////////////////////////////////////////
 class Game
 {
 private:
@@ -211,7 +356,7 @@ private:
          .resizable       = true,
          .vsync           = true,
          .frametimeLimit  = 144u,
-         .contextSettings = {.antiAliasingLevel = 0}});
+         .contextSettings = {.antiAliasingLevel = 0u}});
 
     ////////////////////////////////////////////////////////////
     sf::Shader m_shader{[]
@@ -303,40 +448,14 @@ private:
     sf::PlaybackDevice m_playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};
 
     ////////////////////////////////////////////////////////////
-    sf::SoundBuffer m_sbLanded      = sf::SoundBuffer::loadFromFile("resources/Landed.wav").value();
-    sf::SoundBuffer m_sbNewLevel    = sf::SoundBuffer::loadFromFile("resources/NewLevel.wav").value();
-    sf::SoundBuffer m_sbRotate      = sf::SoundBuffer::loadFromFile("resources/Rotate.wav").value();
-    sf::SoundBuffer m_sbSingle      = sf::SoundBuffer::loadFromFile("resources/Single.wav").value();
-    sf::SoundBuffer m_sbExp         = sf::SoundBuffer::loadFromFile("resources/Exp.wav").value();
-    sf::SoundBuffer m_sbPlace       = sf::SoundBuffer::loadFromFile("resources/Place.wav").value();
-    sf::SoundBuffer m_sbHold        = sf::SoundBuffer::loadFromFile("resources/Hold.wav").value();
-    sf::SoundBuffer m_sbHit         = sf::SoundBuffer::loadFromFile("resources/Hit.wav").value();
-    sf::SoundBuffer m_sbBonus       = sf::SoundBuffer::loadFromFile("resources/Bonus.wav").value();
-    sf::SoundBuffer m_sbStrike      = sf::SoundBuffer::loadFromFile("resources/Strike.wav").value();
-    sf::SoundBuffer m_sbDrill       = sf::SoundBuffer::loadFromFile("resources/Drill.wav").value();
-    sf::SoundBuffer m_sbError       = sf::SoundBuffer::loadFromFile("resources/Error.wav").value();
-    sf::SoundBuffer m_sbLaser       = sf::SoundBuffer::loadFromFile("resources/Laser.wav").value();
-    sf::SoundBuffer m_sbBounce      = sf::SoundBuffer::loadFromFile("resources/Bounce.wav").value();
-    sf::SoundBuffer m_sbMenuSelect  = sf::SoundBuffer::loadFromFile("resources/MenuSelect.ogg").value();
-    sf::SoundBuffer m_sbMenuConfirm = sf::SoundBuffer::loadFromFile("resources/MenuConfirm.ogg").value();
-    sf::SoundBuffer m_sbMenuReroll  = sf::SoundBuffer::loadFromFile("resources/MenuReroll.ogg").value();
+    Sounds       m_sounds;
+    SoundManager m_soundManager;
 
     ////////////////////////////////////////////////////////////
-    sf::base::Array<sf::base::Optional<sf::Sound>, 8> m_soundPool;
-
-    ////////////////////////////////////////////////////////////
-    void playSound(const sf::SoundBuffer& soundBuffer, const float volumeMult = 1.f)
+    void playSound(const LoadedSound& ls, const sf::base::SizeT maxOverlap = 255u)
     {
-        for (auto& soundOpt : m_soundPool)
-            if (!soundOpt.hasValue() || !soundOpt->isPlaying())
-            {
-                auto& s = soundOpt.emplace(m_playbackDevice, soundBuffer);
-
-                s.setVolume(0.5f * volumeMult);
-                s.play();
-
-                return;
-            }
+        (void)m_playbackDevice.updateListener({.volume = 0.5f});
+        m_soundManager.playPooled(m_playbackDevice, ls, maxOverlap);
     }
 
     ////////////////////////////////////////////////////////////
@@ -442,7 +561,7 @@ private:
         float                  squishTime     = 0.f;
     };
 
-    ankerl::unordered_dense::map<sf::base::U32, BlockEffect> m_blockEffects;
+    ankerl::unordered_dense::map<BlockId, BlockEffect> m_blockEffects;
 
     ////////////////////////////////////////////////////////////
     sf::base::Vector<EarnedXPParticle> m_earnedXPParticles;
@@ -462,6 +581,10 @@ private:
     const sf::Rect2f m_txrBlock0         = addImgResourceToAtlas("block0.png");
     const sf::Rect2f m_txrBlock1         = addImgResourceToAtlas("block1.png");
     const sf::Rect2f m_txrBlock2         = addImgResourceToAtlas("block2.png");
+    const sf::Rect2f m_txrBlock3         = addImgResourceToAtlas("block3.png");
+    const sf::Rect2f m_txrBlock4         = addImgResourceToAtlas("block4.png");
+    const sf::Rect2f m_txrBlock5         = addImgResourceToAtlas("block5.png");
+    const sf::Rect2f m_txrBlock6         = addImgResourceToAtlas("block6.png");
     const sf::Rect2f m_txrDivider        = addImgResourceToAtlas("divider.png");
     const sf::Rect2f m_txrDrill          = addImgResourceToAtlas("drill.png");
     const sf::Rect2f m_txrRedDot         = addImgResourceToAtlas("reddot.png");
@@ -470,131 +593,6 @@ private:
     const sf::Rect2f m_txrPowerupBomb    = addImgResourceToAtlas("powerupbomb.png");
     const sf::Rect2f m_txrBFMinogram6x10 = addImgResourceToAtlas("minogram_6x10.png");
     const sf::Rect2f m_txrBFTiny5        = addImgResourceToAtlas("tiny5.png");
-
-
-    //////////////////////////////////////////////////////////////
-    [[nodiscard]] BitmapFont loadMinogramData()
-    {
-        BitmapFont result{};
-
-        constexpr sf::base::Array<sf::base::StringView, 7>
-            glyphRows{"ABCDEFGHIJKLM",
-                      "NOPQRSTUVWXYZ",
-                      "abcdefghijklm",
-                      "nopqrstuvwxyz",
-                      "0123456789+-=",
-                      "()[]{}<>/*:#%",
-                      "!?.,'\"@&$"};
-
-        for (sf::base::SizeT iY = 0; iY < glyphRows.size(); ++iY)
-            for (sf::base::SizeT iX = 0; iX < glyphRows[iY].size(); ++iX)
-            {
-                const char c = glyphRows[iY][iX];
-                result.addGlyph(c, {iX * 6u, iY * 10u}, {6u, 10u});
-            }
-
-        return result;
-    }
-
-
-    //////////////////////////////////////////////////////////////
-    [[nodiscard]] BitmapFont loadTiny5Data()
-    {
-        BitmapFont result{};
-
-        constexpr sf::base::Array<sf::base::StringView, 7>
-            glyphRows{"ABCDEFGHIJKLM",
-                      "NOPQRSTUVWXYZ",
-                      "abcdefghijklm",
-                      "nopqrstuvwxyz",
-                      "0123456789+-=",
-                      "()[]{}<>/*:#%",
-                      "!?.,'\"@&$"};
-
-        sf::base::SizeT stepX = 15;
-        sf::base::SizeT stepY = 17;
-
-        for (sf::base::SizeT iY = 0; iY < glyphRows.size(); ++iY)
-            for (sf::base::SizeT iX = 0; iX < glyphRows[iY].size(); ++iX)
-            {
-                const char c = glyphRows[iY][iX];
-                result.addGlyph(c, {4 + (stepX * iX), 7 + (stepY * iY)}, {6u, 8u});
-            }
-
-        result.adjustSize('I', {-3, 0});
-        result.adjustSize('i', {-3, 0});
-        result.adjustSize('l', {-3, 0});
-        result.adjustSize(':', {-3, 0});
-        result.adjustSize('!', {-3, 0});
-
-        result.adjustSize('a', {-1, 0});
-        result.adjustSize('b', {-1, 0});
-        result.adjustSize('c', {-1, 0});
-        result.adjustSize('d', {-1, 0});
-        result.adjustSize('e', {-1, 0});
-        result.adjustSize('f', {-2, 0});
-        result.adjustSize('g', {-1, 0});
-        result.adjustSize('h', {-1, 0});
-        result.adjustSize('k', {-1, 0});
-        result.adjustSize('n', {-1, 0});
-        result.adjustSize('o', {-1, 0});
-        result.adjustSize('p', {-1, 0});
-        result.adjustSize('q', {-1, 0});
-        result.adjustSize('r', {-2, 0});
-        result.adjustSize('t', {-2, 0});
-        result.adjustSize('u', {-1, 0});
-        result.adjustSize('v', {-1, 0});
-        result.adjustSize('x', {-1, 0});
-        result.adjustSize('y', {-1, 0});
-        result.adjustSize('z', {-1, 0});
-        result.adjustSize('j', {-2, 0});
-
-        result.adjustSize('J', {-1, 0});
-        result.adjustSize('L', {-1, 0});
-        result.adjustSize('T', {-1, 0});
-        result.adjustSize('V', {-1, 0});
-        result.adjustSize('X', {-1, 0});
-        result.adjustSize('Y', {-1, 0});
-        result.adjustSize('Z', {-1, 0});
-
-        result.adjustSize('0', {-1, 0});
-        result.adjustSize('1', {-2, 0});
-        result.adjustSize('2', {-1, 0});
-        result.adjustSize('3', {-1, 0});
-        result.adjustSize('4', {-1, 0});
-        result.adjustSize('5', {-1, 0});
-        result.adjustSize('6', {-1, 0});
-        result.adjustSize('7', {-1, 0});
-        result.adjustSize('8', {-1, 0});
-        result.adjustSize('9', {-1, 0});
-
-        result.adjustSize('(', {-2, 0});
-        result.adjustSize(')', {-2, 0});
-        result.adjustSize('[', {-2, 0});
-        result.adjustSize(']', {-2, 0});
-
-        result.adjustSize('{', {-1, 0});
-        result.adjustSize('}', {-1, 0});
-        result.adjustSize('<', {-1, 0});
-        result.adjustSize('>', {-1, 0});
-        result.adjustSize('+', {-1, 0});
-        result.adjustSize('-', {-1, 0});
-        result.adjustSize('=', {-1, 0});
-        result.adjustSize('*', {-1, 0});
-        result.adjustSize('?', {-1, 0});
-
-        result.adjustSize('.', {-3, 0});
-        result.adjustSize(',', {-3, 0});
-        result.adjustSize('\'', {-3, 0});
-        result.adjustSize('"', {-1, 0});
-        result.adjustSize('@', {-1, 0});
-        result.adjustSize('$', {-1, 0});
-
-        result.adjustSize('/', {-2, 0});
-
-
-        return result;
-    }
 
     //////////////////////////////////////////////////////////////
     BitmapFont m_bitmapFontMinogram{loadMinogramData()};
@@ -607,6 +605,11 @@ private:
 
     sf::RenderTexture m_rtPostProcess{
         sf::RenderTexture::create(resolution.toVec2u(), {.antiAliasingLevel = 0u, .sRgbCapable = false}).value()};
+
+
+    //////////////////////////////////////////////////////////////
+    sf::base::Vector<sf::Vertex>    m_textVerticesBuffer;
+    sf::base::Vector<sf::IndexType> m_textIndicesBuffer;
 
 
     ////////////////////////////////////////////////////////////
@@ -635,37 +638,6 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static bool tetraminosIntersect(const BlockMatrix& shape1,
-                                                  const sf::Vec2i    pos1,
-                                                  const BlockMatrix& shape2,
-                                                  const sf::Vec2i    pos2)
-    {
-        for (sf::base::SizeT y1 = 0; y1 < shapeDimension; ++y1)
-            for (sf::base::SizeT x1 = 0; x1 < shapeDimension; ++x1)
-            {
-                if (!shape1.at(x1, y1).hasValue())
-                    continue;
-
-                const sf::Vec2i worldPos1 = pos1 + sf::Vec2uz{x1, y1}.toVec2i();
-
-                for (sf::base::SizeT y2 = 0; y2 < shapeDimension; ++y2)
-                    for (sf::base::SizeT x2 = 0; x2 < shapeDimension; ++x2)
-                    {
-                        if (!shape2.at(x2, y2).hasValue())
-                            continue;
-
-                        const sf::Vec2i worldPos2 = pos2 + sf::Vec2uz{x2, y2}.toVec2i();
-
-                        if (worldPos1 == worldPos2)
-                            return true;
-                    }
-            }
-
-        return false;
-    }
-
-
-    ////////////////////////////////////////////////////////////
     [[nodiscard]] int calculateGhostY(const Tetramino& tetramino) const
     {
         sf::base::Optional<Tetramino> finalHardDropState;
@@ -683,7 +655,7 @@ private:
                 break;
 
             if (finalHardDropState.hasValue() &&
-                tetraminosIntersect(tetramino.shape, nextGhostPos, finalHardDropState->shape, finalHardDropState->position))
+                blockMatricesIntersect(tetramino.shape, nextGhostPos, finalHardDropState->shape, finalHardDropState->position))
                 break;
 
             ++ghostY;
@@ -714,18 +686,32 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] sf::Color hueColorFromPaletteIdx(
-        const sf::base::SizeT paletteIdx,
-        const sf::base::U8    alpha)
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] sf::Color hueColorFromPaletteIdxRotated(
+        const PaletteIdx   paletteIdx,
+        const sf::base::U8 alpha,
+        const float        degrees)
     {
-        const auto hue = sf::base::positiveRemainder(blockPalette[paletteIdx].toHSL().hue, 360.f);
+        const auto hue = sf::base::positiveRemainder(blockPalette[paletteIdx].toHSL().hue + degrees, 360.f);
         return hueColor(hue, 255u).withAlpha(alpha);
     }
 
 
     ////////////////////////////////////////////////////////////
-    void drawBlock(const Block& block, const sf::Vec2f position, const DrawBlockOptions& options = {})
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] sf::Color hueColorFromPaletteIdx(const PaletteIdx paletteIdx,
+                                                                                                 const sf::base::U8 alpha)
     {
+        return hueColorFromPaletteIdxRotated(paletteIdx, alpha, 0.f);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    sf::Rect2f drawBlock(const Block& block, const sf::Vec2f position, const DrawBlockOptions& options = {})
+    {
+        const float timerProgress = block.getTimerProgress();
+
+        sf::Vec2f mins{9999.f, 9999.f};
+        sf::Vec2f maxs{-9999.f, -9999.f};
+
         float yOffset = 0.f;
 
         if (options.applyYOffset && !m_rowYOffsets.empty())
@@ -766,13 +752,39 @@ private:
             .color    = hueColorFromPaletteIdx(block.paletteIdx, alpha),
         };
 
+        {
+            const auto [sine, cosine] = sf::base::sinCosLookup(commonDrawParams.rotation.wrapUnsigned().asRadians());
+
+            const auto transform = sf::Transform::fromPositionScaleOriginSinCos(commonDrawParams.position,
+                                                                                commonDrawParams.scale,
+                                                                                commonDrawParams.origin,
+                                                                                sine,
+                                                                                cosine);
+
+            mins = transform.transformPoint({0.f, 0.f});
+            maxs = transform.transformPoint(drawBlockSize);
+        }
+
+        const float shakeAmount = easeInOutSine(timerProgress) * 0.75f;
+        const auto  shake       = m_rngFast.getVec2f({-shakeAmount, -shakeAmount}, {shakeAmount, shakeAmount});
+
+        const bool hasTimer = block.tickTimerTarget != nullTickTimerTarget;
+
+        const bool doesNotHaveTimerOrIsPowerup = !hasTimer || block.powerup != BlockPowerup::None;
+
+        // const bool useNormalTexture  = block.health == 1u && !doesNotHaveTimerOrIsPowerup;
+        const bool useDamagedTexture = block.health == 1u && hasTimer && block.powerup == BlockPowerup::None;
+        const bool useArmoredTexture = block.health > 1u;
+
+        const auto txr = useArmoredTexture ? m_txrBlock4 : useDamagedTexture ? m_txrBlock6 : m_txrBlock1;
+
         m_rtGame.draw(m_textureAtlas.getTexture(),
                       {
-                          .position    = commonDrawParams.position,
+                          .position    = commonDrawParams.position + shake,
                           .scale       = commonDrawParams.scale,
                           .origin      = commonDrawParams.origin,
                           .rotation    = sf::degrees(options.rotation),
-                          .textureRect = block.health == 1u ? m_txrBlock1 : m_txrBlock2,
+                          .textureRect = txr,
                           .color       = commonDrawParams.color,
                       },
                       {.shader = &m_shader});
@@ -827,12 +839,85 @@ private:
             text.setCenter(floorVec2(position.addY(yOffset)) + sf::Vec2f{2.f, 2.f});
             m_rtGame.draw(text);
         }
+
+        if (block.tickTimerTarget != nullTickTimerTarget && options.drawTimer)
+        {
+            const bool timerDirection = block.powerup == BlockPowerup::None;
+
+            const float progress0 = sf::base::clamp(timerProgress * 4.f, 0.f, 1.f);
+            const float progress1 = sf::base::clamp((timerProgress - 0.25f) * 4.f, 0.f, 1.f);
+            const float progress2 = sf::base::clamp((timerProgress - 0.5f) * 4.f, 0.f, 1.f);
+            const float progress3 = sf::base::clamp((timerProgress - 0.75f) * 4.f, 0.f, 1.f);
+
+            const float p0 = timerDirection ? progress0 : (1.f - progress3);
+            const float p1 = timerDirection ? progress1 : (1.f - progress2);
+            const float p2 = timerDirection ? progress2 : (1.f - progress1);
+            const float p3 = timerDirection ? progress3 : (1.f - progress0);
+
+            sf::RectangleShapeData timerLine{
+                .scale       = commonDrawParams.scale,
+                .origin      = commonDrawParams.origin,
+                .textureRect = m_txrWhiteDot,
+                .fillColor   = sf::Color::White,
+            };
+
+            const auto drawTimerLines = [&](const float embed)
+            {
+                // top line
+                timerLine.position = commonDrawParams.position + sf::Vec2f{embed, embed};
+                timerLine.rotation = sf::degrees(0.f);
+                timerLine.size     = {(drawBlockSize.x - embed * 2.f) * p0, 1.f};
+                m_rtGame.draw(timerLine, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+
+                // right line
+                timerLine.position = commonDrawParams.position + sf::Vec2f{drawBlockSize.x - embed - 1.f, embed};
+                timerLine.rotation = sf::degrees(0.f);
+                timerLine.size     = {1.f, (drawBlockSize.y - embed * 2.f) * p1};
+                m_rtGame.draw(timerLine, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+
+                // bottom line
+                timerLine.position = commonDrawParams.position + sf::Vec2f{1.f - embed, 1.f - embed};
+                timerLine.rotation = sf::degrees(180.f);
+                timerLine.size     = {(drawBlockSize.x - embed * 2.f) * p2, 1.f};
+                m_rtGame.draw(timerLine, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+
+                // left line
+                timerLine.position = commonDrawParams.position + sf::Vec2f{-drawBlockSize.x + embed + 2.f, 1.f - embed};
+                timerLine.rotation = sf::degrees(180.f);
+                timerLine.size     = {1.f, (drawBlockSize.y - embed * 2.f) * p3};
+                m_rtGame.draw(timerLine, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+            };
+
+            if (useDamagedTexture)
+            {
+                timerLine.textureRect = m_txrWhiteDot;
+
+                timerLine.fillColor = sf::Color::White;
+                drawTimerLines(0.f);
+
+                timerLine.fillColor = sf::Color::DarkGray;
+                drawTimerLines(1.f);
+            }
+            else
+            {
+                timerLine.textureRect = m_txrRedDot;
+                timerLine.fillColor   = useDamagedTexture ? sf::Color::White
+                                                          : hueColorFromPaletteIdxRotated(block.paletteIdx, 255u, 90.f);
+
+                drawTimerLines(0.f);
+            }
+        }
+
+        return {mins, maxs - mins};
     }
 
 
     ////////////////////////////////////////////////////////////
-    void drawTetramino(const BlockMatrix& shape, const sf::Vec2f centerPosition, const DrawBlockOptions& options = {})
+    sf::Rect2f drawTetramino(const BlockMatrix& shape, const sf::Vec2f centerPosition, const DrawBlockOptions& options = {})
     {
+        sf::Vec2f mins{9999.f, 9999.f};
+        sf::Vec2f maxs{-9999.f, -9999.f};
+
         const float     scale    = options.scale;
         constexpr float rotation = 0.f;
 
@@ -863,17 +948,27 @@ private:
                 const sf::Vec2f finalDrawPosition = floorVec2(centerPosition + positionRelativeToPivot);
 
                 // 6. Call drawBlock, passing all the necessary transform properties.
-                drawBlock(*optBlock,
-                          finalDrawPosition,
-                          {
-                              .opacity      = options.opacity,
-                              .squishMult   = options.squishMult,
-                              .rotation     = rotation, // Pass rotation for the block's own orientation
-                              .scale        = scale,
-                              .drawText     = options.drawText,
-                              .applyYOffset = false, // Usually false for UI elements
-                          });
+                const auto [pos,
+                            size] = drawBlock(*optBlock,
+                                              finalDrawPosition,
+                                              {
+                                                  .opacity    = options.opacity,
+                                                  .squishMult = options.squishMult,
+                                                  .rotation = rotation, // Pass rotation for the block's own orientation
+                                                  .scale    = scale,
+                                                  .drawText = options.drawText,
+                                                  .applyYOffset     = false, // Usually false for UI elements
+                                                  .applyQuakeOffset = options.applyQuakeOffset,
+                                                  .drawTimer        = options.drawTimer,
+                                              });
+
+                mins.x = sf::base::min(mins.x, pos.x);
+                mins.y = sf::base::min(mins.y, pos.y);
+                maxs.x = sf::base::max(maxs.x, pos.x + size.x);
+                maxs.y = sf::base::max(maxs.y, pos.y + size.y);
             }
+
+        return {mins, maxs - mins};
     }
 
 
@@ -890,7 +985,7 @@ private:
     ////////////////////////////////////////////////////////////
     void rotateTetramino(Tetramino& tetramino, const bool clockwise) const
     {
-        const auto nextRotationState = static_cast<sf::base::U8>((tetramino.rotationState + (clockwise ? 1 : 3)) % 4u);
+        const auto nextRotationState = static_cast<RotationState>((tetramino.rotationState + (clockwise ? 1 : 3)) % 4u);
 
         const auto& targetShapeTemplate = srsTetraminoShapes[static_cast<sf::base::SizeT>(tetramino.tetraminoType)][nextRotationState];
 
@@ -932,7 +1027,7 @@ private:
         if (m_world.currentTetramino.hasValue())
         {
             rotateTetramino(*m_world.currentTetramino, clockwise);
-            playSound(m_sbRotate, 0.75f);
+            playSound(m_sounds.rotate);
         }
     }
 
@@ -958,7 +1053,7 @@ private:
 
         SFML_BASE_ASSERT(m_world.currentTetramino.hasValue());
 
-        playSound(m_sbHold, 0.75f);
+        playSound(m_sounds.hold);
         resetAndRedrawCurrentTetramino(/* usedHold */ true);
     }
 
@@ -971,7 +1066,7 @@ private:
 
         SFML_BASE_ASSERT(m_world.currentTetramino.hasValue());
 
-        playSound(m_sbHold, 0.75f);
+        playSound(m_sounds.hold);
 
         const auto temp       = m_world.heldTetramino;
         m_world.heldTetramino = m_world.currentTetramino;
@@ -1123,7 +1218,7 @@ private:
                     break;
 
                 // If the block is damageable (health > 1), add it to our list.
-                if (optBlock->health > 1u)
+                if (optBlock->isDamageable())
                 {
                     result.pushBack({optBlock.asPtr(), blockGridPos});
                     if (--nToHit == 0u)
@@ -1252,7 +1347,7 @@ private:
             if (m_selectedPerk >= nPerks)
                 m_selectedPerk = 0u;
 
-            playSound(m_sbMenuSelect, 0.75f);
+            playSound(m_sounds.menuSelect);
         }
         else if (eKeyPressed.code == sf::Keyboard::Key::Up)
         {
@@ -1261,7 +1356,7 @@ private:
             if (m_selectedPerk >= nPerks)
                 m_selectedPerk = nPerks - 1u;
 
-            playSound(m_sbMenuSelect, 0.75f);
+            playSound(m_sounds.menuSelect);
         }
         else if (eKeyPressed.code == sf::Keyboard::Key::Enter || eKeyPressed.code == sf::Keyboard::Key::Space)
         {
@@ -1272,7 +1367,7 @@ private:
             m_perks[m_perkIndicesSelectedThisLevel[m_selectedPerk]]->apply(m_world);
             m_perkIndicesSelectedThisLevel.clear();
 
-            playSound(m_sbMenuConfirm, 0.75f);
+            playSound(m_sounds.menuConfirm);
         }
         else if (m_rerollsLeftThisLevel > 0 && eKeyPressed.code == sf::Keyboard::Key::LShift)
         {
@@ -1281,7 +1376,7 @@ private:
             m_menuDelayProgress = 0.5f;
             rerollPerks();
 
-            playSound(m_sbMenuReroll, 0.75f);
+            playSound(m_sounds.menuReroll);
         }
     }
 
@@ -1312,7 +1407,7 @@ private:
         {
             if (inAnimation)
             {
-                playSound(m_sbError, 0.75f);
+                playSound(m_sounds.error);
                 return;
             }
 
@@ -1348,7 +1443,7 @@ private:
         {
             if (inAnimation)
             {
-                playSound(m_sbError, 1.f);
+                playSound(m_sounds.error);
                 return;
             }
 
@@ -1368,7 +1463,7 @@ private:
         {
             if (inAnimation)
             {
-                playSound(m_sbError, 0.75f);
+                playSound(m_sounds.error);
                 return;
             }
 
@@ -1384,7 +1479,7 @@ private:
         {
             if (inAnimation)
             {
-                playSound(m_sbError, 0.75f);
+                playSound(m_sounds.error);
                 return;
             }
 
@@ -1419,7 +1514,7 @@ private:
             .shape         = taggedBlockMatrix.blockMatrix,
             .position      = sf::Vec2uz{(m_world.blockGrid.getWidth() - shapeDimension) / 2u, 0u}.toVec2i(),
             .tetraminoType = taggedBlockMatrix.tetraminoType,
-            .rotationState = 0u,
+            .rotationState = RotationState{0u},
         });
 
         m_currentTetraminoVisualCenter = toDrawCoordinates(m_world.currentTetramino->position);
@@ -1455,18 +1550,16 @@ private:
     /////////////////////////////////////////////////////////////
     void damageBlock(const sf::Vec2uz position, Block& block)
     {
-        SFML_BASE_ASSERT(block.health > 1u); // TODO: crashed right after janitor for last line
+        block.applyDamage();
 
-        --block.health;
-
-        playSound(m_sbHit, 0.75f);
+        playSound(m_sounds.hit);
 
         m_blockEffects[block.blockId] = BlockEffect{};
 
         if (m_world.perkXPPerBlockDamaged > 0)
         {
             addXP(static_cast<sf::base::U64>(m_world.perkXPPerBlockDamaged));
-            playSound(m_sbExp, 0.25f);
+            playSound(m_sounds.exp);
 
             spawnXPEarnedParticle(toDrawCoordinates(position) + drawBlockSize / 2.f, block.paletteIdx);
         }
@@ -1493,7 +1586,7 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    void spawnXPEarnedParticle(const sf::Vec2f startPosition, const sf::base::U8 paletteIdx)
+    void spawnXPEarnedParticle(const sf::Vec2f startPosition, const PaletteIdx paletteIdx)
     {
         m_earnedXPParticles.pushBack(EarnedXPParticle{
             .startPosition  = startPosition,
@@ -1585,7 +1678,7 @@ private:
 
             rerollPerks();
 
-            playSound(m_sbNewLevel);
+            playSound(m_sounds.newLevel);
         }
     }
 
@@ -1668,7 +1761,7 @@ private:
 
         m_quakeSinEffectHardDrop.start(4.f, 4.f);
 
-        playSound(m_sbLanded);
+        playSound(m_sounds.landed);
 
         return true;
     }
@@ -1790,7 +1883,7 @@ private:
                 if (auto& optBlock = m_world.blockGrid.at(sf::Vec2uz{x, y}); optBlock.hasValue())
                 {
                     // TODO: powerup
-                    if (!clearLines.forceClear && optBlock->health > 1u)
+                    if (!clearLines.forceClear && optBlock->isArmored())
                     {
                         damageBlock(sf::Vec2uz{x, y}, *optBlock);
                         rowIsFullyCleared = false;
@@ -1799,20 +1892,20 @@ private:
                     {
                         fadingBlocks.pushBack(AnimFadeBlocks::FadingBlock{
                             .block    = *optBlock,
-                            .position = sf::Vec2uz{x, y},
+                            .position = {x, y},
                         });
 
                         if (optBlock->powerup == BlockPowerup::XPBonus)
                         {
                             addXP(5u * m_world.playerLevel);
-                            playSound(m_sbBonus, 0.5f);
+                            playSound(m_sounds.bonus);
 
                             spawnXPEarnedParticle(toDrawCoordinates(sf::Vec2uz{x, y}), optBlock->paletteIdx);
                         }
                         else if (optBlock->powerup == BlockPowerup::ColumnDrill)
                         {
                             columnClearPositions.emplaceBack(x, y);
-                            playSound(m_sbBonus, 0.5f);
+                            playSound(m_sounds.bonus);
                         }
                         else if (optBlock->powerup == BlockPowerup::ThreeRowDrill)
                         {
@@ -1824,7 +1917,7 @@ private:
                             if (y > 0u)
                                 addRowIfNotExistent(y - 1);
 
-                            playSound(m_sbBonus, 0.5f);
+                            playSound(m_sounds.bonus);
                         }
 
                         optBlock.reset();
@@ -1841,7 +1934,7 @@ private:
 
         if (!trulyClearedRows.empty())
         {
-            playSound(m_sbSingle, 0.85f);
+            playSound(m_sounds.single);
 
             const sf::base::SizeT numCleared = trulyClearedRows.size();
 
@@ -1869,7 +1962,7 @@ private:
                 m_quakeSinEffectLineClear.start(quakeMagnitude, quakeSpeed);
 
                 addXP(amount);
-                playSound(m_sbExp, 0.5f);
+                playSound(m_sounds.exp);
 
                 for (sf::base::U64 i = 0u; i < fadingBlocks.size() * 4u; ++i)
                 {
@@ -1949,7 +2042,7 @@ private:
             }();
 
             addXP(amount);
-            playSound(m_sbExp, 0.5f);
+            playSound(m_sounds.exp);
 
             for (sf::base::U64 i = 0u; i < fadingBlocks.size() * 4u; ++i)
             {
@@ -1993,7 +2086,7 @@ private:
     [[nodiscard]] bool updateAnimation(auto& timeline, AnimDrill& drill)
     {
         if (timeline.justStarted())
-            playSound(m_sbDrill, 0.75f);
+            playSound(m_sounds.drill);
 
         m_screenShakeAmount = 0.85f;
         m_screenShakeTimer  = 0.05f;
@@ -2013,7 +2106,7 @@ private:
     {
         auto& optBlock = m_world.blockGrid.at(laser.gridTargetPos);
 
-        if (!laser.onlyVisual && (!optBlock.hasValue() || optBlock->health == 1u))
+        if (!laser.onlyVisual && (!optBlock.hasValue() || !optBlock->isDamageable()))
         {
             // cancel animation if block is already at 1 health or destroyed
             // (e.g. drilled earlier in the same animation sequence)
@@ -2022,7 +2115,7 @@ private:
 
         if (timeline.justStarted())
         {
-            playSound(m_sbLaser, 0.75f);
+            playSound(m_sounds.laser);
 
             const auto dir      = laserDirectionToVec2i(laser.direction).toVec2f();
             const auto startPos = toDrawCoordinates(laser.gridStartPos) + dir * 8.f + sf::Vec2f{0, 2.f};
@@ -2044,7 +2137,7 @@ private:
         }
         else
         {
-            playSound(m_sbBounce, 0.75f);
+            playSound(m_sounds.bounce);
         }
 
         SFML_BASE_ASSERT(m_optLaserBeam.hasValue());
@@ -2097,7 +2190,7 @@ private:
 
         m_world.blockGrid.forBlocks([&](Block& block, const sf::Vec2uz position)
         {
-            if (block.health > 1u)
+            if (block.isDamageable())
                 eligibleBlocks.pushBack({&block, position});
 
             return ControlFlow::Continue;
@@ -2145,7 +2238,7 @@ private:
             });
         }
 
-        playSound(m_sbStrike, 0.85f);
+        playSound(m_sounds.strike);
         damageBlock(blockInfo.position, *blockInfo.block);
 
         m_screenShakeAmount = 2.5f;
@@ -2236,11 +2329,13 @@ private:
         {
             const Block block{
                 .tetraminoId        = m_world.nextTetraminoId++,
-                .blockId            = 0u, // updated below
-                .health             = 1u,
-                .paletteIdx         = static_cast<sf::base::U8>(j),
+                .blockId            = BlockId{0u}, // updated below
+                .health             = Health{1u},
+                .paletteIdx         = PaletteIdx::from(j),
                 .shapeBlockSequence = ShapeBlockSequence::_, // set by `shapeMatrixToBlockMatrix`
                 .powerup            = BlockPowerup::None,
+                .tickTimer          = 0u,
+                .tickTimerTarget    = nullTickTimerTarget,
             };
 
             auto& [blockMatrix, tetraminoType] = m_world.blockMatrixBag.pushBack({
@@ -2258,22 +2353,37 @@ private:
                     continue;
 
                 b->blockId = m_world.nextBlockId++;
-                b->health  = static_cast<sf::base::U8>(healthDist[nextHealthDistIdx++]);
 
-                if (m_rngFast.getI(0, 200) > 198)
+                const auto blockType = static_cast<sf::base::U8>(healthDist[nextHealthDistIdx++]);
+
+                if (blockType > 2)
+                {
+                    b->health = blockType - 1u;
+                }
+                else if (blockType == 2)
+                {
+                    b->tickTimerTarget = static_cast<sf::base::U32>(secondsToTicks(20.f));
+                }
+                else if (roll100(1))
                 {
                     b->health = 1u;
 
-                    if (m_rngFast.getI(0, 100) > 75)
-                        b->powerup = BlockPowerup::ThreeRowDrill;
+                    if (roll100(25))
+                    {
+                        b->powerup         = BlockPowerup::ThreeRowDrill;
+                        b->tickTimerTarget = static_cast<sf::base::U32>(secondsToTicks(10.f));
+                    }
                     else
-                        b->powerup = BlockPowerup::XPBonus;
+                    {
+                        b->powerup         = BlockPowerup::XPBonus;
+                        b->tickTimerTarget = static_cast<sf::base::U32>(secondsToTicks(20.f));
+                    }
                 }
             }
         };
 
         for (sf::base::SizeT i = 0u; i < bagMult; ++i)
-            for (sf::base::U8 j = 0u; j < tetraminoShapeCount; ++j)
+            for (sf::base::U8 j = 0u; j < static_cast<sf::base::U8>(tetraminoShapeCount); ++j)
                 addToBag(static_cast<TetraminoType>(j));
 
         for (int i = 0; i < m_world.perkExtraLinePiecesInPool; ++i)
@@ -2306,7 +2416,7 @@ private:
         embedTetraminoAndClearLines(*m_world.currentTetramino);
         resetAndRedrawCurrentTetramino(/* usedHold */ false);
 
-        playSound(m_sbPlace, 0.4f);
+        playSound(m_sounds.place);
     }
 
 
@@ -2328,6 +2438,36 @@ private:
             {
                 m_world.dropTickAccumulator = 0u;
                 applyGravityToCurrentTetramino();
+            }
+
+            for (auto& optBlock : m_world.blockGrid.getBlocks())
+            {
+                if (!optBlock.hasValue())
+                    continue;
+
+                if (optBlock->tickTimerTarget == nullTickTimerTarget)
+                    continue;
+
+                if (optBlock->tickTimer == optBlock->tickTimerTarget)
+                    continue;
+
+                ++optBlock->tickTimer;
+
+                if (optBlock->tickTimer == optBlock->tickTimerTarget)
+                {
+                    optBlock->tickTimerTarget = nullTickTimerTarget;
+
+                    if (optBlock->powerup != BlockPowerup::None)
+                    {
+                        // powerup expires
+                        optBlock->powerup = BlockPowerup::None;
+                    }
+                    else
+                    {
+                        // health increases
+                        ++optBlock->health;
+                    }
+                }
             }
         }
     }
@@ -2451,11 +2591,8 @@ private:
             },
             {.transform = menuTransform});
 
-        static sf::base::Vector<sf::Vertex>    textVertices;
-        static sf::base::Vector<sf::IndexType> textIndices;
-
-        textVertices.clear();
-        textIndices.clear();
+        m_textVerticesBuffer.clear();
+        m_textIndicesBuffer.clear();
 
         std::string levelUpString = "^bold[](^wobble[5,1.2,0.5](LEVEL UP)^)^";
 
@@ -2463,8 +2600,8 @@ private:
             levelUpString += std::format("^color[190,190,190]( - Press SHIFT to reroll ({} left))^", m_rerollsLeftThisLevel);
 
         const BitmapTextToVerticesOptions titleOpts = {
-            .outVertices     = textVertices,
-            .outIndices      = textIndices,
+            .outVertices     = m_textVerticesBuffer,
+            .outIndices      = m_textIndicesBuffer,
             .bitmapFont      = m_bitmapFontMinogram,
             .fontTextureRect = m_txrBFMinogram6x10,
             .alignment       = BitmapTextAlignment::Center,
@@ -2518,8 +2655,8 @@ private:
 
             const auto globalBounds = bitmapTextToVerticesPretransformed(
                 {
-                    .outVertices     = textVertices,
-                    .outIndices      = textIndices,
+                    .outVertices     = m_textVerticesBuffer,
+                    .outIndices      = m_textIndicesBuffer,
                     .bitmapFont      = m_bitmapFontMinogram,
                     .fontTextureRect = m_txrBFMinogram6x10,
                     .alignment       = BitmapTextAlignment::Left,
@@ -2557,10 +2694,10 @@ private:
         }
 
         m_rtGame.drawIndexedVertices({
-            .vertexData    = textVertices.data(),
-            .vertexCount   = textVertices.size(),
-            .indexData     = textIndices.data(),
-            .indexCount    = textIndices.size(),
+            .vertexData    = m_textVerticesBuffer.data(),
+            .vertexCount   = m_textVerticesBuffer.size(),
+            .indexData     = m_textIndicesBuffer.data(),
+            .indexCount    = m_textIndicesBuffer.size(),
             .primitiveType = sf::PrimitiveType::Triangles,
             .renderStates =
                 {
@@ -2813,12 +2950,13 @@ private:
                 if (!optBlock.hasValue())
                     continue;
 
-                drawBlock(*optBlock,
-                          toDrawCoordinates(gridPosition),
-                          {
-                              .opacity          = 1.f,
-                              .applyQuakeOffset = false,
-                          });
+                (void)drawBlock(*optBlock,
+                                toDrawCoordinates(gridPosition),
+                                {
+                                    .opacity          = 1.f,
+                                    .applyQuakeOffset = false,
+                                    .drawTimer        = true,
+                                });
             }
     }
 
@@ -2834,20 +2972,21 @@ private:
 
         for (const auto& fadingBlock : fadeBlocks->fadingBlocks)
         {
-            drawBlock(fadingBlock.block,
-                      toDrawCoordinates(fadingBlock.position),
-                      {
-                          .opacity          = 1.f,
-                          .squishMult       = -easeInBackWithCustomOvershoot(progress, 6.f),
-                          .applyYOffset     = false,
-                          .applyQuakeOffset = false,
-                      });
+            (void)drawBlock(fadingBlock.block,
+                            toDrawCoordinates(fadingBlock.position),
+                            {
+                                .opacity          = 1.f,
+                                .squishMult       = -easeInBackWithCustomOvershoot(progress, 6.f),
+                                .applyYOffset     = false,
+                                .applyQuakeOffset = false,
+                                .drawTimer        = false,
+                            });
         }
     }
 
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::U8 getTetraminoPaletteIdx(const Tetramino& tetramino) const
+    [[nodiscard]] PaletteIdx getTetraminoPaletteIdx(const Tetramino& tetramino) const
     {
         for (const auto& b : tetramino.shape.data)
             if (b.hasValue())
@@ -2880,7 +3019,7 @@ private:
             if (!optBlock.hasValue())
                 return ControlFlow::Break;
 
-            if (optBlock->health == 1u)
+            if (!optBlock->isDamageable())
                 return ControlFlow::Continue;
 
             info.endPos.x = iX;
@@ -2920,7 +3059,7 @@ private:
                 if (!optBlock.hasValue())
                     break;
 
-                if (optBlock->health == 1u)
+                if (!optBlock->isDamageable())
                     continue;
 
                 info.endPos.y = iY;
@@ -2946,7 +3085,7 @@ private:
         {
             auto& optBlock = m_world.blockGrid.at(pos);
 
-            if (optBlock.hasValue() && optBlock->health > 1u)
+            if (optBlock.hasValue() && optBlock->isDamageable())
                 result.positions.emplaceBack(pos);
 
             pos += dir;
@@ -2964,7 +3103,7 @@ private:
             {
                 auto& optBlock = m_world.blockGrid.at(pos);
 
-                if (optBlock.hasValue() && optBlock->health > 1u)
+                if (optBlock.hasValue() && optBlock->isDamageable())
                     result.bouncePositions.emplaceBack(pos);
 
                 pos += bounceDir;
@@ -3499,19 +3638,21 @@ private:
                                    squishMult);
 
         if (mustDrawTetramino)
-            drawTetramino(tetramino.shape,
-                          tetraminoDrawPosition,
-                          {
-                              .squishMult = squishMult,
-                          });
+            (void)drawTetramino(tetramino.shape,
+                                tetraminoDrawPosition,
+                                {
+                                    .squishMult = squishMult,
+                                    .drawTimer  = true,
+                                });
 
         if (mustDrawGhost)
-            drawTetramino(tetramino.shape,
-                          ghostCenterDrawPosition,
-                          {
-                              .opacity    = 0.25f,
-                              .squishMult = squishMult,
-                          });
+            (void)drawTetramino(tetramino.shape,
+                                ghostCenterDrawPosition,
+                                {
+                                    .opacity    = 0.25f,
+                                    .squishMult = squishMult,
+                                    .drawTimer  = false,
+                                });
 
 
         if (m_world.perkLaser[LaserDirection::Left].hasValue())
@@ -3544,20 +3685,27 @@ private:
 
         constexpr float uiTetraminoScale = 9.f / drawBlockSize.x;
 
+        const auto hudPos = getHudPos();
+
+        sf::Vec2f uiBoxCenter = sf::Vec2f{hudPos.x + 12.f, hudPos.y + 68.f + 24.f} + sf::Vec2f{16.f, 16.f};
+
         for (sf::base::SizeT iPeek = 0u; iPeek < nPeek; ++iPeek)
         {
-            const auto&     shape       = m_world.blockMatrixBag[iPeek].blockMatrix;
-            const auto      hudPos      = getHudPos();
-            const sf::Vec2f uiBoxCenter = {hudPos.x, hudPos.y + 68.f + static_cast<float>(nPeek - iPeek) * 24.f};
+            const auto& shape = m_world.blockMatrixBag[iPeek].blockMatrix;
 
-            drawTetramino(shape,
-                          uiBoxCenter + sf::Vec2f{16.f, 16.f},
-                          {
-                              .scale            = uiTetraminoScale,
-                              .drawText         = true,
-                              .applyYOffset     = false,
-                              .applyQuakeOffset = false,
-                          });
+            const auto globalBounds = drawTetramino(shape,
+                                                    uiBoxCenter,
+                                                    {
+                                                        .opacity = 1.f - static_cast<float>(iPeek) * 0.1f,
+                                                        .scale   = uiTetraminoScale - static_cast<float>(iPeek) * 0.05f,
+                                                        .drawText         = true,
+                                                        .applyYOffset     = false,
+                                                        .applyQuakeOffset = false,
+                                                        .drawTimer        = false,
+                                                    });
+
+            uiBoxCenter.x = globalBounds.getCenterRight().x + 24.f;
+            uiBoxCenter.y -= static_cast<float>(iPeek) * 0.1f;
         }
     }
 
@@ -3570,9 +3718,9 @@ private:
 
         const auto&     shape       = m_world.heldTetramino->shape;
         const auto      hudPos      = getHudPos();
-        const sf::Vec2f uiBoxCenter = {hudPos.x, hudPos.y + 68.f};
+        const sf::Vec2f uiBoxCenter = {hudPos.x + 128.f + 10.f, hudPos.y};
 
-        drawTetramino(shape, uiBoxCenter + sf::Vec2f{16.f + 64.f, 16.f + 24.f + 2.f});
+        (void)drawTetramino(shape, uiBoxCenter + sf::Vec2f{20.f, 48.f});
     }
 
 
@@ -3669,9 +3817,8 @@ private:
 
         m_rtGame.draw(statsBorder);
 
-
-        static sf::base::Vector<sf::Vertex>    textVertices;
-        static sf::base::Vector<sf::IndexType> textIndices;
+        m_textVerticesBuffer.clear();
+        m_textIndicesBuffer.clear();
 
         auto statsStr = std::format(
             "^bold[](Level)^: {}\n"
@@ -3689,13 +3836,11 @@ private:
             m_world.tetaminosPlaced,
             getDifficultyFactor(m_world.tick));
 
-        textVertices.clear();
-        textIndices.clear();
 
         (void)bitmapTextToVerticesPretransformed(
             {
-                .outVertices     = textVertices,
-                .outIndices      = textIndices,
+                .outVertices     = m_textVerticesBuffer,
+                .outIndices      = m_textIndicesBuffer,
                 .bitmapFont      = m_bitmapFontMinogram,
                 .fontTextureRect = m_txrBFMinogram6x10,
                 .alignment       = BitmapTextAlignment::Left,
@@ -3706,10 +3851,10 @@ private:
             sf::Transform::fromPosition(statsBorder.getTopLeft() + sf::Vec2f{4.f, 2.f}));
 
         m_rtGame.drawIndexedVertices({
-            .vertexData    = textVertices.data(),
-            .vertexCount   = textVertices.size(),
-            .indexData     = textIndices.data(),
-            .indexCount    = textIndices.size(),
+            .vertexData    = m_textVerticesBuffer.data(),
+            .vertexCount   = m_textVerticesBuffer.size(),
+            .indexData     = m_textIndicesBuffer.data(),
+            .indexCount    = m_textIndicesBuffer.size(),
             .primitiveType = sf::PrimitiveType::Triangles,
             .renderStates  = {.texture = &m_textureAtlas.getTexture()},
         });
@@ -3720,81 +3865,28 @@ private:
     void drawStepPerksText()
     {
         sf::RectangleShape statsBorder{{
-            .position         = getHudPos().addY(168.f).addX(-1.f),
+            .position         = getHudPos().addY(168.f - 48.f).addX(-1.f),
             .fillColor        = sf::Color::Transparent,
             .outlineColor     = {135, 135, 135},
             .outlineThickness = 1.f,
-            .size             = {164.f, 64.f},
+            .size             = {184.f, 64.f + 48.f},
         }};
 
         m_rtGame.draw(statsBorder);
 
         std::string perksStr;
 
+        for (const auto& perk : m_perks)
+            if (perk->isActive(m_world))
+                perksStr += std::format("- {} {}\n", perk->getName(), perk->getInventoryStr(m_world));
 
-        if (m_world.perkRndHitOnClear > 0)
-            perksStr += std::format("- On-Clear Lightning Strike (x{})\n", m_world.perkRndHitOnClear);
-
-        if (m_world.perkCanHoldTetramino == 1)
-            perksStr += "- Can Hold Tetramino\n";
-
-        if (m_world.perkXPPerTetraminoPlaced > 0)
-            perksStr += std::format("- Per-Tetramino XP Gain (+{})\n", m_world.perkXPPerTetraminoPlaced);
-
-        if (m_world.perkXPPerBlockDamaged > 0)
-            perksStr += std::format("- Per-Block Damage XP Gain (+{})\n", m_world.perkXPPerBlockDamaged);
-
-        if (m_world.perkDeleteFloorPerNTetraminos.hasValue())
-            perksStr += std::format("- Janitor (every {})\n", m_world.perkDeleteFloorPerNTetraminos->nTetraminos);
-
-        if (m_world.perkExtraLinePiecesInPool > 0)
-            perksStr += std::format("- Extra Line Pieces in Pool (+{})\n", m_world.perkExtraLinePiecesInPool);
-
-        if (m_world.perkDrill[DrillDirection::Left].hasValue())
-            perksStr += std::format("- Drill Left (c: {}, p: {})\n",
-                                    m_world.perkDrill[DrillDirection::Left]->coverage,
-                                    m_world.perkDrill[DrillDirection::Left]->maxPenetration);
-
-        if (m_world.perkDrill[DrillDirection::Right].hasValue())
-            perksStr += std::format("- Drill Right (c: {}, p: {})\n",
-                                    m_world.perkDrill[DrillDirection::Right]->coverage,
-                                    m_world.perkDrill[DrillDirection::Right]->maxPenetration);
-
-        if (m_world.perkDrill[DrillDirection::Down].hasValue())
-            perksStr += std::format("- Drill Down (c: {}, p: {})\n",
-                                    m_world.perkDrill[DrillDirection::Down]->coverage,
-                                    m_world.perkDrill[DrillDirection::Down]->maxPenetration);
-
-        if (m_world.perkNPeek > 1)
-            perksStr += std::format("- Peek More Tetraminos ({})\n", m_world.perkNPeek);
-
-        if (m_world.perkRndHitPerNTetraminos.hasValue())
-            perksStr += std::format("- On-Placement Lightning Strike (every {})\n",
-                                    m_world.perkRndHitPerNTetraminos->nTetraminos);
-
-        if (m_world.perkChainLightning > 1)
-            perksStr += std::format("- Chain Lightning ({}% chance)\n", m_world.perkChainLightning);
-
-        if (m_world.perkLaser[LaserDirection::Left].hasValue())
-            perksStr += std::format("- Laser Left (p: {}, b: {})\n",
-                                    m_world.perkLaser[LaserDirection::Left]->maxPenetration,
-                                    m_world.perkLaser[LaserDirection::Left]->bounce ? "yes" : "no");
-
-        if (m_world.perkLaser[LaserDirection::Right].hasValue())
-            perksStr += std::format("- Laser Right (p: {}, b: {})\n",
-                                    m_world.perkLaser[LaserDirection::Right]->maxPenetration,
-                                    m_world.perkLaser[LaserDirection::Right]->bounce ? "yes" : "no");
-
-        static sf::base::Vector<sf::Vertex>    textVertices;
-        static sf::base::Vector<sf::IndexType> textIndices;
-
-        textVertices.clear();
-        textIndices.clear();
+        m_textVerticesBuffer.clear();
+        m_textIndicesBuffer.clear();
 
         (void)bitmapTextToVerticesPretransformed(
             {
-                .outVertices     = textVertices,
-                .outIndices      = textIndices,
+                .outVertices     = m_textVerticesBuffer,
+                .outIndices      = m_textIndicesBuffer,
                 .bitmapFont      = m_bitmapFontTiny5,
                 .fontTextureRect = m_txrBFTiny5,
                 .alignment       = BitmapTextAlignment::Left,
@@ -3805,10 +3897,10 @@ private:
             sf::Transform::fromPosition(statsBorder.getTopLeft() + sf::Vec2f{4.f, 2.f}));
 
         m_rtGame.drawIndexedVertices({
-            .vertexData    = textVertices.data(),
-            .vertexCount   = textVertices.size(),
-            .indexData     = textIndices.data(),
-            .indexCount    = textIndices.size(),
+            .vertexData    = m_textVerticesBuffer.data(),
+            .vertexCount   = m_textVerticesBuffer.size(),
+            .indexData     = m_textIndicesBuffer.data(),
+            .indexCount    = m_textIndicesBuffer.size(),
             .primitiveType = sf::PrimitiveType::Triangles,
             .renderStates  = {.texture = &m_textureAtlas.getTexture()},
         });
@@ -3860,7 +3952,7 @@ private:
             if (m_world.perkNPeek > 0)
                 m_rtGame.draw(m_font,
                               sf::TextData{
-                                  .position      = getHudPos().addY(68.f),
+                                  .position      = getHudPos().addY(68.f).addX(4.f),
                                   .string        = "Next:",
                                   .characterSize = 16u,
                                   .outlineColor  = sf::Color::White,
@@ -3869,7 +3961,7 @@ private:
             if (m_world.perkCanHoldTetramino == 1)
                 m_rtGame.draw(m_font,
                               sf::TextData{
-                                  .position      = getHudPos().addY(68.f).addX(64.f),
+                                  .position      = getHudPos().addX(128.f + 10.f),
                                   .string        = "Held:",
                                   .characterSize = 16u,
                                   .outlineColor  = sf::Color::White,
@@ -4001,6 +4093,35 @@ int main()
 // - separate weapon perks from utility perks
 // - change of drill block, change of lightning block, chance of laser block
 // - count combo clears and related perks
-// - laser bounce
 // - bag manipulation perks (e.g. never get same piece twice in a row)
 // - multi hold?
+// - dynamic perk system?
+//      - triggers:
+//            - every N ...
+//                - any/specific tetromino place
+//                - 1/2/3/4 lines clear
+//                - drill hit
+//                - laser hit
+//                - block destroy
+//                - block damage
+//                - combo
+//                - lightning
+//                - power up collected
+//                - gap filled
+//      - effects
+//           - X% chance of...
+//               - lightning bolt
+//               - fill a gap
+//               - gain xp
+//               - remove a block from last line
+//               - remove last line
+//               - turn random block into power up
+//               - shift line l/r
+//               - compact random column
+// - concrete filler weapon instead of drill?
+// - separate weapons and items, items must be bought with gold and are RNG based
+// - finalize main mechanics, then work on items/perks/synergies
+// - timed block +1hp
+// - timed powerups
+// - perks that affect the timers
+// - tutorial modals

@@ -12,7 +12,6 @@
 
 namespace tsurv
 {
-
 /////////////////////////////////////////////////////////////
 [[nodiscard]] inline std::string wrapText(const sf::base::StringView text, const sf::base::SizeT maxLineLength)
 {

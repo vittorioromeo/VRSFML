@@ -21,10 +21,14 @@ struct [[nodiscard]] Perk
     [[nodiscard]] virtual std::string getName() const                             = 0;
     [[nodiscard]] virtual std::string getDescription(const World& world) const    = 0;
     [[nodiscard]] virtual std::string getProgressionStr(const World& world) const = 0;
+    [[nodiscard]] virtual std::string getInventoryStr(const World& world) const   = 0;
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard]] virtual bool isActive(const World& world) const           = 0;
     [[nodiscard]] virtual bool meetsPrerequisites(const World& world) const = 0;
-    virtual void               apply(World& world) const                    = 0;
+
+    ////////////////////////////////////////////////////////////
+    virtual void apply(World& world) const = 0;
 };
 
 } // namespace tsurv

@@ -1619,7 +1619,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void playSound(const Sounds::LoadedSound& ls, const sf::base::SizeT maxOverlap = 255u)
+    void playSound(const LoadedSound& ls, const sf::base::SizeT maxOverlap = 255u)
     {
 #ifndef BUBBLEBYTE_NO_AUDIO
         sounds.playPooled(playbackDevice, ls, maxOverlap);

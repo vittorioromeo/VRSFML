@@ -5,11 +5,13 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "ShapeBlockSequence.hpp"
+#include "StrongTypedef.hpp"
 #include "TetraminoShapes.hpp"
 
 #include "SFML/Graphics/Color.hpp"
 
 #include "SFML/Base/Array.hpp"
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/IntTypes.hpp"
 
 
@@ -38,16 +40,74 @@ enum class [[nodiscard]] BlockPowerup : sf::base::U8
 
 
 ////////////////////////////////////////////////////////////
+TSURV_DEFINE_STRONG_TYPEDEF(BlockId, sf::base::U16);
+TSURV_DEFINE_STRONG_TYPEDEF(TetraminoId, sf::base::U16);
+TSURV_DEFINE_STRONG_TYPEDEF(Health, sf::base::U8);
+TSURV_DEFINE_STRONG_TYPEDEF(PaletteIdx, sf::base::U8);
+
+
+////////////////////////////////////////////////////////////
+inline constexpr auto nullTickTimerTarget = static_cast<sf::base::U32>(-1);
+
+
+////////////////////////////////////////////////////////////
 struct [[nodiscard]] Block
 {
-    sf::base::U32 tetraminoId;
-    sf::base::U32 blockId;
+    ////////////////////////////////////////////////////////////
+    TetraminoId tetraminoId;
+    BlockId     blockId;
 
-    sf::base::U8       health;
-    sf::base::U8       paletteIdx;
+    ////////////////////////////////////////////////////////////
+    Health     health;
+    PaletteIdx paletteIdx;
+
+    ////////////////////////////////////////////////////////////
     ShapeBlockSequence shapeBlockSequence;
 
+    ////////////////////////////////////////////////////////////
     BlockPowerup powerup;
+
+    ////////////////////////////////////////////////////////////
+    sf::base::U32 tickTimer;
+    sf::base::U32 tickTimerTarget;
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isTransformingToArmored() const
+    {
+        return health == 1u && tickTimerTarget != nullTickTimerTarget && powerup == BlockPowerup::None;
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isArmored() const
+    {
+        return health > 1u;
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isDamageable() const
+    {
+        return isArmored() || isTransformingToArmored();
+    }
+
+    ////////////////////////////////////////////////////////////
+    void applyDamage()
+    {
+        SFML_BASE_ASSERT(isDamageable());
+
+        if (isTransformingToArmored())
+            tickTimerTarget = nullTickTimerTarget;
+        else
+            --health;
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getTimerProgress() const
+    {
+        if (tickTimerTarget == nullTickTimerTarget)
+            return 0.f;
+
+        return static_cast<float>(tickTimer) / static_cast<float>(tickTimerTarget);
+    }
 };
 
 } // namespace tsurv

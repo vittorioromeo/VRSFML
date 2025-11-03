@@ -35,11 +35,11 @@ inline constexpr sf::base::SizeT drillDirectionCount = 3u;
     switch (direction)
     {
         case DrillDirection::Left:
-            return sf::Vec2i{-1, 0};
+            return {-1, 0};
         case DrillDirection::Right:
-            return sf::Vec2i{1, 0};
+            return {1, 0};
         case DrillDirection::Down:
-            return sf::Vec2i{0, 1};
+            return {0, 1};
         default:
             SFML_BASE_UNREACHABLE();
     }

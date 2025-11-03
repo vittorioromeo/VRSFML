@@ -38,6 +38,9 @@ struct SFML_AUDIO_API Listener
         Angle innerAngle;  //!< Inner angle
         Angle outerAngle;  //!< Outer angle
         float outerGain{}; //!< Outer gain
+
+        ////////////////////////////////////////////////////////////
+        [[nodiscard]] bool operator==(const Cone&) const noexcept = default;
     };
 
     float volume{1.f};         //!< Volume (between `0` and `1`)
@@ -46,6 +49,9 @@ struct SFML_AUDIO_API Listener
     Vec3f velocity{0, 0, 0};   //!< Velocity of the listener
     Listener::Cone cone{Angle::Full, Angle::Full, 1}; //!< Cone properties (affects directional attenuation)
     Vec3f upVec{0, 1, 0}; //!< Upward-pointing vec3 from the listener's perspective (not necessarily normalized)
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool operator==(const Listener&) const noexcept = default;
 };
 
 } // namespace sf

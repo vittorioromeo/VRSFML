@@ -176,4 +176,36 @@ inline ShapeBlockPositionVector findDownmostBlocks(const BlockMatrix& shape)
     return result;
 }
 
+
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::pure]] inline bool blockMatricesIntersect(
+    const BlockMatrix& shape1,
+    const sf::Vec2i    pos1,
+    const BlockMatrix& shape2,
+    const sf::Vec2i    pos2)
+{
+    for (sf::base::SizeT y1 = 0; y1 < shapeDimension; ++y1)
+        for (sf::base::SizeT x1 = 0; x1 < shapeDimension; ++x1)
+        {
+            if (!shape1.at(x1, y1).hasValue())
+                continue;
+
+            const sf::Vec2i worldPos1 = pos1 + sf::Vec2uz{x1, y1}.toVec2i();
+
+            for (sf::base::SizeT y2 = 0; y2 < shapeDimension; ++y2)
+                for (sf::base::SizeT x2 = 0; x2 < shapeDimension; ++x2)
+                {
+                    if (!shape2.at(x2, y2).hasValue())
+                        continue;
+
+                    const sf::Vec2i worldPos2 = pos2 + sf::Vec2uz{x2, y2}.toVec2i();
+
+                    if (worldPos1 == worldPos2)
+                        return true;
+                }
+        }
+
+    return false;
+}
+
 } // namespace tsurv
