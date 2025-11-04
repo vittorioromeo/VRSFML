@@ -170,12 +170,12 @@ struct [[nodiscard]] PerkOnClearLightningStrike : Perk
 
 
 /////////////////////////////////////////////////////////////
-struct [[nodiscard]] PerkHardDropDrillUnlock : Perk
+struct [[nodiscard]] PerkVerticalDrillUnlock : Perk
 {
     /////////////////////////////////////////////////////////////
     [[nodiscard]] std::string getName() const override
     {
-        return "Hard-Drop Drill";
+        return "Vertical Drill";
     }
 
     /////////////////////////////////////////////////////////////
@@ -219,7 +219,7 @@ struct [[nodiscard]] PerkHardDropDrillUnlock : Perk
 
 
 /////////////////////////////////////////////////////////////
-struct [[nodiscard]] PerkHardDropDrillPenetration : Perk
+struct [[nodiscard]] PerkVerticalDrillPenetration : Perk
 {
     /////////////////////////////////////////////////////////////
     static constexpr int penetrationIncrease = 1;
@@ -275,7 +275,7 @@ struct [[nodiscard]] PerkHardDropDrillPenetration : Perk
 
 
 /////////////////////////////////////////////////////////////
-struct [[nodiscard]] PerkHardDropDrillBluntForce : Perk
+struct [[nodiscard]] PerkVerticalDrillBluntForce : Perk
 {
     /////////////////////////////////////////////////////////////
     [[nodiscard]] std::string getName() const override

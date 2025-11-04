@@ -195,6 +195,10 @@ inline void resetNodes()
 
 
 ////////////////////////////////////////////////////////////
+#define SFEX_PRIV_STRINGIFY(a) #a
+
+
+////////////////////////////////////////////////////////////
 #define SFEX_PRIV_CONCAT_TOKENS_IMPL(a, b) a##b
 
 
@@ -217,10 +221,16 @@ inline void resetNodes()
         const ::sfex::priv::ScopeGuard SFEX_PRIV_UNIQUE_NAME(sfProfilerScopeGuard)(                          \
             SFEX_PRIV_UNIQUE_NAME(sfProfilerScopeInfo))
 
+    ////////////////////////////////////////////////////////////
+    #define SFEX_PROFILE_SCOPE_AUTOLABEL() SFEX_PROFILE_SCOPE(__func__)
+
 #else
 
     ////////////////////////////////////////////////////////////
-    #define SFEX_PROFILE_SCOPE(label) (void)0
+    #define SFEX_PROFILE_SCOPE(label)      (void)0
+
+    ////////////////////////////////////////////////////////////
+    #define SFEX_PROFILE_SCOPE_AUTOLABEL() (void)0
 
 #endif
 

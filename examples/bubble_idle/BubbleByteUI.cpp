@@ -4212,7 +4212,7 @@ void Main::uiTabBarSettings()
         ImGui::Separator();
 
         // TODO P1: check if this solves flickering
-        ImGui::Text("Flickering troubleshooting");
+        ImGui::Text("Advanced options");
 
         constexpr const char* autobatchModes[3]{"Off", "CPU", "GPU"};
 
@@ -4701,6 +4701,8 @@ void Main::uiTabBarSettings()
 ////////////////////////////////////////////////////////////
 void Main::gameLoopDrawImGui(const sf::base::U8 shouldDrawUIAlpha)
 {
+    SFEX_PROFILE_SCOPE_AUTOLABEL();
+
     if (profile.enableNotifications)
         ImGui::RenderNotifications(/* paddingY */ (profile.showDpsMeter ? (15.f + 60.f + 15.f) : 15.f) * profile.uiScale,
                                    [&]
