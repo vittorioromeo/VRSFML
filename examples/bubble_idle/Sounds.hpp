@@ -1,11 +1,10 @@
 #pragma once
 
 #include "LoadedSound.hpp"
-#include "SoundManager.hpp"
 
 
 ////////////////////////////////////////////////////////////
-struct Sounds : SoundManager
+struct Sounds
 {
     ////////////////////////////////////////////////////////////
     LoadedSound pop{"pop.ogg"};

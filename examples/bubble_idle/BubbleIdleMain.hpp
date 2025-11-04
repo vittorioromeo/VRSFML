@@ -36,6 +36,7 @@
 #include "Shrine.hpp"
 #include "ShrineConstants.hpp"
 #include "ShrineType.hpp"
+#include "SoundManager.hpp"
 #include "Sounds.hpp"
 #include "Stats.hpp"
 #include "SweepAndPrune.hpp"
@@ -44,6 +45,13 @@
 #include "TextShakeEffect.hpp"
 #include "Timer.hpp"
 #include "Version.hpp"
+
+// clang-format off
+// #define SFEX_PROFILER_ENABLED
+
+#include "Profiler.hpp"
+#include "ProfilerImGui.hpp"
+// clang-format on
 
 #include "SFML/ImGui/ImGuiContext.hpp"
 
@@ -97,6 +105,7 @@
 #include "SFML/Base/Algorithm/AnyOf.hpp"
 #include "SFML/Base/Algorithm/Count.hpp"
 #include "SFML/Base/Algorithm/Erase.hpp"
+#include "SFML/Base/Algorithm/MaxElement.hpp"
 #include "SFML/Base/AnkerlUnorderedDense.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Clamp.hpp"
@@ -533,7 +542,9 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Sound management
-    Sounds       sounds{/* volumeMult */ 1.f};
+    Sounds sounds{/* volumeMult */ 1.f};
+
+    SoundManager soundManager;
     sf::Listener listener;
 
     ////////////////////////////////////////////////////////////
@@ -1622,7 +1633,7 @@ struct Main
     void playSound(const LoadedSound& ls, const sf::base::SizeT maxOverlap = 255u)
     {
 #ifndef BUBBLEBYTE_NO_AUDIO
-        sounds.playPooled(playbackDevice, ls, maxOverlap);
+        soundManager.playPooled(playbackDevice, ls, maxOverlap);
 #else
         (void)ls;
         (void)maxOverlap;
@@ -2645,8 +2656,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void forceResetGame(const bool goToShopTab = true)
     {
-        sounds.stopPlayingAll(sounds.ritual);
-        sounds.stopPlayingAll(sounds.copyritual);
+        soundManager.stopPlayingAll(sounds.ritual);
+        soundManager.stopPlayingAll(sounds.copyritual);
 
         delayedActions.clear();
 
@@ -2957,7 +2968,7 @@ struct Main
         sounds.pop.settings.position = {bubble.position.x, bubble.position.y};
         sounds.pop.settings.pitch    = remap(static_cast<float>(xCombo), 1, 10, 1.f, 2.f);
 
-        playSound(sounds.pop, popSoundOverlap ? 255u : 1u);
+        playSound(sounds.pop, popSoundOverlap ? 64u : 1u);
 
         spawnParticles(32, bubble.position, ParticleType::Bubble, 0.5f, 0.5f);
         spawnParticles(8, bubble.position, ParticleType::Bubble, 1.2f, 0.25f);
@@ -3140,7 +3151,7 @@ struct Main
                 }
 
                 // Find rightmost cat
-                const auto rightmostIt = std::max_element(pt->cats.begin(), pt->cats.end(), [](const Cat& a, const Cat& b) {
+                const auto rightmostIt = sf::base::maxElement(pt->cats.begin(), pt->cats.end(), [](const Cat& a, const Cat& b) {
                     return a.position.x < b.position.x;
                 });
 
@@ -3262,6 +3273,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateBubbles(const float deltaTimeMs)
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         constexpr float maxVelocityMagnitude  = 2.f;
         constexpr float windMult[4]           = {0.f, 0.00009f, 0.00018f, 0.0005f};
         constexpr float windStartVelocityY[4] = {0.07f, 0.18f, 0.25f, 0.55f};
@@ -3390,6 +3403,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool gameLoopUpdateBubbleClick(sf::base::Optional<sf::Vec2f>& clickPosition)
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         if (!clickPosition.hasValue())
             return false;
 
@@ -3507,6 +3522,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatActionNormal(const float /* deltaTimeMs */, Cat& cat)
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         const auto maxCooldown = pt->getComputedCooldownByCatType(cat.type);
         const auto range       = pt->getComputedRangeByCatType(cat.type);
         const auto [cx, cy]    = getCatRangeCenter(cat);
@@ -3585,6 +3602,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatActionUni(const float /* deltaTimeMs */, Cat& cat)
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         const auto starBubbleType = isUnicatTranscendenceActive() ? BubbleType::Nova : BubbleType::Star;
         const auto nStarParticles = pt->perm.unicatTranscendenceAOEPurchased ? 1u : 4u;
 
@@ -3655,6 +3674,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatActionDevil(const float /* deltaTimeMs */, Cat& cat)
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         const auto maxCooldown = pt->getComputedCooldownByCatType(cat.type);
         const auto range       = pt->getComputedRangeByCatType(cat.type);
 
@@ -3706,6 +3727,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatActionAstro(const float /* deltaTimeMs */, Cat& cat)
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         const auto [cx, cy] = getCatRangeCenter(cat);
 
         if (cat.astroState.hasValue() || pt->disableAstrocatFlight)
@@ -3943,6 +3966,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatActionWitch(const float deltaTimeMs, Cat& cat)
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         SFML_BASE_ASSERT(!anyCatHexed());
         gameLoopUpdateCatActionWitchImpl(deltaTimeMs, cat, pt->dolls);
     }
@@ -3950,6 +3975,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatActionWizard(const float deltaTimeMs, Cat& cat)
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         if (!pt->absorbingWisdom)
             return;
 
@@ -4015,6 +4042,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatActionMouse(const float /* deltaTimeMs */, Cat& cat)
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         const auto maxCooldown = getComputedCooldownByCatTypeOrCopyCat(cat.type);
         const auto range       = getComputedRangeByCatTypeOrCopyCat(cat.type);
 
@@ -4075,6 +4104,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatActionEngi(const float /* deltaTimeMs */, Cat& cat)
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         const auto maxCooldown  = getComputedCooldownByCatTypeOrCopyCat(cat.type);
         const auto range        = getComputedRangeByCatTypeOrCopyCat(cat.type);
         const auto rangeSquared = range * range;
@@ -4114,6 +4145,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatActionRepulso(const float /* deltaTimeMs */, Cat& cat)
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         const auto maxCooldown = getComputedCooldownByCatTypeOrCopyCat(cat.type);
         const auto range       = getComputedRangeByCatTypeOrCopyCat(cat.type);
 
@@ -4140,6 +4173,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatActionAttracto(const float /* deltaTimeMs */, Cat& cat)
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         const auto maxCooldown = getComputedCooldownByCatTypeOrCopyCat(cat.type);
 
         // TODO P1: ? maybe absorb all bubbles in range and give a reward based on the number of bubbles absorbed
@@ -4150,6 +4185,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatActionCopy(const float deltaTimeMs, Cat& cat)
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         if (pt->copycatCopiedCatType == CatType::Witch)
         {
             SFML_BASE_ASSERT(!anyCatCopyHexed());
@@ -4170,6 +4207,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatActionDuck(const float deltaTimeMs, Cat& cat)
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         (void)deltaTimeMs;
         (void)cat;
     }
@@ -4223,6 +4262,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatActions(const float deltaTimeMs)
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         (void)wizardcatSpin.updateAndStop(deltaTimeMs * 0.015f);
 
         for (Cat& cat : pt->cats)
@@ -4279,7 +4320,10 @@ struct Main
                 cat.pawPosition = drawPosition + (cat.pawPosition - drawPosition).normalized() * 16.f;
 
             if (cat.cooldown.value == 0.f && cat.pawOpacity > 10.f)
+            {
                 cat.pawOpacity -= 0.5f * deltaTimeMs;
+                cat.pawOpacity = sf::base::max(cat.pawOpacity, 0.f);
+            }
 
             // Spawn effect
             const auto seStatus = cat.spawnEffectTimer.updateForwardAndStop(deltaTimeMs * 0.002f);
@@ -4305,9 +4349,9 @@ struct Main
             {
                 if (cat.cooldown.value < 100.f)
                 {
-                    sounds.stopPlayingAll(soundRitual);
+                    soundManager.stopPlayingAll(soundRitual);
 
-                    if (sounds.countPlayingPooled(soundRitualEnd) == 0u)
+                    if (soundManager.countPlayingPooled(soundRitualEnd) == 0u)
                     {
                         soundRitualEnd.settings.position = {cat.position.x, cat.position.y};
 
@@ -4318,7 +4362,7 @@ struct Main
 
                 if (cat.cooldown.value < 10'000.f)
                 {
-                    if (cat.cooldown.value > 100.f && sounds.countPlayingPooled(soundRitual) == 0u)
+                    if (cat.cooldown.value > 100.f && soundManager.countPlayingPooled(soundRitual) == 0u)
                     {
                         soundRitual.settings.position = {cat.position.x, cat.position.y};
 
@@ -4362,7 +4406,7 @@ struct Main
                 }
                 else
                 {
-                    sounds.stopPlayingAll(sounds.ritual);
+                    soundManager.stopPlayingAll(sounds.ritual);
                 }
             };
 
@@ -5533,6 +5577,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateMilestones()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         const auto updateMilestone = [&](const char* name, sf::base::U64& milestone)
         {
             const auto oldMilestone = milestone;
@@ -5677,6 +5723,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateAchievements()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         [[maybe_unused]] static bool mustGetFromSteam = true; // sync achievements from Steam only once
 
         SizeT nextId = 0u;
@@ -6483,6 +6531,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopDrawCats(const sf::Vec2f mousePos, const float deltaTimeMs)
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         ////////////////////////////////////////////////////////////
         const sf::Rect2f* const uniCatTxr     = isUnicatTranscendenceActive() ? &txrUniCat2 : &txrUniCat;
         const sf::Rect2f* const uniCatTailTxr = isUnicatTranscendenceActive() ? &txrUniCat2Tail : &txrUniCatTail;
@@ -7173,6 +7223,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopDrawShrines(const sf::Vec2f mousePos)
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         Shrine* hoveredShrine = nullptr;
 
         for (Shrine& shrine : pt->shrines)
@@ -7284,6 +7336,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopDrawDolls(const sf::Vec2f mousePos)
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         ////////////////////////////////////////////////////////////
         const sf::Rect2f* dollTxrs[] = {
             &txrDollNormal,   // Normal
@@ -7335,6 +7389,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopDrawHellPortals()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         const float hellPortalRadius = pt->getComputedRangeByCatType(CatType::Devil);
 
         for (HellPortal& hp : pt->hellPortals)
@@ -7381,7 +7437,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] inline sf::Sprite particleToSprite(const Particle& particle) const
+    [[nodiscard, gnu::always_inline, gnu::flatten]] inline sf::Sprite particleToSprite(const Particle& particle) const
     {
         const auto  opacityAsAlpha = static_cast<sf::base::U8>(particle.opacity * 255.f);
         const auto& textureRect    = particleRects[asIdx(particle.type)];
@@ -7399,6 +7455,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopDrawParticles()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         if (!profile.showParticles)
             return;
 
@@ -7414,6 +7472,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopDrawHUDParticles()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         if (!profile.showParticles)
             return;
 
@@ -7424,6 +7484,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopDrawEarnedCoinParticles()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         if (!profile.showParticles)
             return;
 
@@ -7459,6 +7521,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopDrawHUDTopParticles()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         if (!profile.showParticles)
             return;
 
@@ -7469,6 +7533,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopDrawHUDBottomParticles()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         if (!profile.showParticles)
             return;
 
@@ -7479,6 +7545,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopDrawTextParticles()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         if (!profile.showTextParticles)
             return;
 
@@ -7986,6 +8054,8 @@ struct Main
                              const sf::Vec2f                     mousePos,
                              const sf::base::Optional<sf::Vec2f> clickPosition)
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         // Mousecat combo
         checkComboEnd(deltaTimeMs, pt->mouseCatCombo, pt->mouseCatComboCountdown);
 
@@ -8083,6 +8153,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCollisionsBubbleBubble(const float deltaTimeMs)
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         auto func = [&](const SizeT bubbleIdxI, const SizeT bubbleIdxJ) SFML_BASE_LAMBDA_ALWAYS_INLINE
         {
             // TODO P2: technically this is a data race
@@ -8096,6 +8168,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCollisionsCatCat(const float deltaTimeMs)
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         for (SizeT i = 0u; i < pt->cats.size(); ++i)
             for (SizeT j = i + 1; j < pt->cats.size(); ++j)
             {
@@ -8135,6 +8209,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCollisionsCatShrine(const float deltaTimeMs) const
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         for (Cat& cat : pt->cats)
         {
             if (cat.isAstroAndInFlight())
@@ -8151,6 +8227,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCollisionsCatDoll()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         const auto checkCollisionWithDoll = [&](Doll& d, auto collectFn)
         {
             for (Cat& cat : pt->cats)
@@ -8176,6 +8254,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCollisionsBubbleHellPortal()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         if (!frameProcThisFrame)
             return;
 
@@ -8237,6 +8317,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateParticlesAndTextParticles(const float deltaTimeMs)
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         const auto resolution = getResolution();
 
         const auto updateParticleLike = [&](auto& particleLikeVec)
@@ -8277,6 +8359,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateSounds(const float deltaTimeMs, const sf::Vec2f mousePos)
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
 #ifndef BUBBLEBYTE_NO_AUDIO
         const float volumeMult = profile.playAudioInBackground || window.hasFocus() ? 1.f : 0.f;
 
@@ -8303,7 +8387,7 @@ struct Main
                 optMusic->music.setPosition(listener.position);
                 optMusic->music.setVolume(profile.musicVolume / 100.f * volumeMult * transitionMult);
 
-                if (sounds.countPlayingPooled(sounds.prestige) > 0u)
+                if (soundManager.countPlayingPooled(sounds.prestige) > 0u)
                     optMusic->music.setVolume(0.f);
             };
 
@@ -8326,7 +8410,7 @@ struct Main
                 optMusic->music.setPosition(listener.position);
                 optMusic->music.setVolume(profile.musicVolume / 100.f * volumeMult);
 
-                if (sounds.countPlayingPooled(sounds.prestige) > 0u)
+                if (soundManager.countPlayingPooled(sounds.prestige) > 0u)
                     optMusic->music.setVolume(0.f);
             };
 
@@ -8732,6 +8816,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool gameLoop()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         if (mustExit)
             return false;
 
@@ -9097,6 +9183,14 @@ struct Main
         //
         // Draw ImGui menu
         uiDraw(mousePos);
+
+//
+// Draw profiler
+#ifdef SFEX_PROFILER_ENABLED
+        ImGui::Begin("SFEX Profiler");
+        sfex::showImguiProfiler();
+        ImGui::End();
+#endif
 
         //
         // Compute views
