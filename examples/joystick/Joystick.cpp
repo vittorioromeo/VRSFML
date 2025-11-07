@@ -20,10 +20,9 @@
 
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/Clamp.hpp"
+#include "SFML/Base/String.hpp"
 
 #include "ExampleUtils.hpp"
-
-#include <string>
 
 
 ////////////////////////////////////////////////////////////
@@ -51,13 +50,13 @@ int main()
     {
         oss.setStr("");
         (oss << ... << xs);
-        return oss.to<sf::String>();
+        return oss.to<sf::UnicodeString>();
     };
 
     float threshold = 0.1f;
 
     // Axes labels in as strings
-    const sf::base::Array<std::string, 8> axisLabels = {"X", "Y", "Z", "R", "U", "V", "PovX", "PovY"};
+    const sf::base::Array<sf::base::String, 8> axisLabels = {"X", "Y", "Z", "R", "U", "V", "PovX", "PovY"};
 
     constexpr sf::Vec2f windowSize{400.f, 775.f};
 
@@ -71,7 +70,7 @@ int main()
 
     sf::Clock clock;
 
-    sf::base::Vector<sf::String> eventLog;
+    sf::base::Vector<sf::UnicodeString> eventLog;
 
     while (true)
     {
@@ -131,7 +130,7 @@ int main()
         float yOffset      = 0.f;
         float yEventOffset = 0.f;
 
-        const auto drawLabelValue = [&](const sf::String& label, const sf::String& value)
+        const auto drawLabelValue = [&](const sf::UnicodeString& label, const sf::UnicodeString& value)
         {
             window.draw(font,
                         {.position         = {5.f + 320.f * xOffset, 50.f + yOffset * fontLineSpacing},

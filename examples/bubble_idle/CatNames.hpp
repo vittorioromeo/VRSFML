@@ -2,6 +2,7 @@
 
 #include "CatType.hpp"
 #include "ExactArray.hpp"
+#include "RNGFast.hpp"
 
 #include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/Span.hpp"
@@ -192,5 +193,4 @@ inline constexpr EXACT_ARRAY(
 
 
 ////////////////////////////////////////////////////////////
-template <typename TRng>
-[[nodiscard]] sf::base::Vector<sf::base::StringView> getShuffledCatNames(CatType catType, TRng& randomEngine);
+[[nodiscard]] sf::base::Vector<sf::base::StringView> getShuffledCatNames(CatType catType, RNGFast& rng);

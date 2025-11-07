@@ -15,8 +15,6 @@
 
 #include "SFML/Base/Optional.hpp"
 
-#include <cstdlib>
-
 // Do we want to showcase direct JNI/NDK interaction?
 // Undefine this to get real cross-platform code.
 // Uncomment this to try JNI access; this seems to be broken in latest NDKs

@@ -1,6 +1,6 @@
-#include "SFML/System/String.hpp"
+#include "SFML/System/UnicodeString.hpp"
 
-#include "SFML/System/StringUtfUtils.hpp"
+#include "SFML/System/UnicodeStringUtfUtils.hpp"
 
 #include "SFML/Base/Assert.hpp"
 
@@ -8,7 +8,7 @@
 
 #include <CommonTraits.hpp>
 #include <GraphicsUtil.hpp>
-#include <StringifyStringUtil.hpp>
+#include <StringifyStdStringUtil.hpp>
 
 #include <sstream>
 #include <string>
@@ -78,23 +78,23 @@ struct StringMaker<std::u8string>
 };
 } // namespace doctest
 
-TEST_CASE("[System] sf::String")
+TEST_CASE("[System] sf::UnicodeString")
 {
     using namespace std::string_literals;
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::String));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::String));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::String));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::String));
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::UnicodeString));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::UnicodeString));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::UnicodeString));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::UnicodeString));
     }
 
     SECTION("Construction")
     {
         SECTION("Default constructor")
         {
-            const sf::String string;
+            const sf::UnicodeString string;
             CHECK(string.toAnsiString<std::string>().empty());
             CHECK(string.toWideString<std::wstring>().empty());
             CHECK(string.toUtf8<std::u8string>().empty());
@@ -107,7 +107,7 @@ TEST_CASE("[System] sf::String")
 
         SECTION("ANSI character constructor")
         {
-            const sf::String string = 'a';
+            const sf::UnicodeString string = 'a';
             CHECK(string.toAnsiString<std::string>() == "a"s);
             CHECK(string.toWideString<std::wstring>() == L"a"s);
             CHECK(string.toUtf8<std::u8string>() == std::u8string{'a'});
@@ -120,7 +120,7 @@ TEST_CASE("[System] sf::String")
 
         SECTION("ANSI C string constructor")
         {
-            const sf::String string = "def";
+            const sf::UnicodeString string = "def";
             CHECK(string.toAnsiString<std::string>() == "def"s);
             CHECK(string.toWideString<std::wstring>() == L"def"s);
             CHECK(string.toUtf8<std::u8string>() == std::u8string{'d', 'e', 'f'});
@@ -133,7 +133,7 @@ TEST_CASE("[System] sf::String")
 
         SECTION("ANSI string constructor")
         {
-            const sf::String string = "ghi"s;
+            const sf::UnicodeString string = "ghi"s;
             CHECK(string.toAnsiString<std::string>() == "ghi"s);
             CHECK(string.toWideString<std::wstring>() == L"ghi"s);
             CHECK(string.toUtf8<std::u8string>() == std::u8string{'g', 'h', 'i'});
@@ -146,7 +146,7 @@ TEST_CASE("[System] sf::String")
 
         SECTION("Wide character constructor")
         {
-            const sf::String string = L'\xFA';
+            const sf::UnicodeString string = L'\xFA';
             CHECK(string.toAnsiString<std::string>() == selectAnsi("\xFA"s, "\0"s));
             CHECK(string.toWideString<std::wstring>() == L"\xFA"s);
             CHECK(string.toUtf8<std::u8string>() == std::u8string{0xC3, 0xBA});
@@ -159,7 +159,7 @@ TEST_CASE("[System] sf::String")
 
         SECTION("Wide C string constructor")
         {
-            const sf::String string = L"j\xFAl";
+            const sf::UnicodeString string = L"j\xFAl";
             CHECK(string.toAnsiString<std::string>() == selectAnsi("j\xFAl"s, "j\0l"s));
             CHECK(string.toWideString<std::wstring>() == L"j\xFAl"s);
             CHECK(string.toUtf8<std::u8string>() == std::u8string{'j', 0xC3, 0xBA, 'l'});
@@ -172,7 +172,7 @@ TEST_CASE("[System] sf::String")
 
         SECTION("Wide string constructor")
         {
-            const sf::String string = L"mno\xFA"s;
+            const sf::UnicodeString string = L"mno\xFA"s;
             CHECK(string.toAnsiString<std::string>() == selectAnsi("mno\xFA"s, "mno\0"s));
             CHECK(string.toWideString<std::wstring>() == L"mno\xFA"s);
             CHECK(string.toUtf8<std::u8string>() == std::u8string{'m', 'n', 'o', 0xC3, 0XBA});
@@ -185,7 +185,7 @@ TEST_CASE("[System] sf::String")
 
         SECTION("UTF-32 character constructor")
         {
-            const sf::String string = U'\U0010AFAF';
+            const sf::UnicodeString string = U'\U0010AFAF';
             CHECK(string.toAnsiString<std::string>() == "\0"s);
             CHECK(string.toWideString<std::wstring>() == selectWide(L""s, L"\U0010AFAF"s));
             CHECK(string.toUtf8<std::u8string>() == std::u8string{0xF4, 0x8A, 0xBE, 0xAF});
@@ -198,7 +198,7 @@ TEST_CASE("[System] sf::String")
 
         SECTION("UTF-32 C string constructor")
         {
-            const sf::String string = U"\U0010ABCDrs";
+            const sf::UnicodeString string = U"\U0010ABCDrs";
             CHECK(string.toAnsiString<std::string>() == "\0rs"s);
             CHECK(string.toWideString<std::wstring>() == selectWide(L"rs"s, L"\U0010ABCDrs"s));
             CHECK(string.toUtf8<std::u8string>() == std::u8string{0xF4, 0x8A, 0xAF, 0x8D, 'r', 's'});
@@ -211,7 +211,7 @@ TEST_CASE("[System] sf::String")
 
         SECTION("UTF-32 string constructor")
         {
-            const sf::String string = U"tuv\U00104321"s;
+            const sf::UnicodeString string = U"tuv\U00104321"s;
             CHECK(string.toAnsiString<std::string>() == "tuv\0"s);
             CHECK(string.toWideString<std::wstring>() == selectWide(L"tuv"s, L"tuv\U00104321"s));
             CHECK(string.toUtf8<std::u8string>() == std::u8string{'t', 'u', 'v', 0xF4, 0x84, 0x8C, 0xA1});
@@ -227,8 +227,8 @@ TEST_CASE("[System] sf::String")
     {
         SECTION("Nominal")
         {
-            constexpr sf::base::U8 characters[4]{'w', 'x', 'y', 'z'};
-            const sf::String       string = sf::StringUtfUtils::fromUtf8(characters, characters + 4);
+            constexpr sf::base::U8  characters[4]{'w', 'x', 'y', 'z'};
+            const sf::UnicodeString string = sf::UnicodeStringUtfUtils::fromUtf8(characters, characters + 4);
             CHECK(string.toAnsiString<std::string>() == "wxyz"s);
             CHECK(string.toWideString<std::wstring>() == L"wxyz"s);
             CHECK(string.toUtf8<std::u8string>() == std::u8string{'w', 'x', 'y', 'z'});
@@ -241,9 +241,9 @@ TEST_CASE("[System] sf::String")
 
         SECTION("Insufficient input")
         {
-            constexpr sf::base::U8 characters[1]{251};
-            const sf::String       string = sf::StringUtfUtils::fromUtf8(characters, characters + 1);
-            constexpr char32_t     defaultReplacementCharacter = 0;
+            constexpr sf::base::U8  characters[1]{251};
+            const sf::UnicodeString string = sf::UnicodeStringUtfUtils::fromUtf8(characters, characters + 1);
+            constexpr char32_t      defaultReplacementCharacter = 0;
             CHECK(string.getSize() == 1);
             CHECK(string[0] == defaultReplacementCharacter);
         }
@@ -251,8 +251,8 @@ TEST_CASE("[System] sf::String")
 
     SECTION("fromUtf16()")
     {
-        constexpr char16_t characters[4]{0xF1, 'x', 'y', 'z'};
-        const sf::String   string = sf::StringUtfUtils::fromUtf16(characters, characters + 4);
+        constexpr char16_t      characters[4]{0xF1, 'x', 'y', 'z'};
+        const sf::UnicodeString string = sf::UnicodeStringUtfUtils::fromUtf16(characters, characters + 4);
         CHECK(string.toAnsiString<std::string>() == selectAnsi("\xF1xyz"s, "\0xyz"s));
         CHECK(string.toWideString<std::wstring>() == L"\xF1xyz"s);
         CHECK(string.toUtf8<std::u8string>() == std::u8string{0xC3, 0xB1, 'x', 'y', 'z'});
@@ -265,8 +265,8 @@ TEST_CASE("[System] sf::String")
 
     SECTION("fromUtf32()")
     {
-        constexpr char32_t characters[4]{'w', 0x10'43'21, 'y', 'z'};
-        const sf::String   string = sf::StringUtfUtils::fromUtf32(characters, characters + 4);
+        constexpr char32_t      characters[4]{'w', 0x10'43'21, 'y', 'z'};
+        const sf::UnicodeString string = sf::UnicodeStringUtfUtils::fromUtf32(characters, characters + 4);
         CHECK(string.toAnsiString<std::string>() == "w\0yz"s);
         CHECK(string.toWideString<std::wstring>() == selectWide(L"wyz"s, L"w\U00104321yz"s));
         CHECK(string.toUtf8<std::u8string>() == std::u8string{'w', 0xF4, 0x84, 0x8C, 0xA1, 'y', 'z'});
@@ -279,7 +279,7 @@ TEST_CASE("[System] sf::String")
 
     SECTION("clear()")
     {
-        sf::String string("you'll never guess what happens when you call clear()");
+        sf::UnicodeString string("you'll never guess what happens when you call clear()");
         string.clear();
         CHECK(string.isEmpty());
         CHECK(string.getSize() == 0);
@@ -287,7 +287,7 @@ TEST_CASE("[System] sf::String")
 
     SECTION("erase()")
     {
-        sf::String string("what if i want a shorter string?");
+        sf::UnicodeString string("what if i want a shorter string?");
         string.erase(0, 8);
         string.erase(string.getSize() - 1, 1);
         CHECK(string == "i want a shorter string");
@@ -296,7 +296,7 @@ TEST_CASE("[System] sf::String")
 
     SECTION("insert()")
     {
-        sf::String string("please insert text");
+        sf::UnicodeString string("please insert text");
         string.insert(7, "don't ");
         CHECK(string == "please don't insert text");
         CHECK(string.getSize() == 24);
@@ -304,16 +304,16 @@ TEST_CASE("[System] sf::String")
 
     SECTION("find()")
     {
-        const sf::String string("a little bit of this and a little bit of that");
+        const sf::UnicodeString string("a little bit of this and a little bit of that");
         CHECK(string.find("a little bit") == 0);
         CHECK(string.find("a little bit", 15) == 25);
-        CHECK(string.find("a little bit", 1000) == sf::String::InvalidPos);
-        CHECK(string.find("no way you find this") == sf::String::InvalidPos);
+        CHECK(string.find("a little bit", 1000) == sf::UnicodeString::InvalidPos);
+        CHECK(string.find("no way you find this") == sf::UnicodeString::InvalidPos);
     }
 
     SECTION("replace()")
     {
-        sf::String string("sfml is the worst");
+        sf::UnicodeString string("sfml is the worst");
         string.replace(12, 5, "best!");
         CHECK(string == "sfml is the best!");
         string.replace("the", "THE");
@@ -322,7 +322,7 @@ TEST_CASE("[System] sf::String")
 
     SECTION("substring()")
     {
-        const sf::String string("let's get some substrings");
+        const sf::UnicodeString string("let's get some substrings");
         CHECK(string.substring(0) == "let's get some substrings");
         CHECK(string.substring(10) == "some substrings");
         CHECK(string.substring(10, 4) == "some");
@@ -336,7 +336,7 @@ TEST_CASE("[System] sf::String")
 
     SECTION("begin() and end() const")
     {
-        const sf::String string("let's test the const iterators");
+        const sf::UnicodeString string("let's test the const iterators");
         CHECK(*string.begin() == 'l');
         CHECK(*(string.end() - 1) == 's');
         for (const auto character : string)
@@ -345,7 +345,7 @@ TEST_CASE("[System] sf::String")
 
     SECTION("begin() and end()")
     {
-        sf::String string("let's test the iterators");
+        sf::UnicodeString string("let's test the iterators");
         CHECK(*string.begin() == 'l');
         CHECK(*(string.end() - 1) == 's');
         for (auto& character : string)
@@ -357,21 +357,21 @@ TEST_CASE("[System] sf::String")
     {
         SECTION("operator+=")
         {
-            sf::String string;
-            string += sf::String("xyz");
+            sf::UnicodeString string;
+            string += sf::UnicodeString("xyz");
             CHECK(string.toAnsiString<std::string>() == "xyz"s);
         }
 
         SECTION("operator[] const")
         {
-            const sf::String string("the quick brown fox");
+            const sf::UnicodeString string("the quick brown fox");
             CHECK(string[0] == 't');
             CHECK(string[10] == 'b');
         }
 
         SECTION("operator[]")
         {
-            sf::String string("the quick brown fox");
+            sf::UnicodeString string("the quick brown fox");
             CHECK(string[0] == 't');
             string[1] = 'x';
             CHECK(string[1] == 'x');
@@ -379,44 +379,44 @@ TEST_CASE("[System] sf::String")
 
         SECTION("operator==")
         {
-            CHECK(sf::String() == sf::String());
-            CHECK_FALSE(sf::String() == sf::String(' '));
+            CHECK(sf::UnicodeString() == sf::UnicodeString());
+            CHECK_FALSE(sf::UnicodeString() == sf::UnicodeString(' '));
         }
 
         SECTION("operator!=")
         {
-            CHECK(sf::String() != sf::String(' '));
-            CHECK_FALSE(sf::String() != sf::String());
+            CHECK(sf::UnicodeString() != sf::UnicodeString(' '));
+            CHECK_FALSE(sf::UnicodeString() != sf::UnicodeString());
         }
 
         SECTION("operator<")
         {
-            CHECK(sf::String('a') < sf::String('b'));
-            CHECK_FALSE(sf::String() < sf::String());
+            CHECK(sf::UnicodeString('a') < sf::UnicodeString('b'));
+            CHECK_FALSE(sf::UnicodeString() < sf::UnicodeString());
         }
 
         SECTION("operator>")
         {
-            CHECK(sf::String('b') > sf::String('a'));
-            CHECK_FALSE(sf::String() > sf::String());
+            CHECK(sf::UnicodeString('b') > sf::UnicodeString('a'));
+            CHECK_FALSE(sf::UnicodeString() > sf::UnicodeString());
         }
 
         SECTION("operator<=")
         {
-            CHECK(sf::String() <= sf::String());
-            CHECK(sf::String('a') <= sf::String('b'));
+            CHECK(sf::UnicodeString() <= sf::UnicodeString());
+            CHECK(sf::UnicodeString('a') <= sf::UnicodeString('b'));
         }
 
         SECTION("operator>=")
         {
-            CHECK(sf::String() >= sf::String());
-            CHECK(sf::String('b') >= sf::String('a'));
+            CHECK(sf::UnicodeString() >= sf::UnicodeString());
+            CHECK(sf::UnicodeString('b') >= sf::UnicodeString('a'));
         }
 
         SECTION("operator+")
         {
-            CHECK(sf::String() + sf::String() == sf::String());
-            CHECK(sf::String("abc") + sf::String("def") == sf::String("abcdef"));
+            CHECK(sf::UnicodeString() + sf::UnicodeString() == sf::UnicodeString());
+            CHECK(sf::UnicodeString("abc") + sf::UnicodeString("def") == sf::UnicodeString("abcdef"));
         }
     }
 }

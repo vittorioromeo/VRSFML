@@ -14,10 +14,17 @@
 #include "SFML/Base/Vector.hpp"
 
 
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
 namespace sf
 {
-class String;
+class UnicodeString;
+} // namespace sf
 
+
+namespace sf
+{
 ////////////////////////////////////////////////////////////
 /// \brief Utility class to build blocks of data to transfer
 ///        over the network
@@ -255,7 +262,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator>>(String& data);
+    Packet& operator>>(UnicodeString& data);
 
     ////////////////////////////////////////////////////////////
     /// Overload of `operator<<` to write data into the packet
@@ -336,7 +343,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator<<(const String& data);
+    Packet& operator<<(const UnicodeString& data);
 
 protected:
     friend class TcpSocket;
@@ -470,7 +477,7 @@ private:
 /// \li `bool`
 /// \li fixed-size integer types (`int[8|16|32]_t`, `uint[8|16|32]_t`)
 /// \li floating point numbers (`float`, `double`)
-/// \li string types (`char*`, `wchar_t*`, `std::string`, `std::wstring`, `sf::String`)
+/// \li string types (`char*`, `wchar_t*`, `std::string`, `std::wstring`, `sf::UnicodeString`)
 ///
 /// Like standard streams, it is also possible to define your own
 /// overloads of operators >> and << in order to handle your

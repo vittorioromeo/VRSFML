@@ -15,7 +15,7 @@
 #include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Err.hpp"
-#include "SFML/System/StringUtfUtils.hpp"
+#include "SFML/System/UnicodeStringUtfUtils.hpp"
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Abort.hpp"
@@ -24,6 +24,7 @@
 #include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/ScopeGuard.hpp"
+#include "SFML/Base/String.hpp"
 
 #include <SDL3/SDL_clipboard.h>
 #include <SDL3/SDL_hints.h>
@@ -473,7 +474,9 @@ namespace sf::priv
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, static_cast<Sint64>(flags));
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, windowSettings.size.x);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, windowSettings.size.y);
-    SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, windowSettings.title.toAnsiString<std::string>().data());
+    SDL_SetStringProperty(props,
+                          SDL_PROP_WINDOW_CREATE_TITLE_STRING,
+                          windowSettings.title.toAnsiString<base::String>().data());
 
 
     static int i = 0;
@@ -782,25 +785,25 @@ bool SDLLayer::setGlobalMousePosition(const Vec2i position) const noexcept
 
 
 ////////////////////////////////////////////////////////////
-String SDLLayer::getClipboardString() const noexcept
+UnicodeString SDLLayer::getClipboardString() const noexcept
 {
     if (!SDL_HasClipboardText())
-        return String{};
+        return UnicodeString{};
 
     char* clipboardText = SDL_GetClipboardText();
     if (SFML_BASE_STRCMP(clipboardText, "") == 0)
     {
         err() << "`SDL_GetClipboardText` failed: " << SDL_GetError();
-        return String{};
+        return UnicodeString{};
     }
 
     SFML_BASE_SCOPE_GUARD({ SDL_free(static_cast<void*>(clipboardText)); });
-    return StringUtfUtils::fromUtf8(clipboardText, clipboardText + SFML_BASE_STRLEN(clipboardText));
+    return UnicodeStringUtfUtils::fromUtf8(clipboardText, clipboardText + SFML_BASE_STRLEN(clipboardText));
 }
 
 
 ////////////////////////////////////////////////////////////
-bool SDLLayer::setClipboardString(const String& string) const noexcept
+bool SDLLayer::setClipboardString(const UnicodeString& string) const noexcept
 {
     if (!SDL_SetClipboardText(reinterpret_cast<const char*>(string.toUtf8<std::u8string>().c_str())))
     {
@@ -829,7 +832,7 @@ float SDLLayer::getDisplayContentScale(const SDL_DisplayID displayID) const
 
 
 ////////////////////////////////////////////////////////////
-String SDLLayer::getDisplayName(const SDL_DisplayID displayID) const
+UnicodeString SDLLayer::getDisplayName(const SDL_DisplayID displayID) const
 {
     SFML_BASE_ASSERT(displayID != 0u);
 
@@ -837,10 +840,10 @@ String SDLLayer::getDisplayName(const SDL_DisplayID displayID) const
     if (name == nullptr)
     {
         err() << "`SDL_GetDisplayName` failed: " << SDL_GetError();
-        return String{};
+        return UnicodeString{};
     }
 
-    return StringUtfUtils::fromUtf8(name, name + SFML_BASE_STRLEN(name));
+    return UnicodeStringUtfUtils::fromUtf8(name, name + SFML_BASE_STRLEN(name));
 }
 
 

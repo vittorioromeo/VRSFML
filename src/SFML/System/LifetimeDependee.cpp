@@ -16,9 +16,9 @@
     #include "SFML/Base/Launder.hpp"
     #include "SFML/Base/PlacementNew.hpp"
     #include "SFML/Base/StackTrace.hpp"
+    #include "SFML/Base/String.hpp"
 
     #include <atomic>
-    #include <string>
 
     #include <cctype>
 
@@ -135,7 +135,7 @@ LifetimeDependee::~LifetimeDependee()
     if (finalCount == 0u)
         return;
 
-    const auto toLowerStr = [](std::string s)
+    const auto toLowerStr = [](base::String s)
     {
         for (char& c : s)
             c = static_cast<char>(std::tolower(c));
@@ -143,7 +143,7 @@ LifetimeDependee::~LifetimeDependee()
         return s;
     };
 
-    const auto toTildes = [](std::string s)
+    const auto toTildes = [](base::String s)
     {
         for (char& c : s)
             c = '~';

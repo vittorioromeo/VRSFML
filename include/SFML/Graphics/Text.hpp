@@ -18,7 +18,7 @@
 #include "SFML/System/AnchorPointMixin.hpp"
 #include "SFML/System/LifetimeDependant.hpp"
 #include "SFML/System/Rect2.hpp"
-#include "SFML/System/String.hpp"
+#include "SFML/System/UnicodeString.hpp"
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/EnumClassBitwiseOps.hpp"
@@ -113,7 +113,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Set the text's string
     ///
-    /// The `string` argument is a `sf::String`, which can
+    /// The `string` argument is a `sf::UnicodeString`, which can
     /// automatically be constructed from standard string types.
     /// So, the following calls are all valid:
     /// \code
@@ -129,7 +129,7 @@ public:
     /// \see `getString`
     ///
     ////////////////////////////////////////////////////////////
-    void setString(const String& string);
+    void setString(const UnicodeString& string);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the text's font
@@ -284,13 +284,13 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Get the text's string
     ///
-    /// The returned string is a `sf::String`, which can automatically
+    /// The returned string is a `sf::UnicodeString`, which can automatically
     /// be converted to standard string types. So, the following
     /// lines of code are all valid:
     /// \code
-    /// sf::String   s1 = text.getString();
-    /// std::string  s2 = text.getString();
-    /// std::wstring s3 = text.getString();
+    /// sf::UnicodeString s1 = text.getString();
+    /// std::string       s2 = text.getString();
+    /// std::wstring      s3 = text.getString();
     /// \endcode
     ///
     /// \return Text's string
@@ -298,7 +298,7 @@ public:
     /// \see `setString`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const String& getString() const;
+    [[nodiscard]] const UnicodeString& getString() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the text's font
@@ -513,7 +513,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     /* Ordered to minimize padding */
-    String                       m_string;            //!< String to display
+    UnicodeString                m_string;            //!< String to display
     mutable base::Vector<Vertex> m_vertices;          //!< Vertex array containing the outline and fill geometry
     mutable Rect2f               m_bounds;            //!< Bounding rectangle of the text (in local coordinates)
     const Font*                  m_font{};            //!< Font used to display the string

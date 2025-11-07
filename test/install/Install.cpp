@@ -15,7 +15,7 @@
 #include "SFML/Window/WindowContext.hpp"
 
 #include "SFML/System/Rect2.hpp"
-#include "SFML/System/String.hpp"
+#include "SFML/System/UnicodeString.hpp"
 
 // Instantiate some types from each module to test for linker issues. This program is not meant be ran.
 int main()
@@ -38,9 +38,9 @@ int main()
     [[maybe_unused]] const sf::UdpSocket udpSocket(/* isBlocking */ true);
 
     // System
-    [[maybe_unused]] const sf::Angle  angle;
-    [[maybe_unused]] const sf::String string;
-    [[maybe_unused]] const sf::Time   time;
+    [[maybe_unused]] const sf::Angle         angle;
+    [[maybe_unused]] const sf::UnicodeString string;
+    [[maybe_unused]] const sf::Time          time;
 
     // Window
     [[maybe_unused]] const sf::VideoMode videoMode{{0u, 0u}};

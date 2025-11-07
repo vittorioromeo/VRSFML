@@ -9,7 +9,7 @@
 
 #include "SFML/Network/SocketImpl.hpp"
 
-#include "SFML/System/String.hpp"
+#include "SFML/System/UnicodeString.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/Memcpy.hpp"
@@ -342,7 +342,7 @@ Packet& Packet::operator>>(std::wstring& data)
 
 
 ////////////////////////////////////////////////////////////
-Packet& Packet::operator>>(String& data)
+Packet& Packet::operator>>(UnicodeString& data)
 {
     // First extract the string length
     base::U32 length = 0;
@@ -547,7 +547,7 @@ Packet& Packet::operator<<(const std::wstring& data)
 
 
 ////////////////////////////////////////////////////////////
-Packet& Packet::operator<<(const String& data)
+Packet& Packet::operator<<(const UnicodeString& data)
 {
     // First insert the string length
     const auto length = static_cast<base::U32>(data.getSize());

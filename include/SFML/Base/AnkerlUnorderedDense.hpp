@@ -2152,7 +2152,7 @@ public:
 
     [[nodiscard]] auto load_factor() const -> float
     {
-        return bucket_count() ? static_cast<float>(size()) / static_cast<float>(bucket_count()) : 0.0F;
+        return bucket_count() ? static_cast<float>(size()) / static_cast<float>(bucket_count()) : 0.f;
     }
 
     [[nodiscard]] auto max_load_factor() const -> float

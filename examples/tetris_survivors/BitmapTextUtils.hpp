@@ -16,6 +16,7 @@
 
 #include "SFML/Base/FromChars.hpp"
 #include "SFML/Base/InPlaceVector.hpp"
+#include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Vector.hpp"

@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Export.hpp"
 
-#include "SFML/System/String.hpp"
+#include "SFML/System/UnicodeString.hpp"
 
 
 namespace sf::priv
@@ -19,9 +19,9 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 struct SFML_WINDOW_API JoystickIdentification
 {
-    String       name{"No Joystick"}; //!< Name of the joystick
-    unsigned int vendorId{};          //!< Manufacturer identifier
-    unsigned int productId{};         //!< Product identifier
+    UnicodeString name{"No Joystick"}; //!< Name of the joystick
+    unsigned int  vendorId{};          //!< Manufacturer identifier
+    unsigned int  productId{};         //!< Product identifier
 };
 
 } // namespace sf::priv

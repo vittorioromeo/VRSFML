@@ -1,7 +1,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "../bubble_idle/TextEffectWiggle.hpp"
+#include "../bubble_idle/RNGFast.hpp"          // TODO P1: avoid the relative path...?
+#include "../bubble_idle/TextEffectWiggle.hpp" // TODO P1: avoid the relative path...?
 
 #include "SFML/Graphics/CircleShape.hpp"
 #include "SFML/Graphics/Color.hpp"
@@ -12,10 +13,8 @@
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/View.hpp"
 
 #include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
@@ -27,17 +26,15 @@
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Path.hpp"
-#include "SFML/System/String.hpp"
 #include "SFML/System/Time.hpp"
+#include "SFML/System/UnicodeString.hpp"
 #include "SFML/System/Vec2.hpp"
 
+#include "SFML/Base/Math/Cos.hpp"
+#include "SFML/Base/Math/Fabs.hpp"
+#include "SFML/Base/String.hpp"
+
 #include "ExampleUtils.hpp"
-
-#include <random>
-#include <string>
-
-#include <cmath>
-#include <cstdlib>
 
 #ifdef SFML_SYSTEM_IOS
     #include "SFML/Main.hpp"
@@ -62,9 +59,7 @@ sf::Path resourcesDir()
 ////////////////////////////////////////////////////////////
 int main()
 {
-    // TODO P0: provide a way of easily scaling with DPI
-    std::random_device rd;
-    std::mt19937       rng(rd());
+    RNGFast rng(/* seed */ 1234);
 
     // Define some constants
     constexpr sf::Vec2f gameSize{800.f, 600.f};
@@ -177,8 +172,8 @@ int main()
                     do
                     {
                         // Make sure the ball initial angle is not too much vertical
-                        ballAngle = sf::degrees(std::uniform_real_distribution<float>(0, 360)(rng));
-                    } while (std::abs(std::cos(ballAngle.asRadians())) < 0.7f);
+                        ballAngle = sf::degrees(rng.getF(0.f, 360.f));
+                    } while (sf::base::fabs(sf::base::cos(ballAngle.asRadians())) < 0.7f);
                 }
             }
         }
@@ -228,9 +223,9 @@ int main()
             ball.position += sf::Vec2f::fromAngle(ballSpeed * deltaTime, ballAngle);
 
 #ifdef SFML_SYSTEM_IOS
-            const std::string inputString = "Touch the screen to restart.";
+            const sf::base::String inputString = "Touch the screen to restart.";
 #else
-            const std::string inputString = "Press space to restart or\nescape to exit.";
+            const sf::base::String inputString = "Press space to restart or\nescape to exit.";
 #endif
 
             // Check collisions between the ball and the screen
@@ -258,8 +253,6 @@ int main()
                 ball.position.y = gameSize.y - ballRadius - 0.1f;
             }
 
-            std::uniform_real_distribution<float> dist(0, 20);
-
             // Check the collisions between the ball and the paddles
             // Left Paddle
             if (ball.position.x - ballRadius < leftPaddle.position.x + paddleSize.x / 2 &&
@@ -268,9 +261,9 @@ int main()
                 ball.position.y - ballRadius <= leftPaddle.position.y + paddleSize.y / 2)
             {
                 if (ball.position.y > leftPaddle.position.y)
-                    ballAngle = sf::degrees(180) - ballAngle + sf::degrees(dist(rng));
+                    ballAngle = sf::degrees(180) - ballAngle + sf::degrees(rng.getF(0.f, 20.f));
                 else
-                    ballAngle = sf::degrees(180) - ballAngle - sf::degrees(dist(rng));
+                    ballAngle = sf::degrees(180) - ballAngle - sf::degrees(rng.getF(0.f, 20.f));
 
                 ballSound.play();
                 ball.position.x = leftPaddle.position.x + ballRadius + paddleSize.x / 2 + 0.1f;
@@ -283,9 +276,9 @@ int main()
                 ball.position.y - ballRadius <= rightPaddle.position.y + paddleSize.y / 2)
             {
                 if (ball.position.y > rightPaddle.position.y)
-                    ballAngle = sf::degrees(180) - ballAngle + sf::degrees(dist(rng));
+                    ballAngle = sf::degrees(180) - ballAngle + sf::degrees(rng.getF(0.f, 20.f));
                 else
-                    ballAngle = sf::degrees(180) - ballAngle - sf::degrees(dist(rng));
+                    ballAngle = sf::degrees(180) - ballAngle - sf::degrees(rng.getF(0.f, 20.f));
 
                 ballSound.play();
                 ball.position.x = rightPaddle.position.x - ballRadius - paddleSize.x / 2 - 0.1f;

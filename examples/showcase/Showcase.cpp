@@ -48,8 +48,13 @@
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/InPlaceVector.hpp"
+#include "SFML/Base/Math/Fabs.hpp"
+#include "SFML/Base/Math/Fmod.hpp"
+#include "SFML/Base/Math/Sin.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/String.hpp"
+#include "SFML/Base/ToString.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #include "ExampleUtils.hpp"
@@ -58,9 +63,7 @@
 #include <imgui.h>
 
 #include <initializer_list>
-#include <string>
 
-#include <cmath>
 #include <cstdio>
 
 
@@ -89,9 +92,9 @@ private:
 
         shapeData.fillColor        = fillColor;
         shapeData.outlineColor     = fillColor.withRotatedHue(180.f);
-        shapeData.outlineThickness = std::abs(4.f * std::sin(m_time * 0.05f + m_phase));
+        shapeData.outlineThickness = sf::base::fabs(4.f * sf::base::sin(m_time * 0.05f + m_phase));
 
-        shapeData.rotation = sf::degrees(std::fmod(m_time * 1.f + m_phase * 45.f, 360.f));
+        shapeData.rotation = sf::degrees(sf::base::fmod(m_time * 1.f + m_phase * 45.f, 360.f));
 
         shapeData.textureRect = {
             .position = {0.f, 0.f},
@@ -123,7 +126,7 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] float getPhasedValue(const float timeMultiplier, const float phaseMultiplier) const
     {
-        return std::abs(std::sin(m_time * timeMultiplier + m_phase * phaseMultiplier));
+        return sf::base::fabs(sf::base::sin(m_time * timeMultiplier + m_phase * phaseMultiplier));
     }
 
     ////////////////////////////////////////////////////////////
@@ -198,7 +201,7 @@ private:
                       .outerRadius = 64.f,
                       .innerRadius = 32.f + (16.f * getPhasedValue(0.2f, 0.75f)),
                       .startAngle  = sf::degrees(0.f),
-                      .sweepAngle  = sf::degrees((360.f * getPhasedValue(0.1f, 2.0f))),
+                      .sweepAngle  = sf::degrees((360.f * getPhasedValue(0.1f, 2.f))),
                       .pointCount  = 32u,
                   });
 
@@ -230,7 +233,7 @@ private:
                       .outerRadius = 64.f,
                       .innerRadius = 32.f + (16.f * getPhasedValue(0.25f, 2.f)),
                       .startAngle  = sf::degrees(0.f),
-                      .sweepAngle  = sf::degrees((270.f * getPhasedValue(0.1f, 2.0f))),
+                      .sweepAngle  = sf::degrees((270.f * getPhasedValue(0.1f, 2.f))),
                       .headLength  = 32.f,
                       .headWidth   = 8.f + (64.f * getPhasedValue(0.06f, 3.f)),
                   });
@@ -289,9 +292,9 @@ private:
     RNGFast m_rng{/* seed */ 1234};
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::string toDigitSeparatedString(const sf::base::SizeT value)
+    [[nodiscard]] static sf::base::String toDigitSeparatedString(const sf::base::SizeT value)
     {
-        std::string s = std::to_string(value);
+        auto s = sf::base::toString(value);
 
         for (int i = static_cast<int>(s.size()) - 3; i > 0; i -= 3)
             s.insert(static_cast<sf::base::SizeT>(i), ".");
@@ -399,7 +402,7 @@ public:
 
             if (outlineIndependentIndex >= digitSeparatedBunnyCount.size() * 4u)
             {
-                const float offY = std::sin(m_time) * 1.25f;
+                const float offY = sf::base::sin(m_time) * 1.25f;
 
                 vertices[j + 0].position.y -= offY;
                 vertices[j + 1].position.y -= offY;
@@ -413,7 +416,7 @@ public:
             }
             else
             {
-                const float offY = std::sin(m_time + static_cast<float>(outlineIndependentIndex)) * 1.5f;
+                const float offY = sf::base::sin(m_time + static_cast<float>(outlineIndependentIndex)) * 1.5f;
 
                 vertices[j + 0].position.y += offY;
                 vertices[j + 1].position.y += offY;
@@ -859,7 +862,7 @@ private:
                          samples.data(),
                          static_cast<int>(samples.size()),
                          0,
-                         (std::to_string(samples.getAverageAs<double>()) + unit).c_str(),
+                         (sf::base::toString(samples.getAverageAs<double>()) + unit).cStr(),
                          0.f,
                          upperBound,
                          ImVec2{256.f, 32.f});

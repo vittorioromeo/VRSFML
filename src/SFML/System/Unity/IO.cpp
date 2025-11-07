@@ -10,10 +10,13 @@
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/PathUtils.hpp"
-#include "SFML/System/String.hpp"
+#include "SFML/System/UnicodeString.hpp"
 
 #include "SFML/Base/StackTrace.hpp"
+#include "SFML/Base/String.hpp" // used
+#include "SFML/Base/StringStreamOp.hpp"
 #include "SFML/Base/StringView.hpp"
+#include "SFML/Base/StringViewStreamOp.hpp"
 #include "SFML/Base/Trait/IsSame.hpp"
 
 #include <filesystem>
@@ -25,6 +28,7 @@
 #include <sstream>
 #include <string>
 #include <string_view>
+
 
 namespace
 {
@@ -172,6 +176,7 @@ IOStreamOutput& IOStreamOutput::operator<<(const T& value)
 
 
 ////////////////////////////////////////////////////////////
+template IOStreamOutput& IOStreamOutput::operator<< <base::String>(const base::String&);
 template IOStreamOutput& IOStreamOutput::operator<< <base::StringView>(const base::StringView&);
 template IOStreamOutput& IOStreamOutput::operator<< <bool>(const bool&);
 template IOStreamOutput& IOStreamOutput::operator<< <char>(const char&);
@@ -250,6 +255,7 @@ template IOStreamInput& IOStreamInput::operator>> <float>(float&);
 template IOStreamInput& IOStreamInput::operator>> <int>(int&);
 template IOStreamInput& IOStreamInput::operator>> <long>(long&);
 template IOStreamInput& IOStreamInput::operator>> <std::string>(std::string&);
+template IOStreamInput& IOStreamInput::operator>> <base::String>(base::String&);
 template IOStreamInput& IOStreamInput::operator>> <unsigned int>(unsigned int&);
 template IOStreamInput& IOStreamInput::operator>> <unsigned long long>(unsigned long long&);
 template IOStreamInput& IOStreamInput::operator>> <unsigned long>(unsigned long&);
@@ -298,7 +304,19 @@ IOStreamInput& cIn()
 template <typename Stream, typename T>
 bool getLine(Stream& stream, T& target)
 {
-    return static_cast<bool>(std::getline(stream, target));
+    if constexpr (SFML_BASE_IS_SAME(T, std::string))
+    {
+        return static_cast<bool>(std::getline(stream, target));
+    }
+    else
+    {
+        std::string temp;
+        const auto  result = static_cast<bool>(std::getline(stream, temp));
+
+        target = base::String{temp.data(), temp.size()};
+
+        return result;
+    }
 }
 
 
@@ -306,18 +324,34 @@ bool getLine(Stream& stream, T& target)
 template <typename T>
 bool getLine(IOStreamInput& stream, T& target)
 {
-    return static_cast<bool>(std::getline(stream.m_impl->stream, target));
+    if constexpr (SFML_BASE_IS_SAME(T, std::string))
+    {
+        return static_cast<bool>(std::getline(stream.m_impl->stream, target));
+    }
+    else
+    {
+        std::string temp;
+        const auto  result = static_cast<bool>(std::getline(stream.m_impl->stream, temp));
+
+        target = base::String{temp.data(), temp.size()};
+
+        return result;
+    }
 }
 
 
 ////////////////////////////////////////////////////////////
 template bool getLine<std::istringstream, std::string>(std::istringstream&, std::string&);
 template bool getLine<std::istream, std::string>(std::istream&, std::string&);
+template bool getLine<std::istringstream, base::String>(std::istringstream&, base::String&);
+template bool getLine<std::istream, base::String>(std::istream&, base::String&);
 
 
 ////////////////////////////////////////////////////////////
 template bool getLine<std::string>(IOStreamInput&, std::string&);
 template bool getLine<std::string>(InStringStream&, std::string&);
+template bool getLine<base::String>(IOStreamInput&, base::String&);
+template bool getLine<base::String>(InStringStream&, base::String&);
 
 
 ////////////////////////////////////////////////////////////
@@ -547,6 +581,13 @@ OutStringStream::OutStringStream(const char* str) : m_impl(str)
 
 
 ////////////////////////////////////////////////////////////
+std::streambuf* OutStringStream::rdbuf() const
+{
+    return m_impl->oss.rdbuf();
+}
+
+
+////////////////////////////////////////////////////////////
 void OutStringStream::write(const char* data, base::PtrDiffT size)
 {
     m_impl->oss.write(data, static_cast<std::streamsize>(size));
@@ -599,13 +640,14 @@ OutStringStream::operator bool() const
 template <typename T>
 T OutStringStream::to() const
 {
-    return m_impl->oss.str();
+    return T{m_impl->oss.str()};
 }
 
 
 ////////////////////////////////////////////////////////////
-template String      OutStringStream::to() const;
-template std::string OutStringStream::to() const;
+template UnicodeString OutStringStream::to() const;
+template std::string   OutStringStream::to() const;
+template base::String  OutStringStream::to() const;
 
 
 ////////////////////////////////////////////////////////////
@@ -637,6 +679,7 @@ OutStringStream& OutStringStream::operator<<(const T& value)
 
 
 ////////////////////////////////////////////////////////////
+template OutStringStream& OutStringStream::operator<< <base::String>(const base::String&);
 template OutStringStream& OutStringStream::operator<< <base::StringView>(const base::StringView&);
 template OutStringStream& OutStringStream::operator<< <bool>(const bool&);
 template OutStringStream& OutStringStream::operator<< <char>(const char&);
@@ -863,6 +906,13 @@ InStringStream::InStringStream(const std::string& str, FileOpenMode mode) : m_im
 
 
 ////////////////////////////////////////////////////////////
+InStringStream::InStringStream(const base::String& str, FileOpenMode mode) :
+    InStringStream{std::string{str.data(), str.size()}, mode}
+{
+}
+
+
+////////////////////////////////////////////////////////////
 InStringStream& InStringStream::get(char& ch)
 {
     m_impl->iss.get(ch);
@@ -965,7 +1015,7 @@ template InStringStream& InStringStream::operator>> <std::filesystem::path>(std:
 template <typename T>
 bool getLine(InStringStream& stream, T& target)
 {
-    return static_cast<bool>(std::getline(stream.m_impl->iss, target));
+    return getLine(stream.m_impl->iss, target);
 }
 
 } // namespace sf

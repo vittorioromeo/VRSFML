@@ -22,8 +22,6 @@
 
 #define TEMPLATE_TEST_CASE(name, tag, ...) DOCTEST_TEST_CASE_TEMPLATE(name, TestType, __VA_ARGS__)
 
-#define SUCCEED(...) MESSAGE((std::string{} + __VA_ARGS__))
-
 #define CHECK_THAT(value, ...) CHECK(value == (__VA_ARGS__))
 
 #define CHECKED_IF if

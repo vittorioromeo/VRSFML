@@ -3,6 +3,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Shader.hpp"
 
+#include "../bubble_idle/RNGFast.hpp" // TODO P1: avoid the relative path...?
+
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
@@ -22,29 +24,24 @@
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Path.hpp"
-#include "SFML/System/String.hpp"
 #include "SFML/System/Time.hpp"
+#include "SFML/System/UnicodeString.hpp"
 
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/String.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #include "ExampleUtils.hpp"
 
-#include <random>
-#include <string>
-
-#include <cmath>
-#include <cstdlib>
-
 
 namespace
 {
-std::random_device rd;
-std::mt19937       rng(rd());
+////////////////////////////////////////////////////////////
+RNGFast rng(/* seed */ 1234);
 
 
 ////////////////////////////////////////////////////////////
@@ -160,12 +157,12 @@ class StormBlink : public Effect
 public:
     void update(float time, float x, float y) override
     {
-        const float radius = 200 + std::cos(time) * 150;
+        const float radius = 200 + sf::base::cos(time) * 150;
 
         m_shader.setUniform(m_ulStormPosition, sf::Vec2f(x * 800, y * 600));
         m_shader.setUniform(m_ulStormInnerRadius, radius / 3);
         m_shader.setUniform(m_ulStormTotalRadius, radius);
-        m_shader.setUniform(m_ulBlinkAlpha, 0.5f + std::cos(time * 3) * 0.25f);
+        m_shader.setUniform(m_ulBlinkAlpha, 0.5f + sf::base::cos(time * 3) * 0.25f);
     }
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
@@ -181,19 +178,15 @@ public:
         m_ulStormTotalRadius(m_shader.getUniformLocation("storm_total_radius").value()),
         m_ulBlinkAlpha(m_shader.getUniformLocation("blink_alpha").value())
     {
-        std::uniform_real_distribution<float>        xDistribution(0, 800);
-        std::uniform_real_distribution<float>        yDistribution(0, 600);
-        std::uniform_int_distribution<sf::base::U16> colorDistribution(0, 255);
-
         // Create the points
         for (int i = 0; i < 40'000; ++i)
         {
-            const auto x = xDistribution(rng);
-            const auto y = yDistribution(rng);
+            const auto x = rng.getF(0.f, 800.f);
+            const auto y = rng.getF(0.f, 600.f);
 
-            const auto r = static_cast<sf::base::U8>(colorDistribution(rng));
-            const auto g = static_cast<sf::base::U8>(colorDistribution(rng));
-            const auto b = static_cast<sf::base::U8>(colorDistribution(rng));
+            const auto r = rng.getI<sf::base::U8>(0u, 255u);
+            const auto g = rng.getI<sf::base::U8>(0u, 255u);
+            const auto b = rng.getI<sf::base::U8>(0u, 255u);
 
             m_points.emplaceBack(sf::Vec2f{x, y}, sf::Color{r, g, b});
         }
@@ -231,8 +224,8 @@ public:
             sf::Sprite entity{.textureRect = {{96.f * static_cast<float>(i), 0.f}, {96.f, 96.f}}};
 
             entity.position =
-                {std::cos(0.25f * (time * static_cast<float>(i) + static_cast<float>(numEntities - i))) * 300 + 350,
-                 std::sin(0.25f * (time * static_cast<float>(numEntities - i) + static_cast<float>(i))) * 200 + 250};
+                {sf::base::cos(0.25f * (time * static_cast<float>(i) + static_cast<float>(numEntities - i))) * 300 + 350,
+                 sf::base::sin(0.25f * (time * static_cast<float>(numEntities - i) + static_cast<float>(i))) * 200 + 250};
 
             m_surface.draw(entity, {.texture = &m_entityTexture});
         }
@@ -311,8 +304,7 @@ public:
         for (sf::base::SizeT i = 0; i < 10'000; ++i)
         {
             // Spread the coordinates from -480 to +480 so they'll always fill the viewport at 800x600
-            std::uniform_real_distribution<float> positionDistribution(-480.f, 480.f);
-            m_pointCloud[i].position = {positionDistribution(rng), positionDistribution(rng)};
+            m_pointCloud[i].position = {rng.getF(-480.f, 480.f), rng.getF(-480.f, 480.f)};
         }
     }
 
@@ -453,7 +445,7 @@ int main()
                                               edgeEffect.asPtr(),
                                               geometryEffect.asPtr()};
 
-    const sf::base::Array<std::string, 5>
+    const sf::base::Array<sf::base::String, 5>
         effectNames{"Pixelate", "Wave + Blur", "Storm + Blink", "Edge Post-effect", "Geometry Shader Billboards"};
 
     // Index of currently selected effect

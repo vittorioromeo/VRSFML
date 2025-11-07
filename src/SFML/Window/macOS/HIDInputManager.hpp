@@ -133,7 +133,7 @@ public:
     /// \copydoc sf::Keyboard::getDescription
     ///
     ////////////////////////////////////////////////////////////
-    String getDescription(Keyboard::Scancode code);
+    UnicodeString getDescription(Keyboard::Scancode code);
 
 private:
     ////////////////////////////////////////////////////////////

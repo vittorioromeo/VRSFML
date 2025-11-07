@@ -15,6 +15,8 @@ int main()
     #include "SFML/System/Clock.hpp"
     #include "SFML/System/Time.hpp"
 
+    #include "SFML/Base/Math/Tan.hpp"
+
     #include <X11/Xlib.h>
     #define GLAD_GL_IMPLEMENTATION
     #include "SFML/System/IO.hpp"
@@ -24,9 +26,6 @@ int main()
     #include <gl.h>
 
     #include <array>
-
-    #include <cmath>
-    #include <cstdlib>
 
 
 ////////////////////////////////////////////////////////////
@@ -64,7 +63,7 @@ int main()
     // Setup a perspective projection
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    const float extent = std::tan(sf::degrees(45).asRadians());
+    const float extent = sf::base::tan(sf::degrees(45).asRadians());
 
     glFrustum(-extent, extent, -extent, extent, 1.f, 500.f);
 
@@ -175,7 +174,7 @@ int main()
     // Open a connection with the X server
     Display* display = XOpenDisplay(nullptr);
     if (!display)
-        return EXIT_FAILURE;
+        return 1;
 
     // Get the default screen
     const int screen = DefaultScreen(display);
@@ -197,7 +196,7 @@ int main()
                                         CWBackPixel | CWEventMask,
                                         &attributes);
     if (!window)
-        return EXIT_FAILURE;
+        return 1;
 
     // Set the window's name
     XStoreName(display, window, "SFML Window");
@@ -244,7 +243,7 @@ int main()
         if (!sfmlView1.setActive())
         {
             sf::cErr() << "Failed to set view 1 as active" << sf::endL;
-            return EXIT_FAILURE;
+            return 1;
         }
 
         // Load OpenGL or OpenGL ES entry points using glad
@@ -254,13 +253,13 @@ int main()
         if (!initialize(sfmlView1))
         {
             sf::cErr() << "Failed to initialize view 1" << sf::endL;
-            return EXIT_FAILURE;
+            return 1;
         }
 
         if (!initialize(sfmlView2))
         {
             sf::cErr() << "Failed to initialize view 2" << sf::endL;
-            return EXIT_FAILURE;
+            return 1;
         }
 
         // Start the event loop
@@ -287,13 +286,13 @@ int main()
             if (!draw(sfmlView1, clock.getElapsedTime().asSeconds()))
             {
                 sf::cErr() << "Failed to draw on view 1" << sf::endL;
-                return EXIT_FAILURE;
+                return 1;
             }
 
             if (!draw(sfmlView2, clock.getElapsedTime().asSeconds() * 0.3f))
             {
                 sf::cErr() << "Failed to draw on view 2" << sf::endL;
-                return EXIT_FAILURE;
+                return 1;
             }
 
             // Display the views on screen

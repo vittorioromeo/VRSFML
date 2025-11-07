@@ -1,9 +1,12 @@
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Rect2.hpp"
-#include "SFML/System/String.hpp"
 #include "SFML/System/Time.hpp"
+#include "SFML/System/UnicodeString.hpp"
 #include "SFML/System/Vec2.hpp"
 #include "SFML/System/Vec3.hpp"
+
+#include "SFML/Base/String.hpp"
+#include "SFML/Base/StringStreamOp.hpp"
 
 #include <Doctest.hpp>
 
@@ -13,7 +16,6 @@
 #include <iomanip>
 #include <limits>
 #include <ostream>
-#include <string>
 
 
 namespace sf
@@ -29,9 +31,9 @@ std::ostream& operator<<(std::ostream& os, const Angle& angle)
     return os << angle.asDegrees() << " deg";
 }
 
-std::ostream& operator<<(std::ostream& os, const String& string)
+std::ostream& operator<<(std::ostream& os, const UnicodeString& string)
 {
-    return os << string.toAnsiString<std::string>();
+    return os << string.toAnsiString<base::String>();
 }
 
 std::ostream& operator<<(std::ostream& os, Time time)

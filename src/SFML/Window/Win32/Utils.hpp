@@ -4,17 +4,20 @@
 
 
 ////////////////////////////////////////////////////////////
-// Headers
+// Forward declarations
 ////////////////////////////////////////////////////////////
-#include "SFML/Base/FwdStdString.hpp" // used
-
+namespace sf::base
+{
+class String;
+} // namespace sf::base
 
 using DWORD = unsigned long;
+
 
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-std::string getErrorString(DWORD error);
+base::String getErrorString(DWORD error);
 
 ////////////////////////////////////////////////////////////
 void setWindowBorderless(void* hwnd, unsigned int width, unsigned int height);
