@@ -13,8 +13,8 @@
 #include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/AnchorPointMixin.hpp"
-#include "SFML/System/String.hpp"
 #include "SFML/System/Time.hpp"
+#include "SFML/System/UnicodeString.hpp"
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
@@ -319,7 +319,7 @@ public:
     /// \see `setIcon`
     ///
     ////////////////////////////////////////////////////////////
-    void setTitle(const String& title);
+    void setTitle(const UnicodeString& title);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the window's icon

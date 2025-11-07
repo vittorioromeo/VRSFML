@@ -21,12 +21,10 @@
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/String.hpp" // used
 #include "SFML/Base/Vector.hpp"
 
 #include <mutex>
-#include <string> // used
-
-#include <cstring>
 
 
 constexpr sf::base::U8 serverAudioData   = 1;

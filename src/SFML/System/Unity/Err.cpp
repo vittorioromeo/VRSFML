@@ -11,6 +11,7 @@
 #include "SFML/System/PathUtils.hpp"
 
 #include "SFML/Base/StackTrace.hpp"
+#include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Trait/IsSame.hpp"
 
@@ -197,7 +198,7 @@ ErrStream::Guard& ErrStream::Guard::operator<<(PathDebugFormatter pathDebugForma
 template <typename T>
 ErrStream::Guard& ErrStream::Guard::operator<<(const T& value)
 {
-    if constexpr (SFML_BASE_IS_SAME(T, base::StringView))
+    if constexpr (SFML_BASE_IS_SAME(T, base::String) || SFML_BASE_IS_SAME(T, base::StringView))
     {
         m_stream.write(value.data(), static_cast<std::streamsize>(value.size()));
     }
@@ -211,6 +212,7 @@ ErrStream::Guard& ErrStream::Guard::operator<<(const T& value)
 
 
 ////////////////////////////////////////////////////////////
+template ErrStream::Guard& ErrStream::Guard::operator<< <base::String>(const base::String&);
 template ErrStream::Guard& ErrStream::Guard::operator<< <base::StringView>(const base::StringView&);
 template ErrStream::Guard& ErrStream::Guard::operator<< <bool>(const bool&);
 template ErrStream::Guard& ErrStream::Guard::operator<< <char>(const char&);

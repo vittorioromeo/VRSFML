@@ -32,7 +32,7 @@ if (WIN32 AND ${CMAKE_BUILD_TYPE} STREQUAL "Release")
 endif()
 
 # do not produce demo target by default
-if (FALSE)
+if (TRUE)
     # define the bubble_idle_demo target
     sfml_add_example(bubble_idle_demo GUI_APP
                     SOURCES ${SRC}

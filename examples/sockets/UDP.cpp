@@ -12,8 +12,7 @@
 
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
-
-#include <string>
+#include "SFML/Base/String.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -60,7 +59,7 @@ void runUdpClient(unsigned short port)
     {
         sf::cOut() << "Type the address or name of the server to connect to: ";
 
-        std::string addressStr;
+        sf::base::String addressStr;
         sf::cIn() >> addressStr;
         server = sf::IpAddressUtils::resolve(addressStr);
     } while (!server.hasValue());

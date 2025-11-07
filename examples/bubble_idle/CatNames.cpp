@@ -7,12 +7,9 @@
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#include <random>
-
 
 ////////////////////////////////////////////////////////////
-template <typename TRng>
-[[nodiscard]] sf::base::Vector<sf::base::StringView> getShuffledCatNames(const CatType catType, TRng& randomEngine)
+[[nodiscard]] sf::base::Vector<sf::base::StringView> getShuffledCatNames(const CatType catType, RNGFast& rng)
 {
     const auto span = catNamesPerType[asIdx(catType)];
 
@@ -22,18 +19,9 @@ template <typename TRng>
     for (const char* str : span)
         names.emplaceBack(str);
 
-    sf::base::shuffle(names.begin(),
-                      names.end(),
-                      [&](const sf::base::SizeT min, const sf::base::SizeT max)
-    {
-        std::uniform_int_distribution<sf::base::SizeT> dist{min, max};
-        return dist(randomEngine);
+    sf::base::shuffle(names.begin(), names.end(), [&](const sf::base::SizeT min, const sf::base::SizeT max) {
+        return rng.getI<sf::base::SizeT>(min, max);
     });
 
     return names;
 }
-
-
-////////////////////////////////////////////////////////////
-template sf::base::Vector<sf::base::StringView> getShuffledCatNames<std::minstd_rand0>(const CatType      catType,
-                                                                                       std::minstd_rand0& randomEngine);

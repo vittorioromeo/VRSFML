@@ -23,7 +23,7 @@ namespace sf::base::priv
 
 //////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard]] inline constexpr T maxIntegral() noexcept
+[[nodiscard]] inline consteval T maxIntegral() noexcept
 {
     if constexpr (SFML_BASE_IS_UNSIGNED(T))
     {
@@ -93,7 +93,7 @@ template <typename T>
 
     T result = 0;
 
-    const auto limit = priv::maxIntegral<T>();
+    constexpr auto limit = priv::maxIntegral<T>();
 
     while (first != last && priv::isDigit(*first))
     {
@@ -143,13 +143,15 @@ template <typename T>
     }
 
     // Use long double for intermediate calculations to maximize precision.
-    long double result = 0.0l;
+    long double result          = 0.0l;
+    bool        anyDigitsParsed = false;
 
     // Parse whole number part
     while (first != last && priv::isDigit(*first))
     {
         result = result * 10.0l + (*first - '0');
         ++first;
+        anyDigitsParsed = true;
     }
 
     // Parse fractional part
@@ -162,11 +164,12 @@ template <typename T>
             result += (*first - '0') * power;
             power /= 10.0l;
             ++first;
+            anyDigitsParsed = true;
         }
     }
 
     // If no digits were parsed at all, it's an error.
-    if ((first == initialFirst) || ((first == initialFirst + 1) && (*initialFirst == '+' || *initialFirst == '-')))
+    if (!anyDigitsParsed)
         return {initialFirst, FromCharsError::InvalidArgument};
 
     if (isNegative)

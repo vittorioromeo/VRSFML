@@ -16,7 +16,7 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
-class String;
+class UnicodeString;
 } // namespace sf
 
 
@@ -102,7 +102,7 @@ public:
     /// \brief Return the name of the joystick
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const String& getName() const;
+    [[nodiscard]] const UnicodeString& getName() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the manufacturer identifier of the joystick

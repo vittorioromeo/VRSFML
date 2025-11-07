@@ -9,11 +9,11 @@
 #include <CommonTraits.hpp>
 #include <StringifyIpAddressUtil.hpp>
 
-#include <string>
+#include <StringifySfBaseStringUtil.hpp>
 
 
 using namespace sf::base::literals;
-using namespace std::string_literals;
+
 
 TEST_CASE("[Network] sf::IpAddress")
 {
@@ -28,11 +28,11 @@ TEST_CASE("[Network] sf::IpAddress")
 
     SECTION("Construction")
     {
-        SECTION("static 'create' function")
+        SECTION("_static 'create' function")
         {
             const auto ipAddress = sf::IpAddressUtils::resolve("203.0.113.2"_sv);
             REQUIRE(ipAddress.hasValue());
-            CHECK(sf::IpAddressUtils::toString(*ipAddress) == "203.0.113.2"s);
+            CHECK(sf::IpAddressUtils::toString(*ipAddress) == "203.0.113.2"_s);
             CHECK(ipAddress->toInteger() == 0xCB'00'71'02);
             CHECK(*ipAddress != sf::IpAddress::Any);
             CHECK(*ipAddress != sf::IpAddress::Broadcast);
@@ -40,37 +40,37 @@ TEST_CASE("[Network] sf::IpAddress")
 
             const auto broadcast = sf::IpAddressUtils::resolve("255.255.255.255"_sv);
             REQUIRE(broadcast.hasValue());
-            CHECK(sf::IpAddressUtils::toString(*broadcast) == "255.255.255.255"s);
+            CHECK(sf::IpAddressUtils::toString(*broadcast) == "255.255.255.255"_s);
             CHECK(broadcast->toInteger() == 0xFF'FF'FF'FF);
             CHECK(*broadcast == sf::IpAddress::Broadcast);
 
             const auto any = sf::IpAddressUtils::resolve("0.0.0.0"_sv);
             REQUIRE(any.hasValue());
-            CHECK(sf::IpAddressUtils::toString(*any) == "0.0.0.0"s);
+            CHECK(sf::IpAddressUtils::toString(*any) == "0.0.0.0"_s);
             CHECK(any->toInteger() == 0x00'00'00'00);
             CHECK(*any == sf::IpAddress::Any);
 
-            const auto localHost = sf::IpAddressUtils::resolve("localhost"s);
+            const auto localHost = sf::IpAddressUtils::resolve("localhost"_s);
             REQUIRE(localHost.hasValue());
-            CHECK(sf::IpAddressUtils::toString(*localHost) == "127.0.0.1"s);
+            CHECK(sf::IpAddressUtils::toString(*localHost) == "127.0.0.1"_s);
             CHECK(localHost->toInteger() == 0x7F'00'00'01);
             CHECK(*localHost == sf::IpAddress::LocalHost);
 
-            CHECK(!sf::IpAddressUtils::resolve("255.255.255.256"s).hasValue());
+            CHECK(!sf::IpAddressUtils::resolve("255.255.255.256"_s).hasValue());
             CHECK(!sf::IpAddressUtils::resolve("").hasValue());
         }
 
         SECTION("Byte constructor")
         {
             const sf::IpAddress ipAddress(198, 51, 100, 234);
-            CHECK(sf::IpAddressUtils::toString(ipAddress) == "198.51.100.234"s);
+            CHECK(sf::IpAddressUtils::toString(ipAddress) == "198.51.100.234"_s);
             CHECK(ipAddress.toInteger() == 0xC6'33'64'EA);
         }
 
-        SECTION("sf::base::U32 constructor")
+        SECTION("_sf::base::U32 constructor")
         {
             const sf::IpAddress ipAddress(0xCB'00'71'9A);
-            CHECK(sf::IpAddressUtils::toString(ipAddress) == "203.0.113.154"s);
+            CHECK(sf::IpAddressUtils::toString(ipAddress) == "203.0.113.154"_s);
             CHECK(ipAddress.toInteger() == 0xCB'00'71'9A);
         }
     }
@@ -102,13 +102,13 @@ TEST_CASE("[Network] sf::IpAddress")
 
     SECTION("Static constants")
     {
-        CHECK(sf::IpAddressUtils::toString(sf::IpAddress::Any) == "0.0.0.0"s);
+        CHECK(sf::IpAddressUtils::toString(sf::IpAddress::Any) == "0.0.0.0"_s);
         CHECK(sf::IpAddress::Any.toInteger() == 0);
 
-        CHECK(sf::IpAddressUtils::toString(sf::IpAddress::LocalHost) == "127.0.0.1"s);
+        CHECK(sf::IpAddressUtils::toString(sf::IpAddress::LocalHost) == "127.0.0.1"_s);
         CHECK(sf::IpAddress::LocalHost.toInteger() == 0x7F'00'00'01);
 
-        CHECK(sf::IpAddressUtils::toString(sf::IpAddress::Broadcast) == "255.255.255.255"s);
+        CHECK(sf::IpAddressUtils::toString(sf::IpAddress::Broadcast) == "255.255.255.255"_s);
         CHECK(sf::IpAddress::Broadcast.toInteger() == 0xFF'FF'FF'FF);
     }
 

@@ -8,7 +8,7 @@
 
 #include "SFML/Window/WindowSettings.hpp"
 
-#include "SFML/System/String.hpp"
+#include "SFML/System/UnicodeString.hpp"
 
 #include "SFML/Base/Optional.hpp"
 

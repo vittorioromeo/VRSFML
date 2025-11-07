@@ -29,16 +29,17 @@
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/InterferenceSize.hpp"
+#include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/ThreadPool.hpp"
+#include "SFML/Base/ToString.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 
 #include <latch>
-#include <string>
 
 #include <cstdio>
 
@@ -437,7 +438,7 @@ int main()
                                  samples.data(),
                                  static_cast<int>(samples.size()),
                                  0,
-                                 (std::to_string(samples.getAverageAs<double>()) + unit).c_str(),
+                                 (sf::base::toString(samples.getAverageAs<double>()) + unit).cStr(),
                                  0.f,
                                  upperBound,
                                  ImVec2{256.f, 32.f});

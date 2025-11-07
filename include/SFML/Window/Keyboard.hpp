@@ -9,10 +9,17 @@
 #include "SFML/Window/Export.hpp"
 
 
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
 namespace sf
 {
-class String;
+class UnicodeString;
+} // namespace sf
 
+
+namespace sf
+{
 ////////////////////////////////////////////////////////////
 /// \brief Give access to the real-time state of the keyboard
 ///
@@ -658,7 +665,7 @@ enum : unsigned int
 /// \return The localized description of the code
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API String getDescription(Scancode code);
+[[nodiscard]] SFML_WINDOW_API UnicodeString getDescription(Scancode code);
 
 ////////////////////////////////////////////////////////////
 /// \brief Show or hide the virtual keyboard

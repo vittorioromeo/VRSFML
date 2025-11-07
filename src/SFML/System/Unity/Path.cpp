@@ -9,6 +9,8 @@
 
 #include "SFML/System/StringUtils.hpp"
 
+#include "SFML/Base/Macros.hpp"
+#include "SFML/Base/String.hpp"
 #include "SFML/Base/Trait/IsSame.hpp"
 
 #include <filesystem>
@@ -34,6 +36,18 @@ struct Path::Impl
 {
     std::filesystem::path fsPath;
     mutable std::string   buffer;
+
+    Impl() = default;
+
+    Impl(const auto& source, std::string&& buffer) : fsPath{source}, buffer{SFML_BASE_MOVE(buffer)}
+    {
+    }
+
+    Impl(const base::String& source, std::string&& buffer) :
+        fsPath{std::string(source.data(), source.size())},
+        buffer{SFML_BASE_MOVE(buffer)}
+    {
+    }
 };
 
 
@@ -54,6 +68,7 @@ Path::Path(const T& source) : m_impl(source, std::string{})
 {
 }
 
+template Path::Path(const base::String&);
 template Path::Path(const std::string&);
 template Path::Path(const std::basic_string<wchar_t>&);
 template Path::Path(const std::u32string&);
@@ -176,6 +191,11 @@ T Path::to() const
 {
     if constexpr (SFML_BASE_IS_SAME(T, std::filesystem::path))
         return m_impl->fsPath;
+    else if constexpr (SFML_BASE_IS_SAME(T, base::String))
+    {
+        const auto res = m_impl->fsPath.string();
+        return base::String{res.data(), res.size()};
+    }
     else if constexpr (SFML_BASE_IS_SAME(T, std::string))
         return m_impl->fsPath.string();
     else if constexpr (SFML_BASE_IS_SAME(T, std::u8string))
@@ -227,6 +247,7 @@ bool Path::operator!=(const T& str) const
 ////////////////////////////////////////////////////////////
 template std::filesystem::path Path::to<std::filesystem::path>() const;
 template std::string           Path::to<std::string>() const;
+template base::String          Path::to<base::String>() const;
 template std::u8string         Path::to<std::u8string>() const;
 
 

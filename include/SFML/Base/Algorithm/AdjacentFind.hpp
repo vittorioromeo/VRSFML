@@ -64,7 +64,7 @@ template <typename ForwardIt, typename BinaryPredicate>
 template <typename ForwardIt>
 [[nodiscard, gnu::always_inline]] inline constexpr ForwardIt adjacentFind(const ForwardIt first, const ForwardIt last)
 {
-    return sf::base::adjacentFind(first, last, [](const auto& a, const auto& b) { return a == b; });
+    return adjacentFind(first, last, [](const auto& a, const auto& b) { return a == b; });
 }
 
 } // namespace sf::base

@@ -17,7 +17,7 @@
 #include "SFML/Graphics/Vertex.hpp"
 
 #include "SFML/System/Rect2.hpp"
-#include "SFML/System/String.hpp"
+#include "SFML/System/UnicodeString.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
@@ -57,7 +57,7 @@ Text& Text::operator=(Text&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-void Text::setString(const String& string)
+void Text::setString(const UnicodeString& string)
 {
     if (m_string == string)
         return;
@@ -200,7 +200,7 @@ void Text::setOutlineThickness(const float thickness)
 
 
 ////////////////////////////////////////////////////////////
-const String& Text::getString() const
+const UnicodeString& Text::getString() const
 {
     return m_string;
 }

@@ -1,7 +1,7 @@
 #include "SFML/Window/Clipboard.hpp"
 
 // Other 1st party headers
-#include "SFML/System/String.hpp"
+#include "SFML/System/UnicodeString.hpp"
 
 #include <Doctest.hpp>
 
@@ -17,7 +17,7 @@ TEST_CASE("[Window] sf::Clipboard" * doctest::skip(skipDisplayTests))
     // Capture current clipboard state
     const auto currentClipboard = sf::Clipboard::getString();
 
-    sf::String string;
+    sf::UnicodeString string;
 
     SECTION("ASCII")
     {

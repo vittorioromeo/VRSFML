@@ -267,6 +267,7 @@ public:
 
 } // namespace sf::base
 
+
 ////////////////////////////////////////////////////////////
 /// \class sf::base::FixedFunction
 /// \ingroup system

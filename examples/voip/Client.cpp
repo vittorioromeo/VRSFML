@@ -16,8 +16,7 @@
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Optional.hpp"
-
-#include <string>
+#include "SFML/Base/String.hpp"
 
 
 constexpr sf::base::U8 clientAudioData   = 1;
@@ -133,7 +132,7 @@ void doClient(sf::CaptureDevice& captureDevice, unsigned short port)
     {
         sf::cOut() << "Type address or name of the server to connect to: ";
 
-        std::string addressStr;
+        sf::base::String addressStr;
         sf::cIn() >> addressStr;
         server = sf::IpAddressUtils::resolve(addressStr);
     } while (!server.hasValue());

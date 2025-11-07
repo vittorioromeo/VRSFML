@@ -1,7 +1,7 @@
 #include "SFML/Window/Keyboard.hpp"
 
 // Other 1st party headers
-#include "SFML/System/String.hpp"
+#include "SFML/System/UnicodeString.hpp"
 
 #include <Doctest.hpp>
 

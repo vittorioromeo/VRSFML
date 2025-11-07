@@ -32,8 +32,8 @@
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
-#include "SFML/System/String.hpp"
 #include "SFML/System/Time.hpp"
+#include "SFML/System/UnicodeString.hpp"
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Abort.hpp"
@@ -41,16 +41,21 @@
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/InPlaceVector.hpp"
 #include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Math/Fabs.hpp"
+#include "SFML/Base/Math/Floor.hpp"
+#include "SFML/Base/Math/Fmod.hpp"
+#include "SFML/Base/Math/Lround.hpp"
+#include "SFML/Base/Math/Pow.hpp"
+#include "SFML/Base/Math/Sin.hpp"
+#include "SFML/Base/Math/Tan.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/String.hpp"
+#include "SFML/Base/ToString.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #include "ExampleUtils.hpp"
 
 #include <limits>
-#include <string>
-
-#include <cmath>
-#include <cstdlib>
 
 
 namespace
@@ -78,7 +83,7 @@ class Effect
 public:
     virtual ~Effect() = default;
 
-    [[nodiscard]] const std::string& getName() const
+    [[nodiscard]] const sf::base::String& getName() const
     {
         return m_name;
     }
@@ -94,12 +99,12 @@ public:
     }
 
 protected:
-    explicit Effect(std::string name) : m_name(SFML_BASE_MOVE(name))
+    explicit Effect(sf::base::String name) : m_name(SFML_BASE_MOVE(name))
     {
     }
 
 private:
-    std::string m_name;
+    sf::base::String m_name;
 };
 
 
@@ -184,8 +189,8 @@ public:
         m_music->setPitch(m_pitch);
         m_music->setVolume(m_volume / 100.f);
 
-        m_pitchText.setString("Pitch: " + std::to_string(m_pitch));
-        m_volumeText.setString("Volume: " + std::to_string(m_volume));
+        m_pitchText.setString("Pitch: " + sf::base::toString(m_pitch));
+        m_volumeText.setString("Volume: " + sf::base::toString(m_volume));
     }
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
@@ -291,7 +296,7 @@ public:
         static constexpr auto makeCone = [](auto& shape, const auto& angle)
         {
             const auto theta = sf::degrees(90.f) - (angle / 2);
-            const auto x     = coneHeight / std::tan(theta.asRadians());
+            const auto x     = coneHeight / sf::base::tan(theta.asRadians());
 
             shape.setPoint(1, {-x, coneHeight});
             shape.setPoint(2, {x, coneHeight});
@@ -372,33 +377,36 @@ private:
                 {
                     case Type::Sine:
                     {
-                        value = tone.m_amplitude * std::sin(2 * pi * tone.m_frequency * tone.m_time);
+                        value = tone.m_amplitude * sf::base::sin(2 * pi * tone.m_frequency * tone.m_time);
                         break;
                     }
                     case Type::Square:
                     {
-                        value = tone.m_amplitude * (2 * (2 * std::floor(tone.m_frequency * tone.m_time) -
-                                                         std::floor(2 * tone.m_frequency * tone.m_time)) +
+                        value = tone.m_amplitude * (2 * (2 * sf::base::floor(tone.m_frequency * tone.m_time) -
+                                                         sf::base::floor(2 * tone.m_frequency * tone.m_time)) +
                                                     1);
                         break;
                     }
                     case Type::Triangle:
                     {
                         value = 4 * tone.m_amplitude / period *
-                                    std::abs(std::fmod(((std::fmod((tone.m_time - period / 4), period)) + period), period) -
-                                             period / 2) -
+                                    sf::base::fabs(
+                                        sf::base::fmod(((sf::base::fmod((tone.m_time - period / 4), period)) + period),
+                                                       period) -
+                                        period / 2) -
                                 tone.m_amplitude;
                         break;
                     }
                     case Type::Sawtooth:
                     {
-                        value = tone.m_amplitude * 2 * (tone.m_time / period - std::floor(0.5f + tone.m_time / period));
+                        value = tone.m_amplitude * 2 *
+                                (tone.m_time / period - sf::base::floor(0.5f + tone.m_time / period));
                         break;
                     }
                 }
 
                 tone.m_sampleBuffer[i] = static_cast<sf::base::I16>(
-                    std::lround(value * std::numeric_limits<sf::base::I16>::max()));
+                    sf::base::lround(value * std::numeric_limits<sf::base::I16>::max()));
                 tone.m_time += timePerSample;
             }
 
@@ -432,11 +440,11 @@ public:
         m_amplitude = sf::base::clamp(0.2f * (1.f - y), 0.f, 0.2f);
         m_frequency = sf::base::clamp(500.f * x, 0.f, 500.f);
 
-        m_currentAmplitude.setString("Amplitude: " + std::to_string(m_amplitude));
-        m_currentFrequency.setString("Frequency: " + std::to_string(m_frequency) + " Hz");
+        m_currentAmplitude.setString("Amplitude: " + sf::base::toString(m_amplitude));
+        m_currentFrequency.setString("Frequency: " + sf::base::toString(m_frequency) + " Hz");
 
         m_currentType.setString(
-            std::string{"Wave Type: "} +
+            sf::base::String{"Wave Type: "} +
             sf::base::Array{"Sine", "Square", "Triangle", "Sawtooth"}[static_cast<sf::base::SizeT>(m_type)]);
     }
 
@@ -522,10 +530,10 @@ private:
             for (auto i = 0u; i < chunkSize; ++i)
             {
                 const auto value = doppler.m_amplitude * 2 *
-                                   (doppler.m_time / period - std::floor(0.5f + doppler.m_time / period));
+                                   (doppler.m_time / period - sf::base::floor(0.5f + doppler.m_time / period));
 
                 doppler.m_sampleBuffer[i] = static_cast<sf::base::I16>(
-                    std::lround(value * std::numeric_limits<sf::base::I16>::max()));
+                    sf::base::lround(value * std::numeric_limits<sf::base::I16>::max()));
                 doppler.m_time += timePerSample;
             }
 
@@ -556,10 +564,10 @@ public:
         m_velocity = sf::base::clamp(150.f * (1.f - y), 0.f, 150.f);
         m_factor   = sf::base::clamp(x, 0.f, 1.f);
 
-        m_currentVelocity.setString("Velocity: " + std::to_string(m_velocity));
-        m_currentFactor.setString("Doppler Factor: " + std::to_string(m_factor));
+        m_currentVelocity.setString("Velocity: " + sf::base::toString(m_velocity));
+        m_currentFactor.setString("Doppler Factor: " + sf::base::toString(m_factor));
 
-        m_position.x = std::fmod(time, 8.f) * windowWidth / 8.f;
+        m_position.x = sf::base::fmod(time, 8.f) * windowWidth / 8.f;
 
         m_dopplerSoundStream->setPosition({m_position.x, m_position.y, 0.f});
         m_dopplerSoundStream->setVelocity({m_velocity, 0.f, 0.f});
@@ -667,7 +675,7 @@ public:
     }
 
 protected:
-    explicit Processing(sf::Listener& listener, const sf::Font& font, std::string name) :
+    explicit Processing(sf::Listener& listener, const sf::Font& font, sf::base::String name) :
         Effect(SFML_BASE_MOVE(name)),
         m_listener(listener),
         m_enabledText(font, {.string = "Processing: Enabled"}),
@@ -806,13 +814,13 @@ struct HighPassFilter : BiquadFilter
 
         static constexpr auto cutoffFrequency = 2000.f;
 
-        const auto c = std::tan(pi * cutoffFrequency / static_cast<float>(musicReader.getSampleRate()));
+        const auto c = sf::base::tan(pi * cutoffFrequency / static_cast<float>(musicReader.getSampleRate()));
 
-        Coefficients coefficients{.a0 = 1.f / (1.f + sqrt2 * c + std::pow(c, 2.f)),
+        Coefficients coefficients{.a0 = 1.f / (1.f + sqrt2 * c + sf::base::pow(c, 2.f)),
                                   .a1 = -2.f * coefficients.a0,
                                   .a2 = coefficients.a0,
-                                  .b1 = 2.f * coefficients.a0 * (std::pow(c, 2.f) - 1.f),
-                                  .b2 = coefficients.a0 * (1.f - sqrt2 * c + std::pow(c, 2.f))};
+                                  .b1 = 2.f * coefficients.a0 * (sf::base::pow(c, 2.f) - 1.f),
+                                  .b2 = coefficients.a0 * (1.f - sqrt2 * c + sf::base::pow(c, 2.f))};
 
         setCoefficients(coefficients);
     }
@@ -835,13 +843,13 @@ struct LowPassFilter : BiquadFilter
 
         static constexpr auto cutoffFrequency = 500.f;
 
-        const auto c = 1.f / std::tan(pi * cutoffFrequency / static_cast<float>(musicReader.getSampleRate()));
+        const auto c = 1.f / sf::base::tan(pi * cutoffFrequency / static_cast<float>(musicReader.getSampleRate()));
 
-        Coefficients coefficients{.a0 = 1.f / (1.f + sqrt2 * c + std::pow(c, 2.f)),
+        Coefficients coefficients{.a0 = 1.f / (1.f + sqrt2 * c + sf::base::pow(c, 2.f)),
                                   .a1 = 2.f * coefficients.a0,
                                   .a2 = coefficients.a0,
-                                  .b1 = 2.f * coefficients.a0 * (1.f - std::pow(c, 2.f)),
-                                  .b2 = coefficients.a0 * (1.f - sqrt2 * c + std::pow(c, 2.f))};
+                                  .b1 = 2.f * coefficients.a0 * (1.f - sf::base::pow(c, 2.f)),
+                                  .b2 = coefficients.a0 * (1.f - sqrt2 * c + sf::base::pow(c, 2.f))};
 
         setCoefficients(coefficients);
     }
@@ -1109,7 +1117,7 @@ int main()
     if (!musicPath.exists())
     {
         sf::cErr() << "Music file '" << musicPath << "' not found, aborting" << sf::endL;
-        return EXIT_FAILURE;
+        return 1;
     }
 
     // Create the playback device and listener
@@ -1183,7 +1191,8 @@ int main()
                                  .fillColor     = {80, 80, 80}});
 
     // Utility functions
-    const auto getCurrentDeviceName = [&] { return std::string{getCurrentPlaybackDevice().getDeviceHandle().getName()}; };
+    const auto getCurrentDeviceName = [&]
+    { return sf::base::String{getCurrentPlaybackDevice().getDeviceHandle().getName()}; };
 
     // Create the playback device text
     sf::Text playbackDeviceText(font,

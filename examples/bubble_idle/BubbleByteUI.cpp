@@ -55,6 +55,8 @@
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/ScopeGuard.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/String.hpp"
+#include "SFML/Base/ToString.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
 
@@ -62,9 +64,6 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
-#include <string>
-
-#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -563,7 +562,7 @@ bool Main::uiMakeButtonImpl(const char* label, const char* xBuffer)
         fontScaleMult = 1.f;
 
     if (fontScale == uiSubBulletFontScale)
-        fontScaleMult = std::pow(fontScaleMult, 0.4f);
+        fontScaleMult = sf::base::pow(fontScaleMult, 0.4f);
 
     const float scaledButtonWidth = uiButtonWidth * profile.uiScale;
 
@@ -1681,14 +1680,14 @@ void Main::uiTabBar()
 ////////////////////////////////////////////////////////////
 void Main::uiSetUnlockLabelY(const sf::base::SizeT unlockId)
 {
-    const std::string label = std::to_string(unlockId);
-    uiLabelToY[label]       = ImGui::GetCursorScreenPos().y;
+    const sf::base::String label = sf::base::toString(unlockId);
+    uiLabelToY[label]            = ImGui::GetCursorScreenPos().y;
 }
 
 ////////////////////////////////////////////////////////////
 bool Main::checkUiUnlock(const sf::base::SizeT unlockId, const bool unlockCondition)
 {
-    const std::string label = std::to_string(unlockId);
+    const sf::base::String label = sf::base::toString(unlockId);
 
     if (!unlockCondition)
     {
@@ -2235,9 +2234,9 @@ void Main::uiTabBarShop()
         }
     }
 
-    const auto nextGoalsText = [&]() -> std::string
+    const auto nextGoalsText = [&]() -> sf::base::String
     {
-        std::string result; // Use a single local variable for NRVO
+        sf::base::String result; // Use a single local variable for NRVO
 
         if (!pt->comboPurchased)
         {
@@ -2275,7 +2274,7 @@ void Main::uiTabBarShop()
             // clang-format on
 
             if (count < needed)
-                result += "\n    - buy " + std::to_string(needed - count) + " more " + name + "(s)";
+                result += "\n    - buy " + sf::base::toString(needed - count) + " more " + name + "(s)";
         };
 
         if (!pt->mapPurchased)
@@ -2380,7 +2379,7 @@ void Main::uiTabBarShop()
         ImGui::Columns(1);
 
         uiSetFontScale(uiSubBulletFontScale);
-        ImGui::Text("%s", nextGoalsText.c_str());
+        ImGui::Text("%s", nextGoalsText.cStr());
         uiSetFontScale(uiNormalFontScale);
     }
 
@@ -3608,7 +3607,7 @@ void Main::uiTabBarStats()
 
             const auto addTip = [&](const char* title, const char* description)
             {
-                uiSetFontScale(uiNormalFontScale * 2.0f);
+                uiSetFontScale(uiNormalFontScale * 2.f);
                 uiCenteredText(title);
 
                 ImGui::PushFont(fontImGuiMouldyCheese);
@@ -4401,7 +4400,7 @@ void Main::uiTabBarSettings()
             {
                 pt = &ptMain;
 
-                rng.reseed(pt->seed);
+                reseedRNGs(pt->seed);
                 shuffledCatNamesPerType = makeShuffledCatNames(rng);
             }
         }
@@ -4586,12 +4585,12 @@ void Main::uiTabBarSettings()
 
         const auto scalarInput = [&](const char* label, float& value)
         {
-            std::string lbuf = label;
+            sf::base::String lbuf = label;
             lbuf += "##";
-            lbuf += std::to_string(counter++);
+            lbuf += sf::base::toString(counter++);
 
             ImGui::SetNextItemWidth(140.f * profile.uiScale);
-            if (ImGui::InputScalar(lbuf.c_str(), ImGuiDataType_Float, &value, &step, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal))
+            if (ImGui::InputScalar(lbuf.cStr(), ImGuiDataType_Float, &value, &step, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal))
                 value = sf::base::clamp(value, 0.f, 10'000.f);
         };
 
@@ -4600,12 +4599,12 @@ void Main::uiTabBarSettings()
             if (psv.data->nMaxPurchases == 0u)
                 return;
 
-            std::string lbuf = label;
+            sf::base::String lbuf = label;
             lbuf += "##";
-            lbuf += std::to_string(counter++);
+            lbuf += sf::base::toString(counter++);
 
             ImGui::SetNextItemWidth(140.f * profile.uiScale);
-            if (ImGui::InputScalar(lbuf.c_str(), ImGuiDataType_U64, &psv.nPurchases, &step, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal))
+            if (ImGui::InputScalar(lbuf.cStr(), ImGuiDataType_U64, &psv.nPurchases, &step, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal))
                 psv.nPurchases = sf::base::clamp(psv.nPurchases, SizeT{0u}, psv.data->nMaxPurchases);
         };
 
@@ -4621,7 +4620,7 @@ void Main::uiTabBarSettings()
 
         for (SizeT i = 0u; i < nCatTypes; ++i)
         {
-            scalarInput((std::to_string(i) + "Buff").c_str(), pt->buffCountdownsPerType[i].value);
+            scalarInput((sf::base::toString(i) + "Buff").cStr(), pt->buffCountdownsPerType[i].value);
         }
 
         ImGui::Separator();
@@ -4745,7 +4744,7 @@ void Main::gameLoopUpdateNotificationQueue(const float deltaTimeMs)
 
     ImGuiToast toast{ImGuiToastType::None, 4500};
     toast.setTitle(notification.title);
-    toast.setContent("%s", notification.content.c_str());
+    toast.setContent("%s", notification.content.cStr());
 
     ImGui::InsertNotification(toast);
     playSound(sounds.notification);

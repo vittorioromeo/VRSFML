@@ -13,7 +13,7 @@
 #include "SFML/Window/Vulkan.hpp"
 #include "SFML/Window/WindowHandle.hpp"
 
-#include "SFML/System/String.hpp"
+#include "SFML/System/UnicodeString.hpp"
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Assert.hpp"
@@ -189,7 +189,7 @@ void WindowBase::setMaximumSize(const base::Optional<Vec2u>& maximumSize)
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::setTitle(const String& title)
+void WindowBase::setTitle(const UnicodeString& title)
 {
     m_impl->setTitle(title);
 }

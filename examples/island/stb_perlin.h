@@ -223,10 +223,10 @@ float stb_perlin_noise3(float x, float y, float z, int x_wrap, int y_wrap, int z
 float stb_perlin_ridge_noise3(float x, float y, float z,float lacunarity, float gain, float offset, int octaves,int x_wrap, int y_wrap, int z_wrap)
 {
    int i;
-   float frequency = 1.0f;
-   float prev = 1.0f;
+   float frequency = 1.f;
+   float prev = 1.f;
    float amplitude = 0.5f;
-   float sum = 0.0f;
+   float sum = 0.f;
 
    for (i = 0; i < octaves; ++i) {
       float r = (float)(stb_perlin_noise3(x*frequency,y*frequency,z*frequency,x_wrap,y_wrap,z_wrap));
@@ -244,9 +244,9 @@ float stb_perlin_ridge_noise3(float x, float y, float z,float lacunarity, float 
 float stb_perlin_fbm_noise3(float x, float y, float z,float lacunarity, float gain, int octaves,int x_wrap, int y_wrap, int z_wrap)
 {
    int i;
-   float frequency = 1.0f;
-   float amplitude = 1.0f;
-   float sum = 0.0f;
+   float frequency = 1.f;
+   float amplitude = 1.f;
+   float sum = 0.f;
 
    for (i = 0; i < octaves; ++i) {
       sum += stb_perlin_noise3(x*frequency,y*frequency,z*frequency,x_wrap,y_wrap,z_wrap)*amplitude;
@@ -259,9 +259,9 @@ float stb_perlin_fbm_noise3(float x, float y, float z,float lacunarity, float ga
 float stb_perlin_turbulence_noise3(float x, float y, float z, float lacunarity, float gain, int octaves,int x_wrap, int y_wrap, int z_wrap)
 {
    int i;
-   float frequency = 1.0f;
-   float amplitude = 1.0f;
-   float sum = 0.0f;
+   float frequency = 1.f;
+   float amplitude = 1.f;
+   float sum = 0.f;
 
    for (i = 0; i < octaves; ++i) {
       float r = stb_perlin_noise3(x*frequency,y*frequency,z*frequency,x_wrap,y_wrap,z_wrap)*amplitude;

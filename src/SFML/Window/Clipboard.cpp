@@ -9,20 +9,20 @@
 
 #include "SFML/Window/SDLLayer.hpp"
 
-#include "SFML/System/String.hpp"
+#include "SFML/System/UnicodeString.hpp"
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-String Clipboard::getString()
+UnicodeString Clipboard::getString()
 {
     return priv::getSDLLayerSingleton().getClipboardString();
 }
 
 
 ////////////////////////////////////////////////////////////
-bool Clipboard::setString(const String& text)
+bool Clipboard::setString(const UnicodeString& text)
 {
     return priv::getSDLLayerSingleton().setClipboardString(text);
 }

@@ -10,19 +10,6 @@
 #include "SFML/Base/Swap.hpp"
 
 
-namespace sf::base::priv
-{
-////////////////////////////////////////////////////////////
-/// \brief Default less-than comparison function object.
-///
-/// Used by sorting algorithms when no custom comparator is provided.
-///
-////////////////////////////////////////////////////////////
-inline constexpr auto cmpLess = [](const auto& a, const auto& b) { return a < b; };
-
-} // namespace sf::base::priv
-
-
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
@@ -75,7 +62,7 @@ constexpr void insertionSort(const RandomIt first, const RandomIt last, auto&& c
 template <typename RandomIt>
 [[gnu::always_inline]] inline constexpr void insertionSort(const RandomIt first, const RandomIt last)
 {
-    insertionSort(first, last, priv::cmpLess);
+    insertionSort(first, last, [](const auto& a, const auto& b) { return a < b; });
 }
 
 } // namespace sf::base
@@ -215,7 +202,7 @@ template <typename RandomIt>
 template <typename RandomIt>
 [[gnu::always_inline]] inline void quickSort(const RandomIt first, const RandomIt last)
 {
-    quickSort(first, last, priv::cmpLess);
+    quickSort(first, last, [](const auto& a, const auto& b) { return a < b; });
 }
 
 } // namespace sf::base

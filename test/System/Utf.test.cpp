@@ -1,6 +1,6 @@
 #include "SFML/System/Utf.hpp"
 
-#include "StringifyStringUtil.hpp"
+#include "StringifyStdStringUtil.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/IntTypes.hpp"

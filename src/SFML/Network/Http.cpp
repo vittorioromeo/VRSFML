@@ -33,6 +33,7 @@ namespace
 ////////////////////////////////////////////////////////////
 using FieldTable = std::map<std::string, std::string>; // Use an ordered map for predictable payloads
 
+
 ////////////////////////////////////////////////////////////
 void parseFields(auto& in, FieldTable& fields)
 {
@@ -54,6 +55,63 @@ void parseFields(auto& in, FieldTable& fields)
             fields[sf::priv::toLower(field)] = value;
         }
     }
+}
+
+
+////////////////////////////////////////////////////////////
+/// \brief Prepare the final request to send to the server
+///
+/// This is used internally by Http before sending the
+/// request to the web server.
+///
+/// \return String containing the request, ready to be sent
+///
+////////////////////////////////////////////////////////////
+[[nodiscard]] std::string prepareRequest(
+    const FieldTable&               fields,
+    const sf::Http::Request::Method method,
+    const std::string&              uri,
+    const unsigned int              majorVersion,
+    const unsigned int              minorVersion,
+    const std::string&              body)
+{
+    sf::OutStringStream oss;
+
+    // Convert the method to its string representation
+    switch (method)
+    {
+        case sf::Http::Request::Method::Get:
+            oss << "GET";
+            break;
+        case sf::Http::Request::Method::Post:
+            oss << "POST";
+            break;
+        case sf::Http::Request::Method::Head:
+            oss << "HEAD";
+            break;
+        case sf::Http::Request::Method::Put:
+            oss << "PUT";
+            break;
+        case sf::Http::Request::Method::Delete:
+            oss << "DELETE";
+            break;
+    }
+
+    // Write the first line containing the request type
+    oss << " " << uri << " ";
+    oss << "HTTP/" << majorVersion << "." << minorVersion << "\r\n";
+
+    // Write fields
+    for (const auto& [fieldKey, fieldValue] : fields)
+        oss << fieldKey << ": " << fieldValue << "\r\n";
+
+    // Use an extra \r\n to separate the header from the body
+    oss << "\r\n";
+
+    // Add the body
+    oss << body;
+
+    return oss.getString();
 }
 
 } // namespace
@@ -148,54 +206,9 @@ void Http::Request::setBody(const std::string& body)
 
 
 ////////////////////////////////////////////////////////////
-std::string Http::Request::prepare() const
-{
-    OutStringStream oss;
-
-    // Convert the method to its string representation
-    switch (m_impl->method)
-    {
-        case Method::Get:
-            oss << "GET";
-            break;
-        case Method::Post:
-            oss << "POST";
-            break;
-        case Method::Head:
-            oss << "HEAD";
-            break;
-        case Method::Put:
-            oss << "PUT";
-            break;
-        case Method::Delete:
-            oss << "DELETE";
-            break;
-    }
-
-    // Write the first line containing the request type
-    oss << " " << m_impl->uri << " ";
-    oss << "HTTP/" << m_impl->majorVersion << "." << m_impl->minorVersion << "\r\n";
-
-    // Write fields
-    for (const auto& [fieldKey, fieldValue] : m_impl->fields)
-    {
-        oss << fieldKey << ": " << fieldValue << "\r\n";
-    }
-
-    // Use an extra \r\n to separate the header from the body
-    oss << "\r\n";
-
-    // Add the body
-    oss << m_impl->body;
-
-    return oss.getString();
-}
-
-
-////////////////////////////////////////////////////////////
 bool Http::Request::hasField(const std::string& field) const
 {
-    return m_impl->fields.find(priv::toLower(field)) != m_impl->fields.end();
+    return m_impl->fields.contains(priv::toLower(field));
 }
 
 
@@ -222,9 +235,7 @@ Http::Response::~Response() = default;
 const std::string& Http::Response::getField(const std::string& field) const
 {
     if (const auto it = m_impl->fields.find(priv::toLower(field)); it != m_impl->fields.end())
-    {
         return it->second;
-    }
 
     static const std::string empty;
     return empty;
@@ -406,32 +417,28 @@ Http::Response Http::sendRequest(const Http::Request& request, Time timeout)
 {
     // First make sure that the request is valid -- add missing mandatory fields
     Request toSend(request);
+
     if (!toSend.hasField("From"))
-    {
         toSend.setField("From", "user@sfml-dev.org");
-    }
+
     if (!toSend.hasField("User-Agent"))
-    {
         toSend.setField("User-Agent", "libsfml-network/3.x");
-    }
+
     if (!toSend.hasField("Host"))
-    {
         toSend.setField("Host", m_impl->hostName);
-    }
+
     if (!toSend.hasField("Content-Length"))
     {
         OutStringStream oss;
         oss << toSend.m_impl->body.size();
         toSend.setField("Content-Length", oss.getString());
     }
+
     if ((toSend.m_impl->method == Request::Method::Post) && !toSend.hasField("Content-Type"))
-    {
         toSend.setField("Content-Type", "application/x-www-form-urlencoded");
-    }
+
     if ((toSend.m_impl->majorVersion * 10 + toSend.m_impl->minorVersion >= 11) && !toSend.hasField("Connection"))
-    {
         toSend.setField("Connection", "close");
-    }
 
     // Prepare the response
     Response received;
@@ -440,7 +447,12 @@ Http::Response Http::sendRequest(const Http::Request& request, Time timeout)
     if (m_impl->connection.connect(m_impl->host.value(), m_impl->port, timeout) == Socket::Status::Done)
     {
         // Convert the request to string and send it through the connected socket
-        const std::string requestStr = toSend.prepare();
+        const std::string requestStr = prepareRequest(toSend.m_impl->fields,
+                                                      toSend.m_impl->method,
+                                                      toSend.m_impl->uri,
+                                                      toSend.m_impl->majorVersion,
+                                                      toSend.m_impl->minorVersion,
+                                                      toSend.m_impl->body);
 
         if (!requestStr.empty())
         {

@@ -11,14 +11,13 @@
 #include "SFML/Window/EventUtils.hpp"
 
 #include "SFML/System/Path.hpp"
-#include "SFML/System/String.hpp"
+#include "SFML/System/UnicodeString.hpp"
 
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/ToString.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #include "ExampleUtils.hpp"
-
-#include <string>
 
 
 ////////////////////////////////////////////////////////////
@@ -47,7 +46,7 @@ int main()
     sf::Text mousePosition(font, {.position = {400.f, 300.f}, .characterSize = 20u, .fillColor = sf::Color::White});
     sf::Text mouseRawMovement(font, {.characterSize = 20u, .fillColor = sf::Color::White});
 
-    sf::base::Vector<std::string> log;
+    sf::base::Vector<sf::base::String> log;
 
     while (true)
     {
@@ -60,7 +59,7 @@ int main()
                 continue;
 
             static const auto vec2ToString = [](const sf::Vec2i vec2)
-            { return '(' + std::to_string(vec2.x) + ", " + std::to_string(vec2.y) + ')'; };
+            { return '(' + sf::base::toString(vec2.x) + ", " + sf::base::toString(vec2.y) + ')'; };
 
             if (const auto* const mouseMoved = event->getIf<sf::Event::MouseMoved>())
                 mousePosition.setString("Mouse Position: " + vec2ToString(mouseMoved->position));

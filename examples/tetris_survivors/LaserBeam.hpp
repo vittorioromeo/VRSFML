@@ -14,9 +14,9 @@
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Vec2.hpp"
 
-#include "SFML/Base/SinCosLookup.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
 #include "SFML/Base/Remainder.hpp"
+#include "SFML/Base/SinCosLookup.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
 
@@ -52,7 +52,7 @@ public:
         end(end),
         m_color(color),
         m_coreThickness(coreThickness),
-        m_glowThickness(coreThickness * 6.0f)
+        m_glowThickness(coreThickness * 6.f)
     {
     }
 
@@ -69,15 +69,15 @@ public:
 
         // --- Primary Wave (large, slow wobble) ---
         constexpr float wobbleAmplitude1  = 1.5f;  // The main size of the wobble
-        constexpr float wobbleSpeed1      = 25.0f; // How fast the main wave pattern moves
+        constexpr float wobbleSpeed1      = 25.f;  // How fast the main wave pattern moves
         constexpr float spatialFrequency1 = 0.12f; // How many wiggles per pixel. Smaller = longer waves.
 
         // --- Detail Wave (small, fast jitter) ---
         constexpr float wobbleAmplitude2  = 0.7f;  // The size of the smaller, faster ripples
-        constexpr float wobbleSpeed2      = 10.0f; // The detail wave should move at a different (usually faster) speed
+        constexpr float wobbleSpeed2      = 10.f;  // The detail wave should move at a different (usually faster) speed
         constexpr float spatialFrequency2 = 0.25f; // The detail wave should have a higher frequency (more wiggles)
 
-        constexpr float pixelsPerSegment = 10.0f; // How long each segment of the beam is
+        constexpr float pixelsPerSegment = 10.f; // How long each segment of the beam is
 
         const sf::Vec2f beamVector = end - start;
         const float     beamLength = beamVector.length();

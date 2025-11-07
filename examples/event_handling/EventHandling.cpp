@@ -11,32 +11,33 @@
 #include "SFML/Window/Keyboard.hpp"
 
 #include "SFML/System/Path.hpp"
-#include "SFML/System/String.hpp"
+#include "SFML/System/UnicodeString.hpp"
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/String.hpp"
+#include "SFML/Base/ToString.hpp"
+#include "SFML/Base/Trait/Decay.hpp"
 #include "SFML/Base/Trait/IsSame.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #include "ExampleUtils.hpp"
 
-#include <string>
-
 
 namespace
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] std::string vec2ToString(const sf::Vec2i vec2)
+[[nodiscard]] sf::base::String vec2ToString(const sf::Vec2i vec2)
 {
-    return '(' + std::to_string(vec2.x) + ", " + std::to_string(vec2.y) + ')';
+    return '(' + sf::base::toString(vec2.x) + ", " + sf::base::toString(vec2.y) + ')';
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] std::string scancodeToString(const sf::Keyboard::Scancode scancode)
+[[nodiscard]] sf::base::String scancodeToString(const sf::Keyboard::Scancode scancode)
 {
-    return sf::Keyboard::getDescription(scancode).toAnsiString<std::string>();
+    return sf::Keyboard::getDescription(scancode).toAnsiString<sf::base::String>();
 }
 
 } // namespace
@@ -72,13 +73,13 @@ public:
         {
         }
 
-        sf::base::Optional<std::string> operator()(sf::Event::Closed)
+        sf::base::Optional<sf::base::String> operator()(sf::Event::Closed)
         {
             application.m_mustClose = true;
             return sf::base::nullOpt;
         }
 
-        sf::base::Optional<std::string> operator()(const sf::Event::KeyPressed& keyPress)
+        sf::base::Optional<sf::base::String> operator()(const sf::Event::KeyPressed& keyPress)
         {
             // When the enter key is pressed, switch to the next handler type
             if (keyPress.code == sf::Keyboard::Key::Enter)
@@ -87,22 +88,22 @@ public:
                 application.m_handlerText.setString("Current Handler: Overload");
             }
 
-            return sf::base::makeOptional<std::string>("Key Pressed: " + scancodeToString(keyPress.scancode));
+            return sf::base::makeOptional<sf::base::String>("Key Pressed: " + scancodeToString(keyPress.scancode));
         }
 
-        sf::base::Optional<std::string> operator()(const sf::Event::MouseMoved& mouseMoved)
+        sf::base::Optional<sf::base::String> operator()(const sf::Event::MouseMoved& mouseMoved)
         {
-            return sf::base::makeOptional<std::string>("Mouse Moved: " + vec2ToString(mouseMoved.position));
+            return sf::base::makeOptional<sf::base::String>("Mouse Moved: " + vec2ToString(mouseMoved.position));
         }
 
-        sf::base::Optional<std::string> operator()(const sf::Event::MouseButtonPressed&)
+        sf::base::Optional<sf::base::String> operator()(const sf::Event::MouseButtonPressed&)
         {
-            return sf::base::makeOptional<std::string>("Mouse Pressed");
+            return sf::base::makeOptional<sf::base::String>("Mouse Pressed");
         }
 
-        sf::base::Optional<std::string> operator()(const sf::Event::TouchBegan& touchBegan)
+        sf::base::Optional<sf::base::String> operator()(const sf::Event::TouchBegan& touchBegan)
         {
-            return sf::base::makeOptional<std::string>("Touch Began: " + vec2ToString(touchBegan.position));
+            return sf::base::makeOptional<sf::base::String>("Touch Began: " + vec2ToString(touchBegan.position));
         }
 
         // When defining a visitor, make sure all event types can be handled by it.
@@ -110,7 +111,7 @@ public:
         // event type, you can provide a templated operator() that will be selected
         // by overload resolution when no other event type matches.
         template <typename T>
-        sf::base::Optional<std::string> operator()(const T&)
+        sf::base::Optional<sf::base::String> operator()(const T&)
         {
             // All unhandled events will end up here
             // application.m_log.emplaceBack("Other Event");
@@ -213,7 +214,7 @@ public:
         m_window.pollAndHandleEvents([&](auto&& event)
         {
             // Remove reference and cv-qualifiers
-            using T = std::decay_t<decltype(event)>;
+            using T = sf::base::Decay<decltype(event)>;
 
             if constexpr (sf::base::isSame<T, sf::Event::Closed>)
             {
@@ -377,9 +378,9 @@ private:
     sf::Text m_handlerText{m_font, {.string = "Current Handler: Classic", .characterSize = 24u}};
     sf::Text m_instructions{m_font, {.string = "Press Enter to change handler type", .characterSize = 24u}};
 
-    sf::base::Vector<std::string> m_log;
-    HandlerType                   m_handlerType{HandlerType::Classic};
-    bool                          m_mustClose{false};
+    sf::base::Vector<sf::base::String> m_log;
+    HandlerType                        m_handlerType{HandlerType::Classic};
+    bool                               m_mustClose{false};
 };
 
 

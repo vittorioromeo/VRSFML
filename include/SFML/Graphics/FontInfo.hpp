@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
-#include "SFML/System/String.hpp"
+#include "SFML/System/UnicodeString.hpp"
 
 
 namespace sf
@@ -19,7 +19,7 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct SFML_GRAPHICS_API FontInfo
 {
-    String family; //!< The font family
+    UnicodeString family; //!< The font family
 };
 
 } // namespace sf

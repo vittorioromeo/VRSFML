@@ -34,6 +34,7 @@
 #include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/EnumArray.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
+#include "SFML/Base/String.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <SDL3/SDL_events.h>
@@ -43,7 +44,6 @@
 #include <SDL3/SDL_video.h>
 
 #include <queue>
-#include <string>
 
 
 ////////////////////////////////////////////////////////////
@@ -881,9 +881,9 @@ void SDLWindowImpl::setSize(const Vec2u size)
 
 
 ////////////////////////////////////////////////////////////
-void SDLWindowImpl::setTitle(const String& title)
+void SDLWindowImpl::setTitle(const UnicodeString& title)
 {
-    if (!SDL_SetWindowTitle(m_impl->sdlWindow, title.toAnsiString<std::string>().data()))
+    if (!SDL_SetWindowTitle(m_impl->sdlWindow, title.toAnsiString<base::String>().data()))
         err() << "Failed to set window title: " << SDL_GetError();
 }
 

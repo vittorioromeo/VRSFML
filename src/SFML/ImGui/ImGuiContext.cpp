@@ -28,8 +28,8 @@
 #include "SFML/GLUtils/TextureSaver.hpp"
 
 #include "SFML/System/Err.hpp"
-#include "SFML/System/String.hpp"
-#include "SFML/System/StringUtfUtils.hpp"
+#include "SFML/System/UnicodeString.hpp"
+#include "SFML/System/UnicodeStringUtfUtils.hpp"
 
 #include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Assert.hpp"
@@ -1010,7 +1010,7 @@ thread_local std::string clipboardText;
 ////////////////////////////////////////////////////////////
 void setClipboardTextFn(void* /* userData */, const char* text)
 {
-    if (!Clipboard::setString(StringUtfUtils::fromUtf8(text, text + SFML_BASE_STRLEN(text))))
+    if (!Clipboard::setString(UnicodeStringUtfUtils::fromUtf8(text, text + SFML_BASE_STRLEN(text))))
         priv::err() << "Failed to set clipboard text from ImGui";
 }
 

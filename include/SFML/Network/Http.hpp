@@ -155,17 +155,6 @@ public:
         friend class Http;
 
         ////////////////////////////////////////////////////////////
-        /// \brief Prepare the final request to send to the server
-        ///
-        /// This is used internally by Http before sending the
-        /// request to the web server.
-        ///
-        /// \return String containing the request, ready to be sent
-        ///
-        ////////////////////////////////////////////////////////////
-        [[nodiscard]] std::string prepare() const;
-
-        ////////////////////////////////////////////////////////////
         /// \brief Check if the request defines a field
         ///
         /// This function uses case-insensitive comparisons.

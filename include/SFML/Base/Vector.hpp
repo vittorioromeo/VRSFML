@@ -344,13 +344,13 @@ public:
     ////////////////////////////////////////////////////////////
     TItem* erase(TItem* const it)
     {
-        const auto resultIt = priv::VectorUtils::eraseImpl(begin(), end(), it);
+        priv::VectorUtils::eraseImpl(begin(), end(), it);
         --m_endSize;
 
         if constexpr (!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(TItem))
             m_endSize->~TItem();
 
-        return resultIt;
+        return it;
     }
 
 

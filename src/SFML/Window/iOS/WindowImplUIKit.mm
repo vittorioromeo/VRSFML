@@ -142,7 +142,7 @@ void WindowImplUIKit::setMaximumSize(const base::Optional<Vec2u>& /* maximumSize
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplUIKit::setTitle(const String& /* title */)
+void WindowImplUIKit::setTitle(const UnicodeString& /* title */)
 {
     // Not applicable
 }

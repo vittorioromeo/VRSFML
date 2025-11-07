@@ -8,7 +8,7 @@
 ////////////////////////////////c////////////////////////////
 #include "SFML/Window/ContextSettings.hpp"
 
-#include "SFML/System/String.hpp"
+#include "SFML/System/UnicodeString.hpp"
 #include "SFML/System/Vec2.hpp"
 
 
@@ -33,7 +33,7 @@ struct [[nodiscard]] WindowSettings
 {
     Vec2u           size;                     //!< Video mode width and height, in pixels
     unsigned int    bitsPerPixel{32u};        //!< Video mode pixel depth, in bits per pixels
-    String          title{"Untitled Window"}; //!< Title of the window
+    UnicodeString   title{"Untitled Window"}; //!< Title of the window
     bool            fullscreen{false};        //!< Is the window fullscreen?
     bool            resizable{true};          //!< Is the window resizable?
     bool            closable{true};           //!< Is the window closable?

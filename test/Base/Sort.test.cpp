@@ -1,14 +1,13 @@
 #include "SFML/Base/Algorithm/Sort.hpp"
 
-#include "StringifyStringUtil.hpp" // used
-#include "StringifyVectorUtil.hpp" // used
+#include "StringifySfBaseStringUtil.hpp" // used
+#include "StringifyVectorUtil.hpp"       // used
 
 #include "SFML/Base/Algorithm/IsSorted.hpp"
+#include "SFML/Base/String.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #include <Doctest.hpp>
-
-#include <string>
 
 
 namespace
@@ -47,8 +46,8 @@ TEST_CASE("[Base] Base/Sort.hpp")
 
 struct Person
 {
-    std::string name;
-    int         age;
+    sf::base::String name;
+    int              age;
 
     bool operator<(const Person& other) const
     {

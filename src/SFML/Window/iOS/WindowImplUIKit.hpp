@@ -106,7 +106,7 @@ public:
     /// \param title New title
     ///
     ////////////////////////////////////////////////////////////
-    void setTitle(const String& title) override;
+    void setTitle(const UnicodeString& title) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the window's icon

@@ -13,7 +13,7 @@
 #include "SFML/Graphics/TextData.hpp"
 #include "SFML/Graphics/Transform.hpp"
 
-#include "SFML/System/String.hpp"
+#include "SFML/System/UnicodeString.hpp"
 
 #include "SFML/Base/Builtin/Restrict.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
@@ -58,7 +58,7 @@ struct TextSpacingConstants
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] inline base::SizeT precomputeTextQuadCount(const String& string, const TextStyle style)
+[[nodiscard]] inline base::SizeT precomputeTextQuadCount(const UnicodeString& string, const TextStyle style)
 {
     SFML_BASE_ASSERT(!string.isEmpty());
 
@@ -231,18 +231,18 @@ inline void addGlyphQuadPreTransformed(
 ////////////////////////////////////////////////////////////
 template <bool CalculateBounds>
 inline auto createTextGeometryAndGetBounds(
-    const base::SizeT  outlineVertexCount,
-    const Font&        font,
-    const String&      string,
-    const TextStyle    style,
-    const unsigned int characterSize,
-    const float        letterSpacing,
-    const float        lineSpacing,
-    const float        outlineThickness,
-    const Color        fillColor,    // TODO P1: remove?
-    const Color        outlineColor, // TODO P1: remove?
-    auto&&             fAddLine,
-    auto&&             fAddGlyphQuad)
+    const base::SizeT    outlineVertexCount,
+    const Font&          font,
+    const UnicodeString& string,
+    const TextStyle      style,
+    const unsigned int   characterSize,
+    const float          letterSpacing,
+    const float          lineSpacing,
+    const float          outlineThickness,
+    const Color          fillColor,    // TODO P1: remove?
+    const Color          outlineColor, // TODO P1: remove?
+    auto&&               fAddLine,
+    auto&&               fAddGlyphQuad)
 {
     // Compute values related to the text style
     const bool  isBold             = !!(style & TextStyle::Bold);

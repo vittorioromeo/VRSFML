@@ -1,9 +1,11 @@
 #include "SFML/System/Err.hpp"
 
-#include <Doctest.hpp>
+#include "SFML/System/IO.hpp"
 
-#include <sstream>
-#include <string>
+#include "SFML/Base/String.hpp"
+#include "SFML/Base/StringView.hpp"
+
+#include <Doctest.hpp>
 
 
 TEST_CASE("[System] sf::err")
@@ -24,19 +26,19 @@ TEST_CASE("[System] sf::err")
         auto* const defaultStreamBuffer = sf::priv::err().rdbuf();
         CHECK(defaultStreamBuffer != nullptr);
 
-        const std::stringstream stream;
+        const sf::OutStringStream stream;
         sf::priv::err().rdbuf(stream.rdbuf());
         sf::priv::err() << "Something went wrong!\n";
-        CHECK(stream.str().find("Something went wrong!\n") != std::string::npos);
+        CHECK(stream.to<sf::base::String>().toStringView().find("Something went wrong!\n") != sf::base::String::nPos);
 
         sf::priv::err().rdbuf(nullptr);
         sf::priv::err() << "Sent to the abyss";
-        CHECK(stream.str().find("Something went wrong!\n") != std::string::npos);
+        CHECK(stream.to<sf::base::String>().toStringView().find("Something went wrong!\n") != sf::base::String::nPos);
 
         sf::priv::err().rdbuf(stream.rdbuf());
         sf::priv::err() << "Back to the stringstream :)\n";
-        CHECK(stream.str().find("Something went wrong!\n") != std::string::npos);
-        CHECK(stream.str().find("Back to the stringstream :)\n") != std::string::npos);
+        CHECK(stream.to<sf::base::String>().toStringView().find("Something went wrong!\n") != sf::base::String::nPos);
+        CHECK(stream.to<sf::base::String>().toStringView().find("Back to the stringstream :)\n") != sf::base::String::nPos);
 
         // Restore sf::err to default stream defaultStreamBuffer
         sf::priv::err().rdbuf(defaultStreamBuffer);

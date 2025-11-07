@@ -1,7 +1,7 @@
 #include "SFML/Network/Packet.hpp"
 
 // Other 1st party headers
-#include "SFML/System/String.hpp"
+#include "SFML/System/UnicodeString.hpp"
 
 #include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -39,25 +39,25 @@
         CHECK((expected) == received);                       \
     } while (false)
 
-#define CHECK_PACKET_STRING_STREAM_OPERATORS(expected, size) \
-    do                                                       \
-    {                                                        \
-        sf::Packet packet;                                   \
-        packet << (expected);                                \
-        CHECK(packet.getReadPosition() == 0);                \
-        CHECK(packet.getData() != nullptr);                  \
-        CHECK(packet.getDataSize() == (size));               \
-        CHECK(!packet.endOfPacket());                        \
-        CHECK(bool{packet});                                 \
-                                                             \
-        std::remove_const_t<decltype(expected)> received;    \
-        packet >> received;                                  \
-        CHECK(packet.getReadPosition() == (size));           \
-        CHECK(packet.getData() != nullptr);                  \
-        CHECK(packet.getDataSize() == (size));               \
-        CHECK(packet.endOfPacket());                         \
-        CHECK(bool{packet});                                 \
-        CHECK(sf::String(expected) == sf::String(received)); \
+#define CHECK_PACKET_STRING_STREAM_OPERATORS(expected, size)               \
+    do                                                                     \
+    {                                                                      \
+        sf::Packet packet;                                                 \
+        packet << (expected);                                              \
+        CHECK(packet.getReadPosition() == 0);                              \
+        CHECK(packet.getData() != nullptr);                                \
+        CHECK(packet.getDataSize() == (size));                             \
+        CHECK(!packet.endOfPacket());                                      \
+        CHECK(bool{packet});                                               \
+                                                                           \
+        std::remove_const_t<decltype(expected)> received;                  \
+        packet >> received;                                                \
+        CHECK(packet.getReadPosition() == (size));                         \
+        CHECK(packet.getData() != nullptr);                                \
+        CHECK(packet.getDataSize() == (size));                             \
+        CHECK(packet.endOfPacket());                                       \
+        CHECK(bool{packet});                                               \
+        CHECK(sf::UnicodeString(expected) == sf::UnicodeString(received)); \
     } while (false)
 
 struct Packet : sf::Packet
@@ -266,9 +266,9 @@ TEST_CASE("[Network] sf::Packet")
             CHECK_PACKET_STRING_STREAM_OPERATORS(string, 4 * string.size() + 4);
         }
 
-        SECTION("sf::String")
+        SECTION("sf::UnicodeString")
         {
-            const sf::String string = "testing";
+            const sf::UnicodeString string = "testing";
             CHECK_PACKET_STRING_STREAM_OPERATORS(string, 4 * string.getSize() + 4);
         }
     }

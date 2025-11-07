@@ -10,14 +10,21 @@
 
 #else
 
+namespace sf::base::priv
+{
 ////////////////////////////////////////////////////////////
-// Headers
-////////////////////////////////////////////////////////////
-    #include <type_traits>
+template <typename T>
+inline constexpr bool isRvalueReferenceImpl = false;
 
+
+////////////////////////////////////////////////////////////
+template <typename T>
+inline constexpr bool isRvalueReferenceImpl<T&&> = true;
+
+} // namespace sf::base::priv
 
     ////////////////////////////////////////////////////////////
-    #define SFML_BASE_IS_RVALUE_REFERENCE(...) ::std::is_reference_v<__VA_ARGS__>
+    #define SFML_BASE_IS_RVALUE_REFERENCE(...) ::sf::base::priv::isRvalueReferenceImpl<__VA_ARGS__>
 
 #endif
 

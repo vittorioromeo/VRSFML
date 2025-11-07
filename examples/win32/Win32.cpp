@@ -3,7 +3,6 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/Texture.hpp"
 
 #include "SFML/System/Angle.hpp"
@@ -12,13 +11,14 @@
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Vec2.hpp"
 
+#include "SFML/Base/Math/Cos.hpp"
+
 #ifndef WIN32_LEAN_AND_MEAN
     #define WIN32_LEAN_AND_MEAN
 #endif
 
 #include <windows.h>
 
-#include <cmath>
 
 namespace
 {
@@ -160,7 +160,7 @@ int main()
                                 .rotation = sf::degrees(time * 100)});
 
                 // Draw sprite 2 on view 2
-                sfmlView2.draw(texture2, {.position = {std::cos(time) * 100.f, 0.f}});
+                sfmlView2.draw(texture2, {.position = {sf::base::cos(time) * 100.f, 0.f}});
 
                 // Display each view on screen
                 sfmlView1.display();

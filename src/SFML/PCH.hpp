@@ -24,8 +24,8 @@
     #include "SFML/System/Err.hpp"
     #include "SFML/System/Path.hpp"
     #include "SFML/System/Rect2.hpp"
-    #include "SFML/System/String.hpp"
     #include "SFML/System/Time.hpp"
+    #include "SFML/System/UnicodeString.hpp"
     #include "SFML/System/Vec2.hpp"
 
     #include "SFML/Base/Assert.hpp"
@@ -42,12 +42,6 @@
     #include <string>
 
     #include <cstdlib>
-
-    #ifdef SFML_BUILD_EXAMPLES
-        #include <random>
-
-        #include <cmath>
-    #endif // SFML_BUILD_EXAMPLES
 
     #ifdef SFML_BUILD_TEST_SUITE
         #include <doctest/parts/doctest_fwd.h>

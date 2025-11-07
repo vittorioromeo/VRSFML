@@ -6,6 +6,7 @@
 
 #include <string>
 
+
 TEST_CASE("[Network] sf::Http")
 {
     SECTION("Type traits")

@@ -7,18 +7,17 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Win32/Utils.hpp"
 
-#include "SFML/System/String.hpp"
+#include "SFML/System/UnicodeString.hpp"
 #include "SFML/System/Win32/WindowsHeader.hpp" // used
 
 #include "SFML/Base/Assert.hpp"
-
-#include <string>
+#include "SFML/Base/String.hpp"
 
 
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-std::string getErrorString(DWORD error)
+base::String getErrorString(DWORD error)
 {
     PTCHAR buffer = nullptr;
     if (FormatMessage(FORMAT_MESSAGE_MAX_WIDTH_MASK | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
@@ -32,9 +31,9 @@ std::string getErrorString(DWORD error)
         return "Unknown error.";
     }
 
-    const sf::String message = buffer;
+    const sf::UnicodeString message = buffer;
     LocalFree(buffer);
-    return message.toAnsiString<std::string>();
+    return message.toAnsiString<base::String>();
 }
 
 

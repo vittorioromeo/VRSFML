@@ -481,7 +481,7 @@ int main()
         #include "SFML/Graphics/Text.hpp"
 
         #include "SFML/System/Path.hpp"
-        #include "SFML/System/String.hpp"
+        #include "SFML/System/UnicodeString.hpp"
 
 int main()
 {
@@ -557,16 +557,14 @@ int main()
         #include "SFML/Graphics/Text.hpp"
 
         #include "SFML/System/Path.hpp"
-        #include "SFML/System/String.hpp"
-
-        #include <cstdlib>
+        #include "SFML/System/UnicodeString.hpp"
 
 int main()
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
 
-    const auto       font         = sf::Font::openFromFile("resources/tuffy.ttf").value();
-    const sf::String textContents = "abcdefghilmnopqrstuvz\nabcdefghilmnopqrstuvz\nabcdefghilmnopqrstuvz\n";
+    const auto              font         = sf::Font::openFromFile("resources/tuffy.ttf").value();
+    const sf::UnicodeString textContents = "abcdefghilmnopqrstuvz\nabcdefghilmnopqrstuvz\nabcdefghilmnopqrstuvz\n";
 
     auto text          = sf::Text(font, textContents);
     auto renderTexture = sf::RenderTexture::create({1680, 1050}).value();

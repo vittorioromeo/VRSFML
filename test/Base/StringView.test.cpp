@@ -325,7 +325,7 @@ TEST_CASE("[Base] Base/StringView.hpp")
                 SECTION("Offset out of bounds")
                 {
                     const auto res = sv.rfind("", 100);
-                    REQUIRE(res == (sv.size() - 1));
+                    REQUIRE(res == sv.size());
                 }
             }
 

@@ -10,10 +10,6 @@
 
 #include "SFML/Base/Optional.hpp"
 
-#include <string>
-
-#include <cstdlib>
-
 
 namespace
 {
@@ -51,7 +47,7 @@ int main()
     {
         sf::cOut() << "Enter the FTP server address: ";
 
-        std::string addressStr;
+        sf::base::String addressStr;
         sf::cIn() >> addressStr;
         address = sf::IpAddressUtils::resolve(addressStr);
     } while (!address.hasValue());
@@ -61,11 +57,11 @@ int main()
     const sf::Ftp::Response connectResponse = server.connect(address.value());
     sf::cOut() << connectResponse << sf::endL;
     if (!connectResponse.isOk())
-        return EXIT_FAILURE;
+        return 1;
 
     // Ask for user name and password
-    std::string user;
-    std::string password;
+    sf::base::String user;
+    sf::base::String password;
     sf::cOut() << "User name: ";
     sf::cIn() >> user;
     sf::cOut() << "Password: ";
@@ -75,7 +71,7 @@ int main()
     const sf::Ftp::Response loginResponse = server.login(user, password);
     sf::cOut() << loginResponse << sf::endL;
     if (!loginResponse.isOk())
-        return EXIT_FAILURE;
+        return 1;
 
     // Main menu
     int choice = 0;
@@ -116,7 +112,7 @@ int main()
                 // Print the current server directory
                 const sf::Ftp::DirectoryResponse response = server.getWorkingDirectory();
                 sf::cOut() << response << '\n'
-                           << "Current directory is " << response.getDirectory().to<std::string>() << sf::endL;
+                           << "Current directory is " << response.getDirectory().to<sf::base::String>() << sf::endL;
                 break;
             }
 
@@ -125,7 +121,7 @@ int main()
                 // Print the contents of the current server directory
                 const sf::Ftp::ListingResponse response = server.getDirectoryListing();
                 sf::cOut() << response << '\n';
-                for (const std::string& name : response.getListing())
+                for (const sf::base::String& name : response.getListing())
                     sf::cOut() << name << '\n';
                 sf::cOut().flush();
                 break;
@@ -134,7 +130,7 @@ int main()
             case 3:
             {
                 // Change the current directory
-                std::string directory;
+                sf::base::String directory;
                 sf::cOut() << "Choose a directory: ";
                 sf::cIn() >> directory;
                 sf::cOut() << server.changeDirectory(directory) << sf::endL;
@@ -144,7 +140,7 @@ int main()
             case 4:
             {
                 // Create a new directory
-                std::string directory;
+                sf::base::String directory;
                 sf::cOut() << "Name of the directory to create: ";
                 sf::cIn() >> directory;
                 sf::cOut() << server.createDirectory(directory) << sf::endL;
@@ -154,7 +150,7 @@ int main()
             case 5:
             {
                 // Remove an existing directory
-                std::string directory;
+                sf::base::String directory;
                 sf::cOut() << "Name of the directory to remove: ";
                 sf::cIn() >> directory;
                 sf::cOut() << server.deleteDirectory(directory) << sf::endL;
@@ -164,8 +160,8 @@ int main()
             case 6:
             {
                 // Rename a file
-                std::string source;
-                std::string destination;
+                sf::base::String source;
+                sf::base::String destination;
                 sf::cOut() << "Name of the file to rename: ";
                 sf::cIn() >> source;
                 sf::cOut() << "New name: ";
@@ -177,7 +173,7 @@ int main()
             case 7:
             {
                 // Remove an existing directory
-                std::string filename;
+                sf::base::String filename;
                 sf::cOut() << "Name of the file to remove: ";
                 sf::cIn() >> filename;
                 sf::cOut() << server.deleteFile(filename) << sf::endL;
@@ -187,8 +183,8 @@ int main()
             case 8:
             {
                 // Download a file from server
-                std::string filename;
-                std::string directory;
+                sf::base::String filename;
+                sf::base::String directory;
                 sf::cOut() << "Filename of the file to download (relative to current directory): ";
                 sf::cIn() >> filename;
                 sf::cOut() << "Directory to download the file to: ";
@@ -200,8 +196,8 @@ int main()
             case 9:
             {
                 // Upload a file to server
-                std::string filename;
-                std::string directory;
+                sf::base::String filename;
+                sf::base::String directory;
                 sf::cOut() << "Path of the file to upload (absolute or relative to working directory): ";
                 sf::cIn() >> filename;
                 sf::cOut() << "Directory to upload the file to (relative to current directory): ";

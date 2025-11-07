@@ -616,21 +616,21 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const CurvedArrowShapeData& sd)
         .position = transform.transformPoint(
             correctionTransform.transformPoint(headAttachPointLocal + tangentDir * (sd.headLength * sweepSign))),
         .color     = sd.fillColor,
-        .texCoords = sd.textureRect.position + sd.textureRect.size.componentWiseMul({0.5f, 1.0f}) // Example: Mid-top
+        .texCoords = sd.textureRect.position + sd.textureRect.size.componentWiseMul({0.5f, 1.f}) // Example: Mid-top
     };
     headFillVertexPtr[1] = {
         // Outer Barb
         .position = transform.transformPoint(
             correctionTransform.transformPoint(headAttachPointLocal + radialOutDir * (sd.headWidth / 2.f))),
         .color     = sd.fillColor,
-        .texCoords = sd.textureRect.position + sd.textureRect.size.componentWiseMul({0.0f, 0.0f}) // Example: Top-left
+        .texCoords = sd.textureRect.position + sd.textureRect.size.componentWiseMul({0.f, 0.f}) // Example: Top-left
     };
     headFillVertexPtr[2] = {
         // Inner Barb
         .position = transform.transformPoint(
             correctionTransform.transformPoint(headAttachPointLocal - radialOutDir * (sd.headWidth / 2.f))),
         .color     = sd.fillColor,
-        .texCoords = sd.textureRect.position + sd.textureRect.size.componentWiseMul({1.0f, 0.0f}) // Example: Top-right
+        .texCoords = sd.textureRect.position + sd.textureRect.size.componentWiseMul({1.f, 0.f}) // Example: Top-right
     };
     m_storage.commitMoreVertices(3u);
 

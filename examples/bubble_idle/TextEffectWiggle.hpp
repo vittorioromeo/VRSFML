@@ -14,9 +14,9 @@ class TextEffectWiggle
 public:
     ////////////////////////////////////////////////////////////
     explicit TextEffectWiggle(const float frequency, const float amplitude, const float phase = 0.f) :
-    m_frequency{frequency},
-    m_amplitude{amplitude},
-    m_phase{phase}
+        m_frequency{frequency},
+        m_amplitude{amplitude},
+        m_phase{phase}
     {
     }
 

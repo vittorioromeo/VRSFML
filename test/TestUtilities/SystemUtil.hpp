@@ -19,7 +19,7 @@ class UniquePtr;
 namespace sf
 {
 struct Angle;
-class String;
+class UnicodeString;
 class Time;
 
 template <typename>
@@ -31,7 +31,7 @@ class Vec3;
 void setStreamPrecision(std::ostream& os, int maxDigits10);
 
 std::ostream& operator<<(std::ostream& os, const Angle& angle);
-std::ostream& operator<<(std::ostream& os, const String& string);
+std::ostream& operator<<(std::ostream& os, const UnicodeString& string);
 std::ostream& operator<<(std::ostream& os, Time time);
 
 template <typename T>

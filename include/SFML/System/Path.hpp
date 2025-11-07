@@ -161,7 +161,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename T>
-    T to() const;
+    [[nodiscard]] T to() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Removes the file or empty directory identified by the path

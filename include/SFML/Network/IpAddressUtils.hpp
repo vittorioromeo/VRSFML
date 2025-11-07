@@ -10,9 +10,17 @@
 
 #include "SFML/Network/IpAddress.hpp"
 
-#include "SFML/Base/FwdStdString.hpp" // used
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/StringView.hpp"
+
+
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+namespace sf::base
+{
+class String;
+} // namespace sf::base
 
 
 namespace sf
@@ -49,7 +57,7 @@ public:
     /// \see toInteger
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::string toString(IpAddress ipAddress);
+    [[nodiscard]] static base::String toString(IpAddress ipAddress);
 };
 
 } // namespace sf
