@@ -32,10 +32,12 @@
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/InterferenceSize.hpp"
 #include "SFML/Base/LambdaMacros.hpp"
+#include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/ThreadPool.hpp"
+#include "SFML/Base/ToString.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
 
@@ -43,7 +45,6 @@
 #include <imgui.h>
 
 #include <latch>
-#include <string>
 
 
 namespace
@@ -726,7 +727,7 @@ int main()
                                  samples.data(),
                                  static_cast<int>(samples.size()),
                                  0,
-                                 (std::to_string(samples.getAverageAs<double>()) + unit).c_str(),
+                                 (sf::base::toString(samples.getAverageAs<double>()) + unit).cStr(),
                                  0.f,
                                  upperBound,
                                  ImVec2{256.f, 32.f});

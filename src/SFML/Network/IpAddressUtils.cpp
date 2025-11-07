@@ -11,9 +11,8 @@
 #include "SFML/Network/SocketImpl.hpp"
 
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
-
-#include <string>
 
 
 namespace sf
@@ -57,7 +56,7 @@ base::Optional<IpAddress> IpAddressUtils::resolve(base::StringView address)
 
 
 ////////////////////////////////////////////////////////////
-std::string IpAddressUtils::toString(IpAddress ipAddress)
+base::String IpAddressUtils::toString(IpAddress ipAddress)
 {
     return priv::SocketImpl::addrToString(priv::SocketImpl::getNtohl(ipAddress.m_address));
 }

@@ -89,7 +89,7 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline]] inline void deallocate(T* const p, const SizeT /* capacity */) noexcept
+[[gnu::always_inline]] inline constexpr void deallocate(T* const p, const SizeT /* capacity */) noexcept
 {
     ::operator delete(p, std::align_val_t{alignof(T)});
 }
@@ -97,37 +97,29 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline, gnu::flatten]] inline T* eraseImpl(T* begin, T* end, T* const it)
+[[gnu::always_inline, gnu::flatten]] inline void eraseImpl(T* begin, T* end, T* const it)
 {
     SFML_BASE_ASSERT(it >= begin && it < end);
 
-    const auto size = static_cast<decltype(end - begin)>(end - begin);
-
-    T* const currentEnd  = begin + size;
     T* const nextElement = it + 1;
 
-    if constexpr (SFML_BASE_IS_TRIVIALLY_COPYABLE(T))
+    if (nextElement < end)
     {
-        const auto numElementsToMove = static_cast<SizeT>(currentEnd - nextElement);
-
-        if (numElementsToMove > 0u)
+        if constexpr (SFML_BASE_IS_TRIVIALLY_COPYABLE(T))
         {
-            // Move elements from `[it + 1, end())` to `[it, end() - 1)`
-            SFML_BASE_MEMMOVE(it,                             // Destination
-                              nextElement,                    // Source
-                              numElementsToMove * sizeof(T)); // Number of bytes
+            SFML_BASE_MEMMOVE(it,                                                 // Destination
+                              nextElement,                                        // Source
+                              static_cast<SizeT>(end - nextElement) * sizeof(T)); // Number of bytes
+        }
+        else
+        {
+            T* currentWrite = it;
+            T* currentRead  = nextElement;
+
+            while (currentRead != end)
+                *currentWrite++ = static_cast<T&&>(*currentRead++);
         }
     }
-    else if (nextElement != currentEnd) // If 'it' is not the last element
-    {
-        T* currentWrite = it;
-        T* currentRead  = nextElement;
-
-        while (currentRead != currentEnd)
-            *currentWrite++ = static_cast<T&&>(*currentRead++);
-    }
-
-    return it;
 }
 
 
@@ -187,7 +179,9 @@ template <typename T>
 
     if constexpr (SFML_BASE_IS_TRIVIALLY_COPYABLE(T))
     {
-        SFML_BASE_MEMMOVE(pos + 1, pos, static_cast<SizeT>(end - pos) * sizeof(T));
+        SFML_BASE_MEMMOVE(pos + 1,                                    // Destination
+                          pos,                                        // Source
+                          static_cast<SizeT>(end - pos) * sizeof(T)); // Number of bytes
     }
     else
     {

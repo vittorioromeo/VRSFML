@@ -1,5 +1,8 @@
 #pragma once
 
+#include "RNGSeedType.hpp"
+
+#include "SFML/System/UnicodeString.hpp"
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
@@ -29,7 +32,6 @@
 #include "Playthrough.hpp"
 #include "Profile.hpp"
 #include "PurchasableScalingValue.hpp"
-#include "RNG.hpp"
 #include "RNGFast.hpp"
 #include "Sampler.hpp"
 #include "Serialization.hpp"
@@ -122,18 +124,17 @@
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/Remainder.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/ThreadPool.hpp"
+#include "SFML/Base/ToString.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 
-#include <random>
-#include <string>
 #include <utility>
 
 #include <cctype>
-#include <cmath>
 #include <cstdio>
 #include <ctime>
 
@@ -205,7 +206,7 @@ inline bool handleCatShrineCollision(const float deltaTimeMs, Cat& cat, Shrine& 
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline Bubble makeRandomBubble(Playthrough& pt, RNG& rng, const float mapLimit, const float maxY)
+[[nodiscard, gnu::always_inline]] inline Bubble makeRandomBubble(Playthrough& pt, RNGFast& rng, const float mapLimit, const float maxY)
 {
     return {
         .position = rng.getVec2f({mapLimit, maxY}),
@@ -1012,8 +1013,9 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Random number generation
-    RNG     rng{/* seed */ std::random_device{}()};
-    RNGFast rngFast; // very fast, low-quality, but good enough for VFXs
+    RNGSeedType seed{static_cast<RNGSeedType>(sf::Clock::now().asMicroseconds())};
+    RNGFast     rng{seed};
+    RNGFast     rngFast{seed}; // very fast, low-quality, but good enough for VFXs
 
     ////////////////////////////////////////////////////////////
     // Cat names
@@ -1146,7 +1148,7 @@ struct Main
     OptionalTargetedCountdown tipTCByteEnd;
     OptionalTargetedCountdown tipTCBackgroundEnd;
     Countdown                 tipCountdownChar;
-    std::string               tipString;
+    sf::base::String          tipString;
     TextEffectWiggle          tipStringWiggle{0.00175f, 4.f};
     sf::base::SizeT           tipCharIdx{0u};
 
@@ -1203,8 +1205,8 @@ struct Main
     // Notification queue
     struct NotificationData
     {
-        const char* title;
-        std::string content;
+        const char*      title;
+        sf::base::String content;
     };
 
     sf::base::Vector<NotificationData> notificationQueue;
@@ -1218,15 +1220,15 @@ struct Main
     // Purchase unlocked/available effects
     struct PurchaseUnlockedEffect
     {
-        std::string widgetLabel;
-        Countdown   countdown;
-        Countdown   arrowCountdown;
-        float       hue;
-        int         type;
+        sf::base::String widgetLabel;
+        Countdown        countdown;
+        Countdown        arrowCountdown;
+        float            hue;
+        int              type;
     };
 
-    sf::base::Vector<PurchaseUnlockedEffect>        purchaseUnlockedEffects;
-    ankerl::unordered_dense::map<std::string, bool> btnWasDisabled;
+    sf::base::Vector<PurchaseUnlockedEffect>             purchaseUnlockedEffects;
+    ankerl::unordered_dense::map<sf::base::String, bool> btnWasDisabled;
 
     ////////////////////////////////////////////////////////////
     // Debug stuff
@@ -1349,12 +1351,12 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::base::Vector<sf::base::Vector<sf::base::StringView>> makeShuffledCatNames(RNG& rng)
+    [[nodiscard]] static sf::base::Vector<sf::base::Vector<sf::base::StringView>> makeShuffledCatNames(RNGFast& rng)
     {
         sf::base::Vector<sf::base::Vector<sf::base::StringView>> result(nCatTypes);
 
         for (SizeT i = 0u; i < nCatTypes; ++i)
-            result[i] = getShuffledCatNames(static_cast<CatType>(i), rng.getEngine());
+            result[i] = getShuffledCatNames(static_cast<CatType>(i), rng);
 
         return result;
     }
@@ -1766,7 +1768,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void doTip(const std::string& str, const SizeT maxPrestigeLevel = 0u)
+    void doTip(const sf::base::String& str, const SizeT maxPrestigeLevel = 0u)
     {
         if (!profile.tipsEnabled || pt->psvBubbleValue.nPurchases > maxPrestigeLevel || inSpeedrunPlaythrough())
             return;
@@ -1915,7 +1917,7 @@ struct Main
     float        lastFontScale  = 1.f;
 
     ////////////////////////////////////////////////////////////
-    ankerl::unordered_dense::map<std::string, float> uiLabelToY;
+    ankerl::unordered_dense::map<sf::base::String, float> uiLabelToY;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] float uiGetMaxWindowHeight() const;
@@ -2654,6 +2656,14 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
+    void reseedRNGs(const RNGSeedType newSeed)
+    {
+        seed    = newSeed;
+        rng     = RNGFast{seed};
+        rngFast = RNGFast{seed};
+    }
+
+    ////////////////////////////////////////////////////////////
     void forceResetGame(const bool goToShopTab = true)
     {
         soundManager.stopPlayingAll(sounds.ritual);
@@ -2661,11 +2671,12 @@ struct Main
 
         delayedActions.clear();
 
-        rng.reseed(std::random_device{}());
+        reseedRNGs(static_cast<RNGSeedType>(sf::Clock::now().asMicroseconds()));
+
         shuffledCatNamesPerType = makeShuffledCatNames(rng);
 
         *pt      = Playthrough{};
-        pt->seed = rng.getSeed();
+        pt->seed = seed;
 
         wasPrestigeAvailableLastFrame = false;
         buyReminder                   = 0u;
@@ -3151,7 +3162,7 @@ struct Main
                 }
 
                 // Find rightmost cat
-                const auto rightmostIt = sf::base::maxElement(pt->cats.begin(), pt->cats.end(), [](const Cat& a, const Cat& b) {
+                auto* const rightmostIt = sf::base::maxElement(pt->cats.begin(), pt->cats.end(), [](const Cat& a, const Cat& b) {
                     return a.position.x < b.position.x;
                 });
 
@@ -5273,7 +5284,7 @@ struct Main
             const float currentBuff = pt->buffCountdownsPerType[asIdx(d.catType)].value;
 
             const float factor = (currentBuff < buffDurationSoftCap)
-                                     ? std::pow((buffDurationSoftCap - currentBuff) / buffDurationSoftCap, 0.15f)
+                                     ? sf::base::pow((buffDurationSoftCap - currentBuff) / buffDurationSoftCap, 0.15f)
                                      : 0.1f;
 
             pt->buffCountdownsPerType[asIdx(d.catType)].value += buffDuration * factor;
@@ -5571,7 +5582,7 @@ struct Main
         std::snprintf(fmtBuffer, sizeof(fmtBuffer), format, args...);
 #pragma GCC diagnostic pop
 
-        notificationQueue.emplaceBack(title, std::string{fmtBuffer});
+        notificationQueue.emplaceBack(title, sf::base::String{fmtBuffer});
     }
 
     ////////////////////////////////////////////////////////////
@@ -6784,11 +6795,11 @@ struct Main
 
         const auto tailWiggleRotation = sf::radians(
             catRotation + ((beingDragged ? -0.2f : 0.f) +
-                           std::sin(cat.wobbleRadians) * (beingDragged ? 0.125f : 0.075f) * tailRotationMult));
+                           sf::base::sin(cat.wobbleRadians) * (beingDragged ? 0.125f : 0.075f) * tailRotationMult));
 
         const auto tailWiggleRotationInvertedDragged = sf::radians(
             catRotation + ((beingDragged ? 0.2f : 0.f) +
-                           std::sin(cat.wobbleRadians) * (beingDragged ? 0.125f : 0.075f) * tailRotationMult));
+                           sf::base::sin(cat.wobbleRadians) * (beingDragged ? 0.125f : 0.075f) * tailRotationMult));
 
         const sf::Vec2f pushDown{0.f, beingDragged ? 75.f : 0.f};
 
@@ -6821,8 +6832,9 @@ struct Main
         // Unicats: wings
         if (cat.type == CatType::Uni)
         {
-            const auto wingRotation = sf::radians(catRotation + (beingDragged ? -0.2f : 0.f) +
-                                                  std::cos(cat.wobbleRadians) * (beingDragged ? 0.125f : 0.075f) * 0.75f);
+            const auto wingRotation = sf::radians(
+                catRotation + (beingDragged ? -0.2f : 0.f) +
+                sf::base::cos(cat.wobbleRadians) * (beingDragged ? 0.125f : 0.075f) * 0.75f);
 
             batchToUse.add(sf::Sprite{.position    = anchorOffset({250.f, -175.f}),
                                       .scale       = catScale * 1.25f,
@@ -7131,7 +7143,7 @@ struct Main
         if (profile.showCatText)
         {
             // TODO P2: move to member data
-            static thread_local std::string catNameBuffer;
+            static thread_local sf::base::String catNameBuffer;
             catNameBuffer.clear();
 
             if (pt->perm.smartCatsPurchased && cat.type == CatType::Normal && cat.nameIdx % 2u == 0u)
@@ -7162,17 +7174,17 @@ struct Main
                     actionName = "Portals";
 
                 // TODO P2: move to member data
-                static thread_local std::string actionString;
+                static thread_local sf::base::String actionString;
                 actionString.clear();
 
-                actionString += std::to_string(cat.hits);
+                actionString += sf::base::toString(cat.hits);
                 actionString += " ";
                 actionString += actionName;
 
                 if (cat.type == CatType::Mouse || isCopyCatWithType(CatType::Mouse))
                 {
                     actionString += " (x";
-                    actionString += std::to_string(pt->mouseCatCombo + 1);
+                    actionString += sf::base::toString(pt->mouseCatCombo + 1);
                     actionString += ")";
                 }
 
@@ -7291,7 +7303,7 @@ struct Main
             if (shrine.isActive())
             {
                 // TODO P2: move to member data
-                static thread_local std::string shrineStatus;
+                static thread_local sf::base::String shrineStatus;
 
                 shrineStatus = "$";
                 shrineStatus += toStringWithSeparators(shrine.collectedReward);
@@ -7680,7 +7692,7 @@ struct Main
                                                : txCursor,
                     {.position = sf::Mouse::getPosition(window).toVec2f(),
                      .scale    = sf::Vec2f{profile.cursorScale, profile.cursorScale} *
-                              ((1.f + easeInOutBack(cursorGrow) * std::pow(static_cast<float>(combo), 0.09f)) *
+                              ((1.f + easeInOutBack(cursorGrow) * sf::base::pow(static_cast<float>(combo), 0.09f)) *
                                dpiScalingFactor),
                      .origin = {5.f, 5.f},
                      .color  = hueColor(profile.cursorHue + currentBackgroundHue.asDegrees(), 255u)},
@@ -7711,7 +7723,7 @@ struct Main
             sf::Color{111u, 170u, 244u, alphaU8}.withRotatedHue(profile.cursorHue + currentBackgroundHue.asDegrees()));
 
         if (combo > 0)
-            cursorComboText.setString("x" + std::to_string(combo + 1));
+            cursorComboText.setString("x" + sf::base::toString(combo + 1));
 
         comboTextShakeEffect.applyToText(cursorComboText);
 
@@ -7939,13 +7951,15 @@ struct Main
         }
 
         sf::Text tipText{fontSuperBakery,
-                         {.position         = {},
-                          .scale            = sf::Vec2f{0.5f, 0.5f} * easeInOutBack(byteProgress),
-                          .string           = tipString.substr(0, tipCharIdx),
-                          .characterSize    = 60u,
-                          .fillColor        = sf::Color::whiteMask(static_cast<sf::base::U8>(tipByteAlpha)),
-                          .outlineColor     = outlineHueColor.withAlpha(static_cast<sf::base::U8>(tipByteAlpha)),
-                          .outlineThickness = 4.f}};
+                         {
+                             .position = {},
+                             .scale    = sf::Vec2f{0.5f, 0.5f} * easeInOutBack(byteProgress),
+                             .string   = tipString.toStringView().substrByPosLen(0, tipCharIdx).to<sf::base::String>(),
+                             .characterSize    = 60u,
+                             .fillColor        = sf::Color::whiteMask(static_cast<sf::base::U8>(tipByteAlpha)),
+                             .outlineColor     = outlineHueColor.withAlpha(static_cast<sf::base::U8>(tipByteAlpha)),
+                             .outlineThickness = 4.f,
+                         }};
 
         tipText.setTopLeft(tipBackgroundSprite.getTopLeft() + sf::Vec2f{45.f, 65.f});
 
@@ -8090,7 +8104,7 @@ struct Main
         {
             if (playerLastCombo > 2)
             {
-                comboAccReward     = static_cast<int>(std::pow(static_cast<float>(comboNOthers), 1.25f));
+                comboAccReward     = static_cast<int>(sf::base::pow(static_cast<float>(comboNOthers), 1.25f));
                 comboAccStarReward = comboNStars;
             }
             else
@@ -8589,7 +8603,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateMoneyText(const float deltaTimeMs, const float yBelowMinimap)
     {
-        moneyText.setString("$" + std::string(toStringWithSeparators(pt->money + spentMoney)));
+        moneyText.setString("$" + sf::base::String(toStringWithSeparators(pt->money + spentMoney)));
 
         moneyText.setOutlineColor(outlineHueColor);
         moneyText.scale  = {0.5f, 0.5f};
@@ -8642,7 +8656,7 @@ struct Main
         if (!pt->comboPurchased)
             return;
 
-        comboText.setString("x" + std::to_string(combo + 1));
+        comboText.setString("x" + sf::base::toString(combo + 1));
         comboText.setOutlineColor(outlineHueColor);
 
         comboTextShakeEffect.update(deltaTimeMs);
@@ -9619,7 +9633,7 @@ struct Main
         if (!loadMessage.empty())
             pushNotification("Playthrough loading info", "%s", loadMessage.data());
 
-        rng.reseed(pt->seed);
+        reseedRNGs(pt->seed);
         shuffledCatNamesPerType = makeShuffledCatNames(rng);
     }
 
@@ -9650,7 +9664,7 @@ struct Main
         }
         else
         {
-            pt->seed = rng.getSeed();
+            pt->seed = seed;
         }
 
         //

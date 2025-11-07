@@ -269,16 +269,16 @@ public:
     [[nodiscard]] bool setGlobalMousePosition(Vec2i position) const noexcept;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] String getClipboardString() const noexcept;
+    [[nodiscard]] UnicodeString getClipboardString() const noexcept;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool setClipboardString(const String& string) const noexcept;
+    [[nodiscard]] bool setClipboardString(const UnicodeString& string) const noexcept;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] float getDisplayContentScale(SDL_DisplayID displayID) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] String getDisplayName(SDL_DisplayID displayID) const;
+    [[nodiscard]] UnicodeString getDisplayName(SDL_DisplayID displayID) const;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Rect2i getDisplayBounds(SDL_DisplayID displayID) const;

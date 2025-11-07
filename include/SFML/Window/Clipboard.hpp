@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Export.hpp"
 
-#include "SFML/System/String.hpp"
+#include "SFML/System/UnicodeString.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -22,12 +22,12 @@ namespace sf::Clipboard
 ///
 /// This function returns the content of the clipboard
 /// as a string. If the clipboard does not contain string
-/// it returns an empty `sf::String` object.
+/// it returns an empty `sf::UnicodeString` object.
 ///
-/// \return Clipboard contents as `sf::String` object
+/// \return Clipboard contents as `sf::UnicodeString` object
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API String getString();
+[[nodiscard]] SFML_WINDOW_API UnicodeString getString();
 
 ////////////////////////////////////////////////////////////
 /// \brief Set the content of the clipboard as string data
@@ -40,13 +40,13 @@ namespace sf::Clipboard
 ///          guaranteed to work if there is currently an
 ///          open window for which events are being handled.
 ///
-/// \param text `sf::String` containing the data to be sent
+/// \param text `sf::UnicodeString` containing the data to be sent
 /// to the clipboard
 ///
 /// \return `true` if the clipboard was successfully set
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API bool setString(const String& text);
+[[nodiscard]] SFML_WINDOW_API bool setString(const UnicodeString& text);
 
 } // namespace sf::Clipboard
 
@@ -65,7 +65,7 @@ namespace sf::Clipboard
 /// Usage example:
 /// \code
 /// // get the clipboard content as a string
-/// sf::String string = sf::Clipboard::getString();
+/// sf::UnicodeString string = sf::Clipboard::getString();
 ///
 /// // or use it in the event loop
 /// while (const sf::base::Optional event = window.pollEvent())
@@ -86,6 +86,6 @@ namespace sf::Clipboard
 /// }
 /// \endcode
 ///
-/// \see `sf::String`, `sf::Event`
+/// \see `sf::UnicodeString`, `sf::Event`
 ///
 ////////////////////////////////////////////////////////////

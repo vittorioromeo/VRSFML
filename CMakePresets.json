@@ -212,6 +212,19 @@
         "CMAKE_C_FLAGS": "-fuse-ld=lld $env{CXX_WARNINGS} -fsanitize=address -fsanitize=undefined",
         "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace -flto=thin $env{CXX_WARNINGS} -fsanitize=address -fsanitize=undefined"
       }
+    },
+    {
+      "name": "vrdev_clang_clangenv_reldeb",
+      "inherits": "build_base_release",
+      "binaryDir": "build_vrdev_clang_clangenv_reldeb",
+      "installDir": "${sourceDir}/build_vrdev_clang_clangenv_reldeb/install",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_C_FLAGS": "-fuse-ld=lld $env{CXX_WARNINGS} -fsanitize=address -fsanitize=undefined",
+        "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace -flto=thin $env{CXX_WARNINGS} -fsanitize=address -fsanitize=undefined"
+      }
     }
   ]
 }

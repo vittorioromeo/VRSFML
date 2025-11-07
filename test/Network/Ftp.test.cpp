@@ -6,8 +6,6 @@
 #include <StringifyPathUtil.hpp>
 #include <StringifyStringViewUtil.hpp>
 
-#include <string>
-
 
 TEST_CASE("[Network] sf::Ftp")
 {
@@ -102,7 +100,7 @@ TEST_CASE("[Network] sf::Ftp")
             const sf::Ftp::ListingResponse listingResponse(sf::Ftp::Response(sf::Ftp::Response::Status::Ok),
                                                            "foo\r\nbar\r\nbaz");
 
-            const std::string vec[]{"foo", "bar"};
+            const sf::base::String vec[]{"foo", "bar"};
             CHECK(listingResponse.getListing().valueEquals(vec, 2));
         }
     }

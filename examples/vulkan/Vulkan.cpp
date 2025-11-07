@@ -1,9 +1,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/System/IO.hpp"
-
-#include "SFML/Base/IntTypes.hpp"
 #define GLAD_VULKAN_IMPLEMENTATION
 #include <vulkan.h>
 
@@ -20,20 +17,22 @@
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/FileInputStream.hpp"
+#include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Array.hpp"
+#include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Math/Cos.hpp"
+#include "SFML/Base/Math/Sin.hpp"
+#include "SFML/Base/Math/Tan.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StringView.hpp"
 
 #include <limits>
-
-#include <cmath>
-#include <cstring>
 
 
 ////////////////////////////////////////////////////////////
@@ -54,7 +53,7 @@ void matrixMultiply(Matrix& result, const Matrix& lhs, const Matrix& rhs)
             temp[i][j] = lhs[0][j] * rhs[i][0] + lhs[1][j] * rhs[i][1] + lhs[2][j] * rhs[i][2] + lhs[3][j] * rhs[i][3];
     }
 
-    std::memcpy(result, temp, sizeof(Matrix));
+    SFML_BASE_MEMCPY(result, temp, sizeof(Matrix));
 }
 
 // Rotate a matrix around the x-axis
@@ -65,8 +64,8 @@ void matrixRotateX(Matrix& result, sf::Angle angle)
     // clang-format off
     const Matrix matrix = {
         {1.f,   0.f,           0.f,           0.f},
-        {0.f,   std::cos(rad), std::sin(rad), 0.f},
-        {0.f,  -std::sin(rad), std::cos(rad), 0.f},
+        {0.f,   sf::base::cos(rad), sf::base::sin(rad), 0.f},
+        {0.f,  -sf::base::sin(rad), sf::base::cos(rad), 0.f},
         {0.f,   0.f,           0.f,           1.f}
     };
     // clang-format on
@@ -81,9 +80,9 @@ void matrixRotateY(Matrix& result, sf::Angle angle)
 
     // clang-format off
     const Matrix matrix = {
-        { std::cos(rad), 0.f, std::sin(rad), 0.f},
+        { sf::base::cos(rad), 0.f, sf::base::sin(rad), 0.f},
         { 0.f,           1.f, 0.f,           0.f},
-        {-std::sin(rad), 0.f, std::cos(rad), 0.f},
+        {-sf::base::sin(rad), 0.f, sf::base::cos(rad), 0.f},
         { 0.f,           0.f, 0.f,           1.f}
     };
     // clang-format on
@@ -98,8 +97,8 @@ void matrixRotateZ(Matrix& result, sf::Angle angle)
 
     // clang-format off
     const Matrix matrix = {
-        { std::cos(rad), std::sin(rad), 0.f, 0.f},
-        {-std::sin(rad), std::cos(rad), 0.f, 0.f},
+        { sf::base::cos(rad), sf::base::sin(rad), 0.f, 0.f},
+        {-sf::base::sin(rad), sf::base::cos(rad), 0.f, 0.f},
         { 0.f,           0.f,           1.f, 0.f},
         { 0.f,           0.f,           0.f, 1.f}
     };
@@ -141,7 +140,7 @@ void matrixLookAt(Matrix& result, const sf::Vec3f& eye, const sf::Vec3f& center,
 // Construct a perspective projection matrix
 void matrixPerspective(Matrix& result, sf::Angle fov, float aspect, float nearPlane, float farPlane)
 {
-    const float a = 1.f / std::tan(fov.asRadians() / 2.f);
+    const float a = 1.f / sf::base::tan(fov.asRadians() / 2.f);
 
     result[0][0] = a / aspect;
     result[0][1] = 0.f;
@@ -1473,7 +1472,7 @@ public:
         }
 
         // Copy the vertex data into the buffer
-        std::memcpy(ptr, vertexData.data(), sizeof(vertexData));
+        SFML_BASE_MEMCPY(ptr, vertexData.data(), sizeof(vertexData));
 
         // Unmap the buffer
         vkUnmapMemory(device, stagingBufferMemory);
@@ -1552,7 +1551,7 @@ public:
         }
 
         // Copy the index data into the buffer
-        std::memcpy(ptr, indexData.data(), sizeof(indexData));
+        SFML_BASE_MEMCPY(ptr, indexData.data(), sizeof(indexData));
 
         // Unmap the buffer
         vkUnmapMemory(device, stagingBufferMemory);
@@ -1837,7 +1836,7 @@ public:
         }
 
         // Copy the image data into the buffer
-        std::memcpy(ptr, imageData.getPixelsPtr(), static_cast<sf::base::SizeT>(imageSize));
+        SFML_BASE_MEMCPY(ptr, imageData.getPixelsPtr(), static_cast<sf::base::SizeT>(imageSize));
 
         // Unmap the buffer
         vkUnmapMemory(device, stagingBufferMemory);
@@ -2445,9 +2444,9 @@ public:
         }
 
         // Copy the matrix data into the current frame's uniform buffer
-        std::memcpy(ptr + sizeof(Matrix) * 0, model, sizeof(Matrix));
-        std::memcpy(ptr + sizeof(Matrix) * 1, view, sizeof(Matrix));
-        std::memcpy(ptr + sizeof(Matrix) * 2, projection, sizeof(Matrix));
+        SFML_BASE_MEMCPY(ptr + sizeof(Matrix) * 0, model, sizeof(Matrix));
+        SFML_BASE_MEMCPY(ptr + sizeof(Matrix) * 1, view, sizeof(Matrix));
+        SFML_BASE_MEMCPY(ptr + sizeof(Matrix) * 2, projection, sizeof(Matrix));
 
         // Unmap the buffer
         vkUnmapMemory(device, uniformBuffersMemory[currentFrame]);

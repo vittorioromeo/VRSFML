@@ -19,8 +19,8 @@
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Sleep.hpp"
-#include "SFML/System/String.hpp"
 #include "SFML/System/Time.hpp"
+#include "SFML/System/UnicodeString.hpp"
 #include "SFML/System/Vec2.hpp"
 #include "SFML/System/Vec3.hpp"
 
@@ -506,7 +506,7 @@ int main()
             oss << ((i == currentSetting) ? ">>  " : "       ") << settings[i].name << ":  " << *(settings[i].value)
                 << '\n';
 
-        hudText.setString(oss.to<sf::String>());
+        hudText.setString(oss.to<sf::UnicodeString>());
 
         window.draw(hudText);
 

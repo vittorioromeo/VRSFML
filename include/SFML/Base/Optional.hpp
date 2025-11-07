@@ -107,7 +107,7 @@ public:
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional(const Optional& rhs)
-        requires(!base::isTriviallyCopyConstructible<T> && base::isCopyConstructible<T>)
+        requires(!isTriviallyCopyConstructible<T> && isCopyConstructible<T>)
         : m_engaged{rhs.m_engaged}
     {
         if (m_engaged)
@@ -117,13 +117,13 @@ public:
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional(const Optional& rhs)
-        requires(base::isTriviallyCopyConstructible<T>)
+        requires(isTriviallyCopyConstructible<T>)
     = default;
 
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional(Optional&& rhs) noexcept
-        requires(!base::isTriviallyMoveConstructible<T> && base::isMoveConstructible<T>)
+        requires(!isTriviallyMoveConstructible<T> && isMoveConstructible<T>)
         : m_engaged{rhs.m_engaged}
     {
         if (m_engaged)
@@ -133,13 +133,13 @@ public:
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional(Optional&& rhs)
-        requires(base::isTriviallyMoveConstructible<T>)
+        requires(isTriviallyMoveConstructible<T>)
     = default;
 
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] constexpr ~Optional() noexcept
-        requires(!base::isTriviallyDestructible<T>)
+        requires(!isTriviallyDestructible<T>)
     {
         SFML_PRIV_OPTIONAL_DESTROY_IF_ENGAGED(T, m_engaged, m_buffer);
     }
@@ -147,13 +147,13 @@ public:
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] constexpr ~Optional() noexcept
-        requires(base::isTriviallyDestructible<T>)
+        requires(isTriviallyDestructible<T>)
     = default;
 
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] constexpr Optional& operator=(const Optional& rhs)
-        requires(!base::isTriviallyCopyAssignable<T> && base::isCopyAssignable<T>)
+        requires(!isTriviallyCopyAssignable<T> && isCopyAssignable<T>)
     {
         if (&rhs == this || (!m_engaged && !rhs.m_engaged))
             return *this;
@@ -180,13 +180,13 @@ public:
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] constexpr Optional& operator=(const Optional& rhs)
-        requires(base::isTriviallyCopyAssignable<T>)
+        requires(isTriviallyCopyAssignable<T>)
     = default;
 
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] constexpr Optional& operator=(Optional&& rhs) noexcept
-        requires(!base::isTriviallyMoveAssignable<T> && base::isMoveAssignable<T>)
+        requires(!isTriviallyMoveAssignable<T> && isMoveAssignable<T>)
     {
         if (&rhs == this || (!m_engaged && !rhs.m_engaged))
             return *this;
@@ -213,7 +213,7 @@ public:
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] constexpr Optional& operator=(Optional&& rhs)
-        requires(base::isTriviallyMoveAssignable<T>)
+        requires(isTriviallyMoveAssignable<T>)
     = default;
 
 
@@ -474,11 +474,11 @@ private:
         T    obj;
 
         // clang-format off
-        constexpr Buffer() requires(base::isTriviallyConstructible<T>) = default;
-        constexpr Buffer() requires(!base::isTriviallyConstructible<T>) { }
+        constexpr Buffer() requires(isTriviallyConstructible<T>) = default;
+        constexpr Buffer() requires(!isTriviallyConstructible<T>) { }
 
-        constexpr ~Buffer() requires(base::isTriviallyDestructible<T>) = default;
-        constexpr ~Buffer() requires(!base::isTriviallyDestructible<T>) { }
+        constexpr ~Buffer() requires(isTriviallyDestructible<T>) = default;
+        constexpr ~Buffer() requires(!isTriviallyDestructible<T>) { }
 
         constexpr Buffer(const Buffer&) = default;
         constexpr Buffer& operator=(const Buffer&) = default;

@@ -9,7 +9,7 @@
 
 #include "SFML/Window/SDLLayer.hpp"
 
-#include "SFML/System/String.hpp"
+#include "SFML/System/UnicodeString.hpp"
 
 
 namespace sf::Keyboard
@@ -49,7 +49,7 @@ Scancode delocalize(const Key key)
 
 
 ////////////////////////////////////////////////////////////
-String getDescription(const Scancode code)
+UnicodeString getDescription(const Scancode code)
 {
     return priv::getSDLLayerSingleton().getScancodeDescription(code);
 }

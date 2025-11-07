@@ -44,16 +44,16 @@ concept U32StringLike = sf::base::isSame<typename T::value_type, char32_t>;
 
 namespace sf
 {
-class StringUtfUtils;
+class UnicodeStringUtfUtils;
 
 ////////////////////////////////////////////////////////////
 /// \brief Utility string class that automatically handles
 ///        conversions between types and encodings
 ///
 ////////////////////////////////////////////////////////////
-class [[nodiscard]] SFML_SYSTEM_API String
+class [[nodiscard]] SFML_SYSTEM_API UnicodeString
 {
-    friend StringUtfUtils;
+    friend UnicodeStringUtfUtils;
 
 public:
     ////////////////////////////////////////////////////////////
@@ -76,37 +76,37 @@ public:
     /// This constructor creates an empty string.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] String();
+    [[nodiscard]] UnicodeString();
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    ~String();
+    ~UnicodeString();
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy constructor
     ///
     ////////////////////////////////////////////////////////////
-    String(const String&);
+    UnicodeString(const UnicodeString&);
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy assignment
     ///
     ////////////////////////////////////////////////////////////
-    String& operator=(const String&);
+    UnicodeString& operator=(const UnicodeString&);
 
     ////////////////////////////////////////////////////////////
     /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    String(String&&) noexcept;
+    UnicodeString(UnicodeString&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment
     ///
     ////////////////////////////////////////////////////////////
-    String& operator=(String&&) noexcept;
+    UnicodeString& operator=(UnicodeString&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted `std::nullptr_t` constructor
@@ -114,8 +114,8 @@ public:
     /// Disallow construction from `nullptr` literal
     ///
     ////////////////////////////////////////////////////////////
-    String(decltype(nullptr))                               = delete;
-    String(decltype(nullptr), const priv::LocaleLike auto&) = delete;
+    UnicodeString(decltype(nullptr))                               = delete;
+    UnicodeString(decltype(nullptr), const priv::LocaleLike auto&) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from a single ANSI character and a locale
@@ -127,8 +127,8 @@ public:
     /// \param locale   Locale to use for conversion
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] String(char ansiChar);
-    [[nodiscard]] String(char ansiChar, const priv::LocaleLike auto& locale);
+    [[nodiscard]] UnicodeString(char ansiChar);
+    [[nodiscard]] UnicodeString(char ansiChar, const priv::LocaleLike auto& locale);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from single wide character
@@ -136,7 +136,7 @@ public:
     /// \param wideChar Wide character to convert
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] String(wchar_t wideChar);
+    [[nodiscard]] UnicodeString(wchar_t wideChar);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from single UTF-32 character
@@ -144,7 +144,7 @@ public:
     /// \param utf32Char UTF-32 character to convert
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] String(char32_t utf32Char);
+    [[nodiscard]] UnicodeString(char32_t utf32Char);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from a null-terminated C-style ANSI string and a locale
@@ -156,8 +156,8 @@ public:
     /// \param locale     Locale to use for conversion
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] String(const char* ansiString);
-    [[nodiscard]] String(const char* ansiString, const priv::LocaleLike auto& locale);
+    [[nodiscard]] UnicodeString(const char* ansiString);
+    [[nodiscard]] UnicodeString(const char* ansiString, const priv::LocaleLike auto& locale);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from an ANSI string and a locale
@@ -169,8 +169,8 @@ public:
     /// \param locale     Locale to use for conversion
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] String(const priv::AnsiStringLike auto& ansiString);
-    [[nodiscard]] String(const priv::AnsiStringLike auto& ansiString, const priv::LocaleLike auto& locale);
+    [[nodiscard]] UnicodeString(const priv::AnsiStringLike auto& ansiString);
+    [[nodiscard]] UnicodeString(const priv::AnsiStringLike auto& ansiString, const priv::LocaleLike auto& locale);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from null-terminated C-style wide string
@@ -178,7 +178,7 @@ public:
     /// \param wideString Wide string to convert
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] String(const wchar_t* wideString);
+    [[nodiscard]] UnicodeString(const wchar_t* wideString);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from a wide string
@@ -186,7 +186,7 @@ public:
     /// \param wideString Wide string to convert
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] String(const priv::WStringLike auto& wideString);
+    [[nodiscard]] UnicodeString(const priv::WStringLike auto& wideString);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from a null-terminated C-style UTF-32 string
@@ -194,7 +194,7 @@ public:
     /// \param utf32String UTF-32 string to assign
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] String(const char32_t* utf32String);
+    [[nodiscard]] UnicodeString(const char32_t* utf32String);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from an UTF-32 string
@@ -202,7 +202,7 @@ public:
     /// \param utf32String UTF-32 string to assign
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] String(const priv::U32StringLike auto& utf32String);
+    [[nodiscard]] UnicodeString(const priv::U32StringLike auto& utf32String);
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert the Unicode string to an ANSI string
@@ -278,12 +278,12 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Overload of `operator+=` to append an UTF-32 string
     ///
-    /// \param rhs String to append
+    /// \param rhs UnicodeString to append
     ///
     /// \return Reference to self
     ///
     ////////////////////////////////////////////////////////////
-    String& operator+=(const String& rhs);
+    UnicodeString& operator+=(const UnicodeString& rhs);
 
     ////////////////////////////////////////////////////////////
     /// \brief Overload of `operator[]` to access a character by its position
@@ -363,7 +363,7 @@ public:
     /// \param str      Characters to insert
     ///
     ////////////////////////////////////////////////////////////
-    void insert(base::SizeT position, const String& str);
+    void insert(base::SizeT position, const UnicodeString& str);
 
     ////////////////////////////////////////////////////////////
     /// \brief Find a sequence of one or more characters in the string
@@ -374,10 +374,10 @@ public:
     /// \param str   Characters to find
     /// \param start Where to begin searching
     ///
-    /// \return Position of `str` in the string, or `String::InvalidPos` if not found
+    /// \return Position of `str` in the string, or `UnicodeString::InvalidPos` if not found
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::SizeT find(const String& str, base::SizeT start = 0) const;
+    [[nodiscard]] base::SizeT find(const UnicodeString& str, base::SizeT start = 0) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Replace a substring with another string
@@ -388,10 +388,10 @@ public:
     /// \param position    Index of the first character to be replaced
     /// \param length      Number of characters to replace. You can pass InvalidPos to
     ///                    replace all characters until the end of the string.
-    /// \param replaceWith String that replaces the given substring.
+    /// \param replaceWith UnicodeString that replaces the given substring.
     ///
     ////////////////////////////////////////////////////////////
-    void replace(base::SizeT position, base::SizeT length, const String& replaceWith);
+    void replace(base::SizeT position, base::SizeT length, const UnicodeString& replaceWith);
 
     ////////////////////////////////////////////////////////////
     /// \brief Replace all occurrences of a substring with a replacement string
@@ -403,7 +403,7 @@ public:
     /// \param replaceWith The value that replaces found `searchFor` values
     ///
     ////////////////////////////////////////////////////////////
-    void replace(const String& searchFor, const String& replaceWith);
+    void replace(const UnicodeString& searchFor, const UnicodeString& replaceWith);
 
     ////////////////////////////////////////////////////////////
     /// \brief Return a part of the string
@@ -417,10 +417,10 @@ public:
     ///                 are included). `InvalidPos` can be used to include all
     ///                 characters until the end of the string.
     ///
-    /// \return String object containing a substring of this object
+    /// \return UnicodeString object containing a substring of this object
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] String substring(base::SizeT position, base::SizeT length = InvalidPos) const;
+    [[nodiscard]] UnicodeString substring(base::SizeT position, base::SizeT length = InvalidPos) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a pointer to the C-style array of characters
@@ -484,8 +484,8 @@ public:
     [[nodiscard]] ConstIterator end() const;
 
 private:
-    friend SFML_SYSTEM_API bool operator==(const String& lhs, const String& rhs);
-    friend SFML_SYSTEM_API bool operator<(const String& lhs, const String& rhs);
+    friend SFML_SYSTEM_API bool operator==(const UnicodeString& lhs, const UnicodeString& rhs);
+    friend SFML_SYSTEM_API bool operator<(const UnicodeString& lhs, const UnicodeString& rhs);
 
     ////////////////////////////////////////////////////////////
     /// \brief Retrieve the string stored in the PImpl
@@ -501,7 +501,7 @@ private:
 };
 
 ////////////////////////////////////////////////////////////
-/// \relates String
+/// \relates UnicodeString
 /// \brief Overload of `operator==` to compare two UTF-32 strings
 ///
 /// \param lhs  Left operand (a string)
@@ -510,10 +510,10 @@ private:
 /// \return `true` if both strings are equal
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_SYSTEM_API bool operator==(const String& lhs, const String& rhs);
+[[nodiscard]] SFML_SYSTEM_API bool operator==(const UnicodeString& lhs, const UnicodeString& rhs);
 
 ////////////////////////////////////////////////////////////
-/// \relates String
+/// \relates UnicodeString
 /// \brief Overload of `operator!=` to compare two UTF-32 strings
 ///
 /// \param lhs  Left operand (a string)
@@ -522,10 +522,10 @@ private:
 /// \return `true` if both strings are different
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_SYSTEM_API bool operator!=(const String& lhs, const String& rhs);
+[[nodiscard]] SFML_SYSTEM_API bool operator!=(const UnicodeString& lhs, const UnicodeString& rhs);
 
 ////////////////////////////////////////////////////////////
-/// \relates String
+/// \relates UnicodeString
 /// \brief Overload of `operator<` to compare two UTF-32 strings
 ///
 /// \param lhs  Left operand (a string)
@@ -534,10 +534,10 @@ private:
 /// \return `true` if `lhs` is lexicographically before `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_SYSTEM_API bool operator<(const String& lhs, const String& rhs);
+[[nodiscard]] SFML_SYSTEM_API bool operator<(const UnicodeString& lhs, const UnicodeString& rhs);
 
 ////////////////////////////////////////////////////////////
-/// \relates String
+/// \relates UnicodeString
 /// \brief Overload of `operator>` to compare two UTF-32 strings
 ///
 /// \param lhs  Left operand (a string)
@@ -546,10 +546,10 @@ private:
 /// \return `true` if `lhs` is lexicographically after `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_SYSTEM_API bool operator>(const String& lhs, const String& rhs);
+[[nodiscard]] SFML_SYSTEM_API bool operator>(const UnicodeString& lhs, const UnicodeString& rhs);
 
 ////////////////////////////////////////////////////////////
-/// \relates String
+/// \relates UnicodeString
 /// \brief Overload of `operator<=` to compare two UTF-32 strings
 ///
 /// \param lhs  Left operand (a string)
@@ -558,10 +558,10 @@ private:
 /// \return `true` if `lhs` is lexicographically before or equivalent to `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_SYSTEM_API bool operator<=(const String& lhs, const String& rhs);
+[[nodiscard]] SFML_SYSTEM_API bool operator<=(const UnicodeString& lhs, const UnicodeString& rhs);
 
 ////////////////////////////////////////////////////////////
-/// \relates String
+/// \relates UnicodeString
 /// \brief Overload of `operator>=` to compare two UTF-32 strings
 ///
 /// \param lhs  Left operand (a string)
@@ -570,10 +570,10 @@ private:
 /// \return `true` if `lhs` is lexicographically after or equivalent to `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_SYSTEM_API bool operator>=(const String& lhs, const String& rhs);
+[[nodiscard]] SFML_SYSTEM_API bool operator>=(const UnicodeString& lhs, const UnicodeString& rhs);
 
 ////////////////////////////////////////////////////////////
-/// \relates String
+/// \relates UnicodeString
 /// \brief Overload of binary `operator+` to concatenate two strings
 ///
 /// \param lhs  Left operand (a string)
@@ -582,26 +582,26 @@ private:
 /// \return Concatenated string
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_SYSTEM_API String operator+(const String& lhs, const String& rhs);
+[[nodiscard]] SFML_SYSTEM_API UnicodeString operator+(const UnicodeString& lhs, const UnicodeString& rhs);
 
 } // namespace sf
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::String
+/// \class sf::UnicodeString
 /// \ingroup system
 ///
-/// `sf::String` is a utility string class defined mainly for
+/// `sf::UnicodeString` is a utility string class defined mainly for
 /// convenience. It is a Unicode string (implemented using
 /// UTF-32), thus it can store any character in the world
 /// (European, Chinese, Arabic, Hebrew, etc.).
 ///
 /// It can handle conversions from/to ANSI and wide strings,
 /// so that you can work with standard string classes and still
-/// be compatible with functions taking a `sf::String`.
+/// be compatible with functions taking a `sf::UnicodeString`.
 ///
 /// \code
-/// sf::String s;
+/// sf::UnicodeString s;
 ///
 /// std::string s1 = s.toAnsiString<std::string>();  // converted to ANSI string
 /// std::wstring s2 = s.toWideString<std::wstring>(); // converted to wide string
@@ -615,19 +615,19 @@ private:
 /// it is possible to use a custom locale if necessary:
 /// \code
 /// std::locale locale;
-/// sf::String s;
+/// sf::UnicodeString s;
 /// ...
 /// std::string s1 = s.toAnsiString(locale);
-/// s = sf::String("hello", locale);
+/// s = sf::UnicodeString("hello", locale);
 /// \endcode
 ///
-/// `sf::String` defines the most important functions of the
+/// `sf::UnicodeString` defines the most important functions of the
 /// standard `std::string` class: removing, random access, iterating,
 /// appending, comparing, etc. However it is a simple class
 /// provided for convenience, and you may have to consider using
 /// a more optimized class if your program requires complex string
 /// handling. The automatic conversion functions will then take
-/// care of converting your string to `sf::String` whenever SFML
+/// care of converting your string to `sf::UnicodeString` whenever SFML
 /// requires it.
 ///
 /// Please note that SFML also defines a low-level, generic

@@ -1,5 +1,4 @@
 
-#include "SFML/Window/WindowBase.hpp"
 #include "SFML/Window/WindowContext.hpp"
 
 // Other 1st party headers
@@ -14,8 +13,6 @@
 
 #include <CommonTraits.hpp>
 #include <WindowUtil.hpp>
-
-#include <string>
 
 #if defined(SFML_SYSTEM_WINDOWS)
     #define GLAPI __stdcall
@@ -248,9 +245,9 @@ TEST_CASE("[Window] TestContext" * doctest::skip(skipDisplayTests))
             REQUIRE(renderer != nullptr);
             REQUIRE(version != nullptr);
 
-            SUCCEED(std::string("OpenGL vendor: ") + vendor);
-            SUCCEED(std::string("OpenGL renderer: ") + renderer);
-            SUCCEED(std::string("OpenGL version: ") + version);
+            MESSAGE("OpenGL vendor: ", vendor);
+            MESSAGE("OpenGL renderer: ", renderer);
+            MESSAGE("OpenGL version: ", version);
         }
 
         SECTION("isExtensionAvailable()")

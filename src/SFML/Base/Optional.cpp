@@ -15,6 +15,7 @@
     #include "SFML/Base/Abort.hpp"
 #endif
 
+
 namespace sf::base::priv
 {
 ////////////////////////////////////////////////////////////

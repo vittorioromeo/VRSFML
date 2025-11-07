@@ -16,9 +16,7 @@
 #include "SFML/System/Sleep.hpp"
 #include "SFML/System/Time.hpp"
 
-#include <string>
-
-#include <cstdlib>
+#include "SFML/Base/String.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -37,7 +35,7 @@ int main()
     if (deviceHandles.empty())
     {
         sf::cErr() << "Sorry, audio capture is not supported by your system" << sf::endL;
-        return EXIT_FAILURE;
+        return 1;
     }
 
     // List the available capture device handles
@@ -83,7 +81,7 @@ int main()
     if (!recorder.start(captureDevice, sampleRate))
     {
         sf::cErr() << "Failed to start recorder" << sf::endL;
-        return EXIT_FAILURE;
+        return 1;
     }
 
     sf::cOut() << "Recording... press enter to stop";
@@ -110,7 +108,7 @@ int main()
     if (choice == 's')
     {
         // Choose the filename
-        std::string filename;
+        sf::base::String filename;
         sf::cOut() << "Choose the file to create: ";
         sf::getLine(sf::cIn(), filename);
 

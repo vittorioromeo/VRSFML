@@ -24,8 +24,9 @@
 ////////////////////////////////////////////////////////////
 namespace sf::base
 {
+class String;
 class StringView;
-}
+} // namespace sf::base
 
 namespace sf
 {
@@ -375,6 +376,8 @@ public:
     OutStringStream(OutStringStream&&) noexcept;
     OutStringStream& operator=(OutStringStream&&) noexcept;
 
+    [[nodiscard]] std::streambuf* rdbuf() const;
+
     void write(const char* data, base::PtrDiffT size);
     void flush();
 
@@ -383,7 +386,7 @@ public:
     void setFormatFlags(FormatFlags flags);
 
     template <typename T>
-    T to() const;
+    [[nodiscard]] T to() const;
 
     [[nodiscard]] std::string getString() const;
 
@@ -471,6 +474,7 @@ class InStringStream
 public:
     explicit InStringStream();
     explicit InStringStream(const std::string& str, FileOpenMode mode = FileOpenMode::in);
+    explicit InStringStream(const base::String& str, FileOpenMode mode = FileOpenMode::in);
 
     ~InStringStream();
 

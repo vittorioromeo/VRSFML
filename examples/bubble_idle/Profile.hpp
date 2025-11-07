@@ -73,8 +73,8 @@ struct [[nodiscard]] Profile
     bool uiUnlocks[128] = {};
 
     float ppSVibrance   = 0.25f;
-    float ppSSaturation = 1.0f;
-    float ppSLightness  = 1.0f;
+    float ppSSaturation = 1.f;
+    float ppSLightness  = 1.f;
     float ppSSharpness  = 0.10f;
 
     bool showBubbles            = true;

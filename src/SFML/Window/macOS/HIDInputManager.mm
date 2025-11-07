@@ -574,7 +574,7 @@ Keyboard::Scancode HIDInputManager::delocalize(Keyboard::Key key)
 
 
 ////////////////////////////////////////////////////////////
-String HIDInputManager::getDescription(Keyboard::Scancode code)
+UnicodeString HIDInputManager::getDescription(Keyboard::Scancode code)
 {
     // Phase 1: Get names for layout independent keys
     // clang-format off

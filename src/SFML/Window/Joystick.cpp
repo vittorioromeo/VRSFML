@@ -44,7 +44,7 @@ unsigned int Joystick::Query::getIndex() const
 
 
 ////////////////////////////////////////////////////////////
-const String& Joystick::Query::getName() const
+const UnicodeString& Joystick::Query::getName() const
 {
     return getIdentification().name;
 }

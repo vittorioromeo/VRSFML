@@ -13,8 +13,8 @@
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Time.hpp"
 
-#include "SFML/Base/FwdStdString.hpp" // used
 #include "SFML/Base/Span.hpp"
+#include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
 
 
@@ -24,7 +24,8 @@
 namespace sf
 {
 class IpAddress;
-}
+} // namespace sf
+
 
 namespace sf
 {
@@ -252,7 +253,7 @@ public:
         /// \return Span containing the requested listing
         ///
         ////////////////////////////////////////////////////////////
-        [[nodiscard]] base::Span<const std::string> getListing() const;
+        [[nodiscard]] base::Span<const base::String> getListing() const;
 
     private:
         ////////////////////////////////////////////////////////////
