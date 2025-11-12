@@ -1,5 +1,5 @@
 // LICENSE AND COPYRIGHT (C) INFORMATION
-// (Assume your license here)
+// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -19,16 +19,16 @@ void String::grow(const SizeT minCapacity)
 {
     const SizeT oldCapacity = capacity();
     // Geometric growth, plus a little to avoid growing by 0 or 1.
-    const SizeT newCapacity   = oldCapacity + oldCapacity / 2 + 8;
+    const SizeT newCapacity   = oldCapacity + oldCapacity / 2u + 8u;
     const SizeT finalCapacity = newCapacity > minCapacity ? newCapacity : minCapacity;
 
-    char* newData = priv::VectorUtils::allocate<char>(finalCapacity + 1); // +1 for null terminator
+    char* newData = priv::VectorUtils::allocate<char>(finalCapacity + 1u); // +1 for null terminator
 
     const SizeT currentSize = size();
     SFML_BASE_MEMCPY(newData, data(), currentSize);
 
     if (!isSso())
-        priv::VectorUtils::deallocate(m_rep.heap.data, oldCapacity + 1);
+        priv::VectorUtils::deallocate(m_rep.heap.data, oldCapacity + 1u);
 
     setHeap(newData, currentSize, finalCapacity);
     setNullTerminator();
@@ -71,7 +71,7 @@ String::String(const char* cStr, const SizeT count) : m_rep{}
 
 
 ////////////////////////////////////////////////////////////
-String::String(StringView view) : String{view.data(), view.size()}
+String::String(const StringView view) : String{view.data(), view.size()}
 {
 }
 
@@ -322,6 +322,13 @@ void String::assign(const char* const cStr, const SizeT count)
         priv::VectorUtils::deallocate(m_rep.heap.data, getHeapCapacity() + 1);
 
     createFrom(cStr, count);
+}
+
+
+////////////////////////////////////////////////////////////
+void String::insert(const SizeT pos, const char c)
+{
+    insert(pos, &c);
 }
 
 

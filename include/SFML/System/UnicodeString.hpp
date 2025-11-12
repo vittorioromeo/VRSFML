@@ -17,27 +17,27 @@ namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 template <typename T>
-concept LocaleLike = requires { typename T::category; };
+concept FacetLike = requires { T::id; };
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-concept AnsiStringLike = sf::base::isSame<typename T::value_type, char>;
+concept AnsiStringLike = SFML_BASE_IS_SAME(typename T::value_type, char);
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-concept WStringLike = sf::base::isSame<typename T::value_type, wchar_t>;
+concept WStringLike = SFML_BASE_IS_SAME(typename T::value_type, wchar_t);
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-concept U8StringLike = sf::base::isSame<typename T::value_type, char8_t>;
+concept U8StringLike = SFML_BASE_IS_SAME(typename T::value_type, char8_t) || SFML_BASE_IS_SAME(typename T::value_type, char);
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-concept U16StringLike = sf::base::isSame<typename T::value_type, char16_t>;
+concept U16StringLike = SFML_BASE_IS_SAME(typename T::value_type, char16_t);
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-concept U32StringLike = sf::base::isSame<typename T::value_type, char32_t>;
+concept U32StringLike = SFML_BASE_IS_SAME(typename T::value_type, char32_t);
 
 } // namespace sf::priv
 
@@ -61,6 +61,7 @@ public:
     ////////////////////////////////////////////////////////////
     using Iterator      = char32_t*;       //!< Iterator type
     using ConstIterator = const char32_t*; //!< Read-only iterator type
+    using value_type    = char32_t;        //!< Character type
 
     ////////////////////////////////////////////////////////////
     // Static member data
@@ -114,21 +115,21 @@ public:
     /// Disallow construction from `nullptr` literal
     ///
     ////////////////////////////////////////////////////////////
-    UnicodeString(decltype(nullptr))                               = delete;
-    UnicodeString(decltype(nullptr), const priv::LocaleLike auto&) = delete;
+    UnicodeString(decltype(nullptr))                              = delete;
+    UnicodeString(decltype(nullptr), const priv::FacetLike auto&) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct from a single ANSI character and a locale
+    /// \brief Construct from a single ANSI character and a facet
     ///
     /// The source character is converted to UTF-32 according
-    /// to the given locale.
+    /// to the given facet.
     ///
     /// \param ansiChar ANSI character to convert
-    /// \param locale   Locale to use for conversion
+    /// \param facet    Facet to use for conversion
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] UnicodeString(char ansiChar);
-    [[nodiscard]] UnicodeString(char ansiChar, const priv::LocaleLike auto& locale);
+    [[nodiscard]] UnicodeString(char ansiChar, const priv::FacetLike auto& facet);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from single wide character
@@ -147,30 +148,30 @@ public:
     [[nodiscard]] UnicodeString(char32_t utf32Char);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct from a null-terminated C-style ANSI string and a locale
+    /// \brief Construct from a null-terminated C-style ANSI string and a facet
     ///
     /// The source string is converted to UTF-32 according
-    /// to the given locale.
+    /// to the given facet.
     ///
     /// \param ansiString ANSI string to convert
-    /// \param locale     Locale to use for conversion
+    /// \param facet      Facet to use for conversion
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] UnicodeString(const char* ansiString);
-    [[nodiscard]] UnicodeString(const char* ansiString, const priv::LocaleLike auto& locale);
+    [[nodiscard]] UnicodeString(const char* ansiString, const priv::FacetLike auto& facet);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct from an ANSI string and a locale
+    /// \brief Construct from an ANSI string and a facet
     ///
     /// The source string is converted to UTF-32 according
-    /// to the given locale.
+    /// to the given facet.
     ///
     /// \param ansiString ANSI string to convert
-    /// \param locale     Locale to use for conversion
+    /// \param facet      Facet to use for conversion
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] UnicodeString(const priv::AnsiStringLike auto& ansiString);
-    [[nodiscard]] UnicodeString(const priv::AnsiStringLike auto& ansiString, const priv::LocaleLike auto& locale);
+    [[nodiscard]] UnicodeString(const priv::AnsiStringLike auto& ansiString, const priv::FacetLike auto& facet);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from null-terminated C-style wide string
@@ -208,11 +209,11 @@ public:
     /// \brief Convert the Unicode string to an ANSI string
     ///
     /// The UTF-32 string is converted to an ANSI string in
-    /// the encoding defined by `locale`.
+    /// the encoding defined by `facet`.
     /// Characters that do not fit in the target encoding are
     /// discarded from the returned string.
     ///
-    /// \param locale Locale to use for conversion
+    /// \param facet  Facet to use for conversion
     ///
     /// \return Converted ANSI string
     ///
@@ -223,7 +224,7 @@ public:
     [[nodiscard]] TString toAnsiString() const;
 
     template <priv::AnsiStringLike TString>
-    [[nodiscard]] TString toAnsiString(const priv::LocaleLike auto& locale) const;
+    [[nodiscard]] TString toAnsiString(const priv::FacetLike auto& facet) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert the Unicode string to a wide string
@@ -310,6 +311,18 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] char32_t& operator[](base::SizeT index);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void pushBack(char32_t character);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void assign(const char32_t* begin, const char32_t* end);
 
     ////////////////////////////////////////////////////////////
     /// \brief Clear the string
@@ -611,14 +624,14 @@ private:
 /// s += L'a';           // automatically converted from wide string
 /// \endcode
 ///
-/// Conversions involving ANSI strings use the default user locale. However
-/// it is possible to use a custom locale if necessary:
+/// Conversions involving ANSI strings use the default user facet. However
+/// it is possible to use a custom facet if necessary:
 /// \code
-/// std::locale locale;
+/// std::facet facet;
 /// sf::UnicodeString s;
 /// ...
-/// std::string s1 = s.toAnsiString(locale);
-/// s = sf::UnicodeString("hello", locale);
+/// std::string s1 = s.toAnsiString(facet);
+/// s = sf::UnicodeString("hello", facet);
 /// \endcode
 ///
 /// `sf::UnicodeString` defines the most important functions of the

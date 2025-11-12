@@ -9,6 +9,7 @@
 
 #define SFEX_PROFILER_ENABLED
 #include "Profiler.hpp"
+#include "ProfilerImGui.hpp"
 
 //
 #include "AnimationCommands.hpp"
@@ -3076,6 +3077,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawShop()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         if (!m_inLevelUpScreen)
             return;
 
@@ -3234,6 +3237,10 @@ private:
         SFEX_PROFILE_SCOPE("imgui");
 
         m_imGuiContext.update(m_window, deltaTime);
+
+        ImGui::Begin("SFEX Profiler");
+        sfex::showImguiProfiler();
+        ImGui::End();
         return;
 
         {
@@ -3410,6 +3417,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepBackground()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         const sf::Vec2uz gridSize{m_world.blockGrid.getWidth(), m_world.blockGrid.getHeight() - gridGraceY};
 
         m_rtGame.draw(sf::RectangleShapeData{
@@ -3426,16 +3435,15 @@ private:
         for (sf::base::SizeT x = 0u; x < m_world.blockGrid.getWidth() + 1u; ++x)
             for (sf::base::SizeT y = 0u; y < m_world.blockGrid.getHeight() - gridGraceY + 1u; ++y)
             {
-                m_rtGame.draw(
-                    sf::Sprite{
-                        .position = dividerStartPos - drawBlockSize + sf::Vec2f{3.f, 3.f} +
-                                    sf::Vec2uz{x, y}.toVec2f().componentWiseMul(drawBlockSize),
-                        .textureRect = m_txrDivider,
-                    },
-                    {
-                        .texture = &m_textureAtlas.getTexture(),
-                        .shader  = &m_shader,
-                    });
+                m_rtGame.draw(m_textureAtlas.getTexture(),
+                              {
+                                  .position = dividerStartPos - drawBlockSize + sf::Vec2f{3.f, 3.f} +
+                                              sf::Vec2uz{x, y}.toVec2f().componentWiseMul(drawBlockSize),
+                                  .textureRect = m_txrDivider,
+                              },
+                              {
+                                  .shader = &m_shader,
+                              });
             }
 
         m_rtGame.draw(sf::RectangleShapeData{
@@ -3461,6 +3469,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepEmbeddedBlocks()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         for (sf::base::SizeT y = gridGraceY; y < m_world.blockGrid.getHeight(); ++y)
             for (sf::base::SizeT x = 0u; x < m_world.blockGrid.getWidth(); ++x)
             {
@@ -3484,6 +3494,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepFadingBlocks()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         auto* fadeBlocks = m_animationTimelineP1.getIfPlaying<AnimFadeBlocks>();
         if (fadeBlocks == nullptr)
             return;
@@ -3637,6 +3649,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepAnimDrill()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         auto* drillAnim = m_animationTimelineP0.getIfPlaying<AnimDrill>();
 
         if (drillAnim == nullptr)
@@ -3744,6 +3758,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepAnimLaser()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         auto* laserAnim = m_animationTimelineP0.getIfPlaying<AnimLaser>();
 
         if (laserAnim == nullptr)
@@ -3787,6 +3803,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepAnimFadeAttachments()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         auto* fadeAttachments = m_animationTimelineP0.getIfPlaying<AnimFadeAttachments>();
 
         if (fadeAttachments == nullptr)
@@ -4056,6 +4074,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepAnimHardDrop()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         auto* hardDrop = m_animationTimelineP1.getIfPlaying<AnimHardDrop>();
 
         if (hardDrop == nullptr)
@@ -4084,6 +4104,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepAnimSquish()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         auto* squish = m_animationTimelineP1.getIfPlaying<AnimSquish>();
 
         if (squish == nullptr)
@@ -4200,6 +4222,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepUINextTetraminos()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         const sf::base::SizeT nPeek = sf::base::min(static_cast<sf::base::SizeT>(m_world.perkNPeek),
                                                     m_world.blockMatrixBag.size());
 
@@ -4233,6 +4257,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepUIHeldTetramino()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         if (!m_world.heldTetramino.hasValue())
             return;
 
@@ -4247,6 +4273,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepLightningBolts()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         for (auto& lb : m_lightningBolts)
             lb.draw(m_rtGame, {.blendMode = sf::BlendAdd});
 
@@ -4261,6 +4289,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepEarnedXPParticles()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         const auto bezier = [](const sf::Vec2f start, const sf::Vec2f end, const float t)
         {
             const sf::Vec2f control(start.x, end.y);
@@ -4303,6 +4333,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepParticleData()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         for (const auto& particle : m_hueColorCircleShapeParticles)
             m_rtGame.draw(particleToCircleData(particle), {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
 
@@ -4330,6 +4362,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepStatsText()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         sf::RectangleShape statsBorder{{
             .position         = getHudPos().addY(4.f).addX(-1.f),
             .fillColor        = sf::Color::Transparent,
@@ -4387,6 +4421,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepPerksText()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         sf::RectangleShape statsBorder{{
             .position         = getHudPos().addY(168.f - 48.f).addX(-1.f),
             .fillColor        = sf::Color::Transparent,
@@ -4435,7 +4471,10 @@ private:
     {
         SFEX_PROFILE_SCOPE("draw");
 
-        syncShaderUniforms();
+        {
+            SFEX_PROFILE_SCOPE("syncShaderUniforms");
+            syncShaderUniforms();
+        }
 
         m_rtGame.clear(sf::Color{9, 9, 9});
 
@@ -4493,7 +4532,10 @@ private:
             drawShop();
         }
 
-        m_rtGame.display();
+        {
+            SFEX_PROFILE_SCOPE("display rtgame");
+            m_rtGame.display();
+        }
 
 
         const auto screenShake = m_rngFast.getVec2f({-m_screenShakeAmount, -m_screenShakeAmount},
@@ -4520,18 +4562,31 @@ private:
         if (m_rtPostProcess.getSize() != rtGameSize.toVec2u())
             m_rtPostProcess = sf::RenderTexture::create(rtGameSize.toVec2u()).value();
 
-        m_rtPostProcess.clear();
-        m_rtPostProcess.draw(m_rtGame.getTexture(), {.shader = m_useCRTShader ? &m_shaderCRT : nullptr});
-        m_rtPostProcess.display();
+        {
+            SFEX_PROFILE_SCOPE("postprocess");
+
+            m_rtPostProcess.clear();
+            m_rtPostProcess.draw(m_rtGame.getTexture(), {.shader = m_useCRTShader ? &m_shaderCRT : nullptr});
+            m_rtPostProcess.display();
+        }
 
         const sf::Vec2f centeredPosition = (windowSize - rtGameSize) / 2.f;
         const float     quakeYOffset     = m_quakeSinEffectHardDrop.getValue() + m_quakeSinEffectLineClear.getValue();
         const sf::Vec2f finalPosition    = floorVec2(centeredPosition + screenShake.addY(quakeYOffset));
 
-        m_window.clear();
-        m_window.draw(m_rtPostProcess.getTexture(), {.position = finalPosition}, {.shader = &m_shaderPostProcess});
-        m_imGuiContext.render(m_window);
-        m_window.display();
+
+        {
+            SFEX_PROFILE_SCOPE("final draw");
+
+            m_window.clear();
+            m_window.draw(m_rtPostProcess.getTexture(), {.position = finalPosition}, {.shader = &m_shaderPostProcess});
+            m_imGuiContext.render(m_window);
+        }
+
+        {
+            SFEX_PROFILE_SCOPE("window display");
+            m_window.display();
+        }
     }
 
 
@@ -4649,3 +4704,5 @@ int main()
 // - perks that affect the timers
 // - tutorial modals
 // - active perks/items with cooldowns or restrictions (e.g. one-time undo)
+
+// - try linking libstdc++ statically and using LTO

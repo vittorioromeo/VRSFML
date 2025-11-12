@@ -20,6 +20,17 @@
 #include <cwchar>
 
 
+namespace
+{
+////////////////////////////////////////////////////////////
+const auto& getFacet()
+{
+    return std::use_facet<std::ctype<wchar_t>>(std::locale{});
+}
+
+} // namespace
+
+
 namespace sf
 {
 ////////////////////////////////////////////////////////////
@@ -39,15 +50,15 @@ UnicodeString& UnicodeString::operator=(UnicodeString&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-UnicodeString::UnicodeString(char ansiChar) : UnicodeString(ansiChar, std::locale{})
+UnicodeString::UnicodeString(char ansiChar) : UnicodeString(ansiChar, getFacet())
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-UnicodeString::UnicodeString(char ansiChar, const priv::LocaleLike auto& locale)
+UnicodeString::UnicodeString(char ansiChar, const priv::FacetLike auto& facet)
 {
-    m_impl->string += Utf32::decodeAnsi(ansiChar, locale);
+    m_impl->string += Utf32::decodeAnsi(ansiChar, facet);
 }
 
 
@@ -66,13 +77,13 @@ UnicodeString::UnicodeString(char32_t utf32Char)
 
 
 ////////////////////////////////////////////////////////////
-UnicodeString::UnicodeString(const char* ansiString) : UnicodeString(ansiString, std::locale{})
+UnicodeString::UnicodeString(const char* ansiString) : UnicodeString(ansiString, getFacet())
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-UnicodeString::UnicodeString(const char* ansiString, const priv::LocaleLike auto& locale)
+UnicodeString::UnicodeString(const char* ansiString, const priv::FacetLike auto& facet)
 {
     if (ansiString)
     {
@@ -80,23 +91,23 @@ UnicodeString::UnicodeString(const char* ansiString, const priv::LocaleLike auto
         if (length > 0)
         {
             m_impl->string.reserve(length + 1);
-            Utf32::fromAnsi(ansiString, ansiString + length, base::BackInserter(m_impl->string), locale);
+            Utf32::fromAnsi(ansiString, ansiString + length, base::BackInserter(m_impl->string), facet);
         }
     }
 }
 
 
 ////////////////////////////////////////////////////////////
-UnicodeString::UnicodeString(const priv::AnsiStringLike auto& ansiString) : UnicodeString(ansiString, std::locale{})
+UnicodeString::UnicodeString(const priv::AnsiStringLike auto& ansiString) : UnicodeString(ansiString, getFacet())
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-UnicodeString::UnicodeString(const priv::AnsiStringLike auto& ansiString, const priv::LocaleLike auto& locale)
+UnicodeString::UnicodeString(const priv::AnsiStringLike auto& ansiString, const priv::FacetLike auto& facet)
 {
     m_impl->string.reserve(ansiString.size() + 1);
-    Utf32::fromAnsi(ansiString.begin(), ansiString.end(), base::BackInserter(m_impl->string), locale);
+    Utf32::fromAnsi(ansiString.begin(), ansiString.end(), base::BackInserter(m_impl->string), facet);
 }
 
 
@@ -141,20 +152,20 @@ UnicodeString::UnicodeString(const priv::U32StringLike auto& utf32String) : m_im
 template <priv::AnsiStringLike TString>
 TString UnicodeString::toAnsiString() const
 {
-    return toAnsiString<TString>(std::locale{});
+    return toAnsiString<TString>(getFacet());
 }
 
 
 ////////////////////////////////////////////////////////////
 template <priv::AnsiStringLike TString>
-TString UnicodeString::toAnsiString(const priv::LocaleLike auto& locale) const
+TString UnicodeString::toAnsiString(const priv::FacetLike auto& facet) const
 {
     // Prepare the output string
     TString output;
     output.reserve(m_impl->string.size() + 1);
 
     // Convert
-    Utf32::toAnsi(m_impl->string.begin(), m_impl->string.end(), base::BackInserter(output), 0, locale);
+    Utf32::toAnsi(m_impl->string.begin(), m_impl->string.end(), base::BackInserter(output), 0, facet);
 
     return output;
 }
@@ -180,7 +191,7 @@ template <priv::U8StringLike TString>
 TString UnicodeString::toUtf8() const
 {
     // Prepare the output string
-    std::u8string output;
+    TString output;
     output.reserve(m_impl->string.size());
 
     // Convert
@@ -234,6 +245,20 @@ char32_t& UnicodeString::operator[](base::SizeT index)
 {
     SFML_BASE_ASSERT(index < m_impl->string.size() && "Index is out of bounds");
     return m_impl->string[index];
+}
+
+
+////////////////////////////////////////////////////////////
+void UnicodeString::pushBack(const char32_t character)
+{
+    m_impl->string.push_back(character);
+}
+
+
+////////////////////////////////////////////////////////////
+void UnicodeString::assign(const char32_t* begin, const char32_t* end)
+{
+    m_impl->string.assign(begin, end);
 }
 
 
@@ -408,18 +433,18 @@ const base::SizeT UnicodeString::InvalidPos{std::u32string::npos};
 
 
 ////////////////////////////////////////////////////////////
-template UnicodeString::UnicodeString(char ansiChar, const std::locale& locale);
-template UnicodeString::UnicodeString(const char* ansiString, const std::locale& locale);
+template UnicodeString::UnicodeString(char ansiChar, decltype(getFacet()) facet);
+template UnicodeString::UnicodeString(const char* ansiString, decltype(getFacet()) facet);
 
 
 ////////////////////////////////////////////////////////////
 template UnicodeString::UnicodeString(const std::string& ansiString);
-template UnicodeString::UnicodeString(const std::string& ansiString, const std::locale& locale);
+template UnicodeString::UnicodeString(const std::string& ansiString, decltype(getFacet()) facet);
 
 
 ////////////////////////////////////////////////////////////
 template UnicodeString::UnicodeString(const base::String& ansiString);
-template UnicodeString::UnicodeString(const base::String& ansiString, const std::locale& locale);
+template UnicodeString::UnicodeString(const base::String& ansiString, decltype(getFacet()) facet);
 
 
 ////////////////////////////////////////////////////////////
@@ -432,12 +457,12 @@ template UnicodeString::UnicodeString(const std::u32string& utf32String);
 
 ////////////////////////////////////////////////////////////
 template std::string UnicodeString::toAnsiString() const;
-template std::string UnicodeString::toAnsiString(const std::locale& locale) const;
+template std::string UnicodeString::toAnsiString(decltype(getFacet()) facet) const;
 
 
 ////////////////////////////////////////////////////////////
 template base::String UnicodeString::toAnsiString() const;
-template base::String UnicodeString::toAnsiString(const std::locale& locale) const;
+template base::String UnicodeString::toAnsiString(decltype(getFacet()) facet) const;
 
 
 ////////////////////////////////////////////////////////////
@@ -448,5 +473,9 @@ template std::wstring UnicodeString::toWideString<std::wstring>() const;
 template std::u8string  UnicodeString::toUtf8<std::u8string>() const;
 template std::u16string UnicodeString::toUtf16<std::u16string>() const;
 template std::u32string UnicodeString::toUtf32<std::u32string>() const;
+
+
+////////////////////////////////////////////////////////////
+template sf::base::String UnicodeString::toUtf8<sf::base::String>() const;
 
 } // namespace sf

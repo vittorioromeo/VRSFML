@@ -709,6 +709,34 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
             CHECK(dtorCount == 1);
         }
     }
+
+    SECTION("Temporary assignment")
+    {
+        sf::base::InPlaceVector<int, 5> v0;
+
+        CHECK(v0.size() == 0);
+
+        v0 = sf::base::InPlaceVector<int, 5>{1, 2, 3};
+
+        CHECK(v0.size() == 3);
+        CHECK(v0[0] == 1);
+        CHECK(v0[1] == 2);
+        CHECK(v0[2] == 3);
+    }
+
+    SECTION("Init list assignment")
+    {
+        sf::base::InPlaceVector<int, 5> v0;
+
+        CHECK(v0.size() == 0);
+
+        v0 = {1, 2, 3};
+
+        CHECK(v0.size() == 3);
+        CHECK(v0[0] == 1);
+        CHECK(v0[1] == 2);
+        CHECK(v0[2] == 3);
+    }
 }
 
 } // namespace

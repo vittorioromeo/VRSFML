@@ -8,14 +8,10 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Export.hpp"
 
+#include "SFML/System/UnicodeString.hpp"
+#include "SFML/System/Utf.hpp"
 
-////////////////////////////////////////////////////////////
-// Forward declarations
-////////////////////////////////////////////////////////////
-namespace sf
-{
-class UnicodeString;
-}
+#include "SFML/Base/BackInserter.hpp"
 
 
 namespace sf
@@ -43,7 +39,12 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename T>
-    [[nodiscard]] static UnicodeString fromUtf8(T begin, T end);
+    [[nodiscard]] static UnicodeString fromUtf8(T begin, T end)
+    {
+        UnicodeString string;
+        Utf8::toUtf32(begin, end, base::BackInserter(string));
+        return string;
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new sf::UnicodeString from a UTF-16 encoded string
@@ -57,7 +58,12 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename T>
-    [[nodiscard]] static UnicodeString fromUtf16(T begin, T end);
+    [[nodiscard]] static UnicodeString fromUtf16(T begin, T end)
+    {
+        UnicodeString string;
+        Utf16::toUtf32(begin, end, base::BackInserter(string));
+        return string;
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new sf::UnicodeString from a UTF-32 encoded string
@@ -75,12 +81,15 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename T>
-    [[nodiscard]] static UnicodeString fromUtf32(T begin, T end);
+    [[nodiscard]] static UnicodeString fromUtf32(T begin, T end)
+    {
+        UnicodeString string;
+        string.assign(begin, end);
+        return string;
+    }
 };
 
 } // namespace sf
-
-#include "SFML/System/UnicodeStringUtfUtils.inl"
 
 
 ////////////////////////////////////////////////////////////

@@ -56,6 +56,7 @@ inline constexpr const long long powersOf10[] = {
 ///
 /// \param first Pointer to the beginning of the character buffer.
 /// \param value The unsigned value to convert.
+///
 /// \return Pointer to one past the last character written.
 ///
 ////////////////////////////////////////////////////////////

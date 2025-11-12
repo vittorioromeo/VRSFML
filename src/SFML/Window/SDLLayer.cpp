@@ -38,6 +38,8 @@
 #include <SDL3/SDL_touch.h>
 #include <SDL3/SDL_video.h>
 
+#include <string>
+
 
 ////////////////////////////////////////////////////////////
 #define SFML_PRIV_SDL_ATTR_X_LIST                                             \

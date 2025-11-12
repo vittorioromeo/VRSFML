@@ -7,6 +7,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/System/StringUtils.hpp"
 
+#include "SFML/Base/String.hpp"
+
 #include <string>
 
 #include <cctype>
@@ -26,6 +28,7 @@ T toLower(T str)
 
 
 ////////////////////////////////////////////////////////////
-template std::string toLower<std::string>(std::string);
+template std::string  toLower<std::string>(std::string);
+template base::String toLower<base::String>(base::String);
 
 } // namespace sf::priv
