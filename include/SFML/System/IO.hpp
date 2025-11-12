@@ -501,6 +501,9 @@ public:
     template <typename T>
     InStringStream& operator>>(T& value);
 
+    InStringStream& operator>>(Hex hex);
+    InStringStream& operator>>(base::String& value);
+
 private:
     struct Impl;
     base::InPlacePImpl<Impl, 768> m_impl; //!< Implementation details

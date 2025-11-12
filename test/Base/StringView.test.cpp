@@ -1,11 +1,13 @@
 #include "SFML/Base/StringView.hpp"
 
+#include "SFML/Base/Builtin/Strlen.hpp"
+#include "SFML/Base/String.hpp"
+
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
+#include <StringifySfBaseStringUtil.hpp>
 #include <StringifyStringViewUtil.hpp>
-
-#include <string>
 
 
 TEST_CASE("[Base] Base/StringView.hpp")
@@ -52,9 +54,9 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
     //----------------------------------------------------------------------------
 
-    SECTION("Constructor with std::string")
+    SECTION("Constructor with sf::base::String")
     {
-        std::string          str  = "Hello xyz";
+        sf::base::String     str  = "Hello xyz";
         sf::base::StringView view = str;
 
         REQUIRE_FALSE(view.empty());
@@ -119,7 +121,7 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
         SECTION("Non-zero size")
         {
-            REQUIRE(view.size() == std::char_traits<char>::length(str));
+            REQUIRE(view.size() == SFML_BASE_STRLEN(str));
         }
 
         SECTION("Zero size")
@@ -169,7 +171,7 @@ TEST_CASE("[Base] Base/StringView.hpp")
         const char*          str  = "Hello World";
         sf::base::StringView view = str;
 
-        REQUIRE(&view[0] == str);
+        REQUIRE(view.data() == str);
     }
 
     SECTION("Substring method")
@@ -641,12 +643,12 @@ TEST_CASE("[Base] Base/StringView.hpp")
                 }
 
                 {
-                    std::string str = "Abcdef";
+                    sf::base::String str = "Abcdef";
                     REQUIRE(str == view);
                 }
 
                 {
-                    std::string str = "Abcdef";
+                    sf::base::String str = "Abcdef";
                     REQUIRE(view == str);
                 }
             }
@@ -672,12 +674,12 @@ TEST_CASE("[Base] Base/StringView.hpp")
                 }
 
                 {
-                    std::string str = "Xyzw";
+                    sf::base::String str = "Xyzw";
                     REQUIRE_FALSE(str == view);
                 }
 
                 {
-                    std::string str = "Xyzw";
+                    sf::base::String str = "Xyzw";
                     REQUIRE_FALSE(view == str);
                 }
             }
@@ -710,12 +712,12 @@ TEST_CASE("[Base] Base/StringView.hpp")
                 }
 
                 {
-                    std::string str = "Abcdef";
+                    sf::base::String str = "Abcdef";
                     REQUIRE_FALSE(str != view);
                 }
 
                 {
-                    std::string str = "Abcdef";
+                    sf::base::String str = "Abcdef";
                     REQUIRE_FALSE(view != str);
                 }
             }
@@ -741,12 +743,12 @@ TEST_CASE("[Base] Base/StringView.hpp")
                 }
 
                 {
-                    std::string str = "Xyzw";
+                    sf::base::String str = "Xyzw";
                     REQUIRE(str != view);
                 }
 
                 {
-                    std::string str = "Xyzw";
+                    sf::base::String str = "Xyzw";
                     REQUIRE(view != str);
                 }
             }

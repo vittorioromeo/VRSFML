@@ -495,6 +495,7 @@ OutFileStream& OutFileStream::operator<<(const T& value)
 }
 
 ////////////////////////////////////////////////////////////
+template OutFileStream& OutFileStream::operator<< <base::String>(const base::String&);
 template OutFileStream& OutFileStream::operator<< <base::StringView>(const base::StringView&);
 template OutFileStream& OutFileStream::operator<< <bool>(const bool&);
 template OutFileStream& OutFileStream::operator<< <char>(const char&);
@@ -991,6 +992,24 @@ InStringStream& InStringStream::operator>>(T& value)
         m_impl->iss >> value;
     }
 
+    return *this;
+}
+
+
+//////////////////////////////////////////////////////////////
+InStringStream& InStringStream::operator>>(Hex)
+{
+    m_impl->iss >> std::hex;
+    return *this;
+}
+
+
+//////////////////////////////////////////////////////////////
+InStringStream& InStringStream::operator>>(base::String& value)
+{
+    std::string temp;
+    m_impl->iss >> temp;
+    value = base::String{temp.data(), temp.size()};
     return *this;
 }
 

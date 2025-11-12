@@ -17,6 +17,7 @@
 #include "SFML/System/Rect2.hpp"
 #include "SFML/System/UnicodeString.hpp"
 
+
 // Instantiate some types from each module to test for linker issues. This program is not meant be ran.
 int main()
 {

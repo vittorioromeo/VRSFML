@@ -127,7 +127,7 @@ public:
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[nodiscard, gnu::always_inline]] constexpr InPlaceVector(InPlaceVector&& rhs) noexcept : m_size{rhs.m_size}
     {
-        priv::VectorUtils::relocateRange(data(), rhs.data(), rhs.data() + m_size);
+        priv::VectorUtils::relocateRange(data(), rhs.data(), rhs.data() + rhs.m_size);
         rhs.m_size = 0u;
     }
 
@@ -140,7 +140,7 @@ public:
 
         clear();
 
-        priv::VectorUtils::relocateRange(data(), rhs.data(), rhs.data() + m_size);
+        priv::VectorUtils::relocateRange(data(), rhs.data(), rhs.data() + rhs.m_size);
 
         m_size     = rhs.m_size;
         rhs.m_size = 0u;

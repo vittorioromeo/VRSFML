@@ -40,7 +40,7 @@ public:
 
     ////////////////////////////////////////////////////////////
     template <typename T>
-    [[nodiscard]] bool isInBounds(const sf::Vec2<T> position) const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] bool isInBounds(const sf::Vec2<T> position) const
     {
         return position.x >= T{0} && position.x < static_cast<T>(m_width) && position.y >= T{0} &&
                position.y < static_cast<T>(m_height);
@@ -48,7 +48,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::Optional<Block>& at(const sf::Vec2i position)
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] sf::base::Optional<Block>& at(const sf::Vec2i position)
     {
         SFML_BASE_ASSERT(position.x >= 0);
         SFML_BASE_ASSERT(position.y >= 0);
@@ -58,28 +58,28 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const sf::base::Optional<Block>& at(const sf::Vec2i position) const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const sf::base::Optional<Block>& at(const sf::Vec2i position) const
     {
         return const_cast<BlockGrid*>(this)->at(position);
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::Optional<Block>& at(const sf::Vec2u position)
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] sf::base::Optional<Block>& at(const sf::Vec2u position)
     {
         return at(position.toVec2uz());
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const sf::base::Optional<Block>& at(const sf::Vec2u position) const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const sf::base::Optional<Block>& at(const sf::Vec2u position) const
     {
         return const_cast<BlockGrid*>(this)->at(position);
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::Optional<Block>& at(const sf::Vec2uz position)
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] sf::base::Optional<Block>& at(const sf::Vec2uz position)
     {
         SFML_BASE_ASSERT(position.x < m_width);
         SFML_BASE_ASSERT(position.y < m_height);
@@ -92,21 +92,21 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const sf::base::Optional<Block>& at(const sf::Vec2uz position) const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const sf::base::Optional<Block>& at(const sf::Vec2uz position) const
     {
         return const_cast<BlockGrid*>(this)->at(position);
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::SizeT getWidth() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] sf::base::SizeT getWidth() const noexcept
     {
         return m_width;
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::SizeT getHeight() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] sf::base::SizeT getHeight() const noexcept
     {
         return m_height;
     }
@@ -171,7 +171,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    void forBlocks(auto&& func)
+    [[gnu::always_inline]] void forBlocks(auto&& func)
     {
         for (sf::base::SizeT y = 0u; y < m_height; ++y)
             for (sf::base::SizeT x = 0u; x < m_width; ++x)
@@ -182,7 +182,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    auto& getBlocks() noexcept
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] auto& getBlocks() noexcept
     {
         return m_blocks;
     }

@@ -10,8 +10,16 @@
 
 #include "SFML/System/Time.hpp"
 
-#include "SFML/Base/FwdStdString.hpp" // used
 #include "SFML/Base/InPlacePImpl.hpp"
+
+
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+namespace sf::base
+{
+class String;
+} // namespace sf::base
 
 
 namespace sf
@@ -54,9 +62,9 @@ public:
         /// \param body   Content of the request's body
         ///
         ////////////////////////////////////////////////////////////
-        [[nodiscard]] Request(const std::string& uri, Method method, const std::string& body);
-        [[nodiscard]] Request(const std::string& uri, Method method);
-        [[nodiscard]] Request(const std::string& uri);
+        [[nodiscard]] Request(const base::String& uri, Method method, const base::String& body);
+        [[nodiscard]] Request(const base::String& uri, Method method);
+        [[nodiscard]] Request(const base::String& uri);
         [[nodiscard]] Request();
 
         ////////////////////////////////////////////////////////////
@@ -102,7 +110,7 @@ public:
         /// \param value Value of the field
         ///
         ////////////////////////////////////////////////////////////
-        void setField(const std::string& field, const std::string& value);
+        void setField(const base::String& field, const base::String& value);
 
         ////////////////////////////////////////////////////////////
         /// \brief Set the request method
@@ -126,7 +134,7 @@ public:
         /// \param uri URI to request, relative to the host
         ///
         ////////////////////////////////////////////////////////////
-        void setUri(const std::string& uri);
+        void setUri(const base::String& uri);
 
         ////////////////////////////////////////////////////////////
         /// \brief Set the HTTP version for the request
@@ -149,7 +157,7 @@ public:
         /// \param body Content of the body
         ///
         ////////////////////////////////////////////////////////////
-        void setBody(const std::string& body);
+        void setBody(const base::String& body);
 
     private:
         friend class Http;
@@ -164,7 +172,7 @@ public:
         /// \return `true` if the field exists, `false` otherwise
         ///
         ////////////////////////////////////////////////////////////
-        [[nodiscard]] bool hasField(const std::string& field) const;
+        [[nodiscard]] bool hasField(const base::String& field) const;
 
         ////////////////////////////////////////////////////////////
         // Member data
@@ -268,7 +276,7 @@ public:
         /// \return Value of the field, or empty string if not found
         ///
         ////////////////////////////////////////////////////////////
-        [[nodiscard]] const std::string& getField(const std::string& field) const;
+        [[nodiscard]] const base::String& getField(const base::String& field) const;
 
         ////////////////////////////////////////////////////////////
         /// \brief Get the response status code
@@ -315,7 +323,7 @@ public:
         /// \return The response body
         ///
         ////////////////////////////////////////////////////////////
-        [[nodiscard]] const std::string& getBody() const;
+        [[nodiscard]] const base::String& getBody() const;
 
     private:
         friend class Http;
@@ -329,7 +337,7 @@ public:
         /// \param data Content of the response to parse
         ///
         ////////////////////////////////////////////////////////////
-        void parse(const std::string& data);
+        void parse(const base::String& data);
 
         ////////////////////////////////////////////////////////////
         // Member data
@@ -364,7 +372,7 @@ public:
     /// \param port Port to use for connection
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Http(const std::string& host, unsigned short port = 0);
+    [[nodiscard]] Http(const base::String& host, unsigned short port = 0);
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy constructor
@@ -393,7 +401,7 @@ public:
     /// \param port Port to use for connection
     ///
     ////////////////////////////////////////////////////////////
-    void setHost(const std::string& host, unsigned short port = 0);
+    void setHost(const base::String& host, unsigned short port = 0);
 
     ////////////////////////////////////////////////////////////
     /// \brief Send a HTTP request and return the server's response.

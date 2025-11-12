@@ -163,7 +163,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    base::InPlaceVector<SoundChannel, SoundChannelCount> m_channels{};
+    base::InPlaceVector<SoundChannel, SoundChannelCount> m_channels;
 };
 
 } // namespace sf
