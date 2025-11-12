@@ -21,11 +21,12 @@ namespace sf::base
 /// using the SFML/Base ecosystem.
 ///
 /// \param value The numeric value to convert.
+///
 /// \return A string representing the value.
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard]] String toString(const T value)
+[[nodiscard, gnu::always_inline]] String toString(const T value)
     requires(isIntegral<T> || isFloatingPoint<T>)
 {
     // A buffer large enough for 64-bit integers and floating point numbers.

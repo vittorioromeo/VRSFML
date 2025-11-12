@@ -18,12 +18,11 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/String.hpp"
+#include "SFML/Base/StringView.hpp"
 
-#include <iterator>
 #include <limits>
 #include <map>
-#include <sstream>
-#include <string>
 
 #include <cctype>
 
@@ -31,29 +30,45 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-using FieldTable = std::map<std::string, std::string>; // Use an ordered map for predictable payloads
+[[nodiscard, gnu::const]] bool stringViewLowercaseEq(const sf::base::StringView a, const sf::base::StringView b)
+{
+    if (a.size() != b.size())
+        return false;
+
+    for (sf::base::SizeT i = 0; i < a.size(); ++i)
+        if (std::tolower(static_cast<unsigned char>(a[i])) != std::tolower(static_cast<unsigned char>(b[i])))
+            return false;
+
+    return true;
+}
+
+
+////////////////////////////////////////////////////////////
+using FieldTable = std::map<sf::base::String, sf::base::String>; // Use an ordered map for predictable payloads
 
 
 ////////////////////////////////////////////////////////////
 void parseFields(auto& in, FieldTable& fields)
 {
-    std::string line;
+    sf::base::String line;
     while (sf::getLine(in, line) && (line.size() > 2))
     {
-        const std::string::size_type pos = line.find(": ");
-        if (pos != std::string::npos)
-        {
-            // Extract the field name and its value
-            const std::string field = line.substr(0, pos);
-            std::string       value = line.substr(pos + 2);
+        const auto lineView = line.toStringView();
 
-            // Remove any trailing \r
-            if (!value.empty() && (*value.rbegin() == '\r'))
-                value.erase(value.size() - 1);
+        const auto pos = lineView.find(": ");
+        if (pos == sf::base::String::nPos)
+            continue;
 
-            // Add the field
-            fields[sf::priv::toLower(field)] = value;
-        }
+        // Extract the field name and its value
+        const auto field = sf::base::String{lineView.substrByPosLen(0, pos)};
+        auto       value = sf::base::String{lineView.substrByPosLen(pos + 2)};
+
+        // Remove any trailing \r
+        if (!value.empty() && (value.back() == '\r'))
+            value.erase(value.size() - 1);
+
+        // Add the field
+        fields[sf::priv::toLower(field)] = value;
     }
 }
 
@@ -67,13 +82,13 @@ void parseFields(auto& in, FieldTable& fields)
 /// \return String containing the request, ready to be sent
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] std::string prepareRequest(
+[[nodiscard]] sf::base::String prepareRequest(
     const FieldTable&               fields,
     const sf::Http::Request::Method method,
-    const std::string&              uri,
+    const sf::base::String&         uri,
     const unsigned int              majorVersion,
     const unsigned int              minorVersion,
-    const std::string&              body)
+    const sf::base::String&         body)
 {
     sf::OutStringStream oss;
 
@@ -111,7 +126,7 @@ void parseFields(auto& in, FieldTable& fields)
     // Add the body
     oss << body;
 
-    return oss.getString();
+    return oss.to<sf::base::String>();
 }
 
 } // namespace
@@ -124,10 +139,10 @@ struct Http::Request::Impl
 {
     FieldTable   fields;          //!< Fields of the header associated to their value
     Method       method;          //!< Method to use for the request
-    std::string  uri;             //!< Target URI of the request
+    base::String uri;             //!< Target URI of the request
     unsigned int majorVersion{1}; //!< Major HTTP version
     unsigned int minorVersion{};  //!< Minor HTTP version
-    std::string  body;            //!< Body of the request
+    base::String body;            //!< Body of the request
 
     explicit Impl(Method theMethod) : method(theMethod)
     {
@@ -136,7 +151,7 @@ struct Http::Request::Impl
 
 
 ////////////////////////////////////////////////////////////
-Http::Request::Request(const std::string& uri, Method method, const std::string& body) : m_impl(method)
+Http::Request::Request(const base::String& uri, Method method, const base::String& body) : m_impl(method)
 {
     setUri(uri);
     setBody(body);
@@ -144,13 +159,13 @@ Http::Request::Request(const std::string& uri, Method method, const std::string&
 
 
 ////////////////////////////////////////////////////////////
-Http::Request::Request(const std::string& uri, Method method) : Http::Request::Request(uri, method, "")
+Http::Request::Request(const base::String& uri, Method method) : Http::Request::Request(uri, method, "")
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-Http::Request::Request(const std::string& uri) : Http::Request::Request(uri, Method::Get, "")
+Http::Request::Request(const base::String& uri) : Http::Request::Request(uri, Method::Get, "")
 {
 }
 
@@ -166,7 +181,7 @@ Http::Request::~Request() = default;
 
 
 ////////////////////////////////////////////////////////////
-void Http::Request::setField(const std::string& field, const std::string& value)
+void Http::Request::setField(const base::String& field, const base::String& value)
 {
     m_impl->fields[priv::toLower(field)] = value;
 }
@@ -180,13 +195,13 @@ void Http::Request::setMethod(Http::Request::Method method)
 
 
 ////////////////////////////////////////////////////////////
-void Http::Request::setUri(const std::string& uri)
+void Http::Request::setUri(const base::String& uri)
 {
     m_impl->uri = uri;
 
     // Make sure it starts with a '/'
     if (m_impl->uri.empty() || (m_impl->uri[0] != '/'))
-        m_impl->uri.insert(m_impl->uri.begin(), '/');
+        m_impl->uri.insert(0u, '/');
 }
 
 
@@ -199,14 +214,14 @@ void Http::Request::setHttpVersion(unsigned int major, unsigned int minor)
 
 
 ////////////////////////////////////////////////////////////
-void Http::Request::setBody(const std::string& body)
+void Http::Request::setBody(const base::String& body)
 {
     m_impl->body = body;
 }
 
 
 ////////////////////////////////////////////////////////////
-bool Http::Request::hasField(const std::string& field) const
+bool Http::Request::hasField(const base::String& field) const
 {
     return m_impl->fields.contains(priv::toLower(field));
 }
@@ -219,7 +234,7 @@ struct Http::Response::Impl
     Status       status{Status::ConnectionFailed}; //!< Status code
     unsigned int majorVersion{};                   //!< Major HTTP version
     unsigned int minorVersion{};                   //!< Minor HTTP version
-    std::string  body;                             //!< Body of the response
+    base::String body;                             //!< Body of the response
 };
 
 
@@ -232,12 +247,12 @@ Http::Response::~Response() = default;
 
 
 ////////////////////////////////////////////////////////////
-const std::string& Http::Response::getField(const std::string& field) const
+const base::String& Http::Response::getField(const base::String& field) const
 {
     if (const auto it = m_impl->fields.find(priv::toLower(field)); it != m_impl->fields.end())
         return it->second;
 
-    static const std::string empty;
+    static const base::String empty;
     return empty;
 }
 
@@ -264,22 +279,24 @@ unsigned int Http::Response::getMinorHttpVersion() const
 
 
 ////////////////////////////////////////////////////////////
-const std::string& Http::Response::getBody() const
+const base::String& Http::Response::getBody() const
 {
     return m_impl->body;
 }
 
 
 ////////////////////////////////////////////////////////////
-void Http::Response::parse(const std::string& data)
+void Http::Response::parse(const base::String& data)
 {
-    std::istringstream in(data);
+    sf::InStringStream in(data);
 
     // Extract the HTTP version from the first line
-    std::string version;
+    base::String version;
     if (in >> version)
     {
-        if ((version.size() >= 8) && (version[6] == '.') && (priv::toLower(version.substr(0, 5)) == "http/") &&
+        const auto prefix = version.toStringView().substrByPosLen(0, 5);
+
+        if ((version.size() >= 8) && (version[6] == '.') && (stringViewLowercaseEq(prefix, "http/")) &&
             std::isdigit(version[5]) && std::isdigit(version[7]))
         {
             m_impl->majorVersion = static_cast<unsigned int>(version[5] - '0');
@@ -317,9 +334,13 @@ void Http::Response::parse(const std::string& data)
     // Determine whether the transfer is chunked
     if (priv::toLower(getField("transfer-encoding")) != "chunked")
     {
-        // Not chunked - just read everything at once
-        for (auto it = std::istreambuf_iterator<char>(in); it != std::istreambuf_iterator<char>(); ++it)
-            m_impl->body.push_back(*it);
+        while (!in.isEOF())
+        {
+            char c; // NOLINT(cppcoreguidelines-init-variables)
+            in.get(c);
+
+            m_impl->body.pushBack(c);
+        }
     }
     else
     {
@@ -327,18 +348,18 @@ void Http::Response::parse(const std::string& data)
         base::SizeT length = 0;
 
         // Read all chunks, identified by a chunk-size not being 0
-        while (in >> std::hex >> length)
+        while (in >> Hex{} >> length)
         {
             // Drop the rest of the line (chunk-extension)
             in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
             // Copy the actual content data
-            std::istreambuf_iterator<char>       it(in);
-            const std::istreambuf_iterator<char> itEnd;
-            for (base::SizeT i = 0; ((i < length) && (it != itEnd)); ++i)
+            for (base::SizeT i = 0; ((i < length) && (!in.isEOF())); ++i)
             {
-                m_impl->body.push_back(*it);
-                ++it; // Iterate in separate expression to work around false positive -Wnull-dereference warning in GCC 12.1.0
+                char c; // NOLINT(cppcoreguidelines-init-variables)
+                in.get(c);
+
+                m_impl->body.pushBack(c);
             }
         }
 
@@ -356,7 +377,7 @@ struct Http::Impl
 {
     TcpSocket                 connection; //!< Connection to the host
     base::Optional<IpAddress> host;       //!< Web host address
-    std::string               hostName;   //!< Web host name
+    base::String              hostName;   //!< Web host name
     unsigned short            port{};     //!< Port used for connection with host
 
     explicit Impl() : connection(/* isBlocking */ true)
@@ -374,23 +395,23 @@ Http::~Http() = default;
 
 
 ////////////////////////////////////////////////////////////
-Http::Http(const std::string& host, unsigned short port)
+Http::Http(const base::String& host, unsigned short port)
 {
     setHost(host, port);
 }
 
 
 ////////////////////////////////////////////////////////////
-void Http::setHost(const std::string& host, unsigned short port)
+void Http::setHost(const base::String& host, unsigned short port)
 {
     // Check the protocol
-    if (priv::toLower(host.substr(0, 7)) == "http://")
+    if (stringViewLowercaseEq(host.toStringView().substrByPosLen(0, 7), "http://"))
     {
         // HTTP protocol
-        m_impl->hostName = host.substr(7);
+        m_impl->hostName = host.toStringView().substrByPosLen(7);
         m_impl->port     = (port != 0 ? port : 80);
     }
-    else if (priv::toLower(host.substr(0, 8)) == "https://")
+    else if (stringViewLowercaseEq(host.toStringView().substrByPosLen(0, 8), "https://"))
     {
         // HTTPS protocol -- unsupported (requires encryption and certificates and stuff...)
         priv::err() << "HTTPS protocol is not supported by sf::Http";
@@ -405,7 +426,7 @@ void Http::setHost(const std::string& host, unsigned short port)
     }
 
     // Remove any trailing '/' from the host name
-    if (!m_impl->hostName.empty() && (*m_impl->hostName.rbegin() == '/'))
+    if (!m_impl->hostName.empty() && (m_impl->hostName.back() == '/'))
         m_impl->hostName.erase(m_impl->hostName.size() - 1);
 
     m_impl->host = IpAddressUtils::resolve(m_impl->hostName);
@@ -431,7 +452,7 @@ Http::Response Http::sendRequest(const Http::Request& request, Time timeout)
     {
         OutStringStream oss;
         oss << toSend.m_impl->body.size();
-        toSend.setField("Content-Length", oss.getString());
+        toSend.setField("Content-Length", oss.to<base::String>());
     }
 
     if ((toSend.m_impl->method == Request::Method::Post) && !toSend.hasField("Content-Type"))
@@ -447,25 +468,25 @@ Http::Response Http::sendRequest(const Http::Request& request, Time timeout)
     if (m_impl->connection.connect(m_impl->host.value(), m_impl->port, timeout) == Socket::Status::Done)
     {
         // Convert the request to string and send it through the connected socket
-        const std::string requestStr = prepareRequest(toSend.m_impl->fields,
-                                                      toSend.m_impl->method,
-                                                      toSend.m_impl->uri,
-                                                      toSend.m_impl->majorVersion,
-                                                      toSend.m_impl->minorVersion,
-                                                      toSend.m_impl->body);
+        const base::String requestStr = prepareRequest(toSend.m_impl->fields,
+                                                       toSend.m_impl->method,
+                                                       toSend.m_impl->uri,
+                                                       toSend.m_impl->majorVersion,
+                                                       toSend.m_impl->minorVersion,
+                                                       toSend.m_impl->body);
 
         if (!requestStr.empty())
         {
             // Send it through the socket
-            if (m_impl->connection.send(requestStr.c_str(), requestStr.size()) == Socket::Status::Done)
+            if (m_impl->connection.send(requestStr.cStr(), requestStr.size()) == Socket::Status::Done)
             {
                 // Wait for the server's response
-                std::string receivedStr;
-                base::SizeT size = 0;
-                char        buffer[1024];
+                base::String receivedStr;
+                base::SizeT  size = 0;
+                char         buffer[1024];
                 while (m_impl->connection.receive(buffer, sizeof(buffer), size) == Socket::Status::Done)
                 {
-                    receivedStr.append(buffer, buffer + size);
+                    receivedStr.append(buffer, size);
                 }
 
                 // Build the Response object from the received data
