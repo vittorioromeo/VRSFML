@@ -7,7 +7,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Math/Round.hpp"
-#include "SFML/Base/Swap.hpp"
 #include "SFML/Base/Trait/IsFloatingPoint.hpp"
 #include "SFML/Base/Trait/IsIntegral.hpp"
 #include "SFML/Base/Trait/IsUnsigned.hpp"
@@ -41,13 +40,17 @@ inline constexpr const long long powersOf10[] = {
 /// \brief Reverses the character sequence in the given range.
 ///
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline, gnu::flatten]] inline constexpr void reverseChars(char* first, char* last)
+[[gnu::always_inline]] inline constexpr void reverseChars(char* first, char* last)
 {
     // `last` is one-past-the-end, so decrement it to point to the last character.
     --last;
 
     while (first < last)
-        base::swap(*first++, *last--);
+    {
+        const char tmp = *first;
+        *first++       = *last;
+        *last--        = tmp;
+    }
 }
 
 

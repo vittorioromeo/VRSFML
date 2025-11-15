@@ -12,13 +12,32 @@
 #include <string>
 
 
+namespace
+{
+////////////////////////////////////////////////////////////
+[[gnu::always_inline]] sf::base::String operatorPlusImpl(const char* const     lhs,
+                                                         const sf::base::SizeT lhsSize,
+                                                         const char* const     rhs,
+                                                         const sf::base::SizeT rhsSize)
+{
+    sf::base::String result;
+    result.reserve(lhsSize + rhsSize);
+
+    result.append(sf::base::StringView{lhs, lhsSize});
+    result.append(sf::base::StringView{rhs, rhsSize});
+
+    return result;
+}
+
+} // namespace
+
+
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
 void String::grow(const SizeT minCapacity)
 {
-    const SizeT oldCapacity = capacity();
-    // Geometric growth, plus a little to avoid growing by 0 or 1.
+    const SizeT oldCapacity   = capacity();
     const SizeT newCapacity   = oldCapacity + oldCapacity / 2u + 8u;
     const SizeT finalCapacity = newCapacity > minCapacity ? newCapacity : minCapacity;
 
@@ -31,7 +50,7 @@ void String::grow(const SizeT minCapacity)
         priv::VectorUtils::deallocate(m_rep.heap.data, oldCapacity + 1u);
 
     setHeap(newData, currentSize, finalCapacity);
-    setNullTerminator();
+    data()[currentSize] = '\0'; // `setHeap` doesn't null terminate
 }
 
 
@@ -43,28 +62,27 @@ void String::createFrom(const char* const cStr, const SizeT count)
     if (count <= maxSsoSize)
     {
         SFML_BASE_MEMCPY(m_rep.sso.buffer, cStr, count);
-        setSsoSize(count);
-        setNullTerminator();
+        setSizeAndTerminate(count);
     }
     else
     {
-        char* newData = priv::VectorUtils::allocate<char>(count + 1);
+        char* const newData = priv::VectorUtils::allocate<char>(count + 1);
         SFML_BASE_MEMCPY(newData, cStr, count);
         setHeap(newData, count, count);
-        setNullTerminator();
+        newData[count] = '\0'; // `setHeap` doesn't null terminate
     }
 }
 
 
 ////////////////////////////////////////////////////////////
-String::String(const char* cStr) : String{cStr, SFML_BASE_STRLEN(cStr)}
+String::String(const char* const cStr) : String{cStr, SFML_BASE_STRLEN(cStr)}
 {
     SFML_BASE_ASSERT(cStr != nullptr);
 }
 
 
 ////////////////////////////////////////////////////////////
-String::String(const char* cStr, const SizeT count) : m_rep{}
+String::String(const char* const cStr, const SizeT count) : m_rep{}
 {
     createFrom(cStr, count);
 }
@@ -98,13 +116,7 @@ String::String(const String& other) : String{other.data(), other.size()}
 String::String(String&& other) noexcept : m_rep{}
 {
     SFML_BASE_MEMCPY(&m_rep, &other.m_rep, sizeof(m_rep));
-
-    if (!other.isSso())
-    {
-        // Reset the other string to a valid empty state
-        other.setSsoSize(0);
-        other.setNullTerminator();
-    }
+    other.setSsoSize(0); // prevent double-free
 }
 
 
@@ -129,13 +141,7 @@ String& String::operator=(String&& other) noexcept
         priv::VectorUtils::deallocate(m_rep.heap.data, getHeapCapacity() + 1u);
 
     SFML_BASE_MEMCPY(&m_rep, &other.m_rep, sizeof(m_rep));
-
-    if (!other.isSso())
-    {
-        // Reset the other string to a valid empty state
-        other.setSsoSize(0);
-        other.setNullTerminator();
-    }
+    other.setSsoSize(0); // prevent double-free
 
     return *this;
 }
@@ -147,8 +153,8 @@ String& String::operator=(const StringView view)
     if (!isSso() && view.size() <= getHeapCapacity())
     {
         SFML_BASE_MEMCPY(m_rep.heap.data, view.data(), view.size());
-        m_rep.heap.size = view.size();
-        setNullTerminator();
+        m_rep.heap.size         = view.size();
+        data()[m_rep.heap.size] = '\0';
         return *this;
     }
 
@@ -199,12 +205,7 @@ String& String::operator+=(const StringView view)
 ////////////////////////////////////////////////////////////
 void String::clear() noexcept
 {
-    if (isSso())
-        setSsoSize(0u);
-    else
-        m_rep.heap.size = 0u;
-
-    setNullTerminator();
+    setSizeAndTerminate(0u);
 }
 
 
@@ -218,12 +219,7 @@ void String::pushBack(const char c)
     char* const d  = data();
     d[currentSize] = c;
 
-    if (isSso())
-        setSsoSize(currentSize + 1);
-    else
-        m_rep.heap.size = currentSize + 1;
-
-    setNullTerminator();
+    setSizeAndTerminate(currentSize + 1);
 }
 
 
@@ -257,12 +253,7 @@ String& String::append(const StringView view)
 
     SFML_BASE_MEMCPY(data() + currentSize, view.data(), otherSize);
 
-    if (isSso())
-        setSsoSize(currentSize + otherSize);
-    else
-        m_rep.heap.size = currentSize + otherSize;
-
-    setNullTerminator();
+    setSizeAndTerminate(currentSize + otherSize);
     return *this;
 }
 
@@ -292,24 +283,22 @@ void String::reserve(const SizeT newCapacity)
 
 
 ////////////////////////////////////////////////////////////
-void String::erase(const SizeT index)
+void String::erase(const SizeT index, SizeT count)
 {
-    SFML_BASE_ASSERT(index < size() && "Index is out of bounds");
-
     const SizeT currentSize = size();
+    SFML_BASE_ASSERT(index < currentSize && "Index is out of bounds");
 
-    if (isSso())
-    {
-        SFML_BASE_MEMCPY(m_rep.sso.buffer + index, m_rep.sso.buffer + index + 1, currentSize - index);
-        setSsoSize(currentSize - 1u);
-    }
-    else
-    {
-        SFML_BASE_MEMCPY(m_rep.heap.data + index, m_rep.heap.data + index + 1, currentSize - index);
-        m_rep.heap.size = currentSize - 1u;
-    }
+    // If count is nPos or goes past the end, clamp it to erase until the end.
+    if (count == nPos || index + count > currentSize)
+        count = currentSize - index;
 
-    setNullTerminator();
+    if (count == 0u)
+        return;
+
+    const SizeT tailLength = currentSize - (index + count);
+
+    SFML_BASE_MEMMOVE(data() + index, data() + index + count, tailLength);
+    setSizeAndTerminate(currentSize - count);
 }
 
 
@@ -317,18 +306,30 @@ void String::erase(const SizeT index)
 void String::assign(const char* const cStr, const SizeT count)
 {
     SFML_BASE_ASSERT(cStr != nullptr);
-
-    if (!isSso())
-        priv::VectorUtils::deallocate(m_rep.heap.data, getHeapCapacity() + 1);
-
-    createFrom(cStr, count);
+    this->operator=(StringView{cStr, count});
 }
 
 
 ////////////////////////////////////////////////////////////
 void String::insert(const SizeT pos, const char c)
 {
-    insert(pos, &c);
+    SFML_BASE_ASSERT(pos <= size() && "Insertion position is out of bounds");
+
+    const SizeT oldSize = size();
+    const SizeT newSize = oldSize + 1u;
+
+    reserve(newSize);
+
+    char* const d = data();
+
+    // Make space for the new character
+    if (pos < oldSize)
+        SFML_BASE_MEMMOVE(d + pos + 1, d + pos, oldSize - pos);
+
+    // Insert the character
+    d[pos] = c;
+
+    setSizeAndTerminate(newSize);
 }
 
 
@@ -348,7 +349,7 @@ void String::insert(const SizeT pos, const char* const cStr)
     // 1. Ensure we have enough capacity. This might reallocate and change `data()`.
     reserve(newSize);
 
-    char* d = data();
+    char* const d = data();
 
     // 2. Make space for the new content by shifting the existing part to the right.
     // We must use memmove as the source and destination memory regions overlap.
@@ -363,13 +364,7 @@ void String::insert(const SizeT pos, const char* const cStr)
     SFML_BASE_MEMCPY(d + pos, cStr, insertCount);
 
     // 4. Update the size.
-    if (isSso())
-        setSsoSize(newSize);
-    else
-        m_rep.heap.size = newSize;
-
-    // 5. Ensure null-termination.
-    setNullTerminator();
+    setSizeAndTerminate(newSize);
 }
 
 
@@ -387,26 +382,14 @@ void swap(String& lhs, String& rhs) noexcept
 ////////////////////////////////////////////////////////////
 String operator+(const char lhs, const String& rhs)
 {
-    String result;
-    result.reserve(1u + rhs.size());
-
-    result.append(lhs);
-    result.append(rhs);
-
-    return result;
+    return operatorPlusImpl(&lhs, 1u, rhs.data(), rhs.size());
 }
 
 
 ////////////////////////////////////////////////////////////
 String operator+(const String& lhs, const char rhs)
 {
-    String result;
-    result.reserve(lhs.size() + 1u);
-
-    result.append(lhs);
-    result.append(rhs);
-
-    return result;
+    return operatorPlusImpl(lhs.data(), lhs.size(), &rhs, 1u);
 }
 
 
@@ -414,15 +397,7 @@ String operator+(const String& lhs, const char rhs)
 String operator+(const char* const lhs, const String& rhs)
 {
     SFML_BASE_ASSERT(lhs != nullptr);
-    const SizeT lhsSize = SFML_BASE_STRLEN(lhs);
-
-    String result;
-    result.reserve(lhsSize + rhs.size());
-
-    result.append(lhs);
-    result.append(rhs);
-
-    return result;
+    return operatorPlusImpl(lhs, SFML_BASE_STRLEN(lhs), rhs.data(), rhs.size());
 }
 
 
@@ -430,54 +405,28 @@ String operator+(const char* const lhs, const String& rhs)
 String operator+(const String& lhs, const char* const rhs)
 {
     SFML_BASE_ASSERT(rhs != nullptr);
-    const SizeT rhsSize = SFML_BASE_STRLEN(rhs);
-
-    String result;
-    result.reserve(lhs.size() + rhsSize);
-
-    result.append(lhs);
-    result.append(rhs);
-
-    return result;
+    return operatorPlusImpl(lhs.data(), lhs.size(), rhs, SFML_BASE_STRLEN(rhs));
 }
 
 
 ////////////////////////////////////////////////////////////
 String operator+(const StringView lhs, const String& rhs)
 {
-    String result;
-    result.reserve(lhs.size() + rhs.size());
-
-    result.append(lhs);
-    result.append(rhs);
-
-    return result;
+    return operatorPlusImpl(lhs.data(), lhs.size(), rhs.data(), rhs.size());
 }
 
 
 ////////////////////////////////////////////////////////////
 String operator+(const String& lhs, const StringView rhs)
 {
-    String result;
-    result.reserve(lhs.size() + rhs.size());
-
-    result.append(lhs);
-    result.append(rhs);
-
-    return result;
+    return operatorPlusImpl(lhs.data(), lhs.size(), rhs.data(), rhs.size());
 }
 
 
 ////////////////////////////////////////////////////////////
 String operator+(const String& lhs, const String& rhs)
 {
-    String result;
-    result.reserve(lhs.size() + rhs.size());
-
-    result.append(lhs);
-    result.append(rhs);
-
-    return result;
+    return operatorPlusImpl(lhs.data(), lhs.size(), rhs.data(), rhs.size());
 }
 
 } // namespace sf::base

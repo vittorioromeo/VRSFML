@@ -595,17 +595,15 @@ struct DynamicPerk
 class Game
 {
 private:
-    //////////////////////////////////////////////////////////////
-    const unsigned int m_aaLevel = sf::base::min(16u, sf::RenderTexture::getMaximumAntiAliasingLevel());
-
     ////////////////////////////////////////////////////////////
-    sf::RenderWindow m_window = makeDPIScaledRenderWindow(
-        {.size            = resolution.toVec2u(),
-         .title           = "Tetris Survivors",
-         .resizable       = true,
-         .vsync           = true,
-         .frametimeLimit  = 144u,
-         .contextSettings = {.antiAliasingLevel = 0u}});
+    sf::RenderWindow m_window = makeDPIScaledRenderWindow({
+        .size            = resolution.toVec2u(),
+        .title           = "Tetris Survivors",
+        .resizable       = true,
+        .vsync           = false,
+        .frametimeLimit  = 144u,
+        .contextSettings = {.antiAliasingLevel = 0u},
+    });
 
     ////////////////////////////////////////////////////////////
     sf::Shader m_shader{[]
@@ -2195,10 +2193,10 @@ private:
 
         const sf::Vec2f targetPosition = getTetraminoCenterDrawPosition(optTetramino->position);
 
-        const float interpolationSpeed = 50.f;
-        const auto  deltaTimeMs        = static_cast<float>(deltaTime.asMicroseconds()) / 1000.f;
+        const float interpolationTime = 25.f;
+        const auto  deltaTimeMs       = static_cast<float>(deltaTime.asMicroseconds()) / 1000.f;
 
-        visualCenter = exponentialApproach(visualCenter, targetPosition, deltaTimeMs, interpolationSpeed);
+        visualCenter = exponentialApproach(visualCenter, targetPosition, deltaTimeMs, interpolationTime);
     }
 
 

@@ -34,7 +34,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_SYSTEM_API constexpr T length() const
     {
-        static_assert(SFML_BASE_IS_FLOATING_POINT(T), "Vec3::length() is only supported for floating point types");
+        static_assert(SFML_BASE_IS_FLOATING_POINT(T), "only supported for floating point types");
 
         // don't use `std::hypot` because of slow performance
         return base::sqrt(x * x + y * y + z * z);
@@ -61,9 +61,9 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_SYSTEM_API constexpr Vec3 normalized() const
     {
-        static_assert(SFML_BASE_IS_FLOATING_POINT(T), "Vec3::normalized() is only supported for floating point types");
+        static_assert(SFML_BASE_IS_FLOATING_POINT(T), "only supported for floating point types");
 
-        SFML_BASE_ASSERT(*this != Vec3<T>() && "Vec3::normalized() cannot normalize a zero vec3");
+        SFML_BASE_ASSERT(*this != Vec3<T>() && "cannot normalize a zero vec3");
         return (*this) / length();
     }
 
@@ -115,9 +115,9 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_API_EXPORT constexpr Vec3 componentWiseDiv(const Vec3& rhs) const
     {
-        SFML_BASE_ASSERT(rhs.x != 0 && "Vec3::componentWiseDiv() cannot divide by 0 (x coordinate)");
-        SFML_BASE_ASSERT(rhs.y != 0 && "Vec3::componentWiseDiv() cannot divide by 0 (y coordinate)");
-        SFML_BASE_ASSERT(rhs.z != 0 && "Vec3::componentWiseDiv() cannot divide by 0 (z coordinate)");
+        SFML_BASE_ASSERT(rhs.x != 0 && "cannot divide by 0 (x coordinate)");
+        SFML_BASE_ASSERT(rhs.y != 0 && "cannot divide by 0 (y coordinate)");
+        SFML_BASE_ASSERT(rhs.z != 0 && "cannot divide by 0 (z coordinate)");
 
         return Vec3<T>(x / rhs.x, y / rhs.y, z / rhs.z);
     }
@@ -327,7 +327,7 @@ template <typename T>
 template <typename T>
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec3<T> operator/(const Vec3<T>& lhs, const T rhs)
 {
-    SFML_BASE_ASSERT(rhs != 0 && "Vec3::operator/ cannot divide by 0");
+    SFML_BASE_ASSERT(rhs != 0 && "cannot divide by 0");
 
     return Vec3<T>(lhs.x / rhs, lhs.y / rhs, lhs.z / rhs);
 }
@@ -349,7 +349,7 @@ template <typename T>
 template <typename T>
 [[gnu::always_inline, gnu::flatten]] constexpr Vec3<T>& operator/=(Vec3<T>& lhs, const T rhs)
 {
-    SFML_BASE_ASSERT(rhs != 0 && "Vec3::operator/= cannot divide by 0");
+    SFML_BASE_ASSERT(rhs != 0 && "cannot divide by 0");
 
     lhs.x /= rhs;
     lhs.y /= rhs;

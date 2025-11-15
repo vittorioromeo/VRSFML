@@ -126,10 +126,8 @@ TEST_CASE("[Base] Base/String.hpp")
             CHECK(ssoMoved.size() == 5);
             CHECK(ssoMoved == "Short");
 
-            // Source must be left unchanged for SSO move
+            // Source must be sso to avoid double-free
             CHECK(ssoOrig.isSso());
-            CHECK(ssoOrig.size() == 5);
-            CHECK(ssoOrig == "Short");
 
             sf::base::String heapOrig(longStringLiteral);
             CHECK(!heapOrig.isSso());
@@ -212,8 +210,7 @@ TEST_CASE("[Base] Base/String.hpp")
             dest = SFML_BASE_MOVE(ssoStr); // SSO -> empty
             CHECK(dest.isSso());
             CHECK(dest == "SSO");
-            CHECK(!ssoStr.empty());
-            CHECK(ssoStr == "SSO");
+            CHECK(ssoStr.isSso()); // Source must be sso to avoid double-free
 
             dest = SFML_BASE_MOVE(heapStr); // Heap -> SSO
             CHECK(dest == longStringLiteral);
@@ -427,6 +424,18 @@ TEST_CASE("[Base] Base/String.hpp")
             CHECK(a.data() == bPtr);
             CHECK(b.data() == aPtr);
         }
+    }
+
+    SECTION("Move from heap string")
+    {
+        sf::base::String heapStr(longStringLiteral);
+        CHECK(!heapStr.isSso());
+        CHECK(heapStr == longStringLiteral);
+
+        sf::base::String dest = SFML_BASE_MOVE(heapStr); // Heap -> empty
+        CHECK(!dest.isSso());
+        CHECK(dest == longStringLiteral);
+        CHECK(heapStr.isSso());
     }
 }
 
