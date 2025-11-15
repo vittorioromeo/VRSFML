@@ -103,7 +103,7 @@ template <typename T>
         if (result > limit / 10 || (result == limit / 10 && static_cast<T>(digit) > limit % 10))
             return {first, FromCharsError::ResultOutOfRange};
 
-        result = result * 10 + static_cast<T>(digit);
+        result = static_cast<T>(result * 10 + static_cast<T>(digit));
         ++first;
     }
 

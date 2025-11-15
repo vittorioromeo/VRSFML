@@ -26,7 +26,7 @@ namespace sf::base
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline]] String toString(const T value)
+[[nodiscard]] String toString(const T value)
     requires(isIntegral<T> || isFloatingPoint<T>)
 {
     // A buffer large enough for 64-bit integers and floating point numbers.

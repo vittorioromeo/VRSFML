@@ -1,3 +1,5 @@
+#include "ExampleUtils/Scaling.hpp"
+
 #include "SFML/Graphics/CircleShape.hpp"
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
@@ -13,8 +15,6 @@
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include "ExampleUtils.hpp"
 
 
 constexpr sf::Vec2f resolution{800.f, 600.f};

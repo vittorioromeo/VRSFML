@@ -211,15 +211,14 @@ inline auto bitmapTextToVertices(const BitmapTextToVerticesOptions& options)
 
     const auto getAlignedX = [&](const sf::base::SizeT lineIdx)
     {
-        switch (alignment)
-        {
-            case BitmapTextAlignment::Center:
-                return (static_cast<float>(maxPixelWidth - linePixelWidths[lineIdx])) / 2.f;
-            case BitmapTextAlignment::Right:
-                return static_cast<float>(maxPixelWidth - linePixelWidths[lineIdx]);
-            case BitmapTextAlignment::Left:
-                return 0.f;
-        }
+        if (alignment == BitmapTextAlignment::Center)
+            return (static_cast<float>(maxPixelWidth - linePixelWidths[lineIdx])) / 2.f;
+
+        if (alignment == BitmapTextAlignment::Right)
+            return static_cast<float>(maxPixelWidth - linePixelWidths[lineIdx]);
+
+        SFML_BASE_ASSERT(BitmapTextAlignment::Left);
+        return 0.f;
     };
 
     cursor.x = getAlignedX(0u);

@@ -15,11 +15,12 @@ namespace tsurv
 /////////////////////////////////////////////////////////////
 [[nodiscard]] inline std::string wrapText(const sf::base::StringView text, const sf::base::SizeT maxLineLength)
 {
+    std::string result; // Use a single local variable for NRVO
+
     // Handle trivial cases
     if (text.empty() || maxLineLength == 0)
-        return {};
+        return result;
 
-    std::string result;
     result.reserve(text.size());
 
     std::string     currentLine;
