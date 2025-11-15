@@ -10,14 +10,9 @@
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Vec2.hpp"
+#include "SFML/System/WindowsHeader.hpp"
 
 #include "SFML/Base/Math/Cos.hpp"
-
-#ifndef WIN32_LEAN_AND_MEAN
-    #define WIN32_LEAN_AND_MEAN
-#endif
-
-#include <windows.h>
 
 
 namespace

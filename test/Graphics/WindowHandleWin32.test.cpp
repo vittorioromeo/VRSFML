@@ -9,19 +9,14 @@
     #include "SFML/Window/WindowContext.hpp"
     #include "SFML/Window/WindowHandle.hpp"
 
+    #include "SFML/System/WindowsHeader.hpp" // used
+
     #include "SFML/Base/Optional.hpp"
 
     #include <Doctest.hpp>
 
     #include <SystemUtil.hpp>
 
-    #ifndef NOMINMAX
-        #define NOMINMAX
-    #endif
-    #ifndef WIN32_LEAN_AND_MEAN
-        #define WIN32_LEAN_AND_MEAN
-    #endif
-    #include <Windows.h>
 
 namespace
 {

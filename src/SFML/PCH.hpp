@@ -14,7 +14,7 @@
 
     #ifdef SFML_SYSTEM_WINDOWS
 
-        #include "SFML/System/Win32/WindowsHeader.hpp"
+        #include "SFML/System/WindowsHeader.hpp"
 
         #include <dinput.h>
         #include <mmsystem.h>

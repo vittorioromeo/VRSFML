@@ -2,6 +2,17 @@
 // LICENSE AND COPYRIGHT (C) INFORMATION
 // https://github.com/vittorioromeo/VRSFML/blob/master/license.md
 
+
+////////////////////////////////////////////////////////////
+/// Headers
+////////////////////////////////////////////////////////////
+#include "SFML/Config.hpp" // used
+
+
+#if !defined(SFML_SYSTEM_WINDOWS)
+    #error This header is only to be included on Windows systems.
+#endif
+
 #ifndef NOMINMAX
     #define NOMINMAX
 #endif
