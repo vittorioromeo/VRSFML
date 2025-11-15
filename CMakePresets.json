@@ -123,6 +123,7 @@
       "binaryDir": "build_vrdev_clang_rel",
       "installDir": "${sourceDir}/build_vrdev_clang_rel/install",
       "cacheVariables": {
+        "CMAKE_CXX_COMPILER_LAUNCHER": "",
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_C_FLAGS": "-fuse-ld=lld -Ofast $env{CXX_WARNINGS}",
@@ -135,6 +136,7 @@
       "binaryDir": "build_vrdev_clang_arm64",
       "installDir": "${sourceDir}/build_vrdev_clang_arm64/install",
       "cacheVariables": {
+        "CMAKE_CXX_COMPILER_LAUNCHER": "",
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_C_FLAGS": "-fuse-ld=lld $env{CXX_WARNINGS}",
@@ -147,6 +149,7 @@
       "binaryDir": "build_vrdev_clang_rel_arm64",
       "installDir": "${sourceDir}/build_vrdev_clang_rel_arm64/install",
       "cacheVariables": {
+        "CMAKE_CXX_COMPILER_LAUNCHER": "",
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_C_FLAGS": "-march=native -fuse-ld=lld -Ofast $env{CXX_WARNINGS}",
@@ -207,6 +210,7 @@
       "binaryDir": "build_vrdev_clang_clangenv",
       "installDir": "${sourceDir}/build_vrdev_clang_clangenv/install",
       "cacheVariables": {
+        "CMAKE_CXX_COMPILER_LAUNCHER": "",
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_C_FLAGS": "-fuse-ld=lld $env{CXX_WARNINGS} -fsanitize=address -fsanitize=undefined",
@@ -219,6 +223,7 @@
       "binaryDir": "build_vrdev_clang_clangenv_reldeb",
       "installDir": "${sourceDir}/build_vrdev_clang_clangenv_reldeb/install",
       "cacheVariables": {
+        "CMAKE_CXX_COMPILER_LAUNCHER": "",
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
