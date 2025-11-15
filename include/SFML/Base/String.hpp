@@ -134,18 +134,26 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    void createFrom(const char* cStr, SizeT count);
-    void grow(SizeT minCapacity);
+    [[gnu::always_inline]] constexpr void setSize(const SizeT newSize) noexcept
+    {
+        if (isSso())
+            setSsoSize(newSize);
+        else
+            m_rep.heap.size = newSize;
+    }
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] constexpr void setNullTerminator() noexcept
+    [[gnu::always_inline]] constexpr void setSizeAndTerminate(const SizeT newSize) noexcept
     {
-        if (isSso())
-            m_rep.sso.buffer[getSsoSize()] = '\0';
-        else
-            m_rep.heap.data[m_rep.heap.size] = '\0';
+        setSize(newSize);
+        data()[newSize] = '\0';
     }
+
+
+    ////////////////////////////////////////////////////////////
+    void createFrom(const char* cStr, SizeT count);
+    void grow(SizeT minCapacity);
 
 
 public:
@@ -369,7 +377,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    void erase(SizeT index);
+    void erase(SizeT index,  SizeT count = nPos);
     void assign(const char* cStr, SizeT count);
     void insert(SizeT pos, char c);
     void insert(SizeT pos, const char* cStr);
