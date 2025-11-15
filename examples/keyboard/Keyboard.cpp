@@ -3,6 +3,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Keyboard.hpp"
 
+#include "ExampleUtils/Scaling.hpp"
+
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
@@ -34,8 +36,6 @@
 #include "SFML/Base/Math/Round.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/SizeT.hpp"
-
-#include "ExampleUtils.hpp"
 
 
 #ifdef SFML_SYSTEM_IOS

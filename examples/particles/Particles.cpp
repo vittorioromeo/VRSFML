@@ -1,6 +1,7 @@
-#include "../bubble_idle/RNGFast.hpp" // TODO P1: avoid the relative path...?
-#include "../bubble_idle/Sampler.hpp" // TODO P1: avoid the relative path...?
-#include "../bubble_idle/SoA.hpp"     // TODO P1: avoid the relative path...?
+#include "../bubble_idle/SoA.hpp" // TODO P1: avoid the relative path...?
+
+#include "ExampleUtils/RNGFast.hpp"
+#include "ExampleUtils/Sampler.hpp"
 
 #include "SFML/ImGui/ImGuiContext.hpp"
 

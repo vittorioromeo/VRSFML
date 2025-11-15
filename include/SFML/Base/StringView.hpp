@@ -590,11 +590,16 @@ public:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] friend void swap(StringView& lhs, StringView& rhs) noexcept
     {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wclass-memaccess"
+
         alignas(StringView) char temp[sizeof(StringView)];
 
         SFML_BASE_MEMCPY(&temp, &lhs, sizeof(StringView));
         SFML_BASE_MEMCPY(&lhs, &rhs, sizeof(StringView));
         SFML_BASE_MEMCPY(&rhs, &temp, sizeof(StringView));
+
+#pragma GCC diagnostic pop
     }
 
 

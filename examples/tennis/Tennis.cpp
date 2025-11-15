@@ -1,8 +1,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "../bubble_idle/RNGFast.hpp"          // TODO P1: avoid the relative path...?
 #include "../bubble_idle/TextEffectWiggle.hpp" // TODO P1: avoid the relative path...?
+
+#include "ExampleUtils/RNGFast.hpp"
+#include "ExampleUtils/Scaling.hpp"
 
 #include "SFML/Graphics/CircleShape.hpp"
 #include "SFML/Graphics/Color.hpp"
@@ -33,8 +35,6 @@
 #include "SFML/Base/Math/Cos.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/String.hpp"
-
-#include "ExampleUtils.hpp"
 
 #ifdef SFML_SYSTEM_IOS
     #include "SFML/Main.hpp"

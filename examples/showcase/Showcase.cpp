@@ -1,5 +1,6 @@
-#include "../bubble_idle/RNGFast.hpp" // TODO P1: avoid the relative path...?
-#include "../bubble_idle/Sampler.hpp" // TODO P1: avoid the relative path...?
+#include "ExampleUtils/RNGFast.hpp"
+#include "ExampleUtils/Sampler.hpp"
+#include "ExampleUtils/Scaling.hpp"
 
 #include "SFML/ImGui/ImGuiContext.hpp"
 
@@ -56,8 +57,6 @@
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/ToString.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include "ExampleUtils.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>

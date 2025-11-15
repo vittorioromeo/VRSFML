@@ -1,15 +1,14 @@
-#include "../bubble_idle/Easing.hpp"       // TODO P1: avoid the relative path...?
-#include "../bubble_idle/HueColor.hpp"     // TODO P1: avoid the relative path...?
-#include "../bubble_idle/LoadedSound.hpp"  // TODO P1: avoid the relative path...?
-#include "../bubble_idle/MathUtils.hpp"    // TODO P1: avoid the relative path...?
-#include "../bubble_idle/RNGFast.hpp"      // TODO P1: avoid the relative path...?
-#include "../bubble_idle/SoundManager.hpp" // TODO P1: avoid the relative path...?
-#include "../bubble_idle/Timer.hpp"        // TODO P1: avoid the relative path...?
-
+#include "ExampleUtils/Easing.hpp"
+#include "ExampleUtils/HueColor.hpp"
+#include "ExampleUtils/LoadedSound.hpp"
+#include "ExampleUtils/MathUtils.hpp"
+#include "ExampleUtils/RNGFast.hpp"
+#include "ExampleUtils/SoundManager.hpp"
+#include "ExampleUtils/Timer.hpp"
 
 #define SFEX_PROFILER_ENABLED
-#include "Profiler.hpp"
-#include "ProfilerImGui.hpp"
+#include "ExampleUtils/Profiler.hpp"
+#include "ExampleUtils/ProfilerImGui.hpp"
 
 //
 #include "AnimationCommands.hpp"
@@ -21,7 +20,6 @@
 #include "BlockGrid.hpp"
 #include "BlockMatrix.hpp"
 #include "Constants.hpp"
-#include "ControlFlow.hpp"
 #include "DefaultPerks.hpp"
 #include "DrillDirection.hpp"
 #include "LaserBeam.hpp"
@@ -36,6 +34,9 @@
 #include "TetraminoShapes.hpp"
 #include "Utils.hpp"
 #include "World.hpp"
+
+#include "ExampleUtils/ControlFlow.hpp"
+#include "ExampleUtils/Scaling.hpp"
 
 #include "SFML/ImGui/ImGuiContext.hpp"
 
@@ -94,8 +95,6 @@
 #include "SFML/Base/Trait/IsConst.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include "ExampleUtils.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
@@ -1256,7 +1255,7 @@ private:
     ////////////////////////////////////////////////////////////
     void rotateTetramino(Tetramino& tetramino, const bool clockwise) const
     {
-        const auto nextRotationState = static_cast<RotationState>((tetramino.rotationState + (clockwise ? 1 : 3)) % 4u);
+        const auto nextRotationState = static_cast<RotationState>((tetramino.rotationState + (clockwise ? 1u : 3u)) % 4u);
 
         const auto& targetShapeTemplate = srsTetraminoShapes[static_cast<sf::base::SizeT>(tetramino.tetraminoType)][nextRotationState];
 
@@ -1390,7 +1389,7 @@ private:
             auto downmostBlocksXY = findDownmostBlocks(tetramino.shape);
 
             if (downmostBlocksXY.size() > 1u && m_world.perkDrill[DrillDirection::Down]->coverage == 1u)
-                return {};
+                downmostBlocksXY.clear(); // Instead of `return {}`, to enable NRVO
 
             return downmostBlocksXY;
         }
@@ -2374,7 +2373,7 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] bool updateAnimation(auto& timeline, AnimClearLines& clearLines)
+    [[nodiscard]] bool updateAnimation([[maybe_unused]] auto& timeline, AnimClearLines& clearLines)
     {
         AnimClearLines::RowVector         trulyClearedRows;
         AnimFadeBlocks::FadingBlockVector fadingBlocks;
@@ -2718,7 +2717,10 @@ private:
         const auto blockInfo = eligibleBlocks[0];
 
         m_lightningBolts.emplaceBack(m_rngFast,
-                                     sf::Vec2f{9.f + m_rngFast.getF(0.f, drawBlockSize.x * m_world.blockGrid.getWidth()), 0.f},
+                                     sf::Vec2f{9.f + m_rngFast.getF(0.f,
+                                                                    drawBlockSize.x *
+                                                                        static_cast<float>(m_world.blockGrid.getWidth())),
+                                               0.f},
                                      toDrawCoordinates(blockInfo.position));
 
         for (int i = 0; i < 16; ++i)
@@ -2873,7 +2875,7 @@ private:
 
                 if (blockType > 2)
                 {
-                    b->health = blockType - 1u;
+                    b->health = static_cast<Health>(blockType - 1);
                 }
                 else if (blockType == 2)
                 {

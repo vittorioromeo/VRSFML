@@ -15,10 +15,11 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] sf::base::String operatorPlusImpl(const char* const     lhs,
-                                                         const sf::base::SizeT lhsSize,
-                                                         const char* const     rhs,
-                                                         const sf::base::SizeT rhsSize)
+[[gnu::always_inline]] inline sf::base::String operatorPlusImpl(
+    const char* const     lhs,
+    const sf::base::SizeT lhsSize,
+    const char* const     rhs,
+    const sf::base::SizeT rhsSize)
 {
     sf::base::String result;
     result.reserve(lhsSize + rhsSize);
@@ -371,11 +372,16 @@ void String::insert(const SizeT pos, const char* const cStr)
 ////////////////////////////////////////////////////////////
 void swap(String& lhs, String& rhs) noexcept
 {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wclass-memaccess"
+
     alignas(String::RepUnion) char temp[sizeof(String::RepUnion)];
 
     SFML_BASE_MEMCPY(&temp, &lhs.m_rep, sizeof(String::RepUnion));
     SFML_BASE_MEMCPY(&lhs.m_rep, &rhs.m_rep, sizeof(String::RepUnion));
     SFML_BASE_MEMCPY(&rhs.m_rep, &temp, sizeof(String::RepUnion));
+
+#pragma GCC diagnostic pop
 }
 
 

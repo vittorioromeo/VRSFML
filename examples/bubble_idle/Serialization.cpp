@@ -1,5 +1,3 @@
-#include "Serialization.hpp"
-
 #include "Aliases.hpp"
 #include "Bubble.hpp"
 #include "Cat.hpp"
@@ -9,9 +7,11 @@
 #include "Playthrough.hpp"
 #include "Profile.hpp"
 #include "PurchasableScalingValue.hpp"
+#include "Serialization.hpp"
 #include "Shrine.hpp"
-#include "Timer.hpp"
 #include "Version.hpp"
+
+#include "ExampleUtils/Timer.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-conversion"

@@ -3,6 +3,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Joystick.hpp"
 
+#include "ExampleUtils/Scaling.hpp"
+
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
@@ -21,8 +23,6 @@
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/String.hpp"
-
-#include "ExampleUtils.hpp"
 
 
 ////////////////////////////////////////////////////////////

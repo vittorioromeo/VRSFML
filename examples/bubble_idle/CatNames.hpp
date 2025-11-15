@@ -2,7 +2,8 @@
 
 #include "CatType.hpp"
 #include "ExactArray.hpp"
-#include "RNGFast.hpp"
+
+#include "ExampleUtils/RNGFast.hpp"
 
 #include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/Span.hpp"

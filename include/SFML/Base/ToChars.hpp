@@ -76,7 +76,7 @@ template <typename T>
 
     while (value > T{0})
     {
-        *p++ = '0' + (value % 10);
+        *p++ = '0' + static_cast<char>(value % 10);
         value /= 10;
     }
 

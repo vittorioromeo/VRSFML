@@ -114,7 +114,7 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline, gnu::flatten]] inline constexpr void eraseImpl(T* begin, T* end, T* const it)
+[[gnu::always_inline, gnu::flatten]] inline constexpr void eraseImpl([[maybe_unused]] T* begin, T* end, T* const it)
 {
     SFML_BASE_ASSERT(it >= begin && it < end);
 

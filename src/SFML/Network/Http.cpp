@@ -21,7 +21,6 @@
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
 
-#include <limits>
 #include <map>
 
 #include <cctype>
@@ -324,7 +323,7 @@ void Http::Response::parse(const base::String& data)
     }
 
     // Ignore the end of the first line
-    in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    in.ignore(2'147'483'647, '\n');
 
     // Parse the other lines, which contain fields, one by one
     parseFields(in, m_impl->fields);
@@ -351,7 +350,7 @@ void Http::Response::parse(const base::String& data)
         while (in >> Hex{} >> length)
         {
             // Drop the rest of the line (chunk-extension)
-            in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            in.ignore(2'147'483'647, '\n');
 
             // Copy the actual content data
             for (base::SizeT i = 0; ((i < length) && (!in.isEOF())); ++i)
@@ -364,7 +363,7 @@ void Http::Response::parse(const base::String& data)
         }
 
         // Drop the rest of the line (chunk-extension)
-        in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        in.ignore(2'147'483'647, '\n');
 
         // Read all trailers (if present)
         parseFields(in, m_impl->fields);

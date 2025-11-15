@@ -4,7 +4,8 @@
 #include "CatType.hpp"
 #include "Countdown.hpp"
 #include "TextShakeEffect.hpp"
-#include "Timer.hpp"
+
+#include "ExampleUtils/Timer.hpp"
 
 #include "SFML/System/Vec2.hpp"
 

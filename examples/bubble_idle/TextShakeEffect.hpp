@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RNGFast.hpp"
+#include "ExampleUtils/RNGFast.hpp"
 
 #include "SFML/Graphics/Text.hpp"
 
