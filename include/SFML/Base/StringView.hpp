@@ -7,9 +7,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/MinMaxMacros.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Swap.hpp"
 
 #ifndef __GNUC__
     #include "SFML/Base/Builtin/Strlen.hpp"
@@ -590,8 +590,11 @@ public:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] friend void swap(StringView& lhs, StringView& rhs) noexcept
     {
-        base::swap(lhs.theData, rhs.theData);
-        base::swap(lhs.theSize, rhs.theSize);
+        alignas(StringView) char temp[sizeof(StringView)];
+
+        SFML_BASE_MEMCPY(&temp, &lhs, sizeof(StringView));
+        SFML_BASE_MEMCPY(&lhs, &rhs, sizeof(StringView));
+        SFML_BASE_MEMCPY(&rhs, &temp, sizeof(StringView));
     }
 
 
