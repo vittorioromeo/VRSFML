@@ -95,6 +95,8 @@ MaxEmptyLinesToKeep: 2
 # Sorting
 IncludeBlocks: Regroup
 IncludeCategories:
+  - Priority: 1
+    Regex: '^\"ExampleUtils\/(.*)\"$'
   - Priority: 2
     Regex: '^\"SFML\/Config.hpp\"$'
   - Priority: 3
@@ -117,7 +119,7 @@ IncludeCategories:
     Regex: '^\"SFML\/Base'
   - Priority: 12
     Regex: '^\"ExampleUtils'
-  - Priority: 1
+  - Priority: -100
     Regex: '^\"(.+)\"$'
   - Priority: 22
     Regex: '^<(imgui|glad|gl|X11|jni|android|stb_|GLES2|vorbis|miniaudio|doctest|Doctest|blockingconcurrentqueue|concurrentqueue|SDL3|boost)'

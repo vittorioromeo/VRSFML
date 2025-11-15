@@ -18,41 +18,41 @@
 #include "CatType.hpp"
 #include "Collision.hpp"
 #include "Constants.hpp"
-#include "ControlFlow.hpp"
 #include "Countdown.hpp"
 #include "Doll.hpp"
-#include "Easing.hpp"
 #include "HellPortal.hpp"
-#include "HueColor.hpp"
 #include "InputHelper.hpp"
-#include "MathUtils.hpp"
 #include "MemberGuard.hpp"
 #include "Particle.hpp"
 #include "ParticleType.hpp"
 #include "Playthrough.hpp"
 #include "Profile.hpp"
 #include "PurchasableScalingValue.hpp"
-#include "RNGFast.hpp"
-#include "Sampler.hpp"
 #include "Serialization.hpp"
 #include "Shrine.hpp"
 #include "ShrineConstants.hpp"
 #include "ShrineType.hpp"
-#include "SoundManager.hpp"
 #include "Sounds.hpp"
 #include "Stats.hpp"
 #include "SweepAndPrune.hpp"
 #include "TextEffectWiggle.hpp"
 #include "TextParticle.hpp"
 #include "TextShakeEffect.hpp"
-#include "Timer.hpp"
 #include "Version.hpp"
 
-// clang-format off
-// #define SFEX_PROFILER_ENABLED
+#include "ExampleUtils/ControlFlow.hpp"
+#include "ExampleUtils/Easing.hpp"
+#include "ExampleUtils/HueColor.hpp"
+#include "ExampleUtils/MathUtils.hpp"
+#include "ExampleUtils/RNGFast.hpp"
+#include "ExampleUtils/Sampler.hpp"
+#include "ExampleUtils/SoundManager.hpp"
+#include "ExampleUtils/Timer.hpp"
 
-#include "Profiler.hpp"
-#include "ProfilerImGui.hpp"
+// clang-format off
+#define SFEX_PROFILER_ENABLED
+#include "ExampleUtils/Profiler.hpp"
+#include "ExampleUtils/ProfilerImGui.hpp"
 // clang-format on
 
 #include "SFML/ImGui/ImGuiContext.hpp"
@@ -9610,7 +9610,10 @@ struct Main
         if (finishBeforeDisplay)
             rtGame.finishGPUCommands();
 
-        window.display();
+        {
+            SFEX_PROFILE_SCOPE("window.display()");
+            window.display();
+        }
 
         if (flushAfterDisplay)
             rtGame.flushGPUCommands();

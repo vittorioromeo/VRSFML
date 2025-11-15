@@ -1,4 +1,4 @@
-#include "../bubble_idle/RNGFast.hpp" // TODO P1: avoid the relative path...?
+#include "ExampleUtils/RNGFast.hpp"
 
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"

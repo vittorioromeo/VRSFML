@@ -1,6 +1,6 @@
 #pragma once
 
-#include "LoadedSound.hpp"
+#include "ExampleUtils/LoadedSound.hpp"
 
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/Sound.hpp"

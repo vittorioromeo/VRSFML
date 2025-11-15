@@ -39,13 +39,13 @@ struct Path::Impl
 
     Impl() = default;
 
-    Impl(const auto& source, std::string&& buffer) : fsPath{source}, buffer{SFML_BASE_MOVE(buffer)}
+    Impl(const auto& source, std::string&& theBuffer) : fsPath{source}, buffer{SFML_BASE_MOVE(theBuffer)}
     {
     }
 
-    Impl(const base::String& source, std::string&& buffer) :
+    Impl(const base::String& source, std::string&& theBuffer) :
         fsPath{std::string(source.data(), source.size())},
-        buffer{SFML_BASE_MOVE(buffer)}
+        buffer{SFML_BASE_MOVE(theBuffer)}
     {
     }
 };

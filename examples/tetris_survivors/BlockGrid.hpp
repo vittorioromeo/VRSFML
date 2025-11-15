@@ -5,7 +5,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Block.hpp"
-#include "ControlFlow.hpp"
+#include "ExampleUtils/ControlFlow.hpp"
 #include "IndexUtils.hpp"
 #include "ShapeDimension.hpp"
 #include "Tetramino.hpp"

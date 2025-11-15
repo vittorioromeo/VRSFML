@@ -1,12 +1,13 @@
-#include "../bubble_idle/ControlFlow.hpp" // TODO P1: avoid the relative path...?
-#include "../bubble_idle/Easing.hpp"      // TODO P1: avoid the relative path...?
-#include "../bubble_idle/HueColor.hpp"    // TODO P1: avoid the relative path...?
-#include "../bubble_idle/MathUtils.hpp"   // TODO P1: avoid the relative path...?
-#include "../bubble_idle/RNGFast.hpp"     // TODO P1: avoid the relative path...?
+#include "ExampleUtils/ControlFlow.hpp"
+#include "ExampleUtils/Easing.hpp"
+#include "ExampleUtils/HueColor.hpp"
+#include "ExampleUtils/MathUtils.hpp"
+#include "ExampleUtils/RNGFast.hpp"
+#include "ExampleUtils/Scaling.hpp"
 
 #define SFEX_PROFILER_ENABLED
-#include "Profiler.hpp"
-#include "ProfilerImGui.hpp"
+#include "ExampleUtils/Profiler.hpp"
+#include "ExampleUtils/ProfilerImGui.hpp"
 
 #include "SFML/ImGui/ImGuiContext.hpp"
 
@@ -58,8 +59,6 @@
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Variant.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include "ExampleUtils.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>

@@ -1,6 +1,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "ExampleUtils/Scaling.hpp"
+
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
@@ -10,8 +12,6 @@
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Vec2.hpp"
-
-#include "ExampleUtils.hpp"
 
 
 ////////////////////////////////////////////////////////////
