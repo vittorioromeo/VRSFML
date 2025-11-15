@@ -22,6 +22,7 @@
 #include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
+#include "SFML/Base/Trait/IsTriviallyRelocatable.hpp"
 #include "SFML/Base/Trait/RemoveCVRef.hpp"
 #include "SFML/Base/TypePackElement.hpp"
 #include "SFML/Base/TypePackIndex.hpp"
@@ -37,21 +38,9 @@ namespace sf::base::priv
 ////////////////////////////////////////////////////////////
 [[nodiscard]] consteval auto variadicMax(auto x, auto... xs) noexcept
 {
-    if constexpr (sizeof...(xs) == 0)
-    {
-        return x;
-    }
-    else
-    {
-        decltype(x) result = x;
-        decltype(x) rest[]{xs...};
-
-        for (auto value : rest)
-            if (result < value)
-                result = value;
-
-        return result;
-    }
+    decltype(x) result = x;
+    ((result = (result < xs) ? xs : result), ...);
+    return result;
 }
 
 
@@ -120,6 +109,13 @@ private:
 
 
 public:
+    ////////////////////////////////////////////////////////////
+    enum : bool
+    {
+        enableTrivialRelocation = (SFML_BASE_IS_TRIVIALLY_RELOCATABLE(Alternatives) && ...)
+    };
+
+
     ////////////////////////////////////////////////////////////
     template <typename T>
     static constexpr SizeT indexOf = getTypePackIndex<T, Alternatives...>();
@@ -272,7 +268,7 @@ public:
     template <typename T>
     [[nodiscard, gnu::always_inline]] explicit Variant(T&& x) noexcept
         requires(!isSame<RemoveCVRefIndirect<T>, Variant>)
-        : Variant{inPlaceType<RemoveCVRefIndirect<T>>, static_cast<T&&>(x)}
+        : Variant{inPlaceType<SFML_BASE_REMOVE_CVREF(T)>, static_cast<T&&>(x)}
     {
     }
 
@@ -488,7 +484,7 @@ public:
     ////////////////////////////////////////////////////////////
     template <typename Visitor,
               typename R = decltype(declVal<Visitor&&>()(declVal<SFML_BASE_ADD_LVALUE_REFERENCE(SFML_BASE_VARIANT_NTH_TYPE(0))>()))>
-    [[nodiscard, gnu::always_inline]] R recursiveVisit(Visitor&& visitor) &
+    [[nodiscard, gnu::always_inline, gnu::flatten]] R recursiveVisit(Visitor&& visitor) &
     {
         if constexpr (sizeof...(Alternatives) >= 10)
         {
@@ -509,7 +505,7 @@ public:
     template <typename Visitor,
               typename R = decltype(declVal<Visitor&&>()(
                   declVal<SFML_BASE_ADD_LVALUE_REFERENCE(AddConst<SFML_BASE_VARIANT_NTH_TYPE(0)>)>()))>
-    [[nodiscard, gnu::always_inline]] R recursiveVisit(Visitor&& visitor) const&
+    [[nodiscard, gnu::always_inline, gnu::flatten]] R recursiveVisit(Visitor&& visitor) const&
     {
         if constexpr (sizeof...(Alternatives) >= 10)
         {
@@ -528,8 +524,8 @@ public:
 
     ////////////////////////////////////////////////////////////
     template <typename... Fs>
-    [[nodiscard, gnu::always_inline]] auto recursiveMatch(Fs&&... fs) & -> decltype(recursiveVisit(OverloadSet{
-        static_cast<Fs&&>(fs)...}))
+    [[nodiscard, gnu::always_inline, gnu::flatten]] auto recursiveMatch(
+        Fs&&... fs) & -> decltype(recursiveVisit(OverloadSet{static_cast<Fs&&>(fs)...}))
     {
         return recursiveVisit(OverloadSet{static_cast<Fs&&>(fs)...});
     }
@@ -537,8 +533,8 @@ public:
 
     ////////////////////////////////////////////////////////////
     template <typename... Fs>
-    [[nodiscard, gnu::always_inline]] auto recursiveMatch(Fs&&... fs) const& -> decltype(recursiveVisit(OverloadSet{
-        static_cast<Fs&&>(fs)...}))
+    [[nodiscard, gnu::always_inline, gnu::flatten]] auto recursiveMatch(
+        Fs&&... fs) const& -> decltype(recursiveVisit(OverloadSet{static_cast<Fs&&>(fs)...}))
     {
         return recursiveVisit(OverloadSet{static_cast<Fs&&>(fs)...});
     }
@@ -603,7 +599,7 @@ public:
 
     ////////////////////////////////////////////////////////////
     template <typename... Fs>
-    [[nodiscard, gnu::always_inline]] auto linearMatch(Fs&&... fs) & -> decltype(linearVisit(OverloadSet{
+    [[nodiscard, gnu::always_inline, gnu::flatten]] auto linearMatch(Fs&&... fs) & -> decltype(linearVisit(OverloadSet{
         static_cast<Fs&&>(fs)...}))
     {
         return linearVisit(OverloadSet{static_cast<Fs&&>(fs)...});
@@ -612,7 +608,7 @@ public:
 
     ////////////////////////////////////////////////////////////
     template <typename... Fs>
-    [[nodiscard, gnu::always_inline]] auto linearMatch(Fs&&... fs) const& -> decltype(linearVisit(OverloadSet{
+    [[nodiscard, gnu::always_inline, gnu::flatten]] auto linearMatch(Fs&&... fs) const& -> decltype(linearVisit(OverloadSet{
         static_cast<Fs&&>(fs)...}))
     {
         return linearVisit(OverloadSet{static_cast<Fs&&>(fs)...});

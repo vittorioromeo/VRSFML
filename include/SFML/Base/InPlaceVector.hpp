@@ -15,6 +15,7 @@
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Swap.hpp"
 #include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
+#include "SFML/Base/Trait/IsTriviallyRelocatable.hpp"
 
 
 namespace sf::base
@@ -33,6 +34,13 @@ private:
 
 public:
     ////////////////////////////////////////////////////////////
+    enum : bool
+    {
+        enableTrivialRelocation = SFML_BASE_IS_TRIVIALLY_RELOCATABLE(TItem)
+    };
+
+
+    ////////////////////////////////////////////////////////////
     using value_type      = TItem;
     using pointer         = TItem*;
     using const_pointer   = const TItem*;
@@ -45,11 +53,11 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] InPlaceVector() = default;
+    [[nodiscard]] constexpr InPlaceVector() = default;
 
 
     ////////////////////////////////////////////////////////////
-    ~InPlaceVector()
+    constexpr ~InPlaceVector()
     {
         priv::VectorUtils::destroyRange(data(), data() + m_size);
     }
@@ -57,7 +65,7 @@ public:
 
     ////////////////////////////////////////////////////////////
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
-    [[nodiscard]] explicit InPlaceVector(const SizeT initialSize) : m_size{initialSize}
+    [[nodiscard]] constexpr explicit InPlaceVector(const SizeT initialSize) : m_size{initialSize}
     {
         SFML_BASE_ASSERT(initialSize <= N);
         priv::VectorUtils::defaultConstructRange(data(), data() + initialSize);
@@ -66,7 +74,7 @@ public:
 
     ////////////////////////////////////////////////////////////
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
-    [[nodiscard]] explicit InPlaceVector(const SizeT initialSize, const TItem& value) : m_size{initialSize}
+    [[nodiscard]] constexpr explicit InPlaceVector(const SizeT initialSize, const TItem& value) : m_size{initialSize}
     {
         SFML_BASE_ASSERT(initialSize <= N);
         priv::VectorUtils::copyConstructRange(data(), data() + initialSize, value);
@@ -75,7 +83,7 @@ public:
 
     ////////////////////////////////////////////////////////////
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
-    [[nodiscard]] explicit InPlaceVector(const TItem* const srcBegin, const TItem* const srcEnd)
+    [[nodiscard]] constexpr explicit InPlaceVector(const TItem* const srcBegin, const TItem* const srcEnd)
     {
         SFML_BASE_ASSERT(srcBegin <= srcEnd);
         const auto srcCount = static_cast<SizeT>(srcEnd - srcBegin);
@@ -87,7 +95,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit(false) InPlaceVector(const std::initializer_list<TItem> iList) :
+    [[nodiscard]] constexpr explicit(false) InPlaceVector(const std::initializer_list<TItem> iList) :
         InPlaceVector(iList.begin(), iList.end())
     {
     }
@@ -95,14 +103,14 @@ public:
 
     ////////////////////////////////////////////////////////////
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
-    [[nodiscard, gnu::always_inline]] InPlaceVector(const InPlaceVector& rhs) : m_size{rhs.m_size}
+    [[nodiscard, gnu::always_inline]] constexpr InPlaceVector(const InPlaceVector& rhs) : m_size{rhs.m_size}
     {
         priv::VectorUtils::copyRange(data(), rhs.data(), rhs.data() + m_size);
     }
 
 
     ////////////////////////////////////////////////////////////
-    InPlaceVector& operator=(const InPlaceVector& rhs)
+    constexpr InPlaceVector& operator=(const InPlaceVector& rhs)
     {
         if (this == &rhs)
             return *this;
@@ -117,25 +125,22 @@ public:
 
     ////////////////////////////////////////////////////////////
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
-    [[nodiscard, gnu::always_inline]] InPlaceVector(InPlaceVector&& rhs) noexcept : m_size{rhs.m_size}
+    [[nodiscard, gnu::always_inline]] constexpr InPlaceVector(InPlaceVector&& rhs) noexcept : m_size{rhs.m_size}
     {
-        priv::VectorUtils::moveRange(data(), rhs.data(), rhs.data() + m_size);
-        priv::VectorUtils::destroyRange(rhs.data(), rhs.data() + m_size);
-
+        priv::VectorUtils::relocateRange(data(), rhs.data(), rhs.data() + m_size);
         rhs.m_size = 0u;
     }
 
 
     ////////////////////////////////////////////////////////////
-    InPlaceVector& operator=(InPlaceVector&& rhs) noexcept
+    constexpr InPlaceVector& operator=(InPlaceVector&& rhs) noexcept
     {
         if (this == &rhs)
             return *this;
 
         clear();
 
-        priv::VectorUtils::moveRange(data(), rhs.data(), rhs.data() + rhs.m_size);
-        priv::VectorUtils::destroyRange(rhs.data(), rhs.data() + rhs.m_size);
+        priv::VectorUtils::relocateRange(data(), rhs.data(), rhs.data() + m_size);
 
         m_size     = rhs.m_size;
         rhs.m_size = 0u;
@@ -145,7 +150,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void resize(const SizeT newSize, auto&&... args)
+    [[gnu::always_inline]] constexpr void resize(const SizeT newSize, auto&&... args)
     {
         SFML_BASE_ASSERT(newSize <= N);
 
@@ -168,7 +173,7 @@ public:
 
     ////////////////////////////////////////////////////////////
     template <typename... Ts>
-    [[gnu::always_inline]] TItem* emplace(TItem* const pos, Ts&&... xs)
+    [[gnu::always_inline]] constexpr TItem* emplace(TItem* const pos, Ts&&... xs)
     {
         SFML_BASE_ASSERT(m_size < N);
         SFML_BASE_ASSERT(pos >= begin() && pos <= end());
@@ -184,28 +189,28 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] TItem* insert(TItem* const pos, const TItem& value)
+    [[gnu::always_inline]] constexpr TItem* insert(TItem* const pos, const TItem& value)
     {
         return emplace(pos, value);
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] TItem* insert(TItem* const pos, TItem&& value)
+    [[gnu::always_inline]] constexpr TItem* insert(TItem* const pos, TItem&& value)
     {
         return emplace(pos, static_cast<TItem&&>(value));
     }
 
 
     ////////////////////////////////////////////////////////////
-    void shrinkToFit() noexcept
+    constexpr void shrinkToFit() noexcept
     {
         // no-op, just for compatibility
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void reserve([[maybe_unused]] const SizeT targetCapacity)
+    [[gnu::always_inline, gnu::flatten]] constexpr void reserve([[maybe_unused]] const SizeT targetCapacity)
     {
         SFML_BASE_ASSERT(targetCapacity <= N);
         // no-op, just for compatibility
@@ -213,14 +218,14 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void reserveMore([[maybe_unused]] const SizeT n)
+    [[gnu::always_inline, gnu::flatten]] constexpr void reserveMore([[maybe_unused]] const SizeT n)
     {
         SFML_BASE_ASSERT(size() + n <= N);
         // no-op, just for compatibility
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void unsafeEmplaceBackRange(const TItem* const ptr, const SizeT count) noexcept
+    [[gnu::always_inline, gnu::flatten]] constexpr void unsafeEmplaceBackRange(const TItem* const ptr, const SizeT count) noexcept
     {
         SFML_BASE_ASSERT(m_size + count <= N);
         SFML_BASE_ASSERT(ptr != nullptr);
@@ -230,7 +235,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void clear() noexcept
+    [[gnu::always_inline, gnu::flatten]] constexpr void clear() noexcept
     {
         priv::VectorUtils::destroyRange(data(), data() + m_size);
         m_size = 0u;
@@ -238,7 +243,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] SizeT size() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT size() const noexcept
     {
         return m_size;
     }
@@ -253,7 +258,7 @@ public:
 
     ////////////////////////////////////////////////////////////
     template <typename... Ts>
-    [[gnu::always_inline]] TItem& unsafeEmplaceBack(Ts&&... xs)
+    [[gnu::always_inline]] constexpr TItem& unsafeEmplaceBack(Ts&&... xs)
     {
         SFML_BASE_ASSERT(m_size < N);
         return *(SFML_BASE_PLACEMENT_NEW(data() + m_size++) TItem(static_cast<Ts&&>(xs)...));
@@ -261,7 +266,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    TItem* erase(TItem* const it)
+    constexpr TItem* erase(TItem* const it)
     {
         priv::VectorUtils::eraseImpl(begin(), end(), it);
         --m_size;
@@ -274,7 +279,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    TItem* erase(TItem* const first, TItem* const last)
+    constexpr TItem* erase(TItem* const first, TItem* const last)
     {
         SFML_BASE_ASSERT(first <= last);
 
@@ -293,7 +298,7 @@ public:
 
     ////////////////////////////////////////////////////////////
     template <typename... TItems>
-    [[gnu::always_inline]] void unsafePushBackMultiple(TItems&&... items)
+    [[gnu::always_inline]] constexpr void unsafePushBackMultiple(TItems&&... items)
     {
         SFML_BASE_ASSERT(m_size + sizeof...(items) <= N);
         (..., SFML_BASE_PLACEMENT_NEW(data() + m_size++) TItem(static_cast<TItems&&>(items)));
@@ -301,21 +306,21 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem* data() noexcept
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr TItem* data() noexcept
     {
         return reinterpret_cast<TItem*>(m_storage);
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem* data() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr const TItem* data() const noexcept
     {
         return reinterpret_cast<const TItem*>(m_storage);
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void unsafeSetSize(SizeT newSize) noexcept
+    [[gnu::always_inline, gnu::flatten]] constexpr void unsafeSetSize(SizeT newSize) noexcept
     {
         SFML_BASE_ASSERT(newSize <= N);
         m_size = newSize;
@@ -323,7 +328,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void popBack() noexcept
+    [[gnu::always_inline]] constexpr void popBack() noexcept
     {
         SFML_BASE_ASSERT(!empty());
         --m_size;
@@ -334,7 +339,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void swap(InPlaceVector& rhs) noexcept
+    [[gnu::always_inline]] constexpr void swap(InPlaceVector& rhs) noexcept
     {
         if (this == &rhs)
             return;
@@ -382,7 +387,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem& front() noexcept
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr TItem& front() noexcept
     {
         SFML_BASE_ASSERT(!empty());
         return *data();
@@ -390,7 +395,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem& front() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr const TItem& front() const noexcept
     {
         SFML_BASE_ASSERT(!empty());
         return *data();
@@ -398,14 +403,14 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem& back() noexcept
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr TItem& back() noexcept
     {
         return this->operator[](size() - 1u);
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem& back() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr const TItem& back() const noexcept
     {
         return this->operator[](size() - 1u);
     }

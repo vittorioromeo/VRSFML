@@ -127,6 +127,9 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
         STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::base::InPlaceVector<Obj, defaultCapacity>));
         STATIC_CHECK(SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::base::InPlaceVector<Obj, defaultCapacity>));
         STATIC_CHECK(SFML_BASE_IS_MOVE_ASSIGNABLE(sf::base::InPlaceVector<Obj, defaultCapacity>));
+
+        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_RELOCATABLE(sf::base::InPlaceVector<Obj, defaultCapacity>));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(sf::base::InPlaceVector<int, defaultCapacity>));
     }
 
     SECTION("Empty")

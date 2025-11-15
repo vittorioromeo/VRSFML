@@ -8,6 +8,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Trait/IsTriviallyRelocatable.hpp"
 
 
 namespace sf::base
@@ -16,6 +17,13 @@ namespace sf::base
 template <typename T, SizeT N>
 struct [[nodiscard]] Array
 {
+    ////////////////////////////////////////////////////////////
+    enum : bool
+    {
+        enableTrivialRelocation = SFML_BASE_IS_TRIVIALLY_RELOCATABLE(T)
+    };
+
+
     ////////////////////////////////////////////////////////////
     static_assert(N > 0, "Zero-sized arrays are not supported");
 

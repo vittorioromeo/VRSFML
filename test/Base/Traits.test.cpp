@@ -11,6 +11,7 @@
 #include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
+#include "SFML/Base/Trait/IsTriviallyRelocatable.hpp"
 #include "SFML/Base/Trait/RemoveCVRef.hpp"
 #include "SFML/Base/Trait/RemoveReference.hpp"
 #include "SFML/Base/Trait/UnderlyingType.hpp"
@@ -138,5 +139,73 @@ static_assert(SFML_BASE_IS_SAME(SFML_BASE_DECAY(int (&)[2]), int*));
 static_assert(SFML_BASE_IS_SAME(SFML_BASE_DECAY(const int), int));
 static_assert(SFML_BASE_IS_SAME(SFML_BASE_DECAY(const int&), int));
 static_assert(SFML_BASE_IS_SAME(SFML_BASE_DECAY(int&), int));
+
+////////////////////////////////////////////////////////////
+static_assert(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(int));
+static_assert(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(char));
+static_assert(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(float));
+static_assert(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(int*));
+
+////////////////////////////////////////////////////////////
+struct Custom0
+{
+};
+
+struct Custom1
+{
+    ~Custom1() // NOLINT(modernize-use-equals-default)
+    {
+    }
+};
+
+
+static_assert(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(Custom0));
+static_assert(!SFML_BASE_IS_TRIVIALLY_RELOCATABLE(Custom1));
+
+
+static_assert(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(B));
+static_assert(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(D));
+static_assert(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(E));
+static_assert(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(EC));
+static_assert(!SFML_BASE_IS_TRIVIALLY_RELOCATABLE(NonTrivial));
+
+struct Custom2
+{
+    ~Custom2() // NOLINT(modernize-use-equals-default)
+    {
+    }
+};
+
+} // namespace
+
+
+namespace sf::base
+{
+
+template <>
+inline constexpr bool enableTrivialRelocation<Custom2> = true;
+
+} // namespace sf::base
+
+
+namespace
+{
+
+static_assert(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(Custom2));
+
+
+struct Custom3
+{
+    enum : bool
+    {
+        enableTrivialRelocation = true
+    };
+
+    ~Custom3() // NOLINT(modernize-use-equals-default)
+    {
+    }
+};
+
+static_assert(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(Custom3));
 
 } // namespace
