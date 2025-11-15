@@ -120,6 +120,8 @@ TEST_CASE("[Base] Base/Vector.hpp")
         STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::base::Vector<Obj>));
         STATIC_CHECK(SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::base::Vector<Obj>));
         STATIC_CHECK(SFML_BASE_IS_MOVE_ASSIGNABLE(sf::base::Vector<Obj>));
+
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(sf::base::Vector<Obj>));
     }
 
     SECTION("Empty")

@@ -21,6 +21,7 @@
 #include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
+#include "SFML/Base/Trait/IsTriviallyRelocatable.hpp"
 #include "SFML/Base/Trait/RemoveCVRef.hpp"
 
 
@@ -79,6 +80,13 @@ template <typename T>
 class [[nodiscard]] Optional
 {
 public:
+    ////////////////////////////////////////////////////////////
+    enum : bool
+    {
+        enableTrivialRelocation = SFML_BASE_IS_TRIVIALLY_RELOCATABLE(T)
+    };
+
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional() noexcept : m_engaged{false}
     {

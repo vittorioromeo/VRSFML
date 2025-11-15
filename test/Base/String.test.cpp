@@ -11,6 +11,7 @@
 #include "SFML/Base/Trait/IsMoveConstructible.hpp"
 #include "SFML/Base/Trait/IsTrivial.hpp"
 #include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
+#include "SFML/Base/Trait/IsTriviallyRelocatable.hpp"
 
 #include <Doctest.hpp>
 
@@ -34,6 +35,8 @@ TEST_CASE("[Base] Base/String.hpp")
         STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::base::String));
         STATIC_CHECK(SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::base::String));
         STATIC_CHECK(SFML_BASE_IS_MOVE_ASSIGNABLE(sf::base::String));
+
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(sf::base::String));
     }
 
     SECTION("Constructors")

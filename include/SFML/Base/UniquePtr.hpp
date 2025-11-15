@@ -44,6 +44,13 @@ private:
 
 public:
     ////////////////////////////////////////////////////////////
+    enum : bool
+    {
+        enableTrivialRelocation = true
+    };
+
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr explicit UniquePtr() noexcept : m_ptr{nullptr}
     {
     }

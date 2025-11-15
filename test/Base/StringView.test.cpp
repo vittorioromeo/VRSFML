@@ -23,6 +23,8 @@ TEST_CASE("[Base] Base/StringView.hpp")
         STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::base::StringView));
         STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::base::StringView));
         STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::base::StringView, sf::base::StringView));
+
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(sf::base::StringView));
     }
 
     //----------------------------------------------------------------------------
