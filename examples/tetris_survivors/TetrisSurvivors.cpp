@@ -3099,7 +3099,10 @@ private:
 
         const float menuScale = easeInOutBack(m_menuDelayProgress);
 
-        const auto menuTransform = sf::Transform::fromPositionScaleOrigin(centeredShopPos, {menuScale, menuScale}, shopSize * 0.5f);
+        // The offset seems to fix rendering corruption on Surface
+        const auto menuTransform = sf::Transform::fromPositionScaleOrigin(centeredShopPos + sf::Vec2f{0.1f, 0.1f},
+                                                                          {menuScale, menuScale},
+                                                                          shopSize * 0.5f);
 
         m_rtGame.draw(
             sf::RectangleShapeData{
