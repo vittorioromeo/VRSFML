@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/VulkanImpl.hpp"
 
-#include "SFML/System/Win32/WindowsHeader.hpp"
+#include "SFML/System/WindowsHeader.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/StringView.hpp"

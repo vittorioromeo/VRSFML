@@ -17,10 +17,7 @@
 
     // The Visual C++ version of gl.h uses WINGDIAPI and APIENTRY but doesn't define them
     #ifdef _MSC_VER
-        #ifndef WIN32_LEAN_AND_MEAN
-            #define WIN32_LEAN_AND_MEAN
-        #endif
-        #include <windows.h>
+        #include "SFML/System/WindowsHeader.hpp"
     #endif
 
     #include <GL/gl.h>
