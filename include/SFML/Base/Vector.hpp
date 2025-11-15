@@ -43,8 +43,7 @@ private:
 
         if (m_data != nullptr)
         {
-            priv::VectorUtils::moveRange(newData, m_data, m_endSize);
-            priv::VectorUtils::destroyRange(m_data, m_endSize);
+            priv::VectorUtils::relocateRange(newData, m_data, m_endSize);
             priv::VectorUtils::deallocate(m_data, currentCapacity);
         }
         else
@@ -60,6 +59,13 @@ private:
 
 
 public:
+    ////////////////////////////////////////////////////////////
+    enum : bool
+    {
+        enableTrivialRelocation = true
+    };
+
+
     ////////////////////////////////////////////////////////////
     using value_type      = TItem;
     using pointer         = TItem*;
@@ -268,9 +274,7 @@ public:
 
         auto* newData = priv::VectorUtils::allocate<TItem>(currentSize);
 
-        priv::VectorUtils::moveRange(newData, m_data, m_endSize);
-        priv::VectorUtils::destroyRange(m_data, m_endSize);
-
+        priv::VectorUtils::relocateRange(newData, m_data, m_endSize);
         priv::VectorUtils::deallocate(m_data, capacity());
 
         m_data    = newData;
