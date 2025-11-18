@@ -151,6 +151,38 @@ String& String::operator=(String&& other) noexcept
 ////////////////////////////////////////////////////////////
 String& String::operator=(const StringView view)
 {
+    const char* const src     = view.data();
+    const SizeT       newSize = view.size();
+
+    const char* const myData = data();
+    const SizeT       mySize = size();
+
+    const bool srcInsideThis = (src >= myData) && (src < myData + mySize);
+
+    if (srcInsideThis)
+    {
+        const auto offset = static_cast<SizeT>(src - myData);
+
+        // If it fits in current capacity we can memmove in-place (safe for overlap).
+        if (newSize <= capacity())
+        {
+            SFML_BASE_MEMMOVE(data(), data() + offset, newSize);
+            setSizeAndTerminate(newSize);
+            return *this;
+        }
+
+        // Need a new allocation; copy from the old buffer before deallocating it.
+        char* const newData = priv::VectorUtils::allocate<char>(newSize + 1u);
+        SFML_BASE_MEMCPY(newData, myData + offset, newSize);
+        newData[newSize] = '\0';
+
+        if (!isSso())
+            priv::VectorUtils::deallocate(m_rep.heap.data, getHeapCapacity() + 1u);
+
+        setHeap(newData, newSize, newSize);
+        return *this;
+    }
+
     if (!isSso() && view.size() <= getHeapCapacity())
     {
         SFML_BASE_MEMCPY(m_rep.heap.data, view.data(), view.size());
@@ -249,10 +281,24 @@ String& String::append(const StringView view)
 
     const SizeT currentSize = size();
 
+    // Check for self-append
+    const char* const src    = view.data();
+    const char* const myData = data();
+
+    const bool srcInsideThis = (src >= myData) && (src < myData + currentSize);
+
+    // If we will reallocate, compute offset first so we can still copy from original location
+    const SizeT srcOffset = srcInsideThis ? static_cast<SizeT>(src - myData) : 0u;
+
     if (currentSize + otherSize > capacity())
         grow(currentSize + otherSize);
 
-    SFML_BASE_MEMCPY(data() + currentSize, view.data(), otherSize);
+    char* const newMyData = data(); // May have changed after grow
+
+    if (srcInsideThis)
+        SFML_BASE_MEMMOVE(newMyData + currentSize, newMyData + srcOffset, otherSize);
+    else
+        SFML_BASE_MEMCPY(newMyData + currentSize, src, otherSize);
 
     setSizeAndTerminate(currentSize + otherSize);
     return *this;
