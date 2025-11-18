@@ -7,6 +7,8 @@
 
 namespace
 {
+namespace ArrayTest // for unity builds
+{
 ////////////////////////////////////////////////////////////
 struct NonTrivial
 {
@@ -47,6 +49,7 @@ struct NonTrivialButRelocatable
     int& i; // NOLINT(cppcoreguidelines-use-default-member-init, modernize-use-default-member-init)
 };
 
+} // namespace ArrayTest
 } // namespace
 
 
@@ -54,6 +57,8 @@ TEST_CASE("[Base] Base/Array.hpp")
 {
     SECTION("Type traits")
     {
+        using namespace ArrayTest;
+
         STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::base::Array<int, 5>));
         STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::base::Array<int, 5>));
         STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::base::Array<int, 5>));

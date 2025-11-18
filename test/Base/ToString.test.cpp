@@ -1,7 +1,7 @@
-#include "SFML/Base/ToString.hpp"
-
 #include "StringifySfBaseStringUtil.hpp" // used
 #include "StringifyStringViewUtil.hpp"   // used
+
+#include "SFML/Base/ToString.hpp"
 
 #include <Doctest.hpp>
 
@@ -51,7 +51,7 @@ TEST_CASE("[Base] Base/ToString.hpp")
 
         SUBCASE("Positive floats")
         {
-            CHECK(sf::base::toString(123.456f) == "123.456001"); // Precision differences are expected
+            CHECK(sf::base::toString(123.456f) == "123.456000");
             CHECK(sf::base::toString(0.123) == "0.123000");
         }
 
