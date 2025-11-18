@@ -6,6 +6,8 @@
 #include "ExampleUtils/SoundManager.hpp"
 #include "ExampleUtils/Timer.hpp"
 
+#include "SFML/Base/ToString.hpp"
+
 #define SFEX_PROFILER_ENABLED
 #include "ExampleUtils/Profiler.hpp"
 #include "ExampleUtils/ProfilerImGui.hpp"
@@ -36,6 +38,7 @@
 #include "World.hpp"
 
 #include "ExampleUtils/ControlFlow.hpp"
+#include "ExampleUtils/MiniFmt.hpp"
 #include "ExampleUtils/Scaling.hpp"
 
 #include "SFML/ImGui/ImGuiContext.hpp"
@@ -98,9 +101,6 @@
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
-
-#include <format>
-#include <string>
 
 
 namespace tsurv
@@ -1096,7 +1096,7 @@ private:
             sf::Text text{m_fontMago2,
                           {
                               .origin        = floorVec2(drawBlockSize / 2.f),
-                              .string        = std::to_string(static_cast<unsigned int>(block.health - 1u)),
+                              .string        = sf::base::toString(static_cast<unsigned int>(block.health - 1u)),
                               .characterSize = 5u,
                               .fillColor     = sf::Color::blackMask(alpha),
                           }};
@@ -3120,10 +3120,11 @@ private:
         m_textVerticesBuffer.clear();
         m_textIndicesBuffer.clear();
 
-        std::string levelUpString = "^bold[](^wobble[5,1.2,0.5](LEVEL UP)^)^";
+        sf::base::String levelUpString = "^bold[](^wobble[5,1.2,0.5](LEVEL UP)^)^";
 
         if (m_rerollsLeftThisLevel > 0u)
-            levelUpString += std::format("^color[190,190,190]( - Press SHIFT to reroll ({} left))^", m_rerollsLeftThisLevel);
+            levelUpString += minifmt::format("^color[190,190,190]( - Press SHIFT to reroll ({} left))^",
+                                             m_rerollsLeftThisLevel);
 
         const BitmapTextToVerticesOptions titleOpts = {
             .outVertices     = m_textVerticesBuffer,
@@ -3171,11 +3172,11 @@ private:
         {
             const Perk& perk = *(m_perks[psIndex]);
 
-            std::string perkName        = perk.getName();
-            std::string perkDescription = wrapText(perk.getDescription(m_world), 38u);
-            std::string perkProgression = wrapText(perk.getProgressionStr(m_world), 38u);
+            sf::base::String perkName        = perk.getName();
+            sf::base::String perkDescription = wrapText(perk.getDescription(m_world), 38u);
+            sf::base::String perkProgression = wrapText(perk.getProgressionStr(m_world), 38u);
 
-            const auto perkStr = std::format("^bold[]({})^\n^hspace[0](^color[190,190,190]({})^)^", perkName, perkDescription);
+            const auto perkStr = minifmt::format("^bold[]({})^\n^hspace[0](^color[190,190,190]({})^)^", perkName, perkDescription);
 
             const auto transform = sf::Transform::fromPosition(perkDrawPos);
 
@@ -3302,13 +3303,13 @@ private:
 
         const auto setFontScale = [&](const float x) { ImGui::SetWindowFontScale(x * scale / 2.f); };
 
-        const auto textCentered = [&](const std::string& text)
+        const auto textCentered = [&](const sf::base::String& text)
         {
             const auto windowWidth = ImGui::GetWindowSize().x;
-            const auto textWidth   = ImGui::CalcTextSize(text.c_str()).x;
+            const auto textWidth   = ImGui::CalcTextSize(text.cStr()).x;
 
             ImGui::SetCursorPosX((windowWidth - textWidth) * 0.5f);
-            ImGui::Text("%s", text.c_str());
+            ImGui::Text("%s", text.cStr());
         };
 
         if (m_inLevelUpScreen)
@@ -3345,9 +3346,9 @@ private:
             {
                 const Perk& perk = *(m_perks[psIndex]);
 
-                std::string perkName        = perk.getName();
-                std::string perkDescription = perk.getDescription(m_world);
-                std::string perkProgression = perk.getProgressionStr(m_world);
+                sf::base::String perkName        = perk.getName();
+                sf::base::String perkDescription = perk.getDescription(m_world);
+                sf::base::String perkProgression = perk.getProgressionStr(m_world);
 
                 if (sep)
                     ImGui::Separator();
@@ -3355,18 +3356,18 @@ private:
                 // setFontScale(2.f);
                 ImGui::PushFont(m_imguiFontBig);
 
-                if (ImGui::Selectable(perkName.c_str(), selectedPerk == static_cast<int>(psIndex)))
+                if (ImGui::Selectable(perkName.cStr(), selectedPerk == static_cast<int>(psIndex)))
                     selectedPerk = static_cast<int>(psIndex);
 
                 ImGui::PopFont();
 
                 setFontScale(0.5f);
                 if (!perkProgression.empty())
-                    ImGui::Text("(%s)\n", perkProgression.c_str());
+                    ImGui::Text("(%s)\n", perkProgression.cStr());
                 else
                     ImGui::Text("\n");
                 setFontScale(1.f);
-                ImGui::TextWrapped("%s", perkDescription.c_str());
+                ImGui::TextWrapped("%s", perkDescription.cStr());
 
                 sep = true;
             }
@@ -4380,7 +4381,7 @@ private:
         m_textVerticesBuffer.clear();
         m_textIndicesBuffer.clear();
 
-        auto statsStr = std::format(
+        auto statsStr = minifmt::format(
             "^bold[](Level)^: {}\n"
             "^bold[](XP)^: {} / {}\n"
             "^bold[](Clock)^: {}s\n"
@@ -4436,11 +4437,11 @@ private:
 
         m_rtGame.draw(statsBorder);
 
-        std::string perksStr;
+        sf::base::String perksStr;
 
         for (const auto& perk : m_perks)
             if (perk->isActive(m_world))
-                perksStr += std::format("- {} {}\n", perk->getName(), perk->getInventoryStr(m_world));
+                perksStr += minifmt::format("- {} {}\n", perk->getName(), perk->getInventoryStr(m_world));
 
         m_textVerticesBuffer.clear();
         m_textIndicesBuffer.clear();

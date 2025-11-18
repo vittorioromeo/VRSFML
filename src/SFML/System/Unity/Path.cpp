@@ -7,8 +7,6 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Path.hpp"
 
-#include "SFML/System/StringUtils.hpp"
-
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/Trait/IsSame.hpp"
@@ -159,7 +157,16 @@ bool Path::exists() const
 ////////////////////////////////////////////////////////////
 bool Path::extensionIs(const base::StringView str) const
 {
-    return priv::toLower(m_impl->fsPath.extension().string()) == str;
+    const auto& nativeExt = m_impl->fsPath.extension().native();
+
+    if (nativeExt.size() != str.size())
+        return false;
+
+    for (base::SizeT i = 0u; i < nativeExt.size(); ++i)
+        if (std::tolower(static_cast<int>(nativeExt[i])) != std::tolower(static_cast<int>(str[i])))
+            return false;
+
+    return true;
 }
 
 

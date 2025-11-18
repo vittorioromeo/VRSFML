@@ -14,7 +14,7 @@ namespace sf::priv
 struct DelayOverloadResolution
 {
     template <typename T>
-    explicit(false) DelayOverloadResolution(const T&)
+    /* implicit */ DelayOverloadResolution(const T&)
     {
     }
 

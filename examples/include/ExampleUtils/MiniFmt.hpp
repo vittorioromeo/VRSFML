@@ -6,9 +6,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Base/Abort.hpp"
+#include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/ToChars.hpp"
+#include "SFML/Base/Trait/IsConvertible.hpp"
 
 
 namespace minifmt
@@ -97,7 +101,7 @@ struct [[nodiscard]] FormatString
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr char* formatArgIntoBuffer(char* const buffer, const char* bufferEnd, const T& arg)
+[[nodiscard, gnu::always_inline]] constexpr char* formatArgIntoBuffer(char* const buffer, const char* const bufferEnd, const T& arg)
     requires sf::base::isFloatingPoint<T> || sf::base::isIntegral<T>
 {
     return sf::base::toChars(buffer, bufferEnd, arg);
@@ -105,7 +109,50 @@ constexpr char* formatArgIntoBuffer(char* const buffer, const char* bufferEnd, c
 
 
 ////////////////////////////////////////////////////////////
-using ErasedFn = char* (*)(char*, const char*, const void*);
+template <typename T, typename U>
+concept ConvertibleTo = SFML_BASE_IS_CONVERTIBLE(T, U);
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline]] inline constexpr char* copyStringIntoBuffer(
+    char* const           buffer,
+    const char* const     bufferEnd,
+    const char* const     src,
+    const sf::base::SizeT len)
+{
+    if (static_cast<sf::base::SizeT>(bufferEnd - buffer) < len)
+        return nullptr;
+
+    for (sf::base::SizeT i = 0; i < len; ++i)
+        buffer[i] = src[i];
+
+    return buffer + len;
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+[[nodiscard, gnu::always_inline]] constexpr char* formatArgIntoBuffer(char* const buffer, const char* const bufferEnd, const T& arg)
+    requires requires {
+        { arg.data() } -> ConvertibleTo<const char*>;
+        { arg.size() } -> ConvertibleTo<sf::base::SizeT>;
+    }
+{
+    return copyStringIntoBuffer(buffer, bufferEnd, arg.data(), static_cast<sf::base::SizeT>(arg.size()));
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline]] inline constexpr char* formatArgIntoBuffer(char* const       buffer,
+                                                                             const char* const bufferEnd,
+                                                                             const char* const arg)
+{
+    return copyStringIntoBuffer(buffer, bufferEnd, arg, SFML_BASE_STRLEN(arg));
+}
+
+
+////////////////////////////////////////////////////////////
+using ErasedFormatArgIntoBufferFn = char* (*)(char*, const char*, const void*);
 
 
 ////////////////////////////////////////////////////////////
@@ -118,12 +165,12 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 [[nodiscard]] inline char* formatIntoBufferImpl(
-    char*                 buffer,
-    sf::base::SizeT       bufferSize,
-    sf::base::StringView  formatStr,
-    const void* const*    args,
-    const ErasedFn*       formatters,
-    const sf::base::SizeT argCount)
+    char*                              buffer,
+    sf::base::SizeT                    bufferSize,
+    sf::base::StringView               formatStr,
+    const void* const*                 args,
+    const ErasedFormatArgIntoBufferFn* formatters,
+    const sf::base::SizeT              argCount)
 {
     const auto* const bufferEnd = buffer + bufferSize;
 
@@ -200,11 +247,32 @@ template <typename... Args>
     }
     else
     {
-        const void* const  erasedArgs[]         = {&args...};
-        constexpr ErasedFn erasedFormatArgFns[] = {&erasedFormatArgIntoBuffer<Args>...};
+        const void* const                     erasedArgs[]         = {&args...};
+        constexpr ErasedFormatArgIntoBufferFn erasedFormatArgFns[] = {&erasedFormatArgIntoBuffer<Args>...};
 
         return formatIntoBufferImpl(buffer, bufferSize, formatString.str, erasedArgs, erasedFormatArgFns, sizeof...(Args));
     }
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename... Args>
+[[nodiscard]] constexpr sf::base::String format(const typename NonDeduced<const FormatString<Args...>>::type formatString,
+                                                const Args&... args)
+{
+    enum : sf::base::SizeT
+    {
+        bufferSize = 512
+    };
+
+    char buffer[bufferSize];
+
+    const auto* const endPtr = formatIntoBuffer(buffer, bufferSize, formatString, args...);
+
+    if (endPtr == nullptr)
+        sf::base::abort(); // Formatting failed (buffer too small)
+
+    return sf::base::String(buffer, static_cast<sf::base::SizeT>(endPtr - buffer));
 }
 
 } // namespace minifmt

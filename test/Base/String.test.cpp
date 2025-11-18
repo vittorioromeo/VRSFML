@@ -15,8 +15,6 @@
 
 #include <Doctest.hpp>
 
-#include <string> // For comparison and interoperability tests
-
 
 namespace
 {
@@ -366,7 +364,7 @@ TEST_CASE("[Base] Base/String.hpp")
         const sf::base::String cStr("xyz");
 
         // Basic iteration
-        std::string result;
+        sf::base::String result;
         for (char c : str)
             result += c;
 

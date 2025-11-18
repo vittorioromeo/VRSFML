@@ -133,7 +133,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit(false) Vector(const std::initializer_list<TItem> iList) : Vector(iList.begin(), iList.end())
+    [[nodiscard]] /* implicit */ Vector(const std::initializer_list<TItem> iList) : Vector(iList.begin(), iList.end())
     {
     }
 

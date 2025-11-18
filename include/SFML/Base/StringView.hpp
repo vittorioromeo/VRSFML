@@ -82,7 +82,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr explicit(false) StringView() noexcept = default;
+    [[nodiscard, gnu::always_inline]] constexpr /* implicit */ StringView() noexcept = default;
 
 
     ////////////////////////////////////////////////////////////

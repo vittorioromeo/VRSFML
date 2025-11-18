@@ -13,7 +13,6 @@
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/IO.hpp"
-#include "SFML/System/StringUtils.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Optional.hpp"
@@ -29,13 +28,23 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
+[[nodiscard]] sf::base::String toLower(sf::base::String str)
+{
+    for (char& c : str)
+        c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+
+    return str;
+}
+
+
+////////////////////////////////////////////////////////////
 [[nodiscard, gnu::const]] bool stringViewLowercaseEq(const sf::base::StringView a, const sf::base::StringView b)
 {
     if (a.size() != b.size())
         return false;
 
     for (sf::base::SizeT i = 0; i < a.size(); ++i)
-        if (std::tolower(static_cast<unsigned char>(a[i])) != std::tolower(static_cast<unsigned char>(b[i])))
+        if (std::tolower(static_cast<int>(a[i])) != std::tolower(static_cast<int>(b[i])))
             return false;
 
     return true;
@@ -67,7 +76,7 @@ void parseFields(auto& in, FieldTable& fields)
             value.erase(value.size() - 1);
 
         // Add the field
-        fields[sf::priv::toLower(field)] = value;
+        fields[toLower(field)] = value;
     }
 }
 
@@ -182,7 +191,7 @@ Http::Request::~Request() = default;
 ////////////////////////////////////////////////////////////
 void Http::Request::setField(const base::String& field, const base::String& value)
 {
-    m_impl->fields[priv::toLower(field)] = value;
+    m_impl->fields[toLower(field)] = value;
 }
 
 
@@ -222,7 +231,7 @@ void Http::Request::setBody(const base::String& body)
 ////////////////////////////////////////////////////////////
 bool Http::Request::hasField(const base::String& field) const
 {
-    return m_impl->fields.contains(priv::toLower(field));
+    return m_impl->fields.contains(toLower(field));
 }
 
 
@@ -248,7 +257,7 @@ Http::Response::~Response() = default;
 ////////////////////////////////////////////////////////////
 const base::String& Http::Response::getField(const base::String& field) const
 {
-    if (const auto it = m_impl->fields.find(priv::toLower(field)); it != m_impl->fields.end())
+    if (const auto it = m_impl->fields.find(toLower(field)); it != m_impl->fields.end())
         return it->second;
 
     static const base::String empty;
@@ -331,7 +340,7 @@ void Http::Response::parse(const base::String& data)
     m_impl->body.clear();
 
     // Determine whether the transfer is chunked
-    if (priv::toLower(getField("transfer-encoding")) != "chunked")
+    if (toLower(getField("transfer-encoding")) != "chunked")
     {
         while (!in.isEOF())
         {
