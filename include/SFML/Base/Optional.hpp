@@ -88,13 +88,13 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional() noexcept : m_engaged{false}
+    [[nodiscard, gnu::always_inline]] constexpr /* implicit */ Optional() noexcept : m_engaged{false}
     {
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional(NullOpt) noexcept : m_engaged{false}
+    [[nodiscard, gnu::always_inline]] constexpr /* implicit */ Optional(NullOpt) noexcept : m_engaged{false}
     {
     }
 
@@ -114,7 +114,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional(const Optional& rhs)
+    [[nodiscard, gnu::always_inline]] constexpr /* implicit */ Optional(const Optional& rhs)
         requires(!isTriviallyCopyConstructible<T> && isCopyConstructible<T>)
         : m_engaged{rhs.m_engaged}
     {
@@ -124,13 +124,13 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional(const Optional& rhs)
+    [[nodiscard, gnu::always_inline]] constexpr /* implicit */ Optional(const Optional& rhs)
         requires(isTriviallyCopyConstructible<T>)
     = default;
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional(Optional&& rhs) noexcept
+    [[nodiscard, gnu::always_inline]] constexpr /* implicit */ Optional(Optional&& rhs) noexcept
         requires(!isTriviallyMoveConstructible<T> && isMoveConstructible<T>)
         : m_engaged{rhs.m_engaged}
     {
@@ -140,7 +140,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional(Optional&& rhs)
+    [[nodiscard, gnu::always_inline]] constexpr /* implicit */ Optional(Optional&& rhs)
         requires(isTriviallyMoveConstructible<T>)
     = default;
 
@@ -149,7 +149,8 @@ public:
     [[gnu::always_inline]] constexpr ~Optional() noexcept
         requires(!isTriviallyDestructible<T>)
     {
-        SFML_PRIV_OPTIONAL_DESTROY_IF_ENGAGED(T, m_engaged, m_buffer);
+        if (m_engaged)
+            m_buffer.obj.~T();
     }
 
 

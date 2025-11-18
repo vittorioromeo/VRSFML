@@ -9,8 +9,9 @@
 #include "Perk.hpp"
 #include "World.hpp"
 
-#include <format>
-#include <string>
+#include "ExampleUtils/MiniFmt.hpp"
+
+#include "SFML/Base/String.hpp"
 
 
 namespace tsurv
@@ -22,28 +23,28 @@ struct [[nodiscard]] PerkChainLightning : Perk
     static constexpr int chanceIncrease = 10;
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getName() const override
+    [[nodiscard]] sf::base::String getName() const override
     {
         return "Chain Lightning";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getDescription(const World& world) const override
+    [[nodiscard]] sf::base::String getDescription(const World& world) const override
     {
-        return std::format("Each time lightning strikes, add a {}% chance to hit an additional block.",
-                           world.perkChainLightning + chanceIncrease);
+        return minifmt::format("Each time lightning strikes, add a {}% chance to hit an additional block.",
+                               world.perkChainLightning + chanceIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getProgressionStr(const World& world) const override
+    [[nodiscard]] sf::base::String getProgressionStr(const World& world) const override
     {
-        return std::format("{}% -> {}%", world.perkChainLightning, world.perkChainLightning + chanceIncrease);
+        return minifmt::format("{}% -> {}%", world.perkChainLightning, world.perkChainLightning + chanceIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getInventoryStr(const World& world) const override
+    [[nodiscard]] sf::base::String getInventoryStr(const World& world) const override
     {
-        return std::format("({}% chance)", world.perkChainLightning);
+        return minifmt::format("({}% chance)", world.perkChainLightning);
     }
 
     /////////////////////////////////////////////////////////////
@@ -74,27 +75,27 @@ struct [[nodiscard]] PerkPeekNextTetraminos : Perk
     static constexpr int maxPeek      = 3;
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getName() const override
+    [[nodiscard]] sf::base::String getName() const override
     {
         return "Peek Next Tetraminos";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getDescription(const World& world) const override
+    [[nodiscard]] sf::base::String getDescription(const World& world) const override
     {
-        return std::format("See the next {} upcoming tetraminos.", world.perkNPeek + peekIncrease);
+        return minifmt::format("See the next {} upcoming tetraminos.", world.perkNPeek + peekIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getProgressionStr(const World& world) const override
+    [[nodiscard]] sf::base::String getProgressionStr(const World& world) const override
     {
-        return std::format("{} -> {}", world.perkNPeek, world.perkNPeek + peekIncrease);
+        return minifmt::format("{} -> {}", world.perkNPeek, world.perkNPeek + peekIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getInventoryStr(const World& world) const override
+    [[nodiscard]] sf::base::String getInventoryStr(const World& world) const override
     {
-        return std::format("(see {} tetraminos)", world.perkNPeek);
+        return minifmt::format("(see {} tetraminos)", world.perkNPeek);
     }
 
     /////////////////////////////////////////////////////////////
@@ -124,29 +125,29 @@ struct [[nodiscard]] PerkOnClearLightningStrike : Perk
     static constexpr int strikeIncrease = 1;
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getName() const override
+    [[nodiscard]] sf::base::String getName() const override
     {
         return "On-Clear Lightning Strike";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getDescription(const World& world) const override
+    [[nodiscard]] sf::base::String getDescription(const World& world) const override
     {
-        return std::
+        return minifmt::
             format("Each time you full-clear a line or more, randomly damage {} block(s) with a lightning strike.",
                    world.perkRndHitOnClear + strikeIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getProgressionStr(const World& world) const override
+    [[nodiscard]] sf::base::String getProgressionStr(const World& world) const override
     {
-        return std::format("{} -> {}", world.perkRndHitOnClear, world.perkRndHitOnClear + strikeIncrease);
+        return minifmt::format("{} -> {}", world.perkRndHitOnClear, world.perkRndHitOnClear + strikeIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getInventoryStr(const World& world) const override
+    [[nodiscard]] sf::base::String getInventoryStr(const World& world) const override
     {
-        return std::format("({} tetraminos per clear)", world.perkRndHitOnClear);
+        return minifmt::format("({} tetraminos per clear)", world.perkRndHitOnClear);
     }
 
     /////////////////////////////////////////////////////////////
@@ -173,29 +174,29 @@ struct [[nodiscard]] PerkOnClearLightningStrike : Perk
 struct [[nodiscard]] PerkVerticalDrillUnlock : Perk
 {
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getName() const override
+    [[nodiscard]] sf::base::String getName() const override
     {
         return "Vertical Drill";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getDescription(const World&) const override
+    [[nodiscard]] sf::base::String getDescription(const World&) const override
     {
         return "When hard dropping, automatically damage blocks directly connected below the tetramino's sharp edges.";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getProgressionStr(const World&) const override
+    [[nodiscard]] sf::base::String getProgressionStr(const World&) const override
     {
         return ""; // One-time unlock
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getInventoryStr(const World& world) const override
+    [[nodiscard]] sf::base::String getInventoryStr(const World& world) const override
     {
-        return std::format("(penetration: {}, coverage: {})",
-                           world.perkDrill[DrillDirection::Down]->maxPenetration,
-                           world.perkDrill[DrillDirection::Down]->coverage);
+        return minifmt::format("(penetration: {}, coverage: {})",
+                               world.perkDrill[DrillDirection::Down]->maxPenetration,
+                               world.perkDrill[DrillDirection::Down]->coverage);
     }
 
     /////////////////////////////////////////////////////////////
@@ -226,28 +227,28 @@ struct [[nodiscard]] PerkVerticalDrillPenetration : Perk
     static constexpr int maxPenetration      = 10;
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getName() const override
+    [[nodiscard]] sf::base::String getName() const override
     {
         return "Hard-Drop Drill - Penetration";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getDescription(const World& world) const override
+    [[nodiscard]] sf::base::String getDescription(const World& world) const override
     {
-        return std::format("Increase the maximum number of blocks damaged to {}.",
-                           world.perkDrill[DrillDirection::Down]->maxPenetration + penetrationIncrease);
+        return minifmt::format("Increase the maximum number of blocks damaged to {}.",
+                               world.perkDrill[DrillDirection::Down]->maxPenetration + penetrationIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getProgressionStr(const World& world) const override
+    [[nodiscard]] sf::base::String getProgressionStr(const World& world) const override
     {
-        return std::format("{} -> {}",
-                           world.perkDrill[DrillDirection::Down]->maxPenetration,
-                           world.perkDrill[DrillDirection::Down]->maxPenetration + penetrationIncrease);
+        return minifmt::format("{} -> {}",
+                               world.perkDrill[DrillDirection::Down]->maxPenetration,
+                               world.perkDrill[DrillDirection::Down]->maxPenetration + penetrationIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getInventoryStr(const World&) const override
+    [[nodiscard]] sf::base::String getInventoryStr(const World&) const override
     {
         return ""; // handled by main perk
     }
@@ -278,25 +279,25 @@ struct [[nodiscard]] PerkVerticalDrillPenetration : Perk
 struct [[nodiscard]] PerkVerticalDrillBluntForce : Perk
 {
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getName() const override
+    [[nodiscard]] sf::base::String getName() const override
     {
         return "Hard-Drop Drill - Blunt Force";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getDescription(const World&) const override
+    [[nodiscard]] sf::base::String getDescription(const World&) const override
     {
         return "The entire surface of the tetramino acts as a drill when hard-dropping.";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getProgressionStr(const World&) const override
+    [[nodiscard]] sf::base::String getProgressionStr(const World&) const override
     {
         return ""; // One-time unlock
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getInventoryStr(const World&) const override
+    [[nodiscard]] sf::base::String getInventoryStr(const World&) const override
     {
         return ""; // handled by main perk
     }
@@ -325,7 +326,7 @@ struct [[nodiscard]] PerkVerticalDrillBluntForce : Perk
 struct [[nodiscard]] PerkHoldSkipTetramino : Perk
 {
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getName() const override
+    [[nodiscard]] sf::base::String getName() const override
     {
         // This perk is a multi-stage upgrade. We assume it is only shown when available.
         // The first time (world.perkCanHoldTetramino == 0) it unlocks "Hold".
@@ -334,7 +335,7 @@ struct [[nodiscard]] PerkHoldSkipTetramino : Perk
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getDescription(const World& world) const override
+    [[nodiscard]] sf::base::String getDescription(const World& world) const override
     {
         if (world.perkCanHoldTetramino == 0)
             return "Gain the ability to hold your current tetramino. Can be upgraded to skip a tetramino later.";
@@ -343,7 +344,7 @@ struct [[nodiscard]] PerkHoldSkipTetramino : Perk
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getProgressionStr(const World& world) const override
+    [[nodiscard]] sf::base::String getProgressionStr(const World& world) const override
     {
         if (world.perkCanHoldTetramino == 0)
             return "Unlock Hold";
@@ -355,9 +356,9 @@ struct [[nodiscard]] PerkHoldSkipTetramino : Perk
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getInventoryStr(const World& world) const override
+    [[nodiscard]] sf::base::String getInventoryStr(const World& world) const override
     {
-        return std::format("{}", (world.perkCanHoldTetramino == 0) ? "Hold" : "Skip");
+        return minifmt::format("{}", (world.perkCanHoldTetramino == 0) ? "Hold" : "Skip");
     }
 
     /////////////////////////////////////////////////////////////
@@ -387,28 +388,28 @@ struct [[nodiscard]] PerkXpPerTetraminoPlaced : Perk
     static constexpr int xpIncrease = 3;
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getName() const override
+    [[nodiscard]] sf::base::String getName() const override
     {
         return "XP per Tetramino Placed";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getDescription(const World& world) const override
+    [[nodiscard]] sf::base::String getDescription(const World& world) const override
     {
         /////////////////////////////////////////////////////////////
-        return std::format("Gain {} XP for each tetramino you place.", world.perkXPPerTetraminoPlaced + xpIncrease);
+        return minifmt::format("Gain {} XP for each tetramino you place.", world.perkXPPerTetraminoPlaced + xpIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getProgressionStr(const World& world) const override
+    [[nodiscard]] sf::base::String getProgressionStr(const World& world) const override
     {
-        return std::format("{} -> {}", world.perkXPPerTetraminoPlaced, world.perkXPPerTetraminoPlaced + xpIncrease);
+        return minifmt::format("{} -> {}", world.perkXPPerTetraminoPlaced, world.perkXPPerTetraminoPlaced + xpIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getInventoryStr(const World& world) const override
+    [[nodiscard]] sf::base::String getInventoryStr(const World& world) const override
     {
-        return std::format("({} XP)", world.perkXPPerTetraminoPlaced);
+        return minifmt::format("({} XP)", world.perkXPPerTetraminoPlaced);
     }
 
     /////////////////////////////////////////////////////////////
@@ -437,28 +438,28 @@ struct [[nodiscard]] PerkXpPerBlockDamaged : Perk
     static constexpr int xpIncrease = 10;
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getName() const override
+    [[nodiscard]] sf::base::String getName() const override
     {
         return "XP per Block Damaged";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getDescription(const World& world) const override
+    [[nodiscard]] sf::base::String getDescription(const World& world) const override
     {
         /////////////////////////////////////////////////////////////
-        return std::format("Gain {} XP for each block you damage.", world.perkXPPerBlockDamaged + xpIncrease);
+        return minifmt::format("Gain {} XP for each block you damage.", world.perkXPPerBlockDamaged + xpIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getProgressionStr(const World& world) const override
+    [[nodiscard]] sf::base::String getProgressionStr(const World& world) const override
     {
-        return std::format("{} -> {}", world.perkXPPerBlockDamaged, world.perkXPPerBlockDamaged + xpIncrease);
+        return minifmt::format("{} -> {}", world.perkXPPerBlockDamaged, world.perkXPPerBlockDamaged + xpIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getInventoryStr(const World& world) const override
+    [[nodiscard]] sf::base::String getInventoryStr(const World& world) const override
     {
-        return std::format("({} XP)", world.perkXPPerBlockDamaged);
+        return minifmt::format("({} XP)", world.perkXPPerBlockDamaged);
     }
 
     /////////////////////////////////////////////////////////////
@@ -489,35 +490,35 @@ struct [[nodiscard]] PerkDeleteFloorPerNTetraminos : Perk
     static constexpr int minThreshold     = 10;
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getName() const override
+    [[nodiscard]] sf::base::String getName() const override
     {
         return "Janitor";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getDescription(const World& world) const override
+    [[nodiscard]] sf::base::String getDescription(const World& world) const override
     {
         if (!world.perkDeleteFloorPerNTetraminos.hasValue())
-            return std::format("Every {} tetraminos you place, delete the bottom row of the grid.", initialThreshold);
+            return minifmt::format("Every {} tetraminos you place, delete the bottom row of the grid.", initialThreshold);
 
         return "Decrease the number of tetraminos needed to trigger the Janitor effect.";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getProgressionStr(const World& world) const override
+    [[nodiscard]] sf::base::String getProgressionStr(const World& world) const override
     {
         if (!world.perkDeleteFloorPerNTetraminos.hasValue())
-            return std::format("Activates at {}", initialThreshold);
+            return minifmt::format("Activates at {}", initialThreshold);
 
-        return std::format("{} -> {}",
-                           world.perkDeleteFloorPerNTetraminos->nTetraminos,
-                           world.perkDeleteFloorPerNTetraminos->nTetraminos - 1);
+        return minifmt::format("{} -> {}",
+                               world.perkDeleteFloorPerNTetraminos->nTetraminos,
+                               world.perkDeleteFloorPerNTetraminos->nTetraminos - 1);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getInventoryStr(const World& world) const override
+    [[nodiscard]] sf::base::String getInventoryStr(const World& world) const override
     {
-        return std::format("(every {} tetraminos)", world.perkDeleteFloorPerNTetraminos->nTetraminos);
+        return minifmt::format("(every {} tetraminos)", world.perkDeleteFloorPerNTetraminos->nTetraminos);
     }
 
     /////////////////////////////////////////////////////////////
@@ -552,36 +553,36 @@ struct [[nodiscard]] PerkRndHitPerNTetraminos : Perk
     static constexpr int minThreshold     = 8;
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getName() const override
+    [[nodiscard]] sf::base::String getName() const override
     {
         return "On-Placement Strike";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getDescription(const World& world) const override
+    [[nodiscard]] sf::base::String getDescription(const World& world) const override
     {
         if (!world.perkRndHitPerNTetraminos.hasValue())
-            return std::format("Every {} tetraminos you place, randomly damage a block with a lightning strike.",
-                               initialThreshold);
+            return minifmt::format("Every {} tetraminos you place, randomly damage a block with a lightning strike.",
+                                   initialThreshold);
 
         return "Decrease the number of tetraminos needed to trigger the On-Placement Strike.";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getProgressionStr(const World& world) const override
+    [[nodiscard]] sf::base::String getProgressionStr(const World& world) const override
     {
         if (!world.perkRndHitPerNTetraminos.hasValue())
-            return std::format("Activates at {}", initialThreshold);
+            return minifmt::format("Activates at {}", initialThreshold);
 
-        return std::format("{} -> {}",
-                           world.perkRndHitPerNTetraminos->nTetraminos,
-                           world.perkRndHitPerNTetraminos->nTetraminos - 1);
+        return minifmt::format("{} -> {}",
+                               world.perkRndHitPerNTetraminos->nTetraminos,
+                               world.perkRndHitPerNTetraminos->nTetraminos - 1);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getInventoryStr(const World& world) const override
+    [[nodiscard]] sf::base::String getInventoryStr(const World& world) const override
     {
-        return std::format("(every {} tetraminos)", world.perkRndHitPerNTetraminos->nTetraminos);
+        return minifmt::format("(every {} tetraminos)", world.perkRndHitPerNTetraminos->nTetraminos);
     }
 
     /////////////////////////////////////////////////////////////
@@ -615,27 +616,27 @@ struct [[nodiscard]] PerkExtraLinePieces : Perk
     static constexpr int maxExtraPieces = 3;
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getName() const override
+    [[nodiscard]] sf::base::String getName() const override
     {
         return "Extra Line Pieces";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getDescription(const World&) const override
+    [[nodiscard]] sf::base::String getDescription(const World&) const override
     {
-        return std::format("Increase the number of line pieces in the tetramino bag by {}.", pieceIncrease);
+        return minifmt::format("Increase the number of line pieces in the tetramino bag by {}.", pieceIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getProgressionStr(const World& world) const override
+    [[nodiscard]] sf::base::String getProgressionStr(const World& world) const override
     {
-        return std::format("{} -> {}", world.perkExtraLinePiecesInPool, world.perkExtraLinePiecesInPool + pieceIncrease);
+        return minifmt::format("{} -> {}", world.perkExtraLinePiecesInPool, world.perkExtraLinePiecesInPool + pieceIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getInventoryStr(const World& world) const override
+    [[nodiscard]] sf::base::String getInventoryStr(const World& world) const override
     {
-        return std::format("(+{})", world.perkExtraLinePiecesInPool);
+        return minifmt::format("(+{})", world.perkExtraLinePiecesInPool);
     }
 
     /////////////////////////////////////////////////////////////
@@ -663,31 +664,31 @@ template <DrillDirection::Enum TDirection>
 struct [[nodiscard]] PerkHorizontalDrillUnlock : Perk
 {
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getName() const override
+    [[nodiscard]] sf::base::String getName() const override
     {
         const auto* upperCaseDirectionStr = (TDirection == DrillDirection::Left) ? "Left" : "Right";
-        return std::format("{} Horizontal Drill", upperCaseDirectionStr);
+        return minifmt::format("{} Horizontal Drill", upperCaseDirectionStr);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getDescription(const World&) const override
+    [[nodiscard]] sf::base::String getDescription(const World&) const override
     {
         const auto* lowerCaseDirectionStr = (TDirection == DrillDirection::Left) ? "left" : "right";
-        return std::format("Damage blocks directly adjacent to the {} of the placed tetramino.", lowerCaseDirectionStr);
+        return minifmt::format("Damage blocks directly adjacent to the {} of the placed tetramino.", lowerCaseDirectionStr);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getProgressionStr(const World&) const override
+    [[nodiscard]] sf::base::String getProgressionStr(const World&) const override
     {
         return "";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getInventoryStr(const World& world) const override
+    [[nodiscard]] sf::base::String getInventoryStr(const World& world) const override
     {
-        return std::format("(penetration: {}, coverage: {})",
-                           world.perkDrill[TDirection]->maxPenetration,
-                           world.perkDrill[TDirection]->coverage);
+        return minifmt::format("(penetration: {}, coverage: {})",
+                               world.perkDrill[TDirection]->maxPenetration,
+                               world.perkDrill[TDirection]->coverage);
     }
 
     /////////////////////////////////////////////////////////////
@@ -719,29 +720,29 @@ struct [[nodiscard]] PerkHorizontalDrillPenetration : Perk
     static constexpr int maxPenetration      = 4;
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getName() const override
+    [[nodiscard]] sf::base::String getName() const override
     {
         const auto* upperCaseDirectionStr = (TDirection == DrillDirection::Left) ? "Left" : "Right";
-        return std::format("{} Drill - Penetration", upperCaseDirectionStr);
+        return minifmt::format("{} Drill - Penetration", upperCaseDirectionStr);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getDescription(const World& world) const override
+    [[nodiscard]] sf::base::String getDescription(const World& world) const override
     {
-        return std::format("Increase the maximum number of blocks damaged to {}.",
-                           world.perkDrill[TDirection]->maxPenetration + penetrationIncrease);
+        return minifmt::format("Increase the maximum number of blocks damaged to {}.",
+                               world.perkDrill[TDirection]->maxPenetration + penetrationIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getProgressionStr(const World& world) const override
+    [[nodiscard]] sf::base::String getProgressionStr(const World& world) const override
     {
-        return std::format("{} -> {}",
-                           world.perkDrill[TDirection]->maxPenetration,
-                           world.perkDrill[TDirection]->maxPenetration + penetrationIncrease);
+        return minifmt::format("{} -> {}",
+                               world.perkDrill[TDirection]->maxPenetration,
+                               world.perkDrill[TDirection]->maxPenetration + penetrationIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getInventoryStr(const World&) const override
+    [[nodiscard]] sf::base::String getInventoryStr(const World&) const override
     {
         return ""; // handled by main perk
     }
@@ -775,29 +776,29 @@ struct [[nodiscard]] PerkHorizontalDrillCoverage : Perk
     static constexpr int maxLength      = 4;
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getName() const override
+    [[nodiscard]] sf::base::String getName() const override
     {
         const auto* upperCaseDirectionStr = (TDirection == DrillDirection::Left) ? "Left" : "Right";
-        return std::format("{} Drill - Coverage", upperCaseDirectionStr);
+        return minifmt::format("{} Drill - Coverage", upperCaseDirectionStr);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getDescription(const World& world) const override
+    [[nodiscard]] sf::base::String getDescription(const World& world) const override
     {
-        return std::format("Increase the maximum length of the drill to {} blocks.",
-                           world.perkDrill[TDirection]->coverage + lengthIncrease);
+        return minifmt::format("Increase the maximum length of the drill to {} blocks.",
+                               world.perkDrill[TDirection]->coverage + lengthIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getProgressionStr(const World& world) const override
+    [[nodiscard]] sf::base::String getProgressionStr(const World& world) const override
     {
-        return std::format("{} -> {}",
-                           world.perkDrill[TDirection]->coverage,
-                           world.perkDrill[TDirection]->coverage + lengthIncrease);
+        return minifmt::format("{} -> {}",
+                               world.perkDrill[TDirection]->coverage,
+                               world.perkDrill[TDirection]->coverage + lengthIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getInventoryStr(const World&) const override
+    [[nodiscard]] sf::base::String getInventoryStr(const World&) const override
     {
         return ""; // handled by main perk
     }
@@ -842,31 +843,31 @@ template <LaserDirection::Enum TDirection>
 struct [[nodiscard]] PerkDiagonalLaserUnlock : Perk
 {
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getName() const override
+    [[nodiscard]] sf::base::String getName() const override
     {
         const auto* upperCaseDirectionStr = (TDirection == LaserDirection::Left) ? "SW" : "SE";
-        return std::format("{} Diagonal Laser", upperCaseDirectionStr);
+        return minifmt::format("{} Diagonal Laser", upperCaseDirectionStr);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getDescription(const World&) const override
+    [[nodiscard]] sf::base::String getDescription(const World&) const override
     {
         const auto* lowerCaseDirectionStr = (TDirection == LaserDirection::Left) ? "southwest" : "southeast";
-        return std::format("Damage blocks placed diagonally to the {} of the placed tetramino.", lowerCaseDirectionStr);
+        return minifmt::format("Damage blocks placed diagonally to the {} of the placed tetramino.", lowerCaseDirectionStr);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getProgressionStr(const World&) const override
+    [[nodiscard]] sf::base::String getProgressionStr(const World&) const override
     {
         return "";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getInventoryStr(const World& world) const override
+    [[nodiscard]] sf::base::String getInventoryStr(const World& world) const override
     {
-        return std::format("(penetration: {}, bounce: {})",
-                           world.perkLaser[TDirection]->maxPenetration,
-                           world.perkLaser[TDirection]->bounce ? "yes" : "no");
+        return minifmt::format("(penetration: {}, bounce: {})",
+                               world.perkLaser[TDirection]->maxPenetration,
+                               world.perkLaser[TDirection]->bounce ? "yes" : "no");
     }
 
     /////////////////////////////////////////////////////////////
@@ -898,29 +899,29 @@ struct [[nodiscard]] PerkDiagonalLaserPenetration : Perk
     static constexpr int maxPenetration      = 4;
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getName() const override
+    [[nodiscard]] sf::base::String getName() const override
     {
         const auto* upperCaseDirectionStr = (TDirection == LaserDirection::Left) ? "SW" : "SE";
-        return std::format("{} Diagonal - Penetration", upperCaseDirectionStr);
+        return minifmt::format("{} Diagonal - Penetration", upperCaseDirectionStr);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getDescription(const World& world) const override
+    [[nodiscard]] sf::base::String getDescription(const World& world) const override
     {
-        return std::format("Increase the maximum number of blocks damaged to {}.",
-                           world.perkLaser[TDirection]->maxPenetration + penetrationIncrease);
+        return minifmt::format("Increase the maximum number of blocks damaged to {}.",
+                               world.perkLaser[TDirection]->maxPenetration + penetrationIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getProgressionStr(const World& world) const override
+    [[nodiscard]] sf::base::String getProgressionStr(const World& world) const override
     {
-        return std::format("{} -> {}",
-                           world.perkLaser[TDirection]->maxPenetration,
-                           world.perkLaser[TDirection]->maxPenetration + penetrationIncrease);
+        return minifmt::format("{} -> {}",
+                               world.perkLaser[TDirection]->maxPenetration,
+                               world.perkLaser[TDirection]->maxPenetration + penetrationIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getInventoryStr(const World&) const override
+    [[nodiscard]] sf::base::String getInventoryStr(const World&) const override
     {
         return ""; // handled by main perk
     }
@@ -950,28 +951,28 @@ template <LaserDirection::Enum TDirection>
 struct [[nodiscard]] PerkDiagonalLaserBounce : Perk
 {
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getName() const override
+    [[nodiscard]] sf::base::String getName() const override
     {
         const auto* upperCaseDirectionStr = (TDirection == LaserDirection::Left) ? "SW" : "SE";
-        return std::format("{} Diagonal - Bounce", upperCaseDirectionStr);
+        return minifmt::format("{} Diagonal - Bounce", upperCaseDirectionStr);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getDescription(const World&) const override
+    [[nodiscard]] sf::base::String getDescription(const World&) const override
     {
         const auto* lowerCaseDirectionStr = (TDirection == LaserDirection::Left) ? "southwest" : "southeast";
 
-        return std::format("Lasers fired {} will now bounce off the sides of the grid once.", lowerCaseDirectionStr);
+        return minifmt::format("Lasers fired {} will now bounce off the sides of the grid once.", lowerCaseDirectionStr);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getProgressionStr(const World&) const override
+    [[nodiscard]] sf::base::String getProgressionStr(const World&) const override
     {
         return "";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] std::string getInventoryStr(const World&) const override
+    [[nodiscard]] sf::base::String getInventoryStr(const World&) const override
     {
         return ""; // handled by main perk
     }

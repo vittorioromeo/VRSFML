@@ -114,6 +114,12 @@
 #    include <tuple>            // for forward_as_tuple
 #    include <utility>          // for pair, piece...
 
+#if __has_include(<bits/functional_hash.h>)
+#    include <bits/functional_hash.h>
+#else
+#    include <functional>          // for hash
+#endif
+
 #    if defined(_MSC_VER) && defined(_M_X64)
 #        include <intrin.h>
 #        pragma intrinsic(_umul128)

@@ -217,7 +217,7 @@ inline auto bitmapTextToVertices(const BitmapTextToVerticesOptions& options)
         if (alignment == BitmapTextAlignment::Right)
             return static_cast<float>(maxPixelWidth - linePixelWidths[lineIdx]);
 
-        SFML_BASE_ASSERT(BitmapTextAlignment::Left);
+        SFML_BASE_ASSERT(alignment == BitmapTextAlignment::Left);
         return 0.f;
     };
 

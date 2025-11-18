@@ -47,7 +47,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
         }
 
         ////////////////////////////////////////////////////////////
-        [[nodiscard, gnu::always_inline]] constexpr explicit(false) ScissorRect(const Rect2f& rect) :
+        [[nodiscard, gnu::always_inline]] constexpr /* implicit */ ScissorRect(const Rect2f& rect) :
             ScissorRect{rect.position, rect.size}
         {
         }
