@@ -160,14 +160,7 @@ public:
     ////////////////////////////////////////////////////////////
     constexpr explicit String() noexcept : m_rep{}
     {
-        setSsoSize(0);
-        SFML_BASE_ASSERT(isSso());
-
-        // In a constexpr context, we can't call `terminate()` which modifies member data.
-        // However, the SSO representation of an empty string is naturally null-terminated
-        // if we zero-initialize.
-        m_rep.sso.buffer[0] = '\0';
-        // The size-encoding byte will be set correctly by setSsoSize.
+        setSizeAndTerminate(0);
     }
 
 
@@ -377,7 +370,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    void erase(SizeT index,  SizeT count = nPos);
+    void erase(SizeT index, SizeT count = nPos);
     void assign(const char* cStr, SizeT count);
     void insert(SizeT pos, char c);
     void insert(SizeT pos, const char* cStr);
