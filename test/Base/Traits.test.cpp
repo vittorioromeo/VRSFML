@@ -19,6 +19,8 @@
 
 namespace
 {
+namespace TraitsTest // for unity builds
+{
 
 ////////////////////////////////////////////////////////////
 struct B
@@ -176,6 +178,7 @@ struct Custom2
     }
 };
 
+} // namespace TraitsTest
 } // namespace
 
 
@@ -183,7 +186,7 @@ namespace sf::base
 {
 
 template <>
-inline constexpr bool enableTrivialRelocation<Custom2> = true;
+inline constexpr bool enableTrivialRelocation<TraitsTest::Custom2> = true;
 
 } // namespace sf::base
 
@@ -191,7 +194,7 @@ inline constexpr bool enableTrivialRelocation<Custom2> = true;
 namespace
 {
 
-static_assert(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(Custom2));
+static_assert(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(TraitsTest::Custom2));
 
 
 struct Custom3
