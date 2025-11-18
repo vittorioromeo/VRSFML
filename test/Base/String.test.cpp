@@ -1,7 +1,7 @@
-#include "SFML/Base/String.hpp"
-
 #include "StringifySfBaseStringUtil.hpp" // used
 #include "StringifyStringViewUtil.hpp"   // used
+
+#include "SFML/Base/String.hpp"
 
 #include "SFML/Base/Algorithm/Copy.hpp"
 #include "SFML/Base/Macros.hpp"
@@ -16,6 +16,20 @@
 #include <Doctest.hpp>
 
 #include <string> // For comparison and interoperability tests
+
+
+namespace
+{
+
+sf::base::String makeLongString(const sf::base::StringView& base)
+{
+    sf::base::String result;
+    result.reserve(base.size() * 2 + 30);
+    result.append(base);
+    return result;
+}
+
+} // namespace
 
 
 TEST_CASE("[Base] Base/String.hpp")
@@ -37,6 +51,11 @@ TEST_CASE("[Base] Base/String.hpp")
         STATIC_CHECK(SFML_BASE_IS_MOVE_ASSIGNABLE(sf::base::String));
 
         STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(sf::base::String));
+    }
+
+    SECTION("Constexpr")
+    {
+        constexpr sf::base::String emptyStr;
     }
 
     SECTION("Constructors")
@@ -437,6 +456,215 @@ TEST_CASE("[Base] Base/String.hpp")
         CHECK(dest == longStringLiteral);
         CHECK(heapStr.isSso());
     }
-}
 
-// TODO P0: self-append, self-assign
+    SECTION("Self-append")
+    {
+        sf::base::String str("Hello");
+
+        str.append(str);
+        CHECK(str == "HelloHello");
+
+        str.append(str);
+        CHECK(str == "HelloHelloHelloHello");
+
+        str.append(str);
+        CHECK(str == "HelloHelloHelloHelloHelloHelloHelloHello");
+
+        str.append(str);
+        CHECK(str == "HelloHelloHelloHelloHelloHelloHelloHelloHelloHelloHelloHelloHelloHelloHelloHello");
+    }
+
+    SECTION("SsoSelfAppend")
+    {
+        // Small string: should be SSO and appending itself should produce "abcabc"
+        sf::base::String s("abc");
+        CHECK(s.size() == 3u);
+        s.append(s); // append itself
+        CHECK(s.size() == 6u);
+        CHECK(s == "abcabc");
+    }
+
+
+    SECTION("InPlaceSelfAppend_NoRealloc_UsesMemmovePath")
+    {
+        const auto makePattern = [](const sf::base::SizeT n)
+        {
+            sf::base::String s;
+            s.reserve(n);
+
+            for (sf::base::SizeT i = 0u; i < n; ++i)
+                s.pushBack(char('a' + (i % 26)));
+
+            return s;
+        };
+
+        // Prepare a reasonably large string so it uses heap storage
+        const sf::base::SizeT initialSize = 128;
+        const auto            pattern     = makePattern(initialSize);
+
+        // Construct our sf::base::String on the heap
+        sf::base::String s(pattern.cStr(), static_cast<sf::base::SizeT>(pattern.size()));
+        CHECK(s.size() == static_cast<sf::base::SizeT>(initialSize));
+
+        // Ensure capacity is large enough to fit the result of appending itself
+        const auto needed = static_cast<sf::base::SizeT>(initialSize * 2);
+        s.reserve(needed);
+
+        // Sanity: capacity must be >= needed (so append won't reallocate)
+        CHECK(s.capacity() == needed);
+
+        // Capture data pointer before append — if append reallocates, this will change.
+        const char* dataBefore = s.data();
+
+        // Perform self-append (source overlaps destination)
+        s.append(s);
+
+        // Data pointer should be unchanged (no reallocation) -> in-place path executed
+        const char* dataAfter = s.data();
+        CHECK(dataBefore == dataAfter);
+
+        // Size doubled
+        CHECK(s.size() == needed);
+
+        // First half equals original
+        CHECK(sf::base::StringView{s.cStr(), initialSize} == sf::base::StringView{pattern.cStr(), initialSize});
+
+        // Second half equals original
+        CHECK(sf::base::StringView{s.cStr() + initialSize, initialSize} ==
+              sf::base::StringView{pattern.cStr(), initialSize});
+    }
+
+    SECTION("Self-Assignment")
+    {
+        SECTION("s = s with SSO string")
+        {
+            sf::base::String s = "hello sso";
+            CHECK(s.isSso());
+            const char* originalData = s.data();
+
+            auto& self = s;
+            s          = self; // Self-assignment (avoid warning)
+
+            CHECK(s == "hello sso");
+            CHECK(s.data() == originalData); // Should not have reallocated
+        }
+
+        SECTION("s = s with Heap string")
+        {
+            sf::base::String s = makeLongString("this is a long string definitely on the heap");
+            CHECK(!s.isSso());
+            const char* originalData = s.data();
+            const auto  originalCap  = s.capacity();
+
+            auto& self = s;
+            s          = self; // Self-assignment (avoid warning)
+
+            CHECK(s == "this is a long string definitely on the heap");
+            CHECK(s.data() == originalData); // Should not have reallocated
+            CHECK(s.capacity() == originalCap);
+        }
+
+        SECTION("s = s.toStringView() with SSO string")
+        {
+            sf::base::String s            = "sso view";
+            const char*      originalData = s.data();
+
+            s = s.toStringView();
+
+            CHECK(s == "sso view");
+            CHECK(s.data() == originalData);
+        }
+
+        SECTION("s = s.toStringView() with Heap string")
+        {
+            sf::base::String s            = makeLongString("heap view assignment");
+            const char*      originalData = s.data();
+
+            s = s.toStringView();
+
+            CHECK(s == "heap view assignment");
+            CHECK(s.data() == originalData);
+        }
+
+        SECTION("Assigning an overlapping substring (tests memmove)")
+        {
+            // Case 1: Initial string is SSO
+            sf::base::String s1 = "abcdefgh";
+            CHECK(s1.isSso());
+
+            // Assign a substring of itself: s1 should become "cdef"
+            s1 = sf::base::StringView(s1.data() + 2, 4);
+
+            CHECK(s1 == "cdef");
+
+            // Case 2: Initial string is on the heap
+            sf::base::String s2 = makeLongString("This is a long string for testing overlap");
+            CHECK(!s2.isSso());
+
+            // Assign a substring of itself: s2 should become "long"
+            s2 = sf::base::StringView(s2.data() + 10, 4);
+            CHECK(s2 == "long");
+        }
+    }
+
+
+    SECTION("Self-Append")
+    {
+        SECTION("s += s with SSO string (transitioning to heap)")
+        {
+            // Choose a size that is SSO, but when doubled, is not.
+            // maxSsoSize is likely 23 on a 64-bit system, so 15 is a safe choice.
+            sf::base::String s = "sso-to-heap!!";
+            CHECK(s.size() == 13);
+            CHECK(s.isSso());
+
+            s += s; // Self-append, should trigger grow() and use-after-free bug
+
+            CHECK(s.size() == 26);
+            CHECK(s == "sso-to-heap!!sso-to-heap!!");
+            CHECK(!s.isSso());
+        }
+
+        SECTION("s += s with Heap string (forcing reallocation)")
+        {
+            // Create a heap string with little to no spare capacity
+            sf::base::String original = "a long string that will force a reallocation upon self-append";
+            sf::base::String s        = original;
+            CHECK(!s.isSso());
+            CHECK(s.capacity() - s.size() < s.size()); // Ensure it *must* reallocate
+
+            s += s; // Self-append that reallocates heap buffer
+
+            sf::base::String expected = original;
+            expected.append(original);
+
+            CHECK(s == expected);
+            CHECK(!s.isSso());
+        }
+
+        SECTION("s += s with Heap string (with enough capacity)")
+        {
+            sf::base::String s = "pre-reserved";
+            // Reserve enough space so no reallocation occurs
+            s.reserve(s.size() * 2 + 10);
+            CHECK(!s.isSso());
+            const char* originalData = s.data();
+
+            s += s; // Self-append in-place
+
+            CHECK(s == "pre-reservedpre-reserved");
+            CHECK(s.data() == originalData); // Must not reallocate
+        }
+
+        SECTION("Appending a substring of itself")
+        {
+            sf::base::String s = "12345";
+            CHECK(s.isSso());
+
+            // Append a view of its own beginning
+            s.append(sf::base::StringView(s.data(), 3)); // Append "123"
+
+            CHECK(s == "12345123");
+        }
+    }
+}
