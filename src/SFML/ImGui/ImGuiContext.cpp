@@ -37,12 +37,11 @@
 #include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/String.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
-
-#include <string>
 
 #if defined(__APPLE__)
     #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -1004,7 +1003,7 @@ struct [[nodiscard]] SpriteTextureData
 
 
 ////////////////////////////////////////////////////////////
-thread_local std::string clipboardText;
+thread_local sf::base::String clipboardText;
 
 
 ////////////////////////////////////////////////////////////
@@ -1017,9 +1016,9 @@ void setClipboardTextFn(void* /* userData */, const char* text)
 ////////////////////////////////////////////////////////////
 const char* getClipboardTextFn(void* /* userData */)
 {
-    auto tmp = Clipboard::getString().toUtf8<std::u8string>();
-    clipboardText.assign(tmp.begin(), tmp.end());
-    return clipboardText.c_str();
+    auto tmp = Clipboard::getString().toUtf8<sf::base::String>();
+    clipboardText.assign(tmp.data(), tmp.size());
+    return clipboardText.cStr();
 }
 
 } // namespace

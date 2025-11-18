@@ -165,7 +165,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    explicit(false) String(const char* cStr);
+    /* implicit */ String(const char* cStr);
     explicit String(const char* cStr, SizeT count);
     explicit String(StringView view);
 

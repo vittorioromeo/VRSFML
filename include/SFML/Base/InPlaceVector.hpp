@@ -95,7 +95,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr explicit(false) InPlaceVector(const std::initializer_list<TItem> iList) :
+    [[nodiscard]] constexpr /* implicit */ InPlaceVector(const std::initializer_list<TItem> iList) :
         InPlaceVector(iList.begin(), iList.end())
     {
     }
