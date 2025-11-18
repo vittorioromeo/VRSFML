@@ -58,24 +58,31 @@ inline constexpr const long long powersOf10[] = {
 /// \brief Converts an unsigned integral value to a character string.
 ///
 /// \param first Pointer to the beginning of the character buffer.
+/// \param last  Pointer to one past the end of the character buffer.
 /// \param value The unsigned value to convert.
 ///
 /// \return Pointer to one past the last character written.
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten]] constexpr char* unsignedToChars(char* const first, T value)
+[[nodiscard, gnu::always_inline, gnu::flatten]] constexpr char* unsignedToChars(char* const first, const char* const last, T value)
 {
     char* p = first;
 
     if (value == T{0})
     {
+        if (p >= last)
+            return nullptr; // Buffer too small
+
         *p++ = '0';
         return p;
     }
 
     while (value > T{0})
     {
+        if (p >= last)
+            return nullptr; // Buffer too small
+
         *p++ = '0' + static_cast<char>(value % 10);
         value /= 10;
     }
@@ -97,16 +104,17 @@ namespace sf::base
 /// \param first Pointer to the beginning of the character buffer.
 /// \param last  Pointer to the end of the character buffer (unused, kept for API consistency).
 /// \param value The integral value to convert.
+///
 /// \return Pointer to one past the last character written.
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard]] constexpr char* toChars(char* first, [[maybe_unused]] const char* const last, const T value)
+[[nodiscard]] constexpr char* toChars(char* first, const char* const last, const T value)
     requires isIntegral<T>
 {
     if constexpr (isUnsigned<T>)
     {
-        return priv::unsignedToChars(first, value);
+        return priv::unsignedToChars(first, last, value);
     }
     else
     {
@@ -115,14 +123,17 @@ template <typename T>
 
         if (value < 0)
         {
+            if (first >= last)
+                return nullptr; // Buffer too small
+
             *first++ = '-';
 
             // Unsigned arithmetic wraps around, so `-uValue` is well-defined
             // and gives the correct positive magnitude for all negative values, including T_MIN.
-            return priv::unsignedToChars(first, -uValue);
+            return priv::unsignedToChars(first, last, -uValue);
         }
 
-        return priv::unsignedToChars(first, uValue);
+        return priv::unsignedToChars(first, last, uValue);
     }
 }
 
@@ -136,39 +147,60 @@ template <typename T>
 /// \param last  Pointer to the end of the character buffer (unused, kept for API consistency).
 /// \param value The floating-point value to convert.
 /// \param precision The number of digits after the decimal point.
+///
 /// \return Pointer to one past the last character written.
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard]] constexpr char* toChars(char* first, [[maybe_unused]] const char* const last, T value, const int precision = 6)
+[[nodiscard]] constexpr char* toChars(char* first, const char* const last, T value, const int precision = 6)
     requires isFloatingPoint<T>
 {
     char* p = first;
 
     if (value < 0)
     {
+        if (p >= last)
+            return nullptr; // Buffer too small
+
         *p++  = '-';
         value = -value;
     }
 
-    // Convert integer part (note: subject to long long's range limitations)
-    const auto intPart = static_cast<long long>(value);
+    const int effPrecision = (precision > 0 && precision < 11) ? precision : 0;
 
-    p    = priv::unsignedToChars(p, intPart);
+    if (effPrecision == 0)
+    {
+        const auto roundedAsInt = static_cast<long long>(base::round(value));
+        return priv::unsignedToChars(p, last, roundedAsInt);
+    }
+
+    const long long multiplier = priv::powersOf10[effPrecision];
+    const auto roundedScaledValue = static_cast<MakeUnsigned<long long>>(base::round(value * static_cast<T>(multiplier)));
+
+    const auto finalIntPart  = static_cast<long long>(roundedScaledValue) / multiplier;
+    const auto finalFracPart = static_cast<long long>(roundedScaledValue) % multiplier;
+
+    p = priv::unsignedToChars(p, last, finalIntPart); // End of integer part
+
+    if (p == nullptr)
+        return nullptr; // Buffer too small
+
+    if (p >= last)
+        return nullptr; // Buffer too small for decimal point
+
     *p++ = '.';
-
-    // Calculate fractional part as an integer
-    const T         fracPart       = value - static_cast<T>(intPart);
-    const long long fracMultiplier = (precision > 0 && precision < 11) ? priv::powersOf10[precision] : 1;
-    const auto      fracAsInt      = static_cast<long long>(round(fracPart * static_cast<T>(fracMultiplier)));
 
     char fracBuffer[20]; // A buffer for the fractional part (`long long` max is 19 digits)
 
-    const char* const fracEnd    = priv::unsignedToChars(fracBuffer, fracAsInt);
+    const char* const fracEnd    = priv::unsignedToChars(fracBuffer, fracBuffer + sizeof(fracBuffer), finalFracPart);
     const int         fracLength = static_cast<int>(fracEnd - fracBuffer);
+    const int         numLeadingZeros = effPrecision - fracLength;
+
+    if (last - p < effPrecision)
+        return nullptr; // Buffer too small for fractional part
 
     // 1. Add leading zeros to the main buffer if needed. This is much faster than memmove.
-    for (int i = 0; i < precision - fracLength; ++i)
+    for (int i = 0; i < numLeadingZeros; ++i)
         *p++ = '0';
 
     // 2. Copy the generated fractional digits from the temp buffer.

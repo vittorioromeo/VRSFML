@@ -29,6 +29,7 @@ namespace
 using TaskQueue              = moodycamel::BlockingConcurrentQueue<ThreadPool::Task>;
 using TaskQueueConsumerToken = moodycamel::ConsumerToken;
 
+
 ////////////////////////////////////////////////////////////
 template <typename T>
 struct [[nodiscard]] MovableAtomic : std::atomic<T>
