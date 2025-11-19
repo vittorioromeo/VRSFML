@@ -29,10 +29,10 @@
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/Swap.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #include <atomic>
-#include <utility>
 
 
 namespace
@@ -771,14 +771,14 @@ Texture& Texture::operator=(const Texture& rhs)
 ////////////////////////////////////////////////////////////
 void Texture::swap(Texture& rhs) noexcept
 {
-    std::swap(m_size, rhs.m_size);
-    std::swap(m_texture, rhs.m_texture);
-    std::swap(m_isSmooth, rhs.m_isSmooth);
-    std::swap(m_sRgb, rhs.m_sRgb);
-    std::swap(m_wrapMode, rhs.m_wrapMode);
-    std::swap(m_fboAttachment, rhs.m_fboAttachment);
-    std::swap(m_hasMipmap, rhs.m_hasMipmap);
-    std::swap(m_cacheId, rhs.m_cacheId);
+    base::swap(m_size, rhs.m_size);
+    base::swap(m_texture, rhs.m_texture);
+    base::swap(m_isSmooth, rhs.m_isSmooth);
+    base::swap(m_sRgb, rhs.m_sRgb);
+    base::swap(m_wrapMode, rhs.m_wrapMode);
+    base::swap(m_fboAttachment, rhs.m_fboAttachment);
+    base::swap(m_hasMipmap, rhs.m_hasMipmap);
+    base::swap(m_cacheId, rhs.m_cacheId);
 }
 
 

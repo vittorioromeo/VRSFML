@@ -157,7 +157,7 @@ bool Path::exists() const
 ////////////////////////////////////////////////////////////
 bool Path::extensionIs(const base::StringView str) const
 {
-    const auto& nativeExt = m_impl->fsPath.extension().native();
+    const auto nativeExt = m_impl->fsPath.extension().native();
 
     if (nativeExt.size() != str.size())
         return false;
