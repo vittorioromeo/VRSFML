@@ -119,12 +119,6 @@ else()
         sfml_set_stdlib(vorbisenc)
         sfml_set_stdlib(vorbisfile)
 
-        target_compile_options(ogg PRIVATE "-w")
-        target_compile_options(FLAC PRIVATE "-w")
-        target_compile_options(vorbis PRIVATE "-w")
-        target_compile_options(vorbisenc PRIVATE "-w")
-        target_compile_options(vorbisfile PRIVATE "-w")
-
         # define NDEBUG when building FLAC to suppress console debug output
         target_compile_definitions(FLAC PRIVATE NDEBUG)
 
