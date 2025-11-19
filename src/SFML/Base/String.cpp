@@ -9,8 +9,6 @@
 #include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/Builtin/Strlen.hpp"
 
-#include <string>
-
 
 namespace
 {
@@ -93,18 +91,6 @@ String::String(const char* const cStr, const SizeT count) : m_rep{}
 String::String(const StringView view) : String{view.data(), view.size()}
 {
 }
-
-
-////////////////////////////////////////////////////////////
-template <typename AnsiStringLike>
-    requires isSame<typename AnsiStringLike::value_type, char>
-String::String(const AnsiStringLike& ansiString) : String{ansiString.data(), ansiString.size()}
-{
-}
-
-
-////////////////////////////////////////////////////////////
-template String::String(const std::string&);
 
 
 ////////////////////////////////////////////////////////////

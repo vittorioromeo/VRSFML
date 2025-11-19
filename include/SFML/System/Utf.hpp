@@ -795,7 +795,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
-    static In decode(In begin, In end, char32_t& output, char32_t replacement)
+    static In decode(In begin, [[maybe_unused]] In end, char32_t& output, [[maybe_unused]] char32_t replacement)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(char32_t));
 
@@ -818,7 +818,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename Out>
-    static Out encode(char32_t input, Out output, char32_t replacement)
+    static Out encode(char32_t input, Out output, [[maybe_unused]] char32_t replacement)
     {
         *output++ = input;
         return output;
@@ -837,7 +837,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
-    static In next(In begin, In end)
+    static In next(In begin, [[maybe_unused]] In end)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(char32_t));
 

@@ -173,7 +173,9 @@ public:
     ////////////////////////////////////////////////////////////
     template <typename AnsiStringLike>
         requires isSame<typename AnsiStringLike::value_type, char>
-    explicit String(const AnsiStringLike& ansiString);
+    explicit String(const AnsiStringLike& ansiString) : String{ansiString.data(), ansiString.size()}
+    {
+    }
 
 
     ////////////////////////////////////////////////////////////
