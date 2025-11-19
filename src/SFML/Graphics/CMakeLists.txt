@@ -86,11 +86,7 @@ else()
         sfml_set_stdlib(freetype)
 
         # Disable all warnings
-        if(SFML_COMPILER_MSVC)
-            target_compile_options(freetype PRIVATE /w)
-        elseif(SFML_COMPILER_GCC OR SFML_COMPILER_CLANG)
-            target_compile_options(freetype PRIVATE -w)
-        endif()
+        target_compile_options(freetype PRIVATE -w)
 
         add_library(Freetype::Freetype ALIAS freetype)
     endfunction()
