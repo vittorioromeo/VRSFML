@@ -1602,7 +1602,7 @@ int main()
         window.setHasTitlebar(true);
 
         window.setSize(sf::VideoModeUtils::getDesktopMode().size / 2u);
-        window.setCenter(sf::VideoModeUtils::getDesktopMode().size.toVec2f() / 2.f);
+        window.setGlobalCenter(sf::VideoModeUtils::getDesktopMode().size.toVec2f() / 2.f);
     };
 
     //
@@ -1746,7 +1746,7 @@ int main()
             };
 
             ImGui::SetNextWindowSize(ImVec2{440.f * imguiMult, 470.f * imguiMult});
-            ImGui::SetNextWindowPos({window.getRight() - 440.f * imguiMult - 24.f * imguiMult, 24.f * imguiMult});
+            ImGui::SetNextWindowPos({window.getLocalRight() - 440.f * imguiMult - 24.f * imguiMult, 24.f * imguiMult});
 
             ImGui::PushFont(fontImGuiGeistMono);
             ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 10.f * imguiMult); // Set corner radius
