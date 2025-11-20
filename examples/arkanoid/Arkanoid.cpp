@@ -94,8 +94,8 @@ private:
 
     void updateBallCollisionsAgainstBoundaries()
     {
-        const auto [ballLeft, ballTop]     = m_ball.getTopLeft();
-        const auto [ballRight, ballBottom] = m_ball.getBottomRight();
+        const auto [ballLeft, ballTop]     = m_ball.getGlobalTopLeft();
+        const auto [ballRight, ballBottom] = m_ball.getGlobalBottomRight();
 
         const float boundaryLeft   = 0.f;
         const float boundaryRight  = resolution.x;
@@ -105,23 +105,23 @@ private:
         if (ballLeft < boundaryLeft)
         {
             m_ballVelocity.x *= -1.f;
-            m_ball.setLeft(boundaryLeft);
+            m_ball.setGlobalLeft(boundaryLeft);
         }
         else if (ballRight > boundaryRight)
         {
             m_ballVelocity.x *= -1.f;
-            m_ball.setRight(boundaryRight);
+            m_ball.setGlobalRight(boundaryRight);
         }
 
         if (ballTop < boundaryTop)
         {
             m_ballVelocity.y *= -1.f;
-            m_ball.setTop(boundaryTop);
+            m_ball.setGlobalTop(boundaryTop);
         }
         else if (ballBottom > boundaryBottom)
         {
             m_ballVelocity.y *= -1.f;
-            m_ball.setBottom(boundaryBottom);
+            m_ball.setGlobalBottom(boundaryBottom);
         }
     }
 
@@ -201,10 +201,10 @@ public:
         const float boundaryLeft  = 0.f;
         const float boundaryRight = resolution.x;
 
-        if (m_player.getLeft() < boundaryLeft)
-            m_player.setLeft(boundaryLeft);
-        else if (m_player.getRight() > boundaryRight)
-            m_player.setRight(boundaryRight);
+        if (m_player.getGlobalLeft() < boundaryLeft)
+            m_player.setGlobalLeft(boundaryLeft);
+        else if (m_player.getGlobalRight() > boundaryRight)
+            m_player.setGlobalRight(boundaryRight);
     }
 
     void drawOnto(sf::RenderTarget& renderTarget)

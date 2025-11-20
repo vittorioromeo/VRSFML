@@ -15,16 +15,16 @@ namespace sf
 /// \brief Utility mixin providing anchor point functions for positioning
 ///
 /// This template class can be inherited by classes that have position
-/// and bounds (like `sf::Transformable` based classes or `sf::WindowBase`)
+/// and bounds (like `sf::Transformable` based classes)
 /// to add convenient functions for getting and setting the object's position
 /// based on common anchor points (corners, centers, edges).
 ///
 /// It relies on the inheriting class `T` providing `getGlobalBounds()`
-/// (or `getSize()` for `sf::WindowBase`) and having a `position` member.
+/// and having a `position` member.
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-struct AnchorPointMixin
+struct GlobalAnchorPointMixin
 {
     ////////////////////////////////////////////////////////////
     /// \brief Get the world position of a specific anchor point
@@ -38,83 +38,76 @@ struct AnchorPointMixin
     /// \return World coordinates of the calculated anchor point
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr auto getAnchorPoint(const Vec2f factors) const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr auto getGlobalAnchorPoint(const Vec2f factors) const
     {
-        if constexpr (requires { static_cast<const T&>(*this).getGlobalBounds(); })
-        {
-            return static_cast<const T&>(*this).getGlobalBounds().getAnchorPoint(factors);
-        }
-        else
-        {
-            // For `sf::WindowBase`
-            return static_cast<const T&>(*this).getSize().toVec2f().componentWiseMul(factors);
-        }
+        return static_cast<const T&>(*this).getGlobalBounds().getAnchorPoint(factors);
     }
+
 
 ////////////////////////////////////////////////////////////
 #define SFML_PRIV_DEFINE_MIXIN_GETTER(name, ...)                                                  \
     /** \brief Get the position of the name anchor point */                                       \
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr auto name() const \
     {                                                                                             \
-        return this->getAnchorPoint(__VA_ARGS__);                                                 \
+        return this->getGlobalAnchorPoint(__VA_ARGS__);                                           \
     }
-
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the world position of the top-left anchor point
     ///
     ////////////////////////////////////////////////////////////
-    SFML_PRIV_DEFINE_MIXIN_GETTER(getTopLeft, {0.f, 0.f});
+    SFML_PRIV_DEFINE_MIXIN_GETTER(getGlobalTopLeft, {0.f, 0.f});
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the world position of the top-center anchor point
     ///
     ////////////////////////////////////////////////////////////
-    SFML_PRIV_DEFINE_MIXIN_GETTER(getTopCenter, {0.5f, 0.f});
+    SFML_PRIV_DEFINE_MIXIN_GETTER(getGlobalTopCenter, {0.5f, 0.f});
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the world position of the top-right anchor point
     ///
     ////////////////////////////////////////////////////////////
-    SFML_PRIV_DEFINE_MIXIN_GETTER(getTopRight, {1.f, 0.f});
+    SFML_PRIV_DEFINE_MIXIN_GETTER(getGlobalTopRight, {1.f, 0.f});
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the world position of the center-left anchor point
     ///
     ////////////////////////////////////////////////////////////
-    SFML_PRIV_DEFINE_MIXIN_GETTER(getCenterLeft, {0.f, 0.5f});
+    SFML_PRIV_DEFINE_MIXIN_GETTER(getGlobalCenterLeft, {0.f, 0.5f});
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the world position of the center anchor point
     ///
     ////////////////////////////////////////////////////////////
-    SFML_PRIV_DEFINE_MIXIN_GETTER(getCenter, {0.5f, 0.5f});
+    SFML_PRIV_DEFINE_MIXIN_GETTER(getGlobalCenter, {0.5f, 0.5f});
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the world position of the center-right anchor point
     ///
     ////////////////////////////////////////////////////////////
-    SFML_PRIV_DEFINE_MIXIN_GETTER(getCenterRight, {1.f, 0.5f});
+    SFML_PRIV_DEFINE_MIXIN_GETTER(getGlobalCenterRight, {1.f, 0.5f});
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the world position of the bottom-left anchor point
     ///
     ////////////////////////////////////////////////////////////
-    SFML_PRIV_DEFINE_MIXIN_GETTER(getBottomLeft, {0.f, 1.f});
+    SFML_PRIV_DEFINE_MIXIN_GETTER(getGlobalBottomLeft, {0.f, 1.f});
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the world position of the bottom-center anchor point
     ///
     ////////////////////////////////////////////////////////////
-    SFML_PRIV_DEFINE_MIXIN_GETTER(getBottomCenter, {0.5f, 1.f});
+    SFML_PRIV_DEFINE_MIXIN_GETTER(getGlobalBottomCenter, {0.5f, 1.f});
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the world position of the bottom-right anchor point
     ///
     ////////////////////////////////////////////////////////////
-    SFML_PRIV_DEFINE_MIXIN_GETTER(getBottomRight, {1.f, 1.f});
+    SFML_PRIV_DEFINE_MIXIN_GETTER(getGlobalBottomRight, {1.f, 1.f});
 
 #undef SFML_PRIV_DEFINE_MIXIN_GETTER
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the world X coordinate of the left edge
@@ -122,18 +115,11 @@ struct AnchorPointMixin
     /// \return Left edge X coordinate
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getLeft() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getGlobalLeft() const
     {
-        if constexpr (requires { static_cast<const T&>(*this).getGlobalBounds(); })
-        {
-            return static_cast<const T&>(*this).getGlobalBounds().getLeft();
-        }
-        else
-        {
-            // For `sf::WindowBase`
-            return 0.f;
-        }
+        return static_cast<const T&>(*this).getGlobalBounds().getLeft();
     }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the world X coordinate of the right edge
@@ -141,18 +127,11 @@ struct AnchorPointMixin
     /// \return Right edge X coordinate
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getRight() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getGlobalRight() const
     {
-        if constexpr (requires { static_cast<const T&>(*this).getGlobalBounds(); })
-        {
-            return static_cast<const T&>(*this).getGlobalBounds().getRight();
-        }
-        else
-        {
-            // For `sf::WindowBase`
-            return static_cast<float>(static_cast<const T&>(*this).getSize().x);
-        }
+        return static_cast<const T&>(*this).getGlobalBounds().getRight();
     }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the world Y coordinate of the top edge
@@ -160,18 +139,11 @@ struct AnchorPointMixin
     /// \return Top edge Y coordinate
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getTop() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getGlobalTop() const
     {
-        if constexpr (requires { static_cast<const T&>(*this).getGlobalBounds(); })
-        {
-            return static_cast<const T&>(*this).getGlobalBounds().getTop();
-        }
-        else
-        {
-            // For `sf::WindowBase`
-            return 0.f;
-        }
+        return static_cast<const T&>(*this).getGlobalBounds().getTop();
     }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the world Y coordinate of the bottom edge
@@ -179,18 +151,11 @@ struct AnchorPointMixin
     /// \return Bottom edge Y coordinate
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getBottom() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getGlobalBottom() const
     {
-        if constexpr (requires { static_cast<const T&>(*this).getGlobalBounds(); })
-        {
-            return static_cast<const T&>(*this).getGlobalBounds().getBottom();
-        }
-        else
-        {
-            // For `sf::WindowBase`
-            return static_cast<float>(static_cast<const T&>(*this).getSize().y);
-        }
+        return static_cast<const T&>(*this).getGlobalBounds().getBottom();
     }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the object's position based on an anchor point
@@ -202,27 +167,19 @@ struct AnchorPointMixin
     /// \param newPosition Target world coordinates for the anchor point
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] inline constexpr void setAnchorPoint(const Vec2f factors, const Vec2f newPosition)
+    [[gnu::always_inline, gnu::flatten]] inline constexpr void setGlobalAnchorPoint(const Vec2f factors, const Vec2f newPosition)
     {
-        if constexpr (requires { static_cast<const T&>(*this).getGlobalBounds(); })
-        {
-            const auto& bounds = static_cast<const T&>(*this).getGlobalBounds();
-            static_cast<T&>(*this).position += newPosition - bounds.position + bounds.getAnchorPointOffset(factors);
-        }
-        else
-        {
-            // For `sf::WindowBase`
-            static_cast<T&>(*this).setPosition(
-                (newPosition - static_cast<const T&>(*this).getSize().toVec2f().componentWiseMul(factors)).toVec2i());
-        }
+        const auto& bounds = static_cast<const T&>(*this).getGlobalBounds();
+        addPositionImpl(newPosition - bounds.position + bounds.getAnchorPointOffset(factors));
     }
+
 
 ////////////////////////////////////////////////////////////
 #define SFML_PRIV_DEFINE_MIXIN_SETTER(name, ...)                                             \
     /** \brief Set the position based on the name anchor point */                            \
     [[gnu::always_inline, gnu::flatten]] inline constexpr void name(const Vec2f newPosition) \
     {                                                                                        \
-        this->setAnchorPoint(__VA_ARGS__, newPosition);                                      \
+        this->setGlobalAnchorPoint(__VA_ARGS__, newPosition);                                \
     }
 
     ////////////////////////////////////////////////////////////
@@ -231,7 +188,7 @@ struct AnchorPointMixin
     /// \param newPosition Target world coordinates for the anchor
     ///
     ////////////////////////////////////////////////////////////
-    SFML_PRIV_DEFINE_MIXIN_SETTER(setTopLeft, {0.f, 0.f});
+    SFML_PRIV_DEFINE_MIXIN_SETTER(setGlobalTopLeft, {0.f, 0.f});
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the position based on the top-center anchor
@@ -239,7 +196,7 @@ struct AnchorPointMixin
     /// \param newPosition Target world coordinates for the anchor
     ///
     ////////////////////////////////////////////////////////////
-    SFML_PRIV_DEFINE_MIXIN_SETTER(setTopCenter, {0.5f, 0.f});
+    SFML_PRIV_DEFINE_MIXIN_SETTER(setGlobalTopCenter, {0.5f, 0.f});
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the position based on the top-right anchor
@@ -247,7 +204,7 @@ struct AnchorPointMixin
     /// \param newPosition Target world coordinates for the anchor
     ///
     ////////////////////////////////////////////////////////////
-    SFML_PRIV_DEFINE_MIXIN_SETTER(setTopRight, {1.f, 0.f});
+    SFML_PRIV_DEFINE_MIXIN_SETTER(setGlobalTopRight, {1.f, 0.f});
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the position based on the center-left anchor
@@ -255,7 +212,7 @@ struct AnchorPointMixin
     /// \param newPosition Target world coordinates for the anchor
     ///
     ////////////////////////////////////////////////////////////
-    SFML_PRIV_DEFINE_MIXIN_SETTER(setCenterLeft, {0.f, 0.5f});
+    SFML_PRIV_DEFINE_MIXIN_SETTER(setGlobalCenterLeft, {0.f, 0.5f});
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the position based on the center anchor
@@ -263,7 +220,7 @@ struct AnchorPointMixin
     /// \param newPosition Target world coordinates for the anchor
     ///
     ////////////////////////////////////////////////////////////
-    SFML_PRIV_DEFINE_MIXIN_SETTER(setCenter, {0.5f, 0.5f});
+    SFML_PRIV_DEFINE_MIXIN_SETTER(setGlobalCenter, {0.5f, 0.5f});
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the position based on the center-right anchor
@@ -271,7 +228,7 @@ struct AnchorPointMixin
     /// \param newPosition Target world coordinates for the anchor
     ///
     ////////////////////////////////////////////////////////////
-    SFML_PRIV_DEFINE_MIXIN_SETTER(setCenterRight, {1.f, 0.5f});
+    SFML_PRIV_DEFINE_MIXIN_SETTER(setGlobalCenterRight, {1.f, 0.5f});
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the position based on the bottom-left anchor
@@ -279,7 +236,7 @@ struct AnchorPointMixin
     /// \param newPosition Target world coordinates for the anchor
     ///
     ////////////////////////////////////////////////////////////
-    SFML_PRIV_DEFINE_MIXIN_SETTER(setBottomLeft, {0.f, 1.f});
+    SFML_PRIV_DEFINE_MIXIN_SETTER(setGlobalBottomLeft, {0.f, 1.f});
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the position based on the bottom-center anchor
@@ -287,7 +244,7 @@ struct AnchorPointMixin
     /// \param newPosition Target world coordinates for the anchor
     ///
     ////////////////////////////////////////////////////////////
-    SFML_PRIV_DEFINE_MIXIN_SETTER(setBottomCenter, {0.5f, 1.f});
+    SFML_PRIV_DEFINE_MIXIN_SETTER(setGlobalBottomCenter, {0.5f, 1.f});
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the position based on the bottom-right anchor
@@ -295,9 +252,10 @@ struct AnchorPointMixin
     /// \param newPosition Target world coordinates for the anchor
     ///
     ////////////////////////////////////////////////////////////
-    SFML_PRIV_DEFINE_MIXIN_SETTER(setBottomRight, {1.f, 1.f});
+    SFML_PRIV_DEFINE_MIXIN_SETTER(setGlobalBottomRight, {1.f, 1.f});
 
 #undef SFML_PRIV_DEFINE_MIXIN_SETTER
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the world X coordinate of the left edge
@@ -308,11 +266,12 @@ struct AnchorPointMixin
     /// \param newCoordinate Target X coordinate for the left edge
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] inline constexpr void setLeft(const float newCoordinate)
+    [[gnu::always_inline, gnu::flatten]] inline constexpr void setGlobalLeft(const float newCoordinate)
     {
         const auto& bounds = static_cast<const T&>(*this).getGlobalBounds();
-        static_cast<T&>(*this).position.x += newCoordinate - bounds.position.x;
+        addPositionImpl({newCoordinate - bounds.position.x, 0.f});
     }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the world X coordinate of the right edge
@@ -323,11 +282,12 @@ struct AnchorPointMixin
     /// \param newCoordinate Target X coordinate for the right edge
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] inline constexpr void setRight(const float newCoordinate)
+    [[gnu::always_inline, gnu::flatten]] inline constexpr void setGlobalRight(const float newCoordinate)
     {
         const auto& bounds = static_cast<const T&>(*this).getGlobalBounds();
-        static_cast<T&>(*this).position.x += newCoordinate - bounds.position.x - bounds.size.x;
+        addPositionImpl({newCoordinate - bounds.position.x - bounds.size.x, 0.f});
     }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the world Y coordinate of the top edge
@@ -338,11 +298,12 @@ struct AnchorPointMixin
     /// \param newCoordinate Target Y coordinate for the top edge
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] inline constexpr void setTop(const float newCoordinate)
+    [[gnu::always_inline, gnu::flatten]] inline constexpr void setGlobalTop(const float newCoordinate)
     {
         const auto& bounds = static_cast<const T&>(*this).getGlobalBounds();
-        static_cast<T&>(*this).position.y += newCoordinate - bounds.position.y;
+        addPositionImpl({0.f, newCoordinate - bounds.position.y});
     }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the world Y coordinate of the bottom edge
@@ -353,11 +314,12 @@ struct AnchorPointMixin
     /// \param newCoordinate Target Y coordinate for the bottom edge
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] inline constexpr void setBottom(const float newCoordinate)
+    [[gnu::always_inline, gnu::flatten]] inline constexpr void setGlobalBottom(const float newCoordinate)
     {
         const auto& bounds = static_cast<const T&>(*this).getGlobalBounds();
-        static_cast<T&>(*this).position.y += newCoordinate - bounds.position.y - bounds.size.y;
+        addPositionImpl({0.f, newCoordinate - bounds.position.y - bounds.size.y});
     }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the world X coordinate of the center
@@ -368,11 +330,12 @@ struct AnchorPointMixin
     /// \param newCoordinate Target X coordinate for the center
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] inline constexpr void setCenterX(const float newCoordinate)
+    [[gnu::always_inline, gnu::flatten]] inline constexpr void setGlobalCenterX(const float newCoordinate)
     {
         const auto& bounds = static_cast<const T&>(*this).getGlobalBounds();
-        static_cast<T&>(*this).position.x += newCoordinate - bounds.position.x - bounds.size.x / 2.f;
+        addPositionImpl({newCoordinate - bounds.position.x - bounds.size.x / 2.f, 0.f});
     }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the world Y coordinate of the center
@@ -383,10 +346,44 @@ struct AnchorPointMixin
     /// \param newCoordinate Target Y coordinate for the center
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] inline constexpr void setCenterY(const float newCoordinate)
+    [[gnu::always_inline, gnu::flatten]] inline constexpr void setGlobalCenterY(const float newCoordinate)
     {
         const auto& bounds = static_cast<const T&>(*this).getGlobalBounds();
-        static_cast<T&>(*this).position.y += newCoordinate - bounds.position.y - bounds.size.y / 2.f;
+        addPositionImpl({0.f, newCoordinate - bounds.position.y - bounds.size.y / 2.f});
+    }
+
+private:
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    struct AutoConvertingVec2f
+    {
+        Vec2f data;
+
+        template <typename U>
+        [[nodiscard, gnu::always_inline, gnu::flatten]] operator Vec2<U>() const
+        {
+            return data.to<Vec2<U>>();
+        }
+    };
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] inline constexpr void addPositionImpl(const Vec2f offset)
+    {
+        if constexpr (requires { static_cast<T&>(*this).position; })
+        {
+            static_cast<T&>(*this).position += offset;
+        }
+        else if constexpr (requires { static_cast<const T&>(*this).getPosition(); })
+        {
+            static_cast<T&>(*this).setPosition(
+                AutoConvertingVec2f{static_cast<const T&>(*this).getPosition().toVec2f() + offset});
+        }
     }
 };
 
@@ -394,7 +391,7 @@ struct AnchorPointMixin
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::AnchorPointMixin
+/// \class sf::GlobalAnchorPointMixin
 /// \ingroup system
 ///
 /// Utility mixin providing convenient functions to get and set
@@ -408,12 +405,11 @@ struct AnchorPointMixin
 /// on individual edge coordinates (`getLeft()`, `setRight()`, etc.).
 ///
 /// To use this mixin, inherit from it publicly, e.g.:
-/// `struct MyObject : public sf::Transformable, public sf::AnchorPointMixin<MyObject>`
+/// `struct MyObject : public sf::Transformable, public sf::GlobalAnchorPointMixin<MyObject>`
 /// The template argument `T` must be the type of the inheriting class itself.
-/// The inheriting class must provide `getGlobalBounds()` (or `getSize()` if
-/// bounds are not applicable, like for `sf::WindowBase`) and have a public
+/// The inheriting class must provide `getGlobalBounds()` and have a public
 /// `position` member of type `sf::Vec2f`.
 ///
-/// \see `sf::Transformable`, `sf::WindowBase`
+/// \see `sf::Transformable`
 ///
 ////////////////////////////////////////////////////////////

@@ -14,7 +14,8 @@
 #include "SFML/Graphics/VertexSpan.hpp"
 #include "SFML/Graphics/VertexUtils.hpp"
 
-#include "SFML/System/AnchorPointMixin.hpp"
+#include "SFML/System/GlobalAnchorPointMixin.hpp"
+#include "SFML/System/LocalAnchorPointMixin.hpp"
 #include "SFML/System/Rect2.hpp"
 #include "SFML/System/Vec2.hpp"
 
@@ -46,7 +47,10 @@ namespace sf
 /// \brief Base class for textured shapes with outline
 ///
 ////////////////////////////////////////////////////////////
-class SFML_GRAPHICS_API Shape : public TransformableMixin<Shape>, public AnchorPointMixin<Shape>
+class SFML_GRAPHICS_API Shape :
+    public TransformableMixin<Shape>,
+    public GlobalAnchorPointMixin<Shape>,
+    public LocalAnchorPointMixin<Shape>
 {
 public:
     ////////////////////////////////////////////////////////////

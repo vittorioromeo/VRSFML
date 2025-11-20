@@ -1101,12 +1101,12 @@ private:
                               .fillColor     = sf::Color::blackMask(alpha),
                           }};
 
-            text.setCenter(floorVec2(position.addY(yOffset) + sf::Vec2f{2.f, 3.f}));
+            text.setGlobalCenter(floorVec2(position.addY(yOffset) + sf::Vec2f{2.f, 3.f}));
             m_rtGame.draw(text);
 
             text.setFillColor(sf::Color::whiteMask(alpha));
 
-            text.setCenter(floorVec2(position.addY(yOffset)) + sf::Vec2f{2.f, 2.f});
+            text.setGlobalCenter(floorVec2(position.addY(yOffset)) + sf::Vec2f{2.f, 2.f});
             m_rtGame.draw(text);
         }
 
@@ -4026,12 +4026,12 @@ private:
 
             guide.setFillColor(mainColor.withAlpha(32));
             guide.setSize({1.f, (endPos - startPos).length()});
-            guide.setAnchorPoint(guideAnchorPoint, startPos + guideOffset);
+            guide.setGlobalAnchorPoint(guideAnchorPoint, startPos + guideOffset);
             m_rtGame.draw(guide, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
 
             guide.setFillColor(mainColor.withAlpha(16));
             guide.setSize({2.f, (endPos - startPos).length()});
-            guide.setAnchorPoint(guideAnchorPoint, startPos + guideOffset);
+            guide.setGlobalAnchorPoint(guideAnchorPoint, startPos + guideOffset);
             m_rtGame.draw(guide, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
 
             return endPos;
@@ -4409,7 +4409,7 @@ private:
                 .time            = m_totalTime,
                 .string          = statsStr,
             },
-            sf::Transform::fromPosition(statsBorder.getTopLeft() + sf::Vec2f{4.f, 2.f}));
+            sf::Transform::fromPosition(statsBorder.getGlobalTopLeft() + sf::Vec2f{4.f, 2.f}));
 
         m_rtGame.drawIndexedVertices({
             .vertexData    = m_textVerticesBuffer.data(),
@@ -4457,7 +4457,7 @@ private:
                 .time            = m_totalTime,
                 .string          = perksStr,
             },
-            sf::Transform::fromPosition(statsBorder.getTopLeft() + sf::Vec2f{4.f, 2.f}));
+            sf::Transform::fromPosition(statsBorder.getGlobalTopLeft() + sf::Vec2f{4.f, 2.f}));
 
         m_rtGame.drawIndexedVertices({
             .vertexData    = m_textVerticesBuffer.data(),
