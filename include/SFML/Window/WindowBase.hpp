@@ -12,7 +12,9 @@
 #include "SFML/Window/WindowHandle.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
-#include "SFML/System/AnchorPointMixin.hpp"
+#include "SFML/System/GlobalAnchorPointMixin.hpp"
+#include "SFML/System/LocalAnchorPointMixin.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/Time.hpp"
 #include "SFML/System/UnicodeString.hpp"
 #include "SFML/System/Vec2.hpp"
@@ -49,7 +51,7 @@ namespace sf
 /// \brief Window that serves as a base for other windows
 ///
 ////////////////////////////////////////////////////////////
-class SFML_WINDOW_API WindowBase : public AnchorPointMixin<WindowBase>
+class SFML_WINDOW_API WindowBase : public GlobalAnchorPointMixin<WindowBase>, public LocalAnchorPointMixin<WindowBase>
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -520,6 +522,24 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void setHasTitlebar(bool hasTitleBar);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the local bounding rectangle of the window
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::pure]] Rect2f getLocalBounds() const
+    {
+        return Rect2f{{0.f, 0.f}, getSize().toVec2f()};
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the global bounding rectangle of the window
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::pure]] Rect2f getGlobalBounds() const
+    {
+        return Rect2f{getPosition().toVec2f(), getSize().toVec2f()};
+    }
 
 private:
     friend class Window;
