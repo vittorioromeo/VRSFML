@@ -344,45 +344,7 @@ public:
         if (this == &rhs)
             return;
 
-        TItem* const lhsData = data();
-        TItem* const rhsData = rhs.data();
-
-        // Cache original sizes
-        const SizeT s1 = m_size;
-        const SizeT s2 = rhs.m_size;
-
-        const SizeT commonSize = SFML_BASE_MIN(s1, s2);
-
-        for (SizeT i = 0u; i < commonSize; ++i)
-            base::swap(lhsData[i], rhsData[i]); // Swap elements in the common part
-
-        if (s1 > s2) // `*this` is initially larger; its tail elements move to `rhs`
-        {
-            // Move elements from `(lhsData + commonSize)` up to `(lhsData + s1 - 1)`
-            // into `(rhsData + commonSize)`
-            for (SizeT i = commonSize; i < s1; ++i)
-            {
-                SFML_BASE_PLACEMENT_NEW(rhsData + i) TItem(static_cast<TItem&&>(lhsData[i]));
-
-                if constexpr (!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(TItem))
-                    (lhsData + i)->~TItem(); // Destroy moved-from element in `*this`
-            }
-        }
-        else if (s2 > s1) // `rhs` is initially larger; its tail elements move to `*this`
-        {
-            // Move elements from `(rhsData + commonSize)` up to `(rhsData + s2 - 1)`
-            // into `(lhsData + commonSize)`
-            for (SizeT i = commonSize; i < s2; ++i)
-            {
-                SFML_BASE_PLACEMENT_NEW(lhsData + i) TItem(static_cast<TItem&&>(rhsData[i]));
-
-                if constexpr (!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(TItem))
-                    (rhsData + i)->~TItem(); // Destroy moved-from element in `rhs`
-            }
-        }
-
-        // Swap the effective sizes
-        base::swap(m_size, rhs.m_size);
+        priv::VectorUtils::swapUnequalRanges(data(), m_size, rhs.data(), rhs.m_size);
     }
 
 

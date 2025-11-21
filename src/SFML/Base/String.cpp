@@ -316,6 +316,30 @@ void String::reserve(const SizeT newCapacity)
 
 
 ////////////////////////////////////////////////////////////
+void String::resize(const SizeT newSize, const char c)
+{
+    const SizeT currentSize = size();
+
+    if (newSize < currentSize)
+    {
+        setSizeAndTerminate(newSize);
+        return;
+    }
+
+    if (newSize > currentSize)
+    {
+        reserve(newSize);
+
+        char* const d = data();
+        for (SizeT i = currentSize; i < newSize; ++i)
+            d[i] = c;
+
+        setSizeAndTerminate(newSize);
+    }
+}
+
+
+////////////////////////////////////////////////////////////
 void String::erase(const SizeT index, SizeT count)
 {
     const SizeT currentSize = size();
