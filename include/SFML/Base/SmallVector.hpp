@@ -19,14 +19,31 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-template <typename TItem>
-class [[nodiscard]] Vector
+template <typename TItem, SizeT N>
+class [[nodiscard]] SmallVector
 {
+    static_assert(N > 0);
+
 private:
     ////////////////////////////////////////////////////////////
     TItem* m_data{nullptr};
     TItem* m_endSize{nullptr};
     TItem* m_endCapacity{nullptr};
+    alignas(TItem) unsigned char m_inlineStorage[sizeof(TItem) * N];
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem* getInlineStorage() noexcept
+    {
+        return reinterpret_cast<TItem*>(m_inlineStorage);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem* getInlineStorage() const noexcept
+    {
+        return reinterpret_cast<const TItem*>(m_inlineStorage);
+    }
 
 
     ////////////////////////////////////////////////////////////
@@ -41,15 +58,17 @@ private:
         auto*      newData = priv::VectorUtils::allocate<TItem>(finalNewCapacity);
         const auto oldSize = size();
 
-        if (m_data != nullptr)
+        if (m_data == nullptr)
         {
-            priv::VectorUtils::relocateRange(newData, m_data, m_endSize);
-            priv::VectorUtils::deallocate(m_data, currentCapacity);
+            // Should not happen given constructors init to inline
+            SFML_BASE_ASSERT(size() == 0u);
         }
         else
         {
-            SFML_BASE_ASSERT(size() == 0u);
-            SFML_BASE_ASSERT(currentCapacity == 0u);
+            priv::VectorUtils::relocateRange(newData, m_data, m_endSize);
+
+            if (isHeap())
+                priv::VectorUtils::deallocate(m_data, currentCapacity);
         }
 
         m_data        = newData;
@@ -79,45 +98,50 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector() = default;
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+    [[nodiscard]] SmallVector() : m_data{getInlineStorage()}, m_endSize{m_data}, m_endCapacity{m_data + N}
+    {
+    }
 
 
     ////////////////////////////////////////////////////////////
-    ~Vector()
+    ~SmallVector()
     {
         priv::VectorUtils::destroyRange(m_data, m_endSize);
-        priv::VectorUtils::deallocate(m_data, capacity());
+
+        if (isHeap())
+            priv::VectorUtils::deallocate(m_data, capacity());
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Vector(const SizeT initialSize)
+    [[nodiscard]] explicit SmallVector(const SizeT initialSize, const TItem& value) : SmallVector{}
     {
         if (initialSize == 0u)
             return;
 
-        m_data    = priv::VectorUtils::allocate<TItem>(initialSize);
-        m_endSize = m_endCapacity = m_data + initialSize;
+        reserve(initialSize);
 
-        priv::VectorUtils::defaultConstructRange(m_data, m_endSize);
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Vector(const SizeT initialSize, const TItem& value)
-    {
-        if (initialSize == 0u)
-            return;
-
-        m_data    = priv::VectorUtils::allocate<TItem>(initialSize);
-        m_endSize = m_endCapacity = m_data + initialSize;
-
+        m_endSize = m_data + initialSize;
         priv::VectorUtils::copyConstructRange(m_data, m_endSize, value);
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Vector(const TItem* const srcBegin, const TItem* const srcEnd)
+    [[nodiscard]] explicit SmallVector(const SizeT initialSize) : SmallVector{}
+    {
+        if (initialSize == 0u)
+            return;
+
+        reserve(initialSize);
+
+        m_endSize = m_data + initialSize;
+        priv::VectorUtils::defaultConstructRange(m_data, m_endSize);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] explicit SmallVector(const TItem* const srcBegin, const TItem* const srcEnd) : SmallVector{}
     {
         SFML_BASE_ASSERT(srcBegin <= srcEnd);
         const auto srcCount = static_cast<SizeT>(srcEnd - srcBegin);
@@ -125,31 +149,37 @@ public:
         if (srcCount == 0u)
             return;
 
-        m_data    = priv::VectorUtils::allocate<TItem>(srcCount);
-        m_endSize = m_endCapacity = m_data + srcCount;
-
+        reserve(srcCount);
         priv::VectorUtils::copyRange(m_data, srcBegin, srcEnd);
+        m_endSize = m_data + srcCount;
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] /* implicit */ Vector(const std::initializer_list<TItem> iList) : Vector(iList.begin(), iList.end())
+    [[nodiscard]] /* implicit */ SmallVector(const std::initializer_list<TItem> iList) :
+        SmallVector(iList.begin(), iList.end())
     {
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] Vector(const Vector& rhs) :
-        m_data{rhs.m_data == nullptr ? nullptr : priv::VectorUtils::allocate<TItem>(rhs.size())},
-        m_endSize{m_data + rhs.size()},
-        m_endCapacity{m_data + rhs.size()}
+    [[nodiscard, gnu::always_inline]] SmallVector(const SmallVector& rhs) : SmallVector{}
     {
+        reserve(rhs.size());
         priv::VectorUtils::copyRange(m_data, rhs.m_data, rhs.m_endSize);
+        m_endSize = m_data + rhs.size();
     }
 
 
     ////////////////////////////////////////////////////////////
-    Vector& operator=(const Vector& rhs)
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] bool isHeap() const noexcept
+    {
+        return m_data != reinterpret_cast<const TItem*>(m_inlineStorage);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    SmallVector& operator=(const SmallVector& rhs)
     {
         if (this == &rhs)
             return *this;
@@ -165,31 +195,84 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] Vector(Vector&& rhs) noexcept :
-        m_data{rhs.m_data},
-        m_endSize{rhs.m_endSize},
-        m_endCapacity{rhs.m_endCapacity}
+    [[nodiscard, gnu::always_inline]] SmallVector(SmallVector&& rhs) noexcept : SmallVector{}
     {
-        rhs.m_data    = nullptr;
-        rhs.m_endSize = rhs.m_endCapacity = nullptr;
+        if (rhs.isHeap())
+        {
+            // Steal the heap buffer
+            m_data        = rhs.m_data;
+            m_endSize     = rhs.m_endSize;
+            m_endCapacity = rhs.m_endCapacity;
+
+            // Reset RHS to its own inline storage
+            rhs.m_data        = rhs.getInlineStorage();
+            rhs.m_endSize     = rhs.m_data;
+            rhs.m_endCapacity = rhs.m_data + N;
+        }
+        else
+        {
+            // Move elements from RHS inline storage to LHS inline storage
+            // No need to reserve, capacity is N
+            priv::VectorUtils::relocateRange(m_data, rhs.m_data, rhs.m_endSize);
+            m_endSize     = m_data + rhs.size();
+            rhs.m_endSize = rhs.m_data;
+        }
     }
 
 
     ////////////////////////////////////////////////////////////
-    Vector& operator=(Vector&& rhs) noexcept
+    SmallVector& operator=(SmallVector&& rhs) noexcept
     {
         if (this == &rhs)
             return *this;
 
-        priv::VectorUtils::destroyRange(m_data, m_endSize);
-        priv::VectorUtils::deallocate(m_data, capacity());
+        // Destroy current elements
+        clear();
 
-        m_data        = rhs.m_data;
-        m_endSize     = rhs.m_endSize;
-        m_endCapacity = rhs.m_endCapacity;
+        if (rhs.isHeap())
+        {
+            // If we have a heap buffer, deallocate it before stealing
+            if (isHeap())
+                priv::VectorUtils::deallocate(m_data, capacity());
 
-        rhs.m_data    = nullptr;
-        rhs.m_endSize = rhs.m_endCapacity = nullptr;
+            // Steal pointers
+            m_data        = rhs.m_data;
+            m_endSize     = rhs.m_endSize;
+            m_endCapacity = rhs.m_endCapacity;
+
+            // Reset RHS
+            rhs.m_data        = rhs.getInlineStorage();
+            rhs.m_endSize     = rhs.m_data;
+            rhs.m_endCapacity = rhs.m_data + N;
+
+            return *this;
+        }
+
+        // Optimization: Reuse existing heap buffer
+        if (isHeap() && capacity() >= rhs.size())
+        {
+            priv::VectorUtils::relocateRange(m_data, rhs.m_data, rhs.m_endSize);
+            m_endSize = m_data + rhs.size();
+
+            rhs.clear(); // Reset rhs
+
+            return *this;
+        }
+
+        if (isHeap())
+        {
+            priv::VectorUtils::deallocate(m_data, capacity());
+            m_data        = getInlineStorage();
+            m_endCapacity = m_data + N;
+        }
+
+        m_endSize = m_data; // Reset size
+
+        // Move elements
+        priv::VectorUtils::relocateRange(m_data, rhs.m_data, rhs.m_endSize);
+        m_endSize = m_data + rhs.size();
+
+        rhs.clear();
 
         return *this;
     }
@@ -256,29 +339,39 @@ public:
     ////////////////////////////////////////////////////////////
     void shrinkToFit()
     {
+        if (!isHeap())
+            return;
+
         const SizeT currentSize = size();
 
-        if (capacity() <= currentSize)
-            return;
-
-        if (currentSize == 0u)
+        if (currentSize <= N)
         {
-            priv::VectorUtils::destroyRange(m_data, m_endSize);
-            priv::VectorUtils::deallocate(m_data, capacity());
+            // Move back to inline storage
+            TItem* const oldData     = m_data;
+            const auto   oldCapacity = capacity();
 
-            m_data    = nullptr;
-            m_endSize = m_endCapacity = nullptr;
+            // Setup inline pointers
+            TItem* const inlinePtr = getInlineStorage();
 
-            return;
+            priv::VectorUtils::relocateRange(inlinePtr, oldData, oldData + currentSize);
+            priv::VectorUtils::deallocate(oldData, oldCapacity);
+
+            m_data        = inlinePtr;
+            m_endSize     = m_data + currentSize;
+            m_endCapacity = m_data + N;
         }
+        else if (currentSize < capacity())
+        {
+            // Shrink heap allocation
+            auto* const newData     = priv::VectorUtils::allocate<TItem>(currentSize);
+            const auto  oldCapacity = capacity();
 
-        auto* newData = priv::VectorUtils::allocate<TItem>(currentSize);
+            priv::VectorUtils::relocateRange(newData, m_data, m_endSize);
+            priv::VectorUtils::deallocate(m_data, oldCapacity);
 
-        priv::VectorUtils::relocateRange(newData, m_data, m_endSize);
-        priv::VectorUtils::deallocate(m_data, capacity());
-
-        m_data    = newData;
-        m_endSize = m_endCapacity = m_data + currentSize;
+            m_data    = newData;
+            m_endSize = m_endCapacity = m_data + currentSize;
+        }
     }
 
 
@@ -421,14 +514,62 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void swap(Vector& rhs) noexcept
+    [[gnu::always_inline]] void swap(SmallVector& rhs) noexcept
     {
         if (this == &rhs)
             return;
 
-        base::swap(m_data, rhs.m_data);
-        base::swap(m_endSize, rhs.m_endSize);
-        base::swap(m_endCapacity, rhs.m_endCapacity);
+        const bool lhsHeap = isHeap();
+        const bool rhsHeap = rhs.isHeap();
+
+        if (lhsHeap && rhsHeap)
+        {
+            // Both are heap allocated: standard pointer swap
+            base::swap(m_data, rhs.m_data);
+            base::swap(m_endSize, rhs.m_endSize);
+            base::swap(m_endCapacity, rhs.m_endCapacity);
+
+            return;
+        }
+
+        if (!lhsHeap && !rhsHeap)
+        {
+            // Both are inline: use element-wise swap
+            SizeT lhsSz = size();
+            SizeT rhsSz = rhs.size();
+
+            priv::VectorUtils::swapUnequalRanges(m_data, lhsSz, rhs.m_data, rhsSz);
+
+            // Pointers data and capacity stay the same (pointing to respective inline storage)
+            // Update end pointers based on new sizes
+            m_endSize     = m_data + lhsSz;
+            rhs.m_endSize = rhs.m_data + rhsSz;
+
+            return;
+        }
+
+        // One is heap, one is inline
+        SmallVector* const heapVec   = lhsHeap ? this : &rhs;
+        SmallVector* const inlineVec = lhsHeap ? &rhs : this;
+
+        // 1. Move elements from inlineVec's inline storage to heapVec's inline storage
+        TItem* const heapVecInline = heapVec->getInlineStorage();
+        priv::VectorUtils::relocateRange(heapVecInline, inlineVec->m_data, inlineVec->m_endSize);
+
+        // 2. Capture heapVec's heap pointers
+        TItem* const heapData = heapVec->m_data;
+        TItem* const heapEnd  = heapVec->m_endSize;
+        TItem* const heapCap  = heapVec->m_endCapacity;
+
+        // 3. Point heapVec to its own inline storage (which now holds the data from inlineVec)
+        heapVec->m_data        = heapVecInline;
+        heapVec->m_endSize     = heapVecInline + inlineVec->size();
+        heapVec->m_endCapacity = heapVecInline + N;
+
+        // 4. Point inlineVec to the captured heap buffer
+        inlineVec->m_data        = heapData;
+        inlineVec->m_endSize     = heapEnd;
+        inlineVec->m_endCapacity = heapCap;
     }
 
 
@@ -465,7 +606,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    SFML_BASE_PRIV_DEFINE_COMMON_VECTOR_OPERATIONS(Vector);
+    SFML_BASE_PRIV_DEFINE_COMMON_VECTOR_OPERATIONS(SmallVector);
 };
 
 } // namespace sf::base

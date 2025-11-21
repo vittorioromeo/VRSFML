@@ -353,18 +353,38 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Converts the color to a 3D vector of a specified type `TVec3`.
+    ///
+    /// The components of the vector will be floating-point values
+    /// in the range `[0, 1], corresponding to the R, G, B components
+    /// of the color (divided by 255 to normalize them).
+    ///
+    /// \tparam TVec3 The type of the 3D vector. Must be constructible
+    ///               from three values of `decltype(TVec3{}.x)`.
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename TVec3>
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr TVec3 toVec3() const
+    {
+        using DimType = decltype(TVec3{}.x);
+
+        return {
+            static_cast<DimType>(r) / DimType{255},
+            static_cast<DimType>(g) / DimType{255},
+            static_cast<DimType>(b) / DimType{255},
+        };
+    }
+
+
+    ////////////////////////////////////////////////////////////
     /// \brief Converts the color to a 4D vector of a specified type `TVec4`.
     ///
-    /// The components of the vector (x, y, z, w) will be floating-point values
-    /// in the range `[0, 1]`. These correspond to the R, G, B, A components
-    /// of the `sf::Color`, respectively, each divided by 255.0 to normalize them.
+    /// The components of the vector will be floating-point values
+    /// in the range `[0, 1], corresponding to the R, G, B, A components
+    /// of the color (divided by 255 to normalize them).
     ///
-    /// \tparam TVec4 The type of the 4D vector to create (e.g., `sf::Vector4f`).
-    ///                It must have public `x, y, z, w` members or be constructible
-    ///                from four values of `decltype(TVec4{}.x)`.
-    ///
-    /// \return A `TVec4` instance representing the color, with `TVec4.x` as R,
-    ///         `TVec4.y` as G, `TVec4.z` as B, and `TVec4.w` as A.
+    /// \tparam TVec4 The type of the 4D vector. Must be constructible
+    ///               from four values of `decltype(TVec4{}.x)`.
     ///
     ////////////////////////////////////////////////////////////
     template <typename TVec4>
@@ -372,10 +392,12 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     {
         using DimType = decltype(TVec4{}.x);
 
-        return {static_cast<DimType>(r) / DimType{255},
-                static_cast<DimType>(g) / DimType{255},
-                static_cast<DimType>(b) / DimType{255},
-                static_cast<DimType>(a) / DimType{255}};
+        return {
+            static_cast<DimType>(r) / DimType{255},
+            static_cast<DimType>(g) / DimType{255},
+            static_cast<DimType>(b) / DimType{255},
+            static_cast<DimType>(a) / DimType{255},
+        };
     }
 
 

@@ -9,8 +9,10 @@
 #include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/Builtin/Memmove.hpp"
 #include "SFML/Base/FwdStdAlignedNewDelete.hpp"
+#include "SFML/Base/MinMaxMacros.hpp"
 #include "SFML/Base/PlacementNew.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Swap.hpp"
 #include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
 #include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
 #include "SFML/Base/Trait/IsTriviallyRelocatable.hpp"
@@ -194,7 +196,7 @@ template <typename T>
     if (pos == end)
         return; // Inserting at the end, no move needed.
 
-    if constexpr (SFML_BASE_IS_TRIVIALLY_COPYABLE(T))
+    if constexpr (SFML_BASE_IS_TRIVIALLY_COPYABLE(T) || SFML_BASE_IS_TRIVIALLY_RELOCATABLE(T))
     {
         SFML_BASE_MEMMOVE(pos + 1,                                    // Destination
                           pos,                                        // Source
@@ -215,6 +217,30 @@ template <typename T>
         if constexpr (!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(T))
             pos->~T();
     }
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+[[gnu::always_inline]] inline constexpr void swapUnequalRanges(T* lhsData, SizeT& lhsSize, T* rhsData, SizeT& rhsSize)
+{
+    const SizeT s1 = lhsSize;
+    const SizeT s2 = rhsSize;
+
+    const SizeT commonSize = SFML_BASE_MIN(s1, s2);
+
+    for (SizeT i = 0u; i < commonSize; ++i)
+    {
+        using base::swap;
+        swap(lhsData[i], rhsData[i]); // Swap elements in the common part
+    }
+
+    if (s1 > s2) // `lhs` is larger; its tail elements move to `rhs`
+        relocateRange(rhsData + commonSize, lhsData + commonSize, lhsData + s1);
+    else if (s2 > s1) // `rhs` is larger; its tail elements move to `lhs`
+        relocateRange(lhsData + commonSize, rhsData + commonSize, rhsData + s2);
+
+    base::swap(lhsSize, rhsSize);
 }
 
 
@@ -299,14 +325,14 @@ template <typename T>
     template <typename... Ts>                                                                                                  \
     [[gnu::always_inline, gnu::flatten]] constexpr TItem& emplaceBack(Ts&&... xs)                                              \
     {                                                                                                                          \
-        reserveMore(1);                                                                                                        \
+        reserve(size() + 1);                                                                                                   \
         return unsafeEmplaceBack(static_cast<Ts&&>(xs)...);                                                                    \
     }                                                                                                                          \
                                                                                                                                \
     template <typename T = TItem>                                                                                              \
     [[gnu::always_inline, gnu::flatten]] constexpr TItem& pushBack(T&& x)                                                      \
     {                                                                                                                          \
-        reserveMore(1);                                                                                                        \
+        reserve(size() + 1);                                                                                                   \
         return unsafeEmplaceBack(static_cast<T&&>(x));                                                                         \
     }                                                                                                                          \
                                                                                                                                \
@@ -330,13 +356,13 @@ template <typename T>
     template <typename... TItems>                                                                                              \
     [[gnu::always_inline]] constexpr void pushBackMultiple(TItems&&... items)                                                  \
     {                                                                                                                          \
-        reserveMore(sizeof...(items));                                                                                         \
+        reserve(size() + sizeof...(items));                                                                                    \
         unsafePushBackMultiple(static_cast<TItems&&>(items)...);                                                               \
     }                                                                                                                          \
                                                                                                                                \
     [[gnu::always_inline]] constexpr void emplaceRange(const TItem* const ptr, const SizeT count)                              \
     {                                                                                                                          \
-        reserveMore(count);                                                                                                    \
+        reserve(size() + count);                                                                                               \
         unsafeEmplaceBackRange(ptr, count);                                                                                    \
     }                                                                                                                          \
                                                                                                                                \

@@ -6,6 +6,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/ToChars.hpp"
 #include "SFML/Base/Trait/IsFloatingPoint.hpp"
@@ -36,7 +37,26 @@ template <typename T>
     char buffer[64];
 
     const char* const end = toChars(buffer, buffer + 64, value);
+    SFML_BASE_ASSERT(end != nullptr);
+
     return String{buffer, static_cast<SizeT>(end - buffer)};
+}
+
+
+////////////////////////////////////////////////////////////
+/// \brief TODO P1
+///
+////////////////////////////////////////////////////////////
+template <typename T>
+void appendToString(String& str, const T value)
+    requires(isIntegral<T> || isFloatingPoint<T>)
+{
+    char buffer[64];
+
+    const char* const end = toChars(buffer, buffer + 64, value);
+    SFML_BASE_ASSERT(end != nullptr);
+
+    str.append(buffer, static_cast<SizeT>(end - buffer));
 }
 
 } // namespace sf::base

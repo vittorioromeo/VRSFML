@@ -605,7 +605,6 @@ TEST_CASE("[Base] Base/String.hpp")
         }
     }
 
-
     SECTION("Self-Append")
     {
         SECTION("s += s with SSO string (transitioning to heap)")
@@ -664,5 +663,33 @@ TEST_CASE("[Base] Base/String.hpp")
 
             CHECK(s == "12345123");
         }
+    }
+
+    SECTION("Resize")
+    {
+        sf::base::String s = "Hello";
+        CHECK(s.isSso());
+        CHECK(s.size() == 5);
+
+        s.resize(10, 'X');
+        CHECK(s.size() == 10);
+        CHECK(s == "HelloXXXXX");
+        CHECK(s.isSso());
+
+        s.resize(3);
+        CHECK(s.size() == 3);
+        CHECK(s == "Hel");
+        CHECK(s.isSso());
+
+        s.resize(50);
+        CHECK(s.size() == 50);
+        CHECK(s[0] == 'H');
+        CHECK(s[1] == 'e');
+        CHECK(s[2] == 'l');
+
+        for (sf::base::SizeT i = 3; i < 50; ++i)
+            CHECK(s[i] == '\0');
+
+        CHECK(!s.isSso());
     }
 }
