@@ -23,12 +23,12 @@ template <typename F>
 {
     if constexpr (SFML_BASE_IS_SAME(decltype(f()), void))
     {
-        f();
+        static_cast<F&&>(f)();
         return RegularizeVoidDummy{};
     }
     else
     {
-        return f();
+        return static_cast<F&&>(f)();
     }
 }
 

@@ -73,7 +73,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    void unmapIfNeeded(TBufferObject& obj)
+    void unmapIfNeeded([[maybe_unused /* not available in EGL */]] TBufferObject& obj)
     {
 #ifdef SFML_OPENGL_ES
         priv::err() << "FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES";

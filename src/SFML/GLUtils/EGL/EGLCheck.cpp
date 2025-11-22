@@ -16,82 +16,92 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-bool eglCheckError(const char* file, unsigned int line, const char* expression)
+void eglCheckError(const unsigned int eglError, const char* file, unsigned int line, const char* expression)
 {
     const auto logError = [&](const char* error, const char* description)
     {
         err() << "An internal EGL call failed in " << Path{file}.filename() << " (" << line << ")."
               << "\nExpression:\n   " << expression << "\nError description:\n   " << error << "\n   " << description
               << '\n';
-
-        return false;
     };
 
-    switch (eglGetError())
-    {
-        case EGL_SUCCESS:
-            return true;
+    SFML_BASE_ASSERT(eglError != EGL_SUCCESS);
 
+    switch (eglError)
+    {
         case EGL_NOT_INITIALIZED:
-            return logError("EGL_NOT_INITIALIZED",
-                            "EGL is not initialized, or could not be initialized, for the specified display");
+            logError("EGL_NOT_INITIALIZED",
+                     "EGL is not initialized, or could not be initialized, for the specified display");
+            return;
 
         case EGL_BAD_ACCESS:
-            return logError("EGL_BAD_ACCESS",
-                            "EGL cannot access a requested resource (for example, a context is bound in another "
-                            "thread)");
+            logError("EGL_BAD_ACCESS",
+                     "EGL cannot access a requested resource (for example, a context is bound in another "
+                     "thread)");
+            return;
 
         case EGL_BAD_ALLOC:
-            return logError("EGL_BAD_ALLOC", "EGL failed to allocate resources for the requested operation");
+            logError("EGL_BAD_ALLOC", "EGL failed to allocate resources for the requested operation");
+            return;
 
         case EGL_BAD_ATTRIBUTE:
-            return logError("EGL_BAD_ATTRIBUTE",
-                            "an unrecognized attribute or attribute value was passed in an attribute list");
+            logError("EGL_BAD_ATTRIBUTE",
+                     "an unrecognized attribute or attribute value was passed in an attribute list");
+            return;
 
         case EGL_BAD_CONTEXT:
-            return logError("EGL_BAD_CONTEXT", "an EGLContext argument does not name a valid EGLContext");
+            logError("EGL_BAD_CONTEXT", "an EGLContext argument does not name a valid EGLContext");
+            return;
 
         case EGL_BAD_CONFIG:
-            return logError("EGL_BAD_CONFIG", "an EGLConfig argument does not name a valid EGLConfig");
+            logError("EGL_BAD_CONFIG", "an EGLConfig argument does not name a valid EGLConfig");
+            return;
 
         case EGL_BAD_CURRENT_SURFACE:
-            return logError("EGL_BAD_CURRENT_SURFACE",
-                            "the current surface of the calling thread is a window, pbuffer, or pixmap that is no "
-                            "longer valid");
+            logError("EGL_BAD_CURRENT_SURFACE",
+                     "the current surface of the calling thread is a window, pbuffer, or pixmap that is no "
+                     "longer valid");
+            return;
 
         case EGL_BAD_DISPLAY:
-            return logError("EGL_BAD_DISPLAY",
-                            "an EGLDisplay argument does not name a valid EGLDisplay; or, EGL is not initialized "
-                            "on the specified EGLDisplay");
+            logError("EGL_BAD_DISPLAY",
+                     "an EGLDisplay argument does not name a valid EGLDisplay; or, EGL is not initialized "
+                     "on the specified EGLDisplay");
+            return;
 
         case EGL_BAD_SURFACE:
-            return logError("EGL_BAD_SURFACE",
-                            "an EGLSurface argument does not name a valid surface (window, pbuffer, or pixmap) "
-                            "configured for rendering");
+            logError("EGL_BAD_SURFACE",
+                     "an EGLSurface argument does not name a valid surface (window, pbuffer, or pixmap) "
+                     "configured for rendering");
+            return;
 
         case EGL_BAD_MATCH:
-            return logError("EGL_BAD_MATCH",
-                            "arguments are inconsistent; for example, an otherwise valid context requires buffers "
-                            "(e.g. depth or stencil) not allocated by an otherwise valid surface");
+            logError("EGL_BAD_MATCH",
+                     "arguments are inconsistent; for example, an otherwise valid context requires buffers "
+                     "(e.g. depth or stencil) not allocated by an otherwise valid surface");
+            return;
 
         case EGL_BAD_PARAMETER:
-            return logError("EGL_BAD_PARAMETER", "one or more argument values are invalid");
+            logError("EGL_BAD_PARAMETER", "one or more argument values are invalid");
+            return;
 
         case EGL_BAD_NATIVE_PIXMAP:
-            return logError("EGL_BAD_NATIVE_PIXMAP",
-                            "an EGLNativePixmapType argument does not refer to a valid native pixmap");
+            logError("EGL_BAD_NATIVE_PIXMAP", "an EGLNativePixmapType argument does not refer to a valid native pixmap");
+            return;
 
         case EGL_BAD_NATIVE_WINDOW:
-            return logError("EGL_BAD_NATIVE_WINDOW",
-                            "an EGLNativeWindowType argument does not refer to a valid native window");
+            logError("EGL_BAD_NATIVE_WINDOW", "an EGLNativeWindowType argument does not refer to a valid native window");
+            return;
 
         case EGL_CONTEXT_LOST:
-            return logError("EGL_CONTEXT_LOST",
-                            "a power management event has occurred. The application must destroy all contexts and "
-                            "reinitialize client API state and objects to continue rendering");
+            logError("EGL_CONTEXT_LOST",
+                     "a power management event has occurred. The application must destroy all contexts and "
+                     "reinitialize client API state and objects to continue rendering");
+            return;
 
         default:
-            return logError("Unknown error", "Unknown description");
+            logError("Unknown error", "Unknown description");
+            return;
     }
 }
 
