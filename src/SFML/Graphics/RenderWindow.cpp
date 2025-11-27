@@ -22,9 +22,8 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-template <typename... TWindowArgs>
-RenderWindow::RenderWindow(int /* disambiguator */, TWindowArgs&&... windowArgs) :
-    Window(SFML_BASE_FORWARD(windowArgs)...),
+RenderWindow::RenderWindow(base::PassKey<RenderWindow>&&, Window&& window) :
+    Window(SFML_BASE_MOVE(window)),
     RenderTarget(View::fromRect({{0.f, 0.f}, getSize().toVec2f()}))
 {
     // Retrieve the framebuffer ID we have to bind when targeting the window for rendering
@@ -34,15 +33,24 @@ RenderWindow::RenderWindow(int /* disambiguator */, TWindowArgs&&... windowArgs)
 
 
 ////////////////////////////////////////////////////////////
-RenderWindow::RenderWindow(const Settings& windowSettings) : RenderWindow(int{}, windowSettings)
+base::Optional<RenderWindow> RenderWindow::create(const Settings& windowSettings)
 {
+    auto window = Window::create(windowSettings);
+
+    return window.hasValue()
+               ? base::Optional<RenderWindow>(base::inPlace, base::PassKey<RenderWindow>{}, SFML_BASE_MOVE(*window))
+               : base::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-RenderWindow::RenderWindow(WindowHandle handle, const ContextSettings& contextSettings) :
-    RenderWindow(int{}, handle, contextSettings)
+base::Optional<RenderWindow> RenderWindow::create(const WindowHandle handle, const ContextSettings& contextSettings)
 {
+    auto window = Window::create(handle, contextSettings);
+
+    return window.hasValue()
+               ? base::Optional<RenderWindow>(base::inPlace, base::PassKey<RenderWindow>{}, SFML_BASE_MOVE(*window))
+               : base::nullOpt;
 }
 
 

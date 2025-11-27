@@ -7997,17 +7997,19 @@ struct Main
 
         const bool takesAllScreen = newResolution == desktopResolution;
 
-        return sf::RenderWindow{{
-            .size            = newResolution,
-            .title           = "BubbleByte " BUBBLEBYTE_VERSION_STR,
-            .fullscreen      = !profile.windowed,
-            .resizable       = !takesAllScreen,
-            .closable        = !takesAllScreen,
-            .hasTitlebar     = !takesAllScreen,
-            .vsync           = profile.vsync,
-            .frametimeLimit  = sf::base::clamp(profile.frametimeLimit, 60u, 144u),
-            .contextSettings = contextSettings,
-        }};
+        return sf::RenderWindow::create(
+                   {
+                       .size            = newResolution,
+                       .title           = "BubbleByte " BUBBLEBYTE_VERSION_STR,
+                       .fullscreen      = !profile.windowed,
+                       .resizable       = !takesAllScreen,
+                       .closable        = !takesAllScreen,
+                       .hasTitlebar     = !takesAllScreen,
+                       .vsync           = profile.vsync,
+                       .frametimeLimit  = sf::base::clamp(profile.frametimeLimit, 60u, 144u),
+                       .contextSettings = contextSettings,
+                   })
+            .value();
     }
 
     ////////////////////////////////////////////////////////////

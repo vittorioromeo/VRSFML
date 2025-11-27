@@ -28,7 +28,7 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
     {
         SECTION("Mode and title constructor")
         {
-            const sf::Window window({.size{360u, 240u}, .title = "Window Tests"});
+            const auto window = sf::Window::create({.size{360u, 240u}, .title = "Window Tests"}).value();
 
             CHECK(window.getSize() == sf::Vec2u{360, 240});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
@@ -37,7 +37,7 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
         SECTION("Mode, title, and style constructor")
         {
-            const sf::Window window({.size{360u, 240u}, .title = "Window Tests"});
+            const auto window = sf::Window::create({.size{360u, 240u}, .title = "Window Tests"}).value();
 
             CHECK(window.getSize() == sf::Vec2u{360, 240});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
@@ -46,7 +46,7 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
         SECTION("Mode, title, style, and state constructor")
         {
-            const sf::Window window({.size{360u, 240u}, .title = "Window Tests"});
+            const auto window = sf::Window::create({.size{360u, 240u}, .title = "Window Tests"}).value();
 
             CHECK(window.getSize() == sf::Vec2u{360, 240});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
@@ -55,9 +55,11 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
         SECTION("Mode, title, style, state, and context settings constructor")
         {
-            const sf::Window window({.size{360u, 240u},
+            const auto window = sf::Window::create(
+                                    {.size{360u, 240u},
                                      .title = "Window Tests",
-                                     .contextSettings{.depthBits = 1, .stencilBits = 1, .antiAliasingLevel = 1}});
+                                     .contextSettings{.depthBits = 1, .stencilBits = 1, .antiAliasingLevel = 1}})
+                                    .value();
 
             CHECK(window.getSize() == sf::Vec2u{360, 240});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
@@ -68,7 +70,7 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
         SECTION("Mode, title, and state")
         {
-            const sf::Window window({.size{360u, 240u}, .title = "Window Tests"});
+            const auto window = sf::Window::create({.size{360u, 240u}, .title = "Window Tests"}).value();
 
             CHECK(window.getSize() == sf::Vec2u{360, 240});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
@@ -77,9 +79,11 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
         SECTION("Mode, title, state, and context settings constructor")
         {
-            const sf::Window window({.size{360u, 240u},
+            const auto window = sf::Window::create(
+                                    {.size{360u, 240u},
                                      .title = "Window Tests",
-                                     .contextSettings{.depthBits = 1, .stencilBits = 1, .antiAliasingLevel = 1}});
+                                     .contextSettings{.depthBits = 1, .stencilBits = 1, .antiAliasingLevel = 1}})
+                                    .value();
 
             CHECK(window.getSize() == sf::Vec2u{360, 240});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
@@ -93,11 +97,8 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 #ifndef SFML_SYSTEM_EMSCRIPTEN
     SECTION("Multiple windows 1")
     {
-        sf::Window window({.size{256u, 256u}, .title = "A"});
-
-        sf::base::Optional<sf::Window> childWindow(sf::base::inPlace,
-
-                                                   sf::Window::Settings{.size{256u, 256u}, .title = "B"});
+        auto window      = sf::Window::create({.size{256u, 256u}, .title = "A"}).value();
+        auto childWindow = sf::Window::create(sf::Window::Settings{.size{256u, 256u}, .title = "B"});
 
         window.display();
         childWindow.reset();
@@ -106,11 +107,8 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
     SECTION("Multiple windows 2")
     {
-        sf::Window window({.size{256u, 256u}, .title = "A"});
-
-        sf::base::Optional<sf::Window> childWindow(sf::base::inPlace,
-
-                                                   sf::Window::Settings{.size{256u, 256u}, .title = "B"});
+        auto window      = sf::Window::create({.size{256u, 256u}, .title = "A"}).value();
+        auto childWindow = sf::Window::create(sf::Window::Settings{.size{256u, 256u}, .title = "B"});
 
         window.display();
         childWindow->display();
@@ -119,11 +117,8 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
     SECTION("Multiple windows 3")
     {
-        sf::Window window({.size{256u, 256u}, .title = "A"});
-
-        sf::base::Optional<sf::Window> childWindow(sf::base::inPlace,
-
-                                                   sf::Window::Settings{.size{256u, 256u}, .title = "B"});
+        auto window      = sf::Window::create({.size{256u, 256u}, .title = "A"}).value();
+        auto childWindow = sf::Window::create(sf::Window::Settings{.size{256u, 256u}, .title = "B"});
 
         childWindow->display();
         window.display();
@@ -131,11 +126,8 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
     SECTION("Multiple windows 4")
     {
-        sf::Window window({.size{256u, 256u}, .title = "A"});
-
-        sf::base::Optional<sf::Window> childWindow(sf::base::inPlace,
-
-                                                   sf::Window::Settings{.size{256u, 256u}, .title = "B"});
+        auto window      = sf::Window::create({.size{256u, 256u}, .title = "A"}).value();
+        auto childWindow = sf::Window::create(sf::Window::Settings{.size{256u, 256u}, .title = "B"});
 
         childWindow->display();
         childWindow.reset();

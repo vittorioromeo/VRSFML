@@ -1452,17 +1452,19 @@ int main()
     // Set up window
     constexpr sf::Vec2f resolution{1680.f, 1050.f};
 
-    auto window = makeDPIScaledRenderWindow({
-        .size            = resolution.toVec2u(),
-        .title           = "Rockets",
-        .fullscreen      = false,
-        .resizable       = false,
-        .closable        = false,
-        .hasTitlebar     = false,
-        .vsync           = false,
-        .frametimeLimit  = 144u,
-        .contextSettings = {.antiAliasingLevel = 16u},
-    });
+    auto window = makeDPIScaledRenderWindow(
+                      {
+                          .size            = resolution.toVec2u(),
+                          .title           = "Rockets",
+                          .fullscreen      = false,
+                          .resizable       = false,
+                          .closable        = false,
+                          .hasTitlebar     = false,
+                          .vsync           = false,
+                          .frametimeLimit  = 144u,
+                          .contextSettings = {.antiAliasingLevel = 16u},
+                      })
+                      .value();
 
     // TODO P0: GPUStorage is still glitchy, some synchronization issue persists...
     window.setAutoBatchMode(sf::RenderTarget::AutoBatchMode::GPUStorage);

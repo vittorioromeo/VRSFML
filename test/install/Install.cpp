@@ -45,5 +45,5 @@ int main()
 
     // Window
     [[maybe_unused]] const sf::VideoMode videoMode{{0u, 0u}};
-    [[maybe_unused]] const sf::Window    window({.size{0u, 0u}, .title = ""});
+    [[maybe_unused]] const auto          window = sf::Window::create({.size{0u, 0u}, .title = ""});
 }

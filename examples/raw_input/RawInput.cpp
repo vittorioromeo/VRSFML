@@ -32,12 +32,14 @@ int main()
     // Create the main window
     constexpr sf::Vec2f windowSize{800.f, 600.f};
 
-    auto window = makeDPIScaledRenderWindow({
-        .size      = windowSize.toVec2u(),
-        .title     = "SFML Raw Mouse Input",
-        .resizable = true,
-        .vsync     = true,
-    });
+    auto window = makeDPIScaledRenderWindow(
+                      {
+                          .size      = windowSize.toVec2u(),
+                          .title     = "SFML Raw Mouse Input",
+                          .resizable = true,
+                          .vsync     = true,
+                      })
+                      .value();
 
     // Open the application font and pass it to the Effect class
     const auto font = sf::Font::openFromFile("resources/tuffy.ttf").value();

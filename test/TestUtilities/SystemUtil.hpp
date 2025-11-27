@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include "SFML/System/Rect2.hpp"
-
 #include <iosfwd>
 
 // String conversions for Catch2
@@ -27,6 +25,9 @@ class Vec2;
 
 template <typename>
 class Vec3;
+
+template <typename>
+class Rect2;
 
 void setStreamPrecision(std::ostream& os, int maxDigits10);
 
@@ -66,7 +67,7 @@ bool operator==(const float& lhs, const Approx<float>& rhs);
 bool operator==(sf::Vec2<float> lhs, const Approx<sf::Vec2<float>>& rhs);
 bool operator==(const sf::Vec3<float>& lhs, const Approx<sf::Vec3<float>>& rhs);
 bool operator==(const sf::Angle& lhs, const Approx<sf::Angle>& rhs);
-bool operator==(const sf::Rect2f& lhs, const Approx<sf::Rect2f>& rhs);
+bool operator==(const sf::Rect2<float>& lhs, const Approx<sf::Rect2<float>>& rhs);
 
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const Approx<T>& approx);
