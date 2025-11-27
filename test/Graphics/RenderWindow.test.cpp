@@ -36,7 +36,9 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
     {
         SECTION("Style, state, and settings")
         {
-            const sf::RenderWindow window({.size{256u, 256u}, .bitsPerPixel = 24, .title = "RenderWindow Tests"});
+            const auto window = sf::RenderWindow::create(
+                                    {.size{256u, 256u}, .bitsPerPixel = 24, .title = "RenderWindow Tests"})
+                                    .value();
 
             CHECK(window.getSize() == sf::Vec2u{256, 256});
 #ifndef SFML_SYSTEM_EMSCRIPTEN
@@ -55,7 +57,9 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 
         SECTION("State and settings")
         {
-            const sf::RenderWindow window({.size{240u, 300u}, .bitsPerPixel = 24, .title = "RenderWindow Tests"});
+            const auto window = sf::RenderWindow::create(
+                                    {.size{240u, 300u}, .bitsPerPixel = 24, .title = "RenderWindow Tests"})
+                                    .value();
 
             CHECK(window.getSize() == sf::Vec2u{240, 300});
 #ifndef SFML_SYSTEM_EMSCRIPTEN
@@ -85,9 +89,12 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
         SUBCASE("AA, SRGB")       { testAALevel = 4u; testSRGBCapable = true; }
         // clang-format on
 
-        sf::RenderWindow window({.size{256u, 256u},
-                                 .title = "RenderWindow Tests",
-                                 .contextSettings = {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable}});
+        auto window = sf::RenderWindow::create(
+                          {.size{256u, 256u},
+                           .title           = "RenderWindow Tests",
+                           .contextSettings = {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable}})
+                          .value();
+        ;
 
         REQUIRE(window.getSize() == sf::Vec2u{256, 256});
 
@@ -110,8 +117,8 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 #ifndef SFML_SYSTEM_EMSCRIPTEN
     SECTION("Move assignment")
     {
-        sf::RenderWindow window0({.size{128u, 128u}, .title = "A"});
-        sf::RenderWindow window1({.size{256u, 256u}, .title = "B"});
+        auto window0 = sf::RenderWindow::create({.size{128u, 128u}, .title = "A"}).value();
+        auto window1 = sf::RenderWindow::create({.size{256u, 256u}, .title = "B"}).value();
 
         window1 = SFML_BASE_MOVE(window0);
         CHECK(window1.getSize() == sf::Vec2u{128u, 128u});
@@ -119,10 +126,8 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 
     SECTION("Multiple windows 1")
     {
-        sf::RenderWindow window({.size{256u, 256u}, .title = "A"});
-
-        sf::base::Optional<sf::RenderWindow> childWindow(sf::base::inPlace,
-                                                         sf::RenderWindow::Settings{.size{256u, 256u}, .title = "B"});
+        auto window      = sf::RenderWindow::create({.size{256u, 256u}, .title = "A"}).value();
+        auto childWindow = sf::RenderWindow::create(sf::RenderWindow::Settings{.size{256u, 256u}, .title = "B"});
 
         window.clear();
         window.display();
@@ -135,10 +140,8 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 
     SECTION("Multiple windows 2")
     {
-        sf::RenderWindow window({.size{256u, 256u}, .title = "A"});
-
-        sf::base::Optional<sf::RenderWindow> childWindow(sf::base::inPlace,
-                                                         sf::RenderWindow::Settings{.size{256u, 256u}, .title = "B"});
+        auto window      = sf::RenderWindow::create({.size{256u, 256u}, .title = "A"}).value();
+        auto childWindow = sf::RenderWindow::create(sf::RenderWindow::Settings{.size{256u, 256u}, .title = "B"});
 
         window.clear();
         window.display();
@@ -152,10 +155,8 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 
     SECTION("Multiple windows 3")
     {
-        sf::RenderWindow window({.size{256u, 256u}, .title = "A"});
-
-        sf::base::Optional<sf::RenderWindow> childWindow(sf::base::inPlace,
-                                                         sf::RenderWindow::Settings{.size{256u, 256u}, .title = "B"});
+        auto window      = sf::RenderWindow::create({.size{256u, 256u}, .title = "A"}).value();
+        auto childWindow = sf::RenderWindow::create(sf::RenderWindow::Settings{.size{256u, 256u}, .title = "B"});
 
         childWindow->clear();
         childWindow->display();
@@ -166,10 +167,8 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 
     SECTION("Multiple windows 4")
     {
-        sf::RenderWindow window({.size{256u, 256u}, .title = "A"});
-
-        sf::base::Optional<sf::RenderWindow> childWindow(sf::base::inPlace,
-                                                         sf::RenderWindow::Settings{.size{256u, 256u}, .title = "B"});
+        auto window      = sf::RenderWindow::create({.size{256u, 256u}, .title = "A"}).value();
+        auto childWindow = sf::RenderWindow::create(sf::RenderWindow::Settings{.size{256u, 256u}, .title = "B"});
 
         childWindow->clear();
         childWindow->display();

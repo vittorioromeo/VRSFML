@@ -11,6 +11,7 @@
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Text.hpp"
+#include "SFML/Graphics/View.hpp"
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
@@ -22,6 +23,7 @@
 
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/Clamp.hpp"
+#include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/String.hpp"
 
 
@@ -61,12 +63,14 @@ int main()
     constexpr sf::Vec2f windowSize{400.f, 775.f};
 
     // Create the window of the application
-    auto window = makeDPIScaledRenderWindow({
-        .size      = windowSize.toVec2u(),
-        .title     = "Joystick",
-        .resizable = true,
-        .vsync     = true,
-    });
+    auto window = makeDPIScaledRenderWindow(
+                      {
+                          .size      = windowSize.toVec2u(),
+                          .title     = "Joystick",
+                          .resizable = true,
+                          .vsync     = true,
+                      })
+                      .value();
 
     sf::Clock clock;
 

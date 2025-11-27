@@ -73,12 +73,14 @@ int main()
     // Set up window
     constexpr sf::Vec2f windowSize{1680.f, 1050.f};
 
-    sf::RenderWindow window({
-        .size      = windowSize.toVec2u(),
-        .title     = "Vittorio's SFML fork: batching example",
-        .resizable = false,
-        .vsync     = false,
-    });
+    auto window = sf::RenderWindow::create(
+                      {
+                          .size      = windowSize.toVec2u(),
+                          .title     = "Vittorio's SFML fork: batching example",
+                          .resizable = false,
+                          .vsync     = false,
+                      })
+                      .value();
 
     //
     //

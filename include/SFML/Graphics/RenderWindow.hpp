@@ -17,6 +17,9 @@
 
 #include "SFML/System/Vec2.hpp"
 
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
+
 
 ////////////////////////////////////////////////////////////
 // Forward declarations
@@ -48,7 +51,7 @@ public:
     /// Creates the render window with the specified \a windowSettings.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit RenderWindow(const Settings& windowSettings);
+    [[nodiscard]] static base::Optional<RenderWindow> create(const Settings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control
@@ -66,7 +69,8 @@ public:
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit RenderWindow(WindowHandle handle, const ContextSettings& contextSettings = {});
+    [[nodiscard]] static base::Optional<RenderWindow> create(WindowHandle           handle,
+                                                             const ContextSettings& contextSettings = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy constructor
@@ -180,14 +184,15 @@ public:
     ////////////////////////////////////////////////////////////
     RenderTarget::DrawStatistics display();
 
-private:
     ////////////////////////////////////////////////////////////
+    /// \private
+    ///
     /// \brief Construct a new window
     ///
     ////////////////////////////////////////////////////////////
-    template <typename... TWindowArgs>
-    [[nodiscard]] explicit RenderWindow(int /* disambiguator */, TWindowArgs&&... windowArgs);
+    [[nodiscard]] explicit RenderWindow(base::PassKey<RenderWindow>&&, Window&& window);
 
+private:
     ////////////////////////////////////////////////////////////
     /// \brief Function called after the window has been resized
     ///
@@ -240,7 +245,7 @@ private:
 ///
 /// \code
 /// // Declare and create a new render-window
-/// sf::RenderWindow window({.size{800u, 600u}, .title = "SFML Window"});
+/// auto window = sf::RenderWindow::create({.size{800u, 600u}, .title = "SFML Window"}).value();
 ///
 /// // Limit the framerate to 60 frames per second (this step is optional)
 /// window.setFramerateLimit(60);
@@ -275,7 +280,7 @@ private:
 ///
 /// \code
 /// // Create the render window
-/// sf::RenderWindow window({.size{800u, 600u}, .title = "SFML OpenGL"});
+/// auto window = sf::RenderWindow::create({.size{800u, 600u}, .title = "SFML OpenGL"}).value();
 ///
 /// // Create a sprite and a text to display
 /// const auto texture = sf::Texture::loadFromFile("circle.png").value();

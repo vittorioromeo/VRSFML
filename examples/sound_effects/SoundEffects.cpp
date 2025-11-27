@@ -1102,12 +1102,14 @@ int main()
     // Create the main window
     constexpr sf::Vec2f windowSize{windowWidth, windowHeight};
 
-    auto window = makeDPIScaledRenderWindow({
-        .size      = windowSize.toVec2u(),
-        .title     = "SFML Sound Effects",
-        .resizable = true,
-        .vsync     = true,
-    });
+    auto window = makeDPIScaledRenderWindow(
+                      {
+                          .size      = windowSize.toVec2u(),
+                          .title     = "SFML Sound Effects",
+                          .resizable = true,
+                          .vsync     = true,
+                      })
+                      .value();
 
     // Load the application font and pass it to the Effect class
     const auto font = sf::Font::openFromFile(resourcesDir() / "tuffy.ttf").value();

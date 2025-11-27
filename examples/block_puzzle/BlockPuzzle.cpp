@@ -27,6 +27,7 @@
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/TextureAtlas.hpp"
+#include "SFML/Graphics/View.hpp"
 
 #include "SFML/Audio/AudioContext.hpp"
 #include "SFML/Audio/Music.hpp"
@@ -55,6 +56,7 @@
 #include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
 #include "SFML/Base/Math/Fmod.hpp"
+#include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Variant.hpp"
@@ -545,12 +547,15 @@ private:
 
     ////////////////////////////////////////////////////////////
     sf::RenderWindow m_window = makeDPIScaledRenderWindow(
-        {.size            = resolution.toVec2u(),
-         .title           = "Block Puzzle",
-         .resizable       = true,
-         .vsync           = true,
-         .frametimeLimit  = 144u,
-         .contextSettings = {.antiAliasingLevel = m_aaLevel}});
+                                    {
+                                        .size            = resolution.toVec2u(),
+                                        .title           = "Block Puzzle",
+                                        .resizable       = true,
+                                        .vsync           = true,
+                                        .frametimeLimit  = 144u,
+                                        .contextSettings = {.antiAliasingLevel = m_aaLevel},
+                                    })
+                                    .value();
 
     ////////////////////////////////////////////////////////////
     sf::Shader m_shader{[]

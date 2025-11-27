@@ -74,6 +74,7 @@
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
 #include "SFML/Window/VideoMode.hpp"
+#include "SFML/Window/VideoModeUtils.hpp"
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
@@ -595,14 +596,16 @@ class Game
 {
 private:
     ////////////////////////////////////////////////////////////
-    sf::RenderWindow m_window = makeDPIScaledRenderWindow({
-        .size            = resolution.toVec2u(),
-        .title           = "Tetris Survivors",
-        .resizable       = true,
-        .vsync           = false,
-        .frametimeLimit  = 144u,
-        .contextSettings = {.antiAliasingLevel = 0u},
-    });
+    sf::RenderWindow m_window = makeDPIScaledRenderWindow(
+                                    {
+                                        .size            = resolution.toVec2u(),
+                                        .title           = "Tetris Survivors",
+                                        .resizable       = true,
+                                        .vsync           = false,
+                                        .frametimeLimit  = 144u,
+                                        .contextSettings = {.antiAliasingLevel = 0u},
+                                    })
+                                    .value();
 
     ////////////////////////////////////////////////////////////
     sf::Shader m_shader{[]
@@ -687,7 +690,7 @@ private:
     ////////////////////////////////////////////////////////////
     sf::Font m_font      = sf::Font::openFromFile("resources/monogram.ttf").value();
     sf::Font m_fontMago2 = sf::Font::openFromFile("resources/petty5.bdf").value();
-    sf::Font m_font3     = sf::Font::openFromFile("resources/ChikareGo.ttf").value();
+    sf::Font m_font3     = sf::Font::openFromFile("resources/ChiKareGo.ttf").value();
     sf::Font m_font4     = sf::Font::openFromFile("resources/TinyUnicode.ttf").value();
 
     ////////////////////////////////////////////////////////////

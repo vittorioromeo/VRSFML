@@ -21,6 +21,7 @@
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 
@@ -73,7 +74,7 @@ public:
     /// \param windowSettings Settings to use
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowBase(const Settings& windowSettings);
+    [[nodiscard]] static base::Optional<WindowBase> create(const Settings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control
@@ -81,7 +82,7 @@ public:
     /// \param handle Platform-specific handle of the control
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowBase(WindowHandle handle);
+    [[nodiscard]] static base::Optional<WindowBase> create(WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -541,6 +542,14 @@ public:
         return Rect2f{getPosition().toVec2f(), getSize().toVec2f()};
     }
 
+    ////////////////////////////////////////////////////////////
+    /// \private
+    ///
+    /// \brief Construct a window base from the inner implementation
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] explicit WindowBase(base::PassKey<WindowBase>&&, base::UniquePtr<priv::SDLWindowImpl>&& impl);
+
 private:
     friend class Window;
 
@@ -549,12 +558,6 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     priv::SDLWindowImpl& getWindowImpl();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct a window base from the inner implementation
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowBase(base::UniquePtr<priv::SDLWindowImpl>&& impl);
 
     ////////////////////////////////////////////////////////////
     /// \brief Processes an event before it is sent to the user

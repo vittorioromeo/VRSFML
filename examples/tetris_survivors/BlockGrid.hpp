@@ -5,10 +5,11 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Block.hpp"
-#include "ExampleUtils/ControlFlow.hpp"
 #include "IndexUtils.hpp"
 #include "ShapeDimension.hpp"
 #include "Tetramino.hpp"
+
+#include "ExampleUtils/ControlFlow.hpp"
 
 #include "SFML/System/Vec2.hpp"
 

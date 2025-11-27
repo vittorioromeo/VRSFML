@@ -365,12 +365,14 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    sf::RenderWindow m_window = makeDPIScaledRenderWindow({
-        .size      = {800u, 600u},
-        .title     = "SFML Event Handling",
-        .resizable = true,
-        .vsync     = true,
-    });
+    sf::RenderWindow m_window = makeDPIScaledRenderWindow(
+                                    {
+                                        .size      = {800u, 600u},
+                                        .title     = "SFML Event Handling",
+                                        .resizable = true,
+                                        .vsync     = true,
+                                    })
+                                    .value();
 
     const sf::Font m_font{sf::Font::openFromFile("resources/tuffy.ttf").value()};
 

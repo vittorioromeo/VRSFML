@@ -70,13 +70,15 @@ int main()
     auto graphicsContext = sf::GraphicsContext::create().value();
 
     // Create the window of the application
-    auto window = makeDPIScaledRenderWindow({
-        .size         = gameSize.toVec2u(),
-        .bitsPerPixel = 32u,
-        .title        = "SFML Tennis",
-        .resizable    = true,
-        .vsync        = true,
-    });
+    auto window = makeDPIScaledRenderWindow(
+                      {
+                          .size         = gameSize.toVec2u(),
+                          .bitsPerPixel = 32u,
+                          .title        = "SFML Tennis",
+                          .resizable    = true,
+                          .vsync        = true,
+                      })
+                      .value();
 
     // Create an audio context and get the default playback device
     auto               audioContext = sf::AudioContext::create().value();

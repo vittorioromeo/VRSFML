@@ -8,8 +8,6 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Export.hpp"
 
-#include "SFML/System/Vec2.hpp"
-
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
@@ -19,6 +17,12 @@
 // Forward declarations
 ////////////////////////////////////////////////////////////
 struct SDL_Cursor;
+
+namespace sf
+{
+template <typename>
+class Vec2;
+} // namespace sf
 
 
 namespace sf
@@ -151,7 +155,9 @@ public:
     ///         `base::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Cursor> loadFromPixels(const base::U8* pixels, Vec2u size, Vec2u hotspot);
+    [[nodiscard]] static base::Optional<Cursor> loadFromPixels(const base::U8*    pixels,
+                                                               Vec2<unsigned int> size,
+                                                               Vec2<unsigned int> hotspot);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a native system cursor
@@ -197,7 +203,7 @@ private:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool reloadFromPixels(const base::U8* pixels, Vec2u size, Vec2u hotspot);
+    [[nodiscard]] bool reloadFromPixels(const base::U8* pixels, Vec2<unsigned int> size, Vec2<unsigned int> hotspot);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs

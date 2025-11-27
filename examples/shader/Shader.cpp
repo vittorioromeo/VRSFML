@@ -475,12 +475,14 @@ int main()
     // Create the main window
     constexpr sf::Vec2f windowSize{800.f, 600.f};
 
-    auto window = makeDPIScaledRenderWindow({
-        .size      = windowSize.toVec2u(),
-        .title     = "SFML Shader",
-        .resizable = true,
-        .vsync     = true,
-    });
+    auto window = makeDPIScaledRenderWindow(
+                      {
+                          .size      = windowSize.toVec2u(),
+                          .title     = "SFML Shader",
+                          .resizable = true,
+                          .vsync     = true,
+                      })
+                      .value();
 
     // Start the game loop
     const sf::Clock clock;

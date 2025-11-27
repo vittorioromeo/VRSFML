@@ -26,13 +26,15 @@ int main()
     // Create the window of the application with a stencil buffer
     constexpr sf::Vec2f windowSize{600.f, 600.f};
 
-    auto window = makeDPIScaledRenderWindow({
-        .size            = windowSize.toVec2u(),
-        .title           = "SFML Stencil",
-        .resizable       = true,
-        .vsync           = true,
-        .contextSettings = {.depthBits = 0u, .stencilBits = 8u},
-    });
+    auto window = makeDPIScaledRenderWindow(
+                      {
+                          .size            = windowSize.toVec2u(),
+                          .title           = "SFML Stencil",
+                          .resizable       = true,
+                          .vsync           = true,
+                          .contextSettings = {.depthBits = 0u, .stencilBits = 8u},
+                      })
+                      .value();
 
     const sf::RectangleShape red({
         .position{270.f, 70.f},

@@ -90,6 +90,10 @@ macro(sfml_add_library module)
     # target_compile_options(${target} PUBLIC -include Tracy.hpp)
     # target_compile_definitions(${target} PUBLIC -DTRACY_ENABLE)
 
+    # target_include_directories(${target} PRIVATE ${PROJECT_SOURCE_DIR}/tracy/public/tracy/)
+    # target_compile_options(${target} PUBLIC -include Tracy.hpp)
+    # target_compile_definitions(${target} PUBLIC -DTRACY_ENABLE)
+
     # propagate macros to dependent targets (`add_definitions` does not propagate to parent)
     if(SFML_ENABLE_LIFETIME_TRACKING)
         target_compile_definitions(${target} PUBLIC -DSFML_ENABLE_LIFETIME_TRACKING)
@@ -380,6 +384,7 @@ macro(sfml_add_example target)
 
     # add shared include directory
     target_include_directories(${target} PRIVATE ${PROJECT_SOURCE_DIR}/examples/include)
+    target_link_libraries(${target} PRIVATE ExampleUtils)
 
     # enable precompiled headers
     if (SFML_ENABLE_PCH)
@@ -407,7 +412,7 @@ macro(sfml_add_example target)
     sfml_set_stdlib(${target})
 
     # set the properties required for debugging
-    set_target_properties(${target} PROPERTIES 
+    set_target_properties(${target} PROPERTIES
         VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         XCODE_GENERATE_SCHEME ON)
 

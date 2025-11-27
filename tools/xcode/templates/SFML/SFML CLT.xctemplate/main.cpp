@@ -14,17 +14,14 @@
 // - Click OK.
 //
 
-#include <SFML/Window/EventUtils.hpp>
-
+#include <SFML/Audio/Music.hpp>
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Text.hpp>
-
-#include <SFML/Audio/Music.hpp>
-
 #include <SFML/Window/Event.hpp>
+#include <SFML/Window/EventUtils.hpp>
 #include <SFML/Window/VideoMode.hpp>
 
 #include <cstdlib>
@@ -32,7 +29,7 @@
 int main()
 {
     // Create the main window
-    sf::RenderWindow window(sf::VideoMode({800, 600}), "SFML window");
+    auto window = sf::RenderWindow::create(sf::VideoMode({800, 600}), "SFML window").value();
 
     // Set the Icon
     const auto icon = sf::Image::loadFromFile("icon.png").value();

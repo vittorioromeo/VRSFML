@@ -194,7 +194,7 @@ class VulkanExample
 {
 public:
     // Constructor
-    VulkanExample() : window{{.size{800u, 600u}, .title = "SFML window with Vulkan"}}
+    VulkanExample() : window{sf::WindowBase::create({.size{800u, 600u}, .title = "SFML window with Vulkan"}).value()}
     {
         // Vulkan setup procedure
         if (vulkanAvailable)

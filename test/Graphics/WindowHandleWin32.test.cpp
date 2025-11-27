@@ -101,7 +101,8 @@ void runWindowTest(DWORD exStyle, bool withMenu)
     {
         sf::base::Optional<sf::WindowBase> windowBase;
 
-        windowBase.emplace(handle);
+        windowBase = sf::WindowBase::create(handle);
+        CHECK(windowBase.hasValue());
 
         INFO("sf::WindowBase test with exStyle: " << exStyle << ", withMenu: " << withMenu);
         CHECK(windowBase->getPosition() == position);
