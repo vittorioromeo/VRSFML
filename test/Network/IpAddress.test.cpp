@@ -8,7 +8,6 @@
 
 #include <CommonTraits.hpp>
 #include <StringifyIpAddressUtil.hpp>
-
 #include <StringifySfBaseStringUtil.hpp>
 
 

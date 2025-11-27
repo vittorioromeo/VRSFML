@@ -254,7 +254,7 @@ template <typename T, typename U>
 
     // Find a good position for the new glyph into the texture
     {
-        const auto pos = textureAtlas.getRectPacker().pack(size).value().toVec2f(); // TODO P0: what if there is no room?
+        const auto pos = textureAtlas.getRectPacker().pack(size).value().toVec2f(); // TODO P0: what if there is no room? Happens in OH
         glyph.textureRect = {pos, size.toVec2f()};
     }
 
@@ -338,7 +338,7 @@ struct Font::Impl
     using GlyphTable = MapType</* character size */ unsigned int,
                                MapType</* combined key */ base::U64, Glyph>>; //!< Table mapping a codepoint to its glyph
 
-    explicit Impl(TextureAtlas* theTextureAtlasPtr) :
+    explicit Impl(TextureAtlas* theTextureAtlasPtr) : // TODO P0: change to paged texture atlas, or sequence of texture atlases, or page per charactersize
         textureAtlasPtr{theTextureAtlasPtr},
         fallbackTextureAtlas{
             theTextureAtlasPtr == nullptr

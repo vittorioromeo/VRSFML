@@ -1,5 +1,7 @@
 #include "SFML/Window/Cursor.hpp"
 
+#include "SFML/System/Vec2.hpp"
+
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>

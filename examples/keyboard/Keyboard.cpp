@@ -1048,13 +1048,15 @@ int main()
     // Create the main window
     constexpr sf::Vec2f windowSize{1280.f, 720.f};
 
-    auto window = makeDPIScaledRenderWindow({
-        .size           = windowSize.toVec2u(),
-        .title          = "Keyboard",
-        .resizable      = true,
-        .vsync          = true,
-        .frametimeLimit = 25u,
-    });
+    auto window = makeDPIScaledRenderWindow(
+                      {
+                          .size           = windowSize.toVec2u(),
+                          .title          = "Keyboard",
+                          .resizable      = true,
+                          .vsync          = true,
+                          .frametimeLimit = 25u,
+                      })
+                      .value();
 
     // Load sound buffers
     const auto errorSoundBuffer    = sf::SoundBuffer::loadFromFile(resourcesDir() / "error_005.ogg").value();

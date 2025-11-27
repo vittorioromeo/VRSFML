@@ -92,7 +92,8 @@ TEST_CASE("[Window] sf::WindowBase (Win32)")
 
     SECTION("WindowHandle constructor")
     {
-        windowBase.emplace(handle);
+        windowBase = sf::WindowBase::create(handle);
+        CHECK(windowBase.hasValue());
     }
 
     RECT rect{};

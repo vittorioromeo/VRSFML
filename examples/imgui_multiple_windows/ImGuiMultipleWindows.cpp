@@ -18,20 +18,20 @@ int main()
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
 
-    sf::RenderWindow window({
-        .size  = {1280u, 720u},
-        .title = "ImGui + SFML = <3",
-        .vsync = true,
-    });
+    auto window = sf::RenderWindow::create({
+                                               .size  = {1280u, 720u},
+                                               .title = "ImGui + SFML = <3",
+                                               .vsync = true,
+                                           })
+                      .value();
 
     sf::ImGuiContext imGuiContext;
 
-    sf::base::Optional<sf::RenderWindow> childWindow(sf::base::inPlace,
-                                                     sf::RenderWindow::Settings{
-                                                         .size  = {640u, 480u},
-                                                         .title = "ImGui-SFML Child window",
-                                                         .vsync = true,
-                                                     });
+    auto childWindow = sf::RenderWindow::create(sf::RenderWindow::Settings{
+        .size  = {640u, 480u},
+        .title = "ImGui-SFML Child window",
+        .vsync = true,
+    });
 
     sf::base::Optional<sf::ImGuiContext> childImGuiContext{sf::base::inPlace};
 

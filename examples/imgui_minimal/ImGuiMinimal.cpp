@@ -26,7 +26,7 @@ int main()
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
 
-    sf::RenderWindow window({.size{1024u, 768u}, .title = "ImGui + SFML = <3", .vsync = true});
+    auto window = sf::RenderWindow::create({.size{1024u, 768u}, .title = "ImGui + SFML = <3", .vsync = true}).value();
     sf::ImGuiContext imGuiContext;
 
     const sf::CircleShape shape{{.fillColor = sf::Color::Green, .radius = 100.f}};
@@ -107,8 +107,8 @@ int main()
             window.setSize({800u, 800u});
 
         if (ImGui::Button("Recreate Window"))
-            window = sf::RenderWindow(
-                {.size{1024u, 768u}, .title = "ImGui + SFML = <3", .vsync = true}); // TODO P0: doesn't work on emscripten
+            window = sf::RenderWindow::create({.size{1024u, 768u}, .title = "ImGui + SFML = <3", .vsync = true})
+                         .value(); // TODO P0: doesn't work on emscripten
 
         ImGui::Button("Look at this pretty button");
         imGuiContext.image(baseRenderTexture, size.toVec2f());
