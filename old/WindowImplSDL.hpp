@@ -193,6 +193,41 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
+<<<<<<< HEAD:old/WindowImplSDL.hpp
+=======
+    static Keyboard::Key androidKeyToSF(std::int32_t key);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Convert a Android scan code to SFML key code
+    ///
+    /// Scan code mappings on android are not reliable, and can
+    /// also be customised by users in their own projects. For
+    /// this method we match the provided generic layout
+    ///
+    /// \see https://source.android.com/docs/core/interaction/input/key-layout-files
+    ///
+    /// \param symbol Android scan code to convert
+    ///
+    /// \return Corresponding SFML scan code
+    ///
+    ////////////////////////////////////////////////////////////
+    static Keyboard::Scancode androidScanToSF(std::int32_t key);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get Unicode decoded from the input event
+    ///
+    /// \param Event Input event
+    ///
+    /// \return The Unicode value
+    ///
+    ////////////////////////////////////////////////////////////
+    static char32_t getUnicode(AInputEvent* event);
+
+    Vector2u m_size;
+    bool     m_windowBeingCreated{};
+    bool     m_windowBeingDestroyed{};
+    bool     m_hasFocus{};
+>>>>>>> ca65abe717cc731b5ee309d25c1291508e163795:src/SFML/Window/Android/WindowImplAndroid.hpp
 };
 
 } // namespace priv
