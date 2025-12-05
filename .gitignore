@@ -33,6 +33,8 @@ examples/bubble_idle/userdata*
 *.psd
 .DS_Store
 compile_commands.json
+MakeFile
+*.make
 
 # CMake files
 CMakeUserPresets.json
@@ -44,6 +46,7 @@ CTest*.cmake
 _deps
 SFMLConfig.cmake
 SFMLConfigVersion.cmake
+SFML*Dependencies.cmake
 
 # Ninja build files
 *.Ninja*
@@ -56,3 +59,9 @@ bin
 # Test/coverage files
 *include.cmake
 patch_coverage.cmake
+
+# Xcode files
+*.xcsettings
+*.xcscheme
+*.pbxproj
+*.xcuserstate

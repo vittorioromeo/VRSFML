@@ -106,6 +106,16 @@ public:
             return sf::base::makeOptional<sf::base::String>("Touch Began: " + vec2ToString(touchBegan.position));
         }
 
+        sf::base::Optional<sf::base::String> operator()(const sf::Event::TouchEnded& touchEnded)
+        {
+            return sf::base::makeOptional<sf::base::String>("Touch Ended: " + vec2ToString(touchEnded.position));
+        }
+
+        sf::base::Optional<sf::base::String> operator()(const sf::Event::TouchMoved& touchMoved)
+        {
+            return sf::base::makeOptional<sf::base::String>("Touch Moved: " + vec2ToString(touchMoved.position));
+        }
+
         // When defining a visitor, make sure all event types can be handled by it.
         // If you don't intend on exhaustively specifying an operator() for each
         // event type, you can provide a templated operator() that will be selected
@@ -343,6 +353,16 @@ public:
     void handle(const sf::Event::TouchBegan& touchBegan)
     {
         m_log.emplaceBack("Touch Began: " + vec2ToString(touchBegan.position));
+    }
+
+    void handle(const sf::Event::TouchEnded& touchEnded)
+    {
+        m_log.emplaceBack("Touch Ended: " + vec2ToString(touchEnded.position));
+    }
+
+    void handle(const sf::Event::TouchMoved& touchMoved)
+    {
+        m_log.emplaceBack("Touch Moved: " + vec2ToString(touchMoved.position));
     }
 
     template <typename T>

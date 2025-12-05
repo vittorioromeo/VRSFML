@@ -469,6 +469,8 @@ jobs:
   #   steps:
   #   - name: Checkout Code
   #     uses: actions/checkout@v4
+    - name: Configure
+      run: cmake --preset dev ${{ matrix.platform.name != 'Android' && '-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++' || ''}} -DCMAKE_UNITY_BUILD=ON ${{matrix.platform.flags}}
 
   #   - name: Get CMake and Ninja
   #     uses: lukka/get-cmake@latest
