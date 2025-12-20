@@ -125,7 +125,7 @@ void runWindowTest(DWORD exStyle, bool withMenu)
 
         SUBCASE("Default context settings")
         {
-            window.emplace(handle);
+            window = sf::Window::create(handle);
 
             INFO("sf::Window default context test with exStyle: " << exStyle << ", withMenu: " << withMenu);
             CHECK(window->getSettings().attributeFlags == sf::ContextSettings{}.attributeFlags);
@@ -135,7 +135,7 @@ void runWindowTest(DWORD exStyle, bool withMenu)
         {
             static constexpr sf::ContextSettings contextSettings{1, 1, 1};
 
-            window.emplace(handle, contextSettings);
+            window = sf::Window::create(handle, contextSettings);
 
             INFO("sf::Window custom context test with exStyle: " << exStyle << ", withMenu: " << withMenu);
             CHECK(window->getSettings().depthBits >= 1);
@@ -163,7 +163,7 @@ void runWindowTest(DWORD exStyle, bool withMenu)
 
         SECTION("Default context settings")
         {
-            renderWindow.emplace(handle);
+            renderWindow = sf::RenderWindow::create(handle);
 
             INFO("sf::Window test with exStyle: " << exStyle << ", withMenu: " << withMenu);
             CHECK(renderWindow->getSettings().attributeFlags == sf::ContextSettings{}.attributeFlags);
@@ -174,7 +174,7 @@ void runWindowTest(DWORD exStyle, bool withMenu)
             static constexpr sf::ContextSettings contextSettings{/* depthBits*/ 1,
                                                                  /* stencilBits */ 1};
 
-            renderWindow.emplace(handle, contextSettings);
+            renderWindow = sf::RenderWindow::create(handle, contextSettings);
 
             INFO("sf::Window test with exStyle: " << exStyle << ", withMenu: " << withMenu);
             CHECK(renderWindow->getSettings().depthBits >= 1);

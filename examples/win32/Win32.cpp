@@ -119,8 +119,8 @@ int main()
     auto graphicsContext = sf::GraphicsContext::create().value();
 
     {
-        sf::RenderWindow sfmlView1(view1);
-        sf::RenderWindow sfmlView2(view2);
+        auto sfmlView1 = sf::RenderWindow::create(view1).value();
+        auto sfmlView2 = sf::RenderWindow::create(view2).value();
 
         // Load some textures to display
         const auto texture1 = sf::Texture::loadFromFile("resources/image1.jpg").value();
