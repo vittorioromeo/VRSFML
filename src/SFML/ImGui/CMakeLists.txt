@@ -46,7 +46,7 @@ else()
         CPMAddPackage(
             NAME imgui
             GITHUB_REPOSITORY vittorioromeo/imgui
-            GIT_TAG 522f46e74a705c0c2eb8edfcb444dcdf86d97ac7
+            GIT_TAG ee387a5bb2440371c62e17e762025a32dc784eb2
             SYSTEM TRUE
         )
 
