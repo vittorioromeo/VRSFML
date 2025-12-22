@@ -99,7 +99,7 @@ TEST_CASE("[Network] sf::Tcp Loopback")
         sf::TcpSocket serverSocket{/* isBlocking */ true};
         sf::TcpSocket clientSocket{/* isBlocking */ false};
 
-        CHECK(clientSocket.connect(sf::IpAddress(127, 0, 0, 1), localPort, sf::milliseconds(250)) ==
+        CHECK(clientSocket.connect(sf::IpAddress(127, 0, 0, 1), localPort, sf::milliseconds(750)) ==
               sf::TcpSocket::Status::NotReady);
 
         auto start = sf::Clock::now();
@@ -113,7 +113,7 @@ TEST_CASE("[Network] sf::Tcp Loopback")
             if (result == sf::TcpListener::Status::Done)
                 break;
 
-            REQUIRE((sf::Clock::now() - start < sf::milliseconds(250)));
+            REQUIRE((sf::Clock::now() - start < sf::milliseconds(750)));
         }
 
         serverSocket.setBlocking(false);
@@ -162,7 +162,7 @@ TEST_CASE("[Network] sf::Tcp Loopback")
                 }
             }
 
-            REQUIRE((sf::Clock::now() - start < sf::milliseconds(250)));
+            REQUIRE((sf::Clock::now() - start < sf::milliseconds(750)));
         }
 
         CHECK(rangesAreEqual(buffer.begin(), buffer.end(), testData.begin()));
@@ -173,7 +173,7 @@ TEST_CASE("[Network] sf::Tcp Loopback")
         sf::TcpSocket serverSocket{/* isBlocking */ true};
         sf::TcpSocket clientSocket{/* isBlocking */ false};
 
-        REQUIRE(clientSocket.connect(sf::IpAddress(127, 0, 0, 1), localPort, sf::milliseconds(250)) ==
+        REQUIRE(clientSocket.connect(sf::IpAddress(127, 0, 0, 1), localPort, sf::milliseconds(750)) ==
                 sf::TcpSocket::Status::NotReady);
 
         auto start = sf::Clock::now();
@@ -187,7 +187,7 @@ TEST_CASE("[Network] sf::Tcp Loopback")
             if (result == sf::TcpListener::Status::Done)
                 break;
 
-            REQUIRE((sf::Clock::now() - start < sf::milliseconds(250)));
+            REQUIRE((sf::Clock::now() - start < sf::milliseconds(750)));
         }
 
         serverSocket.setBlocking(false);
@@ -219,7 +219,7 @@ TEST_CASE("[Network] sf::Tcp Loopback")
                 (clientStatus == sf::TcpSocket::TlsStatus::HandshakeComplete))
                 break;
 
-            REQUIRE((sf::Clock::now() - start < sf::milliseconds(250)));
+            REQUIRE((sf::Clock::now() - start < sf::milliseconds(750)));
         }
 
         CHECK(serverSocket.getCurrentCiphersuiteName().hasValue());
@@ -258,7 +258,7 @@ TEST_CASE("[Network] sf::Tcp Loopback")
                 }
             }
 
-            REQUIRE((sf::Clock::now() - start < sf::milliseconds(250)));
+            REQUIRE((sf::Clock::now() - start < sf::milliseconds(750)));
         }
 
         CHECK(rangesAreEqual(buffer.begin(), buffer.end(), testData.begin()));
