@@ -11,7 +11,6 @@
 #include "SFML/Network/IpAddressUtils.hpp"
 #include "SFML/Network/TcpSocket.hpp"
 
-#include "SFML/System/Err.hpp"
 #include "SFML/System/IO.hpp"
 
 #include "SFML/Base/Assert.hpp"
@@ -383,10 +382,11 @@ void Http::Response::parse(const base::String& data)
 ////////////////////////////////////////////////////////////
 struct Http::Impl
 {
-    TcpSocket                 connection; //!< Connection to the host
-    base::Optional<IpAddress> host;       //!< Web host address
-    base::String              hostName;   //!< Web host name
-    unsigned short            port{};     //!< Port used for connection with host
+    TcpSocket                 connection;   //!< Connection to the host
+    base::Optional<IpAddress> host;         //!< Web host address
+    base::String              hostName;     //!< Web host name
+    unsigned short            port{0u};     //!< Port used for connection with host
+    bool                      https{false}; //!< Use HTTPS
 
     explicit Impl() : connection(/* isBlocking */ true)
     {
@@ -421,10 +421,10 @@ void Http::setHost(const base::String& host, unsigned short port)
     }
     else if (stringViewLowercaseEq(host.toStringView().substrByPosLen(0, 8), "https://"))
     {
-        // HTTPS protocol -- unsupported (requires encryption and certificates and stuff...)
-        priv::err() << "HTTPS protocol is not supported by sf::Http";
-        m_impl->hostName.clear();
-        m_impl->port = 0;
+        // HTTPS protocol
+        m_impl->hostName = host.toStringView().substrByPosLen(8);
+        m_impl->port     = (port != 0 ? port : 443);
+        m_impl->https    = true;
     }
     else
     {
@@ -442,7 +442,7 @@ void Http::setHost(const base::String& host, unsigned short port)
 
 
 ////////////////////////////////////////////////////////////
-Http::Response Http::sendRequest(const Http::Request& request, Time timeout)
+Http::Response Http::sendRequest(const Http::Request& request, Time timeout, const bool verifyServer)
 {
     // First make sure that the request is valid -- add missing mandatory fields
     Request toSend(request);
@@ -473,8 +473,13 @@ Http::Response Http::sendRequest(const Http::Request& request, Time timeout)
     Response received;
 
     // Connect the socket to the host
-    if (m_impl->connection.connect(m_impl->host.value(), m_impl->port, timeout) == Socket::Status::Done)
+    if (m_impl->host.hasValue() &&
+        m_impl->connection.connect(m_impl->host.value(), m_impl->port, timeout) == Socket::Status::Done)
     {
+        if (m_impl->https &&
+            (m_impl->connection.setupTlsClient(m_impl->hostName, verifyServer) != TcpSocket::TlsStatus::HandshakeComplete))
+            return received;
+
         // Convert the request to string and send it through the connected socket
         const base::String requestStr = prepareRequest(toSend.m_impl->fields,
                                                        toSend.m_impl->method,
@@ -492,9 +497,21 @@ Http::Response Http::sendRequest(const Http::Request& request, Time timeout)
                 base::String receivedStr;
                 base::SizeT  size = 0;
                 char         buffer[1024];
-                while (m_impl->connection.receive(buffer, sizeof(buffer), size) == Socket::Status::Done)
+
+                // When the HTTPS connection makes use of TLS 1.3 new session ticket
+                // messages can be received by the client from the server at any time
+                // When these messages are received the receive function will return Socket::Status::Partial
+                // In this case We just continue to call receive until actual payload
+                // data is available, the connection is closed or an error occurs
+                auto result = m_impl->connection.receive(buffer, sizeof(buffer), size);
+
+                while ((result == Socket::Status::Done) || (result == Socket::Status::Partial))
                 {
-                    receivedStr.append(buffer, size);
+                    // Only append payload data when it has been completely received
+                    if (result == Socket::Status::Done)
+                        receivedStr.append(buffer, size);
+
+                    result = m_impl->connection.receive(buffer, sizeof(buffer), size);
                 }
 
                 // Build the Response object from the received data

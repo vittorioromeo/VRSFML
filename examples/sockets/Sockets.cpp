@@ -17,22 +17,27 @@ int main()
     const unsigned short port = 50'001;
 
     // TCP, UDP or connected UDP ?
-    char protocol = 0;
+    char protocol{};
     sf::cOut() << "Do you want to use TCP (t) or UDP (u)? ";
     sf::cIn() >> protocol;
 
     // Client or server ?
-    char who = 0;
+    char who{};
     sf::cOut() << "Do you want to be a server (s) or a client (c)? ";
     sf::cIn() >> who;
 
     if (protocol == 't')
     {
+        // Enable TLS ?
+        char tls{};
+        sf::cOut() << "Do you want to enable TLS (y) or not (n)? ";
+        sf::cIn() >> tls;
+
         // Test the TCP protocol
         if (who == 's')
-            runTcpServer(port);
+            runTcpServer(port, tls == 'y');
         else
-            runTcpClient(port);
+            runTcpClient(port, tls == 'y');
     }
     else
     {

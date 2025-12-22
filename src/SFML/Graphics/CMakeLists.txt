@@ -105,3 +105,5 @@ endif()
 if(SFML_COMPILER_GCC)
     set_source_files_properties(${SRCROOT}/Image.cpp PROPERTIES COMPILE_FLAGS -fno-strict-aliasing)
 endif()
+
+# TODO P1: add support harfbuzz/sheenbidi from upstream SFML
