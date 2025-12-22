@@ -91,6 +91,11 @@ public:
             return sf::base::makeOptional<sf::base::String>("Key Pressed: " + scancodeToString(keyPress.scancode));
         }
 
+        sf::base::Optional<sf::base::String> operator()(const sf::Event::KeyReleased& keyRelease)
+        {
+            return sf::base::makeOptional<sf::base::String>("Key Released: " + scancodeToString(keyRelease.scancode));
+        }
+
         sf::base::Optional<sf::base::String> operator()(const sf::Event::MouseMoved& mouseMoved)
         {
             return sf::base::makeOptional<sf::base::String>("Mouse Moved: " + vec2ToString(mouseMoved.position));
@@ -156,6 +161,10 @@ public:
                     m_handlerText.setString("Current Handler: Visitor");
                 }
             }
+            else if (const auto* keyRelease = event->getIf<sf::Event::KeyReleased>())
+            {
+                m_log.emplaceBack("Key Released: " + scancodeToString(keyRelease->scancode));
+            }
             else if (const auto* mouseMoved = event->getIf<sf::Event::MouseMoved>())
             {
                 m_log.emplaceBack("Mouse Moved: " + vec2ToString(mouseMoved->position));
@@ -167,6 +176,14 @@ public:
             else if (const auto* touchBegan = event->getIf<sf::Event::TouchBegan>())
             {
                 m_log.emplaceBack("Touch Began: " + vec2ToString(touchBegan->position));
+            }
+            else if (const auto* touchEnded = event->getIf<sf::Event::TouchEnded>())
+            {
+                m_log.emplaceBack("Touch Ended: " + vec2ToString(touchEnded->position));
+            }
+            else if (const auto* touchMoved = event->getIf<sf::Event::TouchMoved>())
+            {
+                m_log.emplaceBack("Touch Moved: " + vec2ToString(touchMoved->position));
             }
             else
             {
@@ -206,11 +223,17 @@ public:
                 m_handlerText.setString("Current Handler: Generic");
             }
         },
+                                     [&](const sf::Event::KeyReleased& keyRelease)
+        { m_log.emplaceBack("Key Released: " + scancodeToString(keyRelease.scancode)); },
                                      [&](const sf::Event::MouseMoved& mouseMoved)
         { m_log.emplaceBack("Mouse Moved: " + vec2ToString(mouseMoved.position)); },
                                      [&](const sf::Event::MouseButtonPressed&) { m_log.emplaceBack("Mouse Pressed"); },
                                      [&](const sf::Event::TouchBegan& touchBegan)
-        { m_log.emplaceBack("Touch Began: " + vec2ToString(touchBegan.position)); });
+        { m_log.emplaceBack("Touch Began: " + vec2ToString(touchBegan.position)); },
+                                     [&](const sf::Event::TouchEnded& touchEnded)
+        { m_log.emplaceBack("Touch Ended: " + vec2ToString(touchEnded.position)); },
+                                     [&](const sf::Event::TouchMoved& touchMoved)
+        { m_log.emplaceBack("Touch Moved: " + vec2ToString(touchMoved.position)); });
 
         // To handle unhandled events, just add the following lambda to the set of handlers
         // [&](const auto&) { m_log.emplaceBack("Other Event"); }
@@ -241,6 +264,10 @@ public:
                     m_handlerText.setString("Current Handler: Forward");
                 }
             }
+            else if constexpr (sf::base::isSame<T, sf::Event::KeyReleased>)
+            {
+                m_log.emplaceBack("Key Released: " + scancodeToString(event.scancode));
+            }
             else if constexpr (sf::base::isSame<T, sf::Event::MouseMoved>)
             {
                 m_log.emplaceBack("Mouse Moved: " + vec2ToString(event.position));
@@ -252,6 +279,14 @@ public:
             else if constexpr (sf::base::isSame<T, sf::Event::TouchBegan>)
             {
                 m_log.emplaceBack("Touch Began: " + vec2ToString(event.position));
+            }
+            else if constexpr (sf::base::isSame<T, sf::Event::TouchEnded>)
+            {
+                m_log.emplaceBack("Touch Ended: " + vec2ToString(event.position));
+            }
+            else if constexpr (sf::base::isSame<T, sf::Event::TouchMoved>)
+            {
+                m_log.emplaceBack("Touch Moved: " + vec2ToString(event.position));
             }
             else
             {
@@ -338,6 +373,11 @@ public:
             m_handlerType = HandlerType::Classic;
             m_handlerText.setString("Current Handler: Classic");
         }
+    }
+
+    void handle(const sf::Event::KeyReleased& keyRelease)
+    {
+        m_log.emplaceBack("Key Released: " + scancodeToString(keyRelease.scancode));
     }
 
     void handle(const sf::Event::MouseMoved& mouseMoved)
