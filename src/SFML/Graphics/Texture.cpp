@@ -13,6 +13,8 @@
 
 #include "SFML/Window/Window.hpp"
 
+#include "SFML/GLUtils/BlitFramebuffer.hpp"
+#include "SFML/GLUtils/CopyFramebuffer.hpp"
 #include "SFML/GLUtils/FramebufferSaver.hpp"
 #include "SFML/GLUtils/GLCheck.hpp"
 #include "SFML/GLUtils/GLSharedContextGuard.hpp"
