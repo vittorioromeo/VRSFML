@@ -2,10 +2,14 @@
 
 // Other 1st party headers
 #include "SFML/Network/IpAddress.hpp"
+#include "SFML/Network/IpAddressUtils.hpp"
+
+#include "SFML/Base/String.hpp"
 
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
+
 
 TEST_CASE("[Network] sf::TcpSocket")
 {
@@ -24,5 +28,42 @@ TEST_CASE("[Network] sf::TcpSocket")
         CHECK(tcpSocket.getLocalPort() == 0);
         CHECK(!tcpSocket.getRemoteAddress().hasValue());
         CHECK(tcpSocket.getRemotePort() == 0);
+        CHECK(!tcpSocket.getCurrentCiphersuiteName().hasValue());
     }
 }
+
+
+#ifdef SFML_RUN_CONNECTION_TESTS
+
+TEST_CASE("[Network] sf::TcpSocket Connection")
+{
+    SECTION("Connection")
+    {
+        const auto githubAddress = sf::IpAddressUtils::resolve("github.com");
+        REQUIRE(githubAddress.hasValue());
+
+        sf::TcpSocket tcpSocket{/* isBlocking */ true};
+        CHECK(tcpSocket.setupTlsServer("", "") == sf::TcpSocket::TlsStatus::NotConnected);
+        CHECK(tcpSocket.setupTlsClient("") == sf::TcpSocket::TlsStatus::NotConnected);
+
+        SECTION("Non-TLS")
+        {
+            CHECK(tcpSocket.connect(*githubAddress, 80, sf::milliseconds(1000)) == sf::TcpSocket::Status::Done);
+            CHECK_FALSE(tcpSocket.getCurrentCiphersuiteName().hasValue());
+        }
+
+        SECTION("TLS")
+        {
+            CHECK(tcpSocket.connect(*githubAddress, 443, sf::milliseconds(1000)) == sf::TcpSocket::Status::Done);
+            CHECK(tcpSocket.setupTlsClient("github.com") == sf::TcpSocket::TlsStatus::HandshakeComplete);
+
+            SECTION("Ciphersuite")
+            {
+                REQUIRE(tcpSocket.getCurrentCiphersuiteName().hasValue());
+                CHECK_FALSE(tcpSocket.getCurrentCiphersuiteName()->empty());
+            }
+        }
+    }
+}
+
+#endif
