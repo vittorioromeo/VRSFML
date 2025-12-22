@@ -38,6 +38,8 @@
 #include <mbedtls/ssl.h>
 
 #if defined(SFML_SYSTEM_WINDOWS)
+    #include "SFML/System/WindowsHeader.hpp"
+
     #include <wincrypt.h>
 #elif defined(SFML_SYSTEM_MACOS)
     #include <Availability.h>
@@ -72,7 +74,7 @@ constexpr int flags = 0;
 [[nodiscard]] bool loadSystemCertificates([[maybe_unused]] mbedtls_x509_crt* x509crt, [[maybe_unused]] mbedtls_x509_crl* x509crl)
 {
 #if defined(SFML_SYSTEM_WINDOWS)
-    static const auto getErrorString = [](DWORD error) -> base::String
+    static const auto getErrorString = [](DWORD error) -> sf::base::String
     {
         PTCHAR buffer = nullptr;
         if (FormatMessage(FORMAT_MESSAGE_MAX_WIDTH_MASK | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
@@ -86,9 +88,9 @@ constexpr int flags = 0;
             return "Unknown error.";
         }
 
-        const sf::String message = buffer;
+        const sf::UnicodeString message = buffer;
         LocalFree(buffer);
-        return message.toAnsiString();
+        return message.toAnsiString<sf::base::String>();
     };
 
     const auto loadStore = [&](const char* store)
@@ -513,10 +515,10 @@ struct TcpSocket::Impl
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wuseless-cast"
                 const auto result = static_cast<int>(
-                    ::send(tcpSocket.getNativeHandle(),
-                           reinterpret_cast<const char*>(data),
-                           static_cast<priv::SocketImpl::Size>(size),
-                           flags));
+                    priv::SocketImpl::send(tcpSocket.getNativeHandle(),
+                                           reinterpret_cast<const char*>(data),
+                                           static_cast<priv::SocketImpl::Size>(size),
+                                           flags));
 
                 if ((result == -1) && (priv::SocketImpl::getErrorStatus() == sf::Socket::Status::NotReady))
                     return MBEDTLS_ERR_SSL_WANT_WRITE;
@@ -531,10 +533,10 @@ struct TcpSocket::Impl
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wuseless-cast"
                 const auto result = static_cast<int>(
-                    recv(tcpSocket.getNativeHandle(),
-                         reinterpret_cast<char*>(data),
-                         static_cast<priv::SocketImpl::Size>(size),
-                         flags));
+                    priv::SocketImpl::recv(tcpSocket.getNativeHandle(),
+                                           reinterpret_cast<char*>(data),
+                                           static_cast<priv::SocketImpl::Size>(size),
+                                           flags));
 
                 if ((result == -1) && (priv::SocketImpl::getErrorStatus() == sf::Socket::Status::NotReady))
                     return MBEDTLS_ERR_SSL_WANT_READ;
