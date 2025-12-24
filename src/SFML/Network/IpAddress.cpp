@@ -99,7 +99,8 @@ base::Optional<IpAddress> IpAddress::getPublicAddress(Time timeout)
     // and parse the result to extract our IP address
     // (not very hard: the web page contains only our IP address).
 
-    Http                 server("www.sfml-dev.org");
+    Http server("www.sfml-dev.org");
+
     const Http::Request  request("/ip-provider.php", Http::Request::Method::Get);
     const Http::Response page = server.sendRequest(request, timeout);
 
