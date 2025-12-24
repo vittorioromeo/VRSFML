@@ -410,7 +410,7 @@ Http::Http(const base::String& host, unsigned short port)
 
 
 ////////////////////////////////////////////////////////////
-void Http::setHost(const base::String& host, unsigned short port)
+bool Http::setHost(const base::String& host, unsigned short port)
 {
     // Check the protocol
     if (stringViewLowercaseEq(host.toStringView().substrByPosLen(0, 7), "http://"))
@@ -438,6 +438,7 @@ void Http::setHost(const base::String& host, unsigned short port)
         m_impl->hostName.erase(m_impl->hostName.size() - 1);
 
     m_impl->host = IpAddressUtils::resolve(m_impl->hostName);
+    return m_impl->host.hasValue();
 }
 
 
