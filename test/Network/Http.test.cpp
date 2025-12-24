@@ -20,6 +20,31 @@ TEST_CASE("[Network] sf::Http")
         STATIC_CHECK(!SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Http));
     }
 
+    SECTION("setHost")
+    {
+        sf::Http http;
+
+        SECTION("Valid host w/ prefix")
+        {
+            CHECK(http.setHost("http://google.com"));
+        }
+
+        SECTION("Valid host w/o prefix")
+        {
+            CHECK(http.setHost("google.com"));
+        }
+
+        SECTION("Invalid host w/ prefix")
+        {
+            CHECK(!http.setHost("http://dummy"));
+        }
+
+        SECTION("Invalid host w/o prefix")
+        {
+            CHECK(!http.setHost("dummy"));
+        }
+    }
+
     SECTION("Request")
     {
         SECTION("Type traits")
