@@ -37,16 +37,10 @@ else()
     CPMAddPackage(
         NAME sdl
         GITHUB_REPOSITORY vittorioromeo/SDL
-        GIT_TAG b2617a45d1c14989bd34f515ea2c4fa2e1bdae75
+        GIT_TAG 83435214fc23587ddc1af2fd33b5641d65966c0e
         SYSTEM TRUE
     )
 endif()
-
-get_property(sdl3_include_dirs TARGET SDL_uclibc PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
-set_property(TARGET SDL_uclibc PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${sdl3_include_dirs}")
-target_compile_options(SDL_uclibc PRIVATE "-w" "-pthread")
-set_target_properties(SDL_uclibc PROPERTIES UNITY_BUILD OFF)
-target_link_libraries(SDL_uclibc PRIVATE Threads::Threads)
 
 if (TARGET SDL3-static)
     get_property(sdl3_include_dirs TARGET SDL3-static PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
