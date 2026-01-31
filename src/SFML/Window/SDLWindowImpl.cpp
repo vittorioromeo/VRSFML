@@ -40,6 +40,7 @@
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_keycode.h>
 #include <SDL3/SDL_mouse.h>
+#include <SDL3/SDL_properties.h>
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_video.h>
 
@@ -1025,7 +1026,9 @@ WindowHandle SDLWindowImpl::getNativeHandle() const
 #if defined(SFML_SYSTEM_WINDOWS)
         SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr)
 #elif defined(SFML_SYSTEM_LINUX_OR_BSD)
-        SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0)
+        SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, nullptr)
+            ? reinterpret_cast<WindowHandle>(SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, nullptr))
+            : static_cast<WindowHandle>(SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0))
 #elif defined(SFML_SYSTEM_MACOS)
         SDL_GetPointerProperty(props, SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, nullptr)
 #elif defined(SFML_SYSTEM_IOS)

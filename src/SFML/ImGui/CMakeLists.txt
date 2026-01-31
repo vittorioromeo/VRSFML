@@ -41,7 +41,7 @@ function(sfml_add_imgui_dependencies)
     CPMAddPackage(
         NAME imgui
         GITHUB_REPOSITORY vittorioromeo/imgui
-        GIT_TAG 7f60641c5a73468136032f995679daec8820f9b5
+        GIT_TAG c2731890f3493827537691c953f3b6d5157131f8
         SYSTEM TRUE
     )
 
