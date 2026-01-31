@@ -565,7 +565,8 @@ base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(WindowSettings windowSettin
 ////////////////////////////////////////////////////////////
 base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(const WindowHandle handle)
 {
-    SDL_Window* sdlWindowPtr = SDL_CreateWindowWithProperties(makeSDLWindowPropertiesFromHandle(handle));
+    SDL_Window* sdlWindowPtr = SDL_CreateWindowWithProperties(
+        makeSDLWindowPropertiesFromHandle(getSDLLayerSingleton().getCurrentVideoDriver(), handle));
 
     if (sdlWindowPtr == nullptr)
     {

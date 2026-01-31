@@ -58,7 +58,7 @@ namespace sf::priv
 [[nodiscard, gnu::const]] SDL_SystemCursor cursorTypeToSDLCursor(sf::Cursor::Type type) noexcept;
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SDL_PropertiesID makeSDLWindowPropertiesFromHandle(WindowHandle handle);
+[[nodiscard]] SDL_PropertiesID makeSDLWindowPropertiesFromHandle(const char* currentVideoDriver, WindowHandle handle);
 
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SDL_PropertiesID makeSDLWindowPropertiesFromWindowSettings(const WindowSettings& windowSettings);
@@ -336,6 +336,9 @@ public:
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool applyGLContextSettings(const ContextSettings& settings) const;
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] const char* getCurrentVideoDriver() const;
 };
 
 ////////////////////////////////////////////////////////////
