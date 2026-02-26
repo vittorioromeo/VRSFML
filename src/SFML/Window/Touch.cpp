@@ -15,30 +15,6 @@
 namespace sf::Touch
 {
 ////////////////////////////////////////////////////////////
-bool isDown(unsigned int finger)
-{
-    // TODO P0: implement
-    return false;
-}
-
-
-////////////////////////////////////////////////////////////
-Vec2i getPosition(unsigned int finger)
-{
-    // TODO P0: implement
-    return {};
-}
-
-
-////////////////////////////////////////////////////////////
-Vec2i getPosition(unsigned int finger, const WindowBase& relativeTo)
-{
-    // TODO P0: implement
-    return {};
-}
-
-
-////////////////////////////////////////////////////////////
 base::Span<Device> getDevices()
 {
     static thread_local base::Vector<Device> devices;

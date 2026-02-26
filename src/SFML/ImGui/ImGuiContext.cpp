@@ -736,9 +736,7 @@ struct [[nodiscard]] ImGuiContext::Impl
 
         if (!mouseMoved) // TODO P1: needed?
         {
-            if (Touch::isDown(0))
-                lastTouchPos = Touch::getPosition(0, theWindow);
-            else if (touchDown[0])
+            if (touchDown[0])
                 lastTouchPos = touchPositions[0];
 
             update(lastTouchPos, target.getSize().toVec2f(), dt);
@@ -769,8 +767,7 @@ struct [[nodiscard]] ImGuiContext::Impl
 
             for (unsigned int i = 0; i < 3; ++i)
             {
-                io.MouseDown[i] = Touch::isDown(i) || touchDown[i] || mousePressed[i] ||
-                                  Mouse::isButtonPressed(static_cast<Mouse::Button>(i));
+                io.MouseDown[i] = touchDown[i] || mousePressed[i] || Mouse::isButtonPressed(static_cast<Mouse::Button>(i));
 
                 mousePressed[i] = false;
                 touchDown[i]    = false;
