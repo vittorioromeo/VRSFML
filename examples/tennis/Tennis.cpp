@@ -195,13 +195,6 @@ int main()
                 leftPaddle.position.y += paddleSpeed * deltaTime;
             }
 
-            if (sf::Touch::isDown(0))
-            {
-                const sf::Vec2i pos       = sf::Touch::getPosition(0);
-                const sf::Vec2f mappedPos = window.mapPixelToCoords(pos);
-                leftPaddle.position.y     = mappedPos.y;
-            }
-
             // Move the computer's paddle
             if (((rightPaddleSpeed < 0.f) && (rightPaddle.position.y - paddleSize.y / 2 > 5.f)) ||
                 ((rightPaddleSpeed > 0.f) && (rightPaddle.position.y + paddleSize.y / 2 < gameSize.y - 5.f)))

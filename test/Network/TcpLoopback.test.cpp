@@ -144,7 +144,7 @@ TEST_CASE("[Network] sf::Tcp Loopback")
             }
             else if (serverSocket.getRemoteAddress())
             {
-                serverSocket.disconnect();
+                CHECK(serverSocket.disconnect());
             }
 
             {
@@ -157,7 +157,7 @@ TEST_CASE("[Network] sf::Tcp Loopback")
 
                 if (status == sf::TcpSocket::Status::Disconnected)
                 {
-                    clientSocket.disconnect();
+                    CHECK(clientSocket.disconnect());
                     break;
                 }
             }
@@ -240,7 +240,7 @@ TEST_CASE("[Network] sf::Tcp Loopback")
             }
             else if (serverSocket.getRemoteAddress())
             {
-                serverSocket.disconnect();
+                CHECK(serverSocket.disconnect());
             }
 
             {
@@ -253,7 +253,7 @@ TEST_CASE("[Network] sf::Tcp Loopback")
 
                 if (status == sf::TcpSocket::Status::Disconnected)
                 {
-                    clientSocket.disconnect();
+                    CHECK(clientSocket.disconnect());
                     break;
                 }
             }
