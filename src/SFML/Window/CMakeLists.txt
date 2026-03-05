@@ -65,16 +65,10 @@ if(SFML_OS_WINDOWS)
     set(PLATFORM_SRC
         ${SRCROOT}/Win32/Utils.hpp
         ${SRCROOT}/Win32/Win32ImplUnity.cpp
-
-        # ${SRCROOT}/Win32/Unity/Utils.cpp
-        # ${SRCROOT}/Win32/Unity/VulkanImplWin32.cpp
     )
 elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
     set(PLATFORM_SRC
-        ${SRCROOT}/Unix/Display.cpp
-        ${SRCROOT}/Unix/Display.hpp
         ${SRCROOT}/Unix/Utils.hpp
-        ${SRCROOT}/Unix/VulkanImplX11.cpp
     )
 elseif(SFML_OS_MACOS)
     enable_language(OBJC OBJCXX)

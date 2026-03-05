@@ -84,6 +84,15 @@ struct ContextSettings
 };
 
 
+// TODO P0:
+//
+// In modern graphics programming (whether it's OpenGL, Vulkan, or DirectX), the default window framebuffer should
+// always be as basic as possible (no MSAA, standard 8-bit RGBA).
+//
+// We should ensure that window creation settings always have 0 AA and RBGA, and that if those are needed they
+// are used through a rendertexture.
+
+
 ////////////////////////////////////////////////////////////
 SFML_BASE_DEFINE_ENUM_CLASS_BITWISE_OPS(ContextSettings::Attribute);
 
