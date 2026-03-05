@@ -140,18 +140,6 @@ public:
     [[nodiscard]] const value_type* c_str() const; // NOLINT(readability-identifier-naming)
 
     ////////////////////////////////////////////////////////////
-    /// \brief Returns a C-style `const char*` representation of the path (UTF-8 encoded)
-    ///
-    /// This method may involve a conversion if the native path encoding is not UTF-8.
-    /// The lifetime of the pointed-to string is managed by the `Path` object but is
-    /// only guaranteed to be valid until the next non-const method call on this `Path` object.
-    ///
-    /// \return Pointer to a null-terminated UTF-8 encoded C-string.
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] const char* toCharPtr() const;
-
-    ////////////////////////////////////////////////////////////
     /// \brief Converts the path to a string of type `T`
     ///
     /// Supported `T` types include `std::string`, `std::wstring`, `std::u8string`,
