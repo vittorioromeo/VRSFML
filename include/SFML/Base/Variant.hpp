@@ -557,10 +557,7 @@ public:
         }
         else
         {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
             alignas(R) Byte retBuffer[sizeof(R)];
-#pragma GCC diagnostic pop
 
             SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I, SFML_BASE_PLACEMENT_NEW(retBuffer) R(visitor(getByIndex<I>())));
             return *(SFML_BASE_LAUNDER_CAST(R*, retBuffer));
@@ -586,10 +583,7 @@ public:
         }
         else
         {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
             alignas(R) Byte retBuffer[sizeof(R)];
-#pragma GCC diagnostic pop
 
             SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I, SFML_BASE_PLACEMENT_NEW(retBuffer) R(visitor(getByIndex<I>())));
             return *(SFML_BASE_LAUNDER_CAST(R*, retBuffer));
