@@ -3419,10 +3419,7 @@ struct Main
         if (!clickPosition.hasValue())
             return false;
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         const auto clickPos = window.mapPixelToCoords(clickPosition->toVec2i(), gameView);
-#pragma GCC diagnostic pop
 
         if (!particleCullingBoundaries.isInside(clickPos))
         {

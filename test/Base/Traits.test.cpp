@@ -12,6 +12,7 @@
 #include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
 #include "SFML/Base/Trait/IsTriviallyRelocatable.hpp"
+#include "SFML/Base/Trait/IsUnsigned.hpp"
 #include "SFML/Base/Trait/RemoveCVRef.hpp"
 #include "SFML/Base/Trait/RemoveReference.hpp"
 #include "SFML/Base/Trait/UnderlyingType.hpp"
@@ -21,6 +22,14 @@ namespace
 {
 namespace TraitsTest // for unity builds
 {
+////////////////////////////////////////////////////////////
+static_assert(!sf::base::isUnsigned<float>);
+static_assert(!sf::base::isUnsigned<char>);
+static_assert(!sf::base::isUnsigned<int>);
+static_assert(sf::base::isUnsigned<bool>);
+static_assert(sf::base::isUnsigned<unsigned char>);
+static_assert(sf::base::isUnsigned<unsigned int>);
+
 
 ////////////////////////////////////////////////////////////
 struct B
