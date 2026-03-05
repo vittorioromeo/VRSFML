@@ -125,15 +125,6 @@ const Path::value_type* Path::c_str() const
 
 
 ////////////////////////////////////////////////////////////
-const char* Path::toCharPtr() const
-{
-    m_impl->buffer = to<std::string>();
-
-    return m_impl->buffer.c_str();
-}
-
-
-////////////////////////////////////////////////////////////
 bool Path::remove() const
 {
     return std::filesystem::remove(m_impl->fsPath);
@@ -157,7 +148,7 @@ bool Path::exists() const
 ////////////////////////////////////////////////////////////
 bool Path::extensionIs(const base::StringView str) const
 {
-    const auto nativeExt = m_impl->fsPath.extension().native();
+    const auto nativeExt = m_impl->fsPath.extension().string();
 
     if (nativeExt.size() != str.size())
         return false;

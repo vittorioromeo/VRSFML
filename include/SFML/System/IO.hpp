@@ -183,14 +183,14 @@ public:
 /// \brief Helper function to write a string to a file.
 ///
 ////////////////////////////////////////////////////////////
-bool writeToFile(base::StringView filename, base::StringView contents);
+[[nodiscard]] bool writeToFile(base::StringView filename, base::StringView contents);
 
 
 ////////////////////////////////////////////////////////////
 /// \brief Helper function to read the contents of a file into a string.
 ///
 ////////////////////////////////////////////////////////////
-bool readFromFile(base::StringView filename, std::string& target);
+[[nodiscard]] bool readFromFile(base::StringView filename, std::string& target);
 
 
 ////////////////////////////////////////////////////////////
