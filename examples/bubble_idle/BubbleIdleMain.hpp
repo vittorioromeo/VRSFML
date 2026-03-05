@@ -425,7 +425,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     // Context settings
     const unsigned int        aaLevel = sf::base::min(16u, sf::RenderTexture::getMaximumAntiAliasingLevel());
-    const sf::ContextSettings contextSettings{.antiAliasingLevel = aaLevel};
+    const sf::ContextSettings contextSettings{.antiAliasingLevel = aaLevel}; // TODO P0: needs to be 0 on Wayland
 
     ///////////////////////////////////////////////////////////
     // Profile (stores settings)
