@@ -851,6 +851,7 @@ try
     std::filesystem::copy_file(from, to);
 } catch (...)
 {
+    sf::cOut() << "Failed to copy file from '" << from.c_str() << "' to '" << to.c_str() << "'\n";
 }
 
 
@@ -877,7 +878,8 @@ try
     std::filesystem::create_directories("userdata");
     doRotatingBackup(filename);
 
-    sf::writeToFile(filename, nlohmann::json(profile).dump());
+    if (!sf::writeToFile(filename, nlohmann::json(profile).dump()))
+        throw std::runtime_error("writeToFile failed");
 } catch (const std::exception& ex)
 {
     sf::cOut() << "Failed to save profile to file '" << filename << "' (" << ex.what() << ")\n";
@@ -889,7 +891,9 @@ void loadProfileFromFile(Profile& profile, const char* filename)
 try
 {
     std::string contents;
-    sf::readFromFile(filename, contents);
+
+    if (!sf::readFromFile(filename, contents))
+        throw std::runtime_error("readFromFile failed");
 
     nlohmann::json::parse(contents).get_to(profile);
 } catch (const std::exception& ex)
@@ -905,7 +909,8 @@ try
     std::filesystem::create_directories("userdata");
     doRotatingBackup(filename);
 
-    sf::writeToFile(filename, nlohmann::json(playthrough).dump());
+    if (!sf::writeToFile(filename, nlohmann::json(playthrough).dump()))
+        throw std::runtime_error("writeToFile failed");
 } catch (const std::exception& ex)
 {
     sf::cOut() << "Failed to save playthrough to file '" << filename << "' (" << ex.what() << ")\n";
@@ -957,7 +962,9 @@ sf::base::StringView loadPlaythroughFromFile(Playthrough& playthrough, const cha
 try
 {
     std::string contents;
-    sf::readFromFile(filename, contents);
+
+    if (!sf::readFromFile(filename, contents))
+        throw std::runtime_error("readFromFile failed");
 
     const auto parsed = nlohmann::json::parse(contents);
     parsed.get_to(playthrough);

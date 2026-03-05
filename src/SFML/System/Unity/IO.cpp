@@ -372,7 +372,8 @@ bool writeToFile(base::StringView filename, base::StringView contents)
 ////////////////////////////////////////////////////////////
 bool readFromFile(base::StringView filename, std::string& target)
 {
-    std::ifstream file(filename.toString<std::string>(), std::ios::binary);
+    // Open at the end of the file (ate) to immediately get the size
+    std::ifstream file(filename.toString<std::string>(), std::ios::binary | std::ios::ate);
 
     if (!file)
     {
@@ -380,7 +381,27 @@ bool readFromFile(base::StringView filename, std::string& target)
         return false;
     }
 
-    return static_cast<bool>(file >> target);
+    // Get file size and resize the target string
+    std::streamsize size = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    // Handle empty files gracefully without doing a 0-byte read
+    if (size <= 0)
+    {
+        target.clear();
+        return true;
+    }
+
+    target.resize(static_cast<std::size_t>(size));
+
+    // Read the entire file directly into the string's buffer
+    if (!file.read(target.data(), size))
+    {
+        priv::err() << "Failed to read the full contents of file '" << filename << "'\n";
+        return false;
+    }
+
+    return true;
 }
 
 
@@ -853,7 +874,7 @@ InFileStream& InFileStream::operator>>(T& value)
 {
     if constexpr (base::isEnum<T>)
     {
-        m_impl->ifs >> static_cast<base::UnderlyingType<T>>(value);
+        m_impl->ifs >> static_cast<base::UnderlyingType<T>&>(value);
     }
     else
     {
@@ -985,7 +1006,7 @@ InStringStream& InStringStream::operator>>(T& value)
 {
     if constexpr (base::isEnum<T>)
     {
-        m_impl->iss >> static_cast<base::UnderlyingType<T>>(value);
+        m_impl->iss >> static_cast<base::UnderlyingType<T>&>(value);
     }
     else
     {
