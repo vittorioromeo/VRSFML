@@ -6,6 +6,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Swap.hpp"
 
@@ -40,6 +41,8 @@ template <typename RandomIt, typename RngFunc>
     for (decltype(n) i = n - 1; i > 0; --i)
     {
         const auto j = rngFunc(SizeT{0u}, static_cast<SizeT>(i));
+        SFML_BASE_ASSERT(j <= static_cast<SizeT>(i));
+
         iterSwap(rangeBegin + i, rangeBegin + j);
     }
 }

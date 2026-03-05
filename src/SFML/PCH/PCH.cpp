@@ -7,6 +7,9 @@
 
     #ifdef SFML_BUILD_TEST_SUITE
 
+        #undef DOCTEST_CONFIG_USE_STD_HEADERS
+        #undef DOCTEST_CONFIG_INCLUDE_TYPE_TRAITS
+
         #define DOCTEST_CONFIG_IMPLEMENT 1
         #include <doctest/doctest.h>
 
