@@ -24,7 +24,7 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::base::UniquePtr<sf::priv::SDLWindowImpl> tryCreateSDLWindowImpl(sf::WindowBase::Settings windowSettings)
+[[nodiscard]] sf::base::UniquePtr<sf::priv::SDLWindowImpl> tryCreateSDLWindowImpl(sf::WindowBase::Settings windowSettings) // TODO P0: use?
 {
     // The window framebuffer max antialiasing level can actually be lower than what GL_MAX_SAMPLES reports,
     // so we try to create the window with decreasing AA levels until we succeed or reach 0.
