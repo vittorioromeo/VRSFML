@@ -19,6 +19,7 @@
 #include "SFML/Window/SensorManager.hpp"
 #include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
+#include "SFML/Window/Vulkan.hpp"
 #include "SFML/Window/WindowContext.hpp"
 #include "SFML/Window/WindowHandle.hpp"
 #include "SFML/Window/WindowSettings.hpp"
@@ -35,6 +36,7 @@
 #include "SFML/Base/EnumArray.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/String.hpp"
+#include "SFML/Base/ToString.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <SDL3/SDL_events.h>
@@ -49,22 +51,7 @@
 
 ////////////////////////////////////////////////////////////
 #if defined(SFML_SYSTEM_WINDOWS)
-    #include "SFML/Window/VulkanImpl.hpp"
     #include "SFML/Window/Win32/Utils.hpp"
-#elif defined(SFML_SYSTEM_LINUX_OR_BSD)
-    #if defined(SFML_USE_DRM)
-        #define SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
-    #else
-        #include "SFML/Window/VulkanImpl.hpp"
-    #endif
-#elif defined(SFML_SYSTEM_MACOS)
-    #define SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
-#elif defined(SFML_SYSTEM_IOS)
-    #define SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
-#elif defined(SFML_SYSTEM_ANDROID)
-    #define SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
-#elif defined(SFML_SYSTEM_EMSCRIPTEN)
-    #define SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
 #endif
 
 
@@ -100,7 +87,9 @@ bool touchIndexPool[32]{}; // Keeps track of which finger indices are in use
 
 
 ////////////////////////////////////////////////////////////
-bool setWindowNonExclusiveFullscreenIfNeeded(const bool hasTitlebar, const sf::Vec2u size, SDL_Window* sdlWindowPtr)
+bool setWindowNonExclusiveFullscreenIfNeeded([[maybe_unused]] const bool      hasTitlebar,
+                                             [[maybe_unused]] const sf::Vec2u size,
+                                             [[maybe_unused]] SDL_Window*     sdlWindowPtr)
 {
 #ifdef SFML_SYSTEM_WINDOWS
     {
@@ -120,6 +109,28 @@ bool setWindowNonExclusiveFullscreenIfNeeded(const bool hasTitlebar, const sf::V
 #endif
 
     return false;
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] sf::base::String windowSettingsToString(const sf::WindowSettings& settings)
+{
+    return "size={" + sf::base::toString(settings.size.x) + ", " + sf::base::toString(settings.size.y) + "}, " +    //
+           "bitsPerPixel=" + sf::base::toString(settings.bitsPerPixel) + ", " +                                     //
+           "title=\"" + settings.title.toAnsiString<sf::base::String>() + "\", " +                                  //
+           "fullscreen=" + sf::base::toString(settings.fullscreen) + ", " +                                         //
+           "resizable=" + sf::base::toString(settings.resizable) + ", " +                                           //
+           "closable=" + sf::base::toString(settings.closable) + ", " +                                             //
+           "hasTitlebar=" + sf::base::toString(settings.hasTitlebar) + ", " +                                       //
+           "vsync=" + sf::base::toString(settings.vsync) + ", " +                                                   //
+           "frametimeLimit=" + sf::base::toString(settings.frametimeLimit) + ", " +                                 //
+           "contextSettings={antialiasingLevel=" + sf::base::toString(settings.contextSettings.antiAliasingLevel) + //
+           ", depthBits=" + sf::base::toString(settings.contextSettings.depthBits) +                                //
+           ", stencilBits=" + sf::base::toString(settings.contextSettings.stencilBits) +                            //
+           ", majorVersion=" + sf::base::toString(settings.contextSettings.majorVersion) +                          //
+           ", minorVersion=" + sf::base::toString(settings.contextSettings.minorVersion) +                          //
+           ", attributeFlags=" + sf::base::toString(static_cast<unsigned int>(settings.contextSettings.attributeFlags)) + //
+           "}";
 }
 
 
@@ -544,7 +555,9 @@ base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(WindowSettings windowSettin
 
     if (sdlWindowPtr == nullptr)
     {
-        err() << "Failed to create window: " << SDL_GetError();
+        err() << "Failed to create window: " << SDL_GetError()
+              << " (Window settings: " << SDLWindowImplImpl::windowSettingsToString(windowSettings) << ")";
+
         return nullptr;
     }
 
@@ -829,18 +842,10 @@ void SDLWindowImpl::populateEventQueue()
 ////////////////////////////////////////////////////////////
 bool SDLWindowImpl::createVulkanSurface([[maybe_unused]] const Vulkan::VulkanSurfaceData& vulkanSurfaceData) const
 {
-#ifdef SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
-
-    return false;
-
-#else
-
-    return VulkanImpl::createVulkanSurface(vulkanSurfaceData.instance,
-                                           getNativeHandle(),
-                                           vulkanSurfaceData.surface,
-                                           vulkanSurfaceData.allocator);
-
-#endif
+    return Vulkan::createVulkanSurface(vulkanSurfaceData.instance,
+                                       m_impl->sdlWindow,
+                                       vulkanSurfaceData.surface,
+                                       vulkanSurfaceData.allocator);
 }
 
 

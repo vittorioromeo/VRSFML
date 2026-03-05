@@ -8,11 +8,16 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Export.hpp"
 
+#include "SFML/Window/WindowHandle.hpp"
+
 #include "SFML/Base/Span.hpp"
 
 
+////////////////////////////////////////////////////////////
 using VkInstance = struct VkInstance_T*;
 
+
+////////////////////////////////////////////////////////////
 #if defined(__LP64__) || defined(_WIN64) || (defined(__x86_64__) && !defined(__ILP32__)) || defined(_M_X64) || \
     defined(__ia64) || defined(_M_IA64) || defined(__aarch64__) || defined(__powerpc64__)
 
@@ -26,13 +31,16 @@ using VkSurfaceKHR = sf::base::U64;
 
 #endif
 
+
+////////////////////////////////////////////////////////////
 struct VkAllocationCallbacks;
 
 
 namespace sf
 {
-
+////////////////////////////////////////////////////////////
 using VulkanFunctionPointer = void (*)();
+
 
 ////////////////////////////////////////////////////////////
 /// \brief Vulkan helper functions
@@ -96,9 +104,24 @@ struct VulkanSurfaceData
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_WINDOW_API base::Span<const char* const> getGraphicsRequiredInstanceExtensions();
 
+////////////////////////////////////////////////////////////
+/// \brief Create a Vulkan rendering surface
+///
+/// \param instance        Vulkan instance
+/// \param sdlWindowHandle Handle to the SDL window to create the surface for
+/// \param surface         Created surface
+/// \param allocator       Allocator to use
+///
+/// \return `true` if surface creation was successful, `false` otherwise
+///
+////////////////////////////////////////////////////////////
+[[nodiscard]] bool createVulkanSurface(const VkInstance&            instance,
+                                       void*                        sdlWindowHandle,
+                                       VkSurfaceKHR&                surface,
+                                       const VkAllocationCallbacks* allocator);
+
 } // namespace Vulkan
 } // namespace sf
-
 
 ////////////////////////////////////////////////////////////
 /// \namespace sf::Vulkan

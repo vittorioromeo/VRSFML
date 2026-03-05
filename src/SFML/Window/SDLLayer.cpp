@@ -756,14 +756,14 @@ bool SDLLayer::isKeyPressedByScancode(const Keyboard::Scancode code) const noexc
     const bool* keyboardState = SDL_GetKeyboardState(nullptr);
     SFML_BASE_ASSERT(keyboardState != nullptr);
 
-    return keyboardState[priv::mapSFMLScancodeToSDL(code)];
+    return keyboardState[mapSFMLScancodeToSDL(code)];
 }
 
 
 ////////////////////////////////////////////////////////////
 const char* SDLLayer::getScancodeDescription(const Keyboard::Scancode code) const noexcept
 {
-    return SDL_GetKeyName(priv::mapSFMLKeycodeToSDL(localize(code)));
+    return SDL_GetKeyName(mapSFMLKeycodeToSDL(localize(code)));
 }
 
 
