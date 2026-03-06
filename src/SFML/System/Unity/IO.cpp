@@ -13,7 +13,7 @@
 #include "SFML/System/UnicodeString.hpp"
 
 #include "SFML/Base/StackTrace.hpp"
-#include "SFML/Base/String.hpp" // used
+#include "SFML/Base/String.hpp" // IWYU pragma: keep
 #include "SFML/Base/StringStreamOp.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/StringViewStreamOp.hpp"

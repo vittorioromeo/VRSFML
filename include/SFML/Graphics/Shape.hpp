@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
-#include "SFML/Graphics/Priv/ShapeMacros.hpp" // used, exposes macros
+#include "SFML/Graphics/Priv/ShapeMacros.hpp" // IWYU pragma: keep
 #include "SFML/Graphics/TransformableMixin.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 #include "SFML/Graphics/VertexSpan.hpp"

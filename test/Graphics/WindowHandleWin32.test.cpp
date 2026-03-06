@@ -1,4 +1,4 @@
-#include "SFML/Config.hpp"
+#include "SFML/Config.hpp" // IWYU pragma: keep
 
 #ifdef SFML_SYSTEM_WINDOWS
 // Other 1st party headers
@@ -9,7 +9,7 @@
     #include "SFML/Window/WindowContext.hpp"
     #include "SFML/Window/WindowHandle.hpp"
 
-    #include "SFML/System/WindowsHeader.hpp" // used
+    #include "SFML/System/WindowsHeader.hpp" // IWYU pragma: keep
 
     #include "SFML/Base/Optional.hpp"
 

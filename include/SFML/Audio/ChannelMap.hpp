@@ -11,7 +11,7 @@
 #include "SFML/Audio/SoundChannel.hpp"
 
 #include "SFML/Base/InPlaceVector.hpp"
-#include "SFML/Base/InitializerList.hpp" // used
+#include "SFML/Base/InitializerList.hpp" // IWYU pragma: keep
 #include "SFML/Base/SizeT.hpp"
 
 
