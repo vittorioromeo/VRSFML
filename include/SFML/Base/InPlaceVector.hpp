@@ -7,13 +7,11 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/InitializerList.hpp" // used
-#include "SFML/Base/MinMaxMacros.hpp"
+#include "SFML/Base/InitializerList.hpp" // IWYU pragma: keep
 #include "SFML/Base/PlacementNew.hpp"
 #include "SFML/Base/Priv/VectorUtils.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Swap.hpp"
 #include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
 #include "SFML/Base/Trait/IsTriviallyRelocatable.hpp"
 

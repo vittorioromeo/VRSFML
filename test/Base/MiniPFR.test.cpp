@@ -1,4 +1,4 @@
-#include "StringifyStringViewUtil.hpp" // used
+#include "StringifyStringViewUtil.hpp" // IWYU pragma: keep
 
 #include "SFML/Base/MiniPFR.hpp"
 

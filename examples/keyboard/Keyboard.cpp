@@ -13,16 +13,16 @@
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Text.hpp"
-#include "SFML/Graphics/View.hpp" // used
+#include "SFML/Graphics/View.hpp" // IWYU pragma: keep
 
 #include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/AudioSettings.hpp"
+#include "SFML/Audio/AudioSettings.hpp" // IWYU pragma: keep
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
 
 #include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/WindowSettings.hpp"
+#include "SFML/Window/WindowSettings.hpp" // IWYU pragma: keep
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/IO.hpp"

@@ -1,11 +1,11 @@
-#include "SFML/Config.hpp"
+#include "SFML/Config.hpp" // IWYU pragma: keep
 
 #ifdef SFML_SYSTEM_WINDOWS
 
     #include "SFML/Window/WindowBase.hpp"
     #include "SFML/Window/WindowContext.hpp"
 
-    #include "SFML/System/WindowsHeader.hpp" // used
+    #include "SFML/System/WindowsHeader.hpp" // IWYU pragma: keep
 
     #include "SFML/Base/Assert.hpp"
     #include "SFML/Base/Optional.hpp"

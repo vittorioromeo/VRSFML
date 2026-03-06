@@ -84,12 +84,11 @@
 #include "SFML/Base/DeclVal.hpp"
 #include "SFML/Base/Exchange.hpp"
 #include "SFML/Base/IndexSequence.hpp"
-#include "SFML/Base/InitializerList.hpp" // used
+#include "SFML/Base/InitializerList.hpp" // IWYU pragma: keep
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/MakeIndexSequence.hpp"
 #include "SFML/Base/MinMax.hpp"
-#include "SFML/Base/Vector.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -149,8 +148,8 @@ namespace std {
 
 #endif
 
-namespace ankerl::unordered_dense {
-inline namespace ANKERL_UNORDERED_DENSE_NAMESPACE {
+
+namespace ankerl::unordered_dense::inline ANKERL_UNORDERED_DENSE_NAMESPACE {
 
 namespace detail {
 
@@ -2144,7 +2143,7 @@ public:
 
     // bucket interface ///////////////////////////////////////////////////////
 
-    auto bucket_count() const noexcept -> sf::base::SizeT
+    [[nodiscard]] auto bucket_count() const noexcept -> sf::base::SizeT
     { // NOLINT(modernize-use-nodiscard)
         return m_buckets.size();
     }
@@ -2303,8 +2302,8 @@ using segmented_set = detail::table<Key, void, Hash, KeyEqual, Bucket, BucketCon
 // deduction guides for alias templates are only possible since C++20
 // see https://en.cppreference.com/w/cpp/language/class_template_argument_deduction
 
-} // namespace ANKERL_UNORDERED_DENSE_NAMESPACE
-} // namespace ankerl::unordered_dense
+} // namespace ankerl::unordered_dense::inline ANKERL_UNORDERED_DENSE_NAMESPACE
+
 
 // std extensions /////////////////////////////////////////////////////////////
 

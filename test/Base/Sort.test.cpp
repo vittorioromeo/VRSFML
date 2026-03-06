@@ -1,5 +1,5 @@
-#include "StringifySfBaseStringUtil.hpp" // used
-#include "StringifyVectorUtil.hpp"       // used
+#include "StringifySfBaseStringUtil.hpp" // IWYU pragma: keep
+#include "StringifyVectorUtil.hpp"       // IWYU pragma: keep
 
 #include "SFML/Base/Algorithm/Sort.hpp"
 

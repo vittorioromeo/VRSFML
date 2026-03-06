@@ -7,7 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/InitializerList.hpp" // used
+#include "SFML/Base/InitializerList.hpp" // IWYU pragma: keep
 #include "SFML/Base/MinMaxMacros.hpp"
 #include "SFML/Base/PlacementNew.hpp"
 #include "SFML/Base/Priv/VectorUtils.hpp"

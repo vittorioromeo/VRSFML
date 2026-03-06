@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Network/Export.hpp"
 
-#include "SFML/Base/FwdStdString.hpp" // used
+#include "SFML/Base/FwdStdString.hpp" // IWYU pragma: keep
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
