@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SFML/Base/InitializerList.hpp" // used
+#include "SFML/Base/InitializerList.hpp" // IWYU pragma: keep
 
 
 ////////////////////////////////////////////////////////////

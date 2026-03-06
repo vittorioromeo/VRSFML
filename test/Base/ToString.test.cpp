@@ -1,5 +1,5 @@
-#include "StringifySfBaseStringUtil.hpp" // used
-#include "StringifyStringViewUtil.hpp"   // used
+#include "StringifySfBaseStringUtil.hpp" // IWYU pragma: keep
+#include "StringifyStringViewUtil.hpp"   // IWYU pragma: keep
 
 #include "SFML/Base/ToString.hpp"
 
