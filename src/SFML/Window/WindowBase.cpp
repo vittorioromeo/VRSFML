@@ -38,7 +38,7 @@ namespace
         return nullptr;
 
     windowSettings.contextSettings.antiAliasingLevel /= 2u;
-    return  (windowSettings);
+    return tryCreateSDLWindowImpl(windowSettings);
 }
 
 } // namespace
