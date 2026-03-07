@@ -38,21 +38,21 @@ bool isAvailable([[maybe_unused]] bool requireGraphics)
             return false;
         }
 
-        graphicsAvailable = computeAvailable;
+        graphicsAvailable = true;
 
-        if (graphicsAvailable)
+        Uint32             count      = 0;
+        const char* const* extensions = SDL_Vulkan_GetInstanceExtensions(&count);
+
+        if (extensions == nullptr)
         {
-            Uint32             count      = 0;
-            const char* const* extensions = SDL_Vulkan_GetInstanceExtensions(&count);
+            priv::err() << "Failed to get Vulkan extensions: " << SDL_GetError();
+            graphicsAvailable = false;
+        }
 
-            if (extensions == nullptr)
-            {
-                priv::err() << "Failed to get Vulkan extensions: " << SDL_GetError();
-                return false;
-            }
-
-            if (count == 0)
-                graphicsAvailable = false;
+        if (count == 0)
+        {
+            priv::err() << "No Vulkan extensions available";
+            graphicsAvailable = false;
         }
     }
 
@@ -61,14 +61,14 @@ bool isAvailable([[maybe_unused]] bool requireGraphics)
 
 
 ////////////////////////////////////////////////////////////
-VulkanFunctionPointer getFunction([[maybe_unused]] const char* name)
+VulkanFunctionPointer getFunction(const char* name, const VkInstance instance)
 {
     SFML_BASE_ASSERT(name != nullptr && "Name cannot be a null pointer");
 
     if (!isAvailable(/* requireGraphics */ false))
     {
         priv::err() << "Tried to get Vulkan function pointer when Vulkan is not available";
-        return {};
+        return nullptr;
     }
 
     // Retrieve the global vkGetInstanceProcAddr function from SDL
@@ -80,7 +80,7 @@ VulkanFunctionPointer getFunction([[maybe_unused]] const char* name)
         return nullptr;
     }
 
-    return reinterpret_cast<VulkanFunctionPointer>(vkGetInstanceProcAddr(nullptr, name));
+    return reinterpret_cast<VulkanFunctionPointer>(vkGetInstanceProcAddr(instance, name));
 }
 
 
