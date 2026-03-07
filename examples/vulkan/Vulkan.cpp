@@ -209,22 +209,15 @@ public:
     // Constructor
     VulkanExample() : window{sf::WindowBase::create({.size{800u, 600u}, .title = "SFML window with Vulkan"}).value()}
     {
-
-        bool failed = false;
-
         const auto tryStep = [&](const char* fName, auto&& f)
         {
-            if (failed)
+            if (!vulkanAvailable)
                 return;
 
-            if (vulkanAvailable)
-                f();
+            f(); // sets `vulkanAvailable` to false if it fails
 
             if (!vulkanAvailable)
-            {
                 sf::cErr() << "Vulkan setup failed at step '" << fName << "'\n";
-                failed = true;
-            }
         };
 
 #define TRY_STEP(...) tryStep(#__VA_ARGS__, [&]() { __VA_ARGS__; })
@@ -258,6 +251,8 @@ public:
         TRY_STEP({ setupDraw(); });
         TRY_STEP({ setupSemaphores(); });
         TRY_STEP({ setupFences(); });
+
+#undef TRY_STEP
 
         // If something went wrong, notify the user by setting the window title
         if (!vulkanAvailable)
