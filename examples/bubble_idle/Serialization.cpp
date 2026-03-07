@@ -851,7 +851,7 @@ try
     std::filesystem::copy_file(from, to);
 } catch (...)
 {
-    sf::cOut() << "Failed to copy file from '" << from.c_str() << "' to '" << to.c_str() << "'\n";
+    sf::cOut() << "Failed to copy file from '" << from.string() << "' to '" << to.string() << "'\n";
 }
 
 

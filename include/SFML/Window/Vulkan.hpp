@@ -89,12 +89,13 @@ struct VulkanSurfaceData
 ////////////////////////////////////////////////////////////
 /// \brief Get the address of a Vulkan function
 ///
-/// \param name Name of the function to get the address of
+/// \param name     Name of the function to get the address of
+/// \param instance Vulkan instance to get the function for, or `VK_NULL_HANDLE` for global functions
 ///
 /// \return Address of the Vulkan function, `nullptr` on failure
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API VulkanFunctionPointer getFunction(const char* name);
+[[nodiscard]] SFML_WINDOW_API VulkanFunctionPointer getFunction(const char* name, VkInstance instance);
 
 ////////////////////////////////////////////////////////////
 /// \brief Get Vulkan instance extensions required for graphics
