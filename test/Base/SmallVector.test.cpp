@@ -19,6 +19,8 @@
 
 namespace
 {
+namespace SmallVectorTest // for unity builds
+{
 int defaultCtorCount = 0;
 int intCtorCount     = 0;
 int copyCtorCount    = 0;
@@ -103,7 +105,6 @@ struct Obj
     }
 };
 
-} // namespace
 
 constexpr sf::base::SizeT inlineCapacity = 5;
 
@@ -407,3 +408,6 @@ TEST_CASE("[Base] Base/SmallVector.hpp")
         CHECK(dtorCount == 6);
     }
 }
+
+} // namespace SmallVectorTest
+} // namespace

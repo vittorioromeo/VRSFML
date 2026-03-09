@@ -10,7 +10,7 @@
 
 #include "SFML/System/Time.hpp"
 
-#include <chrono>
+#include "SFML/Base/StdChrono.hpp" // IWYU pragma: keep
 
 
 namespace sf

@@ -18,6 +18,8 @@
 
 namespace
 {
+namespace NonTrivialInPlaceVectorTest // for unity builds
+{
 int defaultCtorCount = 0;
 int intCtorCount     = 0;
 int copyCtorCount    = 0;
@@ -739,4 +741,5 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
     }
 }
 
+} // namespace NonTrivialInPlaceVectorTest
 } // namespace
