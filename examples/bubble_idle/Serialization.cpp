@@ -16,6 +16,9 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-conversion"
 
+#undef __cpp_lib_formatters
+#undef __glibcxx_want_formatters
+
 #include "json.hpp"
 
 #pragma GCC diagnostic pop

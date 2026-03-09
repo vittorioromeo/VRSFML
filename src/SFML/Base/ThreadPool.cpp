@@ -6,6 +6,7 @@
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/StdChrono.hpp" // IWYU pragma: keep
 #include "SFML/Base/Vector.hpp"
 
 #pragma GCC diagnostic push
@@ -16,8 +17,10 @@
 
 #pragma GCC diagnostic pop
 
+#undef __cpp_lib_formatters
+#undef __glibcxx_want_formatters
+
 #include <atomic>
-#include <chrono>
 #include <thread>
 
 
