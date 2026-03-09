@@ -21,8 +21,17 @@
 #undef __glibcxx_want_formatters
 
 #include <atomic>
-#include <thread>
 
+#if __has_include(<bits/std_thread.h>) && __has_include(<bits/this_thread_sleep.h>)
+
+    #include <bits/std_thread.h>
+    #include <bits/this_thread_sleep.h>
+
+#else
+
+    #include <thread>
+
+#endif
 
 namespace sf::base
 {

@@ -7,6 +7,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/WindowBase.hpp" // NOLINT(misc-header-include-cycle)
 
+#include "SFML/Base/OverloadSet.hpp"
+
 
 namespace sf::priv
 {
