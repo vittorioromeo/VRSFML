@@ -83,11 +83,9 @@
 #include "SFML/Base/Builtin/Memset.hpp"
 #include "SFML/Base/DeclVal.hpp"
 #include "SFML/Base/Exchange.hpp"
-#include "SFML/Base/IndexSequence.hpp"
 #include "SFML/Base/InitializerList.hpp" // IWYU pragma: keep
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
-#include "SFML/Base/MakeIndexSequence.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
@@ -97,7 +95,6 @@
 #include "SFML/Base/Trait/IsConstructible.hpp"
 #include "SFML/Base/Trait/IsConvertible.hpp"
 #include "SFML/Base/Trait/IsEnum.hpp"
-#include "SFML/Base/Trait/IsIntegral.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowSwappable.hpp"
 #include "SFML/Base/Trait/IsSame.hpp"
@@ -110,8 +107,7 @@
 
 #include <cstdint> // uintptr_t
 
-#    include <tuple>            // for forward_as_tuple
-#    include <utility>          // for pair, piece...
+//  #include <utility>          // for pair, piece...
 
 #if __has_include(<bits/functional_hash.h>)
 #    include <bits/functional_hash.h>
@@ -152,6 +148,29 @@ namespace std {
 namespace ankerl::unordered_dense::inline ANKERL_UNORDERED_DENSE_NAMESPACE {
 
 namespace detail {
+
+    template <typename...>
+    struct piecewise_args { };
+
+    template <typename A, typename B>
+    struct pair {
+        A first;
+        B second;
+
+        pair() = default;
+
+        template <typename U1, typename U2>
+        pair(U1&& a, U2&& b)
+            : first(SFML_BASE_FORWARD(a))
+            , second(SFML_BASE_FORWARD(b))
+        { }
+
+        template <typename... Args1, typename... Args2>
+        pair(piecewise_args<Args1...>, Args1&&... args1, piecewise_args<Args2...>, Args2&&... args2)
+            : first(SFML_BASE_FORWARD(args1)...)
+            , second(SFML_BASE_FORWARD(args2)...)
+        { }
+    };
 
     template <typename T>
     using vector = sf::base::Vector<T>;
@@ -474,6 +493,7 @@ struct hash<StringLike, sf::base::EnableIf<requires (const StringLike& stringLik
     }
 };
 
+/*
 template <typename... Args>
 struct tuple_hash_helper {
     // Converts the value into 64bit. If it is an integral type, just cast it. Mixing is doing the rest.
@@ -501,7 +521,9 @@ struct tuple_hash_helper {
         return h;
     }
 };
+*/
 
+/*
 template <typename... Args>
 struct hash<std::tuple<Args...>> : tuple_hash_helper<Args...> {
     using is_avalanching = void;
@@ -509,14 +531,17 @@ struct hash<std::tuple<Args...>> : tuple_hash_helper<Args...> {
         return tuple_hash_helper<Args...>::calc_hash(t, SFML_BASE_INDEX_SEQUENCE_FOR(Args){});
     }
 };
+*/
 
+/*
 template <typename A, typename B>
-struct hash<std::pair<A, B>> : tuple_hash_helper<A, B> {
+struct hash<detail::pair<A, B>> : tuple_hash_helper<A, B> {
     using is_avalanching = void;
-    auto operator()(std::pair<A, B> const& t) const noexcept -> sf::base::U64 {
+    auto operator()(detail::pair<A, B> const& t) const noexcept -> sf::base::U64 {
         return tuple_hash_helper<A, B>::calc_hash(t, SFML_BASE_MAKE_INDEX_SEQUENCE(2){});
     }
 };
+*/
 
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #    define ANKERL_UNORDERED_DENSE_HASH_STATICCAST(T)                    \
@@ -982,7 +1007,7 @@ template <class Key,
           bool IsSegmented>
 class table : public sf::base::Conditional<is_map_v<T>, base_table_type_map<T>, base_table_type_set>
 {
-    using underlying_value_type = typename sf::base::Conditional<is_map_v<T>, std::pair<Key, T>, Key>;
+    using underlying_value_type = typename sf::base::Conditional<is_map_v<T>, detail::pair<Key, T>, Key>;
     using underlying_container_type = sf::base::
         Conditional<IsSegmented, segmented_vector<underlying_value_type>, detail::vector<underlying_value_type>>;
 
@@ -1329,7 +1354,7 @@ private:
     }
 
     template <class K, class M>
-    auto do_insert_or_assign(K&& key, M&& mapped) -> std::pair<iterator, bool>
+    auto do_insert_or_assign(K&& key, M&& mapped) -> detail::pair<iterator, bool>
     {
         auto it_isinserted = try_emplace(SFML_BASE_FORWARD(key), SFML_BASE_FORWARD(mapped));
         if (!it_isinserted.second)
@@ -1341,7 +1366,7 @@ private:
 
     template <typename... Args>
     auto do_place_element(dist_and_fingerprint_type dist_and_fingerprint, value_idx_type bucket_idx, Args&&... args)
-        -> std::pair<iterator, bool>
+        -> detail::pair<iterator, bool>
     {
 
         // emplace the new value. If that throws an exception, no harm done; index is still in a valid state
@@ -1362,7 +1387,7 @@ private:
     }
 
     template <typename K, typename... Args>
-    auto do_try_emplace(K&& key, Args&&... args) -> std::pair<iterator, bool>
+    auto do_try_emplace(K&& key, Args&&... args) -> detail::pair<iterator, bool>
     {
         auto hash = mixed_hash(key);
         auto dist_and_fingerprint = dist_and_fingerprint_from_hash(hash);
@@ -1382,9 +1407,10 @@ private:
             {
                 return do_place_element(dist_and_fingerprint,
                                         bucket_idx,
-                                        std::piecewise_construct,
-                                        std::forward_as_tuple(SFML_BASE_FORWARD(key)),
-                                        std::forward_as_tuple(SFML_BASE_FORWARD(args)...));
+                                        detail::piecewise_args<K>{},
+                                        SFML_BASE_FORWARD(key),
+                                        detail::piecewise_args<Args...>{},
+                                        SFML_BASE_FORWARD(args)...);
             }
             dist_and_fingerprint = dist_inc(dist_and_fingerprint);
             bucket_idx = next(bucket_idx);
@@ -1621,18 +1647,18 @@ public:
         clear_buckets();
     }
 
-    auto insert(const value_type& value) -> std::pair<iterator, bool>
+    auto insert(const value_type& value) -> detail::pair<iterator, bool>
     {
         return emplace(value);
     }
 
-    auto insert(value_type&& value) -> std::pair<iterator, bool>
+    auto insert(value_type&& value) -> detail::pair<iterator, bool>
     {
         return emplace(SFML_BASE_MOVE(value));
     }
 
     template <class P>
-    auto insert(P&& value) -> std::pair<iterator, bool>
+    auto insert(P&& value) -> detail::pair<iterator, bool>
         requires(sf::base::isConstructible<value_type, P &&>)
     {
         return emplace(SFML_BASE_FORWARD(value));
@@ -1743,21 +1769,21 @@ public:
     }
 
     template <class M, typename Q = T>
-    auto insert_or_assign(const Key& key, M&& mapped) -> std::pair<iterator, bool>
+    auto insert_or_assign(const Key& key, M&& mapped) -> detail::pair<iterator, bool>
         requires(is_map_v<Q>)
     {
         return do_insert_or_assign(key, SFML_BASE_FORWARD(mapped));
     }
 
     template <class M, typename Q = T>
-    auto insert_or_assign(Key&& key, M&& mapped) -> std::pair<iterator, bool>
+    auto insert_or_assign(Key&& key, M&& mapped) -> detail::pair<iterator, bool>
         requires(is_map_v<Q>)
     {
         return do_insert_or_assign(SFML_BASE_MOVE(key), SFML_BASE_FORWARD(mapped));
     }
 
     template <typename K, typename M, typename Q = T, typename H = Hash, typename KE = KeyEqual>
-    auto insert_or_assign(K&& key, M&& mapped) -> std::pair<iterator, bool>
+    auto insert_or_assign(K&& key, M&& mapped) -> detail::pair<iterator, bool>
         requires(is_map_v<Q> && is_transparent_v<H, KE>)
     {
         return do_insert_or_assign(SFML_BASE_FORWARD(key), SFML_BASE_FORWARD(mapped));
@@ -1786,7 +1812,7 @@ public:
 
     // Single arguments for unordered set can be used without having to construct the value_type
     template <class K, typename Q = T, typename H = Hash, typename KE = KeyEqual>
-    auto emplace(K&& key) -> std::pair<iterator, bool>
+    auto emplace(K&& key) -> detail::pair<iterator, bool>
         requires(!is_map_v<Q> && is_transparent_v<H, KE>)
     {
         auto hash = mixed_hash(key);
@@ -1810,7 +1836,7 @@ public:
     }
 
     template <class... Args>
-    auto emplace(Args&&... args) -> std::pair<iterator, bool>
+    auto emplace(Args&&... args) -> detail::pair<iterator, bool>
     {
         // we have to instantiate the value_type to be able to access the key.
         // 1. emplace_back the object so it is constructed. 2. If the key is already there, pop it later in the loop.
@@ -1853,14 +1879,14 @@ public:
     }
 
     template <class... Args, typename Q = T>
-    auto try_emplace(const Key& key, Args&&... args) -> std::pair<iterator, bool>
+    auto try_emplace(const Key& key, Args&&... args) -> detail::pair<iterator, bool>
         requires(is_map_v<Q>)
     {
         return do_try_emplace(key, SFML_BASE_FORWARD(args)...);
     }
 
     template <class... Args, typename Q = T>
-    auto try_emplace(Key&& key, Args&&... args) -> std::pair<iterator, bool>
+    auto try_emplace(Key&& key, Args&&... args) -> detail::pair<iterator, bool>
         requires(is_map_v<Q>)
     {
         return do_try_emplace(SFML_BASE_MOVE(key), SFML_BASE_FORWARD(args)...);
@@ -1881,7 +1907,7 @@ public:
     }
 
     template <typename K, typename... Args, typename Q = T, typename H = Hash, typename KE = KeyEqual>
-    auto try_emplace(K&& key, Args&&... args) -> std::pair<iterator, bool>
+    auto try_emplace(K&& key, Args&&... args) -> detail::pair<iterator, bool>
         requires(is_map_v<Q> && is_transparent_v<H, KE> && is_neither_convertible_v<K &&, iterator, const_iterator>)
     {
         return do_try_emplace(SFML_BASE_FORWARD(key), SFML_BASE_FORWARD(args)...);
@@ -2113,20 +2139,20 @@ public:
         return find(key) != end();
     }
 
-    auto equal_range(const Key& key) -> std::pair<iterator, iterator>
+    auto equal_range(const Key& key) -> detail::pair<iterator, iterator>
     {
         auto it = do_find(key);
         return {it, it == end() ? end() : it + 1};
     }
 
-    auto equal_range(const Key& key) const -> std::pair<const_iterator, const_iterator>
+    auto equal_range(const Key& key) const -> detail::pair<const_iterator, const_iterator>
     {
         auto it = do_find(key);
         return {it, it == end() ? end() : it + 1};
     }
 
     template <class K, class H = Hash, class KE = KeyEqual>
-    auto equal_range(const K& key) -> std::pair<iterator, iterator>
+    auto equal_range(const K& key) -> detail::pair<iterator, iterator>
         requires(is_transparent_v<H, KE>)
     {
         auto it = do_find(key);
@@ -2134,7 +2160,7 @@ public:
     }
 
     template <class K, class H = Hash, class KE = KeyEqual>
-    auto equal_range(const K& key) const -> std::pair<const_iterator, const_iterator>
+    auto equal_range(const K& key) const -> detail::pair<const_iterator, const_iterator>
         requires(is_transparent_v<H, KE>)
     {
         auto it = do_find(key);
