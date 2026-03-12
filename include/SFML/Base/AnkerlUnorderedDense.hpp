@@ -149,8 +149,7 @@ namespace ankerl::unordered_dense::inline ANKERL_UNORDERED_DENSE_NAMESPACE {
 
 namespace detail {
 
-    template <typename...>
-    struct piecewise_args { };
+    struct piecewise_fn { };
 
     template <typename A, typename B>
     struct pair {
@@ -166,9 +165,9 @@ namespace detail {
         { }
 
         template <typename... Args1, typename... Args2>
-        pair(piecewise_args<Args1...>, Args1&&... args1, piecewise_args<Args2...>, Args2&&... args2)
-            : first(SFML_BASE_FORWARD(args1)...)
-            , second(SFML_BASE_FORWARD(args2)...)
+        pair(piecewise_fn, auto&& f0, auto&& f1)
+            : first(SFML_BASE_FORWARD(f0)())
+            , second(SFML_BASE_FORWARD(f1)())
         { }
     };
 
@@ -1368,7 +1367,6 @@ private:
     auto do_place_element(dist_and_fingerprint_type dist_and_fingerprint, value_idx_type bucket_idx, Args&&... args)
         -> detail::pair<iterator, bool>
     {
-
         // emplace the new value. If that throws an exception, no harm done; index is still in a valid state
         m_values.emplaceBack(SFML_BASE_FORWARD(args)...);
 
@@ -1407,10 +1405,9 @@ private:
             {
                 return do_place_element(dist_and_fingerprint,
                                         bucket_idx,
-                                        detail::piecewise_args<K>{},
-                                        SFML_BASE_FORWARD(key),
-                                        detail::piecewise_args<Args...>{},
-                                        SFML_BASE_FORWARD(args)...);
+                                        detail::piecewise_fn{}, //
+                                        [&] { return Key(SFML_BASE_FORWARD(key)); },
+                                        [&] { return T(SFML_BASE_FORWARD(args)...); });
             }
             dist_and_fingerprint = dist_inc(dist_and_fingerprint);
             bucket_idx = next(bucket_idx);
