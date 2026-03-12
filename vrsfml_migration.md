@@ -347,8 +347,7 @@ void main()
 
 ## Batching
 
-- Batching is not automatically done yet, but planned.
-    - "Manual" batching is very easy to do.
+- Manual batching is fully supported to minimize state changes and draw calls.
     - Batch objects are similar to render targets, but not as generic.
 
 ```cpp
@@ -364,7 +363,7 @@ batch.add(someText); // associated texture is stored in the text object
 window.draw(batch, commonRenderStates);
 ```
 
-- Use texture atlases to batch multiple sprites/texts with different textures:
+- Use texture atlases to batch multiple sprites/texts with different textures into a single draw call:
 
 ```cpp
 sf::TextureAtlas atlas{sf::Texture::create({1024u, 1024u}, {.smooth = true}).value()};
@@ -392,10 +391,10 @@ Window `getPosition` now returns the top-left corner of the window's contents (n
 TODO P0:
 
 
-
 ## SDL3 Backend
 
-TODO P0:
+- VRSFML transitions to utilizing SDL3 as its backend for window creation, input handling, and platform-specific heavy lifting.
+    - This drastically improves platform compatibility (Wayland native support, better controller mapping, smoother resize events) compared to upstream SFML's custom backend code.
 
 
 
@@ -403,29 +402,82 @@ TODO P0:
 
 Sound/music volume is now in `[0.0, 1.0]` range instead of `[0.0, 100.0]` range.
 
+```cpp
+//
+// BEFORE (upstream SFML)
+sound.setVolume(50.f); // Half volume
+
+//
+// AFTER (VRSFML)
+sound.setVolume(0.5f); // Half volume
+```
+
 
 
 ## Autobatching
 
-TODO P0:
+- VRSFML features a powerful transparent autobatcher built into `sf::RenderTarget`.
+    - If enabled, sequential draw calls sharing the same `RenderStates` (texture, shader, blend mode) are aggregated automatically and sent to the GPU in a single operation.
+    - You do not need to manually manage `sf::CPUDrawableBatch` if you sort your draw calls by texture/state.
+
+```cpp
+// Assuming autobatch is enabled (default)
+window.draw(sprite1, {.texture = &atlas.getTexture()});
+window.draw(sprite2, {.texture = &atlas.getTexture()});
+window.draw(sprite3, {.texture = &atlas.getTexture()});
+// The above triggers only 1 OpenGL draw call!
+```
+
+- You can tune or disable this behavior via `window.setAutoBatchMode(...)`.
 
 
 
 ## High DPI Support
 
-TODO P0: `makeDPIScaledRenderWindow`, also helper DPI getter functions
-
+TODO P0:
 
 
 ## Windows are not closable anymore
 
-TODO P0: isOpen is gone, use an optional
+- `sf::Window::isOpen()` has been removed. A window object's lifetime dictates its existence.
+    - If you need to represent a window that might be closed or destroyed, wrap it in an `sf::Base::Optional<sf::RenderWindow>`.
+
+```cpp
+//
+// BEFORE (upstream SFML)
+sf::RenderWindow window(...);
+while (window.isOpen())
+{
+    if (event.type == sf::Event::Closed)
+        window.close();
+}
+
+//
+// AFTER (VRSFML)
+auto window = sf::RenderWindow::create(...).value();
+
+while (true)
+{
+    while (const auto event = window.pollEvent())
+        if (event->is<sf::Event::Closed>())
+            break;
+}
+
+// Window is destroyed (closed) when it goes out of scope here.
+```
 
 
 
 ## Vector -> Vec rename
 
-TODO P0:
+- The math vector types have been shortened to align with standard graphics terminology and for conciseness.
+
+| Upstream SFML      | VRSFML       |
+|--------------------|--------------|
+| `sf::Vector2i`     | `sf::Vec2i`  |
+| `sf::Vector2u`     | `sf::Vec2u`  |
+| `sf::Vector2f`     | `sf::Vec2f`  |
+| `sf::Vector3f`     | `sf::Vec3f`  |
 
 
 
@@ -449,4 +501,6 @@ TODO P0:
 
 ## ContextSettings without antialiasing and srgb support, use FBOs with RenderTextureSettings
 
-TODO P0:
+- `sf::ContextSettings` no longer accepts `antialiasingLevel` or `sRgbCapable` for standard window creation.
+    - Relying on the OS window manager for MSAA and sRGB is historically buggy and inconsistent across drivers.
+    - Instead, VRSFML encourages rendering to an `sf::RenderTexture` created with `sf::RenderTextureSettings` (where MSAA and sRGB are strictly controlled via FBOs), and blitting the final result to the window.
