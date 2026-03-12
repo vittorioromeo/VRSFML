@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/Memcmp.hpp"
-#include "SFML/Base/Priv/VectorUtils.hpp"
+#include "SFML/Base/FwdStdAlignedNewDelete.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Trait/IsSame.hpp"
@@ -190,7 +190,7 @@ public:
     constexpr ~String()
     {
         if (!isSso())
-            priv::VectorUtils::deallocate(m_rep.heap.data, getHeapCapacity() + 1);
+            ::operator delete(m_rep.heap.data, std::align_val_t{alignof(char)});
     }
 
 
