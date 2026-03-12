@@ -76,21 +76,10 @@ struct ContextSettings
     ////////////////////////////////////////////////////////////
     unsigned int depthBits{};                           //!< Bits of the depth buffer
     unsigned int stencilBits{};                         //!< Bits of the stencil buffer
-    unsigned int antiAliasingLevel{};                   //!< Level of antialiasing
     unsigned int majorVersion{defaultMajorVersion};     //!< Major number of the context version to create
     unsigned int minorVersion{defaultMinorVersion};     //!< Minor number of the context version to create
-    Attribute    attributeFlags{defaultAttributeFlags}; //!< Whether the context framebuffer is sRGB capable
-    bool         sRgbCapable{};                         //!< Whether the context framebuffer is sRGB capable
+    Attribute    attributeFlags{defaultAttributeFlags}; //!< Flags for context creation (core, debug, etc.)
 };
-
-
-// TODO P0:
-//
-// In modern graphics programming (whether it's OpenGL, Vulkan, or DirectX), the default window framebuffer should
-// always be as basic as possible (no MSAA, standard 8-bit RGBA).
-//
-// We should ensure that window creation settings always have 0 AA and RBGA, and that if those are needed they
-// are used through a rendertexture.
 
 
 ////////////////////////////////////////////////////////////

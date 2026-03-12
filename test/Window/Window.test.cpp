@@ -55,17 +55,15 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
         SECTION("Mode, title, style, state, and context settings constructor")
         {
-            const auto window = sf::Window::create(
-                                    {.size{360u, 240u},
-                                     .title = "Window Tests",
-                                     .contextSettings{.depthBits = 1, .stencilBits = 1, .antiAliasingLevel = 1}})
+            const auto window = sf::Window::create({.size{360u, 240u},
+                                                    .title = "Window Tests",
+                                                    .contextSettings{.depthBits = 1, .stencilBits = 1}})
                                     .value();
 
             CHECK(window.getSize() == sf::Vec2u{360, 240});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
             CHECK(window.getSettings().depthBits >= 1);
             CHECK(window.getSettings().stencilBits >= 1);
-            CHECK(window.getSettings().antiAliasingLevel >= 1);
         }
 
         SECTION("Mode, title, and state")
@@ -79,17 +77,15 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
         SECTION("Mode, title, state, and context settings constructor")
         {
-            const auto window = sf::Window::create(
-                                    {.size{360u, 240u},
-                                     .title = "Window Tests",
-                                     .contextSettings{.depthBits = 1, .stencilBits = 1, .antiAliasingLevel = 1}})
+            const auto window = sf::Window::create({.size{360u, 240u},
+                                                    .title = "Window Tests",
+                                                    .contextSettings{.depthBits = 1, .stencilBits = 1}})
                                     .value();
 
             CHECK(window.getSize() == sf::Vec2u{360, 240});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
             CHECK(window.getSettings().depthBits >= 1);
             CHECK(window.getSettings().stencilBits >= 1);
-            CHECK(window.getSettings().antiAliasingLevel >= 1);
         }
     }
 

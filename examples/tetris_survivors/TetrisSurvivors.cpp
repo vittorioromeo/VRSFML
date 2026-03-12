@@ -603,7 +603,9 @@ private:
                                         .resizable       = true,
                                         .vsync           = false,
                                         .frametimeLimit  = 144u,
-                                        .contextSettings = {.antiAliasingLevel = 0u},
+
+                                        // TODO P0: restore AA with RenderTexture
+                                        // .contextSettings = {.antiAliasingLevel = 0u},
                                     })
                                     .value();
 

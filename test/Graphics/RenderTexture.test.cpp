@@ -6,8 +6,6 @@
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
-#include "SFML/Window/ContextSettings.hpp"
-
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
@@ -34,9 +32,9 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
     {
         CHECK(!sf::RenderTexture::create({1'000'000, 1'000'000}).hasValue());
 
-        CHECK(sf::RenderTexture::create({100, 100}, sf::ContextSettings{.depthBits = 8, .stencilBits = 0}).hasValue());
+        CHECK(sf::RenderTexture::create({100, 100}, {.depthBits = 8, .stencilBits = 0}).hasValue());
 
-        CHECK(sf::RenderTexture::create({100, 100}, sf::ContextSettings{.depthBits = 0, .stencilBits = 8}).hasValue());
+        CHECK(sf::RenderTexture::create({100, 100}, {.depthBits = 0, .stencilBits = 8}).hasValue());
 
         const auto renderTexture = sf::RenderTexture::create({360, 480}).value();
         CHECK(renderTexture.getSize() == sf::Vec2u{360, 480});
@@ -244,10 +242,10 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
 
     SECTION("Move assignment")
     {
-        auto rt0 = sf::RenderTexture::create({100, 100}, sf::ContextSettings{.depthBits = 8, .stencilBits = 8});
+        auto rt0 = sf::RenderTexture::create({100, 100}, {.depthBits = 8, .stencilBits = 8});
         CHECK(rt0.hasValue());
 
-        auto rt1 = sf::RenderTexture::create({100, 100}, sf::ContextSettings{.depthBits = 8, .stencilBits = 8});
+        auto rt1 = sf::RenderTexture::create({100, 100}, {.depthBits = 8, .stencilBits = 8});
         CHECK(rt1.hasValue());
 
         *rt0 = SFML_BASE_MOVE(*rt1);

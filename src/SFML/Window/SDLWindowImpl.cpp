@@ -115,20 +115,19 @@ bool setWindowNonExclusiveFullscreenIfNeeded([[maybe_unused]] const bool      ha
 ////////////////////////////////////////////////////////////
 [[nodiscard]] sf::base::String windowSettingsToString(const sf::WindowSettings& settings)
 {
-    return "size={" + sf::base::toString(settings.size.x) + ", " + sf::base::toString(settings.size.y) + "}, " +    //
-           "bitsPerPixel=" + sf::base::toString(settings.bitsPerPixel) + ", " +                                     //
-           "title=\"" + settings.title.toAnsiString<sf::base::String>() + "\", " +                                  //
-           "fullscreen=" + sf::base::toString(settings.fullscreen) + ", " +                                         //
-           "resizable=" + sf::base::toString(settings.resizable) + ", " +                                           //
-           "closable=" + sf::base::toString(settings.closable) + ", " +                                             //
-           "hasTitlebar=" + sf::base::toString(settings.hasTitlebar) + ", " +                                       //
-           "vsync=" + sf::base::toString(settings.vsync) + ", " +                                                   //
-           "frametimeLimit=" + sf::base::toString(settings.frametimeLimit) + ", " +                                 //
-           "contextSettings={antialiasingLevel=" + sf::base::toString(settings.contextSettings.antiAliasingLevel) + //
-           ", depthBits=" + sf::base::toString(settings.contextSettings.depthBits) +                                //
-           ", stencilBits=" + sf::base::toString(settings.contextSettings.stencilBits) +                            //
-           ", majorVersion=" + sf::base::toString(settings.contextSettings.majorVersion) +                          //
-           ", minorVersion=" + sf::base::toString(settings.contextSettings.minorVersion) +                          //
+    return "size={" + sf::base::toString(settings.size.x) + ", " + sf::base::toString(settings.size.y) + "}, " + //
+           "bitsPerPixel=" + sf::base::toString(settings.bitsPerPixel) + ", " +                                  //
+           "title=\"" + settings.title.toAnsiString<sf::base::String>() + "\", " +                               //
+           "fullscreen=" + sf::base::toString(settings.fullscreen) + ", " +                                      //
+           "resizable=" + sf::base::toString(settings.resizable) + ", " +                                        //
+           "closable=" + sf::base::toString(settings.closable) + ", " +                                          //
+           "hasTitlebar=" + sf::base::toString(settings.hasTitlebar) + ", " +                                    //
+           "vsync=" + sf::base::toString(settings.vsync) + ", " +                                                //
+           "frametimeLimit=" + sf::base::toString(settings.frametimeLimit) + ", " +                              //
+           "contextSettings={depthBits=" + sf::base::toString(settings.contextSettings.depthBits) +              //
+           ", stencilBits=" + sf::base::toString(settings.contextSettings.stencilBits) +                         //
+           ", majorVersion=" + sf::base::toString(settings.contextSettings.majorVersion) +                       //
+           ", minorVersion=" + sf::base::toString(settings.contextSettings.minorVersion) +                       //
            ", attributeFlags=" + sf::base::toString(static_cast<unsigned int>(settings.contextSettings.attributeFlags)) + //
            "}";
 }
