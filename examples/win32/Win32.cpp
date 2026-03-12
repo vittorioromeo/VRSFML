@@ -10,14 +10,9 @@
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Vec2.hpp"
+#include "SFML/System/WindowsHeader.hpp"
 
 #include "SFML/Base/Math/Cos.hpp"
-
-#ifndef WIN32_LEAN_AND_MEAN
-    #define WIN32_LEAN_AND_MEAN
-#endif
-
-#include <windows.h>
 
 
 namespace
@@ -124,8 +119,8 @@ int main()
     auto graphicsContext = sf::GraphicsContext::create().value();
 
     {
-        sf::RenderWindow sfmlView1(view1);
-        sf::RenderWindow sfmlView2(view2);
+        auto sfmlView1 = sf::RenderWindow::create(view1).value();
+        auto sfmlView2 = sf::RenderWindow::create(view2).value();
 
         // Load some textures to display
         const auto texture1 = sf::Texture::loadFromFile("resources/image1.jpg").value();

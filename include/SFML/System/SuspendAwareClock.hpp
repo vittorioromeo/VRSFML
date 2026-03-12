@@ -9,7 +9,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Export.hpp"
 
-#include <chrono>
+#include "SFML/Base/StdChrono.hpp" // IWYU pragma: keep
 
 
 namespace sf

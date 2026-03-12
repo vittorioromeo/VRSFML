@@ -93,8 +93,8 @@ int main(int, char**)
 
     const auto [size, bitsPerPixel] = sf::VideoModeUtils::getDesktopMode();
 
-    sf::RenderWindow window({.size = size, .bitsPerPixel = bitsPerPixel, .framerateLimit = 30});
-    const auto       defaultView = window.getView();
+    auto window = sf::RenderWindow::create({.size = size, .bitsPerPixel = bitsPerPixel, .framerateLimit = 30}).value();
+    const auto defaultView = window.getView();
 
     const auto texture = sf::Texture::loadFromFile("image.png").value();
 

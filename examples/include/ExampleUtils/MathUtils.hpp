@@ -18,6 +18,7 @@
     return newMin + ((x - oldMin) / (oldMax - oldMin)) * (newMax - newMin);
 }
 
+
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float blend(
     const float a,
@@ -26,6 +27,7 @@
 {
     return a + (b - a) * value;
 }
+
 
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr sf::Vec2f blend(

@@ -28,9 +28,6 @@ class SDLWindowImpl;
 class SDLGlContext;
 class GLContextSaver;
 class GLSharedContextGuard;
-
-bool glCheckError(unsigned int openGlError, const char* file, unsigned int line, const char* expression);
-
 } // namespace sf::priv
 
 
@@ -105,6 +102,23 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static bool isInstalled();
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the currently active context's ID
+    ///
+    /// The context ID is used to identify contexts when
+    /// managing unshareable OpenGL resources.
+    ///
+    /// \return The active context's ID or 0 if no context is currently active
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static unsigned int getActiveThreadLocalGlContextId();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool hasActiveThreadLocalGlContext();
+
 private:
     ////////////////////////////////////////////////////////////
     /// Friend declarations
@@ -128,8 +142,6 @@ private:
     friend VertexBuffer;    // for `hasActiveThreadLocalGlContext`
     friend Window;          // for `createGlContext`
     friend WindowContextImpl;
-
-    friend bool sf::priv::glCheckError(unsigned int openGlError, const char* file, unsigned int line, const char* expression);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context, not associated to a window
@@ -178,22 +190,6 @@ private:
     ////////////////////////////////////////////////////////////
     static void cleanupUnsharedFrameBuffers(priv::GlContext& glContext);
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the currently active context's ID
-    ///
-    /// The context ID is used to identify contexts when
-    /// managing unshareable OpenGL resources.
-    ///
-    /// \return The active context's ID or 0 if no context is currently active
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static unsigned int getActiveThreadLocalGlContextId();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static bool hasActiveThreadLocalGlContext();
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs

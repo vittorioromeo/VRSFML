@@ -1,6 +1,6 @@
 #pragma once
 
-#include "LoadedSound.hpp"
+#include "ExampleUtils/LoadedSound.hpp"
 
 
 ////////////////////////////////////////////////////////////

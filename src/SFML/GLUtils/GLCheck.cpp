@@ -20,14 +20,7 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-unsigned int glGetErrorImpl()
-{
-    return glGetError();
-}
-
-
-////////////////////////////////////////////////////////////
-bool glCheckError(const unsigned int openGlError, const char* const file, const unsigned int line, const char* const expression)
+void glCheckError(const unsigned int openGlError, const char* const file, const unsigned int line, const char* const expression)
 {
     if (!WindowContext::hasActiveThreadLocalGlContext())
     {
@@ -39,7 +32,6 @@ bool glCheckError(const unsigned int openGlError, const char* const file, const 
 #endif
     }
 
-
     const auto logError = [&](const char* const error, const char* const description)
     {
         err() << "An internal OpenGL call failed in " << Path{file}.filename() << "(" << line << ")."
@@ -49,40 +41,52 @@ bool glCheckError(const unsigned int openGlError, const char* const file, const 
 #ifdef SFML_FATAL_OPENGL_ERRORS
         SFML_BASE_ASSERT(false && "OpenGL error (fatal OpenGL errors enabled)");
 #endif
-
-        return false;
     };
+
+    SFML_BASE_ASSERT(openGlError != GL_NO_ERROR);
 
     switch (openGlError)
     {
-        case GL_NO_ERROR:
-            return true;
-
         case GL_INVALID_ENUM:
-            return logError("GL_INVALID_ENUM", "An unacceptable value has been specified for an enumerated argument.");
+            logError("GL_INVALID_ENUM", "An unacceptable value has been specified for an enumerated argument.");
+            return;
 
         case GL_INVALID_VALUE:
-            return logError("GL_INVALID_VALUE", "A numeric argument is out of range.");
+            logError("GL_INVALID_VALUE", "A numeric argument is out of range.");
+            return;
 
         case GL_INVALID_OPERATION:
-            return logError("GL_INVALID_OPERATION", "The specified operation is not allowed in the current state.");
+            logError("GL_INVALID_OPERATION", "The specified operation is not allowed in the current state.");
+            return;
 
         case GL_STACK_OVERFLOW:
-            return logError("GL_STACK_OVERFLOW", "This command would cause a stack overflow.");
+            logError("GL_STACK_OVERFLOW", "This command would cause a stack overflow.");
+            return;
 
         case GL_STACK_UNDERFLOW:
-            return logError("GL_STACK_UNDERFLOW", "This command would cause a stack underflow.");
+            logError("GL_STACK_UNDERFLOW", "This command would cause a stack underflow.");
+            return;
 
         case GL_OUT_OF_MEMORY:
-            return logError("GL_OUT_OF_MEMORY", "There is not enough memory left to execute the command.");
+            logError("GL_OUT_OF_MEMORY", "There is not enough memory left to execute the command.");
+            return;
 
         case GL_INVALID_FRAMEBUFFER_OPERATION:
-            return logError("GL_INVALID_FRAMEBUFFER_OPERATION",
-                            "The object bound to FRAMEBUFFER_BINDING is not \"framebuffer complete\".");
+            logError("GL_INVALID_FRAMEBUFFER_OPERATION",
+                     "The object bound to FRAMEBUFFER_BINDING is not \"framebuffer complete\".");
+            return;
 
         default:
-            return logError("Unknown error", "Unknown description");
+            logError("Unknown error", "Unknown description");
+            return;
     }
+}
+
+
+////////////////////////////////////////////////////////////
+void printUncheckedPriorGlError()
+{
+    err() << "(EXISTING UNCHECKED ERROR BEFORE THIS EXPRESSION)\n";
 }
 
 } // namespace sf::priv

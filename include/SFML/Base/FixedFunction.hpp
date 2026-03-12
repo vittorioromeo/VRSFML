@@ -14,6 +14,7 @@
 #include "SFML/Base/Trait/IsRvalueReference.hpp"
 #include "SFML/Base/Trait/RemoveReference.hpp"
 
+// TODO P1: provide triviallyrelocatable version
 
 namespace sf::base
 {

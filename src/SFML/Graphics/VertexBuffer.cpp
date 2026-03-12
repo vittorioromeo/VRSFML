@@ -18,8 +18,7 @@
 #include "SFML/System/Err.hpp"
 
 #include "SFML/Base/SizeT.hpp"
-
-#include <utility>
+#include "SFML/Base/Swap.hpp"
 
 
 namespace
@@ -218,10 +217,10 @@ VertexBuffer& VertexBuffer::operator=(const VertexBuffer& rhs)
 ////////////////////////////////////////////////////////////
 void VertexBuffer::swap(VertexBuffer& rhs) noexcept
 {
-    std::swap(m_size, rhs.m_size);
-    std::swap(m_buffer, rhs.m_buffer);
-    std::swap(m_primitiveType, rhs.m_primitiveType);
-    std::swap(m_usage, rhs.m_usage);
+    base::swap(m_size, rhs.m_size);
+    base::swap(m_buffer, rhs.m_buffer);
+    base::swap(m_primitiveType, rhs.m_primitiveType);
+    base::swap(m_usage, rhs.m_usage);
 }
 
 

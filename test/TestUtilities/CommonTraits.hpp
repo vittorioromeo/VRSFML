@@ -33,6 +33,7 @@
 #include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
+#include "SFML/Base/Trait/IsTriviallyRelocatable.hpp"
 #include "SFML/Base/Trait/RemoveCVRef.hpp"
 #include "SFML/Base/Trait/RemoveReference.hpp"
 #include "SFML/Base/Trait/UnderlyingType.hpp"

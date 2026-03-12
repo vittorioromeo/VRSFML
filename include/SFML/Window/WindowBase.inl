@@ -7,6 +7,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/WindowBase.hpp" // NOLINT(misc-header-include-cycle)
 
+#include "SFML/Base/OverloadSet.hpp"
+
 
 namespace sf::priv
 {
@@ -14,7 +16,7 @@ namespace sf::priv
 struct DelayOverloadResolution
 {
     template <typename T>
-    explicit(false) DelayOverloadResolution(const T&)
+    /* implicit */ DelayOverloadResolution(const T&)
     {
     }
 

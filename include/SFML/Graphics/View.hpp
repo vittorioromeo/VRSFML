@@ -47,7 +47,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
         }
 
         ////////////////////////////////////////////////////////////
-        [[nodiscard, gnu::always_inline]] constexpr explicit(false) ScissorRect(const Rect2f& rect) :
+        [[nodiscard, gnu::always_inline]] constexpr /* implicit */ ScissorRect(const Rect2f& rect) :
             ScissorRect{rect.position, rect.size}
         {
         }
@@ -301,7 +301,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
 ///
 /// Usage example:
 /// \code
-/// sf::RenderWindow window;
+/// auto window = sf::RenderWindow::create(/* ... */).value();
 ///
 /// // Initialize the view to a rectangle located at (100, 100) and with a size of 400x200
 /// sf::View view([{100, 100}, {400, 200}});

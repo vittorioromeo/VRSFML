@@ -38,6 +38,8 @@
 #include <SDL3/SDL_touch.h>
 #include <SDL3/SDL_video.h>
 
+#include <string>
+
 
 ////////////////////////////////////////////////////////////
 #define SFML_PRIV_SDL_ATTR_X_LIST                                             \
@@ -441,15 +443,18 @@ namespace sf::priv
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SDL_PropertiesID makeSDLWindowPropertiesFromHandle(const WindowHandle handle)
+[[nodiscard]] SDL_PropertiesID makeSDLWindowPropertiesFromHandle([[maybe_unused]] const char* const currentVideoDriver,
+                                                                 const WindowHandle                 handle)
 {
     const SDL_PropertiesID props = SDL_CreateProperties();
-    SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, true);
 
 #if defined(SFML_SYSTEM_WINDOWS)
     SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, handle);
 #elif defined(SFML_SYSTEM_LINUX_OR_BSD)
-    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X11_WINDOW_NUMBER, static_cast<Sint64>(handle));
+    if (currentVideoDriver != nullptr && SFML_BASE_STRCMP(currentVideoDriver, "wayland") == 0)
+        SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER, reinterpret_cast<void*>(handle));
+    else
+        SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X11_WINDOW_NUMBER, static_cast<Sint64>(handle));
 #elif defined(SFML_SYSTEM_MACOS)
     SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_COCOA_WINDOW_POINTER, handle);
 #elif defined(SFML_SYSTEM_IOS)
@@ -457,7 +462,7 @@ namespace sf::priv
 #elif defined(SFML_SYSTEM_ANDROID)
     // TODO P0: doesn't seem to be implemented in SDL
 #elif defined(SFML_SYSTEM_EMSCRIPTEN)
-    SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING, handle);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID, handle);
 #endif
 
     return props;
@@ -751,14 +756,14 @@ bool SDLLayer::isKeyPressedByScancode(const Keyboard::Scancode code) const noexc
     const bool* keyboardState = SDL_GetKeyboardState(nullptr);
     SFML_BASE_ASSERT(keyboardState != nullptr);
 
-    return keyboardState[priv::mapSFMLScancodeToSDL(code)];
+    return keyboardState[mapSFMLScancodeToSDL(code)];
 }
 
 
 ////////////////////////////////////////////////////////////
 const char* SDLLayer::getScancodeDescription(const Keyboard::Scancode code) const noexcept
 {
-    return SDL_GetKeyName(priv::mapSFMLKeycodeToSDL(localize(code)));
+    return SDL_GetKeyName(mapSFMLKeycodeToSDL(localize(code)));
 }
 
 
@@ -1076,7 +1081,7 @@ VideoMode SDLLayer::getVideoModeFromSDLDisplayMode(const SDL_DisplayMode& mode) 
 
     if (info == nullptr)
     {
-        sf::priv::err() << "Failed to get pixel format details for display mode";
+        err() << "Failed to get pixel format details for display mode";
         return {};
     }
 
@@ -1109,13 +1114,15 @@ bool SDLLayer::applyGLContextSettings(const ContextSettings& settings) const
 
     bool result = true;
 
+    // Force a basic, flat surface for the window swapchain (Wayland compliant)
+    result &= setGLAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 0);
+    result &= setGLAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
+    result &= setGLAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
+
     // Set context flags
-    result &= setGLAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, settings.sRgbCapable ? 1 : 0);
     result &= setGLAttribute(SDL_GL_DEPTH_SIZE, static_cast<int>(settings.depthBits));
     result &= setGLAttribute(SDL_GL_STENCIL_SIZE, static_cast<int>(settings.stencilBits));
     result &= setGLAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    result &= setGLAttribute(SDL_GL_MULTISAMPLEBUFFERS, settings.antiAliasingLevel > 0u ? 1 : 0);
-    result &= setGLAttribute(SDL_GL_MULTISAMPLESAMPLES, static_cast<int>(settings.antiAliasingLevel));
 
     // Set context version
     result &= setGLAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, static_cast<int>(settings.majorVersion));
@@ -1127,6 +1134,18 @@ bool SDLLayer::applyGLContextSettings(const ContextSettings& settings) const
     result &= setGLAttribute(SDL_GL_CONTEXT_FLAGS, settings.isDebug() ? SDL_GL_CONTEXT_DEBUG_FLAG : 0);
 
     return result;
+}
+
+
+////////////////////////////////////////////////////////////
+const char* SDLLayer::getCurrentVideoDriver() const
+{
+    const char* driver = SDL_GetCurrentVideoDriver();
+
+    if (driver == nullptr)
+        err() << "`SDL_GetCurrentVideoDriver` failed: " << SDL_GetError();
+
+    return driver;
 }
 
 

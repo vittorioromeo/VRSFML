@@ -9,6 +9,7 @@
 #include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
+#include "SFML/Base/Trait/IsTriviallyRelocatable.hpp"
 
 #include <Doctest.hpp>
 
@@ -17,10 +18,13 @@ namespace
 {
 namespace OptionalTest // to support unity builds
 {
+////////////////////////////////////////////////////////////
 struct Trivial
 {
 };
 
+
+////////////////////////////////////////////////////////////
 struct NonTrivial
 {
     // NOLINTNEXTLINE(modernize-use-equals-default)
@@ -56,6 +60,31 @@ struct NonTrivial
     }
 };
 
+
+////////////////////////////////////////////////////////////
+struct NonTrivialButRelocatable
+{
+    enum : bool
+    {
+        enableTrivialRelocation = true
+    };
+
+    static inline int si{};
+
+    NonTrivialButRelocatable(const NonTrivialButRelocatable&) : i(si)
+    {
+    }
+
+    // NOLINTNEXTLINE(modernize-use-equals-default)
+    ~NonTrivialButRelocatable()
+    {
+    }
+
+    int& i; // NOLINT(cppcoreguidelines-use-default-member-init, modernize-use-default-member-init)
+};
+
+
+////////////////////////////////////////////////////////////
 struct MoveOnly
 {
     MoveOnly()  = default;
@@ -96,6 +125,10 @@ TEST_CASE("[Base] Base/Optional.hpp")
 
         STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::base::Optional<Trivial>));
         STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::base::Optional<NonTrivial>));
+
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(sf::base::Optional<Trivial>));
+        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_RELOCATABLE(sf::base::Optional<NonTrivial>));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(sf::base::Optional<NonTrivialButRelocatable>));
 
         STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(MoveOnly));
         STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(MoveOnly));

@@ -904,6 +904,7 @@ private:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void flushIfNeeded(const RenderStates& states)
     {
+        // TODO P0: "withRenderStates" API that would avoid redundant state changes and flushes
         if (m_numAutoBatchVertices >= m_autoBatchVertexThreshold || m_lastRenderStates != states)
         {
             flush();

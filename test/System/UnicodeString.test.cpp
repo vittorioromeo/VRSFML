@@ -13,9 +13,9 @@
 #include <sstream>
 #include <string>
 
-
 namespace
 {
+////////////////////////////////////////////////////////////
 // Return either argument depending on whether wchar_t is 16 or 32 bits
 // Lets us write tests that work on both Windows where wchar_t is 16 bits
 // and elsewhere where it is 32. Otherwise the tests would only work on
@@ -31,6 +31,7 @@ auto selectAnsi(const std::basic_string<T>& stringWin, const std::basic_string<T
 #endif
 }
 
+////////////////////////////////////////////////////////////
 // Return either argument depending on whether wchar_t is 16 or 32 bits.
 // Lets us write tests that work on both Windows (MSVC) where wchar_t is 16 bits
 // and other platforms where it is 32 bits.
@@ -44,6 +45,7 @@ auto selectWide(const std::basic_string<T>& string16, const std::basic_string<T>
         return string32;
 }
 
+////////////////////////////////////////////////////////////
 auto toHex(const char32_t character)
 {
     std::ostringstream stream;

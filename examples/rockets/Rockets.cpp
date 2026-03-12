@@ -1,10 +1,12 @@
-#include "../bubble_idle/RNGFast.hpp" // TODO P1: avoid the relative path...?
-#include "../bubble_idle/Sampler.hpp" // TODO P1: avoid the relative path...?
-#include "SoAPFR.hpp"                 // TODO P1: avoid the relative path...?
+#include "SoAPFR.hpp"
+
+#include "ExampleUtils/RNGFast.hpp"
+#include "ExampleUtils/Sampler.hpp"
+#include "ExampleUtils/Scaling.hpp"
 
 #define SFEX_PROFILER_ENABLED
-#include "Profiler.hpp"
-#include "ProfilerImGui.hpp"
+#include "ExampleUtils/Profiler.hpp"
+#include "ExampleUtils/ProfilerImGui.hpp"
 
 #include "SFML/ImGui/ImGuiContext.hpp"
 
@@ -24,7 +26,7 @@
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/TextureAtlas.hpp"
-#include "SFML/Graphics/View.hpp" // used
+#include "SFML/Graphics/View.hpp" // IWYU pragma: keep
 
 #include "SFML/Window/EventUtils.hpp"
 #include "SFML/Window/Keyboard.hpp"
@@ -43,8 +45,6 @@
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include "ExampleUtils.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
@@ -1452,17 +1452,21 @@ int main()
     // Set up window
     constexpr sf::Vec2f resolution{1680.f, 1050.f};
 
-    auto window = makeDPIScaledRenderWindow({
-        .size            = resolution.toVec2u(),
-        .title           = "Rockets",
-        .fullscreen      = false,
-        .resizable       = false,
-        .closable        = false,
-        .hasTitlebar     = false,
-        .vsync           = false,
-        .frametimeLimit  = 144u,
-        .contextSettings = {.antiAliasingLevel = 16u},
-    });
+    auto window = makeDPIScaledRenderWindow(
+                      {
+                          .size           = resolution.toVec2u(),
+                          .title          = "Rockets",
+                          .fullscreen     = false,
+                          .resizable      = false,
+                          .closable       = false,
+                          .hasTitlebar    = false,
+                          .vsync          = false,
+                          .frametimeLimit = 144u,
+
+                          // TODO P0: restore AA with RenderTexture
+                          // .contextSettings = {.antiAliasingLevel = 16u},
+                      })
+                      .value();
 
     // TODO P0: GPUStorage is still glitchy, some synchronization issue persists...
     window.setAutoBatchMode(sf::RenderTarget::AutoBatchMode::GPUStorage);
@@ -1602,7 +1606,7 @@ int main()
         window.setHasTitlebar(true);
 
         window.setSize(sf::VideoModeUtils::getDesktopMode().size / 2u);
-        window.setCenter(sf::VideoModeUtils::getDesktopMode().size.toVec2f() / 2.f);
+        window.setGlobalCenter(sf::VideoModeUtils::getDesktopMode().size.toVec2f() / 2.f);
     };
 
     //
@@ -1746,7 +1750,7 @@ int main()
             };
 
             ImGui::SetNextWindowSize(ImVec2{440.f * imguiMult, 470.f * imguiMult});
-            ImGui::SetNextWindowPos({window.getRight() - 440.f * imguiMult - 24.f * imguiMult, 24.f * imguiMult});
+            ImGui::SetNextWindowPos({window.getLocalRight() - 440.f * imguiMult - 24.f * imguiMult, 24.f * imguiMult});
 
             ImGui::PushFont(fontImGuiGeistMono);
             ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 10.f * imguiMult); // Set corner radius

@@ -35,6 +35,10 @@ template <typename IntegerType, typename... Bytes>
     return (..., (integer |= static_cast<IntegerType>(static_cast<IntegerType>(byte) << 8 * index++)));
 }
 
+
+////////////////////////////////////////////////////////////
+using Byte = unsigned char;
+
 } // namespace
 
 
@@ -192,7 +196,7 @@ Packet& Packet::operator>>(base::I64& data)
     {
         // Since ntohll is not available everywhere, we have to convert
         // to network byte order (big endian) manually
-        std::byte bytes[sizeof(data)];
+        Byte bytes[sizeof(data)];
         SFML_BASE_MEMCPY(bytes, &m_data[m_readPos], sizeof(data));
 
         data = byteSequenceToInteger<base::I64>(bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0]);
@@ -211,7 +215,7 @@ Packet& Packet::operator>>(base::U64& data)
     {
         // Since ntohll is not available everywhere, we have to convert
         // to network byte order (big endian) manually
-        std::byte bytes[sizeof(data)]{};
+        Byte bytes[sizeof(data)]{};
         SFML_BASE_MEMCPY(bytes, &m_data[m_readPos], sizeof(data));
 
         data = byteSequenceToInteger<base::U64>(bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0]);

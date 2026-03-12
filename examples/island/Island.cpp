@@ -1,6 +1,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "ExampleUtils/Scaling.hpp"
+
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
@@ -26,11 +28,10 @@
 
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Math/Pow.hpp"
+#include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/ThreadPool.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include "ExampleUtils.hpp"
 
 #define STB_PERLIN_IMPLEMENTATION
 #include <stb_perlin.h>
@@ -372,12 +373,14 @@ int main()
     const auto font = sf::Font::openFromFile("resources/tuffy.ttf").value();
 
     // Create the window of the application
-    auto window = makeDPIScaledRenderWindow({
-        .size      = windowSize,
-        .title     = "SFML Island",
-        .resizable = true,
-        .vsync     = true,
-    });
+    auto window = makeDPIScaledRenderWindow(
+                      {
+                          .size      = windowSize,
+                          .title     = "SFML Island",
+                          .resizable = true,
+                          .vsync     = true,
+                      })
+                      .value();
 
     // Create all of our graphics resources
     sf::Text hudText(font,

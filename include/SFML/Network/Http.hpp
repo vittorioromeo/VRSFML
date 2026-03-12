@@ -10,8 +10,16 @@
 
 #include "SFML/System/Time.hpp"
 
-#include "SFML/Base/FwdStdString.hpp" // used
 #include "SFML/Base/InPlacePImpl.hpp"
+
+
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+namespace sf::base
+{
+class String;
+} // namespace sf::base
 
 
 namespace sf
@@ -54,9 +62,9 @@ public:
         /// \param body   Content of the request's body
         ///
         ////////////////////////////////////////////////////////////
-        [[nodiscard]] Request(const std::string& uri, Method method, const std::string& body);
-        [[nodiscard]] Request(const std::string& uri, Method method);
-        [[nodiscard]] Request(const std::string& uri);
+        [[nodiscard]] Request(const base::String& uri, Method method, const base::String& body);
+        [[nodiscard]] Request(const base::String& uri, Method method);
+        [[nodiscard]] Request(const base::String& uri);
         [[nodiscard]] Request();
 
         ////////////////////////////////////////////////////////////
@@ -102,7 +110,7 @@ public:
         /// \param value Value of the field
         ///
         ////////////////////////////////////////////////////////////
-        void setField(const std::string& field, const std::string& value);
+        void setField(const base::String& field, const base::String& value);
 
         ////////////////////////////////////////////////////////////
         /// \brief Set the request method
@@ -126,7 +134,7 @@ public:
         /// \param uri URI to request, relative to the host
         ///
         ////////////////////////////////////////////////////////////
-        void setUri(const std::string& uri);
+        void setUri(const base::String& uri);
 
         ////////////////////////////////////////////////////////////
         /// \brief Set the HTTP version for the request
@@ -149,7 +157,7 @@ public:
         /// \param body Content of the body
         ///
         ////////////////////////////////////////////////////////////
-        void setBody(const std::string& body);
+        void setBody(const base::String& body);
 
     private:
         friend class Http;
@@ -164,7 +172,7 @@ public:
         /// \return `true` if the field exists, `false` otherwise
         ///
         ////////////////////////////////////////////////////////////
-        [[nodiscard]] bool hasField(const std::string& field) const;
+        [[nodiscard]] bool hasField(const base::String& field) const;
 
         ////////////////////////////////////////////////////////////
         // Member data
@@ -268,7 +276,7 @@ public:
         /// \return Value of the field, or empty string if not found
         ///
         ////////////////////////////////////////////////////////////
-        [[nodiscard]] const std::string& getField(const std::string& field) const;
+        [[nodiscard]] const base::String& getField(const base::String& field) const;
 
         ////////////////////////////////////////////////////////////
         /// \brief Get the response status code
@@ -315,7 +323,7 @@ public:
         /// \return The response body
         ///
         ////////////////////////////////////////////////////////////
-        [[nodiscard]] const std::string& getBody() const;
+        [[nodiscard]] const base::String& getBody() const;
 
     private:
         friend class Http;
@@ -329,7 +337,7 @@ public:
         /// \param data Content of the response to parse
         ///
         ////////////////////////////////////////////////////////////
-        void parse(const std::string& data);
+        void parse(const base::String& data);
 
         ////////////////////////////////////////////////////////////
         // Member data
@@ -364,7 +372,7 @@ public:
     /// \param port Port to use for connection
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Http(const std::string& host, unsigned short port = 0);
+    [[nodiscard]] Http(const base::String& host, unsigned short port = 0);
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy constructor
@@ -383,6 +391,7 @@ public:
     ///
     /// This function just stores the host address and port, it
     /// doesn't actually connect to it until you send a request.
+    /// It does however try to resolve the address.
     /// The port has a default value of 0, which means that the
     /// HTTP client will use the right port according to the
     /// protocol used (80 for HTTP). You should leave it like
@@ -392,8 +401,10 @@ public:
     /// \param host Web server to connect to
     /// \param port Port to use for connection
     ///
+    /// \return `true` if the host has been resolved and is valid, `false` otherwise
+    ///
     ////////////////////////////////////////////////////////////
-    void setHost(const std::string& host, unsigned short port = 0);
+    bool setHost(const base::String& host, unsigned short port = 0);
 
     ////////////////////////////////////////////////////////////
     /// \brief Send a HTTP request and return the server's response.
@@ -407,13 +418,14 @@ public:
     /// of `Time{}` means that the client will use the system default timeout
     /// (which is usually pretty long).
     ///
-    /// \param request Request to send
-    /// \param timeout Maximum time to wait
+    /// \param request      Request to send
+    /// \param timeout      Maximum time to wait
+    /// \param verifyServer Verify the server if using HTTPS
     ///
     /// \return Server's response
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Response sendRequest(const Request& request, Time timeout = {});
+    [[nodiscard]] Response sendRequest(const Request& request, Time timeout = {}, bool verifyServer = true);
 
 private:
     ////////////////////////////////////////////////////////////
@@ -434,7 +446,7 @@ private:
 /// to communicate with a web server. You can retrieve
 /// web pages, send data to an interactive resource,
 /// download a remote file, etc. The HTTPS protocol is
-/// not supported.
+/// supported using TLS connections only.
 ///
 /// The HTTP client is split into 3 classes:
 /// \li `sf::Http::Request`
@@ -463,11 +475,11 @@ private:
 /// // Create a new HTTP client
 /// sf::Http http;
 ///
-/// // We'll work on http://www.sfml-dev.org
-/// http.setHost("http://www.sfml-dev.org");
+/// // We'll work on https://www.sfml-dev.org
+/// http.setHost("https://www.sfml-dev.org");
 ///
-/// // Prepare a request to get the 'features.php' page
-/// sf::Http::Request request("features.php");
+/// // Prepare a request to get the '/learn/' page
+/// sf::Http::Request request("/learn/");
 ///
 /// // Send the request
 /// sf::Http::Response response = http.sendRequest(request);

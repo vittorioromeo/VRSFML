@@ -35,14 +35,8 @@ WindowImplUIKit::WindowImplUIKit(const WindowSettings& windowSettings)
     // Apply the fullscreen flag
     [UIApplication sharedApplication].statusBarHidden = !windowSettings.hasTitlebar || (windowSettings.fullscreen);
 
-    // Set the orientation according to the requested size
-    if (windowSettings.size.x > windowSettings.size.y)
-        [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationLandscapeLeft];
-    else
-        [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationPortrait];
-
-    // Create the window
-    const CGRect frame = [UIScreen mainScreen].bounds; // Ignore user size, it wouldn't make sense to use something else
+    // Create the window the size of the screen
+    const CGRect frame = [UIScreen mainScreen].bounds;
     m_window           = [[UIWindow alloc] initWithFrame:frame];
     m_hasFocus         = true;
 
@@ -63,6 +57,12 @@ WindowImplUIKit::WindowImplUIKit(const WindowSettings& windowSettings)
 
     // Make it the current window
     [m_window makeKeyAndVisible];
+
+    // If the size doesn't match what the user requested, we must notify them so they can adjust
+    if (mode.size.x != frame.size.width || mode.size.y != frame.size.height)
+    {
+        forwardEvent(sf::Event::Resized{getSize()});
+    }
 }
 
 
@@ -111,19 +111,13 @@ Vec2u WindowImplUIKit::getSize() const
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplUIKit::setSize(Vec2u size)
+void WindowImplUIKit::setSize(Vec2u /* size */)
 {
     // TODO P2: ...
 
     // if these sizes are required one day, don't forget to scale them!
     // size.x /= m_backingScale;
     // size.y /= m_backingScale;
-
-    // Set the orientation according to the requested size
-    if (size.x > size.y)
-        [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationLandscapeLeft];
-    else
-        [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationPortrait];
 }
 
 

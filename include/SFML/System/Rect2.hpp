@@ -303,6 +303,7 @@ public:
         position = newPosition + getAnchorPointOffset(factors);
     }
 
+
     ////////////////////////////////////////////////////////////
 #define SFML_PRIV_DEFINE_RECT_ANCHOR_SETTER(name, ...)                             \
     /** \brief Set the position based on the name anchor point */                  \
@@ -384,6 +385,7 @@ public:
     SFML_PRIV_DEFINE_RECT_ANCHOR_SETTER(setBottomRight, {1.f, 1.f});
 
 #undef SFML_PRIV_DEFINE_RECT_ANCHOR_SETTER
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the world X coordinate of the left edge.

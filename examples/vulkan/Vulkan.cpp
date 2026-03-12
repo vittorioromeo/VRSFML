@@ -1,3 +1,5 @@
+// NOLINTBEGIN(readability-avoid-return-with-void-value)
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -30,6 +32,7 @@
 #include "SFML/Base/Math/Sin.hpp"
 #include "SFML/Base/Math/Tan.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/SourceLocation.hpp"
 #include "SFML/Base/StringView.hpp"
 
 #include <limits>
@@ -163,10 +166,13 @@ void matrixPerspective(Matrix& result, sf::Angle fov, float aspect, float nearPl
     result[3][3] = 0.f;
 }
 
+// Current Vulkan instance
+VkInstance currVulkanInstance = VK_NULL_HANDLE;
+
 // Helper function we pass to GLAD to load Vulkan functions via SFML
 GLADapiproc getVulkanFunction(const char* name)
 {
-    return sf::Vulkan::getFunction(name);
+    return sf::Vulkan::getFunction(name, currVulkanInstance);
 }
 
 // Debug we pass to Vulkan to call when it detects warnings or errors
@@ -192,67 +198,61 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 ////////////////////////////////////////////////////////////
 class VulkanExample
 {
+private:
+    void failStep(sf::base::SourceLocation sl = sf::base::SourceLocation::current())
+    {
+        vulkanAvailable = false;
+        sf::cErr() << "Vulkan setup failed at step '" << sl.functionName() << "', line " << sl.line() << '\n';
+    }
+
 public:
     // Constructor
-    VulkanExample() : window{{.size{800u, 600u}, .title = "SFML window with Vulkan"}}
+    VulkanExample() : window{sf::WindowBase::create({.size{800u, 600u}, .title = "SFML window with Vulkan"}).value()}
     {
+        const auto tryStep = [&](const char* fName, auto&& f)
+        {
+            if (!vulkanAvailable)
+                return;
+
+            f(); // sets `vulkanAvailable` to false if it fails
+
+            if (!vulkanAvailable)
+                sf::cErr() << "Vulkan setup failed at step '" << fName << "'\n";
+        };
+
+#define TRY_STEP(...) tryStep(#__VA_ARGS__, [&]() { __VA_ARGS__; })
+
         // Vulkan setup procedure
-        if (vulkanAvailable)
-            setupInstance();
-        if (vulkanAvailable)
-            setupDebugReportCallback();
-        if (vulkanAvailable)
-            setupSurface();
-        if (vulkanAvailable)
-            setupPhysicalDevice();
-        if (vulkanAvailable)
-            setupLogicalDevice();
-        if (vulkanAvailable)
-            setupSwapchain();
-        if (vulkanAvailable)
-            setupSwapchainImages();
-        if (vulkanAvailable)
-            setupShaders();
-        if (vulkanAvailable)
-            setupRenderpass();
-        if (vulkanAvailable)
-            setupDescriptorSetLayout();
-        if (vulkanAvailable)
-            setupPipelineLayout();
-        if (vulkanAvailable)
-            setupPipeline();
-        if (vulkanAvailable)
-            setupCommandPool();
-        if (vulkanAvailable)
-            setupVertexBuffer();
-        if (vulkanAvailable)
-            setupIndexBuffer();
-        if (vulkanAvailable)
-            setupUniformBuffers();
-        if (vulkanAvailable)
-            setupDepthImage();
-        if (vulkanAvailable)
-            setupDepthImageView();
-        if (vulkanAvailable)
-            setupTextureImage();
-        if (vulkanAvailable)
-            setupTextureImageView();
-        if (vulkanAvailable)
-            setupTextureSampler();
-        if (vulkanAvailable)
-            setupFramebuffers();
-        if (vulkanAvailable)
-            setupDescriptorPool();
-        if (vulkanAvailable)
-            setupDescriptorSets();
-        if (vulkanAvailable)
-            setupCommandBuffers();
-        if (vulkanAvailable)
-            setupDraw();
-        if (vulkanAvailable)
-            setupSemaphores();
-        if (vulkanAvailable)
-            setupFences();
+        TRY_STEP({ setupInstance(); });
+        TRY_STEP({ setupDebugReportCallback(); });
+        TRY_STEP({ setupSurface(); });
+        TRY_STEP({ setupPhysicalDevice(); });
+        TRY_STEP({ setupLogicalDevice(); });
+        TRY_STEP({ setupSwapchain(); });
+        TRY_STEP({ setupSwapchainImages(); });
+        TRY_STEP({ setupShaders(); });
+        TRY_STEP({ setupRenderpass(); });
+        TRY_STEP({ setupDescriptorSetLayout(); });
+        TRY_STEP({ setupPipelineLayout(); });
+        TRY_STEP({ setupPipeline(); });
+        TRY_STEP({ setupCommandPool(); });
+        TRY_STEP({ setupVertexBuffer(); });
+        TRY_STEP({ setupIndexBuffer(); });
+        TRY_STEP({ setupUniformBuffers(); });
+        TRY_STEP({ setupDepthImage(); });
+        TRY_STEP({ setupDepthImageView(); });
+        TRY_STEP({ setupTextureImage(); });
+        TRY_STEP({ setupTextureImageView(); });
+        TRY_STEP({ setupTextureSampler(); });
+        TRY_STEP({ setupFramebuffers(); });
+        TRY_STEP({ setupDescriptorPool(); });
+        TRY_STEP({ setupDescriptorSets(); });
+        TRY_STEP({ setupCommandBuffers(); });
+        TRY_STEP({ setupDraw(); });
+        TRY_STEP({ setupSemaphores(); });
+        TRY_STEP({ setupFences(); });
+
+#undef TRY_STEP
 
         // If something went wrong, notify the user by setting the window title
         if (!vulkanAvailable)
@@ -418,13 +418,11 @@ public:
     void setupInstance()
     {
         // Load bootstrap entry points
+        currVulkanInstance = VK_NULL_HANDLE; // must be set to null for glad to load global functions
         gladLoadVulkan({}, getVulkanFunction);
 
         if (!vkCreateInstance)
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
 
         // Retrieve the available instance layers
         sf::base::U32 objectCount = 0;
@@ -432,18 +430,12 @@ public:
         sf::base::Vector<VkLayerProperties> layers;
 
         if (vkEnumerateInstanceLayerProperties(&objectCount, nullptr) != VK_SUCCESS)
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
 
         layers.resize(objectCount);
 
         if (vkEnumerateInstanceLayerProperties(&objectCount, layers.data()) != VK_SUCCESS)
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
 
         // Activate the layers we are interested in
         sf::base::Vector<const char*> validationLayers;
@@ -512,12 +504,10 @@ public:
 
         // If instance creation still fails, give up
         if (result != VK_SUCCESS)
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
 
         // Load instance entry points
+        currVulkanInstance = instance; // must be set before loading instance functions
         gladLoadVulkan({}, getVulkanFunction);
     }
 
@@ -538,17 +528,14 @@ public:
         // Create the debug callback
         if (vkCreateDebugReportCallbackEXT(instance, &debugReportCallbackCreateInfo, nullptr, &debugReportCallback) !=
             VK_SUCCESS)
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
     }
 
     // Setup the SFML window Vulkan rendering surface
     void setupSurface()
     {
         if (!window.createVulkanSurface(sf::Vulkan::VulkanSurfaceData{instance, surface}))
-            vulkanAvailable = false;
+            return failStep();
     }
 
     // Select a GPU to use and query its capabilities
@@ -556,10 +543,7 @@ public:
     {
         // Last sanity check
         if (!vkEnumeratePhysicalDevices || !vkCreateDevice || !vkGetPhysicalDeviceProperties)
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
 
         // Retrieve list of GPUs
         sf::base::U32 objectCount = 0;
@@ -567,18 +551,12 @@ public:
         sf::base::Vector<VkPhysicalDevice> devices;
 
         if (vkEnumeratePhysicalDevices(instance, &objectCount, nullptr) != VK_SUCCESS)
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
 
         devices.resize(objectCount);
 
         if (vkEnumeratePhysicalDevices(instance, &objectCount, devices.data()) != VK_SUCCESS)
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
 
         VkPhysicalDeviceType deviceType = VK_PHYSICAL_DEVICE_TYPE_OTHER;
 
@@ -591,18 +569,12 @@ public:
             sf::base::Vector<VkExtensionProperties> extensions;
 
             if (vkEnumerateDeviceExtensionProperties(dev, nullptr, &objectCount, nullptr) != VK_SUCCESS)
-            {
-                vulkanAvailable = false;
-                return;
-            }
+                return failStep();
 
             extensions.resize(objectCount);
 
             if (vkEnumerateDeviceExtensionProperties(dev, nullptr, &objectCount, extensions.data()) != VK_SUCCESS)
-            {
-                vulkanAvailable = false;
-                return;
-            }
+                return failStep();
 
             bool supportsSwapchain = false;
 
@@ -638,10 +610,7 @@ public:
         }
 
         if (!gpu)
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
 
         // Load physical device entry points
         gladLoadVulkan(gpu, getVulkanFunction);
@@ -672,10 +641,7 @@ public:
                     depthFormat = VK_FORMAT_D32_SFLOAT;
                 }
                 else
-                {
-                    vulkanAvailable = false;
-                    return;
-                }
+                    return failStep();
             }
         }
     }
@@ -708,10 +674,7 @@ public:
         }
 
         if (!queueFamilyIndex.hasValue())
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
 
         const float queuePriority = 1.f;
 
@@ -738,10 +701,7 @@ public:
 
         // Create our logical device
         if (vkCreateDevice(gpu, &deviceCreateInfo, nullptr, &device) != VK_SUCCESS)
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
 
         // Retrieve a handle to the logical device command queue
         vkGetDeviceQueue(device, *queueFamilyIndex, 0, &queue);
@@ -756,18 +716,12 @@ public:
         sf::base::Vector<VkSurfaceFormatKHR> surfaceFormats;
 
         if (vkGetPhysicalDeviceSurfaceFormatsKHR(gpu, surface, &objectCount, nullptr) != VK_SUCCESS)
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
 
         surfaceFormats.resize(objectCount);
 
         if (vkGetPhysicalDeviceSurfaceFormatsKHR(gpu, surface, &objectCount, surfaceFormats.data()) != VK_SUCCESS)
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
 
         if ((surfaceFormats.size() == 1) && (surfaceFormats[0].format == VK_FORMAT_UNDEFINED))
         {
@@ -792,27 +746,18 @@ public:
                 swapchainFormat = surfaceFormats[0];
         }
         else
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
 
         // Select a swapchain present mode
         sf::base::Vector<VkPresentModeKHR> presentModes;
 
         if (vkGetPhysicalDeviceSurfacePresentModesKHR(gpu, surface, &objectCount, nullptr) != VK_SUCCESS)
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
 
         presentModes.resize(objectCount);
 
         if (vkGetPhysicalDeviceSurfacePresentModesKHR(gpu, surface, &objectCount, presentModes.data()) != VK_SUCCESS)
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
 
         // Prefer mailbox over FIFO if it is available
         VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
@@ -830,10 +775,7 @@ public:
         VkSurfaceCapabilitiesKHR surfaceCapabilities;
 
         if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu, surface, &surfaceCapabilities) != VK_SUCCESS)
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
 
         swapchainExtent.width  = sf::base::clamp(window.getSize().x,
                                                 surfaceCapabilities.minImageExtent.width,
@@ -862,10 +804,7 @@ public:
 
         // Create the swapchain
         if (vkCreateSwapchainKHR(device, &swapchainCreateInfo, nullptr, &swapchain) != VK_SUCCESS)
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
     }
 
     // Retrieve the swapchain images and create image views for them
@@ -875,19 +814,13 @@ public:
         sf::base::U32 objectCount = 0;
 
         if (vkGetSwapchainImagesKHR(device, swapchain, &objectCount, nullptr) != VK_SUCCESS)
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
 
         swapchainImages.resize(objectCount);
         swapchainImageViews.resize(objectCount);
 
         if (vkGetSwapchainImagesKHR(device, swapchain, &objectCount, swapchainImages.data()) != VK_SUCCESS)
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
 
         VkImageViewCreateInfo imageViewCreateInfo           = VkImageViewCreateInfo();
         imageViewCreateInfo.sType                           = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -909,10 +842,7 @@ public:
             imageViewCreateInfo.image = swapchainImages[i];
 
             if (vkCreateImageView(device, &imageViewCreateInfo, nullptr, &swapchainImageViews[i]) != VK_SUCCESS)
-            {
-                vulkanAvailable = false;
-                return;
-            }
+                return failStep();
         }
     }
 
@@ -926,56 +856,38 @@ public:
         {
             auto file = sf::FileInputStream::open("resources/shader.vert.spv");
             if (!file.hasValue())
-            {
-                vulkanAvailable = false;
-                return;
-            }
+                return failStep();
 
             const auto                      fileSize = file->getSize().value();
             sf::base::Vector<sf::base::U32> buffer(fileSize / sizeof(sf::base::U32));
 
             if (file->read(buffer.data(), fileSize) != file->getSize())
-            {
-                vulkanAvailable = false;
-                return;
-            }
+                return failStep();
 
             shaderModuleCreateInfo.codeSize = buffer.size() * sizeof(sf::base::U32);
             shaderModuleCreateInfo.pCode    = buffer.data();
 
             if (vkCreateShaderModule(device, &shaderModuleCreateInfo, nullptr, &vertexShaderModule) != VK_SUCCESS)
-            {
-                vulkanAvailable = false;
-                return;
-            }
+                return failStep();
         }
 
         // Use the fragment shader SPIR-V code to create a fragment shader module
         {
             auto file = sf::FileInputStream::open("resources/shader.frag.spv");
             if (!file.hasValue())
-            {
-                vulkanAvailable = false;
-                return;
-            }
+                return failStep();
 
             const auto                      fileSize = file->getSize().value();
             sf::base::Vector<sf::base::U32> buffer(fileSize / sizeof(sf::base::U32));
 
             if (file->read(buffer.data(), fileSize) != file->getSize())
-            {
-                vulkanAvailable = false;
-                return;
-            }
+                return failStep();
 
             shaderModuleCreateInfo.codeSize = buffer.size() * sizeof(sf::base::U32);
             shaderModuleCreateInfo.pCode    = buffer.data();
 
             if (vkCreateShaderModule(device, &shaderModuleCreateInfo, nullptr, &fragmentShaderModule) != VK_SUCCESS)
-            {
-                vulkanAvailable = false;
-                return;
-            }
+                return failStep();
         }
 
         // Prepare the shader stage information for later pipeline creation
@@ -1053,10 +965,7 @@ public:
 
         // Create the renderpass
         if (vkCreateRenderPass(device, &renderPassCreateInfo, nullptr, &renderPass) != VK_SUCCESS)
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
     }
 
     // Set up uniform buffer and texture sampler descriptor set layouts
@@ -1085,10 +994,7 @@ public:
 
         // Create descriptor set layout
         if (vkCreateDescriptorSetLayout(device, &descriptorSetLayoutCreateInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS)
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
     }
 
     // Set up pipeline layout
@@ -1101,10 +1007,7 @@ public:
 
         // Create pipeline layout
         if (vkCreatePipelineLayout(device, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
     }
 
     // Set up rendering pipeline
@@ -1237,10 +1140,7 @@ public:
         // Create our graphics pipeline
         if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &graphicsPipelineCreateInfo, nullptr, &graphicsPipeline) !=
             VK_SUCCESS)
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
     }
 
     // Use our renderpass and swapchain images to create the corresponding framebuffers
@@ -1265,10 +1165,7 @@ public:
 
             // Create the framebuffer
             if (vkCreateFramebuffer(device, &framebufferCreateInfo, nullptr, &swapchainFramebuffers[i]) != VK_SUCCESS)
-            {
-                vulkanAvailable = false;
-                return;
-            }
+                return failStep();
         }
     }
 
@@ -1283,10 +1180,7 @@ public:
 
         // Create our command pool
         if (vkCreateCommandPool(device, &commandPoolCreateInfo, nullptr, &commandPool) != VK_SUCCESS)
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
     }
 
     // Helper to create a generic buffer with the specified size, usage and memory flags
@@ -1454,10 +1348,7 @@ public:
                           VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                           stagingBuffer,
                           stagingBufferMemory))
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
 
         void* ptr = nullptr;
 
@@ -1467,8 +1358,7 @@ public:
             vkFreeMemory(device, stagingBufferMemory, nullptr);
             vkDestroyBuffer(device, stagingBuffer, nullptr);
 
-            vulkanAvailable = false;
-            return;
+            return failStep();
         }
 
         // Copy the vertex data into the buffer
@@ -1487,8 +1377,7 @@ public:
             vkFreeMemory(device, stagingBufferMemory, nullptr);
             vkDestroyBuffer(device, stagingBuffer, nullptr);
 
-            vulkanAvailable = false;
-            return;
+            return failStep();
         }
 
         // Copy the contents of the staging buffer into the GPU vertex buffer
@@ -1533,10 +1422,7 @@ public:
                           VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                           stagingBuffer,
                           stagingBufferMemory))
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
 
         void* ptr = nullptr;
 
@@ -1546,8 +1432,7 @@ public:
             vkFreeMemory(device, stagingBufferMemory, nullptr);
             vkDestroyBuffer(device, stagingBuffer, nullptr);
 
-            vulkanAvailable = false;
-            return;
+            return failStep();
         }
 
         // Copy the index data into the buffer
@@ -1566,8 +1451,7 @@ public:
             vkFreeMemory(device, stagingBufferMemory, nullptr);
             vkDestroyBuffer(device, stagingBuffer, nullptr);
 
-            vulkanAvailable = false;
-            return;
+            return failStep();
         }
 
         // Copy the contents of the staging buffer into the GPU index buffer
@@ -1593,10 +1477,7 @@ public:
                               VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                               uniformBuffers[i],
                               uniformBuffersMemory[i]))
-            {
-                vulkanAvailable = false;
-                return;
-            }
+                return failStep();
         }
     }
 
@@ -1678,10 +1559,7 @@ public:
                          VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                          depthImage,
                          depthImageMemory))
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
 
         // Allocate a command buffer
         VkCommandBufferAllocateInfo commandBufferAllocateInfo = VkCommandBufferAllocateInfo();
@@ -1693,10 +1571,7 @@ public:
         VkCommandBuffer commandBuffer = nullptr;
 
         if (vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &commandBuffer) != VK_SUCCESS)
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
 
         // Begin the command buffer
         VkCommandBufferBeginInfo commandBufferBeginInfo = VkCommandBufferBeginInfo();
@@ -1712,8 +1587,7 @@ public:
         {
             vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
 
-            vulkanAvailable = false;
-            return;
+            return failStep();
         }
 
         // Submit a barrier to transition the image layout to depth stencil optimal
@@ -1749,16 +1623,14 @@ public:
         {
             vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
 
-            vulkanAvailable = false;
-            return;
+            return failStep();
         }
 
         if (vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
         {
             vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
 
-            vulkanAvailable = false;
-            return;
+            return failStep();
         }
 
         // Ensure the command buffer has been processed
@@ -1766,8 +1638,7 @@ public:
         {
             vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
 
-            vulkanAvailable = false;
-            return;
+            return failStep();
         }
 
         // Free the command buffer
@@ -1792,10 +1663,7 @@ public:
 
         // Create the depth image view
         if (vkCreateImageView(device, &imageViewCreateInfo, nullptr, &depthImageView) != VK_SUCCESS)
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
     }
 
     // Create an image for our texture data
@@ -1805,10 +1673,7 @@ public:
         const auto maybeImageData = sf::Image::loadFromFile("resources/logo.png");
 
         if (!maybeImageData.hasValue())
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
 
         const auto& imageData = *maybeImageData;
 
@@ -1831,8 +1696,7 @@ public:
             vkFreeMemory(device, stagingBufferMemory, nullptr);
             vkDestroyBuffer(device, stagingBuffer, nullptr);
 
-            vulkanAvailable = false;
-            return;
+            return failStep();
         }
 
         // Copy the image data into the buffer
@@ -1854,8 +1718,7 @@ public:
             vkFreeMemory(device, stagingBufferMemory, nullptr);
             vkDestroyBuffer(device, stagingBuffer, nullptr);
 
-            vulkanAvailable = false;
-            return;
+            return failStep();
         }
 
         // Create a command buffer
@@ -1872,8 +1735,7 @@ public:
             vkFreeMemory(device, stagingBufferMemory, nullptr);
             vkDestroyBuffer(device, stagingBuffer, nullptr);
 
-            vulkanAvailable = false;
-            return;
+            return failStep();
         }
 
         // Begin the command buffer
@@ -1893,8 +1755,7 @@ public:
             vkFreeMemory(device, stagingBufferMemory, nullptr);
             vkDestroyBuffer(device, stagingBuffer, nullptr);
 
-            vulkanAvailable = false;
-            return;
+            return failStep();
         }
 
         // Submit a barrier to transition the image layout to transfer destination optimal
@@ -1931,8 +1792,7 @@ public:
             vkFreeMemory(device, stagingBufferMemory, nullptr);
             vkDestroyBuffer(device, stagingBuffer, nullptr);
 
-            vulkanAvailable = false;
-            return;
+            return failStep();
         }
 
         if (vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
@@ -1942,8 +1802,7 @@ public:
             vkFreeMemory(device, stagingBufferMemory, nullptr);
             vkDestroyBuffer(device, stagingBuffer, nullptr);
 
-            vulkanAvailable = false;
-            return;
+            return failStep();
         }
 
         // Ensure the command buffer has been processed
@@ -1954,8 +1813,7 @@ public:
             vkFreeMemory(device, stagingBufferMemory, nullptr);
             vkDestroyBuffer(device, stagingBuffer, nullptr);
 
-            vulkanAvailable = false;
-            return;
+            return failStep();
         }
 
         // Begin the command buffer
@@ -1966,8 +1824,7 @@ public:
             vkFreeMemory(device, stagingBufferMemory, nullptr);
             vkDestroyBuffer(device, stagingBuffer, nullptr);
 
-            vulkanAvailable = false;
-            return;
+            return failStep();
         }
 
         // Copy the staging buffer contents into the image
@@ -1996,8 +1853,7 @@ public:
             vkFreeMemory(device, stagingBufferMemory, nullptr);
             vkDestroyBuffer(device, stagingBuffer, nullptr);
 
-            vulkanAvailable = false;
-            return;
+            return failStep();
         }
 
         if (vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
@@ -2007,8 +1863,7 @@ public:
             vkFreeMemory(device, stagingBufferMemory, nullptr);
             vkDestroyBuffer(device, stagingBuffer, nullptr);
 
-            vulkanAvailable = false;
-            return;
+            return failStep();
         }
 
         // Ensure the command buffer has been processed
@@ -2019,8 +1874,7 @@ public:
             vkFreeMemory(device, stagingBufferMemory, nullptr);
             vkDestroyBuffer(device, stagingBuffer, nullptr);
 
-            vulkanAvailable = false;
-            return;
+            return failStep();
         }
 
         // Begin the command buffer
@@ -2031,8 +1885,7 @@ public:
             vkFreeMemory(device, stagingBufferMemory, nullptr);
             vkDestroyBuffer(device, stagingBuffer, nullptr);
 
-            vulkanAvailable = false;
-            return;
+            return failStep();
         }
 
         // Submit a barrier to transition the image layout from transfer destination optimal to shader read-only optimal
@@ -2060,8 +1913,7 @@ public:
             vkFreeMemory(device, stagingBufferMemory, nullptr);
             vkDestroyBuffer(device, stagingBuffer, nullptr);
 
-            vulkanAvailable = false;
-            return;
+            return failStep();
         }
 
         if (vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
@@ -2071,8 +1923,7 @@ public:
             vkFreeMemory(device, stagingBufferMemory, nullptr);
             vkDestroyBuffer(device, stagingBuffer, nullptr);
 
-            vulkanAvailable = false;
-            return;
+            return failStep();
         }
 
         // Ensure the command buffer has been processed
@@ -2083,8 +1934,7 @@ public:
             vkFreeMemory(device, stagingBufferMemory, nullptr);
             vkDestroyBuffer(device, stagingBuffer, nullptr);
 
-            vulkanAvailable = false;
-            return;
+            return failStep();
         }
 
         // Free the command buffer
@@ -2110,10 +1960,7 @@ public:
 
         // Create our texture image view
         if (vkCreateImageView(device, &imageViewCreateInfo, nullptr, &textureImageView) != VK_SUCCESS)
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
     }
 
     // Create a sampler for our texture
@@ -2140,10 +1987,7 @@ public:
 
         // Create our sampler
         if (vkCreateSampler(device, &samplerCreateInfo, nullptr, &textureSampler) != VK_SUCCESS)
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
     }
 
     // Set up our descriptor pool
@@ -2168,10 +2012,7 @@ public:
 
         // Create the descriptor pool
         if (vkCreateDescriptorPool(device, &descriptorPoolCreateInfo, nullptr, &descriptorPool) != VK_SUCCESS)
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
     }
 
     // Set up our descriptor sets
@@ -2192,8 +2033,7 @@ public:
         {
             descriptorSets.clear();
 
-            vulkanAvailable = false;
-            return;
+            return failStep();
         }
 
         // For every descriptor set, set up the bindings to our uniform buffer and texture sampler
@@ -2253,8 +2093,7 @@ public:
         if (vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, commandBuffers.data()) != VK_SUCCESS)
         {
             commandBuffers.clear();
-            vulkanAvailable = false;
-            return;
+            return failStep();
         }
     }
 
@@ -2295,10 +2134,7 @@ public:
         {
             // Begin the command buffer
             if (vkBeginCommandBuffer(commandBuffers[i], &commandBufferBeginInfo) != VK_SUCCESS)
-            {
-                vulkanAvailable = false;
-                return;
-            }
+                return failStep();
 
             // Begin the renderpass
             renderPassBeginInfo.framebuffer = swapchainFramebuffers[i];
@@ -2334,10 +2170,7 @@ public:
 
             // End the command buffer
             if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS)
-            {
-                vulkanAvailable = false;
-                return;
-            }
+                return failStep();
         }
     }
 
@@ -2355,8 +2188,7 @@ public:
             if (vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS)
             {
                 imageAvailableSemaphores.popBack();
-                vulkanAvailable = false;
-                return;
+                return failStep();
             }
         }
 
@@ -2368,8 +2200,7 @@ public:
             if (vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS)
             {
                 renderFinishedSemaphores.popBack();
-                vulkanAvailable = false;
-                return;
+                return failStep();
             }
         }
     }
@@ -2390,8 +2221,7 @@ public:
             if (vkCreateFence(device, &fenceCreateInfo, nullptr, &fences[i]) != VK_SUCCESS)
             {
                 fences.popBack();
-                vulkanAvailable = false;
-                return;
+                return failStep();
             }
         }
     }
@@ -2438,10 +2268,7 @@ public:
         // Map the current frame's uniform buffer into our address space
         if (vkMapMemory(device, uniformBuffersMemory[currentFrame], 0, sizeof(Matrix) * 3, 0, reinterpret_cast<void**>(&ptr)) !=
             VK_SUCCESS)
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
 
         // Copy the matrix data into the current frame's uniform buffer
         SFML_BASE_MEMCPY(ptr + sizeof(Matrix) * 0, model, sizeof(Matrix));
@@ -2478,10 +2305,7 @@ public:
 
             if ((result != VK_SUCCESS) && (result != VK_TIMEOUT) && (result != VK_NOT_READY) &&
                 (result != VK_SUBOPTIMAL_KHR))
-            {
-                vulkanAvailable = false;
-                return;
-            }
+                return failStep();
         }
 
         // Wait for the swapchain image to be available in the color attachment stage before submitting the queue
@@ -2501,10 +2325,7 @@ public:
         vkResetFences(device, 1, &fences[currentFrame]);
 
         if (vkQueueSubmit(queue, 1, &submitInfo, fences[currentFrame]) != VK_SUCCESS)
-        {
-            vulkanAvailable = false;
-            return;
-        }
+            return failStep();
 
         // Wait for rendering to complete before presenting
         VkPresentInfoKHR presentInfo   = VkPresentInfoKHR();
@@ -2526,10 +2347,7 @@ public:
                 swapchainOutOfDate = false;
             }
             else if (result != VK_SUCCESS)
-            {
-                vulkanAvailable = false;
-                return;
-            }
+                return failStep();
         }
 
         // Make sure to use the next frame's objects next frame
@@ -2629,3 +2447,5 @@ int main()
     auto windowContext = sf::WindowContext::create().value();
     VulkanExample{}.run();
 }
+
+// NOLINTEND(readability-avoid-return-with-void-value)

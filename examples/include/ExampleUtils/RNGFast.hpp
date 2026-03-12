@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Xoroshiro128PlusBitGenerator.hpp"
+#include "ExampleUtils/Xoroshiro128PlusBitGenerator.hpp"
 
 #include "SFML/System/Vec2.hpp"
 

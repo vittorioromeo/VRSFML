@@ -44,12 +44,12 @@ public:
     /// \param coreThickness  The thickness of the bright inner core
     ///
     ////////////////////////////////////////////////////////////
-    explicit LaserBeam(const sf::Vec2f start,
-                       const sf::Vec2f end,
+    explicit LaserBeam(const sf::Vec2f theStart,
+                       const sf::Vec2f theEnd,
                        const sf::Color color         = sf::Color(255, 25, 25),
                        const float     coreThickness = 1.5f) :
-        start(start),
-        end(end),
+        start(theStart),
+        end(theEnd),
         m_color(color),
         m_coreThickness(coreThickness),
         m_glowThickness(coreThickness * 6.f)

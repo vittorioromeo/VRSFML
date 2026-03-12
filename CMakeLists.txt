@@ -274,7 +274,6 @@ if(SFML_BUILD_TEST_SUITE)
     # this definition is used in the PCH file to speed up compilation of tests
     # `add_definitions` must be called before `add_subdirectory`
     add_definitions(-DSFML_BUILD_TEST_SUITE)
-    # add_definitions(-DDOCTEST_CONFIG_NO_INCLUDE_IOSTREAM=1)
     add_definitions(-DDOCTEST_CONFIG_SUPER_FAST_ASSERTS)
 endif()
 

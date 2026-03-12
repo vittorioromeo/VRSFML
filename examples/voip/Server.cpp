@@ -21,7 +21,7 @@
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/String.hpp" // used
+#include "SFML/Base/String.hpp" // IWYU pragma: keep
 #include "SFML/Base/Vector.hpp"
 
 #include <mutex>

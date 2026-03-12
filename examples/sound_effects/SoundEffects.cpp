@@ -1,6 +1,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "ExampleUtils/Scaling.hpp"
+
 #include "SFML/Graphics/CircleShape.hpp"
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/ConvexShape.hpp"
@@ -52,8 +54,6 @@
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/ToString.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include "ExampleUtils.hpp"
 
 #include <limits>
 
@@ -1102,12 +1102,14 @@ int main()
     // Create the main window
     constexpr sf::Vec2f windowSize{windowWidth, windowHeight};
 
-    auto window = makeDPIScaledRenderWindow({
-        .size      = windowSize.toVec2u(),
-        .title     = "SFML Sound Effects",
-        .resizable = true,
-        .vsync     = true,
-    });
+    auto window = makeDPIScaledRenderWindow(
+                      {
+                          .size      = windowSize.toVec2u(),
+                          .title     = "SFML Sound Effects",
+                          .resizable = true,
+                          .vsync     = true,
+                      })
+                      .value();
 
     // Load the application font and pass it to the Effect class
     const auto font = sf::Font::openFromFile(resourcesDir() / "tuffy.ttf").value();

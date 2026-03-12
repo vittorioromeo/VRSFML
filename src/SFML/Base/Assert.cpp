@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Assert.hpp"
 
-#include "SFML/Config.hpp" // used
+#include "SFML/Config.hpp" // IWYU pragma: keep
 
 #ifdef SFML_DEBUG
 

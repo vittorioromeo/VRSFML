@@ -1,7 +1,7 @@
-#include "SFML/Base/Algorithm/Sort.hpp"
+#include "StringifySfBaseStringUtil.hpp" // IWYU pragma: keep
+#include "StringifyVectorUtil.hpp"       // IWYU pragma: keep
 
-#include "StringifySfBaseStringUtil.hpp" // used
-#include "StringifyVectorUtil.hpp"       // used
+#include "SFML/Base/Algorithm/Sort.hpp"
 
 #include "SFML/Base/Algorithm/IsSorted.hpp"
 #include "SFML/Base/String.hpp"

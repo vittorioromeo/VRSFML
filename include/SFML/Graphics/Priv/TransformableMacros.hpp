@@ -6,11 +6,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Config.hpp"
-
-#include "SFML/System/Angle.hpp"         // used
-#include "SFML/System/AutoWrapAngle.hpp" // used
-#include "SFML/System/Vec2.hpp"          // used
+#include "SFML/System/Angle.hpp"         // IWYU pragma: keep
+#include "SFML/System/AutoWrapAngle.hpp" // IWYU pragma: keep
+#include "SFML/System/Vec2.hpp"          // IWYU pragma: keep
 
 
 ////////////////////////////////////////////////////////////

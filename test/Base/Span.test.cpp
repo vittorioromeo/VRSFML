@@ -20,6 +20,8 @@ TEST_CASE("[Base] Base/Span.hpp")
         STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::base::Span<int>));
         STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::base::Span<int>));
         STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::base::Span<int>, sf::base::Span<int>));
+
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(sf::base::Span<int>));
     }
 
     SECTION("Structured bindings")

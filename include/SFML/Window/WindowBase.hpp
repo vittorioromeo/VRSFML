@@ -12,13 +12,16 @@
 #include "SFML/Window/WindowHandle.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
-#include "SFML/System/AnchorPointMixin.hpp"
+#include "SFML/System/GlobalAnchorPointMixin.hpp"
+#include "SFML/System/LocalAnchorPointMixin.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/Time.hpp"
 #include "SFML/System/UnicodeString.hpp"
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 
@@ -49,7 +52,7 @@ namespace sf
 /// \brief Window that serves as a base for other windows
 ///
 ////////////////////////////////////////////////////////////
-class SFML_WINDOW_API WindowBase : public AnchorPointMixin<WindowBase>
+class SFML_WINDOW_API WindowBase : public GlobalAnchorPointMixin<WindowBase>, public LocalAnchorPointMixin<WindowBase>
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -71,7 +74,7 @@ public:
     /// \param windowSettings Settings to use
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowBase(const Settings& windowSettings);
+    [[nodiscard]] static base::Optional<WindowBase> create(const Settings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control
@@ -79,7 +82,7 @@ public:
     /// \param handle Platform-specific handle of the control
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowBase(WindowHandle handle);
+    [[nodiscard]] static base::Optional<WindowBase> create(WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -521,6 +524,32 @@ public:
     ////////////////////////////////////////////////////////////
     void setHasTitlebar(bool hasTitleBar);
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the local bounding rectangle of the window
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::pure]] Rect2f getLocalBounds() const
+    {
+        return Rect2f{{0.f, 0.f}, getSize().toVec2f()};
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the global bounding rectangle of the window
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::pure]] Rect2f getGlobalBounds() const
+    {
+        return Rect2f{getPosition().toVec2f(), getSize().toVec2f()};
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \private
+    ///
+    /// \brief Construct a window base from the inner implementation
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] explicit WindowBase(base::PassKey<WindowBase>&&, base::UniquePtr<priv::SDLWindowImpl>&& impl);
+
 private:
     friend class Window;
 
@@ -529,12 +558,6 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     priv::SDLWindowImpl& getWindowImpl();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct a window base from the inner implementation
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowBase(base::UniquePtr<priv::SDLWindowImpl>&& impl);
 
     ////////////////////////////////////////////////////////////
     /// \brief Processes an event before it is sent to the user

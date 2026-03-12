@@ -14,8 +14,7 @@
 #include "SFML/System/Err.hpp"
 
 #include "SFML/Base/Optional.hpp"
-
-#include <string>
+#include "SFML/Base/String.hpp"
 
 
 namespace sf
@@ -24,6 +23,7 @@ namespace sf
 const IpAddress IpAddress::Any(0, 0, 0, 0);
 const IpAddress IpAddress::LocalHost(127, 0, 0, 1);
 const IpAddress IpAddress::Broadcast(255, 255, 255, 255);
+
 
 ////////////////////////////////////////////////////////////
 IpAddress::IpAddress(base::U8 byte0, base::U8 byte1, base::U8 byte2, base::U8 byte3) :
@@ -99,7 +99,8 @@ base::Optional<IpAddress> IpAddress::getPublicAddress(Time timeout)
     // and parse the result to extract our IP address
     // (not very hard: the web page contains only our IP address).
 
-    Http                 server("www.sfml-dev.org");
+    Http server("www.sfml-dev.org");
+
     const Http::Request  request("/ip-provider.php", Http::Request::Method::Get);
     const Http::Response page = server.sendRequest(request, timeout);
 

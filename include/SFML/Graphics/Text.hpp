@@ -15,8 +15,9 @@
 #include "SFML/Graphics/Vertex.hpp"
 #include "SFML/Graphics/VertexSpan.hpp"
 
-#include "SFML/System/AnchorPointMixin.hpp"
+#include "SFML/System/GlobalAnchorPointMixin.hpp"
 #include "SFML/System/LifetimeDependant.hpp"
+#include "SFML/System/LocalAnchorPointMixin.hpp"
 #include "SFML/System/Rect2.hpp"
 #include "SFML/System/UnicodeString.hpp"
 #include "SFML/System/Vec2.hpp"
@@ -44,7 +45,10 @@ namespace sf
 /// \brief Graphical text that can be drawn to a render target
 ///
 ////////////////////////////////////////////////////////////
-class SFML_GRAPHICS_API Text : public TransformableMixin<Text>, public AnchorPointMixin<Text>
+class SFML_GRAPHICS_API Text :
+    public TransformableMixin<Text>,
+    public GlobalAnchorPointMixin<Text>,
+    public LocalAnchorPointMixin<Text>
 {
 public:
     ////////////////////////////////////////////////////////////

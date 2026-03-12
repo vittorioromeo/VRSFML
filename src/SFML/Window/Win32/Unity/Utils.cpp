@@ -8,7 +8,7 @@
 #include "SFML/Window/Win32/Utils.hpp"
 
 #include "SFML/System/UnicodeString.hpp"
-#include "SFML/System/Win32/WindowsHeader.hpp" // used
+#include "SFML/System/WindowsHeader.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/String.hpp"

@@ -47,19 +47,12 @@ StreamLike& operator<<(StreamLike& stream, const String& s)
 ////////////////////////////////////////////////////////////
 template <typename StreamLike>
 StreamLike& operator>>(StreamLike& stream, String& s)
-    // This requires clause assumes a more standard stream interface than the original TODO.
-    // `peek()` allows looking at the next character without consuming it.
-    // `get()` consumes the next character.
-    // We assume they return an int-like type where -1 (or a static EOF value) signals end-of-stream.
     requires(requires(StreamLike& str) {
         { str.peek() };
         { str.get() };
     })
 {
     s.clear();
-
-    // A sentry object would typically be used here to manage stream state,
-    // but for a basic implementation, we handle it directly.
 
     // 1. Skip leading whitespace
     int c = stream.peek();
@@ -78,10 +71,6 @@ StreamLike& operator>>(StreamLike& stream, String& s)
             c = stream.peek();
         }
     }
-
-    // The stream's internal state (e.g., failbit, eofbit) should be set by
-    // the stream's own get/peek methods upon failure or reaching the end.
-    // This operator simply reacts to the values they return.
 
     return stream;
 }

@@ -23,16 +23,19 @@ int main()
 {
     auto windowContext = sf::WindowContext::create().value();
 
-    sf::RenderWindow rw{
-        {.size            = {3440u, 1440u},
-         .title           = "sus",
-         .fullscreen      = false,
-         .resizable       = false,
-         .closable        = false,
-         .hasTitlebar     = false,
-         .vsync           = false,
-         .frametimeLimit  = 60u,
-         .contextSettings = {}}};
+    auto rw = sf::RenderWindow::create(
+                  {
+                      .size            = {3440u, 1440u},
+                      .title           = "sus",
+                      .fullscreen      = false,
+                      .resizable       = false,
+                      .closable        = false,
+                      .hasTitlebar     = false,
+                      .vsync           = false,
+                      .frametimeLimit  = 60u,
+                      .contextSettings = {},
+                  })
+                  .value();
 
     while (true)
     {
@@ -86,9 +89,9 @@ int main()
 
 int main()
 {
-    auto             graphicsContext = sf::GraphicsContext::create().value();
-    sf::RenderWindow window({.size{800u, 600u}, .title = L"महसुस", .contextSettings = {.antiAliasingLevel = 4}});
+    auto graphicsContext = sf::GraphicsContext::create().value();
 
+    auto window = sf::RenderWindow::create({.size{800u, 600u}, .title = L"महसुस"}).value();
 
     const float width     = 128.f;
     const float height    = 64.f;
@@ -187,8 +190,8 @@ int main()
 
 int main()
 {
-    auto             graphicsContext = sf::GraphicsContext::create().value();
-    sf::RenderWindow window({.size{800u, 600u}, .title = L"महसुस", .contextSettings = {.antiAliasingLevel = 4}});
+    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto window          = sf::RenderWindow::create({.size{800u, 600u}, .title = L"महसुस"}).value();
 
 
     sf::Vec2u size = window.getSize();
@@ -252,8 +255,8 @@ void main()
 
 int main()
 {
-    auto             graphicsContext = sf::GraphicsContext::create().value();
-    sf::RenderWindow window({.size{800u, 600u}, .title = L"महसुस"});
+    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto window          = sf::RenderWindow::create({.size{800u, 600u}, .title = L"महसुस"}).value();
 
     sf::RectangleShape rs0(
         {.position         = {250.f, 250.f},
@@ -299,7 +302,7 @@ int main()
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
 
-    sf::RenderWindow window({.size{800u, 600u}, .title = L"महसुस"});
+    auto window = sf::RenderWindow::create({.size{800u, 600u}, .title = L"महसुस"}).value();
 
     auto textureAtlas = sf::TextureAtlas{sf::Texture::create({1024u, 1024u}).value()};
 
@@ -399,10 +402,11 @@ int main()
 
     // TODO P0: aa level of 4 causes glcheck assert fail on opengl
 
-    sf::RenderWindow window({.size{screenSize},
-                             .title = "Window",
-                             .vsync = true,
-                             .contextSettings{.depthBits = 0, .stencilBits = 0, .antiAliasingLevel = 4}});
+    auto window = sf::RenderWindow::create({.size{screenSize},
+                                            .title = "Window",
+                                            .vsync = true,
+                                            .contextSettings{.depthBits = 0, .stencilBits = 0, .antiAliasingLevel = 4}})
+                      .value();
 
     auto image   = sf::Image::create(screenSize, sf::Color::White).value();
     auto texture = sf::Texture::loadFromImage(image).value();
@@ -487,7 +491,7 @@ int main()
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
 
-    sf::RenderWindow window({.size{800u, 600u}, .title = "Test", .vsync = false, .resizable = false});
+    auto window = sf::RenderWindow::create({.size{800u, 600u}, .title = "Test", .vsync = false, .resizable = false}).value();
 
     const auto font = sf::Font::openFromFile("resources/tuffy.ttf").value();
 

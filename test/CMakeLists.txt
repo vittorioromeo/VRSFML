@@ -82,6 +82,12 @@ if(SFML_RUN_AUDIO_DEVICE_TESTS)
     target_compile_definitions(sfml-test-main PRIVATE SFML_RUN_AUDIO_DEVICE_TESTS)
 endif()
 
+if(NOT SFML_OS_IOS)
+    add_definitions(-DSFML_RUN_CONNECTION_TESTS -DSFML_RUN_LOOPBACK_TESTS)
+    target_compile_definitions(sfml-test-main PRIVATE SFML_RUN_CONNECTION_TESTS)
+    target_compile_definitions(sfml-test-main PRIVATE SFML_RUN_LOOPBACK_TESTS)
+endif()
+
 add_subdirectory(Audio)
 add_subdirectory(Base)
 add_subdirectory(GLUtils)

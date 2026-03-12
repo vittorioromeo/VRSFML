@@ -3,7 +3,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Shader.hpp"
 
-#include "../bubble_idle/RNGFast.hpp" // TODO P1: avoid the relative path...?
+#include "ExampleUtils/RNGFast.hpp"
+#include "ExampleUtils/Scaling.hpp"
 
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Font.hpp"
@@ -34,8 +35,6 @@
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include "ExampleUtils.hpp"
 
 
 namespace
@@ -476,12 +475,14 @@ int main()
     // Create the main window
     constexpr sf::Vec2f windowSize{800.f, 600.f};
 
-    auto window = makeDPIScaledRenderWindow({
-        .size      = windowSize.toVec2u(),
-        .title     = "SFML Shader",
-        .resizable = true,
-        .vsync     = true,
-    });
+    auto window = makeDPIScaledRenderWindow(
+                      {
+                          .size      = windowSize.toVec2u(),
+                          .title     = "SFML Shader",
+                          .resizable = true,
+                          .vsync     = true,
+                      })
+                      .value();
 
     // Start the game loop
     const sf::Clock clock;

@@ -39,7 +39,7 @@ public:
     /// \param angle Angle to initialize from.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] inline constexpr explicit(false) AutoWrapAngle(Angle angle) :
+    [[nodiscard, gnu::always_inline, gnu::flatten]] inline constexpr /* implicit */ AutoWrapAngle(Angle angle) :
         m_radians(angle.radians)
     {
     }

@@ -18,7 +18,7 @@ TEST_CASE("[Audio] sf::SoundFileReader")
 
     SECTION("Info")
     {
-        const sf::SoundFileReader::Info info;
+        const sf::SoundFileReader::Info info{};
         CHECK(info.sampleCount == 0);
         CHECK(info.channelMap.getSize() == 0);
         CHECK(info.sampleRate == 0);

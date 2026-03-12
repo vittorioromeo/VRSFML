@@ -7,8 +7,6 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Path.hpp"
 
-#include "SFML/System/StringUtils.hpp"
-
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/Trait/IsSame.hpp"
@@ -39,13 +37,13 @@ struct Path::Impl
 
     Impl() = default;
 
-    Impl(const auto& source, std::string&& buffer) : fsPath{source}, buffer{SFML_BASE_MOVE(buffer)}
+    Impl(const auto& source, std::string&& theBuffer) : fsPath{source}, buffer{SFML_BASE_MOVE(theBuffer)}
     {
     }
 
-    Impl(const base::String& source, std::string&& buffer) :
+    Impl(const base::String& source, std::string&& theBuffer) :
         fsPath{std::string(source.data(), source.size())},
-        buffer{SFML_BASE_MOVE(buffer)}
+        buffer{SFML_BASE_MOVE(theBuffer)}
     {
     }
 };
@@ -127,15 +125,6 @@ const Path::value_type* Path::c_str() const
 
 
 ////////////////////////////////////////////////////////////
-const char* Path::toCharPtr() const
-{
-    m_impl->buffer = to<std::string>();
-
-    return m_impl->buffer.c_str();
-}
-
-
-////////////////////////////////////////////////////////////
 bool Path::remove() const
 {
     return std::filesystem::remove(m_impl->fsPath);
@@ -159,7 +148,16 @@ bool Path::exists() const
 ////////////////////////////////////////////////////////////
 bool Path::extensionIs(const base::StringView str) const
 {
-    return priv::toLower(m_impl->fsPath.extension().string()) == str;
+    const auto nativeExt = m_impl->fsPath.extension().string();
+
+    if (nativeExt.size() != str.size())
+        return false;
+
+    for (base::SizeT i = 0u; i < nativeExt.size(); ++i)
+        if (std::tolower(static_cast<int>(nativeExt[i])) != std::tolower(static_cast<int>(str[i])))
+            return false;
+
+    return true;
 }
 
 
