@@ -168,7 +168,12 @@ private:
         linkStencilDepthBuffer(stencilDepthBuffer, stencil, depth);
 
         if (!isBoundFramebufferComplete())
+        {
+            const GLuint fboToDelete = auxFramebufferId;
+            glCheck(glDeleteFramebuffers(1, &fboToDelete));
+
             return createFail("failed to link the render buffers to the auxiliary framebuffer");
+        }
 
         // Register the FBO in our map and with the current context so it is automatically destroyed
         const unsigned int glContextId = GraphicsContext::getActiveThreadLocalGlContextId();
@@ -396,6 +401,8 @@ RenderTexture& RenderTexture::operator=(RenderTexture&& rhs) noexcept
         return *this;
 
     m_impl->cleanup();
+
+    RenderTarget::operator=(SFML_BASE_MOVE(rhs));
     m_impl = SFML_BASE_MOVE(rhs.m_impl);
 
     return *this;
