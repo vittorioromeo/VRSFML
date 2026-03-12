@@ -217,10 +217,10 @@ VertexBuffer& VertexBuffer::operator=(const VertexBuffer& rhs)
 ////////////////////////////////////////////////////////////
 void VertexBuffer::swap(VertexBuffer& rhs) noexcept
 {
-    base::swap(m_size, rhs.m_size);
-    base::swap(m_buffer, rhs.m_buffer);
-    base::swap(m_primitiveType, rhs.m_primitiveType);
-    base::swap(m_usage, rhs.m_usage);
+    base::genericSwap(m_size, rhs.m_size);
+    base::genericSwap(m_buffer, rhs.m_buffer);
+    base::genericSwap(m_primitiveType, rhs.m_primitiveType);
+    base::genericSwap(m_usage, rhs.m_usage);
 }
 
 

@@ -101,7 +101,7 @@ struct Obj
 
     friend void swap(Obj& lhs, Obj& rhs) noexcept // used (found via ADL)
     {
-        sf::base::swap(lhs.value, rhs.value);
+        sf::base::genericSwap(lhs.value, rhs.value);
     }
 };
 
