@@ -6,7 +6,6 @@
 #include "SFML/Graphics/StencilMode.hpp"
 #include "SFML/Graphics/Texture.hpp"
 
-#include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/WindowContext.hpp"
 
 #include <Doctest.hpp>
@@ -26,8 +25,7 @@ TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
 
     SECTION("Stencil Tests")
     {
-        auto renderTexture = sf::RenderTexture::create({100, 100}, sf::ContextSettings{.depthBits = 0, .stencilBits = 8})
-                                 .value();
+        auto renderTexture = sf::RenderTexture::create({100, 100}, {.depthBits = 0, .stencilBits = 8}).value();
 
         renderTexture.clear(sf::Color::Red, sf::StencilValue{127u});
 

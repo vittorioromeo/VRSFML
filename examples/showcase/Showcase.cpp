@@ -1037,12 +1037,14 @@ int main()
     // Set up window
     auto window = makeDPIScaledRenderWindow(
                       {
-                          .size            = resolution.toVec2u(),
-                          .title           = "Showcase",
-                          .resizable       = true,
-                          .vsync           = true,
-                          .frametimeLimit  = 144u,
-                          .contextSettings = {.antiAliasingLevel = 8u},
+                          .size           = resolution.toVec2u(),
+                          .title          = "Showcase",
+                          .resizable      = true,
+                          .vsync          = true,
+                          .frametimeLimit = 144u,
+
+                          // TODO P0: restore AA with RenderTexture
+                          // .contextSettings = {.antiAliasingLevel = 8u},
                       })
                       .value();
 

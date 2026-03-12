@@ -129,9 +129,8 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Tell if the window will use sRGB encoding when drawing on it
     ///
-    /// You can request sRGB encoding for a window by having the sRgbCapable flag set in the `ContextSettings`
-    ///
-    /// \return `true` if the window use sRGB encoding, `false` otherwise
+    /// \return Always `false`. Modern window swapchains do not use sRGB.
+    ///         Use an `sf::RenderTexture` if you need sRGB encoding.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isSrgb() const override;

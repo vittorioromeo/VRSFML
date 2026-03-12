@@ -9,6 +9,7 @@
 #include "SFML/Graphics/Export.hpp"
 
 #include "SFML/Graphics/RenderTarget.hpp"
+#include "SFML/Graphics/RenderTextureSettings.hpp"
 #include "SFML/Graphics/TextureWrapMode.hpp"
 
 #include "SFML/System/Vec2.hpp"
@@ -23,7 +24,6 @@
 namespace sf
 {
 class Texture;
-struct ContextSettings;
 } // namespace sf
 
 
@@ -78,13 +78,13 @@ public:
     /// Call `RenderTexture::clear` first to ensure a single color fill.
     ///
     /// \param size     Width and height of the render-texture
-    /// \param settings Additional settings for the underlying OpenGL texture and context
+    /// \param settings Additional settings for the OpenGL framebuffer
     ///
     /// \return Render texture on success, `base::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<RenderTexture> create(Vec2u size);
-    [[nodiscard]] static base::Optional<RenderTexture> create(Vec2u size, const ContextSettings& contextSettings);
+    [[nodiscard]] static base::Optional<RenderTexture> create(Vec2u size, const RenderTextureSettings& renderTextureSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the maximum anti-aliasing level supported by the system

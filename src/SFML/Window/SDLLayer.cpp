@@ -1114,13 +1114,15 @@ bool SDLLayer::applyGLContextSettings(const ContextSettings& settings) const
 
     bool result = true;
 
+    // Force a basic, flat surface for the window swapchain (Wayland compliant)
+    result &= setGLAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 0);
+    result &= setGLAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
+    result &= setGLAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
+
     // Set context flags
-    result &= setGLAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, settings.sRgbCapable ? 1 : 0);
     result &= setGLAttribute(SDL_GL_DEPTH_SIZE, static_cast<int>(settings.depthBits));
     result &= setGLAttribute(SDL_GL_STENCIL_SIZE, static_cast<int>(settings.stencilBits));
     result &= setGLAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    result &= setGLAttribute(SDL_GL_MULTISAMPLEBUFFERS, settings.antiAliasingLevel > 0u ? 1 : 0);
-    result &= setGLAttribute(SDL_GL_MULTISAMPLESAMPLES, static_cast<int>(settings.antiAliasingLevel));
 
     // Set context version
     result &= setGLAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, static_cast<int>(settings.majorVersion));

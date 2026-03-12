@@ -91,9 +91,7 @@ int main()
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
 
-    auto window = sf::RenderWindow::create(
-                      {.size{800u, 600u}, .title = L"महसुस", .contextSettings = {.antiAliasingLevel = 4}})
-                      .value();
+    auto window = sf::RenderWindow::create({.size{800u, 600u}, .title = L"महसुस"}).value();
 
     const float width     = 128.f;
     const float height    = 64.f;
@@ -193,9 +191,7 @@ int main()
 int main()
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
-    auto window          = sf::RenderWindow::create(
-                      {.size{800u, 600u}, .title = L"महसुस", .contextSettings = {.antiAliasingLevel = 4}})
-                      .value();
+    auto window          = sf::RenderWindow::create({.size{800u, 600u}, .title = L"महसुस"}).value();
 
 
     sf::Vec2u size = window.getSize();

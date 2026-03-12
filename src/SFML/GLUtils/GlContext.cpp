@@ -60,12 +60,10 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
     // Try the new way first
     auto glGetIntegervFunc = reinterpret_cast<glGetIntegervFuncType>(
         derivedSharedGlContext.getFunction("glGetIntegerv"));
-    auto glGetErrorFunc  = reinterpret_cast<glGetErrorFuncType>(derivedSharedGlContext.getFunction("glGetError"));
-    auto glGetStringFunc = reinterpret_cast<glGetStringFuncType>(derivedSharedGlContext.getFunction("glGetString"));
-    auto glEnableFunc    = reinterpret_cast<glEnableFuncType>(derivedSharedGlContext.getFunction("glEnable"));
-    auto glIsEnabledFunc = reinterpret_cast<glIsEnabledFuncType>(derivedSharedGlContext.getFunction("glIsEnabled"));
 
-    if (!glGetIntegervFunc || !glGetErrorFunc || !glGetStringFunc || !glEnableFunc || !glIsEnabledFunc)
+    auto glGetErrorFunc = reinterpret_cast<glGetErrorFuncType>(derivedSharedGlContext.getFunction("glGetError"));
+
+    if (!glGetIntegervFunc || !glGetErrorFunc)
     {
         err() << "Could not load necessary function to initialize OpenGL context";
         return false;
@@ -140,33 +138,6 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
 
 #endif
 
-    // Enable anti-aliasing if requested by the user and supported
-    if ((requestedSettings.antiAliasingLevel > 0) && (m_settings.antiAliasingLevel > 0))
-    {
-        glCheckIgnoreWithFunc(glGetErrorFunc, glEnableFunc(GL_MULTISAMPLE));
-    }
-    else
-    {
-        m_settings.antiAliasingLevel = 0;
-    }
-
-    // Enable sRGB if requested by the user and supported
-    if (requestedSettings.sRgbCapable && m_settings.sRgbCapable)
-    {
-        glCheckIgnoreWithFunc(glGetErrorFunc, glEnableFunc(GL_FRAMEBUFFER_SRGB));
-
-        // Check to see if the enable was successful
-        if (glCheckIgnoreWithFunc(glGetErrorFunc, glIsEnabledFunc(GL_FRAMEBUFFER_SRGB)) == GL_FALSE)
-        {
-            err() << "Warning: Failed to enable GL_FRAMEBUFFER_SRGB";
-            m_settings.sRgbCapable = false;
-        }
-    }
-    else
-    {
-        m_settings.sRgbCapable = false;
-    }
-
     return true;
 }
 
@@ -181,20 +152,16 @@ void GlContext::checkSettings(const ContextSettings& requestedSettings) const
     const int requestedVersion = static_cast<int>(requestedSettings.majorVersion * 10u + requestedSettings.minorVersion);
 
     if ((m_settings.attributeFlags != requestedSettings.attributeFlags) || (version < requestedVersion) ||
-        (m_settings.stencilBits < requestedSettings.stencilBits) ||
-        (m_settings.antiAliasingLevel < requestedSettings.antiAliasingLevel) ||
-        (m_settings.depthBits < requestedSettings.depthBits) || (!m_settings.sRgbCapable && requestedSettings.sRgbCapable))
+        (m_settings.stencilBits < requestedSettings.stencilBits) || (m_settings.depthBits < requestedSettings.depthBits))
     {
         err() << "Warning: The created OpenGL context does not fully meet the settings that were requested" << '\n'
               << "Requested: version = " << requestedSettings.majorVersion << "." << requestedSettings.minorVersion
               << " ; depth bits = " << requestedSettings.depthBits << " ; stencil bits = " << requestedSettings.stencilBits
-              << " ; AA level = " << requestedSettings.antiAliasingLevel << " ; core = "
-              << boolToString(requestedSettings.isCore()) << " ; debug = " << boolToString(requestedSettings.isDebug())
-              << " ; sRGB = " << requestedSettings.sRgbCapable << '\n'
+              << " ; core = " << boolToString(requestedSettings.isCore())
+              << " ; debug = " << boolToString(requestedSettings.isDebug()) << '\n'
               << "Created: version = " << m_settings.majorVersion << "." << m_settings.minorVersion
               << " ; depth bits = " << m_settings.depthBits << " ; stencil bits = " << m_settings.stencilBits
-              << " ; AA level = " << m_settings.antiAliasingLevel << " ; core = " << boolToString(m_settings.isCore())
-              << " ; debug = " << boolToString(m_settings.isDebug()) << " ; sRGB = " << m_settings.sRgbCapable;
+              << " ; core = " << boolToString(m_settings.isCore()) << " ; debug = " << boolToString(m_settings.isDebug());
     }
 }
 

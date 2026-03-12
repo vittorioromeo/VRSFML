@@ -21,29 +21,6 @@
 #include "SFML/Base/Optional.hpp"
 
 
-namespace
-{
-////////////////////////////////////////////////////////////
-[[nodiscard]] sf::base::UniquePtr<sf::priv::SDLWindowImpl> tryCreateSDLWindowImpl(sf::WindowBase::Settings windowSettings) // TODO P0: use?
-{
-    // The window framebuffer max antialiasing level can actually be lower than what GL_MAX_SAMPLES reports,
-    // so we try to create the window with decreasing AA levels until we succeed or reach 0.
-
-    auto result = sf::priv::SDLWindowImpl::create(windowSettings);
-
-    if (result != nullptr)
-        return result;
-
-    if (windowSettings.contextSettings.antiAliasingLevel == 0u)
-        return nullptr;
-
-    windowSettings.contextSettings.antiAliasingLevel /= 2u;
-    return tryCreateSDLWindowImpl(windowSettings);
-}
-
-} // namespace
-
-
 namespace sf
 {
 ////////////////////////////////////////////////////////////

@@ -1,9 +1,7 @@
 #include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/Image.hpp"
 #include "SFML/Graphics/RectangleShapeData.hpp"
 #include "SFML/Graphics/RenderTexture.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
 #include "SFML/Window/WindowContext.hpp"

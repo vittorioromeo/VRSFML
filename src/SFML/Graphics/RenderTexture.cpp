@@ -9,10 +9,9 @@
 
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
+#include "SFML/Graphics/RenderTextureSettings.hpp"
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/View.hpp"
-
-#include "SFML/Window/ContextSettings.hpp"
 
 #include "SFML/GLUtils/CopyFramebuffer.hpp"
 #include "SFML/GLUtils/GLCheck.hpp"
@@ -245,7 +244,7 @@ private:
 
 public:
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool create(const ContextSettings& contextSettings)
+    [[nodiscard]] bool create(const RenderTextureSettings& rtSettings)
     {
         // OpenGL ES requires that all attachments have identical sizes
 
@@ -262,11 +261,11 @@ public:
 
         const auto size = texture.getSize();
 
-        sRgb = contextSettings.sRgbCapable;
+        sRgb = rtSettings.sRgbCapable;
 
         // Check if the requested anti-aliasing level is supported
-        if (const auto samples = getMaximumAntiAliasingLevel(); contextSettings.antiAliasingLevel > samples)
-            return fail("unsupported anti-aliasing level ", contextSettings.antiAliasingLevel, ", maximum supported is ", samples);
+        if (const auto samples = getMaximumAntiAliasingLevel(); rtSettings.antiAliasingLevel > samples)
+            return fail("unsupported anti-aliasing level ", rtSettings.antiAliasingLevel, ", maximum supported is ", samples);
 
         const auto bindRenderbufferAndSetFormat =
             [&size](GLRenderBufferObject& rbo, const unsigned int antiAliasingLevel, const GLenum internalFormat)
@@ -280,9 +279,9 @@ public:
                                                      static_cast<GLsizei>(size.y)));
         };
 
-        depth       = contextSettings.depthBits != 0u;
-        stencil     = contextSettings.stencilBits != 0u;
-        multisample = contextSettings.antiAliasingLevel != 0u;
+        depth       = rtSettings.depthBits != 0u;
+        stencil     = rtSettings.stencilBits != 0u;
+        multisample = rtSettings.antiAliasingLevel != 0u;
 
         // Create the (possibly multisample) depth/stencil buffer if requested
         if (stencil || depth)
@@ -291,9 +290,7 @@ public:
             if (!stencilDepthBuffer.hasValue())
                 return fail("failed to create the attached ", getBufferTypeStr(multisample, stencil, depth));
 
-            bindRenderbufferAndSetFormat(*stencilDepthBuffer,
-                                         contextSettings.antiAliasingLevel,
-                                         getGLInternalFormat(stencil, depth));
+            bindRenderbufferAndSetFormat(*stencilDepthBuffer, rtSettings.antiAliasingLevel, getGLInternalFormat(stencil, depth));
         }
 
         // Create the multisample color buffer if needed
@@ -303,7 +300,7 @@ public:
             if (!colorBuffer.hasValue())
                 return fail("failed to create the attached multisample color buffer");
 
-            bindRenderbufferAndSetFormat(*colorBuffer, contextSettings.antiAliasingLevel, sRgb ? GL_SRGB8_ALPHA8 : GL_RGBA8);
+            bindRenderbufferAndSetFormat(*colorBuffer, rtSettings.antiAliasingLevel, sRgb ? GL_SRGB8_ALPHA8 : GL_RGBA8);
         }
 
         // We can't create an FBO now if there is no active context
@@ -417,12 +414,12 @@ base::Optional<RenderTexture> RenderTexture::create(const Vec2u size)
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<RenderTexture> RenderTexture::create(const Vec2u size, const ContextSettings& contextSettings)
+base::Optional<RenderTexture> RenderTexture::create(const Vec2u size, const RenderTextureSettings& renderTextureSettings)
 {
     base::Optional<RenderTexture> result; // Use a single local variable for NRVO
 
     // Create the texture
-    auto texture = sf::Texture::create(size, {.sRgb = contextSettings.sRgbCapable});
+    auto texture = sf::Texture::create(size, {.sRgb = renderTextureSettings.sRgbCapable});
     if (!texture.hasValue())
     {
         priv::err() << "Impossible to create render texture (failed to create the target texture)";
@@ -439,7 +436,7 @@ base::Optional<RenderTexture> RenderTexture::create(const Vec2u size, const Cont
     result->setSmooth(false);
 
     // Initialize the render texture
-    if (!result->m_impl->create(contextSettings))
+    if (!result->m_impl->create(renderTextureSettings))
     {
         priv::err() << "Impossible to create render texture (failed to create render texture renderTextureImpl)";
 

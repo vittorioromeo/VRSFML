@@ -424,8 +424,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Context settings
-    const unsigned int        aaLevel = sf::base::min(16u, sf::RenderTexture::getMaximumAntiAliasingLevel());
-    const sf::ContextSettings contextSettings{.antiAliasingLevel = aaLevel}; // TODO P0: needs to be 0 on Wayland
+    const unsigned int aaLevel = sf::base::min(16u, sf::RenderTexture::getMaximumAntiAliasingLevel());
 
     ///////////////////////////////////////////////////////////
     // Profile (stores settings)
@@ -561,14 +560,12 @@ struct Main
     ////////////////////////////////////////////////////////////
     // Background and ImGui render textures
     sf::RenderTexture rtBackground{
-        sf::RenderTexture::create(gameScreenSize.toVec2u(), {.antiAliasingLevel = aaLevel, .sRgbCapable = false}).value()};
-    sf::RenderTexture rtImGui{
-        sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .sRgbCapable = false}).value()};
+        sf::RenderTexture::create(gameScreenSize.toVec2u(), {.antiAliasingLevel = aaLevel}).value()};
+    sf::RenderTexture rtImGui{sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel}).value()};
 
     ////////////////////////////////////////////////////////////
     // Game render texture (before post-processing)
-    sf::RenderTexture rtGame{
-        sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .sRgbCapable = false}).value()};
+    sf::RenderTexture rtGame{sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel}).value()};
 
     ////////////////////////////////////////////////////////////
     // Textures (not in atlas)
@@ -7971,13 +7968,13 @@ struct Main
     ////////////////////////////////////////////////////////////
     void recreateImGuiRenderTexture(const sf::Vec2u newResolution)
     {
-        rtImGui = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .sRgbCapable = false}).value();
+        rtImGui = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel}).value();
     }
 
     ////////////////////////////////////////////////////////////
     void recreateGameRenderTexture(const sf::Vec2u newResolution)
     {
-        rtGame = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .sRgbCapable = false}).value();
+        rtGame = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel}).value();
     }
 
     ////////////////////////////////////////////////////////////
@@ -7996,15 +7993,14 @@ struct Main
 
         return sf::RenderWindow::create(
                    {
-                       .size            = newResolution,
-                       .title           = "BubbleByte " BUBBLEBYTE_VERSION_STR,
-                       .fullscreen      = !profile.windowed,
-                       .resizable       = !takesAllScreen,
-                       .closable        = !takesAllScreen,
-                       .hasTitlebar     = !takesAllScreen,
-                       .vsync           = profile.vsync,
-                       .frametimeLimit  = sf::base::clamp(profile.frametimeLimit, 60u, 144u),
-                       .contextSettings = contextSettings,
+                       .size           = newResolution,
+                       .title          = "BubbleByte " BUBBLEBYTE_VERSION_STR,
+                       .fullscreen     = !profile.windowed,
+                       .resizable      = !takesAllScreen,
+                       .closable       = !takesAllScreen,
+                       .hasTitlebar    = !takesAllScreen,
+                       .vsync          = profile.vsync,
+                       .frametimeLimit = sf::base::clamp(profile.frametimeLimit, 60u, 144u),
                    })
             .value();
     }

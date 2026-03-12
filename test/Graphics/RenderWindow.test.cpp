@@ -79,26 +79,11 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 
     SECTION("Clear")
     {
-        unsigned int testAALevel{};
-        bool         testSRGBCapable{};
-
-        // clang-format off
-        SUBCASE("no AA, no SRGB") { testAALevel = 0u; testSRGBCapable = false; }
-        SUBCASE("AA, no SRGB")    { testAALevel = 4u; testSRGBCapable = false; }
-        SUBCASE("no AA, SRGB")    { testAALevel = 0u; testSRGBCapable = true; }
-        SUBCASE("AA, SRGB")       { testAALevel = 4u; testSRGBCapable = true; }
-        // clang-format on
-
-        auto window = sf::RenderWindow::create(
-                          {.size{256u, 256u},
-                           .title           = "RenderWindow Tests",
-                           .contextSettings = {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable}})
-                          .value();
-        ;
+        auto window = sf::RenderWindow::create({.size{256u, 256u}, .title = "RenderWindow Tests"}).value();
 
         REQUIRE(window.getSize() == sf::Vec2u{256, 256});
 
-        auto texture = sf::Texture::create(sf::Vec2u{256, 256}, {.sRgb = testSRGBCapable}).value();
+        auto texture = sf::Texture::create(sf::Vec2u{256, 256}).value();
 
         window.clear(sf::Color::Red);
         CHECK(texture.update(window));
