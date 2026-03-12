@@ -28,14 +28,14 @@ namespace sf::priv
 /// \brief Helper functions to copy `sf::Transform` to `sf::Glsl::Mat3/4`
 ///
 ////////////////////////////////////////////////////////////
-void SFML_GRAPHICS_API copyMatrix(const Transform& source, Matrix<3, 3>& dest);
-void SFML_GRAPHICS_API copyMatrix(const Transform& source, Matrix<4, 4>& dest);
+SFML_GRAPHICS_API void copyMatrix(const Transform& source, Matrix<3, 3>& dest);
+SFML_GRAPHICS_API void copyMatrix(const Transform& source, Matrix<4, 4>& dest);
 
 ////////////////////////////////////////////////////////////
 /// \brief Copy array-based matrix with given number of elements
 ///
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] inline void SFML_GRAPHICS_API copyMatrix(const float* source, base::SizeT elements, float* dest)
+[[gnu::always_inline]] SFML_GRAPHICS_API inline void copyMatrix(const float* source, base::SizeT elements, float* dest)
 {
     SFML_BASE_MEMCPY(dest, source, elements * sizeof(float));
 }

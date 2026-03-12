@@ -507,7 +507,7 @@ RenderTarget::DrawStatistics RenderTexture::display()
 {
     RenderTarget::DrawStatistics result{}; // Use a single local variable for NRVO
 
-    // Perform a RenderTarget-only activation if we are using FBOs
+    // Perform a RenderTarget-only activation (we are using FBOs)
     if (!RenderTarget::setActive())
         return result;
 
