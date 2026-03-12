@@ -37,16 +37,10 @@ else()
     CPMAddPackage(
         NAME sdl
         GITHUB_REPOSITORY vittorioromeo/SDL
-        GIT_TAG 54a461a31fdc0c64e2f5276813e47b7ae5b96a83
+        GIT_TAG 83435214fc23587ddc1af2fd33b5641d65966c0e
         SYSTEM TRUE
     )
 endif()
-
-get_property(sdl3_include_dirs TARGET SDL_uclibc PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
-set_property(TARGET SDL_uclibc PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${sdl3_include_dirs}")
-target_compile_options(SDL_uclibc PRIVATE "-w" "-pthread")
-set_target_properties(SDL_uclibc PROPERTIES UNITY_BUILD OFF)
-target_link_libraries(SDL_uclibc PRIVATE Threads::Threads)
 
 if (TARGET SDL3-static)
     get_property(sdl3_include_dirs TARGET SDL3-static PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
@@ -71,16 +65,10 @@ if(SFML_OS_WINDOWS)
     set(PLATFORM_SRC
         ${SRCROOT}/Win32/Utils.hpp
         ${SRCROOT}/Win32/Win32ImplUnity.cpp
-
-        # ${SRCROOT}/Win32/Unity/Utils.cpp
-        # ${SRCROOT}/Win32/Unity/VulkanImplWin32.cpp
     )
 elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
     set(PLATFORM_SRC
-        ${SRCROOT}/Unix/Display.cpp
-        ${SRCROOT}/Unix/Display.hpp
         ${SRCROOT}/Unix/Utils.hpp
-        ${SRCROOT}/Unix/VulkanImplX11.cpp
     )
 elseif(SFML_OS_MACOS)
     enable_language(OBJC OBJCXX)

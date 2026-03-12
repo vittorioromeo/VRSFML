@@ -15,7 +15,7 @@
 
 
 ////////////////////////////////////////////////////////////
-#include "SFML/Graphics/DrawableBatchImpl.inl" // used
+#include "SFML/Graphics/DrawableBatchImpl.inl" // IWYU pragma: keep
 
 
 namespace sf::priv

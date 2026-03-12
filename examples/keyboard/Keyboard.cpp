@@ -3,6 +3,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Keyboard.hpp"
 
+#include "ExampleUtils/Scaling.hpp"
+
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
@@ -11,16 +13,16 @@
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Text.hpp"
-#include "SFML/Graphics/View.hpp" // used
+#include "SFML/Graphics/View.hpp" // IWYU pragma: keep
 
 #include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/AudioSettings.hpp"
+#include "SFML/Audio/AudioSettings.hpp" // IWYU pragma: keep
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
 
 #include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/WindowSettings.hpp"
+#include "SFML/Window/WindowSettings.hpp" // IWYU pragma: keep
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/IO.hpp"
@@ -34,8 +36,6 @@
 #include "SFML/Base/Math/Round.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/SizeT.hpp"
-
-#include "ExampleUtils.hpp"
 
 
 #ifdef SFML_SYSTEM_IOS
@@ -1048,13 +1048,15 @@ int main()
     // Create the main window
     constexpr sf::Vec2f windowSize{1280.f, 720.f};
 
-    auto window = makeDPIScaledRenderWindow({
-        .size           = windowSize.toVec2u(),
-        .title          = "Keyboard",
-        .resizable      = true,
-        .vsync          = true,
-        .frametimeLimit = 25u,
-    });
+    auto window = makeDPIScaledRenderWindow(
+                      {
+                          .size           = windowSize.toVec2u(),
+                          .title          = "Keyboard",
+                          .resizable      = true,
+                          .vsync          = true,
+                          .frametimeLimit = 25u,
+                      })
+                      .value();
 
     // Load sound buffers
     const auto errorSoundBuffer    = sf::SoundBuffer::loadFromFile(resourcesDir() / "error_005.ogg").value();

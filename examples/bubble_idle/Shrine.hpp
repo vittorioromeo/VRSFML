@@ -2,10 +2,11 @@
 
 #include "Aliases.hpp"
 #include "Countdown.hpp"
-#include "HueColor.hpp"
 #include "ShrineConstants.hpp"
 #include "ShrineType.hpp"
 #include "TextShakeEffect.hpp"
+
+#include "ExampleUtils/HueColor.hpp"
 
 #include "SFML/System/Vec2.hpp"
 

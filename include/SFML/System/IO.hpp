@@ -9,7 +9,7 @@
 #include "SFML/System/Export.hpp"
 
 #include "SFML/Base/EnumClassBitwiseOps.hpp"
-#include "SFML/Base/FwdStdString.hpp" // used
+#include "SFML/Base/FwdStdString.hpp" // IWYU pragma: keep
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -183,14 +183,14 @@ public:
 /// \brief Helper function to write a string to a file.
 ///
 ////////////////////////////////////////////////////////////
-bool writeToFile(base::StringView filename, base::StringView contents);
+[[nodiscard]] bool writeToFile(base::StringView filename, base::StringView contents);
 
 
 ////////////////////////////////////////////////////////////
 /// \brief Helper function to read the contents of a file into a string.
 ///
 ////////////////////////////////////////////////////////////
-bool readFromFile(base::StringView filename, std::string& target);
+[[nodiscard]] bool readFromFile(base::StringView filename, std::string& target);
 
 
 ////////////////////////////////////////////////////////////
@@ -500,6 +500,9 @@ public:
 
     template <typename T>
     InStringStream& operator>>(T& value);
+
+    InStringStream& operator>>(Hex hex);
+    InStringStream& operator>>(base::String& value);
 
 private:
     struct Impl;

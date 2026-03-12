@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Network/SocketImpl.hpp"
 
-#include "SFML/System/Win32/WindowsHeader.hpp"
+#include "SFML/System/WindowsHeader.hpp"
 
 #include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/IntTypes.hpp"

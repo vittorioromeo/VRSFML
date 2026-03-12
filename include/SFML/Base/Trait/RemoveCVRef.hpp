@@ -36,7 +36,7 @@ template <typename T> struct RemoveCVRefImpl<volatile T&>        { using type = 
 template <typename T> struct RemoveCVRefImpl<volatile T&&>       { using type = T; };
 template <typename T> struct RemoveCVRefImpl<const volatile T>   { using type = T; };
 template <typename T> struct RemoveCVRefImpl<const volatile T&>  { using type = T; };
-template <typename T> struct RemoveCVRefImpl<const volatile T&&> { using type = T; };ì
+template <typename T> struct RemoveCVRefImpl<const volatile T&&> { using type = T; };
 // clang-format on
 
 } // namespace sf::base::priv

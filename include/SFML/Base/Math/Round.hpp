@@ -10,7 +10,7 @@
 ////////////////////////////////////////////////////////////
 #if SFML_BASE_PRIV_HAS_MATH_BUILTIN(round)
     #include "SFML/Base/Math/Priv/ImplBuiltinWrapper.hpp"
-    #
+
     #define SFML_BASE_MATH_ROUND(...)  __builtin_round(__VA_ARGS__)
     #define SFML_BASE_MATH_ROUNDF(...) __builtin_roundf(__VA_ARGS__)
     #define SFML_BASE_MATH_ROUNDL(...) __builtin_roundl(__VA_ARGS__)

@@ -5,25 +5,25 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
-
-#include <string>
 
 
 namespace tsurv
 {
 /////////////////////////////////////////////////////////////
-[[nodiscard]] inline std::string wrapText(const sf::base::StringView text, const sf::base::SizeT maxLineLength)
+[[nodiscard]] inline sf::base::String wrapText(const sf::base::StringView text, const sf::base::SizeT maxLineLength)
 {
+    sf::base::String result; // Use a single local variable for NRVO
+
     // Handle trivial cases
     if (text.empty() || maxLineLength == 0)
-        return {};
+        return result;
 
-    std::string result;
     result.reserve(text.size());
 
-    std::string     currentLine;
-    sf::base::SizeT currentPos = 0;
+    sf::base::String currentLine;
+    sf::base::SizeT  currentPos = 0;
 
     // Define our whitespace characters
     constexpr sf::base::StringView whitespace = " \t\n\r";

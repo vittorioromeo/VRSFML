@@ -6,8 +6,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "../bubble_idle/Sampler.hpp" // TODO P1: avoid the relative path...?
-#include "Profiler.hpp"
+#include "ExampleUtils/Profiler.hpp"
+#include "ExampleUtils/Sampler.hpp"
 
 #include "SFML/Base/Algorithm/Sort.hpp"
 #include "SFML/Base/IntTypes.hpp"

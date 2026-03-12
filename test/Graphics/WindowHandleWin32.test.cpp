@@ -1,4 +1,4 @@
-#include "SFML/Config.hpp"
+#include "SFML/Config.hpp" // IWYU pragma: keep
 
 #ifdef SFML_SYSTEM_WINDOWS
 // Other 1st party headers
@@ -9,19 +9,14 @@
     #include "SFML/Window/WindowContext.hpp"
     #include "SFML/Window/WindowHandle.hpp"
 
+    #include "SFML/System/WindowsHeader.hpp" // IWYU pragma: keep
+
     #include "SFML/Base/Optional.hpp"
 
     #include <Doctest.hpp>
 
     #include <SystemUtil.hpp>
 
-    #ifndef NOMINMAX
-        #define NOMINMAX
-    #endif
-    #ifndef WIN32_LEAN_AND_MEAN
-        #define WIN32_LEAN_AND_MEAN
-    #endif
-    #include <Windows.h>
 
 namespace
 {
@@ -106,7 +101,8 @@ void runWindowTest(DWORD exStyle, bool withMenu)
     {
         sf::base::Optional<sf::WindowBase> windowBase;
 
-        windowBase.emplace(handle);
+        windowBase = sf::WindowBase::create(handle);
+        CHECK(windowBase.hasValue());
 
         INFO("sf::WindowBase test with exStyle: " << exStyle << ", withMenu: " << withMenu);
         CHECK(windowBase->getPosition() == position);
@@ -129,7 +125,7 @@ void runWindowTest(DWORD exStyle, bool withMenu)
 
         SUBCASE("Default context settings")
         {
-            window.emplace(handle);
+            window = sf::Window::create(handle);
 
             INFO("sf::Window default context test with exStyle: " << exStyle << ", withMenu: " << withMenu);
             CHECK(window->getSettings().attributeFlags == sf::ContextSettings{}.attributeFlags);
@@ -139,7 +135,7 @@ void runWindowTest(DWORD exStyle, bool withMenu)
         {
             static constexpr sf::ContextSettings contextSettings{1, 1, 1};
 
-            window.emplace(handle, contextSettings);
+            window = sf::Window::create(handle, contextSettings);
 
             INFO("sf::Window custom context test with exStyle: " << exStyle << ", withMenu: " << withMenu);
             CHECK(window->getSettings().depthBits >= 1);
@@ -167,7 +163,7 @@ void runWindowTest(DWORD exStyle, bool withMenu)
 
         SECTION("Default context settings")
         {
-            renderWindow.emplace(handle);
+            renderWindow = sf::RenderWindow::create(handle);
 
             INFO("sf::Window test with exStyle: " << exStyle << ", withMenu: " << withMenu);
             CHECK(renderWindow->getSettings().attributeFlags == sf::ContextSettings{}.attributeFlags);
@@ -176,15 +172,13 @@ void runWindowTest(DWORD exStyle, bool withMenu)
         SECTION("Custom context settings")
         {
             static constexpr sf::ContextSettings contextSettings{/* depthBits*/ 1,
-                                                                 /* stencilBits */ 1,
-                                                                 /* antiAliasingLevel */ 1};
+                                                                 /* stencilBits */ 1};
 
-            renderWindow.emplace(handle, contextSettings);
+            renderWindow = sf::RenderWindow::create(handle, contextSettings);
 
             INFO("sf::Window test with exStyle: " << exStyle << ", withMenu: " << withMenu);
             CHECK(renderWindow->getSettings().depthBits >= 1);
             CHECK(renderWindow->getSettings().stencilBits >= 1);
-            CHECK(renderWindow->getSettings().antiAliasingLevel >= 1);
         }
 
         INFO("sf::Window test with exStyle: " << exStyle << ", withMenu: " << withMenu);

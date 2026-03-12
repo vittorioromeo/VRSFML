@@ -28,83 +28,77 @@ else()
     target_link_libraries(sfml-imgui PRIVATE OpenGL::GL)
 endif()
 
+# use an immediately invoked function to scope option variables we have to set
+function(sfml_add_imgui_dependencies)
+    # remember whether we are building SFML as a shared library
+    if(BUILD_SHARED_LIBS)
+        set(SFML_BUILD_SHARED_LIBS ON)
+    endif()
 
-if(SFML_USE_SYSTEM_DEPS)
-    find_package(ImGui 1.91.0 REQUIRED)
-else()
-    # use an immediately invoked function to scope option variables we have to set
-    function(sfml_add_imgui_dependencies)
+    set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+    set(BUILD_SHARED_LIBS OFF)
 
-        # remember whether we are building SFML as a shared library
-        if(BUILD_SHARED_LIBS)
-            set(SFML_BUILD_SHARED_LIBS ON)
-        endif()
+    CPMAddPackage(
+        NAME imgui
+        GITHUB_REPOSITORY vittorioromeo/imgui
+        GIT_TAG c2731890f3493827537691c953f3b6d5157131f8
+        SYSTEM TRUE
+    )
 
-        set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
-        set(BUILD_SHARED_LIBS OFF)
+    # imgui has no CMake support, so we create our own target
 
-        CPMAddPackage(
-            NAME imgui
-            GITHUB_REPOSITORY vittorioromeo/imgui
-            GIT_TAG e41f0e29e419e5d5548c95c852f9e2401cf16985
-            SYSTEM TRUE
-        )
+    file(GLOB imgui_sources "${imgui_SOURCE_DIR}/*.cpp")
+    file(GLOB imgui_sources_cpp "${imgui_SOURCE_DIR}/misc/cpp/*.cpp")
 
-        # imgui has no CMake support, so we create our own target
+    set(IMGUI_FOUND TRUE)
+    set(IMGUI_INCLUDE_DIRS ${imgui_SOURCE_DIR})
+    set(IMGUI_SOURCES ${imgui_sources} ${imgui_sources_cpp})
+    set(IMGUI_VERSION "1.91.0")
 
-        file(GLOB imgui_sources "${imgui_SOURCE_DIR}/*.cpp")
-        file(GLOB imgui_sources_cpp "${imgui_SOURCE_DIR}/misc/cpp/*.cpp")
+    if(BUILD_SHARED_LIBS)
+        add_library(imgui STATIC ${IMGUI_SOURCES})
+    else()
+        add_library(imgui ${IMGUI_SOURCES})
+    endif()
 
-        set(IMGUI_FOUND TRUE)
-        set(IMGUI_INCLUDE_DIRS ${imgui_SOURCE_DIR})
-        set(IMGUI_SOURCES ${imgui_sources} ${imgui_sources_cpp})
-        set(IMGUI_VERSION "1.91.0")
+    target_compile_features(imgui PUBLIC cxx_std_20)
 
-        if(BUILD_SHARED_LIBS)
-            add_library(imgui STATIC ${IMGUI_SOURCES})
-        else()
-            add_library(imgui ${IMGUI_SOURCES})
-        endif()
+    target_sources(imgui PUBLIC
+                    FILE_SET public_headers
+                    TYPE HEADERS
+                    BASE_DIRS ${IMGUI_INCLUDE_DIRS}
+                    FILES ${IMGUI_INCLUDE_DIRS}/imgui.h)
 
-        target_compile_features(imgui PUBLIC cxx_std_20)
+    set_target_properties(imgui PROPERTIES FOLDER "Dependencies")
 
-        target_sources(imgui PUBLIC
-                       FILE_SET public_headers
-                       TYPE HEADERS
-                       BASE_DIRS ${IMGUI_INCLUDE_DIRS}
-                       FILES ${IMGUI_INCLUDE_DIRS}/imgui.h)
+    target_compile_options(imgui PRIVATE "-w")
 
-        set_target_properties(imgui PROPERTIES FOLDER "Dependencies")
+    target_include_directories(imgui
+                                SYSTEM PUBLIC $<BUILD_INTERFACE:${IMGUI_INCLUDE_DIRS}>
+                                                $<INSTALL_INTERFACE:include>)
 
-        target_compile_options(imgui PRIVATE "-w")
+    target_link_libraries(imgui PUBLIC SFML::Graphics)
 
-        target_include_directories(imgui
-                                   SYSTEM PUBLIC $<BUILD_INTERFACE:${IMGUI_INCLUDE_DIRS}>
-                                                 $<INSTALL_INTERFACE:include>)
+    # add flags required for emscripten support (e.g. pthread)
+    if(SFML_OS_EMSCRIPTEN)
+        target_compile_options(imgui PRIVATE ${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS})
+        target_link_options(imgui PRIVATE ${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS})
+    endif()
 
-        target_link_libraries(imgui PUBLIC SFML::Graphics)
+    # if building SFML as a shared library and linking our dependencies in
+    # as static libraries we need to build them with -fPIC
+    if(SFML_BUILD_SHARED_LIBS)
+        set_target_properties(imgui PROPERTIES POSITION_INDEPENDENT_CODE ON)
+    endif()
 
-        # add flags required for emscripten support (e.g. pthread)
-        if(SFML_OS_EMSCRIPTEN)
-            target_compile_options(imgui PRIVATE ${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS})
-            target_link_options(imgui PRIVATE ${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS})
-        endif()
+    sfml_set_stdlib(imgui)
+    add_library(ImGui::ImGui ALIAS imgui)
 
-        # if building SFML as a shared library and linking our dependencies in
-        # as static libraries we need to build them with -fPIC
-        if(SFML_BUILD_SHARED_LIBS)
-            set_target_properties(imgui PROPERTIES POSITION_INDEPENDENT_CODE ON)
-        endif()
+    # TODO P0: this is hardcoded, should follow same pattern as Macros.cmake
+    install(TARGETS imgui EXPORT SFMLImGuiStaticTargets FILE_SET public_headers)
+endfunction()
 
-        sfml_set_stdlib(imgui)
-        add_library(ImGui::ImGui ALIAS imgui)
-
-        # TODO P0: this is hardcoded, should follow same pattern as Macros.cmake
-        install(TARGETS imgui EXPORT SFMLImGuiStaticTargets FILE_SET public_headers)
-    endfunction()
-
-    sfml_add_imgui_dependencies()
-endif()
+sfml_add_imgui_dependencies()
 
 target_link_libraries(sfml-imgui PRIVATE ImGui::ImGui)
 target_compile_definitions(sfml-imgui PUBLIC IMGUI_USER_CONFIG="${PROJECT_SOURCE_DIR}/include/SFML/ImGui/ImConfigSFML.hpp")

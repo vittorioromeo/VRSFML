@@ -1,9 +1,7 @@
 #include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/Image.hpp"
 #include "SFML/Graphics/RectangleShapeData.hpp"
 #include "SFML/Graphics/RenderTexture.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
 #include "SFML/Window/WindowContext.hpp"
@@ -29,7 +27,7 @@ TEST_CASE("[Graphics] MultiContext" * doctest::skip(skipDisplayTests))
 
     SECTION("Test")
     {
-        sf::RenderWindow wnd{{.size = {1024u, 1024u}, .title = "Window A"}};
+        auto wnd = sf::RenderWindow::create({.size = {1024u, 1024u}, .title = "Window A"}).value();
         wnd.drawIndexedVertices({
             .vertexData    = vertices,
             .vertexCount   = 1u,
@@ -62,11 +60,11 @@ TEST_CASE("[Graphics] MultiContext" * doctest::skip(skipDisplayTests))
         for (int i = 0; i < 2; ++i)
         {
             optRT0.emplace(sf::RenderTexture::create({1024u, 1024u}).value());
-            optWnd.emplace(sf::WindowSettings{.size = {1024u, 1024u}, .title = "Window B"});
+            optWnd = sf::RenderWindow::create(sf::WindowSettings{.size = {1024u, 1024u}, .title = "Window B"});
 
             optRT0.reset();
             optRT0.emplace(sf::RenderTexture::create({1024u, 1024u}).value());
-            optWnd.emplace(sf::WindowSettings{.size = {1024u, 1024u}, .title = "Window B"});
+            optWnd = sf::RenderWindow::create(sf::WindowSettings{.size = {1024u, 1024u}, .title = "Window B"});
 
             optRT0->drawIndexedVertices({
                 .vertexData    = vertices,
@@ -86,7 +84,7 @@ TEST_CASE("[Graphics] MultiContext" * doctest::skip(skipDisplayTests))
 
         auto rt = sf::RenderTexture::create({1024u, 1024u});
 
-        optWnd.emplace(sf::WindowSettings{.size = {1024u, 1024u}, .title = "Window B"});
+        optWnd = sf::RenderWindow::create(sf::WindowSettings{.size = {1024u, 1024u}, .title = "Window B"});
 
         rt->drawIndexedVertices({
             .vertexData    = vertices,
@@ -106,7 +104,7 @@ TEST_CASE("[Graphics] MultiContext" * doctest::skip(skipDisplayTests))
             .primitiveType = sf::PrimitiveType::Points,
             .renderStates  = {},
         });
-        optWnd.emplace(sf::WindowSettings{.size = {1024u, 1024u}, .title = "Window B"});
+        optWnd = sf::RenderWindow::create(sf::WindowSettings{.size = {1024u, 1024u}, .title = "Window B"});
 
         rt->drawIndexedVertices({
             .vertexData    = vertices,
@@ -121,7 +119,7 @@ TEST_CASE("[Graphics] MultiContext" * doctest::skip(skipDisplayTests))
 
     SECTION("Test4")
     {
-        sf::RenderWindow window({.size{1024u, 768u}, .title = "Window C"});
+        auto window = sf::RenderWindow::create({.size{1024u, 768u}, .title = "Window C"}).value();
 
         auto baseRenderTexture = sf::RenderTexture::create({100u, 100u});
         auto leftInnerRT       = sf::RenderTexture::create({100u, 100u});

@@ -1,3 +1,5 @@
+#include "ExampleUtils/Scaling.hpp"
+
 #include "SFML/Graphics/CircleShape.hpp"
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
@@ -13,8 +15,6 @@
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include "ExampleUtils.hpp"
 
 
 constexpr sf::Vec2f resolution{800.f, 600.f};
@@ -94,8 +94,8 @@ private:
 
     void updateBallCollisionsAgainstBoundaries()
     {
-        const auto [ballLeft, ballTop]     = m_ball.getTopLeft();
-        const auto [ballRight, ballBottom] = m_ball.getBottomRight();
+        const auto [ballLeft, ballTop]     = m_ball.getGlobalTopLeft();
+        const auto [ballRight, ballBottom] = m_ball.getGlobalBottomRight();
 
         const float boundaryLeft   = 0.f;
         const float boundaryRight  = resolution.x;
@@ -105,23 +105,23 @@ private:
         if (ballLeft < boundaryLeft)
         {
             m_ballVelocity.x *= -1.f;
-            m_ball.setLeft(boundaryLeft);
+            m_ball.setGlobalLeft(boundaryLeft);
         }
         else if (ballRight > boundaryRight)
         {
             m_ballVelocity.x *= -1.f;
-            m_ball.setRight(boundaryRight);
+            m_ball.setGlobalRight(boundaryRight);
         }
 
         if (ballTop < boundaryTop)
         {
             m_ballVelocity.y *= -1.f;
-            m_ball.setTop(boundaryTop);
+            m_ball.setGlobalTop(boundaryTop);
         }
         else if (ballBottom > boundaryBottom)
         {
             m_ballVelocity.y *= -1.f;
-            m_ball.setBottom(boundaryBottom);
+            m_ball.setGlobalBottom(boundaryBottom);
         }
     }
 
@@ -201,10 +201,10 @@ public:
         const float boundaryLeft  = 0.f;
         const float boundaryRight = resolution.x;
 
-        if (m_player.getLeft() < boundaryLeft)
-            m_player.setLeft(boundaryLeft);
-        else if (m_player.getRight() > boundaryRight)
-            m_player.setRight(boundaryRight);
+        if (m_player.getGlobalLeft() < boundaryLeft)
+            m_player.setGlobalLeft(boundaryLeft);
+        else if (m_player.getGlobalRight() > boundaryRight)
+            m_player.setGlobalRight(boundaryRight);
     }
 
     void drawOnto(sf::RenderTarget& renderTarget)
@@ -228,12 +228,17 @@ int main()
     //
     // Set up window
     auto window = makeDPIScaledRenderWindow(
-        {.size            = resolution.toVec2u(),
-         .title           = "Arkanoid",
-         .resizable       = true,
-         .vsync           = true,
-         .frametimeLimit  = 144u,
-         .contextSettings = {.antiAliasingLevel = 8u}});
+                      {
+                          .size           = resolution.toVec2u(),
+                          .title          = "Arkanoid",
+                          .resizable      = true,
+                          .vsync          = true,
+                          .frametimeLimit = 144u,
+
+                          // TODO P0: restore AA with RenderTexture
+                          // .contextSettings = {.antiAliasingLevel = 8u},
+                      })
+                      .value();
 
     //
     //

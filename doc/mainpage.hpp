@@ -27,7 +27,7 @@
 /// int main()
 /// {
 ///     // Create the main window
-///     sf::RenderWindow window(sf::VideoMode({800, 600}), "SFML window");
+///     auto window = sf::RenderWindow::create(sf::VideoMode({800, 600}), "SFML window").value();
 ///
 ///     // Load a sprite to display
 ///     const auto texture = sf::Texture::loadFromFile("cute_image.jpg").value();

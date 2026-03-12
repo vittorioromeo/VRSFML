@@ -18,6 +18,8 @@
 
 namespace
 {
+namespace NonTrivialInPlaceVectorTest // for unity builds
+{
 int defaultCtorCount = 0;
 int intCtorCount     = 0;
 int copyCtorCount    = 0;
@@ -127,6 +129,9 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
         STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::base::InPlaceVector<Obj, defaultCapacity>));
         STATIC_CHECK(SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::base::InPlaceVector<Obj, defaultCapacity>));
         STATIC_CHECK(SFML_BASE_IS_MOVE_ASSIGNABLE(sf::base::InPlaceVector<Obj, defaultCapacity>));
+
+        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_RELOCATABLE(sf::base::InPlaceVector<Obj, defaultCapacity>));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(sf::base::InPlaceVector<int, defaultCapacity>));
     }
 
     SECTION("Empty")
@@ -706,6 +711,35 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
             CHECK(dtorCount == 1);
         }
     }
+
+    SECTION("Temporary assignment")
+    {
+        sf::base::InPlaceVector<int, 5> v0;
+
+        CHECK(v0.size() == 0);
+
+        v0 = sf::base::InPlaceVector<int, 5>{1, 2, 3};
+
+        CHECK(v0.size() == 3);
+        CHECK(v0[0] == 1);
+        CHECK(v0[1] == 2);
+        CHECK(v0[2] == 3);
+    }
+
+    SECTION("Init list assignment")
+    {
+        sf::base::InPlaceVector<int, 5> v0;
+
+        CHECK(v0.size() == 0);
+
+        v0 = {1, 2, 3};
+
+        CHECK(v0.size() == 3);
+        CHECK(v0[0] == 1);
+        CHECK(v0[1] == 2);
+        CHECK(v0[2] == 3);
+    }
 }
 
+} // namespace NonTrivialInPlaceVectorTest
 } // namespace

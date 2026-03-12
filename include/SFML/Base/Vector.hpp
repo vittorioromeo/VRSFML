@@ -7,7 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/InitializerList.hpp" // used
+#include "SFML/Base/InitializerList.hpp" // IWYU pragma: keep
 #include "SFML/Base/MinMaxMacros.hpp"
 #include "SFML/Base/PlacementNew.hpp"
 #include "SFML/Base/Priv/VectorUtils.hpp"
@@ -43,8 +43,7 @@ private:
 
         if (m_data != nullptr)
         {
-            priv::VectorUtils::moveRange(newData, m_data, m_endSize);
-            priv::VectorUtils::destroyRange(m_data, m_endSize);
+            priv::VectorUtils::relocateRange(newData, m_data, m_endSize);
             priv::VectorUtils::deallocate(m_data, currentCapacity);
         }
         else
@@ -60,6 +59,13 @@ private:
 
 
 public:
+    ////////////////////////////////////////////////////////////
+    enum : bool
+    {
+        enableTrivialRelocation = true
+    };
+
+
     ////////////////////////////////////////////////////////////
     using value_type      = TItem;
     using pointer         = TItem*;
@@ -127,7 +133,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit(false) Vector(const std::initializer_list<TItem> iList) : Vector(iList.begin(), iList.end())
+    [[nodiscard]] /* implicit */ Vector(const std::initializer_list<TItem> iList) : Vector(iList.begin(), iList.end())
     {
     }
 
@@ -268,9 +274,7 @@ public:
 
         auto* newData = priv::VectorUtils::allocate<TItem>(currentSize);
 
-        priv::VectorUtils::moveRange(newData, m_data, m_endSize);
-        priv::VectorUtils::destroyRange(m_data, m_endSize);
-
+        priv::VectorUtils::relocateRange(newData, m_data, m_endSize);
         priv::VectorUtils::deallocate(m_data, capacity());
 
         m_data    = newData;
@@ -289,7 +293,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] TItem*& reserveMore([[maybe_unused]] const SizeT n)
+    [[gnu::always_inline, gnu::flatten]] TItem*& reserveMore(const SizeT n)
     {
         return reserve(size() + n);
     }

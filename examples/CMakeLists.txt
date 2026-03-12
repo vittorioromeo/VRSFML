@@ -1,7 +1,13 @@
+# ExampleUtils library
+add_library(ExampleUtils STATIC src/ExampleUtils/Scaling.cpp)
+target_link_libraries(ExampleUtils PUBLIC SFML::System SFML::Window SFML::Graphics)
+target_include_directories(ExampleUtils PRIVATE ${PROJECT_SOURCE_DIR}/examples/include)
+
 # CLI based examples
 if(NOT SFML_OS_IOS AND NOT SFML_OS_EMSCRIPTEN)
     if(SFML_BUILD_NETWORK)
         add_subdirectory(ftp)
+        add_subdirectory(http)
         add_subdirectory(sockets)
     endif()
     if(SFML_BUILD_NETWORK AND SFML_BUILD_AUDIO)

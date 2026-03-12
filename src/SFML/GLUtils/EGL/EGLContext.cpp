@@ -98,9 +98,7 @@ bool ensureInit()
     int                        colorBits,
     int                        depthBits,
     int                        stencilBits,
-    int                        antiAliasing,
-    bool                       accelerated,
-    bool                       sRgb)
+    bool                       accelerated)
 {
     // Weight sub-scores so that better contextSettings don't score equally as bad as worse contextSettings
     const auto adjustNegativeScore = [](int x) { return static_cast<unsigned int>(x * (x > 0 ? 100'000 : -1)); };
@@ -108,15 +106,11 @@ bool ensureInit()
     const auto colorDiff   = adjustNegativeScore(static_cast<int>(bitsPerPixel) - colorBits);
     const auto depthDiff   = adjustNegativeScore(static_cast<int>(contextSettings.depthBits) - depthBits);
     const auto stencilDiff = adjustNegativeScore(static_cast<int>(contextSettings.stencilBits) - stencilBits);
-    const auto antiAliasingDiff = adjustNegativeScore(static_cast<int>(contextSettings.antiAliasingLevel) - antiAliasing);
 
     // Aggregate the scores
-    return static_cast<int>(
-        colorDiff + depthDiff + stencilDiff + antiAliasingDiff +
-        // If the user wants an sRGB capable format, try really hard to get one
-        ((contextSettings.sRgbCapable && !sRgb) ? 10'000'000 : 0) +
-        // Make sure we prefer hardware acceleration over features
-        (!accelerated ? 100'000'000 : 0));
+    return static_cast<int>(colorDiff + depthDiff + stencilDiff +
+                            // Make sure we prefer hardware acceleration over features
+                            (!accelerated ? 100'000'000 : 0));
 }
 
 
@@ -175,14 +169,7 @@ EGLConfig getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const sf:
 
         // Evaluate the config
         const int color = red + green + blue + alpha;
-        const int score = evaluateFormat(bitsPerPixel,
-                                         contextSettings,
-                                         color,
-                                         depth,
-                                         stencil,
-                                         multiSampling ? samples : 0,
-                                         caveat == EGL_NONE,
-                                         false);
+        const int score = evaluateFormat(bitsPerPixel, contextSettings, color, depth, stencil, caveat == EGL_NONE);
 
         // If it's better than the current best, make it the new best
         if (score < bestScore)
@@ -211,7 +198,7 @@ EGLConfig getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const sf:
          EGL_STENCIL_SIZE,
          static_cast<EGLint>(contextSettings.stencilBits),
          EGL_SAMPLE_BUFFERS,
-         static_cast<EGLint>(contextSettings.antiAliasingLevel),
+         0,
          EGL_SURFACE_TYPE,
          EGL_RENDERABLE_TYPE,
          EGL_OPENGL_ES_BIT,
@@ -436,12 +423,11 @@ void EglContext::destroySurface()
 ////////////////////////////////////////////////////////////
 void EglContext::updateSettings()
 {
-    m_settings.majorVersion      = 1u;
-    m_settings.minorVersion      = 1u;
-    m_settings.attributeFlags    = ContextSettings::Attribute::Default;
-    m_settings.depthBits         = 0u;
-    m_settings.stencilBits       = 0u;
-    m_settings.antiAliasingLevel = 0u;
+    m_settings.majorVersion   = 1u;
+    m_settings.minorVersion   = 1u;
+    m_settings.attributeFlags = ContextSettings::Attribute::Default;
+    m_settings.depthBits      = 0u;
+    m_settings.stencilBits    = 0u;
 
     EGLint tmp = 0;
 
@@ -452,10 +438,6 @@ void EglContext::updateSettings()
 
     if (eglCheck(eglGetConfigAttrib(m_impl->display, m_impl->config, EGL_STENCIL_SIZE, &tmp)) != EGL_FALSE)
         m_settings.stencilBits = static_cast<unsigned int>(tmp);
-
-    if (eglCheck(eglGetConfigAttrib(m_impl->display, m_impl->config, EGL_SAMPLE_BUFFERS, &tmp)) != EGL_FALSE && tmp &&
-        eglCheck(eglGetConfigAttrib(m_impl->display, m_impl->config, EGL_SAMPLES, &tmp)) != EGL_FALSE)
-        m_settings.antiAliasingLevel = static_cast<unsigned int>(tmp);
 }
 
 } // namespace sf::priv

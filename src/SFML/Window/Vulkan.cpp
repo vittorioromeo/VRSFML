@@ -7,25 +7,15 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Vulkan.hpp"
 
+#include "SFML/System/Err.hpp"
+
 #include "SFML/Base/Assert.hpp"
 
-#ifdef SFML_SYSTEM_WINDOWS
+#define VK_NO_PROTOTYPES
+#include <vulkan.h>
 
-    #include "SFML/Window/VulkanImpl.hpp"
-
-#elif defined(SFML_SYSTEM_LINUX_OR_BSD)
-
-    #ifdef SFML_USE_DRM
-        #define SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
-    #else
-        #include "SFML/Window/VulkanImpl.hpp"
-    #endif
-
-#else // not Windows nor Unix
-
-    #define SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
-
-#endif
+// Must be included after Vulkan
+#include <SDL3/SDL_vulkan.h>
 
 
 namespace sf::Vulkan
@@ -33,47 +23,110 @@ namespace sf::Vulkan
 ////////////////////////////////////////////////////////////
 bool isAvailable([[maybe_unused]] bool requireGraphics)
 {
-#ifdef SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
+    static bool checked           = false;
+    static bool computeAvailable  = false;
+    static bool graphicsAvailable = false;
 
-    return false;
+    if (!checked)
+    {
+        checked          = true;
+        computeAvailable = SDL_Vulkan_LoadLibrary(nullptr);
 
-#else
+        if (!computeAvailable)
+        {
+            priv::err() << "Failed to load Vulkan library: " << SDL_GetError();
+            return false;
+        }
 
-    return priv::VulkanImpl::isAvailable(requireGraphics);
+        graphicsAvailable = true;
 
-#endif
+        Uint32             count      = 0;
+        const char* const* extensions = SDL_Vulkan_GetInstanceExtensions(&count);
+
+        if (extensions == nullptr)
+        {
+            priv::err() << "Failed to get Vulkan extensions: " << SDL_GetError();
+            graphicsAvailable = false;
+        }
+
+        if (count == 0)
+        {
+            priv::err() << "No Vulkan extensions available";
+            graphicsAvailable = false;
+        }
+    }
+
+    return requireGraphics ? graphicsAvailable : computeAvailable;
 }
 
 
 ////////////////////////////////////////////////////////////
-VulkanFunctionPointer getFunction([[maybe_unused]] const char* name)
+VulkanFunctionPointer getFunction(const char* name, const VkInstance instance)
 {
     SFML_BASE_ASSERT(name != nullptr && "Name cannot be a null pointer");
 
-#ifdef SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
+    if (!isAvailable(/* requireGraphics */ false))
+    {
+        priv::err() << "Tried to get Vulkan function pointer when Vulkan is not available";
+        return nullptr;
+    }
 
-    return nullptr;
+    // Retrieve the global vkGetInstanceProcAddr function from SDL
+    auto vkGetInstanceProcAddr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(SDL_Vulkan_GetVkGetInstanceProcAddr());
 
-#else
+    if (vkGetInstanceProcAddr == nullptr)
+    {
+        priv::err() << "Failed to get Vulkan function pointer: " << SDL_GetError();
+        return nullptr;
+    }
 
-    return priv::VulkanImpl::getFunction(name);
-
-#endif
+    return reinterpret_cast<VulkanFunctionPointer>(vkGetInstanceProcAddr(instance, name));
 }
 
 
 ////////////////////////////////////////////////////////////
 base::Span<const char* const> getGraphicsRequiredInstanceExtensions()
 {
-#ifdef SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
+    if (!isAvailable(/* requireGraphics */ true))
+    {
+        priv::err() << "Tried to get graphics required instance extensions when Vulkan is not available";
+        return {};
+    }
 
-    return {};
+    Uint32             count      = 0;
+    const char* const* extensions = SDL_Vulkan_GetInstanceExtensions(&count);
 
-#else
+    if (extensions == nullptr)
+    {
+        priv::err() << "Failed to get Vulkan extensions: " << SDL_GetError();
+        return {};
+    }
 
-    return priv::VulkanImpl::getGraphicsRequiredInstanceExtensions();
-
-#endif
+    return {extensions, static_cast<base::SizeT>(count)};
 }
+
+////////////////////////////////////////////////////////////
+bool createVulkanSurface(const VkInstance&            instance,
+                         void*                        sdlWindowHandle,
+                         VkSurfaceKHR&                surface,
+                         const VkAllocationCallbacks* allocator)
+{
+    SFML_BASE_ASSERT(sdlWindowHandle != nullptr && "SDL window handle cannot be a null pointer");
+
+    if (!isAvailable(true))
+    {
+        priv::err() << "Tried to create Vulkan surface when Vulkan is not available";
+        return false;
+    }
+
+    if (!SDL_Vulkan_CreateSurface(static_cast<SDL_Window*>(sdlWindowHandle), instance, allocator, &surface))
+    {
+        priv::err() << "Failed to create Vulkan surface: " << SDL_GetError();
+        return false;
+    }
+
+    return true;
+}
+
 
 } // namespace sf::Vulkan

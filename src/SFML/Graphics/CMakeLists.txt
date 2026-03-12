@@ -58,8 +58,6 @@ else()
 
         set_target_properties(freetype PROPERTIES FOLDER "Dependencies")
 
-        target_compile_options(freetype PRIVATE "-w")
-
         # add flags required for emscripten support (e.g. pthread)
         if(SFML_OS_EMSCRIPTEN)
             target_compile_options(freetype PRIVATE ${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS})
@@ -84,6 +82,10 @@ else()
         )
 
         sfml_set_stdlib(freetype)
+
+        # Disable all warnings
+        target_compile_options(freetype PRIVATE -w)
+
         add_library(Freetype::Freetype ALIAS freetype)
     endfunction()
     sfml_add_graphics_dependencies()
@@ -103,3 +105,5 @@ endif()
 if(SFML_COMPILER_GCC)
     set_source_files_properties(${SRCROOT}/Image.cpp PROPERTIES COMPILE_FLAGS -fno-strict-aliasing)
 endif()
+
+# TODO P1: add support harfbuzz/sheenbidi from upstream SFML

@@ -119,12 +119,6 @@ else()
         sfml_set_stdlib(vorbisenc)
         sfml_set_stdlib(vorbisfile)
 
-        target_compile_options(ogg PRIVATE "-w")
-        target_compile_options(FLAC PRIVATE "-w")
-        target_compile_options(vorbis PRIVATE "-w")
-        target_compile_options(vorbisenc PRIVATE "-w")
-        target_compile_options(vorbisfile PRIVATE "-w")
-
         # define NDEBUG when building FLAC to suppress console debug output
         target_compile_definitions(FLAC PRIVATE NDEBUG)
 
@@ -133,9 +127,12 @@ else()
             target_compile_definitions(FLAC PRIVATE _FILE_OFFSET_BITS=32)
         endif()
 
-        if(SFML_COMPILER_GCC OR SFML_COMPILER_CLANG)
-            target_compile_options(FLAC PRIVATE -Wno-cast-function-type)
-        endif()
+        # Disable all warnings
+        target_compile_options(ogg PRIVATE -w)
+        target_compile_options(FLAC PRIVATE -w)
+        target_compile_options(vorbis PRIVATE -w)
+        target_compile_options(vorbisenc PRIVATE -w)
+        target_compile_options(vorbisfile PRIVATE -w)
 
         # aliases were introduced only after 1.3.7 was released
         add_library(Vorbis::vorbis ALIAS vorbis)

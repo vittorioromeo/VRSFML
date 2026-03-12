@@ -1,5 +1,4 @@
 #include "CatNames.hpp"
-
 #include "CatType.hpp"
 
 #include "SFML/Base/Algorithm/Shuffle.hpp"

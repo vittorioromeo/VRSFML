@@ -1,5 +1,6 @@
-#include "../bubble_idle/RNGFast.hpp" // TODO P1: avoid the relative path...?
-#include "../bubble_idle/Sampler.hpp" // TODO P1: avoid the relative path...?
+#include "ExampleUtils/RNGFast.hpp"
+#include "ExampleUtils/Sampler.hpp"
+#include "ExampleUtils/Scaling.hpp"
 
 #include "SFML/ImGui/ImGuiContext.hpp"
 
@@ -26,7 +27,6 @@
 #include "SFML/Graphics/VertexSpan.hpp"
 
 #include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/Music.hpp"
 #include "SFML/Audio/MusicReader.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
@@ -56,8 +56,6 @@
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/ToString.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include "ExampleUtils.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
@@ -1038,12 +1036,17 @@ int main()
     //
     // Set up window
     auto window = makeDPIScaledRenderWindow(
-        {.size            = resolution.toVec2u(),
-         .title           = "Showcase",
-         .resizable       = true,
-         .vsync           = true,
-         .frametimeLimit  = 144u,
-         .contextSettings = {.antiAliasingLevel = 8u}});
+                      {
+                          .size           = resolution.toVec2u(),
+                          .title          = "Showcase",
+                          .resizable      = true,
+                          .vsync          = true,
+                          .frametimeLimit = 144u,
+
+                          // TODO P0: restore AA with RenderTexture
+                          // .contextSettings = {.antiAliasingLevel = 8u},
+                      })
+                      .value();
 
     //
     //
