@@ -7,8 +7,8 @@
 #include "SFML/Base/String.hpp"
 
 #include "SFML/Base/Builtin/Memcpy.hpp"
-#include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/Builtin/Memmove.hpp"
+#include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/Priv/VectorUtils.hpp"
 
 
