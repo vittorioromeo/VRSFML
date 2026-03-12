@@ -2,12 +2,12 @@
 
 #include "SFML/System/TimeChronoUtil.hpp"
 
+#include "SFML/Base/StdChrono.hpp" // IWYU pragma: keep
+
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
 #include <SystemUtil.hpp>
-
-#include <chrono>
 
 using namespace std::chrono_literals;
 

@@ -37,12 +37,11 @@
 #include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/String.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
-
-#include <string>
 
 #if defined(__APPLE__)
     #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -287,16 +286,16 @@ namespace
     {
         case Keyboard::Key::LControl:
         case Keyboard::Key::RControl:
-            return ImGuiKey_ModCtrl;
+            return ImGuiMod_Ctrl;
         case Keyboard::Key::LShift:
         case Keyboard::Key::RShift:
-            return ImGuiKey_ModShift;
+            return ImGuiMod_Shift;
         case Keyboard::Key::LAlt:
         case Keyboard::Key::RAlt:
-            return ImGuiKey_ModAlt;
+            return ImGuiMod_Alt;
         case Keyboard::Key::LSystem:
         case Keyboard::Key::RSystem:
-            return ImGuiKey_ModSuper;
+            return ImGuiMod_Super;
         default:
             break;
     }
@@ -660,10 +659,10 @@ struct [[nodiscard]] ImGuiContext::Impl
             }
             else
             {
-                io.AddKeyEvent(ImGuiKey_ModCtrl, keyChanged.control);
-                io.AddKeyEvent(ImGuiKey_ModShift, keyChanged.shift);
-                io.AddKeyEvent(ImGuiKey_ModAlt, keyChanged.alt);
-                io.AddKeyEvent(ImGuiKey_ModSuper, keyChanged.system);
+                io.AddKeyEvent(ImGuiMod_Ctrl, keyChanged.control);
+                io.AddKeyEvent(ImGuiMod_Shift, keyChanged.shift);
+                io.AddKeyEvent(ImGuiMod_Alt, keyChanged.alt);
+                io.AddKeyEvent(ImGuiMod_Super, keyChanged.system);
             }
 
             const ImGuiKey key = keycodeToImGuiKey(keyChanged.code);
@@ -737,9 +736,7 @@ struct [[nodiscard]] ImGuiContext::Impl
 
         if (!mouseMoved) // TODO P1: needed?
         {
-            if (Touch::isDown(0))
-                lastTouchPos = Touch::getPosition(0, theWindow);
-            else if (touchDown[0])
+            if (touchDown[0])
                 lastTouchPos = touchPositions[0];
 
             update(lastTouchPos, target.getSize().toVec2f(), dt);
@@ -770,8 +767,7 @@ struct [[nodiscard]] ImGuiContext::Impl
 
             for (unsigned int i = 0; i < 3; ++i)
             {
-                io.MouseDown[i] = Touch::isDown(i) || touchDown[i] || mousePressed[i] ||
-                                  Mouse::isButtonPressed(static_cast<Mouse::Button>(i));
+                io.MouseDown[i] = touchDown[i] || mousePressed[i] || Mouse::isButtonPressed(static_cast<Mouse::Button>(i));
 
                 mousePressed[i] = false;
                 touchDown[i]    = false;
@@ -1004,7 +1000,7 @@ struct [[nodiscard]] SpriteTextureData
 
 
 ////////////////////////////////////////////////////////////
-thread_local std::string clipboardText;
+thread_local sf::base::String clipboardText;
 
 
 ////////////////////////////////////////////////////////////
@@ -1017,9 +1013,9 @@ void setClipboardTextFn(void* /* userData */, const char* text)
 ////////////////////////////////////////////////////////////
 const char* getClipboardTextFn(void* /* userData */)
 {
-    auto tmp = Clipboard::getString().toUtf8<std::u8string>();
-    clipboardText.assign(tmp.begin(), tmp.end());
-    return clipboardText.c_str();
+    auto tmp = Clipboard::getString().toUtf8<sf::base::String>();
+    clipboardText.assign(tmp.data(), tmp.size());
+    return clipboardText.cStr();
 }
 
 } // namespace

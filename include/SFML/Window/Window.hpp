@@ -11,6 +11,8 @@
 #include "SFML/Window/WindowHandle.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
 
 
 namespace sf
@@ -34,7 +36,7 @@ public:
     /// Creates the render window with the specified \a windowSettings.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Window(const Settings& windowSettings);
+    [[nodiscard]] static base::Optional<Window> create(const Settings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control
@@ -50,7 +52,7 @@ public:
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Window(WindowHandle handle, const ContextSettings& contextSettings = {});
+    [[nodiscard]] static base::Optional<Window> create(WindowHandle handle, const ContextSettings& contextSettings = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -165,19 +167,23 @@ public:
     ////////////////////////////////////////////////////////////
     void display();
 
-protected:
-    [[nodiscard]] bool isMovedFrom() const;
-
-private:
     ////////////////////////////////////////////////////////////
+    /// \private
+    ///
     /// \brief Construct a window and a GL context, and a window base
     ///        from either an existing handle or by creating a window
     ///        impl
     ///
     ////////////////////////////////////////////////////////////
-    template <typename... TWindowBaseArgs>
-    [[nodiscard]] explicit Window(const Settings& windowSettings, unsigned int bitsPerPixel, TWindowBaseArgs&&... windowBaseArg);
+    [[nodiscard]] explicit Window(base::PassKey<Window>&&,
+                                  WindowBase&&    windowBase,
+                                  const Settings& windowSettings,
+                                  unsigned int    bitsPerPixel);
 
+protected:
+    [[nodiscard]] bool isMovedFrom() const;
+
+private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////

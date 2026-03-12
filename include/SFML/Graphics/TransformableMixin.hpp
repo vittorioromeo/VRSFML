@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
-#include "SFML/Graphics/Priv/TransformableMacros.hpp" // used, exposes macros
+#include "SFML/Graphics/Priv/TransformableMacros.hpp" // IWYU pragma: keep
 #include "SFML/Graphics/Transform.hpp"
 
 #include "SFML/Base/AssertAndAssume.hpp"

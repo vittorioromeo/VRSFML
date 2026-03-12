@@ -16,11 +16,12 @@
 #include "Playthrough.hpp"
 #include "Profile.hpp"
 #include "PurchasableScalingValue.hpp"
-#include "RNGFast.hpp"
-#include "Sampler.hpp"
 #include "Serialization.hpp"
 #include "Sounds.hpp"
 #include "Version.hpp"
+
+#include "ExampleUtils/RNGFast.hpp"
+#include "ExampleUtils/Sampler.hpp"
 
 #include "SFML/ImGui/ImGuiContext.hpp"
 

@@ -18,41 +18,41 @@
 #include "CatType.hpp"
 #include "Collision.hpp"
 #include "Constants.hpp"
-#include "ControlFlow.hpp"
 #include "Countdown.hpp"
 #include "Doll.hpp"
-#include "Easing.hpp"
 #include "HellPortal.hpp"
-#include "HueColor.hpp"
 #include "InputHelper.hpp"
-#include "MathUtils.hpp"
 #include "MemberGuard.hpp"
 #include "Particle.hpp"
 #include "ParticleType.hpp"
 #include "Playthrough.hpp"
 #include "Profile.hpp"
 #include "PurchasableScalingValue.hpp"
-#include "RNGFast.hpp"
-#include "Sampler.hpp"
 #include "Serialization.hpp"
 #include "Shrine.hpp"
 #include "ShrineConstants.hpp"
 #include "ShrineType.hpp"
-#include "SoundManager.hpp"
 #include "Sounds.hpp"
 #include "Stats.hpp"
 #include "SweepAndPrune.hpp"
 #include "TextEffectWiggle.hpp"
 #include "TextParticle.hpp"
 #include "TextShakeEffect.hpp"
-#include "Timer.hpp"
 #include "Version.hpp"
 
-// clang-format off
-// #define SFEX_PROFILER_ENABLED
+#include "ExampleUtils/ControlFlow.hpp"
+#include "ExampleUtils/Easing.hpp"
+#include "ExampleUtils/HueColor.hpp"
+#include "ExampleUtils/MathUtils.hpp"
+#include "ExampleUtils/RNGFast.hpp"
+#include "ExampleUtils/Sampler.hpp"
+#include "ExampleUtils/SoundManager.hpp"
+#include "ExampleUtils/Timer.hpp"
 
-#include "Profiler.hpp"
-#include "ProfilerImGui.hpp"
+// clang-format off
+#define SFEX_PROFILER_ENABLED
+#include "ExampleUtils/Profiler.hpp"
+#include "ExampleUtils/ProfilerImGui.hpp"
 // clang-format on
 
 #include "SFML/ImGui/ImGuiContext.hpp"
@@ -424,8 +424,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Context settings
-    const unsigned int        aaLevel = sf::base::min(16u, sf::RenderTexture::getMaximumAntiAliasingLevel());
-    const sf::ContextSettings contextSettings{.antiAliasingLevel = aaLevel};
+    const unsigned int aaLevel = sf::base::min(16u, sf::RenderTexture::getMaximumAntiAliasingLevel());
 
     ///////////////////////////////////////////////////////////
     // Profile (stores settings)
@@ -561,14 +560,12 @@ struct Main
     ////////////////////////////////////////////////////////////
     // Background and ImGui render textures
     sf::RenderTexture rtBackground{
-        sf::RenderTexture::create(gameScreenSize.toVec2u(), {.antiAliasingLevel = aaLevel, .sRgbCapable = false}).value()};
-    sf::RenderTexture rtImGui{
-        sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .sRgbCapable = false}).value()};
+        sf::RenderTexture::create(gameScreenSize.toVec2u(), {.antiAliasingLevel = aaLevel}).value()};
+    sf::RenderTexture rtImGui{sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel}).value()};
 
     ////////////////////////////////////////////////////////////
     // Game render texture (before post-processing)
-    sf::RenderTexture rtGame{
-        sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .sRgbCapable = false}).value()};
+    sf::RenderTexture rtGame{sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel}).value()};
 
     ////////////////////////////////////////////////////////////
     // Textures (not in atlas)
@@ -2950,7 +2947,7 @@ struct Main
         {
             if (!collectedByShrine && profile.showCoinParticles)
                 spawnSpentCoinParticle(
-                    {.position      = moneyText.getCenterRight() + sf::Vec2f{32.f, rngFast.getF(-12.f, 12.f)},
+                    {.position      = moneyText.getGlobalCenterRight() + sf::Vec2f{32.f, rngFast.getF(-12.f, 12.f)},
                      .velocity      = {-0.25f, 0.f},
                      .scale         = 0.25f,
                      .scaleDecay    = 0.f,
@@ -3419,10 +3416,7 @@ struct Main
         if (!clickPosition.hasValue())
             return false;
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         const auto clickPos = window.mapPixelToCoords(clickPosition->toVec2i(), gameView);
-#pragma GCC diagnostic pop
 
         if (!particleCullingBoundaries.isInside(clickPos))
         {
@@ -7218,7 +7212,7 @@ struct Main
 
             if (!hideCooldownBar)
                 textBatchToUse.add(sf::RoundedRectangleShapeData{
-                    .position = (cat.moneyEarned != 0u ? textMoneyBuffer : textStatusBuffer).getBottomCenter().addY(2.f),
+                    .position = (cat.moneyEarned != 0u ? textMoneyBuffer : textStatusBuffer).getGlobalBottomCenter().addY(2.f),
                     .scale              = {catScaleMult, catScaleMult},
                     .origin             = {32.f, 0.f},
                     .outlineTextureRect = txrWhiteDot,
@@ -7501,7 +7495,7 @@ struct Main
         if (!profile.showParticles)
             return;
 
-        const auto targetPosition = moneyText.getCenterRight();
+        const auto targetPosition = moneyText.getGlobalCenterRight();
 
         const auto bezier = [](const sf::Vec2f start, const sf::Vec2f end, const float t)
         {
@@ -7878,7 +7872,7 @@ struct Main
 
         SFML_BASE_ASSERT(profile.hudScale > 0.f);
 
-        tipBackgroundSprite.setBottomCenter(
+        tipBackgroundSprite.setGlobalBottomCenter(
             {getResolution().x / 2.f / profile.hudScale, getResolution().y / profile.hudScale - 50.f});
 
         rtGame.draw(tipBackgroundSprite, {.texture = &txTipBg});
@@ -7890,7 +7884,7 @@ struct Main
                                  .textureRect = txTipByte.getRect(),
                                  .color       = sf::Color::whiteMask(static_cast<U8>(tipByteAlpha))};
 
-        tipByteSprite.setCenter(tipBackgroundSprite.getCenterRight().addY(-40.f));
+        tipByteSprite.setGlobalCenter(tipBackgroundSprite.getGlobalCenterRight().addY(-40.f));
         rtGame.draw(tipByteSprite, {.texture = &txTipByte});
 
         if (mustSpawnByteParticles)
@@ -7961,7 +7955,7 @@ struct Main
                              .outlineThickness = 4.f,
                          }};
 
-        tipText.setTopLeft(tipBackgroundSprite.getTopLeft() + sf::Vec2f{45.f, 65.f});
+        tipText.setGlobalTopLeft(tipBackgroundSprite.getGlobalTopLeft() + sf::Vec2f{45.f, 65.f});
 
         tipStringWiggle.advance(deltaTimeMs);
         tipStringWiggle.apply(tipText);
@@ -7974,13 +7968,13 @@ struct Main
     ////////////////////////////////////////////////////////////
     void recreateImGuiRenderTexture(const sf::Vec2u newResolution)
     {
-        rtImGui = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .sRgbCapable = false}).value();
+        rtImGui = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel}).value();
     }
 
     ////////////////////////////////////////////////////////////
     void recreateGameRenderTexture(const sf::Vec2u newResolution)
     {
-        rtGame = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .sRgbCapable = false}).value();
+        rtGame = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel}).value();
     }
 
     ////////////////////////////////////////////////////////////
@@ -7997,17 +7991,18 @@ struct Main
 
         const bool takesAllScreen = newResolution == desktopResolution;
 
-        return sf::RenderWindow{{
-            .size            = newResolution,
-            .title           = "BubbleByte " BUBBLEBYTE_VERSION_STR,
-            .fullscreen      = !profile.windowed,
-            .resizable       = !takesAllScreen,
-            .closable        = !takesAllScreen,
-            .hasTitlebar     = !takesAllScreen,
-            .vsync           = profile.vsync,
-            .frametimeLimit  = sf::base::clamp(profile.frametimeLimit, 60u, 144u),
-            .contextSettings = contextSettings,
-        }};
+        return sf::RenderWindow::create(
+                   {
+                       .size           = newResolution,
+                       .title          = "BubbleByte " BUBBLEBYTE_VERSION_STR,
+                       .fullscreen     = !profile.windowed,
+                       .resizable      = !takesAllScreen,
+                       .closable       = !takesAllScreen,
+                       .hasTitlebar    = !takesAllScreen,
+                       .vsync          = profile.vsync,
+                       .frametimeLimit = sf::base::clamp(profile.frametimeLimit, 60u, 144u),
+                   })
+            .value();
     }
 
     ////////////////////////////////////////////////////////////
@@ -8609,7 +8604,7 @@ struct Main
         moneyText.scale  = {0.5f, 0.5f};
         moneyText.origin = moneyText.getLocalBounds().size / 2.f;
 
-        moneyText.setTopLeft({15.f, 70.f});
+        moneyText.setGlobalTopLeft({15.f, 70.f});
         moneyTextShakeEffect.update(deltaTimeMs);
         moneyTextShakeEffect.applyToText(moneyText);
         moneyText.scale *= 0.5f;
@@ -8628,7 +8623,7 @@ struct Main
             playSound(sounds.coin, /* maxOverlap */ 64);
 
             spawnSpentCoinParticle(
-                {.position      = moneyText.getCenterRight().addY(rngFast.getF(-12.f, 12.f)),
+                {.position      = moneyText.getGlobalCenterRight().addY(rngFast.getF(-12.f, 12.f)),
                  .velocity      = sf::Vec2f{3.f, 0.f},
                  .scale         = 0.35f,
                  .scaleDecay    = 0.f,
@@ -8745,7 +8740,7 @@ struct Main
         buffText.setString(buffStrBuffer);
         buffText.setOutlineColor(outlineHueColor);
 
-        buffText.position.y = comboText.getBottomLeft().y + 10.f;
+        buffText.position.y = comboText.getGlobalBottomLeft().y + 10.f;
         buffText.scale      = {0.5f, 0.5f};
     }
 
@@ -9356,7 +9351,7 @@ struct Main
             const float xStartOverlay = getAspectRatioScalingFactor(gameScreenSize, getResolution()) *
                                         gameScreenSize.x / profile.hudScale;
 
-            demoText.setTopRight({xStartOverlay - 15.f, 15.f});
+            demoText.setGlobalTopRight({xStartOverlay - 15.f, 15.f});
             demoText.setOutlineColor(outlineHueColor);
             rtGame.draw(demoText);
 
@@ -9378,7 +9373,8 @@ struct Main
                 demoInfoTextData.string = lines[i].data();
                 demoInfoTextData.origin
                     .x = sf::TextUtils::precomputeTextLocalBounds(fontSuperBakery, demoInfoTextData).size.x;
-                demoInfoTextData.position = demoText.getBottomRight().addY(10.f + (static_cast<float>(i) * lineSpacing));
+                demoInfoTextData.position = demoText.getGlobalBottomRight().addY(
+                    10.f + (static_cast<float>(i) * lineSpacing));
 
                 rtGame.draw(fontSuperBakery, demoInfoTextData);
             }
@@ -9439,7 +9435,7 @@ struct Main
         //
         // Combo bar
         if (shouldDrawUI && !debugHideUI)
-            rtGame.draw(sf::RectangleShapeData{.position  = {comboText.getCenterRight().x + 3.f, yBelowMinimap + 56.f},
+            rtGame.draw(sf::RectangleShapeData{.position = {comboText.getGlobalCenterRight().x + 3.f, yBelowMinimap + 56.f},
                                                .fillColor = sf::Color{255, 255, 255, 75},
                                                .size      = {100.f * comboCountdown.value / 700.f, 20.f}});
 
@@ -9610,7 +9606,10 @@ struct Main
         if (finishBeforeDisplay)
             rtGame.finishGPUCommands();
 
-        window.display();
+        {
+            SFEX_PROFILE_SCOPE("window.display()");
+            window.display();
+        }
 
         if (flushAfterDisplay)
             rtGame.flushGPUCommands();

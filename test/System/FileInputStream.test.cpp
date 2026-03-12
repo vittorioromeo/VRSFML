@@ -5,6 +5,7 @@
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
 
 #include <Doctest.hpp>
@@ -25,14 +26,14 @@ sf::Path getTemporaryFilePath()
     sf::OutStringStream oss;
     oss << "sfmltemp" << counter++ << ".tmp";
 
-    return sf::Path::tempDirectoryPath() / oss.to<std::string>();
+    return sf::Path::tempDirectoryPath() / oss.to<sf::base::String>();
 }
 
 class TemporaryFile
 {
 public:
     // Create a temporary file with a randomly generated path, containing 'contents'.
-    explicit TemporaryFile(const std::string& contents) : m_path(getTemporaryFilePath())
+    explicit TemporaryFile(const sf::base::String& contents) : m_path(getTemporaryFilePath())
     {
         sf::OutFileStream ofs(m_path);
         SFML_BASE_ASSERT(ofs && "Stream encountered an error");

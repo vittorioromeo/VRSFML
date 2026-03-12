@@ -1,4 +1,3 @@
-#pragma once
 // LICENSE AND COPYRIGHT (C) INFORMATION
 // https://github.com/vittorioromeo/VRSFML/blob/master/license.md
 
@@ -6,22 +5,25 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "ExampleUtils/Scaling.hpp"
+
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/View.hpp"
 
 #include "SFML/Window/VideoModeUtils.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
+#include "SFML/System/Rect2.hpp"
+#include "SFML/System/Vec2.hpp"
+
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Math/Floor.hpp"
 #include "SFML/Base/MinMax.hpp"
+#include "SFML/Base/Optional.hpp"
 
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] inline sf::Rect2f getAspectRatioAwareViewport(const sf::Vec2f newSize, const sf::Vec2f originalSize)
+sf::Rect2f getAspectRatioAwareViewport(const sf::Vec2f newSize, const sf::Vec2f originalSize)
 {
     SFML_BASE_ASSERT(newSize.x > 0.f && newSize.y > 0.f);
     SFML_BASE_ASSERT(originalSize.x > 0.f && originalSize.y > 0.f);
@@ -49,11 +51,9 @@
     return {{0.f, (1.f - height) / 2.f}, {1.f, height}}; // Center vertically
 }
 
+
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] inline float getPixelPerfectScale(const sf::Vec2f windowSize, const sf::Vec2f nativeResolution)
+float getPixelPerfectScale(const sf::Vec2f windowSize, const sf::Vec2f nativeResolution)
 {
     SFML_BASE_ASSERT(windowSize.x > 0.f && windowSize.y > 0.f);
     SFML_BASE_ASSERT(nativeResolution.x > 0.f && nativeResolution.y > 0.f);
@@ -67,21 +67,7 @@
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Calculate a viewport for pixel-perfect integer scaling.
-///
-/// This function calculates the viewport rectangle needed to scale content
-/// from its native resolution to the target window size using the largest
-/// possible integer scaling factor, preventing pixel distortion. The
-/// resulting view is centered within the window, with black bars
-/// (letterboxing/pillarboxing) filling the unused space.
-///
-/// \param windowSize The current size of the window or render target.
-/// \param nativeResolution The original, internal resolution of the content.
-///
-/// \return A `sf::Rect2f` defining the viewport in normalized coordinates.
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] inline sf::Rect2f getPixelPerfectViewport(const sf::Vec2f windowSize, const sf::Vec2f nativeResolution)
+sf::Rect2f getPixelPerfectViewport(const sf::Vec2f windowSize, const sf::Vec2f nativeResolution)
 {
     const float scale = getPixelPerfectScale(windowSize, nativeResolution);
 
@@ -98,13 +84,7 @@
 
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] inline bool handleResizeImpl(const sf::Event&  event,
-                                           const sf::Vec2f   originalSize,
-                                           sf::RenderWindow& renderWindow,
-                                           auto&&            fnViewport)
+bool handleResizeImpl(const sf::Event& event, const sf::Vec2f originalSize, sf::RenderWindow& renderWindow, auto&& fnViewport)
 {
     const auto* eResized = event.getIf<sf::Event::Resized>();
     if (eResized == nullptr)
@@ -124,12 +104,7 @@
 
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] inline bool handleNonScalingResize(const sf::Event&                 event,
-                                                 [[maybe_unused]] const sf::Vec2f originalSize,
-                                                 sf::RenderWindow&                renderWindow)
+bool handleNonScalingResize(const sf::Event& event, [[maybe_unused]] const sf::Vec2f originalSize, sf::RenderWindow& renderWindow)
 {
     const auto* eResized = event.getIf<sf::Event::Resized>();
     if (eResized == nullptr)
@@ -147,44 +122,21 @@
 
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] inline bool handleAspectRatioAwareResize(const sf::Event&  event,
-                                                       const sf::Vec2f   originalSize,
-                                                       sf::RenderWindow& renderWindow)
+bool handleAspectRatioAwareResize(const sf::Event& event, const sf::Vec2f originalSize, sf::RenderWindow& renderWindow)
 {
     return handleResizeImpl(event, originalSize, renderWindow, &getAspectRatioAwareViewport);
 }
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Handles a window resize event to maintain pixel-perfect scaling.
-///
-/// Call this inside your event loop. If the event is a resize event,
-/// it will automatically update the window's view to maintain a
-/// centered, integer-scaled viewport.
-///
-/// \param event The sf::Event to process.
-/// \param nativeResolution The original, internal resolution of the content.
-/// \param renderWindow The sf::RenderWindow to update.
-///
-/// \return True if the event was a resize event and was handled, false otherwise.
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] inline bool handlePixelPerfectResize(const sf::Event&  event,
-                                                   const sf::Vec2f   nativeResolution,
-                                                   sf::RenderWindow& renderWindow)
+bool handlePixelPerfectResize(const sf::Event& event, const sf::Vec2f nativeResolution, sf::RenderWindow& renderWindow)
 {
     return handleResizeImpl(event, nativeResolution, renderWindow, &getPixelPerfectViewport);
 }
 
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] inline sf::RenderWindow makeDPIScaledRenderWindow(const sf::WindowSettings& windowSettings)
+sf::base::Optional<sf::RenderWindow> makeDPIScaledRenderWindow(const sf::WindowSettings& windowSettings)
 {
     const auto  fSize                      = windowSettings.size.toVec2f();
     const float primaryDisplayContentScale = sf::VideoModeUtils::getPrimaryDisplayContentScale();
@@ -192,7 +144,10 @@
     auto adjustedWindowSettings = windowSettings;
     adjustedWindowSettings.size = (fSize * primaryDisplayContentScale).toVec2u();
 
-    sf::RenderWindow renderWindow(adjustedWindowSettings);
-    renderWindow.setView({.center = fSize / 2.f, .size = fSize});
+    auto renderWindow = sf::RenderWindow::create(adjustedWindowSettings);
+
+    if (renderWindow.hasValue())
+        renderWindow->setView({.center = fSize / 2.f, .size = fSize});
+
     return renderWindow;
 }

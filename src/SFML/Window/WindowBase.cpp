@@ -31,8 +31,11 @@ priv::SDLWindowImpl& WindowBase::getWindowImpl()
 
 
 ////////////////////////////////////////////////////////////
-WindowBase::WindowBase(base::UniquePtr<priv::SDLWindowImpl>&& impl) : m_impl(SFML_BASE_MOVE(impl))
+WindowBase::WindowBase(base::PassKey<WindowBase>&&, base::UniquePtr<priv::SDLWindowImpl>&& impl) :
+    m_impl(SFML_BASE_MOVE(impl))
 {
+    SFML_BASE_ASSERT(m_impl != nullptr);
+
     // Setup default behaviors (to get a consistent behavior across different implementations)
     setVisible(true);
     setMouseCursorVisible(true);
@@ -44,14 +47,22 @@ WindowBase::WindowBase(base::UniquePtr<priv::SDLWindowImpl>&& impl) : m_impl(SFM
 
 
 ////////////////////////////////////////////////////////////
-WindowBase::WindowBase(const Settings& windowSettings) : WindowBase(priv::SDLWindowImpl::create(windowSettings))
+base::Optional<WindowBase> WindowBase::create(const Settings& windowSettings)
 {
+    auto impl = priv::SDLWindowImpl::create(windowSettings);
+
+    return impl ? base::Optional<WindowBase>(base::inPlace, base::PassKey<WindowBase>{}, SFML_BASE_MOVE(impl))
+                : base::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-WindowBase::WindowBase(WindowHandle handle) : WindowBase(priv::SDLWindowImpl::create(handle))
+base::Optional<WindowBase> WindowBase::create(const WindowHandle handle)
 {
+    auto impl = priv::SDLWindowImpl::create(handle);
+
+    return impl ? base::Optional<WindowBase>(base::inPlace, base::PassKey<WindowBase>{}, SFML_BASE_MOVE(impl))
+                : base::nullOpt;
 }
 
 

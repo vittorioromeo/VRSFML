@@ -14,11 +14,8 @@ namespace sf::base::priv
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::const, gnu::flatten]] inline constexpr float normalizeAngle(float x)
 {
-    while (x > tau)
-        x -= tau;
-
-    while (x < -tau)
-        x += tau;
+    if (x > tau || x < -tau)
+        x -= static_cast<float>(static_cast<long long>(x / tau)) * tau;
 
     if (x > pi)
         x -= tau; // Map `(pi, 2pi]` to `(-pi, 0]`

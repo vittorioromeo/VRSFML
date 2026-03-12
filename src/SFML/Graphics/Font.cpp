@@ -254,7 +254,7 @@ template <typename T, typename U>
 
     // Find a good position for the new glyph into the texture
     {
-        const auto pos = textureAtlas.getRectPacker().pack(size).value().toVec2f(); // TODO P0: what if there is no room?
+        const auto pos = textureAtlas.getRectPacker().pack(size).value().toVec2f(); // TODO P0: what if there is no room? Happens in OH
         glyph.textureRect = {pos, size.toVec2f()};
     }
 
@@ -338,7 +338,7 @@ struct Font::Impl
     using GlyphTable = MapType</* character size */ unsigned int,
                                MapType</* combined key */ base::U64, Glyph>>; //!< Table mapping a codepoint to its glyph
 
-    explicit Impl(TextureAtlas* theTextureAtlasPtr) :
+    explicit Impl(TextureAtlas* theTextureAtlasPtr) : // TODO P0: change to paged texture atlas, or sequence of texture atlases, or page per charactersize
         textureAtlasPtr{theTextureAtlasPtr},
         fallbackTextureAtlas{
             theTextureAtlasPtr == nullptr
@@ -753,6 +753,40 @@ float Font::getKerning(const char32_t first, const char32_t second, const unsign
 
 
 ////////////////////////////////////////////////////////////
+float Font::getAscent(unsigned int characterSize) const
+{
+    FT_Face face = m_impl->ftFace;
+
+    if (setCurrentSize(characterSize))
+    {
+        if (!FT_IS_SCALABLE(face))
+            return static_cast<float>(face->size->metrics.ascender) / float{1 << 6};
+
+        return static_cast<float>(FT_MulFix(face->ascender, face->size->metrics.y_scale)) / float{1 << 6};
+    }
+
+    return 0.f;
+}
+
+
+////////////////////////////////////////////////////////////
+float Font::getDescent(unsigned int characterSize) const
+{
+    FT_Face face = m_impl->ftFace;
+
+    if (setCurrentSize(characterSize))
+    {
+        if (!FT_IS_SCALABLE(face))
+            return static_cast<float>(face->size->metrics.descender) / float{1 << 6};
+
+        return static_cast<float>(FT_MulFix(face->descender, face->size->metrics.y_scale)) / float{1 << 6};
+    }
+
+    return 0.f;
+}
+
+
+////////////////////////////////////////////////////////////
 float Font::getLineSpacing(const unsigned int characterSize) const
 {
     FT_Face face = m_impl->ftFace;
@@ -787,7 +821,7 @@ float Font::getUnderlineThickness(const unsigned int characterSize) const
 {
     FT_Face face = m_impl->ftFace;
 
-    if (face && setCurrentSize(characterSize))
+    if (setCurrentSize(characterSize))
     {
         // Return a fixed thickness if font is a bitmap font
         if (!FT_IS_SCALABLE(face))

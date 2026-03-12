@@ -6,6 +6,7 @@
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/StdChrono.hpp" // IWYU pragma: keep
 #include "SFML/Base/Vector.hpp"
 
 #pragma GCC diagnostic push
@@ -16,10 +17,21 @@
 
 #pragma GCC diagnostic pop
 
-#include <atomic>
-#include <chrono>
-#include <thread>
+#undef __cpp_lib_formatters
+#undef __glibcxx_want_formatters
 
+#include <atomic>
+
+#if __has_include(<bits/std_thread.h>) && __has_include(<bits/this_thread_sleep.h>)
+
+    #include <bits/std_thread.h>
+    #include <bits/this_thread_sleep.h>
+
+#else
+
+    #include <thread>
+
+#endif
 
 namespace sf::base
 {
@@ -28,6 +40,7 @@ namespace
 ////////////////////////////////////////////////////////////
 using TaskQueue              = moodycamel::BlockingConcurrentQueue<ThreadPool::Task>;
 using TaskQueueConsumerToken = moodycamel::ConsumerToken;
+
 
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -142,6 +155,7 @@ private:
 };
 
 } // namespace
+
 
 ////////////////////////////////////////////////////////////
 struct ThreadPool::Impl

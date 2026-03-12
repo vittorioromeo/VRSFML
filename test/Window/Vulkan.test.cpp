@@ -6,13 +6,13 @@ TEST_CASE("[Window] sf::Vulkan")
 {
     SECTION("getFunction()")
     {
-        CHECK(sf::Vulkan::getFunction("") == nullptr);
-        CHECK(sf::Vulkan::getFunction(" ") == nullptr);
-        CHECK(sf::Vulkan::getFunction("a string that will never resolve to a Vulkan function") == nullptr);
+        CHECK(sf::Vulkan::getFunction("", {}) == nullptr);
+        CHECK(sf::Vulkan::getFunction(" ", {}) == nullptr);
+        CHECK(sf::Vulkan::getFunction("a string that will never resolve to a Vulkan function", {}) == nullptr);
 
         CHECKED_IF(sf::Vulkan::isAvailable())
         {
-            CHECK(sf::Vulkan::getFunction("vkCreateInstance") != nullptr);
+            CHECK(sf::Vulkan::getFunction("vkCreateInstance", {}) != nullptr);
         }
     }
 

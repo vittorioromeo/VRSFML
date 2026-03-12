@@ -11,7 +11,8 @@
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/TransformableMixin.hpp"
 
-#include "SFML/System/AnchorPointMixin.hpp"
+#include "SFML/System/GlobalAnchorPointMixin.hpp"
+#include "SFML/System/LocalAnchorPointMixin.hpp"
 #include "SFML/System/Rect2.hpp"
 
 
@@ -22,7 +23,7 @@ namespace sf
 ///        own transformations, color, etc.
 ///
 ////////////////////////////////////////////////////////////
-struct SFML_GRAPHICS_API Sprite : TransformableMixin<Sprite>, AnchorPointMixin<Sprite>
+struct SFML_GRAPHICS_API Sprite : TransformableMixin<Sprite>, GlobalAnchorPointMixin<Sprite>, LocalAnchorPointMixin<Sprite>
 {
     ////////////////////////////////////////////////////////////
     /// \brief Get the local bounding rectangle of the entity

@@ -1,12 +1,13 @@
-#include "../bubble_idle/ControlFlow.hpp" // TODO P1: avoid the relative path...?
-#include "../bubble_idle/Easing.hpp"      // TODO P1: avoid the relative path...?
-#include "../bubble_idle/HueColor.hpp"    // TODO P1: avoid the relative path...?
-#include "../bubble_idle/MathUtils.hpp"   // TODO P1: avoid the relative path...?
-#include "../bubble_idle/RNGFast.hpp"     // TODO P1: avoid the relative path...?
+#include "ExampleUtils/ControlFlow.hpp"
+#include "ExampleUtils/Easing.hpp"
+#include "ExampleUtils/HueColor.hpp"
+#include "ExampleUtils/MathUtils.hpp"
+#include "ExampleUtils/RNGFast.hpp"
+#include "ExampleUtils/Scaling.hpp"
 
 #define SFEX_PROFILER_ENABLED
-#include "Profiler.hpp"
-#include "ProfilerImGui.hpp"
+#include "ExampleUtils/Profiler.hpp"
+#include "ExampleUtils/ProfilerImGui.hpp"
 
 #include "SFML/ImGui/ImGuiContext.hpp"
 
@@ -26,6 +27,7 @@
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/TextureAtlas.hpp"
+#include "SFML/Graphics/View.hpp"
 
 #include "SFML/Audio/AudioContext.hpp"
 #include "SFML/Audio/Music.hpp"
@@ -54,12 +56,11 @@
 #include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
 #include "SFML/Base/Math/Fmod.hpp"
+#include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Variant.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include "ExampleUtils.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
@@ -546,12 +547,17 @@ private:
 
     ////////////////////////////////////////////////////////////
     sf::RenderWindow m_window = makeDPIScaledRenderWindow(
-        {.size            = resolution.toVec2u(),
-         .title           = "Block Puzzle",
-         .resizable       = true,
-         .vsync           = true,
-         .frametimeLimit  = 144u,
-         .contextSettings = {.antiAliasingLevel = m_aaLevel}});
+                                    {
+                                        .size           = resolution.toVec2u(),
+                                        .title          = "Block Puzzle",
+                                        .resizable      = true,
+                                        .vsync          = true,
+                                        .frametimeLimit = 144u,
+
+                                        // TODO P0: restore AA with RenderTexture
+                                        // .contextSettings = {.antiAliasingLevel = m_aaLevel},
+                                    })
+                                    .value();
 
     ////////////////////////////////////////////////////////////
     sf::Shader m_shader{[]
@@ -659,7 +665,7 @@ private:
     const sf::Rect2f m_txrWallV        = addImgResourceToAtlas("wallv.png");
     const sf::Rect2f m_txrWallBg       = addImgResourceToAtlas("wallbg.png");
     const sf::Rect2f m_txrWallSet      = addImgResourceToAtlas("wallset.png");
-    const sf::Rect2f m_txrWallBits     = addImgResourceToAtlas("wallbits.png");
+    const sf::Rect2f m_txrWallBits     = addImgResourceToAtlas("wallBits.png");
     const sf::Rect2f m_txrLavaParticle = addImgResourceToAtlas("lavaparticle.png");
     const sf::Rect2f m_txrLock0        = addImgResourceToAtlas("lock0.png");
     const sf::Rect2f m_txrPinned       = addImgResourceToAtlas("pinned.png");

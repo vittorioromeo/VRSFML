@@ -405,3 +405,9 @@ void Text::ensureGeometryUpdate(const Font& font) const
 }
 
 } // namespace sf
+
+
+// TODO P1: Unmerged Harfbuzz commits
+// - https://github.com/SFML/SFML/commit/afcb50caa2587aab64023c4830e7b7607c5c1fa2
+// - https://github.com/SFML/SFML/commit/ff34548fa0468b5efdae905359b24999cc7f3b9a
+// - https://github.com/SFML/SFML/commit/12297b04469896fd943b8622a6bddfa6cb083436

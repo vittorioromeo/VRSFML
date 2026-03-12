@@ -48,7 +48,6 @@ jobs:
         # - { name: macOS x64,                      os: macos-15, flags: -GNinja -DCMAKE_OSX_ARCHITECTURES=x86_64 }
         # - { name: macOS x64 Xcode,                os: macos-15, flags: -GXcode -DCMAKE_OSX_ARCHITECTURES=x86_64 }
         # - { name: macOS arm64,                    os: macos-15, flags: -GNinja -DSFML_RUN_AUDIO_DEVICE_TESTS=OFF }
-        # - { name: iOS,                            os: macos-15, flags: -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_ARCHITECTURES=arm64 }
         # - { name: iOS Xcode,                      os: macos-15, flags: -DCMAKE_SYSTEM_NAME=iOS -GXcode -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO }
         config:
         # - { name: Shared, flags: -DBUILD_SHARED_LIBS=ON }
@@ -162,15 +161,10 @@ jobs:
     - name: Install Linux Dependencies and Tools
       if: runner.os == 'Linux'
       run: |
-        sudo apt-get update && sudo apt-get install -y --no-install-recommends \
-          xorg-dev libxrandr-dev libxcursor-dev libxi-dev libudev-dev \
-          libflac-dev libvorbis-dev libgl1-mesa-dev libegl1-mesa-dev \
-          libdrm-dev libgbm-dev \
-          xvfb ccache # Need xvfb for xvfb-run
-
-    - name: Remove ALSA Library
-      if: runner.os == 'Linux' && matrix.platform.name != 'Android'
-      run: sudo apt-get remove -y libasound2 || echo "ALSA already removed or not installed."
+        CLANG_VERSION=$(clang++ --version | sed -n 's/.*version \([0-9]\+\)\..*/\1/p')
+        echo "CLANG_VERSION=$CLANG_VERSION" >> $GITHUB_ENV
+        sudo apt-get update
+        sudo apt-get install xorg-dev libharfbuzz-dev libxrandr-dev libxcursor-dev libxi-dev libudev-dev libflac-dev libvorbis-dev libgl1-mesa-dev libegl1-mesa-dev libdrm-dev libgbm-dev libmbedtls-dev xvfb fluxbox ccache gcovr ${{ matrix.platform.name == 'Linux Clang' && 'llvm-$CLANG_VERSION' || '' }}
 
     - name: Install Android Components
       if: matrix.platform.name == 'Android'
@@ -189,8 +183,7 @@ jobs:
 
     - name: Install macOS System Deps
       if: contains(matrix.config.name, 'System Deps')
-      run: |
-        for i in 1 2 3; do brew install flac libvorbis && break || sleep 15; done
+      run: brew install flac libvorbis mbedtls || true
 
     # In addition to installing a known working version of CCache, this action also takes care of saving and restoring the cache for us
     # Additionally it outputs information at the end of each job that helps us to verify if the cache is working properly
@@ -456,6 +449,11 @@ jobs:
   # sanitize:
   #   name: Sanitizing on ${{ matrix.platform.name }}
   #   runs-on: ${{ matrix.platform.os }}
+  #  - name: Install Linux Dependencies
+  #    if: runner.os == 'Linux'
+  #    run: |
+  #      sudo apt-get update
+  #      sudo apt-get install libharfbuzz-dev libfreetype-dev libxrandr-dev libxcursor-dev libxi-dev libudev-dev libflac-dev libvorbis-dev libgl1-mesa-dev libegl1-mesa-dev libdrm-dev libgbm-dev libmbedtls-dev
 
   #   strategy:
   #     fail-fast: false
@@ -470,6 +468,8 @@ jobs:
   #   steps:
   #   - name: Checkout Code
   #     uses: actions/checkout@v4
+    - name: Configure
+      run: cmake --preset dev ${{ matrix.platform.name != 'Android' && '-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++' || ''}} -DCMAKE_UNITY_BUILD=ON ${{matrix.platform.flags}}
 
   #   - name: Get CMake and Ninja
   #     uses: lukka/get-cmake@latest
@@ -520,6 +520,11 @@ jobs:
 
   #   - name: Build
   #     run: cmake --build build --parallel
+  #  - name: Install Linux Dependencies
+  #    if: runner.os == 'Linux'
+  #    run: |
+  #      sudo apt-get update
+  #      sudo apt-get install xorg-dev libharfbuzz-dev libxrandr-dev libxcursor-dev libxi-dev libudev-dev libflac-dev libvorbis-dev libgl1-mesa-dev libegl1-mesa-dev libdrm-dev libgbm-dev libmbedtls-dev xvfb fluxbox
 
   #   # --- Updated Prepare Test Step (Removed Xvfb/Fluxbox) ---
   #   - name: Prepare Sanitize Test Environment

@@ -1,14 +1,16 @@
-#include "../bubble_idle/Easing.hpp"       // TODO P1: avoid the relative path...?
-#include "../bubble_idle/HueColor.hpp"     // TODO P1: avoid the relative path...?
-#include "../bubble_idle/LoadedSound.hpp"  // TODO P1: avoid the relative path...?
-#include "../bubble_idle/MathUtils.hpp"    // TODO P1: avoid the relative path...?
-#include "../bubble_idle/RNGFast.hpp"      // TODO P1: avoid the relative path...?
-#include "../bubble_idle/SoundManager.hpp" // TODO P1: avoid the relative path...?
-#include "../bubble_idle/Timer.hpp"        // TODO P1: avoid the relative path...?
+#include "ExampleUtils/Easing.hpp"
+#include "ExampleUtils/HueColor.hpp"
+#include "ExampleUtils/LoadedSound.hpp"
+#include "ExampleUtils/MathUtils.hpp"
+#include "ExampleUtils/RNGFast.hpp"
+#include "ExampleUtils/SoundManager.hpp"
+#include "ExampleUtils/Timer.hpp"
 
+#include "SFML/Base/ToString.hpp"
 
 #define SFEX_PROFILER_ENABLED
-#include "Profiler.hpp"
+#include "ExampleUtils/Profiler.hpp"
+#include "ExampleUtils/ProfilerImGui.hpp"
 
 //
 #include "AnimationCommands.hpp"
@@ -20,7 +22,6 @@
 #include "BlockGrid.hpp"
 #include "BlockMatrix.hpp"
 #include "Constants.hpp"
-#include "ControlFlow.hpp"
 #include "DefaultPerks.hpp"
 #include "DrillDirection.hpp"
 #include "LaserBeam.hpp"
@@ -35,6 +36,10 @@
 #include "TetraminoShapes.hpp"
 #include "Utils.hpp"
 #include "World.hpp"
+
+#include "ExampleUtils/ControlFlow.hpp"
+#include "ExampleUtils/MiniFmt.hpp"
+#include "ExampleUtils/Scaling.hpp"
 
 #include "SFML/ImGui/ImGuiContext.hpp"
 
@@ -69,6 +74,7 @@
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
 #include "SFML/Window/VideoMode.hpp"
+#include "SFML/Window/VideoModeUtils.hpp"
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
@@ -94,13 +100,8 @@
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#include "ExampleUtils.hpp"
-
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
-
-#include <format>
-#include <string>
 
 
 namespace tsurv
@@ -594,17 +595,19 @@ struct DynamicPerk
 class Game
 {
 private:
-    //////////////////////////////////////////////////////////////
-    const unsigned int m_aaLevel = sf::base::min(16u, sf::RenderTexture::getMaximumAntiAliasingLevel());
-
     ////////////////////////////////////////////////////////////
     sf::RenderWindow m_window = makeDPIScaledRenderWindow(
-        {.size            = resolution.toVec2u(),
-         .title           = "Tetris Survivors",
-         .resizable       = true,
-         .vsync           = true,
-         .frametimeLimit  = 144u,
-         .contextSettings = {.antiAliasingLevel = 0u}});
+                                    {
+                                        .size            = resolution.toVec2u(),
+                                        .title           = "Tetris Survivors",
+                                        .resizable       = true,
+                                        .vsync           = false,
+                                        .frametimeLimit  = 144u,
+
+                                        // TODO P0: restore AA with RenderTexture
+                                        // .contextSettings = {.antiAliasingLevel = 0u},
+                                    })
+                                    .value();
 
     ////////////////////////////////////////////////////////////
     sf::Shader m_shader{[]
@@ -689,7 +692,7 @@ private:
     ////////////////////////////////////////////////////////////
     sf::Font m_font      = sf::Font::openFromFile("resources/monogram.ttf").value();
     sf::Font m_fontMago2 = sf::Font::openFromFile("resources/petty5.bdf").value();
-    sf::Font m_font3     = sf::Font::openFromFile("resources/ChikareGo.ttf").value();
+    sf::Font m_font3     = sf::Font::openFromFile("resources/ChiKareGo.ttf").value();
     sf::Font m_font4     = sf::Font::openFromFile("resources/TinyUnicode.ttf").value();
 
     ////////////////////////////////////////////////////////////
@@ -1098,17 +1101,17 @@ private:
             sf::Text text{m_fontMago2,
                           {
                               .origin        = floorVec2(drawBlockSize / 2.f),
-                              .string        = std::to_string(static_cast<unsigned int>(block.health - 1u)),
+                              .string        = sf::base::toString(static_cast<unsigned int>(block.health - 1u)),
                               .characterSize = 5u,
                               .fillColor     = sf::Color::blackMask(alpha),
                           }};
 
-            text.setCenter(floorVec2(position.addY(yOffset) + sf::Vec2f{2.f, 3.f}));
+            text.setGlobalCenter(floorVec2(position.addY(yOffset) + sf::Vec2f{2.f, 3.f}));
             m_rtGame.draw(text);
 
             text.setFillColor(sf::Color::whiteMask(alpha));
 
-            text.setCenter(floorVec2(position.addY(yOffset)) + sf::Vec2f{2.f, 2.f});
+            text.setGlobalCenter(floorVec2(position.addY(yOffset)) + sf::Vec2f{2.f, 2.f});
             m_rtGame.draw(text);
         }
 
@@ -1257,7 +1260,7 @@ private:
     ////////////////////////////////////////////////////////////
     void rotateTetramino(Tetramino& tetramino, const bool clockwise) const
     {
-        const auto nextRotationState = static_cast<RotationState>((tetramino.rotationState + (clockwise ? 1 : 3)) % 4u);
+        const auto nextRotationState = static_cast<RotationState>((tetramino.rotationState + (clockwise ? 1u : 3u)) % 4u);
 
         const auto& targetShapeTemplate = srsTetraminoShapes[static_cast<sf::base::SizeT>(tetramino.tetraminoType)][nextRotationState];
 
@@ -1391,7 +1394,7 @@ private:
             auto downmostBlocksXY = findDownmostBlocks(tetramino.shape);
 
             if (downmostBlocksXY.size() > 1u && m_world.perkDrill[DrillDirection::Down]->coverage == 1u)
-                return {};
+                downmostBlocksXY.clear(); // Instead of `return {}`, to enable NRVO
 
             return downmostBlocksXY;
         }
@@ -2194,10 +2197,10 @@ private:
 
         const sf::Vec2f targetPosition = getTetraminoCenterDrawPosition(optTetramino->position);
 
-        const float interpolationSpeed = 50.f;
-        const auto  deltaTimeMs        = static_cast<float>(deltaTime.asMicroseconds()) / 1000.f;
+        const float interpolationTime = 25.f;
+        const auto  deltaTimeMs       = static_cast<float>(deltaTime.asMicroseconds()) / 1000.f;
 
-        visualCenter = exponentialApproach(visualCenter, targetPosition, deltaTimeMs, interpolationSpeed);
+        visualCenter = exponentialApproach(visualCenter, targetPosition, deltaTimeMs, interpolationTime);
     }
 
 
@@ -2375,7 +2378,7 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] bool updateAnimation(auto& timeline, AnimClearLines& clearLines)
+    [[nodiscard]] bool updateAnimation([[maybe_unused]] auto& timeline, AnimClearLines& clearLines)
     {
         AnimClearLines::RowVector         trulyClearedRows;
         AnimFadeBlocks::FadingBlockVector fadingBlocks;
@@ -2719,7 +2722,10 @@ private:
         const auto blockInfo = eligibleBlocks[0];
 
         m_lightningBolts.emplaceBack(m_rngFast,
-                                     sf::Vec2f{9.f + m_rngFast.getF(0.f, drawBlockSize.x * m_world.blockGrid.getWidth()), 0.f},
+                                     sf::Vec2f{9.f + m_rngFast.getF(0.f,
+                                                                    drawBlockSize.x *
+                                                                        static_cast<float>(m_world.blockGrid.getWidth())),
+                                               0.f},
                                      toDrawCoordinates(blockInfo.position));
 
         for (int i = 0; i < 16; ++i)
@@ -2874,7 +2880,7 @@ private:
 
                 if (blockType > 2)
                 {
-                    b->health = blockType - 1u;
+                    b->health = static_cast<Health>(blockType - 1);
                 }
                 else if (blockType == 2)
                 {
@@ -3076,6 +3082,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawShop()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         if (!m_inLevelUpScreen)
             return;
 
@@ -3098,7 +3106,10 @@ private:
 
         const float menuScale = easeInOutBack(m_menuDelayProgress);
 
-        const auto menuTransform = sf::Transform::fromPositionScaleOrigin(centeredShopPos, {menuScale, menuScale}, shopSize * 0.5f);
+        // The offset seems to fix rendering corruption on Surface
+        const auto menuTransform = sf::Transform::fromPositionScaleOrigin(centeredShopPos + sf::Vec2f{0.1f, 0.1f},
+                                                                          {menuScale, menuScale},
+                                                                          shopSize * 0.5f);
 
         m_rtGame.draw(
             sf::RectangleShapeData{
@@ -3114,10 +3125,11 @@ private:
         m_textVerticesBuffer.clear();
         m_textIndicesBuffer.clear();
 
-        std::string levelUpString = "^bold[](^wobble[5,1.2,0.5](LEVEL UP)^)^";
+        sf::base::String levelUpString = "^bold[](^wobble[5,1.2,0.5](LEVEL UP)^)^";
 
         if (m_rerollsLeftThisLevel > 0u)
-            levelUpString += std::format("^color[190,190,190]( - Press SHIFT to reroll ({} left))^", m_rerollsLeftThisLevel);
+            levelUpString += minifmt::format("^color[190,190,190]( - Press SHIFT to reroll ({} left))^",
+                                             m_rerollsLeftThisLevel);
 
         const BitmapTextToVerticesOptions titleOpts = {
             .outVertices     = m_textVerticesBuffer,
@@ -3165,11 +3177,11 @@ private:
         {
             const Perk& perk = *(m_perks[psIndex]);
 
-            std::string perkName        = perk.getName();
-            std::string perkDescription = wrapText(perk.getDescription(m_world), 38u);
-            std::string perkProgression = wrapText(perk.getProgressionStr(m_world), 38u);
+            sf::base::String perkName        = perk.getName();
+            sf::base::String perkDescription = wrapText(perk.getDescription(m_world), 38u);
+            sf::base::String perkProgression = wrapText(perk.getProgressionStr(m_world), 38u);
 
-            const auto perkStr = std::format("^bold[]({})^\n^hspace[0](^color[190,190,190]({})^)^", perkName, perkDescription);
+            const auto perkStr = minifmt::format("^bold[]({})^\n^hspace[0](^color[190,190,190]({})^)^", perkName, perkDescription);
 
             const auto transform = sf::Transform::fromPosition(perkDrawPos);
 
@@ -3234,6 +3246,10 @@ private:
         SFEX_PROFILE_SCOPE("imgui");
 
         m_imGuiContext.update(m_window, deltaTime);
+
+        ImGui::Begin("SFEX Profiler");
+        sfex::showImguiProfiler();
+        ImGui::End();
         return;
 
         {
@@ -3292,13 +3308,13 @@ private:
 
         const auto setFontScale = [&](const float x) { ImGui::SetWindowFontScale(x * scale / 2.f); };
 
-        const auto textCentered = [&](const std::string& text)
+        const auto textCentered = [&](const sf::base::String& text)
         {
             const auto windowWidth = ImGui::GetWindowSize().x;
-            const auto textWidth   = ImGui::CalcTextSize(text.c_str()).x;
+            const auto textWidth   = ImGui::CalcTextSize(text.cStr()).x;
 
             ImGui::SetCursorPosX((windowWidth - textWidth) * 0.5f);
-            ImGui::Text("%s", text.c_str());
+            ImGui::Text("%s", text.cStr());
         };
 
         if (m_inLevelUpScreen)
@@ -3335,9 +3351,9 @@ private:
             {
                 const Perk& perk = *(m_perks[psIndex]);
 
-                std::string perkName        = perk.getName();
-                std::string perkDescription = perk.getDescription(m_world);
-                std::string perkProgression = perk.getProgressionStr(m_world);
+                sf::base::String perkName        = perk.getName();
+                sf::base::String perkDescription = perk.getDescription(m_world);
+                sf::base::String perkProgression = perk.getProgressionStr(m_world);
 
                 if (sep)
                     ImGui::Separator();
@@ -3345,18 +3361,18 @@ private:
                 // setFontScale(2.f);
                 ImGui::PushFont(m_imguiFontBig);
 
-                if (ImGui::Selectable(perkName.c_str(), selectedPerk == static_cast<int>(psIndex)))
+                if (ImGui::Selectable(perkName.cStr(), selectedPerk == static_cast<int>(psIndex)))
                     selectedPerk = static_cast<int>(psIndex);
 
                 ImGui::PopFont();
 
                 setFontScale(0.5f);
                 if (!perkProgression.empty())
-                    ImGui::Text("(%s)\n", perkProgression.c_str());
+                    ImGui::Text("(%s)\n", perkProgression.cStr());
                 else
                     ImGui::Text("\n");
                 setFontScale(1.f);
-                ImGui::TextWrapped("%s", perkDescription.c_str());
+                ImGui::TextWrapped("%s", perkDescription.cStr());
 
                 sep = true;
             }
@@ -3410,6 +3426,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepBackground()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         const sf::Vec2uz gridSize{m_world.blockGrid.getWidth(), m_world.blockGrid.getHeight() - gridGraceY};
 
         m_rtGame.draw(sf::RectangleShapeData{
@@ -3426,16 +3444,15 @@ private:
         for (sf::base::SizeT x = 0u; x < m_world.blockGrid.getWidth() + 1u; ++x)
             for (sf::base::SizeT y = 0u; y < m_world.blockGrid.getHeight() - gridGraceY + 1u; ++y)
             {
-                m_rtGame.draw(
-                    sf::Sprite{
-                        .position = dividerStartPos - drawBlockSize + sf::Vec2f{3.f, 3.f} +
-                                    sf::Vec2uz{x, y}.toVec2f().componentWiseMul(drawBlockSize),
-                        .textureRect = m_txrDivider,
-                    },
-                    {
-                        .texture = &m_textureAtlas.getTexture(),
-                        .shader  = &m_shader,
-                    });
+                m_rtGame.draw(m_textureAtlas.getTexture(),
+                              {
+                                  .position = dividerStartPos - drawBlockSize + sf::Vec2f{3.f, 3.f} +
+                                              sf::Vec2uz{x, y}.toVec2f().componentWiseMul(drawBlockSize),
+                                  .textureRect = m_txrDivider,
+                              },
+                              {
+                                  .shader = &m_shader,
+                              });
             }
 
         m_rtGame.draw(sf::RectangleShapeData{
@@ -3461,6 +3478,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepEmbeddedBlocks()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         for (sf::base::SizeT y = gridGraceY; y < m_world.blockGrid.getHeight(); ++y)
             for (sf::base::SizeT x = 0u; x < m_world.blockGrid.getWidth(); ++x)
             {
@@ -3484,6 +3503,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepFadingBlocks()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         auto* fadeBlocks = m_animationTimelineP1.getIfPlaying<AnimFadeBlocks>();
         if (fadeBlocks == nullptr)
             return;
@@ -3637,6 +3658,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepAnimDrill()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         auto* drillAnim = m_animationTimelineP0.getIfPlaying<AnimDrill>();
 
         if (drillAnim == nullptr)
@@ -3744,6 +3767,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepAnimLaser()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         auto* laserAnim = m_animationTimelineP0.getIfPlaying<AnimLaser>();
 
         if (laserAnim == nullptr)
@@ -3787,6 +3812,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepAnimFadeAttachments()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         auto* fadeAttachments = m_animationTimelineP0.getIfPlaying<AnimFadeAttachments>();
 
         if (fadeAttachments == nullptr)
@@ -4004,12 +4031,12 @@ private:
 
             guide.setFillColor(mainColor.withAlpha(32));
             guide.setSize({1.f, (endPos - startPos).length()});
-            guide.setAnchorPoint(guideAnchorPoint, startPos + guideOffset);
+            guide.setGlobalAnchorPoint(guideAnchorPoint, startPos + guideOffset);
             m_rtGame.draw(guide, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
 
             guide.setFillColor(mainColor.withAlpha(16));
             guide.setSize({2.f, (endPos - startPos).length()});
-            guide.setAnchorPoint(guideAnchorPoint, startPos + guideOffset);
+            guide.setGlobalAnchorPoint(guideAnchorPoint, startPos + guideOffset);
             m_rtGame.draw(guide, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
 
             return endPos;
@@ -4056,6 +4083,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepAnimHardDrop()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         auto* hardDrop = m_animationTimelineP1.getIfPlaying<AnimHardDrop>();
 
         if (hardDrop == nullptr)
@@ -4084,6 +4113,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepAnimSquish()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         auto* squish = m_animationTimelineP1.getIfPlaying<AnimSquish>();
 
         if (squish == nullptr)
@@ -4200,6 +4231,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepUINextTetraminos()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         const sf::base::SizeT nPeek = sf::base::min(static_cast<sf::base::SizeT>(m_world.perkNPeek),
                                                     m_world.blockMatrixBag.size());
 
@@ -4233,6 +4266,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepUIHeldTetramino()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         if (!m_world.heldTetramino.hasValue())
             return;
 
@@ -4247,6 +4282,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepLightningBolts()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         for (auto& lb : m_lightningBolts)
             lb.draw(m_rtGame, {.blendMode = sf::BlendAdd});
 
@@ -4261,6 +4298,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepEarnedXPParticles()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         const auto bezier = [](const sf::Vec2f start, const sf::Vec2f end, const float t)
         {
             const sf::Vec2f control(start.x, end.y);
@@ -4303,6 +4342,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepParticleData()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         for (const auto& particle : m_hueColorCircleShapeParticles)
             m_rtGame.draw(particleToCircleData(particle), {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
 
@@ -4330,6 +4371,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepStatsText()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         sf::RectangleShape statsBorder{{
             .position         = getHudPos().addY(4.f).addX(-1.f),
             .fillColor        = sf::Color::Transparent,
@@ -4343,7 +4386,7 @@ private:
         m_textVerticesBuffer.clear();
         m_textIndicesBuffer.clear();
 
-        auto statsStr = std::format(
+        auto statsStr = minifmt::format(
             "^bold[](Level)^: {}\n"
             "^bold[](XP)^: {} / {}\n"
             "^bold[](Clock)^: {}s\n"
@@ -4371,7 +4414,7 @@ private:
                 .time            = m_totalTime,
                 .string          = statsStr,
             },
-            sf::Transform::fromPosition(statsBorder.getTopLeft() + sf::Vec2f{4.f, 2.f}));
+            sf::Transform::fromPosition(statsBorder.getGlobalTopLeft() + sf::Vec2f{4.f, 2.f}));
 
         m_rtGame.drawIndexedVertices({
             .vertexData    = m_textVerticesBuffer.data(),
@@ -4387,6 +4430,8 @@ private:
     /////////////////////////////////////////////////////////////
     void drawStepPerksText()
     {
+        SFEX_PROFILE_SCOPE_AUTOLABEL();
+
         sf::RectangleShape statsBorder{{
             .position         = getHudPos().addY(168.f - 48.f).addX(-1.f),
             .fillColor        = sf::Color::Transparent,
@@ -4397,11 +4442,11 @@ private:
 
         m_rtGame.draw(statsBorder);
 
-        std::string perksStr;
+        sf::base::String perksStr;
 
         for (const auto& perk : m_perks)
             if (perk->isActive(m_world))
-                perksStr += std::format("- {} {}\n", perk->getName(), perk->getInventoryStr(m_world));
+                perksStr += minifmt::format("- {} {}\n", perk->getName(), perk->getInventoryStr(m_world));
 
         m_textVerticesBuffer.clear();
         m_textIndicesBuffer.clear();
@@ -4417,7 +4462,7 @@ private:
                 .time            = m_totalTime,
                 .string          = perksStr,
             },
-            sf::Transform::fromPosition(statsBorder.getTopLeft() + sf::Vec2f{4.f, 2.f}));
+            sf::Transform::fromPosition(statsBorder.getGlobalTopLeft() + sf::Vec2f{4.f, 2.f}));
 
         m_rtGame.drawIndexedVertices({
             .vertexData    = m_textVerticesBuffer.data(),
@@ -4435,7 +4480,10 @@ private:
     {
         SFEX_PROFILE_SCOPE("draw");
 
-        syncShaderUniforms();
+        {
+            SFEX_PROFILE_SCOPE("syncShaderUniforms");
+            syncShaderUniforms();
+        }
 
         m_rtGame.clear(sf::Color{9, 9, 9});
 
@@ -4493,7 +4541,10 @@ private:
             drawShop();
         }
 
-        m_rtGame.display();
+        {
+            SFEX_PROFILE_SCOPE("display rtgame");
+            m_rtGame.display();
+        }
 
 
         const auto screenShake = m_rngFast.getVec2f({-m_screenShakeAmount, -m_screenShakeAmount},
@@ -4520,18 +4571,31 @@ private:
         if (m_rtPostProcess.getSize() != rtGameSize.toVec2u())
             m_rtPostProcess = sf::RenderTexture::create(rtGameSize.toVec2u()).value();
 
-        m_rtPostProcess.clear();
-        m_rtPostProcess.draw(m_rtGame.getTexture(), {.shader = m_useCRTShader ? &m_shaderCRT : nullptr});
-        m_rtPostProcess.display();
+        {
+            SFEX_PROFILE_SCOPE("postprocess");
+
+            m_rtPostProcess.clear();
+            m_rtPostProcess.draw(m_rtGame.getTexture(), {.shader = m_useCRTShader ? &m_shaderCRT : nullptr});
+            m_rtPostProcess.display();
+        }
 
         const sf::Vec2f centeredPosition = (windowSize - rtGameSize) / 2.f;
         const float     quakeYOffset     = m_quakeSinEffectHardDrop.getValue() + m_quakeSinEffectLineClear.getValue();
         const sf::Vec2f finalPosition    = floorVec2(centeredPosition + screenShake.addY(quakeYOffset));
 
-        m_window.clear();
-        m_window.draw(m_rtPostProcess.getTexture(), {.position = finalPosition}, {.shader = &m_shaderPostProcess});
-        m_imGuiContext.render(m_window);
-        m_window.display();
+
+        {
+            SFEX_PROFILE_SCOPE("final draw");
+
+            m_window.clear();
+            m_window.draw(m_rtPostProcess.getTexture(), {.position = finalPosition}, {.shader = &m_shaderPostProcess});
+            m_imGuiContext.render(m_window);
+        }
+
+        {
+            SFEX_PROFILE_SCOPE("window display");
+            m_window.display();
+        }
     }
 
 
@@ -4649,3 +4713,5 @@ int main()
 // - perks that affect the timers
 // - tutorial modals
 // - active perks/items with cooldowns or restrictions (e.g. one-time undo)
+
+// - try linking libstdc++ statically and using LTO

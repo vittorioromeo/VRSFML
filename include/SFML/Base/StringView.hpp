@@ -7,9 +7,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/MinMaxMacros.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Swap.hpp"
 
 #ifndef __GNUC__
     #include "SFML/Base/Builtin/Strlen.hpp"
@@ -82,7 +82,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr explicit(false) StringView() noexcept = default;
+    [[nodiscard, gnu::always_inline]] constexpr /* implicit */ StringView() noexcept = default;
 
 
     ////////////////////////////////////////////////////////////
@@ -590,8 +590,16 @@ public:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] friend void swap(StringView& lhs, StringView& rhs) noexcept
     {
-        base::swap(lhs.theData, rhs.theData);
-        base::swap(lhs.theSize, rhs.theSize);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wclass-memaccess"
+
+        alignas(StringView) char temp[sizeof(StringView)];
+
+        SFML_BASE_MEMCPY(&temp, &lhs, sizeof(StringView));
+        SFML_BASE_MEMCPY(&lhs, &rhs, sizeof(StringView));
+        SFML_BASE_MEMCPY(&rhs, &temp, sizeof(StringView));
+
+#pragma GCC diagnostic pop
     }
 
 

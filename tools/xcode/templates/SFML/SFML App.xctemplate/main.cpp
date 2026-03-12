@@ -13,15 +13,13 @@
 // function `resourcePath()` from ResourcePath.hpp
 //
 
+#include <SFML/Audio/Music.hpp>
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/Graphics/Texture.hpp>
-
-#include <SFML/Audio/Music.hpp>
-
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/GraphicsContext.hpp>
 #include <SFML/Window/VideoMode.hpp>
@@ -30,6 +28,7 @@
 
 // Here is a small helper for you! Have a look.
 #include "ResourcePath.hpp"
+
 #include <SFML/Window/EventUtils.hpp>
 
 
@@ -39,7 +38,7 @@ int main()
     sf::GraphicsContext graphicsContext;
 
     // Create the main window
-    sf::RenderWindow window(graphicsContext, sf::VideoMode({800, 600}), "SFML window");
+    auto window = sf::RenderWindow::create(graphicsContext, sf::VideoMode({800, 600}), "SFML window").value();
 
     // Set the Icon
     const auto icon = sf::Image::loadFromFile(resourcePath() / "icon.png").value();

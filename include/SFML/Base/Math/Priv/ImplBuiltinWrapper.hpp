@@ -23,6 +23,8 @@
             return __builtin_##name(arg);                                                                        \
         else if constexpr (SFML_BASE_IS_SAME(T, long double))                                                    \
             return __builtin_##name##l(arg);                                                                     \
+        else                                                                                                     \
+            static_assert(sizeof(T) == 0);                                                                       \
     }                                                                                                            \
                                                                                                                  \
     } // namespace sf::base
@@ -41,6 +43,8 @@
             return __builtin_##name(arg0, arg1);                                                                                \
         else if constexpr (SFML_BASE_IS_SAME(T, long double))                                                                   \
             return __builtin_##name##l(arg0, arg1);                                                                             \
+        else                                                                                                                    \
+            static_assert(sizeof(T) == 0);                                                                                      \
     }                                                                                                                           \
                                                                                                                                 \
     } // namespace sf::base

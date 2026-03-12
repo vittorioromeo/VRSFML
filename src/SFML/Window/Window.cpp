@@ -21,6 +21,7 @@
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/PassKey.hpp"
 
 #ifdef SFML_SYSTEM_EMSCRIPTEN
     #include <emscripten.h>
@@ -44,12 +45,10 @@ struct Window::Window::Impl
 
 
 ////////////////////////////////////////////////////////////
-template <typename... TWindowBaseArgs>
-Window::Window(const Settings& windowSettings, unsigned int bitsPerPixel, TWindowBaseArgs&&... windowBaseArgs) :
-    WindowBase(SFML_BASE_FORWARD(windowBaseArgs)...),
+Window::Window(base::PassKey<Window>&&, WindowBase&& windowBase, const Settings& windowSettings, unsigned int bitsPerPixel) :
+    WindowBase(SFML_BASE_MOVE(windowBase)),
     m_impl(WindowContext::createGlContext(windowSettings.contextSettings, getWindowImpl(), bitsPerPixel))
 {
-    // Perform common initializations
     SFML_BASE_ASSERT(m_impl->glContext != nullptr);
 
     // Setup default behaviors (to get a consistent behavior across different implementations)
@@ -63,15 +62,30 @@ Window::Window(const Settings& windowSettings, unsigned int bitsPerPixel, TWindo
 
 
 ////////////////////////////////////////////////////////////
-Window::Window(const Settings& windowSettings) : Window(windowSettings, windowSettings.bitsPerPixel, windowSettings)
+base::Optional<Window> Window::create(const Settings& windowSettings)
 {
+    auto windowBase = WindowBase::create(windowSettings);
+
+    return windowBase.hasValue()
+               ? base::Optional<Window>(base::inPlace,
+                                        base::PassKey<Window>{},
+                                        SFML_BASE_MOVE(*windowBase),
+                                        windowSettings,
+                                        windowSettings.bitsPerPixel)
+               : base::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-Window::Window(WindowHandle handle, const ContextSettings& contextSettings) :
-    Window(WindowSettings{.size{}, .contextSettings = contextSettings}, VideoModeUtils::getDesktopMode().bitsPerPixel, handle)
+base::Optional<Window> Window::create(const WindowHandle handle, const ContextSettings& contextSettings)
 {
+    auto windowBase = WindowBase::create(handle);
+
+    return base::Optional<Window>(base::inPlace,
+                                  base::PassKey<Window>{},
+                                  SFML_BASE_MOVE(*windowBase),
+                                  WindowSettings{.size{}, .contextSettings = contextSettings},
+                                  VideoModeUtils::getDesktopMode().bitsPerPixel);
 }
 
 

@@ -1,8 +1,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "../bubble_idle/RNGFast.hpp"          // TODO P1: avoid the relative path...?
 #include "../bubble_idle/TextEffectWiggle.hpp" // TODO P1: avoid the relative path...?
+
+#include "ExampleUtils/RNGFast.hpp"
+#include "ExampleUtils/Scaling.hpp"
 
 #include "SFML/Graphics/CircleShape.hpp"
 #include "SFML/Graphics/Color.hpp"
@@ -33,8 +35,6 @@
 #include "SFML/Base/Math/Cos.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/String.hpp"
-
-#include "ExampleUtils.hpp"
 
 #ifdef SFML_SYSTEM_IOS
     #include "SFML/Main.hpp"
@@ -70,13 +70,15 @@ int main()
     auto graphicsContext = sf::GraphicsContext::create().value();
 
     // Create the window of the application
-    auto window = makeDPIScaledRenderWindow({
-        .size         = gameSize.toVec2u(),
-        .bitsPerPixel = 32u,
-        .title        = "SFML Tennis",
-        .resizable    = true,
-        .vsync        = true,
-    });
+    auto window = makeDPIScaledRenderWindow(
+                      {
+                          .size         = gameSize.toVec2u(),
+                          .bitsPerPixel = 32u,
+                          .title        = "SFML Tennis",
+                          .resizable    = true,
+                          .vsync        = true,
+                      })
+                      .value();
 
     // Create an audio context and get the default playback device
     auto               audioContext = sf::AudioContext::create().value();
@@ -191,13 +193,6 @@ int main()
                      (leftPaddle.position.y + paddleSize.y / 2 < gameSize.y - 5.f))
             {
                 leftPaddle.position.y += paddleSpeed * deltaTime;
-            }
-
-            if (sf::Touch::isDown(0))
-            {
-                const sf::Vec2i pos       = sf::Touch::getPosition(0);
-                const sf::Vec2f mappedPos = window.mapPixelToCoords(pos);
-                leftPaddle.position.y     = mappedPos.y;
             }
 
             // Move the computer's paddle
