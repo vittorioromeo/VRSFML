@@ -24,7 +24,7 @@ void blitFramebuffer(const bool invertYAxis, const Rect2u src, const Rect2u dst)
     auto srcY1 = static_cast<GLint>(src.position.y + src.size.y);
 
     if (invertYAxis)
-        base::swap(srcY0, srcY1);
+        base::genericSwap(srcY0, srcY1);
 
     glCheck(glBlitFramebuffer(static_cast<GLint>(src.position.x),
                               srcY0,

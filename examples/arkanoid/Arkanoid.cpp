@@ -144,7 +144,7 @@ private:
         {
             if (performBallBrickCollisionResolution(*it))
             {
-                sf::base::swap(*it, m_bricks.back());
+                sf::base::genericSwap(*it, m_bricks.back());
                 m_bricks.popBack();
                 break;
             }

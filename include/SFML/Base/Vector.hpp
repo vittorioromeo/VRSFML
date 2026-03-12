@@ -426,9 +426,9 @@ public:
         if (this == &rhs)
             return;
 
-        base::swap(m_data, rhs.m_data);
-        base::swap(m_endSize, rhs.m_endSize);
-        base::swap(m_endCapacity, rhs.m_endCapacity);
+        base::genericSwap(m_data, rhs.m_data);
+        base::genericSwap(m_endSize, rhs.m_endSize);
+        base::genericSwap(m_endCapacity, rhs.m_endCapacity);
     }
 
 

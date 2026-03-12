@@ -5,19 +5,107 @@
 #include <Doctest.hpp>
 
 
+namespace
+{
+
+struct MoveOnlySwappable
+{
+    int value{0};
+
+    MoveOnlySwappable() = default;
+
+    explicit MoveOnlySwappable(int v) : value(v)
+    {
+    }
+
+    MoveOnlySwappable(const MoveOnlySwappable&)            = delete;
+    MoveOnlySwappable& operator=(const MoveOnlySwappable&) = delete;
+
+    MoveOnlySwappable(MoveOnlySwappable&& other) noexcept : value(other.value)
+    {
+        other.value = -1;
+    }
+
+    MoveOnlySwappable& operator=(MoveOnlySwappable&& other) noexcept
+    {
+        value       = other.value;
+        other.value = -1;
+
+        return *this;
+    }
+};
+
+struct TestMemberSwap
+{
+    int swapped = 0;
+
+    void swap(TestMemberSwap& other) noexcept
+    {
+        swapped       = 1;
+        other.swapped = 2;
+    }
+};
+
+struct TestHiddenFriend
+{
+    int swapped = 0;
+
+    friend void swap(TestHiddenFriend& lhs, TestHiddenFriend& rhs) noexcept
+    {
+        lhs.swapped = 1;
+        rhs.swapped = 2;
+    }
+};
+
+namespace TestADL
+{
+
+struct TestADLStruct
+{
+    int swapped = 0;
+};
+
+void swap(TestADLStruct& lhs, TestADLStruct& rhs) noexcept
+{
+    lhs.swapped = 1;
+    rhs.swapped = 2;
+}
+
+} // namespace TestADL
+
+namespace TestAmbiguity
+{
+
+struct AmbiguousStruct
+{
+    int value{0};
+};
+
+// This mimics `std::swap` by being an unconstrained generic template.
+// During ADL, it will collide with `priv::swap_adl::swap(T&, T&) = delete;`.
+template <typename T>
+void swap(T& lhs, T& rhs) noexcept
+{
+    lhs.value = 999;
+    rhs.value = 999;
+}
+
+} // namespace TestAmbiguity
+
+
 TEST_CASE("[Base] Base/Swap.hpp")
 {
     SECTION("Swap")
     {
         int a = 10;
         int b = 20;
-        sf::base::swap(a, b);
+        sf::base::genericSwap(a, b);
         CHECK(a == 20);
         CHECK(b == 10);
 
         sf::base::Vector<int> v1{1, 2};
         sf::base::Vector<int> v2{3, 4, 5};
-        sf::base::swap(v1, v2);
+        sf::base::genericSwap(v1, v2);
         CHECK((v1 == sf::base::Vector<int>{3, 4, 5}));
         CHECK((v2 == sf::base::Vector<int>{1, 2}));
     }
@@ -71,4 +159,115 @@ TEST_CASE("[Base] Base/Swap.hpp")
         CHECK((v1 == sf::base::Vector<int>{100, 600, 700, 400}));
         CHECK((v2 == sf::base::Vector<int>{500, 200, 300, 800}));
     }
+
+    SECTION("Member swap")
+    {
+        TestMemberSwap a;
+        TestMemberSwap b;
+
+        sf::base::genericSwap(a, b);
+
+        CHECK(a.swapped == 1);
+        CHECK(b.swapped == 2);
+    }
+
+    SECTION("Hidden friend, explicit namespace")
+    {
+        TestHiddenFriend a;
+        TestHiddenFriend b;
+
+        sf::base::genericSwap(a, b);
+
+        CHECK(a.swapped == 1);
+        CHECK(b.swapped == 2);
+    }
+
+    SECTION("Hidden friend, ADL")
+    {
+        TestHiddenFriend a;
+        TestHiddenFriend b;
+
+        swap(a, b);
+
+        CHECK(a.swapped == 1);
+        CHECK(b.swapped == 2);
+    }
+
+    SECTION("ADL")
+    {
+        TestADL::TestADLStruct a;
+        TestADL::TestADLStruct b;
+
+        swap(a, b);
+
+        CHECK(a.swapped == 1);
+        CHECK(b.swapped == 2);
+    }
+
+    SECTION("Poison Pill / Generic Template Ambiguity Fallback")
+    {
+        TestAmbiguity::AmbiguousStruct a{10};
+        TestAmbiguity::AmbiguousStruct b{20};
+
+        // If the Poison Pill succeeds, `HasCustomSwap` gracefully evaluates to false,
+        // bypasses the 999-assigning template entirely, and manually swaps them!
+        sf::base::genericSwap(a, b);
+
+        CHECK(a.value == 20);
+        CHECK(b.value == 10);
+
+        // Ensure the dummy `std::swap`-like function was NOT called
+        CHECK(a.value != 999);
+        CHECK(b.value != 999);
+    }
+
+    SECTION("Move-Only types fallback")
+    {
+        MoveOnlySwappable a{100};
+        MoveOnlySwappable b{200};
+
+        // Ensures `static_cast<T&&>` is correctly applied in the fallback
+        sf::base::genericSwap(a, b);
+
+        CHECK(a.value == 200);
+        CHECK(b.value == 100);
+    }
+
+    SECTION("Raw 1D Arrays")
+    {
+        int arr1[3] = {1, 2, 3};
+        int arr2[3] = {4, 5, 6};
+
+        // Proves the `T (&a)[N]` overload correctly triggers
+        sf::base::genericSwap(arr1, arr2);
+
+        CHECK(arr1[0] == 4);
+        CHECK(arr1[1] == 5);
+        CHECK(arr1[2] == 6);
+
+        CHECK(arr2[0] == 1);
+        CHECK(arr2[1] == 2);
+        CHECK(arr2[2] == 3);
+    }
+
+    SECTION("Multidimensional Arrays")
+    {
+        int arr1[2][2] = {{1, 2}, {3, 4}};
+        int arr2[2][2] = {{5, 6}, {7, 8}};
+
+        // Proves the array overload safely recurses into itself!
+        sf::base::genericSwap(arr1, arr2);
+
+        CHECK(arr1[0][0] == 5);
+        CHECK(arr1[0][1] == 6);
+        CHECK(arr1[1][0] == 7);
+        CHECK(arr1[1][1] == 8);
+
+        CHECK(arr2[0][0] == 1);
+        CHECK(arr2[0][1] == 2);
+        CHECK(arr2[1][0] == 3);
+        CHECK(arr2[1][1] == 4);
+    }
 }
+
+} // namespace
