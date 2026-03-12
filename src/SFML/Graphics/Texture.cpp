@@ -773,14 +773,14 @@ Texture& Texture::operator=(const Texture& rhs)
 ////////////////////////////////////////////////////////////
 void Texture::swap(Texture& rhs) noexcept
 {
-    base::swap(m_size, rhs.m_size);
-    base::swap(m_texture, rhs.m_texture);
-    base::swap(m_isSmooth, rhs.m_isSmooth);
-    base::swap(m_sRgb, rhs.m_sRgb);
-    base::swap(m_wrapMode, rhs.m_wrapMode);
-    base::swap(m_fboAttachment, rhs.m_fboAttachment);
-    base::swap(m_hasMipmap, rhs.m_hasMipmap);
-    base::swap(m_cacheId, rhs.m_cacheId);
+    base::genericSwap(m_size, rhs.m_size);
+    base::genericSwap(m_texture, rhs.m_texture);
+    base::genericSwap(m_isSmooth, rhs.m_isSmooth);
+    base::genericSwap(m_sRgb, rhs.m_sRgb);
+    base::genericSwap(m_wrapMode, rhs.m_wrapMode);
+    base::genericSwap(m_fboAttachment, rhs.m_fboAttachment);
+    base::genericSwap(m_hasMipmap, rhs.m_hasMipmap);
+    base::genericSwap(m_cacheId, rhs.m_cacheId);
 }
 
 
