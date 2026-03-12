@@ -27,7 +27,6 @@
 #include "SFML/Graphics/VertexSpan.hpp"
 
 #include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/Music.hpp"
 #include "SFML/Audio/MusicReader.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
