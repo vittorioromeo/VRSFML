@@ -548,12 +548,14 @@ private:
     ////////////////////////////////////////////////////////////
     sf::RenderWindow m_window = makeDPIScaledRenderWindow(
                                     {
-                                        .size            = resolution.toVec2u(),
-                                        .title           = "Block Puzzle",
-                                        .resizable       = true,
-                                        .vsync           = true,
-                                        .frametimeLimit  = 144u,
-                                        .contextSettings = {.antiAliasingLevel = m_aaLevel},
+                                        .size           = resolution.toVec2u(),
+                                        .title          = "Block Puzzle",
+                                        .resizable      = true,
+                                        .vsync          = true,
+                                        .frametimeLimit = 144u,
+
+                                        // TODO P0: restore AA with RenderTexture
+                                        // .contextSettings = {.antiAliasingLevel = m_aaLevel},
                                     })
                                     .value();
 
@@ -663,7 +665,7 @@ private:
     const sf::Rect2f m_txrWallV        = addImgResourceToAtlas("wallv.png");
     const sf::Rect2f m_txrWallBg       = addImgResourceToAtlas("wallbg.png");
     const sf::Rect2f m_txrWallSet      = addImgResourceToAtlas("wallset.png");
-    const sf::Rect2f m_txrWallBits     = addImgResourceToAtlas("wallbits.png");
+    const sf::Rect2f m_txrWallBits     = addImgResourceToAtlas("wallBits.png");
     const sf::Rect2f m_txrLavaParticle = addImgResourceToAtlas("lavaparticle.png");
     const sf::Rect2f m_txrLock0        = addImgResourceToAtlas("lock0.png");
     const sf::Rect2f m_txrPinned       = addImgResourceToAtlas("pinned.png");

@@ -88,7 +88,7 @@ void RenderWindow::setIcon(const Image& icon)
 ////////////////////////////////////////////////////////////
 bool RenderWindow::isSrgb() const
 {
-    return getSettings().sRgbCapable;
+    return false;
 }
 
 

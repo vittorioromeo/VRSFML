@@ -1454,15 +1454,17 @@ int main()
 
     auto window = makeDPIScaledRenderWindow(
                       {
-                          .size            = resolution.toVec2u(),
-                          .title           = "Rockets",
-                          .fullscreen      = false,
-                          .resizable       = false,
-                          .closable        = false,
-                          .hasTitlebar     = false,
-                          .vsync           = false,
-                          .frametimeLimit  = 144u,
-                          .contextSettings = {.antiAliasingLevel = 16u},
+                          .size           = resolution.toVec2u(),
+                          .title          = "Rockets",
+                          .fullscreen     = false,
+                          .resizable      = false,
+                          .closable       = false,
+                          .hasTitlebar    = false,
+                          .vsync          = false,
+                          .frametimeLimit = 144u,
+
+                          // TODO P0: restore AA with RenderTexture
+                          // .contextSettings = {.antiAliasingLevel = 16u},
                       })
                       .value();
 
