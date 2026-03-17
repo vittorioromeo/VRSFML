@@ -2,6 +2,9 @@
 // LICENSE AND COPYRIGHT (C) INFORMATION
 // https://github.com/vittorioromeo/VRSFML/blob/master/license.md
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc2y-extensions"
+// Intentionally not popping, needed to avoid warnings with Doctest's `__COUNTER__` usage
 
 ////////////////////////////////////////////////////////////
 // Headers
