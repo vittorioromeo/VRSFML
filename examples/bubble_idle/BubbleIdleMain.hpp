@@ -1,8 +1,5 @@
 #pragma once
 
-#include "RNGSeedType.hpp"
-
-#include "SFML/System/UnicodeString.hpp"
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
@@ -28,6 +25,7 @@
 #include "Playthrough.hpp"
 #include "Profile.hpp"
 #include "PurchasableScalingValue.hpp"
+#include "RNGSeedType.hpp"
 #include "Serialization.hpp"
 #include "Shrine.hpp"
 #include "ShrineConstants.hpp"
@@ -101,6 +99,7 @@
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Rect2.hpp"
 #include "SFML/System/Time.hpp"
+#include "SFML/System/UnicodeString.hpp"
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Algorithm/AllOf.hpp"
@@ -212,8 +211,8 @@ inline bool handleCatShrineCollision(const float deltaTimeMs, Cat& cat, Shrine& 
         .position = rng.getVec2f({mapLimit, maxY}),
         .velocity = rng.getVec2f({-0.1f, -0.1f}, {0.1f, 0.1f}),
 
-        .radius = rng.getF(0.07f, 0.16f) * 256.f *
-                  remap(static_cast<float>(pt.psvBubbleCount.nPurchases), 0.f, 30.f, 1.1f, 0.8f),
+        .radius   = rng.getF(0.07f, 0.16f) * 256.f *
+                    remap(static_cast<float>(pt.psvBubbleCount.nPurchases), 0.f, 30.f, 1.1f, 0.8f),
         .rotation = 0.f,
         .hueMod   = 0.f,
 
@@ -4397,8 +4396,8 @@ struct Main
                         if (rngFast.getF(0.f, 1.f) < intensity)
                             spawnParticle({.position = otherCat.getDrawPosition(profile.enableCatBobbing) +
                                                        sf::Vec2f{rngFast.getF(-catRadius, +catRadius), catRadius - 9.f},
-                                           .velocity      = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
-                                           .scale         = rngFast.getF(0.08f, 0.27f) * 0.5f,
+                                           .velocity = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
+                                           .scale    = rngFast.getF(0.08f, 0.27f) * 0.5f,
                                            .scaleDecay    = 0.f,
                                            .accelerationY = -0.0017f,
                                            .opacity       = 1.f,
@@ -4682,11 +4681,11 @@ struct Main
                         continue;
 
                     if (rngFast.getF(0.f, 1.f) > 0.95f)
-                        spawnParticle({.position = otherCat.getDrawPosition(profile.enableCatBobbing) +
-                                                   sf::Vec2f{rngFast.getF(-catRadius, +catRadius), catRadius - 25.f},
-                                       .velocity      = rngFast.getVec2f({-0.01f, -0.05f}, {0.01f, 0.05f}),
-                                       .scale         = rngFast.getF(0.08f, 0.27f) * 0.4f,
-                                       .scaleDecay    = 0.f,
+                        spawnParticle({.position   = otherCat.getDrawPosition(profile.enableCatBobbing) +
+                                                     sf::Vec2f{rngFast.getF(-catRadius, +catRadius), catRadius - 25.f},
+                                       .velocity   = rngFast.getVec2f({-0.01f, -0.05f}, {0.01f, 0.05f}),
+                                       .scale      = rngFast.getF(0.08f, 0.27f) * 0.4f,
+                                       .scaleDecay = 0.f,
                                        .accelerationY = -0.00015f,
                                        .opacity       = 1.f,
                                        .opacityDecay  = rngFast.getF(0.0003f, 0.002f),
@@ -5421,9 +5420,9 @@ struct Main
             }
 
             for (sf::base::SizeT iP = 0u; iP < 2u; ++iP)
-                spawnParticle({.position = hp.getDrawPosition() +
-                                           rngFast.getRandomDirection() *
-                                               rngFast.getF(hellPortalRadius * 0.95f, hellPortalRadius * 1.15f),
+                spawnParticle({.position      = hp.getDrawPosition() +
+                                                rngFast.getRandomDirection() *
+                                                    rngFast.getF(hellPortalRadius * 0.95f, hellPortalRadius * 1.15f),
                                .velocity      = rngFast.getVec2f({-0.025f, -0.025f}, {0.025f, 0.025f}),
                                .scale         = rngFast.getF(0.08f, 0.27f) * 0.85f,
                                .scaleDecay    = -0.00025f,
@@ -7266,9 +7265,9 @@ struct Main
             const auto textOutlineColor   = circleColor.withLightness(0.25f);
 
             cpuDrawableBatch.add(
-                sf::Sprite{.position = shrine.getDrawPosition(),
-                           .scale    = sf::Vec2f{0.3f, 0.3f} * invDeathProgress +
-                                    sf::Vec2f{1.25f, 1.25f} * shrine.textStatusShakeEffect.grow * 0.015f,
+                sf::Sprite{.position    = shrine.getDrawPosition(),
+                           .scale       = sf::Vec2f{0.3f, 0.3f} * invDeathProgress +
+                                          sf::Vec2f{1.25f, 1.25f} * shrine.textStatusShakeEffect.grow * 0.015f,
                            .origin      = txrShrine.size / 2.f,
                            .textureRect = txrShrine,
                            .color       = shrineColor});
@@ -7686,10 +7685,10 @@ struct Main
                                                : txCursor,
                     {.position = sf::Mouse::getPosition(window).toVec2f(),
                      .scale    = sf::Vec2f{profile.cursorScale, profile.cursorScale} *
-                              ((1.f + easeInOutBack(cursorGrow) * sf::base::pow(static_cast<float>(combo), 0.09f)) *
-                               dpiScalingFactor),
-                     .origin = {5.f, 5.f},
-                     .color  = hueColor(profile.cursorHue + currentBackgroundHue.asDegrees(), 255u)},
+                                 ((1.f + easeInOutBack(cursorGrow) * sf::base::pow(static_cast<float>(combo), 0.09f)) *
+                                  dpiScalingFactor),
+                     .origin   = {5.f, 5.f},
+                     .color    = hueColor(profile.cursorHue + currentBackgroundHue.asDegrees(), 255u)},
                     {.shader = &shader});
     }
 
@@ -8832,7 +8831,7 @@ struct Main
 
         //
         // Only draw UI elements if not in prestige transition and splash is done
-        const bool shouldDrawUI      = !inPrestigeTransition && splashCountdown.value <= 0.f;
+        const bool shouldDrawUI = !inPrestigeTransition && splashCountdown.value <= 0.f;
         const auto shouldDrawUIAlpha = inPrestigeTransition || splashCountdown.getProgress() < 0.75f
                                            ? static_cast<sf::base::U8>(0u)
                                            : static_cast<sf::base::U8>(
@@ -9525,8 +9524,8 @@ struct Main
 
                 rtGame.draw(sf::Sprite{.position = resolution / 2.f / profile.hudScale,
                                        .scale    = sf::Vec2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutQuint(progress)) /
-                                                profile.hudScale * 2.f,
-                                       .origin      = txLetter.getSize().toVec2f() / 2.f,
+                                                   profile.hudScale * 2.f,
+                                       .origin   = txLetter.getSize().toVec2f() / 2.f,
                                        .textureRect = txLetter.getRect(),
                                        .color = sf::Color::whiteMask(static_cast<U8>(easeInOutQuint(progress) * 255.f))},
                             {.texture = &txLetter});
@@ -9540,8 +9539,8 @@ struct Main
 
             rtGame.draw(sf::Sprite{.position = resolution / 2.f / profile.hudScale,
                                    .scale    = sf::Vec2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutQuint(textProgress)) /
-                                            profile.hudScale * 1.45f,
-                                   .origin      = txLetterText.getSize().toVec2f() / 2.f,
+                                               profile.hudScale * 1.45f,
+                                   .origin   = txLetterText.getSize().toVec2f() / 2.f,
                                    .textureRect = txLetterText.getRect(),
                                    .color = sf::Color::whiteMask(static_cast<U8>(easeInOutQuint(textProgress) * 255.f))},
                         {.texture = &txLetterText});

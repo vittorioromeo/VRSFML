@@ -12,10 +12,10 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct RenderTextureSettings
 {
-    unsigned int depthBits{0};         //!< Bits of the depth buffer attachment
-    unsigned int stencilBits{0};       //!< Bits of the stencil buffer attachment
-    unsigned int antiAliasingLevel{0}; //!< Level of multisampling (MSAA)
-    bool         sRgbCapable{false};   //!< Whether the texture should use sRGB encoding
+    unsigned int depthBits{0u};         //!< Bits of the depth buffer attachment
+    unsigned int stencilBits{0u};       //!< Bits of the stencil buffer attachment
+    unsigned int antiAliasingLevel{0u}; //!< Level of multisampling (MSAA)
+    bool         sRgbCapable{false};    //!< Whether the texture should use sRGB encoding
 };
 
 } // namespace sf

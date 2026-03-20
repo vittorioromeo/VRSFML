@@ -15,6 +15,7 @@
 #include "SFML/Graphics/PieSliceShapeData.hpp"
 #include "SFML/Graphics/RectangleShapeData.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
+#include "SFML/Graphics/RenderTexture.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/RingPieSliceShapeData.hpp"
 #include "SFML/Graphics/RingShapeData.hpp"
@@ -69,12 +70,19 @@
 constexpr sf::Vec2f resolution{1016.f, 1016.f};
 
 ////////////////////////////////////////////////////////////
+struct GameDependencies
+{
+    sf::RenderWindow* window;
+    sf::RenderTarget* rtGame;
+    const sf::Font*   font;
+};
+
+////////////////////////////////////////////////////////////
 class ExampleShapes
 {
 private:
     ////////////////////////////////////////////////////////////
-    sf::RenderWindow& m_window;
-    const sf::Font&   m_font;
+    GameDependencies m_deps;
 
     ////////////////////////////////////////////////////////////
     float m_time  = 0.f;
@@ -105,16 +113,17 @@ private:
     ////////////////////////////////////////////////////////////
     sf::VertexSpan drawShape(const sf::Vec2f currentOffset, const char* label, const auto& shapeData)
     {
-        auto result = m_window.draw(applyCommonSettings(currentOffset, shapeData), {.texture = &m_font.getTexture()});
+        auto result = m_deps.rtGame->draw(applyCommonSettings(currentOffset, shapeData),
+                                          {.texture = &m_deps.font->getTexture()});
 
-        m_window.draw(m_font,
-                      sf::TextData{
-                          .position         = shapeData.position + currentOffset,
-                          .string           = label,
-                          .characterSize    = 16,
-                          .outlineColor     = sf::Color::Black,
-                          .outlineThickness = 2.f,
-                      });
+        m_deps.rtGame->draw(*m_deps.font,
+                            sf::TextData{
+                                .position         = shapeData.position + currentOffset,
+                                .string           = label,
+                                .characterSize    = 16,
+                                .outlineColor     = sf::Color::Black,
+                                .outlineThickness = 2.f,
+                            });
 
         m_phase += 0.1f;
 
@@ -239,7 +248,7 @@ private:
 
 public:
     ////////////////////////////////////////////////////////////
-    explicit ExampleShapes(sf::RenderWindow& window, const sf::Font& font) : m_window{window}, m_font{font}
+    explicit ExampleShapes(const GameDependencies& deps) : m_deps{deps}
     {
     }
 
@@ -274,8 +283,7 @@ private:
     };
 
     ////////////////////////////////////////////////////////////
-    sf::RenderWindow&       m_window;
-    const sf::Font&         m_font;
+    GameDependencies        m_deps;
     const sf::TextureAtlas& m_textureAtlas;
     const sf::Rect2f (&m_bunnyTextureRects)[8];
 
@@ -302,12 +310,10 @@ private:
 
 public:
     ////////////////////////////////////////////////////////////
-    explicit ExampleBunnyMark(sf::RenderWindow&       window,
-                              const sf::Font&         font,
+    explicit ExampleBunnyMark(const GameDependencies& deps,
                               const sf::TextureAtlas& textureAtlas,
                               const sf::Rect2f (&bunnyTextureRects)[8]) :
-        m_window{window},
-        m_font{font},
+        m_deps{deps},
         m_textureAtlas{textureAtlas},
         m_bunnyTextureRects{bunnyTextureRects}
     {
@@ -370,7 +376,7 @@ public:
         {
             const auto& txr = m_bunnyTextureRects[i % 8u];
 
-            m_window.draw(
+            m_deps.rtGame->draw(
                 sf::Sprite{
                     .position    = position,
                     .scale       = {scale, scale},
@@ -385,14 +391,14 @@ public:
 
         const auto digitSeparatedBunnyCount = toDigitSeparatedString(m_bunnies.size());
 
-        const auto vertices = m_window.draw(m_font,
-                                            sf::TextData{
-                                                .position         = {8.f, 8.f},
-                                                .string           = digitSeparatedBunnyCount + " bunnies",
-                                                .characterSize    = 32,
-                                                .outlineColor     = sf::Color::Black,
-                                                .outlineThickness = 4.f,
-                                            });
+        const auto vertices = m_deps.rtGame->draw(*m_deps.font,
+                                                  sf::TextData{
+                                                      .position         = {8.f, 8.f},
+                                                      .string           = digitSeparatedBunnyCount + " bunnies",
+                                                      .characterSize    = 32,
+                                                      .outlineColor     = sf::Color::Black,
+                                                      .outlineThickness = 4.f,
+                                                  });
 
         for (sf::base::SizeT j = 0u; j < vertices.size(); j += 4u)
         {
@@ -423,14 +429,14 @@ public:
             }
         }
 
-        m_window.draw(m_font,
-                      sf::TextData{
-                          .position         = {8.f, 48.f},
-                          .string           = "Change number of bunnies with arrow keys",
-                          .characterSize    = 16,
-                          .outlineColor     = sf::Color::Black,
-                          .outlineThickness = 2.f,
-                      });
+        m_deps.rtGame->draw(*m_deps.font,
+                            sf::TextData{
+                                .position         = {8.f, 48.f},
+                                .string           = "Change number of bunnies with arrow keys",
+                                .characterSize    = 16,
+                                .outlineColor     = sf::Color::Black,
+                                .outlineThickness = 2.f,
+                            });
     }
 };
 
@@ -440,8 +446,7 @@ class ExampleAudio
 {
 private:
     ////////////////////////////////////////////////////////////
-    sf::RenderWindow& m_window;
-    const sf::Font&   m_font;
+    GameDependencies m_deps;
 
     ////////////////////////////////////////////////////////////
     float m_time = 0.f;
@@ -472,7 +477,7 @@ private:
 
 public:
     ////////////////////////////////////////////////////////////
-    explicit ExampleAudio(sf::RenderWindow& window, const sf::Font& font) : m_window{window}, m_font{font}
+    explicit ExampleAudio(const GameDependencies& deps) : m_deps{deps}
     {
         refreshPlaybackDevices();
     }
@@ -584,8 +589,7 @@ class ExampleIndividualShape
 {
 private:
     ////////////////////////////////////////////////////////////
-    sf::RenderWindow& m_window;
-    const sf::Font&   m_font;
+    GameDependencies m_deps;
 
     ////////////////////////////////////////////////////////////
     float m_time  = 0.f;
@@ -645,7 +649,7 @@ private:
 
 public:
     ////////////////////////////////////////////////////////////
-    explicit ExampleIndividualShape(sf::RenderWindow& window, const sf::Font& font) : m_window{window}, m_font{font}
+    explicit ExampleIndividualShape(const GameDependencies& deps) : m_deps{deps}
     {
     }
 
@@ -779,7 +783,7 @@ public:
     {
         m_phase = 0.f;
 
-        callWithActiveShape([this](auto& shapeData) { m_window.draw(shapeData); });
+        callWithActiveShape([this](auto& shapeData) { m_deps.rtGame->draw(shapeData); });
     }
 };
 
@@ -789,8 +793,9 @@ class Game
 {
 private:
     ////////////////////////////////////////////////////////////
-    sf::RenderWindow& m_window;
-    sf::ImGuiContext& m_imGuiContext;
+    sf::RenderWindow&  m_window;
+    sf::RenderTexture& m_rtGame;
+    sf::ImGuiContext&  m_imGuiContext;
 
     ////////////////////////////////////////////////////////////
     sf::Clock m_clock;
@@ -831,10 +836,13 @@ private:
     };
 
     ////////////////////////////////////////////////////////////
-    ExampleShapes          m_exampleShapes{m_window, m_font};
-    ExampleBunnyMark       m_exampleBunnyMark{m_window, m_font, m_textureAtlas, m_bunnyTextureRects};
-    ExampleAudio           m_exampleAudio{m_window, m_font};
-    ExampleIndividualShape m_exampleIndividualShape{m_window, m_font};
+    GameDependencies m_deps{&m_window, &m_rtGame, &m_font};
+
+    ////////////////////////////////////////////////////////////
+    ExampleShapes          m_exampleShapes{m_deps};
+    ExampleBunnyMark       m_exampleBunnyMark{m_deps, m_textureAtlas, m_bunnyTextureRects};
+    ExampleAudio           m_exampleAudio{m_deps};
+    ExampleIndividualShape m_exampleIndividualShape{m_deps};
 
     ////////////////////////////////////////////////////////////
     static inline constexpr const char* exampleNames[]{"Shapes", "Bunnymark", "Audio", "IndividualShape"};
@@ -882,8 +890,9 @@ private:
 
 public:
     ////////////////////////////////////////////////////////////
-    explicit Game(sf::RenderWindow& window, sf::ImGuiContext& imGuiContext) :
+    explicit Game(sf::RenderWindow& window, sf::RenderTexture& rtGame, sf::ImGuiContext& imGuiContext) :
         m_window{window},
+        m_rtGame{rtGame},
         m_imGuiContext{imGuiContext}
     {
     }
@@ -984,7 +993,7 @@ public:
             // ---
             m_clock.restart();
 
-            m_window.clear();
+            m_rtGame.clear();
 
             if (m_activeExample == 0u)
                 m_exampleShapes.draw();
@@ -1005,14 +1014,26 @@ public:
             // ---
             m_clock.restart();
             {
-                m_imGuiContext.render(m_window);
 
-                const auto [drawCalls, drawnVertices] = m_window.display();
+                const auto [drawCalls, drawnVertices] = m_rtGame.display();
 
                 m_lastFrameDrawCallCount = drawCalls;
                 m_lastFrameDrawnVertices = drawnVertices;
             }
             m_samplesDisplayMs.record(m_clock.getElapsedTime().asSeconds() * 1000.f);
+            // ---
+            ////////////////////////////////////////////////////////////
+
+            ////////////////////////////////////////////////////////////
+            // Display render texture on window
+            ////////////////////////////////////////////////////////////
+            // ---
+            {
+                m_window.clear();
+                m_window.draw(m_rtGame.getTexture());
+                m_imGuiContext.render(m_window);
+                m_window.display();
+            }
             // ---
             ////////////////////////////////////////////////////////////
 
@@ -1034,7 +1055,7 @@ int main()
 
     //
     //
-    // Set up window
+    // Set up window and render texture
     auto window = makeDPIScaledRenderWindow(
                       {
                           .size           = resolution.toVec2u(),
@@ -1042,11 +1063,10 @@ int main()
                           .resizable      = true,
                           .vsync          = true,
                           .frametimeLimit = 144u,
-
-                          // TODO P0: restore AA with RenderTexture
-                          // .contextSettings = {.antiAliasingLevel = 8u},
                       })
                       .value();
+
+    auto rtGame = makeAARenderTexture(resolution.toVec2u(), /* desiredAALevel */ 8u).value();
 
     //
     //
@@ -1056,7 +1076,7 @@ int main()
     //
     //
     // Set up game and simulation loop
-    Game game{window, imGuiContext};
+    Game game{window, rtGame, imGuiContext};
 
     if (!game.run())
         return 1;

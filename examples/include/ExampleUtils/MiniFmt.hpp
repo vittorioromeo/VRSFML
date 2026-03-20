@@ -275,6 +275,31 @@ template <typename... Args>
     return sf::base::String(buffer, static_cast<sf::base::SizeT>(endPtr - buffer));
 }
 
+
+////////////////////////////////////////////////////////////
+void printImpl(const char* formattedString);
+
+
+////////////////////////////////////////////////////////////
+template <typename... Args>
+void print(const typename NonDeduced<const FormatString<Args...>>::type formatString, const Args&... args)
+{
+    // TODO P1: code repetition
+    enum : sf::base::SizeT
+    {
+        bufferSize = 512
+    };
+
+    char buffer[bufferSize];
+
+    const auto* const endPtr = formatIntoBuffer(buffer, bufferSize, formatString, args...);
+
+    if (endPtr == nullptr)
+        sf::base::abort(); // Formatting failed (buffer too small)
+
+    printImpl(buffer);
+}
+
 } // namespace minifmt
 
 // TODO P0: continue and use

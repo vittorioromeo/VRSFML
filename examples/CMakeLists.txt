@@ -1,5 +1,5 @@
 # ExampleUtils library
-add_library(ExampleUtils STATIC src/ExampleUtils/Scaling.cpp)
+add_library(ExampleUtils STATIC src/ExampleUtils/MiniFmt.cpp src/ExampleUtils/Scaling.cpp)
 target_link_libraries(ExampleUtils PUBLIC SFML::System SFML::Window SFML::Graphics)
 target_include_directories(ExampleUtils PRIVATE ${PROJECT_SOURCE_DIR}/examples/include)
 
