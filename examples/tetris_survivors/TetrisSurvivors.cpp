@@ -1,3 +1,5 @@
+// TODO P0: broken scaling on Wayland?
+
 #include "ExampleUtils/Easing.hpp"
 #include "ExampleUtils/HueColor.hpp"
 #include "ExampleUtils/LoadedSound.hpp"
@@ -6,7 +8,6 @@
 #include "ExampleUtils/SoundManager.hpp"
 #include "ExampleUtils/Timer.hpp"
 
-#include "SFML/Base/ToString.hpp"
 
 #define SFEX_PROFILER_ENABLED
 #include "ExampleUtils/Profiler.hpp"
@@ -96,6 +97,7 @@
 #include "SFML/Base/Remainder.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StringView.hpp"
+#include "SFML/Base/ToString.hpp"
 #include "SFML/Base/Trait/IsConst.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
@@ -598,14 +600,11 @@ private:
     ////////////////////////////////////////////////////////////
     sf::RenderWindow m_window = makeDPIScaledRenderWindow(
                                     {
-                                        .size            = resolution.toVec2u(),
-                                        .title           = "Tetris Survivors",
-                                        .resizable       = true,
-                                        .vsync           = false,
-                                        .frametimeLimit  = 144u,
-
-                                        // TODO P0: restore AA with RenderTexture
-                                        // .contextSettings = {.antiAliasingLevel = 0u},
+                                        .size           = resolution.toVec2u(),
+                                        .title          = "Tetris Survivors",
+                                        .resizable      = true,
+                                        .vsync          = false,
+                                        .frametimeLimit = 144u,
                                     })
                                     .value();
 
@@ -3446,8 +3445,8 @@ private:
             {
                 m_rtGame.draw(m_textureAtlas.getTexture(),
                               {
-                                  .position = dividerStartPos - drawBlockSize + sf::Vec2f{3.f, 3.f} +
-                                              sf::Vec2uz{x, y}.toVec2f().componentWiseMul(drawBlockSize),
+                                  .position    = dividerStartPos - drawBlockSize + sf::Vec2f{3.f, 3.f} +
+                                                 sf::Vec2uz{x, y}.toVec2f().componentWiseMul(drawBlockSize),
                                   .textureRect = m_txrDivider,
                               },
                               {
@@ -3731,9 +3730,9 @@ private:
             {
                 for (int i = 0; i < 2; ++i)
                     m_hueColorCircleShapeParticles.emplaceBack(CircleParticleData{
-                        .position = lastDrawPos - drillDrawOffset +
-                                    drillDirectionToVec2i(drillAnim->direction).toVec2f() * (radius / 2.f) +
-                                    m_rngFast.getVec2f({-3.f, -3.f}, {3.f, 3.f}),
+                        .position      = lastDrawPos - drillDrawOffset +
+                                         drillDirectionToVec2i(drillAnim->direction).toVec2f() * (radius / 2.f) +
+                                         m_rngFast.getVec2f({-3.f, -3.f}, {3.f, 3.f}),
                         .velocity      = m_rngFast.getVec2f({-0.75f, -2.15f}, {0.75f, -0.25f}) * 0.05f,
                         .scale         = m_rngFast.getF(0.08f, 0.27f) * 0.95f,
                         .scaleDecay    = 0.f,
@@ -3904,7 +3903,7 @@ private:
             {
                 spike.position = floorVec2(offset + ghostBlockDrawPos.addY(sf::base::floor(drawBlockSize.y / 2.f))) -
                                  sf::Vec2f{1.f, 1.f};
-                spike.color = ghostColor;
+                spike.color    = ghostColor;
                 m_rtGame.draw(spike, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
             }
         }

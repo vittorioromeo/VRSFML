@@ -553,9 +553,6 @@ private:
                                         .resizable      = true,
                                         .vsync          = true,
                                         .frametimeLimit = 144u,
-
-                                        // TODO P0: restore AA with RenderTexture
-                                        // .contextSettings = {.antiAliasingLevel = m_aaLevel},
                                     })
                                     .value();
 
@@ -684,21 +681,21 @@ private:
     sf::CPUDrawableBatch m_dbObjectAttributes;
 
     //////////////////////////////////////////////////////////////
-    static inline constexpr float shadowTextureResMult = 0.75f;
+    static inline constexpr float shadowTextureResMult = 1.f;
 
     //////////////////////////////////////////////////////////////
     sf::RenderTexture m_rtSpriteBg{
         sf::RenderTexture::create((m_window.getSize().toVec2f() * 2.f * shadowTextureResMult).toVec2u(),
-                                  {.antiAliasingLevel = 0u, .sRgbCapable = false})
+                                  {.antiAliasingLevel = m_aaLevel, .sRgbCapable = false})
             .value()};
 
     sf::RenderTexture m_rtSpriteBgTemp{
         sf::RenderTexture::create((m_window.getSize().toVec2f() * 2.f * shadowTextureResMult).toVec2u(),
-                                  {.antiAliasingLevel = 0u, .sRgbCapable = false})
+                                  {.antiAliasingLevel = m_aaLevel, .sRgbCapable = false})
             .value()};
 
     sf::RenderTexture m_rtGame{
-        sf::RenderTexture::create(m_window.getSize() * 2u, {.antiAliasingLevel = 0u, .sRgbCapable = false}).value()};
+        sf::RenderTexture::create(m_window.getSize() * 2u, {.antiAliasingLevel = m_aaLevel, .sRgbCapable = false}).value()};
 
     //////////////////////////////////////////////////////////////
     sf::Texture m_txUndo        = sf::Texture::create(m_rtGame.getSize(), {.smooth = true}).value();
@@ -1706,11 +1703,11 @@ public:
                                 m_dbObjectAttributes.add(sf::Sprite{
                                     .position = drawPosition,
                                     .scale = scaleMultiplier.rotatedBy(block.gravityDir.toVec2f().abs().angle()) * 0.6f,
-                                    .origin   = {64.f, 64.f},
-                                    .rotation = sf::radians(
-                                                    block.gravityDir.toVec2f().componentWiseMul({-1.f, 1.f}).angle().asRadians() +
-                                                    rotationRadians + arrowRotationRadians)
-                                                    .wrapUnsigned(),
+                                    .origin      = {64.f, 64.f},
+                                    .rotation    = sf::radians(
+                                                       block.gravityDir.toVec2f().componentWiseMul({-1.f, 1.f}).angle().asRadians() +
+                                                       rotationRadians + arrowRotationRadians)
+                                                       .wrapUnsigned(),
                                     .textureRect = m_txrGravArrow,
                                     .color       = getHueColor(kindToColor(blockImpl.kind).toHSL().hue),
                                 });

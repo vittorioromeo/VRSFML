@@ -400,8 +400,6 @@ int main()
     sf::cOut() << sf::Texture::getMaximumSize() << '\n';
     return 0;
 
-    // TODO P0: aa level of 4 causes glcheck assert fail on opengl
-
     auto window = sf::RenderWindow::create({.size{screenSize},
                                             .title = "Window",
                                             .vsync = true,

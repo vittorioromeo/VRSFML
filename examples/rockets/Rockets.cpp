@@ -1449,7 +1449,7 @@ int main()
 
     //
     //
-    // Set up window
+    // Set up window and render texture
     constexpr sf::Vec2f resolution{1680.f, 1050.f};
 
     auto window = makeDPIScaledRenderWindow(
@@ -1462,11 +1462,10 @@ int main()
                           .hasTitlebar    = false,
                           .vsync          = false,
                           .frametimeLimit = 144u,
-
-                          // TODO P0: restore AA with RenderTexture
-                          // .contextSettings = {.antiAliasingLevel = 16u},
                       })
                       .value();
+
+    auto rtGame = makeAARenderTexture(resolution.toVec2u(), /* desiredAALevel */ 8u).value();
 
     // TODO P0: GPUStorage is still glitchy, some synchronization issue persists...
     window.setAutoBatchMode(sf::RenderTarget::AutoBatchMode::GPUStorage);
@@ -1888,35 +1887,41 @@ int main()
 
             SFEX_PROFILE_SCOPE("draw");
 
-            window.clear();
+            rtGame.clear();
 
-            const auto prevView = window.getView();
+            const auto prevView = rtGame.getView();
 
-            window.setView({.center   = {resolution.x / (2.f * zoom), resolution.y / 2.f},
+            rtGame.setView({.center   = {resolution.x / (2.f * zoom), resolution.y / 2.f},
                             .size     = prevView.size / zoom,
                             .viewport = prevView.viewport});
 
             if (drawStep)
             {
                 if (mode == Mode::OOP)
-                    oopWorld.draw(window);
+                    oopWorld.draw(rtGame);
                 else if (mode == Mode::AOS)
-                    aosWorld.draw(window);
+                    aosWorld.draw(rtGame);
                 else if (mode == Mode::AOSImproved)
-                    aosImprovedWorld.draw(window);
+                    aosImprovedWorld.draw(rtGame);
                 else if (mode == Mode::SOAManual)
-                    soaManualWorld.draw(window);
+                    soaManualWorld.draw(rtGame);
                 else if (mode == Mode::SOAMeta)
-                    soaMetaWorld.draw(window);
+                    soaMetaWorld.draw(rtGame);
             }
 
-            window.setView(prevView);
+            rtGame.setView(prevView);
+
+            rtGame.display();
         }
         // ---
 
         // ---
         {
             SamplerScopeGuard guard{samplesDisplayMs};
+
+            window.clear();
+
+            window.draw(rtGame.getTexture());
 
             if (drawUI)
                 imGuiContext.render(window);

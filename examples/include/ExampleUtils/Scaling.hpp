@@ -18,6 +18,7 @@
 namespace sf
 {
 class RenderWindow;
+class RenderTexture;
 class Event;
 struct WindowSettings;
 } // namespace sf
@@ -87,3 +88,9 @@ struct WindowSettings;
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] sf::base::Optional<sf::RenderWindow> makeDPIScaledRenderWindow(const sf::WindowSettings& windowSettings);
+
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
+[[nodiscard]] sf::base::Optional<sf::RenderTexture> makeAARenderTexture(sf::Vec2u resolution, unsigned int desiredAALevel);
