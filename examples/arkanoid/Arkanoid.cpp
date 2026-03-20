@@ -5,6 +5,7 @@
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
+#include "SFML/Graphics/RenderTexture.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 
 #include "SFML/Window/EventUtils.hpp"
@@ -226,7 +227,7 @@ int main()
 
     //
     //
-    // Set up window
+    // Set up window and render texture
     auto window = makeDPIScaledRenderWindow(
                       {
                           .size           = resolution.toVec2u(),
@@ -234,11 +235,10 @@ int main()
                           .resizable      = true,
                           .vsync          = true,
                           .frametimeLimit = 144u,
-
-                          // TODO P0: restore AA with RenderTexture
-                          // .contextSettings = {.antiAliasingLevel = 8u},
                       })
                       .value();
+
+    auto rtGame = makeAARenderTexture(resolution.toVec2u(), /* desiredAALevel */ 8u).value();
 
     //
     //
@@ -258,8 +258,12 @@ int main()
 
         game.update();
 
+        rtGame.clear();
+        game.drawOnto(rtGame);
+        rtGame.display();
+
         window.clear();
-        game.drawOnto(window);
+        window.draw(rtGame.getTexture());
         window.display();
     }
 

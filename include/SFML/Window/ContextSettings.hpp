@@ -74,8 +74,8 @@ struct ContextSettings
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    unsigned int depthBits{};                           //!< Bits of the depth buffer
-    unsigned int stencilBits{};                         //!< Bits of the stencil buffer
+    unsigned int depthBits{0u};                         //!< Bits of the depth buffer
+    unsigned int stencilBits{0u};                       //!< Bits of the stencil buffer
     unsigned int majorVersion{defaultMajorVersion};     //!< Major number of the context version to create
     unsigned int minorVersion{defaultMinorVersion};     //!< Minor number of the context version to create
     Attribute    attributeFlags{defaultAttributeFlags}; //!< Flags for context creation (core, debug, etc.)

@@ -7,6 +7,9 @@
 ////////////////////////////////////////////////////////////
 #include "ExampleUtils/Scaling.hpp"
 
+#include "ExampleUtils/MiniFmt.hpp"
+
+#include "SFML/Graphics/RenderTexture.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/View.hpp"
 
@@ -150,4 +153,19 @@ sf::base::Optional<sf::RenderWindow> makeDPIScaledRenderWindow(const sf::WindowS
         renderWindow->setView({.center = fSize / 2.f, .size = fSize});
 
     return renderWindow;
+}
+
+
+////////////////////////////////////////////////////////////
+sf::base::Optional<sf::RenderTexture> makeAARenderTexture(const sf::Vec2u resolution, unsigned int desiredAALevel)
+{
+    const auto maxAALevel = sf::RenderTexture::getMaximumAntiAliasingLevel();
+
+    if (desiredAALevel > maxAALevel)
+    {
+        minifmt::print("Desired AA level {} higher than supported {}, falling back to maximum", desiredAALevel, maxAALevel);
+        desiredAALevel = maxAALevel;
+    }
+
+    return sf::RenderTexture::create(resolution.toVec2u(), {.antiAliasingLevel = desiredAALevel});
 }
