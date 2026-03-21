@@ -545,23 +545,9 @@ Rect2i RenderTarget::getScissor(const View& view) const
 
 
 ////////////////////////////////////////////////////////////
-Vec2f RenderTarget::mapPixelToCoords(const Vec2i point) const
-{
-    return mapPixelToCoords(point, getView());
-}
-
-
-////////////////////////////////////////////////////////////
 Vec2f RenderTarget::mapPixelToCoords(const Vec2i point, const View& view) const
 {
     return view.unproject(point.toVec2f(), getSize().toVec2f());
-}
-
-
-////////////////////////////////////////////////////////////
-Vec2i RenderTarget::mapCoordsToPixel(const Vec2f point) const
-{
-    return mapCoordsToPixel(point, getView());
 }
 
 
@@ -1170,7 +1156,7 @@ void RenderTarget::resetGLStatesImpl()
 {
 // Workaround for states not being properly reset on
 // macOS unless a context switch really takes place
-#if defined(SFML_SYSTEM_MACOS)
+#ifdef SFML_SYSTEM_MACOS
     if (!setActive(false))
         priv::err() << "Failed to set render target inactive";
 #endif

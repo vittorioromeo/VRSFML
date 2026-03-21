@@ -292,26 +292,6 @@ public:
     [[nodiscard]] Rect2i getScissor(const View& view) const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert a point from target coordinates to world
-    ///        coordinates, using the current view
-    ///
-    /// This function is an overload of the mapPixelToCoords
-    /// function that implicitly uses the current view.
-    /// It is equivalent to:
-    /// \code
-    /// target.mapPixelToCoords(point, target.getView());
-    /// \endcode
-    ///
-    /// \param point Pixel to convert
-    ///
-    /// \return The converted point, in "world" coordinates
-    ///
-    /// \see `mapCoordsToPixel`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vec2f mapPixelToCoords(Vec2i point) const;
-
-    ////////////////////////////////////////////////////////////
     /// \brief Convert a point from target coordinates to world coordinates
     ///
     /// This function finds the 2D position that matches the
@@ -341,26 +321,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Vec2f mapPixelToCoords(Vec2i point, const View& view) const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Convert a point from world coordinates to target
-    ///        coordinates, using the current view
-    ///
-    /// This function is an overload of the `mapCoordsToPixel`
-    /// function that implicitly uses the current view.
-    /// It is equivalent to:
-    /// \code
-    /// target.mapCoordsToPixel(point, target.getView());
-    /// \endcode
-    ///
-    /// \param point Point to convert
-    ///
-    /// \return The converted point, in target coordinates (pixels)
-    ///
-    /// \see `mapPixelToCoords`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vec2i mapCoordsToPixel(Vec2f point) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert a point from world coordinates to target coordinates

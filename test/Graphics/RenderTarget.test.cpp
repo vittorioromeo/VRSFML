@@ -103,13 +103,13 @@ TEST_CASE("[Graphics] sf::RenderTarget")
         view.viewport = sf::Rect2f({0, 0}, {.5f, 1});
         TestRenderTarget renderTarget;
         renderTarget.setView(view);
-        const auto [x1, y1] = renderTarget.mapPixelToCoords({0, 0});
+        const auto [x1, y1] = renderTarget.mapPixelToCoords({0, 0}, renderTarget.getView());
         CHECK_THAT(x1, Catch::Matchers::WithinRel(5, 1e-4));
         CHECK_THAT(y1, Catch::Matchers::WithinRel(5, 1e-4));
-        const auto [x2, y2] = renderTarget.mapPixelToCoords({1, 1});
+        const auto [x2, y2] = renderTarget.mapPixelToCoords({1, 1}, renderTarget.getView());
         CHECK_THAT(x2, Catch::Matchers::WithinRel(8.125, 1e-4));
         CHECK_THAT(y2, Catch::Matchers::WithinRel(7.0833, 1e-4));
-        const auto [x3, y3] = renderTarget.mapPixelToCoords({320, 240});
+        const auto [x3, y3] = renderTarget.mapPixelToCoords({320, 240}, renderTarget.getView());
         CHECK_THAT(x3, Catch::Matchers::WithinRel(1005, 1e-5));
         CHECK_THAT(y3, Catch::Matchers::WithinRel(505, 1e-5));
     }
@@ -135,9 +135,9 @@ TEST_CASE("[Graphics] sf::RenderTarget")
         view.viewport = sf::Rect2f({.25f, 0}, {1, 1});
         TestRenderTarget renderTarget;
         renderTarget.setView(view);
-        CHECK(renderTarget.mapCoordsToPixel({0, 0}) == sf::Vec2i(156, -2));
-        CHECK(renderTarget.mapCoordsToPixel({-500, 0}) == sf::Vec2i(-163, -2));
-        CHECK(renderTarget.mapCoordsToPixel({0, -250}) == sf::Vec2i(156, -122));
+        CHECK(renderTarget.mapCoordsToPixel({0, 0}, renderTarget.getView()) == sf::Vec2i(156, -2));
+        CHECK(renderTarget.mapCoordsToPixel({-500, 0}, renderTarget.getView()) == sf::Vec2i(-163, -2));
+        CHECK(renderTarget.mapCoordsToPixel({0, -250}, renderTarget.getView()) == sf::Vec2i(156, -122));
     }
 
     SECTION("mapCoordsToPixel(Vec2f, const View&)")
@@ -147,9 +147,9 @@ TEST_CASE("[Graphics] sf::RenderTarget")
         view.viewport = sf::Rect2f({0, 0}, {.5, .25f});
         TestRenderTarget renderTarget;
         renderTarget.setView(view);
-        CHECK(renderTarget.mapCoordsToPixel({0, 0}) == sf::Vec2i(-1, 0));
-        CHECK(renderTarget.mapCoordsToPixel({320, 0}) == sf::Vec2i{100, 0});
-        CHECK(renderTarget.mapCoordsToPixel({0, 480}) == sf::Vec2i(-1, 57));
-        CHECK(renderTarget.mapCoordsToPixel({640, 480}) == sf::Vec2i{203, 57});
+        CHECK(renderTarget.mapCoordsToPixel({0, 0}, renderTarget.getView()) == sf::Vec2i(-1, 0));
+        CHECK(renderTarget.mapCoordsToPixel({320, 0}, renderTarget.getView()) == sf::Vec2i{100, 0});
+        CHECK(renderTarget.mapCoordsToPixel({0, 480}, renderTarget.getView()) == sf::Vec2i(-1, 57));
+        CHECK(renderTarget.mapCoordsToPixel({640, 480}, renderTarget.getView()) == sf::Vec2i{203, 57});
     }
 }
