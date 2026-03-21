@@ -140,7 +140,9 @@ sf::Rect2f   txrRocket;
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::RenderTarget::DrawInstancedIndexedVerticesSettings makeInstancedDrawSettings(const sf::base::SizeT nInstances)
+[[nodiscard]] sf::RenderTarget::DrawInstancedIndexedVerticesSettings makeInstancedDrawSettings(
+    const sf::base::SizeT nInstances,
+    const sf::View&       view)
 {
     return {.vaoHandle     = *instanceRenderingVAOGroup,
             .vertexData    = instancedQuadVertices,
@@ -149,13 +151,14 @@ sf::Rect2f   txrRocket;
             .indexCount    = 6u,
             .instanceCount = nInstances,
             .primitiveType = sf::PrimitiveType::Triangles,
-            .renderStates  = {.texture = txAtlas, .shader = instanceRenderingShader}};
+            .renderStates  = {.view = view, .texture = txAtlas, .shader = instanceRenderingShader}};
 }
 
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline]] inline void drawParticleImpl(
     sf::RenderTarget& rt,
+    const sf::View&   view,
     const sf::Vec2f   position,
     const sf::Vec2f   scale,
     const float       rotation,
@@ -171,12 +174,12 @@ sf::Rect2f   txrRocket;
             .textureRect = txr,
             .color       = sf::Color::whiteMask(static_cast<sf::base::U8>(opacity * 255.f)),
         },
-        sf::RenderStates{.texture = txAtlas});
+        sf::RenderStates{.view = view, .texture = txAtlas});
 }
 
 
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] inline void drawRocketImpl(sf::RenderTarget& rt, const sf::Vec2f position)
+[[gnu::always_inline]] inline void drawRocketImpl(sf::RenderTarget& rt, const sf::View& view, const sf::Vec2f position)
 {
     rt.draw(
         sf::Sprite{
@@ -187,7 +190,7 @@ sf::Rect2f   txrRocket;
             .textureRect = txrRocket,
             .color       = sf::Color::White,
         },
-        sf::RenderStates{.texture = txAtlas});
+        sf::RenderStates{.view = view, .texture = txAtlas});
 }
 
 
@@ -216,7 +219,7 @@ struct Entity
         velocity += acceleration * dt;
     }
 
-    virtual void draw(sf::RenderTarget&)
+    virtual void draw(sf::RenderTarget&, const sf::View&)
     {
     }
 };
@@ -238,10 +241,10 @@ struct World
             entities[i]->update(dt);
     }
 
-    void draw(sf::RenderTarget& rt)
+    void draw(sf::RenderTarget& rt, const sf::View& view)
     {
         for (const auto& entity : entities)
-            entity->draw(rt);
+            entity->draw(rt, view);
     }
 
     template <typename T>
@@ -302,18 +305,18 @@ struct Particle : Entity // NOLINT(cppcoreguidelines-pro-type-member-init)
 ////////////////////////////////////////////////////////////
 struct SmokeParticle final : Particle
 {
-    void draw(sf::RenderTarget& rt) override
+    void draw(sf::RenderTarget& rt, const sf::View& view) override
     {
-        drawParticleImpl(rt, position, {scale, scale}, rotation, txrSmoke, opacity);
+        drawParticleImpl(rt, view, position, {scale, scale}, rotation, txrSmoke, opacity);
     }
 };
 
 ////////////////////////////////////////////////////////////
 struct FireParticle final : Particle
 {
-    void draw(sf::RenderTarget& rt) override
+    void draw(sf::RenderTarget& rt, const sf::View& view) override
     {
-        drawParticleImpl(rt, position, {scale, scale}, rotation, txrFire, opacity);
+        drawParticleImpl(rt, view, position, {scale, scale}, rotation, txrFire, opacity);
     }
 };
 
@@ -398,9 +401,9 @@ struct Rocket final : Entity
         }
     }
 
-    void draw(sf::RenderTarget& rt) override
+    void draw(sf::RenderTarget& rt, const sf::View& view) override
     {
-        drawRocketImpl(rt, position);
+        drawRocketImpl(rt, view, position);
     }
 };
 
@@ -636,7 +639,7 @@ struct World
     }
 
     ////////////////////////////////////////////////////////////
-    void draw(sf::RenderTarget& rt)
+    void draw(sf::RenderTarget& rt, const sf::View& view)
     {
         const auto drawParticlesInstanced =
             [&](const auto& instanceBuffer, const sf::base::SizeT vboIndexOffset, const sf::Rect2f& txr)
@@ -657,7 +660,8 @@ struct World
             instanceRenderingShader->setUniform(*instanceRenderingULTextureRect,
                                                 sf::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
 
-            rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(instanceBuffer.size()), setupSpriteInstanceAttribs);
+            rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(instanceBuffer.size(), view),
+                                            setupSpriteInstanceAttribs);
         };
 
         const auto nParticles = particles.size();
@@ -686,7 +690,7 @@ struct World
             SFEX_PROFILE_SCOPE("rockets");
 
             for (const auto& r : rockets)
-                drawRocketImpl(rt, r.position);
+                drawRocketImpl(rt, view, r.position);
         }
     }
 };
@@ -890,7 +894,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
     }
 
     ////////////////////////////////////////////////////////////
-    void draw(sf::RenderTarget& rt)
+    void draw(sf::RenderTarget& rt, const sf::View& view)
     {
         const auto drawParticlesInstanced =
             [&](const sf::base::SizeT vboIndexOffset, const sf::Rect2f& txr, const auto& particles)
@@ -920,7 +924,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
             instanceRenderingShader->setUniform(*instanceRenderingULTextureRect,
                                                 sf::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
 
-            rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(nParticles), setupSpriteInstanceAttribs);
+            rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(nParticles, view), setupSpriteInstanceAttribs);
         };
 
         {
@@ -937,7 +941,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
             SFEX_PROFILE_SCOPE("rockets");
 
             for (const auto& r : rockets)
-                drawRocketImpl(rt, r.position);
+                drawRocketImpl(rt, view, r.position);
         }
     }
 };
@@ -1151,7 +1155,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
     }
 
     ////////////////////////////////////////////////////////////
-    void draw(sf::RenderTarget& rt)
+    void draw(sf::RenderTarget& rt, const sf::View& view)
     {
         const auto drawParticlesInstanced =
             [&](const sf::base::SizeT vboIndexOffset, const sf::Rect2f& txr, const auto& particles)
@@ -1180,7 +1184,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
             instanceRenderingShader->setUniform(*instanceRenderingULTextureRect,
                                                 sf::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
 
-            rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(nParticles), setupSpriteInstanceAttribs);
+            rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(nParticles, view), setupSpriteInstanceAttribs);
         };
 
         {
@@ -1197,7 +1201,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
             SFEX_PROFILE_SCOPE("rockets");
 
             for (const auto& r : rockets)
-                drawRocketImpl(rt, r.position);
+                drawRocketImpl(rt, view, r.position);
         }
     }
 };
@@ -1370,7 +1374,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
     }
 
     ////////////////////////////////////////////////////////////
-    void draw(sf::RenderTarget& rt)
+    void draw(sf::RenderTarget& rt, const sf::View& view)
     {
         const auto drawParticlesInstanced =
             [&](const sf::base::SizeT vboIndexOffset, const sf::Rect2f& txr, const auto& particles)
@@ -1399,7 +1403,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
             instanceRenderingShader->setUniform(*instanceRenderingULTextureRect,
                                                 sf::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
 
-            rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(nParticles), setupSpriteInstanceAttribs);
+            rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(nParticles, view), setupSpriteInstanceAttribs);
         };
 
         {
@@ -1416,7 +1420,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
             SFEX_PROFILE_SCOPE("rockets");
 
             for (const auto& r : rockets)
-                drawRocketImpl(rt, r.position);
+                drawRocketImpl(rt, view, r.position);
         }
     }
 };
@@ -1464,6 +1468,9 @@ int main()
                           .frametimeLimit = 144u,
                       })
                       .value();
+
+    auto worldView  = sf::View::fromSize(resolution);
+    auto windowView = sf::View::fromSize(resolution);
 
     auto rtGame = makeAARenderTexture(resolution.toVec2u(), /* desiredAALevel */ 8u).value();
 
@@ -1632,7 +1639,7 @@ int main()
                 if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                     return 0;
 
-                if (handleAspectRatioAwareResize(*event, resolution, window))
+                if (handleAspectRatioAwareResize(*event, resolution, windowView))
                     continue;
 
                 if (auto* eKeyPressed = event->getIf<sf::Event::KeyPressed>())
@@ -1887,29 +1894,24 @@ int main()
 
             SFEX_PROFILE_SCOPE("draw");
 
+            worldView.size   = resolution / zoom;
+            worldView.center = {(resolution.x / zoom) / 2.f, resolution.y / 2.f};
+
             rtGame.clear();
-
-            const auto prevView = rtGame.getView();
-
-            rtGame.setView({.center   = {resolution.x / (2.f * zoom), resolution.y / 2.f},
-                            .size     = prevView.size / zoom,
-                            .viewport = prevView.viewport});
 
             if (drawStep)
             {
                 if (mode == Mode::OOP)
-                    oopWorld.draw(rtGame);
+                    oopWorld.draw(rtGame, worldView);
                 else if (mode == Mode::AOS)
-                    aosWorld.draw(rtGame);
+                    aosWorld.draw(rtGame, worldView);
                 else if (mode == Mode::AOSImproved)
-                    aosImprovedWorld.draw(rtGame);
+                    aosImprovedWorld.draw(rtGame, worldView);
                 else if (mode == Mode::SOAManual)
-                    soaManualWorld.draw(rtGame);
+                    soaManualWorld.draw(rtGame, worldView);
                 else if (mode == Mode::SOAMeta)
-                    soaMetaWorld.draw(rtGame);
+                    soaMetaWorld.draw(rtGame, worldView);
             }
-
-            rtGame.setView(prevView);
 
             rtGame.display();
         }
@@ -1921,7 +1923,7 @@ int main()
 
             window.clear();
 
-            window.draw(rtGame.getTexture());
+            window.draw(rtGame.getTexture(), {.view = windowView});
 
             if (drawUI)
                 imGuiContext.render(window);

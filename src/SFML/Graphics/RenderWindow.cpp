@@ -115,52 +115,12 @@ bool RenderWindow::setActive(bool active)
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Event> RenderWindow::filterEvent(base::Optional<Event> event)
-{
-    if (event.hasValue() && event->getIf<Event::Resized>())
-        onResize();
-
-    return event;
-}
-
-
-////////////////////////////////////////////////////////////
-base::Optional<Event> RenderWindow::pollEvent()
-{
-    return filterEvent(WindowBase::pollEvent());
-}
-
-
-////////////////////////////////////////////////////////////
-base::Optional<Event> RenderWindow::waitEvent(Time timeout)
-{
-    return filterEvent(WindowBase::waitEvent(timeout));
-}
-
-
-////////////////////////////////////////////////////////////
 RenderTarget::DrawStatistics RenderWindow::display()
 {
     const auto result = RenderTarget::flush();
     RenderTarget::syncGPUEndFrame();
     Window::display();
     return result;
-}
-
-
-////////////////////////////////////////////////////////////
-void RenderWindow::setSize(const Vec2u& size)
-{
-    WindowBase::setSize(size);
-    onResize();
-}
-
-
-////////////////////////////////////////////////////////////
-void RenderWindow::onResize()
-{
-    // Update the current view (recompute the viewport, which is stored in relative coordinates)
-    setView(getView());
 }
 
 } // namespace sf

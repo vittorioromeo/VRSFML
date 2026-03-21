@@ -74,6 +74,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
         }
     };
 
+
     ////////////////////////////////////////////////////////////
     /// \brief Create a view from a rectangle
     ///
@@ -83,6 +84,16 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     [[nodiscard, gnu::const]] static constexpr View fromRect(const Rect2f& rectangle)
     {
         return {.center = rectangle.position + rectangle.size / 2.f, .size = rectangle.size};
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::const]] static constexpr View fromSize(const Vec2f& size)
+    {
+        return {.center = size / 2.f, .size = size};
     }
 
 

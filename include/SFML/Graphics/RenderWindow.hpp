@@ -154,30 +154,6 @@ public:
     [[nodiscard]] bool setActive(bool active = true) override;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Sets the size of the window and forwards to `WindowBase::setSize`
-    ///
-    /// \see WindowBase::setSize
-    ///
-    ////////////////////////////////////////////////////////////
-    void setSize(const Vec2u& size);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Polls the next event and forwards to `WindowBase::pollEvent`
-    ///
-    /// \see WindowBase::pollEvent
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<Event> pollEvent();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Waits for the next event and forwards to `WindowBase::waitEvent`
-    ///
-    /// \see WindowBase::waitEvent
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<Event> waitEvent(Time timeout = {});
-
-    ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
@@ -192,29 +168,6 @@ public:
     [[nodiscard]] explicit RenderWindow(base::PassKey<RenderWindow>&&, Window&& window);
 
 private:
-    ////////////////////////////////////////////////////////////
-    /// \brief Function called after the window has been resized
-    ///
-    /// This function is called so that derived classes can
-    /// perform custom actions when the size of the window changes.
-    ///
-    ////////////////////////////////////////////////////////////
-    void onResize();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Processes an event before it is sent to the user
-    ///
-    /// This function is called every time an event is received
-    /// from the internal window (through pollEvent or waitEvent).
-    /// It filters out unwanted events, and performs whatever internal
-    /// stuff the window needs before the event is returned to the
-    /// user.
-    ///
-    /// \param event Event to filter
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<Event> filterEvent(base::Optional<Event> event);
-
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////

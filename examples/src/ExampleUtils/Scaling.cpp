@@ -87,7 +87,7 @@ sf::Rect2f getPixelPerfectViewport(const sf::Vec2f windowSize, const sf::Vec2f n
 
 
 ////////////////////////////////////////////////////////////
-bool handleResizeImpl(const sf::Event& event, const sf::Vec2f originalSize, sf::RenderWindow& renderWindow, auto&& fnViewport)
+static bool handleResizeImpl(const sf::Event& event, const sf::Vec2f originalSize, sf::View& view, auto&& fnViewport)
 {
     const auto* eResized = event.getIf<sf::Event::Resized>();
     if (eResized == nullptr)
@@ -98,43 +98,41 @@ bool handleResizeImpl(const sf::Event& event, const sf::Vec2f originalSize, sf::
     if (newSize.x <= 0.f || newSize.y <= 0.f)
         return true;
 
-    auto view     = renderWindow.getView();
     view.viewport = fnViewport(newSize, originalSize);
-    renderWindow.setView(view);
-
     return true;
 }
 
 
 ////////////////////////////////////////////////////////////
-bool handleNonScalingResize(const sf::Event& event, [[maybe_unused]] const sf::Vec2f originalSize, sf::RenderWindow& renderWindow)
+bool handleNonScalingResize(const sf::Event& event, [[maybe_unused]] const sf::Vec2f originalSize, sf::View& view)
 {
     const auto* eResized = event.getIf<sf::Event::Resized>();
     if (eResized == nullptr)
         return false;
 
-    auto view = renderWindow.getView();
+    const auto newSize = eResized->size.toVec2f();
 
-    view.size   = renderWindow.getSize().toVec2f();
-    view.center = view.size / 2.f;
+    if (newSize.x <= 0.f || newSize.y <= 0.f)
+        return true;
 
-    renderWindow.setView(view);
+    view.size   = newSize;
+    view.center = newSize / 2.f;
 
     return true;
 }
 
 
 ////////////////////////////////////////////////////////////
-bool handleAspectRatioAwareResize(const sf::Event& event, const sf::Vec2f originalSize, sf::RenderWindow& renderWindow)
+bool handleAspectRatioAwareResize(const sf::Event& event, const sf::Vec2f originalSize, sf::View& view)
 {
-    return handleResizeImpl(event, originalSize, renderWindow, &getAspectRatioAwareViewport);
+    return handleResizeImpl(event, originalSize, view, &getAspectRatioAwareViewport);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool handlePixelPerfectResize(const sf::Event& event, const sf::Vec2f nativeResolution, sf::RenderWindow& renderWindow)
+bool handlePixelPerfectResize(const sf::Event& event, const sf::Vec2f nativeResolution, sf::View& view)
 {
-    return handleResizeImpl(event, nativeResolution, renderWindow, &getPixelPerfectViewport);
+    return handleResizeImpl(event, nativeResolution, view, &getPixelPerfectViewport);
 }
 
 
@@ -147,12 +145,7 @@ sf::base::Optional<sf::RenderWindow> makeDPIScaledRenderWindow(const sf::WindowS
     auto adjustedWindowSettings = windowSettings;
     adjustedWindowSettings.size = (fSize * primaryDisplayContentScale).toVec2u();
 
-    auto renderWindow = sf::RenderWindow::create(adjustedWindowSettings);
-
-    if (renderWindow.hasValue())
-        renderWindow->setView({.center = fSize / 2.f, .size = fSize});
-
-    return renderWindow;
+    return sf::RenderWindow::create(adjustedWindowSettings);
 }
 
 

@@ -209,6 +209,8 @@ class Edge : public Effect
 public:
     void update(float time, float x, float y) override
     {
+        const auto surfaceView = sf::View::fromSize({800.f, 600.f});
+
         m_shader.setUniform(m_ulEdgeThreshold, sf::base::clamp(1.f - (x + y) / 2.f, 0.f, 1.f));
 
         // Render the updated scene to the off-screen surface
@@ -226,7 +228,7 @@ public:
                 {sf::base::cos(0.25f * (time * static_cast<float>(i) + static_cast<float>(numEntities - i))) * 300 + 350,
                  sf::base::sin(0.25f * (time * static_cast<float>(numEntities - i) + static_cast<float>(i))) * 200 + 250};
 
-            m_surface.draw(entity, {.texture = &m_entityTexture});
+            m_surface.draw(entity, {.view = surfaceView, .texture = &m_entityTexture});
         }
 
         m_surface.display();
@@ -484,6 +486,8 @@ int main()
                       })
                       .value();
 
+    auto gameView = sf::View::fromSize(windowSize);
+
     // Start the game loop
     const sf::Clock clock;
 
@@ -495,7 +499,7 @@ int main()
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
-            if (handleAspectRatioAwareResize(*event, windowSize, window))
+            if (handleAspectRatioAwareResize(*event, windowSize, gameView))
                 continue;
 
             if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
@@ -543,20 +547,20 @@ int main()
             window.clear(currentEffect == edgeEffect.asPtr() ? sf::Color::White : sf::Color(50, 50, 50));
 
             // Draw the current example
-            window.draw(*currentEffect);
+            window.draw(*currentEffect, {.view = gameView});
         }
         else
         {
             // Clear the window to grey to make sure the text is always readable
             window.clear(sf::Color(50, 50, 50));
-            window.draw(
-                sf::Text{font, {.position = {320.f, 200.f}, .string = "Shader not\nsupported", .characterSize = 36u}});
+            window.draw(sf::Text{font, {.position = {320.f, 200.f}, .string = "Shader not\nsupported", .characterSize = 36u}},
+                        {.view = gameView});
         }
 
         // Draw the text
-        window.draw(textBackgroundTexture, {.position = {0.f, 520.f}, .color = {255, 255, 255, 200}});
-        window.draw(instructions);
-        window.draw(description);
+        window.draw(textBackgroundTexture, {.position = {0.f, 520.f}, .color = {255, 255, 255, 200}}, {.view = gameView});
+        window.draw(instructions, {.view = gameView});
+        window.draw(description, {.view = gameView});
 
         // Finally, display the rendered frame on screen
         window.display();

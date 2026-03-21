@@ -20,6 +20,7 @@ namespace sf
 class RenderWindow;
 class RenderTexture;
 class Event;
+struct View;
 struct WindowSettings;
 } // namespace sf
 
@@ -57,15 +58,13 @@ struct WindowSettings;
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool handleNonScalingResize(const sf::Event&           event,
-                                          [[maybe_unused]] sf::Vec2f originalSize,
-                                          sf::RenderWindow&          renderWindow);
+[[nodiscard]] bool handleNonScalingResize(const sf::Event& event, [[maybe_unused]] sf::Vec2f originalSize, sf::View& view);
 
 ////////////////////////////////////////////////////////////
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool handleAspectRatioAwareResize(const sf::Event& event, sf::Vec2f originalSize, sf::RenderWindow& renderWindow);
+[[nodiscard]] bool handleAspectRatioAwareResize(const sf::Event& event, sf::Vec2f originalSize, sf::View& view);
 
 ////////////////////////////////////////////////////////////
 /// \brief Handles a window resize event to maintain pixel-perfect scaling.
@@ -81,7 +80,7 @@ struct WindowSettings;
 /// \return True if the event was a resize event and was handled, false otherwise.
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool handlePixelPerfectResize(const sf::Event& event, sf::Vec2f nativeResolution, sf::RenderWindow& renderWindow);
+[[nodiscard]] bool handlePixelPerfectResize(const sf::Event& event, sf::Vec2f nativeResolution, sf::View& view);
 
 ////////////////////////////////////////////////////////////
 /// \brief TODO P1: docs

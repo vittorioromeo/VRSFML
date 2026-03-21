@@ -23,7 +23,6 @@
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/Touch.hpp"
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
@@ -79,6 +78,8 @@ int main()
                           .vsync        = true,
                       })
                       .value();
+
+    auto gameView = sf::View::fromSize(gameSize);
 
     // Create an audio context and get the default playback device
     auto               audioContext = sf::AudioContext::create().value();
@@ -151,7 +152,7 @@ int main()
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
-            if (handleAspectRatioAwareResize(*event, gameSize, window))
+            if (handleAspectRatioAwareResize(*event, gameSize, gameView))
                 continue;
 
             // Space key pressed: play
@@ -286,9 +287,9 @@ int main()
         if (isPlaying)
         {
             // Draw the paddles and the ball
-            window.draw(leftPaddle);
-            window.draw(rightPaddle);
-            window.draw(ball);
+            window.draw(leftPaddle, {.view = gameView});
+            window.draw(rightPaddle, {.view = gameView});
+            window.draw(ball, {.view = gameView});
         }
         else
         {
@@ -296,11 +297,11 @@ int main()
             wiggleTextEffect.apply(pauseMessage);
 
             // Draw the pause message
-            window.draw(pauseMessage);
+            window.draw(pauseMessage, {.view = gameView});
 
             wiggleTextEffect.unapply(pauseMessage);
 
-            window.draw(sfmlLogoTexture, {.position = {170.f, 50.f}});
+            window.draw(sfmlLogoTexture, {.position = {170.f, 50.f}}, {.view = gameView});
         }
 
         // Display things on screen

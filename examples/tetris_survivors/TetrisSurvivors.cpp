@@ -610,6 +610,10 @@ private:
                                     .value();
 
     ////////////////////////////////////////////////////////////
+    sf::View m_worldView  = sf::View::fromSize(resolution);
+    sf::View m_windowView = sf::View::fromSize(resolution);
+
+    ////////////////////////////////////////////////////////////
     sf::Shader m_shader{[]
     {
         auto result = sf::Shader::loadFromFile({
@@ -1062,7 +1066,7 @@ private:
                           .textureRect = txr,
                           .color       = commonDrawParams.color,
                       },
-                      {.shader = &m_shader});
+                      {.view = m_worldView, .shader = &m_shader});
 
         if (block.powerup != BlockPowerup::None && options.drawText)
         {
@@ -1076,7 +1080,7 @@ private:
                                   .textureRect = m_txrPowerupXP,
                                   .color       = commonDrawParams.color,
                               },
-                              {.shader = &m_shader});
+                              {.view = m_worldView, .shader = &m_shader});
             }
             else if (block.powerup == BlockPowerup::ColumnDrill)
             {
@@ -1092,7 +1096,7 @@ private:
                                   .textureRect = m_txrPowerupBomb,
                                   .color       = commonDrawParams.color,
                               },
-                              {.shader = &m_shader});
+                              {.view = m_worldView, .shader = &m_shader});
             }
         }
 
@@ -1107,12 +1111,12 @@ private:
                           }};
 
             text.setGlobalCenter(floorVec2(position.addY(yOffset) + sf::Vec2f{2.f, 3.f}));
-            m_rtGame.draw(text);
+            m_rtGame.draw(text, {.view = m_worldView});
 
             text.setFillColor(sf::Color::whiteMask(alpha));
 
             text.setGlobalCenter(floorVec2(position.addY(yOffset)) + sf::Vec2f{2.f, 2.f});
-            m_rtGame.draw(text);
+            m_rtGame.draw(text, {.view = m_worldView});
         }
 
         if (block.tickTimerTarget != nullTickTimerTarget && options.drawTimer)
@@ -1142,25 +1146,29 @@ private:
                 timerLine.position = commonDrawParams.position + sf::Vec2f{embed, embed};
                 timerLine.rotation = sf::degrees(0.f);
                 timerLine.size     = {(drawBlockSize.x - embed * 2.f) * p0, 1.f};
-                m_rtGame.draw(timerLine, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+                m_rtGame.draw(timerLine,
+                              {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
 
                 // right line
                 timerLine.position = commonDrawParams.position + sf::Vec2f{drawBlockSize.x - embed - 1.f, embed};
                 timerLine.rotation = sf::degrees(0.f);
                 timerLine.size     = {1.f, (drawBlockSize.y - embed * 2.f) * p1};
-                m_rtGame.draw(timerLine, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+                m_rtGame.draw(timerLine,
+                              {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
 
                 // bottom line
                 timerLine.position = commonDrawParams.position + sf::Vec2f{1.f - embed, 1.f - embed};
                 timerLine.rotation = sf::degrees(180.f);
                 timerLine.size     = {(drawBlockSize.x - embed * 2.f) * p2, 1.f};
-                m_rtGame.draw(timerLine, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+                m_rtGame.draw(timerLine,
+                              {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
 
                 // left line
                 timerLine.position = commonDrawParams.position + sf::Vec2f{-drawBlockSize.x + embed + 2.f, 1.f - embed};
                 timerLine.rotation = sf::degrees(180.f);
                 timerLine.size     = {1.f, (drawBlockSize.y - embed * 2.f) * p3};
-                m_rtGame.draw(timerLine, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+                m_rtGame.draw(timerLine,
+                              {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
             };
 
             if (useDamagedTexture)
@@ -1988,7 +1996,7 @@ private:
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return ControlFlow::Break;
 
-            if (handleNonScalingResize(*event, resolution, m_window))
+            if (handleNonScalingResize(*event, resolution, m_windowView))
                 continue;
 
             if (auto* eKeyPressed = event->getIf<sf::Event::KeyPressed>())
@@ -3091,11 +3099,13 @@ private:
 
         const auto darkenAlpha = static_cast<sf::base::U8>((0.65f * m_menuDelayProgress) * 255.f);
 
-        m_rtGame.draw(sf::RectangleShapeData{
-            .position  = {0.f, 0.f},
-            .fillColor = sf::Color::blackMask(darkenAlpha),
-            .size      = resolution,
-        });
+        m_rtGame.draw(
+            sf::RectangleShapeData{
+                .position  = {0.f, 0.f},
+                .fillColor = sf::Color::blackMask(darkenAlpha),
+                .size      = resolution,
+            },
+            {.view = m_worldView});
 
         sf::Vec2f shopSize{280.f, 161.f};
 
@@ -3120,7 +3130,7 @@ private:
                 .outlineThickness = 1.f,
                 .size             = shopSize,
             },
-            {.transform = menuTransform});
+            {.transform = menuTransform, .view = m_worldView});
 
         m_textVerticesBuffer.clear();
         m_textIndicesBuffer.clear();
@@ -3154,7 +3164,7 @@ private:
                                              .outlineColor     = {135, 135, 135},
                                              .outlineThickness = 1.f,
                                              .size             = titleGlobalBounds.size + sf::Vec2f{16.f, 8.f}},
-                      {.transform = menuTransform});
+                      {.transform = menuTransform, .view = m_worldView});
 
         /*
 
@@ -3165,7 +3175,7 @@ private:
                 .fillColor = {135, 135, 135},
                 .size      = {shopSize.x - 8.f, 1.f},
             },
-            {.transform = menuTransform});
+            {.transform = menuTransform, .view = m_worldView});
 
         */
 
@@ -3202,14 +3212,14 @@ private:
                                                  .origin    = {0.f, 0.f},
                                                  .fillColor = sf::Color::VeryDarkBrown.withAlpha(100),
                                                  .size      = {32.f, 32.f}},
-                          {.transform = menuTransform});
+                          {.transform = menuTransform, .view = m_worldView});
 
             m_rtGame.draw(sf::RectangleShapeData{.position  = globalBounds.position - sf::Vec2f{1.f, 1.f},
                                                  .origin    = {0.f, 0.f},
                                                  .fillColor = sf::Color::VeryDarkBrown.withAlpha(100),
                                                  .size = globalBounds.size.withY(sf::base::max(40.f, globalBounds.size.y)) +
                                                          sf::Vec2f{2.f, 2.f}},
-                          {.transform = menuTransform});
+                          {.transform = menuTransform, .view = m_worldView});
 
             if (m_selectedPerk == iPerk)
             {
@@ -3217,7 +3227,7 @@ private:
                                                      .origin    = {0.f, 0.f},
                                                      .fillColor = sf::Color::VeryDarkGreen,
                                                      .size      = globalBounds.size + sf::Vec2f{2.f, 2.f}},
-                              {.transform = menuTransform});
+                              {.transform = menuTransform, .view = m_worldView});
             }
 
             perkDrawPos.y += sf::base::max(40.f, globalBounds.size.y) + 12.f;
@@ -3234,6 +3244,7 @@ private:
             .renderStates =
                 {
                     .transform = menuTransform,
+                    .view      = m_worldView,
                     .texture   = &m_textureAtlas.getTexture(),
                 },
         });
@@ -3430,14 +3441,16 @@ private:
 
         const sf::Vec2uz gridSize{m_world.blockGrid.getWidth(), m_world.blockGrid.getHeight() - gridGraceY};
 
-        m_rtGame.draw(sf::RectangleShapeData{
-            .position         = toDrawCoordinates(sf::Vec2uz{0, gridGraceY}),
-            .origin           = floorVec2(drawBlockSize / 2.f),
-            .fillColor        = {30, 30, 30},
-            .outlineColor     = {35, 35, 35},
-            .outlineThickness = 1.f,
-            .size             = gridSize.toVec2f().componentWiseMul(drawBlockSize).addX(2.f).addY(2.f),
-        });
+        m_rtGame.draw(
+            sf::RectangleShapeData{
+                .position         = toDrawCoordinates(sf::Vec2uz{0, gridGraceY}),
+                .origin           = floorVec2(drawBlockSize / 2.f),
+                .fillColor        = {30, 30, 30},
+                .outlineColor     = {35, 35, 35},
+                .outlineThickness = 1.f,
+                .size             = gridSize.toVec2f().componentWiseMul(drawBlockSize).addX(2.f).addY(2.f),
+            },
+            {.view = m_worldView});
 
         const auto dividerStartPos = toDrawCoordinates(sf::Vec2uz{0, gridGraceY});
 
@@ -3451,27 +3464,32 @@ private:
                                   .textureRect = m_txrDivider,
                               },
                               {
+                                  .view   = m_worldView,
                                   .shader = &m_shader,
                               });
             }
 
-        m_rtGame.draw(sf::RectangleShapeData{
-            .position         = toDrawCoordinates(sf::Vec2uz{0, gridGraceY}) - sf::Vec2f{1.f, 1.f},
-            .origin           = floorVec2(drawBlockSize / 2.f),
-            .fillColor        = sf::Color::Transparent,
-            .outlineColor     = {35, 35, 35},
-            .outlineThickness = 1.f,
-            .size             = gridSize.toVec2f().componentWiseMul(drawBlockSize).addX(4.f).addY(4.f),
-        });
+        m_rtGame.draw(
+            sf::RectangleShapeData{
+                .position         = toDrawCoordinates(sf::Vec2uz{0, gridGraceY}) - sf::Vec2f{1.f, 1.f},
+                .origin           = floorVec2(drawBlockSize / 2.f),
+                .fillColor        = sf::Color::Transparent,
+                .outlineColor     = {35, 35, 35},
+                .outlineThickness = 1.f,
+                .size             = gridSize.toVec2f().componentWiseMul(drawBlockSize).addX(4.f).addY(4.f),
+            },
+            {.view = m_worldView});
 
-        m_rtGame.draw(sf::RectangleShapeData{
-            .position         = toDrawCoordinates(sf::Vec2uz{0, gridGraceY}) - sf::Vec2f{3.f, 3.f},
-            .origin           = floorVec2(drawBlockSize / 2.f),
-            .fillColor        = sf::Color::Transparent,
-            .outlineColor     = {135, 135, 135},
-            .outlineThickness = 1.f,
-            .size             = gridSize.toVec2f().componentWiseMul(drawBlockSize).addX(8.f).addY(8.f),
-        });
+        m_rtGame.draw(
+            sf::RectangleShapeData{
+                .position         = toDrawCoordinates(sf::Vec2uz{0, gridGraceY}) - sf::Vec2f{3.f, 3.f},
+                .origin           = floorVec2(drawBlockSize / 2.f),
+                .fillColor        = sf::Color::Transparent,
+                .outlineColor     = {135, 135, 135},
+                .outlineThickness = 1.f,
+                .size             = gridSize.toVec2f().componentWiseMul(drawBlockSize).addX(8.f).addY(8.f),
+            },
+            {.view = m_worldView});
     }
 
 
@@ -3758,7 +3776,7 @@ private:
                                   .textureRect = m_txrDrill,
                                   .color       = hueColorFromPaletteIdx(paletteIdx, 255u),
                               },
-                              {.shader = &m_shader});
+                              {.view = m_worldView, .shader = &m_shader});
             }
         }
     }
@@ -3897,7 +3915,7 @@ private:
             // Draw main spike
             spike.position = floorVec2(offset + mainBlockDrawPos.addX(sf::base::floor(-drawBlockSize.x / 2.f)));
             spike.color    = mainColor;
-            m_rtGame.draw(spike, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+            m_rtGame.draw(spike, {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
 
             // Draw ghost spike
             if (drawGhost)
@@ -3905,7 +3923,7 @@ private:
                 spike.position = floorVec2(offset + ghostBlockDrawPos.addY(sf::base::floor(drawBlockSize.y / 2.f))) -
                                  sf::Vec2f{1.f, 1.f};
                 spike.color = ghostColor;
-                m_rtGame.draw(spike, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+                m_rtGame.draw(spike, {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
             }
         }
     }
@@ -4032,12 +4050,12 @@ private:
             guide.setFillColor(mainColor.withAlpha(32));
             guide.setSize({1.f, (endPos - startPos).length()});
             guide.setGlobalAnchorPoint(guideAnchorPoint, startPos + guideOffset);
-            m_rtGame.draw(guide, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+            m_rtGame.draw(guide, {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
 
             guide.setFillColor(mainColor.withAlpha(16));
             guide.setSize({2.f, (endPos - startPos).length()});
             guide.setGlobalAnchorPoint(guideAnchorPoint, startPos + guideOffset);
-            m_rtGame.draw(guide, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+            m_rtGame.draw(guide, {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
 
             return endPos;
         };
@@ -4052,7 +4070,7 @@ private:
             // Draw main spike
             spike.position = mainSpikePos + (laserDir * 4).toVec2f();
             spike.color    = mainColor;
-            m_rtGame.draw(spike, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+            m_rtGame.draw(spike, {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
 
             if (!drawGhost)
                 continue;
@@ -4063,7 +4081,7 @@ private:
             // Draw ghost spike
             spike.position = ghostSpikePos + (laserDir * 4).toVec2f();
             spike.color    = ghostColor;
-            m_rtGame.draw(spike, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+            m_rtGame.draw(spike, {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
 
             const auto endPos = drawGuide(ghostSpikePos, laserDirection, rotation);
 
@@ -4285,12 +4303,12 @@ private:
         SFEX_PROFILE_SCOPE_AUTOLABEL();
 
         for (auto& lb : m_lightningBolts)
-            lb.draw(m_rtGame, {.blendMode = sf::BlendAdd});
+            lb.draw(m_rtGame, {.blendMode = sf::BlendAdd, .view = m_worldView});
 
         if (m_optLaserBeam.hasValue())
         {
-            m_optLaserBeam->draw(m_rtGame, {.blendMode = sf::BlendAdd});
-            m_optLaserBeam->draw(m_rtGame, {.blendMode = sf::BlendAdd});
+            m_optLaserBeam->draw(m_rtGame, {.blendMode = sf::BlendAdd, .view = m_worldView});
+            m_optLaserBeam->draw(m_rtGame, {.blendMode = sf::BlendAdd, .view = m_worldView});
         }
     }
 
@@ -4332,6 +4350,7 @@ private:
                     .pointCount  = 3u,
                 },
                 {
+                    .view    = m_worldView,
                     .texture = &m_textureAtlas.getTexture(),
                     .shader  = &m_shader,
                 });
@@ -4345,13 +4364,14 @@ private:
         SFEX_PROFILE_SCOPE_AUTOLABEL();
 
         for (const auto& particle : m_hueColorCircleShapeParticles)
-            m_rtGame.draw(particleToCircleData(particle), {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+            m_rtGame.draw(particleToCircleData(particle),
+                          {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
 
         for (const auto& particle : m_fixedColorCircleShapeParticles)
-            m_rtGame.draw(particleToCircleData(particle), {});
+            m_rtGame.draw(particleToCircleData(particle), {.view = m_worldView});
 
         for (const auto& particle : m_fixedColorSpriteParticles)
-            m_rtGame.draw(particleToSpriteData(particle), {.texture = &m_textureAtlas.getTexture()});
+            m_rtGame.draw(particleToSpriteData(particle), {.view = m_worldView, .texture = &m_textureAtlas.getTexture()});
     }
 
 
@@ -4381,7 +4401,7 @@ private:
             .size             = {128.f, 64.f},
         }};
 
-        m_rtGame.draw(statsBorder);
+        m_rtGame.draw(statsBorder, {.view = m_worldView});
 
         m_textVerticesBuffer.clear();
         m_textIndicesBuffer.clear();
@@ -4422,7 +4442,7 @@ private:
             .indexData     = m_textIndicesBuffer.data(),
             .indexCount    = m_textIndicesBuffer.size(),
             .primitiveType = sf::PrimitiveType::Triangles,
-            .renderStates  = {.texture = &m_textureAtlas.getTexture()},
+            .renderStates  = {.view = m_worldView, .texture = &m_textureAtlas.getTexture()},
         });
     }
 
@@ -4440,7 +4460,7 @@ private:
             .size             = {184.f, 64.f + 48.f},
         }};
 
-        m_rtGame.draw(statsBorder);
+        m_rtGame.draw(statsBorder , {.view = m_worldView});
 
         sf::base::String perksStr;
 
@@ -4470,7 +4490,7 @@ private:
             .indexData     = m_textIndicesBuffer.data(),
             .indexCount    = m_textIndicesBuffer.size(),
             .primitiveType = sf::PrimitiveType::Triangles,
-            .renderStates  = {.texture = &m_textureAtlas.getTexture()},
+            .renderStates  = {.view = m_worldView, .texture = &m_textureAtlas.getTexture()},
         });
     }
 
@@ -4527,7 +4547,7 @@ private:
                                   .string        = "Next:",
                                   .characterSize = 16u,
                                   .outlineColor  = sf::Color::White,
-                              });
+                              }, {.view = m_worldView});
 
             if (m_world.perkCanHoldTetramino == 1)
                 m_rtGame.draw(m_font,
@@ -4536,7 +4556,7 @@ private:
                                   .string        = "Held:",
                                   .characterSize = 16u,
                                   .outlineColor  = sf::Color::White,
-                              });
+                              }, {.view = m_worldView});
 
             drawShop();
         }
@@ -4569,22 +4589,17 @@ private:
         m_shaderCRT.setUniform(m_ulTime, m_totalTime);
 
         if (m_rtPostProcess.getSize() != rtGameSize.toVec2u())
-        {
             m_rtPostProcess = sf::RenderTexture::create(rtGameSize.toVec2u()).value();
 
-            auto view = m_rtPostProcess.getView();
-
-            view.size   = m_rtGame.getSize().toVec2f();
-            view.center = view.size / 2.f;
-
-            m_rtPostProcess.setView(view);
-        }
 
         {
             SFEX_PROFILE_SCOPE("postprocess");
 
+            const auto postProcessInternalView = sf::View::fromSize(m_rtGame.getSize().toVec2f());
+
             m_rtPostProcess.clear();
-            m_rtPostProcess.draw(m_rtGame.getTexture(), {.shader = m_useCRTShader ? &m_shaderCRT : nullptr});
+            m_rtPostProcess.draw(m_rtGame.getTexture(),
+                                 {.view = postProcessInternalView, .shader = m_useCRTShader ? &m_shaderCRT : nullptr});
             m_rtPostProcess.display();
         }
 
@@ -4597,7 +4612,9 @@ private:
             SFEX_PROFILE_SCOPE("final draw");
 
             m_window.clear();
-            m_window.draw(m_rtPostProcess.getTexture(), {.position = finalPosition}, {.shader = &m_shaderPostProcess});
+            m_window.draw(m_rtPostProcess.getTexture(),
+                          {.position = finalPosition},
+                          {.view = m_windowView, .shader = &m_shaderPostProcess});
             m_imGuiContext.render(m_window);
         }
 

@@ -9,6 +9,7 @@
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/View.hpp"
@@ -60,12 +61,12 @@ int main()
     // Axes labels in as strings
     const sf::base::Array<sf::base::String, 8> axisLabels = {"X", "Y", "Z", "R", "U", "V", "PovX", "PovY"};
 
-    constexpr sf::Vec2f windowSize{400.f, 775.f};
+    constexpr sf::Vec2f initialWindowSize{400.f, 775.f};
 
     // Create the window of the application
     auto window = makeDPIScaledRenderWindow(
                       {
-                          .size      = windowSize.toVec2u(),
+                          .size      = initialWindowSize.toVec2u(),
                           .title     = "Joystick",
                           .resizable = true,
                           .vsync     = true,
@@ -83,9 +84,6 @@ int main()
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
-
-            // if (handleAspectRatioAwareResize(*event, windowSize, window))
-            //     continue;
 
             if (const auto* joystickConnected = event->getIf<sf::Event::JoystickConnected>())
                 eventLog.pushBack(toStr("[Joystick ", joystickConnected->joystickId, "]: connected"));
@@ -127,8 +125,17 @@ int main()
             if (sf::Joystick::query(i))
                 ++connectedJoystickCount;
 
-        window.setSize({400u * sf::base::max(1u, connectedJoystickCount), 775u});
-        window.setView(sf::View{{775.f / 2.f, 775.f / 2.f}, {775.f, 775.f}});
+        const sf::Vec2f logicalSize = {400.f * sf::base::max(1u, connectedJoystickCount), 775.f};
+
+        const sf::View windowView{
+            .center   = logicalSize / 2.f,
+            .size     = logicalSize,
+            .viewport = getAspectRatioAwareViewport(window.getSize().toVec2f(), logicalSize),
+        };
+
+        const sf::RenderStates states{
+            .view = windowView,
+        };
 
         float xOffset      = 0.f;
         float yOffset      = 0.f;
@@ -141,12 +148,14 @@ int main()
                          .string           = label + ":",
                          .characterSize    = characterSize,
                          .outlineColor     = sf::Color::Blue,
-                         .outlineThickness = 0.5f});
+                         .outlineThickness = 0.5f},
+                        states);
 
             window.draw(font,
                         {.position      = {80.f + 320.f * xOffset, 50.f + yOffset * fontLineSpacing},
                          .string        = value,
-                         .characterSize = characterSize});
+                         .characterSize = characterSize},
+                        states);
 
             yOffset += 1.f;
         };
@@ -159,7 +168,8 @@ int main()
                      .string           = toStr("Threshold: ", threshold, "  (Change with up/down arrow keys)"),
                      .characterSize    = characterSize,
                      .outlineColor     = sf::Color::Blue,
-                     .outlineThickness = 0.5f});
+                     .outlineThickness = 0.5f},
+                    states);
 
         for (const auto& eventStr : eventLog)
         {
@@ -168,7 +178,8 @@ int main()
                          .string           = eventStr,
                          .characterSize    = characterSize,
                          .outlineColor     = sf::Color::Blue,
-                         .outlineThickness = 0.5f});
+                         .outlineThickness = 0.5f},
+                        states);
 
             ++yEventOffset;
         }

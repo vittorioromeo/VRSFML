@@ -382,6 +382,8 @@ int main()
                       })
                       .value();
 
+    auto gameView = sf::View::fromSize(windowSize.toVec2f());
+
     // Create all of our graphics resources
     sf::Text hudText(font,
                      {.position         = {5.f, 5.f},
@@ -446,7 +448,7 @@ int main()
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
-            if (handleAspectRatioAwareResize(*event, windowSize.toVec2f(), window))
+            if (handleAspectRatioAwareResize(*event, windowSize.toVec2f(), gameView))
                 continue;
 
             // Arrow key pressed:
@@ -478,7 +480,7 @@ int main()
         // Clear, draw graphics objects and display
         window.clear();
 
-        window.draw(statusText);
+        window.draw(statusText, {.view = gameView});
 
         // Don't bother updating/drawing the VertexBuffer while terrain is being regenerated
         if (pendingTasks.load(std::memory_order::acquire) == 0u)
@@ -496,7 +498,7 @@ int main()
             }
 
             terrainShader.setUniform(ulLightFactor, lightFactor);
-            window.draw(terrain, {.shader = &terrainShader});
+            window.draw(terrain, {.view = gameView, .shader = &terrainShader});
         }
 
         // Update and draw the HUD text
@@ -511,7 +513,7 @@ int main()
 
         hudText.setString(oss.to<sf::UnicodeString>());
 
-        window.draw(hudText);
+        window.draw(hudText, {.view = gameView});
 
         // Display things on screen
         window.display();

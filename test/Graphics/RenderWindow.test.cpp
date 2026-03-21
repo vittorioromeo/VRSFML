@@ -48,11 +48,14 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
             CHECK(window.getNativeHandle() == sf::WindowHandle());
 #endif
             CHECK(!window.isSrgb());
-            CHECK(window.getView().center == sf::Vec2f{128, 128});
-            CHECK(window.getView().size == sf::Vec2f{256, 256});
-            CHECK(window.getView().rotation == sf::Angle::Zero);
-            CHECK(window.getView().viewport == sf::Rect2f({0, 0}, {1, 1}));
-            CHECK(window.getView().getTransform() == Approx(sf::Transform(0.0078125f, 0, -1, 0, -0.0078125f, 1)));
+
+            const auto defaultView = sf::View::fromSize({256.f, 256.f});
+
+            CHECK(defaultView.center == sf::Vec2f{128, 128});
+            CHECK(defaultView.size == sf::Vec2f{256, 256});
+            CHECK(defaultView.rotation == sf::Angle::Zero);
+            CHECK(defaultView.viewport == sf::Rect2f({0, 0}, {1, 1}));
+            CHECK(defaultView.getTransform() == Approx(sf::Transform(0.0078125f, 0, -1, 0, -0.0078125f, 1)));
         }
 
         SECTION("State and settings")
@@ -69,11 +72,14 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
             CHECK(window.getNativeHandle() == sf::WindowHandle());
 #endif
             CHECK(!window.isSrgb());
-            CHECK(window.getView().center == sf::Vec2f{120, 150});
-            CHECK(window.getView().size == sf::Vec2f{240, 300});
-            CHECK(window.getView().rotation == sf::Angle::Zero);
-            CHECK(window.getView().viewport == sf::Rect2f({0, 0}, {1, 1}));
-            CHECK(window.getView().getTransform() == Approx(sf::Transform(0.00833333f, 0, -1, 0, -0.00666667f, 1)));
+
+            const auto defaultView = sf::View::fromSize({240.f, 300.f});
+
+            CHECK(defaultView.center == sf::Vec2f{120, 150});
+            CHECK(defaultView.size == sf::Vec2f{240, 300});
+            CHECK(defaultView.rotation == sf::Angle::Zero);
+            CHECK(defaultView.viewport == sf::Rect2f({0, 0}, {1, 1}));
+            CHECK(defaultView.getTransform() == Approx(sf::Transform(0.00833333f, 0, -1, 0, -0.00666667f, 1)));
         }
     }
 

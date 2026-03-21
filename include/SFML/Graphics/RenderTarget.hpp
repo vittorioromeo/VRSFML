@@ -170,35 +170,6 @@ public:
     void clear(Color color, StencilValue stencilValue);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Change the current active view
-    ///
-    /// The view is like a 2D camera, it controls which part of
-    /// the 2D scene is visible, and how it is viewed in the
-    /// render target.
-    /// The new view will affect everything that is drawn, until
-    /// another view is set.
-    /// The render target keeps its own copy of the view object,
-    /// so it is not necessary to keep the original one alive
-    /// after calling this function.
-    ///
-    /// \param view New view to use
-    ///
-    /// \see `getView`
-    ///
-    ////////////////////////////////////////////////////////////
-    void setView(const View& view);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the view currently in use in the render target
-    ///
-    /// \return The view object that is currently used
-    ///
-    /// \see `setView`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] const View& getView() const;
-
-    ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
