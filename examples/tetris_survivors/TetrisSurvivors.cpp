@@ -64,6 +64,7 @@
 #include "SFML/Graphics/TextureAtlas.hpp"
 #include "SFML/Graphics/Transform.hpp"
 #include "SFML/Graphics/Vertex.hpp"
+#include "SFML/Graphics/View.hpp"
 
 #include "SFML/Audio/AudioContext.hpp"
 #include "SFML/Audio/Music.hpp"
@@ -3445,8 +3446,8 @@ private:
             {
                 m_rtGame.draw(m_textureAtlas.getTexture(),
                               {
-                                  .position    = dividerStartPos - drawBlockSize + sf::Vec2f{3.f, 3.f} +
-                                                 sf::Vec2uz{x, y}.toVec2f().componentWiseMul(drawBlockSize),
+                                  .position = dividerStartPos - drawBlockSize + sf::Vec2f{3.f, 3.f} +
+                                              sf::Vec2uz{x, y}.toVec2f().componentWiseMul(drawBlockSize),
                                   .textureRect = m_txrDivider,
                               },
                               {
@@ -3730,9 +3731,9 @@ private:
             {
                 for (int i = 0; i < 2; ++i)
                     m_hueColorCircleShapeParticles.emplaceBack(CircleParticleData{
-                        .position      = lastDrawPos - drillDrawOffset +
-                                         drillDirectionToVec2i(drillAnim->direction).toVec2f() * (radius / 2.f) +
-                                         m_rngFast.getVec2f({-3.f, -3.f}, {3.f, 3.f}),
+                        .position = lastDrawPos - drillDrawOffset +
+                                    drillDirectionToVec2i(drillAnim->direction).toVec2f() * (radius / 2.f) +
+                                    m_rngFast.getVec2f({-3.f, -3.f}, {3.f, 3.f}),
                         .velocity      = m_rngFast.getVec2f({-0.75f, -2.15f}, {0.75f, -0.25f}) * 0.05f,
                         .scale         = m_rngFast.getF(0.08f, 0.27f) * 0.95f,
                         .scaleDecay    = 0.f,
@@ -3903,7 +3904,7 @@ private:
             {
                 spike.position = floorVec2(offset + ghostBlockDrawPos.addY(sf::base::floor(drawBlockSize.y / 2.f))) -
                                  sf::Vec2f{1.f, 1.f};
-                spike.color    = ghostColor;
+                spike.color = ghostColor;
                 m_rtGame.draw(spike, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
             }
         }
@@ -4568,7 +4569,16 @@ private:
         m_shaderCRT.setUniform(m_ulTime, m_totalTime);
 
         if (m_rtPostProcess.getSize() != rtGameSize.toVec2u())
+        {
             m_rtPostProcess = sf::RenderTexture::create(rtGameSize.toVec2u()).value();
+
+            auto view = m_rtPostProcess.getView();
+
+            view.size   = m_rtGame.getSize().toVec2f();
+            view.center = view.size / 2.f;
+
+            m_rtPostProcess.setView(view);
+        }
 
         {
             SFEX_PROFILE_SCOPE("postprocess");
