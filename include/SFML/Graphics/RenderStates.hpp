@@ -11,6 +11,7 @@
 #include "SFML/Graphics/BlendMode.hpp"
 #include "SFML/Graphics/StencilMode.hpp"
 #include "SFML/Graphics/Transform.hpp"
+#include "SFML/Graphics/View.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -39,6 +40,8 @@ struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
 
     // NOLINTNEXTLINE(readability-redundant-member-init)
     Transform transform{}; //!< Transform
+
+    View view;
 
     const Texture* texture{nullptr}; //!< Texture
     const Shader*  shader{nullptr};  //!< Shader

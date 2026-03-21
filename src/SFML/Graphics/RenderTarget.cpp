@@ -317,8 +317,7 @@ struct [[nodiscard]] StatesCache
     bool enable{false};      //!< Is the cache enabled?
     bool glStatesSet{false}; //!< Are our internal GL states set yet?
 
-    bool      viewChanged{false}; //!< Has the current view changed since last draw?
-    Transform lastViewTransform;  //!< Cached transform of latest view
+    View lastView; //!< Cached latest view
 
     Transform lastRenderStatesTransform; //!< Cached renderstates transform
 
@@ -340,7 +339,6 @@ struct [[nodiscard]] StatesCache
 struct [[nodiscard]] RenderTarget::Impl
 {
     ////////////////////////////////////////////////////////////
-    View                     view;     //!< Current view
     StatesCache              cache{};  //!< Render states cache
     RenderTargetImpl::IdType id{};     //!< Unique number that identifies the render target
     GLVAOGroup               vaoGroup; //!< Associated VAO, VBO, and EBO (non-persistent storage)
@@ -360,9 +358,7 @@ struct [[nodiscard]] RenderTarget::Impl
 #endif
 
     ////////////////////////////////////////////////////////////
-    explicit Impl(const View& theView) :
-        view(theView),
-        id(RenderTargetImpl::nextUniqueId.fetch_add(1u, std::memory_order::relaxed))
+    explicit Impl() : id(RenderTargetImpl::nextUniqueId.fetch_add(1u, std::memory_order::relaxed))
     {
     }
 
@@ -405,7 +401,7 @@ auto RenderTarget::addToAutoBatch(auto&&... xs)
 
 
 ////////////////////////////////////////////////////////////
-RenderTarget::RenderTarget(const View& currentView) : m_impl(currentView)
+RenderTarget::RenderTarget(const View&) : m_impl{}
 {
 }
 
@@ -432,9 +428,14 @@ RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
     // Unbind texture to fix RenderTexture preventing clear
     unapplyTexture(); // See https://en.sfml-dev.org/forums/index.php?topic=9350
 
-    // Apply the view (scissor testing can affect clearing)
-    if (!m_impl->cache.enable || m_impl->cache.viewChanged)
-        applyView(m_impl->view);
+    // Disable scissor so `clear` always affects the whole target.
+    // The next `setupDraw` will automatically re-enable it if the view demands it.
+    if (!m_impl->cache.enable || m_impl->cache.scissorEnabled)
+    {
+        glCheck(glDisable(GL_SCISSOR_TEST));
+        m_impl->cache.scissorEnabled = false;
+    }
+
 
     return true;
 }
@@ -471,26 +472,6 @@ void RenderTarget::clear(const Color color, const StencilValue stencilValue)
     glCheck(glClearColor(color.r / 255.f, color.g / 255.f, color.b / 255.f, color.a / 255.f));
     glCheck(glClearStencil(static_cast<int>(stencilValue.value)));
     glCheck(glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
-}
-
-
-////////////////////////////////////////////////////////////
-void RenderTarget::setView(const View& view)
-{
-    if (view == m_impl->view)
-        return;
-
-    flush();
-
-    m_impl->view              = view;
-    m_impl->cache.viewChanged = true;
-}
-
-
-////////////////////////////////////////////////////////////
-const View& RenderTarget::getView() const
-{
-    return m_impl->view;
 }
 
 
@@ -1199,9 +1180,6 @@ void RenderTarget::resetGLStatesImpl()
 
     VertexBuffer::unbind();
 
-    // Set the default view
-    setView(getView());
-
     m_impl->cache.enable = true;
 }
 
@@ -1337,8 +1315,7 @@ void RenderTarget::applyView(const View& view)
         }
     }
 
-    m_impl->cache.lastViewTransform = view.getTransform();
-    m_impl->cache.viewChanged       = false;
+    m_impl->cache.lastView = view;
 }
 
 
@@ -1455,12 +1432,12 @@ void RenderTarget::setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& sta
     }
 
     // Apply the view
-    const bool viewChanged = !m_impl->cache.enable || m_impl->cache.viewChanged;
+    const bool viewChanged = !m_impl->cache.enable || m_impl->cache.lastView != states.view;
     if (viewChanged)
-        applyView(m_impl->view);
+        applyView(states.view);
 
     // Set the model-view-projection matrix
-    setupDrawMVP(states.transform, m_impl->cache.lastViewTransform, viewChanged, shaderChanged);
+    setupDrawMVP(states.transform, m_impl->cache.lastView.getTransform(), viewChanged, shaderChanged);
 
     // Apply the blend mode
     if (!m_impl->cache.enable || (states.blendMode != m_impl->cache.lastBlendMode))

@@ -159,10 +159,10 @@ public:
     }
 
 private:
-    sf::Listener&                 m_listener;
-    sf::CircleShape               m_listenerShape{{.fillColor = sf::Color::Red, .radius = 20.f}};
-    sf::CircleShape               m_soundShape{{.radius = 20.f}};
-    sf::Vec2f                     m_position;
+    sf::Listener&   m_listener;
+    sf::CircleShape m_listenerShape{{.origin = {10.f, 10.f}, .fillColor = sf::Color::Red, .radius = 20.f}};
+    sf::CircleShape m_soundShape{{.origin = {10.f, 10.f}, .radius = 20.f}};
+    sf::Vec2f       m_position;
     sf::base::Optional<sf::Music> m_music;
 };
 
@@ -324,12 +324,14 @@ public:
 
 private:
     sf::Listener&   m_listener;
-    sf::CircleShape m_listenerShape{{.position  = {(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f + 100.f},
-                                     .fillColor = sf::Color::Red,
-                                     .radius    = 20.f}};
-    sf::CircleShape m_soundShape{{.fillColor = sf::Color::Magenta, .radius = 20.f}};
-    sf::ConvexShape m_soundConeOuter{{.position = {20.f, 20.f}, .fillColor = sf::Color::Black, .pointCount = 3u}};
-    sf::ConvexShape m_soundConeInner{{.position = {20.f, 20.f}, .fillColor = sf::Color::Cyan, .pointCount = 3u}};
+    sf::CircleShape m_listenerShape{
+        {.position  = {(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f + 100.f},
+         .origin    = {10.f, 10.f},
+         .fillColor = sf::Color::Red,
+         .radius    = 20.f}};
+    sf::CircleShape m_soundShape{{.origin = {10.f, 10.f}, .fillColor = sf::Color::Magenta, .radius = 20.f}};
+    sf::ConvexShape m_soundConeOuter{{.position = {10.f, 10.f}, .fillColor = sf::Color::Black, .pointCount = 3u}};
+    sf::ConvexShape m_soundConeInner{{.position = {10.f, 10.f}, .fillColor = sf::Color::Cyan, .pointCount = 3u}};
     sf::Text        m_text;
     sf::Vec2f       m_position;
     sf::base::Optional<sf::Music> m_music;
@@ -618,7 +620,7 @@ private:
     float           m_factor{1.f};
     sf::CircleShape m_listenerShape{
         {.position = {(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f}, .fillColor = sf::Color::Red, .radius = 20.f}};
-    sf::CircleShape m_soundShape{{.radius = 20.f}};
+    sf::CircleShape m_soundShape{{.origin = {10.f, 10.f}, .radius = 20.f}};
     sf::Vec2f       m_position;
     sf::Text        m_currentVelocity;
     sf::Text        m_currentFactor;
@@ -647,8 +649,8 @@ public:
         states.transform.translate(m_position);
 
         target.draw(m_soundShape, states);
-        target.draw(m_enabledText);
-        target.draw(m_instructions);
+        target.draw(m_enabledText, states);
+        target.draw(m_instructions, states);
     }
 
     void start(sf::PlaybackDevice& playbackDevice, sf::MusicReader& musicReader) override
@@ -704,8 +706,8 @@ private:
         m_enabledText.setString(m_enabled ? "Processing: Enabled" : "Processing: Disabled");
     }
 
-    sf::CircleShape m_listenerShape{{.fillColor = sf::Color::Red, .radius = 20.f}};
-    sf::CircleShape m_soundShape{{.radius = 20.f}};
+    sf::CircleShape m_listenerShape{{.origin = {10.f, 10.f}, .fillColor = sf::Color::Red, .radius = 20.f}};
+    sf::CircleShape m_soundShape{{.origin = {10.f, 10.f}, .radius = 20.f}};
     sf::Vec2f       m_position;
     sf::Text        m_enabledText;
     sf::Text        m_instructions;
@@ -1111,6 +1113,8 @@ int main()
                       })
                       .value();
 
+    auto gameView = sf::View::fromSize(windowSize);
+
     // Load the application font and pass it to the Effect class
     const auto font = sf::Font::openFromFile(resourcesDir() / "tuffy.ttf").value();
 
@@ -1220,7 +1224,7 @@ int main()
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
-            if (handleAspectRatioAwareResize(*event, windowSize, window))
+            if (handleAspectRatioAwareResize(*event, windowSize, gameView))
                 continue;
 
             if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
@@ -1314,22 +1318,23 @@ int main()
         }
 
         // Update the current example
-        const auto [x, y] = sf::Mouse::getPosition(window).toVec2f().componentWiseDiv(
-            window.getSize().toVec2f()); // TODO P2: wrong when resizing
+        const auto [x, y] = window.mapPixelToCoords(sf::Mouse::getPosition(window), gameView)
+                                .componentWiseDiv(windowSize.toVec2f());
+
         effects[current]->update(clock.getElapsedTime().asSeconds(), x, y);
 
         // Clear the window
         window.clear({50, 50, 50});
 
         // Draw the current example
-        window.draw(*effects[current]);
+        window.draw(*effects[current], {.view = gameView});
 
         // Draw the text
-        window.draw(textBackgroundTexture, {.position = {0.f, 520.f}, .color = {255, 255, 255, 200}});
-        window.draw(instructions);
-        window.draw(description);
-        window.draw(playbackDeviceText);
-        window.draw(playbackDeviceInstructions);
+        window.draw(textBackgroundTexture, {.position = {0.f, 520.f}, .color = {255, 255, 255, 200}}, {.view = gameView});
+        window.draw(instructions, {.view = gameView});
+        window.draw(description, {.view = gameView});
+        window.draw(playbackDeviceText, {.view = gameView});
+        window.draw(playbackDeviceInstructions, {.view = gameView});
 
         // Finally, display the rendered frame on screen
         window.display();

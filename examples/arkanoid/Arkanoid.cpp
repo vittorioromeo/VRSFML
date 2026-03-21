@@ -208,13 +208,13 @@ public:
             m_player.setGlobalRight(boundaryRight);
     }
 
-    void drawOnto(sf::RenderTarget& renderTarget)
+    void drawOnto(sf::RenderTarget& renderTarget, const sf::View& gameView)
     {
-        renderTarget.draw(m_ball);
-        renderTarget.draw(m_player);
+        renderTarget.draw(m_ball, {.view = gameView});
+        renderTarget.draw(m_player, {.view = gameView});
 
         for (const sf::RectangleShape& brick : m_bricks)
-            renderTarget.draw(brick);
+            renderTarget.draw(brick, {.view = gameView});
     }
 };
 
@@ -238,6 +238,9 @@ int main()
                       })
                       .value();
 
+    auto worldView = sf::View::fromSize(resolution);
+    auto gameView  = sf::View::fromSize(resolution);
+
     auto rtGame = makeAARenderTexture(resolution.toVec2u(), /* desiredAALevel */ 8u).value();
 
     //
@@ -252,18 +255,18 @@ int main()
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
-            if (handleAspectRatioAwareResize(*event, resolution, window))
+            if (handleAspectRatioAwareResize(*event, resolution, gameView))
                 continue;
         }
 
         game.update();
 
         rtGame.clear();
-        game.drawOnto(rtGame);
+        game.drawOnto(rtGame, worldView);
         rtGame.display();
 
         window.clear();
-        window.draw(rtGame.getTexture());
+        window.draw(rtGame.getTexture(), {}, {.view = gameView});
         window.display();
     }
 

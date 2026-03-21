@@ -74,6 +74,7 @@ struct GameDependencies
 {
     sf::RenderWindow* window;
     sf::RenderTarget* rtGame;
+    const sf::View*   view;
     const sf::Font*   font;
 };
 
@@ -114,7 +115,7 @@ private:
     sf::VertexSpan drawShape(const sf::Vec2f currentOffset, const char* label, const auto& shapeData)
     {
         auto result = m_deps.rtGame->draw(applyCommonSettings(currentOffset, shapeData),
-                                          {.texture = &m_deps.font->getTexture()});
+                                          {.view = *m_deps.view, .texture = &m_deps.font->getTexture()});
 
         m_deps.rtGame->draw(*m_deps.font,
                             sf::TextData{
@@ -123,7 +124,8 @@ private:
                                 .characterSize    = 16,
                                 .outlineColor     = sf::Color::Black,
                                 .outlineThickness = 2.f,
-                            });
+                            },
+                            {.view = *m_deps.view});
 
         m_phase += 0.1f;
 
@@ -384,7 +386,7 @@ public:
                     .rotation    = rotation,
                     .textureRect = txr,
                 },
-                {.texture = &m_textureAtlas.getTexture()});
+                {.view = *m_deps.view, .texture = &m_textureAtlas.getTexture()});
 
             ++i;
         }
@@ -793,6 +795,10 @@ class Game
 {
 private:
     ////////////////////////////////////////////////////////////
+    sf::View m_worldView  = sf::View::fromSize(resolution);
+    sf::View m_windowView = sf::View::fromSize(resolution);
+
+    ////////////////////////////////////////////////////////////
     sf::RenderWindow&  m_window;
     sf::RenderTexture& m_rtGame;
     sf::ImGuiContext&  m_imGuiContext;
@@ -836,7 +842,7 @@ private:
     };
 
     ////////////////////////////////////////////////////////////
-    GameDependencies m_deps{&m_window, &m_rtGame, &m_font};
+    GameDependencies m_deps{&m_window, &m_rtGame, &m_worldView, &m_font};
 
     ////////////////////////////////////////////////////////////
     ExampleShapes          m_exampleShapes{m_deps};
@@ -915,7 +921,7 @@ public:
                 if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                     return true;
 
-                if (handleAspectRatioAwareResize(*event, resolution, m_window))
+                if (handleAspectRatioAwareResize(*event, resolution, m_windowView))
                     continue;
 
                 if (auto* eKeyPressed = event->getIf<sf::Event::KeyPressed>())
@@ -1030,7 +1036,7 @@ public:
             // ---
             {
                 m_window.clear();
-                m_window.draw(m_rtGame.getTexture());
+                m_window.draw(m_rtGame.getTexture(), {.view = m_windowView});
                 m_imGuiContext.render(m_window);
                 m_window.display();
             }

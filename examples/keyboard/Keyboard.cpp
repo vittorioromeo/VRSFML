@@ -1058,6 +1058,8 @@ int main()
                       })
                       .value();
 
+    auto gameView = sf::View::fromSize(windowSize);
+
     // Load sound buffers
     const auto errorSoundBuffer    = sf::SoundBuffer::loadFromFile(resourcesDir() / "error_005.ogg").value();
     const auto pressedSoundBuffer  = sf::SoundBuffer::loadFromFile(resourcesDir() / "mouseclick1.ogg").value();
@@ -1091,12 +1093,8 @@ int main()
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
-            if (handleAspectRatioAwareResize(*event, windowSize, window))
+            if (handleAspectRatioAwareResize(*event, windowSize, gameView))
                 continue;
-
-            // Window size changed: adjust view appropriately
-            if (const auto* resized = event->getIf<sf::Event::Resized>())
-                window.setView({.center = resized->size.toVec2f() / 2.f, .size = resized->size.toVec2f()});
 
             // Key events: update text and play sound
             if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
@@ -1158,12 +1156,14 @@ int main()
         }
 
         // Render frame
+        const sf::RenderStates states{.view = gameView};
+
         window.clear();
-        keyboardView.drawOnto(window, sf::RenderStates{});
-        window.draw(keyPressedText);
-        window.draw(keyReleasedText);
-        window.draw(textEnteredText);
-        window.draw(keyPressedCheckText);
+        keyboardView.drawOnto(window, states);
+        window.draw(keyPressedText, states);
+        window.draw(keyReleasedText, states);
+        window.draw(textEnteredText, states);
+        window.draw(keyPressedCheckText, states);
         window.display();
     }
 
