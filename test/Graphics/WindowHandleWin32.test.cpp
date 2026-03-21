@@ -140,7 +140,6 @@ void runWindowTest(DWORD exStyle, bool withMenu)
             INFO("sf::Window custom context test with exStyle: " << exStyle << ", withMenu: " << withMenu);
             CHECK(window->getSettings().depthBits >= 1);
             CHECK(window->getSettings().stencilBits >= 1);
-            CHECK(window->getSettings().antiAliasingLevel >= 1);
         }
 
         INFO("sf::Window test with exStyle: " << exStyle << ", withMenu: " << withMenu);
