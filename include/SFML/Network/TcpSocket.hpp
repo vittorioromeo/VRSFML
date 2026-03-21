@@ -607,7 +607,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    struct Impl; // TODO P1: review impl
+    struct Impl;                      // TODO P1: review impl
     sf::base::UniquePtr<Impl> m_impl; //!< Implementation details
 
     PendingPacket      m_pendingPacket;     //!< Temporary data of the packet currently being received
