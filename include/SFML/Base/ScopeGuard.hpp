@@ -29,10 +29,10 @@ ScopeGuard(F) -> ScopeGuard<F>; // Needed by clang-cl
 
 
 ////////////////////////////////////////////////////////////
-#define SFML_BASE_SCOPE_GUARD(...)                                      \
-    ::sf::base::ScopeGuard SFML_BASE_TOKEN_PASTE(_scopeGuard, __LINE__) \
-    {                                                                   \
-        [&] __VA_ARGS__                                                 \
+#define SFML_BASE_SCOPE_GUARD(...)                                            \
+    const ::sf::base::ScopeGuard SFML_BASE_TOKEN_PASTE(_scopeGuard, __LINE__) \
+    {                                                                         \
+        [&] __VA_ARGS__                                                       \
     }
 
 } // namespace sf::base
