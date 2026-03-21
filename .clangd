@@ -1,4 +1,8 @@
 Diagnostics:
   Suppress: "pp_including_mainfile_in_preamble"
+  ClangTidy:
+    FastCheckFilter: None
+    Remove:
+      - cppcoreguidelines-use-enum-class
 CompileFlags:
   CompilationDatabase: build_vrdev_clang
