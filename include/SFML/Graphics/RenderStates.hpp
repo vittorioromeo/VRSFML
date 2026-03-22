@@ -32,9 +32,6 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
 {
-    ////////////////////////////////////////////////////////////
-    // Member data
-    ////////////////////////////////////////////////////////////
     BlendMode   blendMode{};   //!< Blending mode
     StencilMode stencilMode{}; //!< Stencil mode
 
@@ -46,6 +43,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
     const Texture* texture{nullptr}; //!< Texture
     const Shader*  shader{nullptr};  //!< Shader
 
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator==(const RenderStates&) const = default;
 };
 

@@ -15,6 +15,7 @@
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/VertexSpan.hpp"
 
+#include "SFML/System/Angle.hpp"
 #include "SFML/System/Rect2.hpp"
 #include "SFML/System/Vec2.hpp"
 
@@ -226,7 +227,7 @@ public:
     /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Texture& texture, RenderStates states); // TODO P1: RenderStatesWithoutTexture?
+    void draw(const Texture& texture, RenderStates states);
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a texture to the render target
@@ -236,9 +237,7 @@ public:
     /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Texture&           texture,
-              const TextureDrawParams& params,
-              RenderStates             states); // TODO P1: RenderStatesWithoutTexture?
+    void draw(const Texture& texture, const TextureDrawParams& params, RenderStates states);
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a sprite object to the render target
@@ -269,7 +268,7 @@ public:
     /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Text& text, RenderStates states); // TODO P1: RenderStatesWithoutTexture?
+    void draw(const Text& text, RenderStates states);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -319,7 +318,7 @@ public:
     ///         (WARNING: the span is only valid until the next draw call)
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan draw(const Font& font, const TextData& textData, RenderStates states); // TODO P1: RenderStatesWithoutTexture?
+    VertexSpan draw(const Font& font, const TextData& textData, RenderStates states);
 
     ////////////////////////////////////////////////////////////
     /// \brief Settings used to draw an array of vertices

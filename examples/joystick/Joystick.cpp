@@ -9,7 +9,6 @@
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/View.hpp"
@@ -21,11 +20,14 @@
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/MinMax.hpp"
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/String.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -133,10 +135,6 @@ int main()
             .viewport = getAspectRatioAwareViewport(window.getSize().toVec2f(), logicalSize),
         };
 
-        const sf::RenderStates states{
-            .view = windowView,
-        };
-
         float xOffset      = 0.f;
         float yOffset      = 0.f;
         float yEventOffset = 0.f;
@@ -149,13 +147,13 @@ int main()
                          .characterSize    = characterSize,
                          .outlineColor     = sf::Color::Blue,
                          .outlineThickness = 0.5f},
-                        states);
+                        {.view = windowView});
 
             window.draw(font,
                         {.position      = {80.f + 320.f * xOffset, 50.f + yOffset * fontLineSpacing},
                          .string        = value,
                          .characterSize = characterSize},
-                        states);
+                        {.view = windowView});
 
             yOffset += 1.f;
         };
@@ -169,7 +167,7 @@ int main()
                      .characterSize    = characterSize,
                      .outlineColor     = sf::Color::Blue,
                      .outlineThickness = 0.5f},
-                    states);
+                    {.view = windowView});
 
         for (const auto& eventStr : eventLog)
         {
@@ -179,7 +177,7 @@ int main()
                          .characterSize    = characterSize,
                          .outlineColor     = sf::Color::Blue,
                          .outlineThickness = 0.5f},
-                        states);
+                        {.view = windowView});
 
             ++yEventOffset;
         }
