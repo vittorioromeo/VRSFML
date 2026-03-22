@@ -6,11 +6,16 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/IndexType.hpp"
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/Transform.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
+#include "SFML/System/Rect2.hpp"
+#include "SFML/System/Vec2.hpp"
+
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/Restrict.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/SizeT.hpp"

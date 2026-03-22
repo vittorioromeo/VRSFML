@@ -9,6 +9,12 @@
 
 #include "SFML/Graphics/BlendMode.hpp"
 #include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/DrawIndexedVerticesSettings.hpp"
+#include "SFML/Graphics/DrawInstancedIndexedVerticesSettings.hpp"
+#include "SFML/Graphics/DrawInstancedVerticesSettings.hpp"
+#include "SFML/Graphics/DrawPersistentMappedIndexedVerticesSettings.hpp"
+#include "SFML/Graphics/DrawQuadsSettings.hpp"
+#include "SFML/Graphics/DrawVerticesSettings.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/DrawableBatchUtils.hpp"
 #include "SFML/Graphics/Font.hpp"
@@ -549,20 +555,22 @@ void RenderTarget::draw(const Shape& shape, RenderStates states)
         const auto [fillData, fillSize]       = shape.getFillVertices();
         const auto [outlineData, outlineSize] = shape.getOutlineVertices();
 
-        immediateDrawVertices({
-            .vertexData    = fillData,
-            .vertexCount   = fillSize,
-            .primitiveType = PrimitiveType::TriangleFan,
-            .renderStates  = states,
-        });
+        immediateDrawVertices(
+            {
+                .vertexData    = fillData,
+                .vertexCount   = fillSize,
+                .primitiveType = PrimitiveType::TriangleFan,
+            },
+            states);
 
         if (shape.getOutlineThickness() != 0.f)
-            immediateDrawVertices({
-                .vertexData    = outlineData,
-                .vertexCount   = outlineSize,
-                .primitiveType = PrimitiveType::TriangleStrip,
-                .renderStates  = states,
-            });
+            immediateDrawVertices(
+                {
+                    .vertexData    = outlineData,
+                    .vertexCount   = outlineSize,
+                    .primitiveType = PrimitiveType::TriangleStrip,
+                },
+                states);
     }
 }
 
@@ -609,13 +617,13 @@ struct [[nodiscard]] RenderTarget::DrawGuard
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::immediateDrawVertices(const DrawVerticesSettings& settings)
+void RenderTarget::immediateDrawVertices(const DrawVerticesSettings& settings, const RenderStates& states)
 {
     // Nothing to draw or inactive target
     if (settings.vertexData == nullptr || settings.vertexCount == 0u || !setActive(true))
         return;
 
-    const DrawGuard drawGuard{*this, settings.renderStates, m_impl->vaoGroup};
+    const DrawGuard drawGuard{*this, states, m_impl->vaoGroup};
 
     RenderTargetImpl::streamVerticesToGPU(settings.vertexData, settings.vertexCount);
     invokePrimitiveDrawCall(settings.primitiveType, 0u, settings.vertexCount);
@@ -623,14 +631,14 @@ void RenderTarget::immediateDrawVertices(const DrawVerticesSettings& settings)
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::immediateDrawIndexedVertices(const DrawIndexedVerticesSettings& settings)
+void RenderTarget::immediateDrawIndexedVertices(const DrawIndexedVerticesSettings& settings, const RenderStates& states)
 {
     // Nothing to draw or inactive target
     if (settings.vertexData == nullptr || settings.vertexCount == 0u || settings.indexData == nullptr ||
         settings.indexCount == 0u || !setActive(true))
         return;
 
-    const DrawGuard drawGuard{*this, settings.renderStates, m_impl->vaoGroup};
+    const DrawGuard drawGuard{*this, states, m_impl->vaoGroup};
 
     RenderTargetImpl::streamVerticesToGPU(settings.vertexData, settings.vertexCount);
     RenderTargetImpl::streamIndicesToGPU(settings.indexData, settings.indexCount);
@@ -641,7 +649,8 @@ void RenderTarget::immediateDrawIndexedVertices(const DrawIndexedVerticesSetting
 
 ////////////////////////////////////////////////////////////
 void RenderTarget::immediateDrawPersistentMappedIndexedVertices(
-    [[maybe_unused]] const DrawPersistentMappedIndexedVerticesSettings& settings)
+    [[maybe_unused]] const DrawPersistentMappedIndexedVerticesSettings& settings,
+    const RenderStates&                                                 states)
 {
 #ifdef SFML_OPENGL_ES
     priv::err() << "FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES";
@@ -652,7 +661,7 @@ void RenderTarget::immediateDrawPersistentMappedIndexedVertices(
         return;
 
     const DrawGuard drawGuard{*this,
-                              settings.renderStates,
+                              states,
                               *static_cast<const GLVAOGroup*>(settings.gpuDrawableBatch.m_storage.getVAOGroup())};
 
     invokePrimitiveDrawCallIndexedBaseVertex(settings.primitiveType, settings.indexCount, settings.indexOffset, settings.vertexOffset);
@@ -667,26 +676,28 @@ void RenderTarget::immediateDrawDrawableBatch(const CPUDrawableBatch& drawableBa
 
     states.transform *= drawableBatch.getTransform();
 
-    immediateDrawIndexedVertices({
-        .vertexData    = drawableBatch.m_storage.vertices.data(),
-        .vertexCount   = drawableBatch.m_storage.vertices.size(),
-        .indexData     = drawableBatch.m_storage.indices.data(),
-        .indexCount    = drawableBatch.m_storage.indices.size(),
-        .primitiveType = PrimitiveType::Triangles,
-        .renderStates  = states,
-    });
+    immediateDrawIndexedVertices(
+        {
+            .vertexData    = drawableBatch.m_storage.vertices.data(),
+            .vertexCount   = drawableBatch.m_storage.vertices.size(),
+            .indexData     = drawableBatch.m_storage.indices.data(),
+            .indexCount    = drawableBatch.m_storage.indices.size(),
+            .primitiveType = PrimitiveType::Triangles,
+        },
+        states);
 }
 
 
 ////////////////////////////////////////////////////////////
 void RenderTarget::immediateDrawInstancedVertices(const DrawInstancedVerticesSettings&                    settings,
-                                                  base::FixedFunction<void(InstanceAttributeBinder&), 64> setupFn)
+                                                  base::FixedFunction<void(InstanceAttributeBinder&), 64> setupFn,
+                                                  const RenderStates&                                     states)
 {
     // Nothing to draw or inactive target
     if (settings.vertexData == nullptr || settings.vertexCount == 0u || settings.instanceCount == 0u || !setActive(true))
         return;
 
-    const DrawGuard drawGuard{*this, settings.renderStates, settings.vaoHandle.asVAOGroup()};
+    const DrawGuard drawGuard{*this, states, settings.vaoHandle.asVAOGroup()};
 
     RenderTargetImpl::streamVerticesToGPU(settings.vertexData, settings.vertexCount);
 
@@ -699,14 +710,15 @@ void RenderTarget::immediateDrawInstancedVertices(const DrawInstancedVerticesSet
 
 ////////////////////////////////////////////////////////////
 void RenderTarget::immediateDrawInstancedIndexedVertices(const DrawInstancedIndexedVerticesSettings& settings,
-                                                         base::FixedFunction<void(InstanceAttributeBinder&), 64> setupFn)
+                                                         base::FixedFunction<void(InstanceAttributeBinder&), 64> setupFn,
+                                                         const RenderStates& states)
 {
     // Nothing to draw or inactive target
     if (settings.vertexData == nullptr || settings.vertexCount == 0u || settings.indexData == nullptr ||
         settings.indexCount == 0u || settings.instanceCount == 0u || !setActive(true))
         return;
 
-    const DrawGuard drawGuard{*this, settings.renderStates, settings.vaoHandle.asVAOGroup()};
+    const DrawGuard drawGuard{*this, states, settings.vaoHandle.asVAOGroup()};
 
     RenderTargetImpl::streamVerticesToGPU(settings.vertexData, settings.vertexCount);
     RenderTargetImpl::streamIndicesToGPU(settings.indexData, settings.indexCount);
@@ -739,14 +751,15 @@ void RenderTarget::draw(const PersistentGPUDrawableBatch& drawableBatch, RenderS
     drawableBatch.flushVertexWritesToGPU(drawableBatch.getNumVertices(), 0u);
     drawableBatch.flushIndexWritesToGPU(drawableBatch.getNumIndices(), 0u);
 
-    immediateDrawPersistentMappedIndexedVertices({
-        .gpuDrawableBatch = drawableBatch,
-        .indexCount       = drawableBatch.getNumIndices(),
-        .indexOffset      = 0u,
-        .vertexOffset     = 0u,
-        .primitiveType    = PrimitiveType::Triangles,
-        .renderStates     = states,
-    });
+    immediateDrawPersistentMappedIndexedVertices(
+        {
+            .gpuDrawableBatch = drawableBatch,
+            .indexCount       = drawableBatch.getNumIndices(),
+            .indexOffset      = 0u,
+            .vertexOffset     = 0u,
+            .primitiveType    = PrimitiveType::Triangles,
+        },
+        states);
 }
 
 
@@ -848,77 +861,81 @@ VertexSpan RenderTarget::draw(const Font& font, const TextData& textData, Render
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::drawVertices(const DrawVerticesSettings& settings)
+void RenderTarget::drawVertices(const DrawVerticesSettings& settings, const RenderStates& states)
 {
     if (RenderTargetImpl::isPrimitiveTypeSupportedByBatchStorage(settings.primitiveType) &&
         m_autoBatchMode != AutoBatchMode::Disabled)
     {
-        flushIfNeeded(settings.renderStates);
-        addToAutoBatch(settings.vertexData, settings.vertexCount, settings.primitiveType);
+        flushIfNeeded(states);
+        addToAutoBatch(settings);
         return;
     }
 
     flush();
-    immediateDrawVertices(settings);
+    immediateDrawVertices(settings, states);
 }
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::drawIndexedVertices(const DrawIndexedVerticesSettings& settings)
+void RenderTarget::drawIndexedVertices(const DrawIndexedVerticesSettings& settings, const RenderStates& states)
 {
     if (RenderTargetImpl::isPrimitiveTypeSupportedByBatchStorage(settings.primitiveType) &&
         m_autoBatchMode != AutoBatchMode::Disabled)
     {
-        flushIfNeeded(settings.renderStates);
-        addToAutoBatch(settings.vertexData, settings.vertexCount, settings.indexData, settings.indexCount, settings.primitiveType);
+        flushIfNeeded(states);
+        addToAutoBatch(settings);
         return;
     }
 
     flush();
-    immediateDrawIndexedVertices(settings);
+    immediateDrawIndexedVertices(settings, states);
 }
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::drawQuads(const DrawQuadsSettings& settings)
+void RenderTarget::drawQuads(const DrawQuadsSettings& settings, const RenderStates& states)
 {
     SFML_BASE_ASSERT(settings.vertexCount % 4u == 0u);
     SFML_BASE_ASSERT(settings.vertexCount < base::getArraySize(RenderTargetImpl::precomputedQuadIndices) / 6u * 4u);
 
-    drawIndexedVertices({
-        .vertexData    = settings.vertexData,
-        .vertexCount   = settings.vertexCount,
-        .indexData     = RenderTargetImpl::precomputedQuadIndices,
-        .indexCount    = settings.vertexCount / 4u * 6u,
-        .primitiveType = settings.primitiveType,
-        .renderStates  = settings.renderStates,
-    });
+    drawIndexedVertices(
+        {
+            .vertexData    = settings.vertexData,
+            .vertexCount   = settings.vertexCount,
+            .indexData     = RenderTargetImpl::precomputedQuadIndices,
+            .indexCount    = settings.vertexCount / 4u * 6u,
+            .primitiveType = settings.primitiveType,
+        },
+        states);
 }
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::drawPersistentMappedIndexedVertices(const DrawPersistentMappedIndexedVerticesSettings& settings)
+void RenderTarget::drawPersistentMappedIndexedVertices(const DrawPersistentMappedIndexedVerticesSettings& settings,
+                                                       const RenderStates&                                states)
 {
     flush();
-    immediateDrawPersistentMappedIndexedVertices(settings);
+    immediateDrawPersistentMappedIndexedVertices(settings, states);
 }
 
 
 ////////////////////////////////////////////////////////////
 void RenderTarget::drawInstancedVertices(const DrawInstancedVerticesSettings&                           settings,
-                                         const base::FixedFunction<void(InstanceAttributeBinder&), 64>& setupFn)
+                                         const base::FixedFunction<void(InstanceAttributeBinder&), 64>& setupFn,
+                                         const RenderStates&                                            states)
 {
     flush();
-    immediateDrawInstancedVertices(settings, setupFn);
+    immediateDrawInstancedVertices(settings, setupFn, states);
 }
 
 
 ////////////////////////////////////////////////////////////
 void RenderTarget::drawInstancedIndexedVertices(const DrawInstancedIndexedVerticesSettings&                    settings,
-                                                const base::FixedFunction<void(InstanceAttributeBinder&), 64>& setupFn)
+                                                const base::FixedFunction<void(InstanceAttributeBinder&), 64>& setupFn,
+                                                const RenderStates&                                            states)
 {
     flush();
-    immediateDrawInstancedIndexedVertices(settings, setupFn);
+    immediateDrawInstancedIndexedVertices(settings, setupFn, states);
 }
 
 
@@ -1080,14 +1097,15 @@ RenderTarget::DrawStatistics RenderTarget::flush()
         batch.flushVertexWritesToGPU(vertexCount, vertexOffset);
         batch.flushIndexWritesToGPU(indexCount, indexOffset);
 
-        immediateDrawPersistentMappedIndexedVertices({
-            .gpuDrawableBatch = batch,
-            .indexCount       = indexCount,
-            .indexOffset      = indexOffset,
-            .vertexOffset     = 0u, // Vertex offset is always `0` for GPU autobatching
-            .primitiveType    = PrimitiveType::Triangles,
-            .renderStates     = m_lastRenderStates,
-        });
+        immediateDrawPersistentMappedIndexedVertices(
+            {
+                .gpuDrawableBatch = batch,
+                .indexCount       = indexCount,
+                .indexOffset      = indexOffset,
+                .vertexOffset     = 0u, // Vertex offset is always `0` for GPU autobatching
+                .primitiveType    = PrimitiveType::Triangles,
+            },
+            m_lastRenderStates);
 
         indexOffset  = batch.getNumIndices();
         vertexOffset = batch.getNumVertices();

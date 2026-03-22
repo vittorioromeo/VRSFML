@@ -16,12 +16,16 @@
 #include "SFML/Graphics/TextUtils.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
+#include "SFML/System/LifetimeDependant.hpp"
 #include "SFML/System/Rect2.hpp"
 #include "SFML/System/UnicodeString.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/MinMax.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
 
 
@@ -349,12 +353,13 @@ void Text::draw(RenderTarget& target, RenderStates states) const // TODO P1: Ren
 
     ensureGeometryUpdate(*m_font);
 
-    target.drawQuads({
-        .vertexData    = m_vertices.data(),
-        .vertexCount   = m_vertices.size(),
-        .primitiveType = PrimitiveType::Triangles,
-        .renderStates  = states,
-    });
+    target.drawQuads(
+        {
+            .vertexData    = m_vertices.data(),
+            .vertexCount   = m_vertices.size(),
+            .primitiveType = PrimitiveType::Triangles,
+        },
+        states);
 }
 
 
