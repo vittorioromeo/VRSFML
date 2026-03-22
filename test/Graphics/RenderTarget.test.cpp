@@ -3,12 +3,24 @@
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/View.hpp"
 
+#include "SFML/System/Rect2.hpp"
+#include "SFML/System/Vec2.hpp"
+
+#include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Trait/IsConstructible.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
+
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
 #include <GraphicsUtil.hpp>
 #include <SystemUtil.hpp>
 
+namespace
+{
 
 class TestRenderTarget : public sf::RenderTarget
 {
@@ -64,3 +76,5 @@ TEST_CASE("[Graphics] sf::RenderTarget")
         CHECK(renderTarget.setActive(true));
     }
 }
+
+} // namespace

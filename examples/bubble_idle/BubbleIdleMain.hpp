@@ -1839,20 +1839,18 @@ struct Main
         // Compute the full window width in world coordinates.
         const float newWidth = windowSize.x / scale;
 
-        sf::View view;
-        // Use the new width while keeping the original height.
-        view.size = {newWidth, originalSize.y};
-
         // Align the left edge with that of the normal game view.
         // The left edge is given by (baseCenter.x - originalSize.x / 2).
         const sf::Vec2f baseCenter = getViewCenter();
         const float     left       = baseCenter.x - originalSize.x / 2.f;
-        view.center                = {left + newWidth / 2.f, baseCenter.y};
 
+        // Use the new width while keeping the original height.
         // Use the same vertical letterboxing as the regular game view.
-        view.viewport = {{0.f, (windowSize.y - scaledSize.y) / (windowSize.y * 2.f)}, {1.f, scaledSize.y / windowSize.y}};
-
-        return view;
+        return {
+            .center = {left + newWidth / 2.f, baseCenter.y},
+            .size   = {newWidth, originalSize.y},
+            .viewport = {{0.f, (windowSize.y - scaledSize.y) / (windowSize.y * 2.f)}, {1.f, scaledSize.y / windowSize.y}},
+        };
     }
 
     ////////////////////////////////////////////////////////////
