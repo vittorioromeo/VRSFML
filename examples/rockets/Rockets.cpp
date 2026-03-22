@@ -4,6 +4,8 @@
 #include "ExampleUtils/Sampler.hpp"
 #include "ExampleUtils/Scaling.hpp"
 
+#include "SFML/Graphics/GlDataType.hpp"
+
 #define SFEX_PROFILER_ENABLED
 #include "ExampleUtils/Profiler.hpp"
 #include "ExampleUtils/ProfilerImGui.hpp"
@@ -17,6 +19,7 @@
 #include "SFML/Graphics/Glsl.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
+#include "SFML/Graphics/InstanceAttributeBinder.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderTexture.hpp"
@@ -26,6 +29,8 @@
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/TextureAtlas.hpp"
+#include "SFML/Graphics/VAOHandle.hpp"
+#include "SFML/Graphics/VBOHandle.hpp"
 #include "SFML/Graphics/View.hpp" // IWYU pragma: keep
 
 #include "SFML/Window/EventUtils.hpp"
@@ -123,8 +128,8 @@ void main()
 sf::Shader*                            instanceRenderingShader         = nullptr;
 const sf::Shader::UniformLocation*     instanceRenderingULTextureRect  = nullptr;
 const sf::Shader::UniformLocation*     instanceRenderingInvTextureSize = nullptr;
-sf::RenderTarget::VAOHandle*           instanceRenderingVAOGroup       = nullptr;
-sf::RenderTarget::VBOHandle*           instanceRenderingVBOs[8]        = {};
+sf::VAOHandle*                         instanceRenderingVAOGroup       = nullptr;
+sf::VBOHandle*                         instanceRenderingVBOs[8]        = {};
 sf::base::Vector<ParticleInstanceData> instanceRenderingDataBuffer[2];
 
 
@@ -644,7 +649,7 @@ struct World
         const auto drawParticlesInstanced =
             [&](const auto& instanceBuffer, const sf::base::SizeT vboIndexOffset, const sf::Rect2f& txr)
         {
-            auto setupSpriteInstanceAttribs = [&](sf::RenderTarget::InstanceAttributeBinder& binder)
+            auto setupSpriteInstanceAttribs = [&](sf::InstanceAttributeBinder& binder)
             {
                 binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset]);
                 binder.uploadContiguousData(instanceBuffer.size(), instanceBuffer.data());
@@ -908,7 +913,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
                 instanceRenderingDataBuffer[0]
                     .emplaceBack(particles[i].position, particles[i].scale, particles[i].rotation, particles[i].opacity);
 
-            auto setupSpriteInstanceAttribs = [&](sf::RenderTarget::InstanceAttributeBinder& binder)
+            auto setupSpriteInstanceAttribs = [&](sf::InstanceAttributeBinder& binder)
             {
                 binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset]);
                 binder.uploadContiguousData(nParticles, instanceRenderingDataBuffer[0].data());
@@ -1162,7 +1167,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
         {
             const auto nParticles = particles.positions.size();
 
-            auto setupSpriteInstanceAttribs = [&](sf::RenderTarget::InstanceAttributeBinder& binder)
+            auto setupSpriteInstanceAttribs = [&](sf::InstanceAttributeBinder& binder)
             {
                 binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 0]);
                 binder.uploadContiguousData(nParticles, particles.positions.data());
@@ -1381,7 +1386,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
         {
             const auto nParticles = particles.getSize();
 
-            auto setupSpriteInstanceAttribs = [&](sf::RenderTarget::InstanceAttributeBinder& binder)
+            auto setupSpriteInstanceAttribs = [&](sf::InstanceAttributeBinder& binder)
             {
                 binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 0]);
                 binder.uploadContiguousData(nParticles, particles.template get<&Particle::position>().data());
@@ -1513,10 +1518,10 @@ int main()
 
     instanceRenderingShader = &instancedRenderingShaderImpl;
 
-    auto instancedRenderingVAOGroupImpl = sf::RenderTarget::VAOHandle{};
+    auto instancedRenderingVAOGroupImpl = sf::VAOHandle{};
     instanceRenderingVAOGroup           = &instancedRenderingVAOGroupImpl;
 
-    sf::RenderTarget::VBOHandle instancedRenderingVBOsImpl[8];
+    sf::VBOHandle instancedRenderingVBOsImpl[8];
     for (sf::base::SizeT i = 0u; i < 8u; ++i)
         instanceRenderingVBOs[i] = &instancedRenderingVBOsImpl[i];
 
