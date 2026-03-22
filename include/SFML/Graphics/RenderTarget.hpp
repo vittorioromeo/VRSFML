@@ -26,7 +26,6 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/FixedFunction.hpp"
 #include "SFML/Base/InPlacePImpl.hpp"
-#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 

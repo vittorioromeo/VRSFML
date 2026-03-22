@@ -7,6 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/DeclVal.hpp"
+#include "SFML/Base/IndexSequence.hpp"
 #include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/Launder.hpp"
 #include "SFML/Base/MakeIndexSequence.hpp"
