@@ -26,6 +26,7 @@
 
 #include "SFML/Base/FixedFunction.hpp"
 #include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 
@@ -460,6 +461,44 @@ public:
     ////////////////////////////////////////////////////////////
     void finishGPUCommands();
 
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    class BoundStatesContext
+    {
+    private:
+        RenderTarget* const m_rt;
+        const RenderStates  m_states;
+
+    public:
+        BoundStatesContext(RenderTarget& rt, const RenderStates& states);
+        ~BoundStatesContext();
+
+        BoundStatesContext(const BoundStatesContext&)            = delete;
+        BoundStatesContext& operator=(const BoundStatesContext&) = delete;
+
+        BoundStatesContext(BoundStatesContext&&)            = delete;
+        BoundStatesContext& operator=(BoundStatesContext&&) = delete;
+
+        [[gnu::always_inline]] decltype(auto) draw(auto&&... args) const
+        {
+            return m_rt->draw(SFML_BASE_FORWARD(args)..., m_states);
+        }
+    };
+
+    ////////////////////////////////////////////////////////////
+    friend BoundStatesContext;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline]] BoundStatesContext withRenderStates(const RenderStates& states)
+    {
+        return {*this, states};
+    }
+
 protected:
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -554,8 +593,7 @@ private:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void flushIfNeeded(const RenderStates& states)
     {
-        // TODO P0: "withRenderStates" API that would avoid redundant state changes and flushes
-        if (m_numAutoBatchVertices >= m_autoBatchVertexThreshold || m_lastRenderStates != states)
+        if (m_numAutoBatchVertices >= m_autoBatchVertexThreshold || (!m_isStateLocked && m_lastRenderStates != states))
         {
             flush();
             m_lastRenderStates = states;
@@ -796,6 +834,7 @@ private:
     base::SizeT    m_numAutoBatchVertices{0u};                 //!< Number of vertices in the current autobatch
     base::SizeT    m_autoBatchVertexThreshold{32'768u};        //!< Threshold for batch vertex count
     RenderStates   m_lastRenderStates;                         //!< Cached render states (autobatching)
+    bool           m_isStateLocked{false}; //!< Whether render states are currently bound via `withRenderStates`
 
     ////////////////////////////////////////////////////////////
     struct Impl;
