@@ -138,14 +138,15 @@ public:
     {
         const auto drawVertices = [&](const sf::base::Vector<sf::Vertex>& vertices)
         {
-            target.drawIndexedVertices({
-                .vertexData    = vertices.data(),
-                .vertexCount   = vertices.size(),
-                .indexData     = m_indices.data(),
-                .indexCount    = m_indices.size(),
-                .primitiveType = sf::PrimitiveType::Triangles,
-                .renderStates  = states,
-            });
+            target.drawIndexedVertices(
+                {
+                    .vertexData    = vertices.data(),
+                    .vertexCount   = vertices.size(),
+                    .indexData     = m_indices.data(),
+                    .indexCount    = m_indices.size(),
+                    .primitiveType = sf::PrimitiveType::Triangles,
+                },
+                states);
         };
 
         drawVertices(m_verticesGlow);
