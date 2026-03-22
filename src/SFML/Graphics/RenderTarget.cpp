@@ -13,7 +13,9 @@
 #include "SFML/Graphics/DrawableBatchUtils.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/InstanceAttributeBinder.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
+#include "SFML/Graphics/Priv/EnumToGlEnumConversions.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/Shader.hpp"
 #include "SFML/Graphics/Shape.hpp"
@@ -22,6 +24,8 @@
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/Transform.hpp"
+#include "SFML/Graphics/VAOHandle.hpp"
+#include "SFML/Graphics/VBOHandle.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 #include "SFML/Graphics/VertexBuffer.hpp"
 #include "SFML/Graphics/VertexSpan.hpp"
@@ -38,7 +42,6 @@
 #include "SFML/Base/Builtin/OffsetOf.hpp"
 #include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Math/Lround.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/ScopeGuard.hpp"
 #include "SFML/Base/SinCosLookup.hpp"
@@ -98,59 +101,6 @@ constinit std::atomic<IdType> contextRenderTargetMap[maxIdCount]{};
         SFML_BASE_ASSERT(static_cast<unsigned int>(sfEnumValue) < ::sf::base::getArraySize(glValues));                \
         return glValues[static_cast<unsigned int>(sfEnumValue)];                                                      \
     }
-
-
-////////////////////////////////////////////////////////////
-// Convert an sf::BlendMode::Factor constant to the corresponding OpenGL constant.
-SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
-    factorToGlConstant,
-    sf::BlendMode::Factor,
-    {GL_ZERO,
-     GL_ONE,
-     GL_SRC_COLOR,
-     GL_ONE_MINUS_SRC_COLOR,
-     GL_DST_COLOR,
-     GL_ONE_MINUS_DST_COLOR,
-     GL_SRC_ALPHA,
-     GL_ONE_MINUS_SRC_ALPHA,
-     GL_DST_ALPHA,
-     GL_ONE_MINUS_DST_ALPHA});
-
-
-////////////////////////////////////////////////////////////
-// Convert an sf::BlendMode::Equation constant to the corresponding OpenGL constant.
-SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(equationToGlConstant,
-                                              sf::BlendMode::Equation,
-                                              {GL_FUNC_ADD, GL_FUNC_SUBTRACT, GL_FUNC_REVERSE_SUBTRACT, GL_MIN, GL_MAX});
-
-
-////////////////////////////////////////////////////////////
-// Convert an UpdateOperation constant to the corresponding OpenGL constant.
-SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(stencilOperationToGlConstant,
-                                              sf::StencilUpdateOperation,
-                                              {GL_KEEP, GL_ZERO, GL_REPLACE, GL_INCR, GL_DECR, GL_INVERT});
-
-
-////////////////////////////////////////////////////////////
-// Convert a Comparison constant to the corresponding OpenGL constant.
-SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
-    stencilFunctionToGlConstant,
-    sf::StencilComparison,
-    {GL_NEVER, GL_LESS, GL_LEQUAL, GL_GREATER, GL_GEQUAL, GL_EQUAL, GL_NOTEQUAL, GL_ALWAYS});
-
-
-////////////////////////////////////////////////////////////
-SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
-    primitiveTypeToOpenGLMode,
-    sf::PrimitiveType,
-    {GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN});
-
-
-////////////////////////////////////////////////////////////
-SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
-    dataTypeToOpenGLDataType,
-    sf::GlDataType,
-    {GL_BYTE, GL_UNSIGNED_BYTE, GL_SHORT, GL_UNSIGNED_SHORT, GL_INT, GL_UNSIGNED_INT, GL_HALF_FLOAT, GL_FLOAT, GL_DOUBLE});
 
 
 ////////////////////////////////////////////////////////////
@@ -716,72 +666,6 @@ void RenderTarget::immediateDrawDrawableBatch(const CPUDrawableBatch& drawableBa
 
 
 ////////////////////////////////////////////////////////////
-struct RenderTarget::VAOHandle::Impl
-{
-    GLVAOGroup vaoGroup;
-};
-
-
-////////////////////////////////////////////////////////////
-RenderTarget::VAOHandle::VAOHandle()                                              = default;
-RenderTarget::VAOHandle::~VAOHandle()                                             = default;
-RenderTarget::VAOHandle::VAOHandle(VAOHandle&&) noexcept                          = default;
-RenderTarget::VAOHandle& RenderTarget::VAOHandle::operator=(VAOHandle&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
-struct RenderTarget::VBOHandle::Impl
-{
-    GLVertexBufferObject vbo;
-};
-
-
-////////////////////////////////////////////////////////////
-RenderTarget::VBOHandle::VBOHandle()                                              = default;
-RenderTarget::VBOHandle::~VBOHandle()                                             = default;
-RenderTarget::VBOHandle::VBOHandle(VBOHandle&&) noexcept                          = default;
-RenderTarget::VBOHandle& RenderTarget::VBOHandle::operator=(VBOHandle&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
-void RenderTarget::InstanceAttributeBinder::bindVBO(VBOHandle& vboHandle)
-{
-    vboHandle.m_impl->vbo.bind();
-}
-
-
-////////////////////////////////////////////////////////////
-void RenderTarget::InstanceAttributeBinder::uploadData(const base::SizeT instanceCount,
-                                                       const void* const data,
-                                                       const base::SizeT stride)
-{
-    glCheck(glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(stride * instanceCount), data, GL_STREAM_DRAW));
-}
-
-
-////////////////////////////////////////////////////////////
-void RenderTarget::InstanceAttributeBinder::setup(
-    const unsigned int location,
-    const unsigned int size,
-    const GlDataType   type,
-    const bool         normalized,
-    const base::SizeT  stride,
-    const base::SizeT  fieldOffset)
-{
-    glCheck(glEnableVertexAttribArray(location));
-
-    glCheck(glVertexAttribPointer(/*      index */ location,
-                                  /*       size */ static_cast<GLint>(size),
-                                  /*       type */ RenderTargetImpl::dataTypeToOpenGLDataType(type),
-                                  /* normalized */ normalized ? GL_TRUE : GL_FALSE,
-                                  /*     stride */ static_cast<GLsizei>(stride),
-                                  /*     offset */ reinterpret_cast<void*>(fieldOffset)));
-
-    glCheck(glVertexAttribDivisor(location, 1));
-}
-
-
-////////////////////////////////////////////////////////////
 void RenderTarget::immediateDrawInstancedVertices(const DrawInstancedVerticesSettings&                    settings,
                                                   base::FixedFunction<void(InstanceAttributeBinder&), 64> setupFn)
 {
@@ -789,7 +673,7 @@ void RenderTarget::immediateDrawInstancedVertices(const DrawInstancedVerticesSet
     if (settings.vertexData == nullptr || settings.vertexCount == 0u || settings.instanceCount == 0u || !setActive(true))
         return;
 
-    const DrawGuard drawGuard{*this, settings.renderStates, settings.vaoHandle.m_impl->vaoGroup};
+    const DrawGuard drawGuard{*this, settings.renderStates, settings.vaoHandle.asVAOGroup()};
 
     RenderTargetImpl::streamVerticesToGPU(settings.vertexData, settings.vertexCount);
 
@@ -809,7 +693,7 @@ void RenderTarget::immediateDrawInstancedIndexedVertices(const DrawInstancedInde
         settings.indexCount == 0u || settings.instanceCount == 0u || !setActive(true))
         return;
 
-    const DrawGuard drawGuard{*this, settings.renderStates, settings.vaoHandle.m_impl->vaoGroup};
+    const DrawGuard drawGuard{*this, settings.renderStates, settings.vaoHandle.asVAOGroup()};
 
     RenderTargetImpl::streamVerticesToGPU(settings.vertexData, settings.vertexCount);
     RenderTargetImpl::streamIndicesToGPU(settings.indexData, settings.indexCount);
@@ -1286,15 +1170,13 @@ void RenderTarget::applyView(const View& view)
 ////////////////////////////////////////////////////////////
 void RenderTarget::applyBlendMode(const BlendMode& mode)
 {
-    using RenderTargetImpl::equationToGlConstant;
-    using RenderTargetImpl::factorToGlConstant;
+    glCheck(glBlendFuncSeparate(priv::factorToGlConstant(mode.colorSrcFactor),
+                                priv::factorToGlConstant(mode.colorDstFactor),
+                                priv::factorToGlConstant(mode.alphaSrcFactor),
+                                priv::factorToGlConstant(mode.alphaDstFactor)));
 
-    glCheck(glBlendFuncSeparate(factorToGlConstant(mode.colorSrcFactor),
-                                factorToGlConstant(mode.colorDstFactor),
-                                factorToGlConstant(mode.alphaSrcFactor),
-                                factorToGlConstant(mode.alphaDstFactor)));
-
-    glCheck(glBlendEquationSeparate(equationToGlConstant(mode.colorEquation), equationToGlConstant(mode.alphaEquation)));
+    glCheck(glBlendEquationSeparate(priv::equationToGlConstant(mode.colorEquation),
+                                    priv::equationToGlConstant(mode.alphaEquation)));
 
     m_impl->cache.lastBlendMode = mode;
 }
@@ -1303,9 +1185,6 @@ void RenderTarget::applyBlendMode(const BlendMode& mode)
 ////////////////////////////////////////////////////////////
 void RenderTarget::applyStencilMode(const StencilMode& mode)
 {
-    using RenderTargetImpl::stencilFunctionToGlConstant;
-    using RenderTargetImpl::stencilOperationToGlConstant;
-
     m_impl->cache.lastStencilMode = mode;
 
     // Fast path if we have a default (disabled) stencil mode
@@ -1327,10 +1206,10 @@ void RenderTarget::applyStencilMode(const StencilMode& mode)
         glCheck(glEnable(GL_STENCIL_TEST));
 
     glCheck(glStencilOp(GL_KEEP,
-                        stencilOperationToGlConstant(mode.stencilUpdateOperation),
-                        stencilOperationToGlConstant(mode.stencilUpdateOperation)));
+                        priv::stencilOperationToGlConstant(mode.stencilUpdateOperation),
+                        priv::stencilOperationToGlConstant(mode.stencilUpdateOperation)));
 
-    glCheck(glStencilFunc(stencilFunctionToGlConstant(mode.stencilComparison),
+    glCheck(glStencilFunc(priv::stencilFunctionToGlConstant(mode.stencilComparison),
                           static_cast<int>(mode.stencilReference.value),
                           mode.stencilMask.value));
 
@@ -1499,7 +1378,7 @@ void RenderTarget::invokePrimitiveDrawCall(const PrimitiveType type, const base:
     m_currentDrawStats.drawCalls += 1u;
     m_currentDrawStats.drawnVertices += vertexCount;
 
-    glCheck(glDrawArrays(/*     primitive type */ RenderTargetImpl::primitiveTypeToOpenGLMode(type),
+    glCheck(glDrawArrays(/*     primitive type */ priv::primitiveTypeToOpenGLMode(type),
                          /* first vertex index */ static_cast<GLint>(firstVertex),
                          /*       vertex count */ static_cast<GLsizei>(vertexCount)));
 }
@@ -1511,7 +1390,7 @@ void RenderTarget::invokePrimitiveDrawCallIndexed(const PrimitiveType type, cons
     m_currentDrawStats.drawCalls += 1u;
     m_currentDrawStats.drawnVertices += indexCount;
 
-    glCheck(glDrawElements(/* primitive type */ RenderTargetImpl::primitiveTypeToOpenGLMode(type),
+    glCheck(glDrawElements(/* primitive type */ priv::primitiveTypeToOpenGLMode(type),
                            /*    index count */ static_cast<GLsizei>(indexCount),
                            /*     index type */ GL_UNSIGNED_INT,
                            /*   index offset */ reinterpret_cast<void*>(indexOffset * sizeof(IndexType))));
@@ -1532,7 +1411,7 @@ void RenderTarget::invokePrimitiveDrawCallIndexedBaseVertex(
     m_currentDrawStats.drawCalls += 1u;
     m_currentDrawStats.drawnVertices += indexCount;
 
-    glCheck(glDrawElementsBaseVertex(/* primitive type */ RenderTargetImpl::primitiveTypeToOpenGLMode(type),
+    glCheck(glDrawElementsBaseVertex(/* primitive type */ priv::primitiveTypeToOpenGLMode(type),
                                      /*    index count */ static_cast<GLsizei>(indexCount),
                                      /*     index type */ GL_UNSIGNED_INT,
                                      /*   index offset */ reinterpret_cast<void*>(indexOffset * sizeof(IndexType)),
@@ -1550,7 +1429,7 @@ void RenderTarget::invokeInstancedPrimitiveDrawCall(const PrimitiveType type,
     m_currentDrawStats.drawCalls += 1u;
     m_currentDrawStats.drawnVertices += vertexCount * instanceCount;
 
-    glCheck(glDrawArraysInstanced(/*      primitive type */ RenderTargetImpl::primitiveTypeToOpenGLMode(type),
+    glCheck(glDrawArraysInstanced(/*      primitive type */ priv::primitiveTypeToOpenGLMode(type),
                                   /*       vertex offset */ static_cast<GLint>(vertexOffset),
                                   /*        vertex count */ static_cast<GLsizei>(vertexCount),
                                   /* number of instances */ static_cast<GLsizei>(instanceCount)));
@@ -1567,7 +1446,7 @@ void RenderTarget::invokeInstancedPrimitiveDrawCallIndexed(
     m_currentDrawStats.drawCalls += 1u;
     m_currentDrawStats.drawnVertices += indexCount * instanceCount;
 
-    glCheck(glDrawElementsInstanced(/*      primitive type */ RenderTargetImpl::primitiveTypeToOpenGLMode(type),
+    glCheck(glDrawElementsInstanced(/*      primitive type */ priv::primitiveTypeToOpenGLMode(type),
                                     /*         index count */ static_cast<GLsizei>(indexCount),
                                     /*          index type */ GL_UNSIGNED_INT,
                                     /*        index offset */ reinterpret_cast<void*>(indexOffset * sizeof(IndexType)),
