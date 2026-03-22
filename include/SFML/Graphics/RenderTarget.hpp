@@ -233,36 +233,6 @@ public:
     [[nodiscard]] base::SizeT getAutoBatchVertexThreshold() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the viewport of a view, applied to this render target
-    ///
-    /// The viewport is defined in the view as a ratio, this function
-    /// simply applies this ratio to the current dimensions of the
-    /// render target to calculate the pixels rectangle that the viewport
-    /// actually covers in the target.
-    ///
-    /// \param view The view for which we want to compute the viewport
-    ///
-    /// \return Viewport rectangle, expressed in pixels
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] Rect2i getViewport(const View& view) const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the scissor rectangle of a view, applied to this render target
-    ///
-    /// The scissor rectangle is defined in the view as a ratio. This
-    /// function simply applies this ratio to the current dimensions
-    /// of the render target to calculate the pixels rectangle
-    /// that the scissor rectangle actually covers in the target.
-    ///
-    /// \param view The view for which we want to compute the scissor rectangle
-    ///
-    /// \return Scissor rectangle, expressed in pixels
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] Rect2i getScissor(const View& view) const;
-
-    ////////////////////////////////////////////////////////////
     /// \brief Convert a point from target coordinates to world coordinates
     ///
     /// This function finds the 2D position that matches the
