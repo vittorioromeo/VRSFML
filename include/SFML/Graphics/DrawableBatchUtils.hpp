@@ -51,51 +51,60 @@ namespace sf::DrawableBatchUtils
     const IndexType startIndex,
     const IndexType i) noexcept
 {
-    const IndexType idx0 = startIndex + i;
-    const IndexType idx1 = startIndex + i + 1u;
-    const IndexType idx2 = startIndex + i + 2u;
-
     // Even triangle: uses vertices `(i, i+1, i+2)` in that order
     // Odd triangle: uses same vertices, but in reverse order to flip winding
 
-    const bool evenTriangle = (i % 2u) == 0u;
+    // If i is even (i & 1 == 0), `swapOffset` is 0.
+    // If i is odd (i & 1 == 1), `swapOffset` is 2.
+    const IndexType swapOffset = (i & 1u) << 1u;
 
-    *indexPtr++ = evenTriangle ? idx0 : idx2;
-    *indexPtr++ = idx1;
-    *indexPtr++ = evenTriangle ? idx2 : idx0;
+    *indexPtr++ = startIndex + i + swapOffset;      // even: i+0, odd: i+2
+    *indexPtr++ = startIndex + i + 1u;              // always i+1
+    *indexPtr++ = startIndex + i + 2u - swapOffset; // even: i+2, odd: i+0
 }
 
 
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline, gnu::flatten]] inline constexpr void appendQuadIndices(IndexType*& indexPtr, const IndexType startIndex) noexcept
+[[gnu::always_inline, gnu::flatten]] inline constexpr void appendQuadIndices(
+    IndexType * SFML_BASE_RESTRICT & SFML_BASE_RESTRICT indexPtr,
+    const IndexType                                     startIndex) noexcept
 {
-    appendTriangleIndices(indexPtr, startIndex);      // Triangle strip: triangle #0
-    appendTriangleIndices(indexPtr, startIndex + 1u); // Triangle strip: triangle #1
+    // Triangle 0 (Top-left, Bottom-left, Top-right)
+    *indexPtr++ = startIndex;
+    *indexPtr++ = startIndex + 1u;
+    *indexPtr++ = startIndex + 2u;
+
+    // Triangle 1 (Top-right, Bottom-left, Bottom-right)
+    *indexPtr++ = startIndex + 2u;
+    *indexPtr++ = startIndex + 1u;
+    *indexPtr++ = startIndex + 3u;
 }
 
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendPreTransformedSpriteQuadVertices(
-    const Transform& transform,
-    const Rect2f&    textureRect,
-    const Color      color,
-    Vertex* const    vertexPtr)
+    const Transform&                 transform,
+    const Rect2f&                    textureRect,
+    const Color                      color,
+    Vertex* SFML_BASE_RESTRICT const vertexPtr)
 {
     const auto& [position, size] = textureRect;
-    const Vec2f absSize{SFML_BASE_MATH_FABSF(size.x), SFML_BASE_MATH_FABSF(size.y)};
+
+    const float absSizeX = SFML_BASE_MATH_FABSF(size.x);
+    const float absSizeY = SFML_BASE_MATH_FABSF(size.y);
 
     // Position
     vertexPtr[0].position.x = transform.a02;
     vertexPtr[0].position.y = transform.a12;
 
-    vertexPtr[1].position.x = transform.a01 * absSize.y + transform.a02;
-    vertexPtr[1].position.y = transform.a11 * absSize.y + transform.a12;
+    vertexPtr[1].position.x = transform.a01 * absSizeY + transform.a02;
+    vertexPtr[1].position.y = transform.a11 * absSizeY + transform.a12;
 
-    vertexPtr[2].position.x = transform.a00 * absSize.x + transform.a02;
-    vertexPtr[2].position.y = transform.a10 * absSize.x + transform.a12;
+    vertexPtr[2].position.x = transform.a00 * absSizeX + transform.a02;
+    vertexPtr[2].position.y = transform.a10 * absSizeX + transform.a12;
 
-    vertexPtr[3].position.x = transform.a00 * absSize.x + vertexPtr[1].position.x;
-    vertexPtr[3].position.y = transform.a10 * absSize.x + vertexPtr[1].position.y;
+    vertexPtr[3].position.x = transform.a00 * absSizeX + vertexPtr[1].position.x;
+    vertexPtr[3].position.y = transform.a10 * absSizeX + vertexPtr[1].position.y;
 
     // Color
     vertexPtr[0].color = color;
@@ -129,10 +138,10 @@ namespace sf::DrawableBatchUtils
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline void appendSpriteIndicesAndVertices(
-    const Sprite&   sprite,
-    const IndexType nextIndex,
-    IndexType*      indexPtr,
-    Vertex* const   vertexPtr) noexcept
+    const Sprite&                    sprite,
+    const IndexType                  nextIndex,
+    IndexType* SFML_BASE_RESTRICT    indexPtr,
+    Vertex* SFML_BASE_RESTRICT const vertexPtr) noexcept
 {
     appendQuadIndices(indexPtr, nextIndex);
     appendPreTransformedSpriteQuadVertices(sprite.getTransform(), sprite.textureRect, sprite.color, vertexPtr);

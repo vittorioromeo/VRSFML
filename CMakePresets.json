@@ -112,7 +112,7 @@
       "hidden": true,
       "inherits": "build_base",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RELEASE",
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
         "SFML_ENABLE_LIFETIME_TRACKING": "OFF",
         "SFML_ENABLE_STACK_TRACES": "OFF",
         "SFML_ENABLE_STDLIB_ASSERTIONS": "OFF"

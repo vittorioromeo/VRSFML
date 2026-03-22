@@ -1132,6 +1132,28 @@ void RenderTarget::finishGPUCommands()
 
 
 ////////////////////////////////////////////////////////////
+RenderTarget::BoundStatesContext::BoundStatesContext(RenderTarget& rt, const RenderStates& states) :
+    m_rt{&rt},
+    m_states{states}
+{
+    // Flush once upfront so the GPU state is ready
+    if (m_rt->getAutoBatchMode() != AutoBatchMode::Disabled)
+        m_rt->flushIfNeeded(m_states);
+
+    SFML_BASE_ASSERT(!m_rt->m_isStateLocked && "Cannot create a context while another is active");
+    m_rt->m_isStateLocked = true;
+}
+
+
+////////////////////////////////////////////////////////////
+RenderTarget::BoundStatesContext::~BoundStatesContext()
+{
+    SFML_BASE_ASSERT(m_rt->m_isStateLocked && "Cannot destroy a context while no context is active");
+    m_rt->m_isStateLocked = false;
+}
+
+
+////////////////////////////////////////////////////////////
 void RenderTarget::syncGPUStartFrame()
 {
 #ifndef SFML_OPENGL_ES
