@@ -11,7 +11,7 @@
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderTextureSettings.hpp"
 #include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/View.hpp"
+#include "SFML/Graphics/TextureWrapMode.hpp"
 
 #include "SFML/GLUtils/CopyFramebuffer.hpp"
 #include "SFML/GLUtils/GLCheck.hpp"
@@ -21,11 +21,13 @@
 #include "SFML/GLUtils/Glad.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/AnkerlUnorderedDense.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
 
 
 namespace

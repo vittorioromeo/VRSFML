@@ -422,7 +422,7 @@ int main()
             ImGui::EndDisabled();
 
             ImGui::BeginDisabled(batchType != BatchType::Disabled);
-            ImGui::Checkbox("Use withRenderStates API", &useWithRenderStatesAPI);
+            ImGui::Checkbox("Use withLockedRenderStates API", &useWithRenderStatesAPI);
             ImGui::EndDisabled();
 
             ImGui::SetNextItemWidth(172.f);
@@ -474,8 +474,8 @@ int main()
         clock.restart();
         {
             window.clear();
-            const auto view       = window.makeView();
-            const auto baseStates = sf::RenderStates{.view = view, .texture = &textureAtlas.getTexture()};
+
+            const auto baseStates = sf::RenderStates{.view = {}, .texture = &textureAtlas.getTexture()};
 
             const auto drawEntity = [&](const Entity& entity, sf::base::SizeT& drawnVertexCounter, auto&& drawFn)
             {
@@ -503,7 +503,8 @@ int main()
 
                 if (useWithRenderStatesAPI)
                 {
-                    auto drawCtx = window.withRenderStates(baseStates);
+                    auto drawCtx = window.withLockedRenderStates(baseStates);
+
                     for (const Entity& entity : entities)
                         drawEntity(entity, drawnVertices, [&](const auto& drawable) { drawCtx.draw(drawable); });
                 }
@@ -529,10 +530,12 @@ int main()
                         [&](const sf::base::SizeT iBatch, const sf::base::SizeT batchStartIdx, const sf::base::SizeT batchEndIdx)
                     {
                         sf::base::SizeT chunkDrawnVertices = 0u; // avoid false sharing
+
                         for (sf::base::SizeT i = batchStartIdx; i < batchEndIdx; ++i)
                             drawEntity(entities[i], chunkDrawnVertices, [&](const auto& drawable) {
                                 batchesArray[iBatch].add(drawable);
                             });
+
                         totalChunkDrawnVertices[iBatch] = chunkDrawnVertices;
                     };
 

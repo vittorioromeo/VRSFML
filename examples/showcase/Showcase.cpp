@@ -377,7 +377,7 @@ public:
         sf::base::SizeT i = 0;
 
         {
-            auto drawCtx = m_deps.rtGame->withRenderStates({.view = *m_deps.view, .texture = &m_textureAtlas.getTexture()});
+            auto drawCtx = m_deps.rtGame->withLockedRenderStates({.view = *m_deps.view, .texture = &m_textureAtlas.getTexture()});
 
             for (auto& [position, velocity, rotation, scale] : m_bunnies)
             {

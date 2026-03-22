@@ -11,6 +11,7 @@
 #include "ExampleUtils/Timer.hpp"
 
 #include "SFML/Graphics/BlendMode.hpp"
+#include "SFML/Graphics/DrawTextureSettings.hpp"
 
 #include "SFML/Window/Keyboard.hpp"
 
@@ -1040,7 +1041,7 @@ private:
             finalSquishMult += easeInOutSine(bounce(progress)) * 0.5f;
         }
 
-        const sf::RenderTarget::TextureDrawParams commonDrawParams{
+        const sf::DrawTextureSettings commonDrawParams{
             .position = floorVec2(position.addY(yOffset)).addX(1.f).addY(1.f),
             .scale    = sf::Vec2f{finalSquishMult, finalSquishMult} * options.scale,
             .origin   = floorVec2(drawBlockSize / 2.f),
@@ -1158,33 +1159,32 @@ private:
 
             const auto drawTimerLines = [&](const float embed)
             {
+                const auto drawCtx = m_rtGame.withLockedRenderStates(
+                    {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+
                 // top line
                 timerLine.position = commonDrawParams.position + sf::Vec2f{embed, embed};
                 timerLine.rotation = sf::degrees(0.f);
                 timerLine.size     = {(drawBlockSize.x - embed * 2.f) * p0, 1.f};
-                m_rtGame.draw(timerLine,
-                              {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+                drawCtx.draw(timerLine);
 
                 // right line
                 timerLine.position = commonDrawParams.position + sf::Vec2f{drawBlockSize.x - embed - 1.f, embed};
                 timerLine.rotation = sf::degrees(0.f);
                 timerLine.size     = {1.f, (drawBlockSize.y - embed * 2.f) * p1};
-                m_rtGame.draw(timerLine,
-                              {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+                drawCtx.draw(timerLine);
 
                 // bottom line
                 timerLine.position = commonDrawParams.position + sf::Vec2f{1.f - embed, 1.f - embed};
                 timerLine.rotation = sf::degrees(180.f);
                 timerLine.size     = {(drawBlockSize.x - embed * 2.f) * p2, 1.f};
-                m_rtGame.draw(timerLine,
-                              {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+                drawCtx.draw(timerLine);
 
                 // left line
                 timerLine.position = commonDrawParams.position + sf::Vec2f{-drawBlockSize.x + embed + 2.f, 1.f - embed};
                 timerLine.rotation = sf::degrees(180.f);
                 timerLine.size     = {1.f, (drawBlockSize.y - embed * 2.f) * p3};
-                m_rtGame.draw(timerLine,
-                              {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+                drawCtx.draw(timerLine);
             };
 
             if (useDamagedTexture)

@@ -14,16 +14,16 @@
 #include "SFML/Graphics/DrawInstancedVerticesSettings.hpp"
 #include "SFML/Graphics/DrawPersistentMappedIndexedVerticesSettings.hpp"
 #include "SFML/Graphics/DrawQuadsSettings.hpp"
+#include "SFML/Graphics/DrawTextureSettings.hpp"
 #include "SFML/Graphics/DrawVerticesSettings.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/Priv/ShapeDataConcept.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/VertexSpan.hpp"
 
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/Rect2.hpp"
 #include "SFML/System/Vec2.hpp"
 
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/FixedFunction.hpp"
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Macros.hpp"
@@ -207,23 +207,6 @@ public:
     [[nodiscard]] base::SizeT getAutoBatchVertexThreshold() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    struct TextureDrawParams
-    {
-        Vec2f position{};      //!< Position of the object in the 2D world
-        Vec2f scale{1.f, 1.f}; //!< Scale of the object
-        Vec2f origin{};        //!< Origin of translation/rotation/scaling of the object
-
-        // NOLINTNEXTLINE(readability-redundant-member-init)
-        Angle rotation{}; //!< Orientation of the object
-
-        Rect2f textureRect{};       //!< Rectangle defining the area of the source texture to display
-        Color  color{Color::White}; //!< Color of the sprite
-    };
-
-    ////////////////////////////////////////////////////////////
     /// \brief Draw a texture to the render target
     ///
     /// The full texture is drawn at position `{0.f, 0.f}` with default origin,
@@ -233,7 +216,7 @@ public:
     /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Texture& texture, RenderStates states);
+    void draw(const Texture& texture, RenderStates states); // TODO P0: revisit this API, shouldn't mutate states
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a texture to the render target
@@ -243,7 +226,9 @@ public:
     /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Texture& texture, const TextureDrawParams& params, RenderStates states);
+    void draw(const Texture&             texture,
+              const DrawTextureSettings& params,
+              RenderStates               states); // TODO P0: revisit this API, shouldn't mutate states
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a sprite object to the render target
@@ -265,7 +250,7 @@ public:
     /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Shape& shape, RenderStates states);
+    void draw(const Shape& shape, RenderStates states); // TODO P0: revisit this API, shouldn't mutate states
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a text object to the render target
@@ -274,7 +259,7 @@ public:
     /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Text& text, RenderStates states);
+    void draw(const Text& text, RenderStates states); // TODO P0: revisit this API, shouldn't mutate states
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -286,7 +271,8 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const PersistentGPUDrawableBatch& drawableBatch, RenderStates states);
+    void draw(const PersistentGPUDrawableBatch& drawableBatch,
+              RenderStates                      states); // TODO P0: revisit this API, shouldn't mutate states
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by a vertex buffer
@@ -324,7 +310,9 @@ public:
     ///         (WARNING: the span is only valid until the next draw call)
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan draw(const Font& font, const TextData& textData, RenderStates states);
+    VertexSpan draw(const Font&     font,
+                    const TextData& textData,
+                    RenderStates    states); // TODO P0: revisit this API, shouldn't mutate states
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by an array of vertices
@@ -465,36 +453,76 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    class BoundStatesContext
+    template <bool TLocked>
+    class WithRenderStatesContext
     {
     private:
+        ////////////////////////////////////////////////////////////
         RenderTarget* const m_rt;
         const RenderStates  m_states;
 
     public:
-        BoundStatesContext(RenderTarget& rt, const RenderStates& states);
-        ~BoundStatesContext();
+        ////////////////////////////////////////////////////////////
+        WithRenderStatesContext(RenderTarget& rt, const RenderStates& states);
+        ~WithRenderStatesContext();
 
-        BoundStatesContext(const BoundStatesContext&)            = delete;
-        BoundStatesContext& operator=(const BoundStatesContext&) = delete;
+        ////////////////////////////////////////////////////////////
+        WithRenderStatesContext(const WithRenderStatesContext&)            = delete;
+        WithRenderStatesContext& operator=(const WithRenderStatesContext&) = delete;
 
-        BoundStatesContext(BoundStatesContext&&)            = delete;
-        BoundStatesContext& operator=(BoundStatesContext&&) = delete;
+        ////////////////////////////////////////////////////////////
+        WithRenderStatesContext(WithRenderStatesContext&&)            = delete;
+        WithRenderStatesContext& operator=(WithRenderStatesContext&&) = delete;
 
-        [[gnu::always_inline]] decltype(auto) draw(auto&&... args) const
+        ////////////////////////////////////////////////////////////
+        [[gnu::always_inline]] const WithRenderStatesContext& draw(const auto& drawable) const
         {
-            return m_rt->draw(SFML_BASE_FORWARD(args)..., m_states);
+            m_rt->draw(drawable, m_states);
+            return *this;
+        }
+
+        ////////////////////////////////////////////////////////////
+        [[gnu::always_inline]] const WithRenderStatesContext& drawAll(const auto&... drawables) const
+        {
+            (..., draw(drawables));
+            return *this;
+        }
+
+        ////////////////////////////////////////////////////////////
+        // NOLINTNEXTLINE(modernize-use-nodiscard)
+        [[gnu::always_inline]] const WithRenderStatesContext& draw(const Texture& texture, const DrawTextureSettings& params) const
+        {
+            m_rt->draw(texture, params, m_states);
+            return *this;
+        }
+
+        ////////////////////////////////////////////////////////////
+        // NOLINTNEXTLINE(modernize-use-nodiscard)
+        [[gnu::always_inline]] const WithRenderStatesContext& draw(const Font& font, const TextData& textData) const
+        {
+            m_rt->draw(font, textData, m_states);
+            return *this;
         }
     };
 
     ////////////////////////////////////////////////////////////
-    friend BoundStatesContext;
+    template <bool>
+    friend class WithRenderStatesContext;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] BoundStatesContext withRenderStates(const RenderStates& states)
+    [[nodiscard, gnu::always_inline]] WithRenderStatesContext<false> withRenderStates(const RenderStates& states)
+    {
+        return {*this, states};
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline]] WithRenderStatesContext<true> withLockedRenderStates(const RenderStates& states)
     {
         return {*this, states};
     }
@@ -569,7 +597,8 @@ private:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void immediateDrawDrawableBatch(const CPUDrawableBatch& drawableBatch, RenderStates states);
+    void immediateDrawDrawableBatch(const CPUDrawableBatch& drawableBatch,
+                                    RenderStates states); // TODO P0: revisit this API, shouldn't mutate states
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -593,10 +622,23 @@ private:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void flushIfNeeded(const RenderStates& states)
     {
-        if (m_numAutoBatchVertices >= m_autoBatchVertexThreshold || (!m_isStateLocked && m_lastRenderStates != states))
+        if (m_isStateLocked)
         {
-            flush();
-            m_lastRenderStates = states;
+            SFML_BASE_ASSERT(m_lastRenderStates == states &&
+                             "State mutation detected while inside a 'withLockedRenderStates' context!\n If you are "
+                             "drawing Text, Shapes, or Sprites, you must explicitly bind their Texture to the context "
+                             "upfront.");
+
+            if (m_numAutoBatchVertices >= m_autoBatchVertexThreshold)
+                flush();
+        }
+        else
+        {
+            if (m_numAutoBatchVertices >= m_autoBatchVertexThreshold || m_lastRenderStates != states)
+            {
+                flush();
+                m_lastRenderStates = states;
+            }
         }
     }
 
@@ -825,6 +867,18 @@ public:
         drawableObject.draw(*this, states);
     }
 
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename DrawableObjectRange>
+    void draw(const DrawableObjectRange& drawableObjectRange, const RenderStates& states)
+        requires(requires { draw(*drawableObjectRange.begin(), states); })
+    {
+        for (const auto& drawable : drawableObjectRange)
+            draw(drawable, states);
+    }
+
 private:
     ////////////////////////////////////////////////////////////
     // Member data
@@ -833,8 +887,8 @@ private:
     AutoBatchMode  m_autoBatchMode{AutoBatchMode::GPUStorage}; //!< Enable automatic batching of draw calls
     base::SizeT    m_numAutoBatchVertices{0u};                 //!< Number of vertices in the current autobatch
     base::SizeT    m_autoBatchVertexThreshold{32'768u};        //!< Threshold for batch vertex count
-    RenderStates   m_lastRenderStates;                         //!< Cached render states (autobatching)
-    bool           m_isStateLocked{false}; //!< Whether render states are currently bound via `withRenderStates`
+    RenderStates   m_lastRenderStates{};                       //!< Cached render states (autobatching)
+    bool           m_isStateLocked{false}; //!< Whether render states are currently bound via `withLockedRenderStates`
 
     ////////////////////////////////////////////////////////////
     struct Impl;

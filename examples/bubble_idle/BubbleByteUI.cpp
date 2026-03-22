@@ -1,6 +1,7 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
+#include "Achievements.hpp"
 #include "Aliases.hpp"
 #include "BubbleIdleMain.hpp"
 #include "BubbleType.hpp"
@@ -12,14 +13,22 @@
 #include "ImGuiNotify.hpp"
 #include "InputHelper.hpp"
 #include "Milestones.hpp"
+#include "ParticleData.hpp"
 #include "ParticleType.hpp"
 #include "Playthrough.hpp"
 #include "Profile.hpp"
 #include "PurchasableScalingValue.hpp"
 #include "Serialization.hpp"
+#include "Shrine.hpp"
+#include "ShrineConstants.hpp"
+#include "ShrineType.hpp"
 #include "Sounds.hpp"
+#include "Stats.hpp"
 #include "Version.hpp"
 
+#include "ExampleUtils/Easing.hpp"
+#include "ExampleUtils/HueColor.hpp"
+#include "ExampleUtils/Profiler.hpp"
 #include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/Sampler.hpp"
 
@@ -38,6 +47,7 @@
 #include "SFML/Graphics/TextureAtlas.hpp"
 
 #include "SFML/Window/Keyboard.hpp"
+#include "SFML/Window/VideoModeUtils.hpp"
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Rect2.hpp"
@@ -52,6 +62,9 @@
 #include "SFML/Base/FloatMax.hpp"
 #include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Math/Cos.hpp"
+#include "SFML/Base/Math/Pow.hpp"
+#include "SFML/Base/Math/Sin.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/ScopeGuard.hpp"
@@ -60,6 +73,8 @@
 #include "SFML/Base/ToString.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
+
+#include <climits>
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
@@ -1733,7 +1748,7 @@ bool Main::checkUiUnlock(const sf::base::SizeT unlockId, const bool unlockCondit
 
 
 ////////////////////////////////////////////////////////////
-void Main::uiImageFromAtlas(const sf::Rect2f& txr, const sf::RenderTarget::TextureDrawParams& drawParams)
+void Main::uiImageFromAtlas(const sf::Rect2f& txr, const sf::DrawTextureSettings& drawParams)
 {
     imGuiContext.image(
         sf::Sprite{

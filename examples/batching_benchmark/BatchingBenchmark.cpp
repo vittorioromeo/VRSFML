@@ -12,6 +12,7 @@
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/TextureAtlas.hpp"
+#include "SFML/Graphics/View.hpp"
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
@@ -22,6 +23,8 @@
 
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -54,8 +57,6 @@ int main()
                           .vsync     = true,
                       })
                       .value();
-
-    auto gameView = sf::View::fromSize(windowSize);
 
     //
     //
@@ -134,7 +135,7 @@ int main()
 
     //
     //
-    // Set up UI elements
+    // Settings
     const bool useBatch    = true;
     const bool drawSprites = true;
     const bool drawText    = true;
@@ -167,7 +168,6 @@ int main()
         while (window.pollEvent())
             ;
 
-        // TODO P0: use new api here
         for (const Entity& entity : entities)
         {
             if (drawSprites)
@@ -175,7 +175,7 @@ int main()
                 if (useBatch)
                     drawableBatch.add(entity.sprite);
                 else
-                    window.draw(entity.sprite, {.view = gameView, .texture = &textureAtlas.getTexture()});
+                    window.draw(entity.sprite, {.view = {}, .texture = &textureAtlas.getTexture()});
             }
 
             if (drawText)
@@ -183,12 +183,12 @@ int main()
                 if (useBatch)
                     drawableBatch.add(entity.text);
                 else
-                    window.draw(entity.text, {.view = gameView});
+                    window.draw(entity.text, {.view = {}});
             }
         }
 
         if (useBatch)
-            window.draw(drawableBatch, {.view = gameView, .texture = &textureAtlas.getTexture()});
+            window.draw(drawableBatch, {.view = {}, .texture = &textureAtlas.getTexture()});
 
         window.display();
     }

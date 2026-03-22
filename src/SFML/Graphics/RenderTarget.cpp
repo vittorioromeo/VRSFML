@@ -460,8 +460,6 @@ base::SizeT RenderTarget::getAutoBatchVertexThreshold() const
 ////////////////////////////////////////////////////////////
 void RenderTarget::draw(const Texture& texture, RenderStates states)
 {
-    SFML_BASE_ASSERT(states.texture == nullptr && "texture for texture will be set automatically");
-
     states.texture = &texture;
 
     if (m_autoBatchMode != AutoBatchMode::Disabled)
@@ -472,19 +470,15 @@ void RenderTarget::draw(const Texture& texture, RenderStates states)
     else
     {
         Vertex buffer[4];
-
         DrawableBatchUtils::appendPreTransformedSpriteQuadVertices(Transform{}, texture.getRect(), Color::White, buffer);
-
         draw(buffer, PrimitiveType::TriangleStrip, states);
     }
 }
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::draw(const Texture& texture, const TextureDrawParams& params, RenderStates states)
+void RenderTarget::draw(const Texture& texture, const DrawTextureSettings& params, RenderStates states)
 {
-    SFML_BASE_ASSERT(states.texture == nullptr && "texture for texture will be set automatically");
-
     states.texture = &texture;
 
     if (m_autoBatchMode != AutoBatchMode::Disabled)
@@ -578,8 +572,6 @@ void RenderTarget::draw(const Shape& shape, RenderStates states)
 ////////////////////////////////////////////////////////////
 void RenderTarget::draw(const Text& text, RenderStates states)
 {
-    SFML_BASE_ASSERT(states.texture == nullptr && "texture for text will be set automatically");
-
     states.texture = &text.getFont().getTexture();
 
     if (m_autoBatchMode != AutoBatchMode::Disabled)
@@ -843,8 +835,6 @@ template VertexSpan RenderTarget::draw(const StarShapeData&, const RenderStates&
 ////////////////////////////////////////////////////////////
 VertexSpan RenderTarget::draw(const Font& font, const TextData& textData, RenderStates states)
 {
-    SFML_BASE_ASSERT(states.texture == nullptr && "texture for text will be set automatically");
-
     states.texture = &font.getTexture();
 
     if (m_autoBatchMode != AutoBatchMode::Disabled)
@@ -1132,25 +1122,37 @@ void RenderTarget::finishGPUCommands()
 
 
 ////////////////////////////////////////////////////////////
-RenderTarget::BoundStatesContext::BoundStatesContext(RenderTarget& rt, const RenderStates& states) :
+template <bool TLocked>
+RenderTarget::WithRenderStatesContext<TLocked>::WithRenderStatesContext(RenderTarget& rt, const RenderStates& states) :
     m_rt{&rt},
     m_states{states}
 {
-    // Flush once upfront so the GPU state is ready
     if (m_rt->getAutoBatchMode() != AutoBatchMode::Disabled)
         m_rt->flushIfNeeded(m_states);
 
-    SFML_BASE_ASSERT(!m_rt->m_isStateLocked && "Cannot create a context while another is active");
-    m_rt->m_isStateLocked = true;
+    if constexpr (TLocked)
+    {
+        SFML_BASE_ASSERT(!m_rt->m_isStateLocked && "Cannot create a context while another is active");
+        m_rt->m_isStateLocked = true;
+    }
 }
 
 
 ////////////////////////////////////////////////////////////
-RenderTarget::BoundStatesContext::~BoundStatesContext()
+template <bool TLocked>
+RenderTarget::WithRenderStatesContext<TLocked>::WithRenderStatesContext::~WithRenderStatesContext()
 {
-    SFML_BASE_ASSERT(m_rt->m_isStateLocked && "Cannot destroy a context while no context is active");
-    m_rt->m_isStateLocked = false;
+    if constexpr (TLocked)
+    {
+        SFML_BASE_ASSERT(m_rt->m_isStateLocked && "Cannot destroy a context while no context is active");
+        m_rt->m_isStateLocked = false;
+    }
 }
+
+
+////////////////////////////////////////////////////////////
+template class RenderTarget::WithRenderStatesContext<true>;
+template class RenderTarget::WithRenderStatesContext<false>;
 
 
 ////////////////////////////////////////////////////////////
@@ -1158,6 +1160,7 @@ void RenderTarget::syncGPUStartFrame()
 {
 #ifndef SFML_OPENGL_ES
     auto& [batch, fenceToWaitOn, indexOffset, vertexOffset] = m_impl->currentGPUAutoBatchState();
+
     if (!RenderTargetImpl::waitOnFence(fenceToWaitOn))
         return;
 
@@ -1320,6 +1323,9 @@ void RenderTarget::setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& sta
     // Select shader to be used
     const Shader& usedShader = states.shader != nullptr ? *states.shader : GraphicsContext::getInstalledBuiltInShader();
 
+    // Select view to be used
+    const View usedView = states.view == View{} ? makeView() : states.view;
+
     // Update shader
     const auto usedNativeHandle = usedShader.getNativeHandle();
     const bool shaderChanged    = m_impl->cache.lastProgramId != usedNativeHandle;
@@ -1331,9 +1337,9 @@ void RenderTarget::setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& sta
     }
 
     // Apply the view
-    const bool viewChanged = m_impl->cache.lastView != states.view;
+    const bool viewChanged = m_impl->cache.lastView != usedView;
     if (!m_impl->cache.enable || viewChanged)
-        applyView(states.view);
+        applyView(usedView);
 
     // Set the model-view-projection matrix
     if (!m_impl->cache.enable || shaderChanged || viewChanged || states.transform != m_impl->cache.lastRenderStatesTransform)

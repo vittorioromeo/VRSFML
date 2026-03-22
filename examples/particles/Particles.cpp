@@ -3,6 +3,7 @@
 #include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/Sampler.hpp"
 
+#include "SFML/ImGui/ImConfigSFML.hpp" // IWYU pragma: keep
 #include "SFML/ImGui/ImGuiContext.hpp"
 
 #include "SFML/Graphics/DrawableBatch.hpp"
@@ -20,6 +21,7 @@
 
 #include "SFML/Window/EventUtils.hpp"
 
+#include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Rect2.hpp"
@@ -74,7 +76,6 @@ namespace
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline]] inline void drawParticleImpl(
-    const sf::View&    view,
     const sf::Texture& texture,
     const sf::Rect2f&  txr,
     const sf::Vec2f    origin,
@@ -91,7 +92,7 @@ namespace
             .rotation    = sf::radians(rotation),
             .textureRect = txr,
         },
-        sf::RenderStates{.view = view, .texture = &texture});
+        sf::RenderStates{.view = {}, .texture = &texture});
 }
 
 } // namespace
@@ -126,8 +127,6 @@ int main()
                           .vsync     = false,
                       })
                       .value();
-
-    auto gameView = sf::View::fromSize(windowSize);
 
     //
     //
@@ -173,7 +172,7 @@ int main()
         {
         }
 
-        virtual void draw(const sf::View&, const sf::Texture&, sf::RenderTarget&)
+        virtual void draw(const sf::Texture&, sf::RenderTarget&)
         {
         }
     };
@@ -220,10 +219,9 @@ int main()
             alive = opacity > 0.f;
         }
 
-        void draw(const sf::View& view, const sf::Texture& texture, sf::RenderTarget& rt) override
+        void draw(const sf::Texture& texture, sf::RenderTarget& rt) override
         {
-            drawParticleImpl(view,
-                             texture,
+            drawParticleImpl(texture,
                              {{0.f, 0.f}, {64.f, 64.f}},
                              {32.f, 32.f},
                              position,
@@ -765,18 +763,18 @@ int main()
             {
                 if (useOOP)
                 {
-                    entities[i]->draw(gameView, textureAtlas.getTexture(), window);
+                    entities[i]->draw(textureAtlas.getTexture(), window);
                 }
                 else if (useSoA)
                 {
                     particlesSoA.withNth<0, 3, 7>(i, [&](const auto& position, const auto& scale, const auto& rotation) {
-                        drawParticleImpl(gameView, textureAtlas.getTexture(), textureRect, origin, position, scale, rotation, drawFn);
+                        drawParticleImpl(textureAtlas.getTexture(), textureRect, origin, position, scale, rotation, drawFn);
                     });
                 }
                 else
                 {
                     const ParticleAoS& p = particlesAoS[i];
-                    drawParticleImpl(gameView, textureAtlas.getTexture(), textureRect, origin, p.position, p.scale, p.rotation, drawFn);
+                    drawParticleImpl(textureAtlas.getTexture(), textureRect, origin, p.position, p.scale, p.rotation, drawFn);
                 }
             };
 
@@ -795,7 +793,7 @@ int main()
                 });
 
                 for (auto& batch : batchesArray)
-                    window.draw(batch, {.view = gameView, .texture = &textureAtlas.getTexture()});
+                    window.draw(batch, {.view = {}, .texture = &textureAtlas.getTexture()});
             };
 
             if (batchType == BatchType::Disabled || !multithreadedDraw)
@@ -817,9 +815,9 @@ int main()
                     });
 
                 if (batchType == BatchType::CPUStorage)
-                    window.draw(cpuDrawableBatches[0], {.view = gameView, .texture = &textureAtlas.getTexture()});
+                    window.draw(cpuDrawableBatches[0], {.view = {}, .texture = &textureAtlas.getTexture()});
                 else if (batchType == BatchType::GPUStorage)
-                    window.draw(gpuDrawableBatches[0], {.view = gameView, .texture = &textureAtlas.getTexture()});
+                    window.draw(gpuDrawableBatches[0], {.view = {}, .texture = &textureAtlas.getTexture()});
             }
             else if (batchType == BatchType::CPUStorage)
             {
