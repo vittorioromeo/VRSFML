@@ -6,6 +6,7 @@
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StdChrono.hpp" // IWYU pragma: keep
 #include "SFML/Base/Vector.hpp"
 
