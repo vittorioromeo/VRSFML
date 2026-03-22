@@ -78,9 +78,11 @@ TEST_CASE("[Graphics] sf::View")
 
     SECTION("Set/get center")
     {
-        sf::View view;
-        view.center = {3.14f, 4.2f};
-        view.size   = {1000, 1000};
+        const sf::View view{
+            .center = {3.14f, 4.2f},
+            .size   = {1000, 1000},
+        };
+
         CHECK(view.center == sf::Vec2f(3.14f, 4.2f));
         CHECK(view.getTransform() == Approx(sf::Transform(0.002f, 0, -0.00628f, 0, -0.002f, 0.0084f)));
         CHECK(view.getInverseTransform() == Approx(sf::Transform(500, 0, 3.14f, 0, -500, 4.2f)));
@@ -88,9 +90,10 @@ TEST_CASE("[Graphics] sf::View")
 
     SECTION("Set/get size")
     {
-        sf::View view;
-        view.center = {500, 500};
-        view.size   = {600, 900};
+        const sf::View view{
+            .center = {500, 500},
+            .size   = {1000, 1000},
+        };
 
         CHECK(view.size == sf::Vec2f{600, 900});
         CHECK(view.getTransform() == Approx(sf::Transform(0.00333333f, 0, -1.66667f, 0, -0.00222222f, 1.11111f)));
@@ -99,15 +102,17 @@ TEST_CASE("[Graphics] sf::View")
 
     SECTION("Set/get rotation")
     {
-        sf::View view;
-        view.center   = {500, 500};
-        view.size     = {1000, 1000};
-        view.rotation = sf::degrees(-345);
+        sf::View view{
+            .center   = {500, 500},
+            .size     = {1000, 1000},
+            .rotation = sf::degrees(-345),
+        };
 
         CHECK(view.rotation == Approx(sf::degrees(15)));
         CHECK(view.getTransform() ==
               Approx(sf::Transform(0.00193185f, 0.000517638f, -1.22474f, 0.000517638f, -0.00193185f, 0.707107f)));
         CHECK(view.getInverseTransform() == Approx(sf::Transform(482.963f, 129.41f, 500, 129.41f, -482.963f, 500)));
+
         view.rotation = sf::degrees(400);
         CHECK(view.rotation == Approx(sf::degrees(40)));
         CHECK(view.getTransform() ==
@@ -117,10 +122,11 @@ TEST_CASE("[Graphics] sf::View")
 
     SECTION("Set/get viewport")
     {
-        sf::View view;
-        view.center   = {500, 500};
-        view.size     = {1000, 1000};
-        view.viewport = {{150, 250}, {500, 750}};
+        const sf::View view{
+            .center   = {500, 500},
+            .size     = {1000, 1000},
+            .viewport = {{150, 250}, {500, 750}},
+        };
 
         CHECK(view.viewport == sf::Rect2f({150, 250}, {500, 750}));
         CHECK(view.getTransform() == Approx(sf::Transform(0.002f, 0, -1, 0, -0.002f, 1)));
@@ -138,11 +144,12 @@ TEST_CASE("[Graphics] sf::View")
 
     SECTION("rotate()")
     {
-        sf::View view;
-        view.center = {500, 500};
-        view.size   = {1000, 1000};
+        sf::View view{
+            .center   = {500, 500},
+            .size     = {1000, 1000},
+            .rotation = sf::degrees(45),
+        };
 
-        view.rotation = sf::degrees(45);
         view.rotation += sf::degrees(-15);
 
         CHECK(view.rotation == Approx(sf::degrees(30)));
@@ -153,10 +160,11 @@ TEST_CASE("[Graphics] sf::View")
 
     SECTION("zoom()")
     {
-        sf::View view;
-        view.center = {500, 500};
+        sf::View view{
+            .center = {500, 500},
+            .size   = {25, 25},
+        };
 
-        view.size = {25, 25};
         view.size *= 4.f;
 
         CHECK(view.size == sf::Vec2f(100, 100));
