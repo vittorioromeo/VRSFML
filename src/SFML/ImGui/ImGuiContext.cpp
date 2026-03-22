@@ -1099,7 +1099,7 @@ void ImGuiContext::render(RenderTarget& target)
 
 
 ////////////////////////////////////////////////////////////
-// TODO P1: add TextureDrawParams overload, use in BubbleByte
+// TODO P1: add DrawTextureSettings overload, use in BubbleByte
 void ImGuiContext::image(const Texture& texture, Color tintColor, Color borderColor)
 {
     image(texture, texture.getSize().toVec2f(), tintColor, borderColor);

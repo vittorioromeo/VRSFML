@@ -1,6 +1,8 @@
+#include "SFML/ImGui/ImConfigSFML.hpp" // IWYU pragma: keep
 #include "SFML/ImGui/ImGuiContext.hpp"
 
 #include "SFML/Graphics/CircleShape.hpp"
+#include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 
@@ -62,7 +64,7 @@ int main()
         const sf::CircleShape shape{{.fillColor = sf::Color::Green, .radius = 100.f}};
 
         window.clear();
-        window.draw(shape, {.view = window.makeView()});
+        window.draw(shape, {.view = {}});
         imGuiContext.render(window);
         window.display();
 
@@ -89,7 +91,7 @@ int main()
             const sf::CircleShape shape2{{.fillColor = sf::Color::Red, .radius = 50.f}};
 
             childWindowRef.clear();
-            childWindowRef.draw(shape2, {.view = childWindowRef.makeView()});
+            childWindowRef.draw(shape2, {.view = {}});
             childImGuiContext->render(childWindowRef);
             childWindowRef.display();
         };

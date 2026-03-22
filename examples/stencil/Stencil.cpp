@@ -3,15 +3,19 @@
 ////////////////////////////////////////////////////////////
 #include "ExampleUtils/Scaling.hpp"
 
+#include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/StencilMode.hpp"
 
 #include "SFML/Window/EventUtils.hpp"
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Vec2.hpp"
+
+#include "SFML/Base/Optional.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -36,7 +40,7 @@ int main()
                       })
                       .value();
 
-    auto gameView = sf::View::fromSize(windowSize);
+    auto windowView = window.makeView();
 
     const sf::RectangleShape red({
         .position{270.f, 70.f},
@@ -67,7 +71,7 @@ int main()
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
-            if (handleAspectRatioAwareResize(*event, windowSize, gameView))
+            if (handleAspectRatioAwareResize(*event, windowSize, windowView))
                 continue;
         }
 
@@ -145,7 +149,7 @@ int main()
                                 .stencilReference       = sf::StencilValue{3u},
                                 .stencilMask            = sf::StencilValue{~0u},
                             },
-                        .view = gameView,
+                        .view = windowView,
                     });
 
         // Just like the first, we draw the second rectangle with comparison set to always so that it will definitely
@@ -162,7 +166,7 @@ int main()
                                 .stencilReference       = sf::StencilValue{1u},
                                 .stencilMask            = sf::StencilValue{~0u},
                             },
-                        .view = gameView,
+                        .view = windowView,
                     });
 
         // Now comes the magic. We want to draw the third rectangle so it is behind i.e. does not overwrite pixels
@@ -182,7 +186,7 @@ int main()
                                 .stencilReference       = sf::StencilValue{2u},
                                 .stencilMask            = sf::StencilValue{~0u},
                             },
-                        .view = gameView,
+                        .view = windowView,
                     });
 
         // Display things on screen

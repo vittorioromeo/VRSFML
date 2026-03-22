@@ -13,6 +13,8 @@
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Text.hpp"
+#include "SFML/Graphics/Transformable.hpp"
+#include "SFML/Graphics/Vertex.hpp"
 #include "SFML/Graphics/View.hpp" // IWYU pragma: keep
 
 #include "SFML/Audio/AudioContext.hpp"
@@ -28,14 +30,20 @@
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Rect2.hpp"
+#include "SFML/System/Time.hpp"
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Abort.hpp"
+#include "SFML/Base/Array.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Math/Round.hpp"
 #include "SFML/Base/MinMax.hpp"
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 #ifdef SFML_SYSTEM_IOS
@@ -701,10 +709,12 @@ public:
         });
     }
 
-    void drawOnto(sf::RenderTarget& target, sf::RenderStates states) const
+    void draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
         states.transform *= getTransform();
+
         target.draw(m_triangles, sf::PrimitiveType::Triangles, states);
+
         for (const sf::Text& label : m_labels)
             target.draw(label, states);
     }
@@ -1058,7 +1068,7 @@ int main()
                       })
                       .value();
 
-    auto gameView = sf::View::fromSize(windowSize);
+    auto windowView = window.makeView();
 
     // Load sound buffers
     const auto errorSoundBuffer    = sf::SoundBuffer::loadFromFile(resourcesDir() / "error_005.ogg").value();
@@ -1093,7 +1103,7 @@ int main()
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
-            if (handleAspectRatioAwareResize(*event, windowSize, gameView))
+            if (handleAspectRatioAwareResize(*event, windowSize, windowView))
                 continue;
 
             // Key events: update text and play sound
@@ -1156,14 +1166,8 @@ int main()
         }
 
         // Render frame
-        const sf::RenderStates states{.view = gameView};
-
         window.clear();
-        keyboardView.drawOnto(window, states);
-        window.draw(keyPressedText, states);
-        window.draw(keyReleasedText, states);
-        window.draw(textEnteredText, states);
-        window.draw(keyPressedCheckText, states);
+        window.withRenderStates({.view = windowView}).drawAll(keyboardView, keyPressedText, keyReleasedText, textEnteredText);
         window.display();
     }
 

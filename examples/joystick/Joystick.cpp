@@ -139,21 +139,25 @@ int main()
         float yOffset      = 0.f;
         float yEventOffset = 0.f;
 
+        const auto drawCtx = window.withLockedRenderStates({.view = windowView, .texture = &font.getTexture()});
+
         const auto drawLabelValue = [&](const sf::UnicodeString& label, const sf::UnicodeString& value)
         {
-            window.draw(font,
-                        {.position         = {5.f + 320.f * xOffset, 50.f + yOffset * fontLineSpacing},
-                         .string           = label + ":",
-                         .characterSize    = characterSize,
-                         .outlineColor     = sf::Color::Blue,
-                         .outlineThickness = 0.5f},
-                        {.view = windowView});
+            drawCtx.draw(font,
+                         {
+                             .position         = {5.f + 320.f * xOffset, 50.f + yOffset * fontLineSpacing},
+                             .string           = label + ":",
+                             .characterSize    = characterSize,
+                             .outlineColor     = sf::Color::Blue,
+                             .outlineThickness = 0.5f,
+                         });
 
-            window.draw(font,
-                        {.position      = {80.f + 320.f * xOffset, 50.f + yOffset * fontLineSpacing},
-                         .string        = value,
-                         .characterSize = characterSize},
-                        {.view = windowView});
+            drawCtx.draw(font,
+                         {
+                             .position      = {80.f + 320.f * xOffset, 50.f + yOffset * fontLineSpacing},
+                             .string        = value,
+                             .characterSize = characterSize,
+                         });
 
             yOffset += 1.f;
         };
@@ -161,26 +165,29 @@ int main()
         // Clear the window
         window.clear();
 
-        window.draw(font,
-                    {.position         = {5.f, 5.f},
-                     .string           = toStr("Threshold: ", threshold, "  (Change with up/down arrow keys)"),
-                     .characterSize    = characterSize,
-                     .outlineColor     = sf::Color::Blue,
-                     .outlineThickness = 0.5f},
-                    {.view = windowView});
+        drawCtx.draw(font,
+                     {
+                         .position         = {5.f, 5.f},
+                         .string           = toStr("Threshold: ", threshold, "  (Change with up/down arrow keys)"),
+                         .characterSize    = characterSize,
+                         .outlineColor     = sf::Color::Blue,
+                         .outlineThickness = 0.5f,
+                     });
 
         for (const auto& eventStr : eventLog)
         {
-            window.draw(font,
-                        {.position         = {5.f, 500.f + yEventOffset * fontLineSpacing},
-                         .string           = eventStr,
-                         .characterSize    = characterSize,
-                         .outlineColor     = sf::Color::Blue,
-                         .outlineThickness = 0.5f},
-                        {.view = windowView});
+            drawCtx.draw(font,
+                         {
+                             .position         = {5.f, 500.f + yEventOffset * fontLineSpacing},
+                             .string           = eventStr,
+                             .characterSize    = characterSize,
+                             .outlineColor     = sf::Color::Blue,
+                             .outlineThickness = 0.5f,
+                         });
 
             ++yEventOffset;
         }
+
 
         for (unsigned int i = 0u; i < sf::Joystick::MaxCount; ++i)
         {

@@ -5,6 +5,8 @@
 
 #include "ExampleUtils/LoadedSound.hpp"
 
+#include "SFML/Graphics/DrawTextureSettings.hpp"
+
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Math/Cos.hpp"
@@ -2088,16 +2090,16 @@ struct Main
     void                    uiTabBar();
     void                    uiSetUnlockLabelY(sf::base::SizeT unlockId);
     [[nodiscard]] bool      checkUiUnlock(sf::base::SizeT unlockId, bool unlockCondition);
-    void uiImageFromAtlas(const sf::Rect2f& txr, const sf::RenderTarget::TextureDrawParams& drawParams);
-    void uiImgsep(const sf::Rect2f& txr, const char* sepLabel, bool first = false);
-    void uiImgsep2(const sf::Rect2f& txr, const char* sepLabel);
-    void uiTabBarShop();
-    bool uiCheckbox(const char* label, bool* b);
-    bool uiRadio(const char* label, int* i, int value);
-    void uiTabBarPrestige();
-    void uiTabBarMagic();
-    void uiTabBarStats();
-    void uiTabBarSettings();
+    void                    uiImageFromAtlas(const sf::Rect2f& txr, const sf::DrawTextureSettings& drawParams);
+    void                    uiImgsep(const sf::Rect2f& txr, const char* sepLabel, bool first = false);
+    void                    uiImgsep2(const sf::Rect2f& txr, const char* sepLabel);
+    void                    uiTabBarShop();
+    bool                    uiCheckbox(const char* label, bool* b);
+    bool                    uiRadio(const char* label, int* i, int value);
+    void                    uiTabBarPrestige();
+    void                    uiTabBarMagic();
+    void                    uiTabBarStats();
+    void                    uiTabBarSettings();
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::base::Optional<sf::Rect2f> getAoEDragRect(const sf::Vec2f mousePos) const

@@ -14,8 +14,11 @@
 
 #include "SFML/System/Path.hpp"
 #include "SFML/System/UnicodeString.hpp"
+#include "SFML/System/Vec2.hpp"
 
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/String.hpp"
 #include "SFML/Base/ToString.hpp"
 #include "SFML/Base/Vector.hpp"
 
@@ -41,7 +44,7 @@ int main()
                       })
                       .value();
 
-    auto gameView = sf::View::fromSize(windowSize);
+    auto windowView = window.makeView();
 
     // Open the application font and pass it to the Effect class
     const auto font = sf::Font::openFromFile("resources/tuffy.ttf").value();
@@ -59,7 +62,7 @@ int main()
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
-            if (handleAspectRatioAwareResize(*event, windowSize, gameView))
+            if (handleAspectRatioAwareResize(*event, windowSize, windowView))
                 continue;
 
             static const auto vec2ToString = [](const sf::Vec2i vec2)
@@ -78,13 +81,13 @@ int main()
         }
 
         window.clear();
-        window.draw(mousePosition, {.view = gameView});
+        window.draw(mousePosition, {.view = windowView});
 
         for (sf::base::SizeT i = 0u; i < log.size(); ++i)
         {
             mouseRawMovement.position = {50.f, static_cast<float>(i * 20) + 50.f};
             mouseRawMovement.setString(log[i]);
-            window.draw(mouseRawMovement, {.view = gameView});
+            window.draw(mouseRawMovement, {.view = windowView});
         }
 
         window.display();

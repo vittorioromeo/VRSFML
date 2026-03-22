@@ -1,12 +1,15 @@
+#include "SFML/ImGui/ImConfigSFML.hpp" // IWYU pragma: keep
 #include "SFML/ImGui/ImGuiContext.hpp"
 
 #include "SFML/Graphics/CircleShape.hpp"
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
+#include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RenderTexture.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Texture.hpp"
+#include "SFML/Graphics/Vertex.hpp"
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
@@ -16,6 +19,7 @@
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/IO.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Optional.hpp"
 
@@ -26,8 +30,7 @@ int main()
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
 
-    auto window   = sf::RenderWindow::create({.size{1024u, 768u}, .title = "ImGui + SFML = <3", .vsync = true}).value();
-    auto gameView = sf::View::fromSize({1024, 748});
+    auto window = sf::RenderWindow::create({.size{1024u, 768u}, .title = "ImGui + SFML = <3", .vsync = true}).value();
 
     sf::ImGuiContext imGuiContext;
 
@@ -55,9 +58,8 @@ int main()
     auto image   = sf::Image::create(size, sf::Color::White).value();
     auto texture = sf::Texture::loadFromImage(image).value();
 
-    leftInnerRT.draw(texture, {.view = leftInnerRT.makeView()});
+    leftInnerRT.draw(texture, {.view = {}});
     leftInnerRT.display();
-
 
     baseRenderTexture.clear();
     baseRenderTexture.draw(leftVertexArray, sf::PrimitiveType::Triangles, {.view = {}, .texture = &leftInnerRT.getTexture()});
@@ -118,7 +120,6 @@ int main()
         ImGui::End();
 
         window.clear();
-        window.draw(shape, {.view = gameView});
         imGuiContext.render(window);
         window.display();
     }

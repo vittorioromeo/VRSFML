@@ -18,6 +18,7 @@
 
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/ToString.hpp"
 #include "SFML/Base/Trait/Decay.hpp"
@@ -340,17 +341,15 @@ public:
             // Draw the contents of the log to the window
             m_window.clear();
 
-            const auto view = m_window.makeView();
-
             for (sf::base::SizeT i = 0u; i < m_log.size(); ++i)
             {
                 m_logText.position = {50.f, static_cast<float>(i * 20) + 50.f};
                 m_logText.setString(m_log[i]);
-                m_window.draw(m_logText, {.view = view});
+                m_window.draw(m_logText, {.view = {}});
             }
 
-            m_window.draw(m_handlerText, {.view = view});
-            m_window.draw(m_instructions, {.view = view});
+            m_window.draw(m_handlerText, {.view = {}});
+            m_window.draw(m_instructions, {.view = {}});
             m_window.display();
         }
     }
