@@ -148,9 +148,8 @@ TEST_CASE("[Graphics] sf::View")
     SECTION("getPixelScissor")
     {
         CHECK(sf::View{.scissor = {{0, 0}, {1, 1}}}.getPixelScissor({640, 480}) == sf::Rect2i({0, 0}, {640, 480}));
-        CHECK(sf::View{.scissor = {{1, 1}, {.5f, .25f}}}.getPixelScissor({640, 480}) == sf::Rect2i({0, 0}, {640, 480}));
-        CHECK(sf::View{.scissor = {{.5f, .5f}, {.25f, .75f}}}.getPixelScissor({640, 480}) ==
-              sf::Rect2i({0, 0}, {640, 480}));
+        CHECK(sf::View{.scissor = {{.5f, .5f}, {.25f, .25f}}}.getPixelScissor({640, 480}) ==
+              sf::Rect2i({320, 240}, {160, 120}));
     }
 
     SECTION("unproject")

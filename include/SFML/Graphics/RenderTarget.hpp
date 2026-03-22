@@ -9,9 +9,9 @@
 #include "SFML/Graphics/Export.hpp"
 
 #include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/GlDataType.hpp"
 #include "SFML/Graphics/IndexType.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
+#include "SFML/Graphics/Priv/ShapeDataConcept.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/VertexSpan.hpp"
 
@@ -21,7 +21,6 @@
 #include "SFML/Base/FixedFunction.hpp"
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Trait/IsSame.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -30,33 +29,20 @@
 namespace sf
 {
 class CPUDrawableBatch;
-
-template <typename TBufferObject>
-class GLPersistentBuffer;
-
 class Font;
 class PersistentGPUDrawableBatch;
 class Shader;
 class Shape;
 class Text;
 class Texture;
+class VAOHandle;
 class VertexBuffer;
-
-struct ArrowShapeData;
-struct CircleShapeData;
-struct CurvedArrowShapeData;
-struct EllipseShapeData;
-struct PieSliceShapeData;
-struct RectangleShapeData;
-struct RingShapeData;
-struct RingPieSliceShapeData;
-struct RoundedRectangleShapeData;
-struct StarShapeData;
 
 struct BlendMode;
 struct GLElementBufferObject;
 struct GLVAOGroup;
 struct GLVertexBufferObject;
+struct InstanceAttributeBinder;
 struct Sprite;
 struct StencilMode;
 struct StencilValue;
@@ -65,25 +51,6 @@ struct Transform;
 struct Vertex;
 struct View;
 } // namespace sf
-
-
-namespace sf::priv
-{
-////////////////////////////////////////////////////////////
-template <typename T>
-concept ShapeDataConcept =                             //
-    SFML_BASE_IS_SAME(T, ArrowShapeData) ||            //
-    SFML_BASE_IS_SAME(T, CircleShapeData) ||           //
-    SFML_BASE_IS_SAME(T, CurvedArrowShapeData) ||      //
-    SFML_BASE_IS_SAME(T, EllipseShapeData) ||          //
-    SFML_BASE_IS_SAME(T, PieSliceShapeData) ||         //
-    SFML_BASE_IS_SAME(T, RectangleShapeData) ||        //
-    SFML_BASE_IS_SAME(T, RingShapeData) ||             //
-    SFML_BASE_IS_SAME(T, RingPieSliceShapeData) ||     //
-    SFML_BASE_IS_SAME(T, RoundedRectangleShapeData) || //
-    SFML_BASE_IS_SAME(T, StarShapeData);
-
-} // namespace sf::priv
 
 
 namespace sf
@@ -442,58 +409,6 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    struct InstanceAttributeBinder;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    class [[nodiscard]] VAOHandle
-    {
-    public:
-        VAOHandle();
-        ~VAOHandle();
-
-        VAOHandle(const VAOHandle&)            = delete;
-        VAOHandle& operator=(const VAOHandle&) = delete;
-
-        VAOHandle(VAOHandle&&) noexcept;
-        VAOHandle& operator=(VAOHandle&&) noexcept;
-
-    private:
-        friend RenderTarget;
-
-        struct Impl;
-        base::InPlacePImpl<Impl, 128> m_impl;
-    };
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    class [[nodiscard]] VBOHandle
-    {
-    public:
-        VBOHandle();
-        ~VBOHandle();
-
-        VBOHandle(const VBOHandle&)            = delete;
-        VBOHandle& operator=(const VBOHandle&) = delete;
-
-        VBOHandle(VBOHandle&&) noexcept;
-        VBOHandle& operator=(VBOHandle&&) noexcept;
-
-    private:
-        friend InstanceAttributeBinder;
-
-        struct Impl;
-        base::InPlacePImpl<Impl, 64> m_impl;
-    };
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
     struct [[nodiscard]] DrawInstancedVerticesSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
     {
         VAOHandle&    vaoHandle;
@@ -607,45 +522,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     RenderTarget::DrawStatistics flush();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    struct [[nodiscard]] InstanceAttributeBinder
-    {
-        ////////////////////////////////////////////////////////////
-        InstanceAttributeBinder() = default;
-
-        ////////////////////////////////////////////////////////////
-        InstanceAttributeBinder(const InstanceAttributeBinder&)            = delete;
-        InstanceAttributeBinder& operator=(const InstanceAttributeBinder&) = delete;
-
-        ////////////////////////////////////////////////////////////
-        InstanceAttributeBinder(InstanceAttributeBinder&&)            = delete;
-        InstanceAttributeBinder& operator=(InstanceAttributeBinder&&) = delete;
-
-        ////////////////////////////////////////////////////////////
-        void bindVBO(VBOHandle& vboHandle);
-
-        ////////////////////////////////////////////////////////////
-        void uploadData(base::SizeT instanceCount, const void* data, base::SizeT stride);
-
-        ////////////////////////////////////////////////////////////
-        template <typename T>
-        void uploadContiguousData(const base::SizeT instanceCount, const T* const data)
-        {
-            uploadData(instanceCount, data, sizeof(T));
-        }
-
-        ////////////////////////////////////////////////////////////
-        void setup(unsigned int location,
-                   unsigned int size,
-                   GlDataType   type,
-                   bool         normalized,
-                   base::SizeT  stride,
-                   base::SizeT  fieldOffset);
-    };
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
