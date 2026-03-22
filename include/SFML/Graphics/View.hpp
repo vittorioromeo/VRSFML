@@ -17,6 +17,7 @@
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/ClampMacro.hpp"
+#include "SFML/Base/Math/Lround.hpp"
 #include "SFML/Base/SinCosLookup.hpp"
 
 
@@ -160,7 +161,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     /// \see unproject
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::pure]] Vec2f project(const Vec2f point, const Vec2f targetSize) const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] Vec2f project(const Vec2f point, const Vec2f targetSize) const
     {
         // 1. Transform to NDC [-1, 1]
         const Vec2f normalized = getTransform().transformPoint(point);
@@ -212,7 +213,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     /// \see project
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::pure]] Vec2f unproject(const Vec2f point, const Vec2f targetSize) const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] Vec2f unproject(const Vec2f point, const Vec2f targetSize) const
     {
         // 1. Normalize window pixels to [0, 1]
         const Vec2f windowNorm = point.componentWiseDiv(targetSize);
@@ -227,6 +228,49 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
         return getInverseTransform().transformPoint(normalized);
     }
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the viewport of this view in pixels, applied to a specific size
+    ///
+    /// The viewport is defined in the view as a ratio, this function
+    /// simply applies this ratio to the current dimensions of the
+    /// render target to calculate the pixels rectangle that the viewport
+    /// actually covers in the target.
+    ///
+    /// \param targetSize The size of the render target
+    ///
+    /// \return Viewport rectangle, expressed in pixels
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] Rect2i getPixelViewport(const Vec2f targetSize) const
+    {
+        return Rect2<long>({SFML_BASE_MATH_LROUNDF(targetSize.x * viewport.position.x),
+                            SFML_BASE_MATH_LROUNDF(targetSize.y * viewport.position.y)},
+                           {SFML_BASE_MATH_LROUNDF(targetSize.x * viewport.size.x),
+                            SFML_BASE_MATH_LROUNDF(targetSize.y * viewport.size.y)})
+            .toRect2i();
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the scissor rectangle of a view, applied to a specific size
+    ///
+    /// The scissor rectangle is defined in the view as a ratio. This
+    /// function simply applies this ratio to the current dimensions
+    /// of the render target to calculate the pixels rectangle
+    /// that the scissor rectangle actually covers in the target.
+    ///
+    /// \param targetSize The size of the render target
+    ///
+    /// \return Scissor rectangle, expressed in pixels
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] Rect2i getPixelScissor(const Vec2f targetSize) const
+    {
+        return Rect2<long>({SFML_BASE_MATH_LROUNDF(targetSize.x * scissor.position.x),
+                            SFML_BASE_MATH_LROUNDF(targetSize.y * scissor.position.y)},
+                           {SFML_BASE_MATH_LROUNDF(targetSize.x * scissor.size.x),
+                            SFML_BASE_MATH_LROUNDF(targetSize.y * scissor.size.y)})
+            .toRect2i();
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Compare strict equality between two `View` objects
