@@ -2,7 +2,7 @@
 // LICENSE AND COPYRIGHT (C) INFORMATION
 // https://github.com/vittorioromeo/VRSFML/blob/master/license.md
 
-#include <cmath> // used
+#include <cmath> // IWYU pragma: keep
 
 
 ////////////////////////////////////////////////////////////
