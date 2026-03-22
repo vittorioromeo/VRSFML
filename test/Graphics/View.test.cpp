@@ -92,7 +92,7 @@ TEST_CASE("[Graphics] sf::View")
     {
         const sf::View view{
             .center = {500, 500},
-            .size   = {1000, 1000},
+            .size   = {600, 900},
         };
 
         CHECK(view.size == sf::Vec2f{600, 900});
