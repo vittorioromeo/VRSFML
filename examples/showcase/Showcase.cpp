@@ -2,6 +2,7 @@
 #include "ExampleUtils/Sampler.hpp"
 #include "ExampleUtils/Scaling.hpp"
 
+#include "SFML/ImGui/ImConfigSFML.hpp"
 #include "SFML/ImGui/ImGuiContext.hpp"
 
 #include "SFML/Graphics/ArrowShapeData.hpp"
@@ -47,6 +48,7 @@
 #include "SFML/Base/Algorithm/Find.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Clamp.hpp"
+#include "SFML/Base/Constants.hpp"
 #include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/InPlaceVector.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
@@ -294,7 +296,7 @@ private:
 
     ////////////////////////////////////////////////////////////
     sf::base::Vector<Bunny> m_bunnies;
-    sf::base::SizeT         m_bunnyTargetCount = 100'000u;
+    sf::base::SizeT         m_bunnyTargetCount = 500'000u;
 
     ////////////////////////////////////////////////////////////
     RNGFast m_rng{/* seed */ 1234};
@@ -374,21 +376,23 @@ public:
     {
         sf::base::SizeT i = 0;
 
-        for (auto& [position, velocity, rotation, scale] : m_bunnies)
         {
-            const auto& txr = m_bunnyTextureRects[i % 8u];
+            auto drawCtx = m_deps.rtGame->withRenderStates({.view = *m_deps.view, .texture = &m_textureAtlas.getTexture()});
 
-            m_deps.rtGame->draw(
-                sf::Sprite{
+            for (auto& [position, velocity, rotation, scale] : m_bunnies)
+            {
+                const auto& txr = m_bunnyTextureRects[i % 8u];
+
+                drawCtx.draw(sf::Sprite{
                     .position    = position,
                     .scale       = {scale, scale},
                     .origin      = txr.size / 2.f,
                     .rotation    = rotation,
                     .textureRect = txr,
-                },
-                {.view = *m_deps.view, .texture = &m_textureAtlas.getTexture()});
+                });
 
-            ++i;
+                ++i;
+            }
         }
 
         const auto digitSeparatedBunnyCount = toDigitSeparatedString(m_bunnies.size());

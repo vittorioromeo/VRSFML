@@ -221,6 +221,7 @@ int main()
     bool            drawShapes               = true;
     bool            multithreadedUpdate      = false;
     bool            multithreadedDraw        = false;
+    bool            useWithRenderStatesAPI   = false;
     sf::base::U64   nWorkers                 = nMaxWorkers;
     int             numEntities              = 500;
     sf::base::SizeT drawnVertices            = 0u;
@@ -420,6 +421,10 @@ int main()
             ImGui::Checkbox("Multithreaded Draw", &multithreadedDraw);
             ImGui::EndDisabled();
 
+            ImGui::BeginDisabled(batchType != BatchType::Disabled);
+            ImGui::Checkbox("Use withRenderStates API", &useWithRenderStatesAPI);
+            ImGui::EndDisabled();
+
             ImGui::SetNextItemWidth(172.f);
             ImGui::InputScalar("Workers", ImGuiDataType_U64, &nWorkers, &step);
             nWorkers = sf::base::clamp(nWorkers, sf::base::U64{2u}, nMaxWorkers);
@@ -453,8 +458,6 @@ int main()
             plotGraph("Update", " ms", samplesUpdateMs, 10.f);
             plotGraph("Draw", " ms", samplesDrawMs, 100.f);
             plotGraph("FPS", " FPS", samplesFPS, 300.f);
-            // plotGraph("Events", " ms", samplesEventMs, 300.f);
-            // plotGraph("ImGui", " ms", samplesImGuiMs, 300.f);
             plotGraph("Display", " ms", samplesDisplayMs, 300.f);
 
             ImGui::Spacing();
@@ -464,120 +467,112 @@ int main()
             ImGui::End();
         }
         samplesImGuiMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
-        // ---
 
         ////////////////////////////////////////////////////////////
         // Draw step
         ////////////////////////////////////////////////////////////
-        // ---
         clock.restart();
         {
             window.clear();
-
-            const auto view = window.makeView();
+            const auto view       = window.makeView();
+            const auto baseStates = sf::RenderStates{.view = view, .texture = &textureAtlas.getTexture()};
 
             const auto drawEntity = [&](const Entity& entity, sf::base::SizeT& drawnVertexCounter, auto&& drawFn)
             {
                 if (drawSprites)
                 {
-                    drawFn(entity.sprite, sf::RenderStates{.view = view, .texture = &textureAtlas.getTexture()});
+                    drawFn(entity.sprite);
                     drawnVertexCounter += 4u;
                 }
-
                 if (drawText)
                 {
-                    drawFn(entity.text, sf::RenderStates{.view = view});
+                    drawFn(entity.text);
                     drawnVertexCounter += entity.text.getVertices().size();
                 }
-
                 if (drawShapes)
                 {
-                    drawFn(entity.circleShape, sf::RenderStates{.view = view, .texture = &textureAtlas.getTexture()});
-
+                    drawFn(entity.circleShape);
                     drawnVertexCounter += entity.circleShape.getFillVertices().size() +
                                           entity.circleShape.getOutlineVertices().size();
                 }
             };
 
-            const auto doMultithreadedDraw = [&](auto& batchesArray)
+            if (batchType == BatchType::Disabled)
             {
-                for (auto& batch : batchesArray)
-                    batch.clear();
+                drawnVertices = 0u;
 
-                // Initialize per-worker drawn vertex counts
-                sf::base::Vector<sf::base::SizeT> totalChunkDrawnVertices(nMaxWorkers);
-
-                doInBatches(
-                    [&](const sf::base::SizeT iBatch, const sf::base::SizeT batchStartIdx, const sf::base::SizeT batchEndIdx)
+                if (useWithRenderStatesAPI)
                 {
-                    sf::base::SizeT chunkDrawnVertices = 0u; // avoid false sharing
-
-                    for (sf::base::SizeT i = batchStartIdx; i < batchEndIdx; ++i)
-                        drawEntity(entities[i], chunkDrawnVertices, [&](const auto& drawable, const auto&...) {
-                            batchesArray[iBatch].add(drawable);
+                    auto drawCtx = window.withRenderStates(baseStates);
+                    for (const Entity& entity : entities)
+                        drawEntity(entity, drawnVertices, [&](const auto& drawable) { drawCtx.draw(drawable); });
+                }
+                else
+                {
+                    for (const Entity& entity : entities)
+                        drawEntity(entity, drawnVertices, [&](const auto& drawable) {
+                            window.draw(drawable, baseStates);
                         });
-
-                    totalChunkDrawnVertices[iBatch] += chunkDrawnVertices;
-                });
-
-                drawnVertices = 0u;
-                for (const auto v : totalChunkDrawnVertices)
-                    drawnVertices += v;
-
-                for (auto& batch : batchesArray)
-                    window.draw(batch, {.view = view, .texture = &textureAtlas.getTexture()});
-            };
-
-            if (batchType == BatchType::Disabled || !multithreadedDraw)
+                }
+            }
+            else // CPUStorage or GPUStorage
             {
-                cpuDrawableBatches[0].clear();
-                gpuDrawableBatches[0].clear();
+                const auto doWithBatch = [&](auto& batchesArray)
+                {
+                    for (auto& batch : batchesArray)
+                        batch.clear();
 
-                drawnVertices = 0u;
+                    // Initialize per-worker drawn vertex counts
+                    sf::base::Vector<sf::base::SizeT> totalChunkDrawnVertices(nMaxWorkers);
 
-                for (const Entity& entity : entities)
-                    drawEntity(entity,
-                               drawnVertices,
-                               [&](const auto& drawable, const auto&... args)
+                    const auto populateBatches =
+                        [&](const sf::base::SizeT iBatch, const sf::base::SizeT batchStartIdx, const sf::base::SizeT batchEndIdx)
                     {
-                        if (batchType == BatchType::Disabled)
-                            window.draw(drawable, args...);
-                        else if (batchType == BatchType::CPUStorage)
-                            cpuDrawableBatches[0].add(drawable);
-                        else if (batchType == BatchType::GPUStorage)
-                            gpuDrawableBatches[0].add(drawable);
-                    });
+                        sf::base::SizeT chunkDrawnVertices = 0u; // avoid false sharing
+                        for (sf::base::SizeT i = batchStartIdx; i < batchEndIdx; ++i)
+                            drawEntity(entities[i], chunkDrawnVertices, [&](const auto& drawable) {
+                                batchesArray[iBatch].add(drawable);
+                            });
+                        totalChunkDrawnVertices[iBatch] = chunkDrawnVertices;
+                    };
+
+                    if (multithreadedDraw)
+                        doInBatches(populateBatches);
+                    else
+                        populateBatches(0u, 0u, entities.size());
+
+                    // Tally vertices and submit batches to GPU
+                    drawnVertices = 0u;
+
+                    for (sf::base::SizeT i = 0u; i < (multithreadedDraw ? nWorkers : 1u); ++i)
+                    {
+                        drawnVertices += totalChunkDrawnVertices[i];
+                        window.draw(batchesArray[i], baseStates);
+                    }
+                };
+
+                // If GPU storage, preallocate memory to avoid race conditions
+                if (batchType == BatchType::GPUStorage)
+                {
+                    const sf::base::SizeT     maxEntitiesPerBatch       = (entities.size() + nWorkers - 1) / nWorkers;
+                    constexpr sf::base::SizeT maxQuadsPerEntityEstimate = 96u;
+                    const sf::base::SizeT     reservationSize = maxEntitiesPerBatch * maxQuadsPerEntityEstimate;
+
+                    for (sf::base::SizeT i = 0u; i < (multithreadedDraw ? nWorkers : 1u); ++i)
+                        gpuDrawableBatches[i].reserveQuads(reservationSize);
+                }
 
                 if (batchType == BatchType::CPUStorage)
-                    window.draw(cpuDrawableBatches[0], {.view = view, .texture = &textureAtlas.getTexture()});
-                else if (batchType == BatchType::GPUStorage)
-                    window.draw(gpuDrawableBatches[0], {.view = view, .texture = &textureAtlas.getTexture()});
-            }
-            else if (batchType == BatchType::CPUStorage)
-            {
-                doMultithreadedDraw(cpuDrawableBatches);
-            }
-            else if (batchType == BatchType::GPUStorage)
-            {
-                // Calculate reservation needed based on current state
-                const sf::base::SizeT     maxEntitiesPerBatch       = (entities.size() + nWorkers - 1) / nWorkers;
-                constexpr sf::base::SizeT maxQuadsPerEntityEstimate = 96u; // Safe upper bound
-                const sf::base::SizeT     reservationSize           = maxEntitiesPerBatch * maxQuadsPerEntityEstimate;
-
-                // Must reserve in advance as reserving is not thread-safe
-                for (sf::base::SizeT iBatch = 0u; iBatch < nMaxWorkers; ++iBatch)
-                    gpuDrawableBatches[iBatch].reserveQuads(reservationSize);
-
-                doMultithreadedDraw(gpuDrawableBatches);
+                    doWithBatch(cpuDrawableBatches);
+                else
+                    doWithBatch(gpuDrawableBatches);
             }
         }
         samplesDrawMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
-        // ---
 
         ////////////////////////////////////////////////////////////
         // Display step
         ////////////////////////////////////////////////////////////
-        // ---
         clock.restart();
         {
             imGuiContext.render(window);
@@ -585,7 +580,6 @@ int main()
             nDrawCalls       = stats.drawCalls;
         }
         samplesDisplayMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
-        // ---
 
         samplesFPS.record(1.f / fpsClock.getElapsedTime().asSeconds());
     }
