@@ -64,30 +64,6 @@ TEST_CASE("[Graphics] sf::RenderTarget")
         CHECK(renderTarget.setActive(true));
     }
 
-    const auto makeView = [](const auto& viewport)
-    {
-        sf::View view;
-        view.viewport = viewport;
-        return view;
-    };
-
-    SECTION("getViewport(const View&)")
-    {
-        const TestRenderTarget renderTarget;
-        CHECK(renderTarget.getViewport(makeView(sf::Rect2f({0, 0}, {1, 1}))) == sf::Rect2i({0, 0}, {640, 480}));
-        CHECK(renderTarget.getViewport(makeView(sf::Rect2f({1, 1}, {.5f, .25f}))) == sf::Rect2i({640, 480}, {320, 120}));
-        CHECK(renderTarget.getViewport(makeView(sf::Rect2f({.5f, .5f}, {.25f, .75f}))) ==
-              sf::Rect2i({320, 240}, {160, 360}));
-    }
-
-    SECTION("getScissor(const View&)")
-    {
-        const TestRenderTarget renderTarget;
-        CHECK(renderTarget.getScissor(makeView(sf::Rect2f({0, 0}, {1, 1}))) == sf::Rect2i({0, 0}, {640, 480}));
-        CHECK(renderTarget.getScissor(makeView(sf::Rect2f({1, 1}, {.5f, .25f}))) == sf::Rect2i({0, 0}, {640, 480}));
-        CHECK(renderTarget.getScissor(makeView(sf::Rect2f({.5f, .5f}, {.25f, .75f}))) == sf::Rect2i({0, 0}, {640, 480}));
-    }
-
     SECTION("mapPixelToCoords(Vec2i, const View&)")
     {
         auto view = sf::View::fromSize({1000.f, 1000.f});
