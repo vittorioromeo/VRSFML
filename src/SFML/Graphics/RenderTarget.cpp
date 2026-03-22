@@ -454,6 +454,8 @@ base::SizeT RenderTarget::getAutoBatchVertexThreshold() const
 ////////////////////////////////////////////////////////////
 void RenderTarget::draw(const Texture& texture, RenderStates states)
 {
+    SFML_BASE_ASSERT(states.texture == nullptr && "texture for texture will be set automatically");
+
     states.texture = &texture;
 
     if (m_autoBatchMode != AutoBatchMode::Disabled)
@@ -475,6 +477,8 @@ void RenderTarget::draw(const Texture& texture, RenderStates states)
 ////////////////////////////////////////////////////////////
 void RenderTarget::draw(const Texture& texture, const TextureDrawParams& params, RenderStates states)
 {
+    SFML_BASE_ASSERT(states.texture == nullptr && "texture for texture will be set automatically");
+
     states.texture = &texture;
 
     if (m_autoBatchMode != AutoBatchMode::Disabled)
@@ -566,6 +570,8 @@ void RenderTarget::draw(const Shape& shape, RenderStates states)
 ////////////////////////////////////////////////////////////
 void RenderTarget::draw(const Text& text, RenderStates states)
 {
+    SFML_BASE_ASSERT(states.texture == nullptr && "texture for text will be set automatically");
+
     states.texture = &text.getFont().getTexture();
 
     if (m_autoBatchMode != AutoBatchMode::Disabled)
@@ -824,6 +830,8 @@ template VertexSpan RenderTarget::draw(const StarShapeData&, const RenderStates&
 ////////////////////////////////////////////////////////////
 VertexSpan RenderTarget::draw(const Font& font, const TextData& textData, RenderStates states)
 {
+    SFML_BASE_ASSERT(states.texture == nullptr && "texture for text will be set automatically");
+
     states.texture = &font.getTexture();
 
     if (m_autoBatchMode != AutoBatchMode::Disabled)
@@ -1145,6 +1153,7 @@ void RenderTarget::applyView(const View& view)
     // Set the viewport
     const Rect2i viewport    = view.getPixelViewport(targetSize);
     const int    viewportTop = static_cast<int>(targetSize.y) - (viewport.position.y + viewport.size.y);
+
     glCheck(glViewport(viewport.position.x, viewportTop, viewport.size.x, viewport.size.y));
 
     // Set the scissor rectangle and enable/disable scissor testing
@@ -1273,21 +1282,21 @@ void RenderTarget::setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& sta
 
     // Update shader
     const auto usedNativeHandle = usedShader.getNativeHandle();
-    const bool shaderChanged    = !m_impl->cache.enable || m_impl->cache.lastProgramId != usedNativeHandle;
+    const bool shaderChanged    = m_impl->cache.lastProgramId != usedNativeHandle;
 
-    if (shaderChanged)
+    if (!m_impl->cache.enable || shaderChanged)
     {
         usedShader.bind();
         m_impl->cache.lastProgramId = usedNativeHandle;
     }
 
     // Apply the view
-    const bool viewChanged = !m_impl->cache.enable || m_impl->cache.lastView != states.view;
-    if (viewChanged)
+    const bool viewChanged = m_impl->cache.lastView != states.view;
+    if (!m_impl->cache.enable || viewChanged)
         applyView(states.view);
 
     // Set the model-view-projection matrix
-    if (shaderChanged || viewChanged || !m_impl->cache.enable || states.transform != m_impl->cache.lastRenderStatesTransform)
+    if (!m_impl->cache.enable || shaderChanged || viewChanged || states.transform != m_impl->cache.lastRenderStatesTransform)
         setupDrawMVP(states.transform, m_impl->cache.lastView.getTransform());
 
     // Apply the blend mode
