@@ -1,4 +1,6 @@
 Diagnostics:
+  UnusedIncludes: Strict
+  MissingIncludes: Strict
   Suppress: "pp_including_mainfile_in_preamble"
   ClangTidy:
     # FastCheckFilter: None
