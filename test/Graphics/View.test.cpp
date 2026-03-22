@@ -136,7 +136,6 @@ TEST_CASE("[Graphics] sf::View")
         CHECK(view.getInverseTransform() == Approx(sf::Transform(50, 0, 500, 0, -50, 500)));
     }
 
-
     SECTION("getPixelViewport")
     {
         CHECK(sf::View{.viewport = {{0, 0}, {1, 1}}}.getPixelViewport({640, 480}) == sf::Rect2i({0, 0}, {640, 480}));
@@ -148,13 +147,13 @@ TEST_CASE("[Graphics] sf::View")
 
     SECTION("getPixelScissor")
     {
-        CHECK(sf::View{.viewport = {{0, 0}, {1, 1}}}.getPixelScissor({640, 480}) == sf::Rect2i({0, 0}, {640, 480}));
-        CHECK(sf::View{.viewport = {{1, 1}, {.5f, .25f}}}.getPixelScissor({640, 480}) == sf::Rect2i({0, 0}, {640, 480}));
-        CHECK(sf::View{.viewport = {{.5f, .5f}, {.25f, .75f}}}.getPixelScissor({640, 480}) ==
+        CHECK(sf::View{.scissor = {{0, 0}, {1, 1}}}.getPixelScissor({640, 480}) == sf::Rect2i({0, 0}, {640, 480}));
+        CHECK(sf::View{.scissor = {{1, 1}, {.5f, .25f}}}.getPixelScissor({640, 480}) == sf::Rect2i({0, 0}, {640, 480}));
+        CHECK(sf::View{.scissor = {{.5f, .5f}, {.25f, .75f}}}.getPixelScissor({640, 480}) ==
               sf::Rect2i({0, 0}, {640, 480}));
     }
 
-    SECTION("mapPixelToCoords(Vec2i, const View&)")
+    SECTION("unproject")
     {
         auto view = sf::View::fromSize({1000.f, 1000.f});
         auto size = sf::Vec2f{640, 480};
@@ -175,7 +174,7 @@ TEST_CASE("[Graphics] sf::View")
         CHECK_THAT(y3, Catch::Matchers::WithinRel(505, 1e-5));
     }
 
-    SECTION("mapCoordsToPixel(Vec2f, const View&)")
+    SECTION("project")
     {
         auto view = sf::View::fromSize({1000.f, 1000.f});
         auto size = sf::Vec2f{640, 480};
@@ -183,8 +182,16 @@ TEST_CASE("[Graphics] sf::View")
         view.center += {5, 5};
         view.viewport = sf::Rect2f({.25f, 0}, {1, 1});
 
-        CHECK(view.project({0, 0}, size) == sf::Vec2f(156, -2));
-        CHECK(view.project({-500, 0}, size) == sf::Vec2f(-163, -2));
-        CHECK(view.project({0, -250}, size) == sf::Vec2f(156, -122));
+        const auto [x1, y1] = view.project({0, 0}, size);
+        CHECK_THAT(x1, Catch::Matchers::WithinRel(156.8, 1e-2));
+        CHECK_THAT(y1, Catch::Matchers::WithinRel(-2.4, 1e-2));
+
+        const auto [x2, y2] = view.project({-500, 0}, size);
+        CHECK_THAT(x2, Catch::Matchers::WithinRel(-163.1, 1e-2));
+        CHECK_THAT(y2, Catch::Matchers::WithinRel(-2.4, 1e-2));
+
+        const auto [x3, y3] = view.project({0, -250}, size);
+        CHECK_THAT(x3, Catch::Matchers::WithinRel(156.8, 1e-2));
+        CHECK_THAT(y3, Catch::Matchers::WithinRel(-122.3, 1e-2));
     }
 }

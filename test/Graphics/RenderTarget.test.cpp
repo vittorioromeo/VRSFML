@@ -63,39 +63,4 @@ TEST_CASE("[Graphics] sf::RenderTarget")
         CHECK(renderTarget.setActive(false));
         CHECK(renderTarget.setActive(true));
     }
-
-    SECTION("mapPixelToCoords(Vec2i, const View&)")
-    {
-        auto view = sf::View::fromSize({1000.f, 1000.f});
-
-        view.center += {5, 5};
-        view.viewport = sf::Rect2f({0, 0}, {.5f, 1});
-
-        TestRenderTarget renderTarget;
-
-        const auto [x1, y1] = renderTarget.mapPixelToCoords({0, 0}, view);
-        CHECK_THAT(x1, Catch::Matchers::WithinRel(5, 1e-4));
-        CHECK_THAT(y1, Catch::Matchers::WithinRel(5, 1e-4));
-
-        const auto [x2, y2] = renderTarget.mapPixelToCoords({1, 1}, view);
-        CHECK_THAT(x2, Catch::Matchers::WithinRel(8.125, 1e-4));
-        CHECK_THAT(y2, Catch::Matchers::WithinRel(7.0833, 1e-4));
-
-        const auto [x3, y3] = renderTarget.mapPixelToCoords({320, 240}, view);
-        CHECK_THAT(x3, Catch::Matchers::WithinRel(1005, 1e-5));
-        CHECK_THAT(y3, Catch::Matchers::WithinRel(505, 1e-5));
-    }
-
-    SECTION("mapCoordsToPixel(Vec2f, const View&)")
-    {
-        auto view = sf::View::fromSize({1000.f, 1000.f});
-
-        view.center += {5, 5};
-        view.viewport = sf::Rect2f({.25f, 0}, {1, 1});
-
-        TestRenderTarget renderTarget;
-        CHECK(renderTarget.mapCoordsToPixel({0, 0}, view) == sf::Vec2i(156, -2));
-        CHECK(renderTarget.mapCoordsToPixel({-500, 0}, view) == sf::Vec2i(-163, -2));
-        CHECK(renderTarget.mapCoordsToPixel({0, -250}, view) == sf::Vec2i(156, -122));
-    }
 }

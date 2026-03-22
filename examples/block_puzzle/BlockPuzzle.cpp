@@ -1195,7 +1195,7 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] sf::Vec2f getMousePos() const noexcept
     {
-        return m_window.mapPixelToCoords(sf::Mouse::getPosition(m_window), m_windowView);
+        return m_windowView.unproject(sf::Mouse::getPosition(m_window).toVec2f(), m_window.getSize().toVec2f());
     }
 
     ////////////////////////////////////////////////////////////
