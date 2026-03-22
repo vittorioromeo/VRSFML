@@ -1,5 +1,7 @@
 // TODO P0: broken scaling on Wayland?
 
+#include "ShapeBlockSequence.hpp"
+
 #include "ExampleUtils/Easing.hpp"
 #include "ExampleUtils/HueColor.hpp"
 #include "ExampleUtils/LoadedSound.hpp"
@@ -7,6 +9,20 @@
 #include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/SoundManager.hpp"
 #include "ExampleUtils/Timer.hpp"
+
+#include "SFML/Graphics/BlendMode.hpp"
+
+#include "SFML/Window/Keyboard.hpp"
+
+#include "SFML/Base/Array.hpp"
+#include "SFML/Base/Builtin/Unreachable.hpp"
+#include "SFML/Base/Clamp.hpp"
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Math/Floor.hpp"
+#include "SFML/Base/Math/Sin.hpp"
+#include "SFML/Base/MinMax.hpp"
+#include "SFML/Base/SinCosLookup.hpp"
+#include "SFML/Base/Variant.hpp"
 
 
 #define SFEX_PROFILER_ENABLED
@@ -3235,19 +3251,19 @@ private:
             ++iPerk;
         }
 
-        m_rtGame.drawIndexedVertices({
-            .vertexData    = m_textVerticesBuffer.data(),
-            .vertexCount   = m_textVerticesBuffer.size(),
-            .indexData     = m_textIndicesBuffer.data(),
-            .indexCount    = m_textIndicesBuffer.size(),
-            .primitiveType = sf::PrimitiveType::Triangles,
-            .renderStates =
-                {
-                    .transform = menuTransform,
-                    .view      = m_worldView,
-                    .texture   = &m_textureAtlas.getTexture(),
-                },
-        });
+        m_rtGame.drawIndexedVertices(
+            {
+                .vertexData    = m_textVerticesBuffer.data(),
+                .vertexCount   = m_textVerticesBuffer.size(),
+                .indexData     = m_textIndicesBuffer.data(),
+                .indexCount    = m_textIndicesBuffer.size(),
+                .primitiveType = sf::PrimitiveType::Triangles,
+            },
+            {
+                .transform = menuTransform,
+                .view      = m_worldView,
+                .texture   = &m_textureAtlas.getTexture(),
+            });
     }
 
 
@@ -3459,8 +3475,8 @@ private:
             {
                 m_rtGame.draw(m_textureAtlas.getTexture(),
                               {
-                                  .position = dividerStartPos - drawBlockSize + sf::Vec2f{3.f, 3.f} +
-                                              sf::Vec2uz{x, y}.toVec2f().componentWiseMul(drawBlockSize),
+                                  .position    = dividerStartPos - drawBlockSize + sf::Vec2f{3.f, 3.f} +
+                                                 sf::Vec2uz{x, y}.toVec2f().componentWiseMul(drawBlockSize),
                                   .textureRect = m_txrDivider,
                               },
                               {
@@ -3749,9 +3765,9 @@ private:
             {
                 for (int i = 0; i < 2; ++i)
                     m_hueColorCircleShapeParticles.emplaceBack(CircleParticleData{
-                        .position = lastDrawPos - drillDrawOffset +
-                                    drillDirectionToVec2i(drillAnim->direction).toVec2f() * (radius / 2.f) +
-                                    m_rngFast.getVec2f({-3.f, -3.f}, {3.f, 3.f}),
+                        .position      = lastDrawPos - drillDrawOffset +
+                                         drillDirectionToVec2i(drillAnim->direction).toVec2f() * (radius / 2.f) +
+                                         m_rngFast.getVec2f({-3.f, -3.f}, {3.f, 3.f}),
                         .velocity      = m_rngFast.getVec2f({-0.75f, -2.15f}, {0.75f, -0.25f}) * 0.05f,
                         .scale         = m_rngFast.getF(0.08f, 0.27f) * 0.95f,
                         .scaleDecay    = 0.f,
@@ -3922,7 +3938,7 @@ private:
             {
                 spike.position = floorVec2(offset + ghostBlockDrawPos.addY(sf::base::floor(drawBlockSize.y / 2.f))) -
                                  sf::Vec2f{1.f, 1.f};
-                spike.color = ghostColor;
+                spike.color    = ghostColor;
                 m_rtGame.draw(spike, {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
             }
         }
@@ -4436,14 +4452,15 @@ private:
             },
             sf::Transform::fromPosition(statsBorder.getGlobalTopLeft() + sf::Vec2f{4.f, 2.f}));
 
-        m_rtGame.drawIndexedVertices({
-            .vertexData    = m_textVerticesBuffer.data(),
-            .vertexCount   = m_textVerticesBuffer.size(),
-            .indexData     = m_textIndicesBuffer.data(),
-            .indexCount    = m_textIndicesBuffer.size(),
-            .primitiveType = sf::PrimitiveType::Triangles,
-            .renderStates  = {.view = m_worldView, .texture = &m_textureAtlas.getTexture()},
-        });
+        m_rtGame.drawIndexedVertices(
+            {
+                .vertexData    = m_textVerticesBuffer.data(),
+                .vertexCount   = m_textVerticesBuffer.size(),
+                .indexData     = m_textIndicesBuffer.data(),
+                .indexCount    = m_textIndicesBuffer.size(),
+                .primitiveType = sf::PrimitiveType::Triangles,
+            },
+            {.view = m_worldView, .texture = &m_textureAtlas.getTexture()});
     }
 
 
@@ -4460,7 +4477,7 @@ private:
             .size             = {184.f, 64.f + 48.f},
         }};
 
-        m_rtGame.draw(statsBorder , {.view = m_worldView});
+        m_rtGame.draw(statsBorder, {.view = m_worldView});
 
         sf::base::String perksStr;
 
@@ -4484,14 +4501,15 @@ private:
             },
             sf::Transform::fromPosition(statsBorder.getGlobalTopLeft() + sf::Vec2f{4.f, 2.f}));
 
-        m_rtGame.drawIndexedVertices({
-            .vertexData    = m_textVerticesBuffer.data(),
-            .vertexCount   = m_textVerticesBuffer.size(),
-            .indexData     = m_textIndicesBuffer.data(),
-            .indexCount    = m_textIndicesBuffer.size(),
-            .primitiveType = sf::PrimitiveType::Triangles,
-            .renderStates  = {.view = m_worldView, .texture = &m_textureAtlas.getTexture()},
-        });
+        m_rtGame.drawIndexedVertices(
+            {
+                .vertexData    = m_textVerticesBuffer.data(),
+                .vertexCount   = m_textVerticesBuffer.size(),
+                .indexData     = m_textIndicesBuffer.data(),
+                .indexCount    = m_textIndicesBuffer.size(),
+                .primitiveType = sf::PrimitiveType::Triangles,
+            },
+            {.view = m_worldView, .texture = &m_textureAtlas.getTexture()});
     }
 
 
@@ -4547,7 +4565,8 @@ private:
                                   .string        = "Next:",
                                   .characterSize = 16u,
                                   .outlineColor  = sf::Color::White,
-                              }, {.view = m_worldView});
+                              },
+                              {.view = m_worldView});
 
             if (m_world.perkCanHoldTetramino == 1)
                 m_rtGame.draw(m_font,
@@ -4556,7 +4575,8 @@ private:
                                   .string        = "Held:",
                                   .characterSize = 16u,
                                   .outlineColor  = sf::Color::White,
-                              }, {.view = m_worldView});
+                              },
+                              {.view = m_worldView});
 
             drawShop();
         }

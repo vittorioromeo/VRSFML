@@ -4,7 +4,13 @@
 #include "ExampleUtils/Sampler.hpp"
 #include "ExampleUtils/Scaling.hpp"
 
+#include "SFML/Graphics/DrawInstancedIndexedVerticesSettings.hpp"
 #include "SFML/Graphics/GlDataType.hpp"
+#include "SFML/Graphics/PrimitiveType.hpp"
+
+#include "SFML/System/Angle.hpp"
+
+#include "SFML/Base/Macros.hpp"
 
 #define SFEX_PROFILER_ENABLED
 #include "ExampleUtils/Profiler.hpp"
@@ -145,18 +151,24 @@ sf::Rect2f   txrRocket;
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::RenderTarget::DrawInstancedIndexedVerticesSettings makeInstancedDrawSettings(
-    const sf::base::SizeT nInstances,
-    const sf::View&       view)
+[[nodiscard]] sf::DrawInstancedIndexedVerticesSettings makeInstancedDrawSettings(const sf::base::SizeT nInstances)
 {
-    return {.vaoHandle     = *instanceRenderingVAOGroup,
-            .vertexData    = instancedQuadVertices,
-            .vertexCount   = 4u,
-            .indexData     = instancedQuadIndices,
-            .indexCount    = 6u,
-            .instanceCount = nInstances,
-            .primitiveType = sf::PrimitiveType::Triangles,
-            .renderStates  = {.view = view, .texture = txAtlas, .shader = instanceRenderingShader}};
+    return {
+        .vaoHandle     = *instanceRenderingVAOGroup,
+        .vertexData    = instancedQuadVertices,
+        .vertexCount   = 4u,
+        .indexData     = instancedQuadIndices,
+        .indexCount    = 6u,
+        .instanceCount = nInstances,
+        .primitiveType = sf::PrimitiveType::Triangles,
+    };
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] sf::RenderStates makeInstancedDrawRenderStates(const sf::View& view)
+{
+    return {.view = view, .texture = txAtlas, .shader = instanceRenderingShader};
 }
 
 
@@ -665,8 +677,9 @@ struct World
             instanceRenderingShader->setUniform(*instanceRenderingULTextureRect,
                                                 sf::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
 
-            rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(instanceBuffer.size(), view),
-                                            setupSpriteInstanceAttribs);
+            rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(instanceBuffer.size()),
+                                            setupSpriteInstanceAttribs,
+                                            makeInstancedDrawRenderStates(view));
         };
 
         const auto nParticles = particles.size();
@@ -929,7 +942,9 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
             instanceRenderingShader->setUniform(*instanceRenderingULTextureRect,
                                                 sf::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
 
-            rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(nParticles, view), setupSpriteInstanceAttribs);
+            rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(nParticles),
+                                            setupSpriteInstanceAttribs,
+                                            makeInstancedDrawRenderStates(view));
         };
 
         {
@@ -1189,7 +1204,9 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
             instanceRenderingShader->setUniform(*instanceRenderingULTextureRect,
                                                 sf::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
 
-            rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(nParticles, view), setupSpriteInstanceAttribs);
+            rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(nParticles),
+                                            setupSpriteInstanceAttribs,
+                                            makeInstancedDrawRenderStates(view));
         };
 
         {
@@ -1408,7 +1425,9 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
             instanceRenderingShader->setUniform(*instanceRenderingULTextureRect,
                                                 sf::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
 
-            rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(nParticles, view), setupSpriteInstanceAttribs);
+            rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(nParticles),
+                                            setupSpriteInstanceAttribs,
+                                            makeInstancedDrawRenderStates(view));
         };
 
         {

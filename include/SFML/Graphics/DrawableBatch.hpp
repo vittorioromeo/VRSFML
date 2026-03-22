@@ -8,11 +8,14 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
+#include "SFML/Graphics/DrawIndexedVerticesSettings.hpp"
+#include "SFML/Graphics/DrawVerticesSettings.hpp"
 #include "SFML/Graphics/IndexType.hpp"
-#include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/Transformable.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 #include "SFML/Graphics/VertexSpan.hpp"
+
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Macros.hpp"
@@ -441,14 +444,12 @@ public:
     /// `sf::PrimitiveType::TriangleFan` and `sf::PrimitiveType::TriangleStrip`.
     /// Other types may lead to undefined behavior or be ignored.
     ///
-    /// \param vertexData Pointer to the array of vertices
-    /// \param vertexCount Number of vertices in the array
-    /// \param type Primitive type
+    /// \param settings Struct containing vertex data, count, and primitive type
     ///
     /// \warning Only supports triangle, fan, or strip, primitives.
     ///
     ////////////////////////////////////////////////////////////
-    void add(const Vertex* vertexData, base::SizeT vertexCount, PrimitiveType type);
+    void add(const DrawVerticesSettings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Adds raw indexed vertex data to the batch
@@ -460,20 +461,12 @@ public:
     ///
     /// Indices are adjusted to be relative to the start of the newly added vertices.
     ///
-    /// \param vertexData Pointer to the array of vertices
-    /// \param vertexCount Number of vertices in the array
-    /// \param indexData Pointer to the array of indices
-    /// \param indexCount Number of indices in the array
-    /// \param type Primitive type
+    /// \param settings Struct containing vertex data, index data, counts, and primitive type
     ///
     /// \warning Only supports triangle, fan, or strip, primitives.
     ///
     ////////////////////////////////////////////////////////////
-    void add(const Vertex*    vertexData,
-             base::SizeT      vertexCount,
-             const IndexType* indexData,
-             base::SizeT      indexCount,
-             PrimitiveType    type);
+    void add(const DrawIndexedVerticesSettings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Adds an `sf::Sprite` to the batch

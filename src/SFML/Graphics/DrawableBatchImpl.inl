@@ -9,6 +9,8 @@
 #include "SFML/Graphics/ArrowShapeData.hpp"
 #include "SFML/Graphics/CircleShapeData.hpp"
 #include "SFML/Graphics/CurvedArrowShapeData.hpp"
+#include "SFML/Graphics/DrawIndexedVerticesSettings.hpp"
+#include "SFML/Graphics/DrawVerticesSettings.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/DrawableBatchUtils.hpp"
 #include "SFML/Graphics/EllipseShapeData.hpp"
@@ -35,13 +37,18 @@
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/AssertAndAssume.hpp"
+#include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/FloatEpsilon.hpp"
 #include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
+#include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/MinMaxMacros.hpp"
+#include "SFML/Base/Remainder.hpp"
+#include "SFML/Base/SinCosLookup.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 
@@ -104,10 +111,10 @@ namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-void DrawableBatchImpl<TStorage>::add(const Vertex* const SFML_BASE_RESTRICT vertexData,
-                                      const base::SizeT                      vertexCount,
-                                      const PrimitiveType                    type)
+void DrawableBatchImpl<TStorage>::add(const DrawVerticesSettings& settings)
 {
+    const auto& [vertexData, vertexCount, type] = settings;
+
     if (vertexData == nullptr || vertexCount == 0u)
         return;
 
@@ -175,12 +182,10 @@ void DrawableBatchImpl<TStorage>::add(const Vertex* const SFML_BASE_RESTRICT ver
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-void DrawableBatchImpl<TStorage>::add(const Vertex* const SFML_BASE_RESTRICT    vertexData,
-                                      const base::SizeT                         vertexCount,
-                                      const IndexType* const SFML_BASE_RESTRICT indexData,
-                                      const base::SizeT                         indexCount,
-                                      const PrimitiveType                       type)
+void DrawableBatchImpl<TStorage>::add(const DrawIndexedVerticesSettings& settings)
 {
+    const auto& [vertexData, vertexCount, indexData, indexCount, type] = settings;
+
     if (vertexData == nullptr || vertexCount == 0u || indexData == nullptr || indexCount == 0u)
         return;
 
@@ -940,10 +945,10 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const RingPieSliceShapeData& sdRingP
 
     const auto [sine, cosine] = base::sinCosLookup(sdRingPieSlice.rotation.asRadians());
     const auto transform      = Transform::fromPositionScaleOriginSinCos(sdRingPieSlice.position,
-                                                                    sdRingPieSlice.scale,
-                                                                    sdRingPieSlice.origin,
-                                                                    sine,
-                                                                    cosine);
+                                                                         sdRingPieSlice.scale,
+                                                                         sdRingPieSlice.origin,
+                                                                         sine,
+                                                                         cosine);
 
     const float absSweepAngle = SFML_BASE_MATH_FABSF(sdRingPieSlice.sweepAngle.asRadians());
     const float sweepRadians  = sdRingPieSlice.sweepAngle.asRadians();
