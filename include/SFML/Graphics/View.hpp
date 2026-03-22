@@ -362,15 +362,8 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
 /// // Set its target viewport to be half of the window
 /// view.setViewport([{0.f, 0.f}, {0.5f, 1.f}});
 ///
-/// // Apply it
-/// const auto defaultView = window.getView();
-/// window.setView(view);
-///
 /// // Render stuff
-/// window.draw(someSprite);
-///
-/// // Set the default view back
-/// window.setView(defaultView);
+/// window.draw(someSprite, {.view = view});
 ///
 /// // Render stuff not affected by the view
 /// window.draw(someText);

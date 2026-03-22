@@ -8,10 +8,12 @@
 
 #include "SFML/Graphics/CircleShape.hpp"
 #include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/DrawTextureSettings.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
 #include "SFML/Graphics/RectangleShape.hpp"
+#include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/Texture.hpp"
@@ -23,6 +25,7 @@
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
+#include "SFML/Window/Keyboard.hpp"
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
@@ -33,6 +36,7 @@
 
 #include "SFML/Base/Math/Cos.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/String.hpp"
 
 #ifdef SFML_SYSTEM_IOS
@@ -79,7 +83,7 @@ int main()
                       })
                       .value();
 
-    auto gameView = sf::View::fromSize(gameSize);
+    auto windowView = window.makeView();
 
     // Create an audio context and get the default playback device
     auto               audioContext = sf::AudioContext::create().value();
@@ -152,7 +156,7 @@ int main()
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
-            if (handleAspectRatioAwareResize(*event, gameSize, gameView))
+            if (handleAspectRatioAwareResize(*event, gameSize, windowView))
                 continue;
 
             // Space key pressed: play
@@ -286,22 +290,20 @@ int main()
 
         if (isPlaying)
         {
-            // Draw the paddles and the ball
-            window.draw(leftPaddle, {.view = gameView});
-            window.draw(rightPaddle, {.view = gameView});
-            window.draw(ball, {.view = gameView});
+            window.withLockedRenderStates({.view = windowView}).drawAll(leftPaddle, rightPaddle, ball);
         }
         else
         {
             wiggleTextEffect.advance(deltaTime);
             wiggleTextEffect.apply(pauseMessage);
 
-            // Draw the pause message
-            window.draw(pauseMessage, {.view = gameView});
+            const auto drawCtx = window.withRenderStates({.view = windowView});
+
+            drawCtx.draw(pauseMessage);
 
             wiggleTextEffect.unapply(pauseMessage);
 
-            window.draw(sfmlLogoTexture, {.position = {170.f, 50.f}}, {.view = gameView});
+            drawCtx.draw(sfmlLogoTexture, {.position = {170.f, 50.f}});
         }
 
         // Display things on screen

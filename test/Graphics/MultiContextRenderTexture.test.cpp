@@ -36,7 +36,7 @@ TEST_CASE("[Graphics] MultiContext" * doctest::skip(skipDisplayTests))
                 .indexCount    = 1u,
                 .primitiveType = sf::PrimitiveType::Points,
             },
-            {.view = wnd.makeView()});
+            {.view = {}});
 
         wnd.display();
 
@@ -49,7 +49,7 @@ TEST_CASE("[Graphics] MultiContext" * doctest::skip(skipDisplayTests))
                 .indexCount    = 1u,
                 .primitiveType = sf::PrimitiveType::Points,
             },
-            {.view = rt1.makeView()});
+            {.view = {}});
 
         rt1.display();
     }

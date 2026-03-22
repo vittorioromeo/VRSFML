@@ -30,7 +30,9 @@
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
 #include "SFML/Window/Keyboard.hpp"
+#include "SFML/Window/Mouse.hpp"
 
+#include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
@@ -43,6 +45,7 @@
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/InPlaceVector.hpp"
 #include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Math/Floor.hpp"
 #include "SFML/Base/Math/Fmod.hpp"
@@ -50,6 +53,7 @@
 #include "SFML/Base/Math/Pow.hpp"
 #include "SFML/Base/Math/Sin.hpp"
 #include "SFML/Base/Math/Tan.hpp"
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/ToString.hpp"
@@ -195,8 +199,7 @@ public:
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
-        target.draw(m_pitchText, states);
-        target.draw(m_volumeText, states);
+        target.withRenderStates(states).drawAll(m_pitchText, m_volumeText);
     }
 
     void start(sf::PlaybackDevice& playbackDevice, sf::MusicReader& musicReader) override
@@ -268,11 +271,8 @@ public:
         statesCopy.transform = sf::Transform::Identity;
         statesCopy.transform.translate(m_position);
 
-        target.draw(m_soundConeOuter, statesCopy);
-        target.draw(m_soundConeInner, statesCopy);
-        target.draw(m_soundShape, statesCopy);
-        target.draw(m_listenerShape, states);
-        target.draw(m_text, states);
+        target.withRenderStates(statesCopy).drawAll(m_soundConeOuter, m_soundConeInner, m_soundShape);
+        target.withRenderStates(states).drawAll(m_listenerShape, m_text);
     }
 
     void start(sf::PlaybackDevice& playbackDevice, sf::MusicReader& musicReader) override
@@ -452,10 +452,7 @@ public:
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
-        target.draw(m_instruction, states);
-        target.draw(m_currentType, states);
-        target.draw(m_currentAmplitude, states);
-        target.draw(m_currentFrequency, states);
+        target.withRenderStates(states).drawAll(m_instruction, m_currentType, m_currentAmplitude, m_currentFrequency);
     }
 
     void start(sf::PlaybackDevice& playbackDevice, sf::MusicReader&) override
@@ -579,6 +576,7 @@ public:
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
         auto statesCopy(states);
+
         statesCopy.transform = sf::Transform::Identity;
         statesCopy.transform.translate(m_position - sf::Vec2f({20.f, 0.f}));
 
@@ -1326,15 +1324,10 @@ int main()
         // Clear the window
         window.clear({50, 50, 50});
 
-        // Draw the current example
-        window.draw(*effects[current], {.view = gameView});
-
-        // Draw the text
-        window.draw(textBackgroundTexture, {.position = {0.f, 520.f}, .color = {255, 255, 255, 200}}, {.view = gameView});
-        window.draw(instructions, {.view = gameView});
-        window.draw(description, {.view = gameView});
-        window.draw(playbackDeviceText, {.view = gameView});
-        window.draw(playbackDeviceInstructions, {.view = gameView});
+        window.withRenderStates({.view = gameView})
+            .draw(*effects[current])
+            .draw(textBackgroundTexture, {.position = {0.f, 520.f}, .color = {255, 255, 255, 200}})
+            .drawAll(instructions, description, playbackDeviceText, playbackDeviceInstructions);
 
         // Finally, display the rendered frame on screen
         window.display();

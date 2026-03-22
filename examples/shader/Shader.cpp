@@ -493,7 +493,7 @@ int main()
                       })
                       .value();
 
-    auto gameView = sf::View::fromSize(windowSize);
+    auto windowView = window.makeView();
 
     // Start the game loop
     const sf::Clock clock;
@@ -506,7 +506,7 @@ int main()
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
-            if (handleAspectRatioAwareResize(*event, windowSize, gameView))
+            if (handleAspectRatioAwareResize(*event, windowSize, windowView))
                 continue;
 
             if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
@@ -554,20 +554,20 @@ int main()
             window.clear(currentEffect == edgeEffect.asPtr() ? sf::Color::White : sf::Color(50, 50, 50));
 
             // Draw the current example
-            window.draw(*currentEffect, {.view = gameView});
+            window.draw(*currentEffect, {.view = windowView});
         }
         else
         {
             // Clear the window to grey to make sure the text is always readable
             window.clear(sf::Color(50, 50, 50));
             window.draw(sf::Text{font, {.position = {320.f, 200.f}, .string = "Shader not\nsupported", .characterSize = 36u}},
-                        {.view = gameView});
+                        {.view = windowView});
         }
 
         // Draw the text
-        window.draw(textBackgroundTexture, {.position = {0.f, 520.f}, .color = {255, 255, 255, 200}}, {.view = gameView});
-        window.draw(instructions, {.view = gameView});
-        window.draw(description, {.view = gameView});
+        window.withRenderStates({.view = windowView})
+            .draw(textBackgroundTexture, {.position = {0.f, 520.f}, .color = {255, 255, 255, 200}})
+            .drawAll(instructions, description);
 
         // Finally, display the rendered frame on screen
         window.display();

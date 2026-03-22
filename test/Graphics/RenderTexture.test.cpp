@@ -3,8 +3,19 @@
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
+#include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/Texture.hpp"
+#include "SFML/Graphics/TextureWrapMode.hpp"
 #include "SFML/Graphics/Vertex.hpp"
+
+#include "SFML/System/Vec2.hpp"
+
+#include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsDefaultConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <Doctest.hpp>
 
@@ -158,20 +169,20 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
         leftInnerRT.clear();
         rightInnerRT.clear();
 
-        leftInnerRT.draw(texture, {.view = leftInnerRT.makeView()});
-        rightInnerRT.draw(texture, {.color = sf::Color::Green}, {.view = rightInnerRT.makeView()});
+        leftInnerRT.draw(texture, {.view = {}});
+        rightInnerRT.draw(texture, {.color = sf::Color::Green}, {.view = {}});
 
         baseRenderTexture.clear();
 
         leftInnerRT.display();
         baseRenderTexture.draw(leftVertexArray,
                                sf::PrimitiveType::Triangles,
-                               {.view = baseRenderTexture.makeView(), .texture = &leftInnerRT.getTexture()});
+                               {.view = {}, .texture = &leftInnerRT.getTexture()});
 
         rightInnerRT.display();
         baseRenderTexture.draw(rightVertexArray,
                                sf::PrimitiveType::Triangles,
-                               {.view = baseRenderTexture.makeView(), .texture = &rightInnerRT.getTexture()});
+                               {.view = {}, .texture = &rightInnerRT.getTexture()});
 
         baseRenderTexture.display();
 
@@ -218,14 +229,14 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
                                             {{halfWidth, height}, sf::Color::Green, {halfWidth, height}}};
 
         leftInnerRT.clear();
-        leftInnerRT.draw(texture, {.view = leftInnerRT.makeView()});
+        leftInnerRT.draw(texture, {.view = {}});
 
         baseRenderTexture.clear();
 
         leftInnerRT.display();
         baseRenderTexture.draw(leftVertexArray,
                                sf::PrimitiveType::Triangles,
-                               {.view = baseRenderTexture.makeView(), .texture = &leftInnerRT.getTexture()});
+                               {.view = {}, .texture = &leftInnerRT.getTexture()});
 
         baseRenderTexture.display();
 
