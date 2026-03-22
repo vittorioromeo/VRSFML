@@ -397,12 +397,26 @@ struct [[nodiscard]] Transform
     {
         const auto [sine, cosine] = base::sinCosLookup(angle.wrapUnsigned().asRadians());
 
-        // clang-format off
-        const Transform rotation{cosine, -sine, center.x * (1.f - cosine) + center.y * sine,
-                                 sine,  cosine, center.y * (1.f - cosine) - center.x * sine};
-        // clang-format on
+        // Precompute the translation components of the rotation matrix
+        const float tx = center.x * (1.f - cosine) + center.y * sine;
+        const float ty = center.y * (1.f - cosine) - center.x * sine;
 
-        return combine(rotation);
+        // Apply the translation to the current translation column
+        a02 += a00 * tx + a01 * ty;
+        a12 += a10 * tx + a11 * ty;
+
+        // Apply the rotation to the scale/shear columns
+        const float m00 = a00;
+        const float m01 = a01;
+        const float m10 = a10;
+        const float m11 = a11;
+
+        a00 = m00 * cosine + m01 * sine;
+        a01 = m00 * -sine + m01 * cosine;
+        a10 = m10 * cosine + m11 * sine;
+        a11 = m10 * -sine + m11 * cosine;
+
+        return *this;
     }
 
 

@@ -5,6 +5,14 @@
 #include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/Scaling.hpp"
 
+#include "SFML/Graphics/BlendMode.hpp"
+
+#include "SFML/Window/Keyboard.hpp"
+
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Math/Fabs.hpp"
+
 #define SFEX_PROFILER_ENABLED
 #include "ExampleUtils/Profiler.hpp"
 #include "ExampleUtils/ProfilerImGui.hpp"
@@ -1886,18 +1894,14 @@ public:
                 const auto updateShadowTexture = [&](const float blurRadius, const sf::base::U8 alpha, auto&&... toDraw)
                 {
                     const auto downscaleSize = m_rtGame.getSize().toVec2f();
-
-                    sf::View downscaleView;
-                    downscaleView.size   = downscaleSize;
-                    downscaleView.center = downscaleSize / 2.f;
-
-                    // m_rtSpriteBg.setView(downscaleView);
+                    // const auto downscaleView = sf::View::fromSize(downscaleSize);
+                    const auto downscaleView = m_worldView;
 
                     m_rtSpriteBg.clear(sf::Color::Transparent);
                     (...,
                      m_rtSpriteBg.draw(toDraw,
                                        {
-                                           .view    = m_worldView,
+                                           .view    = downscaleView,
                                            .texture = &m_textureAtlas.getTexture(),
                                            .shader  = &m_shaderSpriteAlpha,
                                        }));
@@ -1909,7 +1913,7 @@ public:
                     m_rtSpriteBgTemp.clear(sf::Color::Transparent);
                     m_rtSpriteBgTemp.draw(m_rtSpriteBg.getTexture(),
                                           {.scale = {0.5f, 0.5f}},
-                                          {.view = m_worldView, .shader = &m_shaderBlurQuad});
+                                          {.view = downscaleView, .shader = &m_shaderBlurQuad});
                     m_rtSpriteBgTemp.display();
 
                     m_shaderBlurQuad.setUniform(m_ulBlurQuadBlurDirection, sf::Vec2f{0.f, 1.f});
@@ -1917,7 +1921,7 @@ public:
                     m_rtSpriteBg.clear(sf::Color::Transparent);
                     m_rtSpriteBg.draw(m_rtSpriteBgTemp.getTexture(),
                                       {.scale = {0.5f, 0.5f}},
-                                      {.view = m_worldView, .shader = &m_shaderBlurQuad});
+                                      {.view = downscaleView, .shader = &m_shaderBlurQuad});
                     m_rtSpriteBg.display();
 
                     m_shaderShadow.setUniform(m_ulShadowColor, sf::Color::blackMask(alpha).toVec4<sf::Glsl::Vec4>());

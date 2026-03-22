@@ -13,9 +13,11 @@
 #include "SFML/Graphics/DrawableBatchUtils.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/IndexType.hpp"
 #include "SFML/Graphics/InstanceAttributeBinder.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/Priv/EnumToGlEnumConversions.hpp"
+#include "SFML/Graphics/Priv/ShapeDataConcept.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/Shader.hpp"
 #include "SFML/Graphics/Shape.hpp"
@@ -37,11 +39,16 @@
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Rect2.hpp"
+#include "SFML/System/Vec2.hpp"
 
+#include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/OffsetOf.hpp"
+#include "SFML/Base/FixedFunction.hpp"
 #include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/LambdaMacros.hpp"
+#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/ScopeGuard.hpp"
 #include "SFML/Base/SinCosLookup.hpp"
@@ -1455,13 +1462,9 @@ void RenderTarget::invokeInstancedPrimitiveDrawCallIndexed(
 
 } // namespace sf
 
+
 ////////////////////////////////////////////////////////////
 // Render states caching strategies
-//
-// * View
-//   If SetView was called since last draw, the projection
-//   matrix is updated. We don't need more, the view doesn't
-//   change frequently.
 //
 // * Blending mode
 //   Since it overloads the == operator, we can easily check
