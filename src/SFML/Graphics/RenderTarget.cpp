@@ -496,20 +496,6 @@ base::SizeT RenderTarget::getAutoBatchVertexThreshold() const
 
 
 ////////////////////////////////////////////////////////////
-Vec2f RenderTarget::mapPixelToCoords(const Vec2i point, const View& view) const
-{
-    return view.unproject(point.toVec2f(), getSize().toVec2f());
-}
-
-
-////////////////////////////////////////////////////////////
-Vec2i RenderTarget::mapCoordsToPixel(const Vec2f point, const View& view) const
-{
-    return view.project(point.toVec2f(), getSize().toVec2f()).toVec2i();
-}
-
-
-////////////////////////////////////////////////////////////
 void RenderTarget::draw(const Texture& texture, RenderStates states)
 {
     states.texture = &texture;
