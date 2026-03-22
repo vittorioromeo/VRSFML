@@ -10,3 +10,4 @@ Diagnostics:
       - readability-inconsistent-ifelse-braces
 CompileFlags:
   CompilationDatabase: build_vrdev_clang
+  Add: [-D__CLANGD__]

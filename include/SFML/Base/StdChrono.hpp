@@ -6,10 +6,10 @@
 ////////////////////////////////////////////////////////////
 #if __has_include(<bits/chrono.h>)
 
-    #include <bits/chrono.h>
+    #include <bits/chrono.h> // IWYU pragma: export
 
 #else
 
-    #include <chrono>
+    #include <chrono> // IWYU pragma: export
 
 #endif
