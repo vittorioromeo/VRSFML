@@ -1,10 +1,21 @@
 #include "SFML/Graphics/RenderStates.hpp"
 
 #include "SFML/Graphics/BlendMode.hpp"
+#include "SFML/Graphics/View.hpp"
+
+#include "SFML/Base/Trait/IsAggregate.hpp"
+#include "SFML/Base/Trait/IsStandardLayout.hpp"
+#include "SFML/Base/Trait/IsTrivial.hpp"
+#include "SFML/Base/Trait/IsTriviallyAssignable.hpp"
+#include "SFML/Base/Trait/IsTriviallyCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsTriviallyCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
+#include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
+#include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
 
 #include <Doctest.hpp>
 
-#include <CommonTraits.hpp>
 #include <GraphicsUtil.hpp>
 
 TEST_CASE("[Graphics] sf::RenderStates")
@@ -33,7 +44,8 @@ TEST_CASE("[Graphics] sf::RenderStates")
             const sf::RenderStates renderStates{};
             CHECK(renderStates.blendMode == sf::BlendAlpha);
             CHECK(renderStates.stencilMode == sf::StencilMode{});
-            CHECK(renderStates.transform == sf::Transform());
+            CHECK(renderStates.transform == sf::Transform{});
+            CHECK(renderStates.view == sf::View{});
             CHECK(renderStates.texture == nullptr);
             CHECK(renderStates.shader == nullptr);
         }
@@ -43,7 +55,8 @@ TEST_CASE("[Graphics] sf::RenderStates")
     {
         CHECK(sf::RenderStates{}.blendMode == sf::BlendAlpha);
         CHECK(sf::RenderStates{}.stencilMode == sf::StencilMode{});
-        CHECK(sf::RenderStates{}.transform == sf::Transform());
+        CHECK(sf::RenderStates{}.transform == sf::Transform{});
+        CHECK(sf::RenderStates{}.view == sf::View{});
         CHECK(sf::RenderStates{}.texture == nullptr);
         CHECK(sf::RenderStates{}.shader == nullptr);
     }

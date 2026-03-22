@@ -1,6 +1,7 @@
 #include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/Sampler.hpp"
 
+#include "SFML/ImGui/ImConfigSFML.hpp" // IWYU pragma: keep
 #include "SFML/ImGui/ImGuiContext.hpp"
 
 #include "SFML/Graphics/CircleShape.hpp"
@@ -20,6 +21,7 @@
 
 #include "SFML/Window/EventUtils.hpp"
 
+#include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Rect2.hpp"
@@ -28,6 +30,7 @@
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/GetArraySize.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/InterferenceSize.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
@@ -35,6 +38,7 @@
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/ThreadPool.hpp"
 #include "SFML/Base/ToString.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>

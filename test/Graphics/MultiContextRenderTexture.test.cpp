@@ -1,4 +1,5 @@
 #include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RectangleShapeData.hpp"
 #include "SFML/Graphics/RenderTexture.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
@@ -11,7 +12,6 @@
 
 #include <Doctest.hpp>
 
-#include <CommonTraits.hpp>
 #include <GraphicsUtil.hpp>
 #include <StringifyOptionalUtil.hpp>
 #include <SystemUtil.hpp>
@@ -34,7 +34,7 @@ TEST_CASE("[Graphics] MultiContext" * doctest::skip(skipDisplayTests))
             .indexData     = indices,
             .indexCount    = 1u,
             .primitiveType = sf::PrimitiveType::Points,
-            .renderStates  = {},
+            .renderStates  = {.view = wnd.makeView()},
         });
 
         wnd.display();
@@ -46,7 +46,7 @@ TEST_CASE("[Graphics] MultiContext" * doctest::skip(skipDisplayTests))
             .indexData     = indices,
             .indexCount    = 1u,
             .primitiveType = sf::PrimitiveType::Points,
-            .renderStates  = {},
+            .renderStates  = {.view = rt1.makeView()},
         });
 
         rt1.display();
@@ -72,7 +72,7 @@ TEST_CASE("[Graphics] MultiContext" * doctest::skip(skipDisplayTests))
                 .indexData     = indices,
                 .indexCount    = 1u,
                 .primitiveType = sf::PrimitiveType::Points,
-                .renderStates  = {},
+                .renderStates  = {.view = optWnd->makeView()},
             });
             optRT0->display();
         }
@@ -92,7 +92,7 @@ TEST_CASE("[Graphics] MultiContext" * doctest::skip(skipDisplayTests))
             .indexData     = indices,
             .indexCount    = 1u,
             .primitiveType = sf::PrimitiveType::Points,
-            .renderStates  = {},
+            .renderStates  = {.view = rt->makeView()},
         });
         rt->display();
 
@@ -102,7 +102,7 @@ TEST_CASE("[Graphics] MultiContext" * doctest::skip(skipDisplayTests))
             .indexData     = indices,
             .indexCount    = 1u,
             .primitiveType = sf::PrimitiveType::Points,
-            .renderStates  = {},
+            .renderStates  = {.view = optWnd->makeView()},
         });
         optWnd = sf::RenderWindow::create(sf::WindowSettings{.size = {1024u, 1024u}, .title = "Window B"});
 
@@ -112,7 +112,7 @@ TEST_CASE("[Graphics] MultiContext" * doctest::skip(skipDisplayTests))
             .indexData     = indices,
             .indexCount    = 1u,
             .primitiveType = sf::PrimitiveType::Points,
-            .renderStates  = {},
+            .renderStates  = {.view = rt->makeView()},
         });
         rt->display();
     }

@@ -2,6 +2,7 @@
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/StencilMode.hpp"
 #include "SFML/Graphics/Transform.hpp"
+#include "SFML/Graphics/View.hpp"
 
 #include "SFML/System/Rect2.hpp"
 
@@ -104,6 +105,12 @@ std::ostream& operator<<(std::ostream& os, const Transform& transform)
     os << matrix[3] << ", " << matrix[7] << ", " << matrix[15];
 
     return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const View& view)
+{
+    return os << "( center=" << view.center << ", size=" << view.size << ", rotation=" << view.rotation
+              << ", viewport=" << view.viewport << ", scissor=" << view.scissor << " )";
 }
 
 template <typename T>

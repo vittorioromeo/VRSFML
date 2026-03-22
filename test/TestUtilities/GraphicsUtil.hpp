@@ -19,6 +19,7 @@ struct BlendMode;
 struct Color;
 struct StencilMode;
 struct Transform;
+struct View;
 
 template <typename>
 class Rect2;
@@ -30,6 +31,7 @@ std::ostream& operator<<(std::ostream& os, const StencilMode& stencilMode);
 std::ostream& operator<<(std::ostream& os, Color color);
 std::ostream& operator<<(std::ostream& os, Approx<Color> color);
 std::ostream& operator<<(std::ostream& os, const Transform& transform);
+std::ostream& operator<<(std::ostream& os, const View& view);
 
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const Rect2<T>& rect);

@@ -9,10 +9,13 @@
 #include "SFML/Graphics/GraphicsContext.hpp"
 
 #include "SFML/GLUtils/GLBufferObject.hpp"
+#include "SFML/GLUtils/GLCheck.hpp"
+#include "SFML/GLUtils/Glad.hpp"
 
 #include "SFML/System/Err.hpp"
 
 #include "SFML/Base/AnkerlUnorderedDense.hpp"
+#include "SFML/Base/Assert.hpp"
 
 
 namespace sf

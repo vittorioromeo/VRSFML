@@ -1,5 +1,20 @@
 #pragma once
 
+#include "ExactArray.hpp"
+#include "ParticleData.hpp"
+
+#include "ExampleUtils/LoadedSound.hpp"
+
+#include "SFML/Base/Array.hpp"
+#include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Math/Cos.hpp"
+#include "SFML/Base/Math/Fabs.hpp"
+#include "SFML/Base/Math/Sin.hpp"
+#include "SFML/Base/Math/Sqrt.hpp"
+#include "SFML/Base/Vector.hpp"
+
+#include <climits>
+#include <cstdarg>
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
@@ -90,7 +105,7 @@
 #include "SFML/Window/Mouse.hpp"
 #include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
-#include "SFML/Window/WindowSettings.hpp"
+#include "SFML/Window/WindowSettings.hpp" // IWYU pragma: keep
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
@@ -1181,8 +1196,6 @@ struct Main
     ////////////////////////////////////////////////////////////
     // Cached views
     sf::View gameView;
-    sf::View scaledTopGameView;
-    sf::View gameBackgroundView;
     sf::View nonScaledHUDView;
     sf::View scaledHUDView;
 
@@ -8514,7 +8527,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void gameLoopUpdateAndDrawBackground(const float deltaTimeMs)
+    void gameLoopUpdateAndDrawBackground(const float deltaTimeMs, const sf::View& gameBackgroundView)
     {
         static float backgroundScroll = 0.f;
         backgroundScroll += deltaTimeMs * 0.01f;
@@ -9225,17 +9238,15 @@ struct Main
         gameView.viewport.position.x = 0.f;
         gameView.center              = getViewCenter() + screenShake;
 
-        scaledTopGameView                     = createScaledTopGameView(gameScreenSize, resolution);
+        sf::View scaledTopGameView            = createScaledTopGameView(gameScreenSize, resolution);
         scaledTopGameView.viewport.position.x = 0.f;
 
-        {
-            const float     scale      = getAspectRatioScalingFactor(gameScreenSize, resolution);
-            const sf::Vec2f scaledSize = gameScreenSize * scale;
+        const float     scale      = getAspectRatioScalingFactor(gameScreenSize, resolution);
+        const sf::Vec2f scaledSize = gameScreenSize * scale;
 
-            gameBackgroundView                     = createScaledGameView(gameScreenSize, scaledSize);
-            gameBackgroundView.viewport.position.x = 0.f;
-            gameBackgroundView.center              = getViewCenterWithoutScroll() + screenShake;
-        }
+        sf::View gameBackgroundView            = createScaledGameView(gameScreenSize, scaledSize);
+        gameBackgroundView.viewport.position.x = 0.f;
+        gameBackgroundView.center              = getViewCenterWithoutScroll() + screenShake;
 
         //
         // Clear window
@@ -9247,7 +9258,7 @@ struct Main
 
         //
         // Game background
-        gameLoopUpdateAndDrawBackground(deltaTimeMs);
+        gameLoopUpdateAndDrawBackground(deltaTimeMs, gameBackgroundView);
 
         //
         // Draw bubbles (separate batch to avoid showing in minimap and for shader support)

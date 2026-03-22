@@ -104,10 +104,13 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::pure]] constexpr Transform getTransform() const
     {
-        const auto [sine, cosine] = base::sinCosLookup(rotation.asRadians());
+        SFML_BASE_ASSERT(size.x != 0.f && "size.x must be non-zero");
+        SFML_BASE_ASSERT(size.y != 0.f && "size.y must be non-zero");
 
         const float a = 2.f / size.x;
         const float b = -2.f / size.y;
+
+        const auto [sine, cosine] = base::sinCosLookup(rotation.asRadians());
 
         // Analytically derived matrix: Scale_proj * Rot_-theta * Trans_-center
         return {a * cosine,
@@ -281,8 +284,8 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vec2f center{500.f, 500.f}; //!< Center of the view, in scene coordinates
-    Vec2f size{1000.f, 1000.f}; //!< Size of the view, in scene coordinates
+    Vec2f center; //!< Center of the view, in scene coordinates
+    Vec2f size;   //!< Size of the view, in scene coordinates
 
     // NOLINTNEXTLINE(readability-redundant-member-init)
     AutoWrapAngle rotation{}; //!< Angle of rotation of the view rectangle
