@@ -124,7 +124,7 @@ TEST_CASE("[Graphics] MultiContext" * doctest::skip(skipDisplayTests))
         auto baseRenderTexture = sf::RenderTexture::create({100u, 100u});
         auto leftInnerRT       = sf::RenderTexture::create({100u, 100u});
 
-        leftInnerRT->draw(sf::RectangleShapeData{});
+        leftInnerRT->draw(sf::RectangleShapeData{}, {.view = leftInnerRT->makeView()});
         leftInnerRT->display();
     }
 }

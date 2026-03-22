@@ -59,16 +59,9 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
             rect.position.x = SFML_BASE_CLAMP(rect.position.x, 0.f, 1.f);
             rect.position.y = SFML_BASE_CLAMP(rect.position.y, 0.f, 1.f);
 
-            // Ensure the size is non-negative
-            rect.size.x = SFML_BASE_MAX(rect.size.x, 0.f);
-            rect.size.y = SFML_BASE_MAX(rect.size.y, 0.f);
-
-            // Adjust the size so that `position + size` doesn't exceed `1`
-            if (rect.position.x + rect.size.x > 1.f)
-                rect.size.x = 1.f - rect.position.x;
-
-            if (rect.position.y + rect.size.y > 1.f)
-                rect.size.y = 1.f - rect.position.y;
+            // Ensure the size is non-negative and so that `position + size` doesn't exceed `1`
+            rect.size.x = SFML_BASE_CLAMP(rect.size.x, 0.f, 1.f - rect.position.x);
+            rect.size.y = SFML_BASE_CLAMP(rect.size.y, 0.f, 1.f - rect.position.y);
 
             return ScissorRect{rect};
         }
@@ -81,7 +74,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     /// \param rectangle Rectangle defining the zone to display
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::const]] static constexpr View fromRect(const Rect2f& rectangle)
+    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr View fromRect(const Rect2f& rectangle)
     {
         return {.center = rectangle.position + rectangle.size / 2.f, .size = rectangle.size};
     }
@@ -91,7 +84,8 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::const]] static constexpr View fromSize(const Vec2f& size)
+    // TODO P0: rename?
+    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr View fromSize(const Vec2f& size)
     {
         return {.center = size / 2.f, .size = size};
     }
@@ -109,21 +103,18 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::pure]] constexpr Transform getTransform() const
     {
-        // Rotation components
-        const float angle         = rotation.asRadians();
-        const auto [sine, cosine] = base::sinCosLookup(angle);
+        const auto [sine, cosine] = base::sinCosLookup(rotation.asRadians());
 
-        const float tx = -center.x * cosine - center.y * sine + center.x;
-        const float ty = center.x * sine - center.y * cosine + center.y;
-
-        // Projection components
         const float a = 2.f / size.x;
         const float b = -2.f / size.y;
-        const float c = -a * center.x;
-        const float d = -b * center.y;
 
-        // Rebuild the projection matrix
-        return {a * cosine, a * sine, a * tx + c, -b * sine, b * cosine, b * ty + d};
+        // Analytically derived matrix: Scale_proj * Rot_-theta * Trans_-center
+        return {a * cosine,
+                a * sine,
+                -a * (center.x * cosine + center.y * sine),
+                -b * sine,
+                b * cosine,
+                b * (center.x * sine - center.y * cosine)};
     }
 
     ////////////////////////////////////////////////////////////
@@ -138,7 +129,13 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::pure]] constexpr Transform getInverseTransform() const
     {
-        return getTransform().getInverse();
+        const auto [sine, cosine] = base::sinCosLookup(rotation.asRadians());
+
+        const float hw = size.x * 0.5f;
+        const float hh = size.y * 0.5f;
+
+        // Analytically derived inverse: Trans_center * Rot_theta * Scale_proj^-1
+        return {cosine * hw, sine * hh, center.x, sine * hw, -cosine * hh, center.y};
     }
 
 
@@ -165,23 +162,15 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::pure]] Vec2f project(const Vec2f point, const Vec2f targetSize) const
     {
-        // First, transform the point by the view matrix into normalized device coordinates `[-1, 1]`
+        // 1. Transform to NDC [-1, 1]
         const Vec2f normalized = getTransform().transformPoint(point);
 
-        // Then convert from normalized coordinates to absolute pixel coordinates
+        // 2. Map from NDC to [0, 1] space and flip Y
+        const Vec2f relativePos = Vec2f(normalized.x + 1.f, 1.f - normalized.y) * 0.5f;
 
-        // 1. Map from `[-1, 1]` to `[0, 1]` and flip Y axis
-        const Vec2f relativePos = (normalized.componentWiseMul({1.f, -1.f}) + Vec2f{1.f, 1.f}) * 0.5f;
-
-        // 2. Scale by viewport size to get position relative to viewport's origin
-        const Vec2f viewportPixelPos = relativePos.componentWiseMul(viewport.size.componentWiseMul(targetSize));
-
-        // 3. Add viewport's origin to get absolute pixel position
-        const Vec2f absolutePixelPos = viewportPixelPos + viewport.position.componentWiseMul(targetSize);
-
-        return absolutePixelPos;
+        // 3. Map into viewport and finally scale up to target pixel size
+        return (relativePos.componentWiseMul(viewport.size) + viewport.position).componentWiseMul(targetSize);
     }
-
 
     ////////////////////////////////////////////////////////////
     /// \brief Transform a 2D point from target (pixel) coordinates to world coordinates.
@@ -225,13 +214,16 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::pure]] Vec2f unproject(const Vec2f point, const Vec2f targetSize) const
     {
-        // First, convert from absolute pixel coordinates to normalized device coordinates `[-1, 1]`
-        const Vec2f normalized = Vec2f(-1.f, 1.f) +
-                                 Vec2f(2.f, -2.f)
-                                     .componentWiseMul(point - viewport.position.componentWiseMul(targetSize))
-                                     .componentWiseDiv(viewport.size.componentWiseMul(targetSize));
+        // 1. Normalize window pixels to [0, 1]
+        const Vec2f windowNorm = point.componentWiseDiv(targetSize);
 
-        // Then transform by the inverse of the view matrix to get world coordinates
+        // 2. Localize to the viewport rectangle
+        const Vec2f relativePos = (windowNorm - viewport.position).componentWiseDiv(viewport.size);
+
+        // 3. Map from [0, 1] space back to NDC [-1, 1] space and flip Y
+        const Vec2f normalized = relativePos.componentWiseMul({2.f, -2.f}) + Vec2f{-1.f, 1.f};
+
+        // 4. Transform using the inverse
         return getInverseTransform().transformPoint(normalized);
     }
 

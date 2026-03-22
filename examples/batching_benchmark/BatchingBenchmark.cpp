@@ -55,6 +55,8 @@ int main()
                       })
                       .value();
 
+    auto gameView = sf::View::fromSize(windowSize);
+
     //
     //
     // Set up texture atlas
@@ -133,11 +135,11 @@ int main()
     //
     //
     // Set up UI elements
-    bool useBatch    = true;
-    bool drawSprites = true;
-    bool drawText    = true;
-    int  numEntities = 50'000;
-    int  numFrames   = 240;
+    const bool useBatch    = true;
+    const bool drawSprites = true;
+    const bool drawText    = true;
+    const int  numEntities = 50'000;
+    int        numFrames   = 240;
 
 //
 //
@@ -152,8 +154,8 @@ int main()
     populateEntities(static_cast<sf::base::SizeT>(numEntities));
     drawableBatch.position = drawableBatch.origin = windowSize / 2.f;
 
-    sf::Clock  clock;
-    const auto startTime = clock.getElapsedTime();
+    const sf::Clock clock;
+    const auto      startTime = clock.getElapsedTime();
 
     while (--numFrames > 0)
     {
@@ -165,6 +167,7 @@ int main()
         while (window.pollEvent())
             ;
 
+        // TODO P0: use new api here
         for (const Entity& entity : entities)
         {
             if (drawSprites)
@@ -172,7 +175,7 @@ int main()
                 if (useBatch)
                     drawableBatch.add(entity.sprite);
                 else
-                    window.draw(entity.sprite, {.texture = &textureAtlas.getTexture()});
+                    window.draw(entity.sprite, {.view = gameView, .texture = &textureAtlas.getTexture()});
             }
 
             if (drawText)
@@ -180,12 +183,12 @@ int main()
                 if (useBatch)
                     drawableBatch.add(entity.text);
                 else
-                    window.draw(entity.text);
+                    window.draw(entity.text, {.view = gameView});
             }
         }
 
         if (useBatch)
-            window.draw(drawableBatch, {.texture = &textureAtlas.getTexture()});
+            window.draw(drawableBatch, {.view = gameView, .texture = &textureAtlas.getTexture()});
 
         window.display();
     }

@@ -13,9 +13,7 @@
 class TestRenderTarget : public sf::RenderTarget
 {
 public:
-    TestRenderTarget() : sf::RenderTarget({}) // TODO P0: fix
-    {
-    }
+    TestRenderTarget() = default;
 
 private:
     [[nodiscard]] sf::Vec2u getSize() const override

@@ -22,9 +22,7 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-RenderWindow::RenderWindow(base::PassKey<RenderWindow>&&, Window&& window) :
-    Window(SFML_BASE_MOVE(window)),
-    RenderTarget(View::fromRect({{0.f, 0.f}, getSize().toVec2f()}))
+RenderWindow::RenderWindow(base::PassKey<RenderWindow>&&, Window&& window) : Window(SFML_BASE_MOVE(window))
 {
     // Retrieve the framebuffer ID we have to bind when targeting the window for rendering
     // We assume that this window's context is still active at this point
@@ -121,6 +119,13 @@ RenderTarget::DrawStatistics RenderWindow::display()
     RenderTarget::syncGPUEndFrame();
     Window::display();
     return result;
+}
+
+
+////////////////////////////////////////////////////////////
+View RenderWindow::makeView() const
+{
+    return View::fromSize(getSize().toVec2f());
 }
 
 } // namespace sf

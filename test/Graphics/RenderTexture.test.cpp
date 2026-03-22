@@ -158,16 +158,20 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
         leftInnerRT.clear();
         rightInnerRT.clear();
 
-        leftInnerRT.draw(texture);
-        rightInnerRT.draw(texture, {.color = sf::Color::Green});
+        leftInnerRT.draw(texture, {.view = leftInnerRT.makeView()});
+        rightInnerRT.draw(texture, {.color = sf::Color::Green}, {.view = rightInnerRT.makeView()});
 
         baseRenderTexture.clear();
 
         leftInnerRT.display();
-        baseRenderTexture.draw(leftVertexArray, sf::PrimitiveType::Triangles, {.texture = &leftInnerRT.getTexture()});
+        baseRenderTexture.draw(leftVertexArray,
+                               sf::PrimitiveType::Triangles,
+                               {.view = baseRenderTexture.makeView(), .texture = &leftInnerRT.getTexture()});
 
         rightInnerRT.display();
-        baseRenderTexture.draw(rightVertexArray, sf::PrimitiveType::Triangles, {.texture = &rightInnerRT.getTexture()});
+        baseRenderTexture.draw(rightVertexArray,
+                               sf::PrimitiveType::Triangles,
+                               {.view = baseRenderTexture.makeView(), .texture = &rightInnerRT.getTexture()});
 
         baseRenderTexture.display();
 
@@ -214,12 +218,14 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
                                             {{halfWidth, height}, sf::Color::Green, {halfWidth, height}}};
 
         leftInnerRT.clear();
-        leftInnerRT.draw(texture);
+        leftInnerRT.draw(texture, {.view = leftInnerRT.makeView()});
 
         baseRenderTexture.clear();
 
         leftInnerRT.display();
-        baseRenderTexture.draw(leftVertexArray, sf::PrimitiveType::Triangles, {.texture = &leftInnerRT.getTexture()});
+        baseRenderTexture.draw(leftVertexArray,
+                               sf::PrimitiveType::Triangles,
+                               {.view = baseRenderTexture.makeView(), .texture = &leftInnerRT.getTexture()});
 
         baseRenderTexture.display();
 

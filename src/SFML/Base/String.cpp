@@ -430,8 +430,10 @@ void String::insert(const SizeT pos, const char* const cStr)
 ////////////////////////////////////////////////////////////
 void swap(String& lhs, String& rhs) noexcept
 {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wclass-memaccess"
+#ifdef __GNUC__
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wclass-memaccess"
+#endif
 
     alignas(String::RepUnion) char temp[sizeof(String::RepUnion)];
 
@@ -439,7 +441,9 @@ void swap(String& lhs, String& rhs) noexcept
     SFML_BASE_MEMCPY(&lhs.m_rep, &rhs.m_rep, sizeof(String::RepUnion));
     SFML_BASE_MEMCPY(&rhs.m_rep, &temp, sizeof(String::RepUnion));
 
-#pragma GCC diagnostic pop
+#ifdef __GNUC__
+    #pragma GCC diagnostic pop
+#endif
 }
 
 

@@ -2073,8 +2073,8 @@ void Main::uiTabBarShop()
     }
 
     // DEVILCAT
-    const bool catDevilUnlocked = pt->psvBubbleValue.nPurchases > 0 && nCatNormal >= 6 && nCatUni >= 4 &&
-                                  pt->nShrinesCompleted >= 1;
+    const bool catDevilUnlocked         = pt->psvBubbleValue.nPurchases > 0 && nCatNormal >= 6 && nCatUni >= 4 &&
+                                          pt->nShrinesCompleted >= 1;
     const bool catDevilUpgradesUnlocked = catDevilUnlocked && nCatDevil >= 2 && nCatAstro >= 1;
     if (checkUiUnlock(8u, catDevilUnlocked))
     {
@@ -4716,7 +4716,6 @@ void Main::gameLoopDrawImGui(const sf::base::U8 shouldDrawUIAlpha)
             ImGui::PopFont();
         });
 
-    rtImGui.setView(scaledHUDView);
     rtImGui.clear(sf::Color::Transparent);
     imGuiContext.render(rtImGui);
     rtImGui.display();
@@ -4724,7 +4723,7 @@ void Main::gameLoopDrawImGui(const sf::base::U8 shouldDrawUIAlpha)
     rtGame.draw(rtImGui.getTexture(),
                 {.scale = {1.f / profile.hudScale, 1.f / profile.hudScale},
                  .color = hueColor(currentBackgroundHue.asDegrees(), shouldDrawUIAlpha)},
-                {.shader = &shader});
+                {.view = scaledHUDView, .shader = &shader});
 }
 
 ////////////////////////////////////////////////////////////

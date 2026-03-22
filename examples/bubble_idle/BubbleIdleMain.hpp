@@ -85,7 +85,6 @@
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
 
-#include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/EventUtils.hpp"
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/Mouse.hpp"
@@ -211,8 +210,8 @@ inline bool handleCatShrineCollision(const float deltaTimeMs, Cat& cat, Shrine& 
         .position = rng.getVec2f({mapLimit, maxY}),
         .velocity = rng.getVec2f({-0.1f, -0.1f}, {0.1f, 0.1f}),
 
-        .radius = rng.getF(0.07f, 0.16f) * 256.f *
-                  remap(static_cast<float>(pt.psvBubbleCount.nPurchases), 0.f, 30.f, 1.1f, 0.8f),
+        .radius   = rng.getF(0.07f, 0.16f) * 256.f *
+                    remap(static_cast<float>(pt.psvBubbleCount.nPurchases), 0.f, 30.f, 1.1f, 0.8f),
         .rotation = 0.f,
         .hueMod   = 0.f,
 
@@ -308,8 +307,8 @@ inline void drawMinimap(
 
     //
     // Draw minimap contents
-    rt.setView(minimapView); // Use minimap projection
-    rt.draw(sf::RectangleShapeData{.fillColor = sf::Color::blackMask(shouldDrawUIAlpha), .size = boundaries * hudScale});
+    rt.draw(sf::RectangleShapeData{.fillColor = sf::Color::blackMask(shouldDrawUIAlpha), .size = boundaries * hudScale},
+            {.view = minimapView});
 
     // The background has a repeating texture, and it's one ninth of the whole map
     const sf::Vec2f backgroundRectSize{static_cast<float>(txBackgroundChunk.getSize().x) * nGameScreens,
@@ -319,31 +318,31 @@ inline void drawMinimap(
             {.scale       = {hudScale, hudScale},
              .textureRect = {{0.f, 0.f}, backgroundRectSize},
              .color       = hueColor(hueMod, sf::base::min(shouldDrawUIAlpha, static_cast<sf::base::U8>(128u)))},
-            {.shader = &shader}); // Draw world background
+            {.view = minimapView, .shader = &shader}); // Draw world background
 
     rt.draw(txDrawings,
             {.scale       = {hudScale, hudScale},
              .textureRect = {{0.f, 0.f}, backgroundRectSize},
              .color       = sf::Color::whiteMask(sf::base::min(shouldDrawUIAlpha, static_cast<sf::base::U8>(215u)))},
-            {.shader = &shader}); // Draw drawings
+            {.view = minimapView, .shader = &shader}); // Draw drawings
 
     if (shouldDrawUIAlpha > 200u)
     {
         batch.scale = {hudScale, hudScale};
-        rt.draw(batch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+        rt.draw(batch, {.view = minimapView, .texture = &textureAtlas.getTexture(), .shader = &shader});
         batch.scale = {1.f, 1.f};
     }
 
     //
     // Switch back to HUD view and draw overlay elements
-    rt.setView(hudView);
-    rt.draw(minimapBorder);    // Draw border frame
-    rt.draw(minimapIndicator); // Draw current view indicator
+    rt.draw(minimapBorder, {.view = hudView});    // Draw border frame
+    rt.draw(minimapIndicator, {.view = hudView}); // Draw current view indicator
 }
 
 
 ////////////////////////////////////////////////////////////
 inline void drawSplashScreen(sf::RenderTarget&        rt,
+                             const sf::View&          view,
                              const sf::Texture&       txLogo,
                              const TargetedCountdown& splashCountdown,
                              const sf::Vec2f          resolution,
@@ -356,7 +355,7 @@ inline void drawSplashScreen(sf::RenderTarget&        rt,
                        .origin      = txLogo.getSize().toVec2f() / 2.f,
                        .textureRect = txLogo.getRect(),
                        .color       = sf::Color::whiteMask(static_cast<U8>(easeInOutSine(progress) * 255.f))},
-            {.texture = &txLogo});
+            {.view = view, .texture = &txLogo});
 }
 
 ////////////////////////////////////////////////////////////
@@ -455,6 +454,10 @@ struct Main
     float            dpiScalingFactor = 1.f;
 
     ////////////////////////////////////////////////////////////
+    // Views
+
+
+    ////////////////////////////////////////////////////////////
     void refreshWindowAutoBatchModeFromProfile() // TODO P1: check if this solves flickering
     {
         window.setAutoBatchMode(profile.autobatchMode == 0   ? sf::RenderTarget::AutoBatchMode::Disabled
@@ -484,7 +487,7 @@ struct Main
                                      .outlineThickness = 2.f};
 
         loadingTextData.origin = sf::TextUtils::precomputeTextLocalBounds(fontMouldyCheese, loadingTextData).size / 2.f;
-        window.draw(fontMouldyCheese, loadingTextData);
+        window.draw(fontMouldyCheese, loadingTextData, {.view = sf::View::fromSize(window.getSize().toVec2f())});
 
         window.display();
         return true;
@@ -1308,7 +1311,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void log(const char* format, ...)
+    void log(const char* format, ...) // NOLINT(modernize-avoid-variadic-functions)
     {
         if (!logFile)
             return;
@@ -1821,7 +1824,7 @@ struct Main
         const sf::Vec2f scaledSize = originalSize * scale;
 
         // Compute the full window width in world coordinates.
-        float newWidth = windowSize.x / scale;
+        const float newWidth = windowSize.x / scale;
 
         sf::View view;
         // Use the new width while keeping the original height.
@@ -1829,9 +1832,9 @@ struct Main
 
         // Align the left edge with that of the normal game view.
         // The left edge is given by (baseCenter.x - originalSize.x / 2).
-        sf::Vec2f baseCenter = getViewCenter();
-        float     left       = baseCenter.x - originalSize.x / 2.f;
-        view.center          = {left + newWidth / 2.f, baseCenter.y};
+        const sf::Vec2f baseCenter = getViewCenter();
+        const float     left       = baseCenter.x - originalSize.x / 2.f;
+        view.center                = {left + newWidth / 2.f, baseCenter.y};
 
         // Use the same vertical letterboxing as the regular game view.
         view.viewport = {{0.f, (windowSize.y - scaledSize.y) / (windowSize.y * 2.f)}, {1.f, scaledSize.y / windowSize.y}};
@@ -2915,7 +2918,7 @@ struct Main
         if (byPlayerClick && bubble.type == BubbleType::Nova)
             statHighestNovaBubblePopCombo(static_cast<sf::base::U64>(combo));
 
-        Shrine* collectorShrine = nullptr;
+        const Shrine* collectorShrine = nullptr;
         for (Shrine& shrine : pt->shrines)
         {
             if ((bubble.position - shrine.position).lengthSquared() > shrine.getRangeSquared())
@@ -3433,7 +3436,7 @@ struct Main
                 return ControlFlow::Continue;
 
             // Prevent clicks around shrine of automation
-            for (Shrine& shrine : pt->shrines)
+            for (const Shrine& shrine : pt->shrines)
                 if (shrine.type == ShrineType::Automation && shrine.isInRange(clickPos))
                 {
                     sounds.failpop.settings.position = {clickPos.x, clickPos.y};
@@ -4277,7 +4280,7 @@ struct Main
 
             // Keep cats away from shrine of clicking
             // Buff cats in shrine of automation
-            for (Shrine& shrine : pt->shrines)
+            for (const Shrine& shrine : pt->shrines)
             {
                 if (shrine.type == ShrineType::Clicking && shrine.isActive() && cat.type != CatType::Mouse)
                 {
@@ -4396,8 +4399,8 @@ struct Main
                         if (rngFast.getF(0.f, 1.f) < intensity)
                             spawnParticle({.position = otherCat.getDrawPosition(profile.enableCatBobbing) +
                                                        sf::Vec2f{rngFast.getF(-catRadius, +catRadius), catRadius - 9.f},
-                                           .velocity      = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
-                                           .scale         = rngFast.getF(0.08f, 0.27f) * 0.5f,
+                                           .velocity = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
+                                           .scale    = rngFast.getF(0.08f, 0.27f) * 0.5f,
                                            .scaleDecay    = 0.f,
                                            .accelerationY = -0.0017f,
                                            .opacity       = 1.f,
@@ -4681,11 +4684,11 @@ struct Main
                         continue;
 
                     if (rngFast.getF(0.f, 1.f) > 0.95f)
-                        spawnParticle({.position = otherCat.getDrawPosition(profile.enableCatBobbing) +
-                                                   sf::Vec2f{rngFast.getF(-catRadius, +catRadius), catRadius - 25.f},
-                                       .velocity      = rngFast.getVec2f({-0.01f, -0.05f}, {0.01f, 0.05f}),
-                                       .scale         = rngFast.getF(0.08f, 0.27f) * 0.4f,
-                                       .scaleDecay    = 0.f,
+                        spawnParticle({.position   = otherCat.getDrawPosition(profile.enableCatBobbing) +
+                                                     sf::Vec2f{rngFast.getF(-catRadius, +catRadius), catRadius - 25.f},
+                                       .velocity   = rngFast.getVec2f({-0.01f, -0.05f}, {0.01f, 0.05f}),
+                                       .scale      = rngFast.getF(0.08f, 0.27f) * 0.4f,
+                                       .scaleDecay = 0.f,
                                        .accelerationY = -0.00015f,
                                        .opacity       = 1.f,
                                        .opacityDecay  = rngFast.getF(0.0003f, 0.002f),
@@ -5420,9 +5423,9 @@ struct Main
             }
 
             for (sf::base::SizeT iP = 0u; iP < 2u; ++iP)
-                spawnParticle({.position = hp.getDrawPosition() +
-                                           rngFast.getRandomDirection() *
-                                               rngFast.getF(hellPortalRadius * 0.95f, hellPortalRadius * 1.15f),
+                spawnParticle({.position      = hp.getDrawPosition() +
+                                                rngFast.getRandomDirection() *
+                                                    rngFast.getF(hellPortalRadius * 0.95f, hellPortalRadius * 1.15f),
                                .velocity      = rngFast.getVec2f({-0.025f, -0.025f}, {0.025f, 0.025f}),
                                .scale         = rngFast.getF(0.08f, 0.27f) * 0.85f,
                                .scaleDecay    = -0.00025f,
@@ -6330,15 +6333,16 @@ struct Main
         const sf::Rect2f bubbleRects[]{txrBubble, txrBubbleStar, txrBomb, txrBubbleNova};
         static_assert(sf::base::getArraySize(bubbleRects) == nBubbleTypes);
 
-        sf::CPUDrawableBatch* batchToUseByType[]{&bubbleDrawableBatch,
-                                                 &starBubbleDrawableBatch,
-                                                 &bombBubbleDrawableBatch,
-                                                 &starBubbleDrawableBatch};
+        sf::CPUDrawableBatch* const batchToUseByType[]{&bubbleDrawableBatch,
+                                                       &starBubbleDrawableBatch,
+                                                       &bombBubbleDrawableBatch,
+                                                       &starBubbleDrawableBatch};
+
         static_assert(sf::base::getArraySize(batchToUseByType) == nBubbleTypes);
 
         for (SizeT i = 0u; i < pt->bubbles.size(); ++i)
         {
-            Bubble& bubble = pt->bubbles[i];
+            const Bubble& bubble = pt->bubbles[i];
 
             if (!bubbleCullingBoundaries.isInside(bubble.position))
                 continue;
@@ -6364,9 +6368,9 @@ struct Main
     {
         shader.setUniform(suBubbleEffect, false);
 
-        drawBatch(bubbleDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
-        drawBatch(starBubbleDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
-        drawBatch(bombBubbleDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+        drawBatch(bubbleDrawableBatch, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
+        drawBatch(starBubbleDrawableBatch, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
+        drawBatch(bombBubbleDrawableBatch, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
     }
 
     ////////////////////////////////////////////////////////////
@@ -6412,7 +6416,7 @@ struct Main
     {
         minimapDrawableBatch.clear();
 
-        const sf::Rect2f* mmCatTxrs[]{
+        const sf::Rect2f* const mmCatTxrs[]{
             &txrMMNormal,
             &txrMMUni,
             &txrMMDevil,
@@ -6510,6 +6514,7 @@ struct Main
 
         const sf::RenderStates bubbleStates{
             .blendMode = bubbleBlend,
+            .view      = gameView,
             .texture   = &textureAtlas.getTexture(),
             .shader    = &shader,
         };
@@ -7230,9 +7235,9 @@ struct Main
     {
         SFEX_PROFILE_SCOPE_AUTOLABEL();
 
-        Shrine* hoveredShrine = nullptr;
+        const Shrine* hoveredShrine = nullptr;
 
-        for (Shrine& shrine : pt->shrines)
+        for (const Shrine& shrine : pt->shrines)
         {
             U8 rangeInnerAlpha = 0u;
 
@@ -7265,9 +7270,9 @@ struct Main
             const auto textOutlineColor   = circleColor.withLightness(0.25f);
 
             cpuDrawableBatch.add(
-                sf::Sprite{.position = shrine.getDrawPosition(),
-                           .scale    = sf::Vec2f{0.3f, 0.3f} * invDeathProgress +
-                                    sf::Vec2f{1.25f, 1.25f} * shrine.textStatusShakeEffect.grow * 0.015f,
+                sf::Sprite{.position    = shrine.getDrawPosition(),
+                           .scale       = sf::Vec2f{0.3f, 0.3f} * invDeathProgress +
+                                          sf::Vec2f{1.25f, 1.25f} * shrine.textStatusShakeEffect.grow * 0.015f,
                            .origin      = txrShrine.size / 2.f,
                            .textureRect = txrShrine,
                            .color       = shrineColor});
@@ -7364,7 +7369,7 @@ struct Main
         ////////////////////////////////////////////////////////////
         const auto processDolls = [&](auto& container, const float hueMod)
         {
-            for (Doll& doll : container)
+            for (const Doll& doll : container)
             {
                 const auto& dollTxr = *dollTxrs[asIdx(doll.catType)];
 
@@ -7398,7 +7403,7 @@ struct Main
 
         const float hellPortalRadius = pt->getComputedRangeByCatType(CatType::Devil);
 
-        for (HellPortal& hp : pt->hellPortals)
+        for (const HellPortal& hp : pt->hellPortals)
         {
             const float scaleMult = //
                 (hp.life.value > 1500.f)  ? easeOutBack(remap(hp.life.value, 1500.f, 1750.f, 1.f, 0.f))
@@ -7593,12 +7598,14 @@ struct Main
         rtGame.draw(txArrow,
                     {.position = {gameScreenSize.x - 15.f, 15.f + (gameScreenSize.y / 5.f) * 1.f},
                      .origin   = txArrow.getRect().getCenterRight(),
-                     .color    = sf::Color::whiteMask(static_cast<U8>(blinkOpacity))});
+                     .color    = sf::Color::whiteMask(static_cast<U8>(blinkOpacity))},
+                    {.view = gameView});
 
         rtGame.draw(txArrow,
                     {.position = {gameScreenSize.x - 15.f, gameScreenSize.y - 15.f - (gameScreenSize.y / 5.f) * 1.f},
                      .origin   = txArrow.getRect().getCenterRight(),
-                     .color    = sf::Color::whiteMask(static_cast<U8>(blinkOpacity))});
+                     .color    = sf::Color::whiteMask(static_cast<U8>(blinkOpacity))},
+                    {.view = gameView});
     }
 
     ////////////////////////////////////////////////////////////
@@ -7647,7 +7654,7 @@ struct Main
                              .scale = sf::Vec2f{0.25f, 0.25f} * (profile.uiScale + -0.15f * easeInOutBack(blinkProgress)),
                              .origin = tx.getRect().getCenterRight(),
                              .color  = hueColor(hue + currentBackgroundHue.asDegrees(), arrowAlpha)},
-                            {.shader = &shader});
+                            {.view = nonScaledHUDView, .shader = &shader});
             }
         }
 
@@ -7685,11 +7692,11 @@ struct Main
                                                : txCursor,
                     {.position = sf::Mouse::getPosition(window).toVec2f(),
                      .scale    = sf::Vec2f{profile.cursorScale, profile.cursorScale} *
-                              ((1.f + easeInOutBack(cursorGrow) * sf::base::pow(static_cast<float>(combo), 0.09f)) *
-                               dpiScalingFactor),
-                     .origin = {5.f, 5.f},
-                     .color  = hueColor(profile.cursorHue + currentBackgroundHue.asDegrees(), 255u)},
-                    {.shader = &shader});
+                                 ((1.f + easeInOutBack(cursorGrow) * sf::base::pow(static_cast<float>(combo), 0.09f)) *
+                                  dpiScalingFactor),
+                     .origin   = {5.f, 5.f},
+                     .color    = hueColor(profile.cursorHue + currentBackgroundHue.asDegrees(), 255u)},
+                    {.view = nonScaledHUDView, .shader = &shader});
     }
 
     ////////////////////////////////////////////////////////////
@@ -7735,7 +7742,7 @@ struct Main
             cursorComboText.setFillColor(sf::Color::Red.withAlpha(alphaU8));
         }
 
-        rtGame.draw(cursorComboText, {.shader = &shader});
+        rtGame.draw(cursorComboText, {.view = nonScaledHUDView, .shader = &shader});
     }
 
     ////////////////////////////////////////////////////////////
@@ -7748,23 +7755,27 @@ struct Main
 
         const auto cursorComboBarPosition = sf::Mouse::getPosition(window).toVec2f() + sf::Vec2f{52.f, 14.f} * scaleMult;
 
-        rtGame.draw(sf::RectangleShapeData{
-            .position           = cursorComboBarPosition,
-            .outlineTextureRect = txrWhiteDot,
-            .fillColor          = sf::Color::blackMask(80u),
-            .outlineColor       = cursorComboText.getOutlineColor(),
-            .outlineThickness   = 1.f,
-            .size = {64.f * scaleMult * pt->psvComboStartTime.currentValue() * 1000.f / 700.f, 24.f * scaleMult},
-        });
+        rtGame.draw(
+            sf::RectangleShapeData{
+                .position           = cursorComboBarPosition,
+                .outlineTextureRect = txrWhiteDot,
+                .fillColor          = sf::Color::blackMask(80u),
+                .outlineColor       = cursorComboText.getOutlineColor(),
+                .outlineThickness   = 1.f,
+                .size = {64.f * scaleMult * pt->psvComboStartTime.currentValue() * 1000.f / 700.f, 24.f * scaleMult},
+            },
+            {.view = nonScaledHUDView});
 
-        rtGame.draw(sf::RectangleShapeData{
-            .position           = cursorComboBarPosition,
-            .outlineTextureRect = txrWhiteDot,
-            .fillColor          = sf::Color::blackMask(164u),
-            .outlineColor       = cursorComboText.getOutlineColor(),
-            .outlineThickness   = 1.f,
-            .size               = {64.f * scaleMult * comboCountdown.value / 700.f, 24.f * scaleMult},
-        });
+        rtGame.draw(
+            sf::RectangleShapeData{
+                .position           = cursorComboBarPosition,
+                .outlineTextureRect = txrWhiteDot,
+                .fillColor          = sf::Color::blackMask(164u),
+                .outlineColor       = cursorComboText.getOutlineColor(),
+                .outlineThickness   = 1.f,
+                .size               = {64.f * scaleMult * comboCountdown.value / 700.f, 24.f * scaleMult},
+            },
+            {.view = nonScaledHUDView});
     }
 
     ////////////////////////////////////////////////////////////
@@ -7884,7 +7895,7 @@ struct Main
                                  .color       = sf::Color::whiteMask(static_cast<U8>(tipByteAlpha))};
 
         tipByteSprite.setGlobalCenter(tipBackgroundSprite.getGlobalCenterRight().addY(-40.f));
-        rtGame.draw(tipByteSprite, {.texture = &txTipByte});
+        rtGame.draw(tipByteSprite, {.view = scaledHUDView, .texture = &txTipByte});
 
         if (mustSpawnByteParticles)
         {
@@ -7959,7 +7970,7 @@ struct Main
         tipStringWiggle.advance(deltaTimeMs);
         tipStringWiggle.apply(tipText);
 
-        rtGame.draw(tipText);
+        rtGame.draw(tipText, {.view = scaledHUDView});
 
         tipStringWiggle.unapply(tipText);
     }
@@ -8239,7 +8250,7 @@ struct Main
 
         const auto checkCollisionWithDoll = [&](Doll& d, auto collectFn)
         {
-            for (Cat& cat : pt->cats)
+            for (const Cat& cat : pt->cats)
             {
                 if (!cat.isAstroAndInFlight())
                     continue;
@@ -8270,7 +8281,7 @@ struct Main
         const float hellPortalRadius        = pt->getComputedRangeByCatType(CatType::Devil) * 1.25f;
         const float hellPortalRadiusSquared = hellPortalRadius * hellPortalRadius;
 
-        for (HellPortal& hellPortal : pt->hellPortals)
+        for (const HellPortal& hellPortal : pt->hellPortals)
         {
             Cat* linkedCat = hellPortal.catIdx < pt->cats.size() ? &pt->cats[hellPortal.catIdx] : nullptr;
 
@@ -8499,7 +8510,7 @@ struct Main
                         .textureRect = {{sz.x * -2.f, sz.y * -2.f}, {sz.x * 4.f, sz.y * 4.f}},
                         .color       = hueColor(currentBackgroundHue.asDegrees(), 255u),
                     },
-                    {.shader = &shader});
+                    {.view = nonScaledHUDView, .shader = &shader});
     }
 
     ////////////////////////////////////////////////////////////
@@ -8510,14 +8521,13 @@ struct Main
 
         rtBackground.clear(outlineHueColor);
 
-        rtBackground.setView(gameBackgroundView);
         rtBackground.setWrapMode(sf::TextureWrapMode::Repeat); // TODO P2: (lib) add RenderTextureCreateSettings
 
         const auto getAlpha = [&](const float mult)
         { return static_cast<sf::base::U8>(profile.backgroundOpacity / 100.f * mult); };
 
         ////////////////////////////////////////////////////////////
-        const sf::Texture* chunkTx[] = {
+        const sf::Texture* const chunkTx[] = {
             &txBackgroundChunk,            // Normal
             &txBackgroundChunk,            // Voodoo
             &txBackgroundChunk,            // Magic
@@ -8532,7 +8542,7 @@ struct Main
         static_assert(sf::base::getArraySize(chunkTx) == nShrineTypes + 1u);
 
         ////////////////////////////////////////////////////////////
-        const sf::Texture* detailTx[] = {
+        const sf::Texture* const detailTx[] = {
             &txClouds,          // Normal
             &txBgSwamp,         // Voodoo
             &txBgObservatory,   // Magic
@@ -8560,14 +8570,15 @@ struct Main
                                               txBackgroundChunk.getSize().toVec2f() * 2.f},
                               .color       = hueColor(currentBackgroundHue.asDegrees(), getAlpha(255.f)),
                           },
-                          {.shader = &shader});
+                          {.view = gameBackgroundView, .shader = &shader});
 
         if (idx == 0u || profile.alwaysShowDrawings)
             rtBackground.draw(txDrawings,
                               {
                                   .textureRect = {{actualScroll * 2.f, 0.f}, txBackgroundChunk.getSize().toVec2f() * 2.f},
                                   .color = sf::Color::whiteMask(getAlpha(200.f)),
-                              });
+                              },
+                              {.view = gameBackgroundView});
 
         rtBackground.draw(*detailTx[idx],
                           {
@@ -8575,7 +8586,8 @@ struct Main
                               .textureRect = {{actualScroll * 2.f + backgroundScroll * 0.5f, 0.f},
                                               txBackgroundChunk.getSize().toVec2f() * 1.5f},
                               .color       = sf::Color::whiteMask(getAlpha(175.f)),
-                          });
+                          },
+                          {.view = gameBackgroundView});
 
         rtBackground.draw(txClouds,
                           {
@@ -8583,15 +8595,15 @@ struct Main
                               .textureRect = {{actualScroll * 4.f + backgroundScroll * 3.f, 0.f},
                                               txBackgroundChunk.getSize().toVec2f()},
                               .color       = sf::Color::whiteMask(getAlpha(128.f)),
-                          });
+                          },
+                          {.view = gameBackgroundView});
 
         rtBackground.display();
 
         auto gameViewNoScroll   = gameView;
-        gameViewNoScroll.center = getViewCenterWithoutScroll();
+        gameViewNoScroll.center = getViewCenterWithoutScroll(); // TODO P1: view::withcenter? like vecs
 
-        rtGame.setView(gameViewNoScroll);
-        rtGame.draw(rtBackground.getTexture(), {.textureRect{{0.f, 0.f}, gameScreenSize}});
+        rtGame.draw(rtBackground.getTexture(), {.textureRect{{0.f, 0.f}, gameScreenSize}}, {.view = gameViewNoScroll});
     }
 
     ////////////////////////////////////////////////////////////
@@ -8666,7 +8678,7 @@ struct Main
         const char* devilBuffName = (isDevilcatHellsingedActive()) ? "Portal Storm (Scales With Bomb Spawn Chance)"
                                                                    : "Explosive Downpour (Bomb Spawn Chance)";
 
-        const char* buffNames[] = {
+        const char* const buffNames[] = {
             "Midas Paws (x5 Cat Reward)",          // Normal
             "Shooting Stars (Star Spawn Chance) ", // Uni
             devilBuffName,                         // Devil
@@ -8831,7 +8843,7 @@ struct Main
 
         //
         // Only draw UI elements if not in prestige transition and splash is done
-        const bool shouldDrawUI      = !inPrestigeTransition && splashCountdown.value <= 0.f;
+        const bool shouldDrawUI = !inPrestigeTransition && splashCountdown.value <= 0.f;
         const auto shouldDrawUIAlpha = inPrestigeTransition || splashCountdown.getProgress() < 0.75f
                                            ? static_cast<sf::base::U8>(0u)
                                            : static_cast<sf::base::U8>(
@@ -9231,7 +9243,6 @@ struct Main
 
         //
         // Underlying menu background
-        rtGame.setView(nonScaledHUDView);
         gameLoopUpdateAndDrawFixedMenuBackground(deltaTimeMs, elapsedUs);
 
         //
@@ -9240,7 +9251,6 @@ struct Main
 
         //
         // Draw bubbles (separate batch to avoid showing in minimap and for shader support)
-        rtGame.setView(gameView);
         bubbleDrawableBatch.clear();
         starBubbleDrawableBatch.clear();
         bombBubbleDrawableBatch.clear();
@@ -9291,8 +9301,8 @@ struct Main
         gameLoopDrawDolls(mousePos);
         gameLoopDrawParticles();
         gameLoopDrawTextParticles();
-        drawBatch(cpuDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
-        drawBatch(catTextDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+        drawBatch(cpuDrawableBatch, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
+        drawBatch(catTextDrawableBatch, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
 
         //
         // Scroll arrow hint
@@ -9306,27 +9316,26 @@ struct Main
                                                .fillColor        = sf::Color::whiteMask(64u),
                                                .outlineColor     = sf::Color::whiteMask(176u),
                                                .outlineThickness = 4.f,
-                                               .size             = dragRect->size});
+                                               .size             = dragRect->size},
+                        {.view = nonScaledHUDView});
 
         //
         // Draw border around gameview
-        rtGame.setView(nonScaledHUDView);
-
         // Bottom-level hud particles
         if (shouldDrawUI)
         {
             hudBottomDrawableBatch.clear();
             gameLoopDrawHUDBottomParticles();
-            drawBatch(hudBottomDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+            drawBatch(hudBottomDrawableBatch,
+                      {.view = nonScaledHUDView, .texture = &textureAtlas.getTexture(), .shader = &shader});
         }
 
         rtGame.draw(sf::RectangleShapeData{.position         = gameView.viewport.position.componentWiseMul(resolution),
                                            .fillColor        = sf::Color::Transparent,
                                            .outlineColor     = outlineHueColor,
                                            .outlineThickness = 4.f,
-                                           .size             = gameView.viewport.size.componentWiseMul(resolution)});
-
-        rtGame.setView(scaledHUDView);
+                                           .size             = gameView.viewport.size.componentWiseMul(resolution)},
+                    {.view = nonScaledHUDView});
 
         if (shouldDrawUI)
         {
@@ -9336,7 +9345,7 @@ struct Main
                 gameLoopDrawHUDParticles();
 
             gameLoopDrawEarnedCoinParticles();
-            drawBatch(hudDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+            drawBatch(hudDrawableBatch, {.view = scaledHUDView, .texture = &textureAtlas.getTexture(), .shader = &shader});
         }
 
         //
@@ -9352,7 +9361,7 @@ struct Main
 
             demoText.setGlobalTopRight({xStartOverlay - 15.f, 15.f});
             demoText.setOutlineColor(outlineHueColor);
-            rtGame.draw(demoText);
+            rtGame.draw(demoText, {.view = scaledHUDView});
 
             sf::TextData demoInfoTextData{.position         = {},
                                           .string           = "",
@@ -9363,9 +9372,9 @@ struct Main
 
             const float lineSpacing = fontSuperBakery.getLineSpacing(demoInfoTextData.characterSize);
 
-            sf::base::StringView lines[3] = {"Only one prestige and two shrines",
-                                             "Full version available on Steam",
-                                             "Your progress will carry over!"};
+            const sf::base::StringView lines[3] = {"Only one prestige and two shrines",
+                                                   "Full version available on Steam",
+                                                   "Your progress will carry over!"};
 
             for (sf::base::SizeT i = 0u; i < 3u; ++i)
             {
@@ -9375,7 +9384,7 @@ struct Main
                 demoInfoTextData.position = demoText.getGlobalBottomRight().addY(
                     10.f + (static_cast<float>(i) * lineSpacing));
 
-                rtGame.draw(fontSuperBakery, demoInfoTextData);
+                rtGame.draw(fontSuperBakery, demoInfoTextData, {.view = scaledHUDView});
             }
         }
 
@@ -9387,7 +9396,7 @@ struct Main
         {
             moneyText.setFillColorAlpha(shouldDrawUIAlpha);
             moneyText.setOutlineColorAlpha(shouldDrawUIAlpha);
-            rtGame.draw(moneyText);
+            rtGame.draw(moneyText, {.view = scaledHUDView});
         }
 
         //
@@ -9397,7 +9406,7 @@ struct Main
         {
             comboText.setFillColorAlpha(shouldDrawUIAlpha);
             comboText.setOutlineColorAlpha(shouldDrawUIAlpha);
-            rtGame.draw(comboText);
+            rtGame.draw(comboText, {.view = scaledHUDView});
         }
 
         //
@@ -9428,7 +9437,7 @@ struct Main
         {
             buffText.setFillColorAlpha(shouldDrawUIAlpha);
             buffText.setOutlineColorAlpha(shouldDrawUIAlpha);
-            rtGame.draw(buffText);
+            rtGame.draw(buffText, {.view = scaledHUDView});
         }
 
         //
@@ -9436,7 +9445,8 @@ struct Main
         if (shouldDrawUI && !debugHideUI)
             rtGame.draw(sf::RectangleShapeData{.position = {comboText.getGlobalCenterRight().x + 3.f, yBelowMinimap + 56.f},
                                                .fillColor = sf::Color{255, 255, 255, 75},
-                                               .size      = {100.f * comboCountdown.value / 700.f, 20.f}});
+                                               .size      = {100.f * comboCountdown.value / 700.f, 20.f}},
+                        {.view = scaledHUDView});
 
         //
         // Minimap
@@ -9473,14 +9483,13 @@ struct Main
 
         //
         // Draw cats on top of UI
-        rtGame.setView(scaledTopGameView);
-        drawBatch(cpuTopDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
-        drawBatch(catTextTopDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+        drawBatch(cpuTopDrawableBatch,
+                  {.view = scaledTopGameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
+        drawBatch(catTextTopDrawableBatch,
+                  {.view = scaledTopGameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
 
         //
         // Purchase unlocked/available effects
-        rtGame.setView(nonScaledHUDView);
-
         if (shouldDrawUI)
             gameLoopUpdatePurchaseUnlockedEffects(deltaTimeMs);
 
@@ -9489,21 +9498,20 @@ struct Main
         {
             hudTopDrawableBatch.clear();
             gameLoopDrawHUDTopParticles();
-            drawBatch(hudTopDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+            drawBatch(hudTopDrawableBatch,
+                      {.view = nonScaledHUDView, .texture = &textureAtlas.getTexture(), .shader = &shader});
         }
 
         //
         // High visibility cursor
-        rtGame.setView(nonScaledHUDView);
         gameLoopDrawCursor(deltaTimeMs, cursorGrow);
         gameLoopDrawCursorComboText(deltaTimeMs, cursorGrow);
         gameLoopDrawCursorComboBar();
 
         //
         // Splash screen
-        rtGame.setView(scaledHUDView);
         if (splashCountdown.value > 0.f)
-            drawSplashScreen(rtGame, txLogo, splashCountdown, resolution, profile.hudScale);
+            drawSplashScreen(rtGame, scaledHUDView, txLogo, splashCountdown, resolution, profile.hudScale);
 
         //
         // Letter
@@ -9524,11 +9532,11 @@ struct Main
 
                 rtGame.draw(sf::Sprite{.position = resolution / 2.f / profile.hudScale,
                                        .scale    = sf::Vec2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutQuint(progress)) /
-                                                profile.hudScale * 2.f,
-                                       .origin      = txLetter.getSize().toVec2f() / 2.f,
+                                                   profile.hudScale * 2.f,
+                                       .origin   = txLetter.getSize().toVec2f() / 2.f,
                                        .textureRect = txLetter.getRect(),
                                        .color = sf::Color::whiteMask(static_cast<U8>(easeInOutQuint(progress) * 255.f))},
-                            {.texture = &txLetter});
+                            {.view = scaledHUDView, .texture = &txLetter});
             }
 
             (void)cdLetterText.updateAndStop(deltaTimeMs);
@@ -9539,11 +9547,11 @@ struct Main
 
             rtGame.draw(sf::Sprite{.position = resolution / 2.f / profile.hudScale,
                                    .scale    = sf::Vec2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutQuint(textProgress)) /
-                                            profile.hudScale * 1.45f,
-                                   .origin      = txLetterText.getSize().toVec2f() / 2.f,
+                                               profile.hudScale * 1.45f,
+                                   .origin   = txLetterText.getSize().toVec2f() / 2.f,
                                    .textureRect = txLetterText.getRect(),
                                    .color = sf::Color::whiteMask(static_cast<U8>(easeInOutQuint(textProgress) * 255.f))},
-                        {.texture = &txLetterText});
+                        {.view = scaledHUDView, .texture = &txLetterText});
         }
 
         //
@@ -9594,10 +9602,9 @@ struct Main
         shaderPostProcess.setUniform(suPPLightness, profile.ppSLightness);
         shaderPostProcess.setUniform(suPPSharpness, profile.ppSSharpness);
 
-        window.setView({window.getSize().toVec2f() / 2.f, window.getSize().toVec2f()});
-
         window.clear();
-        window.draw(rtGame.getTexture(), {.shader = &shaderPostProcess});
+        window.draw(rtGame.getTexture(),
+                    {.view = sf::View::fromSize(window.getSize().toVec2f()), .shader = &shaderPostProcess});
 
         if (flushBeforeDisplay)
             rtGame.flushGPUCommands();

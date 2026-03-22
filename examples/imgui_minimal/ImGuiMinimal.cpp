@@ -26,7 +26,9 @@ int main()
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
 
-    auto window = sf::RenderWindow::create({.size{1024u, 768u}, .title = "ImGui + SFML = <3", .vsync = true}).value();
+    auto window   = sf::RenderWindow::create({.size{1024u, 768u}, .title = "ImGui + SFML = <3", .vsync = true}).value();
+    auto gameView = sf::View::fromSize({1024, 748});
+
     sf::ImGuiContext imGuiContext;
 
     const sf::CircleShape shape{{.fillColor = sf::Color::Green, .radius = 100.f}};
@@ -53,12 +55,12 @@ int main()
     auto image   = sf::Image::create(size, sf::Color::White).value();
     auto texture = sf::Texture::loadFromImage(image).value();
 
-    leftInnerRT.draw(texture);
+    leftInnerRT.draw(texture, {.view = leftInnerRT.makeView()});
     leftInnerRT.display();
 
 
     baseRenderTexture.clear();
-    baseRenderTexture.draw(leftVertexArray, sf::PrimitiveType::Triangles, {.texture = &leftInnerRT.getTexture()});
+    baseRenderTexture.draw(leftVertexArray, sf::PrimitiveType::Triangles, {.view = {}, .texture = &leftInnerRT.getTexture()});
     baseRenderTexture.display();
 
     sf::Clock deltaClock;
@@ -116,7 +118,7 @@ int main()
         ImGui::End();
 
         window.clear();
-        window.draw(shape);
+        window.draw(shape, {.view = gameView});
         imGuiContext.render(window);
         window.display();
     }

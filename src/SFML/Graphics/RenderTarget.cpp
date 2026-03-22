@@ -317,7 +317,8 @@ struct [[nodiscard]] StatesCache
     bool enable{false};      //!< Is the cache enabled?
     bool glStatesSet{false}; //!< Are our internal GL states set yet?
 
-    View lastView; //!< Cached latest view
+    View      lastView;          //!< Cached latest view
+    Transform lastViewTransform; //!< Cached latest view transform
 
     Transform lastRenderStatesTransform; //!< Cached renderstates transform
 
@@ -401,9 +402,7 @@ auto RenderTarget::addToAutoBatch(auto&&... xs)
 
 
 ////////////////////////////////////////////////////////////
-RenderTarget::RenderTarget(const View&) : m_impl{}
-{
-}
+RenderTarget::RenderTarget() = default;
 
 
 ////////////////////////////////////////////////////////////
@@ -1315,7 +1314,8 @@ void RenderTarget::applyView(const View& view)
         }
     }
 
-    m_impl->cache.lastView = view;
+    m_impl->cache.lastView          = view;
+    m_impl->cache.lastViewTransform = view.getTransform();
 }
 
 
@@ -1437,7 +1437,8 @@ void RenderTarget::setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& sta
         applyView(states.view);
 
     // Set the model-view-projection matrix
-    setupDrawMVP(states.transform, m_impl->cache.lastView.getTransform(), viewChanged, shaderChanged);
+    if (shaderChanged || viewChanged || !m_impl->cache.enable || states.transform != m_impl->cache.lastRenderStatesTransform)
+        setupDrawMVP(states.transform, m_impl->cache.lastViewTransform);
 
     // Apply the blend mode
     if (!m_impl->cache.enable || (states.blendMode != m_impl->cache.lastBlendMode))
@@ -1460,16 +1461,8 @@ void RenderTarget::setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& sta
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::setupDrawMVP(const Transform& renderStatesTransform,
-                                const Transform& viewTransform,
-                                const bool       viewChanged,
-                                const bool       shaderChanged)
+void RenderTarget::setupDrawMVP(const Transform& renderStatesTransform, const Transform& viewTransform)
 {
-    // If there's no difference from the cached one, exit early
-    if (!shaderChanged &&
-        (m_impl->cache.enable && !viewChanged && renderStatesTransform == m_impl->cache.lastRenderStatesTransform))
-        return;
-
     // Compute the final draw transform
     const Transform trsfm = viewTransform * /* model-view matrix */ renderStatesTransform;
 
