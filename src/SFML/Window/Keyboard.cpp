@@ -59,7 +59,7 @@ UnicodeString getDescription(const Scancode code)
 void setVirtualKeyboardVisible(const bool visible)
 {
     // TODO P0:
-    // not always applicable, dispatch to OS-specific SFML impls
+    // not always applicable, dispatch to OS-specific SFML impls, check SDL?
 }
 
 } // namespace sf::Keyboard

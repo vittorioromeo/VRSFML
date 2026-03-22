@@ -340,15 +340,17 @@ public:
             // Draw the contents of the log to the window
             m_window.clear();
 
+            const auto view = m_window.makeView();
+
             for (sf::base::SizeT i = 0u; i < m_log.size(); ++i)
             {
                 m_logText.position = {50.f, static_cast<float>(i * 20) + 50.f};
                 m_logText.setString(m_log[i]);
-                m_window.draw(m_logText);
+                m_window.draw(m_logText, {.view = view});
             }
 
-            m_window.draw(m_handlerText);
-            m_window.draw(m_instructions);
+            m_window.draw(m_handlerText, {.view = view});
+            m_window.draw(m_instructions, {.view = view});
             m_window.display();
         }
     }

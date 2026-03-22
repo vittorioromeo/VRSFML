@@ -347,7 +347,7 @@ public:
     /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Texture& texture, RenderStates states = {}); // TODO P1: RenderStatesWithoutTexture?
+    void draw(const Texture& texture, RenderStates states); // TODO P1: RenderStatesWithoutTexture?
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a texture to the render target
@@ -359,7 +359,7 @@ public:
     ////////////////////////////////////////////////////////////
     void draw(const Texture&           texture,
               const TextureDrawParams& params,
-              RenderStates             states = {}); // TODO P1: RenderStatesWithoutTexture?
+              RenderStates             states); // TODO P1: RenderStatesWithoutTexture?
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a sprite object to the render target
@@ -381,7 +381,7 @@ public:
     /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Shape& shape, RenderStates states = {});
+    void draw(const Shape& shape, RenderStates states);
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a text object to the render target
@@ -390,19 +390,19 @@ public:
     /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Text& text, RenderStates states = {});
+    void draw(const Text& text, RenderStates states); // TODO P1: RenderStatesWithoutTexture?
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const CPUDrawableBatch& drawableBatch, const RenderStates& states = {});
+    void draw(const CPUDrawableBatch& drawableBatch, const RenderStates& states);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const PersistentGPUDrawableBatch& drawableBatch, RenderStates states = {});
+    void draw(const PersistentGPUDrawableBatch& drawableBatch, RenderStates states);
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by a vertex buffer
@@ -411,7 +411,7 @@ public:
     /// \param states       Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const VertexBuffer& vertexBuffer, const RenderStates& states = {});
+    void draw(const VertexBuffer& vertexBuffer, const RenderStates& states);
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by a vertex buffer
@@ -422,10 +422,7 @@ public:
     /// \param states       Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const VertexBuffer& vertexBuffer,
-              base::SizeT         firstVertex,
-              base::SizeT         vertexCount,
-              const RenderStates& states = {});
+    void draw(const VertexBuffer& vertexBuffer, base::SizeT firstVertex, base::SizeT vertexCount, const RenderStates& states);
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a shape from its relevant data
@@ -434,7 +431,7 @@ public:
     ///         (WARNING: the span is only valid until the next draw call)
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan draw(const priv::ShapeDataConcept auto& shapeData, const RenderStates& states = {});
+    VertexSpan draw(const priv::ShapeDataConcept auto& shapeData, const RenderStates& states);
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a text from a font and its relevant data
@@ -443,7 +440,7 @@ public:
     ///         (WARNING: the span is only valid until the next draw call)
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan draw(const Font& font, const TextData& textData, RenderStates states = {}); // TODO P1: RenderStatesWithoutTexture?
+    VertexSpan draw(const Font& font, const TextData& textData, RenderStates states); // TODO P1: RenderStatesWithoutTexture?
 
     ////////////////////////////////////////////////////////////
     /// \brief Settings used to draw an array of vertices
@@ -746,10 +743,10 @@ public:
 
 protected:
     ////////////////////////////////////////////////////////////
-    /// \brief Constructor from view
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit RenderTarget(const View& currentView);
+    [[nodiscard]] explicit RenderTarget();
 
     ////////////////////////////////////////////////////////////
     /// \brief Synchronize the GPU with the CPU (beginning of a frame)
@@ -897,11 +894,9 @@ private:
     ///
     /// \param renderStatesTransform Transform to use for the MVP matrix
     /// \param viewTransform         View transform to use for the MVP matrix
-    /// \param viewChanged           Whether the view has changed
-    /// \param shaderChanged         Whether the shader has changed
     ///
     ////////////////////////////////////////////////////////////
-    void setupDrawMVP(const Transform& renderStatesTransform, const Transform& viewTransform, bool viewChanged, bool shaderChanged);
+    void setupDrawMVP(const Transform& renderStatesTransform, const Transform& viewTransform);
 
     ////////////////////////////////////////////////////////////
     /// \brief Setup environment for drawing: texture
@@ -1020,7 +1015,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename ContiguousVertexRange>
-    [[gnu::always_inline]] void draw(const ContiguousVertexRange& vertices, PrimitiveType type, const RenderStates& states = {})
+    [[gnu::always_inline]] void draw(const ContiguousVertexRange& vertices, PrimitiveType type, const RenderStates& states)
         requires(requires { drawVertices({vertices.data(), vertices.size(), type, states}); })
     {
         drawVertices({
@@ -1040,7 +1035,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <base::SizeT N>
-    [[gnu::always_inline]] void draw(const Vertex (&vertices)[N], PrimitiveType type, const RenderStates& states = {})
+    [[gnu::always_inline]] void draw(const Vertex (&vertices)[N], PrimitiveType type, const RenderStates& states)
     {
         drawVertices({
             .vertexData    = vertices,
@@ -1061,7 +1056,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename DrawableObject>
-    [[gnu::always_inline]] void draw(const DrawableObject& drawableObject, const RenderStates& states = {})
+    [[gnu::always_inline]] void draw(const DrawableObject& drawableObject, const RenderStates& states)
         requires(requires { drawableObject.draw(*this, states); })
     {
         flushIfNeeded(states);

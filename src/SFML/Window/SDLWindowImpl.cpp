@@ -487,6 +487,12 @@ void SDLWindowImpl::processSDLEvent(const SDL_Event& e)
         case SDL_EVENT_USER:
         case SDL_EVENT_LAST:
         case SDL_EVENT_ENUM_PADDING:
+        case SDL_EVENT_DISPLAY_USABLE_BOUNDS_CHANGED:
+        case SDL_EVENT_SCREEN_KEYBOARD_SHOWN:
+        case SDL_EVENT_SCREEN_KEYBOARD_HIDDEN:
+        case SDL_EVENT_PINCH_BEGIN:
+        case SDL_EVENT_PINCH_UPDATE:
+        case SDL_EVENT_PINCH_END:
             break;
     }
 }
@@ -1213,6 +1219,12 @@ void SDLWindowImpl::processEvents()
             case SDL_EVENT_USER:
             case SDL_EVENT_LAST:
             case SDL_EVENT_ENUM_PADDING:
+            case SDL_EVENT_DISPLAY_USABLE_BOUNDS_CHANGED:
+            case SDL_EVENT_SCREEN_KEYBOARD_SHOWN:
+            case SDL_EVENT_SCREEN_KEYBOARD_HIDDEN:
+            case SDL_EVENT_PINCH_BEGIN:
+            case SDL_EVENT_PINCH_UPDATE:
+            case SDL_EVENT_PINCH_END:
                 break;
         }
     }

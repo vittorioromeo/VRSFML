@@ -470,23 +470,25 @@ int main()
         {
             window.clear();
 
+            const auto view = window.makeView();
+
             const auto drawEntity = [&](const Entity& entity, sf::base::SizeT& drawnVertexCounter, auto&& drawFn)
             {
                 if (drawSprites)
                 {
-                    drawFn(entity.sprite, sf::RenderStates{.texture = &textureAtlas.getTexture()});
+                    drawFn(entity.sprite, sf::RenderStates{.view = view, .texture = &textureAtlas.getTexture()});
                     drawnVertexCounter += 4u;
                 }
 
                 if (drawText)
                 {
-                    drawFn(entity.text);
+                    drawFn(entity.text, sf::RenderStates{.view = view});
                     drawnVertexCounter += entity.text.getVertices().size();
                 }
 
                 if (drawShapes)
                 {
-                    drawFn(entity.circleShape, sf::RenderStates{.texture = &textureAtlas.getTexture()});
+                    drawFn(entity.circleShape, sf::RenderStates{.view = view, .texture = &textureAtlas.getTexture()});
 
                     drawnVertexCounter += entity.circleShape.getFillVertices().size() +
                                           entity.circleShape.getOutlineVertices().size();
@@ -519,7 +521,7 @@ int main()
                     drawnVertices += v;
 
                 for (auto& batch : batchesArray)
-                    window.draw(batch, {.texture = &textureAtlas.getTexture()});
+                    window.draw(batch, {.view = view, .texture = &textureAtlas.getTexture()});
             };
 
             if (batchType == BatchType::Disabled || !multithreadedDraw)
@@ -543,9 +545,9 @@ int main()
                     });
 
                 if (batchType == BatchType::CPUStorage)
-                    window.draw(cpuDrawableBatches[0], {.texture = &textureAtlas.getTexture()});
+                    window.draw(cpuDrawableBatches[0], {.view = view, .texture = &textureAtlas.getTexture()});
                 else if (batchType == BatchType::GPUStorage)
-                    window.draw(gpuDrawableBatches[0], {.texture = &textureAtlas.getTexture()});
+                    window.draw(gpuDrawableBatches[0], {.view = view, .texture = &textureAtlas.getTexture()});
             }
             else if (batchType == BatchType::CPUStorage)
             {

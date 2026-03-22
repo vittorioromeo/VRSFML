@@ -400,7 +400,8 @@ public:
                                                       .characterSize    = 32,
                                                       .outlineColor     = sf::Color::Black,
                                                       .outlineThickness = 4.f,
-                                                  });
+                                                  },
+                                                  {.view = *m_deps.view});
 
         for (sf::base::SizeT j = 0u; j < vertices.size(); j += 4u)
         {
@@ -438,7 +439,8 @@ public:
                                 .characterSize    = 16,
                                 .outlineColor     = sf::Color::Black,
                                 .outlineThickness = 2.f,
-                            });
+                            },
+                            {.view = *m_deps.view});
     }
 };
 
@@ -448,7 +450,7 @@ class ExampleAudio
 {
 private:
     ////////////////////////////////////////////////////////////
-    GameDependencies m_deps;
+    [[maybe_unused]] GameDependencies m_deps;
 
     ////////////////////////////////////////////////////////////
     float m_time = 0.f;
@@ -785,7 +787,7 @@ public:
     {
         m_phase = 0.f;
 
-        callWithActiveShape([this](auto& shapeData) { m_deps.rtGame->draw(shapeData); });
+        callWithActiveShape([this](auto& shapeData) { m_deps.rtGame->draw(shapeData, {.view = *m_deps.view}); });
     }
 };
 

@@ -544,9 +544,14 @@ const Texture& RenderTexture::getTexture() const
 
 
 ////////////////////////////////////////////////////////////
-RenderTexture::RenderTexture(base::PassKey<RenderTexture>&&, Texture&& texture) :
-    RenderTarget(View::fromRect({{0.f, 0.f}, texture.getSize().toVec2f()})),
-    m_impl(SFML_BASE_MOVE(texture))
+View RenderTexture::makeView() const
+{
+    return View::fromSize(m_impl->texture.getSize().toVec2f());
+}
+
+
+////////////////////////////////////////////////////////////
+RenderTexture::RenderTexture(base::PassKey<RenderTexture>&&, Texture&& texture) : m_impl(SFML_BASE_MOVE(texture))
 {
 }
 

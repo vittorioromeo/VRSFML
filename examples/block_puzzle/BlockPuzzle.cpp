@@ -1710,11 +1710,11 @@ public:
                                 m_dbObjectAttributes.add(sf::Sprite{
                                     .position = drawPosition,
                                     .scale = scaleMultiplier.rotatedBy(block.gravityDir.toVec2f().abs().angle()) * 0.6f,
-                                    .origin   = {64.f, 64.f},
-                                    .rotation = sf::radians(
-                                                    block.gravityDir.toVec2f().componentWiseMul({-1.f, 1.f}).angle().asRadians() +
-                                                    rotationRadians + arrowRotationRadians)
-                                                    .wrapUnsigned(),
+                                    .origin      = {64.f, 64.f},
+                                    .rotation    = sf::radians(
+                                                       block.gravityDir.toVec2f().componentWiseMul({-1.f, 1.f}).angle().asRadians() +
+                                                       rotationRadians + arrowRotationRadians)
+                                                       .wrapUnsigned(),
                                     .textureRect = m_txrGravArrow,
                                     .color       = getHueColor(kindToColor(blockImpl.kind).toHSL().hue),
                                 });
@@ -1971,11 +1971,13 @@ public:
                 }
 
                 if (false)
-                    m_rtGame.draw(sf::RectangleShapeData{
-                        .position  = getMousePos(),
-                        .fillColor = sf::Color::Black,
-                        .size      = {20.f, 20.f},
-                    });
+                    m_rtGame.draw(
+                        sf::RectangleShapeData{
+                            .position  = getMousePos(),
+                            .fillColor = sf::Color::Black,
+                            .size      = {20.f, 20.f},
+                        },
+                        {.view = m_worldView});
 
                 m_rtGame.display();
 
