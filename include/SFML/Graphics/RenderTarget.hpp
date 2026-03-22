@@ -573,6 +573,12 @@ public:
     [[nodiscard]] virtual bool setActive(bool active = true);
 
     ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] View makeView() const;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Reset the internal OpenGL states so that the target is ready for drawing
     ///
     /// This function can be used when you mix SFML drawing

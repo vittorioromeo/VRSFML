@@ -1728,7 +1728,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     Cat& spawnCatCentered(const CatType catType, const float hue, const bool placeInHand = true)
     {
-        const auto pos = window.mapPixelToCoords((getResolution() / 2.f).toVec2i(), gameView);
+        const auto pos = gameView.unproject(getResolution() / 2.f, window.getSize().toVec2f());
 
         Cat& newCat = spawnCat(pos, catType, hue);
 
@@ -1851,7 +1851,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::Vec2f getHUDMousePos() const
     {
-        return window.mapPixelToCoords(sf::Mouse::getPosition(window), nonScaledHUDView);
+        return nonScaledHUDView.unproject(sf::Mouse::getPosition(window).toVec2f(), window.getSize().toVec2f());
     }
 
     ////////////////////////////////////////////////////////////
@@ -2867,10 +2867,10 @@ struct Main
     [[nodiscard]] sf::Vec2f fromWorldToHud(const sf::Vec2f point) const
     {
         // From game coordinates to screen coordinates
-        const sf::Vec2i screenPos = window.mapCoordsToPixel(point, gameView);
+        const sf::Vec2f screenPos = gameView.project(point, window.getSize().toVec2f());
 
         // From screen coordinates to HUD view coordinates
-        return window.mapPixelToCoords(screenPos, scaledHUDView);
+        return scaledHUDView.unproject(screenPos, window.getSize().toVec2f());
     }
 
     ////////////////////////////////////////////////////////////
@@ -3418,7 +3418,7 @@ struct Main
         if (!clickPosition.hasValue())
             return false;
 
-        const auto clickPos = window.mapPixelToCoords(clickPosition->toVec2i(), gameView);
+        const auto clickPos = gameView.unproject(*clickPosition, window.getSize().toVec2f());
 
         if (!particleCullingBoundaries.isInside(clickPos))
         {
@@ -7885,7 +7885,7 @@ struct Main
         tipBackgroundSprite.setGlobalBottomCenter(
             {getResolution().x / 2.f / profile.hudScale, getResolution().y / profile.hudScale - 50.f});
 
-        rtGame.draw(tipBackgroundSprite, {.texture = &txTipBg});
+        rtGame.draw(tipBackgroundSprite, {.view = scaledHUDView, .texture = &txTipBg});
 
         sf::Sprite tipByteSprite{.position    = {},
                                  .scale       = sf::Vec2f{0.85f, 0.85f} * easeInOutBack(byteProgress),
@@ -9092,7 +9092,7 @@ struct Main
         const auto windowSpaceMouseOrFingerPos = downFingers.size() == 1u ? downFingers[0].toVec2i()
                                                                           : sf::Mouse::getPosition(window);
 
-        const auto mousePos = window.mapPixelToCoords(windowSpaceMouseOrFingerPos, gameView);
+        const auto mousePos = gameView.unproject(windowSpaceMouseOrFingerPos.toVec2f(), window.getSize().toVec2f());
 
         //
         // Game startup, prestige transitions, etc...
@@ -9469,7 +9469,8 @@ struct Main
                         minimapRect);
 
             // Jump to minimap position on click
-            const auto p = window.mapPixelToCoords(windowSpaceMouseOrFingerPos, scaledHUDView);
+            const auto p = scaledHUDView.unproject(windowSpaceMouseOrFingerPos.toVec2f(), window.getSize().toVec2f());
+
             if (minimapRect.contains(p) && mBtnDown(sf::Mouse::Button::Left, /* penetrateUI */ true))
             {
                 const auto minimapPos = p - minimapRect.position;

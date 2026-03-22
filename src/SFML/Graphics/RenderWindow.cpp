@@ -121,11 +121,4 @@ RenderTarget::DrawStatistics RenderWindow::display()
     return result;
 }
 
-
-////////////////////////////////////////////////////////////
-View RenderWindow::makeView() const
-{
-    return View::fromSize(getSize().toVec2f());
-}
-
 } // namespace sf

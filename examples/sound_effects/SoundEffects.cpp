@@ -1318,7 +1318,7 @@ int main()
         }
 
         // Update the current example
-        const auto [x, y] = window.mapPixelToCoords(sf::Mouse::getPosition(window), gameView)
+        const auto [x, y] = gameView.unproject(sf::Mouse::getPosition(window).toVec2f(), window.getSize().toVec2f())
                                 .componentWiseDiv(windowSize.toVec2f());
 
         effects[current]->update(clock.getElapsedTime().asSeconds(), x, y);

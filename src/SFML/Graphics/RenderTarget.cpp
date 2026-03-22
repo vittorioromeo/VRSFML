@@ -302,8 +302,7 @@ struct [[nodiscard]] StatesCache
     bool enable{false};      //!< Is the cache enabled?
     bool glStatesSet{false}; //!< Are our internal GL states set yet?
 
-    View      lastView;          //!< Cached latest view
-    Transform lastViewTransform; //!< Cached latest view transform
+    View lastView; //!< Cached latest view
 
     Transform lastRenderStatesTransform; //!< Cached renderstates transform
 
@@ -1081,6 +1080,13 @@ bool RenderTarget::setActive(const bool active)
 
 
 ////////////////////////////////////////////////////////////
+View RenderTarget::makeView() const
+{
+    return View::fromSize(getSize().toVec2f());
+}
+
+
+////////////////////////////////////////////////////////////
 void RenderTarget::resetGLStates()
 {
     flush();
@@ -1243,9 +1249,11 @@ void RenderTarget::syncGPUEndFrame()
 ////////////////////////////////////////////////////////////
 void RenderTarget::applyView(const View& view)
 {
+    const Vec2f targetSize = getSize().toVec2f();
+
     // Set the viewport
-    const Rect2i viewport    = view.getPixelViewport(getSize().toVec2f());
-    const int    viewportTop = static_cast<int>(getSize().y) - (viewport.position.y + viewport.size.y);
+    const Rect2i viewport    = view.getPixelViewport(targetSize);
+    const int    viewportTop = static_cast<int>(targetSize.y) - (viewport.position.y + viewport.size.y);
     glCheck(glViewport(viewport.position.x, viewportTop, viewport.size.x, viewport.size.y));
 
     // Set the scissor rectangle and enable/disable scissor testing
@@ -1259,8 +1267,8 @@ void RenderTarget::applyView(const View& view)
     }
     else
     {
-        const Rect2i pixelScissor = view.getPixelScissor(getSize().toVec2f());
-        const int    scissorTop   = static_cast<int>(getSize().y) - (pixelScissor.position.y + pixelScissor.size.y);
+        const Rect2i pixelScissor = view.getPixelScissor(targetSize);
+        const int    scissorTop   = static_cast<int>(targetSize.y) - (pixelScissor.position.y + pixelScissor.size.y);
 
         glCheck(glScissor(pixelScissor.position.x, scissorTop, pixelScissor.size.x, pixelScissor.size.y));
 
@@ -1271,8 +1279,7 @@ void RenderTarget::applyView(const View& view)
         }
     }
 
-    m_impl->cache.lastView          = view;
-    m_impl->cache.lastViewTransform = view.getTransform();
+    m_impl->cache.lastView = view;
 }
 
 
@@ -1395,7 +1402,7 @@ void RenderTarget::setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& sta
 
     // Set the model-view-projection matrix
     if (shaderChanged || viewChanged || !m_impl->cache.enable || states.transform != m_impl->cache.lastRenderStatesTransform)
-        setupDrawMVP(states.transform, m_impl->cache.lastViewTransform);
+        setupDrawMVP(states.transform, m_impl->cache.lastView.getTransform());
 
     // Apply the blend mode
     if (!m_impl->cache.enable || (states.blendMode != m_impl->cache.lastBlendMode))

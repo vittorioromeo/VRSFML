@@ -4485,7 +4485,7 @@ void Main::uiTabBarSettings()
 
             if (isUniqueCatType(catType))
             {
-                const auto pos = window.mapPixelToCoords((getResolution() / 2.f).toVec2i(), gameView);
+                const auto pos = gameView.unproject(getResolution() / 2.f, window.getSize().toVec2f());
                 spawnSpecialCat(pos, catType);
             }
             else
