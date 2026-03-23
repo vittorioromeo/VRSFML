@@ -220,7 +220,7 @@ public:
 
         // Render the updated scene to the off-screen surface
         m_surface.clear(sf::Color::White);
-        m_surface.draw(m_backgroundTexture, {.position = {135.f, 100.f}}, {.view = {}});
+        m_surface.draw(m_backgroundTexture, {.position = {135.f, 100.f}});
 
         // Update the position of the moving entities
         constexpr int numEntities = 6;
@@ -233,7 +233,7 @@ public:
                 {sf::base::cos(0.25f * (time * static_cast<float>(i) + static_cast<float>(numEntities - i))) * 300 + 350,
                  sf::base::sin(0.25f * (time * static_cast<float>(numEntities - i) + static_cast<float>(i))) * 200 + 250};
 
-            m_surface.draw(entity, {.view = {}, .texture = &m_entityTexture});
+            m_surface.draw(entity, {.texture = &m_entityTexture});
         }
 
         m_surface.display();
@@ -361,25 +361,19 @@ sf::base::Optional<StormBlink> tryLoadStormBlink()
 sf::base::Optional<Edge> tryLoadEdge()
 {
     // Create the off-screen surface
-    auto surface = sf::RenderTexture::create({800, 600});
+    auto surface = sf::RenderTexture::create({800, 600}, {.smooth = true});
     if (!surface.hasValue())
         return sf::base::nullOpt;
 
-    surface->setSmooth(true);
-
     // Load the background texture
-    auto backgroundTexture = sf::Texture::loadFromFile("resources/sfml.png");
+    auto backgroundTexture = sf::Texture::loadFromFile("resources/sfml.png", {.smooth = true});
     if (!backgroundTexture.hasValue())
         return sf::base::nullOpt;
 
-    backgroundTexture->setSmooth(true);
-
     // Load the entity texture
-    auto entityTexture = sf::Texture::loadFromFile("resources/devices.png");
+    auto entityTexture = sf::Texture::loadFromFile("resources/devices.png", {.smooth = true});
     if (!entityTexture.hasValue())
         return sf::base::nullOpt;
-
-    entityTexture->setSmooth(true);
 
     // Load the shader
     auto shader = sf::Shader::loadFromFile(

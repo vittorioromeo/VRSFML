@@ -58,11 +58,11 @@ int main()
     auto image   = sf::Image::create(size, sf::Color::White).value();
     auto texture = sf::Texture::loadFromImage(image).value();
 
-    leftInnerRT.draw(texture, {.view = {}});
+    leftInnerRT.draw(texture);
     leftInnerRT.display();
 
     baseRenderTexture.clear();
-    baseRenderTexture.draw(leftVertexArray, sf::PrimitiveType::Triangles, {.view = {}, .texture = &leftInnerRT.getTexture()});
+    baseRenderTexture.draw(leftVertexArray, sf::PrimitiveType::Triangles, {.texture = &leftInnerRT.getTexture()});
     baseRenderTexture.display();
 
     sf::Clock deltaClock;

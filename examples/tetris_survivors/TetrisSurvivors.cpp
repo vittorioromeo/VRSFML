@@ -870,11 +870,8 @@ private:
 
 
     //////////////////////////////////////////////////////////////
-    sf::RenderTexture m_rtGame{
-        sf::RenderTexture::create(resolution.toVec2u(), {.antiAliasingLevel = 0u, .sRgbCapable = false}).value()};
-
-    sf::RenderTexture m_rtPostProcess{
-        sf::RenderTexture::create(resolution.toVec2u(), {.antiAliasingLevel = 0u, .sRgbCapable = false}).value()};
+    sf::RenderTexture m_rtGame{sf::RenderTexture::create(resolution.toVec2u(), {.smooth = false}).value()};
+    sf::RenderTexture m_rtPostProcess{sf::RenderTexture::create(resolution.toVec2u(), {.smooth = true}).value()};
 
 
     //////////////////////////////////////////////////////////////
@@ -4640,8 +4637,6 @@ public:
     ////////////////////////////////////////////////////////////
     Game()
     {
-        m_rtGame.setSmooth(false);
-        m_rtPostProcess.setSmooth(true);
         m_font.setSmooth(false);
         m_fontMago2.setSmooth(false);
 

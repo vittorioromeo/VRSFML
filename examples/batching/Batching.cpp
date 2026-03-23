@@ -475,7 +475,7 @@ int main()
         {
             window.clear();
 
-            const auto baseStates = sf::RenderStates{.view = {}, .texture = &textureAtlas.getTexture()};
+            const auto baseStates = sf::RenderStates{.texture = &textureAtlas.getTexture()};
 
             const auto drawEntity = [&](const Entity& entity, sf::base::SizeT& drawnVertexCounter, auto&& drawFn)
             {

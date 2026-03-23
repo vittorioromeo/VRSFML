@@ -14,11 +14,14 @@
 #include "SFML/Audio/SoundBuffer.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/LifetimeDependant.hpp"
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/Memcpy.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/MinMax.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 #include <miniaudio.h>
 

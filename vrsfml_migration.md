@@ -499,8 +499,8 @@ TODO P0:
 
 
 
-## ContextSettings without antialiasing and srgb support, use FBOs with RenderTextureSettings
+## ContextSettings without antialiasing and srgb support, use FBOs with RenderTextureCreateSettings
 
 - `sf::ContextSettings` no longer accepts `antialiasingLevel` or `sRgbCapable` for standard window creation.
     - Relying on the OS window manager for MSAA and sRGB is historically buggy and inconsistent across drivers.
-    - Instead, VRSFML encourages rendering to an `sf::RenderTexture` created with `sf::RenderTextureSettings` (where MSAA and sRGB are strictly controlled via FBOs), and blitting the final result to the window.
+    - Instead, VRSFML encourages rendering to an `sf::RenderTexture` created with `sf::RenderTextureCreateSettings` (where MSAA and sRGB are strictly controlled via FBOs), and blitting the final result to the window.
