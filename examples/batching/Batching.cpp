@@ -241,7 +241,10 @@ int main()
     };
 
     sf::base::Vector<AlignedCPUDrawableBatch> cpuDrawableBatches(nMaxWorkers);
+
+#ifndef SFML_OPENGL_ES
     sf::base::Vector<AlignedGPUDrawableBatch> gpuDrawableBatches(nMaxWorkers);
+#endif
 
     //
     //
@@ -554,6 +557,7 @@ int main()
                     }
                 };
 
+#ifndef SFML_OPENGL_ES
                 // If GPU storage, preallocate memory to avoid race conditions
                 if (batchType == BatchType::GPUStorage)
                 {
@@ -569,6 +573,9 @@ int main()
                     doWithBatch(cpuDrawableBatches);
                 else
                     doWithBatch(gpuDrawableBatches);
+#else
+                doWithBatch(cpuDrawableBatches);
+#endif
             }
         }
         samplesDrawMs.record(clock.getElapsedTime().asSeconds() * 1000.f);

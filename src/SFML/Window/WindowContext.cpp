@@ -20,6 +20,7 @@
 #include "SFML/GLUtils/GlContextTypeImpl.hpp"
 #include "SFML/GLUtils/GlFuncTypesImpl.hpp"
 #include "SFML/GLUtils/Glad.hpp"
+#include "SFML/GLUtils/TransferScratch.hpp"
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/SignalErrHandler.hpp"
@@ -424,12 +425,20 @@ void WindowContext::cleanupUnsharedFrameBuffers(priv::GlContext& glContext)
 {
     auto& wc = ensureInstalled();
 
-    if (&glContext == &wc.sharedGlContext)
+    const auto doCleanup = [&]
     {
+        // Make this context active so resources can be freed
         if (!setActiveThreadLocalGlContext(glContext, true))
             priv::err() << "Could not enable GL context in GlContext::cleanupUnsharedFrameBuffers()";
 
         wc.unsharedContextResourcesManager.unregisterAllResources(glContext.getId());
+        priv::releaseTransferScratchForActiveContext();
+    };
+
+
+    if (&glContext == &wc.sharedGlContext)
+    {
+        doCleanup();
         SFML_BASE_ASSERT(wc.unsharedContextResourcesManager.allEmpty());
 
         disableSharedGlContext();
@@ -438,12 +447,7 @@ void WindowContext::cleanupUnsharedFrameBuffers(priv::GlContext& glContext)
 
     // Save the current context so we can restore it later
     priv::GLContextSaver glContextSaver;
-
-    // Make this context active so resources can be freed
-    if (!setActiveThreadLocalGlContext(glContext, true))
-        priv::err() << "Could not enable GL context in GlContext::cleanupUnsharedFrameBuffers()";
-
-    wc.unsharedContextResourcesManager.unregisterAllResources(glContext.getId());
+    doCleanup();
 }
 
 

@@ -21,6 +21,7 @@
 #include "SFML/GLUtils/GLUtils.hpp"
 #include "SFML/GLUtils/Glad.hpp"
 #include "SFML/GLUtils/TextureSaver.hpp"
+#include "SFML/GLUtils/TransferScratch.hpp"
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Path.hpp"
@@ -34,7 +35,6 @@
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
-#include "SFML/Base/ScopeGuard.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Swap.hpp"
 #include "SFML/Base/Vector.hpp"
@@ -215,25 +215,12 @@ base::Optional<Texture> Texture::create(Vec2u size, const TextureCreateSettings&
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
 
-    const GLint textureWrapParam = TextureImpl::wrapModeToGl(settings.wrapMode);
+    sf::priv::bindAndInitializeTexture(texture.m_texture,
+                                       texture.m_sRgb,
+                                       size,
+                                       static_cast<unsigned int>(TextureImpl::wrapModeToGl(settings.wrapMode)));
 
-    // Initialize the texture
-    glCheck(glBindTexture(GL_TEXTURE_2D, texture.m_texture));
-    glCheck(glTexImage2D(GL_TEXTURE_2D,
-                         0,
-                         (texture.m_sRgb ? GL_SRGB8_ALPHA8 : GL_RGBA),
-                         static_cast<GLsizei>(texture.m_size.x),
-                         static_cast<GLsizei>(texture.m_size.y),
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         nullptr));
-    glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, textureWrapParam));
-    glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, textureWrapParam));
-    glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-    glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-    texture.m_cacheId = TextureImpl::getUniqueId();
-
+    texture.m_cacheId   = TextureImpl::getUniqueId();
     texture.m_hasMipmap = false;
 
     result->setSmooth(settings.smooth);
@@ -368,9 +355,8 @@ Image Texture::copyToImage() const
 
     // OpenGL ES doesn't have the glGetTexImage function, the only way to read
     // from a texture is to bind it to a FBO and use glReadPixels
-    GLuint frameBuffer = 0u;
-    glCheck(glGenFramebuffers(1, &frameBuffer));
-    if (frameBuffer)
+    const auto frameBuffer = static_cast<GLuint>(priv::getTransferScratchReadFramebuffer());
+    if (frameBuffer != 0u)
     {
         const priv::FramebufferSaver framebufferSaver;
 
@@ -383,7 +369,6 @@ Image Texture::copyToImage() const
                              GL_RGBA,
                              GL_UNSIGNED_BYTE,
                              pixels.data()));
-        glCheck(glDeleteFramebuffers(1, &frameBuffer));
     }
     else
     {
@@ -455,30 +440,25 @@ bool Texture::update(const Texture& texture, Vec2u dest)
 
     SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
-    GLuint sourceFrameBuffer = 0;
-    GLuint destFrameBuffer   = 0;
-    bool   success           = true;
+    const auto sourceFrameBuffer = static_cast<GLuint>(priv::getTransferScratchReadFramebuffer());
+    if (sourceFrameBuffer == 0u)
+    {
+        priv::err() << "Cannot copy texture, failed to acquire source frame buffer object";
+        return false;
+    }
+
+    const auto destFrameBuffer = static_cast<GLuint>(priv::getTransferScratchDrawFramebuffer());
+    if (destFrameBuffer == 0u)
+    {
+        priv::err() << "Cannot copy texture, failed to acquire destination frame buffer object";
+        return false;
+    }
+
+    bool success = true;
 
     {
         // Save the current bindings so we can restore them after we are done
         const priv::FramebufferSaver framebufferSaver;
-
-        // Create the framebuffers
-        glCheck(glGenFramebuffers(1, &sourceFrameBuffer));
-        if (!sourceFrameBuffer)
-        {
-            priv::err() << "Cannot copy texture, failed to create source frame buffer object";
-            return false;
-        }
-
-        glCheck(glGenFramebuffers(1, &destFrameBuffer));
-        if (!destFrameBuffer)
-        {
-            glCheck(glDeleteFramebuffers(1, &sourceFrameBuffer));
-
-            priv::err() << "Cannot copy texture, failed to create destination frame buffer object";
-            return false;
-        }
 
         // Link the source texture to the source frame buffer
         glCheck(glBindFramebuffer(GL_READ_FRAMEBUFFER, sourceFrameBuffer));
@@ -508,10 +488,6 @@ bool Texture::update(const Texture& texture, Vec2u dest)
         }
     }
 
-    // Delete the framebuffers
-    glCheck(glDeleteFramebuffers(1, &sourceFrameBuffer));
-    glCheck(glDeleteFramebuffers(1, &destFrameBuffer));
-
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
 
@@ -538,41 +514,6 @@ void Texture::update(const Image& image, Vec2u dest)
 ////////////////////////////////////////////////////////////
 bool Texture::update(const Window& window, Vec2u dest)
 {
-    [[maybe_unused]] const auto slowPathCopyFlippedFramebuffer = [&](const unsigned int destFrameBuffer)
-    {
-        // TODO P1: avoid creating this texture and FBO every time
-        auto tmpTexture = Texture::create(window.getSize(), {.sRgb = m_sRgb, .smooth = m_isSmooth});
-
-        const GLuint intermediateFBO = priv::generateAndBindFramebuffer();
-        if (!intermediateFBO)
-        {
-            priv::err() << "Failure to create intermediate FBO in `Texture::update`";
-            return false;
-        }
-
-        SFML_BASE_SCOPE_GUARD({ glCheck(glDeleteFramebuffers(1, &intermediateFBO)); });
-
-        if (!tmpTexture.hasValue())
-        {
-            priv::err() << "Failure to create intermediate texture in `Texture::update`";
-            return false;
-        }
-
-        if (!priv::copyFlippedFramebufferViaIntermediateFBO(intermediateFBO,
-                                                            tmpTexture->getNativeHandle(),
-                                                            window.getSize(),
-                                                            0u /* default FBO */,
-                                                            destFrameBuffer,
-                                                            {0u, 0u},
-                                                            dest))
-        {
-            priv::err() << "Error flipping render texture during FBO copy";
-            return false;
-        }
-
-        return true;
-    };
-
     SFML_BASE_ASSERT(dest.x + window.getSize().x <= m_size.x && "Destination x coordinate is outside of texture");
     SFML_BASE_ASSERT(dest.y + window.getSize().y <= m_size.y && "Destination y coordinate is outside of texture");
 
@@ -587,20 +528,18 @@ bool Texture::update(const Window& window, Vec2u dest)
 
     SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
-    GLuint destFrameBuffer = 0u;
-    bool   success         = true;
+    const auto destFrameBuffer = static_cast<GLuint>(priv::getTransferScratchDrawFramebuffer());
+    if (destFrameBuffer == 0u)
+    {
+        priv::err() << "Cannot copy texture, failed to acquire a frame buffer object";
+        return false;
+    }
+
+    bool success = true;
 
     {
         // Save the current bindings so we can restore them after we are done
         const priv::FramebufferSaver framebufferSaver;
-
-        // Create the destination framebuffers
-        glCheck(glGenFramebuffers(1, &destFrameBuffer));
-        if (!destFrameBuffer)
-        {
-            priv::err() << "Cannot copy texture, failed to create a frame buffer object";
-            return false;
-        }
 
         // Link the source texture to the source frame buffer
         glCheck(glBindFramebuffer(GL_READ_FRAMEBUFFER, 0u /* default FBO */));
@@ -619,15 +558,11 @@ bool Texture::update(const Window& window, Vec2u dest)
             // Since we don't want scissor testing to interfere with our copying, we temporarily disable it for the blit if it is enabled
             const priv::ScissorDisableGuard scissorDisableGuard;
 
-#ifdef SFML_OPENGL_ES
-            if (!slowPathCopyFlippedFramebuffer(destFrameBuffer))
+            if (!priv::copyFlippedFramebuffer(m_sRgb, window.getSize(), 0u /* default FBO */, destFrameBuffer, {0u, 0u}, dest))
             {
-                priv::err() << "Cannot copy texture, failed to copy flipped framebuffer via intermediate FBO";
+                priv::err() << "Cannot copy texture, failed to copy flipped framebuffer";
                 success = false;
             }
-#else
-            priv::copyFlippedFramebufferViaDirectBlit(window.getSize(), 0u /* default FBO */, destFrameBuffer, dest);
-#endif
         }
         else
         {
@@ -635,9 +570,6 @@ bool Texture::update(const Window& window, Vec2u dest)
             success = false;
         }
     }
-
-    // Delete the framebuffers
-    glCheck(glDeleteFramebuffers(1, &destFrameBuffer));
 
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
