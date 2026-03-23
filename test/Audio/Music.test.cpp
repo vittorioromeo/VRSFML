@@ -1,24 +1,29 @@
 #include "SFML/Audio/Music.hpp"
 
 #include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 
 // Other 1st party headers
 #include "SFML/Audio/MusicReader.hpp"
 
 #include "SFML/System/FileInputStream.hpp"
+#include "SFML/System/LifetimeDependee.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Sleep.hpp"
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/Builtin/Memset.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/Trait/HasVirtualDestructor.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #include <Doctest.hpp>
 
 #include <AudioUtil.hpp>
-#include <CommonTraits.hpp>
 #include <LoadIntoMemoryUtil.hpp>
 #include <SystemUtil.hpp>
 

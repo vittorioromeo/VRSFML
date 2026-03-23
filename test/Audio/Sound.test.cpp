@@ -1,22 +1,29 @@
 #include "SFML/Audio/Sound.hpp"
 
 #include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 
 // Other 1st party headers
 #include "SFML/Audio/SoundBuffer.hpp"
 
+#include "SFML/System/LifetimeDependee.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/Trait/HasVirtualDestructor.hpp"
+#include "SFML/Base/Trait/IsConstructible.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsMoveConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <Doctest.hpp>
 
 #include <AudioUtil.hpp>
-#include <CommonTraits.hpp>
 #include <SystemUtil.hpp>
 
 TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))

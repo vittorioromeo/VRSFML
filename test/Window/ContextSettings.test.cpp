@@ -1,8 +1,12 @@
 #include "SFML/Window/ContextSettings.hpp"
 
+#include "SFML/Base/Trait/IsTriviallyCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsTriviallyCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
+
 #include <Doctest.hpp>
 
-#include <CommonTraits.hpp>
 
 TEST_CASE("[Window] sf::ContextSettings")
 {
@@ -19,8 +23,8 @@ TEST_CASE("[Window] sf::ContextSettings")
         SECTION("Aggregate initialization -- Nothing")
         {
             constexpr sf::ContextSettings contextSettings;
-            STATIC_CHECK(contextSettings.depthBits == 0);
-            STATIC_CHECK(contextSettings.stencilBits == 0);
+            STATIC_CHECK(contextSettings.depthBits == sf::ContextSettings::defaultDepthBits);
+            STATIC_CHECK(contextSettings.stencilBits == sf::ContextSettings::defaultStencilBits);
             STATIC_CHECK(contextSettings.majorVersion == sf::ContextSettings::defaultMajorVersion);
             STATIC_CHECK(contextSettings.minorVersion == sf::ContextSettings::defaultMinorVersion);
             STATIC_CHECK(contextSettings.attributeFlags == sf::ContextSettings::defaultAttributeFlags);

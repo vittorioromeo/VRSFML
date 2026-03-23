@@ -2,9 +2,15 @@
 
 #include "SFML/System/Vec2.hpp"
 
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsDefaultConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
+
 #include <Doctest.hpp>
 
-#include <CommonTraits.hpp>
 #include <StringifyOptionalUtil.hpp>
 #include <WindowUtil.hpp>
 

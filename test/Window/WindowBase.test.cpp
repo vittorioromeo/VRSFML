@@ -3,12 +3,20 @@
 // Other 1st party headers
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/WindowContext.hpp"
+#include "SFML/Window/WindowHandle.hpp"
 
 #include "SFML/System/Clock.hpp"
+#include "SFML/System/Time.hpp"
+#include "SFML/System/Vec2.hpp"
+
+#include "SFML/Base/Trait/HasVirtualDestructor.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <Doctest.hpp>
 
-#include <CommonTraits.hpp>
 #include <StringifyOptionalUtil.hpp>
 #include <SystemUtil.hpp>
 #include <WindowUtil.hpp>

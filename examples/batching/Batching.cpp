@@ -192,7 +192,7 @@ int main()
     //
     //
     // Get hardware constants
-    const auto     nMaxWorkers   = static_cast<sf::base::U64>(sf::base::ThreadPool::getHardwareWorkerCount());
+    const auto     nMaxWorkers   = sf::base::ThreadPool::getHardwareWorkerCount();
     constexpr auto cacheLineSize = static_cast<sf::base::SizeT>(sf::base::hardwareDestructiveInterferenceSize);
 
     //
@@ -222,7 +222,7 @@ int main()
     bool            multithreadedUpdate      = false;
     bool            multithreadedDraw        = false;
     bool            useWithRenderStatesAPI   = false;
-    sf::base::U64   nWorkers                 = nMaxWorkers;
+    auto            nWorkers                 = static_cast<sf::base::U64>(nMaxWorkers);
     int             numEntities              = 500;
     sf::base::SizeT drawnVertices            = 0u;
     unsigned int    nDrawCalls               = 0u;
@@ -427,7 +427,7 @@ int main()
 
             ImGui::SetNextItemWidth(172.f);
             ImGui::InputScalar("Workers", ImGuiDataType_U64, &nWorkers, &step);
-            nWorkers = sf::base::clamp(nWorkers, sf::base::U64{2u}, nMaxWorkers);
+            nWorkers = sf::base::clamp(nWorkers, sf::base::U64{2u}, static_cast<sf::base::U64>(nMaxWorkers));
 
             ImGui::NewLine();
 

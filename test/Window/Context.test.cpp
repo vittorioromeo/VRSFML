@@ -7,11 +7,14 @@
 #include "SFML/System/Err.hpp"
 
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <Doctest.hpp>
 
-#include <CommonTraits.hpp>
 #include <WindowUtil.hpp>
 
 #if defined(SFML_SYSTEM_WINDOWS)

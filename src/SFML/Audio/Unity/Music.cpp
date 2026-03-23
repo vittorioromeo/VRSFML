@@ -10,13 +10,17 @@
 #include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/InputSoundFile.hpp"
 #include "SFML/Audio/MusicReader.hpp"
+#include "SFML/Audio/SoundStream.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/LifetimeDependant.hpp"
 #include "SFML/System/Time.hpp"
 
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
 
 
@@ -97,7 +101,7 @@ bool Music::onGetData(SoundStream::Chunk& data)
     // `seekAndRead` is thread-safe
     const auto [sampleOffset, samplesRead] = m_musicReader.seekAndRead(m_sampleOffset, m_samples.data(), toFill);
 
-    data.sampleCount = samplesRead;
+    data.sampleCount = static_cast<base::SizeT>(samplesRead);
     m_sampleOffset   = sampleOffset + samplesRead;
 
     // Check if we have stopped obtaining samples or reached either the EOF or the loop end point
