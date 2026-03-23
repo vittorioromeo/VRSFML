@@ -353,8 +353,6 @@ public:
     ///
     /// \return `true` if the texture source is converted from sRGB, `false` if not
     ///
-    /// \see `setSrgb`
-    ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isSrgb() const;
 

@@ -92,6 +92,120 @@ void linkStencilDepthBuffer(const sf::base::Optional<sf::GLRenderBufferObject>& 
     return glCheck(glCheckFramebufferStatus(GL_FRAMEBUFFER)) == GL_FRAMEBUFFER_COMPLETE;
 }
 
+
+////////////////////////////////////////////////////////////
+struct RenderTextureContextFramebuffers
+{
+    unsigned int mainFramebuffer{};
+    unsigned int auxFramebuffer{};
+
+#ifdef SFML_OPENGL_ES
+    unsigned int flipScratchFramebuffer{};
+#endif
+};
+
+
+////////////////////////////////////////////////////////////
+class ContextLocalRenderTextureFramebuffers
+{
+private:
+    ankerl::unordered_dense::map<unsigned int, RenderTextureContextFramebuffers> m_byContext;
+
+    ////////////////////////////////////////////////////////////
+    static void unregisterFramebuffer(const unsigned int glContextId, unsigned int& framebufferId)
+    {
+        if (framebufferId == 0u)
+            return;
+
+        sf::GraphicsContext::unregisterUnsharedFrameBuffer(glContextId, framebufferId);
+        framebufferId = 0u;
+    }
+
+    ////////////////////////////////////////////////////////////
+    static void replaceFramebuffer(const unsigned int glContextId, unsigned int& slot, const unsigned int framebufferId)
+    {
+        if (slot == framebufferId)
+            return;
+
+        unregisterFramebuffer(glContextId, slot);
+        slot = framebufferId;
+
+        if (slot != 0u)
+            sf::GraphicsContext::registerUnsharedFrameBuffer(glContextId, slot);
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] RenderTextureContextFramebuffers& getOrCreate(const unsigned int glContextId)
+    {
+        const auto [it, inserted] = m_byContext.try_emplace(glContextId);
+        return it->second;
+    }
+
+public:
+    ////////////////////////////////////////////////////////////
+    void cleanup()
+    {
+        for (auto& [glContextId, framebuffers] : m_byContext)
+        {
+            unregisterFramebuffer(glContextId, framebuffers.mainFramebuffer);
+            unregisterFramebuffer(glContextId, framebuffers.auxFramebuffer);
+
+#ifdef SFML_OPENGL_ES
+            unregisterFramebuffer(glContextId, framebuffers.flipScratchFramebuffer);
+#endif
+        }
+
+        m_byContext.clear();
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] RenderTextureContextFramebuffers* find(const unsigned int glContextId)
+    {
+        if (auto* it = m_byContext.find(glContextId); it != m_byContext.end())
+            return &it->second;
+
+        return nullptr;
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] const RenderTextureContextFramebuffers* find(const unsigned int glContextId) const
+    {
+        return const_cast<ContextLocalRenderTextureFramebuffers*>(this)->find(glContextId);
+    }
+
+    ////////////////////////////////////////////////////////////
+    void setMainFramebuffer(const unsigned int glContextId, const unsigned int framebufferId)
+    {
+        replaceFramebuffer(glContextId, getOrCreate(glContextId).mainFramebuffer, framebufferId);
+    }
+
+    ////////////////////////////////////////////////////////////
+    void setAuxFramebuffer(const unsigned int glContextId, const unsigned int framebufferId)
+    {
+        replaceFramebuffer(glContextId, getOrCreate(glContextId).auxFramebuffer, framebufferId);
+    }
+
+#ifdef SFML_OPENGL_ES
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] unsigned int ensureFlipScratchFramebuffer(const unsigned int glContextId)
+    {
+        auto& framebuffers = getOrCreate(glContextId);
+
+        if (framebuffers.flipScratchFramebuffer != 0u)
+            return framebuffers.flipScratchFramebuffer;
+
+        GLuint framebufferId = 0u;
+        glCheck(glGenFramebuffers(1, &framebufferId));
+
+        if (!framebufferId)
+            return 0u;
+
+        replaceFramebuffer(glContextId, framebuffers.flipScratchFramebuffer, framebufferId);
+        return framebuffers.flipScratchFramebuffer;
+    }
+#endif
+};
+
 } // namespace
 
 
@@ -100,13 +214,10 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct RenderTexture::Impl
 {
-    using FramebufferIdMap = ankerl::unordered_dense::map<unsigned int, unsigned int>;
+    Texture                 texture;    //!< Target texture to draw on
+    base::Optional<Texture> tmpTexture; //!< Temporary texture used for Y-axis flipping fallback or non multisample FBOs
 
-    Texture texture;    //!< Target texture to draw on
-    Texture tmpTexture; //!< Temporary texture used for Y-axis flipping
-
-    FramebufferIdMap framebuffers;    //!< Per-context OpenGL FBOs
-    FramebufferIdMap auxFramebuffers; //!< Per-context auxiliary OpenGL FBOs (either multisample or temp for Y-flipping)
+    ContextLocalRenderTextureFramebuffers contextLocalFramebuffers; //!< Per-context OpenGL FBOs
 
     base::Optional<GLRenderBufferObject> stencilDepthBuffer; //!< Optional depth/stencil buffer attached to the framebuffer
     base::Optional<GLRenderBufferObject> colorBuffer; //!< Optional multisample color buffer attached to the framebuffer
@@ -117,9 +228,7 @@ struct RenderTexture::Impl
     bool sRgb{};        //!< Must encode drawn pixels into sRGB color space
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Impl(Texture&& theTexture) :
-        texture(SFML_BASE_MOVE(theTexture)),
-        tmpTexture(Texture::create(texture.getSize(), {.sRgb = texture.isSrgb(), .smooth = texture.isSmooth()}).value())
+    [[nodiscard]] explicit Impl(Texture&& theTexture) : texture(SFML_BASE_MOVE(theTexture))
     {
     }
 
@@ -136,25 +245,28 @@ struct RenderTexture::Impl
 
         stencilDepthBuffer.reset();
         colorBuffer.reset();
-
-        // Unregister FBOs with the contexts if they haven't already been destroyed
-        {
-            for (const auto& [glContextId, framebufferId] : framebuffers)
-                GraphicsContext::unregisterUnsharedFrameBuffer(glContextId, framebufferId);
-
-            framebuffers.clear();
-        }
-
-        {
-            for (const auto& [glContextId, auxFramebufferId] : auxFramebuffers)
-                GraphicsContext::unregisterUnsharedFrameBuffer(glContextId, auxFramebufferId);
-
-            auxFramebuffers.clear();
-        }
+        contextLocalFramebuffers.cleanup();
     }
 
 
 private:
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] Texture* ensureTmpTexture()
+    {
+        const auto size = texture.getSize();
+
+        if (!tmpTexture.hasValue() || tmpTexture->getSize() != size || tmpTexture->isSrgb() != texture.isSrgb())
+        {
+            tmpTexture = Texture::create(size, {.sRgb = texture.isSrgb(), .smooth = texture.isSmooth()});
+            return tmpTexture.asPtr();
+        }
+
+        if (tmpTexture->isSmooth() != texture.isSmooth())
+            tmpTexture->setSmooth(texture.isSmooth());
+
+        return tmpTexture.asPtr();
+    }
+
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool createFail(const char* what)
     {
@@ -178,8 +290,7 @@ private:
 
         // Register the FBO in our map and with the current context so it is automatically destroyed
         const unsigned int glContextId = GraphicsContext::getActiveThreadLocalGlContextId();
-        auxFramebuffers.try_emplace(glContextId, auxFramebufferId);
-        GraphicsContext::registerUnsharedFrameBuffer(glContextId, auxFramebufferId);
+        contextLocalFramebuffers.setAuxFramebuffer(glContextId, auxFramebufferId);
 
         return true;
     }
@@ -211,9 +322,16 @@ private:
         if (!tempFramebufferId)
             return createFail("failed to create the temp framebuffer object");
 
+        Texture* const currentTmpTexture = ensureTmpTexture();
+        if (currentTmpTexture == nullptr)
+        {
+            glCheck(glDeleteFramebuffers(1, &tempFramebufferId));
+            return createFail("failed to create the temporary Y-flip texture");
+        }
+
         // Link the texture to the framebuffer
         glCheck(
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tmpTexture.getNativeHandle(), 0));
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, currentTmpTexture->getNativeHandle(), 0));
 
         return completeAuxFramebufferCreation(tempFramebufferId);
     }
@@ -234,12 +352,14 @@ private:
             linkStencilDepthBuffer(stencilDepthBuffer, stencil, depth);
 
         if (!isBoundFramebufferComplete())
+        {
+            glCheck(glDeleteFramebuffers(1, &framebufferId));
             return createFail("failed to link the target texture to the framebuffer");
+        }
 
         // Register the FBO in our map and with the current context so it is automatically destroyed
         const unsigned int glContextId = GraphicsContext::getActiveThreadLocalGlContextId();
-        framebuffers.try_emplace(glContextId, framebufferId);
-        GraphicsContext::registerUnsharedFrameBuffer(glContextId, framebufferId);
+        contextLocalFramebuffers.setMainFramebuffer(glContextId, framebufferId);
 
         return multisample ? createAuxMultisampleFramebuffer() : createAuxTempFramebuffer();
     }
@@ -345,9 +465,10 @@ public:
         // If none is found, there is no FBO corresponding to the
         // currently active context so we will have to create a new FBO
 
-        if (const auto* it = auxFramebuffers.find(glContextId); it != auxFramebuffers.end())
+        if (const auto* framebuffers = contextLocalFramebuffers.find(glContextId);
+            framebuffers != nullptr && framebuffers->auxFramebuffer != 0u)
         {
-            glCheck(glBindFramebuffer(GL_FRAMEBUFFER, it->second));
+            glCheck(glBindFramebuffer(GL_FRAMEBUFFER, framebuffers->auxFramebuffer));
             return true;
         }
 
@@ -369,20 +490,38 @@ public:
 
         const unsigned int glContextId = GraphicsContext::getActiveThreadLocalGlContextId();
 
-        const auto* framebufferIt = framebuffers.find(glContextId);
-        if (framebufferIt == framebuffers.end())
-            return;
-
-        const auto* auxFramebufferIt = auxFramebuffers.find(glContextId);
-        if (auxFramebufferIt == auxFramebuffers.end())
+        const auto* framebuffers = contextLocalFramebuffers.find(glContextId);
+        if (framebuffers == nullptr || framebuffers->mainFramebuffer == 0u || framebuffers->auxFramebuffer == 0u)
             return;
 
         // Since we don't want scissor testing to interfere with blits, so we temporarily disable it if needed
         const priv::ScissorDisableGuard scissorDisableGuard;
 
+#ifdef SFML_OPENGL_ES
         // Blit from the auxiliary (multisample or temp) FBO to the main FBO, flipping Y axis
-        if (!priv::copyFlippedFramebuffer(tmpTexture.getNativeHandle(), size, auxFramebufferIt->second, framebufferIt->second))
+        const unsigned int flipScratchFramebuffer = contextLocalFramebuffers.ensureFlipScratchFramebuffer(glContextId);
+        if (flipScratchFramebuffer == 0u)
+        {
+            priv::err() << "Error creating intermediate FBO for render texture flip";
+            return;
+        }
+
+        Texture* const currentTmpTexture = ensureTmpTexture();
+        if (currentTmpTexture == nullptr)
+        {
+            priv::err() << "Error creating temporary Y-flip texture for render texture";
+            return;
+        }
+
+        if (!priv::copyFlippedFramebufferViaIntermediateFBO(flipScratchFramebuffer,
+                                                            currentTmpTexture->getNativeHandle(),
+                                                            size,
+                                                            framebuffers->auxFramebuffer,
+                                                            framebuffers->mainFramebuffer))
             priv::err() << "Error flipping render texture during FBO copy";
+#else
+        priv::copyFlippedFramebufferViaDirectBlit(size, framebuffers->auxFramebuffer, framebuffers->mainFramebuffer);
+#endif
     }
 };
 
