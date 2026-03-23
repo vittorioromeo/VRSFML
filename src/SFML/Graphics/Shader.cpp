@@ -250,7 +250,7 @@ precision highp float;
     buffer.clear();
 
     buffer.emplaceRange(preamble.data(), preamble.size() - 1);
-    buffer.emplaceRange(src.data(), src.size() - 1);
+    buffer.emplaceRange(src.data(), src.size());
 
     return {buffer.data(), buffer.size()};
 }
