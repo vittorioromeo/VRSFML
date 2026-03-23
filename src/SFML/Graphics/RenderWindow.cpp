@@ -8,15 +8,21 @@
 #include "SFML/Graphics/RenderWindow.hpp"
 
 #include "SFML/Graphics/Image.hpp"
-#include "SFML/Graphics/View.hpp"
+#include "SFML/Graphics/RenderTarget.hpp"
 
-#include "SFML/Window/Event.hpp"
+#include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/WindowBase.hpp"
+#include "SFML/Window/WindowHandle.hpp"
 
 #include "SFML/GLUtils/GLCheck.hpp"
 #include "SFML/GLUtils/Glad.hpp"
 
+#include "SFML/System/Vec2.hpp"
+
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
 
 
 namespace sf

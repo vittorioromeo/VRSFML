@@ -100,7 +100,10 @@ static bool handleResizeImpl(const sf::Event& event, const sf::Vec2f originalSiz
     if (newSize.x <= 0.f || newSize.y <= 0.f)
         return true;
 
+    view.size     = originalSize;
+    view.center   = originalSize / 2.f;
     view.viewport = fnViewport(newSize, originalSize);
+
     return true;
 }
 

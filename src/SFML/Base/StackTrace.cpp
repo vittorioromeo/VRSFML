@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/StackTrace.hpp"
 
-#include "SFML/Config.hpp"
+#include "SFML/Config.hpp" // IWYU pragma: keep
 
 #ifdef SFML_ENABLE_STACK_TRACES
 
@@ -31,6 +31,8 @@ void printStackTrace()
     std::puts("");
 
     #ifdef SFML_SYSTEM_EMSCRIPTEN
+    EM_ASM(console.error("printStackTrace was called"); console.trace(););
+
     char callstack[4096];
     emscripten_get_callstack(EM_LOG_NO_PATHS | EM_LOG_JS_STACK, callstack, sizeof(callstack));
     std::puts(callstack);

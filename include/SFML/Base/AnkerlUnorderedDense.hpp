@@ -86,6 +86,7 @@
 #include "SFML/Base/InitializerList.hpp" // IWYU pragma: keep
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/FwdStdHash.hpp" // IWYU pragma: keep
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
@@ -128,21 +129,6 @@
 #        define ANKERL_UNORDERED_DENSE_UNLIKELY(x) (x) // NOLINT(cppcoreguidelines-macro-usage)
 #    endif
 
-#ifdef _LIBCPP_BEGIN_NAMESPACE_STD
-
-_LIBCPP_BEGIN_NAMESPACE_STD
-
-    template <typename> struct hash;
-
-_LIBCPP_END_NAMESPACE_STD
-
-#else
-
-namespace std {
-    template <typename> struct hash;
-} // namespace std
-
-#endif
 
 
 namespace ankerl::unordered_dense::inline ANKERL_UNORDERED_DENSE_NAMESPACE {

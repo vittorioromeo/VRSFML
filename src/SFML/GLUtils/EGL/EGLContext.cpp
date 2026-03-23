@@ -1,4 +1,3 @@
-#include <EGL/egl.h>
 // LICENSE AND COPYRIGHT (C) INFORMATION
 // https://github.com/vittorioromeo/VRSFML/blob/master/license.md
 
@@ -6,18 +5,21 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/GLUtils/EGL/EGLContext.hpp"
+
 #include "SFML/Window/SDLWindowImpl.hpp"
 #include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
 #include "SFML/Window/WindowContext.hpp"
+#include "SFML/Window/WindowHandle.hpp"
 
 #include "SFML/GLUtils/EGL/EGLCheck.hpp"
-#include "SFML/GLUtils/EGL/EGLContext.hpp"
 #include "SFML/GLUtils/EGL/EGLGlad.hpp"
 
 #include "SFML/System/Err.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
 
 
@@ -183,6 +185,8 @@ EGLConfig getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const sf:
 
     return bestConfig;
 #else
+    // TODO P1: these come from `sharedContextSettings`, not customizable...
+
     // Set our video contextSettings constraint
     const EGLint attributes[] =
         {EGL_BUFFER_SIZE,
