@@ -59,6 +59,14 @@ struct ContextSettings
     static inline constexpr auto defaultMinorVersion = 1u;
 #endif
 
+#if defined(SFML_SYSTEM_EMSCRIPTEN)
+    static inline constexpr auto defaultDepthBits   = 8u;
+    static inline constexpr auto defaultStencilBits = 8u;
+#else
+    static inline constexpr auto defaultDepthBits   = 0u;
+    static inline constexpr auto defaultStencilBits = 0u;
+#endif
+
     ////////////////////////////////////////////////////////////
     /// \brief Check if the context is a core context
     ///
@@ -74,8 +82,8 @@ struct ContextSettings
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    unsigned int depthBits{0u};                         //!< Bits of the depth buffer
-    unsigned int stencilBits{0u};                       //!< Bits of the stencil buffer
+    unsigned int depthBits{defaultDepthBits};           //!< Bits of the depth buffer
+    unsigned int stencilBits{defaultStencilBits};       //!< Bits of the stencil buffer
     unsigned int majorVersion{defaultMajorVersion};     //!< Major number of the context version to create
     unsigned int minorVersion{defaultMinorVersion};     //!< Minor number of the context version to create
     Attribute    attributeFlags{defaultAttributeFlags}; //!< Flags for context creation (core, debug, etc.)

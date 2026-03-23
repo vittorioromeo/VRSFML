@@ -8,6 +8,7 @@
 #include "SFML/Graphics/VertexBuffer.hpp"
 
 #include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/Vertex.hpp"
@@ -17,6 +18,7 @@
 
 #include "SFML/System/Err.hpp"
 
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Swap.hpp"
 

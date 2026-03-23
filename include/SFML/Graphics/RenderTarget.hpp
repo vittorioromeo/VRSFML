@@ -215,7 +215,7 @@ public:
     /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Texture& texture, RenderStates states = {}); // TODO P0: revisit this API, shouldn't mutate states
+    void draw(const Texture& texture, RenderStates states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a texture to the render target
@@ -225,9 +225,7 @@ public:
     /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Texture&             texture,
-              const DrawTextureSettings& params,
-              RenderStates               states = {}); // TODO P0: revisit this API, shouldn't mutate states
+    void draw(const Texture& texture, const DrawTextureSettings& params, RenderStates states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a sprite object to the render target
@@ -249,7 +247,7 @@ public:
     /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Shape& shape, RenderStates states = {}); // TODO P0: revisit this API, shouldn't mutate states
+    void draw(const Shape& shape, RenderStates states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a text object to the render target
@@ -258,7 +256,7 @@ public:
     /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Text& text, RenderStates states = {}); // TODO P0: revisit this API, shouldn't mutate states
+    void draw(const Text& text, RenderStates states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -270,8 +268,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const PersistentGPUDrawableBatch& drawableBatch,
-              RenderStates                      states = {}); // TODO P0: revisit this API, shouldn't mutate states
+    void draw(const PersistentGPUDrawableBatch& drawableBatch, RenderStates states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by a vertex buffer
@@ -312,9 +309,7 @@ public:
     ///         (WARNING: the span is only valid until the next draw call)
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan draw(const Font&     font,
-                    const TextData& textData,
-                    RenderStates    states = {}); // TODO P0: revisit this API, shouldn't mutate states
+    VertexSpan draw(const Font& font, const TextData& textData, RenderStates states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by an array of vertices
@@ -599,8 +594,7 @@ private:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void immediateDrawDrawableBatch(const CPUDrawableBatch& drawableBatch,
-                                    RenderStates states); // TODO P0: revisit this API, shouldn't mutate states
+    void immediateDrawDrawableBatch(const CPUDrawableBatch& drawableBatch, RenderStates states);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs

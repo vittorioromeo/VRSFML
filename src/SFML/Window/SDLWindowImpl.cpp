@@ -14,6 +14,7 @@
 #include "SFML/Window/JoystickCapabilities.hpp"
 #include "SFML/Window/JoystickManager.hpp"
 #include "SFML/Window/JoystickState.hpp"
+#include "SFML/Window/Mouse.hpp"
 #include "SFML/Window/SDLLayer.hpp"
 #include "SFML/Window/Sensor.hpp"
 #include "SFML/Window/SensorManager.hpp"
@@ -30,20 +31,28 @@
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Utf.hpp"
 #include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec3.hpp"
 
 #include "SFML/Base/AnkerlUnorderedDense.hpp"
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/EnumArray.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/ToString.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
+#include <SDL3/SDL_error.h>
 #include <SDL3/SDL_events.h>
+#include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_keycode.h>
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_properties.h>
 #include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_touch.h>
 #include <SDL3/SDL_video.h>
 
 #include <queue>
@@ -286,10 +295,10 @@ void SDLWindowImpl::processSDLEvent(const SDL_Event& e)
 
         case SDL_EVENT_TEXT_INPUT:
         {
-            char32_t     unicode   = 0;
-            const char*  keyBuffer = e.text.text;
-            const size_t length    = SFML_BASE_STRLEN(keyBuffer);
-            const auto*  iter      = keyBuffer;
+            char32_t    unicode   = 0;
+            const char* keyBuffer = e.text.text;
+            const auto  length    = SFML_BASE_STRLEN(keyBuffer);
+            const auto* iter      = keyBuffer;
 
             while (iter < keyBuffer + length)
             {
@@ -570,6 +579,10 @@ base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(WindowSettings windowSettin
                                             static_cast<void*>(sdlWindowPtr),
                                             /* isExternal */ false};
 
+#ifdef SFML_SYSTEM_EMSCRIPTEN
+    // This seems necessary on Emscripten to set the initial canvas size
+    SDL_SetWindowSize(sdlWindowPtr, static_cast<int>(windowSettings.size.x), static_cast<int>(windowSettings.size.y));
+#endif
 
     if (windowSettings.fullscreen)
         SDLWindowImplImpl::fullscreenWindow = windowImplPtr;

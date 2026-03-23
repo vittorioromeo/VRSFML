@@ -129,6 +129,8 @@ int main()
 
         const sf::Vec2f logicalSize = {400.f * sf::base::max(1u, connectedJoystickCount), 775.f};
 
+        window.setSize(logicalSize.toVec2u());
+
         const sf::View windowView{
             .center   = logicalSize / 2.f,
             .size     = logicalSize,

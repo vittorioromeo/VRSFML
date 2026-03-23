@@ -7,14 +7,20 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/GLUtils/CopyFramebuffer.hpp"
 
-#include "SFML/Config.hpp"
+#include "SFML/Config.hpp" // IWYU pragma: keep
 
 #include "SFML/GLUtils/BlitFramebuffer.hpp"
 #include "SFML/GLUtils/FramebufferSaver.hpp"
 #include "SFML/GLUtils/GLCheck.hpp"
 #include "SFML/GLUtils/Glad.hpp"
 
+#include "SFML/System/Vec2.hpp"
+
+#include "SFML/Base/Assert.hpp"
+
 #ifdef SFML_OPENGL_ES
+    #include "SFML/GLUtils/GLUtils.hpp"
+
     #include "SFML/System/Err.hpp"
 #endif
 

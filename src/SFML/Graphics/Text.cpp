@@ -346,7 +346,7 @@ Rect2f Text::getGlobalBounds() const
 
 
 ////////////////////////////////////////////////////////////
-void Text::draw(RenderTarget& target, RenderStates states) const // TODO P0: RenderStatesWithoutTexture? problematic API
+void Text::draw(RenderTarget& target, RenderStates states) const
 {
     states.transform *= getTransform();
     states.texture = &m_font->getTexture();

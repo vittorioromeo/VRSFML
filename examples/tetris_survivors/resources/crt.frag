@@ -14,33 +14,34 @@ layout(location = 0) out vec4 sf_fragColor;
 // SHADER CONFIGURATION
 //================================================================================
 
-uniform float u_curvature = -0.02;
+uniform float u_curvature;
 
-uniform float u_vignetteStrength    = 0.25;
-uniform float u_vignetteInnerRadius = 0.5;
-uniform float u_vignetteOuterRadius = 1.0;
+uniform float u_vignetteStrength;
+uniform float u_vignetteInnerRadius;
+uniform float u_vignetteOuterRadius;
 
-uniform float u_scanlineStrength             = 0.7;
-uniform float u_scanlineBrightnessModulation = 1.2;
-uniform float u_scanlineScrollSpeed          = 55.0;
-uniform float u_scanlineThickness            = 4.0;
-uniform float u_scanlineHeight               = 1.0;
+uniform float u_scanlineStrength;
+uniform float u_scanlineBrightnessModulation;
+uniform float u_scanlineScrollSpeed;
+uniform float u_scanlineThickness;
+uniform float u_scanlineHeight;
 
-uniform float u_noiseStrength = 45;
+uniform float u_noiseStrength;
 
 // --- Phosphor Mask (The Grille) ---
 // #define MASK_APERTURE_GRILLE
 #define MASK_SLOT
-uniform float u_maskStrength = 0.25;
-uniform float u_maskScale    = 0.25;
 
-uniform float u_bloomStrength = 0.5;
-uniform float u_inputGamma    = 2.3;
-uniform float u_outputGamma   = 2.6;
-uniform float u_saturation    = 1.15;
+uniform float u_maskStrength;
+uniform float u_maskScale;
+
+uniform float u_bloomStrength;
+uniform float u_inputGamma;
+uniform float u_outputGamma;
+uniform float u_saturation;
 
 //================================================================================
-// HELPER FUNCTIONS (Unchanged)
+// HELPER FUNCTIONS
 //================================================================================
 
 float rand(vec2 co)

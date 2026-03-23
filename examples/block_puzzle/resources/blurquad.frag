@@ -19,7 +19,7 @@ void main()
     blurredColor += texture(sf_u_texture, sf_v_texCoord) * centerWeight;
     totalWeight += centerWeight;
 
-    vec2 texelSize     = vec2(1.0) / textureSize(sf_u_texture, 0); // TODO P1: move to uniform
+    vec2 texelSize     = vec2(1.0) / vec2(textureSize(sf_u_texture, 0)); // TODO P1: move to uniform
     vec2 stepDirection = u_blurDirection * texelSize;
 
     for (int i = 1; i <= int(ceil(u_blurRadiusPixels)); ++i)

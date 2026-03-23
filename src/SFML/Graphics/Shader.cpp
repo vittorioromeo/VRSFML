@@ -7,9 +7,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Shader.hpp"
 
-#include "SFML/Config.hpp"
-
 #include "SFML/Graphics/DefaultShader.hpp"
+#include "SFML/Graphics/Glsl.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Texture.hpp"
 
@@ -28,9 +27,11 @@
 
 #include "SFML/Base/AnkerlUnorderedDense.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/Exchange.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Vector.hpp"

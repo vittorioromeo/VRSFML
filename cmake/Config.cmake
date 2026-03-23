@@ -111,6 +111,7 @@ elseif(${EMSCRIPTEN})
     set(SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_DEBUG
         -g3                                 # Enable debug mode
         -gsource-map                        # Generate a source map using LLVM debug information
+        --profiling-funcs                   # Preserves names in the WASM binary
 
         -sASSERTIONS=2                      # Add runtime assertions
         -sCHECK_NULL_WRITES=1               # Help detect `NULL` pointer usage
@@ -168,6 +169,8 @@ elseif(${EMSCRIPTEN})
         -sTOTAL_MEMORY=64mb                 # Set the total memory size (needed for `bubble_idle` example)
         -sUSE_PTHREADS=1                    # Enable threading support
         -sWASM=1                            # Compile code to WebAssembly
+
+        -sEXPORTED_RUNTIME_METHODS=HEAPU32,HEAP8,getValue,setValue # Expose low-level memory access functions to JavaScript
 
         --emrun                             # Add native support for `emrun` (I/O capture)
 
