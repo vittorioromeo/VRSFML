@@ -34,6 +34,7 @@
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
+#include "SFML/Base/ScopeGuard.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Swap.hpp"
 #include "SFML/Base/Vector.hpp"
@@ -537,6 +538,41 @@ void Texture::update(const Image& image, Vec2u dest)
 ////////////////////////////////////////////////////////////
 bool Texture::update(const Window& window, Vec2u dest)
 {
+    [[maybe_unused]] const auto slowPathCopyFlippedFramebuffer = [&](const unsigned int destFrameBuffer)
+    {
+        // TODO P1: avoid creating this texture and FBO every time
+        auto tmpTexture = Texture::create(window.getSize(), {.sRgb = m_sRgb, .smooth = m_isSmooth});
+
+        const GLuint intermediateFBO = priv::generateAndBindFramebuffer();
+        if (!intermediateFBO)
+        {
+            priv::err() << "Failure to create intermediate FBO in `Texture::update`";
+            return false;
+        }
+
+        SFML_BASE_SCOPE_GUARD({ glCheck(glDeleteFramebuffers(1, &intermediateFBO)); });
+
+        if (!tmpTexture.hasValue())
+        {
+            priv::err() << "Failure to create intermediate texture in `Texture::update`";
+            return false;
+        }
+
+        if (!priv::copyFlippedFramebufferViaIntermediateFBO(intermediateFBO,
+                                                            tmpTexture->getNativeHandle(),
+                                                            window.getSize(),
+                                                            0u /* default FBO */,
+                                                            destFrameBuffer,
+                                                            {0u, 0u},
+                                                            dest))
+        {
+            priv::err() << "Error flipping render texture during FBO copy";
+            return false;
+        }
+
+        return true;
+    };
+
     SFML_BASE_ASSERT(dest.x + window.getSize().x <= m_size.x && "Destination x coordinate is outside of texture");
     SFML_BASE_ASSERT(dest.y + window.getSize().y <= m_size.y && "Destination y coordinate is outside of texture");
 
@@ -583,24 +619,15 @@ bool Texture::update(const Window& window, Vec2u dest)
             // Since we don't want scissor testing to interfere with our copying, we temporarily disable it for the blit if it is enabled
             const priv::ScissorDisableGuard scissorDisableGuard;
 
-            // TODO P1: avoid creating this texture multiple times, also avoid creating in desktop GL
-            auto tmpTexture = Texture::create(window.getSize(), {.sRgb = m_sRgb, .smooth = m_isSmooth});
-
-            if (!tmpTexture.hasValue())
+#ifdef SFML_OPENGL_ES
+            if (!slowPathCopyFlippedFramebuffer(destFrameBuffer))
             {
-                priv::err() << "Failure to create intermediate texture in `copyFlippedFramebuffer`";
+                priv::err() << "Cannot copy texture, failed to copy flipped framebuffer via intermediate FBO";
                 success = false;
             }
-            else if (!priv::copyFlippedFramebuffer(tmpTexture->getNativeHandle(),
-                                                   window.getSize(),
-                                                   0u /* default FBO */,
-                                                   destFrameBuffer,
-                                                   {0u, 0u},
-                                                   dest))
-            {
-                priv::err() << "Error flipping render texture during FBO copy";
-                success = false;
-            }
+#else
+            priv::copyFlippedFramebufferViaDirectBlit(window.getSize(), 0u /* default FBO */, destFrameBuffer, dest);
+#endif
         }
         else
         {
