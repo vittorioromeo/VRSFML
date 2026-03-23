@@ -52,7 +52,7 @@ bool copyFlippedFramebufferViaIntermediateFBO(
     const Vec2u        dstPos)
 {
 #ifndef SFML_OPENGL_ES
-    priv::err() << "Should only be called on OpenGL ES";
+    err() << "Should only be called on OpenGL ES";
     base::abort();
 #endif
 
@@ -66,12 +66,12 @@ bool copyFlippedFramebufferViaIntermediateFBO(
 
     if (glCheck(glCheckFramebufferStatus(GL_FRAMEBUFFER)) != GL_FRAMEBUFFER_COMPLETE)
     {
-        priv::err() << "Failure to complete intermediate FBO in `copyFlippedFramebuffer`";
+        err() << "Failure to complete intermediate FBO in `copyFlippedFramebuffer`";
         return false;
     }
 
-    priv::copyFramebuffer(/* invertYAxis */ false, size, srcFBO, intermediateFBO, srcPos, dstPos);
-    priv::copyFramebuffer(/* invertYAxis */ true, size, intermediateFBO, dstFBO, srcPos, dstPos);
+    copyFramebuffer(/* invertYAxis */ false, size, srcFBO, intermediateFBO, srcPos, dstPos);
+    copyFramebuffer(/* invertYAxis */ true, size, intermediateFBO, dstFBO, srcPos, dstPos);
     return true;
 }
 
@@ -84,12 +84,12 @@ void copyFlippedFramebufferViaDirectBlit(const Vec2u        size,
                                          const Vec2u        dstPos)
 {
 #ifdef SFML_OPENGL_ES
-    priv::err() << "Should only be called on desktop OpenGL";
+    err() << "Should only be called on desktop OpenGL";
     base::abort();
 #endif
 
     const FramebufferSaver framebufferSaver;
-    priv::copyFramebuffer(/* invertYAxis */ true, size, srcFBO, dstFBO, srcPos, dstPos);
+    copyFramebuffer(/* invertYAxis */ true, size, srcFBO, dstFBO, srcPos, dstPos);
 }
 
 } // namespace sf::priv
