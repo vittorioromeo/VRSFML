@@ -204,9 +204,9 @@ EGLConfig getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const sf:
          EGL_SAMPLE_BUFFERS,
          0,
          EGL_SURFACE_TYPE,
+         EGL_WINDOW_BIT,
          EGL_RENDERABLE_TYPE,
-         EGL_OPENGL_ES_BIT,
-         EGL_NONE,
+         EGL_OPENGL_ES3_BIT,
          EGL_NONE};
 
     EGLint    configCount;
