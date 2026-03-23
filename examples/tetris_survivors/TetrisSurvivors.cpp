@@ -1,36 +1,3 @@
-// TODO P0: broken scaling on Wayland?
-
-#include "ShapeBlockSequence.hpp"
-
-#include "ExampleUtils/Easing.hpp"
-#include "ExampleUtils/HueColor.hpp"
-#include "ExampleUtils/LoadedSound.hpp"
-#include "ExampleUtils/MathUtils.hpp"
-#include "ExampleUtils/RNGFast.hpp"
-#include "ExampleUtils/SoundManager.hpp"
-#include "ExampleUtils/Timer.hpp"
-
-#include "SFML/Graphics/BlendMode.hpp"
-#include "SFML/Graphics/DrawTextureSettings.hpp"
-
-#include "SFML/Window/Keyboard.hpp"
-
-#include "SFML/Base/Array.hpp"
-#include "SFML/Base/Builtin/Unreachable.hpp"
-#include "SFML/Base/Clamp.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Math/Floor.hpp"
-#include "SFML/Base/Math/Sin.hpp"
-#include "SFML/Base/MinMax.hpp"
-#include "SFML/Base/SinCosLookup.hpp"
-#include "SFML/Base/Variant.hpp"
-
-
-#define SFEX_PROFILER_ENABLED
-#include "ExampleUtils/Profiler.hpp"
-#include "ExampleUtils/ProfilerImGui.hpp"
-
-//
 #include "AnimationCommands.hpp"
 #include "AnimationTimeline.hpp"
 #include "BitmapFont.hpp"
@@ -48,6 +15,7 @@
 #include "LightningBolt.hpp"
 #include "Perk.hpp"
 #include "RandomBag.hpp"
+#include "ShapeBlockSequence.hpp"
 #include "ShapeDimension.hpp"
 #include "StringUtils.hpp"
 #include "Tetramino.hpp"
@@ -56,13 +24,26 @@
 #include "World.hpp"
 
 #include "ExampleUtils/ControlFlow.hpp"
+#include "ExampleUtils/Easing.hpp"
+#include "ExampleUtils/HueColor.hpp"
+#include "ExampleUtils/LoadedSound.hpp"
+#include "ExampleUtils/MathUtils.hpp"
 #include "ExampleUtils/MiniFmt.hpp"
+#include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/Scaling.hpp"
+#include "ExampleUtils/SoundManager.hpp"
+#include "ExampleUtils/Timer.hpp"
+
+#define SFEX_PROFILER_ENABLED
+#include "ExampleUtils/Profiler.hpp"
+#include "ExampleUtils/ProfilerImGui.hpp"
 
 #include "SFML/ImGui/ImGuiContext.hpp"
 
+#include "SFML/Graphics/BlendMode.hpp"
 #include "SFML/Graphics/CircleShapeData.hpp"
 #include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/DrawTextureSettings.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
@@ -92,6 +73,7 @@
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
+#include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
 
@@ -106,18 +88,27 @@
 #include "SFML/Base/Algorithm/Find.hpp"
 #include "SFML/Base/Algorithm/Sort.hpp"
 #include "SFML/Base/AnkerlUnorderedDense.hpp"
+#include "SFML/Base/Array.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Builtin/Unreachable.hpp"
+#include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/InPlaceVector.hpp"
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Math/Floor.hpp"
 #include "SFML/Base/Math/Fmod.hpp"
+#include "SFML/Base/Math/Sin.hpp"
+#include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/OverloadSet.hpp"
 #include "SFML/Base/Remainder.hpp"
+#include "SFML/Base/SinCosLookup.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/ToString.hpp"
 #include "SFML/Base/Trait/IsConst.hpp"
 #include "SFML/Base/UniquePtr.hpp"
+#include "SFML/Base/Variant.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
@@ -627,8 +618,8 @@ private:
                                     .value();
 
     ////////////////////////////////////////////////////////////
-    sf::View m_worldView  = sf::View::fromSize(resolution);
-    sf::View m_windowView = sf::View::fromSize(resolution);
+    sf::View m_worldView  = sf::View::fromScreenSize(resolution);
+    sf::View m_windowView = sf::View::fromScreenSize(resolution);
 
     ////////////////////////////////////////////////////////////
     sf::Shader m_shader{[]
@@ -4615,7 +4606,7 @@ private:
         {
             SFEX_PROFILE_SCOPE("postprocess");
 
-            const auto postProcessInternalView = sf::View::fromSize(m_rtGame.getSize().toVec2f());
+            const auto postProcessInternalView = sf::View::fromScreenSize(m_rtGame.getSize().toVec2f());
 
             m_rtPostProcess.clear();
             m_rtPostProcess.draw(m_rtGame.getTexture(),

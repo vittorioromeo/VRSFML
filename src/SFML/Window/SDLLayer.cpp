@@ -8,6 +8,7 @@
 #include "SFML/Window/SDLLayer.hpp"
 
 #include "SFML/Window/Cursor.hpp"
+#include "SFML/Window/DisplayOrientation.hpp"
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/Mouse.hpp"
 #include "SFML/Window/VideoMode.hpp"
@@ -15,26 +16,36 @@
 #include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/UnicodeStringUtfUtils.hpp"
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Abort.hpp"
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/Memcmp.hpp"
 #include "SFML/Base/Builtin/Strcmp.hpp"
 #include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/ScopeGuard.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 
 #include <SDL3/SDL_clipboard.h>
+#include <SDL3/SDL_error.h>
+#include <SDL3/SDL_guid.h>
 #include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_joystick.h>
+#include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_keycode.h>
+#include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_oldnames.h>
+#include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL_properties.h>
+#include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_scancode.h>
 #include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_touch.h>
 #include <SDL3/SDL_video.h>
 
