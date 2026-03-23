@@ -6,10 +6,13 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/String.hpp"
 
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/Builtin/Memmove.hpp"
 #include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/Priv/VectorUtils.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/StringView.hpp"
 
 
 namespace
@@ -404,6 +407,16 @@ void String::insert(const SizeT pos, const char* const cStr)
 
     const SizeT oldSize = size();
     const SizeT newSize = oldSize + insertCount;
+
+    const char* const myData = data();
+    const bool srcInsideThis = (cStr >= myData) && (cStr < myData + oldSize);
+
+    if (srcInsideThis)
+    {
+        const String insertedCopy{cStr, insertCount};
+        insert(pos, insertedCopy.cStr());
+        return;
+    }
 
     // 1. Ensure we have enough capacity. This might reallocate and change `data()`.
     reserve(newSize);
