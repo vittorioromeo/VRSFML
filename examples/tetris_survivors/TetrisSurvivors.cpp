@@ -4574,7 +4574,6 @@ private:
             m_rtGame.display();
         }
 
-
         const auto screenShake = m_rngFast.getVec2f({-m_screenShakeAmount, -m_screenShakeAmount},
                                                     {m_screenShakeAmount, m_screenShakeAmount});
 
@@ -4599,7 +4598,6 @@ private:
         if (m_rtPostProcess.getSize() != rtGameSize.toVec2u())
             m_rtPostProcess = sf::RenderTexture::create(rtGameSize.toVec2u()).value();
 
-
         {
             SFEX_PROFILE_SCOPE("postprocess");
 
@@ -4615,7 +4613,6 @@ private:
         const float     quakeYOffset     = m_quakeSinEffectHardDrop.getValue() + m_quakeSinEffectLineClear.getValue();
         const sf::Vec2f finalPosition    = floorVec2(centeredPosition + screenShake.addY(quakeYOffset));
 
-
         {
             SFEX_PROFILE_SCOPE("final draw");
 
@@ -4623,7 +4620,12 @@ private:
             m_window.draw(m_rtPostProcess.getTexture(),
                           {.position = finalPosition},
                           {.view = m_windowView, .shader = &m_shaderPostProcess});
-            m_imGuiContext.render(m_window);
+        }
+
+        {
+            SFEX_PROFILE_SCOPE("imgui");
+
+            m_imGuiContext.render(m_window); // TODO P0: causes gl error in emscripten
         }
 
         {
