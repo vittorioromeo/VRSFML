@@ -10,6 +10,8 @@
 #include "SFML/GLUtils/GLCheck.hpp"
 #include "SFML/GLUtils/Glad.hpp"
 
+#include "SFML/System/Vec2.hpp"
+
 
 namespace sf::priv
 {
@@ -57,6 +59,28 @@ ScissorDisableGuard::~ScissorDisableGuard()
 {
     if (m_savedState)
         glCheck(glEnable(GL_SCISSOR_TEST));
+}
+
+
+/////////////////////////////////////////////////////////////
+void bindAndInitializeTexture(const unsigned int textureId, const bool sRgb, const Vec2u size, const unsigned int textureWrapParam)
+{
+    glCheck(glBindTexture(GL_TEXTURE_2D, textureId));
+
+    glCheck(glTexImage2D(GL_TEXTURE_2D,
+                         0,
+                         (sRgb ? GL_SRGB8_ALPHA8 : GL_RGBA),
+                         static_cast<GLsizei>(size.x),
+                         static_cast<GLsizei>(size.y),
+                         0,
+                         GL_RGBA,
+                         GL_UNSIGNED_BYTE,
+                         nullptr));
+
+    glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, textureWrapParam));
+    glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, textureWrapParam));
+    glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
 }
 
 } // namespace sf::priv
