@@ -337,16 +337,6 @@ endmacro()
 #                           DEPENDS SFML::Network)
 macro(sfml_add_example target)
 
-    # list and copy resources for emscripten support
-    if(SFML_OS_EMSCRIPTEN)
-        if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/resources)
-            file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/../..)
-            file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-        endif()
-
-        file(GLOB GLOBBED_RESOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} resources/*)
-    endif()
-
     # parse the arguments
     cmake_parse_arguments(THIS "GUI_APP" "" "SOURCES;BUNDLE_RESOURCES;DEPENDS" ${ARGN})
 
@@ -414,7 +404,7 @@ macro(sfml_add_example target)
     # set the properties required for debugging
     set_target_properties(${target} PROPERTIES
         VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        
+
         XCODE_SCHEME_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         XCODE_GENERATE_SCHEME ON)
 
@@ -431,10 +421,26 @@ macro(sfml_add_example target)
         target_link_options(${target} PRIVATE ${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS})
         set_target_properties(${target} PROPERTIES SUFFIX ".html")
 
-        foreach(RESOURCE ${GLOBBED_RESOURCES})
-            target_link_options(${target} PRIVATE "SHELL:--embed-file ${RESOURCE}")
-        endforeach()
+        if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/resources)
+            # 1. Define a unique path for this target's resources in the build directory
+            set(TARGET_RESOURCE_STAGING_DIR "${CMAKE_CURRENT_BINARY_DIR}/staging_${target}")
+
+            # 2. Copy resources to this isolated staging area
+            # This prevents target A and target B from overwriting each other in the build folder
+            file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources DESTINATION ${TARGET_RESOURCE_STAGING_DIR})
+
+            # 3. Embed the isolated folder into the WASM virtual filesystem
+            # The syntax "physical_path@virtual_path" maps our unique staging folder
+            # to the "resources" folder the C++ code expects at runtime.
+            target_link_options(${target} PRIVATE
+                "SHELL:--embed-file ${TARGET_RESOURCE_STAGING_DIR}/resources@resources"
+            )
+
+            # Ensure the target rebuilds if resources change
+            set_property(TARGET ${target} APPEND PROPERTY SUBDIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/resources)
+        endif()
     endif()
+
     if(SFML_OS_IOS)
         sfml_set_common_ios_properties(${target})
     endif()

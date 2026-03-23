@@ -170,7 +170,8 @@ elseif(${EMSCRIPTEN})
         -sUSE_PTHREADS=1                    # Enable threading support
         -sWASM=1                            # Compile code to WebAssembly
 
-        -sEXPORTED_RUNTIME_METHODS=HEAPU32,HEAP8,getValue,setValue # Expose low-level memory access functions to JavaScript
+        # Expose low-level memory access functions to JavaScript
+        -sEXPORTED_RUNTIME_METHODS=HEAPU32,HEAP8,getValue,setValue,requestFullscreen
 
         --emrun                             # Add native support for `emrun` (I/O capture)
 
