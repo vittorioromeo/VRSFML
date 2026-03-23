@@ -12,15 +12,21 @@
 #include "SFML/System/PathUtils.hpp"
 #include "SFML/System/UnicodeString.hpp"
 
+#include "SFML/Base/Assert.hpp"
+#include "SFML/Base/PtrDiffT.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StackTrace.hpp"
 #include "SFML/Base/String.hpp" // IWYU pragma: keep
 #include "SFML/Base/StringStreamOp.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/StringViewStreamOp.hpp"
+#include "SFML/Base/Trait/IsEnum.hpp"
 #include "SFML/Base/Trait/IsSame.hpp"
+#include "SFML/Base/Trait/UnderlyingType.hpp"
 
 #include <filesystem>
 #include <fstream>
+#include <iomanip>
 #include <ios>
 #include <iostream>
 #include <istream>
@@ -382,7 +388,7 @@ bool readFromFile(base::StringView filename, std::string& target)
     }
 
     // Get file size and resize the target string
-    std::streamsize size = file.tellg();
+    const auto size = file.tellg();
     file.seekg(0, std::ios::beg);
 
     // Handle empty files gracefully without doing a 0-byte read
@@ -392,10 +398,10 @@ bool readFromFile(base::StringView filename, std::string& target)
         return true;
     }
 
-    target.resize(static_cast<std::size_t>(size));
+    target.resize(static_cast<base::SizeT>(size));
 
     // Read the entire file directly into the string's buffer
-    if (!file.read(target.data(), size))
+    if (!file.read(target.data(), static_cast<std::streamsize>(size)))
     {
         priv::err() << "Failed to read the full contents of file '" << filename << "'\n";
         return false;

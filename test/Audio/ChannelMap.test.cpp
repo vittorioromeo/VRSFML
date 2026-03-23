@@ -1,9 +1,16 @@
 #include "SFML/Audio/ChannelMap.hpp"
 
+#include "SFML/Audio/SoundChannel.hpp"
+
+#include "SFML/Base/Trait/HasVirtualDestructor.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
+
 #include <Doctest.hpp>
 
 #include <AudioUtil.hpp>
-#include <CommonTraits.hpp>
 
 
 TEST_CASE("[Audio] sf::ChannelMap" * doctest::skip(skipAudioDeviceTests))

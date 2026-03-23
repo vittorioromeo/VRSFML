@@ -1,13 +1,19 @@
 #include "SFML/Audio/OutputSoundFile.hpp"
 
 #include "SFML/Audio/ChannelMap.hpp"
+#include "SFML/Audio/SoundChannel.hpp"
 
 #include "SFML/System/Path.hpp"
+
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsDefaultConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <Doctest.hpp>
 
 #include <AudioUtil.hpp>
-#include <CommonTraits.hpp>
 
 #include <string>
 
