@@ -38,7 +38,8 @@ void copyFramebuffer(bool         invertYAxis,
 /// Copies source framebuffer contents to destination while vertically flipping
 /// the image. Uses an intermediate framebuffer for OpenGL ES compatibility.
 ///
-/// \param tmpTextureNativeHandle Temporary texture handle for intermediate operations (OpenGL ES only)
+/// \param intermediateFBO        Reusable intermediate framebuffer ID
+/// \param tmpTextureNativeHandle Temporary texture handle for intermediate operations
 /// \param size                   Dimensions of the region to copy
 /// \param srcFBO                 Source framebuffer ID
 /// \param dstFBO                 Destination framebuffer ID
@@ -48,8 +49,29 @@ void copyFramebuffer(bool         invertYAxis,
 /// \return True if copy succeeded, false otherwise
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool copyFlippedFramebuffer(
+[[nodiscard]] bool copyFlippedFramebufferViaIntermediateFBO(
+    unsigned int intermediateFBO,
     unsigned int tmpTextureNativeHandle,
+    Vec2u        size,
+    unsigned int srcFBO,
+    unsigned int dstFBO,
+    Vec2u        srcPos = {0u, 0u},
+    Vec2u        dstPos = {0u, 0u});
+
+////////////////////////////////////////////////////////////
+/// \brief Copy framebuffer contents with vertical flipping
+///
+/// Copies source framebuffer contents to destination while vertically flipping
+/// the image.
+///
+/// \param size   Dimensions of the region to copy
+/// \param srcFBO Source framebuffer ID
+/// \param dstFBO Destination framebuffer ID
+/// \param srcPos Source region starting position (default: 0,0)
+/// \param dstPos Destination region starting position (default: 0,0)
+///
+////////////////////////////////////////////////////////////
+[[nodiscard]] void copyFlippedFramebufferViaDirectBlit(
     Vec2u        size,
     unsigned int srcFBO,
     unsigned int dstFBO,

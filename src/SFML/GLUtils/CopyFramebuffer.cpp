@@ -14,15 +14,11 @@
 #include "SFML/GLUtils/GLCheck.hpp"
 #include "SFML/GLUtils/Glad.hpp"
 
+#include "SFML/System/Err.hpp"
 #include "SFML/System/Vec2.hpp"
 
+#include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Assert.hpp"
-
-#ifdef SFML_OPENGL_ES
-    #include "SFML/GLUtils/GLUtils.hpp"
-
-    #include "SFML/System/Err.hpp"
-#endif
 
 
 namespace sf::priv
@@ -46,29 +42,26 @@ void copyFramebuffer(const bool         invertYAxis,
 
 
 ////////////////////////////////////////////////////////////
-bool copyFlippedFramebuffer([[maybe_unused]] const unsigned int tmpTextureNativeHandle,
-                            const Vec2u                         size,
-                            const unsigned int                  srcFBO,
-                            const unsigned int                  dstFBO,
-                            const Vec2u                         srcPos,
-                            const Vec2u                         dstPos)
+bool copyFlippedFramebufferViaIntermediateFBO(
+    const unsigned int intermediateFBO,
+    const unsigned int tmpTextureNativeHandle,
+    const Vec2u        size,
+    const unsigned int srcFBO,
+    const unsigned int dstFBO,
+    const Vec2u        srcPos,
+    const Vec2u        dstPos)
 {
+#ifndef SFML_OPENGL_ES
+    priv::err() << "Should only be called on OpenGL ES";
+    base::abort();
+#endif
+
+    SFML_BASE_ASSERT(intermediateFBO != 0u);
+    SFML_BASE_ASSERT(tmpTextureNativeHandle != 0u);
+
     const FramebufferSaver framebufferSaver;
 
-#ifndef SFML_OPENGL_ES
-
-    priv::copyFramebuffer(/* invertYAxis */ true, size, srcFBO, dstFBO, srcPos, dstPos);
-    return true;
-
-#else
-
-    const GLuint intermediateFBO = priv::generateAndBindFramebuffer();
-    if (!intermediateFBO)
-    {
-        priv::err() << "Failure to create intermediate FBO in `copyFlippedFramebuffer`";
-        return false;
-    }
-
+    glCheck(glBindFramebuffer(GL_FRAMEBUFFER, intermediateFBO));
     glCheck(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tmpTextureNativeHandle, 0));
 
     if (glCheck(glCheckFramebufferStatus(GL_FRAMEBUFFER)) != GL_FRAMEBUFFER_COMPLETE)
@@ -79,11 +72,24 @@ bool copyFlippedFramebuffer([[maybe_unused]] const unsigned int tmpTextureNative
 
     priv::copyFramebuffer(/* invertYAxis */ false, size, srcFBO, intermediateFBO, srcPos, dstPos);
     priv::copyFramebuffer(/* invertYAxis */ true, size, intermediateFBO, dstFBO, srcPos, dstPos);
-
-    glCheck(glDeleteFramebuffers(1, &intermediateFBO));
     return true;
+}
 
+
+////////////////////////////////////////////////////////////
+void copyFlippedFramebufferViaDirectBlit(const Vec2u        size,
+                                         const unsigned int srcFBO,
+                                         const unsigned int dstFBO,
+                                         const Vec2u        srcPos,
+                                         const Vec2u        dstPos)
+{
+#ifdef SFML_OPENGL_ES
+    priv::err() << "Should only be called on desktop OpenGL";
+    base::abort();
 #endif
+
+    const FramebufferSaver framebufferSaver;
+    priv::copyFramebuffer(/* invertYAxis */ true, size, srcFBO, dstFBO, srcPos, dstPos);
 }
 
 } // namespace sf::priv
