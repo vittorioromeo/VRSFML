@@ -13,6 +13,7 @@
 #include "SFML/Base/MakeIndexSequence.hpp"
 #include "SFML/Base/OverloadSet.hpp"
 #include "SFML/Base/PlacementNew.hpp"
+#include "SFML/Base/ScopeGuard.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Trait/AddConst.hpp"
 #include "SFML/Base/Trait/AddLvalueReference.hpp"
@@ -560,6 +561,11 @@ public:
         {
             alignas(R) Byte retBuffer[sizeof(R)];
 
+            SFML_BASE_SCOPE_GUARD({
+                if constexpr (!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(R))
+                    SFML_BASE_LAUNDER_CAST(R*, retBuffer)->~R();
+            });
+
             SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I, SFML_BASE_PLACEMENT_NEW(retBuffer) R(visitor(getByIndex<I>())));
             return *(SFML_BASE_LAUNDER_CAST(R*, retBuffer));
         }
@@ -585,6 +591,11 @@ public:
         else
         {
             alignas(R) Byte retBuffer[sizeof(R)];
+
+            SFML_BASE_SCOPE_GUARD({
+                if constexpr (!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(R))
+                    SFML_BASE_LAUNDER_CAST(R*, retBuffer)->~R();
+            });
 
             SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I, SFML_BASE_PLACEMENT_NEW(retBuffer) R(visitor(getByIndex<I>())));
             return *(SFML_BASE_LAUNDER_CAST(R*, retBuffer));
