@@ -538,10 +538,20 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const CurvedArrowShapeData& sd)
                                                     static_cast<float>(sd.pointCount) *
                                                     (absSweepAngleRadians / sf::base::halfPi))));
 
+    // Reserve memory upfront to avoid pointer invalidation
+    const base::SizeT bodyFillVertexCount = 2u * numArcPoints;
+
+    const base::SizeT outlinePerimeterPointCount = numArcPoints + 3u + numArcPoints;
+
+    const base::SizeT outlineVertexCount = sd.outlineThickness != 0.f
+                                               ? (outlinePerimeterPointCount + 1u) * 2u // For closed triangle strip
+                                               : 0u;
+
+    Vertex* const reservedVertexPtr = m_storage.reserveMoreVertices(bodyFillVertexCount + 3u + outlineVertexCount);
+
     // Body fill vertices and indices
-    const base::SizeT bodyFillVertexCount      = 2u * numArcPoints;
-    const IndexType   firstBodyFillVertexIndex = m_storage.getNumVertices();
-    Vertex* const     bodyFillVertexPtr        = m_storage.reserveMoreVertices(bodyFillVertexCount);
+    const IndexType firstBodyFillVertexIndex = m_storage.getNumVertices();
+    Vertex* const   bodyFillVertexPtr        = reservedVertexPtr;
 
     // Using a bounding box around the center of the curve for simplicity in texcoords for the body part
     // This is consistent with how `generateRingVertices` might calculate them for a full ring
@@ -593,7 +603,7 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const CurvedArrowShapeData& sd)
 
     // Head fill vertices and indices
     const IndexType firstHeadFillVertexIndex = m_storage.getNumVertices();
-    Vertex* const   headFillVertexPtr        = m_storage.reserveMoreVertices(3u); // tip, outerBarb, innerBarb
+    Vertex* const   headFillVertexPtr        = reservedVertexPtr + bodyFillVertexCount; // After body
 
     const float endAngleRad = base::positiveRemainder(startRadians + static_cast<float>(numArcPoints - 1u) * angleStep,
                                                       base::tau);
@@ -623,6 +633,7 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const CurvedArrowShapeData& sd)
         .color     = sd.fillColor,
         .texCoords = sd.textureRect.position + sd.textureRect.size.componentWiseMul({0.5f, 1.f}) // Example: Mid-top
     };
+
     headFillVertexPtr[1] = {
         // Outer Barb
         .position = transform.transformPoint(
@@ -630,6 +641,7 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const CurvedArrowShapeData& sd)
         .color     = sd.fillColor,
         .texCoords = sd.textureRect.position + sd.textureRect.size.componentWiseMul({0.f, 0.f}) // Example: Top-left
     };
+
     headFillVertexPtr[2] = {
         // Inner Barb
         .position = transform.transformPoint(
@@ -637,6 +649,7 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const CurvedArrowShapeData& sd)
         .color     = sd.fillColor,
         .texCoords = sd.textureRect.position + sd.textureRect.size.componentWiseMul({1.f, 0.f}) // Example: Top-right
     };
+
     m_storage.commitMoreVertices(3u);
 
     // Indices for head (3 triangles connecting body end to head points)
@@ -671,10 +684,7 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const CurvedArrowShapeData& sd)
     // Outline generation
     if (sd.outlineThickness != 0.f)
     {
-        const base::SizeT outlinePerimeterPointCount = numArcPoints + 3u + numArcPoints;
-
-        const base::SizeT outlineVertexCount = (outlinePerimeterPointCount + 1u) * 2u; // For closed triangle strip
-        Vertex* const     outlineVertexPtr   = m_storage.reserveMoreVertices(outlineVertexCount);
+        Vertex* const outlineVertexPtr = reservedVertexPtr + bodyFillVertexCount + 3u; // After body and head fill vertices
 
         const IndexType firstOutlineVertexIndex = m_storage.getNumVertices();
 
@@ -822,9 +832,16 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const RingShapeData& sdRing)
 
     //
     // Generate fill geometry (triangle strip)
-    const base::SizeT fillVertexCount      = 2u * nPoints + 2u; // `nPoints` pairs + repeated start pair
-    const IndexType   firstFillVertexIndex = m_storage.getNumVertices();
-    Vertex* const     fillVertexPtr        = m_storage.reserveMoreVertices(fillVertexCount);
+    const base::SizeT fillVertexCount = 2u * nPoints + 2u; // `nPoints` pairs + repeated start pair
+
+    const base::SizeT outlineVerticesPerLoop = nPoints * 2u + 2u; // nPoints original points -> nPoints inner/outer
+                                                                  // pairs + duplicated start pair for closed loop
+    const base::SizeT totalOutlineVertices = sdRing.outlineThickness != 0.f ? outlineVerticesPerLoop * 2u
+                                                                            : 0u; // Outer + Inner loop
+
+    const IndexType firstFillVertexIndex = m_storage.getNumVertices();
+    Vertex* const   reservedVertexPtr    = m_storage.reserveMoreVertices(fillVertexCount + totalOutlineVertices);
+    Vertex* const   fillVertexPtr        = reservedVertexPtr;
 
     generateRingVertices(sdRing.textureRect, sdRing.fillColor, sdRing.outerRadius, sdRing.innerRadius, [&](const Vec2f p) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {
         return transform.transformPoint(p);
@@ -855,14 +872,11 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const RingShapeData& sdRing)
     if (sdRing.outlineThickness == 0.f)
         return {fillVertexPtr, fillVertexCount};
 
-    const base::SizeT outlineVerticesPerLoop = nPoints * 2u + 2u; // nPoints original points -> nPoints inner/outer
-                                                                  // pairs + duplicated start pair for closed loop
-    const base::SizeT totalOutlineVertices = outlineVerticesPerLoop * 2u;         // Outer + Inner loop
     const base::SizeT outlineIndicesPerLoop = 3u * (outlineVerticesPerLoop - 2u); // Indices for triangles from the strip
     const base::SizeT totalOutlineIndices = outlineIndicesPerLoop * 2u;
 
     const IndexType  firstOutlineVertexIndex = m_storage.getNumVertices();
-    Vertex* const    outlineVertexPtr        = m_storage.reserveMoreVertices(totalOutlineVertices);
+    Vertex* const    outlineVertexPtr        = reservedVertexPtr + fillVertexCount;
     IndexType* const outlineIndexPtr         = m_storage.reserveMoreIndices(totalOutlineIndices);
 
     const IndexType firstOuterOutlineLoopVertexIndex = firstOutlineVertexIndex;
@@ -970,9 +984,16 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const RingPieSliceShapeData& sdRingP
 
     //
     // Generate fill geometry (triangle strip)
-    const base::SizeT fillVertexCount      = 2u * numArcPoints;
-    const IndexType   firstFillVertexIndex = m_storage.getNumVertices();
-    Vertex* const     fillVertexPtr        = m_storage.reserveMoreVertices(fillVertexCount);
+    const base::SizeT fillVertexCount = 2u * numArcPoints;
+
+    const base::SizeT numBoundaryPoints    = 2u * numArcPoints;
+    const base::SizeT totalOutlineVertices = (sdRingPieSlice.outlineThickness != 0.f && numArcPoints >= 3u)
+                                                 ? (numBoundaryPoints + 1u) * 2u
+                                                 : 0u;
+
+    const IndexType firstFillVertexIndex = m_storage.getNumVertices();
+    Vertex* const   reservedVertexPtr    = m_storage.reserveMoreVertices(fillVertexCount + totalOutlineVertices);
+    Vertex* const   fillVertexPtr        = reservedVertexPtr;
 
     generateRingVertices(sdRingPieSlice.textureRect,
                          sdRingPieSlice.fillColor,
@@ -1007,13 +1028,11 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const RingPieSliceShapeData& sdRingP
     if (sdRingPieSlice.outlineThickness == 0.f || numArcPoints < 3)
         return {fillVertexPtr, fillVertexCount};
 
-    const base::SizeT numBoundaryPoints    = 2u * numArcPoints;
-    const base::SizeT totalOutlineVertices = (numBoundaryPoints + 1u) * 2u;
-    const base::SizeT numOutlineTriangles  = totalOutlineVertices - 2u;
-    const base::SizeT totalOutlineIndices  = numOutlineTriangles * 3u;
+    const base::SizeT numOutlineTriangles = totalOutlineVertices - 2u;
+    const base::SizeT totalOutlineIndices = numOutlineTriangles * 3u;
 
     const IndexType firstOutlineVertexIndex = m_storage.getNumVertices();
-    Vertex* const   outlineVertexPtr        = m_storage.reserveMoreVertices(totalOutlineVertices);
+    Vertex* const   outlineVertexPtr        = reservedVertexPtr + fillVertexCount;
 
     //
     // Generate outline vertices
