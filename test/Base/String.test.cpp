@@ -665,6 +665,32 @@ TEST_CASE("[Base] Base/String.hpp")
         }
     }
 
+    SECTION("Self-Insert")
+    {
+        SECTION("insert with overlapping source and no reallocation")
+        {
+            sf::base::String s("abcdef");
+            s.reserve(12);
+
+            const char* const originalData = s.data();
+            s.insert(2, s.cStr() + 1);
+
+            CHECK(s.data() == originalData);
+            CHECK(s == "abbcdefcdef");
+        }
+
+        SECTION("insert with overlapping source and reallocation")
+        {
+            sf::base::String s("abcdefghijklmno");
+            CHECK(s.isSso());
+
+            s.insert(3, s.cStr() + 2);
+
+            CHECK(!s.isSso());
+            CHECK(s == "abccdefghijklmnodefghijklmno");
+        }
+    }
+
     SECTION("Resize")
     {
         sf::base::String s = "Hello";
