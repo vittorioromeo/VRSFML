@@ -552,6 +552,7 @@ bool Texture::update(const Window& window, Vec2u dest)
     SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
     GLuint destFrameBuffer = 0u;
+    bool   success         = true;
 
     {
         // Save the current bindings so we can restore them after we are done
@@ -586,18 +587,25 @@ bool Texture::update(const Window& window, Vec2u dest)
             auto tmpTexture = Texture::create(window.getSize(), {.sRgb = m_sRgb, .smooth = m_isSmooth});
 
             if (!tmpTexture.hasValue())
+            {
                 priv::err() << "Failure to create intermediate texture in `copyFlippedFramebuffer`";
+                success = false;
+            }
             else if (!priv::copyFlippedFramebuffer(tmpTexture->getNativeHandle(),
                                                    window.getSize(),
                                                    0u /* default FBO */,
                                                    destFrameBuffer,
                                                    {0u, 0u},
                                                    dest))
+            {
                 priv::err() << "Error flipping render texture during FBO copy";
+                success = false;
+            }
         }
         else
         {
             priv::err() << "Cannot copy texture, failed to link texture to frame buffer";
+            success = false;
         }
     }
 
@@ -617,7 +625,7 @@ bool Texture::update(const Window& window, Vec2u dest)
     // in all contexts immediately (solves problems in multi-threaded apps)
     glCheck(glFlush());
 
-    return true;
+    return success;
 }
 
 
