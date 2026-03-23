@@ -209,6 +209,7 @@ struct [[nodiscard]] PersistentGPUAutoBatchState
 }
 
 
+#ifndef SFML_OPENGL_ES
 ////////////////////////////////////////////////////////////
 [[nodiscard]] GLsync makeFence()
 {
@@ -250,6 +251,7 @@ struct [[nodiscard]] PersistentGPUAutoBatchState
 
     return true;
 }
+#endif
 
 } // namespace RenderTargetImpl
 } // namespace
@@ -643,7 +645,7 @@ void RenderTarget::immediateDrawIndexedVertices(const DrawIndexedVerticesSetting
 ////////////////////////////////////////////////////////////
 void RenderTarget::immediateDrawPersistentMappedIndexedVertices(
     [[maybe_unused]] const DrawPersistentMappedIndexedVerticesSettings& settings,
-    const RenderStates&                                                 states)
+    [[maybe_unused]] const RenderStates&                                states)
 {
 #ifdef SFML_OPENGL_ES
     priv::err() << "FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES";

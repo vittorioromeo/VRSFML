@@ -1,17 +1,25 @@
 #include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
+#include "SFML/Audio/Priv/MiniaudioSoundSource.hpp"
 #include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
 
+#include "SFML/System/Angle.hpp"
 #include "SFML/System/Path.hpp"
+#include "SFML/System/Vec3.hpp"
 
 #include "SFML/Base/FloatMax.hpp"
+#include "SFML/Base/Trait/HasVirtualDestructor.hpp"
+#include "SFML/Base/Trait/IsConstructible.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsMoveConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 
 #include <Doctest.hpp>
 
 #include <AudioUtil.hpp>
-#include <CommonTraits.hpp>
 #include <SystemUtil.hpp>
 
 
