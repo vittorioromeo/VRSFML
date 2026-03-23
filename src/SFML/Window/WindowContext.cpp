@@ -7,8 +7,6 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/WindowContext.hpp"
 
-#include "SFML/Config.hpp"
-
 #include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/JoystickManager.hpp"
 #include "SFML/Window/SDLLayer.hpp" // TODO P0:
@@ -30,7 +28,9 @@
 #include "SFML/Base/Algorithm/Find.hpp"
 #include "SFML/Base/AnkerlUnorderedDense.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"

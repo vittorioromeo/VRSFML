@@ -106,7 +106,7 @@ void main()
         float distance = length(centeredUV);
 
         // Calculate proper background UVs
-        vec2 bgUV = v_worldPos / float(textureSize(u_backgroundTexture, 0));
+        vec2 bgUV = v_worldPos / vec2(textureSize(u_backgroundTexture, 0));
 
         // Create a dynamic distortion pattern using time and color
         float distortionTime   = u_time * 0.2 + float(sf_v_color.b) * 10.0;
@@ -124,10 +124,10 @@ void main()
 
         // Apply a simple blur by averaging nearby samples
         vec3 sampleCenter = texture(u_backgroundTexture, sampleCoord).rgb;
-        vec3 sampleRight  = texture(u_backgroundTexture, sampleCoord + vec2(1.0 / u_resolution.x, 0)).rgb;
-        vec3 sampleLeft   = texture(u_backgroundTexture, sampleCoord - vec2(1.0 / u_resolution.x, 0)).rgb;
-        vec3 sampleUp     = texture(u_backgroundTexture, sampleCoord + vec2(0, 1.0 / u_resolution.y)).rgb;
-        vec3 sampleDown   = texture(u_backgroundTexture, sampleCoord - vec2(0, 1.0 / u_resolution.y)).rgb;
+        vec3 sampleRight  = texture(u_backgroundTexture, sampleCoord + vec2(1.0 / u_resolution.x, 0.0)).rgb;
+        vec3 sampleLeft   = texture(u_backgroundTexture, sampleCoord - vec2(1.0 / u_resolution.x, 0.0)).rgb;
+        vec3 sampleUp     = texture(u_backgroundTexture, sampleCoord + vec2(0.0, 1.0 / u_resolution.y)).rgb;
+        vec3 sampleDown   = texture(u_backgroundTexture, sampleCoord - vec2(0.0, 1.0 / u_resolution.y)).rgb;
         vec3 bgColor      = (sampleCenter + sampleRight + sampleLeft + sampleUp + sampleDown) / 5.0;
 
         float edgeFactor = distance;

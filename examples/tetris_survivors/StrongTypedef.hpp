@@ -1,5 +1,7 @@
 #pragma once
 
+#include "SFML/Base/FwdStdHash.hpp" // IWYU pragma: keep
+
 
 ////////////////////////////////////////////////////////////
 #define TSURV_DEFINE_STRONG_TYPEDEF(name, underlyingType)                                                             \
@@ -100,34 +102,8 @@
     }
 
 
-////////////////////////////////////////////////////////////
-#ifdef _LIBCPP_BEGIN_NAMESPACE_STD
-
-_LIBCPP_BEGIN_NAMESPACE_STD
-////////////////////////////////////////////////////////////
-template <typename>
-struct hash;
-
-////////////////////////////////////////////////////////////
-template <typename T>
-    requires requires { typename T::UnderlyingType; }
-struct hash<T>
-{
-    [[nodiscard, gnu::always_inline, gnu::pure]] auto operator()(const T& value) const noexcept
-    {
-        return std::hash<typename T::UnderlyingType>()(value.toUnderlying());
-    }
-};
-_LIBCPP_END_NAMESPACE_STD
-
-#else
-
 namespace std
 {
-////////////////////////////////////////////////////////////
-template <typename>
-struct hash;
-
 ////////////////////////////////////////////////////////////
 template <typename T>
     requires requires { typename T::UnderlyingType; }
@@ -140,5 +116,3 @@ struct hash<T>
 };
 
 } // namespace std
-
-#endif

@@ -11,6 +11,7 @@
 #include "SFML/Window/VideoModeUtils.hpp"
 #include "SFML/Window/WindowBase.hpp"
 #include "SFML/Window/WindowContext.hpp"
+#include "SFML/Window/WindowHandle.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/GLUtils/GlContext.hpp"
@@ -20,8 +21,11 @@
 #include "SFML/System/Sleep.hpp"
 #include "SFML/System/Time.hpp"
 
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 
 #ifdef SFML_SYSTEM_EMSCRIPTEN
     #include <emscripten.h>
