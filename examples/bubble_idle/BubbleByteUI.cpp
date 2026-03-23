@@ -4500,7 +4500,7 @@ void Main::uiTabBarSettings()
 
             if (isUniqueCatType(catType))
             {
-                const auto pos = gameView.unproject(getResolution() / 2.f, window.getSize().toVec2f());
+                const auto pos = gameView.screenToWorld(getResolution() / 2.f, window.getSize().toVec2f());
                 spawnSpecialCat(pos, catType);
             }
             else

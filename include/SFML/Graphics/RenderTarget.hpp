@@ -205,6 +205,8 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] base::SizeT getAutoBatchVertexThreshold() const;
 
+    // TODO P0: revisit decision of removing states default {}
+
     ////////////////////////////////////////////////////////////
     /// \brief Draw a texture to the render target
     ///
@@ -404,7 +406,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] View makeView() const;
+    [[nodiscard]] View computeView() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Reset the internal OpenGL states so that the target is ready for drawing

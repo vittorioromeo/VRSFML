@@ -51,7 +51,7 @@ TEST_CASE("[Graphics] sf::RenderTarget")
     {
         const TestRenderTarget renderTarget;
 
-        const auto defaultView = sf::View::fromSize({640.f, 480.f});
+        const auto defaultView = sf::View::fromScreenSize({640.f, 480.f});
 
         CHECK(defaultView.center == sf::Vec2f{320, 240});
         CHECK(defaultView.size == sf::Vec2f{640, 480});

@@ -986,9 +986,9 @@ bool RenderTarget::setActive(const bool active)
 
 
 ////////////////////////////////////////////////////////////
-View RenderTarget::makeView() const
+View RenderTarget::computeView() const
 {
-    return View::fromSize(getSize().toVec2f());
+    return View::fromScreenSize(getSize().toVec2f());
 }
 
 
@@ -1194,7 +1194,7 @@ void RenderTarget::applyView(const View& view)
     const Vec2f targetSize = getSize().toVec2f();
 
     // Set the viewport
-    const Rect2i viewport    = view.getPixelViewport(targetSize);
+    const Rect2i viewport    = view.computePixelViewport(targetSize);
     const int    viewportTop = static_cast<int>(targetSize.y) - (viewport.position.y + viewport.size.y);
 
     glCheck(glViewport(viewport.position.x, viewportTop, viewport.size.x, viewport.size.y));
@@ -1210,7 +1210,7 @@ void RenderTarget::applyView(const View& view)
     }
     else
     {
-        const Rect2i pixelScissor = view.getPixelScissor(targetSize);
+        const Rect2i pixelScissor = view.computePixelScissor(targetSize);
         const int    scissorTop   = static_cast<int>(targetSize.y) - (pixelScissor.position.y + pixelScissor.size.y);
 
         glCheck(glScissor(pixelScissor.position.x, scissorTop, pixelScissor.size.x, pixelScissor.size.y));
@@ -1324,7 +1324,7 @@ void RenderTarget::setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& sta
     const Shader& usedShader = states.shader != nullptr ? *states.shader : GraphicsContext::getInstalledBuiltInShader();
 
     // Select view to be used
-    const View usedView = states.view == View{} ? makeView() : states.view;
+    const View usedView = states.view == View{} ? computeView() : states.view;
 
     // Update shader
     const auto usedNativeHandle = usedShader.getNativeHandle();

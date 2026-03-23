@@ -8,6 +8,7 @@
 #include "SFML/ImGui/ImGuiContext.hpp"
 
 #include "SFML/ImGui/Backend.hpp"
+#include "SFML/ImGui/ImConfigSFML.hpp" // IWYU pragma: keep
 
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
@@ -21,22 +22,28 @@
 #include "SFML/Window/Cursor.hpp"
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/Joystick.hpp"
-#include "SFML/Window/Touch.hpp"
+#include "SFML/Window/Keyboard.hpp"
+#include "SFML/Window/Mouse.hpp"
 #include "SFML/Window/Window.hpp"
 
 #include "SFML/GLUtils/ShaderSaver.hpp"
 #include "SFML/GLUtils/TextureSaver.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/Rect2.hpp"
+#include "SFML/System/Time.hpp"
 #include "SFML/System/UnicodeString.hpp"
 #include "SFML/System/UnicodeStringUtfUtils.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Abort.hpp"
+#include "SFML/Base/Array.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 

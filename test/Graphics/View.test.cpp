@@ -172,85 +172,85 @@ TEST_CASE("[Graphics] sf::View")
         CHECK(view.getInverseTransform() == Approx(sf::Transform(50, 0, 500, 0, -50, 500)));
     }
 
-    SECTION("getPixelViewport")
+    SECTION("computePixelViewport")
     {
         CHECK(sf::View{
                   .center   = {},
                   .size     = {},
                   .viewport = {{0, 0}, {1, 1}},
               }
-                  .getPixelViewport({640, 480}) == sf::Rect2i({0, 0}, {640, 480}));
+                  .computePixelViewport({640, 480}) == sf::Rect2i({0, 0}, {640, 480}));
 
         CHECK(sf::View{
                   .center   = {},
                   .size     = {},
                   .viewport = {{1, 1}, {.5f, .25f}},
               }
-                  .getPixelViewport({640, 480}) == sf::Rect2i({640, 480}, {320, 120}));
+                  .computePixelViewport({640, 480}) == sf::Rect2i({640, 480}, {320, 120}));
 
         CHECK(sf::View{
                   .center   = {},
                   .size     = {},
                   .viewport = {{.5f, .5f}, {.25f, .75f}},
               }
-                  .getPixelViewport({640, 480}) == sf::Rect2i({320, 240}, {160, 360}));
+                  .computePixelViewport({640, 480}) == sf::Rect2i({320, 240}, {160, 360}));
     }
 
-    SECTION("getPixelScissor")
+    SECTION("computePixelScissor")
     {
         CHECK(sf::View{
                   .center  = {},
                   .size    = {},
                   .scissor = {{0, 0}, {1, 1}},
               }
-                  .getPixelScissor({640, 480}) == sf::Rect2i({0, 0}, {640, 480}));
+                  .computePixelScissor({640, 480}) == sf::Rect2i({0, 0}, {640, 480}));
 
         CHECK(sf::View{
                   .center  = {},
                   .size    = {},
                   .scissor = {{.5f, .5f}, {.25f, .25f}},
               }
-                  .getPixelScissor({640, 480}) == sf::Rect2i({320, 240}, {160, 120}));
+                  .computePixelScissor({640, 480}) == sf::Rect2i({320, 240}, {160, 120}));
     }
 
-    SECTION("unproject")
+    SECTION("screenToWorld")
     {
-        auto view = sf::View::fromSize({1000.f, 1000.f});
+        auto view = sf::View::fromScreenSize({1000.f, 1000.f});
         auto size = sf::Vec2f{640, 480};
 
         view.center += {5, 5};
         view.viewport = sf::Rect2f({0, 0}, {.5f, 1});
 
-        const auto [x1, y1] = view.unproject({0, 0}, size);
+        const auto [x1, y1] = view.screenToWorld({0, 0}, size);
         CHECK_THAT(x1, Catch::Matchers::WithinRel(5, 1e-4));
         CHECK_THAT(y1, Catch::Matchers::WithinRel(5, 1e-4));
 
-        const auto [x2, y2] = view.unproject({1, 1}, size);
+        const auto [x2, y2] = view.screenToWorld({1, 1}, size);
         CHECK_THAT(x2, Catch::Matchers::WithinRel(8.125, 1e-4));
         CHECK_THAT(y2, Catch::Matchers::WithinRel(7.0833, 1e-4));
 
-        const auto [x3, y3] = view.unproject({320, 240}, size);
+        const auto [x3, y3] = view.screenToWorld({320, 240}, size);
         CHECK_THAT(x3, Catch::Matchers::WithinRel(1005, 1e-5));
         CHECK_THAT(y3, Catch::Matchers::WithinRel(505, 1e-5));
     }
 
     SECTION("project")
     {
-        auto view = sf::View::fromSize({1000.f, 1000.f});
+        auto view = sf::View::fromScreenSize({1000.f, 1000.f});
         auto size = sf::Vec2f{640, 480};
 
         view.center += {5, 5};
         view.viewport = sf::Rect2f({.25f, 0}, {1, 1});
 
-        const auto [x1, y1] = view.project({0, 0}, size);
+        const auto [x1, y1] = view.worldToScreen({0, 0}, size);
         CHECK_THAT(x1, Catch::Matchers::WithinRel(156.8, 1e-2));
         CHECK_THAT(y1, Catch::Matchers::WithinRel(-2.4, 1e-2));
 
-        const auto [x2, y2] = view.project({-500, 0}, size);
+        const auto [x2, y2] = view.worldToScreen({-500, 0}, size);
         CHECK_THAT(x2, Catch::Matchers::WithinRel(-163.1, 1e-2));
         CHECK_THAT(y2, Catch::Matchers::WithinRel(-2.4, 1e-2));
 
-        const auto [x3, y3] = view.project({0, -250}, size);
+        const auto [x3, y3] = view.worldToScreen({0, -250}, size);
         CHECK_THAT(x3, Catch::Matchers::WithinRel(156.8, 1e-2));
         CHECK_THAT(y3, Catch::Matchers::WithinRel(-122.3, 1e-2));
     }

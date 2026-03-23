@@ -387,7 +387,7 @@ int main()
                       })
                       .value();
 
-    auto windowView = window.makeView();
+    auto windowView = window.computeView();
 
     // Create all of our graphics resources
     sf::Text hudText(font,

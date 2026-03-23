@@ -40,7 +40,7 @@ int main()
                       })
                       .value();
 
-    auto windowView = window.makeView();
+    auto windowView = window.computeView();
 
     const sf::RectangleShape red({
         .position{270.f, 70.f},

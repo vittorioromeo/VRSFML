@@ -1493,13 +1493,10 @@ int main()
                       })
                       .value();
 
-    auto worldView  = sf::View::fromSize(resolution);
-    auto windowView = sf::View::fromSize(resolution);
+    auto windowView = window.computeView();
+    auto worldView  = sf::View::fromScreenSize(resolution);
 
     auto rtGame = makeAARenderTexture(resolution.toVec2u(), /* desiredAALevel */ 8u).value();
-
-    // TODO P0: GPUStorage is still glitchy, some synchronization issue persists...
-    window.setAutoBatchMode(sf::RenderTarget::AutoBatchMode::GPUStorage);
 
     //
     //

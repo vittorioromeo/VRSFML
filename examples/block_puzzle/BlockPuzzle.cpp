@@ -566,10 +566,10 @@ private:
 
     ////////////////////////////////////////////////////////////
     // For rendering logical game entities into the 2x render textures
-    sf::View m_worldView = sf::View::fromSize(resolution);
+    sf::View m_worldView = sf::View::fromScreenSize(resolution);
 
     // For rendering the final texture to the window (this one gets aspect-ratio resized)
-    sf::View m_windowView = sf::View::fromSize(resolution);
+    sf::View m_windowView = sf::View::fromScreenSize(resolution);
 
     ////////////////////////////////////////////////////////////
     sf::Shader m_shader{[]
@@ -1203,7 +1203,7 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] sf::Vec2f getMousePos() const noexcept
     {
-        return m_windowView.unproject(sf::Mouse::getPosition(m_window).toVec2f(), m_window.getSize().toVec2f());
+        return m_windowView.screenToWorld(sf::Mouse::getPosition(m_window).toVec2f(), m_window.getSize().toVec2f());
     }
 
     ////////////////////////////////////////////////////////////
@@ -1894,7 +1894,7 @@ public:
                 const auto updateShadowTexture = [&](const float blurRadius, const sf::base::U8 alpha, auto&&... toDraw)
                 {
                     const auto downscaleSize = m_rtGame.getSize().toVec2f();
-                    // const auto downscaleView = sf::View::fromSize(downscaleSize);
+                    // const auto downscaleView = sf::View::fromScreenSize(downscaleSize);
                     const auto downscaleView = m_worldView;
 
                     m_rtSpriteBg.clear(sf::Color::Transparent);

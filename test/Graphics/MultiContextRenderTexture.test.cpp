@@ -76,7 +76,7 @@ TEST_CASE("[Graphics] MultiContext" * doctest::skip(skipDisplayTests))
                     .indexCount    = 1u,
                     .primitiveType = sf::PrimitiveType::Points,
                 },
-                {.view = optWnd->makeView()});
+                {.view = optWnd->computeView()});
 
             optRT0->display();
         }
@@ -98,7 +98,7 @@ TEST_CASE("[Graphics] MultiContext" * doctest::skip(skipDisplayTests))
                 .indexCount    = 1u,
                 .primitiveType = sf::PrimitiveType::Points,
             },
-            {.view = rt->makeView()});
+            {.view = rt->computeView()});
 
         rt->display();
 
@@ -110,7 +110,7 @@ TEST_CASE("[Graphics] MultiContext" * doctest::skip(skipDisplayTests))
                 .indexCount    = 1u,
                 .primitiveType = sf::PrimitiveType::Points,
             },
-            {.view = optWnd->makeView()});
+            {.view = optWnd->computeView()});
 
         optWnd = sf::RenderWindow::create(sf::WindowSettings{.size = {1024u, 1024u}, .title = "Window B"});
 
@@ -122,7 +122,7 @@ TEST_CASE("[Graphics] MultiContext" * doctest::skip(skipDisplayTests))
                 .indexCount    = 1u,
                 .primitiveType = sf::PrimitiveType::Points,
             },
-            {.view = rt->makeView()});
+            {.view = rt->computeView()});
 
         rt->display();
     }
@@ -134,7 +134,7 @@ TEST_CASE("[Graphics] MultiContext" * doctest::skip(skipDisplayTests))
         auto baseRenderTexture = sf::RenderTexture::create({100u, 100u});
         auto leftInnerRT       = sf::RenderTexture::create({100u, 100u});
 
-        leftInnerRT->draw(sf::RectangleShapeData{}, {.view = leftInnerRT->makeView()});
+        leftInnerRT->draw(sf::RectangleShapeData{}, {.view = leftInnerRT->computeView()});
         leftInnerRT->display();
     }
 }
