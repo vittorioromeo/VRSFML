@@ -140,11 +140,17 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] Vector(const Vector& rhs) :
-        m_data{rhs.m_data == nullptr ? nullptr : priv::VectorUtils::allocate<TItem>(rhs.size())},
-        m_endSize{m_data + rhs.size()},
-        m_endCapacity{m_data + rhs.size()}
+    [[nodiscard, gnu::always_inline]] Vector(const Vector& rhs)
     {
+        const SizeT rhsSize = rhs.size();
+
+        if (rhsSize == 0u)
+            return;
+
+        m_data        = priv::VectorUtils::allocate<TItem>(rhsSize);
+        m_endSize     = m_data + rhsSize;
+        m_endCapacity = m_data + rhsSize;
+
         priv::VectorUtils::copyRange(m_data, rhs.m_data, rhs.m_endSize);
     }
 
