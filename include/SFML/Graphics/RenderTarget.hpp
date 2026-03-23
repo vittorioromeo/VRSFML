@@ -205,8 +205,6 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] base::SizeT getAutoBatchVertexThreshold() const;
 
-    // TODO P0: revisit decision of removing states default {}
-
     ////////////////////////////////////////////////////////////
     /// \brief Draw a texture to the render target
     ///
@@ -217,7 +215,7 @@ public:
     /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Texture& texture, RenderStates states); // TODO P0: revisit this API, shouldn't mutate states
+    void draw(const Texture& texture, RenderStates states = {}); // TODO P0: revisit this API, shouldn't mutate states
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a texture to the render target
@@ -229,7 +227,7 @@ public:
     ////////////////////////////////////////////////////////////
     void draw(const Texture&             texture,
               const DrawTextureSettings& params,
-              RenderStates               states); // TODO P0: revisit this API, shouldn't mutate states
+              RenderStates               states = {}); // TODO P0: revisit this API, shouldn't mutate states
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a sprite object to the render target
@@ -240,7 +238,7 @@ public:
     /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Sprite& sprite, const RenderStates& states);
+    void draw(const Sprite& sprite, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a shape object to the render target
@@ -251,7 +249,7 @@ public:
     /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Shape& shape, RenderStates states); // TODO P0: revisit this API, shouldn't mutate states
+    void draw(const Shape& shape, RenderStates states = {}); // TODO P0: revisit this API, shouldn't mutate states
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a text object to the render target
@@ -260,20 +258,20 @@ public:
     /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Text& text, RenderStates states); // TODO P0: revisit this API, shouldn't mutate states
+    void draw(const Text& text, RenderStates states = {}); // TODO P0: revisit this API, shouldn't mutate states
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const CPUDrawableBatch& drawableBatch, const RenderStates& states);
+    void draw(const CPUDrawableBatch& drawableBatch, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
     void draw(const PersistentGPUDrawableBatch& drawableBatch,
-              RenderStates                      states); // TODO P0: revisit this API, shouldn't mutate states
+              RenderStates                      states = {}); // TODO P0: revisit this API, shouldn't mutate states
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by a vertex buffer
@@ -282,7 +280,7 @@ public:
     /// \param states       Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const VertexBuffer& vertexBuffer, const RenderStates& states);
+    void draw(const VertexBuffer& vertexBuffer, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by a vertex buffer
@@ -293,7 +291,10 @@ public:
     /// \param states       Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const VertexBuffer& vertexBuffer, base::SizeT firstVertex, base::SizeT vertexCount, const RenderStates& states);
+    void draw(const VertexBuffer& vertexBuffer,
+              base::SizeT         firstVertex,
+              base::SizeT         vertexCount,
+              const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a shape from its relevant data
@@ -302,7 +303,7 @@ public:
     ///         (WARNING: the span is only valid until the next draw call)
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan draw(const priv::ShapeDataConcept auto& shapeData, const RenderStates& states);
+    VertexSpan draw(const priv::ShapeDataConcept auto& shapeData, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a text from a font and its relevant data
@@ -313,7 +314,7 @@ public:
     ////////////////////////////////////////////////////////////
     VertexSpan draw(const Font&     font,
                     const TextData& textData,
-                    RenderStates    states); // TODO P0: revisit this API, shouldn't mutate states
+                    RenderStates    states = {}); // TODO P0: revisit this API, shouldn't mutate states
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by an array of vertices
@@ -321,7 +322,7 @@ public:
     /// \param settings Draw settings
     ///
     ////////////////////////////////////////////////////////////
-    void drawVertices(const DrawVerticesSettings& settings, const RenderStates& states);
+    void drawVertices(const DrawVerticesSettings& settings, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by an array of indices and vertices
@@ -329,7 +330,7 @@ public:
     /// \param settings Draw settings
     ///
     ////////////////////////////////////////////////////////////
-    void drawIndexedVertices(const DrawIndexedVerticesSettings& settings, const RenderStates& states);
+    void drawIndexedVertices(const DrawIndexedVerticesSettings& settings, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw quads defined by an array of vertices and precomputed quad indices
@@ -337,7 +338,7 @@ public:
     /// \param settings Draw settings
     ///
     ////////////////////////////////////////////////////////////
-    void drawQuads(const DrawQuadsSettings& settings, const RenderStates& states);
+    void drawQuads(const DrawQuadsSettings& settings, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by a persistent mapped buffer and indices
@@ -346,7 +347,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void drawPersistentMappedIndexedVertices(const DrawPersistentMappedIndexedVerticesSettings& settings,
-                                             const RenderStates&                                states);
+                                             const RenderStates&                                states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -354,7 +355,7 @@ public:
     ////////////////////////////////////////////////////////////
     void drawInstancedVertices(const DrawInstancedVerticesSettings&                           settings,
                                const base::FixedFunction<void(InstanceAttributeBinder&), 64>& setupFn,
-                               const RenderStates&                                            states);
+                               const RenderStates&                                            states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -362,7 +363,7 @@ public:
     ////////////////////////////////////////////////////////////
     void drawInstancedIndexedVertices(const DrawInstancedIndexedVerticesSettings&                    settings,
                                       const base::FixedFunction<void(InstanceAttributeBinder&), 64>& setupFn,
-                                      const RenderStates&                                            states);
+                                      const RenderStates&                                            states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the rendering region of the target
@@ -455,7 +456,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <bool TLocked>
-    class WithRenderStatesContext
+    class [[nodiscard]] WithRenderStatesContext
     {
     private:
         ////////////////////////////////////////////////////////////
@@ -818,7 +819,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename ContiguousVertexRange>
-    [[gnu::always_inline]] void draw(const ContiguousVertexRange& vertices, PrimitiveType type, const RenderStates& states)
+    [[gnu::always_inline]] void draw(const ContiguousVertexRange& vertices, PrimitiveType type, const RenderStates& states = {})
         requires(requires { drawVertices({vertices.data(), vertices.size(), type}, states); })
     {
         drawVertices(
@@ -839,7 +840,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <base::SizeT N>
-    [[gnu::always_inline]] void draw(const Vertex (&vertices)[N], PrimitiveType type, const RenderStates& states)
+    [[gnu::always_inline]] void draw(const Vertex (&vertices)[N], PrimitiveType type, const RenderStates& states = {})
     {
         drawVertices(
             {
@@ -861,7 +862,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename DrawableObject>
-    [[gnu::always_inline]] void draw(const DrawableObject& drawableObject, const RenderStates& states)
+    [[gnu::always_inline]] void draw(const DrawableObject& drawableObject, const RenderStates& states = {})
         requires(requires { drawableObject.draw(*this, states); })
     {
         flushIfNeeded(states);
@@ -873,7 +874,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename DrawableObjectRange>
-    void draw(const DrawableObjectRange& drawableObjectRange, const RenderStates& states)
+    void draw(const DrawableObjectRange& drawableObjectRange, const RenderStates& states = {})
         requires(requires { draw(*drawableObjectRange.begin(), states); })
     {
         for (const auto& drawable : drawableObjectRange)

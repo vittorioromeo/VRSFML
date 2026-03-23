@@ -6,6 +6,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Graphics/RenderTextureCreateSettings.hpp"
+
 #include "SFML/System/Rect2.hpp"
 #include "SFML/System/Vec2.hpp"
 
@@ -92,4 +94,5 @@ struct WindowSettings;
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::base::Optional<sf::RenderTexture> makeAARenderTexture(sf::Vec2u resolution, unsigned int desiredAALevel);
+[[nodiscard]] sf::base::Optional<sf::RenderTexture> makeAARenderTexture(sf::Vec2u resolution,
+                                                                        sf::RenderTextureCreateSettings rtCreateSettings);

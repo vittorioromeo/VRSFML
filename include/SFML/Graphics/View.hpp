@@ -41,8 +41,10 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
         {
             SFML_BASE_ASSERT(position.x >= 0.f && position.x <= 1.f && "position.x must lie within [0, 1]");
             SFML_BASE_ASSERT(position.y >= 0.f && position.y <= 1.f && "position.y must lie within [0, 1]");
+
             SFML_BASE_ASSERT(size.x >= 0.f && "size.x must lie within [0, 1]");
             SFML_BASE_ASSERT(size.y >= 0.f && "size.y must lie within [0, 1]");
+
             SFML_BASE_ASSERT(position.x + size.x <= 1.f && "position.x + size.x must lie within [0, 1]");
             SFML_BASE_ASSERT(position.y + size.y <= 1.f && "position.y + size.y must lie within [0, 1]");
         }
