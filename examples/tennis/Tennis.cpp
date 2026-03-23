@@ -8,7 +8,6 @@
 
 #include "SFML/Graphics/CircleShape.hpp"
 #include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/DrawTextureSettings.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
@@ -288,19 +287,18 @@ int main()
         // Clear the window
         window.clear({50u, 50u, 50u});
 
+        const auto drawCtx = window.withRenderStates({.view = windowView});
+
         if (isPlaying)
         {
-            window.withLockedRenderStates({.view = windowView}).drawAll(leftPaddle, rightPaddle, ball);
+            drawCtx.drawAll(leftPaddle, rightPaddle, ball);
         }
         else
         {
             wiggleTextEffect.advance(deltaTime);
+
             wiggleTextEffect.apply(pauseMessage);
-
-            const auto drawCtx = window.withRenderStates({.view = windowView});
-
             drawCtx.draw(pauseMessage);
-
             wiggleTextEffect.unapply(pauseMessage);
 
             drawCtx.draw(sfmlLogoTexture, {.position = {170.f, 50.f}});

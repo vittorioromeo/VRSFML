@@ -10,6 +10,7 @@
 #include "ExampleUtils/MiniFmt.hpp"
 
 #include "SFML/Graphics/RenderTexture.hpp"
+#include "SFML/Graphics/RenderTextureCreateSettings.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/View.hpp"
 
@@ -19,6 +20,7 @@
 #include "SFML/System/Rect2.hpp"
 #include "SFML/System/Vec2.hpp"
 
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Math/Floor.hpp"
 #include "SFML/Base/MinMax.hpp"
@@ -150,15 +152,19 @@ sf::base::Optional<sf::RenderWindow> makeDPIScaledRenderWindow(const sf::WindowS
 
 
 ////////////////////////////////////////////////////////////
-sf::base::Optional<sf::RenderTexture> makeAARenderTexture(const sf::Vec2u resolution, unsigned int desiredAALevel)
+sf::base::Optional<sf::RenderTexture> makeAARenderTexture(const sf::Vec2u                 resolution,
+                                                          sf::RenderTextureCreateSettings rtCreateSettings)
 {
     const auto maxAALevel = sf::RenderTexture::getMaximumAntiAliasingLevel();
 
-    if (desiredAALevel > maxAALevel)
+    if (rtCreateSettings.antiAliasingLevel > maxAALevel)
     {
-        minifmt::print("Desired AA level {} higher than supported {}, falling back to maximum", desiredAALevel, maxAALevel);
-        desiredAALevel = maxAALevel;
+        minifmt::print("Desired AA level {} higher than supported {}, falling back to maximum",
+                       rtCreateSettings.antiAliasingLevel,
+                       maxAALevel);
+
+        rtCreateSettings.antiAliasingLevel = maxAALevel;
     }
 
-    return sf::RenderTexture::create(resolution.toVec2u(), {.antiAliasingLevel = desiredAALevel});
+    return sf::RenderTexture::create(resolution.toVec2u(), rtCreateSettings);
 }

@@ -9,11 +9,12 @@
 #include "SFML/Graphics/Export.hpp"
 
 #include "SFML/Graphics/RenderTarget.hpp"
-#include "SFML/Graphics/RenderTextureSettings.hpp"
+#include "SFML/Graphics/RenderTextureCreateSettings.hpp"
 #include "SFML/Graphics/TextureWrapMode.hpp"
 
 #include "SFML/System/Vec2.hpp"
 
+#include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
 
@@ -84,7 +85,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<RenderTexture> create(Vec2u size);
-    [[nodiscard]] static base::Optional<RenderTexture> create(Vec2u size, const RenderTextureSettings& renderTextureSettings);
+    [[nodiscard]] static base::Optional<RenderTexture> create(Vec2u size, const RenderTextureCreateSettings& rtCreateSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the maximum anti-aliasing level supported by the system

@@ -14,6 +14,7 @@
 #include "SFML/Graphics/DrawInstancedVerticesSettings.hpp"
 #include "SFML/Graphics/DrawPersistentMappedIndexedVerticesSettings.hpp"
 #include "SFML/Graphics/DrawQuadsSettings.hpp"
+#include "SFML/Graphics/DrawTextureSettings.hpp"
 #include "SFML/Graphics/DrawVerticesSettings.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/DrawableBatchUtils.hpp"

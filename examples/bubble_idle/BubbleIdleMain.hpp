@@ -504,7 +504,7 @@ struct Main
                                      .outlineThickness = 2.f};
 
         loadingTextData.origin = sf::TextUtils::precomputeTextLocalBounds(fontMouldyCheese, loadingTextData).size / 2.f;
-        window.draw(fontMouldyCheese, loadingTextData, {.view = {}});
+        window.draw(fontMouldyCheese, loadingTextData);
 
         window.display();
         return true;
@@ -579,12 +579,17 @@ struct Main
     ////////////////////////////////////////////////////////////
     // Background and ImGui render textures
     sf::RenderTexture rtBackground{
-        sf::RenderTexture::create(gameScreenSize.toVec2u(), {.antiAliasingLevel = aaLevel}).value()};
-    sf::RenderTexture rtImGui{sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel}).value()};
+        sf::RenderTexture::create(gameScreenSize.toVec2u(),
+                                  {.antiAliasingLevel = aaLevel, .smooth = true, .wrapMode = sf::TextureWrapMode::Repeat})
+            .value()};
+
+    sf::RenderTexture rtImGui{
+        sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()};
 
     ////////////////////////////////////////////////////////////
     // Game render texture (before post-processing)
-    sf::RenderTexture rtGame{sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel}).value()};
+    sf::RenderTexture rtGame{
+        sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()};
 
     ////////////////////////////////////////////////////////////
     // Textures (not in atlas)
@@ -8534,8 +8539,6 @@ struct Main
 
         rtBackground.clear(outlineHueColor);
 
-        rtBackground.setWrapMode(sf::TextureWrapMode::Repeat); // TODO P2: (lib) add RenderTextureCreateSettings
-
         const auto getAlpha = [&](const float mult)
         { return static_cast<sf::base::U8>(profile.backgroundOpacity / 100.f * mult); };
 
@@ -9615,7 +9618,7 @@ struct Main
         shaderPostProcess.setUniform(suPPSharpness, profile.ppSSharpness);
 
         window.clear();
-        window.draw(rtGame.getTexture(), {.view = {}, .shader = &shaderPostProcess});
+        window.draw(rtGame.getTexture(), {.shader = &shaderPostProcess});
 
         if (flushBeforeDisplay)
             rtGame.flushGPUCommands();

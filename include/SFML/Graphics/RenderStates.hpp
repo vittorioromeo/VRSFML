@@ -38,7 +38,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
     // NOLINTNEXTLINE(readability-redundant-member-init)
     Transform transform{}; //!< Transform
 
-    View view;
+    View view{}; //!< View (computed from the render target's size if unset)
 
     const Texture* texture{nullptr}; //!< Texture
     const Shader*  shader{nullptr};  //!< Shader

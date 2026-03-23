@@ -1,12 +1,12 @@
 // LICENSE AND COPYRIGHT (C) INFORMATION
 // https://github.com/vittorioromeo/VRSFML/blob/master/license.md
-#include <freetype/fttypes.h>
 
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Font.hpp"
+
 #include "SFML/Graphics/FontInfo.hpp"
 #include "SFML/Graphics/Glyph.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
@@ -21,6 +21,8 @@
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
 
@@ -33,9 +35,13 @@
 #include "SFML/System/Path.hpp"
 #include "SFML/System/PathUtils.hpp"
 
+#include "SFML/Base/AnkerlUnorderedDense.hpp"
+#include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Math/Floor.hpp"
 
+//
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
@@ -43,9 +49,11 @@
 #include FT_BITMAP_H
 #include FT_STROKER_H
 
-#include "SFML/Base/AnkerlUnorderedDense.hpp"
-#include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Builtin/Memcpy.hpp"
+#include <freetype/config/ftheader.h>
+#include <freetype/config/integer-types.h>
+#include <freetype/ftimage.h>
+#include <freetype/ftsystem.h>
+#include <freetype/fttypes.h>
 
 
 namespace

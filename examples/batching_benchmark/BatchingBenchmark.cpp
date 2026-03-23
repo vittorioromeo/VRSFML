@@ -175,7 +175,7 @@ int main()
                 if (useBatch)
                     drawableBatch.add(entity.sprite);
                 else
-                    window.draw(entity.sprite, {.view = {}, .texture = &textureAtlas.getTexture()});
+                    window.draw(entity.sprite, {.texture = &textureAtlas.getTexture()});
             }
 
             if (drawText)
@@ -183,12 +183,12 @@ int main()
                 if (useBatch)
                     drawableBatch.add(entity.text);
                 else
-                    window.draw(entity.text, {.view = {}});
+                    window.draw(entity.text);
             }
         }
 
         if (useBatch)
-            window.draw(drawableBatch, {.view = {}, .texture = &textureAtlas.getTexture()});
+            window.draw(drawableBatch, {.texture = &textureAtlas.getTexture()});
 
         window.display();
     }

@@ -1079,7 +1079,7 @@ int main()
                       })
                       .value();
 
-    auto rtGame = makeAARenderTexture(resolution.toVec2u(), /* desiredAALevel */ 8u).value();
+    auto rtGame = makeAARenderTexture(resolution.toVec2u(), {.antiAliasingLevel = 8u, .smooth = true}).value();
 
     //
     //

@@ -28,28 +28,24 @@ TEST_CASE("[Graphics] MultiContext" * doctest::skip(skipDisplayTests))
     SECTION("Test")
     {
         auto wnd = sf::RenderWindow::create({.size = {1024u, 1024u}, .title = "Window A"}).value();
-        wnd.drawIndexedVertices(
-            {
-                .vertexData    = vertices,
-                .vertexCount   = 1u,
-                .indexData     = indices,
-                .indexCount    = 1u,
-                .primitiveType = sf::PrimitiveType::Points,
-            },
-            {.view = {}});
+        wnd.drawIndexedVertices({
+            .vertexData    = vertices,
+            .vertexCount   = 1u,
+            .indexData     = indices,
+            .indexCount    = 1u,
+            .primitiveType = sf::PrimitiveType::Points,
+        });
 
         wnd.display();
 
         auto rt1 = sf::RenderTexture::create({1024u, 1024u}).value();
-        wnd.drawIndexedVertices(
-            {
-                .vertexData    = vertices,
-                .vertexCount   = 1u,
-                .indexData     = indices,
-                .indexCount    = 1u,
-                .primitiveType = sf::PrimitiveType::Points,
-            },
-            {.view = {}});
+        wnd.drawIndexedVertices({
+            .vertexData    = vertices,
+            .vertexCount   = 1u,
+            .indexData     = indices,
+            .indexCount    = 1u,
+            .primitiveType = sf::PrimitiveType::Points,
+        });
 
         rt1.display();
     }

@@ -345,11 +345,11 @@ public:
             {
                 m_logText.position = {50.f, static_cast<float>(i * 20) + 50.f};
                 m_logText.setString(m_log[i]);
-                m_window.draw(m_logText, {.view = {}});
+                m_window.draw(m_logText);
             }
 
-            m_window.draw(m_handlerText, {.view = {}});
-            m_window.draw(m_instructions, {.view = {}});
+            m_window.draw(m_handlerText);
+            m_window.draw(m_instructions);
             m_window.display();
         }
     }

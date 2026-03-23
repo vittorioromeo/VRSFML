@@ -92,7 +92,7 @@ namespace
             .rotation    = sf::radians(rotation),
             .textureRect = txr,
         },
-        sf::RenderStates{.view = {}, .texture = &texture});
+        sf::RenderStates{.texture = &texture});
 }
 
 } // namespace
@@ -793,7 +793,7 @@ int main()
                 });
 
                 for (auto& batch : batchesArray)
-                    window.draw(batch, {.view = {}, .texture = &textureAtlas.getTexture()});
+                    window.draw(batch, {.texture = &textureAtlas.getTexture()});
             };
 
             if (batchType == BatchType::Disabled || !multithreadedDraw)
@@ -815,9 +815,9 @@ int main()
                     });
 
                 if (batchType == BatchType::CPUStorage)
-                    window.draw(cpuDrawableBatches[0], {.view = {}, .texture = &textureAtlas.getTexture()});
+                    window.draw(cpuDrawableBatches[0], {.texture = &textureAtlas.getTexture()});
                 else if (batchType == BatchType::GPUStorage)
-                    window.draw(gpuDrawableBatches[0], {.view = {}, .texture = &textureAtlas.getTexture()});
+                    window.draw(gpuDrawableBatches[0], {.texture = &textureAtlas.getTexture()});
             }
             else if (batchType == BatchType::CPUStorage)
             {
