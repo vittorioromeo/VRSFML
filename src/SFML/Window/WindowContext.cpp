@@ -132,7 +132,7 @@ private:
     }
 
     ////////////////////////////////////////////////////////////
-    void unregisterImpl(auto idsPmr, const unsigned int glContextId, const unsigned int id)
+    void unregisterImpl(auto idsPmr, const unsigned int glContextId, const unsigned int id, auto fGlDeleteFunc)
     {
         std::lock_guard lock(m_mutex);
 
@@ -142,7 +142,7 @@ private:
         if (!idsSet.contains(id))
             return;
 
-        glCheck(glDeleteFramebuffers(1, &id));
+        glCheck(fGlDeleteFunc(1, &id));
         idsSet.erase(id);
     }
 
@@ -198,7 +198,7 @@ public:
     ////////////////////////////////////////////////////////////
     void unregisterFrameBuffer(const unsigned int glContextId, const unsigned int frameBufferId)
     {
-        unregisterImpl(&UnsharedContextResources::frameBufferIds, glContextId, frameBufferId);
+        unregisterImpl(&UnsharedContextResources::frameBufferIds, glContextId, frameBufferId, glDeleteFramebuffers);
     }
 
     ////////////////////////////////////////////////////////////
@@ -210,7 +210,7 @@ public:
     ////////////////////////////////////////////////////////////
     void unregisterVAO(const unsigned int glContextId, const unsigned int vaoId)
     {
-        unregisterImpl(&UnsharedContextResources::vaoIds, glContextId, vaoId);
+        unregisterImpl(&UnsharedContextResources::vaoIds, glContextId, vaoId, glDeleteVertexArrays);
     }
 };
 
