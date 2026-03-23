@@ -83,7 +83,7 @@ int main()
                       })
                       .value();
 
-    auto windowView = window.makeView();
+    auto windowView = window.computeView();
 
     // Create an audio context and get the default playback device
     auto               audioContext = sf::AudioContext::create().value();

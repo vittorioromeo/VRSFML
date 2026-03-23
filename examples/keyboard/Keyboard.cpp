@@ -1068,7 +1068,7 @@ int main()
                       })
                       .value();
 
-    auto windowView = window.makeView();
+    auto windowView = window.computeView();
 
     // Load sound buffers
     const auto errorSoundBuffer    = sf::SoundBuffer::loadFromFile(resourcesDir() / "error_005.ogg").value();

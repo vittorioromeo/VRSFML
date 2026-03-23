@@ -216,13 +216,11 @@ class Edge : public Effect
 public:
     void update(float time, float x, float y) override
     {
-        const auto surfaceView = sf::View::fromSize({800.f, 600.f});
-
         m_shader.setUniform(m_ulEdgeThreshold, sf::base::clamp(1.f - (x + y) / 2.f, 0.f, 1.f));
 
         // Render the updated scene to the off-screen surface
         m_surface.clear(sf::Color::White);
-        m_surface.draw(m_backgroundTexture, {.position = {135.f, 100.f}}, {.view = surfaceView});
+        m_surface.draw(m_backgroundTexture, {.position = {135.f, 100.f}}, {.view = {}});
 
         // Update the position of the moving entities
         constexpr int numEntities = 6;
@@ -235,7 +233,7 @@ public:
                 {sf::base::cos(0.25f * (time * static_cast<float>(i) + static_cast<float>(numEntities - i))) * 300 + 350,
                  sf::base::sin(0.25f * (time * static_cast<float>(numEntities - i) + static_cast<float>(i))) * 200 + 250};
 
-            m_surface.draw(entity, {.view = surfaceView, .texture = &m_entityTexture});
+            m_surface.draw(entity, {.view = {}, .texture = &m_entityTexture});
         }
 
         m_surface.display();
@@ -493,7 +491,7 @@ int main()
                       })
                       .value();
 
-    auto windowView = window.makeView();
+    auto windowView = window.computeView();
 
     // Start the game loop
     const sf::Clock clock;

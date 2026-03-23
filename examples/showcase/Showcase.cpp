@@ -296,7 +296,7 @@ private:
 
     ////////////////////////////////////////////////////////////
     sf::base::Vector<Bunny> m_bunnies;
-    sf::base::SizeT         m_bunnyTargetCount = 500'000u;
+    sf::base::SizeT         m_bunnyTargetCount = 100'000u;
 
     ////////////////////////////////////////////////////////////
     RNGFast m_rng{/* seed */ 1234};
@@ -377,7 +377,8 @@ public:
         sf::base::SizeT i = 0;
 
         {
-            auto drawCtx = m_deps.rtGame->withLockedRenderStates({.view = *m_deps.view, .texture = &m_textureAtlas.getTexture()});
+            auto drawCtx = m_deps.rtGame->withLockedRenderStates(
+                {.view = *m_deps.view, .texture = &m_textureAtlas.getTexture()});
 
             for (auto& [position, velocity, rotation, scale] : m_bunnies)
             {
@@ -801,8 +802,8 @@ class Game
 {
 private:
     ////////////////////////////////////////////////////////////
-    sf::View m_worldView  = sf::View::fromSize(resolution);
-    sf::View m_windowView = sf::View::fromSize(resolution);
+    sf::View m_worldView  = sf::View::fromScreenSize(resolution);
+    sf::View m_windowView = sf::View::fromScreenSize(resolution);
 
     ////////////////////////////////////////////////////////////
     sf::RenderWindow&  m_window;

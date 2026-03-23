@@ -1111,7 +1111,7 @@ int main()
                       })
                       .value();
 
-    auto gameView = sf::View::fromSize(windowSize);
+    auto windowView = sf::View::fromScreenSize(windowSize);
 
     // Load the application font and pass it to the Effect class
     const auto font = sf::Font::openFromFile(resourcesDir() / "tuffy.ttf").value();
@@ -1222,7 +1222,7 @@ int main()
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
-            if (handleAspectRatioAwareResize(*event, windowSize, gameView))
+            if (handleAspectRatioAwareResize(*event, windowSize, windowView))
                 continue;
 
             if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
@@ -1316,15 +1316,16 @@ int main()
         }
 
         // Update the current example
-        const auto [x, y] = gameView.unproject(sf::Mouse::getPosition(window).toVec2f(), window.getSize().toVec2f())
-                                .componentWiseDiv(windowSize.toVec2f());
+        const auto [x,
+                    y] = windowView.screenToWorld(sf::Mouse::getPosition(window).toVec2f(), window.getSize().toVec2f())
+                             .componentWiseDiv(windowSize.toVec2f());
 
         effects[current]->update(clock.getElapsedTime().asSeconds(), x, y);
 
         // Clear the window
         window.clear({50, 50, 50});
 
-        window.withRenderStates({.view = gameView})
+        window.withRenderStates({.view = windowView})
             .draw(*effects[current])
             .draw(textBackgroundTexture, {.position = {0.f, 520.f}, .color = {255, 255, 255, 200}})
             .drawAll(instructions, description, playbackDeviceText, playbackDeviceInstructions);

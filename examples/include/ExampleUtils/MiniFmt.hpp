@@ -7,6 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Abort.hpp"
+#include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
@@ -22,25 +23,6 @@ template <typename T>
 struct NonDeduced
 {
     using type = T;
-};
-
-
-////////////////////////////////////////////////////////////
-template <sf::base::SizeT N>
-struct [[nodiscard]] FixedString
-{
-    char data[N]{};
-
-    enum : sf::base::SizeT
-    {
-        size = N - 1 // Exclude null terminator
-    };
-
-    consteval FixedString(const char (&arr)[N])
-    {
-        for (sf::base::SizeT i = 0u; i < N; ++i)
-            data[i] = arr[i];
-    }
 };
 
 
@@ -81,6 +63,7 @@ struct [[nodiscard]] FixedString
             }
         }
     }
+
     return count;
 }
 
@@ -123,9 +106,7 @@ concept ConvertibleTo = SFML_BASE_IS_CONVERTIBLE(T, U);
     if (static_cast<sf::base::SizeT>(bufferEnd - buffer) < len)
         return nullptr;
 
-    for (sf::base::SizeT i = 0; i < len; ++i)
-        buffer[i] = src[i];
-
+    SFML_BASE_MEMCPY(buffer, src, len);
     return buffer + len;
 }
 
@@ -164,73 +145,13 @@ template <typename T>
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] inline char* formatIntoBufferImpl(
+[[nodiscard]] char* formatIntoBufferImpl(
     char*                              buffer,
     sf::base::SizeT                    bufferSize,
     sf::base::StringView               formatStr,
     const void* const*                 args,
     const ErasedFormatArgIntoBufferFn* formatters,
-    const sf::base::SizeT              argCount)
-{
-    const auto* const bufferEnd = buffer + bufferSize;
-
-    const auto*       p   = formatStr.data();
-    const auto* const end = p + formatStr.size();
-
-    sf::base::SizeT argIndex = 0u;
-
-    while (p < end)
-    {
-        // Check for placeholder "{}"
-        if (*p == '{' && (p + 1 < end) && *(p + 1) == '}')
-        {
-            if (argIndex >= argCount)
-                return nullptr;
-
-            // Call the type-erased formatter
-            auto* nextP = formatters[argIndex](buffer, bufferEnd, args[argIndex]);
-            ++argIndex;
-
-            if (nextP == nullptr)
-                return nullptr;
-
-            p += 2; // Skip "{}"
-            buffer = nextP;
-        }
-        // Handle Escaped "{{" -> "{"
-        else if (*p == '{' && (p + 1 < end) && *(p + 1) == '{')
-        {
-            if (buffer >= bufferEnd)
-                return nullptr;
-
-            *buffer++ = '{';
-            p += 2;
-        }
-        // Handle Escaped "}}" -> "}"
-        else if (*p == '}' && (p + 1 < end) && *(p + 1) == '}')
-        {
-            if (buffer >= bufferEnd)
-                return nullptr;
-
-            *buffer++ = '}';
-            p += 2;
-        }
-        else
-        {
-            if (buffer >= bufferEnd)
-                return nullptr;
-
-            *buffer++ = *p++;
-        }
-    }
-
-
-    if (buffer >= bufferEnd)
-        return nullptr; // No room for null terminator
-
-    *buffer = '\0';
-    return buffer;
-}
+    sf::base::SizeT                    argCount);
 
 
 ////////////////////////////////////////////////////////////
@@ -256,18 +177,22 @@ template <typename... Args>
 
 
 ////////////////////////////////////////////////////////////
+template <sf::base::SizeT N, typename... Args>
+[[nodiscard]] constexpr char* formatIntoBuffer(char (&buffer)[N],
+                                               typename NonDeduced<const FormatString<Args...>>::type formatString,
+                                               const Args&... args)
+{
+    return formatIntoBuffer(buffer, N, formatString, args...);
+}
+
+
+////////////////////////////////////////////////////////////
 template <typename... Args>
 [[nodiscard]] constexpr sf::base::String format(const typename NonDeduced<const FormatString<Args...>>::type formatString,
                                                 const Args&... args)
 {
-    enum : sf::base::SizeT
-    {
-        bufferSize = 512
-    };
-
-    char buffer[bufferSize];
-
-    const auto* const endPtr = formatIntoBuffer(buffer, bufferSize, formatString, args...);
+    char              buffer[512];
+    const auto* const endPtr = formatIntoBuffer(buffer, formatString, args...);
 
     if (endPtr == nullptr)
         sf::base::abort(); // Formatting failed (buffer too small)
@@ -284,15 +209,8 @@ void printImpl(const char* formattedString);
 template <typename... Args>
 void print(const typename NonDeduced<const FormatString<Args...>>::type formatString, const Args&... args)
 {
-    // TODO P1: code repetition
-    enum : sf::base::SizeT
-    {
-        bufferSize = 512
-    };
-
-    char buffer[bufferSize];
-
-    const auto* const endPtr = formatIntoBuffer(buffer, bufferSize, formatString, args...);
+    char              buffer[512];
+    const auto* const endPtr = formatIntoBuffer(buffer, formatString, args...);
 
     if (endPtr == nullptr)
         sf::base::abort(); // Formatting failed (buffer too small)
@@ -302,4 +220,4 @@ void print(const typename NonDeduced<const FormatString<Args...>>::type formatSt
 
 } // namespace minifmt
 
-// TODO P0: continue and use
+// TODO P1: continue and use

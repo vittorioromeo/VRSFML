@@ -44,7 +44,7 @@ int main()
                       })
                       .value();
 
-    auto windowView = window.makeView();
+    auto windowView = window.computeView();
 
     // Open the application font and pass it to the Effect class
     const auto font = sf::Font::openFromFile("resources/tuffy.ttf").value();

@@ -1,3 +1,5 @@
+#include "SystemUtil.hpp"
+
 #include "SFML/Graphics/RenderWindow.hpp"
 
 // Other 1st party headers
@@ -6,11 +8,20 @@
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/View.hpp"
 
-#include "SFML/Window/WindowSettings.hpp"
+#include "SFML/Window/ContextSettings.hpp"
+#include "SFML/Window/WindowHandle.hpp"
 
-#include "SFML/System/UnicodeString.hpp"
+#include "SFML/System/Angle.hpp"
+#include "SFML/System/Rect2.hpp"
+#include "SFML/System/Vec2.hpp"
 
+#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/Trait/HasVirtualDestructor.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <Doctest.hpp>
 
@@ -49,7 +60,7 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 #endif
             CHECK(!window.isSrgb());
 
-            const auto defaultView = sf::View::fromSize({256.f, 256.f});
+            const auto defaultView = sf::View::fromScreenSize({256.f, 256.f});
 
             CHECK(defaultView.center == sf::Vec2f{128, 128});
             CHECK(defaultView.size == sf::Vec2f{256, 256});
@@ -73,7 +84,7 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 #endif
             CHECK(!window.isSrgb());
 
-            const auto defaultView = sf::View::fromSize({240.f, 300.f});
+            const auto defaultView = sf::View::fromScreenSize({240.f, 300.f});
 
             CHECK(defaultView.center == sf::Vec2f{120, 150});
             CHECK(defaultView.size == sf::Vec2f{240, 300});

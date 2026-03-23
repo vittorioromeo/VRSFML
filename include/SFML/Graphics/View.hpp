@@ -85,8 +85,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    // TODO P0: rename?
-    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr View fromSize(const Vec2f& size)
+    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr View fromScreenSize(const Vec2f& size)
     {
         return {.center = size / 2.f, .size = size};
     }
@@ -121,6 +120,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
                 b * (center.x * sine - center.y * cosine)};
     }
 
+
     ////////////////////////////////////////////////////////////
     /// \brief Get the inverse projection transform of the view
     ///
@@ -154,17 +154,17 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     /// (e.g., a name tag or health bar) to a sprite in the world,
     /// by calculating its screen position every frame.
     ///
-    /// This function is the inverse of `unproject`.
+    /// This function is the inverse of `screenToWorld`.
     ///
     /// \param point The point to transform, in world coordinates.
     /// \param targetSize The size of the render target the view is applied to.
     ///
     /// \return The transformed point, in target (pixel) coordinates.
     ///
-    /// \see unproject
+    /// \see screenToWorld
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] Vec2f project(const Vec2f point, const Vec2f targetSize) const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] Vec2f worldToScreen(const Vec2f point, const Vec2f targetSize) const
     {
         // 1. Transform to NDC [-1, 1]
         const Vec2f normalized = getTransform().transformPoint(point);
@@ -175,6 +175,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
         // 3. Map into viewport and finally scale up to target pixel size
         return (relativePos.componentWiseMul(viewport.size) + viewport.position).componentWiseMul(targetSize);
     }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Transform a 2D point from target (pixel) coordinates to world coordinates.
@@ -187,7 +188,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     /// into a position in the game world, for object selection, character
     /// movement, etc.
     ///
-    /// This function is the inverse of `project`.
+    /// This function is the inverse of `worldToScreen`.
     ///
     /// Usage example:
     /// \code
@@ -199,12 +200,12 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     /// sf::Vec2f mousePixelPos(400, 300);
     ///
     /// // Find out where that click corresponds to in the game world
-    /// sf::Vec2f worldPos = gameView.unproject(mousePixelPos, targetSize);
+    /// sf::Vec2f worldPos = gameView.screenToWorld(mousePixelPos, targetSize);
     /// // worldPos will be approximately (100, 100), the center of the view.
     ///
     /// // Now, let's go the other way to confirm.
     /// // Where would the world origin (0, 0) appear on the screen?
-    /// sf::Vec2f originPixelPos = gameView.project({0, 0}, targetSize);
+    /// sf::Vec2f originPixelPos = gameView.worldToScreen({0, 0}, targetSize);
     /// // originPixelPos will be approximately (0, 0), the top-left of the screen.
     /// \endcode
     ///
@@ -213,10 +214,10 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     ///
     /// \return The transformed point, in world coordinates.
     ///
-    /// \see project
+    /// \see worldToScreen
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] Vec2f unproject(const Vec2f point, const Vec2f targetSize) const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] Vec2f screenToWorld(const Vec2f point, const Vec2f targetSize) const
     {
         // 1. Normalize window pixels to [0, 1]
         const Vec2f windowNorm = point.componentWiseDiv(targetSize);
@@ -231,6 +232,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
         return getInverseTransform().transformPoint(normalized);
     }
 
+
     ////////////////////////////////////////////////////////////
     /// \brief Get the viewport of this view in pixels, applied to a specific size
     ///
@@ -244,7 +246,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     /// \return Viewport rectangle, expressed in pixels
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] Rect2i getPixelViewport(const Vec2f targetSize) const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] Rect2i computePixelViewport(const Vec2f targetSize) const
     {
         return Rect2<long>({SFML_BASE_MATH_LROUNDF(targetSize.x * viewport.position.x),
                             SFML_BASE_MATH_LROUNDF(targetSize.y * viewport.position.y)},
@@ -252,6 +254,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
                             SFML_BASE_MATH_LROUNDF(targetSize.y * viewport.size.y)})
             .toRect2i();
     }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the scissor rectangle of a view, applied to a specific size
@@ -266,7 +269,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     /// \return Scissor rectangle, expressed in pixels
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] Rect2i getPixelScissor(const Vec2f targetSize) const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] Rect2i computePixelScissor(const Vec2f targetSize) const
     {
         return Rect2<long>({SFML_BASE_MATH_LROUNDF(targetSize.x * scissor.position.x),
                             SFML_BASE_MATH_LROUNDF(targetSize.y * scissor.position.y)},
@@ -275,11 +278,13 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
             .toRect2i();
     }
 
+
     ////////////////////////////////////////////////////////////
     /// \brief Compare strict equality between two `View` objects
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] SFML_GRAPHICS_API constexpr bool operator==(const View& rhs) const = default;
+
 
     ////////////////////////////////////////////////////////////
     // Member data
