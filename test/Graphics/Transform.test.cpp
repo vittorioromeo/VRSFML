@@ -4,7 +4,7 @@
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Rect2.hpp"
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Trait/IsAggregate.hpp"
 #include "SFML/Base/Trait/IsStandardLayout.hpp"
@@ -21,7 +21,6 @@
 
 #include <CommonTraits.hpp>
 #include <GraphicsUtil.hpp>
-#include <StringifyVectorUtil.hpp>
 
 TEST_CASE("[Graphics] sf::Transform")
 {

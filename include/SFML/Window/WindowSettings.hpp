@@ -9,7 +9,7 @@
 #include "SFML/Window/ContextSettings.hpp"
 
 #include "SFML/System/UnicodeString.hpp"
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
 
 namespace sf

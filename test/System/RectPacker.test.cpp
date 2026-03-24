@@ -1,6 +1,6 @@
 #include "SFML/System/RectPacker.hpp"
 
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
 #include <Doctest.hpp>
 
