@@ -6,22 +6,24 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Config.hpp"
+#include "SFML/Config.hpp" // IWYU pragma: keep
 
 #include "SFML/GLUtils/GLBufferObject.hpp"
-#include "SFML/GLUtils/GLCheck.hpp"
-#include "SFML/GLUtils/Glad.hpp"
 
-#include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Builtin/Memcpy.hpp"
-#include "SFML/Base/Macros.hpp"
-#include "SFML/Base/MinMaxMacros.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 #ifdef SFML_OPENGL_ES
     #include "SFML/System/Err.hpp"
 
     #include "SFML/Base/Abort.hpp"
+#else
+    #include "SFML/GLUtils/GLCheck.hpp"
+    #include "SFML/GLUtils/Glad.hpp"
+
+    #include "SFML/Base/Assert.hpp"
+    #include "SFML/Base/Builtin/Memcpy.hpp"
+    #include "SFML/Base/Macros.hpp"
+    #include "SFML/Base/MinMaxMacros.hpp"
 #endif
 
 
