@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/GLUtils/GLDebugCallback.hpp"
 
-#include "SFML/Config.hpp"
+#include "SFML/Config.hpp" // IWYU pragma: keep
 
 #include "SFML/GLUtils/GLCheck.hpp"
 #include "SFML/GLUtils/Glad.hpp"

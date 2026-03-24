@@ -12,6 +12,7 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/BackInserter.hpp"
 #include "SFML/Base/Builtin/Strlen.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 
 #include <locale>
