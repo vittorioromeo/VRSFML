@@ -7,11 +7,14 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/InstanceAttributeBinder.hpp"
 
+#include "SFML/Graphics/GlDataType.hpp"
 #include "SFML/Graphics/Priv/EnumToGlEnumConversions.hpp"
 #include "SFML/Graphics/VBOHandle.hpp"
 
 #include "SFML/GLUtils/GLCheck.hpp"
 #include "SFML/GLUtils/Glad.hpp"
+
+#include "SFML/Base/SizeT.hpp"
 
 
 namespace sf

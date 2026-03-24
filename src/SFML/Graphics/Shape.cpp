@@ -11,6 +11,7 @@
 #include "SFML/Graphics/ShapeUtils.hpp"
 #include "SFML/Graphics/VertexUtils.hpp"
 
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/LambdaMacros.hpp"

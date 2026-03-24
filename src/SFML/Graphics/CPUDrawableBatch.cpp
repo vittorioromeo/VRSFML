@@ -9,7 +9,7 @@
 
 
 ////////////////////////////////////////////////////////////
-#include "SFML/Graphics/DrawableBatchImpl.inl"
+#include "SFML/Graphics/DrawableBatchImpl.inl" // IWYU pragma: keep
 
 
 namespace sf::priv
