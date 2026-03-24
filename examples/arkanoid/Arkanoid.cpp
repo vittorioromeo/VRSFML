@@ -14,7 +14,7 @@
 #include "SFML/Window/Keyboard.hpp"
 
 #include "SFML/System/RectUtils.hpp"
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Optional.hpp"

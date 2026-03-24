@@ -15,7 +15,7 @@
 #include "SFML/Window/WindowHandle.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"

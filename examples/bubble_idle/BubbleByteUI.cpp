@@ -1,8 +1,10 @@
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
 #include "Achievements.hpp"
 #include "Aliases.hpp"
+#include "BubbleIdleApp.hpp"
 #include "BubbleIdleMain.hpp"
 #include "BubbleType.hpp"
 #include "Cat.hpp"
@@ -24,6 +26,7 @@
 #include "ShrineType.hpp"
 #include "Sounds.hpp"
 #include "Stats.hpp"
+#include "Steam.hpp"
 #include "Version.hpp"
 
 #include "ExampleUtils/Easing.hpp"
@@ -35,14 +38,12 @@
 #include "SFML/ImGui/ImGuiContext.hpp"
 
 #include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/DrawTextureSettings.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Shader.hpp"
 #include "SFML/Graphics/Sprite.hpp"
-#include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/TextureAtlas.hpp"
 
@@ -51,7 +52,7 @@
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Rect2.hpp"
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Algorithm/AnyOf.hpp"
 #include "SFML/Base/Algorithm/Count.hpp"
@@ -84,6 +85,24 @@
 #include <cstdlib>
 #include <cstring>
 
+
+////////////////////////////////////////////////////////////
+bool debugMode = false;
+
+////////////////////////////////////////////////////////////
+void runBubbleIdleApp()
+{
+#ifdef BUBBLEBYTE_USE_STEAMWORKS
+    hg::Steam::SteamManager steamMgr;
+    steamMgr.requestStatsAndAchievements();
+    steamMgr.runCallbacks();
+
+    // Using a heap-allocation here because `Main` exceeds the stack size
+    sf::base::makeUnique<Main>(steamMgr)->run();
+#else
+    sf::base::makeUnique<Main>()->run();
+#endif
+}
 
 ////////////////////////////////////////////////////////////
 float Main::uiGetMaxWindowHeight() const

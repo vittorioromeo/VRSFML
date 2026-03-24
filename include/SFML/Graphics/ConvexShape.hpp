@@ -10,7 +10,7 @@
 
 #include "SFML/Graphics/Shape.hpp"
 
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Vector.hpp"
 

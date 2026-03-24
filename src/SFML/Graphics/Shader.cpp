@@ -22,7 +22,7 @@
 #include "SFML/System/InputStream.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/PathUtils.hpp"
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec2Base.hpp"
 #include "SFML/System/Vec3.hpp"
 
 #include "SFML/Base/AnkerlUnorderedDense.hpp"

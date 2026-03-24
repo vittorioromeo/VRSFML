@@ -161,7 +161,7 @@
 
 
 ////////////////////////////////////////////////////////////<
-inline bool debugMode = false;
+extern bool debugMode;
 
 ////////////////////////////////////////////////////////////
 inline bool handleBubbleCollision(const float deltaTimeMs, Bubble& iBubble, Bubble& jBubble)

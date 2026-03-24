@@ -2,7 +2,7 @@
 
 #include "ExampleUtils/Xoroshiro128PlusBitGenerator.hpp"
 
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/AssertAndAssume.hpp"
 #include "SFML/Base/Constants.hpp"

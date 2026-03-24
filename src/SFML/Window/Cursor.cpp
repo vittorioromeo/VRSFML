@@ -10,7 +10,7 @@
 #include "SFML/Window/SDLLayer.hpp"
 
 #include "SFML/System/Err.hpp"
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_surface.h>

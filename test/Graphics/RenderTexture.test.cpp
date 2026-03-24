@@ -8,7 +8,7 @@
 #include "SFML/Graphics/TextureWrapMode.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Trait/IsCopyAssignable.hpp"

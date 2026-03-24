@@ -19,13 +19,14 @@
 #undef __cpp_lib_formatters
 #undef __glibcxx_want_formatters
 
+#define JSON_NO_IO
 #include "json.hpp"
 
 #pragma GCC diagnostic pop
 
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Time.hpp"
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StringView.hpp"

@@ -14,7 +14,7 @@
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Rect2.hpp"
 #include "SFML/System/RectPacker.hpp"
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Optional.hpp"
 

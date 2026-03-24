@@ -9,7 +9,7 @@
 
 #include "SFML/Graphics/ShapeUtils.hpp"
 
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Assert.hpp"
 

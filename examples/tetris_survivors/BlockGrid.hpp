@@ -11,7 +11,7 @@
 
 #include "ExampleUtils/ControlFlow.hpp"
 
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/Vector.hpp"

@@ -1,6 +1,6 @@
 #include "SFML/Window/Cursor.hpp"
 
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Trait/IsCopyAssignable.hpp"

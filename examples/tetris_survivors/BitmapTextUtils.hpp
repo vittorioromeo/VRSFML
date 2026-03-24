@@ -12,10 +12,11 @@
 #include "SFML/Graphics/Vertex.hpp"
 
 #include "SFML/System/Rect2.hpp"
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/FromChars.hpp"
 #include "SFML/Base/InPlaceVector.hpp"
+#include "SFML/Base/Math/Sin.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StringView.hpp"

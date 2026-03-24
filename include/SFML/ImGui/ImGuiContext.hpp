@@ -14,7 +14,7 @@
 
 #include "SFML/System/Rect2.hpp"
 #include "SFML/System/Time.hpp"
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/UniquePtr.hpp"
 

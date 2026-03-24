@@ -2,7 +2,7 @@
 
 #include "Countdown.hpp"
 
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
 
 ////////////////////////////////////////////////////////////

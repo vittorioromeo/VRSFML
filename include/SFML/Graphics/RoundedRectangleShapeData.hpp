@@ -11,7 +11,7 @@
 #include "SFML/Graphics/Priv/ShapeMacros.hpp"
 #include "SFML/Graphics/Priv/TransformableMacros.hpp"
 
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
 
 namespace sf

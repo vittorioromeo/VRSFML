@@ -14,7 +14,7 @@
 
 #include "SFML/System/Path.hpp"
 #include "SFML/System/UnicodeString.hpp"
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"

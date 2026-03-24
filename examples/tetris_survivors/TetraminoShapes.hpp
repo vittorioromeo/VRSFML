@@ -4,12 +4,15 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "ShapeBlockSequence.hpp"
 #include "ShapeDimension.hpp"
 #include "ShapeMatrix.hpp"
 
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
+#include "SFML/Base/Array.hpp"
 #include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 
 namespace tsurv::tetramino_shapes
