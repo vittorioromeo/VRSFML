@@ -10,6 +10,8 @@
 
 #include "SFML/Window/ContextSettings.hpp"
 
+#include "SFML/System/Vec2.hpp"
+
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/UniquePtr.hpp"
@@ -303,6 +305,53 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static priv::SensorManager& getSensorManager();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get a reusable scratch framebuffer for read operations
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static unsigned int getTransferScratchReadFramebuffer();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get a reusable scratch framebuffer for draw operations
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static unsigned int getTransferScratchDrawFramebuffer();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get a reusable scratch framebuffer for intermediate flipped copies
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static unsigned int getTransferScratchFlipFramebuffer();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Ensure a scratch texture exists for intermediate flipped copies
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static unsigned int ensureTransferScratchFlipTexture(Vec2u size, bool sRgb);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Copy framebuffer contents with vertical flipping
+    ///
+    /// Copies source framebuffer contents to destination while vertically flipping
+    /// the image. On OpenGL ES this uses a reusable intermediate texture/FBO pair,
+    /// while on desktop OpenGL this is done via a direct blit with inverted coordinates.
+    ///
+    /// \param sRgb   Whether the scratch texture should use sRGB (only used for OpenGL ES)
+    /// \param size   Dimensions of the region to copy
+    /// \param srcFBO Source framebuffer ID
+    /// \param dstFBO Destination framebuffer ID
+    /// \param srcPos Source region starting position (default: 0,0)
+    /// \param dstPos Destination region starting position (default: 0,0)
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool copyFlippedFramebuffer(
+        bool         sRgb,
+        Vec2u        size,
+        unsigned int srcFBO,
+        unsigned int dstFBO,
+        Vec2u        srcPos = {0u, 0u},
+        Vec2u        dstPos = {0u, 0u});
 };
 
 } // namespace sf

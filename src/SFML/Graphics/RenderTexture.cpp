@@ -13,6 +13,8 @@
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/TextureWrapMode.hpp"
 
+#include "SFML/Window/WindowContext.hpp"
+
 #include "SFML/GLUtils/CopyFramebuffer.hpp"
 #include "SFML/GLUtils/GLCheck.hpp"
 #include "SFML/GLUtils/GLRenderBufferObject.hpp"
@@ -420,7 +422,7 @@ public:
         const priv::ScissorDisableGuard scissorDisableGuard;
 
         // Blit from the auxiliary (multisample or temp) FBO to the main FBO, flipping Y axis
-        if (!priv::copyFlippedFramebuffer(texture.isSrgb(), size, auxFramebufferIt->second, framebufferIt->second))
+        if (!WindowContext::copyFlippedFramebuffer(texture.isSrgb(), size, auxFramebufferIt->second, framebufferIt->second))
             priv::err() << "Error flipping render texture during FBO copy";
     }
 };
