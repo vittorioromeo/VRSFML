@@ -15,7 +15,6 @@
 
 #include "SFML/Window/WindowContext.hpp"
 
-#include "SFML/GLUtils/CopyFramebuffer.hpp"
 #include "SFML/GLUtils/GLCheck.hpp"
 #include "SFML/GLUtils/GLRenderBufferObject.hpp"
 #include "SFML/GLUtils/GLUniqueResource.hpp"

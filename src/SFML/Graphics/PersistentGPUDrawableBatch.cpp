@@ -6,11 +6,14 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/DrawableBatch.hpp"
+#include "SFML/Graphics/IndexType.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
+#include "SFML/GLUtils/GLBufferObject.hpp"
 #include "SFML/GLUtils/GLPersistentBuffer.hpp"
 #include "SFML/GLUtils/GLVAOGroup.hpp"
 
+#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 
