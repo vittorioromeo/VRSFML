@@ -4,7 +4,7 @@
 
 #include "SFML/Window/Event.hpp"
 
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Optional.hpp"
 

@@ -1,6 +1,6 @@
 #include "SFML/System/Rect2.hpp"
 #include "SFML/System/RectUtils.hpp"
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
 #include <Doctest.hpp>
 

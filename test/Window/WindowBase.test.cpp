@@ -7,7 +7,7 @@
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Time.hpp"
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Trait/HasVirtualDestructor.hpp"
 #include "SFML/Base/Trait/IsCopyAssignable.hpp"

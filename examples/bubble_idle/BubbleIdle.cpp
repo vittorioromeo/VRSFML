@@ -1,13 +1,6 @@
-#include "BubbleIdleMain.hpp"
+#include "BubbleIdleApp.hpp"
 
 #include "SFML/Base/Builtin/Strcmp.hpp"
-#include "SFML/Base/UniquePtr.hpp"
-
-
-////////////////////////////////////////////////////////////
-#ifdef BUBBLEBYTE_USE_STEAMWORKS
-    #include "Steam.hpp"
-#endif
 
 
 ////////////////////////////////////////////////////////////
@@ -19,16 +12,7 @@ int main(int argc, const char** argv)
     if (argc >= 2 && SFML_BASE_STRCMP(argv[1], "dev") == 0)
         debugMode = true;
 
-#ifdef BUBBLEBYTE_USE_STEAMWORKS
-    hg::Steam::SteamManager steamMgr;
-    steamMgr.requestStatsAndAchievements();
-    steamMgr.runCallbacks();
-
-    // Using a heap-allocation here because `Main` exceeds the stack size
-    sf::base::makeUnique<Main>(steamMgr)->run();
-#else
-    sf::base::makeUnique<Main>()->run();
-#endif
+    runBubbleIdleApp();
 }
 
 // TODO P1: review all tooltips

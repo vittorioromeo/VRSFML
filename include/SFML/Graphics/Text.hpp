@@ -20,7 +20,7 @@
 #include "SFML/System/LocalAnchorPointMixin.hpp"
 #include "SFML/System/Rect2.hpp"
 #include "SFML/System/UnicodeString.hpp"
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/EnumClassBitwiseOps.hpp"
 #include "SFML/Base/IntTypes.hpp"

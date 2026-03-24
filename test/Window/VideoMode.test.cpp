@@ -2,7 +2,7 @@
 
 #include "SFML/Window/VideoModeUtils.hpp"
 
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Algorithm/IsSorted.hpp"
 #include "SFML/Base/Trait/IsAggregate.hpp"

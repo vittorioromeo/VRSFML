@@ -34,7 +34,7 @@
 #include "SFML/System/Time.hpp"
 #include "SFML/System/UnicodeString.hpp"
 #include "SFML/System/UnicodeStringUtfUtils.hpp"
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Array.hpp"
