@@ -7,8 +7,6 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/DefaultShader.hpp"
 
-#include "SFML/Config.hpp"
-
 #include "SFML/Graphics/Shader.hpp"
 
 #include "SFML/Base/Optional.hpp"

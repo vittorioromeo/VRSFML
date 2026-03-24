@@ -16,6 +16,8 @@
 #include "SFML/System/RectPacker.hpp"
 #include "SFML/System/Vec2Base.hpp"
 
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
 
 

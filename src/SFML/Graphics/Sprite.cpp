@@ -7,6 +7,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Sprite.hpp"
 
+#include "SFML/System/Rect2.hpp"
+
 #include "SFML/Base/Math/Fabs.hpp"
 
 

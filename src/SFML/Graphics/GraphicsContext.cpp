@@ -28,6 +28,8 @@
 
 namespace sf
 {
+namespace
+{
 ///////////////////////////////////////////////////////////
 struct GraphicsContextImpl
 {
@@ -35,8 +37,7 @@ struct GraphicsContextImpl
     Texture builtInWhiteDotTexture;
 };
 
-namespace
-{
+
 ///////////////////////////////////////////////////////////
 constinit sf::base::Optional<GraphicsContextImpl> installedGraphicsContext;
 constinit std::atomic<unsigned int>               graphicsContextRC{0u};
