@@ -8,6 +8,8 @@
 #include "SFML/System/FileInputStream.hpp"
 
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 
 #ifdef SFML_SYSTEM_ANDROID
     #include "SFML/System/Android/Activity.hpp"
@@ -20,6 +22,8 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/SizeT.hpp"
+
+#include <cstdio>
 
 
 namespace sf

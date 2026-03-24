@@ -3,14 +3,20 @@
 #include "SFML/System/UnicodeStringUtfUtils.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <Doctest.hpp>
 
-#include <CommonTraits.hpp>
 #include <GraphicsUtil.hpp>
 #include <StringifyStdStringUtil.hpp>
 
+#include <ios>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 
 namespace

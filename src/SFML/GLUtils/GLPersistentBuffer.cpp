@@ -7,6 +7,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/GLUtils/GLPersistentBuffer.hpp"
 
+#include "SFML/GLUtils/GLBufferObject.hpp"
+
 
 namespace sf
 {

@@ -8,6 +8,7 @@
 #include "SFML/Base/SinCosLookup.hpp"
 
 #include "SFML/Base/Array.hpp"
+#include "SFML/Base/Constants.hpp"
 
 
 namespace sf::base::priv

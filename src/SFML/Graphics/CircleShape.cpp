@@ -7,12 +7,15 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/CircleShape.hpp"
 
+#include "SFML/Graphics/Shape.hpp"
 #include "SFML/Graphics/ShapeUtils.hpp"
 
 #include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Constants.hpp"
 #include "SFML/Base/LambdaMacros.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 
 namespace sf

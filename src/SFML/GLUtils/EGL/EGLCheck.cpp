@@ -12,6 +12,8 @@
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Path.hpp"
 
+#include "SFML/Base/Assert.hpp"
+
 
 namespace sf::priv
 {

@@ -2,7 +2,6 @@
 
 // Other 1st party headers
 #include "SFML/Audio/ChannelMap.hpp"
-#include "SFML/Audio/SoundChannel.hpp"
 #include "SFML/Audio/SoundFileReader.hpp"
 #include "SFML/Audio/SoundFileWriter.hpp"
 
@@ -12,10 +11,13 @@
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/Trait/IsTriviallyCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsTriviallyCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
 
 #include <Doctest.hpp>
 
-#include <CommonTraits.hpp>
 #include <StringifyOptionalUtil.hpp>
 #include <SystemUtil.hpp>
 

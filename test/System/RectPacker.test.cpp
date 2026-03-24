@@ -2,9 +2,10 @@
 
 #include "SFML/System/Vec2Base.hpp"
 
+#include "SFML/Base/Optional.hpp"
+
 #include <Doctest.hpp>
 
-#include <CommonTraits.hpp>
 #include <SystemUtil.hpp>
 
 

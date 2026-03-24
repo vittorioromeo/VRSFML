@@ -2,6 +2,7 @@
 #include "Bubble.hpp"
 #include "Cat.hpp"
 #include "Countdown.hpp"
+#include "Doll.hpp"
 #include "HellPortal.hpp"
 #include "Milestones.hpp"
 #include "Playthrough.hpp"
@@ -9,9 +10,14 @@
 #include "PurchasableScalingValue.hpp"
 #include "Serialization.hpp"
 #include "Shrine.hpp"
+#include "Stats.hpp"
 #include "Version.hpp"
 
 #include "ExampleUtils/Timer.hpp"
+
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-conversion"
@@ -34,7 +40,9 @@
 #include "SFML/Base/Trait/IsSame.hpp"
 #include "SFML/Base/Trait/RemoveCVRef.hpp"
 
+#include <exception>
 #include <filesystem>
+#include <stdexcept>
 #include <string>
 
 // NOLINTBEGIN(readability-identifier-naming, misc-use-internal-linkage)

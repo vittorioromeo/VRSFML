@@ -64,7 +64,7 @@ public:
     /// \param settings Data of the polygon
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit ConvexShape(const Data& settings);
+    [[nodiscard]] explicit ConvexShape(const Data& data);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the number of points of the polygon

@@ -8,9 +8,12 @@
 #include "SFML/System/RectPacker.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Span.hpp"
 
 #define STBRP_STATIC
 #define STB_RECT_PACK_IMPLEMENTATION

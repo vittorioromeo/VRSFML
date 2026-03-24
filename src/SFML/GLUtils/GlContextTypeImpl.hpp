@@ -6,7 +6,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Config.hpp"
+#include "SFML/Config.hpp" // IWYU pragma: keep
 
 #ifdef SFML_SYSTEM_EMSCRIPTEN
     #include "SFML/GLUtils/EGL/EGLContext.hpp"
