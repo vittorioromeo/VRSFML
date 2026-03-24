@@ -12,6 +12,7 @@
 #include "SFML/Graphics/TextureWrapMode.hpp"
 
 #include "SFML/Window/Window.hpp"
+#include "SFML/Window/WindowContext.hpp"
 
 #include "SFML/GLUtils/BlitFramebuffer.hpp"
 #include "SFML/GLUtils/CopyFramebuffer.hpp"
@@ -21,7 +22,6 @@
 #include "SFML/GLUtils/GLUtils.hpp"
 #include "SFML/GLUtils/Glad.hpp"
 #include "SFML/GLUtils/TextureSaver.hpp"
-#include "SFML/GLUtils/TransferScratch.hpp"
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Path.hpp"
@@ -355,7 +355,7 @@ Image Texture::copyToImage() const
 
     // OpenGL ES doesn't have the glGetTexImage function, the only way to read
     // from a texture is to bind it to a FBO and use glReadPixels
-    const auto frameBuffer = static_cast<GLuint>(priv::getTransferScratchReadFramebuffer());
+    const auto frameBuffer = static_cast<GLuint>(WindowContext::getTransferScratchReadFramebuffer());
     if (frameBuffer != 0u)
     {
         const priv::FramebufferSaver framebufferSaver;
@@ -440,14 +440,14 @@ bool Texture::update(const Texture& texture, Vec2u dest)
 
     SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
-    const auto sourceFrameBuffer = static_cast<GLuint>(priv::getTransferScratchReadFramebuffer());
+    const auto sourceFrameBuffer = static_cast<GLuint>(WindowContext::getTransferScratchReadFramebuffer());
     if (sourceFrameBuffer == 0u)
     {
         priv::err() << "Cannot copy texture, failed to acquire source frame buffer object";
         return false;
     }
 
-    const auto destFrameBuffer = static_cast<GLuint>(priv::getTransferScratchDrawFramebuffer());
+    const auto destFrameBuffer = static_cast<GLuint>(WindowContext::getTransferScratchDrawFramebuffer());
     if (destFrameBuffer == 0u)
     {
         priv::err() << "Cannot copy texture, failed to acquire destination frame buffer object";
@@ -528,7 +528,7 @@ bool Texture::update(const Window& window, Vec2u dest)
 
     SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
-    const auto destFrameBuffer = static_cast<GLuint>(priv::getTransferScratchDrawFramebuffer());
+    const auto destFrameBuffer = static_cast<GLuint>(WindowContext::getTransferScratchDrawFramebuffer());
     if (destFrameBuffer == 0u)
     {
         priv::err() << "Cannot copy texture, failed to acquire a frame buffer object";
@@ -558,7 +558,7 @@ bool Texture::update(const Window& window, Vec2u dest)
             // Since we don't want scissor testing to interfere with our copying, we temporarily disable it for the blit if it is enabled
             const priv::ScissorDisableGuard scissorDisableGuard;
 
-            if (!priv::copyFlippedFramebuffer(m_sRgb, window.getSize(), 0u /* default FBO */, destFrameBuffer, {0u, 0u}, dest))
+            if (!WindowContext::copyFlippedFramebuffer(m_sRgb, window.getSize(), 0u /* default FBO */, destFrameBuffer, {0u, 0u}, dest))
             {
                 priv::err() << "Cannot copy texture, failed to copy flipped framebuffer";
                 success = false;
