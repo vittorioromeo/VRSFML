@@ -80,7 +80,7 @@ struct [[nodiscard]] Profile
 
     float ppBGVibrance   = 0.2f;
     float ppBGSaturation = 0.8f;
-    float ppBGLightness  = 0.9f;
+    float ppBGLightness  = 0.85f;
     float ppBGSharpness  = 0.f;
     float ppBGBlur       = 0.5f;
 

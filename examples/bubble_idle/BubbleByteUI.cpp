@@ -4642,9 +4642,21 @@ void Main::uiTabBarSettings()
 
         ImGui::SameLine();
 
+        if (ImGui::Button("Ritual"))
+            if (auto* wc = cachedWitchCat)
+                wc->cooldown.value = 12000.f;
+
+        ImGui::SameLine();
+
         if (ImGui::Button("Do Copy Ritual"))
             if (auto* wc = cachedCopyCat)
                 wc->cooldown.value = 10.f;
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Copy Ritual"))
+            if (auto* wc = cachedCopyCat)
+                wc->cooldown.value = 12000.f;
 
         ImGui::SameLine();
 

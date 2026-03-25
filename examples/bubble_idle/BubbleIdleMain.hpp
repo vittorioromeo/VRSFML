@@ -227,6 +227,7 @@ inline bool handleCatShrineCollision(const float deltaTimeMs, Cat& cat, Shrine& 
         .radius   = rng.getF(0.07f, 0.16f) * 256.f *
                     remap(static_cast<float>(pt.psvBubbleCount.nPurchases), 0.f, 30.f, 1.1f, 0.8f),
         .rotation = 0.f,
+        .torque   = 0.f,
         .hueMod   = 0.f,
 
         .repelledCountdown  = {},
@@ -2273,6 +2274,40 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
+    void turnBubbleInto(Bubble& bubble, const BubbleType newType)
+    {
+        bubble.type = newType;
+
+        if (newType == BubbleType::Normal)
+        {
+            if (bubble.type == BubbleType::Bomb)
+                bombIdxToCatIdx.erase(static_cast<sf::base::SizeT>(&bubble - pt->bubbles.data()));
+
+            bubble.rotation = 0.f;
+            bubble.torque   = 0.f;
+            bubble.hueMod   = 0.f;
+
+            return;
+        }
+
+        if (newType == BubbleType::Star || newType == BubbleType::Nova)
+        {
+            bubble.hueMod = rng.getF(0.f, 360.f);
+            bubble.torque = 0.001f * rng.getSignF();
+
+            return;
+        }
+
+        if (newType == BubbleType::Bomb)
+        {
+            bubble.torque = 0.004f * rng.getSignF();
+            bubble.hueMod = 0.f;
+
+            return;
+        }
+    }
+
+    ////////////////////////////////////////////////////////////
     void doWizardSpellStarpawConversion(Cat& wizardCat)
     {
         const auto range       = getComputedRangeByCatTypeOrCopyCat(wizardCat.type);
@@ -2293,8 +2328,8 @@ struct Main
             if (rng.getF(0.f, 99.f) > pt->psvStarpawPercentage.currentValue())
                 return ControlFlow::Continue;
 
-            bubble.type   = pt->perm.starpawNova ? BubbleType::Nova : BubbleType::Star;
-            bubble.hueMod = rng.getF(0.f, 360.f);
+
+            turnBubbleInto(bubble, pt->perm.starpawNova ? BubbleType::Nova : BubbleType::Star);
             bubble.velocity.y -= rng.getF(0.025f, 0.05f);
 
             spawnParticles(1, bubble.position, ParticleType::Star, 0.5f, 0.35f);
@@ -3109,17 +3144,6 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void turnBubbleNormal(Bubble& bubble)
-    {
-        if (bubble.type == BubbleType::Bomb)
-            bombIdxToCatIdx.erase(static_cast<sf::base::SizeT>(&bubble - pt->bubbles.data()));
-
-        bubble.type     = BubbleType::Normal;
-        bubble.rotation = 0.f;
-        bubble.hueMod   = 0.f;
-    }
-
-    ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::Mouse::Button getLMB() const
     {
         return profile.invertMouseButtons ? sf::Mouse::Button::Right : sf::Mouse::Button::Left;
@@ -3365,8 +3389,7 @@ struct Main
             if (bubble.velocity.lengthSquared() > maxVelocityMagnitude * maxVelocityMagnitude)
                 bubble.velocity = bubble.velocity.normalized() * maxVelocityMagnitude;
 
-            if (bubble.type == BubbleType::Bomb)
-                bubble.rotation += deltaTimeMs * 0.01f;
+            bubble.rotation += deltaTimeMs * bubble.torque;
 
             if (bubble.type == BubbleType::Star || bubble.type == BubbleType::Nova)
                 bubble.hueMod += deltaTimeMs * 0.125f;
@@ -3416,17 +3439,23 @@ struct Main
                 const auto starType = isUnicatTranscendenceActive() ? BubbleType::Nova : BubbleType::Star;
 
                 if (!willBeStar && !willBeBomb)
-                    turnBubbleNormal(bubble);
+                    turnBubbleInto(bubble, BubbleType::Normal);
                 else if (willBeBomb && willBeStar)
-                    bubble.type = rng.getF(0.f, 1.f) > 0.5f ? starType : BubbleType::Bomb;
+                {
+                    turnBubbleInto(bubble, rng.getF(0.f, 1.f) > 0.5f ? starType : BubbleType::Bomb);
+                }
                 else if (willBeBomb)
-                    bubble.type = BubbleType::Bomb;
+                {
+                    turnBubbleInto(bubble, BubbleType::Bomb);
+                }
                 else if (willBeStar)
-                    bubble.type = starType;
+                {
+                    turnBubbleInto(bubble, starType);
+                }
             }
             else if (bubble.position.y + bubble.radius < -128.f)
             {
-                turnBubbleNormal(bubble);
+                turnBubbleInto(bubble, BubbleType::Normal);
             }
 
             bubble.velocity.y += 0.00005f * deltaTimeMs;
@@ -3497,7 +3526,8 @@ struct Main
             return false;
         }
 
-        bool anyBubblePoppedByClicking = false;
+        Bubble* firstClickedBubble           = nullptr;
+        bool    firstClickedBubbleByMultiPop = false;
 
         forEachBubbleInRadius(clickPos,
                               128.f,
@@ -3516,9 +3546,24 @@ struct Main
                     return ControlFlow::Break;
                 }
 
-            anyBubblePoppedByClicking = true;
+            firstClickedBubble = &bubble;
+            return ControlFlow::Break;
+        });
 
-            if (pt->comboPurchased)
+        if (firstClickedBubble == nullptr && pt->multiPopEnabled && !pt->laserPopEnabled)
+            forEachBubbleInRadius(clickPos,
+                                  pt->psvPPMultiPopRange.currentValue(),
+                                  [&](Bubble& b)
+            {
+                firstClickedBubble           = &b;
+                firstClickedBubbleByMultiPop = true;
+
+                return ControlFlow::Break;
+            });
+
+        if (firstClickedBubble != nullptr)
+        {
+            if (!firstClickedBubbleByMultiPop && pt->comboPurchased)
             {
                 if (!pt->laserPopEnabled)
                 {
@@ -3547,14 +3592,14 @@ struct Main
             }
 
             const MoneyType
-                reward = computeFinalReward(/* bubble     */ bubble,
+                reward = computeFinalReward(/* bubble     */ *firstClickedBubble,
                                             /* multiplier */ 1.f,
                                             /* comboMult  */ getComboValueMult(combo, pt->laserPopEnabled ? playerComboDecayLaser : playerComboDecay),
                                             /* popperCat  */ nullptr);
 
             popWithRewardAndReplaceBubble({
                 .reward          = reward,
-                .bubble          = bubble,
+                .bubble          = *firstClickedBubble,
                 .xCombo          = combo,
                 .popSoundOverlap = true,
                 .popperCat       = nullptr,
@@ -3569,7 +3614,7 @@ struct Main
                                       pt->psvPPMultiPopRange.currentValue(),
                                       [&](Bubble& otherBubble)
                 {
-                    if (&otherBubble == &bubble)
+                    if (&otherBubble == firstClickedBubble)
                         return ControlFlow::Continue;
 
                     popWithRewardAndReplaceBubble({
@@ -3583,12 +3628,9 @@ struct Main
 
                     return ControlFlow::Continue;
                 });
+        }
 
-
-            return ControlFlow::Break;
-        });
-
-        return anyBubblePoppedByClicking;
+        return firstClickedBubble != nullptr;
     }
 
     ////////////////////////////////////////////////////////////
@@ -3687,11 +3729,9 @@ struct Main
 
         const auto transformBubble = [&](Bubble& bToTransform)
         {
-            bToTransform.type       = starBubbleType;
-            bToTransform.hueMod     = rng.getF(0.f, 360.f);
-            bToTransform.velocity.y = rng.getF(-0.1f, -0.05f);
-
+            turnBubbleInto(bToTransform, starBubbleType);
             spawnParticles(nStarParticles, bToTransform.position, ParticleType::Star, 0.5f, 0.35f);
+
             ++cat.hits;
         };
 
@@ -3769,7 +3809,7 @@ struct Main
             cat.pawOpacity  = 255.f;
             cat.pawRotation = (bubble.position - cat.position).angle() - sf::degrees(45);
 
-            bubble.type = BubbleType::Bomb;
+            turnBubbleInto(bubble, BubbleType::Bomb);
 
             const auto bubbleIdx = static_cast<sf::base::SizeT>(&bubble - pt->bubbles.data());
             const auto catIdx    = static_cast<sf::base::SizeT>(&cat - pt->cats.data());
@@ -4065,7 +4105,7 @@ struct Main
 
         Bubble* starBubble = nullptr;
 
-        const auto findRotatedStarBubble = [&](Bubble& bubble)
+        const auto findRotatedStarBubble = [&](Bubble& bubble) // TODO P0: change this to something sensible
         {
             if ((bubble.type != BubbleType::Star && bubble.type != BubbleType::Nova) || bubble.rotation == 0.f)
                 return ControlFlow::Continue;
@@ -4090,7 +4130,7 @@ struct Main
         cat.pawOpacity  = 255.f;
         cat.pawRotation = (bubble.position - cat.position).angle() + sf::degrees(45);
 
-        bubble.rotation += deltaTimeMs * 0.025f;
+        bubble.rotation += deltaTimeMs * 0.025f; // TODO P0: change this to something sensible
         spawnParticlesWithHue(230.f, 1, bubble.position, ParticleType::Star, 0.5f, 0.35f);
 
         if (bubble.rotation >= sf::base::tau)
@@ -4109,7 +4149,7 @@ struct Main
             spawnParticlesWithHue(230.f, 16, bubble.position, ParticleType::Star, 0.5f, 0.35f);
 
             pt->wisdom += wisdomReward;
-            turnBubbleNormal(bubble);
+            turnBubbleInto(bubble, BubbleType::Normal);
 
             cat.cooldown.value = maxCooldown;
 
@@ -4236,8 +4276,8 @@ struct Main
 
             if (b != nullptr && rng.getF(0.f, 100.f) < pt->psvPPRepulsoCatConverterChance.currentValue())
             {
-                b->type   = pt->perm.repulsoCatNovaConverterPurchased ? BubbleType::Nova : BubbleType::Star;
-                b->hueMod = rng.getF(0.f, 360.f);
+                turnBubbleInto(*b, pt->perm.repulsoCatNovaConverterPurchased ? BubbleType::Nova : BubbleType::Star);
+
                 spawnParticles(2, b->position, ParticleType::Star, 0.5f, 0.35f);
 
                 cat.textStatusShakeEffect.bump(rngFast, 1.5f);
@@ -5102,7 +5142,7 @@ struct Main
                             sounds.absorb.settings.position = {bubble.position.x, bubble.position.y};
                             playSound(sounds.absorb, /* maxOverlap */ 1u);
 
-                            turnBubbleNormal(bubble);
+                            turnBubbleInto(bubble, BubbleType::Normal);
                         }
                     }
                 }
@@ -5495,7 +5535,7 @@ struct Main
 
             for (sf::base::SizeT iP = 0u; iP < 2u; ++iP)
                 spawnParticle({.position      = hp.getDrawPosition() +
-                                                rngFast.getRandomDirection() *
+                                                rngFast.getDirVec2f() *
                                                     rngFast.getF(hellPortalRadius * 0.95f, hellPortalRadius * 1.15f),
                                .velocity      = rngFast.getVec2f({-0.025f, -0.025f}, {0.025f, 0.025f}),
                                .scale         = rngFast.getF(0.08f, 0.27f) * 0.85f,
@@ -6729,6 +6769,23 @@ struct Main
                             catHueByType);
     }
 
+    [[nodiscard]] bool isCatPerformingRitual(Cat& witch, Cat& cat) const
+    {
+        if (witch.cooldown.value > 10'000.f)
+            return false;
+
+        if (&cat == &witch)
+            return true;
+
+        if (!pt->perm.witchCatBuffPowerScalesWithNCats)
+            return false;
+
+        const auto range        = pt->getComputedRangeByCatType(CatType::Witch);
+        const auto rangeSquared = range * range;
+
+        return (witch.position - cat.position).lengthSquared() <= rangeSquared;
+    }
+
     ////////////////////////////////////////////////////////////
     void gameLoopDrawCat(Cat&            cat,
                          const float     deltaTimeMs,
@@ -6774,25 +6831,28 @@ struct Main
 
         const auto doWitchAnimation = [&](float& wobblePhase, Cat& witch)
         {
-            if (witch.cooldown.value >= 10'000.f)
+            if (&cat == &witch)
             {
-                wobblePhase = 0.f;
-            }
-            else
-            {
-                const float frequency = remap(witch.cooldown.value, 0.f, 10'000.f, 0.1f, 0.05f);
-                wobblePhase += frequency * deltaTimeMs * 0.005f;
-
-                const auto range        = pt->getComputedRangeByCatType(CatType::Witch);
-                const auto rangeSquared = range * range;
-
-                const bool catInWitchRange = (witch.position - cat.position).lengthSquared() <= rangeSquared;
-
-                if (&cat == &witch || (pt->perm.witchCatBuffPowerScalesWithNCats && catInWitchRange))
+                if (witch.cooldown.value >= 10'000.f)
                 {
-                    const float amplitude = remap(witch.cooldown.value, 0.f, 10'000.f, 0.5f, 0.f);
-                    catRotation           = sf::base::sin(wobblePhase) * amplitude;
+                    if (wobblePhase > 0.f)
+                        wobblePhase -= deltaTimeMs * 0.005f;
+
+                    wobblePhase = sf::base::max(wobblePhase, 0.f);
                 }
+                else
+                {
+                    const float frequency = remap(sf::base::min(witch.cooldown.value, 10'000.f), 0.f, 10'000.f, 0.1f, 0.05f);
+
+                    wobblePhase += frequency * deltaTimeMs * 0.05f;
+                    wobblePhase = sf::base::remainder(wobblePhase, sf::base::tau);
+                }
+            }
+
+            if (isCatPerformingRitual(witch, cat))
+            {
+                const float amplitude = remap(sf::base::min(witch.cooldown.value, 10'000.f), 0.f, 10'000.f, 0.5f, 0.f);
+                catRotation           = sf::base::sin(wobblePhase) * amplitude;
             }
         };
 
@@ -6813,11 +6873,13 @@ struct Main
         {
             catRotation = -0.22f + sf::base::sin(cat.wobbleRadians) * 0.12f;
         }
-        else if (cachedWitchCat != nullptr)
+
+        if (cachedWitchCat != nullptr)
         {
             doWitchAnimation(witchcatWobblePhase, *cachedWitchCat);
         }
-        else if (cachedCopyCat != nullptr && pt->copycatCopiedCatType == CatType::Witch)
+
+        if (cachedCopyCat != nullptr && pt->copycatCopiedCatType == CatType::Witch)
         {
             doWitchAnimation(copyWitchcatWobblePhase, *cachedCopyCat);
         }
@@ -7122,7 +7184,18 @@ struct Main
 
             (void)cat.blinkAnimCountdown.updateAndStop(deltaTimeMs);
 
-            if (!cat.yawnAnimCountdown.isDone())
+            if ((cachedWitchCat != nullptr && isCatPerformingRitual(*cachedWitchCat, cat)) ||
+                (cachedCopyCat != nullptr && pt->copycatCopiedCatType == CatType::Witch &&
+                 isCatPerformingRitual(*cachedCopyCat, cat)))
+            {
+                batchToUse.add(sf::Sprite{.position    = anchorOffset(catTailOffset + sf::Vec2f{-185.f, -185.f}),
+                                          .scale       = catScale,
+                                          .origin      = txrCatEyeLid0.size / 2.f,
+                                          .rotation    = sf::radians(catRotation),
+                                          .textureRect = *eyelidArray[2],
+                                          .color       = attachmentHue});
+            }
+            else if (!cat.yawnAnimCountdown.isDone())
             {
                 batchToUse.add(sf::Sprite{.position    = anchorOffset(catTailOffset + sf::Vec2f{-185.f, -185.f}),
                                           .scale       = catScale,

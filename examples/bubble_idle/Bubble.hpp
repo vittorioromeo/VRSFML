@@ -14,6 +14,7 @@ struct [[nodiscard]] Bubble
 
     float radius;
     float rotation;
+    float torque;
     float hueMod;
 
     Countdown repelledCountdown;

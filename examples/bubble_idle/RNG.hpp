@@ -88,7 +88,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] inline sf::Vec2f getRandomDirection()
+    [[nodiscard, gnu::always_inline, gnu::flatten]] inline sf::Vec2f getDirVec2f()
     {
         const float angle = getF(0.f, sf::base::tau);
         return {sf::base::cos(angle), sf::base::sin(angle)};
