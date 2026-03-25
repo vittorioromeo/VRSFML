@@ -44,8 +44,8 @@ struct [[nodiscard]] Profile
     float bsEdgeFactorMax       = 0.6f;
     float bsEdgeFactorStrength  = 1.35f;
     float bsDistortionStrength  = 0.085f;
-    float bsBubbleLightness     = 0.25f;
-    float bsLensDistortion      = 6.5f;
+    float bsBubbleLightness     = 0.15f;
+    float bsLensDistortion      = 7.5f;
 
     Stats statsLifetime;
 
@@ -76,6 +76,13 @@ struct [[nodiscard]] Profile
     float ppSSaturation = 1.f;
     float ppSLightness  = 1.f;
     float ppSSharpness  = 0.10f;
+    float ppSBlur       = 0.f;
+
+    float ppBGVibrance   = 0.2f;
+    float ppBGSaturation = 0.8f;
+    float ppBGLightness  = 0.9f;
+    float ppBGSharpness  = 0.f;
+    float ppBGBlur       = 0.5f;
 
     bool showBubbles            = true;
     bool invertMouseButtons     = false;

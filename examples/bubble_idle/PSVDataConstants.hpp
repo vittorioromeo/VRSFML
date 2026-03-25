@@ -162,7 +162,7 @@ inline constexpr PSVData catCopyCooldownMult //
     {.nMaxPurchases = 0u, .cost = {}, .value = {}};
 
 inline constexpr PSVData catCopyRangeDiv //
-    {.nMaxPurchases = 0u, .cost = {}, .value = {}};
+    {.nMaxPurchases = 0u, .cost = {}, .value = {1.f}};
 
 inline constexpr PSVData catDuck //
     {.nMaxPurchases = 0u, .cost = {}, .value = {}};
@@ -171,7 +171,7 @@ inline constexpr PSVData catDuckCooldownMult //
     {.nMaxPurchases = 0u, .cost = {}, .value = {}};
 
 inline constexpr PSVData catDuckRangeDiv //
-    {.nMaxPurchases = 0u, .cost = {}, .value = {}};
+    {.nMaxPurchases = 0u, .cost = {}, .value = {1.f}};
 
 inline constexpr PSVData catAstro //
     {.nMaxPurchases = 64u, .cost = {.initial = 1'000'000.f, .exponential = 1.85f}, .value = {}};
