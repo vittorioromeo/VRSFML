@@ -2,10 +2,12 @@
 
 #include "Aliases.hpp"
 #include "Bubble.hpp"
+#include "BubbleType.hpp"
 #include "Cat.hpp"
 #include "CatConstants.hpp"
 #include "CatType.hpp"
 #include "Constants.hpp"
+#include "Countdown.hpp"
 #include "Doll.hpp"
 #include "ExactArray.hpp"
 #include "HellPortal.hpp"
@@ -22,6 +24,9 @@
 #include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Math/Pow.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////

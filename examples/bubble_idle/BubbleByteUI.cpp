@@ -1277,7 +1277,9 @@ void Main::uiDrawQuickbarVolumeControls(const sf::Vec2f quickBarPos)
 ////////////////////////////////////////////////////////////
 void Main::uiDrawQuickbar()
 {
-    const float xStart = lastUiSelectedTabIdx == 0 ? getResolution().x : uiGetWindowPos().x;
+    const float xStart = lastUiSelectedTabIdx == 0
+                             ? getResolution().x
+                             : gameView.worldToScreen({getLeftMostUsefulX(), 0.f}, getResolution()).x;
 
     const sf::Vec2f quickBarPos{xStart - 15.f, getResolution().y - 15.f};
 
@@ -1439,8 +1441,8 @@ void Main::uiDraw(const sf::Vec2f mousePos)
 
     // TODO P0: cleanup
     // 1. Define your colors (Top and Bottom)
-    ImU32 col_top = ImColor(75, 47, 97, 220); // Deep Purple
-    ImU32 col_bot = ImColor(22, 12, 44, 240); // Darker Navy/Purple
+    ImU32 col_top = ImColor(25, 65, 125, 220); // Deep Blue
+    ImU32 col_bot = ImColor(5, 20, 45, 240);   // Darker Navy Blue
 
 
     // 3. Get the DrawList and Window coordinates
@@ -4658,6 +4660,11 @@ void Main::uiTabBarSettings()
 
         ImGui::SameLine();
 
+        if (ImGui::Button("Do Arrow"))
+            scrollArrowCountdown.value = 2000.f;
+
+        ImGui::SameLine();
+
         if (ImGui::Button("Do Prestige"))
         {
             ++pt->psvBubbleValue.nPurchases;
@@ -4748,6 +4755,9 @@ void Main::uiTabBarSettings()
             if (ImGui::InputScalar(lbuf.cStr(), ImGuiDataType_U64, &psv.nPurchases, &step, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal))
                 psv.nPurchases = sf::base::clamp(psv.nPurchases, SizeT{0u}, psv.data->nMaxPurchases);
         };
+
+        ImGui::Checkbox("ComboPurchased", &pt->comboPurchased);
+        ImGui::Checkbox("MapPurchased", &pt->mapPurchased);
 
         psvScalarInput("ComboStartTime", pt->psvComboStartTime);
         psvScalarInput("MapExtension", pt->psvMapExtension);
