@@ -1202,9 +1202,9 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Cached views
-    sf::View gameView;
-    sf::View nonScaledHUDView;
-    sf::View scaledHUDView;
+    sf::View gameView{{1.f, 1.f}, {1.f, 1.f}};         // TODO P1: compute on the fly, don't cache...
+    sf::View nonScaledHUDView{{1.f, 1.f}, {1.f, 1.f}}; // TODO P1: compute on the fly, don't cache...
+    sf::View scaledHUDView{{1.f, 1.f}, {1.f, 1.f}};    // TODO P1: compute on the fly, don't cache...
 
     ////////////////////////////////////////////////////////////
     // Scroll arrow hint
@@ -4337,7 +4337,7 @@ struct Main
 
             const auto drawPosition = cat.getDrawPosition(profile.enableCatBobbing);
 
-            auto diff = cat.pawPosition - drawPosition - sf::Vec2f{-25.f, 25.f};
+            auto diff = cat.pawPosition - drawPosition - sf::Vec2f{-30.f, 30.f};
             cat.pawPosition -= diff * 0.01f * deltaTimeMs;
             cat.pawRotation = cat.pawRotation.rotatedTowards(sf::degrees(-45.f), deltaTimeMs * 0.005f);
 
@@ -7103,7 +7103,7 @@ struct Main
             if (!cat.isHexedOrCopyHexed() && cat.type != CatType::Devil)
                 batchToUse.add(
                     sf::Sprite{.position = cat.pawPosition + (beingDragged ? sf::Vec2f{-12.f, 12.f} : sf::Vec2f{0.f, 0.f}),
-                               .scale       = catScale,
+                               .scale       = catScale * 0.85f,
                                .origin      = catPawTxr.size / 2.f,
                                .rotation    = cat.type == CatType::Mouse ? sf::radians(-0.6f) : cat.pawRotation,
                                .textureRect = catPawTxr,

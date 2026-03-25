@@ -1439,8 +1439,24 @@ void Main::uiDraw(const sf::Vec2f mousePos)
     ImGui::Begin("##menu",
                  nullptr,
                  ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize |
-                     ImGuiWindowFlags_NoTitleBar);
+                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground);
 
+    // 1. Define your colors (Top and Bottom)
+    ImU32 col_top = ImColor(45, 27, 77, 240); // Deep Purple
+    ImU32 col_bot = ImColor(22, 12, 44, 240); // Darker Navy/Purple
+
+
+    // 3. Get the DrawList and Window coordinates
+    ImDrawList* draw_list = ImGui::GetWindowDrawList();
+    ImVec2      p_min     = ImGui::GetWindowPos();
+    ImVec2      p_max     = ImVec2(p_min.x + ImGui::GetWindowWidth(), p_min.y + ImGui::GetWindowHeight());
+
+
+    // 4. Draw the Gradient (Top-Left, Top-Right, Bottom-Right, Bottom-Left)
+    draw_list->AddRectFilledMultiColor(p_min, p_max, col_top, col_top, col_bot, col_bot);
+
+float rounding = ImGui::GetStyle().WindowRounding;
+draw_list->AddRect(p_min, p_max, ImColor(150, 100, 200, 100), rounding, 0, 2.0f);
 
     if (ImGui::BeginTabBar("TabBar", ImGuiTabBarFlags_DrawSelectedOverline))
     {
