@@ -2587,7 +2587,7 @@ struct Main
 
         const auto windowedWidth = windowSize.y * gameRatio + (uiWindowWidth + 35.f);
 
-        return sf::Vec2f{windowedWidth, windowSize.y}.toVec2u();
+        return sf::Vec2f{windowedWidth + 12.f, windowSize.y}.toVec2u();
     }
 
     ////////////////////////////////////////////////////////////
@@ -7654,6 +7654,26 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getLeftMostUsefulX() const
+    {
+        const float rightEdgeX = getViewCenter().x + gameView.size.x / 2.f;
+
+        const sf::Vec2f resolution{getResolution()};
+
+        const sf::Rect2f gameViewBounds{getViewportPixelBounds(gameView, resolution)};
+
+        const float menuOverlapScreenX = sf::base::max(uiGetWindowPos().x, gameViewBounds.position.x);
+
+        const float menuOverlapWorldX = gameView
+                                            .screenToWorld({menuOverlapScreenX,
+                                                            gameViewBounds.position.y + gameViewBounds.size.y / 2.f},
+                                                           resolution)
+                                            .x;
+
+        return sf::base::min(rightEdgeX, menuOverlapWorldX);
+    }
+
+    ////////////////////////////////////////////////////////////
     void gameLoopDrawScrollArrowHint(const float deltaTimeMs)
     {
         if (scrollArrowCountdown.value <= 0.f)
@@ -7667,16 +7687,17 @@ struct Main
         const float blinkOpacity = easeInOutSine(sf::base::fabs(sf::base::sin(
                                        sf::base::remainder(scrollArrowCountdown.value / 350.f, sf::base::tau)))) *
                                    255.f;
-        const float rightEdgeX   = getViewCenter().x + gameView.size.x / 2.f - 15.f;
+
+        const float arrowX = getLeftMostUsefulX();
 
         rtGame.draw(txArrow,
-                    {.position = {rightEdgeX, 15.f + (gameScreenSize.y / 5.f) * 1.f},
+                    {.position = {arrowX, 15.f + (gameScreenSize.y / 5.f) * 1.f},
                      .origin   = txArrow.getRect().getCenterRight(),
                      .color    = sf::Color::whiteMask(static_cast<U8>(blinkOpacity))},
                     {.view = gameView});
 
         rtGame.draw(txArrow,
-                    {.position = {rightEdgeX, gameScreenSize.y - 15.f - (gameScreenSize.y / 5.f) * 1.f},
+                    {.position = {arrowX, gameScreenSize.y - 15.f - (gameScreenSize.y / 5.f) * 1.f},
                      .origin   = txArrow.getRect().getCenterRight(),
                      .color    = sf::Color::whiteMask(static_cast<U8>(blinkOpacity))},
                     {.view = gameView});
@@ -8593,16 +8614,11 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     float fixedBgSlideTarget = 0.f;
+    float fixedBgSlide       = 0.f;
 
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateAndDrawFixedMenuBackground(const float deltaTimeMs, const sf::base::I64 elapsedUs)
     {
-        const auto resolution = getResolution();
-
-        const float ratio = resolution.x / 1250.f;
-
-        static float fixedBgSlide = 0.f;
-
         fixedBgSlideAccumulator += elapsedUs;
 
         if (fixedBgSlideAccumulator > 60'000'000) // change slide every 60s
@@ -8616,23 +8632,6 @@ struct Main
         }
 
         fixedBgSlide = exponentialApproach(fixedBgSlide, fixedBgSlideTarget, deltaTimeMs, 1000.f);
-
-        const float fixedBgX = 2100.f * ratio * 0.5f * sf::base::remainder(fixedBgSlide, 3.f);
-        const auto  sz       = txFixedBg.getSize().toVec2f();
-
-        // Result of linear regression and trial-and-error >:3
-        const float fixedBgOffsetX = 1648.f * ratio - 3216.62f;
-
-        if (0) // TODO: P0
-            rtGame.draw(txFixedBg,
-                        {
-                            .position = {sz.x + resolution.x / 2.f - actualScroll / 20.f - fixedBgX + fixedBgOffsetX, sz.y},
-                            .scale       = {ratio, ratio},
-                            .origin      = {sz.x / 2.f, sz.y / 1.5f},
-                            .textureRect = {{sz.x * -2.f, sz.y * -2.f}, {sz.x * 4.f, sz.y * 4.f}},
-                            .color       = hueColor(currentBackgroundHue.asDegrees(), 255u),
-                        },
-                        {.view = nonScaledHUDView, .shader = &shader});
     }
 
     ////////////////////////////////////////////////////////////
@@ -9742,6 +9741,21 @@ struct Main
 
         auto gameViewNoScroll   = gameView;
         gameViewNoScroll.center = getViewCenterWithoutScroll(); // TODO P1: view::withcenter? like vecs
+
+        {
+            const float ratio         = resolution.x / 1250.f;
+            const float fixedBgScroll = txFixedBg.getSize().toVec2f().x * 0.5f * sf::base::remainder(fixedBgSlide, 3.f);
+
+            window.draw(txFixedBg,
+                        {
+                            .position    = {0.f, 0.f},
+                            .scale       = {ratio, ratio},
+                            .textureRect = {{fixedBgScroll - actualScroll / 20.f, 0.f},
+                                            {resolution.x / ratio, resolution.y / ratio}},
+                            .color       = sf::Color::White,
+                        },
+                        {.view = nonScaledHUDView});
+        }
 
         window.draw(rtBackgroundProcessed.getTexture(),
                     {.textureRect{{0.f, 0.f}, gameViewNoScroll.size}},
