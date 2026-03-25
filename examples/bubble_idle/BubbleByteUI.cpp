@@ -31,6 +31,7 @@
 
 #include "ExampleUtils/Easing.hpp"
 #include "ExampleUtils/HueColor.hpp"
+#include "ExampleUtils/NinePatchRect.hpp"
 #include "ExampleUtils/Profiler.hpp"
 #include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/Sampler.hpp"
@@ -41,6 +42,7 @@
 #include "SFML/Graphics/DrawTextureSettings.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
+#include "SFML/Graphics/RectangleShapeData.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Sprite.hpp"
@@ -107,7 +109,7 @@ void runBubbleIdleApp()
 ////////////////////////////////////////////////////////////
 float Main::uiGetMaxWindowHeight() const
 {
-    return sf::base::max(getResolution().y - 30.f, (getResolution().y - 30.f) / profile.uiScale);
+    return sf::base::max(getResolution().y - 46.f, (getResolution().y - 46.f) / profile.uiScale);
 }
 
 ////////////////////////////////////////////////////////////
@@ -873,7 +875,7 @@ sf::Vec2f Main::uiGetWindowPos() const
     const float scaledWindowWidth = uiWindowWidth * profile.uiScale;
     const float rightAnchorX      = getResolution().x - scaledWindowWidth - 15.f * profile.uiScale;
 
-    return {rightAnchorX, 15.f};
+    return {rightAnchorX - 8.f, 15.f + 16.f};
 }
 
 ////////////////////////////////////////////////////////////
@@ -1462,7 +1464,39 @@ void Main::uiDraw(const sf::Vec2f mousePos)
     if (!ImGui::GetIO().WantCaptureMouse && particleCullingBoundaries.isInside(mousePos))
         uiMakeShrineOrCatTooltip(mousePos);
 
+    const auto windowDrawPos  = ImGui::GetWindowPos();
+    const auto windowDrawSize = ImGui::GetWindowSize();
+
     ImGui::End();
+
+    if (windowDrawSize.y > 64.f)
+    {
+        const float offset = 15.f;
+
+        NinePatchRect panel{
+            .position    = sf::Vec2f(windowDrawPos) - sf::Vec2f{offset, offset} + sf::Vec2f{2.f, 1.f},
+            .size        = sf::Vec2f(windowDrawSize) + sf::Vec2f{offset * 2.f, offset * 2.f} - sf::Vec2f{3.f, 3.f},
+            .textureRect = txFrame.getRect(),
+            .borders     = NinePatchBorders::all(64.f),
+            .color       = sf::Color::whiteMask(255u),
+        };
+
+        panel.draw(rtImGuiAuxPost, txFrame);
+    }
+    else
+    {
+        const float offset = 4.f * profile.uiScale;
+
+        NinePatchRect panel{
+            .position    = sf::Vec2f(windowDrawPos) - sf::Vec2f{offset, offset} + sf::Vec2f{2.f, 1.f},
+            .size        = sf::Vec2f(windowDrawSize) + sf::Vec2f{offset * 2.f, offset * 2.f} - sf::Vec2f{3.f, 3.f},
+            .textureRect = txFrameTiny.getRect(),
+            .borders     = NinePatchBorders::all(18.f),
+            .color       = sf::Color::whiteMask(255u),
+        };
+
+        panel.draw(rtImGuiAuxPost, txFrameTiny);
+    }
 
     uiDrawExitPopup(newScalingFactor);
 
@@ -1481,10 +1515,15 @@ void Main::uiDpsMeter()
     ImGui::SetNextWindowPos({15.f, resolution.y - 15.f}, 0, {0.f, 1.f});
     ImGui::SetNextWindowSizeConstraints(dpsMeterSize, dpsMeterSize);
 
+    const auto oldRounding            = ImGui::GetStyle().FrameRounding;
+    const auto oldBorderSize          = ImGui::GetStyle().FrameBorderSize;
+    ImGui::GetStyle().FrameRounding   = 0.f;
+    ImGui::GetStyle().FrameBorderSize = 0.f;
+
     ImGui::Begin("##dpsmeter",
                  nullptr,
                  ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize |
-                     ImGuiWindowFlags_NoTitleBar);
+                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMouseInputs);
 
     uiSetFontScale(0.75f);
 
@@ -1505,7 +1544,37 @@ void Main::uiDpsMeter()
                      SFML_BASE_FLOAT_MAX,
                      ImVec2(dpsMeterSize.x - 15.f * dpsMeterScale, dpsMeterSize.y - 17.f * dpsMeterScale));
 
+
+    const auto windowDrawPos  = ImGui::GetWindowPos();
+    const auto windowDrawSize = ImGui::GetWindowSize();
+
+
+    ImGui::GetStyle().FrameRounding   = oldRounding;
+    ImGui::GetStyle().FrameBorderSize = oldBorderSize;
+
     ImGui::End();
+
+    {
+        const float offset = -2.f * profile.uiScale;
+
+        NinePatchRect panel{
+            .position    = sf::Vec2f(windowDrawPos) - sf::Vec2f{offset, offset} + sf::Vec2f{1.f, 1.f},
+            .size        = sf::Vec2f(windowDrawSize) + sf::Vec2f{offset * 2.f, offset * 2.f} - sf::Vec2f{1.f, 3.f},
+            .textureRect = txFrameTiny.getRect(),
+            .borders     = NinePatchBorders::all(18.f),
+            .color       = sf::Color::whiteMask(255u),
+        };
+
+        sf::RectangleShapeData bg{
+            .position  = panel.position - sf::Vec2f{offset, offset},
+            .origin    = {0.f, 0.f},
+            .fillColor = sf::Color::Black,
+            .size      = panel.size + sf::Vec2f{offset * 2.f, offset * 2.f},
+        };
+
+        rtImGuiAuxPre.draw(bg);
+        panel.draw(rtImGuiAuxPost, txFrameTiny);
+    }
 }
 
 ////////////////////////////////////////////////////////////
@@ -1620,10 +1689,7 @@ void Main::uiTabBar()
 
         shopSelectOnce = {};
 
-        ImGui::BeginChild("ShopScroll",
-                          ImVec2(ImGui::GetContentRegionAvail().x, childHeight),
-                          0,
-                          ImGuiWindowFlags_AlwaysVerticalScrollbar);
+        ImGui::BeginChild("ShopScroll", ImVec2(ImGui::GetContentRegionAvail().x, childHeight), 0, ImGuiWindowFlags_None);
         uiTabBarShop();
 
         ImGui::EndChild();
@@ -1645,10 +1711,7 @@ void Main::uiTabBar()
     {
         selectedTab(2);
 
-        ImGui::BeginChild("MagicScroll",
-                          ImVec2(ImGui::GetContentRegionAvail().x, childHeight),
-                          0,
-                          ImGuiWindowFlags_AlwaysVerticalScrollbar);
+        ImGui::BeginChild("MagicScroll", ImVec2(ImGui::GetContentRegionAvail().x, childHeight), 0, ImGuiWindowFlags_None);
 
         uiTabBarMagic();
 
@@ -1677,10 +1740,7 @@ void Main::uiTabBar()
         {
             selectedTab(3);
 
-            ImGui::BeginChild("PrestigeScroll",
-                              ImVec2(ImGui::GetContentRegionAvail().x, childHeight),
-                              0,
-                              ImGuiWindowFlags_AlwaysVerticalScrollbar);
+            ImGui::BeginChild("PrestigeScroll", ImVec2(ImGui::GetContentRegionAvail().x, childHeight), 0, ImGuiWindowFlags_None);
 
             uiTabBarPrestige();
 
@@ -1696,10 +1756,7 @@ void Main::uiTabBar()
     {
         selectedTab(4);
 
-        ImGui::BeginChild("StatsScroll",
-                          ImVec2(ImGui::GetContentRegionAvail().x, childHeight),
-                          0,
-                          ImGuiWindowFlags_AlwaysVerticalScrollbar);
+        ImGui::BeginChild("StatsScroll", ImVec2(ImGui::GetContentRegionAvail().x, childHeight), 0, ImGuiWindowFlags_None);
 
         uiTabBarStats();
 
@@ -1711,10 +1768,7 @@ void Main::uiTabBar()
     {
         selectedTab(5);
 
-        ImGui::BeginChild("OptionsScroll",
-                          ImVec2(ImGui::GetContentRegionAvail().x, childHeight),
-                          0,
-                          ImGuiWindowFlags_AlwaysVerticalScrollbar);
+        ImGui::BeginChild("OptionsScroll", ImVec2(ImGui::GetContentRegionAvail().x, childHeight), 0, ImGuiWindowFlags_None);
 
         uiTabBarSettings();
 
@@ -4242,17 +4296,58 @@ void Main::uiTabBarSettings()
 
         ImGui::Separator();
 
-        ImGui::SetNextItemWidth(210.f * profile.uiScale);
-        ImGui::SliderFloat("Vibrance", &profile.ppSVibrance, 0.f, 2.f, "%.2f");
+        const auto makePPUi = [&](auto vibrance, auto saturation, auto lightness, auto sharpness, auto blur)
+        {
+            ImGui::SetNextItemWidth(210.f * profile.uiScale);
+            ImGui::SliderFloat("Vibrance", &(profile.*vibrance), 0.f, 2.f, "%.2f");
 
-        ImGui::SetNextItemWidth(210.f * profile.uiScale);
-        ImGui::SliderFloat("Saturation", &profile.ppSSaturation, 0.f, 2.f, "%.2f");
+            ImGui::SetNextItemWidth(210.f * profile.uiScale);
+            ImGui::SliderFloat("Saturation", &(profile.*saturation), 0.f, 2.f, "%.2f");
 
-        ImGui::SetNextItemWidth(210.f * profile.uiScale);
-        ImGui::SliderFloat("Lightness", &profile.ppSLightness, 0.5f, 1.5f, "%.2f");
+            ImGui::SetNextItemWidth(210.f * profile.uiScale);
+            ImGui::SliderFloat("Lightness", &(profile.*lightness), 0.5f, 1.5f, "%.2f");
 
-        ImGui::SetNextItemWidth(210.f * profile.uiScale);
-        ImGui::SliderFloat("Sharpness", &profile.ppSSharpness, 0.f, 1.f, "%.2f");
+            ImGui::SetNextItemWidth(210.f * profile.uiScale);
+            ImGui::SliderFloat("Sharpness", &(profile.*sharpness), 0.f, 1.f, "%.2f");
+
+            ImGui::SetNextItemWidth(210.f * profile.uiScale);
+            ImGui::SliderFloat("Blur", &(profile.*blur), 0.f, 1.f, "%.2f");
+
+            if (ImGui::Button("Reset to default"))
+            {
+                Profile defaultProfile{};
+
+                profile.*vibrance   = defaultProfile.*vibrance;
+                profile.*saturation = defaultProfile.*saturation;
+                profile.*lightness  = defaultProfile.*lightness;
+                profile.*sharpness  = defaultProfile.*sharpness;
+                profile.*blur       = defaultProfile.*blur;
+            }
+        };
+
+        ImGui::Text("Foreground postprocess");
+        ImGui::PushID("foregroundPostProcess");
+
+        makePPUi(&Profile::ppSVibrance, //
+                 &Profile::ppSSaturation,
+                 &Profile::ppSLightness,
+                 &Profile::ppSSharpness,
+                 &Profile::ppSBlur);
+
+        ImGui::PopID();
+
+        ImGui::Separator();
+
+        ImGui::Text("Background postprocess");
+        ImGui::PushID("backgroundPostProcess");
+
+        makePPUi(&Profile::ppBGVibrance,
+                 &Profile::ppBGSaturation,
+                 &Profile::ppBGLightness,
+                 &Profile::ppBGSharpness,
+                 &Profile::ppBGBlur);
+
+        ImGui::PopID();
 
         ImGui::Separator();
 

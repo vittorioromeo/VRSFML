@@ -1,22 +1,5 @@
 #pragma once
 
-#include "ExactArray.hpp"
-#include "ParticleData.hpp"
-
-#include "ExampleUtils/LoadedSound.hpp"
-
-#include "SFML/Graphics/DrawTextureSettings.hpp"
-
-#include "SFML/Base/Array.hpp"
-#include "SFML/Base/Macros.hpp"
-#include "SFML/Base/Math/Cos.hpp"
-#include "SFML/Base/Math/Fabs.hpp"
-#include "SFML/Base/Math/Sin.hpp"
-#include "SFML/Base/Math/Sqrt.hpp"
-#include "SFML/Base/Vector.hpp"
-
-#include <climits>
-#include <cstdarg>
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
@@ -34,10 +17,12 @@
 #include "Constants.hpp"
 #include "Countdown.hpp"
 #include "Doll.hpp"
+#include "ExactArray.hpp"
 #include "HellPortal.hpp"
 #include "InputHelper.hpp"
 #include "MemberGuard.hpp"
 #include "Particle.hpp"
+#include "ParticleData.hpp"
 #include "ParticleType.hpp"
 #include "Playthrough.hpp"
 #include "Profile.hpp"
@@ -58,7 +43,9 @@
 #include "ExampleUtils/ControlFlow.hpp"
 #include "ExampleUtils/Easing.hpp"
 #include "ExampleUtils/HueColor.hpp"
+#include "ExampleUtils/LoadedSound.hpp"
 #include "ExampleUtils/MathUtils.hpp"
+#include "ExampleUtils/NinePatchRect.hpp"
 #include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/Sampler.hpp"
 #include "ExampleUtils/SoundManager.hpp"
@@ -75,6 +62,7 @@
 #include "SFML/Graphics/BlendMode.hpp"
 #include "SFML/Graphics/CircleShapeData.hpp"
 #include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/DrawTextureSettings.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
@@ -124,6 +112,7 @@
 #include "SFML/Base/Algorithm/Erase.hpp"
 #include "SFML/Base/Algorithm/MaxElement.hpp"
 #include "SFML/Base/AnkerlUnorderedDense.hpp"
+#include "SFML/Base/Array.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Constants.hpp"
@@ -132,9 +121,14 @@
 #include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/LambdaMacros.hpp"
+#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
+#include "SFML/Base/Math/Cos.hpp"
+#include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Math/Lround.hpp"
 #include "SFML/Base/Math/Pow.hpp"
+#include "SFML/Base/Math/Sin.hpp"
+#include "SFML/Base/Math/Sqrt.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/Remainder.hpp"
@@ -143,6 +137,7 @@
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/ThreadPool.hpp"
 #include "SFML/Base/ToString.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
@@ -150,6 +145,8 @@
 #include <utility>
 
 #include <cctype>
+#include <climits>
+#include <cstdarg>
 #include <cstdio>
 #include <ctime>
 
@@ -267,7 +264,8 @@ inline void drawMinimap(
     const float             hudScale,
     const float             hueMod,
     const sf::base::U8      shouldDrawUIAlpha,
-    sf::Rect2f&             minimapRect)
+    sf::Rect2f&             minimapRect,
+    sf::Texture&            frameTexture)
 {
     //
     // Screen position of minimap's top-left corner
@@ -354,7 +352,23 @@ inline void drawMinimap(
 
     //
     // Switch back to HUD view and draw overlay elements
-    rt.draw(minimapBorder, {.view = hudView});    // Draw border frame
+    rt.draw(minimapBorder, {.view = hudView}); // Draw border frame
+
+    {
+        const float offset = 3.f;
+
+        NinePatchRect panel{
+            .position    = minimapRect.position - sf::Vec2f{offset, offset},
+            .size        = minimapRect.size + sf::Vec2f{offset * 2.f, offset * 2.f},
+            .textureRect = frameTexture.getRect(),
+            .borders     = NinePatchBorders::all(18.f),
+            .color       = sf::Color::whiteMask(shouldDrawUIAlpha),
+        };
+
+        panel.draw(rt, frameTexture, {.view = hudView});
+    }
+
+
     rt.draw(minimapIndicator, {.view = hudView}); // Draw current view indicator
 }
 
@@ -408,6 +422,7 @@ struct Main
     sf::Shader::UniformLocation suBackgroundTexture = shader.getUniformLocation("u_backgroundTexture").value();
     sf::Shader::UniformLocation suTime              = shader.getUniformLocation("u_time").value();
     sf::Shader::UniformLocation suResolution        = shader.getUniformLocation("u_resolution").value();
+    sf::Shader::UniformLocation suBackgroundOrigin  = shader.getUniformLocation("u_backgroundOrigin").value();
     sf::Shader::UniformLocation suBubbleEffect      = shader.getUniformLocation("u_bubbleEffect").value();
 
     sf::Shader::UniformLocation suIridescenceStrength = shader.getUniformLocation("u_iridescenceStrength").value();
@@ -438,6 +453,7 @@ struct Main
     sf::Shader::UniformLocation suPPSaturation = shaderPostProcess.getUniformLocation("u_saturation").value();
     sf::Shader::UniformLocation suPPLightness  = shaderPostProcess.getUniformLocation("u_lightness").value();
     sf::Shader::UniformLocation suPPSharpness  = shaderPostProcess.getUniformLocation("u_sharpness").value();
+    sf::Shader::UniformLocation suPPBlur       = shaderPostProcess.getUniformLocation("u_blur").value();
 
     ////////////////////////////////////////////////////////////
     // Context settings
@@ -585,7 +601,16 @@ struct Main
                                   {.antiAliasingLevel = aaLevel, .smooth = true, .wrapMode = sf::TextureWrapMode::Repeat})
             .value()};
 
+    sf::RenderTexture rtBackgroundProcessed{
+        sf::RenderTexture::create(gameScreenSize.toVec2u(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()};
+
     sf::RenderTexture rtImGui{
+        sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()};
+
+    sf::RenderTexture rtImGuiAuxPre{
+        sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()};
+
+    sf::RenderTexture rtImGuiAuxPost{
         sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()};
 
     ////////////////////////////////////////////////////////////
@@ -624,6 +649,8 @@ struct Main
     sf::Texture txPurchasable{sf::Texture::loadFromFile("resources/purchasable.png", {.smooth = true}).value()};
     sf::Texture txLetter{sf::Texture::loadFromFile("resources/letter.png", {.smooth = true}).value()};
     sf::Texture txLetterText{sf::Texture::loadFromFile("resources/lettertext.png", {.smooth = true}).value()};
+    sf::Texture txFrame{sf::Texture::loadFromFile("resources/frame.png", {.smooth = true}).value()};
+    sf::Texture txFrameTiny{sf::Texture::loadFromFile("resources/frametiny.png", {.smooth = true}).value()};
 
     ////////////////////////////////////////////////////////////
     // UI texture atlas
@@ -6529,7 +6556,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopDisplayBubblesWithShader()
     {
-        if (!shader.setUniform(suBackgroundTexture, rtBackground.getTexture()))
+        if (!shader.setUniform(suBackgroundTexture, rtBackgroundProcessed.getTexture()))
         {
             profile.useBubbleShader = false;
             gameLoopDisplayBubblesWithoutShader();
@@ -6537,7 +6564,8 @@ struct Main
         }
 
         shader.setUniform(suTime, shaderTime);
-        shader.setUniform(suResolution, getResolution());
+        shader.setUniform(suResolution, rtBackgroundProcessed.getSize().toVec2f());
+        shader.setUniform(suBackgroundOrigin, gameView.center - gameView.size / 2.f);
         shader.setUniform(suBubbleEffect, false);
 
         shader.setUniform(suIridescenceStrength, profile.bsIridescenceStrength);
@@ -6553,7 +6581,7 @@ struct Main
                                             sf::BlendMode::Factor::OneMinusSrcAlpha,
                                             sf::BlendMode::Equation::Add,
                                             sf::BlendMode::Factor::One,
-                                            sf::BlendMode::Factor::One,
+                                            sf::BlendMode::Factor::OneMinusSrcAlpha,
                                             sf::BlendMode::Equation::Add);
 
         const sf::RenderStates bubbleStates{
@@ -8024,7 +8052,9 @@ struct Main
     ////////////////////////////////////////////////////////////
     void recreateImGuiRenderTexture(const sf::Vec2u newResolution)
     {
-        rtImGui = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel}).value();
+        rtImGui = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .smooth = true}).value();
+        rtImGuiAuxPre = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .smooth = true}).value();
+        rtImGuiAuxPost = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .smooth = true}).value();
     }
 
     ////////////////////////////////////////////////////////////
@@ -8035,12 +8065,43 @@ struct Main
                                                   .smooth            = true,
                                                   .wrapMode          = sf::TextureWrapMode::Repeat})
                            .value();
+
+        rtBackgroundProcessed = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .smooth = true}).value();
     }
 
     ////////////////////////////////////////////////////////////
     void recreateGameRenderTexture(const sf::Vec2u newResolution)
     {
-        rtGame = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel}).value();
+        rtGame = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .smooth = true}).value();
+    }
+
+    ////////////////////////////////////////////////////////////
+    void setPostProcessUniforms(const float vibrance,
+                                const float saturation,
+                                const float lightness,
+                                const float sharpness,
+                                const float blur) const
+    {
+        shaderPostProcess.setUniform(suPPVibrance, vibrance);
+        shaderPostProcess.setUniform(suPPSaturation, saturation);
+        shaderPostProcess.setUniform(suPPLightness, lightness);
+        shaderPostProcess.setUniform(suPPSharpness, sharpness);
+        shaderPostProcess.setUniform(suPPBlur, blur);
+    }
+
+    ////////////////////////////////////////////////////////////
+    void updateProcessedBackground()
+    {
+        rtBackgroundProcessed.clear(sf::Color::Transparent);
+
+        setPostProcessUniforms(profile.ppBGVibrance,
+                               profile.ppBGSaturation,
+                               profile.ppBGLightness,
+                               profile.ppBGSharpness,
+                               profile.ppBGBlur);
+
+        rtBackgroundProcessed.draw(rtBackground.getTexture(), {.shader = &shaderPostProcess});
+        rtBackgroundProcessed.display();
     }
 
     ////////////////////////////////////////////////////////////
@@ -8562,15 +8623,16 @@ struct Main
         // Result of linear regression and trial-and-error >:3
         const float fixedBgOffsetX = 1648.f * ratio - 3216.62f;
 
-        rtGame.draw(txFixedBg,
-                    {
-                        .position = {sz.x + resolution.x / 2.f - actualScroll / 20.f - fixedBgX + fixedBgOffsetX, sz.y},
-                        .scale    = {ratio, ratio},
-                        .origin   = {sz.x / 2.f, sz.y / 1.5f},
-                        .textureRect = {{sz.x * -2.f, sz.y * -2.f}, {sz.x * 4.f, sz.y * 4.f}},
-                        .color       = hueColor(currentBackgroundHue.asDegrees(), 255u),
-                    },
-                    {.view = nonScaledHUDView, .shader = &shader});
+        if (0) // TODO: P0
+            rtGame.draw(txFixedBg,
+                        {
+                            .position = {sz.x + resolution.x / 2.f - actualScroll / 20.f - fixedBgX + fixedBgOffsetX, sz.y},
+                            .scale       = {ratio, ratio},
+                            .origin      = {sz.x / 2.f, sz.y / 1.5f},
+                            .textureRect = {{sz.x * -2.f, sz.y * -2.f}, {sz.x * 4.f, sz.y * 4.f}},
+                            .color       = hueColor(currentBackgroundHue.asDegrees(), 255u),
+                        },
+                        {.view = nonScaledHUDView, .shader = &shader});
     }
 
     ////////////////////////////////////////////////////////////
@@ -8618,10 +8680,8 @@ struct Main
         const auto      idx = profile.selectedBackground;
         const sf::Vec2f chunkScale{1.f, 1.f};
         const sf::Vec2f detailScale{1.f, 1.f};
-        const sf::Vec2f cloudScale{1.25f, 1.25f};
         const sf::Vec2f chunkTextureRectSize  = gameBackgroundView.size.componentWiseDiv(chunkScale);
         const sf::Vec2f detailTextureRectSize = gameBackgroundView.size.componentWiseDiv(detailScale);
-        const sf::Vec2f cloudTextureRectSize  = gameBackgroundView.size.componentWiseDiv(cloudScale);
 
         targetBackgroundHue = sf::radians(sf::degrees(backgroundHues[idx]).asRadians()).wrapUnsigned();
         currentBackgroundHue = currentBackgroundHue.rotatedTowards(targetBackgroundHue, deltaTimeMs * 0.01f).wrapUnsigned();
@@ -8643,11 +8703,13 @@ struct Main
                               },
                               {.view = gameBackgroundView});
 
-        rtBackground.draw(*detailTx[0],
+        rtBackground.draw(txClouds,
                           {
-                              .scale = detailScale,
-                              .textureRect = {{actualScroll * 2.f + backgroundScroll * 0.5f, 0.f}, detailTextureRectSize},
-                              .color = sf::Color::whiteMask(getAlpha(255.f)),
+                              .position = {0.f, -350.f},
+                              .scale    = {-detailScale.x * 1.5f, detailScale.y * 1.5f},
+                              .origin   = {detailTextureRectSize.x, 0.f},
+                              .textureRect = {{-actualScroll * 1.5f + backgroundScroll * 1.5f, 0.f}, detailTextureRectSize},
+                              .color = sf::Color::whiteMask(getAlpha(180.f)),
                           },
                           {.view = gameBackgroundView});
 
@@ -8662,18 +8724,14 @@ struct Main
 
         rtBackground.draw(txClouds,
                           {
-                              .scale       = cloudScale,
-                              .textureRect = {{actualScroll * 4.f + backgroundScroll * 3.f, 0.f}, cloudTextureRectSize},
-                              .color       = sf::Color::whiteMask(getAlpha(128.f)),
+                              .scale = detailScale,
+                              .textureRect = {{actualScroll * 2.f + backgroundScroll * 0.5f, 0.f}, detailTextureRectSize},
+                              .color = sf::Color::whiteMask(getAlpha(255.f)),
                           },
                           {.view = gameBackgroundView});
 
         rtBackground.display();
-
-        auto gameViewNoScroll   = gameView;
-        gameViewNoScroll.center = getViewCenterWithoutScroll(); // TODO P1: view::withcenter? like vecs
-
-        rtGame.draw(rtBackground.getTexture(), {.textureRect{{0.f, 0.f}, gameViewNoScroll.size}}, {.view = gameViewNoScroll});
+        updateProcessedBackground();
     }
 
     ////////////////////////////////////////////////////////////
@@ -9273,7 +9331,12 @@ struct Main
 
         //
         // Draw ImGui menu
+        rtImGuiAuxPre.clear(sf::Color::Transparent);
+        rtImGuiAuxPost.clear(sf::Color::Transparent);
         uiDraw(mousePos);
+        rtImGuiAuxPre.display();
+        rtImGuiAuxPost.display();
+
 
 //
 // Draw profiler
@@ -9306,7 +9369,7 @@ struct Main
 
         //
         // Clear window
-        rtGame.clear(outlineHueColor);
+        rtGame.clear(sf::Color::Transparent);
 
         //
         // Underlying menu background
@@ -9532,7 +9595,8 @@ struct Main
                         profile.hudScale,
                         currentBackgroundHue.asDegrees(),
                         shouldDrawUIAlpha,
-                        minimapRect);
+                        minimapRect,
+                        txFrameTiny);
 
             // Jump to minimap position on click
             const auto p = scaledHUDView.screenToWorld(windowSpaceMouseOrFingerPos.toVec2f(), window.getSize().toVec2f());
@@ -9546,7 +9610,17 @@ struct Main
 
         //
         // UI and Toasts
+        rtGame.draw(rtImGuiAuxPre.getTexture(),
+                    {.scale = {1.f / profile.hudScale, 1.f / profile.hudScale},
+                     .color = sf::Color::whiteMask(shouldDrawUIAlpha)},
+                    {.view = scaledHUDView, .shader = &shader});
+
         gameLoopDrawImGui(shouldDrawUIAlpha);
+
+        rtGame.draw(rtImGuiAuxPost.getTexture(),
+                    {.scale = {1.f / profile.hudScale, 1.f / profile.hudScale},
+                     .color = sf::Color::whiteMask(shouldDrawUIAlpha)},
+                    {.view = scaledHUDView, .shader = &shader});
 
         //
         // Draw cats on top of UI
@@ -9664,13 +9738,29 @@ struct Main
         if (finishAfterDisplay)
             rtGame.finishGPUCommands();
 
-        shaderPostProcess.setUniform(suPPVibrance, profile.ppSVibrance);
-        shaderPostProcess.setUniform(suPPSaturation, profile.ppSSaturation);
-        shaderPostProcess.setUniform(suPPLightness, profile.ppSLightness);
-        shaderPostProcess.setUniform(suPPSharpness, profile.ppSSharpness);
-
         window.clear();
-        window.draw(rtGame.getTexture(), {.shader = &shaderPostProcess});
+
+        auto gameViewNoScroll   = gameView;
+        gameViewNoScroll.center = getViewCenterWithoutScroll(); // TODO P1: view::withcenter? like vecs
+
+        window.draw(rtBackgroundProcessed.getTexture(),
+                    {.textureRect{{0.f, 0.f}, gameViewNoScroll.size}},
+                    {.view = gameViewNoScroll});
+
+        setPostProcessUniforms(profile.ppSVibrance,
+                               profile.ppSSaturation,
+                               profile.ppSLightness,
+                               profile.ppSSharpness,
+                               profile.ppSBlur);
+
+        constexpr sf::BlendMode premultipliedAlphaBlend(sf::BlendMode::Factor::One,
+                                                        sf::BlendMode::Factor::OneMinusSrcAlpha,
+                                                        sf::BlendMode::Equation::Add,
+                                                        sf::BlendMode::Factor::One,
+                                                        sf::BlendMode::Factor::OneMinusSrcAlpha,
+                                                        sf::BlendMode::Equation::Add);
+
+        window.draw(rtGame.getTexture(), {.blendMode = premultipliedAlphaBlend, .shader = &shaderPostProcess});
 
         if (flushBeforeDisplay)
             rtGame.flushGPUCommands();
