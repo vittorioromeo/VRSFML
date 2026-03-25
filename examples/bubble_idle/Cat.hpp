@@ -9,8 +9,10 @@
 
 #include "SFML/System/Vec2Base.hpp"
 
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Math/Sin.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/Remainder.hpp"
@@ -105,7 +107,7 @@ struct [[nodiscard]] Cat
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] inline sf::Vec2f getDrawPosition(const bool enableBobbing) const
     {
-        return enableBobbing ? position + sf::Vec2f{0.f, sf::base::sin(wobbleRadians * 2.f) * 7.5f} : position;
+        return enableBobbing ? position + sf::Vec2f{0.f, sf::base::sin(wobbleRadians * 1.35f) * 7.f} : position;
     }
 
     ////////////////////////////////////////////////////////////
