@@ -17,13 +17,13 @@ inline constexpr bool isDemoVersion = false;
 #define BUBBLEBYTE_STRINGIFY(...) BUBBLEBYTE_STRINGIFY_IMPL(__VA_ARGS__)
 
 ////////////////////////////////////////////////////////////
-#define BUBBLEBYTE_VERSION_MAJOR 1
+#define BUBBLEBYTE_VERSION_MAJOR 2
 
 ////////////////////////////////////////////////////////////
-#define BUBBLEBYTE_VERSION_MINOR 8
+#define BUBBLEBYTE_VERSION_MINOR 0
 
 ////////////////////////////////////////////////////////////
-#define BUBBLEBYTE_VERSION_PATCH 2
+#define BUBBLEBYTE_VERSION_PATCH 0
 
 ////////////////////////////////////////////////////////////
 #define BUBBLEBYTE_VERSION_STR                                                   \
@@ -42,3 +42,8 @@ struct [[nodiscard]] Version
 
 ////////////////////////////////////////////////////////////
 inline constexpr Version currentVersion{BUBBLEBYTE_VERSION_MAJOR, BUBBLEBYTE_VERSION_MINOR, BUBBLEBYTE_VERSION_PATCH};
+
+// TODO P1: changelog
+// - graphical assets revamp
+// - reduced cat wobbling animation, should be less nauseating
+// - extended game view horizontally to support ultrawide
