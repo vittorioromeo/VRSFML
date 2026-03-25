@@ -107,7 +107,7 @@ struct [[nodiscard]] Cat
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] inline sf::Vec2f getDrawPosition(const bool enableBobbing) const
     {
-        return enableBobbing ? position + sf::Vec2f{0.f, sf::base::sin(wobbleRadians * 1.35f) * 7.f} : position;
+        return enableBobbing ? position + sf::Vec2f{0.f, sf::base::sin(wobbleRadians) * 7.f} : position;
     }
 
     ////////////////////////////////////////////////////////////
