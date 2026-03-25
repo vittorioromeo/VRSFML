@@ -870,12 +870,8 @@ void Main::uiCenteredTextColored(const sf::Color color, const char* str, const f
 ////////////////////////////////////////////////////////////
 sf::Vec2f Main::uiGetWindowPos() const
 {
-    const float ratio = getAspectRatioScalingFactor(gameScreenSize, getResolution());
-
     const float scaledWindowWidth = uiWindowWidth * profile.uiScale;
-
-    const float rightAnchorX = sf::base::min(getResolution().x - scaledWindowWidth - 15.f * profile.uiScale,
-                                             gameScreenSize.x * ratio + 30.f * profile.uiScale);
+    const float rightAnchorX      = getResolution().x - scaledWindowWidth - 15.f * profile.uiScale;
 
     return {rightAnchorX, 15.f};
 }
@@ -1279,9 +1275,7 @@ void Main::uiDrawQuickbarVolumeControls(const sf::Vec2f quickBarPos)
 ////////////////////////////////////////////////////////////
 void Main::uiDrawQuickbar()
 {
-    const float xStartOverlay = getAspectRatioScalingFactor(gameScreenSize, getResolution()) * gameScreenSize.x;
-
-    const float xStart = lastUiSelectedTabIdx == 0 ? xStartOverlay : sf::base::min(xStartOverlay, uiGetWindowPos().x);
+    const float xStart = lastUiSelectedTabIdx == 0 ? getResolution().x : uiGetWindowPos().x;
 
     const sf::Vec2f quickBarPos{xStart - 15.f, getResolution().y - 15.f};
 
@@ -1441,8 +1435,9 @@ void Main::uiDraw(const sf::Vec2f mousePos)
                  ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize |
                      ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground);
 
+    // TODO P0: cleanup
     // 1. Define your colors (Top and Bottom)
-    ImU32 col_top = ImColor(45, 27, 77, 240); // Deep Purple
+    ImU32 col_top = ImColor(75, 47, 97, 220); // Deep Purple
     ImU32 col_bot = ImColor(22, 12, 44, 240); // Darker Navy/Purple
 
 
@@ -1455,8 +1450,8 @@ void Main::uiDraw(const sf::Vec2f mousePos)
     // 4. Draw the Gradient (Top-Left, Top-Right, Bottom-Right, Bottom-Left)
     draw_list->AddRectFilledMultiColor(p_min, p_max, col_top, col_top, col_bot, col_bot);
 
-float rounding = ImGui::GetStyle().WindowRounding;
-draw_list->AddRect(p_min, p_max, ImColor(150, 100, 200, 100), rounding, 0, 2.0f);
+    // float rounding = 8.f;
+    // draw_list->AddRectFilled(p_min, p_max, col_top, rounding, ImDrawFlags_RoundCornersAll);
 
     if (ImGui::BeginTabBar("TabBar", ImGuiTabBarFlags_DrawSelectedOverline))
     {
