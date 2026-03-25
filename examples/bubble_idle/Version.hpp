@@ -47,3 +47,4 @@ inline constexpr Version currentVersion{BUBBLEBYTE_VERSION_MAJOR, BUBBLEBYTE_VER
 // - graphical assets revamp
 // - reduced cat wobbling animation, should be less nauseating
 // - extended game view horizontally to support ultrawide
+// - multipop now works even if you dont click on a bubble directly, but does not extend combo in that case

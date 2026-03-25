@@ -140,12 +140,23 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
+    /// \brief Generates either `-1.f` or `1.f` with equal probability.
+    ///
+    /// \return Either `-1.f` or `1.f`.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten]] inline float getSignF()
+    {
+        return static_cast<float>((m_engine() >> 63u) << 1u) - 1.f;
+    }
+
+    ////////////////////////////////////////////////////////////
     /// \brief Generates a random 2D unit vector (direction).
     ///
     /// \return A random `sf::Vec2f` with magnitude `1`.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] inline sf::Vec2f getRandomDirection()
+    [[nodiscard, gnu::always_inline, gnu::flatten]] inline sf::Vec2f getDirVec2f()
     {
         const float angle = getF(0.f, sf::base::tau);
         return {SFML_BASE_MATH_COSF(angle), SFML_BASE_MATH_SINF(angle)};
