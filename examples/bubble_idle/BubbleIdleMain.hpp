@@ -290,12 +290,14 @@ inline void drawMinimap(
 
     //
     // Blue rectangle showing current visible area
+    const float visibleLeft  = sf::base::max(0.f, gameView.center.x - gameView.size.x / 2.f);
+    const float visibleRight = sf::base::min(mapLimit, gameView.center.x + gameView.size.x / 2.f);
     const sf::RectangleShapeData
-        minimapIndicator{.position     = minimapPos.addX((gameView.center.x - gameScreenSize.x / 2.f) / minimapScale),
-                         .fillColor    = sf::Color::Transparent,
-                         .outlineColor = sf::Color::Blue.withRotatedHue(hueMod).withAlpha(shouldDrawUIAlpha),
+        minimapIndicator{.position         = minimapPos.addX(visibleLeft / minimapScale),
+                         .fillColor        = sf::Color::Transparent,
+                         .outlineColor     = sf::Color::Blue.withRotatedHue(hueMod).withAlpha(shouldDrawUIAlpha),
                          .outlineThickness = 2.f,
-                         .size             = {gameScreenSize / minimapScale}};
+                         .size = sf::Vec2f{sf::base::max(0.f, visibleRight - visibleLeft), gameView.size.y} / minimapScale};
 
     //
     // Convert minimap dimensions to normalized `[0, 1]` range for scissor rectangle
@@ -1826,38 +1828,58 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getCappedGameViewAspectRatio(const sf::Vec2f originalSize, const sf::Vec2f windowSize) const
+    {
+        const float originalAspect       = originalSize.x / originalSize.y;
+        const float windowAspect         = windowSize.x / windowSize.y;
+        const float configuredMaxAspect  = sf::base::max(maxGameViewAspectRatio, originalAspect);
+        const float unlockedMapAspect    = pt != nullptr ? pt->getMapLimit() / originalSize.y : originalAspect;
+        const float clampedMaxViewAspect = sf::base::min(configuredMaxAspect, unlockedMapAspect);
+
+        return sf::base::clamp(windowAspect, originalAspect, clampedMaxViewAspect);
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] sf::Vec2f getExpandedGameViewSize(const sf::Vec2f originalSize, const sf::Vec2f windowSize) const
+    {
+        return {originalSize.y * getCappedGameViewAspectRatio(originalSize, windowSize), originalSize.y};
+    }
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::View createScaledGameView(const sf::Vec2f originalSize, const sf::Vec2f windowSize) const
     {
-        const float     scale      = getAspectRatioScalingFactor(originalSize, windowSize);
-        const sf::Vec2f scaledSize = originalSize * scale;
+        const float     originalAspect = originalSize.x / originalSize.y;
+        const float     windowAspect   = windowSize.x / windowSize.y;
+        const float     viewAspect     = getCappedGameViewAspectRatio(originalSize, windowSize);
+        const sf::Vec2f expandedSize   = getExpandedGameViewSize(originalSize, windowSize);
+        const float     viewportWidth  = viewAspect < windowAspect ? viewAspect / windowAspect : 1.f;
+        const float     viewportHeight = windowAspect < originalAspect ? windowAspect / originalAspect : 1.f;
 
         return {.center   = originalSize / 2.f,
-                .size     = originalSize,
-                .viewport = {(windowSize - scaledSize).componentWiseDiv(windowSize * 2.f),
-                             scaledSize.componentWiseDiv(windowSize)}};
+                .size     = expandedSize,
+                .viewport = {{0.f, (1.f - viewportHeight) * 0.5f}, {viewportWidth, viewportHeight}}};
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::View createScaledTopGameView(const sf::Vec2f originalSize, const sf::Vec2f windowSize) const
     {
-        const float     scale      = getAspectRatioScalingFactor(originalSize, windowSize);
-        const sf::Vec2f scaledSize = originalSize * scale;
+        return createScaledGameView(originalSize, windowSize);
+    }
 
-        // Compute the full window width in world coordinates.
-        const float newWidth = windowSize.x / scale;
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] sf::Vec2f getCurrentGameViewSize() const
+    {
+        return getExpandedGameViewSize(gameScreenSize, getResolution());
+    }
 
-        // Align the left edge with that of the normal game view.
-        // The left edge is given by (baseCenter.x - originalSize.x / 2).
-        const sf::Vec2f baseCenter = getViewCenter();
-        const float     left       = baseCenter.x - originalSize.x / 2.f;
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float clampGameViewCenterX(const float desiredCenterX, const float viewWidth) const
+    {
+        if (viewWidth >= boundaries.x)
+            return boundaries.x / 2.f;
 
-        // Use the new width while keeping the original height.
-        // Use the same vertical letterboxing as the regular game view.
-        return {
-            .center = {left + newWidth / 2.f, baseCenter.y},
-            .size   = {newWidth, originalSize.y},
-            .viewport = {{0.f, (windowSize.y - scaledSize.y) / (windowSize.y * 2.f)}, {1.f, scaledSize.y / windowSize.y}},
-        };
+        const float halfWidth = viewWidth / 2.f;
+        return sf::base::clamp(desiredCenterX, halfWidth, boundaries.x - halfWidth);
     }
 
     ////////////////////////////////////////////////////////////
@@ -1918,12 +1940,13 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    static inline constexpr float uiNormalFontScale    = 0.95f;
-    static inline constexpr float uiSubBulletFontScale = 0.75f;
-    static inline constexpr float uiToolTipFontScale   = 0.65f;
-    static inline constexpr float uiWindowWidth        = 425.f;
-    static inline constexpr float uiButtonWidth        = 150.f;
-    static inline constexpr float uiTooltipWidth       = uiWindowWidth;
+    static inline constexpr float uiNormalFontScale      = 0.95f;
+    static inline constexpr float uiSubBulletFontScale   = 0.75f;
+    static inline constexpr float uiToolTipFontScale     = 0.65f;
+    static inline constexpr float uiWindowWidth          = 425.f;
+    static inline constexpr float uiButtonWidth          = 150.f;
+    static inline constexpr float uiTooltipWidth         = uiWindowWidth;
+    static inline constexpr float maxGameViewAspectRatio = 21.f / 9.f;
 
     ////////////////////////////////////////////////////////////
     char         uiBuffer[256]{};
@@ -2983,8 +3006,10 @@ struct Main
             if ((!profile.accumulatingCombo || !pt->comboPurchased || !byPlayerClick) && !collectedByShrine &&
                 spawnEarnedCoinParticle(hudPos))
             {
-                sounds.coindelay.settings.position = {getViewCenter().x - gameScreenSize.x / 2.f + 25.f,
-                                                      getViewCenter().y - gameScreenSize.y / 2.f + 25.f};
+                const sf::Vec2f viewSize           = getCurrentGameViewSize();
+                const sf::Vec2f viewCenter         = getViewCenter();
+                sounds.coindelay.settings.position = {viewCenter.x - viewSize.x / 2.f + 25.f,
+                                                      viewCenter.y - viewSize.y / 2.f + 25.f};
 
                 sounds.coindelay.settings.pitch  = 1.f;
                 sounds.coindelay.settings.volume = profile.sfxVolume / 100.f * 0.5f;
@@ -3090,8 +3115,9 @@ struct Main
         // Scrolling
         scroll = sf::base::clamp(scroll,
                                  0.f,
-                                 sf::base::min(pt->getMapLimit() / 2.f - gameScreenSize.x / 2.f,
-                                               (boundaries.x - gameScreenSize.x) / 2.f));
+                                 sf::base::max(0.f,
+                                               sf::base::min(pt->getMapLimit() / 2.f - getCurrentGameViewSize().x / 2.f,
+                                                             (boundaries.x - getCurrentGameViewSize().x) / 2.f)));
 
         actualScroll = exponentialApproach(actualScroll, scroll, deltaTimeMs, 75.f);
     }
@@ -3183,7 +3209,7 @@ struct Main
                     return a.position.x < b.position.x;
                 });
 
-                const float targetScroll = (rightmostIt->position.x - gameScreenSize.x / 2.f) / 2.f;
+                const float targetScroll = (rightmostIt->position.x - getCurrentGameViewSize().x / 2.f) / 2.f;
                 scroll                   = exponentialApproach(scroll, targetScroll, deltaTimeMs, 15.f);
 
                 if (rightmostIt != pt->cats.end())
@@ -7441,27 +7467,28 @@ struct Main
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::Vec2f getViewCenter() const
     {
-        return {sf::base::clamp(gameScreenSize.x / 2.f + actualScroll * 2.f,
-                                gameScreenSize.x / 2.f,
-                                boundaries.x - gameScreenSize.x / 2.f),
-                gameScreenSize.y / 2.f};
+        const sf::Vec2f currentViewSize = getCurrentGameViewSize();
+        return {clampGameViewCenterX(currentViewSize.x / 2.f + actualScroll * 2.f, currentViewSize.x),
+                currentViewSize.y / 2.f};
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::Vec2f getViewCenterWithoutScroll() const
     {
-        return {gameScreenSize.x / 2.f, gameScreenSize.y / 2.f};
+        const sf::Vec2f currentViewSize = getCurrentGameViewSize();
+        return {clampGameViewCenterX(currentViewSize.x / 2.f, currentViewSize.x), currentViewSize.y / 2.f};
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] CullingBoundaries getViewCullingBoundaries(const float offset) const
     {
+        const sf::Vec2f viewSize{getCurrentGameViewSize()};
         const sf::Vec2f viewCenter{getViewCenter()};
 
-        return {viewCenter.x - gameScreenSize.x / 2.f + offset,
-                viewCenter.x + gameScreenSize.x / 2.f - offset,
-                viewCenter.y - gameScreenSize.y / 2.f + offset,
-                viewCenter.y + gameScreenSize.y / 2.f - offset};
+        return {viewCenter.x - viewSize.x / 2.f + offset,
+                viewCenter.x + viewSize.x / 2.f - offset,
+                viewCenter.y - viewSize.y / 2.f + offset,
+                viewCenter.y + viewSize.y / 2.f - offset};
     }
 
     ////////////////////////////////////////////////////////////
@@ -7612,15 +7639,16 @@ struct Main
         const float blinkOpacity = easeInOutSine(sf::base::fabs(sf::base::sin(
                                        sf::base::remainder(scrollArrowCountdown.value / 350.f, sf::base::tau)))) *
                                    255.f;
+        const float rightEdgeX   = getViewCenter().x + gameView.size.x / 2.f - 15.f;
 
         rtGame.draw(txArrow,
-                    {.position = {gameScreenSize.x - 15.f, 15.f + (gameScreenSize.y / 5.f) * 1.f},
+                    {.position = {rightEdgeX, 15.f + (gameScreenSize.y / 5.f) * 1.f},
                      .origin   = txArrow.getRect().getCenterRight(),
                      .color    = sf::Color::whiteMask(static_cast<U8>(blinkOpacity))},
                     {.view = gameView});
 
         rtGame.draw(txArrow,
-                    {.position = {gameScreenSize.x - 15.f, gameScreenSize.y - 15.f - (gameScreenSize.y / 5.f) * 1.f},
+                    {.position = {rightEdgeX, gameScreenSize.y - 15.f - (gameScreenSize.y / 5.f) * 1.f},
                      .origin   = txArrow.getRect().getCenterRight(),
                      .color    = sf::Color::whiteMask(static_cast<U8>(blinkOpacity))},
                     {.view = gameView});
@@ -8000,6 +8028,16 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
+    void recreateBackgroundRenderTexture(const sf::Vec2u newResolution)
+    {
+        rtBackground = sf::RenderTexture::create(newResolution,
+                                                 {.antiAliasingLevel = aaLevel,
+                                                  .smooth            = true,
+                                                  .wrapMode          = sf::TextureWrapMode::Repeat})
+                           .value();
+    }
+
+    ////////////////////////////////////////////////////////////
     void recreateGameRenderTexture(const sf::Vec2u newResolution)
     {
         rtGame = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel}).value();
@@ -8041,6 +8079,7 @@ struct Main
         window = makeWindow();
         refreshWindowAutoBatchModeFromProfile();
 
+        recreateBackgroundRenderTexture(getExpandedGameViewSize(gameScreenSize, newResolution.toVec2f()).toVec2u());
         recreateImGuiRenderTexture(newResolution);
         recreateGameRenderTexture(newResolution);
 
@@ -8062,6 +8101,7 @@ struct Main
         if (!takesAllScreen)
             window.setPosition(((desktopResolution - newResolution) / 2u).toVec2i());
 
+        recreateBackgroundRenderTexture(getExpandedGameViewSize(gameScreenSize, newResolution.toVec2f()).toVec2u());
         recreateImGuiRenderTexture(newResolution);
         recreateGameRenderTexture(newResolution);
 
@@ -8154,8 +8194,10 @@ struct Main
                 {
                     earnedCoinParticles.back().startPosition += rngFast.getVec2f({-25.f, -25.f}, {25.f, 25.f});
 
-                    sounds.coindelay.settings.position = {getViewCenter().x - gameScreenSize.x / 2.f + 25.f,
-                                                          getViewCenter().y - gameScreenSize.y / 2.f + 25.f};
+                    const sf::Vec2f viewSize           = getCurrentGameViewSize();
+                    const sf::Vec2f viewCenter         = getViewCenter();
+                    sounds.coindelay.settings.position = {viewCenter.x - viewSize.x / 2.f + 25.f,
+                                                          viewCenter.y - viewSize.y / 2.f + 25.f};
                     sounds.coindelay.settings.pitch    = 0.8f + static_cast<float>(iComboAccReward) * 0.04f;
                     sounds.coindelay.settings.volume   = profile.sfxVolume / 100.f;
 
@@ -8573,7 +8615,13 @@ struct Main
         static_assert(sf::base::getArraySize(detailTx) == nShrineTypes + 1u);
 
         ////////////////////////////////////////////////////////////
-        const auto idx = profile.selectedBackground;
+        const auto      idx = profile.selectedBackground;
+        const sf::Vec2f chunkScale{1.f, 1.f};
+        const sf::Vec2f detailScale{1.f, 1.f};
+        const sf::Vec2f cloudScale{1.25f, 1.25f};
+        const sf::Vec2f chunkTextureRectSize  = gameBackgroundView.size.componentWiseDiv(chunkScale);
+        const sf::Vec2f detailTextureRectSize = gameBackgroundView.size.componentWiseDiv(detailScale);
+        const sf::Vec2f cloudTextureRectSize  = gameBackgroundView.size.componentWiseDiv(cloudScale);
 
         targetBackgroundHue = sf::radians(sf::degrees(backgroundHues[idx]).asRadians()).wrapUnsigned();
         currentBackgroundHue = currentBackgroundHue.rotatedTowards(targetBackgroundHue, deltaTimeMs * 0.01f).wrapUnsigned();
@@ -8581,9 +8629,8 @@ struct Main
 
         rtBackground.draw(*chunkTx[idx],
                           {
-                              .scale       = {0.5f, 0.5f},
-                              .textureRect = {{actualScroll + backgroundScroll * 0.25f, 0.f},
-                                              txBackgroundChunk.getSize().toVec2f() * 2.f},
+                              .scale       = chunkScale,
+                              .textureRect = {{actualScroll + backgroundScroll * 0.25f, 0.f}, chunkTextureRectSize},
                               .color       = hueColor(currentBackgroundHue.asDegrees(), getAlpha(255.f)),
                           },
                           {.view = gameBackgroundView, .shader = &shader});
@@ -8596,20 +8643,27 @@ struct Main
                               },
                               {.view = gameBackgroundView});
 
-        rtBackground.draw(*detailTx[idx],
+        rtBackground.draw(*detailTx[0],
                           {
-                              .scale       = {0.75f, 0.75f},
-                              .textureRect = {{actualScroll * 2.f + backgroundScroll * 0.5f, 0.f},
-                                              txBackgroundChunk.getSize().toVec2f() * 1.5f},
-                              .color       = sf::Color::whiteMask(getAlpha(175.f)),
+                              .scale = detailScale,
+                              .textureRect = {{actualScroll * 2.f + backgroundScroll * 0.5f, 0.f}, detailTextureRectSize},
+                              .color = sf::Color::whiteMask(getAlpha(255.f)),
                           },
                           {.view = gameBackgroundView});
 
+        if (idx != 0u)
+            rtBackground.draw(*detailTx[idx],
+                              {
+                                  .scale = detailScale,
+                                  .textureRect = {{actualScroll * 2.f + backgroundScroll * 0.5f, 0.f}, detailTextureRectSize},
+                                  .color = sf::Color::whiteMask(getAlpha(190.f)),
+                              },
+                              {.view = gameBackgroundView});
+
         rtBackground.draw(txClouds,
                           {
-                              .scale       = {1.25f, 1.25f},
-                              .textureRect = {{actualScroll * 4.f + backgroundScroll * 3.f, 0.f},
-                                              txBackgroundChunk.getSize().toVec2f()},
+                              .scale       = cloudScale,
+                              .textureRect = {{actualScroll * 4.f + backgroundScroll * 3.f, 0.f}, cloudTextureRectSize},
                               .color       = sf::Color::whiteMask(getAlpha(128.f)),
                           },
                           {.view = gameBackgroundView});
@@ -8619,7 +8673,7 @@ struct Main
         auto gameViewNoScroll   = gameView;
         gameViewNoScroll.center = getViewCenterWithoutScroll(); // TODO P1: view::withcenter? like vecs
 
-        rtGame.draw(rtBackground.getTexture(), {.textureRect{{0.f, 0.f}, gameScreenSize}}, {.view = gameViewNoScroll});
+        rtGame.draw(rtBackground.getTexture(), {.textureRect{{0.f, 0.f}, gameViewNoScroll.size}}, {.view = gameViewNoScroll});
     }
 
     ////////////////////////////////////////////////////////////
@@ -8940,6 +8994,7 @@ struct Main
             }
             else if (const auto* e6 = event->getIf<sf::Event::Resized>())
             {
+                recreateBackgroundRenderTexture(getExpandedGameViewSize(gameScreenSize, e6->size.toVec2f()).toVec2u());
                 recreateImGuiRenderTexture(e6->size);
                 recreateGameRenderTexture(e6->size);
 
@@ -9241,15 +9296,13 @@ struct Main
         gameView.viewport.position.x = 0.f;
         gameView.center              = getViewCenter() + screenShake;
 
-        sf::View scaledTopGameView            = createScaledTopGameView(gameScreenSize, resolution);
-        scaledTopGameView.viewport.position.x = 0.f;
+        const sf::Vec2u backgroundResolution = gameView.size.toVec2u();
+        if (rtBackground.getSize() != backgroundResolution)
+            recreateBackgroundRenderTexture(backgroundResolution);
 
-        const float     scale      = getAspectRatioScalingFactor(gameScreenSize, resolution);
-        const sf::Vec2f scaledSize = gameScreenSize * scale;
+        sf::View scaledTopGameView = gameView;
 
-        sf::View gameBackgroundView            = createScaledGameView(gameScreenSize, scaledSize);
-        gameBackgroundView.viewport.position.x = 0.f;
-        gameBackgroundView.center              = getViewCenterWithoutScroll() + screenShake;
+        sf::View gameBackgroundView{.center = getViewCenterWithoutScroll() + screenShake, .size = gameView.size};
 
         //
         // Clear window
@@ -9370,8 +9423,7 @@ struct Main
         // Demo text (TODO P2: cleanup)
         if constexpr (isDemoVersion)
         {
-            const float xStartOverlay = getAspectRatioScalingFactor(gameScreenSize, getResolution()) *
-                                        gameScreenSize.x / profile.hudScale;
+            const float xStartOverlay = gameView.viewport.size.x * resolution.x / profile.hudScale;
 
             demoText.setGlobalTopRight({xStartOverlay - 15.f, 15.f});
             demoText.setOutlineColor(outlineHueColor);
@@ -9488,7 +9540,7 @@ struct Main
             if (minimapRect.contains(p) && mBtnDown(sf::Mouse::Button::Left, /* penetrateUI */ true))
             {
                 const auto minimapPos = p - minimapRect.position;
-                scroll = minimapPos.x * 0.5f * pt->getMapLimit() / minimapRect.size.x - gameScreenSize.x * 0.25f;
+                scroll = minimapPos.x * 0.5f * pt->getMapLimit() / minimapRect.size.x - gameView.size.x * 0.25f;
             }
         }
 
