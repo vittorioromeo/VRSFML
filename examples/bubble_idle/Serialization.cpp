@@ -670,7 +670,14 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Prof
                       p.hideMaxedOutPurchasables,
                       p.hideCategorySeparators,
 
-                      p.autobatchMode);
+                      p.autobatchMode,
+
+                      p.ppSBlur,
+                      p.ppBGVibrance,
+                      p.ppBGSaturation,
+                      p.ppBGLightness,
+                      p.ppBGSharpness,
+                      p.ppBGBlur);
 }
 
 ////////////////////////////////////////////////////////////
