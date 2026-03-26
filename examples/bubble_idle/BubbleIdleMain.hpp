@@ -540,7 +540,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Texture atlas
-    sf::TextureAtlas textureAtlas{sf::Texture::create({4096u, 4096u}, {.smooth = true}).value()};
+    sf::TextureAtlas textureAtlas{sf::Texture::create({6000u, 4096u}, {.smooth = true}).value()}; // TODO P0: make smaller
 
     ////////////////////////////////////////////////////////////
     // SFML fonts
@@ -631,6 +631,7 @@ struct Main
     sf::Texture txBackgroundChunkDesaturated{
         sf::Texture::loadFromFile("resources/backgroundchunkdesaturated.png", bgSettings).value()};
     sf::Texture txClouds{sf::Texture::loadFromFile("resources/clouds.png", bgSettings).value()};
+    sf::Texture txTintedClouds{sf::Texture::loadFromFile("resources/tintedclouds.png", bgSettings).value()};
     sf::Texture txBgSwamp{sf::Texture::loadFromFile("resources/bgswamp.png", bgSettings).value()};
     sf::Texture txBgObservatory{sf::Texture::loadFromFile("resources/bgobservatory.png", bgSettings).value()};
     sf::Texture txBgAimTraining{sf::Texture::loadFromFile("resources/bgaimtraining.png", bgSettings).value()};
@@ -1121,6 +1122,7 @@ struct Main
     sf::CPUDrawableBatch starBubbleDrawableBatch;
     sf::CPUDrawableBatch bombBubbleDrawableBatch;
     sf::CPUDrawableBatch cpuDrawableBatch;
+    sf::CPUDrawableBatch cpuDrawableBatchAdditive;
     sf::CPUDrawableBatch minimapDrawableBatch;
     sf::CPUDrawableBatch catTextDrawableBatch;
     sf::CPUDrawableBatch hudDrawableBatch;
@@ -1189,7 +1191,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Splash screen state
-    TargetedCountdown splashCountdown{.startingValue = 2500.f};
+    TargetedCountdown splashCountdown{.startingValue = 1.f}; // TODO P0: revert to 2500
 
     ////////////////////////////////////////////////////////////
     // Tip state
@@ -2889,20 +2891,37 @@ struct Main
         sounds.explosion.settings.position = {bubble.position.x, bubble.position.y};
         playSound(sounds.explosion);
 
-        spawnParticles(16, bubble.position, ParticleType::Fire, 3.f, 1.f);
-
         for (sf::base::SizeT iP = 0u; iP < 16u; ++iP)
-            spawnParticle(ParticleData{.position      = bubble.position,
-                                       .velocity      = rngFast.getVec2f({-0.75f, -0.75f}, {0.75f, 0.75f}) * 0.55f,
-                                       .scale         = rngFast.getF(0.08f, 0.27f) * 3.75f,
-                                       .scaleDecay    = -0.0005f,
-                                       .accelerationY = 0.00015f,
-                                       .opacity       = 0.75f,
-                                       .opacityDecay  = rngFast.getF(0.001f, 0.002f),
+        {
+            spawnParticle(
+                ParticleData{
+                    .position      = bubble.position,
+                    .velocity      = rngFast.getVec2f({-0.75f, -1.75f}, {0.75f, -0.75f}) * 0.3f,
+                    .scale         = rngFast.getF(0.08f, 0.27f) * 2.5f,
+                    .scaleDecay    = 0.0002f,
+                    .accelerationY = 0.002f,
+                    .opacity       = 0.65f,
+                    .opacityDecay  = rngFast.getF(0.00025f, 0.0015f),
+                    .rotation      = rngFast.getF(0.f, sf::base::tau),
+                    .torque        = rngFast.getF(-0.002f, 0.002f) * 5.f,
+                },
+                0.f,
+                ParticleType::Fire);
+
+            spawnParticle(ParticleData{.position = bubble.position,
+                                       .velocity = sf::Vec2f::fromAngle(rngFast.getF(0.4f, 0.8f),
+                                                                        sf::radians(sf::base::tau / static_cast<float>(16u) *
+                                                                                    static_cast<float>(iP))),
+                                       .scale         = rngFast.getF(0.08f, 0.27f) * 2.75f,
+                                       .scaleDecay    = -0.0025f,
+                                       .accelerationY = 0.000001f,
+                                       .opacity       = 0.35f,
+                                       .opacityDecay  = rngFast.getF(0.001f, 0.002f) * 0.6f,
                                        .rotation      = rngFast.getF(0.f, sf::base::tau),
                                        .torque        = rngFast.getF(-0.001f, 0.001f)},
                           0.f,
                           ParticleType::Explosion);
+        }
 
         for (sf::base::SizeT iP = 0u; iP < 8u; ++iP)
             spawnParticle(ParticleData{.position      = bubble.position,
@@ -2910,8 +2929,8 @@ struct Main
                                        .scale         = rngFast.getF(0.65f, 1.f) * 1.25f,
                                        .scaleDecay    = -0.0005f,
                                        .accelerationY = -0.00017f,
-                                       .opacity       = rngFast.getF(0.5f, 0.75f),
-                                       .opacityDecay  = rngFast.getF(0.00035f, 0.00055f),
+                                       .opacity       = rngFast.getF(0.5f, 0.75f) * 0.7f,
+                                       .opacityDecay  = rngFast.getF(0.00035f, 0.00055f) * 0.8f,
                                        .rotation      = rngFast.getF(0.f, sf::base::tau),
                                        .torque        = rngFast.getF(-0.002f, 0.002f)},
                           0.f,
@@ -4675,15 +4694,15 @@ struct Main
                     sounds.rocket.settings.position = {cx, cy};
                     playSound(sounds.rocket, /* maxOverlap */ 1u);
 
-                    spawnParticles(1, drawPosition + sf::Vec2f{56.f, 45.f}, ParticleType::Fire, 1.5f, 0.25f, 0.65f);
+                    spawnParticles(1, drawPosition + sf::Vec2f{46.f, 55.f}, ParticleType::Fire, 1.6f, 0.25f, 0.65f);
 
                     if (rngFast.getI(0, 10) > 5)
-                        spawnParticle(ParticleData{.position   = drawPosition + sf::Vec2f{56.f, 45.f},
+                        spawnParticle(ParticleData{.position   = drawPosition + sf::Vec2f{46.f, 55.f},
                                                    .velocity   = {rngFast.getF(-0.15f, 0.15f), rngFast.getF(0.f, 0.1f)},
-                                                   .scale      = rngFast.getF(0.75f, 1.f) * 0.45f,
+                                                   .scale      = rngFast.getF(0.75f, 1.f) * 0.4f,
                                                    .scaleDecay = -0.00025f,
                                                    .accelerationY = -0.00017f,
-                                                   .opacity       = 0.7f,
+                                                   .opacity       = 0.5f,
                                                    .opacityDecay  = rngFast.getF(0.00065f, 0.00075f),
                                                    .rotation      = rngFast.getF(0.f, sf::base::tau),
                                                    .torque        = rngFast.getF(-0.002f, 0.002f)},
@@ -6720,14 +6739,14 @@ struct Main
         static_assert(sf::base::getArraySize(catTailTxrsByType) == nCatTypes);
 
         ////////////////////////////////////////////////////////////
-        const sf::Vec2f catTailOffsetsByType[] = {
+        constexpr sf::Vec2f catTailOffsetsByType[] = {
             {0.f, 0.f},      // Normal
             {-35.f, -222.f}, // Uni
             {-8.f, 2.f},     // Devil
             {56.f, -80.f},   // Astro
 
             {37.f, 165.f}, // Witch
-            {0.f, -35.f},  // Wizard
+            {-18.f, 56.f}, // Wizard
             {0.f, 0.f},    // Mouse
             {2.f, 43.f},   // Engi
             {4.f, -29.f},  // Repulso
@@ -6739,7 +6758,7 @@ struct Main
         static_assert(sf::base::getArraySize(catTailOffsetsByType) == nCatTypes);
 
         ////////////////////////////////////////////////////////////
-        const float catHueByType[] = {
+        constexpr float catHueByType[] = {
             0.f,   // Normal
             160.f, // Uni
             -25.f, // Devil
@@ -7616,12 +7635,28 @@ struct Main
         if (!profile.showParticles)
             return;
 
+        sf::CPUDrawableBatch* const cpuDrawableBatchToUse[nParticleTypes] = {
+            &cpuDrawableBatch,
+            &cpuDrawableBatch,
+            &cpuDrawableBatchAdditive,
+            &cpuDrawableBatch,
+            &cpuDrawableBatch,
+            &cpuDrawableBatch,
+            &cpuDrawableBatch,
+            &cpuDrawableBatch,
+            &cpuDrawableBatch,
+            &cpuDrawableBatchAdditive,
+            &cpuDrawableBatch,
+            &cpuDrawableBatchAdditive,
+            &cpuDrawableBatch,
+        };
+
         for (const auto& particle : particles)
         {
             if (!particleCullingBoundaries.isInside(particle.position))
                 continue;
 
-            cpuDrawableBatch.add(particleToSprite(particle));
+            cpuDrawableBatchToUse[asIdx(particle.type)]->add(particleToSprite(particle));
         }
     }
 
@@ -8794,13 +8829,27 @@ struct Main
                               },
                               {.view = gameBackgroundView});
 
-        rtBackground.draw(txClouds,
-                          {
-                              .scale = detailScale,
-                              .textureRect = {{actualScroll * 2.f + backgroundScroll * 0.5f, 0.f}, detailTextureRectSize},
-                              .color = sf::Color::whiteMask(getAlpha(255.f)),
-                          },
-                          {.view = gameBackgroundView});
+        if (idx == 0u)
+        {
+            rtBackground.draw(txClouds,
+                              {
+                                  .textureRect = {{actualScroll * 2.f + backgroundScroll * 0.5f, 0.f}, detailTextureRectSize},
+                                  .color = sf::Color::whiteMask(getAlpha(255.f)),
+                              },
+                              {
+                                  .view = gameBackgroundView,
+                              });
+        }
+        else
+        {
+            rtBackground.draw(txTintedClouds,
+                              {
+                                  .textureRect = {{actualScroll * 2.f + backgroundScroll * 0.5f, 0.f}, detailTextureRectSize},
+                                  .color = hueColor(currentBackgroundHue.asDegrees() - 30, getAlpha(255.f)),
+                              },
+                              {.view = gameBackgroundView, .shader = &shader});
+        }
+
 
         rtBackground.display();
         updateProcessedBackground();
@@ -9476,6 +9525,7 @@ struct Main
         //
         // Draw cats, shrines, dolls, particles, and text particles
         cpuDrawableBatch.clear();
+        cpuDrawableBatchAdditive.clear();
         cpuTopDrawableBatch.clear();
         catTextDrawableBatch.clear();
         catTextTopDrawableBatch.clear();
@@ -9504,6 +9554,8 @@ struct Main
         gameLoopDrawParticles();
         gameLoopDrawTextParticles();
         drawBatch(cpuDrawableBatch, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
+        drawBatch(cpuDrawableBatchAdditive,
+                  {.blendMode = sf::BlendAdd, .view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
         drawBatch(catTextDrawableBatch, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
 
         //
