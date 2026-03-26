@@ -1544,3 +1544,7 @@ void RenderTarget::invokeInstancedPrimitiveDrawCallIndexed(
 //   already none for the previous draw.
 //
 ////////////////////////////////////////////////////////////
+
+// TODO P0: document autobatching limitations
+// - shader uniform updates not tracked in same batch
+// - texture updates not tracked in same batch

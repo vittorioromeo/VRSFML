@@ -72,17 +72,17 @@ struct [[nodiscard]] Profile
 
     bool uiUnlocks[128] = {};
 
-    float ppSVibrance   = 0.25f;
+    float ppSVibrance   = 0.15f;
     float ppSSaturation = 1.f;
     float ppSLightness  = 1.f;
     float ppSSharpness  = 0.10f;
     float ppSBlur       = 0.f;
 
-    float ppBGVibrance   = 0.2f;
-    float ppBGSaturation = 0.8f;
-    float ppBGLightness  = 0.85f;
+    float ppBGVibrance   = 0.1f;
+    float ppBGSaturation = 0.65f;
+    float ppBGLightness  = 0.95f;
     float ppBGSharpness  = 0.f;
-    float ppBGBlur       = 0.5f;
+    float ppBGBlur       = 1.f;
 
     bool showBubbles            = true;
     bool invertMouseButtons     = false;
