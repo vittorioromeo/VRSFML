@@ -1,4 +1,3 @@
-
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
@@ -12,6 +11,7 @@
 #include "CatType.hpp"
 #include "Constants.hpp"
 #include "Countdown.hpp"
+#include "IconsFontAwesome6.h"
 #include "ImGuiNotify.hpp"
 #include "InputHelper.hpp"
 #include "Milestones.hpp"
@@ -42,12 +42,15 @@
 #include "SFML/Graphics/DrawTextureSettings.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
+#include "SFML/Graphics/IndexType.hpp"
+#include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RectangleShapeData.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/TextureAtlas.hpp"
+#include "SFML/Graphics/Vertex.hpp"
 
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
@@ -1419,7 +1422,7 @@ void Main::uiDraw(const sf::Vec2f mousePos)
 
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_IsTouchScreen;
 
-    ImGui::GetIO().FontGlobalScale = newScalingFactor;
+    ImGui::GetIO().FontGlobalScale = newScalingFactor * 0.975f;
 
     if (profile.showDpsMeter && !debugHideUI)
         uiDpsMeter();
@@ -1457,10 +1460,28 @@ void Main::uiDraw(const sf::Vec2f mousePos)
     // float rounding = 8.f;
     // draw_list->AddRectFilled(p_min, p_max, col_top, rounding, ImDrawFlags_RoundCornersAll);
 
-    if (ImGui::BeginTabBar("TabBar", ImGuiTabBarFlags_DrawSelectedOverline))
     {
-        uiTabBar();
-        ImGui::EndTabBar();
+        const auto prevTabRounding      = style.TabRounding;
+        const auto prevItemInnerSpacing = style.ItemInnerSpacing;
+
+        style.TabRounding      = 8.0f;
+        style.ItemInnerSpacing = {0.f, 0.f};
+
+        ImGui::PushStyleColor(ImGuiCol_Tab, ImVec4(0.15f, 0.35f, 0.60f, 1.0f));        // Inactive
+        ImGui::PushStyleColor(ImGuiCol_TabHovered, ImVec4(0.25f, 0.45f, 0.80f, 1.0f)); // Hover
+        ImGui::PushStyleColor(ImGuiCol_TabActive, ImVec4(0.35f, 0.55f, 0.95f, 1.0f));  // Active
+        ImGui::PushStyleColor(ImGuiCol_TabUnfocused, ImVec4(0.15f, 0.35f, 0.60f, 1.0f));
+
+        if (ImGui::BeginTabBar("TabBar", ImGuiTabBarFlags_DrawSelectedOverline))
+        {
+            uiTabBar();
+            ImGui::EndTabBar();
+        }
+
+        ImGui::PopStyleColor(4);
+
+        style.TabRounding      = prevTabRounding;
+        style.ItemInnerSpacing = prevItemInnerSpacing;
     }
 
     if (!ImGui::GetIO().WantCaptureMouse && particleCullingBoundaries.isInside(mousePos))
@@ -1574,7 +1595,27 @@ void Main::uiDpsMeter()
             .size      = panel.size + sf::Vec2f{offset * 2.f, offset * 2.f},
         };
 
-        rtImGuiAuxPre.draw(bg);
+        sf::Color col_top{25, 65, 125, 220}; // Deep Blue
+        sf::Color col_bot{5, 20, 45, 240};   // Darker Navy Blue
+
+        // Rectangle vertices for top-to-bottom gradient
+        sf::Vertex vertices[4] = {
+            {{bg.position.x, bg.position.y}, col_top},
+            {{bg.position.x + bg.size.x, bg.position.y}, col_top},
+            {{bg.position.x + bg.size.x, bg.position.y + bg.size.y}, col_bot},
+            {{bg.position.x, bg.position.y + bg.size.y}, col_bot},
+        };
+
+        sf::IndexType indices[6] = {0, 1, 2, 2, 3, 0};
+
+        rtImGuiAuxPre.drawIndexedVertices({
+            .vertexData    = vertices,
+            .vertexCount   = 4,
+            .indexData     = indices,
+            .indexCount    = 6,
+            .primitiveType = sf::PrimitiveType::Triangles,
+        });
+
         panel.draw(rtImGuiAuxPost, txFrameTiny);
     }
 }
@@ -1674,7 +1715,7 @@ void Main::uiTabBar()
         lastUiSelectedTabIdx = idx;
     };
 
-    if (ImGui::BeginTabItem("X",
+    if (ImGui::BeginTabItem(ICON_FA_CHEVRON_UP,
                             nullptr,
                             keyboardSelectedTab(sf::Keyboard::Key::Slash) | keyboardSelectedTab(sf::Keyboard::Key::Grave) |
                                 keyboardSelectedTab(sf::Keyboard::Key::Apostrophe) |
@@ -1685,7 +1726,47 @@ void Main::uiTabBar()
         ImGui::EndTabItem();
     }
 
-    if (ImGui::BeginTabItem("Shop", nullptr, shopSelectOnce | keyboardSelectedTab(sf::Keyboard::Key::Num1)))
+    sf::base::SizeT nextTabKeyIndex = 0u;
+
+    constexpr sf::Keyboard::Key tabKeys[] = {
+        sf::Keyboard::Key::Num1,
+        sf::Keyboard::Key::Num2,
+        sf::Keyboard::Key::Num3,
+        sf::Keyboard::Key::Num4,
+        sf::Keyboard::Key::Num5,
+        sf::Keyboard::Key::Num6,
+    };
+
+    if (ImGui::BeginTabItem(ICON_FA_GEAR, nullptr, {}))
+    {
+        selectedTab(5);
+
+        ImGui::BeginChild("OptionsScroll", ImVec2(ImGui::GetContentRegionAvail().x, childHeight), 0, ImGuiWindowFlags_None);
+
+        uiTabBarSettings();
+
+        ImGui::EndChild();
+        ImGui::EndTabItem();
+    }
+
+    if (ImGui::BeginTabItem(ICON_FA_CIRCLE_INFO, nullptr, {}))
+    {
+        selectedTab(4);
+
+        ImGui::BeginChild("StatsScroll", ImVec2(ImGui::GetContentRegionAvail().x, childHeight), 0, ImGuiWindowFlags_None);
+
+        uiTabBarStats();
+
+        ImGui::EndChild();
+        ImGui::EndTabItem();
+    }
+
+    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.0f); // Make it invisible
+    if (ImGui::BeginTabItem("##spacer0", nullptr, ImGuiTabItemFlags_NoTooltip))
+        ImGui::EndTabItem();
+    ImGui::PopStyleVar();
+
+    if (ImGui::BeginTabItem(ICON_FA_STORE " Shop", nullptr, shopSelectOnce | keyboardSelectedTab(tabKeys[nextTabKeyIndex++])))
     {
         selectedTab(1);
 
@@ -1698,18 +1779,13 @@ void Main::uiTabBar()
         ImGui::EndTabItem();
     }
 
-    sf::base::SizeT nextTabKeyIndex = 0u;
-
-    constexpr sf::Keyboard::Key tabKeys[] = {
-        sf::Keyboard::Key::Num2,
-        sf::Keyboard::Key::Num3,
-        sf::Keyboard::Key::Num4,
-        sf::Keyboard::Key::Num5,
-        sf::Keyboard::Key::Num6,
-    };
+    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.0f); // Make it invisible
+    if (ImGui::BeginTabItem("##spacer1", nullptr, ImGuiTabItemFlags_NoTooltip))
+        ImGui::EndTabItem();
+    ImGui::PopStyleVar();
 
     if (cachedWizardCat != nullptr &&
-        ImGui::BeginTabItem("Magic", nullptr, keyboardSelectedTab(tabKeys[nextTabKeyIndex++])))
+        ImGui::BeginTabItem(ICON_FA_STAR " Magic", nullptr, keyboardSelectedTab(tabKeys[nextTabKeyIndex++])))
     {
         selectedTab(2);
 
@@ -1738,7 +1814,12 @@ void Main::uiTabBar()
             ImGui::PushStyleColor(ImGuiCol_TabSelected, IM_COL32(136, 65, 105, 255));
         }
 
-        if (ImGui::BeginTabItem("Prestige", nullptr, keyboardSelectedTab(tabKeys[nextTabKeyIndex++])))
+        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.0f); // Make it invisible
+        if (ImGui::BeginTabItem("##spacer2", nullptr, ImGuiTabItemFlags_NoTooltip))
+            ImGui::EndTabItem();
+        ImGui::PopStyleVar();
+
+        if (ImGui::BeginTabItem(ICON_FA_TROPHY " Prestige", nullptr, keyboardSelectedTab(tabKeys[nextTabKeyIndex++])))
         {
             selectedTab(3);
 
@@ -1752,30 +1833,6 @@ void Main::uiTabBar()
 
         if (canPrestige)
             ImGui::PopStyleColor(3);
-    }
-
-    if (ImGui::BeginTabItem("Info", nullptr, keyboardSelectedTab(tabKeys[nextTabKeyIndex++])))
-    {
-        selectedTab(4);
-
-        ImGui::BeginChild("StatsScroll", ImVec2(ImGui::GetContentRegionAvail().x, childHeight), 0, ImGuiWindowFlags_None);
-
-        uiTabBarStats();
-
-        ImGui::EndChild();
-        ImGui::EndTabItem();
-    }
-
-    if (ImGui::BeginTabItem("Options", nullptr, keyboardSelectedTab(tabKeys[nextTabKeyIndex++])))
-    {
-        selectedTab(5);
-
-        ImGui::BeginChild("OptionsScroll", ImVec2(ImGui::GetContentRegionAvail().x, childHeight), 0, ImGuiWindowFlags_None);
-
-        uiTabBarSettings();
-
-        ImGui::EndChild();
-        ImGui::EndTabItem();
     }
 }
 
