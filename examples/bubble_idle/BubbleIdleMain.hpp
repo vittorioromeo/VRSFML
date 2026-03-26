@@ -19,6 +19,7 @@
 #include "Doll.hpp"
 #include "ExactArray.hpp"
 #include "HellPortal.hpp"
+#include "IconsFontAwesome6.h"
 #include "InputHelper.hpp"
 #include "MemberGuard.hpp"
 #include "Particle.hpp"
@@ -548,8 +549,25 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // ImGui fonts
-    ImFont* fontImGuiSuperBakery{ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/superbakery.ttf", 26.f)};
     ImFont* fontImGuiMouldyCheese{ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/mouldycheese.ttf", 26.f)};
+    ImFont* fontImGuiSuperBakery{ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/superbakery.ttf", 26.f)};
+    ImFont* fontImGuiFA{[]
+    {
+        static const ImWchar iconRanges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
+
+        ImFontConfig iconConfig;
+        iconConfig.MergeMode        = true;
+        iconConfig.PixelSnapH       = true;
+        iconConfig.GlyphMinAdvanceX = 18.0f; // Helps keep icons square
+        iconConfig.GlyphOffset.y    = -1.0f; // Moves icons down 2 pixels
+
+        // 3. Load FontAwesome into the SAME font object
+        auto* res = ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/fa-solid-900.ttf", 16.0f, &iconConfig, iconRanges);
+        SFML_BASE_ASSERT(res != nullptr);
+
+        ImGui::GetIO().Fonts->Build();
+        return res;
+    }()};
 
     ////////////////////////////////////////////////////////////
     // Music
@@ -6745,8 +6763,27 @@ struct Main
             {-8.f, 2.f},     // Devil
             {56.f, -80.f},   // Astro
 
+            {37.f, 165.f},  // Witch
+            {-90.f, 120.f}, // Wizard
+            {0.f, 0.f},     // Mouse
+            {2.f, 43.f},    // Engi
+            {4.f, -29.f},   // Repulso
+            {0.f, 0.f},     // Attracto
+            {0.f, 0.f},     // Copy
+            {0.f, 0.f},     // Duck
+        };
+
+        static_assert(sf::base::getArraySize(catTailOffsetsByType) == nCatTypes);
+
+        ////////////////////////////////////////////////////////////
+        constexpr sf::Vec2f catEyeOffsetsByType[] = {
+            {0.f, 0.f},      // Normal
+            {-35.f, -222.f}, // Uni
+            {-8.f, 2.f},     // Devil
+            {56.f, -80.f},   // Astro
+
             {37.f, 165.f}, // Witch
-            {-18.f, 56.f}, // Wizard
+            {-25.f, 65.f}, // Wizard
             {0.f, 0.f},    // Mouse
             {2.f, 43.f},   // Engi
             {4.f, -29.f},  // Repulso
@@ -6755,7 +6792,7 @@ struct Main
             {0.f, 0.f},    // Duck
         };
 
-        static_assert(sf::base::getArraySize(catTailOffsetsByType) == nCatTypes);
+        static_assert(sf::base::getArraySize(catEyeOffsetsByType) == nCatTypes);
 
         ////////////////////////////////////////////////////////////
         constexpr float catHueByType[] = {
@@ -6785,6 +6822,7 @@ struct Main
                             catPawTxrsByType,
                             catTailTxrsByType,
                             catTailOffsetsByType,
+                            catEyeOffsetsByType,
                             catHueByType);
     }
 
@@ -6813,6 +6851,7 @@ struct Main
                          const sf::Rect2f* const (&catPawTxrsByType)[nCatTypes],
                          const sf::Rect2f* const (&catTailTxrsByType)[nCatTypes],
                          const sf::Vec2f (&catTailOffsetsByType)[nCatTypes],
+                         const sf::Vec2f (&catEyeOffsetsByType)[nCatTypes],
                          const float (&catHueByType)[nCatTypes])
     {
         auto& batchToUse     = catToPlace == &cat ? cpuTopDrawableBatch : cpuDrawableBatch;
@@ -6842,6 +6881,7 @@ struct Main
         const sf::Rect2f& catPawTxr = *catPawTxrsByType[asIdx(isCopyCatWithType(CatType::Mouse) ? CatType::Mouse : cat.type)];
         const sf::Rect2f& catTailTxr    = *catTailTxrsByType[asIdx(cat.type)];
         const sf::Vec2f   catTailOffset = catTailOffsetsByType[asIdx(cat.type)];
+        const sf::Vec2f   catEyeOffset  = catEyeOffsetsByType[asIdx(cat.type)];
 
         const float maxCooldown  = getComputedCooldownByCatTypeOrCopyCat(cat.type);
         const float cooldownDiff = cat.cooldown.value;
@@ -7074,7 +7114,7 @@ struct Main
             if (cat.type == CatType::Normal) // TODO P2: implement for other cats as well?
             {
                 batchToUse.add(
-                    sf::Sprite{.position = anchorOffset(catTailOffset + sf::Vec2f{-131.f, -365.f}),
+                    sf::Sprite{.position = anchorOffset(catEyeOffset + sf::Vec2f{-131.f, -365.f}),
                                .scale    = catScale,
                                .origin   = txrCatEars0.size / 2.f,
                                .rotation = sf::radians(catRotation),
@@ -7098,7 +7138,7 @@ struct Main
 
                 (void)cat.yawnAnimCountdown.updateAndStop(deltaTimeMs);
 
-                batchToUse.add(sf::Sprite{.position    = anchorOffset(catTailOffset + sf::Vec2f{-221.f, 25.f}),
+                batchToUse.add(sf::Sprite{.position    = anchorOffset(catEyeOffset + sf::Vec2f{-221.f, 25.f}),
                                           .scale       = catScale,
                                           .origin      = txrCatYawn0.size / 2.f,
                                           .rotation    = sf::radians(catRotation),
@@ -7207,7 +7247,7 @@ struct Main
                 (cachedCopyCat != nullptr && pt->copycatCopiedCatType == CatType::Witch &&
                  isCatPerformingRitual(*cachedCopyCat, cat)))
             {
-                batchToUse.add(sf::Sprite{.position    = anchorOffset(catTailOffset + sf::Vec2f{-185.f, -185.f}),
+                batchToUse.add(sf::Sprite{.position    = anchorOffset(catEyeOffset + sf::Vec2f{-185.f, -185.f}),
                                           .scale       = catScale,
                                           .origin      = txrCatEyeLid0.size / 2.f,
                                           .rotation    = sf::radians(catRotation),
@@ -7216,7 +7256,7 @@ struct Main
             }
             else if (!cat.yawnAnimCountdown.isDone())
             {
-                batchToUse.add(sf::Sprite{.position    = anchorOffset(catTailOffset + sf::Vec2f{-185.f, -185.f}),
+                batchToUse.add(sf::Sprite{.position    = anchorOffset(catEyeOffset + sf::Vec2f{-185.f, -185.f}),
                                           .scale       = catScale,
                                           .origin      = txrCatEyeLid0.size / 2.f,
                                           .rotation    = sf::radians(catRotation),
@@ -7227,7 +7267,7 @@ struct Main
             else if (!cat.blinkAnimCountdown.isDone())
             {
                 batchToUse.add(
-                    sf::Sprite{.position = anchorOffset(catTailOffset + sf::Vec2f{-185.f, -185.f}),
+                    sf::Sprite{.position = anchorOffset(catEyeOffset + sf::Vec2f{-185.f, -185.f}),
                                .scale    = catScale,
                                .origin   = txrCatEyeLid0.size / 2.f,
                                .rotation = sf::radians(catRotation),
@@ -8810,15 +8850,18 @@ struct Main
                               },
                               {.view = gameBackgroundView});
 
-        rtBackground.draw(txClouds,
-                          {
-                              .position = {0.f, -350.f},
-                              .scale    = {-detailScale.x * 1.5f, detailScale.y * 1.5f},
-                              .origin   = {detailTextureRectSize.x, 0.f},
-                              .textureRect = {{-actualScroll * 1.5f + backgroundScroll * 1.5f, 0.f}, detailTextureRectSize},
-                              .color = sf::Color::whiteMask(getAlpha(180.f)),
-                          },
-                          {.view = gameBackgroundView});
+        // TODO P0: remake clouds
+
+        if (0)
+            rtBackground.draw(txClouds,
+                              {
+                                  .position = {0.f, -350.f},
+                                  .scale    = {-detailScale.x * 1.5f, detailScale.y * 1.5f},
+                                  .origin   = {detailTextureRectSize.x, 0.f},
+                                  .textureRect = {{-actualScroll * 1.5f + backgroundScroll * 1.5f, 0.f}, detailTextureRectSize},
+                                  .color = sf::Color::whiteMask(getAlpha(180.f)),
+                              },
+                              {.view = gameBackgroundView});
 
         if (idx != 0u)
             rtBackground.draw(*detailTx[idx],
@@ -8834,7 +8877,7 @@ struct Main
             rtBackground.draw(txClouds,
                               {
                                   .textureRect = {{actualScroll * 2.f + backgroundScroll * 0.5f, 0.f}, detailTextureRectSize},
-                                  .color = sf::Color::whiteMask(getAlpha(255.f)),
+                                  .color = sf::Color::whiteMask(getAlpha(128.f)),
                               },
                               {
                                   .view = gameBackgroundView,
