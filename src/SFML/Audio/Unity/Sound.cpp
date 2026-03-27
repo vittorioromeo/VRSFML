@@ -175,7 +175,13 @@ Sound::Sound(PlaybackDevice& playbackDevice, const SoundBuffer& buffer) : Sound{
 
 
 ////////////////////////////////////////////////////////////
-Sound::~Sound() = default;
+Sound::~Sound()
+{
+    // TODO P1: revisit?
+    // Stop the sound before `Impl` begins tearing down, otherwise the audio
+    // callback can still race with `read()` during destruction.
+    pause();
+}
 
 
 ////////////////////////////////////////////////////////////
