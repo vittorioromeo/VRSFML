@@ -45,10 +45,8 @@ struct Sound::Impl
     }
 
     ////////////////////////////////////////////////////////////
-    static void onEnd(void* const userData, ma_sound* const soundPtr)
+    static void onEnd(void* const /* userData */, ma_sound* const soundPtr)
     {
-        static_cast<Impl*>(userData)->owner.m_playing = false;
-
         // Seek back to the start of the sound when it finishes playing
         if (const ma_result result = ma_sound_seek_to_pcm_frame(soundPtr, 0u); result != MA_SUCCESS)
             priv::MiniaudioUtils::fail("seek sound to frame 0", result);
