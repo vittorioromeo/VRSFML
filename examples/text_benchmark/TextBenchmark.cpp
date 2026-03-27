@@ -55,6 +55,7 @@ int main()
 
 
     #include "SFML/ImGui/ImGuiContext.hpp"
+    #include "SFML/ImGui/IncludeImGui.hpp"
 
     #include "SFML/Graphics/Color.hpp"
     #include "SFML/Graphics/DrawableBatch.hpp"
@@ -78,9 +79,6 @@ int main()
     #include "SFML/System/Vec2Base.hpp"
 
     #include "SFML/Base/Optional.hpp"
-
-    #define IMGUI_DEFINE_MATH_OPERATORS
-    #include <imgui.h>
 
 
 ////////////////////////////////////////////////////////////
