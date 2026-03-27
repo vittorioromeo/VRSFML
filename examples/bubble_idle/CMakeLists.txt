@@ -1,6 +1,21 @@
 # all source files
 if (NOT SFML_OS_EMSCRIPTEN AND NOT ARCH_ARM64)
-    set(SRC BubbleIdle.cpp Serialization.cpp Steam.cpp BubbleByteUI.cpp CatNames.cpp)
+    set(SRC BubbleIdle.cpp
+            Serialization.cpp
+            Steam.cpp
+            CatNames.cpp
+            MainApp.cpp
+            MainGameplay.cpp
+            MainLoop.cpp
+            MainProgression.cpp
+            MainRendering.cpp
+            MainSystems.cpp
+            UiCore.cpp
+            UiMagic.cpp
+            UiPrestige.cpp
+            UiSettings.cpp
+            UiShop.cpp
+            UiStats.cpp)
 
     # set the correct steam library
     if (SFML_OS_WINDOWS)
@@ -11,7 +26,21 @@ if (NOT SFML_OS_EMSCRIPTEN AND NOT ARCH_ARM64)
 
     add_definitions(-DBUBBLEBYTE_USE_STEAMWORKS=1)
 else()
-    set(SRC BubbleIdle.cpp Serialization.cpp BubbleByteUI.cpp CatNames.cpp)
+    set(SRC BubbleIdle.cpp
+            Serialization.cpp
+            CatNames.cpp
+            MainApp.cpp
+            MainGameplay.cpp
+            MainLoop.cpp
+            MainProgression.cpp
+            MainRendering.cpp
+            MainSystems.cpp
+            UiCore.cpp
+            UiMagic.cpp
+            UiPrestige.cpp
+            UiSettings.cpp
+            UiShop.cpp
+            UiStats.cpp)
     set(STEAM_LIB "")
 endif()
 
