@@ -111,8 +111,7 @@
 #include "SFML/Base/Variant.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#define IMGUI_DEFINE_MATH_OPERATORS
-#include <imgui.h>
+#include "SFML/ImGui/IncludeImGui.hpp"
 
 
 namespace tsurv
