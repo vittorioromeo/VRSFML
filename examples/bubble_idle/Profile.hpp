@@ -48,7 +48,6 @@ struct [[nodiscard]] Profile
     float bsLensDistortion      = 7.5f;
 
     float catCloudOpacity       = 1.f;
-    float catCloudBlur          = 0.35f;
     int   catCloudCircleCount   = 12;
     float catCloudScale         = 1.4f;
     float catCloudXExtent       = 20.f;
