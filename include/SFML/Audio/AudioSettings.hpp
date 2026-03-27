@@ -48,7 +48,6 @@ struct AudioSettings
 
     Positioning positioning{Positioning::Absolute}; //!< Positioning (absolute or relative to listener)
 
-    bool playing{false}; //!< Whether the audio is currently playing
     bool looping{false}; //!< Whether the audio is looping
 
     bool spatializationEnabled{true}; //!< Whether spatialization is enabled

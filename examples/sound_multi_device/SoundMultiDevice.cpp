@@ -16,6 +16,7 @@
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/InPlaceVector.hpp"
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 
@@ -52,19 +53,21 @@ int main()
     auto musicSource2 = sf::MusicReader::openFromFile("resources/ding.mp3").value();
 
     // Create sound sources
-    sf::Sound                     sound(playbackDevices[0], soundBuffer);
+    sf::Sound sound(playbackDevices[0], soundBuffer);
+    sound.play();
+
     sf::base::Optional<sf::Music> music0;
     sf::base::Optional<sf::Music> music1;
     sf::base::Optional<sf::Music> music2;
 
     if (playbackDevices.size() > 1u)
-        music0.emplace(playbackDevices[1], musicSource0);
+        music0.emplace(playbackDevices[1], musicSource0).play();
 
     if (playbackDevices.size() > 2u)
-        music1.emplace(playbackDevices[2], musicSource1);
+        music1.emplace(playbackDevices[2], musicSource1).play();
 
     if (playbackDevices.size() > 3u)
-        music2.emplace(playbackDevices[3], musicSource2);
+        music2.emplace(playbackDevices[3], musicSource2).play();
 
     // Keep program alive while sounds are playing and display spinning icon
     const char      messageIcons[]{'-', '\\', '|', '/'};

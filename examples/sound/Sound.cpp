@@ -36,6 +36,7 @@ void playSound(sf::PlaybackDevice& playbackDevice)
 
     // Create a sound instance and play it
     sf::Sound sound(playbackDevice, buffer);
+    sound.play();
 
     // Loop while the sound is playing
     while (sound.isPlaying())
@@ -68,6 +69,7 @@ void playMusic(sf::PlaybackDevice& playbackDevice, const sf::Path& filename)
 
     // Play it
     sf::Music music(playbackDevice, musicReader);
+    music.play();
 
     // Loop while the music is playing
     while (music.isPlaying())
