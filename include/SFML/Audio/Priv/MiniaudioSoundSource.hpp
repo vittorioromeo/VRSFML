@@ -626,7 +626,7 @@ protected:
     /// \return `true` on success, `false` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool applySettingsAndEffectProcessorTo(MiniaudioUtils::SoundBase& soundBase) const;
+    [[nodiscard]] bool applySettingsAndEffectProcessorTo(MiniaudioUtils::SoundBase& soundBase) const; // TODO P0: unused?
 
     ////////////////////////////////////////////////////////////
     // Member data
