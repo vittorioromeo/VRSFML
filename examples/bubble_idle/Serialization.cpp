@@ -680,7 +680,6 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Prof
                       p.ppBGBlur,
 
                       p.catCloudOpacity,
-                      p.catCloudBlur,
                       p.catCloudCircleCount,
                       p.catCloudScale,
                       p.catCloudXExtent,

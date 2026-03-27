@@ -640,6 +640,9 @@ struct Main
     sf::RenderTexture rtCloudMask{
         sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()};
 
+    sf::RenderTexture rtCloudProcessed{
+        sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()};
+
     ////////////////////////////////////////////////////////////
     // Game render texture (before post-processing)
     sf::RenderTexture rtGame{
@@ -8306,6 +8309,7 @@ struct Main
     void recreateGameRenderTexture(const sf::Vec2u newResolution)
     {
         rtCloudMask = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .smooth = true}).value();
+        rtCloudProcessed = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .smooth = true}).value();
         rtGame = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .smooth = true}).value();
     }
 
@@ -8351,6 +8355,10 @@ struct Main
         shaderClouds.setUniform(suCloudTime, shaderTime);
         shaderClouds.setUniform(suCloudResolution, rtCloudMask.getSize().toVec2f());
 
+        rtCloudProcessed.clear(sf::Color::Transparent);
+        rtCloudProcessed.draw(rtCloudMask.getTexture(), {.blendMode = sf::BlendNone, .shader = &shaderClouds});
+        rtCloudProcessed.display();
+
         constexpr sf::BlendMode premultipliedAlphaBlend(sf::BlendMode::Factor::One,
                                                         sf::BlendMode::Factor::OneMinusSrcAlpha,
                                                         sf::BlendMode::Equation::Add,
@@ -8359,10 +8367,14 @@ struct Main
                                                         sf::BlendMode::Equation::Add);
 
         rtCloudMask.clear(sf::Color::Transparent);
-        rtCloudMask.draw(rtCloudMask.getTexture(), {.blendMode = sf::BlendNone, .shader = &shaderClouds});
+        rtCloudMask.draw(rtCloudProcessed.getTexture(), {.blendMode = sf::BlendNone});
         rtCloudMask.display();
 
-        rtGame.draw(rtCloudMask.getTexture(), {}, {.blendMode = premultipliedAlphaBlend});
+        const auto opacity = static_cast<U8>(profile.catCloudOpacity * 255.f);
+
+        rtGame.draw(rtCloudMask.getTexture(),
+                    {.color = sf::Color{opacity, opacity, opacity, opacity}}, // because of premultiplication
+                    {.blendMode = premultipliedAlphaBlend});
     }
 
     ////////////////////////////////////////////////////////////
