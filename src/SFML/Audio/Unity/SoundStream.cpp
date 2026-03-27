@@ -52,9 +52,8 @@ struct SoundStream::Impl
     ////////////////////////////////////////////////////////////
     static void onEnd(void* const userData, ma_sound* const soundPtr)
     {
-        auto& impl           = *static_cast<Impl*>(userData);
-        impl.streaming       = true;
-        impl.owner.m_playing = false;
+        auto& impl     = *static_cast<Impl*>(userData);
+        impl.streaming = true;
 
         // Seek back to the start of the sound when it finishes playing
         if (const ma_result result = ma_sound_seek_to_pcm_frame(soundPtr, 0u); result != MA_SUCCESS)

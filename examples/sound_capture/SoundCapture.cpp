@@ -16,6 +16,7 @@
 #include "SFML/System/Sleep.hpp"
 #include "SFML/System/Time.hpp"
 
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 
 
@@ -123,6 +124,7 @@ int main()
 
         // Create a sound instance and play it
         sf::Sound sound(playbackDevice, buffer);
+        sound.play();
 
         // Wait until finished
         while (sound.isPlaying())
