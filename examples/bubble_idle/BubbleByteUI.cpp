@@ -4337,9 +4337,6 @@ void Main::uiTabBarSettings()
         ImGui::SliderFloat("Cloud opacity", &profile.catCloudOpacity, 0.f, 1.f, "%.2f");
 
         ImGui::SetNextItemWidth(210.f * profile.uiScale);
-        ImGui::SliderFloat("Cloud blur", &profile.catCloudBlur, 0.f, 8.f, "%.2f");
-
-        ImGui::SetNextItemWidth(210.f * profile.uiScale);
         ImGui::SliderInt("Cloud circles", &profile.catCloudCircleCount, 3, 24);
 
         ImGui::SetNextItemWidth(210.f * profile.uiScale);
@@ -4380,7 +4377,6 @@ void Main::uiTabBarSettings()
             Profile defaultProfile{};
 
             profile.catCloudOpacity       = defaultProfile.catCloudOpacity;
-            profile.catCloudBlur          = defaultProfile.catCloudBlur;
             profile.catCloudCircleCount   = defaultProfile.catCloudCircleCount;
             profile.catCloudScale         = defaultProfile.catCloudScale;
             profile.catCloudXExtent       = defaultProfile.catCloudXExtent;
