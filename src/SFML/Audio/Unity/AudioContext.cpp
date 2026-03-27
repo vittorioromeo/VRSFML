@@ -44,7 +44,10 @@ void maLogCallback(void*, ma_uint32 level, const char* message)
     // Register our logging callback to output any warning/error messages
     if (const ma_result result = ma_log_register_callback(&log, ma_log_callback_init(&maLogCallback, nullptr));
         result != MA_SUCCESS)
+    {
+        ma_log_uninit(&log);
         return sf::priv::MiniaudioUtils::fail("register audio log callback", result);
+    }
 
     return true;
 }
@@ -71,7 +74,10 @@ void maLogCallback(void*, ma_uint32 level, const char* message)
         // Count the playback devices
         if (const ma_result result = ma_context_get_devices(&maContext, nullptr, &deviceCount, nullptr, nullptr);
             result != MA_SUCCESS)
+        {
+            ma_context_uninit(&maContext);
             return sf::priv::MiniaudioUtils::fail("get audio playback devices", result);
+        }
 
         // Check if there are audio playback devices available on the system
         if (deviceCount > 0)
@@ -129,13 +135,18 @@ sf::base::Vector<THandle> getAvailableDeviceHandles(sf::base::PassKey<sf::AudioC
 ////////////////////////////////////////////////////////////
 struct AudioContextImpl
 {
-    ma_log     maLog;     //!< miniaudio log (one per program)
-    ma_context maContext; //!< miniaudio context (one per program)
+    ma_log     maLog{};     //!< miniaudio log (one per program)
+    ma_context maContext{}; //!< miniaudio context (one per program)
+    bool       maLogInitialized{};
+    bool       maContextInitialized{};
 
     ~AudioContextImpl()
     {
-        ma_context_uninit(&maContext);
-        ma_log_uninit(&maLog);
+        if (maContextInitialized)
+            ma_context_uninit(&maContext);
+
+        if (maLogInitialized)
+            ma_log_uninit(&maLog);
     }
 };
 
@@ -179,10 +190,20 @@ base::Optional<AudioContext> AudioContext::create()
     auto& ac = installedAudioContext.emplace();
 
     if (!tryCreateMALog(ac.maLog))
+    {
+        installedAudioContext.reset();
         return base::nullOpt; // Error message generated in called function.
+    }
+
+    ac.maLogInitialized = true;
 
     if (!tryCreateMAContext(ac.maLog, ac.maContext))
+    {
+        installedAudioContext.reset();
         return base::nullOpt; // Error message generated in called function.
+    }
+
+    ac.maContextInitialized = true;
 
     return base::makeOptional<AudioContext>(base::PassKey<AudioContext>{});
 }
