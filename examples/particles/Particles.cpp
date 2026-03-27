@@ -3,8 +3,8 @@
 #include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/Sampler.hpp"
 
-#include "SFML/ImGui/ImConfigSFML.hpp" // IWYU pragma: keep
 #include "SFML/ImGui/ImGuiContext.hpp"
+#include "SFML/ImGui/IncludeImGui.hpp"
 
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
@@ -43,9 +43,6 @@
 #include "SFML/Base/ToString.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#define IMGUI_DEFINE_MATH_OPERATORS
-#include <imgui.h>
 
 #include <latch>
 

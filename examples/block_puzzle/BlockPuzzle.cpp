@@ -18,6 +18,7 @@
 #include "ExampleUtils/ProfilerImGui.hpp"
 
 #include "SFML/ImGui/ImGuiContext.hpp"
+#include "SFML/ImGui/IncludeImGui.hpp"
 
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/CurvedArrowShapeData.hpp"
@@ -69,9 +70,6 @@
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Variant.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#define IMGUI_DEFINE_MATH_OPERATORS
-#include <imgui.h>
 
 #include <initializer_list>
 

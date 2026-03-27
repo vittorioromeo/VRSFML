@@ -8,7 +8,7 @@
 #include "SFML/ImGui/ImGuiContext.hpp"
 
 #include "SFML/ImGui/Backend.hpp"
-#include "SFML/ImGui/ImConfigSFML.hpp" // IWYU pragma: keep
+#include "SFML/ImGui/IncludeImGui.hpp"
 
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
@@ -46,9 +46,6 @@
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/UniquePtr.hpp"
-
-#define IMGUI_DEFINE_MATH_OPERATORS
-#include <imgui.h>
 
 #if defined(__APPLE__)
     #pragma GCC diagnostic ignored "-Wdeprecated-declarations"

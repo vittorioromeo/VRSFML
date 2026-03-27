@@ -9,14 +9,13 @@
 #include "ExampleUtils/Profiler.hpp"
 #include "ExampleUtils/Sampler.hpp"
 
+#include "SFML/ImGui/IncludeImGui.hpp"
+
 #include "SFML/Base/Algorithm/Sort.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Span.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#define IMGUI_DEFINE_MATH_OPERATORS
-#include <imgui.h>
 
 
 namespace sfex::priv
