@@ -677,7 +677,22 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Prof
                       p.ppBGSaturation,
                       p.ppBGLightness,
                       p.ppBGSharpness,
-                      p.ppBGBlur);
+                      p.ppBGBlur,
+
+                      p.catCloudOpacity,
+                      p.catCloudBlur,
+                      p.catCloudCircleCount,
+                      p.catCloudScale,
+                      p.catCloudXExtent,
+                      p.catCloudBaseYOffset,
+                      p.catCloudExtraYOffset,
+                      p.catCloudDraggedOffset,
+                      p.catCloudLobeLift,
+                      p.catCloudWobbleX,
+                      p.catCloudWobbleY,
+                      p.catCloudRadiusBase,
+                      p.catCloudRadiusLobe,
+                      p.catCloudRadiusWobble);
 }
 
 ////////////////////////////////////////////////////////////

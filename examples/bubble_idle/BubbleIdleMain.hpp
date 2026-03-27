@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ExampleUtils/NinePatchUtils.hpp"
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
@@ -59,6 +60,7 @@
 // clang-format on
 
 #include "SFML/ImGui/ImGuiContext.hpp"
+#include "SFML/ImGui/IncludeImGui.hpp"
 
 #include "SFML/Graphics/BlendMode.hpp"
 #include "SFML/Graphics/CircleShapeData.hpp"
@@ -139,9 +141,6 @@
 #include "SFML/Base/ThreadPool.hpp"
 #include "SFML/Base/ToString.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#define IMGUI_DEFINE_MATH_OPERATORS
-#include <imgui.h>
 
 #include <utility>
 
@@ -364,10 +363,10 @@ inline void drawMinimap(
             .size        = minimapRect.size + sf::Vec2f{offset * 2.f, offset * 2.f},
             .textureRect = frameTexture.getRect(),
             .borders     = NinePatchBorders::all(18.f),
-            .color       = sf::Color::whiteMask(shouldDrawUIAlpha),
+            .color       = hueColor(hueMod, shouldDrawUIAlpha),
         };
 
-        panel.draw(rt, frameTexture, {.view = hudView});
+        panel.draw(rt, frameTexture, {.view = hudView, .shader = &shader});
     }
 
 
@@ -456,6 +455,18 @@ struct Main
     sf::Shader::UniformLocation suPPLightness  = shaderPostProcess.getUniformLocation("u_lightness").value();
     sf::Shader::UniformLocation suPPSharpness  = shaderPostProcess.getUniformLocation("u_sharpness").value();
     sf::Shader::UniformLocation suPPBlur       = shaderPostProcess.getUniformLocation("u_blur").value();
+
+    ////////////////////////////////////////////////////////////
+    // Shader for fluffy cat cloud rendering
+    sf::Shader shaderClouds{[]
+    {
+        auto result = sf::Shader::loadFromFile({.fragmentPath = "resources/clouds.frag"}).value();
+        result.setUniform(result.getUniformLocation("sf_u_texture").value(), sf::Shader::CurrentTexture);
+        return result;
+    }()};
+
+    sf::Shader::UniformLocation suCloudTime       = shaderClouds.getUniformLocation("u_time").value();
+    sf::Shader::UniformLocation suCloudResolution = shaderClouds.getUniformLocation("u_resolution").value();
 
     ////////////////////////////////////////////////////////////
     // Context settings
@@ -626,10 +637,7 @@ struct Main
     sf::RenderTexture rtImGui{
         sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()};
 
-    sf::RenderTexture rtImGuiAuxPre{
-        sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()};
-
-    sf::RenderTexture rtImGuiAuxPost{
+    sf::RenderTexture rtCloudMask{
         sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()};
 
     ////////////////////////////////////////////////////////////
@@ -645,7 +653,7 @@ struct Main
     sf::Texture txFixedBg{
         sf::Texture::loadFromFile("resources/fixedbg.png", {.smooth = true, .wrapMode = sf::TextureWrapMode::MirroredRepeat})
             .value()};
-    sf::Texture txBackgroundChunk{sf::Texture::loadFromFile("resources/backgroundchunk.png", bgSettings).value()};
+    sf::Texture txBackgroundChunk{sf::Texture::loadFromFile("resources/bgtest.png", bgSettings).value()};
     sf::Texture txBackgroundChunkDesaturated{
         sf::Texture::loadFromFile("resources/backgroundchunkdesaturated.png", bgSettings).value()};
     sf::Texture txClouds{sf::Texture::loadFromFile("resources/clouds.png", bgSettings).value()};
@@ -730,7 +738,7 @@ struct Main
         nShrineTypes + 1u,
         {
             0.f,    // Normal
-            -120.f, // Voodoo
+            -140.f, // Voodoo
             47.f,   // Magic
             -15.f,  // Clicking
             180.f,  // Automation
@@ -860,6 +868,7 @@ struct Main
     sf::Rect2f txrMMCopy{addImgResourceToAtlas("mmcatcopy.png")};
     sf::Rect2f txrMMDuck{addImgResourceToAtlas("mmduck.png")};
     sf::Rect2f txrMMShrine{addImgResourceToAtlas("mmshrine.png")};
+    sf::Rect2f txrCloud{addImgResourceToAtlas("cloud.png")};
 
     ////////////////////////////////////////////////////////////
     // Cat animation rects: eye blinking
@@ -1139,6 +1148,8 @@ struct Main
     sf::CPUDrawableBatch bubbleDrawableBatch;
     sf::CPUDrawableBatch starBubbleDrawableBatch;
     sf::CPUDrawableBatch bombBubbleDrawableBatch;
+    sf::CPUDrawableBatch cpuCloudDrawableBatch;
+    sf::CPUDrawableBatch cpuTopCloudDrawableBatch;
     sf::CPUDrawableBatch cpuDrawableBatch;
     sf::CPUDrawableBatch cpuDrawableBatchAdditive;
     sf::CPUDrawableBatch minimapDrawableBatch;
@@ -1804,7 +1815,8 @@ struct Main
 
         if (placeInHand)
         {
-            catToPlace = &newCat;
+            catToPlace      = &newCat;
+            newCat.dragTime = 1000.f;
 
             draggedCats.clear();
             draggedCats.pushBack(&newCat);
@@ -1911,7 +1923,11 @@ struct Main
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::View createScaledTopGameView(const sf::Vec2f originalSize, const sf::Vec2f windowSize) const
     {
-        return createScaledGameView(originalSize, windowSize);
+        const sf::View scaledGameView = createScaledGameView(originalSize, windowSize);
+
+        return {.center   = scaledGameView.center,
+                .size     = scaledGameView.size.componentWiseDiv(scaledGameView.viewport.size),
+                .viewport = {{0.f, 0.f}, {1.f, 1.f}}};
     }
 
     ////////////////////////////////////////////////////////////
@@ -6857,6 +6873,12 @@ struct Main
         auto& batchToUse     = catToPlace == &cat ? cpuTopDrawableBatch : cpuDrawableBatch;
         auto& textBatchToUse = catToPlace == &cat ? catTextTopDrawableBatch : catTextDrawableBatch;
 
+        static int   cloudCircleIndex = 0;
+        static float cloudTime        = 0.f;
+
+        if (!pt->cats.empty() && &cat == &pt->cats.front())
+            cloudTime += deltaTimeMs * 0.4f;
+
         const sf::Rect2f& catTxr = *catTxrsByType[asIdx(cat.type)];
 
         if (catToPlace != &cat && !bubbleCullingBoundaries.isInside(cat.position))
@@ -6928,10 +6950,9 @@ struct Main
         {
             catRotation = cat.getHexedTimer()->remap(0.f, cat.wobbleRadians);
         }
-        else if (beingDragged)
-        {
-            catRotation = -0.22f + sf::base::sin(cat.wobbleRadians) * 0.12f;
-        }
+
+        const float mult = remap(cat.dragTime, 0.f, 1000.f, 0.f, 1.f);
+        catRotation      = (-0.22f + sf::base::sin(cat.wobbleRadians) * 0.12f) * mult;
 
         if (cachedWitchCat != nullptr)
         {
@@ -6978,6 +6999,51 @@ struct Main
         const auto  catScale     = sf::Vec2f{0.2f, 0.2f} * catScaleMult;
 
         const auto catAnchor = beingDragged ? cat.position : cat.getDrawPosition(profile.enableCatBobbing);
+
+
+        auto& cloudBatchToUse = catToPlace == &cat ? cpuTopCloudDrawableBatch : cpuCloudDrawableBatch;
+
+        {
+            const int   cloudCircleCount = sf::base::max(profile.catCloudCircleCount, 3);
+            const float cloudScaleBase   = sf::base::max(catScaleMult, 0.35f) * profile.catCloudScale;
+            const float cloudMult        = easeInOutBack(remap(cat.dragTime, 0.f, 1000.f, 1.f, 0.f));
+            const float cloudScale       = cloudScaleBase * cloudMult;
+
+            const float     cloudTimeSeconds = cloudTime * 0.001f;
+            const float     catCloudPhase    = cat.position.x * 0.0215f + cat.position.y * 0.0135f +
+                                               static_cast<float>(asIdx(cat.type)) * 0.7f;
+            const sf::Vec2f cloudBasePos     = catAnchor +
+                                               sf::Vec2f{0.f,
+                                                         profile.catCloudBaseYOffset * cloudScale +
+                                                             (beingDragged ? profile.catCloudDraggedOffset : 0.f)} +
+                                               sf::Vec2f{5.f, profile.catCloudExtraYOffset};
+
+            for (cloudCircleIndex = 0; cloudCircleIndex < cloudCircleCount; ++cloudCircleIndex)
+            {
+                const float normalizedIndex = static_cast<float>(cloudCircleIndex) /
+                                              static_cast<float>(cloudCircleCount - 1);
+                const float centeredIndex   = normalizedIndex * 2.f - 1.f;
+                const float lobeWeight      = 1.f - sf::base::fabs(centeredIndex);
+                const float phase           = cloudTimeSeconds * (1.35f + normalizedIndex * 0.2f) + catCloudPhase +
+                                              static_cast<float>(cloudCircleIndex) * 0.85f;
+
+                const float xOffset = centeredIndex * profile.catCloudXExtent * cloudScale +
+                                      sf::base::sin(phase) * (profile.catCloudWobbleX + lobeWeight * 1.5f) * cloudScale;
+                const float yOffset = -lobeWeight * profile.catCloudLobeLift * cloudScale +
+                                      sf::base::cos(phase * 1.4f) * (profile.catCloudWobbleY + lobeWeight) * cloudScale;
+                const float radius  = (profile.catCloudRadiusBase + lobeWeight * profile.catCloudRadiusLobe +
+                                       sf::base::sin(phase * 1.15f) * profile.catCloudRadiusWobble) *
+                                      cloudScale;
+
+                cloudBatchToUse.add(sf::Sprite{
+                    .position    = cloudBasePos + sf::Vec2f{xOffset, yOffset},
+                    .scale       = {radius / (txrCloud.size.x / 2.f), radius / (txrCloud.size.y / 2.f)},
+                    .origin      = txrCloud.size / 2.f,
+                    .textureRect = txrCloud,
+                });
+            }
+        }
+
 
         const auto anchorOffset = [&](const sf::Vec2f offset)
         { return catAnchor + (offset / 2.f * 0.2f * catScaleMult).rotatedBy(sf::radians(catRotation)); };
@@ -8222,8 +8288,6 @@ struct Main
     void recreateImGuiRenderTexture(const sf::Vec2u newResolution)
     {
         rtImGui = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .smooth = true}).value();
-        rtImGuiAuxPre = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .smooth = true}).value();
-        rtImGuiAuxPost = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .smooth = true}).value();
     }
 
     ////////////////////////////////////////////////////////////
@@ -8241,6 +8305,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     void recreateGameRenderTexture(const sf::Vec2u newResolution)
     {
+        rtCloudMask = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .smooth = true}).value();
         rtGame = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .smooth = true}).value();
     }
 
@@ -8271,6 +8336,33 @@ struct Main
 
         rtBackgroundProcessed.draw(rtBackground.getTexture(), {.shader = &shaderPostProcess});
         rtBackgroundProcessed.display();
+    }
+
+    ////////////////////////////////////////////////////////////
+    void gameLoopDisplayCloudBatch(const sf::CPUDrawableBatch& batch, const sf::View& view)
+    {
+        if (batch.isEmpty())
+            return;
+
+        rtCloudMask.clear(sf::Color::Transparent);
+        rtCloudMask.draw(batch, {.view = view, .texture = &textureAtlas.getTexture()});
+        rtCloudMask.display();
+
+        shaderClouds.setUniform(suCloudTime, shaderTime);
+        shaderClouds.setUniform(suCloudResolution, rtCloudMask.getSize().toVec2f());
+
+        constexpr sf::BlendMode premultipliedAlphaBlend(sf::BlendMode::Factor::One,
+                                                        sf::BlendMode::Factor::OneMinusSrcAlpha,
+                                                        sf::BlendMode::Equation::Add,
+                                                        sf::BlendMode::Factor::One,
+                                                        sf::BlendMode::Factor::OneMinusSrcAlpha,
+                                                        sf::BlendMode::Equation::Add);
+
+        rtCloudMask.clear(sf::Color::Transparent);
+        rtCloudMask.draw(rtCloudMask.getTexture(), {.blendMode = sf::BlendNone, .shader = &shaderClouds});
+        rtCloudMask.display();
+
+        rtGame.draw(rtCloudMask.getTexture(), {}, {.blendMode = premultipliedAlphaBlend});
     }
 
     ////////////////////////////////////////////////////////////
@@ -8842,13 +8934,14 @@ struct Main
                           },
                           {.view = gameBackgroundView, .shader = &shader});
 
-        if (idx == 0u || profile.alwaysShowDrawings)
-            rtBackground.draw(txDrawings,
-                              {
-                                  .textureRect = {{actualScroll * 2.f, 0.f}, txBackgroundChunk.getSize().toVec2f() * 2.f},
-                                  .color = sf::Color::whiteMask(getAlpha(200.f)),
-                              },
-                              {.view = gameBackgroundView});
+        if (0)
+            if (idx == 0u || profile.alwaysShowDrawings)
+                rtBackground.draw(txDrawings,
+                                  {
+                                      .textureRect = {{actualScroll * 2.f, 0.f}, txBackgroundChunk.getSize().toVec2f() * 2.f},
+                                      .color = sf::Color::whiteMask(getAlpha(200.f)),
+                                  },
+                                  {.view = gameBackgroundView});
 
         // TODO P0: remake clouds
 
@@ -8874,14 +8967,16 @@ struct Main
 
         if (idx == 0u)
         {
-            rtBackground.draw(txClouds,
-                              {
-                                  .textureRect = {{actualScroll * 2.f + backgroundScroll * 0.5f, 0.f}, detailTextureRectSize},
-                                  .color = sf::Color::whiteMask(getAlpha(128.f)),
-                              },
-                              {
-                                  .view = gameBackgroundView,
-                              });
+            if (0)
+                rtBackground.draw(txClouds,
+                                  {
+                                      .textureRect = {{actualScroll * 2.f + backgroundScroll * 0.5f, 0.f},
+                                                      detailTextureRectSize},
+                                      .color       = sf::Color::whiteMask(getAlpha(128.f)),
+                                  },
+                                  {
+                                      .view = gameBackgroundView,
+                                  });
         }
         else
         {
@@ -9430,6 +9525,21 @@ struct Main
 
         //
         // Update cats, shrines, dolls, buffs, and magic
+
+        {
+            for (Cat& cat : pt->cats)
+            {
+                constexpr float maxDragTime = 1000.f;
+
+                constexpr float dragInSpeed  = 1.f;
+                constexpr float dragOutSpeed = 2.5f;
+
+                const float dragDelta = isCatBeingDragged(cat) ? deltaTimeMs * dragInSpeed : -deltaTimeMs * dragOutSpeed;
+
+                cat.dragTime = sf::base::clamp(cat.dragTime + dragDelta, 0.f, maxDragTime);
+            }
+        }
+
         gameLoopUpdateCatDragging(deltaTimeMs, downFingers.size(), mousePos);
         gameLoopUpdateCatActions(deltaTimeMs);
         gameLoopUpdateShrines(deltaTimeMs);
@@ -9495,11 +9605,7 @@ struct Main
 
         //
         // Draw ImGui menu
-        rtImGuiAuxPre.clear(sf::Color::Transparent);
-        rtImGuiAuxPost.clear(sf::Color::Transparent);
         uiDraw(mousePos);
-        rtImGuiAuxPre.display();
-        rtImGuiAuxPost.display();
 
 
 //
@@ -9527,7 +9633,10 @@ struct Main
         if (rtBackground.getSize() != backgroundResolution)
             recreateBackgroundRenderTexture(backgroundResolution);
 
-        sf::View scaledTopGameView = gameView;
+        sf::View scaledTopGameView = createScaledTopGameView(gameScreenSize, resolution);
+        scaledTopGameView.center = gameView.center -
+                                   (gameView.viewport.position + gameView.viewport.size * 0.5f - sf::Vec2f{0.5f, 0.5f})
+                                       .componentWiseMul(scaledTopGameView.size);
 
         sf::View gameBackgroundView{.center = getViewCenterWithoutScroll() + screenShake, .size = gameView.size};
 
@@ -9567,6 +9676,8 @@ struct Main
 
         //
         // Draw cats, shrines, dolls, particles, and text particles
+        cpuCloudDrawableBatch.clear();
+        cpuTopCloudDrawableBatch.clear();
         cpuDrawableBatch.clear();
         cpuDrawableBatchAdditive.clear();
         cpuTopDrawableBatch.clear();
@@ -9596,6 +9707,7 @@ struct Main
         gameLoopDrawDolls(mousePos);
         gameLoopDrawParticles();
         gameLoopDrawTextParticles();
+        gameLoopDisplayCloudBatch(cpuCloudDrawableBatch, gameView);
         drawBatch(cpuDrawableBatch, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
         drawBatch(cpuDrawableBatchAdditive,
                   {.blendMode = sf::BlendAdd, .view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
@@ -9777,20 +9889,11 @@ struct Main
 
         //
         // UI and Toasts
-        rtGame.draw(rtImGuiAuxPre.getTexture(),
-                    {.scale = {1.f / profile.hudScale, 1.f / profile.hudScale},
-                     .color = sf::Color::whiteMask(shouldDrawUIAlpha)},
-                    {.view = scaledHUDView, .shader = &shader});
-
         gameLoopDrawImGui(shouldDrawUIAlpha);
-
-        rtGame.draw(rtImGuiAuxPost.getTexture(),
-                    {.scale = {1.f / profile.hudScale, 1.f / profile.hudScale},
-                     .color = sf::Color::whiteMask(shouldDrawUIAlpha)},
-                    {.view = scaledHUDView, .shader = &shader});
 
         //
         // Draw cats on top of UI
+        gameLoopDisplayCloudBatch(cpuTopCloudDrawableBatch, scaledTopGameView);
         drawBatch(cpuTopDrawableBatch,
                   {.view = scaledTopGameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
         drawBatch(catTextTopDrawableBatch,
