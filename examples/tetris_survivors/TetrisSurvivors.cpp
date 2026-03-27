@@ -39,6 +39,7 @@
 #include "ExampleUtils/ProfilerImGui.hpp"
 
 #include "SFML/ImGui/ImGuiContext.hpp"
+#include "SFML/ImGui/IncludeImGui.hpp"
 
 #include "SFML/Graphics/BlendMode.hpp"
 #include "SFML/Graphics/CircleShapeData.hpp"
@@ -110,8 +111,6 @@
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Variant.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include "SFML/ImGui/IncludeImGui.hpp"
 
 
 namespace tsurv
