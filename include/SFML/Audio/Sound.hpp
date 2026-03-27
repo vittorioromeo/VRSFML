@@ -98,20 +98,6 @@ public:
     void setPlayingOffset(Time playingOffset) override;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the sound buffer to play
-    ///
-    /// This function replaces the current sound buffer with
-    /// the one provided in parameter. The sound buffer must
-    /// remain valid as long as the sound is using it.
-    ///
-    /// \param buffer New sound buffer to use
-    ///
-    /// \see `getBuffer`
-    ///
-    ////////////////////////////////////////////////////////////
-    void setBuffer(const SoundBuffer& buffer);
-
-    ////////////////////////////////////////////////////////////
     /// \brief Get the audio buffer attached to the sound
     ///
     /// \return Sound buffer attached to the sound
@@ -124,13 +110,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] PlaybackDevice& getPlaybackDevice() const;
-
-protected:
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    void resumeOnLastPlaybackDevice();
 
 private:
     friend class SoundBuffer;

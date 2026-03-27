@@ -72,11 +72,6 @@ public:
     /// This function uses its own thread so that it doesn't block
     /// the rest of the program while the capture runs.
     /// Please note that only one capture can happen at the same time.
-    /// You can select which capture device will be used by passing
-    /// the name to the `setCurrentDevice()` method. If none was selected
-    /// before, the default capture device will be used. You can get a
-    /// list of the names of all available capture devices by calling
-    /// `getAvailableDevices()`.
     ///
     /// \param sampleRate Desired capture rate, in number of samples per second
     ///
@@ -188,9 +183,7 @@ private:
 /// If you have multiple sound input devices connected to your
 /// computer (for example: microphone, external sound card, webcam mic, etc...)
 /// you can get a list of all available devices through the
-/// getAvailableDevices() function. You can then select a device
-/// by calling `setCurrentDevice()` with the appropriate device. Otherwise
-/// the default capturing device will be used.
+/// getAvailableDevices() function.
 ///
 /// By default the recording is in 16-bit mono. Using the
 /// setChannelCount method you can change the number of channels
