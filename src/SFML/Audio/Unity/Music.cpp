@@ -77,7 +77,13 @@ Music::Music(PlaybackDevice& playbackDevice, MusicReader& musicReader) :
 
 
 ////////////////////////////////////////////////////////////
-Music::~Music() = default;
+Music::~Music()
+{
+    // TODO P1: revisit?
+    // Stop the sound before `m_samples` is destroyed, otherwise the audio
+    // callback can race with `onGetData()` during derived-member teardown.
+    pause();
+}
 
 
 ////////////////////////////////////////////////////////////
