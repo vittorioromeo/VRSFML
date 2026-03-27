@@ -6,6 +6,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "ExampleUtils/NinePatchUtils.hpp"
+
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Priv/TransformableMacros.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
@@ -18,38 +20,7 @@
 #include "SFML/System/Rect2.hpp"
 #include "SFML/System/Vec2Base.hpp"
 
-#include "SFML/Base/Array.hpp"
 #include "SFML/Base/SizeT.hpp"
-
-
-////////////////////////////////////////////////////////////
-/// \brief Border thickness configuration for a nine-patch rectangle.
-///
-////////////////////////////////////////////////////////////
-struct [[nodiscard]] NinePatchBorders
-{
-    ////////////////////////////////////////////////////////////
-    float left{};
-    float right{};
-    float top{};
-    float bottom{};
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] static constexpr NinePatchBorders all(const float value) noexcept
-    {
-        return {value, value, value, value};
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] static constexpr NinePatchBorders symmetric(
-        const float horizontal,
-        const float vertical) noexcept
-    {
-        return {horizontal, horizontal, vertical, vertical};
-    }
-};
 
 
 ////////////////////////////////////////////////////////////
@@ -101,25 +72,14 @@ struct [[nodiscard]] NinePatchRect :
         if (sourceRect.size.x <= 0.f || sourceRect.size.y <= 0.f)
             return;
 
-        const auto srcX = makeSlices(sourceRect.size.x, borders.left, borders.right);
-        const auto srcY = makeSlices(sourceRect.size.y, borders.top, borders.bottom);
-        const auto dstX = makeSlices(size.x, borders.left, borders.right);
-        const auto dstY = makeSlices(size.y, borders.top, borders.bottom);
-
-        const sf::base::Array<float, 3> srcPosX{
-            sourceRect.position.x,
-            sourceRect.position.x + srcX[0],
-            sourceRect.position.x + srcX[0] + srcX[1],
-        };
-
-        const sf::base::Array<float, 3> srcPosY{
-            sourceRect.position.y,
-            sourceRect.position.y + srcY[0],
-            sourceRect.position.y + srcY[0] + srcY[1],
-        };
-
-        const sf::base::Array<float, 3> dstPosX{0.f, dstX[0], dstX[0] + dstX[1]};
-        const sf::base::Array<float, 3> dstPosY{0.f, dstY[0], dstY[0] + dstY[1]};
+        const auto srcX    = makeNinePatchSlices(sourceRect.size.x, borders.left, borders.right);
+        const auto srcY    = makeNinePatchSlices(sourceRect.size.y, borders.top, borders.bottom);
+        const auto dstX    = makeNinePatchSlices(size.x, borders.left, borders.right);
+        const auto dstY    = makeNinePatchSlices(size.y, borders.top, borders.bottom);
+        const auto srcPosX = makeNinePatchPositions(sourceRect.position.x, srcX);
+        const auto srcPosY = makeNinePatchPositions(sourceRect.position.y, srcY);
+        const auto dstPosX = makeNinePatchPositions(0.f, dstX);
+        const auto dstPosY = makeNinePatchPositions(0.f, dstY);
 
         states.transform *= getTransform();
 
@@ -136,38 +96,7 @@ struct [[nodiscard]] NinePatchRect :
         }
     }
 
-
 private:
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] static constexpr float clampNonNegative(const float value) noexcept
-    {
-        return value < 0.f ? 0.f : value;
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] static constexpr sf::base::Array<float, 3> makeSlices(
-        const float total,
-        const float start,
-        const float end) noexcept
-    {
-        const float safeTotal = clampNonNegative(total);
-        float       first     = clampNonNegative(start);
-        float       third     = clampNonNegative(end);
-
-        const float borderSum = first + third;
-
-        if (borderSum > safeTotal && borderSum > 0.f)
-        {
-            const float factor = safeTotal / borderSum;
-            first *= factor;
-            third *= factor;
-        }
-
-        return {first, safeTotal - first - third, third};
-    }
-
-
     ////////////////////////////////////////////////////////////
     void drawPatch(sf::RenderTarget&       target,
                    const sf::Texture&      texture,

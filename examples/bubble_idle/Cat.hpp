@@ -76,6 +76,8 @@ struct [[nodiscard]] Cat
     Countdown yawnCountdown{};
     Countdown yawnAnimCountdown{};
 
+    float dragTime{};
+
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] inline void update(const float deltaTime)
     {

@@ -31,26 +31,24 @@
 
 #include "ExampleUtils/Easing.hpp"
 #include "ExampleUtils/HueColor.hpp"
-#include "ExampleUtils/NinePatchRect.hpp"
+#include "ExampleUtils/NinePatchUtils.hpp"
 #include "ExampleUtils/Profiler.hpp"
 #include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/Sampler.hpp"
 
 #include "SFML/ImGui/ImGuiContext.hpp"
+#include "SFML/ImGui/IncludeImGui.hpp"
+#include "SFML/ImGui/IncludeImGuiInternal.hpp"
 
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DrawTextureSettings.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/IndexType.hpp"
-#include "SFML/Graphics/PrimitiveType.hpp"
-#include "SFML/Graphics/RectangleShapeData.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/TextureAtlas.hpp"
-#include "SFML/Graphics/Vertex.hpp"
 
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
@@ -81,11 +79,6 @@
 #include "SFML/Base/Vector.hpp"
 
 #include <climits>
-
-#define IMGUI_DEFINE_MATH_OPERATORS
-#include <imgui.h>
-#include <imgui_internal.h>
-
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -93,6 +86,69 @@
 
 ////////////////////////////////////////////////////////////
 bool debugMode = false;
+
+namespace
+{
+static_assert(sizeof(unsigned int) <= sizeof(ImTextureID), "ImTextureID is not large enough to fit unsigned int.");
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] ImTextureID toImTextureID(const unsigned int nativeHandle)
+{
+    ImTextureID textureID{};
+    std::memcpy(&textureID, &nativeHandle, sizeof(nativeHandle));
+    return textureID;
+}
+
+////////////////////////////////////////////////////////////
+void drawNinePatchInImGui(ImDrawList&            drawList,
+                          const sf::Texture&     texture,
+                          const sf::Vec2f        position,
+                          const sf::Vec2f        size,
+                          const sf::Rect2f       textureRect,
+                          const NinePatchBorders borders,
+                          const ImU32            color)
+{
+    if (size.x <= 0.f || size.y <= 0.f)
+        return;
+
+    const sf::Rect2f sourceRect = textureRect == sf::Rect2f{} ? texture.getRect() : textureRect;
+
+    if (sourceRect.size.x <= 0.f || sourceRect.size.y <= 0.f)
+        return;
+
+    const auto srcX    = makeNinePatchSlices(sourceRect.size.x, borders.left, borders.right);
+    const auto srcY    = makeNinePatchSlices(sourceRect.size.y, borders.top, borders.bottom);
+    const auto dstX    = makeNinePatchSlices(size.x, borders.left, borders.right);
+    const auto dstY    = makeNinePatchSlices(size.y, borders.top, borders.bottom);
+    const auto srcPosX = makeNinePatchPositions(sourceRect.position.x, srcX);
+    const auto srcPosY = makeNinePatchPositions(sourceRect.position.y, srcY);
+    const auto dstPosX = makeNinePatchPositions(position.x, dstX);
+    const auto dstPosY = makeNinePatchPositions(position.y, dstY);
+
+    const sf::Vec2f   textureSize = texture.getSize().toVec2f();
+    const ImTextureID textureID   = toImTextureID(texture.getNativeHandle());
+
+    drawList.PushClipRectFullScreen();
+
+    for (sf::base::SizeT iy = 0; iy < 3u; ++iy)
+    {
+        for (sf::base::SizeT ix = 0; ix < 3u; ++ix)
+        {
+            if (srcX[ix] <= 0.f || srcY[iy] <= 0.f || dstX[ix] <= 0.f || dstY[iy] <= 0.f)
+                continue;
+
+            const ImVec2 pMin{dstPosX[ix], dstPosY[iy]};
+            const ImVec2 pMax{dstPosX[ix] + dstX[ix], dstPosY[iy] + dstY[iy]};
+            const ImVec2 uvMin{srcPosX[ix] / textureSize.x, srcPosY[iy] / textureSize.y};
+            const ImVec2 uvMax{(srcPosX[ix] + srcX[ix]) / textureSize.x, (srcPosY[iy] + srcY[iy]) / textureSize.y};
+
+            drawList.AddImage(textureID, pMin, pMax, uvMin, uvMax, color);
+        }
+    }
+
+    drawList.PopClipRect();
+}
+} // namespace
 
 ////////////////////////////////////////////////////////////
 void runBubbleIdleApp()
@@ -1490,36 +1546,32 @@ void Main::uiDraw(const sf::Vec2f mousePos)
     const auto windowDrawPos  = ImGui::GetWindowPos();
     const auto windowDrawSize = ImGui::GetWindowSize();
 
-    ImGui::End();
-
     if (windowDrawSize.y > 64.f)
     {
         const float offset = 15.f;
 
-        NinePatchRect panel{
-            .position    = sf::Vec2f(windowDrawPos) - sf::Vec2f{offset, offset} + sf::Vec2f{2.f, 1.f},
-            .size        = sf::Vec2f(windowDrawSize) + sf::Vec2f{offset * 2.f, offset * 2.f} - sf::Vec2f{3.f, 3.f},
-            .textureRect = txFrame.getRect(),
-            .borders     = NinePatchBorders::all(64.f),
-            .color       = sf::Color::whiteMask(255u),
-        };
-
-        panel.draw(rtImGuiAuxPost, txFrame);
+        drawNinePatchInImGui(*draw_list,
+                             txFrame,
+                             windowDrawPos - sf::Vec2f{offset, offset} + sf::Vec2f{2.f, 1.f},
+                             windowDrawSize + sf::Vec2f{offset * 2.f, offset * 2.f} - sf::Vec2f{3.f, 3.f},
+                             txFrame.getRect(),
+                             NinePatchBorders::all(64.f),
+                             IM_COL32_WHITE);
     }
     else
     {
         const float offset = 4.f * profile.uiScale;
 
-        NinePatchRect panel{
-            .position    = sf::Vec2f(windowDrawPos) - sf::Vec2f{offset, offset} + sf::Vec2f{2.f, 1.f},
-            .size        = sf::Vec2f(windowDrawSize) + sf::Vec2f{offset * 2.f, offset * 2.f} - sf::Vec2f{3.f, 3.f},
-            .textureRect = txFrameTiny.getRect(),
-            .borders     = NinePatchBorders::all(18.f),
-            .color       = sf::Color::whiteMask(255u),
-        };
-
-        panel.draw(rtImGuiAuxPost, txFrameTiny);
+        drawNinePatchInImGui(*draw_list,
+                             txFrameTiny,
+                             windowDrawPos - sf::Vec2f{offset, offset} + sf::Vec2f{2.f, 1.f},
+                             windowDrawSize + sf::Vec2f{offset * 2.f, offset * 2.f} - sf::Vec2f{3.f, 3.f},
+                             txFrameTiny.getRect(),
+                             NinePatchBorders::all(18.f),
+                             IM_COL32_WHITE);
     }
+
+    ImGui::End();
 
     uiDrawExitPopup(newScalingFactor);
 
@@ -1548,6 +1600,22 @@ void Main::uiDpsMeter()
                  ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize |
                      ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMouseInputs);
 
+    ImDrawList* const drawList = ImGui::GetWindowDrawList();
+
+    {
+        const float offset = 8.f * profile.uiScale;
+
+        const ImVec2 pMin = ImGui::GetWindowPos();
+        const ImVec2 pMax = ImVec2(pMin.x + ImGui::GetWindowWidth(), pMin.y + ImGui::GetWindowHeight());
+
+        drawList->AddRectFilledMultiColor(pMin + ImVec2{offset, offset},
+                                          pMax - ImVec2{offset, offset},
+                                          ImColor(25, 65, 125, 220),
+                                          ImColor(25, 65, 125, 220),
+                                          ImColor(5, 20, 45, 240),
+                                          ImColor(5, 20, 45, 240));
+    }
+
     uiSetFontScale(0.75f);
 
     static thread_local sf::base::Vector<float> sampleBuffer(60);
@@ -1567,57 +1635,25 @@ void Main::uiDpsMeter()
                      SFML_BASE_FLOAT_MAX,
                      ImVec2(dpsMeterSize.x - 15.f * dpsMeterScale, dpsMeterSize.y - 17.f * dpsMeterScale));
 
+    const auto windowDrawPos  = sf::Vec2f(ImGui::GetWindowPos());
+    const auto windowDrawSize = sf::Vec2f(ImGui::GetWindowSize());
 
-    const auto windowDrawPos  = ImGui::GetWindowPos();
-    const auto windowDrawSize = ImGui::GetWindowSize();
+    {
+        const float offset = -2.f * profile.uiScale;
 
+        drawNinePatchInImGui(*drawList,
+                             txFrameTiny,
+                             windowDrawPos - sf::Vec2f{offset, offset} + sf::Vec2f{1.f, 1.f},
+                             windowDrawSize + sf::Vec2f{offset * 2.f, offset * 2.f} - sf::Vec2f{1.f, 3.f},
+                             txFrameTiny.getRect(),
+                             NinePatchBorders::all(18.f),
+                             IM_COL32_WHITE);
+    }
 
     ImGui::GetStyle().FrameRounding   = oldRounding;
     ImGui::GetStyle().FrameBorderSize = oldBorderSize;
 
     ImGui::End();
-
-    {
-        const float offset = -2.f * profile.uiScale;
-
-        NinePatchRect panel{
-            .position    = sf::Vec2f(windowDrawPos) - sf::Vec2f{offset, offset} + sf::Vec2f{1.f, 1.f},
-            .size        = sf::Vec2f(windowDrawSize) + sf::Vec2f{offset * 2.f, offset * 2.f} - sf::Vec2f{1.f, 3.f},
-            .textureRect = txFrameTiny.getRect(),
-            .borders     = NinePatchBorders::all(18.f),
-            .color       = sf::Color::whiteMask(255u),
-        };
-
-        sf::RectangleShapeData bg{
-            .position  = panel.position - sf::Vec2f{offset, offset},
-            .origin    = {0.f, 0.f},
-            .fillColor = sf::Color::Black,
-            .size      = panel.size + sf::Vec2f{offset * 2.f, offset * 2.f},
-        };
-
-        sf::Color col_top{25, 65, 125, 220}; // Deep Blue
-        sf::Color col_bot{5, 20, 45, 240};   // Darker Navy Blue
-
-        // Rectangle vertices for top-to-bottom gradient
-        sf::Vertex vertices[4] = {
-            {{bg.position.x, bg.position.y}, col_top},
-            {{bg.position.x + bg.size.x, bg.position.y}, col_top},
-            {{bg.position.x + bg.size.x, bg.position.y + bg.size.y}, col_bot},
-            {{bg.position.x, bg.position.y + bg.size.y}, col_bot},
-        };
-
-        sf::IndexType indices[6] = {0, 1, 2, 2, 3, 0};
-
-        rtImGuiAuxPre.drawIndexedVertices({
-            .vertexData    = vertices,
-            .vertexCount   = 4,
-            .indexData     = indices,
-            .indexCount    = 6,
-            .primitiveType = sf::PrimitiveType::Triangles,
-        });
-
-        panel.draw(rtImGuiAuxPost, txFrameTiny);
-    }
 }
 
 ////////////////////////////////////////////////////////////
@@ -4143,7 +4179,7 @@ void Main::uiTabBarSettings()
     };
 
     uiSetFontScale(0.75f);
-    if (ImGui::BeginTabItem(" Audio "))
+    if (ImGui::BeginTabItem(ICON_FA_VOLUME_HIGH " Audio "))
     {
         selectedTab(0);
 
@@ -4167,7 +4203,7 @@ void Main::uiTabBarSettings()
     }
 
     uiSetFontScale(0.75f);
-    if (ImGui::BeginTabItem(" Interface "))
+    if (ImGui::BeginTabItem(ICON_FA_WINDOW_MAXIMIZE " UI "))
     {
         selectedTab(1);
 
@@ -4273,7 +4309,7 @@ void Main::uiTabBarSettings()
     }
 
     uiSetFontScale(0.75f);
-    if (ImGui::BeginTabItem(" Graphics "))
+    if (ImGui::BeginTabItem(ICON_FA_IMAGE " Graphics "))
     {
         selectedTab(2);
 
@@ -4292,6 +4328,72 @@ void Main::uiTabBarSettings()
 
         ImGui::SetNextItemWidth(210.f * profile.uiScale);
         ImGui::SliderFloat("Cat range thickness", &profile.catRangeOutlineThickness, 1.f, 4.f, "%.2fpx");
+
+        ImGui::Separator();
+
+        ImGui::Text("Cat clouds");
+
+        ImGui::SetNextItemWidth(210.f * profile.uiScale);
+        ImGui::SliderFloat("Cloud opacity", &profile.catCloudOpacity, 0.f, 1.f, "%.2f");
+
+        ImGui::SetNextItemWidth(210.f * profile.uiScale);
+        ImGui::SliderFloat("Cloud blur", &profile.catCloudBlur, 0.f, 8.f, "%.2f");
+
+        ImGui::SetNextItemWidth(210.f * profile.uiScale);
+        ImGui::SliderInt("Cloud circles", &profile.catCloudCircleCount, 3, 24);
+
+        ImGui::SetNextItemWidth(210.f * profile.uiScale);
+        ImGui::SliderFloat("Cloud scale", &profile.catCloudScale, 0.5f, 3.f, "%.2f");
+
+        ImGui::SetNextItemWidth(210.f * profile.uiScale);
+        ImGui::SliderFloat("Cloud X extent", &profile.catCloudXExtent, 4.f, 40.f, "%.2f");
+
+        ImGui::SetNextItemWidth(210.f * profile.uiScale);
+        ImGui::SliderFloat("Cloud base Y", &profile.catCloudBaseYOffset, -10.f, 35.f, "%.2f");
+
+        ImGui::SetNextItemWidth(210.f * profile.uiScale);
+        ImGui::SliderFloat("Cloud extra Y", &profile.catCloudExtraYOffset, -10.f, 45.f, "%.2f");
+
+        ImGui::SetNextItemWidth(210.f * profile.uiScale);
+        ImGui::SliderFloat("Cloud dragged Y", &profile.catCloudDraggedOffset, 0.f, 20.f, "%.2f");
+
+        ImGui::SetNextItemWidth(210.f * profile.uiScale);
+        ImGui::SliderFloat("Cloud lobe lift", &profile.catCloudLobeLift, 0.f, 10.f, "%.2f");
+
+        ImGui::SetNextItemWidth(210.f * profile.uiScale);
+        ImGui::SliderFloat("Cloud wobble X", &profile.catCloudWobbleX, 0.f, 8.f, "%.2f");
+
+        ImGui::SetNextItemWidth(210.f * profile.uiScale);
+        ImGui::SliderFloat("Cloud wobble Y", &profile.catCloudWobbleY, 0.f, 8.f, "%.2f");
+
+        ImGui::SetNextItemWidth(210.f * profile.uiScale);
+        ImGui::SliderFloat("Cloud base radius", &profile.catCloudRadiusBase, 2.f, 20.f, "%.2f");
+
+        ImGui::SetNextItemWidth(210.f * profile.uiScale);
+        ImGui::SliderFloat("Cloud lobe radius", &profile.catCloudRadiusLobe, 0.f, 16.f, "%.2f");
+
+        ImGui::SetNextItemWidth(210.f * profile.uiScale);
+        ImGui::SliderFloat("Cloud radius wobble", &profile.catCloudRadiusWobble, 0.f, 5.f, "%.2f");
+
+        if (ImGui::Button("Reset clouds to default"))
+        {
+            Profile defaultProfile{};
+
+            profile.catCloudOpacity       = defaultProfile.catCloudOpacity;
+            profile.catCloudBlur          = defaultProfile.catCloudBlur;
+            profile.catCloudCircleCount   = defaultProfile.catCloudCircleCount;
+            profile.catCloudScale         = defaultProfile.catCloudScale;
+            profile.catCloudXExtent       = defaultProfile.catCloudXExtent;
+            profile.catCloudBaseYOffset   = defaultProfile.catCloudBaseYOffset;
+            profile.catCloudExtraYOffset  = defaultProfile.catCloudExtraYOffset;
+            profile.catCloudDraggedOffset = defaultProfile.catCloudDraggedOffset;
+            profile.catCloudLobeLift      = defaultProfile.catCloudLobeLift;
+            profile.catCloudWobbleX       = defaultProfile.catCloudWobbleX;
+            profile.catCloudWobbleY       = defaultProfile.catCloudWobbleY;
+            profile.catCloudRadiusBase    = defaultProfile.catCloudRadiusBase;
+            profile.catCloudRadiusLobe    = defaultProfile.catCloudRadiusLobe;
+            profile.catCloudRadiusWobble  = defaultProfile.catCloudRadiusWobble;
+        }
 
         ImGui::Separator();
 
@@ -4430,7 +4532,7 @@ void Main::uiTabBarSettings()
     }
 
     uiSetFontScale(0.75f);
-    if (ImGui::BeginTabItem(" Display "))
+    if (ImGui::BeginTabItem(ICON_FA_DESKTOP " Display "))
     {
         selectedTab(3);
 
@@ -4536,7 +4638,7 @@ void Main::uiTabBarSettings()
     }
 
     uiSetFontScale(0.75f);
-    if (ImGui::BeginTabItem(" Data "))
+    if (ImGui::BeginTabItem(ICON_FA_FILE " Data "))
     {
         selectedTab(4);
 
@@ -4622,7 +4724,7 @@ void Main::uiTabBarSettings()
     }
 
     uiSetFontScale(0.75f);
-    if (isDebugModeEnabled() && ImGui::BeginTabItem(" Debug "))
+    if (isDebugModeEnabled() && ImGui::BeginTabItem(ICON_FA_BUG " Debug "))
     {
         selectedTab(5);
 
