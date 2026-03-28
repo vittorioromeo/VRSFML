@@ -130,6 +130,25 @@
 ////////////////////////////////////////////////////////////<
 extern bool debugMode;
 
+
+////////////////////////////////////////////////////////////
+struct CloudFrameDrawSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
+{
+    float time;
+
+    sf::Vec2f mins;
+    sf::Vec2f maxs;
+
+    int xSteps;
+    int ySteps;
+
+    float scaleMult;
+    float outwardOffsetMult;
+
+    sf::CPUDrawableBatch* batch;
+};
+
+
 ////////////////////////////////////////////////////////////
 inline bool handleBubbleCollision(const float deltaTimeMs, Bubble& iBubble, Bubble& jBubble)
 {
@@ -320,7 +339,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // SFML fonts
-    sf::Font fontMouldyCheese{sf::Font::openFromFile("resources/mouldycheese.ttf").value()};
+    sf::Font fontMouldyCheese{sf::Font::openFromFile("resources/fredoka.ttf").value()};
 
     ////////////////////////////////////////////////////////////
     // Render window
@@ -383,7 +402,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // SFML fonts
-    sf::Font fontSuperBakery{sf::Font::openFromFile("resources/superbakery.ttf", &textureAtlas).value()};
+    sf::Font fontSuperBakery{sf::Font::openFromFile("resources/fredoka.ttf", &textureAtlas).value()};
 
     ////////////////////////////////////////////////////////////
     // ImGui fonts
@@ -862,7 +881,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     // HUD money text
     sf::Text        moneyText{fontSuperBakery,
-                              {.position         = {15.f, 70.f},
+                              {.position         = {10.f, 70.f},
                                .string           = "$0",
                                .characterSize    = 64u,
                                .fillColor        = sf::Color::White,
@@ -983,6 +1002,7 @@ struct Main
     sf::CPUDrawableBatch bombBubbleDrawableBatch;
     sf::CPUDrawableBatch cpuCloudDrawableBatch;
     sf::CPUDrawableBatch cpuTopCloudDrawableBatch;
+    sf::CPUDrawableBatch cpuCloudHudDrawableBatch;
     sf::CPUDrawableBatch cpuCloudUiDrawableBatch;
     sf::CPUDrawableBatch cpuDrawableBatch;
     sf::CPUDrawableBatch cpuDrawableBatchAdditive;
@@ -1794,7 +1814,7 @@ struct Main
         const float unlockedMapAspect    = pt != nullptr ? pt->getMapLimit() / originalSize.y : originalAspect;
         const float clampedMaxViewAspect = sf::base::min(configuredMaxAspect, unlockedMapAspect);
 
-        return sf::base::clamp(windowAspect, originalAspect, clampedMaxViewAspect);
+        return sf::base::max(windowAspect, originalAspect);
     }
 
     ////////////////////////////////////////////////////////////
@@ -3236,7 +3256,7 @@ struct Main
     void                gameLoopDrawCursor(float deltaTimeMs, float cursorGrow);
     void                gameLoopDrawCursorComboText(float deltaTimeMs, float cursorGrow);
     void                gameLoopDrawCursorComboBar();
-    void drawMinimap(sf::RenderTarget& rt, const sf::View& hudView, sf::Vec2f resolution, sf::base::U8 shouldDrawUIAlpha);
+    void drawMinimap(bool back, sf::RenderTarget& rt, const sf::View& hudView, sf::Vec2f resolution, sf::base::U8 shouldDrawUIAlpha);
     void drawSplashScreen(sf::RenderTarget& rt, const sf::View& view, sf::Vec2f resolution, float hudScale) const;
     [[nodiscard]] sf::Rect2f getViewportPixelBounds(const sf::View& view, sf::Vec2f targetSize) const;
     void                     gameLoopDrawDollParticleBorder(float hueMod);
@@ -3274,6 +3294,9 @@ struct Main
     void                gameLoopReminderBuyCombo();
     void                gameLoopReminderSpendPPs();
     void                gameLoopUpdateDpsSampler(sf::base::I64 elapsedUs);
+
+    void drawCloudFrame(const CloudFrameDrawSettings& settings);
+
     ////////////////////////////////////////////////////////////
     void               gameLoopUpdateNotificationQueue(float deltaTimeMs);
     [[nodiscard]] bool gameLoop();

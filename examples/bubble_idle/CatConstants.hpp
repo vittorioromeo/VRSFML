@@ -38,15 +38,15 @@ inline constexpr EXACT_ARRAY(
     actionNames,
     nCatTypes,
     {
-        "Pops",    // Normal
-        "Shines",  // Uni
-        "IEDs",    // Devil
-        "Flights", // Astro
+        "pops",    // Normal
+        "shines",  // Uni
+        "ieds",    // Devil
+        "flights", // Astro
 
-        "Rituals", // Witch
-        "Spells",  // Wizard
-        "Clicks",  // Mouse
-        "Boosts",  // Engi
+        "rituals", // Witch
+        "spells",  // Wizard
+        "clicks",  // Mouse
+        "boosts",  // Engi
         "N/A",     // Repulso
         "N/A",     // Attracto
         "N/A",     // Copy

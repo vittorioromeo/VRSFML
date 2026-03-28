@@ -18,6 +18,7 @@
 #include "SFML/Graphics/CircleShapeData.hpp"
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/RectangleShapeData.hpp"
+#include "SFML/Graphics/RoundedRectangleShapeData.hpp"
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/TextData.hpp"
 #include "SFML/Graphics/TextUtils.hpp"
@@ -41,6 +42,7 @@
 #include "SFML/Base/Vector.hpp"
 
 #include <imgui.h>
+#include <imgui_internal.h>
 
 #include <utility>
 
@@ -488,6 +490,39 @@
     else
         gameLoopDisplayBubblesWithoutShader();
 
+    cpuCloudDrawableBatch.clear();
+
+    {
+        sf::Vec2f p_min{pt->getMapLimit(), 0.f};
+        sf::Vec2f p_max{pt->getMapLimit() + resolution.x, resolution.y};
+
+
+        cpuCloudDrawableBatch.add(sf::RectangleShapeData{
+            .position  = p_min.addX(10.f),
+            .fillColor = sf::Color::White,
+            .size      = p_max - p_min,
+        });
+
+        // 4. Draw the Gradient (Top-Left, Top-Right, Bottom-Right, Bottom-Left)
+        // draw_list->AddRectFilledMultiColor(p_min, p_max, col_top, col_top, col_bot, col_bot);
+
+        // float rounding = 8.f;
+        // draw_list->AddRectFilled(p_min, p_max, col_top, rounding, ImDrawFlags_RoundCornersAll);
+
+        p_min.x += 40.f;
+
+        drawCloudFrame({
+            .time              = shaderTime,
+            .mins              = p_min,
+            .maxs              = p_max,
+            .xSteps            = 6,
+            .ySteps            = 12,
+            .scaleMult         = 4.f,
+            .outwardOffsetMult = 1.f,
+            .batch             = &cpuCloudDrawableBatch,
+        });
+    }
+
     //
     // Combo trail
     gameLoopDrawCursorTrail(mousePos);
@@ -498,13 +533,13 @@
 
     //
     // Draw cats, shrines, dolls, particles, and text particles
-    cpuCloudDrawableBatch.clear();
     cpuTopCloudDrawableBatch.clear();
     cpuDrawableBatch.clear();
     cpuDrawableBatchAdditive.clear();
     cpuTopDrawableBatch.clear();
     catTextDrawableBatch.clear();
     catTextTopDrawableBatch.clear();
+    cpuCloudHudDrawableBatch.clear();
 
     // Draw multipop range
     if (pt->multiPopEnabled && draggedCats.empty())
@@ -551,22 +586,46 @@
                     {.view = nonScaledHUDView});
 
     //
+    // Y coordinate below minimap to position money, combo, and buff texts
+    const float yBelowMinimap = pt->mapPurchased ? (boundaries.y / profile.minimapScale) + 12.f : 0.f;
+
+    //
     // Draw border around gameview
     // Bottom-level hud particles
     if (shouldDrawUI)
     {
+        sf::Vec2f offset{-10.f, -10.f};
+        sf::Vec2f mins{10.f, 10.f};
+        sf::Vec2f maxs{20.f + moneyText.getString().getSize() * 15.f, pt->comboPurchased ? 60.f : 40.f};
+
+        mins.y += yBelowMinimap;
+        maxs.y += yBelowMinimap;
+
+        drawCloudFrame({
+            .time              = shaderTime,
+            .mins              = mins,
+            .maxs              = maxs,
+            .xSteps            = 16,
+            .ySteps            = 8,
+            .scaleMult         = 1.f,
+            .outwardOffsetMult = 1.f,
+            .batch             = &cpuCloudHudDrawableBatch,
+        });
+
+
         hudBottomDrawableBatch.clear();
         gameLoopDrawHUDBottomParticles();
         drawBatch(hudBottomDrawableBatch,
                   {.view = nonScaledHUDView, .texture = &textureAtlas.getTexture(), .shader = &shader});
     }
 
-    rtGame.draw(sf::RectangleShapeData{.position         = gameView.viewport.position.componentWiseMul(resolution),
-                                       .fillColor        = sf::Color::Transparent,
-                                       .outlineColor     = outlineHueColor,
-                                       .outlineThickness = 4.f,
-                                       .size             = gameView.viewport.size.componentWiseMul(resolution)},
-                {.view = nonScaledHUDView});
+    if (0)
+        rtGame.draw(sf::RectangleShapeData{.position         = gameView.viewport.position.componentWiseMul(resolution),
+                                           .fillColor        = sf::Color::Transparent,
+                                           .outlineColor     = outlineHueColor,
+                                           .outlineThickness = 4.f,
+                                           .size             = gameView.viewport.size.componentWiseMul(resolution)},
+                    {.view = nonScaledHUDView});
 
     if (shouldDrawUI)
     {
@@ -579,9 +638,6 @@
         drawBatch(hudDrawableBatch, {.view = scaledHUDView, .texture = &textureAtlas.getTexture(), .shader = &shader});
     }
 
-    //
-    // Y coordinate below minimap to position money, combo, and buff texts
-    const float yBelowMinimap = pt->mapPurchased ? (boundaries.y / profile.minimapScale) + 12.f : 0.f;
 
     //
     // Demo text (TODO P2: cleanup)
@@ -620,22 +676,11 @@
     // Money text & spent money effect
     gameLoopUpdateMoneyText(deltaTimeMs, yBelowMinimap);
     gameLoopUpdateSpentMoneyEffect(deltaTimeMs); // handles both text smoothly doing down and particles
-    if (!debugHideUI)
-    {
-        moneyText.setFillColorAlpha(shouldDrawUIAlpha);
-        moneyText.setOutlineColorAlpha(shouldDrawUIAlpha);
-        rtGame.draw(moneyText, {.view = scaledHUDView});
-    }
+
 
     //
     // Combo text
     gameLoopUpdateComboText(deltaTimeMs, yBelowMinimap);
-    if (!debugHideUI && pt->comboPurchased)
-    {
-        comboText.setFillColorAlpha(shouldDrawUIAlpha);
-        comboText.setOutlineColorAlpha(shouldDrawUIAlpha);
-        rtGame.draw(comboText, {.view = scaledHUDView});
-    }
 
     //
     // Portal storm buff
@@ -661,26 +706,56 @@
     //
     // Buff text
     gameLoopUpdateBuffText();
-    if (!debugHideUI)
+
+    if (!buffText.getString().isEmpty())
     {
-        buffText.setFillColorAlpha(shouldDrawUIAlpha);
-        buffText.setOutlineColorAlpha(shouldDrawUIAlpha);
-        rtGame.draw(buffText, {.view = scaledHUDView});
+        const sf::Vec2f offset{10.f, 10.f};
+
+        auto mins = buffText.getGlobalTopLeft() + offset;
+        auto maxs = buffText.getGlobalBottomRight() - offset - sf::Vec2{0.f, 20.f};
+
+        mins = (mins.toVec2i() / 20 * 20).toVec2f();
+        maxs = (maxs.toVec2i() / 20 * 20).toVec2f().addX(20.f).addY(5.f);
+
+        drawCloudFrame({
+            .time              = shaderTime,
+            .mins              = mins,
+            .maxs              = maxs,
+            .xSteps            = 16,
+            .ySteps            = 8,
+            .scaleMult         = 1.f,
+            .outwardOffsetMult = 1.f,
+            .batch             = &cpuCloudHudDrawableBatch,
+        });
     }
 
     //
     // Combo bar
     if (shouldDrawUI && !debugHideUI)
-        rtGame.draw(sf::RectangleShapeData{.position = {comboText.getGlobalCenterRight().x + 3.f, yBelowMinimap + 56.f},
-                                           .fillColor = sf::Color{255, 255, 255, 75},
-                                           .size      = {100.f * comboCountdown.value / 700.f, 20.f}},
-                    {.view = scaledHUDView});
+    {
+        if (comboCountdown.value > 25.f)
+            rtGame.draw(
+                sf::RoundedRectangleShapeData{
+                    .position     = {comboText.getGlobalCenterRight().x + 3.f, yBelowMinimap + 51.f},
+                    .fillColor    = sf::Color{75, 75, 75, 255},
+                    .size         = {100.f * comboCountdown.value / 700.f, 20.f},
+                    .cornerRadius = 6.f,
+                },
+                {.view = scaledHUDView});
+    }
 
     //
     // Minimap
     if (!debugHideUI && pt->mapPurchased)
+        drawMinimap(/* back */ true, rtGame, scaledHUDView, resolution, shouldDrawUIAlpha);
+
+    // UI clouds
+    gameLoopDisplayCloudBatch(cpuCloudUiDrawableBatch, nonScaledHUDView);
+    gameLoopDisplayCloudBatch(cpuCloudHudDrawableBatch, scaledHUDView);
+
+    if (!debugHideUI && pt->mapPurchased)
     {
-        drawMinimap(rtGame, scaledHUDView, resolution, shouldDrawUIAlpha);
+        drawMinimap(/* back */ false, rtGame, scaledHUDView, resolution, shouldDrawUIAlpha);
 
         // Jump to minimap position on click
         const auto p = scaledHUDView.screenToWorld(windowSpaceMouseOrFingerPos.toVec2f(), window.getSize().toVec2f());
@@ -692,8 +767,26 @@
         }
     }
 
-    // UI clouds
-    gameLoopDisplayCloudBatch(cpuCloudUiDrawableBatch, nonScaledHUDView);
+    if (!debugHideUI)
+    {
+        moneyText.setFillColorAlpha(shouldDrawUIAlpha);
+        moneyText.setOutlineColorAlpha(shouldDrawUIAlpha);
+        rtGame.draw(moneyText, {.view = scaledHUDView});
+    }
+
+    if (!debugHideUI && pt->comboPurchased)
+    {
+        comboText.setFillColorAlpha(shouldDrawUIAlpha);
+        comboText.setOutlineColorAlpha(shouldDrawUIAlpha);
+        rtGame.draw(comboText, {.view = scaledHUDView});
+    }
+
+    if (!debugHideUI)
+    {
+        buffText.setFillColorAlpha(shouldDrawUIAlpha);
+        buffText.setOutlineColorAlpha(shouldDrawUIAlpha);
+        rtGame.draw(buffText, {.view = scaledHUDView});
+    }
 
     //
     // UI and Toasts
