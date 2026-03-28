@@ -153,7 +153,8 @@
 
             if (!ImGui::GetIO().WantCaptureMouse)
                 scroll += e8->delta * scrollMult;
-        }    }
+        }
+    }
 
     if (ImGui::GetIO().WantCaptureMouse)
         clickPosition.reset();
@@ -425,6 +426,7 @@
 
     //
     // Draw ImGui menu
+    cpuCloudUiDrawableBatch.clear();
     uiDraw(mousePos);
 
 
@@ -689,6 +691,9 @@
             scroll = minimapPos.x * 0.5f * pt->getMapLimit() / minimapRect.size.x - gameView.size.x * 0.25f;
         }
     }
+
+    // UI clouds
+    gameLoopDisplayCloudBatch(cpuCloudUiDrawableBatch, nonScaledHUDView);
 
     //
     // UI and Toasts

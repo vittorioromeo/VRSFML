@@ -27,6 +27,7 @@
 
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DrawTextureSettings.hpp"
+#include "SFML/Graphics/RectangleShapeData.hpp"
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/Texture.hpp"
 
@@ -54,6 +55,8 @@
 #include "SFML/Base/ToString.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
+
+#include <imgui.h>
 
 #include <cstdio>
 #include <cstdlib>
@@ -438,6 +441,9 @@ It's a duck.)",
 ////////////////////////////////////////////////////////////
 Main::AnimatedButtonOutcome Main::uiAnimatedButton(const char* label, const ImVec2& btnSize, const float fontScale, const float fontScaleMult)
 {
+    static bool yo = false;
+    yo             = !yo;
+
     ImGuiWindow* imGuiWindow = ImGui::GetCurrentWindow();
 
     if (imGuiWindow->SkipItems)
@@ -521,9 +527,11 @@ Main::AnimatedButtonOutcome Main::uiAnimatedButton(const char* label, const ImVe
     const float scale = 1.f - easeInOutElastic(animState->clickAnim) * 0.75f;
 
     // Tilt transform: rotate by up to 0.05 radians (≈2.9°). (Use ~0.0873f for 5°.)
-    const float tiltAngle = sf::base::sin(easeInOutSine(animState->hoverAnim) * sf::base::tau) * 0.1f;
-    const float tiltCos   = sf::base::cos(tiltAngle);
-    const float tiltSin   = sf::base::sin(tiltAngle);
+    const float tiltAngle  = sf::base::sin(easeInOutSine(animState->hoverAnim) * sf::base::tau) * 0.1f;
+    const float tiltCos    = sf::base::cos(tiltAngle);
+    const float tiltSin    = sf::base::sin(tiltAngle);
+    const float tiltCosOpp = sf::base::cos(-tiltAngle);
+    const float tiltSinOpp = sf::base::sin(-tiltAngle);
 
     // Helper lambda: apply scale & rotation about the button center.
     const auto transformPoint = [&](const ImVec2& p) -> ImVec2
@@ -541,32 +549,85 @@ Main::AnimatedButtonOutcome Main::uiAnimatedButton(const char* label, const ImVe
         return center + rotated;
     };
 
+    const auto transformPointOpposite = [&](const ImVec2& p) -> ImVec2
+    {
+        // Translate so that the center is at (0,0)
+        const ImVec2 centered = p - center;
+
+        // Apply scale
+        const ImVec2 scaled = centered * scale;
+
+        // Apply rotation
+        const ImVec2 rotated{scaled.x * tiltCosOpp - scaled.y * tiltSinOpp, scaled.x * tiltSinOpp + scaled.y * tiltCosOpp};
+
+        // Translate back
+        return center + rotated;
+    };
+
     // ── Draw Button Background as a Rounded Rectangle ──
+    /*
     const ImU32 btnBgColor = ImGui::GetColorU32(
         pressed   ? ImGuiCol_ButtonActive
         : hovered ? ImGuiCol_ButtonHovered
                   : ImGuiCol_Button);
+*/
+    const auto btnBgColor255 = (pressed   ? ImColor(255, 255, 255, 255)
+                                : hovered ? ImColor(255, 255, 255, 225)
+                                          : ImColor(255, 255, 255, 255));
+
+    const auto btnBgColor = isCurrentlyDisabled ? ImColor(185, 185, 185, 255)
+                            : hovered           ? ImColor(255, 255, 255, 255)
+                                                : ImColor(235, 235, 235, 255);
 
     const float rounding = ImGui::GetStyle().FrameRounding;
 
-    drawList->PathClear();
-    drawList->PathRect(bb.Min, bb.Max, rounding);
-
-    for (int i = 0; i < drawList->_Path.Size; ++i)
-        drawList->_Path[i] = transformPoint(drawList->_Path[i]);
-
-    drawList->PathFillConvex(btnBgColor);
-
-    if (ImGui::GetStyle().FrameBorderSize > 0.f)
-    {
-        // Recreate the path for the border.
+    /*
         drawList->PathClear();
         drawList->PathRect(bb.Min, bb.Max, rounding);
 
         for (int i = 0; i < drawList->_Path.Size; ++i)
             drawList->_Path[i] = transformPoint(drawList->_Path[i]);
 
-        drawList->PathStroke(ImGui::GetColorU32(ImGuiCol_Border), ImDrawFlags_Closed, ImGui::GetStyle().FrameBorderSize);
+        drawList->PathFillConvex(btnBgColor);
+
+        if (ImGui::GetStyle().FrameBorderSize > 0.f)
+        {
+            // Recreate the path for the border.
+            drawList->PathClear();
+            drawList->PathRect(bb.Min, bb.Max, rounding);
+
+            for (int i = 0; i < drawList->_Path.Size; ++i)
+                drawList->_Path[i] = transformPoint(drawList->_Path[i]);
+
+            drawList->PathStroke(ImGui::GetColorU32(ImGuiCol_Border), ImDrawFlags_Closed, ImGui::GetStyle().FrameBorderSize);
+        }
+    */
+
+    const ImTextureID textureID = toImTextureID(txCloudBtn.getNativeHandle());
+
+    // transformed points as quad
+    auto offset = ImVec2{4.5f, 10.f};
+
+    if (hovered)
+        offset *= 1.7f;
+
+    const auto p0 = transformPointOpposite(ImVec2{bb.Min.x, bb.Min.y} - offset);
+    const auto p1 = transformPointOpposite(ImVec2{bb.Max.x + offset.x, bb.Min.y - offset.y});
+    const auto p2 = transformPointOpposite(ImVec2{bb.Max.x, bb.Max.y} + offset);
+    const auto p3 = transformPointOpposite(ImVec2{bb.Min.x - offset.x, bb.Max.y + offset.y});
+
+    const auto uv0 = ImVec2(0, 0);
+    const auto uv1 = ImVec2(1, 0);
+    const auto uv2 = ImVec2(1, 1);
+    const auto uv3 = ImVec2(0, 1);
+
+
+    if (yo)
+        drawList->AddImageQuad(textureID, p0, p1, p2, p3, uv0, uv1, uv2, uv3, btnBgColor);
+    else
+    {
+        // flip horizontally
+        drawList->AddImageQuad(textureID, p1, p0, p3, p2, uv0, uv1, uv2, uv3, btnBgColor);
     }
 
     // ── Draw Text with the Same Transformation ──
@@ -579,7 +640,7 @@ Main::AnimatedButtonOutcome Main::uiAnimatedButton(const char* label, const ImVe
 
     // ...and add the text at its normal (unrotated/unscaled) position.
     uiSetFontScale(fontScale * fontScaleMult);
-    drawList->AddText(textPos, ImGui::GetColorU32(ImGuiCol_Text), label, labelEnd);
+    drawList->AddText(textPos, ImGui::GetColorU32(isCurrentlyDisabled ? ImGuiCol_TextDisabled : ImGuiCol_Text), label, labelEnd);
 
     // Then, apply our transform to only the new text vertices.
     for (int i = vtxBufferSizeBeforeTransformation; i < drawList->VtxBuffer.Size; ++i)
@@ -1428,8 +1489,10 @@ void Main::uiDraw(const sf::Vec2f mousePos)
     ImGui::PushFont(fontImGuiSuperBakery);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 10.f); // Set corner radius
 
-    style.Colors[ImGuiCol_WindowBg] = ImVec4(0.f, 0.f, 0.f, 0.65f); // 65% transparent black
-    style.Colors[ImGuiCol_Border]   = colorBlueOutline.toVec4<ImVec4>();
+    style.Colors[ImGuiCol_WindowBg]     = ImVec4(0.f, 0.f, 0.f, 0.65f); // 65% transparent black
+    style.Colors[ImGuiCol_Border]       = colorBlueOutline.toVec4<ImVec4>();
+    style.Colors[ImGuiCol_Text]         = sf::Color{50u, 84u, 135u};
+    style.Colors[ImGuiCol_TextDisabled] = sf::Color{50u, 84u, 135u}.withLightness(0.35f).withSaturation(0.25f);
 
     const float newScalingFactor = profile.uiScale;
     initialStyleScales.applyWithScale(style, newScalingFactor, onSteamDeck);
@@ -1468,11 +1531,94 @@ void Main::uiDraw(const sf::Vec2f mousePos)
     ImVec2      p_max     = ImVec2(p_min.x + ImGui::GetWindowWidth(), p_min.y + ImGui::GetWindowHeight());
 
 
+    // draw_list->AddRectFilled(p_min, p_max, ImColor(255, 245, 245, 235), 0.f);
+
+    cpuCloudUiDrawableBatch.add(sf::RectangleShapeData{
+        .position  = p_min,
+        .fillColor = sf::Color::White,
+        .size      = p_max - p_min,
+    });
+
     // 4. Draw the Gradient (Top-Left, Top-Right, Bottom-Right, Bottom-Left)
-    draw_list->AddRectFilledMultiColor(p_min, p_max, col_top, col_top, col_bot, col_bot);
+    // draw_list->AddRectFilledMultiColor(p_min, p_max, col_top, col_top, col_bot, col_bot);
 
     // float rounding = 8.f;
     // draw_list->AddRectFilled(p_min, p_max, col_top, rounding, ImDrawFlags_RoundCornersAll);
+
+    p_min.x += 15.f;
+
+    static float time = 0.f;
+    time += ImGui::GetIO().DeltaTime * 4.f;
+
+    const int xSteps = 10;
+    const int ySteps = 30;
+
+    for (int iX = 0; iX < xSteps; ++iX)
+    {
+        for (int iY = 0; iY < ySteps; ++iY)
+        {
+            // if (iX != 0 && iY != 0 && iX != xSteps - 1 && iY != ySteps - 1)
+            if (iX != 0 && iY != 0 && iX != xSteps - 1 && iY != ySteps - 1)
+                continue;
+
+            const float tX = static_cast<float>(iX) / static_cast<float>(xSteps - 1);
+            const float tY = static_cast<float>(iY) / static_cast<float>(ySteps - 1);
+
+            const ImVec2 p0 = ImLerp(p_min, p_max, ImVec2(tX, tY));
+
+            const float normalX    = iX == 0 ? -1.f : (iX == xSteps - 1 ? 1.f : 0.f);
+            const float normalY    = iY == 0 ? -1.f : (iY == ySteps - 1 ? 1.f : 0.f);
+            const float cornerMult = (normalX != 0.f && normalY != 0.f) ? 0.70710677f : 1.f;
+
+            const float outwardX = normalX * cornerMult;
+            const float outwardY = normalY * cornerMult;
+            const float tangentX = -outwardY;
+            const float tangentY = outwardX;
+
+            const float seed   = tX * 173.13f + tY * 317.71f;
+            const float noise0 = sf::base::sin(seed * 3.17f + 1.2f) * 0.5f + 0.5f;
+            const float noise1 = sf::base::sin(seed * 5.83f + 4.7f) * 0.5f + 0.5f;
+            const float noise2 = sf::base::cos(seed * 4.11f + 2.3f) * 0.5f + 0.5f;
+
+            const float restOutward = (noise0 * noise1) * 12.f - 2.f;
+            const float restTangent = (noise2 - 0.5f) * 5.f;
+
+            const float phase0 = time * (0.45f + noise0 * 0.35f) + seed * 0.35f;
+            const float phase1 = time * (0.90f + noise1 * 0.55f) - seed * 0.21f;
+
+            const float outwardOffset = restOutward + sf::base::sin(phase0) * (1.5f + noise0 * 2.5f) +
+                                        sf::base::sin(phase1) * (0.5f + noise1 * 1.25f);
+
+            const float tangentOffset = restTangent +
+                                        sf::base::cos(time * (0.6f + noise2 * 0.7f) + seed * 0.47f) * (0.5f + noise2 * 2.f) +
+                                        sf::base::sin(phase0 * 1.37f + noise1 * 3.f) * 0.75f;
+
+            const ImVec2 animatedP{p0.x + outwardX * outwardOffset + tangentX * tangentOffset,
+                                   p0.y + outwardY * outwardOffset + tangentY * tangentOffset};
+            const float  puffScale = 0.58f + noise0 * 0.26f + 0.75f;
+
+            cpuCloudUiDrawableBatch.add(sf::Sprite{
+                .position    = animatedP,
+                .scale       = {puffScale, puffScale},
+                .origin      = txrCloud.size / 2.f,
+                .textureRect = txrCloud,
+            });
+
+            if (((iX + iY) % 3) == 0)
+            {
+                const float clusterOutward = outwardOffset - (3.f + noise1 * 4.f);
+                const float clusterTangent = tangentOffset + (noise2 - 0.5f) * 8.f;
+
+                cpuCloudUiDrawableBatch.add(sf::Sprite{
+                    .position    = {p0.x + outwardX * clusterOutward + tangentX * clusterTangent,
+                                    p0.y + outwardY * clusterOutward + tangentY * clusterTangent},
+                    .scale       = {puffScale * 0.72f, puffScale * 0.72f},
+                    .origin      = txrCloud.size / 2.f,
+                    .textureRect = txrCloud,
+                });
+            }
+        }
+    }
 
     {
         const auto prevTabRounding      = style.TabRounding;
@@ -1504,30 +1650,31 @@ void Main::uiDraw(const sf::Vec2f mousePos)
     const auto windowDrawPos  = ImGui::GetWindowPos();
     const auto windowDrawSize = ImGui::GetWindowSize();
 
-    if (windowDrawSize.y > 64.f)
-    {
-        const float offset = 15.f;
+    if (0)
+        if (windowDrawSize.y > 64.f)
+        {
+            const float offset = 15.f;
 
-        drawNinePatchInImGui(*draw_list,
-                             txFrame,
-                             windowDrawPos - sf::Vec2f{offset, offset} + sf::Vec2f{2.f, 1.f},
-                             windowDrawSize + sf::Vec2f{offset * 2.f, offset * 2.f} - sf::Vec2f{3.f, 3.f},
-                             txFrame.getRect(),
-                             NinePatchBorders::all(64.f),
-                             IM_COL32_WHITE);
-    }
-    else
-    {
-        const float offset = 4.f * profile.uiScale;
+            drawNinePatchInImGui(*draw_list,
+                                 txFrame,
+                                 windowDrawPos - sf::Vec2f{offset, offset} + sf::Vec2f{2.f, 1.f},
+                                 windowDrawSize + sf::Vec2f{offset * 2.f, offset * 2.f} - sf::Vec2f{3.f, 3.f},
+                                 txFrame.getRect(),
+                                 NinePatchBorders::all(64.f),
+                                 IM_COL32_WHITE);
+        }
+        else
+        {
+            const float offset = 4.f * profile.uiScale;
 
-        drawNinePatchInImGui(*draw_list,
-                             txFrameTiny,
-                             windowDrawPos - sf::Vec2f{offset, offset} + sf::Vec2f{2.f, 1.f},
-                             windowDrawSize + sf::Vec2f{offset * 2.f, offset * 2.f} - sf::Vec2f{3.f, 3.f},
-                             txFrameTiny.getRect(),
-                             NinePatchBorders::all(18.f),
-                             IM_COL32_WHITE);
-    }
+            drawNinePatchInImGui(*draw_list,
+                                 txFrameTiny,
+                                 windowDrawPos - sf::Vec2f{offset, offset} + sf::Vec2f{2.f, 1.f},
+                                 windowDrawSize + sf::Vec2f{offset * 2.f, offset * 2.f} - sf::Vec2f{3.f, 3.f},
+                                 txFrameTiny.getRect(),
+                                 NinePatchBorders::all(18.f),
+                                 IM_COL32_WHITE);
+        }
 
     ImGui::End();
 
@@ -1895,7 +2042,7 @@ void Main::uiImageFromAtlas(const sf::Rect2f& txr, const sf::DrawTextureSettings
             .textureRect = txr,
         },
         uiTextureAtlas.getTexture(),
-        drawParams.color);
+        sf::Color{50u, 84u, 135u});
 }
 
 ////////////////////////////////////////////////////////////
@@ -1913,6 +2060,9 @@ void Main::uiImgsep(const sf::Rect2f& txr, const char* sepLabel, const bool firs
         ImGui::Spacing();
         ImGui::Spacing();
         ImGui::Spacing();
+        ImGui::Spacing();
+        ImGui::Spacing();
+        ImGui::Spacing();
     }
 
     ImGui::Columns(1);
@@ -1923,7 +2073,7 @@ void Main::uiImgsep(const sf::Rect2f& txr, const char* sepLabel, const bool firs
     uiCenteredText(sepLabel, -5.f * profile.uiScale, -8.f * profile.uiScale);
     uiSetFontScale(oldFontScale);
 
-    ImGui::Separator();
+    // ImGui::Separator();
     ImGui::Spacing();
 
     uiBeginColumns();
