@@ -584,114 +584,115 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Prof
     auto version = currentVersion;
     twoWay<Serialize>(0u, j, version);
 
-    twoWay<Serialize>(1u,
-                      j,
+    twoWay<Serialize>(
+        1u,
+        j,
 
-                      p.masterVolume,
-                      p.musicVolume,
+        p.masterVolume,
+        p.musicVolume,
 
-                      p.playAudioInBackground,
-                      p.playComboEndSound,
+        p.playAudioInBackground,
+        p.playComboEndSound,
 
-                      p.selectedBGM,
+        p.selectedBGM,
 
-                      p.minimapScale,
-                      p.hudScale,
-                      p.uiScale,
+        p.minimapScale,
+        p.hudScale,
+        p.uiScale,
 
-                      p.tipsEnabled,
+        p.tipsEnabled,
 
-                      p.backgroundOpacity,
-                      p.selectedBackground,
-                      p.alwaysShowDrawings,
+        p.backgroundOpacity,
+        p.selectedBackground,
+        p.alwaysShowDrawings,
 
-                      p.showCatText,
-                      p.showCatRange,
-                      p.showParticles,
-                      p.showTextParticles,
-                      p.accumulatingCombo,
-                      p.showCursorComboText,
-                      p.useBubbleShader,
+        p.showCatText,
+        p.showCatRange,
+        p.showParticles,
+        p.showTextParticles,
+        p.accumulatingCombo,
+        p.showCursorComboText,
+        p.useBubbleShader,
 
-                      p.cursorTrailMode,
-                      p.cursorTrailScale,
+        p.cursorTrailMode,
+        p.cursorTrailScale,
 
-                      p.bsIridescenceStrength,
-                      p.bsEdgeFactorMin,
-                      p.bsEdgeFactorMax,
-                      p.bsEdgeFactorStrength,
-                      p.bsDistortionStrength,
-                      p.bsBubbleLightness,
-                      p.bsLensDistortion,
+        p.bsIridescenceStrength,
+        p.bsEdgeFactorMin,
+        p.bsEdgeFactorMax,
+        p.bsEdgeFactorStrength,
+        p.bsDistortionStrength,
+        p.bsBubbleLightness,
+        p.bsLensDistortion,
 
-                      p.statsLifetime,
+        p.statsLifetime,
 
-                      p.resWidth,
+        p.resWidth,
 
-                      p.windowed,
-                      p.vsync,
+        p.windowed,
+        p.vsync,
 
-                      p.frametimeLimit,
+        p.frametimeLimit,
 
-                      p.highVisibilityCursor,
-                      p.multicolorCursor,
+        p.highVisibilityCursor,
+        p.multicolorCursor,
 
-                      p.cursorHue,
-                      p.cursorScale,
+        p.cursorHue,
+        p.cursorScale,
 
-                      p.showCoinParticles,
-                      p.showDpsMeter,
+        p.showCoinParticles,
+        p.showDpsMeter,
 
-                      p.enableNotifications,
-                      p.showFullManaNotification,
+        p.enableNotifications,
+        p.showFullManaNotification,
 
-                      p.unlockedAchievements,
+        p.unlockedAchievements,
 
-                      p.uiUnlocks,
+        p.uiUnlocks,
 
-                      p.ppSVibrance,
-                      p.ppSSaturation,
-                      p.ppSLightness,
-                      p.ppSSharpness,
+        p.ppSVibrance,
+        p.ppSSaturation,
+        p.ppSLightness,
+        p.ppSSharpness,
 
-                      p.showBubbles,
-                      p.invertMouseButtons,
-                      p.showDollParticleBorder,
+        p.showBubbles,
+        p.invertMouseButtons,
+        p.showDollParticleBorder,
 
-                      p.catDragPressDuration,
-                      p.playWitchRitualSounds,
-                      p.enableScreenShake,
-                      p.enableCatBobbing,
-                      p.catRangeOutlineThickness,
+        p.catDragPressDuration,
+        p.playWitchRitualSounds,
+        p.enableScreenShake,
+        p.enableCatBobbing,
+        p.catRangeOutlineThickness,
 
-                      p.showCursorComboBar,
-                      p.sfxVolume,
+        p.showCursorComboBar,
+        p.sfxVolume,
 
-                      p.hideMaxedOutPurchasables,
-                      p.hideCategorySeparators,
+        p.hideMaxedOutPurchasables,
+        p.hideCategorySeparators,
 
-                      p.autobatchMode,
+        p.autobatchMode,
 
-                      p.ppSBlur,
-                      p.ppBGVibrance,
-                      p.ppBGSaturation,
-                      p.ppBGLightness,
-                      p.ppBGSharpness,
-                      p.ppBGBlur,
+        p.ppSBlur,
+        p.ppBGVibrance,
+        p.ppBGSaturation,
+        p.ppBGLightness,
+        p.ppBGSharpness,
+        p.ppBGBlur,
 
-                      p.catCloudOpacity,
-                      p.catCloudCircleCount,
-                      p.catCloudScale,
-                      p.catCloudXExtent,
-                      p.catCloudBaseYOffset,
-                      p.catCloudExtraYOffset,
-                      p.catCloudDraggedOffset,
-                      p.catCloudLobeLift,
-                      p.catCloudWobbleX,
-                      p.catCloudWobbleY,
-                      p.catCloudRadiusBase,
-                      p.catCloudRadiusLobe,
-                      p.catCloudRadiusWobble);
+        p.catCloudOpacity,
+        p.catCloudCircleCount,
+        p.catCloudScale,
+        p.catCloudXExtent,
+        p.catCloudBaseYOffset,
+        p.catCloudExtraYOffset,  // TODO P0: remove
+        p.catCloudDraggedOffset, // TODO P0: remove
+        p.catCloudLobeLift,
+        p.catCloudWobbleX,
+        p.catCloudWobbleY,
+        p.catCloudRadiusBase,
+        p.catCloudRadiusLobe,
+        p.catCloudRadiusWobble);
 }
 
 ////////////////////////////////////////////////////////////

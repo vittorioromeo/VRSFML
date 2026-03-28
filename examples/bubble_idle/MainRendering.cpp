@@ -63,13 +63,98 @@
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/ToString.hpp"
 
+#include <imgui_internal.h>
+
 #include <cctype>
 #include <cstdio>
 
 ////////////////////////////////////////////////////////////
-void Main::drawMinimap(sf::RenderTarget& rt, const sf::View& hudView, const sf::Vec2f resolution, const sf::base::U8 shouldDrawUIAlpha)
+void Main::drawCloudFrame(const CloudFrameDrawSettings& settings)
 {
-    constexpr sf::Vec2f minimapPos = {15.f, 15.f};
+    const auto& [time, mins, maxs, xSteps, ySteps, scaleMult, outwardOffsetMult, batch] = settings;
+
+    const auto vec2Lerp = [](const sf::Vec2f a, const sf::Vec2f b, const sf::Vec2f t)
+    { return sf::Vec2f(a.x + (b.x - a.x) * t.x, a.y + (b.y - a.y) * t.y); };
+
+    for (int iX = 0; iX < xSteps; ++iX)
+    {
+        for (int iY = 0; iY < ySteps; ++iY)
+        {
+            if (iX != 0 && iY != 0 && iX != xSteps - 1 && iY != ySteps - 1)
+                continue;
+
+            const float tX = static_cast<float>(iX) / static_cast<float>(xSteps - 1);
+            const float tY = static_cast<float>(iY) / static_cast<float>(ySteps - 1);
+
+            const auto p0 = vec2Lerp(mins, maxs, {tX, tY});
+
+            const float normalX    = iX == 0 ? -1.f : (iX == xSteps - 1 ? 1.f : 0.f);
+            const float normalY    = iY == 0 ? -1.f : (iY == ySteps - 1 ? 1.f : 0.f);
+            const float cornerMult = (normalX != 0.f && normalY != 0.f) ? 0.70710677f : 1.f;
+
+            const float outwardX = normalX * cornerMult;
+            const float outwardY = normalY * cornerMult;
+            const float tangentX = -outwardY;
+            const float tangentY = outwardX;
+
+            const float noiseSeed = tX * 173.13f + tY * 317.71f;
+
+            const float noise0 = sf::base::sin(noiseSeed * 3.17f + 1.2f) * 0.5f + 0.5f;
+            const float noise1 = sf::base::sin(noiseSeed * 5.83f + 4.7f) * 0.5f + 0.5f;
+            const float noise2 = sf::base::cos(noiseSeed * 4.11f + 2.3f) * 0.5f + 0.5f;
+
+            const float restOutward = (noise0 * noise1) * 12.f - 2.f;
+            const float restTangent = (noise2 - 0.5f) * 5.f;
+
+            const float phase0 = time * (0.45f + noise0 * 0.35f) + noiseSeed * 0.35f;
+            const float phase1 = time * (0.90f + noise1 * 0.55f) - noiseSeed * 0.21f;
+
+            const float outwardOffset = (restOutward + sf::base::sin(phase0) * (1.5f + noise0 * 2.5f) +
+                                         sf::base::sin(phase1) * (0.5f + noise1 * 1.25f)) *
+                                        outwardOffsetMult;
+
+            const float tangentOffset = restTangent +
+                                        sf::base::cos(time * (0.6f + noise2 * 0.7f) + noiseSeed * 0.47f) *
+                                            (0.5f + noise2 * 2.f) +
+                                        sf::base::sin(phase0 * 1.37f + noise1 * 3.f) * 0.75f;
+
+            const sf::Vec2f animatedP{p0.x + outwardX * outwardOffset + tangentX * tangentOffset,
+                                      p0.y + outwardY * outwardOffset + tangentY * tangentOffset};
+
+            const float puffScale = (0.58f + noise0 * 0.26f) * scaleMult;
+
+            batch->add(sf::Sprite{
+                .position    = animatedP,
+                .scale       = {puffScale, puffScale},
+                .origin      = txrCloud.size / 2.f,
+                .textureRect = txrCloud,
+            });
+
+            if (((iX + iY) % 3) == 0)
+            {
+                const float clusterOutward = outwardOffset - (3.f + noise1 * 4.f);
+                const float clusterTangent = tangentOffset + (noise2 - 0.5f) * 8.f;
+
+                batch->add(sf::Sprite{
+                    .position    = {p0.x + outwardX * clusterOutward + tangentX * clusterTangent,
+                                    p0.y + outwardY * clusterOutward + tangentY * clusterTangent},
+                    .scale       = {puffScale, puffScale},
+                    .origin      = txrCloud.size / 2.f,
+                    .textureRect = txrCloud,
+                });
+            }
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////
+void Main::drawMinimap(bool               back,
+                       sf::RenderTarget&  rt,
+                       const sf::View&    hudView,
+                       const sf::Vec2f    resolution,
+                       const sf::base::U8 shouldDrawUIAlpha)
+{
+    constexpr sf::Vec2f minimapPos = {10.f, 10.f};
 
     const float     minimapScale = profile.minimapScale;
     const float     mapLimit     = pt->getMapLimit();
@@ -77,14 +162,32 @@ void Main::drawMinimap(sf::RenderTarget& rt, const sf::View& hudView, const sf::
     const float     hueMod       = currentBackgroundHue.asDegrees();
     const sf::Vec2f minimapSize  = boundaries / minimapScale;
 
-    const sf::RectangleShapeData minimapBorder{.position         = minimapPos,
-                                               .fillColor        = sf::Color::Transparent,
-                                               .outlineColor     = sf::Color::whiteMask(shouldDrawUIAlpha),
-                                               .outlineThickness = 2.f,
-                                               .size             = {mapLimit / minimapScale, minimapSize.y}};
+    const sf::RoundedRectangleShapeData minimapBorder{
+        .position         = minimapPos,
+        .fillColor        = sf::Color::Transparent,
+        .outlineColor     = sf::Color::whiteMask(static_cast<U8>(shouldDrawUIAlpha * 0.75f)),
+        .outlineThickness = 4.f,
+        .size             = {mapLimit / minimapScale, minimapSize.y},
+        .cornerRadius     = 8.f,
+    };
 
     minimapRect.position = minimapPos;
     minimapRect.size     = minimapBorder.size;
+
+    sf::Vec2f offset{-10.f, -10.f};
+
+    if (back)
+        drawCloudFrame({
+            .time              = shaderTime,
+            .mins              = minimapBorder.position - offset - sf::Vec2f{5.f, 5.f},
+            .maxs              = minimapBorder.position + minimapBorder.size + offset,
+            .xSteps            = 16,
+            .ySteps            = 8,
+            .scaleMult         = 1.6f,
+            .outwardOffsetMult = 1.f,
+            .batch             = &cpuCloudHudDrawableBatch,
+        });
+
 
     const float visibleLeft  = sf::base::max(0.f, gameView.center.x - gameView.size.x / 2.f);
     const float visibleRight = sf::base::min(mapLimit, gameView.center.x + gameView.size.x / 2.f);
@@ -93,7 +196,7 @@ void Main::drawMinimap(sf::RenderTarget& rt, const sf::View& hudView, const sf::
         minimapIndicator{.position         = minimapPos.addX(visibleLeft / minimapScale),
                          .fillColor        = sf::Color::Transparent,
                          .outlineColor     = sf::Color::Blue.withRotatedHue(hueMod).withAlpha(shouldDrawUIAlpha),
-                         .outlineThickness = 2.f,
+                         .outlineThickness = 3.f,
                          .size = sf::Vec2f{sf::base::max(0.f, visibleRight - visibleLeft), gameView.size.y} / minimapScale};
 
     const float progressRatio = sf::base::clamp(mapLimit / boundaries.x, 0.f, 1.f);
@@ -112,33 +215,38 @@ void Main::drawMinimap(sf::RenderTarget& rt, const sf::View& hudView, const sf::
                                .size    = resolution * minimapScale,
                                .scissor = clampedScissorRect};
 
-    rt.draw(sf::RectangleShapeData{.fillColor = sf::Color::blackMask(shouldDrawUIAlpha), .size = boundaries * hudScale},
-            {.view = minimapView});
-
     const sf::Vec2f backgroundRectSize{static_cast<float>(txBackgroundChunk.getSize().x) * nGameScreens,
                                        static_cast<float>(txBackgroundChunk.getSize().y)};
 
-    rt.draw(txBackgroundChunk,
-            {.scale       = {hudScale, hudScale},
-             .textureRect = {{0.f, 0.f}, backgroundRectSize},
-             .color       = hueColor(hueMod, sf::base::min(shouldDrawUIAlpha, static_cast<sf::base::U8>(128u)))},
-            {.view = minimapView, .shader = &shader});
-
-    rt.draw(txDrawings,
-            {.scale       = {hudScale, hudScale},
-             .textureRect = {{0.f, 0.f}, backgroundRectSize},
-             .color       = sf::Color::whiteMask(sf::base::min(shouldDrawUIAlpha, static_cast<sf::base::U8>(215u)))},
-            {.view = minimapView, .shader = &shader});
-
-    if (shouldDrawUIAlpha > 200u)
+    if (!back)
     {
-        minimapDrawableBatch.scale = {hudScale, hudScale};
-        rt.draw(minimapDrawableBatch, {.view = minimapView, .texture = &textureAtlas.getTexture(), .shader = &shader});
-        minimapDrawableBatch.scale = {1.f, 1.f};
+        rt.draw(sf::RectangleShapeData{.fillColor = sf::Color::blackMask(shouldDrawUIAlpha), .size = boundaries * hudScale},
+                {.view = minimapView});
+
+        rt.draw(txBackgroundChunk,
+                {.scale       = {hudScale, hudScale},
+                 .textureRect = {{0.f, 0.f}, backgroundRectSize},
+                 .color       = hueColor(hueMod, sf::base::min(shouldDrawUIAlpha, static_cast<sf::base::U8>(128u)))},
+                {.view = minimapView, .shader = &shader});
+
+        rt.draw(txDrawings,
+                {.scale       = {hudScale, hudScale},
+                 .textureRect = {{0.f, 0.f}, backgroundRectSize},
+                 .color = sf::Color::whiteMask(sf::base::min(shouldDrawUIAlpha, static_cast<sf::base::U8>(215u)))},
+                {.view = minimapView, .shader = &shader});
+
+        if (shouldDrawUIAlpha > 200u)
+        {
+            minimapDrawableBatch.scale = {hudScale, hudScale};
+            rt.draw(minimapDrawableBatch, {.view = minimapView, .texture = &textureAtlas.getTexture(), .shader = &shader});
+            minimapDrawableBatch.scale = {1.f, 1.f};
+        }
+
+
+        rt.draw(minimapBorder, {.view = hudView});
     }
 
-    rt.draw(minimapBorder, {.view = hudView});
-
+    if (0)
     {
         const float offset = 3.f;
 
@@ -153,7 +261,8 @@ void Main::drawMinimap(sf::RenderTarget& rt, const sf::View& hudView, const sf::
         panel.draw(rt, txFrameTiny, {.view = hudView, .shader = &shader});
     }
 
-    rt.draw(minimapIndicator, {.view = hudView});
+    if (!back)
+        rt.draw(minimapIndicator, {.view = hudView});
 }
 
 
@@ -480,7 +589,7 @@ void Main::gameLoopDrawCats(const sf::Vec2f mousePos, const float deltaTimeMs)
 
     ////////////////////////////////////////////////////////////
     constexpr sf::Vec2f catTailOffsetsByType[] = {
-        {0.f, 0.f},      // Normal
+        {-40.f, 0.f},      // Normal
         {-35.f, -222.f}, // Uni
         {-8.f, 2.f},     // Devil
         {56.f, -80.f},   // Astro
@@ -499,7 +608,7 @@ void Main::gameLoopDrawCats(const sf::Vec2f mousePos, const float deltaTimeMs)
 
     ////////////////////////////////////////////////////////////
     constexpr sf::Vec2f catEyeOffsetsByType[] = {
-        {0.f, 0.f},      // Normal
+        {-40.f, 0.f},      // Normal
         {-35.f, -222.f}, // Uni
         {-8.f, 2.f},     // Devil
         {56.f, -80.f},   // Astro
@@ -661,7 +770,7 @@ void Main::gameLoopDrawCat(
     }
 
     const float mult = remap(cat.dragTime, 0.f, 1000.f, 0.f, 1.f);
-    catRotation      = (-0.22f + sf::base::sin(cat.wobbleRadians) * 0.12f) * mult;
+    catRotation += (-0.22f + sf::base::sin(cat.wobbleRadians) * 0.12f) * mult;
 
     if (cachedWitchCat != nullptr)
     {
@@ -709,23 +818,63 @@ void Main::gameLoopDrawCat(
 
     const auto catAnchor = beingDragged ? cat.position : cat.getDrawPosition(profile.enableCatBobbing);
 
-
     auto& cloudBatchToUse = catToPlace == &cat ? cpuTopCloudDrawableBatch : cpuCloudDrawableBatch;
 
+    struct CloudModifiers
     {
+        sf::Vec2f positionOffset;
+        float     xExtentMult;
+    };
+
+    ////////////////////////////////////////////////////////////
+    static constexpr CloudModifiers cloudModifiers[] = {
+        {{0.f, 0.f}, 1.f},    // Normal
+        {{0.f, -10.f}, 1.5f}, // Uni
+        {{0.f, 0.f}, 1.5f},   // Devil
+        {{0.f, -17.f}, 2.f},  // Astro
+
+        {{0.f, -5.f}, 1.2f}, // Witch
+        {{0.f, -5.f}, 1.5f}, // Wizard
+        {{0.f, 0.f}, 1.f},   // Mouse
+        {{0.f, 0.f}, 1.f},   // Engi
+        {{0.f, 0.f}, 1.f},   // Repulso
+        {{0.f, 0.f}, 1.f},   // Attracto
+        {{0.f, 0.f}, 1.f},   // Copy
+        {{0.f, 0.f}, 1.f},   // Duck
+    };
+
+    static_assert(sf::base::getArraySize(cloudModifiers) == nCatTypes);
+
+    {
+        const auto& [cloudPositionOffset, cloudXExtentMult] = cloudModifiers[asIdx(cat.type)];
+
         const int   cloudCircleCount = sf::base::max(profile.catCloudCircleCount, 3);
         const float cloudScaleBase   = sf::base::max(catScaleMult, 0.35f) * profile.catCloudScale;
-        const float cloudMult        = easeInOutBack(remap(cat.dragTime, 0.f, 1000.f, 1.f, 0.f));
-        const float cloudScale       = cloudScaleBase * cloudMult;
 
-        const float     cloudTimeSeconds = cloudTime * 0.001f;
-        const float     catCloudPhase    = cat.position.x * 0.0215f + cat.position.y * 0.0135f +
-                                           static_cast<float>(asIdx(cat.type)) * 0.7f;
-        const sf::Vec2f cloudBasePos     = catAnchor +
-                                           sf::Vec2f{0.f,
-                                                     profile.catCloudBaseYOffset * cloudScale +
-                                                         (beingDragged ? profile.catCloudDraggedOffset : 0.f)} +
-                                           sf::Vec2f{5.f, profile.catCloudExtraYOffset};
+        float cloudMult = easeInOutBack(remap(cat.dragTime, 0.f, 1000.f, 1.f, 0.f));
+
+        if (cat.type == CatType::Astro)
+        {
+            if (cat.astroState.hasValue() && cat.isCloseToStartX())
+            {
+                cloudMult *= easeInOutBack(
+                    remap(sf::base::fabs(cat.position.x - cat.astroState->startX), 0.f, 400.f, 1.f, 0.f));
+            }
+            else if (cooldownDiff < 1000.f)
+            {
+                cloudMult *= easeInOutBack(remap(cooldownDiff, 0.f, 1000.f, 0.f, 1.f));
+            }
+        }
+
+        const float cloudScale = cloudScaleBase * cloudMult;
+
+        const float cloudTimeSeconds = cloudTime * 0.001f;
+
+        const float catCloudPhase = cat.position.x * 0.0215f + cat.position.y * 0.0135f +
+                                    static_cast<float>(asIdx(cat.type)) * 0.7f;
+
+        const sf::Vec2f cloudBasePos = catAnchor.addY(catTxr.size.y / 2.f * catScale.y) +
+                                       sf::Vec2f{0.f, profile.catCloudBaseYOffset * cloudScale} + cloudPositionOffset;
 
         for (cloudCircleIndex = 0; cloudCircleIndex < cloudCircleCount; ++cloudCircleIndex)
         {
@@ -735,7 +884,7 @@ void Main::gameLoopDrawCat(
             const float phase         = cloudTimeSeconds * (1.35f + normalizedIndex * 0.2f) + catCloudPhase +
                                         static_cast<float>(cloudCircleIndex) * 0.85f;
 
-            const float xOffset = centeredIndex * profile.catCloudXExtent * cloudScale +
+            const float xOffset = centeredIndex * profile.catCloudXExtent * cloudScale * cloudXExtentMult +
                                   sf::base::sin(phase) * (profile.catCloudWobbleX + lobeWeight * 1.5f) * cloudScale;
             const float yOffset = -lobeWeight * profile.catCloudLobeLift * cloudScale +
                                   sf::base::cos(phase * 1.4f) * (profile.catCloudWobbleY + lobeWeight) * cloudScale;
@@ -1129,7 +1278,7 @@ void Main::gameLoopDrawCat(
 
         // Name text
         textNameBuffer.setString(catNameBuffer);
-        textNameBuffer.position = cat.position.addY(48.f);
+        textNameBuffer.position = cat.position.addY(52.f);
         textNameBuffer.origin   = textNameBuffer.getLocalBounds().size / 2.f;
         textNameBuffer.scale    = sf::Vec2f{0.5f, 0.5f} * catScaleMult;
         textNameBuffer.setOutlineColor(textOutlineColor);
@@ -1160,29 +1309,35 @@ void Main::gameLoopDrawCat(
                 actionString += ")";
             }
 
-            textStatusBuffer.setString(actionString);
-            textStatusBuffer.position = cat.position.addY(68.f);
-            textStatusBuffer.origin   = textStatusBuffer.getLocalBounds().size / 2.f;
-            textStatusBuffer.setFillColor(sf::Color::White);
-            textStatusBuffer.setOutlineColor(textOutlineColor);
-            cat.textStatusShakeEffect.applyToText(textStatusBuffer);
-            textStatusBuffer.scale *= 0.5f * catScaleMult;
-            textBatchToUse.add(textStatusBuffer);
-
             // Money text
             if (cat.moneyEarned != 0u)
             {
                 char moneyFmtBuffer[128]{};
                 std::sprintf(moneyFmtBuffer, "$%s", toStringWithSeparators(cat.moneyEarned));
 
-                textMoneyBuffer.setString(moneyFmtBuffer);
-                textMoneyBuffer.position = cat.position.addY(84.f);
-                textMoneyBuffer.origin   = textMoneyBuffer.getLocalBounds().size / 2.f;
-                textMoneyBuffer.setOutlineColor(textOutlineColor);
-                cat.textMoneyShakeEffect.applyToText(textMoneyBuffer);
-                textMoneyBuffer.scale *= 0.5f * catScaleMult;
-                textBatchToUse.add(textMoneyBuffer);
+                actionString += " | ";
+                actionString += moneyFmtBuffer;
+
+                if (0)
+                {
+                    textMoneyBuffer.setString(moneyFmtBuffer);
+                    textMoneyBuffer.position = cat.position.addY(84.f);
+                    textMoneyBuffer.origin   = textMoneyBuffer.getLocalBounds().size / 2.f;
+                    textMoneyBuffer.setOutlineColor(textOutlineColor);
+                    cat.textMoneyShakeEffect.applyToText(textMoneyBuffer);
+                    textMoneyBuffer.scale *= 0.5f * catScaleMult;
+                    textBatchToUse.add(textMoneyBuffer);
+                }
             }
+
+            textStatusBuffer.setString(actionString);
+            textStatusBuffer.position = cat.position.addY(72.f);
+            textStatusBuffer.origin   = textStatusBuffer.getLocalBounds().size / 2.f;
+            textStatusBuffer.setFillColor(sf::Color::White);
+            textStatusBuffer.setOutlineColor(textOutlineColor);
+            cat.textStatusShakeEffect.applyToText(textStatusBuffer);
+            textStatusBuffer.scale *= 0.4f * catScaleMult;
+            textBatchToUse.add(textStatusBuffer);
         }
 
         const bool hideCooldownBar = inPrestigeTransition || cat.type == CatType::Repulso ||
@@ -1190,14 +1345,14 @@ void Main::gameLoopDrawCat(
 
         if (!hideCooldownBar)
             textBatchToUse.add(sf::RoundedRectangleShapeData{
-                .position = (cat.moneyEarned != 0u ? textMoneyBuffer : textStatusBuffer).getGlobalBottomCenter().addY(2.f),
+                .position           = textStatusBuffer.getGlobalBottomCenter().addY(4.f),
                 .scale              = {catScaleMult, catScaleMult},
                 .origin             = {32.f, 0.f},
                 .outlineTextureRect = txrWhiteDot,
                 .fillColor          = sf::Color::whiteMask(128u),
                 .outlineColor       = textOutlineColor,
                 .outlineThickness   = 1.f,
-                .size               = sf::Vec2f{cat.cooldown.value / maxCooldown * 64.f, 3.f}.clampX(1.f, 64.f),
+                .size               = sf::Vec2f{cat.cooldown.value / maxCooldown * 64.f, 3.f}.clampX(2.f, 64.f),
                 .cornerRadius       = 1.f,
                 .cornerPointCount   = 8u,
             });
@@ -2044,11 +2199,15 @@ void Main::gameLoopDisplayCloudBatch(const sf::CPUDrawableBatch& batch, const sf
     rtCloudMask.draw(rtCloudProcessed.getTexture(), {.blendMode = sf::BlendNone});
     rtCloudMask.display();
 
-    const U8 opacity = &batch == &cpuCloudUiDrawableBatch ? 255u : static_cast<U8>(profile.catCloudOpacity * 255.f);
+    const U8 opacity = (&batch == &cpuCloudUiDrawableBatch || &batch == &cpuCloudHudDrawableBatch)
+                           ? 255u
+                           : static_cast<U8>(profile.catCloudOpacity * 255.f);
 
     rtGame.draw(rtCloudMask.getTexture(),
                 {.color = sf::Color{opacity, opacity, opacity, opacity}}, // because of premultiplication
                 {.blendMode = premultipliedAlphaBlend});
+
+    rtGame.flush();
 }
 
 
