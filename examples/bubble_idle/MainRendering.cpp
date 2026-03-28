@@ -2044,7 +2044,7 @@ void Main::gameLoopDisplayCloudBatch(const sf::CPUDrawableBatch& batch, const sf
     rtCloudMask.draw(rtCloudProcessed.getTexture(), {.blendMode = sf::BlendNone});
     rtCloudMask.display();
 
-    const auto opacity = static_cast<U8>(profile.catCloudOpacity * 255.f);
+    const U8 opacity = &batch == &cpuCloudUiDrawableBatch ? 255u : static_cast<U8>(profile.catCloudOpacity * 255.f);
 
     rtGame.draw(rtCloudMask.getTexture(),
                 {.color = sf::Color{opacity, opacity, opacity, opacity}}, // because of premultiplication
