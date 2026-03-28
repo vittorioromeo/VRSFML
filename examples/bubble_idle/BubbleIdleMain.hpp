@@ -387,8 +387,8 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // ImGui fonts
-    ImFont* fontImGuiMouldyCheese{ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/mouldycheese.ttf", 26.f)};
-    ImFont* fontImGuiSuperBakery{ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/superbakery.ttf", 26.f)};
+    ImFont* fontImGuiMouldyCheese{ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/fredoka.ttf", 28.f)};
+    ImFont* fontImGuiSuperBakery{ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/fredoka.ttf", 28.f)};
     ImFont* fontImGuiFA{[]
     {
         static const ImWchar iconRanges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
@@ -509,6 +509,7 @@ struct Main
     sf::Texture txLetterText{sf::Texture::loadFromFile("resources/lettertext.png", {.smooth = true}).value()};
     sf::Texture txFrame{sf::Texture::loadFromFile("resources/frame.png", {.smooth = true}).value()};
     sf::Texture txFrameTiny{sf::Texture::loadFromFile("resources/frametiny.png", {.smooth = true}).value()};
+    sf::Texture txCloudBtn{sf::Texture::loadFromFile("resources/cloudbtn.png", {.smooth = true}).value()};
 
     ////////////////////////////////////////////////////////////
     // UI texture atlas
@@ -982,6 +983,7 @@ struct Main
     sf::CPUDrawableBatch bombBubbleDrawableBatch;
     sf::CPUDrawableBatch cpuCloudDrawableBatch;
     sf::CPUDrawableBatch cpuTopCloudDrawableBatch;
+    sf::CPUDrawableBatch cpuCloudUiDrawableBatch;
     sf::CPUDrawableBatch cpuDrawableBatch;
     sf::CPUDrawableBatch cpuDrawableBatchAdditive;
     sf::CPUDrawableBatch minimapDrawableBatch;

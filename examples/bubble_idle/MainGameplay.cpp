@@ -544,27 +544,23 @@ void Main::gameLoopUpdateAndDrawBackground(const float deltaTimeMs, const sf::Vi
                       },
                       {.view = gameBackgroundView, .shader = &shader});
 
-    if (0)
-        if (idx == 0u || profile.alwaysShowDrawings)
-            rtBackground.draw(txDrawings,
-                              {
-                                  .textureRect = {{actualScroll * 2.f, 0.f}, txBackgroundChunk.getSize().toVec2f() * 2.f},
-                                  .color = sf::Color::whiteMask(getAlpha(200.f)),
-                              },
-                              {.view = gameBackgroundView});
+    rtBackground.draw(txClouds,
+                      {
+                          .scale       = {detailScale.x, detailScale.y},
+                          .origin      = {0.f, 0.f},
+                          .textureRect = {{actualScroll * 1.5f + backgroundScroll * 1.5f, 0.f}, detailTextureRectSize},
+                          .color       = sf::Color::whiteMask(getAlpha(255.f)),
+                      },
+                      {.view = gameBackgroundView});
 
-    // TODO P0: remake clouds
-
-    if (0)
-        rtBackground.draw(txClouds,
+    if (idx == 0u || profile.alwaysShowDrawings)
+        rtBackground.draw(txDrawings,
                           {
-                              .position = {0.f, -350.f},
-                              .scale    = {-detailScale.x * 1.5f, detailScale.y * 1.5f},
-                              .origin   = {detailTextureRectSize.x, 0.f},
-                              .textureRect = {{-actualScroll * 1.5f + backgroundScroll * 1.5f, 0.f}, detailTextureRectSize},
-                              .color = sf::Color::whiteMask(getAlpha(180.f)),
+                              .textureRect = {{actualScroll * 2.f, 0.f}, txBackgroundChunk.getSize().toVec2f() * 2.f},
+                              .color       = sf::Color::whiteMask(getAlpha(200.f)),
                           },
                           {.view = gameBackgroundView});
+
 
     if (idx != 0u)
         rtBackground.draw(*detailTx[idx],
@@ -574,29 +570,6 @@ void Main::gameLoopUpdateAndDrawBackground(const float deltaTimeMs, const sf::Vi
                               .color = sf::Color::whiteMask(getAlpha(190.f)),
                           },
                           {.view = gameBackgroundView});
-
-    if (idx == 0u)
-    {
-        if (0)
-            rtBackground.draw(txClouds,
-                              {
-                                  .textureRect = {{actualScroll * 2.f + backgroundScroll * 0.5f, 0.f}, detailTextureRectSize},
-                                  .color = sf::Color::whiteMask(getAlpha(128.f)),
-                              },
-                              {
-                                  .view = gameBackgroundView,
-                              });
-    }
-    else
-    {
-        rtBackground.draw(txTintedClouds,
-                          {
-                              .textureRect = {{actualScroll * 2.f + backgroundScroll * 0.5f, 0.f}, detailTextureRectSize},
-                              .color = hueColor(currentBackgroundHue.asDegrees() - 30, getAlpha(255.f)),
-                          },
-                          {.view = gameBackgroundView, .shader = &shader});
-    }
-
 
     rtBackground.display();
     updateProcessedBackground();
