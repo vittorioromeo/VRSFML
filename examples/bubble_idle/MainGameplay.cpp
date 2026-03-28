@@ -585,12 +585,12 @@ void Main::gameLoopUpdateMoneyText(const float deltaTimeMs, const float yBelowMi
     moneyText.scale  = {0.5f, 0.5f};
     moneyText.origin = moneyText.getLocalBounds().size / 2.f;
 
-    moneyText.setGlobalTopLeft({15.f, 70.f});
+    moneyText.setGlobalTopLeft({10.f, 70.f});
     moneyTextShakeEffect.update(deltaTimeMs);
     moneyTextShakeEffect.applyToText(moneyText);
     moneyText.scale *= 0.5f;
 
-    moneyText.position.y = yBelowMinimap + 30.f;
+    moneyText.position.y = yBelowMinimap + 25.f;
 }
 
 
@@ -641,7 +641,7 @@ void Main::gameLoopUpdateComboText(const float deltaTimeMs, const float yBelowMi
     comboTextShakeEffect.applyToText(comboText);
     comboText.scale *= 0.5f;
 
-    comboText.position.y = yBelowMinimap + 50.f;
+    comboText.position.y = yBelowMinimap + 45.f;
 }
 
 

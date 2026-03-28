@@ -441,9 +441,6 @@ It's a duck.)",
 ////////////////////////////////////////////////////////////
 Main::AnimatedButtonOutcome Main::uiAnimatedButton(const char* label, const ImVec2& btnSize, const float fontScale, const float fontScaleMult)
 {
-    static bool yo = false;
-    yo             = !yo;
-
     ImGuiWindow* imGuiWindow = ImGui::GetCurrentWindow();
 
     if (imGuiWindow->SkipItems)
@@ -622,8 +619,10 @@ Main::AnimatedButtonOutcome Main::uiAnimatedButton(const char* label, const ImVe
     const auto uv3 = ImVec2(0, 1);
 
 
-    if (yo)
+    if (id % 2 == 0)
+    {
         drawList->AddImageQuad(textureID, p0, p1, p2, p3, uv0, uv1, uv2, uv3, btnBgColor);
+    }
     else
     {
         // flip horizontally
@@ -1545,80 +1544,18 @@ void Main::uiDraw(const sf::Vec2f mousePos)
     // float rounding = 8.f;
     // draw_list->AddRectFilled(p_min, p_max, col_top, rounding, ImDrawFlags_RoundCornersAll);
 
-    p_min.x += 15.f;
+    p_min.x += 35.f;
 
-    static float time = 0.f;
-    time += ImGui::GetIO().DeltaTime * 4.f;
-
-    const int xSteps = 10;
-    const int ySteps = 30;
-
-    for (int iX = 0; iX < xSteps; ++iX)
-    {
-        for (int iY = 0; iY < ySteps; ++iY)
-        {
-            // if (iX != 0 && iY != 0 && iX != xSteps - 1 && iY != ySteps - 1)
-            if (iX != 0 && iY != 0 && iX != xSteps - 1 && iY != ySteps - 1)
-                continue;
-
-            const float tX = static_cast<float>(iX) / static_cast<float>(xSteps - 1);
-            const float tY = static_cast<float>(iY) / static_cast<float>(ySteps - 1);
-
-            const ImVec2 p0 = ImLerp(p_min, p_max, ImVec2(tX, tY));
-
-            const float normalX    = iX == 0 ? -1.f : (iX == xSteps - 1 ? 1.f : 0.f);
-            const float normalY    = iY == 0 ? -1.f : (iY == ySteps - 1 ? 1.f : 0.f);
-            const float cornerMult = (normalX != 0.f && normalY != 0.f) ? 0.70710677f : 1.f;
-
-            const float outwardX = normalX * cornerMult;
-            const float outwardY = normalY * cornerMult;
-            const float tangentX = -outwardY;
-            const float tangentY = outwardX;
-
-            const float seed   = tX * 173.13f + tY * 317.71f;
-            const float noise0 = sf::base::sin(seed * 3.17f + 1.2f) * 0.5f + 0.5f;
-            const float noise1 = sf::base::sin(seed * 5.83f + 4.7f) * 0.5f + 0.5f;
-            const float noise2 = sf::base::cos(seed * 4.11f + 2.3f) * 0.5f + 0.5f;
-
-            const float restOutward = (noise0 * noise1) * 12.f - 2.f;
-            const float restTangent = (noise2 - 0.5f) * 5.f;
-
-            const float phase0 = time * (0.45f + noise0 * 0.35f) + seed * 0.35f;
-            const float phase1 = time * (0.90f + noise1 * 0.55f) - seed * 0.21f;
-
-            const float outwardOffset = restOutward + sf::base::sin(phase0) * (1.5f + noise0 * 2.5f) +
-                                        sf::base::sin(phase1) * (0.5f + noise1 * 1.25f);
-
-            const float tangentOffset = restTangent +
-                                        sf::base::cos(time * (0.6f + noise2 * 0.7f) + seed * 0.47f) * (0.5f + noise2 * 2.f) +
-                                        sf::base::sin(phase0 * 1.37f + noise1 * 3.f) * 0.75f;
-
-            const ImVec2 animatedP{p0.x + outwardX * outwardOffset + tangentX * tangentOffset,
-                                   p0.y + outwardY * outwardOffset + tangentY * tangentOffset};
-            const float  puffScale = 0.58f + noise0 * 0.26f + 0.75f;
-
-            cpuCloudUiDrawableBatch.add(sf::Sprite{
-                .position    = animatedP,
-                .scale       = {puffScale, puffScale},
-                .origin      = txrCloud.size / 2.f,
-                .textureRect = txrCloud,
-            });
-
-            if (((iX + iY) % 3) == 0)
-            {
-                const float clusterOutward = outwardOffset - (3.f + noise1 * 4.f);
-                const float clusterTangent = tangentOffset + (noise2 - 0.5f) * 8.f;
-
-                cpuCloudUiDrawableBatch.add(sf::Sprite{
-                    .position    = {p0.x + outwardX * clusterOutward + tangentX * clusterTangent,
-                                    p0.y + outwardY * clusterOutward + tangentY * clusterTangent},
-                    .scale       = {puffScale * 0.72f, puffScale * 0.72f},
-                    .origin      = txrCloud.size / 2.f,
-                    .textureRect = txrCloud,
-                });
-            }
-        }
-    }
+    drawCloudFrame({
+        .time              = shaderTime,
+        .mins              = p_min,
+        .maxs              = p_max,
+        .xSteps            = 6,
+        .ySteps            = 12,
+        .scaleMult         = 4.f,
+        .outwardOffsetMult = 1.f,
+        .batch             = &cpuCloudUiDrawableBatch,
+    });
 
     {
         const auto prevTabRounding      = style.TabRounding;
