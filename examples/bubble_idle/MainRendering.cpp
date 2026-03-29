@@ -1749,16 +1749,18 @@ void Main::gameLoopUpdatePurchaseUnlockedEffects(const float deltaTimeMs)
 {
     const float imguiWidth = uiWindowWidth * profile.uiScale;
     const auto  blinkFn    = [](const float value) { return (1 - sf::base::cos(2.f * sf::base::pi * value)) / 2.f; };
+    const float uiMenuCueX = uiMenuLastDrawSize.x > 1.f ? uiMenuLastDrawPos.x : uiGetWindowPos().x;
+    const bool  uiMenuFullyOpen = uiMenuRevealT >= 0.999f;
 
     for (auto& [widgetLabel, countdown, arrowCountdown, hue, type] : purchaseUnlockedEffects)
     {
         const float y = uiLabelToY[widgetLabel];
 
-        if (countdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::Running)
+        if (uiMenuFullyOpen && countdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::Running)
         {
             const float x = remap(countdown.value, 0.f, 1000.f, 0.f, imguiWidth);
 
-            const auto pos = sf::Vec2f{uiGetWindowPos().x + x, y + (14.f + rngFast.getF(-14.f, 14.f)) * profile.uiScale};
+            const auto pos = sf::Vec2f{uiMenuCueX + x, y + (14.f + rngFast.getF(-14.f, 14.f)) * profile.uiScale};
 
             for (sf::base::SizeT i = 0u; i < 2u; ++i)
                 spawnHUDTopParticle({.position      = pos,
@@ -1774,7 +1776,10 @@ void Main::gameLoopUpdatePurchaseUnlockedEffects(const float deltaTimeMs)
                                     ParticleType::Star);
         }
 
-        if (arrowCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::Running)
+        const bool arrowVisible =
+            !arrowCountdown.isDone() && (!uiMenuFullyOpen || arrowCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::Running);
+
+        if (arrowVisible)
         {
             const float blinkProgress = blinkFn(arrowCountdown.getProgressBounced(2000.f));
 
@@ -1783,7 +1788,7 @@ void Main::gameLoopUpdatePurchaseUnlockedEffects(const float deltaTimeMs)
             const auto& tx = type == 0 ? txUnlock : txPurchasable;
 
             rtGame.draw(tx,
-                        {.position = {uiGetWindowPos().x, y + 14.f * profile.uiScale},
+                        {.position = {uiMenuCueX, y + 14.f * profile.uiScale},
                          .scale  = sf::Vec2f{0.25f, 0.25f} * (profile.uiScale + -0.15f * easeInOutBack(blinkProgress)),
                          .origin = tx.getRect().getCenterRight(),
                          .color  = hueColor(hue + currentBackgroundHue.asDegrees(), arrowAlpha)},
