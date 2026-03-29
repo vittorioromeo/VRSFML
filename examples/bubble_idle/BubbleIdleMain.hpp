@@ -1937,6 +1937,10 @@ struct Main
     float        uiButtonHueMod = 0.f;
     unsigned int uiWidgetId     = 0u;
     float        lastFontScale  = 1.f;
+    float        uiMenuRevealT   = 1.f;
+    float        uiMenuHideTimer = 0.75f;
+    sf::Vec2f    uiMenuLastDrawPos{};
+    sf::Vec2f    uiMenuLastDrawSize{uiWindowWidth, 0.f};
 
     ////////////////////////////////////////////////////////////
     ankerl::unordered_dense::map<sf::base::String, float> uiLabelToY;

@@ -1494,6 +1494,16 @@ void Main::uiDraw(const sf::Vec2f mousePos)
     style.Colors[ImGuiCol_TextDisabled] = sf::Color{50u, 84u, 135u}.withLightness(0.35f).withSaturation(0.25f);
 
     const float newScalingFactor = profile.uiScale;
+    const auto  resolution       = getResolution();
+    const float deltaTime        = ImGui::GetIO().DeltaTime;
+    const ImVec2    imguiMousePos  = ImGui::GetMousePos();
+    const sf::Vec2f windowMousePos{imguiMousePos.x, imguiMousePos.y};
+
+    constexpr float uiMenuAutoHideDelaySeconds = 1.25f;
+    constexpr float uiMenuRevealDuration       = 0.7f;
+    constexpr float uiMenuHiddenPeekWidth      = 32.f;
+    constexpr float uiMenuHotspotWidth         = 128.f;
+
     initialStyleScales.applyWithScale(style, newScalingFactor, onSteamDeck);
 
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_IsTouchScreen;
@@ -1509,7 +1519,50 @@ void Main::uiDraw(const sf::Vec2f mousePos)
     if (!debugHideUI)
         uiDrawQuickbar();
 
-    ImGui::SetNextWindowPos({uiGetWindowPos().x, uiGetWindowPos().y}, 0, {0.f, 0.f});
+    const sf::Vec2f uiOpenWindowPos = uiGetWindowPos();
+    const sf::Rect2f gameViewBounds = getViewportPixelBounds(gameView, resolution);
+    const float gameViewRightX      = gameViewBounds.position.x + gameViewBounds.size.x;
+    const float playableRightScreenX =
+        gameView.worldToScreen({pt->getMapLimit(), gameView.center.y}, resolution).x;
+    const bool uiMenuDoesNotCoverPlayableSpace =
+        uiOpenWindowPos.x >= gameViewRightX || playableRightScreenX <= uiOpenWindowPos.x;
+
+    const float     menuHiddenX     = resolution.x - uiMenuHiddenPeekWidth * newScalingFactor;
+    const float     hotspotHeight =
+        uiMenuLastDrawSize.y > 1.f ? uiMenuLastDrawSize.y : uiGetMaxWindowHeight() * newScalingFactor;
+
+    const sf::Rect2f menuHoverHotspot{
+        {resolution.x - uiMenuHotspotWidth * newScalingFactor, uiOpenWindowPos.y},
+        {uiMenuHotspotWidth * newScalingFactor, hotspotHeight},
+    };
+
+    if (uiMenuDoesNotCoverPlayableSpace)
+    {
+        uiMenuHideTimer = uiMenuAutoHideDelaySeconds;
+    }
+    else if (menuHoverHotspot.contains(windowMousePos) ||
+        (uiMenuLastDrawSize.x > 1.f && uiMenuLastDrawSize.y > 1.f &&
+         sf::Rect2f{uiMenuLastDrawPos, uiMenuLastDrawSize}.contains(windowMousePos)))
+    {
+        uiMenuHideTimer = uiMenuAutoHideDelaySeconds;
+    }
+    else
+    {
+        uiMenuHideTimer = sf::base::clamp(uiMenuHideTimer - deltaTime, 0.f, uiMenuAutoHideDelaySeconds);
+    }
+
+    const float uiMenuRevealTarget = uiMenuHideTimer > 0.f ? 1.f : 0.f;
+    const float uiMenuRevealStep   = uiMenuRevealDuration > 0.f ? deltaTime / uiMenuRevealDuration : 1.f;
+
+    if (uiMenuRevealT < uiMenuRevealTarget)
+        uiMenuRevealT = sf::base::clamp(uiMenuRevealT + uiMenuRevealStep, 0.f, 1.f);
+    else if (uiMenuRevealT > uiMenuRevealTarget)
+        uiMenuRevealT = sf::base::clamp(uiMenuRevealT - uiMenuRevealStep, 0.f, 1.f);
+
+    const float uiMenuRevealEased = easeInOutBack(uiMenuRevealT);
+    const float uiMenuDrawX       = menuHiddenX + (uiOpenWindowPos.x - menuHiddenX) * uiMenuRevealEased;
+
+    ImGui::SetNextWindowPos({uiMenuDrawX, uiOpenWindowPos.y}, 0, {0.f, 0.f});
     ImGui::SetNextWindowSizeConstraints(ImVec2(uiWindowWidth * newScalingFactor, 0.f),
                                         ImVec2(uiWindowWidth * newScalingFactor, uiGetMaxWindowHeight() * newScalingFactor));
 
@@ -1581,11 +1634,24 @@ void Main::uiDraw(const sf::Vec2f mousePos)
         style.ItemInnerSpacing = prevItemInnerSpacing;
     }
 
+    const bool uiMenuHovered =
+        ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows | ImGuiHoveredFlags_AllowWhenBlockedByActiveItem);
+    const bool uiMenuActiveInteraction =
+        ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && ImGui::IsAnyItemActive();
+
+    if (uiMenuHovered || uiMenuActiveInteraction)
+    {
+        uiMenuHideTimer = uiMenuAutoHideDelaySeconds;
+    }
+
     if (!ImGui::GetIO().WantCaptureMouse && particleCullingBoundaries.isInside(mousePos))
         uiMakeShrineOrCatTooltip(mousePos);
 
-    const auto windowDrawPos  = ImGui::GetWindowPos();
-    const auto windowDrawSize = ImGui::GetWindowSize();
+    const sf::Vec2f windowDrawPos  = ImGui::GetWindowPos();
+    const sf::Vec2f windowDrawSize = ImGui::GetWindowSize();
+
+    uiMenuLastDrawPos  = windowDrawPos;
+    uiMenuLastDrawSize = windowDrawSize;
 
     if (0)
         if (windowDrawSize.y > 64.f)
