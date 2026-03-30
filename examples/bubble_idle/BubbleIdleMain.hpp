@@ -529,6 +529,8 @@ struct Main
     sf::Texture txFrame{sf::Texture::loadFromFile("resources/frame.png", {.smooth = true}).value()};
     sf::Texture txFrameTiny{sf::Texture::loadFromFile("resources/frametiny.png", {.smooth = true}).value()};
     sf::Texture txCloudBtn{sf::Texture::loadFromFile("resources/cloudbtn.png", {.smooth = true}).value()};
+    sf::Texture txCloudBtnSmall{sf::Texture::loadFromFile("resources/cloudbtnsmall.png", {.smooth = true}).value()};
+    sf::Texture txCloudBtnSquare{sf::Texture::loadFromFile("resources/cloudbtnsquare.png", {.smooth = true}).value()};
 
     ////////////////////////////////////////////////////////////
     // UI texture atlas
@@ -1934,9 +1936,9 @@ struct Main
     char         uiBuffer[256]{};
     char         uiLabelBuffer[512]{};
     char         uiTooltipBuffer[1024]{};
-    float        uiButtonHueMod = 0.f;
-    unsigned int uiWidgetId     = 0u;
-    float        lastFontScale  = 1.f;
+    float        uiButtonHueMod  = 0.f;
+    unsigned int uiWidgetId      = 0u;
+    float        lastFontScale   = 1.f;
     float        uiMenuRevealT   = 1.f;
     float        uiMenuHideTimer = 0.75f;
     sf::Vec2f    uiMenuLastDrawPos{};
@@ -1965,7 +1967,28 @@ struct Main
     };
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] AnimatedButtonOutcome uiAnimatedButton(const char* label, const ImVec2& btnSize, float fontScale, float fontScaleMult);
+
+    struct TabButtonPalette
+    {
+        ImVec4 idle;
+        ImVec4 hovered;
+        ImVec4 active;
+    };
+
+    [[nodiscard]] bool drawTabButton(float                   scaleMult,
+                                     const char*             label,
+                                     bool                    selected,
+                                     const TabButtonPalette& palette,
+                                     ImVec2                  size   = {},
+                                     bool                    square = false);
+
+    [[nodiscard]] AnimatedButtonOutcome uiAnimatedButton(
+        const sf::Texture& tx,
+        const char*        label,
+        const ImVec2&      btnSize,
+        float              fontScale,
+        float              fontScaleMult,
+        float              btnSizeMult = 1.f);
     [[nodiscard]] bool uiMakeButtonImpl(const char* label, const char* xBuffer);
     [[nodiscard]] bool makePSVButtonEx(const char* label, PurchasableScalingValue& psv, SizeT times, MoneyType cost);
     bool               makePSVButton(const char* label, PurchasableScalingValue& psv);

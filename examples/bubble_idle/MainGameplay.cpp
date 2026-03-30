@@ -16,6 +16,7 @@
 #include "ShrineType.hpp"
 
 #include "ExampleUtils/ControlFlow.hpp"
+#include "ExampleUtils/Easing.hpp"
 #include "ExampleUtils/HueColor.hpp"
 #include "ExampleUtils/MathUtils.hpp"
 #include "ExampleUtils/Profiler.hpp"
@@ -544,20 +545,31 @@ void Main::gameLoopUpdateAndDrawBackground(const float deltaTimeMs, const sf::Vi
                       },
                       {.view = gameBackgroundView, .shader = &shader});
 
+
+    static float firstCloudTimer       = 0.f;
+    const float  firstCloudTimerTarget = pt->comboPurchased ? 1.f : 0.f;
+
+    firstCloudTimer = exponentialApproach(firstCloudTimer, firstCloudTimerTarget, deltaTimeMs, 1000.f);
+
     rtBackground.draw(txClouds,
                       {
                           .scale       = {detailScale.x, detailScale.y},
                           .origin      = {0.f, 0.f},
                           .textureRect = {{actualScroll * 1.5f + backgroundScroll * 1.5f, 0.f}, detailTextureRectSize},
-                          .color       = sf::Color::whiteMask(getAlpha(255.f)),
+                          .color       = sf::Color::whiteMask(getAlpha(255.f * easeInOutSine(firstCloudTimer))),
                       },
                       {.view = gameBackgroundView});
+
+    static float firstDrawingTimer       = 0.f;
+    const float  firstDrawingTimerTarget = pt->getCatCountByType(CatType::Normal) > 0 ? 1.f : 0.f;
+
+    firstDrawingTimer = exponentialApproach(firstDrawingTimer, firstDrawingTimerTarget, deltaTimeMs, 1000.f);
 
     if (idx == 0u || profile.alwaysShowDrawings)
         rtBackground.draw(txDrawings,
                           {
                               .textureRect = {{actualScroll * 2.f, 0.f}, txBackgroundChunk.getSize().toVec2f() * 2.f},
-                              .color       = sf::Color::whiteMask(getAlpha(200.f)),
+                              .color       = sf::Color::whiteMask(getAlpha(200.f * easeInOutSine(firstDrawingTimer))),
                           },
                           {.view = gameBackgroundView});
 

@@ -31,6 +31,7 @@ struct InputState
         event.match(
             [&](const sf::Event::KeyPressed& e)
         {
+            // TODO P0: pressing weird key combinations can go out of bounds, press multiple things at once... like altgr space n m b
             keys[static_cast<sf::base::SizeT>(e.code)] = true;
 
             alt     = e.alt;
