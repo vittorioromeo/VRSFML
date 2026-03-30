@@ -66,6 +66,7 @@ namespace
 {
 static_assert(sizeof(unsigned int) <= sizeof(ImTextureID), "ImTextureID is not large enough to fit unsigned int.");
 
+
 ////////////////////////////////////////////////////////////
 [[nodiscard]] ImTextureID toImTextureID(const unsigned int nativeHandle)
 {
@@ -123,10 +124,36 @@ void drawNinePatchInImGui(ImDrawList&            drawList,
 
     drawList.PopClipRect();
 }
+
 } // namespace
 
 ////////////////////////////////////////////////////////////
+bool Main::drawTabButton(const float             scaleMult,
+                         const char*             label,
+                         const bool              selected,
+                         const TabButtonPalette& palette,
+                         const ImVec2            size,
+                         const bool              square)
+{
+    ImGui::PushStyleColor(ImGuiCol_Button, selected ? palette.active : palette.idle);
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, selected ? palette.active : palette.hovered);
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, palette.active);
+    ImGui::PushStyleColor(ImGuiCol_Border, selected ? palette.active : palette.hovered);
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
 
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10.f);
+
+    auto outcome = uiAnimatedButton(square ? txCloudBtnSquare : txCloudBtnSmall, label, size, 1.f * scaleMult, 1.0f, 1.75f * scaleMult);
+
+    const bool pressed = outcome == Main::AnimatedButtonOutcome::Clicked;
+
+    ImGui::PopStyleVar();
+    ImGui::PopStyleColor(4);
+
+    return pressed;
+}
+
+////////////////////////////////////////////////////////////
 float Main::uiGetMaxWindowHeight() const
 {
     return sf::base::max(getResolution().y - 46.f, (getResolution().y - 46.f) / profile.uiScale);
@@ -439,7 +466,13 @@ It's a duck.)",
 }
 
 ////////////////////////////////////////////////////////////
-Main::AnimatedButtonOutcome Main::uiAnimatedButton(const char* label, const ImVec2& btnSize, const float fontScale, const float fontScaleMult)
+Main::AnimatedButtonOutcome Main::uiAnimatedButton(
+    const sf::Texture& tx,
+    const char*        label,
+    const ImVec2&      btnSize,
+    const float        fontScale,
+    const float        fontScaleMult,
+    const float        btnSizeMult)
 {
     ImGuiWindow* imGuiWindow = ImGui::GetCurrentWindow();
 
@@ -521,7 +554,7 @@ Main::AnimatedButtonOutcome Main::uiAnimatedButton(const char* label, const ImVe
     drawList->PushClipRect(clipMin, clipMax, true);
 
     // Scale transform: shrink by up to 10% when clicked.
-    const float scale = 1.f - easeInOutElastic(animState->clickAnim) * 0.75f;
+    const float scale = 1.f - easeInOutBack(animState->clickAnim) * 0.35f;
 
     // Tilt transform: rotate by up to 0.05 radians (≈2.9°). (Use ~0.0873f for 5°.)
     const float tiltAngle  = sf::base::sin(easeInOutSine(animState->hoverAnim) * sf::base::tau) * 0.1f;
@@ -600,10 +633,10 @@ Main::AnimatedButtonOutcome Main::uiAnimatedButton(const char* label, const ImVe
         }
     */
 
-    const ImTextureID textureID = toImTextureID(txCloudBtn.getNativeHandle());
+    const ImTextureID textureID = toImTextureID(tx.getNativeHandle());
 
     // transformed points as quad
-    auto offset = ImVec2{4.5f, 10.f};
+    auto offset = ImVec2{4.5f, 10.f} * btnSizeMult;
 
     if (hovered)
         offset *= 1.7f;
@@ -632,13 +665,19 @@ Main::AnimatedButtonOutcome Main::uiAnimatedButton(const char* label, const ImVe
     // ── Draw Text with the Same Transformation ──
 
     // First, compute the untransformed text position.
-    const ImVec2 textPos = bb.Min + (size - labelSize * fontScaleMult) * 0.5f;
 
     // Record the current vertex buffer size...
     const int vtxBufferSizeBeforeTransformation = drawList->VtxBuffer.Size;
 
     // ...and add the text at its normal (unrotated/unscaled) position.
     uiSetFontScale(fontScale * fontScaleMult);
+
+
+    const auto textSize = ImGui::CalcTextSize(label, labelEnd, true);
+
+    // center text in button
+    const ImVec2 textPos = bb.Min + (size - textSize) * 0.5f + ImVec2(0, ImGui::GetStyle().FramePadding.y * 0.5f);
+
     drawList->AddText(textPos, ImGui::GetColorU32(isCurrentlyDisabled ? ImGuiCol_TextDisabled : ImGuiCol_Text), label, labelEnd);
 
     // Then, apply our transform to only the new text vertices.
@@ -686,7 +725,7 @@ bool Main::uiMakeButtonImpl(const char* label, const char* xBuffer)
     uiPushButtonColors();
 
     bool clicked = false;
-    if (const auto outcome = uiAnimatedButton(xBuffer, ImVec2(scaledButtonWidth, 0.f), fontScale, fontScaleMult);
+    if (const auto outcome = uiAnimatedButton(txCloudBtn, xBuffer, ImVec2(scaledButtonWidth, 0.f), fontScale, fontScaleMult);
         outcome == AnimatedButtonOutcome::Clicked)
     {
         playSound(sounds.buy);
@@ -952,7 +991,7 @@ sf::Vec2f Main::uiGetWindowPos() const
     const float scaledWindowWidth = uiWindowWidth * profile.uiScale;
     const float rightAnchorX      = getResolution().x - scaledWindowWidth - 15.f * profile.uiScale;
 
-    return {rightAnchorX - 8.f, 15.f + 16.f};
+    return {rightAnchorX - 8.f, 0.f};
 }
 
 ////////////////////////////////////////////////////////////
@@ -1493,10 +1532,10 @@ void Main::uiDraw(const sf::Vec2f mousePos)
     style.Colors[ImGuiCol_Text]         = sf::Color{50u, 84u, 135u};
     style.Colors[ImGuiCol_TextDisabled] = sf::Color{50u, 84u, 135u}.withLightness(0.35f).withSaturation(0.25f);
 
-    const float newScalingFactor = profile.uiScale;
-    const auto  resolution       = getResolution();
-    const float deltaTime        = ImGui::GetIO().DeltaTime;
-    const ImVec2    imguiMousePos  = ImGui::GetMousePos();
+    const float     newScalingFactor = profile.uiScale;
+    const auto      resolution       = getResolution();
+    const float     deltaTime        = ImGui::GetIO().DeltaTime;
+    const ImVec2    imguiMousePos    = ImGui::GetMousePos();
     const sf::Vec2f windowMousePos{imguiMousePos.x, imguiMousePos.y};
 
     constexpr float uiMenuAutoHideDelaySeconds = 1.25f;
@@ -1519,17 +1558,15 @@ void Main::uiDraw(const sf::Vec2f mousePos)
     if (!debugHideUI)
         uiDrawQuickbar();
 
-    const sf::Vec2f uiOpenWindowPos = uiGetWindowPos();
-    const sf::Rect2f gameViewBounds = getViewportPixelBounds(gameView, resolution);
-    const float gameViewRightX      = gameViewBounds.position.x + gameViewBounds.size.x;
-    const float playableRightScreenX =
-        gameView.worldToScreen({pt->getMapLimit(), gameView.center.y}, resolution).x;
-    const bool uiMenuDoesNotCoverPlayableSpace =
-        uiOpenWindowPos.x >= gameViewRightX || playableRightScreenX <= uiOpenWindowPos.x;
+    const sf::Vec2f  uiOpenWindowPos = uiGetWindowPos();
+    const sf::Rect2f gameViewBounds  = getViewportPixelBounds(gameView, resolution);
+    const float      gameViewRightX  = gameViewBounds.position.x + gameViewBounds.size.x;
+    const float playableRightScreenX = gameView.worldToScreen({pt->getMapLimit(), gameView.center.y}, resolution).x;
+    const bool  uiMenuDoesNotCoverPlayableSpace = uiOpenWindowPos.x >= gameViewRightX ||
+                                                  playableRightScreenX <= uiOpenWindowPos.x;
 
-    const float     menuHiddenX     = resolution.x - uiMenuHiddenPeekWidth * newScalingFactor;
-    const float     hotspotHeight =
-        uiMenuLastDrawSize.y > 1.f ? uiMenuLastDrawSize.y : uiGetMaxWindowHeight() * newScalingFactor;
+    const float menuHiddenX = resolution.x - uiMenuHiddenPeekWidth * newScalingFactor;
+    const float hotspotHeight = uiMenuLastDrawSize.y > 1.f ? uiMenuLastDrawSize.y : uiGetMaxWindowHeight() * newScalingFactor;
 
     const sf::Rect2f menuHoverHotspot{
         {resolution.x - uiMenuHotspotWidth * newScalingFactor, uiOpenWindowPos.y},
@@ -1541,8 +1578,8 @@ void Main::uiDraw(const sf::Vec2f mousePos)
         uiMenuHideTimer = uiMenuAutoHideDelaySeconds;
     }
     else if (menuHoverHotspot.contains(windowMousePos) ||
-        (uiMenuLastDrawSize.x > 1.f && uiMenuLastDrawSize.y > 1.f &&
-         sf::Rect2f{uiMenuLastDrawPos, uiMenuLastDrawSize}.contains(windowMousePos)))
+             (uiMenuLastDrawSize.x > 1.f && uiMenuLastDrawSize.y > 1.f &&
+              sf::Rect2f{uiMenuLastDrawPos, uiMenuLastDrawSize}.contains(windowMousePos)))
     {
         uiMenuHideTimer = uiMenuAutoHideDelaySeconds;
     }
@@ -1559,17 +1596,17 @@ void Main::uiDraw(const sf::Vec2f mousePos)
     else if (uiMenuRevealT > uiMenuRevealTarget)
         uiMenuRevealT = sf::base::clamp(uiMenuRevealT - uiMenuRevealStep, 0.f, 1.f);
 
-    const float uiMenuRevealEased = easeInOutBack(uiMenuRevealT);
-    const float uiMenuDrawX       = menuHiddenX + (uiOpenWindowPos.x - menuHiddenX) * uiMenuRevealEased;
+    const float  uiMenuRevealEased = easeInOutBack(uiMenuRevealT);
+    const float  uiMenuDrawX       = menuHiddenX + (uiOpenWindowPos.x - menuHiddenX) * uiMenuRevealEased;
+    const ImVec2 uiMenuSize{uiWindowWidth * newScalingFactor, uiGetMaxWindowHeight() * newScalingFactor};
 
     ImGui::SetNextWindowPos({uiMenuDrawX, uiOpenWindowPos.y}, 0, {0.f, 0.f});
-    ImGui::SetNextWindowSizeConstraints(ImVec2(uiWindowWidth * newScalingFactor, 0.f),
-                                        ImVec2(uiWindowWidth * newScalingFactor, uiGetMaxWindowHeight() * newScalingFactor));
+    ImGui::SetNextWindowSize(uiMenuSize, ImGuiCond_Always);
 
     ImGui::Begin("##menu",
                  nullptr,
-                 ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize |
-                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground);
+                 ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar |
+                     ImGuiWindowFlags_NoBackground);
 
     // TODO P0: cleanup
     // 1. Define your colors (Top and Bottom)
@@ -1610,34 +1647,12 @@ void Main::uiDraw(const sf::Vec2f mousePos)
         .batch             = &cpuCloudUiDrawableBatch,
     });
 
-    {
-        const auto prevTabRounding      = style.TabRounding;
-        const auto prevItemInnerSpacing = style.ItemInnerSpacing;
+    uiTabBar();
 
-        style.TabRounding      = 8.0f;
-        style.ItemInnerSpacing = {0.f, 0.f};
-
-        ImGui::PushStyleColor(ImGuiCol_Tab, ImVec4(0.15f, 0.35f, 0.60f, 1.0f));        // Inactive
-        ImGui::PushStyleColor(ImGuiCol_TabHovered, ImVec4(0.25f, 0.45f, 0.80f, 1.0f)); // Hover
-        ImGui::PushStyleColor(ImGuiCol_TabActive, ImVec4(0.35f, 0.55f, 0.95f, 1.0f));  // Active
-        ImGui::PushStyleColor(ImGuiCol_TabUnfocused, ImVec4(0.15f, 0.35f, 0.60f, 1.0f));
-
-        if (ImGui::BeginTabBar("TabBar", ImGuiTabBarFlags_DrawSelectedOverline))
-        {
-            uiTabBar();
-            ImGui::EndTabBar();
-        }
-
-        ImGui::PopStyleColor(4);
-
-        style.TabRounding      = prevTabRounding;
-        style.ItemInnerSpacing = prevItemInnerSpacing;
-    }
-
-    const bool uiMenuHovered =
-        ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows | ImGuiHoveredFlags_AllowWhenBlockedByActiveItem);
-    const bool uiMenuActiveInteraction =
-        ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && ImGui::IsAnyItemActive();
+    const bool uiMenuHovered = ImGui::IsWindowHovered(
+        ImGuiHoveredFlags_RootAndChildWindows | ImGuiHoveredFlags_AllowWhenBlockedByActiveItem);
+    const bool uiMenuActiveInteraction = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) &&
+                                         ImGui::IsAnyItemActive();
 
     if (uiMenuHovered || uiMenuActiveInteraction)
     {
@@ -1844,31 +1859,44 @@ void Main::uiTabBar()
 {
     const float childHeight = uiGetMaxWindowHeight() - (60.f * profile.uiScale);
 
-    const auto keyboardSelectedTab = [&](const sf::Keyboard::Key key)
-    {
-        return !ImGui::GetIO().WantCaptureKeyboard && inputHelper.wasKeyJustPressed(key)
-                   ? ImGuiTabItemFlags_SetSelected
-                   : ImGuiTabItemFlags_{};
+    constexpr TabButtonPalette defaultPalette{
+        .idle    = ImVec4(0.15f, 0.35f, 0.60f, 1.0f),
+        .hovered = ImVec4(0.25f, 0.45f, 0.80f, 1.0f),
+        .active  = ImVec4(0.35f, 0.55f, 0.95f, 1.0f),
     };
 
-    const auto selectedTab = [&](int idx)
+    constexpr TabButtonPalette prestigePalette{
+        .idle    = ImVec4(0.53f, 0.20f, 0.33f, 1.0f),
+        .hovered = ImVec4(0.53f, 0.25f, 0.41f, 1.0f),
+        .active  = ImVec4(0.62f, 0.29f, 0.48f, 1.0f),
+    };
+
+    const auto keyboardSelectedTab = [&](const sf::Keyboard::Key key) -> bool
+    { return !ImGui::GetIO().WantCaptureKeyboard && inputHelper.wasKeyJustPressed(key); };
+
+    const auto selectTab = [&](const int idx)
     {
-        if (shopSelectOnce == ImGuiTabItemFlags_{} && lastUiSelectedTabIdx != idx)
+        if (lastUiSelectedTabIdx != idx)
             playSound(sounds.uitab);
 
         lastUiSelectedTabIdx = idx;
     };
 
-    if (ImGui::BeginTabItem(ICON_FA_CHEVRON_UP,
-                            nullptr,
-                            keyboardSelectedTab(sf::Keyboard::Key::Slash) | keyboardSelectedTab(sf::Keyboard::Key::Grave) |
-                                keyboardSelectedTab(sf::Keyboard::Key::Apostrophe) |
-                                keyboardSelectedTab(sf::Keyboard::Key::Backslash)))
+    if (shopSelectOnce != ImGuiTabItemFlags_{})
     {
-        selectedTab(0);
-
-        ImGui::EndTabItem();
+        lastUiSelectedTabIdx = 1;
+        shopSelectOnce       = {};
     }
+
+    if (lastUiSelectedTabIdx == 2 && cachedWizardCat == nullptr)
+        lastUiSelectedTabIdx = 1;
+
+    if (lastUiSelectedTabIdx == 3 && !pt->isBubbleValueUnlocked())
+        lastUiSelectedTabIdx = 1;
+
+    if (keyboardSelectedTab(sf::Keyboard::Key::Slash) || keyboardSelectedTab(sf::Keyboard::Key::Grave) ||
+        keyboardSelectedTab(sf::Keyboard::Key::Apostrophe) || keyboardSelectedTab(sf::Keyboard::Key::Backslash))
+        selectTab(0);
 
     sf::base::SizeT nextTabKeyIndex = 0u;
 
@@ -1881,65 +1909,11 @@ void Main::uiTabBar()
         sf::Keyboard::Key::Num6,
     };
 
-    if (ImGui::BeginTabItem(ICON_FA_GEAR, nullptr, {}))
-    {
-        selectedTab(5);
+    if (keyboardSelectedTab(tabKeys[nextTabKeyIndex++]))
+        selectTab(1);
 
-        ImGui::BeginChild("OptionsScroll", ImVec2(ImGui::GetContentRegionAvail().x, childHeight), 0, ImGuiWindowFlags_None);
-
-        uiTabBarSettings();
-
-        ImGui::EndChild();
-        ImGui::EndTabItem();
-    }
-
-    if (ImGui::BeginTabItem(ICON_FA_CIRCLE_INFO, nullptr, {}))
-    {
-        selectedTab(4);
-
-        ImGui::BeginChild("StatsScroll", ImVec2(ImGui::GetContentRegionAvail().x, childHeight), 0, ImGuiWindowFlags_None);
-
-        uiTabBarStats();
-
-        ImGui::EndChild();
-        ImGui::EndTabItem();
-    }
-
-    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.0f); // Make it invisible
-    if (ImGui::BeginTabItem("##spacer0", nullptr, ImGuiTabItemFlags_NoTooltip))
-        ImGui::EndTabItem();
-    ImGui::PopStyleVar();
-
-    if (ImGui::BeginTabItem(ICON_FA_STORE " Shop", nullptr, shopSelectOnce | keyboardSelectedTab(tabKeys[nextTabKeyIndex++])))
-    {
-        selectedTab(1);
-
-        shopSelectOnce = {};
-
-        ImGui::BeginChild("ShopScroll", ImVec2(ImGui::GetContentRegionAvail().x, childHeight), 0, ImGuiWindowFlags_None);
-        uiTabBarShop();
-
-        ImGui::EndChild();
-        ImGui::EndTabItem();
-    }
-
-    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.0f); // Make it invisible
-    if (ImGui::BeginTabItem("##spacer1", nullptr, ImGuiTabItemFlags_NoTooltip))
-        ImGui::EndTabItem();
-    ImGui::PopStyleVar();
-
-    if (cachedWizardCat != nullptr &&
-        ImGui::BeginTabItem(ICON_FA_STAR " Magic", nullptr, keyboardSelectedTab(tabKeys[nextTabKeyIndex++])))
-    {
-        selectedTab(2);
-
-        ImGui::BeginChild("MagicScroll", ImVec2(ImGui::GetContentRegionAvail().x, childHeight), 0, ImGuiWindowFlags_None);
-
-        uiTabBarMagic();
-
-        ImGui::EndChild();
-        ImGui::EndTabItem();
-    }
+    if (cachedWizardCat != nullptr && keyboardSelectedTab(tabKeys[nextTabKeyIndex++]))
+        selectTab(2);
 
     if (pt->isBubbleValueUnlocked())
     {
@@ -1949,34 +1923,111 @@ void Main::uiTabBar()
             doTip("Prestige to increase bubble value\nand unlock permanent upgrades!");
         }
 
-        const bool canPrestige = pt->canBuyNextPrestige();
+        if (keyboardSelectedTab(tabKeys[nextTabKeyIndex++]))
+            selectTab(3);
+    }
 
-        if (canPrestige)
+
+    ImGui::SameLine(0.f, 12.f * profile.uiScale);
+    if (drawTabButton(1.f, " " ICON_FA_STORE " Shop ##992", lastUiSelectedTabIdx == 1, defaultPalette))
+        selectTab(1);
+
+    if (cachedWizardCat != nullptr)
+    {
+        ImGui::SameLine(0.f, 0.f);
+        if (drawTabButton(1.f, " " ICON_FA_STAR " Magic ##993", lastUiSelectedTabIdx == 2, defaultPalette))
+            selectTab(2);
+    }
+
+    if (pt->isBubbleValueUnlocked())
+    {
+        const bool              canPrestige = pt->canBuyNextPrestige();
+        const TabButtonPalette& palette     = canPrestige ? prestigePalette : defaultPalette;
+
+        ImGui::SameLine(0.f, 0.f);
+        if (drawTabButton(1.f, " " ICON_FA_TROPHY " Prestige ##994", lastUiSelectedTabIdx == 3, palette))
+            selectTab(3);
+    }
+
+
+    ImGui::SameLine(ImGui::GetWindowWidth() - 60, 0.f);
+    if (drawTabButton(1.f, ICON_FA_GEAR "##990", lastUiSelectedTabIdx == 5, defaultPalette, {}, true))
+        selectTab(5);
+
+    ImGui::SameLine(0.f, 0.f);
+    if (drawTabButton(1.f, ICON_FA_CIRCLE_INFO "##991", lastUiSelectedTabIdx == 4, defaultPalette, {}, true))
+        selectTab(4);
+
+    switch (lastUiSelectedTabIdx)
+    {
+        case 1:
         {
-            ImGui::PushStyleColor(ImGuiCol_Tab, IM_COL32(135, 50, 84, 255));
-            ImGui::PushStyleColor(ImGuiCol_TabHovered, IM_COL32(136, 65, 105, 255));
-            ImGui::PushStyleColor(ImGuiCol_TabSelected, IM_COL32(136, 65, 105, 255));
-        }
-
-        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.0f); // Make it invisible
-        if (ImGui::BeginTabItem("##spacer2", nullptr, ImGuiTabItemFlags_NoTooltip))
-            ImGui::EndTabItem();
-        ImGui::PopStyleVar();
-
-        if (ImGui::BeginTabItem(ICON_FA_TROPHY " Prestige", nullptr, keyboardSelectedTab(tabKeys[nextTabKeyIndex++])))
-        {
-            selectedTab(3);
-
-            ImGui::BeginChild("PrestigeScroll", ImVec2(ImGui::GetContentRegionAvail().x, childHeight), 0, ImGuiWindowFlags_None);
-
-            uiTabBarPrestige();
-
+            ImGui::BeginChild("ShopScroll", ImVec2(ImGui::GetContentRegionAvail().x, childHeight));
+            ImGui::Spacing();
+            ImGui::Spacing();
+            ImGui::Spacing();
+            uiTabBarShop();
             ImGui::EndChild();
-            ImGui::EndTabItem();
+
+            break;
         }
 
-        if (canPrestige)
-            ImGui::PopStyleColor(3);
+        case 2:
+        {
+            if (cachedWizardCat != nullptr)
+            {
+                ImGui::BeginChild("MagicScroll", ImVec2(ImGui::GetContentRegionAvail().x, childHeight));
+                ImGui::Spacing();
+                ImGui::Spacing();
+                ImGui::Spacing();
+                uiTabBarMagic();
+                ImGui::EndChild();
+            }
+
+            break;
+        }
+
+        case 3:
+        {
+            if (pt->isBubbleValueUnlocked())
+            {
+                ImGui::BeginChild("PrestigeScroll", ImVec2(ImGui::GetContentRegionAvail().x, childHeight));
+                ImGui::Spacing();
+                ImGui::Spacing();
+                ImGui::Spacing();
+                uiTabBarPrestige();
+                ImGui::EndChild();
+            }
+
+            break;
+        }
+
+        case 4:
+        {
+            ImGui::BeginChild("StatsScroll", ImVec2(ImGui::GetContentRegionAvail().x, childHeight));
+            ImGui::Spacing();
+            ImGui::Spacing();
+            ImGui::Spacing();
+            uiTabBarStats();
+            ImGui::EndChild();
+
+            break;
+        }
+
+        case 5:
+        {
+            ImGui::BeginChild("OptionsScroll", ImVec2(ImGui::GetContentRegionAvail().x, childHeight));
+            ImGui::Spacing();
+            ImGui::Spacing();
+            ImGui::Spacing();
+            uiTabBarSettings();
+            ImGui::EndChild();
+
+            break;
+        }
+
+        default:
+            break;
     }
 }
 
