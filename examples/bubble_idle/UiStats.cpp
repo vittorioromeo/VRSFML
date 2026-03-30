@@ -18,8 +18,41 @@
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
 
+namespace
+{
+struct TabButtonPalette
+{
+    ImVec4 idle;
+    ImVec4 hovered;
+    ImVec4 active;
+};
+
+////////////////////////////////////////////////////////////
+bool drawTabButton(const char* label, const bool selected, const TabButtonPalette& palette)
+{
+    ImGui::PushStyleColor(ImGuiCol_Button, selected ? palette.active : palette.idle);
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, selected ? palette.active : palette.hovered);
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, palette.active);
+    ImGui::PushStyleColor(ImGuiCol_Border, selected ? palette.active : palette.hovered);
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
+
+    const bool pressed = ImGui::Button(label);
+
+    ImGui::PopStyleVar();
+    ImGui::PopStyleColor(4);
+
+    return pressed;
+}
+} // namespace
+
 void Main::uiTabBarStats()
 {
+    constexpr TabButtonPalette palette{
+        .idle    = ImVec4(0.15f, 0.35f, 0.60f, 1.0f),
+        .hovered = ImVec4(0.25f, 0.45f, 0.80f, 1.0f),
+        .active  = ImVec4(0.35f, 0.55f, 0.95f, 1.0f),
+    };
+
     const auto displayStats = [&](const Stats& stats)
     {
         ImGui::Spacing();
@@ -57,24 +90,44 @@ void Main::uiTabBarStats()
         ImGui::Unindent();
     };
 
-    if (ImGui::BeginTabBar("TabBarStats", ImGuiTabBarFlags_DrawSelectedOverline))
+    static int lastSelectedTabIdx = 0;
+
+    const auto selectedTab = [&](const int idx)
     {
-        static int lastSelectedTabIdx = 0;
+        if (lastSelectedTabIdx != idx)
+            playSound(sounds.uitab);
 
-        const auto selectedTab = [&](int idx)
+        lastSelectedTabIdx = idx;
+    };
+
+    ImGui::Spacing();
+    ImGui::Spacing();
+
+    uiSetFontScale(0.75f);
+
+    ImGui::SameLine(0.f, 0.f);
+    if (drawTabButton(0.75f, " Tips ##29990", lastSelectedTabIdx == 0, palette))
+        selectedTab(0);
+
+    ImGui::SameLine(0.f, 0.f);
+    if (drawTabButton(0.75f, " Statistics ##29991", lastSelectedTabIdx == 1, palette))
+        selectedTab(1);
+
+    ImGui::SameLine(0.f, 0.f);
+    if (drawTabButton(0.75f, " Milestones ##29992", lastSelectedTabIdx == 2, palette))
+        selectedTab(2);
+
+    ImGui::SameLine(0.f, 0.f);
+    if (drawTabButton(0.75f, " Achievements ##29993", lastSelectedTabIdx == 3, palette))
+        selectedTab(3);
+
+    ImGui::Separator();
+
+    switch (lastSelectedTabIdx)
+    {
+        case 0:
         {
-            if (lastSelectedTabIdx != idx)
-                playSound(sounds.uitab);
-
-            lastSelectedTabIdx = idx;
-        };
-
-        uiSetFontScale(0.75f);
-        if (ImGui::BeginTabItem(" Tips "))
-        {
-            selectedTab(0);
-
-            ImGui::BeginChild("TipsScroll", ImVec2(ImGui::GetContentRegionAvail().x, uiGetMaxWindowHeight() - 125.f));
+            ImGui::BeginChild("TipsScroll", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y));
 
             const auto addTip = [&](const char* title, const char* description)
             {
@@ -230,14 +283,11 @@ void Main::uiTabBarStats()
                        "screen.");
 
             ImGui::EndChild();
-            ImGui::EndTabItem();
+            break;
         }
 
-        uiSetFontScale(0.75f);
-        if (ImGui::BeginTabItem(" Statistics "))
+        case 1:
         {
-            selectedTab(1);
-
             uiSetFontScale(1.f);
             uiCenteredText(" ~~ Lifetime ~~ ");
 
@@ -276,15 +326,11 @@ void Main::uiTabBarStats()
             ImGui::Text("Mousecat revenue: $%s", toStringWithSeparators(revenueByCatType[asIdx(CatType::Mouse)]));
 
             uiSetFontScale(uiNormalFontScale);
-
-            ImGui::EndTabItem();
+            break;
         }
 
-        uiSetFontScale(0.75f);
-        if (ImGui::BeginTabItem(" Milestones "))
+        case 2:
         {
-            selectedTab(2);
-
             uiSetFontScale(0.75f);
 
             const auto doMilestone = [&](const char* name, const MilestoneTimestamp value)
@@ -345,15 +391,11 @@ void Main::uiTabBarStats()
 
             for (SizeT i = 0u; i < nShrineTypes; ++i)
                 doMilestone(shrineNames[i], pt->milestones.shrineCompletions[i]);
-
-            ImGui::EndTabItem();
+            break;
         }
 
-        uiSetFontScale(0.75f);
-        if (ImGui::BeginTabItem(" Achievements "))
+        case 3:
         {
-            selectedTab(3);
-
             const sf::base::SizeT nAchievementsUnlocked = sf::base::countTruthy(profile.unlockedAchievements,
                                                                                 profile.unlockedAchievements + nAchievements);
 
@@ -367,7 +409,7 @@ void Main::uiTabBarStats()
             ImGui::Separator();
             uiSetFontScale(0.75f);
 
-            ImGui::BeginChild("AchScroll", ImVec2(ImGui::GetContentRegionAvail().x, uiGetMaxWindowHeight() - 125.f));
+            ImGui::BeginChild("AchScroll", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y));
 
             sf::base::U64 id = 0u;
             for (const auto& [name, description, secret] : achievementData)
@@ -423,12 +465,11 @@ void Main::uiTabBarStats()
             }
 
             ImGui::EndChild();
-
-            ImGui::EndTabItem();
+            break;
         }
 
-        uiSetFontScale(uiNormalFontScale);
-        ImGui::EndTabBar();
+        default:
+            break;
     }
 
     uiSetFontScale(uiNormalFontScale);

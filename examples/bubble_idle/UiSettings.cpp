@@ -21,23 +21,26 @@
 
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/ScopeGuard.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/ToString.hpp"
 #include "SFML/Base/Vector.hpp"
 
+#include <imgui.h>
+
 void Main::uiTabBarSettings()
 {
-    bool sgActive = false;
-    SFML_BASE_SCOPE_GUARD({
-        if (sgActive)
-            ImGui::EndTabBar();
-    });
-    sgActive = ImGui::BeginTabBar("TabBarSettings", ImGuiTabBarFlags_DrawSelectedOverline);
+    constexpr TabButtonPalette palette{
+        .idle    = ImVec4(0.15f, 0.35f, 0.60f, 1.0f),
+        .hovered = ImVec4(0.25f, 0.45f, 0.80f, 1.0f),
+        .active  = ImVec4(1.f, 1.f, 1.f, 1.0f),
+    };
 
     static int lastSelectedTabIdx = 0;
 
-    const auto selectedTab = [&](int idx)
+    if (!isDebugModeEnabled() && lastSelectedTabIdx == 5)
+        lastSelectedTabIdx = 0;
+
+    const auto selectedTab = [&](const int idx)
     {
         if (lastSelectedTabIdx != idx)
             playSound(sounds.uitab);
@@ -46,9 +49,44 @@ void Main::uiTabBarSettings()
     };
 
     uiSetFontScale(0.75f);
-    if (ImGui::BeginTabItem(ICON_FA_VOLUME_HIGH " Audio "))
-    {
+
+    ImGui::Spacing();
+    ImGui::Spacing();
+
+    ImGui::SameLine(0.f, 0.f);
+    if (drawTabButton(0.75f, ICON_FA_VOLUME_HIGH " Audio ##199910", lastSelectedTabIdx == 0, palette))
         selectedTab(0);
+
+    ImGui::SameLine(0.f, 0.f);
+    if (drawTabButton(0.75f, ICON_FA_WINDOW_MAXIMIZE " UI ##19991", lastSelectedTabIdx == 1, palette))
+        selectedTab(1);
+
+    ImGui::SameLine(0.f, 0.f);
+    if (drawTabButton(0.75f, ICON_FA_IMAGE " Graphics ##19992", lastSelectedTabIdx == 2, palette))
+        selectedTab(2);
+
+    ImGui::SameLine(0.f, 0.f);
+    if (drawTabButton(0.75f, ICON_FA_DESKTOP " Display ##19993", lastSelectedTabIdx == 3, palette))
+        selectedTab(3);
+
+    ImGui::SameLine(0.f, 0.f);
+    if (drawTabButton(0.75f, ICON_FA_FILE " Data ##19994", lastSelectedTabIdx == 4, palette))
+        selectedTab(4);
+
+    if (isDebugModeEnabled())
+    {
+        ImGui::SameLine(0.f, 0.f);
+        if (drawTabButton(0.75f, ICON_FA_BUG " ##19995", lastSelectedTabIdx == 5, palette))
+            selectedTab(5);
+    }
+
+    ImGui::Spacing();
+    ImGui::Spacing();
+    ImGui::Spacing();
+    ImGui::Spacing();
+
+    if (lastSelectedTabIdx == 0)
+    {
 
         uiSetFontScale(uiNormalFontScale);
 
@@ -65,15 +103,11 @@ void Main::uiTabBarSettings()
         uiCheckbox("Play audio in background", &profile.playAudioInBackground);
         uiCheckbox("Enable combo scratch sound", &profile.playComboEndSound);
         uiCheckbox("Enable ritual sounds", &profile.playWitchRitualSounds);
-
-        ImGui::EndTabItem();
     }
 
     uiSetFontScale(0.75f);
-    if (ImGui::BeginTabItem(ICON_FA_WINDOW_MAXIMIZE " UI "))
+    if (lastSelectedTabIdx == 1)
     {
-        selectedTab(1);
-
         uiSetFontScale(uiNormalFontScale);
 
         ImGui::SetNextItemWidth(210.f * profile.uiScale);
@@ -171,15 +205,11 @@ void Main::uiTabBarSettings()
 
         ImGui::SetNextItemWidth(210.f * profile.uiScale);
         ImGui::SliderFloat("Cat drag timer", &profile.catDragPressDuration, 50.f, 500.f, "%.2fms");
-
-        ImGui::EndTabItem();
     }
 
     uiSetFontScale(0.75f);
-    if (ImGui::BeginTabItem(ICON_FA_IMAGE " Graphics "))
+    if (lastSelectedTabIdx == 2)
     {
-        selectedTab(2);
-
         uiSetFontScale(uiNormalFontScale);
 
         ImGui::SetNextItemWidth(210.f * profile.uiScale);
@@ -390,15 +420,11 @@ void Main::uiTabBarSettings()
         uiCheckbox("Finish before display", &finishBeforeDisplay);
         uiCheckbox("Flush after display", &flushAfterDisplay);
         uiCheckbox("Finish after display", &finishAfterDisplay);
-
-        ImGui::EndTabItem();
     }
 
     uiSetFontScale(0.75f);
-    if (ImGui::BeginTabItem(ICON_FA_DESKTOP " Display "))
+    if (lastSelectedTabIdx == 3)
     {
-        selectedTab(3);
-
         uiSetFontScale(uiNormalFontScale);
 
         ImGui::Text("Auto resolution");
@@ -496,15 +522,11 @@ void Main::uiTabBarSettings()
         }
 
         uiSetFontScale(uiNormalFontScale);
-
-        ImGui::EndTabItem();
     }
 
     uiSetFontScale(0.75f);
-    if (ImGui::BeginTabItem(ICON_FA_FILE " Data "))
+    if (lastSelectedTabIdx == 4)
     {
-        selectedTab(4);
-
         uiSetFontScale(uiNormalFontScale);
 
         ImGui::Text("!!! Danger Zone !!!");
@@ -582,15 +604,11 @@ void Main::uiTabBarSettings()
                 forceResetGame(/* goToShopTab */ false);
             }
         }
-
-        ImGui::EndTabItem();
     }
 
     uiSetFontScale(0.75f);
-    if (isDebugModeEnabled() && ImGui::BeginTabItem(ICON_FA_BUG " Debug "))
+    if (isDebugModeEnabled() && lastSelectedTabIdx == 5)
     {
-        selectedTab(5);
-
         if (ImGui::Button("Slide"))
         {
             fixedBgSlideTarget += 1.f;
@@ -872,8 +890,6 @@ void Main::uiTabBarSettings()
 
         uiSetFontScale(uiNormalFontScale);
         ImGui::PopFont();
-
-        ImGui::EndTabItem();
     }
 
     ImGui::Separator();
