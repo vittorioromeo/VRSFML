@@ -1988,7 +1988,9 @@ struct Main
         const ImVec2&      btnSize,
         float              fontScale,
         float              fontScaleMult,
-        float              btnSizeMult = 1.f);
+        float              btnSizeMult  = 1.f,
+        bool               forceHovered = false);
+
     [[nodiscard]] bool uiMakeButtonImpl(const char* label, const char* xBuffer);
     [[nodiscard]] bool makePSVButtonEx(const char* label, PurchasableScalingValue& psv, SizeT times, MoneyType cost);
     bool               makePSVButton(const char* label, PurchasableScalingValue& psv);
