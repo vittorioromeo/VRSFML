@@ -143,7 +143,13 @@ bool Main::drawTabButton(const float             scaleMult,
 
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10.f);
 
-    auto outcome = uiAnimatedButton(square ? txCloudBtnSquare : txCloudBtnSmall, label, size, 1.f * scaleMult, 1.0f, 1.75f * scaleMult);
+    auto outcome = uiAnimatedButton(square ? txCloudBtnSquare : txCloudBtnSmall,
+                                    label,
+                                    size,
+                                    1.f * scaleMult,
+                                    1.0f,
+                                    1.75f * scaleMult,
+                                    selected);
 
     const bool pressed = outcome == Main::AnimatedButtonOutcome::Clicked;
 
@@ -472,7 +478,8 @@ Main::AnimatedButtonOutcome Main::uiAnimatedButton(
     const ImVec2&      btnSize,
     const float        fontScale,
     const float        fontScaleMult,
-    const float        btnSizeMult)
+    const float        btnSizeMult,
+    const bool         forceHovered)
 {
     ImGuiWindow* imGuiWindow = ImGui::GetCurrentWindow();
 
@@ -551,7 +558,8 @@ Main::AnimatedButtonOutcome Main::uiAnimatedButton(
     // Apply transformations (with a small extra clip so nothing gets cut off)
     const ImVec2 clipMin{bb.Min.x - 20.f, bb.Min.y - 20.f};
     const ImVec2 clipMax{bb.Max.x + 20.f, bb.Max.y + 20.f};
-    drawList->PushClipRect(clipMin, clipMax, true);
+    //    drawList->PushClipRect(clipMin, clipMax, true);
+    drawList->PushClipRect(ImVec2(0, 0), ImGui::GetIO().DisplaySize, false);
 
     // Scale transform: shrink by up to 10% when clicked.
     const float scale = 1.f - easeInOutBack(animState->clickAnim) * 0.35f;
@@ -601,13 +609,13 @@ Main::AnimatedButtonOutcome Main::uiAnimatedButton(
         : hovered ? ImGuiCol_ButtonHovered
                   : ImGuiCol_Button);
 */
-    const auto btnBgColor255 = (pressed   ? ImColor(255, 255, 255, 255)
-                                : hovered ? ImColor(255, 255, 255, 225)
-                                          : ImColor(255, 255, 255, 255));
+    const auto btnBgColor255 = (pressed                     ? ImColor(255, 255, 255, 255)
+                                : (hovered || forceHovered) ? ImColor(255, 255, 255, 225)
+                                                            : ImColor(255, 255, 255, 255));
 
-    const auto btnBgColor = isCurrentlyDisabled ? ImColor(185, 185, 185, 255)
-                            : hovered           ? ImColor(255, 255, 255, 255)
-                                                : ImColor(235, 235, 235, 255);
+    const auto btnBgColor = isCurrentlyDisabled         ? ImColor(185, 185, 185, 255)
+                            : (hovered || forceHovered) ? ImColor(255, 255, 255, 255)
+                                                        : ImColor(235, 235, 235, 255);
 
     const float rounding = ImGui::GetStyle().FrameRounding;
 
@@ -638,7 +646,7 @@ Main::AnimatedButtonOutcome Main::uiAnimatedButton(
     // transformed points as quad
     auto offset = ImVec2{4.5f, 10.f} * btnSizeMult;
 
-    if (hovered)
+    if (hovered || forceHovered)
         offset *= 1.7f;
 
     const auto p0 = transformPointOpposite(ImVec2{bb.Min.x, bb.Min.y} - offset);
