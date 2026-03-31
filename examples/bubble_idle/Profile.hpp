@@ -28,13 +28,14 @@ struct [[nodiscard]] Profile
     int   selectedBackground = 0; // `[0, nShrineTypes + 1)`
     bool  alwaysShowDrawings = false;
 
-    bool showCatRange        = true;
-    bool showCatText         = true;
-    bool showParticles       = true;
-    bool showTextParticles   = true;
-    bool accumulatingCombo   = true;
-    bool showCursorComboText = true;
-    bool useBubbleShader     = true;
+    bool showCatRange          = true;
+    bool showRangesOnlyOnHover = true;
+    bool showCatText           = true;
+    bool showParticles         = true;
+    bool showTextParticles     = true;
+    bool accumulatingCombo     = true;
+    bool showCursorComboText   = true;
+    bool useBubbleShader       = true;
 
     int   cursorTrailMode  = 0; // 0=combo, 1=always, 2=off
     float cursorTrailScale = 1.f;

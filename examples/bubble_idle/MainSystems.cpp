@@ -1403,17 +1403,18 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
 
         if (cat.hexedTimer.hasValue() || (cat.type == CatType::Witch && (anyCatHexed() || !pt->dolls.empty())))
         {
-            spawnParticle({.position = drawPosition + sf::Vec2f{rngFast.getF(-catRadius, +catRadius), catRadius - 9.f},
-                           .velocity = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
-                           .scale    = rngFast.getF(0.08f, 0.27f) * 0.5f,
-                           .scaleDecay    = 0.f,
-                           .accelerationY = -0.0017f,
-                           .opacity       = 1.f,
-                           .opacityDecay  = rngFast.getF(0.00035f, 0.0025f),
-                           .rotation      = rngFast.getF(0.f, sf::base::tau),
-                           .torque        = rngFast.getF(-0.002f, 0.002f)},
-                          /* hue */ wrapHue(rngFast.getF(-50.f, 50.f)),
-                          ParticleType::Hex);
+            if (rngFast.getI(0, 10) > 5)
+                spawnParticle({.position = drawPosition + sf::Vec2f{rngFast.getF(-catRadius, +catRadius), catRadius - 9.f},
+                               .velocity      = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
+                               .scale         = rngFast.getF(0.08f, 0.27f) * 0.5f,
+                               .scaleDecay    = 0.f,
+                               .accelerationY = -0.0017f,
+                               .opacity       = 0.5f,
+                               .opacityDecay  = rngFast.getF(0.00035f, 0.0025f) * 0.6f,
+                               .rotation      = rngFast.getF(0.f, sf::base::tau),
+                               .torque        = rngFast.getF(-0.002f, 0.002f)},
+                              /* hue */ wrapHue(rngFast.getF(-50.f, 50.f)),
+                              ParticleType::Hex);
 
             continue;
         }
@@ -1421,17 +1422,18 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
         if (cat.hexedCopyTimer.hasValue() || (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Witch &&
                                               (anyCatCopyHexed() || !pt->copyDolls.empty())))
         {
-            spawnParticle({.position = drawPosition + sf::Vec2f{rngFast.getF(-catRadius, +catRadius), catRadius - 9.f},
-                           .velocity = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
-                           .scale    = rngFast.getF(0.08f, 0.27f) * 0.5f,
-                           .scaleDecay    = 0.f,
-                           .accelerationY = -0.0017f,
-                           .opacity       = 1.f,
-                           .opacityDecay  = rngFast.getF(0.00035f, 0.0025f),
-                           .rotation      = rngFast.getF(0.f, sf::base::tau),
-                           .torque        = rngFast.getF(-0.002f, 0.002f)},
-                          /* hue */ wrapHue(rngFast.getF(-50.f, 50.f) + 180.f),
-                          ParticleType::Hex);
+            if (rngFast.getI(0, 10) > 5)
+                spawnParticle({.position = drawPosition + sf::Vec2f{rngFast.getF(-catRadius, +catRadius), catRadius - 9.f},
+                               .velocity      = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
+                               .scale         = rngFast.getF(0.08f, 0.27f) * 0.5f,
+                               .scaleDecay    = 0.f,
+                               .accelerationY = -0.0017f,
+                               .opacity       = 0.5f,
+                               .opacityDecay  = rngFast.getF(0.00035f, 0.0025f) * 0.6f,
+                               .rotation      = rngFast.getF(0.f, sf::base::tau),
+                               .torque        = rngFast.getF(-0.002f, 0.002f)},
+                              /* hue */ wrapHue(rngFast.getF(-50.f, 50.f) + 180.f),
+                              ParticleType::Hex);
 
             continue;
         }

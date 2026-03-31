@@ -800,7 +800,10 @@ void Main::gameLoopDrawCat(
     const auto circleOutlineColor = circleColor.withAlpha(rangeInnerAlpha == 0u ? circleAlpha : 255u);
     const auto textOutlineColor   = circleColor.withLightness(0.25f);
 
-    if (profile.showCatRange && !inPrestigeTransition)
+    const bool shouldDrawCatRange = profile.showCatRange && !inPrestigeTransition &&
+                                    (!profile.showRangesOnlyOnHover || shouldDisplayRangeCircle);
+
+    if (shouldDrawCatRange)
         batchToUse.add(sf::CircleShapeData{
             .position           = getCatRangeCenter(cat),
             .origin             = {range, range},
@@ -1286,12 +1289,15 @@ void Main::gameLoopDrawCat(
         if (pt->perm.smartCatsPurchased && cat.type == CatType::Normal && cat.nameIdx % 2u != 0u)
             catNameBuffer += ", PhD";
 
+        const auto textAlpha = cat.isHexedOrCopyHexed() ? static_cast<U8>(160u) : static_cast<U8>(255u);
+
         // Name text
         textNameBuffer.setString(catNameBuffer);
         textNameBuffer.position = cat.position.addY(52.f);
         textNameBuffer.origin   = textNameBuffer.getLocalBounds().size / 2.f;
         textNameBuffer.scale    = sf::Vec2f{0.5f, 0.5f} * catScaleMult;
-        textNameBuffer.setOutlineColor(textOutlineColor);
+        textNameBuffer.setFillColor(sf::Color::White.withAlpha(textAlpha));
+        textNameBuffer.setOutlineColor(textOutlineColor.withAlpha(textAlpha));
         textBatchToUse.add(textNameBuffer);
 
         // Status text
@@ -1340,18 +1346,32 @@ void Main::gameLoopDrawCat(
                 }
             }
 
+
             textStatusBuffer.setString(actionString);
             textStatusBuffer.position = cat.position.addY(72.f);
             textStatusBuffer.origin   = textStatusBuffer.getLocalBounds().size / 2.f;
-            textStatusBuffer.setFillColor(sf::Color::White);
-            textStatusBuffer.setOutlineColor(textOutlineColor);
+            textStatusBuffer.setFillColor(sf::Color::White.withAlpha(textAlpha));
+            textStatusBuffer.setOutlineColor(textOutlineColor.withAlpha(textAlpha));
+            cat.textStatusShakeEffect.applyToText(textStatusBuffer);
+            textStatusBuffer.scale *= 0.4f * catScaleMult;
+            textBatchToUse.add(textStatusBuffer);
+
+            if (cat.isHexedOrCopyHexed())
+                actionString = "\n[hexed]";
+
+
+            textStatusBuffer.setString(actionString);
+            textStatusBuffer.position = cat.position.addY(72.f);
+            textStatusBuffer.origin   = textStatusBuffer.getLocalBounds().size / 2.f;
+            textStatusBuffer.setFillColor(sf::Color::White.withAlpha(textAlpha));
+            textStatusBuffer.setOutlineColor(textOutlineColor.withAlpha(textAlpha));
             cat.textStatusShakeEffect.applyToText(textStatusBuffer);
             textStatusBuffer.scale *= 0.4f * catScaleMult;
             textBatchToUse.add(textStatusBuffer);
         }
 
-        const bool hideCooldownBar = inPrestigeTransition || cat.type == CatType::Repulso ||
-                                     cat.type == CatType::Attracto || cat.type == CatType::Duck;
+        const bool hideCooldownBar = inPrestigeTransition || cat.type == CatType::Repulso || cat.type == CatType::Attracto ||
+                                     cat.type == CatType::Duck || cat.isHexedOrCopyHexed();
 
         if (!hideCooldownBar)
             textBatchToUse.add(sf::RoundedRectangleShapeData{
@@ -1419,16 +1439,19 @@ void Main::gameLoopDrawShrines(const sf::Vec2f mousePos)
 
         const auto range = shrine.getRange();
 
-        cpuDrawableBatchAfterCats.add(sf::CircleShapeData{
-            .position           = shrine.position,
-            .origin             = {range, range},
-            .outlineTextureRect = txrWhiteDot,
-            .fillColor          = circleOutlineColor.withAlpha(rangeInnerAlpha),
-            .outlineColor       = circleColor,
-            .outlineThickness   = 1.f,
-            .radius             = range,
-            .pointCount         = 64u,
-        });
+        const bool shouldDrawShrineRange = !profile.showRangesOnlyOnHover || hoveredShrine == &shrine;
+
+        if (shouldDrawShrineRange)
+            cpuDrawableBatchAfterCats.add(sf::CircleShapeData{
+                .position           = shrine.position,
+                .origin             = {range, range},
+                .outlineTextureRect = txrWhiteDot,
+                .fillColor          = circleOutlineColor.withAlpha(rangeInnerAlpha),
+                .outlineColor       = circleColor,
+                .outlineThickness   = 1.f,
+                .radius             = range,
+                .pointCount         = 64u,
+            });
 
         textNameBuffer.setString(shrineNames[asIdx(shrine.type)]);
         textNameBuffer.position = shrine.position.addY(48.f);
@@ -2192,10 +2215,34 @@ void Main::drawActivatedShrineBackgroundEffects(sf::RenderTarget& rt,
                                                 const sf::Vec2f   activeGameViewCenter) const
 {
     constexpr float maxShrineEffectRange = 256.f; // Keep in sync with Shrine::getRange().
+    constexpr float hexedCatEffectRange  = Cat::radius * 1.35f;
 
     const sf::Texture& backgroundTexture    = rtBackgroundProcessed.getTexture();
     const sf::Vec2f    backgroundViewOrigin = backgroundView.center - backgroundView.size / 2.f;
     const sf::Vec2f    activeViewDelta      = activeGameViewCenter - backgroundView.center;
+    const auto         drawBackgroundEffect =
+        [&](const sf::Vec2f center, const float range, const sf::Color tint, const float effectStrength)
+    {
+        if (range <= 0.f || effectStrength <= 0.f)
+            return;
+
+        shaderShrineBackground.setUniform(suShrineBgTime, shaderTime);
+        shaderShrineBackground.setUniform(suShrineBgViewOrigin, backgroundViewOrigin);
+        shaderShrineBackground.setUniform(suShrineBgCenter, center);
+        shaderShrineBackground.setUniform(suShrineBgRange, range);
+        shaderShrineBackground.setUniform(suShrineBgTintR, static_cast<float>(tint.r) / 255.f);
+        shaderShrineBackground.setUniform(suShrineBgTintG, static_cast<float>(tint.g) / 255.f);
+        shaderShrineBackground.setUniform(suShrineBgTintB, static_cast<float>(tint.b) / 255.f);
+        shaderShrineBackground.setUniform(suShrineBgDistortionStrength, 1812.f);
+        shaderShrineBackground.setUniform(suShrineBgTintStrength, 0.2f);
+        shaderShrineBackground.setUniform(suShrineBgEffectStrength, effectStrength);
+
+        rt.draw(backgroundTexture,
+                {.textureRect = {{0.f, 0.f}, backgroundView.size}},
+                {.view = backgroundView, .texture = &backgroundTexture, .shader = &shaderShrineBackground});
+
+        rt.flush();
+    };
 
     for (const Shrine& shrine : pt->shrines)
     {
@@ -2216,23 +2263,23 @@ void Main::drawActivatedShrineBackgroundEffects(sf::RenderTarget& rt,
 
         const sf::Color tint = sf::Color::fromHSLA({.hue = shrine.getHue() + 40.f, .saturation = 1.f, .lightness = 0.5f});
         const sf::Vec2f backgroundSpaceCenter = shrine.position - activeViewDelta;
+        drawBackgroundEffect(backgroundSpaceCenter, range, tint, effectStrength);
+    }
 
-        shaderShrineBackground.setUniform(suShrineBgTime, shaderTime);
-        shaderShrineBackground.setUniform(suShrineBgViewOrigin, backgroundViewOrigin);
-        shaderShrineBackground.setUniform(suShrineBgCenter, backgroundSpaceCenter);
-        shaderShrineBackground.setUniform(suShrineBgRange, range);
-        shaderShrineBackground.setUniform(suShrineBgTintR, static_cast<float>(tint.r) / 255.f);
-        shaderShrineBackground.setUniform(suShrineBgTintG, static_cast<float>(tint.g) / 255.f);
-        shaderShrineBackground.setUniform(suShrineBgTintB, static_cast<float>(tint.b) / 255.f);
-        shaderShrineBackground.setUniform(suShrineBgDistortionStrength, 1812.f);
-        shaderShrineBackground.setUniform(suShrineBgTintStrength, 0.2f);
-        shaderShrineBackground.setUniform(suShrineBgEffectStrength, effectStrength);
+    for (const Cat& cat : pt->cats)
+    {
+        if (!cat.isHexedOrCopyHexed())
+            continue;
 
-        rt.draw(backgroundTexture,
-                {.textureRect = {{0.f, 0.f}, backgroundView.size}},
-                {.view = backgroundView, .texture = &backgroundTexture, .shader = &shaderShrineBackground});
+        const float effectStrength = cat.getHexedTimer()->remap(0.f, 1.f);
+        if (effectStrength <= 0.f)
+            continue;
 
-        rt.flush();
+        const bool      copyHexed = cat.hexedCopyTimer.hasValue();
+        const float     hexHue    = copyHexed ? 180.f : 0.f;
+        const sf::Color tint      = sf::Color::fromHSLA({.hue = hexHue + 40.f, .saturation = 1.f, .lightness = 0.5f});
+        const sf::Vec2f backgroundSpaceCenter = cat.getDrawPosition(profile.enableCatBobbing) - activeViewDelta;
+        drawBackgroundEffect(backgroundSpaceCenter, hexedCatEffectRange, tint, effectStrength);
     }
 }
 

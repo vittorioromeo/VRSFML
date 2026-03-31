@@ -606,8 +606,9 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Prof
         p.selectedBackground,
         p.alwaysShowDrawings,
 
-        p.showCatText,
         p.showCatRange,
+        p.showRangesOnlyOnHover,
+        p.showCatText,
         p.showParticles,
         p.showTextParticles,
         p.accumulatingCombo,

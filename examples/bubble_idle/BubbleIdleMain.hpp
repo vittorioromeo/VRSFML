@@ -331,8 +331,8 @@ struct Main
     // Shader for activated shrine background distortion
     sf::Shader shaderShrineBackground{[]
     {
-        auto result = sf::Shader::loadFromFile(
-                          {.vertexPath = "resources/shrine_background.vert", .fragmentPath = "resources/shrine_background.frag"})
+        auto result = sf::Shader::loadFromFile({.vertexPath   = "resources/shrine_background.vert",
+                                                .fragmentPath = "resources/shrine_background.frag"})
                           .value();
         result.setUniform(result.getUniformLocation("sf_u_texture").value(), sf::Shader::CurrentTexture);
         return result;
@@ -341,15 +341,14 @@ struct Main
     sf::Shader::UniformLocation suShrineBgTime = shaderShrineBackground.getUniformLocation("u_time").value();
     sf::Shader::UniformLocation suShrineBgViewOrigin = shaderShrineBackground.getUniformLocation("u_viewOrigin").value();
     sf::Shader::UniformLocation suShrineBgCenter = shaderShrineBackground.getUniformLocation("u_shrineCenter").value();
-    sf::Shader::UniformLocation suShrineBgRange = shaderShrineBackground.getUniformLocation("u_shrineRange").value();
-    sf::Shader::UniformLocation suShrineBgTintR = shaderShrineBackground.getUniformLocation("u_shrineTintR").value();
-    sf::Shader::UniformLocation suShrineBgTintG = shaderShrineBackground.getUniformLocation("u_shrineTintG").value();
-    sf::Shader::UniformLocation suShrineBgTintB = shaderShrineBackground.getUniformLocation("u_shrineTintB").value();
-    sf::Shader::UniformLocation suShrineBgDistortionStrength =
-        shaderShrineBackground.getUniformLocation("u_distortionStrength").value();
+    sf::Shader::UniformLocation suShrineBgRange  = shaderShrineBackground.getUniformLocation("u_shrineRange").value();
+    sf::Shader::UniformLocation suShrineBgTintR  = shaderShrineBackground.getUniformLocation("u_shrineTintR").value();
+    sf::Shader::UniformLocation suShrineBgTintG  = shaderShrineBackground.getUniformLocation("u_shrineTintG").value();
+    sf::Shader::UniformLocation suShrineBgTintB  = shaderShrineBackground.getUniformLocation("u_shrineTintB").value();
+    sf::Shader::UniformLocation
+        suShrineBgDistortionStrength = shaderShrineBackground.getUniformLocation("u_distortionStrength").value();
     sf::Shader::UniformLocation suShrineBgTintStrength = shaderShrineBackground.getUniformLocation("u_tintStrength").value();
-    sf::Shader::UniformLocation suShrineBgEffectStrength =
-        shaderShrineBackground.getUniformLocation("u_effectStrength").value();
+    sf::Shader::UniformLocation suShrineBgEffectStrength = shaderShrineBackground.getUniformLocation("u_effectStrength").value();
 
     ////////////////////////////////////////////////////////////
     // Context settings
@@ -551,7 +550,7 @@ struct Main
             .value()};
     sf::Texture txBackgroundChunk{sf::Texture::loadFromFile("resources/bgtest.png", bgSettings).value()};
     sf::Texture txBackgroundChunkDesaturated{
-        sf::Texture::loadFromFile("resources/backgroundchunkdesaturated.png", bgSettings).value()};
+        sf::Texture::loadFromFile("resources/bgtestdesaturated.png", bgSettings).value()};
     sf::Texture txClouds{sf::Texture::loadFromFile("resources/clouds.png", bgSettings).value()};
     sf::Texture txTintedClouds{sf::Texture::loadFromFile("resources/tintedclouds.png", bgSettings).value()};
     sf::Texture txBgSwamp{sf::Texture::loadFromFile("resources/bgswamp.png", bgSettings).value()};
@@ -3357,8 +3356,8 @@ struct Main
     void setPostProcessUniforms(float vibrance, float saturation, float lightness, float sharpness, float blur) const;
     void updateProcessedBackground();
     void drawActivatedShrineBackgroundEffects(sf::RenderTarget& rt,
-                                             const sf::View&   backgroundView,
-                                             sf::Vec2f         activeGameViewCenter) const;
+                                              const sf::View&   backgroundView,
+                                              sf::Vec2f         activeGameViewCenter) const;
     [[nodiscard]] sf::RenderTexture& getHexedCatRenderTexture(sf::base::SizeT index);
     void enqueueHexedCatDrawCommand(const sf::CPUDrawableBatch& batch, sf::Vec2f position, bool top, float phaseSeed, float effectStrength);
     void                drawHexedCatDrawCommands(const sf::View& view, bool top);
