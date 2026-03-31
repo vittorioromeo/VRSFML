@@ -220,6 +220,7 @@ void Main::uiTabBarSettings()
         ImGui::Separator();
 
         uiCheckbox("Show cat range", &profile.showCatRange);
+        uiCheckbox("Show ranges only on hover", &profile.showRangesOnlyOnHover);
         uiCheckbox("Show cat text", &profile.showCatText);
         uiCheckbox("Enable cat bobbing", &profile.enableCatBobbing);
 

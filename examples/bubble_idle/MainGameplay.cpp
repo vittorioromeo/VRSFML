@@ -499,7 +499,7 @@ void Main::gameLoopUpdateAndDrawBackground(const float deltaTimeMs, const sf::Vi
     ////////////////////////////////////////////////////////////
     const sf::Texture* const chunkTx[] = {
         &txBackgroundChunk,            // Normal
-        &txBackgroundChunk,            // Voodoo
+        &txBackgroundChunkDesaturated, // Voodoo
         &txBackgroundChunk,            // Magic
         &txBackgroundChunkDesaturated, // Clicking
         &txBackgroundChunk,            // Automation
