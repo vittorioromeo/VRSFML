@@ -8,7 +8,7 @@ set(DOCTEST_NO_INSTALL ON CACHE BOOL "")
 CPMAddPackage(
     NAME doctest
     GITHUB_REPOSITORY vittorioromeo/doctest
-    GIT_TAG 1d2308e93890fc96789f029d3d666d3f45e0cb05
+    GIT_TAG d44d4f6e66232d716af82f00a063759e9d0e50d6
     SYSTEM TRUE
 )
 
