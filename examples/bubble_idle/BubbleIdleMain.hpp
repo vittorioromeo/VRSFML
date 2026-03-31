@@ -314,6 +314,20 @@ struct Main
     sf::Shader::UniformLocation suCloudResolution = shaderClouds.getUniformLocation("u_resolution").value();
 
     ////////////////////////////////////////////////////////////
+    // Shader for hexed cat phasing/distortion
+    sf::Shader shaderHexed{[]
+    {
+        auto result = sf::Shader::loadFromFile({.fragmentPath = "resources/hexed_cat.frag"}).value();
+        result.setUniform(result.getUniformLocation("sf_u_texture").value(), sf::Shader::CurrentTexture);
+        return result;
+    }()};
+
+    sf::Shader::UniformLocation suHexedTime = shaderHexed.getUniformLocation("u_time").value();
+    sf::Shader::UniformLocation suHexedSeed = shaderHexed.getUniformLocation("u_seed").value();
+    sf::Shader::UniformLocation suHexedDistortionStrength = shaderHexed.getUniformLocation("u_distortionStrength").value();
+    sf::Shader::UniformLocation suHexedShimmerStrength = shaderHexed.getUniformLocation("u_shimmerStrength").value();
+
+    ////////////////////////////////////////////////////////////
     // Context settings
     const unsigned int aaLevel = sf::base::min(16u, sf::RenderTexture::getMaximumAntiAliasingLevel());
 
@@ -493,6 +507,15 @@ struct Main
     // Game render texture (before post-processing)
     sf::RenderTexture rtGame{
         sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()};
+
+    ////////////////////////////////////////////////////////////
+    // Hexed cat offscreen render textures
+    static inline constexpr sf::Vec2u hexedCatRenderTextureSize{640u, 640u};
+
+    sf::RenderTexture rtHexedCat0{
+        sf::RenderTexture::create(hexedCatRenderTextureSize, {.antiAliasingLevel = aaLevel, .smooth = true}).value()};
+    sf::RenderTexture rtHexedCat1{
+        sf::RenderTexture::create(hexedCatRenderTextureSize, {.antiAliasingLevel = aaLevel, .smooth = true}).value()};
 
     ////////////////////////////////////////////////////////////
     // Textures (not in atlas)
@@ -1006,7 +1029,9 @@ struct Main
     sf::CPUDrawableBatch cpuTopCloudDrawableBatch;
     sf::CPUDrawableBatch cpuCloudHudDrawableBatch;
     sf::CPUDrawableBatch cpuCloudUiDrawableBatch;
+    sf::CPUDrawableBatch cpuDrawableBatchBeforeCats;
     sf::CPUDrawableBatch cpuDrawableBatch;
+    sf::CPUDrawableBatch cpuDrawableBatchAfterCats;
     sf::CPUDrawableBatch cpuDrawableBatchAdditive;
     sf::CPUDrawableBatch minimapDrawableBatch;
     sf::CPUDrawableBatch catTextDrawableBatch;
@@ -1015,6 +1040,18 @@ struct Main
     sf::CPUDrawableBatch hudBottomDrawableBatch;  // drawn below ImGui
     sf::CPUDrawableBatch cpuTopDrawableBatch;     // drawn on top of ImGui
     sf::CPUDrawableBatch catTextTopDrawableBatch; // drawn on top of ImGui
+    sf::CPUDrawableBatch tempDrawableBatch;       // for misc one-off draws (hexed cat effect)
+
+    struct HexedCatDrawCommand
+    {
+        sf::base::SizeT renderTextureIndex;
+        sf::Vec2f       position;
+        float           phaseSeed;
+        float           effectStrength;
+        bool            top;
+    };
+
+    sf::base::Vector<HexedCatDrawCommand> hexedCatDrawCommands;
 
     ////////////////////////////////////////////////////////////
     void drawBatch(const sf::CPUDrawableBatch& batch, const sf::RenderStates& states)
@@ -3295,9 +3332,12 @@ struct Main
     void                     recreateGameRenderTexture(sf::Vec2u newResolution);
     void setPostProcessUniforms(float vibrance, float saturation, float lightness, float sharpness, float blur) const;
     void updateProcessedBackground();
-    void gameLoopDisplayCloudBatch(const sf::CPUDrawableBatch& batch, const sf::View& view);
-    void recreateWindow();
-    void resizeWindow();
+    [[nodiscard]] sf::RenderTexture& getHexedCatRenderTexture(sf::base::SizeT index);
+    void enqueueHexedCatDrawCommand(const sf::CPUDrawableBatch& batch, sf::Vec2f position, bool top, float phaseSeed, float effectStrength);
+    void                drawHexedCatDrawCommands(const sf::View& view, bool top);
+    void                gameLoopDisplayCloudBatch(const sf::CPUDrawableBatch& batch, const sf::View& view);
+    void                recreateWindow();
+    void                resizeWindow();
     [[nodiscard]] float gameLoopUpdateCursorGrowthEffect(float deltaTimeMs, bool anyBubblePoppedByClicking);
     void                gameLoopUpdateCombo(float                         deltaTimeMs,
                                             bool                          anyBubblePoppedByClicking,

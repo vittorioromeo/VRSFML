@@ -534,19 +534,22 @@
     //
     // Draw cats, shrines, dolls, particles, and text particles
     cpuTopCloudDrawableBatch.clear();
+    cpuDrawableBatchBeforeCats.clear();
     cpuDrawableBatch.clear();
+    cpuDrawableBatchAfterCats.clear();
     cpuDrawableBatchAdditive.clear();
     cpuTopDrawableBatch.clear();
     catTextDrawableBatch.clear();
     catTextTopDrawableBatch.clear();
     cpuCloudHudDrawableBatch.clear();
+    hexedCatDrawCommands.clear();
 
     // Draw multipop range
     if (pt->multiPopEnabled && draggedCats.empty())
     {
         const auto range = pt->psvPPMultiPopRange.currentValue() * 0.9f;
 
-        cpuDrawableBatch.add(sf::CircleShapeData{
+        cpuDrawableBatchBeforeCats.add(sf::CircleShapeData{
             .position           = mousePos,
             .origin             = {range, range},
             .outlineTextureRect = txrWhiteDot,
@@ -565,7 +568,10 @@
     gameLoopDrawParticles();
     gameLoopDrawTextParticles();
     gameLoopDisplayCloudBatch(cpuCloudDrawableBatch, gameView);
+    drawBatch(cpuDrawableBatchBeforeCats, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
     drawBatch(cpuDrawableBatch, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
+    drawHexedCatDrawCommands(gameView, /* top */ false);
+    drawBatch(cpuDrawableBatchAfterCats, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
     drawBatch(cpuDrawableBatchAdditive,
               {.blendMode = sf::BlendAdd, .view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
     drawBatch(catTextDrawableBatch, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
@@ -796,6 +802,7 @@
     // Draw cats on top of UI
     gameLoopDisplayCloudBatch(cpuTopCloudDrawableBatch, scaledTopGameView);
     drawBatch(cpuTopDrawableBatch, {.view = scaledTopGameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
+    drawHexedCatDrawCommands(scaledTopGameView, /* top */ true);
     drawBatch(catTextTopDrawableBatch,
               {.view = scaledTopGameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
 
