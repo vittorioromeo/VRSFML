@@ -68,3 +68,6 @@ patch_coverage.cmake
 
 # Krita
 *.kra
+
+# Codex
+.codex
