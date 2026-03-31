@@ -2186,6 +2186,56 @@ void Main::updateProcessedBackground()
     rtBackgroundProcessed.display();
 }
 
+////////////////////////////////////////////////////////////
+void Main::drawActivatedShrineBackgroundEffects(sf::RenderTarget& rt,
+                                                const sf::View&   backgroundView,
+                                                const sf::Vec2f   activeGameViewCenter) const
+{
+    constexpr float maxShrineEffectRange = 256.f; // Keep in sync with Shrine::getRange().
+
+    const sf::Texture& backgroundTexture    = rtBackgroundProcessed.getTexture();
+    const sf::Vec2f    backgroundViewOrigin = backgroundView.center - backgroundView.size / 2.f;
+    const sf::Vec2f    activeViewDelta      = activeGameViewCenter - backgroundView.center;
+
+    for (const Shrine& shrine : pt->shrines)
+    {
+        const bool activationInProgress = shrine.tcActivation.hasValue() && !shrine.isActive();
+        const bool shouldRender         = activationInProgress || shrine.isActive();
+        if (!shouldRender)
+            continue;
+
+        const float activationFade = activationInProgress ? shrine.getActivationProgress() : 1.f;
+        const float deathFade      = shrine.tcDeath.hasValue() ? (1.f - shrine.getDeathProgress()) : 1.f;
+        const float effectStrength = activationFade * deathFade;
+        if (effectStrength <= 0.f)
+            continue;
+
+        const float range = activationInProgress ? maxShrineEffectRange * activationFade : shrine.getRange();
+        if (range <= 0.f)
+            continue;
+
+        const sf::Color tint = sf::Color::fromHSLA({.hue = shrine.getHue() + 40.f, .saturation = 1.f, .lightness = 0.5f});
+        const sf::Vec2f backgroundSpaceCenter = shrine.position - activeViewDelta;
+
+        shaderShrineBackground.setUniform(suShrineBgTime, shaderTime);
+        shaderShrineBackground.setUniform(suShrineBgViewOrigin, backgroundViewOrigin);
+        shaderShrineBackground.setUniform(suShrineBgCenter, backgroundSpaceCenter);
+        shaderShrineBackground.setUniform(suShrineBgRange, range);
+        shaderShrineBackground.setUniform(suShrineBgTintR, static_cast<float>(tint.r) / 255.f);
+        shaderShrineBackground.setUniform(suShrineBgTintG, static_cast<float>(tint.g) / 255.f);
+        shaderShrineBackground.setUniform(suShrineBgTintB, static_cast<float>(tint.b) / 255.f);
+        shaderShrineBackground.setUniform(suShrineBgDistortionStrength, 1812.f);
+        shaderShrineBackground.setUniform(suShrineBgTintStrength, 0.2f);
+        shaderShrineBackground.setUniform(suShrineBgEffectStrength, effectStrength);
+
+        rt.draw(backgroundTexture,
+                {.textureRect = {{0.f, 0.f}, backgroundView.size}},
+                {.view = backgroundView, .texture = &backgroundTexture, .shader = &shaderShrineBackground});
+
+        rt.flush();
+    }
+}
+
 
 ////////////////////////////////////////////////////////////
 [[nodiscard]] sf::RenderTexture& Main::getHexedCatRenderTexture(const sf::base::SizeT index)

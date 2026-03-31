@@ -939,6 +939,8 @@
                 {.textureRect{{0.f, 0.f}, gameViewNoScroll.size}},
                 {.view = gameViewNoScroll});
 
+    drawActivatedShrineBackgroundEffects(window, gameViewNoScroll, gameView.center);
+
     setPostProcessUniforms(profile.ppSVibrance,
                            profile.ppSSaturation,
                            profile.ppSLightness,
