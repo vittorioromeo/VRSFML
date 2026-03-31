@@ -2274,19 +2274,15 @@ void Main::gameLoopDisplayCloudBatch(const sf::CPUDrawableBatch& batch, const sf
                                                     sf::BlendMode::Factor::OneMinusSrcAlpha,
                                                     sf::BlendMode::Equation::Add);
 
-    rtCloudMask.clear(sf::Color::Transparent);
-    rtCloudMask.draw(rtCloudProcessed.getTexture(), {.blendMode = sf::BlendNone});
-    rtCloudMask.display();
-
     const U8 opacity = (&batch == &cpuCloudUiDrawableBatch || &batch == &cpuCloudHudDrawableBatch)
                            ? 255u
                            : static_cast<U8>(profile.catCloudOpacity * 255.f);
 
-    rtGame.draw(rtCloudMask.getTexture(),
+    rtGame.draw(rtCloudProcessed.getTexture(),
                 {.color = sf::Color{opacity, opacity, opacity, opacity}}, // because of premultiplication
                 {.blendMode = premultipliedAlphaBlend});
 
-    rtGame.flush();
+    rtGame.flush(); // TODO P0: needed?
 }
 
 
