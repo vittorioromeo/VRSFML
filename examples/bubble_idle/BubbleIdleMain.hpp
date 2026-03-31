@@ -328,6 +328,30 @@ struct Main
     sf::Shader::UniformLocation suHexedShimmerStrength = shaderHexed.getUniformLocation("u_shimmerStrength").value();
 
     ////////////////////////////////////////////////////////////
+    // Shader for activated shrine background distortion
+    sf::Shader shaderShrineBackground{[]
+    {
+        auto result = sf::Shader::loadFromFile(
+                          {.vertexPath = "resources/shrine_background.vert", .fragmentPath = "resources/shrine_background.frag"})
+                          .value();
+        result.setUniform(result.getUniformLocation("sf_u_texture").value(), sf::Shader::CurrentTexture);
+        return result;
+    }()};
+
+    sf::Shader::UniformLocation suShrineBgTime = shaderShrineBackground.getUniformLocation("u_time").value();
+    sf::Shader::UniformLocation suShrineBgViewOrigin = shaderShrineBackground.getUniformLocation("u_viewOrigin").value();
+    sf::Shader::UniformLocation suShrineBgCenter = shaderShrineBackground.getUniformLocation("u_shrineCenter").value();
+    sf::Shader::UniformLocation suShrineBgRange = shaderShrineBackground.getUniformLocation("u_shrineRange").value();
+    sf::Shader::UniformLocation suShrineBgTintR = shaderShrineBackground.getUniformLocation("u_shrineTintR").value();
+    sf::Shader::UniformLocation suShrineBgTintG = shaderShrineBackground.getUniformLocation("u_shrineTintG").value();
+    sf::Shader::UniformLocation suShrineBgTintB = shaderShrineBackground.getUniformLocation("u_shrineTintB").value();
+    sf::Shader::UniformLocation suShrineBgDistortionStrength =
+        shaderShrineBackground.getUniformLocation("u_distortionStrength").value();
+    sf::Shader::UniformLocation suShrineBgTintStrength = shaderShrineBackground.getUniformLocation("u_tintStrength").value();
+    sf::Shader::UniformLocation suShrineBgEffectStrength =
+        shaderShrineBackground.getUniformLocation("u_effectStrength").value();
+
+    ////////////////////////////////////////////////////////////
     // Context settings
     const unsigned int aaLevel = sf::base::min(16u, sf::RenderTexture::getMaximumAntiAliasingLevel());
 
@@ -3332,6 +3356,9 @@ struct Main
     void                     recreateGameRenderTexture(sf::Vec2u newResolution);
     void setPostProcessUniforms(float vibrance, float saturation, float lightness, float sharpness, float blur) const;
     void updateProcessedBackground();
+    void drawActivatedShrineBackgroundEffects(sf::RenderTarget& rt,
+                                             const sf::View&   backgroundView,
+                                             sf::Vec2f         activeGameViewCenter) const;
     [[nodiscard]] sf::RenderTexture& getHexedCatRenderTexture(sf::base::SizeT index);
     void enqueueHexedCatDrawCommand(const sf::CPUDrawableBatch& batch, sf::Vec2f position, bool top, float phaseSeed, float effectStrength);
     void                drawHexedCatDrawCommands(const sf::View& view, bool top);
