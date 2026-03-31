@@ -1291,6 +1291,7 @@ void Main::uiDrawQuickbarQuickSettings(const sf::Vec2f quickBarPos)
         ImGui::Separator();
 
         uiCheckbox("Show cat range", &profile.showCatRange);
+        uiCheckbox("Show ranges only on hover", &profile.showRangesOnlyOnHover);
         uiCheckbox("Show cat text", &profile.showCatText);
 
         ImGui::Separator();
