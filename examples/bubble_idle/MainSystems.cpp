@@ -169,6 +169,7 @@ void Main::gameLoopUpdateTransitions(const float deltaTimeMs)
 
             const auto cPos = pt->cats.back().position;
             pt->cats.popBack();
+            refreshCachedUniqueCats();
 
             spawnParticle({.position      = cPos.addY(29.f),
                            .velocity      = {0.f, 0.f},
@@ -1808,7 +1809,8 @@ void Main::gameLoopUpdateCatDragging(const float deltaTimeMs, const SizeT countF
         const auto dragRect = getAoEDragRect(mousePos).value();
         catDragOrigin.reset();
         draggedCats.clear();
-        draggedCatsStartedWithTouch = false;
+        draggedCatsStartedWithTouch        = false;
+        draggedCatsStartedFromAOESelection = true;
 
         for (Cat& cat : pt->cats)
         {
@@ -1837,7 +1839,10 @@ void Main::gameLoopUpdateCatDragging(const float deltaTimeMs, const SizeT countF
             if (draggedCatsStartedWithTouch)
                 return countFingersDown != 1u;
 
-            return inputHelper.wasMouseButtonJustPressed(getLMB());
+            if (draggedCatsStartedFromAOESelection)
+                return inputHelper.wasMouseButtonJustPressed(getLMB());
+
+            return !dragInputHeld;
         }();
 
         if (shouldDropCats)
@@ -1915,7 +1920,8 @@ void Main::gameLoopUpdateCatDragging(const float deltaTimeMs, const SizeT countF
             {
                 draggedCats.clear();
                 draggedCats.pushBack(hoveredCat);
-                draggedCatsStartedWithTouch = countFingersDown == 1u;
+                draggedCatsStartedWithTouch        = countFingersDown == 1u;
+                draggedCatsStartedFromAOESelection = false;
 
                 if (hoveredCat->type == CatType::Duck)
                 {

@@ -3,6 +3,7 @@
 #include "Cat.hpp"
 #include "Countdown.hpp"
 #include "Doll.hpp"
+#include "GameConstants.hpp"
 #include "HellPortal.hpp"
 #include "Milestones.hpp"
 #include "Playthrough.hpp"
@@ -205,6 +206,17 @@ template <bool Serialize>
     }
 
     return index;
+}
+
+////////////////////////////////////////////////////////////
+template <typename T>
+void assignIfPresent(const nlohmann::json& j, const char* key, T& value)
+{
+    if (!j.is_object())
+        return;
+
+    if (const auto it = j.find(key); it != j.end())
+        it->get_to(value);
 }
 
 } // namespace
@@ -679,21 +691,141 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Prof
         p.ppBGSaturation,
         p.ppBGLightness,
         p.ppBGSharpness,
-        p.ppBGBlur,
+        p.ppBGBlur);
+}
 
-        p.catCloudOpacity,
-        p.catCloudCircleCount,
-        p.catCloudScale,
-        p.catCloudXExtent,
-        p.catCloudBaseYOffset,
-        p.catCloudExtraYOffset,  // TODO P0: remove
-        p.catCloudDraggedOffset, // TODO P0: remove
-        p.catCloudLobeLift,
-        p.catCloudWobbleX,
-        p.catCloudWobbleY,
-        p.catCloudRadiusBase,
-        p.catCloudRadiusLobe,
-        p.catCloudRadiusWobble);
+////////////////////////////////////////////////////////////
+void to_json(nlohmann::json& j, const GameConstants::CloudModifier& p)
+{
+    j = nlohmann::json{{"positionOffset", p.positionOffset}, {"xExtentMult", p.xExtentMult}};
+}
+
+////////////////////////////////////////////////////////////
+void from_json(const nlohmann::json& j, GameConstants::CloudModifier& p)
+{
+    assignIfPresent(j, "positionOffset", p.positionOffset);
+    assignIfPresent(j, "xExtentMult", p.xExtentMult);
+}
+
+////////////////////////////////////////////////////////////
+void to_json(nlohmann::json& j, const GameConstants::SpriteAttachment& p)
+{
+    j = nlohmann::json{{"positionOffset", p.positionOffset}, {"origin", p.origin}};
+}
+
+////////////////////////////////////////////////////////////
+void from_json(const nlohmann::json& j, GameConstants::SpriteAttachment& p)
+{
+    assignIfPresent(j, "positionOffset", p.positionOffset);
+    assignIfPresent(j, "origin", p.origin);
+}
+
+////////////////////////////////////////////////////////////
+void to_json(nlohmann::json& j, const GameConstants& p)
+{
+    j = nlohmann::json{
+        {"catTailOffsetsByType", p.catTailOffsetsByType},
+        {"catDrawOffsetsByType", p.catDrawOffsetsByType},
+        {"catEyeOffsetsByType", p.catEyeOffsetsByType},
+        {"catHueByType", p.catHueByType},
+        {"cloudModifiers", p.cloudModifiers},
+        {"catCloudOpacity", p.catCloudOpacity},
+        {"catCloudCircleCount", p.catCloudCircleCount},
+        {"catCloudScale", p.catCloudScale},
+        {"catCloudXExtent", p.catCloudXExtent},
+        {"catCloudBaseYOffset", p.catCloudBaseYOffset},
+        {"catCloudExtraYOffset", p.catCloudExtraYOffset},
+        {"catCloudDraggedOffset", p.catCloudDraggedOffset},
+        {"catCloudLobeLift", p.catCloudLobeLift},
+        {"catCloudWobbleX", p.catCloudWobbleX},
+        {"catCloudWobbleY", p.catCloudWobbleY},
+        {"catCloudRadiusBase", p.catCloudRadiusBase},
+        {"catCloudRadiusLobe", p.catCloudRadiusLobe},
+        {"catCloudRadiusWobble", p.catCloudRadiusWobble},
+        {"catAttachmentDraggedOffsetY", p.catAttachmentDraggedOffsetY},
+        {"devilBackTail", p.devilBackTail},
+        {"brainJarOffset", p.brainJarOffset},
+        {"uniWingsOffset", p.uniWingsOffset},
+        {"uniWingsOriginOffsetFromCenter", p.uniWingsOriginOffsetFromCenter},
+        {"devilBookOffset", p.devilBookOffset},
+        {"devilPawIdleOffset", p.devilPawIdleOffset},
+        {"devilPawDraggedOffset", p.devilPawDraggedOffset},
+        {"duckFlag", p.duckFlag},
+        {"smartHatOffset", p.smartHatOffset},
+        {"earFlapOffset", p.earFlapOffset},
+        {"yawnOffset", p.yawnOffset},
+        {"smartDiploma", p.smartDiploma},
+        {"astroFlag", p.astroFlag},
+        {"engiWrench", p.engiWrench},
+        {"attractoMagnet", p.attractoMagnet},
+        {"tail", p.tail},
+        {"uniTailExtraOffset", p.uniTailExtraOffset},
+        {"uniTailOriginOffset", p.uniTailOriginOffset},
+        {"mouseProp", p.mouseProp},
+        {"eyelidOffset", p.eyelidOffset},
+        {"regularPawIdleOffset", p.regularPawIdleOffset},
+        {"regularPawDraggedOffset", p.regularPawDraggedOffset},
+        {"copyMaskOffset", p.copyMaskOffset},
+        {"copyMaskOrigin", p.copyMaskOrigin},
+        {"catNameTextOffsetY", p.catNameTextOffsetY},
+        {"catStatusTextOffsetY", p.catStatusTextOffsetY},
+        {"catCooldownBarOffsetY", p.catCooldownBarOffsetY},
+        {"debugDrawCatCenterMarker", p.debugDrawCatCenterMarker},
+        {"debugDrawCatBodyBounds", p.debugDrawCatBodyBounds},
+    };
+}
+
+////////////////////////////////////////////////////////////
+void from_json(const nlohmann::json& j, GameConstants& p)
+{
+    assignIfPresent(j, "catTailOffsetsByType", p.catTailOffsetsByType);
+    assignIfPresent(j, "catDrawOffsetsByType", p.catDrawOffsetsByType);
+    assignIfPresent(j, "catEyeOffsetsByType", p.catEyeOffsetsByType);
+    assignIfPresent(j, "catHueByType", p.catHueByType);
+    assignIfPresent(j, "cloudModifiers", p.cloudModifiers);
+    assignIfPresent(j, "catCloudOpacity", p.catCloudOpacity);
+    assignIfPresent(j, "catCloudCircleCount", p.catCloudCircleCount);
+    assignIfPresent(j, "catCloudScale", p.catCloudScale);
+    assignIfPresent(j, "catCloudXExtent", p.catCloudXExtent);
+    assignIfPresent(j, "catCloudBaseYOffset", p.catCloudBaseYOffset);
+    assignIfPresent(j, "catCloudExtraYOffset", p.catCloudExtraYOffset);
+    assignIfPresent(j, "catCloudDraggedOffset", p.catCloudDraggedOffset);
+    assignIfPresent(j, "catCloudLobeLift", p.catCloudLobeLift);
+    assignIfPresent(j, "catCloudWobbleX", p.catCloudWobbleX);
+    assignIfPresent(j, "catCloudWobbleY", p.catCloudWobbleY);
+    assignIfPresent(j, "catCloudRadiusBase", p.catCloudRadiusBase);
+    assignIfPresent(j, "catCloudRadiusLobe", p.catCloudRadiusLobe);
+    assignIfPresent(j, "catCloudRadiusWobble", p.catCloudRadiusWobble);
+    assignIfPresent(j, "catAttachmentDraggedOffsetY", p.catAttachmentDraggedOffsetY);
+    assignIfPresent(j, "devilBackTail", p.devilBackTail);
+    assignIfPresent(j, "brainJarOffset", p.brainJarOffset);
+    assignIfPresent(j, "uniWingsOffset", p.uniWingsOffset);
+    assignIfPresent(j, "uniWingsOriginOffsetFromCenter", p.uniWingsOriginOffsetFromCenter);
+    assignIfPresent(j, "devilBookOffset", p.devilBookOffset);
+    assignIfPresent(j, "devilPawIdleOffset", p.devilPawIdleOffset);
+    assignIfPresent(j, "devilPawDraggedOffset", p.devilPawDraggedOffset);
+    assignIfPresent(j, "duckFlag", p.duckFlag);
+    assignIfPresent(j, "smartHatOffset", p.smartHatOffset);
+    assignIfPresent(j, "earFlapOffset", p.earFlapOffset);
+    assignIfPresent(j, "yawnOffset", p.yawnOffset);
+    assignIfPresent(j, "smartDiploma", p.smartDiploma);
+    assignIfPresent(j, "astroFlag", p.astroFlag);
+    assignIfPresent(j, "engiWrench", p.engiWrench);
+    assignIfPresent(j, "attractoMagnet", p.attractoMagnet);
+    assignIfPresent(j, "tail", p.tail);
+    assignIfPresent(j, "uniTailExtraOffset", p.uniTailExtraOffset);
+    assignIfPresent(j, "uniTailOriginOffset", p.uniTailOriginOffset);
+    assignIfPresent(j, "mouseProp", p.mouseProp);
+    assignIfPresent(j, "eyelidOffset", p.eyelidOffset);
+    assignIfPresent(j, "regularPawIdleOffset", p.regularPawIdleOffset);
+    assignIfPresent(j, "regularPawDraggedOffset", p.regularPawDraggedOffset);
+    assignIfPresent(j, "copyMaskOffset", p.copyMaskOffset);
+    assignIfPresent(j, "copyMaskOrigin", p.copyMaskOrigin);
+    assignIfPresent(j, "catNameTextOffsetY", p.catNameTextOffsetY);
+    assignIfPresent(j, "catStatusTextOffsetY", p.catStatusTextOffsetY);
+    assignIfPresent(j, "catCooldownBarOffsetY", p.catCooldownBarOffsetY);
+    assignIfPresent(j, "debugDrawCatCenterMarker", p.debugDrawCatCenterMarker);
+    assignIfPresent(j, "debugDrawCatBodyBounds", p.debugDrawCatBodyBounds);
 }
 
 ////////////////////////////////////////////////////////////
@@ -934,6 +1066,40 @@ try
 } catch (const std::exception& ex)
 {
     sf::cOut() << "Failed to load profile from file '" << filename << "' (" << ex.what() << ")\n";
+}
+
+////////////////////////////////////////////////////////////
+void saveGameConstantsToFile(const GameConstants& gameConstants, const char* filename)
+try
+{
+    const std::filesystem::path path{filename};
+
+    if (path.has_parent_path())
+        std::filesystem::create_directories(path.parent_path());
+
+    doRotatingBackup(filename);
+
+    if (!sf::writeToFile(filename, nlohmann::json(gameConstants).dump(2)))
+        throw std::runtime_error("writeToFile failed");
+} catch (const std::exception& ex)
+{
+    sf::cOut() << "Failed to save game constants to file '" << filename << "' (" << ex.what() << ")\n";
+}
+
+
+////////////////////////////////////////////////////////////
+void loadGameConstantsFromFile(GameConstants& gameConstants, const char* filename)
+try
+{
+    std::string contents;
+
+    if (!sf::readFromFile(filename, contents))
+        throw std::runtime_error("readFromFile failed");
+
+    nlohmann::json::parse(contents).get_to(gameConstants);
+} catch (const std::exception& ex)
+{
+    sf::cOut() << "Failed to load game constants from file '" << filename << "' (" << ex.what() << ")\n";
 }
 
 
