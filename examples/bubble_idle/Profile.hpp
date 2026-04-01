@@ -48,20 +48,6 @@ struct [[nodiscard]] Profile
     float bsBubbleLightness     = 0.15f;
     float bsLensDistortion      = 7.5f;
 
-    float catCloudOpacity       = 1.f;
-    int   catCloudCircleCount   = 12;
-    float catCloudScale         = 1.4f;
-    float catCloudXExtent       = 20.f;
-    float catCloudBaseYOffset   = 15.f;
-    float catCloudExtraYOffset  = 25.f;
-    float catCloudDraggedOffset = 8.f;
-    float catCloudLobeLift      = 4.f;
-    float catCloudWobbleX       = 2.75f;
-    float catCloudWobbleY       = 1.75f;
-    float catCloudRadiusBase    = 8.5f;
-    float catCloudRadiusLobe    = 5.5f;
-    float catCloudRadiusWobble  = 1.25f;
-
     Stats statsLifetime;
 
     sf::Vec2u resWidth = {};

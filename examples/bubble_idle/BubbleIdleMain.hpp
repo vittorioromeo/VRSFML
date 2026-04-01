@@ -16,6 +16,7 @@
 #include "Countdown.hpp"
 #include "Doll.hpp"
 #include "ExactArray.hpp"
+#include "GameConstants.hpp"
 #include "IconsFontAwesome6.h"
 #include "InputHelper.hpp"
 #include "MemberGuard.hpp"
@@ -142,8 +143,8 @@ struct CloudFrameDrawSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
     int xSteps;
     int ySteps;
 
-    float scaleMult;
-    float outwardOffsetMult;
+    float     scaleMult;
+    float     outwardOffsetMult;
     sf::Color color = sf::Color::White;
 
     sf::CPUDrawableBatch* batch;
@@ -365,6 +366,21 @@ struct Main
         {
             loadProfileFromFile(out);
             sf::cOut() << "Loaded profile from file on startup\n";
+        }
+
+        return out;
+    }()};
+
+    ///////////////////////////////////////////////////////////
+    // Game constants (loaded once on startup)
+    GameConstants gameConstants{[&]
+    {
+        GameConstants out;
+
+        if (sf::Path{"resources/game_constants.json"}.exists())
+        {
+            loadGameConstantsFromFile(out);
+            sf::cOut() << "Loaded game constants from file on startup\n";
         }
 
         return out;
@@ -1126,6 +1142,7 @@ struct Main
     sf::base::Optional<sf::Vec2f> catDragOrigin;
     sf::base::Vector<Cat*>        draggedCats;
     bool                          draggedCatsStartedWithTouch{false};
+    bool                          draggedCatsStartedFromAOESelection{false};
     Cat*                          catToPlace{nullptr};
 
     ////////////////////////////////////////////////////////////
@@ -1774,7 +1791,7 @@ struct Main
 
         catToPlace = nullptr;
 
-        return pt->cats.emplaceBack(Cat{
+        Cat& newCat = pt->cats.emplaceBack(Cat{
             .position    = pos,
             .cooldown    = {.value = getComputedCooldownByCatTypeOrCopyCat(catType)},
             .pawPosition = pos,
@@ -1782,6 +1799,9 @@ struct Main
             .nameIdx     = getNextCatNameIdx(catType),
             .type        = catType,
         });
+
+        refreshCachedUniqueCats();
+        return newCat;
     }
 
     ////////////////////////////////////////////////////////////
@@ -1798,6 +1818,8 @@ struct Main
 
             draggedCats.clear();
             draggedCats.pushBack(&newCat);
+            draggedCatsStartedWithTouch        = false;
+            draggedCatsStartedFromAOESelection = false;
 
             newCat.position    = lastMousePos;
             newCat.pawPosition = lastMousePos;
@@ -2214,8 +2236,9 @@ struct Main
         catDragPressDuration = 0.f;
         catDragOrigin.reset();
         draggedCats.clear();
-        draggedCatsStartedWithTouch = false;
-        catToPlace = nullptr;
+        draggedCatsStartedWithTouch        = false;
+        draggedCatsStartedFromAOESelection = false;
+        catToPlace                         = nullptr;
     }
 
     ////////////////////////////////////////////////////////////
@@ -2289,6 +2312,18 @@ struct Main
                 return &cat;
 
         return nullptr;
+    }
+
+    ////////////////////////////////////////////////////////////
+    void refreshCachedUniqueCats()
+    {
+        cachedWitchCat    = findFirstCatByType(CatType::Witch);
+        cachedWizardCat   = findFirstCatByType(CatType::Wizard);
+        cachedMouseCat    = findFirstCatByType(CatType::Mouse);
+        cachedEngiCat     = findFirstCatByType(CatType::Engi);
+        cachedRepulsoCat  = findFirstCatByType(CatType::Repulso);
+        cachedAttractoCat = findFirstCatByType(CatType::Attracto);
+        cachedCopyCat     = findFirstCatByType(CatType::Copy);
     }
 
     ////////////////////////////////////////////////////////////
@@ -2822,6 +2857,7 @@ struct Main
 
         *pt      = Playthrough{};
         pt->seed = seed;
+        refreshCachedUniqueCats();
 
         wasPrestigeAvailableLastFrame = false;
         buyReminder                   = 0u;
@@ -3323,10 +3359,7 @@ struct Main
                          sf::Vec2f mousePos,
                          const sf::Rect2f* const (&catTxrsByType)[nCatTypes],
                          const sf::Rect2f* const (&catPawTxrsByType)[nCatTypes],
-                         const sf::Rect2f* const (&catTailTxrsByType)[nCatTypes],
-                         const sf::Vec2f (&catTailOffsetsByType)[nCatTypes],
-                         const sf::Vec2f (&catEyeOffsetsByType)[nCatTypes],
-                         const float (&catHueByType)[nCatTypes]);
+                         const sf::Rect2f* const (&catTailTxrsByType)[nCatTypes]);
 
     void                gameLoopDrawShrines(sf::Vec2f mousePos);
     void                gameLoopDrawDolls(sf::Vec2f mousePos);

@@ -180,6 +180,7 @@
         sf::base::vectorEraseIf(pt->cats, [](const Cat& cat) {
             return cat.type >= CatType::Mouse && cat.type <= CatType::Duck;
         });
+        refreshCachedUniqueCats();
     }
 
     //
@@ -278,13 +279,7 @@
 
     //
     // Cache unique cats
-    cachedWitchCat    = findFirstCatByType(CatType::Witch);
-    cachedWizardCat   = findFirstCatByType(CatType::Wizard);
-    cachedMouseCat    = findFirstCatByType(CatType::Mouse);
-    cachedEngiCat     = findFirstCatByType(CatType::Engi);
-    cachedRepulsoCat  = findFirstCatByType(CatType::Repulso);
-    cachedAttractoCat = findFirstCatByType(CatType::Attracto);
-    cachedCopyCat     = findFirstCatByType(CatType::Copy);
+    refreshCachedUniqueCats();
 
     //
     // Scrolling
@@ -991,4 +986,5 @@ void Main::loadPlaythroughFromFileAndReseed()
 
     reseedRNGs(pt->seed);
     shuffledCatNamesPerType = makeShuffledCatNames(rng);
+    refreshCachedUniqueCats();
 }

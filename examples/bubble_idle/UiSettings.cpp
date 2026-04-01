@@ -229,68 +229,6 @@ void Main::uiTabBarSettings()
 
         ImGui::Separator();
 
-        ImGui::Text("Cat clouds");
-
-        ImGui::SetNextItemWidth(210.f * profile.uiScale);
-        ImGui::SliderFloat("Cloud opacity", &profile.catCloudOpacity, 0.f, 1.f, "%.2f");
-
-        ImGui::SetNextItemWidth(210.f * profile.uiScale);
-        ImGui::SliderInt("Cloud circles", &profile.catCloudCircleCount, 3, 24);
-
-        ImGui::SetNextItemWidth(210.f * profile.uiScale);
-        ImGui::SliderFloat("Cloud scale", &profile.catCloudScale, 0.5f, 3.f, "%.2f");
-
-        ImGui::SetNextItemWidth(210.f * profile.uiScale);
-        ImGui::SliderFloat("Cloud X extent", &profile.catCloudXExtent, 4.f, 40.f, "%.2f");
-
-        ImGui::SetNextItemWidth(210.f * profile.uiScale);
-        ImGui::SliderFloat("Cloud base Y", &profile.catCloudBaseYOffset, -10.f, 35.f, "%.2f");
-
-        ImGui::SetNextItemWidth(210.f * profile.uiScale);
-        ImGui::SliderFloat("Cloud extra Y", &profile.catCloudExtraYOffset, -10.f, 45.f, "%.2f");
-
-        ImGui::SetNextItemWidth(210.f * profile.uiScale);
-        ImGui::SliderFloat("Cloud dragged Y", &profile.catCloudDraggedOffset, 0.f, 20.f, "%.2f");
-
-        ImGui::SetNextItemWidth(210.f * profile.uiScale);
-        ImGui::SliderFloat("Cloud lobe lift", &profile.catCloudLobeLift, 0.f, 10.f, "%.2f");
-
-        ImGui::SetNextItemWidth(210.f * profile.uiScale);
-        ImGui::SliderFloat("Cloud wobble X", &profile.catCloudWobbleX, 0.f, 8.f, "%.2f");
-
-        ImGui::SetNextItemWidth(210.f * profile.uiScale);
-        ImGui::SliderFloat("Cloud wobble Y", &profile.catCloudWobbleY, 0.f, 8.f, "%.2f");
-
-        ImGui::SetNextItemWidth(210.f * profile.uiScale);
-        ImGui::SliderFloat("Cloud base radius", &profile.catCloudRadiusBase, 2.f, 20.f, "%.2f");
-
-        ImGui::SetNextItemWidth(210.f * profile.uiScale);
-        ImGui::SliderFloat("Cloud lobe radius", &profile.catCloudRadiusLobe, 0.f, 16.f, "%.2f");
-
-        ImGui::SetNextItemWidth(210.f * profile.uiScale);
-        ImGui::SliderFloat("Cloud radius wobble", &profile.catCloudRadiusWobble, 0.f, 5.f, "%.2f");
-
-        if (ImGui::Button("Reset clouds to default"))
-        {
-            Profile defaultProfile{};
-
-            profile.catCloudOpacity       = defaultProfile.catCloudOpacity;
-            profile.catCloudCircleCount   = defaultProfile.catCloudCircleCount;
-            profile.catCloudScale         = defaultProfile.catCloudScale;
-            profile.catCloudXExtent       = defaultProfile.catCloudXExtent;
-            profile.catCloudBaseYOffset   = defaultProfile.catCloudBaseYOffset;
-            profile.catCloudExtraYOffset  = defaultProfile.catCloudExtraYOffset;
-            profile.catCloudDraggedOffset = defaultProfile.catCloudDraggedOffset;
-            profile.catCloudLobeLift      = defaultProfile.catCloudLobeLift;
-            profile.catCloudWobbleX       = defaultProfile.catCloudWobbleX;
-            profile.catCloudWobbleY       = defaultProfile.catCloudWobbleY;
-            profile.catCloudRadiusBase    = defaultProfile.catCloudRadiusBase;
-            profile.catCloudRadiusLobe    = defaultProfile.catCloudRadiusLobe;
-            profile.catCloudRadiusWobble  = defaultProfile.catCloudRadiusWobble;
-        }
-
-        ImGui::Separator();
-
         uiCheckbox("Show particles", &profile.showParticles);
 
         ImGui::BeginDisabled(!profile.showParticles);
@@ -590,6 +528,7 @@ void Main::uiTabBarSettings()
 
                 reseedRNGs(pt->seed);
                 shuffledCatNamesPerType = makeShuffledCatNames(rng);
+                refreshCachedUniqueCats();
             }
         }
         else
@@ -751,7 +690,10 @@ void Main::uiTabBarSettings()
         ImGui::SameLine();
 
         if (ImGui::Button("Custom load"))
+        {
             (void)loadPlaythroughFromFile(*pt, filenameBuf);
+            refreshCachedUniqueCats();
+        }
 
         ImGui::Separator();
 
@@ -888,6 +830,122 @@ void Main::uiTabBarSettings()
         ImGui::Checkbox("shrineCompleted Repulso", &pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Repulso)]);
         ImGui::Checkbox("shrineCompleted Copy", &pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Copy)]);
         ImGui::Checkbox("shrineCompleted Duck", &pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Duck)]);
+
+        ImGui::Separator();
+        ImGui::Text("Game constants");
+        ImGui::SameLine();
+        if (ImGui::Button("Save game constants"))
+            saveGameConstantsToFile(gameConstants);
+
+        ImGui::Checkbox("Draw cat center marker", &gameConstants.debugDrawCatCenterMarker);
+        ImGui::Checkbox("Draw cat body bounds", &gameConstants.debugDrawCatBodyBounds);
+
+        const auto inputFloat = [&](const char* label, float& value)
+        {
+            ImGui::SetNextItemWidth(220.f * profile.uiScale);
+            ImGui::InputFloat(label, &value, 0.f, 0.f, "%.2f");
+        };
+
+        const auto inputInt = [&](const char* label, int& value)
+        {
+            ImGui::SetNextItemWidth(220.f * profile.uiScale);
+            ImGui::InputInt(label, &value);
+        };
+
+        const auto inputVec2 = [&](const char* label, sf::Vec2f& value)
+        {
+            ImGui::SetNextItemWidth(280.f * profile.uiScale);
+            ImGui::InputFloat2(label, &value.x, "%.2f");
+        };
+
+        const auto inputAttachment = [&](const char* label, GameConstants::SpriteAttachment& attachment)
+        {
+            if (!ImGui::TreeNode(label))
+                return;
+
+            inputVec2("Offset", attachment.positionOffset);
+            inputVec2("Origin", attachment.origin);
+            ImGui::TreePop();
+        };
+
+        if (ImGui::TreeNode("Cloud tuning"))
+        {
+            inputFloat("Opacity", gameConstants.catCloudOpacity);
+            inputInt("Circle count", gameConstants.catCloudCircleCount);
+            inputFloat("Scale", gameConstants.catCloudScale);
+            inputFloat("X extent", gameConstants.catCloudXExtent);
+            inputFloat("Base Y offset", gameConstants.catCloudBaseYOffset);
+            inputFloat("Extra Y offset", gameConstants.catCloudExtraYOffset);
+            inputFloat("Dragged Y offset", gameConstants.catCloudDraggedOffset);
+            inputFloat("Lobe lift", gameConstants.catCloudLobeLift);
+            inputFloat("Wobble X", gameConstants.catCloudWobbleX);
+            inputFloat("Wobble Y", gameConstants.catCloudWobbleY);
+            inputFloat("Radius base", gameConstants.catCloudRadiusBase);
+            inputFloat("Radius lobe", gameConstants.catCloudRadiusLobe);
+            inputFloat("Radius wobble", gameConstants.catCloudRadiusWobble);
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Per-cat tables"))
+        {
+            for (SizeT i = 0u; i < nCatTypes; ++i)
+            {
+                ImGui::PushID(static_cast<int>(i));
+
+                if (ImGui::TreeNode(CatConstants::typeNames[i]))
+                {
+                    inputVec2("Draw offset", gameConstants.catDrawOffsetsByType[i]);
+                    inputVec2("Tail offset", gameConstants.catTailOffsetsByType[i]);
+                    inputVec2("Eye offset", gameConstants.catEyeOffsetsByType[i]);
+                    inputFloat("Attachment hue", gameConstants.catHueByType[i]);
+                    inputVec2("Cloud offset", gameConstants.cloudModifiers[i].positionOffset);
+                    inputFloat("Cloud X mult", gameConstants.cloudModifiers[i].xExtentMult);
+                    ImGui::TreePop();
+                }
+
+                ImGui::PopID();
+            }
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Attachment offsets"))
+        {
+            inputFloat("Dragged attachment Y", gameConstants.catAttachmentDraggedOffsetY);
+            inputVec2("Brain jar offset", gameConstants.brainJarOffset);
+            inputVec2("Uni wings offset", gameConstants.uniWingsOffset);
+            inputVec2("Uni wings origin offset", gameConstants.uniWingsOriginOffsetFromCenter);
+            inputVec2("Devil book offset", gameConstants.devilBookOffset);
+            inputVec2("Devil paw idle offset", gameConstants.devilPawIdleOffset);
+            inputVec2("Devil paw dragged offset", gameConstants.devilPawDraggedOffset);
+            inputVec2("Smart hat offset", gameConstants.smartHatOffset);
+            inputVec2("Ear flap offset", gameConstants.earFlapOffset);
+            inputVec2("Yawn offset", gameConstants.yawnOffset);
+            inputVec2("Uni tail extra offset", gameConstants.uniTailExtraOffset);
+            inputVec2("Uni tail origin offset", gameConstants.uniTailOriginOffset);
+            inputVec2("Eyelid offset", gameConstants.eyelidOffset);
+            inputVec2("Regular paw idle offset", gameConstants.regularPawIdleOffset);
+            inputVec2("Regular paw dragged offset", gameConstants.regularPawDraggedOffset);
+            inputVec2("Copy mask offset", gameConstants.copyMaskOffset);
+            inputVec2("Copy mask origin", gameConstants.copyMaskOrigin);
+            inputAttachment("Devil back tail", gameConstants.devilBackTail);
+            inputAttachment("Duck flag", gameConstants.duckFlag);
+            inputAttachment("Smart diploma", gameConstants.smartDiploma);
+            inputAttachment("Astro flag", gameConstants.astroFlag);
+            inputAttachment("Engi wrench", gameConstants.engiWrench);
+            inputAttachment("Attracto magnet", gameConstants.attractoMagnet);
+            inputAttachment("Tail", gameConstants.tail);
+            inputAttachment("Mouse prop", gameConstants.mouseProp);
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Text offsets"))
+        {
+            inputFloat("Cat name Y", gameConstants.catNameTextOffsetY);
+            inputFloat("Cat status Y", gameConstants.catStatusTextOffsetY);
+            inputFloat("Cooldown bar Y", gameConstants.catCooldownBarOffsetY);
+            ImGui::TreePop();
+        }
 
         uiSetFontScale(uiNormalFontScale);
         ImGui::PopFont();
