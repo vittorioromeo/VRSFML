@@ -590,73 +590,8 @@ void Main::gameLoopDrawCats(const sf::Vec2f mousePos, const float deltaTimeMs)
     static_assert(sf::base::getArraySize(catTailTxrsByType) == nCatTypes);
 
     ////////////////////////////////////////////////////////////
-    constexpr sf::Vec2f catTailOffsetsByType[] = {
-        {-40.f, 0.f},    // Normal
-        {-35.f, -222.f}, // Uni
-        {-8.f, 2.f},     // Devil
-        {56.f, -80.f},   // Astro
-
-        {37.f, 165.f},  // Witch
-        {-90.f, 120.f}, // Wizard
-        {0.f, 0.f},     // Mouse
-        {2.f, 43.f},    // Engi
-        {4.f, -29.f},   // Repulso
-        {0.f, 0.f},     // Attracto
-        {0.f, 0.f},     // Copy
-        {0.f, 0.f},     // Duck
-    };
-
-    static_assert(sf::base::getArraySize(catTailOffsetsByType) == nCatTypes);
-
-    ////////////////////////////////////////////////////////////
-    constexpr sf::Vec2f catEyeOffsetsByType[] = {
-        {-40.f, 0.f},    // Normal
-        {-35.f, -222.f}, // Uni
-        {-8.f, 2.f},     // Devil
-        {56.f, -80.f},   // Astro
-
-        {37.f, 165.f}, // Witch
-        {-25.f, 65.f}, // Wizard
-        {0.f, 0.f},    // Mouse
-        {2.f, 43.f},   // Engi
-        {4.f, -29.f},  // Repulso
-        {0.f, 0.f},    // Attracto
-        {0.f, 0.f},    // Copy
-        {0.f, 0.f},    // Duck
-    };
-
-    static_assert(sf::base::getArraySize(catEyeOffsetsByType) == nCatTypes);
-
-    ////////////////////////////////////////////////////////////
-    constexpr float catHueByType[] = {
-        0.f,   // Normal
-        160.f, // Uni
-        -25.f, // Devil
-        0.f,   // Astro
-
-        80.f,   // Witch
-        -135.f, // Wizard
-        0.f,    // Mouse
-        -10.f,  // Engi
-        -40.f,  // Repulso
-        0.f,    // Attracto
-        0.f,    // Copy
-        0.f,    // Duck
-    };
-
-    static_assert(sf::base::getArraySize(catHueByType) == nCatTypes);
-
-    ////////////////////////////////////////////////////////////
     for (Cat& cat : pt->cats)
-        gameLoopDrawCat(cat,
-                        deltaTimeMs,
-                        mousePos,
-                        catTxrsByType,
-                        catPawTxrsByType,
-                        catTailTxrsByType,
-                        catTailOffsetsByType,
-                        catEyeOffsetsByType,
-                        catHueByType);
+        gameLoopDrawCat(cat, deltaTimeMs, mousePos, catTxrsByType, catPawTxrsByType, catTailTxrsByType);
 }
 
 
@@ -679,16 +614,12 @@ void Main::gameLoopDrawCats(const sf::Vec2f mousePos, const float deltaTimeMs)
 
 
 ////////////////////////////////////////////////////////////
-void Main::gameLoopDrawCat(
-    Cat&            cat,
-    const float     deltaTimeMs,
-    const sf::Vec2f mousePos,
-    const sf::Rect2f* const (&catTxrsByType)[nCatTypes],
-    const sf::Rect2f* const (&catPawTxrsByType)[nCatTypes],
-    const sf::Rect2f* const (&catTailTxrsByType)[nCatTypes],
-    const sf::Vec2f (&catTailOffsetsByType)[nCatTypes],
-    const sf::Vec2f (&catEyeOffsetsByType)[nCatTypes],
-    const float (&catHueByType)[nCatTypes])
+void Main::gameLoopDrawCat(Cat&            cat,
+                           const float     deltaTimeMs,
+                           const sf::Vec2f mousePos,
+                           const sf::Rect2f* const (&catTxrsByType)[nCatTypes],
+                           const sf::Rect2f* const (&catPawTxrsByType)[nCatTypes],
+                           const sf::Rect2f* const (&catTailTxrsByType)[nCatTypes])
 {
     auto& batchToUse     = catToPlace == &cat ? cpuTopDrawableBatch : cpuDrawableBatch;
     auto& textBatchToUse = catToPlace == &cat ? catTextTopDrawableBatch : catTextDrawableBatch;
@@ -727,8 +658,8 @@ void Main::gameLoopDrawCat(
 
     const sf::Rect2f& catPawTxr = *catPawTxrsByType[asIdx(isCopyCatWithType(CatType::Mouse) ? CatType::Mouse : cat.type)];
     const sf::Rect2f& catTailTxr    = *catTailTxrsByType[asIdx(cat.type)];
-    const sf::Vec2f   catTailOffset = catTailOffsetsByType[asIdx(cat.type)];
-    const sf::Vec2f   catEyeOffset  = catEyeOffsetsByType[asIdx(cat.type)];
+    const sf::Vec2f   catTailOffset = gameConstants.catTailOffsetsByType[asIdx(cat.type)];
+    const sf::Vec2f   catEyeOffset  = gameConstants.catEyeOffsetsByType[asIdx(cat.type)];
 
     const float maxCooldown  = getComputedCooldownByCatTypeOrCopyCat(cat.type);
     const float cooldownDiff = cat.cooldown.value;
@@ -820,40 +751,17 @@ void Main::gameLoopDrawCat(
     const float catScaleMult = easeOutElastic(cat.spawnEffectTimer.value);
     const auto  catScale     = sf::Vec2f{0.2f, 0.2f} * catScaleMult;
 
-    const auto catAnchor = beingDragged ? cat.position : cat.getDrawPosition(profile.enableCatBobbing);
+    const auto catAnchor     = beingDragged ? cat.position : cat.getDrawPosition(profile.enableCatBobbing);
+    const auto catDrawOffset = gameConstants.catDrawOffsetsByType[asIdx(cat.type)];
+    const auto visualCatAnchor = catAnchor + (catDrawOffset / 2.f * 0.2f * catScaleMult).rotatedBy(sf::radians(catRotation));
 
     auto& cloudBatchToUse = catToPlace == &cat ? cpuTopCloudDrawableBatch : cpuCloudDrawableBatch;
 
-    struct CloudModifiers
     {
-        sf::Vec2f positionOffset;
-        float     xExtentMult;
-    };
+        const auto& [cloudPositionOffset, cloudXExtentMult] = gameConstants.cloudModifiers[asIdx(cat.type)];
 
-    ////////////////////////////////////////////////////////////
-    static constexpr CloudModifiers cloudModifiers[] = {
-        {{0.f, 0.f}, 1.f},    // Normal
-        {{0.f, -10.f}, 1.5f}, // Uni
-        {{0.f, 0.f}, 1.5f},   // Devil
-        {{0.f, -17.f}, 2.f},  // Astro
-
-        {{0.f, -5.f}, 1.2f}, // Witch
-        {{0.f, -5.f}, 1.5f}, // Wizard
-        {{0.f, 0.f}, 1.f},   // Mouse
-        {{0.f, 0.f}, 1.f},   // Engi
-        {{0.f, 0.f}, 1.f},   // Repulso
-        {{0.f, 0.f}, 1.f},   // Attracto
-        {{0.f, 0.f}, 1.f},   // Copy
-        {{0.f, 0.f}, 1.f},   // Duck
-    };
-
-    static_assert(sf::base::getArraySize(cloudModifiers) == nCatTypes);
-
-    {
-        const auto& [cloudPositionOffset, cloudXExtentMult] = cloudModifiers[asIdx(cat.type)];
-
-        const int   cloudCircleCount = sf::base::max(profile.catCloudCircleCount, 3);
-        const float cloudScaleBase   = sf::base::max(catScaleMult, 0.35f) * profile.catCloudScale;
+        const int   cloudCircleCount = sf::base::max(gameConstants.catCloudCircleCount, 3);
+        const float cloudScaleBase   = sf::base::max(catScaleMult, 0.35f) * gameConstants.catCloudScale;
 
         float cloudMult = easeInOutBack(remap(cat.dragTime, 0.f, 1000.f, 1.f, 0.f));
 
@@ -877,8 +785,12 @@ void Main::gameLoopDrawCat(
         const float catCloudPhase = cat.position.x * 0.0215f + cat.position.y * 0.0135f +
                                     static_cast<float>(asIdx(cat.type)) * 0.7f;
 
-        const sf::Vec2f cloudBasePos = catAnchor.addY(catTxr.size.y / 2.f * catScale.y) +
-                                       sf::Vec2f{0.f, profile.catCloudBaseYOffset * cloudScale} + cloudPositionOffset;
+        const float cloudYOffset = gameConstants.catCloudBaseYOffset +
+                                   gameConstants.catCloudExtraYOffset * (1.f - cloudMult) +
+                                   (beingDragged ? gameConstants.catCloudDraggedOffset : 0.f);
+
+        const sf::Vec2f cloudBasePos = visualCatAnchor.addY(catTxr.size.y / 2.f * catScale.y) +
+                                       sf::Vec2f{0.f, cloudYOffset * cloudScale} + cloudPositionOffset;
 
         for (cloudCircleIndex = 0; cloudCircleIndex < cloudCircleCount; ++cloudCircleIndex)
         {
@@ -888,13 +800,15 @@ void Main::gameLoopDrawCat(
             const float phase         = cloudTimeSeconds * (1.35f + normalizedIndex * 0.2f) + catCloudPhase +
                                         static_cast<float>(cloudCircleIndex) * 0.85f;
 
-            const float xOffset = centeredIndex * profile.catCloudXExtent * cloudScale * cloudXExtentMult +
-                                  sf::base::sin(phase) * (profile.catCloudWobbleX + lobeWeight * 1.5f) * cloudScale;
-            const float yOffset = -lobeWeight * profile.catCloudLobeLift * cloudScale +
-                                  sf::base::cos(phase * 1.4f) * (profile.catCloudWobbleY + lobeWeight) * cloudScale;
-            const float radius  = (profile.catCloudRadiusBase + lobeWeight * profile.catCloudRadiusLobe +
-                                   sf::base::sin(phase * 1.15f) * profile.catCloudRadiusWobble) *
-                                  cloudScale;
+            const float xOffset = centeredIndex * gameConstants.catCloudXExtent * cloudScale * cloudXExtentMult +
+                                  sf::base::sin(phase) * (gameConstants.catCloudWobbleX + lobeWeight * 1.5f) * cloudScale;
+
+            const float yOffset = -lobeWeight * gameConstants.catCloudLobeLift * cloudScale +
+                                  sf::base::cos(phase * 1.4f) * (gameConstants.catCloudWobbleY + lobeWeight) * cloudScale;
+
+            const float radius = (gameConstants.catCloudRadiusBase + lobeWeight * gameConstants.catCloudRadiusLobe +
+                                  sf::base::sin(phase * 1.15f) * gameConstants.catCloudRadiusWobble) *
+                                 cloudScale;
 
             cloudBatchToUse.add(sf::Sprite{
                 .position    = cloudBasePos + sf::Vec2f{xOffset, yOffset},
@@ -907,7 +821,7 @@ void Main::gameLoopDrawCat(
 
 
     const auto anchorOffset = [&](const sf::Vec2f offset)
-    { return catAnchor + (offset / 2.f * 0.2f * catScaleMult).rotatedBy(sf::radians(catRotation)); };
+    { return visualCatAnchor + (offset / 2.f * 0.2f * catScaleMult).rotatedBy(sf::radians(catRotation)); };
 
     const float tailRotationMult = cat.type == CatType::Uni ? 0.4f : 1.f;
 
@@ -919,27 +833,28 @@ void Main::gameLoopDrawCat(
         catRotation + ((beingDragged ? 0.2f : 0.f) +
                        sf::base::sin(cat.wobbleRadians) * (beingDragged ? 0.125f : 0.075f) * tailRotationMult));
 
-    const sf::Vec2f pushDown{0.f, beingDragged ? 75.f : 0.f};
+    const sf::Vec2f pushDown{0.f, beingDragged ? gameConstants.catAttachmentDraggedOffsetY : 0.f};
 
-    const auto  attachmentHue       = hueColor(catHueByType[asIdx(cat.type)] + cat.hue, alpha);
+    const auto  attachmentHue       = hueColor(gameConstants.catHueByType[asIdx(cat.type)] + cat.hue, alpha);
     const float hexedEffectStrength = cat.isHexedOrCopyHexed() ? cat.getHexedTimer()->remap(0.f, 1.f) : 0.f;
 
     // Devilcat: draw tail behind
     if (cat.type == CatType::Devil)
     {
-        addCatSprite(sf::Sprite{.position    = anchorOffset(catTailOffset + sf::Vec2f{905.f, 10.f} + pushDown * 2.f),
-                                .scale       = catScale * 1.25f,
-                                .origin      = {320.f, 32.f},
-                                .rotation    = tailWiggleRotationInvertedDragged,
-                                .textureRect = catTailTxr,
-                                .color       = catColor});
+        addCatSprite(
+            sf::Sprite{.position = anchorOffset(catTailOffset + gameConstants.devilBackTail.positionOffset + pushDown * 2.f),
+                       .scale       = catScale * 1.25f,
+                       .origin      = gameConstants.devilBackTail.origin,
+                       .rotation    = tailWiggleRotationInvertedDragged,
+                       .textureRect = catTailTxr,
+                       .color       = catColor});
     }
 
     //
     // Draw brain jar in the background
     if (cat.type == CatType::Normal && pt->perm.geniusCatsPurchased)
     {
-        addCatSprite(sf::Sprite{.position    = anchorOffset({210.f, -235.f}),
+        addCatSprite(sf::Sprite{.position    = anchorOffset(gameConstants.brainJarOffset),
                                 .scale       = catScale,
                                 .origin      = txrBrainBack.size / 2.f,
                                 .rotation    = sf::radians(catRotation),
@@ -954,9 +869,9 @@ void Main::gameLoopDrawCat(
         const auto wingRotation = sf::radians(catRotation + (beingDragged ? -0.2f : 0.f) +
                                               sf::base::cos(cat.wobbleRadians) * (beingDragged ? 0.125f : 0.075f) * 0.75f);
 
-        addCatSprite(sf::Sprite{.position    = anchorOffset({250.f, -175.f}),
+        addCatSprite(sf::Sprite{.position    = anchorOffset(gameConstants.uniWingsOffset),
                                 .scale       = catScale * 1.25f,
-                                .origin      = txrUniCatWings.size / 2.f - sf::Vec2f{35.f, 10.f},
+                                .origin      = txrUniCatWings.size / 2.f - gameConstants.uniWingsOriginOffsetFromCenter,
                                 .rotation    = wingRotation,
                                 .textureRect = txrUniCatWings,
                                 .color       = hueColor(cat.hue + 180.f, 180u)});
@@ -967,7 +882,7 @@ void Main::gameLoopDrawCat(
     if (cat.type == CatType::Devil)
     {
         addCatSprite(
-            sf::Sprite{.position    = catAnchor + sf::Vec2f{10.f, 20.f},
+            sf::Sprite{.position    = visualCatAnchor + gameConstants.devilBookOffset,
                        .scale       = catScale * 1.55f,
                        .origin      = txrDevilCat3Book.size / 2.f,
                        .rotation    = sf::radians(catRotation),
@@ -981,7 +896,8 @@ void Main::gameLoopDrawCat(
     // Devilcat: draw paw behind book
     if (cat.type == CatType::Devil)
     {
-        addCatSprite(sf::Sprite{.position = cat.pawPosition + (beingDragged ? sf::Vec2f{-6.f, 6.f} : sf::Vec2f{4.f, 2.f}),
+        addCatSprite(sf::Sprite{.position    = cat.pawPosition + (beingDragged ? gameConstants.devilPawDraggedOffset
+                                                                               : gameConstants.devilPawIdleOffset),
                                 .scale       = catScale * 1.25f,
                                 .origin      = catPawTxr.size / 2.f,
                                 .rotation    = cat.pawRotation + sf::degrees(35.f),
@@ -991,18 +907,40 @@ void Main::gameLoopDrawCat(
 
     //
     // Draw cat main shape
-    addCatSprite(sf::Sprite{.position    = catAnchor,
+    addCatSprite(sf::Sprite{.position    = visualCatAnchor,
                             .scale       = catScale,
                             .origin      = catTxr.size / 2.f,
                             .rotation    = sf::radians(catRotation),
                             .textureRect = catTxr,
                             .color       = catColor});
 
+    if (gameConstants.debugDrawCatCenterMarker)
+        batchToUse.add(sf::CircleShapeData{
+            .position   = catAnchor,
+            .origin     = {4.f, 4.f},
+            .fillColor  = sf::Color{255u, 0u, 0u, alpha},
+            .radius     = 4.f,
+            .pointCount = 16u,
+        });
+
+    if (gameConstants.debugDrawCatBodyBounds)
+        batchToUse.add(sf::RectangleShapeData{
+            .position           = catAnchor,
+            .scale              = catScale,
+            .origin             = catTxr.size / 2.f,
+            .rotation           = sf::radians(catRotation).wrapUnsigned(),
+            .outlineTextureRect = txrWhiteDot,
+            .fillColor          = sf::Color::Transparent,
+            .outlineColor       = sf::Color{255u, 0u, 0u, alpha},
+            .outlineThickness   = 4.f,
+            .size               = catTxr.size,
+        });
+
     if (cat.type == CatType::Duck)
     {
-        addCatSprite(sf::Sprite{.position    = anchorOffset(sf::Vec2f{335.f, -65.f} + pushDown),
+        addCatSprite(sf::Sprite{.position    = anchorOffset(gameConstants.duckFlag.positionOffset + pushDown),
                                 .scale       = catScale,
-                                .origin      = {98.f, 330.f},
+                                .origin      = gameConstants.duckFlag.origin,
                                 .rotation    = tailWiggleRotation,
                                 .textureRect = txrDuckFlag,
                                 .color       = catColor});
@@ -1013,7 +951,7 @@ void Main::gameLoopDrawCat(
         // Draw graudation hat
         if (cat.type == CatType::Normal && pt->perm.smartCatsPurchased)
         {
-            addCatSprite(sf::Sprite{.position    = anchorOffset({-150.f, -535.f}),
+            addCatSprite(sf::Sprite{.position    = anchorOffset(gameConstants.smartHatOffset),
                                     .scale       = catScale,
                                     .origin      = txrSmartCatHat.size / 2.f,
                                     .rotation    = sf::radians(catRotation),
@@ -1039,7 +977,7 @@ void Main::gameLoopDrawCat(
         if (cat.type == CatType::Normal) // TODO P2: implement for other cats as well?
         {
             addCatSprite(
-                sf::Sprite{.position = anchorOffset(catEyeOffset + sf::Vec2f{-131.f, -365.f}),
+                sf::Sprite{.position = anchorOffset(catEyeOffset + gameConstants.earFlapOffset),
                            .scale    = catScale,
                            .origin   = txrCatEars0.size / 2.f,
                            .rotation = sf::radians(catRotation),
@@ -1063,7 +1001,7 @@ void Main::gameLoopDrawCat(
 
             (void)cat.yawnAnimCountdown.updateAndStop(deltaTimeMs);
 
-            addCatSprite(sf::Sprite{.position    = anchorOffset(catEyeOffset + sf::Vec2f{-221.f, 25.f}),
+            addCatSprite(sf::Sprite{.position    = anchorOffset(catEyeOffset + gameConstants.yawnOffset),
                                     .scale       = catScale,
                                     .origin      = txrCatYawn0.size / 2.f,
                                     .rotation    = sf::radians(catRotation),
@@ -1079,18 +1017,18 @@ void Main::gameLoopDrawCat(
         // Draw attachments
         if (cat.type == CatType::Normal && pt->perm.smartCatsPurchased) // Smart cat diploma
         {
-            addCatSprite(sf::Sprite{.position    = anchorOffset(sf::Vec2f{295.f, 355.f} + pushDown),
+            addCatSprite(sf::Sprite{.position    = anchorOffset(gameConstants.smartDiploma.positionOffset + pushDown),
                                     .scale       = catScale,
-                                    .origin      = {23.f, 150.f},
+                                    .origin      = gameConstants.smartDiploma.origin,
                                     .rotation    = tailWiggleRotation,
                                     .textureRect = txrSmartCatDiploma,
                                     .color       = catColor});
         }
         else if (cat.type == CatType::Astro && pt->perm.astroCatInspirePurchased) // Astro cat flag
         {
-            addCatSprite(sf::Sprite{.position    = anchorOffset(sf::Vec2f{395.f, 225.f} + pushDown),
+            addCatSprite(sf::Sprite{.position    = anchorOffset(gameConstants.astroFlag.positionOffset + pushDown),
                                     .scale       = catScale,
-                                    .origin      = {98.f, 330.f},
+                                    .origin      = gameConstants.astroFlag.origin,
                                     .rotation    = tailWiggleRotation,
                                     .textureRect = txrAstroCatFlag,
                                     .color       = catColor});
@@ -1098,9 +1036,9 @@ void Main::gameLoopDrawCat(
         else if (cat.type == CatType::Engi ||
                  (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Engi)) // Engi cat wrench
         {
-            addCatSprite(sf::Sprite{.position    = anchorOffset(sf::Vec2f{295.f, 385.f} + pushDown),
+            addCatSprite(sf::Sprite{.position    = anchorOffset(gameConstants.engiWrench.positionOffset + pushDown),
                                     .scale       = catScale,
-                                    .origin      = {36.f, 167.f},
+                                    .origin      = gameConstants.engiWrench.origin,
                                     .rotation    = tailWiggleRotation,
                                     .textureRect = txrEngiCatWrench,
                                     .color       = catColor});
@@ -1108,9 +1046,9 @@ void Main::gameLoopDrawCat(
         else if (cat.type == CatType::Attracto ||
                  (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Attracto)) // Attracto cat magnet
         {
-            addCatSprite(sf::Sprite{.position    = anchorOffset(sf::Vec2f{190.f, 315.f} + pushDown),
+            addCatSprite(sf::Sprite{.position    = anchorOffset(gameConstants.attractoMagnet.positionOffset + pushDown),
                                     .scale       = catScale,
-                                    .origin      = {142.f, 254.f},
+                                    .origin      = gameConstants.attractoMagnet.origin,
                                     .rotation    = tailWiggleRotation,
                                     .textureRect = txrAttractoCatMagnet,
                                     .color       = catColor});
@@ -1121,13 +1059,13 @@ void Main::gameLoopDrawCat(
         // Draw cat tail
         if (cat.type != CatType::Devil)
         {
-            const auto originOffset = cat.type == CatType::Uni ? sf::Vec2f{250.f, 0.f} : sf::Vec2f{0.f, 0.f};
-            const auto offset       = cat.type == CatType::Uni ? sf::Vec2f{-130.f, 405.f} : sf::Vec2f{0.f, 0.f};
+            const auto originOffset = cat.type == CatType::Uni ? gameConstants.uniTailOriginOffset : sf::Vec2f{0.f, 0.f};
+            const auto offset = cat.type == CatType::Uni ? gameConstants.uniTailExtraOffset : sf::Vec2f{0.f, 0.f};
 
             addCatSprite(
-                sf::Sprite{.position    = anchorOffset(catTailOffset + sf::Vec2f{475.f, 240.f} + offset + originOffset),
+                sf::Sprite{.position = anchorOffset(catTailOffset + gameConstants.tail.positionOffset + offset + originOffset),
                            .scale       = catScale,
-                           .origin      = originOffset + sf::Vec2f{320.f, 32.f},
+                           .origin      = originOffset + gameConstants.tail.origin,
                            .rotation    = tailWiggleRotation,
                            .textureRect = catTailTxr,
                            .color       = catColor});
@@ -1137,9 +1075,9 @@ void Main::gameLoopDrawCat(
         // Mousecat: mouse
         if (cat.type == CatType::Mouse || (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Mouse))
         {
-            addCatSprite(sf::Sprite{.position    = anchorOffset(sf::Vec2f{-275.f, -15.f}),
+            addCatSprite(sf::Sprite{.position    = anchorOffset(gameConstants.mouseProp.positionOffset),
                                     .scale       = catScale,
-                                    .origin      = {53.f, 77.f},
+                                    .origin      = gameConstants.mouseProp.origin,
                                     .rotation    = tailWiggleRotationInvertedDragged,
                                     .textureRect = txrMouseCatMouse,
                                     .color       = catColor});
@@ -1171,7 +1109,7 @@ void Main::gameLoopDrawCat(
             (cachedCopyCat != nullptr && pt->copycatCopiedCatType == CatType::Witch &&
              isCatPerformingRitual(*cachedCopyCat, cat)))
         {
-            addCatSprite(sf::Sprite{.position    = anchorOffset(catEyeOffset + sf::Vec2f{-185.f, -185.f}),
+            addCatSprite(sf::Sprite{.position    = anchorOffset(catEyeOffset + gameConstants.eyelidOffset),
                                     .scale       = catScale,
                                     .origin      = txrCatEyeLid0.size / 2.f,
                                     .rotation    = sf::radians(catRotation),
@@ -1180,7 +1118,7 @@ void Main::gameLoopDrawCat(
         }
         else if (!cat.yawnAnimCountdown.isDone())
         {
-            addCatSprite(sf::Sprite{.position    = anchorOffset(catEyeOffset + sf::Vec2f{-185.f, -185.f}),
+            addCatSprite(sf::Sprite{.position    = anchorOffset(catEyeOffset + gameConstants.eyelidOffset),
                                     .scale       = catScale,
                                     .origin      = txrCatEyeLid0.size / 2.f,
                                     .rotation    = sf::radians(catRotation),
@@ -1191,7 +1129,7 @@ void Main::gameLoopDrawCat(
         else if (!cat.blinkAnimCountdown.isDone())
         {
             addCatSprite(
-                sf::Sprite{.position = anchorOffset(catEyeOffset + sf::Vec2f{-185.f, -185.f}),
+                sf::Sprite{.position = anchorOffset(catEyeOffset + gameConstants.eyelidOffset),
                            .scale    = catScale,
                            .origin   = txrCatEyeLid0.size / 2.f,
                            .rotation = sf::radians(catRotation),
@@ -1201,7 +1139,7 @@ void Main::gameLoopDrawCat(
 
         if (cat.type == CatType::Normal && pt->perm.geniusCatsPurchased)
         {
-            addCatSprite(sf::Sprite{.position    = anchorOffset({210.f, -235.f}),
+            addCatSprite(sf::Sprite{.position    = anchorOffset(gameConstants.brainJarOffset),
                                     .scale       = catScale,
                                     .origin      = txrBrainFront.size / 2.f,
                                     .rotation    = sf::radians(catRotation),
@@ -1211,13 +1149,13 @@ void Main::gameLoopDrawCat(
 
 
         if (!cat.isHexedOrCopyHexed() && cat.type != CatType::Devil)
-            addCatSprite(
-                sf::Sprite{.position = cat.pawPosition + (beingDragged ? sf::Vec2f{-12.f, 12.f} : sf::Vec2f{0.f, 0.f}),
-                           .scale    = catScale * 0.85f,
-                           .origin   = catPawTxr.size / 2.f,
-                           .rotation = cat.type == CatType::Mouse ? sf::radians(-0.6f) : cat.pawRotation,
-                           .textureRect = catPawTxr,
-                           .color       = catColor.withAlpha(static_cast<U8>(cat.pawOpacity))});
+            addCatSprite(sf::Sprite{.position = cat.pawPosition + (beingDragged ? gameConstants.regularPawDraggedOffset
+                                                                                : gameConstants.regularPawIdleOffset),
+                                    .scale    = catScale * 0.85f,
+                                    .origin   = catPawTxr.size / 2.f,
+                                    .rotation = cat.type == CatType::Mouse ? sf::radians(-0.6f) : cat.pawRotation,
+                                    .textureRect = catPawTxr,
+                                    .color       = catColor.withAlpha(static_cast<U8>(cat.pawOpacity))});
 
         //
         // Copycat: mask
@@ -1256,9 +1194,10 @@ void Main::gameLoopDrawCat(
             }();
 
             if (txrMaskToUse != nullptr)
-                addCatSprite(sf::Sprite{.position    = anchorOffset(sf::Vec2f{265.f, 115.f}),
-                                        .scale       = catScale * remap(foo, 0.f, 0.5f, 1.f, 0.75f),
-                                        .origin      = {353.f, 295.f * remap(foo, 0.f, 0.5f, 1.f, 1.25f)},
+                addCatSprite(sf::Sprite{.position = anchorOffset(gameConstants.copyMaskOffset),
+                                        .scale    = catScale * remap(foo, 0.f, 0.5f, 1.f, 0.75f),
+                                        .origin = {gameConstants.copyMaskOrigin.x,
+                                                   gameConstants.copyMaskOrigin.y * remap(foo, 0.f, 0.5f, 1.f, 1.25f)},
                                         .rotation    = sf::radians(catRotation + foo),
                                         .textureRect = *txrMaskToUse,
                                         .color       = catColor});
@@ -1268,7 +1207,7 @@ void Main::gameLoopDrawCat(
     if (drawHexedWithShader && !tempDrawableBatch.isEmpty())
     {
         enqueueHexedCatDrawCommand(tempDrawableBatch,
-                                   catAnchor,
+                                   visualCatAnchor,
                                    catToPlace == &cat,
                                    cat.position.x * 0.013f + cat.position.y * 0.021f + static_cast<float>(cat.nameIdx) * 0.17f,
                                    hexedEffectStrength);
@@ -1295,7 +1234,7 @@ void Main::gameLoopDrawCat(
 
         // Name text
         textNameBuffer.setString(catNameBuffer);
-        textNameBuffer.position = cat.position.addY(52.f);
+        textNameBuffer.position = cat.position.addY(gameConstants.catNameTextOffsetY);
         textNameBuffer.origin   = textNameBuffer.getLocalBounds().size / 2.f;
         textNameBuffer.scale    = sf::Vec2f{0.5f, 0.5f} * catScaleMult;
         textNameBuffer.setFillColor(sf::Color::White.withAlpha(textAlpha));
@@ -1350,7 +1289,7 @@ void Main::gameLoopDrawCat(
 
 
             textStatusBuffer.setString(actionString);
-            textStatusBuffer.position = cat.position.addY(72.f);
+            textStatusBuffer.position = cat.position.addY(gameConstants.catStatusTextOffsetY);
             textStatusBuffer.origin   = textStatusBuffer.getLocalBounds().size / 2.f;
             textStatusBuffer.setFillColor(sf::Color::White.withAlpha(textAlpha));
             textStatusBuffer.setOutlineColor(textOutlineColor.withAlpha(textAlpha));
@@ -1363,7 +1302,7 @@ void Main::gameLoopDrawCat(
 
 
             textStatusBuffer.setString(actionString);
-            textStatusBuffer.position = cat.position.addY(72.f);
+            textStatusBuffer.position = cat.position.addY(gameConstants.catStatusTextOffsetY);
             textStatusBuffer.origin   = textStatusBuffer.getLocalBounds().size / 2.f;
             textStatusBuffer.setFillColor(sf::Color::White.withAlpha(textAlpha));
             textStatusBuffer.setOutlineColor(textOutlineColor.withAlpha(textAlpha));
@@ -1377,9 +1316,9 @@ void Main::gameLoopDrawCat(
 
         if (!hideCooldownBar)
             textBatchToUse.add(sf::RoundedRectangleShapeData{
-                .position           = textStatusBuffer.getGlobalBottomCenter().addY(4.f),
-                .scale              = {catScaleMult, catScaleMult},
-                .origin             = {32.f, 0.f},
+                .position = textStatusBuffer.getGlobalBottomCenter().addY(gameConstants.catCooldownBarOffsetY),
+                .scale    = {catScaleMult, catScaleMult},
+                .origin   = {32.f, 0.f},
                 .outlineTextureRect = txrWhiteDot,
                 .fillColor          = sf::Color::whiteMask(128u),
                 .outlineColor       = textOutlineColor,
@@ -2420,7 +2359,7 @@ void Main::gameLoopDisplayCloudBatch(const sf::CPUDrawableBatch& batch, const sf
 
     const U8 opacity = (&batch == &cpuCloudUiDrawableBatch || &batch == &cpuCloudHudDrawableBatch)
                            ? 255u
-                           : static_cast<U8>(profile.catCloudOpacity * 255.f);
+                           : static_cast<U8>(gameConstants.catCloudOpacity * 255.f);
 
     rtGame.draw(rtCloudProcessed.getTexture(),
                 {.color = sf::Color{opacity, opacity, opacity, opacity}}, // because of premultiplication

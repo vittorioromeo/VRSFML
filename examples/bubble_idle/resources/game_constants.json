@@ -1,0 +1,415 @@
+{
+  "astroFlag": {
+    "origin": [
+      98.0,
+      330.0
+    ],
+    "positionOffset": [
+      395.0,
+      225.0
+    ]
+  },
+  "attractoMagnet": {
+    "origin": [
+      142.0,
+      254.0
+    ],
+    "positionOffset": [
+      190.0,
+      315.0
+    ]
+  },
+  "brainJarOffset": [
+    255.0,
+    -290.0
+  ],
+  "catAttachmentDraggedOffsetY": 75.0,
+  "catCloudBaseYOffset": 0.0,
+  "catCloudCircleCount": 12,
+  "catCloudDraggedOffset": 0.0,
+  "catCloudExtraYOffset": 0.0,
+  "catCloudLobeLift": -3.0,
+  "catCloudOpacity": 0.8999999761581421,
+  "catCloudRadiusBase": 8.5,
+  "catCloudRadiusLobe": 5.5,
+  "catCloudRadiusWobble": 1.25,
+  "catCloudScale": 1.399999976158142,
+  "catCloudWobbleX": 2.75,
+  "catCloudWobbleY": 1.75,
+  "catCloudXExtent": 25.0,
+  "catCooldownBarOffsetY": 4.0,
+  "catDrawOffsetsByType": [
+    [
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0
+    ]
+  ],
+  "catEyeOffsetsByType": [
+    [
+      0.0,
+      -18.0
+    ],
+    [
+      -35.0,
+      -219.0
+    ],
+    [
+      -8.0,
+      2.0
+    ],
+    [
+      -11.0,
+      -120.0
+    ],
+    [
+      10.0,
+      170.0
+    ],
+    [
+      -48.0,
+      65.0
+    ],
+    [
+      0.0,
+      26.0
+    ],
+    [
+      2.0,
+      43.0
+    ],
+    [
+      4.0,
+      -29.0
+    ],
+    [
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0
+    ]
+  ],
+  "catHueByType": [
+    0.0,
+    160.0,
+    -25.0,
+    0.0,
+    80.0,
+    -135.0,
+    0.0,
+    -10.0,
+    -40.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "catNameTextOffsetY": 52.0,
+  "catStatusTextOffsetY": 72.0,
+  "catTailOffsetsByType": [
+    [
+      0.0,
+      -15.0
+    ],
+    [
+      -35.0,
+      -222.0
+    ],
+    [
+      -8.0,
+      2.0
+    ],
+    [
+      -11.0,
+      -110.0
+    ],
+    [
+      15.0,
+      180.0
+    ],
+    [
+      -100.0,
+      130.0
+    ],
+    [
+      -10.0,
+      15.0
+    ],
+    [
+      2.0,
+      43.0
+    ],
+    [
+      4.0,
+      -29.0
+    ],
+    [
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0
+    ]
+  ],
+  "cloudModifiers": [
+    {
+      "positionOffset": [
+        7.5,
+        0.0
+      ],
+      "xExtentMult": 1.2000000476837158
+    },
+    {
+      "positionOffset": [
+        0.0,
+        -12.0
+      ],
+      "xExtentMult": 1.5
+    },
+    {
+      "positionOffset": [
+        5.0,
+        -5.0
+      ],
+      "xExtentMult": 1.600000023841858
+    },
+    {
+      "positionOffset": [
+        5.0,
+        -15.0
+      ],
+      "xExtentMult": 1.2999999523162842
+    },
+    {
+      "positionOffset": [
+        8.0,
+        -5.0
+      ],
+      "xExtentMult": 1.2000000476837158
+    },
+    {
+      "positionOffset": [
+        0.0,
+        -5.0
+      ],
+      "xExtentMult": 1.5
+    },
+    {
+      "positionOffset": [
+        7.5,
+        0.0
+      ],
+      "xExtentMult": 1.2000000476837158
+    },
+    {
+      "positionOffset": [
+        8.0,
+        -4.0
+      ],
+      "xExtentMult": 1.2000000476837158
+    },
+    {
+      "positionOffset": [
+        8.0,
+        -5.0
+      ],
+      "xExtentMult": 1.2000000476837158
+    },
+    {
+      "positionOffset": [
+        8.0,
+        -5.0
+      ],
+      "xExtentMult": 1.2000000476837158
+    },
+    {
+      "positionOffset": [
+        7.0,
+        -4.0
+      ],
+      "xExtentMult": 1.2000000476837158
+    },
+    {
+      "positionOffset": [
+        0.0,
+        0.0
+      ],
+      "xExtentMult": 1.0
+    }
+  ],
+  "copyMaskOffset": [
+    265.0,
+    115.0
+  ],
+  "copyMaskOrigin": [
+    353.0,
+    295.0
+  ],
+  "debugDrawCatBodyBounds": false,
+  "debugDrawCatCenterMarker": false,
+  "devilBackTail": {
+    "origin": [
+      320.0,
+      32.0
+    ],
+    "positionOffset": [
+      905.0,
+      10.0
+    ]
+  },
+  "devilBookOffset": [
+    10.0,
+    20.0
+  ],
+  "devilPawDraggedOffset": [
+    -6.0,
+    6.0
+  ],
+  "devilPawIdleOffset": [
+    4.0,
+    2.0
+  ],
+  "duckFlag": {
+    "origin": [
+      98.0,
+      330.0
+    ],
+    "positionOffset": [
+      335.0,
+      -65.0
+    ]
+  },
+  "earFlapOffset": [
+    -131.0,
+    -365.0
+  ],
+  "engiWrench": {
+    "origin": [
+      36.0,
+      167.0
+    ],
+    "positionOffset": [
+      295.0,
+      385.0
+    ]
+  },
+  "eyelidOffset": [
+    -185.0,
+    -185.0
+  ],
+  "mouseProp": {
+    "origin": [
+      53.0,
+      77.0
+    ],
+    "positionOffset": [
+      -275.0,
+      0.0
+    ]
+  },
+  "regularPawDraggedOffset": [
+    -12.0,
+    12.0
+  ],
+  "regularPawIdleOffset": [
+    0.0,
+    0.0
+  ],
+  "smartDiploma": {
+    "origin": [
+      23.0,
+      150.0
+    ],
+    "positionOffset": [
+      295.0,
+      355.0
+    ]
+  },
+  "smartHatOffset": [
+    -150.0,
+    -535.0
+  ],
+  "tail": {
+    "origin": [
+      320.0,
+      32.0
+    ],
+    "positionOffset": [
+      475.0,
+      240.0
+    ]
+  },
+  "uniTailExtraOffset": [
+    -130.0,
+    405.0
+  ],
+  "uniTailOriginOffset": [
+    250.0,
+    0.0
+  ],
+  "uniWingsOffset": [
+    250.0,
+    -175.0
+  ],
+  "uniWingsOriginOffsetFromCenter": [
+    35.0,
+    10.0
+  ],
+  "yawnOffset": [
+    -221.0,
+    25.0
+  ]
+}
