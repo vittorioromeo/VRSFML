@@ -589,7 +589,7 @@
                                            .outlineColor     = sf::Color::whiteMask(176u),
                                            .outlineThickness = 4.f,
                                            .size             = dragRect->size},
-                    {.view = nonScaledHUDView});
+                    {.view = gameView});
 
     //
     // Y coordinate below minimap to position money, combo, and buff texts

@@ -71,7 +71,7 @@
 ////////////////////////////////////////////////////////////
 void Main::drawCloudFrame(const CloudFrameDrawSettings& settings)
 {
-    const auto& [time, mins, maxs, xSteps, ySteps, scaleMult, outwardOffsetMult, batch] = settings;
+    const auto& [time, mins, maxs, xSteps, ySteps, scaleMult, outwardOffsetMult, color, batch] = settings;
 
     const auto vec2Lerp = [](const sf::Vec2f a, const sf::Vec2f b, const sf::Vec2f t)
     { return sf::Vec2f(a.x + (b.x - a.x) * t.x, a.y + (b.y - a.y) * t.y); };
@@ -128,6 +128,7 @@ void Main::drawCloudFrame(const CloudFrameDrawSettings& settings)
                 .scale       = {puffScale, puffScale},
                 .origin      = txrCloud.size / 2.f,
                 .textureRect = txrCloud,
+                .color       = color,
             });
 
             if (((iX + iY) % 3) == 0)
@@ -141,6 +142,7 @@ void Main::drawCloudFrame(const CloudFrameDrawSettings& settings)
                     .scale       = {puffScale, puffScale},
                     .origin      = txrCloud.size / 2.f,
                     .textureRect = txrCloud,
+                    .color       = color,
                 });
             }
         }
@@ -2051,7 +2053,7 @@ void Main::gameLoopTips(const float deltaTimeMs)
     const float tipBackgroundAlpha = bgProgress * 255.f;
 
     sf::Sprite tipBackgroundSprite{.position = {},
-                                   .scale  = sf::Vec2f{0.4f, 0.4f} + sf::Vec2f{0.4f, 0.4f} * easeInOutBack(bgProgress),
+                                   .scale  = sf::Vec2f{0.2f, 0.2f} + sf::Vec2f{0.6f, 0.6f} * easeInOutBack(bgProgress),
                                    .origin = txTipBg.getSize().toVec2f() / 2.f,
                                    .textureRect = txTipBg.getRect(),
                                    .color       = sf::Color::whiteMask(static_cast<U8>(tipBackgroundAlpha * 0.85f))};
@@ -2062,7 +2064,52 @@ void Main::gameLoopTips(const float deltaTimeMs)
     tipBackgroundSprite.setGlobalBottomCenter(
         {getResolution().x / 2.f / profile.hudScale, getResolution().y / profile.hudScale - 50.f});
 
-    rtGame.draw(tipBackgroundSprite, {.view = scaledHUDView, .texture = &txTipBg});
+    const sf::Vec2f tipBgTopLeft     = tipBackgroundSprite.getGlobalTopLeft() + sf::Vec2f{40.f, 40.f};
+    const sf::Vec2f tipBgBottomRight = tipBackgroundSprite.getGlobalBottomRight() - sf::Vec2f{40.f, 40.f};
+
+    cpuCloudHudDrawableBatch.clear();
+
+    drawCloudFrame({
+        .time              = shaderTime,
+        .mins              = tipBgTopLeft,
+        .maxs              = tipBgBottomRight,
+        .xSteps            = 10,
+        .ySteps            = 3,
+        .scaleMult         = 2.5f,
+        .outwardOffsetMult = 1.f,
+        .color             = sf::Color::whiteMask(static_cast<U8>(tipBackgroundAlpha * 0.82f)),
+        .batch             = &cpuCloudHudDrawableBatch,
+    });
+
+    const sf::Vec2f tipBgSize = tipBgBottomRight - tipBgTopLeft;
+    const sf::Vec2f tipMidInset{tipBgSize.x * 0.14f, tipBgSize.y * 0.22f};
+    const sf::Vec2f tipInnerInset{tipBgSize.x * 0.27f, tipBgSize.y * 0.36f};
+
+    drawCloudFrame({
+        .time              = shaderTime + 1.7f,
+        .mins              = tipBgTopLeft + tipMidInset,
+        .maxs              = tipBgBottomRight - tipMidInset,
+        .xSteps            = 8,
+        .ySteps            = 3,
+        .scaleMult         = 2.6f,
+        .outwardOffsetMult = 0.85f,
+        .color             = sf::Color::whiteMask(static_cast<U8>(tipBackgroundAlpha * 0.62f)),
+        .batch             = &cpuCloudHudDrawableBatch,
+    });
+
+    drawCloudFrame({
+        .time              = shaderTime + 3.4f,
+        .mins              = tipBgTopLeft + tipInnerInset,
+        .maxs              = tipBgBottomRight - tipInnerInset,
+        .xSteps            = 6,
+        .ySteps            = 2,
+        .scaleMult         = 2.6f,
+        .outwardOffsetMult = 0.7f,
+        .color             = sf::Color::whiteMask(static_cast<U8>(tipBackgroundAlpha * 0.46f)),
+        .batch             = &cpuCloudHudDrawableBatch,
+    });
+
+    gameLoopDisplayCloudBatch(cpuCloudHudDrawableBatch, scaledHUDView);
 
     sf::Sprite tipByteSprite{.position    = {},
                              .scale       = sf::Vec2f{0.85f, 0.85f} * easeInOutBack(byteProgress),

@@ -1582,7 +1582,11 @@ void Main::uiDraw(const sf::Vec2f mousePos)
         {uiMenuHotspotWidth * newScalingFactor, hotspotHeight},
     };
 
-    if (uiMenuDoesNotCoverPlayableSpace)
+    if (uiMenuLocked)
+    {
+        uiMenuHideTimer = uiMenuAutoHideDelaySeconds;
+    }
+    else if (uiMenuDoesNotCoverPlayableSpace)
     {
         uiMenuHideTimer = uiMenuAutoHideDelaySeconds;
     }
@@ -1867,6 +1871,7 @@ void Main::uiSpeedrunning()
 void Main::uiTabBar()
 {
     const float childHeight = uiGetMaxWindowHeight() - (60.f * profile.uiScale);
+    constexpr float uiMenuAutoHideDelaySeconds = 1.25f;
 
     constexpr TabButtonPalette defaultPalette{
         .idle    = ImVec4(0.15f, 0.35f, 0.60f, 1.0f),
@@ -1958,14 +1963,26 @@ void Main::uiTabBar()
             selectTab(3);
     }
 
+    ImGui::SameLine(ImGui::GetWindowWidth() - 92.f * profile.uiScale, 0.f);
+    if (drawTabButton(1.f, ICON_FA_CIRCLE_INFO "##991", lastUiSelectedTabIdx == 4, defaultPalette, {}, true))
+        selectTab(4);
 
-    ImGui::SameLine(ImGui::GetWindowWidth() - 60, 0.f);
+    ImGui::SameLine(0.f, 0.f);
     if (drawTabButton(1.f, ICON_FA_GEAR "##990", lastUiSelectedTabIdx == 5, defaultPalette, {}, true))
         selectTab(5);
 
     ImGui::SameLine(0.f, 0.f);
-    if (drawTabButton(1.f, ICON_FA_CIRCLE_INFO "##991", lastUiSelectedTabIdx == 4, defaultPalette, {}, true))
-        selectTab(4);
+    if (drawTabButton(1.f,
+                      uiMenuLocked ? ICON_FA_LOCK "##995" : ICON_FA_LOCK_OPEN "##995",
+                      uiMenuLocked,
+                      defaultPalette,
+                      {},
+                      true))
+    {
+        uiMenuLocked = !uiMenuLocked;
+        uiMenuHideTimer = uiMenuAutoHideDelaySeconds;
+        playSound(sounds.uitab);
+    }
 
     switch (lastUiSelectedTabIdx)
     {

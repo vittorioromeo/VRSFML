@@ -144,6 +144,7 @@ struct CloudFrameDrawSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
 
     float scaleMult;
     float outwardOffsetMult;
+    sf::Color color = sf::Color::White;
 
     sf::CPUDrawableBatch* batch;
 };
@@ -383,10 +384,6 @@ struct Main
     [[nodiscard]] sf::RenderWindow makeWindow();
     sf::RenderWindow               window{makeWindow()};
     float                          dpiScalingFactor = 1.f;
-
-    ////////////////////////////////////////////////////////////
-    // Views
-
 
     ////////////////////////////////////////////////////////////
     void refreshWindowAutoBatchModeFromProfile() // TODO P1: check if this solves flickering
@@ -1065,7 +1062,7 @@ struct Main
     sf::CPUDrawableBatch catTextTopDrawableBatch; // drawn on top of ImGui
     sf::CPUDrawableBatch tempDrawableBatch;       // for misc one-off draws (hexed cat effect)
 
-    struct HexedCatDrawCommand
+    struct HexedCatDrawCommand // NOLINT(cppcoreguidelines-pro-type-member-init)
     {
         sf::base::SizeT renderTextureIndex;
         sf::Vec2f       position;
@@ -1128,6 +1125,7 @@ struct Main
     float                         catDragPressDuration{0.f};
     sf::base::Optional<sf::Vec2f> catDragOrigin;
     sf::base::Vector<Cat*>        draggedCats;
+    bool                          draggedCatsStartedWithTouch{false};
     Cat*                          catToPlace{nullptr};
 
     ////////////////////////////////////////////////////////////
@@ -1870,11 +1868,11 @@ struct Main
     ////////////////////////////////////////////////////////////
     [[nodiscard]] float getCappedGameViewAspectRatio(const sf::Vec2f originalSize, const sf::Vec2f windowSize) const
     {
-        const float originalAspect       = originalSize.x / originalSize.y;
-        const float windowAspect         = windowSize.x / windowSize.y;
-        const float configuredMaxAspect  = sf::base::max(maxGameViewAspectRatio, originalAspect);
-        const float unlockedMapAspect    = pt != nullptr ? pt->getMapLimit() / originalSize.y : originalAspect;
-        const float clampedMaxViewAspect = sf::base::min(configuredMaxAspect, unlockedMapAspect);
+        const float originalAspect = originalSize.x / originalSize.y;
+        const float windowAspect   = windowSize.x / windowSize.y;
+        // const float configuredMaxAspect = sf::base::max(maxGameViewAspectRatio, originalAspect);
+        // const float unlockedMapAspect   = pt != nullptr ? pt->getMapLimit() / originalSize.y : originalAspect;
+        // const float clampedMaxViewAspect = sf::base::min(configuredMaxAspect, unlockedMapAspect);
 
         return sf::base::max(windowAspect, originalAspect);
     }
@@ -2001,6 +1999,7 @@ struct Main
     float        lastFontScale   = 1.f;
     float        uiMenuRevealT   = 1.f;
     float        uiMenuHideTimer = 0.75f;
+    bool         uiMenuLocked    = false;
     sf::Vec2f    uiMenuLastDrawPos{};
     sf::Vec2f    uiMenuLastDrawSize{uiWindowWidth, 0.f};
 
@@ -2215,6 +2214,7 @@ struct Main
         catDragPressDuration = 0.f;
         catDragOrigin.reset();
         draggedCats.clear();
+        draggedCatsStartedWithTouch = false;
         catToPlace = nullptr;
     }
 

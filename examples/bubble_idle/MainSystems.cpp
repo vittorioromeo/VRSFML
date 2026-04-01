@@ -1770,6 +1770,8 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
 ////////////////////////////////////////////////////////////
 void Main::gameLoopUpdateCatDragging(const float deltaTimeMs, const SizeT countFingersDown, const sf::Vec2f mousePos)
 {
+    const bool dragInputHeld = mBtnDown(getLMB(), /* penetrateUI */ true) || countFingersDown == 1u;
+
     if (inPrestigeTransition)
     {
         resetAllDraggedCats();
@@ -1806,6 +1808,7 @@ void Main::gameLoopUpdateCatDragging(const float deltaTimeMs, const SizeT countF
         const auto dragRect = getAoEDragRect(mousePos).value();
         catDragOrigin.reset();
         draggedCats.clear();
+        draggedCatsStartedWithTouch = false;
 
         for (Cat& cat : pt->cats)
         {
@@ -1828,16 +1831,13 @@ void Main::gameLoopUpdateCatDragging(const float deltaTimeMs, const SizeT countF
                 return bubbleCullingBoundaries.isInside(catToPlace->position) &&
                        inputHelper.wasMouseButtonJustPressed(getLMB());
 
-            const bool noMouseButtonNorFinger = !mBtnDown(getLMB(), /* penetrateUI */ true) && countFingersDown != 1;
+            if (draggedCats.empty())
+                return false;
 
-            if (draggedCats.size() <= 1u)
-                return noMouseButtonNorFinger;
+            if (draggedCatsStartedWithTouch)
+                return countFingersDown != 1u;
 
-            if (draggedCats.size() > 1u)
-                return noMouseButtonNorFinger && !keyDown(sf::Keyboard::Key::LShift) &&
-                       !keyDown(sf::Keyboard::Key::LControl);
-
-            return false;
+            return inputHelper.wasMouseButtonJustPressed(getLMB());
         }();
 
         if (shouldDropCats)
@@ -1880,6 +1880,12 @@ void Main::gameLoopUpdateCatDragging(const float deltaTimeMs, const SizeT countF
             return;
         }
 
+        if (!dragInputHeld)
+        {
+            catDragPressDuration = 0.f;
+            return;
+        }
+
         Cat* hoveredCat = nullptr;
 
         // Only check for hover targets during initial press phase
@@ -1895,6 +1901,12 @@ void Main::gameLoopUpdateCatDragging(const float deltaTimeMs, const SizeT countF
                 hoveredCat = &cat;
             }
 
+        if (hoveredCat == nullptr)
+        {
+            catDragPressDuration = 0.f;
+            return;
+        }
+
         if (hoveredCat)
         {
             catDragPressDuration += deltaTimeMs;
@@ -1903,6 +1915,7 @@ void Main::gameLoopUpdateCatDragging(const float deltaTimeMs, const SizeT countF
             {
                 draggedCats.clear();
                 draggedCats.pushBack(hoveredCat);
+                draggedCatsStartedWithTouch = countFingersDown == 1u;
 
                 if (hoveredCat->type == CatType::Duck)
                 {
