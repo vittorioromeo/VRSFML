@@ -62,28 +62,28 @@ void Main::gameLoopUpdateCombo(const float                         deltaTimeMs,
     checkComboEnd(deltaTimeMs, pt->mouseCatCombo, pt->mouseCatComboCountdown);
 
     // Combo failure countdown for red text effect
-    (void)comboFailCountdown.updateAndStop(deltaTimeMs);
+    (void)comboState.comboFailCountdown.updateAndStop(deltaTimeMs);
 
     // Player combo data
-    const auto playerLastCombo      = combo;
+    const auto playerLastCombo      = comboState.combo;
     bool       playerJustEndedCombo = false;
 
     // Player combo failure due to timer end
-    if (checkComboEnd(deltaTimeMs, combo, comboCountdown))
+    if (checkComboEnd(deltaTimeMs, comboState.combo, comboState.comboCountdown))
         playerJustEndedCombo = true;
 
 
     // Player combo failure due to missed click
     if (!anyBubblePoppedByClicking && clickPosition.hasValue() && !pt->laserPopEnabled)
     {
-        if (combo > 1)
+        if (comboState.combo > 1)
         {
             playSound(sounds.scratch);
-            comboFailCountdown.value = 250.f;
+            comboState.comboFailCountdown.value = 250.f;
         }
 
-        combo                = 0;
-        comboCountdown.value = 0.f;
+        comboState.combo                = 0;
+        comboState.comboCountdown.value = 0.f;
 
         playerJustEndedCombo = true;
     }
@@ -92,28 +92,28 @@ void Main::gameLoopUpdateCombo(const float                         deltaTimeMs,
     {
         if (playerLastCombo > 2)
         {
-            comboAccReward     = static_cast<int>(sf::base::pow(static_cast<float>(comboNOthers), 1.25f));
-            comboAccStarReward = comboNStars;
+            comboState.comboAccReward = static_cast<int>(sf::base::pow(static_cast<float>(comboState.comboNOthers), 1.25f));
+            comboState.comboAccStarReward = comboState.comboNStars;
         }
         else
         {
-            comboAccReward     = 0;
-            comboAccStarReward = 0;
+            comboState.comboAccReward     = 0;
+            comboState.comboAccStarReward = 0;
         }
 
-        iComboAccReward     = 0;
-        iComboAccStarReward = 0;
-        comboNStars         = 0;
-        comboNOthers        = 0;
+        comboState.iComboAccReward     = 0;
+        comboState.iComboAccStarReward = 0;
+        comboState.comboNStars         = 0;
+        comboState.comboNOthers        = 0;
     }
 
     if (profile.accumulatingCombo)
     {
-        if (iComboAccReward < comboAccReward &&
-            accComboDelay.updateAndLoop(deltaTimeMs, 35.f) == CountdownStatusLoop::Looping)
+        if (comboState.iComboAccReward < comboState.comboAccReward &&
+            comboState.accComboDelay.updateAndLoop(deltaTimeMs, 35.f) == CountdownStatusLoop::Looping)
         {
-            ++iComboAccReward;
-            accComboDelay.value = 35.f;
+            ++comboState.iComboAccReward;
+            comboState.accComboDelay.value = 35.f;
 
             if (spawnEarnedCoinParticle(fromWorldToHud(mousePos)))
             {
@@ -123,20 +123,20 @@ void Main::gameLoopUpdateCombo(const float                         deltaTimeMs,
                 const sf::Vec2f viewCenter         = getViewCenter();
                 sounds.coindelay.settings.position = {viewCenter.x - viewSize.x / 2.f + 25.f,
                                                       viewCenter.y - viewSize.y / 2.f + 25.f};
-                sounds.coindelay.settings.pitch    = 0.8f + static_cast<float>(iComboAccReward) * 0.04f;
+                sounds.coindelay.settings.pitch    = 0.8f + static_cast<float>(comboState.iComboAccReward) * 0.04f;
                 sounds.coindelay.settings.volume   = profile.sfxVolume / 100.f;
 
                 playSound(sounds.coindelay, /* maxOverlap */ 64);
             }
         }
 
-        if (iComboAccStarReward < comboAccStarReward &&
-            accComboStarDelay.updateAndLoop(deltaTimeMs, 75.f) == CountdownStatusLoop::Looping)
+        if (comboState.iComboAccStarReward < comboState.comboAccStarReward &&
+            comboState.accComboStarDelay.updateAndLoop(deltaTimeMs, 75.f) == CountdownStatusLoop::Looping)
         {
-            ++iComboAccStarReward;
+            ++comboState.iComboAccStarReward;
 
             sounds.shine3.settings.position = {mousePos.x, mousePos.y};
-            sounds.shine3.settings.pitch    = 0.75f + static_cast<float>(iComboAccStarReward) * 0.075f;
+            sounds.shine3.settings.pitch    = 0.75f + static_cast<float>(comboState.iComboAccStarReward) * 0.075f;
             playSound(sounds.shine3);
 
             spawnParticle(ParticleData{.position      = mousePos,
@@ -539,9 +539,9 @@ void Main::gameLoopUpdateAndDrawBackground(const float deltaTimeMs, const sf::Vi
 
     rtBackground.draw(*chunkTx[idx],
                       {
-                          .scale       = chunkScale,
-                          .textureRect = {{actualScroll + backgroundScroll * 0.25f, 0.f}, chunkTextureRectSize},
-                          .color       = hueColor(currentBackgroundHue.asDegrees(), getAlpha(255.f)),
+                          .scale = chunkScale,
+                          .textureRect = {{playerInputState.actualScroll + backgroundScroll * 0.25f, 0.f}, chunkTextureRectSize},
+                          .color = hueColor(currentBackgroundHue.asDegrees(), getAlpha(255.f)),
                       },
                       {.view = gameBackgroundView, .shader = &shader});
 
@@ -555,7 +555,8 @@ void Main::gameLoopUpdateAndDrawBackground(const float deltaTimeMs, const sf::Vi
                       {
                           .scale       = {detailScale.x, detailScale.y},
                           .origin      = {0.f, 0.f},
-                          .textureRect = {{actualScroll * 1.5f + backgroundScroll * 1.5f, 0.f}, detailTextureRectSize},
+                          .textureRect = {{playerInputState.actualScroll * 1.5f + backgroundScroll * 1.5f, 0.f},
+                                          detailTextureRectSize},
                           .color       = sf::Color::whiteMask(getAlpha(255.f * easeInOutSine(firstCloudTimer))),
                       },
                       {.view = gameBackgroundView});
@@ -568,7 +569,8 @@ void Main::gameLoopUpdateAndDrawBackground(const float deltaTimeMs, const sf::Vi
     if (idx == 0u || profile.alwaysShowDrawings)
         rtBackground.draw(txDrawings,
                           {
-                              .textureRect = {{actualScroll * 2.f, 0.f}, txBackgroundChunk.getSize().toVec2f() * 2.f},
+                              .textureRect = {{playerInputState.actualScroll * 2.f, 0.f},
+                                              txBackgroundChunk.getSize().toVec2f() * 2.f},
                               .color       = sf::Color::whiteMask(getAlpha(200.f * easeInOutSine(firstDrawingTimer))),
                           },
                           {.view = gameBackgroundView});
@@ -577,9 +579,10 @@ void Main::gameLoopUpdateAndDrawBackground(const float deltaTimeMs, const sf::Vi
     if (idx != 0u)
         rtBackground.draw(*detailTx[idx],
                           {
-                              .scale = detailScale,
-                              .textureRect = {{actualScroll * 2.f + backgroundScroll * 0.5f, 0.f}, detailTextureRectSize},
-                              .color = sf::Color::whiteMask(getAlpha(190.f)),
+                              .scale       = detailScale,
+                              .textureRect = {{playerInputState.actualScroll * 2.f + backgroundScroll * 0.5f, 0.f},
+                                              detailTextureRectSize},
+                              .color       = sf::Color::whiteMask(getAlpha(190.f)),
                           },
                           {.view = gameBackgroundView});
 
@@ -646,14 +649,14 @@ void Main::gameLoopUpdateComboText(const float deltaTimeMs, const float yBelowMi
     if (!pt->comboPurchased)
         return;
 
-    comboText.setString("x" + sf::base::toString(combo + 1));
-    comboText.setOutlineColor(outlineHueColor);
+    comboState.comboText.setString("x" + sf::base::toString(comboState.combo + 1));
+    comboState.comboText.setOutlineColor(outlineHueColor);
 
-    comboTextShakeEffect.update(deltaTimeMs);
-    comboTextShakeEffect.applyToText(comboText);
-    comboText.scale *= 0.5f;
+    comboState.comboTextShakeEffect.update(deltaTimeMs);
+    comboState.comboTextShakeEffect.applyToText(comboState.comboText);
+    comboState.comboText.scale *= 0.5f;
 
-    comboText.position.y = yBelowMinimap + 45.f;
+    comboState.comboText.position.y = yBelowMinimap + 45.f;
 }
 
 
@@ -733,11 +736,11 @@ void Main::gameLoopUpdateBuffText()
                           static_cast<double>(buffTime / 1000.f)));
     }
 
-    buffText.setString(buffStrBuffer);
-    buffText.setOutlineColor(outlineHueColor);
+    comboState.buffText.setString(buffStrBuffer);
+    comboState.buffText.setOutlineColor(outlineHueColor);
 
-    buffText.position.y = comboText.getGlobalBottomLeft().y + 10.f;
-    buffText.scale      = {0.5f, 0.5f};
+    comboState.buffText.position.y = comboState.comboText.getGlobalBottomLeft().y + 10.f;
+    comboState.buffText.scale      = {0.5f, 0.5f};
 }
 
 

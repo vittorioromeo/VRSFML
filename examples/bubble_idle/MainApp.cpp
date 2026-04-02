@@ -71,7 +71,7 @@ Main::Main() : onSteamDeck(false)
 
     //
     // Touch state
-    fingerPositions.resize(10);
+    playerInputState.fingerPositions.resize(10);
 }
 
 ////////////////////////////////////////////////////////////

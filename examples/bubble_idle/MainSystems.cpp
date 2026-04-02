@@ -60,17 +60,18 @@ void Main::gameLoopUpdateScrolling(const float deltaTimeMs, const sf::base::Vect
 {
     // Reset map scrolling
     if (keyDown(sf::Keyboard::Key::LShift) || (downFingers.size() != 2u && !mBtnDown(getRMB(), /* penetrateUI */ true)))
-        dragPosition.reset();
+        playerInputState.dragPosition.reset();
 
     //
     // Scrolling
-    scroll = sf::base::clamp(scroll,
-                             0.f,
-                             sf::base::max(0.f,
-                                           sf::base::min(pt->getMapLimit() / 2.f - getCurrentGameViewSize().x / 2.f,
-                                                         (boundaries.x - getCurrentGameViewSize().x) / 2.f)));
+    playerInputState
+        .scroll = sf::base::clamp(playerInputState.scroll,
+                                  0.f,
+                                  sf::base::max(0.f,
+                                                sf::base::min(pt->getMapLimit() / 2.f - getCurrentGameViewSize().x / 2.f,
+                                                              (boundaries.x - getCurrentGameViewSize().x) / 2.f)));
 
-    actualScroll = exponentialApproach(actualScroll, scroll, deltaTimeMs, 75.f);
+    playerInputState.actualScroll = exponentialApproach(playerInputState.actualScroll, playerInputState.scroll, deltaTimeMs, 75.f);
 }
 
 
@@ -162,7 +163,7 @@ void Main::gameLoopUpdateTransitions(const float deltaTimeMs)
             });
 
             const float targetScroll = (rightmostIt->position.x - getCurrentGameViewSize().x / 2.f) / 2.f;
-            scroll                   = exponentialApproach(scroll, targetScroll, deltaTimeMs, 15.f);
+            playerInputState.scroll  = exponentialApproach(playerInputState.scroll, targetScroll, deltaTimeMs, 15.f);
 
             if (rightmostIt != pt->cats.end())
                 std::swap(*rightmostIt, pt->cats.back());
@@ -232,7 +233,7 @@ void Main::gameLoopUpdateTransitions(const float deltaTimeMs)
         pt->mapPurchased               = false;
         pt->psvMapExtension.nPurchases = 0u;
 
-        scroll = 0.f;
+        playerInputState.scroll = 0.f;
 
         sf::base::vectorEraseIf(pt->bubbles, [&](const Bubble& b) { return b.position.x > pt->getMapLimit() + 128.f; });
     }
@@ -469,39 +470,40 @@ void Main::gameLoopUpdateAttractoBuff(const float deltaTimeMs) const
         {
             if (!pt->laserPopEnabled)
             {
-                addCombo(combo, comboCountdown);
-                comboTextShakeEffect.bump(rngFast, 1.f + static_cast<float>(combo) * 0.2f);
+                addCombo(comboState.combo, comboState.comboCountdown);
+                comboState.comboTextShakeEffect.bump(rngFast, 1.f + static_cast<float>(comboState.combo) * 0.2f);
             }
             else
             {
-                ++laserCursorCombo;
+                ++comboState.laserCursorCombo;
 
-                if (combo == 0 || laserCursorCombo >= 10)
+                if (comboState.combo == 0 || comboState.laserCursorCombo >= 10)
                 {
-                    addCombo(combo, comboCountdown);
-                    comboTextShakeEffect.bump(rngFast, 0.01f + static_cast<float>(combo) * 0.002f);
+                    addCombo(comboState.combo, comboState.comboCountdown);
+                    comboState.comboTextShakeEffect.bump(rngFast, 0.01f + static_cast<float>(comboState.combo) * 0.002f);
 
-                    comboCountdown.value = sf::base::min(comboCountdown.value, pt->psvComboStartTime.currentValue() * 100.f);
+                    comboState.comboCountdown.value = sf::base::min(comboState.comboCountdown.value,
+                                                                    pt->psvComboStartTime.currentValue() * 100.f);
 
-                    combo = sf::base::min(combo, 998);
+                    comboState.combo = sf::base::min(comboState.combo, 998);
                 }
             }
         }
         else
         {
-            combo = 1;
+            comboState.combo = 1;
         }
 
         const MoneyType
             reward = computeFinalReward(/* bubble     */ *firstClickedBubble,
                                         /* multiplier */ 1.f,
-                                        /* comboMult  */ getComboValueMult(combo, pt->laserPopEnabled ? playerComboDecayLaser : playerComboDecay),
+                                        /* comboMult  */ getComboValueMult(comboState.combo, pt->laserPopEnabled ? playerComboDecayLaser : playerComboDecay),
                                         /* popperCat  */ nullptr);
 
         popWithRewardAndReplaceBubble({
             .reward          = reward,
             .bubble          = *firstClickedBubble,
-            .xCombo          = combo,
+            .xCombo          = comboState.combo,
             .popSoundOverlap = true,
             .popperCat       = nullptr,
             .multiPop        = false,
@@ -521,7 +523,7 @@ void Main::gameLoopUpdateAttractoBuff(const float deltaTimeMs) const
                 popWithRewardAndReplaceBubble({
                     .reward          = reward,
                     .bubble          = otherBubble,
-                    .xCombo          = combo,
+                    .xCombo          = comboState.combo,
                     .popSoundOverlap = false,
                     .popperCat       = nullptr,
                     .multiPop        = true,
@@ -554,7 +556,8 @@ void Main::gameLoopUpdateCatActionNormal(const float /* deltaTimeMs */, Cat& cat
         const Cat* mouseCat = getMouseCat();
         const Cat* copyCat  = getCopyCat();
 
-        const bool inMouseCatRange = mouseCat != nullptr && (mouseCat->position - cat.position).lengthSquared() <= squaredMouseCatRange;
+        const bool inMouseCatRange = mouseCat != nullptr &&
+                                     (mouseCat->position - cat.position).lengthSquared() <= squaredMouseCatRange;
 
         const bool inCopyMouseCatRange = copyCat != nullptr && pt->copycatCopiedCatType == CatType::Mouse &&
                                          (copyCat->position - cat.position).lengthSquared() <= squaredMouseCatRange;
@@ -1286,8 +1289,8 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
             }
         }
 
-        const bool allowOOBCat = &cat == catToPlace || cat.astroState.hasValue() ||
-                                 (draggedCats.size() > 1u && isCatBeingDragged(cat));
+        const bool allowOOBCat = &cat == playerInputState.catToPlace || cat.astroState.hasValue() ||
+                                 (playerInputState.draggedCats.size() > 1u && isCatBeingDragged(cat));
 
         if (!allowOOBCat)
             cat.position = cat.position.componentWiseClamp({catRadius, catRadius},
@@ -1781,37 +1784,37 @@ void Main::gameLoopUpdateCatDragging(const float deltaTimeMs, const SizeT countF
     }
 
     // Automatically scroll when dragging cats near the edge of the screen
-    if ((!draggedCats.empty() || isAOESelecting()) && catToPlace == nullptr)
+    if ((!playerInputState.draggedCats.empty() || isAOESelecting()) && playerInputState.catToPlace == nullptr)
     {
         constexpr float offset = 48.f;
 
         if (mousePos.x < particleCullingBoundaries.left + offset * 1.f)
-            scroll -= 8.f;
+            playerInputState.scroll -= 8.f;
         else if (mousePos.x < particleCullingBoundaries.left + offset * 2.f)
-            scroll -= 4.f;
+            playerInputState.scroll -= 4.f;
         else if (mousePos.x < particleCullingBoundaries.left + offset * 3.f)
-            scroll -= 2.f;
+            playerInputState.scroll -= 2.f;
 
         if (mousePos.x > particleCullingBoundaries.right - offset * 1.f)
-            scroll += 8.f;
+            playerInputState.scroll += 8.f;
         else if (mousePos.x > particleCullingBoundaries.right - offset * 2.f)
-            scroll += 4.f;
+            playerInputState.scroll += 4.f;
         else if (mousePos.x > particleCullingBoundaries.right - offset * 3.f)
-            scroll += 2.f;
+            playerInputState.scroll += 2.f;
     }
 
     if (isAOESelecting())
     {
-        if (!catDragOrigin.hasValue())
-            catDragOrigin.emplace(mousePos);
+        if (!playerInputState.catDragOrigin.hasValue())
+            playerInputState.catDragOrigin.emplace(mousePos);
     }
-    else if (catDragOrigin.hasValue())
+    else if (playerInputState.catDragOrigin.hasValue())
     {
         const auto dragRect = getAoEDragRect(mousePos).value();
-        catDragOrigin.reset();
-        draggedCats.clear();
-        draggedCatsStartedWithTouch        = false;
-        draggedCatsStartedFromAOESelection = true;
+        playerInputState.catDragOrigin.reset();
+        playerInputState.draggedCats.clear();
+        playerInputState.draggedCatsStartedWithTouch        = false;
+        playerInputState.draggedCatsStartedFromAOESelection = true;
 
         for (Cat& cat : pt->cats)
         {
@@ -1821,7 +1824,7 @@ void Main::gameLoopUpdateCatDragging(const float deltaTimeMs, const SizeT countF
             if (!dragRect.contains(cat.position))
                 continue;
 
-            draggedCats.pushBack(&cat);
+            playerInputState.draggedCats.pushBack(&cat);
         }
 
         playSound(sounds.grab);
@@ -1830,17 +1833,17 @@ void Main::gameLoopUpdateCatDragging(const float deltaTimeMs, const SizeT countF
     {
         const bool shouldDropCats = [&]
         {
-            if (catToPlace != nullptr)
-                return bubbleCullingBoundaries.isInside(catToPlace->position) &&
+            if (playerInputState.catToPlace != nullptr)
+                return bubbleCullingBoundaries.isInside(playerInputState.catToPlace->position) &&
                        inputHelper.wasMouseButtonJustPressed(getLMB());
 
-            if (draggedCats.empty())
+            if (playerInputState.draggedCats.empty())
                 return false;
 
-            if (draggedCatsStartedWithTouch)
+            if (playerInputState.draggedCatsStartedWithTouch)
                 return countFingersDown != 1u;
 
-            if (draggedCatsStartedFromAOESelection)
+            if (playerInputState.draggedCatsStartedFromAOESelection)
                 return inputHelper.wasMouseButtonJustPressed(getLMB());
 
             return !dragInputHeld;
@@ -1848,33 +1851,33 @@ void Main::gameLoopUpdateCatDragging(const float deltaTimeMs, const SizeT countF
 
         if (shouldDropCats)
         {
-            if (!draggedCats.empty())
+            if (!playerInputState.draggedCats.empty())
                 playSound(sounds.drop);
 
             resetAllDraggedCats();
             return;
         }
 
-        if (!draggedCats.empty())
+        if (!playerInputState.draggedCats.empty())
         {
             const auto pivotCatIdx = pickDragPivotCatIndex();
-            Cat&       pivotCat    = *draggedCats[pivotCatIdx];
+            Cat&       pivotCat    = *playerInputState.draggedCats[pivotCatIdx];
 
             static thread_local sf::base::Vector<sf::Vec2f> relativeCatPositions;
             relativeCatPositions.clear();
-            relativeCatPositions.reserve(draggedCats.size());
+            relativeCatPositions.reserve(playerInputState.draggedCats.size());
 
-            for (const Cat* cat : draggedCats)
+            for (const Cat* cat : playerInputState.draggedCats)
                 relativeCatPositions.pushBack(cat->position - pivotCat.position);
 
             pivotCat.position = exponentialApproach(pivotCat.position, mousePos + sf::Vec2f{-10.f, 13.f}, deltaTimeMs, 25.f);
 
-            for (sf::base::SizeT i = 0u; i < draggedCats.size(); ++i)
+            for (sf::base::SizeT i = 0u; i < playerInputState.draggedCats.size(); ++i)
             {
                 if (i == pivotCatIdx)
                     continue;
 
-                draggedCats[i]->position = pivotCat.position + relativeCatPositions[i];
+                playerInputState.draggedCats[i]->position = pivotCat.position + relativeCatPositions[i];
             }
 
             return;
@@ -1888,14 +1891,14 @@ void Main::gameLoopUpdateCatDragging(const float deltaTimeMs, const SizeT countF
 
         if (!dragInputHeld)
         {
-            catDragPressDuration = 0.f;
+            playerInputState.catDragPressDuration = 0.f;
             return;
         }
 
         Cat* hoveredCat = nullptr;
 
         // Only check for hover targets during initial press phase
-        if (catDragPressDuration <= profile.catDragPressDuration)
+        if (playerInputState.catDragPressDuration <= profile.catDragPressDuration)
             for (Cat& cat : pt->cats)
             {
                 if (!isCatDraggable(cat))
@@ -1909,20 +1912,20 @@ void Main::gameLoopUpdateCatDragging(const float deltaTimeMs, const SizeT countF
 
         if (hoveredCat == nullptr)
         {
-            catDragPressDuration = 0.f;
+            playerInputState.catDragPressDuration = 0.f;
             return;
         }
 
         if (hoveredCat)
         {
-            catDragPressDuration += deltaTimeMs;
+            playerInputState.catDragPressDuration += deltaTimeMs;
 
-            if (catDragPressDuration >= profile.catDragPressDuration)
+            if (playerInputState.catDragPressDuration >= profile.catDragPressDuration)
             {
-                draggedCats.clear();
-                draggedCats.pushBack(hoveredCat);
-                draggedCatsStartedWithTouch        = countFingersDown == 1u;
-                draggedCatsStartedFromAOESelection = false;
+                playerInputState.draggedCats.clear();
+                playerInputState.draggedCats.pushBack(hoveredCat);
+                playerInputState.draggedCatsStartedWithTouch        = countFingersDown == 1u;
+                playerInputState.draggedCatsStartedFromAOESelection = false;
 
                 if (hoveredCat->type == CatType::Duck)
                 {
@@ -2370,7 +2373,8 @@ void Main::gameLoopUpdateDollsImpl(const float deltaTimeMs, const sf::Vec2f mous
                               /* hue */ wrapHue(rngFast.getF(-50.f, 50.f) + (copy ? 180.f : 0.f)),
                               ParticleType::Hex);
 
-            const bool click = (mBtnDown(getLMB(), /* penetrateUI */ false) || fingerPositions[0].hasValue());
+            const bool click = (mBtnDown(getLMB(), /* penetrateUI */ false) ||
+                                playerInputState.fingerPositions[0].hasValue());
 
             if (click && (mousePos - d.position).lengthSquared() <= d.getRadiusSquared())
             {
