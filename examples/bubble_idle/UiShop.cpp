@@ -41,14 +41,14 @@ void Main::uiTabBarShop()
 
     uiImgsep(txrMenuSeparator0, "click upgrades", /* first */ true);
 
-    std::sprintf(uiTooltipBuffer,
+    std::sprintf(uiState.uiTooltipBuffer,
                  "Build your combo by popping bubbles quickly, increasing the value of each subsequent "
                  "one.\n\nCombos expire on misclicks and over time, but can be upgraded to last "
                  "longer.\n\nStar bubbles are affected -- pop them while your multiplier is high!");
-    uiLabelBuffer[0] = '\0';
+    uiState.uiLabelBuffer[0] = '\0';
     if (makePurchasableButtonOneTime("Combo", 20u, pt->comboPurchased))
     {
-        combo = 0;
+        comboState.combo = 0;
         doTip("Pop bubbles quickly to keep\nyour combo up and make more money!");
     }
 
@@ -62,7 +62,7 @@ void Main::uiTabBarShop()
         uiSetUnlockLabelY(0u);
         if (!pt->psvComboStartTime.isMaxedOut())
         {
-            std::sprintf(uiTooltipBuffer,
+            std::sprintf(uiState.uiTooltipBuffer,
                          "Increase combo duration from %.2fs to %.2fs. We are in it for the long haul!%s",
                          static_cast<double>(currentComboStartTime),
                          static_cast<double>(nextComboStartTime),
@@ -70,10 +70,10 @@ void Main::uiTabBarShop()
         }
         else
         {
-            std::sprintf(uiTooltipBuffer, "Increase combo duration (MAX). We are in it for the long haul!%s", mouseNote);
+            std::sprintf(uiState.uiTooltipBuffer, "Increase combo duration (MAX). We are in it for the long haul!%s", mouseNote);
         }
 
-        std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(currentComboStartTime));
+        std::sprintf(uiState.uiLabelBuffer, "%.2fs", static_cast<double>(currentComboStartTime));
         makePSVButton("  Longer combo", pt->psvComboStartTime);
     }
 
@@ -90,7 +90,7 @@ void Main::uiTabBarShop()
         }
 
         uiSetUnlockLabelY(1u);
-        std::sprintf(uiTooltipBuffer,
+        std::sprintf(uiState.uiTooltipBuffer,
                      "Extend the map and enable scrolling.\n\nExtending the map will increase the total number "
                      "of "
                      "bubbles you can work with, and will also reveal magical shrines that grant unique cats "
@@ -99,30 +99,30 @@ void Main::uiTabBarShop()
                      "dragging with two fingers, by using the A/D/Left/Right keys.\n\nYou can jump around the "
                      "map "
                      "by clicking on the minimap or using the PgUp/PgDn/Home/End keys.");
-        uiLabelBuffer[0] = '\0';
+        uiState.uiLabelBuffer[0] = '\0';
         if (makePurchasableButtonOneTime("Map scrolling", 1000u, pt->mapPurchased))
         {
-            scroll = 0.f;
+            playerInputState.scroll = 0.f;
             doTip(
                 "Explore the map by using the mouse wheel,\ndragging via right click, or with your "
                 "keyboard.\nYou can also click on the minimap!");
 
             if (pt->psvBubbleValue.nPurchases == 0u)
-                scrollArrowCountdown.value = 2000.f;
+                uiState.scrollArrowCountdown.value = 2000.f;
         }
 
         if (checkUiUnlock(2u, pt->mapPurchased))
         {
             uiSetUnlockLabelY(2u);
-            std::sprintf(uiTooltipBuffer, "Extend the map further by one screen.");
-            std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(pt->getMapLimit() / boundaries.x * 100.f));
+            std::sprintf(uiState.uiTooltipBuffer, "Extend the map further by one screen.");
+            std::sprintf(uiState.uiLabelBuffer, "%.2f%%", static_cast<double>(pt->getMapLimit() / boundaries.x * 100.f));
             makePSVButton("  Extend map", pt->psvMapExtension);
 
             ImGui::BeginDisabled(pt->psvShrineActivation.nPurchases > pt->psvMapExtension.nPurchases);
-            std::sprintf(uiTooltipBuffer,
+            std::sprintf(uiState.uiTooltipBuffer,
                          "Activates the next shrine, enabling it to absorb nearby popped bubbles. Once enough "
                          "bubbles are absorbed by a shrine, it will grant a unique cat.");
-            std::sprintf(uiLabelBuffer, "%zu/9", pt->psvShrineActivation.nPurchases);
+            std::sprintf(uiState.uiLabelBuffer, "%zu/9", pt->psvShrineActivation.nPurchases);
             if (makePSVButton("  Activate next shrine", pt->psvShrineActivation))
             {
                 if (!pt->shrineActivateTipShown)
@@ -146,10 +146,10 @@ void Main::uiTabBarShop()
         uiImgsep(txrMenuSeparator2, "bubble upgrades");
 
         uiSetUnlockLabelY(3u);
-        std::sprintf(uiTooltipBuffer,
+        std::sprintf(uiState.uiTooltipBuffer,
                      "Increase the total number of bubbles. Scales with map size.\n\nMore bubbles, "
                      "more money, fewer FPS!");
-        std::sprintf(uiLabelBuffer, "%zu bubbles", static_cast<SizeT>(pt->psvBubbleCount.currentValue()));
+        std::sprintf(uiState.uiLabelBuffer, "%zu bubbles", static_cast<SizeT>(pt->psvBubbleCount.currentValue()));
         makePSVButton("More bubbles", pt->psvBubbleCount);
     }
 
@@ -158,13 +158,13 @@ void Main::uiTabBarShop()
         uiImgsep(txrMenuSeparator3, "cats");
 
         uiSetUnlockLabelY(4u);
-        std::sprintf(uiTooltipBuffer,
+        std::sprintf(uiState.uiTooltipBuffer,
                      "Cats pop nearby bubbles or bombs. Their cooldown and range can be upgraded. Their "
                      "behavior can be permanently upgraded with prestige points.\n\nCats can be dragged around "
                      "to "
                      "position them strategically.\n\nNo, you can't get rid of a cat once purchased, you "
                      "monster.");
-        std::sprintf(uiLabelBuffer, "%zu cats", nCatNormal);
+        std::sprintf(uiState.uiLabelBuffer, "%zu cats", nCatNormal);
         if (makePSVButton("Cat", pt->psvPerCatType[asIdx(CatType::Normal)]))
         {
             spawnCatCentered(CatType::Normal, getHueByCatType(CatType::Normal), /* placeInHand */ !onSteamDeck);
@@ -188,7 +188,7 @@ void Main::uiTabBarShop()
 
         if (!psv.isMaxedOut())
         {
-            std::sprintf(uiTooltipBuffer,
+            std::sprintf(uiState.uiTooltipBuffer,
                          "Decrease cooldown from %.2fs to %.2fs.%s\n\n(Note: can be reverted by right-clicking, "
                          "but no refunds!)",
                          static_cast<double>(currentCooldown / 1000.f),
@@ -197,13 +197,13 @@ void Main::uiTabBarShop()
         }
         else
         {
-            std::sprintf(uiTooltipBuffer,
+            std::sprintf(uiState.uiTooltipBuffer,
                          "Decrease cooldown (MAX).%s\n\n(Note: can be reverted by right-clicking, but "
                          "no refunds!)",
                          additionalInfo);
         }
 
-        std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt->getComputedCooldownByCatType(catType) / 1000.f));
+        std::sprintf(uiState.uiLabelBuffer, "%.2fs", static_cast<double>(pt->getComputedCooldownByCatType(catType) / 1000.f));
 
         makePSVButton(label, psv);
 
@@ -224,7 +224,7 @@ void Main::uiTabBarShop()
 
         if (!psv.isMaxedOut())
         {
-            std::sprintf(uiTooltipBuffer,
+            std::sprintf(uiState.uiTooltipBuffer,
                          "Increase range from %.2fpx to %.2fpx.%s\n\n(Note: can be reverted by right-clicking, but "
                          "no refunds!)",
                          static_cast<double>(currentRange),
@@ -233,13 +233,13 @@ void Main::uiTabBarShop()
         }
         else
         {
-            std::sprintf(uiTooltipBuffer,
+            std::sprintf(uiState.uiTooltipBuffer,
                          "Increase range (MAX).%s\n\n(Note: can be reverted by right-clicking, but "
                          "no refunds!)",
                          additionalInfo);
         }
 
-        std::sprintf(uiLabelBuffer, "%.2fpx", static_cast<double>(pt->getComputedRangeByCatType(catType)));
+        std::sprintf(uiState.uiLabelBuffer, "%.2fpx", static_cast<double>(pt->getComputedRangeByCatType(catType)));
         makePSVButton(label, psv);
 
         if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) &&
@@ -266,10 +266,10 @@ void Main::uiTabBarShop()
         uiImgsep(txrMenuSeparator4, "unicats");
 
         uiSetUnlockLabelY(6u);
-        std::sprintf(uiTooltipBuffer,
+        std::sprintf(uiState.uiTooltipBuffer,
                      "Unicats transform bubbles into star bubbles, which are worth x15 more!\n\nHave "
                      "your cats pop them for you, or pop them towards the end of a combo for huge rewards!");
-        std::sprintf(uiLabelBuffer, "%zu unicats", nCatUni);
+        std::sprintf(uiState.uiLabelBuffer, "%zu unicats", nCatUni);
         if (makePSVButton("Unicat", pt->psvPerCatType[asIdx(CatType::Uni)]))
         {
             spawnCatCentered(CatType::Uni, getHueByCatType(CatType::Uni), /* placeInHand */ !onSteamDeck);
@@ -297,10 +297,10 @@ void Main::uiTabBarShop()
         uiImgsep(txrMenuSeparator5, "devilcats");
 
         uiSetUnlockLabelY(8u);
-        std::sprintf(uiTooltipBuffer,
+        std::sprintf(uiState.uiTooltipBuffer,
                      "Devilcats transform bubbles into bombs that explode when popped. Bubbles affected by the "
                      "explosion are worth x10 more! Bomb explosion range can be upgraded.");
-        std::sprintf(uiLabelBuffer, "%zu devilcats", nCatDevil);
+        std::sprintf(uiState.uiLabelBuffer, "%zu devilcats", nCatDevil);
         if (makePSVButton("Devilcat", pt->psvPerCatType[asIdx(CatType::Devil)]))
         {
             spawnCatCentered(CatType::Devil, getHueByCatType(CatType::Devil), /* placeInHand */ !onSteamDeck);
@@ -318,11 +318,11 @@ void Main::uiTabBarShop()
             const float nextExplosionRadius    = pt->psvExplosionRadiusMult.nextValue();
 
             uiSetUnlockLabelY(9u);
-            std::sprintf(uiTooltipBuffer,
+            std::sprintf(uiState.uiTooltipBuffer,
                          "Increase bomb explosion radius from x%.2f to x%.2f.",
                          static_cast<double>(currentExplosionRadius),
                          static_cast<double>(nextExplosionRadius));
-            std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(currentExplosionRadius));
+            std::sprintf(uiState.uiLabelBuffer, "x%.2f", static_cast<double>(currentExplosionRadius));
             makePSVButton("  Explosion radius", pt->psvExplosionRadiusMult);
         }
 
@@ -344,12 +344,12 @@ void Main::uiTabBarShop()
         uiImgsep(txrMenuSeparator6, "astrocats");
 
         uiSetUnlockLabelY(11u);
-        std::sprintf(uiTooltipBuffer,
+        std::sprintf(uiState.uiTooltipBuffer,
                      "Astrocats periodically fly across the map, popping bubbles they hit with a huge x20 "
                      "money "
                      "multiplier!\n\nThey can be permanently upgraded with prestige points to inspire cats "
                      "watching them fly past to pop bubbles faster.");
-        std::sprintf(uiLabelBuffer, "%zu astrocats", nCatAstro);
+        std::sprintf(uiState.uiLabelBuffer, "%zu astrocats", nCatAstro);
         if (makePSVButton("Astrocat", pt->psvPerCatType[asIdx(CatType::Astro)]))
         {
             spawnCatCentered(CatType::Astro, getHueByCatType(CatType::Astro), /* placeInHand */ !onSteamDeck);

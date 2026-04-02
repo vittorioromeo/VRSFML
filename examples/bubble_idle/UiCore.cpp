@@ -168,7 +168,7 @@ float Main::uiGetMaxWindowHeight() const
 ////////////////////////////////////////////////////////////
 void Main::uiSetFontScale(const float scale)
 {
-    lastFontScale = scale;
+    uiState.lastFontScale = scale;
     ImGui::SetWindowFontScale(scale);
 }
 
@@ -202,13 +202,15 @@ void Main::uiPushButtonColors()
 {
     const auto convertColorWithHueMod = [&](const auto colorId)
     {
-        return sf::Color::fromVec4(ImGui::GetStyleColorVec4(colorId)).withRotatedHue(uiButtonHueMod).template toVec4<ImVec4>();
+        return sf::Color::fromVec4(ImGui::GetStyleColorVec4(colorId))
+            .withRotatedHue(uiState.uiButtonHueMod)
+            .template toVec4<ImVec4>();
     };
 
     ImGui::PushStyleColor(ImGuiCol_Button, convertColorWithHueMod(ImGuiCol_Button));
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, convertColorWithHueMod(ImGuiCol_ButtonHovered));
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, convertColorWithHueMod(ImGuiCol_ButtonActive));
-    ImGui::PushStyleColor(ImGuiCol_Border, colorBlueOutline.withRotatedHue(uiButtonHueMod).toVec4<ImVec4>());
+    ImGui::PushStyleColor(ImGuiCol_Border, colorBlueOutline.withRotatedHue(uiState.uiButtonHueMod).toVec4<ImVec4>());
 }
 
 ////////////////////////////////////////////////////////////
@@ -238,7 +240,7 @@ void Main::uiEndTooltip()
 ////////////////////////////////////////////////////////////
 void Main::uiMakeTooltip(const bool small)
 {
-    if (!ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) || std::strlen(uiTooltipBuffer) == 0u)
+    if (!ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) || std::strlen(uiState.uiTooltipBuffer) == 0u)
         return;
 
     const float width = small ? 176.f : uiTooltipWidth;
@@ -246,7 +248,7 @@ void Main::uiMakeTooltip(const bool small)
     ImGui::SetNextWindowPos(ImVec2(ImGui::GetMousePos().x - width, ImGui::GetMousePos().y + (small ? -40.f : 20.f)));
 
     uiBeginTooltip(width);
-    ImGui::TextWrapped("%s", uiTooltipBuffer);
+    ImGui::TextWrapped("%s", uiState.uiTooltipBuffer);
     uiEndTooltip();
 }
 
@@ -272,7 +274,7 @@ void Main::uiMakeShrineOrCatTooltip(const sf::Vec2f mousePos)
         return nullptr;
     }();
 
-    if ((hoveredShrine == nullptr && hoveredCat == nullptr) || std::strlen(uiTooltipBuffer) == 0u)
+    if ((hoveredShrine == nullptr && hoveredCat == nullptr) || std::strlen(uiState.uiTooltipBuffer) == 0u)
         return;
 
     ImGui::SetNextWindowPos(ImVec2(getResolution().x - 15.f, getResolution().y - 15.f), 0, ImVec2(1, 1));
@@ -280,7 +282,7 @@ void Main::uiMakeShrineOrCatTooltip(const sf::Vec2f mousePos)
 
     if (hoveredShrine != nullptr)
     {
-        std::sprintf(uiTooltipBuffer, "%s", shrineTooltipsByType[static_cast<SizeT>(hoveredShrine->type)] + 1);
+        std::sprintf(uiState.uiTooltipBuffer, "%s", shrineTooltipsByType[static_cast<SizeT>(hoveredShrine->type)] + 1);
     }
     else
     {
@@ -462,11 +464,11 @@ It's a duck.)",
         static_assert(sf::base::getArraySize(catTooltipsByType) == nCatTypes);
 
         SFML_BASE_ASSERT(hoveredCat != nullptr);
-        std::sprintf(uiTooltipBuffer, "%s", catTooltipsByType[static_cast<SizeT>(hoveredCat->type)] + 1);
+        std::sprintf(uiState.uiTooltipBuffer, "%s", catTooltipsByType[static_cast<SizeT>(hoveredCat->type)] + 1);
     }
 
-    ImGui::TextWrapped("%s", uiTooltipBuffer);
-    uiTooltipBuffer[0] = '\0';
+    ImGui::TextWrapped("%s", uiState.uiTooltipBuffer);
+    uiState.uiTooltipBuffer[0] = '\0';
 
     uiEndTooltip();
 }
@@ -749,7 +751,7 @@ bool Main::uiMakeButtonImpl(const char* label, const char* xBuffer)
                                  .opacityDecay  = rngFast.getF(0.00025f, 0.0015f),
                                  .rotation      = rngFast.getF(0.f, sf::base::tau),
                                  .torque        = rngFast.getF(-0.002f, 0.002f)},
-                                /* hue */ wrapHue(165.f + uiButtonHueMod + currentBackgroundHue.asDegrees()),
+                                /* hue */ wrapHue(165.f + uiState.uiButtonHueMod + currentBackgroundHue.asDegrees()),
                                 ParticleType::Star);
     }
     else if (outcome == AnimatedButtonOutcome::ClickedWhileDisabled)
@@ -782,63 +784,6 @@ bool Main::uiMakeButtonImpl(const char* label, const char* xBuffer)
 }
 
 ////////////////////////////////////////////////////////////
-template <typename TCost>
-bool Main::makePSVButtonExByCurrency(
-    const char*              label,
-    PurchasableScalingValue& psv,
-    const SizeT              times,
-    const TCost              cost,
-    TCost&                   availability,
-    const char*              currencyFmt)
-{
-    const bool maxedOut = psv.nPurchases == psv.data->nMaxPurchases;
-
-    if (profile.hideMaxedOutPurchasables && maxedOut)
-        return false;
-
-    bool result = false;
-
-    if (maxedOut)
-        std::sprintf(uiBuffer, "MAX##%u", uiWidgetId++);
-    else if (cost == 0u || times == 0u)
-        std::sprintf(uiBuffer, "N/A##%u", uiWidgetId++);
-    else
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
-        std::sprintf(uiBuffer, currencyFmt, toStringWithSeparators(cost), uiWidgetId++);
-#pragma GCC diagnostic pop
-
-    ImGui::BeginDisabled(uiCheckPurchasability(label, maxedOut || availability < cost || cost == 0u));
-
-    uiMakeButtonLabels(label, uiLabelBuffer);
-    if (uiMakeButtonImpl(label, uiBuffer))
-    {
-        result = true;
-        availability -= cost;
-
-        if (&availability == &pt->money)
-            spentMoney += cost;
-
-        psv.nPurchases += times;
-
-        if (&availability == &pt->prestigePoints && times == 1u)
-        {
-            undoPPPurchase.emplaceBack([&psv, &availability, times, cost]
-            {
-                psv.nPurchases -= times;
-                availability += cost;
-            });
-
-            undoPPPurchaseTimer.value = 10000.f;
-        }
-    }
-
-    ImGui::EndDisabled();
-    return result;
-}
-
-
-////////////////////////////////////////////////////////////
 bool Main::makePSVButtonEx(const char* label, PurchasableScalingValue& psv, const SizeT times, const MoneyType cost)
 {
     return makePSVButtonExByCurrency(label, psv, times, cost, pt->money, "$%s##%u");
@@ -853,36 +798,36 @@ bool Main::makePSVButton(const char* label, PurchasableScalingValue& psv)
 ////////////////////////////////////////////////////////////
 bool Main::uiCheckPurchasability(const char* label, const bool disabled)
 {
-    uiLabelToY[label] = ImGui::GetCursorScreenPos().y;
+    uiState.uiLabelToY[label] = ImGui::GetCursorScreenPos().y;
 
     if (disabled)
     {
-        btnWasDisabled[label] = true;
+        uiState.btnWasDisabled[label] = true;
     }
-    else if (btnWasDisabled[label] && !disabled)
+    else if (uiState.btnWasDisabled[label] && !disabled)
     {
-        btnWasDisabled[label] = false;
+        uiState.btnWasDisabled[label] = false;
 
-        const bool anyPurchaseUnlockedEffectWithSameLabel = sf::base::anyOf(purchaseUnlockedEffects.begin(),
-                                                                            purchaseUnlockedEffects.end(),
+        const bool anyPurchaseUnlockedEffectWithSameLabel = sf::base::anyOf(uiState.purchaseUnlockedEffects.begin(),
+                                                                            uiState.purchaseUnlockedEffects.end(),
                                                                             [&](const PurchaseUnlockedEffect& effect)
         { return effect.widgetLabel == label; });
 
-        const bool anyPurchaseUnlockedEffectWithSameY = sf::base::anyOf(purchaseUnlockedEffects.begin(),
-                                                                        purchaseUnlockedEffects.end(),
+        const bool anyPurchaseUnlockedEffectWithSameY = sf::base::anyOf(uiState.purchaseUnlockedEffects.begin(),
+                                                                        uiState.purchaseUnlockedEffects.end(),
                                                                         [&](const PurchaseUnlockedEffect& effect)
         {
-            const auto* it = uiLabelToY.find(effect.widgetLabel);
-            return it != uiLabelToY.end() && it->second == uiLabelToY[label];
+            const auto* it = uiState.uiLabelToY.find(effect.widgetLabel);
+            return it != uiState.uiLabelToY.end() && it->second == uiState.uiLabelToY[label];
         });
 
         if (!anyPurchaseUnlockedEffectWithSameLabel && !anyPurchaseUnlockedEffectWithSameY)
         {
-            purchaseUnlockedEffects.pushBack({
+            uiState.purchaseUnlockedEffects.pushBack({
                 .widgetLabel    = label,
                 .countdown      = Countdown{.value = 1000.f},
                 .arrowCountdown = Countdown{.value = 2000.f},
-                .hue            = uiButtonHueMod,
+                .hue            = uiState.uiButtonHueMod,
                 .type           = 1, // now purchasable
             });
 
@@ -892,56 +837,6 @@ bool Main::uiCheckPurchasability(const char* label, const bool disabled)
     }
 
     return disabled;
-}
-
-////////////////////////////////////////////////////////////
-template <typename TCost>
-bool Main::makePurchasableButtonOneTimeByCurrency(
-    const char* label,
-    bool&       done,
-    const TCost cost,
-    TCost&      availability,
-    const char* currencyFmt)
-{
-    bool result = false;
-
-    if (done)
-        std::sprintf(uiBuffer, "DONE##%u", uiWidgetId++);
-    else if (cost == 0u)
-        std::sprintf(uiBuffer, "FREE##%u", uiWidgetId++);
-    else
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
-        std::sprintf(uiBuffer, currencyFmt, toStringWithSeparators(cost), uiWidgetId++);
-#pragma GCC diagnostic pop
-
-    ImGui::BeginDisabled(uiCheckPurchasability(label, done || availability < cost));
-
-    uiMakeButtonLabels(label, uiLabelBuffer);
-    if (uiMakeButtonImpl(label, uiBuffer))
-    {
-        result = true;
-        availability -= cost;
-
-        if (&availability == &pt->money)
-            spentMoney += cost;
-
-        done = true;
-
-        if (&availability == &pt->prestigePoints && cost > 0u)
-        {
-            undoPPPurchase.emplaceBack([&availability, &done, cost]
-            {
-                done = false;
-                availability += cost;
-            });
-
-            undoPPPurchaseTimer.value = 10000.f;
-        }
-    }
-
-    ImGui::EndDisabled();
-    return result;
 }
 
 ////////////////////////////////////////////////////////////
@@ -1005,7 +900,7 @@ sf::Vec2f Main::uiGetWindowPos() const
 ////////////////////////////////////////////////////////////
 void Main::uiDrawExitPopup(const float newScalingFactor)
 {
-    if (!escWasPressed)
+    if (!playerInputState.escWasPressed)
         return;
 
     constexpr float scaleMult = 1.25f;
@@ -1041,7 +936,7 @@ void Main::uiDrawExitPopup(const float newScalingFactor)
     if (ImGui::Button("No", ImVec2(exitButtonWidth, 0.f)))
     {
         playSound(sounds.uitab);
-        escWasPressed = false;
+        playerInputState.escWasPressed = false;
     }
 
     ImGui::EndGroup();
@@ -1073,7 +968,7 @@ void Main::uiDrawQuickbarCopyCat(const sf::Vec2f quickBarPos, Cat& copyCat)
     opacity = ImGui::IsItemHovered() || ImGui::IsPopupOpen(popupLabel) ? 255u : 168u;
 
 
-    std::sprintf(uiTooltipBuffer, "Select Copycat mask");
+    std::sprintf(uiState.uiTooltipBuffer, "Select Copycat mask");
     uiMakeTooltip(/* small */ true);
 
     ImGui::SameLine();
@@ -1158,7 +1053,7 @@ void Main::uiDrawQuickbarBackgroundSelector(const sf::Vec2f quickBarPos)
 
     opacity = ImGui::IsItemHovered() || ImGui::IsPopupOpen(popupLabel) ? 255u : 168u;
 
-    std::sprintf(uiTooltipBuffer, "Select background");
+    std::sprintf(uiState.uiTooltipBuffer, "Select background");
     uiMakeTooltip(/* small */ true);
 
     ImGui::SameLine();
@@ -1212,7 +1107,7 @@ void Main::uiDrawQuickbarBGMSelector(const sf::Vec2f quickBarPos)
 
     opacity = ImGui::IsItemHovered() || ImGui::IsPopupOpen(popupLabel) ? 255u : 168u;
 
-    std::sprintf(uiTooltipBuffer, "Select music");
+    std::sprintf(uiState.uiTooltipBuffer, "Select music");
     uiMakeTooltip(/* small */ true);
 
     ImGui::SameLine();
@@ -1267,7 +1162,7 @@ void Main::uiDrawQuickbarQuickSettings(const sf::Vec2f quickBarPos)
 
     opacity = ImGui::IsItemHovered() || ImGui::IsPopupOpen(popupLabel) ? 255u : 168u;
 
-    std::sprintf(uiTooltipBuffer, "Quick settings");
+    std::sprintf(uiState.uiTooltipBuffer, "Quick settings");
     uiMakeTooltip(/* small */ true);
 
     ImGui::SameLine();
@@ -1371,7 +1266,7 @@ void Main::uiDrawQuickbarVolumeControls(const sf::Vec2f quickBarPos)
 
     opacity = ImGui::IsItemHovered() || ImGui::IsPopupOpen(popupLabel) ? 255u : 168u;
 
-    std::sprintf(uiTooltipBuffer, "Volume settings");
+    std::sprintf(uiState.uiTooltipBuffer, "Volume settings");
     uiMakeTooltip(/* small */ true);
 
     ImGui::SameLine();
@@ -1402,7 +1297,7 @@ void Main::uiDrawQuickbarVolumeControls(const sf::Vec2f quickBarPos)
 ////////////////////////////////////////////////////////////
 void Main::uiDrawQuickbar()
 {
-    const float xStart = lastUiSelectedTabIdx == 0
+    const float xStart = uiState.lastUiSelectedTabIdx == 0
                              ? getResolution().x
                              : gameView.worldToScreen({getLeftMostUsefulX(), 0.f}, getResolution()).x;
 
@@ -1531,7 +1426,7 @@ void Main::uiDraw(const sf::Vec2f mousePos)
         };
     }();
 
-    uiWidgetId = 0u;
+    uiState.uiWidgetId = 0u;
 
     ImGui::PushFont(fontImGuiSuperBakery);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 10.f); // Set corner radius
@@ -1558,13 +1453,13 @@ void Main::uiDraw(const sf::Vec2f mousePos)
 
     ImGui::GetIO().FontGlobalScale = newScalingFactor * 0.975f;
 
-    if (profile.showDpsMeter && !debugHideUI)
+    if (profile.showDpsMeter && !uiState.debugHideUI)
         uiDpsMeter();
 
     if (inSpeedrunPlaythrough())
         uiSpeedrunning();
 
-    if (!debugHideUI)
+    if (!uiState.debugHideUI)
         uiDrawQuickbar();
 
     const sf::Vec2f  uiOpenWindowPos = uiGetWindowPos();
@@ -1574,42 +1469,43 @@ void Main::uiDraw(const sf::Vec2f mousePos)
     const bool  uiMenuDoesNotCoverPlayableSpace = uiOpenWindowPos.x >= gameViewRightX ||
                                                   playableRightScreenX <= uiOpenWindowPos.x;
 
-    const float menuHiddenX = resolution.x - uiMenuHiddenPeekWidth * newScalingFactor;
-    const float hotspotHeight = uiMenuLastDrawSize.y > 1.f ? uiMenuLastDrawSize.y : uiGetMaxWindowHeight() * newScalingFactor;
+    const float menuHiddenX   = resolution.x - uiMenuHiddenPeekWidth * newScalingFactor;
+    const float hotspotHeight = uiState.uiMenuLastDrawSize.y > 1.f ? uiState.uiMenuLastDrawSize.y
+                                                                   : uiGetMaxWindowHeight() * newScalingFactor;
 
     const sf::Rect2f menuHoverHotspot{
         {resolution.x - uiMenuHotspotWidth * newScalingFactor, uiOpenWindowPos.y},
         {uiMenuHotspotWidth * newScalingFactor, hotspotHeight},
     };
 
-    if (uiMenuLocked)
+    if (uiState.uiMenuLocked)
     {
-        uiMenuHideTimer = uiMenuAutoHideDelaySeconds;
+        uiState.uiMenuHideTimer = uiMenuAutoHideDelaySeconds;
     }
     else if (uiMenuDoesNotCoverPlayableSpace)
     {
-        uiMenuHideTimer = uiMenuAutoHideDelaySeconds;
+        uiState.uiMenuHideTimer = uiMenuAutoHideDelaySeconds;
     }
     else if (menuHoverHotspot.contains(windowMousePos) ||
-             (uiMenuLastDrawSize.x > 1.f && uiMenuLastDrawSize.y > 1.f &&
-              sf::Rect2f{uiMenuLastDrawPos, uiMenuLastDrawSize}.contains(windowMousePos)))
+             (uiState.uiMenuLastDrawSize.x > 1.f && uiState.uiMenuLastDrawSize.y > 1.f &&
+              sf::Rect2f{uiState.uiMenuLastDrawPos, uiState.uiMenuLastDrawSize}.contains(windowMousePos)))
     {
-        uiMenuHideTimer = uiMenuAutoHideDelaySeconds;
+        uiState.uiMenuHideTimer = uiMenuAutoHideDelaySeconds;
     }
     else
     {
-        uiMenuHideTimer = sf::base::clamp(uiMenuHideTimer - deltaTime, 0.f, uiMenuAutoHideDelaySeconds);
+        uiState.uiMenuHideTimer = sf::base::clamp(uiState.uiMenuHideTimer - deltaTime, 0.f, uiMenuAutoHideDelaySeconds);
     }
 
-    const float uiMenuRevealTarget = uiMenuHideTimer > 0.f ? 1.f : 0.f;
+    const float uiMenuRevealTarget = uiState.uiMenuHideTimer > 0.f ? 1.f : 0.f;
     const float uiMenuRevealStep   = uiMenuRevealDuration > 0.f ? deltaTime / uiMenuRevealDuration : 1.f;
 
-    if (uiMenuRevealT < uiMenuRevealTarget)
-        uiMenuRevealT = sf::base::clamp(uiMenuRevealT + uiMenuRevealStep, 0.f, 1.f);
-    else if (uiMenuRevealT > uiMenuRevealTarget)
-        uiMenuRevealT = sf::base::clamp(uiMenuRevealT - uiMenuRevealStep, 0.f, 1.f);
+    if (uiState.uiMenuRevealT < uiMenuRevealTarget)
+        uiState.uiMenuRevealT = sf::base::clamp(uiState.uiMenuRevealT + uiMenuRevealStep, 0.f, 1.f);
+    else if (uiState.uiMenuRevealT > uiMenuRevealTarget)
+        uiState.uiMenuRevealT = sf::base::clamp(uiState.uiMenuRevealT - uiMenuRevealStep, 0.f, 1.f);
 
-    const float  uiMenuRevealEased = easeInOutBack(uiMenuRevealT);
+    const float  uiMenuRevealEased = easeInOutBack(uiState.uiMenuRevealT);
     const float  uiMenuDrawX       = menuHiddenX + (uiOpenWindowPos.x - menuHiddenX) * uiMenuRevealEased;
     const ImVec2 uiMenuSize{uiWindowWidth * newScalingFactor, uiGetMaxWindowHeight() * newScalingFactor};
 
@@ -1669,7 +1565,7 @@ void Main::uiDraw(const sf::Vec2f mousePos)
 
     if (uiMenuHovered || uiMenuActiveInteraction)
     {
-        uiMenuHideTimer = uiMenuAutoHideDelaySeconds;
+        uiState.uiMenuHideTimer = uiMenuAutoHideDelaySeconds;
     }
 
     if (!ImGui::GetIO().WantCaptureMouse && particleCullingBoundaries.isInside(mousePos))
@@ -1678,8 +1574,8 @@ void Main::uiDraw(const sf::Vec2f mousePos)
     const sf::Vec2f windowDrawPos  = ImGui::GetWindowPos();
     const sf::Vec2f windowDrawSize = ImGui::GetWindowSize();
 
-    uiMenuLastDrawPos  = windowDrawPos;
-    uiMenuLastDrawSize = windowDrawSize;
+    uiState.uiMenuLastDrawPos  = windowDrawPos;
+    uiState.uiMenuLastDrawSize = windowDrawSize;
 
     if (0)
         if (windowDrawSize.y > 64.f)
@@ -1870,7 +1766,7 @@ void Main::uiSpeedrunning()
 ////////////////////////////////////////////////////////////
 void Main::uiTabBar()
 {
-    const float childHeight = uiGetMaxWindowHeight() - (60.f * profile.uiScale);
+    const float     childHeight                = uiGetMaxWindowHeight() - (60.f * profile.uiScale);
     constexpr float uiMenuAutoHideDelaySeconds = 1.25f;
 
     constexpr TabButtonPalette defaultPalette{
@@ -1890,23 +1786,23 @@ void Main::uiTabBar()
 
     const auto selectTab = [&](const int idx)
     {
-        if (lastUiSelectedTabIdx != idx)
+        if (uiState.lastUiSelectedTabIdx != idx)
             playSound(sounds.uitab);
 
-        lastUiSelectedTabIdx = idx;
+        uiState.lastUiSelectedTabIdx = idx;
     };
 
-    if (shopSelectOnce != ImGuiTabItemFlags_{})
+    if (uiState.shopSelectOnce != ImGuiTabItemFlags_{})
     {
-        lastUiSelectedTabIdx = 1;
-        shopSelectOnce       = {};
+        uiState.lastUiSelectedTabIdx = 1;
+        uiState.shopSelectOnce       = {};
     }
 
-    if (lastUiSelectedTabIdx == 2 && getWizardCat() == nullptr)
-        lastUiSelectedTabIdx = 1;
+    if (uiState.lastUiSelectedTabIdx == 2 && getWizardCat() == nullptr)
+        uiState.lastUiSelectedTabIdx = 1;
 
-    if (lastUiSelectedTabIdx == 3 && !pt->isBubbleValueUnlocked())
-        lastUiSelectedTabIdx = 1;
+    if (uiState.lastUiSelectedTabIdx == 3 && !pt->isBubbleValueUnlocked())
+        uiState.lastUiSelectedTabIdx = 1;
 
     if (keyboardSelectedTab(sf::Keyboard::Key::Slash) || keyboardSelectedTab(sf::Keyboard::Key::Grave) ||
         keyboardSelectedTab(sf::Keyboard::Key::Apostrophe) || keyboardSelectedTab(sf::Keyboard::Key::Backslash))
@@ -1943,13 +1839,13 @@ void Main::uiTabBar()
 
 
     ImGui::SameLine(0.f, 12.f * profile.uiScale);
-    if (drawTabButton(1.f, " " ICON_FA_STORE " Shop ##992", lastUiSelectedTabIdx == 1, defaultPalette))
+    if (drawTabButton(1.f, " " ICON_FA_STORE " Shop ##992", uiState.lastUiSelectedTabIdx == 1, defaultPalette))
         selectTab(1);
 
     if (getWizardCat() != nullptr)
     {
         ImGui::SameLine(0.f, 0.f);
-        if (drawTabButton(1.f, " " ICON_FA_STAR " Magic ##993", lastUiSelectedTabIdx == 2, defaultPalette))
+        if (drawTabButton(1.f, " " ICON_FA_STAR " Magic ##993", uiState.lastUiSelectedTabIdx == 2, defaultPalette))
             selectTab(2);
     }
 
@@ -1959,32 +1855,32 @@ void Main::uiTabBar()
         const TabButtonPalette& palette     = canPrestige ? prestigePalette : defaultPalette;
 
         ImGui::SameLine(0.f, 0.f);
-        if (drawTabButton(1.f, " " ICON_FA_TROPHY " Prestige ##994", lastUiSelectedTabIdx == 3, palette))
+        if (drawTabButton(1.f, " " ICON_FA_TROPHY " Prestige ##994", uiState.lastUiSelectedTabIdx == 3, palette))
             selectTab(3);
     }
 
     ImGui::SameLine(ImGui::GetWindowWidth() - 92.f * profile.uiScale, 0.f);
-    if (drawTabButton(1.f, ICON_FA_CIRCLE_INFO "##991", lastUiSelectedTabIdx == 4, defaultPalette, {}, true))
+    if (drawTabButton(1.f, ICON_FA_CIRCLE_INFO "##991", uiState.lastUiSelectedTabIdx == 4, defaultPalette, {}, true))
         selectTab(4);
 
     ImGui::SameLine(0.f, 0.f);
-    if (drawTabButton(1.f, ICON_FA_GEAR "##990", lastUiSelectedTabIdx == 5, defaultPalette, {}, true))
+    if (drawTabButton(1.f, ICON_FA_GEAR "##990", uiState.lastUiSelectedTabIdx == 5, defaultPalette, {}, true))
         selectTab(5);
 
     ImGui::SameLine(0.f, 0.f);
     if (drawTabButton(1.f,
-                      uiMenuLocked ? ICON_FA_LOCK "##995" : ICON_FA_LOCK_OPEN "##995",
-                      uiMenuLocked,
+                      uiState.uiMenuLocked ? ICON_FA_LOCK "##995" : ICON_FA_LOCK_OPEN "##995",
+                      uiState.uiMenuLocked,
                       defaultPalette,
                       {},
                       true))
     {
-        uiMenuLocked = !uiMenuLocked;
-        uiMenuHideTimer = uiMenuAutoHideDelaySeconds;
+        uiState.uiMenuLocked    = !uiState.uiMenuLocked;
+        uiState.uiMenuHideTimer = uiMenuAutoHideDelaySeconds;
         playSound(sounds.uitab);
     }
 
-    switch (lastUiSelectedTabIdx)
+    switch (uiState.lastUiSelectedTabIdx)
     {
         case 1:
         {
@@ -2061,7 +1957,7 @@ void Main::uiTabBar()
 void Main::uiSetUnlockLabelY(const sf::base::SizeT unlockId)
 {
     const sf::base::String label = sf::base::toString(unlockId);
-    uiLabelToY[label]            = ImGui::GetCursorScreenPos().y;
+    uiState.uiLabelToY[label]    = ImGui::GetCursorScreenPos().y;
 }
 
 ////////////////////////////////////////////////////////////
@@ -2079,26 +1975,26 @@ bool Main::checkUiUnlock(const sf::base::SizeT unlockId, const bool unlockCondit
     {
         profile.uiUnlocks[unlockId] = true;
 
-        const bool anyPurchaseUnlockedEffectWithSameLabel = sf::base::anyOf(purchaseUnlockedEffects.begin(),
-                                                                            purchaseUnlockedEffects.end(),
+        const bool anyPurchaseUnlockedEffectWithSameLabel = sf::base::anyOf(uiState.purchaseUnlockedEffects.begin(),
+                                                                            uiState.purchaseUnlockedEffects.end(),
                                                                             [&](const PurchaseUnlockedEffect& effect)
         { return effect.widgetLabel == label; });
 
-        const bool anyPurchaseUnlockedEffectWithSameY = sf::base::anyOf(purchaseUnlockedEffects.begin(),
-                                                                        purchaseUnlockedEffects.end(),
+        const bool anyPurchaseUnlockedEffectWithSameY = sf::base::anyOf(uiState.purchaseUnlockedEffects.begin(),
+                                                                        uiState.purchaseUnlockedEffects.end(),
                                                                         [&](const PurchaseUnlockedEffect& effect)
         {
-            const auto* it = uiLabelToY.find(effect.widgetLabel);
-            return it != uiLabelToY.end() && it->second == uiLabelToY[label];
+            const auto* it = uiState.uiLabelToY.find(effect.widgetLabel);
+            return it != uiState.uiLabelToY.end() && it->second == uiState.uiLabelToY[label];
         });
 
         if (!anyPurchaseUnlockedEffectWithSameLabel && !anyPurchaseUnlockedEffectWithSameY)
         {
-            purchaseUnlockedEffects.pushBack({
+            uiState.purchaseUnlockedEffects.pushBack({
                 .widgetLabel    = label,
                 .countdown      = Countdown{.value = 1000.f},
                 .arrowCountdown = Countdown{.value = 2000.f},
-                .hue            = uiButtonHueMod,
+                .hue            = uiState.uiButtonHueMod,
                 .type           = 0, // now unlocked
             });
 
@@ -2148,7 +2044,7 @@ void Main::uiImgsep(const sf::Rect2f& txr, const char* sepLabel, const bool firs
     ImGui::Columns(1);
     uiImageFromAtlas(txr, {.scale = {0.46f, 0.5f}});
 
-    const auto oldFontScale = lastFontScale;
+    const auto oldFontScale = uiState.lastFontScale;
     uiSetFontScale(0.75f);
     uiCenteredText(sepLabel, -5.f * profile.uiScale, -8.f * profile.uiScale);
     uiSetFontScale(oldFontScale);
@@ -2176,7 +2072,7 @@ void Main::uiImgsep2(const sf::Rect2f& txr, const char* sepLabel)
 
     uiImageFromAtlas(txr, {.scale = {0.46f, 0.5f}});
 
-    const auto oldFontScale = lastFontScale;
+    const auto oldFontScale = uiState.lastFontScale;
     uiSetFontScale(0.75f);
     uiCenteredText(sepLabel, -5.f * profile.uiScale, -6.f * profile.uiScale);
     uiSetFontScale(oldFontScale);
@@ -2219,15 +2115,15 @@ void Main::gameLoopUpdateNotificationQueue(const float deltaTimeMs)
     if (tipTCByte.hasValue())
         return;
 
-    if (notificationQueue.empty())
+    if (notificationState.queue.empty())
         return;
 
-    if (notificationCountdown.updateAndIsActive(deltaTimeMs))
+    if (notificationState.countdown.updateAndIsActive(deltaTimeMs))
         return;
 
-    notificationCountdown.restart();
+    notificationState.countdown.restart();
 
-    const auto& notification = notificationQueue.front();
+    const auto& notification = notificationState.queue.front();
 
     ImGuiToast toast{ImGuiToastType::None, 4500};
     toast.setTitle(notification.title);
@@ -2237,5 +2133,5 @@ void Main::gameLoopUpdateNotificationQueue(const float deltaTimeMs)
     playSound(sounds.notification);
 
     // pop front
-    notificationQueue.erase(notificationQueue.begin());
+    notificationState.queue.erase(notificationState.queue.begin());
 }

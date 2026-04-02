@@ -386,11 +386,11 @@ void Main::gameLoopUpdateAchievements()
     unlockIfGtEqPrestige(pt->psvPPInspireDurationMult.nPurchases, 12);
     unlockIfGtEqPrestige(pt->psvPPInspireDurationMult.nPurchases, 16);
 
-    unlockIfGtEq(combo, 5);
-    unlockIfGtEq(combo, 10);
-    unlockIfGtEq(combo, 15);
-    unlockIfGtEq(combo, 20);
-    unlockIfGtEq(combo, 25);
+    unlockIfGtEq(comboState.combo, 5);
+    unlockIfGtEq(comboState.combo, 10);
+    unlockIfGtEq(comboState.combo, 15);
+    unlockIfGtEq(comboState.combo, 20);
+    unlockIfGtEq(comboState.combo, 25);
 
     unlockIfGtEq(profile.statsLifetime.highestStarBubblePopCombo, 5);
     unlockIfGtEq(profile.statsLifetime.highestStarBubblePopCombo, 10);

@@ -448,7 +448,7 @@ void Main::uiTabBarStats()
 
             if (debugMode)
             {
-                uiButtonHueMod = 120.f;
+                uiState.uiButtonHueMod = 120.f;
                 uiPushButtonColors();
 
                 uiSetFontScale(uiNormalFontScale);
@@ -461,7 +461,7 @@ void Main::uiTabBarStats()
                 }
 
                 uiPopButtonColors();
-                uiButtonHueMod = 0.f;
+                uiState.uiButtonHueMod = 0.f;
             }
 
             ImGui::EndChild();

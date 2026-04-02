@@ -34,13 +34,13 @@ void Main::uiTabBarPrestige()
         uiCenteredTextColored({229u, 63u, 63u, 255u}, "(!) Limited to 1 prestige in demo (!)");
     }
 
-    std::sprintf(uiTooltipBuffer,
+    std::sprintf(uiState.uiTooltipBuffer,
                  "WARNING: this will reset your progress!\n\nPrestige to increase bubble value permanently and "
                  "obtain prestige points. Prestige points can be used to unlock powerful permanent "
                  "upgrades.\n\nYou will sacrifice all your cats, bubbles, and money, but you will keep your "
                  "prestige points and permanent upgrades, and the value of bubbles will be permanently "
                  "increased.\n\nDo not be afraid to prestige -- it is what enables you to progress further!");
-    std::sprintf(uiLabelBuffer, "current bubble value x%llu", pt->getComputedRewardByBubbleType(BubbleType::Normal));
+    std::sprintf(uiState.uiLabelBuffer, "current bubble value x%llu", pt->getComputedRewardByBubbleType(BubbleType::Normal));
 
     // Figure out how many times we can prestige in a row
 
@@ -108,7 +108,7 @@ void Main::uiTabBarPrestige()
 
     uiBeginColumns();
 
-    uiButtonHueMod = 120.f;
+    uiState.uiButtonHueMod = 120.f;
 
     ImGui::BeginDisabled(prestigeTimes == 0u);
     if (makePSVButtonEx("Prestige", pt->psvBubbleValue, prestigeTimes, maxCost))
@@ -119,7 +119,7 @@ void Main::uiTabBarPrestige()
 
     ImGui::Columns(1);
 
-    uiButtonHueMod = 0.f;
+    uiState.uiButtonHueMod = 0.f;
     uiSetFontScale(0.75f);
 
     const auto currentMult = static_cast<SizeT>(pt->psvBubbleValue.currentValue()) + 1u;
@@ -142,8 +142,8 @@ void Main::uiTabBarPrestige()
         uiSetFontScale(uiSubBulletFontScale);
         uiBeginColumns();
 
-        std::sprintf(uiTooltipBuffer, "Spend money to immediately get prestige points.");
-        uiLabelBuffer[0] = '\0';
+        std::sprintf(uiState.uiTooltipBuffer, "Spend money to immediately get prestige points.");
+        uiState.uiLabelBuffer[0] = '\0';
 
         static int buyPPTimes = 1;
 
@@ -193,9 +193,9 @@ void Main::uiTabBarPrestige()
 
         bool done = false;
 
-        uiLabelBuffer[0] = '\0';
+        uiState.uiLabelBuffer[0] = '\0';
 
-        std::sprintf(uiTooltipBuffer, "Undo your last PP purchase, refunding you the prestige points.");
+        std::sprintf(uiState.uiTooltipBuffer, "Undo your last PP purchase, refunding you the prestige points.");
 
         if (makePurchasablePPButtonOneTime("  Undo last purchase", 0u, done))
         {
@@ -227,15 +227,15 @@ void Main::uiTabBarPrestige()
 
     uiBeginColumns();
 
-    uiButtonHueMod = 190.f;
+    uiState.uiButtonHueMod = 190.f;
 
     if (checkUiUnlock(47u, pt->psvBubbleValue.nPurchases >= 3u))
     {
         uiImgsep2(txrPrestigeSeparator4, "faster beginning");
 
         uiSetUnlockLabelY(47u);
-        std::sprintf(uiTooltipBuffer, "Begin your next prestige with $1000.");
-        uiLabelBuffer[0] = '\0';
+        std::sprintf(uiState.uiTooltipBuffer, "Begin your next prestige with $1000.");
+        uiState.uiLabelBuffer[0] = '\0';
         (void)makePurchasablePPButtonOneTime("Starter pack", 1u, pt->perm.starterPackPurchased);
     }
 
@@ -244,12 +244,12 @@ void Main::uiTabBarPrestige()
         uiImgsep2(txrPrestigeSeparator2, "clicking tools");
 
         uiSetUnlockLabelY(48u);
-        std::sprintf(uiTooltipBuffer,
+        std::sprintf(uiState.uiTooltipBuffer,
                      "Manually popping a bubble now also pops nearby bubbles automatically!\n\n(Note: combo "
                      "multiplier still only increases once per successful click.)\n\n(Note: this effect can be "
                      "toggled "
                      "at will.)");
-        uiLabelBuffer[0] = '\0';
+        uiState.uiLabelBuffer[0] = '\0';
         if (makePurchasablePPButtonOneTime("Multipop click", 0u, pt->perm.multiPopPurchased))
             doTip("Popping a bubble now also pops\nnearby bubbles automatically!",
                   /* maxPrestigeLevel */ UINT_MAX);
@@ -265,17 +265,17 @@ void Main::uiTabBarPrestige()
 
                 if (!pt->psvPPMultiPopRange.isMaxedOut())
                 {
-                    std::sprintf(uiTooltipBuffer,
+                    std::sprintf(uiState.uiTooltipBuffer,
                                  "Increase the range of the multipop effect from %.2fpx to %.2fpx.",
                                  static_cast<double>(currentRange),
                                  static_cast<double>(nextRange));
                 }
                 else
                 {
-                    std::sprintf(uiTooltipBuffer, "Increase the range of the multipop effect (MAX).");
+                    std::sprintf(uiState.uiTooltipBuffer, "Increase the range of the multipop effect (MAX).");
                 }
 
-                std::sprintf(uiLabelBuffer, "%.2fpx", static_cast<double>(currentRange));
+                std::sprintf(uiState.uiLabelBuffer, "%.2fpx", static_cast<double>(currentRange));
                 makePrestigePurchasablePPButtonPSV("  range", pt->psvPPMultiPopRange);
             }
 
@@ -294,10 +294,10 @@ void Main::uiTabBarPrestige()
 
     uiImgsep2(txrPrestigeSeparator3, "wind effects");
 
-    std::sprintf(uiTooltipBuffer,
+    std::sprintf(uiState.uiTooltipBuffer,
                  "A giant fan (off-screen) will produce an intense wind, making bubbles move and "
                  "flow much faster.\n\n(Note: this effect can be toggled at will.)");
-    uiLabelBuffer[0] = '\0';
+    uiState.uiLabelBuffer[0] = '\0';
     if (makePurchasablePPButtonOneTime("Giant fan", 6u, pt->perm.windPurchased))
         doTip("Hold onto something!", /* maxPrestigeLevel */ UINT_MAX);
 
@@ -325,10 +325,10 @@ void Main::uiTabBarPrestige()
 
     uiBeginColumns();
 
-    std::sprintf(uiTooltipBuffer,
+    std::sprintf(uiState.uiTooltipBuffer,
                  "Cats have graduated!\n\nThey still cannot resist their popping insticts, but they will go "
                  "for star bubbles and bombs first, ensuring they are not wasted!");
-    uiLabelBuffer[0] = '\0';
+    uiState.uiLabelBuffer[0] = '\0';
     if (makePurchasablePPButtonOneTime("Smart cats", 1u, pt->perm.smartCatsPurchased))
         doTip("Cats will now prioritize popping\nspecial bubbles over basic ones!",
               /* maxPrestigeLevel */ UINT_MAX);
@@ -336,13 +336,13 @@ void Main::uiTabBarPrestige()
     if (checkUiUnlock(51u, pt->perm.smartCatsPurchased))
     {
         uiSetUnlockLabelY(51u);
-        std::sprintf(uiTooltipBuffer,
+        std::sprintf(uiState.uiTooltipBuffer,
                      "Embrace the glorious evolution!\n\nCats have ascended beyond their primal "
                      "insticts and will now prioritize bombs, then star bubbles, then normal "
                      "bubbles!\n\nThey will also ignore any bubble type of your choosing.\n\nThrough the sheer "
                      "power of their intellect, they also get a x2 multiplier on all bubble values.\n\n(Note: "
                      "this effect can be toggled at will.)");
-        uiLabelBuffer[0] = '\0';
+        uiState.uiLabelBuffer[0] = '\0';
         if (makePurchasablePPButtonOneTime("genius cats", 8u, pt->perm.geniusCatsPurchased))
             doTip("Genius cats prioritize bombs and\ncan be instructed to ignore certain bubbles!",
                   /* maxPrestigeLevel */ UINT_MAX);
@@ -379,11 +379,11 @@ void Main::uiTabBarPrestige()
         uiBeginColumns();
 
         uiSetUnlockLabelY(53u);
-        std::sprintf(uiTooltipBuffer,
+        std::sprintf(uiState.uiTooltipBuffer,
                      "Unicats transcend their physical form, becoming a higher entity that transforms bubbles "
                      "into "
                      "nova bubbles, worth x50.");
-        uiLabelBuffer[0] = '\0';
+        uiState.uiLabelBuffer[0] = '\0';
 
         if (makePurchasablePPButtonOneTime("transcendence", 96u, pt->perm.unicatTranscendencePurchased))
             doTip("Are you ready for that sweet x50?", /* maxPrestigeLevel */ UINT_MAX);
@@ -391,10 +391,10 @@ void Main::uiTabBarPrestige()
         if (checkUiUnlock(54u, pt->perm.unicatTranscendencePurchased))
         {
             uiSetUnlockLabelY(54u);
-            std::sprintf(uiTooltipBuffer,
+            std::sprintf(uiState.uiTooltipBuffer,
                          "Unicats can now transform all bubbles in range at once. Also unlocks Unicat range "
                          "upgrades.");
-            uiLabelBuffer[0] = '\0';
+            uiState.uiLabelBuffer[0] = '\0';
 
             if (makePurchasablePPButtonOneTime("nova expanse", 128u, pt->perm.unicatTranscendenceAOEPurchased))
                 doTip("It's about to get crazy...", /* maxPrestigeLevel */ UINT_MAX);
@@ -415,10 +415,10 @@ void Main::uiTabBarPrestige()
         uiBeginColumns();
 
         uiSetUnlockLabelY(55u);
-        std::sprintf(uiTooltipBuffer,
+        std::sprintf(uiState.uiTooltipBuffer,
                      "Devilcats become touched by the flames of hell, opening stationary portals that teleport "
                      "bubbles into the abyss, with a x50 multiplier. Also unlocks Devilcat range upgrades.");
-        uiLabelBuffer[0] = '\0';
+        uiState.uiLabelBuffer[0] = '\0';
 
         if (makePurchasablePPButtonOneTime("hellsinged", 192u, pt->perm.devilcatHellsingedPurchased))
             doTip("I'm starting to get a bit scared...", /* maxPrestigeLevel */ UINT_MAX);
@@ -440,10 +440,10 @@ void Main::uiTabBarPrestige()
         uiCheckbox("disable flight", &pt->disableAstrocatFlight);
 
         uiSetUnlockLabelY(56u);
-        std::sprintf(uiTooltipBuffer,
+        std::sprintf(uiState.uiTooltipBuffer,
                      "Astrocats are now equipped with fancy patriotic flags, inspiring cats watching "
                      "them fly by to work faster!");
-        uiLabelBuffer[0] = '\0';
+        uiState.uiLabelBuffer[0] = '\0';
 
         if (makePurchasablePPButtonOneTime("Space propaganda", 16u, pt->perm.astroCatInspirePurchased))
             doTip("Astrocats will inspire other cats\nto work faster when flying by!",
@@ -457,16 +457,16 @@ void Main::uiTabBarPrestige()
             uiSetUnlockLabelY(57u);
             if (!pt->psvPPInspireDurationMult.isMaxedOut())
             {
-                std::sprintf(uiTooltipBuffer,
+                std::sprintf(uiState.uiTooltipBuffer,
                              "Increase the duration of the inspiration effect from %.2fs to %.2fs.",
                              static_cast<double>(currentDuration / 1000.f),
                              static_cast<double>(nextDuration / 1000.f));
             }
             else
             {
-                std::sprintf(uiTooltipBuffer, "Increase the duration of the inspiration effect (MAX).");
+                std::sprintf(uiState.uiTooltipBuffer, "Increase the duration of the inspiration effect (MAX).");
             }
-            std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(currentDuration / 1000.f));
+            std::sprintf(uiState.uiLabelBuffer, "%.2fs", static_cast<double>(currentDuration / 1000.f));
 
             makePrestigePurchasablePPButtonPSV("inspire duration", pt->psvPPInspireDurationMult);
         }
@@ -477,12 +477,12 @@ void Main::uiTabBarPrestige()
         if (!pt->perm.shrineCompletedOnceByCatType[asIdx(type)])
             return;
 
-        std::sprintf(uiTooltipBuffer,
+        std::sprintf(uiState.uiTooltipBuffer,
                      "Permanently release the %s from their shrine. They will be waiting for you right "
                      "outside when the shrine is activated.\n\n(Note: completing the shrine will now grant "
                      "1.5x the money it absorbed.)",
                      catName);
-        uiLabelBuffer[0] = '\0';
+        uiState.uiLabelBuffer[0] = '\0';
 
         char buf[256];
         std::snprintf(buf, sizeof(buf), "%s##%s", "Break the seal", catName);
@@ -505,43 +505,44 @@ void Main::uiTabBarPrestige()
 
         if (!pt->psvPPWitchCatBuffDuration.isMaxedOut())
         {
-            std::sprintf(uiTooltipBuffer,
+            std::sprintf(uiState.uiTooltipBuffer,
                          "Increase the base duration of Witchcat buffs from %.2fs to %.2fs.",
                          static_cast<double>(currentDuration),
                          static_cast<double>(nextDuration));
         }
         else
         {
-            std::sprintf(uiTooltipBuffer, "Increase the base duration of Witchcat buffs (MAX).");
+            std::sprintf(uiState.uiTooltipBuffer, "Increase the base duration of Witchcat buffs (MAX).");
         }
-        std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(currentDuration));
+        std::sprintf(uiState.uiLabelBuffer, "%.2fs", static_cast<double>(currentDuration));
         makePrestigePurchasablePPButtonPSV("Buff duration", pt->psvPPWitchCatBuffDuration);
 
         ImGui::Separator();
 
-        std::sprintf(uiTooltipBuffer,
+        std::sprintf(uiState.uiTooltipBuffer,
                      "The duration of Witchcat buffs scales with the number of cats in range of the ritual.");
-        uiLabelBuffer[0] = '\0';
+        uiState.uiLabelBuffer[0] = '\0';
         (void)makePurchasablePPButtonOneTime("Group ritual", 4u, pt->perm.witchCatBuffPowerScalesWithNCats);
 
-        std::sprintf(uiTooltipBuffer, "The duration of Witchcat buffs scales with the size of the explored map.");
-        uiLabelBuffer[0] = '\0';
+        std::sprintf(uiState.uiTooltipBuffer,
+                     "The duration of Witchcat buffs scales with the size of the explored map.");
+        uiState.uiLabelBuffer[0] = '\0';
         (void)makePurchasablePPButtonOneTime("Worldwide cult", 4u, pt->perm.witchCatBuffPowerScalesWithMapSize);
 
         ImGui::Separator();
 
-        std::sprintf(uiTooltipBuffer, "Half as many voodoo dolls will appear per ritual.");
-        uiLabelBuffer[0] = '\0';
+        std::sprintf(uiState.uiTooltipBuffer, "Half as many voodoo dolls will appear per ritual.");
+        uiState.uiLabelBuffer[0] = '\0';
         (void)makePurchasablePPButtonOneTime("Material shortage", 8u, pt->perm.witchCatBuffFewerDolls);
 
         ImGui::Separator();
 
-        std::sprintf(uiTooltipBuffer, "Dolls are automatically collected by Devilcat bomb explosions.");
-        uiLabelBuffer[0] = '\0';
+        std::sprintf(uiState.uiTooltipBuffer, "Dolls are automatically collected by Devilcat bomb explosions.");
+        uiState.uiLabelBuffer[0] = '\0';
         (void)makePurchasablePPButtonOneTime("Flammable dolls", 8u, pt->perm.witchCatBuffFlammableDolls);
 
-        std::sprintf(uiTooltipBuffer, "Dolls are automatically collected by Astrocats during their flyby.");
-        uiLabelBuffer[0] = '\0';
+        std::sprintf(uiState.uiTooltipBuffer, "Dolls are automatically collected by Astrocats during their flyby.");
+        uiState.uiLabelBuffer[0] = '\0';
         (void)makePurchasablePPButtonOneTime("Orbital dolls", 16u, pt->perm.witchCatBuffOrbitalDolls);
 
         ImGui::Separator();
@@ -551,7 +552,7 @@ void Main::uiTabBarPrestige()
 
         if (!pt->psvPPUniRitualBuffPercentage.isMaxedOut())
         {
-            std::sprintf(uiTooltipBuffer,
+            std::sprintf(uiState.uiTooltipBuffer,
                          "Increase the star bubble spawn chance during the Unicat vododoo ritual buff from %.2f%% "
                          "to %.2f%%.",
                          static_cast<double>(currentUniPercentage),
@@ -559,11 +560,11 @@ void Main::uiTabBarPrestige()
         }
         else
         {
-            std::sprintf(uiTooltipBuffer,
+            std::sprintf(uiState.uiTooltipBuffer,
                          "Increase the star bubble spawn chance during the Unicat vododoo ritual buff "
                          "(MAX).");
         }
-        std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(currentUniPercentage));
+        std::sprintf(uiState.uiLabelBuffer, "%.2f%%", static_cast<double>(currentUniPercentage));
         makePrestigePurchasablePPButtonPSV("Star Spawn %", pt->psvPPUniRitualBuffPercentage);
 
         const float currentDevilPercentage = pt->psvPPDevilRitualBuffPercentage.currentValue();
@@ -571,7 +572,7 @@ void Main::uiTabBarPrestige()
 
         if (!pt->psvPPDevilRitualBuffPercentage.isMaxedOut())
         {
-            std::sprintf(uiTooltipBuffer,
+            std::sprintf(uiState.uiTooltipBuffer,
                          "Increase the bomb spawn chance during the Devil vododoo ritual buff from %.2f%% to "
                          "%.2f%%.",
                          static_cast<double>(currentDevilPercentage),
@@ -579,9 +580,10 @@ void Main::uiTabBarPrestige()
         }
         else
         {
-            std::sprintf(uiTooltipBuffer, "Increase the bomb spawn chance during the Devil vododoo ritual buff (MAX).");
+            std::sprintf(uiState.uiTooltipBuffer,
+                         "Increase the bomb spawn chance during the Devil vododoo ritual buff (MAX).");
         }
-        std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(currentDevilPercentage));
+        std::sprintf(uiState.uiLabelBuffer, "%.2f%%", static_cast<double>(currentDevilPercentage));
         makePrestigePurchasablePPButtonPSV("Bomb Spawn %", pt->psvPPDevilRitualBuffPercentage);
     }
 
@@ -600,16 +602,16 @@ void Main::uiTabBarPrestige()
 
         if (!pt->psvPPManaCooldownMult.isMaxedOut())
         {
-            std::sprintf(uiTooltipBuffer,
+            std::sprintf(uiState.uiTooltipBuffer,
                          "Decrease mana generation cooldown from %.2fs to %.2fs.",
                          static_cast<double>(currentManaCooldown / 1000.f),
                          static_cast<double>(nextManaCooldown / 1000.f));
         }
         else
         {
-            std::sprintf(uiTooltipBuffer, "Decrease mana generation cooldown (MAX).");
+            std::sprintf(uiState.uiTooltipBuffer, "Decrease mana generation cooldown (MAX).");
         }
-        std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(currentManaCooldown / 1000.f));
+        std::sprintf(uiState.uiLabelBuffer, "%.2fs", static_cast<double>(currentManaCooldown / 1000.f));
         makePrestigePurchasablePPButtonPSV("Mana cooldown", pt->psvPPManaCooldownMult);
 
         const ManaType currentMaxMana = pt->getComputedMaxMana();
@@ -617,48 +619,48 @@ void Main::uiTabBarPrestige()
 
         if (!pt->psvPPManaMaxMult.isMaxedOut())
         {
-            std::sprintf(uiTooltipBuffer, "Increase the maximum mana from %llu to %llu.", currentMaxMana, nextMaxMana);
+            std::sprintf(uiState.uiTooltipBuffer, "Increase the maximum mana from %llu to %llu.", currentMaxMana, nextMaxMana);
         }
         else
         {
-            std::sprintf(uiTooltipBuffer, "Increase the maximum mana (MAX).");
+            std::sprintf(uiState.uiTooltipBuffer, "Increase the maximum mana (MAX).");
         }
-        std::sprintf(uiLabelBuffer, "%llu mana", currentMaxMana);
+        std::sprintf(uiState.uiLabelBuffer, "%llu mana", currentMaxMana);
         makePrestigePurchasablePPButtonPSV("Mana limit", pt->psvPPManaMaxMult);
 
         ImGui::Separator();
 
-        std::sprintf(uiTooltipBuffer,
+        std::sprintf(uiState.uiTooltipBuffer,
                      "Allow the Wizardcat to automatically cast spells when enough mana is available. Can be "
                      "enabled and configured from the \"Magic\" tab.");
-        uiLabelBuffer[0] = '\0';
+        uiState.uiLabelBuffer[0] = '\0';
         (void)makePurchasablePPButtonOneTime("Autocast", 4u, pt->perm.autocastPurchased);
 
         ImGui::Separator();
 
-        std::sprintf(uiTooltipBuffer,
+        std::sprintf(uiState.uiTooltipBuffer,
                      "Starpaw conversion ignores bombs, transforming only normal bubbles around the wizard "
                      "into star bubbles.");
-        uiLabelBuffer[0] = '\0';
+        uiState.uiLabelBuffer[0] = '\0';
         (void)makePurchasablePPButtonOneTime("Selective starpaw", 4u, pt->perm.starpawConversionIgnoreBombs);
 
         if (pt->perm.unicatTranscendencePurchased && pt->perm.starpawConversionIgnoreBombs)
         {
-            std::sprintf(uiTooltipBuffer, "Starpaw conversion now turns all normal bubbles into nova bubbles.");
-            uiLabelBuffer[0] = '\0';
+            std::sprintf(uiState.uiTooltipBuffer, "Starpaw conversion now turns all normal bubbles into nova bubbles.");
+            uiState.uiLabelBuffer[0] = '\0';
             (void)makePurchasablePPButtonOneTime("Nova starpaw", 64u, pt->perm.starpawNova);
         }
 
         ImGui::Separator();
 
-        std::sprintf(uiTooltipBuffer, "The duration of Mewltiplier Aura is extended from 6s to 12s.");
-        uiLabelBuffer[0] = '\0';
+        std::sprintf(uiState.uiTooltipBuffer, "The duration of Mewltiplier Aura is extended from 6s to 12s.");
+        uiState.uiLabelBuffer[0] = '\0';
         (void)makePurchasablePPButtonOneTime("Meeeeeewltiplier", 64u, pt->perm.wizardCatDoubleMewltiplierDuration);
 
         ImGui::Separator();
 
-        std::sprintf(uiTooltipBuffer, "The duration of Stasis Field is extended from 6s to 12s.");
-        uiLabelBuffer[0] = '\0';
+        std::sprintf(uiState.uiTooltipBuffer, "The duration of Stasis Field is extended from 6s to 12s.");
+        uiState.uiLabelBuffer[0] = '\0';
         (void)makePurchasablePPButtonOneTime("Pop Stuck In Time", 256u, pt->perm.wizardCatDoubleStasisFieldDuration);
     }
 
@@ -677,17 +679,17 @@ void Main::uiTabBarPrestige()
 
         if (!pt->psvPPMouseCatGlobalBonusMult.isMaxedOut())
         {
-            std::sprintf(uiTooltipBuffer,
+            std::sprintf(uiState.uiTooltipBuffer,
                          "Increase the global click reward value multiplier from x%.2f to x%.2f.",
                          static_cast<double>(currentReward),
                          static_cast<double>(nextReward));
         }
         else
         {
-            std::sprintf(uiTooltipBuffer, "Increase the global click reward value multiplier (MAX).");
+            std::sprintf(uiState.uiTooltipBuffer, "Increase the global click reward value multiplier (MAX).");
         }
 
-        std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(currentReward));
+        std::sprintf(uiState.uiLabelBuffer, "x%.2f", static_cast<double>(currentReward));
         makePrestigePurchasablePPButtonPSV("Global click mult", pt->psvPPMouseCatGlobalBonusMult);
     }
 
@@ -706,17 +708,17 @@ void Main::uiTabBarPrestige()
 
         if (!pt->psvPPEngiCatGlobalBonusMult.isMaxedOut())
         {
-            std::sprintf(uiTooltipBuffer,
+            std::sprintf(uiState.uiTooltipBuffer,
                          "Increase the global cat reward value multiplierfrom x%.2f to x%.2f.",
                          static_cast<double>(currentReward),
                          static_cast<double>(nextReward));
         }
         else
         {
-            std::sprintf(uiTooltipBuffer, "Increase the global cat reward value multiplier (MAX).");
+            std::sprintf(uiState.uiTooltipBuffer, "Increase the global cat reward value multiplier (MAX).");
         }
 
-        std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(currentReward));
+        std::sprintf(uiState.uiLabelBuffer, "x%.2f", static_cast<double>(currentReward));
         makePrestigePurchasablePPButtonPSV("Global cat mult", pt->psvPPEngiCatGlobalBonusMult);
     }
 
@@ -730,8 +732,9 @@ void Main::uiTabBarPrestige()
         makeUnsealButton(128u, "Repulsocat", CatType::Repulso);
         ImGui::Separator();
 
-        std::sprintf(uiTooltipBuffer, "The Repulsocat cordially asks their fan to filter repelled bubbles by type.");
-        uiLabelBuffer[0] = '\0';
+        std::sprintf(uiState.uiTooltipBuffer,
+                     "The Repulsocat cordially asks their fan to filter repelled bubbles by type.");
+        uiState.uiLabelBuffer[0] = '\0';
         (void)makePurchasablePPButtonOneTime("Repulsion filter", 16u, pt->perm.repulsoCatFilterPurchased);
 
         if (checkUiUnlock(63u, pt->perm.repulsoCatFilterPurchased))
@@ -757,10 +760,10 @@ void Main::uiTabBarPrestige()
             uiBeginColumns();
         }
 
-        std::sprintf(uiTooltipBuffer,
+        std::sprintf(uiState.uiTooltipBuffer,
                      "The Repulsocat coats the fan blades with star powder, giving it a chance to convert "
                      "repelled bubbles to star bubbles.");
-        uiLabelBuffer[0] = '\0';
+        uiState.uiLabelBuffer[0] = '\0';
         (void)makePurchasablePPButtonOneTime("Conversion field", 32u, pt->perm.repulsoCatConverterPurchased);
 
         if (checkUiUnlock(64u, pt->perm.repulsoCatConverterPurchased))
@@ -777,20 +780,20 @@ void Main::uiTabBarPrestige()
 
             if (!pt->psvPPRepulsoCatConverterChance.isMaxedOut())
             {
-                std::sprintf(uiTooltipBuffer,
+                std::sprintf(uiState.uiTooltipBuffer,
                              "Increase the repelled bubble conversion chance from %.2f%% to %.2f%%.",
                              static_cast<double>(currentChance),
                              static_cast<double>(nextChance));
             }
             else
             {
-                std::sprintf(uiTooltipBuffer, "Increase the repelled bubble conversion chance (MAX).");
+                std::sprintf(uiState.uiTooltipBuffer, "Increase the repelled bubble conversion chance (MAX).");
             }
-            std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(currentChance));
+            std::sprintf(uiState.uiLabelBuffer, "%.2f%%", static_cast<double>(currentChance));
             makePrestigePurchasablePPButtonPSV("Conversion chance", pt->psvPPRepulsoCatConverterChance);
 
-            std::sprintf(uiTooltipBuffer, "Bubbles are converted into nova bubbles instead of star bubbles.");
-            uiLabelBuffer[0] = '\0';
+            std::sprintf(uiState.uiTooltipBuffer, "Bubbles are converted into nova bubbles instead of star bubbles.");
+            uiState.uiLabelBuffer[0] = '\0';
             (void)makePurchasablePPButtonOneTime("Nova conversion", 96u, pt->perm.repulsoCatNovaConverterPurchased);
         }
     }
@@ -805,10 +808,10 @@ void Main::uiTabBarPrestige()
         makeUnsealButton(256u, "Attractocat", CatType::Attracto);
         ImGui::Separator();
 
-        std::sprintf(uiTooltipBuffer,
+        std::sprintf(uiState.uiTooltipBuffer,
                      "The Attractocat does some quantum science stuff to its magnet to allow filtering of "
                      "attracted bubbles by type.");
-        uiLabelBuffer[0] = '\0';
+        uiState.uiLabelBuffer[0] = '\0';
         (void)makePurchasablePPButtonOneTime("Attraction filter", 96u, pt->perm.attractoCatFilterPurchased);
 
         if (checkUiUnlock(66u, pt->perm.attractoCatFilterPurchased))
@@ -848,7 +851,7 @@ void Main::uiTabBarPrestige()
         // TODO P1: something?
     }
 
-    uiButtonHueMod = 0.f;
+    uiState.uiButtonHueMod = 0.f;
 
     ImGui::Columns(1);
 }
