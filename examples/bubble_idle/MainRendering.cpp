@@ -173,8 +173,8 @@ void Main::drawMinimap(bool               back,
         .cornerRadius     = 8.f,
     };
 
-    minimapRect.position = minimapPos;
-    minimapRect.size     = minimapBorder.size;
+    uiState.minimapRect.position = minimapPos;
+    uiState.minimapRect.size     = minimapBorder.size;
 
     sf::Vec2f offset{-10.f, -10.f};
 
@@ -253,8 +253,8 @@ void Main::drawMinimap(bool               back,
         const float offset = 3.f;
 
         NinePatchRect panel{
-            .position    = minimapRect.position - sf::Vec2f{offset, offset},
-            .size        = minimapRect.size + sf::Vec2f{offset * 2.f, offset * 2.f},
+            .position    = uiState.minimapRect.position - sf::Vec2f{offset, offset},
+            .size        = uiState.minimapRect.size + sf::Vec2f{offset * 2.f, offset * 2.f},
             .textureRect = txFrameTiny.getRect(),
             .borders     = NinePatchBorders::all(18.f),
             .color       = hueColor(hueMod, shouldDrawUIAlpha),
@@ -357,10 +357,10 @@ void Main::gameLoopDrawCursorTrail(const sf::Vec2f mousePos)
     if (profile.cursorTrailMode == 2 /* disabled */)
         return;
 
-    if (combo <= 1 && profile.cursorTrailMode == 0 /* combo mode */)
+    if (comboState.combo <= 1 && profile.cursorTrailMode == 0 /* combo mode */)
         return;
 
-    const sf::Vec2f mousePosDiff    = lastMousePos - mousePos;
+    const sf::Vec2f mousePosDiff    = playerInputState.lastMousePos - mousePos;
     const float     mousePosDiffLen = mousePosDiff.length();
 
     if (mousePosDiffLen == 0.f)
@@ -718,12 +718,12 @@ void applyWitchAnimation(CatDrawContext& ctx, float& wobblePhase, Cat& witch)
                                                 const sf::Vec2f          mousePos,
                                                 const CatTextureTables&  textureTables)
 {
-    auto& batchToUse     = main.catToPlace == &cat ? main.cpuTopDrawableBatch : main.cpuDrawableBatch;
-    auto& textBatchToUse = main.catToPlace == &cat ? main.catTextTopDrawableBatch : main.catTextDrawableBatch;
+    auto& batchToUse     = main.playerInputState.catToPlace == &cat ? main.cpuTopDrawableBatch : main.cpuDrawableBatch;
+    auto& textBatchToUse = main.playerInputState.catToPlace == &cat ? main.catTextTopDrawableBatch : main.catTextDrawableBatch;
 
     const bool drawHexedWithShader = cat.isHexedOrCopyHexed() && main.hexedCatDrawCommands.size() < 2u;
     auto&      spriteBatchToUse    = drawHexedWithShader ? main.tempDrawableBatch : batchToUse;
-    auto&      cloudBatchToUse     = main.catToPlace == &cat ? main.cpuTopCloudDrawableBatch : main.cpuCloudDrawableBatch;
+    auto&      cloudBatchToUse     = main.playerInputState.catToPlace == &cat ? main.cpuTopCloudDrawableBatch : main.cpuCloudDrawableBatch;
 
     CatDrawContext ctx{
         .main                = main,
@@ -1263,7 +1263,7 @@ void finalizeCatHexedDraw(const CatDrawContext& ctx)
 
     ctx.main.enqueueHexedCatDrawCommand(ctx.main.tempDrawableBatch,
                                         ctx.visualCatAnchor,
-                                        ctx.main.catToPlace == &ctx.cat,
+                                        ctx.main.playerInputState.catToPlace == &ctx.cat,
                                         ctx.cat.position.x * 0.013f + ctx.cat.position.y * 0.021f +
                                             static_cast<float>(ctx.cat.nameIdx) * 0.17f,
                                         ctx.hexedEffectStrength);
@@ -1383,7 +1383,7 @@ void Main::gameLoopDrawCat(Cat&            cat,
 {
     const float       cloudTime = advanceCatCloudTime(*this, cat, deltaTimeMs);
 
-    if (catToPlace != &cat && !bubbleCullingBoundaries.isInside(cat.position))
+    if (playerInputState.catToPlace != &cat && !bubbleCullingBoundaries.isInside(cat.position))
         return;
 
     const CatTextureTables textureTables{catTxrsByType, catPawTxrsByType, catTailTxrsByType};
@@ -1400,8 +1400,8 @@ void Main::gameLoopDrawCat(Cat&            cat,
     return;
 
 #if 0
-    auto& batchToUse     = catToPlace == &cat ? cpuTopDrawableBatch : cpuDrawableBatch;
-    auto& textBatchToUse = catToPlace == &cat ? catTextTopDrawableBatch : catTextDrawableBatch;
+    auto& batchToUse     = playerInputState.catToPlace == &cat ? cpuTopDrawableBatch : cpuDrawableBatch;
+    auto& textBatchToUse = playerInputState.catToPlace == &cat ? catTextTopDrawableBatch : catTextDrawableBatch;
 
     const bool drawHexedWithShader = cat.isHexedOrCopyHexed() && hexedCatDrawCommands.size() < 2u;
     auto&      spriteBatchToUse    = drawHexedWithShader ? tempDrawableBatch : batchToUse;
@@ -1416,7 +1416,7 @@ void Main::gameLoopDrawCat(Cat&            cat,
 
     const sf::Rect2f& catTxr = *catTxrsByType[asIdx(cat.type)];
 
-    if (catToPlace != &cat && !bubbleCullingBoundaries.isInside(cat.position))
+    if (playerInputState.catToPlace != &cat && !bubbleCullingBoundaries.isInside(cat.position))
         return;
 
     const auto isCopyCatWithType = [&](const CatType copiedType)
@@ -1534,7 +1534,7 @@ void Main::gameLoopDrawCat(Cat&            cat,
     const auto catDrawOffset = gameConstants.catDrawOffsetsByType[asIdx(cat.type)];
     const auto visualCatAnchor = catAnchor + (catDrawOffset / 2.f * 0.2f * catScaleMult).rotatedBy(sf::radians(catRotation));
 
-    auto& cloudBatchToUse = catToPlace == &cat ? cpuTopCloudDrawableBatch : cpuCloudDrawableBatch;
+    auto& cloudBatchToUse = playerInputState.catToPlace == &cat ? cpuTopCloudDrawableBatch : cpuCloudDrawableBatch;
 
     {
         const auto& [cloudPositionOffset, cloudXExtentMult] = gameConstants.cloudModifiers[asIdx(cat.type)];
@@ -1987,7 +1987,7 @@ void Main::gameLoopDrawCat(Cat&            cat,
     {
         enqueueHexedCatDrawCommand(tempDrawableBatch,
                                    visualCatAnchor,
-                                   catToPlace == &cat,
+                                   playerInputState.catToPlace == &cat,
                                    cat.position.x * 0.013f + cat.position.y * 0.021f + static_cast<float>(cat.nameIdx) * 0.17f,
                                    hexedEffectStrength);
 
@@ -2470,16 +2470,16 @@ void Main::gameLoopDrawTextParticles()
 ////////////////////////////////////////////////////////////
 void Main::gameLoopDrawScrollArrowHint(const float deltaTimeMs)
 {
-    if (scrollArrowCountdown.value <= 0.f)
+    if (uiState.scrollArrowCountdown.value <= 0.f)
         return;
 
-    if (scroll == 0.f)
-        (void)scrollArrowCountdown.updateAndLoop(deltaTimeMs, sf::base::tau * 350.f);
+    if (playerInputState.scroll == 0.f)
+        (void)uiState.scrollArrowCountdown.updateAndLoop(deltaTimeMs, sf::base::tau * 350.f);
     else
-        (void)scrollArrowCountdown.updateAndStop(deltaTimeMs);
+        (void)uiState.scrollArrowCountdown.updateAndStop(deltaTimeMs);
 
     const float blinkOpacity = easeInOutSine(sf::base::fabs(sf::base::sin(
-                                   sf::base::remainder(scrollArrowCountdown.value / 350.f, sf::base::tau)))) *
+                                   sf::base::remainder(uiState.scrollArrowCountdown.value / 350.f, sf::base::tau)))) *
                                255.f;
 
     const float arrowX = getLeftMostUsefulX();
@@ -2503,12 +2503,12 @@ void Main::gameLoopUpdatePurchaseUnlockedEffects(const float deltaTimeMs)
 {
     const float imguiWidth = uiWindowWidth * profile.uiScale;
     const auto  blinkFn    = [](const float value) { return (1 - sf::base::cos(2.f * sf::base::pi * value)) / 2.f; };
-    const float uiMenuCueX = uiMenuLastDrawSize.x > 1.f ? uiMenuLastDrawPos.x : uiGetWindowPos().x;
-    const bool  uiMenuFullyOpen = uiMenuRevealT >= 0.999f;
+    const float uiMenuCueX = uiState.uiMenuLastDrawSize.x > 1.f ? uiState.uiMenuLastDrawPos.x : uiGetWindowPos().x;
+    const bool  uiMenuFullyOpen = uiState.uiMenuRevealT >= 0.999f;
 
-    for (auto& [widgetLabel, countdown, arrowCountdown, hue, type] : purchaseUnlockedEffects)
+    for (auto& [widgetLabel, countdown, arrowCountdown, hue, type] : uiState.purchaseUnlockedEffects)
     {
-        const float y = uiLabelToY[widgetLabel];
+        const float y = uiState.uiLabelToY[widgetLabel];
 
         if (uiMenuFullyOpen && countdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::Running)
         {
@@ -2551,14 +2551,14 @@ void Main::gameLoopUpdatePurchaseUnlockedEffects(const float deltaTimeMs)
         }
     }
 
-    sf::base::vectorEraseIf(purchaseUnlockedEffects, [](const auto& pue) { return pue.arrowCountdown.isDone(); });
+    sf::base::vectorEraseIf(uiState.purchaseUnlockedEffects, [](const auto& pue) { return pue.arrowCountdown.isDone(); });
 }
 
 
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool Main::shouldDrawGrabbingCursor() const
 {
-    return !draggedCats.empty() || mBtnDown(getRMB(), /* penetrateUI */ true);
+    return !playerInputState.draggedCats.empty() || mBtnDown(getRMB(), /* penetrateUI */ true);
 }
 
 
@@ -2587,7 +2587,7 @@ void Main::gameLoopDrawCursor(const float deltaTimeMs, const float cursorGrow)
                                            : txCursor,
                 {.position = sf::Mouse::getPosition(window).toVec2f(),
                  .scale    = sf::Vec2f{profile.cursorScale, profile.cursorScale} *
-                             ((1.f + easeInOutBack(cursorGrow) * sf::base::pow(static_cast<float>(combo), 0.09f)) *
+                             ((1.f + easeInOutBack(cursorGrow) * sf::base::pow(static_cast<float>(comboState.combo), 0.09f)) *
                               dpiScalingFactor),
                  .origin   = {5.f, 5.f},
                  .color    = hueColor(profile.cursorHue + currentBackgroundHue.asDegrees(), 255u)},
@@ -2605,47 +2605,47 @@ void Main::gameLoopDrawCursorComboText(const float deltaTimeMs, const float curs
 
     const float scaleMult = profile.cursorScale * dpiScalingFactor;
 
-    if (combo >= 1)
+    if (comboState.combo >= 1)
         alpha = 255.f;
     else if (alpha > 0.f)
         alpha -= deltaTimeMs * 0.5f;
 
     const auto alphaU8 = static_cast<U8>(sf::base::clamp(alpha, 0.f, 255.f));
 
-    cursorComboText.position = sf::Mouse::getPosition(window).toVec2f() + sf::Vec2f{30.f, 48.f} * scaleMult;
+    comboState.cursorComboText.position = sf::Mouse::getPosition(window).toVec2f() + sf::Vec2f{30.f, 48.f} * scaleMult;
 
-    cursorComboText.setFillColor(sf::Color::blackMask(alphaU8));
-    cursorComboText.setOutlineColor(
+    comboState.cursorComboText.setFillColor(sf::Color::blackMask(alphaU8));
+    comboState.cursorComboText.setOutlineColor(
         sf::Color{111u, 170u, 244u, alphaU8}.withRotatedHue(profile.cursorHue + currentBackgroundHue.asDegrees()));
 
-    if (combo > 0)
-        cursorComboText.setString("x" + sf::base::toString(combo + 1));
+    if (comboState.combo > 0)
+        comboState.cursorComboText.setString("x" + sf::base::toString(comboState.combo + 1));
 
-    comboTextShakeEffect.applyToText(cursorComboText);
+    comboState.comboTextShakeEffect.applyToText(comboState.cursorComboText);
 
-    cursorComboText.scale *= (static_cast<float>(combo) * 0.65f) * cursorGrow * 0.3f;
-    cursorComboText.scale += {0.85f, 0.85f};
-    cursorComboText.scale += sf::Vec2f{1.f, 1.f} * comboFailCountdown.value / 325.f;
-    cursorComboText.scale *= scaleMult;
+    comboState.cursorComboText.scale *= (static_cast<float>(comboState.combo) * 0.65f) * cursorGrow * 0.3f;
+    comboState.cursorComboText.scale += {0.85f, 0.85f};
+    comboState.cursorComboText.scale += sf::Vec2f{1.f, 1.f} * comboState.comboFailCountdown.value / 325.f;
+    comboState.cursorComboText.scale *= scaleMult;
 
-    const auto minScale = sf::Vec2f{0.25f, 0.25f} + sf::Vec2f{0.25f, 0.25f} * comboFailCountdown.value / 125.f;
+    const auto minScale = sf::Vec2f{0.25f, 0.25f} + sf::Vec2f{0.25f, 0.25f} * comboState.comboFailCountdown.value / 125.f;
 
-    cursorComboText.scale = cursorComboText.scale.componentWiseClamp(minScale, {1.5f, 1.5f});
+    comboState.cursorComboText.scale = comboState.cursorComboText.scale.componentWiseClamp(minScale, {1.5f, 1.5f});
 
-    if (comboFailCountdown.value > 0.f)
+    if (comboState.comboFailCountdown.value > 0.f)
     {
-        cursorComboText.position += rngFast.getVec2f({-5.f, -5.f}, {5.f, 5.f});
-        cursorComboText.setFillColor(sf::Color::Red.withAlpha(alphaU8));
+        comboState.cursorComboText.position += rngFast.getVec2f({-5.f, -5.f}, {5.f, 5.f});
+        comboState.cursorComboText.setFillColor(sf::Color::Red.withAlpha(alphaU8));
     }
 
-    rtGame.draw(cursorComboText, {.view = nonScaledHUDView, .shader = &shader});
+    rtGame.draw(comboState.cursorComboText, {.view = nonScaledHUDView, .shader = &shader});
 }
 
 
 ////////////////////////////////////////////////////////////
 void Main::gameLoopDrawCursorComboBar()
 {
-    if (!pt->comboPurchased || !profile.showCursorComboBar || comboCountdown.value == 0.f || shouldDrawGrabbingCursor())
+    if (!pt->comboPurchased || !profile.showCursorComboBar || comboState.comboCountdown.value == 0.f || shouldDrawGrabbingCursor())
         return;
 
     const float scaleMult = profile.cursorScale * dpiScalingFactor;
@@ -2657,7 +2657,7 @@ void Main::gameLoopDrawCursorComboBar()
             .position           = cursorComboBarPosition,
             .outlineTextureRect = txrWhiteDot,
             .fillColor          = sf::Color::blackMask(80u),
-            .outlineColor       = cursorComboText.getOutlineColor(),
+            .outlineColor       = comboState.cursorComboText.getOutlineColor(),
             .outlineThickness   = 1.f,
             .size = {64.f * scaleMult * pt->psvComboStartTime.currentValue() * 1000.f / 700.f, 24.f * scaleMult},
         },
@@ -2668,9 +2668,9 @@ void Main::gameLoopDrawCursorComboBar()
             .position           = cursorComboBarPosition,
             .outlineTextureRect = txrWhiteDot,
             .fillColor          = sf::Color::blackMask(164u),
-            .outlineColor       = cursorComboText.getOutlineColor(),
+            .outlineColor       = comboState.cursorComboText.getOutlineColor(),
             .outlineThickness   = 1.f,
-            .size               = {64.f * scaleMult * comboCountdown.value / 700.f, 24.f * scaleMult},
+            .size               = {64.f * scaleMult * comboState.comboCountdown.value / 700.f, 24.f * scaleMult},
         },
         {.view = nonScaledHUDView});
 }

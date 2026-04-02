@@ -33,21 +33,21 @@ void Main::uiTabBarMagic()
     ImGui::Text("Wisdom points: %s WP", toStringWithSeparators(pt->wisdom));
 
     uiCheckbox("Absorb wisdom from star bubbles", &pt->absorbingWisdom);
-    std::sprintf(uiTooltipBuffer,
+    std::sprintf(uiState.uiTooltipBuffer,
                  "The Wizardcat concentrates, absorbing wisdom points from nearby star bubbles. While the "
                  "Wizardcat is concentrating, it cannot cast spells nor be moved around.");
     uiMakeTooltip();
 
     uiBeginColumns();
-    uiButtonHueMod = 45.f;
+    uiState.uiButtonHueMod = 45.f;
 
-    std::sprintf(uiTooltipBuffer,
+    std::sprintf(uiState.uiTooltipBuffer,
                  "The Wizardcat taps into memories of past lives, remembering a powerful spell.\n\nMana "
                  "costs:\n- "
                  "1st spell: 5 mana\n- 2nd spell: 20 mana\n- 3rd spell: 30 mana\n- 4th spell: 40 mana\n\nNote: "
                  "You "
                  "won't be able to cast a spell if the cost exceeds your maximum mana!");
-    std::sprintf(uiLabelBuffer, "%zu/%zu", pt->psvSpellCount.nPurchases, pt->psvSpellCount.data->nMaxPurchases);
+    std::sprintf(uiState.uiLabelBuffer, "%zu/%zu", pt->psvSpellCount.nPurchases, pt->psvSpellCount.data->nMaxPurchases);
     (void)makePSVButtonExByCurrency("Remember spell",
                                     pt->psvSpellCount,
                                     1u,
@@ -55,7 +55,7 @@ void Main::uiTabBarMagic()
                                     pt->wisdom,
                                     "%s WP##%u");
 
-    uiButtonHueMod = 0.f;
+    uiState.uiButtonHueMod = 0.f;
 
     uiImgsep(txrMagicSeparator1, "mana");
     ImGui::Columns(1);
@@ -106,18 +106,18 @@ void Main::uiTabBarMagic()
     uiSetFontScale(uiNormalFontScale);
 
     uiBeginColumns();
-    uiButtonHueMod = 45.f;
+    uiState.uiButtonHueMod = 45.f;
 
     //
     // SPELL 0
     if (checkUiUnlock(32u, pt->psvSpellCount.nPurchases >= 1))
     {
         uiSetUnlockLabelY(32u);
-        std::sprintf(uiTooltipBuffer,
+        std::sprintf(uiState.uiTooltipBuffer,
                      "Transforms a percentage of bubbles around the Wizardcat into star bubbles "
                      "immediately.\n\nCan be upgraded to ignore bombs with prestige points.");
-        uiLabelBuffer[0] = '\0';
-        bool done        = false;
+        uiState.uiLabelBuffer[0] = '\0';
+        bool done                = false;
 
         ImGui::BeginDisabled(isWizardBusy());
         if (makePurchasableButtonOneTimeByCurrency("Starpaw Conversion",
@@ -136,16 +136,17 @@ void Main::uiTabBarMagic()
 
         if (!pt->psvStarpawPercentage.isMaxedOut())
         {
-            std::sprintf(uiTooltipBuffer,
+            std::sprintf(uiState.uiTooltipBuffer,
                          "Increase the percentage of bubbles converted into star bubbles from %.2f%% to %.2f%%.",
                          static_cast<double>(currentPercentage),
                          static_cast<double>(nextPercentage));
         }
         else
         {
-            std::sprintf(uiTooltipBuffer, "Increase the percentage of bubbles converted into star bubbles (MAX).");
+            std::sprintf(uiState.uiTooltipBuffer,
+                         "Increase the percentage of bubbles converted into star bubbles (MAX).");
         }
-        std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(currentPercentage));
+        std::sprintf(uiState.uiLabelBuffer, "%.2f%%", static_cast<double>(currentPercentage));
         (void)makePSVButtonExByCurrency("  higher percentage##starpawperc",
                                         pt->psvStarpawPercentage,
                                         1u,
@@ -161,12 +162,12 @@ void Main::uiTabBarMagic()
         ImGui::Separator();
 
         uiSetUnlockLabelY(33u);
-        std::sprintf(uiTooltipBuffer,
+        std::sprintf(uiState.uiTooltipBuffer,
                      "Creates a value multiplier aura around the Wizardcat that affects all cats and bubbles. "
                      "Lasts %d seconds.\n\nCasting this spell multiple times will accumulate the aura "
                      "duration.",
                      pt->perm.wizardCatDoubleMewltiplierDuration ? 12 : 6);
-        std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt->mewltiplierAuraTimer / 1000.f));
+        std::sprintf(uiState.uiLabelBuffer, "%.2fs", static_cast<double>(pt->mewltiplierAuraTimer / 1000.f));
         bool done = false;
 
         ImGui::BeginDisabled(isWizardBusy());
@@ -184,11 +185,11 @@ void Main::uiTabBarMagic()
         const float currentMultiplier = pt->psvMewltiplierMult.currentValue();
         const float nextMultiplier    = pt->psvMewltiplierMult.nextValue();
 
-        std::sprintf(uiTooltipBuffer,
+        std::sprintf(uiState.uiTooltipBuffer,
                      "Increase the multiplier applied while the aura is active from x%.2f to x%.2f.",
                      static_cast<double>(currentMultiplier),
                      static_cast<double>(nextMultiplier));
-        std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(currentMultiplier));
+        std::sprintf(uiState.uiLabelBuffer, "x%.2f", static_cast<double>(currentMultiplier));
         (void)makePSVButtonExByCurrency("  higher multiplier",
                                         pt->psvMewltiplierMult,
                                         1u,
@@ -204,11 +205,11 @@ void Main::uiTabBarMagic()
         ImGui::Separator();
 
         uiSetUnlockLabelY(34u);
-        std::sprintf(uiTooltipBuffer,
+        std::sprintf(uiState.uiTooltipBuffer,
                      "The Wizardcat uses their magic to empower a nearby Witchcat, reducing their remaining "
                      "ritual cooldown.\n\nNote: This spell has no effect if there is no Witchcat "
                      "nearby, or if there are voodoo dolls left to collect.");
-        uiLabelBuffer[0] = '\0';
+        uiState.uiLabelBuffer[0] = '\0';
 
         bool done = false;
 
@@ -225,16 +226,16 @@ void Main::uiTabBarMagic()
 
         if (!pt->psvDarkUnionPercentage.isMaxedOut())
         {
-            std::sprintf(uiTooltipBuffer,
+            std::sprintf(uiState.uiTooltipBuffer,
                          "Increase the cooldown reduction percentage from %.2f%% to %.2f%%.",
                          static_cast<double>(currentPercentage),
                          static_cast<double>(nextPercentage));
         }
         else
         {
-            std::sprintf(uiTooltipBuffer, "Increase the cooldown reduction percentage (MAX).");
+            std::sprintf(uiState.uiTooltipBuffer, "Increase the cooldown reduction percentage (MAX).");
         }
-        std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(currentPercentage));
+        std::sprintf(uiState.uiLabelBuffer, "%.2f%%", static_cast<double>(currentPercentage));
         (void)makePSVButtonExByCurrency("  higher reduction##darkunionperc",
                                         pt->psvDarkUnionPercentage,
                                         1u,
@@ -250,7 +251,7 @@ void Main::uiTabBarMagic()
         ImGui::Separator();
 
         uiSetUnlockLabelY(35u);
-        std::sprintf(uiTooltipBuffer,
+        std::sprintf(uiState.uiTooltipBuffer,
                      "The Wizardcat controls time itself, creating a stasis field for %d seconds. All bubbles "
                      "caught in the field become frozen in time, unable to move or be destroyed. However, they "
                      "can "
@@ -258,7 +259,7 @@ void Main::uiTabBarMagic()
                      "accumulate the field duration.\n\nNote: This spell has no effect if there are no bubbles "
                      "nearby. Bombs are also affected by the stasis field.",
                      pt->perm.wizardCatDoubleStasisFieldDuration ? 12 : 6);
-        std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt->stasisFieldTimer / 1000.f));
+        std::sprintf(uiState.uiLabelBuffer, "%.2fs", static_cast<double>(pt->stasisFieldTimer / 1000.f));
 
         bool done = false;
 
@@ -275,7 +276,7 @@ void Main::uiTabBarMagic()
         ImGui::EndDisabled();
     }
 
-    uiButtonHueMod = 0.f;
+    uiState.uiButtonHueMod = 0.f;
     ImGui::Columns(1);
 
     if (pt->psvSpellCount.nPurchases > 0 && pt->perm.autocastPurchased)
@@ -283,7 +284,7 @@ void Main::uiTabBarMagic()
         uiImgsep(txrMagicSeparator3, "autocast");
 
         ImGui::Columns(1);
-        uiButtonHueMod = 45.f;
+        uiState.uiButtonHueMod = 45.f;
 
         constexpr const char* entries[]{
             "None",
@@ -311,6 +312,6 @@ void Main::uiTabBarMagic()
             ImGui::EndCombo();
         }
 
-        uiButtonHueMod = 0.f;
+        uiState.uiButtonHueMod = 0.f;
     }
 }

@@ -7,6 +7,7 @@ if (NOT SFML_OS_EMSCRIPTEN AND NOT ARCH_ARM64)
             MainApp.cpp
             MainGameplay.cpp
             MainLoop.cpp
+            PlayerInput.cpp
             MainProgression.cpp
             MainRendering.cpp
             MainSystems.cpp
@@ -32,6 +33,7 @@ else()
             MainApp.cpp
             MainGameplay.cpp
             MainLoop.cpp
+            PlayerInput.cpp
             MainProgression.cpp
             MainRendering.cpp
             MainSystems.cpp

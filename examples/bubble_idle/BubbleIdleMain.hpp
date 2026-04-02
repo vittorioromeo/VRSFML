@@ -11,6 +11,7 @@
 #include "Cat.hpp"
 #include "CatNames.hpp"
 #include "CatType.hpp"
+#include "ComboState.hpp"
 #include "Collision.hpp"
 #include "Constants.hpp"
 #include "Countdown.hpp"
@@ -20,9 +21,11 @@
 #include "IconsFontAwesome6.h"
 #include "InputHelper.hpp"
 #include "MemberGuard.hpp"
+#include "NotificationState.hpp"
 #include "Particle.hpp"
 #include "ParticleData.hpp"
 #include "ParticleType.hpp"
+#include "PlayerInput.hpp"
 #include "Playthrough.hpp"
 #include "Profile.hpp"
 #include "PurchasableScalingValue.hpp"
@@ -36,6 +39,7 @@
 #include "TextEffectWiggle.hpp"
 #include "TextParticle.hpp"
 #include "TextShakeEffect.hpp"
+#include "UIState.hpp"
 #include "Version.hpp"
 
 #include "ExampleUtils/ControlFlow.hpp"
@@ -115,6 +119,7 @@
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/ThreadPool.hpp"
+#include "SFML/Base/ToString.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #include <cstdarg>
@@ -443,8 +448,8 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Exiting status
-    bool escWasPressed = false;
-    bool mustExit      = false;
+    PlayerInputState playerInputState;
+    bool             mustExit{false};
 
     ////////////////////////////////////////////////////////////
     // Texture atlas
@@ -951,25 +956,8 @@ struct Main
     TextShakeEffect moneyTextShakeEffect;
 
     ////////////////////////////////////////////////////////////
-    // HUD combo text
-    sf::Text        comboText{fontSuperBakery,
-                              {.position         = moneyText.position.addY(35.f),
-                               .string           = "x1",
-                               .characterSize    = 48u,
-                               .fillColor        = sf::Color::White,
-                               .outlineColor     = colorBlueOutline,
-                               .outlineThickness = 3.f}};
-    TextShakeEffect comboTextShakeEffect;
-
-    ////////////////////////////////////////////////////////////
-    // HUD buff text
-    sf::Text buffText{fontSuperBakery,
-                      {.position         = comboText.position.addY(35.f),
-                       .string           = "",
-                       .characterSize    = 48u,
-                       .fillColor        = sf::Color::White,
-                       .outlineColor     = colorBlueOutline,
-                       .outlineThickness = 3.f}};
+    // Combo state
+    ComboState comboState{fontSuperBakery, fontMouldyCheese, moneyText.position, colorBlueOutline};
 
     ////////////////////////////////////////////////////////////
     // HUD demo text
@@ -1019,28 +1007,6 @@ struct Main
     // Timers for transitions
     TargetedCountdown bubbleSpawnTimer{.startingValue = 3.f};
     TargetedCountdown catRemoveTimer{.startingValue = 100.f};
-
-    ////////////////////////////////////////////////////////////
-    // Combo state
-    int       combo{0u};
-    Countdown comboCountdown;
-    int       laserCursorCombo{0};
-
-    ////////////////////////////////////////////////////////////
-    // Accumulating combo effect and cursor combo text
-    int       comboNStars{0};        // Number of stars clicked in current combo
-    int       comboNOthers{0};       // Number of non-stars clicked in current combo
-    int       comboAccReward{0};     // Accumulated combo reward effect for non-stars
-    int       comboAccStarReward{0}; // Accumulated combo reward effect for stars
-    Countdown comboFailCountdown;    // Countdown for combo failure effect (red text)
-
-    Countdown accComboDelay;      // Combo reward coin spawns rate
-    int       iComboAccReward{0}; // Index of spawned coin in combo reward (used for pitch)
-
-    Countdown accComboStarDelay;      // Combo reward star spawns rate
-    int       iComboAccStarReward{0}; // Index of spawned star in combo reward (used for pitch)
-
-    sf::Text cursorComboText{fontMouldyCheese, {.origin = {0.f, 0.f}, .characterSize = 48u, .outlineThickness = 4.f}};
 
     ////////////////////////////////////////////////////////////
     // Clock and accumulator for played time
@@ -1102,12 +1068,6 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    // Scrolling state
-    sf::base::Optional<sf::Vec2f> dragPosition;
-    float                         scroll{0.f};
-    float                         actualScroll{0.f};
-
-    ////////////////////////////////////////////////////////////
     // Screen shake effect state
     float screenShakeAmount{0.f};
     float screenShakeTimer{0.f};
@@ -1131,23 +1091,6 @@ struct Main
     CullingBoundaries hudCullingBoundaries{};
     CullingBoundaries particleCullingBoundaries{};
     CullingBoundaries bubbleCullingBoundaries{};
-
-    ////////////////////////////////////////////////////////////
-    // Last frame mouse position (world space)
-    sf::Vec2f lastMousePos;
-
-    ////////////////////////////////////////////////////////////
-    // Cat dragging state
-    float                         catDragPressDuration{0.f};
-    sf::base::Optional<sf::Vec2f> catDragOrigin;
-    sf::base::Vector<Cat*>        draggedCats;
-    bool                          draggedCatsStartedWithTouch{false};
-    bool                          draggedCatsStartedFromAOESelection{false};
-    Cat*                          catToPlace{nullptr};
-
-    ////////////////////////////////////////////////////////////
-    // Touch state
-    sf::base::Vector<sf::base::Optional<sf::Vec2f>> fingerPositions;
 
     ////////////////////////////////////////////////////////////
     // Splash screen state
@@ -1199,10 +1142,6 @@ struct Main
     sf::View scaledHUDView{{1.f, 1.f}, {1.f, 1.f}};    // TODO P1: compute on the fly, don't cache...
 
     ////////////////////////////////////////////////////////////
-    // Scroll arrow hint
-    Countdown scrollArrowCountdown;
-
-    ////////////////////////////////////////////////////////////
     // $ps sampler
     MoneyType      moneyGainedLastSecond{0u};
     Sampler<float> samplerMoneyPerSecond{/* capacity */ 60u};
@@ -1214,36 +1153,15 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Notification queue
-    struct NotificationData
-    {
-        const char*      title;
-        sf::base::String content;
-    };
-
-    sf::base::Vector<NotificationData> notificationQueue;
-    TargetedCountdown                  notificationCountdown{.startingValue = 750.f};
+    NotificationState notificationState;
 
     ////////////////////////////////////////////////////////////
     // FPS counter
     float fps{0.f};
 
     ////////////////////////////////////////////////////////////
-    // Purchase unlocked/available effects
-    struct PurchaseUnlockedEffect
-    {
-        sf::base::String widgetLabel;
-        Countdown        countdown;
-        Countdown        arrowCountdown;
-        float            hue;
-        int              type;
-    };
-
-    sf::base::Vector<PurchaseUnlockedEffect>             purchaseUnlockedEffects;
-    ankerl::unordered_dense::map<sf::base::String, bool> btnWasDisabled;
-
-    ////////////////////////////////////////////////////////////
-    // Debug stuff
-    bool debugHideUI = false;
+    // UI state
+    UIState uiState;
 
     ////////////////////////////////////////////////////////////
     // Portal storm buff countdown
@@ -1268,10 +1186,6 @@ struct Main
     OptionalTargetedCountdown victoryTC;
     Countdown                 cdLetterAppear;
     Countdown                 cdLetterText;
-
-    ////////////////////////////////////////////////////////////
-    // Minimap navigation
-    sf::Rect2f minimapRect;
 
     ////////////////////////////////////////////////////////////
     // Input management
@@ -1709,7 +1623,7 @@ struct Main
     [[nodiscard]] sf::Vec2f getViewCenter() const
     {
         const sf::Vec2f currentViewSize = getCurrentGameViewSize();
-        return {clampGameViewCenterX(currentViewSize.x / 2.f + actualScroll * 2.f, currentViewSize.x),
+        return {clampGameViewCenterX(currentViewSize.x / 2.f + playerInputState.actualScroll * 2.f, currentViewSize.x),
                 currentViewSize.y / 2.f};
     }
 
@@ -1779,7 +1693,7 @@ struct Main
 
         spawnParticles(32, pos, ParticleType::Star, 0.5f, 0.75f);
 
-        catToPlace = nullptr;
+        playerInputState.catToPlace = nullptr;
 
         Cat& newCat = pt->cats.emplaceBack(Cat{
             .position    = pos,
@@ -1802,16 +1716,16 @@ struct Main
 
         if (placeInHand)
         {
-            catToPlace      = &newCat;
+            playerInputState.catToPlace = &newCat;
             newCat.dragTime = 1000.f;
 
-            draggedCats.clear();
-            draggedCats.pushBack(&newCat);
-            draggedCatsStartedWithTouch        = false;
-            draggedCatsStartedFromAOESelection = false;
+            playerInputState.draggedCats.clear();
+            playerInputState.draggedCats.pushBack(&newCat);
+            playerInputState.draggedCatsStartedWithTouch        = false;
+            playerInputState.draggedCatsStartedFromAOESelection = false;
 
-            newCat.position    = lastMousePos;
-            newCat.pawPosition = lastMousePos;
+            newCat.position    = playerInputState.lastMousePos;
+            newCat.pawPosition = playerInputState.lastMousePos;
         }
 
         return newCat;
@@ -2002,22 +1916,6 @@ struct Main
     static inline constexpr float maxGameViewAspectRatio = 21.f / 9.f;
 
     ////////////////////////////////////////////////////////////
-    char         uiBuffer[256]{};
-    char         uiLabelBuffer[512]{};
-    char         uiTooltipBuffer[1024]{};
-    float        uiButtonHueMod  = 0.f;
-    unsigned int uiWidgetId      = 0u;
-    float        lastFontScale   = 1.f;
-    float        uiMenuRevealT   = 1.f;
-    float        uiMenuHideTimer = 0.75f;
-    bool         uiMenuLocked    = false;
-    sf::Vec2f    uiMenuLastDrawPos{};
-    sf::Vec2f    uiMenuLastDrawSize{uiWindowWidth, 0.f};
-
-    ////////////////////////////////////////////////////////////
-    ankerl::unordered_dense::map<sf::base::String, float> uiLabelToY;
-
-    ////////////////////////////////////////////////////////////
     [[nodiscard]] float uiGetMaxWindowHeight() const;
     void                uiSetFontScale(float scale);
     void                uiMakeButtonLabels(const char* label, const char* xLabelBuffer);
@@ -2077,7 +1975,53 @@ struct Main
         SizeT                    times,
         TCost                    cost,
         TCost&                   availability,
-        const char*              currencyFmt);
+        const char*              currencyFmt)
+    {
+        const bool maxedOut = psv.nPurchases == psv.data->nMaxPurchases;
+
+        if (profile.hideMaxedOutPurchasables && maxedOut)
+            return false;
+
+        bool result = false;
+
+        if (maxedOut)
+            std::sprintf(uiState.uiBuffer, "MAX##%u", uiState.uiWidgetId++);
+        else if (cost == 0u || times == 0u)
+            std::sprintf(uiState.uiBuffer, "N/A##%u", uiState.uiWidgetId++);
+        else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+            std::sprintf(uiState.uiBuffer, currencyFmt, toStringWithSeparators(cost), uiState.uiWidgetId++);
+#pragma GCC diagnostic pop
+
+        ImGui::BeginDisabled(uiCheckPurchasability(label, maxedOut || availability < cost || cost == 0u));
+
+        uiMakeButtonLabels(label, uiState.uiLabelBuffer);
+        if (uiMakeButtonImpl(label, uiState.uiBuffer))
+        {
+            result = true;
+            availability -= cost;
+
+            if (&availability == &pt->money)
+                spentMoney += cost;
+
+            psv.nPurchases += times;
+
+            if (&availability == &pt->prestigePoints && times == 1u)
+            {
+                undoPPPurchase.emplaceBack([&psv, &availability, times, cost]
+                {
+                    psv.nPurchases -= times;
+                    availability += cost;
+                });
+
+                undoPPPurchaseTimer.value = 10000.f;
+            }
+        }
+
+        ImGui::EndDisabled();
+        return result;
+    }
 
     ////////////////////////////////////////////////////////////
     template <typename TCost>
@@ -2086,7 +2030,48 @@ struct Main
         bool&       done,
         TCost       cost,
         TCost&      availability,
-        const char* currencyFmt);
+        const char* currencyFmt)
+    {
+        bool result = false;
+
+        if (done)
+            std::sprintf(uiState.uiBuffer, "DONE##%u", uiState.uiWidgetId++);
+        else if (cost == 0u)
+            std::sprintf(uiState.uiBuffer, "FREE##%u", uiState.uiWidgetId++);
+        else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+            std::sprintf(uiState.uiBuffer, currencyFmt, toStringWithSeparators(cost), uiState.uiWidgetId++);
+#pragma GCC diagnostic pop
+
+        ImGui::BeginDisabled(uiCheckPurchasability(label, done || availability < cost));
+
+        uiMakeButtonLabels(label, uiState.uiLabelBuffer);
+        if (uiMakeButtonImpl(label, uiState.uiBuffer))
+        {
+            result = true;
+            availability -= cost;
+
+            if (&availability == &pt->money)
+                spentMoney += cost;
+
+            done = true;
+
+            if (&availability == &pt->prestigePoints && cost > 0u)
+            {
+                undoPPPurchase.emplaceBack([&availability, &done, cost]
+                {
+                    done = false;
+                    availability += cost;
+                });
+
+                undoPPPurchaseTimer.value = 10000.f;
+            }
+        }
+
+        ImGui::EndDisabled();
+        return result;
+    }
 
     ////////////////////////////////////////////////////////////
     void switchToBGM(const sf::base::SizeT index, const bool force)
@@ -2162,8 +2147,8 @@ struct Main
 
         buyReminder = 0;
 
-        inPrestigeTransition = true;
-        scroll               = 0.f;
+        inPrestigeTransition     = true;
+        playerInputState.scroll  = 0.f;
 
         resetAllDraggedCats();
         pt->onPrestige(ppReward);
@@ -2177,11 +2162,6 @@ struct Main
         switchToBGM(static_cast<sf::base::SizeT>(profile.selectedBGM), /* force */ true);
     }
 
-    ////////////////////////////////////////////////////////////
-    ImGuiTabItemFlags_ shopSelectOnce       = ImGuiTabItemFlags_SetSelected;
-    int                lastUiSelectedTabIdx = 1;
-
-    ////////////////////////////////////////////////////////////
     void uiBeginColumns() const;
     void uiCenteredText(const char* str, float offsetX = 0.f, float offsetY = 0.f);
     void uiCenteredTextColored(sf::Color color, const char* str, float offsetX = 0.f, float offsetY = 0.f);
@@ -2213,47 +2193,47 @@ struct Main
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::base::Optional<sf::Rect2f> getAoEDragRect(const sf::Vec2f mousePos) const
     {
-        if (!catDragOrigin.hasValue())
+        if (!playerInputState.catDragOrigin.hasValue())
             return sf::base::nullOpt;
 
-        return sf::base::makeOptional<sf::Rect2f>(*catDragOrigin, mousePos - *catDragOrigin);
+        return sf::base::makeOptional<sf::Rect2f>(*playerInputState.catDragOrigin, mousePos - *playerInputState.catDragOrigin);
     }
 
     ////////////////////////////////////////////////////////////
     void resetAllDraggedCats()
     {
-        catDragPressDuration = 0.f;
-        catDragOrigin.reset();
-        draggedCats.clear();
-        draggedCatsStartedWithTouch        = false;
-        draggedCatsStartedFromAOESelection = false;
-        catToPlace                         = nullptr;
+        playerInputState.catDragPressDuration = 0.f;
+        playerInputState.catDragOrigin.reset();
+        playerInputState.draggedCats.clear();
+        playerInputState.draggedCatsStartedWithTouch        = false;
+        playerInputState.draggedCatsStartedFromAOESelection = false;
+        playerInputState.catToPlace                         = nullptr;
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::base::SizeT pickDragPivotCatIndex() const
     {
-        SFML_BASE_ASSERT(!draggedCats.empty());
+        SFML_BASE_ASSERT(!playerInputState.draggedCats.empty());
 
-        if (draggedCats.size() <= 2u)
+        if (playerInputState.draggedCats.size() <= 2u)
             return 0u;
 
         // First calculate the centroid
         sf::Vec2f centroid;
 
-        for (const Cat* cat : draggedCats)
+        for (const Cat* cat : playerInputState.draggedCats)
             centroid += cat->position;
 
-        centroid /= static_cast<float>(draggedCats.size());
+        centroid /= static_cast<float>(playerInputState.draggedCats.size());
 
         // Find the position closest to the centroid
         sf::base::SizeT closestIndex       = 0u;
         float           minDistanceSquared = SFML_BASE_FLOAT_MAX;
 
-        for (sf::base::SizeT i = 0u; i < draggedCats.size(); ++i)
+        for (sf::base::SizeT i = 0u; i < playerInputState.draggedCats.size(); ++i)
         {
             // Calculate squared distance (avoiding square root for performance)
-            const float distSquared = (draggedCats[i]->position - centroid).lengthSquared();
+            const float distSquared = (playerInputState.draggedCats[i]->position - centroid).lengthSquared();
 
             if (minDistanceSquared - distSquared < 64.f)
             {
@@ -2268,7 +2248,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isCatBeingDragged(const Cat& cat) const
     {
-        for (const Cat* c : draggedCats)
+        for (const Cat* c : playerInputState.draggedCats)
             if (c == &cat)
                 return true;
 
@@ -2278,7 +2258,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     void stopDraggingCat(const Cat& cat)
     {
-        sf::base::vectorEraseIf(draggedCats, [&](const Cat* c) { return c == &cat; });
+        sf::base::vectorEraseIf(playerInputState.draggedCats, [&](const Cat* c) { return c == &cat; });
     }
 
     ////////////////////////////////////////////////////////////
@@ -2892,17 +2872,17 @@ struct Main
 
         inPrestigeTransition = false;
 
-        combo            = 0u;
-        laserCursorCombo = 0;
+        comboState.combo            = 0u;
+        comboState.laserCursorCombo = 0;
 
-        comboNStars         = 0;
-        comboNOthers        = 0;
-        comboAccReward      = 0;
-        comboAccStarReward  = 0;
-        iComboAccReward     = 0;
-        iComboAccStarReward = 0;
+        comboState.comboNStars         = 0;
+        comboState.comboNOthers        = 0;
+        comboState.comboAccReward      = 0;
+        comboState.comboAccStarReward  = 0;
+        comboState.iComboAccReward     = 0;
+        comboState.iComboAccStarReward = 0;
 
-        scroll = 0.f;
+        playerInputState.scroll = 0.f;
 
         screenShakeAmount = 0.f;
         screenShakeTimer  = 0.f;
@@ -2912,12 +2892,12 @@ struct Main
         samplerMoneyPerSecond.clear();
 
         bombIdxToCatIdx.clear();
-        purchaseUnlockedEffects.clear();
-        btnWasDisabled.clear();
+        uiState.purchaseUnlockedEffects.clear();
+        uiState.btnWasDisabled.clear();
         undoPPPurchase.clear();
 
         if (goToShopTab)
-            shopSelectOnce = ImGuiTabItemFlags_SetSelected;
+            uiState.shopSelectOnce = ImGuiTabItemFlags_SetSelected;
 
         profile.selectedBackground = 0;
         profile.selectedBGM        = 0;
@@ -2941,7 +2921,7 @@ struct Main
         return textParticles.emplaceBack(TextParticle{
             {.position      = {position.x, position.y - 10.f},
              .velocity      = rngFast.getVec2f({-0.1f, -1.65f}, {0.1f, -1.35f}) * 0.395f,
-             .scale         = sf::base::clamp(1.f + 0.1f * static_cast<float>(combo + 1) / 1.75f, 1.f, 3.f) * 0.5f,
+             .scale         = sf::base::clamp(1.f + 0.1f * static_cast<float>(comboState.combo + 1) / 1.75f, 1.f, 3.f) * 0.5f,
              .scaleDecay    = 0.f,
              .accelerationY = 0.0039f,
              .opacity       = 1.f,
@@ -3130,10 +3110,10 @@ struct Main
         statBubblePopped(bubble.type, byPlayerClick, reward);
 
         if (byPlayerClick && bubble.type == BubbleType::Star)
-            statHighestStarBubblePopCombo(static_cast<sf::base::U64>(combo));
+            statHighestStarBubblePopCombo(static_cast<sf::base::U64>(comboState.combo));
 
         if (byPlayerClick && bubble.type == BubbleType::Nova)
-            statHighestNovaBubblePopCombo(static_cast<sf::base::U64>(combo));
+            statHighestNovaBubblePopCombo(static_cast<sf::base::U64>(comboState.combo));
 
         const Shrine* collectorShrine = nullptr;
         for (Shrine& shrine : pt->shrines)
@@ -3157,9 +3137,9 @@ struct Main
         if (profile.accumulatingCombo && !multiPop && byPlayerClick && pt->comboPurchased && !collectedByShrine)
         {
             if (bubble.type == BubbleType::Star || bubble.type == BubbleType::Nova)
-                comboNStars += 1;
+                comboState.comboNStars += 1;
             else
-                comboNOthers += 1;
+                comboState.comboNOthers += 1;
         }
 
         if (profile.showCoinParticles)
@@ -3216,7 +3196,7 @@ struct Main
         if (!collectedByShrine)
         {
             addMoney(reward);
-            moneyTextShakeEffect.bump(rngFast, 1.f + static_cast<float>(combo) * 0.1f);
+            moneyTextShakeEffect.bump(rngFast, 1.f + static_cast<float>(comboState.combo) * 0.1f);
         }
 
         if (!isBubbleInStasisField(bubble))
@@ -3268,6 +3248,8 @@ struct Main
     {
         return profile.invertMouseButtons ? sf::Mouse::Button::Left : sf::Mouse::Button::Right;
     }
+    [[nodiscard]] bool gameLoopHandleEvents(FrameInput& frameInput, bool shouldDrawUI);
+    void               gameLoopPrepareInput(FrameInput& frameInput, float deltaTimeMs);
     void               gameLoopUpdateScrolling(float deltaTimeMs, const sf::base::Vector<sf::Vec2f>& downFingers);
     void               gameLoopUpdateTransitions(float deltaTimeMs);
     void               gameLoopUpdateBubbles(float deltaTimeMs);
@@ -3356,7 +3338,7 @@ struct Main
         std::snprintf(fmtBuffer, sizeof(fmtBuffer), format, args...);
 #pragma GCC diagnostic pop
 
-        notificationQueue.emplaceBack(title, sf::base::String{fmtBuffer});
+        notificationState.queue.emplaceBack(title, sf::base::String{fmtBuffer});
     }
 
     ////////////////////////////////////////////////////////////

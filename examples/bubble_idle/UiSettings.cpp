@@ -482,7 +482,7 @@ void Main::uiTabBarSettings()
 
         ImGui::BeginDisabled(!dangerZone);
 
-        uiButtonHueMod = 120.f;
+        uiState.uiButtonHueMod = 120.f;
         uiPushButtonColors();
 
         if (ImGui::Button("Reset *current* prestige##dangerzoneforceprestige"))
@@ -509,7 +509,7 @@ void Main::uiTabBarSettings()
         }
 
         uiPopButtonColors();
-        uiButtonHueMod = 0.f;
+        uiState.uiButtonHueMod = 0.f;
 
         ImGui::EndDisabled();
 
@@ -580,7 +580,7 @@ void Main::uiTabBarSettings()
 
         ImGui::SameLine();
 
-        uiButtonHueMod = 120.f;
+        uiState.uiButtonHueMod = 120.f;
         uiPushButtonColors();
 
         if (ImGui::Button("Reset game"))
@@ -592,7 +592,7 @@ void Main::uiTabBarSettings()
             forceResetProfile();
 
         uiPopButtonColors();
-        uiButtonHueMod = 0.f;
+        uiState.uiButtonHueMod = 0.f;
 
         ImGui::Separator();
 
@@ -652,7 +652,7 @@ void Main::uiTabBarSettings()
         ImGui::SameLine();
 
         if (ImGui::Button("Do Arrow"))
-            scrollArrowCountdown.value = 2000.f;
+            uiState.scrollArrowCountdown.value = 2000.f;
 
         ImGui::SameLine();
 
@@ -665,7 +665,7 @@ void Main::uiTabBarSettings()
 
         ImGui::Separator();
 
-        ImGui::Checkbox("hide ui", &debugHideUI);
+        ImGui::Checkbox("hide ui", &uiState.debugHideUI);
 
         ImGui::Separator();
 
