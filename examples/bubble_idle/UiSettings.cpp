@@ -528,7 +528,6 @@ void Main::uiTabBarSettings()
 
                 reseedRNGs(pt->seed);
                 shuffledCatNamesPerType = makeShuffledCatNames(rng);
-                refreshCachedUniqueCats();
             }
         }
         else
@@ -617,25 +616,25 @@ void Main::uiTabBarSettings()
         ImGui::SameLine();
 
         if (ImGui::Button("Do Ritual"))
-            if (auto* wc = cachedWitchCat)
+            if (auto* wc = getWitchCat())
                 wc->cooldown.value = 10.f;
 
         ImGui::SameLine();
 
         if (ImGui::Button("Ritual"))
-            if (auto* wc = cachedWitchCat)
+            if (auto* wc = getWitchCat())
                 wc->cooldown.value = 12000.f;
 
         ImGui::SameLine();
 
         if (ImGui::Button("Do Copy Ritual"))
-            if (auto* wc = cachedCopyCat)
+            if (auto* wc = getCopyCat())
                 wc->cooldown.value = 10.f;
 
         ImGui::SameLine();
 
         if (ImGui::Button("Copy Ritual"))
-            if (auto* wc = cachedCopyCat)
+            if (auto* wc = getCopyCat())
                 wc->cooldown.value = 12000.f;
 
         ImGui::SameLine();
@@ -692,7 +691,6 @@ void Main::uiTabBarSettings()
         if (ImGui::Button("Custom load"))
         {
             (void)loadPlaythroughFromFile(*pt, filenameBuf);
-            refreshCachedUniqueCats();
         }
 
         ImGui::Separator();

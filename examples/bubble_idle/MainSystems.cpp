@@ -169,7 +169,6 @@ void Main::gameLoopUpdateTransitions(const float deltaTimeMs)
 
             const auto cPos = pt->cats.back().position;
             pt->cats.popBack();
-            refreshCachedUniqueCats();
 
             spawnParticle({.position      = cPos.addY(29.f),
                            .velocity      = {0.f, 0.f},
@@ -552,11 +551,13 @@ void Main::gameLoopUpdateCatActionNormal(const float /* deltaTimeMs */, Cat& cat
 
         const float squaredMouseCatRange = pt->getComputedSquaredRangeByCatType(CatType::Mouse);
 
-        const bool inMouseCatRange = cachedMouseCat != nullptr &&
-                                     (cachedMouseCat->position - cat.position).lengthSquared() <= squaredMouseCatRange;
+        const Cat* mouseCat = getMouseCat();
+        const Cat* copyCat  = getCopyCat();
 
-        const bool inCopyMouseCatRange = cachedCopyCat != nullptr && pt->copycatCopiedCatType == CatType::Mouse &&
-                                         (cachedCopyCat->position - cat.position).lengthSquared() <= squaredMouseCatRange;
+        const bool inMouseCatRange = mouseCat != nullptr && (mouseCat->position - cat.position).lengthSquared() <= squaredMouseCatRange;
+
+        const bool inCopyMouseCatRange = copyCat != nullptr && pt->copycatCopiedCatType == CatType::Mouse &&
+                                         (copyCat->position - cat.position).lengthSquared() <= squaredMouseCatRange;
 
         const int comboMult = (inMouseCatRange || inCopyMouseCatRange) ? pt->mouseCatCombo : 1;
 
@@ -1277,7 +1278,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
             }
             else if (shrine.type == ShrineType::Voodoo && shrine.isActive())
             {
-                if (shrine.isInRange(cat.position) && cachedWitchCat == nullptr && !anyCatHexedOrCopyHexed() &&
+                if (shrine.isInRange(cat.position) && getWitchCat() == nullptr && !anyCatHexedOrCopyHexed() &&
                     !cat.isHexedOrCopyHexed())
                 {
                     hexCat(cat, /* copy */ false);
@@ -2399,7 +2400,7 @@ void Main::gameLoopUpdateDollsImpl(const float deltaTimeMs, const sf::Vec2f mous
 ////////////////////////////////////////////////////////////
 void Main::gameLoopUpdateDolls(const float deltaTimeMs, const sf::Vec2f mousePos)
 {
-    if (cachedWitchCat == nullptr)
+    if (getWitchCat() == nullptr)
         return;
 
     gameLoopUpdateDollsImpl(deltaTimeMs, mousePos, pt->dolls, getHexedCat());
@@ -2409,7 +2410,7 @@ void Main::gameLoopUpdateDolls(const float deltaTimeMs, const sf::Vec2f mousePos
 ////////////////////////////////////////////////////////////
 void Main::gameLoopUpdateCopyDolls(const float deltaTimeMs, const sf::Vec2f mousePos)
 {
-    if (cachedCopyCat == nullptr || pt->copycatCopiedCatType != CatType::Witch)
+    if (getCopyCat() == nullptr || pt->copycatCopiedCatType != CatType::Witch)
         return;
 
     gameLoopUpdateDollsImpl(deltaTimeMs, mousePos, pt->copyDolls, getCopyHexedCat());
@@ -2460,7 +2461,7 @@ void Main::gameLoopUpdateWitchBuffs(const float deltaTimeMs)
 ////////////////////////////////////////////////////////////
 void Main::gameLoopUpdateMana(const float deltaTimeMs)
 {
-    if (cachedWizardCat == nullptr)
+    if (getWizardCat() == nullptr)
         return;
 
     //
@@ -2496,20 +2497,20 @@ void Main::gameLoopUpdateMana(const float deltaTimeMs)
 
         const float wizardRange = pt->getComputedRangeByCatType(CatType::Wizard);
 
-        if (cachedWizardCat != nullptr)
+        if (const Cat* wizardCat = getWizardCat(); wizardCat != nullptr)
             for (SizeT i = 0u; i < 8u; ++i)
                 spawnParticlesWithHueNoGravity(230.f,
                                                1,
-                                               rngFast.getPointInCircle(cachedWizardCat->position, wizardRange),
+                                               rngFast.getPointInCircle(wizardCat->position, wizardRange),
                                                ParticleType::Star,
                                                0.15f,
                                                0.05f);
 
-        if (cachedCopyCat != nullptr && pt->copycatCopiedCatType == CatType::Wizard)
+        if (const Cat* copyCat = getCopyCat(); copyCat != nullptr && pt->copycatCopiedCatType == CatType::Wizard)
             for (SizeT i = 0u; i < 8u; ++i)
                 spawnParticlesWithHueNoGravity(230.f,
                                                1,
-                                               rngFast.getPointInCircle(cachedCopyCat->position, wizardRange),
+                                               rngFast.getPointInCircle(copyCat->position, wizardRange),
                                                ParticleType::Star,
                                                0.15f,
                                                0.05f);
@@ -2525,20 +2526,20 @@ void Main::gameLoopUpdateMana(const float deltaTimeMs)
 
         const float wizardRange = pt->getComputedRangeByCatType(CatType::Wizard);
 
-        if (cachedWizardCat != nullptr)
+        if (const Cat* wizardCat = getWizardCat(); wizardCat != nullptr)
             for (SizeT i = 0u; i < 8u; ++i)
                 spawnParticlesWithHueNoGravity(50.f,
                                                1,
-                                               rngFast.getPointInCircle(cachedWizardCat->position, wizardRange),
+                                               rngFast.getPointInCircle(wizardCat->position, wizardRange),
                                                ParticleType::Star,
                                                0.15f,
                                                0.05f);
 
-        if (cachedCopyCat != nullptr && pt->copycatCopiedCatType == CatType::Wizard)
+        if (const Cat* copyCat = getCopyCat(); copyCat != nullptr && pt->copycatCopiedCatType == CatType::Wizard)
             for (SizeT i = 0u; i < 8u; ++i)
                 spawnParticlesWithHueNoGravity(50.f,
                                                1,
-                                               rngFast.getPointInCircle(cachedCopyCat->position, wizardRange),
+                                               rngFast.getPointInCircle(copyCat->position, wizardRange),
                                                ParticleType::Star,
                                                0.15f,
                                                0.05f);
@@ -2549,7 +2550,10 @@ void Main::gameLoopUpdateMana(const float deltaTimeMs)
 ////////////////////////////////////////////////////////////
 void Main::gameLoopUpdateAutocast()
 {
-    if (cachedWizardCat == nullptr || !pt->perm.autocastPurchased || pt->perm.autocastIndex == 0u || isWizardBusy())
+    Cat* wizardCat = getWizardCat();
+    Cat* copyCat   = getCopyCat();
+
+    if (wizardCat == nullptr || !pt->perm.autocastPurchased || pt->perm.autocastIndex == 0u || isWizardBusy())
         return;
 
     const auto spellIndex = pt->perm.autocastIndex - 1u;
@@ -2560,7 +2564,7 @@ void Main::gameLoopUpdateAutocast()
     if (pt->mana >= spellManaCostByIndex[spellIndex])
     {
         pt->mana -= spellManaCostByIndex[spellIndex];
-        castSpellByIndex(spellIndex, cachedWizardCat, cachedCopyCat);
+        castSpellByIndex(spellIndex, wizardCat, copyCat);
 
         constexpr const char* spellNames[4] = {
             "Starpaw Conversion",

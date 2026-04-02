@@ -40,7 +40,7 @@
   "catCooldownBarOffsetY": 4.0,
   "catDrawOffsetsByType": [
     [
-      0.0,
+      -50.0,
       0.0
     ],
     [
@@ -56,7 +56,7 @@
       0.0
     ],
     [
-      0.0,
+      -50.0,
       0.0
     ],
     [
@@ -64,23 +64,23 @@
       0.0
     ],
     [
-      0.0,
+      -50.0,
       0.0
     ],
     [
-      0.0,
+      -65.0,
       0.0
     ],
     [
-      0.0,
+      -60.0,
       0.0
     ],
     [
-      0.0,
+      -60.0,
       0.0
     ],
     [
-      0.0,
+      -60.0,
       0.0
     ],
     [
@@ -122,8 +122,8 @@
       43.0
     ],
     [
-      4.0,
-      -29.0
+      -40.0,
+      110.0
     ],
     [
       0.0,
@@ -188,8 +188,8 @@
       43.0
     ],
     [
-      4.0,
-      -29.0
+      -35.0,
+      110.0
     ],
     [
       0.0,
@@ -298,8 +298,8 @@
     353.0,
     295.0
   ],
-  "debugDrawCatBodyBounds": false,
-  "debugDrawCatCenterMarker": false,
+  "debugDrawCatBodyBounds": true,
+  "debugDrawCatCenterMarker": true,
   "devilBackTail": {
     "origin": [
       320.0,

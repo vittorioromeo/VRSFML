@@ -281,7 +281,7 @@ void Main::uiTabBarPrestige()
 
             uiSetFontScale(uiSubBulletFontScale);
             uiCheckbox("enable ##multipop", &pt->multiPopEnabled);
-            if (cachedMouseCat != nullptr)
+            if (getMouseCat() != nullptr)
             {
                 ImGui::SameLine();
                 uiCheckbox("mousecat##multipopmousecat", &pt->multiPopMouseCatEnabled);

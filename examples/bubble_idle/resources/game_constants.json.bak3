@@ -40,7 +40,7 @@
   "catCooldownBarOffsetY": 4.0,
   "catDrawOffsetsByType": [
     [
-      0.0,
+      -50.0,
       0.0
     ],
     [
@@ -56,7 +56,7 @@
       0.0
     ],
     [
-      0.0,
+      -50.0,
       0.0
     ],
     [
@@ -257,30 +257,30 @@
     {
       "positionOffset": [
         8.0,
+        -4.0
+      ],
+      "xExtentMult": 1.2000000476837158
+    },
+    {
+      "positionOffset": [
+        8.0,
         -5.0
       ],
       "xExtentMult": 1.2000000476837158
     },
     {
       "positionOffset": [
-        0.0,
-        0.0
+        8.0,
+        -5.0
       ],
-      "xExtentMult": 1.0
+      "xExtentMult": 1.2000000476837158
     },
     {
       "positionOffset": [
-        0.0,
-        0.0
+        7.0,
+        -4.0
       ],
-      "xExtentMult": 1.0
-    },
-    {
-      "positionOffset": [
-        0.0,
-        0.0
-      ],
-      "xExtentMult": 1.0
+      "xExtentMult": 1.2000000476837158
     },
     {
       "positionOffset": [
@@ -298,8 +298,8 @@
     353.0,
     295.0
   ],
-  "debugDrawCatBodyBounds": false,
-  "debugDrawCatCenterMarker": false,
+  "debugDrawCatBodyBounds": true,
+  "debugDrawCatCenterMarker": true,
   "devilBackTail": {
     "origin": [
       320.0,
