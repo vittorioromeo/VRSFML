@@ -26,12 +26,12 @@ void Main::uiTabBarShop()
     const auto nCatDevil  = pt->getCatCountByType(CatType::Devil);
     const auto nCatAstro  = pt->getCatCountByType(CatType::Astro);
 
-    Cat* catWitch    = cachedWitchCat;
-    Cat* catWizard   = cachedWizardCat;
-    Cat* catMouse    = cachedMouseCat;
-    Cat* catEngi     = cachedEngiCat;
-    Cat* catRepulso  = cachedRepulsoCat;
-    Cat* catAttracto = cachedAttractoCat;
+    Cat* catWitch    = getWitchCat();
+    Cat* catWizard   = getWizardCat();
+    Cat* catMouse    = getMouseCat();
+    Cat* catEngi     = getEngiCat();
+    Cat* catRepulso  = getRepulsoCat();
+    Cat* catAttracto = getAttractoCat();
 
     const bool anyUniqueCat = catWitch != nullptr || catWizard != nullptr || catMouse != nullptr ||
                               catEngi != nullptr || catRepulso != nullptr || catAttracto != nullptr;

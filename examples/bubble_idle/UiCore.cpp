@@ -1416,8 +1416,8 @@ void Main::uiDrawQuickbar()
                  ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize |
                      ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground);
 
-    if (cachedCopyCat != nullptr)
-        uiDrawQuickbarCopyCat(quickBarPos, *cachedCopyCat);
+    if (Cat* copyCat = getCopyCat(); copyCat != nullptr)
+        uiDrawQuickbarCopyCat(quickBarPos, *copyCat);
 
     if (getBackgroundSelectorData().entries.size() > 1u)
         uiDrawQuickbarBackgroundSelector(quickBarPos);
@@ -1902,7 +1902,7 @@ void Main::uiTabBar()
         shopSelectOnce       = {};
     }
 
-    if (lastUiSelectedTabIdx == 2 && cachedWizardCat == nullptr)
+    if (lastUiSelectedTabIdx == 2 && getWizardCat() == nullptr)
         lastUiSelectedTabIdx = 1;
 
     if (lastUiSelectedTabIdx == 3 && !pt->isBubbleValueUnlocked())
@@ -1926,7 +1926,7 @@ void Main::uiTabBar()
     if (keyboardSelectedTab(tabKeys[nextTabKeyIndex++]))
         selectTab(1);
 
-    if (cachedWizardCat != nullptr && keyboardSelectedTab(tabKeys[nextTabKeyIndex++]))
+    if (getWizardCat() != nullptr && keyboardSelectedTab(tabKeys[nextTabKeyIndex++]))
         selectTab(2);
 
     if (pt->isBubbleValueUnlocked())
@@ -1946,7 +1946,7 @@ void Main::uiTabBar()
     if (drawTabButton(1.f, " " ICON_FA_STORE " Shop ##992", lastUiSelectedTabIdx == 1, defaultPalette))
         selectTab(1);
 
-    if (cachedWizardCat != nullptr)
+    if (getWizardCat() != nullptr)
     {
         ImGui::SameLine(0.f, 0.f);
         if (drawTabButton(1.f, " " ICON_FA_STAR " Magic ##993", lastUiSelectedTabIdx == 2, defaultPalette))
@@ -2000,7 +2000,7 @@ void Main::uiTabBar()
 
         case 2:
         {
-            if (cachedWizardCat != nullptr)
+            if (getWizardCat() != nullptr)
             {
                 ImGui::BeginChild("MagicScroll", ImVec2(ImGui::GetContentRegionAvail().x, childHeight));
                 ImGui::Spacing();

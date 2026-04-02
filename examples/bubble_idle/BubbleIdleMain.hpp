@@ -1264,16 +1264,6 @@ struct Main
     sf::Color outlineHueColor{colorBlueOutline};
 
     ////////////////////////////////////////////////////////////
-    // Cached unique cats
-    Cat* cachedWitchCat{nullptr};
-    Cat* cachedWizardCat{nullptr};
-    Cat* cachedMouseCat{nullptr};
-    Cat* cachedEngiCat{nullptr};
-    Cat* cachedRepulsoCat{nullptr};
-    Cat* cachedAttractoCat{nullptr};
-    Cat* cachedCopyCat{nullptr};
-
-    ////////////////////////////////////////////////////////////
     // Victory state
     OptionalTargetedCountdown victoryTC;
     Countdown                 cdLetterAppear;
@@ -1800,7 +1790,6 @@ struct Main
             .type        = catType,
         });
 
-        refreshCachedUniqueCats();
         return newCat;
     }
 
@@ -2295,7 +2284,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isWizardBusy() const
     {
-        const Cat* wizardCat = cachedWizardCat;
+        const Cat* wizardCat = getWizardCat();
 
         if (wizardCat == nullptr)
             return false;
@@ -2315,15 +2304,45 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void refreshCachedUniqueCats()
+    [[nodiscard]] Cat* getWitchCat() const
     {
-        cachedWitchCat    = findFirstCatByType(CatType::Witch);
-        cachedWizardCat   = findFirstCatByType(CatType::Wizard);
-        cachedMouseCat    = findFirstCatByType(CatType::Mouse);
-        cachedEngiCat     = findFirstCatByType(CatType::Engi);
-        cachedRepulsoCat  = findFirstCatByType(CatType::Repulso);
-        cachedAttractoCat = findFirstCatByType(CatType::Attracto);
-        cachedCopyCat     = findFirstCatByType(CatType::Copy);
+        return findFirstCatByType(CatType::Witch);
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] Cat* getWizardCat() const
+    {
+        return findFirstCatByType(CatType::Wizard);
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] Cat* getMouseCat() const
+    {
+        return findFirstCatByType(CatType::Mouse);
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] Cat* getEngiCat() const
+    {
+        return findFirstCatByType(CatType::Engi);
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] Cat* getRepulsoCat() const
+    {
+        return findFirstCatByType(CatType::Repulso);
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] Cat* getAttractoCat() const
+    {
+        return findFirstCatByType(CatType::Attracto);
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] Cat* getCopyCat() const
+    {
+        return findFirstCatByType(CatType::Copy);
     }
 
     ////////////////////////////////////////////////////////////
@@ -2439,7 +2458,7 @@ struct Main
         const auto range       = getComputedRangeByCatTypeOrCopyCat(wizardCat.type);
         const auto maxCooldown = getComputedCooldownByCatTypeOrCopyCat(wizardCat.type);
 
-        Cat* witchCat = cachedWitchCat;
+        Cat* witchCat = getWitchCat();
 
         const bool castSuccessful = pt->dolls.empty() && witchCat != nullptr &&
                                     (witchCat->position - wizardCat.position).lengthSquared() <= range * range;
@@ -2589,7 +2608,7 @@ struct Main
         if (pt->mewltiplierAuraTimer <= 0.f)
             return false;
 
-        const Cat* wizardCat = cachedWizardCat;
+        const Cat* wizardCat = getWizardCat();
         if (wizardCat == nullptr)
             return false;
 
@@ -2598,7 +2617,7 @@ struct Main
         if ((wizardCat->position - bubblePosition).lengthSquared() <= wizardCatRangeSquared)
             return true;
 
-        const Cat* copyCat = cachedCopyCat;
+        const Cat* copyCat = getCopyCat();
         if (copyCat == nullptr || pt->copycatCopiedCatType != CatType::Wizard)
             return false;
 
@@ -2646,13 +2665,13 @@ struct Main
             result *= pt->psvMewltiplierMult.currentValue();
 
         // Global bonus -- mousecat (applies to clicks)
-        const bool isMouseBeingCopied = cachedCopyCat != nullptr && pt->copycatCopiedCatType == CatType::Mouse;
-        if (mustApplyHandMult && cachedMouseCat != nullptr)
+        const bool isMouseBeingCopied = getCopyCat() != nullptr && pt->copycatCopiedCatType == CatType::Mouse;
+        if (mustApplyHandMult && getMouseCat() != nullptr)
             result *= pt->psvPPMouseCatGlobalBonusMult.currentValue() * (isMouseBeingCopied ? 2.f : 1.f);
 
         // Global bonus -- engicat (applies to cats)
-        const bool isEngiBeingCopied = cachedCopyCat != nullptr && pt->copycatCopiedCatType == CatType::Engi;
-        if (mustApplyCatMult && cachedEngiCat != nullptr)
+        const bool isEngiBeingCopied = getCopyCat() != nullptr && pt->copycatCopiedCatType == CatType::Engi;
+        if (mustApplyCatMult && getEngiCat() != nullptr)
             result *= pt->psvPPEngiCatGlobalBonusMult.currentValue() * (isEngiBeingCopied ? 2.f : 1.f);
 
         // Shrine of clicking: x5 reward for clicks
@@ -2857,7 +2876,6 @@ struct Main
 
         *pt      = Playthrough{};
         pt->seed = seed;
-        refreshCachedUniqueCats();
 
         wasPrestigeAvailableLastFrame = false;
         buyReminder                   = 0u;
@@ -3091,12 +3109,12 @@ struct Main
 
         const auto rangeSquared = pt->getComputedSquaredRangeByCatType(CatType::Wizard);
 
-        if (cachedWizardCat != nullptr)
-            if ((bubble.position - cachedWizardCat->position).lengthSquared() <= rangeSquared)
+        if (const Cat* wizardCat = getWizardCat(); wizardCat != nullptr)
+            if ((bubble.position - wizardCat->position).lengthSquared() <= rangeSquared)
                 return true;
 
-        if (cachedCopyCat != nullptr && pt->copycatCopiedCatType == CatType::Wizard)
-            if ((bubble.position - cachedCopyCat->position).lengthSquared() <= rangeSquared)
+        if (const Cat* copyCat = getCopyCat(); copyCat != nullptr && pt->copycatCopiedCatType == CatType::Wizard)
+            if ((bubble.position - copyCat->position).lengthSquared() <= rangeSquared)
                 return true;
 
         return false;
