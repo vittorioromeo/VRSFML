@@ -46,45 +46,43 @@
 
 #include <utility>
 
-////////////////////////////////////////////////////////////
-[[nodiscard]] bool Main::gameLoop()
+namespace
 {
-    SFEX_PROFILE_SCOPE_AUTOLABEL();
+struct GameLoopFrameState
+{
+    bool                                  shouldDrawUI{false};
+    sf::base::U8                          shouldDrawUIAlpha{0u};
+    sf::base::Optional<sf::Vec2f>         clickPosition;
+    sf::base::Vector<sf::Vec2f>           downFingers;
+    sf::Vec2i                             windowSpaceMouseOrFingerPos;
+    sf::Vec2f                             mousePos;
+    sf::Time                              deltaTime;
+    float                                 deltaTimeMs{0.f};
+    sf::base::I64                         elapsedUs{0};
+    float                                 cursorGrow{0.f};
+};
 
-    if (mustExit)
-        return false;
+struct GameLoopViewState
+{
+    sf::Vec2f resolution;
+    sf::View  scaledTopGameView;
+    sf::View  gameBackgroundView;
+};
 
-    //
-    // Only draw UI elements if not in prestige transition and splash is done
-    const bool shouldDrawUI = !inPrestigeTransition && splashCountdown.value <= 0.f;
-    const auto shouldDrawUIAlpha = inPrestigeTransition || splashCountdown.getProgress() < 0.75f
-                                       ? static_cast<sf::base::U8>(0u)
-                                       : static_cast<sf::base::U8>(
-                                             remap(easeInOutSine(splashCountdown.getProgress()), 0.75f, 1.f, 0.f, 255.f));
-
-#ifdef BUBBLEBYTE_USE_STEAMWORKS
-    steamMgr.runCallbacks();
-#endif
-
-    fps = 1.f / fpsClock.getElapsedTime().asSeconds();
-    fpsClock.restart();
-
-    sf::base::Optional<sf::Vec2f> clickPosition;
-
-    inputHelper.beginNewFrame();
-
-    while (const sf::base::Optional event = window.pollEvent())
+[[nodiscard]] bool handleGameLoopEvents(Main& main, GameLoopFrameState& frame)
+{
+    while (const sf::base::Optional event = main.window.pollEvent())
     {
-        inputHelper.applyEvent(*event);
-        imGuiContext.processEvent(window, *event);
+        main.inputHelper.applyEvent(*event);
+        main.imGuiContext.processEvent(main.window, *event);
 
-        if (shouldDrawUI && event->is<sf::Event::KeyPressed>() &&
+        if (frame.shouldDrawUI && event->is<sf::Event::KeyPressed>() &&
             event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape)
         {
-            if (!escWasPressed)
+            if (!main.escWasPressed)
             {
-                playSound(sounds.btnswitch);
-                escWasPressed = true;
+                main.playSound(main.sounds.btnswitch);
+                main.escWasPressed = true;
             }
         }
 
@@ -95,569 +93,477 @@
 #pragma GCC diagnostic ignored "-Wshadow"
         if (const auto* e0 = event->getIf<sf::Event::TouchBegan>())
         {
-            fingerPositions[e0->finger].emplace(e0->position.toVec2f());
+            main.fingerPositions[e0->finger].emplace(e0->position.toVec2f());
 
-            if (!clickPosition.hasValue())
-                clickPosition.emplace(e0->position.toVec2f());
+            if (!frame.clickPosition.hasValue())
+                frame.clickPosition.emplace(e0->position.toVec2f());
         }
         else if (const auto* e1 = event->getIf<sf::Event::TouchEnded>())
         {
-            fingerPositions[e1->finger].reset();
+            main.fingerPositions[e1->finger].reset();
         }
         else if (const auto* e2 = event->getIf<sf::Event::TouchMoved>())
         {
-            fingerPositions[e2->finger].emplace(e2->position.toVec2f());
+            main.fingerPositions[e2->finger].emplace(e2->position.toVec2f());
 
-            if (pt->laserPopEnabled)
-                if (!clickPosition.hasValue())
-                    clickPosition.emplace(e2->position.toVec2f());
+            if (main.pt->laserPopEnabled && !frame.clickPosition.hasValue())
+                frame.clickPosition.emplace(e2->position.toVec2f());
         }
         else if (const auto* e3 = event->getIf<sf::Event::MouseButtonPressed>())
         {
-            if (e3->button == getLMB())
-                clickPosition.emplace(e3->position.toVec2f());
+            if (e3->button == main.getLMB())
+                frame.clickPosition.emplace(e3->position.toVec2f());
 
-            if (e3->button == getRMB() && !dragPosition.hasValue())
+            if (e3->button == main.getRMB() && !main.dragPosition.hasValue())
             {
-                clickPosition.reset();
+                frame.clickPosition.reset();
 
-                dragPosition.emplace(e3->position.toVec2f());
-                dragPosition->x += scroll;
+                main.dragPosition.emplace(e3->position.toVec2f());
+                main.dragPosition->x += main.scroll;
             }
         }
         else if (const auto* e4 = event->getIf<sf::Event::MouseButtonReleased>())
         {
-            if (e4->button == getRMB())
-                dragPosition.reset();
+            if (e4->button == main.getRMB())
+                main.dragPosition.reset();
         }
         else if (const auto* e5 = event->getIf<sf::Event::MouseMoved>())
         {
-            if (pt->mapPurchased && dragPosition.hasValue())
-                scroll = dragPosition->x - static_cast<float>(e5->position.x);
+            if (main.pt->mapPurchased && main.dragPosition.hasValue())
+                main.scroll = main.dragPosition->x - static_cast<float>(e5->position.x);
         }
         else if (const auto* e6 = event->getIf<sf::Event::Resized>())
         {
-            recreateBackgroundRenderTexture(getExpandedGameViewSize(gameScreenSize, e6->size.toVec2f()).toVec2u());
-            recreateImGuiRenderTexture(e6->size);
-            recreateGameRenderTexture(e6->size);
+            main.recreateBackgroundRenderTexture(main.getExpandedGameViewSize(gameScreenSize, e6->size.toVec2f()).toVec2u());
+            main.recreateImGuiRenderTexture(e6->size);
+            main.recreateGameRenderTexture(e6->size);
 
-            hudTopParticles.clear();
-            hudBottomParticles.clear();
+            main.hudTopParticles.clear();
+            main.hudBottomParticles.clear();
         }
         else if (const auto* e7 = event->getIf<sf::Event::KeyPressed>())
         {
             if (e7->code == sf::Keyboard::Key::Z || e7->code == sf::Keyboard::Key::X || e7->code == sf::Keyboard::Key::Y)
-                clickPosition.emplace(sf::Mouse::getPosition(window).toVec2f());
+                frame.clickPosition.emplace(sf::Mouse::getPosition(main.window).toVec2f());
         }
         else if (const auto* e8 = event->getIf<sf::Event::MouseWheelScrolled>())
         {
-            const float scrollMult = keyDown(sf::Keyboard::Key::LShift) ? 200.f : 100.f;
+            const float scrollMult = main.keyDown(sf::Keyboard::Key::LShift) ? 200.f : 100.f;
 
             if (!ImGui::GetIO().WantCaptureMouse)
-                scroll += e8->delta * scrollMult;
+                main.scroll += e8->delta * scrollMult;
         }
+#pragma GCC diagnostic pop
     }
 
-    if (ImGui::GetIO().WantCaptureMouse)
-        clickPosition.reset();
+    return true;
+}
 
-    const auto deltaTime   = deltaClock.restart();
-    const auto deltaTimeMs = sf::base::min(24.f, static_cast<float>(deltaTime.asMicroseconds()) / 1000.f);
-    shaderTime += deltaTimeMs * 0.001f;
+void clampDemoPlaythrough(Main& main)
+{
+    if constexpr (!isDemoVersion)
+        return;
 
-    gameLoopCheats();
+    const auto clampNPurchases = [](auto& psv)
+    { psv.nPurchases = sf::base::min(psv.nPurchases, psv.data->nMaxPurchases); };
 
-    // Demo limitations clamping
-    if constexpr (isDemoVersion)
-    {
-        const auto clampNPurchases = [](auto& psv)
-        { psv.nPurchases = sf::base::min(psv.nPurchases, psv.data->nMaxPurchases); };
+    clampNPurchases(main.pt->psvMapExtension);
+    clampNPurchases(main.pt->psvShrineActivation);
+    clampNPurchases(main.pt->psvBubbleValue);
 
-        clampNPurchases(pt->psvMapExtension);
-        clampNPurchases(pt->psvShrineActivation);
-        clampNPurchases(pt->psvBubbleValue);
+    sf::base::vectorEraseIf(main.pt->cats, [](const Cat& cat) {
+        return cat.type >= CatType::Mouse && cat.type <= CatType::Duck;
+    });
+}
 
-        sf::base::vectorEraseIf(pt->cats, [](const Cat& cat) {
-            return cat.type >= CatType::Mouse && cat.type <= CatType::Duck;
-        });
-        refreshCachedUniqueCats();
-    }
-
-    //
-    // TODO PO laser cursor
-    if (pt->laserPopEnabled)
-        if (keyDown(sf::Keyboard::Key::Z) || keyDown(sf::Keyboard::Key::X) || keyDown(sf::Keyboard::Key::Y) ||
-            mBtnDown(getLMB(), /* penetrateUI */ false))
-        {
-            if (!clickPosition.hasValue())
-                clickPosition.emplace(sf::Mouse::getPosition(window).toVec2f());
-        }
-
-    //
-    // Number of fingers
+[[nodiscard]] sf::base::Vector<sf::Vec2f> collectDownFingers(const Main& main)
+{
     sf::base::Vector<sf::Vec2f> downFingers;
-    for (const auto maybeFinger : fingerPositions)
+
+    for (const auto maybeFinger : main.fingerPositions)
         if (maybeFinger.hasValue())
             downFingers.pushBack(*maybeFinger);
 
-    //
-    // Map scrolling via keyboard and touch
-    if (pt->mapPurchased)
+    return downFingers;
+}
+
+void handleGameLoopScrollInput(Main& main, const float deltaTimeMs, const sf::base::Vector<sf::Vec2f>& downFingers)
+{
+    if (!main.pt->mapPurchased)
+        return;
+
+    if (main.inputHelper.wasKeyJustPressed(sf::Keyboard::Key::Home))
+        main.scroll = 0.f;
+    else if (main.inputHelper.wasKeyJustPressed(sf::Keyboard::Key::End))
+        main.scroll = static_cast<float>(main.pt->getMapLimitIncreases()) * gameScreenSize.x * 0.5f;
+
+    const auto currentScrollScreenIndex = static_cast<sf::base::SizeT>(
+        sf::base::lround(main.scroll / (gameScreenSize.x * 0.5f)));
+
+    if (main.inputHelper.wasKeyJustPressed(sf::Keyboard::Key::PageDown) ||
+        main.inputHelper.wasMouseButtonJustPressed(sf::Mouse::Button::Extra2))
     {
-        // Jump to beginning/end of map
-        if (inputHelper.wasKeyJustPressed(sf::Keyboard::Key::Home))
-            scroll = 0.f;
-        else if (inputHelper.wasKeyJustPressed(sf::Keyboard::Key::End))
-            scroll = static_cast<float>(pt->getMapLimitIncreases()) * gameScreenSize.x * 0.5f;
+        const auto nextScrollScreenIndex = sf::base::min(currentScrollScreenIndex + 1u, main.pt->getMapLimitIncreases());
+        main.scroll                      = static_cast<float>(nextScrollScreenIndex) * gameScreenSize.x * 0.5f;
+    }
+    else if ((main.inputHelper.wasKeyJustPressed(sf::Keyboard::Key::PageUp) ||
+              main.inputHelper.wasMouseButtonJustPressed(sf::Mouse::Button::Extra1)) &&
+             currentScrollScreenIndex > 0u)
+    {
+        const auto nextScrollScreenIndex =
+            sf::base::max(static_cast<sf::base::SizeT>(0u), currentScrollScreenIndex - 1u);
 
-        const auto currentScrollScreenIndex = static_cast<sf::base::SizeT>(
-            sf::base::lround(scroll / (gameScreenSize.x * 0.5f)));
+        main.scroll = static_cast<float>(nextScrollScreenIndex) * gameScreenSize.x * 0.5f;
+    }
 
-        // Jump to previous/next screen
-        if (inputHelper.wasKeyJustPressed(sf::Keyboard::Key::PageDown) ||
-            inputHelper.wasMouseButtonJustPressed(sf::Mouse::Button::Extra2))
-        {
-            const auto nextScrollScreenIndex = sf::base::min(currentScrollScreenIndex + 1u, pt->getMapLimitIncreases());
-            scroll                           = static_cast<float>(nextScrollScreenIndex) * gameScreenSize.x * 0.5f;
-        }
-        else if ((inputHelper.wasKeyJustPressed(sf::Keyboard::Key::PageUp) ||
-                  inputHelper.wasMouseButtonJustPressed(sf::Mouse::Button::Extra1)) &&
-                 currentScrollScreenIndex > 0u)
-        {
-            const auto nextScrollScreenIndex = sf::base::max(static_cast<sf::base::SizeT>(0u), currentScrollScreenIndex - 1u);
+    const float scrollMult = main.keyDown(sf::Keyboard::Key::LShift) ? 4.f : 2.f;
 
-            scroll = static_cast<float>(nextScrollScreenIndex) * gameScreenSize.x * 0.5f;
-        }
+    if (main.keyDown(sf::Keyboard::Key::Left) || main.keyDown(sf::Keyboard::Key::A))
+    {
+        main.dragPosition.reset();
+        main.scroll -= scrollMult * deltaTimeMs;
+    }
+    else if (main.keyDown(sf::Keyboard::Key::Right) || main.keyDown(sf::Keyboard::Key::D))
+    {
+        main.dragPosition.reset();
+        main.scroll += scrollMult * deltaTimeMs;
+    }
+    else if (downFingers.size() == 2)
+    {
+        const auto [fingerPos0, fingerPos1] = [&]
+        {
+            std::pair<sf::base::Optional<sf::Vec2f>, sf::base::Optional<sf::Vec2f>> result;
 
-        const float scrollMult = keyDown(sf::Keyboard::Key::LShift) ? 4.f : 2.f;
-
-        // Left/right scrolling with keyboard
-        if (keyDown(sf::Keyboard::Key::Left) || keyDown(sf::Keyboard::Key::A))
-        {
-            dragPosition.reset();
-            scroll -= scrollMult * deltaTimeMs;
-        }
-        else if (keyDown(sf::Keyboard::Key::Right) || keyDown(sf::Keyboard::Key::D))
-        {
-            dragPosition.reset();
-            scroll += scrollMult * deltaTimeMs;
-        }
-        else if (downFingers.size() == 2)
-        {
-            // TODO P2: check fingers distance
-            const auto [fingerPos0, fingerPos1] = [&]
+            for (const auto& fingerPosition : main.fingerPositions)
             {
-                std::pair<sf::base::Optional<sf::Vec2f>, sf::base::Optional<sf::Vec2f>> result;
-
-                for (const auto& fingerPosition : fingerPositions)
+                if (fingerPosition.hasValue())
                 {
-                    if (fingerPosition.hasValue())
-                    {
-                        if (!result.first.hasValue())
-                            result.first.emplace(*fingerPosition);
-                        else if (!result.second.hasValue())
-                            result.second.emplace(*fingerPosition);
-                    }
+                    if (!result.first.hasValue())
+                        result.first.emplace(*fingerPosition);
+                    else if (!result.second.hasValue())
+                        result.second.emplace(*fingerPosition);
                 }
-
-                return result;
-            }();
-
-            const auto avg = (*fingerPos0 + *fingerPos1) / 2.f;
-
-            if (dragPosition.hasValue())
-            {
-                scroll = dragPosition->x - avg.x;
             }
-            else
-            {
-                dragPosition.emplace(avg);
-                dragPosition->x += scroll;
-            }
-        }
-    }
 
-    //
-    // Cache unique cats
-    refreshCachedUniqueCats();
+            return result;
+        }();
 
-    //
-    // Scrolling
-    gameLoopUpdateScrolling(deltaTimeMs, downFingers);
+        const auto avg = (*fingerPos0 + *fingerPos1) / 2.f;
 
-    //
-    // Culling boundaries
-    const sf::Vec2f resolution = getResolution();
-
-    hudCullingBoundaries      = {0.f, resolution.x, 0.f, resolution.y};
-    particleCullingBoundaries = getViewCullingBoundaries(/* offset */ 0.f);
-    bubbleCullingBoundaries   = getViewCullingBoundaries(/* offset */ -64.f);
-
-    //
-    // World-space mouse position
-    const auto windowSpaceMouseOrFingerPos = downFingers.size() == 1u ? downFingers[0].toVec2i()
-                                                                      : sf::Mouse::getPosition(window);
-
-    const auto mousePos = gameView.screenToWorld(windowSpaceMouseOrFingerPos.toVec2f(), window.getSize().toVec2f());
-
-    //
-    // Game startup, prestige transitions, etc...
-    gameLoopUpdateTransitions(deltaTimeMs);
-
-    //
-    // Update spatial partitioning (needs to be done before updating bubbles)
-    sweepAndPrune.clear();
-    sweepAndPrune.populate(pt->bubbles);
-
-    //
-    // Update frameproc
-    frameProcThisFrame = (frameProcCd.updateAndLoop(deltaTimeMs, 20.f) == CountdownStatusLoop::Looping);
-
-    //
-    // Update bubbles
-    gameLoopUpdateBubbles(deltaTimeMs);
-
-    //
-    // Demonic attraction buff
-    gameLoopUpdateAttractoBuff(deltaTimeMs);
-
-    //
-    // Process clicks
-    const bool anyBubblePoppedByClicking = gameLoopUpdateBubbleClick(clickPosition);
-
-    //
-    // Cursor grow effect on click
-    const float cursorGrow = gameLoopUpdateCursorGrowthEffect(deltaTimeMs, anyBubblePoppedByClicking);
-
-    //
-    // Combo failure due to timer end
-    gameLoopUpdateCombo(deltaTimeMs, anyBubblePoppedByClicking, mousePos, clickPosition);
-
-    //
-    // Update collisions
-    gameLoopUpdateCollisionsBubbleBubble(deltaTimeMs);
-    gameLoopUpdateCollisionsCatCat(deltaTimeMs);
-    gameLoopUpdateCollisionsCatShrine(deltaTimeMs);
-    gameLoopUpdateCollisionsCatDoll();
-    gameLoopUpdateCollisionsBubbleHellPortal();
-
-    //
-    // Update cats, shrines, dolls, buffs, and magic
-
-    {
-        for (Cat& cat : pt->cats)
+        if (main.dragPosition.hasValue())
         {
-            constexpr float maxDragTime = 1000.f;
-
-            constexpr float dragInSpeed  = 1.f;
-            constexpr float dragOutSpeed = 2.5f;
-
-            const float dragDelta = isCatBeingDragged(cat) ? deltaTimeMs * dragInSpeed : -deltaTimeMs * dragOutSpeed;
-
-            cat.dragTime = sf::base::clamp(cat.dragTime + dragDelta, 0.f, maxDragTime);
+            main.scroll = main.dragPosition->x - avg.x;
+        }
+        else
+        {
+            main.dragPosition.emplace(avg);
+            main.dragPosition->x += main.scroll;
         }
     }
+}
 
-    gameLoopUpdateCatDragging(deltaTimeMs, downFingers.size(), mousePos);
-    gameLoopUpdateCatActions(deltaTimeMs);
-    gameLoopUpdateShrines(deltaTimeMs);
-    gameLoopUpdateDolls(deltaTimeMs, mousePos);
-    gameLoopUpdateCopyDolls(deltaTimeMs, mousePos);
-    gameLoopUpdateHellPortals(deltaTimeMs);
-    gameLoopUpdateWitchBuffs(deltaTimeMs);
-    gameLoopUpdateMana(deltaTimeMs);
-    gameLoopUpdateAutocast();
+void prepareGameLoopInput(Main& main, GameLoopFrameState& frame)
+{
+    if (ImGui::GetIO().WantCaptureMouse)
+        frame.clickPosition.reset();
 
-    //
-    // Delayed actions
-    for (auto& [delayCountdown, func] : delayedActions)
-        if (delayCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+    main.gameLoopCheats();
+    clampDemoPlaythrough(main);
+
+    if (main.pt->laserPopEnabled)
+        if (main.keyDown(sf::Keyboard::Key::Z) || main.keyDown(sf::Keyboard::Key::X) || main.keyDown(sf::Keyboard::Key::Y) ||
+            main.mBtnDown(main.getLMB(), /* penetrateUI */ false))
+        {
+            if (!frame.clickPosition.hasValue())
+                frame.clickPosition.emplace(sf::Mouse::getPosition(main.window).toVec2f());
+        }
+
+    frame.downFingers = collectDownFingers(main);
+    handleGameLoopScrollInput(main, frame.deltaTimeMs, frame.downFingers);
+    main.gameLoopUpdateScrolling(frame.deltaTimeMs, frame.downFingers);
+
+    frame.windowSpaceMouseOrFingerPos =
+        frame.downFingers.size() == 1u ? frame.downFingers[0].toVec2i() : sf::Mouse::getPosition(main.window);
+
+    const sf::Vec2f resolution = main.getResolution();
+    main.hudCullingBoundaries      = {0.f, resolution.x, 0.f, resolution.y};
+    main.particleCullingBoundaries = main.getViewCullingBoundaries(/* offset */ 0.f);
+    main.bubbleCullingBoundaries   = main.getViewCullingBoundaries(/* offset */ -64.f);
+
+    frame.mousePos = main.gameView.screenToWorld(frame.windowSpaceMouseOrFingerPos.toVec2f(), main.window.getSize().toVec2f());
+}
+
+void updateGameLoopWorld(Main& main, GameLoopFrameState& frame)
+{
+    main.gameLoopUpdateTransitions(frame.deltaTimeMs);
+
+    main.sweepAndPrune.clear();
+    main.sweepAndPrune.populate(main.pt->bubbles);
+
+    main.frameProcThisFrame = (main.frameProcCd.updateAndLoop(frame.deltaTimeMs, 20.f) == CountdownStatusLoop::Looping);
+
+    main.gameLoopUpdateBubbles(frame.deltaTimeMs);
+    main.gameLoopUpdateAttractoBuff(frame.deltaTimeMs);
+
+    const bool anyBubblePoppedByClicking = main.gameLoopUpdateBubbleClick(frame.clickPosition);
+    frame.cursorGrow = main.gameLoopUpdateCursorGrowthEffect(frame.deltaTimeMs, anyBubblePoppedByClicking);
+    main.gameLoopUpdateCombo(frame.deltaTimeMs, anyBubblePoppedByClicking, frame.mousePos, frame.clickPosition);
+
+    main.gameLoopUpdateCollisionsBubbleBubble(frame.deltaTimeMs);
+    main.gameLoopUpdateCollisionsCatCat(frame.deltaTimeMs);
+    main.gameLoopUpdateCollisionsCatShrine(frame.deltaTimeMs);
+    main.gameLoopUpdateCollisionsCatDoll();
+    main.gameLoopUpdateCollisionsBubbleHellPortal();
+
+    for (Cat& cat : main.pt->cats)
+    {
+        constexpr float maxDragTime = 1000.f;
+        constexpr float dragInSpeed = 1.f;
+        constexpr float dragOutSpeed = 2.5f;
+
+        const float dragDelta = main.isCatBeingDragged(cat) ? frame.deltaTimeMs * dragInSpeed : -frame.deltaTimeMs * dragOutSpeed;
+        cat.dragTime = sf::base::clamp(cat.dragTime + dragDelta, 0.f, maxDragTime);
+    }
+
+    main.gameLoopUpdateCatDragging(frame.deltaTimeMs, frame.downFingers.size(), frame.mousePos);
+    main.gameLoopUpdateCatActions(frame.deltaTimeMs);
+    main.gameLoopUpdateShrines(frame.deltaTimeMs);
+    main.gameLoopUpdateDolls(frame.deltaTimeMs, frame.mousePos);
+    main.gameLoopUpdateCopyDolls(frame.deltaTimeMs, frame.mousePos);
+    main.gameLoopUpdateHellPortals(frame.deltaTimeMs);
+    main.gameLoopUpdateWitchBuffs(frame.deltaTimeMs);
+    main.gameLoopUpdateMana(frame.deltaTimeMs);
+    main.gameLoopUpdateAutocast();
+
+    for (auto& [delayCountdown, func] : main.delayedActions)
+        if (delayCountdown.updateAndStop(frame.deltaTimeMs) == CountdownStatusStop::JustFinished)
             func();
 
-    sf::base::vectorEraseIf(delayedActions, [](const auto& delayedAction) {
+    sf::base::vectorEraseIf(main.delayedActions, [](const auto& delayedAction) {
         return delayedAction.delayCountdown.isDone();
     });
 
-    //
-    // Screen shake
-    gameLoopUpdateScreenShake(deltaTimeMs);
+    main.gameLoopUpdateScreenShake(frame.deltaTimeMs);
+    main.gameLoopUpdateParticlesAndTextParticles(frame.deltaTimeMs);
+    main.gameLoopUpdateSounds(frame.deltaTimeMs, frame.mousePos);
 
-    //
-    // Particles and text particles
-    gameLoopUpdateParticlesAndTextParticles(deltaTimeMs);
+    frame.elapsedUs = main.playedClock.getElapsedTime().asMicroseconds();
+    main.playedClock.restart();
 
-    //
-    // Sounds and volume
-    gameLoopUpdateSounds(deltaTimeMs, mousePos); // also updates listener
+    main.gameLoopUpdateTimePlayed(frame.elapsedUs);
+    main.gameLoopUpdateAutosave(frame.elapsedUs);
+    main.gameLoopUpdateMilestones();
+    main.gameLoopUpdateAchievements();
+    main.gameLoopUpdateSplits();
+}
 
-    //
-    // Time played in microseconds
-    const auto elapsedUs = playedClock.getElapsedTime().asMicroseconds();
-    playedClock.restart();
+void updateGameLoopUi(Main& main, const GameLoopFrameState& frame)
+{
+    main.imGuiContext.update(main.window, frame.deltaTime);
 
-    //
-    // Played time
-    gameLoopUpdateTimePlayed(elapsedUs);
+    if (main.undoPPPurchaseTimer.updateAndStop(frame.deltaTimeMs) == CountdownStatusStop::JustFinished)
+        main.undoPPPurchase.clear();
 
-    //
-    // Autosave
-    gameLoopUpdateAutosave(elapsedUs);
+    main.cpuCloudUiDrawableBatch.clear();
+    main.uiDraw(frame.mousePos);
 
-    //
-    // Milestones and achievements
-    gameLoopUpdateMilestones();
-    gameLoopUpdateAchievements();
-
-    //
-    // Speedrunning splits
-    gameLoopUpdateSplits();
-
-    //
-    // Update ImGui
-    imGuiContext.update(window, deltaTime);
-
-    //
-    // Update PP undo button
-    if (undoPPPurchaseTimer.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
-        undoPPPurchase.clear();
-
-    //
-    // Draw ImGui menu
-    cpuCloudUiDrawableBatch.clear();
-    uiDraw(mousePos);
-
-
-//
-// Draw profiler
 #ifdef SFEX_PROFILER_ENABLED
     ImGui::Begin("SFEX Profiler");
     sfex::showImguiProfiler();
     ImGui::End();
 #endif
+}
 
-    //
-    // Compute views
-    const auto screenShake = profile.enableScreenShake ? rngFast.getVec2f({-screenShakeAmount, -screenShakeAmount},
-                                                                          {screenShakeAmount, screenShakeAmount})
-                                                       : sf::Vec2f{0.f, 0.f};
+[[nodiscard]] GameLoopViewState computeGameLoopViews(Main& main)
+{
+    GameLoopViewState out;
+    out.resolution = main.getResolution();
 
-    nonScaledHUDView = {.center = resolution / 2.f, .size = resolution};
-    scaledHUDView    = makeScaledHUDView(resolution, profile.hudScale);
+    const auto screenShake = main.profile.enableScreenShake
+                                 ? main.rngFast.getVec2f({-main.screenShakeAmount, -main.screenShakeAmount},
+                                                         {main.screenShakeAmount, main.screenShakeAmount})
+                                 : sf::Vec2f{0.f, 0.f};
 
-    gameView                     = createScaledGameView(gameScreenSize, resolution);
-    gameView.viewport.position.x = 0.f;
-    gameView.center              = getViewCenter() + screenShake;
+    main.nonScaledHUDView = {.center = out.resolution / 2.f, .size = out.resolution};
+    main.scaledHUDView    = main.makeScaledHUDView(out.resolution, main.profile.hudScale);
 
-    const sf::Vec2u backgroundResolution = gameView.size.toVec2u();
-    if (rtBackground.getSize() != backgroundResolution)
-        recreateBackgroundRenderTexture(backgroundResolution);
+    main.gameView                     = main.createScaledGameView(gameScreenSize, out.resolution);
+    main.gameView.viewport.position.x = 0.f;
+    main.gameView.center              = main.getViewCenter() + screenShake;
 
-    sf::View scaledTopGameView = createScaledTopGameView(gameScreenSize, resolution);
-    scaledTopGameView.center   = gameView.center -
-                                 (gameView.viewport.position + gameView.viewport.size * 0.5f - sf::Vec2f{0.5f, 0.5f})
-                                     .componentWiseMul(scaledTopGameView.size);
+    const sf::Vec2u backgroundResolution = main.gameView.size.toVec2u();
+    if (main.rtBackground.getSize() != backgroundResolution)
+        main.recreateBackgroundRenderTexture(backgroundResolution);
 
-    sf::View gameBackgroundView{.center = getViewCenterWithoutScroll() + screenShake, .size = gameView.size};
+    out.scaledTopGameView = main.createScaledTopGameView(gameScreenSize, out.resolution);
+    out.scaledTopGameView.center =
+        main.gameView.center -
+        (main.gameView.viewport.position + main.gameView.viewport.size * 0.5f - sf::Vec2f{0.5f, 0.5f})
+            .componentWiseMul(out.scaledTopGameView.size);
 
-    //
-    // Clear window
-    rtGame.clear(sf::Color::Transparent);
+    out.gameBackgroundView = {.center = main.getViewCenterWithoutScroll() + screenShake, .size = main.gameView.size};
+    return out;
+}
 
-    //
-    // Underlying menu background
-    gameLoopUpdateAndDrawFixedMenuBackground(deltaTimeMs, elapsedUs);
+void renderGameLoopFrame(Main& main, const GameLoopFrameState& frame, const GameLoopViewState& views)
+{
+    main.rtGame.clear(sf::Color::Transparent);
 
-    //
-    // Game background
-    gameLoopUpdateAndDrawBackground(deltaTimeMs, gameBackgroundView);
+    main.gameLoopUpdateAndDrawFixedMenuBackground(frame.deltaTimeMs, frame.elapsedUs);
+    main.gameLoopUpdateAndDrawBackground(frame.deltaTimeMs, views.gameBackgroundView);
 
-    //
-    // Draw bubbles (separate batch to avoid showing in minimap and for shader support)
-    bubbleDrawableBatch.clear();
-    starBubbleDrawableBatch.clear();
-    bombBubbleDrawableBatch.clear();
+    main.bubbleDrawableBatch.clear();
+    main.starBubbleDrawableBatch.clear();
+    main.bombBubbleDrawableBatch.clear();
 
-    if (profile.showBubbles)
-        gameLoopDrawBubbles();
+    if (main.profile.showBubbles)
+        main.gameLoopDrawBubbles();
 
-    if (profile.useBubbleShader)
-        gameLoopDisplayBubblesWithShader();
+    if (main.profile.useBubbleShader)
+        main.gameLoopDisplayBubblesWithShader();
     else
-        gameLoopDisplayBubblesWithoutShader();
+        main.gameLoopDisplayBubblesWithoutShader();
 
-    cpuCloudDrawableBatch.clear();
+    main.cpuCloudDrawableBatch.clear();
 
     {
-        sf::Vec2f p_min{pt->getMapLimit(), 0.f};
-        sf::Vec2f p_max{pt->getMapLimit() + resolution.x, resolution.y};
+        sf::Vec2f p_min{main.pt->getMapLimit(), 0.f};
+        sf::Vec2f p_max{main.pt->getMapLimit() + views.resolution.x, views.resolution.y};
 
-
-        cpuCloudDrawableBatch.add(sf::RectangleShapeData{
+        main.cpuCloudDrawableBatch.add(sf::RectangleShapeData{
             .position  = p_min.addX(10.f),
             .fillColor = sf::Color::White,
             .size      = p_max - p_min,
         });
 
-        // 4. Draw the Gradient (Top-Left, Top-Right, Bottom-Right, Bottom-Left)
-        // draw_list->AddRectFilledMultiColor(p_min, p_max, col_top, col_top, col_bot, col_bot);
-
-        // float rounding = 8.f;
-        // draw_list->AddRectFilled(p_min, p_max, col_top, rounding, ImDrawFlags_RoundCornersAll);
-
         p_min.x += 40.f;
 
-        drawCloudFrame({
-            .time              = shaderTime,
+        main.drawCloudFrame({
+            .time              = main.shaderTime,
             .mins              = p_min,
             .maxs              = p_max,
             .xSteps            = 6,
             .ySteps            = 12,
             .scaleMult         = 4.f,
             .outwardOffsetMult = 1.f,
-            .batch             = &cpuCloudDrawableBatch,
+            .batch             = &main.cpuCloudDrawableBatch,
         });
     }
 
-    //
-    // Combo trail
-    gameLoopDrawCursorTrail(mousePos);
+    main.gameLoopDrawCursorTrail(frame.mousePos);
+    main.gameLoopDrawMinimapIcons();
 
-    //
-    // Draw minimap stuff
-    gameLoopDrawMinimapIcons();
+    main.cpuTopCloudDrawableBatch.clear();
+    main.cpuDrawableBatchBeforeCats.clear();
+    main.cpuDrawableBatch.clear();
+    main.cpuDrawableBatchAfterCats.clear();
+    main.cpuDrawableBatchAdditive.clear();
+    main.cpuTopDrawableBatch.clear();
+    main.catTextDrawableBatch.clear();
+    main.catTextTopDrawableBatch.clear();
+    main.cpuCloudHudDrawableBatch.clear();
+    main.hexedCatDrawCommands.clear();
 
-    //
-    // Draw cats, shrines, dolls, particles, and text particles
-    cpuTopCloudDrawableBatch.clear();
-    cpuDrawableBatchBeforeCats.clear();
-    cpuDrawableBatch.clear();
-    cpuDrawableBatchAfterCats.clear();
-    cpuDrawableBatchAdditive.clear();
-    cpuTopDrawableBatch.clear();
-    catTextDrawableBatch.clear();
-    catTextTopDrawableBatch.clear();
-    cpuCloudHudDrawableBatch.clear();
-    hexedCatDrawCommands.clear();
-
-    // Draw multipop range
-    if (pt->multiPopEnabled && draggedCats.empty())
+    if (main.pt->multiPopEnabled && main.draggedCats.empty())
     {
-        const auto range = pt->psvPPMultiPopRange.currentValue() * 0.9f;
+        const auto range = main.pt->psvPPMultiPopRange.currentValue() * 0.9f;
 
-        cpuDrawableBatchBeforeCats.add(sf::CircleShapeData{
-            .position           = mousePos,
+        main.cpuDrawableBatchBeforeCats.add(sf::CircleShapeData{
+            .position           = frame.mousePos,
             .origin             = {range, range},
-            .outlineTextureRect = txrWhiteDot,
+            .outlineTextureRect = main.txrWhiteDot,
             .fillColor          = sf::Color::Transparent,
-            .outlineColor       = (outlineHueColor.withAlpha(105u).withLightness(0.75f)),
+            .outlineColor       = (main.outlineHueColor.withAlpha(105u).withLightness(0.75f)),
             .outlineThickness   = 1.5f,
             .radius             = range,
             .pointCount         = static_cast<unsigned int>(range / 2.f),
         });
     }
 
-    gameLoopDrawHellPortals();
-    gameLoopDrawCats(mousePos, deltaTimeMs);
-    gameLoopDrawShrines(mousePos);
-    gameLoopDrawDolls(mousePos);
-    gameLoopDrawParticles();
-    gameLoopDrawTextParticles();
-    gameLoopDisplayCloudBatch(cpuCloudDrawableBatch, gameView);
-    drawBatch(cpuDrawableBatchBeforeCats, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
-    drawBatch(cpuDrawableBatch, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
-    drawHexedCatDrawCommands(gameView, /* top */ false);
-    drawBatch(cpuDrawableBatchAfterCats, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
-    drawBatch(cpuDrawableBatchAdditive,
-              {.blendMode = sf::BlendAdd, .view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
-    drawBatch(catTextDrawableBatch, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
+    main.gameLoopDrawHellPortals();
+    main.gameLoopDrawCats(frame.mousePos, frame.deltaTimeMs);
+    main.gameLoopDrawShrines(frame.mousePos);
+    main.gameLoopDrawDolls(frame.mousePos);
+    main.gameLoopDrawParticles();
+    main.gameLoopDrawTextParticles();
+    main.gameLoopDisplayCloudBatch(main.cpuCloudDrawableBatch, main.gameView);
+    main.drawBatch(main.cpuDrawableBatchBeforeCats, {.view = main.gameView, .texture = &main.textureAtlas.getTexture(), .shader = &main.shader});
+    main.drawBatch(main.cpuDrawableBatch, {.view = main.gameView, .texture = &main.textureAtlas.getTexture(), .shader = &main.shader});
+    main.drawHexedCatDrawCommands(main.gameView, /* top */ false);
+    main.drawBatch(main.cpuDrawableBatchAfterCats, {.view = main.gameView, .texture = &main.textureAtlas.getTexture(), .shader = &main.shader});
+    main.drawBatch(main.cpuDrawableBatchAdditive,
+                   {.blendMode = sf::BlendAdd,
+                    .view = main.gameView,
+                    .texture = &main.textureAtlas.getTexture(),
+                    .shader = &main.shader});
+    main.drawBatch(main.catTextDrawableBatch, {.view = main.gameView, .texture = &main.textureAtlas.getTexture(), .shader = &main.shader});
 
-    //
-    // Scroll arrow hint
-    gameLoopDrawScrollArrowHint(deltaTimeMs);
+    main.gameLoopDrawScrollArrowHint(frame.deltaTimeMs);
 
-    //
-    // AoE Dragging Reticle
-    if (const auto dragRect = getAoEDragRect(mousePos); dragRect.hasValue())
-        rtGame.draw(sf::RectangleShapeData{.position         = dragRect->position,
-                                           .origin           = {0.f, 0.f},
-                                           .fillColor        = sf::Color::whiteMask(64u),
-                                           .outlineColor     = sf::Color::whiteMask(176u),
-                                           .outlineThickness = 4.f,
-                                           .size             = dragRect->size},
-                    {.view = gameView});
+    if (const auto dragRect = main.getAoEDragRect(frame.mousePos); dragRect.hasValue())
+        main.rtGame.draw(sf::RectangleShapeData{.position         = dragRect->position,
+                                                .origin           = {0.f, 0.f},
+                                                .fillColor        = sf::Color::whiteMask(64u),
+                                                .outlineColor     = sf::Color::whiteMask(176u),
+                                                .outlineThickness = 4.f,
+                                                .size             = dragRect->size},
+                         {.view = main.gameView});
 
-    //
-    // Y coordinate below minimap to position money, combo, and buff texts
-    const float yBelowMinimap = pt->mapPurchased ? (boundaries.y / profile.minimapScale) + 12.f : 0.f;
+    const float yBelowMinimap = main.pt->mapPurchased ? (boundaries.y / main.profile.minimapScale) + 12.f : 0.f;
 
-    //
-    // Draw border around gameview
-    // Bottom-level hud particles
-    if (shouldDrawUI)
+    if (frame.shouldDrawUI)
     {
-        sf::Vec2f offset{-10.f, -10.f};
         sf::Vec2f mins{10.f, 10.f};
-        sf::Vec2f maxs{20.f + moneyText.getString().getSize() * 15.f, pt->comboPurchased ? 60.f : 40.f};
+        sf::Vec2f maxs{20.f + static_cast<float>(main.moneyText.getString().getSize()) * 15.f,
+                       main.pt->comboPurchased ? 60.f : 40.f};
 
         mins.y += yBelowMinimap;
         maxs.y += yBelowMinimap;
 
-        drawCloudFrame({
-            .time              = shaderTime,
+        main.drawCloudFrame({
+            .time              = main.shaderTime,
             .mins              = mins,
             .maxs              = maxs,
             .xSteps            = 16,
             .ySteps            = 8,
             .scaleMult         = 1.f,
             .outwardOffsetMult = 1.f,
-            .batch             = &cpuCloudHudDrawableBatch,
+            .batch             = &main.cpuCloudHudDrawableBatch,
         });
 
-
-        hudBottomDrawableBatch.clear();
-        gameLoopDrawHUDBottomParticles();
-        drawBatch(hudBottomDrawableBatch,
-                  {.view = nonScaledHUDView, .texture = &textureAtlas.getTexture(), .shader = &shader});
+        main.hudBottomDrawableBatch.clear();
+        main.gameLoopDrawHUDBottomParticles();
+        main.drawBatch(main.hudBottomDrawableBatch,
+                       {.view = main.nonScaledHUDView, .texture = &main.textureAtlas.getTexture(), .shader = &main.shader});
     }
 
-    if (0)
-        rtGame.draw(sf::RectangleShapeData{.position         = gameView.viewport.position.componentWiseMul(resolution),
-                                           .fillColor        = sf::Color::Transparent,
-                                           .outlineColor     = outlineHueColor,
-                                           .outlineThickness = 4.f,
-                                           .size             = gameView.viewport.size.componentWiseMul(resolution)},
-                    {.view = nonScaledHUDView});
-
-    if (shouldDrawUI)
+    if (frame.shouldDrawUI)
     {
-        hudDrawableBatch.clear();
+        main.hudDrawableBatch.clear();
 
-        if (!debugHideUI)
-            gameLoopDrawHUDParticles();
+        if (!main.debugHideUI)
+            main.gameLoopDrawHUDParticles();
 
-        gameLoopDrawEarnedCoinParticles();
-        drawBatch(hudDrawableBatch, {.view = scaledHUDView, .texture = &textureAtlas.getTexture(), .shader = &shader});
+        main.gameLoopDrawEarnedCoinParticles();
+        main.drawBatch(main.hudDrawableBatch, {.view = main.scaledHUDView, .texture = &main.textureAtlas.getTexture(), .shader = &main.shader});
     }
 
-
-    //
-    // Demo text (TODO P2: cleanup)
     if constexpr (isDemoVersion)
     {
-        const float xStartOverlay = gameView.viewport.size.x * resolution.x / profile.hudScale;
+        const float xStartOverlay = main.gameView.viewport.size.x * views.resolution.x / main.profile.hudScale;
 
-        demoText.setGlobalTopRight({xStartOverlay - 15.f, 15.f});
-        demoText.setOutlineColor(outlineHueColor);
-        rtGame.draw(demoText, {.view = scaledHUDView});
+        main.demoText.setGlobalTopRight({xStartOverlay - 15.f, 15.f});
+        main.demoText.setOutlineColor(main.outlineHueColor);
+        main.rtGame.draw(main.demoText, {.view = main.scaledHUDView});
 
         sf::TextData demoInfoTextData{.position         = {},
                                       .string           = "",
                                       .characterSize    = 24u,
                                       .fillColor        = sf::Color::White,
-                                      .outlineColor     = outlineHueColor,
+                                      .outlineColor     = main.outlineHueColor,
                                       .outlineThickness = 2.f};
 
-        const float lineSpacing = fontSuperBakery.getLineSpacing(demoInfoTextData.characterSize);
+        const float lineSpacing = main.fontSuperBakery.getLineSpacing(demoInfoTextData.characterSize);
 
         const sf::base::StringView lines[3] = {"Only one prestige and two shrines",
                                                "Full version available on Steam",
@@ -666,281 +572,242 @@
         for (sf::base::SizeT i = 0u; i < 3u; ++i)
         {
             demoInfoTextData.string = lines[i].data();
-            demoInfoTextData.origin.x = sf::TextUtils::precomputeTextLocalBounds(fontSuperBakery, demoInfoTextData).size.x;
-            demoInfoTextData.position = demoText.getGlobalBottomRight().addY(10.f + (static_cast<float>(i) * lineSpacing));
+            demoInfoTextData.origin.x =
+                sf::TextUtils::precomputeTextLocalBounds(main.fontSuperBakery, demoInfoTextData).size.x;
+            demoInfoTextData.position =
+                main.demoText.getGlobalBottomRight().addY(10.f + (static_cast<float>(i) * lineSpacing));
 
-            rtGame.draw(fontSuperBakery, demoInfoTextData, {.view = scaledHUDView});
+            main.rtGame.draw(main.fontSuperBakery, demoInfoTextData, {.view = main.scaledHUDView});
         }
     }
 
-    //
-    // Money text & spent money effect
-    gameLoopUpdateMoneyText(deltaTimeMs, yBelowMinimap);
-    gameLoopUpdateSpentMoneyEffect(deltaTimeMs); // handles both text smoothly doing down and particles
+    main.gameLoopUpdateMoneyText(frame.deltaTimeMs, yBelowMinimap);
+    main.gameLoopUpdateSpentMoneyEffect(frame.deltaTimeMs);
+    main.gameLoopUpdateComboText(frame.deltaTimeMs, yBelowMinimap);
 
-
-    //
-    // Combo text
-    gameLoopUpdateComboText(deltaTimeMs, yBelowMinimap);
-
-    //
-    // Portal storm buff
-    if (isDevilcatHellsingedActive() && pt->buffCountdownsPerType[asIdx(CatType::Devil)].value > 0.f)
+    if (main.isDevilcatHellsingedActive() && main.pt->buffCountdownsPerType[asIdx(CatType::Devil)].value > 0.f)
     {
-        if (portalStormTimer.updateAndLoop(deltaTimeMs, 10.f) == CountdownStatusLoop::Looping &&
-            rng.getF(0.f, 100.f) <= pt->psvPPDevilRitualBuffPercentage.currentValue())
+        if (main.portalStormTimer.updateAndLoop(frame.deltaTimeMs, 10.f) == CountdownStatusLoop::Looping &&
+            main.rng.getF(0.f, 100.f) <= main.pt->psvPPDevilRitualBuffPercentage.currentValue())
         {
             const float offset    = 64.f;
-            const auto  portalPos = rng.getVec2f({offset, offset}, {pt->getMapLimit() - offset, boundaries.y - offset});
+            const auto  portalPos = main.rng.getVec2f({offset, offset}, {main.pt->getMapLimit() - offset, boundaries.y - offset});
 
-            pt->hellPortals.pushBack({
+            main.pt->hellPortals.pushBack({
                 .position = portalPos,
                 .life     = Countdown{.value = 1750.f},
-                .catIdx   = 100'000u, // invalid
+                .catIdx   = 100'000u,
             });
 
-            sounds.makeBomb.settings.position = {portalPos.x, portalPos.y};
-            playSound(sounds.portalon);
+            main.sounds.makeBomb.settings.position = {portalPos.x, portalPos.y};
+            main.playSound(main.sounds.portalon);
         }
     }
 
-    //
-    // Buff text
-    gameLoopUpdateBuffText();
+    main.gameLoopUpdateBuffText();
 
-    if (!buffText.getString().isEmpty())
+    if (!main.buffText.getString().isEmpty())
     {
         const sf::Vec2f offset{10.f, 10.f};
 
-        auto mins = buffText.getGlobalTopLeft() + offset;
-        auto maxs = buffText.getGlobalBottomRight() - offset - sf::Vec2{0.f, 20.f};
+        auto mins = main.buffText.getGlobalTopLeft() + offset;
+        auto maxs = main.buffText.getGlobalBottomRight() - offset - sf::Vec2{0.f, 20.f};
 
         mins = (mins.toVec2i() / 20 * 20).toVec2f();
         maxs = (maxs.toVec2i() / 20 * 20).toVec2f().addX(20.f).addY(5.f);
 
-        drawCloudFrame({
-            .time              = shaderTime,
+        main.drawCloudFrame({
+            .time              = main.shaderTime,
             .mins              = mins,
             .maxs              = maxs,
             .xSteps            = 16,
             .ySteps            = 8,
             .scaleMult         = 1.f,
             .outwardOffsetMult = 1.f,
-            .batch             = &cpuCloudHudDrawableBatch,
+            .batch             = &main.cpuCloudHudDrawableBatch,
         });
     }
 
-    //
-    // Combo bar
-    if (shouldDrawUI && !debugHideUI)
-    {
-        if (comboCountdown.value > 25.f)
-            rtGame.draw(
+    if (frame.shouldDrawUI && !main.debugHideUI)
+        if (main.comboCountdown.value > 25.f)
+            main.rtGame.draw(
                 sf::RoundedRectangleShapeData{
-                    .position     = {comboText.getGlobalCenterRight().x + 3.f, yBelowMinimap + 51.f},
+                    .position     = {main.comboText.getGlobalCenterRight().x + 3.f, yBelowMinimap + 51.f},
                     .fillColor    = sf::Color{75, 75, 75, 255},
-                    .size         = {100.f * comboCountdown.value / 700.f, 20.f},
+                    .size         = {100.f * main.comboCountdown.value / 700.f, 20.f},
                     .cornerRadius = 6.f,
                 },
-                {.view = scaledHUDView});
-    }
+                {.view = main.scaledHUDView});
 
-    //
-    // Minimap
-    if (!debugHideUI && pt->mapPurchased)
-        drawMinimap(/* back */ true, rtGame, scaledHUDView, resolution, shouldDrawUIAlpha);
+    if (!main.debugHideUI && main.pt->mapPurchased)
+        main.drawMinimap(/* back */ true, main.rtGame, main.scaledHUDView, views.resolution, frame.shouldDrawUIAlpha);
 
-    // UI clouds
-    gameLoopDisplayCloudBatch(cpuCloudUiDrawableBatch, nonScaledHUDView);
-    gameLoopDisplayCloudBatch(cpuCloudHudDrawableBatch, scaledHUDView);
+    main.gameLoopDisplayCloudBatch(main.cpuCloudUiDrawableBatch, main.nonScaledHUDView);
+    main.gameLoopDisplayCloudBatch(main.cpuCloudHudDrawableBatch, main.scaledHUDView);
 
-    if (!debugHideUI && pt->mapPurchased)
+    if (!main.debugHideUI && main.pt->mapPurchased)
     {
-        drawMinimap(/* back */ false, rtGame, scaledHUDView, resolution, shouldDrawUIAlpha);
+        main.drawMinimap(/* back */ false, main.rtGame, main.scaledHUDView, views.resolution, frame.shouldDrawUIAlpha);
 
-        // Jump to minimap position on click
-        const auto p = scaledHUDView.screenToWorld(windowSpaceMouseOrFingerPos.toVec2f(), window.getSize().toVec2f());
+        const auto p = main.scaledHUDView.screenToWorld(frame.windowSpaceMouseOrFingerPos.toVec2f(), main.window.getSize().toVec2f());
 
-        if (minimapRect.contains(p) && mBtnDown(sf::Mouse::Button::Left, /* penetrateUI */ true))
+        if (main.minimapRect.contains(p) && main.mBtnDown(sf::Mouse::Button::Left, /* penetrateUI */ true))
         {
-            const auto minimapPos = p - minimapRect.position;
-            scroll = minimapPos.x * 0.5f * pt->getMapLimit() / minimapRect.size.x - gameView.size.x * 0.25f;
+            const auto minimapPos = p - main.minimapRect.position;
+            main.scroll = minimapPos.x * 0.5f * main.pt->getMapLimit() / main.minimapRect.size.x - main.gameView.size.x * 0.25f;
         }
     }
 
-    if (!debugHideUI)
+    if (!main.debugHideUI)
     {
-        moneyText.setFillColorAlpha(shouldDrawUIAlpha);
-        moneyText.setOutlineColorAlpha(shouldDrawUIAlpha);
-        rtGame.draw(moneyText, {.view = scaledHUDView});
+        main.moneyText.setFillColorAlpha(frame.shouldDrawUIAlpha);
+        main.moneyText.setOutlineColorAlpha(frame.shouldDrawUIAlpha);
+        main.rtGame.draw(main.moneyText, {.view = main.scaledHUDView});
     }
 
-    if (!debugHideUI && pt->comboPurchased)
+    if (!main.debugHideUI && main.pt->comboPurchased)
     {
-        comboText.setFillColorAlpha(shouldDrawUIAlpha);
-        comboText.setOutlineColorAlpha(shouldDrawUIAlpha);
-        rtGame.draw(comboText, {.view = scaledHUDView});
+        main.comboText.setFillColorAlpha(frame.shouldDrawUIAlpha);
+        main.comboText.setOutlineColorAlpha(frame.shouldDrawUIAlpha);
+        main.rtGame.draw(main.comboText, {.view = main.scaledHUDView});
     }
 
-    if (!debugHideUI)
+    if (!main.debugHideUI)
     {
-        buffText.setFillColorAlpha(shouldDrawUIAlpha);
-        buffText.setOutlineColorAlpha(shouldDrawUIAlpha);
-        rtGame.draw(buffText, {.view = scaledHUDView});
+        main.buffText.setFillColorAlpha(frame.shouldDrawUIAlpha);
+        main.buffText.setOutlineColorAlpha(frame.shouldDrawUIAlpha);
+        main.rtGame.draw(main.buffText, {.view = main.scaledHUDView});
     }
 
-    //
-    // UI and Toasts
-    gameLoopDrawImGui(shouldDrawUIAlpha);
+    main.gameLoopDrawImGui(frame.shouldDrawUIAlpha);
 
-    //
-    // Draw cats on top of UI
-    gameLoopDisplayCloudBatch(cpuTopCloudDrawableBatch, scaledTopGameView);
-    drawBatch(cpuTopDrawableBatch, {.view = scaledTopGameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
-    drawHexedCatDrawCommands(scaledTopGameView, /* top */ true);
-    drawBatch(catTextTopDrawableBatch,
-              {.view = scaledTopGameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
+    main.gameLoopDisplayCloudBatch(main.cpuTopCloudDrawableBatch, views.scaledTopGameView);
+    main.drawBatch(main.cpuTopDrawableBatch,
+                   {.view = views.scaledTopGameView, .texture = &main.textureAtlas.getTexture(), .shader = &main.shader});
+    main.drawHexedCatDrawCommands(views.scaledTopGameView, /* top */ true);
+    main.drawBatch(main.catTextTopDrawableBatch,
+                   {.view = views.scaledTopGameView, .texture = &main.textureAtlas.getTexture(), .shader = &main.shader});
 
-    //
-    // Purchase unlocked/available effects
-    if (shouldDrawUI)
-        gameLoopUpdatePurchaseUnlockedEffects(deltaTimeMs);
+    if (frame.shouldDrawUI)
+        main.gameLoopUpdatePurchaseUnlockedEffects(frame.deltaTimeMs);
 
-    // Top-level hud particles
-    if (shouldDrawUI)
+    if (frame.shouldDrawUI)
     {
-        hudTopDrawableBatch.clear();
-        gameLoopDrawHUDTopParticles();
-        drawBatch(hudTopDrawableBatch,
-                  {.view = nonScaledHUDView, .texture = &textureAtlas.getTexture(), .shader = &shader});
+        main.hudTopDrawableBatch.clear();
+        main.gameLoopDrawHUDTopParticles();
+        main.drawBatch(main.hudTopDrawableBatch,
+                       {.view = main.nonScaledHUDView, .texture = &main.textureAtlas.getTexture(), .shader = &main.shader});
     }
 
-    //
-    // High visibility cursor
-    gameLoopDrawCursor(deltaTimeMs, cursorGrow);
-    gameLoopDrawCursorComboText(deltaTimeMs, cursorGrow);
-    gameLoopDrawCursorComboBar();
+    main.gameLoopDrawCursor(frame.deltaTimeMs, frame.cursorGrow);
+    main.gameLoopDrawCursorComboText(frame.deltaTimeMs, frame.cursorGrow);
+    main.gameLoopDrawCursorComboBar();
 
-    //
-    // Splash screen
-    if (splashCountdown.value > 0.f)
-        drawSplashScreen(rtGame, scaledHUDView, resolution, profile.hudScale);
+    if (main.splashCountdown.value > 0.f)
+        main.drawSplashScreen(main.rtGame, main.scaledHUDView, views.resolution, main.profile.hudScale);
 
-    //
-    // Letter
-    if (victoryTC.hasValue())
+    if (main.victoryTC.hasValue())
     {
-        if (victoryTC->updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+        if (main.victoryTC->updateAndStop(frame.deltaTimeMs) == CountdownStatusStop::JustFinished)
         {
-            cdLetterAppear.value = 4000.f;
-            delayedActions.emplaceBack(Countdown{.value = 4000.f}, [this] { playSound(sounds.paper); });
+            main.cdLetterAppear.value = 4000.f;
+            main.delayedActions.emplaceBack(Countdown{.value = 4000.f}, [&main] { main.playSound(main.sounds.paper); });
         }
 
-        if (victoryTC->isDone())
+        if (main.victoryTC->isDone())
         {
-            if (cdLetterAppear.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
-                cdLetterText.value = 10'000.f;
+            if (main.cdLetterAppear.updateAndStop(frame.deltaTimeMs) == CountdownStatusStop::JustFinished)
+                main.cdLetterText.value = 10'000.f;
 
-            const float progress = cdLetterAppear.getProgressBounced(4000.f);
+            const float progress = main.cdLetterAppear.getProgressBounced(4000.f);
 
-            rtGame.draw(sf::Sprite{.position    = resolution / 2.f / profile.hudScale,
-                                   .scale       = sf::Vec2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutQuint(progress)) /
-                                                  profile.hudScale * 2.f,
-                                   .origin      = txLetter.getSize().toVec2f() / 2.f,
-                                   .textureRect = txLetter.getRect(),
-                                   .color = sf::Color::whiteMask(static_cast<U8>(easeInOutQuint(progress) * 255.f))},
-                        {.view = scaledHUDView, .texture = &txLetter});
+            main.rtGame.draw(sf::Sprite{.position    = views.resolution / 2.f / main.profile.hudScale,
+                                        .scale       = sf::Vec2f{0.9f, 0.9f} *
+                                                 (0.35f + 0.65f * easeInOutQuint(progress)) / main.profile.hudScale * 2.f,
+                                        .origin      = main.txLetter.getSize().toVec2f() / 2.f,
+                                        .textureRect = main.txLetter.getRect(),
+                                        .color = sf::Color::whiteMask(static_cast<U8>(easeInOutQuint(progress) * 255.f))},
+                             {.view = main.scaledHUDView, .texture = &main.txLetter});
         }
 
-        (void)cdLetterText.updateAndStop(deltaTimeMs);
+        (void)main.cdLetterText.updateAndStop(frame.deltaTimeMs);
 
-        const float textProgress = cdLetterText.value > 9000.f   ? remap(cdLetterText.value, 9000.f, 10'000.f, 1.f, 0.f)
-                                   : cdLetterText.value < 1000.f ? cdLetterText.value / 1000.f
-                                                                 : 1.f;
+        const float textProgress = main.cdLetterText.value > 9000.f   ? remap(main.cdLetterText.value, 9000.f, 10'000.f, 1.f, 0.f)
+                                   : main.cdLetterText.value < 1000.f ? main.cdLetterText.value / 1000.f
+                                                                      : 1.f;
 
-        rtGame.draw(sf::Sprite{.position    = resolution / 2.f / profile.hudScale,
-                               .scale       = sf::Vec2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutQuint(textProgress)) /
-                                              profile.hudScale * 1.45f,
-                               .origin      = txLetterText.getSize().toVec2f() / 2.f,
-                               .textureRect = txLetterText.getRect(),
-                               .color = sf::Color::whiteMask(static_cast<U8>(easeInOutQuint(textProgress) * 255.f))},
-                    {.view = scaledHUDView, .texture = &txLetterText});
+        main.rtGame.draw(sf::Sprite{.position    = views.resolution / 2.f / main.profile.hudScale,
+                                    .scale       = sf::Vec2f{0.9f, 0.9f} *
+                                             (0.35f + 0.65f * easeInOutQuint(textProgress)) / main.profile.hudScale * 1.45f,
+                                    .origin      = main.txLetterText.getSize().toVec2f() / 2.f,
+                                    .textureRect = main.txLetterText.getRect(),
+                                    .color = sf::Color::whiteMask(static_cast<U8>(easeInOutQuint(textProgress) * 255.f))},
+                         {.view = main.scaledHUDView, .texture = &main.txLetterText});
     }
 
-    //
-    // Doll on screen particle border
-    if (!pt->dolls.empty())
-        gameLoopDrawDollParticleBorder(0.f);
+    if (!main.pt->dolls.empty())
+        main.gameLoopDrawDollParticleBorder(0.f);
 
-    if (!pt->copyDolls.empty())
-        gameLoopDrawDollParticleBorder(180.f);
+    if (!main.pt->copyDolls.empty())
+        main.gameLoopDrawDollParticleBorder(180.f);
 
-    //
-    // Tips
-    gameLoopTips(deltaTimeMs);
+    main.gameLoopTips(frame.deltaTimeMs);
+    main.gameLoopPrestigeAvailableReminder();
+    main.gameLoopReminderBuyCombo();
+    main.gameLoopReminderSpendPPs();
+    main.gameLoopUpdateDpsSampler(frame.elapsedUs);
 
-    //
-    // Reminders
-    gameLoopPrestigeAvailableReminder(); // produces notification as well
-    gameLoopReminderBuyCombo();          // also handles secret combo purchase achievement
-    gameLoopReminderSpendPPs();
+    if (frame.shouldDrawUI)
+        main.gameLoopUpdateNotificationQueue(frame.deltaTimeMs);
+}
 
-    //
-    // Update sampler
-    gameLoopUpdateDpsSampler(elapsedUs);
+void presentGameLoopFrame(Main& main, const GameLoopViewState& views)
+{
+    if (main.flushBeforeDisplay)
+        main.rtGame.flushGPUCommands();
 
-    //
-    // Notification queue
-    if (shouldDrawUI)
-        gameLoopUpdateNotificationQueue(deltaTimeMs);
+    if (main.finishBeforeDisplay)
+        main.rtGame.finishGPUCommands();
 
-    //
-    // Display window
-    if (flushBeforeDisplay)
-        rtGame.flushGPUCommands();
+    main.rtGame.display();
 
-    if (finishBeforeDisplay)
-        rtGame.finishGPUCommands();
+    if (main.flushAfterDisplay)
+        main.rtGame.flushGPUCommands();
 
-    rtGame.display();
+    if (main.finishAfterDisplay)
+        main.rtGame.finishGPUCommands();
 
-    if (flushAfterDisplay)
-        rtGame.flushGPUCommands();
+    main.window.clear();
 
-    if (finishAfterDisplay)
-        rtGame.finishGPUCommands();
-
-    window.clear();
-
-    auto gameViewNoScroll   = gameView;
-    gameViewNoScroll.center = getViewCenterWithoutScroll(); // TODO P1: view::withcenter? like vecs
+    auto gameViewNoScroll   = main.gameView;
+    gameViewNoScroll.center = main.getViewCenterWithoutScroll();
 
     {
-        const float ratio         = resolution.x / 1250.f;
-        const float fixedBgScroll = txFixedBg.getSize().toVec2f().x * 0.5f * sf::base::remainder(fixedBgSlide, 3.f);
+        const float ratio         = views.resolution.x / 1250.f;
+        const float fixedBgScroll = main.txFixedBg.getSize().toVec2f().x * 0.5f * sf::base::remainder(main.fixedBgSlide, 3.f);
 
-        window.draw(txFixedBg,
-                    {
-                        .position    = {0.f, 0.f},
-                        .scale       = {ratio, ratio},
-                        .textureRect = {{fixedBgScroll - actualScroll / 20.f, 0.f},
-                                        {resolution.x / ratio, resolution.y / ratio}},
-                        .color       = sf::Color::White,
-                    },
-                    {.view = nonScaledHUDView});
+        main.window.draw(main.txFixedBg,
+                         {
+                             .position    = {0.f, 0.f},
+                             .scale       = {ratio, ratio},
+                             .textureRect = {{fixedBgScroll - main.actualScroll / 20.f, 0.f},
+                                             {views.resolution.x / ratio, views.resolution.y / ratio}},
+                             .color       = sf::Color::White,
+                         },
+                         {.view = main.nonScaledHUDView});
     }
 
-    window.draw(rtBackgroundProcessed.getTexture(),
-                {.textureRect{{0.f, 0.f}, gameViewNoScroll.size}},
-                {.view = gameViewNoScroll});
+    main.window.draw(main.rtBackgroundProcessed.getTexture(),
+                     {.textureRect{{0.f, 0.f}, gameViewNoScroll.size}},
+                     {.view = gameViewNoScroll});
 
-    drawActivatedShrineBackgroundEffects(window, gameViewNoScroll, gameView.center);
+    main.drawActivatedShrineBackgroundEffects(main.window, gameViewNoScroll, main.gameView.center);
 
-    setPostProcessUniforms(profile.ppSVibrance,
-                           profile.ppSSaturation,
-                           profile.ppSLightness,
-                           profile.ppSSharpness,
-                           profile.ppSBlur);
+    main.setPostProcessUniforms(main.profile.ppSVibrance,
+                                main.profile.ppSSaturation,
+                                main.profile.ppSLightness,
+                                main.profile.ppSSharpness,
+                                main.profile.ppSBlur);
 
     constexpr sf::BlendMode premultipliedAlphaBlend(sf::BlendMode::Factor::One,
                                                     sf::BlendMode::Factor::OneMinusSrcAlpha,
@@ -949,29 +816,66 @@
                                                     sf::BlendMode::Factor::OneMinusSrcAlpha,
                                                     sf::BlendMode::Equation::Add);
 
-    window.draw(rtGame.getTexture(), {.blendMode = premultipliedAlphaBlend, .shader = &shaderPostProcess});
+    main.window.draw(main.rtGame.getTexture(), {.blendMode = premultipliedAlphaBlend, .shader = &main.shaderPostProcess});
 
-    if (flushBeforeDisplay)
-        rtGame.flushGPUCommands();
+    if (main.flushBeforeDisplay)
+        main.rtGame.flushGPUCommands();
 
-    if (finishBeforeDisplay)
-        rtGame.finishGPUCommands();
+    if (main.finishBeforeDisplay)
+        main.rtGame.finishGPUCommands();
 
     {
         SFEX_PROFILE_SCOPE("window.display()");
-        window.display();
+        main.window.display();
     }
 
-    if (flushAfterDisplay)
-        rtGame.flushGPUCommands();
+    if (main.flushAfterDisplay)
+        main.rtGame.flushGPUCommands();
 
-    if (finishAfterDisplay)
-        rtGame.finishGPUCommands();
+    if (main.finishAfterDisplay)
+        main.rtGame.finishGPUCommands();
+}
+} // namespace
 
-    //
-    // Save last mouse pos
-    lastMousePos = mousePos;
+////////////////////////////////////////////////////////////
+[[nodiscard]] bool Main::gameLoop()
+{
+    SFEX_PROFILE_SCOPE_AUTOLABEL();
 
+    if (mustExit)
+        return false;
+
+#ifdef BUBBLEBYTE_USE_STEAMWORKS
+    steamMgr.runCallbacks();
+#endif
+
+    GameLoopFrameState frame;
+    frame.shouldDrawUI = !inPrestigeTransition && splashCountdown.value <= 0.f;
+    frame.shouldDrawUIAlpha = inPrestigeTransition || splashCountdown.getProgress() < 0.75f
+                                  ? static_cast<sf::base::U8>(0u)
+                                  : static_cast<sf::base::U8>(
+                                        remap(easeInOutSine(splashCountdown.getProgress()), 0.75f, 1.f, 0.f, 255.f));
+
+    fps = 1.f / fpsClock.getElapsedTime().asSeconds();
+    fpsClock.restart();
+
+    inputHelper.beginNewFrame();
+    if (!handleGameLoopEvents(*this, frame))
+        return false;
+
+    frame.deltaTime   = deltaClock.restart();
+    frame.deltaTimeMs = sf::base::min(24.f, static_cast<float>(frame.deltaTime.asMicroseconds()) / 1000.f);
+    shaderTime += frame.deltaTimeMs * 0.001f;
+
+    prepareGameLoopInput(*this, frame);
+    updateGameLoopWorld(*this, frame);
+    updateGameLoopUi(*this, frame);
+
+    const GameLoopViewState views = computeGameLoopViews(*this);
+    renderGameLoopFrame(*this, frame, views);
+    presentGameLoopFrame(*this, views);
+
+    lastMousePos = frame.mousePos;
     return true;
 }
 
@@ -986,5 +890,4 @@ void Main::loadPlaythroughFromFileAndReseed()
 
     reseedRNGs(pt->seed);
     shuffledCatNamesPerType = makeShuffledCatNames(rng);
-    refreshCachedUniqueCats();
 }

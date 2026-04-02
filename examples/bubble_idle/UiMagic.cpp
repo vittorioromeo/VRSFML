@@ -14,7 +14,7 @@ void Main::uiTabBarMagic()
 {
     uiSetFontScale(uiNormalFontScale);
 
-    Cat* wizardCat = cachedWizardCat;
+    Cat* wizardCat = getWizardCat();
 
     if (wizardCat == nullptr)
     {
@@ -22,7 +22,7 @@ void Main::uiTabBarMagic()
         return;
     }
 
-    Cat* copyCat = cachedCopyCat;
+    Cat* copyCat = getCopyCat();
 
     ImGui::Spacing();
     ImGui::Spacing();
