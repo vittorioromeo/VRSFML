@@ -1,3 +1,5 @@
+#include "SystemUtil.hpp"
+
 #include "SFML/Graphics/Text.hpp"
 
 #include "SFML/Graphics/GraphicsContext.hpp"
@@ -5,13 +7,21 @@
 // Other 1st party headers
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Font.hpp"
+#include "SFML/Graphics/TextData.hpp"
+#include "SFML/Graphics/TextUtils.hpp"
 
-#include "SFML/System/LifetimeDependee.hpp"
+#include "SFML/System/Angle.hpp"
 #include "SFML/System/Path.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/UnicodeString.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
-#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/Trait/IsConstructible.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <Doctest.hpp>
 
@@ -167,6 +177,14 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
 
         // Indices that are too large are capped at maximum valid index
         CHECK(text.findCharacterPos(1000) == sf::Vec2f{120, 277});
+    }
+
+    SECTION("TextUtils helpers")
+    {
+        CHECK(sf::TextUtils::precomputeTextQuadCount("A\nB", sf::Text::Style::Underlined | sf::Text::Style::StrikeThrough) ==
+              6u);
+
+        CHECK(sf::TextUtils::precomputeTextLocalBounds(font, sf::TextData{}) == sf::Rect2f{});
     }
 
     SECTION("Get bounds")

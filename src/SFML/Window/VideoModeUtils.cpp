@@ -9,11 +9,14 @@
 
 #include "SFML/Window/SDLLayer.hpp"
 #include "SFML/Window/VideoMode.hpp"
+#include "SFML/Window/WindowContext.hpp"
 
 #include "SFML/System/Err.hpp"
 
 #include "SFML/Base/Algorithm/Find.hpp"
 #include "SFML/Base/Algorithm/Sort.hpp"
+#include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Span.hpp"
 #include "SFML/Base/Vector.hpp"
 
 
@@ -23,14 +26,14 @@ namespace sf
 float VideoModeUtils::getPrimaryDisplayContentScale()
 {
     // TODO P0: per display?
-    return priv::getSDLLayerSingleton().getPrimaryDisplayContentScale();
+    return WindowContext::getSDLLayer().getPrimaryDisplayContentScale();
 }
 
 
 ////////////////////////////////////////////////////////////
 VideoMode VideoModeUtils::getDesktopMode()
 {
-    auto& sdlLayer = priv::getSDLLayerSingleton();
+    auto& sdlLayer = WindowContext::getSDLLayer();
 
     const auto* desktopDisplayMode = sdlLayer.getPrimaryDisplayDesktopDisplayMode();
     if (desktopDisplayMode == nullptr)
@@ -50,7 +53,7 @@ base::Span<const VideoMode> VideoModeUtils::getFullscreenModes()
     {
         base::Vector<VideoMode> result;
 
-        auto& sdlLayer = priv::getSDLLayerSingleton();
+        auto& sdlLayer = WindowContext::getSDLLayer();
 
         const auto displays = sdlLayer.getDisplays();
         if (!displays.valid() || displays.size() == 0)
