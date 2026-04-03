@@ -63,8 +63,6 @@
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/ToString.hpp"
 
-#include <imgui_internal.h>
-
 #include <cctype>
 #include <cstdio>
 
@@ -250,11 +248,11 @@ void Main::drawMinimap(bool               back,
 
     if (0)
     {
-        const float offset = 3.f;
+        const float frameOffset = 3.f;
 
         NinePatchRect panel{
-            .position    = uiState.minimapRect.position - sf::Vec2f{offset, offset},
-            .size        = uiState.minimapRect.size + sf::Vec2f{offset * 2.f, offset * 2.f},
+            .position    = uiState.minimapRect.position - sf::Vec2f{frameOffset, frameOffset},
+            .size        = uiState.minimapRect.size + sf::Vec2f{frameOffset * 2.f, frameOffset * 2.f},
             .textureRect = txFrameTiny.getRect(),
             .borders     = NinePatchBorders::all(18.f),
             .color       = hueColor(hueMod, shouldDrawUIAlpha),
@@ -623,46 +621,46 @@ struct CatTextureTables
 
 struct CatDrawContext
 {
-    Main&               main;
-    Cat&                cat;
-    sf::CPUDrawableBatch& batchToUse;
-    sf::CPUDrawableBatch& textBatchToUse;
-    sf::CPUDrawableBatch& spriteBatchToUse;
-    sf::CPUDrawableBatch& cloudBatchToUse;
-    Cat*                witchCat;
-    Cat*                copyCat;
-    const sf::Rect2f&   catTxr;
-    const sf::Rect2f&   catPawTxr;
-    const sf::Rect2f&   catTailTxr;
-    sf::Vec2f           catTailOffset;
-    sf::Vec2f           catEyeOffset;
-    float               deltaTimeMs;
-    sf::Vec2f           mousePos;
-    bool                drawHexedWithShader;
-    bool                beingDragged;
+    Main&                          main;
+    Cat&                           cat;
+    sf::CPUDrawableBatch&          batchToUse;
+    sf::CPUDrawableBatch&          textBatchToUse;
+    sf::CPUDrawableBatch&          spriteBatchToUse;
+    sf::CPUDrawableBatch&          cloudBatchToUse;
+    Cat*                           witchCat;
+    Cat*                           copyCat;
+    const sf::Rect2f&              catTxr;
+    const sf::Rect2f&              catPawTxr;
+    const sf::Rect2f&              catTailTxr;
+    sf::Vec2f                      catTailOffset;
+    sf::Vec2f                      catEyeOffset;
+    float                          deltaTimeMs;
+    sf::Vec2f                      mousePos;
+    bool                           drawHexedWithShader;
+    bool                           beingDragged;
     sf::base::Optional<sf::Rect2f> dragRect;
-    bool                insideDragRect;
-    bool                hovered;
-    bool                shouldDisplayRangeCircle;
-    U8                  rangeInnerAlpha;
-    float               maxCooldown;
-    float               cooldownDiff;
-    float               catRotation;
-    float               range;
-    U8                  alpha;
-    sf::Color           catColor;
-    U8                  circleAlpha;
-    sf::Color           circleColor;
-    sf::Color           circleOutlineColor;
-    sf::Color           textOutlineColor;
-    bool                shouldDrawCatRange;
-    float               catScaleMult;
-    sf::Vec2f           catScale;
-    sf::Vec2f           catAnchor;
-    sf::Vec2f           visualCatAnchor;
-    sf::Vec2f           pushDown;
-    sf::Color           attachmentHue;
-    float               hexedEffectStrength;
+    bool                           insideDragRect;
+    bool                           hovered;
+    bool                           shouldDisplayRangeCircle;
+    U8                             rangeInnerAlpha;
+    float                          maxCooldown;
+    float                          cooldownDiff;
+    float                          catRotation;
+    float                          range;
+    U8                             alpha;
+    sf::Color                      catColor;
+    U8                             circleAlpha;
+    sf::Color                      circleColor;
+    sf::Color                      circleOutlineColor;
+    sf::Color                      textOutlineColor;
+    bool                           shouldDrawCatRange;
+    float                          catScaleMult;
+    sf::Vec2f                      catScale;
+    sf::Vec2f                      catAnchor;
+    sf::Vec2f                      visualCatAnchor;
+    sf::Vec2f                      pushDown;
+    sf::Color                      attachmentHue;
+    float                          hexedEffectStrength;
 
     [[nodiscard]] bool isCopyCatWithType(const CatType copiedType) const
     {
@@ -712,70 +710,69 @@ void applyWitchAnimation(CatDrawContext& ctx, float& wobblePhase, Cat& witch)
     }
 }
 
-[[nodiscard]] CatDrawContext makeCatDrawContext(Main&                    main,
-                                                Cat&                     cat,
-                                                const float              deltaTimeMs,
-                                                const sf::Vec2f          mousePos,
-                                                const CatTextureTables&  textureTables)
+[[nodiscard]] CatDrawContext makeCatDrawContext(
+    Main&                   main,
+    Cat&                    cat,
+    const float             deltaTimeMs,
+    const sf::Vec2f         mousePos,
+    const CatTextureTables& textureTables)
 {
-    auto& batchToUse     = main.playerInputState.catToPlace == &cat ? main.cpuTopDrawableBatch : main.cpuDrawableBatch;
+    auto& batchToUse = main.playerInputState.catToPlace == &cat ? main.cpuTopDrawableBatch : main.cpuDrawableBatch;
     auto& textBatchToUse = main.playerInputState.catToPlace == &cat ? main.catTextTopDrawableBatch : main.catTextDrawableBatch;
 
     const bool drawHexedWithShader = cat.isHexedOrCopyHexed() && main.hexedCatDrawCommands.size() < 2u;
     auto&      spriteBatchToUse    = drawHexedWithShader ? main.tempDrawableBatch : batchToUse;
-    auto&      cloudBatchToUse     = main.playerInputState.catToPlace == &cat ? main.cpuTopCloudDrawableBatch : main.cpuCloudDrawableBatch;
+    auto& cloudBatchToUse = main.playerInputState.catToPlace == &cat ? main.cpuTopCloudDrawableBatch : main.cpuCloudDrawableBatch;
 
     CatDrawContext ctx{
-        .main                = main,
-        .cat                 = cat,
-        .batchToUse          = batchToUse,
-        .textBatchToUse      = textBatchToUse,
-        .spriteBatchToUse    = spriteBatchToUse,
-        .cloudBatchToUse     = cloudBatchToUse,
-        .witchCat            = main.getWitchCat(),
-        .copyCat             = main.getCopyCat(),
-        .catTxr              = *textureTables.catTxrsByType[asIdx(cat.type)],
-        .catPawTxr           = *textureTables.catPawTxrsByType[asIdx(cat.type == CatType::Copy &&
-                                                                      main.pt->copycatCopiedCatType == CatType::Mouse
-                                                                          ? CatType::Mouse
-                                                                          : cat.type)],
-        .catTailTxr          = *textureTables.catTailTxrsByType[asIdx(cat.type)],
-        .catTailOffset       = main.gameConstants.catTailOffsetsByType[asIdx(cat.type)],
-        .catEyeOffset        = main.gameConstants.catEyeOffsetsByType[asIdx(cat.type)],
-        .deltaTimeMs         = deltaTimeMs,
-        .mousePos            = mousePos,
-        .drawHexedWithShader = drawHexedWithShader,
-        .beingDragged        = main.isCatBeingDragged(cat),
-        .dragRect            = main.getAoEDragRect(mousePos),
-        .insideDragRect      = false,
-        .hovered             = false,
+        .main                     = main,
+        .cat                      = cat,
+        .batchToUse               = batchToUse,
+        .textBatchToUse           = textBatchToUse,
+        .spriteBatchToUse         = spriteBatchToUse,
+        .cloudBatchToUse          = cloudBatchToUse,
+        .witchCat                 = main.getWitchCat(),
+        .copyCat                  = main.getCopyCat(),
+        .catTxr                   = *textureTables.catTxrsByType[asIdx(cat.type)],
+        .catPawTxr                = *textureTables.catPawTxrsByType[asIdx(
+            cat.type == CatType::Copy && main.pt->copycatCopiedCatType == CatType::Mouse ? CatType::Mouse : cat.type)],
+        .catTailTxr               = *textureTables.catTailTxrsByType[asIdx(cat.type)],
+        .catTailOffset            = main.gameConstants.catTailOffsetsByType[asIdx(cat.type)],
+        .catEyeOffset             = main.gameConstants.catEyeOffsetsByType[asIdx(cat.type)],
+        .deltaTimeMs              = deltaTimeMs,
+        .mousePos                 = mousePos,
+        .drawHexedWithShader      = drawHexedWithShader,
+        .beingDragged             = main.isCatBeingDragged(cat),
+        .dragRect                 = main.getAoEDragRect(mousePos),
+        .insideDragRect           = false,
+        .hovered                  = false,
         .shouldDisplayRangeCircle = false,
-        .rangeInnerAlpha         = 0u,
-        .maxCooldown             = main.getComputedCooldownByCatTypeOrCopyCat(cat.type),
-        .cooldownDiff            = cat.cooldown.value,
-        .catRotation             = 0.f,
-        .range                   = main.getComputedRangeByCatTypeOrCopyCat(cat.type),
-        .alpha                   = 255u,
-        .catColor                = sf::Color::White,
-        .circleAlpha             = 0u,
-        .circleColor             = sf::Color::White,
-        .circleOutlineColor      = sf::Color::White,
-        .textOutlineColor        = sf::Color::White,
-        .shouldDrawCatRange      = false,
-        .catScaleMult            = easeOutElastic(cat.spawnEffectTimer.value),
-        .catScale                = {},
-        .catAnchor               = {},
-        .visualCatAnchor         = {},
-        .pushDown                = {},
-        .attachmentHue           = sf::Color::White,
-        .hexedEffectStrength     = cat.isHexedOrCopyHexed() ? cat.getHexedTimer()->remap(0.f, 1.f) : 0.f,
+        .rangeInnerAlpha          = 0u,
+        .maxCooldown              = main.getComputedCooldownByCatTypeOrCopyCat(cat.type),
+        .cooldownDiff             = cat.cooldown.value,
+        .catRotation              = 0.f,
+        .range                    = main.getComputedRangeByCatTypeOrCopyCat(cat.type),
+        .alpha                    = 255u,
+        .catColor                 = sf::Color::White,
+        .circleAlpha              = 0u,
+        .circleColor              = sf::Color::White,
+        .circleOutlineColor       = sf::Color::White,
+        .textOutlineColor         = sf::Color::White,
+        .shouldDrawCatRange       = false,
+        .catScaleMult             = easeOutElastic(cat.spawnEffectTimer.value),
+        .catScale                 = {},
+        .catAnchor                = {},
+        .visualCatAnchor          = {},
+        .pushDown                 = {},
+        .attachmentHue            = sf::Color::White,
+        .hexedEffectStrength      = cat.isHexedOrCopyHexed() ? cat.getHexedTimer()->remap(0.f, 1.f) : 0.f,
     };
 
-    ctx.insideDragRect = ctx.dragRect.hasValue() && ctx.dragRect->contains(cat.position);
-    ctx.hovered        = (mousePos - cat.position).lengthSquared() <= cat.getRadiusSquared();
+    ctx.insideDragRect           = ctx.dragRect.hasValue() && ctx.dragRect->contains(cat.position);
+    ctx.hovered                  = (mousePos - cat.position).lengthSquared() <= cat.getRadiusSquared();
     ctx.shouldDisplayRangeCircle = !ctx.beingDragged && !cat.isAstroAndInFlight() && ctx.hovered &&
                                    !main.mBtnDown(main.getLMB(), /* penetrateUI */ true);
-    ctx.rangeInnerAlpha = ctx.shouldDisplayRangeCircle ? 75u : 0u;
+    ctx.rangeInnerAlpha          = ctx.shouldDisplayRangeCircle ? 75u : 0u;
 
     if (cat.type == CatType::Astro)
     {
@@ -799,23 +796,23 @@ void applyWitchAnimation(CatDrawContext& ctx, float& wobblePhase, Cat& witch)
     if (cat.type == CatType::Wizard)
         ctx.catRotation += main.wizardcatSpin.value + main.wizardcatAbsorptionRotation;
 
-    ctx.alpha = ctx.insideDragRect ? static_cast<U8>(128u) : static_cast<U8>(255u);
+    ctx.alpha    = ctx.insideDragRect ? static_cast<U8>(128u) : static_cast<U8>(255u);
     ctx.catColor = hueColor(cat.hue, ctx.alpha);
     ctx.circleAlpha = cat.cooldown.value < 0.f ? static_cast<U8>(0u)
                                                : static_cast<U8>(255.f - (cat.cooldown.value / ctx.maxCooldown * 225.f));
-    ctx.circleColor = CatConstants::colors[asIdx(cat.type)].withRotatedHue(cat.hue).withLightness(0.75f);
+    ctx.circleColor        = CatConstants::colors[asIdx(cat.type)].withRotatedHue(cat.hue).withLightness(0.75f);
     ctx.circleOutlineColor = ctx.circleColor.withAlpha(ctx.rangeInnerAlpha == 0u ? ctx.circleAlpha : 255u);
     ctx.textOutlineColor   = ctx.circleColor.withLightness(0.25f);
     ctx.shouldDrawCatRange = main.profile.showCatRange && !main.inPrestigeTransition &&
                              (!main.profile.showRangesOnlyOnHover || ctx.shouldDisplayRangeCircle);
 
-    ctx.catScale      = sf::Vec2f{0.2f, 0.2f} * ctx.catScaleMult;
-    ctx.catAnchor     = ctx.beingDragged ? cat.position : cat.getDrawPosition(main.profile.enableCatBobbing);
+    ctx.catScale             = sf::Vec2f{0.2f, 0.2f} * ctx.catScaleMult;
+    ctx.catAnchor            = ctx.beingDragged ? cat.position : cat.getDrawPosition(main.profile.enableCatBobbing);
     const auto catDrawOffset = main.gameConstants.catDrawOffsetsByType[asIdx(cat.type)];
-    ctx.visualCatAnchor =
-        ctx.catAnchor + (catDrawOffset / 2.f * 0.2f * ctx.catScaleMult).rotatedBy(sf::radians(ctx.catRotation));
+    ctx.visualCatAnchor      = ctx.catAnchor +
+                               (catDrawOffset / 2.f * 0.2f * ctx.catScaleMult).rotatedBy(sf::radians(ctx.catRotation));
 
-    ctx.pushDown = {0.f, ctx.beingDragged ? main.gameConstants.catAttachmentDraggedOffsetY : 0.f};
+    ctx.pushDown      = {0.f, ctx.beingDragged ? main.gameConstants.catAttachmentDraggedOffsetY : 0.f};
     ctx.attachmentHue = hueColor(main.gameConstants.catHueByType[asIdx(cat.type)] + cat.hue, ctx.alpha);
 
     return ctx;
@@ -863,7 +860,7 @@ void drawCatClouds(const CatDrawContext& ctx, const float cloudTime)
     const float cloudScale       = cloudScaleBase * cloudMult;
     const float cloudTimeSeconds = cloudTime * 0.001f;
     const float catCloudPhase    = ctx.cat.position.x * 0.0215f + ctx.cat.position.y * 0.0135f +
-                                static_cast<float>(asIdx(ctx.cat.type)) * 0.7f;
+                                   static_cast<float>(asIdx(ctx.cat.type)) * 0.7f;
 
     const float cloudYOffset = ctx.main.gameConstants.catCloudBaseYOffset +
                                ctx.main.gameConstants.catCloudExtraYOffset * (1.f - cloudMult) +
@@ -877,16 +874,14 @@ void drawCatClouds(const CatDrawContext& ctx, const float cloudTime)
         const float normalizedIndex = static_cast<float>(cloudCircleIndex) / static_cast<float>(cloudCircleCount - 1);
         const float centeredIndex   = normalizedIndex * 2.f - 1.f;
         const float lobeWeight      = 1.f - sf::base::fabs(centeredIndex);
-        const float phase = cloudTimeSeconds * (1.35f + normalizedIndex * 0.2f) + catCloudPhase +
-                            static_cast<float>(cloudCircleIndex) * 0.85f;
+        const float phase           = cloudTimeSeconds * (1.35f + normalizedIndex * 0.2f) + catCloudPhase +
+                                      static_cast<float>(cloudCircleIndex) * 0.85f;
 
         const float xOffset = centeredIndex * ctx.main.gameConstants.catCloudXExtent * cloudScale * cloudXExtentMult +
-                              sf::base::sin(phase) *
-                                  (ctx.main.gameConstants.catCloudWobbleX + lobeWeight * 1.5f) * cloudScale;
+                              sf::base::sin(phase) * (ctx.main.gameConstants.catCloudWobbleX + lobeWeight * 1.5f) * cloudScale;
 
         const float yOffset = -lobeWeight * ctx.main.gameConstants.catCloudLobeLift * cloudScale +
-                              sf::base::cos(phase * 1.4f) *
-                                  (ctx.main.gameConstants.catCloudWobbleY + lobeWeight) * cloudScale;
+                              sf::base::cos(phase * 1.4f) * (ctx.main.gameConstants.catCloudWobbleY + lobeWeight) * cloudScale;
 
         const float radius = (ctx.main.gameConstants.catCloudRadiusBase +
                               lobeWeight * ctx.main.gameConstants.catCloudRadiusLobe +
@@ -918,13 +913,14 @@ void drawCatVisuals(const CatDrawContext& ctx)
 
     if (ctx.cat.type == CatType::Devil)
     {
-        addCatSprite(sf::Sprite{.position = ctx.anchorOffset(ctx.catTailOffset + ctx.main.gameConstants.devilBackTail.positionOffset +
-                                                             ctx.pushDown * 2.f),
-                                .scale       = ctx.catScale * 1.25f,
-                                .origin      = ctx.main.gameConstants.devilBackTail.origin,
-                                .rotation    = tailWiggleRotationInvertedDragged,
-                                .textureRect = ctx.catTailTxr,
-                                .color       = ctx.catColor});
+        addCatSprite(
+            sf::Sprite{.position = ctx.anchorOffset(
+                           ctx.catTailOffset + ctx.main.gameConstants.devilBackTail.positionOffset + ctx.pushDown * 2.f),
+                       .scale       = ctx.catScale * 1.25f,
+                       .origin      = ctx.main.gameConstants.devilBackTail.origin,
+                       .rotation    = tailWiggleRotationInvertedDragged,
+                       .textureRect = ctx.catTailTxr,
+                       .color       = ctx.catColor});
     }
 
     if (ctx.cat.type == CatType::Normal && ctx.main.pt->perm.geniusCatsPurchased)
@@ -939,41 +935,43 @@ void drawCatVisuals(const CatDrawContext& ctx)
 
     if (ctx.cat.type == CatType::Uni)
     {
-        const auto wingRotation = sf::radians(ctx.catRotation + (ctx.beingDragged ? -0.2f : 0.f) +
-                                              sf::base::cos(ctx.cat.wobbleRadians) * (ctx.beingDragged ? 0.125f : 0.075f) * 0.75f);
+        const auto wingRotation = sf::radians(
+            ctx.catRotation + (ctx.beingDragged ? -0.2f : 0.f) +
+            sf::base::cos(ctx.cat.wobbleRadians) * (ctx.beingDragged ? 0.125f : 0.075f) * 0.75f);
 
-        addCatSprite(sf::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.uniWingsOffset),
-                                .scale       = ctx.catScale * 1.25f,
-                                .origin      = ctx.main.txrUniCatWings.size / 2.f -
-                                           ctx.main.gameConstants.uniWingsOriginOffsetFromCenter,
-                                .rotation    = wingRotation,
-                                .textureRect = ctx.main.txrUniCatWings,
-                                .color       = hueColor(ctx.cat.hue + 180.f, 180u)});
+        addCatSprite(
+            sf::Sprite{.position = ctx.anchorOffset(ctx.main.gameConstants.uniWingsOffset),
+                       .scale    = ctx.catScale * 1.25f,
+                       .origin = ctx.main.txrUniCatWings.size / 2.f - ctx.main.gameConstants.uniWingsOriginOffsetFromCenter,
+                       .rotation    = wingRotation,
+                       .textureRect = ctx.main.txrUniCatWings,
+                       .color       = hueColor(ctx.cat.hue + 180.f, 180u)});
     }
 
     if (ctx.cat.type == CatType::Devil)
     {
         addCatSprite(
-            sf::Sprite{.position    = ctx.visualCatAnchor + ctx.main.gameConstants.devilBookOffset,
-                       .scale       = ctx.catScale * 1.55f,
-                       .origin      = ctx.main.txrDevilCat3Book.size / 2.f,
-                       .rotation    = sf::radians(ctx.catRotation),
+            sf::Sprite{.position = ctx.visualCatAnchor + ctx.main.gameConstants.devilBookOffset,
+                       .scale    = ctx.catScale * 1.55f,
+                       .origin   = ctx.main.txrDevilCat3Book.size / 2.f,
+                       .rotation = sf::radians(ctx.catRotation),
                        .textureRect = ctx.main.isDevilcatHellsingedActive() ? ctx.main.txrDevilCat2Book : ctx.main.txrDevilCat3Book,
-                       .color = hueColor(sf::base::remainder(ctx.cat.hue * 2.f - 15.f + static_cast<float>(ctx.cat.nameIdx) * 25.f, 60.f) -
+                       .color = hueColor(sf::base::remainder(ctx.cat.hue * 2.f - 15.f + static_cast<float>(ctx.cat.nameIdx) * 25.f,
+                                                             60.f) -
                                              30.f,
                                          255u)});
     }
 
     if (ctx.cat.type == CatType::Devil)
     {
-        addCatSprite(sf::Sprite{.position = ctx.cat.pawPosition +
-                                            (ctx.beingDragged ? ctx.main.gameConstants.devilPawDraggedOffset
-                                                              : ctx.main.gameConstants.devilPawIdleOffset),
-                                .scale       = ctx.catScale * 1.25f,
-                                .origin      = ctx.catPawTxr.size / 2.f,
-                                .rotation    = ctx.cat.pawRotation + sf::degrees(35.f),
-                                .textureRect = ctx.catPawTxr,
-                                .color       = ctx.catColor.withAlpha(static_cast<U8>(ctx.cat.pawOpacity))});
+        addCatSprite(
+            sf::Sprite{.position = ctx.cat.pawPosition + (ctx.beingDragged ? ctx.main.gameConstants.devilPawDraggedOffset
+                                                                           : ctx.main.gameConstants.devilPawIdleOffset),
+                       .scale       = ctx.catScale * 1.25f,
+                       .origin      = ctx.catPawTxr.size / 2.f,
+                       .rotation    = ctx.cat.pawRotation + sf::degrees(35.f),
+                       .textureRect = ctx.catPawTxr,
+                       .color       = ctx.catColor.withAlpha(static_cast<U8>(ctx.cat.pawOpacity))});
     }
 
     addCatSprite(sf::Sprite{.position    = ctx.visualCatAnchor,
@@ -1007,12 +1005,13 @@ void drawCatVisuals(const CatDrawContext& ctx)
 
     if (ctx.cat.type == CatType::Duck)
     {
-        addCatSprite(sf::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.duckFlag.positionOffset + ctx.pushDown),
-                                .scale       = ctx.catScale,
-                                .origin      = ctx.main.gameConstants.duckFlag.origin,
-                                .rotation    = tailWiggleRotation,
-                                .textureRect = ctx.main.txrDuckFlag,
-                                .color       = ctx.catColor});
+        addCatSprite(
+            sf::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.duckFlag.positionOffset + ctx.pushDown),
+                       .scale       = ctx.catScale,
+                       .origin      = ctx.main.gameConstants.duckFlag.origin,
+                       .rotation    = tailWiggleRotation,
+                       .textureRect = ctx.main.txrDuckFlag,
+                       .color       = ctx.catColor});
         return;
     }
 
@@ -1041,13 +1040,14 @@ void drawCatVisuals(const CatDrawContext& ctx)
 
     if (ctx.cat.type == CatType::Normal)
     {
-        addCatSprite(sf::Sprite{.position = ctx.anchorOffset(ctx.catEyeOffset + ctx.main.gameConstants.earFlapOffset),
-                                .scale    = ctx.catScale,
-                                .origin   = ctx.main.txrCatEars0.size / 2.f,
-                                .rotation = sf::radians(ctx.catRotation),
-                                .textureRect = *ctx.main.earRects[static_cast<unsigned int>(ctx.cat.flapAnimCountdown.value / 75.f) %
-                                                                  Main::nEarRects],
-                                .color = ctx.attachmentHue});
+        addCatSprite(
+            sf::Sprite{.position = ctx.anchorOffset(ctx.catEyeOffset + ctx.main.gameConstants.earFlapOffset),
+                       .scale    = ctx.catScale,
+                       .origin   = ctx.main.txrCatEars0.size / 2.f,
+                       .rotation = sf::radians(ctx.catRotation),
+                       .textureRect = *ctx.main.earRects[static_cast<unsigned int>(ctx.cat.flapAnimCountdown.value / 75.f) %
+                                                         Main::nEarRects],
+                       .color = ctx.attachmentHue});
     }
 
     const auto yawnRectIdx = static_cast<unsigned int>(ctx.cat.yawnAnimCountdown.value / 75.f) % Main::nYawnRects;
@@ -1078,53 +1078,59 @@ void drawCatVisuals(const CatDrawContext& ctx)
 
     if (ctx.cat.type == CatType::Normal && ctx.main.pt->perm.smartCatsPurchased)
     {
-        addCatSprite(sf::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.smartDiploma.positionOffset + ctx.pushDown),
-                                .scale       = ctx.catScale,
-                                .origin      = ctx.main.gameConstants.smartDiploma.origin,
-                                .rotation    = tailWiggleRotation,
-                                .textureRect = ctx.main.txrSmartCatDiploma,
-                                .color       = ctx.catColor});
+        addCatSprite(
+            sf::Sprite{.position = ctx.anchorOffset(ctx.main.gameConstants.smartDiploma.positionOffset + ctx.pushDown),
+                       .scale    = ctx.catScale,
+                       .origin   = ctx.main.gameConstants.smartDiploma.origin,
+                       .rotation = tailWiggleRotation,
+                       .textureRect = ctx.main.txrSmartCatDiploma,
+                       .color       = ctx.catColor});
     }
     else if (ctx.cat.type == CatType::Astro && ctx.main.pt->perm.astroCatInspirePurchased)
     {
-        addCatSprite(sf::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.astroFlag.positionOffset + ctx.pushDown),
-                                .scale       = ctx.catScale,
-                                .origin      = ctx.main.gameConstants.astroFlag.origin,
-                                .rotation    = tailWiggleRotation,
-                                .textureRect = ctx.main.txrAstroCatFlag,
-                                .color       = ctx.catColor});
+        addCatSprite(
+            sf::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.astroFlag.positionOffset + ctx.pushDown),
+                       .scale       = ctx.catScale,
+                       .origin      = ctx.main.gameConstants.astroFlag.origin,
+                       .rotation    = tailWiggleRotation,
+                       .textureRect = ctx.main.txrAstroCatFlag,
+                       .color       = ctx.catColor});
     }
     else if (ctx.cat.type == CatType::Engi || ctx.isCopyCatWithType(CatType::Engi))
     {
-        addCatSprite(sf::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.engiWrench.positionOffset + ctx.pushDown),
-                                .scale       = ctx.catScale,
-                                .origin      = ctx.main.gameConstants.engiWrench.origin,
-                                .rotation    = tailWiggleRotation,
-                                .textureRect = ctx.main.txrEngiCatWrench,
-                                .color       = ctx.catColor});
+        addCatSprite(
+            sf::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.engiWrench.positionOffset + ctx.pushDown),
+                       .scale       = ctx.catScale,
+                       .origin      = ctx.main.gameConstants.engiWrench.origin,
+                       .rotation    = tailWiggleRotation,
+                       .textureRect = ctx.main.txrEngiCatWrench,
+                       .color       = ctx.catColor});
     }
     else if (ctx.cat.type == CatType::Attracto || ctx.isCopyCatWithType(CatType::Attracto))
     {
-        addCatSprite(sf::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.attractoMagnet.positionOffset + ctx.pushDown),
-                                .scale       = ctx.catScale,
-                                .origin      = ctx.main.gameConstants.attractoMagnet.origin,
-                                .rotation    = tailWiggleRotation,
-                                .textureRect = ctx.main.txrAttractoCatMagnet,
-                                .color       = ctx.catColor});
+        addCatSprite(
+            sf::Sprite{.position = ctx.anchorOffset(ctx.main.gameConstants.attractoMagnet.positionOffset + ctx.pushDown),
+                       .scale       = ctx.catScale,
+                       .origin      = ctx.main.gameConstants.attractoMagnet.origin,
+                       .rotation    = tailWiggleRotation,
+                       .textureRect = ctx.main.txrAttractoCatMagnet,
+                       .color       = ctx.catColor});
     }
 
     if (ctx.cat.type != CatType::Devil)
     {
-        const auto originOffset = ctx.cat.type == CatType::Uni ? ctx.main.gameConstants.uniTailOriginOffset : sf::Vec2f{0.f, 0.f};
-        const auto offset       = ctx.cat.type == CatType::Uni ? ctx.main.gameConstants.uniTailExtraOffset : sf::Vec2f{0.f, 0.f};
+        const auto originOffset = ctx.cat.type == CatType::Uni ? ctx.main.gameConstants.uniTailOriginOffset
+                                                               : sf::Vec2f{0.f, 0.f};
+        const auto offset = ctx.cat.type == CatType::Uni ? ctx.main.gameConstants.uniTailExtraOffset : sf::Vec2f{0.f, 0.f};
 
-        addCatSprite(sf::Sprite{.position    = ctx.anchorOffset(ctx.catTailOffset + ctx.main.gameConstants.tail.positionOffset +
-                                                                offset + originOffset),
-                                .scale       = ctx.catScale,
-                                .origin      = originOffset + ctx.main.gameConstants.tail.origin,
-                                .rotation    = tailWiggleRotation,
-                                .textureRect = ctx.catTailTxr,
-                                .color       = ctx.catColor});
+        addCatSprite(
+            sf::Sprite{.position = ctx.anchorOffset(
+                           ctx.catTailOffset + ctx.main.gameConstants.tail.positionOffset + offset + originOffset),
+                       .scale       = ctx.catScale,
+                       .origin      = originOffset + ctx.main.gameConstants.tail.origin,
+                       .rotation    = tailWiggleRotation,
+                       .textureRect = ctx.catTailTxr,
+                       .color       = ctx.catColor});
     }
 
     if (ctx.cat.type == CatType::Mouse || ctx.isCopyCatWithType(CatType::Mouse))
@@ -1137,13 +1143,15 @@ void drawCatVisuals(const CatDrawContext& ctx)
                                 .color       = ctx.catColor});
     }
 
-    const auto& eyelidArray =
-        (ctx.cat.type == CatType::Mouse || ctx.cat.type == CatType::Attracto || ctx.cat.type == CatType::Copy)
-            ? ctx.main.grayEyeLidRects
-            : (ctx.cat.type == CatType::Engi || (ctx.cat.type == CatType::Devil && ctx.main.isDevilcatHellsingedActive()))
-                  ? ctx.main.darkEyeLidRects
-            : (ctx.cat.type == CatType::Astro || ctx.cat.type == CatType::Uni) ? ctx.main.whiteEyeLidRects
-                                                                                : ctx.main.eyeLidRects;
+    const auto& eyelidArray = (ctx.cat.type == CatType::Mouse || ctx.cat.type == CatType::Attracto ||
+                               ctx.cat.type == CatType::Copy)
+                                  ? ctx.main.grayEyeLidRects
+                              : (ctx.cat.type == CatType::Engi ||
+                                 (ctx.cat.type == CatType::Devil && ctx.main.isDevilcatHellsingedActive()))
+                                  ? ctx.main.darkEyeLidRects
+                              : (ctx.cat.type == CatType::Astro || ctx.cat.type == CatType::Uni)
+                                  ? ctx.main.whiteEyeLidRects
+                                  : ctx.main.eyeLidRects;
 
     if (ctx.cat.blinkCountdown.isDone() && ctx.cat.blinkAnimCountdown.isDone())
     {
@@ -1177,17 +1185,18 @@ void drawCatVisuals(const CatDrawContext& ctx)
                                 .rotation    = sf::radians(ctx.catRotation),
                                 .textureRect = *eyelidArray[static_cast<unsigned int>(
                                     remap(static_cast<float>(yawnRectIdx), 0.f, 13.f, 0.f, 7.f))],
-                                .color = ctx.attachmentHue});
+                                .color       = ctx.attachmentHue});
     }
     else if (!ctx.cat.blinkAnimCountdown.isDone())
     {
-        addCatSprite(sf::Sprite{.position    = ctx.anchorOffset(ctx.catEyeOffset + ctx.main.gameConstants.eyelidOffset),
-                                .scale       = ctx.catScale,
-                                .origin      = ctx.main.txrCatEyeLid0.size / 2.f,
-                                .rotation    = sf::radians(ctx.catRotation),
-                                .textureRect = *eyelidArray[static_cast<unsigned int>(ctx.cat.blinkAnimCountdown.value / 75.f) %
-                                                            Main::nEyeLidRects],
-                                .color       = ctx.attachmentHue});
+        addCatSprite(
+            sf::Sprite{.position    = ctx.anchorOffset(ctx.catEyeOffset + ctx.main.gameConstants.eyelidOffset),
+                       .scale       = ctx.catScale,
+                       .origin      = ctx.main.txrCatEyeLid0.size / 2.f,
+                       .rotation    = sf::radians(ctx.catRotation),
+                       .textureRect = *eyelidArray[static_cast<unsigned int>(ctx.cat.blinkAnimCountdown.value / 75.f) %
+                                                   Main::nEyeLidRects],
+                       .color       = ctx.attachmentHue});
     }
 
     if (ctx.cat.type == CatType::Normal && ctx.main.pt->perm.geniusCatsPurchased)
@@ -1201,14 +1210,14 @@ void drawCatVisuals(const CatDrawContext& ctx)
     }
 
     if (!ctx.cat.isHexedOrCopyHexed() && ctx.cat.type != CatType::Devil)
-        addCatSprite(sf::Sprite{.position = ctx.cat.pawPosition +
-                                            (ctx.beingDragged ? ctx.main.gameConstants.regularPawDraggedOffset
-                                                              : ctx.main.gameConstants.regularPawIdleOffset),
-                                .scale       = ctx.catScale * 0.85f,
-                                .origin      = ctx.catPawTxr.size / 2.f,
-                                .rotation    = ctx.cat.type == CatType::Mouse ? sf::radians(-0.6f) : ctx.cat.pawRotation,
-                                .textureRect = ctx.catPawTxr,
-                                .color       = ctx.catColor.withAlpha(static_cast<U8>(ctx.cat.pawOpacity))});
+        addCatSprite(
+            sf::Sprite{.position = ctx.cat.pawPosition + (ctx.beingDragged ? ctx.main.gameConstants.regularPawDraggedOffset
+                                                                           : ctx.main.gameConstants.regularPawIdleOffset),
+                       .scale       = ctx.catScale * 0.85f,
+                       .origin      = ctx.catPawTxr.size / 2.f,
+                       .rotation    = ctx.cat.type == CatType::Mouse ? sf::radians(-0.6f) : ctx.cat.pawRotation,
+                       .textureRect = ctx.catPawTxr,
+                       .color       = ctx.catColor.withAlpha(static_cast<U8>(ctx.cat.pawOpacity))});
 
     if (ctx.cat.type == CatType::Copy)
     {
@@ -1246,13 +1255,14 @@ void drawCatVisuals(const CatDrawContext& ctx)
         }();
 
         if (txrMaskToUse != nullptr)
-            addCatSprite(sf::Sprite{.position = ctx.anchorOffset(ctx.main.gameConstants.copyMaskOffset),
-                                    .scale    = ctx.catScale * remap(foo, 0.f, 0.5f, 1.f, 0.75f),
-                                    .origin = {ctx.main.gameConstants.copyMaskOrigin.x,
-                                               ctx.main.gameConstants.copyMaskOrigin.y * remap(foo, 0.f, 0.5f, 1.f, 1.25f)},
-                                    .rotation    = sf::radians(ctx.catRotation + foo),
-                                    .textureRect = *txrMaskToUse,
-                                    .color       = ctx.catColor});
+            addCatSprite(
+                sf::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.copyMaskOffset),
+                           .scale       = ctx.catScale * remap(foo, 0.f, 0.5f, 1.f, 0.75f),
+                           .origin      = {ctx.main.gameConstants.copyMaskOrigin.x,
+                                           ctx.main.gameConstants.copyMaskOrigin.y * remap(foo, 0.f, 0.5f, 1.f, 1.25f)},
+                           .rotation    = sf::radians(ctx.catRotation + foo),
+                           .textureRect = *txrMaskToUse,
+                           .color       = ctx.catColor});
     }
 }
 
@@ -1358,8 +1368,8 @@ void drawCatText(const CatDrawContext& ctx)
         if (!hideCooldownBar)
             ctx.textBatchToUse.add(sf::RoundedRectangleShapeData{
                 .position = ctx.main.textStatusBuffer.getGlobalBottomCenter().addY(ctx.main.gameConstants.catCooldownBarOffsetY),
-                .scale    = {ctx.catScaleMult, ctx.catScaleMult},
-                .origin   = {32.f, 0.f},
+                .scale              = {ctx.catScaleMult, ctx.catScaleMult},
+                .origin             = {32.f, 0.f},
                 .outlineTextureRect = ctx.main.txrWhiteDot,
                 .fillColor          = sf::Color::whiteMask(128u),
                 .outlineColor       = ctx.textOutlineColor,
@@ -1381,7 +1391,7 @@ void Main::gameLoopDrawCat(Cat&            cat,
                            const sf::Rect2f* const (&catPawTxrsByType)[nCatTypes],
                            const sf::Rect2f* const (&catTailTxrsByType)[nCatTypes])
 {
-    const float       cloudTime = advanceCatCloudTime(*this, cat, deltaTimeMs);
+    const float cloudTime = advanceCatCloudTime(*this, cat, deltaTimeMs);
 
     if (playerInputState.catToPlace != &cat && !bubbleCullingBoundaries.isInside(cat.position))
         return;
@@ -1397,717 +1407,6 @@ void Main::gameLoopDrawCat(Cat&            cat,
     drawCatVisuals(ctx);
     finalizeCatHexedDraw(ctx);
     drawCatText(ctx);
-    return;
-
-#if 0
-    auto& batchToUse     = playerInputState.catToPlace == &cat ? cpuTopDrawableBatch : cpuDrawableBatch;
-    auto& textBatchToUse = playerInputState.catToPlace == &cat ? catTextTopDrawableBatch : catTextDrawableBatch;
-
-    const bool drawHexedWithShader = cat.isHexedOrCopyHexed() && hexedCatDrawCommands.size() < 2u;
-    auto&      spriteBatchToUse    = drawHexedWithShader ? tempDrawableBatch : batchToUse;
-
-    const auto addCatSprite = [&](const sf::Sprite& sprite) { spriteBatchToUse.add(sprite); };
-
-    static int   cloudCircleIndex = 0;
-    static float cloudTime        = 0.f;
-
-    if (!pt->cats.empty() && &cat == &pt->cats.front())
-        cloudTime += deltaTimeMs * 0.4f;
-
-    const sf::Rect2f& catTxr = *catTxrsByType[asIdx(cat.type)];
-
-    if (playerInputState.catToPlace != &cat && !bubbleCullingBoundaries.isInside(cat.position))
-        return;
-
-    const auto isCopyCatWithType = [&](const CatType copiedType)
-    { return cat.type == CatType::Copy && pt->copycatCopiedCatType == copiedType; };
-
-    const bool beingDragged = isCatBeingDragged(cat);
-
-    const sf::base::Optional<sf::Rect2f> dragRect = getAoEDragRect(mousePos);
-
-    const bool insideDragRect = dragRect.hasValue() && dragRect->contains(cat.position);
-
-    const bool hovered = (mousePos - cat.position).lengthSquared() <= cat.getRadiusSquared();
-
-    const bool shouldDisplayRangeCircle = !beingDragged && !cat.isAstroAndInFlight() && hovered &&
-                                          !mBtnDown(getLMB(), /* penetrateUI */ true);
-
-    const U8 rangeInnerAlpha = shouldDisplayRangeCircle ? 75u : 0u;
-
-    const sf::Rect2f& catPawTxr = *catPawTxrsByType[asIdx(isCopyCatWithType(CatType::Mouse) ? CatType::Mouse : cat.type)];
-    const sf::Rect2f& catTailTxr    = *catTailTxrsByType[asIdx(cat.type)];
-    const sf::Vec2f   catTailOffset = gameConstants.catTailOffsetsByType[asIdx(cat.type)];
-    const sf::Vec2f   catEyeOffset  = gameConstants.catEyeOffsetsByType[asIdx(cat.type)];
-
-    const float maxCooldown  = getComputedCooldownByCatTypeOrCopyCat(cat.type);
-    const float cooldownDiff = cat.cooldown.value;
-
-    float catRotation = 0.f;
-
-    const auto doWitchAnimation = [&](float& wobblePhase, Cat& witch)
-    {
-        if (&cat == &witch)
-        {
-            if (witch.cooldown.value >= 10'000.f)
-            {
-                if (wobblePhase > 0.f)
-                    wobblePhase -= deltaTimeMs * 0.005f;
-
-                wobblePhase = sf::base::max(wobblePhase, 0.f);
-            }
-            else
-            {
-                const float frequency = remap(sf::base::min(witch.cooldown.value, 10'000.f), 0.f, 10'000.f, 0.1f, 0.05f);
-
-                wobblePhase += frequency * deltaTimeMs * 0.05f;
-                wobblePhase = sf::base::remainder(wobblePhase, sf::base::tau);
-            }
-        }
-
-        if (isCatPerformingRitual(witch, cat))
-        {
-            const float amplitude = remap(sf::base::min(witch.cooldown.value, 10'000.f), 0.f, 10'000.f, 0.5f, 0.f);
-            catRotation           = sf::base::sin(wobblePhase) * amplitude;
-        }
-    };
-
-    if (cat.type == CatType::Astro)
-    {
-        if (cat.astroState.hasValue() && cat.isCloseToStartX())
-            catRotation = remap(sf::base::fabs(cat.position.x - cat.astroState->startX), 0.f, 400.f, 0.f, 0.523599f);
-        else if (cooldownDiff < 1000.f)
-            catRotation = remap(cooldownDiff, 0.f, 1000.f, 0.523599f, 0.f);
-        else if (cat.astroState.hasValue())
-            catRotation = 0.523599f;
-    }
-
-    const float mult = remap(cat.dragTime, 0.f, 1000.f, 0.f, 1.f);
-    catRotation += (-0.22f + sf::base::sin(cat.wobbleRadians) * 0.12f) * mult;
-
-    if (cachedWitchCat != nullptr)
-    {
-        doWitchAnimation(witchcatWobblePhase, *cachedWitchCat);
-    }
-
-    if (cachedCopyCat != nullptr && pt->copycatCopiedCatType == CatType::Witch)
-    {
-        doWitchAnimation(copyWitchcatWobblePhase, *cachedCopyCat);
-    }
-
-    if (cat.type == CatType::Wizard)
-        catRotation += wizardcatSpin.value + wizardcatAbsorptionRotation;
-
-    const auto range = getComputedRangeByCatTypeOrCopyCat(cat.type);
-
-    const auto alpha = insideDragRect ? static_cast<U8>(128u) : static_cast<U8>(255u);
-
-    const auto catColor = hueColor(cat.hue, alpha);
-
-    const auto circleAlpha = cat.cooldown.value < 0.f
-                                 ? static_cast<U8>(0u)
-                                 : static_cast<U8>(255.f - (cat.cooldown.value / maxCooldown * 225.f));
-
-    const auto circleColor        = CatConstants::colors[asIdx(cat.type)].withRotatedHue(cat.hue).withLightness(0.75f);
-    const auto circleOutlineColor = circleColor.withAlpha(rangeInnerAlpha == 0u ? circleAlpha : 255u);
-    const auto textOutlineColor   = circleColor.withLightness(0.25f);
-
-    const bool shouldDrawCatRange = profile.showCatRange && !inPrestigeTransition &&
-                                    (!profile.showRangesOnlyOnHover || shouldDisplayRangeCircle);
-
-    if (shouldDrawCatRange)
-        batchToUse.add(sf::CircleShapeData{
-            .position           = getCatRangeCenter(cat),
-            .origin             = {range, range},
-            .outlineTextureRect = txrWhiteDot,
-            .fillColor          = (circleOutlineColor.withAlpha(rangeInnerAlpha)),
-            .outlineColor       = circleOutlineColor,
-            .outlineThickness   = profile.catRangeOutlineThickness,
-            .radius             = range,
-            .pointCount         = static_cast<unsigned int>(range / 3.f),
-        });
-
-    const float catScaleMult = easeOutElastic(cat.spawnEffectTimer.value);
-    const auto  catScale     = sf::Vec2f{0.2f, 0.2f} * catScaleMult;
-
-    const auto catAnchor     = beingDragged ? cat.position : cat.getDrawPosition(profile.enableCatBobbing);
-    const auto catDrawOffset = gameConstants.catDrawOffsetsByType[asIdx(cat.type)];
-    const auto visualCatAnchor = catAnchor + (catDrawOffset / 2.f * 0.2f * catScaleMult).rotatedBy(sf::radians(catRotation));
-
-    auto& cloudBatchToUse = playerInputState.catToPlace == &cat ? cpuTopCloudDrawableBatch : cpuCloudDrawableBatch;
-
-    {
-        const auto& [cloudPositionOffset, cloudXExtentMult] = gameConstants.cloudModifiers[asIdx(cat.type)];
-
-        const int   cloudCircleCount = sf::base::max(gameConstants.catCloudCircleCount, 3);
-        const float cloudScaleBase   = sf::base::max(catScaleMult, 0.35f) * gameConstants.catCloudScale;
-
-        float cloudMult = easeInOutBack(remap(cat.dragTime, 0.f, 1000.f, 1.f, 0.f));
-
-        if (cat.type == CatType::Astro)
-        {
-            if (cat.astroState.hasValue() && cat.isCloseToStartX())
-            {
-                cloudMult *= easeInOutBack(
-                    remap(sf::base::fabs(cat.position.x - cat.astroState->startX), 0.f, 400.f, 1.f, 0.f));
-            }
-            else if (cooldownDiff < 1000.f)
-            {
-                cloudMult *= easeInOutBack(remap(cooldownDiff, 0.f, 1000.f, 0.f, 1.f));
-            }
-        }
-
-        const float cloudScale = cloudScaleBase * cloudMult;
-
-        const float cloudTimeSeconds = cloudTime * 0.001f;
-
-        const float catCloudPhase = cat.position.x * 0.0215f + cat.position.y * 0.0135f +
-                                    static_cast<float>(asIdx(cat.type)) * 0.7f;
-
-        const float cloudYOffset = gameConstants.catCloudBaseYOffset +
-                                   gameConstants.catCloudExtraYOffset * (1.f - cloudMult) +
-                                   (beingDragged ? gameConstants.catCloudDraggedOffset : 0.f);
-
-        const sf::Vec2f cloudBasePos = visualCatAnchor.addY(catTxr.size.y / 2.f * catScale.y) +
-                                       sf::Vec2f{0.f, cloudYOffset * cloudScale} + cloudPositionOffset;
-
-        for (cloudCircleIndex = 0; cloudCircleIndex < cloudCircleCount; ++cloudCircleIndex)
-        {
-            const float normalizedIndex = static_cast<float>(cloudCircleIndex) / static_cast<float>(cloudCircleCount - 1);
-            const float centeredIndex = normalizedIndex * 2.f - 1.f;
-            const float lobeWeight    = 1.f - sf::base::fabs(centeredIndex);
-            const float phase         = cloudTimeSeconds * (1.35f + normalizedIndex * 0.2f) + catCloudPhase +
-                                        static_cast<float>(cloudCircleIndex) * 0.85f;
-
-            const float xOffset = centeredIndex * gameConstants.catCloudXExtent * cloudScale * cloudXExtentMult +
-                                  sf::base::sin(phase) * (gameConstants.catCloudWobbleX + lobeWeight * 1.5f) * cloudScale;
-
-            const float yOffset = -lobeWeight * gameConstants.catCloudLobeLift * cloudScale +
-                                  sf::base::cos(phase * 1.4f) * (gameConstants.catCloudWobbleY + lobeWeight) * cloudScale;
-
-            const float radius = (gameConstants.catCloudRadiusBase + lobeWeight * gameConstants.catCloudRadiusLobe +
-                                  sf::base::sin(phase * 1.15f) * gameConstants.catCloudRadiusWobble) *
-                                 cloudScale;
-
-            cloudBatchToUse.add(sf::Sprite{
-                .position    = cloudBasePos + sf::Vec2f{xOffset, yOffset},
-                .scale       = {radius / (txrCloud.size.x / 2.f), radius / (txrCloud.size.y / 2.f)},
-                .origin      = txrCloud.size / 2.f,
-                .textureRect = txrCloud,
-            });
-        }
-    }
-
-
-    const auto anchorOffset = [&](const sf::Vec2f offset)
-    { return visualCatAnchor + (offset / 2.f * 0.2f * catScaleMult).rotatedBy(sf::radians(catRotation)); };
-
-    const float tailRotationMult = cat.type == CatType::Uni ? 0.4f : 1.f;
-
-    const auto tailWiggleRotation = sf::radians(
-        catRotation + ((beingDragged ? -0.2f : 0.f) +
-                       sf::base::sin(cat.wobbleRadians) * (beingDragged ? 0.125f : 0.075f) * tailRotationMult));
-
-    const auto tailWiggleRotationInvertedDragged = sf::radians(
-        catRotation + ((beingDragged ? 0.2f : 0.f) +
-                       sf::base::sin(cat.wobbleRadians) * (beingDragged ? 0.125f : 0.075f) * tailRotationMult));
-
-    const sf::Vec2f pushDown{0.f, beingDragged ? gameConstants.catAttachmentDraggedOffsetY : 0.f};
-
-    const auto  attachmentHue       = hueColor(gameConstants.catHueByType[asIdx(cat.type)] + cat.hue, alpha);
-    const float hexedEffectStrength = cat.isHexedOrCopyHexed() ? cat.getHexedTimer()->remap(0.f, 1.f) : 0.f;
-
-    // Devilcat: draw tail behind
-    if (cat.type == CatType::Devil)
-    {
-        addCatSprite(
-            sf::Sprite{.position = anchorOffset(catTailOffset + gameConstants.devilBackTail.positionOffset + pushDown * 2.f),
-                       .scale       = catScale * 1.25f,
-                       .origin      = gameConstants.devilBackTail.origin,
-                       .rotation    = tailWiggleRotationInvertedDragged,
-                       .textureRect = catTailTxr,
-                       .color       = catColor});
-    }
-
-    //
-    // Draw brain jar in the background
-    if (cat.type == CatType::Normal && pt->perm.geniusCatsPurchased)
-    {
-        addCatSprite(sf::Sprite{.position    = anchorOffset(gameConstants.brainJarOffset),
-                                .scale       = catScale,
-                                .origin      = txrBrainBack.size / 2.f,
-                                .rotation    = sf::radians(catRotation),
-                                .textureRect = txrBrainBack,
-                                .color       = catColor});
-    }
-
-    //
-    // Unicats: wings
-    if (cat.type == CatType::Uni)
-    {
-        const auto wingRotation = sf::radians(catRotation + (beingDragged ? -0.2f : 0.f) +
-                                              sf::base::cos(cat.wobbleRadians) * (beingDragged ? 0.125f : 0.075f) * 0.75f);
-
-        addCatSprite(sf::Sprite{.position    = anchorOffset(gameConstants.uniWingsOffset),
-                                .scale       = catScale * 1.25f,
-                                .origin      = txrUniCatWings.size / 2.f - gameConstants.uniWingsOriginOffsetFromCenter,
-                                .rotation    = wingRotation,
-                                .textureRect = txrUniCatWings,
-                                .color       = hueColor(cat.hue + 180.f, 180u)});
-    }
-
-    //
-    // Devilcat: draw book
-    if (cat.type == CatType::Devil)
-    {
-        addCatSprite(
-            sf::Sprite{.position    = visualCatAnchor + gameConstants.devilBookOffset,
-                       .scale       = catScale * 1.55f,
-                       .origin      = txrDevilCat3Book.size / 2.f,
-                       .rotation    = sf::radians(catRotation),
-                       .textureRect = isDevilcatHellsingedActive() ? txrDevilCat2Book : txrDevilCat3Book,
-                       .color = hueColor(sf::base::remainder(cat.hue * 2.f - 15.f + static_cast<float>(cat.nameIdx) * 25.f, 60.f) -
-                                             30.f,
-                                         255u)});
-    }
-
-    //
-    // Devilcat: draw paw behind book
-    if (cat.type == CatType::Devil)
-    {
-        addCatSprite(sf::Sprite{.position    = cat.pawPosition + (beingDragged ? gameConstants.devilPawDraggedOffset
-                                                                               : gameConstants.devilPawIdleOffset),
-                                .scale       = catScale * 1.25f,
-                                .origin      = catPawTxr.size / 2.f,
-                                .rotation    = cat.pawRotation + sf::degrees(35.f),
-                                .textureRect = catPawTxr,
-                                .color       = catColor.withAlpha(static_cast<U8>(cat.pawOpacity))});
-    }
-
-    //
-    // Draw cat main shape
-    addCatSprite(sf::Sprite{.position    = visualCatAnchor,
-                            .scale       = catScale,
-                            .origin      = catTxr.size / 2.f,
-                            .rotation    = sf::radians(catRotation),
-                            .textureRect = catTxr,
-                            .color       = catColor});
-
-    if (gameConstants.debugDrawCatCenterMarker)
-        batchToUse.add(sf::CircleShapeData{
-            .position   = catAnchor,
-            .origin     = {4.f, 4.f},
-            .fillColor  = sf::Color{255u, 0u, 0u, alpha},
-            .radius     = 4.f,
-            .pointCount = 16u,
-        });
-
-    if (gameConstants.debugDrawCatBodyBounds)
-        batchToUse.add(sf::RectangleShapeData{
-            .position           = catAnchor,
-            .scale              = catScale,
-            .origin             = catTxr.size / 2.f,
-            .rotation           = sf::radians(catRotation).wrapUnsigned(),
-            .outlineTextureRect = txrWhiteDot,
-            .fillColor          = sf::Color::Transparent,
-            .outlineColor       = sf::Color{255u, 0u, 0u, alpha},
-            .outlineThickness   = 4.f,
-            .size               = catTxr.size,
-        });
-
-    if (cat.type == CatType::Duck)
-    {
-        addCatSprite(sf::Sprite{.position    = anchorOffset(gameConstants.duckFlag.positionOffset + pushDown),
-                                .scale       = catScale,
-                                .origin      = gameConstants.duckFlag.origin,
-                                .rotation    = tailWiggleRotation,
-                                .textureRect = txrDuckFlag,
-                                .color       = catColor});
-    }
-    else
-    {
-        //
-        // Draw graudation hat
-        if (cat.type == CatType::Normal && pt->perm.smartCatsPurchased)
-        {
-            addCatSprite(sf::Sprite{.position    = anchorOffset(gameConstants.smartHatOffset),
-                                    .scale       = catScale,
-                                    .origin      = txrSmartCatHat.size / 2.f,
-                                    .rotation    = sf::radians(catRotation),
-                                    .textureRect = txrSmartCatHat,
-                                    .color       = catColor});
-        }
-
-        //
-        // Ear flapping animation
-        if (cat.flapCountdown.isDone() && cat.flapAnimCountdown.isDone())
-        {
-            if (rngFast.getI(0, 100) > 92) // Double-flap chance
-                cat.flapCountdown.value = 75.f;
-            else
-                cat.flapCountdown.value = rngFast.getF(4500.f, 12'500.f);
-        }
-
-        if (cat.flapCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
-            cat.flapAnimCountdown.value = 75.f * nEarRects;
-
-        (void)cat.flapAnimCountdown.updateAndStop(deltaTimeMs);
-
-        if (cat.type == CatType::Normal) // TODO P2: implement for other cats as well?
-        {
-            addCatSprite(
-                sf::Sprite{.position = anchorOffset(catEyeOffset + gameConstants.earFlapOffset),
-                           .scale    = catScale,
-                           .origin   = txrCatEars0.size / 2.f,
-                           .rotation = sf::radians(catRotation),
-                           .textureRect = *earRects[static_cast<unsigned int>(cat.flapAnimCountdown.value / 75.f) % nEarRects],
-                           .color = attachmentHue});
-        }
-
-        //
-        // Yawning animation
-        const auto yawnRectIdx = static_cast<unsigned int>(cat.yawnAnimCountdown.value / 75.f) % nYawnRects;
-
-        if (cat.type != CatType::Devil && cat.type != CatType::Wizard && cat.type != CatType::Mouse &&
-            cat.type != CatType::Engi)
-        {
-            if (cat.yawnCountdown.isDone() && cat.yawnAnimCountdown.isDone())
-                cat.yawnCountdown.value = rngFast.getF(7500.f, 20'000.f);
-
-            if (cat.blinkAnimCountdown.isDone() &&
-                cat.yawnCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
-                cat.yawnAnimCountdown.value = 75.f * nYawnRects;
-
-            (void)cat.yawnAnimCountdown.updateAndStop(deltaTimeMs);
-
-            addCatSprite(sf::Sprite{.position    = anchorOffset(catEyeOffset + gameConstants.yawnOffset),
-                                    .scale       = catScale,
-                                    .origin      = txrCatYawn0.size / 2.f,
-                                    .rotation    = sf::radians(catRotation),
-                                    .textureRect = *catYawnRects[yawnRectIdx],
-                                    .color       = attachmentHue});
-        }
-        else
-        {
-            cat.yawnCountdown.value = cat.yawnAnimCountdown.value = 0.f;
-        }
-
-        //
-        // Draw attachments
-        if (cat.type == CatType::Normal && pt->perm.smartCatsPurchased) // Smart cat diploma
-        {
-            addCatSprite(sf::Sprite{.position    = anchorOffset(gameConstants.smartDiploma.positionOffset + pushDown),
-                                    .scale       = catScale,
-                                    .origin      = gameConstants.smartDiploma.origin,
-                                    .rotation    = tailWiggleRotation,
-                                    .textureRect = txrSmartCatDiploma,
-                                    .color       = catColor});
-        }
-        else if (cat.type == CatType::Astro && pt->perm.astroCatInspirePurchased) // Astro cat flag
-        {
-            addCatSprite(sf::Sprite{.position    = anchorOffset(gameConstants.astroFlag.positionOffset + pushDown),
-                                    .scale       = catScale,
-                                    .origin      = gameConstants.astroFlag.origin,
-                                    .rotation    = tailWiggleRotation,
-                                    .textureRect = txrAstroCatFlag,
-                                    .color       = catColor});
-        }
-        else if (cat.type == CatType::Engi ||
-                 (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Engi)) // Engi cat wrench
-        {
-            addCatSprite(sf::Sprite{.position    = anchorOffset(gameConstants.engiWrench.positionOffset + pushDown),
-                                    .scale       = catScale,
-                                    .origin      = gameConstants.engiWrench.origin,
-                                    .rotation    = tailWiggleRotation,
-                                    .textureRect = txrEngiCatWrench,
-                                    .color       = catColor});
-        }
-        else if (cat.type == CatType::Attracto ||
-                 (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Attracto)) // Attracto cat magnet
-        {
-            addCatSprite(sf::Sprite{.position    = anchorOffset(gameConstants.attractoMagnet.positionOffset + pushDown),
-                                    .scale       = catScale,
-                                    .origin      = gameConstants.attractoMagnet.origin,
-                                    .rotation    = tailWiggleRotation,
-                                    .textureRect = txrAttractoCatMagnet,
-                                    .color       = catColor});
-        }
-
-
-        //
-        // Draw cat tail
-        if (cat.type != CatType::Devil)
-        {
-            const auto originOffset = cat.type == CatType::Uni ? gameConstants.uniTailOriginOffset : sf::Vec2f{0.f, 0.f};
-            const auto offset = cat.type == CatType::Uni ? gameConstants.uniTailExtraOffset : sf::Vec2f{0.f, 0.f};
-
-            addCatSprite(
-                sf::Sprite{.position = anchorOffset(catTailOffset + gameConstants.tail.positionOffset + offset + originOffset),
-                           .scale       = catScale,
-                           .origin      = originOffset + gameConstants.tail.origin,
-                           .rotation    = tailWiggleRotation,
-                           .textureRect = catTailTxr,
-                           .color       = catColor});
-        }
-
-        //
-        // Mousecat: mouse
-        if (cat.type == CatType::Mouse || (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Mouse))
-        {
-            addCatSprite(sf::Sprite{.position    = anchorOffset(gameConstants.mouseProp.positionOffset),
-                                    .scale       = catScale,
-                                    .origin      = gameConstants.mouseProp.origin,
-                                    .rotation    = tailWiggleRotationInvertedDragged,
-                                    .textureRect = txrMouseCatMouse,
-                                    .color       = catColor});
-        }
-
-        //
-        // Eye blining animation
-        const auto& eyelidArray = //
-            (cat.type == CatType::Mouse || cat.type == CatType::Attracto || cat.type == CatType::Copy) ? grayEyeLidRects
-            : (cat.type == CatType::Engi || (cat.type == CatType::Devil && isDevilcatHellsingedActive())) ? darkEyeLidRects
-            : (cat.type == CatType::Astro || cat.type == CatType::Uni)
-                ? whiteEyeLidRects
-                : eyeLidRects;
-
-        if (cat.blinkCountdown.isDone() && cat.blinkAnimCountdown.isDone())
-        {
-            if (rngFast.getI(0, 100) > 90) // Double animation chance
-                cat.blinkCountdown.value = 75.f;
-            else
-                cat.blinkCountdown.value = rngFast.getF(1000.f, 4000.f);
-        }
-
-        if (cat.blinkCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
-            cat.blinkAnimCountdown.value = 75.f * nEyeLidRects;
-
-        (void)cat.blinkAnimCountdown.updateAndStop(deltaTimeMs);
-
-        if ((cachedWitchCat != nullptr && isCatPerformingRitual(*cachedWitchCat, cat)) ||
-            (cachedCopyCat != nullptr && pt->copycatCopiedCatType == CatType::Witch &&
-             isCatPerformingRitual(*cachedCopyCat, cat)))
-        {
-            addCatSprite(sf::Sprite{.position    = anchorOffset(catEyeOffset + gameConstants.eyelidOffset),
-                                    .scale       = catScale,
-                                    .origin      = txrCatEyeLid0.size / 2.f,
-                                    .rotation    = sf::radians(catRotation),
-                                    .textureRect = *eyelidArray[2],
-                                    .color       = attachmentHue});
-        }
-        else if (!cat.yawnAnimCountdown.isDone())
-        {
-            addCatSprite(sf::Sprite{.position    = anchorOffset(catEyeOffset + gameConstants.eyelidOffset),
-                                    .scale       = catScale,
-                                    .origin      = txrCatEyeLid0.size / 2.f,
-                                    .rotation    = sf::radians(catRotation),
-                                    .textureRect = *eyelidArray[static_cast<unsigned int>(
-                                        remap(static_cast<float>(yawnRectIdx), 0.f, 13.f, 0.f, 7.f))],
-                                    .color       = attachmentHue});
-        }
-        else if (!cat.blinkAnimCountdown.isDone())
-        {
-            addCatSprite(
-                sf::Sprite{.position = anchorOffset(catEyeOffset + gameConstants.eyelidOffset),
-                           .scale    = catScale,
-                           .origin   = txrCatEyeLid0.size / 2.f,
-                           .rotation = sf::radians(catRotation),
-                           .textureRect = *eyelidArray[static_cast<unsigned int>(cat.blinkAnimCountdown.value / 75.f) % nEyeLidRects],
-                           .color = attachmentHue});
-        }
-
-        if (cat.type == CatType::Normal && pt->perm.geniusCatsPurchased)
-        {
-            addCatSprite(sf::Sprite{.position    = anchorOffset(gameConstants.brainJarOffset),
-                                    .scale       = catScale,
-                                    .origin      = txrBrainFront.size / 2.f,
-                                    .rotation    = sf::radians(catRotation),
-                                    .textureRect = txrBrainFront,
-                                    .color       = catColor});
-        }
-
-
-        if (!cat.isHexedOrCopyHexed() && cat.type != CatType::Devil)
-            addCatSprite(sf::Sprite{.position = cat.pawPosition + (beingDragged ? gameConstants.regularPawDraggedOffset
-                                                                                : gameConstants.regularPawIdleOffset),
-                                    .scale    = catScale * 0.85f,
-                                    .origin   = catPawTxr.size / 2.f,
-                                    .rotation = cat.type == CatType::Mouse ? sf::radians(-0.6f) : cat.pawRotation,
-                                    .textureRect = catPawTxr,
-                                    .color       = catColor.withAlpha(static_cast<U8>(cat.pawOpacity))});
-
-        //
-        // Copycat: mask
-        if (cat.type == CatType::Copy)
-        {
-            if (copycatMaskAnim.isDone() &&
-                copycatMaskAnimCd.updateAndStop(deltaTimeMs) == CountdownStatusStop::AlreadyFinished)
-                copycatMaskAnim.value = 3000.f;
-
-            if (copycatMaskAnimCd.isDone() && copycatMaskAnim.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
-                copycatMaskAnimCd.value = 4000.f;
-
-            const float foo = easeInOutBack(copycatMaskAnim.getProgressBounced(3000.f)) * 0.5f;
-
-            const auto* txrMaskToUse = [&]() -> const sf::Rect2f*
-            {
-                if (pt->copycatCopiedCatType == CatType::Witch)
-                    return &txrCCMaskWitch;
-
-                if (pt->copycatCopiedCatType == CatType::Wizard)
-                    return &txrCCMaskWizard;
-
-                if (pt->copycatCopiedCatType == CatType::Mouse)
-                    return &txrCCMaskMouse;
-
-                if (pt->copycatCopiedCatType == CatType::Engi)
-                    return &txrCCMaskEngi;
-
-                if (pt->copycatCopiedCatType == CatType::Repulso)
-                    return &txrCCMaskRepulso;
-
-                if (pt->copycatCopiedCatType == CatType::Attracto)
-                    return &txrCCMaskAttracto;
-
-                return nullptr;
-            }();
-
-            if (txrMaskToUse != nullptr)
-                addCatSprite(sf::Sprite{.position = anchorOffset(gameConstants.copyMaskOffset),
-                                        .scale    = catScale * remap(foo, 0.f, 0.5f, 1.f, 0.75f),
-                                        .origin = {gameConstants.copyMaskOrigin.x,
-                                                   gameConstants.copyMaskOrigin.y * remap(foo, 0.f, 0.5f, 1.f, 1.25f)},
-                                        .rotation    = sf::radians(catRotation + foo),
-                                        .textureRect = *txrMaskToUse,
-                                        .color       = catColor});
-        }
-    }
-
-    if (drawHexedWithShader && !tempDrawableBatch.isEmpty())
-    {
-        enqueueHexedCatDrawCommand(tempDrawableBatch,
-                                   visualCatAnchor,
-                                   playerInputState.catToPlace == &cat,
-                                   cat.position.x * 0.013f + cat.position.y * 0.021f + static_cast<float>(cat.nameIdx) * 0.17f,
-                                   hexedEffectStrength);
-
-        tempDrawableBatch.clear();
-    }
-
-    if (profile.showCatText)
-    {
-        // TODO P2: move to member data
-        static thread_local sf::base::String catNameBuffer;
-        catNameBuffer.clear();
-
-        if (pt->perm.smartCatsPurchased && cat.type == CatType::Normal && cat.nameIdx % 2u == 0u)
-            catNameBuffer += "Dr. ";
-
-        const sf::base::StringView catNameSv = shuffledCatNamesPerType[asIdx(cat.type)][cat.nameIdx];
-        catNameBuffer.append(catNameSv.data(), catNameSv.size());
-
-        if (pt->perm.smartCatsPurchased && cat.type == CatType::Normal && cat.nameIdx % 2u != 0u)
-            catNameBuffer += ", PhD";
-
-        const auto textAlpha = cat.isHexedOrCopyHexed() ? static_cast<U8>(160u) : static_cast<U8>(255u);
-
-        // Name text
-        textNameBuffer.setString(catNameBuffer);
-        textNameBuffer.position = cat.position.addY(gameConstants.catNameTextOffsetY);
-        textNameBuffer.origin   = textNameBuffer.getLocalBounds().size / 2.f;
-        textNameBuffer.scale    = sf::Vec2f{0.5f, 0.5f} * catScaleMult;
-        textNameBuffer.setFillColor(sf::Color::White.withAlpha(textAlpha));
-        textNameBuffer.setOutlineColor(textOutlineColor.withAlpha(textAlpha));
-        textBatchToUse.add(textNameBuffer);
-
-        // Status text
-        if (cat.type != CatType::Repulso && cat.type != CatType::Attracto && cat.type != CatType::Duck &&
-            !isCopyCatWithType(CatType::Repulso) && !isCopyCatWithType(CatType::Attracto))
-        {
-            const char* actionName = CatConstants::actionNames[asIdx(
-                cat.type == CatType::Copy ? pt->copycatCopiedCatType : cat.type)];
-
-            if (cat.type == CatType::Devil && isDevilcatHellsingedActive())
-                actionName = "Portals";
-
-            // TODO P2: move to member data
-            static thread_local sf::base::String actionString;
-            actionString.clear();
-
-            actionString += sf::base::toString(cat.hits);
-            actionString += " ";
-            actionString += actionName;
-
-            if (cat.type == CatType::Mouse || isCopyCatWithType(CatType::Mouse))
-            {
-                actionString += " (x";
-                actionString += sf::base::toString(pt->mouseCatCombo + 1);
-                actionString += ")";
-            }
-
-            // Money text
-            if (cat.moneyEarned != 0u)
-            {
-                char moneyFmtBuffer[128]{};
-                std::sprintf(moneyFmtBuffer, "$%s", toStringWithSeparators(cat.moneyEarned));
-
-                actionString += " | ";
-                actionString += moneyFmtBuffer;
-
-                if (0)
-                {
-                    textMoneyBuffer.setString(moneyFmtBuffer);
-                    textMoneyBuffer.position = cat.position.addY(84.f);
-                    textMoneyBuffer.origin   = textMoneyBuffer.getLocalBounds().size / 2.f;
-                    textMoneyBuffer.setOutlineColor(textOutlineColor);
-                    cat.textMoneyShakeEffect.applyToText(textMoneyBuffer);
-                    textMoneyBuffer.scale *= 0.5f * catScaleMult;
-                    textBatchToUse.add(textMoneyBuffer);
-                }
-            }
-
-
-            textStatusBuffer.setString(actionString);
-            textStatusBuffer.position = cat.position.addY(gameConstants.catStatusTextOffsetY);
-            textStatusBuffer.origin   = textStatusBuffer.getLocalBounds().size / 2.f;
-            textStatusBuffer.setFillColor(sf::Color::White.withAlpha(textAlpha));
-            textStatusBuffer.setOutlineColor(textOutlineColor.withAlpha(textAlpha));
-            cat.textStatusShakeEffect.applyToText(textStatusBuffer);
-            textStatusBuffer.scale *= 0.4f * catScaleMult;
-            textBatchToUse.add(textStatusBuffer);
-
-            if (cat.isHexedOrCopyHexed())
-                actionString = "\n[hexed]";
-
-
-            textStatusBuffer.setString(actionString);
-            textStatusBuffer.position = cat.position.addY(gameConstants.catStatusTextOffsetY);
-            textStatusBuffer.origin   = textStatusBuffer.getLocalBounds().size / 2.f;
-            textStatusBuffer.setFillColor(sf::Color::White.withAlpha(textAlpha));
-            textStatusBuffer.setOutlineColor(textOutlineColor.withAlpha(textAlpha));
-            cat.textStatusShakeEffect.applyToText(textStatusBuffer);
-            textStatusBuffer.scale *= 0.4f * catScaleMult;
-            textBatchToUse.add(textStatusBuffer);
-        }
-
-        const bool hideCooldownBar = inPrestigeTransition || cat.type == CatType::Repulso || cat.type == CatType::Attracto ||
-                                     cat.type == CatType::Duck || cat.isHexedOrCopyHexed();
-
-        if (!hideCooldownBar)
-            textBatchToUse.add(sf::RoundedRectangleShapeData{
-                .position = textStatusBuffer.getGlobalBottomCenter().addY(gameConstants.catCooldownBarOffsetY),
-                .scale    = {catScaleMult, catScaleMult},
-                .origin   = {32.f, 0.f},
-                .outlineTextureRect = txrWhiteDot,
-                .fillColor          = sf::Color::whiteMask(128u),
-                .outlineColor       = textOutlineColor,
-                .outlineThickness   = 1.f,
-                .size               = sf::Vec2f{cat.cooldown.value / maxCooldown * 64.f, 3.f}.clampX(2.f, 64.f),
-                .cornerRadius       = 1.f,
-                .cornerPointCount   = 8u,
-            });
-    }
-#endif
 }
 
 
@@ -2586,11 +1885,11 @@ void Main::gameLoopDrawCursor(const float deltaTimeMs, const float cursorGrow)
                 : pt->multiPopEnabled      ? txCursorMultipop
                                            : txCursor,
                 {.position = sf::Mouse::getPosition(window).toVec2f(),
-                 .scale    = sf::Vec2f{profile.cursorScale, profile.cursorScale} *
-                             ((1.f + easeInOutBack(cursorGrow) * sf::base::pow(static_cast<float>(comboState.combo), 0.09f)) *
-                              dpiScalingFactor),
-                 .origin   = {5.f, 5.f},
-                 .color    = hueColor(profile.cursorHue + currentBackgroundHue.asDegrees(), 255u)},
+                 .scale = sf::Vec2f{profile.cursorScale, profile.cursorScale} *
+                          ((1.f + easeInOutBack(cursorGrow) * sf::base::pow(static_cast<float>(comboState.combo), 0.09f)) *
+                           dpiScalingFactor),
+                 .origin = {5.f, 5.f},
+                 .color  = hueColor(profile.cursorHue + currentBackgroundHue.asDegrees(), 255u)},
                 {.view = nonScaledHUDView, .shader = &shader});
 }
 
@@ -2645,7 +1944,8 @@ void Main::gameLoopDrawCursorComboText(const float deltaTimeMs, const float curs
 ////////////////////////////////////////////////////////////
 void Main::gameLoopDrawCursorComboBar()
 {
-    if (!pt->comboPurchased || !profile.showCursorComboBar || comboState.comboCountdown.value == 0.f || shouldDrawGrabbingCursor())
+    if (!pt->comboPurchased || !profile.showCursorComboBar || comboState.comboCountdown.value == 0.f ||
+        shouldDrawGrabbingCursor())
         return;
 
     const float scaleMult = profile.cursorScale * dpiScalingFactor;

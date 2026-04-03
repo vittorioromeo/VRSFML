@@ -23,6 +23,8 @@
 #include "ExampleUtils/Profiler.hpp"
 #include "ExampleUtils/Timer.hpp"
 
+#include "SFML/ImGui/IncludeImGui.hpp"
+
 #include "SFML/Window/Keyboard.hpp"
 
 #include "SFML/System/Angle.hpp"
@@ -48,10 +50,6 @@
 #include "SFML/Base/Remainder.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include <imgui.h>
-
-#include <utility>
 
 #include <cstdio>
 
