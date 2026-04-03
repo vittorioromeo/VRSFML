@@ -33,57 +33,44 @@ namespace sf
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-class [[nodiscard]] SFML_GRAPHICS_API TextureAtlas
+struct SFML_GRAPHICS_API TextureAtlasUtils
 {
-public:
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit TextureAtlas(Texture&& atlasTexture);
+    [[nodiscard]] static base::Optional<Rect2f> add(
+        Texture&        targetTexture,
+        RectPacker&     rectPacker,
+        Vec2u           padding,
+        const base::U8* pixels,
+        Vec2u           size);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<Rect2f> add(const base::U8* pixels, Vec2u size, Vec2u padding = {});
-    [[nodiscard]] base::Optional<Rect2f> add(const Image& image, Vec2u padding = {});
-    [[nodiscard]] base::Optional<Rect2f> add(const Texture& texture, Vec2u padding = {});
+    [[nodiscard]] static base::Optional<Rect2f> add(Texture& targetTexture, RectPacker& rectPacker, Vec2u padding, const Image& image);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Texture&       getTexture();
-    [[nodiscard]] const Texture& getTexture() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] RectPacker&       getRectPacker();
-    [[nodiscard]] const RectPacker& getRectPacker() const;
-
-private:
-    ////////////////////////////////////////////////////////////
-    // Member data
-    ////////////////////////////////////////////////////////////
-    Texture    m_atlasTexture;
-    RectPacker m_rectPacker;
+    [[nodiscard]] static base::Optional<Rect2f> add(Texture&       targetTexture,
+                                                    RectPacker&    rectPacker,
+                                                    Vec2u          padding,
+                                                    const Texture& texture);
 };
 
 } // namespace sf
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::TextureAtlas
+/// \class sf::TextureAtlasUtils
 /// \ingroup graphics
 ///
 /// TODO P1: docs
 ///
-/// \see sf::Texture, sf::Image, sf::RenderTexture
+/// \see sf::Texture, sf::RectPacker
 ///
 ////////////////////////////////////////////////////////////
-
-
-// TODO P0: deprecate in favour of textureatlasutils?
