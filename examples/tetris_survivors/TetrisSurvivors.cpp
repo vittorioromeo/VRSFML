@@ -4637,8 +4637,8 @@ public:
     ////////////////////////////////////////////////////////////
     Game()
     {
-        m_font.setSmooth(false);
-        m_fontMago2.setSmooth(false);
+        m_font.getTexture().setSmooth(false);
+        m_fontMago2.getTexture().setSmooth(false);
 
         float scale = 4.f;
 

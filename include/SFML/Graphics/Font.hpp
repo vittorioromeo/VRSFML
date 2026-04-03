@@ -319,33 +319,19 @@ public:
     /// \return Texture containing the glyphs of the requested size
     ///
     ////////////////////////////////////////////////////////////
+    [[nodiscard]] Texture& getTexture();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Retrieve the texture containing the loaded glyphs of a certain size
+    ///
+    /// The contents of the returned texture changes as more glyphs
+    /// are requested, thus it is not very relevant. It is mainly
+    /// used internally by `sf::Text`.
+    ///
+    /// \return Texture containing the glyphs of the requested size
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] const Texture& getTexture() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Enable or disable the smooth filter
-    ///
-    /// When the filter is activated, the font appears smoother
-    /// so that pixels are less noticeable. However if you want
-    /// the font to look exactly the same as its source file,
-    /// you should disable it.
-    /// The smooth filter is enabled by default.
-    ///
-    /// \param smooth `true` to enable smoothing, `false` to disable it
-    ///
-    /// \see `isSmooth`
-    ///
-    ////////////////////////////////////////////////////////////
-    void setSmooth(bool smooth);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Tell whether the smooth filter is enabled or not
-    ///
-    /// \return `true` if smoothing is enabled, `false` if it is disabled
-    ///
-    /// \see `setSmooth`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isSmooth() const;
 
 private:
     ////////////////////////////////////////////////////////////

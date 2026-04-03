@@ -1,13 +1,24 @@
+#include "SystemUtil.hpp"
+
 #include "SFML/Graphics/Font.hpp"
 
 #include "SFML/Graphics/FontInfo.hpp"
 #include "SFML/Graphics/Glyph.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Texture.hpp"
+#include "SFML/Graphics/TextureWrapMode.hpp"
 
 // Other 1st party headers
 #include "SFML/System/FileInputStream.hpp"
 #include "SFML/System/Path.hpp"
+#include "SFML/System/Rect2.hpp"
+#include "SFML/System/Vec2Base.hpp"
+
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsDefaultConstructible.hpp"
+#include "SFML/Base/Trait/IsMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsMoveConstructible.hpp"
 
 #include <Doctest.hpp>
 
@@ -69,7 +80,6 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
                 CHECK(!texture.isSrgb());
                 CHECK(texture.getWrapMode() == sf::TextureWrapMode::Clamp);
                 CHECK(texture.getNativeHandle() != 0);
-                CHECK(font.isSmooth());
             }
         }
     }
@@ -107,7 +117,6 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
             CHECK(!texture.isSrgb());
             CHECK(texture.getWrapMode() == sf::TextureWrapMode::Clamp);
             CHECK(texture.getNativeHandle() != 0);
-            CHECK(font.isSmooth());
         }
     }
 
@@ -135,13 +144,5 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
         CHECK(!texture.isSrgb());
         CHECK(texture.getWrapMode() == sf::TextureWrapMode::Clamp);
         CHECK(texture.getNativeHandle() != 0);
-        CHECK(font.isSmooth());
-    }
-
-    SECTION("Set/get smooth")
-    {
-        auto font = sf::Font::openFromFile("tuffy.ttf").value();
-        font.setSmooth(false);
-        CHECK(!font.isSmooth());
     }
 }
