@@ -7,9 +7,6 @@
 // Other 1st party headers
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/FontFace.hpp"
-#include "SFML/Graphics/GlyphCache.hpp"
-#include "SFML/Graphics/PagedTextureAtlas.hpp"
 #include "SFML/Graphics/TextData.hpp"
 #include "SFML/Graphics/TextUtils.hpp"
 
@@ -41,15 +38,13 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
     {
         STATIC_CHECK(!SFML_BASE_IS_CONSTRUCTIBLE(sf::Text, sf::Font&&, sf::UnicodeString, unsigned int));
         STATIC_CHECK(!SFML_BASE_IS_CONSTRUCTIBLE(sf::Text, const sf::Font&&, sf::UnicodeString, unsigned int));
-        STATIC_CHECK(!SFML_BASE_IS_CONSTRUCTIBLE(sf::Text, sf::FontFace&&, sf::GlyphCache&, sf::TextData));
         STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Text));
         STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Text));
         STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Text));
         STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Text));
     }
 
-    const auto font     = sf::Font::openFromFile("tuffy.ttf").value();
-    const auto fontFace = sf::FontFace::openFromFile("tuffy.ttf").value();
+    const auto font = sf::Font::openFromFile("tuffy.ttf").value();
 
     SECTION("Construction")
     {
@@ -103,18 +98,6 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             CHECK(text.getLocalBounds() == sf::Rect2f({1, 7}, {290, 22}));
             CHECK(text.getGlobalBounds() == sf::Rect2f({1, 7}, {290, 22}));
         }
-
-        SECTION("Font face and glyph cache constructor")
-        {
-            sf::PagedTextureAtlas atlas({1024u, 1024u}, {.smooth = true});
-            sf::GlyphCache        glyphCache(atlas);
-            const sf::Text text(fontFace, glyphCache, {.string = "abcdefghijklmnopqrstuvwxyz", .characterSize = 24});
-            CHECK(text.getString() == "abcdefghijklmnopqrstuvwxyz");
-            CHECK(&text.getFontFace() == &fontFace);
-            CHECK(&text.getGlyphCache() == &glyphCache);
-            CHECK(text.getCharacterSize() == 24);
-            CHECK(text.getLocalBounds() == sf::Rect2f({1, 7}, {290, 22}));
-        }
     }
 
     SECTION("Set/get string")
@@ -131,16 +114,6 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
         sf::Text text(font, {});
         text.setFont(otherFont);
         CHECK(&text.getFont() == &otherFont);
-    }
-
-    SECTION("Set/get font face and glyph cache")
-    {
-        sf::PagedTextureAtlas atlas({1024u, 1024u}, {.smooth = true});
-        sf::GlyphCache        glyphCache(atlas);
-        sf::Text       text(font, {});
-        text.setFont(fontFace, glyphCache);
-        CHECK(&text.getFontFace() == &fontFace);
-        CHECK(&text.getGlyphCache() == &glyphCache);
     }
 
     SECTION("Set/get character size")
@@ -206,18 +179,6 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
         CHECK(text.findCharacterPos(1000) == sf::Vec2f{120, 277});
     }
 
-    SECTION("findCharacterPos() with font face and glyph cache")
-    {
-        sf::PagedTextureAtlas atlas({1024u, 1024u}, {.smooth = true});
-        sf::GlyphCache        glyphCache(atlas);
-        sf::Text       text(fontFace, glyphCache, {.string = "\tabcdefghijklmnopqrstuvwxyz \n"});
-        text.position = {120, 240};
-        CHECK(text.findCharacterPos(0) == sf::Vec2f{120, 240});
-        CHECK(text.findCharacterPos(1) == sf::Vec2f{156, 240});
-        CHECK(text.findCharacterPos(2) == sf::Vec2f{170, 240});
-        CHECK(text.findCharacterPos(1000) == sf::Vec2f{120, 277});
-    }
-
     SECTION("TextUtils helpers")
     {
         CHECK(sf::TextUtils::precomputeTextQuadCount("A\nB", sf::Text::Style::Underlined | sf::Text::Style::StrikeThrough) ==
@@ -253,16 +214,6 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             CHECK(text.getLocalBounds() == sf::Rect2f({1, 5}, {33, 13}));
             CHECK(text.getGlobalBounds() == Approx(sf::Rect2f({66, 182}, {33, 13})));
         }
-    }
-
-    SECTION("Get bounds with font face and glyph cache")
-    {
-        sf::PagedTextureAtlas atlas({1024u, 1024u}, {.smooth = true});
-        sf::GlyphCache        glyphCache(atlas);
-        sf::Text       text(fontFace, glyphCache, {.string = "Test", .characterSize = 18u});
-        text.position = {100, 200};
-        CHECK(text.getLocalBounds() == sf::Rect2f({1, 5}, {33, 13}));
-        CHECK(text.getGlobalBounds() == sf::Rect2f({101, 205}, {33, 13}));
     }
 
 #if defined(SFML_ENABLE_LIFETIME_TRACKING) && !defined(SFML_SYSTEM_ADDRESS_SANITIZER_DETECTED)
