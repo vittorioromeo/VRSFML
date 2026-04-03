@@ -22,27 +22,35 @@ namespace sf::priv
 {
 class EglContext;
 class GlContext;
-class JoystickManager;
-class SensorManager;
-class SDLWindowImpl;
-class SDLGlContext;
 class GLContextSaver;
 class GLSharedContextGuard;
+class JoystickManager;
+class SDLGlContext;
+class SDLLayer;
+class SDLWindowImpl;
+class SensorManager;
+
 } // namespace sf::priv
 
 
 namespace sf
 {
+class Cursor;
 class GraphicsContext;
 class RenderTarget;
 class RenderTexture;
 class Shader;
 class Texture;
 class VertexBuffer;
+class VideoModeUtils;
 class Window;
+struct Clipboard;
 struct ContextSettings;
 struct Joystick;
+struct Keyboard;
+struct Mouse;
 struct Sensor;
+struct Touch;
 struct WindowContextImpl;
 using GlFunctionPointer = void (*)();
 } // namespace sf
@@ -128,19 +136,25 @@ private:
     friend priv::GlContext;  // for `onGlContextDestroyed` and `getActiveThreadLocalGlContextPtr`
     friend priv::GLContextSaver; // for `setActiveThreadLocalGlContext`, `getActiveThreadLocalGlContextPtr`, and `disableSharedGlContext`
     friend priv::GLSharedContextGuard; // for `setActiveThreadLocalGlContextToSharedContext`
-    friend priv::SDLGlContext;         // for `cleanupUnsharedFrameBuffers`
-    friend priv::SDLWindowImpl;        // for `getJoystickManager`
-
-    friend GraphicsContext; // for `setActiveThreadLocalGlContext`
-    friend Joystick;        // for `getJoystickManager`
-    friend RenderTarget;    // for `getActiveThreadLocalGlContextId`
-    friend RenderTexture;   // for `[un]registerUnsharedFrameBuffer`
-    friend Sensor;          // for `getSensorManager`
-    friend Shader;          // for `hasActiveThreadLocalGlContext`
-    friend TestContext;     // for `createGlContext`
-    friend Texture;         // for `hasActiveThreadLocalGlContext`
-    friend VertexBuffer;    // for `hasActiveThreadLocalGlContext`
-    friend Window;          // for `createGlContext`
+    friend priv::SDLGlContext;         // for `cleanupUnsharedFrameBuffers` and `getSDLLayer`
+    friend priv::JoystickManager;      // for `getSDLLayer`
+    friend priv::SDLWindowImpl;        // for `getJoystickManager` and `getSDLLayer`
+    friend Clipboard;                  // for `getSDLLayer`
+    friend Cursor;                     // for `getSDLLayer`
+    friend GraphicsContext;            // for `setActiveThreadLocalGlContext`
+    friend Joystick;                   // for `getJoystickManager`
+    friend Keyboard;                   // for `getSDLLayer`
+    friend Mouse;                      // for `getSDLLayer`
+    friend RenderTarget;               // for `getActiveThreadLocalGlContextId`
+    friend RenderTexture;              // for `[un]registerUnsharedFrameBuffer`
+    friend Sensor;                     // for `getSensorManager`
+    friend Shader;                     // for `hasActiveThreadLocalGlContext`
+    friend TestContext;                // for `createGlContext`
+    friend Texture;                    // for `hasActiveThreadLocalGlContext`
+    friend Touch;                      // for `getSDLLayer`
+    friend VertexBuffer;               // for `hasActiveThreadLocalGlContext`
+    friend VideoModeUtils;             // for `getSDLLayer`
+    friend Window;                     // for `createGlContext`
     friend WindowContextImpl;
 
     ////////////////////////////////////////////////////////////
@@ -291,6 +305,12 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static priv::GlContext& getSharedGlContext();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the SDL layer instance
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static priv::SDLLayer& getSDLLayer();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the "global" joystick manager

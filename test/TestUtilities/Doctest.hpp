@@ -14,6 +14,13 @@
 ////////////////////////////////////////////////////////////
 #include <DoctestFwd.hpp> // IWYU pragma: export
 
+#ifdef __CLANGD__
+    #include <parts/public/decorators.h>      // IWYU pragma: export
+    #include <parts/public/macros.h>          // IWYU pragma: export
+    #include <parts/public/matchers/approx.h> // IWYU pragma: export
+    #include <parts/public/string.h>          // IWYU pragma: export
+#endif
+
 
 #define SECTION(name) DOCTEST_SUBCASE(name)
 

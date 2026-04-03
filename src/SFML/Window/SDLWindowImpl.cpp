@@ -510,7 +510,7 @@ void SDLWindowImpl::processSDLEvent(const SDL_Event& e)
 ////////////////////////////////////////////////////////////
 base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(WindowSettings windowSettings)
 {
-    if (!getSDLLayerSingleton().applyGLContextSettings(windowSettings.contextSettings))
+    if (!WindowContext::getSDLLayer().applyGLContextSettings(windowSettings.contextSettings))
         err() << "Failed to apply SDL GL context settings for SDL window";
 
     // Fullscreen style requires some tests
@@ -597,7 +597,7 @@ base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(WindowSettings windowSettin
 base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(const WindowHandle handle)
 {
     SDL_Window* sdlWindowPtr = SDL_CreateWindowWithProperties(
-        makeSDLWindowPropertiesFromHandle(getSDLLayerSingleton().getCurrentVideoDriver(), handle));
+        makeSDLWindowPropertiesFromHandle(WindowContext::getSDLLayer().getCurrentVideoDriver(), handle));
 
     if (sdlWindowPtr == nullptr)
     {
@@ -890,7 +890,7 @@ void SDLWindowImpl::setPosition(const Vec2i position)
 Vec2u SDLWindowImpl::getSize() const
 {
     SFML_BASE_ASSERT(m_impl->sdlWindow);
-    return getSDLLayerSingleton().getWindowSize(*m_impl->sdlWindow);
+    return WindowContext::getSDLLayer().getWindowSize(*m_impl->sdlWindow);
 }
 
 
@@ -898,7 +898,7 @@ Vec2u SDLWindowImpl::getSize() const
 void SDLWindowImpl::setSize(const Vec2u size)
 {
     SFML_BASE_ASSERT(m_impl->sdlWindow);
-    getSDLLayerSingleton().setWindowSize(*m_impl->sdlWindow, size);
+    WindowContext::getSDLLayer().setWindowSize(*m_impl->sdlWindow, size);
 
     if (!isFullscreen())
         SDLWindowImplImpl::setWindowNonExclusiveFullscreenIfNeeded(hasTitlebar(), getSize(), m_impl->sdlWindow);
@@ -916,7 +916,7 @@ void SDLWindowImpl::setTitle(const UnicodeString& title)
 ////////////////////////////////////////////////////////////
 void SDLWindowImpl::setIcon(const Vec2u size, const base::U8* pixels)
 {
-    auto surface = getSDLLayerSingleton().createSurfaceFromPixels(size, pixels);
+    auto surface = WindowContext::getSDLLayer().createSurfaceFromPixels(size, pixels);
     if (surface == nullptr)
     {
         err() << "Failed to set icon";
@@ -1000,7 +1000,7 @@ bool SDLWindowImpl::hasFocus() const
 ////////////////////////////////////////////////////////////
 float SDLWindowImpl::getWindowDisplayScale() const
 {
-    return priv::getSDLLayerSingleton().getWindowDisplayScale(*m_impl->sdlWindow);
+    return WindowContext::getSDLLayer().getWindowDisplayScale(*m_impl->sdlWindow);
 }
 
 

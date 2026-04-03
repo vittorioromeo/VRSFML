@@ -8,50 +8,60 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Export.hpp"
 
-#include "SFML/System/UnicodeString.hpp"
+
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+namespace sf
+{
+class UnicodeString;
+} // namespace sf
 
 
+namespace sf
+{
 ////////////////////////////////////////////////////////////
 /// \brief Give access to the system clipboard
 ///
 ////////////////////////////////////////////////////////////
-namespace sf::Clipboard
+struct SFML_WINDOW_API Clipboard
 {
-////////////////////////////////////////////////////////////
-/// \brief Get the content of the clipboard as string data
-///
-/// This function returns the content of the clipboard
-/// as a string. If the clipboard does not contain string
-/// it returns an empty `sf::UnicodeString` object.
-///
-/// \return Clipboard contents as `sf::UnicodeString` object
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API UnicodeString getString();
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the content of the clipboard as string data
+    ///
+    /// This function returns the content of the clipboard
+    /// as a string. If the clipboard does not contain string
+    /// it returns an empty `sf::UnicodeString` object.
+    ///
+    /// \return Clipboard contents as `sf::UnicodeString` object
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static UnicodeString getString();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Set the content of the clipboard as string data
+    ///
+    /// This function sets the content of the clipboard as a
+    /// string.
+    ///
+    /// \warning Due to limitations on some operating systems,
+    ///          setting the clipboard contents is only
+    ///          guaranteed to work if there is currently an
+    ///          open window for which events are being handled.
+    ///
+    /// \param text `sf::UnicodeString` containing the data to be sent
+    /// to the clipboard
+    ///
+    /// \return `true` if the clipboard was successfully set
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool setString(const UnicodeString& text);
+};
+
+} // namespace sf
 
 ////////////////////////////////////////////////////////////
-/// \brief Set the content of the clipboard as string data
-///
-/// This function sets the content of the clipboard as a
-/// string.
-///
-/// \warning Due to limitations on some operating systems,
-///          setting the clipboard contents is only
-///          guaranteed to work if there is currently an
-///          open window for which events are being handled.
-///
-/// \param text `sf::UnicodeString` containing the data to be sent
-/// to the clipboard
-///
-/// \return `true` if the clipboard was successfully set
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API bool setString(const UnicodeString& text);
-
-} // namespace sf::Clipboard
-
-////////////////////////////////////////////////////////////
-/// \namespace sf::Clipboard
+/// \struct sf::Clipboard
 /// \ingroup window
 ///
 /// `sf::Clipboard` provides an interface for getting and

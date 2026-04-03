@@ -8,14 +8,15 @@
 #include "SFML/Window/Keyboard.hpp"
 
 #include "SFML/Window/SDLLayer.hpp"
+#include "SFML/Window/WindowContext.hpp"
 
 #include "SFML/System/UnicodeString.hpp"
 
 
-namespace sf::Keyboard
+namespace sf
 {
 ////////////////////////////////////////////////////////////
-bool isKeyPressed(const Key key)
+bool Keyboard::isKeyPressed(const Key key)
 {
     // TODO P0:
     // dispatch to OS-specific SFML impls
@@ -25,41 +26,41 @@ bool isKeyPressed(const Key key)
 
 
 ////////////////////////////////////////////////////////////
-bool isKeyPressed(const Scancode code)
+bool Keyboard::isKeyPressed(const Scancode code)
 {
     // TODO P0:
     // dispatch to OS-specific SFML impls
 
-    return priv::getSDLLayerSingleton().isKeyPressedByScancode(code);
+    return WindowContext::getSDLLayer().isKeyPressedByScancode(code);
 }
 
 
 ////////////////////////////////////////////////////////////
-Key localize(const Scancode code)
+Keyboard::Key Keyboard::localize(const Scancode code)
 {
-    return priv::getSDLLayerSingleton().localizeScancode(code);
+    return WindowContext::getSDLLayer().localizeScancode(code);
 }
 
 
 ////////////////////////////////////////////////////////////
-Scancode delocalize(const Key key)
+Keyboard::Scancode Keyboard::delocalize(const Key key)
 {
-    return priv::getSDLLayerSingleton().delocalizeScancode(key);
+    return WindowContext::getSDLLayer().delocalizeScancode(key);
 }
 
 
 ////////////////////////////////////////////////////////////
-UnicodeString getDescription(const Scancode code)
+UnicodeString Keyboard::getDescription(const Scancode code)
 {
-    return priv::getSDLLayerSingleton().getScancodeDescription(code);
+    return WindowContext::getSDLLayer().getScancodeDescription(code);
 }
 
 
 ////////////////////////////////////////////////////////////
-void setVirtualKeyboardVisible(const bool visible)
+void Keyboard::setVirtualKeyboardVisible(const bool visible)
 {
     // TODO P0:
     // not always applicable, dispatch to OS-specific SFML impls, check SDL?
 }
 
-} // namespace sf::Keyboard
+} // namespace sf

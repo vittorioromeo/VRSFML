@@ -9,7 +9,7 @@
 
 #include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/JoystickManager.hpp"
-#include "SFML/Window/SDLLayer.hpp" // TODO P0:
+#include "SFML/Window/SDLLayer.hpp"
 #include "SFML/Window/SensorManager.hpp"
 
 #include "SFML/GLUtils/CopyFramebuffer.hpp"
@@ -477,6 +477,9 @@ void copyFlippedFramebufferViaDirectBlit(
 struct WindowContextImpl
 {
     ////////////////////////////////////////////////////////////
+    priv::SDLLayer sdlLayer; //!< SDL layer instance, must be initialized before GL context
+
+    ////////////////////////////////////////////////////////////
     std::atomic<unsigned int> nextThreadLocalGlContextId{2u}; // 1 is reserved for shared context
 
     ////////////////////////////////////////////////////////////
@@ -527,8 +530,6 @@ WindowContextImpl& ensureInstalled()
 ////////////////////////////////////////////////////////////
 base::Optional<WindowContext> WindowContext::create()
 {
-    priv::getSDLLayerSingleton(); // TODO P0:
-
     const auto fail = [](const char* what)
     {
         priv::err() << "Error creating `sf::WindowContext`: " << what;
@@ -630,6 +631,13 @@ WindowContext::~WindowContext()
     SFML_BASE_ASSERT(!hasActiveThreadLocalGlContext());
 
     installedWindowContext.reset();
+}
+
+
+////////////////////////////////////////////////////////////
+priv::SDLLayer& WindowContext::getSDLLayer()
+{
+    return ensureInstalled().sdlLayer;
 }
 
 
