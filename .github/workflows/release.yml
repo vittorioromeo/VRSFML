@@ -146,8 +146,6 @@ jobs:
     - name: Packaging - Prepare Example Files for Windows
       if: matrix.config.name == 'Static' && matrix.type.name == 'Release' && runner.os == 'Windows'
       run: |
-        rm -r './SFML-${{ matrix.platform.name }}-${{ matrix.config.name }}-${{ matrix.type.name }}/examples/X11'
-        rm -r './SFML-${{ matrix.platform.name }}-${{ matrix.config.name }}-${{ matrix.type.name }}/examples/cocoa'
         cp ./build/bin/event_handling.exe './SFML-${{ matrix.platform.name }}-${{ matrix.config.name }}-${{ matrix.type.name }}/examples/event_handling'
         cp ./build/bin/ftp.exe './SFML-${{ matrix.platform.name }}-${{ matrix.config.name }}-${{ matrix.type.name }}/examples/ftp'
         cp ./build/bin/island.exe './SFML-${{ matrix.platform.name }}-${{ matrix.config.name }}-${{ matrix.type.name }}/examples/island'
@@ -170,9 +168,7 @@ jobs:
     - name: Packaging - Prepare Example Files for Linux
       if: matrix.config.name == 'Static' && matrix.type.name == 'Release' && runner.os == 'Linux'
       run: |
-        rm -r './SFML-${{ matrix.platform.name }}-${{ matrix.config.name }}-${{ matrix.type.name }}/examples/cocoa'
         rm -r './SFML-${{ matrix.platform.name }}-${{ matrix.config.name }}-${{ matrix.type.name }}/examples/win32'
-        cp ./build/bin/X11Example './SFML-${{ matrix.platform.name }}-${{ matrix.config.name }}-${{ matrix.type.name }}/examples/X11'
         cp ./build/bin/event_handling './SFML-${{ matrix.platform.name }}-${{ matrix.config.name }}-${{ matrix.type.name }}/examples/event_handling'
         cp ./build/bin/ftp './SFML-${{ matrix.platform.name }}-${{ matrix.config.name }}-${{ matrix.type.name }}/examples/ftp'
         cp ./build/bin/island './SFML-${{ matrix.platform.name }}-${{ matrix.config.name }}-${{ matrix.type.name }}/examples/island'
@@ -194,10 +190,8 @@ jobs:
     - name: Packaging - Prepare Example Files for macOS
       if: matrix.config.name == 'Static' && matrix.type.name == 'Release' && runner.os == 'macOS'
       run: |
-        rm -r './SFML-${{ matrix.platform.name }}-${{ matrix.config.name }}-${{ matrix.type.name }}/examples/X11'
         rm -r './SFML-${{ matrix.platform.name }}-${{ matrix.config.name }}-${{ matrix.type.name }}/examples/raw_input'
         rm -r './SFML-${{ matrix.platform.name }}-${{ matrix.config.name }}-${{ matrix.type.name }}/examples/win32'
-        cp -r ./build/bin/cocoa.app './SFML-${{ matrix.platform.name }}-${{ matrix.config.name }}-${{ matrix.type.name }}/examples/cocoa'
         cp ./build/bin/event_handling './SFML-${{ matrix.platform.name }}-${{ matrix.config.name }}-${{ matrix.type.name }}/examples/event_handling'
         cp ./build/bin/ftp './SFML-${{ matrix.platform.name }}-${{ matrix.config.name }}-${{ matrix.type.name }}/examples/ftp'
         cp ./build/bin/island './SFML-${{ matrix.platform.name }}-${{ matrix.config.name }}-${{ matrix.type.name }}/examples/island'
