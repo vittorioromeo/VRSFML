@@ -229,7 +229,7 @@ public:
     /// \return Kerning value for `first` and `second`, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] float getKerning(char32_t first, char32_t second, unsigned int characterSize, bool bold = false) const;
+    [[nodiscard]] float getKerning(char32_t first, char32_t second, unsigned int characterSize, bool bold) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the ascent
