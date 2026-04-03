@@ -14,6 +14,7 @@
 
 #include "SFML/System/Err.hpp"
 
+#include <SDL3/SDL_error.h>
 #include <SDL3/SDL_video.h>
 
 
@@ -35,7 +36,7 @@ void SDLGlContext::destroyWindowIfNeeded()
 ////////////////////////////////////////////////////////////
 void SDLGlContext::initContext(SDLGlContext* const shared)
 {
-    auto& sdlLayer = getSDLLayerSingleton();
+    auto& sdlLayer = WindowContext::getSDLLayer();
 
     // Set context sharing attributes if a shared context is provided
     if (shared != nullptr)
@@ -74,7 +75,7 @@ SDLGlContext::SDLGlContext(const unsigned int id, SDLGlContext* const shared, co
     m_context(nullptr),
     m_ownsWindow(false)
 {
-    if (!getSDLLayerSingleton().applyGLContextSettings(m_settings))
+    if (!WindowContext::getSDLLayer().applyGLContextSettings(m_settings))
         err() << "Failed to apply SDL GL context settings for shared GL context hidden window";
 
     // Create a hidden window for the context

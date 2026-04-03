@@ -11,11 +11,14 @@
 #include "SFML/Window/JoystickIdentification.hpp"
 #include "SFML/Window/JoystickState.hpp"
 #include "SFML/Window/SDLLayer.hpp"
+#include "SFML/Window/WindowContext.hpp"
 
 #include "SFML/System/Err.hpp"
 
 #include "SFML/Base/Algorithm/AnyOf.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 // TODO P1: move to SDLLayer
 #include <SDL3/SDL_dialog.h>
@@ -30,9 +33,8 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::priv::JoystickCapabilities getCapabilitiesFromSDL(SDL_Joystick& handle)
+[[nodiscard]] sf::priv::JoystickCapabilities getCapabilitiesFromSDL(sf::priv::SDLLayer& sdlLayer, SDL_Joystick& handle)
 {
-    auto& sdlLayer = sf::priv::getSDLLayerSingleton();
 
     sf::priv::JoystickCapabilities caps{
         .buttonCount = sdlLayer.getJoystickButtonCount(handle),
@@ -56,9 +58,8 @@ namespace
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::priv::JoystickIdentification getIdentificationFromSDL(SDL_Joystick& handle)
+[[nodiscard]] sf::priv::JoystickIdentification getIdentificationFromSDL(sf::priv::SDLLayer& sdlLayer, SDL_Joystick& handle)
 {
-    auto& sdlLayer = sf::priv::getSDLLayerSingleton();
 
     return {
         .name      = sdlLayer.getJoystickName(handle),
@@ -69,9 +70,8 @@ namespace
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::priv::JoystickState getStateFromSDL(SDL_Joystick& handle)
+[[nodiscard]] sf::priv::JoystickState getStateFromSDL(sf::priv::SDLLayer& sdlLayer, SDL_Joystick& handle)
 {
-    auto& sdlLayer = sf::priv::getSDLLayerSingleton();
 
     sf::priv::JoystickState state;
 
@@ -185,7 +185,7 @@ bool JoystickManager::isConnected(const unsigned int joystickId) const
 ////////////////////////////////////////////////////////////
 void JoystickManager::update()
 {
-    auto& sdlLayer = priv::getSDLLayerSingleton();
+    auto& sdlLayer = WindowContext::getSDLLayer();
 
     ////////////////////////////////////////////////////////////
     SDL_UpdateJoysticks();
@@ -282,8 +282,8 @@ void JoystickManager::update()
             }
             else
             {
-                m_impl->capabilities[iImpl]    = getCapabilitiesFromSDL(*joyImpl->handle);
-                m_impl->identifications[iImpl] = getIdentificationFromSDL(*joyImpl->handle);
+                m_impl->capabilities[iImpl]    = getCapabilitiesFromSDL(sdlLayer, *joyImpl->handle);
+                m_impl->identifications[iImpl] = getIdentificationFromSDL(sdlLayer, *joyImpl->handle);
             }
 
             break;
@@ -300,7 +300,7 @@ void JoystickManager::update()
             continue;
 
         SFML_BASE_ASSERT(impls[i]->handle != nullptr);
-        states[i] = getStateFromSDL(*impls[i]->handle);
+        states[i] = getStateFromSDL(sdlLayer, *impls[i]->handle);
     }
 }
 

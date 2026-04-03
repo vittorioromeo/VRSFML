@@ -7,18 +7,21 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Mouse.hpp"
 
-#include "SFML/Config.hpp"
-
 #include "SFML/Window/SDLLayer.hpp"
 #include "SFML/Window/WindowBase.hpp"
+#include "SFML/Window/WindowContext.hpp"
+
+#include "SFML/System/Vec2Base.hpp"
+
+#include "SFML/Base/Assert.hpp"
 
 #include <SDL3/SDL_mouse.h>
 
 
-namespace sf::Mouse
+namespace sf
 {
 ////////////////////////////////////////////////////////////
-bool isButtonPressed(Button button)
+bool Mouse::isButtonPressed(Button button)
 {
     const auto globalMouseState = SDL_GetGlobalMouseState(nullptr, nullptr);
 
@@ -43,30 +46,30 @@ bool isButtonPressed(Button button)
 
 
 ////////////////////////////////////////////////////////////
-Vec2i getPosition()
+Vec2i Mouse::getPosition()
 {
-    return priv::getSDLLayerSingleton().getGlobalMousePosition();
+    return WindowContext::getSDLLayer().getGlobalMousePosition();
 }
 
 
 ////////////////////////////////////////////////////////////
-Vec2i getPosition(const WindowBase& relativeTo)
+Vec2i Mouse::getPosition(const WindowBase& relativeTo)
 {
     return getPosition() - relativeTo.getPosition();
 }
 
 
 ////////////////////////////////////////////////////////////
-void setPosition(const Vec2i position)
+void Mouse::setPosition(const Vec2i position)
 {
-    (void)priv::getSDLLayerSingleton().setGlobalMousePosition(position);
+    (void)WindowContext::getSDLLayer().setGlobalMousePosition(position);
 }
 
 
 ////////////////////////////////////////////////////////////
-void setPosition(const Vec2i position, const WindowBase& relativeTo)
+void Mouse::setPosition(const Vec2i position, const WindowBase& relativeTo)
 {
     setPosition(position + relativeTo.getPosition());
 }
 
-} // namespace sf::Mouse
+} // namespace sf

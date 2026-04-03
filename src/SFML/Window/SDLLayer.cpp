@@ -774,7 +774,7 @@ bool SDLLayer::isKeyPressedByScancode(const Keyboard::Scancode code) const noexc
 ////////////////////////////////////////////////////////////
 const char* SDLLayer::getScancodeDescription(const Keyboard::Scancode code) const noexcept
 {
-    return SDL_GetKeyName(mapSFMLKeycodeToSDL(localize(code)));
+    return SDL_GetKeyName(mapSFMLKeycodeToSDL(Keyboard::localize(code)));
 }
 
 
@@ -1159,12 +1159,5 @@ const char* SDLLayer::getCurrentVideoDriver() const
     return driver;
 }
 
-
-////////////////////////////////////////////////////////////
-SDLLayer& getSDLLayerSingleton()
-{
-    static SDLLayer sdlLayer;
-    return sdlLayer;
-}
 
 } // namespace sf::priv

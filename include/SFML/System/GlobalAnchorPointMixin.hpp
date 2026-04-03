@@ -158,6 +158,30 @@ struct GlobalAnchorPointMixin
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Get the world width of the object
+    ///
+    /// \return Width of the object
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getGlobalWidth() const
+    {
+        return static_cast<const T&>(*this).getGlobalBounds().size.x;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the world height of the object
+    ///
+    /// \return Height of the object
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getGlobalHeight() const
+    {
+        return static_cast<const T&>(*this).getGlobalBounds().size.y;
+    }
+
+
+    ////////////////////////////////////////////////////////////
     /// \brief Set the object's position based on an anchor point
     ///
     /// Moves the object so that the anchor point specified by `factors`

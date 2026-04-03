@@ -11,11 +11,18 @@
 #include "SFML/Graphics/Glyph.hpp"
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/TextData.hpp"
+#include "SFML/Graphics/TextStyle.hpp"
 #include "SFML/Graphics/Transform.hpp"
+#include "SFML/Graphics/Vertex.hpp"
 
+#include "SFML/System/Angle.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/UnicodeString.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/Restrict.hpp"
+#include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Math/Floor.hpp"
@@ -81,8 +88,14 @@ struct TextSpacingConstants
         lineHasContents = true;
 
         // If we're using the underlined or strike through style and there's a new line, draw a line
-        if ((curChar == U'\n' && prevChar != U'\n') && (isUnderlined || isStrikeThrough))
-            ++result;
+        if (curChar == U'\n' && prevChar != U'\n')
+        {
+            if (isUnderlined)
+                ++result;
+
+            if (isStrikeThrough)
+                ++result;
+        }
 
         prevChar = curChar;
 
@@ -244,6 +257,14 @@ inline auto createTextGeometryAndGetBounds(
     auto&&               fAddLine,
     auto&&               fAddGlyphQuad)
 {
+    if (string.isEmpty())
+    {
+        if constexpr (CalculateBounds)
+            return Rect2f{};
+        else
+            return;
+    }
+
     // Compute values related to the text style
     const bool  isBold             = !!(style & TextStyle::Bold);
     const bool  isUnderlined       = !!(style & TextStyle::Underlined);

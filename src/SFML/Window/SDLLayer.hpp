@@ -16,13 +16,21 @@
 #include "SFML/System/Rect2.hpp"
 #include "SFML/System/Vec2Base.hpp"
 
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Trait/IsSame.hpp"
+#include "SFML/Base/TrivialAbi.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <SDL3/SDL_keycode.h>
 #include <SDL3/SDL_mouse.h>
+#include <SDL3/SDL_pixels.h>
+#include <SDL3/SDL_properties.h>
 #include <SDL3/SDL_scancode.h>
+#include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_touch.h>
 #include <SDL3/SDL_video.h>
 
@@ -340,8 +348,5 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const char* getCurrentVideoDriver() const;
 };
-
-////////////////////////////////////////////////////////////
-[[nodiscard]] SDLLayer& getSDLLayerSingleton();
 
 } // namespace sf::priv

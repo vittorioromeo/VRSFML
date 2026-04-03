@@ -8,6 +8,7 @@
 #include "SFML/Window/Clipboard.hpp"
 
 #include "SFML/Window/SDLLayer.hpp"
+#include "SFML/Window/WindowContext.hpp"
 
 #include "SFML/System/UnicodeString.hpp"
 
@@ -17,14 +18,14 @@ namespace sf
 ////////////////////////////////////////////////////////////
 UnicodeString Clipboard::getString()
 {
-    return priv::getSDLLayerSingleton().getClipboardString();
+    return WindowContext::getSDLLayer().getClipboardString();
 }
 
 
 ////////////////////////////////////////////////////////////
 bool Clipboard::setString(const UnicodeString& text)
 {
-    return priv::getSDLLayerSingleton().setClipboardString(text);
+    return WindowContext::getSDLLayer().setClipboardString(text);
 }
 
 } // namespace sf
