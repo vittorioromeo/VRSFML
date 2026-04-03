@@ -298,8 +298,8 @@
     353.0,
     295.0
   ],
-  "debugDrawCatBodyBounds": true,
-  "debugDrawCatCenterMarker": true,
+  "debugDrawCatBodyBounds": false,
+  "debugDrawCatCenterMarker": false,
   "devilBackTail": {
     "origin": [
       320.0,
@@ -380,7 +380,7 @@
   },
   "smartHatOffset": [
     -150.0,
-    -535.0
+    -550.0
   ],
   "tail": {
     "origin": [

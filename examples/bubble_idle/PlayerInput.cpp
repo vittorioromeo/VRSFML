@@ -1,8 +1,11 @@
-#include "Aliases.hpp"
 #include "BubbleIdleMain.hpp"
 #include "Cat.hpp"
+#include "CatType.hpp"
 #include "Constants.hpp"
+#include "PlayerInput.hpp"
 #include "Version.hpp"
+
+#include "SFML/ImGui/IncludeImGui.hpp"
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/Keyboard.hpp"
@@ -11,16 +14,11 @@
 #include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Algorithm/Erase.hpp"
-#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Lround.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include <imgui.h>
-
-#include <utility>
 
 namespace
 {
@@ -94,25 +92,7 @@ void handleGameLoopScrollInput(Main& main, const float deltaTimeMs, const sf::ba
     }
     else if (downFingers.size() == 2)
     {
-        const auto [fingerPos0, fingerPos1] = [&]
-        {
-            std::pair<sf::base::Optional<sf::Vec2f>, sf::base::Optional<sf::Vec2f>> result;
-
-            for (const auto& fingerPosition : main.playerInputState.fingerPositions)
-            {
-                if (fingerPosition.hasValue())
-                {
-                    if (!result.first.hasValue())
-                        result.first.emplace(*fingerPosition);
-                    else if (!result.second.hasValue())
-                        result.second.emplace(*fingerPosition);
-                }
-            }
-
-            return result;
-        }();
-
-        const auto avg = (*fingerPos0 + *fingerPos1) / 2.f;
+        const auto avg = (downFingers[0] + downFingers[1]) / 2.f;
 
         if (main.playerInputState.dragPosition.hasValue())
         {

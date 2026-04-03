@@ -36,8 +36,10 @@ namespace Keyboard
 ////////////////////////////////////////////////////////////
 enum class Key
 {
-    Unknown = -1,
-    A       = 0,
+    // `Unknown` used to be `-1` in SFML, but that was a bit of a hack and it doesn't work well with array-based
+    // containers, so now it's the last enumerator and `KeyCount` is the total number of keys, including `Unknown`.
+
+    A = 0,
     B,
     C,
     D,
@@ -294,12 +296,14 @@ enum class Key
     RMeta,
     LHyper,
     RHyper,
+
+    Unknown
 };
 
 ////////////////////////////////////////////////////////////
 enum : unsigned int
 {
-    KeyCount = static_cast<unsigned int>(Key::RHyper) + 1u //!< Total number of keyboard keys, ignoring `Key::Unknown`
+    KeyCount = static_cast<unsigned int>(Key::Unknown) + 1u //!< Total number of keyboard keys, including `Key::Unknown`
 };
 
 ////////////////////////////////////////////////////////////

@@ -6,11 +6,28 @@ if (NOT SFML_OS_EMSCRIPTEN AND NOT ARCH_ARM64)
             CatNames.cpp
             MainApp.cpp
             MainGameplay.cpp
+            GameRender.cpp
+            GameUpdate.cpp
             MainLoop.cpp
             PlayerInput.cpp
             MainProgression.cpp
             MainRendering.cpp
             MainSystems.cpp
+            UIQuickbar.cpp
+            UIRuntime.cpp
+            UITabBar.cpp
+            UIShopCats.cpp
+            UIShopCore.cpp
+            UIShopGoals.cpp
+            UIPrestigeCore.cpp
+            UIPrestigeOverview.cpp
+            UIPrestigeShrines.cpp
+            UISettingsAudio.cpp
+            UISettingsData.cpp
+            UISettingsDebug.cpp
+            UISettingsDisplay.cpp
+            UISettingsGraphics.cpp
+            UISettingsUi.cpp
             UiCore.cpp
             UiMagic.cpp
             UiPrestige.cpp
@@ -32,11 +49,28 @@ else()
             CatNames.cpp
             MainApp.cpp
             MainGameplay.cpp
+            GameRender.cpp
+            GameUpdate.cpp
             MainLoop.cpp
             PlayerInput.cpp
             MainProgression.cpp
             MainRendering.cpp
             MainSystems.cpp
+            UIQuickbar.cpp
+            UIRuntime.cpp
+            UITabBar.cpp
+            UIShopCats.cpp
+            UIShopCore.cpp
+            UIShopGoals.cpp
+            UIPrestigeCore.cpp
+            UIPrestigeOverview.cpp
+            UIPrestigeShrines.cpp
+            UISettingsAudio.cpp
+            UISettingsData.cpp
+            UISettingsDebug.cpp
+            UISettingsDisplay.cpp
+            UISettingsGraphics.cpp
+            UISettingsUi.cpp
             UiCore.cpp
             UiMagic.cpp
             UiPrestige.cpp

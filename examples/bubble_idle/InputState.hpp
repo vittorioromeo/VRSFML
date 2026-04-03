@@ -7,6 +7,7 @@
 #include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Array.hpp"
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 
@@ -28,40 +29,72 @@ struct InputState
     ////////////////////////////////////////////////////////////
     void apply(const sf::Event& event)
     {
-        event.match(
-            [&](const sf::Event::KeyPressed& e)
+        if (const auto* e = event.getIf<sf::Event::KeyPressed>())
         {
-            // TODO P0: pressing weird key combinations can go out of bounds, press multiple things at once... like altgr space n m b
-            keys[static_cast<sf::base::SizeT>(e.code)] = true;
+            keys[static_cast<sf::base::SizeT>(e->code)] = true;
 
-            alt     = e.alt;
-            control = e.control;
-            shift   = e.shift;
-            system  = e.system;
-        },
-            [&](const sf::Event::KeyReleased& e)
-        {
-            keys[static_cast<sf::base::SizeT>(e.code)] = false;
+            alt     = e->alt;
+            control = e->control;
+            shift   = e->shift;
+            system  = e->system;
 
-            alt     = e.alt;
-            control = e.control;
-            shift   = e.shift;
-            system  = e.system;
-        },
-            [&](const sf::Event::MouseButtonPressed& e)
+            return;
+        }
+
+        if (const auto* e = event.getIf<sf::Event::KeyReleased>())
         {
-            buttons[static_cast<sf::base::SizeT>(e.button)] = true;
-            mousePosition                                   = e.position;
-        },
-            [&](const sf::Event::MouseButtonReleased& e)
+            keys[static_cast<sf::base::SizeT>(e->code)] = false;
+
+            alt     = e->alt;
+            control = e->control;
+            shift   = e->shift;
+            system  = e->system;
+
+            return;
+        }
+
+        if (const auto* e = event.getIf<sf::Event::MouseButtonPressed>())
         {
-            buttons[static_cast<sf::base::SizeT>(e.button)] = false;
-            mousePosition                                   = e.position;
-        },
-            [&](const sf::Event::MouseMoved& e) { mousePosition = e.position; },
-            [&](const sf::Event::TouchBegan& e) { fingerPositions[e.finger].emplace(e.position); },
-            [&](const sf::Event::TouchMoved& e) { fingerPositions[e.finger].emplace(e.position); },
-            [&](const sf::Event::TouchEnded& e) { fingerPositions[e.finger].reset(); },
-            [](const auto&) {});
+            buttons[static_cast<sf::base::SizeT>(e->button)] = true;
+            mousePosition                                    = e->position;
+
+            return;
+        }
+
+        if (const auto* e = event.getIf<sf::Event::MouseButtonReleased>())
+        {
+            buttons[static_cast<sf::base::SizeT>(e->button)] = false;
+            mousePosition                                    = e->position;
+
+            return;
+        }
+
+        if (const auto* e = event.getIf<sf::Event::MouseMoved>())
+        {
+            mousePosition = e->position;
+
+            return;
+        }
+
+        if (const auto* e = event.getIf<sf::Event::TouchBegan>())
+        {
+            fingerPositions[e->finger].emplace(e->position);
+
+            return;
+        }
+
+        if (const auto* e = event.getIf<sf::Event::TouchMoved>())
+        {
+            fingerPositions[e->finger].emplace(e->position);
+
+            return;
+        }
+
+        if (const auto* e = event.getIf<sf::Event::TouchEnded>())
+        {
+            fingerPositions[e->finger].reset();
+
+            return;
+        }
     }
 };

@@ -29,8 +29,6 @@ set(FIND_SFML_DEPENDENCIES_NOTFOUND)
 if(FIND_SFML_USE_DRM)
     find_dependency(DRM)
     find_dependency(GBM)
-elseif(FIND_SFML_OS_LINUX OR FIND_SFML_OS_FREEBSD OR FIND_SFML_OS_OPENBSD)
-    find_dependency(X11 REQUIRED COMPONENTS Xrandr Xcursor)
 endif()
 
 if(FIND_SFML_OS_LINUX)

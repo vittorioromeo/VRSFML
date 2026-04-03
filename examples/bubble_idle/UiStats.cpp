@@ -18,33 +18,6 @@
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
 
-namespace
-{
-struct TabButtonPalette
-{
-    ImVec4 idle;
-    ImVec4 hovered;
-    ImVec4 active;
-};
-
-////////////////////////////////////////////////////////////
-bool drawTabButton(const char* label, const bool selected, const TabButtonPalette& palette)
-{
-    ImGui::PushStyleColor(ImGuiCol_Button, selected ? palette.active : palette.idle);
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, selected ? palette.active : palette.hovered);
-    ImGui::PushStyleColor(ImGuiCol_ButtonActive, palette.active);
-    ImGui::PushStyleColor(ImGuiCol_Border, selected ? palette.active : palette.hovered);
-    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
-
-    const bool pressed = ImGui::Button(label);
-
-    ImGui::PopStyleVar();
-    ImGui::PopStyleColor(4);
-
-    return pressed;
-}
-} // namespace
-
 void Main::uiTabBarStats()
 {
     constexpr TabButtonPalette palette{

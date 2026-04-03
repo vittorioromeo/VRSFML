@@ -11,8 +11,8 @@
 #include "Cat.hpp"
 #include "CatNames.hpp"
 #include "CatType.hpp"
-#include "ComboState.hpp"
 #include "Collision.hpp"
+#include "ComboState.hpp"
 #include "Constants.hpp"
 #include "Countdown.hpp"
 #include "Doll.hpp"
@@ -125,6 +125,12 @@
 #include <cstdarg>
 #include <cstdio>
 #include <ctime>
+
+#if defined(__GNUC__) || defined(__clang__)
+    #define BUBBLE_IDLE_PRINTF_FORMAT(fmtIndex, firstArgIndex) __attribute__((format(printf, fmtIndex, firstArgIndex)))
+#else
+    #define BUBBLE_IDLE_PRINTF_FORMAT(fmtIndex, firstArgIndex)
+#endif
 
 
 ////////////////////////////////////////////////////////////
@@ -1717,7 +1723,7 @@ struct Main
         if (placeInHand)
         {
             playerInputState.catToPlace = &newCat;
-            newCat.dragTime = 1000.f;
+            newCat.dragTime             = 1000.f;
 
             playerInputState.draggedCats.clear();
             playerInputState.draggedCats.pushBack(&newCat);
@@ -2147,8 +2153,8 @@ struct Main
 
         buyReminder = 0;
 
-        inPrestigeTransition     = true;
-        playerInputState.scroll  = 0.f;
+        inPrestigeTransition    = true;
+        playerInputState.scroll = 0.f;
 
         resetAllDraggedCats();
         pt->onPrestige(ppReward);
@@ -2167,28 +2173,90 @@ struct Main
     void uiCenteredTextColored(sf::Color color, const char* str, float offsetX = 0.f, float offsetY = 0.f);
     [[nodiscard]] sf::Vec2f uiGetWindowPos() const;
     void                    uiDrawExitPopup(float newScalingFactor);
-    void                    uiDrawQuickbarCopyCat(sf::Vec2f quickBarPos, Cat& copyCat);
-    void                    uiDrawQuickbarBackgroundSelector(sf::Vec2f quickBarPos);
-    void                    uiDrawQuickbarBGMSelector(sf::Vec2f quickBarPos);
-    void                    uiDrawQuickbarQuickSettings(sf::Vec2f quickBarPos);
-    void                    uiDrawQuickbarVolumeControls(sf::Vec2f quickBarPos);
-    void                    uiDrawQuickbar();
-    void                    uiDraw(sf::Vec2f mousePos);
-    void                    uiDpsMeter();
-    void                    uiSpeedrunning();
-    void                    uiTabBar();
-    void                    uiSetUnlockLabelY(sf::base::SizeT unlockId);
-    [[nodiscard]] bool      checkUiUnlock(sf::base::SizeT unlockId, bool unlockCondition);
-    void                    uiImageFromAtlas(const sf::Rect2f& txr, const sf::DrawTextureSettings& drawParams);
-    void                    uiImgsep(const sf::Rect2f& txr, const char* sepLabel, bool first = false);
-    void                    uiImgsep2(const sf::Rect2f& txr, const char* sepLabel);
-    void                    uiTabBarShop();
-    bool                    uiCheckbox(const char* label, bool* b);
-    bool                    uiRadio(const char* label, int* i, int value);
-    void                    uiTabBarPrestige();
-    void                    uiTabBarMagic();
-    void                    uiTabBarStats();
-    void                    uiTabBarSettings();
+    void                    uiClearLabel();
+    void                    uiSetLabel(const char* fmt, ...) BUBBLE_IDLE_PRINTF_FORMAT(2, 3);
+    void                    uiSetTooltip(const char* fmt, ...) BUBBLE_IDLE_PRINTF_FORMAT(2, 3);
+    void                    uiSetTooltipOnly(const char* fmt, ...) BUBBLE_IDLE_PRINTF_FORMAT(2, 3);
+
+    [[nodiscard]] bool uiMakePrestigeOneTimeButton(
+        const char*        buttonLabel,
+        PrestigePointsType cost,
+        bool&              done,
+        const char*        tooltipFmt,
+        ...) BUBBLE_IDLE_PRINTF_FORMAT(5, 6);
+
+    template <typename TLabel, typename TCurrent, typename TNext>
+    bool uiMakePrestigePsvButtonValue(
+        const char*              buttonLabel,
+        PurchasableScalingValue& psv,
+        const char*              labelFmt,
+        TLabel                   labelValue,
+        const char*              tooltipFmt,
+        TCurrent                 currentValue,
+        TNext                    nextValue,
+        const char*              maxTooltipFmt)
+    {
+#if defined(__clang__)
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wformat-nonliteral"
+    #pragma clang diagnostic ignored "-Wformat-security"
+#elif defined(__GNUC__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wformat-nonliteral"
+    #pragma GCC diagnostic ignored "-Wformat-security"
+#endif
+        if (!psv.isMaxedOut())
+            uiSetTooltip(tooltipFmt, currentValue, nextValue);
+        else
+            uiSetTooltip(maxTooltipFmt);
+
+        uiSetLabel(labelFmt, labelValue);
+#if defined(__clang__)
+    #pragma clang diagnostic pop
+#elif defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#endif
+        return makePrestigePurchasablePPButtonPSV(buttonLabel, psv);
+    }
+
+    void                           uiDrawQuickbarCopyCat(sf::Vec2f quickBarPos, Cat& copyCat);
+    void                           uiDrawQuickbarBackgroundSelector(sf::Vec2f quickBarPos);
+    void                           uiDrawQuickbarBGMSelector(sf::Vec2f quickBarPos);
+    void                           uiDrawQuickbarQuickSettings(sf::Vec2f quickBarPos);
+    void                           uiDrawQuickbarVolumeControls(sf::Vec2f quickBarPos);
+    void                           uiDrawQuickbar();
+    void                           uiDraw(sf::Vec2f mousePos);
+    void                           uiDpsMeter();
+    void                           uiSpeedrunning();
+    void                           uiTabBar();
+    void                           uiSetUnlockLabelY(sf::base::SizeT unlockId);
+    [[nodiscard]] bool             checkUiUnlock(sf::base::SizeT unlockId, bool unlockCondition);
+    void                           uiImageFromAtlas(const sf::Rect2f& txr, const sf::DrawTextureSettings& drawParams);
+    void                           uiImgsep(const sf::Rect2f& txr, const char* sepLabel, bool first = false);
+    void                           uiImgsep2(const sf::Rect2f& txr, const char* sepLabel);
+    void                           uiTabBarShop();
+    void                           uiShopDrawCoreUpgrades();
+    void                           uiShopDrawSpecialCats();
+    void                           uiShopDrawUniqueCatBonuses();
+    [[nodiscard]] sf::base::String uiShopBuildNextGoalsText();
+    void uiShopCooldownButton(const char* label, CatType catType, const char* additionalInfo = "");
+    void uiShopRangeButton(const char* label, CatType catType, const char* additionalInfo = "");
+    bool uiCheckbox(const char* label, bool* b);
+    bool uiRadio(const char* label, int* i, int value);
+    void uiTabBarPrestige();
+    void uiPrestigeDrawOverview();
+    void uiPrestigeDrawCoreUpgrades();
+    void uiPrestigeUnsealButton(PrestigePointsType ppCost, const char* catName, CatType type);
+    void uiPrestigeDrawShrineCatUpgrades();
+    void uiTabBarMagic();
+    void uiTabBarStats();
+    void uiTabBarSettings();
+    void uiSettingsDrawAudioTab();
+    void uiSettingsDrawUiTab();
+    void uiSettingsDrawGraphicsTab();
+    void uiSettingsDrawDisplayTab();
+    void uiSettingsDrawDataTab();
+    void uiSettingsDrawDebugTab();
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::base::Optional<sf::Rect2f> getAoEDragRect(const sf::Vec2f mousePos) const
@@ -2919,9 +2987,9 @@ struct Main
     TextParticle& makeRewardTextParticle(const sf::Vec2f position)
     {
         return textParticles.emplaceBack(TextParticle{
-            {.position      = {position.x, position.y - 10.f},
-             .velocity      = rngFast.getVec2f({-0.1f, -1.65f}, {0.1f, -1.35f}) * 0.395f,
-             .scale         = sf::base::clamp(1.f + 0.1f * static_cast<float>(comboState.combo + 1) / 1.75f, 1.f, 3.f) * 0.5f,
+            {.position = {position.x, position.y - 10.f},
+             .velocity = rngFast.getVec2f({-0.1f, -1.65f}, {0.1f, -1.35f}) * 0.395f,
+             .scale = sf::base::clamp(1.f + 0.1f * static_cast<float>(comboState.combo + 1) / 1.75f, 1.f, 3.f) * 0.5f,
              .scaleDecay    = 0.f,
              .accelerationY = 0.0039f,
              .opacity       = 1.f,
@@ -3250,6 +3318,16 @@ struct Main
     }
     [[nodiscard]] bool gameLoopHandleEvents(FrameInput& frameInput, bool shouldDrawUI);
     void               gameLoopPrepareInput(FrameInput& frameInput, float deltaTimeMs);
+    void gameLoopUpdateFrameWorld(float deltaTimeMs, FrameInput& frameInput, FrameUpdateState& frameUpdate);
+    void gameLoopUpdateFrameUi(sf::Time deltaTime, float deltaTimeMs, const FrameInput& frameInput);
+    [[nodiscard]] FrameViewState gameLoopComputeViews();
+    void                         gameLoopRenderFrame(float                   deltaTimeMs,
+                                                     bool                    shouldDrawUI,
+                                                     sf::base::U8            shouldDrawUIAlpha,
+                                                     const FrameInput&       frameInput,
+                                                     const FrameUpdateState& frameUpdate,
+                                                     const FrameViewState&   frameViews);
+    void                         gameLoopPresentFrame(const FrameViewState& frameViews);
     void               gameLoopUpdateScrolling(float deltaTimeMs, const sf::base::Vector<sf::Vec2f>& downFingers);
     void               gameLoopUpdateTransitions(float deltaTimeMs);
     void               gameLoopUpdateBubbles(float deltaTimeMs);
@@ -3436,3 +3514,5 @@ struct Main
 #endif
     void run();
 };
+
+#undef BUBBLE_IDLE_PRINTF_FORMAT
