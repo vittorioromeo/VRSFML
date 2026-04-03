@@ -378,8 +378,7 @@ struct Font::Impl
     TextureAtlas* textureAtlasPtr; //!< User-provided referenced texture atlas to store glyphs
     mutable base::Optional<TextureAtlas> fallbackTextureAtlas; //!< Owned texture atlas used if the user didn't provide one
 
-    bool     isSmooth{true}; //!< Status of the smooth filter
-    FontInfo info;           //!< Information about the font
+    FontInfo info; //!< Information about the font
 
     mutable GlyphTable glyphs; //!< Table mapping code points to their corresponding glyph
 
@@ -843,27 +842,16 @@ float Font::getUnderlineThickness(const unsigned int characterSize) const
 
 
 ////////////////////////////////////////////////////////////
-const Texture& Font::getTexture() const
+Texture& Font::getTexture()
 {
     return m_impl->getTextureAtlas().getTexture();
 }
 
 
 ////////////////////////////////////////////////////////////
-void Font::setSmooth(bool smooth)
+const Texture& Font::getTexture() const
 {
-    if (smooth == m_impl->isSmooth)
-        return;
-
-    m_impl->isSmooth = smooth;
-    m_impl->getTextureAtlas().getTexture().setSmooth(m_impl->isSmooth);
-}
-
-
-////////////////////////////////////////////////////////////
-bool Font::isSmooth() const
-{
-    return m_impl->isSmooth;
+    return m_impl->getTextureAtlas().getTexture();
 }
 
 
