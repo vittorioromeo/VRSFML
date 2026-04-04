@@ -1,8 +1,16 @@
 #!/bin/bash
-find ./src | grep pp | xargs clang-format -i
-find ./include | grep pp | xargs clang-format -i
-find ./include | grep inl | xargs clang-format -i
-find ./test | grep pp | xargs clang-format -i
-find ./examples | grep cpp | xargs clang-format -i
-find ./examples | grep hpp | xargs clang-format -i
-find ./examples | grep inl | xargs clang-format -i
+set -euo pipefail
+
+files=$(find ./src ./include ./test ./examples \
+    -type f \( -name '*.hpp' -o -name '*.cpp' -o -name '*.inl' \) \
+    ! -name 'json.hpp' \
+    ! -name 'PrecomputedQuadIndices.inl' \
+    ! -name 'SinCosLookupTable.inl' \
+    ! -name 'AnkerlUnorderedDense.hpp')
+
+total=$(echo "$files" | wc -l)
+echo "Formatting $total files..."
+
+echo "$files" | xargs -P"$(nproc)" -I{} sh -c 'echo "  {}" && clang-format -i {}'
+
+echo "Done."
