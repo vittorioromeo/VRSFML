@@ -3,10 +3,14 @@
 #include "InputState.hpp"
 
 #include "SFML/Window/Event.hpp"
+#include "SFML/Window/Keyboard.hpp"
+#include "SFML/Window/Mouse.hpp"
 
 #include "SFML/System/Vec2Base.hpp"
 
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
