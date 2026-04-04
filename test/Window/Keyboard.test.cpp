@@ -1,5 +1,7 @@
 #include "SFML/Window/Keyboard.hpp"
 
+#include "SFML/Window/WindowContext.hpp"
+
 // Other 1st party headers
 #include "SFML/System/UnicodeString.hpp"
 
@@ -18,6 +20,8 @@
 
 TEST_CASE("[Window] sf::Keyboard" * doctest::skip(skipDisplayTests))
 {
+    auto windowContext = sf::WindowContext::create().value();
+
     SECTION("isKeyPressed(Key)")
     {
         CHECK(!sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W));
