@@ -408,8 +408,8 @@ void String::insert(const SizeT pos, const char* const cStr)
     const SizeT oldSize = size();
     const SizeT newSize = oldSize + insertCount;
 
-    const char* const myData = data();
-    const bool srcInsideThis = (cStr >= myData) && (cStr < myData + oldSize);
+    const char* const myData        = data();
+    const bool        srcInsideThis = (cStr >= myData) && (cStr < myData + oldSize);
 
     if (srcInsideThis)
     {
