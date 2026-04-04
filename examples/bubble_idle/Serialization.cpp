@@ -16,6 +16,7 @@
 
 #include "ExampleUtils/Timer.hpp"
 
+#include "SFML/Base/Array.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/Vector.hpp"
@@ -217,6 +218,17 @@ void assignIfPresent(const nlohmann::json& j, const char* key, T& value)
 
     if (const auto it = j.find(key); it != j.end())
         it->get_to(value);
+}
+
+////////////////////////////////////////////////////////////
+template <typename T, SizeT N>
+void assignIfPresent(const nlohmann::json& j, const char* key, sf::base::Array<T, N>& value)
+{
+    if (!j.is_object())
+        return;
+
+    if (const auto it = j.find(key); it != j.end())
+        it->get_to(value.elements);
 }
 
 } // namespace
