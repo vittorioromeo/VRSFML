@@ -4,6 +4,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 
+#include <cstdint>
 #define GLAD_VULKAN_IMPLEMENTATION
 #include <vulkan.h>
 
@@ -183,9 +184,9 @@ GLADapiproc getVulkanFunction(const char* name)
 VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     VkDebugReportFlagsEXT,
     VkDebugReportObjectTypeEXT,
-    sf::base::U64, // cannot use base here due to mismatch on unix
+    std::uint64_t, // cannot use base here due to mismatch on unix
     sf::base::SizeT,
-    sf::base::I32, // cannot use base here due to mismatch on unix
+    std::int32_t, // cannot use base here due to mismatch on unix
     const char*,
     const char* pMessage,
     void*)
