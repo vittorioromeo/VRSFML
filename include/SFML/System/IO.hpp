@@ -210,6 +210,8 @@ enum class FileOpenMode
     trunc = 1L << 5,
 };
 
+
+////////////////////////////////////////////////////////////
 SFML_BASE_DEFINE_ENUM_CLASS_BITWISE_OPS(FileOpenMode);
 
 
@@ -243,6 +245,8 @@ enum class FormatFlags
     ios_fmtflags_end = 1L << 16,
 };
 
+
+////////////////////////////////////////////////////////////
 SFML_BASE_DEFINE_ENUM_CLASS_BITWISE_OPS(FormatFlags);
 
 
