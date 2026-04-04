@@ -1117,20 +1117,31 @@ struct Main
     ////////////////////////////////////////////////////////////
     // Text buffers
     sf::Text textNameBuffer{fontSuperBakery,
-                            {.characterSize    = 48u,
-                             .fillColor        = sf::Color::White,
-                             .outlineColor     = colorBlueOutline,
-                             .outlineThickness = 3.f}};
+                            {
+                                .string           = "",
+                                .characterSize    = 48u,
+                                .fillColor        = sf::Color::White,
+                                .outlineColor     = colorBlueOutline,
+                                .outlineThickness = 3.f,
+                            }};
+
     sf::Text textStatusBuffer{fontSuperBakery,
-                              {.characterSize    = 32u,
-                               .fillColor        = sf::Color::White,
-                               .outlineColor     = colorBlueOutline,
-                               .outlineThickness = 2.f}};
+                              {
+                                  .string           = "",
+                                  .characterSize    = 32u,
+                                  .fillColor        = sf::Color::White,
+                                  .outlineColor     = colorBlueOutline,
+                                  .outlineThickness = 2.f,
+                              }};
+
     sf::Text textMoneyBuffer{fontSuperBakery,
-                             {.characterSize    = 24u,
-                              .fillColor        = sf::Color::White,
-                              .outlineColor     = colorBlueOutline,
-                              .outlineThickness = 1.5f}};
+                             {
+                                 .string           = "",
+                                 .characterSize    = 24u,
+                                 .fillColor        = sf::Color::White,
+                                 .outlineColor     = colorBlueOutline,
+                                 .outlineThickness = 1.5f,
+                             }};
 
     ////////////////////////////////////////////////////////////
     // Spent money count-down effect

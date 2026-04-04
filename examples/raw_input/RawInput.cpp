@@ -50,8 +50,20 @@ int main()
     const auto font = sf::Font::openFromFile("resources/tuffy.ttf").value();
 
     // Create the mouse position and mouse raw movement texts
-    sf::Text mousePosition(font, {.position = {400.f, 300.f}, .characterSize = 20u, .fillColor = sf::Color::White});
-    sf::Text mouseRawMovement(font, {.characterSize = 20u, .fillColor = sf::Color::White});
+    sf::Text mousePosition(font,
+                           {
+                               .position      = {400.f, 300.f},
+                               .string        = "",
+                               .characterSize = 20u,
+                               .fillColor     = sf::Color::White,
+                           });
+
+    sf::Text mouseRawMovement(font,
+                              {
+                                  .string        = "",
+                                  .characterSize = 20u,
+                                  .fillColor     = sf::Color::White,
+                              });
 
     sf::base::Vector<sf::base::String> log;
 

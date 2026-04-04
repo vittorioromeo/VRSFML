@@ -33,6 +33,7 @@ class Path;
 class Text;
 class Texture;
 class TextureAtlas;
+
 struct FontInfo;
 struct Glyph;
 } // namespace sf
@@ -179,8 +180,8 @@ public:
     ////////////////////////////////////////////////////////////
     struct GlyphPair
     {
-        const Glyph& fillGlyph;    //!< The fill glyph
-        const Glyph& outlineGlyph; //!< The outline glyph
+        const Glyph& fillGlyph;
+        const Glyph& outlineGlyph;
     };
 
     ////////////////////////////////////////////////////////////
@@ -340,24 +341,6 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<Font> openFromStreamImpl(InputStream& stream, TextureAtlas* textureAtlas, const char* type);
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Return the index of the internal representation a character
-    ///
-    /// \param codePoint Unicode code point of the character to load
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] unsigned int getCharIndex(char32_t codePoint) const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Make sure that the given size is the current one
-    ///
-    /// \param characterSize Reference character size
-    ///
-    /// \return `true` on success, `false` if any error happened
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool setCurrentSize(unsigned int characterSize) const;
-
 public:
     ////////////////////////////////////////////////////////////
     /// \private
@@ -426,12 +409,11 @@ private:
 /// // Create a text which uses our font
 /// sf::Text text1(font);
 /// text1.setCharacterSize(30);
-/// text1.setStyle(sf::Text::Style::Regular);
 ///
 /// // Create another text using the same font, but with different parameters
 /// sf::Text text2(font);
 /// text2.setCharacterSize(50);
-/// text2.setStyle(sf::Text::Style::Italic);
+/// text2.setItalic(true);
 /// \endcode
 ///
 /// Apart from opening font files, and passing them to instances

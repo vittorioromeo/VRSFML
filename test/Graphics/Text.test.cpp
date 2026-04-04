@@ -56,7 +56,10 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             CHECK(text.getCharacterSize() == 30);
             CHECK(text.getLetterSpacing() == 1.f);
             CHECK(text.getLineSpacing() == 1.f);
-            CHECK(text.getStyle() == sf::Text::Style::Regular);
+            CHECK(text.isBold() == false);
+            CHECK(text.isItalic() == false);
+            CHECK(text.isUnderlined() == false);
+            CHECK(text.isStrikeThrough() == false);
             CHECK(text.getFillColor() == sf::Color::White);
             CHECK(text.getOutlineColor() == sf::Color::Black);
             CHECK(text.getOutlineThickness() == 0);
@@ -67,13 +70,16 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
 
         SECTION("Font and string constructor")
         {
-            const sf::Text text(font, {.string = "abcdefghijklmnopqrstuvwxyz"});
+            const sf::Text text(font, {.string = "abcdefghijklmnopqrstuvwxyz", .characterSize = 30u});
             CHECK(text.getString() == "abcdefghijklmnopqrstuvwxyz");
             CHECK(&text.getFont() == &font);
             CHECK(text.getCharacterSize() == 30);
             CHECK(text.getLetterSpacing() == 1.f);
             CHECK(text.getLineSpacing() == 1.f);
-            CHECK(text.getStyle() == sf::Text::Style::Regular);
+            CHECK(text.isBold() == false);
+            CHECK(text.isItalic() == false);
+            CHECK(text.isUnderlined() == false);
+            CHECK(text.isStrikeThrough() == false);
             CHECK(text.getFillColor() == sf::Color::White);
             CHECK(text.getOutlineColor() == sf::Color::Black);
             CHECK(text.getOutlineThickness() == 0);
@@ -90,7 +96,10 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             CHECK(text.getCharacterSize() == 24);
             CHECK(text.getLetterSpacing() == 1.f);
             CHECK(text.getLineSpacing() == 1.f);
-            CHECK(text.getStyle() == sf::Text::Style::Regular);
+            CHECK(text.isBold() == false);
+            CHECK(text.isItalic() == false);
+            CHECK(text.isUnderlined() == false);
+            CHECK(text.isStrikeThrough() == false);
             CHECK(text.getFillColor() == sf::Color::White);
             CHECK(text.getOutlineColor() == sf::Color::Black);
             CHECK(text.getOutlineThickness() == 0);
@@ -137,23 +146,44 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
         CHECK(text.getLetterSpacing() == 15);
     }
 
-    SECTION("Set/get style")
+    SECTION("Set/get bold")
     {
         sf::Text text(font, {});
-        text.setStyle(sf::Text::Style::Bold | sf::Text::Style::Italic);
-        CHECK(text.getStyle() == (sf::Text::Style::Bold | sf::Text::Style::Italic));
+        text.setBold(true);
+        CHECK(text.isBold() == true);
+    }
+
+    SECTION("Set/get italic")
+    {
+        sf::Text text(font, {});
+        text.setItalic(true);
+        CHECK(text.isItalic() == true);
+    }
+
+    SECTION("Set/get underlined")
+    {
+        sf::Text text(font, {});
+        text.setUnderlined(true);
+        CHECK(text.isUnderlined() == true);
+    }
+
+    SECTION("Set/get strikeThrough")
+    {
+        sf::Text text(font, {});
+        text.setStrikeThrough(true);
+        CHECK(text.isStrikeThrough() == true);
     }
 
     SECTION("Set/get fill color")
     {
-        sf::Text text(font, {.string = "Fill color"});
+        sf::Text text(font, {.string = "Fill color", .characterSize = 30u});
         text.setFillColor(sf::Color::Red);
         CHECK(text.getFillColor() == sf::Color::Red);
     }
 
     SECTION("Set/get outline color")
     {
-        sf::Text text(font, {.string = "Outline color"});
+        sf::Text text(font, {.string = "Outline color", .characterSize = 30u});
         text.setOutlineColor(sf::Color::Green);
         CHECK(text.getOutlineColor() == sf::Color::Green);
     }
@@ -167,7 +197,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
 
     SECTION("findCharacterPos()")
     {
-        sf::Text text(font, {.string = "\tabcdefghijklmnopqrstuvwxyz \n"});
+        sf::Text text(font, {.string = "\tabcdefghijklmnopqrstuvwxyz \n", .characterSize = 30u});
         text.position = {120, 240};
         CHECK(text.findCharacterPos(0) == sf::Vec2f{120, 240});
         CHECK(text.findCharacterPos(1) == sf::Vec2f{156, 240});
@@ -181,8 +211,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
 
     SECTION("TextUtils helpers")
     {
-        CHECK(sf::TextUtils::precomputeTextQuadCount("A\nB", sf::Text::Style::Underlined | sf::Text::Style::StrikeThrough) ==
-              6u);
+        CHECK(sf::TextUtils::precomputeTextQuadCount("A\nB", /* isUnderlined */ true, /* isStrikeThrough */ true) == 6u);
 
         CHECK(sf::TextUtils::precomputeTextLocalBounds(font, sf::TextData{}) == sf::Rect2f{});
     }
@@ -196,14 +225,14 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
 
         SECTION("Add underline")
         {
-            text.setStyle(sf::Text::Style::Underlined);
+            text.setUnderlined(true);
             CHECK(text.getLocalBounds() == sf::Rect2f({1, 5}, {33, 13}));
             CHECK(text.getGlobalBounds() == sf::Rect2f({101, 205}, {33, 13}));
         }
 
         SECTION("Add strikethrough")
         {
-            text.setStyle(sf::Text::Style::StrikeThrough);
+            text.setStrikeThrough(true);
             CHECK(text.getLocalBounds() == sf::Rect2f({1, 5}, {33, 13}));
             CHECK(text.getGlobalBounds() == sf::Rect2f({101, 205}, {33, 13}));
         }
