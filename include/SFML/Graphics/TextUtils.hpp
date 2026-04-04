@@ -11,7 +11,6 @@
 #include "SFML/Graphics/Glyph.hpp"
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/TextData.hpp"
-#include "SFML/Graphics/TextStyle.hpp"
 #include "SFML/Graphics/Transform.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
@@ -42,15 +41,14 @@ struct TextSpacingConstants
 
 
 ////////////////////////////////////////////////////////////
+template <typename TFontSource>
 [[nodiscard]] inline TextSpacingConstants precomputeSpacingConstants(
-    const Font&        font,
-    const TextStyle    style,
+    const TFontSource& font,
+    const bool         isBold,
     const unsigned int characterSize,
     const float        letterSpacing,
     const float        lineSpacing)
 {
-    const bool isBold = !!(style & TextStyle::Bold);
-
     float whitespaceWidth = font.getGlyph(U' ', characterSize, isBold, /* outlineThickness */ 0.f).advance;
 
     const float finalLetterSpacing = (whitespaceWidth / 3.f) * (letterSpacing - 1.f);
@@ -65,15 +63,11 @@ struct TextSpacingConstants
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] inline base::SizeT precomputeTextQuadCount(const UnicodeString& string, const TextStyle style)
+[[nodiscard]] inline base::SizeT precomputeTextQuadCount(const UnicodeString& string, const bool isUnderlined, const bool isStrikeThrough)
 {
     SFML_BASE_ASSERT(!string.isEmpty());
 
     base::SizeT result = 0u;
-
-    // Compute values related to the text style
-    const bool isUnderlined    = !!(style & TextStyle::Underlined);
-    const bool isStrikeThrough = !!(style & TextStyle::StrikeThrough);
 
     char32_t prevChar        = 0;
     bool     lineHasContents = false;
@@ -242,12 +236,15 @@ inline void addGlyphQuadPreTransformed(
 
 
 ////////////////////////////////////////////////////////////
-template <bool CalculateBounds>
+template <bool CalculateBounds, typename TFontSource>
 inline auto createTextGeometryAndGetBounds(
     const base::SizeT    outlineVertexCount,
-    const Font&          font,
+    const TFontSource&   font,
     const UnicodeString& string,
-    const TextStyle      style,
+    const bool           isBold,
+    const bool           isItalic,
+    const bool           isUnderlined,
+    const bool           isStrikeThrough,
     const unsigned int   characterSize,
     const float          letterSpacing,
     const float          lineSpacing,
@@ -266,10 +263,7 @@ inline auto createTextGeometryAndGetBounds(
     }
 
     // Compute values related to the text style
-    const bool  isBold             = !!(style & TextStyle::Bold);
-    const bool  isUnderlined       = !!(style & TextStyle::Underlined);
-    const bool  isStrikeThrough    = !!(style & TextStyle::StrikeThrough);
-    const float italicShear        = !!(style & TextStyle::Italic) ? degrees(12).asRadians() : 0.f;
+    const float italicShear        = isItalic ? degrees(12).asRadians() : 0.f;
     const float underlineOffset    = font.getUnderlinePosition(characterSize);
     const float underlineThickness = font.getUnderlineThickness(characterSize);
 
@@ -285,7 +279,7 @@ inline auto createTextGeometryAndGetBounds(
     // Precompute the variables needed by the algorithm
     const auto [whitespaceWidth,
                 finalLetterSpacing,
-                finalLineSpacing] = precomputeSpacingConstants(font, style, characterSize, letterSpacing, lineSpacing);
+                finalLineSpacing] = precomputeSpacingConstants(font, isBold, characterSize, letterSpacing, lineSpacing);
 
     base::SizeT currFillIndex    = outlineVertexCount;
     base::SizeT currOutlineIndex = 0u;
@@ -441,7 +435,10 @@ inline auto createTextGeometryAndGetBounds(
         /* outlineVertexCount */ 0u,
         font,
         textData.string,
-        textData.style,
+        textData.bold,
+        textData.italic,
+        textData.underlined,
+        textData.strikeThrough,
         textData.characterSize,
         textData.letterSpacing,
         textData.lineSpacing,
@@ -460,7 +457,10 @@ inline auto createTextGeometryAndGetBounds(
         /* outlineVertexCount */ 0u,
         font,
         text.getString(),
-        text.getStyle(),
+        text.isBold(),
+        text.isItalic(),
+        text.isUnderlined(),
+        text.isStrikeThrough(),
         text.getCharacterSize(),
         text.getLetterSpacing(),
         text.getLineSpacing(),

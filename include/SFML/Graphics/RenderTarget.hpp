@@ -36,6 +36,7 @@ namespace sf
 {
 class CPUDrawableBatch;
 class Font;
+class GlyphMappedText;
 class PersistentGPUDrawableBatch;
 class Shader;
 class Shape;
@@ -48,6 +49,8 @@ struct BlendMode;
 struct GLElementBufferObject;
 struct GLVAOGroup;
 struct GLVertexBufferObject;
+struct GlyphMapping;
+struct GlyphMappedTextData;
 struct InstanceAttributeBinder;
 struct Sprite;
 struct StencilMode;
@@ -259,6 +262,12 @@ public:
     void draw(const Text& text, RenderStates states = {});
 
     ////////////////////////////////////////////////////////////
+    /// \brief Draw a GlyphMappedText
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const GlyphMappedText& text, RenderStates states = {});
+
+    ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
@@ -310,6 +319,12 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     VertexSpan draw(const Font& font, const TextData& textData, RenderStates states = {});
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw text using a glyph mapping (stateless)
+    ///
+    ////////////////////////////////////////////////////////////
+    VertexSpan draw(const GlyphMapping& glyphMapping, const GlyphMappedTextData& textData, RenderStates states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by an array of vertices
@@ -498,6 +513,15 @@ public:
         [[gnu::always_inline]] const WithRenderStatesContext& draw(const Font& font, const TextData& textData) const
         {
             m_rt->draw(font, textData, m_states);
+            return *this;
+        }
+
+        ////////////////////////////////////////////////////////////
+        // NOLINTNEXTLINE(modernize-use-nodiscard)
+        [[gnu::always_inline]] const WithRenderStatesContext& draw(const GlyphMapping&         glyphMapping,
+                                                                   const GlyphMappedTextData& textData) const
+        {
+            m_rt->draw(glyphMapping, textData, m_states);
             return *this;
         }
     };

@@ -29,6 +29,7 @@
 namespace sf
 {
 class Font;
+class GlyphMappedText;
 class RenderTarget;
 class Shape;
 class Text;
@@ -37,6 +38,8 @@ struct ArrowShapeData;
 struct CircleShapeData;
 struct CurvedArrowShapeData;
 struct EllipseShapeData;
+struct GlyphMapping;
+struct GlyphMappedTextData;
 struct PieSliceShapeData;
 struct RectangleShapeData;
 struct RingPieSliceShapeData;
@@ -500,6 +503,17 @@ public:
     ////////////////////////////////////////////////////////////
     void add(const Text& text);
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Adds an `sf::GlyphMappedText` to the batch
+    ///
+    /// Extracts vertex data from the glyph-mapped text object (including fill and outline)
+    /// and appends it to the batch.
+    ///
+    /// \param text The glyph-mapped text object to add
+    ///
+    ////////////////////////////////////////////////////////////
+    void add(const GlyphMappedText& text);
+
     // TODO P0: should return two vertex spans, one for fill and one for outline
 
     ////////////////////////////////////////////////////////////
@@ -670,6 +684,21 @@ public:
     VertexSpan add(const Font& font, const TextData& textData);
 
     ////////////////////////////////////////////////////////////
+    /// \brief Add text geometry using a glyph mapping (stateless)
+    ///
+    /// Generates vertices for text based on the provided glyph mapping and text data.
+    ///
+    /// \param glyphMapping The glyph mapping to use for generating text geometry
+    /// \param textData Data defining the text to render
+    ///
+    /// \return A `VertexSpan` referring to the added vertices.
+    ///
+    /// \warning The returned span is invalidated after the next call to `add` or batch flush.
+    ///
+    ////////////////////////////////////////////////////////////
+    VertexSpan add(const GlyphMapping& glyphMapping, const GlyphMappedTextData& textData);
+
+    ////////////////////////////////////////////////////////////
     /// \brief Clears all geometry from the batch
     ///
     /// Removes all vertices and indices from the batch, making it empty.
@@ -762,6 +791,18 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     void addShapeOutline(const Transform& transform, const Vertex* data, base::SizeT size);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void addTextImpl(const auto& text);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    VertexSpan addTextDataImpl(const auto& glyphSource, const auto& textData, bool isBold, unsigned int characterSize, float outlineThickness);
 
 protected:
     ////////////////////////////////////////////////////////////
