@@ -1,6 +1,7 @@
 #include "BubbleIdleMain.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"
+
 #include "SFML/Window/VideoModeUtils.hpp"
 
 void Main::uiSettingsDrawDisplayTab()

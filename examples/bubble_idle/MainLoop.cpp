@@ -8,9 +8,11 @@
 #include "ExampleUtils/Easing.hpp"
 #include "ExampleUtils/MathUtils.hpp"
 #include "ExampleUtils/Profiler.hpp"
+
+#include "SFML/System/Time.hpp"
+
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/MinMax.hpp"
-#include "SFML/System/Time.hpp"
 
 namespace
 {

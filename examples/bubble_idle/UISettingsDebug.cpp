@@ -1,5 +1,4 @@
 #include "BubbleIdleMain.hpp"
-
 #include "Cat.hpp"
 #include "CatConstants.hpp"
 #include "CatType.hpp"

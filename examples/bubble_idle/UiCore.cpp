@@ -866,8 +866,11 @@ void Main::uiSetTooltipOnly(const char* const fmt, ...)
 }
 
 ////////////////////////////////////////////////////////////
-bool Main::uiMakePrestigeOneTimeButton(
-    const char* const buttonLabel, const PrestigePointsType cost, bool& done, const char* const tooltipFmt, ...)
+bool Main::uiMakePrestigeOneTimeButton(const char* const        buttonLabel,
+                                       const PrestigePointsType cost,
+                                       bool&                    done,
+                                       const char* const        tooltipFmt,
+                                       ...)
 {
     std::va_list args;
     va_start(args, tooltipFmt);
