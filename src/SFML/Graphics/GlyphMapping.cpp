@@ -75,10 +75,10 @@ GlyphLoadSettings GlyphLoadSettings::latin1(const unsigned int characterSize, co
 
 
 ////////////////////////////////////////////////////////////
-const Glyph& GlyphMapping::getGlyph(const char32_t     codePoint,
-                                    const unsigned int theCharacterSize,
-                                    const bool         theBold,
-                                    const float        theOutlineThickness) const
+const Glyph& GlyphMapping::getGlyph(const char32_t                      codePoint,
+                                    [[maybe_unused]] const unsigned int theCharacterSize,
+                                    [[maybe_unused]] const bool         theBold,
+                                    const float                         theOutlineThickness) const
 {
     SFML_BASE_ASSERT(theCharacterSize == characterSize);
     SFML_BASE_ASSERT(theBold == bold);
@@ -96,10 +96,10 @@ const Glyph& GlyphMapping::getGlyph(const char32_t     codePoint,
 
 ////////////////////////////////////////////////////////////
 GlyphMapping::GlyphPair GlyphMapping::getFillAndOutlineGlyph(
-    const char32_t     codePoint,
-    const unsigned int theCharacterSize,
-    const bool         theBold,
-    const float        theOutlineThickness) const
+    const char32_t                      codePoint,
+    [[maybe_unused]] const unsigned int theCharacterSize,
+    [[maybe_unused]] const bool         theBold,
+    [[maybe_unused]] const float        theOutlineThickness) const
 {
     SFML_BASE_ASSERT(theCharacterSize == characterSize);
     SFML_BASE_ASSERT(theBold == bold);
@@ -129,7 +129,7 @@ GlyphMapping::GlyphPair GlyphMapping::getFillAndOutlineGlyph(
 
 
 ////////////////////////////////////////////////////////////
-float GlyphMapping::getLineSpacing(const unsigned int theCharacterSize) const
+float GlyphMapping::getLineSpacing([[maybe_unused]] const unsigned int theCharacterSize) const
 {
     SFML_BASE_ASSERT(theCharacterSize == characterSize);
     return cachedLineSpacing;
@@ -137,7 +137,7 @@ float GlyphMapping::getLineSpacing(const unsigned int theCharacterSize) const
 
 
 ////////////////////////////////////////////////////////////
-float GlyphMapping::getAscent(const unsigned int theCharacterSize) const
+float GlyphMapping::getAscent([[maybe_unused]] const unsigned int theCharacterSize) const
 {
     SFML_BASE_ASSERT(theCharacterSize == characterSize);
     return cachedAscent;
@@ -145,7 +145,7 @@ float GlyphMapping::getAscent(const unsigned int theCharacterSize) const
 
 
 ////////////////////////////////////////////////////////////
-float GlyphMapping::getDescent(const unsigned int theCharacterSize) const
+float GlyphMapping::getDescent([[maybe_unused]] const unsigned int theCharacterSize) const
 {
     SFML_BASE_ASSERT(theCharacterSize == characterSize);
     return cachedDescent;
@@ -153,7 +153,7 @@ float GlyphMapping::getDescent(const unsigned int theCharacterSize) const
 
 
 ////////////////////////////////////////////////////////////
-float GlyphMapping::getUnderlinePosition(const unsigned int theCharacterSize) const
+float GlyphMapping::getUnderlinePosition([[maybe_unused]] const unsigned int theCharacterSize) const
 {
     SFML_BASE_ASSERT(theCharacterSize == characterSize);
     return cachedUnderlinePosition;
@@ -161,7 +161,7 @@ float GlyphMapping::getUnderlinePosition(const unsigned int theCharacterSize) co
 
 
 ////////////////////////////////////////////////////////////
-float GlyphMapping::getUnderlineThickness(const unsigned int theCharacterSize) const
+float GlyphMapping::getUnderlineThickness([[maybe_unused]] const unsigned int theCharacterSize) const
 {
     SFML_BASE_ASSERT(theCharacterSize == characterSize);
     return cachedUnderlineThickness;
