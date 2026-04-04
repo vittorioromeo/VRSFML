@@ -1474,7 +1474,11 @@ private:
     }
 
 public:
-    explicit table(sf::base::SizeT bucket_count = 0, const Hash& hash = Hash(), const KeyEqual& equal = KeyEqual()) :
+    table() : table(0u)
+    {
+    }
+
+    explicit table(sf::base::SizeT bucket_count, const Hash& hash = Hash(), const KeyEqual& equal = KeyEqual()) :
         m_values(),
         m_buckets(),
         m_hash(hash),
