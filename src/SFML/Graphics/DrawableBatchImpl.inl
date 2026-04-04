@@ -15,6 +15,7 @@
 #include "SFML/Graphics/DrawableBatchUtils.hpp"
 #include "SFML/Graphics/EllipseShapeData.hpp"
 #include "SFML/Graphics/Font.hpp"
+#include "SFML/Graphics/FontFace.hpp"
 #include "SFML/Graphics/GlyphMappedText.hpp"
 #include "SFML/Graphics/GlyphMappedTextData.hpp"
 #include "SFML/Graphics/GlyphMapping.hpp"
@@ -106,6 +107,55 @@ namespace
         };
     }
 }
+
+
+////////////////////////////////////////////////////////////
+// Adapter combining GlyphMapping (glyph/metrics) + FontFace (kerning) into a single font source
+struct GlyphMappingWithKerning
+{
+    const sf::GlyphMapping& mapping;
+    const sf::FontFace&     fontFace;
+
+    [[nodiscard]] const sf::Glyph& getGlyph(char32_t cp, unsigned int cs, bool b, float ot) const
+    {
+        return mapping.getGlyph(cp, cs, b, ot);
+    }
+
+    [[nodiscard]] sf::GlyphMapping::GlyphPair getFillAndOutlineGlyph(char32_t cp, unsigned int cs, bool b, float ot) const
+    {
+        return mapping.getFillAndOutlineGlyph(cp, cs, b, ot);
+    }
+
+    [[nodiscard]] float getKerning(char32_t first, char32_t second, unsigned int cs, bool b) const
+    {
+        return fontFace.getKerning(first, second, cs, b);
+    }
+
+    [[nodiscard]] float getLineSpacing(unsigned int cs) const
+    {
+        return mapping.getLineSpacing(cs);
+    }
+
+    [[nodiscard]] float getAscent(unsigned int cs) const
+    {
+        return mapping.getAscent(cs);
+    }
+
+    [[nodiscard]] float getDescent(unsigned int cs) const
+    {
+        return mapping.getDescent(cs);
+    }
+
+    [[nodiscard]] float getUnderlinePosition(unsigned int cs) const
+    {
+        return mapping.getUnderlinePosition(cs);
+    }
+
+    [[nodiscard]] float getUnderlineThickness(unsigned int cs) const
+    {
+        return mapping.getUnderlineThickness(cs);
+    }
+};
 
 } // namespace
 
@@ -1164,9 +1214,15 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const Font& font, const TextData& te
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-VertexSpan DrawableBatchImpl<TStorage>::add(const GlyphMapping& glyphMapping, const GlyphMappedTextData& textData)
+VertexSpan DrawableBatchImpl<TStorage>::add(const FontFace&            fontFace,
+                                            const GlyphMapping&        glyphMapping,
+                                            const GlyphMappedTextData& textData)
 {
-    return addTextDataImpl(glyphMapping, textData, glyphMapping.bold, glyphMapping.characterSize, glyphMapping.outlineThickness);
+    return addTextDataImpl(GlyphMappingWithKerning{glyphMapping, fontFace},
+                           textData,
+                           glyphMapping.bold,
+                           glyphMapping.characterSize,
+                           glyphMapping.outlineThickness);
 }
 
 } // namespace sf::priv

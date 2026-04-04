@@ -21,7 +21,6 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
-class FontFace;
 class GlyphMappedText;
 } // namespace sf
 
@@ -58,10 +57,9 @@ struct [[nodiscard]] GlyphLoadSettings
 ////////////////////////////////////////////////////////////
 /// \brief Immutable mapping of code points to preloaded glyphs
 ///
-/// Created by `FontFace::loadGlyphs()`. Contains all data needed
-/// for text layout: glyph metrics, font metrics, and a reference
-/// to the atlas texture. Satisfies the same "source" concept as
-/// `sf::Font` so it can be used with `TextUtils` functions.
+/// Created by `FontFace::loadGlyphs()`. Contains preloaded glyph
+/// metrics and cached font metrics. Does not store references to
+/// `FontFace` or `Texture` — those are provided externally.
 ///
 ////////////////////////////////////////////////////////////
 struct SFML_GRAPHICS_API GlyphMapping
@@ -99,12 +97,6 @@ struct SFML_GRAPHICS_API GlyphMapping
                                                    float        theOutlineThickness) const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get kerning between two code points
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] float getKerning(char32_t first, char32_t second, unsigned int theCharacterSize, bool theBold) const;
-
-    ////////////////////////////////////////////////////////////
     /// \brief Get line spacing
     ///
     ////////////////////////////////////////////////////////////
@@ -139,11 +131,6 @@ struct SFML_GRAPHICS_API GlyphMapping
     ////////////////////////////////////////////////////////////
     ankerl::unordered_dense::map<char32_t, Glyph> fillGlyphs;
     ankerl::unordered_dense::map<char32_t, Glyph> outlineGlyphs;
-
-    ////////////////////////////////////////////////////////////
-    // References (lifetime managed externally)
-    ////////////////////////////////////////////////////////////
-    const FontFace* fontFace{};
 
     ////////////////////////////////////////////////////////////
     // Baked-in parameters

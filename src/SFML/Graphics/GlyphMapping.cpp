@@ -7,7 +7,6 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/GlyphMapping.hpp"
 
-#include "SFML/Graphics/FontFace.hpp"
 #include "SFML/Graphics/Glyph.hpp"
 
 #include "SFML/System/Err.hpp"
@@ -126,17 +125,6 @@ GlyphMapping::GlyphPair GlyphMapping::getFillAndOutlineGlyph(
         .fillGlyph    = fillIt->second,
         .outlineGlyph = outlineIt->second,
     };
-}
-
-
-////////////////////////////////////////////////////////////
-float GlyphMapping::getKerning(const char32_t first, const char32_t second, const unsigned int theCharacterSize, const bool theBold) const
-{
-    SFML_BASE_ASSERT(theCharacterSize == characterSize);
-    SFML_BASE_ASSERT(theBold == bold);
-
-    SFML_BASE_ASSERT(fontFace != nullptr);
-    return fontFace->getKerning(first, second, theCharacterSize, theBold);
 }
 
 

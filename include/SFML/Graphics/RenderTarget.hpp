@@ -36,6 +36,7 @@ namespace sf
 {
 class CPUDrawableBatch;
 class Font;
+class FontFace;
 class GlyphMappedText;
 class PersistentGPUDrawableBatch;
 class Shader;
@@ -324,7 +325,7 @@ public:
     /// \brief Draw text using a glyph mapping (stateless)
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan draw(const GlyphMapping& glyphMapping, const GlyphMappedTextData& textData, RenderStates states = {});
+    VertexSpan draw(const FontFace& fontFace, const GlyphMapping& glyphMapping, const GlyphMappedTextData& textData, RenderStates states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by an array of vertices
@@ -518,10 +519,11 @@ public:
 
         ////////////////////////////////////////////////////////////
         // NOLINTNEXTLINE(modernize-use-nodiscard)
-        [[gnu::always_inline]] const WithRenderStatesContext& draw(const GlyphMapping&         glyphMapping,
+        [[gnu::always_inline]] const WithRenderStatesContext& draw(const FontFace&             fontFace,
+                                                                   const GlyphMapping&         glyphMapping,
                                                                    const GlyphMappedTextData& textData) const
         {
-            m_rt->draw(glyphMapping, textData, m_states);
+            m_rt->draw(fontFace, glyphMapping, textData, m_states);
             return *this;
         }
     };

@@ -142,7 +142,7 @@
 ////////////////////////////////////////////////////////////
 #if defined(__has_feature)
     #if __has_feature(address_sanitizer)
-        #define SFML_SYSTEM_ADDRESS_SANITIZER_DETECTED
+        //#define SFML_SYSTEM_ADDRESS_SANITIZER_DETECTED
     #endif
 #endif
 

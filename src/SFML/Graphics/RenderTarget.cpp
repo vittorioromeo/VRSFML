@@ -874,20 +874,20 @@ VertexSpan RenderTarget::draw(const Font& font, const TextData& textData, Render
 
 
 ////////////////////////////////////////////////////////////
-VertexSpan RenderTarget::draw(const GlyphMapping& glyphMapping, const GlyphMappedTextData& textData, RenderStates states)
+VertexSpan RenderTarget::draw(const FontFace& fontFace, const GlyphMapping& glyphMapping, const GlyphMappedTextData& textData, RenderStates states)
 {
     SFML_BASE_ASSERT(states.texture != nullptr);
 
     if (m_autoBatchMode != AutoBatchMode::Disabled)
     {
         flushIfNeeded(states);
-        return addToAutoBatch(glyphMapping, textData);
+        return addToAutoBatch(fontFace, glyphMapping, textData);
     }
 
     m_impl->cpuAutoBatch.clear();
 
     SFML_BASE_SCOPE_GUARD({ immediateDrawDrawableBatch(m_impl->cpuAutoBatch, states); });
-    return m_impl->cpuAutoBatch.add(glyphMapping, textData);
+    return m_impl->cpuAutoBatch.add(fontFace, glyphMapping, textData);
 }
 
 

@@ -727,7 +727,6 @@ base::Optional<GlyphMapping> FontFace::loadGlyphs(TextureAtlas& atlas, const Gly
         .fillGlyphs{},
         .outlineGlyphs{},
 
-        .fontFace         = this,
         .characterSize    = settings.characterSize,
         .bold             = settings.bold,
         .outlineThickness = settings.outlineThickness,
