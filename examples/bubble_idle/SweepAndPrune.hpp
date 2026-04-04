@@ -1,14 +1,31 @@
 #pragma once
 
 #include "SFML/Base/Algorithm/Sort.hpp"
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/InterferenceSize.hpp"
 #include "SFML/Base/MinMax.hpp"
-#include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#include <latch>
+#include <atomic>
 
-#include <cassert>
+
+////////////////////////////////////////////////////////////
+template <typename T>
+[[gnu::always_inline, gnu::flatten]] void atomicWaitUntil(std::atomic<T>&   a,
+                                                          auto&&            predicate,
+                                                          std::memory_order order = std::memory_order_acquire)
+{
+    while (true)
+    {
+        const T val = a.load(order);
+
+        if (predicate(val))
+            return;
+
+        a.wait(val, order);
+    }
+}
 
 
 ////////////////////////////////////////////////////////////
@@ -17,8 +34,8 @@ class SweepAndPrune
 private:
     struct AABB
     {
-        float           minX, maxX, minY, maxY;
-        sf::base::SizeT objIdx;
+        float         minX, maxX, minY, maxY;
+        sf::base::U32 objIdx;
     };
 
     sf::base::Vector<AABB> m_aabbs;
@@ -32,30 +49,23 @@ public:
         if (numObjects < 2)
             return;
 
-        // Compute a chunk size for dividing the outer loop among tasks.
-        const sf::base::SizeT chunkSize = (numObjects + nWorkers - 1u) / nWorkers;
-
-        const auto processChunk = [this, numObjects, &func](sf::base::SizeT start, sf::base::SizeT end)
+        const auto processOne = [this, numObjects, &func](sf::base::SizeT i)
         {
-            for (sf::base::SizeT i = start; i < end; ++i)
+            const AABB& aabb1 = m_aabbs[i];
+
+            for (sf::base::SizeT j = i + 1; j < numObjects; ++j)
             {
-                const AABB& aabb1 = m_aabbs[i];
+                const AABB& aabb2 = m_aabbs[j];
 
-                for (sf::base::SizeT j = i + 1; j < numObjects; ++j)
+                // Early exit: since `m_aabbs` is sorted by `minX`,
+                // if `aabb2.minX` is greater than `aabb1.maxX`, no further objects will overlap on the x-axis.
+                if (aabb2.minX > aabb1.maxX)
+                    break;
+
+                // Since the x intervals overlap, check the y intervals.
+                if (aabb1.minY <= aabb2.maxY && aabb1.maxY >= aabb2.minY)
                 {
-                    const AABB& aabb2 = m_aabbs[j];
-
-                    // Early exit: since `m_aabbs` is sorted by `minX`,
-                    // if `aabb2.minX` is greater than `aabb1.maxX`, no further objects will overlap on the x-axis.
-                    if (aabb2.minX > aabb1.maxX)
-                        break;
-
-                    // Since the x intervals overlap, check the y intervals.
-                    if (aabb1.minY <= aabb2.maxY && aabb1.maxY >= aabb2.minY)
-                    {
-                        // Call the user-supplied function with the indices in sorted order.
-                        func(sf::base::min(aabb1.objIdx, aabb2.objIdx), sf::base::max(aabb1.objIdx, aabb2.objIdx));
-                    }
+                    func(sf::base::min(aabb1.objIdx, aabb2.objIdx), sf::base::max(aabb1.objIdx, aabb2.objIdx));
                 }
             }
         };
@@ -63,47 +73,44 @@ public:
         // If there's only one worker, process synchronously.
         if (nWorkers <= 1u)
         {
-            processChunk(0u, numObjects);
+            for (sf::base::SizeT i = 0; i < numObjects; ++i)
+                processOne(i);
+
             return;
         }
 
-        // Initialize latch for the asynchronous tasks only.
-        std::latch latch{static_cast<sf::base::PtrDiffT>(nWorkers - 1u)};
+        // Dynamic scheduling: each thread grabs the next row via atomic counter.
+        // This naturally balances load since early rows (low i) have much more work
+        // than late rows (high i) due to longer inner loops and less effective early-exit.
+        alignas(sf::base::hardwareDestructiveInterferenceSize) std::atomic<sf::base::SizeT> nextI{0};
+        alignas(sf::base::hardwareDestructiveInterferenceSize) std::atomic<sf::base::SizeT> nRemaining{nWorkers};
 
-        // Process the first chunk on the main thread.
+        auto worker = [&]
         {
-            const sf::base::SizeT start = 0;
-            const sf::base::SizeT end   = sf::base::min(chunkSize, numObjects);
-            processChunk(start, end);
-        }
-
-        // Launch asynchronous tasks for remaining chunks.
-        for (unsigned int iWorker = 1u; iWorker < nWorkers; ++iWorker)
-        {
-            const sf::base::SizeT start = iWorker * chunkSize;
-            const sf::base::SizeT end   = sf::base::min((iWorker + 1u) * chunkSize, numObjects);
-
-            if (start >= numObjects)
+            while (true)
             {
-                // If there is no work for this task, decrement the latch for each missing task.
-                latch.count_down(static_cast<sf::base::PtrDiffT>(nWorkers - iWorker));
-                break;
+                const auto i = nextI.fetch_add(1, std::memory_order_relaxed);
+
+                if (i >= numObjects)
+                    break;
+
+                processOne(i);
             }
 
-            pool.post([start, end, &latch, processChunk]()
-            {
-                processChunk(start, end);
-                latch.count_down();
-            });
-        }
+            // Only notify when the last worker finishes (like std::latch).
+            if (nRemaining.fetch_sub(1, std::memory_order_release) == 1)
+                nRemaining.notify_one();
+        };
 
-        latch.wait();
-    }
+        // Launch asynchronous workers.
+        for (sf::base::SizeT iWorker = 1u; iWorker < nWorkers; ++iWorker)
+            pool.post(worker);
 
-    ////////////////////////////////////////////////////////////
-    void clear()
-    {
-        m_aabbs.clear();
+        // Main thread also participates as a worker.
+        worker();
+
+        // Wait until all workers finish.
+        atomicWaitUntil(nRemaining, [](sf::base::SizeT val) { return val == 0; });
     }
 
     ////////////////////////////////////////////////////////////
@@ -119,7 +126,7 @@ public:
                                       b.position.x + b.radius,
                                       b.position.y - b.radius,
                                       b.position.y + b.radius,
-                                      i);
+                                      static_cast<unsigned int>(i));
         }
 
         sf::base::quickSort(m_aabbs.begin(), m_aabbs.end(), [](const AABB& a, const AABB& b) { return a.minX < b.minX; });
