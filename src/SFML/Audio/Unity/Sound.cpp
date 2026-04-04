@@ -175,6 +175,8 @@ Sound::Sound(PlaybackDevice& playbackDevice, const SoundBuffer& buffer) : Sound{
 ////////////////////////////////////////////////////////////
 Sound::~Sound()
 {
+    SFML_LIFETIME_DEPENDANT_RETURN_IF_TESTING_ERROR(SoundBuffer);
+
     // TODO P1: revisit?
     // Stop the sound before `Impl` begins tearing down, otherwise the audio
     // callback can still race with `read()` during destruction.

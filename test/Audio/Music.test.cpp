@@ -205,7 +205,7 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
         CHECK(!music.isLooping());
     }
 
-#if defined(SFML_ENABLE_LIFETIME_TRACKING) && !defined(SFML_SYSTEM_ADDRESS_SANITIZER_DETECTED)
+#if defined(SFML_ENABLE_LIFETIME_TRACKING)
     SECTION("Lifetime tracking")
     {
         SECTION("Return local from function")

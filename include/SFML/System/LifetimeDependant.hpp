@@ -28,6 +28,8 @@ public:
 
     void update(LifetimeDependee* dependee) noexcept;
 
+    [[nodiscard]] bool isTestingModeErrorTriggered() const noexcept;
+
 private:
     void addSelfAsDependant();
     void subSelfAsDependant();
@@ -48,6 +50,14 @@ private:
     #define SFML_UPDATE_LIFETIME_DEPENDANT(dependantType, dependeeType, thisPtr, dependantMemberPtr) \
         thisPtr->m_sfPrivLifetimeDependant##dependantType.update(                                    \
             dependantMemberPtr == nullptr ? nullptr : &dependantMemberPtr->m_sfPrivLifetimeDependee##dependeeType)
+
+    #define SFML_LIFETIME_DEPENDANT_RETURN_IF_TESTING_ERROR(dependeeType) \
+        do                                                                \
+        {                                                                 \
+            if (m_sfPrivLifetimeDependant##dependeeType                   \
+                    .isTestingModeErrorTriggered())                       \
+                return;                                                   \
+        } while (false)
 // NOLINTEND(bugprone-macro-parentheses)
 
 #else // SFML_ENABLE_LIFETIME_TRACKING
@@ -55,5 +65,7 @@ private:
     #define SFML_DEFINE_LIFETIME_DEPENDANT(dependantType) static_assert(true)
 
     #define SFML_UPDATE_LIFETIME_DEPENDANT(...) (void)0
+
+    #define SFML_LIFETIME_DEPENDANT_RETURN_IF_TESTING_ERROR(dependeeType) (void)0
 
 #endif // SFML_ENABLE_LIFETIME_TRACKING
