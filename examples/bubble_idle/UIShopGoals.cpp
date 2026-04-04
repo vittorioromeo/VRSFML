@@ -1,5 +1,4 @@
 #include "BubbleIdleMain.hpp"
-
 #include "CatType.hpp"
 
 #include "SFML/Base/String.hpp"
@@ -12,14 +11,13 @@ sf::base::String Main::uiShopBuildNextGoalsText()
     const auto nCatDevil  = pt->getCatCountByType(CatType::Devil);
     const auto nCatAstro  = pt->getCatCountByType(CatType::Astro);
 
-    const bool catUpgradesUnlocked = pt->psvBubbleCount.nPurchases > 0 && nCatNormal >= 2 && nCatUni >= 1;
-    const bool catUnicornUnlocked  = pt->psvBubbleCount.nPurchases > 0 && nCatNormal >= 3;
+    const bool catUpgradesUnlocked        = pt->psvBubbleCount.nPurchases > 0 && nCatNormal >= 2 && nCatUni >= 1;
+    const bool catUnicornUnlocked         = pt->psvBubbleCount.nPurchases > 0 && nCatNormal >= 3;
     const bool catUnicornUpgradesUnlocked = catUnicornUnlocked && nCatUni >= 2 && nCatDevil >= 1;
-    const bool catDevilUnlocked =
-        catUnicornUnlocked && pt->psvBubbleValue.nPurchases > 0 && nCatNormal >= 6 && nCatUni >= 4 &&
-        pt->nShrinesCompleted >= 1;
+    const bool catDevilUnlocked         = catUnicornUnlocked && pt->psvBubbleValue.nPurchases > 0 && nCatNormal >= 6 &&
+                                          nCatUni >= 4 && pt->nShrinesCompleted >= 1;
     const bool catDevilUpgradesUnlocked = catDevilUnlocked && nCatDevil >= 2 && nCatAstro >= 1;
-    const bool astroCatUnlocked         = nCatNormal >= 10 && nCatUni >= 5 && nCatDevil >= 2 && pt->nShrinesCompleted >= 2;
+    const bool astroCatUnlocked = nCatNormal >= 10 && nCatUni >= 5 && nCatDevil >= 2 && pt->nShrinesCompleted >= 2;
     const bool astroCatUpgradesUnlocked = astroCatUnlocked && nCatDevil >= 9 && nCatAstro >= 5;
 
     sf::base::String result;

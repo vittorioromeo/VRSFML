@@ -1,5 +1,4 @@
 #include "BubbleIdleMain.hpp"
-
 #include "CatType.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"
@@ -11,10 +10,11 @@ void Main::uiPrestigeUnsealButton(const PrestigePointsType ppCost, const char* c
     if (!pt->perm.shrineCompletedOnceByCatType[asIdx(type)])
         return;
 
-    uiSetTooltipOnly("Permanently release the %s from their shrine. They will be waiting for you right outside "
-                     "when the shrine is activated.\n\n(Note: completing the shrine will now grant 1.5x the money "
-                     "it absorbed.)",
-                     catName);
+    uiSetTooltipOnly(
+        "Permanently release the %s from their shrine. They will be waiting for you right outside "
+        "when the shrine is activated.\n\n(Note: completing the shrine will now grant 1.5x the money "
+        "it absorbed.)",
+        catName);
 
     char buf[256];
     std::snprintf(buf, sizeof(buf), "%s##%s", "Break the seal", catName);
@@ -51,7 +51,8 @@ void Main::uiPrestigeDrawShrineCatUpgrades()
         (void)uiMakePrestigeOneTimeButton("Group ritual",
                                           4u,
                                           pt->perm.witchCatBuffPowerScalesWithNCats,
-                                          "The duration of Witchcat buffs scales with the number of cats in range of the ritual.");
+                                          "The duration of Witchcat buffs scales with the number of cats in range of "
+                                          "the ritual.");
 
         (void)uiMakePrestigeOneTimeButton("Worldwide cult",
                                           4u,
@@ -86,10 +87,12 @@ void Main::uiPrestigeDrawShrineCatUpgrades()
                                      pt->psvPPUniRitualBuffPercentage,
                                      "%.2f%%",
                                      static_cast<double>(currentUniPercentage),
-                                     "Increase the star bubble spawn chance during the Unicat vododoo ritual buff from %.2f%% to %.2f%%.",
+                                     "Increase the star bubble spawn chance during the Unicat vododoo ritual buff from "
+                                     "%.2f%% to %.2f%%.",
                                      static_cast<double>(currentUniPercentage),
                                      static_cast<double>(nextUniPercentage),
-                                     "Increase the star bubble spawn chance during the Unicat vododoo ritual buff (MAX).");
+                                     "Increase the star bubble spawn chance during the Unicat vododoo ritual buff "
+                                     "(MAX).");
 
         const float currentDevilPercentage = pt->psvPPDevilRitualBuffPercentage.currentValue();
         const float nextDevilPercentage    = pt->psvPPDevilRitualBuffPercentage.nextValue();
@@ -98,7 +101,8 @@ void Main::uiPrestigeDrawShrineCatUpgrades()
                                      pt->psvPPDevilRitualBuffPercentage,
                                      "%.2f%%",
                                      static_cast<double>(currentDevilPercentage),
-                                     "Increase the bomb spawn chance during the Devil vododoo ritual buff from %.2f%% to %.2f%%.",
+                                     "Increase the bomb spawn chance during the Devil vododoo ritual buff from %.2f%% "
+                                     "to %.2f%%.",
                                      static_cast<double>(currentDevilPercentage),
                                      static_cast<double>(nextDevilPercentage),
                                      "Increase the bomb spawn chance during the Devil vododoo ritual buff (MAX).");
@@ -143,14 +147,16 @@ void Main::uiPrestigeDrawShrineCatUpgrades()
         (void)uiMakePrestigeOneTimeButton("Autocast",
                                           4u,
                                           pt->perm.autocastPurchased,
-                                          "Allow the Wizardcat to automatically cast spells when enough mana is available. Can be enabled and configured from the \"Magic\" tab.");
+                                          "Allow the Wizardcat to automatically cast spells when enough mana is "
+                                          "available. Can be enabled and configured from the \"Magic\" tab.");
 
         ImGui::Separator();
 
         (void)uiMakePrestigeOneTimeButton("Selective starpaw",
                                           4u,
                                           pt->perm.starpawConversionIgnoreBombs,
-                                          "Starpaw conversion ignores bombs, transforming only normal bubbles around the wizard into star bubbles.");
+                                          "Starpaw conversion ignores bombs, transforming only normal bubbles around "
+                                          "the wizard into star bubbles.");
 
         if (pt->perm.unicatTranscendencePurchased && pt->perm.starpawConversionIgnoreBombs)
         {
@@ -234,7 +240,8 @@ void Main::uiPrestigeDrawShrineCatUpgrades()
         (void)uiMakePrestigeOneTimeButton("Repulsion filter",
                                           16u,
                                           pt->perm.repulsoCatFilterPurchased,
-                                          "The Repulsocat cordially asks their fan to filter repelled bubbles by type.");
+                                          "The Repulsocat cordially asks their fan to filter repelled bubbles by "
+                                          "type.");
 
         if (checkUiUnlock(63u, pt->perm.repulsoCatFilterPurchased))
         {
@@ -260,7 +267,8 @@ void Main::uiPrestigeDrawShrineCatUpgrades()
         (void)uiMakePrestigeOneTimeButton("Conversion field",
                                           32u,
                                           pt->perm.repulsoCatConverterPurchased,
-                                          "The Repulsocat coats the fan blades with star powder, giving it a chance to convert repelled bubbles to star bubbles.");
+                                          "The Repulsocat coats the fan blades with star powder, giving it a chance to "
+                                          "convert repelled bubbles to star bubbles.");
 
         if (checkUiUnlock(64u, pt->perm.repulsoCatConverterPurchased))
         {
@@ -303,7 +311,8 @@ void Main::uiPrestigeDrawShrineCatUpgrades()
         (void)uiMakePrestigeOneTimeButton("Attraction filter",
                                           96u,
                                           pt->perm.attractoCatFilterPurchased,
-                                          "The Attractocat does some quantum science stuff to its magnet to allow filtering of attracted bubbles by type.");
+                                          "The Attractocat does some quantum science stuff to its magnet to allow "
+                                          "filtering of attracted bubbles by type.");
 
         if (checkUiUnlock(66u, pt->perm.attractoCatFilterPurchased))
         {

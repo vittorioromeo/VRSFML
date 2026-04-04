@@ -34,7 +34,10 @@ struct ComboState
     sf::Text        buffText;
     sf::Text        cursorComboText;
 
-    ComboState(const sf::Font& hudFont, const sf::Font& cursorFont, const sf::Vec2f moneyTextPosition, const sf::Color& outlineColor) :
+    ComboState(const sf::Font&  hudFont,
+               const sf::Font&  cursorFont,
+               const sf::Vec2f  moneyTextPosition,
+               const sf::Color& outlineColor) :
         comboText{hudFont,
                   {.position         = moneyTextPosition.addY(35.f),
                    .string           = "x1",
