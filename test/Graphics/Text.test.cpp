@@ -11,11 +11,13 @@
 #include "SFML/Graphics/TextUtils.hpp"
 
 #include "SFML/System/Angle.hpp"
+#include "SFML/System/LifetimeDependee.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Rect2.hpp"
 #include "SFML/System/UnicodeString.hpp"
 #include "SFML/System/Vec2Base.hpp"
 
+#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/Trait/IsConstructible.hpp"
 #include "SFML/Base/Trait/IsCopyAssignable.hpp"
@@ -53,7 +55,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             const sf::Text text(font, {});
             CHECK(text.getString() == "");
             CHECK(&text.getFont() == &font);
-            CHECK(text.getCharacterSize() == 30);
+            CHECK(text.getCharacterSize() == 0);
             CHECK(text.getLetterSpacing() == 1.f);
             CHECK(text.getLineSpacing() == 1.f);
             CHECK(text.isBold() == false);

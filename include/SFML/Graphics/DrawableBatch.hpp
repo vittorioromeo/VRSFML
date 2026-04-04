@@ -29,6 +29,7 @@
 namespace sf
 {
 class Font;
+class FontFace;
 class GlyphMappedText;
 class RenderTarget;
 class Shape;
@@ -696,7 +697,7 @@ public:
     /// \warning The returned span is invalidated after the next call to `add` or batch flush.
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan add(const GlyphMapping& glyphMapping, const GlyphMappedTextData& textData);
+    VertexSpan add(const FontFace& fontFace, const GlyphMapping& glyphMapping, const GlyphMappedTextData& textData);
 
     ////////////////////////////////////////////////////////////
     /// \brief Clears all geometry from the batch
@@ -802,7 +803,11 @@ private:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan addTextDataImpl(const auto& glyphSource, const auto& textData, bool isBold, unsigned int characterSize, float outlineThickness);
+    VertexSpan addTextDataImpl(const auto&  glyphSource,
+                               const auto&  textData,
+                               bool         isBold,
+                               unsigned int characterSize,
+                               float        outlineThickness);
 
 protected:
     ////////////////////////////////////////////////////////////

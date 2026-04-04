@@ -25,6 +25,7 @@ namespace sf
 {
 class InputStream;
 class Path;
+class GlyphMappedText;
 class Text;
 class TextureAtlas;
 
@@ -189,6 +190,7 @@ private:
     // Lifetime tracking
     ////////////////////////////////////////////////////////////
     SFML_DEFINE_LIFETIME_DEPENDEE(FontFace, Text);
+    SFML_DEFINE_LIFETIME_DEPENDEE(FontFace, GlyphMappedText);
 };
 
 } // namespace sf

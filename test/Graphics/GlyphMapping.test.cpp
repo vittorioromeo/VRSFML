@@ -5,6 +5,7 @@
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/TextureAtlas.hpp"
 
+#include "SFML/System/LifetimeDependee.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/UnicodeString.hpp"
 
@@ -40,7 +41,6 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * doctest::skip(skipDisplayTests))
         CHECK(mapping.characterSize == 24);
         CHECK(mapping.bold == false);
         CHECK(mapping.outlineThickness == 0.f);
-        CHECK(mapping.fontFace == &fontFace);
         CHECK(mapping.cachedLineSpacing > 0.f);
         CHECK(mapping.cachedAscent > 0.f);
     }
@@ -146,7 +146,7 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * doctest::skip(skipDisplayTests))
                                        })
                            .value();
 
-        const sf::GlyphMappedText text(atlas.getTexture(), mapping, {.string = "Outlined"});
+        const sf::GlyphMappedText text(fontFace, atlas.getTexture(), mapping, {.string = "Outlined"});
         CHECK(text.getLocalBounds().size.x > 0.f);
         CHECK(text.getLocalBounds().size.y > 0.f);
 
@@ -180,7 +180,7 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * doctest::skip(skipDisplayTests))
         }
     }
 
-    SECTION("getKerning delegates to FontFace")
+    SECTION("GlyphMappedText getKerning delegates to FontFace")
     {
         auto mapping = fontFace
                            .loadGlyphs(atlas,
@@ -193,8 +193,11 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * doctest::skip(skipDisplayTests))
                                        })
                            .value();
 
-        const float kerning     = mapping.getKerning(U'A', U'V', 24, false);
+        const sf::GlyphMappedText text(fontFace, atlas.getTexture(), mapping, {.string = "AV"});
+
+        const float kerning     = text.getKerning(U'A', U'V', 24, false);
         const float faceKerning = fontFace.getKerning(U'A', U'V', 24, false);
+
         CHECK(kerning == faceKerning);
     }
 
@@ -211,7 +214,7 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * doctest::skip(skipDisplayTests))
                                        })
                            .value();
 
-        const sf::GlyphMappedText text(atlas.getTexture(), mapping, {.string = "Hello World"});
+        const sf::GlyphMappedText text(fontFace, atlas.getTexture(), mapping, {.string = "Hello World"});
         CHECK(text.getString() == "Hello World");
         CHECK(&text.getGlyphMapping() == &mapping);
         CHECK(&text.getTexture() == &atlas.getTexture());
@@ -255,7 +258,7 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * doctest::skip(skipDisplayTests))
                                                     })
                                         .value();
 
-                return sf::GlyphMappedText(atlas.getTexture(), localMapping, {.string = "Test"});
+                return sf::GlyphMappedText(fontFace, atlas.getTexture(), localMapping, {.string = "Test"});
             };
 
             const sf::priv::LifetimeDependee::TestingModeGuard guard{"GlyphMapping"};
@@ -293,11 +296,99 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * doctest::skip(skipDisplayTests))
             const sf::priv::LifetimeDependee::TestingModeGuard guard{"GlyphMapping"};
             CHECK(!guard.fatalErrorTriggered("GlyphMapping"));
 
-            sf::GlyphMappedText text(atlas.getTexture(), mapping1, {.string = "Test"});
+            sf::GlyphMappedText text(fontFace, atlas.getTexture(), mapping1, {.string = "Test"});
             CHECK(!guard.fatalErrorTriggered("GlyphMapping"));
 
-            text.setGlyphMapping(atlas.getTexture(), mapping2);
+            text.setGlyphMapping(fontFace, atlas.getTexture(), mapping2);
             CHECK(!guard.fatalErrorTriggered("GlyphMapping"));
+        }
+
+        SECTION("FontFace outlived by GlyphMappedText triggers error")
+        {
+            auto mapping = fontFace
+                               .loadGlyphs(atlas,
+                                           {
+                                               .codePoints       = testCodePoints.getData(),
+                                               .codePointCount   = testCodePoints.getSize(),
+                                               .characterSize    = 24,
+                                               .bold             = false,
+                                               .outlineThickness = 0.f,
+                                           })
+                               .value();
+
+            const auto badFunction = [&]
+            {
+                auto localFontFace = sf::FontFace::openFromFile("tuffy.ttf").value();
+                return sf::GlyphMappedText(localFontFace, atlas.getTexture(), mapping, {.string = "Test"});
+            };
+
+            const sf::priv::LifetimeDependee::TestingModeGuard guard{"FontFace"};
+            CHECK(!guard.fatalErrorTriggered("FontFace"));
+
+            badFunction();
+
+            CHECK(guard.fatalErrorTriggered("FontFace"));
+        }
+
+        SECTION("Texture outlived by GlyphMappedText triggers error")
+        {
+            auto mapping = fontFace
+                               .loadGlyphs(atlas,
+                                           {
+                                               .codePoints       = testCodePoints.getData(),
+                                               .codePointCount   = testCodePoints.getSize(),
+                                               .characterSize    = 24,
+                                               .bold             = false,
+                                               .outlineThickness = 0.f,
+                                           })
+                               .value();
+
+            const auto badFunction = [&]
+            {
+                auto localTexture = sf::Texture::create({64u, 64u}).value();
+                return sf::GlyphMappedText(fontFace, localTexture, mapping, {.string = "Test"});
+            };
+
+            const sf::priv::LifetimeDependee::TestingModeGuard guard{"Texture"};
+            CHECK(!guard.fatalErrorTriggered("Texture"));
+
+            badFunction();
+
+            CHECK(guard.fatalErrorTriggered("Texture"));
+        }
+
+        SECTION("Valid lifetime does not trigger errors")
+        {
+            auto mapping = fontFace
+                               .loadGlyphs(atlas,
+                                           {
+                                               .codePoints       = testCodePoints.getData(),
+                                               .codePointCount   = testCodePoints.getSize(),
+                                               .characterSize    = 24,
+                                               .bold             = false,
+                                               .outlineThickness = 0.f,
+                                           })
+                               .value();
+
+            const sf::priv::LifetimeDependee::TestingModeGuard fontFaceGuard{"FontFace"};
+            const sf::priv::LifetimeDependee::TestingModeGuard textureGuard{"Texture"};
+            const sf::priv::LifetimeDependee::TestingModeGuard mappingGuard{"GlyphMapping"};
+
+            CHECK(!fontFaceGuard.fatalErrorTriggered("FontFace"));
+            CHECK(!textureGuard.fatalErrorTriggered("Texture"));
+            CHECK(!mappingGuard.fatalErrorTriggered("GlyphMapping"));
+
+            {
+                sf::GlyphMappedText text(fontFace, atlas.getTexture(), mapping, {.string = "Test"});
+                CHECK(!fontFaceGuard.fatalErrorTriggered("FontFace"));
+                CHECK(!textureGuard.fatalErrorTriggered("Texture"));
+                CHECK(!mappingGuard.fatalErrorTriggered("GlyphMapping"));
+            }
+
+            // Text destroyed before dependees — no errors
+            CHECK(!fontFaceGuard.fatalErrorTriggered("FontFace"));
+            CHECK(!textureGuard.fatalErrorTriggered("Texture"));
+            CHECK(!mappingGuard.fatalErrorTriggered("GlyphMapping"));
         }
     }
 #endif

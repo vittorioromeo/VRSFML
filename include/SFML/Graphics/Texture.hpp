@@ -10,6 +10,7 @@
 
 #include "SFML/Graphics/TextureWrapMode.hpp"
 
+#include "SFML/System/LifetimeDependee.hpp"
 #include "SFML/System/Rect2.hpp"
 #include "SFML/System/Vec2Base.hpp"
 
@@ -24,6 +25,7 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
+class GlyphMappedText;
 class Image;
 class InputStream;
 class Path;
@@ -520,6 +522,11 @@ private:
     bool            m_fboAttachment{}; //!< Is this texture owned by a framebuffer object?
     bool            m_hasMipmap{};     //!< Has the mipmap been generated?
     unsigned int    m_cacheId;         //!< Unique number that identifies the texture to the render target's cache
+
+    ////////////////////////////////////////////////////////////
+    // Lifetime tracking
+    ////////////////////////////////////////////////////////////
+    SFML_DEFINE_LIFETIME_DEPENDEE(Texture, GlyphMappedText);
 };
 
 ////////////////////////////////////////////////////////////

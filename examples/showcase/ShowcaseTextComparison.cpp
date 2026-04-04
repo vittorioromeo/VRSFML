@@ -19,7 +19,7 @@ ExampleTextComparison::ExampleTextComparison(const GameDependencies& deps) :
     ShowcaseExample{"TextComparison"},
     m_deps{deps},
     m_legacyText(*m_deps.font, {.position = {50.f, 70.f}, .string = m_inputBuffer, .characterSize = 30u}),
-    m_mappedText(m_atlas.getTexture(), m_mapping, {.position = {50.f, 270.f}, .string = m_inputBuffer})
+    m_mappedText(m_fontFace, m_atlas.getTexture(), m_mapping, {.position = {50.f, 270.f}, .string = m_inputBuffer})
 {
 }
 
@@ -100,7 +100,8 @@ void ExampleTextComparison::draw()
                         sf::TextData{.position = {450.f, 250.f}, .string = "sf::GlyphMappedTextData:", .characterSize = 16},
                         {.view = *m_deps.view});
 
-    m_deps.rtGame->draw(m_mapping,
+    m_deps.rtGame->draw(m_fontFace,
+                        m_mapping,
                         sf::GlyphMappedTextData{.position = {450.f, 270.f}, .string = m_convertedStr},
                         {
                             .view    = *m_deps.view,

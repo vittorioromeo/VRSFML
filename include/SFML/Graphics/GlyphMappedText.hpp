@@ -8,7 +8,9 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
+#include "SFML/Graphics/Glyph.hpp"
 #include "SFML/Graphics/GlyphMappedTextData.hpp"
+#include "SFML/Graphics/GlyphMapping.hpp"
 #include "SFML/Graphics/TextBase.hpp"
 
 #include "SFML/System/LifetimeDependant.hpp"
@@ -19,8 +21,8 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
+class FontFace;
 class Texture;
-struct GlyphMapping;
 } // namespace sf
 
 
@@ -50,13 +52,19 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] GlyphMappedText(const Texture& texture, const GlyphMapping& glyphMapping, const Data& data);
+    [[nodiscard]] GlyphMappedText(const FontFace&     fontFace,
+                                  const Texture&      texture,
+                                  const GlyphMapping& glyphMapping,
+                                  const Data&         data);
 
     ////////////////////////////////////////////////////////////
     /// \brief Disallow construction from a temporary glyph mapping
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] GlyphMappedText(const Texture& texture, const GlyphMapping&& glyphMapping, const Data& data) = delete;
+    [[nodiscard]] GlyphMappedText(const FontFace&      fontFace,
+                                  const Texture&       texture,
+                                  const GlyphMapping&& glyphMapping,
+                                  const Data&          data) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -82,13 +90,13 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void setGlyphMapping(const Texture& texture, const GlyphMapping& glyphMapping);
+    void setGlyphMapping(const FontFace& fontFace, const Texture& texture, const GlyphMapping& glyphMapping);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void setGlyphMapping(const Texture& texture, GlyphMapping&& glyphMapping) = delete;
+    void setGlyphMapping(const FontFace& fontFace, const Texture& texture, GlyphMapping&& glyphMapping) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -110,7 +118,63 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const GlyphMapping& getFontSource() const;
+    [[nodiscard]] const GlyphMappedText& getFontSource() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get kerning between two code points
+    ///
+    /// Delegates to the stored FontFace.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getKerning(char32_t first, char32_t second, unsigned int characterSize, bool bold) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get a glyph from the mapping
+    ///
+    /// Delegates to the stored GlyphMapping.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] const Glyph& getGlyph(char32_t codePoint, unsigned int characterSize, bool bold, float outlineThickness) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get both fill and outline glyphs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] GlyphMapping::GlyphPair getFillAndOutlineGlyph(
+        char32_t     codePoint,
+        unsigned int characterSize,
+        bool         bold,
+        float        outlineThickness) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get line spacing
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getLineSpacing(unsigned int characterSize) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get ascent
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getAscent(unsigned int characterSize) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get descent
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getDescent(unsigned int characterSize) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get underline position
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getUnderlinePosition(unsigned int characterSize) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get underline thickness
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getUnderlineThickness(unsigned int characterSize) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -145,12 +209,15 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
+    const FontFace*     m_fontFace{};     //!< Font face for kerning queries
     const Texture*      m_texture{};      //!< Atlas texture for rendering
     const GlyphMapping* m_glyphMapping{}; //!< Glyph mapping used to display the string
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking
     ////////////////////////////////////////////////////////////
+    SFML_DEFINE_LIFETIME_DEPENDANT(FontFace);
+    SFML_DEFINE_LIFETIME_DEPENDANT(Texture);
     SFML_DEFINE_LIFETIME_DEPENDANT(GlyphMapping);
 };
 
