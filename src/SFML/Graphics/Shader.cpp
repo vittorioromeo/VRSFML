@@ -475,7 +475,7 @@ base::Optional<Shader> Shader::loadFromStream(const LoadFromStreamSettings& sett
         optBufferSlice = appendStreamContentsToVector(*optStream, buffer);
         if (!optBufferSlice.hasValue())
         {
-            priv::err() << "Failed to open " << typeStr << " shader from stream\n";
+            priv::err() << "Failed to open " << typeStr << " shader from stream";
             return false;
         }
 

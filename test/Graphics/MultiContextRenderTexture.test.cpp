@@ -36,13 +36,13 @@ using PFNGLCHECKFRAMEBUFFERSTATUSPROC = GLenum(SFML_TEST_GL_API_PTR*)(GLenum tar
 using PFNGLGENFRAMEBUFFERSPROC        = void(SFML_TEST_GL_API_PTR*)(GLsizei n, GLuint* framebuffers);
 using PFNGLISFRAMEBUFFERPROC          = GLboolean(SFML_TEST_GL_API_PTR*)(GLuint framebuffer);
 
-constexpr GLenum GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT = 0x8CD6u;
+constexpr GLenum GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT = 0x8C'D6u;
 
 extern "C"
 {
-extern PFNGLCHECKFRAMEBUFFERSTATUSPROC glad_glCheckFramebufferStatus;
-extern PFNGLGENFRAMEBUFFERSPROC        glad_glGenFramebuffers;
-extern PFNGLISFRAMEBUFFERPROC          glad_glIsFramebuffer;
+    extern PFNGLCHECKFRAMEBUFFERSTATUSPROC glad_glCheckFramebufferStatus;
+    extern PFNGLGENFRAMEBUFFERSPROC        glad_glGenFramebuffers;
+    extern PFNGLISFRAMEBUFFERPROC          glad_glIsFramebuffer;
 }
 
 
@@ -82,13 +82,13 @@ struct ScopedFramebufferHooks
     ////////////////////////////////////////////////////////////
     explicit ScopedFramebufferHooks(const bool failSecondFramebufferStatusCheck)
     {
-        originalCheckFramebufferStatus         = glad_glCheckFramebufferStatus;
-        originalGenFramebuffers                = glad_glGenFramebuffers;
-        generatedFramebuffers                  = &ids;
-        checkFramebufferStatusCallCount        = 0u;
-        failOnSecondFramebufferStatusCheck     = failSecondFramebufferStatusCheck;
-        glad_glCheckFramebufferStatus          = &checkFramebufferStatusHook;
-        glad_glGenFramebuffers                 = &genFramebuffersHook;
+        originalCheckFramebufferStatus     = glad_glCheckFramebufferStatus;
+        originalGenFramebuffers            = glad_glGenFramebuffers;
+        generatedFramebuffers              = &ids;
+        checkFramebufferStatusCallCount    = 0u;
+        failOnSecondFramebufferStatusCheck = failSecondFramebufferStatusCheck;
+        glad_glCheckFramebufferStatus      = &checkFramebufferStatusHook;
+        glad_glGenFramebuffers             = &genFramebuffersHook;
     }
 
     ////////////////////////////////////////////////////////////
