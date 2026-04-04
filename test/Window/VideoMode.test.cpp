@@ -1,6 +1,7 @@
 #include "SFML/Window/VideoMode.hpp"
 
 #include "SFML/Window/VideoModeUtils.hpp"
+#include "SFML/Window/WindowContext.hpp"
 
 #include "SFML/System/Vec2Base.hpp"
 
@@ -25,6 +26,8 @@
 
 TEST_CASE("[Window] sf::VideoMode" * doctest::skip(skipDisplayTests))
 {
+    auto windowContext = sf::WindowContext::create().value();
+
     SECTION("Type traits")
     {
         STATIC_CHECK(SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::VideoMode));
