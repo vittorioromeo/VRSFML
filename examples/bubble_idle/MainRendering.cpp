@@ -39,6 +39,7 @@
 #include "SFML/Graphics/View.hpp"
 
 #include "SFML/Window/Mouse.hpp"
+#include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
 
 #include "SFML/System/Angle.hpp"

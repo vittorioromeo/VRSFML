@@ -2,6 +2,7 @@
 
 #include "SFML/ImGui/IncludeImGui.hpp"
 
+#include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
 
 void Main::uiSettingsDrawDisplayTab()
@@ -96,7 +97,7 @@ void Main::uiSettingsDrawDisplayTab()
 
     static auto fpsLimit = static_cast<float>(profile.frametimeLimit);
     ImGui::SetNextItemWidth(210.f * profile.uiScale);
-    if (ImGui::DragFloat("FPS Limit", &fpsLimit, 1.f, 60.f, 144.f, "%.f", ImGuiSliderFlags_AlwaysClamp))
+    if (ImGui::DragFloat("FPS Limit", &fpsLimit, 1.f, 60.f, 360.f, "%.f", ImGuiSliderFlags_AlwaysClamp))
     {
         profile.frametimeLimit = static_cast<unsigned int>(fpsLimit);
         window.setFramerateLimit(profile.frametimeLimit);
