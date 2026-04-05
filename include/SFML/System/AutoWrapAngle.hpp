@@ -8,6 +8,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Angle.hpp"
 
+#include "SFML/Base/Assert.hpp"
+
 
 namespace sf
 {
@@ -39,7 +41,7 @@ public:
     /// \param angle Angle to initialize from.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] inline constexpr /* implicit */ AutoWrapAngle(Angle angle) :
+    [[nodiscard, gnu::always_inline, gnu::flatten]] inline constexpr /* implicit */ AutoWrapAngle(const Angle angle) :
         m_radians(angle.radians)
     {
     }
@@ -51,7 +53,7 @@ public:
     /// \return Reference to `*this`.
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator=(Angle angle) noexcept
+    [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator=(const Angle angle) noexcept
     {
         m_radians = angle.radians;
         return *this;
@@ -101,7 +103,8 @@ public:
     /// See `sf::Angle::rotatedTowards` for details.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle rotatedTowards(Angle other, float speed) const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle rotatedTowards(const Angle other,
+                                                                                                     const float speed) const
     {
         return operator Angle().rotatedTowards(other, speed);
     }
@@ -120,7 +123,7 @@ public:
     /// Adds `rhs` to the current angle value.
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator+=(Angle rhs)
+    [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator+=(const Angle rhs)
     {
         m_radians += rhs.radians;
         return *this;
@@ -132,7 +135,7 @@ public:
     /// Subtracts `rhs` from the current angle value.
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator-=(Angle rhs)
+    [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator-=(const Angle rhs)
     {
         m_radians -= rhs.radians;
         return *this;
@@ -144,7 +147,7 @@ public:
     /// Multiplies the current angle value by `rhs`.
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator*=(float rhs)
+    [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator*=(const float rhs)
     {
         m_radians *= rhs;
         return *this;
@@ -156,8 +159,10 @@ public:
     /// Divides the current angle value by `rhs`. Asserts if `rhs` is 0.
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator/=(float rhs)
+    [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator/=(const float rhs)
     {
+        SFML_BASE_ASSERT(rhs != 0.f);
+
         m_radians /= rhs;
         return *this;
     }
@@ -169,7 +174,7 @@ public:
     /// before performing the modulo operation. See `sf::Angle::operator%`.
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator%=(Angle rhs)
+    [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator%=(const Angle rhs)
     {
         return *this = (operator Angle() % rhs);
     }
