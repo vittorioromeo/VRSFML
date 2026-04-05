@@ -196,13 +196,6 @@ struct [[nodiscard]] Angle
     // NOLINTNEXTLINE(readability-identifier-naming)
     static const Angle Full; //!< Predefined 360 degree angle value
 
-    friend AutoWrapAngle;
-
-
-    ////////////////////////////////////////////////////////////
-    friend constexpr Angle degrees(float angle);
-    friend constexpr Angle radians(float angle);
-
 
     ////////////////////////////////////////////////////////////
     /// \relates Angle
