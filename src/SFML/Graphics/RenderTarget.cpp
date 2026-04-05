@@ -110,21 +110,6 @@ constinit std::atomic<IdType> contextRenderTargetMap[maxIdCount]{};
 
 
 ////////////////////////////////////////////////////////////
-#define SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(fnName, sfEnumType, ...)                                        \
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr GLenum fnName(const sfEnumType sfEnumValue) \
-    {                                                                                                                 \
-        constexpr GLenum glValues[] __VA_ARGS__;                                                                      \
-                                                                                                                      \
-        SFML_BASE_ASSERT(static_cast<unsigned int>(sfEnumValue) < ::sf::base::getArraySize(glValues));                \
-        return glValues[static_cast<unsigned int>(sfEnumValue)];                                                      \
-    }
-
-
-////////////////////////////////////////////////////////////
-#undef SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN
-
-
-////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline void streamVerticesToGPU(const sf::Vertex* vertexData, const sf::base::SizeT vertexCount)
 {
     glCheck(
