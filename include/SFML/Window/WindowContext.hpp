@@ -46,6 +46,7 @@ class VideoModeUtils;
 class Window;
 struct Clipboard;
 struct ContextSettings;
+struct GLVAOGroup;
 struct Joystick;
 struct Keyboard;
 struct Mouse;
@@ -141,6 +142,7 @@ private:
     friend priv::SDLWindowImpl;        // for `getJoystickManager` and `getSDLLayer`
     friend Clipboard;                  // for `getSDLLayer`
     friend Cursor;                     // for `getSDLLayer`
+    friend GLVAOGroup;                 // for `[un]registerUnsharedVAO`
     friend GraphicsContext;            // for `setActiveThreadLocalGlContext`
     friend Joystick;                   // for `getJoystickManager`
     friend Keyboard;                   // for `getSDLLayer`
