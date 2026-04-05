@@ -13,7 +13,10 @@
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <mutex>
@@ -24,8 +27,8 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct MusicReader::Impl
 {
-    InputSoundFile       file;  //!< Input sound file
-    std::recursive_mutex mutex; //!< Mutex protecting the data
+    InputSoundFile file;  //!< Input sound file
+    std::mutex     mutex; //!< Mutex protecting the data
 
     explicit Impl(InputSoundFile&& theFile) : file(SFML_BASE_MOVE(theFile))
     {
