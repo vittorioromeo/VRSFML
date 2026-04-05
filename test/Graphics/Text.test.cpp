@@ -318,6 +318,51 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             sb0 = sf::Font::openFromFile("tuffy.ttf").value();
             CHECK(!guard.fatalErrorTriggered("Font"));
         }
+
+        SECTION("Copy assignment same dependee")
+        {
+            const sf::priv::LifetimeDependee::TestingModeGuard guard{"Font"};
+            CHECK(!guard.fatalErrorTriggered("Font"));
+
+            auto f = sf::Font::openFromFile("tuffy.ttf").value();
+            sf::Text a(f, {});
+            sf::Text b(f, {});
+            CHECK(!guard.fatalErrorTriggered("Font"));
+
+            a = b;
+            CHECK(!guard.fatalErrorTriggered("Font"));
+        }
+
+        SECTION("Copy assignment different dependee")
+        {
+            const sf::priv::LifetimeDependee::TestingModeGuard guard{"Font"};
+            CHECK(!guard.fatalErrorTriggered("Font"));
+
+            auto f1 = sf::Font::openFromFile("tuffy.ttf").value();
+            auto f2 = sf::Font::openFromFile("tuffy.ttf").value();
+            sf::Text a(f1, {});
+            sf::Text b(f2, {});
+            CHECK(!guard.fatalErrorTriggered("Font"));
+
+            a = b;
+            CHECK(!guard.fatalErrorTriggered("Font"));
+        }
+
+        SECTION("Repeated copy assignment does not inflate count")
+        {
+            const sf::priv::LifetimeDependee::TestingModeGuard guard{"Font"};
+            CHECK(!guard.fatalErrorTriggered("Font"));
+
+            auto f = sf::Font::openFromFile("tuffy.ttf").value();
+            sf::Text a(f, {});
+            sf::Text b(f, {});
+            CHECK(!guard.fatalErrorTriggered("Font"));
+
+            a = b;
+            a = b;
+            a = b;
+            CHECK(!guard.fatalErrorTriggered("Font"));
+        }
     }
 #endif
 }

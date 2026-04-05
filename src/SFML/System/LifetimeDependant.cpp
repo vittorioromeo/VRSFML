@@ -51,8 +51,11 @@ LifetimeDependant& LifetimeDependant::operator=(const LifetimeDependant& rhs) no
     if (&rhs == this)
         return *this;
 
+    subSelfAsDependant();
+
     m_dependeeName = rhs.m_dependeeName;
     m_dependee     = rhs.m_dependee;
+
     addSelfAsDependant();
 
     return *this;
