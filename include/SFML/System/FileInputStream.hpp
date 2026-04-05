@@ -12,7 +12,9 @@
 
 #include "SFML/System/InputStream.hpp"
 
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <cstdio> // TODO P2: try to remove
