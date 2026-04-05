@@ -12,7 +12,7 @@
 
     #include <Doctest.hpp>
 
-    #include <SystemUtil.hpp>
+    #include "SystemUtil.hpp"
 
 
 namespace

@@ -4,6 +4,10 @@
 #include "SFML/Audio/PlaybackDevice.hpp"
 
 // Other 1st party headers
+#include "AudioUtil.hpp"
+#include "LoadIntoMemoryUtil.hpp"
+#include "SystemUtil.hpp"
+
 #include "SFML/Audio/MusicReader.hpp"
 
 #include "SFML/System/FileInputStream.hpp"
@@ -22,10 +26,6 @@
 #include "SFML/Base/Vector.hpp"
 
 #include <Doctest.hpp>
-
-#include <AudioUtil.hpp>
-#include <LoadIntoMemoryUtil.hpp>
-#include <SystemUtil.hpp>
 
 #include <string>
 
@@ -205,7 +205,7 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
         CHECK(!music.isLooping());
     }
 
-#if defined(SFML_ENABLE_LIFETIME_TRACKING) && !defined(SFML_SYSTEM_ADDRESS_SANITIZER_DETECTED)
+#if defined(SFML_ENABLE_LIFETIME_TRACKING)
     SECTION("Lifetime tracking")
     {
         SECTION("Return local from function")

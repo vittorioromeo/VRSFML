@@ -16,7 +16,7 @@
 
 #include <Doctest.hpp>
 
-#include <GraphicsUtil.hpp>
+#include "GraphicsUtil.hpp"
 
 TEST_CASE("[Graphics] sf::RenderStates")
 {

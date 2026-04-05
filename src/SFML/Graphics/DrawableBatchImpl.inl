@@ -15,6 +15,10 @@
 #include "SFML/Graphics/DrawableBatchUtils.hpp"
 #include "SFML/Graphics/EllipseShapeData.hpp"
 #include "SFML/Graphics/Font.hpp"
+#include "SFML/Graphics/FontFace.hpp"
+#include "SFML/Graphics/GlyphMappedText.hpp"
+#include "SFML/Graphics/GlyphMappedTextData.hpp"
+#include "SFML/Graphics/GlyphMapping.hpp"
 #include "SFML/Graphics/IndexType.hpp"
 #include "SFML/Graphics/PieSliceShapeData.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
@@ -103,6 +107,55 @@ namespace
         };
     }
 }
+
+
+////////////////////////////////////////////////////////////
+// Adapter combining GlyphMapping (glyph/metrics) + FontFace (kerning) into a single font source
+struct GlyphMappingWithKerning
+{
+    const sf::GlyphMapping& mapping;
+    const sf::FontFace&     fontFace;
+
+    [[nodiscard]] const sf::Glyph& getGlyph(char32_t cp, unsigned int cs, bool b, float ot) const
+    {
+        return mapping.getGlyph(cp, cs, b, ot);
+    }
+
+    [[nodiscard]] sf::GlyphMapping::GlyphPair getFillAndOutlineGlyph(char32_t cp, unsigned int cs, bool b, float ot) const
+    {
+        return mapping.getFillAndOutlineGlyph(cp, cs, b, ot);
+    }
+
+    [[nodiscard]] float getKerning(char32_t first, char32_t second, unsigned int cs, bool b) const
+    {
+        return fontFace.getKerning(first, second, cs, b);
+    }
+
+    [[nodiscard]] float getLineSpacing(unsigned int cs) const
+    {
+        return mapping.getLineSpacing(cs);
+    }
+
+    [[nodiscard]] float getAscent(unsigned int cs) const
+    {
+        return mapping.getAscent(cs);
+    }
+
+    [[nodiscard]] float getDescent(unsigned int cs) const
+    {
+        return mapping.getDescent(cs);
+    }
+
+    [[nodiscard]] float getUnderlinePosition(unsigned int cs) const
+    {
+        return mapping.getUnderlinePosition(cs);
+    }
+
+    [[nodiscard]] float getUnderlineThickness(unsigned int cs) const
+    {
+        return mapping.getUnderlineThickness(cs);
+    }
+};
 
 } // namespace
 
@@ -283,7 +336,7 @@ void DrawableBatchImpl<TStorage>::add(const DrawIndexedVerticesSettings& setting
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-void DrawableBatchImpl<TStorage>::add(const Text& text)
+void DrawableBatchImpl<TStorage>::addTextImpl(const auto& text)
 {
     const auto [data, size] = text.getVertices();
     SFML_BASE_ASSERT(size % 4u == 0);
@@ -299,6 +352,22 @@ void DrawableBatchImpl<TStorage>::add(const Text& text)
 
     m_storage.commitMoreIndices(6u * numQuads);
     m_storage.commitMoreVertices(4u * numQuads);
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TStorage>
+void DrawableBatchImpl<TStorage>::add(const Text& text)
+{
+    addTextImpl(text);
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TStorage>
+void DrawableBatchImpl<TStorage>::add(const GlyphMappedText& text)
+{
+    addTextImpl(text);
 }
 
 
@@ -1083,13 +1152,18 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const StarShapeData& sdStar)
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-VertexSpan DrawableBatchImpl<TStorage>::add(const Font& font, const TextData& textData)
+VertexSpan DrawableBatchImpl<TStorage>::addTextDataImpl(
+    const auto&        glyphSource,
+    const auto&        textData,
+    const bool         isBold,
+    const unsigned int characterSize,
+    const float        outlineThickness)
 {
     if (textData.string.isEmpty())
         return {};
 
-    const auto fillQuadCount    = TextUtils::precomputeTextQuadCount(textData.string, textData.style);
-    const auto outlineQuadCount = textData.outlineThickness == 0.f ? 0u : fillQuadCount;
+    const auto fillQuadCount = TextUtils::precomputeTextQuadCount(textData.string, textData.underlined, textData.strikeThrough);
+    const auto outlineQuadCount = outlineThickness == 0.f ? 0u : fillQuadCount;
 
     const auto numQuads = fillQuadCount + outlineQuadCount;
 
@@ -1106,13 +1180,16 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const Font& font, const TextData& te
 
     TextUtils::createTextGeometryAndGetBounds<
         /* CalculateBounds */ false>(/* outlineVertexCount */ outlineQuadCount * 4u,
-                                     font,
+                                     glyphSource,
                                      textData.string,
-                                     textData.style,
-                                     textData.characterSize,
+                                     isBold,
+                                     textData.italic,
+                                     textData.underlined,
+                                     textData.strikeThrough,
+                                     characterSize,
                                      textData.letterSpacing,
                                      textData.lineSpacing,
-                                     textData.outlineThickness,
+                                     outlineThickness,
                                      textData.fillColor,
                                      textData.outlineColor,
                                      [&](auto&&... xs) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
@@ -1124,6 +1201,28 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const Font& font, const TextData& te
     m_storage.commitMoreVertices(4u * numQuads);
 
     return {vertexPtr, 4u * numQuads};
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TStorage>
+VertexSpan DrawableBatchImpl<TStorage>::add(const Font& font, const TextData& textData)
+{
+    return addTextDataImpl(font, textData, textData.bold, textData.characterSize, textData.outlineThickness);
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TStorage>
+VertexSpan DrawableBatchImpl<TStorage>::add(const FontFace&            fontFace,
+                                            const GlyphMapping&        glyphMapping,
+                                            const GlyphMappedTextData& textData)
+{
+    return addTextDataImpl(GlyphMappingWithKerning{glyphMapping, fontFace},
+                           textData,
+                           glyphMapping.bold,
+                           glyphMapping.characterSize,
+                           glyphMapping.outlineThickness);
 }
 
 } // namespace sf::priv

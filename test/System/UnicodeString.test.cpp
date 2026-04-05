@@ -11,8 +11,8 @@
 
 #include <Doctest.hpp>
 
-#include <GraphicsUtil.hpp>
-#include <StringifyStdStringUtil.hpp>
+#include "GraphicsUtil.hpp"
+#include "StringifyStdStringUtil.hpp"
 
 #include <ios>
 #include <sstream>

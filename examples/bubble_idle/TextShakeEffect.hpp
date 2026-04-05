@@ -2,7 +2,7 @@
 
 #include "ExampleUtils/RNGFast.hpp"
 
-#include "SFML/Graphics/Text.hpp"
+#include "SFML/System/Angle.hpp"
 
 #include "SFML/Base/Clamp.hpp"
 
@@ -40,7 +40,7 @@ struct [[nodiscard]] TextShakeEffect
     }
 
     ////////////////////////////////////////////////////////////
-    void applyToText(sf::Text& text) const
+    void applyToText(auto& text) const
     {
         text.scale    = {1.f + grow * 0.2f, 1.f + grow * 0.2f};
         text.rotation = sf::radians(angle);

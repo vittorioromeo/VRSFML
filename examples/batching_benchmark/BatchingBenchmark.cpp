@@ -113,6 +113,7 @@ int main()
 
             auto& [text, sprite, torque] = entities.emplaceBack(sf::Text{i % 2u == 0u ? fontTuffy : fontMouldyCheese,
                                                                          {.string           = "abcdefABCDEF",
+                                                                          .characterSize    = 30u,
                                                                           .fillColor        = sf::Color::Black,
                                                                           .outlineColor     = sf::Color::White,
                                                                           .outlineThickness = 5.f}},

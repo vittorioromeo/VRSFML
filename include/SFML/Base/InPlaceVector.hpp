@@ -365,6 +365,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr TItem& back() noexcept
     {
+        SFML_BASE_ASSERT(!empty());
         return this->operator[](size() - 1u);
     }
 
@@ -372,6 +373,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr const TItem& back() const noexcept
     {
+        SFML_BASE_ASSERT(!empty());
         return this->operator[](size() - 1u);
     }
 

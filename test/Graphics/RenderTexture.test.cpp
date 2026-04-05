@@ -20,10 +20,10 @@
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
-#include <GraphicsUtil.hpp>
-#include <StringifyOptionalUtil.hpp>
-#include <SystemUtil.hpp>
-#include <WindowUtil.hpp>
+#include "GraphicsUtil.hpp"
+#include "StringifyOptionalUtil.hpp"
+#include "SystemUtil.hpp"
+#include "WindowUtil.hpp"
 
 
 TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))

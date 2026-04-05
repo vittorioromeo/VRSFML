@@ -26,7 +26,10 @@ enum class [[nodiscard]] Style : unsigned int
     Default = Titlebar | Resize | Close //!< Default window style
 };
 
+
+////////////////////////////////////////////////////////////
 SFML_BASE_DEFINE_ENUM_CLASS_BITWISE_OPS(Style);
+
 
 ////////////////////////////////////////////////////////////
 /// \ingroup window

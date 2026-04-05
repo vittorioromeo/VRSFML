@@ -135,7 +135,8 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec2<T> Vec2<T>::clampMaxLengthSquared(const T maxLengthSquared) const
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec2<T> Vec2<T>::clampMaxLengthSquared(
+    const T maxLengthSquared) const
 {
     static_assert(SFML_BASE_IS_FLOATING_POINT(T));
 
@@ -160,8 +161,8 @@ template <typename T>
 
     const T currentLengthSquared = lengthSquared();
 
-    SFML_BASE_ASSERT_AND_ASSUME((currentLengthSquared != T{0} || minLength == T{0}) &&
-                                "cannot clamp zero vec2 to a positive minimum length");
+    SFML_BASE_ASSERT_AND_ASSUME(
+        (currentLengthSquared != T{0} || minLength == T{0}) && "cannot clamp zero vec2 to a positive minimum length");
 
     if (currentLengthSquared >= minLength * minLength)
         return *this;
@@ -172,7 +173,8 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec2<T> Vec2<T>::clampMinLengthSquared(const T minLengthSquared) const
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec2<T> Vec2<T>::clampMinLengthSquared(
+    const T minLengthSquared) const
 {
     static_assert(SFML_BASE_IS_FLOATING_POINT(T));
 
@@ -193,7 +195,7 @@ template <typename T>
 ////////////////////////////////////////////////////////////
 template <typename T>
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec2<T> Vec2<T>::clampLength(const T minLength,
-                                                                                                 const T maxLength) const
+                                                                                                  const T maxLength) const
 {
     static_assert(SFML_BASE_IS_FLOATING_POINT(T));
 
@@ -201,8 +203,8 @@ template <typename T>
 
     const T currentLengthSquared = lengthSquared();
 
-    SFML_BASE_ASSERT_AND_ASSUME((currentLengthSquared != T{0} || minLength == T{0}) &&
-                                "cannot clamp zero vec2 to a positive minimum length");
+    SFML_BASE_ASSERT_AND_ASSUME(
+        (currentLengthSquared != T{0} || minLength == T{0}) && "cannot clamp zero vec2 to a positive minimum length");
 
     const T minLengthSquared = minLength * minLength;
     const T maxLengthSquared = maxLength * maxLength;
@@ -227,8 +229,9 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec2<T> Vec2<T>::clampLengthSquared(const T minLengthSquared,
-                                                                                                        const T maxLengthSquared) const
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec2<T> Vec2<T>::clampLengthSquared(
+    const T minLengthSquared,
+    const T maxLengthSquared) const
 {
     static_assert(SFML_BASE_IS_FLOATING_POINT(T));
 

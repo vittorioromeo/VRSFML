@@ -180,8 +180,18 @@ public:
     explicit PitchVolume(sf::Listener& listener, const sf::Font& font) :
         Effect("Pitch / Volume"),
         m_listener(listener),
-        m_pitchText(font, {.position = {windowWidth / 2.f - 120.f, windowHeight / 2.f - 80.f}}),
-        m_volumeText(font, {.position = {windowWidth / 2.f - 120.f, windowHeight / 2.f - 30.f}})
+        m_pitchText(font,
+                    {
+                        .position      = {windowWidth / 2.f - 120.f, windowHeight / 2.f - 80.f},
+                        .string        = "",
+                        .characterSize = 30u,
+                    }),
+        m_volumeText(font,
+                     {
+                         .position      = {windowWidth / 2.f - 120.f, windowHeight / 2.f - 30.f},
+                         .string        = "",
+                         .characterSize = 30u,
+                     })
     {
     }
 
@@ -429,11 +439,29 @@ public:
         Effect("Tone Generator"),
         m_listener(listener),
         m_instruction(font,
-                      {.position = {windowWidth / 2.f - 370.f, windowHeight / 2.f - 200.f},
-                       .string   = "Press up and down arrows to change the current wave type"}),
-        m_currentType(font, {.position = {windowWidth / 2.f - 150.f, windowHeight / 2.f - 100.f}}),
-        m_currentAmplitude(font, {.position = {windowWidth / 2.f - 150.f, windowHeight / 2.f - 50.f}}),
-        m_currentFrequency(font, {.position = {windowWidth / 2.f - 150.f, windowHeight / 2.f}})
+                      {
+                          .position      = {windowWidth / 2.f - 370.f, windowHeight / 2.f - 200.f},
+                          .string        = "Press up and down arrows to change the current wave type",
+                          .characterSize = 30,
+                      }),
+        m_currentType(font,
+                      {
+                          .position      = {windowWidth / 2.f - 150.f, windowHeight / 2.f - 100.f},
+                          .string        = "",
+                          .characterSize = 30u,
+                      }),
+        m_currentAmplitude(font,
+                           {
+                               .position      = {windowWidth / 2.f - 150.f, windowHeight / 2.f - 50.f},
+                               .string        = "",
+                               .characterSize = 30u,
+                           }),
+        m_currentFrequency(font,
+                           {
+                               .position      = {windowWidth / 2.f - 150.f, windowHeight / 2.f},
+                               .string        = "",
+                               .characterSize = 30u,
+                           })
     {
     }
 
@@ -552,8 +580,18 @@ public:
     explicit Doppler(sf::Listener& listener, const sf::Font& font) :
         Effect("Doppler Shift"),
         m_listener(listener),
-        m_currentVelocity(font, {.position = {windowWidth / 2.f - 150.f, windowHeight * 3.f / 4.f - 50.f}}),
-        m_currentFactor(font, {.position = {windowWidth / 2.f - 150.f, windowHeight * 3.f / 4.f}})
+        m_currentVelocity(font,
+                          {
+                              .position      = {windowWidth / 2.f - 150.f, windowHeight * 3.f / 4.f - 50.f},
+                              .string        = "",
+                              .characterSize = 30u,
+                          }),
+        m_currentFactor(font,
+                        {
+                            .position      = {windowWidth / 2.f - 150.f, windowHeight * 3.f / 4.f},
+                            .string        = "",
+                            .characterSize = 30u,
+                        })
     {
         m_position.y = (windowHeight - 20.f) / 2.f - 40.f;
     }
@@ -678,8 +716,8 @@ protected:
     explicit Processing(sf::Listener& listener, const sf::Font& font, sf::base::String name) :
         Effect(SFML_BASE_MOVE(name)),
         m_listener(listener),
-        m_enabledText(font, {.string = "Processing: Enabled"}),
-        m_instructions(font, {.string = "Press Space to enable/disable processing"})
+        m_enabledText(font, {.string = "Processing: Enabled", .characterSize = 30u}),
+        m_instructions(font, {.string = "Press Space to enable/disable processing", .characterSize = 30u})
     {
         m_listenerShape.position = {(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f};
 

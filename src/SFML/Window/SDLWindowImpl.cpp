@@ -882,7 +882,8 @@ Vec2i SDLWindowImpl::getPosition() const
 ////////////////////////////////////////////////////////////
 void SDLWindowImpl::setPosition(const Vec2i position)
 {
-    SDL_SetWindowPosition(m_impl->sdlWindow, position.x, position.y);
+    if (!SDL_SetWindowPosition(m_impl->sdlWindow, position.x, position.y))
+        err() << "Failed to set window position: " << SDL_GetError();
 }
 
 

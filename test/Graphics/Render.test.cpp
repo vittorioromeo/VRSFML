@@ -10,8 +10,8 @@
 
 #include <Doctest.hpp>
 
-#include <GraphicsUtil.hpp>
-#include <WindowUtil.hpp>
+#include "GraphicsUtil.hpp"
+#include "WindowUtil.hpp"
 
 TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
 {

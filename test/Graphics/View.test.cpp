@@ -18,8 +18,8 @@
 #include <Doctest.hpp>
 #include <doctest/parts/doctest_fwd.h>
 
-#include <GraphicsUtil.hpp>
-#include <SystemUtil.hpp>
+#include "GraphicsUtil.hpp"
+#include "SystemUtil.hpp"
 
 
 TEST_CASE("[Graphics] sf::View")

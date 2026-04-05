@@ -10,8 +10,8 @@
 
 #include <Doctest.hpp>
 
-#include <GraphicsUtil.hpp>
-#include <SystemUtil.hpp>
+#include "GraphicsUtil.hpp"
+#include "SystemUtil.hpp"
 
 #include <iomanip>
 #include <limits>

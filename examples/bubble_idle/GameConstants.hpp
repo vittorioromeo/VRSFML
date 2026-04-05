@@ -4,7 +4,7 @@
 
 #include "SFML/System/Vec2Base.hpp"
 
-#include <array>
+#include "SFML/Base/Array.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -22,7 +22,7 @@ struct [[nodiscard]] GameConstants
         sf::Vec2f origin{};
     };
 
-    std::array<sf::Vec2f, nCatTypes> catTailOffsetsByType{{
+    sf::base::Array<sf::Vec2f, nCatTypes> catTailOffsetsByType{{
         {-40.f, 0.f},    // Normal
         {-35.f, -222.f}, // Uni
         {-8.f, 2.f},     // Devil
@@ -37,7 +37,7 @@ struct [[nodiscard]] GameConstants
         {0.f, 0.f},      // Duck
     }};
 
-    std::array<sf::Vec2f, nCatTypes> catDrawOffsetsByType{{
+    sf::base::Array<sf::Vec2f, nCatTypes> catDrawOffsetsByType{{
         {0.f, 0.f}, // Normal
         {0.f, 0.f}, // Uni
         {0.f, 0.f}, // Devil
@@ -52,7 +52,7 @@ struct [[nodiscard]] GameConstants
         {0.f, 0.f}, // Duck
     }};
 
-    std::array<sf::Vec2f, nCatTypes> catEyeOffsetsByType{{
+    sf::base::Array<sf::Vec2f, nCatTypes> catEyeOffsetsByType{{
         {-40.f, 0.f},    // Normal
         {-35.f, -222.f}, // Uni
         {-8.f, 2.f},     // Devil
@@ -67,7 +67,7 @@ struct [[nodiscard]] GameConstants
         {0.f, 0.f},      // Duck
     }};
 
-    std::array<float, nCatTypes> catHueByType{{
+    sf::base::Array<float, nCatTypes> catHueByType{{
         0.f,    // Normal
         160.f,  // Uni
         -25.f,  // Devil
@@ -82,7 +82,7 @@ struct [[nodiscard]] GameConstants
         0.f,    // Duck
     }};
 
-    std::array<CloudModifier, nCatTypes> cloudModifiers{{
+    sf::base::Array<CloudModifier, nCatTypes> cloudModifiers{{
         CloudModifier{{0.f, 0.f}, 1.f},    // Normal
         CloudModifier{{0.f, -10.f}, 1.5f}, // Uni
         CloudModifier{{0.f, 0.f}, 1.5f},   // Devil

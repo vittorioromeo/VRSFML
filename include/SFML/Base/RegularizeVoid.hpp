@@ -9,7 +9,7 @@
 #include "SFML/Base/Trait/IsSame.hpp"
 
 
-namespace sf
+namespace sf::base
 {
 ////////////////////////////////////////////////////////////
 struct RegularizeVoidDummy
@@ -32,4 +32,4 @@ template <typename F>
     }
 }
 
-} // namespace sf
+} // namespace sf::base

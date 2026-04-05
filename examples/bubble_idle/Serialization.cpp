@@ -16,6 +16,7 @@
 
 #include "ExampleUtils/Timer.hpp"
 
+#include "SFML/Base/Array.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/Vector.hpp"
@@ -217,6 +218,17 @@ void assignIfPresent(const nlohmann::json& j, const char* key, T& value)
 
     if (const auto it = j.find(key); it != j.end())
         it->get_to(value);
+}
+
+////////////////////////////////////////////////////////////
+template <typename T, SizeT N>
+void assignIfPresent(const nlohmann::json& j, const char* key, sf::base::Array<T, N>& value)
+{
+    if (!j.is_object())
+        return;
+
+    if (const auto it = j.find(key); it != j.end())
+        it->get_to(value.elements);
 }
 
 } // namespace
@@ -596,102 +608,101 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Prof
     auto version = currentVersion;
     twoWay<Serialize>(0u, j, version);
 
-    twoWay<Serialize>(
-        1u,
-        j,
+    twoWay<Serialize>(1u,
+                      j,
 
-        p.masterVolume,
-        p.musicVolume,
+                      p.masterVolume,
+                      p.musicVolume,
 
-        p.playAudioInBackground,
-        p.playComboEndSound,
+                      p.playAudioInBackground,
+                      p.playComboEndSound,
 
-        p.selectedBGM,
+                      p.selectedBGM,
 
-        p.minimapScale,
-        p.hudScale,
-        p.uiScale,
+                      p.minimapScale,
+                      p.hudScale,
+                      p.uiScale,
 
-        p.tipsEnabled,
+                      p.tipsEnabled,
 
-        p.backgroundOpacity,
-        p.selectedBackground,
-        p.alwaysShowDrawings,
+                      p.backgroundOpacity,
+                      p.selectedBackground,
+                      p.alwaysShowDrawings,
 
-        p.showCatRange,
-        p.showRangesOnlyOnHover,
-        p.showCatText,
-        p.showParticles,
-        p.showTextParticles,
-        p.accumulatingCombo,
-        p.showCursorComboText,
-        p.useBubbleShader,
+                      p.showCatRange,
+                      p.showRangesOnlyOnHover,
+                      p.showCatText,
+                      p.showParticles,
+                      p.showTextParticles,
+                      p.accumulatingCombo,
+                      p.showCursorComboText,
+                      p.useBubbleShader,
 
-        p.cursorTrailMode,
-        p.cursorTrailScale,
+                      p.cursorTrailMode,
+                      p.cursorTrailScale,
 
-        p.bsIridescenceStrength,
-        p.bsEdgeFactorMin,
-        p.bsEdgeFactorMax,
-        p.bsEdgeFactorStrength,
-        p.bsDistortionStrength,
-        p.bsBubbleLightness,
-        p.bsLensDistortion,
+                      p.bsIridescenceStrength,
+                      p.bsEdgeFactorMin,
+                      p.bsEdgeFactorMax,
+                      p.bsEdgeFactorStrength,
+                      p.bsDistortionStrength,
+                      p.bsBubbleLightness,
+                      p.bsLensDistortion,
 
-        p.statsLifetime,
+                      p.statsLifetime,
 
-        p.resWidth,
+                      p.resWidth,
 
-        p.windowed,
-        p.vsync,
+                      p.windowed,
+                      p.vsync,
 
-        p.frametimeLimit,
+                      p.frametimeLimit,
 
-        p.highVisibilityCursor,
-        p.multicolorCursor,
+                      p.highVisibilityCursor,
+                      p.multicolorCursor,
 
-        p.cursorHue,
-        p.cursorScale,
+                      p.cursorHue,
+                      p.cursorScale,
 
-        p.showCoinParticles,
-        p.showDpsMeter,
+                      p.showCoinParticles,
+                      p.showDpsMeter,
 
-        p.enableNotifications,
-        p.showFullManaNotification,
+                      p.enableNotifications,
+                      p.showFullManaNotification,
 
-        p.unlockedAchievements,
+                      p.unlockedAchievements,
 
-        p.uiUnlocks,
+                      p.uiUnlocks,
 
-        p.ppSVibrance,
-        p.ppSSaturation,
-        p.ppSLightness,
-        p.ppSSharpness,
+                      p.ppSVibrance,
+                      p.ppSSaturation,
+                      p.ppSLightness,
+                      p.ppSSharpness,
 
-        p.showBubbles,
-        p.invertMouseButtons,
-        p.showDollParticleBorder,
+                      p.showBubbles,
+                      p.invertMouseButtons,
+                      p.showDollParticleBorder,
 
-        p.catDragPressDuration,
-        p.playWitchRitualSounds,
-        p.enableScreenShake,
-        p.enableCatBobbing,
-        p.catRangeOutlineThickness,
+                      p.catDragPressDuration,
+                      p.playWitchRitualSounds,
+                      p.enableScreenShake,
+                      p.enableCatBobbing,
+                      p.catRangeOutlineThickness,
 
-        p.showCursorComboBar,
-        p.sfxVolume,
+                      p.showCursorComboBar,
+                      p.sfxVolume,
 
-        p.hideMaxedOutPurchasables,
-        p.hideCategorySeparators,
+                      p.hideMaxedOutPurchasables,
+                      p.hideCategorySeparators,
 
-        p.autobatchMode,
+                      p.autobatchMode,
 
-        p.ppSBlur,
-        p.ppBGVibrance,
-        p.ppBGSaturation,
-        p.ppBGLightness,
-        p.ppBGSharpness,
-        p.ppBGBlur);
+                      p.ppSBlur,
+                      p.ppBGVibrance,
+                      p.ppBGSaturation,
+                      p.ppBGLightness,
+                      p.ppBGSharpness,
+                      p.ppBGBlur);
 }
 
 ////////////////////////////////////////////////////////////
