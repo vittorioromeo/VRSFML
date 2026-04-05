@@ -1,6 +1,4 @@
 #pragma once
-#include "SFML/Base/SizeT.hpp"
-#pragma once
 // LICENSE AND COPYRIGHT (C) INFORMATION
 // https://github.com/vittorioromeo/VRSFML/blob/master/license.md
 
@@ -8,10 +6,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Config.hpp"
+
 #include "SFML/System/Export.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Math/Sqrt.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Trait/IsFloatingPoint.hpp"
 
 
@@ -149,6 +150,198 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr bool operator==(const Vec3<T>& rhs) const = default;
 
+
+    ////////////////////////////////////////////////////////////
+    /// \relates Vec3
+    /// \brief Overload of unary `operator-`
+    ///
+    /// \param rhs Vector to negate
+    ///
+    /// \return Member-wise opposite of the vec3
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr Vec3 operator-(const Vec3& rhs)
+    {
+        return Vec3(-rhs.x, -rhs.y, -rhs.z);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \relates Vec3
+    /// \brief Overload of binary `operator+=`
+    ///
+    /// This operator performs a member-wise addition of both vec3s,
+    /// and assigns the result to `lhs`.
+    ///
+    /// \param lhs  Left operand (a vec3)
+    /// \param rhs Right operand (a vec3)
+    ///
+    /// \return Reference to `lhs`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] friend constexpr Vec3& operator+=(Vec3& lhs, const Vec3& rhs)
+    {
+        lhs.x += rhs.x;
+        lhs.y += rhs.y;
+        lhs.z += rhs.z;
+
+        return lhs;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \relates Vec3
+    /// \brief Overload of binary `operator-=`
+    ///
+    /// This operator performs a member-wise subtraction of both vec3s,
+    /// and assigns the result to `lhs`.
+    ///
+    /// \param lhs  Left operand (a vec3)
+    /// \param rhs Right operand (a vec3)
+    ///
+    /// \return Reference to `lhs`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] friend constexpr Vec3& operator-=(Vec3& lhs, const Vec3& rhs)
+    {
+        lhs.x -= rhs.x;
+        lhs.y -= rhs.y;
+        lhs.z -= rhs.z;
+
+        return lhs;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \relates Vec3
+    /// \brief Overload of binary `operator+`
+    ///
+    /// \param lhs  Left operand (a vec3)
+    /// \param rhs Right operand (a vec3)
+    ///
+    /// \return Member-wise addition of both vec3s
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr Vec3 operator+(const Vec3& lhs, const Vec3& rhs)
+    {
+        return Vec3(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \relates Vec3
+    /// \brief Overload of binary `operator-`
+    ///
+    /// \param lhs  Left operand (a vec3)
+    /// \param rhs Right operand (a vec3)
+    ///
+    /// \return Member-wise subtraction of both vec3s
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr Vec3 operator-(const Vec3& lhs, const Vec3& rhs)
+    {
+        return Vec3(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \relates Vec3
+    /// \brief Overload of binary `operator*`
+    ///
+    /// \param lhs  Left operand (a vec3)
+    /// \param rhs Right operand (a scalar value)
+    ///
+    /// \return Member-wise multiplication by `rhs`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr Vec3 operator*(const Vec3& lhs, const T rhs)
+    {
+        return Vec3(lhs.x * rhs, lhs.y * rhs, lhs.z * rhs);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \relates Vec3
+    /// \brief Overload of binary `operator*`
+    ///
+    /// \param lhs  Left operand (a scalar value)
+    /// \param rhs Right operand (a vec3)
+    ///
+    /// \return Member-wise multiplication by `lhs`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr Vec3 operator*(const T lhs, const Vec3& rhs)
+    {
+        return Vec3(rhs.x * lhs, rhs.y * lhs, rhs.z * lhs);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \relates Vec3
+    /// \brief Overload of binary `operator*=`
+    ///
+    /// This operator performs a member-wise multiplication by `rhs`,
+    /// and assigns the result to `lhs`.
+    ///
+    /// \param lhs  Left operand (a vec3)
+    /// \param rhs Right operand (a scalar value)
+    ///
+    /// \return Reference to `lhs`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] friend constexpr Vec3& operator*=(Vec3& lhs, const T rhs)
+    {
+        lhs.x *= rhs;
+        lhs.y *= rhs;
+        lhs.z *= rhs;
+
+        return lhs;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \relates Vec3
+    /// \brief Overload of binary `operator/`
+    ///
+    /// \param lhs  Left operand (a vec3)
+    /// \param rhs Right operand (a scalar value)
+    ///
+    /// \return Member-wise division by `rhs`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr Vec3 operator/(const Vec3& lhs, const T rhs)
+    {
+        SFML_BASE_ASSERT(rhs != 0 && "cannot divide by 0");
+
+        return Vec3(lhs.x / rhs, lhs.y / rhs, lhs.z / rhs);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \relates Vec3
+    /// \brief Overload of binary `operator/=`
+    ///
+    /// This operator performs a member-wise division by `rhs`,
+    /// and assigns the result to `lhs`.
+    ///
+    /// \param lhs  Left operand (a vec3)
+    /// \param rhs Right operand (a scalar value)
+    ///
+    /// \return Reference to `lhs`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] friend constexpr Vec3& operator/=(Vec3& lhs, const T rhs)
+    {
+        SFML_BASE_ASSERT(rhs != 0 && "cannot divide by 0");
+
+        lhs.x /= rhs;
+        lhs.y /= rhs;
+        lhs.z /= rhs;
+
+        return lhs;
+    }
+
+
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
@@ -156,207 +349,6 @@ public:
     T y{}; //!< Y coordinate of the vec3
     T z{}; //!< Z coordinate of the vec3
 };
-
-
-////////////////////////////////////////////////////////////
-/// \relates Vec3
-/// \brief Overload of unary `operator-`
-///
-/// \param lhs Vector to negate
-///
-/// \return Member-wise opposite of the vec3
-///
-////////////////////////////////////////////////////////////
-template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec3<T> operator-(const Vec3<T>& lhs)
-{
-    return Vec3<T>(-lhs.x, -lhs.y, -lhs.z);
-}
-
-
-////////////////////////////////////////////////////////////
-/// \relates Vec3
-/// \brief Overload of binary `operator+=`
-///
-/// This operator performs a member-wise addition of both vec3s,
-/// and assigns the result to `lhs`.
-///
-/// \param lhs  Left operand (a vec3)
-/// \param rhs Right operand (a vec3)
-///
-/// \return Reference to `lhs`
-///
-////////////////////////////////////////////////////////////
-template <typename T>
-[[gnu::always_inline, gnu::flatten]] constexpr Vec3<T>& operator+=(Vec3<T>& lhs, const Vec3<T>& rhs)
-{
-    lhs.x += rhs.x;
-    lhs.y += rhs.y;
-    lhs.z += rhs.z;
-
-    return lhs;
-}
-
-
-////////////////////////////////////////////////////////////
-/// \relates Vec3
-/// \brief Overload of binary `operator-=`
-///
-/// This operator performs a member-wise subtraction of both vec3s,
-/// and assigns the result to `lhs`.
-///
-/// \param lhs  Left operand (a vec3)
-/// \param rhs Right operand (a vec3)
-///
-/// \return Reference to `lhs`
-///
-////////////////////////////////////////////////////////////
-template <typename T>
-[[gnu::always_inline, gnu::flatten]] constexpr Vec3<T>& operator-=(Vec3<T>& lhs, const Vec3<T>& rhs)
-{
-    lhs.x -= rhs.x;
-    lhs.y -= rhs.y;
-    lhs.z -= rhs.z;
-
-    return lhs;
-}
-
-
-////////////////////////////////////////////////////////////
-/// \relates Vec3
-/// \brief Overload of binary `operator+`
-///
-/// \param lhs  Left operand (a vec3)
-/// \param rhs Right operand (a vec3)
-///
-/// \return Member-wise addition of both vec3s
-///
-////////////////////////////////////////////////////////////
-template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec3<T> operator+(const Vec3<T>& lhs, const Vec3<T>& rhs)
-{
-    return Vec3<T>(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z);
-}
-
-
-////////////////////////////////////////////////////////////
-/// \relates Vec3
-/// \brief Overload of binary `operator-`
-///
-/// \param lhs  Left operand (a vec3)
-/// \param rhs Right operand (a vec3)
-///
-/// \return Member-wise subtraction of both vec3s
-///
-////////////////////////////////////////////////////////////
-template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec3<T> operator-(const Vec3<T>& lhs, const Vec3<T>& rhs)
-{
-    return Vec3<T>(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z);
-}
-
-
-////////////////////////////////////////////////////////////
-/// \relates Vec3
-/// \brief Overload of binary `operator*`
-///
-/// \param lhs  Left operand (a vec3)
-/// \param rhs Right operand (a scalar value)
-///
-/// \return Member-wise multiplication by `rhs`
-///
-////////////////////////////////////////////////////////////
-template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec3<T> operator*(const Vec3<T>& lhs, const T rhs)
-{
-    return Vec3<T>(lhs.x * rhs, lhs.y * rhs, lhs.z * rhs);
-}
-
-
-////////////////////////////////////////////////////////////
-/// \relates Vec3
-/// \brief Overload of binary `operator*`
-///
-/// \param lhs  Left operand (a scalar value)
-/// \param rhs Right operand (a vec3)
-///
-/// \return Member-wise multiplication by `lhs`
-///
-////////////////////////////////////////////////////////////
-template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec3<T> operator*(const T lhs, const Vec3<T>& rhs)
-{
-    return Vec3<T>(rhs.x * lhs, rhs.y * lhs, rhs.z * lhs);
-}
-
-
-////////////////////////////////////////////////////////////
-/// \relates Vec3
-/// \brief Overload of binary `operator*=`
-///
-/// This operator performs a member-wise multiplication by `rhs`,
-/// and assigns the result to `lhs`.
-///
-/// \param lhs  Left operand (a vec3)
-/// \param rhs Right operand (a scalar value)
-///
-/// \return Reference to `lhs`
-///
-////////////////////////////////////////////////////////////
-template <typename T>
-[[gnu::always_inline, gnu::flatten]] constexpr Vec3<T>& operator*=(Vec3<T>& lhs, const T rhs)
-{
-    lhs.x *= rhs;
-    lhs.y *= rhs;
-    lhs.z *= rhs;
-
-    return lhs;
-}
-
-
-////////////////////////////////////////////////////////////
-/// \relates Vec3
-/// \brief Overload of binary `operator/`
-///
-/// \param lhs  Left operand (a vec3)
-/// \param rhs Right operand (a scalar value)
-///
-/// \return Member-wise division by `rhs`
-///
-////////////////////////////////////////////////////////////
-template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec3<T> operator/(const Vec3<T>& lhs, const T rhs)
-{
-    SFML_BASE_ASSERT(rhs != 0 && "cannot divide by 0");
-
-    return Vec3<T>(lhs.x / rhs, lhs.y / rhs, lhs.z / rhs);
-}
-
-
-////////////////////////////////////////////////////////////
-/// \relates Vec3
-/// \brief Overload of binary `operator/=`
-///
-/// This operator performs a member-wise division by `rhs`,
-/// and assigns the result to `lhs`.
-///
-/// \param lhs  Left operand (a vec3)
-/// \param rhs Right operand (a scalar value)
-///
-/// \return Reference to `lhs`
-///
-////////////////////////////////////////////////////////////
-template <typename T>
-[[gnu::always_inline, gnu::flatten]] constexpr Vec3<T>& operator/=(Vec3<T>& lhs, const T rhs)
-{
-    SFML_BASE_ASSERT(rhs != 0 && "cannot divide by 0");
-
-    lhs.x /= rhs;
-    lhs.y /= rhs;
-    lhs.z /= rhs;
-
-    return lhs;
-}
 
 // Aliases for the most common types
 using Vec3i  = Vec3<int>;
