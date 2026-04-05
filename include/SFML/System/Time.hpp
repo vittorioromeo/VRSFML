@@ -62,7 +62,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr base::I32 asMilliseconds() const
     {
-        return static_cast<base::I32>(static_cast<float>(m_microseconds) / 1000.f);
+        return static_cast<base::I32>(m_microseconds / 1000);
     }
 
 
@@ -302,7 +302,7 @@ private:
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator*(Time lhs, float rhs)
 {
-    return seconds(lhs.asSeconds() * rhs);
+    return Time(static_cast<base::I64>(static_cast<float>(lhs.asMicroseconds()) * rhs));
 }
 
 
@@ -399,7 +399,7 @@ private:
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator/(const Time lhs, const float rhs)
 {
     SFML_BASE_ASSERT(rhs != 0 && "Time::operator/ cannot divide by 0");
-    return seconds(lhs.asSeconds() / rhs);
+    return Time(static_cast<base::I64>(static_cast<float>(lhs.asMicroseconds()) / rhs));
 }
 
 
@@ -467,7 +467,7 @@ private:
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr float operator/(const Time lhs, const Time rhs)
 {
     SFML_BASE_ASSERT(rhs.asMicroseconds() != 0 && "Time::operator/ cannot divide by 0");
-    return lhs.asSeconds() / rhs.asSeconds();
+    return static_cast<float>(lhs.asMicroseconds()) / static_cast<float>(rhs.asMicroseconds());
 }
 
 
