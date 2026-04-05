@@ -39,9 +39,9 @@ int main()
 
     const sf::Vec2u size{static_cast<unsigned int>(width), static_cast<unsigned int>(height)};
 
-    auto baseRenderTexture = sf::RenderTexture::create(size, {.antiAliasingLevel = 0, .sRgbCapable = true}).value();
+    auto baseRenderTexture = sf::RenderTexture::create(size, {.antiAliasingLevel = 0}).value();
 
-    auto leftInnerRT = sf::RenderTexture::create(size, {.antiAliasingLevel = 4, .sRgbCapable = true}).value();
+    auto leftInnerRT = sf::RenderTexture::create(size, {.antiAliasingLevel = 4}).value();
 
     const sf::Vertex leftVertexArray[6]{{{0.f, 0.f}, sf::Color::Red, {0.f, 0.f}},
                                         {{halfWidth, 0.f}, sf::Color::Red, {halfWidth, 0.f}},
