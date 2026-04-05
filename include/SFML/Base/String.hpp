@@ -59,8 +59,24 @@ private:
     ////////////////////////////////////////////////////////////
     enum [[nodiscard]] : unsigned char
     {
-        flagIsHeap = 0x01, // Use the LSB of the last byte to indicate non-SSO
+        flagIsHeap = 0x01, // Flag bit in the last byte of the union to indicate non-SSO
     };
+
+
+    ////////////////////////////////////////////////////////////
+    // `buffer[maxSsoSize]` (last byte of the union) overlaps with byte
+    // `sizeof(SizeT) - 1` of `capacityAndFlag` in memory. Which *numeric*
+    // bit that byte corresponds to depends on endianness:
+    //   LE: last memory byte = MSB → flag at bit `((sizeof(SizeT) - 1) * 8)`
+    //   BE: last memory byte = LSB → flag at bit `0`
+    //
+    // GCC/Clang always define `__BYTE_ORDER__`; MSVC is always little-endian.
+    ////////////////////////////////////////////////////////////
+#if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+    static constexpr SizeT heapFlagMask = static_cast<SizeT>(flagIsHeap);
+#else
+    static constexpr SizeT heapFlagMask = static_cast<SizeT>(flagIsHeap) << ((sizeof(SizeT) - 1) * 8);
+#endif
 
 
     ////////////////////////////////////////////////////////////
@@ -68,7 +84,7 @@ private:
     {
         char* data{nullptr};
         SizeT size{0u};
-        SizeT capacityAndFlag{0u}; // The LSB is the SSO flag (0 for heap)
+        SizeT capacityAndFlag{0u}; // Stores `(capacity << 1) | heapFlagMask`
     };
 
 
@@ -115,21 +131,14 @@ private:
     {
         m_rep.heap.data            = data;
         m_rep.heap.size            = size;
-        m_rep.heap.capacityAndFlag = (capacity << 1);
-
-        // Set the flag in the high byte (byte 23) by setting the high bit
-        // On little-endian, this is bit 56 of the 64-bit value
-        constexpr SizeT flagMask = static_cast<SizeT>(flagIsHeap) << ((sizeof(SizeT) * 8) - 8);
-        m_rep.heap.capacityAndFlag |= flagMask;
+        m_rep.heap.capacityAndFlag = (capacity << 1) | heapFlagMask;
     }
 
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT getHeapCapacity() const noexcept
     {
-        // Mask out the flag bit from the high byte before shifting
-        constexpr SizeT flagMask = static_cast<SizeT>(flagIsHeap) << ((sizeof(SizeT) * 8) - 8);
-        return (m_rep.heap.capacityAndFlag & ~flagMask) >> 1;
+        return (m_rep.heap.capacityAndFlag & ~heapFlagMask) >> 1;
     }
 
 
@@ -472,7 +481,7 @@ public:
 namespace sf::base::literals
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline String operator""_s(const char* const cStr, const SizeT len) noexcept
+[[nodiscard, gnu::always_inline]] inline String operator""_s(const char* const cStr, const SizeT len)
 {
     return String{cStr, len};
 }
