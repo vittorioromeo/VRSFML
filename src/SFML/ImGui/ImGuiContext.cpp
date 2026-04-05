@@ -362,13 +362,13 @@ struct [[nodiscard]] ImGuiContext::Impl
 
     bool windowHasFocus{false};
     bool mouseMoved{false};
-    bool mousePressed[3]{};
+    base::Array<bool, 3> mousePressed{};
 
     ImGuiMouseCursor lastCursor{ImGuiMouseCursor_COUNT};
 
-    bool  touchDown[3]{};
-    Vec2i touchPositions[3]{};
-    Vec2i lastTouchPos;
+    base::Array<bool, 3>  touchDown{};
+    base::Array<Vec2i, 3> touchPositions{};
+    Vec2i                 lastTouchPos;
 
     unsigned int joystickId;
     ImGuiKey     joystickMapping[Joystick::ButtonCount]{ImGuiKey_None};
@@ -409,8 +409,6 @@ struct [[nodiscard]] ImGuiContext::Impl
                            ImGuiBackendFlags_HasSetMousePos;
 
         io.BackendPlatformName = "imgui_impl_sfml";
-
-        joystickId = getConnectedJoystickId();
 
         // clipboard
         io.SetClipboardTextFn = setClipboardTextFn;
@@ -545,35 +543,28 @@ struct [[nodiscard]] ImGuiContext::Impl
     ////////////////////////////////////////////////////////////
     void processEvent(const Window& window, const Event& event)
     {
+        (void)window;
+
         ImGuiIO& io = ::ImGui::GetIO();
 
-        if (!windowHasFocus && window.hasFocus())
+        if (event.is<Event::FocusGained>())
         {
             io.AddFocusEvent(true);
             windowHasFocus = true;
+            return;
         }
-        else if (windowHasFocus && !window.hasFocus())
+
+        if (event.is<Event::FocusLost>())
         {
             io.AddFocusEvent(false);
             windowHasFocus = false;
-        }
-
-        if (!windowHasFocus && event.is<Event::FocusGained>())
-        {
-            io.AddFocusEvent(true);
-            windowHasFocus = true;
             return;
         }
 
         if (!windowHasFocus)
             return;
 
-        if (windowHasFocus && event.is<Event::FocusLost>())
-        {
-            io.AddFocusEvent(false);
-            windowHasFocus = false;
-        }
-        else if (const auto* resized = event.getIf<Event::Resized>())
+        if (const auto* resized = event.getIf<Event::Resized>())
         {
             io.DisplaySize = ImVec2(static_cast<float>(resized->size.x), static_cast<float>(resized->size.y));
         }
@@ -589,7 +580,7 @@ struct [[nodiscard]] ImGuiContext::Impl
             const int button = static_cast<int>(mouseButtonPressed->button);
             if (button >= 0 && button < 3)
             {
-                mousePressed[static_cast<int>(mouseButtonPressed->button)] = true;
+                mousePressed[static_cast<base::SizeT>(button)] = true;
 
                 io.AddMouseSourceEvent(ImGuiMouseSource_Mouse);
                 io.AddMouseButtonEvent(button, true);
@@ -766,12 +757,13 @@ struct [[nodiscard]] ImGuiContext::Impl
             }
             else
             {
-                io.MousePos = ImVec2(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+                io.AddMousePosEvent(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
             }
 
             for (unsigned int i = 0; i < 3; ++i)
             {
-                io.MouseDown[i] = touchDown[i] || mousePressed[i] || Mouse::isButtonPressed(static_cast<Mouse::Button>(i));
+                const bool isDown = touchDown[i] || mousePressed[i] || Mouse::isButtonPressed(static_cast<Mouse::Button>(i));
+                io.AddMouseButtonEvent(static_cast<int>(i), isDown);
 
                 mousePressed[i] = false;
                 touchDown[i]    = false;
@@ -780,16 +772,16 @@ struct [[nodiscard]] ImGuiContext::Impl
 
 #ifdef ANDROID
     #ifdef USE_JNI
-        if (io.WantTextInput && !s_currWindowCtx->wantTextInput)
+        if (io.WantTextInput && !wantTextInput)
         {
             openKeyboardIME();
-            s_currWindowCtx->wantTextInput = true;
+            wantTextInput = true;
         }
 
-        if (!io.WantTextInput && s_currWindowCtx->wantTextInput)
+        if (!io.WantTextInput && wantTextInput)
         {
             closeKeyboardIME();
-            s_currWindowCtx->wantTextInput = false;
+            wantTextInput = false;
         }
     #endif
 #endif
@@ -856,36 +848,9 @@ void ImGuiContext::setJoystickRTriggerThreshold(float threshold)
 void ImGuiContext::setJoystickMapping(int key, unsigned int joystickButton)
 {
     SFML_BASE_ASSERT(joystickButton < Joystick::ButtonCount);
+    SFML_BASE_ASSERT(key >= ImGuiKey_NamedKey_BEGIN && key < ImGuiKey_NamedKey_END);
 
-    // This function now expects ImGuiKey_* values.
-    // For partial backwards compatibility, also expect some ImGuiNavInput_* values.
-    ImGuiKey finalKey{};
-    switch (key)
-    {
-        case ImGuiKey_GamepadFaceDown:
-            finalKey = ImGuiKey_GamepadFaceDown;
-            break;
-        case ImGuiKey_GamepadFaceRight:
-            finalKey = ImGuiKey_GamepadFaceRight;
-            break;
-        case ImGuiKey_GamepadFaceUp:
-            finalKey = ImGuiKey_GamepadFaceUp;
-            break;
-        case ImGuiKey_GamepadFaceLeft:
-            finalKey = ImGuiKey_GamepadFaceLeft;
-            break;
-        case ImGuiKey_GamepadL1:
-            finalKey = ImGuiKey_GamepadL1;
-            break;
-        case ImGuiKey_GamepadR1:
-            finalKey = ImGuiKey_GamepadR1;
-            break;
-        default:
-            SFML_BASE_ASSERT(key >= ImGuiKey_NamedKey_BEGIN && key < ImGuiKey_NamedKey_END);
-            finalKey = static_cast<ImGuiKey>(key);
-    }
-
-    m_impl->joystickMapping[joystickButton] = finalKey;
+    m_impl->joystickMapping[joystickButton] = static_cast<ImGuiKey>(key);
 }
 
 ////////////////////////////////////////////////////////////
@@ -933,7 +898,7 @@ void ImGuiContext::setRStickYAxis(Joystick::Axis rStickYAxis, bool inverted)
 ////////////////////////////////////////////////////////////
 void ImGuiContext::setLTriggerAxis(Joystick::Axis lTriggerAxis)
 {
-    m_impl->rTriggerInfo.axis = lTriggerAxis;
+    m_impl->lTriggerInfo.axis = lTriggerAxis;
 }
 
 ////////////////////////////////////////////////////////////
@@ -1004,7 +969,7 @@ struct [[nodiscard]] SpriteTextureData
 
 
 ////////////////////////////////////////////////////////////
-thread_local sf::base::String clipboardText;
+sf::base::String clipboardText;
 
 
 ////////////////////////////////////////////////////////////
@@ -1106,6 +1071,7 @@ void ImGuiContext::render(RenderTarget& target)
 // TODO P1: add DrawTextureSettings overload, use in BubbleByte
 void ImGuiContext::image(const Texture& texture, Color tintColor, Color borderColor)
 {
+    ::ImGui::SetCurrentContext(m_impl->imContext);
     image(texture, texture.getSize().toVec2f(), tintColor, borderColor);
 }
 
@@ -1113,6 +1079,7 @@ void ImGuiContext::image(const Texture& texture, Color tintColor, Color borderCo
 ////////////////////////////////////////////////////////////
 void ImGuiContext::image(const Texture& texture, Vec2f size, Color tintColor, Color borderColor)
 {
+    ::ImGui::SetCurrentContext(m_impl->imContext);
     ImTextureID textureID = convertGLTextureHandleToImTextureID(texture.getNativeHandle());
     ::ImGui::Image(textureID, toImVec2(size), ImVec2(0, 0), ImVec2(1, 1), toImColor(tintColor), toImColor(borderColor));
 }
@@ -1121,6 +1088,7 @@ void ImGuiContext::image(const Texture& texture, Vec2f size, Color tintColor, Co
 ////////////////////////////////////////////////////////////
 void ImGuiContext::image(const RenderTexture& texture, Color tintColor, Color borderColor)
 {
+    ::ImGui::SetCurrentContext(m_impl->imContext);
     image(texture, texture.getSize().toVec2f(), tintColor, borderColor);
 }
 
@@ -1128,6 +1096,7 @@ void ImGuiContext::image(const RenderTexture& texture, Color tintColor, Color bo
 ////////////////////////////////////////////////////////////
 void ImGuiContext::image(const RenderTexture& texture, Vec2f size, Color tintColor, Color borderColor)
 {
+    ::ImGui::SetCurrentContext(m_impl->imContext);
     ImTextureID textureID = convertGLTextureHandleToImTextureID(texture.getTexture().getNativeHandle());
     ::ImGui::Image(textureID, toImVec2(size), ImVec2(0, 0), ImVec2(1, 1), toImColor(tintColor), toImColor(borderColor));
 }
@@ -1136,6 +1105,7 @@ void ImGuiContext::image(const RenderTexture& texture, Vec2f size, Color tintCol
 ////////////////////////////////////////////////////////////
 void ImGuiContext::image(const Sprite& sprite, const Texture& texture, Color tintColor, Color borderColor)
 {
+    ::ImGui::SetCurrentContext(m_impl->imContext);
     image(sprite, texture, sprite.getGlobalBounds().size, tintColor, borderColor);
 }
 
@@ -1143,6 +1113,7 @@ void ImGuiContext::image(const Sprite& sprite, const Texture& texture, Color tin
 ////////////////////////////////////////////////////////////
 void ImGuiContext::image(const Sprite& sprite, const Texture& texture, Vec2f size, Color tintColor, Color borderColor)
 {
+    ::ImGui::SetCurrentContext(m_impl->imContext);
     const auto [uv0, uv1, textureID] = getSpriteTextureData(sprite, texture);
     ::ImGui::Image(textureID, toImVec2(size), uv0, uv1, toImColor(tintColor), toImColor(borderColor));
 }
@@ -1151,6 +1122,7 @@ void ImGuiContext::image(const Sprite& sprite, const Texture& texture, Vec2f siz
 ////////////////////////////////////////////////////////////
 bool ImGuiContext::imageButton(const char* id, const Texture& texture, Vec2f size, Color bgColor, Color tintColor)
 {
+    ::ImGui::SetCurrentContext(m_impl->imContext);
     const ImTextureID textureID = convertGLTextureHandleToImTextureID(texture.getNativeHandle());
     return ::ImGui::ImageButton(id, textureID, toImVec2(size), ImVec2(0, 0), ImVec2(1, 1), toImColor(bgColor), toImColor(tintColor));
 }
@@ -1159,6 +1131,7 @@ bool ImGuiContext::imageButton(const char* id, const Texture& texture, Vec2f siz
 ////////////////////////////////////////////////////////////
 bool ImGuiContext::imageButton(const char* id, const RenderTexture& texture, Vec2f size, Color bgColor, Color tintColor)
 {
+    ::ImGui::SetCurrentContext(m_impl->imContext);
     const ImTextureID textureID = convertGLTextureHandleToImTextureID(texture.getTexture().getNativeHandle());
     return ::ImGui::ImageButton(id, textureID, toImVec2(size), ImVec2(0, 0), ImVec2(1, 1), toImColor(bgColor), toImColor(tintColor));
 }
@@ -1167,6 +1140,7 @@ bool ImGuiContext::imageButton(const char* id, const RenderTexture& texture, Vec
 ////////////////////////////////////////////////////////////
 bool ImGuiContext::imageButton(const char* id, const Sprite& sprite, const Texture& texture, Vec2f size, Color bgColor, Color tintColor)
 {
+    ::ImGui::SetCurrentContext(m_impl->imContext);
     const auto [uv0, uv1, textureID] = getSpriteTextureData(sprite, texture);
     return ::ImGui::ImageButton(id, textureID, toImVec2(size), uv0, uv1, toImColor(bgColor), toImColor(tintColor));
 }
@@ -1175,6 +1149,7 @@ bool ImGuiContext::imageButton(const char* id, const Sprite& sprite, const Textu
 ////////////////////////////////////////////////////////////
 void ImGuiContext::drawLine(Vec2f a, Vec2f b, Color color, float thickness)
 {
+    ::ImGui::SetCurrentContext(m_impl->imContext);
     ImDrawList* const drawList = ::ImGui::GetWindowDrawList();
     SFML_BASE_ASSERT(drawList != nullptr);
 
@@ -1190,6 +1165,7 @@ void ImGuiContext::drawLine(Vec2f a, Vec2f b, Color color, float thickness)
 ////////////////////////////////////////////////////////////
 void ImGuiContext::drawRect(const Rect2f& rect, Color color, float rounding, int roundingCorners, float thickness)
 {
+    ::ImGui::SetCurrentContext(m_impl->imContext);
     ImDrawList* const drawList = ::ImGui::GetWindowDrawList();
     SFML_BASE_ASSERT(drawList != nullptr);
 
@@ -1205,6 +1181,7 @@ void ImGuiContext::drawRect(const Rect2f& rect, Color color, float rounding, int
 ////////////////////////////////////////////////////////////
 void ImGuiContext::drawRectFilled(const Rect2f& rect, Color color, float rounding, int roundingCorners)
 {
+    ::ImGui::SetCurrentContext(m_impl->imContext);
     ImDrawList* const drawList = ::ImGui::GetWindowDrawList();
     SFML_BASE_ASSERT(drawList != nullptr);
 
