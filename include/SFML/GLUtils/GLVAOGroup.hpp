@@ -6,7 +6,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Window/WindowContext.hpp"
 
 #include "SFML/GLUtils/GLBufferObject.hpp"
 #include "SFML/GLUtils/GLCheck.hpp"
@@ -57,13 +57,13 @@ struct GLVAOGroup
     ////////////////////////////////////////////////////////////
     ~GLVAOGroup()
     {
-        SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
-        const unsigned int glContextId = GraphicsContext::getActiveThreadLocalGlContextId();
+        SFML_BASE_ASSERT(WindowContext::hasActiveThreadLocalGlContext());
+        const unsigned int glContextId = WindowContext::getActiveThreadLocalGlContextId();
 
         auto* it = perContextVAOIds.find(glContextId);
 
         if (it != perContextVAOIds.end())
-            GraphicsContext::unregisterUnsharedVAO(glContextId, it->second);
+            WindowContext::unregisterUnsharedVAO(glContextId, it->second);
     }
 
 
@@ -87,8 +87,8 @@ struct GLVAOGroup
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] void bind() const
     {
-        SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
-        const unsigned int glContextId = GraphicsContext::getActiveThreadLocalGlContextId();
+        SFML_BASE_ASSERT(WindowContext::hasActiveThreadLocalGlContext());
+        const unsigned int glContextId = WindowContext::getActiveThreadLocalGlContextId();
 
         const auto* it = perContextVAOIds.find(glContextId);
 
@@ -112,7 +112,7 @@ struct GLVAOGroup
             const unsigned int vaoId = res.first->second;
 
             glCheck(glBindVertexArray(vaoId));
-            GraphicsContext::registerUnsharedVAO(glContextId, vaoId);
+            WindowContext::registerUnsharedVAO(glContextId, vaoId);
         }
 
         vbo.bind();
@@ -129,8 +129,8 @@ struct GLVAOGroup
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] unsigned int getId() const
     {
-        SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
-        const unsigned int glContextId = GraphicsContext::getActiveThreadLocalGlContextId();
+        SFML_BASE_ASSERT(WindowContext::hasActiveThreadLocalGlContext());
+        const unsigned int glContextId = WindowContext::getActiveThreadLocalGlContextId();
 
         const auto* it = perContextVAOIds.find(glContextId);
 
