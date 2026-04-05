@@ -55,7 +55,7 @@ struct EnumArray
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] constexpr void fill(const Value fillValue)
+    [[gnu::always_inline]] constexpr void fill(const Value& fillValue)
     {
         for (Value& value : data)
             value = fillValue;
