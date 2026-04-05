@@ -13,20 +13,21 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Config.hpp"
+#include "SFML/Window/Event.hpp"
 
 #include "SFML/System/Android/Activity.hpp"
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Sleep.hpp"
 #include "SFML/System/Time.hpp"
-
-#include "SFML/Base/Assert.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
 #include <android/native_activity.h>
 #include <android/window.h>
 
 #include <mutex>
 #include <thread>
+
+#include <cstddef>
 
 #define GLAD_EGL_IMPLEMENTATION
 #include <glad/egl.h>
@@ -137,8 +138,8 @@ void goToFullscreenMode(ANativeActivity& activity)
     if (apiLevel >= 14)
     {
         jfieldID   fieldSystemUiFlagLowProfile = lJNIEnv.GetStaticFieldID(classView,
-                                                                        "SYSTEM_UI_FLAG_HIDE_NAVIGATION",
-                                                                        "I");
+                                                                          "SYSTEM_UI_FLAG_HIDE_NAVIGATION",
+                                                                          "I");
         const jint systemUiFlagLowProfile      = lJNIEnv.GetStaticIntField(classView, fieldSystemUiFlagLowProfile);
         flags |= systemUiFlagLowProfile;
     }
@@ -155,8 +156,8 @@ void goToFullscreenMode(ANativeActivity& activity)
     if (apiLevel >= 19)
     {
         jfieldID   fieldSystemUiFlagImmersiveSticky = lJNIEnv.GetStaticFieldID(classView,
-                                                                             "SYSTEM_UI_FLAG_IMMERSIVE_STICKY",
-                                                                             "I");
+                                                                               "SYSTEM_UI_FLAG_IMMERSIVE_STICKY",
+                                                                               "I");
         const jint systemUiFlagImmersiveSticky = lJNIEnv.GetStaticIntField(classView, fieldSystemUiFlagImmersiveSticky);
         flags |= systemUiFlagImmersiveSticky;
     }

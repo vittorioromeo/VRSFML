@@ -3,7 +3,7 @@
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
-#include <GraphicsUtil.hpp>
+#include "GraphicsUtil.hpp"
 
 
 struct TestTransformable : sf::TransformableMixin<TestTransformable>

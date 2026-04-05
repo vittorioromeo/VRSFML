@@ -39,7 +39,7 @@ private:
     #define SFML_BASE_PRIV_CONSTEXPR_STRLEN  SFML_BASE_STRLEN
     #define SFML_BASE_PRIV_CONSTEXPR_STRNCMP SFML_BASE_STRNCMP
 #else
-    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr SizeT constexprStrLen(const char* const cStr) noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] static constexpr SizeT constexprStrLen(const char* const cStr) noexcept
     {
         const char* end = cStr;
 
@@ -49,7 +49,7 @@ private:
         return static_cast<SizeT>(end - cStr);
     }
 
-    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr int constexprStrNCmp(const char* s1, const char* s2, SizeT n)
+    [[nodiscard, gnu::always_inline, gnu::pure]] static constexpr int constexprStrNCmp(const char* s1, const char* s2, SizeT n)
     {
         while (n && *s1 && (*s1 == *s2))
         {
@@ -87,10 +87,13 @@ public:
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr StringView(const char* const cStr) noexcept :
-        theData{cStr},
+        theData{[cStr]
+    {
+        SFML_BASE_ASSERT(cStr != nullptr); // assert before strlen to avoid UB
+        return cStr;
+    }()},
         theSize{SFML_BASE_PRIV_CONSTEXPR_STRLEN(cStr)}
     {
-        SFML_BASE_ASSERT(cStr != nullptr);
     }
 
 
@@ -499,6 +502,9 @@ public:
     {
         if (lhs.theSize != rhs.theSize)
             return false;
+
+        if (lhs.theSize == 0u)
+            return true;
 
         return SFML_BASE_PRIV_CONSTEXPR_STRNCMP(lhs.theData, rhs.theData, lhs.theSize) == 0;
     }

@@ -15,8 +15,8 @@
 
 #include <Doctest.hpp>
 
-#include <SystemUtil.hpp>
-#include <WindowUtil.hpp>
+#include "SystemUtil.hpp"
+#include "WindowUtil.hpp"
 
 TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 {

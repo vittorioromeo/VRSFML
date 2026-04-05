@@ -1,5 +1,4 @@
 #include "BubbleIdleMain.hpp"
-
 #include "Profile.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"
@@ -7,13 +6,13 @@
 namespace
 {
 template <typename TVibrance, typename TSaturation, typename TLightness, typename TSharpness, typename TBlur>
-void drawPostProcessControls(Profile& profile,
+void drawPostProcessControls(Profile&    profile,
                              const float uiScale,
-                             TVibrance vibrance,
+                             TVibrance   vibrance,
                              TSaturation saturation,
-                             TLightness lightness,
-                             TSharpness sharpness,
-                             TBlur blur)
+                             TLightness  lightness,
+                             TSharpness  sharpness,
+                             TBlur       blur)
 {
     ImGui::SetNextItemWidth(210.f * uiScale);
     ImGui::SliderFloat("Vibrance", &(profile.*vibrance), 0.f, 2.f, "%.2f");

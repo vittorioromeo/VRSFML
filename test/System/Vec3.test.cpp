@@ -14,7 +14,7 @@
 
 #include <Doctest.hpp>
 
-#include <SystemUtil.hpp>
+#include "SystemUtil.hpp"
 
 TEMPLATE_TEST_CASE("[System] sf::Vec3", "", int, float)
 {

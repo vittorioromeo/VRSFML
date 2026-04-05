@@ -1,5 +1,4 @@
 #include "BubbleIdleMain.hpp"
-
 #include "Cat.hpp"
 #include "CatConstants.hpp"
 #include "CatType.hpp"
@@ -18,11 +17,12 @@ void Main::uiShopCooldownButton(const char* label, const CatType catType, const 
 
     if (!psv.isMaxedOut())
     {
-        uiSetTooltip("Decrease cooldown from %.2fs to %.2fs.%s\n\n(Note: can be reverted by right-clicking, "
-                     "but no refunds!)",
-                     static_cast<double>(currentCooldown / 1000.f),
-                     static_cast<double>(nextCooldown / 1000.f),
-                     additionalInfo);
+        uiSetTooltip(
+            "Decrease cooldown from %.2fs to %.2fs.%s\n\n(Note: can be reverted by right-clicking, "
+            "but no refunds!)",
+            static_cast<double>(currentCooldown / 1000.f),
+            static_cast<double>(nextCooldown / 1000.f),
+            additionalInfo);
     }
     else
     {
@@ -51,11 +51,12 @@ void Main::uiShopRangeButton(const char* label, const CatType catType, const cha
 
     if (!psv.isMaxedOut())
     {
-        uiSetTooltip("Increase range from %.2fpx to %.2fpx.%s\n\n(Note: can be reverted by right-clicking, but "
-                     "no refunds!)",
-                     static_cast<double>(currentRange),
-                     static_cast<double>(nextRange),
-                     additionalInfo);
+        uiSetTooltip(
+            "Increase range from %.2fpx to %.2fpx.%s\n\n(Note: can be reverted by right-clicking, but "
+            "no refunds!)",
+            static_cast<double>(currentRange),
+            static_cast<double>(nextRange),
+            additionalInfo);
     }
     else
     {
@@ -88,8 +89,9 @@ void Main::uiShopDrawSpecialCats()
         uiImgsep(txrMenuSeparator4, "unicats");
 
         uiSetUnlockLabelY(6u);
-        uiSetTooltip("Unicats transform bubbles into star bubbles, which are worth x15 more!\n\nHave "
-                     "your cats pop them for you, or pop them towards the end of a combo for huge rewards!");
+        uiSetTooltip(
+            "Unicats transform bubbles into star bubbles, which are worth x15 more!\n\nHave "
+            "your cats pop them for you, or pop them towards the end of a combo for huge rewards!");
         uiSetLabel("%zu unicats", nCatUni);
         if (makePSVButton("Unicat", pt->psvPerCatType[asIdx(CatType::Uni)]))
         {
@@ -109,16 +111,17 @@ void Main::uiShopDrawSpecialCats()
         }
     }
 
-    const bool catDevilUnlocked =
-        pt->psvBubbleValue.nPurchases > 0 && nCatNormal >= 6 && nCatUni >= 4 && pt->nShrinesCompleted >= 1;
+    const bool catDevilUnlocked         = pt->psvBubbleValue.nPurchases > 0 && nCatNormal >= 6 && nCatUni >= 4 &&
+                                          pt->nShrinesCompleted >= 1;
     const bool catDevilUpgradesUnlocked = catDevilUnlocked && nCatDevil >= 2 && nCatAstro >= 1;
     if (checkUiUnlock(8u, catDevilUnlocked))
     {
         uiImgsep(txrMenuSeparator5, "devilcats");
 
         uiSetUnlockLabelY(8u);
-        uiSetTooltip("Devilcats transform bubbles into bombs that explode when popped. Bubbles affected by the "
-                     "explosion are worth x10 more! Bomb explosion range can be upgraded.");
+        uiSetTooltip(
+            "Devilcats transform bubbles into bombs that explode when popped. Bubbles affected by the "
+            "explosion are worth x10 more! Bomb explosion range can be upgraded.");
         uiSetLabel("%zu devilcats", nCatDevil);
         if (makePSVButton("Devilcat", pt->psvPerCatType[asIdx(CatType::Devil)]))
         {
@@ -161,9 +164,10 @@ void Main::uiShopDrawSpecialCats()
         uiImgsep(txrMenuSeparator6, "astrocats");
 
         uiSetUnlockLabelY(11u);
-        uiSetTooltip("Astrocats periodically fly across the map, popping bubbles they hit with a huge x20 "
-                     "money multiplier!\n\nThey can be permanently upgraded with prestige points to inspire cats "
-                     "watching them fly past to pop bubbles faster.");
+        uiSetTooltip(
+            "Astrocats periodically fly across the map, popping bubbles they hit with a huge x20 "
+            "money multiplier!\n\nThey can be permanently upgraded with prestige points to inspire cats "
+            "watching them fly past to pop bubbles faster.");
         uiSetLabel("%zu astrocats", nCatAstro);
         if (makePSVButton("Astrocat", pt->psvPerCatType[asIdx(CatType::Astro)]))
         {
@@ -214,7 +218,8 @@ void Main::uiShopDrawUniqueCatBonuses()
             uiSetUnlockLabelY(14u);
             uiShopRangeButton("  witchcat range",
                               CatType::Witch,
-                              "\n\nAllows more cats to participate in group rituals, increasing the duration of buffs.");
+                              "\n\nAllows more cats to participate in group rituals, increasing the duration of "
+                              "buffs.");
         }
     }
 

@@ -8,7 +8,7 @@
 
 #include <Doctest.hpp>
 
-#include <StringifyStringViewUtil.hpp>
+#include "StringifyStringViewUtil.hpp"
 
 TEST_CASE("[System] sf::MemoryInputStream")
 {

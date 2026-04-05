@@ -17,9 +17,9 @@
 
 #include <Doctest.hpp>
 
-#include <StringifyOptionalUtil.hpp>
-#include <SystemUtil.hpp>
-#include <WindowUtil.hpp>
+#include "StringifyOptionalUtil.hpp"
+#include "SystemUtil.hpp"
+#include "WindowUtil.hpp"
 
 
 namespace

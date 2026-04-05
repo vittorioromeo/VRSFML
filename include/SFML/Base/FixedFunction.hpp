@@ -12,6 +12,8 @@
 #include "SFML/Base/PlacementNew.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Trait/IsRvalueReference.hpp"
+#include "SFML/Base/Trait/IsSame.hpp"
+#include "SFML/Base/Trait/RemoveCVRef.hpp"
 #include "SFML/Base/Trait/RemoveReference.hpp"
 
 // TODO P1: provide triviallyrelocatable version
@@ -90,11 +92,13 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename TFFwd>
-    // NOLINTNEXTLINE(bugprone-forwarding-reference-overload)
+        requires(!base::isSame<base::RemoveCVRefIndirect<TFFwd>, FixedFunction>)
     [[nodiscard]] FixedFunction(TFFwd&& f) : FixedFunction()
     {
         using UnrefType = SFML_BASE_REMOVE_REFERENCE(TFFwd);
+
         static_assert(sizeof(UnrefType) <= TStorageSize);
+        static_assert(alignof(UnrefType) <= alignof(MaxAlignT));
 
         // NOLINTNEXTLINE(readability-non-const-parameter)
         m_methodPtr = [](char* s, FnPtrType, Ts... xs) -> RetType
@@ -129,8 +133,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    template <typename TFReturn, typename... TFs>
-    [[nodiscard]] FixedFunction(TFReturn (*f)(TFs...)) noexcept :
+    [[nodiscard]] FixedFunction(FnPtrType f) noexcept :
         functionPtr{f},
         m_methodPtr{[](char* /* unused */, FnPtrType xf, Ts... xs) -> RetType { return xf(SFML_BASE_FORWARD(xs)...); }},
         m_allocPtr{nullptr}

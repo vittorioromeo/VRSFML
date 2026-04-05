@@ -8,8 +8,8 @@
 
 #include "SFML/Base/Math/Fabs.hpp"
 
-#include <GraphicsUtil.hpp>
-#include <SystemUtil.hpp>
+#include "GraphicsUtil.hpp"
+#include "SystemUtil.hpp"
 
 #include <limits>
 #include <ostream>

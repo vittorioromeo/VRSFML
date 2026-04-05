@@ -69,6 +69,13 @@ LifetimeDependant& LifetimeDependant::operator=(LifetimeDependant&& rhs) noexcep
 
 
 ////////////////////////////////////////////////////////////
+bool LifetimeDependant::isTestingModeErrorTriggered() const noexcept
+{
+    return LifetimeDependee::TestingModeGuard::fatalErrorTriggered(m_dependeeName);
+}
+
+
+////////////////////////////////////////////////////////////
 void LifetimeDependant::update(LifetimeDependee* dependee) noexcept
 {
     subSelfAsDependant();

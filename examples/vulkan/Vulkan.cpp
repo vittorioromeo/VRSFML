@@ -3,6 +3,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+
+#include <cstdint>
 #define GLAD_VULKAN_IMPLEMENTATION
 #include <vulkan.h>
 
@@ -23,6 +25,7 @@
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec3.hpp"
 
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/Builtin/Memcpy.hpp"
@@ -31,11 +34,13 @@
 #include "SFML/Base/Math/Cos.hpp"
 #include "SFML/Base/Math/Sin.hpp"
 #include "SFML/Base/Math/Tan.hpp"
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/SourceLocation.hpp"
 #include "SFML/Base/StringView.hpp"
+#include "SFML/Base/Vector.hpp"
 
-#include <limits>
+#include <limits> // TODO P1: rewrite in sfml base
 
 
 ////////////////////////////////////////////////////////////
@@ -179,9 +184,9 @@ GLADapiproc getVulkanFunction(const char* name)
 VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     VkDebugReportFlagsEXT,
     VkDebugReportObjectTypeEXT,
-    uint64_t, // cannot use base here due to mismatch on unix
+    std::uint64_t, // cannot use base here due to mismatch on unix
     sf::base::SizeT,
-    int32_t, // cannot use base here due to mismatch on unix
+    std::int32_t, // cannot use base here due to mismatch on unix
     const char*,
     const char* pMessage,
     void*)
@@ -777,9 +782,10 @@ public:
         if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu, surface, &surfaceCapabilities) != VK_SUCCESS)
             return failStep();
 
-        swapchainExtent.width  = sf::base::clamp(window.getSize().x,
+        swapchainExtent.width = sf::base::clamp(window.getSize().x,
                                                 surfaceCapabilities.minImageExtent.width,
                                                 surfaceCapabilities.maxImageExtent.width);
+
         swapchainExtent.height = sf::base::clamp(window.getSize().y,
                                                  surfaceCapabilities.minImageExtent.height,
                                                  surfaceCapabilities.maxImageExtent.height);

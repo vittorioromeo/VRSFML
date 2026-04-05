@@ -14,6 +14,7 @@
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Span.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #define STBRP_STATIC
 #define STB_RECT_PACK_IMPLEMENTATION
@@ -25,17 +26,16 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct RectPacker::Impl
 {
-    enum : int
-    {
-        MaxNodes = 2048
-    };
+    base::Vector<stbrp_node> nodes;
+    stbrp_context            context{};
 
-    stbrp_node    nodes[MaxNodes]{};
-    stbrp_context context{};
-
-    explicit Impl(const Vec2u size)
+    explicit Impl(const Vec2u size) : nodes(size.x)
     {
-        stbrp_init_target(&context, static_cast<int>(size.x), static_cast<int>(size.y), nodes, MaxNodes);
+        stbrp_init_target(&context,
+                          static_cast<int>(size.x),
+                          static_cast<int>(size.y),
+                          nodes.data(),
+                          static_cast<int>(nodes.size()));
     }
 };
 

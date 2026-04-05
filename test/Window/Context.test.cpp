@@ -15,7 +15,7 @@
 
 #include <Doctest.hpp>
 
-#include <WindowUtil.hpp>
+#include "WindowUtil.hpp"
 
 #if defined(SFML_SYSTEM_WINDOWS)
     #define GLAPI __stdcall

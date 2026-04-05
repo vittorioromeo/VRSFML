@@ -1,5 +1,4 @@
 #include "BubbleIdleMain.hpp"
-
 #include "BubbleType.hpp"
 #include "Playthrough.hpp"
 #include "Version.hpp"
@@ -26,11 +25,12 @@ void Main::uiPrestigeDrawOverview()
         uiCenteredTextColored({229u, 63u, 63u, 255u}, "(!) Limited to 1 prestige in demo (!)");
     }
 
-    uiSetTooltip("WARNING: this will reset your progress!\n\nPrestige to increase bubble value permanently and "
-                 "obtain prestige points. Prestige points can be used to unlock powerful permanent "
-                 "upgrades.\n\nYou will sacrifice all your cats, bubbles, and money, but you will keep your "
-                 "prestige points and permanent upgrades, and the value of bubbles will be permanently "
-                 "increased.\n\nDo not be afraid to prestige -- it is what enables you to progress further!");
+    uiSetTooltip(
+        "WARNING: this will reset your progress!\n\nPrestige to increase bubble value permanently and "
+        "obtain prestige points. Prestige points can be used to unlock powerful permanent "
+        "upgrades.\n\nYou will sacrifice all your cats, bubbles, and money, but you will keep your "
+        "prestige points and permanent upgrades, and the value of bubbles will be permanently "
+        "increased.\n\nDo not be afraid to prestige -- it is what enables you to progress further!");
     uiSetLabel("current bubble value x%llu", pt->getComputedRewardByBubbleType(BubbleType::Normal));
 
     const auto currentPrestigeLevel    = pt->psvBubbleValue.nPurchases;
@@ -111,11 +111,13 @@ void Main::uiPrestigeDrawOverview()
 
     if (prestigeTimes > 0u)
     {
-        ImGui::Text("  prestige %zu time(s) at once\n  - increase bubble value from x%zu to x%zu\n  - obtain %llu prestige point(s)",
-                    prestigeTimes,
-                    currentMult,
-                    currentMult + prestigeTimes,
-                    ppReward);
+        ImGui::Text(
+            "  prestige %zu time(s) at once\n  - increase bubble value from x%zu to x%zu\n  - obtain %llu prestige "
+            "point(s)",
+            prestigeTimes,
+            currentMult,
+            currentMult + prestigeTimes,
+            ppReward);
     }
     else if (pt->psvBubbleValue.nPurchases == 19u)
     {
