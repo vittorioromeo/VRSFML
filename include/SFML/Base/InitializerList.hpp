@@ -3,7 +3,11 @@
 // https://github.com/vittorioromeo/VRSFML/blob/master/license.md
 
 
-#if !defined(_LIBCPP_INITIALIZER_LIST) && !defined(_INITIALIZER_LIST) && !defined(_INITIALIZER_LIST_)
+#ifdef __CLANGD__
+
+    #include <initializer_list> // IWYU pragma: export
+
+#elif !defined(_LIBCPP_INITIALIZER_LIST) && !defined(_INITIALIZER_LIST) && !defined(_INITIALIZER_LIST_)
 
     #define _LIBCPP_INITIALIZER_LIST // libcpp
     #define _INITIALIZER_LIST        // libstdc++
