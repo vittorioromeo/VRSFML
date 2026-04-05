@@ -160,8 +160,8 @@ public:
             return;
         }
 
+        rhs.m_allocPtr(objStorage, const_cast<char*>(rhs.objStorage), Operation::CopyConstruct);
         m_allocPtr = rhs.m_allocPtr;
-        m_allocPtr(objStorage, const_cast<char*>(rhs.objStorage), Operation::CopyConstruct);
     }
 
 
@@ -172,6 +172,7 @@ public:
             return *this;
 
         destroyIfNeeded();
+        m_allocPtr = nullptr; // Safe empty state in case copy-construct throws
 
         m_methodPtr = rhs.m_methodPtr;
 
@@ -181,8 +182,8 @@ public:
             return *this;
         }
 
+        rhs.m_allocPtr(objStorage, const_cast<char*>(rhs.objStorage), Operation::CopyConstruct);
         m_allocPtr = rhs.m_allocPtr;
-        m_allocPtr(objStorage, const_cast<char*>(rhs.objStorage), Operation::CopyConstruct);
 
         return *this;
     }
