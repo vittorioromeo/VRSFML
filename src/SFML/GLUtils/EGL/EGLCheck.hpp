@@ -46,7 +46,7 @@ struct EglScopedChecker
         expression{theExpression},
         line{theLine}
     {
-        SFML_BASE_ASSERT(::eglGetError() == EGL_SUCCESS);
+        SFML_BASE_ASSERT(eglGetError() == EGL_SUCCESS);
     }
 
     ////////////////////////////////////////////////////////////

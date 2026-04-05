@@ -435,7 +435,6 @@ void EglContext::updateSettings()
 
     EGLint tmp = 0;
 
-    // Update the internal context contextSettings with the current config
     // Update the internal context settings with the current config
     if (eglCheck(eglGetConfigAttrib(m_impl->display, m_impl->config, EGL_DEPTH_SIZE, &tmp)) != EGL_FALSE)
         m_settings.depthBits = static_cast<unsigned int>(tmp);
