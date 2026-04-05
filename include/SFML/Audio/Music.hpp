@@ -10,11 +10,9 @@
 
 #include "SFML/Audio/SoundStream.hpp"
 
-#include "SFML/System/LifetimeDependant.hpp"
-
+#include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
-#include "SFML/Base/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -178,15 +176,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    base::Vector<base::I16> m_samples;      //!< Temporary buffer of samples
-    Span<base::U64>         m_loopSpan;     //!< Loop range Specifier
-    MusicReader&            m_musicReader;  //!< The music reader
-    base::U64               m_sampleOffset; //!< Current offset in the stream
-
-    ////////////////////////////////////////////////////////////
-    // Lifetime tracking
-    ////////////////////////////////////////////////////////////
-    SFML_DEFINE_LIFETIME_DEPENDANT(MusicReader);
+    struct Impl;
+    base::InPlacePImpl<Impl, 196> m_impl; //!< Implementation details
 };
 
 } // namespace sf
@@ -225,7 +216,7 @@ private:
 /// auto musicReader = sf::MusicReader::openFromFile("music.ogg").value();
 ///
 /// // Create a music stream from the music source
-/// sf::Music music(musicReader);
+/// sf::Music music(playbackDevice, musicReader);
 ///
 /// // Change some parameters
 /// music.setPosition({0, 1, 10}); // change its 3D position
@@ -234,7 +225,7 @@ private:
 /// music.setLooping(true);        // make it loop
 ///
 /// // Play it
-/// music.play(playbackDevice);
+/// music.play();
 /// \endcode
 ///
 /// \see `sf::Sound`, `sf::SoundStream`

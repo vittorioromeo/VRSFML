@@ -7,6 +7,9 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Audio/SoundFileReaderFlac.hpp"
 
+#include "SFML/Audio/SoundChannel.hpp"
+#include "SFML/Audio/SoundFileReader.hpp"
+
 #include "SFML/System/Err.hpp"
 #include "SFML/System/InputStream.hpp"
 
@@ -18,6 +21,8 @@
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
 
+#include <FLAC/format.h>
+#include <FLAC/ordinals.h>
 #include <FLAC/stream_decoder.h>
 
 
@@ -177,6 +182,8 @@ void streamMetadata(const FLAC__StreamDecoder*, const FLAC__StreamMetadata* meta
         data->info.sampleCount = meta->data.stream_info.total_samples * meta->data.stream_info.channels;
         data->info.sampleRate  = meta->data.stream_info.sample_rate;
 
+        using enum sf::SoundChannel;
+
         // For FLAC channel mapping refer to: https://xiph.org/flac/format.html#frame_header
         switch (meta->data.stream_info.channels)
         {
@@ -184,55 +191,29 @@ void streamMetadata(const FLAC__StreamDecoder*, const FLAC__StreamMetadata* meta
                 sf::priv::err() << "No channels in FLAC file";
                 break;
             case 1:
-                data->info.channelMap = {sf::SoundChannel::Mono};
+                data->info.channelMap = {Mono};
                 break;
             case 2:
-                data->info.channelMap = {sf::SoundChannel::FrontLeft, sf::SoundChannel::FrontRight};
+                data->info.channelMap = {FrontLeft, FrontRight};
                 break;
             case 3:
-                data->info.channelMap = {sf::SoundChannel::FrontLeft,
-                                         sf::SoundChannel::FrontRight,
-                                         sf::SoundChannel::FrontCenter};
+                data->info.channelMap = {FrontLeft, FrontRight, FrontCenter};
                 break;
             case 4:
-                data->info.channelMap = {sf::SoundChannel::FrontLeft,
-                                         sf::SoundChannel::FrontRight,
-                                         sf::SoundChannel::BackLeft,
-                                         sf::SoundChannel::BackRight};
+                data->info.channelMap = {FrontLeft, FrontRight, BackLeft, BackRight};
                 break;
             case 5:
-                data->info.channelMap = {sf::SoundChannel::FrontLeft,
-                                         sf::SoundChannel::FrontRight,
-                                         sf::SoundChannel::FrontCenter,
-                                         sf::SoundChannel::BackLeft,
-                                         sf::SoundChannel::BackRight};
+                data->info.channelMap = {FrontLeft, FrontRight, FrontCenter, BackLeft, BackRight};
                 break;
             case 6:
-                data->info.channelMap = {sf::SoundChannel::FrontLeft,
-                                         sf::SoundChannel::FrontRight,
-                                         sf::SoundChannel::FrontCenter,
-                                         sf::SoundChannel::LowFrequencyEffects,
-                                         sf::SoundChannel::BackLeft,
-                                         sf::SoundChannel::BackRight};
+                data->info.channelMap = {FrontLeft, FrontRight, FrontCenter, LowFrequencyEffects, BackLeft, BackRight};
                 break;
             case 7:
-                data->info.channelMap = {sf::SoundChannel::FrontLeft,
-                                         sf::SoundChannel::FrontRight,
-                                         sf::SoundChannel::FrontCenter,
-                                         sf::SoundChannel::LowFrequencyEffects,
-                                         sf::SoundChannel::BackCenter,
-                                         sf::SoundChannel::SideLeft,
-                                         sf::SoundChannel::SideRight};
+                data->info.channelMap = {FrontLeft, FrontRight, FrontCenter, LowFrequencyEffects, BackCenter, SideLeft, SideRight};
                 break;
             case 8:
-                data->info.channelMap = {sf::SoundChannel::FrontLeft,
-                                         sf::SoundChannel::FrontRight,
-                                         sf::SoundChannel::FrontCenter,
-                                         sf::SoundChannel::LowFrequencyEffects,
-                                         sf::SoundChannel::BackLeft,
-                                         sf::SoundChannel::BackRight,
-                                         sf::SoundChannel::SideLeft,
-                                         sf::SoundChannel::SideRight};
+                data->info.channelMap =
+                    {FrontLeft, FrontRight, FrontCenter, LowFrequencyEffects, BackLeft, BackRight, SideLeft, SideRight};
                 break;
             default:
                 sf::priv::err() << "FLAC files with more than 8 channels not supported";
@@ -404,8 +385,9 @@ base::U64 SoundFileReaderFlac::read(base::I16* samples, base::U64 maxCount)
             for (base::SizeT i = 0; i < maxCount; ++i)
                 samples[i] = m_impl->clientData.leftovers[i];
 
-            m_impl->clientData.leftovers = base::Vector<base::I16>(m_impl->clientData.leftovers.begin(),
-                                                                   m_impl->clientData.leftovers.begin() + maxCount);
+            m_impl->clientData.leftovers = base::Vector<base::I16>(m_impl->clientData.leftovers.begin() + maxCount,
+                                                                   m_impl->clientData.leftovers.end());
+
             return maxCount;
         }
 

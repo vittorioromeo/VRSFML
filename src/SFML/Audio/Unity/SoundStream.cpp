@@ -26,6 +26,8 @@
 
 #include <miniaudio.h>
 
+#include <atomic>
+
 
 namespace sf
 {
@@ -52,8 +54,8 @@ struct SoundStream::Impl
     ////////////////////////////////////////////////////////////
     static void onEnd(void* const userData, ma_sound* const soundPtr)
     {
-        auto& impl     = *static_cast<Impl*>(userData);
-        impl.streaming = true;
+        auto& impl = *static_cast<Impl*>(userData);
+        impl.streaming.store(true, std::memory_order::release);
 
         // Seek back to the start of the sound when it finishes playing
         if (const ma_result result = ma_sound_seek_to_pcm_frame(soundPtr, 0u); result != MA_SUCCESS)
@@ -69,11 +71,11 @@ struct SoundStream::Impl
         auto& impl = *static_cast<Impl*>(dataSource);
 
         // Try to fill our buffer with new samples if the source is still willing to stream data
-        if (impl.sampleBuffer.empty() && impl.streaming)
+        if (impl.sampleBuffer.empty() && impl.streaming.load(std::memory_order::acquire))
         {
             Chunk chunk;
 
-            impl.streaming = impl.owner.onGetData(chunk);
+            impl.streaming.store(impl.owner.onGetData(chunk), std::memory_order::release);
 
             if (chunk.samples && chunk.sampleCount)
             {
@@ -114,11 +116,11 @@ struct SoundStream::Impl
             impl.sampleBufferCursor = 0;
 
             // If we are looping and at the end of the loop, set the cursor back to the beginning of the loop
-            if (!impl.streaming && impl.owner.isLooping())
+            if (!impl.streaming.load(std::memory_order::acquire) && impl.owner.isLooping())
             {
                 if (const base::Optional seekPositionAfterLoop = impl.owner.onLoop())
                 {
-                    impl.streaming        = true;
+                    impl.streaming.store(true, std::memory_order::release);
                     impl.samplesProcessed = *seekPositionAfterLoop;
                 }
             }
@@ -138,7 +140,7 @@ struct SoundStream::Impl
         SFML_BASE_ASSERT(channelCount > 0u);
         SFML_BASE_ASSERT(sampleRate > 0u);
 
-        impl.streaming = true;
+        impl.streaming.store(true, std::memory_order::release);
         impl.sampleBuffer.clear();
         impl.sampleBufferCursor = 0u;
         impl.samplesProcessed   = frameIndex * channelCount;
@@ -212,7 +214,7 @@ struct SoundStream::Impl
     base::Vector<base::I16> sampleBuffer;         //!< Our temporary sample buffer
     base::SizeT             sampleBufferCursor{}; //!< The current read position in the temporary sample buffer
     base::U64               samplesProcessed{};   //!< Number of samples processed since beginning of the stream
-    bool                    streaming{true};      //!< `true` if we are still streaming samples from the source
+    std::atomic<bool>       streaming{true};      //!< `true` if we are still streaming samples from the source
 };
 
 
@@ -242,7 +244,7 @@ void SoundStream::setPlayingOffset(Time playingOffset)
 
     const auto frameIndex = priv::MiniaudioUtils::getFrameIndex(sound, playingOffset).value();
 
-    m_impl->streaming = true;
+    m_impl->streaming.store(true, std::memory_order::release);
     m_impl->sampleBuffer.clear();
     m_impl->sampleBufferCursor = 0;
     m_impl->samplesProcessed   = frameIndex * m_impl->channelMap.getSize();
