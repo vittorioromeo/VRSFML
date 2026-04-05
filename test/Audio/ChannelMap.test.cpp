@@ -10,7 +10,7 @@
 
 #include <Doctest.hpp>
 
-#include <AudioUtil.hpp>
+#include "AudioUtil.hpp"
 
 
 TEST_CASE("[Audio] sf::ChannelMap" * doctest::skip(skipAudioDeviceTests))

@@ -4,17 +4,15 @@
 #include "SFML/Graphics/Texture.hpp"
 
 // Other 1st party headers
+#include "GraphicsUtil.hpp"
+#include "WindowUtil.hpp"
+
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
 
 #include "SFML/System/Vec2Base.hpp"
 
 #include <Doctest.hpp>
-
-#include <CommonTraits.hpp>
-#include <GraphicsUtil.hpp>
-#include <LoadIntoMemoryUtil.hpp>
-#include <WindowUtil.hpp>
 
 
 TEST_CASE("[Graphics] sf::TextureAtlas" * doctest::skip(skipDisplayTests))

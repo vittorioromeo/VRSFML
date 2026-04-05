@@ -1,9 +1,9 @@
+#include "LoadIntoMemoryUtil.hpp"
+
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 
 #include "SFML/Base/Assert.hpp"
-
-#include <LoadIntoMemoryUtil.hpp>
 
 
 sf::base::Vector<unsigned char> loadIntoMemory(const char* path)

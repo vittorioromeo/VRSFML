@@ -19,6 +19,9 @@
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/DrawableBatchUtils.hpp"
 #include "SFML/Graphics/Font.hpp"
+#include "SFML/Graphics/GlyphMappedText.hpp"
+#include "SFML/Graphics/GlyphMappedTextData.hpp"
+#include "SFML/Graphics/GlyphMapping.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/IndexType.hpp"
 #include "SFML/Graphics/InstanceAttributeBinder.hpp"
@@ -521,6 +524,7 @@ void RenderTarget::draw(const Texture& texture, const DrawTextureSettings& param
 ////////////////////////////////////////////////////////////
 void RenderTarget::draw(const Sprite& sprite, const RenderStates& states)
 {
+    // TODO P0: can we turn this into a compile-time error? it's the usual renderstates issue...
     SFML_BASE_ASSERT(states.texture != nullptr);
 
     if (m_autoBatchMode != AutoBatchMode::Disabled)
@@ -575,7 +579,24 @@ void RenderTarget::draw(const Shape& shape, RenderStates states)
 ////////////////////////////////////////////////////////////
 void RenderTarget::draw(const Text& text, RenderStates states)
 {
-    states.texture = &text.getFont().getTexture();
+    states.texture = &text.getTexture();
+
+    if (m_autoBatchMode != AutoBatchMode::Disabled)
+    {
+        flushIfNeeded(states);
+        addToAutoBatch(text);
+    }
+    else
+    {
+        text.draw(*this, states);
+    }
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::draw(const GlyphMappedText& text, RenderStates states)
+{
+    states.texture = &text.getTexture();
 
     if (m_autoBatchMode != AutoBatchMode::Disabled)
     {
@@ -850,6 +871,28 @@ VertexSpan RenderTarget::draw(const Font& font, const TextData& textData, Render
 
     SFML_BASE_SCOPE_GUARD({ immediateDrawDrawableBatch(m_impl->cpuAutoBatch, states); });
     return m_impl->cpuAutoBatch.add(font, textData);
+}
+
+
+////////////////////////////////////////////////////////////
+VertexSpan RenderTarget::draw(const FontFace&            fontFace,
+                              const GlyphMapping&        glyphMapping,
+                              const GlyphMappedTextData& textData,
+                              const RenderStates&        states)
+{
+    // TODO P0: can we turn this into a compile-time error? it's the usual renderstates issue...
+    SFML_BASE_ASSERT(states.texture != nullptr);
+
+    if (m_autoBatchMode != AutoBatchMode::Disabled)
+    {
+        flushIfNeeded(states);
+        return addToAutoBatch(fontFace, glyphMapping, textData);
+    }
+
+    m_impl->cpuAutoBatch.clear();
+
+    SFML_BASE_SCOPE_GUARD({ immediateDrawDrawableBatch(m_impl->cpuAutoBatch, states); });
+    return m_impl->cpuAutoBatch.add(fontFace, glyphMapping, textData);
 }
 
 

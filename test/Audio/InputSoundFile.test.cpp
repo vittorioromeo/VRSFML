@@ -1,6 +1,10 @@
 #include "SFML/Audio/InputSoundFile.hpp"
 
 // Other 1st party headers
+#include "LoadIntoMemoryUtil.hpp"
+#include "StringifyArrayUtil.hpp" // IWYU pragma: keep
+#include "SystemUtil.hpp"
+
 #include "SFML/System/FileInputStream.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Time.hpp"
@@ -14,10 +18,6 @@
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <Doctest.hpp>
-
-#include <LoadIntoMemoryUtil.hpp>
-#include <StringifyArrayUtil.hpp>
-#include <SystemUtil.hpp>
 
 #include <string>
 

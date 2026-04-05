@@ -40,8 +40,7 @@ struct [[nodiscard]] NinePatchBorders
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr float clampNinePatchNonNegative(
-    const float value) noexcept
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr float clampNinePatchNonNegative(const float value) noexcept
 {
     return value < 0.f ? 0.f : value;
 }
@@ -72,7 +71,7 @@ struct [[nodiscard]] NinePatchBorders
 
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr sf::base::Array<float, 3> makeNinePatchPositions(
-    const float origin,
+    const float                      origin,
     const sf::base::Array<float, 3>& slices) noexcept
 {
     return {origin, origin + slices[0], origin + slices[0] + slices[1]};

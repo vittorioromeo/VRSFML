@@ -79,6 +79,8 @@ Music::Music(PlaybackDevice& playbackDevice, MusicReader& musicReader) :
 ////////////////////////////////////////////////////////////
 Music::~Music()
 {
+    SFML_LIFETIME_DEPENDANT_RETURN_IF_TESTING_ERROR(MusicReader);
+
     // TODO P1: revisit?
     // Stop the sound before `m_samples` is destroyed, otherwise the audio
     // callback can race with `onGetData()` during derived-member teardown.

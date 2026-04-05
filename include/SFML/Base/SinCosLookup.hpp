@@ -111,6 +111,9 @@ namespace sf::base
         float sin, cos;
     };
 
+    if (SFML_BASE_IS_CONSTANT_EVALUATED())
+        return Result{priv::constexprSin(radians), priv::constexprCos(radians)};
+
     const auto sinIndex = static_cast<U32>(radians * priv::radToIndex);
     return Result{priv::sinTableData[sinIndex & priv::sinMask], priv::sinTableData[(sinIndex + 16'384u) & priv::sinMask]};
 }

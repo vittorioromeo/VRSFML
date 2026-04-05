@@ -4,7 +4,7 @@
 
 #include <Doctest.hpp>
 
-#include <SystemUtil.hpp>
+#include "SystemUtil.hpp"
 
 TEST_CASE("[Window] sf::Joystick")
 {

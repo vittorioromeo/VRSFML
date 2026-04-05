@@ -1,0 +1,242 @@
+#pragma once
+// LICENSE AND COPYRIGHT (C) INFORMATION
+// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include "SFML/Graphics/Export.hpp"
+
+#include "SFML/Graphics/Glyph.hpp"
+#include "SFML/Graphics/GlyphMappedTextData.hpp"
+#include "SFML/Graphics/GlyphMapping.hpp"
+#include "SFML/Graphics/TextBase.hpp"
+
+#include "SFML/System/LifetimeDependant.hpp"
+
+
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+namespace sf
+{
+class FontFace;
+class Texture;
+} // namespace sf
+
+
+namespace sf
+{
+////////////////////////////////////////////////////////////
+/// \brief Text rendered using a preloaded GlyphMapping
+///
+/// Unlike `sf::Text`, this class does not lazily rasterize glyphs.
+/// All glyphs must be preloaded into a `GlyphMapping` via
+/// `FontFace::loadGlyphs()` before constructing this object.
+///
+/// Character size and outline thickness are baked into the mapping
+/// and cannot be changed after construction.
+///
+////////////////////////////////////////////////////////////
+class SFML_GRAPHICS_API GlyphMappedText : public TextBase<GlyphMappedText>
+{
+public:
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    using Data = GlyphMappedTextData;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] GlyphMappedText(const FontFace&     fontFace,
+                                  const Texture&      texture,
+                                  const GlyphMapping& glyphMapping,
+                                  const Data&         data);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Disallow construction from a temporary font face
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] GlyphMappedText(FontFace&&         fontFace,
+                                  const Texture&     texture,
+                                  const GlyphMapping glyphMapping,
+                                  const Data&        data) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Disallow construction from a temporary texture
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] GlyphMappedText(const FontFace&    fontFace,
+                                  Texture&&          texture,
+                                  const GlyphMapping glyphMapping,
+                                  const Data&        data) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Disallow construction from a temporary glyph mapping
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] GlyphMappedText(const FontFace& fontFace,
+                                  const Texture&  texture,
+                                  GlyphMapping&&  glyphMapping,
+                                  const Data&     data) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Destructor
+    ///
+    ////////////////////////////////////////////////////////////
+    ~GlyphMappedText();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Copy operations
+    ///
+    ////////////////////////////////////////////////////////////
+    GlyphMappedText(const GlyphMappedText&);
+    GlyphMappedText& operator=(const GlyphMappedText&);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move operations
+    ///
+    ////////////////////////////////////////////////////////////
+    GlyphMappedText(GlyphMappedText&&) noexcept;
+    GlyphMappedText& operator=(GlyphMappedText&&) noexcept;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void setGlyphMapping(const FontFace& fontFace, const Texture& texture, const GlyphMapping& glyphMapping);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void setGlyphMapping(const FontFace& fontFace, const Texture& texture, GlyphMapping&& glyphMapping) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] const GlyphMapping& getGlyphMapping() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get whether the text is bold
+    ///
+    /// Bold is baked into the GlyphMapping and cannot be changed.
+    ///
+    /// \return True if the mapping was created with bold
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isBold() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] const GlyphMappedText& getFontSource() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get kerning between two code points
+    ///
+    /// Delegates to the stored FontFace.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getKerning(char32_t first, char32_t second, unsigned int characterSize, bool bold) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get a glyph from the mapping
+    ///
+    /// Delegates to the stored GlyphMapping.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] const Glyph& getGlyph(char32_t codePoint, unsigned int characterSize, bool bold, float outlineThickness) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get both fill and outline glyphs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] GlyphMapping::GlyphPair getFillAndOutlineGlyph(
+        char32_t     codePoint,
+        unsigned int characterSize,
+        bool         bold,
+        float        outlineThickness) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get line spacing
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getLineSpacing(unsigned int characterSize) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get ascent
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getAscent(unsigned int characterSize) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get descent
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getDescent(unsigned int characterSize) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get underline position
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getUnderlinePosition(unsigned int characterSize) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get underline thickness
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getUnderlineThickness(unsigned int characterSize) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] const Texture& getTexture() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the character size
+    ///
+    /// \return Size of the characters, in pixels
+    ///
+    /// \see `setCharacterSize`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] unsigned int getCharacterSize() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the outline thickness of the text
+    ///
+    /// \return Outline thickness of the text, in pixels
+    ///
+    /// \see `setOutlineThickness`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getOutlineThickness() const;
+
+private:
+    ////////////////////////////////////////////////////////////
+    friend class TextBase<GlyphMappedText>;
+
+    ////////////////////////////////////////////////////////////
+    // Member data
+    ////////////////////////////////////////////////////////////
+    const FontFace*     m_fontFace{};     //!< Font face for kerning queries
+    const Texture*      m_texture{};      //!< Atlas texture for rendering
+    const GlyphMapping* m_glyphMapping{}; //!< Glyph mapping used to display the string
+
+    ////////////////////////////////////////////////////////////
+    // Lifetime tracking
+    ////////////////////////////////////////////////////////////
+    SFML_DEFINE_LIFETIME_DEPENDANT(FontFace);
+    SFML_DEFINE_LIFETIME_DEPENDANT(Texture);
+    SFML_DEFINE_LIFETIME_DEPENDANT(GlyphMapping);
+};
+
+} // namespace sf

@@ -116,12 +116,20 @@ MiniaudioUtils::SoundBase::SoundBase(PlaybackDevice&   thePlaybackDevice,
 MiniaudioUtils::SoundBase::~SoundBase()
 {
 #ifdef SFML_ENABLE_LIFETIME_TRACKING
-    // Avoid undefined behavior when the destructor is called after the owning sound object
-    // fails a lifetime tracking test
+    // When the owning sound object fails a lifetime tracking test, its dependee
+    // has already been destroyed. We must still detach from the engine graph
+    // (otherwise the engine will access freed node memory during its own
+    // destruction), but skip `ma_data_source_uninit` as the data source may
+    // reference the freed dependee's memory.
 
     if (priv::LifetimeDependee::TestingModeGuard::fatalErrorTriggered("SoundBuffer") ||
         priv::LifetimeDependee::TestingModeGuard::fatalErrorTriggered("MusicReader"))
     {
+        ma_sound_uninit(&sound);
+
+        ma_node_uninit(&effectNode, nullptr);
+        effectNodeUninitialized = true;
+
         return;
     }
 #endif

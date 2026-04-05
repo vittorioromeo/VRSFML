@@ -157,6 +157,7 @@ int main()
             auto& [text, circleShape, sprite, velocity, torque] = entities.emplaceBack(
                 sf::Text{i % 2u == 0u ? fontTuffy : fontMouldyCheese,
                          {.string           = labelBuffer,
+                          .characterSize    = 30u,
                           .fillColor        = sf::Color::Black,
                           .outlineColor     = sf::Color::White,
                           .outlineThickness = 5.f}},

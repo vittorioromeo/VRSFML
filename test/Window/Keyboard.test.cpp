@@ -1,12 +1,14 @@
 #include "SFML/Window/Keyboard.hpp"
 
+#include "SFML/Window/WindowContext.hpp"
+
 // Other 1st party headers
 #include "SFML/System/UnicodeString.hpp"
 
 #include <Doctest.hpp>
 
-#include <SystemUtil.hpp>
-#include <WindowUtil.hpp>
+#include "SystemUtil.hpp"
+#include "WindowUtil.hpp"
 
 // We're limited on what can be tested. Without control over the hardware and the
 // configuration of the operating system, certain things cannot be tested. In
@@ -18,6 +20,8 @@
 
 TEST_CASE("[Window] sf::Keyboard" * doctest::skip(skipDisplayTests))
 {
+    auto windowContext = sf::WindowContext::create().value();
+
     SECTION("isKeyPressed(Key)")
     {
         CHECK(!sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W));

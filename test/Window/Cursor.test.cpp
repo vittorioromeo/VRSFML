@@ -1,5 +1,7 @@
 #include "SFML/Window/Cursor.hpp"
 
+#include "SFML/Window/WindowContext.hpp"
+
 #include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
@@ -11,11 +13,13 @@
 
 #include <Doctest.hpp>
 
-#include <StringifyOptionalUtil.hpp>
-#include <WindowUtil.hpp>
+#include "StringifyOptionalUtil.hpp"
+#include "WindowUtil.hpp"
 
 TEST_CASE("[Window] sf::Cursor" * doctest::skip(skipDisplayTests))
 {
+    auto windowContext = sf::WindowContext::create().value();
+
     SECTION("Type traits")
     {
         STATIC_CHECK(!SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::Cursor));

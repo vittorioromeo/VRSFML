@@ -436,6 +436,7 @@ public:
     template <typename T>
     [[nodiscard, gnu::always_inline]] T& as() & noexcept
     {
+        SFML_BASE_ASSERT(m_index == indexOf<T>);
         return *SFML_BASE_LAUNDER_CAST(T*, m_buffer);
     }
 
@@ -444,6 +445,7 @@ public:
     template <typename T>
     [[nodiscard, gnu::always_inline]] const T& as() const& noexcept
     {
+        SFML_BASE_ASSERT(m_index == indexOf<T>);
         return *SFML_BASE_LAUNDER_CAST(const T*, m_buffer);
     }
 
@@ -452,6 +454,7 @@ public:
     template <typename T>
     [[nodiscard, gnu::always_inline]] T&& as() && noexcept
     {
+        SFML_BASE_ASSERT(m_index == indexOf<T>);
         return static_cast<T&&>(*SFML_BASE_LAUNDER_CAST(T*, m_buffer));
     }
 

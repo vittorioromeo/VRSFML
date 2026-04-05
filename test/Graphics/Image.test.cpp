@@ -9,7 +9,7 @@
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
-#include <GraphicsUtil.hpp>
+#include "GraphicsUtil.hpp"
 
 
 TEST_CASE("[Graphics] sf::Image")

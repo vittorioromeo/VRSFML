@@ -15,8 +15,8 @@
 
 #include <Doctest.hpp>
 
-#include <StringifyOptionalUtil.hpp>
-#include <StringifyStringViewUtil.hpp>
+#include "StringifyOptionalUtil.hpp"
+#include "StringifyStringViewUtil.hpp"
 
 #include <string>
 

@@ -19,8 +19,8 @@
 
 #include <Doctest.hpp>
 
-#include <AudioUtil.hpp>
-#include <SystemUtil.hpp>
+#include "AudioUtil.hpp"
+#include "SystemUtil.hpp"
 
 
 #define SFML_TEST_CHECK_DEFAULT_VALUES(xSoundSource)                      \

@@ -603,7 +603,7 @@ class KeyboardView : public sf::Transformable
 {
 public:
     explicit KeyboardView(const sf::Font& font) :
-        m_labels(sf::Keyboard::ScancodeCount, sf::Text(font, {.characterSize = 14u}))
+        m_labels(sf::Keyboard::ScancodeCount, sf::Text(font, {.string = "", .characterSize = 14u}))
     {
         // Check all the scancodes are in the matrix exactly once
         {

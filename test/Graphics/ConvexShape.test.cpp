@@ -8,7 +8,7 @@
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
-#include <SystemUtil.hpp>
+#include "SystemUtil.hpp"
 
 TEST_CASE("[Graphics] sf::ConvexShape")
 {

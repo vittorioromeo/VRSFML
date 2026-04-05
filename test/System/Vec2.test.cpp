@@ -18,7 +18,7 @@
 
 #include <Doctest.hpp>
 
-#include <SystemUtil.hpp>
+#include "SystemUtil.hpp"
 
 using namespace sf::Literals;
 

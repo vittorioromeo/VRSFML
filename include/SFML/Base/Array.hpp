@@ -110,6 +110,7 @@ struct [[nodiscard]] Array
         return elements + N;
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard]] constexpr bool operator==(const Array& rhs) const = default;
 };

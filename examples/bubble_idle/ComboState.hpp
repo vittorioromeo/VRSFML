@@ -34,22 +34,35 @@ struct ComboState
     sf::Text        buffText;
     sf::Text        cursorComboText;
 
-    ComboState(const sf::Font& hudFont, const sf::Font& cursorFont, const sf::Vec2f moneyTextPosition, const sf::Color& outlineColor) :
+    ComboState(const sf::Font&  hudFont,
+               const sf::Font&  cursorFont,
+               const sf::Vec2f  moneyTextPosition,
+               const sf::Color& outlineColor) :
         comboText{hudFont,
-                  {.position         = moneyTextPosition.addY(35.f),
-                   .string           = "x1",
-                   .characterSize    = 48u,
-                   .fillColor        = sf::Color::White,
-                   .outlineColor     = outlineColor,
-                   .outlineThickness = 3.f}},
+                  {
+                      .position         = moneyTextPosition.addY(35.f),
+                      .string           = "x1",
+                      .characterSize    = 48u,
+                      .fillColor        = sf::Color::White,
+                      .outlineColor     = outlineColor,
+                      .outlineThickness = 3.f,
+                  }},
         buffText{hudFont,
-                 {.position         = moneyTextPosition.addY(70.f),
-                  .string           = "",
-                  .characterSize    = 48u,
-                  .fillColor        = sf::Color::White,
-                  .outlineColor     = outlineColor,
-                  .outlineThickness = 3.f}},
-        cursorComboText{cursorFont, {.origin = {0.f, 0.f}, .characterSize = 48u, .outlineThickness = 4.f}}
+                 {
+                     .position         = moneyTextPosition.addY(70.f),
+                     .string           = "",
+                     .characterSize    = 48u,
+                     .fillColor        = sf::Color::White,
+                     .outlineColor     = outlineColor,
+                     .outlineThickness = 3.f,
+                 }},
+        cursorComboText{cursorFont,
+                        {
+                            .origin           = {0.f, 0.f},
+                            .string           = "",
+                            .characterSize    = 48u,
+                            .outlineThickness = 4.f,
+                        }}
     {
     }
 };

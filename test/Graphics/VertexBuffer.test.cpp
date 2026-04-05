@@ -10,7 +10,7 @@
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
-#include <GraphicsUtil.hpp>
+#include "GraphicsUtil.hpp"
 
 // Skip these tests with [.display] because they produce flakey failures in CI when using xvfb-run
 TEST_CASE("[Graphics] sf::VertexBuffer", "[.display]")

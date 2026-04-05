@@ -176,7 +176,7 @@ public:
 
 ////////////////////////////////////////////////////////////
 template <typename T, typename... Ts>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr UniquePtr<T> makeUnique(Ts&&... xs)
+[[nodiscard, gnu::always_inline, gnu::flatten]] inline constexpr UniquePtr<T> makeUnique(Ts&&... xs)
 {
     return UniquePtr<T>{new T{static_cast<Ts&&>(xs)...}};
 }

@@ -233,7 +233,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec2 clampLengthSquared(T minLengthSquared,
-                                                                                                    T maxLengthSquared) const;
+                                                                                                 T maxLengthSquared) const;
 
 
     ////////////////////////////////////////////////////////////

@@ -4,6 +4,7 @@ set_target_warnings(test-sfml-install)
 set(CMAKE_POLICY_VERSION_MINIMUM "3.5")
 
 set(DOCTEST_NO_INSTALL ON CACHE BOOL "")
+set(DOCTEST_WITH_MAIN_IN_STATIC_LIB OFF CACHE BOOL "" FORCE)
 
 CPMAddPackage(
     NAME doctest
@@ -26,12 +27,9 @@ target_compile_features(doctest INTERFACE cxx_std_20)
 
 # Ensure that doctest sources and headers are not analyzed by any tools
 set_target_properties(doctest PROPERTIES COMPILE_OPTIONS "" EXPORT_COMPILE_COMMANDS OFF)
-set_target_properties(doctest_with_main PROPERTIES EXPORT_COMPILE_COMMANDS OFF)
-set_target_properties(doctest doctest_with_main PROPERTIES FOLDER "Dependencies")
+set_target_properties(doctest PROPERTIES FOLDER "Dependencies")
 get_target_property(DOCTEST_INCLUDE_DIRS doctest INTERFACE_INCLUDE_DIRECTORIES)
 target_include_directories(doctest SYSTEM INTERFACE ${DOCTEST_INCLUDE_DIRS})
-target_compile_options(doctest_with_main PRIVATE "-w")
-
 # add flags required for emscripten support (e.g. pthread)
 if(SFML_OS_EMSCRIPTEN)
     target_compile_definitions(doctest INTERFACE DOCTEST_CONFIG_COLORS_NONE)
@@ -46,28 +44,27 @@ add_library(sfml-test-main STATIC ${TEST_UTILITIES_SRC})
 target_include_directories(sfml-test-main PUBLIC TestUtilities)
 target_compile_definitions(sfml-test-main PUBLIC DOCTEST_CONFIG_REQUIRE_STRINGIFICATION_FOR_ALL_USED_TYPES)
 
+# Suppress warnings for the doctest implementation (matches the old doctest_with_main `-w` flag)
+set_source_files_properties("${TEST_SRCROOT}/TestUtilities/DoctestImpl.cpp" PROPERTIES COMPILE_OPTIONS "-w")
+
 set_target_warnings(sfml-test-main)
+
+target_link_libraries(sfml-test-main PUBLIC SFML::System doctest::doctest)
 
 # enable precompiled headers
 if (SFML_ENABLE_PCH)
     message(VERBOSE "enabling PCH for doctest")
 
-    target_precompile_headers(doctest_with_main REUSE_FROM sfml-system)
     target_precompile_headers(sfml-test-main REUSE_FROM sfml-system)
 
     target_include_directories(sfml-system PUBLIC ${DOCTEST_INCLUDE_DIRS})
     target_link_libraries(sfml-system PUBLIC $<BUILD_INTERFACE:doctest::doctest>)
-    target_link_libraries(sfml-test-main PUBLIC SFML::System doctest::doctest)
 
     find_package(Threads REQUIRED)
     target_link_libraries(sfml-test-main PRIVATE Threads::Threads)
-else()
-    target_link_libraries(sfml-test-main PUBLIC SFML::System doctest::doctest_with_main)
 endif()
 
 # set the target flags to use the appropriate C++ standard library
-sfml_set_stdlib(doctest)
-sfml_set_stdlib(doctest_with_main)
 sfml_set_stdlib(sfml-test-main)
 
 sfml_set_option(SFML_RUN_DISPLAY_TESTS ON BOOL "ON to run tests that require a display, OFF to ignore it")
@@ -117,8 +114,6 @@ if(SFML_OS_ANDROID AND DEFINED ENV{LIBCXX_SHARED_SO})
         adb push $<TARGET_FILE:SFML::Network>         ${TARGET_DIR}\n\
         adb push $<TARGET_FILE:SFML::System>          ${TARGET_DIR}\n\
         adb push $<TARGET_FILE:SFML::Window>          ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:doctest>               ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:doctest_with_main>     ${TARGET_DIR}\n\
         adb push $ENV{LIBCXX_SHARED_SO}               ${TARGET_DIR}\n\
         adb push ${CMAKE_CURRENT_LIST_DIR}/Audio/.    ${TARGET_DIR}\n\
         adb push ${CMAKE_CURRENT_LIST_DIR}/Graphics/. ${TARGET_DIR}\n\

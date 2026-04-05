@@ -84,3 +84,6 @@ private:
 /// \see sf::Texture, sf::Image, sf::RenderTexture
 ///
 ////////////////////////////////////////////////////////////
+
+
+// TODO P0: deprecate in favour of textureatlasutils?

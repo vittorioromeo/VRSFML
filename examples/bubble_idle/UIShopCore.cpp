@@ -1,5 +1,4 @@
 #include "BubbleIdleMain.hpp"
-
 #include "Cat.hpp"
 #include "CatType.hpp"
 #include "Version.hpp"
@@ -19,9 +18,10 @@ void Main::uiShopDrawCoreUpgrades()
 
     uiImgsep(txrMenuSeparator0, "click upgrades", /* first */ true);
 
-    uiSetTooltipOnly("Build your combo by popping bubbles quickly, increasing the value of each subsequent "
-                     "one.\n\nCombos expire on misclicks and over time, but can be upgraded to last "
-                     "longer.\n\nStar bubbles are affected -- pop them while your multiplier is high!");
+    uiSetTooltipOnly(
+        "Build your combo by popping bubbles quickly, increasing the value of each subsequent "
+        "one.\n\nCombos expire on misclicks and over time, but can be upgraded to last "
+        "longer.\n\nStar bubbles are affected -- pop them while your multiplier is high!");
     if (makePurchasableButtonOneTime("Combo", 20u, pt->comboPurchased))
     {
         comboState.combo = 0;
@@ -65,11 +65,12 @@ void Main::uiShopDrawCoreUpgrades()
         }
 
         uiSetUnlockLabelY(1u);
-        uiSetTooltipOnly("Extend the map and enable scrolling.\n\nExtending the map will increase the total number "
-                         "of bubbles you can work with, and will also reveal magical shrines that grant unique cats "
-                         "upon completion.\n\nYou can scroll the map with the scroll wheel, holding right click, by "
-                         "dragging with two fingers, by using the A/D/Left/Right keys.\n\nYou can jump around the "
-                         "map by clicking on the minimap or using the PgUp/PgDn/Home/End keys.");
+        uiSetTooltipOnly(
+            "Extend the map and enable scrolling.\n\nExtending the map will increase the total number "
+            "of bubbles you can work with, and will also reveal magical shrines that grant unique cats "
+            "upon completion.\n\nYou can scroll the map with the scroll wheel, holding right click, by "
+            "dragging with two fingers, by using the A/D/Left/Right keys.\n\nYou can jump around the "
+            "map by clicking on the minimap or using the PgUp/PgDn/Home/End keys.");
         if (makePurchasableButtonOneTime("Map scrolling", 1000u, pt->mapPurchased))
         {
             playerInputState.scroll = 0.f;
@@ -89,8 +90,9 @@ void Main::uiShopDrawCoreUpgrades()
             makePSVButton("  Extend map", pt->psvMapExtension);
 
             ImGui::BeginDisabled(pt->psvShrineActivation.nPurchases > pt->psvMapExtension.nPurchases);
-            uiSetTooltip("Activates the next shrine, enabling it to absorb nearby popped bubbles. Once enough "
-                         "bubbles are absorbed by a shrine, it will grant a unique cat.");
+            uiSetTooltip(
+                "Activates the next shrine, enabling it to absorb nearby popped bubbles. Once enough "
+                "bubbles are absorbed by a shrine, it will grant a unique cat.");
             uiSetLabel("%zu/9", pt->psvShrineActivation.nPurchases);
             if (makePSVButton("  Activate next shrine", pt->psvShrineActivation))
             {
@@ -115,8 +117,9 @@ void Main::uiShopDrawCoreUpgrades()
         uiImgsep(txrMenuSeparator2, "bubble upgrades");
 
         uiSetUnlockLabelY(3u);
-        uiSetTooltip("Increase the total number of bubbles. Scales with map size.\n\nMore bubbles, "
-                     "more money, fewer FPS!");
+        uiSetTooltip(
+            "Increase the total number of bubbles. Scales with map size.\n\nMore bubbles, "
+            "more money, fewer FPS!");
         uiSetLabel("%zu bubbles", static_cast<sf::base::SizeT>(pt->psvBubbleCount.currentValue()));
         makePSVButton("More bubbles", pt->psvBubbleCount);
     }
@@ -126,10 +129,11 @@ void Main::uiShopDrawCoreUpgrades()
         uiImgsep(txrMenuSeparator3, "cats");
 
         uiSetUnlockLabelY(4u);
-        uiSetTooltip("Cats pop nearby bubbles or bombs. Their cooldown and range can be upgraded. Their "
-                     "behavior can be permanently upgraded with prestige points.\n\nCats can be dragged around "
-                     "to position them strategically.\n\nNo, you can't get rid of a cat once purchased, you "
-                     "monster.");
+        uiSetTooltip(
+            "Cats pop nearby bubbles or bombs. Their cooldown and range can be upgraded. Their "
+            "behavior can be permanently upgraded with prestige points.\n\nCats can be dragged around "
+            "to position them strategically.\n\nNo, you can't get rid of a cat once purchased, you "
+            "monster.");
         uiSetLabel("%zu cats", nCatNormal);
         if (makePSVButton("Cat", pt->psvPerCatType[asIdx(CatType::Normal)]))
         {

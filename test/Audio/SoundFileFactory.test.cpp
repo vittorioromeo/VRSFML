@@ -18,8 +18,8 @@
 
 #include <Doctest.hpp>
 
-#include <StringifyOptionalUtil.hpp>
-#include <SystemUtil.hpp>
+#include "StringifyOptionalUtil.hpp"
+#include "SystemUtil.hpp"
 
 
 namespace

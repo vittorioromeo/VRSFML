@@ -1,7 +1,11 @@
-# all source files
-set(SRC Showcase.cpp)
+set(SRC
+    Showcase.cpp
+    ShowcaseShapes.cpp
+    ShowcaseBunnyMark.cpp
+    ShowcaseAudio.cpp
+    ShowcaseIndividualShape.cpp
+    ShowcaseTextComparison.cpp)
 
-# define the arkanoid target
 sfml_add_example(showcase GUI_APP
                  SOURCES ${SRC}
                  DEPENDS SFML::Audio SFML::Graphics SFML::ImGui ImGui::ImGui)

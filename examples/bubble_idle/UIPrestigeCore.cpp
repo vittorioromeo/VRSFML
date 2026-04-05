@@ -1,5 +1,4 @@
 #include "BubbleIdleMain.hpp"
-
 #include "CatType.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"
@@ -18,7 +17,10 @@ void Main::uiPrestigeDrawCoreUpgrades()
         uiImgsep2(txrPrestigeSeparator4, "faster beginning");
 
         uiSetUnlockLabelY(47u);
-        (void)uiMakePrestigeOneTimeButton("Starter pack", 1u, pt->perm.starterPackPurchased, "Begin your next prestige with $1000.");
+        (void)uiMakePrestigeOneTimeButton("Starter pack",
+                                          1u,
+                                          pt->perm.starterPackPurchased,
+                                          "Begin your next prestige with $1000.");
     }
 
     if (checkUiUnlock(48u, pt->psvBubbleValue.nPurchases >= 1u))

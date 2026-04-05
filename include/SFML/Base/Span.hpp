@@ -64,7 +64,7 @@ struct Span
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const char* data() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T* data() const noexcept
     {
         return theData;
     }

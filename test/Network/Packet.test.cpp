@@ -10,8 +10,8 @@
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
-#include <StringifyVectorUtil.hpp>
-#include <SystemUtil.hpp>
+#include "StringifyVectorUtil.hpp"
+#include "SystemUtil.hpp"
 
 #include <limits>
 #include <string>

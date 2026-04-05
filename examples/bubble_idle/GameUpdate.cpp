@@ -17,7 +17,6 @@ void Main::gameLoopUpdateFrameWorld(const float deltaTimeMs, FrameInput& frameIn
 {
     gameLoopUpdateTransitions(deltaTimeMs);
 
-    sweepAndPrune.clear();
     sweepAndPrune.populate(pt->bubbles);
 
     frameProcThisFrame = (frameProcCd.updateAndLoop(deltaTimeMs, 20.f) == CountdownStatusLoop::Looping);

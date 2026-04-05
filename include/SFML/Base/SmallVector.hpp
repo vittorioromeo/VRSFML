@@ -14,6 +14,7 @@
 #include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Swap.hpp"
+#include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
 
 
 namespace sf::base
@@ -26,9 +27,12 @@ class [[nodiscard]] SmallVector
 
 private:
     ////////////////////////////////////////////////////////////
-    TItem* m_data{nullptr};
-    TItem* m_endSize{nullptr};
-    TItem* m_endCapacity{nullptr};
+    // `m_heapData == nullptr` means "using inline storage".
+    // This makes SmallVector trivially relocatable: after memcpy,
+    // nullptr still means "use my own inline storage" (recomputed from `this`).
+    TItem* m_heapData{nullptr};
+    SizeT  m_size{0u};
+    SizeT  m_capacity{N};
     alignas(TItem) unsigned char m_inlineStorage[sizeof(TItem) * N];
 
 
@@ -56,24 +60,18 @@ private:
         SFML_BASE_ASSERT(finalNewCapacity > capacity()); // Should only be called to grow
 
         auto*      newData = priv::VectorUtils::allocate<TItem>(finalNewCapacity);
-        const auto oldSize = size();
+        const auto oldSize = m_size;
 
-        if (m_data == nullptr)
-        {
-            // Should not happen given constructors init to inline
-            SFML_BASE_ASSERT(size() == 0u);
-        }
-        else
-        {
-            priv::VectorUtils::relocateRange(newData, m_data, m_endSize);
+        TItem* const oldData = data();
 
-            if (isHeap())
-                priv::VectorUtils::deallocate(m_data, currentCapacity);
-        }
+        if (oldSize > 0u)
+            priv::VectorUtils::relocateRange(newData, oldData, oldData + oldSize);
 
-        m_data        = newData;
-        m_endSize     = m_data + oldSize;
-        m_endCapacity = m_data + finalNewCapacity;
+        if (isHeap())
+            priv::VectorUtils::deallocate(m_heapData, currentCapacity);
+
+        m_heapData = newData;
+        m_capacity = finalNewCapacity;
     }
 
 
@@ -98,19 +96,17 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
-    [[nodiscard]] SmallVector() : m_data{getInlineStorage()}, m_endSize{m_data}, m_endCapacity{m_data + N}
-    {
-    }
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init, cppcoreguidelines-pro-type-reinterpret-cast)
+    [[nodiscard]] SmallVector() = default;
 
 
     ////////////////////////////////////////////////////////////
     ~SmallVector()
     {
-        priv::VectorUtils::destroyRange(m_data, m_endSize);
+        priv::VectorUtils::destroyRange(data(), data() + m_size);
 
         if (isHeap())
-            priv::VectorUtils::deallocate(m_data, capacity());
+            priv::VectorUtils::deallocate(m_heapData, m_capacity);
     }
 
 
@@ -122,8 +118,8 @@ public:
 
         reserve(initialSize);
 
-        m_endSize = m_data + initialSize;
-        priv::VectorUtils::copyConstructRange(m_data, m_endSize, value);
+        priv::VectorUtils::copyConstructRange(data(), data() + initialSize, value);
+        m_size = initialSize;
     }
 
 
@@ -135,8 +131,8 @@ public:
 
         reserve(initialSize);
 
-        m_endSize = m_data + initialSize;
-        priv::VectorUtils::defaultConstructRange(m_data, m_endSize);
+        priv::VectorUtils::defaultConstructRange(data(), data() + initialSize);
+        m_size = initialSize;
     }
 
 
@@ -150,8 +146,8 @@ public:
             return;
 
         reserve(srcCount);
-        priv::VectorUtils::copyRange(m_data, srcBegin, srcEnd);
-        m_endSize = m_data + srcCount;
+        priv::VectorUtils::copyRange(data(), srcBegin, srcEnd);
+        m_size = srcCount;
     }
 
 
@@ -165,16 +161,16 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] SmallVector(const SmallVector& rhs) : SmallVector{}
     {
-        reserve(rhs.size());
-        priv::VectorUtils::copyRange(m_data, rhs.m_data, rhs.m_endSize);
-        m_endSize = m_data + rhs.size();
+        reserve(rhs.m_size);
+        priv::VectorUtils::copyRange(data(), rhs.data(), rhs.data() + rhs.m_size);
+        m_size = rhs.m_size;
     }
 
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] bool isHeap() const noexcept
     {
-        return m_data != reinterpret_cast<const TItem*>(m_inlineStorage);
+        return m_heapData != nullptr;
     }
 
 
@@ -185,10 +181,10 @@ public:
             return *this;
 
         clear();
-        reserve(rhs.size());
-        priv::VectorUtils::copyRange(m_data, rhs.m_data, rhs.m_endSize);
+        reserve(rhs.m_size);
+        priv::VectorUtils::copyRange(data(), rhs.data(), rhs.data() + rhs.m_size);
 
-        m_endSize = m_data + rhs.size();
+        m_size = rhs.m_size;
 
         return *this;
     }
@@ -200,22 +196,22 @@ public:
         if (rhs.isHeap())
         {
             // Steal the heap buffer
-            m_data        = rhs.m_data;
-            m_endSize     = rhs.m_endSize;
-            m_endCapacity = rhs.m_endCapacity;
+            m_heapData = rhs.m_heapData;
+            m_size     = rhs.m_size;
+            m_capacity = rhs.m_capacity;
 
-            // Reset RHS to its own inline storage
-            rhs.m_data        = rhs.getInlineStorage();
-            rhs.m_endSize     = rhs.m_data;
-            rhs.m_endCapacity = rhs.m_data + N;
+            // Reset RHS to inline mode
+            rhs.m_heapData = nullptr;
+            rhs.m_size     = 0u;
+            rhs.m_capacity = N;
         }
         else
         {
             // Move elements from RHS inline storage to LHS inline storage
             // No need to reserve, capacity is N
-            priv::VectorUtils::relocateRange(m_data, rhs.m_data, rhs.m_endSize);
-            m_endSize     = m_data + rhs.size();
-            rhs.m_endSize = rhs.m_data;
+            priv::VectorUtils::relocateRange(getInlineStorage(), rhs.getInlineStorage(), rhs.getInlineStorage() + rhs.m_size);
+            m_size     = rhs.m_size;
+            rhs.m_size = 0u;
         }
     }
 
@@ -233,46 +229,46 @@ public:
         {
             // If we have a heap buffer, deallocate it before stealing
             if (isHeap())
-                priv::VectorUtils::deallocate(m_data, capacity());
+                priv::VectorUtils::deallocate(m_heapData, m_capacity);
 
             // Steal pointers
-            m_data        = rhs.m_data;
-            m_endSize     = rhs.m_endSize;
-            m_endCapacity = rhs.m_endCapacity;
+            m_heapData = rhs.m_heapData;
+            m_size     = rhs.m_size;
+            m_capacity = rhs.m_capacity;
 
             // Reset RHS
-            rhs.m_data        = rhs.getInlineStorage();
-            rhs.m_endSize     = rhs.m_data;
-            rhs.m_endCapacity = rhs.m_data + N;
+            rhs.m_heapData = nullptr;
+            rhs.m_size     = 0u;
+            rhs.m_capacity = N;
 
             return *this;
         }
 
         // Optimization: Reuse existing heap buffer
-        if (isHeap() && capacity() >= rhs.size())
+        if (isHeap() && m_capacity >= rhs.m_size)
         {
-            priv::VectorUtils::relocateRange(m_data, rhs.m_data, rhs.m_endSize);
-            m_endSize = m_data + rhs.size();
+            priv::VectorUtils::relocateRange(m_heapData, rhs.data(), rhs.data() + rhs.m_size);
+            m_size = rhs.m_size;
 
-            rhs.clear(); // Reset rhs
+            rhs.m_size = 0u;
 
             return *this;
         }
 
         if (isHeap())
         {
-            priv::VectorUtils::deallocate(m_data, capacity());
-            m_data        = getInlineStorage();
-            m_endCapacity = m_data + N;
+            priv::VectorUtils::deallocate(m_heapData, m_capacity);
+            m_heapData = nullptr;
+            m_capacity = N;
         }
 
-        m_endSize = m_data; // Reset size
+        m_size = 0u; // Reset size
 
         // Move elements
-        priv::VectorUtils::relocateRange(m_data, rhs.m_data, rhs.m_endSize);
-        m_endSize = m_data + rhs.size();
+        priv::VectorUtils::relocateRange(data(), rhs.data(), rhs.data() + rhs.m_size);
+        m_size = rhs.m_size;
 
-        rhs.clear();
+        rhs.m_size = 0u;
 
         return *this;
     }
@@ -281,21 +277,23 @@ public:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void resize(const SizeT newSize, auto&&... args)
     {
-        const auto oldSize = size();
+        const auto oldSize = m_size;
 
         if (newSize > oldSize)
         {
             reserve(newSize);
 
-            for (auto* p = m_data + oldSize; p != m_data + newSize; ++p)
+            TItem* const d = data();
+            for (auto* p = d + oldSize; p != d + newSize; ++p)
                 SFML_BASE_PLACEMENT_NEW(p) TItem(args...); // intentionally not forwarding
         }
         else
         {
-            priv::VectorUtils::destroyRange(m_data + newSize, m_endSize);
+            TItem* const d = data();
+            priv::VectorUtils::destroyRange(d + newSize, d + oldSize);
         }
 
-        m_endSize = m_data + newSize;
+        m_size = newSize;
     }
 
 
@@ -306,17 +304,19 @@ public:
         SFML_BASE_ASSERT(pos >= begin() && pos <= end());
 
         // Save the index before `reserve` potentially invalidates `pos`.
-        const auto index = static_cast<SizeT>(pos - m_data);
+        const auto index = static_cast<SizeT>(pos - data());
 
-        reserve(size() + 1);
+        reserve(m_size + 1);
+
+        TItem* const d = data();
 
         // Restore the insertion position iterator, which may point to new memory.
-        TItem* const currentPos = m_data + index;
+        TItem* const currentPos = d + index;
 
-        priv::VectorUtils::makeHole(currentPos, m_endSize);
+        priv::VectorUtils::makeHole(currentPos, d + m_size);
 
         SFML_BASE_PLACEMENT_NEW(currentPos) TItem(static_cast<Ts&&>(xs)...);
-        ++m_endSize;
+        ++m_size;
 
         return currentPos;
     }
@@ -342,13 +342,13 @@ public:
         if (!isHeap())
             return;
 
-        const SizeT currentSize = size();
+        const SizeT currentSize = m_size;
 
         if (currentSize <= N)
         {
             // Move back to inline storage
-            TItem* const oldData     = m_data;
-            const auto   oldCapacity = capacity();
+            TItem* const oldData     = m_heapData;
+            const auto   oldCapacity = m_capacity;
 
             // Setup inline pointers
             TItem* const inlinePtr = getInlineStorage();
@@ -356,73 +356,70 @@ public:
             priv::VectorUtils::relocateRange(inlinePtr, oldData, oldData + currentSize);
             priv::VectorUtils::deallocate(oldData, oldCapacity);
 
-            m_data        = inlinePtr;
-            m_endSize     = m_data + currentSize;
-            m_endCapacity = m_data + N;
+            m_heapData = nullptr;
+            m_capacity = N;
         }
-        else if (currentSize < capacity())
+        else if (currentSize < m_capacity)
         {
             // Shrink heap allocation
             auto* const newData     = priv::VectorUtils::allocate<TItem>(currentSize);
-            const auto  oldCapacity = capacity();
+            const auto  oldCapacity = m_capacity;
 
-            priv::VectorUtils::relocateRange(newData, m_data, m_endSize);
-            priv::VectorUtils::deallocate(m_data, oldCapacity);
+            priv::VectorUtils::relocateRange(newData, m_heapData, m_heapData + currentSize);
+            priv::VectorUtils::deallocate(m_heapData, oldCapacity);
 
-            m_data    = newData;
-            m_endSize = m_endCapacity = m_data + currentSize;
+            m_heapData = newData;
+            m_capacity = currentSize;
         }
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] TItem*& reserve(const SizeT targetCapacity)
+    [[gnu::always_inline]] void reserve(const SizeT targetCapacity)
     {
-        if (capacity() < targetCapacity) [[unlikely]]
+        if (m_capacity < targetCapacity) [[unlikely]]
             reserveImpl(targetCapacity);
-
-        return m_endSize;
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] TItem*& reserveMore(const SizeT n)
+    [[gnu::always_inline, gnu::flatten]] void reserveMore(const SizeT n)
     {
-        return reserve(size() + n);
+        reserve(m_size + n);
     }
 
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] void unsafeEmplaceBackRange(const TItem* const ptr, const SizeT count) noexcept
     {
-        SFML_BASE_ASSERT(size() + count <= capacity());
-        SFML_BASE_ASSERT(m_data != nullptr);
-        SFML_BASE_ASSERT(m_endSize != nullptr);
+        SFML_BASE_ASSERT(m_size + count <= m_capacity);
 
-        priv::VectorUtils::copyRange(m_endSize, ptr, ptr + count);
-        m_endSize += count;
+        TItem* const d = data();
+        priv::VectorUtils::copyRange(d + m_size, ptr, ptr + count);
+        m_size += count;
     }
 
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] void clear() noexcept
     {
-        priv::VectorUtils::destroyRange(m_data, m_endSize);
-        m_endSize = m_data;
+        TItem* const d = data();
+        priv::VectorUtils::destroyRange(d, d + m_size);
+        m_size = 0u;
     }
 
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] SizeT size() const noexcept
     {
-        return static_cast<SizeT>(m_endSize - m_data);
+        return m_size;
     }
 
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] SizeT capacity() const noexcept
     {
-        return static_cast<SizeT>(m_endCapacity - m_data);
+        return m_capacity;
     }
 
 
@@ -430,11 +427,12 @@ public:
     template <typename... Ts>
     [[gnu::always_inline]] TItem& unsafeEmplaceBack(Ts&&... xs)
     {
-        SFML_BASE_ASSERT(m_endSize < m_endCapacity);
-        SFML_BASE_ASSERT(m_data != nullptr);
-        SFML_BASE_ASSERT(m_endSize != nullptr);
+        SFML_BASE_ASSERT(m_size < m_capacity);
 
-        return *(SFML_BASE_PLACEMENT_NEW(m_endSize++) TItem(static_cast<Ts&&>(xs)...));
+        TItem* const slot = data() + m_size;
+        ++m_size;
+
+        return *(SFML_BASE_PLACEMENT_NEW(slot) TItem(static_cast<Ts&&>(xs)...));
     }
 
 
@@ -442,10 +440,10 @@ public:
     TItem* erase(TItem* const it)
     {
         priv::VectorUtils::eraseImpl(begin(), end(), it);
-        --m_endSize;
+        --m_size;
 
         if constexpr (!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(TItem))
-            m_endSize->~TItem();
+            (data() + m_size)->~TItem();
 
         return it;
     }
@@ -459,7 +457,8 @@ public:
         if (first == last)
             return first; // No elements to erase
 
-        m_endSize = priv::VectorUtils::eraseRangeImpl(end(), first, last);
+        TItem* const newEnd = priv::VectorUtils::eraseRangeImpl(end(), first, last);
+        m_size              = static_cast<SizeT>(newEnd - data());
 
         // Return an iterator to the element that now occupies the position
         // where the first erased element (`first`) was. This is `first` itself,
@@ -472,33 +471,32 @@ public:
     template <typename... TItems>
     [[gnu::always_inline]] void unsafePushBackMultiple(TItems&&... items)
     {
-        SFML_BASE_ASSERT(size() + sizeof...(items) <= capacity());
-        SFML_BASE_ASSERT(m_data != nullptr);
-        SFML_BASE_ASSERT(m_endSize != nullptr);
+        SFML_BASE_ASSERT(m_size + sizeof...(items) <= m_capacity);
 
-        (..., SFML_BASE_PLACEMENT_NEW(m_endSize++) TItem(static_cast<TItems&&>(items)));
+        TItem* d = data();
+        (..., (SFML_BASE_PLACEMENT_NEW(d + m_size) TItem(static_cast<TItems&&>(items)), ++m_size));
     }
 
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem* data() noexcept
     {
-        return m_data;
+        return m_heapData != nullptr ? m_heapData : getInlineStorage();
     }
 
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem* data() const noexcept
     {
-        return m_data;
+        return m_heapData != nullptr ? m_heapData : getInlineStorage();
     }
 
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] void unsafeSetSize(SizeT newSize) noexcept
     {
-        SFML_BASE_ASSERT(newSize <= capacity());
-        m_endSize = m_data + newSize;
+        SFML_BASE_ASSERT(newSize <= m_capacity);
+        m_size = newSize;
     }
 
 
@@ -506,10 +504,10 @@ public:
     [[gnu::always_inline]] void popBack() noexcept
     {
         SFML_BASE_ASSERT(!empty());
-        --m_endSize;
+        --m_size;
 
         if constexpr (!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(TItem))
-            m_endSize->~TItem();
+            (data() + m_size)->~TItem();
     }
 
 
@@ -525,9 +523,9 @@ public:
         if (lhsHeap && rhsHeap)
         {
             // Both are heap allocated: standard pointer swap
-            base::genericSwap(m_data, rhs.m_data);
-            base::genericSwap(m_endSize, rhs.m_endSize);
-            base::genericSwap(m_endCapacity, rhs.m_endCapacity);
+            base::genericSwap(m_heapData, rhs.m_heapData);
+            base::genericSwap(m_size, rhs.m_size);
+            base::genericSwap(m_capacity, rhs.m_capacity);
 
             return;
         }
@@ -535,15 +533,8 @@ public:
         if (!lhsHeap && !rhsHeap)
         {
             // Both are inline: use element-wise swap
-            SizeT lhsSz = size();
-            SizeT rhsSz = rhs.size();
-
-            priv::VectorUtils::swapUnequalRanges(m_data, lhsSz, rhs.m_data, rhsSz);
-
-            // Pointers data and capacity stay the same (pointing to respective inline storage)
-            // Update end pointers based on new sizes
-            m_endSize     = m_data + lhsSz;
-            rhs.m_endSize = rhs.m_data + rhsSz;
+            // (swapUnequalRanges also swaps the sizes via the SizeT& references)
+            priv::VectorUtils::swapUnequalRanges(data(), m_size, rhs.data(), rhs.m_size);
 
             return;
         }
@@ -554,22 +545,24 @@ public:
 
         // 1. Move elements from inlineVec's inline storage to heapVec's inline storage
         TItem* const heapVecInline = heapVec->getInlineStorage();
-        priv::VectorUtils::relocateRange(heapVecInline, inlineVec->m_data, inlineVec->m_endSize);
+        priv::VectorUtils::relocateRange(heapVecInline,
+                                         inlineVec->getInlineStorage(),
+                                         inlineVec->getInlineStorage() + inlineVec->m_size);
 
-        // 2. Capture heapVec's heap pointers
-        TItem* const heapData = heapVec->m_data;
-        TItem* const heapEnd  = heapVec->m_endSize;
-        TItem* const heapCap  = heapVec->m_endCapacity;
+        // 2. Capture heapVec's heap state
+        TItem* const savedHeapData     = heapVec->m_heapData;
+        const SizeT  savedHeapSize     = heapVec->m_size;
+        const SizeT  savedHeapCapacity = heapVec->m_capacity;
 
         // 3. Point heapVec to its own inline storage (which now holds the data from inlineVec)
-        heapVec->m_data        = heapVecInline;
-        heapVec->m_endSize     = heapVecInline + inlineVec->size();
-        heapVec->m_endCapacity = heapVecInline + N;
+        heapVec->m_heapData = nullptr;
+        heapVec->m_size     = inlineVec->m_size;
+        heapVec->m_capacity = N;
 
         // 4. Point inlineVec to the captured heap buffer
-        inlineVec->m_data        = heapData;
-        inlineVec->m_endSize     = heapEnd;
-        inlineVec->m_endCapacity = heapCap;
+        inlineVec->m_heapData = savedHeapData;
+        inlineVec->m_size     = savedHeapSize;
+        inlineVec->m_capacity = savedHeapCapacity;
     }
 
 
@@ -577,7 +570,7 @@ public:
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem& front() noexcept
     {
         SFML_BASE_ASSERT(!empty());
-        return *m_data;
+        return *data();
     }
 
 
@@ -585,7 +578,7 @@ public:
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem& front() const noexcept
     {
         SFML_BASE_ASSERT(!empty());
-        return *m_data;
+        return *data();
     }
 
 
@@ -593,7 +586,7 @@ public:
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem& back() noexcept
     {
         SFML_BASE_ASSERT(!empty());
-        return *(m_endSize - 1u);
+        return *(data() + m_size - 1u);
     }
 
 
@@ -601,7 +594,7 @@ public:
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem& back() const noexcept
     {
         SFML_BASE_ASSERT(!empty());
-        return *(m_endSize - 1u);
+        return *(data() + m_size - 1u);
     }
 
 

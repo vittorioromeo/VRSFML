@@ -9,9 +9,9 @@
 
 #include <Doctest.hpp>
 
-#include <AudioUtil.hpp>
+#include "AudioUtil.hpp"
 #include <CommonTraits.hpp>
-#include <SystemUtil.hpp>
+#include "SystemUtil.hpp"
 
 
 namespace

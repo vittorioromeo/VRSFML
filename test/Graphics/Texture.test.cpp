@@ -1,6 +1,10 @@
 #include "SFML/Graphics/Texture.hpp"
 
 // Other 1st party headers
+#include "GraphicsUtil.hpp"
+#include "LoadIntoMemoryUtil.hpp"
+#include "WindowUtil.hpp"
+
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
 #include "SFML/Graphics/TextureWrapMode.hpp"
@@ -19,10 +23,6 @@
 #include "SFML/Base/Trait/IsNothrowSwappable.hpp"
 
 #include <Doctest.hpp>
-
-#include <GraphicsUtil.hpp>
-#include <LoadIntoMemoryUtil.hpp>
-#include <WindowUtil.hpp>
 
 
 TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))

@@ -9,6 +9,11 @@
 #include "SFML/Graphics/TextureWrapMode.hpp"
 
 // Other 1st party headers
+#include "CommonTraits.hpp"
+#include "GraphicsUtil.hpp"
+#include "LoadIntoMemoryUtil.hpp"
+#include "WindowUtil.hpp"
+
 #include "SFML/System/FileInputStream.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Rect2.hpp"
@@ -21,11 +26,6 @@
 #include "SFML/Base/Trait/IsMoveConstructible.hpp"
 
 #include <Doctest.hpp>
-
-#include <CommonTraits.hpp>
-#include <GraphicsUtil.hpp>
-#include <LoadIntoMemoryUtil.hpp>
-#include <WindowUtil.hpp>
 
 #include <string>
 
@@ -69,7 +69,7 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
                 CHECK(glyph.textureRect == sf::Rect2f({2, 2}, {8, 12}));
                 CHECK(font.hasGlyph(0x41));
                 CHECK(font.hasGlyph(0xC0));
-                CHECK(font.getKerning(0x41, 0x42, 12) == -1);
+                CHECK(font.getKerning(0x41, 0x42, 12, false) == -1);
                 CHECK(font.getKerning(0x43, 0x44, 24, true) == 0);
                 CHECK(font.getLineSpacing(24) == 30);
                 CHECK(font.getUnderlinePosition(36) == Approx(2.20312f));
@@ -106,7 +106,7 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
             CHECK(glyph.textureRect == sf::Rect2f({2, 2}, {8, 12}));
             CHECK(font.hasGlyph(0x41));
             CHECK(font.hasGlyph(0xC0));
-            CHECK(font.getKerning(0x41, 0x42, 12) == -1);
+            CHECK(font.getKerning(0x41, 0x42, 12, false) == -1);
             CHECK(font.getKerning(0x43, 0x44, 24, true) == 0);
             CHECK(font.getLineSpacing(24) == 30);
             CHECK(font.getUnderlinePosition(36) == Approx(2.20312f));
@@ -133,7 +133,7 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
         CHECK(glyph.textureRect == sf::Rect2f({2, 2}, {8, 12}));
         CHECK(font.hasGlyph(0x41));
         CHECK(font.hasGlyph(0xC0));
-        CHECK(font.getKerning(0x41, 0x42, 12) == -1);
+        CHECK(font.getKerning(0x41, 0x42, 12, false) == -1);
         CHECK(font.getKerning(0x43, 0x44, 24, true) == 0);
         CHECK(font.getLineSpacing(24) == 30);
         CHECK(font.getUnderlinePosition(36) == Approx(2.20312f));

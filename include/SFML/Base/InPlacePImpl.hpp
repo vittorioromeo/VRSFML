@@ -55,6 +55,8 @@ public:
     [[nodiscard, gnu::always_inline]] explicit InPlacePImpl(Args&&... args)
     {
         static_assert(sizeof(T) <= BufferSize);
+        static_assert(alignof(T) <= alignof(MaxAlignT));
+
         SFML_BASE_PLACEMENT_NEW(m_buffer) T(static_cast<Args&&>(args)...);
     }
 
