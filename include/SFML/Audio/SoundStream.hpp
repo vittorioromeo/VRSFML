@@ -206,16 +206,12 @@ private:
 /// {
 /// public:
 ///
-///     [[nodiscard]] bool open(const std::string& location)
+///     // The channel map and sample rate are passed to the SoundStream base constructor
+///     CustomStream(sf::PlaybackDevice& playbackDevice)
+///         : sf::SoundStream(playbackDevice,
+///                           {sf::SoundChannel::FrontLeft, sf::SoundChannel::FrontRight},
+///                           44100)
 ///     {
-///         // Open the source and get audio settings
-///         ...
-///         unsigned int channelCount = 2; // Stereo
-///         unsigned int sampleRate = 44100; // 44100 Hz
-///
-///         // Initialize the stream -- important!
-///         initialize(channelCount, sampleRate, {sf::SoundChannel::FrontLeft, sf::SoundChannel::FrontRight});
-///         return true;
 ///     }
 ///
 /// private:
@@ -238,9 +234,8 @@ private:
 ///     }
 /// };
 ///
-/// // Usage
-/// CustomStream stream;
-/// stream.open("path/to/stream");
+/// // Usage (assumes `playbackDevice` is an initialized sf::PlaybackDevice)
+/// CustomStream stream(playbackDevice);
 /// stream.play();
 /// \endcode
 ///

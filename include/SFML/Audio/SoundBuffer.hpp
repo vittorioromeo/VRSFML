@@ -22,7 +22,6 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
-class Sound;
 class ChannelMap;
 class InputSoundFile;
 class InputStream;
@@ -327,14 +326,16 @@ private:
 /// // Load a new sound buffer from a file
 /// const auto buffer = sf::SoundBuffer::loadFromFile("sound.wav").value();
 ///
+/// // Assumes `playbackDevice` is an initialized sf::PlaybackDevice
+///
 /// // Create a sound source bound to the buffer
-/// sf::Sound sound1(buffer);
+/// sf::Sound sound1(playbackDevice, buffer);
 ///
 /// // Play the sound
 /// sound1.play();
 ///
 /// // Create another sound source bound to the same buffer
-/// sf::Sound sound2(buffer);
+/// sf::Sound sound2(playbackDevice, buffer);
 ///
 /// // Play it with a higher pitch -- the first sound remains unchanged
 /// sound2.setPitch(2);
@@ -351,8 +352,9 @@ private:
 ///     sf::SoundChannel::BackLeft,
 ///     sf::SoundChannel::LowFrequencyEffects
 /// };
-/// auto soundBuffer = sf::SoundBuffer(samples.data(), samples.size(), channelMap.size(), 44100, channelMap);
-/// auto sound = sf::Sound(soundBuffer);
+/// auto soundBuffer = sf::SoundBuffer::loadFromSamples(
+///     samples.data(), samples.size(), channelMap, 44100).value();
+/// sf::Sound sound(playbackDevice, soundBuffer);
 /// \endcode
 ///
 /// \see `sf::Sound`, `sf::SoundBufferRecorder`

@@ -162,8 +162,9 @@ private:
 ///
 /// Usage example:
 /// \code
+/// // Assumes `playbackDevice` is an initialized sf::PlaybackDevice
 /// const auto buffer = sf::SoundBuffer::loadFromFile("sound.wav").value();
-/// sf::Sound sound(buffer);
+/// sf::Sound sound(playbackDevice, buffer);
 /// sound.play();
 /// \endcode
 ///
