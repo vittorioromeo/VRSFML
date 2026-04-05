@@ -341,6 +341,8 @@ public:
         if (this == &rhs)
             return *this;
 
+        // TODO P1: should use assignment when types are the same
+
         SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I, destroyAt<I>());
 
         SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX_OBJ(rhs,
@@ -365,6 +367,8 @@ public:
     {
         if (this == &rhs)
             return *this;
+
+        // TODO P1: should use assignment when types are the same
 
         SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I, destroyAt<I>());
 
