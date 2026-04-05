@@ -8,6 +8,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/AssertAndAssume.hpp"
 #include "SFML/Base/Builtin/Unreachable.hpp"
 #include "SFML/Base/ClampMacro.hpp"
@@ -503,6 +504,145 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     // NOLINTEND(readability-identifier-naming)
 
     ////////////////////////////////////////////////////////////
+    /// \relates Color
+    /// \brief Overload of the binary `operator+`
+    ///
+    /// This operator returns the component-wise sum of two colors.
+    /// Components that exceed 255 are clamped to 255.
+    ///
+    /// \param lhs  Left operand
+    /// \param rhs Right operand
+    ///
+    /// \return Result of \a lhs + \a rhs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::const]] friend constexpr Color operator+(const Color lhs, const Color rhs)
+    {
+        const auto clampedAdd = [](const base::U8 lc, const base::U8 rc) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN -> base::U8
+        {
+            const int intResult = int{lc} + int{rc};
+            return static_cast<base::U8>(intResult < 255 ? intResult : 255);
+        };
+
+        return {clampedAdd(lhs.r, rhs.r), clampedAdd(lhs.g, rhs.g), clampedAdd(lhs.b, rhs.b), clampedAdd(lhs.a, rhs.a)};
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \relates Color
+    /// \brief Overload of the binary `operator-`
+    ///
+    /// This operator returns the component-wise subtraction of two colors.
+    /// Components below 0 are clamped to 0.
+    ///
+    /// \param lhs  Left operand
+    /// \param rhs Right operand
+    ///
+    /// \return Result of \a lhs - \a rhs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::const]] friend constexpr Color operator-(const Color lhs, const Color rhs)
+    {
+        const auto clampedSub = [](const base::U8 lc, const base::U8 rc) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN -> base::U8
+        {
+            const int intResult = int{lc} - int{rc};
+            return static_cast<base::U8>(intResult > 0 ? intResult : 0);
+        };
+
+        return {clampedSub(lhs.r, rhs.r), clampedSub(lhs.g, rhs.g), clampedSub(lhs.b, rhs.b), clampedSub(lhs.a, rhs.a)};
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \relates Color
+    /// \brief Overload of the binary `operator*`
+    ///
+    /// This operator returns the component-wise multiplication
+    /// (also called "modulation") of two colors.
+    /// Components are then divided by 255 so that the result is
+    /// still in the range [0, 255].
+    ///
+    /// \param lhs  Left operand
+    /// \param rhs Right operand
+    ///
+    /// \return Result of \a lhs * \a rhs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::const]] friend constexpr Color operator*(const Color lhs, const Color rhs)
+    {
+        const auto scaledMul = [](const base::U8 lc, const base::U8 rc) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN -> base::U8
+        {
+            const auto uint16Result = static_cast<base::U16>(base::U16{lc} * base::U16{rc});
+            return static_cast<base::U8>(uint16Result / 255u);
+        };
+
+        return {scaledMul(lhs.r, rhs.r), scaledMul(lhs.g, rhs.g), scaledMul(lhs.b, rhs.b), scaledMul(lhs.a, rhs.a)};
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \relates Color
+    /// \brief Overload of the binary `operator+=`
+    ///
+    /// This operator computes the component-wise sum of two colors,
+    /// and assigns the result to the lhs operand.
+    /// Components that exceed 255 are clamped to 255.
+    ///
+    /// \param lhs  Left operand
+    /// \param rhs Right operand
+    ///
+    /// \return Reference to \a lhs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] friend constexpr Color& operator+=(Color& lhs, const Color rhs)
+    {
+        return lhs = lhs + rhs;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \relates Color
+    /// \brief Overload of the binary `operator-=`
+    ///
+    /// This operator computes the component-wise subtraction of two colors,
+    /// and assigns the result to the lhs operand.
+    /// Components below 0 are clamped to 0.
+    ///
+    /// \param lhs  Left operand
+    /// \param rhs Right operand
+    ///
+    /// \return Reference to \a lhs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] friend constexpr Color& operator-=(Color& lhs, const Color rhs)
+    {
+        return lhs = lhs - rhs;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \relates Color
+    /// \brief Overload of the binary `operator*=`
+    ///
+    /// This operator returns the component-wise multiplication
+    /// (also called "modulation") of two colors, and assigns
+    /// the result to the lhs operand.
+    /// Components are then divided by 255 so that the result is
+    /// still in the range [0, 255].
+    ///
+    /// \param lhs  Left operand
+    /// \param rhs Right operand
+    ///
+    /// \return Reference to \a lhs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] friend constexpr Color& operator*=(Color& lhs, const Color rhs)
+    {
+        return lhs = lhs * rhs;
+    }
+
+
+    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     base::U8 r{};     //!< Red component
@@ -510,144 +650,6 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     base::U8 b{};     //!< Blue component
     base::U8 a{255u}; //!< Alpha (opacity) component
 };
-
-////////////////////////////////////////////////////////////
-/// \relates Color
-/// \brief Overload of the binary `operator+`
-///
-/// This operator returns the component-wise sum of two colors.
-/// Components that exceed 255 are clamped to 255.
-///
-/// \param lhs  Left operand
-/// \param rhs Right operand
-///
-/// \return Result of \a lhs + \a rhs
-///
-////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::const]] constexpr Color operator+(const Color lhs, const Color rhs)
-{
-    const auto clampedAdd = [](const base::U8 l, const base::U8 r) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN -> base::U8
-    {
-        const int intResult = int{l} + int{r};
-        return static_cast<base::U8>(intResult < 255 ? intResult : 255);
-    };
-
-    return {clampedAdd(lhs.r, rhs.r), clampedAdd(lhs.g, rhs.g), clampedAdd(lhs.b, rhs.b), clampedAdd(lhs.a, rhs.a)};
-}
-
-
-////////////////////////////////////////////////////////////
-/// \relates Color
-/// \brief Overload of the binary `operator-`
-///
-/// This operator returns the component-wise subtraction of two colors.
-/// Components below 0 are clamped to 0.
-///
-/// \param lhs  Left operand
-/// \param rhs Right operand
-///
-/// \return Result of \a lhs - \a rhs
-///
-////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::const]] constexpr Color operator-(const Color lhs, const Color rhs)
-{
-    const auto clampedSub = [](const base::U8 l, const base::U8 r) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN -> base::U8
-    {
-        const int intResult = int{l} - int{r};
-        return static_cast<base::U8>(intResult > 0 ? intResult : 0);
-    };
-
-    return {clampedSub(lhs.r, rhs.r), clampedSub(lhs.g, rhs.g), clampedSub(lhs.b, rhs.b), clampedSub(lhs.a, rhs.a)};
-}
-
-
-////////////////////////////////////////////////////////////
-/// \relates Color
-/// \brief Overload of the binary `operator*`
-///
-/// This operator returns the component-wise multiplication
-/// (also called "modulation") of two colors.
-/// Components are then divided by 255 so that the result is
-/// still in the range [0, 255].
-///
-/// \param lhs  Left operand
-/// \param rhs Right operand
-///
-/// \return Result of \a lhs * \a rhs
-///
-////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::const]] constexpr Color operator*(const Color lhs, const Color rhs)
-{
-    const auto scaledMul = [](const base::U8 l, const base::U8 r) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN -> base::U8
-    {
-        const auto uint16Result = static_cast<base::U16>(base::U16{l} * base::U16{r});
-        return static_cast<base::U8>(uint16Result / 255u);
-    };
-
-    return {scaledMul(lhs.r, rhs.r), scaledMul(lhs.g, rhs.g), scaledMul(lhs.b, rhs.b), scaledMul(lhs.a, rhs.a)};
-}
-
-
-////////////////////////////////////////////////////////////
-/// \relates Color
-/// \brief Overload of the binary `operator+=`
-///
-/// This operator computes the component-wise sum of two colors,
-/// and assigns the result to the lhs operand.
-/// Components that exceed 255 are clamped to 255.
-///
-/// \param lhs  Left operand
-/// \param rhs Right operand
-///
-/// \return Reference to \a lhs
-///
-////////////////////////////////////////////////////////////
-[[gnu::always_inline]] constexpr Color& operator+=(Color& lhs, const Color rhs)
-{
-    return lhs = lhs + rhs;
-}
-
-
-////////////////////////////////////////////////////////////
-/// \relates Color
-/// \brief Overload of the binary `operator-=`
-///
-/// This operator computes the component-wise subtraction of two colors,
-/// and assigns the result to the lhs operand.
-/// Components below 0 are clamped to 0.
-///
-/// \param lhs  Left operand
-/// \param rhs Right operand
-///
-/// \return Reference to \a lhs
-///
-////////////////////////////////////////////////////////////
-[[gnu::always_inline]] constexpr Color& operator-=(Color& lhs, const Color rhs)
-{
-    return lhs = lhs - rhs;
-}
-
-
-////////////////////////////////////////////////////////////
-/// \relates Color
-/// \brief Overload of the binary `operator*=`
-///
-/// This operator returns the component-wise multiplication
-/// (also called "modulation") of two colors, and assigns
-/// the result to the lhs operand.
-/// Components are then divided by 255 so that the result is
-/// still in the range [0, 255].
-///
-/// \param lhs  Left operand
-/// \param rhs Right operand
-///
-/// \return Reference to \a lhs
-///
-////////////////////////////////////////////////////////////
-[[gnu::always_inline]] constexpr Color& operator*=(Color& lhs, const Color rhs)
-{
-    return lhs = lhs * rhs;
-}
 
 
 ////////////////////////////////////////////////////////////
