@@ -52,10 +52,10 @@
                                                                                                   \
     operator ::sf::Color() const                                                                  \
     {                                                                                             \
-        return ::sf::Color(static_cast<::sf::base::U8>(x * 255.f),                                \
-                           static_cast<::sf::base::U8>(y * 255.f),                                \
-                           static_cast<::sf::base::U8>(z * 255.f),                                \
-                           static_cast<::sf::base::U8>(w * 255.f));                               \
+        return ::sf::Color(static_cast<::sf::base::U8>(x * 255.f + 0.5f),                         \
+                           static_cast<::sf::base::U8>(y * 255.f + 0.5f),                         \
+                           static_cast<::sf::base::U8>(z * 255.f + 0.5f),                         \
+                           static_cast<::sf::base::U8>(w * 255.f + 0.5f));                        \
     }
 
 
