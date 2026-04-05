@@ -9,10 +9,13 @@
 
 #include "SFML/Network/Http.hpp"
 #include "SFML/Network/IpAddressUtils.hpp"
+#include "SFML/Network/SocketHandle.hpp"
 #include "SFML/Network/SocketImpl.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/Time.hpp"
 
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/String.hpp"
 
@@ -115,32 +118,5 @@ base::Optional<IpAddress> IpAddress::getPublicAddress(Time timeout)
     return base::nullOpt;
 }
 
-
-////////////////////////////////////////////////////////////
-bool operator<(IpAddress lhs, IpAddress rhs)
-{
-    return lhs.m_address < rhs.m_address;
-}
-
-
-////////////////////////////////////////////////////////////
-bool operator>(IpAddress lhs, IpAddress rhs)
-{
-    return rhs < lhs;
-}
-
-
-////////////////////////////////////////////////////////////
-bool operator<=(IpAddress lhs, IpAddress rhs)
-{
-    return !(rhs < lhs);
-}
-
-
-////////////////////////////////////////////////////////////
-bool operator>=(IpAddress lhs, IpAddress rhs)
-{
-    return !(lhs < rhs);
-}
 
 } // namespace sf
