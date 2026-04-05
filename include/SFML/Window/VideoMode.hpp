@@ -42,6 +42,100 @@ struct [[nodiscard]] SFML_WINDOW_API VideoMode
     ////////////////////////////////////////////////////////////
     [[nodiscard]] SFML_WINDOW_API bool operator==(const VideoMode& rhs) const = default;
 
+
+    ////////////////////////////////////////////////////////////
+    /// \relates VideoMode
+    /// \brief Overload of `operator<` to compare video modes
+    ///
+    /// \param lhs  Left operand (a video mode)
+    /// \param rhs Right operand (a video mode)
+    ///
+    /// \return `true` if `lhs` is lesser than `rhs`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr bool operator<(const VideoMode& lhs, const VideoMode& rhs)
+    {
+        const auto vecLessThan = [](const Vec2u& vecLhs, const Vec2u& vecRhs) -> bool
+        {
+            if (vecLhs.x == vecRhs.x)
+                return vecLhs.y < vecRhs.y;
+
+            return vecLhs.x < vecRhs.x;
+        };
+
+        if (lhs.bitsPerPixel < rhs.bitsPerPixel)
+            return true;
+
+        if (rhs.bitsPerPixel < lhs.bitsPerPixel)
+            return false;
+
+        if (vecLessThan(lhs.size, rhs.size))
+            return true;
+
+        if (vecLessThan(rhs.size, lhs.size))
+            return false;
+
+        if (lhs.pixelDensity < rhs.pixelDensity)
+            return true;
+
+        if (rhs.pixelDensity < lhs.pixelDensity)
+            return false;
+
+        if (lhs.refreshRate < rhs.refreshRate)
+            return true;
+
+        return false;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \relates VideoMode
+    /// \brief Overload of `operator>` to compare video modes
+    ///
+    /// \param lhs  Left operand (a video mode)
+    /// \param rhs Right operand (a video mode)
+    ///
+    /// \return `true` if `lhs` is greater than `rhs`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr bool operator>(const VideoMode& lhs, const VideoMode& rhs)
+    {
+        return rhs < lhs;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \relates VideoMode
+    /// \brief Overload of `operator<=` to compare video modes
+    ///
+    /// \param lhs  Left operand (a video mode)
+    /// \param rhs Right operand (a video mode)
+    ///
+    /// \return `true` if `lhs` is lesser or equal than `rhs`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr bool operator<=(const VideoMode& lhs, const VideoMode& rhs)
+    {
+        return !(rhs < lhs);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \relates VideoMode
+    /// \brief Overload of `operator>=` to compare video modes
+    ///
+    /// \param lhs  Left operand (a video mode)
+    /// \param rhs Right operand (a video mode)
+    ///
+    /// \return `true` if `lhs` is greater or equal than `rhs`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr bool operator>=(const VideoMode& lhs, const VideoMode& rhs)
+    {
+        return !(lhs < rhs);
+    }
+
+
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
@@ -50,54 +144,6 @@ struct [[nodiscard]] SFML_WINDOW_API VideoMode
     float        pixelDensity{1.f}; //!< Video mode pixel density multiplier
     float        refreshRate{60.f}; //!< Video mode refresh rate, in Hz
 };
-
-////////////////////////////////////////////////////////////
-/// \relates VideoMode
-/// \brief Overload of `operator<` to compare video modes
-///
-/// \param lhs  Left operand (a video mode)
-/// \param rhs Right operand (a video mode)
-///
-/// \return `true` if `lhs` is lesser than `rhs`
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API bool operator<(const VideoMode& lhs, const VideoMode& rhs);
-
-////////////////////////////////////////////////////////////
-/// \relates VideoMode
-/// \brief Overload of `operator>` to compare video modes
-///
-/// \param lhs  Left operand (a video mode)
-/// \param rhs Right operand (a video mode)
-///
-/// \return `true` if `lhs` is greater than `rhs`
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API bool operator>(const VideoMode& lhs, const VideoMode& rhs);
-
-////////////////////////////////////////////////////////////
-/// \relates VideoMode
-/// \brief Overload of `operator<=` to compare video modes
-///
-/// \param lhs  Left operand (a video mode)
-/// \param rhs Right operand (a video mode)
-///
-/// \return `true` if `lhs` is lesser or equal than `rhs`
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API bool operator<=(const VideoMode& lhs, const VideoMode& rhs);
-
-////////////////////////////////////////////////////////////
-/// \relates VideoMode
-/// \brief Overload of `operator>=` to compare video modes
-///
-/// \param lhs  Left operand (a video mode)
-/// \param rhs Right operand (a video mode)
-///
-/// \return `true` if `lhs` is greater or equal than `rhs`
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API bool operator>=(const VideoMode& lhs, const VideoMode& rhs);
 
 } // namespace sf
 
