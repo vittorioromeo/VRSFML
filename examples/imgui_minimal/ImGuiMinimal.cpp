@@ -59,7 +59,7 @@ int main()
     leftInnerRT.display();
 
     baseRenderTexture.clear();
-    baseRenderTexture.draw(leftVertexArray, sf::PrimitiveType::Triangles, {.texture = &leftInnerRT.getTexture()});
+    baseRenderTexture.draw(leftVertexArray, sf::PrimitiveType::Triangles, &leftInnerRT.getTexture());
     baseRenderTexture.display();
 
     sf::Clock deltaClock;

@@ -175,10 +175,10 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
         baseRenderTexture.clear();
 
         leftInnerRT.display();
-        baseRenderTexture.draw(leftVertexArray, sf::PrimitiveType::Triangles, {.texture = &leftInnerRT.getTexture()});
+        baseRenderTexture.draw(leftVertexArray, sf::PrimitiveType::Triangles, &leftInnerRT.getTexture());
 
         rightInnerRT.display();
-        baseRenderTexture.draw(rightVertexArray, sf::PrimitiveType::Triangles, {.texture = &rightInnerRT.getTexture()});
+        baseRenderTexture.draw(rightVertexArray, sf::PrimitiveType::Triangles, &rightInnerRT.getTexture());
 
         baseRenderTexture.display();
 
@@ -230,7 +230,7 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
         baseRenderTexture.clear();
 
         leftInnerRT.display();
-        baseRenderTexture.draw(leftVertexArray, sf::PrimitiveType::Triangles, {.texture = &leftInnerRT.getTexture()});
+        baseRenderTexture.draw(leftVertexArray, sf::PrimitiveType::Triangles, &leftInnerRT.getTexture());
 
         baseRenderTexture.display();
 

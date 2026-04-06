@@ -118,7 +118,7 @@ void ExampleBunnyMark::draw()
 
     {
         auto drawCtx = m_deps.rtGame->withLockedRenderStates(
-            {.view = *m_deps.view, .texture = &m_textureAtlas.getTexture()});
+            &m_textureAtlas.getTexture(), {.view = *m_deps.view});
 
         for (auto& [position, velocity, rotation, scale] : m_bunnies)
         {

@@ -10,7 +10,6 @@
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
-#include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderTexture.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
@@ -89,7 +88,7 @@ namespace
             .rotation    = sf::radians(rotation),
             .textureRect = txr,
         },
-        sf::RenderStates{.texture = &texture});
+        texture);
 }
 
 } // namespace
@@ -224,7 +223,7 @@ int main()
                              position,
                              scale,
                              rotation,
-                             [&](const sf::Sprite& sprite, const sf::RenderStates& states) { rt.draw(sprite, states); });
+                             [&](const sf::Sprite& sprite, const sf::Texture& tex) { rt.draw(sprite, tex); });
         }
     };
 
@@ -790,7 +789,7 @@ int main()
                 });
 
                 for (auto& batch : batchesArray)
-                    window.draw(batch, {.texture = &textureAtlas.getTexture()});
+                    window.draw(batch, textureAtlas.getTexture());
             };
 
             if (batchType == BatchType::Disabled || !multithreadedDraw)
@@ -812,9 +811,9 @@ int main()
                     });
 
                 if (batchType == BatchType::CPUStorage)
-                    window.draw(cpuDrawableBatches[0], {.texture = &textureAtlas.getTexture()});
+                    window.draw(cpuDrawableBatches[0], textureAtlas.getTexture());
                 else if (batchType == BatchType::GPUStorage)
-                    window.draw(gpuDrawableBatches[0], {.texture = &textureAtlas.getTexture()});
+                    window.draw(gpuDrawableBatches[0], textureAtlas.getTexture());
             }
             else if (batchType == BatchType::CPUStorage)
             {

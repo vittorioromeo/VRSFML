@@ -329,7 +329,6 @@ void TextBase<TDerived>::draw(RenderTarget& target, RenderStates states) const
     const auto& derived = static_cast<const TDerived&>(*this);
 
     states.transform *= this->getTransform();
-    states.texture = &derived.getTexture();
 
     ensureGeometryUpdate();
 
@@ -339,6 +338,7 @@ void TextBase<TDerived>::draw(RenderTarget& target, RenderStates states) const
             .vertexCount   = m_vertices.size(),
             .primitiveType = PrimitiveType::Triangles,
         },
+        &derived.getTexture(),
         states);
 }
 

@@ -131,12 +131,12 @@ public:
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
-        target.draw(m_listenerShape, states);
+        target.draw(m_listenerShape, nullptr, states);
 
         states.transform = sf::Transform::Identity;
         states.transform.translate(m_position);
 
-        target.draw(m_soundShape, states);
+        target.draw(m_soundShape, nullptr, states);
     }
 
     void start(sf::PlaybackDevice& playbackDevice, sf::MusicReader& musicReader) override
@@ -209,7 +209,7 @@ public:
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
-        target.withRenderStates(states).drawAll(m_pitchText, m_volumeText);
+        target.withRenderStates(nullptr, states).drawAll(m_pitchText, m_volumeText);
     }
 
     void start(sf::PlaybackDevice& playbackDevice, sf::MusicReader& musicReader) override
@@ -281,8 +281,8 @@ public:
         statesCopy.transform = sf::Transform::Identity;
         statesCopy.transform.translate(m_position);
 
-        target.withRenderStates(statesCopy).drawAll(m_soundConeOuter, m_soundConeInner, m_soundShape);
-        target.withRenderStates(states).drawAll(m_listenerShape, m_text);
+        target.withRenderStates(nullptr, statesCopy).drawAll(m_soundConeOuter, m_soundConeInner, m_soundShape);
+        target.withRenderStates(nullptr, states).drawAll(m_listenerShape, m_text);
     }
 
     void start(sf::PlaybackDevice& playbackDevice, sf::MusicReader& musicReader) override
@@ -480,7 +480,7 @@ public:
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
-        target.withRenderStates(states).drawAll(m_instruction, m_currentType, m_currentAmplitude, m_currentFrequency);
+        target.withRenderStates(nullptr, states).drawAll(m_instruction, m_currentType, m_currentAmplitude, m_currentFrequency);
     }
 
     void start(sf::PlaybackDevice& playbackDevice, sf::MusicReader&) override
@@ -618,8 +618,8 @@ public:
         statesCopy.transform = sf::Transform::Identity;
         statesCopy.transform.translate(m_position - sf::Vec2f({20.f, 0.f}));
 
-        target.draw(m_listenerShape, states);
-        target.draw(m_soundShape, statesCopy);
+        target.draw(m_listenerShape, nullptr, states);
+        target.draw(m_soundShape, nullptr, statesCopy);
         target.draw(m_currentVelocity, states);
         target.draw(m_currentFactor, states);
     }
@@ -679,12 +679,12 @@ public:
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
-        target.draw(m_listenerShape, states);
+        target.draw(m_listenerShape, nullptr, states);
 
         states.transform = sf::Transform::Identity;
         states.transform.translate(m_position);
 
-        target.draw(m_soundShape, states);
+        target.draw(m_soundShape, nullptr, states);
         target.draw(m_enabledText, states);
         target.draw(m_instructions, states);
     }
@@ -1363,7 +1363,7 @@ int main()
         // Clear the window
         window.clear({50, 50, 50});
 
-        window.withRenderStates({.view = windowView})
+        window.withRenderStates(nullptr, {.view = windowView})
             .draw(*effects[current])
             .draw(textBackgroundTexture, {.position = {0.f, 520.f}, .color = {255, 255, 255, 200}})
             .drawAll(instructions, description, playbackDeviceText, playbackDeviceInstructions);

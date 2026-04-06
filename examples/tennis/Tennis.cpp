@@ -287,7 +287,7 @@ int main()
         // Clear the window
         window.clear({50u, 50u, 50u});
 
-        const auto drawCtx = window.withRenderStates({.view = windowView});
+        const auto drawCtx = window.withRenderStates(nullptr, {.view = windowView});
 
         if (isPlaying)
         {

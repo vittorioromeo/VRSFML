@@ -176,7 +176,7 @@ int main()
                 if (useBatch)
                     drawableBatch.add(entity.sprite);
                 else
-                    window.draw(entity.sprite, {.texture = &textureAtlas.getTexture()});
+                    window.draw(entity.sprite, textureAtlas.getTexture());
             }
 
             if (drawText)
@@ -189,7 +189,7 @@ int main()
         }
 
         if (useBatch)
-            window.draw(drawableBatch, {.texture = &textureAtlas.getTexture()});
+            window.draw(drawableBatch, textureAtlas.getTexture());
 
         window.display();
     }

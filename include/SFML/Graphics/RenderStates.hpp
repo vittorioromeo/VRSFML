@@ -20,7 +20,6 @@
 namespace sf
 {
 class Shader;
-class Texture;
 } // namespace sf
 
 
@@ -40,8 +39,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
 
     View view{}; //!< View (computed from the render target's size if unset)
 
-    const Texture* texture{nullptr}; //!< Texture
-    const Shader*  shader{nullptr};  //!< Shader
+    const Shader* shader{nullptr}; //!< Shader
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator==(const RenderStates&) const = default;
@@ -54,18 +52,15 @@ struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
 /// \class sf::RenderStates
 /// \ingroup graphics
 ///
-/// There are six global states that can be applied to
+/// There are five global states that can be applied to
 /// the drawn objects:
 /// \li the blend mode: how pixels of the object are blended with the background
 /// \li the stencil mode: how pixels of the object interact with the stencil buffer
 /// \li the transform: how the object is positioned/rotated/scaled
-/// \li the texture: what image is mapped to the object
 /// \li the shader: what custom effect is applied to the object
 ///
-/// High-level objects such as sprites or text force some of
-/// these states when they are drawn. For example, a sprite
-/// will set its own texture, so that you don't have to care
-/// about it when drawing the sprite.
+/// Textures are not part of render states -- they are passed
+/// explicitly as parameters to draw functions that require them.
 ///
 /// The transform is a special case: sprites, texts and shapes
 /// (and it's a good idea to do it with your own drawable classes
@@ -77,23 +72,8 @@ struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
 /// directly without defining render states explicitly -- the
 /// default set of states is ok in most cases.
 /// \code
-/// window.draw(sprite);
+/// window.draw(sprite, texture);
 /// \endcode
-///
-/// If you want to use a single specific render state,
-/// for example a shader, you can pass it directly to the Draw
-/// function: `sf::RenderStates` has an implicit one-argument
-/// constructor for each state.
-/// \code
-/// window.draw(sprite, shader);
-/// \endcode
-///
-/// When you're inside the `draw` function of a drawable
-/// object, you can either pass the render states unmodified,
-/// or change some of them.
-/// For example, a transformable object will combine the
-/// current transform with its own transform. A sprite will
-/// set its texture. Etc.
 ///
 /// \see `sf::RenderTarget`
 ///

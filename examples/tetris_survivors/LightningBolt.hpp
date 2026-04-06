@@ -134,6 +134,7 @@ public:
                     .indexCount    = m_indices.size(),
                     .primitiveType = sf::PrimitiveType::Triangles,
                 },
+                nullptr,
                 states);
         };
 

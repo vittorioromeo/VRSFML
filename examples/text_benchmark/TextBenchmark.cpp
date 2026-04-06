@@ -150,26 +150,26 @@ int main()
         const auto doit = [&](auto& rt, auto& rts, float xBias)
         {
             rt.clear();
-            rt.draw(leftVertexArray, sf::PrimitiveType::Triangles, {.texture = &leftInnerRT.getTexture()});
+            rt.draw(leftVertexArray, sf::PrimitiveType::Triangles, &leftInnerRT.getTexture());
             rt.display();
 
             rts.position = {xBias, 0};
-            window.draw(rts, {.texture = &rt.getTexture()});
+            window.draw(rts, rt.getTexture());
 
             rt.clear();
-            rt.draw(leftVertexArray, sf::PrimitiveType::Triangles, {.texture = &leftInnerRT.getTexture()});
+            rt.draw(leftVertexArray, sf::PrimitiveType::Triangles, &leftInnerRT.getTexture());
             rt.display();
 
             rts.position = {xBias + 128, 0};
-            window.draw(rts, {.texture = &rt.getTexture()});
+            window.draw(rts, rt.getTexture());
 
             rt.clear();
-            rt.draw(leftVertexArray, sf::PrimitiveType::Triangles, {.texture = &leftInnerRT.getTexture()});
+            rt.draw(leftVertexArray, sf::PrimitiveType::Triangles, &leftInnerRT.getTexture());
             rt.draw(text0);
             rt.display();
 
             rts.position = {xBias, 128};
-            window.draw(rts, {.texture = &rt.getTexture()});
+            window.draw(rts, rt.getTexture());
         };
 
         doit(baseRenderTexture, rtSprite, 0);
@@ -373,7 +373,7 @@ int main()
 
             drawableBatch.add(circle0);
 
-            window.draw(drawableBatch, {.texture = &textureAtlas.getTexture()});
+            window.draw(drawableBatch, textureAtlas.getTexture());
         }
 
         // window.draw(circle0);
@@ -459,10 +459,10 @@ int main()
 
 
         renderTextures[0].display();
-        baseRenderTexture.draw(vertexArrays[0], sf::PrimitiveType::Triangles, {.texture = &renderTextures[0].getTexture()});
+        baseRenderTexture.draw(vertexArrays[0], sf::PrimitiveType::Triangles, &renderTextures[0].getTexture());
 
         renderTextures[1].display();
-        baseRenderTexture.draw(vertexArrays[1], sf::PrimitiveType::Triangles, {.texture = &renderTextures[1].getTexture()});
+        baseRenderTexture.draw(vertexArrays[1], sf::PrimitiveType::Triangles, &renderTextures[1].getTexture());
 
         baseRenderTexture.display();
 

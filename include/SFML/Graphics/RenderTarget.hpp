@@ -215,8 +215,8 @@ public:
     /// The full texture is drawn at position `{0.f, 0.f}` with default origin,
     /// rotation, scale, and color
     ///
-    /// \param sprite Texture to draw
-    /// \param states Render states to use for drawing
+    /// \param texture Texture to draw
+    /// \param states  Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
     void draw(const Texture& texture, RenderStates states = {});
@@ -224,9 +224,9 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Draw a texture to the render target
     ///
-    /// \param sprite Texture to draw
-    /// \param params Drawing parameters
-    /// \param states Render states to use for drawing
+    /// \param texture Texture to draw
+    /// \param params  Drawing parameters
+    /// \param states  Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
     void draw(const Texture& texture, const DrawTextureSettings& params, RenderStates states = {});
@@ -234,29 +234,27 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Draw a sprite object to the render target
     ///
-    /// The texture associated with a sprite must be passed while drawing.
-    ///
-    /// \param sprite Sprite to draw
-    /// \param states Render states to use for drawing
+    /// \param sprite  Sprite to draw
+    /// \param texture Texture to use for the sprite
+    /// \param states  Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Sprite& sprite, const RenderStates& states = {});
+    void draw(const Sprite& sprite, const Texture& texture, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a shape object to the render target
     ///
-    /// A texture associated with a shape can be passed while drawing.
-    ///
-    /// \param shape  Shape to draw
-    /// \param states Render states to use for drawing
+    /// \param shape   Shape to draw
+    /// \param texture Texture to use (or nullptr for white-dot)
+    /// \param states  Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Shape& shape, RenderStates states = {});
+    void draw(const Shape& shape, const Texture* texture, RenderStates states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a text object to the render target
     ///
-    /// \param text Text to draw
+    /// \param text   Text to draw
     /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
@@ -272,22 +270,23 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const CPUDrawableBatch& drawableBatch, const RenderStates& states = {});
+    void draw(const CPUDrawableBatch& drawableBatch, const Texture& texture, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const PersistentGPUDrawableBatch& drawableBatch, RenderStates states = {});
+    void draw(const PersistentGPUDrawableBatch& drawableBatch, const Texture& texture, RenderStates states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by a vertex buffer
     ///
     /// \param vertexBuffer Vertex buffer
+    /// \param texture      Texture to use (or nullptr for white-dot)
     /// \param states       Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const VertexBuffer& vertexBuffer, const RenderStates& states = {});
+    void draw(const VertexBuffer& vertexBuffer, const Texture* texture = nullptr, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by a vertex buffer
@@ -295,12 +294,14 @@ public:
     /// \param vertexBuffer Vertex buffer
     /// \param firstVertex  Index of the first vertex to render
     /// \param vertexCount  Number of vertices to render
+    /// \param texture      Texture to use (or nullptr for white-dot)
     /// \param states       Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
     void draw(const VertexBuffer& vertexBuffer,
               base::SizeT         firstVertex,
               base::SizeT         vertexCount,
+              const Texture*      texture = nullptr,
               const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
@@ -310,7 +311,7 @@ public:
     ///         (WARNING: the span is only valid until the next draw call)
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan draw(const priv::ShapeDataConcept auto& shapeData, const RenderStates& states = {});
+    VertexSpan draw(const priv::ShapeDataConcept auto& shapeData, const Texture* texture, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a text from a font and its relevant data
@@ -327,6 +328,7 @@ public:
     ////////////////////////////////////////////////////////////
     VertexSpan draw(const FontFace&            fontFace,
                     const GlyphMapping&        glyphMapping,
+                    const Texture&             texture,
                     const GlyphMappedTextData& textData,
                     const RenderStates&        states = {});
 
@@ -334,33 +336,42 @@ public:
     /// \brief Draw primitives defined by an array of vertices
     ///
     /// \param settings Draw settings
+    /// \param texture  Texture to use (or nullptr for white-dot)
+    /// \param states   Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void drawVertices(const DrawVerticesSettings& settings, const RenderStates& states = {});
+    void drawVertices(const DrawVerticesSettings& settings, const Texture* texture = nullptr, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by an array of indices and vertices
     ///
     /// \param settings Draw settings
+    /// \param texture  Texture to use (or nullptr for white-dot)
+    /// \param states   Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void drawIndexedVertices(const DrawIndexedVerticesSettings& settings, const RenderStates& states = {});
+    void drawIndexedVertices(const DrawIndexedVerticesSettings& settings, const Texture* texture = nullptr, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw quads defined by an array of vertices and precomputed quad indices
     ///
     /// \param settings Draw settings
+    /// \param texture  Texture to use (or nullptr for white-dot)
+    /// \param states   Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void drawQuads(const DrawQuadsSettings& settings, const RenderStates& states = {});
+    void drawQuads(const DrawQuadsSettings& settings, const Texture* texture = nullptr, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by a persistent mapped buffer and indices
     ///
     /// \param settings Draw settings
+    /// \param texture  Texture to use (or nullptr for white-dot)
+    /// \param states   Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
     void drawPersistentMappedIndexedVertices(const DrawPersistentMappedIndexedVerticesSettings& settings,
+                                             const Texture*                                     texture = nullptr,
                                              const RenderStates&                                states = {});
 
     ////////////////////////////////////////////////////////////
@@ -369,6 +380,7 @@ public:
     ////////////////////////////////////////////////////////////
     void drawInstancedVertices(const DrawInstancedVerticesSettings&                           settings,
                                const base::FixedFunction<void(InstanceAttributeBinder&), 64>& setupFn,
+                               const Texture*                                                  texture = nullptr,
                                const RenderStates&                                            states = {});
 
     ////////////////////////////////////////////////////////////
@@ -377,6 +389,7 @@ public:
     ////////////////////////////////////////////////////////////
     void drawInstancedIndexedVertices(const DrawInstancedIndexedVerticesSettings&                    settings,
                                       const base::FixedFunction<void(InstanceAttributeBinder&), 64>& setupFn,
+                                      const Texture*                                                  texture = nullptr,
                                       const RenderStates&                                            states = {});
 
     ////////////////////////////////////////////////////////////
@@ -475,11 +488,12 @@ public:
     private:
         ////////////////////////////////////////////////////////////
         RenderTarget* const m_rt;
+        const Texture*      m_texture;
         const RenderStates  m_states;
 
     public:
         ////////////////////////////////////////////////////////////
-        WithRenderStatesContext(RenderTarget& rt, const RenderStates& states);
+        WithRenderStatesContext(RenderTarget& rt, const Texture* texture, const RenderStates& states);
         ~WithRenderStatesContext();
 
         ////////////////////////////////////////////////////////////
@@ -491,9 +505,85 @@ public:
         WithRenderStatesContext& operator=(WithRenderStatesContext&&) = delete;
 
         ////////////////////////////////////////////////////////////
-        [[gnu::always_inline]] const WithRenderStatesContext& draw(const auto& drawable) const
+        /// \brief Draw a sprite using the context's texture
+        ///
+        ////////////////////////////////////////////////////////////
+        // NOLINTNEXTLINE(modernize-use-nodiscard)
+        [[gnu::always_inline]] const WithRenderStatesContext& draw(const Sprite& sprite) const
+        {
+            SFML_BASE_ASSERT(m_texture != nullptr);
+            m_rt->draw(sprite, *m_texture, m_states);
+            return *this;
+        }
+
+        ////////////////////////////////////////////////////////////
+        /// \brief Draw a shape (uses context's texture if set, white-dot otherwise)
+        ///
+        ////////////////////////////////////////////////////////////
+        // NOLINTNEXTLINE(modernize-use-nodiscard)
+        [[gnu::always_inline]] const WithRenderStatesContext& draw(const Shape& shape) const
+        {
+            m_rt->draw(shape, m_texture, m_states);
+            return *this;
+        }
+
+        ////////////////////////////////////////////////////////////
+        /// \brief Draw a text (self-providing texture)
+        ///
+        ////////////////////////////////////////////////////////////
+        // NOLINTNEXTLINE(modernize-use-nodiscard)
+        [[gnu::always_inline]] const WithRenderStatesContext& draw(const Text& text) const
+        {
+            m_rt->draw(text, m_states);
+            return *this;
+        }
+
+        ////////////////////////////////////////////////////////////
+        /// \brief Draw a glyph-mapped text (self-providing texture)
+        ///
+        ////////////////////////////////////////////////////////////
+        // NOLINTNEXTLINE(modernize-use-nodiscard)
+        [[gnu::always_inline]] const WithRenderStatesContext& draw(const GlyphMappedText& text) const
+        {
+            m_rt->draw(text, m_states);
+            return *this;
+        }
+
+        ////////////////////////////////////////////////////////////
+        /// \brief Draw shape data (uses context's texture if set, white-dot otherwise)
+        ///
+        ////////////////////////////////////////////////////////////
+        // NOLINTNEXTLINE(modernize-use-nodiscard)
+        [[gnu::always_inline]] const WithRenderStatesContext& draw(const priv::ShapeDataConcept auto& shapeData) const
+        {
+            m_rt->draw(shapeData, m_texture, m_states);
+            return *this;
+        }
+
+        ////////////////////////////////////////////////////////////
+        /// \brief Draw a generic drawable (has .draw(RenderTarget&, RenderStates))
+        ///
+        ////////////////////////////////////////////////////////////
+        template <typename DrawableObject>
+        // NOLINTNEXTLINE(modernize-use-nodiscard)
+        [[gnu::always_inline]] const WithRenderStatesContext& draw(const DrawableObject& drawable) const
+            requires(requires { drawable.draw(*m_rt, m_states); })
         {
             m_rt->draw(drawable, m_states);
+            return *this;
+        }
+
+        ////////////////////////////////////////////////////////////
+        /// \brief Draw a range of drawables
+        ///
+        ////////////////////////////////////////////////////////////
+        template <typename DrawableRange>
+        // NOLINTNEXTLINE(modernize-use-nodiscard)
+        [[gnu::always_inline]] const WithRenderStatesContext& draw(const DrawableRange& range) const
+            requires(requires { draw(*range.begin()); })
+        {
+            for (const auto& drawable : range)
+                draw(drawable);
             return *this;
         }
 
@@ -524,9 +614,10 @@ public:
         // NOLINTNEXTLINE(modernize-use-nodiscard)
         [[gnu::always_inline]] const WithRenderStatesContext& draw(const FontFace&            fontFace,
                                                                    const GlyphMapping&        glyphMapping,
+                                                                   const Texture&             texture,
                                                                    const GlyphMappedTextData& textData) const
         {
-            m_rt->draw(fontFace, glyphMapping, textData, m_states);
+            m_rt->draw(fontFace, glyphMapping, texture, textData, m_states);
             return *this;
         }
     };
@@ -539,18 +630,20 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] WithRenderStatesContext<false> withRenderStates(const RenderStates& states)
+    [[nodiscard, gnu::always_inline]] WithRenderStatesContext<false> withRenderStates(const Texture*      texture,
+                                                                                      const RenderStates& states = {})
     {
-        return {*this, states};
+        return {*this, texture, states};
     }
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] WithRenderStatesContext<true> withLockedRenderStates(const RenderStates& states)
+    [[nodiscard, gnu::always_inline]] WithRenderStatesContext<true> withLockedRenderStates(const Texture*      texture,
+                                                                                           const RenderStates& states = {})
     {
-        return {*this, states};
+        return {*this, texture, states};
     }
 
 protected:
@@ -594,7 +687,7 @@ private:
     /// \param settings Draw settings
     ///
     ////////////////////////////////////////////////////////////
-    void immediateDrawVertices(const DrawVerticesSettings& settings, const RenderStates& states);
+    void immediateDrawVertices(const DrawVerticesSettings& settings, const Texture* texture, const RenderStates& states);
 
     ////////////////////////////////////////////////////////////
     /// \brief Immediately draw primitives defined by an array of indices and vertices
@@ -605,7 +698,7 @@ private:
     /// \param settings Draw settings
     ///
     ////////////////////////////////////////////////////////////
-    void immediateDrawIndexedVertices(const DrawIndexedVerticesSettings& settings, const RenderStates& states);
+    void immediateDrawIndexedVertices(const DrawIndexedVerticesSettings& settings, const Texture* texture, const RenderStates& states);
 
     ////////////////////////////////////////////////////////////
     /// \brief Immediately draw primitives defined by a persistent mapped buffer and indices
@@ -617,13 +710,14 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     void immediateDrawPersistentMappedIndexedVertices(const DrawPersistentMappedIndexedVerticesSettings& settings,
+                                                      const Texture*                                     texture,
                                                       const RenderStates&                                states);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void immediateDrawDrawableBatch(const CPUDrawableBatch& drawableBatch, RenderStates states);
+    void immediateDrawDrawableBatch(const CPUDrawableBatch& drawableBatch, const Texture* texture, RenderStates states);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -631,6 +725,7 @@ private:
     ////////////////////////////////////////////////////////////
     void immediateDrawInstancedVertices(const DrawInstancedVerticesSettings&                    settings,
                                         base::FixedFunction<void(InstanceAttributeBinder&), 64> setupFn,
+                                        const Texture*                                          texture,
                                         const RenderStates&                                     states);
 
     ////////////////////////////////////////////////////////////
@@ -639,17 +734,18 @@ private:
     ////////////////////////////////////////////////////////////
     void immediateDrawInstancedIndexedVertices(const DrawInstancedIndexedVerticesSettings&             settings,
                                                base::FixedFunction<void(InstanceAttributeBinder&), 64> setupFn,
+                                               const Texture*                                          texture,
                                                const RenderStates&                                     states);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void flushIfNeeded(const RenderStates& states)
+    [[gnu::always_inline]] void flushIfNeeded(const Texture* texture, const RenderStates& states)
     {
         if (m_isStateLocked)
         {
-            SFML_BASE_ASSERT(m_lastRenderStates == states &&
+            SFML_BASE_ASSERT(m_lastRenderStates == states && m_lastTexture == texture &&
                              "State mutation detected while inside a 'withLockedRenderStates' context!\n If you are "
                              "drawing Text, Shapes, or Sprites, you must explicitly bind their Texture to the context "
                              "upfront.");
@@ -659,10 +755,12 @@ private:
         }
         else
         {
-            if (m_numAutoBatchVertices >= m_autoBatchVertexThreshold || m_lastRenderStates != states)
+            if (m_numAutoBatchVertices >= m_autoBatchVertexThreshold || m_lastRenderStates != states ||
+                m_lastTexture != texture)
             {
                 flush();
                 m_lastRenderStates = states;
+                m_lastTexture      = texture;
             }
         }
     }
@@ -711,10 +809,12 @@ private:
     ////////////////////////////////////////////////////////////
     /// \brief Setup environment for drawing
     ///
-    /// \param states Render states to use for drawing
+    /// \param vaoGroup VAO group to bind
+    /// \param texture  Texture to use (or nullptr for white-dot)
+    /// \param states   Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& states);
+    void setupDraw(const GLVAOGroup& vaoGroup, const Texture* texture, const RenderStates& states);
 
     ////////////////////////////////////////////////////////////
     /// \brief Setup environment for drawing: MVP matrix
@@ -728,18 +828,18 @@ private:
     ////////////////////////////////////////////////////////////
     /// \brief Setup environment for drawing: texture
     ///
-    /// \param states Render states to use for drawing
+    /// \param texture Texture to use (or nullptr for white-dot)
     ///
     ////////////////////////////////////////////////////////////
-    void setupDrawTexture(const RenderStates& states);
+    void setupDrawTexture(const Texture* texture);
 
     ////////////////////////////////////////////////////////////
     /// \brief Clean up environment after drawing
     ///
-    /// \param states Render states used for drawing
+    /// \param texture Texture that was used for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void cleanupDraw(const RenderStates& states);
+    void cleanupDraw(const Texture* texture);
 
     ////////////////////////////////////////////////////////////
     /// \brief Invoke primitive draw call: non-indexed
@@ -838,12 +938,16 @@ public:
     ///
     /// \param vertices Reference to the contiguous vertex container
     /// \param type     Type of primitives to draw
+    /// \param texture  Texture to use (or nullptr for white-dot)
     /// \param states   Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
     template <typename ContiguousVertexRange>
-    [[gnu::always_inline]] void draw(const ContiguousVertexRange& vertices, PrimitiveType type, const RenderStates& states = {})
-        requires(requires { drawVertices({vertices.data(), vertices.size(), type}, states); })
+    [[gnu::always_inline]] void draw(const ContiguousVertexRange& vertices,
+                                     PrimitiveType                type,
+                                     const Texture*               texture,
+                                     const RenderStates&          states = {})
+        requires(requires { drawVertices({vertices.data(), vertices.size(), type}, texture, states); })
     {
         drawVertices(
             {
@@ -851,6 +955,7 @@ public:
                 .vertexCount   = vertices.size(),
                 .primitiveType = type,
             },
+            texture,
             states);
     }
 
@@ -859,11 +964,15 @@ public:
     ///
     /// \param vertices Reference to the C-style vertex array
     /// \param type     Type of primitives to draw
+    /// \param texture  Texture to use (or nullptr for white-dot)
     /// \param states   Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
     template <base::SizeT N>
-    [[gnu::always_inline]] void draw(const Vertex (&vertices)[N], PrimitiveType type, const RenderStates& states = {})
+    [[gnu::always_inline]] void draw(const Vertex (&vertices)[N],
+                                     PrimitiveType       type,
+                                     const Texture*      texture,
+                                     const RenderStates& states = {})
     {
         drawVertices(
             {
@@ -871,37 +980,22 @@ public:
                 .vertexCount   = N,
                 .primitiveType = type,
             },
+            texture,
             states);
     }
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a drawable object to the render target
     ///
-    /// \tparam DrawableObject Type of the drawable object,
-    ///         must support `draw(RenderTarget&, RenderStates&)` method.
-    ///
-    /// \param drawable Object to draw
-    /// \param states   Render states to use for drawing
+    /// The drawable must implement `draw(RenderTarget&, RenderStates)`.
     ///
     ////////////////////////////////////////////////////////////
     template <typename DrawableObject>
     [[gnu::always_inline]] void draw(const DrawableObject& drawableObject, const RenderStates& states = {})
         requires(requires { drawableObject.draw(*this, states); })
     {
-        flushIfNeeded(states);
+        flushIfNeeded(nullptr, states);
         drawableObject.draw(*this, states);
-    }
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    template <typename DrawableObjectRange>
-    void draw(const DrawableObjectRange& drawableObjectRange, const RenderStates& states = {})
-        requires(requires { draw(*drawableObjectRange.begin(), states); })
-    {
-        for (const auto& drawable : drawableObjectRange)
-            draw(drawable, states);
     }
 
 private:
@@ -913,6 +1007,7 @@ private:
     base::SizeT    m_numAutoBatchVertices{0u};                 //!< Number of vertices in the current autobatch
     base::SizeT    m_autoBatchVertexThreshold{32'768u};        //!< Threshold for batch vertex count
     RenderStates   m_lastRenderStates{};                       //!< Cached render states (autobatching)
+    const Texture* m_lastTexture{nullptr};                     //!< Cached texture (autobatching)
     bool           m_isStateLocked{false}; //!< Whether render states are currently bound via `withLockedRenderStates`
 
     ////////////////////////////////////////////////////////////

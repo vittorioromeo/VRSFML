@@ -166,7 +166,7 @@ sf::Rect2f   txrRocket;
 ////////////////////////////////////////////////////////////
 [[nodiscard]] sf::RenderStates makeInstancedDrawRenderStates(const sf::View& view)
 {
-    return {.view = view, .texture = txAtlas, .shader = instanceRenderingShader};
+    return {.view = view, .shader = instanceRenderingShader};
 }
 
 
@@ -189,7 +189,8 @@ sf::Rect2f   txrRocket;
             .textureRect = txr,
             .color       = sf::Color::whiteMask(static_cast<sf::base::U8>(opacity * 255.f)),
         },
-        sf::RenderStates{.view = view, .texture = txAtlas});
+        *txAtlas,
+        sf::RenderStates{.view = view});
 }
 
 
@@ -205,7 +206,8 @@ sf::Rect2f   txrRocket;
             .textureRect = txrRocket,
             .color       = sf::Color::White,
         },
-        sf::RenderStates{.view = view, .texture = txAtlas});
+        *txAtlas,
+        sf::RenderStates{.view = view});
 }
 
 
@@ -677,6 +679,7 @@ struct World
 
             rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(instanceBuffer.size()),
                                             setupSpriteInstanceAttribs,
+                                            txAtlas,
                                             makeInstancedDrawRenderStates(view));
         };
 
@@ -942,6 +945,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
 
             rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(nParticles),
                                             setupSpriteInstanceAttribs,
+                                            txAtlas,
                                             makeInstancedDrawRenderStates(view));
         };
 
@@ -1204,6 +1208,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
 
             rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(nParticles),
                                             setupSpriteInstanceAttribs,
+                                            txAtlas,
                                             makeInstancedDrawRenderStates(view));
         };
 
@@ -1425,6 +1430,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
 
             rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(nParticles),
                                             setupSpriteInstanceAttribs,
+                                            txAtlas,
                                             makeInstancedDrawRenderStates(view));
         };
 

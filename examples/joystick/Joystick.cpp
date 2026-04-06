@@ -141,7 +141,7 @@ int main()
         float yOffset      = 0.f;
         float yEventOffset = 0.f;
 
-        const auto drawCtx = window.withLockedRenderStates({.view = windowView, .texture = &font.getTexture()});
+        const auto drawCtx = window.withLockedRenderStates(&font.getTexture(), {.view = windowView});
 
         const auto drawLabelValue = [&](const sf::UnicodeString& label, const sf::UnicodeString& value)
         {

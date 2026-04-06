@@ -476,7 +476,8 @@ int main()
         {
             window.clear();
 
-            const auto baseStates = sf::RenderStates{.texture = &textureAtlas.getTexture()};
+            const auto& baseTexture = textureAtlas.getTexture();
+            const auto  baseStates  = sf::RenderStates{};
 
             const auto drawEntity = [&](const Entity& entity, sf::base::SizeT& drawnVertexCounter, auto&& drawFn)
             {
@@ -504,16 +505,18 @@ int main()
 
                 if (useWithRenderStatesAPI)
                 {
-                    auto drawCtx = window.withLockedRenderStates(baseStates);
+                    auto drawCtx = window.withLockedRenderStates(&baseTexture, baseStates);
 
                     for (const Entity& entity : entities)
                         drawEntity(entity, drawnVertices, [&](const auto& drawable) { drawCtx.draw(drawable); });
                 }
                 else
                 {
+                    auto drawCtx = window.withRenderStates(&baseTexture, baseStates);
+
                     for (const Entity& entity : entities)
                         drawEntity(entity, drawnVertices, [&](const auto& drawable) {
-                            window.draw(drawable, baseStates);
+                            drawCtx.draw(drawable);
                         });
                 }
             }
@@ -551,7 +554,7 @@ int main()
                     for (sf::base::SizeT i = 0u; i < (multithreadedDraw ? nWorkers : 1u); ++i)
                     {
                         drawnVertices += totalChunkDrawnVertices[i];
-                        window.draw(batchesArray[i], baseStates);
+                        window.draw(batchesArray[i], baseTexture);
                     }
                 };
 

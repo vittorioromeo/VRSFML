@@ -218,7 +218,7 @@ public:
 
     void draw(sf::RenderTarget& renderTarget, const sf::RenderStates& states) const
     {
-        renderTarget.withLockedRenderStates(states).drawAll(m_ball, m_player, m_bricks);
+        renderTarget.withLockedRenderStates(nullptr, states).drawAll(m_ball, m_player, m_bricks);
     }
 };
 
