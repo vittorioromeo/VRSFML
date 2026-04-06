@@ -102,11 +102,9 @@ void ExampleTextComparison::draw()
 
     m_deps.rtGame->draw(m_fontFace,
                         m_mapping,
+                        m_atlas.getTexture(),
                         sf::GlyphMappedTextData{.position = {450.f, 270.f}, .string = m_convertedStr},
-                        {
-                            .view    = *m_deps.view,
-                            .texture = &m_atlas.getTexture(),
-                        });
+                        {.view = *m_deps.view});
 
 
     m_deps.rtGame->draw(*m_deps.font,

@@ -140,6 +140,7 @@ int main()
         // We draw the first rectangle with comparison set to always so that it will definitely draw and update
         // (Replace) the stencil buffer values of its pixels to the specified reference value.
         window.draw(red,
+                    nullptr,
                     sf::RenderStates{
                         .stencilMode =
                             {
@@ -157,6 +158,7 @@ int main()
         // In the case of pixels overlapping the first rectangle, because we specify Always as the comparison, it is
         // as if we are drawing using the painter's algorithm, i.e. newer pixels overwrite older pixels.
         window.draw(green,
+                    nullptr,
                     sf::RenderStates{
                         .stencilMode =
                             {
@@ -177,6 +179,7 @@ int main()
         // of this rectangle will overwrite pixels of the second rectangle. The stencil update operation for this
         // draw operation is not significant in any way since this is the last draw call in the frame.
         window.draw(blue,
+                    nullptr,
                     sf::RenderStates{
                         .stencilMode =
                             {

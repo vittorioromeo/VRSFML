@@ -46,7 +46,6 @@ TEST_CASE("[Graphics] sf::RenderStates")
             CHECK(renderStates.stencilMode == sf::StencilMode{});
             CHECK(renderStates.transform == sf::Transform{});
             CHECK(renderStates.view == sf::View{});
-            CHECK(renderStates.texture == nullptr);
             CHECK(renderStates.shader == nullptr);
         }
     }
@@ -57,7 +56,6 @@ TEST_CASE("[Graphics] sf::RenderStates")
         CHECK(sf::RenderStates{}.stencilMode == sf::StencilMode{});
         CHECK(sf::RenderStates{}.transform == sf::Transform{});
         CHECK(sf::RenderStates{}.view == sf::View{});
-        CHECK(sf::RenderStates{}.texture == nullptr);
         CHECK(sf::RenderStates{}.shader == nullptr);
     }
 }

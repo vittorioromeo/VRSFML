@@ -1062,9 +1062,9 @@ struct Main
     sf::base::Vector<HexedCatDrawCommand> hexedCatDrawCommands;
 
     ////////////////////////////////////////////////////////////
-    void drawBatch(const sf::CPUDrawableBatch& batch, const sf::RenderStates& states)
+    void drawBatch(const sf::CPUDrawableBatch& batch, const sf::Texture& texture, const sf::RenderStates& states)
     {
-        rtGame.draw(batch, states);
+        rtGame.draw(batch, texture, states);
 
         if (flushAfterEveryBatch)
             rtGame.flushGPUCommands();

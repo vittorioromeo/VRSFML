@@ -713,7 +713,7 @@ public:
     {
         states.transform *= getTransform();
 
-        target.draw(m_triangles, sf::PrimitiveType::Triangles, states);
+        target.draw(m_triangles, sf::PrimitiveType::Triangles, nullptr, states);
 
         for (const sf::Text& label : m_labels)
             target.draw(label, states);
@@ -1167,7 +1167,7 @@ int main()
 
         // Render frame
         window.clear();
-        window.withRenderStates({.view = windowView}).drawAll(keyboardView, keyPressedText, keyReleasedText, textEnteredText);
+        window.withRenderStates(nullptr, {.view = windowView}).drawAll(keyboardView, keyPressedText, keyReleasedText, textEnteredText);
         window.display();
     }
 

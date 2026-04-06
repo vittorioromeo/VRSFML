@@ -222,6 +222,7 @@ void Main::drawMinimap(bool               back,
     if (!back)
     {
         rt.draw(sf::RectangleShapeData{.fillColor = sf::Color::blackMask(shouldDrawUIAlpha), .size = boundaries * hudScale},
+                nullptr,
                 {.view = minimapView});
 
         rt.draw(txBackgroundChunk,
@@ -239,12 +240,12 @@ void Main::drawMinimap(bool               back,
         if (shouldDrawUIAlpha > 200u)
         {
             minimapDrawableBatch.scale = {hudScale, hudScale};
-            rt.draw(minimapDrawableBatch, {.view = minimapView, .texture = &textureAtlas.getTexture(), .shader = &shader});
+            rt.draw(minimapDrawableBatch, textureAtlas.getTexture(), {.view = minimapView, .shader = &shader});
             minimapDrawableBatch.scale = {1.f, 1.f};
         }
 
 
-        rt.draw(minimapBorder, {.view = hudView});
+        rt.draw(minimapBorder, nullptr, {.view = hudView});
     }
 
     if (0)
@@ -263,7 +264,7 @@ void Main::drawMinimap(bool               back,
     }
 
     if (!back)
-        rt.draw(minimapIndicator, {.view = hudView});
+        rt.draw(minimapIndicator, nullptr, {.view = hudView});
 }
 
 
@@ -277,7 +278,8 @@ void Main::drawSplashScreen(sf::RenderTarget& rt, const sf::View& view, const sf
                        .origin      = txLogo.getSize().toVec2f() / 2.f,
                        .textureRect = txLogo.getRect(),
                        .color       = sf::Color::whiteMask(static_cast<U8>(easeInOutSine(progress) * 255.f))},
-            {.view = view, .texture = &txLogo});
+            txLogo,
+            {.view = view});
 }
 
 
@@ -344,9 +346,9 @@ void Main::gameLoopDisplayBubblesWithoutShader()
 {
     shader.setUniform(suBubbleEffect, false);
 
-    drawBatch(bubbleDrawableBatch, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
-    drawBatch(starBubbleDrawableBatch, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
-    drawBatch(bombBubbleDrawableBatch, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
+    drawBatch(bubbleDrawableBatch, textureAtlas.getTexture(), {.view = gameView, .shader = &shader});
+    drawBatch(starBubbleDrawableBatch, textureAtlas.getTexture(), {.view = gameView, .shader = &shader});
+    drawBatch(bombBubbleDrawableBatch, textureAtlas.getTexture(), {.view = gameView, .shader = &shader});
 }
 
 
@@ -495,7 +497,6 @@ void Main::gameLoopDisplayBubblesWithShader()
     const sf::RenderStates bubbleStates{
         .blendMode = bubbleBlend,
         .view      = gameView,
-        .texture   = &textureAtlas.getTexture(),
         .shader    = &shader,
     };
 
@@ -503,18 +504,18 @@ void Main::gameLoopDisplayBubblesWithShader()
     shader.setUniform(suSubTexOrigin, txrBubble.position);
     shader.setUniform(suSubTexSize, txrBubble.size);
 
-    drawBatch(bubbleDrawableBatch, bubbleStates);
+    drawBatch(bubbleDrawableBatch, textureAtlas.getTexture(), bubbleStates);
 
     shader.setUniform(suBubbleLightness, profile.bsBubbleLightness * 1.25f);
     shader.setUniform(suIridescenceStrength, profile.bsIridescenceStrength * 0.01f);
     shader.setUniform(suSubTexOrigin, txrBubbleStar.position);
     shader.setUniform(suSubTexSize, txrBubbleStar.size);
 
-    drawBatch(starBubbleDrawableBatch, bubbleStates);
+    drawBatch(starBubbleDrawableBatch, textureAtlas.getTexture(), bubbleStates);
 
     shader.setUniform(suBubbleEffect, false);
 
-    drawBatch(bombBubbleDrawableBatch, bubbleStates);
+    drawBatch(bombBubbleDrawableBatch, textureAtlas.getTexture(), bubbleStates);
 }
 
 
@@ -1962,6 +1963,7 @@ void Main::gameLoopDrawCursorComboBar()
             .outlineThickness   = 1.f,
             .size = {64.f * scaleMult * pt->psvComboStartTime.currentValue() * 1000.f / 700.f, 24.f * scaleMult},
         },
+        nullptr,
         {.view = nonScaledHUDView});
 
     rtGame.draw(
@@ -1973,6 +1975,7 @@ void Main::gameLoopDrawCursorComboBar()
             .outlineThickness   = 1.f,
             .size               = {64.f * scaleMult * comboState.comboCountdown.value / 700.f, 24.f * scaleMult},
         },
+        nullptr,
         {.view = nonScaledHUDView});
 }
 
@@ -2139,7 +2142,7 @@ void Main::gameLoopTips(const float deltaTimeMs)
                              .color       = sf::Color::whiteMask(static_cast<U8>(tipByteAlpha))};
 
     tipByteSprite.setGlobalCenter(tipBackgroundSprite.getGlobalCenterRight().addY(-40.f));
-    rtGame.draw(tipByteSprite, {.view = scaledHUDView, .texture = &txTipByte});
+    rtGame.draw(tipByteSprite, txTipByte, {.view = scaledHUDView});
 
     if (mustSpawnByteParticles)
     {
@@ -2306,7 +2309,7 @@ void Main::drawActivatedShrineBackgroundEffects(sf::RenderTarget& rt,
 
         rt.draw(backgroundTexture,
                 {.textureRect = {{0.f, 0.f}, backgroundView.size}},
-                {.view = backgroundView, .texture = &backgroundTexture, .shader = &shaderShrineBackground});
+                {.view = backgroundView, .shader = &shaderShrineBackground});
 
         rt.flush();
     };
@@ -2376,7 +2379,7 @@ void Main::enqueueHexedCatDrawCommand(const sf::CPUDrawableBatch& batch,
 
     rtHexedCat.clear(sf::Color::Transparent);
     shader.setUniform(suBubbleEffect, false);
-    rtHexedCat.draw(batch, {.transform = toLocal, .texture = &textureAtlas.getTexture(), .shader = &shader});
+    rtHexedCat.draw(batch, textureAtlas.getTexture(), {.transform = toLocal, .shader = &shader});
     rtHexedCat.display();
 
     hexedCatDrawCommands.pushBack(
@@ -2409,7 +2412,7 @@ void Main::drawHexedCatDrawCommands(const sf::View& view, const bool top)
                      .origin      = texture.getSize().toVec2f() / 2.f,
                      .textureRect = texture.getRect(),
                      .color       = sf::Color::whiteMask(static_cast<U8>(blend(255.f, 128.f, command.effectStrength)))},
-                    {.view = view, .texture = &texture, .shader = &shaderHexed});
+                    {.view = view, .shader = &shaderHexed});
     }
 }
 
@@ -2421,7 +2424,7 @@ void Main::gameLoopDisplayCloudBatch(const sf::CPUDrawableBatch& batch, const sf
         return;
 
     rtCloudMask.clear(sf::Color::Transparent);
-    rtCloudMask.draw(batch, {.view = view, .texture = &textureAtlas.getTexture()});
+    rtCloudMask.draw(batch, textureAtlas.getTexture(), {.view = view});
     rtCloudMask.display();
 
     shaderClouds.setUniform(suCloudTime, shaderTime);

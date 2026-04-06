@@ -1896,10 +1896,10 @@ public:
 
                     (...,
                      m_rtSpriteBg.draw(toDraw,
+                                       m_textureAtlas.getTexture(),
                                        {
-                                           .view    = m_worldView,
-                                           .texture = &m_textureAtlas.getTexture(),
-                                           .shader  = &m_shaderSpriteAlpha,
+                                           .view   = m_worldView,
+                                           .shader = &m_shaderSpriteAlpha,
                                        }));
 
                     m_rtSpriteBg.display();
@@ -1930,9 +1930,8 @@ public:
                     const float invScale = 1.f / shadowTextureResMult;
 
                     const sf::RenderStates states{
-                        .view    = m_worldView,
-                        .texture = &m_textureAtlas.getTexture(),
-                        .shader  = &m_shader,
+                        .view   = m_worldView,
+                        .shader = &m_shader,
                     };
 
                     m_rtGame.clear();
@@ -1943,15 +1942,15 @@ public:
                     m_rtGame.flush();
 
                     m_shader.setUniform(m_ulWaveEnabled, false);
-                    m_rtGame.draw(m_dbBackground, states);
+                    m_rtGame.draw(m_dbBackground, m_textureAtlas.getTexture(), states);
                     m_rtGame.draw(m_dbLavaParticles,
+                                  m_textureAtlas.getTexture(),
                                   {
                                       .blendMode = sf::BlendAdd,
                                       .view      = m_worldView,
-                                      .texture   = &m_textureAtlas.getTexture(),
                                       .shader    = &m_shader,
                                   });
-                    m_rtGame.draw(m_dbTile, states);
+                    m_rtGame.draw(m_dbTile, m_textureAtlas.getTexture(), states);
 
                     {
                         SFEX_PROFILE_SCOPE("shadow pass 1");
@@ -1962,14 +1961,14 @@ public:
                                       {.view = m_worldView, .shader = &m_shaderShadow});
                     }
 
-                    m_rtGame.draw(m_dbWall, states);
-                    m_rtGame.draw(m_dbObject, states);
+                    m_rtGame.draw(m_dbWall, m_textureAtlas.getTexture(), states);
+                    m_rtGame.draw(m_dbObject, m_textureAtlas.getTexture(), states);
 
                     m_rtGame.draw(m_dbLavaParticlesTop,
+                                  m_textureAtlas.getTexture(),
                                   {
                                       .blendMode = sf::BlendAdd,
                                       .view      = m_worldView,
-                                      .texture   = &m_textureAtlas.getTexture(),
                                       .shader    = &m_shader,
                                   });
 
@@ -1985,7 +1984,7 @@ public:
                                       });
                     }
 
-                    m_rtGame.draw(m_dbObjectAttributes, states);
+                    m_rtGame.draw(m_dbObjectAttributes, m_textureAtlas.getTexture(), states);
                 }
 
                 m_rtGame.draw(
@@ -1995,6 +1994,7 @@ public:
                         .fillColor = sf::Color::Black,
                         .size      = {20.f, 20.f},
                     },
+                    nullptr,
                     {.view = m_worldView});
 
                 m_rtGame.display();

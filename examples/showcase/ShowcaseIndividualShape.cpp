@@ -181,5 +181,5 @@ void ExampleIndividualShape::draw()
 {
     m_phase = 0.f;
 
-    callWithActiveShape([this](auto& shapeData) { m_deps.rtGame->draw(shapeData, {.view = *m_deps.view}); });
+    callWithActiveShape([this](auto& shapeData) { m_deps.rtGame->draw(shapeData, nullptr, {.view = *m_deps.view}); });
 }

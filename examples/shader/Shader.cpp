@@ -174,7 +174,7 @@ public:
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
         states.shader = &m_shader;
-        target.draw(m_points, sf::PrimitiveType::Points, states);
+        target.draw(m_points, sf::PrimitiveType::Points, nullptr, states);
     }
 
     explicit StormBlink(sf::Shader&& shader) :
@@ -233,7 +233,7 @@ public:
                 {sf::base::cos(0.25f * (time * static_cast<float>(i) + static_cast<float>(numEntities - i))) * 300 + 350,
                  sf::base::sin(0.25f * (time * static_cast<float>(numEntities - i) + static_cast<float>(i))) * 200 + 250};
 
-            m_surface.draw(entity, {.texture = &m_entityTexture});
+            m_surface.draw(entity, m_entityTexture);
         }
 
         m_surface.display();
@@ -293,11 +293,10 @@ public:
     {
         // Prepare the render state
         states.shader    = &m_shader;
-        states.texture   = &m_logoTexture;
         states.transform = m_transform;
 
         // Draw the point cloud
-        target.draw(m_pointCloud, sf::PrimitiveType::Points, states);
+        target.draw(m_pointCloud, sf::PrimitiveType::Points, &m_logoTexture, states);
     }
 
     explicit Geometry(sf::Texture&& logoTexture, sf::Shader&& shader) :
@@ -557,7 +556,7 @@ int main()
         }
 
         // Draw the text
-        window.withRenderStates({.view = windowView})
+        window.withRenderStates(nullptr, {.view = windowView})
             .draw(textBackgroundTexture, {.position = {0.f, 520.f}, .color = {255, 255, 255, 200}})
             .drawAll(instructions, description);
 
