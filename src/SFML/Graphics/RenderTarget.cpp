@@ -509,7 +509,6 @@ void RenderTarget::draw(const Texture& texture, const DrawTextureSettings& param
 ////////////////////////////////////////////////////////////
 void RenderTarget::draw(const Sprite& sprite, const RenderStates& states)
 {
-    // TODO P0: can we turn this into a compile-time error? it's the usual renderstates issue...
     SFML_BASE_ASSERT(states.texture != nullptr);
 
     if (m_autoBatchMode != AutoBatchMode::Disabled)
@@ -865,7 +864,6 @@ VertexSpan RenderTarget::draw(const FontFace&            fontFace,
                               const GlyphMappedTextData& textData,
                               const RenderStates&        states)
 {
-    // TODO P0: can we turn this into a compile-time error? it's the usual renderstates issue...
     SFML_BASE_ASSERT(states.texture != nullptr);
 
     if (m_autoBatchMode != AutoBatchMode::Disabled)
