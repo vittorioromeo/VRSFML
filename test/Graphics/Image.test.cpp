@@ -1,6 +1,8 @@
 #include "SFML/Graphics/Image.hpp"
 
 // Other 1st party headers
+#include "GraphicsUtil.hpp"
+
 #include "SFML/System/FileInputStream.hpp"
 #include "SFML/System/Path.hpp"
 
@@ -9,7 +11,6 @@
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
-#include "GraphicsUtil.hpp"
 
 
 TEST_CASE("[Graphics] sf::Image")

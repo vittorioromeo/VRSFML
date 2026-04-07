@@ -1,6 +1,9 @@
 #include "SFML/Audio/SoundFileFactory.hpp"
 
 // Other 1st party headers
+#include "StringifyOptionalUtil.hpp"
+#include "SystemUtil.hpp"
+
 #include "SFML/Audio/ChannelMap.hpp"
 #include "SFML/Audio/SoundFileReader.hpp"
 #include "SFML/Audio/SoundFileWriter.hpp"
@@ -17,9 +20,6 @@
 #include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
 
 #include <Doctest.hpp>
-
-#include "StringifyOptionalUtil.hpp"
-#include "SystemUtil.hpp"
 
 
 namespace

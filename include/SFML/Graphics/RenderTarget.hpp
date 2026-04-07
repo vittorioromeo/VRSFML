@@ -9,11 +9,6 @@
 #include "SFML/Graphics/Export.hpp"
 
 #include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/DrawIndexedVerticesSettings.hpp"
-#include "SFML/Graphics/DrawInstancedIndexedVerticesSettings.hpp"
-#include "SFML/Graphics/DrawInstancedVerticesSettings.hpp"
-#include "SFML/Graphics/DrawPersistentMappedIndexedVerticesSettings.hpp"
-#include "SFML/Graphics/DrawQuadsSettings.hpp"
 #include "SFML/Graphics/DrawTextureSettings.hpp"
 #include "SFML/Graphics/DrawVerticesSettings.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
@@ -47,11 +42,16 @@ class VAOHandle;
 class VertexBuffer;
 
 struct BlendMode;
+struct DrawIndexedVerticesSettings;
+struct DrawInstancedIndexedVerticesSettings;
+struct DrawInstancedVerticesSettings;
+struct DrawPersistentMappedIndexedVerticesSettings;
+struct DrawQuadsSettings;
 struct GLElementBufferObject;
 struct GLVAOGroup;
 struct GLVertexBufferObject;
-struct GlyphMapping;
 struct GlyphMappedTextData;
+struct GlyphMapping;
 struct InstanceAttributeBinder;
 struct Sprite;
 struct StencilMode;
@@ -60,6 +60,7 @@ struct TextData;
 struct Transform;
 struct Vertex;
 struct View;
+
 } // namespace sf
 
 
@@ -469,17 +470,17 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    template <bool TLocked>
     class [[nodiscard]] WithRenderStatesContext
     {
     private:
         ////////////////////////////////////////////////////////////
         RenderTarget* const m_rt;
         const RenderStates  m_states;
+        const bool          m_locked;
 
     public:
         ////////////////////////////////////////////////////////////
-        WithRenderStatesContext(RenderTarget& rt, const RenderStates& states);
+        WithRenderStatesContext(RenderTarget& rt, const RenderStates& states, bool locked);
         ~WithRenderStatesContext();
 
         ////////////////////////////////////////////////////////////
@@ -532,25 +533,24 @@ public:
     };
 
     ////////////////////////////////////////////////////////////
-    template <bool>
     friend class WithRenderStatesContext;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] WithRenderStatesContext<false> withRenderStates(const RenderStates& states)
+    [[nodiscard, gnu::always_inline]] WithRenderStatesContext withRenderStates(const RenderStates& states)
     {
-        return {*this, states};
+        return {*this, states, /* locked */ false};
     }
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] WithRenderStatesContext<true> withLockedRenderStates(const RenderStates& states)
+    [[nodiscard, gnu::always_inline]] WithRenderStatesContext withLockedRenderStates(const RenderStates& states)
     {
-        return {*this, states};
+        return {*this, states, /* locked */ true};
     }
 
 protected:
@@ -843,12 +843,11 @@ public:
     ////////////////////////////////////////////////////////////
     template <typename ContiguousVertexRange>
     [[gnu::always_inline]] void draw(const ContiguousVertexRange& vertices, PrimitiveType type, const RenderStates& states = {})
-        requires(requires { drawVertices({vertices.data(), vertices.size(), type}, states); })
+        requires(requires { drawVertices(DrawVerticesSettings{vertices, type}, states); })
     {
         drawVertices(
-            {
-                .vertexData    = vertices.data(),
-                .vertexCount   = vertices.size(),
+            DrawVerticesSettings{
+                .vertexSpan    = vertices,
                 .primitiveType = type,
             },
             states);
@@ -866,9 +865,8 @@ public:
     [[gnu::always_inline]] void draw(const Vertex (&vertices)[N], PrimitiveType type, const RenderStates& states = {})
     {
         drawVertices(
-            {
-                .vertexData    = vertices,
-                .vertexCount   = N,
+            DrawVerticesSettings{
+                .vertexSpan    = vertices,
                 .primitiveType = type,
             },
             states);

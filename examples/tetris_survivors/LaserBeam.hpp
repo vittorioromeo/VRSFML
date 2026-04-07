@@ -5,6 +5,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/DrawIndexedVerticesSettings.hpp"
 #include "SFML/Graphics/IndexType.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
@@ -14,6 +15,7 @@
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Vec2.hpp"
 
+#include "SFML/Base/Constants.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
 #include "SFML/Base/Remainder.hpp"
 #include "SFML/Base/SinCosLookup.hpp"
@@ -139,11 +141,9 @@ public:
         const auto drawVertices = [&](const sf::base::Vector<sf::Vertex>& vertices)
         {
             target.drawIndexedVertices(
-                {
-                    .vertexData    = vertices.data(),
-                    .vertexCount   = vertices.size(),
-                    .indexData     = m_indices.data(),
-                    .indexCount    = m_indices.size(),
+                sf::DrawIndexedVerticesSettings{
+                    .vertexSpan    = vertices,
+                    .indexSpan     = m_indices,
                     .primitiveType = sf::PrimitiveType::Triangles,
                 },
                 states);

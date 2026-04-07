@@ -2,6 +2,8 @@
 #include "SFML/Window/WindowContext.hpp"
 
 // Other 1st party headers
+#include "WindowUtil.hpp"
+
 #include "SFML/Window/ContextSettings.hpp"
 
 #include "SFML/System/Err.hpp"
@@ -14,8 +16,6 @@
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <Doctest.hpp>
-
-#include "WindowUtil.hpp"
 
 #if defined(SFML_SYSTEM_WINDOWS)
     #define GLAPI __stdcall

@@ -8,6 +8,9 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Trait/IsConvertible.hpp"
+#include "SFML/Base/Trait/IsSame.hpp"
+#include "SFML/Base/Trait/RemoveCVRef.hpp"
 
 
 namespace sf::base
@@ -30,6 +33,18 @@ struct Span
     ////////////////////////////////////////////////////////////
     template <SizeT N>
     [[nodiscard, gnu::always_inline]] constexpr Span(T (&array)[N]) : theData{array}, theSize{N}
+    {
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    template <typename Range>
+        requires(!isSame<RemoveCVRefIndirect<Range>, Span> &&
+                 requires(Range&& r) {
+                     requires isConvertible<decltype(r.data()), T*>;
+                     r.size();
+                 })
+    [[nodiscard, gnu::always_inline]] constexpr Span(Range&& range) : theData{range.data()}, theSize{range.size()}
     {
     }
 
@@ -81,6 +96,13 @@ struct Span
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool empty() const
     {
         return theSize == 0u;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool isNullOrEmpty() const
+    {
+        return theData == nullptr || theSize == 0u;
     }
 
 

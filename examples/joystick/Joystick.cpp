@@ -127,7 +127,7 @@ int main()
             if (sf::Joystick::query(i))
                 ++connectedJoystickCount;
 
-        const sf::Vec2f logicalSize = {400.f * sf::base::max(1u, connectedJoystickCount), 775.f};
+        const sf::Vec2f logicalSize = {400.f * static_cast<float>(sf::base::max(1u, connectedJoystickCount)), 775.f};
 
         window.setSize(logicalSize.toVec2u());
 

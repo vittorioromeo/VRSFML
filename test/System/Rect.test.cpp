@@ -1,3 +1,5 @@
+#include "SystemUtil.hpp"
+
 #include "SFML/System/Rect2.hpp"
 #include "SFML/System/RectUtils.hpp"
 #include "SFML/System/Vec2Base.hpp"
@@ -15,8 +17,6 @@
 #include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
 
 #include <Doctest.hpp>
-
-#include "SystemUtil.hpp"
 
 TEMPLATE_TEST_CASE("[System] sf::Rect2", "", int, float)
 {

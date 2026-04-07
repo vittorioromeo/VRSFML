@@ -1,3 +1,4 @@
+#include "GraphicsUtil.hpp"
 #include "SystemUtil.hpp"
 
 #include "SFML/Graphics/Transform.hpp"
@@ -20,7 +21,6 @@
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
-#include "GraphicsUtil.hpp"
 
 TEST_CASE("[Graphics] sf::Transform")
 {

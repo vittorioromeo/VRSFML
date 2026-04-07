@@ -1,12 +1,13 @@
 #include "SFML/Graphics/Glsl.hpp"
 
 // Other 1st party headers
+#include "SystemUtil.hpp"
+
 #include "SFML/Graphics/Transform.hpp"
 
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
-#include "SystemUtil.hpp"
 
 TEST_CASE("[Graphics] sf::Glsl")
 {

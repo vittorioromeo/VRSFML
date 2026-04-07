@@ -1,8 +1,8 @@
+#include "WindowUtil.hpp"
+
 #include "SFML/Window/Mouse.hpp"
 
 #include <Doctest.hpp>
-
-#include "WindowUtil.hpp"
 
 TEST_CASE("[Window] sf::Mouse" * doctest::skip(skipDisplayTests))
 {

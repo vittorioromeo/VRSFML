@@ -1,9 +1,10 @@
+#include "SystemUtil.hpp"
+
 #include "SFML/System/AutoWrapAngle.hpp"
 
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
-#include "SystemUtil.hpp"
 
 TEST_CASE("[System] sf::AutoWrapAngle")
 {

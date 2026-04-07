@@ -5,6 +5,9 @@
 #include "SFML/Graphics/GraphicsContext.hpp"
 
 // Other 1st party headers
+#include "GraphicsUtil.hpp"
+#include "WindowUtil.hpp"
+
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/TextData.hpp"
@@ -28,8 +31,6 @@
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
-#include "GraphicsUtil.hpp"
-#include "WindowUtil.hpp"
 
 
 TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
@@ -324,7 +325,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             const sf::priv::LifetimeDependee::TestingModeGuard guard{"Font"};
             CHECK(!guard.fatalErrorTriggered("Font"));
 
-            auto f = sf::Font::openFromFile("tuffy.ttf").value();
+            auto     f = sf::Font::openFromFile("tuffy.ttf").value();
             sf::Text a(f, {});
             sf::Text b(f, {});
             CHECK(!guard.fatalErrorTriggered("Font"));
@@ -338,8 +339,8 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             const sf::priv::LifetimeDependee::TestingModeGuard guard{"Font"};
             CHECK(!guard.fatalErrorTriggered("Font"));
 
-            auto f1 = sf::Font::openFromFile("tuffy.ttf").value();
-            auto f2 = sf::Font::openFromFile("tuffy.ttf").value();
+            auto     f1 = sf::Font::openFromFile("tuffy.ttf").value();
+            auto     f2 = sf::Font::openFromFile("tuffy.ttf").value();
             sf::Text a(f1, {});
             sf::Text b(f2, {});
             CHECK(!guard.fatalErrorTriggered("Font"));
@@ -353,7 +354,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             const sf::priv::LifetimeDependee::TestingModeGuard guard{"Font"};
             CHECK(!guard.fatalErrorTriggered("Font"));
 
-            auto f = sf::Font::openFromFile("tuffy.ttf").value();
+            auto     f = sf::Font::openFromFile("tuffy.ttf").value();
             sf::Text a(f, {});
             sf::Text b(f, {});
             CHECK(!guard.fatalErrorTriggered("Font"));

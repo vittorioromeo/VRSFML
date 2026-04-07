@@ -4,6 +4,9 @@
 #include "SFML/Audio/PlaybackDevice.hpp"
 
 // Other 1st party headers
+#include "AudioUtil.hpp"
+#include "SystemUtil.hpp"
+
 #include "SFML/Audio/SoundBuffer.hpp"
 
 #include "SFML/System/LifetimeDependee.hpp"
@@ -22,9 +25,6 @@
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <Doctest.hpp>
-
-#include "AudioUtil.hpp"
-#include "SystemUtil.hpp"
 
 TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
 {

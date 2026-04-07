@@ -1,3 +1,5 @@
+#include "StringifyStringViewUtil.hpp"
+
 #include "SFML/System/MemoryInputStream.hpp"
 
 #include "SFML/Base/StringView.hpp"
@@ -7,8 +9,6 @@
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <Doctest.hpp>
-
-#include "StringifyStringViewUtil.hpp"
 
 TEST_CASE("[System] sf::MemoryInputStream")
 {

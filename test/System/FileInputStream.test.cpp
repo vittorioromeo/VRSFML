@@ -1,3 +1,6 @@
+#include "StringifyOptionalUtil.hpp"
+#include "StringifyStringViewUtil.hpp"
+
 #include "SFML/System/FileInputStream.hpp"
 
 #include "SFML/System/IO.hpp"
@@ -14,9 +17,6 @@
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <Doctest.hpp>
-
-#include "StringifyOptionalUtil.hpp"
-#include "StringifyStringViewUtil.hpp"
 
 #include <string>
 

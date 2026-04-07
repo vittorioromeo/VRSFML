@@ -1,3 +1,9 @@
+#include "GraphicsUtil.hpp"
+#include "StringifyOptionalUtil.hpp"
+#include "SystemUtil.hpp"
+#include "WindowUtil.hpp"
+
+#include "SFML/Graphics/DrawIndexedVerticesSettings.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RectangleShapeData.hpp"
@@ -13,14 +19,7 @@
 
 #include <Doctest.hpp>
 
-#include "GraphicsUtil.hpp"
-#include "StringifyOptionalUtil.hpp"
-#include "SystemUtil.hpp"
-#include "WindowUtil.hpp"
 
-
-namespace
-{
 #if defined(_WIN32)
     #define SFML_TEST_GL_API_PTR __stdcall
 #else
@@ -36,14 +35,17 @@ using PFNGLCHECKFRAMEBUFFERSTATUSPROC = GLenum(SFML_TEST_GL_API_PTR*)(GLenum tar
 using PFNGLGENFRAMEBUFFERSPROC        = void(SFML_TEST_GL_API_PTR*)(GLsizei n, GLuint* framebuffers);
 using PFNGLISFRAMEBUFFERPROC          = GLboolean(SFML_TEST_GL_API_PTR*)(GLuint framebuffer);
 
-constexpr GLenum GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT = 0x8C'D6u;
-
 extern "C"
 {
-    extern PFNGLCHECKFRAMEBUFFERSTATUSPROC glad_glCheckFramebufferStatus;
-    extern PFNGLGENFRAMEBUFFERSPROC        glad_glGenFramebuffers;
-    extern PFNGLISFRAMEBUFFERPROC          glad_glIsFramebuffer;
+    extern PFNGLCHECKFRAMEBUFFERSTATUSPROC glad_glCheckFramebufferStatus; // NOLINT(readability-identifier-naming)
+    extern PFNGLGENFRAMEBUFFERSPROC        glad_glGenFramebuffers;        // NOLINT(readability-identifier-naming)
+    extern PFNGLISFRAMEBUFFERPROC          glad_glIsFramebuffer;          // NOLINT(readability-identifier-naming)
 }
+
+
+namespace
+{
+constexpr GLenum GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT = 0x8C'D6u; // NOLINT(readability-identifier-naming)
 
 
 struct ScopedFramebufferHooks
@@ -122,22 +124,18 @@ TEST_CASE("[Graphics] MultiContext" * doctest::skip(skipDisplayTests))
     SECTION("Test")
     {
         auto wnd = sf::RenderWindow::create({.size = {1024u, 1024u}, .title = "Window A"}).value();
-        wnd.drawIndexedVertices({
-            .vertexData    = vertices,
-            .vertexCount   = 1u,
-            .indexData     = indices,
-            .indexCount    = 1u,
+        wnd.drawIndexedVertices(sf::DrawIndexedVerticesSettings{
+            .vertexSpan    = vertices,
+            .indexSpan     = indices,
             .primitiveType = sf::PrimitiveType::Points,
         });
 
         wnd.display();
 
         auto rt1 = sf::RenderTexture::create({1024u, 1024u}).value();
-        wnd.drawIndexedVertices({
-            .vertexData    = vertices,
-            .vertexCount   = 1u,
-            .indexData     = indices,
-            .indexCount    = 1u,
+        wnd.drawIndexedVertices(sf::DrawIndexedVerticesSettings{
+            .vertexSpan    = vertices,
+            .indexSpan     = indices,
             .primitiveType = sf::PrimitiveType::Points,
         });
 
@@ -159,11 +157,9 @@ TEST_CASE("[Graphics] MultiContext" * doctest::skip(skipDisplayTests))
             optWnd = sf::RenderWindow::create(sf::WindowSettings{.size = {1024u, 1024u}, .title = "Window B"});
 
             optRT0->drawIndexedVertices(
-                {
-                    .vertexData    = vertices,
-                    .vertexCount   = 1u,
-                    .indexData     = indices,
-                    .indexCount    = 1u,
+                sf::DrawIndexedVerticesSettings{
+                    .vertexSpan    = vertices,
+                    .indexSpan     = indices,
                     .primitiveType = sf::PrimitiveType::Points,
                 },
                 {.view = optWnd->computeView()});
@@ -181,11 +177,9 @@ TEST_CASE("[Graphics] MultiContext" * doctest::skip(skipDisplayTests))
         optWnd = sf::RenderWindow::create(sf::WindowSettings{.size = {1024u, 1024u}, .title = "Window B"});
 
         rt->drawIndexedVertices(
-            {
-                .vertexData    = vertices,
-                .vertexCount   = 1u,
-                .indexData     = indices,
-                .indexCount    = 1u,
+            sf::DrawIndexedVerticesSettings{
+                .vertexSpan    = vertices,
+                .indexSpan     = indices,
                 .primitiveType = sf::PrimitiveType::Points,
             },
             {.view = rt->computeView()});
@@ -193,11 +187,9 @@ TEST_CASE("[Graphics] MultiContext" * doctest::skip(skipDisplayTests))
         rt->display();
 
         optWnd->drawIndexedVertices(
-            {
-                .vertexData    = vertices,
-                .vertexCount   = 1u,
-                .indexData     = indices,
-                .indexCount    = 1u,
+            sf::DrawIndexedVerticesSettings{
+                .vertexSpan    = vertices,
+                .indexSpan     = indices,
                 .primitiveType = sf::PrimitiveType::Points,
             },
             {.view = optWnd->computeView()});
@@ -205,11 +197,9 @@ TEST_CASE("[Graphics] MultiContext" * doctest::skip(skipDisplayTests))
         optWnd = sf::RenderWindow::create(sf::WindowSettings{.size = {1024u, 1024u}, .title = "Window B"});
 
         rt->drawIndexedVertices(
-            {
-                .vertexData    = vertices,
-                .vertexCount   = 1u,
-                .indexData     = indices,
-                .indexCount    = 1u,
+            sf::DrawIndexedVerticesSettings{
+                .vertexSpan    = vertices,
+                .indexSpan     = indices,
                 .primitiveType = sf::PrimitiveType::Points,
             },
             {.view = rt->computeView()});

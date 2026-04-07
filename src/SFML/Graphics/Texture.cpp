@@ -27,6 +27,7 @@
 #include "SFML/System/Rect2.hpp"
 #include "SFML/System/Vec2Base.hpp"
 
+#include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Exchange.hpp"
 #include "SFML/Base/IntTypes.hpp"
@@ -309,14 +310,13 @@ base::Optional<Texture> Texture::loadFromImage(const Image& image, const Texture
         // Make sure that the current texture binding will be preserved
         const priv::TextureSaver save;
 
-        // Copy the pixels to the texture, row by row
+        // Copy the pixels to the texture
         const base::U8* pixels = image.getPixelsPtr() + 4 * (rectangle.position.x + (size.x * rectangle.position.y));
         glCheck(glBindTexture(GL_TEXTURE_2D, result->m_texture));
-        for (int i = 0; i < rectangle.size.y; ++i)
-        {
-            glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, i, rectangle.size.x, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixels));
-            pixels += 4 * size.x;
-        }
+
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, size.x); // restore after
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.size.x, rectangle.size.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 
         glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
         result->m_hasMipmap = false;
@@ -372,6 +372,7 @@ Image Texture::copyToImage() const
     else
     {
         priv::err() << "Failed to copy texture to image, failed to create frame buffer object";
+        base::abort();
     }
 
     auto result = sf::Image::create(m_size, pixels.data());

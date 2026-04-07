@@ -6,6 +6,9 @@
 #include "SFML/System/Vec2Base.hpp"
 
 // Other 1st party headers
+#include "SystemUtil.hpp"
+#include "WindowUtil.hpp"
+
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/Trait/HasVirtualDestructor.hpp"
 #include "SFML/Base/Trait/IsCopyAssignable.hpp"
@@ -14,9 +17,6 @@
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <Doctest.hpp>
-
-#include "SystemUtil.hpp"
-#include "WindowUtil.hpp"
 
 TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 {

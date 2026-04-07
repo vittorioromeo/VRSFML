@@ -62,11 +62,11 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct Music::Impl
 {
-    base::Vector<base::I16> samples;         //!< Temporary buffer of samples
-    mutable std::mutex      loopMutex;       //!< Protects loopSpan and sampleOffset
-    Span<base::U64>         loopSpan;        //!< Loop range Specifier
-    MusicReader&            musicReader;     //!< The music reader
-    base::U64               sampleOffset{};  //!< Current offset in the stream
+    base::Vector<base::I16> samples;        //!< Temporary buffer of samples
+    mutable std::mutex      loopMutex;      //!< Protects loopSpan and sampleOffset
+    Span<base::U64>         loopSpan;       //!< Loop range Specifier
+    MusicReader&            musicReader;    //!< The music reader
+    base::U64               sampleOffset{}; //!< Current offset in the stream
 
     explicit Impl(MusicReader& theMusicReader, base::U64 theSampleCount) :
         loopSpan{0u, theSampleCount},
@@ -127,14 +127,16 @@ bool Music::onGetData(SoundStream::Chunk& data)
     // If the loop end is enabled and imminent, request less data.
     // This will trip an "onLoop()" call from the underlying SoundStream,
     // and we can then take action.
-    if (isLooping() && (m_impl->loopSpan.length != 0) && (m_impl->sampleOffset <= loopEnd) && (m_impl->sampleOffset + toFill > loopEnd))
+    if (isLooping() && (m_impl->loopSpan.length != 0) && (m_impl->sampleOffset <= loopEnd) &&
+        (m_impl->sampleOffset + toFill > loopEnd))
         toFill = static_cast<base::SizeT>(loopEnd - m_impl->sampleOffset);
 
     // Fill the chunk parameters
     data.samples = m_impl->samples.data();
 
     // `seekAndRead` is thread-safe
-    const auto [sampleOffset, samplesRead] = m_impl->musicReader.seekAndRead(m_impl->sampleOffset, m_impl->samples.data(), toFill);
+    const auto [sampleOffset,
+                samplesRead] = m_impl->musicReader.seekAndRead(m_impl->sampleOffset, m_impl->samples.data(), toFill);
 
     data.sampleCount     = static_cast<base::SizeT>(samplesRead);
     m_impl->sampleOffset = sampleOffset + samplesRead;
@@ -159,7 +161,8 @@ base::Optional<base::U64> Music::onLoop()
 {
     const std::lock_guard lock(m_impl->loopMutex);
 
-    if (isLooping() && (m_impl->loopSpan.length != 0) && (m_impl->sampleOffset == m_impl->loopSpan.offset + m_impl->loopSpan.length))
+    if (isLooping() && (m_impl->loopSpan.length != 0) &&
+        (m_impl->sampleOffset == m_impl->loopSpan.offset + m_impl->loopSpan.length))
     {
         // Looping is enabled, and either we're at the loop end, or we're at the EOF
         // when it's equivalent to the loop end (loop end takes priority). Send us to loop begin

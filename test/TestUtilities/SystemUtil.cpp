@@ -1,3 +1,6 @@
+#include "GraphicsUtil.hpp"
+#include "SystemUtil.hpp"
+
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Rect2.hpp"
 #include "SFML/System/Time.hpp"
@@ -9,9 +12,6 @@
 #include "SFML/Base/StringStreamOp.hpp"
 
 #include <Doctest.hpp>
-
-#include "GraphicsUtil.hpp"
-#include "SystemUtil.hpp"
 
 #include <iomanip>
 #include <limits>

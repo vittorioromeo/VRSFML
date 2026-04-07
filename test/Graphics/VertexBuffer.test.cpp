@@ -3,6 +3,8 @@
 #include "SFML/Graphics/GraphicsContext.hpp"
 
 // Other 1st party headers
+#include "GraphicsUtil.hpp"
+
 #include "SFML/Graphics/Vertex.hpp"
 
 #include "SFML/Base/Trait/IsNothrowSwappable.hpp"
@@ -10,7 +12,6 @@
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
-#include "GraphicsUtil.hpp"
 
 // Skip these tests with [.display] because they produce flakey failures in CI when using xvfb-run
 TEST_CASE("[Graphics] sf::VertexBuffer", "[.display]")

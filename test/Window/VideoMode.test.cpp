@@ -1,3 +1,6 @@
+#include "SystemUtil.hpp"
+#include "WindowUtil.hpp"
+
 #include "SFML/Window/VideoMode.hpp"
 
 #include "SFML/Window/VideoModeUtils.hpp"
@@ -19,9 +22,6 @@
 #include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
 
 #include <Doctest.hpp>
-
-#include "SystemUtil.hpp"
-#include "WindowUtil.hpp"
 
 
 TEST_CASE("[Window] sf::VideoMode" * doctest::skip(skipDisplayTests))

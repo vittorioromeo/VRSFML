@@ -910,11 +910,14 @@ base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
 void Shader::bindTextures() const
 {
     auto* it = m_impl->textures.begin();
+
     for (base::SizeT i = 0u; i < m_impl->textures.size(); ++i)
     {
         const auto index = static_cast<GLsizei>(i + 1);
+
         glCheck(glUniform1i(it->first, index));
         glCheck(glActiveTexture(GL_TEXTURE0 + static_cast<GLenum>(index)));
+
         it->second->bind();
         ++it;
     }

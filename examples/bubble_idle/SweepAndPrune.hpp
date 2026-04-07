@@ -12,9 +12,9 @@
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline, gnu::flatten]] void atomicWaitUntil(std::atomic<T>&   a,
-                                                          auto&&            predicate,
-                                                          std::memory_order order = std::memory_order_acquire)
+[[gnu::always_inline, gnu::flatten]] inline void atomicWaitUntil(std::atomic<T>&   a,
+                                                                 auto&&            predicate,
+                                                                 std::memory_order order = std::memory_order_acquire)
 {
     while (true)
     {

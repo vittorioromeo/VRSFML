@@ -1,3 +1,6 @@
+#include "GraphicsUtil.hpp"
+#include "SystemUtil.hpp"
+
 #include "SFML/Graphics/BlendMode.hpp"
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/StencilMode.hpp"
@@ -7,9 +10,6 @@
 #include "SFML/System/Rect2.hpp"
 
 #include "SFML/Base/Math/Fabs.hpp"
-
-#include "GraphicsUtil.hpp"
-#include "SystemUtil.hpp"
 
 #include <limits>
 #include <ostream>

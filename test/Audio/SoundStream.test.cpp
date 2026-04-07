@@ -1,3 +1,6 @@
+#include "AudioUtil.hpp"
+#include "SystemUtil.hpp"
+
 #include "SFML/Audio/SoundStream.hpp"
 
 #include "SFML/Audio/AudioContext.hpp"
@@ -9,9 +12,7 @@
 
 #include <Doctest.hpp>
 
-#include "AudioUtil.hpp"
 #include <CommonTraits.hpp>
-#include "SystemUtil.hpp"
 
 
 namespace

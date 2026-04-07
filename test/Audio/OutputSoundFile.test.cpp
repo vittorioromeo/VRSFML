@@ -1,3 +1,5 @@
+#include "AudioUtil.hpp"
+
 #include "SFML/Audio/OutputSoundFile.hpp"
 
 #include "SFML/Audio/ChannelMap.hpp"
@@ -12,8 +14,6 @@
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <Doctest.hpp>
-
-#include "AudioUtil.hpp"
 
 #include <string>
 

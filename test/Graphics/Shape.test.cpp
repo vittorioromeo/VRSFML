@@ -3,6 +3,9 @@
 #include "SFML/Graphics/Color.hpp"
 
 // Other 1st party headers
+#include "GraphicsUtil.hpp"
+#include "WindowUtil.hpp"
+
 #include "SFML/Graphics/Texture.hpp"
 
 #include "SFML/System/Rect2.hpp"
@@ -10,8 +13,6 @@
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
-#include "GraphicsUtil.hpp"
-#include "WindowUtil.hpp"
 
 class TriangleShape : public sf::Shape
 {

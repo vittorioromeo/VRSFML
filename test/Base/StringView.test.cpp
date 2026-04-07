@@ -1,3 +1,6 @@
+#include "StringifySfBaseStringUtil.hpp"
+#include "StringifyStringViewUtil.hpp"
+
 #include "SFML/Base/StringView.hpp"
 
 #include "SFML/Base/Builtin/Strlen.hpp"
@@ -6,8 +9,6 @@
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
-#include "StringifySfBaseStringUtil.hpp"
-#include "StringifyStringViewUtil.hpp"
 
 
 TEST_CASE("[Base] Base/StringView.hpp")
