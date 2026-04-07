@@ -95,6 +95,7 @@ public:
     IOStreamOutput& operator<<(std::ostream& (*func)(std::ostream&));
 
     IOStreamOutput& operator<<(const char* value);
+    IOStreamOutput& operator<<(const base::String& value);
     IOStreamOutput& operator<<(FlushType);
     IOStreamOutput& operator<<(EndLType);
 
@@ -348,6 +349,7 @@ public:
     template <typename T>
     OutFileStream& operator<<(const T& value);
 
+    OutFileStream& operator<<(const base::String& value);
     OutFileStream& operator<<(SetFill fill);
     OutFileStream& operator<<(SetWidth width);
     OutFileStream& operator<<(Hex hex);
@@ -407,6 +409,7 @@ public:
         return operator<<(static_cast<const char*>(value));
     }
 
+    OutStringStream& operator<<(const base::String& value);
     OutStringStream& operator<<(SetFill fill);
     OutStringStream& operator<<(SetWidth width);
     OutStringStream& operator<<(Hex hex);
