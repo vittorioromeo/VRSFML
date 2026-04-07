@@ -1,3 +1,5 @@
+#include "SystemUtil.hpp"
+
 #include "SFML/System/Clock.hpp"
 
 #include "SFML/System/Sleep.hpp"
@@ -6,7 +8,6 @@
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
-#include "SystemUtil.hpp"
 
 TEST_CASE("[System] sf::Clock")
 {

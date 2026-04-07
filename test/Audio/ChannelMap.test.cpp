@@ -1,3 +1,5 @@
+#include "AudioUtil.hpp"
+
 #include "SFML/Audio/ChannelMap.hpp"
 
 #include "SFML/Audio/SoundChannel.hpp"
@@ -9,8 +11,6 @@
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <Doctest.hpp>
-
-#include "AudioUtil.hpp"
 
 
 TEST_CASE("[Audio] sf::ChannelMap" * doctest::skip(skipAudioDeviceTests))

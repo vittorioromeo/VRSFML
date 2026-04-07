@@ -1,3 +1,6 @@
+#include "GraphicsUtil.hpp"
+#include "SystemUtil.hpp"
+
 #include "SFML/Graphics/View.hpp"
 
 #include "SFML/System/Angle.hpp"
@@ -17,9 +20,6 @@
 
 #include <Doctest.hpp>
 #include <doctest/parts/doctest_fwd.h>
-
-#include "GraphicsUtil.hpp"
-#include "SystemUtil.hpp"
 
 
 TEST_CASE("[Graphics] sf::View")

@@ -153,10 +153,8 @@ sf::Rect2f   txrRocket;
 {
     return {
         .vaoHandle     = *instanceRenderingVAOGroup,
-        .vertexData    = instancedQuadVertices,
-        .vertexCount   = 4u,
-        .indexData     = instancedQuadIndices,
-        .indexCount    = 6u,
+        .vertexSpan    = instancedQuadVertices,
+        .indexSpan     = instancedQuadIndices,
         .instanceCount = nInstances,
         .primitiveType = sf::PrimitiveType::Triangles,
     };

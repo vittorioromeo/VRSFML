@@ -1,3 +1,6 @@
+#include "GraphicsUtil.hpp"
+#include "WindowUtil.hpp"
+
 #include "SFML/Graphics/GlyphMapping.hpp"
 
 #include "SFML/Graphics/FontFace.hpp"
@@ -10,9 +13,6 @@
 #include "SFML/System/UnicodeString.hpp"
 
 #include <Doctest.hpp>
-
-#include "GraphicsUtil.hpp"
-#include "WindowUtil.hpp"
 
 
 TEST_CASE("[Graphics] sf::GlyphMapping" * doctest::skip(skipDisplayTests))

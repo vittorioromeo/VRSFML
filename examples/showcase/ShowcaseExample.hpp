@@ -34,7 +34,7 @@ struct ShowcaseExample
 {
     const char* name;
 
-    explicit ShowcaseExample(const char* name) : name{name}
+    explicit ShowcaseExample(const char* theName) : name{theName}
     {
     }
 

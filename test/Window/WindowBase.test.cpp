@@ -1,6 +1,10 @@
 #include "SFML/Window/WindowBase.hpp"
 
 // Other 1st party headers
+#include "StringifyOptionalUtil.hpp"
+#include "SystemUtil.hpp"
+#include "WindowUtil.hpp"
+
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/WindowContext.hpp"
 #include "SFML/Window/WindowHandle.hpp"
@@ -16,10 +20,6 @@
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <Doctest.hpp>
-
-#include "StringifyOptionalUtil.hpp"
-#include "SystemUtil.hpp"
-#include "WindowUtil.hpp"
 
 
 namespace

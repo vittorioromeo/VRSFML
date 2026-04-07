@@ -9,8 +9,8 @@
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
-#include "SFML/Base/Builtin/Restrict.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Span.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -29,11 +29,10 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] DrawInstancedVerticesSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    VAOHandle&                       vaoHandle;
-    const Vertex* SFML_BASE_RESTRICT vertexData;
-    base::SizeT                      vertexCount;
-    base::SizeT                      instanceCount;
-    PrimitiveType                    primitiveType;
+    VAOHandle&               vaoHandle;
+    base::Span<const Vertex> vertexSpan;
+    base::SizeT              instanceCount;
+    PrimitiveType            primitiveType;
 };
 
 } // namespace sf

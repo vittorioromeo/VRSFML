@@ -1,9 +1,10 @@
+#include "GraphicsUtil.hpp"
+
 #include "SFML/Graphics/TransformableMixin.hpp"
 
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
-#include "GraphicsUtil.hpp"
 
 
 struct TestTransformable : sf::TransformableMixin<TestTransformable>

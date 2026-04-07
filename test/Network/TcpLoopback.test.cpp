@@ -1,3 +1,7 @@
+#include "StringifyIpAddressUtil.hpp"
+#include "StringifyOptionalUtil.hpp"
+#include "StringifySfBaseStringUtil.hpp"
+
 #include "SFML/Network/SocketSelector.hpp"
 #include "SFML/Network/TcpListener.hpp"
 #include "SFML/Network/TcpSocket.hpp"
@@ -10,10 +14,6 @@
 #include "SFML/Base/Vector.hpp"
 
 #include <Doctest.hpp>
-
-#include "StringifyIpAddressUtil.hpp"
-#include "StringifyOptionalUtil.hpp"
-#include "StringifySfBaseStringUtil.hpp"
 
 
 namespace

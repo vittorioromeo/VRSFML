@@ -52,6 +52,7 @@
 #include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Abort.hpp"
+#include "SFML/Base/Array.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/OffsetOf.hpp"
 #include "SFML/Base/FixedFunction.hpp"
@@ -63,6 +64,7 @@
 #include "SFML/Base/ScopeGuard.hpp"
 #include "SFML/Base/SinCosLookup.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Span.hpp"
 
 #include <atomic>
 
@@ -95,7 +97,7 @@ constexpr sf::base::SizeT maxIdCount{256ul};
 
 ////////////////////////////////////////////////////////////
 // Map to help us detect whether a different RenderTarget has been activated within a single context
-constinit std::atomic<IdType> contextRenderTargetMap[maxIdCount]{};
+constinit sf::base::Array<std::atomic<IdType>, maxIdCount> contextRenderTargetMap{};
 
 
 ////////////////////////////////////////////////////////////
@@ -110,20 +112,21 @@ constinit std::atomic<IdType> contextRenderTargetMap[maxIdCount]{};
 
 
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline, gnu::flatten]] inline void streamVerticesToGPU(const sf::Vertex* vertexData, const sf::base::SizeT vertexCount)
+[[gnu::always_inline, gnu::flatten]] inline void streamVerticesToGPU(sf::base::Span<const sf::Vertex> vertexSpan)
 {
-    glCheck(
-        glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeof(sf::Vertex) * vertexCount), vertexData, GL_STREAM_DRAW));
+    glCheck(glBufferData(GL_ARRAY_BUFFER,
+                         static_cast<GLsizeiptr>(sizeof(sf::Vertex) * vertexSpan.size()),
+                         vertexSpan.data(),
+                         GL_STREAM_DRAW));
 }
 
 
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline, gnu::flatten]] inline void streamIndicesToGPU(const sf::IndexType*  indexData,
-                                                                    const sf::base::SizeT indexCount)
+[[gnu::always_inline, gnu::flatten]] inline void streamIndicesToGPU(sf::base::Span<const sf::IndexType> indexSpan)
 {
     glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                         static_cast<GLsizeiptr>(sizeof(sf::IndexType) * indexCount),
-                         indexData,
+                         static_cast<GLsizeiptr>(sizeof(sf::IndexType) * indexSpan.size()),
+                         indexSpan.data(),
                          GL_STREAM_DRAW));
 }
 
@@ -537,13 +540,9 @@ void RenderTarget::draw(const Shape& shape, RenderStates states)
     {
         states.transform *= shape.getTransform();
 
-        const auto [fillData, fillSize]       = shape.getFillVertices();
-        const auto [outlineData, outlineSize] = shape.getOutlineVertices();
-
         immediateDrawVertices(
             {
-                .vertexData    = fillData,
-                .vertexCount   = fillSize,
+                .vertexSpan    = shape.getFillVertices(),
                 .primitiveType = PrimitiveType::TriangleFan,
             },
             states);
@@ -551,8 +550,7 @@ void RenderTarget::draw(const Shape& shape, RenderStates states)
         if (shape.getOutlineThickness() != 0.f)
             immediateDrawVertices(
                 {
-                    .vertexData    = outlineData,
-                    .vertexCount   = outlineSize,
+                    .vertexSpan    = shape.getOutlineVertices(),
                     .primitiveType = PrimitiveType::TriangleStrip,
                 },
                 states);
@@ -620,13 +618,13 @@ struct [[nodiscard]] RenderTarget::DrawGuard
 void RenderTarget::immediateDrawVertices(const DrawVerticesSettings& settings, const RenderStates& states)
 {
     // Nothing to draw or inactive target
-    if (settings.vertexData == nullptr || settings.vertexCount == 0u || !setActive(true))
+    if (settings.vertexSpan.isNullOrEmpty() || !setActive(true))
         return;
 
     const DrawGuard drawGuard{*this, states, m_impl->vaoGroup};
 
-    RenderTargetImpl::streamVerticesToGPU(settings.vertexData, settings.vertexCount);
-    invokePrimitiveDrawCall(settings.primitiveType, 0u, settings.vertexCount);
+    RenderTargetImpl::streamVerticesToGPU(settings.vertexSpan);
+    invokePrimitiveDrawCall(settings.primitiveType, 0u, settings.vertexSpan.size());
 }
 
 
@@ -634,16 +632,15 @@ void RenderTarget::immediateDrawVertices(const DrawVerticesSettings& settings, c
 void RenderTarget::immediateDrawIndexedVertices(const DrawIndexedVerticesSettings& settings, const RenderStates& states)
 {
     // Nothing to draw or inactive target
-    if (settings.vertexData == nullptr || settings.vertexCount == 0u || settings.indexData == nullptr ||
-        settings.indexCount == 0u || !setActive(true))
+    if (settings.vertexSpan.isNullOrEmpty() || settings.indexSpan.isNullOrEmpty() || !setActive(true))
         return;
 
     const DrawGuard drawGuard{*this, states, m_impl->vaoGroup};
 
-    RenderTargetImpl::streamVerticesToGPU(settings.vertexData, settings.vertexCount);
-    RenderTargetImpl::streamIndicesToGPU(settings.indexData, settings.indexCount);
+    RenderTargetImpl::streamVerticesToGPU(settings.vertexSpan);
+    RenderTargetImpl::streamIndicesToGPU(settings.indexSpan);
 
-    invokePrimitiveDrawCallIndexed(settings.primitiveType, settings.indexCount, /* indexOffset */ 0u);
+    invokePrimitiveDrawCallIndexed(settings.primitiveType, settings.indexSpan.size(), /* indexOffset */ 0u);
 }
 
 
@@ -678,10 +675,8 @@ void RenderTarget::immediateDrawDrawableBatch(const CPUDrawableBatch& drawableBa
 
     immediateDrawIndexedVertices(
         {
-            .vertexData    = drawableBatch.m_storage.vertices.data(),
-            .vertexCount   = drawableBatch.m_storage.vertices.size(),
-            .indexData     = drawableBatch.m_storage.indices.data(),
-            .indexCount    = drawableBatch.m_storage.indices.size(),
+            .vertexSpan    = drawableBatch.m_storage.vertices,
+            .indexSpan     = drawableBatch.m_storage.indices,
             .primitiveType = PrimitiveType::Triangles,
         },
         states);
@@ -694,17 +689,17 @@ void RenderTarget::immediateDrawInstancedVertices(const DrawInstancedVerticesSet
                                                   const RenderStates&                                     states)
 {
     // Nothing to draw or inactive target
-    if (settings.vertexData == nullptr || settings.vertexCount == 0u || settings.instanceCount == 0u || !setActive(true))
+    if (settings.vertexSpan.isNullOrEmpty() || settings.instanceCount == 0u || !setActive(true))
         return;
 
     const DrawGuard drawGuard{*this, states, settings.vaoHandle.asVAOGroup()};
 
-    RenderTargetImpl::streamVerticesToGPU(settings.vertexData, settings.vertexCount);
+    RenderTargetImpl::streamVerticesToGPU(settings.vertexSpan);
 
     InstanceAttributeBinder iab;
     setupFn(iab);
 
-    invokeInstancedPrimitiveDrawCall(settings.primitiveType, 0, settings.vertexCount, settings.instanceCount);
+    invokeInstancedPrimitiveDrawCall(settings.primitiveType, 0, settings.vertexSpan.size(), settings.instanceCount);
 }
 
 
@@ -714,19 +709,19 @@ void RenderTarget::immediateDrawInstancedIndexedVertices(const DrawInstancedInde
                                                          const RenderStates& states)
 {
     // Nothing to draw or inactive target
-    if (settings.vertexData == nullptr || settings.vertexCount == 0u || settings.indexData == nullptr ||
-        settings.indexCount == 0u || settings.instanceCount == 0u || !setActive(true))
+    if (settings.vertexSpan.isNullOrEmpty() || settings.indexSpan.isNullOrEmpty() || settings.instanceCount == 0u ||
+        !setActive(true))
         return;
 
     const DrawGuard drawGuard{*this, states, settings.vaoHandle.asVAOGroup()};
 
-    RenderTargetImpl::streamVerticesToGPU(settings.vertexData, settings.vertexCount);
-    RenderTargetImpl::streamIndicesToGPU(settings.indexData, settings.indexCount);
+    RenderTargetImpl::streamVerticesToGPU(settings.vertexSpan);
+    RenderTargetImpl::streamIndicesToGPU(settings.indexSpan);
 
     InstanceAttributeBinder iab;
     setupFn(iab);
 
-    invokeInstancedPrimitiveDrawCallIndexed(settings.primitiveType, 0, settings.indexCount, settings.instanceCount);
+    invokeInstancedPrimitiveDrawCallIndexed(settings.primitiveType, 0, settings.indexSpan.size(), settings.instanceCount);
 }
 
 
@@ -914,15 +909,15 @@ void RenderTarget::drawIndexedVertices(const DrawIndexedVerticesSettings& settin
 ////////////////////////////////////////////////////////////
 void RenderTarget::drawQuads(const DrawQuadsSettings& settings, const RenderStates& states)
 {
-    SFML_BASE_ASSERT(settings.vertexCount % 4u == 0u);
-    SFML_BASE_ASSERT(settings.vertexCount < base::getArraySize(RenderTargetImpl::precomputedQuadIndices) / 6u * 4u);
+    const auto vertexCount = settings.vertexSpan.size();
+
+    SFML_BASE_ASSERT(vertexCount % 4u == 0u);
+    SFML_BASE_ASSERT(vertexCount < base::getArraySize(RenderTargetImpl::precomputedQuadIndices) / 6u * 4u);
 
     drawIndexedVertices(
         {
-            .vertexData    = settings.vertexData,
-            .vertexCount   = settings.vertexCount,
-            .indexData     = RenderTargetImpl::precomputedQuadIndices,
-            .indexCount    = settings.vertexCount / 4u * 6u,
+            .vertexSpan    = settings.vertexSpan,
+            .indexSpan     = {RenderTargetImpl::precomputedQuadIndices, vertexCount / 4u * 6u},
             .primitiveType = settings.primitiveType,
         },
         states);
@@ -1151,15 +1146,15 @@ void RenderTarget::finishGPUCommands()
 
 
 ////////////////////////////////////////////////////////////
-template <bool TLocked>
-RenderTarget::WithRenderStatesContext<TLocked>::WithRenderStatesContext(RenderTarget& rt, const RenderStates& states) :
+RenderTarget::WithRenderStatesContext::WithRenderStatesContext(RenderTarget& rt, const RenderStates& states, const bool locked) :
     m_rt{&rt},
-    m_states{states}
+    m_states{states},
+    m_locked{locked}
 {
     if (m_rt->getAutoBatchMode() != AutoBatchMode::Disabled)
         m_rt->flushIfNeeded(m_states);
 
-    if constexpr (TLocked)
+    if (m_locked)
     {
         SFML_BASE_ASSERT(!m_rt->m_isStateLocked && "Cannot create a context while another is active");
         m_rt->m_isStateLocked = true;
@@ -1168,20 +1163,14 @@ RenderTarget::WithRenderStatesContext<TLocked>::WithRenderStatesContext(RenderTa
 
 
 ////////////////////////////////////////////////////////////
-template <bool TLocked>
-RenderTarget::WithRenderStatesContext<TLocked>::WithRenderStatesContext::~WithRenderStatesContext()
+RenderTarget::WithRenderStatesContext::WithRenderStatesContext::~WithRenderStatesContext()
 {
-    if constexpr (TLocked)
+    if (m_locked)
     {
         SFML_BASE_ASSERT(m_rt->m_isStateLocked && "Cannot destroy a context while no context is active");
         m_rt->m_isStateLocked = false;
     }
 }
-
-
-////////////////////////////////////////////////////////////
-template class RenderTarget::WithRenderStatesContext<true>;
-template class RenderTarget::WithRenderStatesContext<false>;
 
 
 ////////////////////////////////////////////////////////////

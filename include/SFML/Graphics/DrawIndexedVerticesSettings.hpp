@@ -10,8 +10,7 @@
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
-#include "SFML/Base/Builtin/Restrict.hpp"
-#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Span.hpp"
 
 
 namespace sf
@@ -22,11 +21,9 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] DrawIndexedVerticesSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    const Vertex* SFML_BASE_RESTRICT    vertexData;
-    base::SizeT                         vertexCount;
-    const IndexType* SFML_BASE_RESTRICT indexData;
-    base::SizeT                         indexCount;
-    PrimitiveType                       primitiveType;
+    base::Span<const Vertex>    vertexSpan;
+    base::Span<const IndexType> indexSpan;
+    PrimitiveType               primitiveType;
 };
 
 } // namespace sf

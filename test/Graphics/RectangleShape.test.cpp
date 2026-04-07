@@ -1,3 +1,5 @@
+#include "SystemUtil.hpp"
+
 #include "SFML/Graphics/RectangleShape.hpp"
 
 #include "SFML/Graphics/Color.hpp"
@@ -5,7 +7,6 @@
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
-#include "SystemUtil.hpp"
 
 TEST_CASE("[Graphics] sf::RectangleShape")
 {

@@ -1,3 +1,5 @@
+#include "SystemUtil.hpp"
+
 #include "SFML/System/Time.hpp"
 
 #include "SFML/System/TimeChronoUtil.hpp"
@@ -16,8 +18,6 @@
 #include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
 
 #include <Doctest.hpp>
-
-#include "SystemUtil.hpp"
 
 using namespace std::chrono_literals;
 

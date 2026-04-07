@@ -1,3 +1,5 @@
+#include "SystemUtil.hpp"
+
 #include "SFML/System/RectPacker.hpp"
 
 #include "SFML/System/Vec2Base.hpp"
@@ -5,8 +7,6 @@
 #include "SFML/Base/Optional.hpp"
 
 #include <Doctest.hpp>
-
-#include "SystemUtil.hpp"
 
 
 namespace
