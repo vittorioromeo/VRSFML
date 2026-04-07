@@ -166,10 +166,13 @@ namespace sf::priv
 template <typename TStorage>
 void DrawableBatchImpl<TStorage>::add(const DrawVerticesSettings& settings)
 {
-    const auto& [vertexData, vertexCount, type] = settings;
+    const auto& [vertexSpan, type] = settings;
 
-    if (vertexData == nullptr || vertexCount == 0u)
+    if (vertexSpan.isNullOrEmpty())
         return;
+
+    const auto* vertexData  = vertexSpan.data();
+    const auto  vertexCount = vertexSpan.size();
 
     IndexType   numTrianglesInStripOrFan = 0u; // Only used for triangle strips and triangle fans
     base::SizeT numIndicesToGenerate     = 0u;
@@ -237,10 +240,16 @@ void DrawableBatchImpl<TStorage>::add(const DrawVerticesSettings& settings)
 template <typename TStorage>
 void DrawableBatchImpl<TStorage>::add(const DrawIndexedVerticesSettings& settings)
 {
-    const auto& [vertexData, vertexCount, indexData, indexCount, type] = settings;
+    const auto& [vertexSpan, indexSpan, type] = settings;
 
-    if (vertexData == nullptr || vertexCount == 0u || indexData == nullptr || indexCount == 0u)
+    if (vertexSpan.isNullOrEmpty() || indexSpan.isNullOrEmpty())
         return;
+
+    const auto* vertexData  = vertexSpan.data();
+    const auto  vertexCount = vertexSpan.size();
+
+    const auto* indexData  = indexSpan.data();
+    const auto  indexCount = indexSpan.size();
 
     IndexType   numTrianglesInStripOrFan = 0u; // Only used for triangle strips and triangle fans
     base::SizeT numIndicesToGenerate     = 0u;

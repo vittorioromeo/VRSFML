@@ -1,6 +1,9 @@
 #include "SFML/Network/Packet.hpp"
 
 // Other 1st party headers
+#include "StringifyVectorUtil.hpp"
+#include "SystemUtil.hpp"
+
 #include "SFML/System/UnicodeString.hpp"
 
 #include "SFML/Base/Builtin/Strlen.hpp"
@@ -10,8 +13,6 @@
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
-#include "StringifyVectorUtil.hpp"
-#include "SystemUtil.hpp"
 
 #include <limits>
 #include <string>

@@ -2,6 +2,8 @@
 
 #ifdef SFML_SYSTEM_WINDOWS
 
+    #include "SystemUtil.hpp"
+
     #include "SFML/Window/WindowBase.hpp"
     #include "SFML/Window/WindowContext.hpp"
 
@@ -11,8 +13,6 @@
     #include "SFML/Base/Optional.hpp"
 
     #include <Doctest.hpp>
-
-    #include "SystemUtil.hpp"
 
 
 namespace

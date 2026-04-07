@@ -44,6 +44,7 @@
 #include "SFML/Graphics/BlendMode.hpp"
 #include "SFML/Graphics/CircleShapeData.hpp"
 #include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/DrawIndexedVerticesSettings.hpp"
 #include "SFML/Graphics/DrawTextureSettings.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
@@ -3238,11 +3239,9 @@ private:
         }
 
         m_rtGame.drawIndexedVertices(
-            {
-                .vertexData    = m_textVerticesBuffer.data(),
-                .vertexCount   = m_textVerticesBuffer.size(),
-                .indexData     = m_textIndicesBuffer.data(),
-                .indexCount    = m_textIndicesBuffer.size(),
+            sf::DrawIndexedVerticesSettings{
+                .vertexSpan    = m_textVerticesBuffer,
+                .indexSpan     = m_textIndicesBuffer,
                 .primitiveType = sf::PrimitiveType::Triangles,
             },
             {
@@ -4439,11 +4438,9 @@ private:
             sf::Transform::fromPosition(statsBorder.getGlobalTopLeft() + sf::Vec2f{4.f, 2.f}));
 
         m_rtGame.drawIndexedVertices(
-            {
-                .vertexData    = m_textVerticesBuffer.data(),
-                .vertexCount   = m_textVerticesBuffer.size(),
-                .indexData     = m_textIndicesBuffer.data(),
-                .indexCount    = m_textIndicesBuffer.size(),
+            sf::DrawIndexedVerticesSettings{
+                .vertexSpan    = m_textVerticesBuffer,
+                .indexSpan     = m_textIndicesBuffer,
                 .primitiveType = sf::PrimitiveType::Triangles,
             },
             {.view = m_worldView, .texture = &m_textureAtlas.getTexture()});
@@ -4488,11 +4485,9 @@ private:
             sf::Transform::fromPosition(statsBorder.getGlobalTopLeft() + sf::Vec2f{4.f, 2.f}));
 
         m_rtGame.drawIndexedVertices(
-            {
-                .vertexData    = m_textVerticesBuffer.data(),
-                .vertexCount   = m_textVerticesBuffer.size(),
-                .indexData     = m_textIndicesBuffer.data(),
-                .indexCount    = m_textIndicesBuffer.size(),
+            sf::DrawIndexedVerticesSettings{
+                .vertexSpan    = m_textVerticesBuffer,
+                .indexSpan     = m_textIndicesBuffer,
                 .primitiveType = sf::PrimitiveType::Triangles,
             },
             {.view = m_worldView, .texture = &m_textureAtlas.getTexture()});

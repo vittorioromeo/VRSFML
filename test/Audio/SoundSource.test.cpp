@@ -1,3 +1,6 @@
+#include "AudioUtil.hpp"
+#include "SystemUtil.hpp"
+
 #include "SFML/Audio/AudioContext.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/Priv/MiniaudioSoundSource.hpp"
@@ -18,9 +21,6 @@
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 
 #include <Doctest.hpp>
-
-#include "AudioUtil.hpp"
-#include "SystemUtil.hpp"
 
 
 #define SFML_TEST_CHECK_DEFAULT_VALUES(xSoundSource)                      \

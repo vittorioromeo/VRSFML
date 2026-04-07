@@ -9,8 +9,7 @@
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
-#include "SFML/Base/Builtin/Restrict.hpp"
-#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Span.hpp"
 
 
 namespace sf
@@ -21,9 +20,8 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] DrawQuadsSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    const Vertex* SFML_BASE_RESTRICT vertexData;
-    base::SizeT                      vertexCount;
-    PrimitiveType                    primitiveType;
+    base::Span<const Vertex> vertexSpan;
+    PrimitiveType            primitiveType;
 };
 
 } // namespace sf

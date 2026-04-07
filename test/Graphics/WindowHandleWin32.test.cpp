@@ -2,6 +2,8 @@
 
 #ifdef SFML_SYSTEM_WINDOWS
 // Other 1st party headers
+    #include "SystemUtil.hpp"
+
     #include "SFML/Graphics/RenderWindow.hpp"
 
     #include "SFML/Window/Window.hpp"
@@ -14,8 +16,6 @@
     #include "SFML/Base/Optional.hpp"
 
     #include <Doctest.hpp>
-
-    #include "SystemUtil.hpp"
 
 
 namespace

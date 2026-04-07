@@ -1,3 +1,6 @@
+#include "GraphicsUtil.hpp"
+#include "StringifyStdStringUtil.hpp"
+
 #include "SFML/System/UnicodeString.hpp"
 
 #include "SFML/System/UnicodeStringUtfUtils.hpp"
@@ -10,9 +13,6 @@
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <Doctest.hpp>
-
-#include "GraphicsUtil.hpp"
-#include "StringifyStdStringUtil.hpp"
 
 #include <ios>
 #include <sstream>
@@ -27,9 +27,11 @@ namespace
 // and elsewhere where it is 32. Otherwise the tests would only work on
 // one OS or the other.
 template <typename T>
-auto selectAnsi(const std::basic_string<T>& stringWin, const std::basic_string<T>& stringUnix)
+auto selectAnsi([[maybe_unused]] const std::basic_string<T>& stringWin,
+                [[maybe_unused]] const std::basic_string<T>& stringUnix)
 {
     SFML_BASE_ASSERT(stringWin != stringUnix && "Invalid to select between identical inputs");
+
 #if defined(_WIN32) // TODO P1: fails under CLANG64 env
     return stringWin;
 #else
@@ -45,6 +47,7 @@ template <typename T>
 auto selectWide(const std::basic_string<T>& string16, const std::basic_string<T>& string32)
 {
     SFML_BASE_ASSERT(string16 != string32 && "Invalid to select between identical inputs");
+
     if constexpr (sizeof(wchar_t) == 2)
         return string16;
     else

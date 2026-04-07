@@ -1,3 +1,5 @@
+#include "SystemUtil.hpp"
+
 #include "SFML/Window/Event.hpp"
 
 #include "SFML/Window/Joystick.hpp"
@@ -22,8 +24,6 @@
 #include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
 
 #include <Doctest.hpp>
-
-#include "SystemUtil.hpp"
 
 
 namespace

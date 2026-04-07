@@ -1,11 +1,11 @@
+#include "StringifyStringViewUtil.hpp"
+
 #include "SFML/Base/ToChars.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/StringView.hpp"
 
 #include <Doctest.hpp>
-
-#include "StringifyStringViewUtil.hpp"
 
 #include <limits>
 

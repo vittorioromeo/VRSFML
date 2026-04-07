@@ -51,12 +51,11 @@ private:
         thisPtr->m_sfPrivLifetimeDependant##dependantType.update(                                    \
             dependantMemberPtr == nullptr ? nullptr : &dependantMemberPtr->m_sfPrivLifetimeDependee##dependeeType)
 
-    #define SFML_LIFETIME_DEPENDANT_RETURN_IF_TESTING_ERROR(dependeeType) \
-        do                                                                \
-        {                                                                 \
-            if (m_sfPrivLifetimeDependant##dependeeType                   \
-                    .isTestingModeErrorTriggered())                       \
-                return;                                                   \
+    #define SFML_LIFETIME_DEPENDANT_RETURN_IF_TESTING_ERROR(dependeeType)              \
+        do                                                                             \
+        {                                                                              \
+            if (m_sfPrivLifetimeDependant##dependeeType.isTestingModeErrorTriggered()) \
+                return;                                                                \
         } while (false)
 // NOLINTEND(bugprone-macro-parentheses)
 

@@ -3,12 +3,12 @@
 #include "SFML/Window/WindowContext.hpp"
 
 // Other 1st party headers
+#include "SystemUtil.hpp"
+#include "WindowUtil.hpp"
+
 #include "SFML/System/UnicodeString.hpp"
 
 #include <Doctest.hpp>
-
-#include "SystemUtil.hpp"
-#include "WindowUtil.hpp"
 
 #include <string>
 

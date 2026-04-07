@@ -1,3 +1,6 @@
+#include "GraphicsUtil.hpp"
+#include "WindowUtil.hpp"
+
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
 #include "SFML/Graphics/RectangleShape.hpp"
@@ -9,9 +12,6 @@
 #include "SFML/Window/WindowContext.hpp"
 
 #include <Doctest.hpp>
-
-#include "GraphicsUtil.hpp"
-#include "WindowUtil.hpp"
 
 TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
 {

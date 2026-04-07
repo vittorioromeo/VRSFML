@@ -1,3 +1,6 @@
+#include "StringifyIpAddressUtil.hpp"
+#include "StringifySfBaseStringUtil.hpp"
+
 #include "SFML/Network/Http.hpp"
 
 #include "SFML/Base/String.hpp"
@@ -6,8 +9,6 @@
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
-#include "StringifyIpAddressUtil.hpp"
-#include "StringifySfBaseStringUtil.hpp"
 
 
 TEST_CASE("[Network] sf::Http")

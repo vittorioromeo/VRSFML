@@ -1,3 +1,5 @@
+#include "GraphicsUtil.hpp"
+
 #include "SFML/Graphics/Color.hpp"
 
 #include "SFML/Base/Vector.hpp"
@@ -5,7 +7,6 @@
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
-#include "GraphicsUtil.hpp"
 
 
 TEST_CASE("[Graphics] sf::Color")

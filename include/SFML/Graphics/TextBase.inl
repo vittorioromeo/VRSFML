@@ -7,10 +7,10 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/DrawQuadsSettings.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
-#include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/TextBase.hpp"
 #include "SFML/Graphics/TextUtils.hpp"
 
@@ -334,9 +334,8 @@ void TextBase<TDerived>::draw(RenderTarget& target, RenderStates states) const
     ensureGeometryUpdate();
 
     target.drawQuads(
-        {
-            .vertexData    = m_vertices.data(),
-            .vertexCount   = m_vertices.size(),
+        sf::DrawQuadsSettings{
+            .vertexSpan    = m_vertices,
             .primitiveType = PrimitiveType::Triangles,
         },
         states);

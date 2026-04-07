@@ -11,8 +11,8 @@
 #include "SFML/Graphics/Glyph.hpp"
 #include "SFML/Graphics/GlyphMapping.hpp"
 #include "SFML/Graphics/TextBase.hpp"
-#include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/TextBase.inl" // IWYU pragma: keep
+#include "SFML/Graphics/Texture.hpp"
 
 #include "SFML/System/LifetimeDependant.hpp"
 
@@ -28,7 +28,10 @@ template class sf::TextBase<sf::GlyphMappedText>;
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-GlyphMappedText::GlyphMappedText(const FontFace& fontFace, const Texture& texture, const GlyphMapping& glyphMapping, const Data& data) :
+GlyphMappedText::GlyphMappedText(const FontFace&     fontFace,
+                                 const Texture&      texture,
+                                 const GlyphMapping& glyphMapping,
+                                 const Data&         data) :
     TextBase(data),
     m_fontFace(&fontFace),
     m_texture(&texture),
@@ -103,7 +106,10 @@ float GlyphMappedText::getKerning(const char32_t first, const char32_t second, c
 
 
 ////////////////////////////////////////////////////////////
-const Glyph& GlyphMappedText::getGlyph(const char32_t codePoint, const unsigned int characterSize, const bool bold, const float outlineThickness) const
+const Glyph& GlyphMappedText::getGlyph(const char32_t     codePoint,
+                                       const unsigned int characterSize,
+                                       const bool         bold,
+                                       const float        outlineThickness) const
 {
     SFML_BASE_ASSERT(m_glyphMapping != nullptr);
     return m_glyphMapping->getGlyph(codePoint, characterSize, bold, outlineThickness);
@@ -111,7 +117,11 @@ const Glyph& GlyphMappedText::getGlyph(const char32_t codePoint, const unsigned 
 
 
 ////////////////////////////////////////////////////////////
-GlyphMapping::GlyphPair GlyphMappedText::getFillAndOutlineGlyph(const char32_t codePoint, const unsigned int characterSize, const bool bold, const float outlineThickness) const
+GlyphMapping::GlyphPair GlyphMappedText::getFillAndOutlineGlyph(
+    const char32_t     codePoint,
+    const unsigned int characterSize,
+    const bool         bold,
+    const float        outlineThickness) const
 {
     SFML_BASE_ASSERT(m_glyphMapping != nullptr);
     return m_glyphMapping->getFillAndOutlineGlyph(codePoint, characterSize, bold, outlineThickness);

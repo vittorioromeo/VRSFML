@@ -1,3 +1,5 @@
+#include "SystemUtil.hpp"
+
 #include "SFML/System/Vec3.hpp"
 
 #include "SFML/Base/Trait/IsAggregate.hpp"
@@ -13,8 +15,6 @@
 #include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
 
 #include <Doctest.hpp>
-
-#include "SystemUtil.hpp"
 
 TEMPLATE_TEST_CASE("[System] sf::Vec3", "", int, float)
 {

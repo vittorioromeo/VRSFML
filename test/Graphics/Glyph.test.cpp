@@ -1,9 +1,10 @@
+#include "GraphicsUtil.hpp"
+
 #include "SFML/Graphics/Glyph.hpp"
 
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
-#include "GraphicsUtil.hpp"
 
 TEST_CASE("[Graphics] sf::Glyph")
 {

@@ -360,8 +360,8 @@ struct [[nodiscard]] ImGuiContext::Impl
 {
     ::ImGuiContext* imContext{::ImGui::CreateContext()};
 
-    bool windowHasFocus{false};
-    bool mouseMoved{false};
+    bool                 windowHasFocus{false};
+    bool                 mouseMoved{false};
     base::Array<bool, 3> mousePressed{};
 
     ImGuiMouseCursor lastCursor{ImGuiMouseCursor_COUNT};
@@ -762,7 +762,8 @@ struct [[nodiscard]] ImGuiContext::Impl
 
             for (unsigned int i = 0; i < 3; ++i)
             {
-                const bool isDown = touchDown[i] || mousePressed[i] || Mouse::isButtonPressed(static_cast<Mouse::Button>(i));
+                const bool isDown = touchDown[i] || mousePressed[i] ||
+                                    Mouse::isButtonPressed(static_cast<Mouse::Button>(i));
                 io.AddMouseButtonEvent(static_cast<int>(i), isDown);
 
                 mousePressed[i] = false;

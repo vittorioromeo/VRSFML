@@ -1,3 +1,5 @@
+#include "GraphicsUtil.hpp"
+
 #include "SFML/Graphics/RenderStates.hpp"
 
 #include "SFML/Graphics/BlendMode.hpp"
@@ -15,8 +17,6 @@
 #include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
 
 #include <Doctest.hpp>
-
-#include "GraphicsUtil.hpp"
 
 TEST_CASE("[Graphics] sf::RenderStates")
 {

@@ -1,3 +1,5 @@
+#include "SystemUtil.hpp"
+
 #include "SFML/Graphics/CircleShape.hpp"
 
 #include "SFML/Base/SizeT.hpp"
@@ -5,7 +7,6 @@
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
-#include "SystemUtil.hpp"
 
 TEST_CASE("[Graphics] sf::CircleShape")
 {

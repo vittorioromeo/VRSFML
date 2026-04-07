@@ -1,3 +1,5 @@
+#include "SystemUtil.hpp"
+
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/System/Angle.hpp"
@@ -17,8 +19,6 @@
 #include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
 
 #include <Doctest.hpp>
-
-#include "SystemUtil.hpp"
 
 using namespace sf::Literals;
 
