@@ -15,7 +15,6 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/StackTrace.hpp"
 #include "SFML/Base/String.hpp" // IWYU pragma: keep
 #include "SFML/Base/StringStreamOp.hpp"
 #include "SFML/Base/StringView.hpp"
@@ -34,6 +33,79 @@
 #include <sstream>
 #include <string>
 #include <string_view>
+
+// Note: `::sf::base::String` is intentionally absent from the macros below. It is handled by dedicated non-template
+// `operator<<` overloads on the output stream classes, which avoids an ambiguity with the free `operator<<` from
+// `StringStreamOp.hpp` when downstream code includes both headers.
+
+// clang-format off
+#define SFML_BASE_OUT_STREAMABLE_TYPES_X(x) \
+    x(bool)                    \
+                               \
+    x(char)                    \
+    x(unsigned char)           \
+                               \
+    x(short)                   \
+    x(unsigned short)          \
+                               \
+    x(int)                     \
+    x(unsigned int)            \
+                               \
+    x(long)                    \
+    x(unsigned long)           \
+                               \
+    x(long long)               \
+    x(unsigned long long)      \
+                               \
+    x(float)                   \
+    x(double)                  \
+    x(long double)             \
+                               \
+    x(short*)                  \
+    x(int*)                    \
+    x(void*)                   \
+                               \
+    x(const char*)             \
+                               \
+    x(::std::string_view)      \
+    x(::std::string)           \
+    x(::std::filesystem::path) \
+                               \
+    x(::sf::base::StringView)  \
+    x(::sf::Path)
+// clang-format on
+
+
+// clang-format off
+#define SFML_BASE_IN_STREAMABLE_TYPES_X(x) \
+    x(bool)                    \
+                               \
+    x(char)                    \
+    x(unsigned char)           \
+                               \
+    x(short)                   \
+    x(unsigned short)          \
+                               \
+    x(int)                     \
+    x(unsigned int)            \
+                               \
+    x(long)                    \
+    x(unsigned long)           \
+                               \
+    x(long long)               \
+    x(unsigned long long)      \
+                               \
+    x(float)                   \
+    x(double)                  \
+    x(long double)             \
+                               \
+    x(void*)                   \
+                               \
+    x(::std::string)           \
+    x(::std::filesystem::path) \
+                               \
+    x(::sf::base::String)
+// clang-format on
 
 
 namespace
@@ -149,6 +221,14 @@ IOStreamOutput& IOStreamOutput::operator<<(const char* value)
 
 
 ////////////////////////////////////////////////////////////
+IOStreamOutput& IOStreamOutput::operator<<(const base::String& value)
+{
+    m_impl->stream.write(value.data(), static_cast<std::streamsize>(value.size()));
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
 IOStreamOutput& IOStreamOutput::operator<<(FlushType)
 {
     m_impl->stream << std::flush;
@@ -182,22 +262,9 @@ IOStreamOutput& IOStreamOutput::operator<<(const T& value)
 
 
 ////////////////////////////////////////////////////////////
-template IOStreamOutput& IOStreamOutput::operator<< <base::String>(const base::String&);
-template IOStreamOutput& IOStreamOutput::operator<< <base::StringView>(const base::StringView&);
-template IOStreamOutput& IOStreamOutput::operator<< <bool>(const bool&);
-template IOStreamOutput& IOStreamOutput::operator<< <char>(const char&);
-template IOStreamOutput& IOStreamOutput::operator<< <const char* const>(const char* const&);
-template IOStreamOutput& IOStreamOutput::operator<< <float>(const float&);
-template IOStreamOutput& IOStreamOutput::operator<< <int>(const int&);
-template IOStreamOutput& IOStreamOutput::operator<< <long>(const long&);
-template IOStreamOutput& IOStreamOutput::operator<< <Path>(const Path&);
-template IOStreamOutput& IOStreamOutput::operator<< <short*>(short* const&);
-template IOStreamOutput& IOStreamOutput::operator<< <std::string_view>(const std::string_view&);
-template IOStreamOutput& IOStreamOutput::operator<< <std::string>(const std::string&);
-template IOStreamOutput& IOStreamOutput::operator<< <unsigned int>(const unsigned int&);
-template IOStreamOutput& IOStreamOutput::operator<< <unsigned long long>(const unsigned long long&);
-template IOStreamOutput& IOStreamOutput::operator<< <unsigned long>(const unsigned long&);
-template IOStreamOutput& IOStreamOutput::operator<< <unsigned short>(const unsigned short&);
+#define x(type) template IOStreamOutput& IOStreamOutput::operator<< <type>(type const&);
+SFML_BASE_OUT_STREAMABLE_TYPES_X(x)
+#undef x
 
 
 ////////////////////////////////////////////////////////////
@@ -255,17 +322,9 @@ IOStreamInput& IOStreamInput::operator>>(T& value)
 
 
 ////////////////////////////////////////////////////////////
-template IOStreamInput& IOStreamInput::operator>> <bool>(bool&);
-template IOStreamInput& IOStreamInput::operator>> <char>(char&);
-template IOStreamInput& IOStreamInput::operator>> <float>(float&);
-template IOStreamInput& IOStreamInput::operator>> <int>(int&);
-template IOStreamInput& IOStreamInput::operator>> <long>(long&);
-template IOStreamInput& IOStreamInput::operator>> <std::string>(std::string&);
-template IOStreamInput& IOStreamInput::operator>> <base::String>(base::String&);
-template IOStreamInput& IOStreamInput::operator>> <unsigned int>(unsigned int&);
-template IOStreamInput& IOStreamInput::operator>> <unsigned long long>(unsigned long long&);
-template IOStreamInput& IOStreamInput::operator>> <unsigned long>(unsigned long&);
-template IOStreamInput& IOStreamInput::operator>> <unsigned short>(unsigned short&);
+#define x(type) template IOStreamInput& IOStreamInput::operator>> <type>(type&); // NOLINT(bugprone-macro-parentheses)
+SFML_BASE_IN_STREAMABLE_TYPES_X(x)
+#undef x
 
 
 ////////////////////////////////////////////////////////////
@@ -521,25 +580,19 @@ OutFileStream& OutFileStream::operator<<(const T& value)
     return *this;
 }
 
+
 ////////////////////////////////////////////////////////////
-template OutFileStream& OutFileStream::operator<< <base::String>(const base::String&);
-template OutFileStream& OutFileStream::operator<< <base::StringView>(const base::StringView&);
-template OutFileStream& OutFileStream::operator<< <bool>(const bool&);
-template OutFileStream& OutFileStream::operator<< <char>(const char&);
-template OutFileStream& OutFileStream::operator<< <const char* const>(const char* const&);
-template OutFileStream& OutFileStream::operator<< <float>(const float&);
-template OutFileStream& OutFileStream::operator<< <int>(const int&);
-template OutFileStream& OutFileStream::operator<< <long>(const long&);
-template OutFileStream& OutFileStream::operator<< <Path>(const Path&);
-template OutFileStream& OutFileStream::operator<< <short*>(short* const&);
-template OutFileStream& OutFileStream::operator<< <std::string_view>(const std::string_view&);
-template OutFileStream& OutFileStream::operator<< <std::string>(const std::string&);
-template OutFileStream& OutFileStream::operator<< <unsigned int>(const unsigned int&);
-template OutFileStream& OutFileStream::operator<< <unsigned long long>(const unsigned long long&);
-template OutFileStream& OutFileStream::operator<< <unsigned long>(const unsigned long&);
-template OutFileStream& OutFileStream::operator<< <unsigned short>(const unsigned short&);
-template OutFileStream& OutFileStream::operator<< <void*>(void* const&);
-template OutFileStream& OutFileStream::operator<< <std::filesystem::path>(const std::filesystem::path&);
+#define x(type) template OutFileStream& OutFileStream::operator<< <type>(type const&);
+SFML_BASE_OUT_STREAMABLE_TYPES_X(x)
+#undef x
+
+
+////////////////////////////////////////////////////////////
+OutFileStream& OutFileStream::operator<<(const base::String& value)
+{
+    m_impl->ofs.write(value.data(), static_cast<std::streamsize>(value.size()));
+    return *this;
+}
 
 
 ////////////////////////////////////////////////////////////
@@ -707,24 +760,17 @@ OutStringStream& OutStringStream::operator<<(const T& value)
 
 
 ////////////////////////////////////////////////////////////
-template OutStringStream& OutStringStream::operator<< <base::String>(const base::String&);
-template OutStringStream& OutStringStream::operator<< <base::StringView>(const base::StringView&);
-template OutStringStream& OutStringStream::operator<< <bool>(const bool&);
-template OutStringStream& OutStringStream::operator<< <char>(const char&);
-template OutStringStream& OutStringStream::operator<< <const char*>(const char* const&);
-template OutStringStream& OutStringStream::operator<< <float>(const float&);
-template OutStringStream& OutStringStream::operator<< <int>(const int&);
-template OutStringStream& OutStringStream::operator<< <long>(const long&);
-template OutStringStream& OutStringStream::operator<< <Path>(const Path&);
-template OutStringStream& OutStringStream::operator<< <short*>(short* const&);
-template OutStringStream& OutStringStream::operator<< <std::string_view>(const std::string_view&);
-template OutStringStream& OutStringStream::operator<< <std::string>(const std::string&);
-template OutStringStream& OutStringStream::operator<< <unsigned int>(const unsigned int&);
-template OutStringStream& OutStringStream::operator<< <unsigned long long>(const unsigned long long&);
-template OutStringStream& OutStringStream::operator<< <unsigned long>(const unsigned long&);
-template OutStringStream& OutStringStream::operator<< <unsigned short>(const unsigned short&);
-template OutStringStream& OutStringStream::operator<< <void*>(void* const&);
-template OutStringStream& OutStringStream::operator<< <std::filesystem::path>(const std::filesystem::path&);
+#define x(type) template OutStringStream& OutStringStream::operator<< <type>(type const&);
+SFML_BASE_OUT_STREAMABLE_TYPES_X(x)
+#undef x
+
+
+////////////////////////////////////////////////////////////
+OutStringStream& OutStringStream::operator<<(const base::String& value)
+{
+    m_impl->oss.write(value.data(), static_cast<std::streamsize>(value.size()));
+    return *this;
+}
 
 
 ////////////////////////////////////////////////////////////
@@ -892,19 +938,9 @@ InFileStream& InFileStream::operator>>(T& value)
 
 
 //////////////////////////////////////////////////////////////
-template InFileStream& InFileStream::operator>> <bool>(bool&);
-template InFileStream& InFileStream::operator>> <char>(char&);
-template InFileStream& InFileStream::operator>> <float>(float&);
-template InFileStream& InFileStream::operator>> <int>(int&);
-template InFileStream& InFileStream::operator>> <long>(long&);
-template InFileStream& InFileStream::operator>> <short>(short&);
-template InFileStream& InFileStream::operator>> <std::string>(std::string&);
-template InFileStream& InFileStream::operator>> <unsigned int>(unsigned int&);
-template InFileStream& InFileStream::operator>> <unsigned long long>(unsigned long long&);
-template InFileStream& InFileStream::operator>> <unsigned long>(unsigned long&);
-template InFileStream& InFileStream::operator>> <unsigned short>(unsigned short&);
-template InFileStream& InFileStream::operator>> <void*>(void*&);
-template InFileStream& InFileStream::operator>> <std::filesystem::path>(std::filesystem::path&);
+#define x(type) template InFileStream& InFileStream::operator>> <type>(type&); // NOLINT(bugprone-macro-parentheses)
+SFML_BASE_IN_STREAMABLE_TYPES_X(x)
+#undef x
 
 
 ////////////////////////////////////////////////////////////
@@ -1042,19 +1078,9 @@ InStringStream& InStringStream::operator>>(base::String& value)
 
 
 //////////////////////////////////////////////////////////////
-template InStringStream& InStringStream::operator>> <bool>(bool&);
-template InStringStream& InStringStream::operator>> <char>(char&);
-template InStringStream& InStringStream::operator>> <float>(float&);
-template InStringStream& InStringStream::operator>> <int>(int&);
-template InStringStream& InStringStream::operator>> <long>(long&);
-template InStringStream& InStringStream::operator>> <short>(short&);
-template InStringStream& InStringStream::operator>> <std::string>(std::string&);
-template InStringStream& InStringStream::operator>> <unsigned int>(unsigned int&);
-template InStringStream& InStringStream::operator>> <unsigned long long>(unsigned long long&);
-template InStringStream& InStringStream::operator>> <unsigned long>(unsigned long&);
-template InStringStream& InStringStream::operator>> <unsigned short>(unsigned short&);
-template InStringStream& InStringStream::operator>> <void*>(void*&);
-template InStringStream& InStringStream::operator>> <std::filesystem::path>(std::filesystem::path&);
+#define x(type) template InStringStream& InStringStream::operator>> <type>(type&); // NOLINT(bugprone-macro-parentheses)
+SFML_BASE_IN_STREAMABLE_TYPES_X(x)
+#undef x
 
 
 ////////////////////////////////////////////////////////////

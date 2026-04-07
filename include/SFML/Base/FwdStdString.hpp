@@ -4,16 +4,24 @@
 
 
 ////////////////////////////////////////////////////////////
-#if __has_include(<bits/stringfwd.h>)
+#ifdef __CLANGD__
 
-    #include <bits/stringfwd.h>
-
-#elif __has_include(<__fwd/string.h>)
-
-    #include <__fwd/string.h>
+    #include <string> // IWYU pragma: export
 
 #else
 
-    #include <string>
+    #if __has_include(<bits/stringfwd.h>)
+
+        #include <bits/stringfwd.h> // IWYU pragma: export
+
+    #elif __has_include(<__fwd/string.h>)
+
+        #include <__fwd/string.h> // IWYU pragma: export
+
+    #else
+
+        #include <string> // IWYU pragma: export
+
+    #endif
 
 #endif
