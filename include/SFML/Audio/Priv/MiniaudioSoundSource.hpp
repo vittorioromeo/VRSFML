@@ -344,14 +344,14 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Set whether or not the sound should loop after reaching the end
     ///
-    /// If set, the sound will restart from beginning after
-    /// reaching the end and so on, until it is stopped or
-    /// setLooping(false) is called.
-    /// The default looping state for sound is false.
+    /// If set, the sound will restart from the beginning after
+    /// reaching the end, and so on, until it is stopped or
+    /// `setLooping(false)` is called.
+    /// The default looping state for a sound is `false`.
     ///
-    /// \param loop True to play in loop, false to play once
+    /// \param loop `true` to play in a loop, `false` to play once
     ///
-    /// \see isLooping
+    /// \see `isLooping`
     ///
     ////////////////////////////////////////////////////////////
     void setLooping(bool loop);
@@ -563,50 +563,86 @@ public:
     [[nodiscard]] Time getPlayingOffset() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Start or resume playing the sound source
+    /// \brief Resume playback of the sound source from its current position
     ///
-    /// This function starts the source if it was stopped, resumes
-    /// it if it was paused, and restarts it from the beginning if
-    /// it was already playing.
+    /// If the source is already playing this is a no-op (and
+    /// returns `true`). Unlike `play`, this does not seek back
+    /// to any position: it simply unpauses the source.
     ///
-    /// \see `pause`, `stop`
+    /// \return `true` on success, `false` on failure
+    ///
+    /// \see `pause`, `play`, `stop`
     ///
     ////////////////////////////////////////////////////////////
     bool resume();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Pause the sound source
+    /// \brief Pause playback of the sound source
     ///
-    /// This function pauses the source if it was playing,
-    /// otherwise (source already paused or stopped) it has no effect.
+    /// Pauses the source if it was playing, otherwise (source
+    /// already paused or not started) does nothing. The current
+    /// playing offset is preserved, so a subsequent `resume()`
+    /// will continue from where it stopped.
     ///
-    /// \see `play`, `stop`
+    /// \return `true` on success, `false` on failure
+    ///
+    /// \see `resume`, `play`, `stop`
     ///
     ////////////////////////////////////////////////////////////
     bool pause();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the current status of the sound (stopped, paused, playing)
+    /// \brief Check whether the sound source is currently playing
     ///
-    /// \return Current status of the sound
+    /// \return `true` if the source is currently playing audio,
+    ///         `false` if it is paused or stopped
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isPlaying() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Start (or restart) playback at the given offset
+    ///
+    /// Equivalent to `setPlayingOffset(playingOffset); resume();`.
+    /// Calling `play()` with the default argument (`Time{}`)
+    /// rewinds the source to the beginning before resuming. To
+    /// continue from the current position without rewinding, use
+    /// `resume()` instead.
+    ///
+    /// \param playingOffset Position to start playback from (default: beginning)
+    ///
+    /// \return `true` on success, `false` on failure
+    ///
+    /// \see `resume`, `pause`, `stop`
     ///
     ////////////////////////////////////////////////////////////
     bool play(Time playingOffset = {});
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Stop playback and rewind to the beginning
+    ///
+    /// Equivalent to `setPlayingOffset(Time{}); pause();`. After
+    /// this call, `isPlaying()` returns `false` and the next
+    /// `play()` or `resume()` call will start from the beginning.
+    ///
+    /// \return `true` on success, `false` on failure
+    ///
+    /// \see `play`, `pause`, `resume`
     ///
     ////////////////////////////////////////////////////////////
     bool stop();
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Apply a complete `AudioSettings` snapshot to this source
+    ///
+    /// Overwrites every property exposed by `AudioSettings`
+    /// (volume, pitch, pan, position, looping, etc.) in one
+    /// shot. This is the recommended way to push a serialized
+    /// or pre-configured state onto a sound source.
+    ///
+    /// \param settings Settings to apply
+    ///
+    /// \see `sf::AudioSettings`
     ///
     ////////////////////////////////////////////////////////////
     void applyAudioSettings(const AudioSettings& settings);
@@ -643,14 +679,19 @@ private:
 /// \class sf::priv::MiniaudioSoundSource
 /// \ingroup audio
 ///
-/// `sf::priv::MiniaudioSoundSource` is not meant to be used directly, it
-/// only serves as a common base for all audio objects
-/// that can live in the audio environment.
+/// `sf::priv::MiniaudioSoundSource` is not meant to be used directly:
+/// it serves as the common base class for all audio objects
+/// that can live in the audio environment, providing the
+/// shared playback control interface (`play`/`pause`/`stop`/
+/// `resume`) and the per-source spatialization parameters
+/// (pitch, volume, pan, position, direction, velocity,
+/// attenuation, cone, Doppler, etc.).
 ///
-/// It defines several properties for the sound: pitch,
-/// volume, position, attenuation, etc. All of them can be
-/// changed at any time with no impact on performances.
+/// All getters and setters can be called at any time without
+/// having to stop or restart the source. Bulk configuration
+/// can be done in one shot via `applyAudioSettings` and the
+/// `sf::AudioSettings` aggregate.
 ///
-/// \see `sf::Sound`, `sf::SoundStream`
+/// \see `sf::Sound`, `sf::SoundStream`, `sf::Music`, `sf::AudioSettings`
 ///
 ////////////////////////////////////////////////////////////

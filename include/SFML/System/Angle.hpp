@@ -27,8 +27,9 @@ namespace sf
 /// \brief Represents an angle value.
 ///
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] Angle
+class [[nodiscard]] Angle
 {
+public:
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
@@ -507,30 +508,36 @@ struct [[nodiscard]] Angle
 
 
     ////////////////////////////////////////////////////////////
+    // Member data
+    ////////////////////////////////////////////////////////////
+    float radians{0.f}; //!< Angle value stored as radians
+
+
+private:
+    ////////////////////////////////////////////////////////////
+    friend constexpr Angle degrees(float angle);
+    friend constexpr Angle radians(float angle);
+
+
+    ////////////////////////////////////////////////////////////
     /// \brief Construct from a number of radians
     ///
-    /// This function is internal. To construct angle values,
-    /// use `sf::radians` or `sf::degrees` instead.
+    /// This constructor is for internal use. To construct angle values,
+    /// use the `sf::radians` or `sf::degrees` free functions instead.
     ///
-    /// \param radians Angle in radians
+    /// \param theRadians Angle in radians
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] constexpr explicit Angle(const float theRadians) :
         radians{theRadians}
     {
     }
-
-
-    ////////////////////////////////////////////////////////////
-    // Member data
-    ////////////////////////////////////////////////////////////
-    float radians{0.f}; //!< Angle value stored as radians
 };
 
 
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(readability-identifier-naming)
-inline constexpr Angle Angle::Zero{}; //!< Predefined 0 degree angle value
+inline constexpr Angle Angle::Zero{}; //!< Predefined 0 degree angle valuep
 
 
 ////////////////////////////////////////////////////////////

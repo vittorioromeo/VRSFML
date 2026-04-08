@@ -98,7 +98,7 @@ struct VertexSpanImpl : base::Span<T>
     ///
     /// \return The (min x, min y) of this vertex span.
     ///
-    ////////////////////////////////////////////////////////////D
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2f getTopLeft() const noexcept
     {
         return VertexUtils::getTopLeft(this->theData, this->theSize);
@@ -161,10 +161,21 @@ using ConstVertexSpan = priv::VertexSpanImpl<const Vertex>;
 /// \struct sf::VertexSpan
 /// \ingroup graphics
 ///
-/// The `sf::VertexSpan` class is a refinement of `base::Span`
-/// that provides additional functionality for working with
-/// vertex data.
+/// `sf::VertexSpan` is a thin refinement of `base::Span<Vertex>`
+/// that adds vertex-specific helpers such as bounding box and
+/// extrema queries (`getGlobalBounds`, `getTopLeft`,
+/// `getBottomRight`, ...).
 ///
-/// \see `sf::Vertex`, `sf::base::Span`
+/// `sf::ConstVertexSpan` is the immutable equivalent
+/// (`base::Span<const Vertex>`) and exposes the same query API.
+/// A mutable `VertexSpan` implicitly converts to a
+/// `ConstVertexSpan`.
+///
+/// `VertexSpan` is the return type of the stateless draw paths
+/// in `sf::RenderTarget` and `sf::DrawableBatch`. It is meant
+/// for short-term use only -- the underlying storage may be
+/// invalidated by the next batch flush or vertex append.
+///
+/// \see `sf::Vertex`, `sf::base::Span`, `sf::VertexUtils`
 ///
 ////////////////////////////////////////////////////////////

@@ -166,7 +166,7 @@ void Main::drawMinimap(bool               back,
     const sf::RoundedRectangleShapeData minimapBorder{
         .position         = minimapPos,
         .fillColor        = sf::Color::Transparent,
-        .outlineColor     = sf::Color::whiteMask(static_cast<U8>(shouldDrawUIAlpha * 0.75f)),
+        .outlineColor     = sf::Color::whiteWithAlpha(static_cast<U8>(shouldDrawUIAlpha * 0.75f)),
         .outlineThickness = 4.f,
         .size             = {mapLimit / minimapScale, minimapSize.y},
         .cornerRadius     = 8.f,
@@ -221,7 +221,8 @@ void Main::drawMinimap(bool               back,
 
     if (!back)
     {
-        rt.draw(sf::RectangleShapeData{.fillColor = sf::Color::blackMask(shouldDrawUIAlpha), .size = boundaries * hudScale},
+        rt.draw(sf::RectangleShapeData{.fillColor = sf::Color::blackWithAlpha(shouldDrawUIAlpha),
+                                       .size      = boundaries * hudScale},
                 {.view = minimapView});
 
         rt.draw(txBackgroundChunk,
@@ -233,7 +234,7 @@ void Main::drawMinimap(bool               back,
         rt.draw(txDrawings,
                 {.scale       = {hudScale, hudScale},
                  .textureRect = {{0.f, 0.f}, backgroundRectSize},
-                 .color = sf::Color::whiteMask(sf::base::min(shouldDrawUIAlpha, static_cast<sf::base::U8>(215u)))},
+                 .color = sf::Color::whiteWithAlpha(sf::base::min(shouldDrawUIAlpha, static_cast<sf::base::U8>(215u)))},
                 {.view = minimapView, .shader = &shader});
 
         if (shouldDrawUIAlpha > 200u)
@@ -276,7 +277,7 @@ void Main::drawSplashScreen(sf::RenderTarget& rt, const sf::View& view, const sf
                        .scale       = sf::Vec2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutCubic(progress)) / hudScale,
                        .origin      = txLogo.getSize().toVec2f() / 2.f,
                        .textureRect = txLogo.getRect(),
-                       .color       = sf::Color::whiteMask(static_cast<U8>(easeInOutSine(progress) * 255.f))},
+                       .color       = sf::Color::whiteWithAlpha(static_cast<U8>(easeInOutSine(progress) * 255.f))},
             {.view = view, .texture = &txLogo});
 }
 
@@ -1372,7 +1373,7 @@ void drawCatText(const CatDrawContext& ctx)
                 .scale              = {ctx.catScaleMult, ctx.catScaleMult},
                 .origin             = {32.f, 0.f},
                 .outlineTextureRect = ctx.main.txrWhiteDot,
-                .fillColor          = sf::Color::whiteMask(128u),
+                .fillColor          = sf::Color::whiteWithAlpha(128u),
                 .outlineColor       = ctx.textOutlineColor,
                 .outlineThickness   = 1.f,
                 .size               = sf::Vec2f{ctx.cat.cooldown.value / ctx.maxCooldown * 64.f, 3.f}.clampX(2.f, 64.f),
@@ -1685,7 +1686,7 @@ void Main::gameLoopDrawEarnedCoinParticles()
             .origin      = txrCoin.size / 2.f,
             .rotation    = sf::radians(particle.progress.remap(0.f, sf::base::tau)),
             .textureRect = txrCoin,
-            .color       = sf::Color::whiteMask(static_cast<U8>(alpha)),
+            .color       = sf::Color::whiteWithAlpha(static_cast<U8>(alpha)),
         });
     }
 }
@@ -1738,7 +1739,7 @@ void Main::gameLoopDrawTextParticles()
         textStatusBuffer.origin   = textStatusBuffer.getLocalBounds().size / 2.f;
 
         const auto opacityAsAlpha = static_cast<sf::base::U8>(tp.opacity * 255.f);
-        textStatusBuffer.setFillColor(sf::Color::whiteMask(opacityAsAlpha));
+        textStatusBuffer.setFillColor(sf::Color::whiteWithAlpha(opacityAsAlpha));
         textStatusBuffer.setOutlineColor(outlineHueColor.withAlpha(opacityAsAlpha));
 
         cpuDrawableBatchAfterCats.add(textStatusBuffer);
@@ -1787,13 +1788,13 @@ void Main::gameLoopDrawScrollArrowHint(const float deltaTimeMs)
     rtGame.draw(txArrow,
                 {.position = {arrowX, 15.f + (gameScreenSize.y / 5.f) * 1.f},
                  .origin   = txArrow.getRect().getCenterRight(),
-                 .color    = sf::Color::whiteMask(static_cast<U8>(blinkOpacity))},
+                 .color    = sf::Color::whiteWithAlpha(static_cast<U8>(blinkOpacity))},
                 {.view = gameView});
 
     rtGame.draw(txArrow,
                 {.position = {arrowX, gameScreenSize.y - 15.f - (gameScreenSize.y / 5.f) * 1.f},
                  .origin   = txArrow.getRect().getCenterRight(),
-                 .color    = sf::Color::whiteMask(static_cast<U8>(blinkOpacity))},
+                 .color    = sf::Color::whiteWithAlpha(static_cast<U8>(blinkOpacity))},
                 {.view = gameView});
 }
 
@@ -1914,7 +1915,7 @@ void Main::gameLoopDrawCursorComboText(const float deltaTimeMs, const float curs
 
     comboState.cursorComboText.position = sf::Mouse::getPosition(window).toVec2f() + sf::Vec2f{30.f, 48.f} * scaleMult;
 
-    comboState.cursorComboText.setFillColor(sf::Color::blackMask(alphaU8));
+    comboState.cursorComboText.setFillColor(sf::Color::blackWithAlpha(alphaU8));
     comboState.cursorComboText.setOutlineColor(
         sf::Color{111u, 170u, 244u, alphaU8}.withRotatedHue(profile.cursorHue + currentBackgroundHue.asDegrees()));
 
@@ -1957,7 +1958,7 @@ void Main::gameLoopDrawCursorComboBar()
         sf::RectangleShapeData{
             .position           = cursorComboBarPosition,
             .outlineTextureRect = txrWhiteDot,
-            .fillColor          = sf::Color::blackMask(80u),
+            .fillColor          = sf::Color::blackWithAlpha(80u),
             .outlineColor       = comboState.cursorComboText.getOutlineColor(),
             .outlineThickness   = 1.f,
             .size = {64.f * scaleMult * pt->psvComboStartTime.currentValue() * 1000.f / 700.f, 24.f * scaleMult},
@@ -1968,7 +1969,7 @@ void Main::gameLoopDrawCursorComboBar()
         sf::RectangleShapeData{
             .position           = cursorComboBarPosition,
             .outlineTextureRect = txrWhiteDot,
-            .fillColor          = sf::Color::blackMask(164u),
+            .fillColor          = sf::Color::blackWithAlpha(164u),
             .outlineColor       = comboState.cursorComboText.getOutlineColor(),
             .outlineThickness   = 1.f,
             .size               = {64.f * scaleMult * comboState.comboCountdown.value / 700.f, 24.f * scaleMult},
@@ -2076,7 +2077,7 @@ void Main::gameLoopTips(const float deltaTimeMs)
                                    .scale  = sf::Vec2f{0.2f, 0.2f} + sf::Vec2f{0.6f, 0.6f} * easeInOutBack(bgProgress),
                                    .origin = txTipBg.getSize().toVec2f() / 2.f,
                                    .textureRect = txTipBg.getRect(),
-                                   .color       = sf::Color::whiteMask(static_cast<U8>(tipBackgroundAlpha * 0.85f))};
+                                   .color = sf::Color::whiteWithAlpha(static_cast<U8>(tipBackgroundAlpha * 0.85f))};
 
 
     SFML_BASE_ASSERT(profile.hudScale > 0.f);
@@ -2097,7 +2098,7 @@ void Main::gameLoopTips(const float deltaTimeMs)
         .ySteps            = 3,
         .scaleMult         = 2.5f,
         .outwardOffsetMult = 1.f,
-        .color             = sf::Color::whiteMask(static_cast<U8>(tipBackgroundAlpha * 0.82f)),
+        .color             = sf::Color::whiteWithAlpha(static_cast<U8>(tipBackgroundAlpha * 0.82f)),
         .batch             = &cpuCloudHudDrawableBatch,
     });
 
@@ -2113,7 +2114,7 @@ void Main::gameLoopTips(const float deltaTimeMs)
         .ySteps            = 3,
         .scaleMult         = 2.6f,
         .outwardOffsetMult = 0.85f,
-        .color             = sf::Color::whiteMask(static_cast<U8>(tipBackgroundAlpha * 0.62f)),
+        .color             = sf::Color::whiteWithAlpha(static_cast<U8>(tipBackgroundAlpha * 0.62f)),
         .batch             = &cpuCloudHudDrawableBatch,
     });
 
@@ -2125,7 +2126,7 @@ void Main::gameLoopTips(const float deltaTimeMs)
         .ySteps            = 2,
         .scaleMult         = 2.6f,
         .outwardOffsetMult = 0.7f,
-        .color             = sf::Color::whiteMask(static_cast<U8>(tipBackgroundAlpha * 0.46f)),
+        .color             = sf::Color::whiteWithAlpha(static_cast<U8>(tipBackgroundAlpha * 0.46f)),
         .batch             = &cpuCloudHudDrawableBatch,
     });
 
@@ -2136,7 +2137,7 @@ void Main::gameLoopTips(const float deltaTimeMs)
                              .origin      = txTipByte.getSize().toVec2f() / 2.f,
                              .rotation    = sf::radians(sf::base::tau * easeInOutBack(byteProgress)),
                              .textureRect = txTipByte.getRect(),
-                             .color       = sf::Color::whiteMask(static_cast<U8>(tipByteAlpha))};
+                             .color       = sf::Color::whiteWithAlpha(static_cast<U8>(tipByteAlpha))};
 
     tipByteSprite.setGlobalCenter(tipBackgroundSprite.getGlobalCenterRight().addY(-40.f));
     rtGame.draw(tipByteSprite, {.view = scaledHUDView, .texture = &txTipByte});
@@ -2203,7 +2204,7 @@ void Main::gameLoopTips(const float deltaTimeMs)
                          .scale         = sf::Vec2f{0.5f, 0.5f} * easeInOutBack(byteProgress),
                          .string        = tipString.toStringView().substrByPosLen(0, tipCharIdx).to<sf::base::String>(),
                          .characterSize = 60u,
-                         .fillColor     = sf::Color::whiteMask(static_cast<sf::base::U8>(tipByteAlpha)),
+                         .fillColor     = sf::Color::whiteWithAlpha(static_cast<sf::base::U8>(tipByteAlpha)),
                          .outlineColor  = outlineHueColor.withAlpha(static_cast<sf::base::U8>(tipByteAlpha)),
                          .outlineThickness = 4.f,
                      }};
@@ -2408,7 +2409,7 @@ void Main::drawHexedCatDrawCommands(const sf::View& view, const bool top)
                     {.position    = command.position,
                      .origin      = texture.getSize().toVec2f() / 2.f,
                      .textureRect = texture.getRect(),
-                     .color       = sf::Color::whiteMask(static_cast<U8>(blend(255.f, 128.f, command.effectStrength)))},
+                     .color = sf::Color::whiteWithAlpha(static_cast<U8>(blend(255.f, 128.f, command.effectStrength)))},
                     {.view = view, .texture = &texture, .shader = &shaderHexed});
     }
 }
@@ -2492,7 +2493,7 @@ void Main::recreateWindow()
     recreateImGuiRenderTexture(newResolution);
     recreateGameRenderTexture(newResolution);
 
-    dpiScalingFactor = window.getWindowDisplayScale();
+    dpiScalingFactor = window.getDisplayScale();
 }
 
 
@@ -2515,7 +2516,7 @@ void Main::resizeWindow()
     recreateImGuiRenderTexture(newResolution);
     recreateGameRenderTexture(newResolution);
 
-    dpiScalingFactor = window.getWindowDisplayScale();
+    dpiScalingFactor = window.getDisplayScale();
 }
 
 

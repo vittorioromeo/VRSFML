@@ -121,7 +121,7 @@ void Main::uiDrawQuickbarBackgroundSelector(const sf::Vec2f quickBarPos)
     constexpr const char* popupLabel = "BackgroundSelectorPopup";
     static sf::base::U8   opacity    = 168u;
 
-    uiImageFromAtlas(txrIconBg, {.scale = {0.65f, 0.65f}, .color = sf::Color::whiteMask(opacity)});
+    uiImageFromAtlas(txrIconBg, {.scale = {0.65f, 0.65f}, .color = sf::Color::whiteWithAlpha(opacity)});
 
     opacity = ImGui::IsItemHovered() || ImGui::IsPopupOpen(popupLabel) ? 255u : 168u;
 
@@ -175,7 +175,7 @@ void Main::uiDrawQuickbarBGMSelector(const sf::Vec2f quickBarPos)
     constexpr const char* popupLabel = "MusicSelectorPopup";
     static sf::base::U8   opacity    = 168u;
 
-    uiImageFromAtlas(txrIconBGM, {.scale = {0.65f, 0.65f}, .color = sf::Color::whiteMask(opacity)});
+    uiImageFromAtlas(txrIconBGM, {.scale = {0.65f, 0.65f}, .color = sf::Color::whiteWithAlpha(opacity)});
 
     opacity = ImGui::IsItemHovered() || ImGui::IsPopupOpen(popupLabel) ? 255u : 168u;
 
@@ -230,7 +230,7 @@ void Main::uiDrawQuickbarQuickSettings(const sf::Vec2f quickBarPos)
     constexpr const char* popupLabel = "QuickSettingsPopup";
     static sf::base::U8   opacity    = 168u;
 
-    uiImageFromAtlas(txrIconCfg, {.scale = {0.65f, 0.65f}, .color = sf::Color::whiteMask(opacity)});
+    uiImageFromAtlas(txrIconCfg, {.scale = {0.65f, 0.65f}, .color = sf::Color::whiteWithAlpha(opacity)});
 
     opacity = ImGui::IsItemHovered() || ImGui::IsPopupOpen(popupLabel) ? 255u : 168u;
 
@@ -334,7 +334,7 @@ void Main::uiDrawQuickbarVolumeControls(const sf::Vec2f quickBarPos)
     constexpr const char* popupLabel = "VolumeSelectorPopup";
     static sf::base::U8   opacity    = 168u;
 
-    uiImageFromAtlas(txrIconVolume, {.scale = {0.65f, 0.65f}, .color = sf::Color::whiteMask(opacity)});
+    uiImageFromAtlas(txrIconVolume, {.scale = {0.65f, 0.65f}, .color = sf::Color::whiteWithAlpha(opacity)});
 
     opacity = ImGui::IsItemHovered() || ImGui::IsPopupOpen(popupLabel) ? 255u : 168u;
 

@@ -304,10 +304,10 @@ public:
     [[nodiscard]] float getPrimaryDisplayContentScale() const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] float getWindowDisplayScale(SDL_Window& window) const;
+    [[nodiscard]] float getDisplayScale(SDL_Window& window) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SDLSurfaceUPtr createSurfaceFromPixels(Vec2u size, const base::U8* pixels) const;
+    [[nodiscard]] SDLSurfaceUPtr createSurfaceFromPixels(const base::U8* pixels, Vec2u size) const;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] unsigned int getJoystickButtonCount(SDL_Joystick& handle);

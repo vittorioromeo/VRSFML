@@ -472,18 +472,19 @@ extern template class sf::Rect2<sf::base::SizeT>;
 
 ////////////////////////////////////////////////////////////
 /// \class sf::Rect2
-/// \ingroup graphics
+/// \ingroup system
 ///
-/// A rectangle is defined by its top-left corner and its size.
-/// It is a very simple class defined for convenience, so
-/// its member variables (position and size) are public
-/// and can be accessed directly, just like the vector classes
-/// (`Vec2` and `Vec3`).
+/// A rectangle is defined by its top-left corner (`position`) and its
+/// `size`. It is a very simple class defined for convenience, so its
+/// member variables are public and can be accessed directly, just like
+/// the vector classes (`Vec2` and `Vec3`).
 ///
-/// To keep things simple, `sf::Rect2` doesn't define
-/// functions to emulate the properties that are not directly
-/// members (such as right, bottom, etc.), it rather
-/// only provides intersection functions.
+/// In addition to direct access to `position` and `size`, `sf::Rect2`
+/// provides convenience accessors for the four edges (`getLeft()`,
+/// `getTop()`, `getRight()`, `getBottom()` and their setter
+/// counterparts), as well as anchor-point helpers (`getCenter()`,
+/// `getTopLeft()`, `setBottomRight()`, etc.) for easy positioning.
+/// Intersection testing is provided by `sf::findIntersection`.
 ///
 /// `sf::Rect2` uses the usual rules for its boundaries:
 /// \li The left and top edges are included in the rectangle's area
@@ -496,6 +497,8 @@ extern template class sf::Rect2<sf::base::SizeT>;
 /// for simplicity type aliases for the instantiations used by SFML are given:
 /// \li `sf::Rect2<int>` is `sf::Rect2i`
 /// \li `sf::Rect2<float>` is `sf::Rect2f`
+/// \li `sf::Rect2<unsigned int>` is `sf::Rect2u`
+/// \li `sf::Rect2<sf::base::SizeT>` is `sf::Rect2uz`
 ///
 /// So that you don't have to care about the template syntax.
 ///

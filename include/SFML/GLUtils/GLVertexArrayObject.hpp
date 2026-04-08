@@ -14,10 +14,17 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-/// \brief Internal helper struct defining OpenGL functions for Vertex Array Objects (VAOs).
+/// \brief Internal policy struct exposing OpenGL functions for Vertex Array Objects (VAOs)
 ///
-/// This template acts as a policy class for `GLUniqueResource`, providing
-/// the necessary static functions tailored to OpenGL Vertex Array Objects.
+/// Acts as a policy class for `GLUniqueResource`, providing the static
+/// `create`, `destroy`, `bind` and `get` functions tailored to OpenGL
+/// Vertex Array Objects.
+///
+/// Unlike buffer objects, VAOs are container objects whose state is
+/// **not** shareable across OpenGL contexts. As a result, this policy
+/// performs all operations on the currently active context — there is
+/// no shared-context guard. See `GLVAOGroup` for a helper that handles
+/// per-context VAO management on top of shared VBO/EBO storage.
 ///
 ////////////////////////////////////////////////////////////
 struct GLVertexArrayObjectFuncs
@@ -56,10 +63,16 @@ struct GLVertexArrayObjectFuncs
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief RAII wrapper for an OpenGL Vertex Array Object (VAO).
+/// \brief RAII wrapper for an OpenGL Vertex Array Object (VAO)
 /// \ingroup glutils
 ///
-/// Manages the lifecycle (creation, destruction) and binding of an OpenGL Vertex Array Object.
+/// Manages the lifecycle (creation, destruction) and binding of an
+/// OpenGL Vertex Array Object on the currently active context.
+///
+/// VAOs are not shareable across contexts: a VAO created on one context
+/// cannot be bound from another. If you need to use the same vertex
+/// layout from multiple contexts, see `GLVAOGroup`, which lazily
+/// creates one VAO per context while sharing the underlying VBO/EBO.
 ///
 ////////////////////////////////////////////////////////////
 struct GLVertexArrayObject : GLUniqueResource<priv::GLVertexArrayObjectFuncs>

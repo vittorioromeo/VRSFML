@@ -22,39 +22,88 @@ struct GLVAOGroup;
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Owning handle to an OpenGL Vertex Array Object
+///
+/// `sf::VAOHandle` wraps a single OpenGL VAO and the
+/// per-instance attribute streams attached to it. It is the
+/// VAO that the instanced draw paths
+/// (`sf::RenderTarget::drawInstancedVertices` and
+/// `sf::RenderTarget::drawInstancedIndexedVertices`) bind
+/// before issuing the draw call.
+///
+/// `VAOHandle` is move-only. Construct one per "instance set"
+/// you want to render and reuse it across frames; the
+/// underlying GPU object stays alive for the lifetime of the
+/// handle.
 ///
 ////////////////////////////////////////////////////////////
 class [[nodiscard]] VAOHandle
 {
 public:
+    ////////////////////////////////////////////////////////////
+    /// \brief Default constructor
+    ///
+    /// Creates a fresh OpenGL VAO with no attribute streams
+    /// configured. Configure it from a `setupFn` callback passed
+    /// to one of the instanced draw paths.
+    ///
+    ////////////////////////////////////////////////////////////
     VAOHandle();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Destructor
+    ///
+    /// Releases the underlying OpenGL VAO.
+    ///
+    ////////////////////////////////////////////////////////////
     ~VAOHandle();
 
+    ////////////////////////////////////////////////////////////
     VAOHandle(const VAOHandle&)            = delete;
     VAOHandle& operator=(const VAOHandle&) = delete;
 
+    ////////////////////////////////////////////////////////////
     VAOHandle(VAOHandle&&) noexcept;
     VAOHandle& operator=(VAOHandle&&) noexcept;
 
 private:
     friend RenderTarget;
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Internal accessor used by `sf::RenderTarget` during draw
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] const GLVAOGroup& asVAOGroup() const;
 
+    ////////////////////////////////////////////////////////////
+    // Member data
+    ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 128> m_impl;
+    base::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details (PImpl)
 };
 
 } // namespace sf
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::RenderTarget
+/// \class sf::VAOHandle
 /// \ingroup graphics
 ///
-/// TODO P1: docs
+/// `sf::VAOHandle` is the user-facing wrapper around an
+/// OpenGL Vertex Array Object. It is used together with
+/// `sf::DrawInstancedVerticesSettings` and
+/// `sf::DrawInstancedIndexedVerticesSettings` to drive the
+/// instanced rendering path of `sf::RenderTarget`. The actual
+/// per-instance attribute streams are populated through a
+/// `sf::InstanceAttributeBinder` from inside the `setupFn`
+/// callback that the draw functions take.
 ///
-/// \see TODO P1: docs
+/// `VAOHandle` is move-only and should be cached -- recreating
+/// it every frame defeats the entire point of instanced
+/// rendering.
+///
+/// \see `sf::RenderTarget`, `sf::InstanceAttributeBinder`,
+///      `sf::VBOHandle`, `sf::DrawInstancedVerticesSettings`,
+///      `sf::DrawInstancedIndexedVerticesSettings`
 ///
 ////////////////////////////////////////////////////////////

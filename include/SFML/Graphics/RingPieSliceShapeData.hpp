@@ -36,11 +36,20 @@ struct [[nodiscard]] SFML_GRAPHICS_API RingPieSliceShapeData
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::RingPieSliceShapeData
+/// \struct sf::RingPieSliceShapeData
 /// \ingroup graphics
 ///
-/// TODO P1: docs
+/// `sf::RingPieSliceShapeData` describes a slice of a ring -- the
+/// intersection of a `sf::RingShapeData` and a `sf::PieSliceShapeData`.
+/// It is defined by an `outerRadius`, an `innerRadius`, a `startAngle`,
+/// and a `sweepAngle`. `pointCount` controls the smoothness of the
+/// arcs.
 ///
-/// \see `sf::Shape`, `sf::CircleShape`
+/// Like other `*ShapeData` types, it embeds the standard
+/// transformable and shape appearance members and is consumed by
+/// `sf::ShapeUtils` and `sf::CPUDrawableBatch::add` -- it is not
+/// directly drawable on its own.
+///
+/// \see `sf::Shape`, `sf::RingShapeData`, `sf::PieSliceShapeData`, `sf::CurvedArrowShapeData`
 ///
 ////////////////////////////////////////////////////////////

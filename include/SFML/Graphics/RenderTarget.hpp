@@ -148,14 +148,34 @@ public:
     void clear(Color color, StencilValue stencilValue);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Auto-batching strategy used by the render target
+    ///
+    /// Auto-batching is a performance optimization that
+    /// transparently coalesces consecutive compatible draw calls
+    /// into a single GPU submission, drastically reducing CPU
+    /// overhead for scenes with many small drawables (sprites,
+    /// shapes, text characters, ...).
+    ///
+    /// The mode controls *where* the intermediate vertex buffer
+    /// lives:
+    /// \li `Disabled`   -- no batching; each draw call goes
+    ///                     directly to the GPU.
+    /// \li `CPUStorage` -- batching enabled, vertices accumulate
+    ///                     in a CPU-side buffer and are uploaded
+    ///                     on flush. Best general default.
+    /// \li `GPUStorage` -- batching enabled, vertices stream
+    ///                     directly into a persistent-mapped GPU
+    ///                     buffer. Falls back to `CPUStorage`
+    ///                     when persistent mapping is unavailable
+    ///                     (e.g. on platforms without
+    ///                     `GL_ARB_buffer_storage`).
     ///
     ////////////////////////////////////////////////////////////
     enum class [[nodiscard]] AutoBatchMode : unsigned char
     {
-        Disabled,   //!< Auto-batching is disabled
-        CPUStorage, //!< Auto-batching is enabled with CPU storage
-        GPUStorage, //!< Auto-batching is enabled with GPU storage (fallback to CPU if GPU storage is not available)
+        Disabled,   //!< No auto-batching; each draw call is submitted directly
+        CPUStorage, //!< Auto-batching enabled, intermediate vertices stored in CPU memory
+        GPUStorage, //!< Auto-batching enabled, intermediate vertices stored in a persistent-mapped GPU buffer (CPU fallback)
     };
 
     ////////////////////////////////////////////////////////////
@@ -211,42 +231,53 @@ public:
     [[nodiscard]] base::SizeT getAutoBatchVertexThreshold() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Draw a texture to the render target
+    /// \brief Draw a texture to the render target with default parameters
     ///
-    /// The full texture is drawn at position `{0.f, 0.f}` with default origin,
-    /// rotation, scale, and color
+    /// The full texture is drawn at position `{0.f, 0.f}` with the
+    /// default origin, rotation, scale, and color (opaque white).
+    /// This is the simplest way to put a texture on screen, but
+    /// also the least flexible -- use the `DrawTextureSettings`
+    /// overload (or `sf::Sprite`) for any further control.
     ///
-    /// \param sprite Texture to draw
-    /// \param states Render states to use for drawing
+    /// \param texture Texture to draw
+    /// \param states  Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
     void draw(const Texture& texture, RenderStates states = {});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Draw a texture to the render target
+    /// \brief Draw a texture to the render target with custom parameters
     ///
-    /// \param sprite Texture to draw
-    /// \param params Drawing parameters
-    /// \param states Render states to use for drawing
+    /// Uses `params` to control the position, rotation, scale,
+    /// origin, sub-rectangle, and tint of the rendered texture.
+    /// This is the recommended one-shot path; for repeated drawing
+    /// of the same configuration, use `sf::Sprite`.
+    ///
+    /// \param texture Texture to draw
+    /// \param params  Position, rotation, scale, sub-rect, and tint
+    /// \param states  Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
     void draw(const Texture& texture, const DrawTextureSettings& params, RenderStates states = {});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Draw a sprite object to the render target
+    /// \brief Draw a sprite to the render target
     ///
-    /// The texture associated with a sprite must be passed while drawing.
+    /// VRSFML sprites do not own their texture: the texture must
+    /// be supplied at draw time, either inline (preferred for
+    /// one-offs) or through `RenderStates::texture`.
     ///
     /// \param sprite Sprite to draw
-    /// \param states Render states to use for drawing
+    /// \param states Render states to use for drawing (must reference the sprite's texture)
     ///
     ////////////////////////////////////////////////////////////
     void draw(const Sprite& sprite, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Draw a shape object to the render target
+    /// \brief Draw a shape to the render target
     ///
-    /// A texture associated with a shape can be passed while drawing.
+    /// As with `sf::Sprite`, the texture (if any) is passed at
+    /// draw time via `RenderStates::texture`.
     ///
     /// \param shape  Shape to draw
     /// \param states Render states to use for drawing
@@ -257,26 +288,52 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Draw a text object to the render target
     ///
-    /// \param text Text to draw
+    /// `text` carries its own font reference, so no extra
+    /// resource needs to be passed in `states`.
+    ///
+    /// \param text   Text to draw
     /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
     void draw(const Text& text, RenderStates states = {});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Draw a GlyphMappedText
+    /// \brief Draw a `sf::GlyphMappedText` to the render target
+    ///
+    /// Lower-level text drawing path: glyphs are precomputed in
+    /// a `sf::GlyphMapping` and reused across draws, which is
+    /// significantly faster than `sf::Text` for static or
+    /// frequently-redrawn strings.
+    ///
+    /// \param text   Pre-mapped glyph text to draw
+    /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
     void draw(const GlyphMappedText& text, RenderStates states = {});
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Draw the contents of a CPU-side drawable batch
+    ///
+    /// The vertices accumulated in `drawableBatch` are uploaded
+    /// (if needed) and drawn in one go. This is the high-level
+    /// path for manual batching of many small drawables.
+    ///
+    /// \param drawableBatch Batch whose contents should be drawn
+    /// \param states        Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
     void draw(const CPUDrawableBatch& drawableBatch, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Draw the contents of a persistent GPU drawable batch
+    ///
+    /// The same as the `CPUDrawableBatch` overload, but the
+    /// vertex data already lives in a persistent-mapped GPU
+    /// buffer owned by `drawableBatch`. No CPU-to-GPU upload
+    /// happens at draw time.
+    ///
+    /// \param drawableBatch Batch whose contents should be drawn
+    /// \param states        Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
     void draw(const PersistentGPUDrawableBatch& drawableBatch, RenderStates states = {});
@@ -305,25 +362,58 @@ public:
               const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Draw a shape from its relevant data
+    /// \brief Draw a shape from its plain `*ShapeData` description
     ///
-    /// \return Span pointing to vertices in the batch
-    ///         (WARNING: the span is only valid until the next draw call)
+    /// This is the "stateless" shape drawing path: instead of
+    /// constructing a full `sf::Shape`, you pass any of the
+    /// `sf::CircleShapeData`, `sf::RectangleShapeData`, etc.
+    /// structs and the renderer tessellates and draws it in one
+    /// call.
+    ///
+    /// \param shapeData Plain shape description
+    /// \param states    Render states to use for drawing
+    ///
+    /// \return Span pointing to the generated vertices inside the
+    ///         current batch. The span is invalidated by the next
+    ///         draw call -- copy it out if you need to keep it.
     ///
     ////////////////////////////////////////////////////////////
     VertexSpan draw(const priv::ShapeDataConcept auto& shapeData, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Draw a text from a font and its relevant data
+    /// \brief Draw text from a font and a plain `TextData` description
     ///
-    /// \return Span pointing to vertices in the batch
-    ///         (WARNING: the span is only valid until the next draw call)
+    /// Stateless counterpart to `draw(const Text&, ...)`. Useful
+    /// when the text properties change every frame and the
+    /// overhead of (re)building a `sf::Text` would be wasted.
+    ///
+    /// \param font     Font used to rasterize glyphs
+    /// \param textData Text description (string, character size, style, ...)
+    /// \param states   Render states to use for drawing
+    ///
+    /// \return Span pointing to the generated vertices inside the
+    ///         current batch. The span is invalidated by the next
+    ///         draw call -- copy it out if you need to keep it.
     ///
     ////////////////////////////////////////////////////////////
     VertexSpan draw(const Font& font, const TextData& textData, RenderStates states = {});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Draw text using a glyph mapping (stateless)
+    /// \brief Draw text using a precomputed glyph mapping
+    ///
+    /// Lowest-level text drawing path: the glyph layout has
+    /// already been computed and cached in `glyphMapping`, so
+    /// each draw is essentially a vertex generation pass. This
+    /// is the fastest path for static or frequently-redrawn text.
+    ///
+    /// \param fontFace     Font face providing glyph metrics
+    /// \param glyphMapping Precomputed glyph layout
+    /// \param textData     Text description without glyph-derived fields
+    /// \param states       Render states to use for drawing
+    ///
+    /// \return Span pointing to the generated vertices inside the
+    ///         current batch. The span is invalidated by the next
+    ///         draw call -- copy it out if you need to keep it.
     ///
     ////////////////////////////////////////////////////////////
     VertexSpan draw(const FontFace&            fontFace,
@@ -365,7 +455,17 @@ public:
                                              const RenderStates&                                states = {});
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Draw an instanced primitive (same vertices replayed N times)
+    ///
+    /// Issues a single instanced draw call. `setupFn` is invoked
+    /// once before the call to bind the per-instance attribute
+    /// streams onto the VAO carried by `settings`. See
+    /// `sf::InstanceAttributeBinder` for the available attribute
+    /// types.
+    ///
+    /// \param settings Instanced draw parameters (vertices, VAO, instance count, primitive type)
+    /// \param setupFn  Callback that binds per-instance attribute streams
+    /// \param states   Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
     void drawInstancedVertices(const DrawInstancedVerticesSettings&                           settings,
@@ -373,7 +473,16 @@ public:
                                const RenderStates&                                            states = {});
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Draw an instanced and indexed primitive
+    ///
+    /// Combines indexing (vertex reuse) with instancing
+    /// (geometry reuse). `setupFn` is invoked once before the
+    /// call to bind the per-instance attribute streams onto the
+    /// VAO carried by `settings`.
+    ///
+    /// \param settings Instanced indexed draw parameters
+    /// \param setupFn  Callback that binds per-instance attribute streams
+    /// \param states   Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
     void drawInstancedIndexedVertices(const DrawInstancedIndexedVerticesSettings&                    settings,
@@ -419,7 +528,13 @@ public:
     [[nodiscard]] virtual bool setActive(bool active = true);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Compute a default view that exactly matches the target's current size
+    ///
+    /// Equivalent to `sf::View::fromScreenSize(getSize())`. Useful
+    /// after a resize event, when you want a fresh view that maps
+    /// world units to pixels 1:1.
+    ///
+    /// \return View covering the entire render target
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] View computeView() const;
@@ -455,19 +570,39 @@ public:
     RenderTarget::DrawStatistics flush();
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Flush queued GPU commands to the driver (`glFlush`)
+    ///
+    /// Hints the driver to start processing previously submitted
+    /// commands as soon as possible, but does **not** wait for
+    /// them to complete. Use sparingly: most code does not need
+    /// this, since the renderer flushes implicitly at frame
+    /// boundaries.
     ///
     ////////////////////////////////////////////////////////////
-    void flushGPUCommands();
+    void invokeGlFlush();
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Block until all queued GPU commands have completed (`glFinish`)
+    ///
+    /// Strictly stronger than `invokeGlFlush`: this returns
+    /// only after the GPU has actually finished executing every
+    /// previously submitted command. Useful for benchmarking and
+    /// for synchronizing CPU work that depends on the result of
+    /// previous draw calls. Avoid in normal rendering paths --
+    /// it serializes CPU and GPU and tanks frame pacing.
     ///
     ////////////////////////////////////////////////////////////
-    void finishGPUCommands();
+    void invokeGlFinish();
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief RAII helper bound to a `RenderStates` snapshot for chained drawing
+    ///
+    /// Returned by `withRenderStates` and `withLockedRenderStates`.
+    /// Calling `draw`/`drawAll` on this context forwards the
+    /// drawables to the parent `RenderTarget` while implicitly
+    /// reusing the captured `RenderStates`. The "locked" variant
+    /// additionally asserts (in debug builds) that no nested call
+    /// changes those render states behind your back.
     ///
     ////////////////////////////////////////////////////////////
     class [[nodiscard]] WithRenderStatesContext
@@ -536,7 +671,16 @@ public:
     friend class WithRenderStatesContext;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Begin a chained-drawing context with a fixed `RenderStates` snapshot
+    ///
+    /// Returns a `WithRenderStatesContext` whose `draw` calls
+    /// reuse `states`. Useful for drawing many objects with
+    /// identical render states without repeating them at every
+    /// call site.
+    ///
+    /// \param states Render states to capture
+    ///
+    /// \return Chained drawing context (do not store across frames)
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] WithRenderStatesContext withRenderStates(const RenderStates& states)
@@ -545,7 +689,16 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Like `withRenderStates`, but asserts the snapshot stays unchanged
+    ///
+    /// In debug builds, drawing through the returned context
+    /// triggers an assertion if any nested code path changes the
+    /// captured `RenderStates`. Use this to enforce that a hot
+    /// rendering loop never accidentally breaks its batch.
+    ///
+    /// \param states Render states to capture and lock
+    ///
+    /// \return Chained drawing context with state-mutation guard
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] WithRenderStatesContext withLockedRenderStates(const RenderStates& states)
@@ -555,7 +708,11 @@ public:
 
 protected:
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Default constructor
+    ///
+    /// Protected: instances of `RenderTarget` are always created
+    /// through one of the concrete subclasses (`sf::RenderWindow`,
+    /// `sf::RenderTexture`).
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit RenderTarget();
@@ -578,9 +735,14 @@ protected:
 
 private:
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Prepare the render target for drawing
     ///
-    /// no need to call if clear is called
+    /// Activates the target's context and ensures the renderer's
+    /// OpenGL state matches what the next draw call expects. Not
+    /// needed if `clear` has already been called this frame, since
+    /// `clear` performs the same setup.
+    ///
+    /// \return `true` on success, `false` if the target could not be activated
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool prepare();
@@ -620,13 +782,20 @@ private:
                                                       const RenderStates&                                states);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Immediately draw a CPU drawable batch
+    ///
+    /// Submits the batch directly without going through any
+    /// auto-batching path. Internal helper used by the public
+    /// `draw(const CPUDrawableBatch&, ...)` overload.
     ///
     ////////////////////////////////////////////////////////////
     void immediateDrawDrawableBatch(const CPUDrawableBatch& drawableBatch, RenderStates states);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Immediately draw an instanced primitive
+    ///
+    /// Will result in an OpenGL `glDrawArraysInstanced` call.
+    /// Does not flush any batch in flight.
     ///
     ////////////////////////////////////////////////////////////
     void immediateDrawInstancedVertices(const DrawInstancedVerticesSettings&                    settings,
@@ -634,7 +803,10 @@ private:
                                         const RenderStates&                                     states);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Immediately draw an instanced and indexed primitive
+    ///
+    /// Will result in an OpenGL `glDrawElementsInstanced` call.
+    /// Does not flush any batch in flight.
     ///
     ////////////////////////////////////////////////////////////
     void immediateDrawInstancedIndexedVertices(const DrawInstancedIndexedVerticesSettings&             settings,
@@ -642,7 +814,11 @@ private:
                                                const RenderStates&                                     states);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Flush the auto-batch if `states` differ or it has grown past the threshold
+    ///
+    /// Internal helper invoked by every public `draw` overload to
+    /// decide whether the in-flight batch must be sent to the GPU
+    /// before the new draw can be appended to it.
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void flushIfNeeded(const RenderStates& states)
@@ -668,7 +844,11 @@ private:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Backend implementation of `resetGLStates`
+    ///
+    /// Performs the actual OpenGL state restoration; the public
+    /// wrapper additionally takes care of flushing the auto-batch
+    /// before invoking it.
     ///
     ////////////////////////////////////////////////////////////
     void resetGLStatesImpl();
@@ -702,7 +882,12 @@ private:
     void unapplyTexture();
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Internal RAII helper that scopes a draw call
+    ///
+    /// Owns the lifetime of the per-draw setup performed by
+    /// `setupDraw` and the matching `cleanupDraw` (state save,
+    /// VAO/program/uniform setup, ...). Implementation lives in
+    /// the `.cpp` file.
     ///
     ////////////////////////////////////////////////////////////
     struct DrawGuard;
@@ -824,7 +1009,12 @@ private:
                                                  base::SizeT   instanceCount);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Forward a draw description to the active auto-batch
+    ///
+    /// Internal entry point shared by every public `draw` overload
+    /// that wants to participate in auto-batching. The variadic
+    /// argument pack is forwarded to the matching `add(...)`
+    /// overload of the underlying drawable batch.
     ///
     ////////////////////////////////////////////////////////////
     auto addToAutoBatch(auto&&... xs);
@@ -891,7 +1081,19 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Draw every element of a range with the same render states
+    ///
+    /// Convenience overload that iterates over `drawableObjectRange`
+    /// and forwards each element to the appropriate single-element
+    /// `draw` overload. Useful when you have a `std::vector` (or
+    /// any other iterable) of drawables you want to render in a
+    /// single call.
+    ///
+    /// \tparam DrawableObjectRange Any range whose iterator
+    ///         dereferences to a drawable accepted by `draw`.
+    ///
+    /// \param drawableObjectRange Range of drawables to render
+    /// \param states              Render states reused for every element
     ///
     ////////////////////////////////////////////////////////////
     template <typename DrawableObjectRange>
@@ -925,29 +1127,66 @@ private:
 /// \class sf::RenderTarget
 /// \ingroup graphics
 ///
-/// `sf::RenderTarget` defines the common behavior of all the
-/// 2D render targets usable in the graphics module. It makes
-/// it possible to draw 2D entities like sprites, shapes, text
-/// without using any OpenGL command directly.
+/// `sf::RenderTarget` is the abstract base of every 2D render
+/// target in VRSFML. It is the surface onto which sprites,
+/// shapes, text, and raw vertex data are drawn, hiding the
+/// underlying OpenGL state from user code.
 ///
-/// A `sf::RenderTarget` is also able to use views (`sf::View`),
-/// which are a kind of 2D cameras. With views you can globally
-/// scroll, rotate or zoom everything that is drawn,
-/// without having to transform every single entity. See the
-/// documentation of `sf::View` for more details and sample pieces of
-/// code about this class.
+/// The two concrete subclasses are `sf::RenderWindow` (a target
+/// backed by an OS window) and `sf::RenderTexture` (a target
+/// backed by an off-screen framebuffer object).
 ///
-/// On top of that, render targets are still able to render direct
-/// OpenGL stuff. It is even possible to mix together OpenGL calls
-/// and regular SFML drawing commands. When doing so, make sure that
-/// OpenGL states are not messed up by calling `resetGLStates`.
+/// Key features:
+/// \li High-level draw overloads for every built-in drawable
+///     (`sf::Sprite`, `sf::Shape`, `sf::Text`, `sf::VertexBuffer`,
+///     `sf::CPUDrawableBatch`, `sf::PersistentGPUDrawableBatch`,
+///     ...).
+/// \li Stateless draw overloads taking the corresponding
+///     `*ShapeData`, `TextData`, or `GlyphMappedTextData` plain
+///     descriptions, for code paths that prefer not to allocate
+///     full drawable objects.
+/// \li Low-level vertex draw paths for every primitive flavor:
+///     `drawVertices`, `drawIndexedVertices`, `drawQuads`,
+///     `drawInstancedVertices`, `drawInstancedIndexedVertices`,
+///     and `drawPersistentMappedIndexedVertices`.
+/// \li Automatic per-frame batching of compatible draw calls,
+///     configurable via `setAutoBatchMode` and
+///     `setAutoBatchVertexThreshold`. The strategy can be
+///     `Disabled`, `CPUStorage`, or `GPUStorage`.
+/// \li Per-call `sf::RenderStates` (transform, blend mode,
+///     stencil mode, view, shader, texture). The
+///     `withRenderStates` and `withLockedRenderStates` helpers
+///     scope a snapshot to a chained drawing block.
+/// \li Native interop with raw OpenGL via `setActive`, `bind`,
+///     `unbind`, and `resetGLStates`. Calling
+///     `resetGLStates` is required after issuing direct OpenGL
+///     commands so that subsequent VRSFML draws produce the
+///     expected output.
 ///
-/// While render targets are moveable, it is not valid to move them
-/// between threads. This will cause your program to crash. The
-/// problem boils down to OpenGL being limited with regard to how it
-/// works in multithreaded environments. Please ensure you only move
-/// render targets within the same thread.
+/// `sf::RenderTarget` is move-only and is not safe to access
+/// from multiple threads simultaneously. The OpenGL context it
+/// owns is bound to the thread that drives it; if you need
+/// cross-thread rendering, deactivate the target on the source
+/// thread (`setActive(false)`) before activating it on the
+/// destination thread.
 ///
-/// \see `sf::RenderWindow`, `sf::RenderTexture`, `sf::View`
+/// Usage example:
+/// \code
+/// auto window = sf::RenderWindow::create(/* ... */).value();
+///
+/// while (true)
+/// {
+///     // Process events, update game state, ...
+///
+///     window.clear(sf::Color::Black);
+///     window.draw(sprite, texture);
+///     window.draw(shape);
+///     window.draw(text);
+///     window.display();
+/// }
+/// \endcode
+///
+/// \see `sf::RenderWindow`, `sf::RenderTexture`, `sf::View`,
+///      `sf::RenderStates`, `sf::DrawableBatch`
 ///
 ////////////////////////////////////////////////////////////

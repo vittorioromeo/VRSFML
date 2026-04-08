@@ -65,10 +65,16 @@ struct InPlaceIndex
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
+/// \brief Tag value used to construct a `Variant` in-place by alternative type
+///
+////////////////////////////////////////////////////////////
 template <typename T>
 inline constexpr priv::InPlaceType<T> inPlaceType{};
 
 
+////////////////////////////////////////////////////////////
+/// \brief Tag value used to construct a `Variant` in-place by alternative index
+///
 ////////////////////////////////////////////////////////////
 template <SizeT N>
 inline constexpr priv::InPlaceIndex<N> inPlaceIndex{};
@@ -78,6 +84,25 @@ inline constexpr priv::InPlaceIndex<N> inPlaceIndex{};
 #define SFML_BASE_VARIANT_NTH_TYPE(i) SFML_BASE_TYPE_PACK_ELEMENT(i, Alternatives...)
 
 
+////////////////////////////////////////////////////////////
+/// \brief Lightweight tagged-union replacement for `std::variant`
+///
+/// Holds exactly one value chosen from the type pack `Alternatives...`.
+/// Storage is in-place and never allocates. Special members are
+/// conditionally defaulted when all alternatives are trivially
+/// copy/move/destructible to keep the type trivial whenever possible.
+///
+/// Compared to `std::variant`, `sf::base::Variant`:
+/// - avoids the heavy `<variant>` standard header
+/// - never enters the "valueless by exception" state
+/// - exposes both a recursive and a linear visit strategy, so callers
+///   can pick the one with the best codegen for their alternative count
+/// - propagates trivial relocatability when all alternatives are
+///   trivially relocatable
+///
+/// The number of alternatives is limited to 254 (the discriminator is
+/// stored in a single byte).
+///
 ////////////////////////////////////////////////////////////
 template <typename... Alternatives>
 class [[nodiscard]] Variant
@@ -251,6 +276,11 @@ private:
 
 public:
     ////////////////////////////////////////////////////////////
+    /// \brief Construct an alternative in-place from its type
+    ///
+    /// \param args Arguments forwarded to `T`'s constructor
+    ///
+    ////////////////////////////////////////////////////////////
     template <typename T, typename... Args>
     [[nodiscard, gnu::always_inline]] explicit Variant(const priv::InPlaceType<T> inPlaceType, Args&&... args) noexcept :
         Variant{inPlaceType, inPlaceIndex<indexOf<T>>, static_cast<Args&&>(args)...}
@@ -258,6 +288,11 @@ public:
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Construct an alternative in-place from its index
+    ///
+    /// \param args Arguments forwarded to the alternative's constructor
+    ///
     ////////////////////////////////////////////////////////////
     template <SizeT I, typename... Args>
     [[nodiscard, gnu::always_inline]] explicit Variant(const priv::InPlaceIndex<I> inPlaceIndex, Args&&... args) noexcept :
@@ -267,6 +302,12 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Construct from any value whose decayed type is one of the alternatives
+    ///
+    /// The alternative is chosen by exact type match (after removing
+    /// cvref) — there is no implicit conversion picking.
+    ///
+    ////////////////////////////////////////////////////////////
     template <typename T>
     [[nodiscard, gnu::always_inline]] explicit Variant(T&& x) noexcept
         requires(!isSame<RemoveCVRefIndirect<T>, Variant>)
@@ -275,6 +316,9 @@ public:
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Default constructor, holds the first alternative default-constructed
+    ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] explicit Variant() noexcept : Variant{inPlaceIndex<0>}
     {
@@ -390,6 +434,12 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Assign a value whose decayed type is one of the alternatives
+    ///
+    /// Destroys the current value and reconstructs the variant to hold a
+    /// new alternative selected by exact type match (after removing cvref).
+    ///
+    ////////////////////////////////////////////////////////////
     template <typename T>
     [[gnu::always_inline]] Variant& operator=(T&& x)
         requires(!isSame<RemoveCVRefIndirect<T>, Variant>)
@@ -406,6 +456,11 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Check whether the variant currently holds alternative `T`
+    ///
+    /// \return `true` if the active alternative is `T`, `false` otherwise
+    ///
+    ////////////////////////////////////////////////////////////
     template <typename T>
     [[nodiscard, gnu::always_inline]] bool is() const noexcept
     {
@@ -414,12 +469,22 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Check whether the variant currently holds the alternative at the given index
+    ///
+    /// \param index Discriminator value to compare against
+    ///
+    /// \return `true` if the active alternative index matches `index`
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] bool hasIndex(const DiscriminatorType index) const noexcept
     {
         return m_index == index;
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Pointer-typed access to alternative `T`, or `nullptr` if not active
+    ///
     ////////////////////////////////////////////////////////////
     template <typename T>
     [[nodiscard, gnu::always_inline]] T* getIf() noexcept
@@ -429,6 +494,9 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Pointer-typed access to alternative `T`, or `nullptr` if not active (const)
+    ///
+    ////////////////////////////////////////////////////////////
     template <typename T>
     [[nodiscard, gnu::always_inline]] const T* getIf() const noexcept
     {
@@ -436,6 +504,9 @@ public:
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Unchecked access to alternative `T` (asserts that it is active)
+    ///
     ////////////////////////////////////////////////////////////
     template <typename T>
     [[nodiscard, gnu::always_inline]] T& as() & noexcept
@@ -446,6 +517,9 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Unchecked access to alternative `T` (const overload)
+    ///
+    ////////////////////////////////////////////////////////////
     template <typename T>
     [[nodiscard, gnu::always_inline]] const T& as() const& noexcept
     {
@@ -454,6 +528,9 @@ public:
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Unchecked access to alternative `T` (rvalue overload)
+    ///
     ////////////////////////////////////////////////////////////
     template <typename T>
     [[nodiscard, gnu::always_inline]] T&& as() && noexcept
@@ -464,6 +541,9 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Unchecked access to the alternative at index `I`
+    ///
+    ////////////////////////////////////////////////////////////
     template <SizeT I>
     [[nodiscard, gnu::always_inline]] auto& getByIndex() & noexcept
     {
@@ -472,6 +552,9 @@ public:
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Unchecked access to the alternative at index `I` (const overload)
+    ///
     ////////////////////////////////////////////////////////////
     template <SizeT I>
     [[nodiscard, gnu::always_inline]] const auto& getByIndex() const& noexcept
@@ -482,6 +565,9 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Unchecked access to the alternative at index `I` (rvalue overload)
+    ///
+    ////////////////////////////////////////////////////////////
     template <SizeT I>
     [[nodiscard, gnu::always_inline]] auto&& getByIndex() && noexcept
     {
@@ -490,6 +576,21 @@ public:
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Visit the active alternative using a tail-call recursive dispatch
+    ///
+    /// The visitor must be callable with a reference to every alternative
+    /// type. The return type `R` is deduced from the visitor's call on the
+    /// first alternative.
+    ///
+    /// Recursive dispatch is generally faster for small alternative
+    /// counts; for larger counts the unrolled `Opt5` and `Opt10` helpers
+    /// are selected automatically.
+    ///
+    /// \param visitor Callable invoked with the active alternative
+    ///
+    /// \return Whatever `visitor` returns
+    ///
     ////////////////////////////////////////////////////////////
     template <typename Visitor,
               typename R = decltype(declVal<Visitor&&>()(declVal<SFML_BASE_ADD_LVALUE_REFERENCE(SFML_BASE_VARIANT_NTH_TYPE(0))>()))>
@@ -510,6 +611,9 @@ public:
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Visit the active alternative using a tail-call recursive dispatch (const overload)
+    ///
     ////////////////////////////////////////////////////////////
     template <typename Visitor,
               typename R = decltype(declVal<Visitor&&>()(
@@ -532,6 +636,13 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Like `recursiveVisit`, but takes one lambda per alternative
+    ///
+    /// The lambdas are combined into an `OverloadSet` and the resulting
+    /// callable is then forwarded to `recursiveVisit`. This is the
+    /// pattern-matching style entry point.
+    ///
+    ////////////////////////////////////////////////////////////
     template <typename... Fs>
     [[nodiscard, gnu::always_inline, gnu::flatten]] auto recursiveMatch(
         Fs&&... fs) & -> decltype(recursiveVisit(OverloadSet{static_cast<Fs&&>(fs)...}))
@@ -541,6 +652,9 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Pattern-matching variant of `recursiveVisit` (const overload)
+    ///
+    ////////////////////////////////////////////////////////////
     template <typename... Fs>
     [[nodiscard, gnu::always_inline, gnu::flatten]] auto recursiveMatch(
         Fs&&... fs) const& -> decltype(recursiveVisit(OverloadSet{static_cast<Fs&&>(fs)...}))
@@ -549,6 +663,19 @@ public:
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Visit the active alternative using a single linear dispatch
+    ///
+    /// Unlike `recursiveVisit`, this implementation expands a single
+    /// fold expression that compares the discriminator against every
+    /// alternative index. It can produce better codegen for moderate
+    /// alternative counts when the visitor has a non-void, non-reference
+    /// return type.
+    ///
+    /// \param visitor Callable invoked with the active alternative
+    ///
+    /// \return Whatever `visitor` returns
+    ///
     ////////////////////////////////////////////////////////////
     template <typename Visitor,
               typename R = decltype(declVal<Visitor&&>()(declVal<SFML_BASE_ADD_LVALUE_REFERENCE(SFML_BASE_VARIANT_NTH_TYPE(0))>()))>
@@ -579,6 +706,9 @@ public:
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Visit the active alternative using a single linear dispatch (const overload)
+    ///
     ////////////////////////////////////////////////////////////
     template <typename Visitor,
               typename R = decltype(declVal<Visitor&&>()(
@@ -611,6 +741,13 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Like `linearVisit`, but takes one lambda per alternative
+    ///
+    /// The lambdas are combined into an `OverloadSet` and the resulting
+    /// callable is then forwarded to `linearVisit`. This is the
+    /// pattern-matching style entry point.
+    ///
+    ////////////////////////////////////////////////////////////
     template <typename... Fs>
     [[nodiscard, gnu::always_inline, gnu::flatten]] auto linearMatch(Fs&&... fs) & -> decltype(linearVisit(OverloadSet{
         static_cast<Fs&&>(fs)...}))
@@ -619,6 +756,9 @@ public:
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Pattern-matching variant of `linearVisit` (const overload)
+    ///
     ////////////////////////////////////////////////////////////
     template <typename... Fs>
     [[nodiscard, gnu::always_inline, gnu::flatten]] auto linearMatch(Fs&&... fs) const& -> decltype(linearVisit(OverloadSet{

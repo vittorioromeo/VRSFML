@@ -30,20 +30,58 @@ struct AudioSettings;
 namespace sf
 {
 ////////////////////////////////////////////////////////////
+/// \brief Streamed music source built on top of `sf::SoundStream`
+///
+/// `Music` is the high-level streamed counterpart to
+/// `sf::Sound`: it pulls samples on demand from a
+/// `sf::MusicReader` instead of holding the entire decoded
+/// audio in memory. It is the right choice for long tracks
+/// (background music, voice-overs, etc.) where loading the
+/// whole file at once would be wasteful.
+///
+/// A `Music` instance is bound to a `sf::PlaybackDevice` and a
+/// `sf::MusicReader`; both must outlive the music object.
+///
+/// `Music` also adds support for custom loop sub-ranges via
+/// `setLoopPoints` / `getLoopPoints`.
+///
+////////////////////////////////////////////////////////////
 class SFML_AUDIO_API Music : public SoundStream
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Construct the music from a music source
+    /// \brief Construct a music stream from a music reader and a settings snapshot
     ///
-    /// \param musicReader Music source to stream data from
+    /// The music is bound to `playbackDevice` (which must
+    /// outlive it) and pulls samples from `musicReader` (which
+    /// must also outlive it). Every property in `audioSettings`
+    /// is applied immediately.
+    ///
+    /// \param playbackDevice Playback device to render through
+    /// \param musicReader    Music source to stream data from
+    /// \param audioSettings  Initial audio settings to apply
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit Music(PlaybackDevice& playbackDevice, MusicReader& musicReader, const AudioSettings& audioSettings);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Construct a music stream from a music reader with default settings
+    ///
+    /// Equivalent to passing a default-constructed
+    /// `AudioSettings` to the other constructor.
+    ///
+    /// \param playbackDevice Playback device to render through
+    /// \param musicReader    Music source to stream data from
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit Music(PlaybackDevice& playbackDevice, MusicReader& musicReader);
 
     ////////////////////////////////////////////////////////////
     /// \brief Disallow construction from a temporary music reader
+    ///
+    /// `Music` only stores a reference to the reader, so
+    /// constructing one from a temporary would immediately
+    /// dangle.
     ///
     ////////////////////////////////////////////////////////////
     Music(PlaybackDevice&, const MusicReader&& buffer, const AudioSettings& audioSettings) = delete;
@@ -68,35 +106,38 @@ public:
     Music& operator=(const Music&) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Deleted copy constructor
+    /// \brief Deleted move constructor
     ///
     ////////////////////////////////////////////////////////////
     Music(Music&&) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Deleted copy assignment
+    /// \brief Deleted move assignment
     ///
     ////////////////////////////////////////////////////////////
     Music& operator=(Music&&) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Structure template defining a time range
+    /// \brief Generic `[offset, offset + length)` range
+    ///
+    /// Used to express loop ranges (see `setLoopPoints`) in
+    /// either time units or sample units.
     ///
     ////////////////////////////////////////////////////////////
     template <typename T>
     struct [[nodiscard]] Span
     {
-        T offset{}; //!< The beginning offset of the time range
-        T length{}; //!< The length of the time range
+        T offset{}; //!< Beginning of the range
+        T length{}; //!< Length of the range
     };
 
-    // Define the relevant `Span` types
+    /// Time-valued specialization of `Span`, used by `setLoopPoints` / `getLoopPoints`.
     using TimeSpan = Span<Time>;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the positions of the of the music's looping sequence
+    /// \brief Get the current loop range of the music
     ///
-    /// \return `TimeSpan` containing looping sequence positions
+    /// \return `TimeSpan` describing the active loop sub-range
     ///
     /// \warning Since `setLoopPoints()` performs some adjustments on the
     /// provided values and rounds them to internal samples, a call to
@@ -133,7 +174,9 @@ public:
     void setLoopPoints(TimeSpan timePoints);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the music reader attached to the music
+    /// \brief Get the music reader this stream is pulling samples from
+    ///
+    /// \return Reference to the music reader this music was constructed with
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const MusicReader& getMusicReader() const;

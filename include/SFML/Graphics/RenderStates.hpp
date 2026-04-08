@@ -51,50 +51,47 @@ struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::RenderStates
+/// \struct sf::RenderStates
 /// \ingroup graphics
 ///
-/// There are six global states that can be applied to
-/// the drawn objects:
-/// \li the blend mode: how pixels of the object are blended with the background
-/// \li the stencil mode: how pixels of the object interact with the stencil buffer
-/// \li the transform: how the object is positioned/rotated/scaled
-/// \li the texture: what image is mapped to the object
-/// \li the shader: what custom effect is applied to the object
+/// `sf::RenderStates` is the bag of state passed to every
+/// `sf::RenderTarget::draw` call. It is an aggregate of six
+/// public members:
 ///
-/// High-level objects such as sprites or text force some of
-/// these states when they are drawn. For example, a sprite
-/// will set its own texture, so that you don't have to care
-/// about it when drawing the sprite.
+/// \li `blendMode`   -- how pixels of the object are blended with the background
+/// \li `stencilMode` -- how pixels of the object interact with the stencil buffer
+/// \li `transform`   -- how the object is positioned, rotated, and scaled
+/// \li `view`        -- which view (camera) is active for this draw call
+/// \li `texture`     -- which texture is sampled by the shader
+/// \li `shader`      -- which custom shader runs (if any)
 ///
-/// The transform is a special case: sprites, texts and shapes
-/// (and it's a good idea to do it with your own drawable classes
-/// too) combine their transform with the one that is passed in the
-/// RenderStates structure. So that you can use a "global" transform
-/// on top of each object's transform.
+/// High-level objects such as `sf::Sprite`, `sf::Shape`, and
+/// `sf::Text` may need some of these to be set up before drawing.
+/// In particular, `sf::Sprite` and `sf::Shape` do not own a
+/// texture in VRSFML: you must either pass the texture as a draw
+/// argument or assign it to `RenderStates::texture` yourself.
 ///
-/// Most objects, especially high-level drawables, can be drawn
-/// directly without defining render states explicitly -- the
-/// default set of states is ok in most cases.
+/// The transform is special: drawables that have their own
+/// `transform` (sprites, texts, shapes, ...) combine their local
+/// transform with the one passed in `RenderStates`, so a "global"
+/// transform composes naturally on top of every per-object
+/// transform.
+///
+/// `sf::RenderStates` is an aggregate, so it is most often
+/// constructed inline with C++20 designated initializers:
+///
 /// \code
-/// window.draw(sprite);
+/// // Default render states.
+/// window.draw(sprite, texture);
+///
+/// // Custom shader, defaults for everything else.
+/// window.draw(sprite, texture, {.shader = &myShader});
+///
+/// // Custom view + custom blend mode.
+/// window.draw(shape, {.blendMode = sf::BlendAdd, .view = myView});
 /// \endcode
 ///
-/// If you want to use a single specific render state,
-/// for example a shader, you can pass it directly to the Draw
-/// function: `sf::RenderStates` has an implicit one-argument
-/// constructor for each state.
-/// \code
-/// window.draw(sprite, shader);
-/// \endcode
-///
-/// When you're inside the `draw` function of a drawable
-/// object, you can either pass the render states unmodified,
-/// or change some of them.
-/// For example, a transformable object will combine the
-/// current transform with its own transform. A sprite will
-/// set its texture. Etc.
-///
-/// \see `sf::RenderTarget`
+/// \see `sf::RenderTarget`, `sf::BlendMode`, `sf::StencilMode`,
+///      `sf::Transform`, `sf::View`, `sf::Shader`, `sf::Texture`
 ///
 ////////////////////////////////////////////////////////////

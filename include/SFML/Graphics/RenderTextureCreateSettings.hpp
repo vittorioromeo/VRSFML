@@ -12,19 +12,21 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief Structure defining the settings of the Framebuffer
-///        Object attached to a RenderTexture
+/// \brief Settings used to create the framebuffer object backing a `sf::RenderTexture`
+///
+/// All members default to sensible values, so the struct can usually
+/// be passed empty (e.g. via designated initializers) and only the
+/// fields that need to differ from their defaults need to be set.
 ///
 ////////////////////////////////////////////////////////////
 struct RenderTextureCreateSettings
 {
-    unsigned int    depthBits{0u};         //!< Bits of the depth buffer attachment
-    unsigned int    stencilBits{0u};       //!< Bits of the stencil buffer attachment
-    unsigned int    antiAliasingLevel{0u}; //!< Level of multisampling (MSAA)
+    unsigned int    depthBits{0u};         //!< Number of bits for the depth buffer attachment (0 = no depth buffer)
+    unsigned int    stencilBits{0u};       //!< Number of bits for the stencil buffer attachment (0 = no stencil buffer)
+    unsigned int    antiAliasingLevel{0u}; //!< Multisampling (MSAA) sample count (0 or 1 = disabled)
     bool            sRgbCapable{false};    //!< Whether the texture should use sRGB encoding
-    bool            smooth{false};         //!<  Whether the texture should use the smooth filter
-    TextureWrapMode wrapMode{
-        TextureWrapMode::Clamp}; //!< Texture wrap mode to use for the texture attached to the render texture
+    bool            smooth{false};         //!< Whether linear filtering should be enabled on the texture
+    TextureWrapMode wrapMode{TextureWrapMode::Clamp}; //!< Wrap mode used when sampling the attached texture
 };
 
 } // namespace sf

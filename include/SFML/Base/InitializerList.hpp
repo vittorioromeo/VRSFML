@@ -3,6 +3,19 @@
 // https://github.com/vittorioromeo/VRSFML/blob/master/license.md
 
 
+////////////////////////////////////////////////////////////
+/// \file
+/// \brief Provides `std::initializer_list` without including `<initializer_list>`
+///
+/// `std::initializer_list` is implicitly used by the language for
+/// brace-init constructors, so the type itself must live in `std`.
+/// This header defines the minimal interface that the compiler expects
+/// while pretending to be the real `<initializer_list>` header (via
+/// the standard libraries' include guards). When parsed by clangd we
+/// fall back to the real header to avoid double-definition issues.
+///
+////////////////////////////////////////////////////////////
+
 #ifdef __CLANGD__
 
     #include <initializer_list> // IWYU pragma: export

@@ -12,11 +12,21 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
+/// \brief Empty placeholder type returned in place of `void`
+///
+////////////////////////////////////////////////////////////
 struct RegularizeVoidDummy
 {
 };
 
 
+////////////////////////////////////////////////////////////
+/// \brief Invoke `f()` and replace a `void` return with `RegularizeVoidDummy`
+///
+/// Useful in generic code that wants to treat any callable uniformly:
+/// after `regularizeVoid`, the result is always a regular value type
+/// even if `f` returns `void`.
+///
 ////////////////////////////////////////////////////////////
 template <typename F>
 [[nodiscard, gnu::always_inline, gnu::flatten]] inline constexpr auto regularizeVoid(F&& f)

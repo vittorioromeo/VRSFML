@@ -34,11 +34,19 @@ struct [[nodiscard]] SFML_GRAPHICS_API RoundedRectangleShapeData
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::RoundedRectangleShapeData
+/// \struct sf::RoundedRectangleShapeData
 /// \ingroup graphics
 ///
-/// TODO P1: docs
+/// `sf::RoundedRectangleShapeData` describes an axis-aligned
+/// rectangle whose corners are rounded with a quarter-circle of
+/// radius `cornerRadius`. The smoothness of each rounded corner is
+/// controlled by `cornerPointCount`.
 ///
-/// \see `sf::Shape`
+/// Like other `*ShapeData` types, it embeds the standard
+/// transformable and shape appearance members and is consumed by
+/// `sf::ShapeUtils` and `sf::CPUDrawableBatch::add` -- it is not
+/// directly drawable on its own.
+///
+/// \see `sf::Shape`, `sf::RectangleShapeData`, `sf::ShapeUtils`
 ///
 ////////////////////////////////////////////////////////////

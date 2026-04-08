@@ -15,24 +15,33 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief Settings used to draw an array of vertices and precomputed quad indices
+/// \brief Parameters for `sf::RenderTarget::drawQuads`
+///
+/// `vertexSpan` is interpreted as 4 vertices per quad. The renderer
+/// uses a precomputed index buffer to expand quads into two
+/// triangles each, so the caller does not have to duplicate
+/// vertices.
 ///
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] DrawQuadsSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    base::Span<const Vertex> vertexSpan;
-    PrimitiveType            primitiveType;
+    base::Span<const Vertex> vertexSpan;    //!< Range of vertices laid out as groups of 4 corners
+    PrimitiveType            primitiveType; //!< Primitive type used for the expanded triangles
 };
 
 } // namespace sf
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::RenderTarget
+/// \struct sf::DrawQuadsSettings
 /// \ingroup graphics
 ///
-/// TODO P1: docs
+/// `sf::DrawQuadsSettings` is a convenience for drawing groups of
+/// 4-vertex quads without having to manually duplicate vertices for
+/// the two triangles each quad consists of. The renderer reuses a
+/// precomputed quad index buffer to perform the expansion in a
+/// single indexed draw call.
 ///
-/// \see TODO P1: docs
+/// \see `sf::DrawIndexedVerticesSettings`, `sf::RenderTarget`
 ///
 ////////////////////////////////////////////////////////////

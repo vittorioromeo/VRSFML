@@ -640,7 +640,7 @@ public:
             if (rect.size.x < label.getLocalBounds().size.x + padding * 2.f + 2.f)
             {
                 sf::UnicodeString string = label.getString();
-                string.replace(" ", "\n");
+                string.replaceAllOccurrences(" ", "\n");
                 label.setString(string);
             }
             while (rect.size.x < label.getLocalBounds().size.x + padding * 2.f + 2.f)

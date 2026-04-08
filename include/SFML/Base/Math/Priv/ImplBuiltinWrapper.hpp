@@ -4,6 +4,21 @@
 
 
 ////////////////////////////////////////////////////////////
+/// \file
+/// \brief Macros that emit type-dispatching wrappers around math builtins
+///
+/// `SFML_BASE_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_1ARG(name)` and its
+/// 2-arg counterpart generate a `sf::base::name` function template
+/// that picks `__builtin_<name>f`, `__builtin_<name>`, or
+/// `__builtin_<name>l` depending on the floating-point type, with a
+/// `static_assert` for unsupported types.
+///
+/// Used by every per-function header in `SFML/Base/Math/*.hpp`.
+///
+////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Trait/IsSame.hpp"

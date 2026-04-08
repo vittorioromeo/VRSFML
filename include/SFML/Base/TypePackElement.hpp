@@ -4,6 +4,18 @@
 
 
 ////////////////////////////////////////////////////////////
+/// \file
+/// \brief Compile-time access to the `N`-th type in a parameter pack
+///
+/// `TypePackElement<N, Ts...>` evaluates to the `N`-th type in `Ts...`.
+/// Prefers the `__type_pack_element` compiler builtin (Clang/MSVC),
+/// otherwise falls back to a manually unrolled `if constexpr`
+/// implementation that recurses ten elements at a time.
+///
+////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/SizeT.hpp"

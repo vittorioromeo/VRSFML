@@ -65,10 +65,11 @@ using WindowHandle = "platform-specific";
 /// Platform        | Type
 /// ----------------|------------------------------------------------------------
 /// Windows         | \p HWND
-/// Linux/FreeBSD   | \p %Window
+/// Linux/FreeBSD   | \p %Window (X11)
 /// macOS           | either \p NSWindow* or \p NSView*, disguised as \p void*
-/// iOS             | \p UIWindow*
-/// Android         | \p ANativeWindow*
+/// iOS             | \p UIWindow*, disguised as \p void*
+/// Android         | \p ANativeWindow*, disguised as \p void*
+/// Emscripten      | CSS selector string (e.g. `"#canvas"`)
 ///
 /// \par macOS Specification
 ///

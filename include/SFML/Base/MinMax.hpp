@@ -6,6 +6,11 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
+/// \brief Return a reference to the smaller of two values
+///
+/// Equivalent to `std::min` but does not include `<algorithm>`.
+///
+////////////////////////////////////////////////////////////
 template <typename T>
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T& min(const T& a, const T& b) noexcept
 {
@@ -14,6 +19,11 @@ template <typename T>
 }
 
 
+////////////////////////////////////////////////////////////
+/// \brief Return a reference to the larger of two values
+///
+/// Equivalent to `std::max` but does not include `<algorithm>`.
+///
 ////////////////////////////////////////////////////////////
 template <typename T>
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T& max(const T& a, const T& b) noexcept

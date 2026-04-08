@@ -56,7 +56,14 @@ class SFML_GRAPHICS_API Shape :
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Plain-data initializer for `sf::Shape`
+    ///
+    /// Bundles the standard transformable members (`position`,
+    /// `scale`, `origin`, `rotation`) with the standard shape
+    /// appearance members (`textureRect`, `outlineTextureRect`,
+    /// `fillColor`, `outlineColor`, `outlineThickness`,
+    /// `miterLimit`). Designed to be created with C++20
+    /// designated initializers.
     ///
     ////////////////////////////////////////////////////////////
     struct [[nodiscard]] Data
@@ -66,7 +73,14 @@ public:
     };
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Construct a shape from a `Data` initializer
+    ///
+    /// The shape's transform and appearance are taken from
+    /// `data`. Concrete subclasses (`sf::CircleShape`,
+    /// `sf::RectangleShape`, `sf::ConvexShape`, ...) extend the
+    /// `Data` struct with their own geometry parameters.
+    ///
+    /// \param data Combined transformable and appearance settings
     ///
     ////////////////////////////////////////////////////////////
     explicit Shape(const Data& data);
@@ -270,7 +284,14 @@ public:
     [[nodiscard]] Rect2f getGlobalBounds() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Read-only view of the shape's fill vertices
+    ///
+    /// Returns the contiguous range of vertices that make up the
+    /// filled interior of the shape, in the order expected by the
+    /// renderer. Useful for custom drawable batches that want to
+    /// consume the shape's geometry directly.
+    ///
+    /// \return Span over the fill vertices (invalidated if the shape changes)
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] ConstVertexSpan getFillVertices() const
@@ -279,7 +300,12 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Read-only view of the shape's outline vertices
+    ///
+    /// Returns the contiguous range of vertices that make up the
+    /// outline of the shape (empty if `outlineThickness == 0`).
+    ///
+    /// \return Span over the outline vertices (invalidated if the shape changes)
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] ConstVertexSpan getOutlineVertices() const
@@ -424,23 +450,35 @@ template <typename TData>
 /// \class sf::Shape
 /// \ingroup graphics
 ///
-/// `sf::Shape` is a non-polymorphic base class that allows to
-/// define and display a custom convex shape on a render target.
+/// `sf::Shape` is the **non-polymorphic** base class for all
+/// built-in textured shapes with an optional outline. Concrete
+/// shapes (`sf::CircleShape`, `sf::RectangleShape`,
+/// `sf::ConvexShape`, ...) compose with `Shape` and provide their
+/// own geometry.
 ///
-/// In addition to the attributes provided by the specialized
-/// shape classes, a shape always has the following attributes:
-/// \li a texture
-/// \li a texture rectangle
+/// Unlike upstream SFML, `sf::Shape` is **not** a virtual base.
+/// VRSFML deliberately removes the `sf::Drawable` interface and
+/// the `vector<unique_ptr<Drawable>>` pattern in favor of flat
+/// concrete types. Each shape stores its tessellated vertex data
+/// directly and is drawn through the dedicated `RenderTarget::draw`
+/// overload, with the texture (if any) supplied via
+/// `RenderStates::texture` -- the shape itself does not own a
+/// texture pointer.
+///
+/// Every shape carries:
+/// \li a texture rectangle for the fill
+/// \li a texture rectangle for the outline
 /// \li a fill color
 /// \li an outline color
 /// \li an outline thickness
+/// \li a miter limit (for the outline join)
 ///
-/// Each feature is optional, and can be disabled easily:
-/// \li the texture can be null
-/// \li the fill/outline colors can be `sf::Color::Transparent`
-/// \li the outline thickness can be zero
+/// All of these are optional and can be disabled with the obvious
+/// values (`sf::Color::Transparent`, `0` thickness, full-texture
+/// rectangles, ...).
 ///
-/// \see `sf::RectangleShape`, `sf::CircleShape`, `sf::ConvexShape`, `sf::Transformable`
+/// \see `sf::RectangleShape`, `sf::CircleShape`, `sf::ConvexShape`,
+///      `sf::Transformable`, `sf::ShapeUtils`
 ///
 ////////////////////////////////////////////////////////////
 

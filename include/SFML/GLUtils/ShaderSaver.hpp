@@ -6,24 +6,25 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-/// \brief Automatic wrapper for saving and restoring the current shader binding
+/// \brief RAII guard that saves and restores the current shader program binding
+///
+/// On construction, queries `GL_CURRENT_PROGRAM` and stores its value.
+/// On destruction, restores it via `glUseProgram`. Useful when a
+/// function needs to bind its own shader temporarily without
+/// disturbing surrounding rendering state.
 ///
 ////////////////////////////////////////////////////////////
 class ShaderSaver
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// The current shader binding is saved.
+    /// \brief Default constructor: snapshot the current shader program
     ///
     ////////////////////////////////////////////////////////////
     ShaderSaver();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Destructor
-    ///
-    /// The previous shader binding is restored.
+    /// \brief Destructor: restore the previously saved shader program
     ///
     ////////////////////////////////////////////////////////////
     ~ShaderSaver();
@@ -40,7 +41,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    int m_shaderBinding; //!< Shader binding to restore
+    int m_shaderBinding; //!< Saved `GL_CURRENT_PROGRAM` to restore
 };
 
 } // namespace sf::priv

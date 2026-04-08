@@ -13,7 +13,7 @@
 
 namespace sf
 {
-struct Angle;
+class Angle;
 
 ////////////////////////////////////////////////////////////
 /// \brief Class template for manipulating

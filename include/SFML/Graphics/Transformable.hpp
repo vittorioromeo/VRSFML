@@ -14,7 +14,18 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Standalone aggregate that exposes the standard transformable members
+///
+/// `sf::Transformable` is a flat, non-polymorphic struct that
+/// holds the position, scale, origin, and rotation members
+/// (defined by `SFML_DEFINE_TRANSFORMABLE_DATA_MEMBERS`) plus
+/// the helper methods provided by `TransformableMixin` (such as
+/// `getTransform`, `getInverseTransform`, ...).
+///
+/// Use it as a member of your own types when you want to
+/// expose the same transform-management API as the built-in
+/// drawables, without the burden of inheriting from a virtual
+/// base class.
 ///
 ////////////////////////////////////////////////////////////
 struct SFML_GRAPHICS_API Transformable : TransformableMixin<Transformable>
@@ -64,38 +75,40 @@ struct SFML_GRAPHICS_API Transformable : TransformableMixin<Transformable>
 /// relative to its top-left corner while rotating it around its
 /// center, for example. To do such things, use `sf::Transform` directly.
 ///
-/// `sf::Transformable` can be used as a non-polymorphic base class.
+/// `sf::Transformable` can be used as a **non-polymorphic** base
+/// class -- VRSFML deliberately removes virtual interfaces from
+/// the drawable hierarchy.
 /// \code
-/// class MyEntity : public sf::Transformable
+/// struct MyEntity : sf::Transformable
 /// {
 ///     void draw(sf::RenderTarget& target, sf::RenderStates states) const
 ///     {
 ///         states.transform *= getTransform();
-///         target.draw(..., states);
+///         target.draw(/* vertex data */, states);
 ///     }
 /// };
 ///
 /// MyEntity entity;
-/// entity.position = {10, 20};
-/// entity.rotation = sf::degrees(45);
+/// entity.position = {10.f, 20.f};
+/// entity.rotation = sf::degrees(45.f);
 /// window.draw(entity);
 /// \endcode
 ///
-/// It can also be used as a member, if you don't want to use
-/// its API directly (because you don't need all its functions,
-/// or you have different naming conventions for example).
+/// It can also be embedded as a member, if you do not want to
+/// expose its public members directly (e.g. because your code
+/// uses different naming conventions):
 /// \code
 /// class MyEntity
 /// {
 /// public:
-///     void SetPosition(const MyVec2& v)
+///     void setPosition(const MyVec2& v)
 ///     {
-///         myTransform.position = v.x(), v.y();
+///         myTransform.position = {v.x(), v.y()};
 ///     }
 ///
 ///     void draw(sf::RenderTarget& target) const
 ///     {
-///         target.draw(..., myTransform.getTransform());
+///         target.draw(/* vertex data */, {.transform = myTransform.getTransform()});
 ///     }
 ///
 /// private:
@@ -103,18 +116,19 @@ struct SFML_GRAPHICS_API Transformable : TransformableMixin<Transformable>
 /// };
 /// \endcode
 ///
-/// A note on coordinates and undistorted rendering: \n
-/// By default, SFML (or more exactly, OpenGL) may interpolate drawable objects
-/// such as sprites or texts when rendering. While this allows transitions
-/// like slow movements or rotations to appear smoothly, it can lead to
-/// unwanted results in some cases, for example blurred or distorted objects.
-/// In order to render a `sf::Drawable` object pixel-perfectly, make sure
-/// the involved coordinates allow a 1:1 mapping of pixels in the window
-/// to texels (pixels in the texture). More specifically, this means:
-/// * The object's position, origin and scale have no fractional part
-/// * The object's and the view's rotation are a multiple of 90 degrees
-/// * The view's center and size have no fractional part
+/// A note on coordinates and undistorted rendering: by default,
+/// the GPU may interpolate drawable objects when rendering.
+/// While this enables smooth transitions for moving or rotating
+/// content, it can lead to unwanted blur or distortion in some
+/// cases. To render an entity pixel-perfectly, make sure that
+/// the involved coordinates allow a 1:1 mapping between window
+/// pixels and texture texels. More specifically:
+/// * The object's `position`, `origin`, and `scale` have no
+///   fractional part.
+/// * The object's `rotation` and the view's `rotation` are
+///   multiples of 90 degrees.
+/// * The view's `center` and `size` have no fractional part.
 ///
-/// \see `sf::Transform`
+/// \see `sf::Transform`, `sf::TransformableMixin`
 ///
 ////////////////////////////////////////////////////////////

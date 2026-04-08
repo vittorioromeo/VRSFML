@@ -306,14 +306,14 @@ base::SizeT UnicodeString::find(const UnicodeString& str, base::SizeT start) con
 
 
 ////////////////////////////////////////////////////////////
-void UnicodeString::replace(base::SizeT position, base::SizeT length, const UnicodeString& replaceWith)
+void UnicodeString::replaceRange(base::SizeT position, base::SizeT length, const UnicodeString& replaceWith)
 {
     m_impl->string.replace(position, length, replaceWith.m_impl->string);
 }
 
 
 ////////////////////////////////////////////////////////////
-void UnicodeString::replace(const UnicodeString& searchFor, const UnicodeString& replaceWith)
+void UnicodeString::replaceAllOccurrences(const UnicodeString& searchFor, const UnicodeString& replaceWith)
 {
     const base::SizeT step = replaceWith.getSize();
     const base::SizeT len  = searchFor.getSize();
@@ -322,7 +322,7 @@ void UnicodeString::replace(const UnicodeString& searchFor, const UnicodeString&
     // Replace each occurrence of search
     while (pos != InvalidPos)
     {
-        replace(pos, len, replaceWith);
+        replaceRange(pos, len, replaceWith);
         pos = find(searchFor, pos + step);
     }
 }
