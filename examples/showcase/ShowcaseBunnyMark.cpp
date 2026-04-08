@@ -146,7 +146,7 @@ void ExampleBunnyMark::draw()
                                                   .outlineColor     = sf::Color::Black,
                                                   .outlineThickness = 4.f,
                                               },
-                                              {.view = *m_deps.view});
+                                              {.view = *m_deps.view}); // TODO P1: add a way to prevent flushing
 
     for (sf::base::SizeT j = 0u; j < vertices.size(); j += 4u)
     {
