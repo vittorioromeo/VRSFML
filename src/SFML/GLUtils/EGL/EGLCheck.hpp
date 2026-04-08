@@ -16,13 +16,18 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-/// \brief Check the last EGL error
+/// \brief Decode and log a known EGL error
 ///
-/// \param file Source file where the call is located
-/// \param line Line number of the source file where the call is located
+/// Translates a previously retrieved EGL error code into a human-readable
+/// description and writes it to `sf::priv::err()` along with the source
+/// location of the offending call. Invoked by `EglScopedChecker` and
+/// not meant to be called directly by user code; use the `eglCheck`
+/// macro instead.
+///
+/// \param eglError   The EGL error code previously returned by `eglGetError()`
+/// \param file       Source file where the offending call is located
+/// \param line       Line number in the source file where the call is located
 /// \param expression The evaluated expression as a string
-///
-/// \return `false` if an error occurred, `true` otherwise
 ///
 ////////////////////////////////////////////////////////////
 [[gnu::cold]] void eglCheckError(unsigned int eglError, const char* file, unsigned int line, const char* expression);
@@ -30,10 +35,12 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 /// \brief Helper class to check for EGL errors in debug mode
 ///
-/// This RAII style class is used internally to detect and report EGL
-/// errors during development. It captures the location of an EGL call
-/// and checks for errors when is object is destroyed (i.e. after the
-/// EGL call executes).
+/// This RAII style class is used internally by the `eglCheck` macro
+/// to detect and report EGL errors during development. It captures
+/// the source location of an EGL call on construction (asserting that
+/// no error was already pending) and drains/checks the EGL error
+/// queue when the object is destroyed (i.e. after the wrapped EGL
+/// call has executed).
 ///
 ////////////////////////////////////////////////////////////
 struct EglScopedChecker
@@ -71,11 +78,18 @@ struct EglScopedChecker
 
 ////////////////////////////////////////////////////////////
 /// Macro to check every EGL API call
+///
+/// In debug builds, wraps the given EGL expression with an
+/// `EglScopedChecker` that captures the source location and detects
+/// errors before and after the call. In release builds the macro
+/// expands to the bare expression with no overhead. The wrapper
+/// preserves the value category and return type of the expression,
+/// so `eglCheck(eglCreateContext(...))` can be used directly in an
+/// assignment.
+///
 ////////////////////////////////////////////////////////////
 #ifdef SFML_DEBUG
 
-    // In debug mode, perform a test on every EGL call
-    // The do-while loop is needed so that glCheck can be used as a single statement in if/else branches
     #define eglCheck(...) \
         (::sf::priv::EglScopedChecker{__FILE__, #__VA_ARGS__, static_cast<unsigned int>(__LINE__)}, __VA_ARGS__)
 

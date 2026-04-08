@@ -38,34 +38,35 @@ struct [[nodiscard]] SFML_GRAPHICS_API ArrowShapeData
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::ArrowShapeData
+/// \struct sf::ArrowShapeData
 /// \ingroup graphics
 ///
-/// `sf::ArrowShapeData` is a structure that holds the geometric
-/// definition of an arrow. It defines properties like the length
-/// and width of the arrow's shaft, and the length and width of
-/// its head.
+/// `sf::ArrowShapeData` is a plain struct that holds the geometric
+/// definition of an arrow: the length/width of the shaft and the
+/// length/width of the head. It also embeds the standard
+/// transformable members (`position`, `scale`, `origin`, `rotation`)
+/// and the standard shape appearance members (`textureRect`,
+/// `outlineTextureRect`, `fillColor`, `outlineColor`,
+/// `outlineThickness`, `miterLimit`).
 ///
-/// This structure is typically used in conjunction with a generic
-/// shape class or a rendering function that can take this data
-/// to produce a visual representation of an arrow.
+/// `ArrowShapeData` is consumed by `sf::ShapeUtils` and by
+/// `sf::CPUDrawableBatch::add` to generate the corresponding vertex
+/// data. It is not directly drawable on its own.
 ///
 /// Example usage:
 /// \code
-/// sf::ArrowShapeData arrowData{
-///     .position = {100.f, 100.f},
+/// const sf::ArrowShapeData arrowData{
+///     .position    = {100.f, 100.f},
+///     .fillColor   = sf::Color::White,
 ///     .shaftLength = 100.f,
-///     .shaftWidth = 5.f,
-///     .headLength = 20.f,
-///     .headWidth = 15.f,
+///     .shaftWidth  = 5.f,
+///     .headLength  = 20.f,
+///     .headWidth   = 15.f,
 /// };
 ///
-/// window.draw(arrowData);
+/// drawableBatch.add(arrowData);
 /// \endcode
 ///
-/// The individual members `shaftLength`, `shaftWidth`, `headLength`,
-/// and `headWidth` control the respective dimensions of the arrow.
-///
-/// \see sf::Shape, sf::RectangleShape, sf::ConvexShape
+/// \see `sf::Shape`, `sf::ShapeUtils`, `sf::CurvedArrowShapeData`, `sf::DrawableBatch`
 ///
 ////////////////////////////////////////////////////////////

@@ -43,13 +43,28 @@ class SFML_GRAPHICS_API GlyphMappedText : public TextBase<GlyphMappedText>
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Initialization data for `sf::GlyphMappedText`
+    ///
+    /// Alias for `sf::GlyphMappedTextData`. Unlike `sf::TextData`,
+    /// it omits `characterSize`, `outlineThickness`, and `bold`,
+    /// which are baked into the associated `sf::GlyphMapping`.
     ///
     ////////////////////////////////////////////////////////////
     using Data = GlyphMappedTextData;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Construct a glyph-mapped text from preloaded resources
+    ///
+    /// All glyphs that the text needs must already be present in
+    /// `glyphMapping`. The font face is referenced for kerning
+    /// queries, the texture is referenced as the glyph atlas, and
+    /// the mapping is referenced for the glyph layout. None of
+    /// these are copied: they must outlive the text.
+    ///
+    /// \param fontFace     Font face used for kerning queries (referenced)
+    /// \param texture      Glyph atlas texture (referenced)
+    /// \param glyphMapping Precomputed glyph mapping (referenced)
+    /// \param data         Initial text properties
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] GlyphMappedText(const FontFace&     fontFace,
@@ -105,19 +120,28 @@ public:
     GlyphMappedText& operator=(GlyphMappedText&&) noexcept;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Replace the underlying font face, texture, and glyph mapping
+    ///
+    /// All three parameters are referenced (not copied) and must
+    /// outlive the text. The next draw will use the new resources.
+    ///
+    /// \param fontFace     New font face (for kerning queries)
+    /// \param texture      New glyph atlas texture
+    /// \param glyphMapping New precomputed glyph mapping
     ///
     ////////////////////////////////////////////////////////////
     void setGlyphMapping(const FontFace& fontFace, const Texture& texture, const GlyphMapping& glyphMapping);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Disallow setting from a temporary glyph mapping
     ///
     ////////////////////////////////////////////////////////////
     void setGlyphMapping(const FontFace& fontFace, const Texture& texture, GlyphMapping&& glyphMapping) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Get the glyph mapping currently used by this text
+    ///
+    /// \return Reference to the underlying `sf::GlyphMapping`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const GlyphMapping& getGlyphMapping() const;
@@ -133,7 +157,16 @@ public:
     [[nodiscard]] bool isBold() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief CRTP hook returning the "font source" -- in this case `*this`
+    ///
+    /// `sf::TextBase` calls this from templated code that needs
+    /// to access the glyph metrics provider. For
+    /// `GlyphMappedText` the metrics live on the object itself
+    /// (forwarded to the underlying `sf::FontFace` and
+    /// `sf::GlyphMapping`), so the implementation simply returns
+    /// `*this`.
+    ///
+    /// \return Reference to `*this`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const GlyphMappedText& getFontSource() const;
@@ -195,7 +228,9 @@ public:
     [[nodiscard]] float getUnderlineThickness(unsigned int characterSize) const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Get the glyph atlas texture currently used by this text
+    ///
+    /// \return Reference to the atlas texture
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const Texture& getTexture() const;
@@ -240,3 +275,37 @@ private:
 };
 
 } // namespace sf
+
+
+////////////////////////////////////////////////////////////
+/// \class sf::GlyphMappedText
+/// \ingroup graphics
+///
+/// `sf::GlyphMappedText` is the high-performance text drawable
+/// for static or frequently-redrawn strings. Where `sf::Text`
+/// rasterizes glyphs lazily as new code points or sizes are
+/// requested, `GlyphMappedText` requires the caller to preload
+/// all glyphs into a `sf::GlyphMapping` (via
+/// `sf::FontFace::loadGlyphs`) up front. After that, drawing is
+/// reduced to laying out vertices over a known glyph table --
+/// no font lookups, no FreeType calls, no atlas updates.
+///
+/// Because the character size, the bold flag, and the outline
+/// thickness are baked into the `GlyphMapping` itself, those
+/// fields are intentionally absent from `sf::GlyphMappedTextData`.
+/// To draw text with a different size or style, build (and
+/// cache) a separate `GlyphMapping`.
+///
+/// `sf::GlyphMappedText` borrows references to:
+/// \li a `sf::FontFace` (for kerning queries),
+/// \li a `sf::Texture` (the glyph atlas),
+/// \li a `sf::GlyphMapping` (the precomputed glyph layout).
+///
+/// All three must outlive the text object. In debug builds with
+/// `SFML_ENABLE_LIFETIME_TRACKING`, lifetime violations are
+/// detected automatically.
+///
+/// \see `sf::Text`, `sf::Font`, `sf::FontFace`,
+///      `sf::GlyphMapping`, `sf::TextureAtlas`
+///
+////////////////////////////////////////////////////////////

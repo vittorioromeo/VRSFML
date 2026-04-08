@@ -34,25 +34,36 @@ public:
     using Settings = WindowSettings;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct a new window
+    /// \brief Create a new window from a settings aggregate
     ///
-    /// Creates the render window with the specified \a windowSettings.
+    /// Creates a new top-level window described by
+    /// `windowSettings` and attaches an OpenGL context to it.
+    /// On failure (invalid settings, OS error, ...) returns
+    /// `base::nullOpt`.
+    ///
+    /// \param windowSettings Window creation parameters
+    ///
+    /// \return The newly created window on success, `base::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<Window> create(const Settings& windowSettings);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct the window from an existing control
+    /// \brief Create a window wrapping an existing native control
     ///
-    /// Use this constructor if you want to create an OpenGL
-    /// rendering area into an already existing control.
+    /// Use this overload to attach an OpenGL rendering context
+    /// to an already existing OS-level window/control. This is
+    /// useful for embedding SFML rendering inside a larger
+    /// application built with another GUI toolkit.
     ///
-    /// The second parameter is an optional structure specifying
-    /// advanced OpenGL context settings such as anti-aliasing,
-    /// depth-buffer bits, etc.
+    /// The optional second parameter specifies advanced OpenGL
+    /// context settings (depth/stencil bits, version, profile,
+    /// etc.).
     ///
-    /// \param handle   Platform-specific handle of the control
-    /// \param settings Additional settings for the underlying OpenGL context
+    /// \param handle          Platform-specific handle of the control to attach to
+    /// \param contextSettings Additional settings for the underlying OpenGL context
+    ///
+    /// \return The newly wrapped window on success, `base::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<Window> create(WindowHandle handle, const ContextSettings& contextSettings = {});
@@ -233,8 +244,11 @@ private:
 ///
 /// Usage example:
 /// \code
-/// // Declare and create a new window
-/// sf::Window window({.size{800u, 600u}, .title = "SFML Window"});
+/// // Initialize the window context (must outlive any window)
+/// auto windowContext = sf::WindowContext::create().value();
+///
+/// // Create a new window
+/// auto window = sf::Window::create({.size = {800u, 600u}, .title = "SFML Window"}).value();
 ///
 /// // Limit the framerate to 60 frames per second (this step is optional)
 /// window.setFramerateLimit(60);
@@ -242,21 +256,21 @@ private:
 /// // The main loop - ends as soon as the window is closed
 /// while (true)
 /// {
-///    // Event processing
-///    while (const sf::base::Optional event = window.pollEvent())
-///    {
-///        // Request for closing the window
-///        if (event->is<sf::Event::Closed>())
-///            return 0; // break out of both loops
-///    }
+///     // Event processing
+///     while (const sf::base::Optional event = window.pollEvent())
+///     {
+///         // Request for closing the window
+///         if (event->is<sf::Event::Closed>())
+///             return 0; // break out of both loops
+///     }
 ///
-///    // Activate the window for OpenGL rendering
-///    window.setActive();
+///     // Activate the window for OpenGL rendering
+///     (void)window.setActive();
 ///
-///    // OpenGL drawing commands go here...
+///     // OpenGL drawing commands go here...
 ///
-///    // End the current frame and display its contents on screen
-///    window.display();
+///     // End the current frame and display its contents on screen
+///     window.display();
 /// }
 /// \endcode
 ///

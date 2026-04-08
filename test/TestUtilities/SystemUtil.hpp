@@ -16,7 +16,7 @@ class UniquePtr;
 
 namespace sf
 {
-struct Angle;
+class Angle;
 class UnicodeString;
 class Time;
 

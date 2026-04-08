@@ -157,7 +157,7 @@ public:
     /// \return `true` if removal succeeds, `false` otherwise.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool remove() const;
+    [[nodiscard]] bool removeFromDisk() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Checks if the path is empty

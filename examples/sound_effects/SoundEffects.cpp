@@ -144,7 +144,7 @@ public:
         // Synchronize listener audio position with graphical position
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
-        if (!playbackDevice.updateListener(m_listener))
+        if (!playbackDevice.applyListener(m_listener))
             sf::cErr() << "Failed to update listener\n";
 
         m_music
@@ -218,7 +218,7 @@ public:
         // so that the music is right on top of the listener
         m_listener.position = {0.f, 0.f, 0.f};
 
-        if (!playbackDevice.updateListener(m_listener))
+        if (!playbackDevice.applyListener(m_listener))
             sf::cErr() << "Failed to update listener\n";
 
         m_music
@@ -290,7 +290,7 @@ public:
         // Synchronize listener audio position with graphical position
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
-        if (!playbackDevice.updateListener(m_listener))
+        if (!playbackDevice.applyListener(m_listener))
             sf::cErr() << "Failed to update listener\n";
 
         // Sound cone parameters
@@ -489,7 +489,7 @@ public:
         // so that the tone is right on top of the listener
         m_listener.position = {0.f, 0.f, 0.f};
 
-        if (!playbackDevice.updateListener(m_listener))
+        if (!playbackDevice.applyListener(m_listener))
             sf::cErr() << "Failed to update listener\n";
 
         m_toneSoundStream.emplace(*this, playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, sampleRate).play();
@@ -629,7 +629,7 @@ public:
         // Synchronize listener audio position with graphical position
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
-        if (!playbackDevice.updateListener(m_listener))
+        if (!playbackDevice.applyListener(m_listener))
             sf::cErr() << "Failed to update listener\n";
 
         m_dopplerSoundStream.emplace(*this, playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, sampleRate).play();
@@ -694,7 +694,7 @@ public:
         // Synchronize listener audio position with graphical position
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
-        if (!playbackDevice.updateListener(m_listener))
+        if (!playbackDevice.applyListener(m_listener))
             sf::cErr() << "Failed to update listener\n";
 
         m_music

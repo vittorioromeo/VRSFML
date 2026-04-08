@@ -4,6 +4,18 @@
 
 
 ////////////////////////////////////////////////////////////
+/// \file
+/// \brief Forward declarations of `std::align_val_t` and aligned `new`/`delete`
+///
+/// Allows code to use the aligned-allocation overloads of `operator new`
+/// and `operator delete` without pulling in the heavy `<new>` header.
+/// clangd is given the real header so its semantic analysis stays
+/// consistent with the rest of the standard library.
+///
+////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////
 #ifdef __CLANGD__
     #include <new> // IWYU pragma: export
 #endif

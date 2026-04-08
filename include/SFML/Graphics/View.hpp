@@ -30,11 +30,30 @@ namespace sf
 struct [[nodiscard]] SFML_GRAPHICS_API View
 {
     ////////////////////////////////////////////////////////////
-    /// \brief Scissor rectangle
+    /// \brief Normalized scissor rectangle, expressed as a fraction of the render target
+    ///
+    /// `ScissorRect` is a thin wrapper around `sf::Rect2f` that
+    /// asserts (in debug builds) that all four edges lie within
+    /// `[0, 1]`. Coordinates are interpreted as a ratio of the
+    /// render target's size, so that the scissor automatically
+    /// follows resize events.
+    ///
+    /// Use `fromRectClamped` if your input may fall outside the
+    /// allowed range and you want it silently clamped instead of
+    /// triggering an assertion.
     ///
     ////////////////////////////////////////////////////////////
     struct [[nodiscard]] ScissorRect : Rect2f
     {
+        ////////////////////////////////////////////////////////////
+        /// \brief Construct from explicit position and size
+        ///
+        /// \param thePosition Top-left corner, in `[0, 1]` along each axis
+        /// \param theSize     Size, in `[0, 1]` along each axis
+        ///
+        /// Asserts in debug builds that the resulting rectangle is
+        /// fully contained in `[0, 1] x [0, 1]`.
+        ///
         ////////////////////////////////////////////////////////////
         [[nodiscard, gnu::always_inline]] constexpr ScissorRect(Vec2f thePosition, Vec2f theSize) :
             Rect2f{thePosition, theSize}
@@ -50,11 +69,30 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
         }
 
         ////////////////////////////////////////////////////////////
+        /// \brief Implicit conversion from a `Rect2f`
+        ///
+        /// Allows passing a regular `sf::Rect2f` anywhere a
+        /// `ScissorRect` is expected. The same `[0, 1]` assertions
+        /// apply.
+        ///
+        ////////////////////////////////////////////////////////////
         [[nodiscard, gnu::always_inline]] constexpr /* implicit */ ScissorRect(const Rect2f& rect) :
             ScissorRect{rect.position, rect.size}
         {
         }
 
+        ////////////////////////////////////////////////////////////
+        /// \brief Build a `ScissorRect` by clamping a (possibly out-of-range) rectangle
+        ///
+        /// Unlike the constructors, this factory does not assert.
+        /// Position is clamped to `[0, 1]` and size is clamped so
+        /// that `position + size` never exceeds `1`. The result is
+        /// always a valid `ScissorRect`.
+        ///
+        /// \param rect Source rectangle (any values allowed)
+        ///
+        /// \return Clamped `ScissorRect`
+        ///
         ////////////////////////////////////////////////////////////
         [[nodiscard]] static constexpr ScissorRect fromRectClamped(sf::Rect2f rect)
         {
@@ -84,7 +122,16 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Create a view that exactly covers a render target of the given size
+    ///
+    /// The resulting view is centered on `size / 2` and has a size
+    /// of `size`, so that the world-to-screen mapping is the
+    /// identity (one world unit equals one pixel). This matches the
+    /// "default view" that `sf::RenderTarget` uses on creation.
+    ///
+    /// \param size Size of the target the view should cover, in pixels
+    ///
+    /// \return A view spanning `[0, 0, size.x, size.y]`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::const]] static constexpr View fromScreenSize(const Vec2f& size)
@@ -194,21 +241,20 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     ///
     /// Usage example:
     /// \code
-    /// // Create a view and a hypothetical render target size
-    /// sf::View gameView({100, 100}, {200, 150}); // Centered at (100, 100), showing 200x150 world units
-    /// sf::Vec2f targetSize(800, 600);
+    /// // A view centered at (100, 100), showing 200x150 world units.
+    /// const sf::View      gameView{.center = {100.f, 100.f}, .size = {200.f, 150.f}};
+    /// const sf::Vec2f     targetSize{800.f, 600.f};
     ///
-    /// // Simulate a mouse click at pixel (400, 300), the center of the screen
-    /// sf::Vec2f mousePixelPos(400, 300);
+    /// // Simulate a mouse click at pixel (400, 300), the center of the screen.
+    /// const sf::Vec2f     mousePixelPos{400.f, 300.f};
     ///
-    /// // Find out where that click corresponds to in the game world
-    /// sf::Vec2f worldPos = gameView.screenToWorld(mousePixelPos, targetSize);
-    /// // worldPos will be approximately (100, 100), the center of the view.
+    /// // Find out where that click corresponds to in the game world.
+    /// const sf::Vec2f worldPos = gameView.screenToWorld(mousePixelPos, targetSize);
+    /// // 'worldPos' will be approximately (100, 100), the center of the view.
     ///
-    /// // Now, let's go the other way to confirm.
-    /// // Where would the world origin (0, 0) appear on the screen?
-    /// sf::Vec2f originPixelPos = gameView.worldToScreen({0, 0}, targetSize);
-    /// // originPixelPos will be approximately (0, 0), the top-left of the screen.
+    /// // Now go the other way to confirm: where does the world origin (0, 0)
+    /// // appear on the screen?
+    /// const sf::Vec2f originPixelPos = gameView.worldToScreen({0.f, 0.f}, targetSize);
     /// \endcode
     ///
     /// \param point The point to transform, in target (pixel) coordinates.
@@ -351,33 +397,36 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
 /// transform on vertices is necessary but a subset of the generated
 /// fragments should not have an effect on the stencil buffer or
 /// blend with the color buffer.
-//
-/// To apply a view, you have to assign it to the render target.
-/// Then, objects drawn in this render target will be
-/// affected by the view until you use another view.
+///
+/// `sf::View` is an aggregate, so it is constructed and modified
+/// directly through its public members. To apply a view to a draw
+/// call, pass it as part of the `sf::RenderStates` (`.view = ...`).
+/// Subsequent draw calls that do not specify a view will use
+/// whatever view the render target was last given via
+/// `setView` (the "default view" if none was set).
 ///
 /// Usage example:
 /// \code
 /// auto window = sf::RenderWindow::create(/* ... */).value();
 ///
-/// // Initialize the view to a rectangle located at (100, 100) and with a size of 400x200
-/// sf::View view([{100, 100}, {400, 200}});
+/// // A view rectangle located at (100, 100) with a size of 400x200.
+/// sf::View view = sf::View::fromRect({{100.f, 100.f}, {400.f, 200.f}});
 ///
-/// // Rotate it by 45 degrees
-/// view.rotation += sf::degrees(45);
+/// // Rotate it by 45 degrees.
+/// view.rotation += sf::degrees(45.f);
 ///
-/// // Set its target viewport to be half of the window
-/// view.setViewport([{0.f, 0.f}, {0.5f, 1.f}});
+/// // Restrict its target viewport to the left half of the window.
+/// view.viewport = {{0.f, 0.f}, {0.5f, 1.f}};
 ///
-/// // Render stuff
+/// // Render 'someSprite' through the custom view.
 /// window.draw(someSprite, {.view = view});
 ///
-/// // Render stuff not affected by the view
+/// // Render 'someText' through whatever view is currently active on the target.
 /// window.draw(someText);
 /// \endcode
 ///
 /// See also the note on coordinates and undistorted rendering in `sf::Transformable`.
 ///
-/// \see `sf::RenderWindow`, `sf::RenderTexture`
+/// \see `sf::RenderWindow`, `sf::RenderTexture`, `sf::RenderStates`
 ///
 ////////////////////////////////////////////////////////////

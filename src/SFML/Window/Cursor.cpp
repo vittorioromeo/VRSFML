@@ -27,7 +27,7 @@ namespace sf
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool Cursor::reloadFromPixels(const base::U8* pixels, const Vec2u size, const Vec2u hotspot)
 {
-    auto surface = WindowContext::getSDLLayer().createSurfaceFromPixels(size, pixels);
+    auto surface = WindowContext::getSDLLayer().createSurfaceFromPixels(pixels, size);
     if (surface == nullptr)
     {
         priv::err() << "Failed to reload cursor from pixels";

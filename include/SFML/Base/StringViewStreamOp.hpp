@@ -12,6 +12,12 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
+/// \brief Stream-insertion operator for `sf::base::StringView`
+///
+/// Writes the viewed character range to any stream-like type that
+/// exposes a `write(const char*, long)` member.
+///
+////////////////////////////////////////////////////////////
 template <typename StreamLike>
 StreamLike& operator<<(StreamLike& stream, const StringView& stringView)
     requires(requires { stream.write(stringView.theData, static_cast<long>(stringView.theSize)); })

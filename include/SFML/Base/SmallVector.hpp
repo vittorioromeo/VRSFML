@@ -20,6 +20,20 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
+/// \brief Vector with inline storage for the first `N` elements (small buffer optimization)
+///
+/// Behaves like `Vector` but reserves space inside the object for `N`
+/// elements, avoiding any heap allocation when `size() <= N`. Once the
+/// vector grows past `N`, storage is moved to the heap and the inline
+/// buffer becomes unused until `shrinkToFit()` brings the size back
+/// below the threshold.
+///
+/// Implementation note: `m_heapData == nullptr` encodes "currently
+/// inline", which lets `SmallVector` remain trivially relocatable —
+/// after a `memcpy`, the recomputed inline-storage pointer still
+/// addresses the new object's own buffer.
+///
+////////////////////////////////////////////////////////////
 template <typename TItem, SizeT N>
 class [[nodiscard]] SmallVector
 {

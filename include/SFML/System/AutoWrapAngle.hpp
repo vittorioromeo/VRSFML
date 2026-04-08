@@ -67,7 +67,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr operator Angle() const noexcept
     {
-        return Angle(m_radians).wrapUnsigned();
+        return radians(m_radians).wrapUnsigned();
     }
 
     ////////////////////////////////////////////////////////////
@@ -112,10 +112,13 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Equality comparison operator
     ///
-    /// Compares the underlying radian values without wrapping.
+    /// Compares the underlying radian values after wrapping.
     ///
     ////////////////////////////////////////////////////////////
-    friend constexpr bool operator==(AutoWrapAngle lhs, AutoWrapAngle rhs) = default;
+    friend constexpr bool operator==(AutoWrapAngle lhs, AutoWrapAngle rhs)
+    {
+        return Angle(lhs) == Angle(rhs);
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Addition assignment operator

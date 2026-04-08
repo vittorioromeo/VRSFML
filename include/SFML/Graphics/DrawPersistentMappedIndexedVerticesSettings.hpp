@@ -22,27 +22,35 @@ class PersistentGPUDrawableBatch;
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief Settings used to draw a persistent mapped buffer and indices
+/// \brief Parameters for `sf::RenderTarget::drawPersistentMappedIndexedVertices`
+///
+/// Issues an indexed draw call from the GPU-resident, persistent
+/// mapped buffers owned by a `sf::PersistentGPUDrawableBatch`. The
+/// offsets and counts select the slice of the persistent buffers to
+/// draw, allowing the same batch to be partially submitted.
 ///
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] DrawPersistentMappedIndexedVerticesSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    const PersistentGPUDrawableBatch& gpuDrawableBatch;
-    base::SizeT                       indexCount;
-    base::SizeT                       indexOffset;
-    base::SizeT                       vertexOffset;
-    PrimitiveType                     primitiveType;
+    const PersistentGPUDrawableBatch& gpuDrawableBatch; //!< Source of the persistent vertex/index buffers
+    base::SizeT                       indexCount;       //!< Number of indices to consume from `indexOffset`
+    base::SizeT                       indexOffset;      //!< Offset (in indices) into the persistent index buffer
+    base::SizeT                       vertexOffset;     //!< Base vertex offset added to each fetched index
+    PrimitiveType                     primitiveType;    //!< How to interpret the indexed primitives
 };
 
 } // namespace sf
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::RenderTarget
+/// \struct sf::DrawPersistentMappedIndexedVerticesSettings
 /// \ingroup graphics
 ///
-/// TODO P1: docs
+/// `sf::DrawPersistentMappedIndexedVerticesSettings` is the lowest-
+/// overhead draw path for content that lives in a
+/// `sf::PersistentGPUDrawableBatch`: the buffers are mapped only
+/// once and the GPU is told to render a slice of them.
 ///
-/// \see TODO P1: docs
+/// \see `sf::PersistentGPUDrawableBatch`, `sf::RenderTarget`
 ///
 ////////////////////////////////////////////////////////////

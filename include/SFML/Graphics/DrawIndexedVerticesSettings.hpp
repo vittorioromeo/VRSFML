@@ -16,25 +16,32 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief Settings used to draw an array of indices and vertices
+/// \brief Parameters for `sf::RenderTarget::drawIndexedVertices`
+///
+/// Bundles a vertex array, an index array, and the primitive type.
+/// Indexed drawing lets you reuse vertices, which is significantly
+/// cheaper than duplicating them when many primitives share corners.
 ///
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] DrawIndexedVerticesSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    base::Span<const Vertex>    vertexSpan;
-    base::Span<const IndexType> indexSpan;
-    PrimitiveType               primitiveType;
+    base::Span<const Vertex>    vertexSpan;    //!< Range of unique vertices that will be referenced by the indices
+    base::Span<const IndexType> indexSpan;     //!< Range of indices into `vertexSpan` defining the primitives
+    PrimitiveType               primitiveType; //!< How to interpret the indexed primitives
 };
 
 } // namespace sf
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::RenderTarget
+/// \struct sf::DrawIndexedVerticesSettings
 /// \ingroup graphics
 ///
-/// TODO P1: docs
+/// `sf::DrawIndexedVerticesSettings` is the indexed counterpart of
+/// `sf::DrawVerticesSettings`. Instead of feeding the GPU one vertex
+/// per primitive corner, you provide a flat vertex pool plus a list
+/// of indices into that pool, allowing shared vertices to be reused.
 ///
-/// \see TODO P1: docs
+/// \see `sf::DrawVerticesSettings`, `sf::IndexType`, `sf::RenderTarget`
 ///
 ////////////////////////////////////////////////////////////

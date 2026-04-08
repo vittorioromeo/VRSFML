@@ -21,7 +21,11 @@
 namespace std
 {
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Forward declaration of `std::source_location`
+///
+/// Required for `__builtin_source_location` to work without including
+/// the heavy `<source_location>` standard header. The internal layout
+/// must match the one expected by the compiler builtin.
 ///
 ////////////////////////////////////////////////////////////
 struct source_location
@@ -44,7 +48,15 @@ struct source_location
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Lightweight replacement for `std::source_location`
+///
+/// Captures the file name, function name, line number, and column
+/// at the call site through the `__builtin_source_location` compiler
+/// builtin. Avoids the cost of including the `<source_location>`
+/// standard header.
+///
+/// Use `SourceLocation::current()` as a default function argument to
+/// capture the caller's location automatically.
 ///
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] SourceLocation
@@ -53,6 +65,14 @@ struct [[nodiscard]] SourceLocation
     BuiltinTypePtr ptr   = nullptr;
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Capture the current source location at the call site
+    ///
+    /// Intended to be used as a default argument so that the captured
+    /// location refers to the caller, not to this function.
+    ///
+    /// \return A `SourceLocation` describing the call site
+    ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] static consteval SourceLocation current(
         BuiltinTypePtr ptr = __builtin_source_location()) noexcept
@@ -63,6 +83,11 @@ struct [[nodiscard]] SourceLocation
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Get the line number associated with the source location
+    ///
+    /// \return Line number of the captured source location
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr unsigned int line() const noexcept
     {
         SFML_BASE_ASSERT_AND_ASSUME(ptr != nullptr);
@@ -70,6 +95,11 @@ struct [[nodiscard]] SourceLocation
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the column number associated with the source location
+    ///
+    /// \return Column number of the captured source location
+    ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr unsigned int column() const noexcept
     {
@@ -79,6 +109,11 @@ struct [[nodiscard]] SourceLocation
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Get the file name associated with the source location
+    ///
+    /// \return Null-terminated string containing the file path
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr const char* fileName() const noexcept
     {
         SFML_BASE_ASSERT_AND_ASSUME(ptr != nullptr);
@@ -86,6 +121,11 @@ struct [[nodiscard]] SourceLocation
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the function name associated with the source location
+    ///
+    /// \return Null-terminated string containing the enclosing function name
+    ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr const char* functionName() const noexcept
     {

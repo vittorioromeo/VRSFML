@@ -12,6 +12,9 @@
 
 
 ////////////////////////////////////////////////////////////
+/// \brief `FLT_EPSILON` macro, prefers the compiler builtin to avoid `<cfloat>`
+///
+////////////////////////////////////////////////////////////
 #ifdef __FLT_EPSILON__
     #define SFML_BASE_FLOAT_EPSILON __FLT_EPSILON__
 #else

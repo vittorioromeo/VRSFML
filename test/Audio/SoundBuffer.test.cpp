@@ -171,7 +171,7 @@ TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
                 CHECK(soundBuffer.getChannelCount() == 1);
                 CHECK(soundBuffer.getDuration() == sf::microseconds(1'990'884));
 
-                CHECK(filename.remove());
+                CHECK(filename.removeFromDisk());
             }
         }
     }

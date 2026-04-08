@@ -21,17 +21,24 @@ namespace sf
 struct ContextSettings
 {
     ////////////////////////////////////////////////////////////
-    /// \brief Enumeration of the context attribute flags
+    /// \brief Bit flags describing OpenGL context attributes
+    ///
+    /// These flags control how the OpenGL context is created.
+    /// `Core` selects a core profile (no fixed-function or
+    /// deprecated functionality), `Debug` enables OpenGL's
+    /// debug output extension, and `Default` is the
+    /// non-debug compatibility context. `Core` and the
+    /// non-`Core` defaults are mutually exclusive.
     ///
     ////////////////////////////////////////////////////////////
     enum class [[nodiscard]] Attribute : unsigned int
     {
-        Default = 0,      //!< Non-debug, compatibility context (this and the core attribute are mutually exclusive)
-        Core    = 1 << 0, //!< Core attribute
-        Debug   = 1 << 2, //!< Debug attribute
+        Default = 0,      //!< Non-debug, compatibility context (mutually exclusive with `Core`)
+        Core    = 1 << 0, //!< Request a core profile context
+        Debug   = 1 << 2, //!< Request a debug context (enables `GL_KHR_debug` / equivalent)
 
-        DefaultAndDebug = Default | Debug,
-        CoreAndDebug    = Core | Debug,
+        DefaultAndDebug = Default | Debug, //!< Compatibility context with debug output
+        CoreAndDebug    = Core | Debug,    //!< Core profile context with debug output
     };
 
 #ifdef SFML_OPENGL_ES
@@ -68,13 +75,17 @@ struct ContextSettings
 #endif
 
     ////////////////////////////////////////////////////////////
-    /// \brief Check if the context is a core context
+    /// \brief Check whether the context uses a core profile
+    ///
+    /// \return `true` if `attributeFlags` contains `Attribute::Core`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] bool isCore() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Check if the context is a debug context
+    /// \brief Check whether the context has the debug flag enabled
+    ///
+    /// \return `true` if `attributeFlags` contains `Attribute::Debug`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] bool isDebug() const;
@@ -82,11 +93,11 @@ struct ContextSettings
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    unsigned int depthBits{defaultDepthBits};           //!< Bits of the depth buffer
-    unsigned int stencilBits{defaultStencilBits};       //!< Bits of the stencil buffer
-    unsigned int majorVersion{defaultMajorVersion};     //!< Major number of the context version to create
-    unsigned int minorVersion{defaultMinorVersion};     //!< Minor number of the context version to create
-    Attribute    attributeFlags{defaultAttributeFlags}; //!< Flags for context creation (core, debug, etc.)
+    unsigned int depthBits{defaultDepthBits};           //!< Bits of the depth buffer (0 = no depth buffer)
+    unsigned int stencilBits{defaultStencilBits};       //!< Bits of the stencil buffer (0 = no stencil buffer)
+    unsigned int majorVersion{defaultMajorVersion};     //!< Major version of the OpenGL context to create
+    unsigned int minorVersion{defaultMinorVersion};     //!< Minor version of the OpenGL context to create
+    Attribute    attributeFlags{defaultAttributeFlags}; //!< Bitmask of context creation flags (core / debug / ...)
 };
 
 
@@ -111,46 +122,32 @@ inline bool ContextSettings::isDebug() const
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::ContextSettings
+/// \struct sf::ContextSettings
 /// \ingroup window
 ///
-/// ContextSettings allows to define several advanced settings
-/// of the OpenGL context attached to a window. All these
-/// settings with the exception of the compatibility flag
-/// and anti-aliasing level have no impact on the regular
-/// SFML rendering (graphics module), so you may need to use
-/// this structure only if you're using SFML as a windowing
-/// system for custom OpenGL rendering.
+/// `ContextSettings` describes the OpenGL context attached
+/// to a window: the depth and stencil buffer sizes, the
+/// requested OpenGL version, and a small set of attribute
+/// flags (core profile, debug context, ...).
 ///
-/// The depthBits and stencilBits members define the number
-/// of bits per pixel requested for the (respectively) depth
-/// and stencil buffers.
+/// VRSFML's graphics module is designed to run on a core
+/// profile OpenGL (or OpenGL ES / WebGL2) context, so the
+/// defaults already select an appropriate version and the
+/// `Core` attribute. Most users only need to touch
+/// `ContextSettings` when they are layering custom OpenGL
+/// rendering on top of SFML and need to request specific
+/// extensions or a specific version.
 ///
-/// antiAliasingLevel represents the requested number of
-/// multisampling levels for anti-aliasing.
+/// The `depthBits` and `stencilBits` members define the
+/// number of bits per pixel requested for the depth and
+/// stencil buffers respectively. A value of `0` means no
+/// buffer of that kind is requested.
 ///
-/// majorVersion and minorVersion define the version of the
-/// OpenGL context that you want. Only versions greater or
-/// equal to 3.0 are relevant; versions lesser than 3.0 are
-/// all handled the same way (i.e. you can use any version
-/// < 3.0 if you don't want an OpenGL 3 context).
+/// `majorVersion` and `minorVersion` define the version of
+/// the OpenGL (or OpenGL ES / WebGL) context to create.
 ///
-/// When requesting a context with a version greater or equal
-/// to 3.2, you have the option of specifying whether the
-/// context should follow the core or compatibility profile
-/// of all newer (>= 3.2) OpenGL specifications. For versions
-/// 3.0 and 3.1 there is only the core profile. By default
-/// a compatibility context is created. You only need to specify
-/// the core flag if you want a core profile context to use with
-/// your own OpenGL rendering.
-/// <b>Warning: The graphics module will not function if you
-/// request a core profile context. Make sure the attributes are
-/// set to Default if you want to use the graphics module.</b>
-///
-/// Setting the debug attribute flag will request a context with
-/// additional debugging features enabled. Depending on the
-/// system, this might be required for advanced OpenGL debugging.
-/// OpenGL debugging is disabled by default.
+/// `attributeFlags` selects between core / compatibility
+/// profile and toggles the debug context flag.
 ///
 /// <b>Special Note for macOS:</b>
 /// Apple only supports choosing between either a legacy context
@@ -161,11 +158,11 @@ inline bool ContextSettings::isDebug() const
 /// OpenGL Capabilities Tables</a> page. macOS also currently does
 /// not support debug contexts.
 ///
-/// Please note that these values are only a hint.
-/// No failure will be reported if one or more of these values
-/// are not supported by the system; instead, SFML will try to
-/// find the closest valid match. You can then retrieve the
-/// settings that the window actually used to create its context,
-/// with `Window::getSettings()`.
+/// Please note that these values are only a hint. No failure
+/// will be reported if one or more of these values are not
+/// supported by the system; instead, SFML will try to find
+/// the closest valid match. You can retrieve the settings
+/// that the window actually used to create its context with
+/// `sf::Window::getSettings()`.
 ///
 ////////////////////////////////////////////////////////////

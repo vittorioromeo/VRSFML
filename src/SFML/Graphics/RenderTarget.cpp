@@ -490,7 +490,7 @@ void RenderTarget::draw(const Texture& texture, const DrawTextureSettings& param
     }
     else
     {
-        const auto [sine, cosine] = base::sinCosLookup(params.rotation.wrapUnsigned().asRadians());
+        const auto [sine, cosine] = base::sinCosLookup(params.rotation.asRadians());
 
         Vertex buffer[4];
 
@@ -1132,14 +1132,14 @@ RenderTarget::DrawStatistics RenderTarget::flush()
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::flushGPUCommands()
+void RenderTarget::invokeGlFlush()
 {
     glCheck(glFlush());
 }
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::finishGPUCommands()
+void RenderTarget::invokeGlFinish()
 {
     glCheck(glFinish());
 }

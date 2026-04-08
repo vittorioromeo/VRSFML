@@ -378,7 +378,11 @@ struct GlobalAnchorPointMixin
 
 private:
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Helper that implicitly converts a `Vec2f` to any `Vec2<U>`
+    ///
+    /// Used by `addPositionImpl` to feed a computed `Vec2f` offset back
+    /// into the inheriting class's `setPosition()` regardless of the
+    /// concrete coordinate type that `T` uses for its position.
     ///
     ////////////////////////////////////////////////////////////
     struct AutoConvertingVec2f
@@ -394,7 +398,15 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Add an offset to the inheriting object's position
+    ///
+    /// Selects between two strategies based on the API exposed by `T`:
+    /// if `T` has a public `position` member, the offset is added in
+    /// place; otherwise, `T::setPosition` is called with the current
+    /// position plus the offset (with automatic conversion to `T`'s
+    /// position type via `AutoConvertingVec2f`).
+    ///
+    /// \param offset Offset to add to the current position, in world coordinates
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] inline constexpr void addPositionImpl(const Vec2f offset)

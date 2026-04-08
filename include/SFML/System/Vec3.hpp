@@ -392,6 +392,8 @@ extern template class sf::Vec3<sf::base::SizeT>;
 /// the most common specializations have special type aliases:
 /// \li `sf::Vec3<float>` is `sf::Vec3f`
 /// \li `sf::Vec3<int>` is `sf::Vec3i`
+/// \li `sf::Vec3<unsigned int>` is `sf::Vec3u`
+/// \li `sf::Vec3<sf::base::SizeT>` is `sf::Vec3uz`
 ///
 /// The `sf::Vec3` class has a small and simple interface, its x, y and z members
 /// can be accessed directly (there are no accessors like `setX()`, `getX()`).

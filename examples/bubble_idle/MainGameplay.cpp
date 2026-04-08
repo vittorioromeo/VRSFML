@@ -382,7 +382,7 @@ void Main::gameLoopUpdateSounds(const float deltaTimeMs, const sf::Vec2f mousePo
 
     listener.volume = profile.masterVolume / 100.f * volumeMult;
 
-    (void)playbackDevice.updateListener(listener);
+    (void)playbackDevice.applyListener(listener);
 
     auto& optCurrentMusic = getCurrentBGMBuffer();
     auto& optNextMusic    = getNextBGMBuffer();
@@ -557,7 +557,7 @@ void Main::gameLoopUpdateAndDrawBackground(const float deltaTimeMs, const sf::Vi
                           .origin      = {0.f, 0.f},
                           .textureRect = {{playerInputState.actualScroll * 1.5f + backgroundScroll * 1.5f, 0.f},
                                           detailTextureRectSize},
-                          .color       = sf::Color::whiteMask(getAlpha(255.f * easeInOutSine(firstCloudTimer))),
+                          .color       = sf::Color::whiteWithAlpha(getAlpha(255.f * easeInOutSine(firstCloudTimer))),
                       },
                       {.view = gameBackgroundView});
 
@@ -571,7 +571,7 @@ void Main::gameLoopUpdateAndDrawBackground(const float deltaTimeMs, const sf::Vi
                           {
                               .textureRect = {{playerInputState.actualScroll * 2.f, 0.f},
                                               txBackgroundChunk.getSize().toVec2f() * 2.f},
-                              .color       = sf::Color::whiteMask(getAlpha(200.f * easeInOutSine(firstDrawingTimer))),
+                              .color = sf::Color::whiteWithAlpha(getAlpha(200.f * easeInOutSine(firstDrawingTimer))),
                           },
                           {.view = gameBackgroundView});
 
@@ -582,7 +582,7 @@ void Main::gameLoopUpdateAndDrawBackground(const float deltaTimeMs, const sf::Vi
                               .scale       = detailScale,
                               .textureRect = {{playerInputState.actualScroll * 2.f + backgroundScroll * 0.5f, 0.f},
                                               detailTextureRectSize},
-                              .color       = sf::Color::whiteMask(getAlpha(190.f)),
+                              .color       = sf::Color::whiteWithAlpha(getAlpha(190.f)),
                           },
                           {.view = gameBackgroundView});
 

@@ -40,53 +40,58 @@ class SFML_GRAPHICS_API Image
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Supported image saving formats
+    /// \brief Image encoding formats supported by `saveToMemory` / `saveToFile`
     ///
     ////////////////////////////////////////////////////////////
     enum class [[nodiscard]] SaveFormat : unsigned char
     {
-        BMP,
-        TGA,
-        PNG,
-        JPG,
-        QOI
+        BMP, //!< Windows Bitmap (uncompressed)
+        TGA, //!< Truevision TGA (lossless)
+        PNG, //!< Portable Network Graphics (lossless, compressed)
+        JPG, //!< JPEG (lossy, compressed)
+        QOI  //!< Quite OK Image format (lossless, fast)
     };
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct the image and fill it with a unique color
+    /// \brief Create an image filled with a uniform color
     ///
-    /// If \a size is zero, the behavior is undefined.
+    /// Both `size.x` and `size.y` must be greater than zero.
     ///
-    /// \param size  Width and height of the image
-    /// \param color Fill color
+    /// \param size  Width and height of the image, in pixels
+    /// \param color Fill color (defaults to opaque black)
+    ///
+    /// \return Image on success, `base::nullOpt` on failure (e.g. zero size)
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<Image> create(Vec2u size, Color color = Color::Black);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct the image from an array of pixels
+    /// \brief Create an image from an existing array of pixels
     ///
-    /// The pixel array is assumed to contain 32-bits RGBA pixels,
-    /// and have the given `size`. If not, this is an undefined behavior.
-    /// If `pixels` is `nullptr`, an empty image is created.
+    /// `pixels` must point to an array of `size.x * size.y` 32-bit
+    /// RGBA pixels. The data is copied into the image; the source
+    /// array can be freed after the call.
     ///
-    /// \param size   Width and height of the image
-    /// \param pixels Array of pixels to copy to the image
+    /// If `pixels` is `nullptr`, the function returns `base::nullOpt`.
+    ///
+    /// \param size   Width and height of the image, in pixels
+    /// \param pixels Source pixel array (RGBA, 8 bits per channel)
+    ///
+    /// \return Image on success, `base::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<Image> create(Vec2u size, const base::U8* pixels);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Load the image from a file on disk
+    /// \brief Load an image from a file on disk
     ///
     /// The supported image formats are bmp, png, tga, jpg, gif,
-    /// psd, hdr, pic and pnm. Some format options are not supported,
-    /// like jpeg with arithmetic coding or ASCII pnm.
-    /// If this function fails, the image is left unchanged.
+    /// psd, hdr, pic, pnm, and qoi. Some format options are not
+    /// supported, such as JPEG with arithmetic coding or ASCII PNM.
     ///
     /// \param filename Path of the image file to load
     ///
-    /// \return Image if loading was successful, `base::nullOpt` otherwise
+    /// \return Image on success, `base::nullOpt` on failure
     ///
     /// \see `loadFromMemory`, `loadFromStream`, `saveToFile`
     ///
@@ -94,34 +99,31 @@ public:
     [[nodiscard]] static base::Optional<Image> loadFromFile(const Path& filename);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Load the image from a file in memory
+    /// \brief Load an image from an encoded buffer in memory
     ///
-    /// The supported image formats are bmp, png, tga, jpg, gif,
-    /// psd, hdr, pic and pnm. Some format options are not supported,
-    /// like jpeg with arithmetic coding or ASCII pnm.
-    /// If this function fails, the image is left unchanged.
+    /// Same supported formats as `loadFromFile`. Useful when image
+    /// data is bundled into the application binary or received over
+    /// a network.
     ///
-    /// \param data Pointer to the file data in memory
-    /// \param size Size of the data to load, in bytes
+    /// \param data Pointer to the encoded file bytes in memory
+    /// \param size Size of the data, in bytes
     ///
-    /// \return Image if loading was successful, `base::nullOpt` otherwise
+    /// \return Image on success, `base::nullOpt` on failure
     ///
-    /// \see loadFromFile, loadFromStream
+    /// \see `loadFromFile`, `loadFromStream`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<Image> loadFromMemory(const void* data, base::SizeT size);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Load the image from a custom stream
+    /// \brief Load an image from a custom input stream
     ///
-    /// The supported image formats are bmp, png, tga, jpg, gif,
-    /// psd, hdr, pic and pnm. Some format options are not supported,
-    /// like jpeg with arithmetic coding or ASCII pnm.
-    /// If this function fails, the image is left unchanged.
+    /// Same supported formats as `loadFromFile`. Lets you plug in
+    /// arbitrary sources (archives, encrypted blobs, ...).
     ///
-    /// \param stream Source stream to read from
+    /// \param stream Source stream to read encoded image data from
     ///
-    /// \return Image if loading was successful, `base::nullOpt` otherwise
+    /// \return Image on success, `base::nullOpt` on failure
     ///
     /// \see `loadFromFile`, `loadFromMemory`
     ///
@@ -297,37 +299,33 @@ public:
     void rotateHue(float degrees);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Save an image to a file on disk
+    /// \brief Save the image to a file on disk
     ///
-    /// The format of the image is automatically deduced from
-    /// the extension. The supported image formats are bmp, png,
-    /// tga and jpg. The destination file is overwritten
-    /// if it already exists. This function fails if the image is empty.
+    /// The output format is deduced from the file extension. The
+    /// supported extensions are `.bmp`, `.png`, `.tga`, `.jpg`, and
+    /// `.qoi`. The destination file is overwritten if it already
+    /// exists.
     ///
-    /// \param image Image to save
-    /// \param filename Path of the file to save
+    /// \param filename Path of the file to write
     ///
-    /// \return `true` if saving was successful
+    /// \return `true` on success, `false` on failure (e.g. unknown extension)
     ///
-    /// \see create, loadFromFile, loadFromMemory
+    /// \see `create`, `loadFromFile`, `loadFromMemory`, `saveToMemory`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool saveToFile(const Path& filename) const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Save an image to a buffer in memory
+    /// \brief Encode the image into an in-memory buffer
     ///
-    /// The format of the image must be specified.
-    /// The supported image formats are bmp, png, tga and jpg.
-    /// This function fails if the image is empty, or if
-    /// the format was invalid.
+    /// The encoding format must be specified explicitly. See
+    /// `SaveFormat` for the available options.
     ///
-    /// \param image Image to save
     /// \param format Encoding format to use
     ///
-    /// \return Buffer with encoded data if saving was successful, `base::nullOpt` otherwise
+    /// \return Encoded byte buffer; empty on failure
     ///
-    /// \see create, loadFromFile, loadFromMemory, saveToFile
+    /// \see `SaveFormat`, `saveToFile`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] base::Vector<base::U8> saveToMemory(SaveFormat format) const;
@@ -376,22 +374,22 @@ private:
 ///
 /// Usage example:
 /// \code
-/// // Load an image file from a file
+/// // Load an image file from disk.
 /// const auto background = sf::Image::loadFromFile("background.jpg").value();
 ///
-/// // Create a 20x20 image filled with black color
-/// sf::Image image({20, 20}, sf::Color::Black);
+/// // Create a 20x20 image filled with black.
+/// auto image = sf::Image::create({20u, 20u}, sf::Color::Black).value();
 ///
-/// // Copy background on image at position (10, 10)
-/// if (!image.copy(background, {10, 10}))
+/// // Copy 'background' onto 'image' at position (10, 10).
+/// if (!image.copy(background, {10u, 10u}))
 ///     return -1;
 ///
-/// // Make the top-left pixel transparent
-/// sf::Color color = image.getPixel({0, 0});
-/// color.a = 0;
-/// image.setPixel({0, 0}, color);
+/// // Make the top-left pixel transparent.
+/// sf::Color color = image.getPixel({0u, 0u});
+/// color.a = 0u;
+/// image.setPixel({0u, 0u}, color);
 ///
-/// // Save the image to a file
+/// // Save the image to a file.
 /// if (!image.saveToFile("result.png"))
 ///     return -1;
 /// \endcode

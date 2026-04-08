@@ -36,12 +36,12 @@ namespace sf
 /// channel. If e.g. the data source provides stereo data,
 /// each frame will contain 2 floats.
 ///
-/// The effects processor function takes 4 parameters:
-///   - The input data frames, channels interleaved
-///   - The number of input data frames available
-///   - The buffer to write output data frames to, channels interleaved
-///   - The number of output data frames that the output buffer can hold
-///   - The channel count
+/// The effects processor function takes 5 parameters:
+///   - `inputFrames`: pointer to the input data frames, channels interleaved
+///   - `inputFrameCount`: in/out, number of input data frames available
+///   - `outputFrames`: pointer to the buffer to write output data frames to, channels interleaved
+///   - `outputFrameCount`: in/out, capacity of the output buffer in frames
+///   - `frameChannelCount`: number of channels per frame (engine channel count, see below)
 ///
 /// The input and output frame counts are in/out parameters.
 ///

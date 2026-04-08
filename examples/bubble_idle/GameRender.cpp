@@ -159,8 +159,8 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
     if (const auto dragRect = getAoEDragRect(frameInput.mousePos); dragRect.hasValue())
         rtGame.draw(sf::RectangleShapeData{.position         = dragRect->position,
                                            .origin           = {0.f, 0.f},
-                                           .fillColor        = sf::Color::whiteMask(64u),
-                                           .outlineColor     = sf::Color::whiteMask(176u),
+                                           .fillColor        = sf::Color::whiteWithAlpha(64u),
+                                           .outlineColor     = sf::Color::whiteWithAlpha(176u),
                                            .outlineThickness = 4.f,
                                            .size             = dragRect->size},
                     {.view = gameView});
@@ -381,7 +381,7 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
                                                   profile.hudScale * 2.f,
                                    .origin      = txLetter.getSize().toVec2f() / 2.f,
                                    .textureRect = txLetter.getRect(),
-                                   .color = sf::Color::whiteMask(static_cast<U8>(easeInOutQuint(progress) * 255.f))},
+                                   .color = sf::Color::whiteWithAlpha(static_cast<U8>(easeInOutQuint(progress) * 255.f))},
                         {.view = scaledHUDView, .texture = &txLetter});
         }
 
@@ -396,7 +396,7 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
                                               profile.hudScale * 1.45f,
                                .origin      = txLetterText.getSize().toVec2f() / 2.f,
                                .textureRect = txLetterText.getRect(),
-                               .color = sf::Color::whiteMask(static_cast<U8>(easeInOutQuint(textProgress) * 255.f))},
+                               .color = sf::Color::whiteWithAlpha(static_cast<U8>(easeInOutQuint(textProgress) * 255.f))},
                     {.view = scaledHUDView, .texture = &txLetterText});
     }
 
@@ -420,18 +420,18 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
 void Main::gameLoopPresentFrame(const FrameViewState& frameViews)
 {
     if (flushBeforeDisplay)
-        rtGame.flushGPUCommands();
+        rtGame.invokeGlFlush();
 
     if (finishBeforeDisplay)
-        rtGame.finishGPUCommands();
+        rtGame.invokeGlFinish();
 
     rtGame.display();
 
     if (flushAfterDisplay)
-        rtGame.flushGPUCommands();
+        rtGame.invokeGlFlush();
 
     if (finishAfterDisplay)
-        rtGame.finishGPUCommands();
+        rtGame.invokeGlFinish();
 
     window.clear();
 
@@ -473,10 +473,10 @@ void Main::gameLoopPresentFrame(const FrameViewState& frameViews)
     window.draw(rtGame.getTexture(), {.blendMode = premultipliedAlphaBlend, .shader = &shaderPostProcess});
 
     if (flushBeforeDisplay)
-        rtGame.flushGPUCommands();
+        rtGame.invokeGlFlush();
 
     if (finishBeforeDisplay)
-        rtGame.finishGPUCommands();
+        rtGame.invokeGlFinish();
 
     {
         SFEX_PROFILE_SCOPE("window.display()");
@@ -484,8 +484,8 @@ void Main::gameLoopPresentFrame(const FrameViewState& frameViews)
     }
 
     if (flushAfterDisplay)
-        rtGame.flushGPUCommands();
+        rtGame.invokeGlFlush();
 
     if (finishAfterDisplay)
-        rtGame.finishGPUCommands();
+        rtGame.invokeGlFinish();
 }

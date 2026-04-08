@@ -126,7 +126,7 @@ public:
     ////////////////////////////////////////////////////////////
     struct LoadFromFileSettings
     {
-        Path vertexPath{};   //!< Path of the vertex shader file (empty to skip)   // NOLINT(readability-redundant-member-init)
+        Path vertexPath{}; //!< Path of the vertex shader file (empty to skip)   // NOLINT(readability-redundant-member-init)
         Path fragmentPath{}; //!< Path of the fragment shader file (empty to skip) // NOLINT(readability-redundant-member-init)
         Path geometryPath{}; //!< Path of the geometry shader file (empty to skip) // NOLINT(readability-redundant-member-init)
     };
@@ -174,7 +174,7 @@ public:
     ////////////////////////////////////////////////////////////
     struct LoadFromMemorySettings
     {
-        base::StringView vertexCode{};   //!< Source code of the vertex shader (empty to skip)   // NOLINT(readability-redundant-member-init)
+        base::StringView vertexCode{}; //!< Source code of the vertex shader (empty to skip)   // NOLINT(readability-redundant-member-init)
         base::StringView fragmentCode{}; //!< Source code of the fragment shader (empty to skip) // NOLINT(readability-redundant-member-init)
         base::StringView geometryCode{}; //!< Source code of the geometry shader (empty to skip) // NOLINT(readability-redundant-member-init)
     };

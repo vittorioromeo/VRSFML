@@ -73,7 +73,11 @@ inline constexpr EndLType endL;
 ////////////////////////////////////////////////////////////
 /// \brief Output stream wrapper for `std::ostream`.
 ///
-/// Uses PImpl to avoid exposing expensive headers in the public API.
+/// Provides a thin wrapper around `std::ostream` that hides the
+/// `<ostream>`/`<iostream>` headers behind a PImpl, so that translation
+/// units which include this header don't pay their compile-time cost.
+/// Use `sf::cOut()` and `sf::cErr()` to obtain instances bound to the
+/// standard output/error streams.
 ///
 ////////////////////////////////////////////////////////////
 class SFML_SYSTEM_API IOStreamOutput
@@ -86,10 +90,27 @@ private:
     base::InPlacePImpl<Impl, 512> m_impl; //!< Implementation details
 
 public:
+    ////////////////////////////////////////////////////////////
+    /// \brief Construct from a `std::streambuf`
+    ///
+    /// \param sbuf Pointer to the underlying stream buffer to wrap
+    ///
+    ////////////////////////////////////////////////////////////
     explicit IOStreamOutput(std::streambuf* sbuf);
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the underlying stream buffer pointer
+    ///
+    ////////////////////////////////////////////////////////////
     std::streambuf* rdbuf();
-    void            rdbuf(std::streambuf* sbuf);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Replace the underlying stream buffer
+    ///
+    /// \param sbuf New stream buffer pointer (may be `nullptr` to discard output)
+    ///
+    ////////////////////////////////////////////////////////////
+    void rdbuf(std::streambuf* sbuf);
 
     IOStreamOutput& operator<<(std::ios_base& (*func)(std::ios_base&));
     IOStreamOutput& operator<<(std::ostream& (*func)(std::ostream&));

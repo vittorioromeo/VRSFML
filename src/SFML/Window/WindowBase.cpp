@@ -210,9 +210,9 @@ void WindowBase::setTitle(const UnicodeString& title)
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::setIcon(const Vec2u size, const base::U8* const pixels)
+void WindowBase::setIcon(const base::U8* const pixels, const Vec2u size)
 {
-    m_impl->setIcon(size, pixels);
+    m_impl->setIcon(pixels, size);
 }
 
 
@@ -273,9 +273,9 @@ bool WindowBase::hasFocus() const
 
 
 ////////////////////////////////////////////////////////////
-float WindowBase::getWindowDisplayScale() const
+float WindowBase::getDisplayScale() const
 {
-    return m_impl->getWindowDisplayScale();
+    return m_impl->getDisplayScale();
 }
 
 

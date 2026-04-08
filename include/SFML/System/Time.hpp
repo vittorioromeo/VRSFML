@@ -29,16 +29,6 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct from microseconds
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr explicit Time(const base::I64 microseconds) :
-        m_microseconds(microseconds)
-    {
-    }
-
-
-    ////////////////////////////////////////////////////////////
     /// \brief Return the time value as a number of seconds
     ///
     /// \return Time in seconds
@@ -94,7 +84,6 @@ public:
     ////////////////////////////////////////////////////////////
     /// \relates Time
     /// \brief Overload of `operator<` to compare two time values
-    /// \note Does not automatically wrap the time value
     ///
     /// \param lhs  Left operand (a time)
     /// \param rhs Right operand (a time)
@@ -459,6 +448,21 @@ public:
 
 private:
     ////////////////////////////////////////////////////////////
+    /// \brief Construct from microseconds
+    ///
+    /// Prefer the `sf::microseconds`, `sf::milliseconds`, and
+    /// `sf::seconds` factory functions for clarity at call sites.
+    ///
+    /// \param microseconds Number of microseconds
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline]] constexpr explicit Time(const base::I64 microseconds) :
+        m_microseconds(microseconds)
+    {
+    }
+
+
+    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     base::I64 m_microseconds{}; //!< Time value stored as microseconds
@@ -525,10 +529,12 @@ private:
 /// It allows to define a time value either as a number of
 /// seconds, milliseconds or microseconds. It also works the
 /// other way round: you can read a time value as either
-/// a number of seconds, milliseconds or microseconds. It
-/// even interoperates with the `<chrono>` header. You can
-/// construct an `sf::Time` from a `chrono::duration` and read
-/// any `sf::Time` as a chrono::duration.
+/// a number of seconds, milliseconds or microseconds.
+///
+/// `sf::Time` is intentionally decoupled from `<chrono>` to keep
+/// this header lightweight; conversions between `sf::Time` and
+/// `std::chrono::duration` are provided as opt-in helpers in
+/// `SFML/System/TimeChronoUtil.hpp` (see `sf::TimeChronoUtil`).
 ///
 /// By using such a flexible interface, the API doesn't
 /// impose any fixed type or resolution for time values,

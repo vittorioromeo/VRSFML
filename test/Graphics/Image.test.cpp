@@ -5,12 +5,20 @@
 
 #include "SFML/System/FileInputStream.hpp"
 #include "SFML/System/Path.hpp"
+#include "SFML/System/Rect2.hpp"
+#include "SFML/System/Vec2Base.hpp"
 
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsDefaultConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #include <Doctest.hpp>
-
-#include <CommonTraits.hpp>
 
 
 TEST_CASE("[Graphics] sf::Image")
@@ -245,7 +253,7 @@ TEST_CASE("[Graphics] sf::Image")
                 CHECK(loadedImage.getSize() == sf::Vec2u{256, 256});
                 CHECK(loadedImage.getPixelsPtr() != nullptr);
 
-                CHECK(filename.remove());
+                CHECK(filename.removeFromDisk());
             }
 
             SECTION("To .tga")
@@ -257,7 +265,7 @@ TEST_CASE("[Graphics] sf::Image")
                 CHECK(loadedImage.getSize() == sf::Vec2u{256, 256});
                 CHECK(loadedImage.getPixelsPtr() != nullptr);
 
-                CHECK(filename.remove());
+                CHECK(filename.removeFromDisk());
             }
 
             SECTION("To .png")
@@ -269,7 +277,7 @@ TEST_CASE("[Graphics] sf::Image")
                 CHECK(loadedImage.getSize() == sf::Vec2u{256, 256});
                 CHECK(loadedImage.getPixelsPtr() != nullptr);
 
-                CHECK(filename.remove());
+                CHECK(filename.removeFromDisk());
             }
 
             SECTION("To .qoi")
@@ -281,7 +289,7 @@ TEST_CASE("[Graphics] sf::Image")
                 CHECK(loadedImage.getSize() == sf::Vec2u{256, 256});
                 CHECK(loadedImage.getPixelsPtr() != nullptr);
 
-                CHECK(filename.remove());
+                CHECK(filename.removeFromDisk());
             }
 
             SECTION("To Spanish Latin1 filename .png")
@@ -294,7 +302,7 @@ TEST_CASE("[Graphics] sf::Image")
                 CHECK(loadedImage.getSize() == sf::Vec2u{256, 256});
                 CHECK(loadedImage.getPixelsPtr() != nullptr);
 
-                CHECK(filename.remove());
+                CHECK(filename.removeFromDisk());
             }
 
             SECTION("To Polish filename .png")
@@ -307,7 +315,7 @@ TEST_CASE("[Graphics] sf::Image")
                 CHECK(loadedImage.getSize() == sf::Vec2u{256, 256});
                 CHECK(loadedImage.getPixelsPtr() != nullptr);
 
-                CHECK(filename.remove());
+                CHECK(filename.removeFromDisk());
             }
 
             SECTION("To Japanese CJK filename .png")
@@ -320,7 +328,7 @@ TEST_CASE("[Graphics] sf::Image")
                 CHECK(loadedImage.getSize() == sf::Vec2u{256, 256});
                 CHECK(loadedImage.getPixelsPtr() != nullptr);
 
-                CHECK(filename.remove());
+                CHECK(filename.removeFromDisk());
             }
 
             SECTION("To emoji non-BMP Unicode filename .png")
@@ -333,7 +341,7 @@ TEST_CASE("[Graphics] sf::Image")
                 CHECK(loadedImage.getSize() == sf::Vec2u{256, 256});
                 CHECK(loadedImage.getPixelsPtr() != nullptr);
 
-                CHECK(filename.remove());
+                CHECK(filename.removeFromDisk());
             }
 
             // Cannot test JPEG encoding due to it triggering UB in stbiw__jpg_writeBits

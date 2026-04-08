@@ -49,7 +49,15 @@ using VulkanFunctionPointer = void (*)();
 namespace Vulkan
 {
 ////////////////////////////////////////////////////////////
-/// \brief Data associated with a Vulkan surface
+/// \brief Bundle of references needed to create a Vulkan surface
+///
+/// `VulkanSurfaceData` groups the inputs and the output of
+/// `sf::WindowBase::createVulkanSurface` into a single value
+/// to keep that call concise.
+///
+/// All members are stored as references / pointers, so the
+/// referred-to objects must outlive the `VulkanSurfaceData`
+/// instance.
 ///
 ////////////////////////////////////////////////////////////
 struct VulkanSurfaceData
@@ -63,9 +71,9 @@ struct VulkanSurfaceData
     {
     }
 
-    const VkInstance&            instance;
-    VkSurfaceKHR&                surface;
-    const VkAllocationCallbacks* allocator;
+    const VkInstance&            instance;  //!< Vulkan instance to create the surface in
+    VkSurfaceKHR&                surface;   //!< Out-parameter that will receive the created surface handle
+    const VkAllocationCallbacks* allocator; //!< Optional Vulkan allocator callbacks (may be `nullptr`)
 };
 
 ////////////////////////////////////////////////////////////
@@ -79,7 +87,7 @@ struct VulkanSurfaceData
 /// to `false` to skip checking for the extensions necessary
 /// for graphics rendering.
 ///
-/// \param requireGraphics
+/// \param requireGraphics If `true`, also require the extensions necessary for graphics rendering
 ///
 /// \return `true` if Vulkan is supported, `false` otherwise
 ///
@@ -100,6 +108,13 @@ struct VulkanSurfaceData
 ////////////////////////////////////////////////////////////
 /// \brief Get Vulkan instance extensions required for graphics
 ///
+/// Returns the set of extensions that must be enabled when
+/// creating a Vulkan instance that will be used to render
+/// into a `sf::Window` (or `sf::WindowBase`).
+///
+/// The returned span is owned by the implementation and
+/// remains valid for the duration of the program.
+///
 /// \return Vulkan instance extensions required for graphics
 ///
 ////////////////////////////////////////////////////////////
@@ -108,18 +123,20 @@ struct VulkanSurfaceData
 ////////////////////////////////////////////////////////////
 /// \brief Create a Vulkan rendering surface
 ///
-/// \param instance        Vulkan instance
-/// \param sdlWindowHandle Handle to the SDL window to create the surface for
-/// \param surface         Created surface
-/// \param allocator       Allocator to use
+/// Internal helper used by `sf::WindowBase::createVulkanSurface`.
+///
+/// \param instance     Vulkan instance to create the surface in
+/// \param windowHandle Handle to the underlying `SDL_Window` to create the surface for
+/// \param surface      Out-parameter that will receive the created surface
+/// \param allocator    Optional allocator callbacks (may be `nullptr`)
 ///
 /// \return `true` if surface creation was successful, `false` otherwise
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool createVulkanSurface(const VkInstance&            instance,
-                                       void*                        sdlWindowHandle,
-                                       VkSurfaceKHR&                surface,
-                                       const VkAllocationCallbacks* allocator);
+[[nodiscard]] SFML_WINDOW_API bool createVulkanSurface(const VkInstance&            instance,
+                                                       void*                        windowHandle,
+                                                       VkSurfaceKHR&                surface,
+                                                       const VkAllocationCallbacks* allocator);
 
 } // namespace Vulkan
 } // namespace sf
@@ -128,7 +145,11 @@ struct VulkanSurfaceData
 /// \namespace sf::Vulkan
 /// \ingroup window
 ///
-/// This namespace contains functions to help you use SFML
-/// for windowing and write your own Vulkan code for graphics
+/// This namespace contains the small set of helpers needed
+/// to use SFML for windowing alongside hand-rolled Vulkan
+/// rendering. Most users will only ever touch
+/// `sf::Vulkan::isAvailable`,
+/// `sf::Vulkan::getGraphicsRequiredInstanceExtensions`, and
+/// `sf::WindowBase::createVulkanSurface`.
 ///
 ////////////////////////////////////////////////////////////

@@ -20,11 +20,31 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Non-template base of `sf::TransformableMixin`
+///
+/// `TransformableMixinBase` factors out the (non-template)
+/// transform construction code so that the actual mixin
+/// template stays small and friendly to compile times.
+/// User code should not need to refer to this type directly.
 ///
 ////////////////////////////////////////////////////////////
 struct SFML_GRAPHICS_API TransformableMixinBase
 {
+    ////////////////////////////////////////////////////////////
+    /// \brief Build a `sf::Transform` from raw position/scale/origin/rotation values
+    ///
+    /// Used by the templated `getTransform` to convert the
+    /// derived object's public members into a final
+    /// `sf::Transform` matrix.
+    ///
+    /// \param position World-space position
+    /// \param scale    Per-axis scale factors
+    /// \param origin   Origin of translation/rotation/scaling
+    /// \param radians  Rotation angle, in radians
+    ///
+    /// \return Combined transform
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::pure, gnu::flatten]] Transform getTransform(
         const Vec2f position,
         const Vec2f scale,
@@ -107,8 +127,25 @@ struct SFML_GRAPHICS_API TransformableMixin : TransformableMixinBase
 /// \class sf::TransformableMixin
 /// \ingroup graphics
 ///
-/// TODO P1: docs
+/// `sf::TransformableMixin<T>` is the **CRTP** mixin that adds
+/// transform-related convenience methods to a derived type
+/// `T`. The derived type must declare the standard
+/// transformable public members (typically via the
+/// `SFML_DEFINE_TRANSFORMABLE_DATA_MEMBERS` macro):
+/// `position`, `scale`, `origin`, and `rotation`.
 ///
-/// \see `sf::Transform`
+/// In exchange, the mixin provides:
+/// \li `scaleBy(factor)`           -- multiply the current scale by `factor`,
+/// \li `getTransform()`            -- return the combined `sf::Transform`,
+/// \li `getInverseTransform()`     -- return the inverse of the combined transform.
+///
+/// VRSFML's built-in drawables (`sf::Sprite`, `sf::Shape`,
+/// `sf::Text`, `sf::GlyphMappedText`, ...) all use this mixin
+/// to expose a consistent transform API. Use it (or
+/// `sf::Transformable`) for your own non-polymorphic drawable
+/// types.
+///
+/// \see `sf::Transform`, `sf::Transformable`,
+///      `SFML_DEFINE_TRANSFORMABLE_DATA_MEMBERS`
 ///
 ////////////////////////////////////////////////////////////

@@ -56,7 +56,7 @@ public:
     {
         if (m_path.exists())
         {
-            [[maybe_unused]] const bool removed = m_path.remove();
+            [[maybe_unused]] const bool removed = m_path.removeFromDisk();
             SFML_BASE_ASSERT(removed && "m_path failed to be removed from filesystem");
         }
     }

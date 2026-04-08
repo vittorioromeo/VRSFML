@@ -33,11 +33,20 @@ struct [[nodiscard]] SFML_GRAPHICS_API RingShapeData
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::RingShapeData
+/// \struct sf::RingShapeData
 /// \ingroup graphics
 ///
-/// TODO P1: docs
+/// `sf::RingShapeData` describes a ring (an annulus): a closed band
+/// between two concentric circles defined by `outerRadius` and
+/// `innerRadius`. The contour is approximated by `pointCount` points
+/// per circle, and `startAngle` shifts where on the circle the
+/// tessellation begins.
 ///
-/// \see `sf::Shape`, `sf::CircleShape`
+/// Like other `*ShapeData` types, it embeds the standard
+/// transformable and shape appearance members and is consumed by
+/// `sf::ShapeUtils` and `sf::CPUDrawableBatch::add` -- it is not
+/// directly drawable on its own.
+///
+/// \see `sf::Shape`, `sf::CircleShape`, `sf::RingPieSliceShapeData`, `sf::ShapeUtils`
 ///
 ////////////////////////////////////////////////////////////

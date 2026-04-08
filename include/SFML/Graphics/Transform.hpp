@@ -26,7 +26,14 @@ namespace sf
 struct [[nodiscard]] Transform
 {
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Build a translation-only transform
+    ///
+    /// Equivalent to `Identity` followed by `translate(position)`,
+    /// but expressed as a direct construction.
+    ///
+    /// \param position Translation to bake into the transform
+    ///
+    /// \return Transform that translates by `position`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] static constexpr Transform fromPosition(const Vec2f position)
@@ -43,7 +50,18 @@ struct [[nodiscard]] Transform
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Build a transform from a position, scale, and origin
+    ///
+    /// Equivalent to building the transform that
+    /// `sf::Transformable` with the same `position`, `scale`, and
+    /// `origin` (and a zero rotation) would produce. Useful as a
+    /// fast path when no rotation is involved.
+    ///
+    /// \param position World-space position
+    /// \param scale    Per-axis scale factors
+    /// \param origin   Origin of translation/scaling, in local space
+    ///
+    /// \return Transform that applies the requested translation and scaling
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] static constexpr Transform fromPositionScaleOrigin(
@@ -63,7 +81,21 @@ struct [[nodiscard]] Transform
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Build a transform from a position, scale, origin, and a precomputed (sine, cosine) pair
+    ///
+    /// This is the fully general form: it produces the same matrix
+    /// as the equivalent `Transformable`, but skips the trigonometry
+    /// by accepting `sine` and `cosine` directly. Pass values from
+    /// `sf::base::sinCosLookup` (or any equivalent source) when you
+    /// already have them, to avoid recomputing them per object.
+    ///
+    /// \param position World-space position
+    /// \param scale    Per-axis scale factors
+    /// \param origin   Origin of translation/rotation/scaling, in local space
+    /// \param sine     Sine of the rotation angle (must be in `[-1, 1]`)
+    /// \param cosine   Cosine of the rotation angle (must be in `[-1, 1]`)
+    ///
+    /// \return Transform that applies the requested translation, rotation, and scaling
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] static constexpr Transform fromPositionScaleOriginSinCos(
@@ -95,25 +127,33 @@ struct [[nodiscard]] Transform
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Write the transform's salient values to a 4x4 matrix
+    /// \brief Write the 2D transform into a 4x4 column-major matrix
     ///
-    /// Given an identity 4x4 float matrix, this function writes
-    /// the salient transform elements to some of the spots of the
-    /// matrix, such that it is directly compatible with OpenGL functions.
+    /// This writes the six meaningful elements of the 2D transform
+    /// (`a00`, `a01`, `a02`, `a10`, `a11`, `a12`) into the appropriate
+    /// slots of a column-major 4x4 matrix. The remaining slots are
+    /// **not** touched, so the caller must pre-initialize `target`
+    /// to a 4x4 identity matrix (or to whatever Z/W column they need)
+    /// before calling this function.
+    ///
+    /// The resulting layout is directly compatible with OpenGL's
+    /// `glUniformMatrix4fv` and similar APIs.
     ///
     /// \code
     /// sf::Transform transform = ...;
     ///
-    /// float matrix[]{{},  {},  0.f, 0.f,
-    ///                {},  {},  0.f, 0.f,
-    ///                0.f, 0.f, 1.f, 0.f,
-    ///                {},  {},  0.f, 1.f};
+    /// float matrix[16] = {
+    ///     1.f, 0.f, 0.f, 0.f,
+    ///     0.f, 1.f, 0.f, 0.f,
+    ///     0.f, 0.f, 1.f, 0.f,
+    ///     0.f, 0.f, 0.f, 1.f,
+    /// };
     ///
     /// transform.writeTo4x4Matrix(matrix);
-    /// glLoadMatrixf(matrix);
+    /// // 'matrix' is now ready to be uploaded as a uniform.
     /// \endcode
     ///
-    /// \return Pointer to a 4x4 matrix
+    /// \param target Pre-initialized 4x4 matrix to write into
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] constexpr void writeTo4x4Matrix(float (&target)[16]) const
@@ -521,40 +561,47 @@ inline constexpr Transform Transform::Identity{};
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::Transform
+/// \struct sf::Transform
 /// \ingroup graphics
 ///
-/// A `sf::Transform` specifies how to translate, rotate, scale,
-/// shear, project, whatever things. In mathematical terms, it defines
-/// how to transform a coordinate system into another.
+/// `sf::Transform` is a 2D affine transform that can translate,
+/// rotate, scale, and shear points. Internally it stores the six
+/// meaningful elements of the upper-left 2x3 block of a 4x4
+/// homogeneous matrix.
 ///
-/// For example, if you apply a rotation transform to a sprite, the
-/// result will be a rotated sprite. And anything that is transformed
-/// by this rotation transform will be rotated the same way, according
-/// to its initial position.
+/// In mathematical terms, a `sf::Transform` defines how to map a
+/// coordinate system into another. For example, applying a rotation
+/// transform to a sprite produces a rotated sprite, and applying it
+/// to a point produces the rotated point.
 ///
-/// Transforms are typically used for drawing. But they can also be
-/// used for any computation that requires to transform points between
-/// the local and global coordinate systems of an entity (like collision
+/// Transforms are most commonly used for drawing (via
+/// `sf::Transformable` or directly as part of `sf::RenderStates`),
+/// but they are equally useful for converting points between local
+/// and world space (e.g. for picking, hit testing, or collision
 /// detection).
 ///
 /// Example:
 /// \code
-/// // define a translation transform
+/// // Define a translation transform.
 /// sf::Transform translation;
-/// translation.translate(20, 50);
+/// translation.translate({20.f, 50.f});
 ///
-/// // define a rotation transform
+/// // Define a rotation transform.
 /// sf::Transform rotation;
-/// rotation.rotate(45);
+/// rotation.rotate(sf::degrees(45.f));
 ///
-/// // combine them
-/// sf::Transform transform = translation * rotation;
+/// // Combine them: 'transform' first applies 'rotation', then 'translation'.
+/// const sf::Transform transform = translation * rotation;
 ///
-/// // use the result to transform stuff...
-/// sf::Vec2f point = transform.transformPoint({10, 20});
-/// sf::Rect2f rect = transform.transformRect(sf::Rect2f({0, 0}, {10, 100}));
+/// // Use the result to transform points and rectangles.
+/// const sf::Vec2f  point = transform.transformPoint({10.f, 20.f});
+/// const sf::Rect2f rect  = transform.transformRect({{0.f, 0.f}, {10.f, 100.f}});
 /// \endcode
+///
+/// `sf::Transform` is an aggregate, can be created with designated
+/// initializers, and exposes static factory helpers (`fromPosition`,
+/// `fromPositionScaleOrigin`, `fromPositionScaleOriginSinCos`) for
+/// efficient construction from `Transformable`-style parameters.
 ///
 /// \see `sf::Transformable`, `sf::RenderStates`
 ///

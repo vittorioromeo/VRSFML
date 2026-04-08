@@ -185,7 +185,7 @@ sf::Rect2f   txrRocket;
             .origin      = txr.size / 2.f,
             .rotation    = sf::radians(rotation),
             .textureRect = txr,
-            .color       = sf::Color::whiteMask(static_cast<sf::base::U8>(opacity * 255.f)),
+            .color       = sf::Color::whiteWithAlpha(static_cast<sf::base::U8>(opacity * 255.f)),
         },
         sf::RenderStates{.view = view, .texture = txAtlas});
 }
