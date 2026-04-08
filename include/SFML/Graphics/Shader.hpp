@@ -55,7 +55,7 @@ public:
     /// \brief Special type that can be passed to setUniform(),
     ///        and that represents the texture of the object being drawn
     ///
-    /// \see `setUniform(base::StringView, CurrentTextureType)`
+    /// \see `setUniform(UniformLocation, CurrentTextureType)`
     ///
     ////////////////////////////////////////////////////////////
     struct CurrentTextureType
@@ -65,7 +65,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Represents the texture of the object being drawn
     ///
-    /// \see `setUniform(base::StringView, CurrentTextureType)`
+    /// \see `setUniform(UniformLocation, CurrentTextureType)`
     ///
     ////////////////////////////////////////////////////////////
     // NOLINTNEXTLINE(readability-identifier-naming)
@@ -115,30 +115,45 @@ public:
     Shader& operator=(Shader&& rhs) noexcept;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Settings for `loadFromFile`
+    ///
+    /// Each path is optional: leave any field empty to skip that
+    /// shader stage. The default vertex and/or fragment shader will
+    /// be used in place of any stage that is not provided.
+    ///
+    /// \see `loadFromFile`
     ///
     ////////////////////////////////////////////////////////////
     struct LoadFromFileSettings
     {
-        Path vertexPath{};   // NOLINT(readability-redundant-member-init)
-        Path fragmentPath{}; // NOLINT(readability-redundant-member-init)
-        Path geometryPath{}; // NOLINT(readability-redundant-member-init)
+        Path vertexPath{};   //!< Path of the vertex shader file (empty to skip)   // NOLINT(readability-redundant-member-init)
+        Path fragmentPath{}; //!< Path of the fragment shader file (empty to skip) // NOLINT(readability-redundant-member-init)
+        Path geometryPath{}; //!< Path of the geometry shader file (empty to skip) // NOLINT(readability-redundant-member-init)
     };
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the vertex, geometry and fragment shaders from files
     ///
     /// This function loads the vertex, geometry and fragment
-    /// shaders. If one of them fails to load, the shader is left
-    /// empty (the valid shader is unloaded).
+    /// shaders specified by `settings`. If one of them fails to
+    /// load, this function returns `base::nullOpt`. Any stage
+    /// whose path is left empty is replaced by the corresponding
+    /// default shader.
+    ///
     /// The sources must be text files containing valid shaders
     /// in GLSL language. GLSL is a C-like language dedicated to
     /// OpenGL shaders; you'll probably need to read a good documentation
     /// for it before writing your own shaders.
     ///
-    /// \param vertexShaderFilename   Path of the vertex shader file to load
-    /// \param geometryShaderFilename Path of the geometry shader file to load
-    /// \param fragmentShaderFilename Path of the fragment shader file to load
+    /// Example:
+    /// \code
+    /// auto shader = sf::Shader::loadFromFile({
+    ///     .vertexPath   = "resources/wave.vert",
+    ///     .fragmentPath = "resources/blur.frag",
+    /// });
+    /// \endcode
+    ///
+    /// \param settings Paths of the shader stages to load
     ///
     /// \return Shader if loading succeeded, `base::nullOpt` if it failed
     ///
@@ -148,30 +163,37 @@ public:
     [[nodiscard]] static base::Optional<Shader> loadFromFile(const LoadFromFileSettings& settings);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Settings for `loadFromMemory`
+    ///
+    /// Each source view is optional: leave any field empty to skip
+    /// that shader stage. The default vertex and/or fragment shader
+    /// will be used in place of any stage that is not provided.
+    ///
+    /// \see `loadFromMemory`
     ///
     ////////////////////////////////////////////////////////////
     struct LoadFromMemorySettings
     {
-        base::StringView vertexCode{};   // NOLINT(readability-redundant-member-init)
-        base::StringView fragmentCode{}; // NOLINT(readability-redundant-member-init)
-        base::StringView geometryCode{}; // NOLINT(readability-redundant-member-init)
+        base::StringView vertexCode{};   //!< Source code of the vertex shader (empty to skip)   // NOLINT(readability-redundant-member-init)
+        base::StringView fragmentCode{}; //!< Source code of the fragment shader (empty to skip) // NOLINT(readability-redundant-member-init)
+        base::StringView geometryCode{}; //!< Source code of the geometry shader (empty to skip) // NOLINT(readability-redundant-member-init)
     };
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the vertex, geometry and fragment shaders from source codes in memory
     ///
     /// This function loads the vertex, geometry and fragment
-    /// shaders. If one of them fails to load, the shader is left
-    /// empty (the valid shader is unloaded).
+    /// shaders specified by `settings`. If one of them fails to
+    /// load, this function returns `base::nullOpt`. Any stage
+    /// whose source code is left empty is replaced by the
+    /// corresponding default shader.
+    ///
     /// The sources must be valid shaders in GLSL language. GLSL is
     /// a C-like language dedicated to OpenGL shaders; you'll
     /// probably need to read a good documentation for it before
     /// writing your own shaders.
     ///
-    /// \param vertexShader   String containing the source code of the vertex shader
-    /// \param geometryShader String containing the source code of the geometry shader
-    /// \param fragmentShader String containing the source code of the fragment shader
+    /// \param settings Source code of the shader stages to load
     ///
     /// \return Shader if loading succeeded, `base::nullOpt` if it failed
     ///
@@ -181,30 +203,38 @@ public:
     [[nodiscard]] static base::Optional<Shader> loadFromMemory(const LoadFromMemorySettings& settings);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Settings for `loadFromStream`
+    ///
+    /// Each stream pointer is optional: leave any field as
+    /// `nullptr` to skip that shader stage. The default vertex
+    /// and/or fragment shader will be used in place of any stage
+    /// that is not provided.
+    ///
+    /// \see `loadFromStream`
     ///
     ////////////////////////////////////////////////////////////
     struct LoadFromStreamSettings
     {
-        InputStream* vertexStream{nullptr};
-        InputStream* fragmentStream{nullptr};
-        InputStream* geometryStream{nullptr};
+        InputStream* vertexStream{nullptr};   //!< Stream to read the vertex shader from (`nullptr` to skip)
+        InputStream* fragmentStream{nullptr}; //!< Stream to read the fragment shader from (`nullptr` to skip)
+        InputStream* geometryStream{nullptr}; //!< Stream to read the geometry shader from (`nullptr` to skip)
     };
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the vertex, geometry and fragment shaders from custom streams
     ///
     /// This function loads the vertex, geometry and fragment
-    /// shaders. If one of them fails to load, the shader is left
-    /// empty (the valid shader is unloaded).
+    /// shaders specified by `settings`. If one of them fails to
+    /// load, this function returns `base::nullOpt`. Any stage
+    /// whose stream is `nullptr` is replaced by the corresponding
+    /// default shader.
+    ///
     /// The source codes must be valid shaders in GLSL language.
     /// GLSL is a C-like language dedicated to OpenGL shaders;
     /// you'll probably need to read a good documentation for
     /// it before writing your own shaders.
     ///
-    /// \param vertexShaderStream   Source stream to read the vertex shader from
-    /// \param geometryShaderStream Source stream to read the geometry shader from
-    /// \param fragmentShaderStream Source stream to read the fragment shader from
+    /// \param settings Streams of the shader stages to load
     ///
     /// \return Shader if loading succeeded, `base::nullOpt` if it failed
     ///
@@ -214,11 +244,15 @@ public:
     [[nodiscard]] static base::Optional<Shader> loadFromStream(const LoadFromStreamSettings& settings);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the location ID of a shader uniform
+    /// \brief Get the location of a shader uniform
     ///
-    /// \param name Name of the uniform variable to search
+    /// The returned `UniformLocation` can be cached and passed
+    /// to the various `setUniform` overloads to avoid the cost of
+    /// looking the uniform up by name on every call.
     ///
-    /// \return Location ID of the uniform, or `sf::base::nullOpt` if not found
+    /// \param uniformName Name of the uniform variable to search
+    ///
+    /// \return Location of the uniform, or `base::nullOpt` if not found
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] base::Optional<UniformLocation> getUniformLocation(base::StringView uniformName) const;
@@ -226,8 +260,8 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p float uniform
     ///
-    /// \param name Name of the uniform variable in GLSL
-    /// \param x    Value of the float scalar
+    /// \param location Location of the uniform variable in GLSL
+    /// \param x        Value of the float scalar
     ///
     ////////////////////////////////////////////////////////////
     void setUniform(UniformLocation location, float x) const;
@@ -235,8 +269,8 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p vec2 uniform
     ///
-    /// \param name Name of the uniform variable in GLSL
-    /// \param vec  Value of the vec2
+    /// \param location Location of the uniform variable in GLSL
+    /// \param vec      Value of the vec2
     ///
     ////////////////////////////////////////////////////////////
     void setUniform(UniformLocation location, Glsl::Vec2 vec) const;
@@ -244,8 +278,8 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p vec3 uniform
     ///
-    /// \param name Name of the uniform variable in GLSL
-    /// \param vec  Value of the vec3
+    /// \param location Location of the uniform variable in GLSL
+    /// \param vec      Value of the vec3
     ///
     ////////////////////////////////////////////////////////////
     void setUniform(UniformLocation location, const Glsl::Vec3& vec) const;
@@ -262,8 +296,8 @@ public:
     /// For example, a `sf::Color(255, 127, 0, 255)` will be transformed
     /// to a `vec4(1.0, 0.5, 0.0, 1.0)` in the shader.
     ///
-    /// \param name Name of the uniform variable in GLSL
-    /// \param vec  Value of the vec4
+    /// \param location Location of the uniform variable in GLSL
+    /// \param vec      Value of the vec4
     ///
     ////////////////////////////////////////////////////////////
     void setUniform(UniformLocation location, const Glsl::Vec4& vec) const;
@@ -271,8 +305,8 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p int uniform
     ///
-    /// \param name Name of the uniform variable in GLSL
-    /// \param x    Value of the int scalar
+    /// \param location Location of the uniform variable in GLSL
+    /// \param x        Value of the int scalar
     ///
     ////////////////////////////////////////////////////////////
     void setUniform(UniformLocation location, int x) const;
@@ -280,8 +314,8 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p ivec2 uniform
     ///
-    /// \param name Name of the uniform variable in GLSL
-    /// \param vec  Value of the ivec2
+    /// \param location Location of the uniform variable in GLSL
+    /// \param vec      Value of the ivec2
     ///
     ////////////////////////////////////////////////////////////
     void setUniform(UniformLocation location, Glsl::Ivec2 vec) const;
@@ -289,8 +323,8 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p ivec3 uniform
     ///
-    /// \param name Name of the uniform variable in GLSL
-    /// \param vec  Value of the ivec3
+    /// \param location Location of the uniform variable in GLSL
+    /// \param vec      Value of the ivec3
     ///
     ////////////////////////////////////////////////////////////
     void setUniform(UniformLocation location, const Glsl::Ivec3& vec) const;
@@ -306,8 +340,8 @@ public:
     /// instance. For example, `sf::Color(255, 127, 0, 255)` is
     /// mapped to `ivec4(255, 127, 0, 255)`.
     ///
-    /// \param name Name of the uniform variable in GLSL
-    /// \param vec  Value of the ivec4
+    /// \param location Location of the uniform variable in GLSL
+    /// \param vec      Value of the ivec4
     ///
     ////////////////////////////////////////////////////////////
     void setUniform(UniformLocation location, const Glsl::Ivec4& vec) const;
@@ -315,8 +349,8 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p bool uniform
     ///
-    /// \param name Name of the uniform variable in GLSL
-    /// \param x    Value of the bool scalar
+    /// \param location Location of the uniform variable in GLSL
+    /// \param x        Value of the bool scalar
     ///
     ////////////////////////////////////////////////////////////
     void setUniform(UniformLocation location, bool x) const;
@@ -324,8 +358,8 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p bvec2 uniform
     ///
-    /// \param name Name of the uniform variable in GLSL
-    /// \param vec  Value of the bvec2
+    /// \param location Location of the uniform variable in GLSL
+    /// \param vec      Value of the bvec2
     ///
     ////////////////////////////////////////////////////////////
     void setUniform(UniformLocation location, Glsl::Bvec2 vec) const;
@@ -333,8 +367,8 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p bvec3 uniform
     ///
-    /// \param name   Name of the uniform variable in GLSL
-    /// \param vec Value of the bvec3
+    /// \param location Location of the uniform variable in GLSL
+    /// \param vec      Value of the bvec3
     ///
     ////////////////////////////////////////////////////////////
     void setUniform(UniformLocation location, const Glsl::Bvec3& vec) const;
@@ -342,8 +376,8 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p bvec4 uniform
     ///
-    /// \param name   Name of the uniform variable in GLSL
-    /// \param vec Value of the bvec4
+    /// \param location Location of the uniform variable in GLSL
+    /// \param vec      Value of the bvec4
     ///
     ////////////////////////////////////////////////////////////
     void setUniform(UniformLocation location, const Glsl::Bvec4& vec) const;
@@ -351,8 +385,8 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p mat3 matrix
     ///
-    /// \param name   Name of the uniform variable in GLSL
-    /// \param matrix Value of the mat3 matrix
+    /// \param location Location of the uniform variable in GLSL
+    /// \param matrix   Value of the mat3 matrix
     ///
     ////////////////////////////////////////////////////////////
     void setUniform(UniformLocation location, const Glsl::Mat3& matrix) const;
@@ -360,8 +394,8 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p mat4 matrix
     ///
-    /// \param name   Name of the uniform variable in GLSL
-    /// \param matrix Value of the mat4 matrix
+    /// \param location Location of the uniform variable in GLSL
+    /// \param matrix   Value of the mat4 matrix
     ///
     ////////////////////////////////////////////////////////////
     void setUniform(UniformLocation location, const Glsl::Mat4& matrix) const;
@@ -369,9 +403,8 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Specify a texture as \p sampler2D uniform
     ///
-    /// \a name is the name of the variable to change in the shader.
-    /// The corresponding parameter in the shader must be a 2D texture
-    /// (\p sampler2D GLSL type).
+    /// The corresponding parameter in the shader must be a 2D
+    /// texture (\p sampler2D GLSL type).
     ///
     /// Example:
     /// \code
@@ -380,7 +413,8 @@ public:
     /// \code
     /// sf::Texture texture;
     /// ...
-    /// shader.setUniform("the_texture", texture);
+    /// const auto loc = shader.getUniformLocation("the_texture").value();
+    /// shader.setUniform(loc, texture);
     /// \endcode
     /// It is important to note that `texture` must remain alive as long
     /// as the shader uses it, no copy is made internally.
@@ -389,11 +423,13 @@ public:
     /// known in advance, you can pass the special value
     /// `sf::Shader::CurrentTexture`:
     /// \code
-    /// shader.setUniform("the_texture", sf::Shader::CurrentTexture).
+    /// shader.setUniform(loc, sf::Shader::CurrentTexture);
     /// \endcode
     ///
-    /// \param name    Name of the texture in the shader
-    /// \param texture Texture to assign
+    /// \param location Location of the texture uniform in the shader
+    /// \param texture  Texture to assign
+    ///
+    /// \return `true` on success, `false` if no free texture units are available
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool setUniform(UniformLocation location, const Texture& texture) const;
@@ -419,10 +455,11 @@ public:
     /// uniform sampler2D current; // this is the variable in the shader
     /// \endcode
     /// \code
-    /// shader.setUniform("current", sf::Shader::CurrentTexture);
+    /// const auto loc = shader.getUniformLocation("current").value();
+    /// shader.setUniform(loc, sf::Shader::CurrentTexture);
     /// \endcode
     ///
-    /// \param name Name of the texture in the shader
+    /// \param location Location of the texture uniform in the shader
     ///
     ////////////////////////////////////////////////////////////
     void setUniform(UniformLocation location, CurrentTextureType);
@@ -430,8 +467,8 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Specify values for \p float[] array uniform
     ///
-    /// \param name        Name of the uniform variable in GLSL
-    /// \param scalarArray pointer to array of \p float values
+    /// \param location    Location of the uniform variable in GLSL
+    /// \param scalarArray Pointer to array of \p float values
     /// \param length      Number of elements in the array
     ///
     ////////////////////////////////////////////////////////////
@@ -440,9 +477,9 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Specify values for \p vec2[] array uniform
     ///
-    /// \param name        Name of the uniform variable in GLSL
-    /// \param vecArray pointer to array of \p vec2 values
-    /// \param length      Number of elements in the array
+    /// \param location Location of the uniform variable in GLSL
+    /// \param vecArray Pointer to array of \p vec2 values
+    /// \param length   Number of elements in the array
     ///
     ////////////////////////////////////////////////////////////
     void setUniformArray(UniformLocation location, const Glsl::Vec2* vecArray, base::SizeT length);
@@ -450,9 +487,9 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Specify values for \p vec3[] array uniform
     ///
-    /// \param name        Name of the uniform variable in GLSL
-    /// \param vecArray pointer to array of \p vec3 values
-    /// \param length      Number of elements in the array
+    /// \param location Location of the uniform variable in GLSL
+    /// \param vecArray Pointer to array of \p vec3 values
+    /// \param length   Number of elements in the array
     ///
     ////////////////////////////////////////////////////////////
     void setUniformArray(UniformLocation location, const Glsl::Vec3* vecArray, base::SizeT length);
@@ -460,9 +497,9 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Specify values for \p vec4[] array uniform
     ///
-    /// \param name        Name of the uniform variable in GLSL
-    /// \param vecArray pointer to array of \p vec4 values
-    /// \param length      Number of elements in the array
+    /// \param location Location of the uniform variable in GLSL
+    /// \param vecArray Pointer to array of \p vec4 values
+    /// \param length   Number of elements in the array
     ///
     ////////////////////////////////////////////////////////////
     void setUniformArray(UniformLocation location, const Glsl::Vec4* vecArray, base::SizeT length);
@@ -470,8 +507,8 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Specify values for \p mat3[] array uniform
     ///
-    /// \param name        Name of the uniform variable in GLSL
-    /// \param matrixArray pointer to array of \p mat3 values
+    /// \param location    Location of the uniform variable in GLSL
+    /// \param matrixArray Pointer to array of \p mat3 values
     /// \param length      Number of elements in the array
     ///
     ////////////////////////////////////////////////////////////
@@ -480,8 +517,8 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Specify values for \p mat4[] array uniform
     ///
-    /// \param name        Name of the uniform variable in GLSL
-    /// \param matrixArray pointer to array of \p mat4 values
+    /// \param location    Location of the uniform variable in GLSL
+    /// \param matrixArray Pointer to array of \p mat4 values
     /// \param length      Number of elements in the array
     ///
     ////////////////////////////////////////////////////////////
@@ -500,30 +537,35 @@ public:
     [[nodiscard]] unsigned int getNativeHandle() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Bind a shader for rendering
+    /// \brief Bind this shader for rendering
     ///
     /// This function is not part of the graphics API, it mustn't be
     /// used when drawing SFML entities. It must be used only if you
-    /// mix `sf::Shader` with OpenGL code.
+    /// mix `sf::Shader` with raw OpenGL code.
+    ///
+    /// Call `Shader::unbind()` to revert to using no shader.
     ///
     /// \code
-    /// sf::Shader s1, s2;
-    /// ...
-    /// sf::Shader::bind(&s1);
-    /// // draw OpenGL stuff that use s1...
-    /// sf::Shader::bind(&s2);
-    /// // draw OpenGL stuff that use s2...
-    /// sf::Shader::bind(nullptr);
-    /// // draw OpenGL stuff that use no shader...
+    /// sf::Shader s1 = ...;
+    /// sf::Shader s2 = ...;
+    ///
+    /// s1.bind();
+    /// // draw OpenGL stuff that uses s1...
+    /// s2.bind();
+    /// // draw OpenGL stuff that uses s2...
+    /// sf::Shader::unbind();
+    /// // draw OpenGL stuff that uses no shader...
     /// \endcode
     ///
-    /// \param shader Shader to bind, can be null to use no shader
+    /// \see `unbind`
     ///
     ////////////////////////////////////////////////////////////
     void bind() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Unbind any bound shader
+    ///
+    /// \see `bind`
     ///
     ////////////////////////////////////////////////////////////
     static void unbind();
@@ -641,8 +683,13 @@ private:
 /// \li `sf::Transform` as matrices (\p mat3 or \p mat4)
 ///
 /// Every uniform variable in a shader can be set through one of the
-/// `setUniform()` or `setUniformArray()` overloads. For example, if you
-/// have a shader with the following uniforms:
+/// `setUniform()` or `setUniformArray()` overloads. The overloads take
+/// a `Shader::UniformLocation`, which is obtained by calling
+/// `getUniformLocation()` with the name of the uniform variable.
+/// Locations should be cached and reused rather than queried on every
+/// frame, as the lookup has a non-trivial cost.
+///
+/// For example, if you have a shader with the following uniforms:
 /// \code
 /// uniform float offset;
 /// uniform vec3 point;
@@ -654,12 +701,19 @@ private:
 /// You can set their values from C++ code as follows, using the types
 /// defined in the `sf::Glsl` namespace:
 /// \code
-/// shader.setUniform("offset", 2.f);
-/// shader.setUniform("point", sf::Vec3f(0.5f, 0.8f, 0.3f));
-/// shader.setUniform("color", sf::Glsl::Vec4(color));          // color is a sf::Color
-/// shader.setUniform("matrix", sf::Glsl::Mat4(transform));     // transform is a sf::Transform
-/// shader.setUniform("overlay", texture);                      // texture is a sf::Texture
-/// shader.setUniform("current", sf::Shader::CurrentTexture);
+/// const auto ulOffset  = shader.getUniformLocation("offset").value();
+/// const auto ulPoint   = shader.getUniformLocation("point").value();
+/// const auto ulColor   = shader.getUniformLocation("color").value();
+/// const auto ulMatrix  = shader.getUniformLocation("matrix").value();
+/// const auto ulOverlay = shader.getUniformLocation("overlay").value();
+/// const auto ulCurrent = shader.getUniformLocation("current").value();
+///
+/// shader.setUniform(ulOffset,  2.f);
+/// shader.setUniform(ulPoint,   sf::Vec3f(0.5f, 0.8f, 0.3f));
+/// shader.setUniform(ulColor,   sf::Glsl::Vec4(color));          // color is a sf::Color
+/// shader.setUniform(ulMatrix,  sf::Glsl::Mat4(transform));      // transform is a sf::Transform
+/// shader.setUniform(ulOverlay, texture);                        // texture is a sf::Texture
+/// shader.setUniform(ulCurrent, sf::Shader::CurrentTexture);
 /// \endcode
 ///
 /// The special `Shader::CurrentTexture` argument maps the
@@ -703,9 +757,9 @@ private:
 /// `sf::Shader` can also be used directly as a raw shader for
 /// custom OpenGL geometry.
 /// \code
-/// sf::Shader::bind(&shader);
+/// shader.bind();
 /// ... render OpenGL geometry ...
-/// sf::Shader::bind(nullptr);
+/// sf::Shader::unbind();
 /// \endcode
 ///
 /// \see `sf::Glsl`
