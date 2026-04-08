@@ -4632,8 +4632,8 @@ public:
     ////////////////////////////////////////////////////////////
     Game()
     {
-        m_font.getTexture().setSmooth(false);
-        m_fontMago2.getTexture().setSmooth(false);
+        m_font.getTexture().setSmooth(false); // TODO P1: add Font::openFromXXX overloads with TextureSettings
+        m_fontMago2.getTexture().setSmooth(false); // TODO P1: add Font::openFromXXX overloads with TextureSettings
 
         float scale = 4.f;
 
