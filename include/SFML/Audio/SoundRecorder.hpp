@@ -34,7 +34,13 @@ class SFML_AUDIO_API SoundRecorder
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief destructor
+    /// \brief Destructor
+    ///
+    /// Derived classes must call `stop()` from their own
+    /// destructor before any state used by `onProcessSamples`
+    /// is torn down. Failing to do so leaves the audio engine's
+    /// internal capture thread referencing a half-destroyed
+    /// derived object.
     ///
     ////////////////////////////////////////////////////////////
     virtual ~SoundRecorder();
@@ -64,26 +70,41 @@ public:
     SoundRecorder& operator=(SoundRecorder&&) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Start the capture
+    /// \brief Start the capture on a given capture device
     ///
-    /// The `sampleRate` parameter defines the number of audio samples
-    /// captured per second. The higher, the better the quality
-    /// (for example, 44100 samples/sec is CD quality).
-    /// This function uses its own thread so that it doesn't block
-    /// the rest of the program while the capture runs.
-    /// Please note that only one capture can happen at the same time.
+    /// The `sampleRate` parameter defines the number of audio
+    /// samples captured per second. The higher, the better the
+    /// quality (for example, 44100 samples/sec is CD quality).
+    /// The capture device's sample rate is updated accordingly.
     ///
-    /// \param sampleRate Desired capture rate, in number of samples per second
+    /// The capture happens in the audio engine's internal
+    /// thread, so this function returns immediately. Captured
+    /// chunks are delivered through the virtual `onProcessSamples`
+    /// callback (which is therefore also invoked from that
+    /// thread).
     ///
-    /// \return `true`, if start of capture was successful
+    /// Only one `SoundRecorder` may be active on a given
+    /// `CaptureDevice` at a time. The capture device must
+    /// outlive the recorder.
     ///
-    /// \see `stop`, `getAvailableDevices`
+    /// \param captureDevice Capture device to record from
+    /// \param sampleRate    Desired capture rate, in number of samples per second
+    ///
+    /// \return `true` if the capture was successfully started, `false` otherwise
+    ///
+    /// \see `stop`, `sf::CaptureDevice`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool start(CaptureDevice& captureDevice, unsigned int sampleRate = 44'100);
 
     ////////////////////////////////////////////////////////////
     /// \brief Stop the capture
+    ///
+    /// Has no effect if no capture is currently running. After
+    /// this call, no more `onProcessSamples` invocations will
+    /// happen for the previously bound capture device.
+    ///
+    /// \return `true` on success, `false` on failure
     ///
     /// \see `start`
     ///
@@ -100,12 +121,17 @@ protected:
     [[nodiscard]] explicit SoundRecorder();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Start capturing audio data
+    /// \brief Hook called once when a new capture starts
     ///
-    /// This virtual function may be overridden by a derived class
-    /// if something has to be done every time a new capture
-    /// starts. If not, this function can be ignored; the default
-    /// implementation does nothing.
+    /// This virtual function may be overridden by a derived
+    /// class if something has to be done every time a new
+    /// capture starts. The default implementation does nothing
+    /// and returns `true`. Returning `false` aborts the capture.
+    ///
+    /// Called from the thread that invoked `start()` (i.e. the
+    /// user thread), not from the audio thread.
+    ///
+    /// \param captureDevice Capture device the recording is starting on
     ///
     /// \return `true` to start the capture, or `false` to abort it
     ///
@@ -115,13 +141,18 @@ protected:
     ////////////////////////////////////////////////////////////
     /// \brief Process a new chunk of recorded samples
     ///
-    /// This virtual function is called every time a new chunk of
-    /// recorded data is available. The derived class can then do
-    /// whatever it wants with it (storing it, playing it, sending
-    /// it over the network, etc.).
+    /// This virtual function is called every time a new chunk
+    /// of recorded data is available. The derived class can
+    /// then do whatever it wants with it (storing it, playing
+    /// it, sending it over the network, etc.).
+    ///
+    /// Samples are interleaved 16-bit signed PCM. This function
+    /// is called from the audio engine's internal capture
+    /// thread; any data shared with other threads must be
+    /// synchronized appropriately.
     ///
     /// \param samples     Pointer to the new chunk of recorded samples
-    /// \param sampleCount Number of samples pointed by `samples`
+    /// \param sampleCount Number of samples pointed to by `samples`
     ///
     /// \return `true` to continue the capture, or `false` to stop it
     ///
@@ -129,12 +160,19 @@ protected:
     [[nodiscard]] virtual bool onProcessSamples(const base::I16* samples, base::SizeT sampleCount) = 0;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Stop capturing audio data
+    /// \brief Hook called once when the capture stops
     ///
-    /// This virtual function may be overridden by a derived class
-    /// if something has to be done every time the capture
-    /// ends. If not, this function can be ignored; the default
-    /// implementation does nothing.
+    /// This virtual function may be overridden by a derived
+    /// class if something has to be done every time the capture
+    /// ends. The default implementation does nothing and
+    /// returns `true`.
+    ///
+    /// Called from the thread that invoked `stop()` (i.e. the
+    /// user thread), not from the audio thread.
+    ///
+    /// \param captureDevice Capture device the recording is stopping on
+    ///
+    /// \return `true` on success, `false` on failure
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] virtual bool onStop(CaptureDevice& captureDevice);
@@ -158,100 +196,85 @@ private:
 /// \class sf::SoundRecorder
 /// \ingroup audio
 ///
-/// `sf::SoundBuffer` provides a simple interface to access
-/// the audio recording capabilities of the computer
-/// (the microphone). As an abstract base class, it only cares
-/// about capturing sound samples, the task of making something
-/// useful with them is left to the derived class. Note that
-/// SFML provides a built-in specialization for saving the
-/// captured data to a sound buffer (see `sf::SoundBufferRecorder`).
+/// `sf::SoundRecorder` provides a simple interface to access
+/// the audio recording capabilities of the computer (the
+/// microphone or any other capture device). As an abstract
+/// base class, it only takes care of capturing sound samples;
+/// the task of doing something useful with them is left to the
+/// derived class. SFML provides a built-in specialization that
+/// stores the captured data into a `sf::SoundBuffer`: see
+/// `sf::SoundBufferRecorder`.
 ///
 /// A derived class has only one virtual function to override:
-/// \li `onProcessSamples` provides the new chunks of audio samples while the capture happens
+/// \li `onProcessSamples` receives the new chunks of audio samples while the capture happens
 ///
-/// Moreover, two additional virtual functions can be overridden
-/// as well if necessary:
-/// \li `onStart` is called before the capture happens, to perform custom initializations
-/// \li `onStop` is called after the capture ends, to perform custom cleanup
+/// Two additional virtual functions can be overridden if
+/// custom setup or teardown is needed:
+/// \li `onStart` is called from the user thread before the audio thread starts pulling samples
+/// \li `onStop`  is called from the user thread after the audio thread has been stopped
 ///
-/// A derived class can also control the frequency of the onProcessSamples
-/// calls, with the `setProcessingInterval` protected function. The default
-/// interval is chosen so that recording thread doesn't consume too much
-/// CPU, but it can be changed to a smaller value if you need to process
-/// the recorded data in real time, for example.
-///
-/// If you have multiple sound input devices connected to your
-/// computer (for example: microphone, external sound card, webcam mic, etc...)
-/// you can get a list of all available devices through the
-/// getAvailableDevices() function.
-///
-/// By default the recording is in 16-bit mono. Using the
-/// setChannelCount method you can change the number of channels
-/// used by the audio capture device to record. Note that you
-/// have to decide whether you want to record in mono or stereo
-/// before starting the recording.
+/// The list of available capture devices is enumerated via
+/// `sf::AudioContext::getAvailableCaptureDeviceHandles`. A
+/// `sf::CaptureDevice` is then opened and passed to `start()`.
+/// The capture device's sample rate, channel count, and
+/// channel map can all be configured before recording starts.
 ///
 /// It is important to note that the audio capture happens in a
-/// separate thread, so that it doesn't block the rest of the
-/// program. In particular, the `onProcessSamples` virtual function
-/// (but not `onStart` and not `onStop`) will be called
-/// from this separate thread. It is important to keep this in
-/// mind, because you may have to take care of synchronization
-/// issues if you share data between threads.
-/// Another thing to bear in mind is that you must call `stop()`
-/// in the destructor of your derived class, so that the recording
-/// thread finishes before your object is destroyed.
+/// separate thread (the audio engine's internal capture
+/// thread), so that it doesn't block the rest of the program.
+/// In particular, the `onProcessSamples` virtual function
+/// (but not `onStart` and not `onStop`) is called from this
+/// separate thread. Any data shared with other threads must
+/// therefore be synchronized appropriately. Another thing to
+/// bear in mind is that you must call `stop()` in the destructor
+/// of your derived class, so that the recording thread finishes
+/// before your object is destroyed.
 ///
 /// Usage example:
 /// \code
 /// class CustomRecorder : public sf::SoundRecorder
 /// {
 /// public:
-///     ~CustomRecorder()
+///     ~CustomRecorder() override
 ///     {
-///         // Make sure to stop the recording thread
-///         stop();
+///         // Make sure the recording thread is stopped before our state is destroyed
+///         (void)stop();
 ///     }
 ///
 /// private:
-///     bool onStart() override // optional
+///     bool onStart(sf::CaptureDevice& /*captureDevice*/) override // optional
 ///     {
 ///         // Initialize whatever has to be done before the capture starts
-///         ...
-///
-///         // Return true to start playing
 ///         return true;
 ///     }
 ///
-///     [[nodiscard]] bool onProcessSamples(const base::I16* samples, base::SizeT sampleCount) override
+///     [[nodiscard]] bool onProcessSamples(const sf::base::I16* samples, sf::base::SizeT sampleCount) override
 ///     {
-///         // Do something with the new chunk of samples (store them, send them, etc...)
-///         ...
-///
-///         // Return true to continue playing
-///         return true;
+///         // Do something with the new chunk of samples (store them, send them, etc.)
+///         return true; // return false to stop the capture
 ///     }
 ///
-///     void onStop() override // optional
+///     bool onStop(sf::CaptureDevice& /*captureDevice*/) override // optional
 ///     {
 ///         // Clean up whatever has to be done after the capture ends
-///         ...
+///         return true;
 ///     }
 /// };
 ///
 /// // Usage
-/// if (CustomRecorder::isAvailable())
-/// {
-///     CustomRecorder recorder;
+/// auto audioContext  = sf::AudioContext::create().value();
+/// auto deviceHandle  = sf::AudioContext::getDefaultCaptureDeviceHandle().value();
+/// sf::CaptureDevice  captureDevice{deviceHandle};
 ///
-///     if (!recorder.start())
-///         return -1;
+/// CustomRecorder recorder;
+/// if (!recorder.start(captureDevice))
+///     return -1;
 ///
-///     ...
-///     recorder.stop();
-/// }
+/// // ... record for a while ...
+///
+/// (void)recorder.stop();
 /// \endcode
 ///
-/// \see `sf::SoundBufferRecorder`
+/// \see `sf::SoundBufferRecorder`, `sf::CaptureDevice`, `sf::AudioContext`
 ///
 ////////////////////////////////////////////////////////////

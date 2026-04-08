@@ -200,13 +200,32 @@ private:
     [[nodiscard]] void* getImpl() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Re-create the underlying SDL cursor from a custom image
+    ///
+    /// Internal helper used by the `loadFromPixels` factory.
+    /// Replaces the previously held SDL cursor (if any) with a
+    /// new one built from the provided image.
+    ///
+    /// \param pixels  Pointer to the array of 32-bit RGBA pixels
+    /// \param size    Width and height of the image
+    /// \param hotspot Hotspot position within the image
+    ///
+    /// \return `true` on success, `false` on failure
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool reloadFromPixels(const base::U8* pixels, Vec2<unsigned int> size, Vec2<unsigned int> hotspot);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Re-create the underlying SDL cursor from a system cursor
+    ///
+    /// Internal helper used by the `loadFromSystem` factory.
+    /// Replaces the previously held SDL cursor (if any) with a
+    /// new one built from the requested system cursor type.
+    ///
+    /// \param type Native system cursor type
+    ///
+    /// \return `true` on success, `false` if the cursor type is
+    ///         not supported on the current platform
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool reloadFromSystem(Cursor::Type type);

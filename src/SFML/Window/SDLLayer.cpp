@@ -933,7 +933,7 @@ float SDLLayer::getPrimaryDisplayContentScale() const
 
 
 ////////////////////////////////////////////////////////////
-float SDLLayer::getWindowDisplayScale(SDL_Window& window) const
+float SDLLayer::getDisplayScale(SDL_Window& window) const
 {
     const float result = SDL_GetWindowDisplayScale(&window);
 
@@ -948,7 +948,7 @@ float SDLLayer::getWindowDisplayScale(SDL_Window& window) const
 
 
 ////////////////////////////////////////////////////////////
-SDLSurfaceUPtr SDLLayer::createSurfaceFromPixels(Vec2u size, const base::U8* pixels) const
+SDLSurfaceUPtr SDLLayer::createSurfaceFromPixels(const base::U8* pixels, Vec2u size) const
 {
     SFML_BASE_ASSERT(pixels != nullptr);
 

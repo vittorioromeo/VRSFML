@@ -716,7 +716,7 @@ private:
     ////////////////////////////////////////////////////////////
     void playSound(const LoadedSound& ls, const sf::base::SizeT maxOverlap = 255u)
     {
-        (void)m_playbackDevice.updateListener({.volume = 0.5f});
+        (void)m_playbackDevice.applyListener({.volume = 0.5f});
         m_soundManager.playPooled(m_playbackDevice, ls, maxOverlap);
     }
 
@@ -908,7 +908,7 @@ private:
             .origin      = floorVec2(particle.origin),
             .rotation    = sf::radians(particle.rotation),
             .textureRect = particle.textureRect,
-            .color       = sf::Color::whiteMask(opacityAsAlpha),
+            .color       = sf::Color::whiteWithAlpha(opacityAsAlpha),
         };
     }
 
@@ -1036,7 +1036,7 @@ private:
         };
 
         {
-            const auto [sine, cosine] = sf::base::sinCosLookup(commonDrawParams.rotation.wrapUnsigned().asRadians());
+            const auto [sine, cosine] = sf::base::sinCosLookup(commonDrawParams.rotation.asRadians());
 
             const auto transform = sf::Transform::fromPositionScaleOriginSinCos(commonDrawParams.position,
                                                                                 commonDrawParams.scale,
@@ -1111,13 +1111,13 @@ private:
                               .origin        = floorVec2(drawBlockSize / 2.f),
                               .string        = sf::base::toString(static_cast<unsigned int>(block.health - 1u)),
                               .characterSize = 5u,
-                              .fillColor     = sf::Color::blackMask(alpha),
+                              .fillColor     = sf::Color::blackWithAlpha(alpha),
                           }};
 
             text.setGlobalCenter(floorVec2(position.addY(yOffset) + sf::Vec2f{2.f, 3.f}));
             m_rtGame.draw(text, {.view = m_worldView});
 
-            text.setFillColor(sf::Color::whiteMask(alpha));
+            text.setFillColor(sf::Color::whiteWithAlpha(alpha));
 
             text.setGlobalCenter(floorVec2(position.addY(yOffset)) + sf::Vec2f{2.f, 2.f});
             m_rtGame.draw(text, {.view = m_worldView});
@@ -3105,7 +3105,7 @@ private:
         m_rtGame.draw(
             sf::RectangleShapeData{
                 .position  = {0.f, 0.f},
-                .fillColor = sf::Color::blackMask(darkenAlpha),
+                .fillColor = sf::Color::blackWithAlpha(darkenAlpha),
                 .size      = resolution,
             },
             {.view = m_worldView});
@@ -4632,7 +4632,7 @@ public:
     ////////////////////////////////////////////////////////////
     Game()
     {
-        m_font.getTexture().setSmooth(false); // TODO P1: add Font::openFromXXX overloads with TextureSettings
+        m_font.getTexture().setSmooth(false);      // TODO P1: add Font::openFromXXX overloads with TextureSettings
         m_fontMago2.getTexture().setSmooth(false); // TODO P1: add Font::openFromXXX overloads with TextureSettings
 
         float scale = 4.f;

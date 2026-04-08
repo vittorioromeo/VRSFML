@@ -63,12 +63,14 @@ struct Joystick
     };
 
     ////////////////////////////////////////////////////////////
-    /// \brief Update the states of all joysticks
+    /// \brief Refresh the cached state of every joystick
     ///
-    /// This function is used internally by SFML, so you normally
-    /// don't have to call it explicitly. However, you may need to
-    /// call it if you have no window yet (or no window at all):
-    /// in this case the joystick states are not updated automatically.
+    /// This function is used internally by VRSFML's event loop,
+    /// so you normally don't have to call it explicitly.
+    /// However, you may need to call it if you want to query
+    /// joystick state without having created a window yet (or
+    /// without having a window at all): in that case the
+    /// joystick states are not refreshed automatically.
     ///
     ////////////////////////////////////////////////////////////
     SFML_WINDOW_API static void update();
@@ -77,41 +79,67 @@ struct Joystick
     class Query;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Open a query handle on a specific joystick slot
     ///
-    /// \param joystick Index of the joystick to check
+    /// Returns a `Query` object bound to the joystick at the
+    /// given index, or `base::nullOpt` if no joystick is
+    /// currently connected at that slot.
+    ///
+    /// The returned `Query` only stays valid as long as the
+    /// joystick remains connected. If the joystick is
+    /// disconnected, you should drop the query and call
+    /// `query()` again.
+    ///
+    /// \param joystickId Index of the joystick to query, in `[0, MaxCount - 1]`
+    ///
+    /// \return `Query` for the joystick on success, `base::nullOpt` if it is not connected
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<Query> query(unsigned int joystickId);
 };
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Cheap, read-only handle to a connected joystick
+///
+/// `Query` is a thin wrapper that bundles a reference to the
+/// joystick manager with the joystick index, exposing the
+/// real-time state of one joystick (axes, buttons, name,
+/// vendor / product IDs).
+///
+/// Instances are obtained from `sf::Joystick::query`.
 ///
 ////////////////////////////////////////////////////////////
 class [[nodiscard]] SFML_WINDOW_API Joystick::Query
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Return the index of the joystick
+    /// \brief Get the index of the joystick this query is bound to
+    ///
+    /// \return Joystick index, in `[0, MaxCount - 1]`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] unsigned int getIndex() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Return the name of the joystick
+    /// \brief Get the human-readable name of the joystick
+    ///
+    /// \return Joystick name as reported by the OS
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const UnicodeString& getName() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Return the manufacturer identifier of the joystick
+    /// \brief Get the USB vendor identifier of the joystick
+    ///
+    /// \return Vendor identifier reported by the OS (`0` if unknown)
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] unsigned int getVendorId() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Return the product identifier of the joystick
+    /// \brief Get the USB product identifier of the joystick
+    ///
+    /// \return Product identifier reported by the OS (`0` if unknown)
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] unsigned int getProductId() const;
@@ -188,14 +216,17 @@ private:
 
 
 ////////////////////////////////////////////////////////////
-/// \namespace sf::Joystick
+/// \struct sf::Joystick
 /// \ingroup window
 ///
 /// `sf::Joystick` provides an interface to the state of the
-/// joysticks. Each joystick is identified by an index that
-/// is passed to the functions in this namespace.
+/// joysticks. Each joystick is identified by an index that is
+/// passed to `sf::Joystick::query`, which returns a
+/// `sf::Joystick::Query` object exposing the joystick's name,
+/// vendor / product IDs, supported axes, and real-time button
+/// / axis state.
 ///
-/// This namespace allows users to query the state of joysticks at any
+/// This struct allows users to query the state of joysticks at any
 /// time and directly, without having to deal with a window and
 /// its events. Compared to the `JoystickMoved`, `JoystickButtonPressed`
 /// and `JoystickButtonReleased` events, `sf::Joystick` can retrieve the
@@ -227,16 +258,16 @@ private:
 ///     return;
 ///
 /// // How many buttons does joystick #0 support?
-/// const unsigned int buttonCount = query.getButtonCount();
+/// const unsigned int buttonCount = query->getButtonCount();
 ///
-/// // Does joystick #0 define a X axis?
-/// const bool hasX = query.hasAxis(sf::Joystick::Axis::X);
+/// // Does joystick #0 define an X axis?
+/// const bool hasX = query->hasAxis(sf::Joystick::Axis::X);
 ///
 /// // Is button #2 pressed on joystick #0?
-/// const bool pressed = query.isButtonPressed(2);
+/// const bool pressed = query->isButtonPressed(2);
 ///
 /// // What's the current position of the Y axis on joystick #0?
-/// const float position = query.getAxisPosition(sf::Joystick::Axis::Y);
+/// const float position = query->getAxisPosition(sf::Joystick::Axis::Y);
 /// \endcode
 ///
 /// \see `sf::Keyboard`, `sf::Mouse`

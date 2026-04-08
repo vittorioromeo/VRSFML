@@ -78,7 +78,7 @@ void to_json(nlohmann::json& j, const Time& p)
 ////////////////////////////////////////////////////////////
 void from_json(const nlohmann::json& j, Time& p)
 {
-    p = Time{j.get<base::I64>()};
+    p = microseconds(j.get<base::I64>());
 }
 
 } // namespace sf

@@ -375,7 +375,7 @@ Ftp::Response Ftp::download(const Path& remoteFile, const Path& localPath, Trans
 
     // If the download was unsuccessful, delete the partial file
     if (!response.isOk())
-        if (!filepath.remove())
+        if (!filepath.removeFromDisk())
             priv::err() << "Failed to delete '" << filepath << '\'';
 
     return response;

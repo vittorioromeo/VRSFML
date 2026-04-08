@@ -19,6 +19,19 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
+/// \brief Bounded vector backed entirely by inline storage (no heap allocation)
+///
+/// `InPlaceVector<T, N>` provides the usual `Vector` interface but
+/// stores all elements in a fixed-size aligned buffer of capacity `N`.
+/// It never allocates and `capacity()` always returns `N`. Attempting
+/// to grow past `N` is a programming error and is caught by debug
+/// assertions on the relevant `unsafe*` and `emplace*` operations.
+///
+/// Useful when the maximum element count is known statically and you
+/// want to avoid both heap traffic and the size overhead of
+/// `SmallVector`'s heap escape hatch.
+///
+////////////////////////////////////////////////////////////
 template <typename TItem, SizeT N>
 class [[nodiscard]] InPlaceVector // NOLINT(cppcoreguidelines-pro-type-member-init)
 {

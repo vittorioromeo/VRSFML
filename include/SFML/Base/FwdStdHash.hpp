@@ -4,6 +4,19 @@
 
 
 ////////////////////////////////////////////////////////////
+/// \file
+/// \brief Forward declaration of `std::hash` to avoid `<functional>`
+///
+/// SFML containers and types only need to befriend or specialize
+/// `std::hash`, never to use the rest of `<functional>`. This header
+/// declares `std::hash` inside the appropriate (versioned) namespace
+/// so that user-defined specializations remain ABI-compatible with
+/// libc++/libstdc++.
+///
+////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////
 #ifdef __CLANGD__
 
     #include <functional> // IWYU pragma: export

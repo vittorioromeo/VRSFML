@@ -386,7 +386,14 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the index of the first fill vertex.
+    /// \brief Get the index where the fill vertices start in `getVertices()`
+    ///
+    /// The vertex array returned by `getVertices` is laid out as
+    /// `[outline vertices ... fill vertices]`. This function
+    /// returns the index of the first fill vertex, which is also
+    /// the count of outline vertices.
+    ///
+    /// \return Start index of the fill vertex sub-range
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] base::SizeT getFillVerticesStartIndex() const
@@ -462,8 +469,30 @@ protected:
 /// \class sf::TextBase
 /// \ingroup graphics
 ///
-/// TODO P1: docs
+/// `sf::TextBase` is the **CRTP** base shared by `sf::Text`
+/// and `sf::GlyphMappedText`. It implements the parts of the
+/// text rendering pipeline that do not depend on the source of
+/// the glyphs:
 ///
-/// \see sf::Text, sf::GlyphMappedText
+/// \li the string itself,
+/// \li letter spacing, line spacing, italic/underline/strike,
+/// \li fill and outline colors (with separate alpha setters),
+/// \li the cached vertex buffer that backs the rendered text,
+/// \li the public transformable members,
+/// \li bounds queries (`getLocalBounds`, `getGlobalBounds`),
+/// \li per-character position lookup (`findCharacterPos`).
+///
+/// Concrete subclasses provide:
+/// \li `getFontSource()` -- returns either a `sf::Font&` (legacy
+///     lazy-loading path) or a `sf::GlyphMapping&` (precomputed
+///     path).
+/// \li `getCharacterSize()`, `getOutlineThickness()`, `isBold()`
+/// \li `getTexture()` -- the glyph atlas texture.
+///
+/// `TextBase` is not meant to be used directly. Use `sf::Text`
+/// or `sf::GlyphMappedText`, depending on whether your text is
+/// dynamic or precomputed.
+///
+/// \see `sf::Text`, `sf::GlyphMappedText`, `sf::TextData`
 ///
 ////////////////////////////////////////////////////////////

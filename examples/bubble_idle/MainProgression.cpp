@@ -148,7 +148,7 @@ void Main::gameLoopUpdateSplits()
 
         if (split != oldSplit)
         {
-            const auto [hours, mins, secs, millis] = formatSpeedrunTime(sf::Time{splitTimeUs});
+            const auto [hours, mins, secs, millis] = formatSpeedrunTime(sf::microseconds(splitTimeUs));
             pushNotification("Split reached!", "'%s' at %02llu:%02llu:%02llu:%03llu", name, hours, mins, secs, millis);
         }
     };

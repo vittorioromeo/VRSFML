@@ -3,6 +3,18 @@
 // https://github.com/vittorioromeo/VRSFML/blob/master/license.md
 
 
+////////////////////////////////////////////////////////////
+/// \file
+/// \brief Fixed-width integer aliases (`I8`/`U8` … `I64`/`U64`)
+///
+/// `<cstdint>` equivalents that do not require including `<cstdint>`.
+/// On GCC and Clang the types are picked from compiler-defined size
+/// macros; on other compilers (e.g. MSVC) the standard ILP32/LLP64 data
+/// model is assumed.
+///
+////////////////////////////////////////////////////////////
+
+
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////

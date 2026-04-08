@@ -7,40 +7,42 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/Priv/TransformableMacros.hpp"
 
-#include "SFML/System/Angle.hpp"
 #include "SFML/System/Rect2.hpp"
-#include "SFML/System/Vec2Base.hpp"
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Parameters for drawing a texture directly on a render target
+///
+/// `DrawTextureSettings` lets you stamp a `sf::Texture` onto a
+/// `sf::RenderTarget` without needing to construct a full
+/// `sf::Sprite`. It bundles the standard transformable members
+/// (`position`, `scale`, `origin`, `rotation`) with a sub-rectangle
+/// and a tint color.
 ///
 ////////////////////////////////////////////////////////////
 struct DrawTextureSettings
 {
-    Vec2f position{};      //!< Position of the object in the 2D world
-    Vec2f scale{1.f, 1.f}; //!< Scale of the object
-    Vec2f origin{};        //!< Origin of translation/rotation/scaling of the object
-
-    // NOLINTNEXTLINE(readability-redundant-member-init)
-    Angle rotation{}; //!< Orientation of the object
-
-    Rect2f textureRect{};       //!< Rectangle defining the area of the source texture to display
-    Color  color{Color::White}; //!< Color of the sprite
+    SFML_DEFINE_TRANSFORMABLE_DATA_MEMBERS;
+    Rect2f textureRect{};       //!< Sub-rectangle of the source texture to display (`{}` means the full texture)
+    Color  color{Color::White}; //!< Color used to tint (modulate) the texture
 };
 
 } // namespace sf
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::RenderTarget
+/// \struct sf::DrawTextureSettings
 /// \ingroup graphics
 ///
-/// TODO P1: docs
+/// `sf::DrawTextureSettings` is the parameter pack for the
+/// `sf::RenderTarget::draw(const Texture&, const DrawTextureSettings&, ...)`
+/// overload. It is the most convenient way to render a texture once
+/// without keeping a `sf::Sprite` around (e.g. for one-off blits).
 ///
-/// \see TODO P1: docs
+/// \see `sf::Sprite`, `sf::RenderTarget`, `sf::Texture`
 ///
 ////////////////////////////////////////////////////////////

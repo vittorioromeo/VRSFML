@@ -80,21 +80,27 @@ public:
     Font& operator=(Font&& rhs) noexcept;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Open the font from a file
+    /// \brief Open a font from a file on disk
     ///
     /// The supported font formats are: TrueType, Type 1, CFF,
     /// OpenType, SFNT, X11 PCF, Windows FNT, BDF, PFR and Type 42.
-    /// Note that this function knows nothing about the standard
-    /// fonts installed on the user's system, thus you can't
-    /// load them directly.
+    /// Note that this function knows nothing about the fonts
+    /// installed on the user's system: you must always provide an
+    /// explicit file path.
     ///
-    /// \warning SFML cannot preload all the font data in this
-    /// function, so the file has to remain accessible until
-    /// the sf::Font object is destroyed.
+    /// If `textureAtlas` is `nullptr`, the font allocates and owns
+    /// its own glyph texture. Passing a shared atlas lets multiple
+    /// fonts (and other resources) pack their glyphs into the same
+    /// GPU texture, which is more efficient when batching.
     ///
-    /// \param filename Path of the font file to load
+    /// \warning VRSFML does not preload all the font data in this
+    /// function. The file must remain accessible for as long as the
+    /// `sf::Font` object lives, since glyphs are loaded on demand.
     ///
-    /// \return Font if opening succeeded, `base::nullOpt` if it failed
+    /// \param filename     Path of the font file to load
+    /// \param textureAtlas Optional shared glyph atlas
+    ///
+    /// \return Font on success, `base::nullOpt` on failure
     ///
     /// \see `openFromMemory`, `openFromStream`
     ///
@@ -102,20 +108,17 @@ public:
     [[nodiscard]] static base::Optional<Font> openFromFile(const Path& filename, TextureAtlas* textureAtlas = nullptr);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Open the font from a file in memory
+    /// \brief Open a font from a file held in memory
     ///
-    /// The supported font formats are: TrueType, Type 1, CFF,
-    /// OpenType, SFNT, X11 PCF, Windows FNT, BDF, PFR and Type 42.
+    /// Same supported formats as `openFromFile`. The buffer
+    /// pointed to by `data` must remain valid for as long as the
+    /// `sf::Font` object lives, since glyphs are loaded on demand.
     ///
-    /// \warning SFML cannot preload all the font data in this
-    /// function, so the buffer pointed by `data` has to remain
-    /// valid until the `sf::Font` object opens a new font or
-    /// is destroyed.
+    /// \param data         Pointer to the encoded font bytes in memory
+    /// \param sizeInBytes  Size of the data, in bytes
+    /// \param textureAtlas Optional shared glyph atlas
     ///
-    /// \param data        Pointer to the file data in memory
-    /// \param sizeInBytes Size of the data to load, in bytes
-    ///
-    /// \return Font if opening succeeded, `base::nullOpt` if it failed
+    /// \return Font on success, `base::nullOpt` on failure
     ///
     /// \see `openFromFile`, `openFromStream`
     ///
@@ -125,18 +128,16 @@ public:
                                                              TextureAtlas* textureAtlas = nullptr);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Open the font from a custom stream
+    /// \brief Open a font from a custom input stream
     ///
-    /// The supported font formats are: TrueType, Type 1, CFF,
-    /// OpenType, SFNT, X11 PCF, Windows FNT, BDF, PFR and Type 42.
+    /// Same supported formats as `openFromFile`. The stream must
+    /// remain accessible for as long as the `sf::Font` object
+    /// lives, since glyphs are loaded on demand.
     ///
-    /// \warning SFML cannot preload all the font data in this
-    /// function, so the stream has to remain accessible until
-    /// the sf::Font object is destroyed.
+    /// \param stream       Source stream to read encoded font data from
+    /// \param textureAtlas Optional shared glyph atlas
     ///
-    /// \param stream Source stream to read from
-    ///
-    /// \return Font if opening succeeded, `base::nullOpt` if it failed
+    /// \return Font on success, `base::nullOpt` on failure
     ///
     /// \see `openFromFile`, `openFromMemory`
     ///
@@ -176,17 +177,30 @@ public:
     [[nodiscard]] const Glyph& getGlyph(char32_t codePoint, unsigned int characterSize, bool bold, float outlineThickness) const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Groups a fill and outline glyph together
+    /// \brief A fill glyph paired with its matching outline glyph
+    ///
+    /// Used by `sf::Text` to render outlined text in a single pass.
     ///
     ////////////////////////////////////////////////////////////
     struct GlyphPair
     {
-        const Glyph& fillGlyph;
-        const Glyph& outlineGlyph;
+        const Glyph& fillGlyph;    //!< Glyph used for the filled (interior) part of the character
+        const Glyph& outlineGlyph; //!< Glyph used for the outlined (border) part of the character
     };
 
     ////////////////////////////////////////////////////////////
-    /// \brief Retrieve a pair of fill and outline glyphs of the font
+    /// \brief Retrieve a fill glyph and its matching outline glyph in one call
+    ///
+    /// Equivalent to two `getGlyph` calls (with `outlineThickness == 0`
+    /// and `outlineThickness != 0` respectively), but a single
+    /// dictionary lookup, which is faster when both halves are needed.
+    ///
+    /// \param codePoint        Unicode code point of the character to get
+    /// \param characterSize    Reference character size
+    /// \param bold             Retrieve the bold versions or the regular ones
+    /// \param outlineThickness Thickness of the outline (must be non-zero for the outline glyph to be meaningful)
+    ///
+    /// \return Pair of references to the fill and outline glyphs
     ///
     /// \see `getGlyph`
     ///
@@ -312,25 +326,27 @@ public:
     [[nodiscard]] float getUnderlineThickness(unsigned int characterSize) const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Retrieve the texture containing the loaded glyphs of a certain size
+    /// \brief Retrieve the texture that backs the rasterized glyphs
     ///
-    /// The contents of the returned texture changes as more glyphs
-    /// are requested, thus it is not very relevant. It is mainly
-    /// used internally by `sf::Text`.
+    /// If this font owns its glyph atlas, the returned texture is
+    /// that atlas. If a shared `sf::TextureAtlas` was passed to the
+    /// open function, the returned texture is the shared atlas
+    /// texture. The contents grow as more glyphs are rasterized on
+    /// demand.
     ///
-    /// \return Texture containing the glyphs of the requested size
+    /// This accessor exists mostly for advanced uses (custom
+    /// rendering, debugging, dumping the glyph atlas) -- regular
+    /// text drawing goes through `sf::Text` and never needs it.
+    ///
+    /// \return Reference to the glyph texture
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Texture& getTexture();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Retrieve the texture containing the loaded glyphs of a certain size
+    /// \brief `const` overload of `getTexture`
     ///
-    /// The contents of the returned texture changes as more glyphs
-    /// are requested, thus it is not very relevant. It is mainly
-    /// used internally by `sf::Text`.
-    ///
-    /// \return Texture containing the glyphs of the requested size
+    /// \return Const reference to the glyph texture
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const Texture& getTexture() const;
@@ -372,62 +388,54 @@ private:
 /// \class sf::Font
 /// \ingroup graphics
 ///
-/// Fonts can be opened from a file, from memory or from a custom
-/// stream, and supports the most common types of fonts. See
-/// the openFromFile function for the complete list of supported formats.
+/// `sf::Font` represents a font that has been opened from a file,
+/// from memory, or from a custom stream. The most common font
+/// formats are supported -- see `openFromFile` for the full list.
 ///
-/// Once it is opened, a `sf::Font` instance provides three
-/// types of information about the font:
-/// \li Global metrics, such as the line spacing
-/// \li Per-glyph metrics, such as bounding box or kerning
-/// \li Pixel representation of glyphs
+/// Once opened, a `sf::Font` instance exposes three kinds of
+/// information about the font:
+/// \li Global metrics, such as ascent, descent, and line spacing
+/// \li Per-glyph metrics, such as bounding box, advance, and kerning
+/// \li Rasterized pixel representations of individual glyphs
 ///
-/// Fonts alone are not very useful: they hold the font data
-/// but cannot make anything useful of it. To do so you need to
-/// use the `sf::Text` class, which is able to properly output text
-/// with several options such as character size, style, color,
-/// position, rotation, etc.
-/// This separation allows more flexibility and better performances:
-/// indeed a `sf::Font` is a heavy resource, and any operation on it
-/// is slow (often too slow for real-time applications). On the other
-/// side, a `sf::Text` is a lightweight object which can combine the
-/// glyphs data and metrics of a `sf::Font` to display any text on a
-/// render target.
-/// Note that it is also possible to bind several `sf::Text` instances
-/// to the same `sf::Font`.
+/// Fonts on their own are not very useful: they hold the font data
+/// but do not draw anything. To render text, pair a `sf::Font` with
+/// a `sf::Text` object, which combines the glyph data and metrics
+/// with a string and a transform to produce vertices for the
+/// renderer. The same font can be bound to as many `sf::Text`
+/// instances as needed.
 ///
-/// It is important to note that the `sf::Text` instance doesn't
-/// copy the font that it uses, it only keeps a reference to it.
-/// Thus, a `sf::Font` must not be destructed while it is
-/// used by a `sf::Text` (i.e. never write a function that
-/// uses a local `sf::Font` instance for creating a text).
+/// `sf::Font` is a heavy resource: opening it allocates an internal
+/// glyph cache, and rasterizing glyphs touches FreeType. Use
+/// references (or, ideally, a shared `sf::TextureAtlas`) rather
+/// than copies whenever possible.
+///
+/// Lifetime: in VRSFML, `sf::Text` does not copy the font; it only
+/// references it via `sf::Font&`. The font must therefore outlive
+/// every `sf::Text` that uses it. Debug builds with
+/// `SFML_ENABLE_LIFETIME_TRACKING` will detect violations
+/// automatically.
 ///
 /// Usage example:
 /// \code
-/// // Open a new font
+/// // Open a new font.
 /// const auto font = sf::Font::openFromFile("arial.ttf").value();
 ///
-/// // Create a text which uses our font
-/// sf::Text text1(font);
-/// text1.setCharacterSize(30);
-///
-/// // Create another text using the same font, but with different parameters
-/// sf::Text text2(font);
-/// text2.setCharacterSize(50);
-/// text2.setItalic(true);
+/// // Create a text from the font using designated initializers.
+/// const sf::Text text1{font, {.string = "Hello",  .characterSize = 30u}};
+/// const sf::Text text2{font, {.string = "World!", .characterSize = 50u, .italic = true}};
 /// \endcode
 ///
-/// Apart from opening font files, and passing them to instances
-/// of `sf::Text`, you should normally not have to deal directly
-/// with this class. However, it may be useful to access the
-/// font metrics or rasterized glyphs for advanced usage.
+/// Apart from opening font files and passing them to `sf::Text`,
+/// you usually do not need to interact with this class directly.
+/// The `getInfo`, `getGlyph`, `getKerning`, and metric accessors
+/// can be useful for advanced custom rendering.
 ///
-/// Note that if the font is a bitmap font, it is not scalable,
-/// thus not all requested sizes will be available to use. This
-/// needs to be taken into consideration when using `sf::Text`.
-/// If you need to display text of a certain size, make sure the
-/// corresponding bitmap font that supports that size is used.
+/// Note that bitmap fonts are not scalable: they only contain a
+/// fixed set of pre-rendered sizes. If `sf::Text` requests a size
+/// that the bitmap font does not provide, the result may be empty
+/// or look incorrect.
 ///
-/// \see `sf::Text`
+/// \see `sf::Text`, `sf::FontFace`, `sf::TextureAtlas`
 ///
 ////////////////////////////////////////////////////////////

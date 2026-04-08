@@ -37,16 +37,38 @@ class SFML_AUDIO_API Sound : public priv::MiniaudioSoundSource
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Construct the sound with a buffer
+    /// \brief Construct the sound with a buffer and a full settings snapshot
     ///
-    /// \param buffer Sound buffer containing the audio data to play with the sound
+    /// The sound is bound to `playbackDevice` (which must
+    /// outlive it) and reads its samples from `buffer` (which
+    /// must also outlive it). Every property in `audioSettings`
+    /// is applied immediately.
+    ///
+    /// \param playbackDevice Playback device to render through
+    /// \param buffer         Sound buffer containing the audio data to play
+    /// \param audioSettings  Initial audio settings to apply (volume, pitch, position, etc.)
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit Sound(PlaybackDevice& playbackDevice, const SoundBuffer& buffer, const AudioSettings& audioSettings);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Construct the sound with a buffer and default settings
+    ///
+    /// Equivalent to passing a default-constructed
+    /// `AudioSettings` to the other constructor.
+    ///
+    /// \param playbackDevice Playback device to render through
+    /// \param buffer         Sound buffer containing the audio data to play
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit Sound(PlaybackDevice& playbackDevice, const SoundBuffer& buffer);
 
     ////////////////////////////////////////////////////////////
     /// \brief Disallow construction from a temporary sound buffer
+    ///
+    /// `Sound` only stores a reference to the buffer, so
+    /// constructing one from a temporary would immediately
+    /// dangle.
     ///
     ////////////////////////////////////////////////////////////
     Sound(PlaybackDevice&, const SoundBuffer&& buffer, const AudioSettings& audioSettings) = delete;
@@ -100,13 +122,15 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Get the audio buffer attached to the sound
     ///
-    /// \return Sound buffer attached to the sound
+    /// \return Sound buffer this sound is reading samples from
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const SoundBuffer& getBuffer() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the playback device
+    /// \brief Get the playback device this sound is rendered through
+    ///
+    /// \return Reference to the playback device this sound was constructed with
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] PlaybackDevice& getPlaybackDevice() const;

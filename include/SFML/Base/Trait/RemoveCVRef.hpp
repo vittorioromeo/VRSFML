@@ -3,6 +3,21 @@
 // https://github.com/vittorioromeo/VRSFML/blob/master/license.md
 
 
+////////////////////////////////////////////////////////////
+/// \file
+/// \brief `std::remove_cvref` replacement
+///
+/// `RemoveCVRef<T>` strips both references and top-level cv-qualifiers
+/// from `T`. The macro form `SFML_BASE_REMOVE_CVREF(T)` prefers the
+/// compiler builtin when available; the type alias forwards to it.
+///
+/// `RemoveCVRefIndirect<T>` is the same trait expressed without the
+/// builtin, which is required when used inside `requires` constraints
+/// (where compiler builtins are sometimes not allowed).
+///
+////////////////////////////////////////////////////////////
+
+
 #if __has_builtin(__remove_cvref)
 
     ////////////////////////////////////////////////////////////

@@ -37,26 +37,34 @@ class Window;
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Optional parameters for `sf::Texture::create`
+///
+/// All members default to sensible values, so the struct can be
+/// passed empty (e.g. via designated initializers).
 ///
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] TextureCreateSettings
 {
-    bool            sRgb     = false;
-    bool            smooth   = false;
-    TextureWrapMode wrapMode = TextureWrapMode::Clamp;
+    bool            sRgb     = false;                  //!< Whether the texture should be created in sRGB color space
+    bool            smooth   = false;                  //!< Whether linear filtering should be enabled
+    TextureWrapMode wrapMode = TextureWrapMode::Clamp; //!< Wrap mode used when sampling the texture
 };
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Optional parameters for `sf::Texture::loadFromFile` and friends
+///
+/// In addition to the `TextureCreateSettings` fields, this struct
+/// has an `area` member that lets you load only a sub-rectangle of
+/// the source image. Pass an empty `Rect2i` to load the whole
+/// image (the default).
 ///
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] TextureLoadSettings
 {
-    bool            sRgb     = false;
-    Rect2i          area     = {};
-    bool            smooth   = false;
-    TextureWrapMode wrapMode = TextureWrapMode::Clamp;
+    bool            sRgb     = false; //!< Whether the texture should be created in sRGB color space
+    Rect2i          area     = {};    //!< Sub-rectangle of the source image to load (`{}` = full image)
+    bool            smooth   = false; //!< Whether linear filtering should be enabled
+    TextureWrapMode wrapMode = TextureWrapMode::Clamp; //!< Wrap mode used when sampling the texture
 };
 
 ////////////////////////////////////////////////////////////
@@ -97,37 +105,34 @@ public:
     Texture& operator=(Texture&& rhs) noexcept;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Create the texture
+    /// \brief Create an empty texture of the given size
     ///
-    /// If this function fails, the texture is left unchanged.
+    /// The contents of a freshly created texture are undefined.
+    /// Use `update` to upload pixel data afterwards.
     ///
-    /// \param size Width and height of the texture
-    /// \param sRgb `true` to enable sRGB conversion, `false` to disable it
+    /// \param size     Width and height of the texture
+    /// \param settings Texture create settings (sRGB, smoothing, wrap mode)
     ///
-    /// \return Texture on success, `base::nullOpt` otherwise
+    /// \return Texture on success, `base::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<Texture> create(Vec2u size, const TextureCreateSettings& settings = {});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Load the texture from a file on disk
+    /// \brief Load a texture from an image file on disk
     ///
-    /// The `area` argument can be used to load only a sub-rectangle
-    /// of the whole image. If you want the entire image then leave
-    /// the default value (which is an empty `Rect2i`).
-    /// If the `area` rectangle crosses the bounds of the image, it
-    /// is adjusted to fit the image size.
+    /// `settings.area` can be used to load only a sub-rectangle of
+    /// the source image. The default (empty) value loads the whole
+    /// image. If the `area` rectangle crosses the image bounds, it
+    /// is clipped to fit.
     ///
     /// The maximum size for a texture depends on the graphics
-    /// driver and can be retrieved with the `getMaximumSize` function.
-    ///
-    /// If this function fails, the texture is left unchanged.
+    /// driver and can be retrieved with `getMaximumSize`.
     ///
     /// \param filename Path of the image file to load
-    /// \param sRgb     `true` to enable sRGB conversion, `false` to disable it
-    /// \param area     Area of the image to load
+    /// \param settings Texture load settings (sRGB, smoothing, wrap mode, sub-area)
     ///
-    /// \return Texture on success, `base::nullOpt` otherwise
+    /// \return Texture on success, `base::nullOpt` on failure
     ///
     /// \see `loadFromMemory`, `loadFromStream`, `loadFromImage`
     ///
@@ -135,25 +140,17 @@ public:
     [[nodiscard]] static base::Optional<Texture> loadFromFile(const Path& filename, const TextureLoadSettings& settings = {});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Load the texture from a file in memory
+    /// \brief Load a texture from an image file held in memory
     ///
-    /// The `area` argument can be used to load only a sub-rectangle
-    /// of the whole image. If you want the entire image then leave
-    /// the default value (which is an empty `Rect2i`).
-    /// If the `area` rectangle crosses the bounds of the image, it
-    /// is adjusted to fit the image size.
+    /// Decodes the image bytes pointed to by `data`/`size` (PNG,
+    /// JPEG, etc.) and uploads the result to the GPU. See
+    /// `loadFromFile` for the meaning of `settings.area`.
     ///
-    /// The maximum size for a texture depends on the graphics
-    /// driver and can be retrieved with the `getMaximumSize` function.
+    /// \param data     Pointer to the encoded file bytes in memory
+    /// \param size     Size of the data, in bytes
+    /// \param settings Texture load settings (sRGB, smoothing, wrap mode, sub-area)
     ///
-    /// If this function fails, the texture is left unchanged.
-    ///
-    /// \param data Pointer to the file data in memory
-    /// \param size Size of the data to load, in bytes
-    /// \param sRgb `true` to enable sRGB conversion, `false` to disable it
-    /// \param area Area of the image to load
-    ///
-    /// \return Texture on success, `base::nullOpt` otherwise
+    /// \return Texture on success, `base::nullOpt` on failure
     ///
     /// \see `loadFromFile`, `loadFromStream`, `loadFromImage`
     ///
@@ -163,24 +160,16 @@ public:
                                                                 const TextureLoadSettings& settings = {});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Load the texture from a custom stream
+    /// \brief Load a texture from a custom input stream
     ///
-    /// The `area` argument can be used to load only a sub-rectangle
-    /// of the whole image. If you want the entire image then leave
-    /// the default value (which is an empty `Rect2i`).
-    /// If the `area` rectangle crosses the bounds of the image, it
-    /// is adjusted to fit the image size.
+    /// Decodes the image bytes read from `stream` and uploads the
+    /// result to the GPU. See `loadFromFile` for the meaning of
+    /// `settings.area`.
     ///
-    /// The maximum size for a texture depends on the graphics
-    /// driver and can be retrieved with the `getMaximumSize` function.
+    /// \param stream   Source stream to read encoded image data from
+    /// \param settings Texture load settings (sRGB, smoothing, wrap mode, sub-area)
     ///
-    /// If this function fails, the texture is left unchanged.
-    ///
-    /// \param stream Source stream to read from
-    /// \param sRgb   `true` to enable sRGB conversion, `false` to disable it
-    /// \param area   Area of the image to load
-    ///
-    /// \return Texture on success, `base::nullOpt` otherwise
+    /// \return Texture on success, `base::nullOpt` on failure
     ///
     /// \see `loadFromFile`, `loadFromMemory`, `loadFromImage`
     ///
@@ -189,26 +178,19 @@ public:
                                                                 const TextureLoadSettings& settings = {});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Load the texture from an image
+    /// \brief Load a texture from an existing `sf::Image`
     ///
-    /// The `area` argument can be used to load only a sub-rectangle
-    /// of the whole image. If you want the entire image then leave
-    /// the default value (which is an empty `Rect2i`).
-    /// If the `area` rectangle crosses the bounds of the image, it
-    /// is adjusted to fit the image size.
+    /// Uploads the pixels of `image` to the GPU. See `loadFromFile`
+    /// for the meaning of `settings.area`. This is the preferred
+    /// path when you need to perform CPU-side processing on the
+    /// pixels before uploading them.
     ///
-    /// The maximum size for a texture depends on the graphics
-    /// driver and can be retrieved with the `getMaximumSize` function.
+    /// \param image    Image whose pixels will be uploaded
+    /// \param settings Texture load settings (sRGB, smoothing, wrap mode, sub-area)
     ///
-    /// If this function fails, the texture is left unchanged.
+    /// \return Texture on success, `base::nullOpt` on failure
     ///
-    /// \param image Image to load into the texture
-    /// \param sRgb   True to enable sRGB conversion, false to disable it
-    /// \param area  Area of the image to load
-    ///
-    /// \return Texture on success, `base::nullOpt` otherwise
-    ///
-    /// \see `loadFromFile`, `loadFromMemory`
+    /// \see `loadFromFile`, `loadFromMemory`, `loadFromStream`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<Texture> loadFromImage(const Image& image, const TextureLoadSettings& settings = {});
@@ -359,32 +341,28 @@ public:
     [[nodiscard]] bool isSrgb() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Enable or disable repeating
+    /// \brief Set the wrap mode used when sampling texture coordinates outside `[0, 1]`
     ///
-    /// Repeating is involved when using texture coordinates
-    /// outside the texture rectangle [0, 0, width, height].
-    /// In this case, if repeat mode is enabled, the whole texture
-    /// will be repeated as many times as needed to reach the
-    /// coordinate (for example, if the X texture coordinate is
-    /// 3 * width, the texture will be repeated 3 times).
-    /// If repeat mode is disabled, the "extra space" will instead
-    /// be filled with border pixels.
+    /// The wrap mode determines what happens when texture
+    /// coordinates fall outside the canonical `[0, 1]` range:
+    /// they can be clamped to the edge texel, repeated, or
+    /// mirror-repeated. See `sf::TextureWrapMode` for details.
     ///
-    /// Repeating is disabled by default.
+    /// The default wrap mode is `TextureWrapMode::Clamp`.
     ///
-    /// \param wrapMode TODO P1: docs
+    /// \param wrapMode New wrap mode to apply
     ///
-    /// \see `getWrapMode`
+    /// \see `getWrapMode`, `sf::TextureWrapMode`
     ///
     ////////////////////////////////////////////////////////////
     void setWrapMode(TextureWrapMode wrapMode);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Tell whether the texture is repeated or not
+    /// \brief Get the wrap mode currently set on this texture
     ///
-    /// \return TODO P1: docs
+    /// \return Active `sf::TextureWrapMode`
     ///
-    /// \see `setWrapMode`
+    /// \see `setWrapMode`, `sf::TextureWrapMode`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] TextureWrapMode getWrapMode() const;
@@ -467,7 +445,11 @@ public:
     void bind() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Unbind any currently bound texture
+    ///
+    /// Counterpart of `bind`. Call this after you are done with
+    /// raw OpenGL drawing that used a `sf::Texture` so that the
+    /// next VRSFML draw call starts from a clean texture binding.
     ///
     ////////////////////////////////////////////////////////////
     static void unbind();
@@ -518,7 +500,7 @@ private:
     unsigned int    m_texture{};       //!< Internal texture identifier
     bool            m_isSmooth{};      //!< Status of the smooth filter
     bool            m_sRgb{};          //!< Should the texture source be converted from sRGB?
-    TextureWrapMode m_wrapMode{};      //!< Is the texture in repeat mode?
+    TextureWrapMode m_wrapMode{};      //!< Active wrap mode for sampling outside `[0, 1]`
     bool            m_fboAttachment{}; //!< Is this texture owned by a framebuffer object?
     bool            m_hasMipmap{};     //!< Has the mipmap been generated?
     unsigned int    m_cacheId;         //!< Unique number that identifies the texture to the render target's cache
@@ -595,37 +577,40 @@ SFML_GRAPHICS_API void swap(Texture& lhs, Texture& rhs) noexcept;
 ///
 /// Usage example:
 /// \code
-/// // This example shows the most common use of `sf::Texture`:
-/// // drawing a sprite
+/// // The most common use of `sf::Texture`: drawing a sprite.
 ///
-/// // Load a texture from a file
+/// // Load a texture from a file. The factory returns an
+/// // `Optional<Texture>`; `.value()` extracts it (and throws on
+/// // failure). For graceful error handling, inspect the optional.
 /// const auto texture = sf::Texture::loadFromFile("texture.png").value();
 ///
-/// // Draw the texture
-/// window.draw(texture);
+/// // Build a sprite from the texture and draw it. In VRSFML, the
+/// // texture is passed to `draw` rather than stored on the sprite,
+/// // so the sprite cannot accidentally outlive the texture.
+/// const sf::Sprite sprite{.textureRect = texture.getRect()};
+/// window.draw(sprite, texture);
 /// \endcode
 ///
 /// \code
-/// // This example shows another common use of sf::Texture:
-/// // streaming real-time data, like video frames
+/// // Another common use of `sf::Texture`: streaming pixel data
+/// // (e.g. video frames or procedurally generated content).
 ///
-/// // Create an empty texture
-/// auto texture = sf::Texture::create({640, 480}).value();
+/// // Create an empty texture.
+/// auto texture = sf::Texture::create({640u, 480u}).value();
 ///
-/// while (...) // the main loop
+/// while (window.isOpen()) // the main loop
 /// {
-///     ...
+///     // ...
 ///
-///     // update the texture
-///     base::U8* pixels = ...; // get a fresh chunk of pixels (the next frame of a movie, for example)
+///     // Update the texture with a fresh chunk of pixels.
+///     const sf::base::U8* pixels = /* next frame */;
 ///     texture.update(pixels);
 ///
-///     // draw the texture
+///     // Draw the texture.
 ///     window.draw(texture);
 ///
-///     ...
+///     // ...
 /// }
-///
 /// \endcode
 ///
 /// Like `sf::Shader` that can be used as a raw OpenGL shader,

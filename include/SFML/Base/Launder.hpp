@@ -3,19 +3,32 @@
 // https://github.com/vittorioromeo/VRSFML/blob/master/license.md
 
 
+////////////////////////////////////////////////////////////
+/// \brief `std::launder` replacement, prefers `__builtin_launder` to avoid `<new>`
+///
+/// `std::launder` tells the optimizer that a pointer obtained by some
+/// other means actually points to a freshly constructed object. It is
+/// required after placement-new into reused storage to make pointer
+/// dereferences well-defined.
+///
+////////////////////////////////////////////////////////////
 #if __has_builtin(__builtin_launder)
 
-    ////////////////////////////////////////////////////////////
     #define SFML_BASE_LAUNDER __builtin_launder
 
 #else
 
     #include <new>
 
-    ////////////////////////////////////////////////////////////
     #define SFML_BASE_LAUNDER ::std::launder
 
 #endif
 
+////////////////////////////////////////////////////////////
+/// \brief Combined `reinterpret_cast` + `launder` for typed buffer access
+///
+/// Convenience macro: `SFML_BASE_LAUNDER_CAST(T*, buffer)` is the
+/// laundered equivalent of `reinterpret_cast<T*>(buffer)`.
+///
 ////////////////////////////////////////////////////////////
 #define SFML_BASE_LAUNDER_CAST(type, buffer) SFML_BASE_LAUNDER(reinterpret_cast<type>(buffer))

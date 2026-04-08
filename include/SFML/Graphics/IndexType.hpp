@@ -7,7 +7,11 @@ namespace sf
 {
 ////////////////////////////////////////////////////////////
 /// \ingroup graphics
-/// \brief Index type used for vetrtex buffers
+/// \brief Integer type used to index into vertex arrays
+///
+/// Used by `sf::DrawIndexedVerticesSettings` and `sf::VertexBuffer`
+/// when drawing indexed primitives. The 32-bit width allows
+/// addressing very large vertex arrays without overflow.
 ///
 ////////////////////////////////////////////////////////////
 using IndexType = unsigned int;

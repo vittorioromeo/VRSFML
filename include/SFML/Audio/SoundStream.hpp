@@ -93,16 +93,27 @@ public:
     void setPlayingOffset(Time playingOffset) override;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the playback device
+    /// \brief Get the playback device this stream is rendered through
+    ///
+    /// \return Reference to the playback device this stream was constructed with
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] PlaybackDevice& getPlaybackDevice() const;
 
 protected:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
+    /// \brief Construct the sound stream
     ///
-    /// This constructor is only meant to be called by derived classes.
+    /// This constructor is meant to be called by derived
+    /// classes only. The derived class is responsible for
+    /// providing the channel layout and sample rate of the
+    /// stream up-front, since miniaudio uses them to set up the
+    /// data source. Both must remain constant for the lifetime
+    /// of the stream.
+    ///
+    /// \param playbackDevice Playback device to render through (must outlive the stream)
+    /// \param channelMap     Layout of audio channels in the produced sample frames
+    /// \param sampleRate     Sample rate of the produced samples, in samples per second
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit SoundStream(PlaybackDevice& playbackDevice, const ChannelMap& channelMap, unsigned int sampleRate);

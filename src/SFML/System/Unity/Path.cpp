@@ -125,7 +125,7 @@ const Path::value_type* Path::c_str() const
 
 
 ////////////////////////////////////////////////////////////
-bool Path::remove() const
+bool Path::removeFromDisk() const
 {
     return std::filesystem::remove(m_impl->fsPath);
 }

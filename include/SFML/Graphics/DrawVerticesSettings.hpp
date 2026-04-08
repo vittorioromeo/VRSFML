@@ -15,24 +15,36 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief Settings used to draw an array of vertices
+/// \brief Parameters for `sf::RenderTarget::drawVertices`
+///
+/// Bundles the vertex data and the primitive type used to interpret
+/// it. Used by `sf::RenderTarget::drawVertices` and the convenience
+/// `sf::RenderTarget::draw` overloads.
 ///
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] DrawVerticesSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    base::Span<const Vertex> vertexSpan;
-    PrimitiveType            primitiveType;
+    base::Span<const Vertex> vertexSpan;    //!< Range of vertices to draw
+    PrimitiveType            primitiveType; //!< How to interpret the vertices (triangles, lines, ...)
 };
 
 } // namespace sf
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::RenderTarget
+/// \struct sf::DrawVerticesSettings
 /// \ingroup graphics
 ///
-/// TODO P1: docs
+/// `sf::DrawVerticesSettings` is the simplest of the `Draw*Settings`
+/// family: it points at a contiguous range of `sf::Vertex` and
+/// declares which `sf::PrimitiveType` should be used to interpret
+/// the range. It is consumed by `sf::RenderTarget::drawVertices`.
 ///
-/// \see TODO P1: docs
+/// For indexed, instanced, or persistent-mapped variants, see
+/// `sf::DrawIndexedVerticesSettings`, `sf::DrawInstancedVerticesSettings`,
+/// `sf::DrawInstancedIndexedVerticesSettings`, and
+/// `sf::DrawPersistentMappedIndexedVerticesSettings`.
+///
+/// \see `sf::RenderTarget`, `sf::Vertex`, `sf::PrimitiveType`
 ///
 ////////////////////////////////////////////////////////////

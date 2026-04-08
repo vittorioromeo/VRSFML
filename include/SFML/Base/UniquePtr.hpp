@@ -16,6 +16,11 @@ namespace sf::base
 {
 // clang-format off
 ////////////////////////////////////////////////////////////
+/// \brief Default deleter for `UniquePtr`, calls `delete` on the pointer
+///
+/// Statically rejects deletion of pointers to incomplete or `void` types.
+///
+////////////////////////////////////////////////////////////
 struct SFML_BASE_TRIVIAL_ABI UniquePtrDefaultDeleter
 {
     template <typename T>
@@ -32,6 +37,20 @@ struct SFML_BASE_TRIVIAL_ABI UniquePtrDefaultDeleter
 // clang-format on
 
 
+////////////////////////////////////////////////////////////
+/// \brief Lightweight `std::unique_ptr` replacement
+///
+/// Owns a single heap-allocated `T` and destroys it via `TDeleter` on
+/// destruction. The deleter is stored as a private base to take
+/// advantage of empty base optimization, so a `UniquePtr` with a
+/// stateless deleter is the size of a single pointer.
+///
+/// `UniquePtr` is annotated with `SFML_BASE_TRIVIAL_ABI` so it is
+/// passed in registers like a raw pointer when ABI rules allow, and
+/// is always trivially relocatable.
+///
+/// Move-only: copy construction and copy assignment are deleted.
+///
 ////////////////////////////////////////////////////////////
 template <typename T, typename TDeleter = UniquePtrDefaultDeleter>
 class SFML_BASE_TRIVIAL_ABI UniquePtr : private TDeleter
@@ -51,11 +70,17 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Default constructor, creates a null pointer
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr explicit UniquePtr() noexcept : m_ptr{nullptr}
     {
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Construct a null pointer from `nullptr`
+    ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr /* implicit */ UniquePtr(decltype(nullptr)) noexcept : m_ptr{nullptr}
     {
@@ -63,11 +88,17 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Take ownership of an existing raw pointer
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr explicit UniquePtr(T* ptr) noexcept : m_ptr{ptr}
     {
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Take ownership of an existing raw pointer with a custom deleter
+    ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr explicit UniquePtr(T* ptr, const TDeleter& deleter) noexcept :
         TDeleter{deleter},
@@ -76,6 +107,9 @@ public:
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Destructor, invokes the deleter on the held pointer
+    ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] constexpr ~UniquePtr() noexcept
     {
@@ -89,6 +123,11 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Move-construct from a derived/related `UniquePtr`
+    ///
+    /// Allows storing `UniquePtr<Derived>` in a `UniquePtr<Base>`.
+    ///
+    ////////////////////////////////////////////////////////////
     template <typename U, typename UDeleter>
     [[nodiscard, gnu::always_inline]] constexpr UniquePtr(UniquePtr<U, UDeleter>&& rhs) noexcept
         requires(isSame<T, U> || isBaseOf<T, U>)
@@ -98,6 +137,11 @@ public:
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Move-assign from a derived/related `UniquePtr`
+    ///
+    /// Destroys the previously held object before stealing the new one.
+    ///
     ////////////////////////////////////////////////////////////
     template <typename U, typename UDeleter>
     [[gnu::always_inline, gnu::flatten]] constexpr UniquePtr& operator=(UniquePtr<U, UDeleter>&& rhs) noexcept
@@ -113,12 +157,18 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Get the underlying raw pointer (or `nullptr`)
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T* get() const noexcept
     {
         return m_ptr;
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Dereference the held object (asserts non-null)
+    ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr T& operator*() const noexcept
     {
@@ -128,6 +178,9 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Member access on the held object (asserts non-null)
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr T* operator->() const noexcept
     {
         SFML_BASE_ASSERT(m_ptr != nullptr);
@@ -136,12 +189,18 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Conversion to `bool`, true when the pointer is non-null
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr explicit operator bool() const noexcept
     {
         return m_ptr != nullptr;
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Equality comparison with `nullptr`
+    ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator==(decltype(nullptr)) const noexcept
     {
@@ -150,12 +209,20 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Inequality comparison with `nullptr`
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator!=(decltype(nullptr)) const noexcept
     {
         return m_ptr != nullptr;
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Destroy the held object and optionally take ownership of a new one
+    ///
+    /// \param ptr New pointer to take ownership of (defaults to `nullptr`)
+    ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] constexpr void reset(T* const ptr = nullptr) noexcept
     {
@@ -164,6 +231,11 @@ public:
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Release ownership of the held pointer without destroying it
+    ///
+    /// \return The previously held pointer; the caller is now responsible for it
+    ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] constexpr T* release() noexcept
     {
@@ -174,6 +246,11 @@ public:
 };
 
 
+////////////////////////////////////////////////////////////
+/// \brief Construct a `UniquePtr<T>` by forwarding `xs...` to `T`'s constructor
+///
+/// Equivalent to `std::make_unique`. Always uses brace-initialization.
+///
 ////////////////////////////////////////////////////////////
 template <typename T, typename... Ts>
 [[nodiscard, gnu::always_inline, gnu::flatten]] inline constexpr UniquePtr<T> makeUnique(Ts&&... xs)

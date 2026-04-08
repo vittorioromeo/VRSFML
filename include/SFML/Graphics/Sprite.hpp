@@ -9,6 +9,7 @@
 #include "SFML/Graphics/Export.hpp"
 
 #include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/Priv/TransformableMacros.hpp"
 #include "SFML/Graphics/TransformableMixin.hpp"
 
 #include "SFML/System/GlobalAnchorPointMixin.hpp"
@@ -65,48 +66,49 @@ struct SFML_GRAPHICS_API Sprite : TransformableMixin<Sprite>, GlobalAnchorPointM
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::Sprite
+/// \struct sf::Sprite
 /// \ingroup graphics
 ///
-/// `sf::Sprite` is a drawable class that allows to easily display
-/// a texture (or a part of it) on a render target.
+/// `sf::Sprite` is a lightweight aggregate that knows how to
+/// draw a textured quad with its own transform and color tint.
+/// It is the building block for displaying images on screen.
 ///
-/// It inherits all the functions from `sf::Transformable`:
-/// position, rotation, scale, origin. It also adds sprite-specific
-/// properties such as the texture to use, the part of it to display,
-/// and some convenience functions to change the overall color of the
-/// sprite, or to get its bounding rectangle.
+/// Like all transformable types in VRSFML, `sf::Sprite` exposes
+/// the standard public members `position`, `scale`, `origin`,
+/// and `rotation` (via `SFML_DEFINE_TRANSFORMABLE_DATA_MEMBERS`),
+/// plus the sprite-specific `textureRect` (sub-rectangle of the
+/// source texture to display) and `color` (modulation tint).
 ///
-/// `sf::Sprite` works in combination with the `sf::Texture` class, which
-/// loads and provides the pixel data of a given texture.
+/// **Lifetime safety:** unlike upstream SFML, `sf::Sprite` does
+/// **not** store a pointer to its texture. The texture is
+/// supplied at draw time -- either as an extra argument to
+/// `sf::RenderTarget::draw` or via `sf::RenderStates::texture`.
+/// This eliminates the classic "white square" problem where a
+/// sprite outlives its texture.
 ///
-/// The separation of `sf::Sprite` and `sf::Texture` allows more flexibility
-/// and better performances: indeed a `sf::Texture` is a heavy resource,
-/// and any operation on it is slow (often too slow for real-time
-/// applications). On the other side, a `sf::Sprite` is a lightweight
-/// object which can use the pixel data of a `sf::Texture` and draw
-/// it with its own transformation/color/blending attributes.
+/// Because `sf::Sprite` is an aggregate, it is best constructed
+/// inline with C++20 designated initializers.
 ///
-/// It is important to note that the `sf::Sprite` instance doesn't
-/// even keep a reference to the `sf::Texture` it uses, the texture
-/// must be provided prior to drawing the sprite via `sf::RenderStates`.
-///
-/// See also the note on coordinates and undistorted rendering in `sf::Transformable`.
+/// See also the note on coordinates and undistorted rendering
+/// in `sf::Transformable`.
 ///
 /// Usage example:
 /// \code
-/// // Load a texture
+/// // Load a texture.
 /// const auto texture = sf::Texture::loadFromFile("texture.png").value();
 ///
-/// // Create a sprite
-/// sprite.textureRect = {{10, 10}, {50, 30}};
-/// sprite.color = {255, 255, 255, 200};
-/// sprite.position = {100.f, 25.f};
+/// // Create a sprite that displays a sub-rectangle of the texture
+/// // with a custom color tint.
+/// const sf::Sprite sprite{
+///     .position    = {100.f, 25.f},
+///     .textureRect = {{10.f, 10.f}, {50.f, 30.f}},
+///     .color       = {255u, 255u, 255u, 200u},
+/// };
 ///
-/// // Draw it
+/// // Draw it. The texture is passed at draw time.
 /// window.draw(sprite, texture);
 /// \endcode
 ///
-/// \see `sf::Texture`, `sf::Transformable`
+/// \see `sf::Texture`, `sf::Transformable`, `sf::RenderStates`
 ///
 ////////////////////////////////////////////////////////////

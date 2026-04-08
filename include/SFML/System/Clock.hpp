@@ -34,6 +34,10 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
+    /// Constructs a clock and immediately starts it. The elapsed
+    /// time is measured from this point on, until `restart()` or
+    /// `reset()` is called.
+    ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit Clock();
 
@@ -130,7 +134,14 @@ public:
     Time reset();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the current time
+    /// \brief Get the current time from the underlying monotonic clock
+    ///
+    /// The returned value is the absolute time reported by the OS's
+    /// most precise monotonic clock. It is not relative to any
+    /// `sf::Clock` instance and is mainly useful for measuring time
+    /// intervals between two `now()` calls.
+    ///
+    /// \return Current time stamp from the monotonic clock
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static Time now();

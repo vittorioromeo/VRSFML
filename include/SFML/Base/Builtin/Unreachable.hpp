@@ -3,6 +3,18 @@
 // https://github.com/vittorioromeo/VRSFML/blob/master/license.md
 
 
+////////////////////////////////////////////////////////////
+/// \file
+/// \brief Portable "unreachable" hint
+///
+/// Marks a code path as unreachable so that the optimizer can omit
+/// any safety checks leading to it. Reaching it at run time is
+/// undefined behavior in release mode; on compilers that lack a
+/// dedicated builtin it falls back to a debug-only assertion.
+///
+////////////////////////////////////////////////////////////
+
+
 #if __has_builtin(__builtin_unreachable)
 
     ////////////////////////////////////////////////////////////

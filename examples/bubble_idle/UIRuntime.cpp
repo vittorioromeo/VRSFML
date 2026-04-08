@@ -486,7 +486,7 @@ void Main::uiSpeedrunning()
         }
         else
         {
-            const auto [hours, mins, secs, millis] = formatSpeedrunTime(sf::Time{static_cast<sf::base::I64>(split)});
+            const auto [hours, mins, secs, millis] = formatSpeedrunTime(sf::microseconds(static_cast<sf::base::I64>(split)));
             ImGui::TextColored(textColorUnlocked, "%s: %02llu:%02llu:%02llu:%03llu", title, hours, mins, secs, millis);
         }
     };

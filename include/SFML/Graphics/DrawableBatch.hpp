@@ -794,13 +794,19 @@ private:
     void addShapeOutline(const Transform& transform, const Vertex* data, base::SizeT size);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Internal implementation that appends `text` (or `glyphMappedText`) vertices to the batch
+    ///
+    /// Generic over `sf::Text` and `sf::GlyphMappedText`.
     ///
     ////////////////////////////////////////////////////////////
     void addTextImpl(const auto& text);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Internal implementation that appends stateless text vertices to the batch
+    ///
+    /// Generic over the glyph source (`sf::Font` or
+    /// `sf::GlyphMapping`) and the corresponding text data type
+    /// (`sf::TextData` or `sf::GlyphMappedTextData`).
     ///
     ////////////////////////////////////////////////////////////
     VertexSpan addTextDataImpl(const auto&  glyphSource,
@@ -839,15 +845,16 @@ namespace sf
 /// Example:
 /// \code
 /// sf::CPUDrawableBatch batch;
+///
 /// batch.add(sf::Sprite{/* ... */});
-/// batch.add(sf::TextData{/* ... */});
-/// batch.add(sf::CircleShape{/* ... */});
+/// batch.add(font, sf::TextData{/* ... */});
+/// batch.add(sf::CircleShapeData{/* ... */});
 /// // ... add more drawables
 ///
-/// window.draw(batch); // Data uploaded to GPU here
+/// window.draw(batch); // Vertex data uploaded to the GPU here
 /// \endcode
 ///
-/// \see sf::PersistentGPUDrawableBatch, sf::priv::DrawableBatchImpl, sf::priv::CPUStorage
+/// \see `sf::PersistentGPUDrawableBatch`, `sf::priv::DrawableBatchImpl`, `sf::priv::CPUStorage`
 ///
 ////////////////////////////////////////////////////////////
 class CPUDrawableBatch : public priv::DrawableBatchImpl<priv::CPUStorage>
@@ -867,15 +874,16 @@ class CPUDrawableBatch : public priv::DrawableBatchImpl<priv::CPUStorage>
 /// Example:
 /// \code
 /// sf::PersistentGPUDrawableBatch batch;
+///
 /// batch.add(sf::Sprite{/* ... */});
-/// batch.add(sf::TextData{/* ... */});
-/// batch.add(sf::CircleShape{/* ... */});
+/// batch.add(font, sf::TextData{/* ... */});
+/// batch.add(sf::CircleShapeData{/* ... */});
 /// // ... add more drawables
 ///
 /// window.draw(batch);
 /// \endcode
 ///
-/// \see sf::CPUDrawableBatch, sf::priv::DrawableBatchImpl, sf::priv::PersistentGPUStorage
+/// \see `sf::CPUDrawableBatch`, `sf::priv::DrawableBatchImpl`, `sf::priv::PersistentGPUStorage`
 ///
 ////////////////////////////////////////////////////////////
 class PersistentGPUDrawableBatch : public priv::DrawableBatchImpl<priv::PersistentGPUStorage>
@@ -937,49 +945,62 @@ public:
 /// \class sf::DrawableBatch
 /// \ingroup graphics
 ///
-/// `sf::DrawableBatch` refers to a concept of batching drawables for performance,
-/// realized through concrete classes like `sf::CPUDrawableBatch` and
-/// `sf::PersistentGPUDrawableBatch`.
+/// `sf::DrawableBatch` is the concept of batching drawables for
+/// performance, realized through the concrete classes
+/// `sf::CPUDrawableBatch` and `sf::PersistentGPUDrawableBatch`.
 ///
-/// Batching draw calls is a common optimization technique in graphics programming.
-/// Instead of drawing each object (sprite, shape, text) individually, which
-/// can lead to many separate commands sent to the graphics card, objects
-/// are collected into a single "batch". This batch is then drawn with one
-/// (or very few) commands, reducing CPU overhead and often improving GPU efficiency.
+/// Batching is a fundamental optimization in graphics
+/// programming. Instead of issuing one draw call per object
+/// (sprite, shape, text glyph, ...), objects are collected into
+/// a single batch and drawn with one (or very few) GPU
+/// submissions. This eliminates the per-call CPU overhead and
+/// usually translates to better GPU utilization.
 ///
-/// SFML provides two main types of drawable batches:
+/// VRSFML provides two batch types:
 ///
-/// - `sf::CPUDrawableBatch`: Stores vertex data in CPU memory. Data is typically
-///   uploaded to the GPU when the batch is drawn. Simpler to manage for
-///   highly dynamic data. This is the only supported batch type for OpenGL ES.
+/// \li `sf::CPUDrawableBatch` -- vertex data lives in CPU memory.
+///     Uploaded to the GPU at draw time. Easier to reason about,
+///     no special platform requirements, recommended for highly
+///     dynamic content. This is the only supported batch type on
+///     OpenGL ES.
 ///
-/// - `sf::PersistentGPUDrawableBatch`: Stores vertex data in persistently mapped
-///   GPU memory. Can be faster for large or less frequently updated batches
-///   as it allows direct modification of GPU data.
+/// \li `sf::PersistentGPUDrawableBatch` -- vertex data lives in a
+///     GPU buffer that is persistently mapped to the application's
+///     address space. Avoids per-frame uploads at the cost of
+///     trickier synchronization. Available where
+///     `GL_ARB_buffer_storage` is supported.
 ///
-/// Both batch types inherit from `sf::Transformable`, allowing the entire
-/// group of batched objects to be transformed as a single unit.
+/// Both batch types inherit from `sf::Transformable`, so the
+/// **entire** group of batched drawables can be translated,
+/// rotated, scaled, and re-anchored as a single unit.
 ///
-/// Usage example (using `sf::CPUDrawableBatch`):
+/// Usage example with `sf::CPUDrawableBatch`:
 /// \code
 /// sf::CPUDrawableBatch batch;
 ///
-/// sf::CircleShape circle(50.f);
-/// circle.position = {100, 100};
-/// circle.setFillColor(sf::Color::Green);
+/// // Add several drawables to the batch.
+/// const sf::CircleShape circle{{
+///     .position  = {100.f, 100.f},
+///     .fillColor = sf::Color::Green,
+///     .radius    = 50.f,
+/// }};
 /// batch.add(circle);
 ///
-/// // The batch itself can be transformed
-/// batch.move({5, 5});
-/// batch.setRotation(10); // Rotates all contained items around the batch's origin
+/// batch.add(sf::Sprite{.textureRect = texture.getRect()});
+/// batch.add(font, sf::TextData{.string = "Hello", .characterSize = 32u});
 ///
-/// // Draw the entire batch with one call to sf::RenderTarget
+/// // The batch can be transformed as a whole, since it inherits from sf::Transformable.
+/// batch.position = {5.f, 5.f};
+/// batch.rotation = sf::degrees(10.f);
+///
+/// // Draw the entire batch with one call.
 /// window.draw(batch);
 /// \endcode
 ///
-/// Choose the batch type based on your specific needs for update frequency
-/// and performance characteristics.
+/// Use the batch type that matches your update frequency and
+/// platform constraints.
 ///
-/// \see sf::CPUDrawableBatch, sf::PersistentGPUDrawableBatch
+/// \see `sf::CPUDrawableBatch`, `sf::PersistentGPUDrawableBatch`,
+///      `sf::Transformable`
 ///
 ////////////////////////////////////////////////////////////

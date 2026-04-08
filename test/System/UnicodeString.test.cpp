@@ -325,9 +325,9 @@ TEST_CASE("[System] sf::UnicodeString")
     SECTION("replace()")
     {
         sf::UnicodeString string("sfml is the worst");
-        string.replace(12, 5, "best!");
+        string.replaceRange(12, 5, "best!");
         CHECK(string == "sfml is the best!");
-        string.replace("the", "THE");
+        string.replaceAllOccurrences("the", "THE");
         CHECK(string == "sfml is THE best!");
     }
 

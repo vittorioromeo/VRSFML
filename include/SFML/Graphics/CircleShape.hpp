@@ -37,9 +37,9 @@ public:
     using Data = CircleShapeData;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
+    /// \brief Construct a circle shape from a `Data` initializer
     ///
-    /// \param settings Data of the circle
+    /// \param data Geometry, transform, and appearance settings
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit CircleShape(const Data& data);
@@ -132,29 +132,35 @@ private:
 /// \class sf::CircleShape
 /// \ingroup graphics
 ///
-/// This class inherits all the functions of `sf::Transformable`
-/// (position, rotation, scale, bounds, etc...) as well as the
-/// functions of `sf::Shape` (outline, color, texture, etc...).
+/// `sf::CircleShape` is the concrete `sf::Shape` subclass for
+/// drawing a circle (or, more generally, a regular polygon
+/// approximation of one). It exposes the standard transform and
+/// appearance members inherited from `sf::Shape` plus a `radius`
+/// and `pointCount` (number of vertices used to approximate the
+/// curve).
 ///
 /// Usage example:
 /// \code
-/// sf::CircleShape circle(150.f);
-/// circle.setOutlineColor(sf::Color::Red);
-/// circle.setOutlineThickness(5);
-/// circle.position = {10, 20};
-/// ...
+/// sf::CircleShape circle{{
+///     .position         = {10.f, 20.f},
+///     .outlineColor     = sf::Color::Red,
+///     .outlineThickness = 5.f,
+///     .radius           = 150.f,
+/// }};
+///
 /// window.draw(circle);
 /// \endcode
 ///
-/// Since the graphics card can't draw perfect circles, we have to
-/// fake them with multiple triangles connected to each other. The
-/// "points count" property of `sf::CircleShape` defines how many of these
-/// triangles to use, and therefore defines the quality of the circle.
+/// Since the GPU cannot draw perfect circles, the circle is
+/// approximated by `pointCount` connected triangles fanning out
+/// from the center. Higher counts produce smoother circles at
+/// the cost of more vertices.
 ///
-/// The number of points can also be used for another purpose; with
-/// small numbers you can create any regular polygon shape:
-/// equilateral triangle, square, pentagon, hexagon, ...
+/// `pointCount` can also be used to draw regular polygons --
+/// pass a small value to get an equilateral triangle (3), a
+/// square (4), a pentagon (5), a hexagon (6), and so on.
 ///
-/// \see `sf::Shape`, `sf::RectangleShape`, `sf::ConvexShape`
+/// \see `sf::Shape`, `sf::RectangleShape`, `sf::ConvexShape`,
+///      `sf::CircleShapeData`
 ///
 ////////////////////////////////////////////////////////////

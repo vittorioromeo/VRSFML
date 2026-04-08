@@ -12,6 +12,7 @@
 #include "SFML/Audio/MiniaudioUtils.hpp"
 #include "SFML/Audio/PlaybackDeviceHandle.hpp"
 
+#include "SFML/System/Angle.hpp"
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Vec3.hpp"
 
@@ -107,7 +108,7 @@ PlaybackDevice::~PlaybackDevice() = default;
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool PlaybackDevice::updateListener(const Listener& listener)
+[[nodiscard]] bool PlaybackDevice::applyListener(const Listener& listener)
 {
     ma_engine* engine = &m_impl->maEngine;
 

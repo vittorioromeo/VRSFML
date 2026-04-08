@@ -1921,7 +1921,7 @@ public:
                                       {.view = m_worldView, .shader = &m_shaderBlurQuad});
                     m_rtSpriteBg.display();
 
-                    m_shaderShadow.setUniform(m_ulShadowColor, sf::Color::blackMask(alpha).toVec4<sf::Glsl::Vec4>());
+                    m_shaderShadow.setUniform(m_ulShadowColor, sf::Color::blackWithAlpha(alpha).toVec4<sf::Glsl::Vec4>());
                 };
 
                 {
@@ -2006,7 +2006,7 @@ public:
                 if (m_undoCountdown > 0.f)
                     m_window.draw(m_txUndo,
                                   {
-                                      .color = sf::Color::whiteMask(static_cast<sf::base::U8>(
+                                      .color = sf::Color::whiteWithAlpha(static_cast<sf::base::U8>(
                                           remap(easeInOutSine(m_undoCountdown), 0.f, 1.f, 0.f, 255.f))),
                                   },
                                   {.view = m_windowView, .shader = &m_shader});

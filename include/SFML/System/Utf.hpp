@@ -228,12 +228,12 @@ public:
     ///
     /// This function is necessary for multi-elements encodings, as
     /// a single character may use more than 1 storage element, thus the
-    /// total size can be different from (begin - end).
+    /// total size can be different from `end - begin`.
     ///
     /// \param begin Iterator pointing to the beginning of the input sequence
     /// \param end   Iterator pointing to the end of the input sequence
     ///
-    /// \return Iterator pointing to one past the last read element of the input sequence
+    /// \return Number of decoded characters in the input sequence
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
@@ -254,13 +254,14 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Convert an ANSI characters range to UTF-8
     ///
-    /// The current global locale will be used by default, unless you
-    /// pass a custom one in the `locale` parameter.
+    /// Uses the supplied `facet` to convert each ANSI character to a
+    /// Unicode codepoint before encoding it as UTF-8. Pass an instance
+    /// of the desired locale's `std::ctype<wchar_t>` facet here.
     ///
     /// \param begin  Iterator pointing to the beginning of the input sequence
     /// \param end    Iterator pointing to the end of the input sequence
     /// \param output Iterator pointing to the beginning of the output sequence
-    /// \param facet Facet to use for conversion
+    /// \param facet  Facet to use for conversion
     ///
     /// \return Iterator to the end of the output sequence which has been written
     ///
@@ -308,8 +309,10 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Convert an UTF-8 characters range to ANSI characters
     ///
-    /// The current global locale will be used by default, unless you
-    /// pass a custom one in the `locale` parameter.
+    /// Uses the supplied `facet` to narrow each Unicode codepoint into
+    /// an ANSI character. Codepoints that cannot be represented in the
+    /// target encoding are substituted with `replacement` (or skipped if
+    /// `replacement` is `0`).
     ///
     /// \param begin       Iterator pointing to the beginning of the input sequence
     /// \param end         Iterator pointing to the end of the input sequence
@@ -343,7 +346,7 @@ public:
     /// \param begin       Iterator pointing to the beginning of the input sequence
     /// \param end         Iterator pointing to the end of the input sequence
     /// \param output      Iterator pointing to the beginning of the output sequence
-    /// \param replacement Replacement for characters not convertible to wide (use 0 to skip them)
+    /// \param replacement Replacement for characters not convertible to latin-1 (use 0 to skip them)
     ///
     /// \return Iterator to the end of the output sequence which has been written
     ///
@@ -444,7 +447,7 @@ public:
     /// \param begin       Iterator pointing to the beginning of the input sequence
     /// \param end         Iterator pointing to the end of the input sequence
     /// \param output      Codepoint of the decoded UTF-16 character
-    /// \param replacement Replacement character to use in case the UTF-8 sequence is invalid
+    /// \param replacement Replacement character to use in case the UTF-16 sequence is invalid
     ///
     /// \return Iterator pointing to one past the last read element of the input sequence
     ///
@@ -564,12 +567,12 @@ public:
     ///
     /// This function is necessary for multi-elements encodings, as
     /// a single character may use more than 1 storage element, thus the
-    /// total size can be different from (begin - end).
+    /// total size can be different from `end - begin`.
     ///
     /// \param begin Iterator pointing to the beginning of the input sequence
     /// \param end   Iterator pointing to the end of the input sequence
     ///
-    /// \return Iterator pointing to one past the last read element of the input sequence
+    /// \return Number of decoded characters in the input sequence
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
@@ -590,13 +593,13 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Convert an ANSI characters range to UTF-16
     ///
-    /// The current global locale will be used by default, unless you
-    /// pass a custom one in the `locale` parameter.
+    /// Uses the supplied `facet` to convert each ANSI character to a
+    /// Unicode codepoint before encoding it as UTF-16.
     ///
     /// \param begin  Iterator pointing to the beginning of the input sequence
     /// \param end    Iterator pointing to the end of the input sequence
     /// \param output Iterator pointing to the beginning of the output sequence
-    /// \param facet Facet to use for conversion
+    /// \param facet  Facet to use for conversion
     ///
     /// \return Iterator to the end of the output sequence which has been written
     ///
@@ -640,8 +643,10 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Convert an UTF-16 characters range to ANSI characters
     ///
-    /// The current global locale will be used by default, unless you
-    /// pass a custom one in the `locale` parameter.
+    /// Uses the supplied `facet` to narrow each Unicode codepoint into
+    /// an ANSI character. Codepoints that cannot be represented in the
+    /// target encoding are substituted with `replacement` (or skipped if
+    /// `replacement` is `0`).
     ///
     /// \param begin       Iterator pointing to the beginning of the input sequence
     /// \param end         Iterator pointing to the end of the input sequence
@@ -675,7 +680,7 @@ public:
     /// \param begin       Iterator pointing to the beginning of the input sequence
     /// \param end         Iterator pointing to the end of the input sequence
     /// \param output      Iterator pointing to the beginning of the output sequence
-    /// \param replacement Replacement for characters not convertible to wide (use 0 to skip them)
+    /// \param replacement Replacement for characters not convertible to latin-1 (use 0 to skip them)
     ///
     /// \return Iterator to the end of the output sequence which has been written
     ///
@@ -789,7 +794,7 @@ public:
     /// \param begin       Iterator pointing to the beginning of the input sequence
     /// \param end         Iterator pointing to the end of the input sequence
     /// \param output      Codepoint of the decoded UTF-32 character
-    /// \param replacement Replacement character to use in case the UTF-8 sequence is invalid
+    /// \param replacement Replacement character (unused for UTF-32, kept for API consistency)
     ///
     /// \return Iterator pointing to one past the last read element of the input sequence
     ///
@@ -854,7 +859,7 @@ public:
     /// \param begin Iterator pointing to the beginning of the input sequence
     /// \param end   Iterator pointing to the end of the input sequence
     ///
-    /// \return Iterator pointing to one past the last read element of the input sequence
+    /// \return Number of decoded characters in the input sequence
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
@@ -868,13 +873,13 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Convert an ANSI characters range to UTF-32
     ///
-    /// The current global locale will be used by default, unless you
-    /// pass a custom one in the `locale` parameter.
+    /// Uses the supplied `facet` to widen each ANSI character into a
+    /// Unicode codepoint.
     ///
     /// \param begin  Iterator pointing to the beginning of the input sequence
     /// \param end    Iterator pointing to the end of the input sequence
     /// \param output Iterator pointing to the beginning of the output sequence
-    /// \param facet Facet to use for conversion
+    /// \param facet  Facet to use for conversion
     ///
     /// \return Iterator to the end of the output sequence which has been written
     ///
@@ -934,8 +939,10 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Convert an UTF-32 characters range to ANSI characters
     ///
-    /// The current global locale will be used by default, unless you
-    /// pass a custom one in the `locale` parameter.
+    /// Uses the supplied `facet` to narrow each Unicode codepoint into
+    /// an ANSI character. Codepoints that cannot be represented in the
+    /// target encoding are substituted with `replacement` (or skipped if
+    /// `replacement` is `0`).
     ///
     /// \param begin       Iterator pointing to the beginning of the input sequence
     /// \param end         Iterator pointing to the end of the input sequence
@@ -980,12 +987,12 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert an UTF-16 characters range to latin-1 (ISO-5589-1) characters
+    /// \brief Convert an UTF-32 characters range to latin-1 (ISO-5589-1) characters
     ///
     /// \param begin       Iterator pointing to the beginning of the input sequence
     /// \param end         Iterator pointing to the end of the input sequence
     /// \param output      Iterator pointing to the beginning of the output sequence
-    /// \param replacement Replacement for characters not convertible to wide (use 0 to skip them)
+    /// \param replacement Replacement for characters not convertible to latin-1 (use 0 to skip them)
     ///
     /// \return Iterator to the end of the output sequence which has been written
     ///
@@ -1122,7 +1129,7 @@ public:
     /// of `sf::Utf<>`, it is defined for convenience (it is used by
     /// several other conversion functions).
     ///
-    /// \param codepoint   Iterator pointing to the beginning of the input sequence
+    /// \param codepoint   Codepoint to encode as ANSI
     /// \param output      Iterator pointing to the beginning of the output sequence
     /// \param replacement Replacement if the input character is not convertible to ANSI (use 0 to skip it)
     /// \param facet       Facet to use for conversion
@@ -1146,7 +1153,7 @@ public:
     /// of `sf::Utf<>`, it is defined for convenience (it is used by
     /// several other conversion functions).
     ///
-    /// \param codepoint   Iterator pointing to the beginning of the input sequence
+    /// \param codepoint   Codepoint to encode as a wide character
     /// \param output      Iterator pointing to the beginning of the output sequence
     /// \param replacement Replacement if the input character is not convertible to wide (use 0 to skip it)
     ///

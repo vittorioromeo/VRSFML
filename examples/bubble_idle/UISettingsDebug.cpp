@@ -11,6 +11,8 @@
 
 #include "SFML/ImGui/IncludeImGui.hpp"
 
+#include "SFML/System/Time.hpp"
+
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/String.hpp"
@@ -51,7 +53,7 @@ void Main::uiSettingsDrawDebugTab()
 
     ImGui::SetNextItemWidth(240.f * profile.uiScale);
     if (ImGui::InputScalar("Speedrun timer", ImGuiDataType_S64, &speedrunTimerSet, &iStep, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal))
-        pt->speedrunStartTime.emplace(speedrunTimerSet);
+        pt->speedrunStartTime.emplace(sf::microseconds(speedrunTimerSet));
 
     ImGui::Separator();
 

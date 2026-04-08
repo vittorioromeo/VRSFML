@@ -12,6 +12,7 @@
 #include "SFML/Window/Sensor.hpp"
 
 #include "SFML/System/Vec2Base.hpp"
+#include "SFML/System/Vec3.hpp"
 
 #include "SFML/Base/Variant.hpp"
 
@@ -295,7 +296,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename TEventSubtype>
-    [[nodiscard]] Event(const TEventSubtype& eventSubtype);
+    [[nodiscard]] explicit(false) Event(const TEventSubtype& eventSubtype);
 
     ////////////////////////////////////////////////////////////
     /// \brief Check current event subtype
@@ -447,25 +448,27 @@ SFML_PRIV_EVENTS_X_MACRO(SFML_PRIV_EVENT_X_EXTERN_TEMPLATE_GETIF, SFML_PRIV_EVEN
 /// \ingroup window
 ///
 /// `sf::Event` holds all the information about a system event
-/// that just happened. Events are  using the
-/// `sf::Window::pollEvent` and `sf::Window::waitEvent` functions.
+/// that just happened. Events are obtained via
+/// `sf::WindowBase::pollEvent`, `sf::WindowBase::waitEvent`,
+/// or dispatched in bulk through
+/// `sf::WindowBase::pollAndHandleEvents`.
 ///
 /// A `sf::Event` instance contains the subtype of the event
-/// (mouse moved, key pressed, window closed, etc...) as well
+/// (mouse moved, key pressed, window closed, etc.) as well
 /// as the details about this particular event. Each event
 /// corresponds to a different subtype struct which contains
 /// the data required to process that event.
 ///
-/// Event subtype are event types belonging to `sf::Event`,
-/// such as `sf::Event::Closed` or `sf::Event::MouseMoved`.
+/// Event subtypes are nested types of `sf::Event`, such as
+/// `sf::Event::Closed` or `sf::Event::MouseMoved`.
 ///
-/// The way to access the current active event subtype is via
-/// `sf::Event::getIf`. This member function returns the address
-/// of the event subtype struct if the event subtype matches the
-/// active event, otherwise it returns `nullptr`.
-///
-/// `sf::Event::is` is used to check the active event subtype
-/// without actually reading any of the corresponding event data.
+/// The simplest way to inspect an event is to use
+/// `sf::Event::is<T>` (just check the subtype) and
+/// `sf::Event::getIf<T>` (return a pointer to the subtype's
+/// data, or `nullptr` if the event is not of that type).
+/// More advanced patterns are available through
+/// `sf::Event::visit` and `sf::Event::match`, which dispatch
+/// to a set of handlers based on the active subtype.
 ///
 /// \code
 /// while (const sf::base::Optional event = window.pollEvent())

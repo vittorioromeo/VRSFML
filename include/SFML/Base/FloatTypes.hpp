@@ -4,6 +4,18 @@
 
 
 ////////////////////////////////////////////////////////////
+/// \file
+/// \brief Conditional `<stdfloat>` aliases (`F16`, `F32`, `F64`, `F128`)
+///
+/// Detects compiler/standard library support for the C++23 extended
+/// floating-point types and exposes them under short names. Each
+/// `Fxx` alias is only defined when the matching `SFML_BASE_FLOATxx_DETECTED`
+/// macro is available.
+///
+////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////
 // Clang detection
 #ifdef __is_identifier
     #if !__is_identifier(_Float16)

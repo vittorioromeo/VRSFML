@@ -12,6 +12,9 @@
 
 
 ////////////////////////////////////////////////////////////
+/// \brief `LDBL_MAX` macro, prefers the compiler builtin to avoid `<cfloat>`
+///
+////////////////////////////////////////////////////////////
 #ifdef __LDBL_MAX__
     #define SFML_BASE_LONG_DOUBLE_MAX __LDBL_MAX__
 #else

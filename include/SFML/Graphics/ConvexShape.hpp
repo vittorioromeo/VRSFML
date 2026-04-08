@@ -28,43 +28,46 @@ class SFML_GRAPHICS_API ConvexShape : public Shape
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Initialization data for a `sf::ConvexShape`
+    /// \brief Initialization data for `sf::ConvexShape`
     ///
-    /// This struct groups the parameters needed to initialize a
-    /// `sf::ConvexShape`. It includes common shape properties
-    /// (like transform, texture, fill color, outline) and
-    /// convex shape specific properties, such as the initial
-    /// point count.
-    ///
-    /// An instance of `Data` is passed to the constructor
-    /// of `sf::ConvexShape`.
+    /// In addition to the standard transformable and shape
+    /// appearance members, `Data` carries the polygon's initial
+    /// point count. After construction, the actual point
+    /// positions are set with `setPoint`.
     ///
     /// Example:
     /// \code
-    /// sf::ConvexShape::Data data;
-    /// data.pointCount = 5; // For a pentagon
-    /// data.fillColor = sf::Color::Green;
-    /// data.outlineColor = sf::Color::Black;
-    /// data.outlineThickness = 2.f;
+    /// sf::ConvexShape pentagon{{
+    ///     .fillColor        = sf::Color::Green,
+    ///     .outlineColor     = sf::Color::Black,
+    ///     .outlineThickness = 2.f,
+    ///     .pointCount       = 5u, // pentagon
+    /// }};
     ///
-    /// sf::ConvexShape pentagon(data);
-    /// // Points still need to be set individually using `setPoint`
+    /// pentagon.setPoint(0u, {  0.f,   0.f});
+    /// pentagon.setPoint(1u, { 50.f, -50.f});
+    /// // ...
     /// \endcode
     ///
-    /// \see ConvexShape(const Data&)
+    /// \see `ConvexShape(const Data&)`
+    ///
     ////////////////////////////////////////////////////////////
     struct [[nodiscard]] Data
     {
         SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
         SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;
 
-        base::SizeT pointCount{0u}; //!< Number of points of the polygon
+        base::SizeT pointCount{0u}; //!< Initial number of points of the polygon
     };
 
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
+    /// \brief Construct a convex polygon from a `Data` initializer
     ///
-    /// \param settings Data of the polygon
+    /// The polygon is created with `data.pointCount` points, all
+    /// at position `(0, 0)`. Use `setPoint` to assign their
+    /// actual coordinates.
+    ///
+    /// \param data Geometry, transform, and appearance settings
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit ConvexShape(const Data& data);
@@ -155,26 +158,31 @@ private:
 /// \class sf::ConvexShape
 /// \ingroup graphics
 ///
-/// This class inherits all the functions of `sf::Transformable`
-/// (position, rotation, scale, bounds, etc...) as well as the
-/// functions of `sf::Shape` (outline, color, texture, etc...).
+/// `sf::ConvexShape` is the concrete `sf::Shape` subclass for
+/// drawing arbitrary convex polygons. The point count is set at
+/// construction time (or via `setPointCount`) and the
+/// coordinates of each vertex are then assigned with `setPoint`.
 ///
-/// It is important to keep in mind that a convex shape must
-/// always be... convex, otherwise it may not be drawn correctly.
-/// Moreover, the points must be defined in order; using a random
-/// order would result in an incorrect shape.
+/// Important: the polygon **must remain convex** at draw time,
+/// and the points must be supplied in a consistent winding
+/// order. A non-convex polygon may render with visual artifacts.
+/// It is fine to temporarily have a non-convex or degenerate
+/// polygon while you are still building it -- the constraint
+/// applies only when the shape is actually drawn.
 ///
 /// Usage example:
 /// \code
-/// sf::ConvexShape polygon;
-/// polygon.setPointCount(3);
-/// polygon.setPoint(0, sf::Vec2f{0, 0});
-/// polygon.setPoint(1, sf::Vec2f{0, 10});
-/// polygon.setPoint(2, sf::Vec2f{25, 5});
-/// polygon.setOutlineColor(sf::Color::Red);
-/// polygon.setOutlineThickness(5);
-/// polygon.position = {10, 20};
-/// ...
+/// sf::ConvexShape polygon{{
+///     .position         = {10.f, 20.f},
+///     .outlineColor     = sf::Color::Red,
+///     .outlineThickness = 5.f,
+///     .pointCount       = 3u,
+/// }};
+///
+/// polygon.setPoint(0u, { 0.f,  0.f});
+/// polygon.setPoint(1u, { 0.f, 10.f});
+/// polygon.setPoint(2u, {25.f,  5.f});
+///
 /// window.draw(polygon);
 /// \endcode
 ///

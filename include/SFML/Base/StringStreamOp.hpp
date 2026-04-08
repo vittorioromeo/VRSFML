@@ -23,6 +23,13 @@ namespace sf::base::priv
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
+/// \brief Stream-insertion operator for `sf::base::String`
+///
+/// Writes the entire string to any stream-like type that exposes a
+/// `write(const char*, long)` member, mirroring the behavior of
+/// `std::ostream << std::string`.
+///
+////////////////////////////////////////////////////////////
 template <typename StreamLike>
 StreamLike& operator<<(StreamLike& stream, const String& s)
     requires(requires { stream.write(s.data(), static_cast<long>(s.size())); })

@@ -182,37 +182,45 @@ struct [[nodiscard]] SFML_GRAPHICS_API StencilMode
 /// buffer and not the color buffer during a draw. The written stencil buffer
 /// value can then be used in subsequent draws as a masking region.
 ///
-/// In SFML, a stencil mode can be specified every time you draw a drawable
-/// object to a render target. It is part of the sf::RenderStates compound
-/// that is passed to the member function `sf::RenderTarget::draw()`.
+/// A stencil mode can be specified every time you draw something
+/// to a render target. It is part of the `sf::RenderStates`
+/// compound that is passed to `sf::RenderTarget::draw`.
 ///
 /// Usage example:
 /// \code
-/// // Make sure we create a RenderTarget with a stencil buffer by specifying it via the context settings
-/// auto window = sf::RenderWindow::create({.size{250u, 200u}, .title = "Stencil Window", .contextSettings{.depthBits = 0, .stencilBits = 8});
+/// // Make sure to create the render target with a stencil buffer.
+/// auto window = sf::RenderWindow::create({
+///     .size            = {250u, 200u},
+///     .title           = "Stencil Window",
+///     .contextSettings = {.depthBits = 0, .stencilBits = 8},
+/// }).value();
 ///
-/// ...
+/// const sf::CircleShape left  {{.position = { 0.f, 0.f}, .fillColor = sf::Color::Green,  .radius = 100.f}};
+/// const sf::CircleShape middle{{.position = {25.f, 0.f}, .fillColor = sf::Color::Yellow, .radius = 100.f}};
+/// const sf::CircleShape right {{.position = {50.f, 0.f}, .fillColor = sf::Color::Red,    .radius = 100.f}};
 ///
-/// const sf::CircleShape left{{.position = {0, 0}, .fillColor = sf::Color::Green, .radius = 100.f}};
-/// const sf::CircleShape middle{{.position = {25, 0}, .fillColor = sf::Color::Yellow, .radius = 100.f}};
-/// const sf::CircleShape right{{.position = {50, 0}, .fillColor = sf::Color::Red, .radius = 100.f}};
-///
-/// ...
-///
-/// // Clear the stencil buffer to 0 at the start of every frame
-/// window.clear(sf::Color::Black, 0);
-///
-/// ...
+/// // Clear the color and stencil buffers at the start of every frame.
+/// window.clear(sf::Color::Black, sf::StencilValue{0u});
 ///
 /// // Draw the middle circle in a stencil-only pass and write the value 1
-/// // to the stencil buffer for every pixel the circle would have affected
-/// window.draw(middle, sf::StencilMode{sf::StencilComparison::Always, sf::StencilUpdateOperation::Replace, 1, 0xFF, true});
+/// // to the stencil buffer for every pixel the circle would have affected.
+/// window.draw(middle, /* render states */ {.stencilMode = sf::StencilMode{
+///     .stencilComparison      = sf::StencilComparison::Always,
+///     .stencilUpdateOperation = sf::StencilUpdateOperation::Replace,
+///     .stencilOnly            = true,
+///     .stencilReference       = sf::StencilValue{1u},
+/// }});
 ///
-/// // Draw the left and right circles
-/// // Only allow rendering to pixels whose stencil value is not
-/// // equal to 1 i.e. weren't written when drawing the middle circle
-/// window.draw(left, sf::StencilMode{sf::StencilComparison::NotEqual, sf::StencilUpdateOperation::Keep, 1, 0xFF, false});
-/// window.draw(right, sf::StencilMode{sf::StencilComparison::NotEqual, sf::StencilUpdateOperation::Keep, 1, 0xFF, false});
+/// // Draw the left and right circles, allowing only pixels whose stencil
+/// // value is not 1 (i.e. those not written when drawing the middle circle).
+/// const sf::StencilMode notEqualOne{
+///     .stencilComparison      = sf::StencilComparison::NotEqual,
+///     .stencilUpdateOperation = sf::StencilUpdateOperation::Keep,
+///     .stencilReference       = sf::StencilValue{1u},
+/// };
+///
+/// window.draw(left,  /* render states */ {.stencilMode = notEqualOne});
+/// window.draw(right, /* render states */ {.stencilMode = notEqualOne});
 /// \endcode
 ///
 /// \see `sf::RenderStates`, `sf::RenderTarget`

@@ -27,15 +27,17 @@ class SFML_GRAPHICS_API RectangleShape : public Shape
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Initialization data for `sf::RectangleShape`
+    ///
+    /// Alias for `sf::RectangleShapeData`.
     ///
     ////////////////////////////////////////////////////////////
     using Data = RectangleShapeData;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
+    /// \brief Construct a rectangle shape from a `Data` initializer
     ///
-    /// \param settings Data of the rectangle
+    /// \param data Geometry, transform, and appearance settings
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit RectangleShape(const Data& data);
@@ -113,21 +115,25 @@ private:
 /// \class sf::RectangleShape
 /// \ingroup graphics
 ///
-/// This class inherits all the functions of `sf::Transformable`
-/// (position, rotation, scale, bounds, etc...) as well as the
-/// functions of `sf::Shape` (outline, color, texture, etc...).
+/// `sf::RectangleShape` is the concrete `sf::Shape` subclass for
+/// drawing an axis-aligned rectangle. In addition to the
+/// transform and appearance members inherited from `sf::Shape`,
+/// it exposes a `size` (width and height) and the four corner
+/// points it generates from it.
 ///
 /// Usage example:
 /// \code
-/// sf::RectangleShape rectangle;
-/// rectangle.setSize(sf::Vec2f{100, 50});
-/// rectangle.setOutlineColor(sf::Color::Red);
-/// rectangle.setOutlineThickness(5);
-/// rectangle.position = {10, 20};
-/// ...
+/// const sf::RectangleShape rectangle{{
+///     .position         = {10.f, 20.f},
+///     .outlineColor     = sf::Color::Red,
+///     .outlineThickness = 5.f,
+///     .size             = {100.f, 50.f},
+/// }};
+///
 /// window.draw(rectangle);
 /// \endcode
 ///
-/// \see `sf::Shape`, `sf::CircleShape`, `sf::ConvexShape`
+/// \see `sf::Shape`, `sf::CircleShape`, `sf::ConvexShape`,
+///      `sf::RectangleShapeData`
 ///
 ////////////////////////////////////////////////////////////

@@ -1067,10 +1067,10 @@ struct Main
         rtGame.draw(batch, states);
 
         if (flushAfterEveryBatch)
-            rtGame.flushGPUCommands();
+            rtGame.invokeGlFlush();
 
         if (finishAfterEveryBatch)
-            rtGame.finishGPUCommands();
+            rtGame.invokeGlFinish();
     }
 
     ////////////////////////////////////////////////////////////

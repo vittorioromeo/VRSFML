@@ -915,9 +915,9 @@ void SDLWindowImpl::setTitle(const UnicodeString& title)
 
 
 ////////////////////////////////////////////////////////////
-void SDLWindowImpl::setIcon(const Vec2u size, const base::U8* pixels)
+void SDLWindowImpl::setIcon(const base::U8* pixels, const Vec2u size)
 {
-    auto surface = WindowContext::getSDLLayer().createSurfaceFromPixels(size, pixels);
+    auto surface = WindowContext::getSDLLayer().createSurfaceFromPixels(pixels, size);
     if (surface == nullptr)
     {
         err() << "Failed to set icon";
@@ -999,9 +999,9 @@ bool SDLWindowImpl::hasFocus() const
 
 
 ////////////////////////////////////////////////////////////
-float SDLWindowImpl::getWindowDisplayScale() const
+float SDLWindowImpl::getDisplayScale() const
 {
-    return WindowContext::getSDLLayer().getWindowDisplayScale(*m_impl->sdlWindow);
+    return WindowContext::getSDLLayer().getDisplayScale(*m_impl->sdlWindow);
 }
 
 

@@ -38,7 +38,7 @@ public:
     template <typename Rep, typename Period>
     [[nodiscard]] static constexpr Time fromDuration(const std::chrono::duration<Rep, Period>& duration)
     {
-        return Time(std::chrono::duration_cast<std::chrono::microseconds>(duration).count());
+        return microseconds(std::chrono::duration_cast<std::chrono::microseconds>(duration).count());
     }
 
 

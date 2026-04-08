@@ -183,19 +183,32 @@ inline constexpr auto BlendNone = BlendMode::from(BlendMode::Factor::One, BlendM
 /// All factors and colors are represented as floating point numbers between
 /// 0 and 1. Where necessary, the result is clamped to fit in that range.
 ///
-/// The most common blending modes are defined as constants
-/// in the sf namespace:
+/// The most common blending modes are predefined as inline
+/// `constexpr` constants in the `sf` namespace:
 ///
 /// \code
 /// sf::BlendMode alphaBlending          = sf::BlendAlpha;
 /// sf::BlendMode additiveBlending       = sf::BlendAdd;
 /// sf::BlendMode multiplicativeBlending = sf::BlendMultiply;
+/// sf::BlendMode minBlending            = sf::BlendMin;
+/// sf::BlendMode maxBlending            = sf::BlendMax;
 /// sf::BlendMode noBlending             = sf::BlendNone;
 /// \endcode
 ///
-/// In SFML, a blend mode can be specified every time you draw a drawable
-/// object to a render target. It is part of the `sf::RenderStates` compound
-/// that is passed to the member function `sf::RenderTarget::draw()`.
+/// You can also build a custom blend mode using designated
+/// initializers, or use the `sf::BlendMode::from` helper when the
+/// same factors and equation are used for both color and alpha:
+///
+/// \code
+/// constexpr auto premultiplied = sf::BlendMode{
+///     .colorSrcFactor = sf::BlendMode::Factor::One,
+///     .colorDstFactor = sf::BlendMode::Factor::OneMinusSrcAlpha,
+/// };
+/// \endcode
+///
+/// A blend mode can be specified every time you draw something to a
+/// render target. It is part of the `sf::RenderStates` compound that
+/// is passed to `sf::RenderTarget::draw`.
 ///
 /// \see `sf::RenderStates`, `sf::RenderTarget`
 ///

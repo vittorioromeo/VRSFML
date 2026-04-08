@@ -45,22 +45,35 @@ template <typename T>
 namespace sf::base
 {
 //////////////////////////////////////////////////////////////
+/// \brief Outcome of a `fromChars` parse attempt
+///
+//////////////////////////////////////////////////////////////
 enum class [[nodiscard]] FromCharsError
 {
-    None,
-    InvalidArgument,
-    ResultOutOfRange
+    None,            //!< Successful parse
+    InvalidArgument, //!< No digits found, or sign without digits
+    ResultOutOfRange //!< Value would overflow the destination type
 };
 
 
 //////////////////////////////////////////////////////////////
+/// \brief Result type returned from `fromChars`, mirroring `std::from_chars_result`
+///
+//////////////////////////////////////////////////////////////
 struct [[nodiscard]] FromCharsResult
 {
-    const char*    ptr;
-    FromCharsError ec;
+    const char*    ptr; //!< One past the last character successfully consumed
+    FromCharsError ec;  //!< Error code (`None` on success)
 };
 
 
+//////////////////////////////////////////////////////////////
+/// \brief Parse an integer from `[first, last)` into `value`
+///
+/// Stricter than `strtol`: only base-10 digits and an optional leading
+/// sign are accepted. Detects overflow before it happens and signals
+/// it via `FromCharsError::ResultOutOfRange`.
+///
 //////////////////////////////////////////////////////////////
 template <typename T>
 [[nodiscard]] FromCharsResult fromChars(const char* first, const char* const last, T& value)
@@ -120,6 +133,14 @@ template <typename T>
 }
 
 
+//////////////////////////////////////////////////////////////
+/// \brief Parse a floating-point number from `[first, last)` into `value`
+///
+/// Accepts an optional sign, an integer part, and an optional fractional
+/// part. Exponents (`e`/`E`) are not currently supported. Uses
+/// `long double` internally to retain precision before narrowing the
+/// result back into `T`.
+///
 //////////////////////////////////////////////////////////////
 template <typename T>
 [[nodiscard]] FromCharsResult fromChars(const char* first, const char* const last, T& value)

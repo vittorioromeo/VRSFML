@@ -59,9 +59,23 @@ struct SwapFn
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
+/// \brief Customization point object that swaps two values
+///
+/// Behaves like `std::ranges::swap`: prefers a member `swap`, then a
+/// well-formed unqualified `swap` found via ADL, and finally falls
+/// back to a manual three-step move-swap. Calling
+/// `genericSwap(a, b)` is therefore the recommended way to swap
+/// arbitrary objects in code that wants to honor user-provided
+/// `swap` overloads without needing to write the customary
+/// `using std::swap; swap(a, b);` dance.
+///
+////////////////////////////////////////////////////////////
 inline constexpr priv::swap_adl::SwapFn genericSwap{};
 
 
+////////////////////////////////////////////////////////////
+/// \brief Swap the elements pointed to by two iterators
+///
 ////////////////////////////////////////////////////////////
 template <typename ForwardIt1, typename ForwardIt2>
 [[gnu::always_inline]] inline constexpr void iterSwap(const ForwardIt1 a, const ForwardIt2 b)
@@ -70,6 +84,14 @@ template <typename ForwardIt1, typename ForwardIt2>
 }
 
 
+////////////////////////////////////////////////////////////
+/// \brief Pairwise swap two ranges of equal length
+///
+/// Iterates over `[first1, last1)` and `[first2, ...)`, swapping
+/// corresponding elements with `iterSwap`.
+///
+/// \return Iterator to the element past the last element of the second range
+///
 ////////////////////////////////////////////////////////////
 template <typename ForwardIt1, typename ForwardIt2>
 [[gnu::always_inline]] inline constexpr ForwardIt2 swapRanges(ForwardIt1 first1, const ForwardIt1 last1, ForwardIt2 first2)

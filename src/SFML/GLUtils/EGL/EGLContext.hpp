@@ -25,24 +25,43 @@ namespace sf::priv
 {
 class SDLWindowImpl;
 
+////////////////////////////////////////////////////////////
+/// \brief EGL-backed implementation of `GlContext`
+///
+/// Used on platforms that expose OpenGL ES through EGL — most notably
+/// Emscripten and Android. Wraps an `EGLDisplay`, `EGLContext`,
+/// `EGLSurface` and `EGLConfig` quartet, picking the best matching
+/// config based on the requested `ContextSettings`.
+///
+////////////////////////////////////////////////////////////
 class EglContext : public GlContext
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Create a new context, not associated to a window
+    /// \brief Create a new offscreen EGL context, not associated with a window
     ///
-    /// \param shared Context to share the new one with (can be a null pointer)
+    /// Allocates an `EGL_PBUFFER` surface of size 1x1 (or a dummy
+    /// surface on Emscripten) so the context can be made current
+    /// without needing a real window.
+    ///
+    /// \param id              Unique numeric ID assigned by `WindowContext`
+    /// \param shared          Sibling context to share resources with
+    ///                        (may be `nullptr` for an unshared context)
+    /// \param contextSettings Requested context settings
     ///
     ////////////////////////////////////////////////////////////
     explicit EglContext(unsigned int id, EglContext* shared, const ContextSettings& contextSettings);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Create a new context attached to a window
+    /// \brief Create a new EGL context attached to a window
     ///
-    /// \param shared       Context to share the new one with
-    /// \param settings     Creation parameters
-    /// \param owner        Pointer to the owner window
-    /// \param bitsPerPixel Pixel depth, in bits per pixel
+    /// \param id              Unique numeric ID assigned by `WindowContext`
+    /// \param shared          Sibling context to share resources with
+    ///                        (may be `nullptr` for an unshared context)
+    /// \param contextSettings Requested context settings
+    /// \param owner           Window that owns the context (used to
+    ///                        obtain the native window handle)
+    /// \param bitsPerPixel    Pixel depth, in bits per pixel
     ///
     ////////////////////////////////////////////////////////////
     explicit EglContext(unsigned int           id,
@@ -54,6 +73,9 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
+    /// Deactivates the context if it is current on the calling
+    /// thread, then destroys the EGL context and surface.
+    ///
     ////////////////////////////////////////////////////////////
     ~EglContext() override;
 
@@ -62,24 +84,25 @@ public:
     ///
     /// \param name Name of the function to get the address of
     ///
-    /// \return Address of the OpenGL function, `nullptr` on failure
+    /// \return Address of the OpenGL function, or `nullptr` on failure
     ///
     ////////////////////////////////////////////////////////////
     GlFunctionPointer getFunction(const char* name) const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Activate the context as the current target
-    ///        for rendering
+    /// \brief Activate or deactivate the context as the current rendering target
     ///
-    /// \param current Whether to make the context current or no longer current
+    /// \param activate `true` to make the context current on the
+    ///                 calling thread, `false` to deactivate it
     ///
-    /// \return `true` on success, `false` if any error happened
+    /// \return `true` on success, `false` if the EGL call failed or
+    ///         no surface is associated with the context
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool makeCurrent(bool activate) override;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Display what has been rendered to the context so far
+    /// \brief Present the rendered contents of the context (`eglSwapBuffers`)
     ///
     ////////////////////////////////////////////////////////////
     void display() override;
@@ -87,52 +110,67 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Enable or disable vertical synchronization
     ///
-    /// Activating vertical synchronization will limit the number
-    /// of frames displayed to the refresh rate of the monitor.
-    /// This can avoid some visual artifacts, and limit the framerate
-    /// to a good value (but not constant across different computers).
+    /// Forwards to `eglSwapInterval`. No-op on Emscripten, since
+    /// browsers manage vsync themselves through `requestAnimationFrame`.
     ///
-    /// \param enabled: `true` to enable v-sync, `false` to deactivate
+    /// \param enabled `true` to enable v-sync, `false` to disable it
     ///
     ////////////////////////////////////////////////////////////
     void setVerticalSyncEnabled(bool enabled) override;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Check whether vertical synchronization is enabled
+    ///
+    /// \return `true` if vertical synchronization is enabled,
+    ///         `false` otherwise
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isVerticalSyncEnabled() const override;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Create the context
+    /// \brief Create the underlying EGL context object
     ///
-    /// \param shared       Context to share the new one with (can be a null pointer)
-    /// \param bitsPerPixel Pixel depth, in bits per pixel
-    /// \param settings     Creation parameters
+    /// Called from the constructors after the display and config have
+    /// been picked. The new context is created with OpenGL ES 3.1 on
+    /// native platforms and OpenGL ES 2 on Emscripten.
+    ///
+    /// \param shared Sibling context to share resources with, or
+    ///               `nullptr` for an unshared context
     ///
     ////////////////////////////////////////////////////////////
     void createContext(EglContext* shared);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Create the EGL surface
+    /// \brief Create the EGL window surface for this context
     ///
-    /// This function must be called when the activity (re)start, or
-    /// when the orientation change.
+    /// Must be called when the underlying native window first becomes
+    /// available — and again on Android whenever the activity is
+    /// (re)started or the device orientation changes.
     ///
-    /// \param windowPtr Pointer to the native window
+    /// \param windowPtr Type-erased pointer to a platform-specific
+    ///                  native window handle (`EGLNativeWindowType*`)
     ///
     ////////////////////////////////////////////////////////////
     void createSurface(void* windowPtr);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Destroy the EGL surface
+    /// \brief Destroy the EGL window surface
     ///
-    /// This function must be called when the activity is stopped, or
-    /// when the orientation change.
+    /// Must be called on Android whenever the activity is stopped or
+    /// the device orientation changes, so that the surface can be
+    /// recreated against the new native window.
     ///
     ////////////////////////////////////////////////////////////
     void destroySurface();
 
 private:
     ////////////////////////////////////////////////////////////
-    /// \brief Helper to copy the picked EGL configuration
+    /// \brief Refresh `m_settings` from the chosen EGL config
+    ///
+    /// Reads the depth/stencil sizes (and resets the version/profile
+    /// flags) from the currently selected EGL config so that
+    /// `getSettings()` reflects what was actually allocated.
+    ///
     ////////////////////////////////////////////////////////////
     void updateSettings();
 
@@ -140,7 +178,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 64> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 64> m_impl; //!< Implementation details (display, context, surface, config)
 };
 
 } // namespace sf::priv

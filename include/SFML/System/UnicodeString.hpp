@@ -313,13 +313,21 @@ public:
     [[nodiscard]] char32_t& operator[](base::SizeT index);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Append a single UTF-32 character to the end of the string
+    ///
+    /// \param character UTF-32 character to append
     ///
     ////////////////////////////////////////////////////////////
     void pushBack(char32_t character);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Replace the contents of the string with a UTF-32 range
+    ///
+    /// All previously stored characters are discarded and replaced by
+    /// the characters in the half-open range `[begin, end)`.
+    ///
+    /// \param begin Pointer to the first UTF-32 character of the source range
+    /// \param end   Pointer one past the last UTF-32 character of the source range
     ///
     ////////////////////////////////////////////////////////////
     void assign(const char32_t* begin, const char32_t* end);
@@ -404,7 +412,7 @@ public:
     /// \param replaceWith UnicodeString that replaces the given substring.
     ///
     ////////////////////////////////////////////////////////////
-    void replace(base::SizeT position, base::SizeT length, const UnicodeString& replaceWith);
+    void replaceRange(base::SizeT position, base::SizeT length, const UnicodeString& replaceWith);
 
     ////////////////////////////////////////////////////////////
     /// \brief Replace all occurrences of a substring with a replacement string
@@ -416,7 +424,7 @@ public:
     /// \param replaceWith The value that replaces found `searchFor` values
     ///
     ////////////////////////////////////////////////////////////
-    void replace(const UnicodeString& searchFor, const UnicodeString& replaceWith);
+    void replaceAllOccurrences(const UnicodeString& searchFor, const UnicodeString& replaceWith);
 
     ////////////////////////////////////////////////////////////
     /// \brief Return a part of the string

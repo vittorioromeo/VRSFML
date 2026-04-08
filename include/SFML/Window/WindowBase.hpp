@@ -62,24 +62,34 @@ public:
     using Settings = WindowSettings;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct a new window
+    /// \brief Create a new window from a settings aggregate
     ///
-    /// This constructor creates the window with the size and pixel
-    /// depth defined in `mode`. An optional style can be passed to
-    /// customize the look and behavior of the window (borders,
-    /// title bar, resizable, closable, etc...). An optional state can
-    /// be provided. If `state` is `State::Fullscreen`, then `mode`
-    /// must be a valid video mode.
+    /// Creates a window with the size, title, style and pacing
+    /// options defined in `windowSettings`. If
+    /// `windowSettings.fullscreen` is `true`, the requested
+    /// size and bit depth must correspond to a valid fullscreen
+    /// video mode (see `sf::VideoModeUtils::getFullscreenModes`).
     ///
-    /// \param windowSettings Settings to use
+    /// On failure (invalid settings, OS error, ...) returns
+    /// `base::nullOpt`.
+    ///
+    /// \param windowSettings Window creation parameters
+    ///
+    /// \return The newly created window on success, `base::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<WindowBase> create(const Settings& windowSettings);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct the window from an existing control
+    /// \brief Create a window wrapping an existing native control
     ///
-    /// \param handle Platform-specific handle of the control
+    /// Use this overload to wrap an already existing OS-level
+    /// window/control. Unlike `sf::Window::create`, this base
+    /// version does not attach an OpenGL context to the window.
+    ///
+    /// \param handle Platform-specific handle of the control to attach to
+    ///
+    /// \return The newly wrapped window on success, `base::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<WindowBase> create(WindowHandle handle);
@@ -295,7 +305,9 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Set the minimum window rendering region size
     ///
-    /// Pass `base::nullOpt` to unset the minimum size
+    /// The OS will prevent the user from resizing the window
+    /// below this size. Use the `Optional` overload and pass
+    /// `base::nullOpt` to clear any previously set minimum.
     ///
     /// \param minimumSize New minimum size, in pixels
     ///
@@ -306,7 +318,9 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Set the maximum window rendering region size
     ///
-    /// Pass `base::nullOpt` to unset the maximum size
+    /// The OS will prevent the user from resizing the window
+    /// above this size. Use the `Optional` overload and pass
+    /// `base::nullOpt` to clear any previously set maximum.
     ///
     /// \param maximumSize New maximum size, in pixels
     ///
@@ -332,15 +346,15 @@ public:
     ///
     /// The OS default icon is used by default.
     ///
-    /// \param size   Icon's width and height, in pixels
     /// \param pixels Pointer to the array of pixels in memory. The
     ///               pixels are copied, so you need not keep the
     ///               source alive after calling this function.
+    /// \param size   Icon's width and height, in pixels
     ///
     /// \see `setTitle`
     ///
     ////////////////////////////////////////////////////////////
-    void setIcon(Vec2u size, const base::U8* pixels);
+    void setIcon(const base::U8* pixels, Vec2u size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window
@@ -458,7 +472,7 @@ public:
     /// \return `1.f` for default DPI (96), otherwise the scaling factor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] float getWindowDisplayScale() const;
+    [[nodiscard]] float getDisplayScale() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the OS-specific handle of the window
@@ -475,21 +489,29 @@ public:
     [[nodiscard]] WindowHandle getNativeHandle() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the SDL-specific handle of the window
+    /// \brief Get the underlying `SDL_Window*` backing this window
     ///
-    /// \return SDL handle of the window
+    /// VRSFML's windowing layer is implemented on top of SDL.
+    /// This accessor exposes the raw `SDL_Window*` for code
+    /// that needs to interoperate with SDL directly.
+    ///
+    /// \return Pointer to the underlying SDL window
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] SDL_Window* getSDLHandle() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Create a Vulkan rendering surface
+    /// \brief Create a Vulkan rendering surface for this window
     ///
-    /// \param instance  Vulkan instance
-    /// \param surface   Created surface
-    /// \param allocator Allocator to use
+    /// Creates a `VkSurfaceKHR` corresponding to this window
+    /// using the instance, output handle, and optional
+    /// allocator bundled inside `vulkanSurfaceData`.
+    ///
+    /// \param vulkanSurfaceData Inputs and output for the surface creation
     ///
     /// \return `true` if surface creation was successful, `false` otherwise
+    ///
+    /// \see `sf::Vulkan::isAvailable`, `sf::Vulkan::VulkanSurfaceData`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool createVulkanSurface(const Vulkan::VulkanSurfaceData& vulkanSurfaceData);
@@ -497,35 +519,51 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Check whether the window is in exclusive fullscreen mode
     ///
+    /// \return `true` if the window is fullscreen, `false` otherwise
+    ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isFullscreen() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Check whether the window is resizable
+    /// \brief Check whether the window can be resized by the user
+    ///
+    /// \return `true` if the user is allowed to resize the window, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isResizable() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Check whether the window has a titlebar
+    /// \brief Check whether the window has a titlebar / borders
+    ///
+    /// \return `true` if a titlebar is shown, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool hasTitlebar() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set whether the window is resizable or not
+    /// \brief Enable or disable user-driven resizing
+    ///
+    /// \param resizable `true` to allow resizing, `false` to prevent it
     ///
     ////////////////////////////////////////////////////////////
     void setResizable(bool resizable);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set whether the window has a titlebar or not
+    /// \brief Show or hide the window's title bar
+    ///
+    /// \param hasTitleBar `true` to show the title bar / borders, `false` to hide them
     ///
     ////////////////////////////////////////////////////////////
     void setHasTitlebar(bool hasTitleBar);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the local bounding rectangle of the window
+    ///
+    /// The local bounds always have their top-left corner at
+    /// the origin and their size set to the window's current
+    /// size, in pixels.
+    ///
+    /// \return Rect with origin `{0, 0}` and size equal to the window size
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::pure]] Rect2f getLocalBounds() const
@@ -535,6 +573,11 @@ public:
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the global bounding rectangle of the window
+    ///
+    /// The global bounds combine `getPosition()` and
+    /// `getSize()` into a `Rect2f`.
+    ///
+    /// \return Rect with origin equal to the window position and size equal to the window size
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::pure]] Rect2f getGlobalBounds() const
@@ -588,33 +631,40 @@ private:
 /// \class sf::WindowBase
 /// \ingroup window
 ///
-/// `sf::WindowBase` serves as the base class for all Windows.
+/// `sf::WindowBase` is the base class for all VRSFML windows.
+/// It owns the OS-level window resource and provides the
+/// common interface for moving, resizing, showing/hiding,
+/// controlling the cursor, and pumping events. It does *not*
+/// own an OpenGL context: use `sf::Window` (which derives
+/// from `WindowBase`) for that.
 ///
-/// A `sf::WindowBase` can create its own new window, or be embedded into
-/// an already existing control using the `create(handle)` function.
+/// A `WindowBase` can create its own new top-level window via
+/// `create(settings)` or be wrapped around an already
+/// existing OS control via `create(handle)`.
 ///
-/// The `sf::WindowBase` class provides a simple interface for manipulating
-/// the window: move, resize, show/hide, control mouse cursor, etc.
-/// It also provides event handling through its `pollEvent()` and `waitEvent()`
-/// functions.
+/// Event handling is provided by `pollEvent()`, `waitEvent()`,
+/// and `pollAndHandleEvents()`.
 ///
 /// Usage example:
 /// \code
-/// // Declare and create a new window
-/// sf::WindowBase window({.size{800u, 600u}, .title = "SFML Window"});
+/// // Initialize the window context (must outlive any window)
+/// auto windowContext = sf::WindowContext::create().value();
+///
+/// // Create a new window
+/// auto window = sf::WindowBase::create({.size = {800u, 600u}, .title = "SFML Window"}).value();
 ///
 /// // The main loop - ends as soon as the window is closed
 /// while (true)
 /// {
-///    // Event processing
-///    while (const sf::base::Optional event = window.pollEvent())
-///    {
-///        // Request for closing the window
-///        if (event->is<sf::Event::Closed>())
-///        return 0; // break out of both loops
-///    }
+///     // Event processing
+///     while (const sf::base::Optional event = window.pollEvent())
+///     {
+///         // Request for closing the window
+///         if (event->is<sf::Event::Closed>())
+///             return 0; // break out of both loops
+///     }
 ///
-///    // Do things with the window here...
+///     // Do things with the window here...
 /// }
 /// \endcode
 ///

@@ -42,36 +42,49 @@ struct [[nodiscard]] SFML_GRAPHICS_API CurvedArrowShapeData
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::CurvedArrowShapeData
+/// \struct sf::CurvedArrowShapeData
 /// \ingroup graphics
 ///
-/// `sf::CurvedArrowShapeData` allows for drawing arrows that bend along
-/// a circular arc.
+/// `sf::CurvedArrowShapeData` describes an arrow that bends along
+/// a circular arc, useful for diagrams, UI affordances, and game
+/// indicators.
 ///
 /// Key properties:
-/// - `outerRadius`: Radius of the outer circle defining the boundary.
-/// - `innerRadius`: Radius of the inner circle defining the hole.
-/// - `startAngle`, `sweepAngle`: Define the segment of the circle that the arrow occupies.
-/// - `headLength`, `headWidth`: Dimensions of the arrowhead.
-/// - `pointCount`: Controls the smoothness of the curved body. This is interpreted as
-///   points per 90 degrees of sweep angle to maintain similar smoothness for different sweep angles.
+/// - `outerRadius` -- radius of the outer edge of the arc body.
+/// - `innerRadius` -- radius of the inner edge of the arc body
+///   (the difference with `outerRadius` defines its thickness).
+/// - `startAngle`, `sweepAngle` -- define the angular segment of
+///   the arc that the arrow occupies.
+/// - `headLength`, `headWidth` -- dimensions of the triangular
+///   arrowhead at the end of the arc.
+/// - `pointCount` -- controls the smoothness of the curved body.
+///   It is interpreted as the number of points per 90 degrees of
+///   sweep, so that arcs of different lengths render with comparable
+///   smoothness.
+///
+/// Like other `*ShapeData` types, this struct also embeds the
+/// standard transformable and shape appearance members.
+///
+/// `CurvedArrowShapeData` is consumed by `sf::ShapeUtils` and by
+/// `sf::CPUDrawableBatch::add` -- it is not directly drawable.
 ///
 /// Example usage:
 /// \code
-/// sf::CurvedArrowShapeData curvedArrowData{
-///     .position = {200, 200},
+/// const sf::CurvedArrowShapeData curvedArrowData{
+///     .position    = {200.f, 200.f},
+///     .fillColor   = sf::Color::Red,
 ///     .outerRadius = 100.f,
 ///     .innerRadius = 50.f,
-///     .startAngle = sf::degrees(0.f),
-///     .sweepAngle = sf::degrees(120.f),
-///     .headLength = 20.f,
-///     .headWidth = 25.f,
-///     .pointCount = 20,
+///     .startAngle  = sf::degrees(0.f),
+///     .sweepAngle  = sf::degrees(120.f),
+///     .headLength  = 20.f,
+///     .headWidth   = 25.f,
+///     .pointCount  = 20,
 /// };
 ///
-/// window.draw(curvedArrowData);
+/// drawableBatch.add(curvedArrowData);
 /// \endcode
 ///
-/// \see sf::ArrowShapeData, sf::RingPieSliceShapeData
+/// \see `sf::ArrowShapeData`, `sf::RingPieSliceShapeData`, `sf::ShapeUtils`, `sf::DrawableBatch`
 ///
 ////////////////////////////////////////////////////////////

@@ -4,6 +4,19 @@
 
 
 ////////////////////////////////////////////////////////////
+/// \file
+/// \brief Hardware interference size constants without including `<new>`
+///
+/// Defines `hardwareDestructiveInterferenceSize` and
+/// `hardwareConstructiveInterferenceSize` (typically the cache line
+/// size on the target architecture). Prefers compiler-defined macros
+/// when available, falls back to a fixed `64u` on common architectures,
+/// and only as a last resort pulls in `<new>` for the standard values.
+///
+////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/SizeT.hpp"

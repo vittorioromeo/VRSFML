@@ -52,7 +52,7 @@ TEST_CASE("[Audio] sf::OutputSoundFile")
                     CHECK(sf::Path(filename).exists());
                 }
 
-                CHECK(sf::Path(filename).remove());
+                CHECK(sf::Path(filename).removeFromDisk());
             }
         }
     }

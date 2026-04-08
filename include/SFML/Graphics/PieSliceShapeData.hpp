@@ -35,11 +35,19 @@ struct [[nodiscard]] SFML_GRAPHICS_API PieSliceShapeData
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::PieSliceShapeData
+/// \struct sf::PieSliceShapeData
 /// \ingroup graphics
 ///
-/// TODO P1: docs
+/// `sf::PieSliceShapeData` describes a pie slice (a filled angular
+/// sector of a circle) defined by a `radius`, a `startAngle`, and a
+/// `sweepAngle`. The contour is approximated by `pointCount` points
+/// distributed along the arc.
 ///
-/// \see `sf::Shape`, `sf::CircleShape`
+/// Like other `*ShapeData` types, it embeds the standard
+/// transformable and shape appearance members and is consumed by
+/// `sf::ShapeUtils` and `sf::CPUDrawableBatch::add` -- it is not
+/// directly drawable on its own.
+///
+/// \see `sf::Shape`, `sf::CircleShape`, `sf::RingPieSliceShapeData`, `sf::ShapeUtils`
 ///
 ////////////////////////////////////////////////////////////

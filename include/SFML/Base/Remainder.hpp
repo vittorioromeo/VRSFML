@@ -12,6 +12,13 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
+/// \brief Truncated `a % b` for floats (sign follows `a`)
+///
+/// Lighter and faster than `std::fmod`: uses `int` truncation rather
+/// than the IEEE-754 remainder operation, which is sufficient for the
+/// gameplay use cases that need it. `b` must be strictly positive.
+///
+////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr float remainder(const float a, const float b) noexcept
 {
     SFML_BASE_ASSERT_AND_ASSUME(b > 0.f);
@@ -20,6 +27,12 @@ namespace sf::base
 }
 
 
+////////////////////////////////////////////////////////////
+/// \brief Like `remainder` but always returns a non-negative value
+///
+/// Equivalent to `((a % b) + b) % b` for floats. `b` must be strictly
+/// positive. Useful for wrapping angles or texture coordinates.
+///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr float positiveRemainder(const float a, const float b) noexcept
 {

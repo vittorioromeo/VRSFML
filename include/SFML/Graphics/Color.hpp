@@ -33,7 +33,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     /// \param alpha Alpha channel of the white mask
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr Color whiteMask(const base::U8 alpha)
+    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr Color whiteWithAlpha(const base::U8 alpha)
     {
         return {255u, 255u, 255u, alpha};
     }
@@ -45,7 +45,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     /// \param alpha Alpha channel of the black mask
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr Color blackMask(const base::U8 alpha)
+    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr Color blackWithAlpha(const base::U8 alpha)
     {
         return {0u, 0u, 0u, alpha};
     }
@@ -271,8 +271,8 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     /// (normalized to `[0, 360)`), and then converts back to RGB.
     /// Saturation, lightness, and alpha components remain unchanged.
     ///
-    /// \param degrees The angle in degrees to rotate the hue by. Positive values rotate
-    ///                counter-clockwise (e.g., red towards yellow), negative values clockwise.
+    /// \param degrees The angle in degrees to add to the hue. The hue progression is
+    ///                red (0°) → yellow (60°) → green (120°) → cyan (180°) → blue (240°) → magenta (300°) → red.
     ///
     /// \return A new `sf::Color` instance with the rotated hue.
     ///
@@ -357,11 +357,13 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     /// \brief Converts the color to a 3D vector of a specified type `TVec3`.
     ///
     /// The components of the vector will be floating-point values
-    /// in the range `[0, 1], corresponding to the R, G, B components
+    /// in the range `[0, 1]`, corresponding to the R, G, B components
     /// of the color (divided by 255 to normalize them).
     ///
     /// \tparam TVec3 The type of the 3D vector. Must be constructible
     ///               from three values of `decltype(TVec3{}.x)`.
+    ///
+    /// \return A `TVec3` instance with normalized R, G, B components.
     ///
     ////////////////////////////////////////////////////////////
     template <typename TVec3>
@@ -381,11 +383,13 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     /// \brief Converts the color to a 4D vector of a specified type `TVec4`.
     ///
     /// The components of the vector will be floating-point values
-    /// in the range `[0, 1], corresponding to the R, G, B, A components
+    /// in the range `[0, 1]`, corresponding to the R, G, B, A components
     /// of the color (divided by 255 to normalize them).
     ///
     /// \tparam TVec4 The type of the 4D vector. Must be constructible
     ///               from four values of `decltype(TVec4{}.x)`.
+    ///
+    /// \return A `TVec4` instance with normalized R, G, B, A components.
     ///
     ////////////////////////////////////////////////////////////
     template <typename TVec4>
@@ -698,7 +702,7 @@ inline constexpr Color Color::LightViolet{160u, 96u, 255u};
 inline constexpr Color Color::LightPurple{128u, 64u, 192u};
 inline constexpr Color Color::LightPeach{255u, 160u, 128u};
 inline constexpr Color Color::LightLime{192u, 255u, 128u};
-inline constexpr Color Color::LightMint{128u, 255u, 22u};
+inline constexpr Color Color::LightMint{128u, 255u, 224u};
 inline constexpr Color Color::LightGray{192u, 192u, 192u};
 
 inline constexpr Color Color::DarkBlue{0u, 0u, 128u};
@@ -748,15 +752,14 @@ inline constexpr Color Color::VeryDarkGray{32u, 32u, 32u};
 /// \class sf::Color
 /// \ingroup graphics
 ///
-/// `sf::Color` is a simple color class composed of 4 components:
+/// `sf::Color` is a simple aggregate composed of 4 components:
 /// \li Red
 /// \li Green
 /// \li Blue
 /// \li Alpha (opacity)
 ///
-/// Each component is a public member, an unsigned integer in
-/// the range [0, 255]. Thus, colors can be constructed and
-/// manipulated very easily:
+/// Each component is a public `base::U8` member in the range
+/// `[0, 255]`. Colors can be constructed and manipulated very easily:
 ///
 /// \code
 /// sf::Color color(255, 0, 0); // red
@@ -764,13 +767,13 @@ inline constexpr Color Color::VeryDarkGray{32u, 32u, 32u};
 /// color.b = 128;              // make it dark blue
 /// \endcode
 ///
-/// The fourth component of colors, named "alpha", represents
-/// the opacity of the color. A color with an alpha value of
-/// 255 will be fully opaque, while an alpha value of 0 will
-/// make a color fully transparent, whatever the value of the
-/// other components is.
+/// The fourth component, "alpha", represents opacity. A color with
+/// an alpha value of 255 is fully opaque, while an alpha value of 0
+/// is fully transparent, regardless of the other components.
 ///
-/// The most common colors are already defined as static variables:
+/// An extensive palette of common colors is provided as static
+/// constants, including grayscale, primary, secondary, and tertiary
+/// colors with `Light`, `Dark`, and `VeryDark` variants:
 /// \code
 /// auto black       = sf::Color::Black;
 /// auto white       = sf::Color::White;
@@ -781,9 +784,25 @@ inline constexpr Color Color::VeryDarkGray{32u, 32u, 32u};
 /// auto magenta     = sf::Color::Magenta;
 /// auto cyan        = sf::Color::Cyan;
 /// auto transparent = sf::Color::Transparent;
+/// auto darkOrange  = sf::Color::DarkOrange;
+/// auto lightMint   = sf::Color::LightMint;
 /// \endcode
 ///
-/// Colors can also be added and modulated (multiplied) using the
-/// overloaded operators + and *.
+/// Colors can be added, subtracted, and modulated (multiplied)
+/// component-wise using the overloaded operators `+`, `-`, and `*`,
+/// with results clamped to `[0, 255]`.
+///
+/// `sf::Color` also provides a number of convenience factory and
+/// transformation helpers:
+/// \li `fromRGBA` / `toInteger` -- convert from/to a packed 32-bit RGBA value.
+/// \li `fromHSLA` / `toHSL` -- convert from/to the HSL (hue, saturation, lightness) model.
+/// \li `withRed`, `withGreen`, `withBlue`, `withAlpha` -- produce a copy
+///     with a single component replaced.
+/// \li `withRotatedHue`, `withSaturation`, `withLightness` -- produce a
+///     copy with HSL adjustments applied.
+/// \li `whiteWithAlpha` / `blackWithAlpha` -- produce a fully white/black color
+///     with the requested alpha.
+/// \li `fromVec4` / `toVec3` / `toVec4` -- convert from/to floating-point
+///     vector types whose components are in `[0, 1]`.
 ///
 ////////////////////////////////////////////////////////////

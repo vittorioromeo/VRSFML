@@ -20,6 +20,18 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
+/// \brief Non-owning view over a contiguous sequence of `char`
+///
+/// Lightweight `std::string_view` replacement that avoids the heavy
+/// `<string_view>` standard header. Provides the usual interface:
+/// length-aware comparisons, `find*` family, prefix/suffix removal,
+/// substring extraction, and friend operators against C strings.
+///
+/// `StringView` does not own its data; the caller must ensure the
+/// referenced character buffer outlives the view. The implicit
+/// constructor from `nullptr` is deleted to catch accidental misuse.
+///
+////////////////////////////////////////////////////////////
 class StringView
 {
 private:

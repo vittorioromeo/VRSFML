@@ -27,32 +27,47 @@ class Texture;
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief Graphical text that can be drawn to a render target
+/// \brief High-level drawable text backed by `sf::Font`
 ///
-/// Uses legacy `sf::Font` for lazy glyph rasterization.
+/// `sf::Text` couples a `sf::Font` with a `TextData` payload
+/// (string, character size, style, colors, transform, ...) and
+/// produces vertex data on demand. Glyphs are rasterized lazily
+/// by the underlying font as new characters or sizes are
+/// requested.
+///
+/// For very high-throughput rendering of mostly-static strings,
+/// consider `sf::GlyphMappedText` instead, which precomputes the
+/// glyph layout once and replays it on every draw.
 ///
 ////////////////////////////////////////////////////////////
 class SFML_GRAPHICS_API Text : public TextBase<Text>
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Initialization data for `sf::Text`
+    ///
+    /// Alias for `sf::TextData`. Use designated initializers to
+    /// configure only the fields you care about (the rest fall
+    /// back to sensible defaults).
     ///
     ////////////////////////////////////////////////////////////
     using Data = TextData;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct the text from a string, font and size
+    /// \brief Construct a text from a font and a `Data` initializer
     ///
-    /// Note that if the used font is a bitmap font, it is not
-    /// scalable, thus not all requested sizes will be available
-    /// to use. This needs to be taken into consideration when
-    /// setting the character size. If you need to display text
-    /// of a certain size, make sure the corresponding bitmap
-    /// font that supports that size is used.
+    /// `font` is referenced (not copied) and must outlive the
+    /// text. In debug builds with
+    /// `SFML_ENABLE_LIFETIME_TRACKING`, the lifetime relationship
+    /// is enforced automatically.
     ///
-    /// \param font Font to use
-    /// \param data Data of the text
+    /// Note that bitmap fonts are not scalable: they only contain
+    /// a fixed set of pre-rendered sizes. If `data.characterSize`
+    /// does not match a size the bitmap font supports, the result
+    /// may be empty or look incorrect.
+    ///
+    /// \param font Font to use (referenced for the lifetime of the text)
+    /// \param data Initial text properties
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Text(const Font& font, const Data& data);
@@ -187,13 +202,26 @@ public:
     [[nodiscard]] bool isBold() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Get the font this text was created with
+    ///
+    /// Equivalent to `getFont` -- present so that `Text` and
+    /// `GlyphMappedText` can be used interchangeably from
+    /// templated code that needs the underlying font.
+    ///
+    /// \return Reference to the source font
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const Font& getFontSource() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Get the glyph atlas texture used by this text
+    ///
+    /// Returns the texture into which the underlying `sf::Font`
+    /// rasterizes glyphs. Useful for drawing custom batches that
+    /// share the same atlas as the text, or for debugging by
+    /// dumping the atlas to disk.
+    ///
+    /// \return Reference to the glyph atlas texture
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const Texture& getTexture() const;
@@ -276,19 +304,22 @@ private:
 ///
 /// Usage example:
 /// \code
-/// // Open a font
+/// // Open a font.
 /// const auto font = sf::Font::openFromFile("arial.ttf").value();
 ///
-/// // Create a text
-/// sf::Text text(font, "hello");
-/// text.setCharacterSize(30);
-/// text.setBold(true);
-/// text.setFillColor(sf::Color::Red);
+/// // Create a text using designated initializers.
+/// sf::Text text{font, {
+///     .string        = "hello",
+///     .characterSize = 30u,
+///     .fillColor     = sf::Color::Red,
+///     .bold          = true,
+/// }};
 ///
-/// // Draw it
+/// // Draw it.
 /// window.draw(text);
 /// \endcode
 ///
-/// \see `sf::Font`, `sf::Transformable`
+/// \see `sf::Font`, `sf::Transformable`, `sf::TextData`,
+///      `sf::GlyphMappedText`
 ///
 ////////////////////////////////////////////////////////////

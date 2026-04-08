@@ -10,6 +10,13 @@
 
 
 ////////////////////////////////////////////////////////////
+/// \brief Define `&`, `|`, `^`, `~`, `&=`, `|=`, and `!` for a scoped enum
+///
+/// Generates the standard set of bitwise operators that operate on the
+/// enum's underlying type and return values back as the enum. Useful
+/// for flag-style scoped enums (`enum class Flags : unsigned int`).
+///
+////////////////////////////////////////////////////////////
 #define SFML_BASE_DEFINE_ENUM_CLASS_BITWISE_OPS(enumType)                                                                        \
                                                                                                                                  \
     [[nodiscard, maybe_unused, gnu::always_inline, gnu::const]] inline constexpr bool operator!(const enumType lhs) noexcept     \

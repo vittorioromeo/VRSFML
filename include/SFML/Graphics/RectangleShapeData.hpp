@@ -32,11 +32,20 @@ struct [[nodiscard]] SFML_GRAPHICS_API RectangleShapeData
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::RectangleShapeData
+/// \struct sf::RectangleShapeData
 /// \ingroup graphics
 ///
-/// TODO P1: docs
+/// `sf::RectangleShapeData` is the plain-data description of an
+/// axis-aligned rectangle. It holds the rectangle's `size` together
+/// with the standard transformable members (`position`, `scale`,
+/// `origin`, `rotation`) and the standard shape appearance members
+/// (`textureRect`, `outlineTextureRect`, `fillColor`,
+/// `outlineColor`, `outlineThickness`, `miterLimit`).
 ///
-/// \see `sf::Shape`, `sf::RectangleShape`
+/// Use it as input for `sf::ShapeUtils`, `sf::RectangleShape`, or a
+/// drawable batch when you want to render a rectangle without
+/// instantiating a full shape object.
+///
+/// \see `sf::Shape`, `sf::RectangleShape`, `sf::ShapeUtils`
 ///
 ////////////////////////////////////////////////////////////

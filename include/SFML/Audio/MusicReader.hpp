@@ -34,6 +34,27 @@ class Time;
 namespace sf
 {
 ////////////////////////////////////////////////////////////
+/// \brief Streamed sound source intended to back one or more `sf::Music` instances
+///
+/// `MusicReader` owns a thread-safe wrapper around an
+/// `sf::InputSoundFile` and exposes the metadata required by
+/// `sf::Music` (sample rate, channel count, channel map,
+/// duration), plus a single `seekAndRead` operation used by
+/// the streaming thread to pull new chunks.
+///
+/// Splitting the reader from the playback object means that:
+///   - the underlying file/stream/memory can outlive any
+///     individual `sf::Music` instance,
+///   - and the same source can be reused (one at a time) by
+///     several `sf::Music` instances over its lifetime.
+///
+/// Use the `openFromFile`, `openFromMemory`, or
+/// `openFromStream` factories to construct a reader, then pass
+/// it to `sf::Music`.
+///
+/// \see `sf::Music`, `sf::InputSoundFile`
+///
+////////////////////////////////////////////////////////////
 class SFML_AUDIO_API MusicReader
 {
 public:
@@ -186,16 +207,32 @@ public:
     [[nodiscard]] base::U64 getSampleCount() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Stores seek/read information
+    /// \brief Result of a combined `seekAndRead` operation
     ///
     ////////////////////////////////////////////////////////////
     struct [[nodiscard]] SeekAndReadResult
     {
-        base::U64 sampleOffset; //!< Sample offset after seeking
-        base::U64 samplesRead;  //!< Number of samples read
+        base::U64 sampleOffset; //!< Sample offset of the underlying file after the seek
+        base::U64 samplesRead;  //!< Number of samples actually read into the output buffer
     };
 
     ////////////////////////////////////////////////////////////
+    /// \brief Atomically seek to a sample offset and read a chunk of samples
+    ///
+    /// This is the operation used by `sf::Music`'s streaming
+    /// thread to pull new audio chunks from the reader. It is
+    /// internally synchronized so that multiple `sf::Music`
+    /// instances cannot interleave their reads against the
+    /// shared underlying `InputSoundFile`.
+    ///
+    /// Samples are written as interleaved 16-bit signed PCM.
+    ///
+    /// \param sampleOffset Sample offset to seek to before reading
+    /// \param samples      Pointer to the output buffer to fill
+    /// \param maxCount     Maximum number of samples to read
+    ///
+    /// \return Post-seek sample offset and the number of samples actually read
+    ///
     /// \see `InputSoundFile::seek`, `InputSoundFile::read`
     ///
     ////////////////////////////////////////////////////////////
@@ -241,6 +278,25 @@ private:
 /// \class sf::MusicReader
 /// \ingroup audio
 ///
-/// \see `sf::Music`
+/// `sf::MusicReader` is the streamed counterpart to
+/// `sf::SoundBuffer`: it owns the long-lived audio source
+/// (file, in-memory blob, or custom stream) and exposes the
+/// metadata and chunked-read interface that `sf::Music` needs
+/// to play it back without loading it all into memory.
+///
+/// Because the music is streamed on demand, the underlying
+/// resource (path, memory buffer, or stream) must remain
+/// valid for the entire lifetime of the reader, and the
+/// reader itself must outlive every `sf::Music` constructed
+/// from it.
+///
+/// Usage example:
+/// \code
+/// auto reader = sf::MusicReader::openFromFile("music.ogg").value();
+/// sf::Music   music{playbackDevice, reader};
+/// music.play();
+/// \endcode
+///
+/// \see `sf::Music`, `sf::InputSoundFile`
 ///
 ////////////////////////////////////////////////////////////

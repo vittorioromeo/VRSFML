@@ -25,27 +25,36 @@ class VAOHandle;
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Parameters for `sf::RenderTarget::drawInstancedIndexedVertices`
+///
+/// Bundles the data needed to issue an instanced *and* indexed draw
+/// call: a vertex pool, an index list defining a single instance,
+/// the instance count, and a `sf::VAOHandle` carrying the per-instance
+/// attribute streams.
 ///
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] DrawInstancedIndexedVerticesSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    VAOHandle&                  vaoHandle;
-    base::Span<const Vertex>    vertexSpan;
-    base::Span<const IndexType> indexSpan;
-    base::SizeT                 instanceCount;
-    PrimitiveType               primitiveType;
+    VAOHandle&                  vaoHandle;     //!< VAO holding per-instance attribute streams
+    base::Span<const Vertex>    vertexSpan;    //!< Pool of vertices referenced by `indexSpan`
+    base::Span<const IndexType> indexSpan;     //!< Indices defining the primitives of a single instance
+    base::SizeT                 instanceCount; //!< Number of instances to draw
+    PrimitiveType               primitiveType; //!< How to interpret the indexed primitives of a single instance
 };
 
 } // namespace sf
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::RenderTarget
+/// \struct sf::DrawInstancedIndexedVerticesSettings
 /// \ingroup graphics
 ///
-/// TODO P1: docs
+/// `sf::DrawInstancedIndexedVerticesSettings` combines indexing
+/// (vertex reuse) with instancing (geometry reuse). The same indexed
+/// mesh is replayed `instanceCount` times in a single draw call,
+/// with per-instance attributes pulled from `vaoHandle`.
 ///
-/// \see TODO P1: docs
+/// \see `sf::DrawIndexedVerticesSettings`, `sf::DrawInstancedVerticesSettings`,
+///      `sf::VAOHandle`, `sf::InstanceAttributeBinder`, `sf::RenderTarget`
 ///
 ////////////////////////////////////////////////////////////

@@ -46,9 +46,16 @@ public:
     using Settings = WindowSettings;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct a new window
+    /// \brief Create a new render window
     ///
-    /// Creates the render window with the specified \a windowSettings.
+    /// Creates the render window described by `windowSettings`
+    /// (size, title, style, context settings, ...). The OS window
+    /// is opened immediately and an associated OpenGL context is
+    /// created and made current.
+    ///
+    /// \param windowSettings Window creation parameters
+    ///
+    /// \return Render window on success, `base::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<RenderWindow> create(const Settings& windowSettings);
@@ -97,7 +104,10 @@ public:
     RenderWindow& operator=(RenderWindow&&) noexcept;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Destructor
+    ///
+    /// Closes the underlying OS window and releases the
+    /// associated OpenGL context.
     ///
     ////////////////////////////////////////////////////////////
     ~RenderWindow() override;
@@ -154,7 +164,15 @@ public:
     [[nodiscard]] bool setActive(bool active = true) override;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Display the rendered frame on screen
+    ///
+    /// Flushes any pending auto-batched draw calls, swaps the
+    /// front and back buffers of the underlying window, and
+    /// returns statistics describing the work that the GPU just
+    /// performed for this frame. Call this exactly once at the
+    /// end of every frame.
+    ///
+    /// \return Per-frame draw call and vertex statistics
     ///
     ////////////////////////////////////////////////////////////
     RenderTarget::DrawStatistics display();
@@ -193,79 +211,80 @@ private:
 /// On top of that, `sf::RenderWindow` adds more features related to
 /// 2D drawing with the graphics module (see its base class
 /// `sf::RenderTarget` for more details).
-/// Here is a typical rendering and event loop with a `sf::RenderWindow`:
+/// Here is a typical rendering and event loop with a
+/// `sf::RenderWindow`:
 ///
 /// \code
-/// // Declare and create a new render-window
-/// auto window = sf::RenderWindow::create({.size{800u, 600u}, .title = "SFML Window"}).value();
+/// // Declare and create a new render window.
+/// auto window = sf::RenderWindow::create({.size = {800u, 600u}, .title = "SFML Window"}).value();
 ///
-/// // Limit the framerate to 60 frames per second (this step is optional)
-/// window.setFramerateLimit(60);
+/// // Limit the framerate to 60 frames per second (optional).
+/// window.setFramerateLimit(60u);
 ///
-/// // The main loop - ends as soon as the window is closed
+/// // The main loop -- ends as soon as the window is closed.
 /// while (true)
 /// {
-///    // Event processing
-///    while (const sf::base::Optional event = window.pollEvent())
-///    {
-///        // Request for closing the window
-///        if (event->is<sf::Event::Closed>())
-///            return 0; // break out of both loops
-///    }
+///     // Event processing.
+///     while (const sf::base::Optional event = window.pollEvent())
+///     {
+///         // Request for closing the window.
+///         if (event->is<sf::Event::Closed>())
+///             return 0; // break out of both loops
+///     }
 ///
-///    // Clear the whole window before rendering a new frame
-///    window.clear();
+///     // Clear the whole window before rendering a new frame.
+///     window.clear();
 ///
-///    // Draw some graphical entities
-///    window.draw(sprite);
-///    window.draw(circle);
-///    window.draw(text);
+///     // Draw some graphical entities.
+///     window.draw(sprite, texture); // texture passed at draw time in VRSFML
+///     window.draw(circle);
+///     window.draw(text);
 ///
-///    // End the current frame and display its contents on screen
-///    window.display();
+///     // End the current frame and display its contents on screen.
+///     window.display();
 /// }
 /// \endcode
 ///
-/// Like `sf::Window`, `sf::RenderWindow` is still able to render direct
-/// OpenGL stuff. It is even possible to mix together OpenGL calls
-/// and regular SFML drawing commands.
+/// Like `sf::Window`, `sf::RenderWindow` is still able to render
+/// direct OpenGL geometry. It is even possible to mix together
+/// custom OpenGL calls (using OpenGL ES 3.1 only -- the legacy
+/// fixed-function pipeline is not available in VRSFML) and
+/// regular VRSFML drawing commands. When doing so, call
+/// `resetGLStates` between the two so that VRSFML can re-establish
+/// the OpenGL state it expects.
 ///
 /// \code
-/// // Create the render window
-/// auto window = sf::RenderWindow::create({.size{800u, 600u}, .title = "SFML OpenGL"}).value();
+/// // Create the render window.
+/// auto window = sf::RenderWindow::create({.size = {800u, 600u}, .title = "SFML OpenGL"}).value();
 ///
-/// // Create a sprite and a text to display
-/// const auto texture = sf::Texture::loadFromFile("circle.png").value();
-/// sf::Sprite sprite(texture);
-/// const auto font = sf::Font::openFromFile("arial.ttf").value();
-/// sf::Text text(font);
-/// ...
+/// // Load some assets to display.
+/// const auto       texture = sf::Texture::loadFromFile("circle.png").value();
+/// const sf::Sprite sprite{.textureRect = texture.getRect()};
 ///
-/// // Perform OpenGL initializations
-/// glMatrixMode(GL_PROJECTION);
-/// ...
+/// const auto     font = sf::Font::openFromFile("arial.ttf").value();
+/// const sf::Text text{font, {.string = "Hello", .characterSize = 32u}};
 ///
-/// // Start the rendering loop
+/// // Perform OpenGL initializations (modern OpenGL only).
+/// // ...
+///
+/// // Start the rendering loop.
 /// while (true)
 /// {
 ///     // Process events
-///     ...
+///     // ...
 ///
-///     // Draw a background sprite
+///     // Draw a background sprite.
 ///     window.resetGLStates();
 ///     window.draw(sprite, texture);
 ///
-///     // Draw a 3D object using OpenGL
-///     glBegin(GL_TRIANGLES);
-///         glVertex3f(...);
-///         ...
-///     glEnd();
+///     // Draw raw OpenGL ES 3.1 geometry here.
+///     // ...
 ///
-///     // Draw text on top of the 3D object
+///     // Draw text on top of the OpenGL geometry.
 ///     window.resetGLStates();
 ///     window.draw(text);
 ///
-///     // Finally, display the rendered frame on screen
+///     // Finally, display the rendered frame on screen.
 ///     window.display();
 /// }
 /// \endcode

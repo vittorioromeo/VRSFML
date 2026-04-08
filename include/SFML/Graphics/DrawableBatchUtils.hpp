@@ -228,3 +228,30 @@ namespace sf::DrawableBatchUtils
 }
 
 } // namespace sf::DrawableBatchUtils
+
+
+////////////////////////////////////////////////////////////
+/// \namespace sf::DrawableBatchUtils
+/// \ingroup graphics
+///
+/// `sf::DrawableBatchUtils` is a collection of low-level
+/// `inline constexpr` helpers used by the drawable batching
+/// implementation to append index and vertex data into raw
+/// arrays. They are intended for use by `sf::CPUDrawableBatch`,
+/// `sf::PersistentGPUDrawableBatch`, and other custom batchers
+/// that need maximum throughput when generating quad, triangle,
+/// triangle-fan, or triangle-strip primitives.
+///
+/// Each helper takes a writable index/vertex pointer **by
+/// reference** and advances it past the data it just wrote, so
+/// they can be chained together cheaply inside a tight loop.
+///
+/// Most application code does not need this header; it is
+/// exposed for advanced users that build their own batching
+/// pipelines on top of VRSFML.
+///
+/// \see `sf::DrawableBatch`, `sf::CPUDrawableBatch`,
+///      `sf::PersistentGPUDrawableBatch`, `sf::Vertex`,
+///      `sf::IndexType`
+///
+////////////////////////////////////////////////////////////

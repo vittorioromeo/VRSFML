@@ -45,7 +45,15 @@ template <typename T>
 
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1
+/// \brief Append a numeric value's string representation to an existing `String`
+///
+/// Avoids the temporary allocation that `str += toString(value)` would
+/// otherwise require. Asserts in debug builds if the internal buffer
+/// is somehow too small (which should not happen for any supported
+/// integral or floating-point type).
+///
+/// \param str   String to append to
+/// \param value Numeric value to convert and append
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>

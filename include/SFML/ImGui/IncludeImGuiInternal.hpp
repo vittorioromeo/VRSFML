@@ -4,6 +4,17 @@
 
 
 ////////////////////////////////////////////////////////////
+// Internal Dear ImGui include shim
+//
+// Pulls in `<imgui_internal.h>` (which itself depends on
+// `<imgui.h>`) after applying VRSFML's `IMGUI_USER_CONFIG`. Use
+// this header only when you genuinely need access to Dear ImGui's
+// unstable internal API; prefer `IncludeImGui.hpp` for the
+// public API.
+////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/ImGui/IncludeImGui.hpp" // IWYU pragma: keep
