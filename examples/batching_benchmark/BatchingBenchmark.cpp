@@ -54,7 +54,7 @@ int main()
                           .size      = windowSize.toVec2u(),
                           .title     = "Vittorio's SFML fork: batching benchmark",
                           .resizable = false,
-                          .vsync     = true,
+                          .vsync     = false,
                       })
                       .value();
 

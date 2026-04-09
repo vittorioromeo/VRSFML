@@ -141,13 +141,12 @@ int main()
             return;
         }
 
-        entities.clear();
         entities.reserve(n);
 
         char                  labelBuffer[64]{};
         constexpr const char* names[]{"Elephant", "Giraffe", "Monkey", "Pig", "Rabbit", "Snake"};
 
-        for (sf::base::SizeT i = 0u; i < n; ++i)
+        for (sf::base::SizeT i = entities.size(); i < n; ++i)
         {
             const sf::base::SizeT type        = i % 6u;
             const sf::Rect2f&     textureRect = spriteTextureRects[type];
@@ -219,7 +218,7 @@ int main()
     bool            drawShapes               = true;
     bool            multithreadedUpdate      = false;
     bool            multithreadedDraw        = false;
-    bool            useWithRenderStatesAPI   = false;
+    bool            useWithRenderStatesAPI   = true;
     auto            nWorkers                 = static_cast<sf::base::U64>(nMaxWorkers);
     int             numEntities              = 500;
     sf::base::SizeT drawnVertices            = 0u;
