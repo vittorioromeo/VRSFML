@@ -87,10 +87,11 @@ struct ParticleInstanceData // NOLINT(cppcoreguidelines-pro-type-member-init)
 ////////////////////////////////////////////////////////////
 constexpr const char* instancedVertexShader = R"glsl(
 
-layout(location = 0) uniform mat4 sf_u_mvpMatrix;
-layout(location = 1) uniform sampler2D sf_u_texture;
-layout(location = 2) uniform vec4 u_texRect;
-layout(location = 3) uniform vec2 u_invTexSize;
+layout(location = 0) uniform vec3 sf_u_mvpRow0;
+layout(location = 1) uniform vec3 sf_u_mvpRow1;
+layout(location = 2) uniform sampler2D sf_u_texture;
+layout(location = 4) uniform vec4 u_texRect;
+layout(location = 5) uniform vec2 u_invTexSize;
 
 layout(location = 0) in vec2 sf_a_position;
 layout(location = 1) in vec4 sf_a_color; // Unused but part of `sf::Vertex` struct
@@ -117,7 +118,7 @@ void main()
     float y = local.x * s + local.y * c;
     vec2 worldPos = instance_position + instance_scale * vec2(x, y);
 
-    gl_Position = sf_u_mvpMatrix * vec4(worldPos, 0.0, 1.0);
+    gl_Position = vec4(dot(sf_u_mvpRow0, vec3(worldPos, 1.0)), dot(sf_u_mvpRow1, vec3(worldPos, 1.0)), 0.0, 1.0);
 
     sf_v_color = vec4(1.0, 1.0, 1.0, instance_opacity);
 

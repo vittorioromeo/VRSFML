@@ -302,15 +302,17 @@ sf::TcpSocket socket(/* isBlocking */ true);
 
 ## Shader GLSL API Is Different
 
-- Check `SFML/Graphics/GraphicsContext.cpp` to see the default shaders.
+- Check `SFML/Graphics/DefaultShader.hpp` to see the default shaders.
 
 For your convenience:
 
 ```glsl
 // DEFAULT VERTEX SHADER
 
-layout(location = 0) uniform mat4 sf_u_mvpMatrix;
-layout(location = 4) uniform vec2 sf_u_invTextureSize;
+layout(location = 0) uniform vec3 sf_u_mvpRow0;
+layout(location = 1) uniform vec3 sf_u_mvpRow1;
+layout(location = 2) uniform sampler2D sf_u_texture;
+layout(location = 3) uniform vec2 sf_u_invTextureSize;
 
 layout(location = 0) in vec2 sf_a_position;
 layout(location = 1) in vec4 sf_a_color;
@@ -321,7 +323,9 @@ out vec2 sf_v_texCoord;
 
 void main()
 {
-    gl_Position = sf_u_mvpMatrix * vec4(sf_a_position, 0.0, 1.0);
+    vec3 pos = vec3(sf_a_position, 1.0);
+
+    gl_Position = vec4(dot(sf_u_mvpRow0, pos), dot(sf_u_mvpRow1, pos), 0.0, 1.0);
     sf_v_color = sf_a_color;
     sf_v_texCoord = sf_a_texCoord * sf_u_invTextureSize;
 }
@@ -330,7 +334,7 @@ void main()
 ```glsl
 // DEFAULT FRAGMENT SHADER
 
-layout(location = 1) uniform sampler2D sf_u_texture;
+layout(location = 2) uniform sampler2D sf_u_texture;
 
 in vec4 sf_v_color;
 in vec2 sf_v_texCoord;
@@ -341,6 +345,43 @@ void main()
 {
     sf_fragColor = sf_v_color * texture(sf_u_texture, sf_v_texCoord);
 }
+```
+
+### Built-in uniform locations
+
+| Location | Name                  | Type        | Stage    | Description                             |
+|----------|-----------------------|-------------|----------|-----------------------------------------|
+| 0        | `sf_u_mvpRow0`        | `vec3`      | Vertex   | First row of 2D MVP: `(a00, a01, a02)`  |
+| 1        | `sf_u_mvpRow1`        | `vec3`      | Vertex   | Second row of 2D MVP: `(a10, a11, a12)` |
+| 2        | `sf_u_texture`        | `sampler2D` | Fragment | Texture sampler (unit 0)                |
+| 3        | `sf_u_invTextureSize` | `vec2`      | Vertex   | `(1/texWidth, 1/texHeight)`             |
+
+### Reconstructing `mat4` from `sf_u_mvpRow0`/`sf_u_mvpRow1`
+
+VRSFML uploads only the 6 meaningful values of the 2D affine MVP transform instead of a full `mat4`. If your custom shader needs the full matrix (e.g., for a geometry shader), you can reconstruct it:
+
+```glsl
+layout(location = 0) uniform vec3 sf_u_mvpRow0;
+layout(location = 1) uniform vec3 sf_u_mvpRow1;
+
+// Reconstruct the equivalent mat4 (column-major)
+mat4 sf_u_mvpMatrix = mat4(
+    sf_u_mvpRow0.x, sf_u_mvpRow1.x, 0.0, 0.0,  // column 0
+    sf_u_mvpRow0.y, sf_u_mvpRow1.y, 0.0, 0.0,  // column 1
+    0.0,            0.0,            1.0, 0.0,  // column 2
+    sf_u_mvpRow0.z, sf_u_mvpRow1.z, 0.0, 1.0   // column 3
+);
+
+// Then use it as before:
+gl_Position = sf_u_mvpMatrix * vec4(sf_a_position, 0.0, 1.0);
+```
+
+For most 2D shaders, you can use the more efficient dot-product form directly:
+
+```glsl
+gl_Position = vec4(dot(sf_u_mvpRow0, vec3(position, 1.0)),
+                   dot(sf_u_mvpRow1, vec3(position, 1.0)),
+                   0.0, 1.0);
 ```
 
 
@@ -532,31 +573,31 @@ while (true)
 
 - The math vector types have been shortened to align with standard graphics terminology and for conciseness.
 
-| Upstream SFML      | VRSFML        |
-|--------------------|---------------|
-| `sf::Vector2i`     | `sf::Vec2i`   |
-| `sf::Vector2u`     | `sf::Vec2u`   |
-| `sf::Vector2f`     | `sf::Vec2f`   |
-| `sf::Vector3i`     | `sf::Vec3i`   |
-| `sf::Vector3u`     | `sf::Vec3u`   |
-| `sf::Vector3f`     | `sf::Vec3f`   |
-| `sf::IntRect`      | `sf::Rect2i`  |
-| `sf::FloatRect`    | `sf::Rect2f`  |
+| Upstream SFML   | VRSFML       |
+|-----------------|--------------|
+| `sf::Vector2i`  | `sf::Vec2i`  |
+| `sf::Vector2u`  | `sf::Vec2u`  |
+| `sf::Vector2f`  | `sf::Vec2f`  |
+| `sf::Vector3i`  | `sf::Vec3i`  |
+| `sf::Vector3u`  | `sf::Vec3u`  |
+| `sf::Vector3f`  | `sf::Vec3f`  |
+| `sf::IntRect`   | `sf::Rect2i` |
+| `sf::FloatRect` | `sf::Rect2f` |
 
 - Additional type aliases exist: `sf::Vec2uz`, `sf::Vec3uz` (for `base::SizeT` components), `sf::Rect2u`, `sf::Rect2uz`.
 
 - Fixed-width integer types live in `sf::base`:
 
-| Upstream SFML  | VRSFML         |
-|----------------|----------------|
-| `sf::Int8`     | `sf::base::I8` |
-| `sf::Uint8`    | `sf::base::U8` |
-| `sf::Int16`    | `sf::base::I16`|
-| `sf::Uint16`   | `sf::base::U16`|
-| `sf::Int32`    | `sf::base::I32`|
-| `sf::Uint32`   | `sf::base::U32`|
-| `sf::Int64`    | `sf::base::I64`|
-| `sf::Uint64`   | `sf::base::U64`|
+| Upstream SFML | VRSFML          |
+|---------------|-----------------|
+| `sf::Int8`    | `sf::base::I8`  |
+| `sf::Uint8`   | `sf::base::U8`  |
+| `sf::Int16`   | `sf::base::I16` |
+| `sf::Uint16`  | `sf::base::U16` |
+| `sf::Int32`   | `sf::base::I32` |
+| `sf::Uint32`  | `sf::base::U32` |
+| `sf::Int64`   | `sf::base::I64` |
+| `sf::Uint64`  | `sf::base::U64` |
 
 
 
@@ -904,16 +945,16 @@ sf::Text text(font, {.string = "Hello",
 
 - VRSFML adds several new shape types beyond the original circle, rectangle, and convex shapes:
 
-| Shape                         | Data Struct                    |
-|-------------------------------|--------------------------------|
-| Ellipse                       | `sf::EllipseShapeData`         |
-| Ring (annulus)                | `sf::RingShapeData`            |
-| Pie slice                     | `sf::PieSliceShapeData`        |
-| Ring pie slice                | `sf::RingPieSliceShapeData`    |
-| Rounded rectangle             | `sf::RoundedRectangleShapeData`|
-| Star                          | `sf::StarShapeData`            |
-| Arrow                         | `sf::ArrowShapeData`           |
-| Curved arrow                  | `sf::CurvedArrowShapeData`     |
+| Shape             | Data Struct                     |
+|-------------------|---------------------------------|
+| Ellipse           | `sf::EllipseShapeData`          |
+| Ring (annulus)    | `sf::RingShapeData`             |
+| Pie slice         | `sf::PieSliceShapeData`         |
+| Ring pie slice    | `sf::RingPieSliceShapeData`     |
+| Rounded rectangle | `sf::RoundedRectangleShapeData` |
+| Star              | `sf::StarShapeData`             |
+| Arrow             | `sf::ArrowShapeData`            |
+| Curved arrow      | `sf::CurvedArrowShapeData`      |
 
 - All shapes follow the designated-initializer aggregate pattern for construction.
 

@@ -1,9 +1,10 @@
-layout(location = 0) uniform mat4 sf_u_mvpMatrix;
-layout(location = 4) uniform vec2 sf_u_invTextureSize;
+layout(location = 0) uniform vec3 sf_u_mvpRow0;
+layout(location = 1) uniform vec3 sf_u_mvpRow1;
+layout(location = 3) uniform vec2 sf_u_invTextureSize;
 
-layout(location = 3) uniform vec2 storm_position;
+layout(location = 4) uniform vec2 storm_position;
 layout(location = 5) uniform float storm_total_radius;
-layout(location = 9) uniform float storm_inner_radius;
+layout(location = 6) uniform float storm_inner_radius;
 
 layout(location = 0) in vec2 sf_a_position;
 layout(location = 1) in vec4 sf_a_color;
@@ -25,7 +26,7 @@ void main()
         newPosition.xy      = storm_position + normalize(offset) * push_distance;
     }
 
-    gl_Position   = sf_u_mvpMatrix * vec4(newPosition, 0.0, 1.0);
+    gl_Position   = vec4(dot(sf_u_mvpRow0, vec3(newPosition, 1.0)), dot(sf_u_mvpRow1, vec3(newPosition, 1.0)), 0.0, 1.0);
     sf_v_texCoord = sf_a_texCoord * sf_u_invTextureSize;
     sf_v_color    = sf_a_color;
 }
