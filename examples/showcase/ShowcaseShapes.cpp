@@ -52,8 +52,7 @@ auto ExampleShapes::applyCommonSettings(const sf::Vec2f currentOffset, auto shap
 ////////////////////////////////////////////////////////////
 sf::VertexSpan ExampleShapes::drawShape(const sf::Vec2f currentOffset, const char* label, const auto& shapeData)
 {
-    auto result = m_deps.rtGame->draw(applyCommonSettings(currentOffset, shapeData),
-                                      {.view = *m_deps.view, .texture = &m_deps.font->getTexture()});
+    auto result = m_deps.rtGame->draw(applyCommonSettings(currentOffset, shapeData), {.view = *m_deps.view});
 
     m_deps.rtGame->draw(*m_deps.font,
                         sf::TextData{
