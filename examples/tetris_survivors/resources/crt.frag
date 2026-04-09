@@ -2,7 +2,7 @@
 // UNIFORMS & INPUTS
 //================================================================================
 
-layout(location = 1) uniform sampler2D sf_u_texture;
+layout(location = 2) uniform sampler2D sf_u_texture;
 
 uniform vec2  u_inputSize;
 uniform float u_time;

@@ -1,5 +1,5 @@
-layout(location = 1) uniform sampler2D sf_u_texture;
-layout(location = 6) uniform float blink_alpha;
+layout(location = 2) uniform sampler2D sf_u_texture;
+layout(location = 7) uniform float blink_alpha;
 
 in vec4 sf_v_color;
 in vec2 sf_v_texCoord;

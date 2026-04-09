@@ -1392,15 +1392,14 @@ void RenderTarget::setupDrawMVP(const Transform& renderStatesTransform, const Tr
     // Update the cached transform
     m_impl->cache.lastRenderStatesTransform = renderStatesTransform;
 
-    // clang-format off
-    const float transformMatrixBuffer[]{trsfm.a00, trsfm.a10, 0.f, 0.f,
-                                        trsfm.a01, trsfm.a11, 0.f, 0.f,
-                                        0.f,       0.f,       1.f, 0.f,
-                                        trsfm.a02, trsfm.a12, 0.f, 1.f};
-    // clang-format on
+    // Upload the 2D affine transform as two vec3 rows:
+    //   row0 = (a00, a01, a02)  ->  gl_Position.x = dot(row0, vec3(pos, 1))
+    //   row1 = (a10, a11, a12)  ->  gl_Position.y = dot(row1, vec3(pos, 1))
+    const float mvpRow0[]{trsfm.a00, trsfm.a01, trsfm.a02};
+    const float mvpRow1[]{trsfm.a10, trsfm.a11, trsfm.a12};
 
-    // Upload uniform data to GPU (hardcoded layout location `0u` for `sf_u_mvpMatrix`)
-    glCheck(glUniformMatrix4fv(/* location */ 0u, /* count */ 1, /* transpose */ GL_FALSE, transformMatrixBuffer));
+    glCheck(glUniform3fv(/* location */ 0u, /* count */ 1, mvpRow0)); // `sf_u_mvpRow0`
+    glCheck(glUniform3fv(/* location */ 1u, /* count */ 1, mvpRow1)); // `sf_u_mvpRow1`
 }
 
 
@@ -1428,11 +1427,11 @@ void RenderTarget::setupDrawTexture(const RenderStates& states, const bool shade
         m_impl->cache.lastTextureId = usedTexture.m_cacheId;
     }
 
-    // Upload inverse texture size when texture or shader changed (hardcoded layout location `4u` for `sf_u_invTextureSize`)
+    // Upload inverse texture size if needed (hardcoded layout location `3u` for `sf_u_invTextureSize`)
     if (mustApplyTexture || shaderChanged)
     {
         const auto invTexSize = 1.f / usedTexture.getSize().toVec2f();
-        glCheck(glUniform2f(/* location */ 4u, invTexSize.x, invTexSize.y));
+        glCheck(glUniform2f(/* location */ 3u, invTexSize.x, invTexSize.y));
     }
 }
 
