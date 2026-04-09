@@ -216,6 +216,7 @@ public:
         m_allocPtr = rhs.m_allocPtr;
         m_allocPtr(objStorage, rhs.objStorage, Operation::MoveConstruct);
 
+        rhs.m_allocPtr(rhs.objStorage, nullptr, Operation::Destroy);
         rhs.m_methodPtr = nullptr;
         rhs.m_allocPtr  = nullptr;
     }
@@ -230,6 +231,7 @@ public:
         destroyIfNeeded();
 
         m_methodPtr = rhs.m_methodPtr;
+        m_allocPtr  = nullptr;
 
         if (rhs.m_allocPtr == nullptr)
         {
@@ -240,6 +242,7 @@ public:
         m_allocPtr = rhs.m_allocPtr;
         m_allocPtr(objStorage, rhs.objStorage, Operation::MoveConstruct);
 
+        rhs.m_allocPtr(rhs.objStorage, nullptr, Operation::Destroy);
         rhs.m_methodPtr = nullptr;
         rhs.m_allocPtr  = nullptr;
 
