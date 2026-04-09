@@ -341,7 +341,7 @@ void SDLWindowImpl::processSDLEvent(const SDL_Event& e)
             pushEvent(Event::MouseWheelScrolled{
                 .wheel    = Mouse::Wheel::Vertical, // TODO P0: horizontal wheel support?
                 .delta    = static_cast<float>(e.wheel.y),
-                .position = {static_cast<int>(e.wheel.x), static_cast<int>(e.wheel.y)},
+                .position = {static_cast<int>(e.wheel.x), static_cast<int>(e.wheel.y)}, // TODO P0: this is wrong
             });
             break;
         }
@@ -550,6 +550,8 @@ base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(WindowSettings windowSettin
                 err(/* multiLine */ true) << "Selected video mode (";
                 streamVideoMode(err(/* multiLine */ true), bestFullscreenMode);
                 err(/* multiLine */ true) << ")";
+
+                // TODO P1: actually switch?
             }
         }
     }
