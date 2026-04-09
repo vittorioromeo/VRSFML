@@ -258,8 +258,14 @@ precision highp float;
 
 
 ////////////////////////////////////////////////////////////
-void printLinesWithNumbers(auto& os, sf::base::StringView text)
+void printLinesWithNumbers(sf::base::StringView text)
 {
+    auto os = sf::priv::err(/* multiLine */ true) << "\n\n";
+
+    constexpr sf::base::StringView lineDirectivePrefix{"#line "};
+    constexpr sf::base::StringView beginIncludePrefix{"// >>> begin included from \""};
+    constexpr sf::base::StringView endIncludePrefix{"// <<< end included from \""};
+
     sf::base::SizeT lineStart  = 0u;
     sf::base::SizeT lineNumber = 1u;
 
@@ -267,17 +273,60 @@ void printLinesWithNumbers(auto& os, sf::base::StringView text)
     {
         // Find the position of the next newline character.
         sf::base::SizeT newlinePos = text.find('\n', lineStart);
-        if (newlinePos == sf::base::StringView::nPos)
+        const bool      lastLine   = (newlinePos == sf::base::StringView::nPos);
+
+        const sf::base::StringView line = lastLine ? text.substrByPosLen(lineStart)
+                                                   : text.substrByPosLen(lineStart, newlinePos - lineStart);
+
+        // Check if this line is a #line directive and update the tracked line number
+        if (line.size() > lineDirectivePrefix.size() &&
+            line.substrByPosLen(0, lineDirectivePrefix.size()) == lineDirectivePrefix)
         {
-            // Print the remaining text as the final line.
-            os << lineNumber << " | " << text.substrByPosLen(lineStart) << "\n";
-            break;
+            // Parse the line number from the directive
+            unsigned int parsedLineNumber = 0;
+
+            for (sf::base::SizeT i = lineDirectivePrefix.size(); i < line.size(); ++i)
+            {
+                const char c = line[i];
+                if (c < '0' || c > '9')
+                    break;
+
+                parsedLineNumber = parsedLineNumber * 10 + static_cast<unsigned int>(c - '0');
+            }
+
+            if (parsedLineNumber > 0)
+                lineNumber = parsedLineNumber;
+        }
+        // Check for include begin/end markers -- print as separator lines
+        else if (line.size() > beginIncludePrefix.size() &&
+                 line.substrByPosLen(0, beginIncludePrefix.size()) == beginIncludePrefix)
+        {
+            os << "      | " << line << "\n";
+        }
+        else if (line.size() > endIncludePrefix.size() && line.substrByPosLen(0, endIncludePrefix.size()) == endIncludePrefix)
+        {
+            os << "      | " << line << "\n";
+        }
+        else
+        {
+            // Right-align line number in a 5-char field
+            if (lineNumber < 10)
+                os << "    ";
+            else if (lineNumber < 100)
+                os << "   ";
+            else if (lineNumber < 1000)
+                os << "  ";
+            else if (lineNumber < 10'000)
+                os << " ";
+
+            os << lineNumber << " | " << line << "\n";
+            ++lineNumber;
         }
 
-        // Print the current line with its line number and pipe separator.
-        os << lineNumber << " | " << text.substrByPosLen(lineStart, newlinePos - lineStart) << "\n";
-        lineStart = newlinePos + 1; // Move past the newline.
-        ++lineNumber;
+        if (lastLine)
+            break;
+
+        lineStart = newlinePos + 1;
     }
 }
 
@@ -873,7 +922,7 @@ base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
             priv::err() << "Failed to compile " << typeStr << " shader:" << '\n'
                         << static_cast<const char*>(log) << "\n\nSource code:\n";
 
-            printLinesWithNumbers(priv::err(/* multiLine */ true), adjustedShaderCode);
+            printLinesWithNumbers(adjustedShaderCode);
 
             glCheck(glDeleteShader(shader));
             glCheck(glDeleteProgram(shaderProgram));
