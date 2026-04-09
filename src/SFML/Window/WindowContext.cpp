@@ -558,14 +558,20 @@ base::Optional<WindowContext> WindowContext::create()
     SFML_BASE_ASSERT(!hasActiveThreadLocalGlContext());
 
     if (!setActiveThreadLocalGlContextToSharedContext())
+    {
+        installedWindowContext.reset();
         return fail("could not enable shared context");
+    }
 
     SFML_BASE_ASSERT(isActiveGlContextSharedContext());
 
     //
     // Try to initialize shared GL context
     if (!wc.sharedGlContext.initialize(wc.sharedGlContext, sharedContextSettings))
+    {
+        installedWindowContext.reset();
         return fail("could not initialize shared context");
+    }
 
     //
     // Load extensions and entrypoints
@@ -582,7 +588,10 @@ base::Optional<WindowContext> WindowContext::create()
     const auto minorVersion = priv::getGLInteger(GL_MINOR_VERSION);
 
     if ((majorVersion < 1) || ((majorVersion == 1) && (minorVersion < 1)))
+    {
+        installedWindowContext.reset();
         return fail("support for OpenGL 1.1 or greater required, ensure hardware acceleration is enabled");
+    }
 #else
     // Need to drain errors here or subsequent assertion will fail on Emscripten, unsure why
     while (glGetError() != GL_NO_ERROR)
