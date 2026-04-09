@@ -1376,7 +1376,7 @@ void RenderTarget::setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& sta
         glCheck(glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE));
 
     // Deal with texture
-    setupDrawTexture(states);
+    setupDrawTexture(states, shaderChanged);
 
     // Update last used render states
     m_lastRenderStates = states;
@@ -1405,7 +1405,7 @@ void RenderTarget::setupDrawMVP(const Transform& renderStatesTransform, const Tr
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::setupDrawTexture(const RenderStates& states)
+void RenderTarget::setupDrawTexture(const RenderStates& states, const bool shaderChanged)
 {
     // Select texture to be used
     const Texture& usedTexture = states.texture != nullptr ? *states.texture
@@ -1421,15 +1421,19 @@ void RenderTarget::setupDrawTexture(const RenderStates& states)
     const bool mustApplyTexture = !m_impl->cache.enable || usedTexture.m_fboAttachment ||
                                   usedTexture.m_cacheId != m_impl->cache.lastTextureId;
 
-    // If not, exit early
-    if (!mustApplyTexture)
-        return;
+    // Bind the texture if needed
+    if (mustApplyTexture)
+    {
+        usedTexture.bind();
+        m_impl->cache.lastTextureId = usedTexture.m_cacheId;
+    }
 
-    // Bind the texture
-    usedTexture.bind();
-
-    // Update basic cache texture stuff
-    m_impl->cache.lastTextureId = usedTexture.m_cacheId;
+    // Upload inverse texture size when texture or shader changed (hardcoded layout location `4u` for `sf_u_invTextureSize`)
+    if (mustApplyTexture || shaderChanged)
+    {
+        const auto invTexSize = 1.f / usedTexture.getSize().toVec2f();
+        glCheck(glUniform2f(/* location */ 4u, invTexSize.x, invTexSize.y));
+    }
 }
 
 

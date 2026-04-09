@@ -310,7 +310,7 @@ For your convenience:
 // DEFAULT VERTEX SHADER
 
 layout(location = 0) uniform mat4 sf_u_mvpMatrix;
-layout(location = 1) uniform sampler2D sf_u_texture;
+layout(location = 4) uniform vec2 sf_u_invTextureSize;
 
 layout(location = 0) in vec2 sf_a_position;
 layout(location = 1) in vec4 sf_a_color;
@@ -323,7 +323,7 @@ void main()
 {
     gl_Position = sf_u_mvpMatrix * vec4(sf_a_position, 0.0, 1.0);
     sf_v_color = sf_a_color;
-    sf_v_texCoord = sf_a_texCoord / vec2(textureSize(sf_u_texture, 0));
+    sf_v_texCoord = sf_a_texCoord * sf_u_invTextureSize;
 }
 ```
 
@@ -645,10 +645,10 @@ music.play();
 
 - `sf::CoordinateType` has been removed. Texture coordinates in `sf::Vertex` are now **always in pixel units** (not normalized).
 
-- The default vertex shader automatically normalizes pixel coordinates to `[0, 1]` via `textureSize()`:
+- The default vertex shader automatically normalizes pixel coordinates to `[0, 1]` via a precomputed inverse texture size uniform:
 
 ```glsl
-sf_v_texCoord = sf_a_texCoord / vec2(textureSize(sf_u_texture, 0));
+sf_v_texCoord = sf_a_texCoord * sf_u_invTextureSize;
 ```
 
 - If you had code that switched between `CoordinateType::Pixels` and `CoordinateType::Normalized`, simply remove those switches -- pixel coordinates are always used now.
