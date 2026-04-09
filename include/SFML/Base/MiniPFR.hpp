@@ -10,11 +10,11 @@
 /// `sf::base::minipfr` is a small fork of Boost.PFR that does not
 /// depend on the C++ standard library. It supports aggregate types of
 /// up to 32 fields and provides:
-/// - `numFields<T>` — number of public data members
-/// - `tieAsTuple(obj)` — bind every field of `obj` into a tuple of refs
-/// - `getField<I>(obj)` — fetch the `I`-th field by index
-/// - `forEachField(obj, fn)` — invoke `fn` on each field in declaration order
-/// - `getFieldName<T, I>()` / `tieAsFieldNamesTuple<T>()` — extract
+/// - `numFields<T>` -- number of public data members
+/// - `tieAsTuple(obj)` -- bind every field of `obj` into a tuple of refs
+/// - `getField<I>(obj)` -- fetch the `I`-th field by index
+/// - `forEachField(obj, fn)` -- invoke `fn` on each field in declaration order
+/// - `getFieldName<T, I>()` / `tieAsFieldNamesTuple<T>()` -- extract
 ///   field names by parsing the compiler's pretty-function string
 ///
 /// Unions and C-style array types are explicitly rejected by the

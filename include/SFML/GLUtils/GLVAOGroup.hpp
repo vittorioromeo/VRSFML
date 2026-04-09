@@ -53,7 +53,7 @@ struct GLVAOGroup
     /// \brief Default constructor
     ///
     /// Creates the underlying VBO and EBO on the shared GL context.
-    /// VAOs are not allocated here — they are created on demand by
+    /// VAOs are not allocated here -- they are created on demand by
     /// `bind()` on the first call from each context.
     ///
     ////////////////////////////////////////////////////////////

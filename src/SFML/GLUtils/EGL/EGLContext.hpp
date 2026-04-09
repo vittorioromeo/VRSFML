@@ -28,7 +28,7 @@ class SDLWindowImpl;
 ////////////////////////////////////////////////////////////
 /// \brief EGL-backed implementation of `GlContext`
 ///
-/// Used on platforms that expose OpenGL ES through EGL — most notably
+/// Used on platforms that expose OpenGL ES through EGL -- most notably
 /// Emscripten and Android. Wraps an `EGLDisplay`, `EGLContext`,
 /// `EGLSurface` and `EGLConfig` quartet, picking the best matching
 /// config based on the requested `ContextSettings`.
@@ -144,7 +144,7 @@ public:
     /// \brief Create the EGL window surface for this context
     ///
     /// Must be called when the underlying native window first becomes
-    /// available — and again on Android whenever the activity is
+    /// available -- and again on Android whenever the activity is
     /// (re)started or the device orientation changes.
     ///
     /// \param windowPtr Type-erased pointer to a platform-specific

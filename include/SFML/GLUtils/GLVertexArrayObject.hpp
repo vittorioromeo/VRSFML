@@ -22,7 +22,7 @@ namespace sf::priv
 ///
 /// Unlike buffer objects, VAOs are container objects whose state is
 /// **not** shareable across OpenGL contexts. As a result, this policy
-/// performs all operations on the currently active context — there is
+/// performs all operations on the currently active context -- there is
 /// no shared-context guard. See `GLVAOGroup` for a helper that handles
 /// per-context VAO management on top of shared VBO/EBO storage.
 ///

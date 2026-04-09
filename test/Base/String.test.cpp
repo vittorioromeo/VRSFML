@@ -5,6 +5,8 @@
 
 #include "SFML/Base/Algorithm/Copy.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Trait/IsCopyAssignable.hpp"
 #include "SFML/Base/Trait/IsCopyConstructible.hpp"
 #include "SFML/Base/Trait/IsMoveAssignable.hpp"
@@ -511,7 +513,7 @@ TEST_CASE("[Base] Base/String.hpp")
         // Sanity: capacity must be >= needed (so append won't reallocate)
         CHECK(s.capacity() == needed);
 
-        // Capture data pointer before append — if append reallocates, this will change.
+        // Capture data pointer before append -- if append reallocates, this will change.
         const char* dataBefore = s.data();
 
         // Perform self-append (source overlaps destination)

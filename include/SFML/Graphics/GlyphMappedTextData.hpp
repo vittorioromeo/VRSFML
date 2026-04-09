@@ -20,7 +20,7 @@ namespace sf
 /// \brief Data required to draw text using a `GlyphMapping`
 ///
 /// Unlike `TextData`, this struct does not include `characterSize`,
-/// `outlineThickness`, or `bold` — those are baked into the
+/// `outlineThickness`, or `bold` -- those are baked into the
 /// `GlyphMapping` and taken from there.
 ///
 ////////////////////////////////////////////////////////////

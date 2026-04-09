@@ -305,7 +305,7 @@ public:
     /// \brief Construct from any value whose decayed type is one of the alternatives
     ///
     /// The alternative is chosen by exact type match (after removing
-    /// cvref) — there is no implicit conversion picking.
+    /// cvref) -- there is no implicit conversion picking.
     ///
     ////////////////////////////////////////////////////////////
     template <typename T>

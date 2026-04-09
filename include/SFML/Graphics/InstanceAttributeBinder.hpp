@@ -64,7 +64,7 @@ struct [[nodiscard]] InstanceAttributeBinder
     /// \brief Bind an external VBO for the next `setup` calls
     ///
     /// Overrides the automatic VBO management for advanced use
-    /// cases. Resets the upload state — `uploadData` must be
+    /// cases. Resets the upload state -- `uploadData` must be
     /// called before any `setup` calls after this.
     ///
     /// \param vboHandle VBO to bind as the active per-instance source

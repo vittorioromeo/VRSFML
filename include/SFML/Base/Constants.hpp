@@ -6,7 +6,7 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-/// \brief π — ratio of a circle's circumference to its diameter
+/// \brief π -- ratio of a circle's circumference to its diameter
 ///
 ////////////////////////////////////////////////////////////
 inline constexpr auto pi = static_cast<float>(3.141592653589793238462643383279502884L);
