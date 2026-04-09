@@ -118,6 +118,13 @@ Path Path::absolute() const
 
 
 ////////////////////////////////////////////////////////////
+Path Path::parent() const
+{
+    return Path{0, asVoidPtr(m_impl->fsPath.parent_path())};
+}
+
+
+////////////////////////////////////////////////////////////
 const Path::value_type* Path::c_str() const
 {
     return m_impl->fsPath.c_str();
@@ -207,6 +214,20 @@ T Path::to() const
         struct unsupported;
         return unsupported{};
     }
+}
+
+
+////////////////////////////////////////////////////////////
+bool Path::operator==(const Path& rhs) const
+{
+    return m_impl->fsPath == rhs.m_impl->fsPath;
+}
+
+
+////////////////////////////////////////////////////////////
+bool Path::operator!=(const Path& rhs) const
+{
+    return m_impl->fsPath != rhs.m_impl->fsPath;
 }
 
 
