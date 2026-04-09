@@ -384,47 +384,35 @@ class [[nodiscard]] Shader::UniformBinder
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Constructor: set up state before uniform is set
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] explicit UniformBinder(unsigned int shaderProgram) :
-        m_currentProgram(static_cast<GLhandle>(castToGlHandle(shaderProgram)))
+    [[nodiscard, gnu::always_inline]] explicit UniformBinder(unsigned int currentProgramInt)
     {
-        SFML_BASE_ASSERT(m_currentProgram != 0);
+        const auto currentProgram = static_cast<GLhandle>(castToGlHandle(currentProgramInt));
+        SFML_BASE_ASSERT(currentProgram != 0);
 
-        // Enable program object
         glCheck(glGetIntegerv(GL_CURRENT_PROGRAM, reinterpret_cast<GLint*>(&m_savedProgram)));
 
-        if (m_currentProgram != m_savedProgram)
-            glCheck(glUseProgram(m_currentProgram));
+        m_needsRestore = (currentProgram != m_savedProgram);
+
+        if (m_needsRestore)
+            glCheck(glUseProgram(currentProgram));
     }
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Destructor: restore state after uniform is set
-    ///
+
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] ~UniformBinder()
     {
-        // Disable program object
-        if (m_currentProgram && (m_currentProgram != m_savedProgram))
+        if (m_needsRestore)
             glCheck(glUseProgram(m_savedProgram));
     }
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Deleted copy constructor
-    ///
-    ////////////////////////////////////////////////////////////
-    UniformBinder(const UniformBinder&) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Deleted copy assignment
-    ///
-    ////////////////////////////////////////////////////////////
+    UniformBinder(const UniformBinder&)            = delete;
     UniformBinder& operator=(const UniformBinder&) = delete;
 
 private:
-    GLhandle m_currentProgram; //!< Handle to the program object of the modified `sf::Shader` instance
-    GLhandle m_savedProgram{}; //!< Handle to the previously active program object
+    GLhandle m_savedProgram{};
+    bool     m_needsRestore{};
 };
 
 
@@ -606,6 +594,7 @@ base::Optional<Shader::UniformLocation> Shader::getUniformLocation(base::StringV
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, float x) const
 {
+    ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
     glCheck(glUniform1f(location.m_value, x));
 }
@@ -614,6 +603,7 @@ void Shader::setUniform(UniformLocation location, float x) const
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, Glsl::Vec2 v) const
 {
+    ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
     glCheck(glUniform2f(location.m_value, v.x, v.y));
 }
@@ -622,6 +612,7 @@ void Shader::setUniform(UniformLocation location, Glsl::Vec2 v) const
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, const Glsl::Vec3& v) const
 {
+    ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
     glCheck(glUniform3f(location.m_value, v.x, v.y, v.z));
 }
@@ -630,6 +621,7 @@ void Shader::setUniform(UniformLocation location, const Glsl::Vec3& v) const
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, const Glsl::Vec4& v) const
 {
+    ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
     glCheck(glUniform4f(location.m_value, v.x, v.y, v.z, v.w));
 }
@@ -638,6 +630,7 @@ void Shader::setUniform(UniformLocation location, const Glsl::Vec4& v) const
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, int x) const
 {
+    ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
     glCheck(glUniform1i(location.m_value, x));
 }
@@ -646,6 +639,7 @@ void Shader::setUniform(UniformLocation location, int x) const
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, Glsl::Ivec2 v) const
 {
+    ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
     glCheck(glUniform2i(location.m_value, v.x, v.y));
 }
@@ -654,6 +648,7 @@ void Shader::setUniform(UniformLocation location, Glsl::Ivec2 v) const
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, const Glsl::Ivec3& v) const
 {
+    ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
     glCheck(glUniform3i(location.m_value, v.x, v.y, v.z));
 }
@@ -662,6 +657,7 @@ void Shader::setUniform(UniformLocation location, const Glsl::Ivec3& v) const
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, const Glsl::Ivec4& v) const
 {
+    ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
     glCheck(glUniform4i(location.m_value, v.x, v.y, v.z, v.w));
 }
@@ -698,6 +694,7 @@ void Shader::setUniform(UniformLocation location, const Glsl::Bvec4& v) const
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, const Glsl::Mat3& matrix) const
 {
+    ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
     glCheck(glUniformMatrix3fv(location.m_value, 1, GL_FALSE, matrix.array));
 }
@@ -706,6 +703,7 @@ void Shader::setUniform(UniformLocation location, const Glsl::Mat3& matrix) cons
 ////////////////////////////////////////////////////////////
 void Shader::setMat4Uniform(UniformLocation location, const float* matrixPtr) const
 {
+    ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
     glCheck(glUniformMatrix4fv(location.m_value, 1, GL_FALSE, matrixPtr));
 }
@@ -721,6 +719,8 @@ void Shader::setUniform(UniformLocation location, const Glsl::Mat4& matrix) cons
 ////////////////////////////////////////////////////////////
 bool Shader::setUniform(UniformLocation location, const Texture& texture) const
 {
+    ++m_uniformGeneration;
+
     SFML_BASE_ASSERT(m_impl->shaderProgram);
     SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
@@ -749,6 +749,8 @@ bool Shader::setUniform(UniformLocation location, const Texture& texture) const
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, CurrentTextureType)
 {
+    ++m_uniformGeneration;
+
     SFML_BASE_ASSERT(m_impl->shaderProgram);
     SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
@@ -760,6 +762,7 @@ void Shader::setUniform(UniformLocation location, CurrentTextureType)
 ////////////////////////////////////////////////////////////
 void Shader::setUniformArray(UniformLocation location, const float* scalarArray, base::SizeT length)
 {
+    ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
     glCheck(glUniform1fv(location.m_value, static_cast<GLsizei>(length), scalarArray));
 }
@@ -768,6 +771,7 @@ void Shader::setUniformArray(UniformLocation location, const float* scalarArray,
 ////////////////////////////////////////////////////////////
 void Shader::setUniformArray(UniformLocation location, const Glsl::Vec2* vecArray, base::SizeT length)
 {
+    ++m_uniformGeneration;
     base::Vector<float> contiguous = flatten(vecArray, length);
     const UniformBinder binder{m_impl->shaderProgram};
     glCheck(glUniform2fv(location.m_value, static_cast<GLsizei>(length), contiguous.data()));
@@ -777,6 +781,7 @@ void Shader::setUniformArray(UniformLocation location, const Glsl::Vec2* vecArra
 ////////////////////////////////////////////////////////////
 void Shader::setUniformArray(UniformLocation location, const Glsl::Vec3* vecArray, base::SizeT length)
 {
+    ++m_uniformGeneration;
     base::Vector<float> contiguous = flatten(vecArray, length);
     const UniformBinder binder{m_impl->shaderProgram};
     glCheck(glUniform3fv(location.m_value, static_cast<GLsizei>(length), contiguous.data()));
@@ -786,6 +791,7 @@ void Shader::setUniformArray(UniformLocation location, const Glsl::Vec3* vecArra
 ////////////////////////////////////////////////////////////
 void Shader::setUniformArray(UniformLocation location, const Glsl::Vec4* vecArray, base::SizeT length)
 {
+    ++m_uniformGeneration;
     base::Vector<float> contiguous = flatten(vecArray, length);
     const UniformBinder binder{m_impl->shaderProgram};
     glCheck(glUniform4fv(location.m_value, static_cast<GLsizei>(length), contiguous.data()));
@@ -795,6 +801,8 @@ void Shader::setUniformArray(UniformLocation location, const Glsl::Vec4* vecArra
 ////////////////////////////////////////////////////////////
 void Shader::setUniformArray(UniformLocation location, const Glsl::Mat3* matrixArray, base::SizeT length)
 {
+    ++m_uniformGeneration;
+
     const base::SizeT matrixSize = 3 * 3;
 
     base::Vector<float> contiguous(matrixSize * length);
@@ -810,6 +818,8 @@ void Shader::setUniformArray(UniformLocation location, const Glsl::Mat3* matrixA
 ////////////////////////////////////////////////////////////
 void Shader::setUniformArray(UniformLocation location, const Glsl::Mat4* matrixArray, base::SizeT length)
 {
+    ++m_uniformGeneration;
+
     const base::SizeT matrixSize = 4 * 4;
 
     base::Vector<float> contiguous(matrixSize * length);
