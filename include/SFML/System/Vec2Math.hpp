@@ -9,6 +9,7 @@
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Vec2Base.hpp"
 
+#include "SFML/Base/AssertAndAssume.hpp"
 #include "SFML/Base/Math/Atan2.hpp"
 #include "SFML/Base/Math/Cos.hpp"
 #include "SFML/Base/Math/Sin.hpp"
