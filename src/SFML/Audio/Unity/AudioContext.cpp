@@ -240,6 +240,13 @@ AudioContext::~AudioContext()
 
 
 ////////////////////////////////////////////////////////////
+bool AudioContext::isInstalled()
+{
+    return installedAudioContext.hasValue();
+}
+
+
+////////////////////////////////////////////////////////////
 base::Vector<PlaybackDeviceHandle> AudioContext::getAvailablePlaybackDeviceHandles()
 {
     ensureInstalled();
