@@ -1,0 +1,8 @@
+leak:libdbus
+leak:libGLX
+leak:libEGL
+leak:libvulkan
+leak:swrast_dri.so
+leak:iris_dri.so
+leak:radeonsi_dri.so
+leak:nvidia
