@@ -70,7 +70,7 @@ public:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit GraphicsContext(base::PassKey<GraphicsContext>&&, WindowContext&& windowContext);
+    [[nodiscard]] explicit GraphicsContext(base::PassKey<GraphicsContext>&&);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -191,12 +191,6 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static Texture& getInstalledBuiltInWhiteDotTexture();
-
-    ////////////////////////////////////////////////////////////
-    // Member data
-    ////////////////////////////////////////////////////////////
-    struct Impl;
-    base::InPlacePImpl<Impl, 64> m_impl; //!< Implementation details
 };
 
 } // namespace sf
