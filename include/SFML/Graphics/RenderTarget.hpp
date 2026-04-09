@@ -914,9 +914,10 @@ private:
     /// \brief Setup environment for drawing: texture
     ///
     /// \param states Render states to use for drawing
+    /// \param shaderChanged Whether the shader program changed since the last draw call
     ///
     ////////////////////////////////////////////////////////////
-    void setupDrawTexture(const RenderStates& states);
+    void setupDrawTexture(const RenderStates& states, bool shaderChanged);
 
     ////////////////////////////////////////////////////////////
     /// \brief Clean up environment after drawing

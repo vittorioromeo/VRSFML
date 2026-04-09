@@ -1,7 +1,7 @@
 layout(location = 1) uniform sampler2D sf_u_texture;
 layout(location = 2) uniform sampler2D u_backgroundTexture; // Background texture for bubble distortion
 layout(location = 3) uniform float u_time;                  // Time for animations
-layout(location = 4) uniform vec2 u_resolution;             // Screen resolution
+layout(location = 16) uniform vec2 u_resolution;            // Screen resolution
 layout(location = 5) uniform vec2 u_backgroundOrigin;       // World-space top-left of the background snapshot
 layout(location = 6) uniform bool u_bubbleEffect;
 
