@@ -1,4 +1,4 @@
-layout(location = 2) uniform sampler2D sf_u_texture;
+#include "default_uniforms.glsl"
 
 in vec4 sf_v_color;
 in vec2 sf_v_texCoord;

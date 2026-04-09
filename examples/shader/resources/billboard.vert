@@ -1,6 +1,4 @@
-layout(location = 0) uniform vec3 sf_u_mvpRow0;
-layout(location = 1) uniform vec3 sf_u_mvpRow1;
-layout(location = 3) uniform vec2 sf_u_invTextureSize;
+#include "default_uniforms.glsl"
 
 layout(location = 0) in vec2 sf_a_position;
 layout(location = 1) in vec4 sf_a_color;

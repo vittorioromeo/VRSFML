@@ -10,6 +10,7 @@
 #include "SFML/Graphics/DefaultShader.hpp"
 #include "SFML/Graphics/Glsl.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/ShaderUtils.hpp"
 #include "SFML/Graphics/Texture.hpp"
 
 #include "SFML/GLUtils/GLCheck.hpp"
@@ -445,9 +446,38 @@ base::Optional<Shader> Shader::loadFromFile(const LoadFromFileSettings& settings
     if (!readIntoBufferSlice("fragment", settings.fragmentPath, fragmentShaderSlice))
         return base::nullOpt;
 
-    return compile(vertexShaderSlice.hasValue() ? vertexShaderSlice->toView(buffer) : base::StringView{},
-                   geometryShaderSlice.hasValue() ? geometryShaderSlice->toView(buffer) : base::StringView{},
-                   fragmentShaderSlice.hasValue() ? fragmentShaderSlice->toView(buffer) : base::StringView{});
+    // Get source views
+    auto vertexView   = vertexShaderSlice.hasValue() ? vertexShaderSlice->toView(buffer) : base::StringView{};
+    auto geometryView = geometryShaderSlice.hasValue() ? geometryShaderSlice->toView(buffer) : base::StringView{};
+    auto fragmentView = fragmentShaderSlice.hasValue() ? fragmentShaderSlice->toView(buffer) : base::StringView{};
+
+    // Preprocess #include directives if present
+    base::Vector<char> ppVertexBuf;
+    base::Vector<char> ppGeometryBuf;
+    base::Vector<char> ppFragmentBuf;
+
+    const auto preprocessIfNeeded = [](base::StringView& source, const Path& shaderPath, base::Vector<char>& ppBuf) -> bool
+    {
+        if (source.data() == nullptr || source.find("#include") == base::StringView::nPos)
+            return true;
+
+        if (!ShaderUtils::preprocessGlslIncludes(source, shaderPath, ppBuf))
+            return false;
+
+        source = {ppBuf.data(), ppBuf.size()};
+        return true;
+    };
+
+    if (!preprocessIfNeeded(vertexView, settings.vertexPath, ppVertexBuf))
+        return base::nullOpt;
+
+    if (!preprocessIfNeeded(geometryView, settings.geometryPath, ppGeometryBuf))
+        return base::nullOpt;
+
+    if (!preprocessIfNeeded(fragmentView, settings.fragmentPath, ppFragmentBuf))
+        return base::nullOpt;
+
+    return compile(vertexView, geometryView, fragmentView);
 }
 
 
@@ -927,5 +957,3 @@ void Shader::bindTextures() const
 }
 
 } // namespace sf
-
-// TODO P2: add support for `#include` in shaders

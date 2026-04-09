@@ -128,6 +128,16 @@ public:
     [[nodiscard]] Path absolute() const;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Returns the parent path (directory component)
+    ///
+    /// Example: `/foo/bar.txt` -> `/foo`
+    ///
+    /// \return A new Path object representing the parent directory.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] Path parent() const;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Returns a C-style string representation of the path
     ///
     /// The returned pointer is to the internal representation native to the OS
@@ -216,6 +226,18 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     friend std::ostream& operator<<(std::ostream& os, const Path& path);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Compare two paths for equality
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool operator==(const Path& rhs) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Compare two paths for inequality
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool operator!=(const Path& rhs) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Constructs a `Path` from `str` and compares it for equality with the current path
