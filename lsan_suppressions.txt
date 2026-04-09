@@ -6,3 +6,4 @@ leak:swrast_dri.so
 leak:iris_dri.so
 leak:radeonsi_dri.so
 leak:nvidia
+leak:<unknown module>
