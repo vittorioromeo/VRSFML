@@ -756,77 +756,109 @@ int main()
             const sf::Rect2f& textureRect = spriteTextureRects[0];
             const auto        origin      = textureRect.size / 2.f;
 
-            const auto drawNthParticle = [&](const sf::base::SizeT& i, auto&& drawFn)
+            const auto nParticles = static_cast<sf::base::SizeT>(numEntities);
+
+            const auto makeParticleSprite = [&](const sf::Vec2f position, const float scale, const float rotation)
+                                                SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
             {
-                if (useOOP)
+                return sf::Sprite{
+                    .position    = position,
+                    .scale       = {scale, scale},
+                    .origin      = origin,
+                    .rotation    = sf::radians(rotation),
+                    .textureRect = textureRect,
+                };
+            };
+
+            // Iterates over non-OOP particles, hoisting the SoA/AoS branch outside the inner loop
+            const auto forEachNonOOPParticle = [&](const sf::base::SizeT startIdx, const sf::base::SizeT endIdx, auto&& fn)
+                                                   SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+            {
+                if (useSoA)
                 {
-                    entities[i]->draw(textureAtlas.getTexture(), window);
-                }
-                else if (useSoA)
-                {
-                    particlesSoA.withNth<0, 3, 7>(i, [&](const auto& position, const auto& scale, const auto& rotation) {
-                        drawParticleImpl(textureAtlas.getTexture(), textureRect, origin, position, scale, rotation, drawFn);
-                    });
+                    for (sf::base::SizeT i = startIdx; i < endIdx; ++i)
+                        particlesSoA.withNth<0, 3, 7>(i,
+                                                      [&](const auto& position, const auto& scale, const auto& rotation)
+                                                          SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                        { fn(makeParticleSprite(position, scale, rotation)); });
                 }
                 else
                 {
-                    const ParticleAoS& p = particlesAoS[i];
-                    drawParticleImpl(textureAtlas.getTexture(), textureRect, origin, p.position, p.scale, p.rotation, drawFn);
+                    for (sf::base::SizeT i = startIdx; i < endIdx; ++i)
+                    {
+                        const ParticleAoS& p = particlesAoS[i];
+                        fn(makeParticleSprite(p.position, p.scale, p.rotation));
+                    }
                 }
             };
 
-            const auto doMultithreadedDraw = [&](auto& batchesArray)
+            if (useOOP)
             {
-                for (auto& batch : batchesArray)
+                // OOP particles always draw directly to window (no batching/locked states)
+                for (sf::base::SizeT i = 0u; i < nParticles; ++i)
+                    entities[i]->draw(textureAtlas.getTexture(), window);
+            }
+            else if (batchType == BatchType::Disabled)
+            {
+                // Use withLockedRenderStates to skip per-sprite RenderStates comparison
+                auto drawCtx = window.withLockedRenderStates({.texture = &textureAtlas.getTexture()});
+
+                forEachNonOOPParticle(0u, nParticles, [&](const sf::Sprite& sprite) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {
+                    drawCtx.draw(sprite);
+                });
+            }
+            else if (!multithreadedDraw)
+            {
+                const auto doBatchedDraw = [&](auto& batch)
+                {
                     batch.clear();
 
-                doInBatches(static_cast<sf::base::SizeT>(numEntities),
-                            [&](const sf::base::SizeT iBatch, const sf::base::SizeT batchStartIdx, const sf::base::SizeT batchEndIdx)
-                {
-                    for (sf::base::SizeT i = batchStartIdx; i < batchEndIdx; ++i)
-                        drawNthParticle(i, [&](const auto& drawable, const auto&...) {
-                            batchesArray[iBatch].add(drawable);
-                        });
-                });
-
-                for (auto& batch : batchesArray)
-                    window.draw(batch, {.texture = &textureAtlas.getTexture()});
-            };
-
-            if (batchType == BatchType::Disabled || !multithreadedDraw)
-            {
-                cpuDrawableBatches[0].clear();
-
-                gpuDrawableBatches[0].clear();
-
-                for (sf::base::SizeT i = 0u; i < static_cast<sf::base::SizeT>(numEntities); ++i)
-                    drawNthParticle(i,
-                                    [&](const auto& drawable, const auto&... args)
-                    {
-                        if (batchType == BatchType::Disabled)
-                            window.draw(drawable, args...);
-                        else if (batchType == BatchType::CPUStorage)
-                            cpuDrawableBatches[0].add(drawable);
-                        else if (batchType == BatchType::GPUStorage)
-                            gpuDrawableBatches[0].add(drawable);
+                    forEachNonOOPParticle(0u, nParticles, [&](const sf::Sprite& sprite) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {
+                        batch.add(sprite);
                     });
 
-                if (batchType == BatchType::CPUStorage)
-                    window.draw(cpuDrawableBatches[0], {.texture = &textureAtlas.getTexture()});
-                else if (batchType == BatchType::GPUStorage)
-                    window.draw(gpuDrawableBatches[0], {.texture = &textureAtlas.getTexture()});
-            }
-            else if (batchType == BatchType::CPUStorage)
-            {
-                doMultithreadedDraw(cpuDrawableBatches);
-            }
-            else if (batchType == BatchType::GPUStorage)
-            {
-                // Must reserve in advance as reserving is not thread-safe
-                for (sf::base::SizeT iBatch = 0u; iBatch < nMaxWorkers; ++iBatch)
-                    gpuDrawableBatches[iBatch].reserveQuads(static_cast<sf::base::SizeT>(numEntities) / nWorkers * 2u);
+                    window.draw(batch, {.texture = &textureAtlas.getTexture()});
+                };
 
-                doMultithreadedDraw(gpuDrawableBatches);
+                if (batchType == BatchType::CPUStorage)
+                    doBatchedDraw(cpuDrawableBatches[0]);
+                else if (batchType == BatchType::GPUStorage)
+                    doBatchedDraw(gpuDrawableBatches[0]);
+            }
+            else
+            {
+                const auto doMultithreadedDraw = [&](auto& batchesArray)
+                {
+                    for (auto& batch : batchesArray)
+                        batch.clear();
+
+                    doInBatches(nParticles,
+                                [&](const sf::base::SizeT iBatch,
+                                    const sf::base::SizeT batchStartIdx,
+                                    const sf::base::SizeT batchEndIdx)
+                    {
+                        forEachNonOOPParticle(batchStartIdx,
+                                              batchEndIdx,
+                                              [&](const sf::Sprite& sprite) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                        { batchesArray[iBatch].add(sprite); });
+                    });
+
+                    for (auto& batch : batchesArray)
+                        window.draw(batch, {.texture = &textureAtlas.getTexture()});
+                };
+
+                if (batchType == BatchType::CPUStorage)
+                {
+                    doMultithreadedDraw(cpuDrawableBatches);
+                }
+                else if (batchType == BatchType::GPUStorage)
+                {
+                    // Must reserve in advance as reserving is not thread-safe
+                    for (sf::base::SizeT iBatch = 0u; iBatch < nMaxWorkers; ++iBatch)
+                        gpuDrawableBatches[iBatch].reserveQuads(nParticles / nWorkers * 2u);
+
+                    doMultithreadedDraw(gpuDrawableBatches);
+                }
             }
         }
         else

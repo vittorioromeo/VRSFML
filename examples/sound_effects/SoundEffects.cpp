@@ -680,13 +680,13 @@ public:
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
         target.draw(m_listenerShape, states);
+        target.draw(m_enabledText, states);
+        target.draw(m_instructions, states);
 
         states.transform = sf::Transform::Identity;
         states.transform.translate(m_position);
 
         target.draw(m_soundShape, states);
-        target.draw(m_enabledText, states);
-        target.draw(m_instructions, states);
     }
 
     void start(sf::PlaybackDevice& playbackDevice, sf::MusicReader& musicReader) override
