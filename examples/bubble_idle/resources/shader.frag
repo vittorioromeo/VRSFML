@@ -1,21 +1,23 @@
-layout(location = 1) uniform sampler2D sf_u_texture;
-layout(location = 2) uniform sampler2D u_backgroundTexture; // Background texture for bubble distortion
-layout(location = 3) uniform float u_time;                  // Time for animations
-layout(location = 16) uniform vec2 u_resolution;            // Screen resolution
-layout(location = 5) uniform vec2 u_backgroundOrigin;       // World-space top-left of the background snapshot
+layout(location = 0) uniform vec3 sf_u_mvpRow0;
+layout(location = 1) uniform vec3 sf_u_mvpRow1;
+layout(location = 2) uniform sampler2D sf_u_texture;
+layout(location = 3) uniform vec2 sf_u_invTextureSize;
+layout(location = 4) uniform sampler2D u_backgroundTexture; // Background texture for bubble distortion
+layout(location = 5) uniform float u_time;                  // Time for animations
 layout(location = 6) uniform bool u_bubbleEffect;
+layout(location = 7) uniform vec2 u_resolution;            // Screen resolution
+layout(location = 8) uniform vec2 u_backgroundOrigin;      // World-space top-left of the background snapshot
+layout(location = 9) uniform float u_iridescenceStrength;
+layout(location = 10) uniform float u_edgeFactorMin;
+layout(location = 11) uniform float u_edgeFactorMax;
+layout(location = 12) uniform float u_edgeFactorStrength;
+layout(location = 13) uniform float u_distorsionStrength;
 
-layout(location = 7) uniform float u_iridescenceStrength;
-layout(location = 8) uniform float u_edgeFactorMin;
-layout(location = 9) uniform float u_edgeFactorMax;
-layout(location = 10) uniform float u_edgeFactorStrength;
-layout(location = 11) uniform float u_distorsionStrength;
+layout(location = 14) uniform vec2 u_subTexOrigin; // Bottom-left corner of the sub-texture (pixels)
+layout(location = 15) uniform vec2 u_subTexSize;   // Size of the sub-texture (pixels)
 
-layout(location = 12) uniform vec2 u_subTexOrigin; // Bottom-left corner of the sub-texture (pixels)
-layout(location = 13) uniform vec2 u_subTexSize;   // Size of the sub-texture (pixels)
-
-layout(location = 14) uniform float u_bubbleLightness;
-layout(location = 15) uniform float u_lensDistortion;
+layout(location = 16) uniform float u_bubbleLightness;
+layout(location = 17) uniform float u_lensDistortion;
 
 ////////////////////////////////////////////////////////////
 in vec4 sf_v_color;

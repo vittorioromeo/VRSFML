@@ -1,8 +1,8 @@
 // The render target's resolution (used for scaling)
-layout(location = 7) uniform vec2 resolution;
+layout(location = 8) uniform vec2 resolution;
 
 // The billboards' size
-layout(location = 8) uniform vec2 size;
+layout(location = 9) uniform vec2 size;
 
 // Input is the passed point cloud
 layout(points) in;
