@@ -57,15 +57,6 @@ GraphicsContextImpl& ensureInstalled()
 
 } // namespace
 
-////////////////////////////////////////////////////////////
-struct GraphicsContext::Impl
-{
-    explicit Impl(WindowContext&& theWindowContext) : windowContext(SFML_BASE_MOVE(theWindowContext))
-    {
-    }
-
-    WindowContext windowContext;
-};
 
 ////////////////////////////////////////////////////////////
 base::Optional<GraphicsContext> GraphicsContext::create()
@@ -83,8 +74,9 @@ base::Optional<GraphicsContext> GraphicsContext::create()
 
     //
     // Install window context if necessary
-    auto windowContext = WindowContext::isInstalled() ? WindowContext{base::PassKey<GraphicsContext>{}}
-                                                      : WindowContext::create().value();
+    if (!WindowContext::isInstalled())
+        if (auto windowContext = WindowContext::create(); !windowContext.hasValue())
+            return fail("failed to create `sf::WindowContext`");
 
     //
     // Initialize built-in shader
@@ -102,21 +94,19 @@ base::Optional<GraphicsContext> GraphicsContext::create()
     // Install graphics context
     installedGraphicsContext.emplace(*SFML_BASE_MOVE(shader), *SFML_BASE_MOVE(texture));
 
-    return base::makeOptional<GraphicsContext>(base::PassKey<GraphicsContext>{}, SFML_BASE_MOVE(windowContext));
+    return base::makeOptional<GraphicsContext>(base::PassKey<GraphicsContext>{});
 }
 
 
 ////////////////////////////////////////////////////////////
-GraphicsContext::GraphicsContext(base::PassKey<GraphicsContext>&&, WindowContext&& windowContext) :
-    m_impl(SFML_BASE_MOVE(windowContext))
+GraphicsContext::GraphicsContext(base::PassKey<GraphicsContext>&&)
 {
     graphicsContextRC.fetch_add(1u, std::memory_order::relaxed);
 }
 
 
 ////////////////////////////////////////////////////////////
-GraphicsContext::GraphicsContext(GraphicsContext&& rhs) noexcept :
-    m_impl(static_cast<WindowContext&&>(rhs.m_impl->windowContext))
+GraphicsContext::GraphicsContext(GraphicsContext&&) noexcept
 {
     graphicsContextRC.fetch_add(1u, std::memory_order::relaxed);
 }
