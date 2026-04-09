@@ -35,7 +35,7 @@ int main()
 
 ## Designated Initializer Configurations
 
-- Most objects are now initalized using C++20's designated initialized syntax.
+- Most objects are now initialized using C++20's designated initializer syntax.
 
 ```cpp
 //
@@ -81,7 +81,7 @@ sf::CircleShape ball{{.origin           = {ballRadius / 2.f, ballRadius / 2.f},
 
 ## Standard Library Replacements
 
-- To optimize compilation speed and debug run-time performance, VRSFML uses custom types instead of Standard Sibrary ones.
+- To optimize compilation speed and debug run-time performance, VRSFML uses custom types instead of Standard Library ones.
     - Check out the `SFML/Base` module to see all of them.
 
 - VRSFML types use the `pascalCase` convention, and some APIs might be very different (or missing).
@@ -173,10 +173,10 @@ int main()
 
     // Load sounds
     const auto ballSoundBuffer = sf::SoundBuffer::loadFromFile(resourcesDir() / "ball.wav").value();
-    sf::Sound  ballSound(ballSoundBuffer);
+    sf::Sound  ballSound(playbackDevice, ballSoundBuffer);
 
     // Play sound
-    ballSound.play(playbackDevice);
+    ballSound.play();
 }
 ```
 
@@ -184,7 +184,7 @@ int main()
 
 ## Optional-Based Factory Functions
 
-- Creation of objects/resources that can fail is done through factory functions returing an `sf::Base::Optional`.
+- Creation of objects/resources that can fail is done through factory functions returning an `sf::Base::Optional`.
     - This ensures that the user decides how to handle the failure case.
 
 ```cpp
@@ -201,7 +201,7 @@ const auto sfmlLogoTexture = sf::Texture::loadFromFile(resourcesDir() / "sfml_lo
 
 
 
-## Sprites And Shape Are Textureless
+## Sprites And Shapes Are Textureless
 
 - Sprites and shapes do not point to a texture anymore.
     - The texture is specified during the draw call.
@@ -388,7 +388,41 @@ Window `getPosition` now returns the top-left corner of the window's contents (n
 
 ## Joystick Query API
 
-TODO P0:
+- The joystick API has been redesigned from static class methods to a **query object pattern**.
+    - Instead of calling `sf::Joystick::isButtonPressed(id, button)`, you first obtain an `Optional<Query>` handle for a specific joystick, then call methods on it.
+
+```cpp
+//
+// BEFORE (upstream SFML)
+if (sf::Joystick::isConnected(0))
+{
+    bool pressed = sf::Joystick::isButtonPressed(0, 2);
+    float pos    = sf::Joystick::getAxisPosition(0, sf::Joystick::Y);
+    unsigned int buttonCount = sf::Joystick::getButtonCount(0);
+
+    sf::Joystick::Identification id = sf::Joystick::getIdentification(0);
+    const auto& name = id.name;
+}
+
+//
+// AFTER (VRSFML)
+if (const auto query = sf::Joystick::query(0); query.hasValue())
+{
+    bool pressed = query->isButtonPressed(2);
+    float pos    = query->getAxisPosition(sf::Joystick::Axis::Y);
+    unsigned int buttonCount = query->getButtonCount();
+
+    const auto& name     = query->getName();
+    unsigned int vendorId = query->getVendorId();
+}
+```
+
+- If `sf::Joystick::query(id)` returns `base::nullOpt`, the joystick is not connected.
+
+- Event-based joystick input still works as before (via `sf::Event::JoystickButtonPressed`, etc.).
+
+- If you have no window, call `sf::Joystick::update()` manually to refresh the cached state.
+
 
 
 ## SDL3 Backend
@@ -434,10 +468,36 @@ window.draw(sprite3, {.texture = &atlas.getTexture()});
 
 ## High DPI Support
 
-TODO P0:
+- VRSFML provides proper High DPI support via SDL3's display scaling infrastructure.
+
+- Query the display scale factor at runtime with `window.getDisplayScale()`:
+
+```cpp
+//
+// BEFORE (upstream SFML)
+// No standard mechanism for high DPI support.
+
+//
+// AFTER (VRSFML)
+const float scale = window.getDisplayScale();
+// Returns 1.f for standard DPI (96), 2.f for Retina "@2x" displays, etc.
+```
+
+- Window sizes are always in **logical pixels**. The OS handles conversion to the physical framebuffer size automatically.
+
+- You can also query the primary display's content scale without a window:
+
+```cpp
+const float displayScale = sf::VideoModeUtils::getPrimaryDisplayContentScale();
+```
+
+- `sf::VideoMode` includes a `pixelDensity` field reflecting the HiDPI scale for each video mode.
+
+- VRSFML does **not** automatically scale your coordinates -- you must apply `getDisplayScale()` manually for UI elements, text sizing, etc.
 
 
-## Windows are not closable anymore
+
+## Windows Are Not Closable Anymore
 
 - `sf::Window::isOpen()` has been removed. A window object's lifetime dictates its existence.
     - If you need to represent a window that might be closed or destroyed, wrap it in an `sf::Base::Optional<sf::RenderWindow>`.
@@ -460,7 +520,7 @@ while (true)
 {
     while (const auto event = window.pollEvent())
         if (event->is<sf::Event::Closed>())
-            break;
+            return 0;
 }
 
 // Window is destroyed (closed) when it goes out of scope here.
@@ -468,39 +528,415 @@ while (true)
 
 
 
-## Vector -> Vec rename
+## Type Renames
 
 - The math vector types have been shortened to align with standard graphics terminology and for conciseness.
 
-| Upstream SFML      | VRSFML       |
-|--------------------|--------------|
-| `sf::Vector2i`     | `sf::Vec2i`  |
-| `sf::Vector2u`     | `sf::Vec2u`  |
-| `sf::Vector2f`     | `sf::Vec2f`  |
-| `sf::Vector3f`     | `sf::Vec3f`  |
+| Upstream SFML      | VRSFML        |
+|--------------------|---------------|
+| `sf::Vector2i`     | `sf::Vec2i`   |
+| `sf::Vector2u`     | `sf::Vec2u`   |
+| `sf::Vector2f`     | `sf::Vec2f`   |
+| `sf::Vector3i`     | `sf::Vec3i`   |
+| `sf::Vector3u`     | `sf::Vec3u`   |
+| `sf::Vector3f`     | `sf::Vec3f`   |
+| `sf::IntRect`      | `sf::Rect2i`  |
+| `sf::FloatRect`    | `sf::Rect2f`  |
+
+- Additional type aliases exist: `sf::Vec2uz`, `sf::Vec3uz` (for `base::SizeT` components), `sf::Rect2u`, `sf::Rect2uz`.
+
+- Fixed-width integer types live in `sf::base`:
+
+| Upstream SFML  | VRSFML         |
+|----------------|----------------|
+| `sf::Int8`     | `sf::base::I8` |
+| `sf::Uint8`    | `sf::base::U8` |
+| `sf::Int16`    | `sf::base::I16`|
+| `sf::Uint16`   | `sf::base::U16`|
+| `sf::Int32`    | `sf::base::I32`|
+| `sf::Uint32`   | `sf::base::U32`|
+| `sf::Int64`    | `sf::base::I64`|
+| `sf::Uint64`   | `sf::base::U64`|
 
 
 
-## Sound is non-movable
+## Sound Is Non-Movable
 
-TODO P0:
+- `sf::Sound` is neither copyable nor movable.
+    - It maintains internal references to a `PlaybackDevice` and a `SoundBuffer`, and contains embedded miniaudio state that must remain at a stable memory address.
+
+- To manage collections of sounds, use `sf::base::InPlaceVector` with `reEmplaceByIterator` to reuse slots:
+
+```cpp
+//
+// Pool of up to 256 concurrent sounds
+sf::base::InPlaceVector<sf::Sound, 256> sounds;
+
+// Play a new sound by emplacing it at the end
+sounds.emplaceBack(playbackDevice, buffer).play();
+
+// Reuse a stopped slot for a new sound
+auto* it = sf::base::findIf(sounds.begin(), sounds.end(),
+    [](const sf::Sound& s) { return !s.isPlaying(); });
+
+if (it != sounds.end())
+    sounds.reEmplaceByIterator(it, playbackDevice, buffer).play();
+```
+
+- For a single optional sound, use `sf::base::Optional<sf::Sound>` with `.emplace(...)` to reconstruct in-place.
 
 
 
-## Music is non-movable
+## Music Is Non-Movable
 
-TODO P0:
+- `sf::Music` is neither copyable nor movable for the same reasons as `sf::Sound` (stable references, streaming thread).
+
+- The same patterns apply: use `sf::base::Optional<sf::Music>` for single instances, or `sf::base::InPlaceVector` for collections.
+
+```cpp
+sf::base::Optional<sf::Music> bgMusic;
+
+// Start playing
+bgMusic.emplace(playbackDevice, musicReader);
+bgMusic->play();
+
+// Switch to a different track (destroys old, constructs new in-place)
+bgMusic.emplace(playbackDevice, otherMusicReader);
+bgMusic->play();
+```
 
 
 
-## MusicReader, Music with its own buffer
+## MusicReader: Decoupled Music Source
 
-TODO P0:
+- Music loading and playback are now split into two objects:
+    - `sf::MusicReader` -- owns the audio file/stream/memory source, is **movable**.
+    - `sf::Music` -- performs playback from a `MusicReader`, is **non-movable**.
+
+- The `MusicReader` must outlive any `Music` instances that reference it.
+
+```cpp
+//
+// BEFORE (upstream SFML)
+sf::Music music;
+music.openFromFile("music.ogg");
+music.play();
+
+//
+// AFTER (VRSFML)
+auto musicReader = sf::MusicReader::openFromFile("music.ogg").value();
+sf::Music music(playbackDevice, musicReader);
+music.play();
+```
+
+- This separation means you can keep the `MusicReader` alive and construct/destroy `Music` instances freely (e.g. to switch playback devices).
 
 
 
-## ContextSettings without antialiasing and srgb support, use FBOs with RenderTextureCreateSettings
+## ContextSettings Without Antialiasing And sRGB Support
 
 - `sf::ContextSettings` no longer accepts `antialiasingLevel` or `sRgbCapable` for standard window creation.
     - Relying on the OS window manager for MSAA and sRGB is historically buggy and inconsistent across drivers.
     - Instead, VRSFML encourages rendering to an `sf::RenderTexture` created with `sf::RenderTextureCreateSettings` (where MSAA and sRGB are strictly controlled via FBOs), and blitting the final result to the window.
+
+
+
+## CoordinateType Is Gone
+
+- `sf::CoordinateType` has been removed. Texture coordinates in `sf::Vertex` are now **always in pixel units** (not normalized).
+
+- The default vertex shader automatically normalizes pixel coordinates to `[0, 1]` via `textureSize()`:
+
+```glsl
+sf_v_texCoord = sf_a_texCoord / vec2(textureSize(sf_u_texture, 0));
+```
+
+- If you had code that switched between `CoordinateType::Pixels` and `CoordinateType::Normalized`, simply remove those switches -- pixel coordinates are always used now.
+
+```cpp
+//
+// BEFORE (upstream SFML)
+sf::Vertex vertex;
+vertex.texCoords = {0.5f, 0.5f}; // Could be normalized or pixels depending on CoordinateType
+
+//
+// AFTER (VRSFML)
+sf::Vertex vertex;
+vertex.texCoords = {128.f, 128.f}; // Always pixel coordinates (e.g. center of a 256x256 texture)
+```
+
+- If you write custom shaders, note that the vertex shader receives pixel-space texture coordinates and must normalize them (the default shader does this for you).
+
+
+
+## Views Are Not Stateful Anymore
+
+- Views are no longer stored as persistent state on `sf::RenderTarget`. Instead, they are passed **per draw call** via `sf::RenderStates`.
+
+```cpp
+//
+// BEFORE (upstream SFML)
+sf::View gameView({0.f, 0.f, 800.f, 600.f});
+window.setView(gameView);
+window.draw(sprite);  // uses gameView
+window.draw(text);    // uses gameView
+
+sf::View uiView = window.getDefaultView();
+window.setView(uiView);
+window.draw(button);  // uses uiView
+
+//
+// AFTER (VRSFML)
+sf::View gameView = sf::View::fromRect({{0.f, 0.f}, {800.f, 600.f}});
+window.draw(sprite, {.view = gameView, .texture = &texture});
+window.draw(text,   {.view = gameView});
+
+sf::View uiView = window.computeView(); // default view matching window size
+window.draw(button, {.view = uiView});
+```
+
+- Use `window.computeView()` to get a default view matching the current window size (replaces `getDefaultView()`).
+
+- Coordinate conversion now takes the target size as a parameter:
+
+```cpp
+//
+// BEFORE (upstream SFML)
+sf::Vec2f worldPos = window.mapPixelToCoords(mousePos, gameView);
+
+//
+// AFTER (VRSFML)
+sf::Vec2f worldPos = gameView.screenToWorld(mousePos.toVec2f(), window.getSize().toVec2f());
+sf::Vec2f screenPos = gameView.worldToScreen(entityPos, window.getSize().toVec2f());
+```
+
+
+
+## Event System Overhaul
+
+- The event system has been completely redesigned from a C-style union to a **type-safe tagged variant**.
+
+- `pollEvent()` now returns `sf::base::Optional<sf::Event>` instead of taking an output parameter.
+
+```cpp
+//
+// BEFORE (upstream SFML)
+sf::Event event;
+while (window.pollEvent(event))
+{
+    if (event.type == sf::Event::Closed)
+        window.close();
+    else if (event.type == sf::Event::KeyPressed)
+        handleKey(event.key.code);
+}
+
+//
+// AFTER (VRSFML)
+while (const auto event = window.pollEvent())
+{
+    if (event->is<sf::Event::Closed>())
+        return 0;
+    else if (const auto* keyPress = event->getIf<sf::Event::KeyPressed>())
+        handleKey(keyPress->scancode);
+}
+```
+
+- Each event type is a separate struct (e.g. `sf::Event::KeyPressed`, `sf::Event::MouseMoved`, etc.) with named fields.
+
+- Three ways to check event types:
+    - `event->is<sf::Event::Closed>()` -- boolean check.
+    - `event->getIf<sf::Event::KeyPressed>()` -- returns pointer to data, or `nullptr`.
+    - `event->visit(visitor)` -- full visitor pattern.
+
+- **Bulk event handling** is supported via `pollAndHandleEvents`:
+
+```cpp
+window.pollAndHandleEvents(
+    [&](sf::Event::Closed) { mustClose = true; },
+    [&](const sf::Event::KeyPressed& e) { handleKey(e.scancode); },
+    [&](const sf::Event::MouseMoved& e) { handleMouse(e.position); }
+    // Unhandled event types are silently ignored.
+);
+```
+
+- New event type: `sf::Event::MouseMovedRaw` provides unprocessed mouse delta input (no acceleration/smoothing), useful for camera control in 3D/first-person views.
+
+
+
+## Window Styles Replaced By Booleans
+
+- `sf::Style` bitfield flags have been replaced by individual boolean fields in `sf::WindowSettings`.
+
+```cpp
+//
+// BEFORE (upstream SFML)
+sf::RenderWindow window(videoMode, "Title", sf::Style::Titlebar | sf::Style::Close);
+
+//
+// AFTER (VRSFML)
+auto window = sf::RenderWindow::create({.size{800u, 600u},
+                                        .title = "Title",
+                                        .resizable = false,
+                                        .closable = true,
+                                        .hasTitlebar = true}).value();
+```
+
+- Available boolean fields: `fullscreen`, `resizable`, `closable`, `hasTitlebar`.
+
+
+
+## `sf::String` Replaced By `sf::UnicodeString`
+
+- `sf::String` has been replaced by `sf::UnicodeString` with full UTF encoding support.
+
+- Used throughout the API for window titles, clipboard text, keyboard descriptions, and joystick names.
+
+
+
+## Angle Type
+
+- Rotation values are now represented by the dedicated `sf::Angle` type instead of raw `float`.
+
+```cpp
+//
+// BEFORE (upstream SFML)
+sprite.setRotation(45.f);
+float rot = sprite.getRotation();
+
+//
+// AFTER (VRSFML)
+sprite.rotation = sf::degrees(45.f);
+float rot = sprite.rotation.asDegrees();
+```
+
+- Factory functions: `sf::degrees(float)`, `sf::radians(float)`.
+- Methods: `.asDegrees()`, `.asRadians()`, `.wrapSigned()`, `.wrapUnsigned()`.
+
+
+
+## Clock Pause/Resume Support
+
+- `sf::Clock` now supports pausing and resuming.
+
+```cpp
+sf::Clock clock;
+
+clock.stop();               // Pause the clock
+// ...
+clock.start();              // Resume the clock
+
+Time t1 = clock.restart();  // Reset and keep running
+Time t2 = clock.reset();    // Reset and leave paused
+
+bool running = clock.isRunning();
+```
+
+- `sf::Clock::now()` provides access to the raw monotonic clock without needing an instance.
+
+
+
+## Color HSL Support
+
+- `sf::Color` now supports HSL (Hue, Saturation, Lightness) color model conversion.
+
+```cpp
+// Create a color from HSL
+sf::Color color = sf::Color::fromHSLA({.hue = 120.f, .saturation = 1.f, .lightness = 0.5f});
+
+// Convert to HSL
+sf::Color::HSL hsl = color.toHSL();
+
+// Hue rotation
+sf::Color rotated = color.withRotatedHue(90.f);
+
+// Adjust saturation/lightness
+sf::Color desaturated = color.withSaturation(0.2f);
+sf::Color darker      = color.withLightness(0.3f);
+```
+
+- Convenience factories: `sf::Color::whiteWithAlpha(alpha)`, `sf::Color::blackWithAlpha(alpha)`.
+- Packed integer: `sf::Color::fromRGBA(0xFF0000FF)` for opaque red.
+
+
+
+## Font And Text API Changes
+
+- `sf::Font` uses `openFromFile` (not `loadFromFile`) and returns `sf::base::Optional<sf::Font>`.
+    - Fonts optionally accept a `sf::TextureAtlas*` for shared atlas packing:
+
+```cpp
+//
+// BEFORE (upstream SFML)
+sf::Font font;
+font.loadFromFile("font.ttf");
+sf::Text text(font, "Hello", 30);
+text.setFillColor(sf::Color::Red);
+
+//
+// AFTER (VRSFML)
+auto font = sf::Font::openFromFile("font.ttf").value();
+sf::Text text(font, {.string = "Hello",
+                      .characterSize = 30u,
+                      .fillColor = sf::Color::Red});
+```
+
+- Text styling uses individual booleans instead of a style enum:
+
+```cpp
+//
+// BEFORE (upstream SFML)
+text.setStyle(sf::Text::Bold | sf::Text::Italic);
+
+//
+// AFTER (VRSFML)
+sf::Text text(font, {.string = "Hello",
+                      .bold = true,
+                      .italic = true});
+```
+
+- Fonts are **not copyable** -- only movable.
+
+- Construction of `sf::Text` from a temporary font is a **deleted overload** to prevent dangling references.
+
+
+
+## New Shape Types
+
+- VRSFML adds several new shape types beyond the original circle, rectangle, and convex shapes:
+
+| Shape                         | Data Struct                    |
+|-------------------------------|--------------------------------|
+| Ellipse                       | `sf::EllipseShapeData`         |
+| Ring (annulus)                | `sf::RingShapeData`            |
+| Pie slice                     | `sf::PieSliceShapeData`        |
+| Ring pie slice                | `sf::RingPieSliceShapeData`    |
+| Rounded rectangle             | `sf::RoundedRectangleShapeData`|
+| Star                          | `sf::StarShapeData`            |
+| Arrow                         | `sf::ArrowShapeData`           |
+| Curved arrow                  | `sf::CurvedArrowShapeData`     |
+
+- All shapes follow the designated-initializer aggregate pattern for construction.
+
+
+
+## Keyboard And Mouse API Changes
+
+- `sf::Keyboard::Scancode` has been greatly expanded with 200+ scan codes from SDL3.
+
+- New utility functions:
+    - `sf::Keyboard::localize(Scancode)` -- convert scancode to virtual key.
+    - `sf::Keyboard::delocalize(Key)` -- convert virtual key to scancode.
+    - `sf::Keyboard::getDescription(Scancode)` -- human-readable key name.
+    - `sf::Keyboard::setVirtualKeyboardVisible(bool)` -- for mobile/touch platforms.
+
+- Touch input now provides device enumeration via `sf::Touch::getDevices()` and `sf::Touch::Device` structs.
+
+
+
+## Lifetime Tracking
+
+- VRSFML has an optional compile-time lifetime tracking system (`SFML_ENABLE_LIFETIME_TRACKING`) that catches dangling references in debug builds.
+
+- For example, constructing an `sf::Text` from a temporary `sf::Font` is a compile error (deleted overload). At runtime, if a `SoundBuffer` is destroyed while a `Sound` still references it, the lifetime tracker will assert.
+
+- This prevents the "white square problem" from upstream SFML where a sprite would silently render incorrectly after its texture was destroyed.
