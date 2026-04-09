@@ -30,6 +30,40 @@ struct Color;
 } // namespace sf
 
 
+namespace sf::priv
+{
+////////////////////////////////////////////////////////////
+// GL field info deduction
+////////////////////////////////////////////////////////////
+struct FieldInfo
+{
+    unsigned int size;
+    GlDataType   type;
+    bool         defaultNormalized;
+};
+
+template <typename>
+extern FieldInfo fieldInfo;
+
+// clang-format off
+template <> inline constexpr FieldInfo fieldInfo<float>          = {1, GlDataType::Float, false};
+template <> inline constexpr FieldInfo fieldInfo<double>         = {1, GlDataType::Double, false};
+template <> inline constexpr FieldInfo fieldInfo<int>            = {1, GlDataType::Int, false};
+template <> inline constexpr FieldInfo fieldInfo<unsigned int>   = {1, GlDataType::UnsignedInt, false};
+template <> inline constexpr FieldInfo fieldInfo<short>          = {1, GlDataType::Short, false};
+template <> inline constexpr FieldInfo fieldInfo<unsigned short> = {1, GlDataType::UnsignedShort, false};
+template <> inline constexpr FieldInfo fieldInfo<signed char>    = {1, GlDataType::Byte, false};
+template <> inline constexpr FieldInfo fieldInfo<unsigned char>  = {1, GlDataType::UnsignedByte, false};
+template <> inline constexpr FieldInfo fieldInfo<Vec2<float>>    = {2, GlDataType::Float, false};
+template <> inline constexpr FieldInfo fieldInfo<Vec2<int>>      = {2, GlDataType::Int, false};
+template <> inline constexpr FieldInfo fieldInfo<Vec3<float>>    = {3, GlDataType::Float, false};
+template <> inline constexpr FieldInfo fieldInfo<Vec3<int>>      = {3, GlDataType::Int, false};
+template <> inline constexpr FieldInfo fieldInfo<Color>          = {4, GlDataType::UnsignedByte, true};
+// clang-format on
+
+} // namespace sf::priv
+
+
 namespace sf
 {
 ////////////////////////////////////////////////////////////
@@ -166,7 +200,7 @@ struct [[nodiscard]] InstanceAttributeBinder
         using StructType = MemberPtrStructType<decltype(MemberPtr)>;
         using FieldType  = MemberPtrFieldType<decltype(MemberPtr)>;
 
-        constexpr auto glInfo = fieldInfo<FieldType>;
+        constexpr auto glInfo = priv::fieldInfo<FieldType>;
         setup(location, glInfo.size, glInfo.type, glInfo.defaultNormalized, sizeof(StructType), memberOffset<MemberPtr>());
     }
 
@@ -185,7 +219,7 @@ struct [[nodiscard]] InstanceAttributeBinder
     template <typename T>
     void setupFlat(const unsigned int location) const
     {
-        constexpr auto glInfo = fieldInfo<T>;
+        constexpr auto glInfo = priv::fieldInfo<T>;
         setup(location, glInfo.size, glInfo.type, glInfo.defaultNormalized, sizeof(T), 0);
     }
 
@@ -222,35 +256,6 @@ private:
         auto* const obj = reinterpret_cast<S*>(storage);
         return static_cast<base::SizeT>(reinterpret_cast<const char*>(&(obj->*MPtr)) - reinterpret_cast<const char*>(obj));
     }
-
-    ////////////////////////////////////////////////////////////
-    // GL field info deduction
-    ////////////////////////////////////////////////////////////
-    struct FieldInfo
-    {
-        unsigned int size;
-        GlDataType   type;
-        bool         defaultNormalized;
-    };
-
-    template <typename>
-    static const FieldInfo fieldInfo;
-
-    // clang-format off
-    template <> inline constexpr FieldInfo fieldInfo<float>          = {1, GlDataType::Float, false};
-    template <> inline constexpr FieldInfo fieldInfo<double>         = {1, GlDataType::Double, false};
-    template <> inline constexpr FieldInfo fieldInfo<int>            = {1, GlDataType::Int, false};
-    template <> inline constexpr FieldInfo fieldInfo<unsigned int>   = {1, GlDataType::UnsignedInt, false};
-    template <> inline constexpr FieldInfo fieldInfo<short>          = {1, GlDataType::Short, false};
-    template <> inline constexpr FieldInfo fieldInfo<unsigned short> = {1, GlDataType::UnsignedShort, false};
-    template <> inline constexpr FieldInfo fieldInfo<signed char>    = {1, GlDataType::Byte, false};
-    template <> inline constexpr FieldInfo fieldInfo<unsigned char>  = {1, GlDataType::UnsignedByte, false};
-    template <> inline constexpr FieldInfo fieldInfo<Vec2<float>>    = {2, GlDataType::Float, false};
-    template <> inline constexpr FieldInfo fieldInfo<Vec2<int>>      = {2, GlDataType::Int, false};
-    template <> inline constexpr FieldInfo fieldInfo<Vec3<float>>    = {3, GlDataType::Float, false};
-    template <> inline constexpr FieldInfo fieldInfo<Vec3<int>>      = {3, GlDataType::Int, false};
-    template <> inline constexpr FieldInfo fieldInfo<Color>          = {4, GlDataType::UnsignedByte, true};
-    // clang-format on
 
     ////////////////////////////////////////////////////////////
     // Member data

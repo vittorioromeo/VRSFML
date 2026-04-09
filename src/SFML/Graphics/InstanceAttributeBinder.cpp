@@ -16,7 +16,88 @@
 #include "SFML/GLUtils/Glad.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Builtin/Unreachable.hpp"
 #include "SFML/Base/SizeT.hpp"
+
+#ifdef SFML_OPENGL_ES
+    #include "SFML/System/Err.hpp"
+
+    #include "SFML/Base/Abort.hpp"
+#endif
+
+
+namespace
+{
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::const]] constexpr bool isIntegerAttributeType(const sf::GlDataType type) noexcept
+{
+    switch (type)
+    {
+        case sf::GlDataType::Byte:
+        case sf::GlDataType::UnsignedByte:
+        case sf::GlDataType::Short:
+        case sf::GlDataType::UnsignedShort:
+        case sf::GlDataType::Int:
+        case sf::GlDataType::UnsignedInt:
+            return true;
+
+        case sf::GlDataType::HalfFloat:
+        case sf::GlDataType::Float:
+        case sf::GlDataType::Double:
+            return false;
+    }
+
+    SFML_BASE_UNREACHABLE();
+}
+
+
+////////////////////////////////////////////////////////////
+[[gnu::always_inline, gnu::flatten]] inline void setupVertexAttribPointer(
+    const unsigned int   location,
+    const unsigned int   size,
+    const sf::GlDataType type,
+    const bool           normalized,
+    const GLsizei        stride,
+    void* const          offset)
+{
+    const GLenum glType = sf::priv::dataTypeToOpenGLDataType(type);
+
+    if (type == sf::GlDataType::Double)
+    {
+#ifdef SFML_OPENGL_ES
+        sf::priv::err() << "FATAL ERROR: per-instance `double` attributes are unsupported on OpenGL ES";
+        sf::base::abort();
+#else
+        glCheck(glVertexAttribLPointer(/*  index */ location,
+                                       /*   size */ static_cast<GLint>(size),
+                                       /*   type */ glType,
+                                       /* stride */ stride,
+                                       /* offset */ offset));
+#endif
+
+        return;
+    }
+
+    if (isIntegerAttributeType(type) && !normalized)
+    {
+        glCheck(glVertexAttribIPointer(/*  index */ location,
+                                       /*   size */ static_cast<GLint>(size),
+                                       /*   type */ glType,
+                                       /* stride */ stride,
+                                       /* offset */ offset));
+
+        return;
+    }
+
+    glCheck(glVertexAttribPointer(/*      index */ location,
+                                  /*       size */ static_cast<GLint>(size),
+                                  /*       type */ glType,
+                                  /* normalized */ normalized ? GL_TRUE : GL_FALSE,
+                                  /*     stride */ stride,
+                                  /*     offset */ offset));
+}
+
+} // namespace
 
 
 namespace sf
@@ -73,12 +154,7 @@ void InstanceAttributeBinder::setup(
 
     glCheck(glEnableVertexAttribArray(location));
 
-    glCheck(glVertexAttribPointer(/*      index */ location,
-                                  /*       size */ static_cast<GLint>(size),
-                                  /*       type */ priv::dataTypeToOpenGLDataType(type),
-                                  /* normalized */ normalized ? GL_TRUE : GL_FALSE,
-                                  /*     stride */ static_cast<GLsizei>(stride),
-                                  /*     offset */ reinterpret_cast<void*>(fieldOffset)));
+    setupVertexAttribPointer(location, size, type, normalized, static_cast<GLsizei>(stride), reinterpret_cast<void*>(fieldOffset));
 
     glCheck(glVertexAttribDivisor(location, 1));
 }
