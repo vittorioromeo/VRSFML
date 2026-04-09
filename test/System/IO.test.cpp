@@ -1,12 +1,12 @@
 #include "StringifySfBaseStringUtil.hpp"
 #include "StringifyStdStringUtil.hpp"
 #include "StringifyStringViewUtil.hpp"
+#include "TemporaryFile.hpp"
 
 #include "SFML/System/IO.hpp"
 
 #include "SFML/System/Path.hpp"
 
-#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
@@ -21,60 +21,7 @@
 #include <string>
 
 
-namespace
-{
-sf::Path getTemporaryFilePath()
-{
-    static int counter = 0;
-
-    sf::OutStringStream oss;
-    oss << "sfmltemp_io_" << counter++ << ".tmp";
-
-    return sf::Path::tempDirectoryPath() / oss.to<sf::base::String>();
-}
-
-class TemporaryFile
-{
-public:
-    // Reserve a unique path without creating any file on disk.
-    explicit TemporaryFile() : m_path(getTemporaryFilePath())
-    {
-    }
-
-    // Create a temporary file with a randomly generated path, containing 'contents'.
-    explicit TemporaryFile(const sf::base::StringView contents) : m_path(getTemporaryFilePath())
-    {
-        sf::OutFileStream ofs(m_path);
-        SFML_BASE_ASSERT(ofs && "Stream encountered an error");
-
-        ofs << contents;
-        SFML_BASE_ASSERT(ofs && "Stream encountered an error");
-    }
-
-    // Close and delete the generated file (if it still exists).
-    ~TemporaryFile()
-    {
-        if (m_path.exists())
-        {
-            [[maybe_unused]] const bool removed = m_path.removeFromDisk();
-            SFML_BASE_ASSERT(removed && "m_path failed to be removed from filesystem");
-        }
-    }
-
-    // Prevent copies.
-    TemporaryFile(const TemporaryFile&)            = delete;
-    TemporaryFile& operator=(const TemporaryFile&) = delete;
-
-    // Return the randomly generated path.
-    [[nodiscard]] const sf::Path& getPath() const
-    {
-        return m_path;
-    }
-
-private:
-    sf::Path m_path;
-};
-} // namespace
+using sf::testing::TemporaryFile;
 
 
 TEST_CASE("[System] sf::OutStringStream")

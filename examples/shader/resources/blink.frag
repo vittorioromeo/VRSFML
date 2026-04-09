@@ -1,4 +1,5 @@
-layout(location = 2) uniform sampler2D sf_u_texture;
+#include "default_uniforms.glsl"
+
 layout(location = 7) uniform float blink_alpha;
 
 in vec4 sf_v_color;
