@@ -13,7 +13,7 @@
 #include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/AssertAndAssume.hpp"
-#include "SFML/Base/MinMaxMacros.hpp"
+#include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/SinCosLookup.hpp"
 
 
@@ -110,16 +110,16 @@ struct [[nodiscard]] Transform
 
         const float sxc = scale.x * cosine;
         const float syc = scale.y * cosine;
-        const float sxs = scale.x * -sine;
-        const float sys = scale.y * -sine;
-        const float tx  = -origin.x * sxc - origin.y * sys + position.x;
-        const float ty  = origin.x * sxs - origin.y * syc + position.y;
+        const float sxs = scale.x * sine;
+        const float sys = scale.y * sine;
+        const float tx  = -origin.x * sxc + origin.y * sys + position.x;
+        const float ty  = -origin.x * sxs - origin.y * syc + position.y;
 
         return {
             .a00 = sxc,
-            .a01 = sys,
+            .a01 = -sys,
             .a02 = tx,
-            .a10 = -sxs,
+            .a10 = sxs,
             .a11 = syc,
             .a12 = ty,
         };
@@ -242,24 +242,20 @@ struct [[nodiscard]] Transform
     {
         const Vec2f p0 = transformPoint(rectangle.position);
 
-        // Transformed offset vec2 for the X-direction side
-        const Vec2f dx = {a00 * rectangle.size.x, a10 * rectangle.size.x};
+        // Per-axis edge contributions from each side of the rectangle
+        const float e0x = a00 * rectangle.size.x;
+        const float e0y = a10 * rectangle.size.x;
+        const float e1x = a01 * rectangle.size.y;
+        const float e1y = a11 * rectangle.size.y;
 
-        // Transformed offset vec2 for the Y-direction side
-        const Vec2f dy = {a01 * rectangle.size.y, a11 * rectangle.size.y};
+        // The minimum corner is p0 offset by the negative contributions
+        const float minX = p0.x + (e0x < 0.f ? e0x : 0.f) + (e1x < 0.f ? e1x : 0.f);
+        const float minY = p0.y + (e0y < 0.f ? e0y : 0.f) + (e1y < 0.f ? e1y : 0.f);
 
-        // Calculate other corners relative to `p0`
-        const Vec2f p1 = p0 + dy;
-        const Vec2f p2 = p0 + dx;
-        const Vec2f p3 = p2 + dy; // Or `p1 + dx`
-
-        // Compute the bounding rectangle of the transformed points
-        const float minX = SFML_BASE_MIN(SFML_BASE_MIN(p0.x, p1.x), SFML_BASE_MIN(p2.x, p3.x));
-        const float maxX = SFML_BASE_MAX(SFML_BASE_MAX(p0.x, p1.x), SFML_BASE_MAX(p2.x, p3.x));
-        const float minY = SFML_BASE_MIN(SFML_BASE_MIN(p0.y, p1.y), SFML_BASE_MIN(p2.y, p3.y));
-        const float maxY = SFML_BASE_MAX(SFML_BASE_MAX(p0.y, p1.y), SFML_BASE_MAX(p2.y, p3.y));
-
-        return Rect2f{{minX, minY}, {maxX - minX, maxY - minY}};
+        // The size is the sum of the absolute edge contributions
+        return Rect2f{{minX, minY},
+                      {SFML_BASE_MATH_FABSF(e0x) + SFML_BASE_MATH_FABSF(e1x),
+                       SFML_BASE_MATH_FABSF(e0y) + SFML_BASE_MATH_FABSF(e1y)}};
     }
 
 
