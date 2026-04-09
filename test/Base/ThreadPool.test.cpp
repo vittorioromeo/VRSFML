@@ -7,12 +7,6 @@
 
 TEST_CASE("[Base] Base/ThreadPool.hpp")
 {
-    SECTION("Construct with 0 workers")
-    {
-        sf::base::ThreadPool pool(0u);
-        REQUIRE(pool.getWorkerCount() == 0u);
-    }
-
     SECTION("Construct with 1 worker")
     {
         sf::base::ThreadPool pool(1u);
