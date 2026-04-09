@@ -170,6 +170,8 @@ struct ThreadPool::Impl
 ////////////////////////////////////////////////////////////
 ThreadPool::ThreadPool(const SizeT workerCount)
 {
+    SFML_BASE_ASSERT(workerCount > 0u);
+
     for (SizeT i = 0u; i < workerCount; ++i)
         m_impl->workers.emplaceBack(m_impl->queue);
 
