@@ -385,7 +385,7 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * doctest::skip(skipDisplayTests))
                 CHECK(!mappingGuard.fatalErrorTriggered("GlyphMapping"));
             }
 
-            // Text destroyed before dependees — no errors
+            // Text destroyed before dependees -- no errors
             CHECK(!fontFaceGuard.fatalErrorTriggered("FontFace"));
             CHECK(!textureGuard.fatalErrorTriggered("Texture"));
             CHECK(!mappingGuard.fatalErrorTriggered("GlyphMapping"));

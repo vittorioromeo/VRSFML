@@ -18,7 +18,7 @@ namespace sf::priv
 /// Copies the color buffer from the framebuffer currently bound to
 /// `GL_READ_FRAMEBUFFER` into the framebuffer currently bound to
 /// `GL_DRAW_FRAMEBUFFER`. Setting `invertYAxis` to `true` swaps the
-/// source's vertical bounds, producing a vertically flipped result —
+/// source's vertical bounds, producing a vertically flipped result --
 /// useful when copying between framebuffers that disagree on Y axis
 /// orientation (e.g. flipping for screen capture).
 ///
@@ -26,7 +26,7 @@ namespace sf::priv
 /// \param src         Source region coordinates and dimensions
 /// \param dst         Destination region coordinates and dimensions
 ///
-/// \note Uses `GL_NEAREST` filtering — appropriate for same-size copies.
+/// \note Uses `GL_NEAREST` filtering -- appropriate for same-size copies.
 ///       The caller is responsible for binding the source and
 ///       destination framebuffers before calling.
 ///
@@ -45,7 +45,7 @@ void blitFramebuffer(bool invertYAxis, Rect2u src, Rect2u dst);
 /// \param srcPos      Source region starting position
 /// \param dstPos      Destination region starting position
 ///
-/// \note Uses `GL_NEAREST` filtering — appropriate for same-size copies.
+/// \note Uses `GL_NEAREST` filtering -- appropriate for same-size copies.
 ///       The caller is responsible for binding the source and
 ///       destination framebuffers before calling.
 ///
