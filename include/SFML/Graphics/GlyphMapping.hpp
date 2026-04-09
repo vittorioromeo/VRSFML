@@ -80,7 +80,7 @@ struct [[nodiscard]] GlyphLoadSettings
 ///
 /// Created by `FontFace::loadGlyphs()`. Contains preloaded glyph
 /// metrics and cached font metrics. Does not store references to
-/// `FontFace` or `Texture` — those are provided externally.
+/// `FontFace` or `Texture` -- those are provided externally.
 ///
 ////////////////////////////////////////////////////////////
 struct SFML_GRAPHICS_API GlyphMapping

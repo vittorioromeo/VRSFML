@@ -45,7 +45,7 @@ namespace sf
 /// path).
 ///
 /// Derived classes must provide:
-/// - `const auto& getFontSource() const` — returns Font& or GlyphMapping&
+/// - `const auto& getFontSource() const` -- returns Font& or GlyphMapping&
 /// - `unsigned int getCharacterSize() const`
 /// - `float getOutlineThickness() const`
 /// - `const Texture& getTexture() const`

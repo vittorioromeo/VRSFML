@@ -29,7 +29,7 @@ namespace sf::base
 /// below the threshold.
 ///
 /// Implementation note: `m_heapData == nullptr` encodes "currently
-/// inline", which lets `SmallVector` remain trivially relocatable —
+/// inline", which lets `SmallVector` remain trivially relocatable --
 /// after a `memcpy`, the recomputed inline-storage pointer still
 /// addresses the new object's own buffer.
 ///
