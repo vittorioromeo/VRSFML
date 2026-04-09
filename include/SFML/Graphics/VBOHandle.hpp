@@ -15,6 +15,7 @@
 namespace sf
 {
 struct InstanceAttributeBinder;
+class VAOHandle;
 } // namespace sf
 
 
@@ -61,6 +62,7 @@ public:
 
 private:
     friend InstanceAttributeBinder;
+    friend VAOHandle;
 
     ////////////////////////////////////////////////////////////
     /// \brief Internal helper that binds the VBO as `GL_ARRAY_BUFFER`

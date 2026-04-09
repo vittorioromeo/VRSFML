@@ -382,7 +382,7 @@ void DrawableBatchImpl<TStorage>::add(const GlyphMappedText& text)
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-void DrawableBatchImpl<TStorage>::add(const Sprite& sprite) // TODO P1: batched versions for (Sprite* b, Sprite* e)
+void DrawableBatchImpl<TStorage>::add(const Sprite& sprite)
 {
     DrawableBatchUtils::appendSpriteIndicesAndVertices(sprite,
                                                        m_storage.getNumVertices(),

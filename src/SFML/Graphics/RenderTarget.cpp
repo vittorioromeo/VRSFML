@@ -363,6 +363,7 @@ RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
 
     syncGPUStartFrame();
 
+    ++m_frameCounter;
     m_currentDrawStats = {};
 
     // Unbind texture to fix RenderTexture preventing clear
@@ -375,7 +376,6 @@ RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
         glCheck(glDisable(GL_SCISSOR_TEST));
         m_impl->cache.scissorEnabled = false;
     }
-
 
     return true;
 }
@@ -692,11 +692,13 @@ void RenderTarget::immediateDrawInstancedVertices(const DrawInstancedVerticesSet
     if (settings.vertexSpan.isNullOrEmpty() || settings.instanceCount == 0u || !setActive(true))
         return;
 
+    settings.vaoHandle.resetVBOSlotsIfNewFrame(m_frameCounter);
+
     const DrawGuard drawGuard{*this, states, settings.vaoHandle.asVAOGroup()};
 
     RenderTargetImpl::streamVerticesToGPU(settings.vertexSpan);
 
-    InstanceAttributeBinder iab;
+    InstanceAttributeBinder iab{settings.instanceCount, settings.vaoHandle};
     setupFn(iab);
 
     invokeInstancedPrimitiveDrawCall(settings.primitiveType, 0, settings.vertexSpan.size(), settings.instanceCount);
@@ -713,12 +715,14 @@ void RenderTarget::immediateDrawInstancedIndexedVertices(const DrawInstancedInde
         !setActive(true))
         return;
 
+    settings.vaoHandle.resetVBOSlotsIfNewFrame(m_frameCounter);
+
     const DrawGuard drawGuard{*this, states, settings.vaoHandle.asVAOGroup()};
 
     RenderTargetImpl::streamVerticesToGPU(settings.vertexSpan);
     RenderTargetImpl::streamIndicesToGPU(settings.indexSpan);
 
-    InstanceAttributeBinder iab;
+    InstanceAttributeBinder iab{settings.instanceCount, settings.vaoHandle};
     setupFn(iab);
 
     invokeInstancedPrimitiveDrawCallIndexed(settings.primitiveType, 0, settings.indexSpan.size(), settings.instanceCount);
