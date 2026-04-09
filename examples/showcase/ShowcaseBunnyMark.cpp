@@ -1,8 +1,16 @@
 #include "ShowcaseBunnyMark.hpp"
 #include "ShowcaseExample.hpp"
 
+#include "SFML/ImGui/IncludeImGui.hpp"
+
 #include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/DefaultShader.hpp"
+#include "SFML/Graphics/DrawInstancedIndexedVerticesSettings.hpp"
 #include "SFML/Graphics/Font.hpp"
+#include "SFML/Graphics/InstanceAttributeBinder.hpp"
+#include "SFML/Graphics/InstancedQuad.hpp"
+#include "SFML/Graphics/PrimitiveType.hpp"
+#include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/TextData.hpp"
@@ -18,8 +26,53 @@
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/Math/Sin.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Span.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/ToString.hpp"
+
+
+////////////////////////////////////////////////////////////
+constexpr const char* bunnyInstancedVertexShader = R"glsl(
+
+layout(location = 0) uniform vec3 sf_u_mvpRow0;
+layout(location = 1) uniform vec3 sf_u_mvpRow1;
+layout(location = 2) uniform sampler2D sf_u_texture;
+layout(location = 3) uniform vec2 sf_u_invTextureSize;
+
+layout(location = 0) in vec2 sf_a_position;
+layout(location = 1) in vec4 sf_a_color;
+layout(location = 2) in vec2 sf_a_texCoord;
+
+// Per-instance attributes
+layout(location = 3) in vec2 instance_position;
+layout(location = 4) in float instance_scale;
+layout(location = 5) in float instance_rotation;
+layout(location = 6) in vec2 instance_texRectPos;
+layout(location = 7) in vec2 instance_texRectSize;
+
+out vec4 sf_v_color;
+out vec2 sf_v_texCoord;
+
+void main()
+{
+    vec2 local = sf_a_position * instance_texRectSize;
+
+    float c = cos(instance_rotation);
+    float s = sin(instance_rotation);
+    float x = local.x * c - local.y * s;
+    float y = local.x * s + local.y * c;
+    vec2 worldPos = instance_position + instance_scale * vec2(x, y);
+
+    gl_Position = vec4(dot(sf_u_mvpRow0, vec3(worldPos, 1.0)),
+                       dot(sf_u_mvpRow1, vec3(worldPos, 1.0)), 0.0, 1.0);
+
+    sf_v_color = vec4(1.0, 1.0, 1.0, 1.0);
+
+    vec2 final_texCoord = instance_texRectPos + (sf_a_texCoord * instance_texRectSize);
+    sf_v_texCoord = final_texCoord * sf_u_invTextureSize;
+}
+
+)glsl";
 
 
 ////////////////////////////////////////////////////////////
@@ -59,6 +112,11 @@ ExampleBunnyMark::ExampleBunnyMark(const GameDependencies& deps, sf::TextureAtla
         addImgToAtlasWithRotatedHue("resources/bunny0.png", 315.f),
     }
 {
+    // Set up instanced rendering shader
+    m_instancedShader.emplace(sf::Shader::loadFromMemory({.vertexCode = bunnyInstancedVertexShader}).value());
+
+    m_ulInvTexSize.emplace(m_instancedShader->getUniformLocation("sf_u_invTextureSize").value());
+    m_instancedShader->setUniform(*m_ulInvTexSize, 1.f / m_textureAtlas.getTexture().getSize().toVec2f());
 }
 
 
@@ -68,11 +126,11 @@ void ExampleBunnyMark::update(const float deltaTimeMs)
     m_time += deltaTimeMs;
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right))
-        m_bunnyTargetCount += 1000;
+        m_bunnyTargetCount += 5000;
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))
-        m_bunnyTargetCount -= 1000;
+        m_bunnyTargetCount -= 5000;
 
-    m_bunnyTargetCount = sf::base::clamp(m_bunnyTargetCount, sf::base::SizeT{1000}, sf::base::SizeT{2'500'000});
+    m_bunnyTargetCount = sf::base::clamp(m_bunnyTargetCount, sf::base::SizeT{5000}, sf::base::SizeT{2'500'000});
 
     if (m_bunnies.size() < m_bunnyTargetCount)
     {
@@ -112,13 +170,72 @@ void ExampleBunnyMark::update(const float deltaTimeMs)
 
 
 ////////////////////////////////////////////////////////////
+void ExampleBunnyMark::imgui()
+{
+    ImGui::Begin("BunnyMark", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+
+    constexpr const char* modeNames[] = {"Normal", "Instanced"};
+    int                   modeIndex   = static_cast<int>(m_drawMode);
+
+    if (ImGui::Combo("Draw mode", &modeIndex, modeNames, 2))
+        m_drawMode = static_cast<DrawMode>(modeIndex);
+
+    ImGui::End();
+}
+
+
+////////////////////////////////////////////////////////////
+void ExampleBunnyMark::drawInstanced()
+{
+    const auto nBunnies = m_bunnies.size();
+
+    m_instanceData.resize(nBunnies);
+
+    for (sf::base::SizeT i = 0u; i < nBunnies; ++i)
+    {
+        const auto& [position, velocity, rotation, scale] = m_bunnies[i];
+        const auto& txr                                   = m_bunnyTextureRects[i % 8u];
+
+        m_instanceData[i] = {position, scale, rotation.asRadians(), txr.position, txr.size};
+    }
+
+    auto setupAttribs = [&](sf::InstanceAttributeBinder& binder)
+    {
+        binder.uploadContiguousData(m_instanceData);
+
+        binder.setupField<&BunnyInstanceData::position>(3);
+        binder.setupField<&BunnyInstanceData::scale>(4);
+        binder.setupField<&BunnyInstanceData::rotation>(5);
+        binder.setupField<&BunnyInstanceData::texRectPos>(6);
+        binder.setupField<&BunnyInstanceData::texRectSize>(7);
+    };
+
+    m_deps.rtGame->drawInstancedIndexedVertices(
+        {
+            .vaoHandle     = m_vaoHandle,
+            .vertexSpan    = sf::instancedQuadVertices,
+            .indexSpan     = sf::instancedQuadIndices,
+            .instanceCount = nBunnies,
+            .primitiveType = sf::PrimitiveType::Triangles,
+        },
+        setupAttribs,
+        {.view = *m_deps.view, .texture = &m_textureAtlas.getTexture(), .shader = &*m_instancedShader});
+}
+
+
+////////////////////////////////////////////////////////////
 void ExampleBunnyMark::draw()
 {
-    sf::base::SizeT i = 0;
-
+    if (m_drawMode == DrawMode::Instanced)
+    {
+        drawInstanced();
+    }
+    else
     {
         auto drawCtx = m_deps.rtGame->withLockedRenderStates(
             {.view = *m_deps.view, .texture = &m_textureAtlas.getTexture()});
+
+        sf::base::SizeT i = 0;
 
         for (auto& [position, velocity, rotation, scale] : m_bunnies)
         {
