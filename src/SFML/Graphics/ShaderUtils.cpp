@@ -148,6 +148,16 @@ constexpr unsigned int maxIncludeFilenameLength = 256;
             // Get included source
             sf::base::StringView includedSource{optFileContents->data(), optFileContents->size()};
 
+            // Emit begin-include marker
+            {
+                constexpr sf::base::StringView prefix{"// >>> begin included from \""};
+                constexpr sf::base::StringView suffix{"\" >>>\n"};
+
+                output.emplaceRange(prefix.data(), prefix.size());
+                output.emplaceRange(filenameBuf, includedFilename.size());
+                output.emplaceRange(suffix.data(), suffix.size());
+            }
+
             // Push to include stack and recursively process
             includeStack.pushBack(includePath);
 
@@ -155,6 +165,16 @@ constexpr unsigned int maxIncludeFilenameLength = 256;
                 return false;
 
             includeStack.popBack();
+
+            // Emit end-include marker
+            {
+                constexpr sf::base::StringView prefix{"// <<< end included from \""};
+                constexpr sf::base::StringView suffix{"\" <<<\n"};
+
+                output.emplaceRange(prefix.data(), prefix.size());
+                output.emplaceRange(filenameBuf, includedFilename.size());
+                output.emplaceRange(suffix.data(), suffix.size());
+            }
 
             // Restore line numbering for parent file
             sf::ShaderUtils::emitLineDirective(output, lineNumber + 1);
