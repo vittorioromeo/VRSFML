@@ -1,5 +1,5 @@
 layout(location = 0) uniform mat4 sf_u_mvpMatrix;
-layout(location = 1) uniform sampler2D sf_u_texture;
+layout(location = 4) uniform vec2 sf_u_invTextureSize;
 uniform vec2 u_viewOrigin;
 
 layout(location = 0) in vec2 sf_a_position;
@@ -14,6 +14,6 @@ void main()
 {
     gl_Position   = sf_u_mvpMatrix * vec4(sf_a_position, 0.0, 1.0);
     sf_v_color    = sf_a_color;
-    sf_v_texCoord = sf_a_texCoord / vec2(textureSize(sf_u_texture, 0));
+    sf_v_texCoord = sf_a_texCoord * sf_u_invTextureSize;
     v_worldPos    = u_viewOrigin + sf_a_position;
 }
