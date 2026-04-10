@@ -628,10 +628,7 @@ enum class TSpinType : sf::base::U8
     // T-piece center is always at local position (1,1) in the 4x4 shape matrix
     const sf::Vec2i center = tetramino.position + sf::Vec2i{1, 1};
 
-    const auto isOccupied = [&](const sf::Vec2i pos) -> bool
-    {
-        return !grid.isInBounds(pos) || grid.at(pos).hasValue();
-    };
+    const auto isOccupied = [&](const sf::Vec2i pos) -> bool { return !grid.isInBounds(pos) || grid.at(pos).hasValue(); };
 
     int occupiedCorners = 0;
     occupiedCorners += isOccupied(center + sf::Vec2i{-1, -1}) ? 1 : 0;
@@ -1313,7 +1310,7 @@ private:
 
         if (m_world.blockGrid.isValidMove(tetramino.shape, newPosition))
         {
-            tetramino.position              = newPosition;
+            tetramino.position          = newPosition;
             m_world.lastMoveWasRotation = false;
         }
     }
@@ -1341,9 +1338,9 @@ private:
             if (!m_world.blockGrid.isValidMove(rotatedShape, testPosition))
                 continue;
 
-            tetramino.shape                 = rotatedShape;
-            tetramino.position              = testPosition;
-            tetramino.rotationState         = nextRotationState;
+            tetramino.shape             = rotatedShape;
+            tetramino.position          = testPosition;
+            tetramino.rotationState     = nextRotationState;
             m_world.lastMoveWasRotation = true;
 
             return;
