@@ -8,6 +8,7 @@
 #include "SFML/Graphics/Shader.hpp"
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/VAOHandle.hpp"
+#include "SFML/Graphics/VBOHandle.hpp"
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Path.hpp"
@@ -87,6 +88,7 @@ private:
     sf::base::Optional<sf::Shader>                  m_instancedShader;
     sf::base::Optional<sf::Shader::UniformLocation> m_ulInvTexSize;
     sf::VAOHandle                                   m_vaoHandle;
+    sf::VBOHandle                                   m_instanceVBO;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::Rect2f              addImgToAtlasWithRotatedHue(const sf::Path& path, float hueDegrees);

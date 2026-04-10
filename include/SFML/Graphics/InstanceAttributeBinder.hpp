@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
-class VAOHandle;
 class VBOHandle;
 
 template <typename T>
@@ -84,7 +83,7 @@ namespace sf
 struct [[nodiscard]] InstanceAttributeBinder
 {
     ////////////////////////////////////////////////////////////
-    InstanceAttributeBinder(base::SizeT instanceCount, VAOHandle& vaoHandle);
+    explicit InstanceAttributeBinder(base::SizeT instanceCount);
 
     ////////////////////////////////////////////////////////////
     InstanceAttributeBinder(const InstanceAttributeBinder&)            = delete;
@@ -95,64 +94,54 @@ struct [[nodiscard]] InstanceAttributeBinder
     InstanceAttributeBinder& operator=(InstanceAttributeBinder&&) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Bind an external VBO for the next `setup` calls
+    /// \brief Upload per-instance data into the given VBO
     ///
-    /// Overrides the automatic VBO management for advanced use
-    /// cases. Resets the upload state -- `uploadData` must be
-    /// called before any `setup` calls after this.
+    /// Binds `vboHandle`, then uploads `instanceCount * stride`
+    /// bytes from `data` with `GL_STREAM_DRAW`.
     ///
-    /// \param vboHandle VBO to bind as the active per-instance source
-    ///
-    ////////////////////////////////////////////////////////////
-    void bindVBO(VBOHandle& vboHandle);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Upload per-instance data into the next auto-managed VBO
-    ///
-    /// Automatically binds the next VBO from the `VAOHandle`'s
-    /// internal pool (creating it lazily if needed), then uploads
-    /// `instanceCount * stride` bytes from `data`.
-    ///
-    /// \param data   Pointer to the source bytes
-    /// \param stride Size, in bytes, of one per-instance record
+    /// \param vboHandle VBO to upload into
+    /// \param data      Pointer to the source bytes
+    /// \param stride    Size, in bytes, of one per-instance record
     ///
     ////////////////////////////////////////////////////////////
-    void uploadData(const void* data, base::SizeT stride);
+    void uploadData(VBOHandle& vboHandle, const void* data, base::SizeT stride);
 
     ////////////////////////////////////////////////////////////
     /// \brief Type-safe wrapper around `uploadData` for contiguous arrays
     ///
-    /// Equivalent to `uploadData(data, sizeof(T))`.
+    /// Equivalent to `uploadData(vboHandle, data, sizeof(T))`.
     ///
-    /// \tparam T    Per-instance record type
-    /// \param data  Pointer to the contiguous per-instance data
+    /// \tparam T         Per-instance record type
+    /// \param vboHandle  VBO to upload into
+    /// \param data       Pointer to the contiguous per-instance data
     ///
     ////////////////////////////////////////////////////////////
     template <typename T>
-    void uploadContiguousData(const T* const data)
+    void uploadContiguousData(VBOHandle& vboHandle, const T* const data)
     {
-        uploadData(data, sizeof(T));
+        uploadData(vboHandle, data, sizeof(T));
     }
 
     ////////////////////////////////////////////////////////////
     /// \brief Type-safe wrapper around `uploadData` for contiguous arrays
     ///
-    /// Equivalent to `uploadContiguousData(range.data())`.
+    /// Equivalent to `uploadContiguousData(vboHandle, range.data())`.
     /// Asserts that `range.size() >= instanceCount`.
     ///
-    /// \tparam T    Per-instance record type
-    /// \param range Reference to the contiguous per-instance data
+    /// \tparam T         Per-instance record type
+    /// \param vboHandle  VBO to upload into
+    /// \param range      Reference to the contiguous per-instance data
     ///
     ////////////////////////////////////////////////////////////
     template <typename T>
-    void uploadContiguousData(const T& range)
+    void uploadContiguousData(VBOHandle& vboHandle, const T& range)
         requires requires {
             range.data();
             range.size();
         }
     {
         SFML_BASE_ASSERT(range.size() >= m_instanceCount);
-        uploadContiguousData(range.data());
+        uploadContiguousData(vboHandle, range.data());
     }
 
     ////////////////////////////////////////////////////////////
@@ -213,7 +202,7 @@ struct [[nodiscard]] InstanceAttributeBinder
     ///
     /// \tparam T Element type (e.g. `Vec2f`, `float`)
     ///
-    /// \param location    Shader attribute location to bind to
+    /// \param location Shader attribute location to bind to
     ///
     ////////////////////////////////////////////////////////////
     template <typename T>
@@ -260,9 +249,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    VAOHandle&  m_vaoHandle;
     base::SizeT m_instanceCount;
-    bool        m_vboBound{false};
     bool        m_uploaded{false};
 };
 

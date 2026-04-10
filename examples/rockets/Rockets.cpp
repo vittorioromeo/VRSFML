@@ -37,6 +37,7 @@
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/TextureAtlas.hpp"
 #include "SFML/Graphics/VAOHandle.hpp"
+#include "SFML/Graphics/VBOHandle.hpp"
 #include "SFML/Graphics/View.hpp" // IWYU pragma: keep
 
 #include "SFML/Window/EventUtils.hpp"
@@ -120,6 +121,7 @@ void main()
 sf::Shader*                            instanceRenderingShader        = nullptr;
 const sf::Shader::UniformLocation*     instanceRenderingULTextureRect = nullptr;
 sf::VAOHandle*                         instanceRenderingVAOGroup      = nullptr;
+sf::VBOHandle*                         instanceRenderingVBOs          = nullptr; // points to array of 4
 sf::base::Vector<ParticleInstanceData> instanceRenderingDataBuffer[2];
 
 
@@ -644,7 +646,7 @@ struct World
         {
             auto setupSpriteInstanceAttribs = [&](sf::InstanceAttributeBinder& binder)
             {
-                binder.uploadContiguousData(instanceBuffer);
+                binder.uploadContiguousData(instanceRenderingVBOs[0], instanceBuffer);
 
                 binder.setupField<&ParticleInstanceData::position>(3);
                 binder.setupField<&ParticleInstanceData::scale>(4);
@@ -905,7 +907,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
 
             auto setupSpriteInstanceAttribs = [&](sf::InstanceAttributeBinder& binder)
             {
-                binder.uploadContiguousData(instanceRenderingDataBuffer[0]);
+                binder.uploadContiguousData(instanceRenderingVBOs[0], instanceRenderingDataBuffer[0]);
 
                 binder.setupField<&ParticleInstanceData::position>(3);
                 binder.setupField<&ParticleInstanceData::scale>(4);
@@ -1157,16 +1159,16 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
 
             auto setupSpriteInstanceAttribs = [&](sf::InstanceAttributeBinder& binder)
             {
-                binder.uploadContiguousData(particles.positions);
+                binder.uploadContiguousData(instanceRenderingVBOs[0], particles.positions);
                 binder.setupFlat<sf::Vec2f>(3);
 
-                binder.uploadContiguousData(particles.scales);
+                binder.uploadContiguousData(instanceRenderingVBOs[1], particles.scales);
                 binder.setupFlat<float>(4);
 
-                binder.uploadContiguousData(particles.rotations);
+                binder.uploadContiguousData(instanceRenderingVBOs[2], particles.rotations);
                 binder.setupFlat<float>(5);
 
-                binder.uploadContiguousData(particles.opacities);
+                binder.uploadContiguousData(instanceRenderingVBOs[3], particles.opacities);
                 binder.setupFlat<float>(6);
             };
 
@@ -1373,16 +1375,16 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
 
             auto setupSpriteInstanceAttribs = [&](sf::InstanceAttributeBinder& binder)
             {
-                binder.uploadContiguousData(particles.template get<&Particle::position>());
+                binder.uploadContiguousData(instanceRenderingVBOs[0], particles.template get<&Particle::position>());
                 binder.setupFlat<sf::Vec2f>(3);
 
-                binder.uploadContiguousData(particles.template get<&Particle::scale>());
+                binder.uploadContiguousData(instanceRenderingVBOs[1], particles.template get<&Particle::scale>());
                 binder.setupFlat<float>(4);
 
-                binder.uploadContiguousData(particles.template get<&Particle::rotation>());
+                binder.uploadContiguousData(instanceRenderingVBOs[2], particles.template get<&Particle::rotation>());
                 binder.setupFlat<float>(5);
 
-                binder.uploadContiguousData(particles.template get<&Particle::opacity>());
+                binder.uploadContiguousData(instanceRenderingVBOs[3], particles.template get<&Particle::opacity>());
                 binder.setupFlat<float>(6);
             };
 
@@ -1500,6 +1502,9 @@ int main()
 
     auto instancedRenderingVAOGroupImpl = sf::VAOHandle{};
     instanceRenderingVAOGroup           = &instancedRenderingVAOGroupImpl;
+
+    sf::VBOHandle instanceRenderingVBOsImpl[4];
+    instanceRenderingVBOs = instanceRenderingVBOsImpl;
 
     const auto instanceRenderingULTextureRectImpl = instancedRenderingShaderImpl.getUniformLocation("u_texRect").value();
     instanceRenderingULTextureRect = &instanceRenderingULTextureRectImpl;

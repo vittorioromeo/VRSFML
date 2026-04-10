@@ -201,7 +201,7 @@ void ExampleBunnyMark::drawInstanced()
 
     auto setupAttribs = [&](sf::InstanceAttributeBinder& binder)
     {
-        binder.uploadContiguousData(m_instanceData);
+        binder.uploadContiguousData(m_instanceVBO, m_instanceData);
 
         binder.setupField<&BunnyInstanceData::position>(3);
         binder.setupField<&BunnyInstanceData::scale>(4);
