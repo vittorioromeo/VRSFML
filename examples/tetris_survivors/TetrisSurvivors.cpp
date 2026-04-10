@@ -602,6 +602,54 @@ struct DynamicPerk
 
 
 ////////////////////////////////////////////////////////////
+enum class TSpinType : sf::base::U8
+{
+    None,
+    Mini,
+    Full
+};
+
+
+////////////////////////////////////////////////////////////
+// Detect T-spin after a T-piece locks.
+// Standard 3-corner rule: the T-piece center is always at local (1,1).
+// Check the 4 diagonal corners around the center on the grid.
+// A corner counts as "occupied" if it's out of bounds or contains a block.
+// Full T-spin: 3+ corners occupied.
+// Mini T-spin: exactly 2 corners occupied (and last move was rotation).
+[[nodiscard]] inline TSpinType detectTSpin(const BlockGrid& grid, const Tetramino& tetramino, const bool lastMoveWasRotation)
+{
+    if (tetramino.tetraminoType != TetraminoType::T)
+        return TSpinType::None;
+
+    if (!lastMoveWasRotation)
+        return TSpinType::None;
+
+    // T-piece center is always at local position (1,1) in the 4x4 shape matrix
+    const sf::Vec2i center = tetramino.position + sf::Vec2i{1, 1};
+
+    const auto isOccupied = [&](const sf::Vec2i pos) -> bool
+    {
+        return !grid.isInBounds(pos) || grid.at(pos).hasValue();
+    };
+
+    int occupiedCorners = 0;
+    occupiedCorners += isOccupied(center + sf::Vec2i{-1, -1}) ? 1 : 0;
+    occupiedCorners += isOccupied(center + sf::Vec2i{+1, -1}) ? 1 : 0;
+    occupiedCorners += isOccupied(center + sf::Vec2i{-1, +1}) ? 1 : 0;
+    occupiedCorners += isOccupied(center + sf::Vec2i{+1, +1}) ? 1 : 0;
+
+    if (occupiedCorners >= 3)
+        return TSpinType::Full;
+
+    if (occupiedCorners == 2)
+        return TSpinType::Mini;
+
+    return TSpinType::None;
+}
+
+
+////////////////////////////////////////////////////////////
 class Game
 {
 private:
@@ -1259,17 +1307,20 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    void moveTetramino(Tetramino& tetramino, const sf::Vec2i delta) const
+    void moveTetramino(Tetramino& tetramino, const sf::Vec2i delta)
     {
         const auto newPosition = tetramino.position + delta;
 
         if (m_world.blockGrid.isValidMove(tetramino.shape, newPosition))
-            tetramino.position = newPosition;
+        {
+            tetramino.position              = newPosition;
+            m_world.lastMoveWasRotation = false;
+        }
     }
 
 
     ////////////////////////////////////////////////////////////
-    void rotateTetramino(Tetramino& tetramino, const bool clockwise) const
+    void rotateTetramino(Tetramino& tetramino, const bool clockwise)
     {
         const auto nextRotationState = static_cast<RotationState>((tetramino.rotationState + (clockwise ? 1u : 3u)) % 4u);
 
@@ -1290,9 +1341,10 @@ private:
             if (!m_world.blockGrid.isValidMove(rotatedShape, testPosition))
                 continue;
 
-            tetramino.shape         = rotatedShape;
-            tetramino.position      = testPosition;
-            tetramino.rotationState = nextRotationState;
+            tetramino.shape                 = rotatedShape;
+            tetramino.position              = testPosition;
+            tetramino.rotationState         = nextRotationState;
+            m_world.lastMoveWasRotation = true;
 
             return;
         }
@@ -1675,14 +1727,35 @@ private:
 
 
     ////////////////////////////////////////////////////////////
+    void handleTSpin(const TSpinType tSpinType, const Tetramino& tetramino)
+    {
+        (void)tetramino;
+
+        if (tSpinType == TSpinType::None)
+            return;
+
+        // TODO P1: add T-spin effects here, test detection
+        //
+        // `tSpinType` is `TSpinType::Full` or `TSpinType::Mini`.
+        // `tetramino.position` is the grid position of the locked T-piece.
+    }
+
+
+    ////////////////////////////////////////////////////////////
     void embedTetraminoAndClearLines(const Tetramino& tetramino)
     {
         handleTriggerTetraminoPlaced(tetramino);
+
+        // Detect T-spin before embedding (corners must be checked against the grid
+        // before the tetramino's blocks are placed into it)
+        const TSpinType tSpinType = detectTSpin(m_world.blockGrid, tetramino, m_world.lastMoveWasRotation);
 
         m_world.blockGrid.embedTetramino(tetramino);
         m_world.graceDropMoves = 0u;
 
         ++m_world.tetaminosPlaced;
+
+        handleTSpin(tSpinType, tetramino);
 
         if (const auto fullRows = findFullRows(); !fullRows.empty())
             m_animationTimelineP1.addInstantaneous(AnimClearLines{
@@ -1985,6 +2058,7 @@ private:
             .rotationState = RotationState{0u},
         });
 
+        m_world.lastMoveWasRotation    = false;
         m_currentTetraminoVisualCenter = toDrawCoordinates(m_world.currentTetramino->position);
     }
 
