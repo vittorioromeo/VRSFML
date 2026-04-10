@@ -9,6 +9,7 @@
 
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/String.hpp"
+#include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Trait/IsSame.hpp"
 
 #include <filesystem>
@@ -161,7 +162,7 @@ bool Path::extensionIs(const base::StringView str) const
         return false;
 
     for (base::SizeT i = 0u; i < nativeExt.size(); ++i)
-        if (std::tolower(static_cast<int>(nativeExt[i])) != std::tolower(static_cast<int>(str[i])))
+        if (std::tolower(static_cast<int>(nativeExt[i])) != std::tolower(static_cast<int>(str[i]))) // TODO P1: non-locale tolower
             return false;
 
     return true;
@@ -268,6 +269,8 @@ template std::filesystem::path Path::to<std::filesystem::path>() const;
 template std::string           Path::to<std::string>() const;
 template base::String          Path::to<base::String>() const;
 template std::u8string         Path::to<std::u8string>() const;
+template std::u32string        Path::to<std::u32string>() const;
+template std::wstring          Path::to<std::wstring>() const;
 
 
 ////////////////////////////////////////////////////////////
