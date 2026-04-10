@@ -13,6 +13,8 @@
 #include "SFML/Window/JoystickState.hpp"
 #include "SFML/Window/WindowContext.hpp"
 
+#include "SFML/System/Err.hpp"
+
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Optional.hpp"
 
@@ -27,7 +29,7 @@ void Joystick::update()
 
 
 ////////////////////////////////////////////////////////////
-Joystick::Query::Query(const priv::JoystickManager& joystickManager, unsigned int joystickId) :
+Joystick::Query::Query(const priv::JoystickManager& joystickManager, const unsigned int joystickId) :
     m_joystickManager(joystickManager),
     m_joystickId(joystickId)
 {
@@ -81,7 +83,7 @@ unsigned int Joystick::Query::getButtonCount() const
 
 
 ////////////////////////////////////////////////////////////
-bool Joystick::Query::hasAxis(Axis axis) const
+bool Joystick::Query::hasAxis(const Axis axis) const
 {
     SFML_BASE_ASSERT(isConnected() && "Query on unconnected joystick: has axis");
     return m_joystickManager.getCapabilities(m_joystickId).axes[axis];
@@ -89,7 +91,7 @@ bool Joystick::Query::hasAxis(Axis axis) const
 
 
 ////////////////////////////////////////////////////////////
-bool Joystick::Query::isButtonPressed(unsigned int button) const
+bool Joystick::Query::isButtonPressed(const unsigned int button) const
 {
     SFML_BASE_ASSERT(isConnected() && "Query on unconnected joystick: is button pressed");
     return m_joystickManager.getState(m_joystickId).buttons[button];
@@ -97,7 +99,7 @@ bool Joystick::Query::isButtonPressed(unsigned int button) const
 
 
 ////////////////////////////////////////////////////////////
-float Joystick::Query::getAxisPosition(Axis axis) const
+float Joystick::Query::getAxisPosition(const Axis axis) const
 {
     SFML_BASE_ASSERT(isConnected() && "Query on unconnected joystick: get axis position");
     return m_joystickManager.getState(m_joystickId).axes[axis];
@@ -112,8 +114,16 @@ bool Joystick::Query::isConnected() const
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Joystick::Query> Joystick::query(unsigned int joystickId)
+base::Optional<Joystick::Query> Joystick::query(const unsigned int joystickId)
 {
+    if (joystickId >= Joystick::MaxCount)
+    {
+        priv::err() << "Invalid joystick index: " << joystickId << ", valid range is [0 .. " << (Joystick::MaxCount - 1)
+                    << "]";
+
+        return base::nullOpt;
+    }
+
     const auto& joystickManager = WindowContext::getJoystickManager();
 
     if (!joystickManager.isConnected(joystickId))
