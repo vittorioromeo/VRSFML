@@ -318,7 +318,7 @@ base::Optional<Texture> Texture::loadFromImage(const Image& image, const Texture
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.size.x, rectangle.size.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
         glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 
-        glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+        glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, result->m_isSmooth ? GL_LINEAR : GL_NEAREST));
         result->m_hasMipmap = false;
 
         // Force an OpenGL flush, so that the texture will appear updated
