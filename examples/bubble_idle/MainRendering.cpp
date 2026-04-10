@@ -2306,11 +2306,11 @@ void Main::drawActivatedShrineBackgroundEffects(sf::RenderTarget& rt,
         shaderShrineBackground.setUniform(suShrineBgTintStrength, 0.2f);
         shaderShrineBackground.setUniform(suShrineBgEffectStrength, effectStrength);
 
+        rt.flush();
+
         rt.draw(backgroundTexture,
                 {.textureRect = {{0.f, 0.f}, backgroundView.size}},
                 {.view = backgroundView, .texture = &backgroundTexture, .shader = &shaderShrineBackground});
-
-        rt.flush();
     };
 
     for (const Shrine& shrine : pt->shrines)
