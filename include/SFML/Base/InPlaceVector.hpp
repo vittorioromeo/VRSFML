@@ -191,10 +191,20 @@ public:
 
         const auto index = static_cast<SizeT>(pos - data());
 
-        priv::VectorUtils::makeHole(pos, end());
-        SFML_BASE_PLACEMENT_NEW(pos) TItem(static_cast<Ts&&>(xs)...);
-        ++m_size;
+        if (pos == end()) // Append at end: no shift, no aliasing risk.
+        {
+            SFML_BASE_PLACEMENT_NEW(pos) TItem(static_cast<Ts&&>(xs)...);
+            ++m_size;
+            return data() + index;
+        }
 
+        // Construct a copy first to handle self-aliasing (`makeHole` shifts elements in-place,
+        // which invalidates any reference into the shifted region).
+        TItem copy(static_cast<Ts&&>(xs)...);
+        priv::VectorUtils::makeHole(pos, end());
+        SFML_BASE_PLACEMENT_NEW(pos) TItem(static_cast<TItem&&>(copy));
+
+        ++m_size;
         return data() + index;
     }
 
@@ -210,6 +220,24 @@ public:
     [[gnu::always_inline]] constexpr TItem* insert(TItem* const pos, TItem&& value)
     {
         return emplace(pos, static_cast<TItem&&>(value));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    template <typename T = TItem>
+    [[gnu::always_inline, gnu::flatten]] constexpr TItem& pushBack(T&& x)
+    {
+        SFML_BASE_ASSERT(m_size < N);
+        return unsafeEmplaceBack(static_cast<T&&>(x));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    template <typename... Ts>
+    [[gnu::always_inline, gnu::flatten]] constexpr TItem& emplaceBack(Ts&&... xs)
+    {
+        SFML_BASE_ASSERT(m_size < N);
+        return unsafeEmplaceBack(static_cast<Ts&&>(xs)...);
     }
 
 

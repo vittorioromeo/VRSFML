@@ -624,6 +624,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
             CHECK(tv.size() == 1);
             CHECK(tv[0].value == 42);
             CHECK(itRet == tv.begin());
+            // Emplace at end: direct construction, no temporary needed.
             CHECK(intCtorCount == 1);
             CHECK(moveCtorCount == 0);
             CHECK(moveAssignCount == 0);
@@ -646,7 +647,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
             CHECK(tv[2].value == 30);
             CHECK(itRet == tv.begin() + 2);
 
-            // Directly constructs at end, no shifts needed.
+            // Emplace at end: direct construction, no temporary needed.
             CHECK(intCtorCount == 1);
             CHECK(moveCtorCount == 0);
             CHECK(moveAssignCount == 0);
@@ -672,15 +673,11 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
             CHECK(tv[3].value == 40);
             CHECK(itRet == tv.begin() + 1);
 
-            // Analysis: Shift 2 elements (30, 40)
-            // 1. Move-construct '40' to new end.
-            // 2. Move-assign '30' over old '40'.
-            // 3. Destroy moved-from '30' at insertion point.
-            // 4. In-place construct '20'.
+            // Analysis: Shift 2 elements (30, 40) + temporary for new element
             CHECK(intCtorCount == 1);
-            CHECK(moveCtorCount == 1);
+            CHECK(moveCtorCount == 2);
             CHECK(moveAssignCount == 1);
-            CHECK(dtorCount == 1);
+            CHECK(dtorCount == 2);
         }
 
         SUBCASE("Emplace at the beginning")
@@ -700,15 +697,11 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
             CHECK(tv[2].value == 30);
             CHECK(itRet == tv.begin());
 
-            // Analysis: Shift 2 elements (20, 30)
-            // 1. Move-construct '30' to new end.
-            // 2. Move-assign '20' over old '30'.
-            // 3. Destroy moved-from '20' at insertion point.
-            // 4. In-place construct '10'.
+            // Analysis: Shift 2 elements (20, 30) + temporary for new element
             CHECK(intCtorCount == 1);
-            CHECK(moveCtorCount == 1);
+            CHECK(moveCtorCount == 2);
             CHECK(moveAssignCount == 1);
-            CHECK(dtorCount == 1);
+            CHECK(dtorCount == 2);
         }
     }
 
@@ -738,6 +731,88 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
         CHECK(v0[0] == 1);
         CHECK(v0[1] == 2);
         CHECK(v0[2] == 3);
+    }
+
+    SECTION("Self-aliasing: pushBack from own element")
+    {
+        sf::base::InPlaceVector<Obj, defaultCapacity> v;
+        v.emplaceBack(10);
+        v.emplaceBack(20);
+        v.emplaceBack(30);
+
+        v.pushBack(v[0]);
+
+        CHECK(v.size() == 4);
+        CHECK(v[0].value == 10);
+        CHECK(v[1].value == 20);
+        CHECK(v[2].value == 30);
+        CHECK(v[3].value == 10);
+    }
+
+    SECTION("Self-aliasing: insert at begin from last element")
+    {
+        sf::base::InPlaceVector<Obj, defaultCapacity> v;
+        v.emplaceBack(10);
+        v.emplaceBack(20);
+        v.emplaceBack(30);
+
+        v.insert(v.begin(), v[2]);
+
+        CHECK(v.size() == 4);
+        CHECK(v[0].value == 30);
+        CHECK(v[1].value == 10);
+        CHECK(v[2].value == 20);
+        CHECK(v[3].value == 30);
+    }
+
+    SECTION("Self-aliasing: insert at middle from element that gets shifted")
+    {
+        sf::base::InPlaceVector<Obj, defaultCapacity> v;
+        v.emplaceBack(10);
+        v.emplaceBack(20);
+        v.emplaceBack(30);
+
+        v.insert(v.begin() + 1, v[2]);
+
+        CHECK(v.size() == 4);
+        CHECK(v[0].value == 10);
+        CHECK(v[1].value == 30);
+        CHECK(v[2].value == 20);
+        CHECK(v[3].value == 30);
+    }
+
+    SECTION("Self-aliasing: emplace at begin from back()")
+    {
+        sf::base::InPlaceVector<Obj, defaultCapacity> v;
+        v.emplaceBack(10);
+        v.emplaceBack(20);
+        v.emplaceBack(30);
+
+        const Obj& backRef = v.back();
+        v.emplace(v.begin(), backRef);
+
+        CHECK(v.size() == 4);
+        CHECK(v[0].value == 30);
+        CHECK(v[1].value == 10);
+        CHECK(v[2].value == 20);
+        CHECK(v[3].value == 30);
+    }
+
+    SECTION("Self-aliasing: emplaceBack from own element")
+    {
+        sf::base::InPlaceVector<Obj, defaultCapacity> v;
+        v.emplaceBack(10);
+        v.emplaceBack(20);
+        v.emplaceBack(30);
+
+        const Obj& ref = v[1];
+        v.emplaceBack(ref);
+
+        CHECK(v.size() == 4);
+        CHECK(v[0].value == 10);
+        CHECK(v[1].value == 20);
+        CHECK(v[2].value == 30);
+        CHECK(v[3].value == 20);
     }
 }
 

@@ -89,6 +89,47 @@ private:
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Grow the buffer and construct a new element at `insertIndex`
+    ///
+    /// Allocates a new buffer, constructs the element at its target
+    /// position while the old buffer is still alive (so references
+    /// into the old buffer remain valid), then relocates existing
+    /// elements around it.
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename... Ts>
+    [[gnu::cold, gnu::noinline]] TItem* growAndEmplace(const SizeT insertIndex, Ts&&... xs)
+    {
+        const auto oldSize               = m_size;
+        const auto currentCapacity       = m_capacity;
+        const auto geometricGrowthTarget = currentCapacity + (currentCapacity / 2u);
+        const auto finalNewCapacity      = SFML_BASE_MAX(oldSize + 1, geometricGrowthTarget);
+
+        auto* newData = priv::VectorUtils::allocate<TItem>(finalNewCapacity);
+
+        // Construct new element first (old buffer still alive, references valid).
+        SFML_BASE_PLACEMENT_NEW(newData + insertIndex) TItem(static_cast<Ts&&>(xs)...);
+
+        // Relocate old elements around the newly constructed element.
+        TItem* const oldData = data();
+        if (oldSize > 0u)
+        {
+            priv::VectorUtils::relocateRange(newData, oldData, oldData + insertIndex);
+            priv::VectorUtils::relocateRange(newData + insertIndex + 1, oldData + insertIndex, oldData + oldSize);
+        }
+
+        if (isHeap())
+            priv::VectorUtils::deallocate(m_heapData, currentCapacity);
+
+        m_heapData = newData;
+        m_capacity = finalNewCapacity;
+        m_size     = oldSize + 1;
+
+        return newData + insertIndex;
+    }
+
+
 public:
     ////////////////////////////////////////////////////////////
     enum : bool
@@ -317,22 +358,29 @@ public:
     {
         SFML_BASE_ASSERT(pos >= begin() && pos <= end());
 
-        // Save the index before `reserve` potentially invalidates `pos`.
         const auto index = static_cast<SizeT>(pos - data());
 
-        reserve(m_size + 1);
+        if (m_size >= m_capacity) [[unlikely]]
+            return growAndEmplace(index, static_cast<Ts&&>(xs)...);
 
         TItem* const d = data();
 
-        // Restore the insertion position iterator, which may point to new memory.
+        if (pos == d + m_size) // Append at end: no shift, no aliasing risk.
+        {
+            SFML_BASE_PLACEMENT_NEW(d + m_size) TItem(static_cast<Ts&&>(xs)...);
+            ++m_size;
+            return d + index;
+        }
+
+        // Construct a copy first to handle self-aliasing (`makeHole` shifts elements in-place,
+        // which invalidates any reference into the shifted region).
+        TItem        copy(static_cast<Ts&&>(xs)...);
         TItem* const currentPos = d + index;
-
         priv::VectorUtils::makeHole(currentPos, d + m_size);
+        SFML_BASE_PLACEMENT_NEW(currentPos) TItem(static_cast<TItem&&>(copy));
 
-        SFML_BASE_PLACEMENT_NEW(currentPos) TItem(static_cast<Ts&&>(xs)...);
         ++m_size;
-
-        return currentPos;
+        return d + index;
     }
 
 
@@ -347,6 +395,28 @@ public:
     [[gnu::always_inline]] TItem* insert(TItem* const pos, TItem&& value)
     {
         return emplace(pos, static_cast<TItem&&>(value));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    template <typename T = TItem>
+    [[gnu::always_inline, gnu::flatten]] TItem& pushBack(T&& x)
+    {
+        if (m_size < m_capacity) [[likely]]
+            return unsafeEmplaceBack(static_cast<T&&>(x));
+
+        return *growAndEmplace(m_size, static_cast<T&&>(x));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    template <typename... Ts>
+    [[gnu::always_inline, gnu::flatten]] TItem& emplaceBack(Ts&&... xs)
+    {
+        if (m_size < m_capacity) [[likely]]
+            return unsafeEmplaceBack(static_cast<Ts&&>(xs)...);
+
+        return *growAndEmplace(m_size, static_cast<Ts&&>(xs)...);
     }
 
 

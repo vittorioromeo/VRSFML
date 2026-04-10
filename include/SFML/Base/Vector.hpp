@@ -79,6 +79,44 @@ private:
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Grow the buffer and construct a new element at `insertIndex`
+    ///
+    /// Allocates a new buffer, constructs the element at its target
+    /// position while the old buffer is still alive (so references
+    /// into the old buffer remain valid), then relocates existing
+    /// elements around it.
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename... Ts>
+    [[gnu::cold, gnu::noinline]] TItem* growAndEmplace(const SizeT insertIndex, Ts&&... xs)
+    {
+        const auto oldSize               = size();
+        const auto currentCapacity       = capacity();
+        const auto geometricGrowthTarget = currentCapacity + (currentCapacity / 2u);
+        const auto finalNewCapacity      = SFML_BASE_MAX(oldSize + 1, geometricGrowthTarget);
+
+        auto* newData = priv::VectorUtils::allocate<TItem>(finalNewCapacity);
+
+        // Construct new element first (old buffer still alive, references valid).
+        SFML_BASE_PLACEMENT_NEW(newData + insertIndex) TItem(static_cast<Ts&&>(xs)...);
+
+        // Relocate old elements around the newly constructed element.
+        if (m_data != nullptr)
+        {
+            priv::VectorUtils::relocateRange(newData, m_data, m_data + insertIndex);
+            priv::VectorUtils::relocateRange(newData + insertIndex + 1, m_data + insertIndex, m_endSize);
+            priv::VectorUtils::deallocate(m_data, currentCapacity);
+        }
+
+        m_data        = newData;
+        m_endSize     = newData + oldSize + 1;
+        m_endCapacity = newData + finalNewCapacity;
+
+        return newData + insertIndex;
+    }
+
+
 public:
     ////////////////////////////////////////////////////////////
     enum : bool
@@ -311,20 +349,27 @@ public:
     {
         SFML_BASE_ASSERT(pos >= begin() && pos <= end());
 
-        // Save the index before `reserve` potentially invalidates `pos`.
         const auto index = static_cast<SizeT>(pos - m_data);
 
-        reserve(size() + 1);
+        if (size() >= capacity()) [[unlikely]]
+            return growAndEmplace(index, static_cast<Ts&&>(xs)...);
 
-        // Restore the insertion position iterator, which may point to new memory.
+        if (pos == m_endSize) // Append at end: no shift, no aliasing risk.
+        {
+            SFML_BASE_PLACEMENT_NEW(m_endSize) TItem(static_cast<Ts&&>(xs)...);
+            ++m_endSize;
+            return m_data + index;
+        }
+
+        // Construct a copy first to handle self-aliasing (`makeHole` shifts elements in-place,
+        // which invalidates any reference into the shifted region).
+        TItem        copy(static_cast<Ts&&>(xs)...);
         TItem* const currentPos = m_data + index;
-
         priv::VectorUtils::makeHole(currentPos, m_endSize);
+        SFML_BASE_PLACEMENT_NEW(currentPos) TItem(static_cast<TItem&&>(copy));
 
-        SFML_BASE_PLACEMENT_NEW(currentPos) TItem(static_cast<Ts&&>(xs)...);
         ++m_endSize;
-
-        return currentPos;
+        return m_data + index;
     }
 
 
@@ -345,6 +390,34 @@ public:
     [[gnu::always_inline]] TItem* insert(TItem* const pos, TItem&& value)
     {
         return emplace(pos, static_cast<TItem&&>(value));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Append a copy or moved-from element
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename T = TItem>
+    [[gnu::always_inline, gnu::flatten]] TItem& pushBack(T&& x)
+    {
+        if (size() < capacity()) [[likely]]
+            return unsafeEmplaceBack(static_cast<T&&>(x));
+
+        return *growAndEmplace(size(), static_cast<T&&>(x));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Construct a new element in-place at the end
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename... Ts>
+    [[gnu::always_inline, gnu::flatten]] TItem& emplaceBack(Ts&&... xs)
+    {
+        if (size() < capacity()) [[likely]]
+            return unsafeEmplaceBack(static_cast<Ts&&>(xs)...);
+
+        return *growAndEmplace(size(), static_cast<Ts&&>(xs)...);
     }
 
 

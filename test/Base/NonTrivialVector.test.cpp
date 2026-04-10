@@ -467,6 +467,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
             CHECK(tv.size() == 1);
             CHECK(tv[0].value == 42);
             CHECK(itRet == tv.begin());
+            // Emplace at end: direct construction, no temporary needed.
             CHECK(intCtorCount == 1);
             CHECK(moveCtorCount == 0);
             CHECK(moveAssignCount == 0);
@@ -490,7 +491,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
             CHECK(tv[2].value == 30);
             CHECK(itRet == tv.begin() + 2);
 
-            // Directly constructs at end, no shifts needed.
+            // Emplace at end: direct construction, no temporary needed.
             CHECK(intCtorCount == 1);
             CHECK(moveCtorCount == 0);
             CHECK(moveAssignCount == 0);
@@ -517,15 +518,17 @@ TEST_CASE("[Base] Base/Vector.hpp")
             CHECK(tv[3].value == 40);
             CHECK(itRet == tv.begin() + 1);
 
-            // Analysis: Shift 2 elements (30, 40)
-            // 1. Move-construct '40' to new end.
-            // 2. Move-assign '30' over old '40'.
-            // 3. Destroy moved-from '30' at insertion point.
-            // 4. In-place construct '20'.
+            // Analysis: Shift 2 elements (30, 40) + temporary for new element
+            // 1. Construct temporary from int arg: 1 int-ctor.
+            // 2. Move-construct '40' to new end: 1 move-ctor.
+            // 3. Move-assign '30' over old '40': 1 move-assign.
+            // 4. Destroy moved-from at insertion point: 1 dtor.
+            // 5. Move-construct from temporary into position: 1 move-ctor.
+            // 6. Destroy temporary: 1 dtor.
             CHECK(intCtorCount == 1);
-            CHECK(moveCtorCount == 1);
+            CHECK(moveCtorCount == 2);
             CHECK(moveAssignCount == 1);
-            CHECK(dtorCount == 1);
+            CHECK(dtorCount == 2);
         }
 
         SUBCASE("Emplace at the beginning with capacity")
@@ -546,15 +549,17 @@ TEST_CASE("[Base] Base/Vector.hpp")
             CHECK(tv[2].value == 30);
             CHECK(itRet == tv.begin());
 
-            // Analysis: Shift 2 elements (20, 30)
-            // 1. Move-construct '30' to new end.
-            // 2. Move-assign '20' over old '30'.
-            // 3. Destroy moved-from '20' at insertion point.
-            // 4. In-place construct '10'.
+            // Analysis: Shift 2 elements (20, 30) + temporary for new element
+            // 1. Construct temporary from int arg: 1 int-ctor.
+            // 2. Move-construct '30' to new end: 1 move-ctor.
+            // 3. Move-assign '20' over old '30': 1 move-assign.
+            // 4. Destroy moved-from at insertion point: 1 dtor.
+            // 5. Move-construct from temporary into position: 1 move-ctor.
+            // 6. Destroy temporary: 1 dtor.
             CHECK(intCtorCount == 1);
-            CHECK(moveCtorCount == 1);
+            CHECK(moveCtorCount == 2);
             CHECK(moveAssignCount == 1);
-            CHECK(dtorCount == 1);
+            CHECK(dtorCount == 2);
         }
 
         SUBCASE("Emplace in the middle with reallocation")
@@ -577,14 +582,14 @@ TEST_CASE("[Base] Base/Vector.hpp")
             CHECK(tv[2].value == 30);
             CHECK(itRet == tv.begin() + 1);
 
-            // Analysis: N=2 elements
-            // 1. Reallocation: 2 move-constructs, 2 destructors.
-            // 2. Shift 1 element ('30'): 1 move-construct, 1 destructor.
-            // 3. In-place construct '20': 1 int-constructor.
+            // Analysis: N=2 elements, growAndEmplace path
+            // 1. Construct '20' directly in new buffer: 1 int-constructor.
+            // 2. Relocate '10' (before insert pos): 1 move-construct, 1 destructor.
+            // 3. Relocate '30' (after insert pos): 1 move-construct, 1 destructor.
             CHECK(intCtorCount == 1);
-            CHECK(moveCtorCount == 3); // 2 for realloc, 1 for shift
+            CHECK(moveCtorCount == 2);
             CHECK(moveAssignCount == 0);
-            CHECK(dtorCount == 3); // 2 for realloc, 1 for shift
+            CHECK(dtorCount == 2);
         }
 
         SUBCASE("Emplace at the end with reallocation")
@@ -616,6 +621,112 @@ TEST_CASE("[Base] Base/Vector.hpp")
             CHECK(moveAssignCount == 0);
             CHECK(dtorCount == 2);
         }
+    }
+
+    SECTION("Self-aliasing: pushBack from own element without reallocation")
+    {
+        sf::base::Vector<Obj> v;
+        v.reserve(10);
+        v.emplaceBack(10);
+        v.emplaceBack(20);
+        v.emplaceBack(30);
+
+        v.pushBack(v[0]);
+
+        CHECK(v.size() == 4);
+        CHECK(v[0].value == 10);
+        CHECK(v[1].value == 20);
+        CHECK(v[2].value == 30);
+        CHECK(v[3].value == 10);
+    }
+
+    SECTION("Self-aliasing: pushBack from own element with reallocation")
+    {
+        sf::base::Vector<Obj> v;
+        v.emplaceBack(10);
+        v.emplaceBack(20);
+        v.emplaceBack(30);
+        v.shrinkToFit();
+        REQUIRE(v.capacity() == v.size()); // next pushBack must reallocate
+
+        v.pushBack(v[0]);
+
+        CHECK(v.size() == 4);
+        CHECK(v[0].value == 10);
+        CHECK(v[1].value == 20);
+        CHECK(v[2].value == 30);
+        CHECK(v[3].value == 10);
+    }
+
+    SECTION("Self-aliasing: insert at begin from last element")
+    {
+        sf::base::Vector<Obj> v;
+        v.reserve(10);
+        v.emplaceBack(10);
+        v.emplaceBack(20);
+        v.emplaceBack(30);
+
+        v.insert(v.begin(), v[2]);
+
+        CHECK(v.size() == 4);
+        CHECK(v[0].value == 30);
+        CHECK(v[1].value == 10);
+        CHECK(v[2].value == 20);
+        CHECK(v[3].value == 30);
+    }
+
+    SECTION("Self-aliasing: insert at middle from element that gets shifted")
+    {
+        sf::base::Vector<Obj> v;
+        v.reserve(10);
+        v.emplaceBack(10);
+        v.emplaceBack(20);
+        v.emplaceBack(30);
+
+        v.insert(v.begin() + 1, v[2]);
+
+        CHECK(v.size() == 4);
+        CHECK(v[0].value == 10);
+        CHECK(v[1].value == 30);
+        CHECK(v[2].value == 20);
+        CHECK(v[3].value == 30);
+    }
+
+    SECTION("Self-aliasing: emplace at begin from back()")
+    {
+        sf::base::Vector<Obj> v;
+        v.reserve(10);
+        v.emplaceBack(10);
+        v.emplaceBack(20);
+        v.emplaceBack(30);
+
+        const Obj& backRef = v.back();
+        v.emplace(v.begin(), backRef);
+
+        CHECK(v.size() == 4);
+        CHECK(v[0].value == 30);
+        CHECK(v[1].value == 10);
+        CHECK(v[2].value == 20);
+        CHECK(v[3].value == 30);
+    }
+
+    SECTION("Self-aliasing: emplaceBack from own element with reallocation")
+    {
+        sf::base::Vector<Obj> v;
+        v.emplaceBack(10);
+        v.emplaceBack(20);
+        v.emplaceBack(30);
+        v.shrinkToFit();
+        REQUIRE(v.capacity() == v.size());
+
+        const Obj& ref = v[1];
+        v.emplaceBack(ref);
+
+        CHECK(v.size() == 4);
+        CHECK(v[0].value == 10);
+        CHECK(v[1].value == 20);
+        CHECK(v[2].value == 30);
+        CHECK(v[3].value == 20);
     }
 }
 

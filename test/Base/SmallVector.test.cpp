@@ -513,6 +513,104 @@ TEST_CASE("[Base] Base/SmallVector.hpp")
             CHECK(outer[i][2] == static_cast<int>(i * 10u + 2u));
         }
     }
+
+    SECTION("Self-aliasing: pushBack from own element (inline, no reallocation)")
+    {
+        sf::base::SmallVector<Obj, inlineCapacity> v;
+        v.emplaceBack(10);
+        v.emplaceBack(20);
+        v.emplaceBack(30);
+        REQUIRE(v.size() < v.capacity()); // still inline, room to spare
+
+        v.pushBack(v[0]);
+
+        CHECK(v.size() == 4);
+        CHECK(v[0].value == 10);
+        CHECK(v[1].value == 20);
+        CHECK(v[2].value == 30);
+        CHECK(v[3].value == 10);
+    }
+
+    SECTION("Self-aliasing: pushBack from own element (triggers heap allocation)")
+    {
+        sf::base::SmallVector<Obj, inlineCapacity> v;
+        for (sf::base::SizeT i = 0; i < inlineCapacity; ++i)
+            v.emplaceBack(static_cast<int>(i * 10));
+        REQUIRE(v.size() == v.capacity()); // full inline buffer
+
+        v.pushBack(v[0]); // must reallocate to heap
+
+        CHECK(v.size() == inlineCapacity + 1);
+        CHECK(v[0].value == 0);
+        CHECK(v[inlineCapacity].value == 0);
+    }
+
+    SECTION("Self-aliasing: insert at begin from last element")
+    {
+        sf::base::SmallVector<Obj, inlineCapacity> v;
+        v.emplaceBack(10);
+        v.emplaceBack(20);
+        v.emplaceBack(30);
+        REQUIRE(v.size() < v.capacity());
+
+        v.insert(v.begin(), v[2]);
+
+        CHECK(v.size() == 4);
+        CHECK(v[0].value == 30);
+        CHECK(v[1].value == 10);
+        CHECK(v[2].value == 20);
+        CHECK(v[3].value == 30);
+    }
+
+    SECTION("Self-aliasing: insert at middle from element that gets shifted")
+    {
+        sf::base::SmallVector<Obj, inlineCapacity> v;
+        v.emplaceBack(10);
+        v.emplaceBack(20);
+        v.emplaceBack(30);
+        REQUIRE(v.size() < v.capacity());
+
+        v.insert(v.begin() + 1, v[2]);
+
+        CHECK(v.size() == 4);
+        CHECK(v[0].value == 10);
+        CHECK(v[1].value == 30);
+        CHECK(v[2].value == 20);
+        CHECK(v[3].value == 30);
+    }
+
+    SECTION("Self-aliasing: emplace at begin from back()")
+    {
+        sf::base::SmallVector<Obj, inlineCapacity> v;
+        v.emplaceBack(10);
+        v.emplaceBack(20);
+        v.emplaceBack(30);
+        REQUIRE(v.size() < v.capacity());
+
+        const Obj& backRef = v.back();
+        v.emplace(v.begin(), backRef);
+
+        CHECK(v.size() == 4);
+        CHECK(v[0].value == 30);
+        CHECK(v[1].value == 10);
+        CHECK(v[2].value == 20);
+        CHECK(v[3].value == 30);
+    }
+
+    SECTION("Self-aliasing: emplaceBack from own element (triggers heap allocation)")
+    {
+        sf::base::SmallVector<Obj, inlineCapacity> v;
+        for (sf::base::SizeT i = 0; i < inlineCapacity; ++i)
+            v.emplaceBack(static_cast<int>((i + 1) * 10));
+        REQUIRE(v.size() == v.capacity());
+
+        const Obj& ref = v[1];
+        v.emplaceBack(ref);
+
+        CHECK(v.size() == inlineCapacity + 1);
+        CHECK(v[1].value == 20);
+        CHECK(v[inlineCapacity].value == 20);
+    }
 }
 
 } // namespace SmallVectorTest
