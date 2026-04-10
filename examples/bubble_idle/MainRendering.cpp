@@ -2273,6 +2273,7 @@ void Main::updateProcessedBackground()
                            profile.ppBGSharpness,
                            profile.ppBGBlur);
 
+    rtBackgroundProcessed.flush();
     rtBackgroundProcessed.draw(rtBackground.getTexture(), {.shader = &shaderPostProcess});
     rtBackgroundProcessed.display();
 }
@@ -2428,6 +2429,7 @@ void Main::gameLoopDisplayCloudBatch(const sf::CPUDrawableBatch& batch, const sf
     shaderClouds.setUniform(suCloudTime, shaderTime);
     shaderClouds.setUniform(suCloudResolution, rtCloudMask.getSize().toVec2f());
 
+    rtCloudProcessed.flush();
     rtCloudProcessed.clear(sf::Color::Transparent);
     rtCloudProcessed.draw(rtCloudMask.getTexture(), {.blendMode = sf::BlendNone, .shader = &shaderClouds});
     rtCloudProcessed.display();
