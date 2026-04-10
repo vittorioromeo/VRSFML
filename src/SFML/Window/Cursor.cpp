@@ -113,13 +113,15 @@ base::Optional<Cursor> Cursor::loadFromPixels(const base::U8* pixels, Vec2u size
         return cursor; // Empty optional
 
     cursor.emplace(base::PassKey<Cursor>{});
+
     if (!cursor->reloadFromPixels(pixels, size, hotspot))
     {
         priv::err() << "Failed to load cursor from pixels (invalid arguments)";
+
+        cursor.reset();
         return cursor; // Empty optional
     }
 
-    // Error message generated in called function.
     return cursor;
 }
 
