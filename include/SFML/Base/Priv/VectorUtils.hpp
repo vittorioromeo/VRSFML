@@ -335,20 +335,6 @@ template <typename T>
     }                                                                                                                          \
                                                                                                                                \
     template <typename... Ts>                                                                                                  \
-    [[gnu::always_inline, gnu::flatten]] constexpr TItem& emplaceBack(Ts&&... xs)                                              \
-    {                                                                                                                          \
-        reserve(size() + 1);                                                                                                   \
-        return unsafeEmplaceBack(static_cast<Ts&&>(xs)...);                                                                    \
-    }                                                                                                                          \
-                                                                                                                               \
-    template <typename T = TItem>                                                                                              \
-    [[gnu::always_inline, gnu::flatten]] constexpr TItem& pushBack(T&& x)                                                      \
-    {                                                                                                                          \
-        reserve(size() + 1);                                                                                                   \
-        return unsafeEmplaceBack(static_cast<T&&>(x));                                                                         \
-    }                                                                                                                          \
-                                                                                                                               \
-    template <typename... Ts>                                                                                                  \
     [[gnu::always_inline]] constexpr TItem& reEmplaceByIterator(TItem* const it, Ts&&... xs)                                   \
     {                                                                                                                          \
         SFML_BASE_ASSERT(it >= begin() && it < end());                                                                         \
