@@ -7,7 +7,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/InPlacePImpl.hpp"
-#include "SFML/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -17,7 +16,6 @@ namespace sf
 {
 class RenderTarget;
 struct GLVAOGroup;
-struct InstanceAttributeBinder;
 } // namespace sf
 
 
@@ -26,12 +24,12 @@ namespace sf
 ////////////////////////////////////////////////////////////
 /// \brief Owning handle to an OpenGL Vertex Array Object
 ///
-/// `sf::VAOHandle` wraps a single OpenGL VAO and the
-/// per-instance attribute streams attached to it. It is the
-/// VAO that the instanced draw paths
+/// `sf::VAOHandle` wraps a single OpenGL VAO. It is the VAO
+/// that the instanced draw paths
 /// (`sf::RenderTarget::drawInstancedVertices` and
 /// `sf::RenderTarget::drawInstancedIndexedVertices`) bind
-/// before issuing the draw call.
+/// before issuing the draw call. Per-instance data is stored
+/// in separate `sf::VBOHandle` objects managed by the user.
 ///
 /// `VAOHandle` is move-only. Construct one per "instance set"
 /// you want to render and reuse it across frames; the
@@ -70,31 +68,12 @@ public:
 
 private:
     friend RenderTarget;
-    friend InstanceAttributeBinder;
 
     ////////////////////////////////////////////////////////////
     /// \brief Internal accessor used by `sf::RenderTarget` during draw
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const GLVAOGroup& asVAOGroup() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get or lazily create a VBO at the given index
-    ///
-    ////////////////////////////////////////////////////////////
-    void bindVBO(base::SizeT index);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Allocate the next VBO slot and bind it
-    ///
-    ////////////////////////////////////////////////////////////
-    void bindNextVBO();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Reset the VBO slot counter if a new frame is detected
-    ///
-    ////////////////////////////////////////////////////////////
-    void resetVBOSlotsIfNewFrame(base::SizeT frameCounter);
 
     ////////////////////////////////////////////////////////////
     // Member data
@@ -114,10 +93,10 @@ private:
 /// OpenGL Vertex Array Object. It is used together with
 /// `sf::DrawInstancedVerticesSettings` and
 /// `sf::DrawInstancedIndexedVerticesSettings` to drive the
-/// instanced rendering path of `sf::RenderTarget`. The actual
-/// per-instance attribute streams are populated through a
-/// `sf::InstanceAttributeBinder` from inside the `setupFn`
-/// callback that the draw functions take.
+/// instanced rendering path of `sf::RenderTarget`. Per-instance
+/// data lives in user-managed `sf::VBOHandle` objects, which are
+/// passed to `sf::InstanceAttributeBinder::uploadData` from
+/// inside the `setupFn` callback that the draw functions take.
 ///
 /// `VAOHandle` is move-only and should be cached -- recreating
 /// it every frame defeats the entire point of instanced
