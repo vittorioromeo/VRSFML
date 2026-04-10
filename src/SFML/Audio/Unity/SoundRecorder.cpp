@@ -10,8 +10,11 @@
 #include "SFML/Audio/CaptureDevice.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/LifetimeDependant.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 #include <miniaudio.h>
 
@@ -55,19 +58,22 @@ bool SoundRecorder::start(CaptureDevice& captureDevice, unsigned int sampleRate)
     if (!onStart(captureDevice))
         return false;
 
+    // Register callback before starting the device to prevent a race where
+    // the audio thread invokes the callback before it has been set.
+    captureDevice.setProcessSamplesFunc(this, [](void* userData, const base::I16* samples, base::SizeT sampleCount) {
+        return static_cast<SoundRecorder*>(userData)->onProcessSamples(samples, sampleCount);
+    });
+
     // Start the capture
     if (!captureDevice.startDevice())
     {
+        captureDevice.setProcessSamplesFunc(nullptr, nullptr);
         priv::err() << "Failed to start sound recorder";
         return false;
     }
 
     m_lastCaptureDevice = &captureDevice;
     SFML_UPDATE_LIFETIME_DEPENDANT(CaptureDevice, SoundRecorder, this, m_lastCaptureDevice);
-
-    captureDevice.setProcessSamplesFunc(this, [](void* userData, const base::I16* samples, base::SizeT sampleCount) {
-        return static_cast<SoundRecorder*>(userData)->onProcessSamples(samples, sampleCount);
-    });
 
     return true;
 }
@@ -82,16 +88,23 @@ bool SoundRecorder::stop()
     auto* const savedCaptureDevice = m_lastCaptureDevice;
     m_lastCaptureDevice            = nullptr;
 
-    savedCaptureDevice->setProcessSamplesFunc(nullptr, nullptr);
-
     if (!savedCaptureDevice->isDeviceInitialized() || !savedCaptureDevice->isDeviceStarted())
+    {
+        savedCaptureDevice->setProcessSamplesFunc(nullptr, nullptr);
         return false;
+    }
 
+    // Stop the device before clearing the callback to prevent a race where
+    // the audio thread invokes a null callback. ma_device_stop is synchronous,
+    // so no more callbacks will fire after it returns.
     if (!savedCaptureDevice->stopDevice())
     {
+        savedCaptureDevice->setProcessSamplesFunc(nullptr, nullptr);
         priv::err() << "Failed to stop sound recorder";
         return false;
     }
+
+    savedCaptureDevice->setProcessSamplesFunc(nullptr, nullptr);
 
     // Notify derived class
     return onStop(*savedCaptureDevice);
