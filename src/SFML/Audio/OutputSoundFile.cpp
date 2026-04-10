@@ -7,6 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Audio/OutputSoundFile.hpp"
 
+#include "SFML/Audio/ChannelMap.hpp"
 #include "SFML/Audio/SoundFileFactory.hpp"
 #include "SFML/Audio/SoundFileWriter.hpp"
 
@@ -14,7 +15,11 @@
 #include "SFML/System/Path.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 
 
 namespace sf
@@ -32,6 +37,16 @@ base::Optional<OutputSoundFile> OutputSoundFile::openFromFile(
     unsigned int      channelCount,
     const ChannelMap& channelMap)
 {
+    SFML_BASE_ASSERT(channelCount == channelMap.getSize() && "channelCount must match channelMap size");
+
+    if (channelCount != channelMap.getSize())
+    {
+        priv::err() << "Channel count (" << channelCount << ") does not match channel map size ("
+                    << channelMap.getSize() << ")";
+
+        return base::nullOpt;
+    }
+
     // Find a suitable writer for the file type
     auto writer = SoundFileFactory::createWriterFromFilename(filename);
     if (!writer)

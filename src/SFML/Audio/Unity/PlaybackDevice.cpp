@@ -44,8 +44,11 @@ struct PlaybackDevice::Impl
 
     ~Impl()
     {
-        ma_engine_uninit(&maEngine);
-        ma_device_uninit(&maDevice);
+        if (engineInitialized)
+            ma_engine_uninit(&maEngine);
+
+        if (deviceInitialized)
+            ma_device_uninit(&maDevice);
     }
 
     [[nodiscard]] bool initialize()
@@ -64,6 +67,8 @@ struct PlaybackDevice::Impl
 
             if (const ma_result result = ma_device_init(&maContext, &maDeviceConfig, &maDevice); result != MA_SUCCESS)
                 return priv::MiniaudioUtils::fail("initialize the audio device", result);
+
+            deviceInitialized = true;
         }
 
         // Initialize miniaudio engine
@@ -75,7 +80,14 @@ struct PlaybackDevice::Impl
             engineConfig.listenerCount = 1;
 
             if (const ma_result result = ma_engine_init(&engineConfig, &maEngine); result != MA_SUCCESS)
+            {
+                ma_device_uninit(&maDevice);
+                deviceInitialized = false;
+
                 return priv::MiniaudioUtils::fail("initialize the audio engine", result);
+            }
+
+            engineInitialized = true;
         }
 
         return true;
@@ -85,10 +97,15 @@ struct PlaybackDevice::Impl
 
     ma_device maDevice; //!< miniaudio playback device (one per hardware device)
     ma_engine maEngine; //!< miniaudio engine (one per hardware device, for effects/spatialization)
+
+    bool deviceInitialized{false}; //!< Whether maDevice has been successfully initialized
+    bool engineInitialized{false}; //!< Whether maEngine has been successfully initialized
 };
 
 
 ////////////////////////////////////////////////////////////
+// TODO P1: change to a factory returning `base::Optional<PlaybackDevice>` so a
+//          failed device can never be observed by the caller.
 PlaybackDevice::PlaybackDevice(const PlaybackDeviceHandle& playbackDeviceHandle) : m_impl(playbackDeviceHandle)
 {
     if (!m_impl->initialize())

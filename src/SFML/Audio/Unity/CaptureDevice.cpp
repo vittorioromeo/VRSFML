@@ -17,6 +17,8 @@
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/Memcpy.hpp"
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #include <miniaudio.h>
@@ -64,7 +66,11 @@ struct CaptureDevice::Impl
 
     void deinitialize()
     {
-        ma_device_uninit(&maDevice);
+        if (deviceInitialized)
+        {
+            ma_device_uninit(&maDevice);
+            deviceInitialized = false;
+        }
     }
 
     [[nodiscard]] bool initialize()
@@ -84,6 +90,7 @@ struct CaptureDevice::Impl
             result != MA_SUCCESS)
             return priv::MiniaudioUtils::fail("initialize the audio device", result);
 
+        deviceInitialized = true;
         return true;
     }
 
@@ -98,11 +105,14 @@ struct CaptureDevice::Impl
     SoundRecorder*     soundRecorder{nullptr}; //!< Used in the miniaudio device callback
     ProcessSamplesFunc processSamplesFunc{};   //!< Used in the miniaudio device callback
 
-    ma_device maDevice; //!< miniaudio capture device (one per hardware device)
+    ma_device maDevice;                 //!< miniaudio capture device (one per hardware device)
+    bool      deviceInitialized{false}; //!< Whether maDevice has been successfully initialized
 };
 
 
 ////////////////////////////////////////////////////////////
+// TODO P1: change to a factory returning `base::Optional<CaptureDevice>` so a
+//          failed device can never be observed by the caller.
 CaptureDevice::CaptureDevice(const CaptureDeviceHandle& playbackDeviceHandle) : m_impl(playbackDeviceHandle)
 {
     if (!m_impl->initialize())
@@ -113,7 +123,7 @@ CaptureDevice::CaptureDevice(const CaptureDeviceHandle& playbackDeviceHandle) : 
 ////////////////////////////////////////////////////////////
 CaptureDevice::~CaptureDevice()
 {
-    SFML_BASE_ASSERT(!ma_device_is_started(&m_impl->maDevice) &&
+    SFML_BASE_ASSERT((!m_impl->deviceInitialized || !ma_device_is_started(&m_impl->maDevice)) &&
                      "The miniaudio capture device must be stopped before destroying the capture device");
 }
 
@@ -132,12 +142,19 @@ bool CaptureDevice::setSampleRate(unsigned int sampleRate)
     if (m_impl->sampleRate == sampleRate)
         return true;
 
-    m_impl->sampleRate = sampleRate;
+    const auto oldSampleRate = m_impl->sampleRate;
+    m_impl->sampleRate       = sampleRate;
 
     m_impl->deinitialize();
     if (!m_impl->initialize())
     {
         priv::err() << "Failed to set audio capture device sample rate to " << sampleRate;
+
+        // Roll back to old config and try to restore the previous device
+        m_impl->sampleRate = oldSampleRate;
+        if (!m_impl->initialize())
+            priv::err() << "Failed to restore previous audio capture device after failed sample rate change";
+
         return false;
     }
 
@@ -155,7 +172,7 @@ unsigned int CaptureDevice::getSampleRate() const
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool CaptureDevice::isDeviceInitialized() const
 {
-    return ma_device_get_state(&m_impl->maDevice) != ma_device_state_uninitialized;
+    return m_impl->deviceInitialized;
 }
 
 
@@ -208,6 +225,8 @@ bool CaptureDevice::setChannelCount(unsigned int channelCount)
     if (m_impl->channelMap.getSize() == channelCount)
         return true;
 
+    auto oldChannelMap = SFML_BASE_MOVE(m_impl->channelMap);
+
     // We only bother supporting mono/stereo recording for now
     if (channelCount == 1)
         m_impl->channelMap = {SoundChannel::Mono};
@@ -218,6 +237,13 @@ bool CaptureDevice::setChannelCount(unsigned int channelCount)
     if (!m_impl->initialize())
     {
         priv::err() << "Failed to set audio capture device channel count to " << channelCount;
+
+        // Roll back to old config and try to restore the previous device
+        m_impl->channelMap = SFML_BASE_MOVE(oldChannelMap);
+
+        if (!m_impl->initialize())
+            priv::err() << "Failed to restore previous audio capture device after failed channel count change";
+
         return false;
     }
 
