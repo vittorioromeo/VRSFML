@@ -157,6 +157,9 @@ void WindowBase::setMinimumSize(const Vec2u& minimumSize)
     setSize(getSize());
 }
 
+// TODO P1: minimumSize/maximumSize are not respected when the window is resized by the user. This is because we only
+// clamp the size when `setSize` is called, but not when processing a resize event
+
 
 ////////////////////////////////////////////////////////////
 void WindowBase::setMinimumSize(const base::Optional<Vec2u>& minimumSize)
@@ -193,7 +196,7 @@ void WindowBase::setMaximumSize(const Vec2u& maximumSize)
 void WindowBase::setMaximumSize(const base::Optional<Vec2u>& maximumSize)
 {
     if (maximumSize.hasValue())
-        setMinimumSize(*maximumSize);
+        setMaximumSize(*maximumSize);
     else
     {
         m_impl->setMaximumSize(base::nullOpt);
