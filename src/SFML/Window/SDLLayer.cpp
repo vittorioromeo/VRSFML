@@ -807,13 +807,14 @@ UnicodeString SDLLayer::getClipboardString() const noexcept
         return UnicodeString{};
 
     char* clipboardText = SDL_GetClipboardText();
+    SFML_BASE_SCOPE_GUARD({ SDL_free(static_cast<void*>(clipboardText)); });
+
     if (SFML_BASE_STRCMP(clipboardText, "") == 0)
     {
         err() << "`SDL_GetClipboardText` failed: " << SDL_GetError();
         return UnicodeString{};
     }
 
-    SFML_BASE_SCOPE_GUARD({ SDL_free(static_cast<void*>(clipboardText)); });
     return UnicodeStringUtfUtils::fromUtf8(clipboardText, clipboardText + SFML_BASE_STRLEN(clipboardText));
 }
 
