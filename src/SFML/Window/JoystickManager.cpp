@@ -206,6 +206,14 @@ void JoystickManager::update()
         int             count = 0;
         SDL_JoystickID* ids   = SDL_GetJoysticks(&count);
 
+        const auto intMaxCount = static_cast<int>(Joystick::MaxCount);
+
+        if (count > intMaxCount)
+        {
+            priv::err() << "SDL reported " << count << " joysticks, but SFML supports a maximum of " << intMaxCount;
+            count = intMaxCount;
+        }
+
         for (int i = 0; i < count; ++i)
         {
             const auto guid = SDL_GetJoystickGUIDForID(ids[i]);
