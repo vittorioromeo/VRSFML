@@ -114,21 +114,23 @@
 #include "SFML/Base/Vector.hpp"
 
 
-namespace tsurv
+namespace
 {
 //////////////////////////////////////////////////////////////
-[[nodiscard]] static BitmapFont loadMinogramData()
-{
-    BitmapFont result;
+constexpr sf::base::Array<sf::base::StringView, 7>
+    glyphRows{"ABCDEFGHIJKLM",
+              "NOPQRSTUVWXYZ",
+              "abcdefghijklm",
+              "nopqrstuvwxyz",
+              "0123456789+-=",
+              "()[]{}<>/*:#%",
+              "!?.,'\"@&$"};
 
-    constexpr sf::base::Array<sf::base::StringView, 7>
-        glyphRows{"ABCDEFGHIJKLM",
-                  "NOPQRSTUVWXYZ",
-                  "abcdefghijklm",
-                  "nopqrstuvwxyz",
-                  "0123456789+-=",
-                  "()[]{}<>/*:#%",
-                  "!?.,'\"@&$"};
+
+//////////////////////////////////////////////////////////////
+[[nodiscard]] tsurv::BitmapFont loadMinogramData()
+{
+    tsurv::BitmapFont result;
 
     for (sf::base::SizeT iY = 0; iY < glyphRows.size(); ++iY)
         for (sf::base::SizeT iX = 0; iX < glyphRows[iY].size(); ++iX)
@@ -142,18 +144,9 @@ namespace tsurv
 
 
 //////////////////////////////////////////////////////////////
-[[nodiscard]] static BitmapFont loadTiny5Data()
+[[nodiscard]] tsurv::BitmapFont loadTiny5Data()
 {
-    BitmapFont result;
-
-    constexpr sf::base::Array<sf::base::StringView, 7>
-        glyphRows{"ABCDEFGHIJKLM",
-                  "NOPQRSTUVWXYZ",
-                  "abcdefghijklm",
-                  "nopqrstuvwxyz",
-                  "0123456789+-=",
-                  "()[]{}<>/*:#%",
-                  "!?.,'\"@&$"};
+    tsurv::BitmapFont result;
 
     sf::base::SizeT stepX = 15;
     sf::base::SizeT stepY = 17;
@@ -239,7 +232,10 @@ namespace tsurv
     return result;
 }
 
+} // namespace
 
+namespace tsurv
+{
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] CircleParticleData
 {
@@ -1098,9 +1094,9 @@ private:
 
         const bool hasTimer = block.tickTimerTarget != nullTickTimerTarget;
 
-        const bool doesNotHaveTimerOrIsPowerup = !hasTimer || block.powerup != BlockPowerup::None;
-
+        // const bool doesNotHaveTimerOrIsPowerup = !hasTimer || block.powerup != BlockPowerup::None;
         // const bool useNormalTexture  = block.health == 1u && !doesNotHaveTimerOrIsPowerup;
+
         const bool useDamagedTexture = block.health == 1u && hasTimer && block.powerup == BlockPowerup::None;
         const bool useArmoredTexture = block.health > 1u;
 
@@ -2178,7 +2174,7 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] Block* pickRandomBlock()
+    [[nodiscard]] Block* pickRandomBlockMatching(auto&& predicate)
     {
         sf::base::SizeT count    = 0u;
         Block*          selected = nullptr;
@@ -2186,6 +2182,9 @@ private:
         for (auto& optBlock : m_world.blockGrid.getBlocks())
         {
             if (!optBlock.hasValue())
+                continue;
+
+            if (!predicate(*optBlock))
                 continue;
 
             ++count;
@@ -2200,27 +2199,16 @@ private:
 
 
     /////////////////////////////////////////////////////////////
+    [[nodiscard]] Block* pickRandomBlock()
+    {
+        return pickRandomBlockMatching([](const Block&) { return true; });
+    }
+
+
+    /////////////////////////////////////////////////////////////
     [[nodiscard]] Block* pickDamageableBlock()
     {
-        sf::base::SizeT count    = 0u;
-        Block*          selected = nullptr;
-
-        for (auto& optBlock : m_world.blockGrid.getBlocks())
-        {
-            if (!optBlock.hasValue())
-                continue;
-
-            if (optBlock->health <= 1u)
-                continue;
-
-            ++count;
-
-            // Select the current bubble with probability `1/count` (reservoir sampling)
-            if (m_rngFast.getI<sf::base::SizeT>(0, count - 1) == 0)
-                selected = optBlock.asPtr();
-        }
-
-        return (count == 0u) ? nullptr : selected;
+        return pickRandomBlockMatching([](const Block& block) { return block.health > 1u; });
     }
 
 
@@ -3333,7 +3321,8 @@ private:
         ImGui::Begin("SFEX Profiler");
         sfex::showImguiProfiler();
         ImGui::End();
-        return;
+
+        return; // TODO P1: remove?
 
         {
             ImGui::Begin("Graphics settings", nullptr);
