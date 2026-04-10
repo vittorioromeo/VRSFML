@@ -4596,6 +4596,7 @@ private:
 
             const auto postProcessInternalView = sf::View::fromScreenSize(m_rtGame.getSize().toVec2f());
 
+            m_rtPostProcess.flush();
             m_rtPostProcess.clear();
             m_rtPostProcess.draw(m_rtGame.getTexture(),
                                  {.view = postProcessInternalView, .shader = m_useCRTShader ? &m_shaderCRT : nullptr});
