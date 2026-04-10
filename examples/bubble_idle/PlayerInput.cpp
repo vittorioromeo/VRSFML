@@ -222,6 +222,15 @@ void Main::gameLoopPrepareInput(FrameInput& frameInput, const float deltaTimeMs)
     frameInput.windowSpaceMouseOrFingerPos = frameInput.downFingers.size() == 1u ? frameInput.downFingers[0].toVec2i()
                                                                                  : sf::Mouse::getPosition(window);
 
+    if (frameInput.clickPosition.hasValue() && pt->mapPurchased)
+    {
+        const auto p = scaledHUDView.screenToWorld(frameInput.windowSpaceMouseOrFingerPos.toVec2f(),
+                                                   window.getSize().toVec2f());
+
+        if (uiState.minimapRect.contains(p))
+            frameInput.clickPosition.reset();
+    }
+
     const sf::Vec2f resolution = getResolution();
     hudCullingBoundaries       = {0.f, resolution.x, 0.f, resolution.y};
     particleCullingBoundaries  = getViewCullingBoundaries(/* offset */ 0.f);
