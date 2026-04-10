@@ -6,6 +6,7 @@
 #include "ExampleUtils/Scaling.hpp"
 
 #include "SFML/Graphics/BlendMode.hpp"
+#include "SFML/Graphics/RenderStates.hpp"
 
 #include "SFML/Window/Keyboard.hpp"
 
@@ -1391,6 +1392,7 @@ public:
                 SFEX_PROFILE_SCOPE("update");
 
                 m_time += deltaTimeMs;
+
                 m_shader.setUniform(m_ulTime, m_time);
 
                 if (!isLMBPressed())
@@ -1907,6 +1909,7 @@ public:
                     m_shaderBlurQuad.setUniform(m_ulBlurQuadBlurDirection, sf::Vec2f{1.f, 0.f});
                     m_shaderBlurQuad.setUniform(m_ulBlurQuadRadiusPixels, blurRadius * shadowTextureResMult);
 
+                    m_rtSpriteBgTemp.flush();
                     m_rtSpriteBgTemp.clear(sf::Color::Transparent);
                     m_rtSpriteBgTemp.draw(m_rtSpriteBg.getTexture(),
                                           {.scale = {invScale, invScale}},
@@ -1915,6 +1918,7 @@ public:
 
                     m_shaderBlurQuad.setUniform(m_ulBlurQuadBlurDirection, sf::Vec2f{0.f, 1.f});
 
+                    m_rtSpriteBg.flush();
                     m_rtSpriteBg.clear(sf::Color::Transparent);
                     m_rtSpriteBg.draw(m_rtSpriteBgTemp.getTexture(),
                                       {.scale = {invScale, invScale}},
@@ -1935,14 +1939,17 @@ public:
                         .shader  = &m_shader,
                     };
 
-                    m_rtGame.clear();
                     m_shader.setUniform(m_ulWaveEnabled, true);
+
+                    m_rtGame.flush();
+                    m_rtGame.clear();
                     m_rtGame.draw(m_txLava,
                                   {.position = {0.f, 0.f}, .scale = {2.f, 2.f}, .color = getLavaColor()},
                                   {.view = m_worldView, .shader = &m_shader});
-                    m_rtGame.flush();
 
                     m_shader.setUniform(m_ulWaveEnabled, false);
+
+                    m_rtGame.flush();
                     m_rtGame.draw(m_dbBackground, states);
                     m_rtGame.draw(m_dbLavaParticles,
                                   {
@@ -1999,6 +2006,7 @@ public:
 
                 m_rtGame.display();
 
+                m_window.flush();
                 m_window.clear();
 
                 m_window.draw(m_rtGame.getTexture(), {.view = m_windowView, .shader = &m_shader});
