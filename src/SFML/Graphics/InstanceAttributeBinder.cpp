@@ -9,7 +9,6 @@
 
 #include "SFML/Graphics/GlDataType.hpp"
 #include "SFML/Graphics/Priv/EnumToGlEnumConversions.hpp"
-#include "SFML/Graphics/VAOHandle.hpp"
 #include "SFML/Graphics/VBOHandle.hpp"
 
 #include "SFML/GLUtils/GLCheck.hpp"
@@ -103,8 +102,7 @@ namespace
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-InstanceAttributeBinder::InstanceAttributeBinder(const base::SizeT instanceCount, VAOHandle& vaoHandle) :
-    m_vaoHandle(vaoHandle),
+InstanceAttributeBinder::InstanceAttributeBinder(const base::SizeT instanceCount) :
     m_instanceCount(instanceCount)
 {
     SFML_BASE_ASSERT(instanceCount > 0u);
@@ -112,24 +110,12 @@ InstanceAttributeBinder::InstanceAttributeBinder(const base::SizeT instanceCount
 
 
 ////////////////////////////////////////////////////////////
-void InstanceAttributeBinder::bindVBO(VBOHandle& vboHandle)
-{
-    vboHandle.bind();
-
-    m_vboBound = true;
-    m_uploaded = false;
-}
-
-
-////////////////////////////////////////////////////////////
-void InstanceAttributeBinder::uploadData(const void* const data, const base::SizeT stride)
+void InstanceAttributeBinder::uploadData(VBOHandle& vboHandle, const void* const data, const base::SizeT stride)
 {
     SFML_BASE_ASSERT(data != nullptr);
     SFML_BASE_ASSERT(stride > 0u);
 
-    // Auto-bind the next VBO from the VAOHandle's internal pool
-    m_vaoHandle.bindNextVBO();
-    m_vboBound = true;
+    vboHandle.bind();
 
     glCheck(glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(stride * m_instanceCount), data, GL_STREAM_DRAW));
 
@@ -149,7 +135,6 @@ void InstanceAttributeBinder::setup(
     SFML_BASE_ASSERT(size >= 1u && size <= 4u);
     SFML_BASE_ASSERT(stride > 0u);
     SFML_BASE_ASSERT(fieldOffset < stride);
-    SFML_BASE_ASSERT(m_vboBound);
     SFML_BASE_ASSERT(m_uploaded);
 
     glCheck(glEnableVertexAttribArray(location));

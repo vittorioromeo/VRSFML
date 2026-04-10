@@ -15,7 +15,6 @@
 namespace sf
 {
 struct InstanceAttributeBinder;
-class VAOHandle;
 } // namespace sf
 
 
@@ -24,11 +23,10 @@ namespace sf
 ////////////////////////////////////////////////////////////
 /// \brief Owning handle to an OpenGL Vertex Buffer Object
 ///
-/// `sf::VBOHandle` wraps a single OpenGL VBO. It is intended
-/// to be passed to `sf::InstanceAttributeBinder::bindVBO`
-/// inside the `setupFn` callback of an instanced draw call,
-/// after which `setup` declares one or more attribute streams
-/// that pull from this VBO.
+/// `sf::VBOHandle` wraps a single OpenGL VBO. It is passed to
+/// `sf::InstanceAttributeBinder::uploadData` inside the
+/// `setupFn` callback of an instanced draw call, which uploads
+/// per-instance data into it.
 ///
 /// `VBOHandle` is move-only and should be cached across frames.
 ///
@@ -62,7 +60,6 @@ public:
 
 private:
     friend InstanceAttributeBinder;
-    friend VAOHandle;
 
     ////////////////////////////////////////////////////////////
     /// \brief Internal helper that binds the VBO as `GL_ARRAY_BUFFER`

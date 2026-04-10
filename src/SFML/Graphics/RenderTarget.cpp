@@ -692,13 +692,11 @@ void RenderTarget::immediateDrawInstancedVertices(const DrawInstancedVerticesSet
     if (settings.vertexSpan.isNullOrEmpty() || settings.instanceCount == 0u || !setActive(true))
         return;
 
-    settings.vaoHandle.resetVBOSlotsIfNewFrame(m_frameCounter);
-
     const DrawGuard drawGuard{*this, states, settings.vaoHandle.asVAOGroup()};
 
     RenderTargetImpl::streamVerticesToGPU(settings.vertexSpan);
 
-    InstanceAttributeBinder iab{settings.instanceCount, settings.vaoHandle};
+    InstanceAttributeBinder iab{settings.instanceCount};
     setupFn(iab);
 
     invokeInstancedPrimitiveDrawCall(settings.primitiveType, 0, settings.vertexSpan.size(), settings.instanceCount);
@@ -715,14 +713,12 @@ void RenderTarget::immediateDrawInstancedIndexedVertices(const DrawInstancedInde
         !setActive(true))
         return;
 
-    settings.vaoHandle.resetVBOSlotsIfNewFrame(m_frameCounter);
-
     const DrawGuard drawGuard{*this, states, settings.vaoHandle.asVAOGroup()};
 
     RenderTargetImpl::streamVerticesToGPU(settings.vertexSpan);
     RenderTargetImpl::streamIndicesToGPU(settings.indexSpan);
 
-    InstanceAttributeBinder iab{settings.instanceCount, settings.vaoHandle};
+    InstanceAttributeBinder iab{settings.instanceCount};
     setupFn(iab);
 
     invokeInstancedPrimitiveDrawCallIndexed(settings.primitiveType, 0, settings.indexSpan.size(), settings.instanceCount);
