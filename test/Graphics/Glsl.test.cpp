@@ -6,9 +6,6 @@
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Transform.hpp"
 
-#include "SFML/System/Priv/Vec2Base.hpp" // IWYU pragma: keep
-#include "SFML/System/Vec3.hpp"          // IWYU pragma: keep
-
 #include "SFML/Base/Trait/IsTriviallyCopyAssignable.hpp"
 #include "SFML/Base/Trait/IsTriviallyCopyConstructible.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
