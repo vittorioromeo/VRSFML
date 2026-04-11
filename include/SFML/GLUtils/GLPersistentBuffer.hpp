@@ -71,6 +71,35 @@ class [[nodiscard]] GLPersistentBuffer
 {
 public:
     ////////////////////////////////////////////////////////////
+    GLPersistentBuffer() = default;
+
+    ////////////////////////////////////////////////////////////
+    GLPersistentBuffer(const GLPersistentBuffer&)            = delete;
+    GLPersistentBuffer& operator=(const GLPersistentBuffer&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    GLPersistentBuffer(GLPersistentBuffer&& rhs) noexcept : m_mappedPtr{rhs.m_mappedPtr}, m_capacity{rhs.m_capacity}
+    {
+        rhs.m_mappedPtr = nullptr;
+        rhs.m_capacity  = 0u;
+    }
+
+    ////////////////////////////////////////////////////////////
+    GLPersistentBuffer& operator=(GLPersistentBuffer&& rhs) noexcept
+    {
+        if (this == &rhs)
+            return *this;
+
+        m_mappedPtr = rhs.m_mappedPtr;
+        m_capacity  = rhs.m_capacity;
+
+        rhs.m_mappedPtr = nullptr;
+        rhs.m_capacity  = 0u;
+
+        return *this;
+    }
+
+    ////////////////////////////////////////////////////////////
     /// \brief Ensure the buffer can hold at least `byteCount` bytes
     ///
     /// If the current capacity is already sufficient the call is a
@@ -81,17 +110,20 @@ public:
     /// \param obj       The buffer object to (re)allocate. Will be
     ///                  move-assigned a fresh instance on growth.
     /// \param byteCount Minimum number of bytes to make available
+    /// \param preserveExistingData `true` to copy the old mapped bytes
+    ///                             into the new storage on growth,
+    ///                             `false` to discard them
     ///
     /// \return `true` if a reallocation occurred, `false` if the
     ///         existing storage was already large enough
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] bool reserve(TBufferObject& obj, const base::SizeT byteCount)
+    [[gnu::always_inline]] bool reserve(TBufferObject& obj, const base::SizeT byteCount, const bool preserveExistingData)
     {
         if (m_capacity >= byteCount) [[likely]]
             return false;
 
-        reserveImpl(obj, byteCount);
+        reserveImpl(obj, byteCount, preserveExistingData);
         return true;
     }
 
@@ -103,7 +135,7 @@ public:
     ///         storage has been reserved yet
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] void* data()
+    [[nodiscard, gnu::always_inline, gnu::pure]] void* data()
     {
         return m_mappedPtr;
     }
@@ -116,9 +148,18 @@ public:
     ///         storage has been reserved yet
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] const void* data() const
+    [[nodiscard, gnu::always_inline, gnu::pure]] const void* data() const
     {
         return m_mappedPtr;
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the currently allocated capacity in bytes
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] base::SizeT capacity() const
+    {
+        return m_capacity;
     }
 
 
@@ -198,7 +239,8 @@ public:
 private:
     ////////////////////////////////////////////////////////////
     [[gnu::cold, gnu::noinline]] void reserveImpl([[maybe_unused]] TBufferObject&    obj,
-                                                  [[maybe_unused]] const base::SizeT byteCount)
+                                                  [[maybe_unused]] const base::SizeT byteCount,
+                                                  [[maybe_unused]] const bool        preserveExistingData)
     {
 #ifdef SFML_OPENGL_ES
         priv::err() << "FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES";
@@ -229,7 +271,9 @@ private:
 
         if (m_mappedPtr != nullptr)
         {
-            SFML_BASE_MEMCPY(newMappedPtr, m_mappedPtr, m_capacity);
+            if (preserveExistingData)
+                SFML_BASE_MEMCPY(newMappedPtr, m_mappedPtr, m_capacity);
+
             unmapIfNeeded(obj);
         }
 
