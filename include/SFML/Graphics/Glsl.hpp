@@ -8,8 +8,10 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Priv/GlslFwd.hpp" // IWYU pragma: export
 
-#include "SFML/Base/SizeT.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp" // IWYU pragma: export
+#include "SFML/System/Vec3.hpp"          // IWYU pragma: export
 
+#include "SFML/Base/SizeT.hpp" // IWYU pragma: export
 
 // Implementation (must be after the forward declarations)
 #include "SFML/Graphics/Glsl.inl" // IWYU pragma: export
