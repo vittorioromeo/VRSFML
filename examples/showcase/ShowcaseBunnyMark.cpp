@@ -232,7 +232,9 @@ void ExampleBunnyMark::draw()
     }
     else
     {
-        auto drawCtx = m_deps.rtGame->withLockedRenderStates(
+        m_deps.rtGame->reserveAutoBatchQuads(m_bunnies.size());
+
+        const auto drawCtx = m_deps.rtGame->withLockedRenderStates(
             {.view = *m_deps.view, .texture = &m_textureAtlas.getTexture()});
 
         sf::base::SizeT i = 0;
