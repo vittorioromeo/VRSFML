@@ -11,6 +11,7 @@
 #include "SFML/Graphics/Glsl.hpp" // NOLINT(misc-header-include-cycle)
 
 #include "SFML/Base/Builtin/Memcpy.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////

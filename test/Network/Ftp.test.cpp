@@ -3,9 +3,13 @@
 
 #include "SFML/Network/Ftp.hpp"
 
-#include <Doctest.hpp>
+#include "SFML/Base/String.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
-#include <CommonTraits.hpp>
+#include <Doctest.hpp>
 
 
 TEST_CASE("[Network] sf::Ftp")

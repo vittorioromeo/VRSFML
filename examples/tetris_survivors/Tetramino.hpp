@@ -8,7 +8,7 @@
 #include "StrongTypedef.hpp"
 #include "TetraminoShapes.hpp"
 
-#include "SFML/System/Vec2Base.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
 

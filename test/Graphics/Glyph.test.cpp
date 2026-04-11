@@ -2,9 +2,15 @@
 
 #include "SFML/Graphics/Glyph.hpp"
 
+#include "SFML/System/Rect2.hpp"
+
+#include "SFML/Base/Trait/IsTriviallyCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsTriviallyCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
+
 #include <Doctest.hpp>
 
-#include <CommonTraits.hpp>
 
 TEST_CASE("[Graphics] sf::Glyph")
 {

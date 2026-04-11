@@ -11,7 +11,7 @@
 #include "SFML/Window/Mouse.hpp"
 #include "SFML/Window/Sensor.hpp"
 
-#include "SFML/System/Vec2Base.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Vec3.hpp"
 
 #include "SFML/Base/Variant.hpp"

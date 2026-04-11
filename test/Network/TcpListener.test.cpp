@@ -1,11 +1,16 @@
 #include "SFML/Network/TcpListener.hpp"
 
 // Other 1st party headers
+#include "SFML/Network/Socket.hpp"
 #include "SFML/Network/TcpSocket.hpp"
+
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <Doctest.hpp>
 
-#include <CommonTraits.hpp>
 
 TEST_CASE("[Network] sf::TcpListener")
 {

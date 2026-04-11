@@ -21,7 +21,7 @@ struct SDL_Cursor;
 namespace sf
 {
 template <typename>
-class Vec2;
+struct Vec2;
 } // namespace sf
 
 

@@ -6,7 +6,7 @@
 #include "SFML/Window/VideoModeUtils.hpp"
 #include "SFML/Window/WindowContext.hpp"
 
-#include "SFML/System/Vec2Base.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/Algorithm/IsSorted.hpp"
 #include "SFML/Base/Trait/IsAggregate.hpp"

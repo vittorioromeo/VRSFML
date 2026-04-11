@@ -28,7 +28,7 @@
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/IO.hpp"
-#include "SFML/System/Vec2Base.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/Algorithm/AnyOf.hpp"
 #include "SFML/Base/Algorithm/Count.hpp"

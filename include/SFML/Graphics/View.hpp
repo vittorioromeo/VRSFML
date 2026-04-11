@@ -12,8 +12,8 @@
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/AutoWrapAngle.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
-#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/ClampMacro.hpp"

@@ -20,8 +20,8 @@
 #include "Stats.hpp"
 #include "Version.hpp"
 
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Time.hpp"
-#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Math/Pow.hpp"
 #include "SFML/Base/Optional.hpp"

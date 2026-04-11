@@ -10,8 +10,8 @@
 #include "SFML/Window/WindowHandle.hpp"
 
 #include "SFML/System/Clock.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Time.hpp"
-#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Trait/HasVirtualDestructor.hpp"
 #include "SFML/Base/Trait/IsCopyAssignable.hpp"

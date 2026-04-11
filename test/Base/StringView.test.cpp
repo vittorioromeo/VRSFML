@@ -5,10 +5,19 @@
 
 #include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/String.hpp"
+#include "SFML/Base/Trait/IsAggregate.hpp"
+#include "SFML/Base/Trait/IsStandardLayout.hpp"
+#include "SFML/Base/Trait/IsTrivial.hpp"
+#include "SFML/Base/Trait/IsTriviallyAssignable.hpp"
+#include "SFML/Base/Trait/IsTriviallyCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsTriviallyCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
+#include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
+#include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
+#include "SFML/Base/Trait/IsTriviallyRelocatable.hpp"
 
 #include <Doctest.hpp>
-
-#include <CommonTraits.hpp>
 
 
 TEST_CASE("[Base] Base/StringView.hpp")

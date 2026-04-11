@@ -12,9 +12,9 @@
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/TextureAtlasUtils.hpp"
 
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
 #include "SFML/System/RectPacker.hpp"
-#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"

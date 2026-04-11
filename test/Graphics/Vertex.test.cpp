@@ -2,9 +2,16 @@
 
 #include "SFML/Graphics/Vertex.hpp"
 
+#include "SFML/System/Priv/Vec2Base.hpp"
+
+#include "SFML/Base/Trait/IsAggregate.hpp"
+#include "SFML/Base/Trait/IsTriviallyCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsTriviallyCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
+
 #include <Doctest.hpp>
 
-#include <CommonTraits.hpp>
 
 TEST_CASE("[Graphics] sf::Vertex")
 {

@@ -21,7 +21,7 @@
 
 #include "SFML/Window/Mouse.hpp"
 
-#include "SFML/System/Vec2Base.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Remainder.hpp"

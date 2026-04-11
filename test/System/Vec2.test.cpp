@@ -3,7 +3,7 @@
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/System/Angle.hpp"
-#include "SFML/System/Vec2Base.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/Math/Sqrt.hpp"
 #include "SFML/Base/Trait/IsAggregate.hpp"

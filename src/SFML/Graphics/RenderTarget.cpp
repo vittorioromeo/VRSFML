@@ -48,8 +48,8 @@
 #include "SFML/GLUtils/Glad.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
-#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Array.hpp"
@@ -1079,7 +1079,19 @@ void RenderTarget::resetGLStatesImpl()
 ////////////////////////////////////////////////////////////
 RenderTarget::DrawStatistics RenderTarget::flush()
 {
-    SFML_BASE_SCOPE_GUARD({ m_numAutoBatchVertices = 0u; });
+    // Warn if a shader's uniforms were mutated while a batch using that shader was pending.
+    // The GL uniform change is immediate, so the pending batch will be drawn with the wrong values.
+    // The user should call flush() *before* setUniform(), not after.
+    if (m_numAutoBatchVertices > 0u && hasGenerationMismatch(m_lastRenderStates)) [[unlikely]]
+    {
+        priv::err() << "Shader uniform mutation detected while autobatch was in flight -- "
+                       "call `flush()` before changing uniforms on a shader that is part of a pending draw";
+    }
+
+    SFML_BASE_SCOPE_GUARD({
+        m_numAutoBatchVertices = 0u;
+        updateCachedGenerations(m_lastRenderStates);
+    });
 
     if (m_autoBatchMode == AutoBatchMode::Disabled)
         return m_currentDrawStats;
@@ -1333,7 +1345,11 @@ void RenderTarget::setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& sta
             m_impl->bindGLObjects(vaoGroup);
         else
         {
-            // TODO P0: why is this needed??? prevents crash in Render Tests
+            // Instanced draw callbacks can leave a per-instance VBO bound as
+            // GL_ARRAY_BUFFER. Always rebind the VAO group's shared VBO so
+            // that (a) setupVertexAttribPointers wires attributes 0-2 to the
+            // correct buffer and (b) streamVerticesToGPU uploads into it.
+            vaoGroup.vbo.bind();
             RenderTargetImpl::setupVertexAttribPointers();
         }
     }
@@ -1564,5 +1580,5 @@ void RenderTarget::invokeInstancedPrimitiveDrawCallIndexed(
 ////////////////////////////////////////////////////////////
 
 // TODO P0: document autobatching limitations
-// - shader uniform updates not tracked in same batch
-// - texture updates not tracked in same batch
+// - shader uniform updates tracked, but require manual flush
+// - texture updates not tracked in same batch (would break additive font atlases)

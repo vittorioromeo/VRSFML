@@ -16,9 +16,9 @@
 #include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
 #include "SFML/System/UnicodeStringUtfUtils.hpp"
-#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Assert.hpp"
@@ -48,8 +48,6 @@
 #include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_touch.h>
 #include <SDL3/SDL_video.h>
-
-#include <string>
 
 
 ////////////////////////////////////////////////////////////
@@ -822,7 +820,7 @@ UnicodeString SDLLayer::getClipboardString() const noexcept
 ////////////////////////////////////////////////////////////
 bool SDLLayer::setClipboardString(const UnicodeString& string) const noexcept
 {
-    if (!SDL_SetClipboardText(reinterpret_cast<const char*>(string.toUtf8<std::u8string>().c_str())))
+    if (!SDL_SetClipboardText(reinterpret_cast<const char*>(string.toUtf8<base::String>().cStr())))
     {
         err() << "`SDL_SetClipboardText` failed: " << SDL_GetError();
         return false;

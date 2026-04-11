@@ -3,12 +3,17 @@
 
 #include "SFML/Network/Http.hpp"
 
+#include "SFML/System/Time.hpp"
+
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsMoveConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <Doctest.hpp>
-
-#include <CommonTraits.hpp>
 
 
 TEST_CASE("[Network] sf::Http")

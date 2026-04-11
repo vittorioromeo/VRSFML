@@ -19,7 +19,7 @@
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/IO.hpp"
-#include "SFML/System/Vec2Base.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/Optional.hpp"
 

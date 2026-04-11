@@ -43,8 +43,8 @@
 #include "SFML/Window/VideoModeUtils.hpp"
 
 #include "SFML/System/Angle.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
-#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Algorithm/Erase.hpp"
 #include "SFML/Base/Assert.hpp"
@@ -2273,7 +2273,6 @@ void Main::updateProcessedBackground()
                            profile.ppBGSharpness,
                            profile.ppBGBlur);
 
-    rtBackgroundProcessed.flush();
     rtBackgroundProcessed.draw(rtBackground.getTexture(), {.shader = &shaderPostProcess});
     rtBackgroundProcessed.display();
 }
@@ -2295,6 +2294,8 @@ void Main::drawActivatedShrineBackgroundEffects(sf::RenderTarget& rt,
         if (range <= 0.f || effectStrength <= 0.f)
             return;
 
+        rt.flush();
+
         shaderShrineBackground.setUniform(suShrineBgTime, shaderTime);
         shaderShrineBackground.setUniform(suShrineBgViewOrigin, backgroundViewOrigin);
         shaderShrineBackground.setUniform(suShrineBgCenter, center);
@@ -2305,8 +2306,6 @@ void Main::drawActivatedShrineBackgroundEffects(sf::RenderTarget& rt,
         shaderShrineBackground.setUniform(suShrineBgDistortionStrength, 1812.f);
         shaderShrineBackground.setUniform(suShrineBgTintStrength, 0.2f);
         shaderShrineBackground.setUniform(suShrineBgEffectStrength, effectStrength);
-
-        rt.flush();
 
         rt.draw(backgroundTexture,
                 {.textureRect = {{0.f, 0.f}, backgroundView.size}},
@@ -2429,7 +2428,6 @@ void Main::gameLoopDisplayCloudBatch(const sf::CPUDrawableBatch& batch, const sf
     shaderClouds.setUniform(suCloudTime, shaderTime);
     shaderClouds.setUniform(suCloudResolution, rtCloudMask.getSize().toVec2f());
 
-    rtCloudProcessed.flush();
     rtCloudProcessed.clear(sf::Color::Transparent);
     rtCloudProcessed.draw(rtCloudMask.getTexture(), {.blendMode = sf::BlendNone, .shader = &shaderClouds});
     rtCloudProcessed.display();

@@ -162,7 +162,8 @@ bool Path::extensionIs(const base::StringView str) const
         return false;
 
     for (base::SizeT i = 0u; i < nativeExt.size(); ++i)
-        if (std::tolower(static_cast<int>(nativeExt[i])) != std::tolower(static_cast<int>(str[i]))) // TODO P1: non-locale tolower
+        if (std::tolower(static_cast<int>(nativeExt[i])) !=
+            std::tolower(static_cast<int>(str[i]))) // TODO P1: non-locale tolower
             return false;
 
     return true;

@@ -3,7 +3,7 @@
 #include "CatType.hpp"
 #include "Countdown.hpp"
 
-#include "SFML/System/Vec2Base.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/Math/Cos.hpp"

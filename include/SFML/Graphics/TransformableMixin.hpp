@@ -8,10 +8,9 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
-#include "SFML/Graphics/Priv/TransformableMacros.hpp" // IWYU pragma: keep
 #include "SFML/Graphics/Transform.hpp"
 
-#include "SFML/System/Vec2Base.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/AssertAndAssume.hpp"
 #include "SFML/Base/SinCosLookup.hpp"

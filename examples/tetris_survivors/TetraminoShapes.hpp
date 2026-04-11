@@ -8,7 +8,7 @@
 #include "ShapeDimension.hpp"
 #include "ShapeMatrix.hpp"
 
-#include "SFML/System/Vec2Base.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/IntTypes.hpp"

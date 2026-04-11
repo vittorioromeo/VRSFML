@@ -4645,9 +4645,6 @@ private:
         const sf::Vec2f windowSize = m_window.getSize().toVec2f();
         const sf::Vec2f rtGameSize = m_rtGame.getSize().toVec2f() * scale;
 
-        m_shaderCRT.setUniform(m_ulInputSize, m_rtGame.getSize().toVec2f());
-        m_shaderCRT.setUniform(m_ulTime, m_totalTime);
-
         if (m_rtPostProcess.getSize() != rtGameSize.toVec2u())
             m_rtPostProcess = sf::RenderTexture::create(rtGameSize.toVec2u()).value();
 
@@ -4657,6 +4654,10 @@ private:
             const auto postProcessInternalView = sf::View::fromScreenSize(m_rtGame.getSize().toVec2f());
 
             m_rtPostProcess.flush();
+
+            m_shaderCRT.setUniform(m_ulInputSize, m_rtGame.getSize().toVec2f());
+            m_shaderCRT.setUniform(m_ulTime, m_totalTime);
+
             m_rtPostProcess.clear();
             m_rtPostProcess.draw(m_rtGame.getTexture(),
                                  {.view = postProcessInternalView, .shader = m_useCRTShader ? &m_shaderCRT : nullptr});

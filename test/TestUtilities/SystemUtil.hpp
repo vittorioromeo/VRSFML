@@ -21,10 +21,10 @@ class UnicodeString;
 class Time;
 
 template <typename>
-class Vec2;
+struct Vec2;
 
 template <typename>
-class Vec3;
+struct Vec3;
 
 template <typename>
 class Rect2;

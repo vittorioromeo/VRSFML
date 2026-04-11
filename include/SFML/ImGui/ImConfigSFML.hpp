@@ -28,7 +28,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Color.hpp" // IWYU pragma: keep
 
-#include "SFML/System/Vec2Base.hpp" // IWYU pragma: keep
+#include "SFML/System/Priv/Vec2Base.hpp" // IWYU pragma: keep
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/IntTypes.hpp" // IWYU pragma: keep

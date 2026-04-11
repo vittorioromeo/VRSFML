@@ -1,10 +1,25 @@
 #include "GraphicsUtil.hpp"
+#include "SystemUtil.hpp"
 
 #include "SFML/Graphics/TransformableMixin.hpp"
 
-#include <Doctest.hpp>
+#include "SFML/Graphics/Priv/TransformableMacros.hpp"
 
-#include <CommonTraits.hpp>
+#include "SFML/System/Angle.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
+
+#include "SFML/Base/Trait/IsAggregate.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
+#include "SFML/Base/Trait/IsStandardLayout.hpp"
+#include "SFML/Base/Trait/IsTrivial.hpp"
+#include "SFML/Base/Trait/IsTriviallyAssignable.hpp"
+#include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
+#include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
+
+#include <Doctest.hpp>
 
 
 struct TestTransformable : sf::TransformableMixin<TestTransformable>

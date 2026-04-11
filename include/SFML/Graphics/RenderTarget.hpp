@@ -12,15 +12,17 @@
 #include "SFML/Graphics/DrawTextureSettings.hpp"
 #include "SFML/Graphics/DrawVerticesSettings.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
+#include "SFML/Graphics/Priv/ShaderBase.hpp"
 #include "SFML/Graphics/Priv/ShapeDataConcept.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/VertexSpan.hpp"
 
-#include "SFML/System/Vec2Base.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/FixedFunction.hpp"
 #include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 
@@ -567,7 +569,7 @@ public:
     /// \return Statistics about the draw calls that were made
     ///
     ////////////////////////////////////////////////////////////
-    RenderTarget::DrawStatistics flush();
+    [[gnu::cold]] RenderTarget::DrawStatistics flush();
 
     ////////////////////////////////////////////////////////////
     /// \brief Flush queued GPU commands to the driver (`glFlush`)
@@ -814,6 +816,25 @@ private:
                                                const RenderStates&                                     states);
 
     ////////////////////////////////////////////////////////////
+    /// \brief Check whether shader/texture generation counters diverge from cached values
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] bool hasGenerationMismatch(const RenderStates& states) const
+    {
+        return states.shader != nullptr && states.shader->m_uniformGeneration != m_lastShaderGeneration;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Store the current shader/texture generation counters
+    ///
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] void updateCachedGenerations(const RenderStates& states)
+    {
+        m_lastShaderGeneration = states.shader != nullptr ? states.shader->m_uniformGeneration : base::U8{0};
+    }
+
+    ////////////////////////////////////////////////////////////
     /// \brief Flush the auto-batch if `states` differ or it has grown past the threshold
     ///
     /// Internal helper invoked by every public `draw` overload to
@@ -825,7 +846,7 @@ private:
     {
         if (m_isStateLocked)
         {
-            SFML_BASE_ASSERT(m_lastRenderStates == states &&
+            SFML_BASE_ASSERT(m_lastRenderStates == states && !hasGenerationMismatch(states) &&
                              "State mutation detected while inside a 'withLockedRenderStates' context!\n If you are "
                              "drawing Text, Shapes, or Sprites, you must explicitly bind their Texture to the context "
                              "upfront.");
@@ -835,10 +856,13 @@ private:
         }
         else
         {
-            if (m_numAutoBatchVertices >= m_autoBatchVertexThreshold || m_lastRenderStates != states)
+            if (m_numAutoBatchVertices >= m_autoBatchVertexThreshold || m_lastRenderStates != states ||
+                hasGenerationMismatch(states))
             {
                 flush();
+
                 m_lastRenderStates = states;
+                updateCachedGenerations(states);
             }
         }
     }
@@ -1115,6 +1139,7 @@ private:
     base::SizeT    m_numAutoBatchVertices{0u};                 //!< Number of vertices in the current autobatch
     base::SizeT    m_autoBatchVertexThreshold{32'768u};        //!< Threshold for batch vertex count
     RenderStates   m_lastRenderStates{};                       //!< Cached render states (autobatching)
+    base::U8       m_lastShaderGeneration{0}; //!< Cached shader uniform generation (autobatch invalidation)
     bool           m_isStateLocked{false}; //!< Whether render states are currently bound via `withLockedRenderStates`
 
     ////////////////////////////////////////////////////////////

@@ -4,11 +4,16 @@
 #include "SFML/Network/IpAddress.hpp"
 #include "SFML/Network/IpAddressUtils.hpp"
 
+#include "SFML/System/Time.hpp"
+
 #include "SFML/Base/String.hpp"
+#include "SFML/Base/Trait/HasVirtualDestructor.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <Doctest.hpp>
-
-#include <CommonTraits.hpp>
 
 
 TEST_CASE("[Network] sf::TcpSocket")

@@ -5,7 +5,7 @@
 #include "SFML/System/TimeChronoUtil.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/StdChrono.hpp" // IWYU pragma: keep
+#include "SFML/Base/StdChrono.hpp"
 #include "SFML/Base/Trait/IsAggregate.hpp"
 #include "SFML/Base/Trait/IsStandardLayout.hpp"
 #include "SFML/Base/Trait/IsTrivial.hpp"

@@ -24,9 +24,8 @@ namespace sf
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-class [[nodiscard]] Vec3
+struct [[nodiscard]] Vec3
 {
-public:
     ////////////////////////////////////////////////////////////
     /// \brief Length of the vec3 <i><b>(floating-point)</b></i>.
     ///
@@ -362,13 +361,13 @@ using Vec3uz = Vec3<base::SizeT>;
 ////////////////////////////////////////////////////////////
 // Explicit instantiation declarations
 ////////////////////////////////////////////////////////////
-extern template class sf::Vec3<float>;
-extern template class sf::Vec3<double>;
-extern template class sf::Vec3<long double>;
-extern template class sf::Vec3<bool>;
-extern template class sf::Vec3<int>;
-extern template class sf::Vec3<unsigned int>;
-extern template class sf::Vec3<sf::base::SizeT>;
+extern template struct sf::Vec3<float>;
+extern template struct sf::Vec3<double>;
+extern template struct sf::Vec3<long double>;
+extern template struct sf::Vec3<bool>;
+extern template struct sf::Vec3<int>;
+extern template struct sf::Vec3<unsigned int>;
+extern template struct sf::Vec3<sf::base::SizeT>;
 
 
 ////////////////////////////////////////////////////////////

@@ -8,11 +8,18 @@
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/SoundChannel.hpp"
 
+#include "SFML/System/Angle.hpp"
 #include "SFML/System/Time.hpp"
+#include "SFML/System/Vec3.hpp"
+
+#include "SFML/Base/Trait/HasVirtualDestructor.hpp"
+#include "SFML/Base/Trait/IsConstructible.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <Doctest.hpp>
-
-#include <CommonTraits.hpp>
 
 
 namespace

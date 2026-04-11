@@ -14,9 +14,9 @@
 #include "SFML/Graphics/Texture.hpp"
 
 #include "SFML/System/Clock.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
 #include "SFML/System/Time.hpp"
-#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/FloatMax.hpp"
