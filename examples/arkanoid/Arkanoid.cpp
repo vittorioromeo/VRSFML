@@ -13,8 +13,8 @@
 #include "SFML/Window/EventUtils.hpp"
 #include "SFML/Window/Keyboard.hpp"
 
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/RectUtils.hpp"
-#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Optional.hpp"

@@ -11,7 +11,7 @@
 #include "SFML/Window/WindowBase.hpp"
 #include "SFML/Window/WindowContext.hpp"
 
-#include "SFML/System/Vec2Base.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/Assert.hpp"
 

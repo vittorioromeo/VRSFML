@@ -3,7 +3,7 @@
 #include "BubbleType.hpp"
 #include "Countdown.hpp"
 
-#include "SFML/System/Vec2Base.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 
 ////////////////////////////////////////////////////////////

@@ -102,8 +102,7 @@ namespace
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-InstanceAttributeBinder::InstanceAttributeBinder(const base::SizeT instanceCount) :
-    m_instanceCount(instanceCount)
+InstanceAttributeBinder::InstanceAttributeBinder(const base::SizeT instanceCount) : m_instanceCount(instanceCount)
 {
     SFML_BASE_ASSERT(instanceCount > 0u);
 }

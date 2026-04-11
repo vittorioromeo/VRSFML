@@ -19,6 +19,7 @@
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/String.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #pragma GCC diagnostic push
@@ -33,8 +34,8 @@
 #pragma GCC diagnostic pop
 
 #include "SFML/System/IO.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Time.hpp"
-#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StringView.hpp"
@@ -45,7 +46,6 @@
 #include <exception>
 #include <filesystem>
 #include <stdexcept>
-#include <string>
 
 // NOLINTBEGIN(readability-identifier-naming, misc-use-internal-linkage)
 
@@ -1068,7 +1068,7 @@ try
 void loadProfileFromFile(Profile& profile, const char* filename)
 try
 {
-    std::string contents;
+    sf::base::String contents;
 
     if (!sf::readFromFile(filename, contents))
         throw std::runtime_error("readFromFile failed");
@@ -1102,7 +1102,7 @@ try
 void loadGameConstantsFromFile(GameConstants& gameConstants, const char* filename)
 try
 {
-    std::string contents;
+    sf::base::String contents;
 
     if (!sf::readFromFile(filename, contents))
         throw std::runtime_error("readFromFile failed");

@@ -6,8 +6,8 @@
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/View.hpp"
 
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
-#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Trait/IsConstructible.hpp"
@@ -18,7 +18,6 @@
 
 #include <Doctest.hpp>
 
-#include <CommonTraits.hpp>
 
 namespace
 {

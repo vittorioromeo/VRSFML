@@ -11,8 +11,8 @@
 #include "SFML/Graphics/TextureWrapMode.hpp"
 
 #include "SFML/System/LifetimeDependee.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
-#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"

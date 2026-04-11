@@ -16,9 +16,9 @@
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/LifetimeDependee.hpp"
 #include "SFML/System/Path.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
 #include "SFML/System/UnicodeString.hpp"
-#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
@@ -29,8 +29,6 @@
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <Doctest.hpp>
-
-#include <CommonTraits.hpp>
 
 
 TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))

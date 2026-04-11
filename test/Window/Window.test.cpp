@@ -3,7 +3,7 @@
 #include "SFML/Window/WindowContext.hpp"
 #include "SFML/Window/WindowHandle.hpp"
 
-#include "SFML/System/Vec2Base.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 // Other 1st party headers
 #include "SystemUtil.hpp"

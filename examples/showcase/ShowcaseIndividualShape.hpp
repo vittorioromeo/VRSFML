@@ -14,7 +14,7 @@
 #include "SFML/Graphics/StarShapeData.hpp"
 
 #include "SFML/System/Angle.hpp"
-#include "SFML/System/Vec2Base.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 
 ////////////////////////////////////////////////////////////

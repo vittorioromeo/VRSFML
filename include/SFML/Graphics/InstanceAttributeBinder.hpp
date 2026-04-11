@@ -20,10 +20,10 @@ namespace sf
 class VBOHandle;
 
 template <typename T>
-class Vec2;
+struct Vec2;
 
 template <typename T>
-class Vec3;
+struct Vec3;
 
 struct Color;
 } // namespace sf

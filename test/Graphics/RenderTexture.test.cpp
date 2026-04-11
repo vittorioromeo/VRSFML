@@ -13,7 +13,7 @@
 #include "SFML/Graphics/TextureWrapMode.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
-#include "SFML/System/Vec2Base.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Trait/IsCopyAssignable.hpp"
@@ -23,8 +23,6 @@
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <Doctest.hpp>
-
-#include <CommonTraits.hpp>
 
 
 TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))

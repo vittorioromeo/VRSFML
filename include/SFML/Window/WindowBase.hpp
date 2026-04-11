@@ -14,10 +14,10 @@
 
 #include "SFML/System/GlobalAnchorPointMixin.hpp"
 #include "SFML/System/LocalAnchorPointMixin.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
 #include "SFML/System/Time.hpp"
 #include "SFML/System/UnicodeString.hpp"
-#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"

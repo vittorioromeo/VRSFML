@@ -8,6 +8,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
+#include "SFML/Graphics/Priv/TransformableMacros.hpp"
 #include "SFML/Graphics/TransformableMixin.hpp"
 
 

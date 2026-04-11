@@ -7,17 +7,23 @@
 #include "SFML/System/UnicodeString.hpp"
 
 #include "SFML/Base/Builtin/Strlen.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
+#include "SFML/Base/Trait/RemoveConst.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #include <Doctest.hpp>
 
-#include <CommonTraits.hpp>
-
 #include <limits>
 #include <string>
 
+#include <cstddef>
 #include <cwchar>
+
 
 #define CHECK_PACKET_STREAM_OPERATORS(expected)              \
     do                                                       \
@@ -51,7 +57,7 @@
         CHECK(!packet.endOfPacket());                                      \
         CHECK(bool{packet});                                               \
                                                                            \
-        std::remove_const_t<decltype(expected)> received;                  \
+        SFML_BASE_REMOVE_CONST(decltype(expected)) received;               \
         packet >> received;                                                \
         CHECK(packet.getReadPosition() == (size));                         \
         CHECK(packet.getData() != nullptr);                                \
