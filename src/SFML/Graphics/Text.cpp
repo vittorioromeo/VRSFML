@@ -9,12 +9,15 @@
 
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/TextBase.hpp"
-#include "SFML/Graphics/TextBase.inl" // IWYU pragma: keep
 #include "SFML/Graphics/Texture.hpp"
 
 #include "SFML/System/LifetimeDependant.hpp"
 
 #include "SFML/Base/Assert.hpp"
+
+
+////////////////////////////////////////////////////////////
+#include "SFML/Graphics/TextBase.inl" // IWYU pragma: keep
 
 
 ////////////////////////////////////////////////////////////

@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Angle.hpp"         // IWYU pragma: keep
 #include "SFML/System/AutoWrapAngle.hpp" // IWYU pragma: keep
-#include "SFML/System/Vec2Base.hpp"      // IWYU pragma: keep
+#include "SFML/System/Priv/Vec2Base.hpp" // IWYU pragma: keep
 
 
 ////////////////////////////////////////////////////////////

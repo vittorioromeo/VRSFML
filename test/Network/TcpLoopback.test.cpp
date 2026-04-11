@@ -9,7 +9,7 @@
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Time.hpp"
 
-#include "SFML/Base/String.hpp" // IWYU pragma: keep
+#include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Vector.hpp"
 

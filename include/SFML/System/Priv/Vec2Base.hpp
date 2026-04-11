@@ -21,9 +21,8 @@ class Angle;
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-class [[nodiscard]] Vec2
+struct [[nodiscard]] Vec2
 {
-public:
     ////////////////////////////////////////////////////////////
     /// \brief Construct the vec2 from polar coordinates <i><b>(floating-point)</b></i>
     ///
@@ -683,13 +682,13 @@ using Vec2uz = Vec2<base::SizeT>;
 ////////////////////////////////////////////////////////////
 // Explicit instantiation declarations
 ////////////////////////////////////////////////////////////
-extern template class sf::Vec2<float>;
-extern template class sf::Vec2<double>;
-extern template class sf::Vec2<long double>;
-extern template class sf::Vec2<bool>;
-extern template class sf::Vec2<int>;
-extern template class sf::Vec2<unsigned int>;
-extern template class sf::Vec2<sf::base::SizeT>;
+extern template struct sf::Vec2<float>;
+extern template struct sf::Vec2<double>;
+extern template struct sf::Vec2<long double>;
+extern template struct sf::Vec2<bool>;
+extern template struct sf::Vec2<int>;
+extern template struct sf::Vec2<unsigned int>;
+extern template struct sf::Vec2<sf::base::SizeT>;
 
 
 ////////////////////////////////////////////////////////////

@@ -1,10 +1,17 @@
 #include "SFML/Network/Socket.hpp"
 
+#include "SFML/Network/SocketHandle.hpp"
+
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Trait/HasVirtualDestructor.hpp"
+#include "SFML/Base/Trait/IsConstructible.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <Doctest.hpp>
 
-#include <CommonTraits.hpp>
 
 class TestSocket : public sf::Socket
 {

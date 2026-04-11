@@ -15,7 +15,7 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/String.hpp" // IWYU pragma: keep
+#include "SFML/Base/String.hpp"
 #include "SFML/Base/StringStreamOp.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/StringViewStreamOp.hpp"
@@ -174,6 +174,43 @@ namespace
             SFML_BASE_ASSERT(sfmlEnum == sf::SeekDir::end);
             return std::ios_base::end;
     }
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+bool readFromFileImpl(sf::base::StringView filename, T& target)
+{
+    // Open at the end of the file (ate) to immediately get the size
+    std::ifstream file(filename.toString<std::string>(), std::ios::binary | std::ios::ate);
+
+    if (!file)
+    {
+        sf::priv::err() << "Failed to read from file '" << filename << "'\n";
+        return false;
+    }
+
+    // Get file size and resize the target string
+    const auto size = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    // Handle empty files gracefully without doing a 0-byte read
+    if (size <= 0)
+    {
+        target.clear();
+        return true;
+    }
+
+    target.resize(static_cast<sf::base::SizeT>(size));
+
+    // Read the entire file directly into the string's buffer
+    if (!file.read(target.data(), static_cast<std::streamsize>(size)))
+    {
+        sf::priv::err() << "Failed to read the full contents of file '" << filename << "'\n";
+        return false;
+    }
+
+    return true;
 }
 
 } // namespace
@@ -437,36 +474,14 @@ bool writeToFile(base::StringView filename, base::StringView contents)
 ////////////////////////////////////////////////////////////
 bool readFromFile(base::StringView filename, std::string& target)
 {
-    // Open at the end of the file (ate) to immediately get the size
-    std::ifstream file(filename.toString<std::string>(), std::ios::binary | std::ios::ate);
+    return readFromFileImpl(filename, target);
+}
 
-    if (!file)
-    {
-        priv::err() << "Failed to read from file '" << filename << "'\n";
-        return false;
-    }
 
-    // Get file size and resize the target string
-    const auto size = file.tellg();
-    file.seekg(0, std::ios::beg);
-
-    // Handle empty files gracefully without doing a 0-byte read
-    if (size <= 0)
-    {
-        target.clear();
-        return true;
-    }
-
-    target.resize(static_cast<base::SizeT>(size));
-
-    // Read the entire file directly into the string's buffer
-    if (!file.read(target.data(), static_cast<std::streamsize>(size)))
-    {
-        priv::err() << "Failed to read the full contents of file '" << filename << "'\n";
-        return false;
-    }
-
-    return true;
+////////////////////////////////////////////////////////////
+bool readFromFile(base::StringView filename, base::String& target)
+{
+    return readFromFileImpl(filename, target);
 }
 
 

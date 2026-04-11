@@ -119,7 +119,6 @@
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/ThreadPool.hpp"
-#include "SFML/Base/ToString.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #include <cstdarg>

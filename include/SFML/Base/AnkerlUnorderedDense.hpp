@@ -83,10 +83,10 @@
 #include "SFML/Base/Builtin/Memset.hpp"
 #include "SFML/Base/DeclVal.hpp"
 #include "SFML/Base/Exchange.hpp"
-#include "SFML/Base/InitializerList.hpp" // IWYU pragma: keep
+#include "SFML/Base/InitializerList.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
-#include "SFML/Base/FwdStdHash.hpp" // IWYU pragma: keep
+#include "SFML/Base/FwdStdHash.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PtrDiffT.hpp"

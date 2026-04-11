@@ -18,7 +18,8 @@
         "SFML_WARNINGS_AS_ERRORS": "OFF"
       },
       "environment": {
-        "CXX_WARNINGS": "-Wall -Wextra -Wpedantic -Wno-ignored-attributes -Wno-unused-command-line-argument"
+        "CXX_WARNINGS": "-Wall -Wextra -Wpedantic -Wno-ignored-attributes -Wno-unused-command-line-argument",
+        "OFAST": "-O3 -ffast-math"
       }
     },
     {
@@ -27,25 +28,18 @@
       "inherits": "build_base",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "DEBUG",
+        "SFML_ENABLE_HARDENING_FLAGS": "ON",
         "SFML_ENABLE_LIFETIME_TRACKING": "ON",
         "SFML_ENABLE_STACK_TRACES": "ON",
         "SFML_ENABLE_STDLIB_ASSERTIONS": "ON",
-        "SFML_ENABLE_HARDENING_FLAGS": "ON"
+        "SFML_FATAL_OPENGL_ERRORS": "ON"
       }
     },
     {
       "name": "vrdev_ci",
       "inherits": "build_base_debug",
       "binaryDir": "build",
-      "installDir": "${sourceDir}/build/install",
-      "cacheVariables": {
-        "CMAKE_CXX_EXTENSIONS": "OFF",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "SFML_BUILD_EXAMPLES": "ON",
-        "SFML_BUILD_TEST_SUITE": "ON",
-        "SFML_ENABLE_STDLIB_ASSERTIONS": "ON",
-        "SFML_WARNINGS_AS_ERRORS": "OFF"
-      }
+      "installDir": "${sourceDir}/build/install"
     },
     {
       "name": "vrdev_clang",
@@ -56,8 +50,7 @@
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_C_FLAGS": "-fuse-ld=lld $env{CXX_WARNINGS}",
         "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace $env{CXX_WARNINGS}",
-        "SFML_FATAL_OPENGL_ERRORS": "ON"
+        "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace $env{CXX_WARNINGS}"
       }
     },
     {
@@ -69,8 +62,7 @@
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_C_FLAGS": "-fuse-ld=lld $env{CXX_WARNINGS}",
         "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace $env{CXX_WARNINGS} -stdlib=libc++",
-        "SFML_FATAL_OPENGL_ERRORS": "ON"
+        "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace $env{CXX_WARNINGS} -stdlib=libc++"
       }
     },
     {
@@ -113,6 +105,7 @@
       "inherits": "build_base",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-g -DNDEBUG",
         "SFML_ENABLE_LIFETIME_TRACKING": "OFF",
         "SFML_ENABLE_STACK_TRACES": "OFF",
         "SFML_ENABLE_STDLIB_ASSERTIONS": "OFF"
@@ -126,8 +119,8 @@
       "cacheVariables": {
         "CMAKE_C_COMPILER": "gcc",
         "CMAKE_CXX_COMPILER": "g++",
-        "CMAKE_C_FLAGS": "-fuse-ld=lld -Ofast $env{CXX_WARNINGS}",
-        "CMAKE_CXX_FLAGS": "-fuse-ld=lld -Wnrvo -Ofast $env{CXX_WARNINGS}"
+        "CMAKE_C_FLAGS": "-fuse-ld=lld $env{OFAST} $env{CXX_WARNINGS}",
+        "CMAKE_CXX_FLAGS": "-fuse-ld=lld -Wnrvo $env{OFAST} $env{CXX_WARNINGS}"
       }
     },
     {
@@ -139,8 +132,23 @@
         "CMAKE_CXX_COMPILER_LAUNCHER": "",
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_C_FLAGS": "-fuse-ld=lld -Ofast $env{CXX_WARNINGS}",
-        "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace -flto=thin -Ofast $env{CXX_WARNINGS}"
+        "CMAKE_C_FLAGS": "-fuse-ld=lld $env{OFAST} $env{CXX_WARNINGS}",
+        "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace -flto=thin $env{OFAST} $env{CXX_WARNINGS}"
+      }
+    },
+    {
+      "name": "vrdev_clang_rel_profile",
+      "inherits": "build_base_release",
+      "binaryDir": "build_vrdev_clang_rel_profile",
+      "installDir": "${sourceDir}/build_vrdev_clang_rel_profile/install",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER_LAUNCHER": "",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_C_FLAGS": "-fstandalone-debug -fuse-ld=lld $env{OFAST} -g -fno-omit-frame-pointer -march=native $env{CXX_WARNINGS}",
+        "CMAKE_CXX_FLAGS": "-fstandalone-debug -fuse-ld=lld -ftime-trace -flto=thin $env{OFAST} -g -fno-omit-frame-pointer -fdebug-info-for-profiling -march=native $env{CXX_WARNINGS}",
+        "CMAKE_EXE_LINKER_FLAGS": "-fuse-ld=lld -g",
+        "CMAKE_SHARED_LINKER_FLAGS": "-fuse-ld=lld -g"
       }
     },
     {
@@ -153,7 +161,7 @@
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_C_FLAGS": "-fuse-ld=lld $env{CXX_WARNINGS}",
-        "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace -flto=thin $env{CXX_WARNINGS}"
+        "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace $env{CXX_WARNINGS}"
       }
     },
     {
@@ -165,8 +173,8 @@
         "CMAKE_CXX_COMPILER_LAUNCHER": "",
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_C_FLAGS": "-march=native -fuse-ld=lld -Ofast $env{CXX_WARNINGS}",
-        "CMAKE_CXX_FLAGS": "-march=native -fuse-ld=lld -ftime-trace -flto=thin -Ofast $env{CXX_WARNINGS}"
+        "CMAKE_C_FLAGS": "-march=native -fuse-ld=lld $env{OFAST} $env{CXX_WARNINGS}",
+        "CMAKE_CXX_FLAGS": "-march=native -fuse-ld=lld -ftime-trace -flto=thin $env{OFAST} $env{CXX_WARNINGS}"
       }
     },
     {
@@ -186,7 +194,7 @@
       "cacheVariables": {
         "CMAKE_CROSSCOMPILING_EMULATOR": "C:/msys64/clang64/bin/node.exe",
         "CMAKE_CXX_COMPILER_LAUNCHER": "",
-        "CMAKE_CXX_FLAGS": "-Ofast $env{CXX_WARNINGS}",
+        "CMAKE_CXX_FLAGS": "$env{OFAST} $env{CXX_WARNINGS}",
         "CMAKE_TOOLCHAIN_FILE": "C:/msys64/clang64/lib/emscripten/cmake/Modules/Platform/Emscripten.cmake",
         "SFML_OPENGL_ES": "ON"
       }
@@ -212,7 +220,7 @@
       "cacheVariables": {
         "CMAKE_CROSSCOMPILING_EMULATOR": "/usr/bin/node",
         "CMAKE_CXX_COMPILER_LAUNCHER": "",
-        "CMAKE_CXX_FLAGS": "-Ofast $env{CXX_WARNINGS}",
+        "CMAKE_CXX_FLAGS": "$env{OFAST} $env{CXX_WARNINGS}",
         "CMAKE_TOOLCHAIN_FILE": "/usr/lib/emscripten/cmake/Modules/Platform/Emscripten.cmake",
         "SFML_OPENGL_ES": "ON"
       }

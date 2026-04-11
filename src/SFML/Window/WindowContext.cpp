@@ -25,8 +25,8 @@
 #include "SFML/GLUtils/TextureSaver.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/SignalErrHandler.hpp"
-#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Algorithm/Find.hpp"

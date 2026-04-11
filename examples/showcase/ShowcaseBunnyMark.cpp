@@ -19,8 +19,8 @@
 #include "SFML/Window/Keyboard.hpp"
 
 #include "SFML/System/Angle.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
-#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Constants.hpp"

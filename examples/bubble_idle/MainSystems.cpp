@@ -29,7 +29,7 @@
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
-#include "SFML/System/Vec2Base.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/Algorithm/AllOf.hpp"
 #include "SFML/Base/Algorithm/AnyOf.hpp"

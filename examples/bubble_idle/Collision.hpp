@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SFML/System/Vec2Base.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/Math/Sqrt.hpp"
 #include "SFML/Base/Optional.hpp"

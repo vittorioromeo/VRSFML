@@ -9,15 +9,14 @@
 #include "SFML/Graphics/TextureWrapMode.hpp"
 
 // Other 1st party headers
-#include "CommonTraits.hpp"
 #include "GraphicsUtil.hpp"
 #include "LoadIntoMemoryUtil.hpp"
 #include "WindowUtil.hpp"
 
 #include "SFML/System/FileInputStream.hpp"
 #include "SFML/System/Path.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
-#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/Trait/IsCopyAssignable.hpp"
 #include "SFML/Base/Trait/IsCopyConstructible.hpp"

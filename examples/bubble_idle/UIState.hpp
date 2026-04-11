@@ -4,8 +4,8 @@
 
 #include "SFML/ImGui/IncludeImGui.hpp"
 
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
-#include "SFML/System/Vec2Base.hpp"
 
 #include "SFML/Base/AnkerlUnorderedDense.hpp"
 #include "SFML/Base/String.hpp"

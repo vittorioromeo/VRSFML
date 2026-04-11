@@ -259,7 +259,7 @@ TEST_CASE("[Base] Base/FixedFunction.hpp")
             CHECK(ff() == 70);
 
             const auto& ffRef = ff;
-            ff = ffRef;
+            ff                = ffRef;
 
             CHECK(ff() == 70);
         }
@@ -381,7 +381,7 @@ TEST_CASE("[Base] Base/FixedFunction.hpp")
             CHECK(!!ff);
 
             const int prevDestructions = c.destructions;
-            ff = nullptr;
+            ff                         = nullptr;
             CHECK(!ff);
             CHECK(c.destructions == prevDestructions + 1);
         }
@@ -412,7 +412,7 @@ TEST_CASE("[Base] Base/FixedFunction.hpp")
 
     SECTION("Multiple return types - void")
     {
-        int  x = 0;
+        int x = 0;
         FFv ff([&x] { x = 42; });
         ff();
         CHECK(x == 42);
