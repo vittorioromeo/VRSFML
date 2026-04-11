@@ -65,6 +65,7 @@
 #include "SFML/Base/SinCosLookup.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Span.hpp"
+#include "SFML/Base/Trait/IsSame.hpp"
 
 #include <atomic>
 
@@ -318,6 +319,23 @@ struct [[nodiscard]] RenderTarget::Impl
 
 
 ////////////////////////////////////////////////////////////
+decltype(auto) RenderTarget::withCurrentAutobatch(auto&& f)
+{
+    SFML_BASE_ASSERT(m_autoBatchMode != AutoBatchMode::Disabled);
+
+#ifdef SFML_OPENGL_ES
+    return f(m_impl->cpuAutoBatch);
+#else
+    if (m_autoBatchMode == AutoBatchMode::CPUStorage)
+        return f(m_impl->cpuAutoBatch);
+
+    SFML_BASE_ASSERT(m_autoBatchMode == AutoBatchMode::GPUStorage);
+    return f(m_impl->currentGPUAutoBatchState().batch);
+#endif
+}
+
+
+////////////////////////////////////////////////////////////
 auto RenderTarget::addToAutoBatch(auto&&... xs)
 {
     SFML_BASE_ASSERT(m_autoBatchMode != AutoBatchMode::Disabled);
@@ -330,15 +348,7 @@ auto RenderTarget::addToAutoBatch(auto&&... xs)
         return batch.add(SFML_BASE_FORWARD(xs)...);
     };
 
-#ifdef SFML_OPENGL_ES
-    return addImpl(m_impl->cpuAutoBatch);
-#else
-    if (m_autoBatchMode == AutoBatchMode::CPUStorage)
-        return addImpl(m_impl->cpuAutoBatch);
-
-    SFML_BASE_ASSERT(m_autoBatchMode == AutoBatchMode::GPUStorage);
-    return addImpl(m_impl->currentGPUAutoBatchState().batch);
-#endif
+    return withCurrentAutobatch(addImpl);
 }
 
 
@@ -448,6 +458,26 @@ void RenderTarget::setAutoBatchVertexThreshold(const base::SizeT threshold)
 base::SizeT RenderTarget::getAutoBatchVertexThreshold() const
 {
     return m_autoBatchVertexThreshold;
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::reserveAutoBatchTriangles(const base::SizeT triangleCount)
+{
+    if (triangleCount == 0u || m_autoBatchMode == AutoBatchMode::Disabled)
+        return;
+
+    withCurrentAutobatch([&](auto& batch) { batch.reserveTriangles(triangleCount); });
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::reserveAutoBatchQuads(const base::SizeT quadCount)
+{
+    if (quadCount == 0u || m_autoBatchMode == AutoBatchMode::Disabled)
+        return;
+
+    withCurrentAutobatch([&](auto& batch) { batch.reserveQuads(quadCount); });
 }
 
 
@@ -1096,48 +1126,41 @@ RenderTarget::DrawStatistics RenderTarget::flush()
     if (m_autoBatchMode == AutoBatchMode::Disabled)
         return m_currentDrawStats;
 
-#ifdef SFML_OPENGL_ES
-
-    immediateDrawDrawableBatch(m_impl->cpuAutoBatch, m_lastRenderStates);
-    m_impl->cpuAutoBatch.clear();
-
-#else
-
-    if (m_autoBatchMode == AutoBatchMode::CPUStorage)
+    withCurrentAutobatch([&]<typename Batch>(Batch& b)
     {
-        immediateDrawDrawableBatch(m_impl->cpuAutoBatch, m_lastRenderStates);
-        m_impl->cpuAutoBatch.clear();
-    }
-    else
-    {
-        SFML_BASE_ASSERT(m_autoBatchMode == AutoBatchMode::GPUStorage);
+        if constexpr (SFML_BASE_IS_SAME(Batch, CPUDrawableBatch))
+        {
+            immediateDrawDrawableBatch(b, m_lastRenderStates);
+            b.clear();
+        }
+        else
+        {
+            auto& [batch, fence, indexOffset, vertexOffset] = m_impl->currentGPUAutoBatchState();
+            SFML_BASE_ASSERT(&batch == &b);
 
-        auto& [batch, fence, indexOffset, vertexOffset] = m_impl->currentGPUAutoBatchState();
+            const auto vertexCount = batch.getNumVertices() - vertexOffset;
+            const auto indexCount  = batch.getNumIndices() - indexOffset;
 
-        const auto vertexCount = batch.getNumVertices() - vertexOffset;
-        const auto indexCount  = batch.getNumIndices() - indexOffset;
+            if (vertexCount == 0u || indexCount == 0u)
+                return;
 
-        if (vertexCount == 0u || indexCount == 0u)
-            return m_currentDrawStats;
+            batch.flushVertexWritesToGPU(vertexCount, vertexOffset);
+            batch.flushIndexWritesToGPU(indexCount, indexOffset);
 
-        batch.flushVertexWritesToGPU(vertexCount, vertexOffset);
-        batch.flushIndexWritesToGPU(indexCount, indexOffset);
+            immediateDrawPersistentMappedIndexedVertices(
+                {
+                    .gpuDrawableBatch = batch,
+                    .indexCount       = indexCount,
+                    .indexOffset      = indexOffset,
+                    .vertexOffset     = 0u, // Vertex offset is always `0` for GPU autobatching
+                    .primitiveType    = PrimitiveType::Triangles,
+                },
+                m_lastRenderStates);
 
-        immediateDrawPersistentMappedIndexedVertices(
-            {
-                .gpuDrawableBatch = batch,
-                .indexCount       = indexCount,
-                .indexOffset      = indexOffset,
-                .vertexOffset     = 0u, // Vertex offset is always `0` for GPU autobatching
-                .primitiveType    = PrimitiveType::Triangles,
-            },
-            m_lastRenderStates);
-
-        indexOffset  = batch.getNumIndices();
-        vertexOffset = batch.getNumVertices();
-    }
-
-#endif
+            indexOffset  = batch.getNumIndices();
+            vertexOffset = batch.getNumVertices();
+        }
+    });
 
     return m_currentDrawStats;
 }

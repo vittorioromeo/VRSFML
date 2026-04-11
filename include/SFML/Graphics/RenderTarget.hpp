@@ -233,6 +233,28 @@ public:
     [[nodiscard]] base::SizeT getAutoBatchVertexThreshold() const;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Reserve space in the current auto-batch for triangles
+    ///
+    /// Ensures that the currently active auto-batch has enough
+    /// storage for `triangleCount` triangles.
+    ///
+    /// \param triangleCount Number of triangles to reserve for
+    ///
+    ////////////////////////////////////////////////////////////
+    void reserveAutoBatchTriangles(base::SizeT triangleCount);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Reserve space in the current auto-batch for quads
+    ///
+    /// Ensures that the currently active auto-batch has enough
+    /// storage for `quadCount` quads.
+    ///
+    /// \param quadCount Number of quads to reserve for
+    ///
+    ////////////////////////////////////////////////////////////
+    void reserveAutoBatchQuads(base::SizeT quadCount);
+
+    ////////////////////////////////////////////////////////////
     /// \brief Draw a texture to the render target with default parameters
     ///
     /// The full texture is drawn at position `{0.f, 0.f}` with the
@@ -1043,6 +1065,17 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     auto addToAutoBatch(auto&&... xs);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Execute a function with the current auto-batch as the active target
+    ///
+    /// If OpenGL ES is detected, the CPU drawable batch is used.
+    /// Otherwise, the used batch depends on `m_autoBatchMode`.
+    ///
+    /// Asserts that autobatching is enabled.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] inline decltype(auto) withCurrentAutobatch(auto&& f);
 
 public:
     ////////////////////////////////////////////////////////////
