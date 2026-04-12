@@ -1177,7 +1177,7 @@ private:
 
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 1024> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 1536> m_impl; //!< Implementation details
 };
 
 } // namespace sf

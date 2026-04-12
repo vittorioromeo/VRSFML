@@ -3,6 +3,7 @@
 
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DrawInstancedIndexedVerticesSettings.hpp"
+#include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
 #include "SFML/Graphics/InstanceAttributeBinder.hpp"
@@ -20,9 +21,15 @@
 
 #include "SFML/Window/WindowContext.hpp"
 
+#include "SFML/GLUtils/GLCheck.hpp"
+#include "SFML/GLUtils/Glad.hpp"
+
 #include "SFML/System/Priv/Vec2Base.hpp"
 
 #include <Doctest.hpp>
+
+#include <thread>
+
 
 TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
 {
@@ -623,5 +630,145 @@ void main()
             CHECK(image.getPixel({15, 15}) == sf::Color::Green);
             CHECK(image.getPixel({65, 15}) == sf::Color::Red);
         }
+
+        SECTION("Multiple uploads to the same instance VBO within one draw remain correct")
+        {
+            constexpr auto vertexSource = R"glsl(
+layout(location = 0) uniform vec3 sf_u_mvpRow0;
+layout(location = 1) uniform vec3 sf_u_mvpRow1;
+layout(location = 3) uniform vec2 sf_u_invTextureSize;
+
+layout(location = 0) in vec2 sf_a_position;
+layout(location = 1) in vec4 sf_a_color;
+layout(location = 2) in vec2 sf_a_texCoord;
+
+layout(location = 3) in vec2 instance_offset;
+layout(location = 4) in vec4 instance_color;
+
+out vec4 v_color;
+
+void main()
+{
+    const vec2 worldPos = instance_offset + (sf_a_position * vec2(20.0, 20.0));
+
+    gl_Position = vec4(dot(sf_u_mvpRow0, vec3(worldPos, 1.0)),
+                       dot(sf_u_mvpRow1, vec3(worldPos, 1.0)),
+                       0.0,
+                       1.0);
+
+    v_color = instance_color;
+}
+)glsl";
+
+            constexpr auto fragmentSource = R"glsl(
+in vec4 v_color;
+
+layout(location = 0) out vec4 sf_fragColor;
+
+void main()
+{
+    sf_fragColor = v_color;
+}
+)glsl";
+
+            auto shader = sf::Shader::loadFromMemory({.vertexCode = vertexSource, .fragmentCode = fragmentSource}).value();
+
+            sf::VAOHandle vaoHandle;
+            sf::VBOHandle instanceVBO;
+
+            const auto drawInstance = [&](const sf::Vec2f offset, const sf::Color color)
+            {
+                const sf::Vec2f instanceOffsetData[]{offset};
+                const sf::Color instanceColorData[]{color};
+
+                auto setupAttribs = [&](sf::InstanceAttributeBinder& binder)
+                {
+                    binder.uploadContiguousData(instanceVBO, instanceOffsetData);
+                    binder.setupFlat<sf::Vec2f>(3);
+
+                    binder.uploadContiguousData(instanceVBO, instanceColorData);
+                    binder.setupFlat<sf::Color>(4);
+                };
+
+                renderTexture.drawInstancedIndexedVertices(
+                    {
+                        .vaoHandle     = vaoHandle,
+                        .vertexSpan    = sf::instancedQuadVertices,
+                        .indexSpan     = sf::instancedQuadIndices,
+                        .instanceCount = 1u,
+                        .primitiveType = sf::PrimitiveType::Triangles,
+                    },
+                    setupAttribs,
+                    {.view = sf::View::fromScreenSize({100.f, 100.f}), .shader = &shader});
+            };
+
+            renderTexture.clear(sf::Color::Black);
+
+            drawInstance({10.f, 10.f}, sf::Color::Green);
+            drawInstance({60.f, 10.f}, sf::Color::Red);
+
+            renderTexture.display();
+
+            const auto image = renderTexture.getTexture().copyToImage();
+
+            CHECK(image.getPixel({15, 15}) == sf::Color::Green);
+            CHECK(image.getPixel({65, 15}) == sf::Color::Red);
+        }
+
+#ifndef SFML_OPENGL_ES
+        SECTION("Persistent GPU batches can reserve before clear when reused across frames")
+        {
+            auto batchRenderTexture = sf::RenderTexture::create({100, 100}).value();
+
+            sf::PersistentGPUDrawableBatch batch;
+            const sf::RectangleShape rect{{.position = {10.f, 10.f}, .fillColor = sf::Color::Green, .size = {30.f, 30.f}}};
+
+            batchRenderTexture.clear(sf::Color::Black);
+            batch.add(rect);
+            batchRenderTexture.draw(batch);
+            batchRenderTexture.display();
+
+            glCheck(glFinish());
+
+            // Mirrors the examples: reserve for the next frame before the
+            // batch is cleared and refilled.
+            batch.reserveQuads(64u);
+            batch.clear();
+            batch.add(rect);
+
+            batchRenderTexture.clear(sf::Color::Black);
+            batchRenderTexture.draw(batch);
+            batchRenderTexture.display();
+
+            const auto image = batchRenderTexture.getTexture().copyToImage();
+            CHECK(image.getPixel({20, 20}) == sf::Color::Green);
+        }
+
+        SECTION("Persistent GPU batches can be refilled from a worker thread after clear")
+        {
+            auto batchRenderTexture = sf::RenderTexture::create({100, 100}).value();
+
+            sf::PersistentGPUDrawableBatch batch;
+            const sf::RectangleShape rect{{.position = {10.f, 10.f}, .fillColor = sf::Color::Green, .size = {30.f, 30.f}}};
+
+            batch.add(rect);
+
+            batchRenderTexture.clear(sf::Color::Black);
+            batchRenderTexture.draw(batch);
+            batchRenderTexture.display();
+
+            batch.clear();
+
+            std::thread worker([&batch, &rect] { batch.add(rect); });
+            worker.join();
+
+            batchRenderTexture.clear(sf::Color::Black);
+            batchRenderTexture.draw(batch);
+            batchRenderTexture.display();
+
+            const auto image = batchRenderTexture.getTexture().copyToImage();
+            CHECK(image.getPixel({20, 20}) == sf::Color::Green);
+        }
+#endif
     }
 }

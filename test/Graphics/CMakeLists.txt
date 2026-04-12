@@ -1,6 +1,12 @@
 file(GLOB GRAPHICS_SRC CONFIGURE_DEPENDS "*.cpp" "*.hpp" "*.inl")
 sfml_add_test(test-sfml-graphics "${GRAPHICS_SRC}" SFML::Graphics)
 
+# Some tests directly instantiate GL utility types whose public headers
+# transitively include private headers from `src/SFML/GLUtils/` and the
+# bundled `glad` sources.
+target_include_directories(test-sfml-graphics PRIVATE "${PROJECT_SOURCE_DIR}/src")
+target_include_directories(test-sfml-graphics SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/extlibs/headers/glad/include")
+
 if(SFML_RUN_DISPLAY_TESTS)
     target_compile_definitions(test-sfml-graphics PRIVATE SFML_RUN_DISPLAY_TESTS)
 endif()

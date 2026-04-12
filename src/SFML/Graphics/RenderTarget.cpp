@@ -688,8 +688,10 @@ void RenderTarget::immediateDrawInstancedVertices(const DrawInstancedVerticesSet
 
     InstanceAttributeBinder iab{settings.instanceCount};
     setupFn(iab);
+    iab.applySetups();
 
     invokeInstancedPrimitiveDrawCall(settings.primitiveType, 0, settings.vertexSpan.size(), settings.instanceCount);
+    iab.markDrawSubmitted();
 }
 
 
@@ -710,8 +712,10 @@ void RenderTarget::immediateDrawInstancedIndexedVertices(const DrawInstancedInde
 
     InstanceAttributeBinder iab{settings.instanceCount};
     setupFn(iab);
+    iab.applySetups();
 
     invokeInstancedPrimitiveDrawCallIndexed(settings.primitiveType, 0, settings.indexSpan.size(), settings.instanceCount);
+    iab.markDrawSubmitted();
 }
 
 
@@ -731,6 +735,9 @@ void RenderTarget::draw(const PersistentGPUDrawableBatch& drawableBatch, RenderS
     if (m_autoBatchMode != AutoBatchMode::Disabled)
         flush();
 
+    if (!setActive(true))
+        return;
+
     states.transform *= drawableBatch.getTransform();
 
     drawableBatch.flushVertexWritesToGPU(drawableBatch.getNumVertices(), 0u);
@@ -745,6 +752,8 @@ void RenderTarget::draw(const PersistentGPUDrawableBatch& drawableBatch, RenderS
             .primitiveType    = PrimitiveType::Triangles,
         },
         states);
+
+    drawableBatch.m_storage.commitPendingDrawSubmission();
 }
 
 
