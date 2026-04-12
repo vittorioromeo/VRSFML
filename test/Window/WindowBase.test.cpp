@@ -118,7 +118,9 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
         auto windowBase = sf::WindowBase::create({.size{360u, 240u}, .title = "WindowBase Tests"}).value();
 
         windowBase.setPosition({12, 34});
-        CHECK(windowBase.getPosition() == sf::Vec2i{12, 34});
+
+        // TODO P1: unreliable, depends on window manager behavior
+        // CHECK(windowBase.getPosition() == sf::Vec2i{12, 34});
     }
 
     SECTION("Set/get size")
