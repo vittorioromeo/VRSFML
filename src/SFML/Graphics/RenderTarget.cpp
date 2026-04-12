@@ -43,7 +43,9 @@
 #include "SFML/Graphics/VertexSpan.hpp"
 #include "SFML/Graphics/View.hpp"
 
+#include "SFML/GLUtils/FenceUtils.hpp"
 #include "SFML/GLUtils/GLCheck.hpp"
+#include "SFML/GLUtils/GLFenceSync.hpp"
 #include "SFML/GLUtils/GLVAOGroup.hpp"
 #include "SFML/GLUtils/Glad.hpp"
 
@@ -185,7 +187,7 @@ enum : sf::base::SizeT
 struct [[nodiscard]] PersistentGPUAutoBatchState
 {
     sf::PersistentGPUDrawableBatch batch;            //!< Internal GPU autobatch
-    GLsync                         fence{};          //!< Fences for GPU autobatching
+    sf::priv::GLFenceSync          fence;            //!< Fences for GPU autobatching
     sf::base::SizeT                indexOffset{0u};  //!< Index offset for GPU autobatching
     sf::base::SizeT                vertexOffset{0u}; //!< Vertex offset for GPU autobatching
 };
@@ -199,51 +201,6 @@ struct [[nodiscard]] PersistentGPUAutoBatchState
     return type == sf::PrimitiveType::Triangles || type == sf::PrimitiveType::TriangleStrip ||
            type == sf::PrimitiveType::TriangleFan;
 }
-
-
-#ifndef SFML_OPENGL_ES
-////////////////////////////////////////////////////////////
-[[nodiscard]] GLsync makeFence()
-{
-    GLsync fenceToCreate = glCheck(glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0));
-
-    if (fenceToCreate == nullptr) [[unlikely]]
-    {
-        sf::priv::err() << "FATAL ERROR: Error creating fence sync object";
-        sf::base::abort();
-    }
-
-    return fenceToCreate;
-}
-
-
-////////////////////////////////////////////////////////////
-[[nodiscard]] bool waitOnFence(GLsync& fenceToWaitOn)
-{
-    if (!fenceToWaitOn) // No need to wait
-        return false;
-
-    const GLenum waitResult = glCheck(glClientWaitSync(fenceToWaitOn, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED));
-
-    if (waitResult == GL_WAIT_FAILED) [[unlikely]]
-    {
-        sf::priv::err() << "FATAL ERROR: Error waiting on GPU fence";
-        sf::base::abort();
-    }
-
-    if (waitResult == GL_TIMEOUT_EXPIRED) [[unlikely]]
-    {
-        sf::priv::err() << "FATAL ERROR: Fence wait timed out";
-        sf::base::abort();
-    }
-
-    // Delete the fence now that we're done with it
-    glCheck(glDeleteSync(fenceToWaitOn));
-    fenceToWaitOn = nullptr;
-
-    return true;
-}
-#endif
 
 } // namespace RenderTargetImpl
 } // namespace
@@ -1214,8 +1171,10 @@ void RenderTarget::syncGPUStartFrame()
 #ifndef SFML_OPENGL_ES
     auto& [batch, fenceToWaitOn, indexOffset, vertexOffset] = m_impl->currentGPUAutoBatchState();
 
-    if (!RenderTargetImpl::waitOnFence(fenceToWaitOn))
+    if (!fenceToWaitOn)
         return;
+
+    priv::waitOnFence(fenceToWaitOn);
 
     batch.clear();
 
@@ -1230,9 +1189,9 @@ void RenderTarget::syncGPUEndFrame()
 {
 #ifndef SFML_OPENGL_ES
     auto& fenceToCreate = m_impl->currentGPUAutoBatchState().fence;
-    SFML_BASE_ASSERT(fenceToCreate == nullptr);
+    SFML_BASE_ASSERT(!fenceToCreate);
 
-    fenceToCreate = RenderTargetImpl::makeFence();
+    fenceToCreate = priv::makeFence();
 
     // Advance to the next fence index for the *next* frame
     m_impl->currentGPUAutoBatchIndex = (m_impl->currentGPUAutoBatchIndex + 1u) %
