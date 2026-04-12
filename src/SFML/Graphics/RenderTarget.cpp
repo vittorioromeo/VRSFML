@@ -53,7 +53,6 @@
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
 
-#include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/OffsetOf.hpp"
@@ -68,6 +67,10 @@
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Span.hpp"
 #include "SFML/Base/Trait/IsSame.hpp"
+
+#ifdef SFML_OPENGL_ES
+    #include "SFML/Base/Abort.hpp"
+#endif
 
 #include <atomic>
 
