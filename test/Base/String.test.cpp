@@ -322,22 +322,22 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SUBCASE("append")
         {
-            sf::base::String str("Start");
+            sf::base::String str("Hi");
             CHECK(str.isSso());
 
-            str.append(sf::base::StringView("-Middle"));
+            str.append(sf::base::StringView("-Mid"));
             CHECK(str.isSso());
-            CHECK(sf::base::StringView(str) == "Start-Middle");
+            CHECK(sf::base::StringView(str) == "Hi-Mid");
 
-            str.append("-End");
+            str.append("-E");
             CHECK(str.isSso());
-            CHECK(sf::base::StringView(str) == "Start-Middle-End");
+            CHECK(sf::base::StringView(str) == "Hi-Mid-E");
 
             sf::base::String finalPart(longStringLiteral);
             str.append(finalPart);
             CHECK(!str.isSso());
-            CHECK(str.size() == 16 + finalPart.size());
-            CHECK(sf::base::StringView(str).substrByPosLen(16) == longStringLiteral);
+            CHECK(str.size() == 8 + finalPart.size());
+            CHECK(sf::base::StringView(str).substrByPosLen(8) == longStringLiteral);
         }
 
         SUBCASE("append2")
@@ -611,16 +611,16 @@ TEST_CASE("[Base] Base/String.hpp")
     {
         SECTION("s += s with SSO string (transitioning to heap)")
         {
-            // Choose a size that is SSO, but when doubled, is not.
-            // maxSsoSize is likely 23 on a 64-bit system, so 15 is a safe choice.
-            sf::base::String s = "sso-to-heap!!";
-            CHECK(s.size() == 13);
+            // Choose a size that fits SSO but when doubled exceeds it.
+            // maxSsoSize is 11 on wasm32 and 23 on 64-bit, so 7 is a safe choice.
+            sf::base::String s = "heap!!!";
+            CHECK(s.size() == 7);
             CHECK(s.isSso());
 
             s += s; // Self-append, should trigger grow() and use-after-free bug
 
-            CHECK(s.size() == 26);
-            CHECK(s == "sso-to-heap!!sso-to-heap!!");
+            CHECK(s.size() == 14);
+            CHECK(s == "heap!!!heap!!!");
             CHECK(!s.isSso());
         }
 
@@ -683,13 +683,15 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SECTION("insert with overlapping source and reallocation")
         {
-            sf::base::String s("abcdefghijklmno");
+            // Use a string that fits SSO (<=11 on wasm32) but after inserting
+            // s[2:] at position 3, the result (2*len - 2) exceeds maxSsoSize.
+            sf::base::String s("abcdefg");
             CHECK(s.isSso());
 
             s.insert(3, s.cStr() + 2);
 
             CHECK(!s.isSso());
-            CHECK(s == "abccdefghijklmnodefghijklmno");
+            CHECK(s == "abccdefgdefg");
         }
     }
 
