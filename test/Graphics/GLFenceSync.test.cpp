@@ -1,13 +1,14 @@
 #include "WindowUtil.hpp"
 
+#include "SFML/GLUtils/GLFenceSync.hpp"
+
 #include "SFML/Graphics/GraphicsContext.hpp"
+
+#include "SFML/Window/WindowContext.hpp"
 
 #include "SFML/GLUtils/FenceUtils.hpp"
 #include "SFML/GLUtils/GLCheck.hpp"
-#include "SFML/GLUtils/GLFenceSync.hpp"
 #include "SFML/GLUtils/Glad.hpp"
-
-#include "SFML/Window/WindowContext.hpp"
 
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Trait/IsCopyAssignable.hpp"
