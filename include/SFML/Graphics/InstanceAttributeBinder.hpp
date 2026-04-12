@@ -9,6 +9,7 @@
 #include "SFML/Graphics/GlDataType.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/InPlaceVector.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 
@@ -76,6 +77,12 @@ namespace sf
 /// a VBO holding the per-instance data and configure one or
 /// more vertex attribute streams that pull from it.
 ///
+/// Attribute setup is intentionally deferred until the callback
+/// completes. Streaming uploads may grow a `VBOHandle` and replace
+/// its underlying GL buffer object; applying `glVertexAttribPointer`
+/// immediately would capture the old buffer in the VAO and make the
+/// subsequent draw read invalid state.
+///
 /// The binder is non-copyable and non-movable: it must be used
 /// only within the scope of the callback that received it.
 ///
@@ -84,6 +91,7 @@ struct [[nodiscard]] InstanceAttributeBinder
 {
     ////////////////////////////////////////////////////////////
     explicit InstanceAttributeBinder(base::SizeT instanceCount);
+    ~InstanceAttributeBinder();
 
     ////////////////////////////////////////////////////////////
     InstanceAttributeBinder(const InstanceAttributeBinder&)            = delete;
@@ -96,8 +104,9 @@ struct [[nodiscard]] InstanceAttributeBinder
     ////////////////////////////////////////////////////////////
     /// \brief Upload per-instance data into the given VBO
     ///
-    /// Binds `vboHandle`, then uploads `instanceCount * stride`
-    /// bytes from `data` with `GL_STREAM_DRAW`.
+    /// Streams `instanceCount * stride` bytes from `data` into
+    /// `vboHandle` and makes that uploaded range the source for
+    /// subsequent `setup*()` calls until the next upload.
     ///
     /// \param vboHandle VBO to upload into
     /// \param data      Pointer to the source bytes
@@ -151,6 +160,9 @@ struct [[nodiscard]] InstanceAttributeBinder
     /// (with divisor `1`) to set up an attribute that advances
     /// once per instance.
     ///
+    /// The setup is recorded immediately but applied only after the
+    /// callback completes, once all uploads for the draw are finalized.
+    ///
     /// \param location    Shader attribute location to bind to
     /// \param size        Number of components (1-4)
     /// \param type        Data type of each component
@@ -159,12 +171,7 @@ struct [[nodiscard]] InstanceAttributeBinder
     /// \param fieldOffset Byte offset of this attribute within a single instance record
     ///
     ////////////////////////////////////////////////////////////
-    void setup(unsigned int location,
-               unsigned int size,
-               GlDataType   type,
-               bool         normalized,
-               base::SizeT  stride,
-               base::SizeT  fieldOffset) const;
+    void setup(unsigned int location, unsigned int size, GlDataType type, bool normalized, base::SizeT stride, base::SizeT fieldOffset);
 
     ////////////////////////////////////////////////////////////
     /// \brief Configure a per-instance attribute from a pointer-to-member
@@ -184,7 +191,7 @@ struct [[nodiscard]] InstanceAttributeBinder
     ///
     ////////////////////////////////////////////////////////////
     template <auto MemberPtr>
-    void setupField(const unsigned int location) const
+    void setupField(const unsigned int location)
     {
         using StructType = MemberPtrStructType<decltype(MemberPtr)>;
         using FieldType  = MemberPtrFieldType<decltype(MemberPtr)>;
@@ -206,11 +213,32 @@ struct [[nodiscard]] InstanceAttributeBinder
     ///
     ////////////////////////////////////////////////////////////
     template <typename T>
-    void setupFlat(const unsigned int location) const
+    void setupFlat(const unsigned int location)
     {
         constexpr auto glInfo = priv::fieldInfo<T>;
         setup(location, glInfo.size, glInfo.type, glInfo.defaultNormalized, sizeof(T), 0);
     }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Apply any deferred attribute setups before the draw
+    ///
+    /// `RenderTarget` calls this after the setup callback has finished,
+    /// once all streaming uploads for the draw are known. This is required
+    /// because a later upload can grow a VBO and replace its GL buffer
+    /// object, which would invalidate attribute pointers configured earlier.
+    ///
+    ////////////////////////////////////////////////////////////
+    void applySetups() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Mark that the draw consuming the staged uploads has been submitted
+    ///
+    /// `RenderTarget` calls this after issuing the instanced draw. The
+    /// destructor then commits the staged uploads instead of rolling them
+    /// back, ensuring the fence is created after the draw.
+    ///
+    ////////////////////////////////////////////////////////////
+    void markDrawSubmitted() noexcept;
 
 private:
     ////////////////////////////////////////////////////////////
@@ -247,10 +275,26 @@ private:
     }
 
     ////////////////////////////////////////////////////////////
+    struct DeferredSetup
+    {
+        VBOHandle*   vboHandle;
+        unsigned int location;
+        unsigned int size;
+        GlDataType   type;
+        bool         normalized;
+        base::SizeT  stride;
+        base::SizeT  byteOffset;
+    };
+
+    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    base::SizeT m_instanceCount;
-    bool        m_uploaded{false};
+    base::SizeT                             m_instanceCount;
+    base::InPlaceVector<VBOHandle*, 8u>     m_touchedVBOHandles;
+    base::InPlaceVector<DeferredSetup, 16u> m_deferredSetups;
+    VBOHandle*                              m_currentVBOHandle{nullptr};
+    base::SizeT                             m_currentUploadByteOffset{0u};
+    bool                                    m_drawSubmitted{false};
 };
 
 } // namespace sf
