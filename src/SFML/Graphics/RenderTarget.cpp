@@ -1104,6 +1104,7 @@ RenderTarget::DrawStatistics RenderTarget::flush()
         }
         else
         {
+#ifndef SFML_OPENGL_ES
             auto& [batch, fence, indexOffset, vertexOffset] = m_impl->currentGPUAutoBatchState();
             SFML_BASE_ASSERT(&batch == &b);
 
@@ -1128,6 +1129,7 @@ RenderTarget::DrawStatistics RenderTarget::flush()
 
             indexOffset  = batch.getNumIndices();
             vertexOffset = batch.getNumVertices();
+#endif
         }
     });
 
