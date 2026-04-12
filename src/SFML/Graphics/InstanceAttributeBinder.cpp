@@ -107,6 +107,21 @@ InstanceAttributeBinder::InstanceAttributeBinder(const base::SizeT instanceCount
     SFML_BASE_ASSERT(instanceCount > 0u);
 }
 
+////////////////////////////////////////////////////////////
+InstanceAttributeBinder::~InstanceAttributeBinder()
+{
+    if (m_drawSubmitted)
+    {
+        for (VBOHandle* const vboHandle : m_touchedVBOHandles)
+            vboHandle->commitPendingUploads();
+
+        return;
+    }
+
+    for (VBOHandle* const vboHandle : m_touchedVBOHandles)
+        vboHandle->rollbackPendingUploads();
+}
+
 
 ////////////////////////////////////////////////////////////
 void InstanceAttributeBinder::uploadData(VBOHandle& vboHandle, const void* const data, const base::SizeT stride)
@@ -114,11 +129,22 @@ void InstanceAttributeBinder::uploadData(VBOHandle& vboHandle, const void* const
     SFML_BASE_ASSERT(data != nullptr);
     SFML_BASE_ASSERT(stride > 0u);
 
-    vboHandle.bind();
+    m_currentVBOHandle        = &vboHandle;
+    m_currentUploadByteOffset = vboHandle.uploadStreamingData(data, stride * m_instanceCount);
 
-    glCheck(glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(stride * m_instanceCount), data, GL_STREAM_DRAW));
+    bool alreadyTouched = false;
 
-    m_uploaded = true;
+    for (VBOHandle* const touchedVBOHandle : m_touchedVBOHandles)
+    {
+        if (touchedVBOHandle == &vboHandle)
+        {
+            alreadyTouched = true;
+            break;
+        }
+    }
+
+    if (!alreadyTouched)
+        m_touchedVBOHandles.emplaceBack(&vboHandle);
 }
 
 
@@ -129,18 +155,53 @@ void InstanceAttributeBinder::setup(
     const GlDataType   type,
     const bool         normalized,
     const base::SizeT  stride,
-    const base::SizeT  fieldOffset) const
+    const base::SizeT  fieldOffset)
 {
     SFML_BASE_ASSERT(size >= 1u && size <= 4u);
     SFML_BASE_ASSERT(stride > 0u);
     SFML_BASE_ASSERT(fieldOffset < stride);
-    SFML_BASE_ASSERT(m_uploaded);
+    SFML_BASE_ASSERT(m_currentVBOHandle != nullptr);
+    m_deferredSetups.emplaceBack(DeferredSetup{
+        .vboHandle  = m_currentVBOHandle,
+        .location   = location,
+        .size       = size,
+        .type       = type,
+        .normalized = normalized,
+        .stride     = stride,
+        .byteOffset = m_currentUploadByteOffset + fieldOffset,
+    });
+}
 
-    glCheck(glEnableVertexAttribArray(location));
+////////////////////////////////////////////////////////////
+void InstanceAttributeBinder::applySetups() const
+{
+    VBOHandle* lastBoundVBOHandle = nullptr;
 
-    setupVertexAttribPointer(location, size, type, normalized, static_cast<GLsizei>(stride), reinterpret_cast<void*>(fieldOffset));
+    for (const DeferredSetup& deferredSetup : m_deferredSetups)
+    {
+        if (deferredSetup.vboHandle != lastBoundVBOHandle)
+        {
+            deferredSetup.vboHandle->bind();
+            lastBoundVBOHandle = deferredSetup.vboHandle;
+        }
 
-    glCheck(glVertexAttribDivisor(location, 1));
+        glCheck(glEnableVertexAttribArray(deferredSetup.location));
+
+        setupVertexAttribPointer(deferredSetup.location,
+                                 deferredSetup.size,
+                                 deferredSetup.type,
+                                 deferredSetup.normalized,
+                                 static_cast<GLsizei>(deferredSetup.stride),
+                                 reinterpret_cast<void*>(deferredSetup.byteOffset));
+
+        glCheck(glVertexAttribDivisor(deferredSetup.location, 1));
+    }
+}
+
+////////////////////////////////////////////////////////////
+void InstanceAttributeBinder::markDrawSubmitted() noexcept
+{
+    m_drawSubmitted = true;
 }
 
 } // namespace sf
