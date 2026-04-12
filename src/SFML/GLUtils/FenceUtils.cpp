@@ -56,7 +56,9 @@ bool tryWaitOnFence(GLFenceSync& fenceToWaitOn)
     if (!fenceToWaitOn)
         return true;
 
-    const GLenum waitResult = glCheck(glClientWaitSync(asNativeHandle(fenceToWaitOn), GL_SYNC_FLUSH_COMMANDS_BIT, 0u));
+    const GLbitfield flags      = fenceToWaitOn.needsClientFlush() ? GL_SYNC_FLUSH_COMMANDS_BIT : 0u;
+    const GLenum     waitResult = glCheck(glClientWaitSync(asNativeHandle(fenceToWaitOn), flags, 0u));
+    fenceToWaitOn.markClientFlushConsumed();
 
     if (waitResult == GL_WAIT_FAILED) [[unlikely]]
     {
@@ -80,8 +82,9 @@ void waitOnFence(GLFenceSync& fenceToWaitOn)
     if (!fenceToWaitOn)
         return;
 
-    const GLenum waitResult = glCheck(
-        glClientWaitSync(asNativeHandle(fenceToWaitOn), GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED));
+    const GLbitfield flags      = fenceToWaitOn.needsClientFlush() ? GL_SYNC_FLUSH_COMMANDS_BIT : 0u;
+    const GLenum     waitResult = glCheck(glClientWaitSync(asNativeHandle(fenceToWaitOn), flags, GL_TIMEOUT_IGNORED));
+    fenceToWaitOn.markClientFlushConsumed();
 
     if (waitResult == GL_WAIT_FAILED) [[unlikely]]
     {
