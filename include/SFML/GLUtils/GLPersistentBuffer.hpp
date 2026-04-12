@@ -58,7 +58,7 @@ namespace sf
 ///
 /// Persistent mapping requires desktop OpenGL 4.4+ functionality and is
 /// **not** available in OpenGL ES; calling `unmapIfNeeded`,
-/// `flushWritesToGPU`, or causing a reservation under
+/// `flushBytesToGPU`, or causing a reservation under
 /// `SFML_OPENGL_ES` will abort the program with a fatal error.
 ///
 /// \tparam TBufferObject The type of the underlying buffer object
@@ -195,30 +195,27 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Flush a CPU-written range so that it becomes visible to the GPU
+    /// \brief Flush a CPU-written byte range so that it becomes visible to the GPU
     ///
     /// Wraps `glFlushMappedNamedBufferRange`. Because the buffer is
     /// mapped with `GL_MAP_FLUSH_EXPLICIT_BIT`, the driver will not
     /// propagate CPU writes to GPU-visible memory until this function
-    /// is called. The flushed region is `[offset, offset + count) *
-    /// unitSize` bytes within the buffer.
+    /// is called.
     ///
     /// This function does **not** issue a memory barrier; the caller
     /// must still ensure proper synchronization (e.g. `glMemoryBarrier`
     /// or fence sync) before the GPU consumes the data.
     ///
-    /// \param obj      The buffer object containing the persistent mapping
-    /// \param unitSize Size in bytes of a single element
-    /// \param count    Number of elements in the range to flush
-    /// \param offset   Offset (in elements) of the first element to flush
+    /// \param obj        The buffer object containing the persistent mapping
+    /// \param byteOffset Offset in bytes of the first byte to flush
+    /// \param byteCount  Number of bytes in the range to flush
     ///
     /// \warning Aborts the program when compiled for OpenGL ES.
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void flushWritesToGPU([[maybe_unused]] const TBufferObject& obj,
-                                                 [[maybe_unused]] const base::SizeT    unitSize,
-                                                 [[maybe_unused]] const base::SizeT    count,
-                                                 [[maybe_unused]] const base::SizeT    offset) const
+    [[gnu::always_inline]] void flushBytesToGPU([[maybe_unused]] const TBufferObject& obj,
+                                                [[maybe_unused]] const base::SizeT    byteOffset,
+                                                [[maybe_unused]] const base::SizeT    byteCount) const
     {
 #ifdef SFML_OPENGL_ES
         priv::err() << "FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES";
@@ -229,9 +226,7 @@ public:
         SFML_BASE_ASSERT(objId != 0u);
         SFML_BASE_ASSERT(m_mappedPtr != nullptr);
 
-        glCheck(glFlushMappedNamedBufferRange(objId,
-                                              static_cast<GLintptr>(unitSize * offset),
-                                              static_cast<GLsizeiptr>(unitSize * count)));
+        glCheck(glFlushMappedNamedBufferRange(objId, static_cast<GLintptr>(byteOffset), static_cast<GLsizeiptr>(byteCount)));
 #endif
     }
 
