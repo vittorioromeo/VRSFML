@@ -7,6 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -26,7 +27,10 @@ namespace sf
 /// `sf::VBOHandle` wraps a single OpenGL VBO. It is passed to
 /// `sf::InstanceAttributeBinder::uploadData` inside the
 /// `setupFn` callback of an instanced draw call, which uploads
-/// per-instance data into it.
+/// per-instance data into it. On desktop GL, streaming uploads may
+/// grow and replace the underlying buffer object, which is why
+/// `InstanceAttributeBinder` defers the final `glVertexAttribPointer`
+/// calls until every upload for the draw is complete.
 ///
 /// `VBOHandle` is move-only and should be cached across frames.
 ///
@@ -55,8 +59,8 @@ public:
     VBOHandle& operator=(const VBOHandle&) = delete;
 
     ////////////////////////////////////////////////////////////
-    VBOHandle(VBOHandle&&) noexcept;
-    VBOHandle& operator=(VBOHandle&&) noexcept;
+    VBOHandle(VBOHandle&&) noexcept            = delete;
+    VBOHandle& operator=(VBOHandle&&) noexcept = delete;
 
 private:
     friend InstanceAttributeBinder;
@@ -68,10 +72,28 @@ private:
     void bind();
 
     ////////////////////////////////////////////////////////////
+    /// \brief Internal helper for per-frame streaming uploads
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] base::SizeT uploadStreamingData(const void* data, base::SizeT byteCount);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Commit the staged uploads associated with the current draw
+    ///
+    ////////////////////////////////////////////////////////////
+    void commitPendingUploads();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Roll back staged uploads when a draw never gets submitted
+    ///
+    ////////////////////////////////////////////////////////////
+    void rollbackPendingUploads() noexcept;
+
+    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 64> m_impl; //!< Implementation details (PImpl)
+    base::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details (PImpl)
 };
 
 } // namespace sf
