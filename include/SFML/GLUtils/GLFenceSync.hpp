@@ -31,7 +31,9 @@ public:
     GLFenceSync& operator=(const GLFenceSync&) = delete;
 
     ////////////////////////////////////////////////////////////
-    GLFenceSync(GLFenceSync&& rhs) noexcept : m_handle{base::exchange(rhs.m_handle, nullptr)}
+    GLFenceSync(GLFenceSync&& rhs) noexcept :
+        m_handle{base::exchange(rhs.m_handle, nullptr)},
+        m_needsClientFlush{base::exchange(rhs.m_needsClientFlush, true)}
     {
     }
 
@@ -42,7 +44,8 @@ public:
             return *this;
 
         reset();
-        m_handle = base::exchange(rhs.m_handle, nullptr);
+        m_handle           = base::exchange(rhs.m_handle, nullptr);
+        m_needsClientFlush = base::exchange(rhs.m_needsClientFlush, true);
 
         return *this;
     }
@@ -66,6 +69,18 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] bool needsClientFlush() const noexcept
+    {
+        return m_needsClientFlush;
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] void markClientFlushConsumed() noexcept
+    {
+        m_needsClientFlush = false;
+    }
+
+    ////////////////////////////////////////////////////////////
     void reset() noexcept;
 
 private:
@@ -78,6 +93,7 @@ private:
 
     ////////////////////////////////////////////////////////////
     void* m_handle{nullptr};
+    bool  m_needsClientFlush{true};
 };
 
 } // namespace sf::priv

@@ -46,8 +46,10 @@ void deleteFenceIfNeeded(GLFenceSync& fence) noexcept;
 ////////////////////////////////////////////////////////////
 /// \brief Non-blocking poll of a GPU fence
 ///
-/// Performs a zero-timeout `glClientWaitSync` with `GL_SYNC_FLUSH_COMMANDS_BIT`
-/// (ensures the command buffer is flushed so the fence can make progress).
+/// Performs a zero-timeout `glClientWaitSync`. The first wait on a given
+/// fence uses `GL_SYNC_FLUSH_COMMANDS_BIT` so queued commands can reach the
+/// server; later polls skip the flush to avoid repeatedly draining the
+/// command queue from hot paths.
 ///
 /// Behavior:
 /// - `fenceToWaitOn == nullptr`: returns `true` (nothing to wait on is
@@ -71,10 +73,11 @@ void deleteFenceIfNeeded(GLFenceSync& fence) noexcept;
 ////////////////////////////////////////////////////////////
 /// \brief Blocking wait on a GPU fence
 ///
-/// Performs a `glClientWaitSync` with `GL_SYNC_FLUSH_COMMANDS_BIT` and an
-/// effectively-unbounded timeout. Intended for frame pacing or forced
-/// serialization when a range of GPU memory must be reclaimed before the
-/// CPU can overwrite it.
+/// Performs a `glClientWaitSync` with an effectively-unbounded timeout.
+/// The first wait on a given fence uses `GL_SYNC_FLUSH_COMMANDS_BIT`;
+/// later waits skip it because the client-side flush has already happened.
+/// Intended for frame pacing or forced serialization when a range of GPU
+/// memory must be reclaimed before the CPU can overwrite it.
 ///
 /// If `fenceToWaitOn` is null, this is a no-op. Otherwise, once the fence
 /// is signaled, it is deleted and `fenceToWaitOn` is nulled.
