@@ -78,12 +78,41 @@ public:
     GLPersistentBuffer& operator=(const GLPersistentBuffer&) = delete;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Move constructor
+    ///
+    /// Transfers the cached mapped pointer and capacity metadata to the
+    /// new wrapper and leaves `rhs` empty.
+    ///
+    /// \warning `GLPersistentBuffer` does not own the associated
+    /// `TBufferObject`. The caller must move that buffer object in
+    /// lockstep with this wrapper, otherwise `m_mappedPtr` would refer to
+    /// the wrong GL object.
+    ///
+    /// \warning The moved-from wrapper does not unmap anything during the
+    /// transfer. Lifetime management of the underlying GL mapping remains
+    /// the responsibility of the owning type.
+    ///
+    ////////////////////////////////////////////////////////////
     GLPersistentBuffer(GLPersistentBuffer&& rhs) noexcept : m_mappedPtr{rhs.m_mappedPtr}, m_capacity{rhs.m_capacity}
     {
         rhs.m_mappedPtr = nullptr;
         rhs.m_capacity  = 0u;
     }
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Move-assign the cached mapped pointer and capacity metadata
+    ///
+    /// Leaves `rhs` empty after the transfer.
+    ///
+    /// \warning This wrapper cannot safely clean up the destination's
+    /// previous mapping on its own because it does not own the associated
+    /// `TBufferObject`. The destination must already have been unmapped or
+    /// otherwise invalidated by the owning type before this assignment.
+    ///
+    /// \warning As with the move constructor, the caller must move the
+    /// matching `TBufferObject` in lockstep so the transferred mapping
+    /// metadata continues to describe the correct GL buffer object.
+    ///
     ////////////////////////////////////////////////////////////
     GLPersistentBuffer& operator=(GLPersistentBuffer&& rhs) noexcept
     {
