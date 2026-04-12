@@ -1,14 +1,15 @@
 #include "WindowUtil.hpp"
 
+#include "SFML/GLUtils/GLPersistentBuffer.hpp"
+
 #include "SFML/Graphics/GraphicsContext.hpp"
+
+#include "SFML/Window/WindowContext.hpp"
 
 #include "SFML/GLUtils/GLBufferObject.hpp"
 #include "SFML/GLUtils/GLCheck.hpp"
-#include "SFML/GLUtils/GLPersistentBuffer.hpp"
 #include "SFML/GLUtils/GLUniqueResource.hpp"
 #include "SFML/GLUtils/Glad.hpp"
-
-#include "SFML/Window/WindowContext.hpp"
 
 #include "SFML/Base/Builtin/Memcmp.hpp"
 #include "SFML/Base/Builtin/Memcpy.hpp"
@@ -40,15 +41,9 @@ using EBuffer = sf::GLPersistentBuffer<EBO>;
 /// a readable mapping (`GL_MAP_READ_BIT`).
 ////////////////////////////////////////////////////////////
 template <typename TBufferObject>
-void readbackBufferBytes(const TBufferObject& obj,
-                         const sf::base::SizeT offset,
-                         const sf::base::SizeT size,
-                         unsigned char* const  out)
+void readbackBufferBytes(const TBufferObject& obj, const sf::base::SizeT offset, const sf::base::SizeT size, unsigned char* const out)
 {
-    glCheck(glGetNamedBufferSubData(obj.getId(),
-                                    static_cast<GLintptr>(offset),
-                                    static_cast<GLsizeiptr>(size),
-                                    out));
+    glCheck(glGetNamedBufferSubData(obj.getId(), static_cast<GLintptr>(offset), static_cast<GLsizeiptr>(size), out));
 }
 
 
@@ -205,13 +200,13 @@ TEST_CASE("[GLUtils] sf::GLPersistentBuffer" * doctest::skip(skipDisplayTests))
         REQUIRE(sb.buffer.reserve(sb.obj, 100u, false));
 
         // 1.5 * 100 = 150, but 10000 > 150 -> capacity becomes exactly 10000.
-        REQUIRE(sb.buffer.reserve(sb.obj, 10000u, false));
-        CHECK(!sb.buffer.reserve(sb.obj, 10000u, false));
+        REQUIRE(sb.buffer.reserve(sb.obj, 10'000u, false));
+        CHECK(!sb.buffer.reserve(sb.obj, 10'000u, false));
         CHECK(!sb.buffer.reserve(sb.obj, 9999u, false));
 
         // Next growth uses the new baseline: 10000 + 5000 = 15000.
-        REQUIRE(sb.buffer.reserve(sb.obj, 10001u, false));
-        CHECK(!sb.buffer.reserve(sb.obj, 15000u, false));
+        REQUIRE(sb.buffer.reserve(sb.obj, 10'001u, false));
+        CHECK(!sb.buffer.reserve(sb.obj, 15'000u, false));
     }
 
     SECTION("Writing through the mapped pointer and flushing the range succeeds")
@@ -224,26 +219,26 @@ TEST_CASE("[GLUtils] sf::GLPersistentBuffer" * doctest::skip(skipDisplayTests))
 
         SFML_BASE_MEMSET(bytes, 0x5A, 1024u);
 
-        sb.buffer.flushWritesToGPU(sb.obj, /* unitSize */ 1u, /* count */ 1024u, /* offset */ 0u);
+        sb.buffer.flushBytesToGPU(sb.obj, /* byteOffset */ 0u, /* byteCount */ 1024u);
     }
 
-    SECTION("flushWritesToGPU accepts partial and degenerate ranges")
+    SECTION("flushBytesToGPU accepts partial and degenerate ranges")
     {
         ScopedPersistentBuffer<VBO> sb;
         REQUIRE(sb.buffer.reserve(sb.obj, 256u, false));
         REQUIRE(sb.buffer.data() != nullptr);
 
         // Middle slice.
-        sb.buffer.flushWritesToGPU(sb.obj, 1u, 64u, 32u);
+        sb.buffer.flushBytesToGPU(sb.obj, 32u, 64u);
 
         // Single byte at the start.
-        sb.buffer.flushWritesToGPU(sb.obj, 1u, 1u, 0u);
+        sb.buffer.flushBytesToGPU(sb.obj, 0u, 1u);
 
         // Zero-length slice at the end.
-        sb.buffer.flushWritesToGPU(sb.obj, 1u, 0u, 256u);
+        sb.buffer.flushBytesToGPU(sb.obj, 256u, 0u);
 
-        // Non-unit stride (count = 4 elements of 16 bytes at offset 2).
-        sb.buffer.flushWritesToGPU(sb.obj, /* unitSize */ 16u, /* count */ 4u, /* offset */ 2u);
+        // Arbitrary byte range.
+        sb.buffer.flushBytesToGPU(sb.obj, /* byteOffset */ 32u, /* byteCount */ 64u);
     }
 
     SECTION("Growth with preserveExistingData=true retains the original bytes")
@@ -259,7 +254,7 @@ TEST_CASE("[GLUtils] sf::GLPersistentBuffer" * doctest::skip(skipDisplayTests))
             pattern[i] = static_cast<unsigned char>((i * 17u) ^ 0xABu);
 
         SFML_BASE_MEMCPY(writePtr, pattern, 128u);
-        sb.buffer.flushWritesToGPU(sb.obj, 1u, 128u, 0u);
+        sb.buffer.flushBytesToGPU(sb.obj, 0u, 128u);
 
         // Grow: internally memcpys the old [0, 128) range into the new mapping.
         REQUIRE(sb.buffer.reserve(sb.obj, 4096u, /* preserveExistingData */ true));
@@ -268,7 +263,7 @@ TEST_CASE("[GLUtils] sf::GLPersistentBuffer" * doctest::skip(skipDisplayTests))
         // The internal memcpy is done through the CPU-side mapping; the new
         // mapping must be flushed before `glGetNamedBufferSubData` is allowed
         // to see the bytes.
-        sb.buffer.flushWritesToGPU(sb.obj, 1u, 128u, 0u);
+        sb.buffer.flushBytesToGPU(sb.obj, 0u, 128u);
 
         unsigned char readback[128]{};
         readbackBufferBytes(sb.obj, /* offset */ 0u, /* size */ 128u, readback);
@@ -282,7 +277,7 @@ TEST_CASE("[GLUtils] sf::GLPersistentBuffer" * doctest::skip(skipDisplayTests))
             tail[i] = static_cast<unsigned char>(i);
 
         SFML_BASE_MEMCPY(static_cast<unsigned char*>(sb.buffer.data()) + 128u, tail, 256u);
-        sb.buffer.flushWritesToGPU(sb.obj, 1u, 256u, 128u);
+        sb.buffer.flushBytesToGPU(sb.obj, 128u, 256u);
 
         unsigned char tailReadback[256]{};
         readbackBufferBytes(sb.obj, 128u, 256u, tailReadback);
@@ -298,7 +293,7 @@ TEST_CASE("[GLUtils] sf::GLPersistentBuffer" * doctest::skip(skipDisplayTests))
         // the spec only guarantees that the post-growth bytes are indeterminate,
         // so we don't assert anything about them.
         SFML_BASE_MEMSET(sb.buffer.data(), 0xAB, 128u);
-        sb.buffer.flushWritesToGPU(sb.obj, 1u, 128u, 0u);
+        sb.buffer.flushBytesToGPU(sb.obj, 0u, 128u);
 
         REQUIRE(sb.buffer.reserve(sb.obj, 4096u, /* preserveExistingData */ false));
         REQUIRE(sb.buffer.data() != nullptr);
@@ -308,7 +303,7 @@ TEST_CASE("[GLUtils] sf::GLPersistentBuffer" * doctest::skip(skipDisplayTests))
             fresh[i] = static_cast<unsigned char>((i + 7u) * 13u);
 
         SFML_BASE_MEMCPY(sb.buffer.data(), fresh, 256u);
-        sb.buffer.flushWritesToGPU(sb.obj, 1u, 256u, 0u);
+        sb.buffer.flushBytesToGPU(sb.obj, 0u, 256u);
 
         unsigned char readback[256]{};
         readbackBufferBytes(sb.obj, 0u, 256u, readback);
@@ -326,7 +321,7 @@ TEST_CASE("[GLUtils] sf::GLPersistentBuffer" * doctest::skip(skipDisplayTests))
             pattern[i] = static_cast<unsigned char>(i & 0xFFu);
 
         SFML_BASE_MEMCPY(sb.buffer.data(), pattern, 512u);
-        sb.buffer.flushWritesToGPU(sb.obj, 1u, 512u, 0u);
+        sb.buffer.flushBytesToGPU(sb.obj, 0u, 512u);
 
         unsigned char readback[512]{};
         readbackBufferBytes(sb.obj, 0u, 512u, readback);
@@ -336,10 +331,8 @@ TEST_CASE("[GLUtils] sf::GLPersistentBuffer" * doctest::skip(skipDisplayTests))
         for (sf::base::SizeT i = 0u; i < 64u; ++i)
             pattern[128u + i] = static_cast<unsigned char>(0xF0u - i);
 
-        SFML_BASE_MEMCPY(static_cast<unsigned char*>(sb.buffer.data()) + 128u,
-                         pattern + 128u,
-                         64u);
-        sb.buffer.flushWritesToGPU(sb.obj, 1u, 64u, 128u);
+        SFML_BASE_MEMCPY(static_cast<unsigned char*>(sb.buffer.data()) + 128u, pattern + 128u, 64u);
+        sb.buffer.flushBytesToGPU(sb.obj, 128u, 64u);
 
         unsigned char slice[64]{};
         readbackBufferBytes(sb.obj, 128u, 64u, slice);
@@ -356,7 +349,7 @@ TEST_CASE("[GLUtils] sf::GLPersistentBuffer" * doctest::skip(skipDisplayTests))
             REQUIRE(sb.buffer.data() != nullptr);
 
             SFML_BASE_MEMSET(sb.buffer.data(), static_cast<int>(size & 0xFFu), size);
-            sb.buffer.flushWritesToGPU(sb.obj, 1u, size, 0u);
+            sb.buffer.flushBytesToGPU(sb.obj, 0u, size);
         }
     }
 
@@ -417,14 +410,14 @@ TEST_CASE("[GLUtils] sf::GLPersistentBuffer" * doctest::skip(skipDisplayTests))
         void* const ptrBefore = sb.buffer.data();
         REQUIRE(ptrBefore != nullptr);
 
-#if defined(__GNUC__)
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wself-move"
-#endif
+    #if defined(__GNUC__)
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wself-move"
+    #endif
         sb.buffer = SFML_BASE_MOVE(sb.buffer);
-#if defined(__GNUC__)
-    #pragma GCC diagnostic pop
-#endif
+    #if defined(__GNUC__)
+        #pragma GCC diagnostic pop
+    #endif
 
         CHECK(sb.buffer.data() == ptrBefore);
     }
@@ -438,7 +431,7 @@ TEST_CASE("[GLUtils] sf::GLPersistentBuffer" * doctest::skip(skipDisplayTests))
 
         auto* const bytes = static_cast<unsigned char*>(sb.buffer.data());
         SFML_BASE_MEMSET(bytes, 0x7F, 128u);
-        sb.buffer.flushWritesToGPU(sb.obj, 1u, 128u, 0u);
+        sb.buffer.flushBytesToGPU(sb.obj, 0u, 128u);
 
         REQUIRE(sb.buffer.reserve(sb.obj, 4096u, /* preserveExistingData */ true));
         CHECK(sb.buffer.data() != nullptr);
