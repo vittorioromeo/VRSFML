@@ -178,7 +178,7 @@ public:
     /// responsibility of the owning type.
     ///
     ////////////////////////////////////////////////////////////
-    GLPersistentRingBuffer(GLPersistentRingBuffer&&) noexcept            = default;
+    GLPersistentRingBuffer(GLPersistentRingBuffer&&) noexcept = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move-assign the persistent-buffer metadata, fence markers,
