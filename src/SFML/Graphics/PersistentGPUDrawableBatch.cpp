@@ -95,14 +95,16 @@ IndexType* PersistentGPUStorage::reserveMoreIndices(const base::SizeT count)
 ////////////////////////////////////////////////////////////
 void PersistentGPUStorage::flushVertexWritesToGPU(const base::SizeT count, const base::SizeT offset) const
 {
-    impl->vboPersistentBuffer.flushWritesToGPU(impl->persistentVaoGroup.vbo, sizeof(Vertex), count, offset);
+    impl->vboRingBuffer.flushBytesToGPU(impl->persistentVaoGroup.vbo, sizeof(Vertex) * offset, sizeof(Vertex) * count);
 }
 
 
 ////////////////////////////////////////////////////////////
 void PersistentGPUStorage::flushIndexWritesToGPU(const base::SizeT count, const base::SizeT offset) const
 {
-    impl->eboPersistentBuffer.flushWritesToGPU(impl->persistentVaoGroup.ebo, sizeof(IndexType), count, offset);
+    impl->eboRingBuffer.flushBytesToGPU(impl->persistentVaoGroup.ebo, sizeof(IndexType) * offset, sizeof(IndexType) * count);
+}
+
 }
 
 
