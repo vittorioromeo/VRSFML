@@ -96,6 +96,15 @@ struct CPUStorage
     }
 
     ////////////////////////////////////////////////////////////
+    /// \brief Ensure the vertex storage can accommodate `count` vertices without changing the committed size
+    ///
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] void reserveVertexCapacity(const base::SizeT count)
+    {
+        vertices.reserve(count);
+    }
+
+    ////////////////////////////////////////////////////////////
     /// \brief Reserves capacity for more indices and returns a pointer to the new region
     ///
     /// Ensures that the internal index vector has enough capacity to
@@ -108,6 +117,15 @@ struct CPUStorage
     [[nodiscard, gnu::always_inline, gnu::flatten]] IndexType* reserveMoreIndices(const base::SizeT count)
     {
         return indices.reserveMore(count);
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Ensure the index storage can accommodate `count` indices without changing the committed size
+    ///
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] void reserveIndexCapacity(const base::SizeT count)
+    {
+        indices.reserve(count);
     }
 
     ////////////////////////////////////////////////////////////
@@ -233,10 +251,7 @@ struct PersistentGPUStorage
     /// Does not deallocate or overwrite GPU memory, but marks it as unused.
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void clear()
-    {
-        nVertices = nIndices = 0u;
-    }
+    void clear();
 
     ////////////////////////////////////////////////////////////
     /// \brief Reserves capacity for more vertices and returns a pointer to the mapped region
@@ -252,6 +267,12 @@ struct PersistentGPUStorage
     [[nodiscard]] Vertex* reserveMoreVertices(base::SizeT count);
 
     ////////////////////////////////////////////////////////////
+    /// \brief Ensure the vertex buffer can accommodate `count` more vertices without changing the active count
+    ///
+    ////////////////////////////////////////////////////////////
+    void reserveVertexCapacity(base::SizeT count);
+
+    ////////////////////////////////////////////////////////////
     /// \brief Reserves capacity for more indices and returns a pointer to the mapped region
     ///
     /// Ensures that the GPU index buffer has enough capacity and returns
@@ -263,6 +284,12 @@ struct PersistentGPUStorage
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] IndexType* reserveMoreIndices(base::SizeT count);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Ensure the index buffer can accommodate `count` more indices without changing the active count
+    ///
+    ////////////////////////////////////////////////////////////
+    void reserveIndexCapacity(base::SizeT count);
 
     ////////////////////////////////////////////////////////////
     /// \brief Commits a number of previously reserved vertices
@@ -357,10 +384,21 @@ struct PersistentGPUStorage
     void flushIndexWritesToGPU(base::SizeT count, base::SizeT offset) const;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Commit all writes since the last submission, creating a GPU fence
+    ///
+    /// Used when a `PersistentGPUDrawableBatch` is submitted directly,
+    /// outside of `RenderTarget`'s internal GPU autobatching path. Must
+    /// be called after the draw command that consumes the batch has been
+    /// issued, so the fence covers the draw.
+    ///
+    ////////////////////////////////////////////////////////////
+    void commitPendingDrawSubmission() const;
+
+    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 128> impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 256> impl; //!< Implementation details
 
     IndexType nVertices{}; //!< Number of "active" vertices in the buffer
     IndexType nIndices{};  //!< Number of "active" indices in the buffer
@@ -419,8 +457,8 @@ public:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] void reserveTriangles(const base::SizeT triangleCount)
     {
-        (void)m_storage.reserveMoreIndices(3u * triangleCount);
-        (void)m_storage.reserveMoreVertices(3u * triangleCount);
+        m_storage.reserveIndexCapacity(3u * triangleCount);
+        m_storage.reserveVertexCapacity(3u * triangleCount);
     }
 
     ////////////////////////////////////////////////////////////
@@ -436,8 +474,8 @@ public:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] void reserveQuads(const base::SizeT quadCount)
     {
-        (void)m_storage.reserveMoreIndices(6u * quadCount);
-        (void)m_storage.reserveMoreVertices(4u * quadCount);
+        m_storage.reserveIndexCapacity(6u * quadCount);
+        m_storage.reserveVertexCapacity(4u * quadCount);
     }
 
     ////////////////////////////////////////////////////////////

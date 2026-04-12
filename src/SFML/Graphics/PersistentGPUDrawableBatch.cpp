@@ -10,9 +10,10 @@
 #include "SFML/Graphics/Vertex.hpp"
 
 #include "SFML/GLUtils/GLBufferObject.hpp"
-#include "SFML/GLUtils/GLPersistentBuffer.hpp"
+#include "SFML/GLUtils/GLPersistentRingBuffer.hpp"
 #include "SFML/GLUtils/GLVAOGroup.hpp"
 
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/SizeT.hpp"
 
@@ -28,15 +29,15 @@ struct PersistentGPUStorage::Impl
 {
     GLVAOGroup persistentVaoGroup; //!< VAO, VBO, and EBO associated with the batch (persistent storage)
 
-    GLPersistentBuffer<GLVertexBufferObject>  vboPersistentBuffer; //!< GPU persistent buffer for vertices
-    GLPersistentBuffer<GLElementBufferObject> eboPersistentBuffer; //!< GPU persistent buffer for indices
+    mutable GLPersistentRingBuffer<GLVertexBufferObject>  vboRingBuffer; //!< Vertex ring buffer
+    mutable GLPersistentRingBuffer<GLElementBufferObject> eboRingBuffer; //!< Index ring buffer
 
     Impl() = default;
 
     ~Impl()
     {
-        eboPersistentBuffer.unmapIfNeeded(persistentVaoGroup.ebo);
-        vboPersistentBuffer.unmapIfNeeded(persistentVaoGroup.vbo);
+        eboRingBuffer.destroy(persistentVaoGroup.ebo);
+        vboRingBuffer.destroy(persistentVaoGroup.vbo);
     }
 
     Impl(const Impl&)            = delete;
@@ -50,12 +51,12 @@ struct PersistentGPUStorage::Impl
             return *this;
 
         // Must unmap the buffers before moving them
-        vboPersistentBuffer.unmapIfNeeded(persistentVaoGroup.vbo);
-        eboPersistentBuffer.unmapIfNeeded(persistentVaoGroup.ebo);
+        vboRingBuffer.destroy(persistentVaoGroup.vbo);
+        eboRingBuffer.destroy(persistentVaoGroup.ebo);
 
-        persistentVaoGroup  = SFML_BASE_MOVE(rhs.persistentVaoGroup);
-        vboPersistentBuffer = SFML_BASE_MOVE(rhs.vboPersistentBuffer);
-        eboPersistentBuffer = SFML_BASE_MOVE(rhs.eboPersistentBuffer);
+        persistentVaoGroup = SFML_BASE_MOVE(rhs.persistentVaoGroup);
+        vboRingBuffer      = SFML_BASE_MOVE(rhs.vboRingBuffer);
+        eboRingBuffer      = SFML_BASE_MOVE(rhs.eboRingBuffer);
 
         return *this;
     }
@@ -70,18 +71,57 @@ PersistentGPUStorage& PersistentGPUStorage::operator=(PersistentGPUStorage&&) no
 
 
 ////////////////////////////////////////////////////////////
+void PersistentGPUStorage::clear()
+{
+    // `PersistentGPUDrawableBatch` can be refilled from worker threads that do
+    // not own a GL context. Drain the previous submission here, on the render
+    // thread, so the next `add()` only performs mapped-memory writes and never
+    // has to wait on GL fences from a context-less worker.
+    impl->vboRingBuffer.drain();
+    impl->eboRingBuffer.drain();
+
+    nVertices = 0u;
+    nIndices  = 0u;
+}
+
+
+////////////////////////////////////////////////////////////
 Vertex* PersistentGPUStorage::reserveMoreVertices(const base::SizeT count)
 {
-    impl->vboPersistentBuffer.reserve(impl->persistentVaoGroup.vbo, sizeof(Vertex) * (nVertices + count));
-    return static_cast<Vertex*>(impl->vboPersistentBuffer.data()) + nVertices;
+    [[maybe_unused]] const auto offset = impl->vboRingBuffer.beginWrite(impl->persistentVaoGroup.vbo, sizeof(Vertex) * count);
+    SFML_BASE_ASSERT(offset == sizeof(Vertex) * nVertices);
+
+    return static_cast<Vertex*>(impl->vboRingBuffer.data()) + nVertices;
 }
 
 
 ////////////////////////////////////////////////////////////
 IndexType* PersistentGPUStorage::reserveMoreIndices(const base::SizeT count)
 {
-    impl->eboPersistentBuffer.reserve(impl->persistentVaoGroup.ebo, sizeof(IndexType) * (nIndices + count));
-    return static_cast<IndexType*>(impl->eboPersistentBuffer.data()) + nIndices;
+    [[maybe_unused]] const auto offset = impl->eboRingBuffer.beginWrite(impl->persistentVaoGroup.ebo,
+                                                                        sizeof(IndexType) * count);
+    SFML_BASE_ASSERT(offset == sizeof(IndexType) * nIndices);
+
+    return static_cast<IndexType*>(impl->eboRingBuffer.data()) + nIndices;
+}
+
+
+////////////////////////////////////////////////////////////
+void PersistentGPUStorage::reserveVertexCapacity(const base::SizeT count)
+{
+    // `reserve*Capacity()` mirrors the CPU batch reserve APIs: it may grow the
+    // backing storage, but it must not stage a write or advance the ring
+    // cursor. Examples call `reserveQuads()` for a future frame before
+    // `clear()`, so using `beginWrite()` here would incorrectly consume space
+    // in the current submission and break the next append.
+    impl->vboRingBuffer.reserveCapacity(impl->persistentVaoGroup.vbo, sizeof(Vertex) * count);
+}
+
+
+////////////////////////////////////////////////////////////
+void PersistentGPUStorage::reserveIndexCapacity(const base::SizeT count)
+{
+    impl->eboRingBuffer.reserveCapacity(impl->persistentVaoGroup.ebo, sizeof(IndexType) * count);
 }
 
 
@@ -105,6 +145,12 @@ void PersistentGPUStorage::flushIndexWritesToGPU(const base::SizeT count, const 
     impl->eboRingBuffer.flushBytesToGPU(impl->persistentVaoGroup.ebo, sizeof(IndexType) * offset, sizeof(IndexType) * count);
 }
 
+
+////////////////////////////////////////////////////////////
+void PersistentGPUStorage::commitPendingDrawSubmission() const
+{
+    impl->vboRingBuffer.commit();
+    impl->eboRingBuffer.commit();
 }
 
 
@@ -114,5 +160,3 @@ void PersistentGPUStorage::flushIndexWritesToGPU(const base::SizeT count, const 
 template class DrawableBatchImpl<PersistentGPUStorage>;
 
 } // namespace sf::priv
-
-// TODO P0: needs synchronization when used on its own without autobatching
