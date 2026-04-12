@@ -19,6 +19,7 @@ if (SFML_OS_EMSCRIPTEN OR (XCODE AND SFML_OS_IOS))
         sfml-logo-big.jpg
         sfml-logo-big.png
         sfml-logo-big.psd
+        sfml-logo-big.qoi
         shader-🐌.vert
         shader-ń.vert
         shader.frag
@@ -33,8 +34,17 @@ if (SFML_OS_EMSCRIPTEN OR (XCODE AND SFML_OS_IOS))
     set_source_files_properties(${GRAPHICS_RESOURCES} MACOSX_PACKAGE_LOCATION "Graphics")
 
     if (SFML_OS_EMSCRIPTEN)
-        foreach(RESOURCE ${GRAPHICS_TEST_RESOURCES})
-            target_link_options(test-sfml-graphics PRIVATE "SHELL:--embed-file ${RESOURCE}")
+        # Use --preload-file instead of --embed-file to support non-ASCII filenames.
+        # --embed-file generates assembly symbols derived from filenames, which the
+        # assembler rejects for non-ASCII characters (e.g. ń, 🐌). --preload-file
+        # stores filenames as JS strings in a .data bundle, avoiding the issue.
+        set(GRAPHICS_RESOURCE_STAGING_DIR "${CMAKE_CURRENT_BINARY_DIR}/staging_test-sfml-graphics")
+
+        foreach(RESOURCE ${GRAPHICS_RESOURCES})
+            file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/${RESOURCE}" DESTINATION "${GRAPHICS_RESOURCE_STAGING_DIR}")
         endforeach()
+
+        target_link_options(test-sfml-graphics PRIVATE
+            "SHELL:--preload-file ${GRAPHICS_RESOURCE_STAGING_DIR}@/")
     endif()
 endif()
