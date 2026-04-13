@@ -43,19 +43,13 @@ public:
     ////////////////////////////////////////////////////////////
     enum [[nodiscard]] : SizeT
     {
-        nPos = static_cast<SizeT>(-1)
-    };
-
-
-private:
-    ////////////////////////////////////////////////////////////
-    enum [[nodiscard]] : SizeT
-    {
+        nPos       = static_cast<SizeT>(-1),
         ssoSize    = sizeof(char*) + sizeof(SizeT) * 2,
         maxSsoSize = ssoSize - 1,
     };
 
 
+private:
     ////////////////////////////////////////////////////////////
     enum [[nodiscard]] : unsigned char
     {
