@@ -991,6 +991,19 @@ base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
     // in all contexts immediately (solves problems in multi-threaded apps)
     glCheck(glFlush());
 
+#ifdef SFML_SYSTEM_EMSCRIPTEN
+    // Workaround for Emscripten bug with `-sGL_EXPLICIT_UNIFORM_LOCATION=1`:
+    // Emscripten lazily populates its internal uniform location table
+    // (`uniformLocsById`) only when `glGetUniformLocation` is called, NOT
+    // when `glUniform*` is called. So `glUniform*(loc, ...)` on a newly
+    // linked program silently does nothing — the location resolves to
+    // `undefined` in JavaScript, and WebGL ignores the call.
+    // Calling `glGetUniformLocation` once forces the table to be built.
+    // See: src/lib/libwebgl.js `webglPrepareUniformLocationsBeforeFirstUse`
+    // See: https://github.com/emscripten-core/emscripten/issues/26672
+    glCheck(glGetUniformLocation(castToGlHandle(shaderProgram), "sf_u_mvpRow0"));
+#endif
+
     return base::makeOptional<Shader>(base::PassKey<Shader>{}, castFromGlHandle(shaderProgram));
 }
 

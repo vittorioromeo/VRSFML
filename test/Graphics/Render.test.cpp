@@ -631,7 +631,7 @@ void main()
             CHECK(image.getPixel({65, 15}) == sf::Color::Red);
         }
 
-        SECTION("Multiple uploads to the same instance VBO within one draw remain correct")
+        SECTION("SOA instanced draw with separate VBOs per field")
         {
             constexpr auto vertexSource = R"glsl(
 layout(location = 0) uniform vec3 sf_u_mvpRow0;
@@ -674,7 +674,8 @@ void main()
             auto shader = sf::Shader::loadFromMemory({.vertexCode = vertexSource, .fragmentCode = fragmentSource}).value();
 
             sf::VAOHandle vaoHandle;
-            sf::VBOHandle instanceVBO;
+            sf::VBOHandle offsetVBO;
+            sf::VBOHandle colorVBO;
 
             const auto drawInstance = [&](const sf::Vec2f offset, const sf::Color color)
             {
@@ -683,10 +684,10 @@ void main()
 
                 auto setupAttribs = [&](sf::InstanceAttributeBinder& binder)
                 {
-                    binder.uploadContiguousData(instanceVBO, instanceOffsetData);
+                    binder.uploadContiguousData(offsetVBO, instanceOffsetData);
                     binder.setupFlat<sf::Vec2f>(3);
 
-                    binder.uploadContiguousData(instanceVBO, instanceColorData);
+                    binder.uploadContiguousData(colorVBO, instanceColorData);
                     binder.setupFlat<sf::Color>(4);
                 };
 
