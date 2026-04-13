@@ -564,7 +564,7 @@ out vec4 v_color;
 
 void main()
 {
-    const vec2 worldPos = instance_offset + (sf_a_position * vec2(20.0, 20.0));
+    vec2 worldPos = instance_offset + (sf_a_position * vec2(20.0, 20.0));
 
     gl_Position = vec4(dot(sf_u_mvpRow0, vec3(worldPos, 1.0)),
                        dot(sf_u_mvpRow1, vec3(worldPos, 1.0)),
@@ -649,7 +649,7 @@ out vec4 v_color;
 
 void main()
 {
-    const vec2 worldPos = instance_offset + (sf_a_position * vec2(20.0, 20.0));
+    vec2 worldPos = instance_offset + (sf_a_position * vec2(20.0, 20.0));
 
     gl_Position = vec4(dot(sf_u_mvpRow0, vec3(worldPos, 1.0)),
                        dot(sf_u_mvpRow1, vec3(worldPos, 1.0)),
