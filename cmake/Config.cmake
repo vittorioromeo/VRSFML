@@ -102,7 +102,6 @@ elseif(${EMSCRIPTEN})
     )
 
     # -sEXCEPTION_STACK_TRACES=1 # Exceptions will contain stack traces and uncaught exceptions will display stack traces
-    # -sGL_ASSERTIONS=1          # Adds extra checks for error situations in the GL library
     # -sDETERMINISTIC=1          # Force `Date.now()`, `Math.random`, etc. to return deterministic results
     # -fwasm-exceptions          # TODO P1: -fwasm-exceptions seems to break examples
     # -sEXCEPTION_DEBUG=1        # Print out exceptions in emscriptened code (SPEWS WARNINGS)
@@ -117,6 +116,7 @@ elseif(${EMSCRIPTEN})
         -sCHECK_NULL_WRITES=1               # Help detect `NULL` pointer usage
         -sSAFE_HEAP=1                       # Check each write to the heap
         -sSTACK_OVERFLOW_CHECK=1            # Adds a security cookie at the top of the stack
+        -sGL_ASSERTIONS=1                   # Adds extra checks for error situations in the GL library
     )
 
     set(SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_RELEASE
