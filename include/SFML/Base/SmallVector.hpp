@@ -35,7 +35,7 @@ namespace sf::base
 ///
 ////////////////////////////////////////////////////////////
 template <typename TItem, SizeT N>
-class [[nodiscard]] SmallVector
+class [[nodiscard]] SmallVector // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
     static_assert(N > 0);
 
