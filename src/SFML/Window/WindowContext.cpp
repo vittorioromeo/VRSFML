@@ -62,9 +62,13 @@ namespace
     if (!glGetErrorFunc || !glGetIntegervFunc || !glGetStringFunc)
         return result; // Empty vector
 
+    // Drain any pre-existing GL errors (Emscripten leaves errors after context setup)
+    while (glGetErrorFunc() != GL_NO_ERROR)
+        ;
+
     // Check whether a >= 3.0 context is available
     int majorVersion = 0;
-    glGetIntegervFunc(GL_MAJOR_VERSION, &majorVersion); // intentionally not checked, will be checked below
+    glCheckIgnoreWithFunc(glGetErrorFunc, glGetIntegervFunc(GL_MAJOR_VERSION, &majorVersion));
 
     auto glGetStringiFunc = reinterpret_cast<glGetStringiFuncType>(glContext.getFunction("glGetStringi"));
 
