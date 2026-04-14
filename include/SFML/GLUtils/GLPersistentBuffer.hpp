@@ -73,9 +73,11 @@ public:
     ////////////////////////////////////////////////////////////
     GLPersistentBuffer() = default;
 
+
     ////////////////////////////////////////////////////////////
     GLPersistentBuffer(const GLPersistentBuffer&)            = delete;
     GLPersistentBuffer& operator=(const GLPersistentBuffer&) = delete;
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Move constructor
@@ -98,6 +100,7 @@ public:
         rhs.m_mappedPtr = nullptr;
         rhs.m_capacity  = 0u;
     }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Move-assign the cached mapped pointer and capacity metadata
@@ -127,6 +130,7 @@ public:
 
         return *this;
     }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Ensure the buffer can hold at least `byteCount` bytes
@@ -181,6 +185,7 @@ public:
     {
         return m_mappedPtr;
     }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the currently allocated capacity in bytes

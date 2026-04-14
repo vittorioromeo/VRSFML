@@ -38,6 +38,7 @@ void GLFenceSync::reset() noexcept
         return;
 
     glCheck(glDeleteSync(asNativeHandle(m_handle)));
+
     m_handle           = nullptr;
     m_needsClientFlush = true;
 }
