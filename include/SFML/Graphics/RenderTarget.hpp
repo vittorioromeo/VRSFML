@@ -952,18 +952,24 @@ private:
     ///
     /// \param renderStatesTransform Transform to use for the MVP matrix
     /// \param viewTransform         View transform to use for the MVP matrix
+    /// \param uploadMVPRow0         Whether to upload the `sf_u_mvpRow0` uniform
+    /// \param uploadMVPRow1         Whether to upload the `sf_u_mvpRow1` uniform
     ///
     ////////////////////////////////////////////////////////////
-    void setupDrawMVP(const Transform& renderStatesTransform, const Transform& viewTransform);
+    void setupDrawMVP(const Transform& renderStatesTransform,
+                      const Transform& viewTransform,
+                      bool             uploadMVPRow0,
+                      bool             uploadMVPRow1);
 
     ////////////////////////////////////////////////////////////
     /// \brief Setup environment for drawing: texture
     ///
-    /// \param states Render states to use for drawing
-    /// \param shaderChanged Whether the shader program changed since the last draw call
+    /// \param states                      Render states to use for drawing
+    /// \param shaderChanged               Whether the shader program changed since the last draw call
+    /// \param uploadInvTextureSizeUniform Whether to upload the `sf_u_invTextureSize` uniform
     ///
     ////////////////////////////////////////////////////////////
-    void setupDrawTexture(const RenderStates& states, bool shaderChanged);
+    void setupDrawTexture(const RenderStates& states, bool shaderChanged, bool uploadInvTextureSizeUniform);
 
     ////////////////////////////////////////////////////////////
     /// \brief Clean up environment after drawing

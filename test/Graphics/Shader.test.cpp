@@ -1,7 +1,11 @@
 #include "SFML/Graphics/Shader.hpp"
 
 // Other 1st party headers
+#include "SFML/Graphics/Glsl.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
+
+#include "SFML/GLUtils/GLCheck.hpp"
+#include "SFML/GLUtils/Glad.hpp"
 
 #include "SFML/System/FileInputStream.hpp"
 #include "SFML/System/Path.hpp"
@@ -295,6 +299,141 @@ TEST_CASE("[Graphics] sf::Shader" * doctest::skip(skipShaderFullTest))
             CHECK(shader.hasValue() == sf::Shader::isGeometryAvailable());
             if (shader.hasValue())
                 CHECK(static_cast<bool>(shader->getNativeHandle()) == sf::Shader::isGeometryAvailable());
+        }
+    }
+
+    SECTION("setUniformArray() readback")
+    {
+        // Fragment shader with uniform arrays at known layout locations.
+        // All uniforms are referenced in main() to prevent driver elimination.
+        constexpr auto uniformArrayFragSource = R"glsl(
+
+layout(location = 10) uniform float u_floats[3];
+layout(location = 13) uniform vec2  u_vec2s[2];
+layout(location = 15) uniform vec3  u_vec3s[2];
+layout(location = 17) uniform vec4  u_vec4s[2];
+layout(location = 19) uniform mat3  u_mat3s[2];
+layout(location = 25) uniform mat4  u_mat4s[2];
+
+layout(location = 0) out vec4 sf_fragColor;
+
+void main()
+{
+    sf_fragColor = vec4(u_floats[0] + u_floats[1] + u_floats[2])
+                 + vec4(u_vec2s[0], u_vec2s[1])
+                 + vec4(u_vec3s[0], u_vec3s[1].x)
+                 + u_vec4s[0] + u_vec4s[1]
+                 + vec4(u_mat3s[0][0], u_mat3s[1][0][0])
+                 + vec4(u_mat4s[0][0]) + vec4(u_mat4s[1][0]);
+}
+
+)glsl";
+
+        auto       shader  = sf::Shader::loadFromMemory({.fragmentCode = uniformArrayFragSource}).value();
+        const auto program = static_cast<GLuint>(shader.getNativeHandle());
+
+        SECTION("float[]")
+        {
+            const float data[] = {1.5f, 2.5f, 3.5f};
+            shader.setUniformArray(shader.getUniformLocation("u_floats").value(), data, 3);
+
+            for (int i = 0; i < 3; ++i)
+            {
+                const char* names[] = {"u_floats[0]", "u_floats[1]", "u_floats[2]"};
+
+                float readback = 0.f;
+                glCheck(glGetUniformfv(program, shader.getUniformLocation(names[i]).value().getNativeHandle(), &readback));
+                CHECK(readback == data[i]);
+            }
+        }
+
+        SECTION("vec2[]")
+        {
+            const sf::Glsl::Vec2 data[] = {{1.0f, 2.0f}, {3.0f, 4.0f}};
+            shader.setUniformArray(shader.getUniformLocation("u_vec2s").value(), data, 2);
+
+            for (int i = 0; i < 2; ++i)
+            {
+                const char* names[] = {"u_vec2s[0]", "u_vec2s[1]"};
+
+                float readback[2]{};
+                glCheck(glGetUniformfv(program, shader.getUniformLocation(names[i]).value().getNativeHandle(), readback));
+                CHECK(readback[0] == data[i].x);
+                CHECK(readback[1] == data[i].y);
+            }
+        }
+
+        SECTION("vec3[]")
+        {
+            const sf::Glsl::Vec3 data[] = {{1.0f, 2.0f, 3.0f}, {4.0f, 5.0f, 6.0f}};
+            shader.setUniformArray(shader.getUniformLocation("u_vec3s").value(), data, 2);
+
+            for (int i = 0; i < 2; ++i)
+            {
+                const char* names[] = {"u_vec3s[0]", "u_vec3s[1]"};
+
+                float readback[3]{};
+                glCheck(glGetUniformfv(program, shader.getUniformLocation(names[i]).value().getNativeHandle(), readback));
+                CHECK(readback[0] == data[i].x);
+                CHECK(readback[1] == data[i].y);
+                CHECK(readback[2] == data[i].z);
+            }
+        }
+
+        SECTION("vec4[]")
+        {
+            const sf::Glsl::Vec4 data[] = {{1.0f, 2.0f, 3.0f, 4.0f}, {5.0f, 6.0f, 7.0f, 8.0f}};
+            shader.setUniformArray(shader.getUniformLocation("u_vec4s").value(), data, 2);
+
+            for (int i = 0; i < 2; ++i)
+            {
+                const char* names[] = {"u_vec4s[0]", "u_vec4s[1]"};
+
+                float readback[4]{};
+                glCheck(glGetUniformfv(program, shader.getUniformLocation(names[i]).value().getNativeHandle(), readback));
+                CHECK(readback[0] == data[i].x);
+                CHECK(readback[1] == data[i].y);
+                CHECK(readback[2] == data[i].z);
+                CHECK(readback[3] == data[i].w);
+            }
+        }
+
+        SECTION("mat3[]")
+        {
+            const float raw0[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+            const float raw1[9] = {10, 20, 30, 40, 50, 60, 70, 80, 90};
+
+            const sf::Glsl::Mat3 data[] = {sf::Glsl::Mat3(raw0), sf::Glsl::Mat3(raw1)};
+            shader.setUniformArray(shader.getUniformLocation("u_mat3s").value(), data, 2);
+
+            float readback0[9]{};
+            glCheck(glGetUniformfv(program, shader.getUniformLocation("u_mat3s[0]").value().getNativeHandle(), readback0));
+            for (int j = 0; j < 9; ++j)
+                CHECK(readback0[j] == raw0[j]);
+
+            float readback1[9]{};
+            glCheck(glGetUniformfv(program, shader.getUniformLocation("u_mat3s[1]").value().getNativeHandle(), readback1));
+            for (int j = 0; j < 9; ++j)
+                CHECK(readback1[j] == raw1[j]);
+        }
+
+        SECTION("mat4[]")
+        {
+            const float raw0[16] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+            const float raw1[16] = {16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+
+            const sf::Glsl::Mat4 data[] = {sf::Glsl::Mat4(raw0), sf::Glsl::Mat4(raw1)};
+            shader.setUniformArray(shader.getUniformLocation("u_mat4s").value(), data, 2);
+
+            float readback0[16]{};
+            glCheck(glGetUniformfv(program, shader.getUniformLocation("u_mat4s[0]").value().getNativeHandle(), readback0));
+            for (int j = 0; j < 16; ++j)
+                CHECK(readback0[j] == raw0[j]);
+
+            float readback1[16]{};
+            glCheck(glGetUniformfv(program, shader.getUniformLocation("u_mat4s[1]").value().getNativeHandle(), readback1));
+            for (int j = 0; j < 16; ++j)
+                CHECK(readback1[j] == raw1[j]);
         }
     }
 }

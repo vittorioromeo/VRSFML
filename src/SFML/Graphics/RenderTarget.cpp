@@ -1373,7 +1373,10 @@ void RenderTarget::setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& sta
 
     // Set the model-view-projection matrix
     if (!m_impl->cache.enable || shaderChanged || viewChanged || states.transform != m_impl->cache.lastRenderStatesTransform)
-        setupDrawMVP(states.transform, m_impl->cache.lastView.getTransform());
+        setupDrawMVP(states.transform,
+                     m_impl->cache.lastView.getTransform(),
+                     usedShader.m_hasBuiltInUniformMVPRow0,
+                     usedShader.m_hasBuiltInUniformMVPRow1);
 
     // Apply the blend mode
     if (!m_impl->cache.enable || (states.blendMode != m_impl->cache.lastBlendMode))
@@ -1388,7 +1391,7 @@ void RenderTarget::setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& sta
         glCheck(glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE));
 
     // Deal with texture
-    setupDrawTexture(states, shaderChanged);
+    setupDrawTexture(states, shaderChanged, usedShader.m_hasBuiltInUniformInvTextureSize);
 
     // Update last used render states
     m_lastRenderStates = states;
@@ -1396,7 +1399,10 @@ void RenderTarget::setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& sta
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::setupDrawMVP(const Transform& renderStatesTransform, const Transform& viewTransform)
+void RenderTarget::setupDrawMVP(const Transform& renderStatesTransform,
+                                const Transform& viewTransform,
+                                const bool       uploadMVPRow0,
+                                const bool       uploadMVPRow1)
 {
     // Compute the final draw transform
     const Transform trsfm = viewTransform * /* model-view matrix */ renderStatesTransform;
@@ -1407,16 +1413,23 @@ void RenderTarget::setupDrawMVP(const Transform& renderStatesTransform, const Tr
     // Upload the 2D affine transform as two vec3 rows:
     //   row0 = (a00, a01, a02)  ->  gl_Position.x = dot(row0, vec3(pos, 1))
     //   row1 = (a10, a11, a12)  ->  gl_Position.y = dot(row1, vec3(pos, 1))
-    const float mvpRow0[]{trsfm.a00, trsfm.a01, trsfm.a02};
-    const float mvpRow1[]{trsfm.a10, trsfm.a11, trsfm.a12};
 
-    glCheck(glUniform3fv(/* location */ 0u, /* count */ 1, mvpRow0)); // `sf_u_mvpRow0`
-    glCheck(glUniform3fv(/* location */ 1u, /* count */ 1, mvpRow1)); // `sf_u_mvpRow1`
+    if (uploadMVPRow0)
+    {
+        const float mvpRow0[]{trsfm.a00, trsfm.a01, trsfm.a02};
+        glCheck(glUniform3fv(/* location */ 0u, /* count */ 1, mvpRow0)); // `sf_u_mvpRow0`
+    }
+
+    if (uploadMVPRow1)
+    {
+        const float mvpRow1[]{trsfm.a10, trsfm.a11, trsfm.a12};
+        glCheck(glUniform3fv(/* location */ 1u, /* count */ 1, mvpRow1)); // `sf_u_mvpRow1`
+    }
 }
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::setupDrawTexture(const RenderStates& states, const bool shaderChanged)
+void RenderTarget::setupDrawTexture(const RenderStates& states, const bool shaderChanged, const bool uploadInvTextureSizeUniform)
 {
     // Select texture to be used
     const Texture& usedTexture = states.texture != nullptr ? *states.texture
@@ -1440,7 +1453,7 @@ void RenderTarget::setupDrawTexture(const RenderStates& states, const bool shade
     }
 
     // Upload inverse texture size if needed (hardcoded layout location `3u` for `sf_u_invTextureSize`)
-    if (mustApplyTexture || shaderChanged)
+    if ((mustApplyTexture || shaderChanged) && uploadInvTextureSizeUniform)
     {
         const auto invTexSize = 1.f / usedTexture.getSize().toVec2f();
         glCheck(glUniform2f(/* location */ 3u, invTexSize.x, invTexSize.y));
