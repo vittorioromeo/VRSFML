@@ -205,9 +205,11 @@ struct CPUStorage
 struct PersistentGPUStorage
 {
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
+    /// \brief Default constructor (3 frame states for CPU/GPU pipelining)
     ///
-    /// Initializes the GPU storage, potentially allocating GPU resources.
+    /// Initializes the GPU storage with triple-buffered frame states
+    /// so that the CPU can fill a batch while the GPU is still
+    /// rendering from a previous one.
     ///
     ////////////////////////////////////////////////////////////
     explicit PersistentGPUStorage();
@@ -398,7 +400,7 @@ struct PersistentGPUStorage
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 256> impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 2048> impl; //!< Implementation details
 
     IndexType nVertices{}; //!< Number of "active" vertices in the buffer
     IndexType nIndices{};  //!< Number of "active" indices in the buffer

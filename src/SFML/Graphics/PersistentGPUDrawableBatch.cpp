@@ -13,6 +13,7 @@
 #include "SFML/GLUtils/GLPersistentRingBuffer.hpp"
 #include "SFML/GLUtils/GLVAOGroup.hpp"
 
+#include "SFML/Base/Array.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -24,28 +25,30 @@
 
 namespace sf::priv
 {
-////////////////////////////////////////////////////////////
-struct PersistentGPUStorage::Impl
+namespace
 {
-    GLVAOGroup persistentVaoGroup; //!< VAO, VBO, and EBO associated with the batch (persistent storage)
+////////////////////////////////////////////////////////////
+struct FrameState
+{
+    GLVAOGroup persistentVaoGroup; //!< VAO, VBO, and EBO for this frame state
 
     mutable GLPersistentRingBuffer<GLVertexBufferObject>  vboRingBuffer; //!< Vertex ring buffer
     mutable GLPersistentRingBuffer<GLElementBufferObject> eboRingBuffer; //!< Index ring buffer
 
-    Impl() = default;
+    FrameState() = default;
 
-    ~Impl()
+    ~FrameState()
     {
         eboRingBuffer.destroy(persistentVaoGroup.ebo);
         vboRingBuffer.destroy(persistentVaoGroup.vbo);
     }
 
-    Impl(const Impl&)            = delete;
-    Impl& operator=(const Impl&) = delete;
+    FrameState(const FrameState&)            = delete;
+    FrameState& operator=(const FrameState&) = delete;
 
-    Impl(Impl&& rhs) noexcept = default;
+    FrameState(FrameState&&) noexcept = default;
 
-    Impl& operator=(Impl&& rhs) noexcept
+    FrameState& operator=(FrameState&& rhs) noexcept
     {
         if (this == &rhs)
             return *this;
@@ -62,6 +65,38 @@ struct PersistentGPUStorage::Impl
     }
 };
 
+} // namespace
+
+
+////////////////////////////////////////////////////////////
+struct PersistentGPUStorage::Impl
+{
+    ////////////////////////////////////////////////////////////
+    base::Array<FrameState, 3> frameStates;
+    base::SizeT                currentFrameIndex{0u};
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten]] FrameState& current() noexcept
+    {
+        return frameStates[currentFrameIndex];
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten]] const FrameState& current() const noexcept
+    {
+        return frameStates[currentFrameIndex];
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] void advance() noexcept
+    {
+        currentFrameIndex = (currentFrameIndex + 1u) % frameStates.size();
+    }
+};
+
 
 ////////////////////////////////////////////////////////////
 PersistentGPUStorage::PersistentGPUStorage()                                           = default;
@@ -73,12 +108,36 @@ PersistentGPUStorage& PersistentGPUStorage::operator=(PersistentGPUStorage&&) no
 ////////////////////////////////////////////////////////////
 void PersistentGPUStorage::clear()
 {
-    // `PersistentGPUDrawableBatch` can be refilled from worker threads that do
-    // not own a GL context. Drain the previous submission here, on the render
-    // thread, so the next `add()` only performs mapped-memory writes and never
-    // has to wait on GL fences from a context-less worker.
-    impl->vboRingBuffer.drain();
-    impl->eboRingBuffer.drain();
+    // Record the previous frame state's buffer capacities so
+    // the next state can be pre-sized, avoiding incremental
+    // growth on its first use.
+    const auto prevVboCap = impl->current().vboRingBuffer.capacity();
+    const auto prevEboCap = impl->current().eboRingBuffer.capacity();
+
+    // Rotate to the next frame state. With N states, the state
+    // we rotate into was last used N-1 frames ago, so its fence
+    // is almost certainly signaled.
+    impl->advance();
+
+    auto& fs = impl->current();
+
+    // Non-blocking reclaim: if the fence is already signaled,
+    // the marker is removed here and `drain()` below becomes a
+    // pure C++ no-op (no GL calls), avoiding the variable
+    // latency of `glClientWaitSync` in the common path.
+    fs.vboRingBuffer.reclaim();
+    fs.eboRingBuffer.reclaim();
+    fs.vboRingBuffer.drain();
+    fs.eboRingBuffer.drain();
+
+    // Pre-size if the new state's buffers are smaller than what
+    // the previous frame needed. This turns ~20 incremental
+    // reallocations into a single up-front allocation.
+    if (prevVboCap > fs.vboRingBuffer.capacity())
+        fs.vboRingBuffer.reserveCapacity(fs.persistentVaoGroup.vbo, prevVboCap);
+
+    if (prevEboCap > fs.eboRingBuffer.capacity())
+        fs.eboRingBuffer.reserveCapacity(fs.persistentVaoGroup.ebo, prevEboCap);
 
     nVertices = 0u;
     nIndices  = 0u;
@@ -88,69 +147,72 @@ void PersistentGPUStorage::clear()
 ////////////////////////////////////////////////////////////
 Vertex* PersistentGPUStorage::reserveMoreVertices(const base::SizeT count)
 {
-    [[maybe_unused]] const auto offset = impl->vboRingBuffer.beginWrite(impl->persistentVaoGroup.vbo, sizeof(Vertex) * count);
+    auto& fs = impl->current();
+
+    [[maybe_unused]] const auto offset = fs.vboRingBuffer.beginWrite(fs.persistentVaoGroup.vbo, sizeof(Vertex) * count);
     SFML_BASE_ASSERT(offset == sizeof(Vertex) * nVertices);
 
-    return static_cast<Vertex*>(impl->vboRingBuffer.data()) + nVertices;
+    return static_cast<Vertex*>(fs.vboRingBuffer.data()) + nVertices;
 }
 
 
 ////////////////////////////////////////////////////////////
 IndexType* PersistentGPUStorage::reserveMoreIndices(const base::SizeT count)
 {
-    [[maybe_unused]] const auto offset = impl->eboRingBuffer.beginWrite(impl->persistentVaoGroup.ebo,
-                                                                        sizeof(IndexType) * count);
+    auto& fs = impl->current();
+
+    [[maybe_unused]] const auto offset = fs.eboRingBuffer.beginWrite(fs.persistentVaoGroup.ebo, sizeof(IndexType) * count);
     SFML_BASE_ASSERT(offset == sizeof(IndexType) * nIndices);
 
-    return static_cast<IndexType*>(impl->eboRingBuffer.data()) + nIndices;
+    return static_cast<IndexType*>(fs.eboRingBuffer.data()) + nIndices;
 }
 
 
 ////////////////////////////////////////////////////////////
 void PersistentGPUStorage::reserveVertexCapacity(const base::SizeT count)
 {
-    // `reserve*Capacity()` mirrors the CPU batch reserve APIs: it may grow the
-    // backing storage, but it must not stage a write or advance the ring
-    // cursor. Examples call `reserveQuads()` for a future frame before
-    // `clear()`, so using `beginWrite()` here would incorrectly consume space
-    // in the current submission and break the next append.
-    impl->vboRingBuffer.reserveCapacity(impl->persistentVaoGroup.vbo, sizeof(Vertex) * count);
+    for (auto& fs : impl->frameStates)
+        fs.vboRingBuffer.reserveCapacity(fs.persistentVaoGroup.vbo, sizeof(Vertex) * count);
 }
 
 
 ////////////////////////////////////////////////////////////
 void PersistentGPUStorage::reserveIndexCapacity(const base::SizeT count)
 {
-    impl->eboRingBuffer.reserveCapacity(impl->persistentVaoGroup.ebo, sizeof(IndexType) * count);
+    for (auto& fs : impl->frameStates)
+        fs.eboRingBuffer.reserveCapacity(fs.persistentVaoGroup.ebo, sizeof(IndexType) * count);
 }
 
 
 ////////////////////////////////////////////////////////////
 [[nodiscard]] const void* PersistentGPUStorage::getVAOGroup() const
 {
-    return &impl->persistentVaoGroup;
+    return &impl->current().persistentVaoGroup;
 }
 
 
 ////////////////////////////////////////////////////////////
 void PersistentGPUStorage::flushVertexWritesToGPU(const base::SizeT count, const base::SizeT offset) const
 {
-    impl->vboRingBuffer.flushBytesToGPU(impl->persistentVaoGroup.vbo, sizeof(Vertex) * offset, sizeof(Vertex) * count);
+    const auto& fs = impl->current();
+    fs.vboRingBuffer.flushBytesToGPU(fs.persistentVaoGroup.vbo, sizeof(Vertex) * offset, sizeof(Vertex) * count);
 }
 
 
 ////////////////////////////////////////////////////////////
 void PersistentGPUStorage::flushIndexWritesToGPU(const base::SizeT count, const base::SizeT offset) const
 {
-    impl->eboRingBuffer.flushBytesToGPU(impl->persistentVaoGroup.ebo, sizeof(IndexType) * offset, sizeof(IndexType) * count);
+    const auto& fs = impl->current();
+    fs.eboRingBuffer.flushBytesToGPU(fs.persistentVaoGroup.ebo, sizeof(IndexType) * offset, sizeof(IndexType) * count);
 }
 
 
 ////////////////////////////////////////////////////////////
 void PersistentGPUStorage::commitPendingDrawSubmission() const
 {
-    impl->vboRingBuffer.commit();
-    impl->eboRingBuffer.commit();
+    const auto& fs = impl->current();
+    fs.vboRingBuffer.commit();
+    fs.eboRingBuffer.commit();
 }
 
 

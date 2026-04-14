@@ -1070,7 +1070,7 @@ private:
     /// overload of the underlying drawable batch.
     ///
     ////////////////////////////////////////////////////////////
-    auto addToAutoBatch(auto&&... xs);
+    [[gnu::always_inline]] inline auto addToAutoBatch(auto&&... xs);
 
     ////////////////////////////////////////////////////////////
     /// \brief Execute a function with the current auto-batch as the active target
@@ -1183,7 +1183,7 @@ private:
 
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 1536> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 2560> m_impl; //!< Implementation details
 };
 
 } // namespace sf

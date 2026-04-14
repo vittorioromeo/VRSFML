@@ -43,9 +43,7 @@
 #include "SFML/Graphics/VertexSpan.hpp"
 #include "SFML/Graphics/View.hpp"
 
-#include "SFML/GLUtils/FenceUtils.hpp"
 #include "SFML/GLUtils/GLCheck.hpp"
-#include "SFML/GLUtils/GLFenceSync.hpp"
 #include "SFML/GLUtils/GLVAOGroup.hpp"
 #include "SFML/GLUtils/Glad.hpp"
 
@@ -179,24 +177,6 @@ constexpr unsigned int precomputedQuadIndices[]{
 };
 
 
-#ifndef SFML_OPENGL_ES
-////////////////////////////////////////////////////////////
-enum : sf::base::SizeT
-{
-    maxGPUAutoBatchFramesInFlight = 3u //!< Number of frames in flight for GPU autobatching
-};
-
-////////////////////////////////////////////////////////////
-struct [[nodiscard]] PersistentGPUAutoBatchState
-{
-    sf::PersistentGPUDrawableBatch batch;            //!< Internal GPU autobatch
-    sf::priv::GLFenceSync          fence;            //!< Fences for GPU autobatching
-    sf::base::SizeT                indexOffset{0u};  //!< Index offset for GPU autobatching
-    sf::base::SizeT                vertexOffset{0u}; //!< Vertex offset for GPU autobatching
-};
-#endif
-
-
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr bool isPrimitiveTypeSupportedByBatchStorage(
     const sf::PrimitiveType type) noexcept
@@ -250,14 +230,10 @@ struct [[nodiscard]] RenderTarget::Impl
     CPUDrawableBatch cpuAutoBatch; //!< Internal CPU autobatch
 
 #ifndef SFML_OPENGL_ES
-    RenderTargetImpl::PersistentGPUAutoBatchState gpuAutoBatchStates[RenderTargetImpl::maxGPUAutoBatchFramesInFlight]{};
-    sf::base::SizeT currentGPUAutoBatchIndex{0u}; //!< Cycles `0`, `1`, ..., `maxGPUAutoBatchFramesInFlight - 1`
-
-    ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] auto& currentGPUAutoBatchState() noexcept
-    {
-        return gpuAutoBatchStates[currentGPUAutoBatchIndex];
-    }
+    PersistentGPUDrawableBatch gpuAutoBatch; //!< Internal GPU autobatch (3 frame states for CPU/GPU pipelining)
+    sf::base::SizeT            gpuAutoBatchIndexOffset{0u};  //!< Tracks how many indices have been drawn this frame
+    sf::base::SizeT            gpuAutoBatchVertexOffset{0u}; //!< Tracks how many vertices have been drawn this frame
+    bool                       needsFrameSync{false};
 #endif
 
     ////////////////////////////////////////////////////////////
@@ -290,7 +266,7 @@ decltype(auto) RenderTarget::withCurrentAutobatch(auto&& f)
         return f(m_impl->cpuAutoBatch);
 
     SFML_BASE_ASSERT(m_autoBatchMode == AutoBatchMode::GPUStorage);
-    return f(m_impl->currentGPUAutoBatchState().batch);
+    return f(m_impl->gpuAutoBatch);
 #endif
 }
 
@@ -300,15 +276,13 @@ auto RenderTarget::addToAutoBatch(auto&&... xs)
 {
     SFML_BASE_ASSERT(m_autoBatchMode != AutoBatchMode::Disabled);
 
-    const auto addImpl = [&](auto& batch) SFML_BASE_LAMBDA_ALWAYS_INLINE
+    return withCurrentAutobatch([&](auto& batch) SFML_BASE_LAMBDA_ALWAYS_INLINE
     {
         const auto prevVertices = batch.getNumVertices();
         SFML_BASE_SCOPE_GUARD({ m_numAutoBatchVertices += batch.getNumVertices() - prevVertices; });
 
         return batch.add(SFML_BASE_FORWARD(xs)...);
-    };
-
-    return withCurrentAutobatch(addImpl);
+    });
 }
 
 
@@ -1105,7 +1079,10 @@ RenderTarget::DrawStatistics RenderTarget::flush()
         else
         {
 #ifndef SFML_OPENGL_ES
-            auto& [batch, fence, indexOffset, vertexOffset] = m_impl->currentGPUAutoBatchState();
+            auto& batch        = m_impl->gpuAutoBatch;
+            auto& indexOffset  = m_impl->gpuAutoBatchIndexOffset;
+            auto& vertexOffset = m_impl->gpuAutoBatchVertexOffset;
+
             SFML_BASE_ASSERT(&batch == &b);
 
             const auto vertexCount = batch.getNumVertices() - vertexOffset;
@@ -1183,17 +1160,27 @@ RenderTarget::WithRenderStatesContext::WithRenderStatesContext::~WithRenderState
 void RenderTarget::syncGPUStartFrame()
 {
 #ifndef SFML_OPENGL_ES
-    auto& [batch, fenceToWaitOn, indexOffset, vertexOffset] = m_impl->currentGPUAutoBatchState();
-
-    if (!fenceToWaitOn)
+    if (!m_impl->needsFrameSync)
         return;
 
-    priv::waitOnFence(fenceToWaitOn);
+    m_impl->needsFrameSync = false;
 
-    batch.clear();
+    // Commit the previous frame state's ring buffer writes before
+    // rotating away from it. The fence inserted by commit() covers
+    // all GPU work up to this point (including the previous frame's
+    // draws). Committing here keeps the ring buffer uncommitted
+    // between frames, so the batch can be drawn again after `display`
+    // without `clear` -- `reclaim` won't reset the cursor mid-use
+    // since no marker exists.
+    m_impl->gpuAutoBatch.m_storage.commitPendingDrawSubmission();
 
-    indexOffset  = 0u;
-    vertexOffset = 0u;
+    // Internally rotates to the next frame state and drains it.
+    // The drained state was last used 2 frames ago, so its fence
+    // is almost always signaled and drain returns instantly.
+    m_impl->gpuAutoBatch.clear();
+
+    m_impl->gpuAutoBatchIndexOffset  = 0u;
+    m_impl->gpuAutoBatchVertexOffset = 0u;
 #endif
 }
 
@@ -1202,14 +1189,7 @@ void RenderTarget::syncGPUStartFrame()
 void RenderTarget::syncGPUEndFrame()
 {
 #ifndef SFML_OPENGL_ES
-    auto& fenceToCreate = m_impl->currentGPUAutoBatchState().fence;
-    SFML_BASE_ASSERT(!fenceToCreate);
-
-    fenceToCreate = priv::makeFence();
-
-    // Advance to the next fence index for the *next* frame
-    m_impl->currentGPUAutoBatchIndex = (m_impl->currentGPUAutoBatchIndex + 1u) %
-                                       RenderTargetImpl::maxGPUAutoBatchFramesInFlight;
+    m_impl->needsFrameSync = true;
 #endif
 }
 
