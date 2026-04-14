@@ -496,13 +496,13 @@ void main()
             renderTexture.draw(shape, states); // batch 2: alpha=0.5
             CHECK(renderTexture.display().drawCalls == 2u);
 
-            // Wrong order: mutate, then flush — the pending batch is
+            // Wrong order: mutate, then flush -- the pending batch is
             // drawn with the ALREADY-MUTATED uniform (corruption).
             // The generation counter must detect this and break the batch.
             renderTexture.clear();
             shader.setUniform(loc, 1.f);
             renderTexture.draw(shape, states); // batch 1: intended alpha=1
-            shader.setUniform(loc, 0.5f);      // oops — mutated before flush
+            shader.setUniform(loc, 0.5f);      // oops -- mutated before flush
             renderTexture.flush();             // draws batch 1 with alpha=0.5 (wrong!)
             renderTexture.draw(shape, states); // batch 2: alpha=0.5
             CHECK(renderTexture.display().drawCalls == 2u);

@@ -959,7 +959,7 @@ base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
     // Emscripten lazily populates its internal uniform location table
     // (`uniformLocsById`) only when `glGetUniformLocation` is called, NOT
     // when `glUniform*` is called. So `glUniform*(loc, ...)` on a newly
-    // linked program silently does nothing — the location resolves to
+    // linked program silently does nothing -- the location resolves to
     // `undefined` in JavaScript, and WebGL ignores the call.
     // Calling `glGetUniformLocation` once forces the table to be built.
     // See: src/lib/libwebgl.js `webglPrepareUniformLocationsBeforeFirstUse`
