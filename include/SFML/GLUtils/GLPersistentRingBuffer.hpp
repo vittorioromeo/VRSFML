@@ -13,8 +13,8 @@
 #include "SFML/GLUtils/GLPersistentBuffer.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/InPlaceVector.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Vector.hpp"
 
 
 namespace sf
@@ -114,11 +114,16 @@ private:
         priv::GLFenceSync fence;  //!< fence that signals when the GPU has processed up to `offset`
     };
 
+
     ////////////////////////////////////////////////////////////
     GLPersistentBuffer<TBufferObject> m_persistentBuffer;
-    base::Vector<Marker>              m_markers;
     base::SizeT                       m_writeCursor{0u};      //!< next bump-allocation position
     base::SizeT                       m_lastCommitCursor{0u}; //!< writeCursor at the last `commit()`
+
+
+    ////////////////////////////////////////////////////////////
+    base::InPlaceVector<Marker, 8> m_markers;
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Reset the cursors to 0 if the buffer is fully idle
@@ -128,7 +133,7 @@ private:
     /// calls restart from the front of the buffer.
     ///
     ////////////////////////////////////////////////////////////
-    void resetCursorsIfIdle()
+    [[gnu::always_inline]] void resetCursorsIfIdle()
     {
         if (m_markers.empty() && m_writeCursor == m_lastCommitCursor)
         {
@@ -137,11 +142,12 @@ private:
         }
     }
 
+
     ////////////////////////////////////////////////////////////
     /// \brief Block on the oldest marker's fence and erase it
     ///
     ////////////////////////////////////////////////////////////
-    void waitAndReclaimOldestMarker()
+    [[gnu::always_inline]] void waitAndReclaimOldestMarker()
     {
         SFML_BASE_ASSERT(!m_markers.empty());
 
@@ -151,16 +157,56 @@ private:
         resetCursorsIfIdle();
     }
 
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Grow the underlying persistent buffer to fit the pending write
+    ///
+    /// Invoked from `handleOverflow` once all in-flight markers
+    /// have been reclaimed and the pending write still does not
+    /// fit. Computes a target capacity of `max(byteCount, writeCursor
+    /// + byteCount)` and defers to `GLPersistentBuffer::reserve`,
+    /// which applies its own geometric growth policy on top.
+    ///
+    /// If the current commit cycle has any live bytes
+    /// (`m_writeCursor > 0`), they are preserved across the remap
+    /// and re-flushed: the old mapping is invalidated by `reserve`,
+    /// and any prior `flushBytesToGPU` calls targeted that old
+    /// mapping. Without the re-flush, previously staged data can
+    /// become invisible to subsequent draws from the remapped buffer.
+    ///
+    /// Marked `[[gnu::cold, gnu::noinline]]` so it stays out of
+    /// `beginWrite`'s hot path.
+    ///
+    /// \param obj       Buffer object; will be move-assigned a fresh
+    ///                  instance by `reserve()`.
+    /// \param byteCount Size of the pending allocation that triggered
+    ///                  the grow.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[gnu::cold, gnu::noinline]] void growInternalStorage(TBufferObject& obj, const base::SizeT byteCount)
+    {
+        const auto currentCapacity = m_persistentBuffer.capacity();
+        const auto targetCapacity  = currentCapacity == 0u ? byteCount : m_writeCursor + byteCount;
+        const auto liveByteCount   = m_writeCursor;
+
+        m_persistentBuffer.reserve(obj, targetCapacity, /* preserve */ liveByteCount > 0u);
+
+        // Growing remaps the buffer. Any bytes copied into the new mapping
+        // must be flushed again, otherwise earlier uploads from this commit
+        // cycle stop being visible to subsequent draws.
+        if (liveByteCount > 0u)
+            m_persistentBuffer.flushBytesToGPU(obj, /* byteOffset */ 0u, liveByteCount);
+    }
+
+
 public:
     ////////////////////////////////////////////////////////////
-    GLPersistentRingBuffer()
-    {
-        m_markers.reserve(8u);
-    }
+    GLPersistentRingBuffer() = default;
 
     ////////////////////////////////////////////////////////////
     GLPersistentRingBuffer(const GLPersistentRingBuffer&)            = delete;
     GLPersistentRingBuffer& operator=(const GLPersistentRingBuffer&) = delete;
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Move constructor
@@ -179,6 +225,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     GLPersistentRingBuffer(GLPersistentRingBuffer&&) noexcept = default;
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Move-assign the persistent-buffer metadata, fence markers,
@@ -199,6 +246,7 @@ public:
     ////////////////////////////////////////////////////////////
     GLPersistentRingBuffer& operator=(GLPersistentRingBuffer&&) noexcept = default;
 
+
     ////////////////////////////////////////////////////////////
     /// \brief Release the fence handles and unmap the persistent buffer
     ///
@@ -216,11 +264,13 @@ public:
         m_persistentBuffer.unmapIfNeeded(obj);
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] void* data()
     {
         return m_persistentBuffer.data();
     }
+
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] const void* data() const
@@ -228,11 +278,13 @@ public:
         return m_persistentBuffer.data();
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] base::SizeT capacity() const
     {
         return m_persistentBuffer.capacity();
     }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Flush a mapped byte range so the GPU can see the writes
@@ -244,6 +296,7 @@ public:
     {
         m_persistentBuffer.flushBytesToGPU(obj, byteOffset, byteCount);
     }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Ensure the underlying storage can hold `byteCount` bytes without advancing the write cursor
@@ -268,6 +321,7 @@ public:
             m_persistentBuffer.flushBytesToGPU(obj, /* byteOffset */ 0u, liveByteCount);
     }
 
+
     ////////////////////////////////////////////////////////////
     /// \brief Bump-allocate `byteCount` bytes and return the write offset
     ///
@@ -280,34 +334,57 @@ public:
     /// and `commit()` after the writes are done.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::SizeT beginWrite(TBufferObject& obj, const base::SizeT byteCount)
+    [[nodiscard, gnu::always_inline]] base::SizeT beginWrite(TBufferObject& obj, const base::SizeT byteCount)
     {
-        reclaim();
-
-        // Wait on any pending fences until the write fits at the cursor.
-        while (m_writeCursor + byteCount > m_persistentBuffer.capacity() && !m_markers.empty())
-            waitAndReclaimOldestMarker();
-
-        // Still doesn't fit -> no markers to wait on, must grow.
-        if (m_writeCursor + byteCount > m_persistentBuffer.capacity())
-        {
-            const auto currentCapacity = m_persistentBuffer.capacity();
-            const auto targetCapacity  = currentCapacity == 0u ? byteCount : m_writeCursor + byteCount;
-            const auto liveByteCount   = m_writeCursor;
-
-            m_persistentBuffer.reserve(obj, targetCapacity, /* preserve */ liveByteCount > 0u);
-
-            // Growing remaps the buffer. Any bytes copied into the new mapping
-            // must be flushed again, otherwise earlier uploads from this commit
-            // cycle stop being visible to subsequent draws.
-            if (liveByteCount > 0u)
-                m_persistentBuffer.flushBytesToGPU(obj, /* byteOffset */ 0u, liveByteCount);
-        }
+        if (m_writeCursor + byteCount > m_persistentBuffer.capacity()) [[unlikely]]
+            handleOverflow(obj, byteCount);
 
         const auto result = m_writeCursor;
         m_writeCursor += byteCount;
         return result;
     }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Slow path for `beginWrite` when the request exceeds capacity
+    ///
+    /// Invoked from `beginWrite` when `m_writeCursor + byteCount`
+    /// exceeds `capacity()`. Applies three strategies in sequence,
+    /// stopping as soon as the pending write fits:
+    ///
+    /// 1. `reclaim()` -- non-blocking poll that frees any signaled
+    ///    markers and, if the buffer is fully idle, resets both
+    ///    cursors to `0`. The cheapest path out: the GPU has already
+    ///    caught up and the freed region is reusable.
+    /// 2. If the write still doesn't fit, block on the oldest pending
+    ///    marker's fence and remove it, repeating until either the
+    ///    write fits or no markers remain.
+    /// 3. If all markers have been reclaimed and the write *still*
+    ///    doesn't fit, grow the underlying persistent buffer.
+    ///
+    /// Split out from `beginWrite` and marked `[[gnu::cold, gnu::noinline]]`
+    /// so the common-case hot path (write fits without any marker
+    /// traversal) stays a tight `compare + bump`. Keeping the cold
+    /// code out-of-line shrinks the hot path's instruction footprint
+    /// and improves inlining at the call sites.
+    ///
+    /// \param obj       Buffer object used by the grow path; unused
+    ///                  if the first two strategies succeed.
+    /// \param byteCount Size of the pending allocation the caller is
+    ///                  about to bump-allocate.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[gnu::cold, gnu::noinline]] void handleOverflow(TBufferObject& obj, const base::SizeT byteCount)
+    {
+        reclaim(); // free signaled markers
+
+        while (m_writeCursor + byteCount > m_persistentBuffer.capacity() && !m_markers.empty())
+            waitAndReclaimOldestMarker();
+
+        if (m_writeCursor + byteCount > m_persistentBuffer.capacity())
+            growInternalStorage(obj, byteCount);
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Insert a fence covering every write since the last commit
@@ -317,7 +394,7 @@ public:
     /// has been written since the previous commit.
     ///
     ////////////////////////////////////////////////////////////
-    void commit()
+    [[gnu::always_inline]] void commit()
     {
         if (m_writeCursor == m_lastCommitCursor)
             return;
@@ -326,6 +403,7 @@ public:
         m_lastCommitCursor = m_writeCursor;
     }
 
+
     ////////////////////////////////////////////////////////////
     /// \brief Rewind the write cursor to the last committed position
     ///
@@ -333,10 +411,11 @@ public:
     /// when the draw path unwinds before `commit()`.
     ///
     ////////////////////////////////////////////////////////////
-    void rollback() noexcept
+    [[gnu::always_inline]] void rollback() noexcept
     {
         m_writeCursor = m_lastCommitCursor;
     }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Opportunistically reclaim markers whose fences have signaled
@@ -345,13 +424,14 @@ public:
     /// When the buffer becomes fully idle, the cursors reset to `0`.
     ///
     ////////////////////////////////////////////////////////////
-    void reclaim()
+    [[gnu::always_inline]] void reclaim()
     {
         while (!m_markers.empty() && priv::tryWaitOnFence(m_markers.front().fence))
             m_markers.erase(m_markers.begin());
 
         resetCursorsIfIdle();
     }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Block until every in-flight marker has signaled, then reset
@@ -368,7 +448,7 @@ public:
     /// fences were never created).
     ///
     ////////////////////////////////////////////////////////////
-    void drain()
+    [[gnu::always_inline]] void drain()
     {
         while (!m_markers.empty())
             waitAndReclaimOldestMarker();
