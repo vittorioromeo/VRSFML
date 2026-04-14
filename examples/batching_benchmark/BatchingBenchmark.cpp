@@ -137,11 +137,9 @@ int main()
     //
     //
     // Settings
-    const bool useBatch    = true;
-    const bool drawSprites = true;
-    const bool drawText    = true;
-    const int  numEntities = 50'000;
-    int        numFrames   = 240;
+    constexpr bool useBatch    = true;
+    constexpr int  numEntities = 50'000;
+    int            numFrames   = 240;
 
 //
 //
@@ -154,7 +152,16 @@ int main()
     sf::CPUDrawableBatch drawableBatch;
 #endif
     populateEntities(static_cast<sf::base::SizeT>(numEntities));
-    drawableBatch.position = drawableBatch.origin = windowSize / 2.f;
+
+    if (useBatch)
+    {
+        drawableBatch.position = drawableBatch.origin = windowSize / 2.f;
+        drawableBatch.reserveQuads(static_cast<sf::base::SizeT>(numEntities) * 25u);
+    }
+    else
+    {
+        window.reserveAutoBatchQuads(static_cast<sf::base::SizeT>(numEntities) * 25u);
+    }
 
     const sf::Clock clock;
     const auto      startTime = clock.getElapsedTime();
@@ -162,29 +169,27 @@ int main()
     while (--numFrames > 0)
     {
         window.clear();
-        drawableBatch.clear();
 
-        drawableBatch.rotation += sf::degrees(2.f);
+        if (useBatch)
+        {
+            drawableBatch.clear();
+            drawableBatch.rotation += sf::degrees(2.f);
+        }
 
         while (window.pollEvent())
             ;
 
         for (const Entity& entity : entities)
         {
-            if (drawSprites)
+            if (useBatch)
             {
-                if (useBatch)
-                    drawableBatch.add(entity.sprite);
-                else
-                    window.draw(entity.sprite, {.texture = &textureAtlas.getTexture()});
+                drawableBatch.add(entity.sprite);
+                drawableBatch.add(entity.text);
             }
-
-            if (drawText)
+            else
             {
-                if (useBatch)
-                    drawableBatch.add(entity.text);
-                else
-                    window.draw(entity.text);
+                window.draw(entity.sprite, {.texture = &textureAtlas.getTexture()});
+                window.draw(entity.text);
             }
         }
 
