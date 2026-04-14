@@ -387,7 +387,7 @@ void EglContext::createContext(EglContext* shared)
 #ifndef SFML_SYSTEM_EMSCRIPTEN
     constexpr EGLint contextAttribs[]{EGL_CONTEXT_MAJOR_VERSION, 3, EGL_CONTEXT_MINOR_VERSION, 1, EGL_NONE};
 #else
-    constexpr EGLint contextAttribs[]{EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE, EGL_NONE};
+    constexpr EGLint contextAttribs[]{EGL_CONTEXT_CLIENT_VERSION, 3, EGL_NONE, EGL_NONE};
 #endif
 
     const EGLContext toShared = shared != nullptr ? shared->m_impl->context : EGL_NO_CONTEXT;
