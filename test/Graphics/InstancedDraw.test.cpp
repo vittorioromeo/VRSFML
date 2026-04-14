@@ -67,11 +67,13 @@ void main() { sf_fragColor = v_color; }
         sf::VAOHandle vao;
 
         renderTexture.clear(sf::Color::Black);
-        renderTexture.drawInstancedIndexedVertices(
-            {.vaoHandle = vao, .vertexSpan = sf::instancedQuadVertices, .indexSpan = sf::instancedQuadIndices,
-             .instanceCount = 1u, .primitiveType = sf::PrimitiveType::Triangles},
-            [](sf::InstanceAttributeBinder&) {},
-            {.view = sf::View::fromScreenSize({100.f, 100.f}), .shader = &shader});
+        renderTexture.drawInstancedIndexedVertices({.vaoHandle     = vao,
+                                                    .vertexSpan    = sf::instancedQuadVertices,
+                                                    .indexSpan     = sf::instancedQuadIndices,
+                                                    .instanceCount = 1u,
+                                                    .primitiveType = sf::PrimitiveType::Triangles},
+                                                   [](sf::InstanceAttributeBinder&) {},
+                                                   {.view = sf::View::fromScreenSize({100.f, 100.f}), .shader = &shader});
         renderTexture.display();
 
         const auto pixel = renderTexture.getTexture().copyToImage().getPixel({50, 50});
