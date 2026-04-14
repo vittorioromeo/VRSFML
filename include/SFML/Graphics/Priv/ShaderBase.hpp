@@ -86,6 +86,9 @@ public:
     private:
         [[nodiscard]] explicit UniformLocation(int location);
         int m_value;
+
+    public:
+        [[nodiscard, gnu::always_inline, gnu::pure]] int getNativeHandle() const;
     };
 
     ////////////////////////////////////////////////////////////
@@ -635,8 +638,13 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 192> m_impl;                 //!< Implementation details
-    mutable base::U8              m_uniformGeneration{0}; //!< Bumped on every uniform mutation (autobatch invalidation)
+    base::InPlacePImpl<Impl, 192> m_impl; //!< Implementation details
+
+    mutable base::U8 m_uniformGeneration{0}; //!< Bumped on every uniform mutation (autobatch invalidation)
+
+    bool m_hasBuiltInUniformMVPRow0;        //!< Whether the shader has the built-in `sf_u_mvpRow0` uniform
+    bool m_hasBuiltInUniformMVPRow1;        //!< Whether the shader has the built-in `sf_u_mvpRow1` uniform
+    bool m_hasBuiltInUniformInvTextureSize; //!< Whether the shader has the built-in `sf_u_invTextureSize` uniform
 };
 
 } // namespace sf
