@@ -63,7 +63,7 @@ if(SFML_ENABLE_STACK_TRACES)
         CPMAddPackage(
             NAME cpptrace
             GITHUB_REPOSITORY vittorioromeo/cpptrace
-            GIT_TAG bcd42b677bfd0209add98123e97e6236f81b9c9b
+            GIT_TAG 247c545e37003893e4bf305f83043f6f9be25e60
             SYSTEM TRUE
         )
 
