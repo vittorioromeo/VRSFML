@@ -19,7 +19,8 @@
       },
       "environment": {
         "CXX_WARNINGS": "-Wall -Wextra -Wpedantic -Wno-ignored-attributes -Wno-unused-command-line-argument",
-        "OFAST": "-O3 -ffast-math"
+        "OFAST": "-O3 -ffast-math",
+        "LINKER": "-fuse-ld=lld"
       }
     },
     {
@@ -48,9 +49,9 @@
       "installDir": "${sourceDir}/build_vrdev_clang/install",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang",
-        "CMAKE_C_FLAGS": "-fuse-ld=lld $env{CXX_WARNINGS}",
+        "CMAKE_C_FLAGS": "$env{LINKER} $env{CXX_WARNINGS}",
         "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace $env{CXX_WARNINGS}"
+        "CMAKE_CXX_FLAGS": "$env{LINKER} -ftime-trace $env{CXX_WARNINGS}"
       }
     },
     {
@@ -60,9 +61,9 @@
       "installDir": "${sourceDir}/build_vrdev_clang_libcpp/install",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang",
-        "CMAKE_C_FLAGS": "-fuse-ld=lld $env{CXX_WARNINGS}",
+        "CMAKE_C_FLAGS": "$env{LINKER} $env{CXX_WARNINGS}",
         "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace $env{CXX_WARNINGS} -stdlib=libc++"
+        "CMAKE_CXX_FLAGS": "$env{LINKER} -ftime-trace $env{CXX_WARNINGS} -stdlib=libc++"
       }
     },
     {
@@ -82,8 +83,8 @@
       "cacheVariables": {
         "CMAKE_C_COMPILER": "gcc",
         "CMAKE_CXX_COMPILER": "g++",
-        "CMAKE_C_FLAGS": "-fuse-ld=lld $env{CXX_WARNINGS}",
-        "CMAKE_CXX_FLAGS": "-fuse-ld=lld -Wnrvo $env{CXX_WARNINGS}"
+        "CMAKE_C_FLAGS": "$env{LINKER} $env{CXX_WARNINGS}",
+        "CMAKE_CXX_FLAGS": "$env{LINKER} -Wnrvo $env{CXX_WARNINGS}"
       }
     },
     {
@@ -119,8 +120,8 @@
       "cacheVariables": {
         "CMAKE_C_COMPILER": "gcc",
         "CMAKE_CXX_COMPILER": "g++",
-        "CMAKE_C_FLAGS": "-fuse-ld=lld $env{OFAST} $env{CXX_WARNINGS}",
-        "CMAKE_CXX_FLAGS": "-fuse-ld=lld -Wnrvo $env{OFAST} $env{CXX_WARNINGS}"
+        "CMAKE_C_FLAGS": "$env{LINKER} $env{OFAST} $env{CXX_WARNINGS}",
+        "CMAKE_CXX_FLAGS": "$env{LINKER} -Wnrvo $env{OFAST} $env{CXX_WARNINGS}"
       }
     },
     {
@@ -132,8 +133,8 @@
         "CMAKE_CXX_COMPILER_LAUNCHER": "",
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_C_FLAGS": "-fuse-ld=lld $env{OFAST} $env{CXX_WARNINGS}",
-        "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace -flto=thin $env{OFAST} $env{CXX_WARNINGS}"
+        "CMAKE_C_FLAGS": "$env{LINKER} $env{OFAST} $env{CXX_WARNINGS}",
+        "CMAKE_CXX_FLAGS": "$env{LINKER} -ftime-trace -flto=thin $env{OFAST} $env{CXX_WARNINGS}"
       }
     },
     {
@@ -145,10 +146,10 @@
         "CMAKE_CXX_COMPILER_LAUNCHER": "",
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_C_FLAGS": "-fstandalone-debug -fuse-ld=lld $env{OFAST} -g -fno-omit-frame-pointer -march=native $env{CXX_WARNINGS}",
-        "CMAKE_CXX_FLAGS": "-fstandalone-debug -fuse-ld=lld -ftime-trace -flto=thin $env{OFAST} -g -fno-omit-frame-pointer -fdebug-info-for-profiling -march=native $env{CXX_WARNINGS}",
-        "CMAKE_EXE_LINKER_FLAGS": "-fuse-ld=lld -g",
-        "CMAKE_SHARED_LINKER_FLAGS": "-fuse-ld=lld -g"
+        "CMAKE_C_FLAGS": "-fstandalone-debug $env{LINKER} $env{OFAST} -g -fno-omit-frame-pointer -march=native $env{CXX_WARNINGS}",
+        "CMAKE_CXX_FLAGS": "-fstandalone-debug $env{LINKER} -ftime-trace -flto=thin $env{OFAST} -g -fno-omit-frame-pointer -fdebug-info-for-profiling -march=native $env{CXX_WARNINGS}",
+        "CMAKE_EXE_LINKER_FLAGS": "$env{LINKER} -g",
+        "CMAKE_SHARED_LINKER_FLAGS": "$env{LINKER} -g"
       }
     },
     {
@@ -160,8 +161,8 @@
         "CMAKE_CXX_COMPILER_LAUNCHER": "",
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_C_FLAGS": "-fuse-ld=lld $env{CXX_WARNINGS}",
-        "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace $env{CXX_WARNINGS}"
+        "CMAKE_C_FLAGS": "$env{LINKER} $env{CXX_WARNINGS}",
+        "CMAKE_CXX_FLAGS": "$env{LINKER} -ftime-trace $env{CXX_WARNINGS}"
       }
     },
     {
@@ -173,8 +174,8 @@
         "CMAKE_CXX_COMPILER_LAUNCHER": "",
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_C_FLAGS": "-march=native -fuse-ld=lld $env{OFAST} $env{CXX_WARNINGS}",
-        "CMAKE_CXX_FLAGS": "-march=native -fuse-ld=lld -ftime-trace -flto=thin $env{OFAST} $env{CXX_WARNINGS}"
+        "CMAKE_C_FLAGS": "-march=native $env{LINKER} $env{OFAST} $env{CXX_WARNINGS}",
+        "CMAKE_CXX_FLAGS": "-march=native $env{LINKER} -ftime-trace -flto=thin $env{OFAST} $env{CXX_WARNINGS}"
       }
     },
     {
@@ -234,8 +235,8 @@
         "CMAKE_CXX_COMPILER_LAUNCHER": "",
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_C_FLAGS": "-fuse-ld=lld $env{CXX_WARNINGS} -fsanitize=address -fsanitize=undefined",
-        "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace -flto=thin $env{CXX_WARNINGS} -fsanitize=address -fsanitize=undefined"
+        "CMAKE_C_FLAGS": "$env{LINKER} $env{CXX_WARNINGS} -fsanitize=address -fsanitize=undefined",
+        "CMAKE_CXX_FLAGS": "$env{LINKER} -ftime-trace -flto=thin $env{CXX_WARNINGS} -fsanitize=address -fsanitize=undefined"
       }
     },
     {
@@ -248,8 +249,8 @@
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_C_FLAGS": "-fuse-ld=lld $env{CXX_WARNINGS} -fsanitize=address -fsanitize=undefined",
-        "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace -flto=thin $env{CXX_WARNINGS} -fsanitize=address -fsanitize=undefined"
+        "CMAKE_C_FLAGS": "$env{LINKER} $env{CXX_WARNINGS} -fsanitize=address -fsanitize=undefined",
+        "CMAKE_CXX_FLAGS": "$env{LINKER} -ftime-trace -flto=thin $env{CXX_WARNINGS} -fsanitize=address -fsanitize=undefined"
       }
     }
   ]
