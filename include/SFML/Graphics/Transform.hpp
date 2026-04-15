@@ -127,6 +127,31 @@ struct [[nodiscard]] Transform
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Build a transform from a position, scale, origin, and rotation
+    ///
+    /// Computes sine and cosine of `rotation`, so if you already have those values,
+    /// prefer `fromPositionScaleOriginSinCos` to avoid redundant trig calculations.
+    ///
+    /// \param position World-space position
+    /// \param scale    Per-axis scale factors
+    /// \param origin   Origin of translation/rotation/scaling, in local space
+    /// \param rotation Rotation angle
+    ///
+    /// \return Transform that applies the requested translation, rotation, and scaling
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] static constexpr Transform fromPositionScaleOriginRotation(
+        const Vec2f position,
+        const Vec2f scale,
+        const Vec2f origin,
+        const Angle rotation)
+    {
+        const auto [sine, cosine] = base::sinCosLookup(rotation.wrapUnsigned().asRadians());
+        return fromPositionScaleOriginSinCos(position, scale, origin, sine, cosine);
+    }
+
+
+    ////////////////////////////////////////////////////////////
     /// \brief Write the 2D transform into a 4x4 column-major matrix
     ///
     /// This writes the six meaningful elements of the 2D transform
