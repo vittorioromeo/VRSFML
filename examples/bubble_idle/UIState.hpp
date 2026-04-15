@@ -45,6 +45,7 @@ struct UIState
     ankerl::unordered_dense::map<sf::base::String, float> uiLabelToY;
 
     sf::Rect2f minimapRect;
+    sf::Rect2f minimapZoomButtonsRect;
     Countdown  scrollArrowCountdown;
 
     sf::base::Vector<PurchaseUnlockedEffect>             purchaseUnlockedEffects;
