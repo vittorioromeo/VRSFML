@@ -10,6 +10,7 @@
 #include "Countdown.hpp"
 #include "Doll.hpp"
 #include "HellPortal.hpp"
+#include "HexSession.hpp"
 #include "ParticleData.hpp"
 #include "ParticleType.hpp"
 #include "Shrine.hpp"
@@ -46,6 +47,7 @@
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/ToString.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include <climits>
 #include <cstdio>
@@ -252,11 +254,13 @@ void Main::gameLoopUpdateCollisionsCatDoll()
         }
     };
 
-    for (Doll& doll : pt->dolls)
-        checkCollisionWithDoll(doll, [&](Doll& d) { collectDoll(d); });
+    for (HexSession& session : pt->hexSessions)
+        for (Doll& doll : session.dolls)
+            checkCollisionWithDoll(doll, [&](Doll& d) { collectDoll(d, session); });
 
-    for (Doll& copyDoll : pt->copyDolls)
-        checkCollisionWithDoll(copyDoll, [&](Doll& d) { collectCopyDoll(d); });
+    for (HexSession& session : pt->copyHexSessions)
+        for (Doll& copyDoll : session.dolls)
+            checkCollisionWithDoll(copyDoll, [&](Doll& d) { collectCopyDoll(d, session); });
 }
 
 
@@ -687,13 +691,20 @@ void Main::gameLoopUpdateBuffText()
     char  buffStrBuffer[1024]{};
     SizeT writeIdx = 0u;
 
-    const SizeT nDollsToClick = sf::base::countIf(pt->dolls.begin(), pt->dolls.end(), [](const Doll& doll) {
-        return !doll.tcDeath.hasValue();
-    });
+    const auto countPendingDolls = [](const sf::base::Vector<HexSession>& sessions)
+    {
+        SizeT count = 0u;
 
-    const SizeT nCopyDollsToClick = sf::base::countIf(pt->copyDolls.begin(), pt->copyDolls.end(), [](const Doll& doll) {
-        return !doll.tcDeath.hasValue();
-    });
+        for (const HexSession& session : sessions)
+            count += sf::base::countIf(session.dolls.begin(), session.dolls.end(), [](const Doll& doll) {
+                return !doll.tcDeath.hasValue();
+            });
+
+        return count;
+    };
+
+    const SizeT nDollsToClick     = countPendingDolls(pt->hexSessions);
+    const SizeT nCopyDollsToClick = countPendingDolls(pt->copyHexSessions);
 
     if (nDollsToClick > 0u)
         writeIdx += static_cast<SizeT>(
