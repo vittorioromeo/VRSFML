@@ -20,7 +20,7 @@
 #include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/FixedFunction.hpp"
+#include "SFML/Base/FunctionRef.hpp"
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -492,9 +492,9 @@ public:
     /// \param states   Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void drawInstancedVertices(const DrawInstancedVerticesSettings&                           settings,
-                               const base::FixedFunction<void(InstanceAttributeBinder&), 64>& setupFn,
-                               const RenderStates&                                            states = {});
+    void drawInstancedVertices(const DrawInstancedVerticesSettings&              settings,
+                               base::FunctionRef<void(InstanceAttributeBinder&)> setupFn,
+                               const RenderStates&                               states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw an instanced and indexed primitive
@@ -509,9 +509,9 @@ public:
     /// \param states   Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void drawInstancedIndexedVertices(const DrawInstancedIndexedVerticesSettings&                    settings,
-                                      const base::FixedFunction<void(InstanceAttributeBinder&), 64>& setupFn,
-                                      const RenderStates&                                            states = {});
+    void drawInstancedIndexedVertices(const DrawInstancedIndexedVerticesSettings&       settings,
+                                      base::FunctionRef<void(InstanceAttributeBinder&)> setupFn,
+                                      const RenderStates&                               states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the rendering region of the target
@@ -822,9 +822,9 @@ private:
     /// Does not flush any batch in flight.
     ///
     ////////////////////////////////////////////////////////////
-    void immediateDrawInstancedVertices(const DrawInstancedVerticesSettings&                    settings,
-                                        base::FixedFunction<void(InstanceAttributeBinder&), 64> setupFn,
-                                        const RenderStates&                                     states);
+    void immediateDrawInstancedVertices(const DrawInstancedVerticesSettings&              settings,
+                                        base::FunctionRef<void(InstanceAttributeBinder&)> setupFn,
+                                        const RenderStates&                               states);
 
     ////////////////////////////////////////////////////////////
     /// \brief Immediately draw an instanced and indexed primitive
@@ -833,9 +833,9 @@ private:
     /// Does not flush any batch in flight.
     ///
     ////////////////////////////////////////////////////////////
-    void immediateDrawInstancedIndexedVertices(const DrawInstancedIndexedVerticesSettings&             settings,
-                                               base::FixedFunction<void(InstanceAttributeBinder&), 64> setupFn,
-                                               const RenderStates&                                     states);
+    void immediateDrawInstancedIndexedVertices(const DrawInstancedIndexedVerticesSettings&       settings,
+                                               base::FunctionRef<void(InstanceAttributeBinder&)> setupFn,
+                                               const RenderStates&                               states);
 
     ////////////////////////////////////////////////////////////
     /// \brief Check whether shader/texture generation counters diverge from cached values
