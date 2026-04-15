@@ -65,5 +65,5 @@ elseif(SFML_OS_ANDROID)
 endif()
 
 if(SFML_ENABLE_STACK_TRACES AND NOT SFML_OS_EMSCRIPTEN)
-    target_link_libraries(sfml-system PUBLIC cpptrace::cpptrace)
+    target_link_libraries(sfml-system PRIVATE $<BUILD_INTERFACE:sfml::libbacktrace>)
 endif()
