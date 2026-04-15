@@ -1,6 +1,8 @@
 #include "ShowcaseAudio.hpp"
 #include "ShowcaseExample.hpp"
 
+#include "SFML/ImGui/IncludeImGui.hpp"
+
 #include "SFML/Audio/AudioContext.hpp"
 #include "SFML/Audio/Music.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
@@ -8,8 +10,6 @@
 
 #include "SFML/Base/Algorithm/Find.hpp"
 #include "SFML/Base/SizeT.hpp"
-
-#include <imgui.h>
 
 #include <cstdio>
 

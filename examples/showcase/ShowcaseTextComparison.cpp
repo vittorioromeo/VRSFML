@@ -1,6 +1,8 @@
 #include "ShowcaseExample.hpp"
 #include "ShowcaseTextComparison.hpp"
 
+#include "SFML/ImGui/IncludeImGui.hpp"
+
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GlyphMappedText.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
@@ -10,8 +12,6 @@
 #include "SFML/System/UnicodeStringUtfUtils.hpp"
 
 #include "SFML/Base/Builtin/Strlen.hpp"
-
-#include <imgui.h>
 
 
 ////////////////////////////////////////////////////////////
