@@ -549,10 +549,15 @@ inline constexpr auto
 
 
 ////////////////////////////////////////////////////////////
+template <SizeT>
+using AlwaysStringView = StringView;
+
+
+////////////////////////////////////////////////////////////
 template <typename T, SizeT... I>
 constexpr auto tieAsNamesTupleImpl(IndexSequence<I...>) noexcept
 {
-    return Tuple{StringView{storedNameOfField<T, I>.data()}...};
+    return Tuple<AlwaysStringView<I>...>{StringView{storedNameOfField<T, I>.data()}...};
 }
 
 } // namespace sf::base::minipfr::priv
