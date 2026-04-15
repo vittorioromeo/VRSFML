@@ -192,9 +192,36 @@ void Main::uiDraw(const sf::Vec2f mousePos)
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 10.f);
 
     style.Colors[ImGuiCol_WindowBg]     = ImVec4(0.f, 0.f, 0.f, 0.65f);
+    style.Colors[ImGuiCol_PopupBg]      = ImVec4(0.96f, 0.98f, 1.00f, 0.97f);
     style.Colors[ImGuiCol_Border]       = colorBlueOutline.toVec4<ImVec4>();
     style.Colors[ImGuiCol_Text]         = sf::Color{50u, 84u, 135u};
     style.Colors[ImGuiCol_TextDisabled] = sf::Color{50u, 84u, 135u}.withLightness(0.35f).withSaturation(0.25f);
+
+    style.Colors[ImGuiCol_FrameBg]        = ImVec4(0.82f, 0.88f, 0.96f, 0.85f);
+    style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.72f, 0.82f, 0.95f, 0.95f);
+    style.Colors[ImGuiCol_FrameBgActive]  = ImVec4(0.65f, 0.78f, 0.95f, 1.00f);
+
+    style.Colors[ImGuiCol_CheckMark] = ImVec4(0.20f, 0.45f, 0.85f, 1.00f);
+
+    style.Colors[ImGuiCol_SliderGrab]       = ImVec4(0.30f, 0.55f, 0.90f, 1.00f);
+    style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.20f, 0.45f, 0.85f, 1.00f);
+
+    style.Colors[ImGuiCol_Button]        = ImVec4(0.72f, 0.82f, 0.95f, 0.90f);
+    style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.60f, 0.75f, 0.95f, 1.00f);
+    style.Colors[ImGuiCol_ButtonActive]  = ImVec4(0.45f, 0.65f, 0.92f, 1.00f);
+
+    style.Colors[ImGuiCol_Header]        = ImVec4(0.72f, 0.82f, 0.95f, 0.75f);
+    style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.60f, 0.75f, 0.95f, 0.85f);
+    style.Colors[ImGuiCol_HeaderActive]  = ImVec4(0.45f, 0.65f, 0.92f, 0.95f);
+
+    style.Colors[ImGuiCol_Separator]        = ImVec4(0.50f, 0.65f, 0.85f, 0.55f);
+    style.Colors[ImGuiCol_SeparatorHovered] = ImVec4(0.40f, 0.58f, 0.85f, 0.80f);
+    style.Colors[ImGuiCol_SeparatorActive]  = ImVec4(0.30f, 0.50f, 0.85f, 1.00f);
+
+    style.Colors[ImGuiCol_ScrollbarBg]          = ImVec4(0.88f, 0.93f, 0.98f, 0.60f);
+    style.Colors[ImGuiCol_ScrollbarGrab]        = ImVec4(0.65f, 0.78f, 0.92f, 1.00f);
+    style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.50f, 0.68f, 0.90f, 1.00f);
+    style.Colors[ImGuiCol_ScrollbarGrabActive]  = ImVec4(0.35f, 0.58f, 0.88f, 1.00f);
 
     const float     newScalingFactor = profile.uiScale;
     const auto      resolution       = getResolution();
@@ -212,14 +239,16 @@ void Main::uiDraw(const sf::Vec2f mousePos)
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_IsTouchScreen;
     ImGui::GetIO().FontGlobalScale = newScalingFactor * 0.975f;
 
-    if (profile.showDpsMeter && !uiState.debugHideUI)
-        uiDpsMeter();
+    (void)&Main::uiDpsMeter;
 
     if (inSpeedrunPlaythrough())
         uiSpeedrunning();
 
     if (!uiState.debugHideUI)
         uiDrawQuickbar();
+
+    if (!uiState.debugHideUI)
+        uiDrawMinimapZoomButtons();
 
     const sf::Vec2f  uiOpenWindowPos = uiGetWindowPos();
     const sf::Rect2f gameViewBounds  = getViewportPixelBounds(gameView, resolution);

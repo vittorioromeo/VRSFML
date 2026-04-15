@@ -167,7 +167,7 @@ void Main::drawMinimap(bool               back,
         .position         = minimapPos,
         .fillColor        = sf::Color::Transparent,
         .outlineColor     = sf::Color::whiteWithAlpha(static_cast<U8>(shouldDrawUIAlpha * 0.75f)),
-        .outlineThickness = 4.f,
+        .outlineThickness = -4.f,
         .size             = {mapLimit / minimapScale, minimapSize.y},
         .cornerRadius     = 8.f,
     };

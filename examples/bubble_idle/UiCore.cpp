@@ -184,7 +184,10 @@ void Main::uiMakeTooltip(const bool small)
 
     const float width = small ? 176.f : uiTooltipWidth;
 
-    ImGui::SetNextWindowPos(ImVec2(ImGui::GetMousePos().x - width, ImGui::GetMousePos().y + (small ? -40.f : 20.f)));
+    const ImVec2 mousePos = ImGui::GetMousePos();
+    const float  tooltipX = mousePos.x - width < 8.f ? mousePos.x + 16.f : mousePos.x - width;
+
+    ImGui::SetNextWindowPos(ImVec2(tooltipX, mousePos.y + (small ? -40.f : 20.f)));
 
     uiBeginTooltip(width);
     ImGui::TextWrapped("%s", uiState.uiTooltipBuffer);
@@ -250,7 +253,7 @@ We do not speak of the origin of the large brain attached to their body.)";
                 R"(
 ~~ Smart Cat ~~
 
-Pops bubbles or bombs. Smart enough to prioritizes bombs and star bubbles over normal bubbles, but can't really tell those two apart.
+Pops bubbles or bombs. Smart enough to prioritize bombs and star bubbles over normal ones, but can't quite tell those two apart.
 
 We do not speak of the tuition fees.)";
         }
@@ -258,7 +261,7 @@ We do not speak of the tuition fees.)";
         const char* catUniTooltip = R"(
 ~~ Unicat ~~
 
-Imbued with the power of stars and rainbows, transforms bubbles into star bubbles, worth x15 more.
+Imbued with the power of stars and rainbows, transforms bubbles into star bubbles worth x15 more.
 
 Must have eaten something they weren't supposed to, because they keep changing color.
 )";
@@ -277,7 +280,7 @@ Radiates a somewhat creepy energy.
 
 Hired diplomat of the NB (NOBUBBLES) political party. Convinces bubbles to turn into bombs and explode for the rightful cause.
 
-Bubbles caught in explosions are worth x10 more.)";
+Collateral bubbles caught in the blast are worth x10 more.)";
 
         if (isDevilcatHellsingedActive())
             catDevilTooltip = R"(
@@ -292,7 +295,7 @@ From politician to demon... the NB (NOBUBBLES) party is truly a mystery.)";
 
 Pride of the NCSA, a highly trained feline astronaut that continuously flies across the map, popping bubbles with a x20 multiplier.
 
-Desperately trying to get funding from the government for a mission on the cheese moon. Perhaps some prestige points could help?)";
+Desperately trying to get funding from the government for a mission to the cheese moon. Perhaps some prestige points could help?)";
 
         if (pt->perm.astroCatInspirePurchased)
         {
@@ -314,43 +317,44 @@ Finally financed by the NB (NOBUBBLES) political party to inspire other cats to 
 ~~ Witchcat ~~
 (unique cat)
 
-Loves to perform rituals on other cats, hexing one of them at random and capturing their soul in voodoo dolls that appear around the map.
+Loves to perform rituals on other cats, hexing one at random.
 
-Collecting all the dolls will release the hex and trigger a powerful timed effect depending on the type of the cursed cat.
+Voodoo dolls of the cursed cat appear around the map - collect all of them to release the hex and trigger a powerful timed effect based on the victim.
 
 Their dark magic is puzzling... but not as puzzling as the sheer number of dolls they carry around.)",
             R"(
 ~~ Wizardcat ~~
 (unique cat)
 
-Ancient arcane feline capable of unleashing powerful spells, if only they could remember them.
-Can absorb the magic of star bubbles to recall their past lives and remember spells.
+Arcane feline capable of unleashing powerful spells -- if only they could remember them.
 
-The scriptures say that they "unlock a Magic menu", but nobody knows what that means.
+Absorbs the magic of star bubbles to recall past lives and recover lost incantations.
 
-Witchcat interaction: after being hexed, will grant a x3.5 faster mana regen buff.)",
+The scriptures say that they "unlock the Magic menu", but nobody knows what that means.
+
+Hex buff: x3.5 faster mana regen buff.)",
             R"(
 ~~ Mousecat ~~
 (unique cat)
 
-They stole a Logicat gaming mouse and they're now on the run. Surprisingly, the mouse still works even though it's not plugged in to anything.
+Stole a Logicat gaming mouse and is now on the run. And yes, it still works unplugged.
 
-Able to keep up a combo like for manual popping, and empowers nearby cats to pop bubbles with Mousecat's current combo multiplier.
+Maintains a combo like manual popping and shares that combo multiplier with nearby cats.
 
-Is affected by both cat reward value multipliers and click reward value multipliers, including their own buff.
+Affected by both cat and click reward multipliers, including their own buff.
 
-Provides a global click reward value multiplier (upgradable via PPs) by merely existing... Logicat does know how to make a good mouse.
+Also provides a global click reward multiplier just by existing -- Logicat does know how to make a good mouse.
 
-Witchcat interaction: after being hexed, will grant a x10 click reward buff.)",
+Hex buff: x10 click reward buff.)",
             R"(
 ~~ Engicat ~~
 (unique cat)
 
-Periodically performs maintenance on all nearby cats, temporarily increasing their engine efficiency and making them faster. (Note: this buff stacks with inspirational NB propaganda.)
+Periodically performs maintenance on all nearby cats, temporarily overclocking them.
 
-Provides a global cat reward value multiplier (upgradable via PPs) by merely existing... guess they're a "10x engineer"?
+Provides a global cat reward value multiplier just by existing. -- guess they're a "10x engineer"?
 
-Witchcat interaction: after being hexed, will grant a x2 global faster cat cooldown buff.)",
+Hex buff: x2 global faster cat cooldown buff.)",
             R"(
 ~~ Repulsocat ~~
 (unique cat)
@@ -361,23 +365,25 @@ Bubbles being pushed away by Repulsocat are worth x2 more.
 
 Using prestige points, the fan can be upgraded to filter specific bubble types and/or convert a percentage of bubbles to star bubbles.
 
-Witchcat interaction: after being hexed, will grant a x2 bubble count buff and increase wind speed.)",
+Hex buff: x2 bubble count buff and increase wind speed.)",
             R"(
 ~~ Attractocat ~~
 (unique cat)
 
-Continuously attracts bubbles with their huge magnet, because soap is definitely magnetic. (Note: this effect is applied even while Attractocat is being dragged.)
+Continuously attracts bubbles with their huge magnet. And yes, soap is magnetic -- don't ask.
 
 Bubbles being attracted by Attractocat are worth x2 more.
 
 Using prestige points, the magnet can be upgraded to filter specific bubble types.
 
-Witchcat interaction: after being hexed, all bombs or hell portals will attract bubbles.)",
+Hex buff: all bombs or hell portals will attract bubbles.)",
             R"(
 ~~ Copycat ~~
 (unique cat)
 
-Mimics an existing unique cat, gaining their abilities and effects. (Note: the mimicked cat can be changed via the toolbar near the bottom of the screen.)
+Mimics an existing unique cat, gaining their abilities and effects. Change the target via the toolbar at the bottom of the screen.
+
+Identity crisis? Perhaps. But they're very good at it.
 
 Mimicking Witchcat:
 - Two separate rituals will be performed.
@@ -393,7 +399,7 @@ Mimicking Mousecat:
 Mimicking Engicat:
 - The global clicking buff multiplier is doubled.
 
-Witchcat interaction: after being hexed, will grant the same buff as the mimicked cat.)",
+Hex buff: grant the same buff as the mimicked cat.)",
             R"(
 ~~ Duck ~~
 
@@ -896,7 +902,9 @@ void Main::uiDrawExitPopup(const float newScalingFactor)
     ImGui::Begin("##exit",
                  nullptr,
                  ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize |
-                     ImGuiWindowFlags_NoTitleBar);
+                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground);
+
+    uiDrawCloudWindowBackground();
 
     uiSetFontScale(scaleMult);
 

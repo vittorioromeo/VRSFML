@@ -305,7 +305,8 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
         const auto p = scaledHUDView.screenToWorld(frameInput.windowSpaceMouseOrFingerPos.toVec2f(),
                                                    window.getSize().toVec2f());
 
-        if (uiState.minimapRect.contains(p) && mBtnDown(sf::Mouse::Button::Left, /* penetrateUI */ true))
+        if (uiState.minimapRect.contains(p) && !uiState.minimapZoomButtonsRect.contains(p) &&
+            mBtnDown(sf::Mouse::Button::Left, /* penetrateUI */ true))
         {
             const auto minimapPos   = p - uiState.minimapRect.position;
             playerInputState.scroll = minimapPos.x * 0.5f * pt->getMapLimit() / uiState.minimapRect.size.x -

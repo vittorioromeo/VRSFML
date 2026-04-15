@@ -3,21 +3,87 @@
 #include "Cat.hpp"
 #include "CatConstants.hpp"
 #include "CatType.hpp"
+#include "IconsFontAwesome6.h"
 #include "ParticleData.hpp"
 #include "ParticleType.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"
 
 #include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/RectangleShapeData.hpp"
 
 #include "SFML/System/Priv/Vec2Base.hpp"
 
+#include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/FloatMax.hpp"
-#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 #include <cstdio>
+
+////////////////////////////////////////////////////////////
+void Main::uiDrawCloudWindowBackground()
+{
+    const ImVec2 winPos  = ImGui::GetWindowPos();
+    const ImVec2 winSize = ImGui::GetWindowSize();
+
+    const sf::Vec2f pMin{winPos.x, winPos.y};
+    const sf::Vec2f pMax{winPos.x + winSize.x, winPos.y + winSize.y};
+
+    cpuCloudUiDrawableBatch.add(sf::RectangleShapeData{
+        .position  = pMin,
+        .fillColor = sf::Color::White,
+        .size      = pMax - pMin,
+    });
+
+    const int xSteps = sf::base::clamp(static_cast<int>(winSize.x / 28.f), 3, 24);
+    const int ySteps = sf::base::clamp(static_cast<int>(winSize.y / 28.f), 3, 24);
+
+    drawCloudFrame({
+        .time              = shaderTime,
+        .mins              = pMin,
+        .maxs              = pMax,
+        .xSteps            = xSteps,
+        .ySteps            = ySteps,
+        .scaleMult         = 1.6f,
+        .outwardOffsetMult = 1.f,
+        .batch             = &cpuCloudUiDrawableBatch,
+    });
+}
+
+
+////////////////////////////////////////////////////////////
+bool Main::uiDrawQuickbarIconButton(const char* label, const bool selected, const float scaleMult)
+{
+    constexpr TabButtonPalette palette{
+        .idle    = ImVec4(0.15f, 0.35f, 0.60f, 1.0f),
+        .hovered = ImVec4(0.25f, 0.45f, 0.80f, 1.0f),
+        .active  = ImVec4(0.35f, 0.55f, 0.95f, 1.0f),
+    };
+
+    ImGui::PushStyleColor(ImGuiCol_Button, selected ? palette.active : palette.idle);
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, selected ? palette.active : palette.hovered);
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, palette.active);
+    ImGui::PushStyleColor(ImGuiCol_Border, selected ? palette.active : palette.hovered);
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(ImGui::GetStyle().FramePadding.x + 1.f, -6.f * scaleMult));
+
+    ImGui::SetCursorPosY(ImGui::GetCursorStartPos().y - 10.f * scaleMult);
+
+    const auto outcome = uiAnimatedButton(txCloudBtnSquare2,
+                                          label,
+                                          ImVec2(36.f * profile.uiScale * scaleMult, 22.f * profile.uiScale * scaleMult),
+                                          /* fontScale */ 1.35f * scaleMult,
+                                          /* fontScaleMult */ 1.0f,
+                                          /* btnSizeMult */ 1.3125f * scaleMult,
+                                          /* forceHovered */ selected);
+
+    ImGui::PopStyleVar(2);
+    ImGui::PopStyleColor(4);
+
+    return outcome == Main::AnimatedButtonOutcome::Clicked;
+}
+
 
 ////////////////////////////////////////////////////////////
 void Main::uiDrawQuickbarCopyCat(const sf::Vec2f quickBarPos, Cat& copyCat)
@@ -31,29 +97,25 @@ void Main::uiDrawQuickbarCopyCat(const sf::Vec2f quickBarPos, Cat& copyCat)
     ImGui::BeginDisabled(mustDisable);
 
     constexpr const char* popupLabel = "CopyCatSelectorPopup";
-    static sf::base::U8   opacity    = 168u;
 
-    uiImageFromAtlas(txrIconCopyCat,
-                     {.scale = {0.65f, 0.65f},
-                      .color = (mustDisable ? sf::Color::Gray : sf::Color::White).withAlpha(opacity)});
-
-    opacity = ImGui::IsItemHovered() || ImGui::IsPopupOpen(popupLabel) ? 255u : 168u;
-
+    const bool pressed = uiDrawQuickbarIconButton(ICON_FA_MASKS_THEATER "##800", ImGui::IsPopupOpen(popupLabel));
 
     std::sprintf(uiState.uiTooltipBuffer, "Select Copycat mask");
     uiMakeTooltip(/* small */ true);
 
     ImGui::SameLine();
 
-    if (ImGui::IsItemClicked())
+    if (pressed)
     {
         ImGui::OpenPopup(popupLabel);
         playSound(sounds.uitab);
     }
 
-    ImGui::SetNextWindowPos(ImVec2(quickBarPos) - ImVec2{0.f, 64.f}, 0, {1.f, 1.f});
-    if (ImGui::BeginPopup(popupLabel))
+    ImGui::SetNextWindowPos(ImVec2(quickBarPos) - ImVec2{0.f, 64.f}, 0, {0.f, 1.f});
+    if (ImGui::BeginPopup(popupLabel, ImGuiWindowFlags_NoBackground))
     {
+        uiDrawCloudWindowBackground();
+
         ImGui::SetNextItemWidth(210.f * profile.uiScale);
 
         if (ImGui::BeginCombo("##copycatsel", CatConstants::typeNamesLong[asIdx(pt->copycatCopiedCatType)]))
@@ -119,26 +181,25 @@ void Main::uiDrawQuickbarCopyCat(const sf::Vec2f quickBarPos, Cat& copyCat)
 void Main::uiDrawQuickbarBackgroundSelector(const sf::Vec2f quickBarPos)
 {
     constexpr const char* popupLabel = "BackgroundSelectorPopup";
-    static sf::base::U8   opacity    = 168u;
 
-    uiImageFromAtlas(txrIconBg, {.scale = {0.65f, 0.65f}, .color = sf::Color::whiteWithAlpha(opacity)});
-
-    opacity = ImGui::IsItemHovered() || ImGui::IsPopupOpen(popupLabel) ? 255u : 168u;
+    const bool pressed = uiDrawQuickbarIconButton(ICON_FA_PALETTE "##801", ImGui::IsPopupOpen(popupLabel));
 
     std::sprintf(uiState.uiTooltipBuffer, "Select background");
     uiMakeTooltip(/* small */ true);
 
     ImGui::SameLine();
 
-    if (ImGui::IsItemClicked())
+    if (pressed)
     {
         ImGui::OpenPopup(popupLabel);
         playSound(sounds.uitab);
     }
 
-    ImGui::SetNextWindowPos(ImVec2(quickBarPos) - ImVec2{0.f, 64.f}, 0, {1.f, 1.f});
-    if (ImGui::BeginPopup(popupLabel))
+    ImGui::SetNextWindowPos(ImVec2(quickBarPos) - ImVec2{0.f, 64.f}, 0, {0.f, 1.f});
+    if (ImGui::BeginPopup(popupLabel, ImGuiWindowFlags_NoBackground))
     {
+        uiDrawCloudWindowBackground();
+
         auto& [entries, selectedIndex] = getBackgroundSelectorData();
 
         ImGui::SetNextItemWidth(210.f * profile.uiScale);
@@ -173,26 +234,25 @@ void Main::uiDrawQuickbarBackgroundSelector(const sf::Vec2f quickBarPos)
 void Main::uiDrawQuickbarBGMSelector(const sf::Vec2f quickBarPos)
 {
     constexpr const char* popupLabel = "MusicSelectorPopup";
-    static sf::base::U8   opacity    = 168u;
 
-    uiImageFromAtlas(txrIconBGM, {.scale = {0.65f, 0.65f}, .color = sf::Color::whiteWithAlpha(opacity)});
-
-    opacity = ImGui::IsItemHovered() || ImGui::IsPopupOpen(popupLabel) ? 255u : 168u;
+    const bool pressed = uiDrawQuickbarIconButton(ICON_FA_MUSIC "##802", ImGui::IsPopupOpen(popupLabel));
 
     std::sprintf(uiState.uiTooltipBuffer, "Select music");
     uiMakeTooltip(/* small */ true);
 
     ImGui::SameLine();
 
-    if (ImGui::IsItemClicked())
+    if (pressed)
     {
         ImGui::OpenPopup(popupLabel);
         playSound(sounds.uitab);
     }
 
-    ImGui::SetNextWindowPos(ImVec2(quickBarPos) - ImVec2{0.f, 64.f}, 0, {1.f, 1.f});
-    if (ImGui::BeginPopup(popupLabel))
+    ImGui::SetNextWindowPos(ImVec2(quickBarPos) - ImVec2{0.f, 64.f}, 0, {0.f, 1.f});
+    if (ImGui::BeginPopup(popupLabel, ImGuiWindowFlags_NoBackground))
     {
+        uiDrawCloudWindowBackground();
+
         auto& [entries, selectedIndex] = getBGMSelectorData();
 
         ImGui::SetNextItemWidth(210.f * profile.uiScale);
@@ -228,26 +288,25 @@ void Main::uiDrawQuickbarBGMSelector(const sf::Vec2f quickBarPos)
 void Main::uiDrawQuickbarQuickSettings(const sf::Vec2f quickBarPos)
 {
     constexpr const char* popupLabel = "QuickSettingsPopup";
-    static sf::base::U8   opacity    = 168u;
 
-    uiImageFromAtlas(txrIconCfg, {.scale = {0.65f, 0.65f}, .color = sf::Color::whiteWithAlpha(opacity)});
-
-    opacity = ImGui::IsItemHovered() || ImGui::IsPopupOpen(popupLabel) ? 255u : 168u;
+    const bool pressed = uiDrawQuickbarIconButton(ICON_FA_SLIDERS "##803", ImGui::IsPopupOpen(popupLabel));
 
     std::sprintf(uiState.uiTooltipBuffer, "Quick settings");
     uiMakeTooltip(/* small */ true);
 
     ImGui::SameLine();
 
-    if (ImGui::IsItemClicked())
+    if (pressed)
     {
         ImGui::OpenPopup(popupLabel);
         playSound(sounds.uitab);
     }
 
-    ImGui::SetNextWindowPos(ImVec2(quickBarPos) - ImVec2{0.f, 64.f}, 0, {1.f, 1.f});
-    if (ImGui::BeginPopup(popupLabel))
+    ImGui::SetNextWindowPos(ImVec2(quickBarPos) - ImVec2{0.f, 64.f}, 0, {0.f, 1.f});
+    if (ImGui::BeginPopup(popupLabel, ImGuiWindowFlags_NoBackground))
     {
+        uiDrawCloudWindowBackground();
+
         uiCheckbox("Enable tips", &profile.tipsEnabled);
         uiCheckbox("Enable notifications", &profile.enableNotifications);
 
@@ -332,26 +391,25 @@ void Main::uiDrawQuickbarQuickSettings(const sf::Vec2f quickBarPos)
 void Main::uiDrawQuickbarVolumeControls(const sf::Vec2f quickBarPos)
 {
     constexpr const char* popupLabel = "VolumeSelectorPopup";
-    static sf::base::U8   opacity    = 168u;
 
-    uiImageFromAtlas(txrIconVolume, {.scale = {0.65f, 0.65f}, .color = sf::Color::whiteWithAlpha(opacity)});
-
-    opacity = ImGui::IsItemHovered() || ImGui::IsPopupOpen(popupLabel) ? 255u : 168u;
+    const bool pressed = uiDrawQuickbarIconButton(ICON_FA_VOLUME_HIGH "##804", ImGui::IsPopupOpen(popupLabel));
 
     std::sprintf(uiState.uiTooltipBuffer, "Volume settings");
     uiMakeTooltip(/* small */ true);
 
     ImGui::SameLine();
 
-    if (ImGui::IsItemClicked())
+    if (pressed)
     {
         ImGui::OpenPopup(popupLabel);
         playSound(sounds.uitab);
     }
 
-    ImGui::SetNextWindowPos(ImVec2(quickBarPos) - ImVec2{0.f, 64.f}, 0, {1.f, 1.f});
-    if (ImGui::BeginPopup(popupLabel))
+    ImGui::SetNextWindowPos(ImVec2(quickBarPos) - ImVec2{0.f, 64.f}, 0, {0.f, 1.f});
+    if (ImGui::BeginPopup(popupLabel, ImGuiWindowFlags_NoBackground))
     {
+        uiDrawCloudWindowBackground();
+
         ImGui::SetNextItemWidth(210.f * profile.uiScale);
         ImGui::SliderFloat("Master##popupmastervolume", &profile.masterVolume, 0.f, 100.f, "%.f%%");
 
@@ -367,21 +425,99 @@ void Main::uiDrawQuickbarVolumeControls(const sf::Vec2f quickBarPos)
 }
 
 ////////////////////////////////////////////////////////////
+void Main::uiDrawMinimapZoomButtons()
+{
+    if (!pt->mapPurchased)
+    {
+        uiState.minimapZoomButtonsRect = {};
+        return;
+    }
+
+    const float     hudScale     = profile.hudScale;
+    const sf::Vec2f mmScreenPos  = uiState.minimapRect.position * hudScale;
+    const sf::Vec2f mmScreenSize = uiState.minimapRect.size * hudScale;
+
+    constexpr float tolerance = 48.f;
+
+    const ImVec2 mp = ImGui::GetMousePos();
+    const bool   inHoverArea = mp.x >= mmScreenPos.x - tolerance && mp.x <= mmScreenPos.x + mmScreenSize.x + tolerance &&
+                             mp.y >= mmScreenPos.y - tolerance && mp.y <= mmScreenPos.y + mmScreenSize.y + tolerance;
+
+    if (!inHoverArea)
+    {
+        uiState.minimapZoomButtonsRect = {};
+        return;
+    }
+
+    ImGui::SetNextWindowPos({2.f, 14.f}, 0, {0.f, 0.f});
+    ImGui::SetNextWindowSizeConstraints(ImVec2(0.f, 0.f), ImVec2(SFML_BASE_FLOAT_MAX, SFML_BASE_FLOAT_MAX));
+
+    ImGui::Begin("##minimapzoom",
+                 nullptr,
+                 ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize |
+                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground);
+
+    constexpr float zoomBtnScale = 0.85f;
+
+    if (uiDrawQuickbarIconButton(ICON_FA_MAGNIFYING_GLASS_PLUS "##700", false, zoomBtnScale))
+    {
+        profile.minimapScale = sf::base::clamp(profile.minimapScale - 2.5f, 5.f, 40.f);
+        playSound(sounds.uitab);
+    }
+
+    std::sprintf(uiState.uiTooltipBuffer, "Zoom minimap in");
+    uiMakeTooltip(/* small */ true);
+
+    ImGui::SameLine();
+
+    if (uiDrawQuickbarIconButton(ICON_FA_MAGNIFYING_GLASS_MINUS "##701", false, zoomBtnScale))
+    {
+        profile.minimapScale = sf::base::clamp(profile.minimapScale + 2.5f, 5.f, 40.f);
+        playSound(sounds.uitab);
+    }
+
+    std::sprintf(uiState.uiTooltipBuffer, "Zoom minimap out");
+    uiMakeTooltip(/* small */ true);
+
+    const ImVec2 winPos  = ImGui::GetWindowPos();
+    const ImVec2 winSize = ImGui::GetWindowSize();
+    uiState.minimapZoomButtonsRect = {{winPos.x, winPos.y}, {winSize.x, winSize.y}};
+
+    ImGui::End();
+}
+
+
+////////////////////////////////////////////////////////////
 void Main::uiDrawQuickbar()
 {
-    const float xStart = uiState.lastUiSelectedTabIdx == 0
-                             ? getResolution().x
-                             : gameView.worldToScreen({getLeftMostUsefulX(), 0.f}, getResolution()).x;
+    const sf::Vec2f quickBarPos{10.f, getResolution().y - 15.f};
 
-    const sf::Vec2f quickBarPos{xStart - 15.f, getResolution().y - 15.f};
-
-    ImGui::SetNextWindowPos({quickBarPos.x, quickBarPos.y}, 0, {1.f, 1.f});
+    ImGui::SetNextWindowPos({quickBarPos.x, quickBarPos.y}, 0, {0.f, 1.f});
     ImGui::SetNextWindowSizeConstraints(ImVec2(0.f, 0.f), ImVec2(SFML_BASE_FLOAT_MAX, SFML_BASE_FLOAT_MAX));
 
     ImGui::Begin("##quickmenu",
                  nullptr,
                  ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize |
                      ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground);
+
+    {
+        const ImVec2 qbPos  = ImGui::GetWindowPos();
+        const ImVec2 qbSize = ImGui::GetWindowSize();
+
+        const sf::Vec2f mins{qbPos.x - 20.f, qbPos.y - 6.f};
+        const sf::Vec2f maxs{qbPos.x + qbSize.x - 10.f, qbPos.y + qbSize.y + 20.f};
+
+        drawCloudFrame({
+            .time              = shaderTime,
+            .mins              = mins,
+            .maxs              = maxs,
+            .xSteps            = 8,
+            .ySteps            = 8,
+            .scaleMult         = 1.6f,
+            .outwardOffsetMult = 1.f,
+            .batch             = &cpuCloudUiDrawableBatch,
+        });
+    }
 
     if (Cat* copyCat = getCopyCat(); copyCat != nullptr)
         uiDrawQuickbarCopyCat(quickBarPos, *copyCat);
