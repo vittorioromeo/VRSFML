@@ -13,8 +13,8 @@
 #include "SFML/GLUtils/GLPersistentBuffer.hpp"
 
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/InPlaceVector.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/SmallVector.hpp"
 
 
 namespace sf
@@ -122,7 +122,7 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    base::InPlaceVector<Marker, 8> m_markers;
+    base::SmallVector<Marker, 8> m_markers;
 
 
     ////////////////////////////////////////////////////////////
