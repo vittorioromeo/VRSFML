@@ -88,7 +88,10 @@ public:
         int m_value;
 
     public:
-        [[nodiscard, gnu::always_inline, gnu::pure]] int getNativeHandle() const;
+        [[nodiscard, gnu::always_inline, gnu::pure]] int getNativeHandle() const
+        {
+            return m_value;
+        }
     };
 
     ////////////////////////////////////////////////////////////
