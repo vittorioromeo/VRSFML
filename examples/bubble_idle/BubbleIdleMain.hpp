@@ -16,6 +16,7 @@
 #include "Constants.hpp"
 #include "Countdown.hpp"
 #include "Doll.hpp"
+#include "HexSession.hpp"
 #include "ExactArray.hpp"
 #include "GameConstants.hpp"
 #include "IconsFontAwesome6.h"
@@ -555,13 +556,21 @@ struct Main
         sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()};
 
     ////////////////////////////////////////////////////////////
-    // Hexed cat offscreen render textures
+    // Hexed cat offscreen render textures (one per concurrent hex, for witch and copy-witch combined)
     static inline constexpr sf::Vec2u hexedCatRenderTextureSize{640u, 640u};
+    static inline constexpr sf::base::SizeT maxHexedCatRenderTextures = maxConcurrentHexes * 2u;
 
-    sf::RenderTexture rtHexedCat0{
-        sf::RenderTexture::create(hexedCatRenderTextureSize, {.antiAliasingLevel = aaLevel, .smooth = true}).value()};
-    sf::RenderTexture rtHexedCat1{
-        sf::RenderTexture::create(hexedCatRenderTextureSize, {.antiAliasingLevel = aaLevel, .smooth = true}).value()};
+    sf::base::Vector<sf::RenderTexture> hexedCatRenderTextures{[this]
+    {
+        sf::base::Vector<sf::RenderTexture> result;
+        result.reserve(maxHexedCatRenderTextures);
+
+        for (sf::base::SizeT i = 0u; i < maxHexedCatRenderTextures; ++i)
+            result.emplaceBack(
+                sf::RenderTexture::create(hexedCatRenderTextureSize, {.antiAliasingLevel = aaLevel, .smooth = true}).value());
+
+        return result;
+    }()};
 
     ////////////////////////////////////////////////////////////
     // Textures (not in atlas)
@@ -1077,6 +1086,11 @@ struct Main
     // Screen shake effect state
     float screenShakeAmount{0.f};
     float screenShakeTimer{0.f};
+
+    ////////////////////////////////////////////////////////////
+    // Debug-only multiplier applied to per-frame `deltaTimeMs` in the world update.
+    // Always 1.0 outside debug mode.
+    float debugTimeScale{1.f};
 
     ////////////////////////////////////////////////////////////
     // Cached culling boundaries
@@ -2522,7 +2536,7 @@ struct Main
 
         Cat* witchCat = getWitchCat();
 
-        const bool castSuccessful = pt->dolls.empty() && witchCat != nullptr &&
+        const bool castSuccessful = pt->hexSessions.empty() && witchCat != nullptr &&
                                     (witchCat->position - wizardCat.position).lengthSquared() <= range * range;
 
         if (castSuccessful)
@@ -3129,13 +3143,15 @@ struct Main
 
         if (pt->perm.witchCatBuffFlammableDolls)
         {
-            for (Doll& doll : pt->dolls)
-                if ((doll.position - bubble.position).length() <= explosionRadius && !doll.tcDeath.hasValue())
-                    collectDoll(doll);
+            for (HexSession& session : pt->hexSessions)
+                for (Doll& doll : session.dolls)
+                    if ((doll.position - bubble.position).length() <= explosionRadius && !doll.tcDeath.hasValue())
+                        collectDoll(doll, session);
 
-            for (Doll& copyDoll : pt->copyDolls)
-                if ((copyDoll.position - bubble.position).length() <= explosionRadius && !copyDoll.tcDeath.hasValue())
-                    collectCopyDoll(copyDoll);
+            for (HexSession& session : pt->copyHexSessions)
+                for (Doll& copyDoll : session.dolls)
+                    if ((copyDoll.position - bubble.position).length() <= explosionRadius && !copyDoll.tcDeath.hasValue())
+                        collectCopyDoll(copyDoll, session);
         }
 
         if (catWhoMadeBomb != nullptr)
@@ -3351,13 +3367,12 @@ struct Main
     void               gameLoopUpdateCatActionUni(float /* deltaTimeMs */, Cat& cat);
     void               gameLoopUpdateCatActionDevil(float /* deltaTimeMs */, Cat& cat);
     void               gameLoopUpdateCatActionAstro(float /* deltaTimeMs */, Cat& cat);
-    [[nodiscard]] Cat* getHexedCat() const;
-    [[nodiscard]] Cat* getCopyHexedCat() const;
+    [[nodiscard]] Cat* getSessionTargetCat(const HexSession& session) const;
     [[nodiscard]] bool anyCatHexedOrCopyHexed() const;
-    [[nodiscard]] bool anyCatHexed() const;
-    [[nodiscard]] bool anyCatCopyHexed() const;
-    void               hexCat(Cat& cat, bool copy);
-    void gameLoopUpdateCatActionWitchImpl(float /* deltaTimeMs */, Cat& cat, sf::base::Vector<Doll>& dollsToUse);
+    [[nodiscard]] bool canHexMore() const;
+    [[nodiscard]] bool canCopyHexMore() const;
+    void               hexCat(Cat& cat, SizeT catIdx, bool copy);
+    void gameLoopUpdateCatActionWitchImpl(float /* deltaTimeMs */, Cat& cat, sf::base::Vector<HexSession>& sessionsToUse, SizeT nCatsToHex);
     void gameLoopUpdateCatActionWitch(float deltaTimeMs, Cat& cat);
     void gameLoopUpdateCatActionWizard(float deltaTimeMs, Cat& cat);
     void gameLoopUpdateCatActionMouse(float /* deltaTimeMs */, Cat& cat);
@@ -3406,11 +3421,11 @@ struct Main
     void gameLoopUpdateCatDragging(float deltaTimeMs, SizeT countFingersDown, sf::Vec2f mousePos);
     void gameLoopUpdateShrines(float deltaTimeMs);
 
-    void collectDollImpl(Doll& d, const sf::base::Vector<Doll>& dollsToUse);
-    void collectDoll(Doll& d);
-    void collectCopyDoll(Doll& d);
+    void collectDollImpl(Doll& d, HexSession& session, bool copy);
+    void collectDoll(Doll& d, HexSession& session);
+    void collectCopyDoll(Doll& d, HexSession& session);
 
-    void gameLoopUpdateDollsImpl(float deltaTimeMs, sf::Vec2f mousePos, sf::base::Vector<Doll>& dollsToUse, Cat* hexedCat);
+    void gameLoopUpdateDollsImpl(float deltaTimeMs, sf::Vec2f mousePos, sf::base::Vector<HexSession>& sessionsToUse, bool copy);
     void gameLoopUpdateDolls(float deltaTimeMs, sf::Vec2f mousePos);
     void gameLoopUpdateCopyDolls(float deltaTimeMs, sf::Vec2f mousePos);
     void gameLoopUpdateHellPortals(float deltaTimeMs);

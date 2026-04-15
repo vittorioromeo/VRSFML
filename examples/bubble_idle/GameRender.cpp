@@ -401,10 +401,10 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
                     {.view = scaledHUDView, .texture = &txLetterText});
     }
 
-    if (!pt->dolls.empty())
+    if (!pt->hexSessions.empty())
         gameLoopDrawDollParticleBorder(0.f);
 
-    if (!pt->copyDolls.empty())
+    if (!pt->copyHexSessions.empty())
         gameLoopDrawDollParticleBorder(180.f);
 
     gameLoopTips(deltaTimeMs);

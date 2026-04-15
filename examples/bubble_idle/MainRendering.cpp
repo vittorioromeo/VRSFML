@@ -9,6 +9,7 @@
 #include "Countdown.hpp"
 #include "Doll.hpp"
 #include "HellPortal.hpp"
+#include "HexSession.hpp"
 #include "Particle.hpp"
 #include "ParticleData.hpp"
 #include "ParticleType.hpp"
@@ -63,6 +64,7 @@
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/ToString.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include <cctype>
 #include <cstdio>
@@ -438,27 +440,21 @@ void Main::gameLoopDrawMinimapIcons()
                        .color       = hueColor(cat.hue, 255u)});
     }
 
-    for (const Doll& doll : pt->dolls)
+    const auto addDollsToMinimap = [&](const sf::base::Vector<HexSession>& sessions, const float hueMod)
     {
-        minimapDrawableBatch.add(
-            sf::Sprite{.position    = doll.position,
-                       .scale       = {0.5f, 0.5f},
-                       .origin      = txrDollNormal.size / 2.f,
-                       .rotation    = sf::radians(0.f),
-                       .textureRect = txrDollNormal,
-                       .color       = hueColor(doll.hue, 255u)});
-    }
+        for (const HexSession& session : sessions)
+            for (const Doll& doll : session.dolls)
+                minimapDrawableBatch.add(
+                    sf::Sprite{.position    = doll.position,
+                               .scale       = {0.5f, 0.5f},
+                               .origin      = txrDollNormal.size / 2.f,
+                               .rotation    = sf::radians(0.f),
+                               .textureRect = txrDollNormal,
+                               .color       = hueColor(doll.hue + hueMod, 255u)});
+    };
 
-    for (const Doll& doll : pt->copyDolls)
-    {
-        minimapDrawableBatch.add(
-            sf::Sprite{.position    = doll.position,
-                       .scale       = {0.5f, 0.5f},
-                       .origin      = txrDollNormal.size / 2.f,
-                       .rotation    = sf::radians(0.f),
-                       .textureRect = txrDollNormal,
-                       .color       = hueColor(doll.hue + 180.f, 255u)});
-    }
+    addDollsToMinimap(pt->hexSessions, 0.f);
+    addDollsToMinimap(pt->copyHexSessions, 180.f);
 }
 
 
@@ -722,7 +718,8 @@ void applyWitchAnimation(CatDrawContext& ctx, float& wobblePhase, Cat& witch)
     auto& batchToUse = main.playerInputState.catToPlace == &cat ? main.cpuTopDrawableBatch : main.cpuDrawableBatch;
     auto& textBatchToUse = main.playerInputState.catToPlace == &cat ? main.catTextTopDrawableBatch : main.catTextDrawableBatch;
 
-    const bool drawHexedWithShader = cat.isHexedOrCopyHexed() && main.hexedCatDrawCommands.size() < 2u;
+    const bool drawHexedWithShader = cat.isHexedOrCopyHexed() &&
+                                     main.hexedCatDrawCommands.size() < Main::maxHexedCatRenderTextures;
     auto&      spriteBatchToUse    = drawHexedWithShader ? main.tempDrawableBatch : batchToUse;
     auto& cloudBatchToUse = main.playerInputState.catToPlace == &cat ? main.cpuTopCloudDrawableBatch : main.cpuCloudDrawableBatch;
 
@@ -1553,33 +1550,34 @@ void Main::gameLoopDrawDolls(const sf::Vec2f mousePos)
     static_assert(sf::base::getArraySize(dollTxrs) == nCatTypes);
 
     ////////////////////////////////////////////////////////////
-    const auto processDolls = [&](auto& container, const float hueMod)
+    const auto processDolls = [&](const sf::base::Vector<HexSession>& sessions, const float hueMod)
     {
-        for (const Doll& doll : container)
-        {
-            const auto& dollTxr = *dollTxrs[asIdx(doll.catType)];
+        for (const HexSession& session : sessions)
+            for (const Doll& doll : session.dolls)
+            {
+                const auto& dollTxr = *dollTxrs[asIdx(doll.catType)];
 
-            const float invDeathProgress = 1.f - doll.getDeathProgress();
-            const float progress         = doll.tcDeath.hasValue() ? invDeathProgress : doll.getActivationProgress();
+                const float invDeathProgress = 1.f - doll.getDeathProgress();
+                const float progress = doll.tcDeath.hasValue() ? invDeathProgress : doll.getActivationProgress();
 
-            auto dollAlpha = static_cast<U8>(remap(progress, 0.f, 1.f, 128.f, 255.f));
+                auto dollAlpha = static_cast<U8>(remap(progress, 0.f, 1.f, 128.f, 255.f));
 
-            if ((mousePos - doll.position).lengthSquared() <= doll.getRadiusSquared() &&
-                !mBtnDown(getLMB(), /* penetrateUI */ true))
-                dollAlpha = 128.f;
+                if ((mousePos - doll.position).lengthSquared() <= doll.getRadiusSquared() &&
+                    !mBtnDown(getLMB(), /* penetrateUI */ true))
+                    dollAlpha = 128.f;
 
-            cpuDrawableBatchAfterCats.add(
-                sf::Sprite{.position    = doll.getDrawPosition(),
-                           .scale       = sf::Vec2f{0.22f, 0.22f} * progress,
-                           .origin      = dollTxr.size / 2.f,
-                           .rotation    = sf::radians(-0.15f + 0.3f * sf::base::sin(doll.wobbleRadians / 2.f)),
-                           .textureRect = dollTxr,
-                           .color       = hueColor(doll.hue + hueMod, dollAlpha)});
-        }
+                cpuDrawableBatchAfterCats.add(
+                    sf::Sprite{.position    = doll.getDrawPosition(),
+                               .scale       = sf::Vec2f{0.22f, 0.22f} * progress,
+                               .origin      = dollTxr.size / 2.f,
+                               .rotation    = sf::radians(-0.15f + 0.3f * sf::base::sin(doll.wobbleRadians / 2.f)),
+                               .textureRect = dollTxr,
+                               .color       = hueColor(doll.hue + hueMod, dollAlpha)});
+            }
     };
 
-    processDolls(pt->dolls, /* hueMod */ 0.f);
-    processDolls(pt->copyDolls, /* hueMod */ 180.f);
+    processDolls(pt->hexSessions, /* hueMod */ 0.f);
+    processDolls(pt->copyHexSessions, /* hueMod */ 180.f);
 }
 
 
@@ -2355,8 +2353,8 @@ void Main::drawActivatedShrineBackgroundEffects(sf::RenderTarget& rt,
 ////////////////////////////////////////////////////////////
 [[nodiscard]] sf::RenderTexture& Main::getHexedCatRenderTexture(const sf::base::SizeT index)
 {
-    SFML_BASE_ASSERT(index < 2u);
-    return index == 0u ? rtHexedCat0 : rtHexedCat1;
+    SFML_BASE_ASSERT(index < hexedCatRenderTextures.size());
+    return hexedCatRenderTextures[index];
 }
 
 
@@ -2367,11 +2365,9 @@ void Main::enqueueHexedCatDrawCommand(const sf::CPUDrawableBatch& batch,
                                       const float                 phaseSeed,
                                       const float                 effectStrength)
 {
-    SFML_BASE_ASSERT(hexedCatDrawCommands.size() < 2u);
+    SFML_BASE_ASSERT(hexedCatDrawCommands.size() < maxHexedCatRenderTextures);
 
-    sf::RenderTexture* const hexedCatRTs[2] = {&rtHexedCat0, &rtHexedCat1};
-
-    auto&           rtHexedCat = *hexedCatRTs[hexedCatDrawCommands.size()];
+    auto&           rtHexedCat = hexedCatRenderTextures[hexedCatDrawCommands.size()];
     const sf::Vec2f rtCenter   = rtHexedCat.getSize().toVec2f() * 0.5f;
     auto            toLocal    = sf::Transform::fromPosition(rtCenter - position);
 

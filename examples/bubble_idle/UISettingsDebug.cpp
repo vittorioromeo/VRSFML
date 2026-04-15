@@ -38,6 +38,16 @@ void drawSpriteAttachmentControls(const float uiScale, const char* label, GameCo
 
 void Main::uiSettingsDrawDebugTab()
 {
+    ImGui::Text("Time scale: %.2fx", static_cast<double>(debugTimeScale));
+    ImGui::SetNextItemWidth(240.f * profile.uiScale);
+    ImGui::SliderFloat("##timescale", &debugTimeScale, 0.05f, 10.f, "%.2fx", ImGuiSliderFlags_Logarithmic);
+
+    ImGui::SameLine();
+    if (ImGui::Button("Reset##timescale"))
+        debugTimeScale = 1.f;
+
+    ImGui::Separator();
+
     if (ImGui::Button("Slide"))
     {
         fixedBgSlideTarget += 1.f;

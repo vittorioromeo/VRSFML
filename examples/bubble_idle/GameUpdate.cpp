@@ -13,8 +13,10 @@
 #include "SFML/Base/Clamp.hpp"
 
 ////////////////////////////////////////////////////////////
-void Main::gameLoopUpdateFrameWorld(const float deltaTimeMs, FrameInput& frameInput, FrameUpdateState& frameUpdate)
+void Main::gameLoopUpdateFrameWorld(const float realDeltaTimeMs, FrameInput& frameInput, FrameUpdateState& frameUpdate)
 {
+    const float deltaTimeMs = debugMode ? realDeltaTimeMs * debugTimeScale : realDeltaTimeMs;
+
     gameLoopUpdateTransitions(deltaTimeMs);
 
     sweepAndPrune.populate(pt->bubbles);

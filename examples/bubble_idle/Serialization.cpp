@@ -5,6 +5,7 @@
 #include "Doll.hpp"
 #include "GameConstants.hpp"
 #include "HellPortal.hpp"
+#include "HexSession.hpp"
 #include "Milestones.hpp"
 #include "Playthrough.hpp"
 #include "Profile.hpp"
@@ -21,6 +22,7 @@
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/Vector.hpp"
+
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-conversion"
@@ -46,6 +48,7 @@
 #include <exception>
 #include <filesystem>
 #include <stdexcept>
+#include <string>
 
 // NOLINTBEGIN(readability-identifier-naming, misc-use-internal-linkage)
 
@@ -361,6 +364,18 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Doll
 
                       p.tcActivation,
                       p.tcDeath);
+}
+
+
+////////////////////////////////////////////////////////////
+template <bool Serialize>
+void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<HexSession> auto&& p)
+{
+    twoWay<Serialize>(0u,
+                      j,
+
+                      p.catIdx,
+                      p.dolls);
 }
 
 
@@ -975,8 +990,8 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Play
                       p.bubbles,
                       p.cats,
                       p.shrines,
-                      p.dolls,
-                      p.copyDolls,
+                      p.hexSessions,
+                      p.copyHexSessions,
                       p.hellPortals,
 
                       p.nShrinesCompleted,
