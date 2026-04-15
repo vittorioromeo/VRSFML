@@ -347,7 +347,7 @@ TODO P0: update
 
 - ➡️ **Stack trace generation for errors and assertions:**
     - Human-readable stack traces are generated on any `sf::priv::err()` error message, assertion failure, or lifetime tracking error.
-    - Internally uses `cpptrace`: <https://github.com/jeremy-rifkin/cpptrace>.
+    - Internally uses a vendored copy of `libbacktrace` (Ian Lance Taylor): <https://github.com/ianlancetaylor/libbacktrace>.
     - Can be controlled via the CMake option `SFML_ENABLE_STACK_TRACES`.
 
 <br>
