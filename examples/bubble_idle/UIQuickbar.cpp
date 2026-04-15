@@ -88,7 +88,7 @@ bool Main::uiDrawQuickbarIconButton(const char* label, const bool selected, cons
 ////////////////////////////////////////////////////////////
 void Main::uiDrawQuickbarCopyCat(const sf::Vec2f quickBarPos, Cat& copyCat)
 {
-    const bool asWitchAndBusy = pt->copycatCopiedCatType == CatType::Witch && (anyCatCopyHexed() || !pt->copyDolls.empty());
+    const bool asWitchAndBusy = pt->copycatCopiedCatType == CatType::Witch && !pt->copyHexSessions.empty();
 
     const bool asWizardAndBusy = pt->copycatCopiedCatType == CatType::Wizard && isWizardBusy();
 

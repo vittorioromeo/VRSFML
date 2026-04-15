@@ -11,6 +11,7 @@
 #include "Countdown.hpp"
 #include "Doll.hpp"
 #include "HellPortal.hpp"
+#include "HexSession.hpp"
 #include "ParticleData.hpp"
 #include "ParticleType.hpp"
 #include "Shrine.hpp"
@@ -50,6 +51,8 @@
 #include "SFML/Base/Remainder.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
+
+#include <utility>
 
 #include <cstdio>
 
@@ -194,23 +197,27 @@ void Main::gameLoopUpdateTransitions(const float deltaTimeMs)
             playReversePopAt(cPos);
         }
 
-        if (!pt->dolls.empty())
+        const auto popOneDollOrSession = [&](sf::base::Vector<HexSession>& sessions)
         {
-            const auto cPos = pt->dolls.back().position;
-            pt->dolls.popBack();
+            while (!sessions.empty() && sessions.back().dolls.empty())
+                sessions.popBack();
+
+            if (sessions.empty())
+                return;
+
+            auto&      session = sessions.back();
+            const auto cPos    = session.dolls.back().position;
+            session.dolls.popBack();
+
+            if (session.dolls.empty())
+                sessions.popBack();
 
             spawnParticles(24, cPos, ParticleType::Star, 1.f, 0.5f);
             playReversePopAt(cPos);
-        }
+        };
 
-        if (!pt->copyDolls.empty())
-        {
-            const auto cPos = pt->copyDolls.back().position;
-            pt->copyDolls.popBack();
-
-            spawnParticles(24, cPos, ParticleType::Star, 1.f, 0.5f);
-            playReversePopAt(cPos);
-        }
+        popOneDollOrSession(pt->hexSessions);
+        popOneDollOrSession(pt->copyHexSessions);
 
         if (!pt->hellPortals.empty())
         {
@@ -222,8 +229,8 @@ void Main::gameLoopUpdateTransitions(const float deltaTimeMs)
         }
     }
 
-    const bool gameElementsRemoved = pt->cats.empty() && pt->shrines.empty() && pt->dolls.empty() &&
-                                     pt->copyDolls.empty() && pt->hellPortals.empty();
+    const bool gameElementsRemoved = pt->cats.empty() && pt->shrines.empty() && pt->hexSessions.empty() &&
+                                     pt->copyHexSessions.empty() && pt->hellPortals.empty();
 
     // Reset map extension and scroll, and remove bubbles outside of view
     if (gameElementsRemoved)
@@ -763,24 +770,19 @@ void Main::gameLoopUpdateCatActionAstro(const float /* deltaTimeMs */, Cat& cat)
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] Cat* Main::getHexedCat() const
+[[nodiscard]] Cat* Main::getSessionTargetCat(const HexSession& session) const
 {
-    for (Cat& cat : pt->cats)
-        if (cat.hexedTimer.hasValue())
-            return &cat;
+    if (session.catIdx >= pt->cats.size())
+        return nullptr;
 
-    return nullptr;
-}
+    Cat& cat = pt->cats[session.catIdx];
 
+    // Guard against index aliasing during prestige transition (cats get
+    // swap-to-back popped): a live session must point at an actually hexed cat.
+    if (!cat.isHexedOrCopyHexed())
+        return nullptr;
 
-////////////////////////////////////////////////////////////
-[[nodiscard]] Cat* Main::getCopyHexedCat() const
-{
-    for (Cat& cat : pt->cats)
-        if (cat.hexedCopyTimer.hasValue())
-            return &cat;
-
-    return nullptr;
+    return &cat;
 }
 
 
@@ -792,21 +794,21 @@ void Main::gameLoopUpdateCatActionAstro(const float /* deltaTimeMs */, Cat& cat)
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool Main::anyCatHexed() const
+[[nodiscard]] bool Main::canHexMore() const
 {
-    return sf::base::anyOf(pt->cats.begin(), pt->cats.end(), [](const Cat& cat) { return cat.hexedTimer.hasValue(); });
+    return pt->hexSessions.size() < maxConcurrentHexes;
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool Main::anyCatCopyHexed() const
+[[nodiscard]] bool Main::canCopyHexMore() const
 {
-    return sf::base::anyOf(pt->cats.begin(), pt->cats.end(), [](const Cat& cat) { return cat.hexedCopyTimer.hasValue(); });
+    return pt->copyHexSessions.size() < maxConcurrentHexes;
 }
 
 
 ////////////////////////////////////////////////////////////
-void Main::hexCat(Cat& cat, const bool copy)
+void Main::hexCat(Cat& cat, const SizeT /* catIdx */, const bool copy)
 {
     if (isCatBeingDragged(cat))
         stopDraggingCat(cat);
@@ -817,7 +819,6 @@ void Main::hexCat(Cat& cat, const bool copy)
     screenShakeAmount = 3.5f;
     screenShakeTimer  = 600.f;
 
-    (copy ? cat.hexedTimer : cat.hexedCopyTimer).reset();
     (copy ? cat.hexedCopyTimer : cat.hexedTimer).emplace(BidirectionalTimer{.direction = TimerDirection::Forward});
 
     cat.wobbleRadians = 0.f;
@@ -836,16 +837,23 @@ void Main::hexCat(Cat& cat, const bool copy)
 }
 
 
-void Main::gameLoopUpdateCatActionWitchImpl(const float /* deltaTimeMs */, Cat& cat, sf::base::Vector<Doll>& dollsToUse)
+void Main::gameLoopUpdateCatActionWitchImpl(const float /* deltaTimeMs */,
+                                            Cat&                          cat,
+                                            sf::base::Vector<HexSession>& sessionsToUse,
+                                            const SizeT                   nCatsToHex)
 {
     const auto maxCooldown = getComputedCooldownByCatTypeOrCopyCat(cat.type);
     const auto range       = getComputedRangeByCatTypeOrCopyCat(cat.type);
 
-    SizeT otherCatCount = 0u;
-    Cat*  selected      = nullptr;
+    const bool copy = &sessionsToUse == &pt->copyHexSessions;
 
-    for (Cat& otherCat : pt->cats)
+    // Collect all eligible candidates in range.
+    sf::base::Vector<SizeT> candidateIndices;
+
+    for (SizeT i = 0u; i < pt->cats.size(); ++i)
     {
+        const Cat& otherCat = pt->cats[i];
+
         if (otherCat.type == CatType::Duck)
             continue;
 
@@ -861,112 +869,128 @@ void Main::gameLoopUpdateCatActionWitchImpl(const float /* deltaTimeMs */, Cat& 
         if (otherCat.isHexedOrCopyHexed())
             continue;
 
-        ++otherCatCount;
-
-        // Select the current cat with probability `1/count` (reservoir sampling)
-        if (rng.getI<SizeT>(0, otherCatCount - 1) == 0)
-            selected = &otherCat;
+        candidateIndices.pushBack(i);
     }
 
-    if (otherCatCount > 0)
+    const SizeT otherCatCount = candidateIndices.size();
+
+    if (otherCatCount == 0u)
     {
-        SFML_BASE_ASSERT(selected != nullptr);
+        wastedEffort       = true;
+        cat.cooldown.value = maxCooldown;
+        return;
+    }
 
-        hexCat(*selected, /* copy */ &dollsToUse == &pt->copyDolls);
+    // Partial Fisher-Yates shuffle to pick `nToHex` distinct random indices.
+    const SizeT nToHex = sf::base::min(nCatsToHex, otherCatCount);
 
-        float buffPower = pt->psvPPWitchCatBuffDuration.currentValue();
-
-        if (pt->perm.witchCatBuffPowerScalesWithNCats)
-            buffPower += sf::base::ceil(sf::base::pow(static_cast<float>(otherCatCount), 0.9f)) * 0.5f;
-
-        if (pt->perm.witchCatBuffPowerScalesWithMapSize)
+    for (SizeT i = 0u; i < nToHex; ++i)
+    {
+        const SizeT j = rng.getI<SizeT>(i, otherCatCount - 1);
+        if (j != i)
         {
-            const float nMapExtensions = (pt->mapPurchased ? 1.f : 0.f) + static_cast<float>(pt->psvMapExtension.nPurchases);
-
-            buffPower += static_cast<float>(nMapExtensions) * 0.75f;
+            const SizeT tmp     = candidateIndices[i];
+            candidateIndices[i] = candidateIndices[j];
+            candidateIndices[j] = tmp;
         }
+    }
 
-        const auto nDollsToSpawn = sf::base::max(SizeT{2u},
-                                                 static_cast<SizeT>(
-                                                     buffPower * (pt->perm.witchCatBuffFewerDolls ? 1.f : 2.f) / 4.f));
+    float buffPower = pt->psvPPWitchCatBuffDuration.currentValue();
 
-        SFML_BASE_ASSERT(dollsToUse.empty());
+    if (pt->perm.witchCatBuffPowerScalesWithNCats)
+        buffPower += sf::base::ceil(sf::base::pow(static_cast<float>(otherCatCount), 0.9f)) * 0.5f;
 
-        statRitual(selected->type);
+    if (pt->perm.witchCatBuffPowerScalesWithMapSize)
+    {
+        const float nMapExtensions = (pt->mapPurchased ? 1.f : 0.f) + static_cast<float>(pt->psvMapExtension.nPurchases);
 
-        const auto isPositionFarFromOtherDolls = [&](const sf::Vec2f position) -> bool
-        {
-            for (const Doll& d : dollsToUse)
+        buffPower += static_cast<float>(nMapExtensions) * 0.75f;
+    }
+
+    const auto nDollsToSpawn = sf::base::max(SizeT{2u},
+                                             static_cast<SizeT>(
+                                                 buffPower * (pt->perm.witchCatBuffFewerDolls ? 1.f : 2.f) / 4.f));
+
+    const auto isPositionFarFromOtherDolls = [&](const sf::Vec2f position) -> bool
+    {
+        for (const HexSession& s : sessionsToUse)
+            for (const Doll& d : s.dolls)
                 if ((d.position - position).lengthSquared() < (256.f * 256.f))
                     return false;
 
-            return true;
-        };
+        return true;
+    };
 
-        const auto isOnTopOfAnyCat = [&](const sf::Vec2f position) -> bool
-        {
-            for (const Cat& c : pt->cats)
-                if ((c.position - position).lengthSquared() < c.getRadiusSquared())
-                    return true;
+    const auto isOnTopOfAnyCat = [&](const sf::Vec2f position) -> bool
+    {
+        for (const Cat& c : pt->cats)
+            if ((c.position - position).lengthSquared() < c.getRadiusSquared())
+                return true;
 
-            return false;
-        };
+        return false;
+    };
 
-        const auto isOnTopOfAnyShrine = [&](const sf::Vec2f position) -> bool
-        {
-            for (const Shrine& s : pt->shrines)
-                if ((s.position - position).lengthSquared() < s.getRadiusSquared())
-                    return true;
+    const auto isOnTopOfAnyShrine = [&](const sf::Vec2f position) -> bool
+    {
+        for (const Shrine& s : pt->shrines)
+            if ((s.position - position).lengthSquared() < s.getRadiusSquared())
+                return true;
 
-            return false;
-        };
+        return false;
+    };
 
-        const auto rndDollPosition = [&]
-        {
-            constexpr float offset = 64.f;
-            return rng.getVec2f({offset, offset}, {pt->getMapLimit() - offset - uiWindowWidth, boundaries.y - offset});
-        };
+    const auto rndDollPosition = [&]
+    {
+        constexpr float offset = 64.f;
+        return rng.getVec2f({offset, offset}, {pt->getMapLimit() - offset - uiWindowWidth, boundaries.y - offset});
+    };
 
-        const auto pickDollPosition = [&]
-        {
-            constexpr unsigned int maxRetries = 16u;
+    const auto pickDollPosition = [&]
+    {
+        constexpr unsigned int maxRetries = 16u;
 
-            for (unsigned int retryCount = 0; retryCount < maxRetries; ++retryCount)
-                if (const auto candidate = rndDollPosition();
-                    isPositionFarFromOtherDolls(candidate) && !isOnTopOfAnyCat(candidate) && !isOnTopOfAnyShrine(candidate))
-                    return candidate;
+        for (unsigned int retryCount = 0; retryCount < maxRetries; ++retryCount)
+            if (const auto candidate = rndDollPosition();
+                isPositionFarFromOtherDolls(candidate) && !isOnTopOfAnyCat(candidate) && !isOnTopOfAnyShrine(candidate))
+                return candidate;
 
-            return rndDollPosition();
-        };
+        return rndDollPosition();
+    };
+
+    for (SizeT s = 0u; s < nToHex; ++s)
+    {
+        const SizeT selectedIdx = candidateIndices[s];
+        Cat&        selected    = pt->cats[selectedIdx];
+
+        hexCat(selected, selectedIdx, copy);
+        statRitual(selected.type);
+
+        auto& session = sessionsToUse.emplaceBack(HexSession{.catIdx = selectedIdx, .dolls = {}});
+        session.dolls.reserve(nDollsToSpawn);
 
         for (SizeT i = 0u; i < nDollsToSpawn; ++i)
         {
-            auto& d = dollsToUse.emplaceBack(
+            auto& d = session.dolls.emplaceBack(
                 Doll{.position      = pickDollPosition(),
                      .wobbleRadians = rng.getF(0.f, sf::base::tau),
                      .buffPower     = buffPower,
-                     .catType       = selected->type == CatType::Copy ? pt->copycatCopiedCatType : selected->type,
+                     .catType       = selected.type == CatType::Copy ? pt->copycatCopiedCatType : selected.type,
                      .tcActivation  = {.startingValue = rng.getF(300.f, 600.f) * static_cast<float>(i + 1)},
                      .tcDeath       = {}});
 
             d.tcActivation.restart();
         }
 
-        const bool copy = &dollsToUse == &pt->copyDolls;
-        spawnParticlesWithHue(copy ? 180.f : 0.f, 128, selected->position, ParticleType::Hex, 0.5f, 0.35f);
-
-        cat.textStatusShakeEffect.bump(rngFast, 1.5f);
-        cat.hits += 1u;
-
-        if (!pt->dollTipShown)
-        {
-            pt->dollTipShown = true;
-            doTip("Click on all the dolls to\nreceive a powerful timed buff!\nYou might need to scroll...");
-        }
+        spawnParticlesWithHue(copy ? 180.f : 0.f, 128, selected.position, ParticleType::Hex, 0.5f, 0.35f);
     }
-    else
+
+    cat.textStatusShakeEffect.bump(rngFast, 1.5f);
+    cat.hits += 1u;
+
+    if (!pt->dollTipShown)
     {
-        wastedEffort = true;
+        pt->dollTipShown = true;
+        doTip("Click on all the dolls to\nreceive a powerful timed buff!\nYou might need to scroll...");
     }
 
     cat.cooldown.value = maxCooldown;
@@ -978,8 +1002,8 @@ void Main::gameLoopUpdateCatActionWitch(const float deltaTimeMs, Cat& cat)
 {
     SFEX_PROFILE_SCOPE_AUTOLABEL();
 
-    SFML_BASE_ASSERT(!anyCatHexed());
-    gameLoopUpdateCatActionWitchImpl(deltaTimeMs, cat, pt->dolls);
+    SFML_BASE_ASSERT(canHexMore());
+    gameLoopUpdateCatActionWitchImpl(deltaTimeMs, cat, pt->hexSessions, /* nCatsToHex */ 1u); // TODO P1: add PP for more cats to hex at once
 }
 
 
@@ -1205,8 +1229,8 @@ void Main::gameLoopUpdateCatActionCopy(const float deltaTimeMs, Cat& cat)
 
     if (pt->copycatCopiedCatType == CatType::Witch)
     {
-        SFML_BASE_ASSERT(!anyCatCopyHexed());
-        gameLoopUpdateCatActionWitchImpl(deltaTimeMs, cat, pt->copyDolls);
+        SFML_BASE_ASSERT(canCopyHexMore());
+        gameLoopUpdateCatActionWitchImpl(deltaTimeMs, cat, pt->copyHexSessions, /* nCatsToHex */ 1u);
     }
     else if (pt->copycatCopiedCatType == CatType::Wizard)
         gameLoopUpdateCatActionWizard(deltaTimeMs, cat);
@@ -1254,8 +1278,10 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
 
     (void)wizardcatSpin.updateAndStop(deltaTimeMs * 0.015f);
 
-    for (Cat& cat : pt->cats)
+    for (SizeT catIdx = 0u; catIdx < pt->cats.size(); ++catIdx)
     {
+        Cat& cat = pt->cats[catIdx];
+
         // Keep cat in boundaries
         const float catRadius = cat.getRadius();
 
@@ -1282,7 +1308,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
                 if (shrine.isInRange(cat.position) && getWitchCat() == nullptr && !anyCatHexedOrCopyHexed() &&
                     !cat.isHexedOrCopyHexed())
                 {
-                    hexCat(cat, /* copy */ false);
+                    hexCat(cat, catIdx, /* copy */ false);
                 }
             }
         }
@@ -1398,13 +1424,13 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
             }
         };
 
-        if (cat.type == CatType::Witch && !anyCatHexed())
+        if (cat.type == CatType::Witch && canHexMore())
             doWitchBehavior(/* hueMod */ 0.f, sounds.ritual, sounds.ritualend);
 
-        if (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Witch && !anyCatCopyHexed())
+        if (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Witch && canCopyHexMore())
             doWitchBehavior(/* hueMod */ 180.f, sounds.copyritual, sounds.copyritualend);
 
-        if (cat.hexedTimer.hasValue() || (cat.type == CatType::Witch && (anyCatHexed() || !pt->dolls.empty())))
+        if (cat.hexedTimer.hasValue() || (cat.type == CatType::Witch && !pt->hexSessions.empty()))
         {
             if (rngFast.getI(0, 10) > 5)
                 spawnParticle({.position = drawPosition + sf::Vec2f{rngFast.getF(-catRadius, +catRadius), catRadius - 9.f},
@@ -1422,8 +1448,8 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
             continue;
         }
 
-        if (cat.hexedCopyTimer.hasValue() || (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Witch &&
-                                              (anyCatCopyHexed() || !pt->copyDolls.empty())))
+        if (cat.hexedCopyTimer.hasValue() ||
+            (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Witch && !pt->copyHexSessions.empty()))
         {
             if (rngFast.getI(0, 10) > 5)
                 spawnParticle({.position = drawPosition + sf::Vec2f{rngFast.getF(-catRadius, +catRadius), catRadius - 9.f},
@@ -1747,10 +1773,10 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
     if (cat.isHexedOrCopyHexed())
         return false;
 
-    if (cat.type == CatType::Witch && anyCatHexed())
+    if (cat.type == CatType::Witch && !pt->hexSessions.empty())
         return false;
 
-    if (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Witch && anyCatCopyHexed())
+    if (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Witch && !pt->copyHexSessions.empty())
         return false;
 
     if (cat.type == CatType::Witch && cat.cooldown.value <= 10'000.f)
@@ -2229,11 +2255,9 @@ void Main::gameLoopUpdateShrines(const float deltaTimeMs)
 
 
 ////////////////////////////////////////////////////////////
-void Main::collectDollImpl(Doll& d, const sf::base::Vector<Doll>& dollsToUse)
+void Main::collectDollImpl(Doll& d, HexSession& session, const bool copy)
 {
     SFML_BASE_ASSERT(!d.tcDeath.hasValue());
-
-    const bool copy = &dollsToUse == &pt->copyDolls;
 
     statDollCollected();
 
@@ -2251,7 +2275,7 @@ void Main::collectDollImpl(Doll& d, const sf::base::Vector<Doll>& dollsToUse)
     d.tcDeath.emplace(TargetedCountdown{.startingValue = 750.f});
     d.tcDeath->restart();
 
-    const bool allDollsCollected = sf::base::allOf(dollsToUse.begin(), dollsToUse.end(), [&](const Doll& otherDoll) {
+    const bool allDollsCollected = sf::base::allOf(session.dolls.begin(), session.dolls.end(), [&](const Doll& otherDoll) {
         return otherDoll.tcDeath.hasValue();
     });
 
@@ -2289,7 +2313,7 @@ void Main::collectDollImpl(Doll& d, const sf::base::Vector<Doll>& dollsToUse)
 
         pt->buffCountdownsPerType[asIdx(d.catType)].value += buffDuration * factor;
 
-        const auto* hexedCat = copy ? getCopyHexedCat() : getHexedCat();
+        Cat* const hexedCat = getSessionTargetCat(session);
         SFML_BASE_ASSERT(hexedCat != nullptr);
 
         spawnParticle({.position = d.getDrawPosition(),
@@ -2316,86 +2340,95 @@ void Main::collectDollImpl(Doll& d, const sf::base::Vector<Doll>& dollsToUse)
 
 
 ////////////////////////////////////////////////////////////
-void Main::collectDoll(Doll& d)
+void Main::collectDoll(Doll& d, HexSession& session)
 {
-    collectDollImpl(d, pt->dolls);
+    collectDollImpl(d, session, /* copy */ false);
 }
 
 
 ////////////////////////////////////////////////////////////
-void Main::collectCopyDoll(Doll& d)
+void Main::collectCopyDoll(Doll& d, HexSession& session)
 {
-    collectDollImpl(d, pt->copyDolls);
+    collectDollImpl(d, session, /* copy */ true);
 }
 
 
 ////////////////////////////////////////////////////////////
-void Main::gameLoopUpdateDollsImpl(const float deltaTimeMs, const sf::Vec2f mousePos, sf::base::Vector<Doll>& dollsToUse, Cat* hexedCat)
+void Main::gameLoopUpdateDollsImpl(const float                   deltaTimeMs,
+                                   const sf::Vec2f               mousePos,
+                                   sf::base::Vector<HexSession>& sessionsToUse,
+                                   const bool                    copy)
 {
-    const bool copy = &dollsToUse == &pt->copyDolls;
-
-    if (dollsToUse.empty())
+    for (HexSession& session : sessionsToUse)
     {
-        if (hexedCat != nullptr)
-            (copy ? hexedCat->hexedCopyTimer : hexedCat->hexedTimer)->direction = TimerDirection::Backwards;
+        Cat* const hexedCat = getSessionTargetCat(session);
 
-        return;
-    }
-
-    // Can happen during prestige transition
-    if (hexedCat == nullptr)
-        return;
-
-    for (Doll& d : dollsToUse)
-    {
-        d.update(deltaTimeMs);
-
-        if (!d.tcActivation.isDone())
+        if (session.dolls.empty())
         {
-            (void)d.tcActivation.updateAndStop(deltaTimeMs);
+            if (hexedCat != nullptr)
+                (copy ? hexedCat->hexedCopyTimer : hexedCat->hexedTimer)->direction = TimerDirection::Backwards;
+
             continue;
         }
 
-        if (!d.tcDeath.hasValue())
+        // Can happen during prestige transition
+        if (hexedCat == nullptr)
+            continue;
+
+        for (Doll& d : session.dolls)
         {
-            if (rngFast.getF(0.f, 1.f) > 0.8f)
-                spawnParticle({.position      = d.getDrawPosition() + sf::Vec2f{rngFast.getF(-32.f, +32.f), 32.f},
-                               .velocity      = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
-                               .scale         = rngFast.getF(0.08f, 0.27f) * 0.5f,
-                               .scaleDecay    = 0.f,
-                               .accelerationY = -0.002f,
-                               .opacity       = 1.f,
-                               .opacityDecay  = rngFast.getF(0.00025f, 0.0015f),
-                               .rotation      = rngFast.getF(0.f, sf::base::tau),
-                               .torque        = rngFast.getF(-0.002f, 0.002f)},
-                              /* hue */ wrapHue(rngFast.getF(-50.f, 50.f) + (copy ? 180.f : 0.f)),
-                              ParticleType::Hex);
+            d.update(deltaTimeMs);
 
-            const bool click = (mBtnDown(getLMB(), /* penetrateUI */ false) ||
-                                playerInputState.fingerPositions[0].hasValue());
-
-            if (click && (mousePos - d.position).lengthSquared() <= d.getRadiusSquared())
+            if (!d.tcActivation.isDone())
             {
-                if (copy)
-                    collectCopyDoll(d);
-                else
-                    collectDoll(d);
+                (void)d.tcActivation.updateAndStop(deltaTimeMs);
+                continue;
+            }
+
+            if (!d.tcDeath.hasValue())
+            {
+                if (rngFast.getF(0.f, 1.f) > 0.8f)
+                    spawnParticle({.position      = d.getDrawPosition() + sf::Vec2f{rngFast.getF(-32.f, +32.f), 32.f},
+                                   .velocity      = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
+                                   .scale         = rngFast.getF(0.08f, 0.27f) * 0.5f,
+                                   .scaleDecay    = 0.f,
+                                   .accelerationY = -0.002f,
+                                   .opacity       = 1.f,
+                                   .opacityDecay  = rngFast.getF(0.00025f, 0.0015f),
+                                   .rotation      = rngFast.getF(0.f, sf::base::tau),
+                                   .torque        = rngFast.getF(-0.002f, 0.002f)},
+                                  /* hue */ wrapHue(rngFast.getF(-50.f, 50.f) + (copy ? 180.f : 0.f)),
+                                  ParticleType::Hex);
+
+                const bool click = (mBtnDown(getLMB(), /* penetrateUI */ false) ||
+                                    playerInputState.fingerPositions[0].hasValue());
+
+                if (click && (mousePos - d.position).lengthSquared() <= d.getRadiusSquared())
+                {
+                    if (copy)
+                        collectCopyDoll(d, session);
+                    else
+                        collectDoll(d, session);
+                }
+            }
+            else
+            {
+                (void)d.tcDeath->updateAndStop(deltaTimeMs);
+
+                spawnParticlesWithHue(wrapHue(d.hue + (copy ? 180.f : 0.f)),
+                                      static_cast<SizeT>(1 + 12 * d.getDeathProgress()),
+                                      d.getDrawPosition() + rngFast.getVec2f({-1.f, -1.f}, {1.f, 1.f}) * 32.f,
+                                      ParticleType::Hex,
+                                      sf::base::max(0.25f, 1.f - d.getDeathProgress()),
+                                      0.75f);
             }
         }
-        else
-        {
-            (void)d.tcDeath->updateAndStop(deltaTimeMs);
 
-            spawnParticlesWithHue(wrapHue(d.hue + (copy ? 180.f : 0.f)),
-                                  static_cast<SizeT>(1 + 12 * d.getDeathProgress()),
-                                  d.getDrawPosition() + rngFast.getVec2f({-1.f, -1.f}, {1.f, 1.f}) * 32.f,
-                                  ParticleType::Hex,
-                                  sf::base::max(0.25f, 1.f - d.getDeathProgress()),
-                                  0.75f);
-        }
+        sf::base::vectorEraseIf(session.dolls, [](const Doll& d) { return d.getDeathProgress() >= 1.f; });
     }
 
-    sf::base::vectorEraseIf(dollsToUse, [](const Doll& d) { return d.getDeathProgress() >= 1.f; });
+    // Drop sessions whose cat has since gone away (e.g. prestige transition).
+    sf::base::vectorEraseIf(sessionsToUse, [&](const HexSession& s) { return getSessionTargetCat(s) == nullptr; });
 }
 
 
@@ -2405,7 +2438,7 @@ void Main::gameLoopUpdateDolls(const float deltaTimeMs, const sf::Vec2f mousePos
     if (getWitchCat() == nullptr)
         return;
 
-    gameLoopUpdateDollsImpl(deltaTimeMs, mousePos, pt->dolls, getHexedCat());
+    gameLoopUpdateDollsImpl(deltaTimeMs, mousePos, pt->hexSessions, /* copy */ false);
 }
 
 
@@ -2415,7 +2448,7 @@ void Main::gameLoopUpdateCopyDolls(const float deltaTimeMs, const sf::Vec2f mous
     if (getCopyCat() == nullptr || pt->copycatCopiedCatType != CatType::Witch)
         return;
 
-    gameLoopUpdateDollsImpl(deltaTimeMs, mousePos, pt->copyDolls, getCopyHexedCat());
+    gameLoopUpdateDollsImpl(deltaTimeMs, mousePos, pt->copyHexSessions, /* copy */ true);
 }
 
 

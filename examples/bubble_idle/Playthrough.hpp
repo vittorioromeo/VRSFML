@@ -8,9 +8,9 @@
 #include "CatType.hpp"
 #include "Constants.hpp"
 #include "Countdown.hpp"
-#include "Doll.hpp"
 #include "ExactArray.hpp"
 #include "HellPortal.hpp"
+#include "HexSession.hpp"
 #include "Milestones.hpp"
 #include "PSVDataConstants.hpp"
 #include "PurchasableScalingValue.hpp"
@@ -223,8 +223,8 @@ struct Playthrough
     sf::base::Vector<Bubble>     bubbles;
     sf::base::Vector<Cat>        cats;
     sf::base::Vector<Shrine>     shrines;
-    sf::base::Vector<Doll>       dolls;
-    sf::base::Vector<Doll>       copyDolls;
+    sf::base::Vector<HexSession> hexSessions;
+    sf::base::Vector<HexSession> copyHexSessions;
     sf::base::Vector<HellPortal> hellPortals;
 
     //
