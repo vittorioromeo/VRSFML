@@ -1,0 +1,408 @@
+#include "SFML/Base/FunctionRef.hpp"
+
+#include "SFML/Base/Macros.hpp"
+
+#include <Doctest.hpp>
+
+
+namespace
+{
+namespace FunctionRefTest // to support unity builds
+{
+
+////////////////////////////////////////////////////////////
+int freeFunction()
+{
+    return 42;
+}
+
+
+////////////////////////////////////////////////////////////
+int freeFunctionWithArg(int x)
+{
+    return x * 2;
+}
+
+
+////////////////////////////////////////////////////////////
+int freeFunctionSum(int a, int b, int c)
+{
+    return a + b + c;
+}
+
+
+////////////////////////////////////////////////////////////
+void freeFunctionVoid(int& out)
+{
+    out = 777;
+}
+
+
+////////////////////////////////////////////////////////////
+struct CallableConst
+{
+    int value;
+
+    int operator()() const
+    {
+        return value;
+    }
+};
+
+
+////////////////////////////////////////////////////////////
+struct CallableMutable
+{
+    int counter = 0;
+
+    int operator()()
+    {
+        return ++counter;
+    }
+};
+
+
+////////////////////////////////////////////////////////////
+struct CallableWithArgs
+{
+    int multiplier;
+
+    int operator()(int a, int b) const
+    {
+        return (a + b) * multiplier;
+    }
+};
+
+
+////////////////////////////////////////////////////////////
+int takesFunctionRef(sf::base::FunctionRef<int()> f)
+{
+    return f();
+}
+
+
+////////////////////////////////////////////////////////////
+int takesFunctionRefWithArg(sf::base::FunctionRef<int(int)> f, int x)
+{
+    return f(x);
+}
+
+
+////////////////////////////////////////////////////////////
+int sumViaRef(sf::base::FunctionRef<int(int, int)> f)
+{
+    return f(3, 4) + f(5, 6);
+}
+
+
+////////////////////////////////////////////////////////////
+TEST_CASE("[Base] Base/FunctionRef.hpp")
+{
+    SECTION("Construction from free function pointer")
+    {
+        sf::base::FunctionRef<int()> fr(freeFunction);
+        CHECK(fr() == 42);
+    }
+
+    SECTION("Construction from free function with argument")
+    {
+        sf::base::FunctionRef<int(int)> fr(freeFunctionWithArg);
+        CHECK(fr(5) == 10);
+        CHECK(fr(-3) == -6);
+    }
+
+    SECTION("Construction from free function with multiple arguments")
+    {
+        sf::base::FunctionRef<int(int, int, int)> fr(freeFunctionSum);
+        CHECK(fr(1, 2, 3) == 6);
+        CHECK(fr(10, 20, 30) == 60);
+    }
+
+    SECTION("Construction from stateless lambda")
+    {
+        auto                         lam = [] { return 99; };
+        sf::base::FunctionRef<int()> fr(lam);
+        CHECK(fr() == 99);
+    }
+
+    SECTION("Construction from stateful lambda (capture by value)")
+    {
+        int                          x   = 7;
+        auto                         lam = [x] { return x * 3; };
+        sf::base::FunctionRef<int()> fr(lam);
+        CHECK(fr() == 21);
+    }
+
+    SECTION("Construction from stateful lambda (capture by reference)")
+    {
+        int  x   = 10;
+        auto lam = [&x]
+        {
+            x += 5;
+            return x;
+        };
+        sf::base::FunctionRef<int()> fr(lam);
+        CHECK(fr() == 15);
+        CHECK(fr() == 20);
+        CHECK(x == 20);
+    }
+
+    SECTION("Construction from const functor")
+    {
+        const CallableConst          cc{123};
+        sf::base::FunctionRef<int()> fr(cc);
+        CHECK(fr() == 123);
+    }
+
+    SECTION("Construction from mutable functor")
+    {
+        CallableMutable              cm;
+        sf::base::FunctionRef<int()> fr(cm);
+        CHECK(fr() == 1);
+        CHECK(fr() == 2);
+        CHECK(fr() == 3);
+        CHECK(cm.counter == 3);
+    }
+
+    SECTION("Construction from functor with arguments")
+    {
+        const CallableWithArgs               cwa{3};
+        sf::base::FunctionRef<int(int, int)> fr(cwa);
+        CHECK(fr(2, 3) == 15);
+        CHECK(fr(10, 0) == 30);
+    }
+
+    SECTION("Use as function parameter - lambda rvalue")
+    {
+        CHECK(takesFunctionRef([] { return 1000; }) == 1000);
+    }
+
+    SECTION("Use as function parameter - free function")
+    {
+        CHECK(takesFunctionRef(freeFunction) == 42);
+    }
+
+    SECTION("Use as function parameter - stateful lambda rvalue")
+    {
+        int y = 4;
+        CHECK(takesFunctionRefWithArg([y](int x) { return x * y; }, 9) == 36);
+    }
+
+    SECTION("Use as function parameter - functor rvalue")
+    {
+        CHECK(takesFunctionRef(CallableConst{77}) == 77);
+    }
+
+    SECTION("Use as function parameter - multiple invocations")
+    {
+        // (3+4)*2 + (5+6)*2 = 14 + 22 = 36
+        CHECK(sumViaRef(CallableWithArgs{2}) == 36);
+    }
+
+    SECTION("Use as function parameter - lambda with reference capture")
+    {
+        int sum = 0;
+        takesFunctionRefWithArg(
+            [&sum](int x)
+        {
+            sum += x;
+            return sum;
+        },
+            10);
+        takesFunctionRefWithArg(
+            [&sum](int x)
+        {
+            sum += x;
+            return sum;
+        },
+            20);
+        CHECK(sum == 30);
+    }
+
+    SECTION("Void return type")
+    {
+        int                           out = 0;
+        auto                          lam = [&out] { out = 42; };
+        sf::base::FunctionRef<void()> fr(lam);
+        fr();
+        CHECK(out == 42);
+    }
+
+    SECTION("Void return type - free function")
+    {
+        int                               out = 0;
+        sf::base::FunctionRef<void(int&)> fr(freeFunctionVoid);
+        fr(out);
+        CHECK(out == 777);
+    }
+
+    SECTION("Forward by lvalue reference argument")
+    {
+        int  value = 5;
+        auto lam   = [](int& v) { v *= 3; };
+
+        sf::base::FunctionRef<void(int&)> fr(lam);
+        fr(value);
+        CHECK(value == 15);
+    }
+
+    SECTION("Forward by rvalue reference argument")
+    {
+        struct Move
+        {
+            int v;
+            Move(int x) : v(x)
+            {
+            }
+            Move(const Move&)            = delete;
+            Move& operator=(const Move&) = delete;
+            Move(Move&& other) noexcept : v(other.v)
+            {
+                other.v = -1;
+            }
+            Move& operator=(Move&& other) noexcept
+            {
+                v       = other.v;
+                other.v = -1;
+                return *this;
+            }
+        };
+
+        auto                               lam = [](Move&& m) { return m.v; };
+        sf::base::FunctionRef<int(Move&&)> fr(lam);
+
+        Move m(88);
+        CHECK(fr(SFML_BASE_MOVE(m)) == 88);
+    }
+
+    SECTION("Copyable and trivially small")
+    {
+        sf::base::FunctionRef<int()> fr1(freeFunction);
+        sf::base::FunctionRef<int()> fr2 = fr1; // copy
+        CHECK(fr2() == 42);
+
+        sf::base::FunctionRef<int()> fr3(fr1); // copy-construct
+        CHECK(fr3() == 42);
+
+        // FunctionRef should fit in two pointers (obj + thunk)
+        static_assert(sizeof(sf::base::FunctionRef<int()>) <= 2 * sizeof(void*));
+    }
+
+    SECTION("Can rebind via assignment")
+    {
+        auto lam1 = [] { return 1; };
+        auto lam2 = [] { return 2; };
+
+        sf::base::FunctionRef<int()> fr(lam1);
+        CHECK(fr() == 1);
+
+        fr = lam2;
+        CHECK(fr() == 2);
+
+        fr = freeFunction;
+        CHECK(fr() == 42);
+    }
+
+    SECTION("Different lambdas with same signature")
+    {
+        auto a = [] { return 11; };
+        auto b = [] { return 22; };
+
+        sf::base::FunctionRef<int()> fa(a);
+        sf::base::FunctionRef<int()> fb(b);
+
+        CHECK(fa() == 11);
+        CHECK(fb() == 22);
+    }
+
+    SECTION("Referenced object is not copied")
+    {
+        struct Tracker
+        {
+            int* copies;
+            int  value;
+
+            Tracker(int* c, int v) : copies(c), value(v)
+            {
+            }
+
+            Tracker(const Tracker& other) : copies(other.copies), value(other.value)
+            {
+                ++*copies;
+            }
+
+            Tracker(Tracker&&)                 = delete;
+            Tracker& operator=(const Tracker&) = delete;
+            Tracker& operator=(Tracker&&)      = delete;
+
+            int operator()() const
+            {
+                return value;
+            }
+        };
+
+        int     copies = 0;
+        Tracker t(&copies, 321);
+
+        sf::base::FunctionRef<int()> fr(t);
+        CHECK(fr() == 321);
+        CHECK(copies == 0);
+
+        // Multiple invocations still don't copy
+        (void)fr();
+        (void)fr();
+        CHECK(copies == 0);
+    }
+
+    SECTION("Pass non-copyable callable as parameter")
+    {
+        struct NonCopyable
+        {
+            int value;
+
+            NonCopyable(int v) : value(v)
+            {
+            }
+
+            NonCopyable(const NonCopyable&)            = delete;
+            NonCopyable& operator=(const NonCopyable&) = delete;
+
+            int operator()() const
+            {
+                return value;
+            }
+        };
+
+        NonCopyable nc(555);
+        CHECK(takesFunctionRef(nc) == 555);
+    }
+
+    SECTION("Return by reference")
+    {
+        int  x   = 0;
+        auto lam = [&x]() -> int& { return x; };
+
+        sf::base::FunctionRef<int&()> fr(lam);
+        fr() = 99;
+        CHECK(x == 99);
+    }
+
+    SECTION("Same lambda called many times with changing capture")
+    {
+        int  accumulator = 0;
+        auto lam         = [&accumulator](int v)
+        {
+            accumulator += v;
+            return accumulator;
+        };
+
+        sf::base::FunctionRef<int(int)> fr(lam);
+        CHECK(fr(1) == 1);
+        CHECK(fr(2) == 3);
+        CHECK(fr(7) == 10);
+        CHECK(accumulator == 10);
+    }
+}
+
+} // namespace FunctionRefTest
+} // namespace

@@ -54,7 +54,7 @@
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/OffsetOf.hpp"
-#include "SFML/Base/FixedFunction.hpp"
+#include "SFML/Base/FunctionRef.hpp"
 #include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/LambdaMacros.hpp"
@@ -648,9 +648,9 @@ void RenderTarget::immediateDrawDrawableBatch(const CPUDrawableBatch& drawableBa
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::immediateDrawInstancedVertices(const DrawInstancedVerticesSettings&                    settings,
-                                                  base::FixedFunction<void(InstanceAttributeBinder&), 64> setupFn,
-                                                  const RenderStates&                                     states)
+void RenderTarget::immediateDrawInstancedVertices(const DrawInstancedVerticesSettings&              settings,
+                                                  base::FunctionRef<void(InstanceAttributeBinder&)> setupFn,
+                                                  const RenderStates&                               states)
 {
     // Nothing to draw or inactive target
     if (settings.vertexSpan.isNullOrEmpty() || settings.instanceCount == 0u || !setActive(true))
@@ -670,9 +670,9 @@ void RenderTarget::immediateDrawInstancedVertices(const DrawInstancedVerticesSet
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::immediateDrawInstancedIndexedVertices(const DrawInstancedIndexedVerticesSettings& settings,
-                                                         base::FixedFunction<void(InstanceAttributeBinder&), 64> setupFn,
-                                                         const RenderStates& states)
+void RenderTarget::immediateDrawInstancedIndexedVertices(const DrawInstancedIndexedVerticesSettings&       settings,
+                                                         base::FunctionRef<void(InstanceAttributeBinder&)> setupFn,
+                                                         const RenderStates&                               states)
 {
     // Nothing to draw or inactive target
     if (settings.vertexSpan.isNullOrEmpty() || settings.indexSpan.isNullOrEmpty() || settings.instanceCount == 0u ||
@@ -907,9 +907,9 @@ void RenderTarget::drawPersistentMappedIndexedVertices(const DrawPersistentMappe
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::drawInstancedVertices(const DrawInstancedVerticesSettings&                           settings,
-                                         const base::FixedFunction<void(InstanceAttributeBinder&), 64>& setupFn,
-                                         const RenderStates&                                            states)
+void RenderTarget::drawInstancedVertices(const DrawInstancedVerticesSettings&              settings,
+                                         base::FunctionRef<void(InstanceAttributeBinder&)> setupFn,
+                                         const RenderStates&                               states)
 {
     flush();
     immediateDrawInstancedVertices(settings, setupFn, states);
@@ -917,9 +917,9 @@ void RenderTarget::drawInstancedVertices(const DrawInstancedVerticesSettings&   
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::drawInstancedIndexedVertices(const DrawInstancedIndexedVerticesSettings&                    settings,
-                                                const base::FixedFunction<void(InstanceAttributeBinder&), 64>& setupFn,
-                                                const RenderStates&                                            states)
+void RenderTarget::drawInstancedIndexedVertices(const DrawInstancedIndexedVerticesSettings&       settings,
+                                                base::FunctionRef<void(InstanceAttributeBinder&)> setupFn,
+                                                const RenderStates&                               states)
 {
     flush();
     immediateDrawInstancedIndexedVertices(settings, setupFn, states);
