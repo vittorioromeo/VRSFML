@@ -600,6 +600,7 @@ struct Main
     sf::Texture txCloudBtn{sf::Texture::loadFromFile("resources/cloudbtn.png", {.smooth = true}).value()};
     sf::Texture txCloudBtnSmall{sf::Texture::loadFromFile("resources/cloudbtnsmall.png", {.smooth = true}).value()};
     sf::Texture txCloudBtnSquare{sf::Texture::loadFromFile("resources/cloudbtnsquare.png", {.smooth = true}).value()};
+    sf::Texture txCloudBtnSquare2{sf::Texture::loadFromFile("resources/cloudbtnsquare2.png", {.smooth = true}).value()};
 
     ////////////////////////////////////////////////////////////
     // UI texture atlas
@@ -2229,12 +2230,15 @@ struct Main
         return makePrestigePurchasablePPButtonPSV(buttonLabel, psv);
     }
 
+    void                           uiDrawCloudWindowBackground();
+    [[nodiscard]] bool             uiDrawQuickbarIconButton(const char* label, bool selected, float scaleMult = 1.f);
     void                           uiDrawQuickbarCopyCat(sf::Vec2f quickBarPos, Cat& copyCat);
     void                           uiDrawQuickbarBackgroundSelector(sf::Vec2f quickBarPos);
     void                           uiDrawQuickbarBGMSelector(sf::Vec2f quickBarPos);
     void                           uiDrawQuickbarQuickSettings(sf::Vec2f quickBarPos);
     void                           uiDrawQuickbarVolumeControls(sf::Vec2f quickBarPos);
     void                           uiDrawQuickbar();
+    void                           uiDrawMinimapZoomButtons();
     void                           uiDraw(sf::Vec2f mousePos);
     void                           uiDpsMeter();
     void                           uiSpeedrunning();
