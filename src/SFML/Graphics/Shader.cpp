@@ -347,13 +347,6 @@ Shader::UniformLocation::UniformLocation(int location) : m_value(location)
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] int Shader::UniformLocation::getNativeHandle() const
-{
-    return m_value;
-}
-
-
-////////////////////////////////////////////////////////////
 class [[nodiscard]] Shader::UniformBinder
 {
 public:
