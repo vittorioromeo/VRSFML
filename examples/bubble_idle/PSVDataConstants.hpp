@@ -62,7 +62,7 @@ inline constexpr PSVData catUniCooldownMult //
 inline constexpr PSVData catUniRangeDiv //
     {.nMaxPurchases = 9u,
      .cost          = {.initial = 10'000'000.f, .exponential = 1.85f},
-     .value         = {.initial = 0.6f, .multiplicative = -0.05f, .exponential = 0.8f, .flat = 0.4f}};
+     .value         = {.initial = 1.f, .multiplicative = -0.05f, .exponential = 0.8f, .flat = 0.4f}};
 
 inline constexpr PSVData catDevil //
     {.nMaxPurchases = 64u, .cost = {.initial = 15000.f, .exponential = 1.7f, .flat = -7000.f}, .value = {}};

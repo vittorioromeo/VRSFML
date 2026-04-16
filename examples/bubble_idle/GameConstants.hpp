@@ -145,6 +145,27 @@ struct [[nodiscard]] GameConstants
     sf::Vec2f        copyMaskOffset{265.f, 115.f};
     sf::Vec2f        copyMaskOrigin{353.f, 295.f};
 
+    // Wardencat composite layout. Offsets are applied on top of the cat's
+    // `visualCatAnchor` and inherit the usual cat scaling. The guardhouse
+    // parts are drawn without rotation so they don't visibly swing while the
+    // cat body wobbles; only the cat adds an extra tail-like rock.
+    sf::Vec2f wardenGuardhouseBackOffset{0.f, 0.f};
+    sf::Vec2f wardenGuardhouseFrontOffset{0.f, 0.f};
+    sf::Vec2f wardenCatBodyOffset{0.f, 0.f};
+    sf::Vec2f wardenCatPawOffset{0.f, 0.f};
+    float     wardenCatBodyWobbleRadians = 0.12f;
+
+    // Rotation-pivot offsets added to the face sprites' origins so the
+    // eyelids / yawn rotate around a point that actually lines up with the
+    // wardencat body rather than their own texture centers.
+    sf::Vec2f wardenCatEyelidOriginOffset{0.f, 0.f};
+    sf::Vec2f wardenCatYawnOriginOffset{0.f, 0.f};
+
+    // Scale multiplier applied on top of the shared cat scale for the Warden
+    // paw specifically. Handy because the paw is always visible for Warden
+    // and its art may not match the default cat-paw proportions.
+    float wardenCatPawScale = 1.f;
+
     float catNameTextOffsetY    = 52.f;
     float catStatusTextOffsetY  = 72.f;
     float catCooldownBarOffsetY = 4.f;

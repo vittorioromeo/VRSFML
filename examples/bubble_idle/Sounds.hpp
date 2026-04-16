@@ -63,6 +63,7 @@ struct Sounds
     LoadedSound sleep{"sleep.ogg"};
     LoadedSound glasshit{"glasshit.ogg"};
     LoadedSound glassbreak{"glassbreak.ogg"};
+    LoadedSound bonk{"bonk.ogg"};
 
     ////////////////////////////////////////////////////////////
     void setupSounds(const bool volumeOnly, const float volumeMult)
@@ -123,6 +124,7 @@ struct Sounds
         setupWorldSound(smokebomb);
         setupWorldSound(quack);
         setupWorldSound(sleep, /* attenuationMult */ 0.6f);
+        setupWorldSound(bonk);
         setupWorldSound(glasshit);
         setupWorldSound(glassbreak);
 

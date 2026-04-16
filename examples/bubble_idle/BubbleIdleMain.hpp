@@ -690,6 +690,13 @@ struct Main
     sf::Rect2f txrBubbleNova{addImgResourceToAtlas("bubble4.png")};
     sf::Rect2f txrBubbleGlass{addImgResourceToAtlas("bubbleglass.png")};
     sf::Rect2f txrCat{addImgResourceToAtlas("cat.png")};
+
+    // Wardencat composite: drawn back-to-front as guardhouse_back, wardencat
+    // (with a tail-like body wobble), guardhouse_front, wardencatpaw.
+    sf::Rect2f txrGuardhouseBack{addImgResourceToAtlas("guardhouse_back.png")};
+    sf::Rect2f txrWardenCat{addImgResourceToAtlas("wardencat.png")};
+    sf::Rect2f txrGuardhouseFront{addImgResourceToAtlas("guardhouse_front.png")};
+    sf::Rect2f txrWardencatPaw{addImgResourceToAtlas("wardencatpaw.png")};
     sf::Rect2f txrUniCat{addImgResourceToAtlas("unicat3.png")};
     sf::Rect2f txrUniCat2{addImgResourceToAtlas("unicat2.png")};
     sf::Rect2f txrUniCatWings{addImgResourceToAtlas("unicatwings.png")};
@@ -3052,7 +3059,7 @@ struct Main
              .velocity = rngFast.getVec2f({-0.1f, -1.65f}, {0.1f, -1.35f}) * 0.395f,
              .scale = sf::base::clamp(1.f + 0.1f * static_cast<float>(comboState.combo + 1) / 1.75f, 1.f, 3.f) * 0.5f,
              .scaleDecay    = 0.f,
-             .accelerationY = 0.0039f,
+             .accelerationY = 0.0035f,
              .opacity       = 1.f,
              .opacityDecay  = 0.0015f,
              .rotation      = 0.f,

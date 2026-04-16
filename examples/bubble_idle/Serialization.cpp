@@ -901,6 +901,14 @@ DEFINE_TWO_WAY_SERIALIZER(GameConstants)
     FIELD(regularPawDraggedOffset);
     FIELD(copyMaskOffset);
     FIELD(copyMaskOrigin);
+    FIELD(wardenGuardhouseBackOffset);
+    FIELD(wardenGuardhouseFrontOffset);
+    FIELD(wardenCatBodyOffset);
+    FIELD(wardenCatPawOffset);
+    FIELD(wardenCatBodyWobbleRadians);
+    FIELD(wardenCatEyelidOriginOffset);
+    FIELD(wardenCatYawnOriginOffset);
+    FIELD(wardenCatPawScale);
     FIELD(catNameTextOffsetY);
     FIELD(catStatusTextOffsetY);
     FIELD(catCooldownBarOffsetY);
