@@ -320,7 +320,7 @@ The night-shift cat: patrols their range and gently shakes any napping cat awake
 
 Cooldown: 30s base.
 
-Wardencats can also fall asleep — and yes, they will wake each other up.)", // TODO: art polish, lore polish
+Wardencats can also fall asleep -- and yes, they will wake each other up.)", // TODO: art polish, lore polish
             R"(
 ~~ Witchcat ~~
 (unique cat)

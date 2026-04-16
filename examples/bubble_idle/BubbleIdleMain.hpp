@@ -1021,7 +1021,7 @@ struct Main
     // Combo-bubble payout queue. Each entry holds a swarm of coin particles
     // spawned at the popped bubble. They first burst outward physically (with
     // exponential damping, so they settle to a near-stop), then transition
-    // into the rising-pitch collection sequence — when the collection delay
+    // into the rising-pitch collection sequence -- when the collection delay
     // ticks, one settled coin is consumed and a regular `EarnedCoinParticle`
     // is spawned at its position to fly to the money text on the HUD.
     struct [[nodiscard]] BurstingComboCoin
@@ -3250,7 +3250,7 @@ struct Main
 
         // Combo bubbles are interactive only with player clicks: cats can't
         // pop them (silently ignore the swing) and they never get destroyed
-        // or replaced — they fall off the bottom on their own (ephemeral).
+        // or replaced -- they fall off the bottom on their own (ephemeral).
         if (bubble.type == BubbleType::Combo && !byPlayerClick)
             return;
 

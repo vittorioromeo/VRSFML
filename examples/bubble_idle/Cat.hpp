@@ -68,7 +68,7 @@ struct [[nodiscard]] Cat
     float     pawBonkReturnMs         = 0.f;
     float     pawBonkReturnDurationMs = 0.f;
 
-    // While > 0 the cat rocks side-to-side like a struck pendulum — used by
+    // While > 0 the cat rocks side-to-side like a struck pendulum -- used by
     // the Warden's bonk to give the target a visible reaction. Ticked down
     // each frame; transient.
     float bonkImpactMs = 0.f;

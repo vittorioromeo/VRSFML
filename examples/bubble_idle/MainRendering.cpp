@@ -453,7 +453,7 @@ void Main::gameLoopDrawMinimapIcons()
         &txrMMUni,
         &txrMMDevil,
         &txrMMAstro,
-        &txrMMNormal, // Warden — TODO: dedicated minimap icon (reusing Normal)
+        &txrMMNormal, // Warden -- TODO: dedicated minimap icon (reusing Normal)
         &txrMMWitch,
         &txrMMWizard,
         &txrMMMouse,
@@ -586,7 +586,7 @@ void Main::gameLoopDrawCats(const sf::Vec2f mousePos, const float deltaTimeMs)
         uniCatTxr,    // Uni
         devilCatTxr,  // Devil
         &txrAstroCat, // Astro
-        &txrWardenCat, // Warden (composite — guardhouse drawn around it)
+        &txrWardenCat, // Warden (composite -- guardhouse drawn around it)
 
         &txrWitchCat,    // Witch
         &txrWizardCat,   // Wizard
@@ -626,7 +626,7 @@ void Main::gameLoopDrawCats(const sf::Vec2f mousePos, const float deltaTimeMs)
         uniCatTailTxr,    // Uni
         devilCatTailTxr,  // Devil
         &txrAstroCatTail, // Astro
-        &txrCatTail,      // Warden — TODO: dedicated tail texture (reusing Normal)
+        &txrCatTail,      // Warden -- TODO: dedicated tail texture (reusing Normal)
 
         &txrWitchCatTail,    // Witch
         &txrWizardCatTail,   // Wizard
@@ -1718,7 +1718,7 @@ void Main::gameLoopDrawDolls(const sf::Vec2f mousePos)
         &txrDollUni,      // Uni
         &txrDollDevil,    // Devil
         &txrDollAstro,    // Astro
-        &txrDollNormal,   // Warden — TODO: dedicated doll texture (reusing Normal)
+        &txrDollNormal,   // Warden -- TODO: dedicated doll texture (reusing Normal)
         &txrDollNormal,   // Witch (missing, hexing a witchcat is not possible, even with copycat)
         &txrDollWizard,   // Wizard
         &txrDollMouse,    // Mouse
