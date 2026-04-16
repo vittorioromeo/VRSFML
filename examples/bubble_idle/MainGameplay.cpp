@@ -678,7 +678,7 @@ void Main::gameLoopUpdateBuffText()
         "Shooting Stars (Star Spawn Chance) ", // Uni
         devilBuffName,                         // Devil
         "Endless Flight (Looping Astrocats)",  // Astro
-        "Wide Awake (Faster Wakeups)",         // Warden — TODO P1: actually wire the buff effect
+        "Wide Awake (Faster Wakeups)",         // Warden -- TODO P1: actually wire the buff effect
 
         "N/A",                                         // Witch
         "Mana Overload (x3.5 Mana Regen)",             // Wizard

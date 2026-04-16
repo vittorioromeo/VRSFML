@@ -418,11 +418,11 @@ void Main::gameLoopUpdateBubbles(const float deltaTimeMs)
         if (bubble.position.y - bubble.radius > boundaries.y)
         {
             // Event-spawned bubbles despawn instead of being recycled at the
-            // top — the post-loop `vectorEraseIf` removes them.
+            // top -- the post-loop `vectorEraseIf` removes them.
             if (bubble.ephemeral)
             {
                 // A Combo bubble that was clicked at least once still pays out
-                // when it slips past the bottom — only the never-clicked one
+                // when it slips past the bottom -- only the never-clicked one
                 // disappears silently. (Normally the per-bubble combo timer
                 // fires before this happens; this is the safety net.)
                 if (bubble.type == BubbleType::Combo && bubble.comboClickCount > 0u)
@@ -619,7 +619,7 @@ void Main::gameLoopUpdateComboBubblePayouts(const float deltaTimeMs)
 
     for (PendingComboBubblePayout& p : pendingComboBubblePayouts)
     {
-        // Phase 1: burst — every coin drifts outward, decelerating each frame.
+        // Phase 1: burst -- every coin drifts outward, decelerating each frame.
         for (BurstingComboCoin& c : p.coins)
         {
             if (c.collected)
@@ -629,13 +629,13 @@ void Main::gameLoopUpdateComboBubblePayouts(const float deltaTimeMs)
             c.velocity *= dampingFrame;
         }
 
-        // Phase 2: settle delay — coins keep drifting/damping but no
+        // Phase 2: settle delay -- coins keep drifting/damping but no
         // collection happens yet so the player sees the explosion settle.
         if (p.settleCountdown.updateAndStop(deltaTimeMs) != CountdownStatusStop::AlreadyFinished &&
             p.settleCountdown.value > 0.f)
             continue;
 
-        // Phase 3: collect — every `coinDelayMs`, take the next settled coin,
+        // Phase 3: collect -- every `coinDelayMs`, take the next settled coin,
         // route it to the HUD via the existing `EarnedCoinParticle` path, and
         // play the rising-pitch coin chime. Pitch climbs with `coinsCollected`.
         if (p.collectDelay.updateAndLoop(deltaTimeMs, coinDelayMs) != CountdownStatusLoop::Looping)
@@ -1241,7 +1241,7 @@ void Main::gameLoopUpdateCatActionWarden(const float /* deltaTimeMs */, Cat& cat
         if (otherCat.napTransition->value < 0.9f)
             continue;
 
-        // Already in the wake-fade — don't double-trigger.
+        // Already in the wake-fade -- don't double-trigger.
         if (otherCat.napTransition->direction == TimerDirection::Backwards)
             continue;
 
@@ -1442,7 +1442,7 @@ void Main::gameLoopUpdateNapScheduler(const float deltaTimeMs)
         return;
 
     // Once the player has prestiged at least once, the nap system skips both
-    // the "need 3 cats" minimum and the scripted tutorial — random naps kick
+    // the "need 3 cats" minimum and the scripted tutorial -- random naps kick
     // in right away.
     const bool prestigedBefore = pt->psvBubbleValue.nPurchases > 0u;
 
@@ -1492,7 +1492,7 @@ void Main::gameLoopUpdateNapScheduler(const float deltaTimeMs)
             cat.napScheduleCountdownMs = rng.getF(minNextNapMs, maxNextNapMs);
 
         // Pause the schedule countdown while the cat is napping or otherwise
-        // ineligible — it'll resume once the cat is awake again.
+        // ineligible -- it'll resume once the cat is awake again.
         if (!canCatNap(cat))
             continue;
 
@@ -2551,7 +2551,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
 
         // Passive body-repel for Unicats: nudges bubbles out of the cat's
         // body so a freshly-spawned star bubble never hides under the cat.
-        // Intentionally weak and short-range — no countdown side-effects.
+        // Intentionally weak and short-range -- no countdown side-effects.
         if (cat.type == CatType::Uni || (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Uni))
         {
             constexpr float uniBodyRepelStrength = 0.00018f; // per-ms velocity push at body contact
@@ -3437,7 +3437,7 @@ void Main::gameLoopUpdateEvents(const float deltaTimeMs)
     }
 
     // Per-kind update: advance the event's own timers and (if positional)
-    // drive its spawner. Returns the remaining duration — <= 0 means expire.
+    // drive its spawner. Returns the remaining duration -- <= 0 means expire.
     const auto tickEvent = sf::base::OverloadSet{
         // Invincible bubble events are fire-and-forget: the bubble itself is
         // the manifestation, so the entry expires on the very next frame.
