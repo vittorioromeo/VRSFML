@@ -346,6 +346,21 @@
       385.0
     ]
   },
+  "events": {
+    "bubblefall": {
+      "attackRatio": 0.20000000298023224,
+      "bubblesPerTick": 1,
+      "durationMs": 9000.0,
+      "initialVelocityY": 0.550000011920929,
+      "regionWidth": 180.0,
+      "releaseRatio": 0.4000000059604645,
+      "spawnIntervalMs": 10.0,
+      "velocityJitterX": 0.05000000074505806,
+      "velocityJitterY": 0.25
+    },
+    "maxSpawnIntervalMs": 120000.0,
+    "minSpawnIntervalMs": 45000.0
+  },
   "eyelidOffset": [
     -185.0,
     -185.0
