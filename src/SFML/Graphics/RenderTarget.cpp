@@ -61,7 +61,6 @@
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/ScopeGuard.hpp"
-#include "SFML/Base/SinCosLookup.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Span.hpp"
 #include "SFML/Base/Trait/IsSame.hpp"
@@ -454,15 +453,12 @@ void RenderTarget::draw(const Texture& texture, const DrawTextureSettings& param
     }
     else
     {
-        const auto [sine, cosine] = base::sinCosLookup(params.rotation.asRadians());
-
         Vertex buffer[4];
 
-        DrawableBatchUtils::appendPreTransformedSpriteQuadVertices(Transform::fromPositionScaleOriginSinCos(params.position,
-                                                                                                            params.scale,
-                                                                                                            params.origin,
-                                                                                                            sine,
-                                                                                                            cosine),
+        DrawableBatchUtils::appendPreTransformedSpriteQuadVertices(Transform::fromPositionScaleOriginRotation(params.position,
+                                                                                                              params.scale,
+                                                                                                              params.origin,
+                                                                                                              params.rotation),
                                                                    (params.textureRect == Rect2f{}) ? texture.getRect()
                                                                                                     : params.textureRect,
                                                                    params.color,
@@ -780,7 +776,7 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer,
 
 
 ////////////////////////////////////////////////////////////
-VertexSpan RenderTarget::draw(const priv::ShapeDataConcept auto& shapeData, const RenderStates& states)
+BatchedGeometry RenderTarget::draw(const priv::ShapeDataConcept auto& shapeData, const RenderStates& states)
 {
     if (m_autoBatchMode != AutoBatchMode::Disabled)
     {
@@ -796,20 +792,25 @@ VertexSpan RenderTarget::draw(const priv::ShapeDataConcept auto& shapeData, cons
 
 
 ////////////////////////////////////////////////////////////
-template VertexSpan RenderTarget::draw(const ArrowShapeData&, const RenderStates&);
-template VertexSpan RenderTarget::draw(const CircleShapeData&, const RenderStates&);
-template VertexSpan RenderTarget::draw(const CurvedArrowShapeData&, const RenderStates&);
-template VertexSpan RenderTarget::draw(const EllipseShapeData&, const RenderStates&);
-template VertexSpan RenderTarget::draw(const PieSliceShapeData&, const RenderStates&);
-template VertexSpan RenderTarget::draw(const RectangleShapeData&, const RenderStates&);
-template VertexSpan RenderTarget::draw(const RingShapeData&, const RenderStates&);
-template VertexSpan RenderTarget::draw(const RingPieSliceShapeData&, const RenderStates&);
-template VertexSpan RenderTarget::draw(const RoundedRectangleShapeData&, const RenderStates&);
-template VertexSpan RenderTarget::draw(const StarShapeData&, const RenderStates&);
+template BatchedGeometry RenderTarget::draw(const ArrowShapeData&, const RenderStates&);
+template BatchedGeometry RenderTarget::draw(const ChevronShapeData&, const RenderStates&);
+template BatchedGeometry RenderTarget::draw(const CircleShapeData&, const RenderStates&);
+template BatchedGeometry RenderTarget::draw(const CogShapeData&, const RenderStates&);
+template BatchedGeometry RenderTarget::draw(const CrossShapeData&, const RenderStates&);
+template BatchedGeometry RenderTarget::draw(const CurvedArrowShapeData&, const RenderStates&);
+template BatchedGeometry RenderTarget::draw(const EllipseShapeData&, const RenderStates&);
+template BatchedGeometry RenderTarget::draw(const HeartShapeData&, const RenderStates&);
+template BatchedGeometry RenderTarget::draw(const PieSliceShapeData&, const RenderStates&);
+template BatchedGeometry RenderTarget::draw(const RectangleShapeData&, const RenderStates&);
+template BatchedGeometry RenderTarget::draw(const RingShapeData&, const RenderStates&);
+template BatchedGeometry RenderTarget::draw(const RingPieSliceShapeData&, const RenderStates&);
+template BatchedGeometry RenderTarget::draw(const RoundedRectangleShapeData&, const RenderStates&);
+template BatchedGeometry RenderTarget::draw(const StarShapeData&, const RenderStates&);
+template BatchedGeometry RenderTarget::draw(const TrapezoidShapeData&, const RenderStates&);
 
 
 ////////////////////////////////////////////////////////////
-VertexSpan RenderTarget::draw(const Font& font, const TextData& textData, RenderStates states)
+BatchedGeometry RenderTarget::draw(const Font& font, const TextData& textData, RenderStates states)
 {
     states.texture = &font.getTexture();
 
@@ -827,7 +828,7 @@ VertexSpan RenderTarget::draw(const Font& font, const TextData& textData, Render
 
 
 ////////////////////////////////////////////////////////////
-VertexSpan RenderTarget::draw(const FontFace&            fontFace,
+BatchedGeometry RenderTarget::draw(const FontFace&            fontFace,
                               const GlyphMapping&        glyphMapping,
                               const GlyphMappedTextData& textData,
                               const RenderStates&        states)
