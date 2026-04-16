@@ -37,7 +37,7 @@ struct [[nodiscard]] Bubble
     // Combo (invincible) bubble state. After the first click, `comboTimerMs`
     // becomes the bespoke combo window: each subsequent click resets it; if it
     // reaches 0 the bubble pops with payout. `comboClickCount` is the running
-    // tally of clicks on this bubble — drives the payout magnitude.
+    // tally of clicks on this bubble -- drives the payout magnitude.
     float         comboTimerMs    = 0.f;
     sf::base::U32 comboClickCount = 0u;
 

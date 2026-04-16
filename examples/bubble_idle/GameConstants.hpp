@@ -29,7 +29,7 @@ struct [[nodiscard]] GameConstants
         {-35.f, -222.f}, // Uni
         {-8.f, 2.f},     // Devil
         {56.f, -80.f},   // Astro
-        {-40.f, 0.f},    // Warden — TODO: dedicated assets (reusing Normal)
+        {-40.f, 0.f},    // Warden -- TODO: dedicated assets (reusing Normal)
         {37.f, 165.f},   // Witch
         {-90.f, 120.f},  // Wizard
         {0.f, 0.f},      // Mouse
@@ -45,7 +45,7 @@ struct [[nodiscard]] GameConstants
         {0.f, 0.f}, // Uni
         {0.f, 0.f}, // Devil
         {0.f, 0.f}, // Astro
-        {0.f, 0.f}, // Warden — TODO: dedicated assets
+        {0.f, 0.f}, // Warden -- TODO: dedicated assets
         {0.f, 0.f}, // Witch
         {0.f, 0.f}, // Wizard
         {0.f, 0.f}, // Mouse
@@ -61,7 +61,7 @@ struct [[nodiscard]] GameConstants
         {-35.f, -222.f}, // Uni
         {-8.f, 2.f},     // Devil
         {56.f, -80.f},   // Astro
-        {-40.f, 0.f},    // Warden — TODO: dedicated assets (reusing Normal)
+        {-40.f, 0.f},    // Warden -- TODO: dedicated assets (reusing Normal)
         {37.f, 165.f},   // Witch
         {-25.f, 65.f},   // Wizard
         {0.f, 0.f},      // Mouse
@@ -77,7 +77,7 @@ struct [[nodiscard]] GameConstants
         160.f,  // Uni
         -25.f,  // Devil
         0.f,    // Astro
-        45.f,   // Warden — TODO: dedicated assets
+        45.f,   // Warden -- TODO: dedicated assets
         80.f,   // Witch
         -135.f, // Wizard
         0.f,    // Mouse
@@ -93,7 +93,7 @@ struct [[nodiscard]] GameConstants
         CloudModifier{{0.f, -10.f}, 1.5f}, // Uni
         CloudModifier{{0.f, 0.f}, 1.5f},   // Devil
         CloudModifier{{0.f, -17.f}, 2.f},  // Astro
-        CloudModifier{{0.f, 0.f}, 1.f},    // Warden — TODO: dedicated assets
+        CloudModifier{{0.f, 0.f}, 1.f},    // Warden -- TODO: dedicated assets
         CloudModifier{{0.f, -5.f}, 1.2f},  // Witch
         CloudModifier{{0.f, -5.f}, 1.5f},  // Wizard
         CloudModifier{{0.f, 0.f}, 1.f},    // Mouse
