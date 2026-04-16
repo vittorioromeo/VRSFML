@@ -20,12 +20,7 @@ Rect2f RingShapeData::getGlobalBounds() const noexcept
     if (!hasVisibleGeometry()) [[unlikely]]
         return {};
 
-    return priv::getEllipticalGlobalBounds({outerRadius, outerRadius},
-                                           {outerRadius, outerRadius},
-                                           position,
-                                           scale,
-                                           origin,
-                                           rotation);
+    return priv::getEllipticalGlobalBounds({outerRadius, outerRadius}, {outerRadius, outerRadius}, position, scale, origin, rotation);
 }
 
 } // namespace sf

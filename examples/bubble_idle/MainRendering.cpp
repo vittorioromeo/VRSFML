@@ -350,7 +350,7 @@ void Main::gameLoopDrawBubbles()
             const float frac    = sf::base::clamp(bubble.comboTimerMs / (maxMs <= 0.f ? 1.f : maxMs), 0.f, 1.f);
             const float urgency = 1.f - frac;
             const float amp     = urgency * urgency * 8.f; // quadratic ramp, peaks ~8px right before pop
-            shakeOffset = {rngFast.getF(-amp, amp), rngFast.getF(-amp, amp)};
+            shakeOffset         = {rngFast.getF(-amp, amp), rngFast.getF(-amp, amp)};
         }
 
         batchToUseByType[asIdx(bubble.type)]->add(sf::Sprite{
@@ -582,10 +582,10 @@ void Main::gameLoopDrawCats(const sf::Vec2f mousePos, const float deltaTimeMs)
 
     ////////////////////////////////////////////////////////////
     const sf::Rect2f* const catTxrsByType[] = {
-        &txrCat,      // Normal
-        uniCatTxr,    // Uni
-        devilCatTxr,  // Devil
-        &txrAstroCat, // Astro
+        &txrCat,       // Normal
+        uniCatTxr,     // Uni
+        devilCatTxr,   // Devil
+        &txrAstroCat,  // Astro
         &txrWardenCat, // Warden (composite -- guardhouse drawn around it)
 
         &txrWitchCat,    // Witch
@@ -602,10 +602,10 @@ void Main::gameLoopDrawCats(const sf::Vec2f mousePos, const float deltaTimeMs)
 
     ////////////////////////////////////////////////////////////
     const sf::Rect2f* const catPawTxrsByType[] = {
-        &txrCatPaw,     // Normal
-        &txrUniCatPaw,  // Uni
-        devilCatPawTxr, // Devil
-        &txrWhiteDot,   // Astro
+        &txrCatPaw,       // Normal
+        &txrUniCatPaw,    // Uni
+        devilCatPawTxr,   // Devil
+        &txrWhiteDot,     // Astro
         &txrWardencatPaw, // Warden (paw resting on the guardhouse windowsill)
 
         &txrWitchCatPaw,    // Witch
@@ -896,8 +896,7 @@ void applyWitchAnimation(CatDrawContext& ctx, float& wobblePhase, Cat& witch)
     ctx.catScale             = sf::Vec2f{0.2f, 0.2f} * ctx.catScaleMult;
     ctx.catAnchor            = ctx.beingDragged ? cat.position : cat.getDrawPosition(main.profile.enableCatBobbing);
     const auto catDrawOffset = main.gameConstants.catDrawOffsetsByType[asIdx(cat.type)];
-    ctx.visualCatAnchor      = ctx.catAnchor +
-                               (catDrawOffset / 2.f * 0.2f * ctx.catScaleMult).rotatedBy(ctx.bodyRotation());
+    ctx.visualCatAnchor = ctx.catAnchor + (catDrawOffset / 2.f * 0.2f * ctx.catScaleMult).rotatedBy(ctx.bodyRotation());
 
     ctx.pushDown      = {0.f, ctx.beingDragged ? main.gameConstants.catAttachmentDraggedOffsetY : 0.f};
     ctx.attachmentHue = hueColor(main.gameConstants.catHueByType[asIdx(cat.type)] + cat.hue, ctx.alpha);
@@ -991,12 +990,14 @@ void drawCatVisuals(const CatDrawContext& ctx)
     const float tailRotationMult = ctx.cat.type == CatType::Uni ? 0.4f : 1.f;
 
     const auto tailWiggleRotation = sf::radians(
-        ctx.catRotation + ctx.bodyRotationExtra + ((ctx.beingDragged ? -0.2f : 0.f) +
-                           sf::base::sin(ctx.cat.wobbleRadians) * (ctx.beingDragged ? 0.125f : 0.075f) * tailRotationMult));
+        ctx.catRotation + ctx.bodyRotationExtra +
+        ((ctx.beingDragged ? -0.2f : 0.f) +
+         sf::base::sin(ctx.cat.wobbleRadians) * (ctx.beingDragged ? 0.125f : 0.075f) * tailRotationMult));
 
     const auto tailWiggleRotationInvertedDragged = sf::radians(
-        ctx.catRotation + ctx.bodyRotationExtra + ((ctx.beingDragged ? 0.2f : 0.f) +
-                           sf::base::sin(ctx.cat.wobbleRadians) * (ctx.beingDragged ? 0.125f : 0.075f) * tailRotationMult));
+        ctx.catRotation + ctx.bodyRotationExtra +
+        ((ctx.beingDragged ? 0.2f : 0.f) +
+         sf::base::sin(ctx.cat.wobbleRadians) * (ctx.beingDragged ? 0.125f : 0.075f) * tailRotationMult));
 
     if (ctx.cat.type == CatType::Devil)
     {
@@ -1083,14 +1084,14 @@ void drawCatVisuals(const CatDrawContext& ctx)
     // `ctx.bodyRotation()` stay in sync as a single rigid body.
     const auto bodyRotation = ctx.bodyRotation();
 
-    addCatSprite(sf::Sprite{.position    = ctx.cat.type == CatType::Warden
-                                               ? ctx.anchorOffset(ctx.main.gameConstants.wardenCatBodyOffset)
-                                               : ctx.visualCatAnchor,
-                            .scale       = ctx.catScale,
-                            .origin      = ctx.catTxr.size / 2.f,
-                            .rotation    = bodyRotation,
-                            .textureRect = ctx.catTxr,
-                            .color       = ctx.catColor});
+    addCatSprite(
+        sf::Sprite{.position = ctx.cat.type == CatType::Warden ? ctx.anchorOffset(ctx.main.gameConstants.wardenCatBodyOffset)
+                                                               : ctx.visualCatAnchor,
+                   .scale       = ctx.catScale,
+                   .origin      = ctx.catTxr.size / 2.f,
+                   .rotation    = bodyRotation,
+                   .textureRect = ctx.catTxr,
+                   .color       = ctx.catColor});
 
     if (ctx.main.gameConstants.debugDrawCatCenterMarker)
         ctx.batchToUse.add(sf::CircleShapeData{
@@ -1352,30 +1353,29 @@ void drawCatVisuals(const CatDrawContext& ctx)
 
     if (drawPaw)
     {
-        const bool isWarden  = ctx.cat.type == CatType::Warden;
-        const auto pawScale  = isWarden ? ctx.catScale * ctx.main.gameConstants.wardenCatPawScale : ctx.catScale * 0.85f;
-        const auto pawAlpha  = isWarden ? static_cast<U8>(255u) : static_cast<U8>(ctx.cat.pawOpacity);
+        const bool isWarden = ctx.cat.type == CatType::Warden;
+        const auto pawScale = isWarden ? ctx.catScale * ctx.main.gameConstants.wardenCatPawScale : ctx.catScale * 0.85f;
+        const auto pawAlpha = isWarden ? static_cast<U8>(255u) : static_cast<U8>(ctx.cat.pawOpacity);
 
         // Warden paw state machine:
         //  - Travel:  lerps start pose → `cat.pawPosition` over pawBonkTravelMs
         //  - Hold:    stays at `cat.pawPosition`
         //  - Return:  eases the snapshotted hold pose → idle windowsill spot
         //  - Idle:    sits at the tunable windowsill offset
-        const sf::Vec2f wardenIdlePos = isWarden
-                                            ? ctx.anchorOffset(ctx.main.gameConstants.wardenCatPawOffset)
-                                            : sf::Vec2f{0.f, 0.f};
+        const sf::Vec2f wardenIdlePos = isWarden ? ctx.anchorOffset(ctx.main.gameConstants.wardenCatPawOffset)
+                                                 : sf::Vec2f{0.f, 0.f};
 
-        sf::Vec2f pawPosition = isWarden
-                                    ? (ctx.cat.pawHoldMs > 0.f ? ctx.cat.pawPosition : wardenIdlePos)
-                                    : ctx.cat.pawPosition + (ctx.beingDragged ? ctx.main.gameConstants.regularPawDraggedOffset
-                                                                              : ctx.main.gameConstants.regularPawIdleOffset);
+        sf::Vec2f pawPosition = isWarden ? (ctx.cat.pawHoldMs > 0.f ? ctx.cat.pawPosition : wardenIdlePos)
+                                         : ctx.cat.pawPosition +
+                                               (ctx.beingDragged ? ctx.main.gameConstants.regularPawDraggedOffset
+                                                                 : ctx.main.gameConstants.regularPawIdleOffset);
 
         auto pawRotate = ctx.cat.type == CatType::Mouse ? sf::radians(-0.6f) : ctx.cat.pawRotation;
 
         if (isWarden && ctx.cat.pawBonkTravelMs > 0.f && ctx.cat.pawBonkTravelDurationMs > 0.f)
         {
-            const float t = easeInOutCubic(sf::base::clamp(
-                1.f - (ctx.cat.pawBonkTravelMs / ctx.cat.pawBonkTravelDurationMs), 0.f, 1.f));
+            const float t = easeInOutCubic(
+                sf::base::clamp(1.f - (ctx.cat.pawBonkTravelMs / ctx.cat.pawBonkTravelDurationMs), 0.f, 1.f));
 
             pawPosition = ctx.cat.pawBonkStartPos + (ctx.cat.pawPosition - ctx.cat.pawBonkStartPos) * t;
             pawRotate   = ctx.cat.pawBonkStartRotation.rotatedTowards(ctx.cat.pawRotation, t);
@@ -1384,8 +1384,8 @@ void drawCatVisuals(const CatDrawContext& ctx)
         {
             // Return-phase target is recomputed every frame so the paw tracks
             // the cat's bobbing position while it eases back.
-            const float t = easeInOutCubic(sf::base::clamp(
-                1.f - (ctx.cat.pawBonkReturnMs / ctx.cat.pawBonkReturnDurationMs), 0.f, 1.f));
+            const float t = easeInOutCubic(
+                sf::base::clamp(1.f - (ctx.cat.pawBonkReturnMs / ctx.cat.pawBonkReturnDurationMs), 0.f, 1.f));
 
             pawPosition = ctx.cat.pawBonkReturnStartPos + (wardenIdlePos - ctx.cat.pawBonkReturnStartPos) * t;
             pawRotate   = ctx.cat.pawBonkReturnStartRotation.rotatedTowards(sf::degrees(-45.f), t);
