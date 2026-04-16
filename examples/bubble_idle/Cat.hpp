@@ -97,6 +97,12 @@ struct [[nodiscard]] Cat
     // cat plays its own independent instance.
     float sleepSoundCountdownMs{0.f};
 
+    // Per-cat nap-schedule countdown. Once the sleep mechanic has been
+    // introduced (post-tutorial or post-prestige), this ticks down and the
+    // cat takes a nap when it reaches zero, then resets to a fresh random
+    // value (~2-5 minutes). Pre-introduction it's not ticked.
+    float napScheduleCountdownMs{0.f};
+
     float dragTime{};
 
     ////////////////////////////////////////////////////////////

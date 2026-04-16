@@ -57,6 +57,24 @@ inline constexpr const char* astroCatNames[] =
 
 
 ////////////////////////////////////////////////////////////
+// TODO: dedicated wardencat name list once they get their own art.
+inline constexpr const char* wardenCatNames[] = {
+    "Argus",
+    "Patrol",
+    "Sentry",
+    "Vigil",
+    "Watcher",
+    "Reveille",
+    "Bugle",
+    "Dawn",
+    "Roost",
+    "Snoozer",
+    "Reverie",
+    "Awakener",
+};
+
+
+////////////////////////////////////////////////////////////
 inline constexpr const char* witchCatNames[] = {
     "Bayou",
     "Roux",
@@ -181,6 +199,7 @@ inline constexpr EXACT_ARRAY(
         {uniCatNames, sf::base::getArraySize(uniCatNames)},       // Uni
         {devilCatNames, sf::base::getArraySize(devilCatNames)},   // Devil
         {astroCatNames, sf::base::getArraySize(astroCatNames)},   // Astro
+        {wardenCatNames, sf::base::getArraySize(wardenCatNames)}, // Warden
 
         {witchCatNames, sf::base::getArraySize(witchCatNames)},       // Witch
         {wizardCatNames, sf::base::getArraySize(wizardCatNames)},     // Wizard

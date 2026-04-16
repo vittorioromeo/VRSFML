@@ -186,6 +186,20 @@ inline constexpr PSVData catAstroRangeDiv //
      .cost          = {.initial = 5'500'000.f, .exponential = 1.85f},
      .value         = {.initial = 0.6f, .multiplicative = -0.045f, .exponential = 0.85f, .flat = 0.4f}};
 
+// TODO: rebalance Warden costs/scaling once it gates behind prestige points.
+inline constexpr PSVData catWarden //
+    {.nMaxPurchases = 32u, .cost = {.initial = 500.f, .linear = 250.f, .exponential = 1.7f, .flat = -200.f}, .value = {}};
+
+inline constexpr PSVData catWardenCooldownMult //
+    {.nMaxPurchases = 12u,
+     .cost          = {.initial = 5'000.f, .exponential = 1.85f, .flat = -2'500.f},
+     .value         = {.initial = 1.f, .linear = 0.015f, .multiplicative = 0.05f, .exponential = 0.8f}};
+
+inline constexpr PSVData catWardenRangeDiv //
+    {.nMaxPurchases = 9u,
+     .cost          = {.initial = 8'000.f, .exponential = 1.85f, .flat = -3'000.f},
+     .value         = {.initial = 0.6f, .multiplicative = -0.045f, .exponential = 0.85f, .flat = 0.4f}};
+
 inline constexpr PSVData multiPopRange //
     {.nMaxPurchases = 24u,
      .cost          = {.initial = 1.f, .linear = 2.f, .exponential = 1.75f},

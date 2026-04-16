@@ -20,6 +20,7 @@ inline constexpr EXACT_ARRAY(
         {129u, 251u, 191u}, // Uni
         {191u, 61u, 61u},   // Devil
         sf::Color::White,   // Astro
+        {220u, 195u, 80u},  // Warden — TODO: dedicated palette
 
         {90u, 155u, 48u},   // Witch
         {123u, 108u, 191u}, // Wizard
@@ -42,6 +43,7 @@ inline constexpr EXACT_ARRAY(
         "shines",  // Uni
         "ieds",    // Devil
         "flights", // Astro
+        "wakes",   // Warden
 
         "rituals", // Witch
         "spells",  // Wizard
@@ -63,6 +65,7 @@ inline constexpr EXACT_ARRAY(
         3000.f,   // Uni
         7000.f,   // Devil
         10'000.f, // Astro
+        30'000.f, // Warden
 
         80'000.f, // Witch
         1500.f,   // Wizard
@@ -80,10 +83,11 @@ inline constexpr EXACT_ARRAY(
     baseRanges,
     nCatTypes,
     {
-        96.f, // Normal
-        64.f, // Uni
-        48.f, // Devil
-        48.f, // Astro
+        96.f,  // Normal
+        64.f,  // Uni
+        48.f,  // Devil
+        48.f,  // Astro
+        144.f, // Warden
 
         192.f, // Witch
         384.f, // Wizard
@@ -105,6 +109,7 @@ inline constexpr EXACT_ARRAY(
         {0.f, -100.f}, // Uni
         {0.f, 100.f},  // Devil
         {-64.f, 0.f},  // Astro
+        {0.f, 0.f},    // Warden
 
         {0.f, 0.f}, // Witch
         {0.f, 0.f}, // Wizard
@@ -126,6 +131,7 @@ inline constexpr EXACT_ARRAY(
         "Uni",
         "Devil",
         "Astro",
+        "Warden",
 
         "Witch",
         "Wizard",
@@ -147,6 +153,7 @@ inline constexpr EXACT_ARRAY(
         "Unicat",
         "Devilcat",
         "Astrocat",
+        "Wardencat",
 
         "Witchcat",
         "Wizardcat",

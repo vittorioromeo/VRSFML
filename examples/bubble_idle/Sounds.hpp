@@ -61,6 +61,8 @@ struct Sounds
     LoadedSound paper{"paper.ogg"};
     LoadedSound letterchime{"letterchime.ogg"};
     LoadedSound sleep{"sleep.ogg"};
+    LoadedSound glasshit{"glasshit.ogg"};
+    LoadedSound glassbreak{"glassbreak.ogg"};
 
     ////////////////////////////////////////////////////////////
     void setupSounds(const bool volumeOnly, const float volumeMult)
@@ -121,6 +123,8 @@ struct Sounds
         setupWorldSound(smokebomb);
         setupWorldSound(quack);
         setupWorldSound(sleep, /* attenuationMult */ 0.6f);
+        setupWorldSound(glasshit);
+        setupWorldSound(glassbreak);
 
         setupUISound(click);
         setupUISound(byteMeow);

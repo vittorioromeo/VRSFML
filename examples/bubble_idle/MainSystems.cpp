@@ -28,6 +28,9 @@
 
 #include "SFML/ImGui/IncludeImGui.hpp"
 
+#include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/Sprite.hpp"
+
 #include "SFML/Window/Keyboard.hpp"
 
 #include "SFML/System/Angle.hpp"
@@ -36,6 +39,7 @@
 
 #include "SFML/Base/Algorithm/AllOf.hpp"
 #include "SFML/Base/Algorithm/AnyOf.hpp"
+#include "SFML/Base/Algorithm/Count.hpp"
 #include "SFML/Base/Algorithm/Erase.hpp"
 #include "SFML/Base/Algorithm/MaxElement.hpp"
 #include "SFML/Base/Assert.hpp"
@@ -43,7 +47,9 @@
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
+#include "SFML/Base/Math/Cos.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Math/Pow.hpp"
 #include "SFML/Base/Math/Sin.hpp"
@@ -114,10 +120,16 @@ void Main::gameLoopUpdateTransitions(const float deltaTimeMs)
         // Spawn shrines if required
         pt->spawnAllShrinesIfNeeded();
 
-        // Spawn bubbles (or remove extra bubbles via debug menu)
-        if (pt->bubbles.size() < targetBubbleCount)
+        // The bubble cap only governs regular (non-ephemeral) bubbles. Event
+        // bubbles like Bubblefall and the invincible Combo bubble are bonuses
+        // that don't count toward the cap and are never trimmed.
+        const SizeT nonEphemeralCount = sf::base::countIf(pt->bubbles.begin(), pt->bubbles.end(), [](const Bubble& b) {
+            return !b.ephemeral;
+        });
+
+        if (nonEphemeralCount < targetBubbleCount)
         {
-            const SizeT times = (targetBubbleCount - pt->bubbles.size()) > 500u ? 25u : 1u;
+            const SizeT times = (targetBubbleCount - nonEphemeralCount) > 500u ? 25u : 1u;
 
             for (SizeT i = 0; i < times; ++i)
             {
@@ -131,33 +143,44 @@ void Main::gameLoopUpdateTransitions(const float deltaTimeMs)
                 playReversePopAt(bPos);
             }
         }
-        else if (pt->bubbles.size() > targetBubbleCount)
+        else if (nonEphemeralCount > targetBubbleCount)
         {
-            // Events that spawn bubbles (e.g. Bubblefall) are explicitly allowed
-            // to exceed the cap. Suppress the trim while any such event is
-            // active — otherwise the event-spawned bubbles would be popped on
-            // the next frame.
-            const bool eventSpawningBubbles = sf::base::anyOf(pt->activeEvents.begin(),
-                                                              pt->activeEvents.end(),
-                                                              [](const GameEvent& ev)
-            {
-                return ev.linearVisit(sf::base::OverloadSet{
-                    [](const EBubblefall&) { return true; },
-                });
-            });
+            const SizeT excess = nonEphemeralCount - targetBubbleCount;
+            const SizeT times  = excess > 500u ? 25u : 1u;
 
-            if (!eventSpawningBubbles)
+            for (SizeT i = 0; i < times; ++i)
             {
-                const SizeT times = (pt->bubbles.size() - targetBubbleCount) > 500u ? 25u : 1u;
-
-                for (SizeT i = 0; i < times; ++i)
+                // Find the rearmost non-ephemeral bubble; ephemerals are
+                // skipped entirely so event bubbles are never popped.
+                SizeT idx        = pt->bubbles.size();
+                bool  foundIndex = false;
+                while (idx > 0u)
                 {
-                    const auto bPos = pt->bubbles.back().position;
-                    pt->bubbles.popBack();
-
-                    spawnParticles(8, bPos, ParticleType::Bubble, 0.5f, 0.5f);
-                    playReversePopAt(bPos);
+                    --idx;
+                    if (!pt->bubbles[idx].ephemeral)
+                    {
+                        foundIndex = true;
+                        break;
+                    }
                 }
+
+                if (!foundIndex)
+                    break;
+
+                const auto bPos = pt->bubbles[idx].position;
+
+                // Swap-to-back so the cheap popBack still works regardless of
+                // where the non-ephemeral was found in the vector.
+                if (idx != pt->bubbles.size() - 1u)
+                {
+                    Bubble tmp         = pt->bubbles.back();
+                    pt->bubbles.back() = pt->bubbles[idx];
+                    pt->bubbles[idx]   = tmp;
+                }
+                pt->bubbles.popBack();
+
+                spawnParticles(8, bPos, ParticleType::Bubble, 0.5f, 0.5f);
+                playReversePopAt(bPos);
             }
         }
 
@@ -319,19 +342,69 @@ void Main::gameLoopUpdateBubbles(const float deltaTimeMs)
         if (bubble.type == BubbleType::Star || bubble.type == BubbleType::Nova)
             bubble.hueMod += deltaTimeMs * 0.125f;
 
-        float windVelocity = windMult[pt->windStrength] * (bubble.type == BubbleType::Bomb ? 0.01f : 0.9f);
+        // Combo bubbles ignore wind, gravity and stasis: they drift down with
+        // their initial velocity for a slow, predictable fall, and their
+        // vertical speed is hard-capped so even out-of-range JSON tunings
+        // can't make them blaze across the screen.
+        const bool isCombo = bubble.type == BubbleType::Combo;
 
-        if (pt->buffCountdownsPerType[asIdx(CatType::Repulso)].value > 0.f)
-            windVelocity += 0.00015f;
-
-        if (windVelocity > 0.f)
+        if (isCombo)
         {
-            bubble.velocity.x += (windVelocity * 0.5f) * deltaTimeMs;
-            bubble.velocity.y += windVelocity * deltaTimeMs;
-        }
+            const auto& cfg = gameConstants.events.invincibleBubble;
 
-        if (isBubbleInStasisField(bubble))
-            bubble.velocity = {0.f, 0.f};
+            if (bubble.velocity.y > cfg.maxVelocityY)
+                bubble.velocity.y = cfg.maxVelocityY;
+
+            // Bespoke per-bubble combo timer: starts ticking after the first
+            // click. When it expires the bubble pops with payout.
+            if (bubble.comboClickCount > 0u && bubble.comboTimerMs > 0.f)
+            {
+                bubble.comboTimerMs -= deltaTimeMs;
+                if (bubble.comboTimerMs <= 0.f)
+                {
+                    bubble.comboTimerMs = 0.f;
+                    popComboBubble(bubble);
+                }
+            }
+
+            // Ambient repulsion of nearby bubbles so the Combo bubble visibly
+            // stands out as it drifts.
+            const float repelR = cfg.ambientRepelRadius;
+            if (repelR > 0.f && cfg.ambientRepelStrength > 0.f)
+            {
+                const float repelRSq = repelR * repelR;
+                for (Bubble& other : pt->bubbles)
+                {
+                    if (&other == &bubble || other.type == BubbleType::Combo)
+                        continue;
+
+                    const auto  diff   = other.position - bubble.position;
+                    const float distSq = diff.lengthSquared();
+                    if (distSq <= 0.0001f || distSq > repelRSq)
+                        continue;
+
+                    const float dist    = sf::base::sqrt(distSq);
+                    const float falloff = 1.f - (dist / repelR);
+                    other.velocity += (diff / dist) * (cfg.ambientRepelStrength * falloff * deltaTimeMs);
+                }
+            }
+        }
+        else
+        {
+            float windVelocity = windMult[pt->windStrength] * (bubble.type == BubbleType::Bomb ? 0.01f : 0.9f);
+
+            if (pt->buffCountdownsPerType[asIdx(CatType::Repulso)].value > 0.f)
+                windVelocity += 0.00015f;
+
+            if (windVelocity > 0.f)
+            {
+                bubble.velocity.x += (windVelocity * 0.5f) * deltaTimeMs;
+                bubble.velocity.y += windVelocity * deltaTimeMs;
+            }
+
+            if (isBubbleInStasisField(bubble))
+                bubble.velocity = {0.f, 0.f};
+        }
 
         bubble.position += bubble.velocity * deltaTimeMs;
 
@@ -347,7 +420,16 @@ void Main::gameLoopUpdateBubbles(const float deltaTimeMs)
             // Event-spawned bubbles despawn instead of being recycled at the
             // top — the post-loop `vectorEraseIf` removes them.
             if (bubble.ephemeral)
+            {
+                // A Combo bubble that was clicked at least once still pays out
+                // when it slips past the bottom — only the never-clicked one
+                // disappears silently. (Normally the per-bubble combo timer
+                // fires before this happens; this is the safety net.)
+                if (bubble.type == BubbleType::Combo && bubble.comboClickCount > 0u)
+                    popComboBubble(bubble);
+
                 continue;
+            }
 
             bubble.position.x = rng.getF(0.f, pt->getMapLimit());
             bubble.position.y = -bubble.radius * rng.getF(1.f, 2.f);
@@ -388,7 +470,8 @@ void Main::gameLoopUpdateBubbles(const float deltaTimeMs)
             turnBubbleInto(bubble, BubbleType::Normal);
         }
 
-        bubble.velocity.y += 0.00005f * deltaTimeMs;
+        if (!isCombo)
+            bubble.velocity.y += 0.00005f * deltaTimeMs;
 
         (void)bubble.repelledCountdown.updateAndStop(deltaTimeMs);
         (void)bubble.attractedCountdown.updateAndStop(deltaTimeMs);
@@ -407,6 +490,223 @@ void Main::gameLoopReapEphemeralBubbles()
     sf::base::vectorEraseIf(pt->bubbles, [&](const Bubble& b) {
         return b.ephemeral && (b.position.y - b.radius > boundaries.y);
     });
+}
+
+
+////////////////////////////////////////////////////////////
+void Main::popComboBubble(Bubble& bubble)
+{
+    SFML_BASE_ASSERT(bubble.type == BubbleType::Combo);
+
+    // Idempotency: a bubble can be popped from multiple paths (timer, max
+    // clicks, bottom-despawn). Skip if we've already paid out.
+    if (bubble.comboClickCount == 0u && bubble.comboTimerMs == 0.f && bubble.radius < 0.f)
+        return;
+
+    const auto& cfg = gameConstants.events.invincibleBubble;
+
+    const auto clicks = bubble.comboClickCount;
+    if (clicks == 0u)
+    {
+        // Defensive: pop with no payout (shouldn't normally be reached).
+        bubble.position.y = boundaries.y * 2.f;
+        bubble.radius     = -1.f;
+        return;
+    }
+
+    // Reward scales super-linearly with click count and tracks the prestige
+    // bubble value so it stays meaningful late game.
+    const float baseReward = cfg.rewardScalePerClick * sf::base::pow(static_cast<float>(clicks), cfg.rewardClickExponent);
+    const auto reward = static_cast<MoneyType>(baseReward) * static_cast<MoneyType>(pt->psvBubbleValue.currentValue() + 1.f);
+
+    addMoney(reward);
+    moneyTextShakeEffect.bump(rngFast, 1.f + static_cast<float>(clicks) * 0.1f);
+
+    if (profile.showTextParticles)
+    {
+        auto& tp = makeRewardTextParticle(bubble.position);
+
+        tp.velocity *= 0.5f;
+        tp.opacityDecay *= 0.5f;
+        tp.accelerationY *= 0.35f;
+        tp.scale *= 1.3f;
+
+        std::snprintf(tp.buffer, sizeof(tp.buffer), "+$%llu", reward);
+    }
+
+    // Big visual burst at the bubble.
+    spawnParticles(64, bubble.position, ParticleType::Bubble, 0.8f, 0.6f);
+    spawnParticles(32, bubble.position, ParticleType::Star, 0.6f, 0.45f);
+
+    sounds.buffon.settings.position = {bubble.position.x, bubble.position.y};
+    playSound(sounds.buffon, /* maxOverlap */ 4u);
+
+    sounds.glassbreak.settings.position = {bubble.position.x, bubble.position.y};
+    playSound(sounds.glassbreak, /* maxOverlap */ 4u);
+
+    // One-shot radial impulse on nearby bubbles for a punchy "blowout".
+    const float popR = cfg.popRepelRadius;
+    if (popR > 0.f && cfg.popRepelImpulse > 0.f)
+    {
+        const float popRSq = popR * popR;
+        for (Bubble& other : pt->bubbles)
+        {
+            if (&other == &bubble)
+                continue;
+
+            const auto  diff   = other.position - bubble.position;
+            const float distSq = diff.lengthSquared();
+            if (distSq <= 0.0001f || distSq > popRSq)
+                continue;
+
+            const float dist    = sf::base::sqrt(distSq);
+            const float falloff = 1.f - (dist / popR);
+            other.velocity += (diff / dist) * (cfg.popRepelImpulse * falloff);
+        }
+    }
+
+    // Queue the burst-then-collect coin spew. Capped to avoid pathological cases.
+    const SizeT coinCount = sf::base::min(static_cast<SizeT>(cfg.payoutMaxCoins),
+                                          static_cast<SizeT>(clicks) * static_cast<SizeT>(cfg.payoutCoinsPerClick));
+
+    PendingComboBubblePayout payout{
+        .coins           = {},
+        .coinsCollected  = 0u,
+        .settleCountdown = Countdown{.value = cfg.burstSettleDelayMs},
+        .collectDelay    = {},
+    };
+    payout.coins.reserve(coinCount);
+
+    for (SizeT i = 0u; i < coinCount; ++i)
+    {
+        // Spread coins evenly around a circle (with jitter) and give them a
+        // randomized outward speed so the explosion looks organic.
+        const float angle = static_cast<float>(i) * (sf::base::tau / static_cast<float>(coinCount)) +
+                            rngFast.getF(-0.25f, 0.25f);
+        const float speed = rngFast.getF(cfg.burstSpeedMin, cfg.burstSpeedMax);
+
+        payout.coins.pushBack(BurstingComboCoin{
+            .position  = bubble.position,
+            .velocity  = {sf::base::cos(angle) * speed, sf::base::sin(angle) * speed},
+            .collected = false,
+        });
+    }
+
+    pendingComboBubblePayouts.pushBack(SFML_BASE_MOVE(payout));
+
+    // Despawn: push past the bottom and zero the radius so the ephemeral
+    // reaper takes it next frame, and so re-entering this function is a no-op.
+    bubble.position.y      = boundaries.y * 2.f;
+    bubble.radius          = -1.f;
+    bubble.comboClickCount = 0u;
+    bubble.comboTimerMs    = 0.f;
+    bubble.ephemeral       = true;
+}
+
+
+////////////////////////////////////////////////////////////
+void Main::gameLoopUpdateComboBubblePayouts(const float deltaTimeMs)
+{
+    if (pendingComboBubblePayouts.empty())
+        return;
+
+    const auto& cfg         = gameConstants.events.invincibleBubble;
+    const float coinDelayMs = cfg.payoutCoinDelayMs <= 0.f ? 35.f : cfg.payoutCoinDelayMs;
+
+    // Per-frame velocity multiplier from the per-second damping factor.
+    const float dampingPerSec = sf::base::clamp(cfg.burstDampingPerSec, 0.f, 1.f);
+    const float dampingFrame  = sf::base::pow(dampingPerSec, deltaTimeMs * 0.001f);
+
+    for (PendingComboBubblePayout& p : pendingComboBubblePayouts)
+    {
+        // Phase 1: burst — every coin drifts outward, decelerating each frame.
+        for (BurstingComboCoin& c : p.coins)
+        {
+            if (c.collected)
+                continue;
+
+            c.position += c.velocity * deltaTimeMs;
+            c.velocity *= dampingFrame;
+        }
+
+        // Phase 2: settle delay — coins keep drifting/damping but no
+        // collection happens yet so the player sees the explosion settle.
+        if (p.settleCountdown.updateAndStop(deltaTimeMs) != CountdownStatusStop::AlreadyFinished &&
+            p.settleCountdown.value > 0.f)
+            continue;
+
+        // Phase 3: collect — every `coinDelayMs`, take the next settled coin,
+        // route it to the HUD via the existing `EarnedCoinParticle` path, and
+        // play the rising-pitch coin chime. Pitch climbs with `coinsCollected`.
+        if (p.collectDelay.updateAndLoop(deltaTimeMs, coinDelayMs) != CountdownStatusLoop::Looping)
+            continue;
+
+        p.collectDelay.value = coinDelayMs;
+
+        BurstingComboCoin* next = nullptr;
+        for (BurstingComboCoin& c : p.coins)
+            if (!c.collected)
+            {
+                next = &c;
+                break;
+            }
+
+        if (next == nullptr)
+            continue;
+
+        const sf::Vec2f hudOrigin = fromWorldToHud(next->position);
+        if (spawnEarnedCoinParticle(hudOrigin))
+        {
+            const sf::Vec2f viewSize           = getCurrentGameViewSize();
+            const sf::Vec2f viewCenter         = getViewCenter();
+            sounds.coindelay.settings.position = {viewCenter.x - viewSize.x / 2.f + 25.f,
+                                                  viewCenter.y - viewSize.y / 2.f + 25.f};
+            sounds.coindelay.settings.pitch    = 0.8f + static_cast<float>(p.coinsCollected) * 0.04f;
+            sounds.coindelay.settings.volume   = profile.sfxVolume / 100.f;
+
+            playSound(sounds.coindelay, /* maxOverlap */ 64u);
+        }
+
+        next->collected = true;
+        ++p.coinsCollected;
+    }
+
+    sf::base::vectorEraseIf(pendingComboBubblePayouts,
+                            [](const PendingComboBubblePayout& p)
+    {
+        for (const BurstingComboCoin& c : p.coins)
+            if (!c.collected)
+                return false;
+        return true;
+    });
+}
+
+
+////////////////////////////////////////////////////////////
+void Main::gameLoopDrawComboBubbleBurstingCoins()
+{
+    if (pendingComboBubblePayouts.empty() || !profile.showParticles)
+        return;
+
+    const float spinPhase = shaderTime * 0.005f;
+
+    for (const PendingComboBubblePayout& p : pendingComboBubblePayouts)
+    {
+        for (const BurstingComboCoin& c : p.coins)
+        {
+            if (c.collected)
+                continue;
+
+            cpuDrawableBatchAfterCats.add(sf::Sprite{
+                .position    = c.position,
+                .scale       = {0.18f, 0.18f},
+                .origin      = txrCoin.size / 2.f,
+                .rotation    = sf::radians(spinPhase),
+                .textureRect = txrCoin,
+                .color       = sf::Color::White,
+            });
+        }
+    }
 }
 
 
@@ -509,6 +809,91 @@ void Main::gameLoopUpdateAttractoBuff(const float deltaTimeMs) const
 
     if (firstClickedBubble != nullptr)
     {
+        // Combo (invincible) bubbles use a bespoke per-bubble timer and reward
+        // path. Clicking one does not extend the player's regular combo, but
+        // it counts as "popped something" so the regular combo doesn't break.
+        if (firstClickedBubble->type == BubbleType::Combo)
+        {
+            const auto& cfg = gameConstants.events.invincibleBubble;
+
+            ++firstClickedBubble->comboClickCount;
+            firstClickedBubble->comboTimerMs = sf::base::max(cfg.comboTimerMaxMs -
+                                                                 static_cast<float>(firstClickedBubble->comboClickCount) * 25.f,
+                                                             100.f);
+
+            // Slight per-click size growth, capped, so the bubble visibly
+            // "fattens" as the player builds the combo.
+            const float currentGrowth = firstClickedBubble->radius - cfg.maxRadius;
+            if (currentGrowth < cfg.radiusGrowthMax)
+                firstClickedBubble->radius += sf::base::min(cfg.radiusGrowthPerClick,
+                                                            cfg.radiusGrowthMax - sf::base::max(0.f, currentGrowth));
+
+            sounds.pop.settings.position = {firstClickedBubble->position.x, firstClickedBubble->position.y};
+            sounds.pop.settings.pitch = remap(static_cast<float>(firstClickedBubble->comboClickCount), 1.f, 30.f, 1.2f, 2.5f);
+            playSound(sounds.pop, /* maxOverlap */ 64u);
+
+            sounds.glasshit.settings.position = {firstClickedBubble->position.x, firstClickedBubble->position.y};
+            sounds.glasshit.settings.pitch = 1.f + static_cast<float>(firstClickedBubble->comboClickCount - 1u) * 0.03f;
+            playSound(sounds.glasshit, /* maxOverlap */ 64u);
+
+            // Randomize rotation on every click so the crystal looks like it's cracking.
+            firstClickedBubble->rotation = rngFast.getF(0.f, sf::base::tau);
+
+            // Gentle nudge: random horizontal wobble + slight downward push per click.
+            firstClickedBubble->velocity += rngFast.getVec2f({-0.15f, 0.05f}, {0.15f, 0.2f});
+
+            // Glass shards: pop upward from the bubble, arc and fall under gravity.
+            for (sf::base::SizeT i = 0u; i < 6u; ++i)
+            {
+                spawnParticle({.position      = firstClickedBubble->position,
+                               .velocity      = rngFast.getVec2f({-0.4f, -1.f}, {0.4f, -0.2f}),
+                               .scale         = rngFast.getF(0.15f, 0.3f),
+                               .scaleDecay    = 0.f,
+                               .accelerationY = 0.0025f,
+                               .opacity       = 1.f,
+                               .opacityDecay  = 0.001f,
+                               .rotation      = rngFast.getF(0.f, sf::base::tau),
+                               .torque        = rngFast.getF(-0.02f, 0.02f)},
+                              /* hue */ 0.f,
+                              ParticleType::Glass);
+            }
+
+            // spawnParticles(8, firstClickedBubble->position, ParticleType::Star, 0.4f, 0.4f);
+
+            // Absorption ring: a handful of particles spawn around the bubble
+            // and fly inward into it, fading just before they reach the
+            // center.
+            const sf::Vec2f bubbleCenter = firstClickedBubble->position;
+            const float     ringRadius   = sf::base::max(cfg.clickAbsorbRadius, firstClickedBubble->radius * 1.5f);
+
+            for (sf::base::SizeT i = 0u; i < 8u; ++i)
+            {
+                const float     angle   = rngFast.getF(0.f, sf::base::tau);
+                const sf::Vec2f outward = {sf::base::cos(angle), sf::base::sin(angle)};
+                const sf::Vec2f start   = bubbleCenter + outward * ringRadius * rngFast.getF(0.8f, 1.3f);
+
+                spawnParticle({.position      = start,
+                               .velocity      = -outward * cfg.clickAbsorbSpeed,
+                               .scale         = rngFast.getF(0.009f, 0.016f) * 5.f,
+                               .scaleDecay    = 0.0001f, // shrink as it converges
+                               .accelerationY = 0.f,
+                               .opacity       = 1.f,
+                               .opacityDecay  = 0.0035f,
+                               .rotation      = rngFast.getF(0.f, sf::base::tau),
+                               .torque        = rngFast.getF(-0.005f, 0.005f)},
+                              /* hue */ 0.f, // gold to match the bubble
+                              ParticleType::Star);
+            }
+
+            if (firstClickedBubble->comboClickCount >= cfg.maxClicks)
+                popComboBubble(*firstClickedBubble);
+
+            if (!pt->speedrunStartTime.hasValue())
+                pt->speedrunStartTime.emplace(sf::Clock::now());
+
+            return true;
+        }
+
         if (!firstClickedBubbleByMultiPop && pt->comboPurchased)
         {
             if (!pt->laserPopEnabled)
@@ -627,9 +1012,17 @@ void Main::gameLoopUpdateCatActionNormal(const float /* deltaTimeMs */, Cat& cat
         cat.cooldown.value = maxCooldown;
     };
 
+    // Combo bubbles are player-only; cats must never target or pop them.
+    const auto pickRandomNonCombo = [&]() -> Bubble*
+    {
+        return pickRandomBubbleInRadiusMatching({cx, cy}, range, [&](const Bubble& b) {
+            return b.type != BubbleType::Combo;
+        });
+    };
+
     if (!pt->perm.smartCatsPurchased)
     {
-        if (Bubble* b = pickRandomBubbleInRadius({cx, cy}, range))
+        if (Bubble* b = pickRandomNonCombo())
             normalCatPopBubble(*b);
 
         return;
@@ -646,7 +1039,7 @@ void Main::gameLoopUpdateCatActionNormal(const float /* deltaTimeMs */, Cat& cat
     {
         if (Bubble* specialBubble = pickAny(BubbleType::Nova, BubbleType::Star, BubbleType::Bomb))
             normalCatPopBubble(*specialBubble);
-        else if (Bubble* b = pickRandomBubbleInRadius({cx, cy}, range))
+        else if (Bubble* b = pickRandomNonCombo())
             normalCatPopBubble(*b);
 
         return;
@@ -744,7 +1137,9 @@ void Main::gameLoopUpdateCatActionDevil(const float /* deltaTimeMs */, Cat& cat)
 
     if (!isDevilcatHellsingedActive())
     {
-        Bubble* b = pickRandomBubbleInRadius(getCatRangeCenter(cat), range);
+        Bubble* b = pickRandomBubbleInRadiusMatching(getCatRangeCenter(cat), range, [&](const Bubble& bubble) {
+            return bubble.type != BubbleType::Combo;
+        });
         if (b == nullptr)
             return;
 
@@ -804,6 +1199,66 @@ void Main::gameLoopUpdateCatActionAstro(const float /* deltaTimeMs */, Cat& cat)
     ++cat.hits;
     cat.astroState.emplace(/* startX */ cat.position.x, /* velocityX */ 0.f, /* wrapped */ false);
     --cat.position.x;
+}
+
+
+////////////////////////////////////////////////////////////
+void Main::gameLoopUpdateCatActionWarden(const float /* deltaTimeMs */, Cat& cat)
+{
+    SFEX_PROFILE_SCOPE_AUTOLABEL();
+
+    const auto maxCooldown  = getComputedCooldownByCatTypeOrCopyCat(cat.type);
+    const auto range        = getComputedRangeByCatTypeOrCopyCat(cat.type);
+    const auto rangeSquared = range * range;
+
+    // Pick the most-deeply-asleep cat in range (favors the one closest to
+    // fully napping, so the warden keeps the dorm orderly).
+    Cat*  bestTarget = nullptr;
+    float bestScore  = -1.f;
+
+    for (Cat& otherCat : pt->cats)
+    {
+        if (&otherCat == &cat)
+            continue;
+
+        if (!otherCat.isNapping())
+            continue;
+
+        // Already in the wake-fade — don't double-trigger.
+        if (otherCat.napTransition->direction == TimerDirection::Backwards)
+            continue;
+
+        if ((otherCat.position - cat.position).lengthSquared() > rangeSquared)
+            continue;
+
+        const float score = otherCat.napTransition->value;
+        if (score > bestScore)
+        {
+            bestScore  = score;
+            bestTarget = &otherCat;
+        }
+    }
+
+    if (bestTarget == nullptr)
+        return;
+
+    // Wake them up: kick the fade backwards and clear the sleep countdown.
+    bestTarget->napTransition->direction = TimerDirection::Backwards;
+    bestTarget->napSleepCountdown.reset();
+    bestTarget->napShakeProgress = 0.f;
+
+    // TODO: dedicated wake-up sound for the warden's action.
+    sounds.shimmer.settings.position = {bestTarget->position.x, bestTarget->position.y};
+    playSound(sounds.shimmer, /* maxOverlap */ 1u);
+
+    cat.pawPosition = bestTarget->position;
+    cat.pawOpacity  = 255.f;
+    cat.pawRotation = (bestTarget->position - cat.position).angle() + sf::degrees(45);
+
+    cat.textStatusShakeEffect.bump(rngFast, 1.5f);
+    ++cat.hits;
+
+    cat.cooldown.value = maxCooldown;
 }
 
 
@@ -964,35 +1419,32 @@ void Main::gameLoopUpdateNapScheduler(const float deltaTimeMs)
         }
     }
 
-    // Random periodic naps once the player has seen the tutorial. The interval
-    // shrinks with cat count via a sqrt-curve (diminishing returns) and is
-    // floored so it never becomes ridiculously frequent.
-    pt->randomNapTimerMs -= deltaTimeMs;
+    // Per-cat scheduler: each cat owns its own countdown that ticks down
+    // independently and triggers a nap when it expires. The countdown resets
+    // to a fresh random value in [120s, 300s].
+    constexpr float minNextNapMs = 120'000.f;
+    constexpr float maxNextNapMs = 300'000.f;
 
-    if (pt->randomNapTimerMs > 0.f)
-        return;
-
-    const auto  n         = static_cast<float>(pt->cats.size());
-    const float scaledSec = sf::base::max(25.f, 80.f - 2.3f * sf::base::sqrt(n));
-    pt->randomNapTimerMs  = scaledSec * 1000.f * rng.getF(0.85f, 1.15f);
-
-    // Reservoir-sample a random eligible cat.
-    SizeT eligibleCount = 0u;
-    Cat*  selected      = nullptr;
-
-    for (Cat& candidate : pt->cats)
+    for (Cat& cat : pt->cats)
     {
-        if (!canCatNap(candidate))
+        // Lazy-init: brand-new cats have a 0 countdown; pick one on first
+        // visit so they don't all fire on the same frame.
+        if (cat.napScheduleCountdownMs <= 0.f)
+            cat.napScheduleCountdownMs = rng.getF(minNextNapMs, maxNextNapMs);
+
+        // Pause the schedule countdown while the cat is napping or otherwise
+        // ineligible — it'll resume once the cat is awake again.
+        if (!canCatNap(cat))
             continue;
 
-        ++eligibleCount;
+        cat.napScheduleCountdownMs -= deltaTimeMs;
 
-        if (rng.getI<SizeT>(0, eligibleCount - 1) == 0)
-            selected = &candidate;
+        if (cat.napScheduleCountdownMs > 0.f)
+            continue;
+
+        cat.napScheduleCountdownMs = rng.getF(minNextNapMs, maxNextNapMs);
+        beginCatNap(cat, /* sleepDurationMs */ 20'000.f);
     }
-
-    if (selected != nullptr)
-        beginCatNap(*selected, /* sleepDurationMs */ 20'000.f);
 }
 
 
@@ -1242,7 +1694,9 @@ void Main::gameLoopUpdateCatActionMouse(const float /* deltaTimeMs */, Cat& cat)
     const auto maxCooldown = getComputedCooldownByCatTypeOrCopyCat(cat.type);
     const auto range       = getComputedRangeByCatTypeOrCopyCat(cat.type);
 
-    Bubble* b = pickRandomBubbleInRadius(cat.position, range);
+    Bubble* b = pickRandomBubbleInRadiusMatching(cat.position, range, [&](const Bubble& bubble) {
+        return bubble.type != BubbleType::Combo;
+    });
     if (b == nullptr)
         return;
 
@@ -1276,6 +1730,9 @@ void Main::gameLoopUpdateCatActionMouse(const float /* deltaTimeMs */, Cat& cat)
                               [&](Bubble& otherBubble)
         {
             if (&otherBubble == &bubble)
+                return ControlFlow::Continue;
+
+            if (otherBubble.type == BubbleType::Combo)
                 return ControlFlow::Continue;
 
             popWithRewardAndReplaceBubble({
@@ -1350,7 +1807,7 @@ void Main::gameLoopUpdateCatActionRepulso(const float /* deltaTimeMs */, Cat& ca
     if (pt->repulsoCatConverterEnabled && !pt->repulsoCatIgnoreBubbles.normal)
     {
         Bubble* b = pickRandomBubbleInRadiusMatching(cat.position, range, [&](Bubble& bubble) {
-            return bubble.type != BubbleType::Star && bubble.type != BubbleType::Nova;
+            return bubble.type != BubbleType::Star && bubble.type != BubbleType::Nova && bubble.type != BubbleType::Combo;
         });
 
         if (b != nullptr && rng.getF(0.f, 100.f) < pt->psvPPRepulsoCatConverterChance.currentValue())
@@ -1878,6 +2335,9 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
                                       range,
                                       [&](Bubble& bubble)
                 {
+                    if (bubble.type == BubbleType::Combo)
+                        return ControlFlow::Continue;
+
                     const MoneyType reward = computeFinalReward(/* bubble     */ bubble,
                                                                 /* multiplier */ 20.f,
                                                                 /* comboMult  */ 1.f,
@@ -2028,6 +2488,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
             &Main::gameLoopUpdateCatActionUni,
             &Main::gameLoopUpdateCatActionDevil,
             &Main::gameLoopUpdateCatActionAstro,
+            &Main::gameLoopUpdateCatActionWarden,
 
             &Main::gameLoopUpdateCatActionWitch,
             &Main::gameLoopUpdateCatActionWizard,
@@ -2570,6 +3031,7 @@ void Main::collectDollImpl(Doll& d, HexSession& session, const bool copy)
             1.f, // Uni
             1.f, // Devil
             1.f, // Astro
+            1.f, // Warden
 
             1.f, // Witch
             1.f, // Wizard
@@ -2793,6 +3255,39 @@ void Main::addEventBubblefall(const float regionCenterX)
 
 
 ////////////////////////////////////////////////////////////
+void Main::addEventInvincibleBubble()
+{
+    const auto& cfg = gameConstants.events.invincibleBubble;
+
+    // Spawn one Combo bubble at a random x at the top of the map. The bubble
+    // is the event manifestation; the variant entry expires immediately.
+    auto& bubble = pt->bubbles.emplaceBack(makeRandomBubble(*pt, rng, pt->getMapLimit(), boundaries.y));
+
+    bubble.type      = BubbleType::Combo;
+    bubble.ephemeral = true;
+    bubble.radius    = rng.getF(cfg.minRadius, cfg.maxRadius);
+
+    // Keep the bubble well inside the play area: at least `spawnEdgeMarginPx`
+    // away from either horizontal boundary (capped so we never invert the
+    // range on a tiny / unbought map).
+    const float mapLimit = pt->getMapLimit();
+    const float margin   = sf::base::min(cfg.spawnEdgeMarginPx, sf::base::max(0.f, mapLimit * 0.5f - bubble.radius));
+    bubble.position.x    = rng.getF(margin, mapLimit - margin);
+    bubble.position.y    = -bubble.radius * rng.getF(cfg.spawnYOffsetTopMin, cfg.spawnYOffsetTopMax);
+    bubble.velocity.x    = rng.getF(-cfg.velocityJitterX, cfg.velocityJitterX);
+    bubble.velocity.y    = cfg.initialVelocityY + rng.getF(-cfg.velocityJitterY, cfg.velocityJitterY);
+
+    pt->activeEvents.emplaceBack(EInvincibleBubble{.remainingMs = 0.f});
+
+    spawnParticles(32, bubble.position, ParticleType::Bubble, 0.6f, 0.5f);
+    sounds.shimmer.settings.position = {bubble.position.x, bubble.position.y};
+    playSound(sounds.shimmer);
+
+    pushNotification("Something is happening!", "Invincible bubble TODO");
+}
+
+
+////////////////////////////////////////////////////////////
 void Main::gameLoopUpdateEvents(const float deltaTimeMs)
 {
     SFEX_PROFILE_SCOPE_AUTOLABEL();
@@ -2810,16 +3305,26 @@ void Main::gameLoopUpdateEvents(const float deltaTimeMs)
     {
         pt->nextEventSpawnMs = rng.getF(eventsCfg.minSpawnIntervalMs, eventsCfg.maxSpawnIntervalMs);
 
-        // Pick a random event kind. With more kinds this becomes a switch on a
-        // uniform roll; for now the only option is Bubblefall.
-        const float halfWidth = bfCfg.regionWidth * 0.5f;
-
-        addEventBubblefall(rng.getF(halfWidth, pt->getMapLimit() - halfWidth));
+        // Uniform pick across the available event kinds. Adding a new kind is
+        // a matter of extending this branch.
+        if (rng.getI<SizeT>(0u, 1u) == 0u)
+        {
+            const float halfWidth = bfCfg.regionWidth * 0.5f;
+            addEventBubblefall(rng.getF(halfWidth, pt->getMapLimit() - halfWidth));
+        }
+        else
+        {
+            addEventInvincibleBubble();
+        }
     }
 
     // Per-kind update: advance the event's own timers and (if positional)
     // drive its spawner. Returns the remaining duration — <= 0 means expire.
     const auto tickEvent = sf::base::OverloadSet{
+        // Invincible bubble events are fire-and-forget: the bubble itself is
+        // the manifestation, so the entry expires on the very next frame.
+        [&](EInvincibleBubble& e) -> float { return e.remainingMs; },
+
         [&](EBubblefall& e) -> float
     {
         e.remainingMs -= deltaTimeMs;
@@ -2882,6 +3387,7 @@ void Main::gameLoopUpdateEvents(const float deltaTimeMs)
     {
         return ev.linearVisit(sf::base::OverloadSet{
             [](const EBubblefall& e) { return e.remainingMs <= 0.f; },
+            [](const EInvincibleBubble& e) { return e.remainingMs <= 0.f; },
         });
     });
 }

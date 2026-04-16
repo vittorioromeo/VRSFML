@@ -12,15 +12,16 @@ enum class [[nodiscard]] CatType : sf::base::U8
     Uni    = 1u,
     Devil  = 2u,
     Astro  = 3u,
+    Warden = 4u, // wakes up sleeping cats in their range
 
-    Witch    = 4u,
-    Wizard   = 5u,
-    Mouse    = 6u,
-    Engi     = 7u,
-    Repulso  = 8u,
-    Attracto = 9u,
-    Copy     = 10u,
-    Duck     = 11u,
+    Witch    = 5u,
+    Wizard   = 6u,
+    Mouse    = 7u,
+    Engi     = 8u,
+    Repulso  = 9u,
+    Attracto = 10u,
+    Copy     = 11u,
+    Duck     = 12u,
 
     Count
 };

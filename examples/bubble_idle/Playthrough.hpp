@@ -68,6 +68,7 @@ struct Playthrough
                     {&PSVDataConstants::catUni},
                     {&PSVDataConstants::catDevil},
                     {&PSVDataConstants::catAstro},
+                    {&PSVDataConstants::catWarden},
 
                     {&PSVDataConstants::catWitch},    // unused
                     {&PSVDataConstants::catWizard},   // unused
@@ -87,6 +88,7 @@ struct Playthrough
                     {&PSVDataConstants::catUniCooldownMult},
                     {&PSVDataConstants::catDevilCooldownMult},
                     {&PSVDataConstants::catAstroCooldownMult},
+                    {&PSVDataConstants::catWardenCooldownMult},
 
                     {&PSVDataConstants::catWitchCooldownMult},
                     {&PSVDataConstants::catWizardCooldownMult},
@@ -106,6 +108,7 @@ struct Playthrough
                     {&PSVDataConstants::catUniRangeDiv},
                     {&PSVDataConstants::catDevilRangeDiv},
                     {&PSVDataConstants::catAstroRangeDiv},
+                    {&PSVDataConstants::catWardenRangeDiv},
 
                     {&PSVDataConstants::catWitchRangeDiv},
                     {&PSVDataConstants::catWizardRangeDiv},
@@ -274,11 +277,9 @@ struct Playthrough
     //   - `scriptedNapDone` flips to `true` once the one-shot tutorial nap has
     //     fired; the trigger is 5s after hitting 3 cats for the first time.
     //   - `scriptedNapPendingCountdown` holds the in-flight 5s delay.
-    //   - `randomNapTimerMs` ticks down to the next random nap once the
-    //     scripted event is done and the player owns enough cats.
+    //   - The actual nap-cadence countdown is per-cat (`Cat::napScheduleCountdownMs`).
     bool                          scriptedNapDone = false;
     sf::base::Optional<Countdown> scriptedNapPendingCountdown;
-    float                         randomNapTimerMs = 60'000.f;
 
     // Flips to `true` the first time a cat finishes waking up from a nap;
     // used as the "completed the nap tutorial" gate (e.g. for unlocking
@@ -421,6 +422,7 @@ struct Playthrough
                                   15u, // Star
                                   1u,  // Bomb
                                   50u, // Nova
+                                  1u,  // Combo (the value is in the combo it builds, not the per-click reward)
                               });
 
         return baseRewards[asIdx(type)] * static_cast<MoneyType>(psvBubbleValue.currentValue() + 1.f);

@@ -5,6 +5,7 @@
 #include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/Array.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 
@@ -28,6 +29,7 @@ struct [[nodiscard]] GameConstants
         {-35.f, -222.f}, // Uni
         {-8.f, 2.f},     // Devil
         {56.f, -80.f},   // Astro
+        {-40.f, 0.f},    // Warden — TODO: dedicated assets (reusing Normal)
         {37.f, 165.f},   // Witch
         {-90.f, 120.f},  // Wizard
         {0.f, 0.f},      // Mouse
@@ -43,6 +45,7 @@ struct [[nodiscard]] GameConstants
         {0.f, 0.f}, // Uni
         {0.f, 0.f}, // Devil
         {0.f, 0.f}, // Astro
+        {0.f, 0.f}, // Warden — TODO: dedicated assets
         {0.f, 0.f}, // Witch
         {0.f, 0.f}, // Wizard
         {0.f, 0.f}, // Mouse
@@ -58,6 +61,7 @@ struct [[nodiscard]] GameConstants
         {-35.f, -222.f}, // Uni
         {-8.f, 2.f},     // Devil
         {56.f, -80.f},   // Astro
+        {-40.f, 0.f},    // Warden — TODO: dedicated assets (reusing Normal)
         {37.f, 165.f},   // Witch
         {-25.f, 65.f},   // Wizard
         {0.f, 0.f},      // Mouse
@@ -73,6 +77,7 @@ struct [[nodiscard]] GameConstants
         160.f,  // Uni
         -25.f,  // Devil
         0.f,    // Astro
+        45.f,   // Warden — TODO: dedicated assets
         80.f,   // Witch
         -135.f, // Wizard
         0.f,    // Mouse
@@ -88,6 +93,7 @@ struct [[nodiscard]] GameConstants
         CloudModifier{{0.f, -10.f}, 1.5f}, // Uni
         CloudModifier{{0.f, 0.f}, 1.5f},   // Devil
         CloudModifier{{0.f, -17.f}, 2.f},  // Astro
+        CloudModifier{{0.f, 0.f}, 1.f},    // Warden — TODO: dedicated assets
         CloudModifier{{0.f, -5.f}, 1.2f},  // Witch
         CloudModifier{{0.f, -5.f}, 1.5f},  // Wizard
         CloudModifier{{0.f, 0.f}, 1.f},    // Mouse
@@ -167,12 +173,56 @@ struct [[nodiscard]] GameConstants
         float releaseRatio = 0.15f;
     };
 
+    struct [[nodiscard]] InvincibleBubbleTuning
+    {
+        float minRadius          = 0.05f * 256.f; // smaller than normal bubbles
+        float maxRadius          = 0.08f * 256.f;
+        float initialVelocityY   = 0.04f; // gentle initial drop
+        float velocityJitterY    = 0.015f;
+        float velocityJitterX    = 0.04f;
+        float maxVelocityY       = 0.06f; // hard cap on fall speed
+        float spawnYOffsetTopMin = 1.f;
+        float spawnYOffsetTopMax = 3.f;
+
+        // Combo mechanic tuning.
+        float         comboTimerMaxMs      = 1000.f;  // window after each click before the bubble pops
+        sf::base::U32 maxClicks            = 25u;     // auto-pop after this many clicks
+        float         rewardScalePerClick  = 5.f;     // base coins per click
+        float         rewardClickExponent  = 1.5f;    // reward = base * pow(clicks, exp)
+        float         ambientRepelRadius   = 128.f;   // gentle "stand-out" push while alive
+        float         ambientRepelStrength = 0.0018f; // per-ms velocity push factor
+        float         popRepelRadius       = 360.f;   // burst on pop
+        float         popRepelImpulse      = 0.95f;   // one-shot velocity kick
+
+        // Per-click visual feedback: coins-of-energy fly into the bubble and
+        // it puffs up slightly to telegraph progress.
+        float clickAbsorbRadius    = 64.f;  // ring around the bubble where particles spawn
+        float clickAbsorbSpeed     = 0.45f; // px/ms inward
+        float radiusGrowthPerClick = 0.4f;  // px added per click
+        float radiusGrowthMax      = 18.f;  // total px added cap
+
+        // Spawn position safety margin so the bubble never appears flush
+        // against either horizontal edge of the map.
+        float         spawnEdgeMarginPx   = 300.f;
+        float         payoutCoinDelayMs   = 35.f; // ms between rising-pitch coin collections
+        sf::base::U32 payoutCoinsPerClick = 2u;   // coins spewed per click
+        sf::base::U32 payoutMaxCoins      = 80u;  // hard cap on the spew
+
+        // Burst phase: coins explode outward from the bubble, damp to a stop,
+        // then transition into the rising-pitch collection sequence.
+        float burstSpeedMin      = 0.55f; // initial outward speed (px/ms)
+        float burstSpeedMax      = 0.95f;
+        float burstDampingPerSec = 0.005f; // fraction of velocity left per second (smaller = more damping)
+        float burstSettleDelayMs = 350.f;  // wait between burst start and collection start
+    };
+
     struct [[nodiscard]] EventsTuning
     {
         float minSpawnIntervalMs = 45'000.f;
         float maxSpawnIntervalMs = 120'000.f;
 
-        BubblefallTuning bubblefall{};
+        BubblefallTuning       bubblefall{};
+        InvincibleBubbleTuning invincibleBubble{};
     };
 
     EventsTuning events{};

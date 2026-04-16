@@ -70,6 +70,7 @@ void Main::gameLoopUpdateFrameWorld(const float realDeltaTimeMs, FrameInput& fra
     // this frame. Must run after all bubble collision passes so that the
     // indices captured by `sweepAndPrune.populate` stay valid.
     gameLoopReapEphemeralBubbles();
+    gameLoopUpdateComboBubblePayouts(deltaTimeMs);
 
     gameLoopUpdateScreenShake(deltaTimeMs);
     gameLoopUpdateParticlesAndTextParticles(deltaTimeMs);

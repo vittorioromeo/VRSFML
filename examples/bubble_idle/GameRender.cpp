@@ -150,6 +150,7 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
     drawBatch(cpuDrawableBatchBeforeCats, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
     drawBatch(cpuDrawableBatch, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
     drawHexedCatDrawCommands(gameView, /* top */ false);
+    gameLoopDrawComboBubbleBurstingCoins();
     drawBatch(cpuDrawableBatchAfterCats, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
     drawBatch(cpuDrawableBatchAdditive,
               {.blendMode = sf::BlendAdd, .view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});

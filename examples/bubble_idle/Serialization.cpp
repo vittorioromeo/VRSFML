@@ -340,6 +340,8 @@ DEFINE_TWO_WAY_SERIALIZER(Bubble)
     FIELD(type);
     FIELD(ephemeral);
     FIELD(hueSeed);
+    FIELD(comboTimerMs);
+    FIELD(comboClickCount);
 }
 
 
@@ -390,6 +392,7 @@ DEFINE_TWO_WAY_SERIALIZER(Cat)
     FIELD(napTransition);
     FIELD(napSleepCountdown);
     FIELD(napShakeProgress);
+    FIELD(napScheduleCountdownMs);
 }
 
 
@@ -435,11 +438,23 @@ DEFINE_TWO_WAY_SERIALIZER(EBubblefall)
 
 
 ////////////////////////////////////////////////////////////
+DEFINE_TWO_WAY_SERIALIZER(EInvincibleBubble)
+{
+    FIELD(remainingMs);
+}
+
+
+////////////////////////////////////////////////////////////
 // Event kinds are tagged by a string `kind` so the variant can round-trip
 // without positional coupling. Keep tags stable when renaming types.
 inline constexpr const char* eventKindTag(const EBubblefall&)
 {
     return "bubblefall";
+}
+
+inline constexpr const char* eventKindTag(const EInvincibleBubble&)
+{
+    return "invincible_bubble";
 }
 
 
@@ -472,6 +487,12 @@ void from_json(const nlohmann::json& j, GameEvent& p)
     if (kind == "bubblefall")
     {
         EBubblefall e{};
+        dataIt->get_to(e);
+        p = GameEvent{e};
+    }
+    else if (kind == "invincible_bubble")
+    {
+        EInvincibleBubble e{};
         dataIt->get_to(e);
         p = GameEvent{e};
     }
@@ -794,11 +815,44 @@ DEFINE_TWO_WAY_SERIALIZER(GameConstants::BubblefallTuning)
 }
 
 ////////////////////////////////////////////////////////////
+DEFINE_TWO_WAY_SERIALIZER(GameConstants::InvincibleBubbleTuning)
+{
+    FIELD(minRadius);
+    FIELD(maxRadius);
+    FIELD(initialVelocityY);
+    FIELD(velocityJitterY);
+    FIELD(velocityJitterX);
+    FIELD(maxVelocityY);
+    FIELD(spawnYOffsetTopMin);
+    FIELD(spawnYOffsetTopMax);
+    FIELD(comboTimerMaxMs);
+    FIELD(maxClicks);
+    FIELD(rewardScalePerClick);
+    FIELD(rewardClickExponent);
+    FIELD(ambientRepelRadius);
+    FIELD(ambientRepelStrength);
+    FIELD(popRepelRadius);
+    FIELD(popRepelImpulse);
+    FIELD(clickAbsorbRadius);
+    FIELD(clickAbsorbSpeed);
+    FIELD(radiusGrowthPerClick);
+    FIELD(radiusGrowthMax);
+    FIELD(spawnEdgeMarginPx);
+    FIELD(payoutCoinDelayMs);
+    FIELD(payoutCoinsPerClick);
+    FIELD(payoutMaxCoins);
+    FIELD(burstSpeedMin);
+    FIELD(burstSpeedMax);
+    FIELD(burstDampingPerSec);
+    FIELD(burstSettleDelayMs);
+}
+
 DEFINE_TWO_WAY_SERIALIZER(GameConstants::EventsTuning)
 {
     FIELD(minSpawnIntervalMs);
     FIELD(maxSpawnIntervalMs);
     FIELD(bubblefall);
+    FIELD(invincibleBubble);
 }
 
 ////////////////////////////////////////////////////////////
@@ -1015,7 +1069,6 @@ DEFINE_TWO_WAY_SERIALIZER(Playthrough)
 
     FIELD(scriptedNapDone);
     FIELD(scriptedNapPendingCountdown);
-    FIELD(randomNapTimerMs);
     FIELD(anyCatEverWokenFromNap);
     FIELD(shrinesSpawned);
 
