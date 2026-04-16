@@ -52,6 +52,16 @@ struct SoundStream::Impl
     }
 
     ////////////////////////////////////////////////////////////
+    ~Impl()
+    {
+        // Detach the sound from the engine graph BEFORE `sampleBuffer` (and
+        // any other non-trivial members) is destroyed. Member destruction
+        // order would otherwise free `sampleBuffer` while the audio thread
+        // is still calling `read()`, causing a heap-use-after-free.
+        soundBase.uninitSound();
+    }
+
+    ////////////////////////////////////////////////////////////
     static void onEnd(void* const userData, ma_sound* const soundPtr)
     {
         auto& impl = *static_cast<Impl*>(userData);
