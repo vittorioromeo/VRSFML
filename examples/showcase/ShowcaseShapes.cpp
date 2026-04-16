@@ -2,19 +2,24 @@
 #include "ShowcaseShapes.hpp"
 
 #include "SFML/Graphics/ArrowShapeData.hpp"
+#include "SFML/Graphics/ChevronShapeData.hpp"
 #include "SFML/Graphics/CircleShapeData.hpp"
+#include "SFML/Graphics/CogShapeData.hpp"
 #include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/CrossShapeData.hpp"
 #include "SFML/Graphics/CurvedArrowShapeData.hpp"
 #include "SFML/Graphics/EllipseShapeData.hpp"
-#include "SFML/Graphics/Font.hpp"
+#include "SFML/Graphics/HeartShapeData.hpp"
 #include "SFML/Graphics/PieSliceShapeData.hpp"
+#include "SFML/Graphics/RectangleShapeData.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RingPieSliceShapeData.hpp"
 #include "SFML/Graphics/RingShapeData.hpp"
 #include "SFML/Graphics/RoundedRectangleShapeData.hpp"
 #include "SFML/Graphics/StarShapeData.hpp"
 #include "SFML/Graphics/TextData.hpp"
-#include "SFML/Graphics/VertexSpan.hpp"
+#include "SFML/Graphics/TrapezoidShapeData.hpp"
+#include "SFML/Graphics/BatchedGeometry.hpp"
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"
@@ -22,8 +27,6 @@
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Math/Fmod.hpp"
 #include "SFML/Base/Math/Sin.hpp"
-
-#include <initializer_list>
 
 
 ////////////////////////////////////////////////////////////
@@ -50,13 +53,15 @@ auto ExampleShapes::applyCommonSettings(const sf::Vec2f currentOffset, auto shap
 
 
 ////////////////////////////////////////////////////////////
-sf::VertexSpan ExampleShapes::drawShape(const sf::Vec2f currentOffset, const char* label, const auto& shapeData)
+sf::BatchedGeometry ExampleShapes::drawShape(const char* label, const auto& shapeData)
 {
-    auto result = m_deps.rtGame->draw(applyCommonSettings(currentOffset, shapeData), {.view = *m_deps.view});
+    const auto offset = sf::Vec2f{32.f, 32.f};
+
+    auto result = m_deps.rtGame->draw(applyCommonSettings(offset, shapeData), {.view = *m_deps.view});
 
     m_deps.rtGame->draw(*m_deps.font,
                         sf::TextData{
-                            .position         = shapeData.position + currentOffset,
+                            .position         = shapeData.position + offset,
                             .string           = label,
                             .characterSize    = 16,
                             .outlineColor     = sf::Color::Black,
@@ -78,103 +83,185 @@ float ExampleShapes::getPhasedValue(const float timeMultiplier, const float phas
 
 
 ////////////////////////////////////////////////////////////
-void ExampleShapes::drawAllShapes(const sf::Vec2f offset)
+void ExampleShapes::drawShapeAtCell(const sf::Vec2f cellPosition, const unsigned int shapeIndex)
 {
-    drawShape(offset,
-              "Circle",
-              sf::CircleShapeData{
-                  .position   = {32.f, 32.f},
-                  .origin     = {64.f, 64.f},
-                  .radius     = 64.f,
-                  .pointCount = 3u + static_cast<unsigned int>(29.f * getPhasedValue(0.04f, 2.f)),
-              });
+    // Cycle through the 15 shape types by index. Each case constructs the shape at the given
+    // cell and forwards it to `drawShape`, which handles per-frame color/rotation animation.
+    switch (shapeIndex % 15u)
+    {
+        case 0u:
+            drawShape("Circle",
+                      sf::CircleShapeData{
+                          .position   = cellPosition,
+                          .origin     = {64.f, 64.f},
+                          .radius     = 64.f,
+                          .pointCount = 3u + static_cast<unsigned int>(29.f * getPhasedValue(0.04f, 2.f)),
+                      });
+            break;
 
-    drawShape(offset,
-              "Ellipse",
-              sf::EllipseShapeData{
-                  .position         = {196.f, 32.f},
-                  .origin           = {64.f, 32.f},
-                  .horizontalRadius = 64.f,
-                  .verticalRadius   = 32.f,
-                  .pointCount       = 3u + static_cast<unsigned int>(29.f * getPhasedValue(0.06f, 3.5f)),
-              });
+        case 1u:
+            drawShape("Ellipse",
+                      sf::EllipseShapeData{
+                          .position         = cellPosition,
+                          .origin           = {64.f, 32.f},
+                          .horizontalRadius = 64.f,
+                          .verticalRadius   = 32.f,
+                          .pointCount       = 3u + static_cast<unsigned int>(29.f * getPhasedValue(0.06f, 3.5f)),
+                      });
+            break;
 
-    drawShape(offset,
-              "PieSlice",
-              sf::PieSliceShapeData{
-                  .position   = {364.f, 32.f},
-                  .origin     = {64.f, 64.f},
-                  .radius     = 64.f,
-                  .startAngle = sf::degrees(0.f),
-                  .sweepAngle = sf::degrees((360.f * getPhasedValue(0.1f, 2.f))),
-                  .pointCount = 32u,
-              });
+        case 2u:
+            drawShape("PieSlice",
+                      sf::PieSliceShapeData{
+                          .position   = cellPosition,
+                          .origin     = {64.f, 64.f},
+                          .radius     = 64.f,
+                          .startAngle = sf::degrees(0.f),
+                          .sweepAngle = sf::degrees((360.f * getPhasedValue(0.1f, 2.f))),
+                          .pointCount = 32u,
+                      });
+            break;
 
-    drawShape(offset,
-              "Arrow",
-              sf::ArrowShapeData{
-                  .position    = {32.f, 196.f},
-                  .origin      = {(64.f + 48.f) / 2.f, 0.f},
-                  .shaftLength = 64.f,
-                  .shaftWidth  = 32.f + (32.f * getPhasedValue(0.04f, 2.f)),
-                  .headLength  = 48.f,
-                  .headWidth   = 96.f - (64.f * getPhasedValue(0.06f, 3.f)),
-              });
+        case 3u:
+            drawShape("Rectangle",
+                      sf::RectangleShapeData{
+                          .position = cellPosition,
+                          .origin   = {64.f, 64.f},
+                          .size = {64.f + 64.f * getPhasedValue(0.06f, 2.f), 128.f - 64.f * getPhasedValue(0.06f, 2.f)},
+                      });
+            break;
 
-    drawShape(offset,
-              "RoundedRectangle",
-              sf::RoundedRectangleShapeData{
-                  .position         = {196.f, 196.f},
-                  .origin           = {64.f, 32.f},
-                  .size             = {128.f, 64.f},
-                  .cornerRadius     = 3.f + (29.f * getPhasedValue(0.1f, 1.5f)),
-                  .cornerPointCount = 16u,
-              });
+        case 4u:
+            drawShape("RoundedRectangle",
+                      sf::RoundedRectangleShapeData{
+                          .position         = cellPosition,
+                          .origin           = {64.f, 32.f},
+                          .size             = {128.f, 64.f},
+                          .cornerRadius     = 3.f + (29.f * getPhasedValue(0.1f, 1.5f)),
+                          .cornerPointCount = 16u,
+                      });
+            break;
 
-    drawShape(offset,
-              "RingPieSlice",
-              sf::RingPieSliceShapeData{
-                  .position    = {364.f, 196.f},
-                  .origin      = {64.f, 64.f},
-                  .outerRadius = 64.f,
-                  .innerRadius = 32.f + (16.f * getPhasedValue(0.2f, 0.75f)),
-                  .startAngle  = sf::degrees(0.f),
-                  .sweepAngle  = sf::degrees((360.f * getPhasedValue(0.1f, 2.f))),
-                  .pointCount  = 32u,
-              });
+        case 5u:
+            drawShape("Arrow",
+                      sf::ArrowShapeData{
+                          .position    = cellPosition,
+                          .origin      = {(64.f + 48.f) / 2.f, 0.f},
+                          .shaftLength = 64.f,
+                          .shaftWidth  = 32.f + (32.f * getPhasedValue(0.04f, 2.f)),
+                          .headLength  = 48.f,
+                          .headWidth   = 96.f - (64.f * getPhasedValue(0.06f, 3.f)),
+                      });
+            break;
 
-    drawShape(offset,
-              "Ring",
-              sf::RingShapeData{
-                  .position    = {364.f, 364.f},
-                  .origin      = {64.f, 64.f},
-                  .outerRadius = 64.f,
-                  .innerRadius = 32.f + (16.f * getPhasedValue(0.25f, 2.f)),
-                  .pointCount  = 30u,
-              });
+        case 6u:
+            drawShape("CurvedArrow",
+                      sf::CurvedArrowShapeData{
+                          .position    = cellPosition,
+                          .origin      = {64.f, 64.f},
+                          .outerRadius = 64.f,
+                          .innerRadius = 32.f + (16.f * getPhasedValue(0.25f, 2.f)),
+                          .startAngle  = sf::degrees(0.f),
+                          .sweepAngle  = sf::degrees((270.f * getPhasedValue(0.1f, 2.f))),
+                          .headLength  = 32.f,
+                          .headWidth   = 8.f + (64.f * getPhasedValue(0.06f, 3.f)),
+                      });
+            break;
 
-    drawShape(offset,
-              "Star",
-              sf::StarShapeData{
-                  .position    = {32.f, 364.f},
-                  .origin      = {64.f, 64.f},
-                  .outerRadius = 64.f,
-                  .innerRadius = 32.f + (16.f * getPhasedValue(0.25f, 2.f)),
-                  .pointCount  = 3u + static_cast<unsigned int>(10.f * getPhasedValue(0.1f, 2.f)),
-              });
+        case 7u:
+            drawShape("Ring",
+                      sf::RingShapeData{
+                          .position    = cellPosition,
+                          .origin      = {64.f, 64.f},
+                          .outerRadius = 64.f,
+                          .innerRadius = 32.f + (16.f * getPhasedValue(0.25f, 2.f)),
+                          .pointCount  = 30u,
+                      });
+            break;
 
-    drawShape(offset,
-              "CurvedArrow",
-              sf::CurvedArrowShapeData{
-                  .position    = {196.f, 364.f},
-                  .origin      = {64.f, 64.f},
-                  .outerRadius = 64.f,
-                  .innerRadius = 32.f + (16.f * getPhasedValue(0.25f, 2.f)),
-                  .startAngle  = sf::degrees(0.f),
-                  .sweepAngle  = sf::degrees((270.f * getPhasedValue(0.1f, 2.f))),
-                  .headLength  = 32.f,
-                  .headWidth   = 8.f + (64.f * getPhasedValue(0.06f, 3.f)),
-              });
+        case 8u:
+            drawShape("RingPieSlice",
+                      sf::RingPieSliceShapeData{
+                          .position    = cellPosition,
+                          .origin      = {64.f, 64.f},
+                          .outerRadius = 64.f,
+                          .innerRadius = 32.f + (16.f * getPhasedValue(0.2f, 0.75f)),
+                          .startAngle  = sf::degrees(0.f),
+                          .sweepAngle  = sf::degrees((360.f * getPhasedValue(0.1f, 2.f))),
+                          .pointCount  = 32u,
+                      });
+            break;
+
+        case 9u:
+            drawShape("Star",
+                      sf::StarShapeData{
+                          .position    = cellPosition,
+                          .origin      = {64.f, 64.f},
+                          .outerRadius = 64.f,
+                          .innerRadius = 32.f + (16.f * getPhasedValue(0.25f, 2.f)),
+                          .pointCount  = 3u + static_cast<unsigned int>(10.f * getPhasedValue(0.1f, 2.f)),
+                      });
+            break;
+
+        case 10u:
+            drawShape("Cross",
+                      sf::CrossShapeData{
+                          .position     = cellPosition,
+                          .origin       = {64.f, 64.f},
+                          .size         = {128.f, 128.f},
+                          .armThickness = 16.f + (32.f * getPhasedValue(0.1f, 2.f)),
+                      });
+            break;
+
+        case 11u:
+        {
+            sf::TrapezoidShapeData sd{
+                .position    = cellPosition,
+                .topWidth    = 32.f + (64.f * getPhasedValue(0.08f, 2.f)),
+                .bottomWidth = 128.f,
+                .height      = 128.f,
+            };
+            sd.origin = sd.getCentroid();
+            drawShape("Trapezoid", sd);
+            break;
+        }
+
+        case 12u:
+        {
+            sf::ChevronShapeData sd{
+                .position  = cellPosition,
+                .size      = {128.f, 128.f},
+                .thickness = 16.f + (24.f * getPhasedValue(0.1f, 2.f)),
+            };
+            sd.origin = sd.getCentroid();
+            drawShape("Chevron", sd);
+            break;
+        }
+
+        case 13u:
+        {
+            sf::HeartShapeData sd{
+                .position   = cellPosition,
+                .size       = {128.f, 128.f},
+                .pointCount = 32u + static_cast<unsigned int>(32.f * getPhasedValue(0.05f, 2.f)),
+            };
+            sd.origin = sd.getCentroid();
+            drawShape("Heart", sd);
+            break;
+        }
+
+        case 14u:
+            drawShape("Cog",
+                      sf::CogShapeData{
+                          .position        = cellPosition,
+                          .origin          = {64.f, 64.f},
+                          .outerRadius     = 64.f,
+                          .innerRadius     = 32.f + (16.f * getPhasedValue(0.15f, 2.f)),
+                          .toothCount      = 6u + static_cast<unsigned int>(10.f * getPhasedValue(0.06f, 2.f)),
+                          .toothWidthRatio = 0.35f + (0.3f * getPhasedValue(0.12f, 2.f)),
+                      });
+            break;
+    }
 }
 
 
@@ -196,6 +283,16 @@ void ExampleShapes::draw()
 {
     m_phase = 0.f;
 
-    for (const auto offset : {sf::Vec2f{0.f, 0.f}, {492.f, 0.f}, {0.f, 492.f}, {492.f, 492.f}})
-        drawAllShapes(offset);
+    // 6 x 6 grid sized to fill the 1016 x 1016 render target exactly: 6 cells of 164 px span
+    // 984 px, leaving a 16 px border on each side. Shape types cycle (36 cells / 15 shapes),
+    // so the first 6 shape types appear three times and the remaining 9 appear twice.
+    constexpr unsigned int gridSize = 6u;
+    constexpr float        cellStep = 164.f;
+
+    for (unsigned int row = 0u; row < gridSize; ++row)
+        for (unsigned int col = 0u; col < gridSize; ++col)
+        {
+            const sf::Vec2f cellPosition{static_cast<float>(col) * cellStep, static_cast<float>(row) * cellStep};
+            drawShapeAtCell(cellPosition, row * gridSize + col);
+        }
 }

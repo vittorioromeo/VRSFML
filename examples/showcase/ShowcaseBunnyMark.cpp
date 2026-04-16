@@ -15,6 +15,7 @@
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/TextData.hpp"
 #include "SFML/Graphics/TextureAtlas.hpp"
+#include "SFML/Graphics/VertexSpan.hpp"
 
 #include "SFML/Window/Keyboard.hpp"
 
@@ -267,34 +268,38 @@ void ExampleBunnyMark::draw()
                                               },
                                               {.view = *m_deps.view}); // TODO P1: add a way to prevent flushing
 
-    for (sf::base::SizeT j = 0u; j < vertices.size(); j += 4u)
+    const auto applyEffect = [&](sf::VertexSpan quads)
     {
-        const sf::base::SizeT outlineIndependentIndex = j % (vertices.size() / 2u);
-
-        if (outlineIndependentIndex >= digitSeparatedBunnyCount.size() * 4u)
+        for (sf::base::SizeT j = 0u; j < quads.size(); j += 4u)
         {
-            const float offY = sf::base::sin(m_time) * 1.25f;
+            if (j >= digitSeparatedBunnyCount.size() * 4u)
+            {
+                const float offY = sf::base::sin(m_time) * 1.25f;
 
-            vertices[j + 0].position.y -= offY;
-            vertices[j + 1].position.y -= offY;
-            vertices[j + 2].position.y += offY;
-            vertices[j + 3].position.y += offY;
+                quads[j + 0].position.y -= offY;
+                quads[j + 1].position.y -= offY;
+                quads[j + 2].position.y += offY;
+                quads[j + 3].position.y += offY;
 
-            vertices[j + 0].position.x -= offY;
-            vertices[j + 1].position.x += offY;
-            vertices[j + 2].position.x -= offY;
-            vertices[j + 3].position.x += offY;
+                quads[j + 0].position.x -= offY;
+                quads[j + 1].position.x += offY;
+                quads[j + 2].position.x -= offY;
+                quads[j + 3].position.x += offY;
+            }
+            else
+            {
+                const float offY = sf::base::sin(m_time + static_cast<float>(j)) * 1.5f;
+
+                quads[j + 0].position.y += offY;
+                quads[j + 1].position.y += offY;
+                quads[j + 2].position.y += offY;
+                quads[j + 3].position.y += offY;
+            }
         }
-        else
-        {
-            const float offY = sf::base::sin(m_time + static_cast<float>(outlineIndependentIndex)) * 1.5f;
+    };
 
-            vertices[j + 0].position.y += offY;
-            vertices[j + 1].position.y += offY;
-            vertices[j + 2].position.y += offY;
-            vertices[j + 3].position.y += offY;
-        }
-    }
+    applyEffect(vertices.outline);
+    applyEffect(vertices.fill);
 
     m_deps.rtGame->draw(*m_deps.font,
                         sf::TextData{
