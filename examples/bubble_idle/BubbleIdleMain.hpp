@@ -360,6 +360,7 @@ struct Main
     sf::Shader::UniformLocation suShrineBgTintR  = shaderShrineBackground.getUniformLocation("u_shrineTintR").value();
     sf::Shader::UniformLocation suShrineBgTintG  = shaderShrineBackground.getUniformLocation("u_shrineTintG").value();
     sf::Shader::UniformLocation suShrineBgTintB  = shaderShrineBackground.getUniformLocation("u_shrineTintB").value();
+    sf::Shader::UniformLocation suShrineBgTintA  = shaderShrineBackground.getUniformLocation("u_shrineTintA").value();
     sf::Shader::UniformLocation
         suShrineBgDistortionStrength = shaderShrineBackground.getUniformLocation("u_distortionStrength").value();
     sf::Shader::UniformLocation suShrineBgTintStrength = shaderShrineBackground.getUniformLocation("u_tintStrength").value();
@@ -687,6 +688,7 @@ struct Main
     sf::Rect2f txrBubble{addImgResourceToAtlas("bubble2.png")};
     sf::Rect2f txrBubbleStar{addImgResourceToAtlas("bubble3.png")};
     sf::Rect2f txrBubbleNova{addImgResourceToAtlas("bubble4.png")};
+    sf::Rect2f txrBubbleGlass{addImgResourceToAtlas("bubbleglass.png")};
     sf::Rect2f txrCat{addImgResourceToAtlas("cat.png")};
     sf::Rect2f txrUniCat{addImgResourceToAtlas("unicat3.png")};
     sf::Rect2f txrUniCat2{addImgResourceToAtlas("unicat2.png")};
@@ -731,6 +733,7 @@ struct Main
     sf::Rect2f txrHexParticle{addImgResourceToAtlas("hexparticle.png")};
     sf::Rect2f txrShrineParticle{addImgResourceToAtlas("shrineparticle.png")};
     sf::Rect2f txrCogParticle{addImgResourceToAtlas("cogparticle.png")};
+    sf::Rect2f txrGlassParticle{addImgResourceToAtlas("glassparticle.png")};
     sf::Rect2f txrWitchCat{addImgResourceToAtlas("witchcat.png")};
     sf::Rect2f txrWitchCatPaw{addImgResourceToAtlas("witchcatpaw.png")};
     sf::Rect2f txrAstroCat{addImgResourceToAtlas("astromeow.png")};
@@ -914,6 +917,7 @@ struct Main
         txrSmokeParticle,
         txrExplosionParticle,
         txrTrailParticle,
+        txrGlassParticle,
     };
 
     ////////////////////////////////////////////////////////////
@@ -1005,6 +1009,30 @@ struct Main
     };
 
     sf::base::Vector<EarnedCoinParticle> earnedCoinParticles; // HUD space
+
+    ////////////////////////////////////////////////////////////
+    // Combo-bubble payout queue. Each entry holds a swarm of coin particles
+    // spawned at the popped bubble. They first burst outward physically (with
+    // exponential damping, so they settle to a near-stop), then transition
+    // into the rising-pitch collection sequence — when the collection delay
+    // ticks, one settled coin is consumed and a regular `EarnedCoinParticle`
+    // is spawned at its position to fly to the money text on the HUD.
+    struct [[nodiscard]] BurstingComboCoin
+    {
+        sf::Vec2f position{};
+        sf::Vec2f velocity{};
+        bool      collected{false};
+    };
+
+    struct [[nodiscard]] PendingComboBubblePayout
+    {
+        sf::base::Vector<BurstingComboCoin> coins;
+        SizeT                               coinsCollected{0u}; // total collected so far (drives pitch)
+        Countdown                           settleCountdown{};  // burst → collect transition
+        Countdown                           collectDelay{};
+    };
+
+    sf::base::Vector<PendingComboBubblePayout> pendingComboBubblePayouts;
 
     ////////////////////////////////////////////////////////////
     // Random number generation
@@ -2497,6 +2525,9 @@ struct Main
                               range,
                               [&](Bubble& bubble)
         {
+            if (bubble.type == BubbleType::Combo)
+                return ControlFlow::Continue;
+
             if (pt->perm.starpawConversionIgnoreBombs && bubble.type != BubbleType::Normal)
                 return ControlFlow::Continue;
 
@@ -3124,6 +3155,9 @@ struct Main
             if (otherBubble.type == BubbleType::Bomb)
                 return ControlFlow::Continue;
 
+            if (otherBubble.type == BubbleType::Combo)
+                return ControlFlow::Continue;
+
             const MoneyType otherReward = computeFinalReward(/* bubble     */ otherBubble,
                                                              /* multiplier */ 10.f,
                                                              /* comboMult  */ 1.f,
@@ -3206,6 +3240,12 @@ struct Main
         const auto& [reward, bubble, xCombo, popSoundOverlap, popperCat, multiPop] = data;
 
         const bool byPlayerClick = popperCat == nullptr;
+
+        // Combo bubbles are interactive only with player clicks: cats can't
+        // pop them (silently ignore the swing) and they never get destroyed
+        // or replaced — they fall off the bottom on their own (ephemeral).
+        if (bubble.type == BubbleType::Combo && !byPlayerClick)
+            return;
 
         statBubblePopped(bubble.type, byPlayerClick, reward);
 
@@ -3299,7 +3339,7 @@ struct Main
             moneyTextShakeEffect.bump(rngFast, 1.f + static_cast<float>(comboState.combo) * 0.1f);
         }
 
-        if (!isBubbleInStasisField(bubble))
+        if (bubble.type != BubbleType::Combo && !isBubbleInStasisField(bubble))
         {
             bubble = makeRandomBubble(*pt, rng, pt->getMapLimit(), 0.f);
             bubble.position.y -= bubble.radius;
@@ -3369,6 +3409,7 @@ struct Main
     void               gameLoopUpdateCatActionUni(float /* deltaTimeMs */, Cat& cat);
     void               gameLoopUpdateCatActionDevil(float /* deltaTimeMs */, Cat& cat);
     void               gameLoopUpdateCatActionAstro(float /* deltaTimeMs */, Cat& cat);
+    void               gameLoopUpdateCatActionWarden(float /* deltaTimeMs */, Cat& cat);
     [[nodiscard]] Cat* getSessionTargetCat(const HexSession& session) const;
     [[nodiscard]] bool anyCatHexedOrCopyHexed() const;
     [[nodiscard]] bool canHexMore() const;
@@ -3399,6 +3440,9 @@ struct Main
         return [this, &ignoreFlags, deltaTimeMs, position, catType, countdownPm, countdownTime, strengthMult, direction](
                    Bubble& bubble)
         {
+            if (bubble.type == BubbleType::Combo)
+                return ControlFlow::Continue;
+
             if (ignoreFlags.normal && bubble.type == BubbleType::Normal)
                 return ControlFlow::Continue;
 
@@ -3431,6 +3475,7 @@ struct Main
     void collectCopyDoll(Doll& d, HexSession& session);
 
     void addEventBubblefall(float regionCenterX);
+    void addEventInvincibleBubble();
 
     void gameLoopUpdateDollsImpl(float deltaTimeMs, sf::Vec2f mousePos, sf::base::Vector<HexSession>& sessionsToUse, bool copy);
     void gameLoopUpdateDolls(float deltaTimeMs, sf::Vec2f mousePos);
@@ -3444,6 +3489,10 @@ struct Main
     [[nodiscard]] bool canCatNap(const Cat& cat) const;
     void               beginCatNap(Cat& cat, float sleepDurationMs);
     void               gameLoopUpdateNapScheduler(float deltaTimeMs);
+
+    void popComboBubble(Bubble& bubble);
+    void gameLoopUpdateComboBubblePayouts(float deltaTimeMs);
+    void gameLoopDrawComboBubbleBurstingCoins();
     void gameLoopUpdateMana(float deltaTimeMs);
     void gameLoopUpdateAutocast();
     void pushNotification(const char* title, const char* format, const auto&... args)

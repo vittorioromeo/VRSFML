@@ -23,4 +23,15 @@ struct [[nodiscard]] EBubblefall
 
 
 ////////////////////////////////////////////////////////////
-using GameEvent = sf::base::Variant<EBubblefall>;
+// Global one-shot event: spawns a single invincible Combo bubble at the top
+// of the map. The bubble itself is the manifestation; the event entry just
+// exists so the random scheduler can pick it. `remainingMs` ticks down to 0
+// and the entry is dropped on the next frame.
+struct [[nodiscard]] EInvincibleBubble
+{
+    float remainingMs{};
+};
+
+
+////////////////////////////////////////////////////////////
+using GameEvent = sf::base::Variant<EBubblefall, EInvincibleBubble>;
