@@ -54,6 +54,7 @@ void Main::gameLoopUpdateFrameWorld(const float realDeltaTimeMs, FrameInput& fra
     gameLoopUpdateHellPortals(deltaTimeMs);
     gameLoopUpdateWitchBuffs(deltaTimeMs);
     gameLoopUpdateEvents(deltaTimeMs);
+    gameLoopUpdateNapScheduler(deltaTimeMs);
     gameLoopUpdateMana(deltaTimeMs);
     gameLoopUpdateAutocast();
 

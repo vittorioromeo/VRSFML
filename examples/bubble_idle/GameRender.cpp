@@ -139,6 +139,7 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
         });
     }
 
+    gameLoopDrawEvents();
     gameLoopDrawHellPortals();
     gameLoopDrawCats(frameInput.mousePos, deltaTimeMs);
     gameLoopDrawShrines(frameInput.mousePos);

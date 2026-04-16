@@ -298,8 +298,8 @@
     353.0,
     295.0
   ],
-  "debugDrawCatBodyBounds": true,
-  "debugDrawCatCenterMarker": true,
+  "debugDrawCatBodyBounds": false,
+  "debugDrawCatCenterMarker": false,
   "devilBackTail": {
     "origin": [
       320.0,
