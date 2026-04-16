@@ -11,6 +11,12 @@
 #include "SFML/Graphics/Priv/ShapeMacros.hpp"
 #include "SFML/Graphics/Priv/TransformableMacros.hpp"
 
+#include "SFML/System/Angle.hpp"
+#include "SFML/System/GlobalAnchorPointMixin.hpp"
+#include "SFML/System/LocalAnchorPointMixin.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
+#include "SFML/System/Rect2.hpp"
+
 
 namespace sf
 {
@@ -24,7 +30,9 @@ namespace sf
 /// drawable batching system.
 ///
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] SFML_GRAPHICS_API CircleShapeData
+struct [[nodiscard]] SFML_GRAPHICS_API CircleShapeData :
+    LocalAnchorPointMixin<CircleShapeData>,
+    GlobalAnchorPointMixin<CircleShapeData>
 {
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;
@@ -32,6 +40,60 @@ struct [[nodiscard]] SFML_GRAPHICS_API CircleShapeData
     float        radius{0.f};     //!< Radius of the circle
     Angle        startAngle{};    //!< Starting angle of the first generated point on the contour
     unsigned int pointCount{30u}; //!< Number of points composing the circle (higher = smoother contour)
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief `true` when the circle would actually render anything.
+    ///
+    /// A circle with non-positive `radius` or `pointCount < 3`
+    /// produces no geometry and is treated as an empty shape.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr bool hasVisibleGeometry() const noexcept
+    {
+        return radius > 0.f && pointCount >= 3u;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Tight local-space AABB of the circle.
+    ///
+    /// Returns an empty bbox when `hasVisibleGeometry()` is `false`.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Rect2f getLocalBounds() const noexcept
+    {
+        if (!hasVisibleGeometry()) [[unlikely]]
+            return {};
+
+        return {{0.f, 0.f}, {2.f * radius, 2.f * radius}};
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Tight world-space AABB of the circle (rotation-invariant under uniform scale).
+    ///
+    /// \par Cost
+    /// **Analytical, O(1)** -- closed-form rotated-disk formula
+    /// (one trig lookup, two `sqrt` calls, one matrix build, one
+    /// point transform). Independent of `pointCount`.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::pure]] Rect2f getGlobalBounds() const noexcept;
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Local-space geometric centroid of the circle.
+    ///
+    /// \par Cost
+    /// **Analytical, O(1)** -- one multiply. Returns the disk's
+    /// center, which coincides with `getLocalBounds().getCenter()`.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2f getCentroid() const noexcept
+    {
+        return {radius, radius};
+    }
 };
 
 } // namespace sf
