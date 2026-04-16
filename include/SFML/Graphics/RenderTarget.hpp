@@ -8,6 +8,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
+#include "SFML/Graphics/BatchedGeometry.hpp"
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DrawTextureSettings.hpp"
 #include "SFML/Graphics/DrawVerticesSettings.hpp"
@@ -15,7 +16,6 @@
 #include "SFML/Graphics/Priv/ShaderBase.hpp"
 #include "SFML/Graphics/Priv/ShapeDataConcept.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
-#include "SFML/Graphics/VertexSpan.hpp"
 
 #include "SFML/System/Priv/Vec2Base.hpp"
 
@@ -402,7 +402,7 @@ public:
     ///         draw call -- copy it out if you need to keep it.
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan draw(const priv::ShapeDataConcept auto& shapeData, const RenderStates& states = {});
+    BatchedGeometry draw(const priv::ShapeDataConcept auto& shapeData, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw text from a font and a plain `TextData` description
@@ -420,7 +420,7 @@ public:
     ///         draw call -- copy it out if you need to keep it.
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan draw(const Font& font, const TextData& textData, RenderStates states = {});
+    BatchedGeometry draw(const Font& font, const TextData& textData, RenderStates states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw text using a precomputed glyph mapping
@@ -440,10 +440,10 @@ public:
     ///         draw call -- copy it out if you need to keep it.
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan draw(const FontFace&            fontFace,
-                    const GlyphMapping&        glyphMapping,
-                    const GlyphMappedTextData& textData,
-                    const RenderStates&        states = {});
+    BatchedGeometry draw(const FontFace&            fontFace,
+                         const GlyphMapping&        glyphMapping,
+                         const GlyphMappedTextData& textData,
+                         const RenderStates&        states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by an array of vertices
