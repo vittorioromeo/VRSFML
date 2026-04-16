@@ -2,7 +2,7 @@
 
 #include "ShowcaseExample.hpp"
 
-#include "SFML/Graphics/VertexSpan.hpp"
+#include "SFML/Graphics/BatchedGeometry.hpp"
 
 #include "SFML/System/Priv/Vec2Base.hpp"
 
@@ -22,13 +22,13 @@ private:
     [[nodiscard]] auto applyCommonSettings(sf::Vec2f currentOffset, auto shapeData);
 
     ////////////////////////////////////////////////////////////
-    sf::VertexSpan drawShape(sf::Vec2f currentOffset, const char* label, const auto& shapeData);
+    sf::BatchedGeometry drawShape(const char* label, const auto& shapeData);
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] float getPhasedValue(float timeMultiplier, float phaseMultiplier) const;
 
     ////////////////////////////////////////////////////////////
-    void drawAllShapes(sf::Vec2f offset);
+    void drawShapeAtCell(sf::Vec2f cellPosition, unsigned int shapeIndex);
 
 public:
     ////////////////////////////////////////////////////////////

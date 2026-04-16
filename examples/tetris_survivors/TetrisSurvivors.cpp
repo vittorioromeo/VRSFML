@@ -104,7 +104,6 @@
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/OverloadSet.hpp"
 #include "SFML/Base/Remainder.hpp"
-#include "SFML/Base/SinCosLookup.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/ToString.hpp"
@@ -1077,13 +1076,10 @@ private:
         };
 
         {
-            const auto [sine, cosine] = sf::base::sinCosLookup(commonDrawParams.rotation.asRadians());
-
-            const auto transform = sf::Transform::fromPositionScaleOriginSinCos(commonDrawParams.position,
-                                                                                commonDrawParams.scale,
-                                                                                commonDrawParams.origin,
-                                                                                sine,
-                                                                                cosine);
+            const auto transform = sf::Transform::fromPositionScaleOriginRotation(commonDrawParams.position,
+                                                                                  commonDrawParams.scale,
+                                                                                  commonDrawParams.origin,
+                                                                                  commonDrawParams.rotation);
 
             mins = transform.transformPoint({0.f, 0.f});
             maxs = transform.transformPoint(drawBlockSize);
