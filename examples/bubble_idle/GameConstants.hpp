@@ -5,6 +5,7 @@
 #include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/Array.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -144,4 +145,35 @@ struct [[nodiscard]] GameConstants
 
     bool debugDrawCatCenterMarker = false;
     bool debugDrawCatBodyBounds   = false;
+
+    ////////////////////////////////////////////////////////////
+    // Random event system tuning. Lives here so it round-trips through
+    // `game_constants.json` and can be tweaked live from the debug menu.
+    struct [[nodiscard]] BubblefallTuning
+    {
+        float           durationMs       = 12'000.f;
+        float           regionWidth      = 240.f;
+        float           spawnIntervalMs  = 10.f;
+        sf::base::SizeT bubblesPerTick   = 3u;
+        float           initialVelocityY = 0.55f;
+        float           velocityJitterY  = 0.25f;
+        float           velocityJitterX  = 0.05f;
+
+        // Fraction of `durationMs` spent ramping the spawn rate up from zero
+        // at the start (`attackRatio`) and down to zero at the end
+        // (`releaseRatio`). The middle `1 - attack - release` is at full rate.
+        // Clamped ∈ [0, 0.5] in aggregate at runtime.
+        float attackRatio  = 0.15f;
+        float releaseRatio = 0.15f;
+    };
+
+    struct [[nodiscard]] EventsTuning
+    {
+        float minSpawnIntervalMs = 45'000.f;
+        float maxSpawnIntervalMs = 120'000.f;
+
+        BubblefallTuning bubblefall{};
+    };
+
+    EventsTuning events{};
 };

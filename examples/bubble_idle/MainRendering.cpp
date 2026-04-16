@@ -286,7 +286,7 @@ void Main::drawSplashScreen(sf::RenderTarget& rt, const sf::View& view, const sf
 
 void Main::gameLoopDrawBubbles()
 {
-    const auto getBubbleHue = [&](const sf::base::SizeT idx, const Bubble& bubble)
+    const auto getBubbleHue = [&](const Bubble& bubble)
     {
         if (bubble.type == BubbleType::Bomb)
             return 0.f;
@@ -305,7 +305,7 @@ void Main::gameLoopDrawBubbles()
 
         const float magnetHueMod = (beingRepelledOrAttracted ? 180.f : 0.f);
 
-        return sf::base::remainder(static_cast<float>(idx) * 2.f - hueRange / 2.f, hueRange) + magnetHueMod;
+        return sf::base::remainder(static_cast<float>(bubble.hueSeed) * 2.f - hueRange / 2.f, hueRange) + magnetHueMod;
     };
 
     const sf::Rect2f bubbleRects[]{txrBubble, txrBubbleStar, txrBomb, txrBubbleNova};
@@ -336,7 +336,7 @@ void Main::gameLoopDrawBubbles()
             .origin      = rect.size / 2.f,
             .rotation    = sf::radians(bubble.rotation),
             .textureRect = rect,
-            .color       = hueColor(getBubbleHue(i, bubble), 255u),
+            .color       = hueColor(getBubbleHue(bubble), 255u),
         });
     }
 }

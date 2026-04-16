@@ -53,6 +53,7 @@ void Main::gameLoopUpdateFrameWorld(const float realDeltaTimeMs, FrameInput& fra
     gameLoopUpdateCopyDolls(deltaTimeMs, frameInput.mousePos);
     gameLoopUpdateHellPortals(deltaTimeMs);
     gameLoopUpdateWitchBuffs(deltaTimeMs);
+    gameLoopUpdateEvents(deltaTimeMs);
     gameLoopUpdateMana(deltaTimeMs);
     gameLoopUpdateAutocast();
 
@@ -63,6 +64,11 @@ void Main::gameLoopUpdateFrameWorld(const float realDeltaTimeMs, FrameInput& fra
     sf::base::vectorEraseIf(delayedActions, [](const auto& delayedAction) {
         return delayedAction.delayCountdown.isDone();
     });
+
+    // Reap ephemeral bubbles (e.g. from Bubblefall) that fell off the bottom
+    // this frame. Must run after all bubble collision passes so that the
+    // indices captured by `sweepAndPrune.populate` stay valid.
+    gameLoopReapEphemeralBubbles();
 
     gameLoopUpdateScreenShake(deltaTimeMs);
     gameLoopUpdateParticlesAndTextParticles(deltaTimeMs);
