@@ -12,6 +12,10 @@
 #include "SFML/Graphics/Priv/TransformableMacros.hpp"
 
 #include "SFML/System/Angle.hpp"
+#include "SFML/System/GlobalAnchorPointMixin.hpp"
+#include "SFML/System/LocalAnchorPointMixin.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
+#include "SFML/System/Rect2.hpp"
 
 
 namespace sf
@@ -24,7 +28,9 @@ namespace sf
 /// thickness, angular span, and arrowhead dimensions.
 ///
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] SFML_GRAPHICS_API CurvedArrowShapeData
+struct [[nodiscard]] SFML_GRAPHICS_API CurvedArrowShapeData :
+    LocalAnchorPointMixin<CurvedArrowShapeData>,
+    GlobalAnchorPointMixin<CurvedArrowShapeData>
 {
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;
@@ -36,6 +42,81 @@ struct [[nodiscard]] SFML_GRAPHICS_API CurvedArrowShapeData
     float        headLength{15.f};              //!< Length of the arrowhead (from base to tip)
     float        headWidth{20.f};               //!< Width of the arrowhead at its base
     unsigned int pointCount{30u}; //!< Number of points to approximate the curved body (per 90 degrees of sweep)
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief `true` when the curved arrow would actually render anything.
+    ///
+    /// A curved arrow with `outerRadius <= 0`, `innerRadius < 0`,
+    /// `innerRadius >= outerRadius`, zero `sweepAngle`, negative
+    /// `headLength`/`headWidth`, or `pointCount < 2` produces no
+    /// geometry and is treated as an empty shape.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr bool hasVisibleGeometry() const noexcept
+    {
+        return outerRadius > 0.f && innerRadius >= 0.f && innerRadius < outerRadius &&
+               sweepAngle.asRadians() != 0.f && headLength >= 0.f && headWidth >= 0.f && pointCount >= 2u;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Tight local-space AABB of the curved arrow.
+    ///
+    /// Folds both the inner/outer arc extrema (sweep-aware) and
+    /// the three arrowhead vertices (tip and two barbs). The result
+    /// is tight even when the arrowhead extends beyond the outer
+    /// ring envelope.
+    ///
+    /// \par Cost
+    /// **Analytical, O(1)** -- folds outer + inner arc endpoints,
+    /// up to four in-sweep cardinal extrema, and the three
+    /// arrowhead vertices (a handful of trig lookups). Independent
+    /// of `pointCount`.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::pure]] Rect2f getLocalBounds() const noexcept;
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Tight world-space AABB of the curved arrow.
+    ///
+    /// Tight up to arc tessellation: every rendered outer- and
+    /// inner-arc sample plus the three arrowhead vertices (tip and
+    /// two barbs) is folded through the shape transform. The
+    /// analytical cardinal-extrema trick used by `getLocalBounds`
+    /// can't be reused here because rotation (and non-uniform
+    /// scale) move the world extrema off the local cardinals.
+    ///
+    /// \par Cost
+    /// **Vertex iteration, O(pointCount)** -- transforms
+    /// `2 * pointCount + 3` vertices (outer arc + inner arc + head)
+    /// and folds them into an AABB. Each iteration performs one
+    /// trig lookup and one point transform. Cost grows linearly
+    /// with `pointCount`; the default `pointCount = 30` means
+    /// 63 vertex transforms per call.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::pure]] Rect2f getGlobalBounds() const noexcept;
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Local-space geometric centroid of the curved arrow.
+    ///
+    /// Decomposes the shape into its ring-sector body (outer radius
+    /// `outerRadius`, inner radius `innerRadius`, span `sweepAngle`)
+    /// and its arrowhead triangle (`tip`, `outerBarb`, `innerBarb`)
+    /// and returns the area-weighted combination of the two
+    /// centroids.
+    ///
+    /// \par Cost
+    /// **Analytical, O(1)** -- two trig lookups (for the bisector
+    /// direction of the body and the attach point of the head) and
+    /// a handful of multiplies/divisions. Independent of
+    /// `pointCount`.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::pure]] Vec2f getCentroid() const noexcept;
 };
 
 } // namespace sf
