@@ -1267,6 +1267,9 @@ void Main::gameLoopUpdateCatActionWarden(const float /* deltaTimeMs */, Cat& cat
     sounds.bonk.settings.position = {bestTarget->position.x, bestTarget->position.y};
     playSound(sounds.bonk, /* maxOverlap */ 4u);
 
+    sounds.napWake.settings.position = {bestTarget->position.x, bestTarget->position.y};
+    playSound(sounds.napWake, /* maxOverlap */ 2u);
+
     if (profile.showTextParticles)
     {
         auto& tp = textParticles.emplaceBack(TextParticle{
@@ -1305,6 +1308,7 @@ void Main::gameLoopUpdateCatActionWarden(const float /* deltaTimeMs */, Cat& cat
     // Hold-mode spans travel + linger so the per-frame lerp stays suspended
     // for the entire bonk and the baton doesn't snap back mid-swing.
     cat.pawHoldMs = bonkTravelMs + bonkLingerMs;
+
 
     // Pendulum-style impact reaction on the target cat: rocks side-to-side
     // for ~500ms, synced roughly with the baton reaching the target.
@@ -2121,9 +2125,8 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
                     cat.napSleepCountdown.reset();
                     cat.napShakeProgress = 0.f;
 
-                    // TODO: play a "wake-up" sound here.
                     // sounds.napWake.settings.position = {cat.position.x, cat.position.y};
-                    // playSound(sounds.napWake, /* maxOverlap */ 1u);
+                    // playSound(sounds.napWake, /* maxOverlap */ 2u);
                 }
             }
             else
@@ -3417,6 +3420,8 @@ void Main::gameLoopUpdateEvents(const float deltaTimeMs)
     if (pt->nextEventSpawnMs <= 0.f)
     {
         pt->nextEventSpawnMs = rng.getF(eventsCfg.minSpawnIntervalMs, eventsCfg.maxSpawnIntervalMs);
+
+        // TODO: event eligibility rules
 
         // Uniform pick across the available event kinds. Adding a new kind is
         // a matter of extending this branch.

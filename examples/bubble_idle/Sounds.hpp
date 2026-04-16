@@ -64,6 +64,7 @@ struct Sounds
     LoadedSound glasshit{"glasshit.ogg"};
     LoadedSound glassbreak{"glassbreak.ogg"};
     LoadedSound bonk{"bonk.ogg"};
+    LoadedSound napWake{"mew.ogg"};
 
     ////////////////////////////////////////////////////////////
     void setupSounds(const bool volumeOnly, const float volumeMult)
@@ -127,6 +128,7 @@ struct Sounds
         setupWorldSound(bonk);
         setupWorldSound(glasshit);
         setupWorldSound(glassbreak);
+        setupWorldSound(napWake);
 
         setupUISound(click);
         setupUISound(byteMeow);
@@ -156,7 +158,7 @@ struct Sounds
         buffon.settings.volume    = volumeMult * 0.65f;
         buffoff.settings.volume   = volumeMult * 0.65f;
         shine3.settings.volume    = volumeMult * 0.25f;
-        sleep.settings.volume     = volumeMult * 0.5f;
+        sleep.settings.volume     = volumeMult * 0.75f;
     }
 
     ////////////////////////////////////////////////////////////
