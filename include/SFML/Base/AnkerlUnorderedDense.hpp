@@ -86,7 +86,6 @@
 #include "SFML/Base/InitializerList.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
-#include "SFML/Base/FwdStdHash.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
