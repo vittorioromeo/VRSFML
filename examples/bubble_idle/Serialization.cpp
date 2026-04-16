@@ -386,6 +386,10 @@ DEFINE_TWO_WAY_SERIALIZER(Cat)
     FIELD(blinkCountdown);
     FIELD(flapCountdown);
     FIELD(yawnCountdown);
+
+    FIELD(napTransition);
+    FIELD(napSleepCountdown);
+    FIELD(napShakeProgress);
 }
 
 
@@ -1007,6 +1011,12 @@ DEFINE_TWO_WAY_SERIALIZER(Playthrough)
     FIELD(shrineActivateTipShown);
     FIELD(dollTipShown);
     FIELD(spendPPTipShown);
+    FIELD(napTipShown);
+
+    FIELD(scriptedNapDone);
+    FIELD(scriptedNapPendingCountdown);
+    FIELD(randomNapTimerMs);
+    FIELD(anyCatEverWokenFromNap);
     FIELD(shrinesSpawned);
 
     FIELD(laserPopEnabled);

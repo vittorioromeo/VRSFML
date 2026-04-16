@@ -76,6 +76,27 @@ struct [[nodiscard]] Cat
     Countdown yawnCountdown{};
     Countdown yawnAnimCountdown{};
 
+    // Napping state. `napTransition` is a 0..1 fade that eases eyes closed on
+    // entry and open on exit. `napSleepCountdown` is the remaining sleep time
+    // (only counted down once the fade has reached 1). The player can wake
+    // the cat early by grabbing and shaking it: `napShakeProgress` (0..1)
+    // accumulates drag motion and triggers wake-up on reaching 1.
+    // `napWakeWobble` is a transient feedback rotation that decays to zero.
+    sf::base::Optional<BidirectionalTimer> napTransition{sf::base::nullOpt};
+    sf::base::Optional<Countdown>          napSleepCountdown{sf::base::nullOpt};
+    float                                  napShakeProgress{0.f};
+    float                                  napWakeWobble{0.f};
+
+    // Transient per-frame kinematics used to derive a velocity-based tilt
+    // while being dragged (and also the delta for `napShakeProgress`).
+    sf::Vec2f lastFramePosition{};
+    float     dragTiltRadians{0.f};
+
+    // Per-cat retrigger countdown for the looping `sleep` sound. Reset to
+    // the sound's natural length each time it's (re)started so each napping
+    // cat plays its own independent instance.
+    float sleepSoundCountdownMs{0.f};
+
     float dragTime{};
 
     ////////////////////////////////////////////////////////////
@@ -90,6 +111,18 @@ struct [[nodiscard]] Cat
     [[nodiscard, gnu::always_inline, gnu::pure]] inline bool isHexedOrCopyHexed() const
     {
         return hexedTimer.hasValue() || hexedCopyTimer.hasValue();
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline bool isNapping() const
+    {
+        return napTransition.hasValue();
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline float getNapTransitionValue() const
+    {
+        return napTransition.hasValue() ? napTransition->value : 0.f;
     }
 
     ////////////////////////////////////////////////////////////

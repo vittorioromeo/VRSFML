@@ -266,7 +266,24 @@ struct Playthrough
     bool shrineActivateTipShown = false;
     bool dollTipShown           = false;
     bool spendPPTipShown        = false;
+    bool napTipShown            = false;
     bool shrinesSpawned         = false;
+
+    //
+    // Nap scheduler state (outside of the event system).
+    //   - `scriptedNapDone` flips to `true` once the one-shot tutorial nap has
+    //     fired; the trigger is 5s after hitting 3 cats for the first time.
+    //   - `scriptedNapPendingCountdown` holds the in-flight 5s delay.
+    //   - `randomNapTimerMs` ticks down to the next random nap once the
+    //     scripted event is done and the player owns enough cats.
+    bool                          scriptedNapDone = false;
+    sf::base::Optional<Countdown> scriptedNapPendingCountdown;
+    float                         randomNapTimerMs = 60'000.f;
+
+    // Flips to `true` the first time a cat finishes waking up from a nap;
+    // used as the "completed the nap tutorial" gate (e.g. for unlocking
+    // unicats pre-prestige).
+    bool anyCatEverWokenFromNap = false;
 
     //
     // New flags (v1.6.0)

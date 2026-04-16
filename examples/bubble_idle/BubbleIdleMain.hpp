@@ -3430,6 +3430,8 @@ struct Main
     void collectDoll(Doll& d, HexSession& session);
     void collectCopyDoll(Doll& d, HexSession& session);
 
+    void addEventBubblefall(float regionCenterX);
+
     void gameLoopUpdateDollsImpl(float deltaTimeMs, sf::Vec2f mousePos, sf::base::Vector<HexSession>& sessionsToUse, bool copy);
     void gameLoopUpdateDolls(float deltaTimeMs, sf::Vec2f mousePos);
     void gameLoopUpdateCopyDolls(float deltaTimeMs, sf::Vec2f mousePos);
@@ -3437,6 +3439,11 @@ struct Main
     void gameLoopUpdateWitchBuffs(float deltaTimeMs);
     void gameLoopUpdateEvents(float deltaTimeMs);
     void gameLoopReapEphemeralBubbles();
+    void gameLoopDrawEvents();
+
+    [[nodiscard]] bool canCatNap(const Cat& cat) const;
+    void               beginCatNap(Cat& cat, float sleepDurationMs);
+    void               gameLoopUpdateNapScheduler(float deltaTimeMs);
     void gameLoopUpdateMana(float deltaTimeMs);
     void gameLoopUpdateAutocast();
     void pushNotification(const char* title, const char* format, const auto&... args)
