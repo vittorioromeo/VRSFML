@@ -15,7 +15,10 @@
 #include "SFML/Audio/SoundChannel.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/LifetimeDependant.hpp"
 #include "SFML/System/Time.hpp"
+
+#include "SFML/Base/IntTypes.hpp"
 
 #ifdef SFML_ENABLE_LIFETIME_TRACKING
     #include "SFML/System/LifetimeDependee.hpp"
@@ -113,6 +116,23 @@ MiniaudioUtils::SoundBase::SoundBase(PlaybackDevice&   thePlaybackDevice,
 
 
 ////////////////////////////////////////////////////////////
+void MiniaudioUtils::SoundBase::uninitSound()
+{
+    // `ma_sound_uninit` detaches the sound from the engine graph and
+    // synchronizes with the audio thread, ensuring the read callback is
+    // not in flight after this call returns. Derived `Impl` types should
+    // call this explicitly before any data their read callback depends
+    // on is destroyed (member destruction order would otherwise free
+    // those buffers before this destructor runs).
+    if (soundUninitialized)
+        return;
+
+    ma_sound_uninit(&sound);
+    soundUninitialized = true;
+}
+
+
+////////////////////////////////////////////////////////////
 MiniaudioUtils::SoundBase::~SoundBase()
 {
 #ifdef SFML_ENABLE_LIFETIME_TRACKING
@@ -125,7 +145,7 @@ MiniaudioUtils::SoundBase::~SoundBase()
     if (priv::LifetimeDependee::TestingModeGuard::fatalErrorTriggered("SoundBuffer") ||
         priv::LifetimeDependee::TestingModeGuard::fatalErrorTriggered("MusicReader"))
     {
-        ma_sound_uninit(&sound);
+        uninitSound();
 
         ma_node_uninit(&effectNode, nullptr);
         effectNodeUninitialized = true;
@@ -134,7 +154,7 @@ MiniaudioUtils::SoundBase::~SoundBase()
     }
 #endif
 
-    ma_sound_uninit(&sound);
+    uninitSound();
 
     ma_node_uninit(&effectNode, nullptr);
     effectNodeUninitialized = true; // Only for debugging

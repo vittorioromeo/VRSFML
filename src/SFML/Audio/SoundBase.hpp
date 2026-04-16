@@ -51,6 +51,14 @@ struct SoundBase
     [[nodiscard]] bool initialize(ma_sound_end_proc endCallback);
 
     ////////////////////////////////////////////////////////////
+    /// Detach the sound from the engine graph and stop the audio
+    /// thread from invoking its data source callbacks. Idempotent.
+    /// Must be called before any data the read callback depends on
+    /// is freed.
+    ////////////////////////////////////////////////////////////
+    void uninitSound();
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool connectEffect(bool connect);
 
     ////////////////////////////////////////////////////////////
@@ -105,6 +113,7 @@ struct SoundBase
     ma_sound        sound{};         //!< The sound
     EffectProcessor effectProcessor; //!< The effect processor
 
+    bool soundUninitialized{}; //!< `true` once `ma_sound_uninit` has been called (prevents double-uninit)
     [[maybe_unused]] bool effectNodeUninitialized{}; //!< Failsafe debug boolean to check if `onProcess` is called after destruction
 
     ////////////////////////////////////////////////////////////
