@@ -55,8 +55,8 @@ struct [[nodiscard]] SFML_GRAPHICS_API CurvedArrowShapeData :
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr bool hasVisibleGeometry() const noexcept
     {
-        return outerRadius > 0.f && innerRadius >= 0.f && innerRadius < outerRadius &&
-               sweepAngle.asRadians() != 0.f && headLength >= 0.f && headWidth >= 0.f && pointCount >= 2u;
+        return outerRadius > 0.f && innerRadius >= 0.f && innerRadius < outerRadius && sweepAngle.asRadians() != 0.f &&
+               headLength >= 0.f && headWidth >= 0.f && pointCount >= 2u;
     }
 
 

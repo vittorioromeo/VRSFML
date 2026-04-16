@@ -23,7 +23,7 @@ Rect2f StarShapeData::getGlobalBounds() const noexcept
     if (!hasVisibleGeometry()) [[unlikely]]
         return {};
 
-    const auto transform  = Transform::fromPositionScaleOriginRotation(position, scale, origin, rotation);
+    const auto transform   = Transform::fromPositionScaleOriginRotation(position, scale, origin, rotation);
     const auto transformFn = [&](const Vec2f p) noexcept { return transform.transformPoint(p); };
 
     // In the typical case (`innerRadius <= outerRadius`) the inner-tip vertices lie strictly

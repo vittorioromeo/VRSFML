@@ -45,8 +45,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API CogShapeData : LocalAnchorPointMixin<CogS
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr bool hasVisibleGeometry() const noexcept
     {
-        return outerRadius > 0.f && innerRadius >= 0.f && toothCount >= 3u && toothWidthRatio > 0.f &&
-               toothWidthRatio < 1.f;
+        return outerRadius > 0.f && innerRadius >= 0.f && toothCount >= 3u && toothWidthRatio > 0.f && toothWidthRatio < 1.f;
     }
 
 
