@@ -20,6 +20,7 @@ enum class [[nodiscard]] ParticleType : sf::base::U8
     Smoke     = 10u,
     Explosion = 11u,
     Trail     = 12u,
+    Glass     = 13u,
 
     Count
 };

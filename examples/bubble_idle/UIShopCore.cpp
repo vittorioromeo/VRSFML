@@ -156,4 +156,30 @@ void Main::uiShopDrawCoreUpgrades()
         uiShopCooldownButton("  cooldown##Normal", CatType::Normal);
         uiShopRangeButton("  range##Normal", CatType::Normal);
     }
+
+    // TODO: gate Wardencat behind a prestige-point unlock once the related
+    // permanent upgrade is wired up. For now they're always purchasable in
+    // the same section as Normal cats so the mechanic can be playtested.
+    if (checkUiUnlock(4u, pt->comboPurchased && pt->psvComboStartTime.nPurchases > 0))
+    {
+        const auto nCatWarden = pt->getCatCountByType(CatType::Warden);
+
+        uiSetTooltip(
+            "Wardencats patrol their range and shake any napping cat awake.\n\nWardencats can also "
+            "fall asleep — and yes, they will wake each other up.");
+        uiSetLabel("%zu wardencats", nCatWarden);
+        if (makePSVButton("Wardencat", pt->psvPerCatType[asIdx(CatType::Warden)]))
+        {
+            spawnCatCentered(CatType::Warden, getHueByCatType(CatType::Warden), /* placeInHand */ !onSteamDeck);
+
+            if (nCatWarden == 0)
+                doTip("Wardencats wake up sleeping cats nearby!\nThey can also nap themselves.");
+        }
+
+        if (catUpgradesUnlocked)
+        {
+            uiShopCooldownButton("  cooldown##Warden", CatType::Warden);
+            uiShopRangeButton("  range##Warden", CatType::Warden);
+        }
+    }
 }

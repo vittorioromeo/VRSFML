@@ -34,6 +34,7 @@
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTexture.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/RingPieSliceShapeData.hpp"
 #include "SFML/Graphics/RoundedRectangleShapeData.hpp"
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/Text.hpp"
@@ -300,6 +301,13 @@ void Main::gameLoopDrawBubbles()
         if (bubble.type == BubbleType::Nova)
             return bubble.hueMod * 2.f;
 
+        if (bubble.type == BubbleType::Combo)
+        {
+            // Slowly rotating gold-ish hue.
+            constexpr float goldBaseHue = 50.f;
+            return goldBaseHue + sf::base::sin(bubble.hueMod * 0.001f) * 8.f;
+        }
+
         SFML_BASE_ASSERT(bubble.type == BubbleType::Normal);
 
         constexpr float hueRange = 75.f;
@@ -311,12 +319,13 @@ void Main::gameLoopDrawBubbles()
         return sf::base::remainder(static_cast<float>(bubble.hueSeed) * 2.f - hueRange / 2.f, hueRange) + magnetHueMod;
     };
 
-    const sf::Rect2f bubbleRects[]{txrBubble, txrBubbleStar, txrBomb, txrBubbleNova};
+    const sf::Rect2f bubbleRects[]{txrBubble, txrBubbleStar, txrBomb, txrBubbleNova, txrBubbleGlass};
     static_assert(sf::base::getArraySize(bubbleRects) == nBubbleTypes);
 
     sf::CPUDrawableBatch* const batchToUseByType[]{&bubbleDrawableBatch,
                                                    &starBubbleDrawableBatch,
                                                    &bombBubbleDrawableBatch,
+                                                   &starBubbleDrawableBatch,
                                                    &starBubbleDrawableBatch};
 
     static_assert(sf::base::getArraySize(batchToUseByType) == nBubbleTypes);
@@ -341,6 +350,34 @@ void Main::gameLoopDrawBubbles()
             .textureRect = rect,
             .color       = hueColor(getBubbleHue(bubble), 255u),
         });
+
+        // Visible marker for the invincible Combo bubble so the player can
+        // track it. TODO P2: replace with a dedicated sprite/glow.
+        if (bubble.type == BubbleType::Combo)
+        {
+            // Combo timer ring: only after the first click. Full ring at full
+            // timer, depleting clockwise as the timer runs out.
+            if (bubble.comboClickCount > 0u && bubble.comboTimerMs > 0.f)
+            {
+                const float maxMs = gameConstants.events.invincibleBubble.comboTimerMaxMs;
+                const float frac  = sf::base::clamp(bubble.comboTimerMs / (maxMs <= 0.f ? 1.f : maxMs), 0.f, 1.f);
+
+                constexpr float thickness = 3.f;
+                const float     outerR    = bubble.radius;
+
+                batchToUseByType[asIdx(bubble.type)]->add(sf::RingPieSliceShapeData{
+                    .position    = bubble.position,
+                    .origin      = {outerR, outerR},
+                    .textureRect = txrWhiteDot,
+                    .fillColor   = sf::Color::whiteWithAlpha(64u),
+                    .outerRadius = outerR,
+                    .innerRadius = outerR - thickness,
+                    .startAngle  = sf::degrees(-90.f),
+                    .sweepAngle  = sf::radians(sf::base::tau * frac),
+                    .pointCount  = 32u,
+                });
+            }
+        }
     }
 }
 
@@ -405,6 +442,7 @@ void Main::gameLoopDrawMinimapIcons()
         &txrMMUni,
         &txrMMDevil,
         &txrMMAstro,
+        &txrMMNormal, // Warden — TODO: dedicated minimap icon (reusing Normal)
         &txrMMWitch,
         &txrMMWizard,
         &txrMMMouse,
@@ -537,6 +575,7 @@ void Main::gameLoopDrawCats(const sf::Vec2f mousePos, const float deltaTimeMs)
         uniCatTxr,    // Uni
         devilCatTxr,  // Devil
         &txrAstroCat, // Astro
+        &txrCat,      // Warden — TODO: dedicated body texture (reusing Normal)
 
         &txrWitchCat,    // Witch
         &txrWizardCat,   // Wizard
@@ -556,6 +595,7 @@ void Main::gameLoopDrawCats(const sf::Vec2f mousePos, const float deltaTimeMs)
         &txrUniCatPaw,  // Uni
         devilCatPawTxr, // Devil
         &txrWhiteDot,   // Astro
+        &txrCatPaw,     // Warden — TODO: dedicated paw texture (reusing Normal)
 
         &txrWitchCatPaw,    // Witch
         &txrWizardCatPaw,   // Wizard
@@ -575,6 +615,7 @@ void Main::gameLoopDrawCats(const sf::Vec2f mousePos, const float deltaTimeMs)
         uniCatTailTxr,    // Uni
         devilCatTailTxr,  // Devil
         &txrAstroCatTail, // Astro
+        &txrCatTail,      // Warden — TODO: dedicated tail texture (reusing Normal)
 
         &txrWitchCatTail,    // Witch
         &txrWizardCatTail,   // Wizard
@@ -1343,7 +1384,7 @@ void drawCatText(const CatDrawContext& ctx)
             char moneyFmtBuffer[128]{};
             std::sprintf(moneyFmtBuffer, "$%s", Main::toStringWithSeparators(ctx.cat.moneyEarned));
 
-            actionString += " | ";>
+            actionString += " | ";
             actionString += moneyFmtBuffer;
         }
 
@@ -1545,6 +1586,7 @@ void Main::gameLoopDrawDolls(const sf::Vec2f mousePos)
         &txrDollUni,      // Uni
         &txrDollDevil,    // Devil
         &txrDollAstro,    // Astro
+        &txrDollNormal,   // Warden — TODO: dedicated doll texture (reusing Normal)
         &txrDollNormal,   // Witch (missing, hexing a witchcat is not possible, even with copycat)
         &txrDollWizard,   // Wizard
         &txrDollMouse,    // Mouse
@@ -1622,6 +1664,9 @@ void Main::gameLoopDrawEvents()
     constexpr float topWidthRatio = 0.4f; // top edge is 40% of the bottom
 
     const auto drawRay = sf::base::OverloadSet{
+        // No light-ray for the global invincible-bubble event.
+        [](const EInvincibleBubble&) {},
+
         [&](const EBubblefall& e)
     {
         const float intensity = computeIntensity(e.remainingMs);
@@ -1705,6 +1750,7 @@ void Main::gameLoopDrawParticles()
         &cpuDrawableBatchAfterCats,
         &cpuDrawableBatchAdditive,
         &cpuDrawableBatchAfterCats,
+        &cpuDrawableBatchAfterCats, // Glass
     };
 
     for (const auto& particle : particles)
@@ -2364,7 +2410,8 @@ void Main::drawActivatedShrineBackgroundEffects(sf::RenderTarget& rt,
     const sf::Texture& backgroundTexture    = rtBackgroundProcessed.getTexture();
     const sf::Vec2f    backgroundViewOrigin = backgroundView.center - backgroundView.size / 2.f;
     const sf::Vec2f    activeViewDelta      = activeGameViewCenter - backgroundView.center;
-    const auto         drawBackgroundEffect =
+
+    const auto drawBackgroundEffect =
         [&](const sf::Vec2f center, const float range, const sf::Color tint, const float effectStrength)
     {
         if (range <= 0.f || effectStrength <= 0.f)
@@ -2379,6 +2426,7 @@ void Main::drawActivatedShrineBackgroundEffects(sf::RenderTarget& rt,
         shaderShrineBackground.setUniform(suShrineBgTintR, static_cast<float>(tint.r) / 255.f);
         shaderShrineBackground.setUniform(suShrineBgTintG, static_cast<float>(tint.g) / 255.f);
         shaderShrineBackground.setUniform(suShrineBgTintB, static_cast<float>(tint.b) / 255.f);
+        shaderShrineBackground.setUniform(suShrineBgTintA, static_cast<float>(tint.a) / 255.f);
         shaderShrineBackground.setUniform(suShrineBgDistortionStrength, 1812.f);
         shaderShrineBackground.setUniform(suShrineBgTintStrength, 0.2f);
         shaderShrineBackground.setUniform(suShrineBgEffectStrength, effectStrength);
@@ -2424,6 +2472,28 @@ void Main::drawActivatedShrineBackgroundEffects(sf::RenderTarget& rt,
         const sf::Color tint      = sf::Color::fromHSLA({.hue = hexHue + 40.f, .saturation = 1.f, .lightness = 0.5f});
         const sf::Vec2f backgroundSpaceCenter = cat.getDrawPosition(profile.enableCatBobbing) - activeViewDelta;
         drawBackgroundEffect(backgroundSpaceCenter, hexedCatEffectRange, tint, effectStrength);
+    }
+
+    // Combo (invincible) bubbles: warm gold halo that intensifies as the
+    // player builds the combo, so the bubble visually pulls focus.
+    for (const Bubble& bubble : pt->bubbles)
+    {
+        if (bubble.type != BubbleType::Combo)
+            continue;
+
+        // Effect grows from a baseline glow to full intensity as the click
+        // count climbs toward the auto-pop cap.
+        const auto& cfg            = gameConstants.events.invincibleBubble;
+        const float maxClicks      = cfg.maxClicks == 0u ? 1.f : static_cast<float>(cfg.maxClicks);
+        const float clicksFrac     = sf::base::clamp(static_cast<float>(bubble.comboClickCount) / maxClicks, 0.f, 1.f);
+        const float effectStrength = sf::base::clamp(0.45f + 0.55f * clicksFrac, 0.f, 1.f);
+
+        // The halo extends a bit past the bubble's outer edge.
+        const float range = sf::base::max(bubble.radius * 3.5f, 96.f);
+
+        const sf::Color tint = sf::Color::fromHSLA({.hue = 255.f, .saturation = 1.f, .lightness = 0.55f});
+        const sf::Vec2f backgroundSpaceCenter = bubble.position - activeViewDelta;
+        drawBackgroundEffect(backgroundSpaceCenter, range, tint.withAlpha(64), effectStrength);
     }
 }
 

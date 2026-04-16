@@ -78,6 +78,9 @@ void Main::uiSettingsDrawDebugTab()
     if (ImGui::Button("Clear events"))
         pt->activeEvents.clear();
 
+    if (ImGui::Button("Trigger invincible bubble"))
+        addEventInvincibleBubble();
+
     if (ImGui::Button("Nap random cat"))
     {
         sf::base::SizeT eligibleCount = 0u;

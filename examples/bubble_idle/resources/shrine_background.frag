@@ -12,6 +12,7 @@ uniform float u_shrineRange;
 uniform float u_shrineTintR;
 uniform float u_shrineTintG;
 uniform float u_shrineTintB;
+uniform float u_shrineTintA;
 uniform float u_distortionStrength;
 uniform float u_tintStrength;
 uniform float u_effectStrength;
@@ -60,5 +61,5 @@ void main()
     phasedColor = mix(phasedColor, phasedColor * 0.45 + tint * 1.9, u_tintStrength * tintMask);
     phasedColor += tint * 0.08 * shimmer * radialMask;
 
-    sf_fragColor = mix(vec4(tint, 1.0), vec4(phasedColor, radialMask * effectStrength * 0.95), 0.75);
+    sf_fragColor = mix(vec4(tint, u_shrineTintA), vec4(phasedColor, radialMask * effectStrength * 0.95), 0.75);
 }
