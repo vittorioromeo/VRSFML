@@ -7,7 +7,10 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/ArrowShapeData.hpp"
+#include "SFML/Graphics/ChevronShapeData.hpp"
 #include "SFML/Graphics/CircleShapeData.hpp"
+#include "SFML/Graphics/CogShapeData.hpp"
+#include "SFML/Graphics/CrossShapeData.hpp"
 #include "SFML/Graphics/CurvedArrowShapeData.hpp"
 #include "SFML/Graphics/DrawIndexedVerticesSettings.hpp"
 #include "SFML/Graphics/DrawVerticesSettings.hpp"
@@ -19,6 +22,7 @@
 #include "SFML/Graphics/GlyphMappedText.hpp"
 #include "SFML/Graphics/GlyphMappedTextData.hpp"
 #include "SFML/Graphics/GlyphMapping.hpp"
+#include "SFML/Graphics/HeartShapeData.hpp"
 #include "SFML/Graphics/IndexType.hpp"
 #include "SFML/Graphics/PieSliceShapeData.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
@@ -34,6 +38,8 @@
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/TextUtils.hpp"
 #include "SFML/Graphics/Transform.hpp"
+#include "SFML/Graphics/TrapezoidShapeData.hpp"
+#include "SFML/Graphics/BatchedGeometry.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 #include "SFML/Graphics/VertexSpan.hpp"
 
@@ -452,17 +458,19 @@ void DrawableBatchImpl<TStorage>::add(const Shape& shape)
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-VertexSpan DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
-    const base::SizeT nPoints,
-    const auto&       descriptor,
-    auto&&            pointFn,
-    const Vec2f       centerOffset)
+BatchedGeometry DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
+    const base::SizeT  nPoints,
+    const auto&        descriptor,
+    auto&&             pointFn,
+    const Vec2f* const localApex)
 {
     if (nPoints < 3u) [[unlikely]]
         return {};
 
-    const auto [sine, cosine] = base::sinCosLookup(descriptor.rotation.asRadians());
-    const auto transform = Transform::fromPositionScaleOriginSinCos(descriptor.position, descriptor.scale, descriptor.origin, sine, cosine);
+    const auto transform = Transform::fromPositionScaleOriginRotation(descriptor.position,
+                                                                      descriptor.scale,
+                                                                      descriptor.origin,
+                                                                      descriptor.rotation);
 
     // TODO P1: improve, also add to RenderTarget
 
@@ -495,7 +503,11 @@ VertexSpan DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
 
     const sf::Vec2f fillBoundsSize{fillBoundsMaxX - fillBoundsPosition.x, fillBoundsMaxY - fillBoundsPosition.y};
 
-    fillVertexPtr[0].position            = fillBoundsPosition + fillBoundsSize / 2.f + centerOffset; // center
+    // Fan apex: if the caller supplied a local apex (needed for non-convex shapes whose bbox
+    // center may lie outside the polygon), transform it alongside the geometry; otherwise fall
+    // back to the world-space bbox center (valid for convex/centrally-symmetric shapes).
+    fillVertexPtr[0].position = (localApex != nullptr) ? transform.transformPoint(*localApex)
+                                                       : fillBoundsPosition + fillBoundsSize / 2.f;
     fillVertexPtr[1u + nPoints].position = fillVertexPtr[1].position; // repeated first point
 
     //
@@ -524,7 +536,7 @@ VertexSpan DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
     //
     // Update outline if needed
     if (descriptor.outlineThickness == 0.f)
-        return {fillVertexPtr, fillVertexCount};
+        return {.fill = {fillVertexPtr, fillVertexCount}, .outline = {}};
 
     const base::SizeT outlineVertexCount = (nPoints + 1u) * 2u;
 
@@ -553,19 +565,27 @@ VertexSpan DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
 
     m_storage.commitMoreIndices(outlineIndexCount);
 
-    return {outlineVertexPtr - fillVertexCount, outlineVertexCount + fillVertexCount};
+    return {
+        .fill    = {outlineVertexPtr - fillVertexCount, fillVertexCount},
+        .outline = {outlineVertexPtr, outlineVertexCount},
+    };
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-VertexSpan DrawableBatchImpl<TStorage>::add(const ArrowShapeData& sdArrow)
+BatchedGeometry DrawableBatchImpl<TStorage>::add(const ArrowShapeData& sdArrow)
 {
-    const auto centerOffset = sdArrow.shaftWidth < sdArrow.headWidth
-                                  ? Vec2f{sdArrow.shaftLength / 2.f + sdArrow.headLength / 2.f, 0.f}
-                                        .componentWiseMul(sdArrow.scale)
-                                        .rotatedBy(sdArrow.rotation)
-                                  : Vec2f{0.f, 0.f};
+    if (!sdArrow.hasVisibleGeometry()) [[unlikely]]
+        return {};
+
+    // Fan apex in LOCAL coords: on the arrow's axis of symmetry, inside whichever region
+    // (head triangle or shaft rectangle) is wide enough to see every perimeter vertex.
+    // The arrow is non-convex (barbs at v1/v5), so only one of the two regions is a valid
+    // star-shaped kernel -- pick based on which of head/shaft is wider.
+    const Vec2f localApex = sdArrow.headWidth > sdArrow.shaftWidth
+                                ? Vec2f{sdArrow.shaftLength + sdArrow.headLength / 3.f, 0.f}
+                                : Vec2f{sdArrow.shaftLength * 0.5f, 0.f};
 
     return drawTriangleFanShapeFromPoints(7u,
                                           sdArrow,
@@ -573,15 +593,17 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const ArrowShapeData& sdArrow)
     {
         return ShapeUtils::computeArrowPoint(i, sdArrow.shaftLength, sdArrow.shaftWidth, sdArrow.headLength, sdArrow.headWidth);
     },
-                                          centerOffset);
+                                          &localApex);
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-VertexSpan DrawableBatchImpl<TStorage>::add(const CircleShapeData& sdCircle)
+BatchedGeometry DrawableBatchImpl<TStorage>::add(const CircleShapeData& sdCircle)
 {
-    SFML_BASE_ASSERT(sdCircle.pointCount != 0u);
+    if (!sdCircle.hasVisibleGeometry()) [[unlikely]]
+        return {};
+
     const float angleStep = base::tau / static_cast<float>(sdCircle.pointCount);
 
     return drawTriangleFanShapeFromPoints(sdCircle.pointCount,
@@ -595,16 +617,14 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const CircleShapeData& sdCircle)
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-VertexSpan DrawableBatchImpl<TStorage>::add(const CurvedArrowShapeData& sd)
+BatchedGeometry DrawableBatchImpl<TStorage>::add(const CurvedArrowShapeData& sd)
 {
-    if (sd.outerRadius <= 0.f || sd.innerRadius < 0.f || sd.innerRadius >= sd.outerRadius ||
-        sd.sweepAngle.asRadians() == 0.f || sd.headLength < 0.f || sd.headWidth < 0.f || sd.pointCount < 2u) [[unlikely]]
+    if (!sd.hasVisibleGeometry()) [[unlikely]]
         return {};
 
     const auto adjustedOrigin = sd.origin - Vec2f{sd.outerRadius, sd.outerRadius};
 
-    const auto [tfSine, tfCosine] = base::sinCosLookup(sd.rotation.asRadians());
-    const auto transform = Transform::fromPositionScaleOriginSinCos(sd.position, sd.scale, adjustedOrigin, tfSine, tfCosine);
+    const auto transform = Transform::fromPositionScaleOriginRotation(sd.position, sd.scale, adjustedOrigin, sd.rotation);
 
     const float sweepAngleRadians    = sd.sweepAngle.asRadians();
     const float absSweepAngleRadians = base::fabs(sweepAngleRadians);
@@ -766,19 +786,28 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const CurvedArrowShapeData& sd)
 
         const IndexType firstOutlineVertexIndex = m_storage.getNumVertices();
 
+        // Walk the perimeter CW-visually in screen space (y-down) so that outline normals point
+        // inward into the curved-arrow body. This makes `outlineThickness > 0` draw on top of
+        // the fill rather than growing the bounds.
+        //
+        // Order: outer arc (start -> end) -> head (outer barb, tip, inner barb) -> inner arc (end -> start).
         ShapeUtils::updateOutlineImpl(sd.outlineThickness,
                                       [&](const base::SizeT i)
         {
-            // 1. Inner edge of the body (start to end)
+            // 1. Outer edge of the body (start to end).
             if (i < numArcPoints)
-                return bodyFillVertexPtr[2 * i + 1u].position;
+                return bodyFillVertexPtr[2 * i + 0u].position;
 
-            // 2. Edge of the head: from inner barb, to tip, to outer barb
-            if (i <= numArcPoints + 2u)
-                return headFillVertexPtr[(i - numArcPoints + 2u) % 3u].position;
+            // 2. Arrowhead vertices: outer barb (1) -> tip (0) -> inner barb (2).
+            if (i < numArcPoints + 3u)
+            {
+                const unsigned int headLocal[3] = {1u, 0u, 2u};
+                return headFillVertexPtr[headLocal[i - numArcPoints]].position;
+            }
 
-            const auto tweakedIndex = outlinePerimeterPointCount - 1u - static_cast<base::SizeT>(i);
-            return bodyFillVertexPtr[2 * tweakedIndex].position;
+            // 3. Inner edge of the body (end back to start).
+            const auto innerIdx = 2u * numArcPoints + 2u - static_cast<base::SizeT>(i);
+            return bodyFillVertexPtr[2 * innerIdx + 1u].position;
         },
                                       outlineVertexPtr,
                                       outlinePerimeterPointCount,
@@ -795,20 +824,27 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const CurvedArrowShapeData& sd)
 
         m_storage.commitMoreIndices(outlineIndexCount);
 
-        // The returned span should cover all vertices (body + head + outline)
-        return {bodyFillVertexPtr, bodyFillVertexCount + 3u + outlineVertexCount};
+        // Split body + head (fill) from the outline region
+        return {
+            .fill    = {bodyFillVertexPtr, bodyFillVertexCount + 3u},
+            .outline = {outlineVertexPtr, outlineVertexCount},
+        };
     }
 
-    // The returned span should cover all fill vertices (body + head)
-    return {bodyFillVertexPtr, bodyFillVertexCount + 3u};
+    return {
+        .fill    = {bodyFillVertexPtr, bodyFillVertexCount + 3u},
+        .outline = {},
+    };
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-VertexSpan DrawableBatchImpl<TStorage>::add(const EllipseShapeData& sdEllipse)
+BatchedGeometry DrawableBatchImpl<TStorage>::add(const EllipseShapeData& sdEllipse)
 {
-    SFML_BASE_ASSERT(sdEllipse.pointCount != 0u);
+    if (!sdEllipse.hasVisibleGeometry()) [[unlikely]]
+        return {};
+
     const float angleStep = base::tau / static_cast<float>(sdEllipse.pointCount);
 
     return drawTriangleFanShapeFromPoints(sdEllipse.pointCount,
@@ -826,12 +862,12 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const EllipseShapeData& sdEllipse)
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-VertexSpan DrawableBatchImpl<TStorage>::add(const PieSliceShapeData& sdPieSlice)
+BatchedGeometry DrawableBatchImpl<TStorage>::add(const PieSliceShapeData& sdPieSlice)
 {
-    if (sdPieSlice.sweepAngle.asRadians() <= 0.f)
+    if (!sdPieSlice.hasVisibleGeometry()) [[unlikely]]
         return {};
 
-    if (sdPieSlice.sweepAngle.asRadians() >= base::tau - SFML_BASE_FLOAT_EPSILON)
+    if (SFML_BASE_MATH_FABSF(sdPieSlice.sweepAngle.asRadians()) >= base::tau - SFML_BASE_FLOAT_EPSILON)
         return add(CircleShapeData{
             .position           = sdPieSlice.position,
             .scale              = sdPieSlice.scale,
@@ -863,8 +899,11 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const PieSliceShapeData& sdPieSlice)
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-VertexSpan DrawableBatchImpl<TStorage>::add(const RectangleShapeData& sdRectangle)
+BatchedGeometry DrawableBatchImpl<TStorage>::add(const RectangleShapeData& sdRectangle)
 {
+    if (!sdRectangle.hasVisibleGeometry()) [[unlikely]]
+        return {};
+
     return drawTriangleFanShapeFromPoints(4u, sdRectangle, [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {
         return ShapeUtils::computeRectanglePoint(i, sdRectangle.size);
     });
@@ -873,8 +912,11 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const RectangleShapeData& sdRectangl
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-VertexSpan DrawableBatchImpl<TStorage>::add(const RoundedRectangleShapeData& sdRoundedRectangle)
+BatchedGeometry DrawableBatchImpl<TStorage>::add(const RoundedRectangleShapeData& sdRoundedRectangle)
 {
+    if (!sdRoundedRectangle.hasVisibleGeometry()) [[unlikely]]
+        return {};
+
     return drawTriangleFanShapeFromPoints(sdRoundedRectangle.cornerPointCount * 4u,
                                           sdRoundedRectangle,
                                           [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
@@ -889,14 +931,13 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const RoundedRectangleShapeData& sdR
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-VertexSpan DrawableBatchImpl<TStorage>::add(const RingShapeData& sdRing)
+BatchedGeometry DrawableBatchImpl<TStorage>::add(const RingShapeData& sdRing)
 {
-    if (sdRing.outerRadius <= 0.f || sdRing.innerRadius < 0.f || sdRing.innerRadius >= sdRing.outerRadius ||
-        sdRing.pointCount < 3u) [[unlikely]]
+    if (!sdRing.hasVisibleGeometry()) [[unlikely]]
         return {};
 
-    const auto [sine, cosine] = base::sinCosLookup(sdRing.rotation.asRadians());
-    const auto transform = Transform::fromPositionScaleOriginSinCos(sdRing.position, sdRing.scale, sdRing.origin, sine, cosine);
+    const auto
+        transform = Transform::fromPositionScaleOriginRotation(sdRing.position, sdRing.scale, sdRing.origin, sdRing.rotation);
 
     const unsigned int nPoints   = sdRing.pointCount;
     const float        angleStep = base::tau / static_cast<float>(nPoints);
@@ -948,7 +989,7 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const RingShapeData& sdRing)
     //
     // Update outline if needed
     if (sdRing.outlineThickness == 0.f)
-        return {fillVertexPtr, fillVertexCount};
+        return {.fill = {fillVertexPtr, fillVertexCount}, .outline = {}};
 
     const base::SizeT outlineIndicesPerLoop = 3u * (outlineVerticesPerLoop - 2u); // Indices for triangles from the strip
     const base::SizeT totalOutlineIndices = outlineIndicesPerLoop * 2u;
@@ -965,13 +1006,18 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const RingShapeData& sdRing)
         [&](Vertex* const      chosenOutlineVertexPtr,
             IndexType* const   chosenOutlineIndexPtr,
             const IndexType    firstChonsenOutlineLoopVertexIndex,
-            const unsigned int fillVertexIndexOffset)
+            const unsigned int fillVertexIndexOffset,
+            const bool         reverseWalk)
     {
-        // Generate outline vertices
+        // Generate outline vertices.
+        // The inner outline walks the inner ring in reverse so its normals point away from the
+        // hole (into the annulus), matching the outer outline's inward normals. This keeps
+        // `outlineThickness > 0` drawing on top of the fill for both loops.
         const auto getBoundaryPoint = [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
         {
             SFML_BASE_ASSERT_AND_ASSUME(i < nPoints);
-            return fillVertexPtr[2 * i + fillVertexIndexOffset].position;
+            const base::SizeT walked = reverseWalk ? (nPoints - 1u - i) : i;
+            return fillVertexPtr[2 * walked + fillVertexIndexOffset].position;
         };
 
         Vertex* const chosenOutlineVertexStart = chosenOutlineVertexPtr;
@@ -988,15 +1034,16 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const RingShapeData& sdRing)
     };
 
     //
-    // Generate outer outline
-    generateOutlineHelper(outlineVertexPtr, outlineIndexPtr, firstOuterOutlineLoopVertexIndex, 0);
+    // Generate outer outline (walked forward: CW-visual, normals point inward into annulus)
+    generateOutlineHelper(outlineVertexPtr, outlineIndexPtr, firstOuterOutlineLoopVertexIndex, 0, /* reverseWalk */ false);
 
     //
-    // Generate inner outline
+    // Generate inner outline (walked backward: CCW-visual, normals point outward from hole into annulus)
     generateOutlineHelper(outlineVertexPtr + outlineVerticesPerLoop,
                           outlineIndexPtr + outlineIndicesPerLoop,
                           firstInnerOutlineLoopVertexIndex,
-                          1);
+                          1,
+                          /* reverseWalk */ true);
 
     //
     // Update outline colors and outline tex coords
@@ -1005,20 +1052,21 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const RingShapeData& sdRing)
     m_storage.commitMoreVertices(totalOutlineVertices);
     m_storage.commitMoreIndices(totalOutlineIndices);
 
-    return {outlineVertexPtr - fillVertexCount, fillVertexCount + totalOutlineVertices};
+    return {
+        .fill    = {outlineVertexPtr - fillVertexCount, fillVertexCount},
+        .outline = {outlineVertexPtr, totalOutlineVertices},
+    };
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-VertexSpan DrawableBatchImpl<TStorage>::add(const RingPieSliceShapeData& sdRingPieSlice)
+BatchedGeometry DrawableBatchImpl<TStorage>::add(const RingPieSliceShapeData& sdRingPieSlice)
 {
-    if (sdRingPieSlice.outerRadius <= 0.f || sdRingPieSlice.innerRadius < 0.f ||
-        sdRingPieSlice.innerRadius >= sdRingPieSlice.outerRadius || sdRingPieSlice.pointCount < 3u ||
-        sdRingPieSlice.sweepAngle.asRadians() <= 0.f) [[unlikely]]
+    if (!sdRingPieSlice.hasVisibleGeometry()) [[unlikely]]
         return {};
 
-    if (sdRingPieSlice.sweepAngle.asRadians() >= base::tau - SFML_BASE_FLOAT_EPSILON)
+    if (SFML_BASE_MATH_FABSF(sdRingPieSlice.sweepAngle.asRadians()) >= base::tau - SFML_BASE_FLOAT_EPSILON)
         return add(RingShapeData{
             .position           = sdRingPieSlice.position,
             .scale              = sdRingPieSlice.scale,
@@ -1035,12 +1083,10 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const RingPieSliceShapeData& sdRingP
             .pointCount         = sdRingPieSlice.pointCount - 1u,
         });
 
-    const auto [sine, cosine] = base::sinCosLookup(sdRingPieSlice.rotation.asRadians());
-    const auto transform      = Transform::fromPositionScaleOriginSinCos(sdRingPieSlice.position,
-                                                                         sdRingPieSlice.scale,
-                                                                         sdRingPieSlice.origin,
-                                                                         sine,
-                                                                         cosine);
+    const auto transform = Transform::fromPositionScaleOriginRotation(sdRingPieSlice.position,
+                                                                      sdRingPieSlice.scale,
+                                                                      sdRingPieSlice.origin,
+                                                                      sdRingPieSlice.rotation);
 
     const float absSweepAngle = SFML_BASE_MATH_FABSF(sdRingPieSlice.sweepAngle.asRadians());
     const float sweepRadians  = sdRingPieSlice.sweepAngle.asRadians();
@@ -1104,7 +1150,7 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const RingPieSliceShapeData& sdRingP
     //
     // Update outline if needed
     if (sdRingPieSlice.outlineThickness == 0.f || numArcPoints < 3)
-        return {fillVertexPtr, fillVertexCount};
+        return {.fill = {fillVertexPtr, fillVertexCount}, .outline = {}};
 
     const base::SizeT numOutlineTriangles = totalOutlineVertices - 2u;
     const base::SizeT totalOutlineIndices = numOutlineTriangles * 3u;
@@ -1140,14 +1186,20 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const RingPieSliceShapeData& sdRingP
     m_storage.commitMoreVertices(totalOutlineVertices);
     m_storage.commitMoreIndices(totalOutlineIndices);
 
-    return {outlineVertexPtr - fillVertexCount, fillVertexCount + totalOutlineVertices};
+    return {
+        .fill    = {outlineVertexPtr - fillVertexCount, fillVertexCount},
+        .outline = {outlineVertexPtr, totalOutlineVertices},
+    };
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-VertexSpan DrawableBatchImpl<TStorage>::add(const StarShapeData& sdStar)
+BatchedGeometry DrawableBatchImpl<TStorage>::add(const StarShapeData& sdStar)
 {
+    if (!sdStar.hasVisibleGeometry()) [[unlikely]]
+        return {};
+
     const auto nPoints = sdStar.pointCount * 2u;
 
     SFML_BASE_ASSERT(nPoints != 0u);
@@ -1161,7 +1213,91 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const StarShapeData& sdStar)
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-VertexSpan DrawableBatchImpl<TStorage>::addTextDataImpl(
+BatchedGeometry DrawableBatchImpl<TStorage>::add(const CrossShapeData& sdCross)
+{
+    if (!sdCross.hasVisibleGeometry()) [[unlikely]]
+        return {};
+
+    return drawTriangleFanShapeFromPoints(12u, sdCross, [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {
+        return ShapeUtils::computeCrossPoint(i, sdCross.size, sdCross.armThickness);
+    });
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TStorage>
+BatchedGeometry DrawableBatchImpl<TStorage>::add(const TrapezoidShapeData& sdTrapezoid)
+{
+    if (!sdTrapezoid.hasVisibleGeometry()) [[unlikely]]
+        return {};
+
+    return drawTriangleFanShapeFromPoints(4u, sdTrapezoid, [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {
+        return ShapeUtils::computeTrapezoidPoint(i, sdTrapezoid.topWidth, sdTrapezoid.bottomWidth, sdTrapezoid.height);
+    });
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TStorage>
+BatchedGeometry DrawableBatchImpl<TStorage>::add(const ChevronShapeData& sdChevron)
+{
+    if (!sdChevron.hasVisibleGeometry()) [[unlikely]]
+        return {};
+
+    // `computeChevronPoint` clamps `thickness` to `size.y / 2` internally (so the shape cleanly
+    // degenerates to a filled triangle when the inner vertices would cross), but we need the
+    // same clamped value here to keep the fan apex on the chevron's axis of symmetry.
+    const float w = sdChevron.size.x;
+    const float h = sdChevron.size.y;
+    const float t = SFML_BASE_MIN(sdChevron.thickness, h * 0.5f);
+
+    const float innerTipX = w * (1.f - 2.f * t / h);
+
+    // Fan apex in LOCAL coords: midway between inner and outer tip, on the chevron's axis of
+    // symmetry. Inside the non-convex chevron for every valid `thickness`.
+    const Vec2f localApex{(w + innerTipX) * 0.5f, h * 0.5f};
+
+    return drawTriangleFanShapeFromPoints(6u,
+                                          sdChevron,
+                                          [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+    { return ShapeUtils::computeChevronPoint(i, sdChevron.size, sdChevron.thickness); },
+                                          &localApex);
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TStorage>
+BatchedGeometry DrawableBatchImpl<TStorage>::add(const HeartShapeData& sdHeart)
+{
+    if (!sdHeart.hasVisibleGeometry()) [[unlikely]]
+        return {};
+
+    return drawTriangleFanShapeFromPoints(sdHeart.pointCount,
+                                          sdHeart,
+                                          [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+    { return ShapeUtils::computeHeartPoint(i, sdHeart.pointCount, sdHeart.size); });
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TStorage>
+BatchedGeometry DrawableBatchImpl<TStorage>::add(const CogShapeData& sdCog)
+{
+    if (!sdCog.hasVisibleGeometry()) [[unlikely]]
+        return {};
+
+    return drawTriangleFanShapeFromPoints(4u * sdCog.toothCount,
+                                          sdCog,
+                                          [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+    {
+        return ShapeUtils::computeCogPoint(i, sdCog.toothCount, sdCog.outerRadius, sdCog.innerRadius, sdCog.toothWidthRatio);
+    });
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TStorage>
+BatchedGeometry DrawableBatchImpl<TStorage>::addTextDataImpl(
     const auto&        glyphSource,
     const auto&        textData,
     const bool         isBold,
@@ -1182,8 +1318,10 @@ VertexSpan DrawableBatchImpl<TStorage>::addTextDataImpl(
     for (IndexType i = 0u; i < numQuads; ++i)
         DrawableBatchUtils::appendQuadIndices(indexPtr, nextIndex + (i * 4u));
 
-    const auto [sine, cosine] = base::sinCosLookup(textData.rotation.asRadians());
-    const auto transform = Transform::fromPositionScaleOriginSinCos(textData.position, textData.scale, textData.origin, sine, cosine);
+    const auto transform = Transform::fromPositionScaleOriginRotation(textData.position,
+                                                                      textData.scale,
+                                                                      textData.origin,
+                                                                      textData.rotation);
 
     Vertex* const vertexPtr = m_storage.reserveMoreVertices(4u * numQuads);
 
@@ -1209,13 +1347,17 @@ VertexSpan DrawableBatchImpl<TStorage>::addTextDataImpl(
     m_storage.commitMoreIndices(6u * numQuads);
     m_storage.commitMoreVertices(4u * numQuads);
 
-    return {vertexPtr, 4u * numQuads};
+    // `createTextGeometryAndGetBounds` lays outline quads out first, then fill quads.
+    return {
+        .fill    = {vertexPtr + outlineQuadCount * 4u, fillQuadCount * 4u},
+        .outline = {vertexPtr, outlineQuadCount * 4u},
+    };
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-VertexSpan DrawableBatchImpl<TStorage>::add(const Font& font, const TextData& textData)
+BatchedGeometry DrawableBatchImpl<TStorage>::add(const Font& font, const TextData& textData)
 {
     return addTextDataImpl(font, textData, textData.bold, textData.characterSize, textData.outlineThickness);
 }
@@ -1223,7 +1365,7 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const Font& font, const TextData& te
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-VertexSpan DrawableBatchImpl<TStorage>::add(const FontFace&            fontFace,
+BatchedGeometry DrawableBatchImpl<TStorage>::add(const FontFace&            fontFace,
                                             const GlyphMapping&        glyphMapping,
                                             const GlyphMappedTextData& textData)
 {
