@@ -16,11 +16,11 @@ inline constexpr EXACT_ARRAY(
     colors,
     nCatTypes,
     {
-        {192u, 147u, 109u}, // Normal
-        {129u, 251u, 191u}, // Uni
-        {191u, 61u, 61u},   // Devil
-        sf::Color::White,   // Astro
-        {220u, 195u, 80u},  // Warden — TODO: dedicated palette
+        {192u, 147u, 109u},  // Normal
+        {129u, 251u, 191u},  // Uni
+        {191u, 61u, 61u},    // Devil
+        sf::Color::White,    // Astro
+        sf::Color::DarkBlue, // Warden
 
         {90u, 155u, 48u},   // Witch
         {123u, 108u, 191u}, // Wizard
@@ -43,7 +43,7 @@ inline constexpr EXACT_ARRAY(
         "shines",  // Uni
         "ieds",    // Devil
         "flights", // Astro
-        "wakes",   // Warden
+        "bonks",   // Warden
 
         "rituals", // Witch
         "spells",  // Wizard
