@@ -9,6 +9,7 @@
 #include "Constants.hpp"
 #include "Countdown.hpp"
 #include "ExactArray.hpp"
+#include "GameEvent.hpp"
 #include "HellPortal.hpp"
 #include "HexSession.hpp"
 #include "Milestones.hpp"
@@ -23,6 +24,7 @@
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Time.hpp"
 
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Pow.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -226,6 +228,17 @@ struct Playthrough
     sf::base::Vector<HexSession> hexSessions;
     sf::base::Vector<HexSession> copyHexSessions;
     sf::base::Vector<HellPortal> hellPortals;
+
+    //
+    // Random events
+    sf::base::Vector<GameEvent> activeEvents;
+    float                       nextEventSpawnMs = 60'000.f;
+
+    //
+    // Monotonic counter assigned to every newly-spawned bubble. Used only to
+    // seed the rendered hue of Normal bubbles so it stays stable when earlier
+    // bubbles are removed.
+    sf::base::U32 nextBubbleHueSeed = 0u;
 
     //
     // Shrines

@@ -1,8 +1,10 @@
+#include "Aliases.hpp"
 #include "BubbleIdleMain.hpp"
 #include "Cat.hpp"
 #include "CatConstants.hpp"
 #include "CatType.hpp"
 #include "Countdown.hpp"
+#include "GameEvent.hpp"
 #include "Profile.hpp"
 #include "PurchasableScalingValue.hpp"
 #include "Serialization.hpp"
@@ -11,10 +13,12 @@
 
 #include "SFML/ImGui/IncludeImGui.hpp"
 
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/ToString.hpp"
 #include "SFML/Base/Vector.hpp"
@@ -45,6 +49,45 @@ void Main::uiSettingsDrawDebugTab()
     ImGui::SameLine();
     if (ImGui::Button("Reset##timescale"))
         debugTimeScale = 1.f;
+
+    ImGui::Separator();
+
+    ImGui::Text("Events: %zu active", pt->activeEvents.size());
+
+    const auto& bfCfg = gameConstants.events.bubblefall;
+
+    if (ImGui::Button("Trigger bubblefall (random)"))
+    {
+        const float halfWidth = bfCfg.regionWidth * 0.5f;
+
+        pt->activeEvents.emplaceBack(EBubblefall{
+            .regionCenterX = rng.getF(halfWidth, pt->getMapLimit() - halfWidth),
+            .regionWidth   = bfCfg.regionWidth,
+            .remainingMs   = bfCfg.durationMs,
+            .subTickMs     = 0.f,
+        });
+    }
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("Trigger bubblefall (at view)"))
+    {
+        const float viewCenterX = gameView.center.x;
+        const float halfWidth   = bfCfg.regionWidth * 0.5f;
+        const float mapLimit    = pt->getMapLimit();
+
+        pt->activeEvents.emplaceBack(EBubblefall{
+            .regionCenterX = sf::base::clamp(viewCenterX, halfWidth, mapLimit - halfWidth),
+            .regionWidth   = bfCfg.regionWidth,
+            .remainingMs   = bfCfg.durationMs,
+            .subTickMs     = 0.f,
+        });
+    }
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("Clear events"))
+        pt->activeEvents.clear();
 
     ImGui::Separator();
 
@@ -430,6 +473,37 @@ void Main::uiSettingsDrawDebugTab()
         inputFloat("Cat name Y", gameConstants.catNameTextOffsetY);
         inputFloat("Cat status Y", gameConstants.catStatusTextOffsetY);
         inputFloat("Cooldown bar Y", gameConstants.catCooldownBarOffsetY);
+        ImGui::TreePop();
+    }
+
+    if (ImGui::TreeNode("Events tuning"))
+    {
+        auto& eventsCfg = gameConstants.events;
+
+        inputFloat("Min spawn interval (ms)", eventsCfg.minSpawnIntervalMs);
+        inputFloat("Max spawn interval (ms)", eventsCfg.maxSpawnIntervalMs);
+
+        if (ImGui::TreeNode("Bubblefall"))
+        {
+            auto& bf = eventsCfg.bubblefall;
+
+            inputFloat("Duration (ms)", bf.durationMs);
+            inputFloat("Region width", bf.regionWidth);
+            inputFloat("Spawn interval (ms)", bf.spawnIntervalMs);
+
+            int bubblesPerTick = static_cast<int>(bf.bubblesPerTick);
+            ImGui::SetNextItemWidth(220.f * profile.uiScale);
+            if (ImGui::InputInt("Bubbles per tick", &bubblesPerTick) && bubblesPerTick >= 0)
+                bf.bubblesPerTick = static_cast<sf::base::SizeT>(bubblesPerTick);
+
+            inputFloat("Initial velocity Y", bf.initialVelocityY);
+            inputFloat("Velocity jitter Y", bf.velocityJitterY);
+            inputFloat("Velocity jitter X", bf.velocityJitterX);
+            inputFloat("Attack ratio", bf.attackRatio);
+            inputFloat("Release ratio", bf.releaseRatio);
+            ImGui::TreePop();
+        }
+
         ImGui::TreePop();
     }
 

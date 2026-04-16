@@ -16,9 +16,9 @@
 #include "Constants.hpp"
 #include "Countdown.hpp"
 #include "Doll.hpp"
-#include "HexSession.hpp"
 #include "ExactArray.hpp"
 #include "GameConstants.hpp"
+#include "HexSession.hpp"
 #include "IconsFontAwesome6.h"
 #include "InputHelper.hpp"
 #include "MemberGuard.hpp"
@@ -235,7 +235,9 @@ inline bool handleCatShrineCollision(const float deltaTimeMs, Cat& cat, Shrine& 
         .repelledCountdown  = {},
         .attractedCountdown = {},
 
-        .type = BubbleType::Normal,
+        .type      = BubbleType::Normal,
+        .ephemeral = false,
+        .hueSeed   = pt.nextBubbleHueSeed++,
     };
 }
 
@@ -557,7 +559,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Hexed cat offscreen render textures (one per concurrent hex, for witch and copy-witch combined)
-    static inline constexpr sf::Vec2u hexedCatRenderTextureSize{640u, 640u};
+    static inline constexpr sf::Vec2u       hexedCatRenderTextureSize{640u, 640u};
     static inline constexpr sf::base::SizeT maxHexedCatRenderTextures = maxConcurrentHexes * 2u;
 
     sf::base::Vector<sf::RenderTexture> hexedCatRenderTextures{[this]
@@ -3372,15 +3374,18 @@ struct Main
     [[nodiscard]] bool canHexMore() const;
     [[nodiscard]] bool canCopyHexMore() const;
     void               hexCat(Cat& cat, SizeT catIdx, bool copy);
-    void gameLoopUpdateCatActionWitchImpl(float /* deltaTimeMs */, Cat& cat, sf::base::Vector<HexSession>& sessionsToUse, SizeT nCatsToHex);
-    void gameLoopUpdateCatActionWitch(float deltaTimeMs, Cat& cat);
-    void gameLoopUpdateCatActionWizard(float deltaTimeMs, Cat& cat);
-    void gameLoopUpdateCatActionMouse(float /* deltaTimeMs */, Cat& cat);
-    void gameLoopUpdateCatActionEngi(float /* deltaTimeMs */, Cat& cat);
-    void gameLoopUpdateCatActionRepulso(float /* deltaTimeMs */, Cat& cat);
-    void gameLoopUpdateCatActionAttracto(float /* deltaTimeMs */, Cat& cat);
-    void gameLoopUpdateCatActionCopy(float deltaTimeMs, Cat& cat);
-    void gameLoopUpdateCatActionDuck(float deltaTimeMs, Cat& cat);
+    void               gameLoopUpdateCatActionWitchImpl(float /* deltaTimeMs */,
+                                                        Cat&                          cat,
+                                                        sf::base::Vector<HexSession>& sessionsToUse,
+                                                        SizeT                         nCatsToHex);
+    void               gameLoopUpdateCatActionWitch(float deltaTimeMs, Cat& cat);
+    void               gameLoopUpdateCatActionWizard(float deltaTimeMs, Cat& cat);
+    void               gameLoopUpdateCatActionMouse(float /* deltaTimeMs */, Cat& cat);
+    void               gameLoopUpdateCatActionEngi(float /* deltaTimeMs */, Cat& cat);
+    void               gameLoopUpdateCatActionRepulso(float /* deltaTimeMs */, Cat& cat);
+    void               gameLoopUpdateCatActionAttracto(float /* deltaTimeMs */, Cat& cat);
+    void               gameLoopUpdateCatActionCopy(float deltaTimeMs, Cat& cat);
+    void               gameLoopUpdateCatActionDuck(float deltaTimeMs, Cat& cat);
     [[nodiscard]] auto makeMagnetAction(
         const sf::Vec2f    position,
         const CatType      catType,
@@ -3430,6 +3435,8 @@ struct Main
     void gameLoopUpdateCopyDolls(float deltaTimeMs, sf::Vec2f mousePos);
     void gameLoopUpdateHellPortals(float deltaTimeMs);
     void gameLoopUpdateWitchBuffs(float deltaTimeMs);
+    void gameLoopUpdateEvents(float deltaTimeMs);
+    void gameLoopReapEphemeralBubbles();
     void gameLoopUpdateMana(float deltaTimeMs);
     void gameLoopUpdateAutocast();
     void pushNotification(const char* title, const char* format, const auto&... args)

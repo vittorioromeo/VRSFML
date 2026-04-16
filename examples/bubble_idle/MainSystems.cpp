@@ -5,11 +5,11 @@
 #include "BubbleIdleMain.hpp"
 #include "BubbleType.hpp"
 #include "Cat.hpp"
-#include "CatConstants.hpp"
 #include "CatType.hpp"
 #include "Constants.hpp"
 #include "Countdown.hpp"
 #include "Doll.hpp"
+#include "GameEvent.hpp"
 #include "HellPortal.hpp"
 #include "HexSession.hpp"
 #include "ParticleData.hpp"
@@ -19,6 +19,7 @@
 #include "Stats.hpp"
 
 #include "ExampleUtils/ControlFlow.hpp"
+#include "ExampleUtils/Easing.hpp"
 #include "ExampleUtils/HueColor.hpp"
 #include "ExampleUtils/MathUtils.hpp"
 #include "ExampleUtils/Profiler.hpp"
@@ -48,6 +49,7 @@
 #include "SFML/Base/Math/Sqrt.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/OverloadSet.hpp"
 #include "SFML/Base/Remainder.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
@@ -130,15 +132,31 @@ void Main::gameLoopUpdateTransitions(const float deltaTimeMs)
         }
         else if (pt->bubbles.size() > targetBubbleCount)
         {
-            const SizeT times = (pt->bubbles.size() - targetBubbleCount) > 500u ? 25u : 1u;
-
-            for (SizeT i = 0; i < times; ++i)
+            // Events that spawn bubbles (e.g. Bubblefall) are explicitly allowed
+            // to exceed the cap. Suppress the trim while any such event is
+            // active — otherwise the event-spawned bubbles would be popped on
+            // the next frame.
+            const bool eventSpawningBubbles = sf::base::anyOf(pt->activeEvents.begin(),
+                                                              pt->activeEvents.end(),
+                                                              [](const GameEvent& ev)
             {
-                const auto bPos = pt->bubbles.back().position;
-                pt->bubbles.popBack();
+                return ev.linearVisit(sf::base::OverloadSet{
+                    [](const EBubblefall&) { return true; },
+                });
+            });
 
-                spawnParticles(8, bPos, ParticleType::Bubble, 0.5f, 0.5f);
-                playReversePopAt(bPos);
+            if (!eventSpawningBubbles)
+            {
+                const SizeT times = (pt->bubbles.size() - targetBubbleCount) > 500u ? 25u : 1u;
+
+                for (SizeT i = 0; i < times; ++i)
+                {
+                    const auto bPos = pt->bubbles.back().position;
+                    pt->bubbles.popBack();
+
+                    spawnParticles(8, bPos, ParticleType::Bubble, 0.5f, 0.5f);
+                    playReversePopAt(bPos);
+                }
             }
         }
 
@@ -325,6 +343,11 @@ void Main::gameLoopUpdateBubbles(const float deltaTimeMs)
         // Y-axis below and above screen
         if (bubble.position.y - bubble.radius > boundaries.y)
         {
+            // Event-spawned bubbles despawn instead of being recycled at the
+            // top — the post-loop `vectorEraseIf` removes them.
+            if (bubble.ephemeral)
+                continue;
+
             bubble.position.x = rng.getF(0.f, pt->getMapLimit());
             bubble.position.y = -bubble.radius * rng.getF(1.f, 2.f);
 
@@ -369,6 +392,20 @@ void Main::gameLoopUpdateBubbles(const float deltaTimeMs)
         (void)bubble.repelledCountdown.updateAndStop(deltaTimeMs);
         (void)bubble.attractedCountdown.updateAndStop(deltaTimeMs);
     }
+
+    // Ephemeral bubbles that have fallen off the bottom stay in `pt->bubbles`
+    // for the remainder of the frame: `sweepAndPrune` already captured their
+    // indices and the collision passes below rely on them staying stable.
+    // `gameLoopReapEphemeralBubbles` at end-of-frame removes them.
+}
+
+
+////////////////////////////////////////////////////////////
+void Main::gameLoopReapEphemeralBubbles()
+{
+    sf::base::vectorEraseIf(pt->bubbles, [&](const Bubble& b) {
+        return b.ephemeral && (b.position.y - b.radius > boundaries.y);
+    });
 }
 
 
@@ -886,7 +923,7 @@ void Main::gameLoopUpdateCatActionWitchImpl(const float /* deltaTimeMs */,
 
     for (SizeT i = 0u; i < nToHex; ++i)
     {
-        const SizeT j = rng.getI<SizeT>(i, otherCatCount - 1);
+        const auto j = rng.getI<SizeT>(i, otherCatCount - 1);
         if (j != i)
         {
             const SizeT tmp     = candidateIndices[i];
@@ -2490,6 +2527,103 @@ void Main::gameLoopUpdateWitchBuffs(const float deltaTimeMs)
     for (Countdown& buffCountdown : pt->buffCountdownsPerType)
         if (buffCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
             playSound(sounds.buffoff);
+}
+
+
+////////////////////////////////////////////////////////////
+void Main::gameLoopUpdateEvents(const float deltaTimeMs)
+{
+    SFEX_PROFILE_SCOPE_AUTOLABEL();
+
+    if (inPrestigeTransition || splashCountdown.value > 0.f)
+        return;
+
+    const auto& eventsCfg = gameConstants.events;
+    const auto& bfCfg     = eventsCfg.bubblefall;
+
+    // Schedule the next random event.
+    pt->nextEventSpawnMs -= deltaTimeMs;
+
+    if (pt->nextEventSpawnMs <= 0.f)
+    {
+        pt->nextEventSpawnMs = rng.getF(eventsCfg.minSpawnIntervalMs, eventsCfg.maxSpawnIntervalMs);
+
+        // Pick a random event kind. With more kinds this becomes a switch on a
+        // uniform roll; for now the only option is Bubblefall.
+        const float halfWidth = bfCfg.regionWidth * 0.5f;
+
+        pt->activeEvents.emplaceBack(EBubblefall{
+            .regionCenterX = rng.getF(halfWidth, pt->getMapLimit() - halfWidth),
+            .regionWidth   = bfCfg.regionWidth,
+            .remainingMs   = bfCfg.durationMs,
+            .subTickMs     = 0.f,
+        });
+    }
+
+    // Per-kind update: advance the event's own timers and (if positional)
+    // drive its spawner. Returns the remaining duration — <= 0 means expire.
+    const auto tickEvent = sf::base::OverloadSet{
+        [&](EBubblefall& e) -> float
+    {
+        e.remainingMs -= deltaTimeMs;
+
+        // Attack/release envelope on the spawn rate: ramps up over
+        // `attackRatio` of the duration, holds at full rate, then ramps
+        // down over `releaseRatio`. Advancing `subTickMs` by
+        // `deltaTimeMs * intensity` scales the effective spawn frequency
+        // without changing the total event length.
+        const float duration    = bfCfg.durationMs <= 0.f ? 1.f : bfCfg.durationMs;
+        const float elapsedNorm = sf::base::clamp(1.f - (e.remainingMs / duration), 0.f, 1.f);
+
+        const float attack  = sf::base::clamp(bfCfg.attackRatio, 0.f, 0.5f);
+        const float release = sf::base::clamp(bfCfg.releaseRatio, 0.f, 0.5f);
+
+        float intensity = 1.f;
+        if (attack > 0.f && elapsedNorm < attack)
+            intensity = easeInOutCubic(sf::base::clamp(elapsedNorm / attack, 0.f, 1.f));
+        else if (release > 0.f && elapsedNorm > 1.f - release)
+            intensity = easeInOutCubic(sf::base::clamp((1.f - elapsedNorm) / release, 0.f, 1.f));
+
+        e.subTickMs += deltaTimeMs * intensity;
+
+        while (e.subTickMs >= bfCfg.spawnIntervalMs)
+        {
+            e.subTickMs -= bfCfg.spawnIntervalMs;
+
+            const float leftX  = e.regionCenterX - e.regionWidth * 0.5f;
+            const float rightX = e.regionCenterX + e.regionWidth * 0.5f;
+
+            // Bypass the bubble-count cap: event bubbles are added directly.
+            // They're flagged `ephemeral` so they despawn at the bottom
+            // instead of being recycled like regular bubbles.
+            for (SizeT i = 0u; i < bfCfg.bubblesPerTick; ++i)
+            {
+                auto& bubble = pt->bubbles.emplaceBack(makeRandomBubble(*pt, rng, pt->getMapLimit(), boundaries.y));
+
+                bubble.position.x = rng.getF(leftX, rightX);
+                bubble.position.y = -bubble.radius * rng.getF(1.f, 3.f);
+                bubble.velocity.x = rng.getF(-bfCfg.velocityJitterX, bfCfg.velocityJitterX);
+                bubble.velocity.y = bfCfg.initialVelocityY + rng.getF(-bfCfg.velocityJitterY, bfCfg.velocityJitterY);
+                bubble.ephemeral  = true;
+
+                spawnParticles(4, bubble.position, ParticleType::Bubble, 0.35f, 0.5f);
+            }
+        }
+
+        return e.remainingMs;
+    },
+    };
+
+    for (GameEvent& ev : pt->activeEvents)
+        (void)ev.linearVisit(tickEvent);
+
+    sf::base::vectorEraseIf(pt->activeEvents,
+                            [&](GameEvent& ev)
+    {
+        return ev.linearVisit(sf::base::OverloadSet{
+            [](const EBubblefall& e) { return e.remainingMs <= 0.f; },
+        });
+    });
 }
 
 
