@@ -17,6 +17,7 @@
 #include "Shrine.hpp"
 #include "ShrineType.hpp"
 #include "Stats.hpp"
+#include "TextParticle.hpp"
 
 #include "ExampleUtils/ControlFlow.hpp"
 #include "ExampleUtils/Easing.hpp"
@@ -874,6 +875,127 @@ void Main::hexCat(Cat& cat, const SizeT /* catIdx */, const bool copy)
 }
 
 
+////////////////////////////////////////////////////////////
+[[nodiscard]] bool Main::canCatNap(const Cat& cat) const
+{
+    if (cat.isNapping())
+        return false;
+
+    if (cat.isHexedOrCopyHexed())
+        return false;
+
+    // Witchcat: refuse nap while any hex sessions are active or while the
+    // ritual is winding up / cast (cooldown in the ritual band).
+    if (cat.type == CatType::Witch)
+        if (!pt->hexSessions.empty() || cat.cooldown.value <= 10'000.f)
+            return false;
+
+    // Copycat mimicking the witch: same guards against copy-side rituals.
+    if (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Witch)
+        if (!pt->copyHexSessions.empty() || cat.cooldown.value <= 10'000.f)
+            return false;
+
+    return true;
+}
+
+
+////////////////////////////////////////////////////////////
+void Main::beginCatNap(Cat& cat, const float sleepDurationMs)
+{
+    if (isCatBeingDragged(cat))
+        stopDraggingCat(cat);
+
+    cat.napTransition.emplace(BidirectionalTimer{.direction = TimerDirection::Forward});
+
+    // A non-positive duration means "sleep indefinitely until shaken awake":
+    // leave `napSleepCountdown` unset so the natural-wakeup branch never fires.
+    if (sleepDurationMs > 0.f)
+        cat.napSleepCountdown.emplace(Countdown{.value = sleepDurationMs});
+    else
+        cat.napSleepCountdown.reset();
+
+    cat.napShakeProgress = 0.f;
+    cat.napWakeWobble    = 0.f;
+}
+
+
+////////////////////////////////////////////////////////////
+void Main::gameLoopUpdateNapScheduler(const float deltaTimeMs)
+{
+    SFEX_PROFILE_SCOPE_AUTOLABEL();
+
+    if (inPrestigeTransition || splashCountdown.value > 0.f)
+        return;
+
+    // Once the player has prestiged at least once, the nap system skips both
+    // the "need 3 cats" minimum and the scripted tutorial — random naps kick
+    // in right away.
+    const bool prestigedBefore = pt->psvBubbleValue.nPurchases > 0u;
+
+    if (!prestigedBefore)
+    {
+        if (pt->cats.size() < 3u)
+            return;
+
+        // One-shot tutorial nap: 5s after first reaching 3 cats, put the
+        // oldest cat to sleep indefinitely and display a tip.
+        if (!pt->scriptedNapDone)
+        {
+            if (!pt->scriptedNapPendingCountdown.hasValue())
+                pt->scriptedNapPendingCountdown.emplace(Countdown{.value = 5'000.f});
+
+            if (pt->scriptedNapPendingCountdown->updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+            {
+                pt->scriptedNapPendingCountdown.reset();
+                pt->scriptedNapDone = true;
+
+                if (!pt->cats.empty() && canCatNap(pt->cats[0]))
+                    beginCatNap(pt->cats[0], /* indefinite */ -1.f);
+
+                if (!pt->napTipShown)
+                {
+                    pt->napTipShown = true;
+                    doTip("One of your cats is taking a nap!\nGrab it and shake it around to wake it up.");
+                }
+            }
+
+            // Don't start random naps until the scripted one has run.
+            return;
+        }
+    }
+
+    // Random periodic naps once the player has seen the tutorial. The interval
+    // shrinks with cat count via a sqrt-curve (diminishing returns) and is
+    // floored so it never becomes ridiculously frequent.
+    pt->randomNapTimerMs -= deltaTimeMs;
+
+    if (pt->randomNapTimerMs > 0.f)
+        return;
+
+    const auto  n         = static_cast<float>(pt->cats.size());
+    const float scaledSec = sf::base::max(25.f, 80.f - 2.3f * sf::base::sqrt(n));
+    pt->randomNapTimerMs  = scaledSec * 1000.f * rng.getF(0.85f, 1.15f);
+
+    // Reservoir-sample a random eligible cat.
+    SizeT eligibleCount = 0u;
+    Cat*  selected      = nullptr;
+
+    for (Cat& candidate : pt->cats)
+    {
+        if (!canCatNap(candidate))
+            continue;
+
+        ++eligibleCount;
+
+        if (rng.getI<SizeT>(0, eligibleCount - 1) == 0)
+            selected = &candidate;
+    }
+
+    if (selected != nullptr)
+        beginCatNap(*selected, /* sleepDurationMs */ 20'000.f);
+}
+
+
 void Main::gameLoopUpdateCatActionWitchImpl(const float /* deltaTimeMs */,
                                             Cat&                          cat,
                                             sf::base::Vector<HexSession>& sessionsToUse,
@@ -1388,12 +1510,135 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
 
         cat.update(deltaTimeMs);
 
+        // Per-frame kinematics derived from the change in position this frame.
+        // Dragging runs before this pass, so `frameDelta.x` here is the drag
+        // velocity when the cat is being dragged.
+        const sf::Vec2f frameDelta = cat.position - cat.lastFramePosition;
+        cat.lastFramePosition      = cat.position;
+
+        // Velocity-based body tilt: positive vx tilts the body over, easing
+        // back to neutral when the player slows down or releases the grip.
+        {
+            constexpr float tiltPerVelocity = 0.25f; // radians per (px/ms)
+            constexpr float maxTilt         = 0.55f;
+
+            if (isCatBeingDragged(cat))
+            {
+                const float vx      = frameDelta.x / sf::base::max(deltaTimeMs, 0.001f);
+                const float target  = sf::base::clamp(vx * tiltPerVelocity, -maxTilt, maxTilt);
+                cat.dragTiltRadians = exponentialApproach(cat.dragTiltRadians, target, deltaTimeMs, 40.f);
+            }
+            else
+            {
+                cat.dragTiltRadians = exponentialApproach(cat.dragTiltRadians, 0.f, deltaTimeMs, 80.f);
+            }
+        }
+
         if (cat.isHexedOrCopyHexed())
         {
             const auto res = cat.getHexedTimer()->updateAndStop(deltaTimeMs * 0.001f);
 
             if (cat.getHexedTimer()->direction == TimerDirection::Backwards && res == TimerStatusStop::JustFinished)
                 cat.getHexedTimer().reset();
+        }
+
+        if (cat.isNapping())
+        {
+            auto& t = *cat.napTransition;
+
+            // 500ms fade in/out.
+            (void)t.updateAndStop(deltaTimeMs * 0.002f);
+
+            const bool fullyAsleep = t.direction == TimerDirection::Forward && t.value >= 1.f;
+
+            if (fullyAsleep && cat.napSleepCountdown.hasValue())
+                if (cat.napSleepCountdown->updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+                {
+                    t.direction = TimerDirection::Backwards;
+                    cat.napSleepCountdown.reset();
+                }
+
+            // Shake-to-wake: accumulate drag motion while being dragged; drain
+            // slowly otherwise so the player has to keep shaking.
+            constexpr float requiredShakeDistance = 500.f;
+            constexpr float perFrameDeltaCap      = 50.f; // ignore teleport-sized moves
+            constexpr float idleDrainPerMs        = 1.f / 1'500.f;
+
+            if (isCatBeingDragged(cat))
+            {
+                const float moved = sf::base::min(frameDelta.length(), perFrameDeltaCap);
+
+                cat.napShakeProgress = sf::base::clamp(cat.napShakeProgress + moved / requiredShakeDistance, 0.f, 1.f);
+
+                // Motion-driven wobble feedback.
+                if (moved > 2.f)
+                    cat.napWakeWobble = rngFast.getF(-0.35f, 0.35f) * sf::base::min(moved / 20.f, 1.f);
+
+                if (cat.napShakeProgress >= 1.f && fullyAsleep)
+                {
+                    t.direction = TimerDirection::Backwards;
+                    cat.napSleepCountdown.reset();
+                    cat.napShakeProgress = 0.f;
+
+                    // TODO: play a "wake-up" sound here.
+                    // sounds.napWake.settings.position = {cat.position.x, cat.position.y};
+                    // playSound(sounds.napWake, /* maxOverlap */ 1u);
+                }
+            }
+            else
+            {
+                cat.napShakeProgress = sf::base::max(0.f, cat.napShakeProgress - idleDrainPerMs * deltaTimeMs);
+            }
+
+            // Wobble decays back to zero.
+            cat.napWakeWobble *= sf::base::pow(0.001f, deltaTimeMs * 0.001f);
+
+            if (t.direction == TimerDirection::Backwards && t.value <= 0.f)
+            {
+                cat.napTransition.reset();
+                cat.napSleepCountdown.reset();
+                cat.napShakeProgress = 0.f;
+                cat.napWakeWobble    = 0.f;
+
+                pt->anyCatEverWokenFromNap = true;
+
+                // Trigger a yawn right as the cat finishes waking up, and push
+                // the next natural yawn far out so it doesn't double-fire.
+                cat.yawnAnimCountdown.value = 75.f * static_cast<float>(Main::nYawnRects);
+                cat.yawnCountdown.value     = rngFast.getF(15'000.f, 25'000.f);
+            }
+
+            // Continuous per-cat sleep breath: each cat owns its own retrigger
+            // countdown and refreshes itself when it elapses, so multiple
+            // napping cats can play their own instance simultaneously.
+            cat.sleepSoundCountdownMs -= deltaTimeMs;
+
+            if (cat.isNapping() && t.value > 0.3f && cat.sleepSoundCountdownMs <= 0.f)
+            {
+                sounds.sleep.settings.position = {cat.position.x, cat.position.y};
+                playSound(sounds.sleep, /* maxOverlap */ 8u);
+
+                cat.sleepSoundCountdownMs = static_cast<float>(sounds.sleep.buffer.getDuration().asMilliseconds());
+            }
+
+            // Spawn a floating 'Z' once the eyes are mostly shut.
+            if (cat.isNapping() && t.value > 0.3f && rngFast.getF(0.f, 1.f) < deltaTimeMs * 0.003f)
+            {
+                auto& tp = textParticles.emplaceBack(TextParticle{
+                    {.position      = cat.getDrawPosition(profile.enableCatBobbing).addY(-24.f),
+                     .velocity      = {rngFast.getF(-0.03f, 0.03f), rngFast.getF(-0.10f, -0.06f)},
+                     .scale         = 0.5f,
+                     .scaleDecay    = 0.f,
+                     .accelerationY = 0.f,
+                     .opacity       = 0.9f,
+                     .opacityDecay  = 0.0008f,
+                     .rotation      = 0.f,
+                     .torque        = rngFast.getF(-0.0015f, 0.0015f)}});
+                (void)std::snprintf(tp.buffer, sizeof(tp.buffer), "Z");
+            }
+
+            // Napping cats do not take any action.
+            continue;
         }
 
         const auto doWitchBehavior = [&](const float hueMod, auto& soundRitual, auto& soundRitualEnd)
@@ -2531,6 +2776,23 @@ void Main::gameLoopUpdateWitchBuffs(const float deltaTimeMs)
 
 
 ////////////////////////////////////////////////////////////
+void Main::addEventBubblefall(const float regionCenterX)
+{
+    const auto& eventsCfg = gameConstants.events;
+    const auto& bfCfg     = eventsCfg.bubblefall;
+
+    pt->activeEvents.emplaceBack(EBubblefall{
+        .regionCenterX = regionCenterX,
+        .regionWidth   = bfCfg.regionWidth,
+        .remainingMs   = bfCfg.durationMs,
+        .subTickMs     = 0.f,
+    });
+
+    pushNotification("Something is happening!", "Bubblefall TODO");
+}
+
+
+////////////////////////////////////////////////////////////
 void Main::gameLoopUpdateEvents(const float deltaTimeMs)
 {
     SFEX_PROFILE_SCOPE_AUTOLABEL();
@@ -2552,12 +2814,7 @@ void Main::gameLoopUpdateEvents(const float deltaTimeMs)
         // uniform roll; for now the only option is Bubblefall.
         const float halfWidth = bfCfg.regionWidth * 0.5f;
 
-        pt->activeEvents.emplaceBack(EBubblefall{
-            .regionCenterX = rng.getF(halfWidth, pt->getMapLimit() - halfWidth),
-            .regionWidth   = bfCfg.regionWidth,
-            .remainingMs   = bfCfg.durationMs,
-            .subTickMs     = 0.f,
-        });
+        addEventBubblefall(rng.getF(halfWidth, pt->getMapLimit() - halfWidth));
     }
 
     // Per-kind update: advance the event's own timers and (if positional)
@@ -2607,6 +2864,9 @@ void Main::gameLoopUpdateEvents(const float deltaTimeMs)
                 bubble.ephemeral  = true;
 
                 spawnParticles(4, bubble.position, ParticleType::Bubble, 0.35f, 0.5f);
+
+                sounds.reversePop.settings.position = {bubble.position.x, bubble.position.y};
+                playSound(sounds.reversePop, /* maxOverlap */ 1u);
             }
         }
 

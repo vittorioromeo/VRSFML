@@ -59,13 +59,7 @@ void Main::uiSettingsDrawDebugTab()
     if (ImGui::Button("Trigger bubblefall (random)"))
     {
         const float halfWidth = bfCfg.regionWidth * 0.5f;
-
-        pt->activeEvents.emplaceBack(EBubblefall{
-            .regionCenterX = rng.getF(halfWidth, pt->getMapLimit() - halfWidth),
-            .regionWidth   = bfCfg.regionWidth,
-            .remainingMs   = bfCfg.durationMs,
-            .subTickMs     = 0.f,
-        });
+        addEventBubblefall(rng.getF(halfWidth, pt->getMapLimit() - halfWidth));
     }
 
     ImGui::SameLine();
@@ -76,18 +70,34 @@ void Main::uiSettingsDrawDebugTab()
         const float halfWidth   = bfCfg.regionWidth * 0.5f;
         const float mapLimit    = pt->getMapLimit();
 
-        pt->activeEvents.emplaceBack(EBubblefall{
-            .regionCenterX = sf::base::clamp(viewCenterX, halfWidth, mapLimit - halfWidth),
-            .regionWidth   = bfCfg.regionWidth,
-            .remainingMs   = bfCfg.durationMs,
-            .subTickMs     = 0.f,
-        });
+        addEventBubblefall(sf::base::clamp(viewCenterX, halfWidth, mapLimit - halfWidth));
     }
 
     ImGui::SameLine();
 
     if (ImGui::Button("Clear events"))
         pt->activeEvents.clear();
+
+    if (ImGui::Button("Nap random cat"))
+    {
+        sf::base::SizeT eligibleCount = 0u;
+        Cat*            selected      = nullptr;
+
+        for (Cat& candidate : pt->cats)
+        {
+            if (!canCatNap(candidate))
+                continue;
+
+            ++eligibleCount;
+
+            // Reservoir sampling.
+            if (rng.getI<sf::base::SizeT>(0, eligibleCount - 1) == 0)
+                selected = &candidate;
+        }
+
+        if (selected != nullptr)
+            beginCatNap(*selected, /* sleepDurationMs */ 20'000.f);
+    }
 
     ImGui::Separator();
 

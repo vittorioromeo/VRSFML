@@ -82,7 +82,9 @@ void Main::uiShopDrawSpecialCats()
     const auto nCatDevil  = pt->getCatCountByType(CatType::Devil);
     const auto nCatAstro  = pt->getCatCountByType(CatType::Astro);
 
-    const bool catUnicornUnlocked         = pt->psvBubbleCount.nPurchases > 0 && nCatNormal >= 3;
+    const bool prestigedBefore    = pt->psvBubbleValue.nPurchases > 0u;
+    const bool catUnicornUnlocked = pt->psvBubbleCount.nPurchases > 0 && nCatNormal >= 3 &&
+                                    (prestigedBefore || pt->anyCatEverWokenFromNap);
     const bool catUnicornUpgradesUnlocked = catUnicornUnlocked && nCatUni >= 2 && nCatDevil >= 1;
     if (checkUiUnlock(6u, catUnicornUnlocked))
     {

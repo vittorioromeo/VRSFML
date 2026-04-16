@@ -1,6 +1,7 @@
 #include "BubbleIdleMain.hpp"
 #include "CatType.hpp"
 
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/ToString.hpp"
 
@@ -11,8 +12,10 @@ sf::base::String Main::uiShopBuildNextGoalsText()
     const auto nCatDevil  = pt->getCatCountByType(CatType::Devil);
     const auto nCatAstro  = pt->getCatCountByType(CatType::Astro);
 
+    const bool prestigedBefore            = pt->psvBubbleValue.nPurchases > 0u;
     const bool catUpgradesUnlocked        = pt->psvBubbleCount.nPurchases > 0 && nCatNormal >= 2 && nCatUni >= 1;
-    const bool catUnicornUnlocked         = pt->psvBubbleCount.nPurchases > 0 && nCatNormal >= 3;
+    const bool catUnicornUnlocked         = pt->psvBubbleCount.nPurchases > 0 && nCatNormal >= 3 &&
+                                    (prestigedBefore || pt->anyCatEverWokenFromNap);
     const bool catUnicornUpgradesUnlocked = catUnicornUnlocked && nCatUni >= 2 && nCatDevil >= 1;
     const bool catDevilUnlocked         = catUnicornUnlocked && pt->psvBubbleValue.nPurchases > 0 && nCatNormal >= 6 &&
                                           nCatUni >= 4 && pt->nShrinesCompleted >= 1;
@@ -75,6 +78,9 @@ sf::base::String Main::uiShopBuildNextGoalsText()
             result += "\n    - buy more bubbles";
 
         needNCats(nCatNormal, 3);
+
+        if (!prestigedBefore && !pt->anyCatEverWokenFromNap)
+            result += "\n    - wake up a sleepy cat";
     }
 
     if (!catUpgradesUnlocked && catUnicornUnlocked)

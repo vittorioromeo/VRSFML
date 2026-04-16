@@ -142,7 +142,7 @@ void Main::uiShopDrawCoreUpgrades()
             if (nCatNormal == 0)
                 doTip("Cats periodically pop bubbles for you!\nYou can drag them around to position them.");
 
-            if (nCatNormal == 2)
+            if (nCatNormal == 4)
                 doTip(
                     "Multiple cats can be dragged at once by\nholding shift while clicking the mouse.\nRelease "
                     "either button to drop them!");

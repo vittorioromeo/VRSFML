@@ -2,6 +2,8 @@
 
 #include "ExampleUtils/LoadedSound.hpp"
 
+#include "SFML/Base/Assert.hpp"
+
 
 ////////////////////////////////////////////////////////////
 struct Sounds
@@ -58,6 +60,7 @@ struct Sounds
     LoadedSound quack{"quack.ogg"};
     LoadedSound paper{"paper.ogg"};
     LoadedSound letterchime{"letterchime.ogg"};
+    LoadedSound sleep{"sleep.ogg"};
 
     ////////////////////////////////////////////////////////////
     void setupSounds(const bool volumeOnly, const float volumeMult)
@@ -117,6 +120,7 @@ struct Sounds
         setupWorldSound(failcast, /* attenuationMult */ 0.1f);
         setupWorldSound(smokebomb);
         setupWorldSound(quack);
+        setupWorldSound(sleep, /* attenuationMult */ 0.6f);
 
         setupUISound(click);
         setupUISound(byteMeow);
@@ -146,6 +150,7 @@ struct Sounds
         buffon.settings.volume    = volumeMult * 0.65f;
         buffoff.settings.volume   = volumeMult * 0.65f;
         shine3.settings.volume    = volumeMult * 0.25f;
+        sleep.settings.volume     = volumeMult * 0.5f;
     }
 
     ////////////////////////////////////////////////////////////

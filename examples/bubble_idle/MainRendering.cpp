@@ -8,6 +8,7 @@
 #include "Constants.hpp"
 #include "Countdown.hpp"
 #include "Doll.hpp"
+#include "GameEvent.hpp"
 #include "HellPortal.hpp"
 #include "HexSession.hpp"
 #include "Particle.hpp"
@@ -37,6 +38,7 @@
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/TextureWrapMode.hpp"
+#include "SFML/Graphics/TrapezoidShapeData.hpp"
 #include "SFML/Graphics/View.hpp"
 
 #include "SFML/Window/Mouse.hpp"
@@ -59,6 +61,7 @@
 #include "SFML/Base/Math/Sin.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/OverloadSet.hpp"
 #include "SFML/Base/Remainder.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
@@ -795,6 +798,10 @@ void applyWitchAnimation(CatDrawContext& ctx, float& wobblePhase, Cat& witch)
     if (cat.type == CatType::Wizard)
         ctx.catRotation += main.wizardcatSpin.value + main.wizardcatAbsorptionRotation;
 
+    // Velocity-based body tilt while dragged + transient wake-wobble poke.
+    ctx.catRotation += cat.dragTiltRadians;
+    ctx.catRotation += cat.napWakeWobble;
+
     ctx.alpha    = ctx.insideDragRect ? static_cast<U8>(128u) : static_cast<U8>(255u);
     ctx.catColor = hueColor(cat.hue, ctx.alpha);
     ctx.circleAlpha = cat.cooldown.value < 0.f ? static_cast<U8>(0u)
@@ -1167,7 +1174,8 @@ void drawCatVisuals(const CatDrawContext& ctx)
 
     if ((ctx.witchCat != nullptr && ctx.main.isCatPerformingRitual(*ctx.witchCat, ctx.cat)) ||
         (ctx.copyCat != nullptr && ctx.main.pt->copycatCopiedCatType == CatType::Witch &&
-         ctx.main.isCatPerformingRitual(*ctx.copyCat, ctx.cat)))
+         ctx.main.isCatPerformingRitual(*ctx.copyCat, ctx.cat)) ||
+        ctx.cat.isNapping())
     {
         addCatSprite(sf::Sprite{.position    = ctx.anchorOffset(ctx.catEyeOffset + ctx.main.gameConstants.eyelidOffset),
                                 .scale       = ctx.catScale,
@@ -1335,7 +1343,7 @@ void drawCatText(const CatDrawContext& ctx)
             char moneyFmtBuffer[128]{};
             std::sprintf(moneyFmtBuffer, "$%s", Main::toStringWithSeparators(ctx.cat.moneyEarned));
 
-            actionString += " | ";
+            actionString += " | ";>
             actionString += moneyFmtBuffer;
         }
 
@@ -1578,6 +1586,76 @@ void Main::gameLoopDrawDolls(const sf::Vec2f mousePos)
 
     processDolls(pt->hexSessions, /* hueMod */ 0.f);
     processDolls(pt->copyHexSessions, /* hueMod */ 180.f);
+}
+
+
+////////////////////////////////////////////////////////////
+void Main::gameLoopDrawEvents()
+{
+    SFEX_PROFILE_SCOPE_AUTOLABEL();
+
+    if (pt->activeEvents.empty())
+        return;
+
+    const auto& bfCfg = gameConstants.events.bubblefall;
+
+    // Matches the attack/hold/release envelope driving the spawn rate, so the
+    // light ray visually fades in, holds, and fades out on the same curve.
+    const auto computeIntensity = [&](const float remainingMs)
+    {
+        const float duration    = bfCfg.durationMs <= 0.f ? 1.f : bfCfg.durationMs;
+        const float elapsedNorm = sf::base::clamp(1.f - (remainingMs / duration), 0.f, 1.f);
+
+        const float attack  = sf::base::clamp(bfCfg.attackRatio, 0.f, 0.5f);
+        const float release = sf::base::clamp(bfCfg.releaseRatio, 0.f, 0.5f);
+
+        if (attack > 0.f && elapsedNorm < attack)
+            return easeInOutCubic(sf::base::clamp(elapsedNorm / attack, 0.f, 1.f));
+
+        if (release > 0.f && elapsedNorm > 1.f - release)
+            return easeInOutCubic(sf::base::clamp((1.f - elapsedNorm) / release, 0.f, 1.f));
+
+        return 1.f;
+    };
+
+    constexpr float thinLineWidth = 4.f;
+    constexpr float topWidthRatio = 0.4f; // top edge is 40% of the bottom
+
+    const auto drawRay = sf::base::OverloadSet{
+        [&](const EBubblefall& e)
+    {
+        const float intensity = computeIntensity(e.remainingMs);
+        if (intensity <= 0.f)
+            return;
+
+        const float bottomWidth = thinLineWidth + (e.regionWidth - thinLineWidth) * intensity;
+        const float topWidth    = thinLineWidth + (e.regionWidth * topWidthRatio - thinLineWidth) * intensity;
+        const auto  alpha       = static_cast<U8>(sf::base::clamp(intensity * 90.f, 0.f, 255.f));
+        const float height      = boundaries.y;
+
+        const auto makeLightRay = [&](U8 xAlpha, float xSizeMult)
+        {
+            const auto [fillSpan, outlineSpan] = cpuDrawableBatchBeforeCats.add(sf::TrapezoidShapeData{
+                .position    = {e.regionCenterX, 0.f},
+                .origin      = {bottomWidth * xSizeMult * 0.5f, 0.f},
+                .textureRect = {},
+                .fillColor   = sf::Color::whiteWithAlpha(xAlpha),
+                .topWidth    = topWidth * xSizeMult,
+                .bottomWidth = bottomWidth * xSizeMult,
+                .height      = height,
+            });
+
+            fillSpan[3].color.a = 5;
+            fillSpan[4].color.a = 5;
+        };
+
+        makeLightRay(alpha / 3, 5.f);
+        makeLightRay(alpha, 3.f);
+    },
+    };
+
+    for (const GameEvent& ev : pt->activeEvents)
+        ev.linearVisit(drawRay);
 }
 
 
