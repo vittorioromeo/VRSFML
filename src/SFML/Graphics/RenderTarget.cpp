@@ -829,9 +829,9 @@ BatchedGeometry RenderTarget::draw(const Font& font, const TextData& textData, R
 
 ////////////////////////////////////////////////////////////
 BatchedGeometry RenderTarget::draw(const FontFace&            fontFace,
-                              const GlyphMapping&        glyphMapping,
-                              const GlyphMappedTextData& textData,
-                              const RenderStates&        states)
+                                   const GlyphMapping&        glyphMapping,
+                                   const GlyphMappedTextData& textData,
+                                   const RenderStates&        states)
 {
     SFML_BASE_ASSERT(states.texture != nullptr);
 

@@ -7,6 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/ArrowShapeData.hpp"
+#include "SFML/Graphics/BatchedGeometry.hpp"
 #include "SFML/Graphics/ChevronShapeData.hpp"
 #include "SFML/Graphics/CircleShapeData.hpp"
 #include "SFML/Graphics/CogShapeData.hpp"
@@ -39,7 +40,6 @@
 #include "SFML/Graphics/TextUtils.hpp"
 #include "SFML/Graphics/Transform.hpp"
 #include "SFML/Graphics/TrapezoidShapeData.hpp"
-#include "SFML/Graphics/BatchedGeometry.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 #include "SFML/Graphics/VertexSpan.hpp"
 
@@ -506,8 +506,8 @@ BatchedGeometry DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
     // Fan apex: if the caller supplied a local apex (needed for non-convex shapes whose bbox
     // center may lie outside the polygon), transform it alongside the geometry; otherwise fall
     // back to the world-space bbox center (valid for convex/centrally-symmetric shapes).
-    fillVertexPtr[0].position = (localApex != nullptr) ? transform.transformPoint(*localApex)
-                                                       : fillBoundsPosition + fillBoundsSize / 2.f;
+    fillVertexPtr[0].position            = (localApex != nullptr) ? transform.transformPoint(*localApex)
+                                                                  : fillBoundsPosition + fillBoundsSize / 2.f;
     fillVertexPtr[1u + nPoints].position = fillVertexPtr[1].position; // repeated first point
 
     //
@@ -1257,11 +1257,9 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const ChevronShapeData& sdChevr
     // symmetry. Inside the non-convex chevron for every valid `thickness`.
     const Vec2f localApex{(w + innerTipX) * 0.5f, h * 0.5f};
 
-    return drawTriangleFanShapeFromPoints(6u,
-                                          sdChevron,
-                                          [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
-    { return ShapeUtils::computeChevronPoint(i, sdChevron.size, sdChevron.thickness); },
-                                          &localApex);
+    return drawTriangleFanShapeFromPoints(6u, sdChevron, [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {
+        return ShapeUtils::computeChevronPoint(i, sdChevron.size, sdChevron.thickness);
+    }, &localApex);
 }
 
 
@@ -1366,8 +1364,8 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const Font& font, const TextDat
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
 BatchedGeometry DrawableBatchImpl<TStorage>::add(const FontFace&            fontFace,
-                                            const GlyphMapping&        glyphMapping,
-                                            const GlyphMappedTextData& textData)
+                                                 const GlyphMapping&        glyphMapping,
+                                                 const GlyphMappedTextData& textData)
 {
     return addTextDataImpl(GlyphMappingWithKerning{glyphMapping, fontFace},
                            textData,

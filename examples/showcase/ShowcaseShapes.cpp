@@ -2,6 +2,7 @@
 #include "ShowcaseShapes.hpp"
 
 #include "SFML/Graphics/ArrowShapeData.hpp"
+#include "SFML/Graphics/BatchedGeometry.hpp"
 #include "SFML/Graphics/ChevronShapeData.hpp"
 #include "SFML/Graphics/CircleShapeData.hpp"
 #include "SFML/Graphics/CogShapeData.hpp"
@@ -19,7 +20,6 @@
 #include "SFML/Graphics/StarShapeData.hpp"
 #include "SFML/Graphics/TextData.hpp"
 #include "SFML/Graphics/TrapezoidShapeData.hpp"
-#include "SFML/Graphics/BatchedGeometry.hpp"
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"

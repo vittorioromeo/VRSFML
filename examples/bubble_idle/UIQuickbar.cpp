@@ -439,8 +439,8 @@ void Main::uiDrawMinimapZoomButtons()
 
     constexpr float tolerance = 48.f;
 
-    const ImVec2 mp = ImGui::GetMousePos();
-    const bool   inHoverArea = mp.x >= mmScreenPos.x - tolerance && mp.x <= mmScreenPos.x + mmScreenSize.x + tolerance &&
+    const ImVec2 mp        = ImGui::GetMousePos();
+    const bool inHoverArea = mp.x >= mmScreenPos.x - tolerance && mp.x <= mmScreenPos.x + mmScreenSize.x + tolerance &&
                              mp.y >= mmScreenPos.y - tolerance && mp.y <= mmScreenPos.y + mmScreenSize.y + tolerance;
 
     if (!inHoverArea)
@@ -479,8 +479,8 @@ void Main::uiDrawMinimapZoomButtons()
     std::sprintf(uiState.uiTooltipBuffer, "Zoom minimap out");
     uiMakeTooltip(/* small */ true);
 
-    const ImVec2 winPos  = ImGui::GetWindowPos();
-    const ImVec2 winSize = ImGui::GetWindowSize();
+    const ImVec2 winPos            = ImGui::GetWindowPos();
+    const ImVec2 winSize           = ImGui::GetWindowSize();
     uiState.minimapZoomButtonsRect = {{winPos.x, winPos.y}, {winSize.x, winSize.y}};
 
     ImGui::End();

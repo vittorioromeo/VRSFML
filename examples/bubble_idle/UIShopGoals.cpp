@@ -15,7 +15,7 @@ sf::base::String Main::uiShopBuildNextGoalsText()
     const bool prestigedBefore            = pt->psvBubbleValue.nPurchases > 0u;
     const bool catUpgradesUnlocked        = pt->psvBubbleCount.nPurchases > 0 && nCatNormal >= 2 && nCatUni >= 1;
     const bool catUnicornUnlocked         = pt->psvBubbleCount.nPurchases > 0 && nCatNormal >= 3 &&
-                                    (prestigedBefore || pt->anyCatEverWokenFromNap);
+                                            (prestigedBefore || pt->anyCatEverWokenFromNap);
     const bool catUnicornUpgradesUnlocked = catUnicornUnlocked && nCatUni >= 2 && nCatDevil >= 1;
     const bool catDevilUnlocked         = catUnicornUnlocked && pt->psvBubbleValue.nPurchases > 0 && nCatNormal >= 6 &&
                                           nCatUni >= 4 && pt->nShrinesCompleted >= 1;
