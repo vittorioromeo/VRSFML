@@ -8,6 +8,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
+#include "SFML/Graphics/BatchedGeometry.hpp"
 #include "SFML/Graphics/DrawIndexedVerticesSettings.hpp"
 #include "SFML/Graphics/DrawVerticesSettings.hpp"
 #include "SFML/Graphics/IndexType.hpp"
@@ -36,11 +37,15 @@ class Shape;
 class Text;
 
 struct ArrowShapeData;
+struct ChevronShapeData;
 struct CircleShapeData;
+struct CogShapeData;
+struct CrossShapeData;
 struct CurvedArrowShapeData;
 struct EllipseShapeData;
 struct GlyphMapping;
 struct GlyphMappedTextData;
+struct HeartShapeData;
 struct PieSliceShapeData;
 struct RectangleShapeData;
 struct RingPieSliceShapeData;
@@ -48,6 +53,7 @@ struct RingShapeData;
 struct RoundedRectangleShapeData;
 struct Sprite;
 struct StarShapeData;
+struct TrapezoidShapeData;
 struct TextData;
 struct Transform;
 } // namespace sf
@@ -555,8 +561,6 @@ public:
     ////////////////////////////////////////////////////////////
     void add(const GlyphMappedText& text);
 
-    // TODO P0: should return two vertex spans, one for fill and one for outline
-
     ////////////////////////////////////////////////////////////
     /// \brief Adds an arrow shape defined by `sf::ArrowShapeData` to the batch
     ///
@@ -565,12 +569,12 @@ public:
     ///
     /// \param sdArrow Data defining the arrow shape
     ///
-    /// \return A `VertexSpan` referring to the added vertices.
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
     ///
     /// \warning The returned span is invalidated after the next call to `add` or batch flush.
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan add(const ArrowShapeData& sdArrow);
+    BatchedGeometry add(const ArrowShapeData& sdArrow);
 
     ////////////////////////////////////////////////////////////
     /// \brief Adds a circle shape defined by `sf::CircleShapeData` to the batch
@@ -580,12 +584,12 @@ public:
     ///
     /// \param sdCircle Data defining the circle shape
     ///
-    /// \return A `VertexSpan` referring to the added vertices.
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
     ///
     /// \warning The returned span is invalidated after the next call to `add` or batch flush.
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan add(const CircleShapeData& sdCircle);
+    BatchedGeometry add(const CircleShapeData& sdCircle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Adds a curved arrow shape defined by `sf::CurvedArrowShapeData` to the batch
@@ -595,12 +599,12 @@ public:
     ///
     /// \param sdCurvedArrow Data defining the curved arrow shape
     ///
-    /// \return A `VertexSpan` referring to the added vertices.
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
     ///
     /// \warning The returned span is invalidated after the next call to `add` or batch flush.
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan add(const CurvedArrowShapeData& sdCurvedArrow);
+    BatchedGeometry add(const CurvedArrowShapeData& sdCurvedArrow);
 
     ////////////////////////////////////////////////////////////
     /// \brief Adds an ellipse shape defined by `sf::EllipseShapeData` to the batch
@@ -610,12 +614,12 @@ public:
     ///
     /// \param sdEllipse Data defining the ellipse shape
     ///
-    /// \return A `VertexSpan` referring to the added vertices.
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
     ///
     /// \warning The returned span is invalidated after the next call to `add` or batch flush.
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan add(const EllipseShapeData& sdEllipse);
+    BatchedGeometry add(const EllipseShapeData& sdEllipse);
 
     ////////////////////////////////////////////////////////////
     /// \brief Adds a pie slice shape defined by `sf::PieSliceShapeData` to the batch
@@ -625,12 +629,12 @@ public:
     ///
     /// \param sdPieSlice Data defining the pie slice shape
     ///
-    /// \return A `VertexSpan` referring to the added vertices.
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
     ///
     /// \warning The returned span is invalidated after the next call to `add` or batch flush.
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan add(const PieSliceShapeData& sdPieSlice);
+    BatchedGeometry add(const PieSliceShapeData& sdPieSlice);
 
     ////////////////////////////////////////////////////////////
     /// \brief Adds a rectangle shape defined by `sf::RectangleShapeData` to the batch
@@ -640,12 +644,12 @@ public:
     ///
     /// \param sdRectangle Data defining the rectangle shape
     ///
-    /// \return A `VertexSpan` referring to the added vertices.
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
     ///
     /// \warning The returned span is invalidated after the next call to `add` or batch flush.
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan add(const RectangleShapeData& sdRectangle);
+    BatchedGeometry add(const RectangleShapeData& sdRectangle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Adds a ring shape defined by `sf::RingShapeData` to the batch
@@ -655,12 +659,12 @@ public:
     ///
     /// \param sdRing Data defining the ring shape
     ///
-    /// \return A `VertexSpan` referring to the added vertices.
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
     ///
     /// \warning The returned span is invalidated after the next call to `add` or batch flush.
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan add(const RingShapeData& sdRing);
+    BatchedGeometry add(const RingShapeData& sdRing);
 
     ////////////////////////////////////////////////////////////
     /// \brief Adds a ring pie slice shape defined by `sf::RingPieSliceShapeData` to the batch
@@ -670,12 +674,12 @@ public:
     ///
     /// \param sdRingPieSlice Data defining the ring pie slice shape
     ///
-    /// \return A `VertexSpan` referring to the added vertices.
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
     ///
     /// \warning The returned span is invalidated after the next call to `add` or batch flush.
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan add(const RingPieSliceShapeData& sdRingPieSlice);
+    BatchedGeometry add(const RingPieSliceShapeData& sdRingPieSlice);
 
     ////////////////////////////////////////////////////////////
     /// \brief Adds a rounded rectangle shape defined by `sf::RoundedRectangleShapeData` to the batch
@@ -685,12 +689,12 @@ public:
     ///
     /// \param sdRoundedRectangle Data defining the rounded rectangle shape
     ///
-    /// \return A `VertexSpan` referring to the added vertices.
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
     ///
     /// \warning The returned span is invalidated after the next call to `add` or batch flush.
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan add(const RoundedRectangleShapeData& sdRoundedRectangle);
+    BatchedGeometry add(const RoundedRectangleShapeData& sdRoundedRectangle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Adds a star shape defined by `sf::StarShapeData` to the batch
@@ -700,12 +704,72 @@ public:
     ///
     /// \param sdStarShape Data defining the star shape
     ///
-    /// \return A `VertexSpan` referring to the added vertices.
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
     ///
     /// \warning The returned span is invalidated after the next call to `add` or batch flush.
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan add(const StarShapeData& sdStarShape);
+    BatchedGeometry add(const StarShapeData& sdStarShape);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Adds a cross (plus) shape defined by `sf::CrossShapeData` to the batch
+    ///
+    /// \param sdCross Data defining the cross shape
+    ///
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
+    ///
+    /// \warning The returned span is invalidated after the next call to `add` or batch flush.
+    ///
+    ////////////////////////////////////////////////////////////
+    BatchedGeometry add(const CrossShapeData& sdCross);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Adds a trapezoid shape defined by `sf::TrapezoidShapeData` to the batch
+    ///
+    /// \param sdTrapezoid Data defining the trapezoid shape
+    ///
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
+    ///
+    /// \warning The returned span is invalidated after the next call to `add` or batch flush.
+    ///
+    ////////////////////////////////////////////////////////////
+    BatchedGeometry add(const TrapezoidShapeData& sdTrapezoid);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Adds a chevron shape defined by `sf::ChevronShapeData` to the batch
+    ///
+    /// \param sdChevron Data defining the chevron shape
+    ///
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
+    ///
+    /// \warning The returned span is invalidated after the next call to `add` or batch flush.
+    ///
+    ////////////////////////////////////////////////////////////
+    BatchedGeometry add(const ChevronShapeData& sdChevron);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Adds a heart shape defined by `sf::HeartShapeData` to the batch
+    ///
+    /// \param sdHeart Data defining the heart shape
+    ///
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
+    ///
+    /// \warning The returned span is invalidated after the next call to `add` or batch flush.
+    ///
+    ////////////////////////////////////////////////////////////
+    BatchedGeometry add(const HeartShapeData& sdHeart);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Adds a cog (gear) shape defined by `sf::CogShapeData` to the batch
+    ///
+    /// \param sdCog Data defining the cog shape
+    ///
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
+    ///
+    /// \warning The returned span is invalidated after the next call to `add` or batch flush.
+    ///
+    ////////////////////////////////////////////////////////////
+    BatchedGeometry add(const CogShapeData& sdCog);
 
     ////////////////////////////////////////////////////////////
     /// \brief Adds text geometry defined by `sf::Font` and `sf::TextData` to the batch
@@ -717,12 +781,12 @@ public:
     /// \param font The font to use for generating text geometry
     /// \param textData Data defining the text to render
     ///
-    /// \return A `VertexSpan` referring to the added vertices.
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
     ///
     /// \warning The returned span is invalidated after the next call to `add` or batch flush.
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan add(const Font& font, const TextData& textData);
+    BatchedGeometry add(const Font& font, const TextData& textData);
 
     ////////////////////////////////////////////////////////////
     /// \brief Add text geometry using a glyph mapping (stateless)
@@ -732,12 +796,12 @@ public:
     /// \param glyphMapping The glyph mapping to use for generating text geometry
     /// \param textData Data defining the text to render
     ///
-    /// \return A `VertexSpan` referring to the added vertices.
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
     ///
     /// \warning The returned span is invalidated after the next call to `add` or batch flush.
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan add(const FontFace& fontFace, const GlyphMapping& glyphMapping, const GlyphMappedTextData& textData);
+    BatchedGeometry add(const FontFace& fontFace, const GlyphMapping& glyphMapping, const GlyphMappedTextData& textData);
 
     ////////////////////////////////////////////////////////////
     /// \brief Clears all geometry from the batch
@@ -797,17 +861,21 @@ private:
     /// \param nPoints Number of points on the shape's perimeter (excluding center)
     /// \param descriptor Shape-specific data (e.g., `CircleShapeData`)
     /// \param pointFn A function that takes an index and returns the coordinate of an outer point
-    /// \param centerOffset Offset for the central point of the fan, relative to the shape's origin
+    /// \param localApex Optional fan apex in LOCAL (untransformed) coordinates. When non-null, the
+    ///                  apex is transformed alongside the perimeter points, so the caller does not
+    ///                  need to pre-transform anything. When null, the world-space bounding-box
+    ///                  center of the perimeter is used (suitable for convex/centrally-symmetric
+    ///                  shapes).
     ///
-    /// \return A `VertexSpan` referring to the added vertices.
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
     ///
     /// \warning The returned span is invalidated after the next call to `add` or batch flush.
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan drawTriangleFanShapeFromPoints(base::SizeT nPoints,
-                                              const auto& descriptor,
-                                              auto&&      pointFn,
-                                              Vec2f       centerOffset = {});
+    BatchedGeometry drawTriangleFanShapeFromPoints(base::SizeT  nPoints,
+                                                   const auto&  descriptor,
+                                                   auto&&       pointFn,
+                                                   const Vec2f* localApex = nullptr);
 
     ////////////////////////////////////////////////////////////
     /// \brief Adds vertices for a shape's fill to the batch
@@ -849,11 +917,11 @@ private:
     /// (`sf::TextData` or `sf::GlyphMappedTextData`).
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan addTextDataImpl(const auto&  glyphSource,
-                               const auto&  textData,
-                               bool         isBold,
-                               unsigned int characterSize,
-                               float        outlineThickness);
+    BatchedGeometry addTextDataImpl(const auto&  glyphSource,
+                                    const auto&  textData,
+                                    bool         isBold,
+                                    unsigned int characterSize,
+                                    float        outlineThickness);
 
 protected:
     ////////////////////////////////////////////////////////////
