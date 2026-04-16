@@ -16,10 +16,10 @@
     #else
 
         #include "SFML/Base/ScopeGuard.hpp"
+        #include "SFML/Base/UIntPtrT.hpp"
 
         #include <backtrace.h>
 
-        #include <cstdint>
         #include <cstdlib>
         #include <cxxabi.h>
 
@@ -135,14 +135,18 @@ const Palette& getPalette()
 
 
 ////////////////////////////////////////////////////////////
-void syminfoCallback(void* data, std::uintptr_t /* pc */, const char* symname, std::uintptr_t /* symval */, std::uintptr_t /* symsize */)
+void syminfoCallback(void* data,
+                     sf::base::UIntPtrT /* pc */,
+                     const char* symname,
+                     sf::base::UIntPtrT /* symval */,
+                     sf::base::UIntPtrT /* symsize */)
 {
     *static_cast<const char**>(data) = symname;
 }
 
 
 ////////////////////////////////////////////////////////////
-int frameCallback(void* data, std::uintptr_t pc, const char* filename, int lineno, const char* function)
+int frameCallback(void* data, sf::base::UIntPtrT pc, const char* filename, int lineno, const char* function)
 {
     int& index = *static_cast<int*>(data);
 

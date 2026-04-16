@@ -105,10 +105,7 @@
 #include "SFML/Base/Trait/RemoveCVRef.hpp"
 #include "SFML/Base/Trait/UnderlyingType.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include <cstdint> // uintptr_t
-
-//  #include <utility>          // for pair, piece...
+#include "SFML/Base/UIntPtrT.hpp"
 
 #if __has_include(<bits/functional_hash.h>)
 #    include <bits/functional_hash.h>
@@ -434,7 +431,7 @@ struct hash<T*> {
     using is_avalanching = void;
     auto operator()(T* ptr) const noexcept -> sf::base::U64 {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        return detail::wyhash::hash(reinterpret_cast<uintptr_t>(ptr));
+        return detail::wyhash::hash(reinterpret_cast<sf::base::UIntPtrT>(ptr));
     }
 };
 
@@ -444,7 +441,7 @@ struct hash<std::unique_ptr<T>> {
     using is_avalanching = void;
     auto operator()(std::unique_ptr<T> const& ptr) const noexcept -> sf::base::U64 {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        return detail::wyhash::hash(reinterpret_cast<uintptr_t>(ptr.get()));
+        return detail::wyhash::hash(reinterpret_cast<sf::base::UIntPtrT>(ptr.get()));
     }
 };
 
@@ -453,7 +450,7 @@ struct hash<std::shared_ptr<T>> {
     using is_avalanching = void;
     auto operator()(std::shared_ptr<T> const& ptr) const noexcept -> sf::base::U64 {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        return detail::wyhash::hash(reinterpret_cast<uintptr_t>(ptr.get()));
+        return detail::wyhash::hash(reinterpret_cast<sf::base::UIntPtrT>(ptr.get()));
     }
 };
 */
