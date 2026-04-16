@@ -10,9 +10,11 @@
 
 #include "SFML/System/Vec2.hpp"
 
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/AssertAndAssume.hpp"
 #include "SFML/Base/Builtin/Restrict.hpp"
 #include "SFML/Base/Constants.hpp"
+#include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Math/Sqrt.hpp"
 #include "SFML/Base/MinMaxMacros.hpp"
@@ -51,7 +53,9 @@ namespace sf::ShapeUtils
     SFML_BASE_ASSERT_AND_ASSUME(sine >= -1.f && sine <= 1.f);
     SFML_BASE_ASSERT_AND_ASSUME(cosine >= -1.f && cosine <= 1.f);
 
-    return {hRadius * (1.f + sine), vRadius * (1.f + cosine)};
+    // Winding is CW-visual in screen space (y-down) so that outline normals point inward:
+    // `outlineThickness > 0` overlays the outline on top of the fill without growing the bounds.
+    return {hRadius * (1.f - sine), vRadius * (1.f + cosine)};
 }
 
 ////////////////////////////////////////////////////////////
@@ -177,11 +181,20 @@ namespace sf::ShapeUtils
 
     const float deltaAngle = (base::halfPi) / static_cast<float>(cornerPointCount - 1u);
 
-    const Vec2f center{(centerIndex == 0 || centerIndex == 3) ? size.x - cornerRadius : cornerRadius,
-                       (centerIndex < 2) ? cornerRadius : size.y - cornerRadius};
+    // Corner order: TL (0), TR (1), BR (2), BL (3). This traces the perimeter CW-visually in screen
+    // space (y-down) so that outline normals point inward -- keeps `outlineThickness > 0` on top of
+    // the fill without growing the bounds.
+    const Vec2f center{(centerIndex == 1u || centerIndex == 2u) ? size.x - cornerRadius : cornerRadius,
+                       (centerIndex >= 2u) ? size.y - cornerRadius : cornerRadius};
 
-    const auto [sine, cosine] = base::sinCosLookup(deltaAngle * static_cast<float>(index - centerIndex));
-    return center + Vec2f{cornerRadius * cosine, -cornerRadius * sine};
+    // Base angle per corner: TL starts at `pi` (west), TR at `3*pi/2` (north), BR at `0` (east),
+    // BL at `pi/2` (south) -- measured in the (cos, sin) screen convention used below.
+    const float baseAngle = base::pi + static_cast<float>(centerIndex) * base::halfPi;
+
+    const base::SizeT localIndex = index - centerIndex * cornerPointCount;
+    const float angle = base::positiveRemainder(baseAngle + deltaAngle * static_cast<float>(localIndex), base::tau);
+    const auto [sine, cosine] = base::sinCosLookup(angle);
+    return center + Vec2f{cornerRadius * cosine, cornerRadius * sine};
 }
 
 ////////////////////////////////////////////////////////////
@@ -254,7 +267,7 @@ namespace sf::ShapeUtils
 ///
 /// \return The computed angle step in radians between points on the arc.
 ///
-/// \see computePieSlicePoint, computePieSlicePointFromArcAngleStep
+/// \see computePieSlicePoint, computePieSlicePointFromArcAngleStep, computeArcAngleStep
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float computePieSliceArcAngleStep(
@@ -263,6 +276,32 @@ namespace sf::ShapeUtils
 {
     SFML_BASE_ASSERT_AND_ASSUME(pointCount >= 3u);
     return sweepAngle / static_cast<float>(pointCount - 2u);
+}
+
+////////////////////////////////////////////////////////////
+/// \brief Computes the angular step per point for a hub-less arc.
+///
+/// Companion to `computePieSliceArcAngleStep`, but for shapes whose
+/// `pointCount` samples all lie on the arc (no separate hub vertex) --
+/// `RingPieSliceShapeData`, `CurvedArrowShapeData`, etc. The
+/// `pointCount` samples span `pointCount - 1` segments, so the step
+/// is `sweepAngle / (pointCount - 1)`.
+///
+/// \param sweepAngle The total angular extent of the arc, in radians.
+///                   May be negative (sweeps in the opposite direction).
+/// \param pointCount The number of vertices defining the arc; must be >= 2.
+///
+/// \return The computed angle step in radians between successive arc samples.
+///
+/// \see computePieSliceArcAngleStep
+///
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float computeArcAngleStep(
+    const float        sweepAngle,
+    const unsigned int pointCount) noexcept
+{
+    SFML_BASE_ASSERT_AND_ASSUME(pointCount >= 2u);
+    return sweepAngle / static_cast<float>(pointCount - 1u);
 }
 
 ////////////////////////////////////////////////////////////
@@ -294,7 +333,9 @@ namespace sf::ShapeUtils
     SFML_BASE_ASSERT_AND_ASSUME(sine >= -1.f && sine <= 1.f);
     SFML_BASE_ASSERT_AND_ASSUME(cosine >= -1.f && cosine <= 1.f);
 
-    return {radius * (1.f + sine), radius * (1.f + cosine)};
+    // Winding is CW-visual in screen space (y-down) so that outline normals point inward:
+    // `outlineThickness > 0` overlays the outline on top of the fill without growing the bounds.
+    return {radius * (1.f - sine), radius * (1.f + cosine)};
 }
 
 ////////////////////////////////////////////////////////////
@@ -445,6 +486,269 @@ namespace sf::ShapeUtils
 
     // Add offset to `localCenter` to get final local position
     return RingPoints{localCenter + outerOffset, localCenter + innerOffset};
+}
+
+////////////////////////////////////////////////////////////
+/// \brief Computes a vertex point for a cross (plus) shape.
+///
+/// The cross occupies a bounding box of dimensions `size` with a
+/// horizontal and a vertical arm of common `armThickness` sharing a
+/// central square. Vertices are generated in counter-clockwise
+/// (math) / clockwise (screen-y-down) winding order, starting at
+/// the top-left corner of the top arm.
+///
+/// \param index         The index of the vertex to compute `(0 <= index < 12)`.
+/// \param size          Overall bounding size of the cross.
+/// \param armThickness  Thickness of the horizontal and vertical arms.
+///
+/// \return The computed 2D position of the boundary vertex.
+///
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeCrossPoint(
+    const base::SizeT index,
+    const Vec2f       size,
+    const float       armThickness) noexcept
+{
+    SFML_BASE_ASSERT_AND_ASSUME(index < 12u);
+    SFML_BASE_ASSERT_AND_ASSUME(armThickness >= 0.f);
+
+    const float cx = size.x * 0.5f;
+    const float cy = size.y * 0.5f;
+    const float h  = armThickness * 0.5f;
+
+    const Vec2f points[12u] = {
+        {cx - h, 0.f},    //  0: top-left of top arm
+        {cx + h, 0.f},    //  1: top-right of top arm
+        {cx + h, cy - h}, //  2: inner corner (top-right)
+        {size.x, cy - h}, //  3: top-right of right arm
+        {size.x, cy + h}, //  4: bottom-right of right arm
+        {cx + h, cy + h}, //  5: inner corner (bottom-right)
+        {cx + h, size.y}, //  6: bottom-right of bottom arm
+        {cx - h, size.y}, //  7: bottom-left of bottom arm
+        {cx - h, cy + h}, //  8: inner corner (bottom-left)
+        {0.f, cy + h},    //  9: bottom-left of left arm
+        {0.f, cy - h},    // 10: top-left of left arm
+        {cx - h, cy - h}, // 11: inner corner (top-left)
+    };
+
+    return points[index];
+}
+
+////////////////////////////////////////////////////////////
+/// \brief Computes a vertex point for an isosceles trapezoid.
+///
+/// The trapezoid has its top edge of width `topWidth` at `y = 0`
+/// and bottom edge of width `bottomWidth` at `y = height`, both
+/// horizontally centered within a bounding box of width
+/// `max(topWidth, bottomWidth)`.
+///
+/// \param index       The index of the vertex to compute `(0 <= index < 4)`.
+/// \param topWidth    Width of the top edge.
+/// \param bottomWidth Width of the bottom edge.
+/// \param height      Vertical distance between top and bottom edges.
+///
+/// \return The computed 2D position of the boundary vertex.
+///
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeTrapezoidPoint(
+    const base::SizeT index,
+    const float       topWidth,
+    const float       bottomWidth,
+    const float       height) noexcept
+{
+    SFML_BASE_ASSERT_AND_ASSUME(index < 4u);
+
+    const float maxW  = SFML_BASE_MAX(topWidth, bottomWidth);
+    const float topXL = (maxW - topWidth) * 0.5f;
+    const float topXR = topXL + topWidth;
+    const float botXL = (maxW - bottomWidth) * 0.5f;
+    const float botXR = botXL + bottomWidth;
+
+    const Vec2f points[4u] = {
+        {topXL, 0.f},    // 0: top-left
+        {topXR, 0.f},    // 1: top-right
+        {botXR, height}, // 2: bottom-right
+        {botXL, height}, // 3: bottom-left
+    };
+
+    return points[index];
+}
+
+////////////////////////////////////////////////////////////
+/// \brief Computes a vertex point for a chevron (`>`) shape.
+///
+/// The chevron occupies a bounding box of dimensions `size` with
+/// its tip at `{size.x, size.y/2}` and its open (back) end along
+/// `x = 0`. `thickness` is the vertical thickness of the stroke at
+/// the back; the inner tip is pulled back from the outer tip so
+/// that the two arms have constant perpendicular thickness.
+///
+/// Vertices are returned in CCW (math) / CW (screen-y-down) winding
+/// order: outer top-back, outer tip, outer bottom-back, inner
+/// bottom-back, inner tip, inner top-back.
+///
+/// When `thickness >= size.y / 2`, the chevron fills up entirely:
+/// the three inner vertices all collapse to `{0, size.y / 2}` and
+/// the resulting 6-vertex polygon degenerates into the outer
+/// triangle `{(0, 0), (size.x, size.y/2), (0, size.y)}` (with the
+/// three duplicate inner vertices producing zero-area triangles in
+/// the fan). This keeps the fill continuous as `thickness` crosses
+/// `size.y / 2` without self-intersections.
+///
+/// \param index     The index of the vertex to compute `(0 <= index < 6)`.
+/// \param size      Overall bounding size of the chevron.
+/// \param thickness Vertical stroke thickness at the back (clamped to `size.y / 2`).
+///
+/// \return The computed 2D position of the boundary vertex.
+///
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeChevronPoint(
+    const base::SizeT index,
+    const Vec2f       size,
+    const float       thickness) noexcept
+{
+    SFML_BASE_ASSERT_AND_ASSUME(index < 6u);
+    SFML_BASE_ASSERT_AND_ASSUME(thickness >= 0.f);
+    SFML_BASE_ASSERT_AND_ASSUME(size.y > 0.f);
+
+    const float halfH = size.y * 0.5f;
+
+    // Clamp thickness to half the height: beyond that, the inner vertices would cross
+    // and create a self-intersecting polygon. Clamping lets the shape cleanly degenerate
+    // into the outer triangle instead.
+    const float clampedThickness = SFML_BASE_MIN(thickness, halfH);
+
+    const float innerTipX = size.x * (1.f - 2.f * clampedThickness / size.y);
+
+    const Vec2f points[6u] = {
+        {0.f, 0.f},                       // 0: outer top-back
+        {size.x, halfH},                  // 1: outer tip
+        {0.f, size.y},                    // 2: outer bottom-back
+        {0.f, size.y - clampedThickness}, // 3: inner bottom-back
+        {innerTipX, halfH},               // 4: inner tip
+        {0.f, clampedThickness},          // 5: inner top-back
+    };
+
+    return points[index];
+}
+
+////////////////////////////////////////////////////////////
+/// \brief Computes a vertex point for a heart shape.
+///
+/// Based on the classic valentine-heart parametric curve
+/// `x(t) = 16 sin^3(t)`,
+/// `y(t) = 13 cos(t) - 5 cos(2t) - 2 cos(3t) - cos(4t)`,
+/// rescaled to fit the axis-aligned bounding box
+/// `[0, size.x] x [0, size.y]` in screen (y-down) coordinates.
+///
+/// The classic curve has two tangent cusps (both derivatives vanish)
+/// at `t = 0` (dimple) and `t = pi` (bottom tip). These destabilize
+/// the outline miter calculation regardless of where samples are
+/// placed, because the curve itself does an instantaneous U-turn at
+/// each cusp. To eliminate that, the `sin^3` factor is replaced by
+/// `sin(t) * (sin^2(t) + delta)` with a small `delta`. At `t = 0`
+/// and `t = pi`, `dx/dt = 16 * cos(t) * delta` is now non-zero, so
+/// the tangent is a finite horizontal vector instead of a zero
+/// vector -- a smooth point rather than a cusp. For small `delta`
+/// the lobes widen and the notches round off by well under a pixel
+/// at typical sizes, so the heart still looks like a classic
+/// valentine heart.
+///
+/// \param index      The index of the vertex to compute `(0 <= index < pointCount)`.
+/// \param pointCount Total number of samples along the contour (must be >= 4).
+/// \param size       Overall bounding size of the heart.
+///
+/// \return The computed 2D position of the boundary vertex.
+///
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeHeartPoint(
+    const base::SizeT  index,
+    const unsigned int pointCount,
+    const Vec2f        size) noexcept
+{
+    SFML_BASE_ASSERT_AND_ASSUME(pointCount >= 4u);
+    SFML_BASE_ASSERT_AND_ASSUME(index < pointCount);
+
+    // Cusp-removal smoothing. Larger kDelta reduces curvature at the former cusps, which keeps
+    // the outline miter factor (1 + n1.n2) well above 0 at adjacent samples and avoids the
+    // miter-limit clamp that causes visible spikes sticking past the shape boundary.
+    constexpr float kDelta = 0.15f;
+    constexpr float kXMax  = 16.f * (1.f + kDelta);
+    constexpr float kYMax  = 12.f; // analytic y_max ~= 11.93; 12 gives a tiny safety margin
+    constexpr float kYMin  = -17.f;
+
+    const float t = base::tau * static_cast<float>(index) / static_cast<float>(pointCount);
+
+    const auto [sinT, cosT] = base::sinCosLookup(t);
+
+    const float sin2  = sinT * sinT;
+    const float cos2t = cosT * cosT - sin2;
+    const float cos3t = 4.f * cosT * cosT * cosT - 3.f * cosT;
+    const float cos4t = 2.f * cos2t * cos2t - 1.f;
+
+    const float xMath = 16.f * sinT * (sin2 + kDelta);
+    const float yMath = 13.f * cosT - 5.f * cos2t - 2.f * cos3t - cos4t;
+
+    return {(xMath + kXMax) / (2.f * kXMax) * size.x, (kYMax - yMath) / (kYMax - kYMin) * size.y};
+}
+
+////////////////////////////////////////////////////////////
+/// \brief Computes a vertex point for a cog (gear) shape.
+///
+/// A cog has `toothCount` rectangular teeth evenly distributed
+/// around its center. Each angular sector (of width
+/// `2*pi / toothCount`) is split into a tooth of angular width
+/// `toothWidthRatio * (2*pi / toothCount)` and a gap filling the
+/// remainder. Four vertices are emitted per tooth (gap-start at
+/// inner radius, tooth-tip-left at outer radius, tooth-tip-right
+/// at outer radius, gap-end at inner radius).
+///
+/// The shape is centered at `(outerRadius, outerRadius)` to match
+/// the convention used by `computeStarPoint`/`computeCirclePoint`.
+///
+/// \param index           The index of the vertex to compute `(0 <= index < 4 * toothCount)`.
+/// \param toothCount      Number of teeth (must be >= 3).
+/// \param outerRadius     Distance from the center to a tooth tip.
+/// \param innerRadius     Distance from the center to a tooth root.
+/// \param toothWidthRatio Fraction of each angular sector that is tooth (in `(0, 1)`).
+///
+/// \return The computed 2D position of the boundary vertex.
+///
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeCogPoint(
+    const base::SizeT  index,
+    const unsigned int toothCount,
+    const float        outerRadius,
+    const float        innerRadius,
+    const float        toothWidthRatio) noexcept
+{
+    SFML_BASE_ASSERT_AND_ASSUME(toothCount >= 3u);
+    SFML_BASE_ASSERT_AND_ASSUME(index < 4u * toothCount);
+    SFML_BASE_ASSERT_AND_ASSUME(outerRadius >= 0.f);
+    SFML_BASE_ASSERT_AND_ASSUME(innerRadius >= 0.f);
+    SFML_BASE_ASSERT_AND_ASSUME(toothWidthRatio > 0.f && toothWidthRatio < 1.f);
+
+    const float sector     = base::tau / static_cast<float>(toothCount);
+    const float toothHalfA = sector * toothWidthRatio * 0.5f;
+    const float sectorHalf = sector * 0.5f;
+
+    const base::SizeT toothIdx   = index / 4u;
+    const base::SizeT vertexKind = index % 4u; // 0: root start, 1: tip left, 2: tip right, 3: root end
+    const float       center     = sector * static_cast<float>(toothIdx) - base::halfPi; // start from top
+
+    const float offsets[4u] = {-sectorHalf, -toothHalfA, toothHalfA, sectorHalf};
+    const float radii[4u]   = {innerRadius, outerRadius, outerRadius, innerRadius};
+
+    float       angle  = center + offsets[vertexKind];
+    const float radius = radii[vertexKind];
+
+    if (angle < 0.f)
+        angle += base::tau;
+
+    const auto [sine, cosine] = base::sinCosLookup(base::positiveRemainder(angle, base::tau));
+
+    // Center at (outerRadius, outerRadius) for consistency with star/circle
+    return {outerRadius + radius * cosine, outerRadius + radius * sine};
 }
 
 ////////////////////////////////////////////////////////////
