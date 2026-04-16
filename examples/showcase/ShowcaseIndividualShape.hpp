@@ -3,15 +3,20 @@
 #include "ShowcaseExample.hpp"
 
 #include "SFML/Graphics/ArrowShapeData.hpp"
+#include "SFML/Graphics/ChevronShapeData.hpp"
 #include "SFML/Graphics/CircleShapeData.hpp"
+#include "SFML/Graphics/CogShapeData.hpp"
+#include "SFML/Graphics/CrossShapeData.hpp"
 #include "SFML/Graphics/CurvedArrowShapeData.hpp"
 #include "SFML/Graphics/EllipseShapeData.hpp"
+#include "SFML/Graphics/HeartShapeData.hpp"
 #include "SFML/Graphics/PieSliceShapeData.hpp"
 #include "SFML/Graphics/RectangleShapeData.hpp"
 #include "SFML/Graphics/RingPieSliceShapeData.hpp"
 #include "SFML/Graphics/RingShapeData.hpp"
 #include "SFML/Graphics/RoundedRectangleShapeData.hpp"
 #include "SFML/Graphics/StarShapeData.hpp"
+#include "SFML/Graphics/TrapezoidShapeData.hpp"
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"
@@ -30,18 +35,26 @@ private:
 
     ///////////////////////////////////////////////////////////
     sf::ArrowShapeData            m_sdArrow;
+    sf::ChevronShapeData          m_sdChevron;
     sf::CircleShapeData           m_sdCircle;
+    sf::CogShapeData              m_sdCog;
+    sf::CrossShapeData            m_sdCross;
     sf::CurvedArrowShapeData      m_sdCurvedArrow;
     sf::EllipseShapeData          m_sdEllipse;
+    sf::HeartShapeData            m_sdHeart;
     sf::PieSliceShapeData         m_sdPieSlice;
     sf::RectangleShapeData        m_sdRectangle;
     sf::RingShapeData             m_sdRingShape;
     sf::RingPieSliceShapeData     m_sdRingPieSlice;
     sf::RoundedRectangleShapeData m_sdRoundedRectangle;
     sf::StarShapeData             m_sdStar;
+    sf::TrapezoidShapeData        m_sdTrapezoid;
 
     ////////////////////////////////////////////////////////////
-    int m_shapeIndex = 0;
+    bool m_showPositionOrigin = false;
+    bool m_showBoundingBox    = false;
+    bool m_showCentroid       = false;
+    int  m_shapeIndex         = 0;
 
     ////////////////////////////////////////////////////////////
     sf::Vec2f m_position{256.f, 256.f};
