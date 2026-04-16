@@ -840,7 +840,19 @@ void Main::gameLoopUpdateAttractoBuff(const float deltaTimeMs) const
             firstClickedBubble->rotation = rngFast.getF(0.f, sf::base::tau);
 
             // Gentle nudge: random horizontal wobble + slight downward push per click.
-            firstClickedBubble->velocity += rngFast.getVec2f({-0.15f, 0.05f}, {0.15f, 0.2f});
+            // Near a map edge, clamp the horizontal range so the nudge always points
+            // back toward the center (prevents knocking the bubble off the playfield).
+            constexpr float edgeZone = 200.f;
+            const float     mapLimit = pt->getMapLimit();
+
+            float hLo = -0.15f;
+            float hHi = 0.15f;
+            if (firstClickedBubble->position.x < edgeZone)
+                hLo = 0.f;
+            else if (firstClickedBubble->position.x > mapLimit - edgeZone)
+                hHi = 0.f;
+
+            firstClickedBubble->velocity += rngFast.getVec2f({hLo, 0.05f}, {hHi, 0.2f}) * 0.8f;
 
             // Glass shards: pop upward from the bubble, arc and fall under gravity.
             for (sf::base::SizeT i = 0u; i < 6u; ++i)
@@ -1069,6 +1081,8 @@ void Main::gameLoopUpdateCatActionUni(const float /* deltaTimeMs */, Cat& cat)
         turnBubbleInto(bToTransform, starBubbleType);
         spawnParticles(nStarParticles, bToTransform.position, ParticleType::Star, 0.5f, 0.35f);
 
+        bToTransform.velocity.y -= 0.2f;
+
         ++cat.hits;
     };
 
@@ -1224,6 +1238,9 @@ void Main::gameLoopUpdateCatActionWarden(const float /* deltaTimeMs */, Cat& cat
         if (!otherCat.isNapping())
             continue;
 
+        if (otherCat.napTransition->value < 0.9f)
+            continue;
+
         // Already in the wake-fade — don't double-trigger.
         if (otherCat.napTransition->direction == TimerDirection::Backwards)
             continue;
@@ -1247,13 +1264,51 @@ void Main::gameLoopUpdateCatActionWarden(const float /* deltaTimeMs */, Cat& cat
     bestTarget->napSleepCountdown.reset();
     bestTarget->napShakeProgress = 0.f;
 
-    // TODO: dedicated wake-up sound for the warden's action.
-    sounds.shimmer.settings.position = {bestTarget->position.x, bestTarget->position.y};
-    playSound(sounds.shimmer, /* maxOverlap */ 1u);
+    sounds.bonk.settings.position = {bestTarget->position.x, bestTarget->position.y};
+    playSound(sounds.bonk, /* maxOverlap */ 4u);
 
-    cat.pawPosition = bestTarget->position;
+    if (profile.showTextParticles)
+    {
+        auto& tp = textParticles.emplaceBack(TextParticle{
+            {.position      = bestTarget->position.addY(-40.f),
+             .velocity      = rngFast.getVec2f({-0.1f, -1.65f}, {0.1f, -1.35f}) * 0.395f,
+             .scale         = 0.8f,
+             .scaleDecay    = 0.f,
+             .accelerationY = -0.0035f,
+             .opacity       = 1.f,
+             .opacityDecay  = 0.0025f,
+             .rotation      = 0.f,
+             .torque        = rngFast.getF(-0.002f, 0.002f)}});
+
+        tp.velocity *= 0.5f;
+        tp.opacityDecay *= 0.5f;
+        tp.accelerationY *= 0.35f;
+        tp.scale *= 1.3f;
+
+        (void)std::snprintf(tp.buffer, sizeof(tp.buffer), "BONK!");
+    }
+
+    constexpr float bonkTravelMs = 100.f; // outgoing swing duration
+    constexpr float bonkLingerMs = 250.f; // time the baton stays on the target
+
+    // Snapshot the current pose as the start of the outgoing swing, then set
+    // the destination; the render lerps between them over `bonkTravelMs`.
+    cat.pawBonkStartPos         = cat.pawPosition;
+    cat.pawBonkStartRotation    = cat.pawRotation;
+    cat.pawBonkTravelDurationMs = bonkTravelMs;
+    cat.pawBonkTravelMs         = bonkTravelMs;
+
+    cat.pawPosition = bestTarget->position - sf::Vec2f{0.f, 35.f};
     cat.pawOpacity  = 255.f;
     cat.pawRotation = (bestTarget->position - cat.position).angle() + sf::degrees(45);
+
+    // Hold-mode spans travel + linger so the per-frame lerp stays suspended
+    // for the entire bonk and the baton doesn't snap back mid-swing.
+    cat.pawHoldMs = bonkTravelMs + bonkLingerMs;
+
+    // Pendulum-style impact reaction on the target cat: rocks side-to-side
+    // for ~500ms, synced roughly with the baton reaching the target.
+    bestTarget->bonkImpactMs = 500.f;
 
     cat.textStatusShakeEffect.bump(rngFast, 1.5f);
     ++cat.hits;
@@ -1942,17 +1997,46 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
 
         const auto drawPosition = cat.getDrawPosition(profile.enableCatBobbing);
 
-        auto diff = cat.pawPosition - drawPosition - sf::Vec2f{-30.f, 30.f};
-        cat.pawPosition -= diff * 0.01f * deltaTimeMs;
-        cat.pawRotation = cat.pawRotation.rotatedTowards(sf::degrees(-45.f), deltaTimeMs * 0.005f);
+        if (cat.bonkImpactMs > 0.f)
+            cat.bonkImpactMs = sf::base::max(0.f, cat.bonkImpactMs - deltaTimeMs);
 
-        if (isCatBeingDragged(cat) && (cat.pawPosition - drawPosition).length() > 16.f)
-            cat.pawPosition = drawPosition + (cat.pawPosition - drawPosition).normalized() * 16.f;
-
-        if (cat.cooldown.value == 0.f && cat.pawOpacity > 10.f)
+        if (cat.pawHoldMs > 0.f)
         {
-            cat.pawOpacity -= 0.5f * deltaTimeMs;
-            cat.pawOpacity = sf::base::max(cat.pawOpacity, 0.f);
+            const bool holdWillExpire = cat.pawHoldMs <= deltaTimeMs;
+            cat.pawHoldMs -= deltaTimeMs;
+
+            if (cat.pawBonkTravelMs > 0.f)
+                cat.pawBonkTravelMs = sf::base::max(0.f, cat.pawBonkTravelMs - deltaTimeMs);
+
+            // The moment the hold ends for a Warden, kick off the return phase
+            // so the baton eases back instead of snapping to the windowsill.
+            if (holdWillExpire && cat.type == CatType::Warden)
+            {
+                constexpr float bonkReturnMs   = 400.f;
+                cat.pawBonkReturnStartPos      = cat.pawPosition;
+                cat.pawBonkReturnStartRotation = cat.pawRotation;
+                cat.pawBonkReturnMs            = bonkReturnMs;
+                cat.pawBonkReturnDurationMs    = bonkReturnMs;
+            }
+        }
+        else if (cat.pawBonkReturnMs > 0.f)
+        {
+            cat.pawBonkReturnMs = sf::base::max(0.f, cat.pawBonkReturnMs - deltaTimeMs);
+        }
+        else
+        {
+            auto diff = cat.pawPosition - drawPosition - sf::Vec2f{-30.f, 30.f};
+            cat.pawPosition -= diff * 0.01f * deltaTimeMs;
+            cat.pawRotation = cat.pawRotation.rotatedTowards(sf::degrees(-45.f), deltaTimeMs * 0.005f);
+
+            if (isCatBeingDragged(cat) && (cat.pawPosition - drawPosition).length() > 16.f)
+                cat.pawPosition = drawPosition + (cat.pawPosition - drawPosition).normalized() * 16.f;
+
+            if (cat.cooldown.value == 0.f && cat.pawOpacity > 10.f)
+            {
+                cat.pawOpacity -= 0.5f * deltaTimeMs;
+                cat.pawOpacity = sf::base::max(cat.pawOpacity, 0.f);
+            }
         }
 
         // Spawn effect
@@ -2461,6 +2545,35 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
                                                    getWindRepulsionMult(),
                                                    -1.f,
                                                    pt->repulsoCatIgnoreBubbles));
+
+        // Passive body-repel for Unicats: nudges bubbles out of the cat's
+        // body so a freshly-spawned star bubble never hides under the cat.
+        // Intentionally weak and short-range — no countdown side-effects.
+        if (cat.type == CatType::Uni || (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Uni))
+        {
+            constexpr float uniBodyRepelStrength = 0.00018f; // per-ms velocity push at body contact
+
+            const float bodyRepelRadius   = 150.f;
+            const float bodyRepelRadiusSq = bodyRepelRadius * bodyRepelRadius;
+
+            forEachBubbleInRadius(cat.position,
+                                  bodyRepelRadius,
+                                  [&](Bubble& bubble)
+            {
+                if (bubble.type != BubbleType::Star)
+                    return ControlFlow::Continue;
+
+                const auto  diff   = bubble.position - cat.position;
+                const float distSq = diff.lengthSquared();
+
+                if (distSq <= 0.0001f || distSq > bodyRepelRadiusSq)
+                    return ControlFlow::Continue;
+
+                bubble.velocity.x += diff.normalized().x * (uniBodyRepelStrength * deltaTimeMs);
+
+                return ControlFlow::Continue;
+            });
+        }
 
         if (cat.type == CatType::Attracto || (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Attracto))
             forEachBubbleInRadius(cat.position,

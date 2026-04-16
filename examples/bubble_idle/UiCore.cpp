@@ -1060,7 +1060,7 @@ void Main::uiImgsep(const sf::Rect2f& txr, const char* sepLabel, const bool firs
 
     const auto oldFontScale = uiState.lastFontScale;
     uiSetFontScale(0.75f);
-    uiCenteredText(sepLabel, -5.f * profile.uiScale, -8.f * profile.uiScale);
+    uiCenteredText(sepLabel, -8.f * profile.uiScale, -8.f * profile.uiScale);
     uiSetFontScale(oldFontScale);
 
     // ImGui::Separator();
@@ -1088,7 +1088,7 @@ void Main::uiImgsep2(const sf::Rect2f& txr, const char* sepLabel)
 
     const auto oldFontScale = uiState.lastFontScale;
     uiSetFontScale(0.75f);
-    uiCenteredText(sepLabel, -5.f * profile.uiScale, -6.f * profile.uiScale);
+    uiCenteredText(sepLabel, -8.f * profile.uiScale, -6.f * profile.uiScale);
     uiSetFontScale(oldFontScale);
 
     uiBeginColumns();

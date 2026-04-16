@@ -470,6 +470,14 @@ void Main::uiSettingsDrawDebugTab()
         inputVec2("Regular paw dragged offset", gameConstants.regularPawDraggedOffset);
         inputVec2("Copy mask offset", gameConstants.copyMaskOffset);
         inputVec2("Copy mask origin", gameConstants.copyMaskOrigin);
+        inputVec2("Warden guardhouse back offset", gameConstants.wardenGuardhouseBackOffset);
+        inputVec2("Warden guardhouse front offset", gameConstants.wardenGuardhouseFrontOffset);
+        inputVec2("Warden cat body offset", gameConstants.wardenCatBodyOffset);
+        inputVec2("Warden cat paw offset", gameConstants.wardenCatPawOffset);
+        inputFloat("Warden cat body wobble (rad)", gameConstants.wardenCatBodyWobbleRadians);
+        inputVec2("Warden eyelid origin offset", gameConstants.wardenCatEyelidOriginOffset);
+        inputVec2("Warden yawn origin offset", gameConstants.wardenCatYawnOriginOffset);
+        inputFloat("Warden paw scale", gameConstants.wardenCatPawScale);
         drawSpriteAttachmentControls(profile.uiScale, "Devil back tail", gameConstants.devilBackTail);
         drawSpriteAttachmentControls(profile.uiScale, "Duck flag", gameConstants.duckFlag);
         drawSpriteAttachmentControls(profile.uiScale, "Smart diploma", gameConstants.smartDiploma);

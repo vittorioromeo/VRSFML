@@ -162,11 +162,15 @@ void Main::uiShopDrawCoreUpgrades()
     // the same section as Normal cats so the mechanic can be playtested.
     if (checkUiUnlock(4u, pt->comboPurchased && pt->psvComboStartTime.nPurchases > 0))
     {
+        uiImgsep(txrMenuSeparator3, "wardencats");
+
+        uiSetUnlockLabelY(68u);
+
         const auto nCatWarden = pt->getCatCountByType(CatType::Warden);
 
         uiSetTooltip(
-            "Wardencats patrol their range and shake any napping cat awake.\n\nWardencats can also "
-            "fall asleep — and yes, they will wake each other up.");
+            "Wardencats gently wake up sleeping cats nearby.\n\nThat doesn't mean they can't nap themselves, "
+            "though...");
         uiSetLabel("%zu wardencats", nCatWarden);
         if (makePSVButton("Wardencat", pt->psvPerCatType[asIdx(CatType::Warden)]))
         {

@@ -106,7 +106,7 @@ inline constexpr EXACT_ARRAY(
     nCatTypes,
     {
         {0.f, 0.f},    // Normal
-        {0.f, -100.f}, // Uni
+        {0.f, -124.f}, // Uni
         {0.f, 100.f},  // Devil
         {-64.f, 0.f},  // Astro
         {0.f, 0.f},    // Warden

@@ -342,8 +342,19 @@ void Main::gameLoopDrawBubbles()
 
         const auto& rect = bubbleRects[asIdx(bubble.type)];
 
+        // Combo bubble shake: after the first click, wobble more and more as the timer runs out.
+        sf::Vec2f shakeOffset = {};
+        if (bubble.type == BubbleType::Combo && bubble.comboClickCount > 0u && bubble.comboTimerMs > 0.f)
+        {
+            const float maxMs   = gameConstants.events.invincibleBubble.comboTimerMaxMs;
+            const float frac    = sf::base::clamp(bubble.comboTimerMs / (maxMs <= 0.f ? 1.f : maxMs), 0.f, 1.f);
+            const float urgency = 1.f - frac;
+            const float amp     = urgency * urgency * 8.f; // quadratic ramp, peaks ~8px right before pop
+            shakeOffset = {rngFast.getF(-amp, amp), rngFast.getF(-amp, amp)};
+        }
+
         batchToUseByType[asIdx(bubble.type)]->add(sf::Sprite{
-            .position    = bubble.position,
+            .position    = bubble.position + shakeOffset,
             .scale       = {bubble.radius * scaleMult, bubble.radius * scaleMult},
             .origin      = rect.size / 2.f,
             .rotation    = sf::radians(bubble.rotation),
@@ -366,7 +377,7 @@ void Main::gameLoopDrawBubbles()
                 const float     outerR    = bubble.radius;
 
                 batchToUseByType[asIdx(bubble.type)]->add(sf::RingPieSliceShapeData{
-                    .position    = bubble.position,
+                    .position    = bubble.position + shakeOffset,
                     .origin      = {outerR, outerR},
                     .textureRect = txrWhiteDot,
                     .fillColor   = sf::Color::whiteWithAlpha(64u),
@@ -575,7 +586,7 @@ void Main::gameLoopDrawCats(const sf::Vec2f mousePos, const float deltaTimeMs)
         uniCatTxr,    // Uni
         devilCatTxr,  // Devil
         &txrAstroCat, // Astro
-        &txrCat,      // Warden — TODO: dedicated body texture (reusing Normal)
+        &txrWardenCat, // Warden (composite — guardhouse drawn around it)
 
         &txrWitchCat,    // Witch
         &txrWizardCat,   // Wizard
@@ -595,7 +606,7 @@ void Main::gameLoopDrawCats(const sf::Vec2f mousePos, const float deltaTimeMs)
         &txrUniCatPaw,  // Uni
         devilCatPawTxr, // Devil
         &txrWhiteDot,   // Astro
-        &txrCatPaw,     // Warden — TODO: dedicated paw texture (reusing Normal)
+        &txrWardencatPaw, // Warden (paw resting on the guardhouse windowsill)
 
         &txrWitchCatPaw,    // Witch
         &txrWizardCatPaw,   // Wizard
@@ -688,6 +699,7 @@ struct CatDrawContext
     float                          maxCooldown;
     float                          cooldownDiff;
     float                          catRotation;
+    float                          bodyRotationExtra; // tail-wobble + bonk pendulum etc. (added on top of catRotation)
     float                          range;
     U8                             alpha;
     sf::Color                      catColor;
@@ -709,9 +721,14 @@ struct CatDrawContext
         return cat.type == CatType::Copy && main.pt->copycatCopiedCatType == copiedType;
     }
 
+    [[nodiscard]] sf::Angle bodyRotation() const
+    {
+        return sf::radians(catRotation + bodyRotationExtra);
+    }
+
     [[nodiscard]] sf::Vec2f anchorOffset(const sf::Vec2f offset) const
     {
-        return visualCatAnchor + (offset / 2.f * 0.2f * catScaleMult).rotatedBy(sf::radians(catRotation));
+        return visualCatAnchor + (offset / 2.f * 0.2f * catScaleMult).rotatedBy(bodyRotation());
     }
 };
 
@@ -794,6 +811,7 @@ void applyWitchAnimation(CatDrawContext& ctx, float& wobblePhase, Cat& witch)
         .maxCooldown              = main.getComputedCooldownByCatTypeOrCopyCat(cat.type),
         .cooldownDiff             = cat.cooldown.value,
         .catRotation              = 0.f,
+        .bodyRotationExtra        = 0.f,
         .range                    = main.getComputedRangeByCatTypeOrCopyCat(cat.type),
         .alpha                    = 255u,
         .catColor                 = sf::Color::White,
@@ -843,6 +861,28 @@ void applyWitchAnimation(CatDrawContext& ctx, float& wobblePhase, Cat& witch)
     ctx.catRotation += cat.dragTiltRadians;
     ctx.catRotation += cat.napWakeWobble;
 
+    // Extra body-level rotation that every body-attached sprite (including
+    // attachments positioned via `anchorOffset`) must follow: tail-like
+    // wobble for the Warden and the pendulum reaction when this cat was
+    // just bonked. Decoupled from `catRotation` so logic that needs the
+    // "base" rotation (drag, witch animation, etc.) stays unaffected.
+    ctx.bodyRotationExtra = 0.f;
+
+    if (cat.type == CatType::Warden)
+        ctx.bodyRotationExtra += sf::base::sin(cat.wobbleRadians) * main.gameConstants.wardenCatBodyWobbleRadians;
+
+    if (cat.bonkImpactMs > 0.f)
+    {
+        constexpr float bonkImpactDurationMs = 500.f;
+        constexpr float bonkImpactAmplitude  = 0.28f;
+        constexpr float bonkImpactFreqHz     = 4.f;
+
+        const float elapsedS = (bonkImpactDurationMs - cat.bonkImpactMs) * 0.001f;
+        const float decay    = cat.bonkImpactMs / bonkImpactDurationMs;
+
+        ctx.bodyRotationExtra += sf::base::sin(elapsedS * bonkImpactFreqHz * sf::base::tau) * bonkImpactAmplitude * decay;
+    }
+
     ctx.alpha    = ctx.insideDragRect ? static_cast<U8>(128u) : static_cast<U8>(255u);
     ctx.catColor = hueColor(cat.hue, ctx.alpha);
     ctx.circleAlpha = cat.cooldown.value < 0.f ? static_cast<U8>(0u)
@@ -857,7 +897,7 @@ void applyWitchAnimation(CatDrawContext& ctx, float& wobblePhase, Cat& witch)
     ctx.catAnchor            = ctx.beingDragged ? cat.position : cat.getDrawPosition(main.profile.enableCatBobbing);
     const auto catDrawOffset = main.gameConstants.catDrawOffsetsByType[asIdx(cat.type)];
     ctx.visualCatAnchor      = ctx.catAnchor +
-                               (catDrawOffset / 2.f * 0.2f * ctx.catScaleMult).rotatedBy(sf::radians(ctx.catRotation));
+                               (catDrawOffset / 2.f * 0.2f * ctx.catScaleMult).rotatedBy(ctx.bodyRotation());
 
     ctx.pushDown      = {0.f, ctx.beingDragged ? main.gameConstants.catAttachmentDraggedOffsetY : 0.f};
     ctx.attachmentHue = hueColor(main.gameConstants.catHueByType[asIdx(cat.type)] + cat.hue, ctx.alpha);
@@ -951,11 +991,11 @@ void drawCatVisuals(const CatDrawContext& ctx)
     const float tailRotationMult = ctx.cat.type == CatType::Uni ? 0.4f : 1.f;
 
     const auto tailWiggleRotation = sf::radians(
-        ctx.catRotation + ((ctx.beingDragged ? -0.2f : 0.f) +
+        ctx.catRotation + ctx.bodyRotationExtra + ((ctx.beingDragged ? -0.2f : 0.f) +
                            sf::base::sin(ctx.cat.wobbleRadians) * (ctx.beingDragged ? 0.125f : 0.075f) * tailRotationMult));
 
     const auto tailWiggleRotationInvertedDragged = sf::radians(
-        ctx.catRotation + ((ctx.beingDragged ? 0.2f : 0.f) +
+        ctx.catRotation + ctx.bodyRotationExtra + ((ctx.beingDragged ? 0.2f : 0.f) +
                            sf::base::sin(ctx.cat.wobbleRadians) * (ctx.beingDragged ? 0.125f : 0.075f) * tailRotationMult));
 
     if (ctx.cat.type == CatType::Devil)
@@ -975,7 +1015,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
         addCatSprite(sf::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.brainJarOffset),
                                 .scale       = ctx.catScale,
                                 .origin      = ctx.main.txrBrainBack.size / 2.f,
-                                .rotation    = sf::radians(ctx.catRotation),
+                                .rotation    = ctx.bodyRotation(),
                                 .textureRect = ctx.main.txrBrainBack,
                                 .color       = ctx.catColor});
     }
@@ -1001,7 +1041,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
             sf::Sprite{.position = ctx.visualCatAnchor + ctx.main.gameConstants.devilBookOffset,
                        .scale    = ctx.catScale * 1.55f,
                        .origin   = ctx.main.txrDevilCat3Book.size / 2.f,
-                       .rotation = sf::radians(ctx.catRotation),
+                       .rotation = ctx.bodyRotation(),
                        .textureRect = ctx.main.isDevilcatHellsingedActive() ? ctx.main.txrDevilCat2Book : ctx.main.txrDevilCat3Book,
                        .color = hueColor(sf::base::remainder(ctx.cat.hue * 2.f - 15.f + static_cast<float>(ctx.cat.nameIdx) * 25.f,
                                                              60.f) -
@@ -1021,10 +1061,34 @@ void drawCatVisuals(const CatDrawContext& ctx)
                        .color       = ctx.catColor.withAlpha(static_cast<U8>(ctx.cat.pawOpacity))});
     }
 
-    addCatSprite(sf::Sprite{.position    = ctx.visualCatAnchor,
+    // Wardencat is a composite: guardhouse_back goes BEHIND the cat body,
+    // guardhouse_front later OCCLUDES the lower half, and the paw sits on top.
+    // The guardhouse parts are drawn un-rotated (pure position + bobbing) so
+    // only the cat visibly rocks.
+    if (ctx.cat.type == CatType::Warden)
+    {
+        addCatSprite(sf::Sprite{
+            .position    = ctx.anchorOffset(ctx.main.gameConstants.wardenGuardhouseBackOffset),
+            .scale       = ctx.catScale,
+            .origin      = ctx.main.txrGuardhouseBack.size / 2.f,
+            .rotation    = sf::radians(0.f),
+            .textureRect = ctx.main.txrGuardhouseBack,
+            .color       = ctx.catColor,
+        });
+    }
+
+    // The body-attached rotation (including tail wobble and bonk pendulum)
+    // was computed once in `makeCatDrawContext` and promoted onto the context,
+    // so attachments positioned via `anchorOffset` + sprites using
+    // `ctx.bodyRotation()` stay in sync as a single rigid body.
+    const auto bodyRotation = ctx.bodyRotation();
+
+    addCatSprite(sf::Sprite{.position    = ctx.cat.type == CatType::Warden
+                                               ? ctx.anchorOffset(ctx.main.gameConstants.wardenCatBodyOffset)
+                                               : ctx.visualCatAnchor,
                             .scale       = ctx.catScale,
                             .origin      = ctx.catTxr.size / 2.f,
-                            .rotation    = sf::radians(ctx.catRotation),
+                            .rotation    = bodyRotation,
                             .textureRect = ctx.catTxr,
                             .color       = ctx.catColor});
 
@@ -1042,7 +1106,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
             .position           = ctx.catAnchor,
             .scale              = ctx.catScale,
             .origin             = ctx.catTxr.size / 2.f,
-            .rotation           = sf::radians(ctx.catRotation).wrapUnsigned(),
+            .rotation           = bodyRotation.wrapUnsigned(),
             .outlineTextureRect = ctx.main.txrWhiteDot,
             .fillColor          = sf::Color::Transparent,
             .outlineColor       = sf::Color{255u, 0u, 0u, ctx.alpha},
@@ -1067,7 +1131,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
         addCatSprite(sf::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.smartHatOffset),
                                 .scale       = ctx.catScale,
                                 .origin      = ctx.main.txrSmartCatHat.size / 2.f,
-                                .rotation    = sf::radians(ctx.catRotation),
+                                .rotation    = bodyRotation,
                                 .textureRect = ctx.main.txrSmartCatHat,
                                 .color       = ctx.catColor});
     }
@@ -1091,7 +1155,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
             sf::Sprite{.position = ctx.anchorOffset(ctx.catEyeOffset + ctx.main.gameConstants.earFlapOffset),
                        .scale    = ctx.catScale,
                        .origin   = ctx.main.txrCatEars0.size / 2.f,
-                       .rotation = sf::radians(ctx.catRotation),
+                       .rotation = bodyRotation,
                        .textureRect = *ctx.main.earRects[static_cast<unsigned int>(ctx.cat.flapAnimCountdown.value / 75.f) %
                                                          Main::nEarRects],
                        .color = ctx.attachmentHue});
@@ -1111,10 +1175,14 @@ void drawCatVisuals(const CatDrawContext& ctx)
 
         (void)ctx.cat.yawnAnimCountdown.updateAndStop(ctx.deltaTimeMs);
 
+        const sf::Vec2f yawnOrigin = ctx.main.txrCatYawn0.size / 2.f +
+                                     (ctx.cat.type == CatType::Warden ? ctx.main.gameConstants.wardenCatYawnOriginOffset
+                                                                      : sf::Vec2f{0.f, 0.f});
+
         addCatSprite(sf::Sprite{.position    = ctx.anchorOffset(ctx.catEyeOffset + ctx.main.gameConstants.yawnOffset),
                                 .scale       = ctx.catScale,
-                                .origin      = ctx.main.txrCatYawn0.size / 2.f,
-                                .rotation    = sf::radians(ctx.catRotation),
+                                .origin      = yawnOrigin,
+                                .rotation    = bodyRotation,
                                 .textureRect = *ctx.main.catYawnRects[yawnRectIdx],
                                 .color       = ctx.attachmentHue});
     }
@@ -1164,7 +1232,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
                        .color       = ctx.catColor});
     }
 
-    if (ctx.cat.type != CatType::Devil)
+    if (ctx.cat.type != CatType::Devil && ctx.cat.type != CatType::Warden)
     {
         const auto originOffset = ctx.cat.type == CatType::Uni ? ctx.main.gameConstants.uniTailOriginOffset
                                                                : sf::Vec2f{0.f, 0.f};
@@ -1213,6 +1281,10 @@ void drawCatVisuals(const CatDrawContext& ctx)
 
     (void)ctx.cat.blinkAnimCountdown.updateAndStop(ctx.deltaTimeMs);
 
+    const sf::Vec2f eyelidOrigin = ctx.main.txrCatEyeLid0.size / 2.f +
+                                   (ctx.cat.type == CatType::Warden ? ctx.main.gameConstants.wardenCatEyelidOriginOffset
+                                                                    : sf::Vec2f{0.f, 0.f});
+
     if ((ctx.witchCat != nullptr && ctx.main.isCatPerformingRitual(*ctx.witchCat, ctx.cat)) ||
         (ctx.copyCat != nullptr && ctx.main.pt->copycatCopiedCatType == CatType::Witch &&
          ctx.main.isCatPerformingRitual(*ctx.copyCat, ctx.cat)) ||
@@ -1220,8 +1292,8 @@ void drawCatVisuals(const CatDrawContext& ctx)
     {
         addCatSprite(sf::Sprite{.position    = ctx.anchorOffset(ctx.catEyeOffset + ctx.main.gameConstants.eyelidOffset),
                                 .scale       = ctx.catScale,
-                                .origin      = ctx.main.txrCatEyeLid0.size / 2.f,
-                                .rotation    = sf::radians(ctx.catRotation),
+                                .origin      = eyelidOrigin,
+                                .rotation    = bodyRotation,
                                 .textureRect = *eyelidArray[2],
                                 .color       = ctx.attachmentHue});
     }
@@ -1229,8 +1301,8 @@ void drawCatVisuals(const CatDrawContext& ctx)
     {
         addCatSprite(sf::Sprite{.position    = ctx.anchorOffset(ctx.catEyeOffset + ctx.main.gameConstants.eyelidOffset),
                                 .scale       = ctx.catScale,
-                                .origin      = ctx.main.txrCatEyeLid0.size / 2.f,
-                                .rotation    = sf::radians(ctx.catRotation),
+                                .origin      = eyelidOrigin,
+                                .rotation    = bodyRotation,
                                 .textureRect = *eyelidArray[static_cast<unsigned int>(
                                     remap(static_cast<float>(yawnRectIdx), 0.f, 13.f, 0.f, 7.f))],
                                 .color       = ctx.attachmentHue});
@@ -1240,8 +1312,8 @@ void drawCatVisuals(const CatDrawContext& ctx)
         addCatSprite(
             sf::Sprite{.position    = ctx.anchorOffset(ctx.catEyeOffset + ctx.main.gameConstants.eyelidOffset),
                        .scale       = ctx.catScale,
-                       .origin      = ctx.main.txrCatEyeLid0.size / 2.f,
-                       .rotation    = sf::radians(ctx.catRotation),
+                       .origin      = eyelidOrigin,
+                       .rotation    = bodyRotation,
                        .textureRect = *eyelidArray[static_cast<unsigned int>(ctx.cat.blinkAnimCountdown.value / 75.f) %
                                                    Main::nEyeLidRects],
                        .color       = ctx.attachmentHue});
@@ -1252,20 +1324,80 @@ void drawCatVisuals(const CatDrawContext& ctx)
         addCatSprite(sf::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.brainJarOffset),
                                 .scale       = ctx.catScale,
                                 .origin      = ctx.main.txrBrainFront.size / 2.f,
-                                .rotation    = sf::radians(ctx.catRotation),
+                                .rotation    = bodyRotation,
                                 .textureRect = ctx.main.txrBrainFront,
                                 .color       = ctx.catColor});
     }
 
-    if (!ctx.cat.isHexedOrCopyHexed() && ctx.cat.type != CatType::Devil)
-        addCatSprite(
-            sf::Sprite{.position = ctx.cat.pawPosition + (ctx.beingDragged ? ctx.main.gameConstants.regularPawDraggedOffset
-                                                                           : ctx.main.gameConstants.regularPawIdleOffset),
-                       .scale       = ctx.catScale * 0.85f,
-                       .origin      = ctx.catPawTxr.size / 2.f,
-                       .rotation    = ctx.cat.type == CatType::Mouse ? sf::radians(-0.6f) : ctx.cat.pawRotation,
-                       .textureRect = ctx.catPawTxr,
-                       .color       = ctx.catColor.withAlpha(static_cast<U8>(ctx.cat.pawOpacity))});
+    // Wardencat: front of the guardhouse occludes the cat's lower half. Goes
+    // over the body + eyes/yawn/eyelids, but still UNDER the paw so the paw
+    // reads as resting on the windowsill.
+    if (ctx.cat.type == CatType::Warden)
+    {
+        addCatSprite(sf::Sprite{
+            .position    = ctx.anchorOffset(ctx.main.gameConstants.wardenGuardhouseFrontOffset),
+            .scale       = ctx.catScale,
+            .origin      = ctx.main.txrGuardhouseFront.size / 2.f,
+            .rotation    = sf::radians(0.f),
+            .textureRect = ctx.main.txrGuardhouseFront,
+            .color       = ctx.catColor,
+        });
+    }
+
+    // Warden's paw is part of the guardhouse composite and must always be
+    // visible (not hidden by hex / idle fade). Its scale is tunable so the
+    // art lines up with the windowsill regardless of the shared cat scale.
+    const bool drawPaw = ctx.cat.type == CatType::Warden ||
+                         (!ctx.cat.isHexedOrCopyHexed() && ctx.cat.type != CatType::Devil);
+
+    if (drawPaw)
+    {
+        const bool isWarden  = ctx.cat.type == CatType::Warden;
+        const auto pawScale  = isWarden ? ctx.catScale * ctx.main.gameConstants.wardenCatPawScale : ctx.catScale * 0.85f;
+        const auto pawAlpha  = isWarden ? static_cast<U8>(255u) : static_cast<U8>(ctx.cat.pawOpacity);
+
+        // Warden paw state machine:
+        //  - Travel:  lerps start pose → `cat.pawPosition` over pawBonkTravelMs
+        //  - Hold:    stays at `cat.pawPosition`
+        //  - Return:  eases the snapshotted hold pose → idle windowsill spot
+        //  - Idle:    sits at the tunable windowsill offset
+        const sf::Vec2f wardenIdlePos = isWarden
+                                            ? ctx.anchorOffset(ctx.main.gameConstants.wardenCatPawOffset)
+                                            : sf::Vec2f{0.f, 0.f};
+
+        sf::Vec2f pawPosition = isWarden
+                                    ? (ctx.cat.pawHoldMs > 0.f ? ctx.cat.pawPosition : wardenIdlePos)
+                                    : ctx.cat.pawPosition + (ctx.beingDragged ? ctx.main.gameConstants.regularPawDraggedOffset
+                                                                              : ctx.main.gameConstants.regularPawIdleOffset);
+
+        auto pawRotate = ctx.cat.type == CatType::Mouse ? sf::radians(-0.6f) : ctx.cat.pawRotation;
+
+        if (isWarden && ctx.cat.pawBonkTravelMs > 0.f && ctx.cat.pawBonkTravelDurationMs > 0.f)
+        {
+            const float t = easeInOutCubic(sf::base::clamp(
+                1.f - (ctx.cat.pawBonkTravelMs / ctx.cat.pawBonkTravelDurationMs), 0.f, 1.f));
+
+            pawPosition = ctx.cat.pawBonkStartPos + (ctx.cat.pawPosition - ctx.cat.pawBonkStartPos) * t;
+            pawRotate   = ctx.cat.pawBonkStartRotation.rotatedTowards(ctx.cat.pawRotation, t);
+        }
+        else if (isWarden && ctx.cat.pawBonkReturnMs > 0.f && ctx.cat.pawBonkReturnDurationMs > 0.f)
+        {
+            // Return-phase target is recomputed every frame so the paw tracks
+            // the cat's bobbing position while it eases back.
+            const float t = easeInOutCubic(sf::base::clamp(
+                1.f - (ctx.cat.pawBonkReturnMs / ctx.cat.pawBonkReturnDurationMs), 0.f, 1.f));
+
+            pawPosition = ctx.cat.pawBonkReturnStartPos + (wardenIdlePos - ctx.cat.pawBonkReturnStartPos) * t;
+            pawRotate   = ctx.cat.pawBonkReturnStartRotation.rotatedTowards(sf::degrees(-45.f), t);
+        }
+
+        addCatSprite(sf::Sprite{.position    = pawPosition,
+                                .scale       = pawScale,
+                                .origin      = ctx.catPawTxr.size / 2.f,
+                                .rotation    = pawRotate,
+                                .textureRect = ctx.catPawTxr,
+                                .color       = ctx.catColor.withAlpha(pawAlpha)});
+    }
 
     if (ctx.cat.type == CatType::Copy)
     {
