@@ -56,7 +56,7 @@
       0.0
     ],
     [
-      -50.0,
+      -35.0,
       0.0
     ],
     [
@@ -86,6 +86,10 @@
     [
       0.0,
       0.0
+    ],
+    [
+      0.0,
+      0.0
     ]
   ],
   "catEyeOffsetsByType": [
@@ -106,8 +110,8 @@
       -120.0
     ],
     [
-      10.0,
-      170.0
+      -44.0,
+      -129.0
     ],
     [
       -48.0,
@@ -136,6 +140,10 @@
     [
       0.0,
       0.0
+    ],
+    [
+      0.0,
+      0.0
     ]
   ],
   "catHueByType": [
@@ -143,11 +151,12 @@
     160.0,
     -25.0,
     0.0,
-    80.0,
+    180.0,
     -135.0,
     0.0,
     -10.0,
     -40.0,
+    0.0,
     0.0,
     0.0,
     0.0
@@ -202,6 +211,10 @@
     [
       0.0,
       0.0
+    ],
+    [
+      0.0,
+      0.0
     ]
   ],
   "cloudModifiers": [
@@ -235,10 +248,10 @@
     },
     {
       "positionOffset": [
-        8.0,
-        -5.0
+        3.0,
+        7.0
       ],
-      "xExtentMult": 1.2000000476837158
+      "xExtentMult": 1.399999976158142
     },
     {
       "positionOffset": [
@@ -281,6 +294,13 @@
         -4.0
       ],
       "xExtentMult": 1.2000000476837158
+    },
+    {
+      "positionOffset": [
+        0.0,
+        0.0
+      ],
+      "xExtentMult": 1.0
     },
     {
       "positionOffset": [
@@ -358,6 +378,36 @@
       "velocityJitterX": 0.05000000074505806,
       "velocityJitterY": 0.25
     },
+    "invincibleBubble": {
+      "ambientRepelRadius": 128.0,
+      "ambientRepelStrength": 0.0017999999690800905,
+      "burstDampingPerSec": 0.004999999888241291,
+      "burstSettleDelayMs": 350.0,
+      "burstSpeedMax": 0.949999988079071,
+      "burstSpeedMin": 0.550000011920929,
+      "clickAbsorbRadius": 64.0,
+      "clickAbsorbSpeed": 0.44999998807907104,
+      "comboTimerMaxMs": 1000.0,
+      "initialVelocityY": 0.03999999910593033,
+      "maxClicks": 25,
+      "maxRadius": 20.479999542236328,
+      "maxVelocityY": 0.05999999865889549,
+      "minRadius": 12.800000190734863,
+      "payoutCoinDelayMs": 35.0,
+      "payoutCoinsPerClick": 2,
+      "payoutMaxCoins": 80,
+      "popRepelImpulse": 0.949999988079071,
+      "popRepelRadius": 360.0,
+      "radiusGrowthMax": 18.0,
+      "radiusGrowthPerClick": 0.4000000059604645,
+      "rewardClickExponent": 1.5,
+      "rewardScalePerClick": 5.0,
+      "spawnEdgeMarginPx": 300.0,
+      "spawnYOffsetTopMax": 3.0,
+      "spawnYOffsetTopMin": 1.0,
+      "velocityJitterX": 0.03999999910593033,
+      "velocityJitterY": 0.014999999664723873
+    },
     "maxSpawnIntervalMs": 120000.0,
     "minSpawnIntervalMs": 45000.0
   },
@@ -422,6 +472,32 @@
   "uniWingsOriginOffsetFromCenter": [
     35.0,
     10.0
+  ],
+  "wardenCatBodyOffset": [
+    -140.0,
+    -45.0
+  ],
+  "wardenCatBodyWobbleRadians": 0.029999999329447746,
+  "wardenCatEyelidOriginOffset": [
+    0.0,
+    0.0
+  ],
+  "wardenCatPawOffset": [
+    0.0,
+    0.0
+  ],
+  "wardenCatPawScale": 1.850000023841858,
+  "wardenCatYawnOriginOffset": [
+    0.0,
+    0.0
+  ],
+  "wardenGuardhouseBackOffset": [
+    0.0,
+    0.0
+  ],
+  "wardenGuardhouseFrontOffset": [
+    0.0,
+    0.0
   ],
   "yawnOffset": [
     -221.0,

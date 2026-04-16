@@ -46,6 +46,33 @@ struct [[nodiscard]] Cat
 
     float pawOpacity = 255.f;
 
+    // While > 0 the per-frame paw lerp is suspended, leaving the paw frozen
+    // at whatever pose the current action set it to. Lets the warden's
+    // baton-bonk visibly linger on the target cat instead of snapping back
+    // the moment the action fires. Ticked down each frame; transient.
+    float pawHoldMs = 0.f;
+
+    // Outgoing-swing animation toward `pawPosition`. `pawBonkTravelMs` counts
+    // down from `pawBonkTravelDurationMs` so the render can interpolate from
+    // the snapshotted start pose over the travel window instead of snapping.
+    sf::Vec2f pawBonkStartPos{};
+    sf::Angle pawBonkStartRotation{sf::Angle::Zero};
+    float     pawBonkTravelMs         = 0.f;
+    float     pawBonkTravelDurationMs = 0.f;
+
+    // Return phase: after the hold expires the paw eases back from its last
+    // struck pose toward the idle windowsill target over this window. The
+    // target is dynamic (it follows the cat), so only the START is cached.
+    sf::Vec2f pawBonkReturnStartPos{};
+    sf::Angle pawBonkReturnStartRotation{sf::Angle::Zero};
+    float     pawBonkReturnMs         = 0.f;
+    float     pawBonkReturnDurationMs = 0.f;
+
+    // While > 0 the cat rocks side-to-side like a struck pendulum — used by
+    // the Warden's bonk to give the target a visible reaction. Ticked down
+    // each frame; transient.
+    float bonkImpactMs = 0.f;
+
     float hue = 0.f;
 
     Countdown inspiredCountdown{};
