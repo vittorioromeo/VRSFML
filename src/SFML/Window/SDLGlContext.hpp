@@ -21,6 +21,11 @@ namespace sf::priv
 class SDLWindowImpl;
 }
 
+namespace sf
+{
+struct ContextSettings;
+}
+
 
 namespace sf::priv
 {
@@ -51,6 +56,9 @@ public:
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] GlFunctionPointer getFunction(const char* name) const;
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] SDL_Window* getSDLWindow() const noexcept;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool makeCurrent(bool activate) override;
