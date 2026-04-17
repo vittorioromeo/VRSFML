@@ -14,6 +14,8 @@
 
 #include "SFML/System/Err.hpp"
 
+#include "SFML/Base/Assert.hpp"
+
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_video.h>
 
@@ -130,6 +132,7 @@ GlFunctionPointer SDLGlContext::getFunction(const char* const name) const
     return SDL_GL_GetProcAddress(name);
 }
 
+
 ////////////////////////////////////////////////////////////
 SDL_Window* SDLGlContext::getSDLWindow() const noexcept
 {
@@ -140,6 +143,9 @@ SDL_Window* SDLGlContext::getSDLWindow() const noexcept
 ////////////////////////////////////////////////////////////
 bool SDLGlContext::makeCurrent(const bool activate)
 {
+    SFML_BASE_ASSERT((!activate || m_context != nullptr) &&
+                     "Cannot activate SDL GL context: context was not successfully created");
+
     auto*       targetWindow  = activate ? m_window : nullptr;
     auto*       targetContext = activate ? m_context : nullptr;
     const char* targetAction  = activate ? "activate" : "deactivate";

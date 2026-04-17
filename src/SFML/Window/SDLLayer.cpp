@@ -459,6 +459,7 @@ namespace sf::priv
 
 #if defined(SFML_SYSTEM_WINDOWS)
     SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, handle);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, static_cast<Sint64>(SDL_WINDOW_OPENGL));
 #elif defined(SFML_SYSTEM_LINUX_OR_BSD)
     if (currentVideoDriver != nullptr && SFML_BASE_STRCMP(currentVideoDriver, "wayland") == 0)
         SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER, reinterpret_cast<void*>(handle));
