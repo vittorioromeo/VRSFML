@@ -11,8 +11,10 @@
     #include "SFML/Window/WindowContext.hpp"
     #include "SFML/Window/WindowHandle.hpp"
 
+    #include "SFML/System/Priv/Vec2Base.hpp"
     #include "SFML/System/WindowsHeader.hpp" // IWYU pragma: keep
 
+    #include "SFML/Base/Assert.hpp"
     #include "SFML/Base/Optional.hpp"
 
     #include <Doctest.hpp>
@@ -126,6 +128,7 @@ void runWindowTest(DWORD exStyle, bool withMenu)
         SUBCASE("Default context settings")
         {
             window = sf::Window::create(handle);
+            REQUIRE(window.hasValue());
 
             INFO("sf::Window default context test with exStyle: " << exStyle << ", withMenu: " << withMenu);
             CHECK(window->getSettings().attributeFlags == sf::ContextSettings{}.attributeFlags);
@@ -136,12 +139,14 @@ void runWindowTest(DWORD exStyle, bool withMenu)
             static constexpr sf::ContextSettings contextSettings{1, 1, 1};
 
             window = sf::Window::create(handle, contextSettings);
+            REQUIRE(window.hasValue());
 
             INFO("sf::Window custom context test with exStyle: " << exStyle << ", withMenu: " << withMenu);
             CHECK(window->getSettings().depthBits >= 1);
             CHECK(window->getSettings().stencilBits >= 1);
         }
 
+        REQUIRE(window.hasValue());
         INFO("sf::Window test with exStyle: " << exStyle << ", withMenu: " << withMenu);
         CHECK(window->getPosition() == position);
         CHECK(window->getSize() == initialSize);
@@ -163,6 +168,7 @@ void runWindowTest(DWORD exStyle, bool withMenu)
         SECTION("Default context settings")
         {
             renderWindow = sf::RenderWindow::create(handle);
+            REQUIRE(renderWindow.hasValue());
 
             INFO("sf::Window test with exStyle: " << exStyle << ", withMenu: " << withMenu);
             CHECK(renderWindow->getSettings().attributeFlags == sf::ContextSettings{}.attributeFlags);
@@ -174,12 +180,14 @@ void runWindowTest(DWORD exStyle, bool withMenu)
                                                                  /* stencilBits */ 1};
 
             renderWindow = sf::RenderWindow::create(handle, contextSettings);
+            REQUIRE(renderWindow.hasValue());
 
             INFO("sf::Window test with exStyle: " << exStyle << ", withMenu: " << withMenu);
             CHECK(renderWindow->getSettings().depthBits >= 1);
             CHECK(renderWindow->getSettings().stencilBits >= 1);
         }
 
+        REQUIRE(renderWindow.hasValue());
         INFO("sf::Window test with exStyle: " << exStyle << ", withMenu: " << withMenu);
         CHECK(renderWindow->getPosition() == position);
         CHECK(renderWindow->getSize() == initialSize);
