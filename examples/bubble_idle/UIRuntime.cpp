@@ -1,6 +1,7 @@
 #include "Aliases.hpp"
 #include "BubbleIdleMain.hpp"
 #include "Constants.hpp"
+#include "ImGuiNotify.hpp"
 #include "Milestones.hpp"
 #include "Version.hpp"
 
@@ -386,6 +387,50 @@ void Main::uiDraw(const sf::Vec2f mousePos)
     ImGui::End();
 
     uiDrawExitPopup(newScalingFactor);
+
+    if (profile.enableNotifications)
+        ImGui::RenderNotifications(/* paddingY */ (profile.showDpsMeter ? (15.f + 60.f + 15.f) : 15.f) * profile.uiScale,
+                                   [&](const float opacity)
+        {
+            ImGui::PushFont(fontImGuiMouldyCheese);
+            uiSetFontScale(uiToolTipFontScale);
+            ImGui::PushStyleVar(ImGuiStyleVar_Alpha, opacity);
+        },
+                                   [&](const float opacity)
+        {
+            const ImVec2 winPos  = ImGui::GetWindowPos();
+            const ImVec2 winSize = ImGui::GetWindowSize();
+
+            const sf::Vec2f pMin{winPos.x - 8.f, winPos.y - 8.f};
+            const sf::Vec2f pMax{winPos.x + winSize.x + 8.f, winPos.y + winSize.y + 8.f};
+
+            const auto tintColor = sf::Color::whiteWithAlpha(static_cast<sf::base::U8>(opacity * 255.f));
+
+            cpuCloudUiDrawableBatch.add(sf::RectangleShapeData{
+                .position  = pMin,
+                .fillColor = tintColor,
+                .size      = pMax - pMin,
+            });
+
+            const int xSteps = sf::base::clamp(static_cast<int>((pMax.x - pMin.x) / 28.f), 3, 24);
+            const int ySteps = sf::base::clamp(static_cast<int>((pMax.y - pMin.y) / 28.f), 3, 24);
+
+            drawCloudFrame({
+                .time              = shaderTime,
+                .mins              = pMin,
+                .maxs              = pMax,
+                .xSteps            = xSteps,
+                .ySteps            = ySteps,
+                .scaleMult         = 1.6f,
+                .outwardOffsetMult = 1.f,
+                .color             = tintColor,
+                .batch             = &cpuCloudUiDrawableBatch,
+            });
+
+            ImGui::PopStyleVar();
+            uiSetFontScale(uiNormalFontScale);
+            ImGui::PopFont();
+        });
 
     ImGui::PopStyleVar();
     ImGui::PopFont();
