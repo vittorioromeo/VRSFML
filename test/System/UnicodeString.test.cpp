@@ -32,7 +32,7 @@ auto selectAnsi([[maybe_unused]] const std::basic_string<T>& stringWin,
 {
     SFML_BASE_ASSERT(stringWin != stringUnix && "Invalid to select between identical inputs");
 
-#if defined(_WIN32) // TODO P1: fails under CLANG64 env
+#if defined(_WIN32) && !defined(__MINGW32__)
     return stringWin;
 #else
     return stringUnix;

@@ -53,7 +53,7 @@ Window::Window(base::PassKey<Window>&&, WindowBase&& windowBase, const Settings&
     WindowBase(SFML_BASE_MOVE(windowBase)),
     m_impl(WindowContext::createGlContext(windowSettings.contextSettings, getWindowImpl(), bitsPerPixel))
 {
-    SFML_BASE_ASSERT(m_impl->glContext != nullptr);
+    SFML_BASE_ASSERT(m_impl->glContext != nullptr && "Failed to create GL context for window");
 
     // Setup default behaviors (to get a consistent behavior across different implementations)
     setVerticalSyncEnabled(windowSettings.vsync);
@@ -84,6 +84,9 @@ base::Optional<Window> Window::create(const Settings& windowSettings)
 base::Optional<Window> Window::create(const WindowHandle handle, const ContextSettings& contextSettings)
 {
     auto windowBase = WindowBase::create(handle);
+
+    if (!windowBase.hasValue())
+        return base::nullOpt;
 
     return base::Optional<Window>(base::inPlace,
                                   base::PassKey<Window>{},

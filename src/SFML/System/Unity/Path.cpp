@@ -156,7 +156,9 @@ bool Path::exists() const
 ////////////////////////////////////////////////////////////
 bool Path::extensionIs(const base::StringView str) const
 {
-    const auto nativeExt = m_impl->fsPath.extension().string();
+    // `u8string()` is locale-independent; `string()` throws on MinGW/Clang64 when the
+    // extension contains characters outside the current codepage.
+    const auto nativeExt = m_impl->fsPath.extension().u8string();
 
     if (nativeExt.size() != str.size())
         return false;
@@ -188,7 +190,10 @@ Path operator/(const Path& lhs, const Path& rhs)
 ////////////////////////////////////////////////////////////
 std::ostream& operator<<(std::ostream& os, const Path& path)
 {
-    return os << path.m_impl->fsPath;
+    // Use `u8string()` rather than streaming `fsPath` directly: the latter uses the C locale,
+    // which throws on MinGW/Clang64 when the path contains characters outside the current codepage.
+    const auto u8 = path.m_impl->fsPath.u8string();
+    return os.write(reinterpret_cast<const char*>(u8.data()), static_cast<std::streamsize>(u8.size()));
 }
 
 
@@ -200,11 +205,16 @@ T Path::to() const
         return m_impl->fsPath;
     else if constexpr (SFML_BASE_IS_SAME(T, base::String))
     {
-        const auto res = m_impl->fsPath.string();
-        return base::String{res.data(), res.size()};
+        // `u8string()` is locale-independent; `string()` throws on MinGW/Clang64 when the
+        // path contains characters outside the current codepage.
+        const auto res = m_impl->fsPath.u8string();
+        return base::String{reinterpret_cast<const char*>(res.data()), res.size()};
     }
     else if constexpr (SFML_BASE_IS_SAME(T, std::string))
-        return m_impl->fsPath.string();
+    {
+        const auto res = m_impl->fsPath.u8string();
+        return std::string{reinterpret_cast<const char*>(res.data()), res.size()};
+    }
     else if constexpr (SFML_BASE_IS_SAME(T, std::u8string))
         return m_impl->fsPath.u8string();
     else if constexpr (SFML_BASE_IS_SAME(T, std::u32string))
