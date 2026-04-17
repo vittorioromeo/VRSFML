@@ -209,6 +209,11 @@ void Main::uiSettingsDrawDebugTab()
 
     ImGui::SameLine();
 
+    if (ImGui::Button("Do Notification"))
+        pushNotification("Test notification", "Hello, I am a test notification!\nHow are you doing today?");
+
+    ImGui::SameLine();
+
     if (ImGui::Button("Do Arrow"))
         uiState.scrollArrowCountdown.value = 2000.f;
 

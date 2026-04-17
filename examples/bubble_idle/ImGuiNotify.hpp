@@ -514,7 +514,7 @@ inline void RenderNotifications(const float paddingY, auto&& afterBegin, auto&& 
                          ImVec2(0.f, 1.f));
 
         Begin(windowName, nullptr, currentToast->getWindowFlags());
-        afterBegin();
+        afterBegin(opacity);
 
         // Render over all other windows
         BringWindowToDisplayFront(GetCurrentWindow());
@@ -609,7 +609,7 @@ inline void RenderNotifications(const float paddingY, auto&& afterBegin, auto&& 
         height += GetWindowHeight() + NOTIFY_PADDING_MESSAGE_Y;
 
         // End
-        beforeEnd();
+        beforeEnd(opacity);
         End();
     }
 }
