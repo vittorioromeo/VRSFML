@@ -25,6 +25,8 @@
 #include "SFML/Window/WindowHandle.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
+#include "SFML/GLUtils/GlContextTypeImpl.hpp"
+
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"
@@ -598,8 +600,23 @@ base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(WindowSettings windowSettin
 ////////////////////////////////////////////////////////////
 base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(const WindowHandle handle)
 {
-    SDL_Window* sdlWindowPtr = SDL_CreateWindowWithProperties(
-        makeSDLWindowPropertiesFromHandle(WindowContext::getSDLLayer().getCurrentVideoDriver(), handle));
+    const SDL_PropertiesID props = makeSDLWindowPropertiesFromHandle(WindowContext::getSDLLayer().getCurrentVideoDriver(),
+                                                                     handle);
+
+#if defined(SFML_SYSTEM_WINDOWS)
+    // Copy the pixel format from the shared GL context's hidden window instead of calling
+    // WIN_GL_SetupWindow, which fails for externally-created HWNDs (SetPixelFormat restrictions).
+    const auto& sharedCtx = static_cast<const priv::DerivedGlContextType&>(WindowContext::getSharedGlContext());
+    if (SDL_Window* const sharedSDLWindow = sharedCtx.getSDLWindow())
+    {
+        if (auto* const sharedHWND = SDL_GetPointerProperty(SDL_GetWindowProperties(sharedSDLWindow),
+                                                            SDL_PROP_WINDOW_WIN32_HWND_POINTER,
+                                                            nullptr))
+            SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WIN32_PIXEL_FORMAT_HWND_POINTER, sharedHWND);
+    }
+#endif
+
+    SDL_Window* sdlWindowPtr = SDL_CreateWindowWithProperties(props);
 
     if (sdlWindowPtr == nullptr)
     {
