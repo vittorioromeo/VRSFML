@@ -130,6 +130,12 @@ GlFunctionPointer SDLGlContext::getFunction(const char* const name) const
     return SDL_GL_GetProcAddress(name);
 }
 
+////////////////////////////////////////////////////////////
+SDL_Window* SDLGlContext::getSDLWindow() const noexcept
+{
+    return m_window;
+}
+
 
 ////////////////////////////////////////////////////////////
 bool SDLGlContext::makeCurrent(const bool activate)
