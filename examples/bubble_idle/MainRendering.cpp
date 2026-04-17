@@ -2676,6 +2676,7 @@ void Main::drawHexedCatDrawCommands(const sf::View& view, const bool top)
         auto&              rtHexedCat = getHexedCatRenderTexture(command.renderTextureIndex);
         const sf::Texture& texture    = rtHexedCat.getTexture();
 
+        rtGame.flush();
         shaderHexed.setUniform(suHexedTime, shaderTime);
         shaderHexed.setUniform(suHexedSeed, command.phaseSeed);
         shaderHexed.setUniform(suHexedDistortionStrength, blend(0.35f, 1.f, command.effectStrength));

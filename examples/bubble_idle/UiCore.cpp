@@ -1100,19 +1100,6 @@ void Main::gameLoopDrawImGui(const sf::base::U8 shouldDrawUIAlpha)
 {
     SFEX_PROFILE_SCOPE_AUTOLABEL();
 
-    if (profile.enableNotifications)
-        ImGui::RenderNotifications(/* paddingY */ (profile.showDpsMeter ? (15.f + 60.f + 15.f) : 15.f) * profile.uiScale,
-                                   [&]
-        {
-            ImGui::PushFont(fontImGuiMouldyCheese);
-            uiSetFontScale(uiToolTipFontScale);
-        },
-                                   [&]
-        {
-            uiSetFontScale(uiNormalFontScale);
-            ImGui::PopFont();
-        });
-
     rtImGui.clear(sf::Color::Transparent);
     imGuiContext.render(rtImGui);
     rtImGui.display();
@@ -1140,6 +1127,7 @@ void Main::gameLoopUpdateNotificationQueue(const float deltaTimeMs)
     const auto& notification = notificationState.queue.front();
 
     ImGuiToast toast{ImGuiToastType::None, 4500};
+    toast.setWindowFlags(NOTIFY_DEFAULT_TOAST_FLAGS | ImGuiWindowFlags_NoBackground);
     toast.setTitle(notification.title);
     toast.setContent("%s", notification.content.cStr());
 

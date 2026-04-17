@@ -2826,7 +2826,7 @@ void Main::gameLoopUpdateCatDragging(const float deltaTimeMs, const SizeT countF
 ////////////////////////////////////////////////////////////
 [[nodiscard]] constexpr CatType Main::shrineTypeToCatType(const ShrineType shrineType)
 {
-    return static_cast<CatType>(asIdx(shrineType) + 4u);
+    return static_cast<CatType>(asIdx(shrineType) + asIdx(CatType::Witch));
 }
 
 
