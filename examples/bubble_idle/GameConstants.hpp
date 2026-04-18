@@ -239,7 +239,7 @@ struct [[nodiscard]] GameConstants
 
     struct [[nodiscard]] EventsTuning
     {
-        float minSpawnIntervalMs = 45'000.f;
+        float minSpawnIntervalMs = 90'000.f;
         float maxSpawnIntervalMs = 120'000.f;
 
         BubblefallTuning       bubblefall{};
