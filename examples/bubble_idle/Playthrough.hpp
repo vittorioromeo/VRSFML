@@ -235,7 +235,7 @@ struct Playthrough
     //
     // Random events
     sf::base::Vector<GameEvent> activeEvents;
-    float                       nextEventSpawnMs = 60'000.f;
+    sf::base::Optional<float>   nextEventSpawnMs;
 
     //
     // Monotonic counter assigned to every newly-spawned bubble. Used only to

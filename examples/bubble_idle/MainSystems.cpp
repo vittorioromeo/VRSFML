@@ -2549,35 +2549,6 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
                                                    -1.f,
                                                    pt->repulsoCatIgnoreBubbles));
 
-        // Passive body-repel for Unicats: nudges bubbles out of the cat's
-        // body so a freshly-spawned star bubble never hides under the cat.
-        // Intentionally weak and short-range -- no countdown side-effects.
-        if (cat.type == CatType::Uni || (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Uni))
-        {
-            constexpr float uniBodyRepelStrength = 0.00018f; // per-ms velocity push at body contact
-
-            const float bodyRepelRadius   = 150.f;
-            const float bodyRepelRadiusSq = bodyRepelRadius * bodyRepelRadius;
-
-            forEachBubbleInRadius(cat.position,
-                                  bodyRepelRadius,
-                                  [&](Bubble& bubble)
-            {
-                if (bubble.type != BubbleType::Star)
-                    return ControlFlow::Continue;
-
-                const auto  diff   = bubble.position - cat.position;
-                const float distSq = diff.lengthSquared();
-
-                if (distSq <= 0.0001f || distSq > bodyRepelRadiusSq)
-                    return ControlFlow::Continue;
-
-                bubble.velocity.x += diff.normalized().x * (uniBodyRepelStrength * deltaTimeMs);
-
-                return ControlFlow::Continue;
-            });
-        }
-
         if (cat.type == CatType::Attracto || (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Attracto))
             forEachBubbleInRadius(cat.position,
                                   pt->getComputedRangeByCatType(CatType::Attracto),
@@ -3415,24 +3386,32 @@ void Main::gameLoopUpdateEvents(const float deltaTimeMs)
     const auto& bfCfg     = eventsCfg.bubblefall;
 
     // Schedule the next random event.
-    pt->nextEventSpawnMs -= deltaTimeMs;
-
-    if (pt->nextEventSpawnMs <= 0.f)
+    if (!pt->nextEventSpawnMs.hasValue())
     {
-        pt->nextEventSpawnMs = rng.getF(eventsCfg.minSpawnIntervalMs, eventsCfg.maxSpawnIntervalMs);
+        pt->nextEventSpawnMs.emplace(rng.getF(eventsCfg.minSpawnIntervalMs, eventsCfg.maxSpawnIntervalMs));
+    }
+    else if (false) // TODO: event eligibility rules
+    {
+        auto& nextEventSpawnMs = pt->nextEventSpawnMs.value();
 
-        // TODO: event eligibility rules
+        nextEventSpawnMs -= deltaTimeMs;
 
-        // Uniform pick across the available event kinds. Adding a new kind is
-        // a matter of extending this branch.
-        if (rng.getI<SizeT>(0u, 1u) == 0u)
+        if (nextEventSpawnMs <= 0.f)
         {
-            const float halfWidth = bfCfg.regionWidth * 0.5f;
-            addEventBubblefall(rng.getF(halfWidth, pt->getMapLimit() - halfWidth));
-        }
-        else
-        {
-            addEventInvincibleBubble();
+            nextEventSpawnMs = rng.getF(eventsCfg.minSpawnIntervalMs, eventsCfg.maxSpawnIntervalMs);
+
+
+            // Uniform pick across the available event kinds. Adding a new kind is
+            // a matter of extending this branch.
+            if (rng.getI<SizeT>(0u, 1u) == 0u)
+            {
+                const float halfWidth = bfCfg.regionWidth * 0.5f;
+                addEventBubblefall(rng.getF(halfWidth, pt->getMapLimit() - halfWidth));
+            }
+            else
+            {
+                addEventInvincibleBubble();
+            }
         }
     }
 

@@ -1,13 +1,13 @@
 #include "BubbleIdleMain.hpp"
 #include "Cat.hpp"
 #include "CatType.hpp"
+#include "Constants.hpp"
 #include "Version.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"
 
 #include "SFML/Base/SizeT.hpp"
 
-#include <cstdio>
 
 void Main::uiShopDrawCoreUpgrades()
 {
@@ -142,7 +142,7 @@ void Main::uiShopDrawCoreUpgrades()
             if (nCatNormal == 0)
                 doTip("Cats periodically pop bubbles for you!\nYou can drag them around to position them.");
 
-            if (nCatNormal == 4)
+            if (nCatNormal == 3)
                 doTip(
                     "Multiple cats can be dragged at once by\nholding shift while clicking the mouse.\nRelease "
                     "either button to drop them!");
