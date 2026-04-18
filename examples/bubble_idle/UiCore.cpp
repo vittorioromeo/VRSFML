@@ -316,11 +316,9 @@ Finally financed by the NB (NOBUBBLES) political party to inspire other cats to 
             R"(
 ~~ Wardencat ~~
 
-The night-shift cat: patrols their range and gently shakes any napping cat awake.
+The night-shift cat: gently wakes up sleeping cats nearby.
 
-Cooldown: 30s base.
-
-Wardencats can also fall asleep -- and yes, they will wake each other up.)", // TODO: art polish, lore polish
+Will not sleep on the job. Probably. )",
             R"(
 ~~ Witchcat ~~
 (unique cat)
