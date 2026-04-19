@@ -38,252 +38,254 @@ void drawSpriteAttachmentControls(const float uiScale, const char* label, GameCo
 
     ImGui::TreePop();
 }
-} // namespace
 
-void Main::uiSettingsDrawDebugTab()
+void drawDebugSectionTitle(const char* label)
 {
-    ImGui::Text("Time scale: %.2fx", static_cast<double>(debugTimeScale));
-    ImGui::SetNextItemWidth(240.f * profile.uiScale);
-    ImGui::SliderFloat("##timescale", &debugTimeScale, 0.05f, 10.f, "%.2fx", ImGuiSliderFlags_Logarithmic);
-
-    ImGui::SameLine();
-    if (ImGui::Button("Reset##timescale"))
-        debugTimeScale = 1.f;
-
     ImGui::Separator();
+    ImGui::Text("%s", label);
+}
 
-    ImGui::Text("Events: %zu active", pt->activeEvents.size());
+template <typename TAction0, typename TAction1>
+void drawButtonRow2(const char* label0, TAction0&& action0, const char* label1, TAction1&& action1)
+{
+    const float spacing = ImGui::GetStyle().ItemSpacing.x;
+    const float width   = (ImGui::GetContentRegionAvail().x - spacing) * 0.5f;
 
-    const auto& bfCfg = gameConstants.events.bubblefall;
+    if (ImGui::Button(label0, {width, 0.f}))
+        action0();
 
-    if (ImGui::Button("Trigger bubblefall (random)"))
+    ImGui::SameLine();
+
+    if (ImGui::Button(label1, {width, 0.f}))
+        action1();
+}
+
+void drawDebugQuickTools(Main& main)
+{
+    static int              catTypeN        = 0;
+    static sf::base::I64    speedrunTimerSet = 0;
+    static char             filenameBuf[128] = "userdata/custom.json";
+    constexpr sf::base::I64 speedrunTimerStep = 1;
+    constexpr sf::base::SizeT currencyStep    = 1u;
+
+    auto fullWidth = [&]() { return ImGui::GetContentRegionAvail().x - 140.f; };
+
+    ImGui::Checkbox("Hide main UI", &main.uiState.debugHideUI);
+    ImGui::Text("Active events: %zu", main.pt->activeEvents.size());
+
+    drawDebugSectionTitle("Runtime");
+    ImGui::Text("Time scale: %.2fx", static_cast<double>(main.debugTimeScale));
+
+    const float sliderButtonWidth = 92.f * main.profile.uiScale;
+    const float sliderSpacing     = ImGui::GetStyle().ItemSpacing.x;
+    ImGui::SetNextItemWidth(fullWidth() - sliderButtonWidth - sliderSpacing);
+    ImGui::SliderFloat("##timescale",
+                       &main.debugTimeScale,
+                       0.05f,
+                       10.f,
+                       "%.2fx",
+                       ImGuiSliderFlags_Logarithmic);
+
+    ImGui::SameLine();
+    if (ImGui::Button("Reset##timescale", {sliderButtonWidth, 0.f}))
+        main.debugTimeScale = 1.f;
+
+    drawButtonRow2("Slide", [&main] {
+        main.fixedBgSlideTarget += 1.f;
+
+        if (main.fixedBgSlideTarget >= 3.f)
+            main.fixedBgSlideTarget = 0.f;
+    }, "Feed next shrine", [&main] {
+        for (Shrine& shrine : main.pt->shrines)
+        {
+            if (!shrine.isActive() || shrine.tcDeath.hasValue())
+                continue;
+
+            const auto requiredReward = main.pt->getComputedRequiredRewardByShrineType(shrine.type);
+            shrine.collectedReward += requiredReward / 3u;
+            break;
+        }
+    });
+
+    ImGui::SetNextItemWidth(fullWidth());
+    if (ImGui::InputScalar("Speedrun timer",
+                           ImGuiDataType_S64,
+                           &speedrunTimerSet,
+                           &speedrunTimerStep,
+                           nullptr,
+                           nullptr,
+                           ImGuiInputTextFlags_CharsDecimal))
     {
+        main.pt->speedrunStartTime.emplace(sf::microseconds(speedrunTimerSet));
+    }
+
+    drawDebugSectionTitle("Events");
+    const auto& bfCfg = main.gameConstants.events.bubblefall;
+
+    drawButtonRow2("Bubblefall (random)", [&main, &bfCfg] {
         const float halfWidth = bfCfg.regionWidth * 0.5f;
-        addEventBubblefall(rng.getF(halfWidth, pt->getMapLimit() - halfWidth));
-    }
-
-    ImGui::SameLine();
-
-    if (ImGui::Button("Trigger bubblefall (at view)"))
-    {
-        const float viewCenterX = gameView.center.x;
+        main.addEventBubblefall(main.rng.getF(halfWidth, main.pt->getMapLimit() - halfWidth));
+    }, "Bubblefall (view)", [&main, &bfCfg] {
+        const float viewCenterX = main.gameView.center.x;
         const float halfWidth   = bfCfg.regionWidth * 0.5f;
-        const float mapLimit    = pt->getMapLimit();
+        const float mapLimit    = main.pt->getMapLimit();
 
-        addEventBubblefall(sf::base::clamp(viewCenterX, halfWidth, mapLimit - halfWidth));
-    }
+        main.addEventBubblefall(sf::base::clamp(viewCenterX, halfWidth, mapLimit - halfWidth));
+    });
 
-    ImGui::SameLine();
+    drawButtonRow2("Clear events", [&main] { main.pt->activeEvents.clear(); }, "Invincible bubble", [&main] {
+        main.addEventInvincibleBubble();
+    });
 
-    if (ImGui::Button("Clear events"))
-        pt->activeEvents.clear();
-
-    if (ImGui::Button("Trigger invincible bubble"))
-        addEventInvincibleBubble();
-
-    if (ImGui::Button("Nap random cat"))
+    if (ImGui::Button("Nap random cat", {fullWidth(), 0.f}))
     {
         sf::base::SizeT eligibleCount = 0u;
         Cat*            selected      = nullptr;
 
-        for (Cat& candidate : pt->cats)
+        for (Cat& candidate : main.pt->cats)
         {
-            if (!canCatNap(candidate))
+            if (!main.canCatNap(candidate))
                 continue;
 
             ++eligibleCount;
 
             // Reservoir sampling.
-            if (rng.getI<sf::base::SizeT>(0, eligibleCount - 1) == 0)
+            if (main.rng.getI<sf::base::SizeT>(0, eligibleCount - 1) == 0)
                 selected = &candidate;
         }
 
         if (selected != nullptr)
-            beginCatNap(*selected, /* sleepDurationMs */ 20'000.f);
+            main.beginCatNap(*selected, /* sleepDurationMs */ 20'000.f);
     }
 
-    ImGui::Separator();
+    drawDebugSectionTitle("Cats and Rituals");
+    ImGui::SetNextItemWidth(fullWidth());
+    ImGui::Combo("Cat type", &catTypeN, CatConstants::typeNames, nCatTypes);
 
-    if (ImGui::Button("Slide"))
-    {
-        fixedBgSlideTarget += 1.f;
-
-        if (fixedBgSlideTarget >= 3.f)
-            fixedBgSlideTarget = 0.f;
-    }
-
-    ImGui::Separator();
-
-    constexpr sf::base::I64 iStep            = 1;
-    static sf::base::I64    speedrunTimerSet = 0;
-
-    ImGui::SetNextItemWidth(240.f * profile.uiScale);
-    if (ImGui::InputScalar("Speedrun timer", ImGuiDataType_S64, &speedrunTimerSet, &iStep, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal))
-        pt->speedrunStartTime.emplace(sf::microseconds(speedrunTimerSet));
-
-    ImGui::Separator();
-
-    if (ImGui::Button("Save game"))
-    {
-        ptMain.fullVersion = !isDemoVersion;
-        savePlaythroughToFile(ptMain, "userdata/playthrough.json");
-    }
-
-    ImGui::SameLine();
-
-    if (ImGui::Button("Load game"))
-        loadPlaythroughFromFileAndReseed();
-
-    ImGui::SameLine();
-
-    uiState.uiButtonHueMod = 120.f;
-    uiPushButtonColors();
-
-    if (ImGui::Button("Reset game"))
-        forceResetGame();
-
-    ImGui::SameLine();
-
-    if (ImGui::Button("Reset profile"))
-        forceResetProfile();
-
-    uiPopButtonColors();
-    uiState.uiButtonHueMod = 0.f;
-
-    ImGui::Separator();
-
-    static int catTypeN = 0;
-    ImGui::SetNextItemWidth(320.f * profile.uiScale);
-    ImGui::Combo("typeN", &catTypeN, CatConstants::typeNames, nCatTypes);
-
-    if (ImGui::Button("Spawn"))
-    {
+    drawButtonRow2("Spawn", [&main] {
         const auto catType = static_cast<CatType>(catTypeN);
 
         if (isUniqueCatType(catType))
         {
-            const auto pos = gameView.screenToWorld(getResolution() / 2.f, window.getSize().toVec2f());
-            spawnSpecialCat(pos, catType);
+            const auto pos = main.gameView.screenToWorld(main.getResolution() / 2.f, main.window.getSize().toVec2f());
+            main.spawnSpecialCat(pos, catType);
         }
         else
         {
-            spawnCatCentered(catType, getHueByCatType(catType));
+            main.spawnCatCentered(catType, main.getHueByCatType(catType));
         }
-    }
-
-    ImGui::SameLine();
-
-    if (ImGui::Button("Do Ritual"))
-        if (auto* wc = getWitchCat())
+    }, "Do Ritual", [&main] {
+        if (auto* wc = main.getWitchCat())
             wc->cooldown.value = 10.f;
+    });
 
-    ImGui::SameLine();
-
-    if (ImGui::Button("Ritual"))
-        if (auto* wc = getWitchCat())
+    drawButtonRow2("Ritual", [&main] {
+        if (auto* wc = main.getWitchCat())
             wc->cooldown.value = 12000.f;
-
-    ImGui::SameLine();
-
-    if (ImGui::Button("Do Copy Ritual"))
-        if (auto* wc = getCopyCat())
+    }, "Do Copy Ritual", [&main] {
+        if (auto* wc = main.getCopyCat())
             wc->cooldown.value = 10.f;
+    });
 
-    ImGui::SameLine();
-
-    if (ImGui::Button("Copy Ritual"))
-        if (auto* wc = getCopyCat())
+    drawButtonRow2("Copy Ritual", [&main] {
+        if (auto* wc = main.getCopyCat())
             wc->cooldown.value = 12000.f;
+    }, "Do Letter", [&main] {
+        main.victoryTC.emplace(TargetedCountdown{.startingValue = 6500.f});
+        main.victoryTC->restart();
+        main.delayedActions.emplaceBack(Countdown{.value = 7000.f}, [&main] { main.playSound(main.sounds.letterchime); });
+    });
+
+    drawButtonRow2("Do Tip", [&main] {
+        main.doTip("Hello, I am a tip!\nHello world... How are you doing today?\nTest test test");
+    }, "Do Notification", [&main] {
+        main.pushNotification("Test notification", "Hello, I am a test notification!\nHow are you doing today?");
+    });
+
+    drawButtonRow2("Do Arrow", [&main] { main.uiState.scrollArrowCountdown.value = 2000.f; }, "Do Prestige", [&main] {
+        ++main.pt->psvBubbleValue.nPurchases;
+        const auto ppReward = main.pt->calculatePrestigePointReward(1u);
+        main.beginPrestigeTransition(ppReward);
+    });
+
+    drawDebugSectionTitle("Save Data");
+    drawButtonRow2("Save game", [&main] {
+        main.ptMain.fullVersion = !isDemoVersion;
+        savePlaythroughToFile(main.ptMain, "userdata/playthrough.json");
+    }, "Load game", [&main] { main.loadPlaythroughFromFileAndReseed(); });
+
+    main.uiState.uiButtonHueMod = 120.f;
+    main.uiPushButtonColors();
+    drawButtonRow2("Reset game", [&main] { main.forceResetGame(); }, "Reset profile", [&main] {
+        main.forceResetProfile();
+    });
+    main.uiPopButtonColors();
+    main.uiState.uiButtonHueMod = 0.f;
+
+    ImGui::SetNextItemWidth(fullWidth());
+    ImGui::InputText("Custom file", filenameBuf, sizeof(filenameBuf));
+
+    drawButtonRow2("Custom save", [&main] {
+        main.pt->fullVersion = !isDemoVersion;
+        savePlaythroughToFile(*main.pt, filenameBuf);
+    }, "Custom load", [&main] { (void)loadPlaythroughFromFile(*main.pt, filenameBuf); });
+
+    drawDebugSectionTitle("Economy");
+
+    const float inputSpacing = ImGui::GetStyle().ItemSpacing.x;
+    const float inputWidth   = (fullWidth() - inputSpacing) * 0.5f;
+
+    ImGui::SetNextItemWidth(inputWidth);
+    ImGui::InputScalar("Money",
+                       ImGuiDataType_U64,
+                       &main.pt->money,
+                       &currencyStep,
+                       nullptr,
+                       nullptr,
+                       ImGuiInputTextFlags_CharsDecimal);
 
     ImGui::SameLine();
+    ImGui::SetNextItemWidth(inputWidth);
+    ImGui::InputScalar("PPs",
+                       ImGuiDataType_U64,
+                       &main.pt->prestigePoints,
+                       &currencyStep,
+                       nullptr,
+                       nullptr,
+                       ImGuiInputTextFlags_CharsDecimal);
 
-    if (ImGui::Button("Do Letter"))
-    {
-        victoryTC.emplace(TargetedCountdown{.startingValue = 6500.f});
-        victoryTC->restart();
-        delayedActions.emplaceBack(Countdown{.value = 7000.f}, [this] { playSound(sounds.letterchime); });
-    }
-
-    if (ImGui::Button("Do Tip"))
-        doTip("Hello, I am a tip!\nHello world... How are you doing today?\nTest test test");
-
-    ImGui::SameLine();
-
-    if (ImGui::Button("Do Notification"))
-        pushNotification("Test notification", "Hello, I am a test notification!\nHow are you doing today?");
-
-    ImGui::SameLine();
-
-    if (ImGui::Button("Do Arrow"))
-        uiState.scrollArrowCountdown.value = 2000.f;
+    ImGui::SetNextItemWidth(inputWidth);
+    ImGui::InputScalar("WPs",
+                       ImGuiDataType_U64,
+                       &main.pt->wisdom,
+                       &currencyStep,
+                       nullptr,
+                       nullptr,
+                       ImGuiInputTextFlags_CharsDecimal);
 
     ImGui::SameLine();
+    ImGui::SetNextItemWidth(inputWidth);
+    ImGui::InputScalar("Mana",
+                       ImGuiDataType_U64,
+                       &main.pt->mana,
+                       &currencyStep,
+                       nullptr,
+                       nullptr,
+                       ImGuiInputTextFlags_CharsDecimal);
 
-    if (ImGui::Button("Do Prestige"))
-    {
-        ++pt->psvBubbleValue.nPurchases;
-        const auto ppReward = pt->calculatePrestigePointReward(1u);
-        beginPrestigeTransition(ppReward);
-    }
-
-    ImGui::Separator();
-
-    ImGui::Checkbox("hide ui", &uiState.debugHideUI);
-
-    ImGui::Separator();
-
-    ImGui::PushFont(fontImGuiMouldyCheese);
-    uiSetFontScale(uiToolTipFontScale);
-
-    SizeT step    = 1u;
-    SizeT counter = 0u;
-
-    static char filenameBuf[128] = "userdata/custom.json";
-
-    ImGui::SetNextItemWidth(320.f * profile.uiScale);
-    ImGui::InputText("##Filename", filenameBuf, sizeof(filenameBuf));
-
-    if (ImGui::Button("Custom save"))
-    {
-        pt->fullVersion = !isDemoVersion;
-        savePlaythroughToFile(*pt, filenameBuf);
-    }
-
+    ImGui::Checkbox("Combo purchased", &main.pt->comboPurchased);
     ImGui::SameLine();
+    ImGui::Checkbox("Map purchased", &main.pt->mapPurchased);
+}
 
-    if (ImGui::Button("Custom load"))
-        (void)loadPlaythroughFromFile(*pt, filenameBuf);
+void drawDebugStateEditors(Main& main)
+{
+    main.uiSetFontScale(main.uiToolTipFontScale);
+    ImGui::PushFont(main.fontImGuiMouldyCheese);
 
-    ImGui::Separator();
-
-    if (ImGui::Button("Feed next shrine"))
-    {
-        for (Shrine& shrine : pt->shrines)
-        {
-            if (!shrine.isActive() || shrine.tcDeath.hasValue())
-                continue;
-
-            const auto requiredReward = pt->getComputedRequiredRewardByShrineType(shrine.type);
-            shrine.collectedReward += requiredReward / 3u;
-            break;
-        }
-    }
-
-    ImGui::Separator();
-
-    ImGui::SetNextItemWidth(240.f * profile.uiScale);
-    ImGui::InputScalar("Money", ImGuiDataType_U64, &pt->money, &step, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal);
-
-    ImGui::SetNextItemWidth(240.f * profile.uiScale);
-    ImGui::InputScalar("PPs", ImGuiDataType_U64, &pt->prestigePoints, &step, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal);
-
-    ImGui::SetNextItemWidth(240.f * profile.uiScale);
-    ImGui::InputScalar("WPs", ImGuiDataType_U64, &pt->wisdom, &step, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal);
-
-    ImGui::SetNextItemWidth(240.f * profile.uiScale);
-    ImGui::InputScalar("Mana", ImGuiDataType_U64, &pt->mana, &step, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal);
-
-    ImGui::Separator();
+    sf::base::SizeT integerStep = 1u;
+    float           floatStep   = 1.f;
+    sf::base::SizeT counter     = 0u;
 
     const auto scalarInput = [&](const char* label, float& value)
     {
@@ -291,9 +293,17 @@ void Main::uiSettingsDrawDebugTab()
         lbuf += "##";
         lbuf += sf::base::toString(counter++);
 
-        ImGui::SetNextItemWidth(140.f * profile.uiScale);
-        if (ImGui::InputScalar(lbuf.cStr(), ImGuiDataType_Float, &value, &step, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal))
+        ImGui::SetNextItemWidth(160.f * main.profile.uiScale);
+        if (ImGui::InputScalar(lbuf.cStr(),
+                               ImGuiDataType_Float,
+                               &value,
+                               &floatStep,
+                               nullptr,
+                               nullptr,
+                               ImGuiInputTextFlags_CharsDecimal))
+        {
             value = sf::base::clamp(value, 0.f, 10'000.f);
+        }
     };
 
     const auto psvScalarInput = [&](const char* label, PurchasableScalingValue& psv)
@@ -305,234 +315,310 @@ void Main::uiSettingsDrawDebugTab()
         lbuf += "##";
         lbuf += sf::base::toString(counter++);
 
-        ImGui::SetNextItemWidth(140.f * profile.uiScale);
-        if (ImGui::InputScalar(lbuf.cStr(), ImGuiDataType_U64, &psv.nPurchases, &step, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal))
+        ImGui::SetNextItemWidth(160.f * main.profile.uiScale);
+        if (ImGui::InputScalar(lbuf.cStr(),
+                               ImGuiDataType_U64,
+                               &psv.nPurchases,
+                               &integerStep,
+                               nullptr,
+                               nullptr,
+                               ImGuiInputTextFlags_CharsDecimal))
+        {
             psv.nPurchases = sf::base::clamp(psv.nPurchases, SizeT{0u}, psv.data->nMaxPurchases);
+        }
     };
-
-    ImGui::Checkbox("ComboPurchased", &pt->comboPurchased);
-    ImGui::Checkbox("MapPurchased", &pt->mapPurchased);
-
-    psvScalarInput("ComboStartTime", pt->psvComboStartTime);
-    psvScalarInput("MapExtension", pt->psvMapExtension);
-    psvScalarInput("ShrineActivation", pt->psvShrineActivation);
-    psvScalarInput("BubbleCount", pt->psvBubbleCount);
-    psvScalarInput("SpellCount", pt->psvSpellCount);
-    psvScalarInput("BubbleValue", pt->psvBubbleValue);
-    psvScalarInput("ExplosionRadiusMult", pt->psvExplosionRadiusMult);
-
-    ImGui::Separator();
-
-    for (SizeT i = 0u; i < nCatTypes; ++i)
-        scalarInput((sf::base::toString(i) + "Buff").cStr(), pt->buffCountdownsPerType[i].value);
-
-    ImGui::Separator();
-
-    for (SizeT i = 0u; i < nCatTypes; ++i)
-    {
-        ImGui::Text("%s", CatConstants::typeNames[i]);
-        psvScalarInput("PerCatType", pt->psvPerCatType[i]);
-        psvScalarInput("CooldownMultsPerCatType", pt->psvCooldownMultsPerCatType[i]);
-        psvScalarInput("RangeDivsPerCatType", pt->psvRangeDivsPerCatType[i]);
-
-        ImGui::Separator();
-    }
-
-    psvScalarInput("PPMultiPopRange", pt->psvPPMultiPopRange);
-    psvScalarInput("PPInspireDurationMult", pt->psvPPInspireDurationMult);
-    psvScalarInput("PPManaCooldownMult", pt->psvPPManaCooldownMult);
-    psvScalarInput("PPManaMaxMult", pt->psvPPManaMaxMult);
-    psvScalarInput("PPMouseCatGlobalBonusMult", pt->psvPPMouseCatGlobalBonusMult);
-    psvScalarInput("PPEngiCatGlobalBonusMult", pt->psvPPEngiCatGlobalBonusMult);
-    psvScalarInput("PPRepulsoCatConverterChance", pt->psvPPRepulsoCatConverterChance);
-    psvScalarInput("PPWitchCatBuffDuration", pt->psvPPWitchCatBuffDuration);
-    psvScalarInput("PPUniRitualBuffPercentage", pt->psvPPUniRitualBuffPercentage);
-    psvScalarInput("PPDevilRitualBuffPercentage", pt->psvPPDevilRitualBuffPercentage);
-
-    ImGui::Separator();
-
-    ImGui::Checkbox("starterPackPurchased", &pt->perm.starterPackPurchased);
-    ImGui::Checkbox("multiPopPurchased", &pt->perm.multiPopPurchased);
-    ImGui::Checkbox("smartCatsPurchased", &pt->perm.smartCatsPurchased);
-    ImGui::Checkbox("geniusCatsPurchased", &pt->perm.geniusCatsPurchased);
-    ImGui::Checkbox("windPurchased", &pt->perm.windPurchased);
-    ImGui::Checkbox("astroCatInspirePurchased", &pt->perm.astroCatInspirePurchased);
-    ImGui::Checkbox("starpawConversionIgnoreBombs", &pt->perm.starpawConversionIgnoreBombs);
-    ImGui::Checkbox("starpawNova", &pt->perm.starpawNova);
-    ImGui::Checkbox("repulsoCatFilterPurchased", &pt->perm.repulsoCatFilterPurchased);
-    ImGui::Checkbox("repulsoCatConverterPurchased", &pt->perm.repulsoCatConverterPurchased);
-    ImGui::Checkbox("repulsoCatNovaConverterPurchased", &pt->perm.repulsoCatNovaConverterPurchased);
-    ImGui::Checkbox("attractoCatFilterPurchased", &pt->perm.attractoCatFilterPurchased);
-    ImGui::Checkbox("witchCatBuffPowerScalesWithNCats", &pt->perm.witchCatBuffPowerScalesWithNCats);
-    ImGui::Checkbox("witchCatBuffPowerScalesWithMapSize", &pt->perm.witchCatBuffPowerScalesWithMapSize);
-    ImGui::Checkbox("witchCatBuffFewerDolls", &pt->perm.witchCatBuffFewerDolls);
-    ImGui::Checkbox("witchCatBuffFlammableDolls", &pt->perm.witchCatBuffFlammableDolls);
-    ImGui::Checkbox("witchCatBuffOrbitalDolls", &pt->perm.witchCatBuffOrbitalDolls);
-    ImGui::Checkbox("wizardCatDoubleMewltiplierDuration", &pt->perm.wizardCatDoubleMewltiplierDuration);
-    ImGui::Checkbox("wizardCatDoubleStasisFieldDuration", &pt->perm.wizardCatDoubleStasisFieldDuration);
-    ImGui::Checkbox("unicatTranscendencePurchased", &pt->perm.unicatTranscendencePurchased);
-    ImGui::Checkbox("unicatTranscendenceAOEPurchased", &pt->perm.unicatTranscendenceAOEPurchased);
-    ImGui::Checkbox("devilcatHellsingedPurchased", &pt->perm.devilcatHellsingedPurchased);
-    ImGui::Checkbox("unicatTranscendenceEnabled", &pt->perm.unicatTranscendenceEnabled);
-    ImGui::Checkbox("devilcatHellsingedEnabled", &pt->perm.devilcatHellsingedEnabled);
-    ImGui::Checkbox("autocastPurchased", &pt->perm.autocastPurchased);
-
-    ImGui::Separator();
-
-    ImGui::Checkbox("shrineCompleted Witch", &pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Witch)]);
-    ImGui::Checkbox("shrineCompleted Wizard", &pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Wizard)]);
-    ImGui::Checkbox("shrineCompleted Mouse", &pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)]);
-    ImGui::Checkbox("shrineCompleted Engi", &pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Engi)]);
-    ImGui::Checkbox("shrineCompleted Attracto", &pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Attracto)]);
-    ImGui::Checkbox("shrineCompleted Repulso", &pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Repulso)]);
-    ImGui::Checkbox("shrineCompleted Copy", &pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Copy)]);
-    ImGui::Checkbox("shrineCompleted Duck", &pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Duck)]);
-
-    ImGui::Separator();
-    ImGui::Text("Game constants");
-    ImGui::SameLine();
-    if (ImGui::Button("Save game constants"))
-        saveGameConstantsToFile(gameConstants);
-
-    ImGui::Checkbox("Draw cat center marker", &gameConstants.debugDrawCatCenterMarker);
-    ImGui::Checkbox("Draw cat body bounds", &gameConstants.debugDrawCatBodyBounds);
 
     const auto inputFloat = [&](const char* label, float& value)
     {
-        ImGui::SetNextItemWidth(220.f * profile.uiScale);
+        ImGui::SetNextItemWidth(220.f * main.profile.uiScale);
         ImGui::InputFloat(label, &value, 0.f, 0.f, "%.2f");
     };
 
     const auto inputInt = [&](const char* label, int& value)
     {
-        ImGui::SetNextItemWidth(220.f * profile.uiScale);
+        ImGui::SetNextItemWidth(220.f * main.profile.uiScale);
         ImGui::InputInt(label, &value);
     };
 
     const auto inputVec2 = [&](const char* label, sf::Vec2f& value)
     {
-        ImGui::SetNextItemWidth(280.f * profile.uiScale);
+        ImGui::SetNextItemWidth(280.f * main.profile.uiScale);
         ImGui::InputFloat2(label, &value.x, "%.2f");
     };
 
-    if (ImGui::TreeNode("Cloud tuning"))
+    if (ImGui::CollapsingHeader("Progression Values", ImGuiTreeNodeFlags_DefaultOpen))
     {
-        inputFloat("Opacity", gameConstants.catCloudOpacity);
-        inputInt("Circle count", gameConstants.catCloudCircleCount);
-        inputFloat("Scale", gameConstants.catCloudScale);
-        inputFloat("X extent", gameConstants.catCloudXExtent);
-        inputFloat("Base Y offset", gameConstants.catCloudBaseYOffset);
-        inputFloat("Extra Y offset", gameConstants.catCloudExtraYOffset);
-        inputFloat("Dragged Y offset", gameConstants.catCloudDraggedOffset);
-        inputFloat("Lobe lift", gameConstants.catCloudLobeLift);
-        inputFloat("Wobble X", gameConstants.catCloudWobbleX);
-        inputFloat("Wobble Y", gameConstants.catCloudWobbleY);
-        inputFloat("Radius base", gameConstants.catCloudRadiusBase);
-        inputFloat("Radius lobe", gameConstants.catCloudRadiusLobe);
-        inputFloat("Radius wobble", gameConstants.catCloudRadiusWobble);
-        ImGui::TreePop();
+        psvScalarInput("ComboStartTime", main.pt->psvComboStartTime);
+        psvScalarInput("MapExtension", main.pt->psvMapExtension);
+        psvScalarInput("ShrineActivation", main.pt->psvShrineActivation);
+        psvScalarInput("BubbleCount", main.pt->psvBubbleCount);
+        psvScalarInput("SpellCount", main.pt->psvSpellCount);
+        psvScalarInput("BubbleValue", main.pt->psvBubbleValue);
+        psvScalarInput("ExplosionRadiusMult", main.pt->psvExplosionRadiusMult);
+        psvScalarInput("PPMultiPopRange", main.pt->psvPPMultiPopRange);
+        psvScalarInput("PPInspireDurationMult", main.pt->psvPPInspireDurationMult);
+        psvScalarInput("PPManaCooldownMult", main.pt->psvPPManaCooldownMult);
+        psvScalarInput("PPManaMaxMult", main.pt->psvPPManaMaxMult);
+        psvScalarInput("PPMouseCatGlobalBonusMult", main.pt->psvPPMouseCatGlobalBonusMult);
+        psvScalarInput("PPEngiCatGlobalBonusMult", main.pt->psvPPEngiCatGlobalBonusMult);
+        psvScalarInput("PPRepulsoCatConverterChance", main.pt->psvPPRepulsoCatConverterChance);
+        psvScalarInput("PPWitchCatBuffDuration", main.pt->psvPPWitchCatBuffDuration);
+        psvScalarInput("PPUniRitualBuffPercentage", main.pt->psvPPUniRitualBuffPercentage);
+        psvScalarInput("PPDevilRitualBuffPercentage", main.pt->psvPPDevilRitualBuffPercentage);
     }
 
-    if (ImGui::TreeNode("Per-cat tables"))
+    if (ImGui::CollapsingHeader("Cat Buff Countdown Values"))
+    {
+        for (SizeT i = 0u; i < nCatTypes; ++i)
+            scalarInput((sf::base::toString(i) + "Buff").cStr(), main.pt->buffCountdownsPerType[i].value);
+    }
+
+    if (ImGui::CollapsingHeader("Per-cat Upgrade Tables"))
     {
         for (SizeT i = 0u; i < nCatTypes; ++i)
         {
-            ImGui::PushID(static_cast<int>(i));
-
-            if (ImGui::TreeNode(CatConstants::typeNames[i]))
-            {
-                inputVec2("Draw offset", gameConstants.catDrawOffsetsByType[i]);
-                inputVec2("Tail offset", gameConstants.catTailOffsetsByType[i]);
-                inputVec2("Eye offset", gameConstants.catEyeOffsetsByType[i]);
-                inputFloat("Attachment hue", gameConstants.catHueByType[i]);
-                inputVec2("Cloud offset", gameConstants.cloudModifiers[i].positionOffset);
-                inputFloat("Cloud X mult", gameConstants.cloudModifiers[i].xExtentMult);
-                ImGui::TreePop();
-            }
-
-            ImGui::PopID();
+            ImGui::Text("%s", CatConstants::typeNames[i]);
+            psvScalarInput("PerCatType", main.pt->psvPerCatType[i]);
+            psvScalarInput("CooldownMultsPerCatType", main.pt->psvCooldownMultsPerCatType[i]);
+            psvScalarInput("RangeDivsPerCatType", main.pt->psvRangeDivsPerCatType[i]);
+            ImGui::Separator();
         }
-
-        ImGui::TreePop();
     }
 
-    if (ImGui::TreeNode("Attachment offsets"))
+    if (ImGui::CollapsingHeader("Permanent Unlocks"))
     {
-        inputFloat("Dragged attachment Y", gameConstants.catAttachmentDraggedOffsetY);
-        inputVec2("Brain jar offset", gameConstants.brainJarOffset);
-        inputVec2("Uni wings offset", gameConstants.uniWingsOffset);
-        inputVec2("Uni wings origin offset", gameConstants.uniWingsOriginOffsetFromCenter);
-        inputVec2("Devil book offset", gameConstants.devilBookOffset);
-        inputVec2("Devil paw idle offset", gameConstants.devilPawIdleOffset);
-        inputVec2("Devil paw dragged offset", gameConstants.devilPawDraggedOffset);
-        inputVec2("Smart hat offset", gameConstants.smartHatOffset);
-        inputVec2("Ear flap offset", gameConstants.earFlapOffset);
-        inputVec2("Yawn offset", gameConstants.yawnOffset);
-        inputVec2("Uni tail extra offset", gameConstants.uniTailExtraOffset);
-        inputVec2("Uni tail origin offset", gameConstants.uniTailOriginOffset);
-        inputVec2("Eyelid offset", gameConstants.eyelidOffset);
-        inputVec2("Regular paw idle offset", gameConstants.regularPawIdleOffset);
-        inputVec2("Regular paw dragged offset", gameConstants.regularPawDraggedOffset);
-        inputVec2("Copy mask offset", gameConstants.copyMaskOffset);
-        inputVec2("Copy mask origin", gameConstants.copyMaskOrigin);
-        inputVec2("Warden guardhouse back offset", gameConstants.wardenGuardhouseBackOffset);
-        inputVec2("Warden guardhouse front offset", gameConstants.wardenGuardhouseFrontOffset);
-        inputVec2("Warden cat body offset", gameConstants.wardenCatBodyOffset);
-        inputVec2("Warden cat paw offset", gameConstants.wardenCatPawOffset);
-        inputFloat("Warden cat body wobble (rad)", gameConstants.wardenCatBodyWobbleRadians);
-        inputVec2("Warden eyelid origin offset", gameConstants.wardenCatEyelidOriginOffset);
-        inputVec2("Warden yawn origin offset", gameConstants.wardenCatYawnOriginOffset);
-        inputFloat("Warden paw scale", gameConstants.wardenCatPawScale);
-        drawSpriteAttachmentControls(profile.uiScale, "Devil back tail", gameConstants.devilBackTail);
-        drawSpriteAttachmentControls(profile.uiScale, "Duck flag", gameConstants.duckFlag);
-        drawSpriteAttachmentControls(profile.uiScale, "Smart diploma", gameConstants.smartDiploma);
-        drawSpriteAttachmentControls(profile.uiScale, "Astro flag", gameConstants.astroFlag);
-        drawSpriteAttachmentControls(profile.uiScale, "Engi wrench", gameConstants.engiWrench);
-        drawSpriteAttachmentControls(profile.uiScale, "Attracto magnet", gameConstants.attractoMagnet);
-        drawSpriteAttachmentControls(profile.uiScale, "Tail", gameConstants.tail);
-        drawSpriteAttachmentControls(profile.uiScale, "Mouse prop", gameConstants.mouseProp);
-        ImGui::TreePop();
+        ImGui::Checkbox("starterPackPurchased", &main.pt->perm.starterPackPurchased);
+        ImGui::Checkbox("multiPopPurchased", &main.pt->perm.multiPopPurchased);
+        ImGui::Checkbox("smartCatsPurchased", &main.pt->perm.smartCatsPurchased);
+        ImGui::Checkbox("geniusCatsPurchased", &main.pt->perm.geniusCatsPurchased);
+        ImGui::Checkbox("windPurchased", &main.pt->perm.windPurchased);
+        ImGui::Checkbox("astroCatInspirePurchased", &main.pt->perm.astroCatInspirePurchased);
+        ImGui::Checkbox("starpawConversionIgnoreBombs", &main.pt->perm.starpawConversionIgnoreBombs);
+        ImGui::Checkbox("starpawNova", &main.pt->perm.starpawNova);
+        ImGui::Checkbox("repulsoCatFilterPurchased", &main.pt->perm.repulsoCatFilterPurchased);
+        ImGui::Checkbox("repulsoCatConverterPurchased", &main.pt->perm.repulsoCatConverterPurchased);
+        ImGui::Checkbox("repulsoCatNovaConverterPurchased", &main.pt->perm.repulsoCatNovaConverterPurchased);
+        ImGui::Checkbox("attractoCatFilterPurchased", &main.pt->perm.attractoCatFilterPurchased);
+        ImGui::Checkbox("witchCatBuffPowerScalesWithNCats", &main.pt->perm.witchCatBuffPowerScalesWithNCats);
+        ImGui::Checkbox("witchCatBuffPowerScalesWithMapSize", &main.pt->perm.witchCatBuffPowerScalesWithMapSize);
+        ImGui::Checkbox("witchCatBuffFewerDolls", &main.pt->perm.witchCatBuffFewerDolls);
+        ImGui::Checkbox("witchCatBuffFlammableDolls", &main.pt->perm.witchCatBuffFlammableDolls);
+        ImGui::Checkbox("witchCatBuffOrbitalDolls", &main.pt->perm.witchCatBuffOrbitalDolls);
+        ImGui::Checkbox("wizardCatDoubleMewltiplierDuration", &main.pt->perm.wizardCatDoubleMewltiplierDuration);
+        ImGui::Checkbox("wizardCatDoubleStasisFieldDuration", &main.pt->perm.wizardCatDoubleStasisFieldDuration);
+        ImGui::Checkbox("unicatTranscendencePurchased", &main.pt->perm.unicatTranscendencePurchased);
+        ImGui::Checkbox("unicatTranscendenceAOEPurchased", &main.pt->perm.unicatTranscendenceAOEPurchased);
+        ImGui::Checkbox("devilcatHellsingedPurchased", &main.pt->perm.devilcatHellsingedPurchased);
+        ImGui::Checkbox("unicatTranscendenceEnabled", &main.pt->perm.unicatTranscendenceEnabled);
+        ImGui::Checkbox("devilcatHellsingedEnabled", &main.pt->perm.devilcatHellsingedEnabled);
+        ImGui::Checkbox("autocastPurchased", &main.pt->perm.autocastPurchased);
     }
 
-    if (ImGui::TreeNode("Text offsets"))
+    if (ImGui::CollapsingHeader("Shrine Completion Flags"))
     {
-        inputFloat("Cat name Y", gameConstants.catNameTextOffsetY);
-        inputFloat("Cat status Y", gameConstants.catStatusTextOffsetY);
-        inputFloat("Cooldown bar Y", gameConstants.catCooldownBarOffsetY);
-        ImGui::TreePop();
+        ImGui::Checkbox("shrineCompleted Witch", &main.pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Witch)]);
+        ImGui::Checkbox("shrineCompleted Wizard", &main.pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Wizard)]);
+        ImGui::Checkbox("shrineCompleted Mouse", &main.pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)]);
+        ImGui::Checkbox("shrineCompleted Engi", &main.pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Engi)]);
+        ImGui::Checkbox("shrineCompleted Attracto", &main.pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Attracto)]);
+        ImGui::Checkbox("shrineCompleted Repulso", &main.pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Repulso)]);
+        ImGui::Checkbox("shrineCompleted Copy", &main.pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Copy)]);
+        ImGui::Checkbox("shrineCompleted Duck", &main.pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Duck)]);
     }
 
-    if (ImGui::TreeNode("Events tuning"))
+    if (ImGui::CollapsingHeader("Game Constants", ImGuiTreeNodeFlags_DefaultOpen))
     {
-        auto& eventsCfg = gameConstants.events;
+        if (ImGui::Button("Save game constants"))
+            saveGameConstantsToFile(main.gameConstants);
 
-        inputFloat("Min spawn interval (ms)", eventsCfg.minSpawnIntervalMs);
-        inputFloat("Max spawn interval (ms)", eventsCfg.maxSpawnIntervalMs);
+        ImGui::Checkbox("Draw cat center marker", &main.gameConstants.debugDrawCatCenterMarker);
+        ImGui::Checkbox("Draw cat body bounds", &main.gameConstants.debugDrawCatBodyBounds);
 
-        if (ImGui::TreeNode("Bubblefall"))
+        if (ImGui::TreeNode("Cloud tuning"))
         {
-            auto& bf = eventsCfg.bubblefall;
-
-            inputFloat("Duration (ms)", bf.durationMs);
-            inputFloat("Region width", bf.regionWidth);
-            inputFloat("Spawn interval (ms)", bf.spawnIntervalMs);
-
-            int bubblesPerTick = static_cast<int>(bf.bubblesPerTick);
-            ImGui::SetNextItemWidth(220.f * profile.uiScale);
-            if (ImGui::InputInt("Bubbles per tick", &bubblesPerTick) && bubblesPerTick >= 0)
-                bf.bubblesPerTick = static_cast<sf::base::SizeT>(bubblesPerTick);
-
-            inputFloat("Initial velocity Y", bf.initialVelocityY);
-            inputFloat("Velocity jitter Y", bf.velocityJitterY);
-            inputFloat("Velocity jitter X", bf.velocityJitterX);
-            inputFloat("Attack ratio", bf.attackRatio);
-            inputFloat("Release ratio", bf.releaseRatio);
+            inputFloat("Opacity", main.gameConstants.catCloudOpacity);
+            inputInt("Circle count", main.gameConstants.catCloudCircleCount);
+            inputFloat("Scale", main.gameConstants.catCloudScale);
+            inputFloat("X extent", main.gameConstants.catCloudXExtent);
+            inputFloat("Base Y offset", main.gameConstants.catCloudBaseYOffset);
+            inputFloat("Extra Y offset", main.gameConstants.catCloudExtraYOffset);
+            inputFloat("Dragged Y offset", main.gameConstants.catCloudDraggedOffset);
+            inputFloat("Lobe lift", main.gameConstants.catCloudLobeLift);
+            inputFloat("Wobble X", main.gameConstants.catCloudWobbleX);
+            inputFloat("Wobble Y", main.gameConstants.catCloudWobbleY);
+            inputFloat("Radius base", main.gameConstants.catCloudRadiusBase);
+            inputFloat("Radius lobe", main.gameConstants.catCloudRadiusLobe);
+            inputFloat("Radius wobble", main.gameConstants.catCloudRadiusWobble);
             ImGui::TreePop();
         }
 
-        ImGui::TreePop();
+        if (ImGui::TreeNode("Per-cat tables"))
+        {
+            for (SizeT i = 0u; i < nCatTypes; ++i)
+            {
+                ImGui::PushID(static_cast<int>(i));
+
+                if (ImGui::TreeNode(CatConstants::typeNames[i]))
+                {
+                    inputVec2("Draw offset", main.gameConstants.catDrawOffsetsByType[i]);
+                    inputVec2("Tail offset", main.gameConstants.catTailOffsetsByType[i]);
+                    inputVec2("Eye offset", main.gameConstants.catEyeOffsetsByType[i]);
+                    inputFloat("Attachment hue", main.gameConstants.catHueByType[i]);
+                    inputVec2("Cloud offset", main.gameConstants.cloudModifiers[i].positionOffset);
+                    inputFloat("Cloud X mult", main.gameConstants.cloudModifiers[i].xExtentMult);
+                    ImGui::TreePop();
+                }
+
+                ImGui::PopID();
+            }
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Attachment offsets"))
+        {
+            inputFloat("Dragged attachment Y", main.gameConstants.catAttachmentDraggedOffsetY);
+            inputVec2("Brain jar offset", main.gameConstants.brainJarOffset);
+            inputVec2("Uni wings offset", main.gameConstants.uniWingsOffset);
+            inputVec2("Uni wings origin offset", main.gameConstants.uniWingsOriginOffsetFromCenter);
+            inputVec2("Devil book offset", main.gameConstants.devilBookOffset);
+            inputVec2("Devil paw idle offset", main.gameConstants.devilPawIdleOffset);
+            inputVec2("Devil paw dragged offset", main.gameConstants.devilPawDraggedOffset);
+            inputVec2("Smart hat offset", main.gameConstants.smartHatOffset);
+            inputVec2("Ear flap offset", main.gameConstants.earFlapOffset);
+            inputVec2("Yawn offset", main.gameConstants.yawnOffset);
+            inputVec2("Uni tail extra offset", main.gameConstants.uniTailExtraOffset);
+            inputVec2("Uni tail origin offset", main.gameConstants.uniTailOriginOffset);
+            inputVec2("Eyelid offset", main.gameConstants.eyelidOffset);
+            inputVec2("Regular paw idle offset", main.gameConstants.regularPawIdleOffset);
+            inputVec2("Regular paw dragged offset", main.gameConstants.regularPawDraggedOffset);
+            inputVec2("Copy mask offset", main.gameConstants.copyMaskOffset);
+            inputVec2("Copy mask origin", main.gameConstants.copyMaskOrigin);
+            inputVec2("Warden guardhouse back offset", main.gameConstants.wardenGuardhouseBackOffset);
+            inputVec2("Warden guardhouse front offset", main.gameConstants.wardenGuardhouseFrontOffset);
+            inputVec2("Warden cat body offset", main.gameConstants.wardenCatBodyOffset);
+            inputVec2("Warden cat paw offset", main.gameConstants.wardenCatPawOffset);
+            inputFloat("Warden cat body wobble (rad)", main.gameConstants.wardenCatBodyWobbleRadians);
+            inputVec2("Warden eyelid origin offset", main.gameConstants.wardenCatEyelidOriginOffset);
+            inputVec2("Warden yawn origin offset", main.gameConstants.wardenCatYawnOriginOffset);
+            inputFloat("Warden paw scale", main.gameConstants.wardenCatPawScale);
+            drawSpriteAttachmentControls(main.profile.uiScale, "Devil back tail", main.gameConstants.devilBackTail);
+            drawSpriteAttachmentControls(main.profile.uiScale, "Duck flag", main.gameConstants.duckFlag);
+            drawSpriteAttachmentControls(main.profile.uiScale, "Smart diploma", main.gameConstants.smartDiploma);
+            drawSpriteAttachmentControls(main.profile.uiScale, "Astro flag", main.gameConstants.astroFlag);
+            drawSpriteAttachmentControls(main.profile.uiScale, "Engi wrench", main.gameConstants.engiWrench);
+            drawSpriteAttachmentControls(main.profile.uiScale, "Attracto magnet", main.gameConstants.attractoMagnet);
+            drawSpriteAttachmentControls(main.profile.uiScale, "Tail", main.gameConstants.tail);
+            drawSpriteAttachmentControls(main.profile.uiScale, "Mouse prop", main.gameConstants.mouseProp);
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Text offsets"))
+        {
+            inputFloat("Cat name Y", main.gameConstants.catNameTextOffsetY);
+            inputFloat("Cat status Y", main.gameConstants.catStatusTextOffsetY);
+            inputFloat("Cooldown bar Y", main.gameConstants.catCooldownBarOffsetY);
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Events tuning"))
+        {
+            auto& eventsCfg = main.gameConstants.events;
+
+            inputFloat("Min spawn interval (ms)", eventsCfg.minSpawnIntervalMs);
+            inputFloat("Max spawn interval (ms)", eventsCfg.maxSpawnIntervalMs);
+
+            if (ImGui::TreeNode("Bubblefall"))
+            {
+                auto& bf = eventsCfg.bubblefall;
+
+                inputFloat("Duration (ms)", bf.durationMs);
+                inputFloat("Region width", bf.regionWidth);
+                inputFloat("Spawn interval (ms)", bf.spawnIntervalMs);
+
+                int bubblesPerTick = static_cast<int>(bf.bubblesPerTick);
+                ImGui::SetNextItemWidth(220.f * main.profile.uiScale);
+                if (ImGui::InputInt("Bubbles per tick", &bubblesPerTick) && bubblesPerTick >= 0)
+                    bf.bubblesPerTick = static_cast<sf::base::SizeT>(bubblesPerTick);
+
+                inputFloat("Initial velocity Y", bf.initialVelocityY);
+                inputFloat("Velocity jitter Y", bf.velocityJitterY);
+                inputFloat("Velocity jitter X", bf.velocityJitterX);
+                inputFloat("Attack ratio", bf.attackRatio);
+                inputFloat("Release ratio", bf.releaseRatio);
+                ImGui::TreePop();
+            }
+
+            ImGui::TreePop();
+        }
     }
 
-    uiSetFontScale(uiNormalFontScale);
+    main.uiSetFontScale(main.uiNormalFontScale);
     ImGui::PopFont();
+}
+} // namespace
+
+void Main::uiDrawDebugWindow()
+{
+    if (!isDebugModeEnabled() || !uiState.debugWindowVisible)
+        return;
+
+    const sf::Vec2f resolution = getResolution();
+    const float     scale      = profile.uiScale;
+    const float     margin     = 24.f * scale;
+
+    float maxWindowWidth = resolution.x - margin * 2.f;
+    float maxWindowHeight = resolution.y - margin * 2.f;
+
+    if (maxWindowWidth <= 0.f)
+        maxWindowWidth = resolution.x;
+
+    if (maxWindowHeight <= 0.f)
+        maxWindowHeight = resolution.y;
+
+    const float minWindowWidth  = maxWindowWidth < 760.f * scale ? maxWindowWidth : 760.f * scale;
+    const float minWindowHeight = maxWindowHeight < 520.f * scale ? maxWindowHeight : 520.f * scale;
+    const float defaultWidth    = maxWindowWidth < 1120.f * scale ? maxWindowWidth : 1120.f * scale;
+    const float defaultHeight   = maxWindowHeight < 820.f * scale ? maxWindowHeight : 820.f * scale;
+
+    ImGui::SetNextWindowPos({margin, margin}, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize({defaultWidth, defaultHeight}, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSizeConstraints({minWindowWidth, minWindowHeight}, {maxWindowWidth, maxWindowHeight});
+    ImGui::SetNextWindowBgAlpha(0.f);
+
+    ImGui::PushStyleColor(ImGuiCol_TitleBg, ImVec4(0.f, 0.f, 0.f, 0.f));
+    ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(0.f, 0.f, 0.f, 0.f));
+    ImGui::PushStyleColor(ImGuiCol_TitleBgCollapsed, ImVec4(0.f, 0.f, 0.f, 0.f));
+
+    if (!ImGui::Begin("Debug Tools (F8)", &uiState.debugWindowVisible, ImGuiWindowFlags_NoSavedSettings))
+    {
+        ImGui::PopStyleColor(3);
+        ImGui::End();
+        return;
+    }
+
+    uiDrawCloudWindowBackground();
+    uiSettingsDrawDebugTab();
+    ImGui::End();
+    ImGui::PopStyleColor(3);
+}
+
+void Main::uiSettingsDrawDebugTab()
+{
+    const float spacing       = ImGui::GetStyle().ItemSpacing.x;
+    const float contentWidth  = ImGui::GetContentRegionAvail().x;
+    const float desiredLeft   = 430.f * profile.uiScale;
+    const float minLeft       = 460.f * profile.uiScale;
+    const float maxLeft       = contentWidth * 0.48f;
+    const float leftPaneWidth = maxLeft > minLeft ? sf::base::clamp(desiredLeft, minLeft, maxLeft) : contentWidth * 0.5f;
+
+    ImGui::BeginChild("DebugQuickToolsPane", {leftPaneWidth, 0.f}, true);
+    drawDebugQuickTools(*this);
+    ImGui::EndChild();
+
+    ImGui::SameLine(0.f, spacing);
+
+    ImGui::BeginChild("DebugStateEditorsPane", {0.f, 0.f}, true);
+    drawDebugStateEditors(*this);
+    ImGui::EndChild();
 }
