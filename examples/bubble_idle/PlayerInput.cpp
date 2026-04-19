@@ -125,6 +125,13 @@ void handleGameLoopScrollInput(Main& main, const float deltaTimeMs, const sf::ba
             }
         }
 
+        if (isDebugModeEnabled() && event->is<sf::Event::KeyPressed>() &&
+            event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::F8)
+        {
+            uiState.debugWindowVisible = !uiState.debugWindowVisible;
+            playSound(sounds.uitab);
+        }
+
         if (event->is<sf::Event::Closed>())
             return false;
 

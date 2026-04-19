@@ -13,7 +13,7 @@ void Main::uiTabBarSettings()
 
     static int lastSelectedTabIdx = 0;
 
-    if (!isDebugModeEnabled() && lastSelectedTabIdx == 5)
+    if (lastSelectedTabIdx > 4)
         lastSelectedTabIdx = 0;
 
     const auto selectedTab = [&](const int idx)
@@ -29,32 +29,25 @@ void Main::uiTabBarSettings()
     ImGui::Spacing();
     ImGui::Spacing();
 
-    ImGui::SameLine(0.f, 0.f);
+    ImGui::SameLine(0.f, 5.f);
     if (drawTabButton(0.75f, ICON_FA_VOLUME_HIGH " Audio ##199910", lastSelectedTabIdx == 0, palette))
         selectedTab(0);
 
-    ImGui::SameLine(0.f, 0.f);
+    ImGui::SameLine(0.f, 5.f);
     if (drawTabButton(0.75f, ICON_FA_WINDOW_MAXIMIZE " UI ##19991", lastSelectedTabIdx == 1, palette))
         selectedTab(1);
 
-    ImGui::SameLine(0.f, 0.f);
+    ImGui::SameLine(0.f, 5.f);
     if (drawTabButton(0.75f, ICON_FA_IMAGE " Graphics ##19992", lastSelectedTabIdx == 2, palette))
         selectedTab(2);
 
-    ImGui::SameLine(0.f, 0.f);
+    ImGui::SameLine(0.f, 5.f);
     if (drawTabButton(0.75f, ICON_FA_DESKTOP " Display ##19993", lastSelectedTabIdx == 3, palette))
         selectedTab(3);
 
-    ImGui::SameLine(0.f, 0.f);
+    ImGui::SameLine(0.f, 5.f);
     if (drawTabButton(0.75f, ICON_FA_FILE " Data ##19994", lastSelectedTabIdx == 4, palette))
         selectedTab(4);
-
-    if (isDebugModeEnabled())
-    {
-        ImGui::SameLine(0.f, 0.f);
-        if (drawTabButton(0.75f, ICON_FA_BUG " ##19995", lastSelectedTabIdx == 5, palette))
-            selectedTab(5);
-    }
 
     ImGui::Spacing();
     ImGui::Spacing();
@@ -77,9 +70,6 @@ void Main::uiTabBarSettings()
 
     if (lastSelectedTabIdx == 4)
         uiSettingsDrawDataTab();
-
-    if (isDebugModeEnabled() && lastSelectedTabIdx == 5)
-        uiSettingsDrawDebugTab();
 
     ImGui::Separator();
     uiSetFontScale(uiNormalFontScale);
