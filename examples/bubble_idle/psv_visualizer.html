@@ -1,0 +1,1527 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bubble Idle PSV Visualizer</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0d1419;
+    --panel: #162129;
+    --panel-strong: #1d2c36;
+    --panel-soft: #10191f;
+    --border: #29404f;
+    --text: #e6f0f5;
+    --muted: #96aab5;
+    --accent: #65d0b3;
+    --accent-2: #ff9d57;
+    --accent-3: #8cb6ff;
+    --danger: #ff7b72;
+    --cap: #f3d36b;
+    --grid: rgba(255, 255, 255, 0.09);
+    --shadow: 0 18px 60px rgba(0, 0, 0, 0.25);
+    --radius: 18px;
+    --radius-sm: 12px;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    font-family: "Avenir Next", "Segoe UI Variable", "IBM Plex Sans", system-ui, sans-serif;
+    background:
+      radial-gradient(circle at top left, rgba(101, 208, 179, 0.14), transparent 28%),
+      radial-gradient(circle at top right, rgba(255, 157, 87, 0.12), transparent 26%),
+      linear-gradient(180deg, #0d1419 0%, #0a0f13 100%);
+    color: var(--text);
+  }
+
+  .shell {
+    width: calc(100vw - 24px);
+    margin: 0 auto;
+    padding: 16px 0 20px;
+  }
+
+  header {
+    margin-bottom: 18px;
+  }
+
+  h1 {
+    margin: 0 0 6px;
+    font-size: clamp(2rem, 3vw, 3rem);
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 1rem;
+    letter-spacing: 0.02em;
+  }
+
+  p,
+  .note,
+  .formula {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  code {
+    font-family: "SFMono-Regular", "Iosevka Fixed", "Cascadia Code", monospace;
+    font-size: 0.95em;
+  }
+
+  .grid {
+    display: grid;
+    gap: 16px;
+  }
+
+  .grid.two {
+    grid-template-columns: minmax(420px, 1.2fr) minmax(320px, 0.8fr);
+  }
+
+  .grid.editor {
+    grid-template-columns: minmax(260px, 0.55fr) minmax(260px, 1fr) minmax(260px, 1fr);
+  }
+
+  .grid.charts {
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  }
+
+  .panel {
+    background: linear-gradient(180deg, rgba(29, 44, 54, 0.95), rgba(16, 25, 31, 0.95));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 18px;
+    min-height: 0;
+  }
+
+  .panel-header,
+  .chart-header,
+  .inline-controls,
+  .summary-grid,
+  .legend,
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .panel-header,
+  .chart-header {
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .inline-controls {
+    margin-bottom: 12px;
+  }
+
+  .summary-grid {
+    margin-top: 14px;
+  }
+
+  .summary-card {
+    min-width: 140px;
+    flex: 1 1 0;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+  }
+
+  .summary-card strong {
+    display: block;
+    margin-top: 4px;
+    font-size: 1rem;
+    color: var(--text);
+  }
+
+  .caption {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  textarea,
+  select,
+  input[type="number"] {
+    width: 100%;
+    background: rgba(8, 13, 17, 0.9);
+    color: var(--text);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font: inherit;
+  }
+
+  textarea {
+    min-height: 420px;
+    resize: vertical;
+    font-family: "SFMono-Regular", "Iosevka Fixed", "Cascadia Code", monospace;
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+
+  label {
+    display: grid;
+    gap: 6px;
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+
+  .field-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+
+  .growth-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+
+  .toggle-row label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    width: auto;
+  }
+
+  input[type="checkbox"] {
+    accent-color: var(--accent);
+  }
+
+  button,
+  .file-button {
+    appearance: none;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(101, 208, 179, 0.16), rgba(101, 208, 179, 0.08));
+    color: var(--text);
+    padding: 9px 14px;
+    font: inherit;
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  }
+
+  button:hover,
+  .file-button:hover {
+    transform: translateY(-1px);
+    border-color: rgba(101, 208, 179, 0.5);
+  }
+
+  button.secondary {
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  button.warn {
+    background: linear-gradient(180deg, rgba(255, 157, 87, 0.16), rgba(255, 157, 87, 0.08));
+  }
+
+  .file-button input {
+    display: none;
+  }
+
+  .status {
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+
+  .status.error {
+    color: var(--danger);
+  }
+
+  .status.ok {
+    color: var(--accent);
+  }
+
+  .legend {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  .legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .legend-swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+  }
+
+  .chart-host {
+    width: 100%;
+    min-height: 280px;
+    margin-top: 12px;
+  }
+
+  .chart-host svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .table-wrap {
+    overflow: auto;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 720px;
+    background: rgba(0, 0, 0, 0.12);
+  }
+
+  th,
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  th:first-child,
+  td:first-child {
+    text-align: left;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    background: rgba(9, 16, 21, 0.95);
+    backdrop-filter: blur(8px);
+  }
+
+  tbody tr:nth-child(odd) {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  tbody tr.beyond-cap {
+    background: rgba(243, 211, 107, 0.08);
+  }
+
+  .formula {
+    font-family: "SFMono-Regular", "Iosevka Fixed", "Cascadia Code", monospace;
+    color: var(--text);
+    background: rgba(0, 0, 0, 0.18);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    overflow: auto;
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  @media (max-width: 1120px) {
+    .grid.two,
+    .grid.editor {
+      grid-template-columns: 1fr;
+    }
+
+    textarea {
+      min-height: 320px;
+    }
+  }
+
+  @media (min-width: 2200px) and (min-height: 900px) {
+    html,
+    body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      padding: 0;
+    }
+
+    .shell {
+      min-height: 100vh;
+      height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(780px, 0.95fr);
+      grid-template-rows: auto minmax(0, 0.96fr) minmax(0, 1.04fr);
+      grid-template-areas:
+        "header header"
+        "source editor"
+        "charts table";
+      gap: 14px;
+      padding: 12px 0;
+    }
+
+    header {
+      grid-area: header;
+      margin-bottom: 0;
+    }
+
+    header p {
+      max-width: 110ch;
+    }
+
+    .layout-source {
+      grid-area: source;
+      min-height: 0;
+      height: 100%;
+      gap: 14px;
+      grid-template-columns: minmax(0, 1.5fr) minmax(360px, 0.8fr);
+    }
+
+    .layout-editor {
+      grid-area: editor;
+      min-height: 0;
+      height: 100%;
+      gap: 14px;
+      grid-template-columns: minmax(240px, 0.72fr) minmax(260px, 1fr) minmax(260px, 1fr);
+    }
+
+    .layout-charts {
+      grid-area: charts;
+      min-height: 0;
+      height: 100%;
+      gap: 14px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .layout-table {
+      grid-area: table;
+      min-height: 0;
+      height: 100%;
+    }
+
+    .layout-source,
+    .layout-editor,
+    .layout-charts,
+    .layout-table {
+      margin-top: 0 !important;
+    }
+
+    .layout-source > .panel,
+    .layout-editor > .panel,
+    .layout-charts > .panel,
+    .layout-table > .panel {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .layout-source textarea {
+      flex: 1 1 auto;
+      min-height: 0;
+      height: auto;
+      resize: none;
+    }
+
+    .chart-host,
+    .table-wrap {
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
+    .chart-host {
+      min-height: 0;
+    }
+
+    .table-wrap {
+      overflow: auto;
+    }
+
+    th,
+    td {
+      padding: 8px 10px;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <h1>Bubble Idle PSV Visualizer</h1>
+      <p>Load <code>PSVDataConstants.hpp</code>, pick a preset, tweak its factors, and preview how cost and value curves evolve across purchases or simulated time.</p>
+    </header>
+
+    <section class="grid two layout-source">
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Source</h2>
+          <div class="inline-controls">
+            <label class="file-button">Load .hpp
+              <input id="source-file" type="file" accept=".hpp,.h,.txt">
+            </label>
+            <button id="reset-source" class="secondary" type="button">Reset bundled source</button>
+          </div>
+        </div>
+        <div class="toggle-row">
+          <label><input id="demo-mode" type="checkbox"> Use demo branches for <code>isDemoVersion ? a : b</code></label>
+          <button id="parse-source" type="button">Parse source</button>
+          <span id="parse-status" class="status"></span>
+        </div>
+        <textarea id="source-text" spellcheck="false"></textarea>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Preset</h2>
+          <div class="inline-controls">
+            <button id="load-selected" type="button">Load into editor</button>
+            <button id="reset-edits" class="secondary" type="button">Reset edits</button>
+          </div>
+        </div>
+
+        <div class="field-grid">
+          <label>Entry
+            <select id="preset-select"></select>
+          </label>
+          <label>Plot states
+            <input id="plot-count" type="number" min="1" step="1">
+          </label>
+          <label>X-axis
+            <select id="x-mode">
+              <option value="purchase">Purchases owned</option>
+              <option value="time">Simulated time</option>
+            </select>
+          </label>
+          <label id="seconds-wrap">Seconds per purchase
+            <input id="seconds-per-purchase" type="number" min="0.001" step="0.1" value="1">
+          </label>
+          <label>nMaxPurchases
+            <input id="n-max-purchases" type="number" min="0" step="1">
+          </label>
+        </div>
+
+        <div class="summary-grid" id="summary-grid"></div>
+
+        <div class="toggle-row" style="margin-top: 14px;">
+          <label><input id="show-baseline" type="checkbox" checked> Show original baseline</label>
+          <label><input id="log-cost" type="checkbox" checked> Log scale for cost charts</label>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid editor layout-editor" style="margin-top: 16px;">
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Formula</h2>
+        </div>
+        <div class="formula">((initial + n * multiplicative) * Math.pow(exponential, n) + linear * n + flat) * finalMult</div>
+        <p class="note" style="margin-top: 12px;">The charts treat <code>n</code> as the current purchase count. <code>value</code> is the current value at state <code>n</code>, <code>next cost</code> is the price to buy the next upgrade from state <code>n</code>, and <code>cumulative cost</code> is the total spent to reach state <code>n</code>.</p>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Cost Factors</h2>
+        </div>
+        <div id="cost-fields" class="growth-grid"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Value Factors</h2>
+        </div>
+        <div id="value-fields" class="growth-grid"></div>
+      </div>
+    </section>
+
+    <section class="grid charts layout-charts" style="margin-top: 16px;">
+      <div class="panel">
+        <div class="chart-header">
+          <div>
+            <h2>Next Cost</h2>
+            <div class="caption">Cost to buy the next upgrade from each state.</div>
+          </div>
+          <div class="legend" id="legend-cost"></div>
+        </div>
+        <div id="chart-cost" class="chart-host"></div>
+      </div>
+
+      <div class="panel">
+        <div class="chart-header">
+          <div>
+            <h2>Current Value</h2>
+            <div class="caption">Value after reaching each state.</div>
+          </div>
+          <div class="legend" id="legend-value"></div>
+        </div>
+        <div id="chart-value" class="chart-host"></div>
+      </div>
+
+      <div class="panel">
+        <div class="chart-header">
+          <div>
+            <h2>Cumulative Cost</h2>
+            <div class="caption">Total spend needed to reach each state.</div>
+          </div>
+          <div class="legend" id="legend-cumulative"></div>
+        </div>
+        <div id="chart-cumulative" class="chart-host"></div>
+      </div>
+    </section>
+
+    <section class="layout-table" style="margin-top: 16px;">
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Data Preview</h2>
+          <div class="caption">Rows past the purchase cap are highlighted as theoretical.</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>State</th>
+                <th>Axis</th>
+                <th>Current Value</th>
+                <th>Next Cost</th>
+                <th>Cumulative Cost</th>
+              </tr>
+            </thead>
+            <tbody id="data-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+
+<script>
+(() => {
+  const growthKeys = ["initial", "linear", "multiplicative", "exponential", "flat", "finalMult"];
+  const defaultGrowth = Object.freeze({
+    initial: 0,
+    linear: 0,
+    multiplicative: 0,
+    exponential: 1,
+    flat: 0,
+    finalMult: 1,
+  });
+
+  const defaultSource = String.raw`#pragma once
+
+#include "PSVData.hpp"
+#include "Version.hpp"
+
+
+////////////////////////////////////////////////////////////
+namespace PSVDataConstants
+{
+
+inline constexpr PSVData comboStartTime //
+    {.nMaxPurchases = 20u,
+     .cost          = {.initial = 250.f, .linear = 125.f, .exponential = 1.7f, .flat = -200.f},
+     .value         = {.initial = 0.55f, .linear = 0.04f, .exponential = 1.02f}};
+
+inline constexpr PSVData mapExtension //
+    {.nMaxPurchases = isDemoVersion ? 1u : 7u,
+     .cost          = {.initial = 15000.f, .exponential = 8.f, .flat = -5000.f},
+     .value         = {}};
+
+inline constexpr PSVData shrineActivation //
+    {.nMaxPurchases = isDemoVersion ? 2u : 8u,
+     .cost          = {.initial = 15000.f, .linear = -56'500.f, .exponential = 7.5f, .flat = -13'500.f},
+     .value         = {}};
+
+inline constexpr PSVData bubbleCount //
+    {.nMaxPurchases = 30u,
+     .cost          = {.initial = 250.f, .linear = 1500.f, .exponential = 2.65f, .flat = -100.f},
+     .value         = {.initial = 500.f, .linear = 325.f, .exponential = 1.01f}};
+
+inline constexpr PSVData bubbleValue //
+    {.nMaxPurchases = isDemoVersion ? 1u : 19u,
+     .cost  = {.initial = 19000.f, .linear = -620.f, .multiplicative = -800.f, .exponential = 4.1f, .flat = -14000.f},
+     .value = {.initial = 0.f, .linear = 1.f}};
+
+inline constexpr PSVData explosionRadiusMult //
+    {.nMaxPurchases = 10u,
+     .cost          = {.initial = 15000.f, .linear = -15000.f, .exponential = 3.f, .flat = -5000.f},
+     .value         = {.initial = 1.f, .linear = 0.1f}};
+
+inline constexpr PSVData catNormal //
+    {.nMaxPurchases = 64u, .cost = {.initial = 75.f, .linear = 100.f, .exponential = 1.7f, .flat = -40.f}, .value = {}};
+
+inline constexpr PSVData catNormalCooldownMult //
+    {.nMaxPurchases = 12u,
+     .cost          = {.initial = 2'500.f, .exponential = 1.85f, .flat = -1500.f},
+     .value         = {.initial = 1.f, .linear = 0.015f, .multiplicative = 0.05f, .exponential = 0.8f}};
+
+inline constexpr PSVData catNormalRangeDiv //
+    {.nMaxPurchases = 9u,
+     .cost          = {.initial = 7000.f, .exponential = 1.85f, .flat = -3000.f},
+     .value         = {.initial = 0.6f, .multiplicative = -0.045f, .exponential = 0.85f, .flat = 0.4f}};
+
+inline constexpr PSVData catUni //
+    {.nMaxPurchases = 64u, .cost = {.initial = 350.f, .linear = 300.f, .exponential = 1.75f}, .value = {}};
+
+inline constexpr PSVData catUniCooldownMult //
+    {.nMaxPurchases = 12u,
+     .cost          = {.initial = 8'500.f, .exponential = 1.85f, .flat = -4'500.f},
+     .value         = {.initial = 1.f, .linear = 0.015f, .multiplicative = 0.05f, .exponential = 0.8f}};
+
+inline constexpr PSVData catUniRangeDiv //
+    {.nMaxPurchases = 9u,
+     .cost          = {.initial = 10'000'000.f, .exponential = 1.85f},
+     .value         = {.initial = 1.f, .multiplicative = -0.05f, .exponential = 0.8f, .flat = 0.4f}};
+
+inline constexpr PSVData catDevil //
+    {.nMaxPurchases = 64u, .cost = {.initial = 15000.f, .exponential = 1.7f, .flat = -7000.f}, .value = {}};
+
+inline constexpr PSVData catDevilCooldownMult //
+    {.nMaxPurchases = 12u,
+     .cost          = {.initial = 1'000'000.f, .exponential = 1.75f},
+     .value         = {.initial = 1.f, .linear = 0.01f, .multiplicative = 0.045f, .exponential = 0.85f}};
+
+inline constexpr PSVData catDevilRangeDiv //
+    {.nMaxPurchases = 9u,
+     .cost          = {.initial = 50'000'000.f, .exponential = 1.75f},
+     .value         = {.initial = 0.6f, .multiplicative = -0.045f, .exponential = 0.85f, .flat = 0.4f}};
+
+inline constexpr PSVData catWitch //
+    {.nMaxPurchases = 0u, .cost = {}, .value = {}};
+
+inline constexpr PSVData catWitchCooldownMult //
+    {.nMaxPurchases = 12u,
+     .cost          = {.initial = 500'000.f, .exponential = 2.5f},
+     .value         = {.initial = 1.f, .linear = 0.0085f, .multiplicative = 0.02f, .exponential = 0.875f}};
+
+inline constexpr PSVData catWitchRangeDiv //
+    {.nMaxPurchases = 9u,
+     .cost          = {.initial = 200'000.f, .exponential = 2.5f},
+     .value         = {.initial = 0.6f, .multiplicative = -0.05f, .exponential = 0.8f, .flat = 0.4f}};
+
+inline constexpr PSVData catWizard //
+    {.nMaxPurchases = 0u, .cost = {}, .value = {}};
+
+inline constexpr PSVData catWizardCooldownMult //
+    {.nMaxPurchases = 12u,
+     .cost          = {.initial = 750'000.f, .exponential = 1.75f},
+     .value         = {.initial = 1.f, .linear = 0.015f, .multiplicative = 0.05f, .exponential = 0.8f}};
+
+inline constexpr PSVData catWizardRangeDiv //
+    {.nMaxPurchases = 9u,
+     .cost          = {.initial = 1'000'000.f, .exponential = 1.85f},
+     .value         = {.initial = 0.6f, .multiplicative = -0.05f, .exponential = 0.8f, .flat = 0.4f}};
+
+inline constexpr PSVData catMouse //
+    {.nMaxPurchases = 0u, .cost = {}, .value = {}};
+
+inline constexpr PSVData catMouseCooldownMult //
+    {.nMaxPurchases = 12u,
+     .cost          = {.initial = 125000.f, .exponential = 1.75f},
+     .value         = {.initial = 1.f, .linear = 0.015f, .multiplicative = 0.05f, .exponential = 0.8f}};
+
+inline constexpr PSVData catMouseRangeDiv //
+    {.nMaxPurchases = 9u,
+     .cost          = {.initial = 100'000.f, .exponential = 1.85f},
+     .value         = {.initial = 0.6f, .multiplicative = -0.045f, .exponential = 0.85f, .flat = 0.4f}};
+
+inline constexpr PSVData catEngi //
+    {.nMaxPurchases = 0u, .cost = {}, .value = {}};
+
+inline constexpr PSVData catEngiCooldownMult //
+    {.nMaxPurchases = 12u,
+     .cost          = {.initial = 1'250'000.f, .exponential = 1.75f},
+     .value         = {.initial = 1.f, .linear = 0.015f, .multiplicative = 0.05f, .exponential = 0.8f}};
+
+inline constexpr PSVData catEngiRangeDiv //
+    {.nMaxPurchases = 9u,
+     .cost          = {.initial = 1'000'000.f, .exponential = 1.85f},
+     .value         = {.initial = 0.6f, .multiplicative = -0.045f, .exponential = 0.85f, .flat = 0.4f}};
+
+inline constexpr PSVData catRepulso //
+    {.nMaxPurchases = 0u, .cost = {}, .value = {}};
+
+inline constexpr PSVData catRepulsoCooldownMult //
+    {.nMaxPurchases = 12u,
+     .cost          = {.initial = 250'000.f, .exponential = 1.75f},
+     .value         = {.initial = 1.f, .linear = 0.015f, .multiplicative = 0.05f, .exponential = 0.8f}};
+
+inline constexpr PSVData catRepulsoRangeDiv //
+    {.nMaxPurchases = 9u,
+     .cost          = {.initial = 10'000'000.f, .exponential = 1.85f},
+     .value         = {.initial = 0.7f, .multiplicative = -0.025f, .exponential = 0.95f, .flat = 0.3f}};
+
+inline constexpr PSVData catAttracto //
+    {.nMaxPurchases = 0u, .cost = {}, .value = {}};
+
+inline constexpr PSVData catAttractoCooldownMult //
+    {.nMaxPurchases = 12u,
+     .cost          = {.initial = 300'000.f, .exponential = 1.75f},
+     .value         = {.initial = 1.f, .linear = 0.015f, .multiplicative = 0.05f, .exponential = 0.8f}};
+
+inline constexpr PSVData catAttractoRangeDiv //
+    {.nMaxPurchases = 9u,
+     .cost          = {.initial = 50'000'000.f, .exponential = 1.85f},
+     .value         = {.initial = 0.7f, .multiplicative = -0.025f, .exponential = 0.95f, .flat = 0.3f}};
+
+inline constexpr PSVData catCopy //
+    {.nMaxPurchases = 0u, .cost = {}, .value = {}};
+
+inline constexpr PSVData catCopyCooldownMult //
+    {.nMaxPurchases = 0u, .cost = {}, .value = {}};
+
+inline constexpr PSVData catCopyRangeDiv //
+    {.nMaxPurchases = 0u, .cost = {}, .value = {1.f}};
+
+inline constexpr PSVData catDuck //
+    {.nMaxPurchases = 0u, .cost = {}, .value = {}};
+
+inline constexpr PSVData catDuckCooldownMult //
+    {.nMaxPurchases = 0u, .cost = {}, .value = {}};
+
+inline constexpr PSVData catDuckRangeDiv //
+    {.nMaxPurchases = 0u, .cost = {}, .value = {1.f}};
+
+inline constexpr PSVData catAstro //
+    {.nMaxPurchases = 64u, .cost = {.initial = 1'000'000.f, .exponential = 1.85f}, .value = {}};
+
+inline constexpr PSVData catAstroCooldownMult //
+    {.nMaxPurchases = 12u,
+     .cost          = {.initial = 3'500'000.f, .exponential = 1.85f},
+     .value         = {.initial = 1.f, .linear = 0.01f, .multiplicative = 0.04f, .exponential = 0.85f}};
+
+inline constexpr PSVData catAstroRangeDiv //
+    {.nMaxPurchases = 9u,
+     .cost          = {.initial = 5'500'000.f, .exponential = 1.85f},
+     .value         = {.initial = 0.6f, .multiplicative = -0.045f, .exponential = 0.85f, .flat = 0.4f}};
+
+// TODO: rebalance Warden costs/scaling once it gates behind prestige points.
+inline constexpr PSVData catWarden //
+    {.nMaxPurchases = 32u, .cost = {.initial = 500.f, .linear = 250.f, .exponential = 1.7f, .flat = -200.f}, .value = {}};
+
+inline constexpr PSVData catWardenCooldownMult //
+    {.nMaxPurchases = 12u,
+     .cost          = {.initial = 5'000.f, .exponential = 1.85f, .flat = -2'500.f},
+     .value         = {.initial = 1.f, .linear = 0.015f, .multiplicative = 0.05f, .exponential = 0.8f}};
+
+inline constexpr PSVData catWardenRangeDiv //
+    {.nMaxPurchases = 9u,
+     .cost          = {.initial = 8'000.f, .exponential = 1.85f, .flat = -3'000.f},
+     .value         = {.initial = 0.6f, .multiplicative = -0.045f, .exponential = 0.85f, .flat = 0.4f}};
+
+inline constexpr PSVData multiPopRange //
+    {.nMaxPurchases = 24u,
+     .cost          = {.initial = 1.f, .linear = 2.f, .exponential = 1.75f},
+     .value         = {.initial = 64.f, .linear = 8.f}};
+
+inline constexpr PSVData inspireDurationMult //
+    {.nMaxPurchases = 16u,
+     .cost          = {.initial = 2.f, .linear = 2.f, .exponential = 1.8f},
+     .value         = {.initial = 1.f, .linear = 0.2f}};
+
+inline constexpr PSVData manaCooldownMult //
+    {.nMaxPurchases = 16u,
+     .cost          = {.initial = 1.f, .linear = 2.f, .exponential = 1.75f},
+     .value         = {.initial = 1.f, .exponential = 0.875f}};
+
+inline constexpr PSVData manaMaxMult //
+    {.nMaxPurchases = 20u,
+     .cost          = {.initial = 1.f, .linear = 2.f, .exponential = 1.75f},
+     .value         = {.initial = 1.f, .linear = 0.2f}};
+
+inline constexpr PSVData spellCount //
+    {.nMaxPurchases = 4u,
+     .cost          = {.initial = 3'500.f, .linear = -24000.f, .exponential = 8.f, .flat = -3250.f},
+     .value         = {.initial = 0.f, .linear = 1.f}};
+
+inline constexpr PSVData mouseCatGlobalBonusMult //
+    {.nMaxPurchases = 14u,
+     .cost          = {.initial = 2.f, .linear = 4.f, .exponential = 1.5f},
+     .value         = {.initial = 1.25f, .linear = 0.125f}};
+
+inline constexpr PSVData engiCatGlobalBonusMult //
+    {.nMaxPurchases = 14u,
+     .cost          = {.initial = 4.f, .linear = 8.f, .exponential = 1.5f},
+     .value         = {.initial = 1.25f, .linear = 0.125f}};
+
+inline constexpr PSVData repulsoCatConverterChance //
+    {.nMaxPurchases = 16u,
+     .cost          = {.initial = 128.f, .linear = 32.f, .exponential = 1.35f},
+     .value         = {.initial = 6.f, .linear = 5.875f}};
+
+inline constexpr PSVData witchCatBuffDuration //
+    {.nMaxPurchases = 12u,
+     .cost          = {.initial = 1.f, .linear = 8.f, .exponential = 1.5f},
+     .value         = {.initial = 8.f, .linear = 1.f}};
+
+inline constexpr PSVData starpawPercentage //
+    {.nMaxPurchases = 8u, .cost = {.initial = 1000.f, .exponential = 1.25f}, .value = {.initial = 40.f, .linear = 7.5f}};
+
+inline constexpr PSVData mewltiplierMult //
+    {.nMaxPurchases = 15u, .cost = {.initial = 2000.f, .exponential = 1.75f}, .value = {.initial = 2.5f, .linear = 0.5f}};
+
+inline constexpr PSVData darkUnionPercentage //
+    {.nMaxPurchases = 8u, .cost = {.initial = 50'000.f, .exponential = 1.25f}, .value = {.initial = 50.f, .linear = 5.f}};
+
+inline constexpr PSVData uniRitualBuffPercentage //
+    {.nMaxPurchases = 24u, .cost = {.initial = 4.f, .exponential = 1.25f}, .value = {.initial = 15.f, .linear = 2.5f}};
+
+inline constexpr PSVData devilRitualBuffPercentage //
+    {.nMaxPurchases = 24u, .cost = {.initial = 8.f, .exponential = 1.25f}, .value = {.initial = 1.f, .linear = 1.f}};
+
+} // namespace PSVDataConstants`;
+
+  const state = {
+    sourceText: defaultSource,
+    parsedPresets: [],
+    selectedName: null,
+    baselinePreset: null,
+    currentPreset: null,
+  };
+
+  const elements = {
+    sourceText: document.getElementById("source-text"),
+    sourceFile: document.getElementById("source-file"),
+    resetSource: document.getElementById("reset-source"),
+    parseSource: document.getElementById("parse-source"),
+    parseStatus: document.getElementById("parse-status"),
+    demoMode: document.getElementById("demo-mode"),
+    presetSelect: document.getElementById("preset-select"),
+    loadSelected: document.getElementById("load-selected"),
+    resetEdits: document.getElementById("reset-edits"),
+    plotCount: document.getElementById("plot-count"),
+    xMode: document.getElementById("x-mode"),
+    secondsWrap: document.getElementById("seconds-wrap"),
+    secondsPerPurchase: document.getElementById("seconds-per-purchase"),
+    nMaxPurchases: document.getElementById("n-max-purchases"),
+    showBaseline: document.getElementById("show-baseline"),
+    logCost: document.getElementById("log-cost"),
+    summaryGrid: document.getElementById("summary-grid"),
+    costFields: document.getElementById("cost-fields"),
+    valueFields: document.getElementById("value-fields"),
+    dataTableBody: document.getElementById("data-table-body"),
+    chartCost: document.getElementById("chart-cost"),
+    chartValue: document.getElementById("chart-value"),
+    chartCumulative: document.getElementById("chart-cumulative"),
+    legendCost: document.getElementById("legend-cost"),
+    legendValue: document.getElementById("legend-value"),
+    legendCumulative: document.getElementById("legend-cumulative"),
+  };
+
+  function cloneGrowth(growth) {
+    return {
+      initial: growth.initial,
+      linear: growth.linear,
+      multiplicative: growth.multiplicative,
+      exponential: growth.exponential,
+      flat: growth.flat,
+      finalMult: growth.finalMult,
+    };
+  }
+
+  function clonePreset(preset) {
+    return {
+      name: preset.name,
+      nMaxPurchases: preset.nMaxPurchases,
+      cost: cloneGrowth(preset.cost),
+      value: cloneGrowth(preset.value),
+      originalSource: preset.originalSource,
+    };
+  }
+
+  function evaluateExpression(expression, demoMode) {
+    const sanitized = expression
+      .replace(/\/\/.*$/gm, "")
+      .replace(/'/g, "")
+      .replace(/\b(\d+\.\d*|\.\d+|\d+)(?:[fFuU]+)\b/g, "$1")
+      .replace(/\bisDemoVersion\b/g, demoMode ? "1" : "0")
+      .trim();
+
+    if (!sanitized) {
+      return 0;
+    }
+
+    if (!/^[0-9eE+\-*/().?:<>=!&| \t\r\n]+$/.test(sanitized)) {
+      throw new Error(`Unsupported expression: ${expression}`);
+    }
+
+    const value = Function(`"use strict"; return (${sanitized});`)();
+    if (!Number.isFinite(value)) {
+      throw new Error(`Expression did not produce a finite number: ${expression}`);
+    }
+    return value;
+  }
+
+  function parseGrowthBlock(block, demoMode) {
+    const growth = cloneGrowth(defaultGrowth);
+    const trimmed = block.trim();
+
+    if (!trimmed) {
+      return growth;
+    }
+
+    if (/\.[A-Za-z_]\w*\s*=/.test(trimmed)) {
+      const pattern = /\.(initial|linear|multiplicative|exponential|flat|finalMult)\s*=\s*([^,}]+)/g;
+      let match;
+      while ((match = pattern.exec(trimmed)) !== null) {
+        growth[match[1]] = evaluateExpression(match[2], demoMode);
+      }
+      return growth;
+    }
+
+    const positional = trimmed.split(",").map((part) => part.trim()).filter(Boolean);
+    positional.forEach((part, index) => {
+      if (index < growthKeys.length) {
+        growth[growthKeys[index]] = evaluateExpression(part, demoMode);
+      }
+    });
+    return growth;
+  }
+
+  function parseSourceText(sourceText, demoMode) {
+    const presets = [];
+    const issues = [];
+    const entryPattern = /inline\s+constexpr\s+PSVData\s+([A-Za-z_]\w*)(?:\s*\/\/[^\n]*)?\s*\{([\s\S]*?)\};/g;
+    let match;
+
+    while ((match = entryPattern.exec(sourceText)) !== null) {
+      const name = match[1];
+      const body = match[2];
+      try {
+        const maxMatch = body.match(/\.nMaxPurchases\s*=\s*([^,\n]+)/);
+        const costMatch = body.match(/\.cost\s*=\s*\{([^}]*)\}/);
+        const valueMatch = body.match(/\.value\s*=\s*\{([^}]*)\}/);
+
+        if (!maxMatch || !costMatch || !valueMatch) {
+          throw new Error("Missing one of nMaxPurchases/cost/value");
+        }
+
+        presets.push({
+          name,
+          nMaxPurchases: Math.max(0, Math.round(evaluateExpression(maxMatch[1], demoMode))),
+          cost: parseGrowthBlock(costMatch[1], demoMode),
+          value: parseGrowthBlock(valueMatch[1], demoMode),
+          originalSource: match[0],
+        });
+      } catch (error) {
+        issues.push(`${name}: ${error.message}`);
+      }
+    }
+
+    if (!presets.length) {
+      throw new Error("No PSVData entries were parsed. Make sure the pasted file still uses inline constexpr PSVData blocks.");
+    }
+
+    return { presets, issues };
+  }
+
+  function computeGrowth(growth, n) {
+    return ((growth.initial + n * growth.multiplicative) * Math.pow(growth.exponential, n) + growth.linear * n + growth.flat) * growth.finalMult;
+  }
+
+  function formatNumber(value) {
+    if (!Number.isFinite(value)) {
+      return "n/a";
+    }
+
+    const absValue = Math.abs(value);
+    if (absValue === 0) {
+      return "0";
+    }
+    if (absValue >= 1e6 || absValue < 1e-3) {
+      return value.toExponential(3).replace("e+", "e");
+    }
+    if (absValue >= 1000) {
+      return value.toLocaleString(undefined, { maximumFractionDigits: 0 });
+    }
+    if (absValue >= 10) {
+      return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    }
+    return value.toLocaleString(undefined, { maximumSignificantDigits: 4 });
+  }
+
+  function formatDuration(seconds) {
+    if (!Number.isFinite(seconds)) {
+      return "n/a";
+    }
+    if (seconds < 60) {
+      return `${formatNumber(seconds)}s`;
+    }
+    if (seconds < 3600) {
+      return `${formatNumber(seconds / 60)}m`;
+    }
+    if (seconds < 86400) {
+      return `${formatNumber(seconds / 3600)}h`;
+    }
+    return `${formatNumber(seconds / 86400)}d`;
+  }
+
+  function defaultPlotCount(preset) {
+    return Math.max(12, preset.nMaxPurchases || 0);
+  }
+
+  function getSelectedPreset() {
+    return state.parsedPresets.find((preset) => preset.name === elements.presetSelect.value) || state.parsedPresets[0] || null;
+  }
+
+  function getSecondsPerPurchase() {
+    const value = Number(elements.secondsPerPurchase.value);
+    return Number.isFinite(value) && value > 0 ? value : 1;
+  }
+
+  function getPlotCount() {
+    const value = Number(elements.plotCount.value);
+    return Number.isFinite(value) && value >= 1 ? Math.round(value) : defaultPlotCount(state.currentPreset || state.baselinePreset);
+  }
+
+  function buildSeries(preset, plotCount) {
+    const rows = [];
+    let cumulativeCost = 0;
+
+    for (let n = 0; n <= plotCount; n += 1) {
+      if (n > 0) {
+        cumulativeCost += computeGrowth(preset.cost, n - 1);
+      }
+
+      rows.push({
+        state: n,
+        nextCost: computeGrowth(preset.cost, n),
+        currentValue: computeGrowth(preset.value, n),
+        cumulativeCost,
+        beyondCap: n > preset.nMaxPurchases,
+      });
+    }
+
+    return rows;
+  }
+
+  function axisValueForRow(row) {
+    if (elements.xMode.value === "time") {
+      return row.state * getSecondsPerPurchase();
+    }
+    return row.state;
+  }
+
+  function axisLabelForRow(row) {
+    if (elements.xMode.value === "time") {
+      return formatDuration(axisValueForRow(row));
+    }
+    return String(row.state);
+  }
+
+  function updatePresetOptions() {
+    const previous = elements.presetSelect.value;
+    elements.presetSelect.innerHTML = "";
+
+    state.parsedPresets.forEach((preset) => {
+      const option = document.createElement("option");
+      option.value = preset.name;
+      option.textContent = preset.name;
+      if (preset.name === previous) {
+        option.selected = true;
+      }
+      elements.presetSelect.appendChild(option);
+    });
+
+    if (!elements.presetSelect.value && state.parsedPresets.length) {
+      elements.presetSelect.value = state.selectedName || state.parsedPresets[0].name;
+    }
+  }
+
+  function updateStatus(message, type = "") {
+    elements.parseStatus.textContent = message;
+    elements.parseStatus.className = `status${type ? ` ${type}` : ""}`;
+  }
+
+  function loadPresetIntoEditor(preset) {
+    state.baselinePreset = clonePreset(preset);
+    state.currentPreset = clonePreset(preset);
+    state.selectedName = preset.name;
+    elements.nMaxPurchases.value = String(preset.nMaxPurchases);
+    elements.plotCount.value = String(defaultPlotCount(preset));
+    renderGrowthFields();
+    renderAll();
+  }
+
+  function renderGrowthFields() {
+    const current = state.currentPreset;
+    if (!current) {
+      return;
+    }
+
+    const createField = (group, key) => {
+      const wrapper = document.createElement("label");
+      wrapper.textContent = key;
+      const input = document.createElement("input");
+      input.type = "number";
+      input.step = "any";
+      input.value = String(current[group][key]);
+      input.dataset.group = group;
+      input.dataset.key = key;
+      input.addEventListener("input", () => {
+        const parsed = Number(input.value);
+        current[group][key] = Number.isFinite(parsed) ? parsed : 0;
+        renderAll();
+      });
+      wrapper.appendChild(input);
+      return wrapper;
+    };
+
+    elements.costFields.innerHTML = "";
+    elements.valueFields.innerHTML = "";
+
+    growthKeys.forEach((key) => {
+      elements.costFields.appendChild(createField("cost", key));
+      elements.valueFields.appendChild(createField("value", key));
+    });
+  }
+
+  function renderSummary() {
+    const current = state.currentPreset;
+    const lastReachableValue = computeGrowth(current.value, current.nMaxPurchases);
+    const capRows = buildSeries(current, current.nMaxPurchases);
+    const totalCostToCap = capRows.length ? capRows[capRows.length - 1].cumulativeCost : 0;
+
+    const cards = [
+      { label: "Preset", value: current.name },
+      { label: "Purchase Cap", value: String(current.nMaxPurchases) },
+      { label: "Value At Cap", value: formatNumber(lastReachableValue) },
+      { label: "Total Cost To Cap", value: formatNumber(totalCostToCap) },
+    ];
+
+    elements.summaryGrid.innerHTML = "";
+    cards.forEach((card) => {
+      const node = document.createElement("div");
+      node.className = "summary-card";
+      node.innerHTML = `<div class="caption">${card.label}</div><strong>${card.value}</strong>`;
+      elements.summaryGrid.appendChild(node);
+    });
+  }
+
+  function renderDataTable(seriesRows) {
+    elements.dataTableBody.innerHTML = "";
+    seriesRows.forEach((row) => {
+      const tr = document.createElement("tr");
+      if (row.beyondCap) {
+        tr.classList.add("beyond-cap");
+      }
+      tr.innerHTML = `
+        <td>${row.state}</td>
+        <td>${axisLabelForRow(row)}</td>
+        <td>${formatNumber(row.currentValue)}</td>
+        <td>${formatNumber(row.nextCost)}</td>
+        <td>${formatNumber(row.cumulativeCost)}</td>
+      `;
+      elements.dataTableBody.appendChild(tr);
+    });
+  }
+
+  function makeLegend(target, series) {
+    target.innerHTML = "";
+    series.forEach((entry) => {
+      const item = document.createElement("span");
+      item.className = "legend-item";
+      item.innerHTML = `<span class="legend-swatch" style="background:${entry.color}"></span>${entry.label}`;
+      target.appendChild(item);
+    });
+
+    const capItem = document.createElement("span");
+    capItem.className = "legend-item";
+    capItem.innerHTML = `<span class="legend-swatch" style="background:${getComputedStyle(document.documentElement).getPropertyValue("--cap").trim()}"></span>cap`;
+    target.appendChild(capItem);
+  }
+
+  function niceStep(range, targetTickCount = 5) {
+    if (range <= 0) {
+      return 1;
+    }
+    const rough = range / targetTickCount;
+    const power = Math.pow(10, Math.floor(Math.log10(rough)));
+    const fraction = rough / power;
+    let niceFraction = 1;
+    if (fraction > 5) {
+      niceFraction = 10;
+    } else if (fraction > 2) {
+      niceFraction = 5;
+    } else if (fraction > 1) {
+      niceFraction = 2;
+    }
+    return niceFraction * power;
+  }
+
+  function linearTicks(minValue, maxValue, targetTickCount = 5) {
+    if (minValue === maxValue) {
+      return [minValue];
+    }
+    const step = niceStep(maxValue - minValue, targetTickCount);
+    const start = Math.floor(minValue / step) * step;
+    const end = Math.ceil(maxValue / step) * step;
+    const ticks = [];
+    for (let value = start; value <= end + step * 0.5; value += step) {
+      ticks.push(Number(value.toPrecision(12)));
+    }
+    return ticks;
+  }
+
+  function logTicks(minValue, maxValue) {
+    const minExponent = Math.floor(Math.log10(minValue));
+    const maxExponent = Math.ceil(Math.log10(maxValue));
+    const ticks = [];
+    const span = Math.max(1, maxExponent - minExponent);
+    const stride = Math.max(1, Math.ceil(span / 6));
+
+    for (let exponent = minExponent; exponent <= maxExponent; exponent += stride) {
+      ticks.push(Math.pow(10, exponent));
+    }
+
+    if (!ticks.includes(minValue)) {
+      ticks.unshift(minValue);
+    }
+    if (!ticks.includes(maxValue)) {
+      ticks.push(maxValue);
+    }
+
+    return [...new Set(ticks)].sort((a, b) => a - b);
+  }
+
+  function renderLineChart(target, legendTarget, metric, title, useLogScale) {
+    const current = state.currentPreset;
+    const baseline = state.baselinePreset;
+
+    if (!current) {
+      target.innerHTML = "";
+      legendTarget.innerHTML = "";
+      return;
+    }
+
+    const plotCount = getPlotCount();
+    const currentRows = buildSeries(current, plotCount);
+    const baselineRows = baseline ? buildSeries(baseline, plotCount) : [];
+    const baselineVisible = elements.showBaseline.checked && baseline && baseline.name === current.name;
+
+    const series = [
+      {
+        label: baselineVisible ? "baseline" : "current",
+        color: baselineVisible ? "rgba(140, 182, 255, 0.75)" : "rgba(101, 208, 179, 1)",
+        rows: baselineVisible ? baselineRows : currentRows,
+      },
+    ];
+
+    if (baselineVisible) {
+      series.push({
+        label: "current",
+        color: "rgba(101, 208, 179, 1)",
+        rows: currentRows,
+      });
+    }
+
+    makeLegend(legendTarget, series);
+
+    const width = 760;
+    const height = 280;
+    const margin = { top: 16, right: 18, bottom: 42, left: 70 };
+    const innerWidth = width - margin.left - margin.right;
+    const innerHeight = height - margin.top - margin.bottom;
+    const xMin = 0;
+    const xMax = axisValueForRow(currentRows[currentRows.length - 1]);
+
+    const allValues = series
+      .flatMap((entry) => entry.rows.map((row) => row[metric]))
+      .filter((value) => Number.isFinite(value) && (!useLogScale || value > 0));
+
+    if (!allValues.length) {
+      target.innerHTML = `<div class="caption">Unable to plot ${title.toLowerCase()} because the current values are not finite.</div>`;
+      return;
+    }
+
+    let minValue = Math.min(...allValues);
+    let maxValue = Math.max(...allValues);
+    if (minValue === maxValue) {
+      const padding = Math.max(1, Math.abs(minValue) * 0.1);
+      minValue -= padding;
+      maxValue += padding;
+    }
+
+    let yTicks = [];
+    let transformY = (value) => value;
+    let transformedMin = minValue;
+    let transformedMax = maxValue;
+
+    if (useLogScale) {
+      const positiveMin = Math.min(...allValues.filter((value) => value > 0));
+      transformedMin = Math.log10(positiveMin);
+      transformedMax = Math.log10(maxValue);
+      transformY = (value) => Math.log10(Math.max(value, positiveMin));
+      yTicks = logTicks(positiveMin, maxValue);
+      minValue = positiveMin;
+    } else {
+      yTicks = linearTicks(minValue, maxValue);
+      transformedMin = Math.min(...yTicks);
+      transformedMax = Math.max(...yTicks);
+    }
+
+    const xTicks = linearTicks(xMin, xMax, 6);
+    const mapX = (value) => margin.left + ((value - xMin) / Math.max(1e-9, xMax - xMin)) * innerWidth;
+    const mapY = (value) => {
+      const transformed = transformY(value);
+      return margin.top + innerHeight - ((transformed - transformedMin) / Math.max(1e-9, transformedMax - transformedMin)) * innerHeight;
+    };
+
+    let svg = `
+      <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${title}">
+        <rect x="0" y="0" width="${width}" height="${height}" rx="16" fill="rgba(0,0,0,0.12)"></rect>
+    `;
+
+    yTicks.forEach((tick) => {
+      const y = mapY(tick);
+      svg += `
+        <line x1="${margin.left}" y1="${y}" x2="${width - margin.right}" y2="${y}" stroke="var(--grid)" stroke-width="1"></line>
+        <text x="${margin.left - 10}" y="${y + 4}" text-anchor="end" fill="var(--muted)" font-size="12">${formatNumber(tick)}</text>
+      `;
+    });
+
+    xTicks.forEach((tick) => {
+      const x = mapX(tick);
+      const label = elements.xMode.value === "time" ? formatDuration(tick) : String(Math.round(tick));
+      svg += `
+        <line x1="${x}" y1="${margin.top}" x2="${x}" y2="${height - margin.bottom}" stroke="var(--grid)" stroke-width="1"></line>
+        <text x="${x}" y="${height - 14}" text-anchor="middle" fill="var(--muted)" font-size="12">${label}</text>
+      `;
+    });
+
+    const capAxis = elements.xMode.value === "time" ? current.nMaxPurchases * getSecondsPerPurchase() : current.nMaxPurchases;
+    const capX = mapX(Math.min(Math.max(capAxis, xMin), xMax));
+    svg += `
+      <line x1="${capX}" y1="${margin.top}" x2="${capX}" y2="${height - margin.bottom}" stroke="var(--cap)" stroke-width="2" stroke-dasharray="6 6"></line>
+      <text x="${capX + 6}" y="${margin.top + 12}" fill="var(--cap)" font-size="12">cap ${current.nMaxPurchases}</text>
+    `;
+
+    series.forEach((entry) => {
+      const points = entry.rows.map((row) => `${mapX(axisValueForRow(row)).toFixed(2)},${mapY(row[metric]).toFixed(2)}`).join(" ");
+      svg += `<polyline fill="none" stroke="${entry.color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="${points}"></polyline>`;
+      entry.rows.forEach((row) => {
+        svg += `
+          <circle cx="${mapX(axisValueForRow(row))}" cy="${mapY(row[metric])}" r="3.5" fill="${entry.color}">
+            <title>${entry.label}
+state: ${row.state}
+axis: ${axisLabelForRow(row)}
+${title}: ${formatNumber(row[metric])}</title>
+          </circle>
+        `;
+      });
+    });
+
+    svg += `
+        <text x="${width / 2}" y="${height - 4}" text-anchor="middle" fill="var(--muted)" font-size="12">${elements.xMode.value === "time" ? "Simulated time" : "Purchases owned"}</text>
+        <text x="18" y="${height / 2}" text-anchor="middle" fill="var(--muted)" font-size="12" transform="rotate(-90 18 ${height / 2})">${title}${useLogScale ? " (log)" : ""}</text>
+      </svg>
+    `;
+
+    target.innerHTML = svg;
+  }
+
+  function renderAll() {
+    const current = state.currentPreset;
+    if (!current) {
+      return;
+    }
+
+    current.nMaxPurchases = Math.max(0, Math.round(Number(elements.nMaxPurchases.value) || 0));
+    elements.secondsWrap.classList.toggle("hidden", elements.xMode.value !== "time");
+
+    const seriesRows = buildSeries(current, getPlotCount());
+    renderSummary();
+    renderDataTable(seriesRows);
+    renderLineChart(elements.chartCost, elements.legendCost, "nextCost", "Next Cost", elements.logCost.checked);
+    renderLineChart(elements.chartValue, elements.legendValue, "currentValue", "Current Value", false);
+    renderLineChart(elements.chartCumulative, elements.legendCumulative, "cumulativeCost", "Cumulative Cost", elements.logCost.checked);
+  }
+
+  function parseCurrentSource({ preserveSelection = true } = {}) {
+    try {
+      state.sourceText = elements.sourceText.value;
+      const { presets, issues } = parseSourceText(state.sourceText, elements.demoMode.checked);
+      state.parsedPresets = presets;
+      updatePresetOptions();
+
+      const preferredName = preserveSelection ? (state.selectedName || elements.presetSelect.value) : elements.presetSelect.value;
+      if (preferredName && presets.some((preset) => preset.name === preferredName)) {
+        elements.presetSelect.value = preferredName;
+      }
+
+      const selected = getSelectedPreset();
+      if (selected) {
+        loadPresetIntoEditor(selected);
+      }
+
+      const issueSuffix = issues.length ? ` Skipped ${issues.length}: ${issues.slice(0, 3).join(" | ")}` : "";
+      updateStatus(`Parsed ${presets.length} presets in ${elements.demoMode.checked ? "demo" : "release"} mode.${issueSuffix}`, issues.length ? "error" : "ok");
+    } catch (error) {
+      updateStatus(error.message, "error");
+    }
+  }
+
+  function bindEvents() {
+    elements.resetSource.addEventListener("click", () => {
+      elements.sourceText.value = defaultSource;
+      parseCurrentSource({ preserveSelection: false });
+    });
+
+    elements.parseSource.addEventListener("click", () => {
+      parseCurrentSource();
+    });
+
+    elements.demoMode.addEventListener("change", () => {
+      parseCurrentSource();
+    });
+
+    elements.sourceFile.addEventListener("change", async (event) => {
+      const file = event.target.files && event.target.files[0];
+      if (!file) {
+        return;
+      }
+      elements.sourceText.value = await file.text();
+      parseCurrentSource({ preserveSelection: false });
+    });
+
+    elements.presetSelect.addEventListener("change", () => {
+      const selected = getSelectedPreset();
+      if (selected) {
+        loadPresetIntoEditor(selected);
+      }
+    });
+
+    elements.loadSelected.addEventListener("click", () => {
+      const selected = getSelectedPreset();
+      if (selected) {
+        loadPresetIntoEditor(selected);
+      }
+    });
+
+    elements.resetEdits.addEventListener("click", () => {
+      if (!state.baselinePreset) {
+        return;
+      }
+      state.currentPreset = clonePreset(state.baselinePreset);
+      elements.nMaxPurchases.value = String(state.currentPreset.nMaxPurchases);
+      renderGrowthFields();
+      renderAll();
+    });
+
+    elements.plotCount.addEventListener("input", renderAll);
+    elements.xMode.addEventListener("change", renderAll);
+    elements.secondsPerPurchase.addEventListener("input", renderAll);
+    elements.nMaxPurchases.addEventListener("input", renderAll);
+    elements.showBaseline.addEventListener("change", renderAll);
+    elements.logCost.addEventListener("change", renderAll);
+  }
+
+  function init() {
+    elements.sourceText.value = defaultSource;
+    bindEvents();
+    parseCurrentSource({ preserveSelection: false });
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>

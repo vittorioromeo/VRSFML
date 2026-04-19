@@ -46,6 +46,8 @@
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
 
+#include <imgui.h>
+
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
@@ -82,7 +84,7 @@ bool Main::drawTabButton(const float             scaleMult,
 
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10.f);
 
-    auto outcome = uiAnimatedButton(square ? txCloudBtnSquare : txCloudBtnSmall,
+    auto outcome = uiAnimatedButton(square ? txCloudBtnSquare2 : txCloudBtnSmall,
                                     label,
                                     size,
                                     1.f * scaleMult,

@@ -386,6 +386,7 @@ void Main::uiDraw(const sf::Vec2f mousePos)
 
     ImGui::End();
 
+    uiDrawDebugWindow();
     uiDrawExitPopup(newScalingFactor);
 
     if (profile.enableNotifications)

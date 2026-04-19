@@ -10,7 +10,6 @@
 ////////////////////////////////////////////////////////////
 void Main::uiTabBar()
 {
-    const float     childHeight                = uiGetMaxWindowHeight() - (60.f * profile.uiScale);
     constexpr float uiMenuAutoHideDelaySeconds = 1.25f;
 
     constexpr TabButtonPalette defaultPalette{
@@ -83,12 +82,15 @@ void Main::uiTabBar()
 
 
     ImGui::SameLine(0.f, 12.f * profile.uiScale);
+
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 40.f);
+
     if (drawTabButton(1.f, " " ICON_FA_STORE " Shop ##992", uiState.lastUiSelectedTabIdx == 1, defaultPalette))
         selectTab(1);
 
     if (getWizardCat() != nullptr)
     {
-        ImGui::SameLine(0.f, 0.f);
+        ImGui::SameLine(0.f, 5.f);
         if (drawTabButton(1.f, " " ICON_FA_STAR " Magic ##993", uiState.lastUiSelectedTabIdx == 2, defaultPalette))
             selectTab(2);
     }
@@ -98,7 +100,7 @@ void Main::uiTabBar()
         const bool              canPrestige = pt->canBuyNextPrestige();
         const TabButtonPalette& palette     = canPrestige ? prestigePalette : defaultPalette;
 
-        ImGui::SameLine(0.f, 0.f);
+        ImGui::SameLine(0.f, 5.f);
         if (drawTabButton(1.f, " " ICON_FA_TROPHY " Prestige ##994", uiState.lastUiSelectedTabIdx == 3, palette))
             selectTab(3);
     }
@@ -107,11 +109,11 @@ void Main::uiTabBar()
     if (drawTabButton(1.f, ICON_FA_CIRCLE_INFO "##991", uiState.lastUiSelectedTabIdx == 4, defaultPalette, {}, true))
         selectTab(4);
 
-    ImGui::SameLine(0.f, 0.f);
+    ImGui::SameLine(0.f, 5.f);
     if (drawTabButton(1.f, ICON_FA_GEAR "##990", uiState.lastUiSelectedTabIdx == 5, defaultPalette, {}, true))
         selectTab(5);
 
-    ImGui::SameLine(0.f, 0.f);
+    ImGui::SameLine(0.f, 5.f);
     if (drawTabButton(1.f,
                       uiState.uiMenuLocked ? ICON_FA_LOCK "##995" : ICON_FA_LOCK_OPEN "##995",
                       uiState.uiMenuLocked,
@@ -124,11 +126,18 @@ void Main::uiTabBar()
         playSound(sounds.uitab);
     }
 
+    ImGui::Spacing();
+    ImGui::Spacing();
+    ImGui::Spacing();
+    ImGui::Spacing();
+    ImGui::Spacing();
+    ImGui::Spacing();
+
     switch (uiState.lastUiSelectedTabIdx)
     {
         case 1:
         {
-            ImGui::BeginChild("ShopScroll", ImVec2(ImGui::GetContentRegionAvail().x, childHeight));
+            ImGui::BeginChild("ShopScroll", ImVec2(0.f, 0.f));
             ImGui::Spacing();
             ImGui::Spacing();
             ImGui::Spacing();
@@ -142,7 +151,7 @@ void Main::uiTabBar()
         {
             if (getWizardCat() != nullptr)
             {
-                ImGui::BeginChild("MagicScroll", ImVec2(ImGui::GetContentRegionAvail().x, childHeight));
+                ImGui::BeginChild("MagicScroll", ImVec2(0.f, 0.f));
                 ImGui::Spacing();
                 ImGui::Spacing();
                 ImGui::Spacing();
@@ -157,7 +166,7 @@ void Main::uiTabBar()
         {
             if (pt->isBubbleValueUnlocked())
             {
-                ImGui::BeginChild("PrestigeScroll", ImVec2(ImGui::GetContentRegionAvail().x, childHeight));
+                ImGui::BeginChild("PrestigeScroll", ImVec2(0.f, 0.f));
                 ImGui::Spacing();
                 ImGui::Spacing();
                 ImGui::Spacing();
@@ -170,7 +179,7 @@ void Main::uiTabBar()
 
         case 4:
         {
-            ImGui::BeginChild("StatsScroll", ImVec2(ImGui::GetContentRegionAvail().x, childHeight));
+            ImGui::BeginChild("StatsScroll", ImVec2(0.f, 0.f));
             ImGui::Spacing();
             ImGui::Spacing();
             ImGui::Spacing();
@@ -182,7 +191,7 @@ void Main::uiTabBar()
 
         case 5:
         {
-            ImGui::BeginChild("OptionsScroll", ImVec2(ImGui::GetContentRegionAvail().x, childHeight));
+            ImGui::BeginChild("OptionsScroll", ImVec2(0.f, 0.f));
             ImGui::Spacing();
             ImGui::Spacing();
             ImGui::Spacing();

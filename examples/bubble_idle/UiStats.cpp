@@ -18,6 +18,8 @@
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
 
+#include <imgui.h>
+
 void Main::uiTabBarStats()
 {
     constexpr TabButtonPalette palette{
@@ -78,23 +80,28 @@ void Main::uiTabBarStats()
 
     uiSetFontScale(0.75f);
 
-    ImGui::SameLine(0.f, 0.f);
+    ImGui::SameLine(0.f, 5.f);
     if (drawTabButton(0.75f, " Tips ##29990", lastSelectedTabIdx == 0, palette))
         selectedTab(0);
 
-    ImGui::SameLine(0.f, 0.f);
+    ImGui::SameLine(0.f, 5.f);
     if (drawTabButton(0.75f, " Statistics ##29991", lastSelectedTabIdx == 1, palette))
         selectedTab(1);
 
-    ImGui::SameLine(0.f, 0.f);
+    ImGui::SameLine(0.f, 5.f);
     if (drawTabButton(0.75f, " Milestones ##29992", lastSelectedTabIdx == 2, palette))
         selectedTab(2);
 
-    ImGui::SameLine(0.f, 0.f);
+    ImGui::SameLine(0.f, 5.f);
     if (drawTabButton(0.75f, " Achievements ##29993", lastSelectedTabIdx == 3, palette))
         selectedTab(3);
 
-    ImGui::Separator();
+    ImGui::Spacing();
+    ImGui::Spacing();
+    ImGui::Spacing();
+    ImGui::Spacing();
+    ImGui::Spacing();
+    ImGui::Spacing();
 
     switch (lastSelectedTabIdx)
     {
@@ -395,19 +402,20 @@ void Main::uiTabBarStats()
                     continue;
                 }
 
-                const float opacity = unlocked ? 1.f : 0.5f;
-
-                const ImVec4 textColor{1.f, 1.f, 1.f, opacity};
+                const sf::Color titleColor = unlocked ? colorBlueOutline
+                                                      : colorBlueOutline.withLightness(0.48f).withSaturation(0.35f);
+                const sf::Color bodyColor  = unlocked ? colorBlueOutline.withLightness(0.38f).withSaturation(0.55f)
+                                                      : colorBlueOutline.withLightness(0.45f).withSaturation(0.2f);
 
                 uiSetFontScale(uiNormalFontScale * 1.15f);
-                ImGui::TextColored(textColor, "%llu - %s", id, (!secret || unlocked) ? name : "???");
+                ImGui::TextColored(titleColor.toVec4<ImVec4>(), "%llu - %s", id, (!secret || unlocked) ? name : "???");
 
                 ImGui::PushFont(fontImGuiMouldyCheese);
                 uiSetFontScale(0.75f);
-                ImGui::TextColored(textColor, "%s", (!secret || unlocked) ? description : "(...secret achievement...)");
+                ImGui::TextColored(bodyColor.toVec4<ImVec4>(), "%s", (!secret || unlocked) ? description : "(...secret achievement...)");
 
                 if (!unlocked && achievementProgress[id].hasValue())
-                    ImGui::TextColored(textColor,
+                    ImGui::TextColored(bodyColor.toVec4<ImVec4>(),
                                        "(%s / %s)",
                                        toStringWithSeparators<0>(achievementProgress[id]->value),
                                        toStringWithSeparators<1>(achievementProgress[id]->threshold));

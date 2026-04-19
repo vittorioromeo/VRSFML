@@ -2290,6 +2290,7 @@ struct Main
     void                           uiDrawQuickbarVolumeControls(sf::Vec2f quickBarPos);
     void                           uiDrawQuickbar();
     void                           uiDrawMinimapZoomButtons();
+    void                           uiDrawDebugWindow();
     void                           uiDraw(sf::Vec2f mousePos);
     void                           uiDpsMeter();
     void                           uiSpeedrunning();
