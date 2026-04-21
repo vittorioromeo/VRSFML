@@ -5,6 +5,7 @@
 #include "BubbleIdleMain.hpp"
 #include "Cat.hpp"
 #include "CatType.hpp"
+#include "Constants.hpp"
 #include "Milestones.hpp"
 #include "PurchasableScalingValue.hpp"
 #include "ShrineConstants.hpp"
@@ -12,6 +13,8 @@
 #include "Stats.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"
+
+#include "SFML/Graphics/Color.hpp"
 
 #include "SFML/Base/Algorithm/Count.hpp"
 #include "SFML/Base/GetArraySize.hpp"
@@ -404,15 +407,18 @@ void Main::uiTabBarStats()
 
                 const sf::Color titleColor = unlocked ? colorBlueOutline
                                                       : colorBlueOutline.withLightness(0.48f).withSaturation(0.35f);
-                const sf::Color bodyColor  = unlocked ? colorBlueOutline.withLightness(0.38f).withSaturation(0.55f)
-                                                      : colorBlueOutline.withLightness(0.45f).withSaturation(0.2f);
+
+                const sf::Color bodyColor = unlocked ? colorBlueOutline.withLightness(0.38f).withSaturation(0.55f)
+                                                     : colorBlueOutline.withLightness(0.45f).withSaturation(0.2f);
 
                 uiSetFontScale(uiNormalFontScale * 1.15f);
                 ImGui::TextColored(titleColor.toVec4<ImVec4>(), "%llu - %s", id, (!secret || unlocked) ? name : "???");
 
                 ImGui::PushFont(fontImGuiMouldyCheese);
                 uiSetFontScale(0.75f);
-                ImGui::TextColored(bodyColor.toVec4<ImVec4>(), "%s", (!secret || unlocked) ? description : "(...secret achievement...)");
+                ImGui::TextColored(bodyColor.toVec4<ImVec4>(),
+                                   "%s",
+                                   (!secret || unlocked) ? description : "(...secret achievement...)");
 
                 if (!unlocked && achievementProgress[id].hasValue())
                     ImGui::TextColored(bodyColor.toVec4<ImVec4>(),
