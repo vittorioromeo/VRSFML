@@ -3255,6 +3255,12 @@ struct Main
         if (bubble.type == BubbleType::Combo && !byPlayerClick)
             return;
 
+        // Bubble-transform (Unicat star / Devilcat bomb / ...) in progress:
+        // the bubble is frozen mid-air and inert until the animation resolves.
+        // Silently ignore any pop attempt so the transformation can complete.
+        if (bubble.pendingTransformMs > 0.f)
+            return;
+
         statBubblePopped(bubble.type, byPlayerClick, reward);
 
         if (byPlayerClick && bubble.type == BubbleType::Star)

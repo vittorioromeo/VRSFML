@@ -330,15 +330,28 @@ void Main::gameLoopDrawBubbles()
 
     static_assert(sf::base::getArraySize(batchToUseByType) == nBubbleTypes);
 
-    for (SizeT i = 0u; i < pt->bubbles.size(); ++i)
+    for (const auto & bubble : pt->bubbles)
     {
-        const Bubble& bubble = pt->bubbles[i];
-
-        if (!bubbleCullingBoundaries.isInside(bubble.position))
+         if (!bubbleCullingBoundaries.isInside(bubble.position))
             continue;
 
         constexpr float radiusToScale = 1.f / 256.f;
-        const float     scaleMult     = radiusToScale * (bubble.type == BubbleType::Bomb ? 1.65f : 1.f);
+
+        // Pending-transform pulse (Unicat star, Devilcat bomb, ...): inflate
+        // with back-ease overshoot, then deflate with back-ease undershoot,
+        // returning to 1.0 at resolve. Must match the `freezeMs` used when
+        // starting the transform in the cat action.
+        float pendingTransformScale = 1.f;
+        if (bubble.pendingTransformMs > 0.f)
+        {
+            constexpr float freezeMs = 450.f;
+            const float     phase    = sf::base::clamp(1.f - bubble.pendingTransformMs / freezeMs, 0.f, 1.f);
+
+            const float bulge = phase < 0.5f ? easeOutBack(phase * 2.f) : 1.f - easeInBack((phase - 0.5f) * 2.f);
+            pendingTransformScale = 1.f + bulge * 0.35f;
+        }
+
+        const float scaleMult = radiusToScale * (bubble.type == BubbleType::Bomb ? 1.65f : 1.f) * pendingTransformScale;
 
         const auto& rect = bubbleRects[asIdx(bubble.type)];
 

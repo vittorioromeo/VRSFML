@@ -342,6 +342,9 @@ DEFINE_TWO_WAY_SERIALIZER(Bubble)
     FIELD(hueSeed);
     FIELD(comboTimerMs);
     FIELD(comboClickCount);
+    FIELD(pendingTransformMs);
+    FIELD(pendingTransformTargetType);
+    FIELD(pendingTransformCatIdx);
 }
 
 
