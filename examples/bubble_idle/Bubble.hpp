@@ -41,6 +41,15 @@ struct [[nodiscard]] Bubble
     float         comboTimerMs    = 0.f;
     sf::base::U32 comboClickCount = 0u;
 
+    // Pending bubble transformation (Unicat star, Devilcat bomb, ...).
+    // While `pendingTransformMs > 0`, the bubble is frozen mid-air and inert
+    // (cannot be popped). When the timer reaches 0, the bubble turns into
+    // `pendingTransformTargetType`; if `pendingTransformCatIdx` is not the
+    // sentinel (0xFFFF) it is credited in `bombIdxToCatIdx` at resolve time.
+    float         pendingTransformMs         = 0.f;
+    sf::base::U8  pendingTransformTargetType = 0u;
+    sf::base::U16 pendingTransformCatIdx     = 0xFFFFu;
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline float getRadiusSquared() const
     {
