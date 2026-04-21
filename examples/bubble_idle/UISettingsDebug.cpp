@@ -62,11 +62,11 @@ void drawButtonRow2(const char* label0, TAction0&& action0, const char* label1, 
 
 void drawDebugQuickTools(Main& main)
 {
-    static int              catTypeN        = 0;
-    static sf::base::I64    speedrunTimerSet = 0;
-    static char             filenameBuf[128] = "userdata/custom.json";
-    constexpr sf::base::I64 speedrunTimerStep = 1;
-    constexpr sf::base::SizeT currencyStep    = 1u;
+    static int                catTypeN          = 0;
+    static sf::base::I64      speedrunTimerSet  = 0;
+    static char               filenameBuf[128]  = "userdata/custom.json";
+    constexpr sf::base::I64   speedrunTimerStep = 1;
+    constexpr sf::base::SizeT currencyStep      = 1u;
 
     auto fullWidth = [&]() { return ImGui::GetContentRegionAvail().x - 140.f; };
 
@@ -79,23 +79,23 @@ void drawDebugQuickTools(Main& main)
     const float sliderButtonWidth = 92.f * main.profile.uiScale;
     const float sliderSpacing     = ImGui::GetStyle().ItemSpacing.x;
     ImGui::SetNextItemWidth(fullWidth() - sliderButtonWidth - sliderSpacing);
-    ImGui::SliderFloat("##timescale",
-                       &main.debugTimeScale,
-                       0.05f,
-                       10.f,
-                       "%.2fx",
-                       ImGuiSliderFlags_Logarithmic);
+    ImGui::SliderFloat("##timescale", &main.debugTimeScale, 0.05f, 10.f, "%.2fx", ImGuiSliderFlags_Logarithmic);
 
     ImGui::SameLine();
     if (ImGui::Button("Reset##timescale", {sliderButtonWidth, 0.f}))
         main.debugTimeScale = 1.f;
 
-    drawButtonRow2("Slide", [&main] {
+    drawButtonRow2("Slide",
+                   [&main]
+    {
         main.fixedBgSlideTarget += 1.f;
 
         if (main.fixedBgSlideTarget >= 3.f)
             main.fixedBgSlideTarget = 0.f;
-    }, "Feed next shrine", [&main] {
+    },
+                   "Feed next shrine",
+                   [&main]
+    {
         for (Shrine& shrine : main.pt->shrines)
         {
             if (!shrine.isActive() || shrine.tcDeath.hasValue())
@@ -108,13 +108,7 @@ void drawDebugQuickTools(Main& main)
     });
 
     ImGui::SetNextItemWidth(fullWidth());
-    if (ImGui::InputScalar("Speedrun timer",
-                           ImGuiDataType_S64,
-                           &speedrunTimerSet,
-                           &speedrunTimerStep,
-                           nullptr,
-                           nullptr,
-                           ImGuiInputTextFlags_CharsDecimal))
+    if (ImGui::InputScalar("Speedrun timer", ImGuiDataType_S64, &speedrunTimerSet, &speedrunTimerStep, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal))
     {
         main.pt->speedrunStartTime.emplace(sf::microseconds(speedrunTimerSet));
     }
@@ -122,10 +116,15 @@ void drawDebugQuickTools(Main& main)
     drawDebugSectionTitle("Events");
     const auto& bfCfg = main.gameConstants.events.bubblefall;
 
-    drawButtonRow2("Bubblefall (random)", [&main, &bfCfg] {
+    drawButtonRow2("Bubblefall (random)",
+                   [&main, &bfCfg]
+    {
         const float halfWidth = bfCfg.regionWidth * 0.5f;
         main.addEventBubblefall(main.rng.getF(halfWidth, main.pt->getMapLimit() - halfWidth));
-    }, "Bubblefall (view)", [&main, &bfCfg] {
+    },
+                   "Bubblefall (view)",
+                   [&main, &bfCfg]
+    {
         const float viewCenterX = main.gameView.center.x;
         const float halfWidth   = bfCfg.regionWidth * 0.5f;
         const float mapLimit    = main.pt->getMapLimit();
@@ -162,7 +161,9 @@ void drawDebugQuickTools(Main& main)
     ImGui::SetNextItemWidth(fullWidth());
     ImGui::Combo("Cat type", &catTypeN, CatConstants::typeNames, nCatTypes);
 
-    drawButtonRow2("Spawn", [&main] {
+    drawButtonRow2("Spawn",
+                   [&main]
+    {
         const auto catType = static_cast<CatType>(catTypeN);
 
         if (isUniqueCatType(catType))
@@ -174,23 +175,36 @@ void drawDebugQuickTools(Main& main)
         {
             main.spawnCatCentered(catType, main.getHueByCatType(catType));
         }
-    }, "Do Ritual", [&main] {
+    },
+                   "Do Ritual",
+                   [&main]
+    {
         if (auto* wc = main.getWitchCat())
             wc->cooldown.value = 10.f;
     });
 
-    drawButtonRow2("Ritual", [&main] {
+    drawButtonRow2("Ritual",
+                   [&main]
+    {
         if (auto* wc = main.getWitchCat())
             wc->cooldown.value = 12000.f;
-    }, "Do Copy Ritual", [&main] {
+    },
+                   "Do Copy Ritual",
+                   [&main]
+    {
         if (auto* wc = main.getCopyCat())
             wc->cooldown.value = 10.f;
     });
 
-    drawButtonRow2("Copy Ritual", [&main] {
+    drawButtonRow2("Copy Ritual",
+                   [&main]
+    {
         if (auto* wc = main.getCopyCat())
             wc->cooldown.value = 12000.f;
-    }, "Do Letter", [&main] {
+    },
+                   "Do Letter",
+                   [&main]
+    {
         main.victoryTC.emplace(TargetedCountdown{.startingValue = 6500.f});
         main.victoryTC->restart();
         main.delayedActions.emplaceBack(Countdown{.value = 7000.f}, [&main] { main.playSound(main.sounds.letterchime); });
@@ -202,17 +216,25 @@ void drawDebugQuickTools(Main& main)
         main.pushNotification("Test notification", "Hello, I am a test notification!\nHow are you doing today?");
     });
 
-    drawButtonRow2("Do Arrow", [&main] { main.uiState.scrollArrowCountdown.value = 2000.f; }, "Do Prestige", [&main] {
+    drawButtonRow2("Do Arrow",
+                   [&main] { main.uiState.scrollArrowCountdown.value = 2000.f; },
+                   "Do Prestige",
+                   [&main]
+    {
         ++main.pt->psvBubbleValue.nPurchases;
         const auto ppReward = main.pt->calculatePrestigePointReward(1u);
         main.beginPrestigeTransition(ppReward);
     });
 
     drawDebugSectionTitle("Save Data");
-    drawButtonRow2("Save game", [&main] {
+    drawButtonRow2("Save game",
+                   [&main]
+    {
         main.ptMain.fullVersion = !isDemoVersion;
         savePlaythroughToFile(main.ptMain, "userdata/playthrough.json");
-    }, "Load game", [&main] { main.loadPlaythroughFromFileAndReseed(); });
+    },
+                   "Load game",
+                   [&main] { main.loadPlaythroughFromFileAndReseed(); });
 
     main.uiState.uiButtonHueMod = 120.f;
     main.uiPushButtonColors();
@@ -225,10 +247,14 @@ void drawDebugQuickTools(Main& main)
     ImGui::SetNextItemWidth(fullWidth());
     ImGui::InputText("Custom file", filenameBuf, sizeof(filenameBuf));
 
-    drawButtonRow2("Custom save", [&main] {
+    drawButtonRow2("Custom save",
+                   [&main]
+    {
         main.pt->fullVersion = !isDemoVersion;
         savePlaythroughToFile(*main.pt, filenameBuf);
-    }, "Custom load", [&main] { (void)loadPlaythroughFromFile(*main.pt, filenameBuf); });
+    },
+                   "Custom load",
+                   [&main] { (void)loadPlaythroughFromFile(*main.pt, filenameBuf); });
 
     drawDebugSectionTitle("Economy");
 
@@ -236,42 +262,18 @@ void drawDebugQuickTools(Main& main)
     const float inputWidth   = (fullWidth() - inputSpacing) * 0.5f;
 
     ImGui::SetNextItemWidth(inputWidth);
-    ImGui::InputScalar("Money",
-                       ImGuiDataType_U64,
-                       &main.pt->money,
-                       &currencyStep,
-                       nullptr,
-                       nullptr,
-                       ImGuiInputTextFlags_CharsDecimal);
+    ImGui::InputScalar("Money", ImGuiDataType_U64, &main.pt->money, &currencyStep, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal);
 
     ImGui::SameLine();
     ImGui::SetNextItemWidth(inputWidth);
-    ImGui::InputScalar("PPs",
-                       ImGuiDataType_U64,
-                       &main.pt->prestigePoints,
-                       &currencyStep,
-                       nullptr,
-                       nullptr,
-                       ImGuiInputTextFlags_CharsDecimal);
+    ImGui::InputScalar("PPs", ImGuiDataType_U64, &main.pt->prestigePoints, &currencyStep, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal);
 
     ImGui::SetNextItemWidth(inputWidth);
-    ImGui::InputScalar("WPs",
-                       ImGuiDataType_U64,
-                       &main.pt->wisdom,
-                       &currencyStep,
-                       nullptr,
-                       nullptr,
-                       ImGuiInputTextFlags_CharsDecimal);
+    ImGui::InputScalar("WPs", ImGuiDataType_U64, &main.pt->wisdom, &currencyStep, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal);
 
     ImGui::SameLine();
     ImGui::SetNextItemWidth(inputWidth);
-    ImGui::InputScalar("Mana",
-                       ImGuiDataType_U64,
-                       &main.pt->mana,
-                       &currencyStep,
-                       nullptr,
-                       nullptr,
-                       ImGuiInputTextFlags_CharsDecimal);
+    ImGui::InputScalar("Mana", ImGuiDataType_U64, &main.pt->mana, &currencyStep, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal);
 
     ImGui::Checkbox("Combo purchased", &main.pt->comboPurchased);
     ImGui::SameLine();
@@ -294,13 +296,7 @@ void drawDebugStateEditors(Main& main)
         lbuf += sf::base::toString(counter++);
 
         ImGui::SetNextItemWidth(160.f * main.profile.uiScale);
-        if (ImGui::InputScalar(lbuf.cStr(),
-                               ImGuiDataType_Float,
-                               &value,
-                               &floatStep,
-                               nullptr,
-                               nullptr,
-                               ImGuiInputTextFlags_CharsDecimal))
+        if (ImGui::InputScalar(lbuf.cStr(), ImGuiDataType_Float, &value, &floatStep, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal))
         {
             value = sf::base::clamp(value, 0.f, 10'000.f);
         }
@@ -316,13 +312,7 @@ void drawDebugStateEditors(Main& main)
         lbuf += sf::base::toString(counter++);
 
         ImGui::SetNextItemWidth(160.f * main.profile.uiScale);
-        if (ImGui::InputScalar(lbuf.cStr(),
-                               ImGuiDataType_U64,
-                               &psv.nPurchases,
-                               &integerStep,
-                               nullptr,
-                               nullptr,
-                               ImGuiInputTextFlags_CharsDecimal))
+        if (ImGui::InputScalar(lbuf.cStr(), ImGuiDataType_U64, &psv.nPurchases, &integerStep, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal))
         {
             psv.nPurchases = sf::base::clamp(psv.nPurchases, SizeT{0u}, psv.data->nMaxPurchases);
         }
@@ -567,7 +557,7 @@ void Main::uiDrawDebugWindow()
     const float     scale      = profile.uiScale;
     const float     margin     = 24.f * scale;
 
-    float maxWindowWidth = resolution.x - margin * 2.f;
+    float maxWindowWidth  = resolution.x - margin * 2.f;
     float maxWindowHeight = resolution.y - margin * 2.f;
 
     if (maxWindowWidth <= 0.f)
@@ -605,11 +595,11 @@ void Main::uiDrawDebugWindow()
 
 void Main::uiSettingsDrawDebugTab()
 {
-    const float spacing       = ImGui::GetStyle().ItemSpacing.x;
-    const float contentWidth  = ImGui::GetContentRegionAvail().x;
-    const float desiredLeft   = 430.f * profile.uiScale;
-    const float minLeft       = 460.f * profile.uiScale;
-    const float maxLeft       = contentWidth * 0.48f;
+    const float spacing      = ImGui::GetStyle().ItemSpacing.x;
+    const float contentWidth = ImGui::GetContentRegionAvail().x;
+    const float desiredLeft  = 430.f * profile.uiScale;
+    const float minLeft      = 460.f * profile.uiScale;
+    const float maxLeft      = contentWidth * 0.48f;
     const float leftPaneWidth = maxLeft > minLeft ? sf::base::clamp(desiredLeft, minLeft, maxLeft) : contentWidth * 0.5f;
 
     ImGui::BeginChild("DebugQuickToolsPane", {leftPaneWidth, 0.f}, true);

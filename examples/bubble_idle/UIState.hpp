@@ -50,7 +50,7 @@ struct UIState
 
     sf::base::Vector<PurchaseUnlockedEffect>             purchaseUnlockedEffects;
     ankerl::unordered_dense::map<sf::base::String, bool> btnWasDisabled;
-    bool                                                 debugHideUI = false;
+    bool                                                 debugHideUI        = false;
     bool                                                 debugWindowVisible = true;
 
     ImGuiTabItemFlags_ shopSelectOnce       = ImGuiTabItemFlags_SetSelected;
