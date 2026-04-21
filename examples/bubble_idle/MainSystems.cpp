@@ -334,6 +334,52 @@ void Main::gameLoopUpdateBubbles(const float deltaTimeMs)
 
     for (Bubble& bubble : pt->bubbles)
     {
+        // Pending transform (Unicat star, Devilcat bomb, ...): the bubble is
+        // frozen mid-air while converging particles fall in. When the timer
+        // hits 0 we swap the type and emit the resolution burst. No motion /
+        // wind / gravity during the animation, so bail out of the usual
+        // update for this bubble.
+        if (bubble.pendingTransformMs > 0.f)
+        {
+            bubble.pendingTransformMs -= deltaTimeMs;
+
+            if (bubble.pendingTransformMs <= 0.f)
+            {
+                bubble.pendingTransformMs         = 0.f;
+                const auto targetType             = static_cast<BubbleType>(bubble.pendingTransformTargetType);
+                const auto creditCatIdx           = bubble.pendingTransformCatIdx;
+                bubble.pendingTransformTargetType = 0u;
+                bubble.pendingTransformCatIdx     = 0xFFFFu;
+
+                turnBubbleInto(bubble, targetType);
+
+                if (targetType == BubbleType::Bomb)
+                {
+                    spawnParticles(8u, bubble.position, ParticleType::Fire, 1.25f, 0.35f);
+                    bubble.velocity.y += rng.getF(0.1f, 0.2f);
+
+                    // Credit the originating Devilcat so the bomb's kill
+                    // payouts flow back to the correct cat. Uses the current
+                    // slot index because the vector may have reshuffled
+                    // during the freeze window.
+                    if (creditCatIdx != 0xFFFFu)
+                    {
+                        const auto bubbleIdx = static_cast<sf::base::SizeT>(&bubble - pt->bubbles.data());
+                        bombIdxToCatIdx[bubbleIdx] = static_cast<sf::base::SizeT>(creditCatIdx);
+                    }
+                }
+                else
+                {
+                    const bool aoe            = pt->perm.unicatTranscendenceAOEPurchased;
+                    const auto nStarParticles = aoe ? 1u : 4u;
+                    spawnParticles(nStarParticles, bubble.position, ParticleType::Star, 0.5f, 0.35f);
+                    bubble.velocity.y -= 0.2f;
+                }
+            }
+
+            continue;
+        }
+
         if (bubble.velocity.lengthSquared() > maxVelocityMagnitude * maxVelocityMagnitude)
             bubble.velocity = bubble.velocity.normalized() * maxVelocityMagnitude;
 
@@ -782,6 +828,11 @@ void Main::gameLoopUpdateAttractoBuff(const float deltaTimeMs) const
         if ((clickPos - bubble.position).lengthSquared() > bubble.getRadiusSquared())
             return ControlFlow::Continue;
 
+        // Bubbles mid transform (star / bomb / ...) are inert: don't consume
+        // the click.
+        if (bubble.pendingTransformMs > 0.f)
+            return ControlFlow::Continue;
+
         // Prevent clicks around shrine of automation
         for (const Shrine& shrine : pt->shrines)
             if (shrine.type == ShrineType::Automation && shrine.isInRange(clickPos))
@@ -801,6 +852,9 @@ void Main::gameLoopUpdateAttractoBuff(const float deltaTimeMs) const
                               pt->psvPPMultiPopRange.currentValue(),
                               [&](Bubble& b)
         {
+            if (b.pendingTransformMs > 0.f)
+                return ControlFlow::Continue;
+
             firstClickedBubble           = &b;
             firstClickedBubbleByMultiPop = true;
 
@@ -1069,19 +1123,48 @@ void Main::gameLoopUpdateCatActionNormal(const float /* deltaTimeMs */, Cat& cat
 
 
 ////////////////////////////////////////////////////////////
-void Main::gameLoopUpdateCatActionUni(const float /* deltaTimeMs */, Cat& cat)
+void Main::gameLoopUpdateCatActionUni(const float deltaTimeMs, Cat& cat)
 {
     SFEX_PROFILE_SCOPE_AUTOLABEL();
 
     const auto starBubbleType = isUnicatTranscendenceActive() ? BubbleType::Nova : BubbleType::Star;
-    const auto nStarParticles = pt->perm.unicatTranscendenceAOEPurchased ? 1u : 4u;
+
+    constexpr float freezeMs = 450.f;
 
     const auto transformBubble = [&](Bubble& bToTransform)
     {
-        turnBubbleInto(bToTransform, starBubbleType);
-        spawnParticles(nStarParticles, bToTransform.position, ParticleType::Star, 0.5f, 0.35f);
+        // Freeze the bubble in mid-air and spawn inward-converging star
+        // particles; the actual type swap runs when `pendingTransformMs`
+        // ticks to zero in `gameLoopUpdateBubbles`, so the transformation
+        // reads as "particles finish falling in → bubble pops into a star".
+        // Storing the state on the bubble itself means it survives
+        // saves/loads and doesn't rely on any index or pointer being stable.
+        constexpr float convergeRadius = 60.f;
+        const float     convergeSpeed  = convergeRadius / freezeMs;
 
-        bToTransform.velocity.y -= 0.2f;
+        bToTransform.velocity                   = {0.f, 0.f};
+        bToTransform.pendingTransformMs         = freezeMs;
+        bToTransform.pendingTransformTargetType = static_cast<sf::base::U8>(asIdx(starBubbleType));
+        bToTransform.pendingTransformCatIdx     = 0xFFFFu;
+        bToTransform.rotation = sf::base::positiveRemainder(bToTransform.rotation + deltaTimeMs, sf::base::tau);
+
+        for (SizeT i = 0u; i < 8u; ++i)
+        {
+            const float     angle   = rngFast.getF(0.f, sf::base::tau);
+            const sf::Vec2f outward = {sf::base::cos(angle), sf::base::sin(angle)};
+
+            spawnParticle({.position      = bToTransform.position + outward * convergeRadius * rngFast.getF(0.8f, 1.2f),
+                           .velocity      = -outward * convergeSpeed,
+                           .scale         = rngFast.getF(0.14f, 0.26f) * 0.25f,
+                           .scaleDecay    = -0.0003f,
+                           .accelerationY = 0.f,
+                           .opacity       = 1.f,
+                           .opacityDecay  = 1.f / freezeMs * 0.9f,
+                           .rotation      = rngFast.getF(0.f, sf::base::tau),
+                           .torque        = rngFast.getF(-0.003f, 0.003f)},
+                          /* hue */ 0.f,
+                          ParticleType::Star);
+        }
 
         ++cat.hits;
     };
@@ -1097,7 +1180,7 @@ void Main::gameLoopUpdateCatActionUni(const float /* deltaTimeMs */, Cat& cat)
                               range,
                               [&](Bubble& bubble)
         {
-            if (bubble.type != BubbleType::Normal)
+            if (bubble.type != BubbleType::Normal || bubble.pendingTransformMs > 0.f)
                 return ControlFlow::Continue;
 
             if (firstBubble == nullptr)
@@ -1110,9 +1193,13 @@ void Main::gameLoopUpdateCatActionUni(const float /* deltaTimeMs */, Cat& cat)
         if (firstBubble == nullptr)
             return;
 
-        cat.pawPosition = firstBubble->position;
+        cat.pawPosition = exponentialApproach(cat.pawPosition,
+                                              firstBubble->position.addY(firstBubble->radius - 5.f),
+                                              deltaTimeMs,
+                                              5.f);
         cat.pawOpacity  = 255.f;
         cat.pawRotation = (firstBubble->position - cat.position).angle() + sf::degrees(45);
+        cat.pawHoldMs   = 250.f;
 
         sounds.shine2.settings.position = {firstBubble->position.x, firstBubble->position.y};
         playSound(sounds.shine2);
@@ -1120,7 +1207,7 @@ void Main::gameLoopUpdateCatActionUni(const float /* deltaTimeMs */, Cat& cat)
     else
     {
         Bubble* b = pickRandomBubbleInRadiusMatching(getCatRangeCenter(cat), range, [&](const Bubble& bubble) {
-            return bubble.type == BubbleType::Normal;
+            return bubble.type == BubbleType::Normal && bubble.pendingTransformMs <= 0.f;
         });
 
         if (b == nullptr)
@@ -1128,9 +1215,10 @@ void Main::gameLoopUpdateCatActionUni(const float /* deltaTimeMs */, Cat& cat)
 
         transformBubble(*b);
 
-        cat.pawPosition = b->position;
+        cat.pawPosition = exponentialApproach(cat.pawPosition, b->position.addY(b->radius - 5.f), deltaTimeMs, 5.f);
         cat.pawOpacity  = 255.f;
         cat.pawRotation = (b->position - cat.position).angle() + sf::degrees(45);
+        cat.pawHoldMs   = 250.f;
 
         sounds.shine.settings.position = {b->position.x, b->position.y};
         playSound(sounds.shine);
@@ -1142,7 +1230,7 @@ void Main::gameLoopUpdateCatActionUni(const float /* deltaTimeMs */, Cat& cat)
 
 
 ////////////////////////////////////////////////////////////
-void Main::gameLoopUpdateCatActionDevil(const float /* deltaTimeMs */, Cat& cat)
+void Main::gameLoopUpdateCatActionDevil(const float deltaTimeMs, Cat& cat)
 {
     SFEX_PROFILE_SCOPE_AUTOLABEL();
 
@@ -1152,29 +1240,52 @@ void Main::gameLoopUpdateCatActionDevil(const float /* deltaTimeMs */, Cat& cat)
     if (!isDevilcatHellsingedActive())
     {
         Bubble* b = pickRandomBubbleInRadiusMatching(getCatRangeCenter(cat), range, [&](const Bubble& bubble) {
-            return bubble.type != BubbleType::Combo;
+            return bubble.type != BubbleType::Combo && bubble.pendingTransformMs <= 0.f;
         });
         if (b == nullptr)
             return;
 
         Bubble& bubble = *b;
 
-        // cat.pawPosition = bubble.position;
+        // Freeze the bubble in mid-air and spawn inward-converging fire
+        // particles; the type swap + bomb credit happen in
+        // `gameLoopUpdateBubbles` when the timer reaches zero. Same shape as
+        // Unicat's transform so the feel matches.
+        constexpr float freezeMs       = 450.f;
+        constexpr float convergeRadius = 60.f;
+        const float     convergeSpeed  = convergeRadius / freezeMs;
+
+        const auto catIdx = static_cast<sf::base::SizeT>(&cat - pt->cats.data());
+
+        bubble.velocity                   = {0.f, 0.f};
+        bubble.pendingTransformMs         = freezeMs;
+        bubble.pendingTransformTargetType = static_cast<sf::base::U8>(asIdx(BubbleType::Bomb));
+        bubble.pendingTransformCatIdx     = static_cast<sf::base::U16>(catIdx);
+        bubble.rotation = sf::base::positiveRemainder(bubble.rotation + deltaTimeMs, sf::base::tau);
+
+        for (SizeT i = 0u; i < 8u; ++i)
+        {
+            const float     angle   = rngFast.getF(0.f, sf::base::tau);
+            const sf::Vec2f outward = {sf::base::cos(angle), sf::base::sin(angle)};
+
+            spawnParticle({.position      = bubble.position + outward * convergeRadius * rngFast.getF(0.8f, 1.2f),
+                           .velocity      = -outward * convergeSpeed,
+                           .scale         = rngFast.getF(0.14f, 0.26f) * 0.25f,
+                           .scaleDecay    = -0.0003f,
+                           .accelerationY = 0.f,
+                           .opacity       = 1.f,
+                           .opacityDecay  = 1.f / freezeMs * 0.9f,
+                           .rotation      = rngFast.getF(0.f, sf::base::tau),
+                           .torque        = rngFast.getF(-0.003f, 0.003f)},
+                          /* hue */ 0.f,
+                          ParticleType::Fire);
+        }
+
         cat.pawOpacity  = 255.f;
         cat.pawRotation = (bubble.position - cat.position).angle() - sf::degrees(45);
 
-        turnBubbleInto(bubble, BubbleType::Bomb);
-
-        const auto bubbleIdx = static_cast<sf::base::SizeT>(&bubble - pt->bubbles.data());
-        const auto catIdx    = static_cast<sf::base::SizeT>(&cat - pt->cats.data());
-
-        bombIdxToCatIdx[bubbleIdx] = catIdx;
-
-        bubble.velocity.y += rng.getF(0.1f, 0.2f);
         sounds.makeBomb.settings.position = {bubble.position.x, bubble.position.y};
         playSound(sounds.makeBomb);
-
-        spawnParticles(8, bubble.position, ParticleType::Fire, 1.25f, 0.35f);
     }
     else
     {
