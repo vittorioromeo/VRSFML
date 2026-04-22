@@ -547,6 +547,11 @@ void Main::gameLoopDisplayBubblesWithShader()
     shader.setUniform(suBubbleLightness, profile.bsBubbleLightness);
     shader.setUniform(suLensDistortion, profile.bsLensDistortion);
 
+    shader.setUniform(suRimShineStrength, profile.bsRimShineStrength);
+    shader.setUniform(suRimShineFallRate, profile.bsRimShineFallRate);
+    shader.setUniform(suRimShineTimeRate, profile.bsRimShineTimeRate);
+    shader.setUniform(suRimShineArc, profile.bsRimShineArc);
+
     constexpr sf::BlendMode bubbleBlend(sf::BlendMode::Factor::One,
                                         sf::BlendMode::Factor::OneMinusSrcAlpha,
                                         sf::BlendMode::Equation::Add,

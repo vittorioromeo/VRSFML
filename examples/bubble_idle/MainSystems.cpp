@@ -1375,6 +1375,9 @@ void Main::gameLoopUpdateCatActionWarden(const float /* deltaTimeMs */, Cat& cat
     bestTarget->napSleepCountdown.reset();
     bestTarget->napShakeProgress = 0.f;
 
+    // Forced wake-up (wardencat bonk) grants the Power Nap cooldown boost.
+    applyPowerNapBoost(*bestTarget);
+
     sounds.bonk.settings.position = {bestTarget->position.x, bestTarget->position.y};
     playSound(sounds.bonk, /* maxOverlap */ 4u);
 
@@ -1541,6 +1544,17 @@ void Main::beginCatNap(Cat& cat, const float sleepDurationMs)
 
     cat.napShakeProgress = 0.f;
     cat.napWakeWobble    = 0.f;
+}
+
+
+////////////////////////////////////////////////////////////
+void Main::applyPowerNapBoost(Cat& cat)
+{
+    if (!pt->perm.powerNapPurchased)
+        return;
+
+    cat.napBoostCountdown.value = pt->psvPPPowerNapDuration.currentValue();
+    cat.napBoostMultiplier      = 1.f + pt->psvPPPowerNapStrength.currentValue();
 }
 
 
@@ -2236,6 +2250,9 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
                     cat.napSleepCountdown.reset();
                     cat.napShakeProgress = 0.f;
 
+                    // Forced wake-up (shake) grants the Power Nap cooldown boost.
+                    applyPowerNapBoost(cat);
+
                     // sounds.napWake.settings.position = {cat.position.x, cat.position.y};
                     // playSound(sounds.napWake, /* maxOverlap */ 2u);
                 }
@@ -2451,6 +2468,25 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
                            .torque        = rngFast.getF(-0.002f, 0.002f)},
                           /* hue */ 180.f,
                           ParticleType::Cog);
+        }
+
+        // Power Nap boost: mirror the engicat cog-spawn pattern, using Star
+        // particles as a placeholder visual.
+        // TODO P2: swap ParticleType::Star for a dedicated "Z" / dream-themed
+        // particle type once that asset exists.
+        if (cat.napBoostCountdown.value > 0.f && rngFast.getF(0.f, 1.f) > 0.75f)
+        {
+            spawnParticle({.position = drawPosition + sf::Vec2f{rngFast.getF(-catRadius, +catRadius), catRadius - 25.f},
+                           .velocity = rngFast.getVec2f({-0.025f, -0.015f}, {0.025f, 0.015f}),
+                           .scale    = rngFast.getF(0.08f, 0.27f) * 0.2f,
+                           .scaleDecay    = 0.f,
+                           .accelerationY = -0.0015f,
+                           .opacity       = 1.f,
+                           .opacityDecay  = rngFast.getF(0.00055f, 0.0045f),
+                           .rotation      = rngFast.getF(0.f, sf::base::tau),
+                           .torque        = rngFast.getF(-0.002f, 0.002f)},
+                          /* hue */ 210.f,
+                          ParticleType::Star);
         }
 
         if (cat.type == CatType::Uni)
