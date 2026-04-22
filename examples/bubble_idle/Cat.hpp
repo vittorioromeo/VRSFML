@@ -130,6 +130,14 @@ struct [[nodiscard]] Cat
     // value (~2-5 minutes). Pre-introduction it's not ticked.
     float napScheduleCountdownMs{0.f};
 
+    // Power Nap boost: cooldown-reduction buff applied when the cat is
+    // forcibly woken from a nap (shake or wardencat bonk -- NOT natural
+    // wake). `napBoostCountdown` is the remaining duration; while active,
+    // `updateCooldown` multiplies the cooldown tick rate by
+    // `napBoostMultiplier` on top of other boosts (multiplicative stack).
+    Countdown napBoostCountdown{};
+    float     napBoostMultiplier{1.f};
+
     float dragTime{};
 
     ////////////////////////////////////////////////////////////
@@ -183,7 +191,8 @@ struct [[nodiscard]] Cat
     {
         const float ispiredMult   = inspiredCountdown.updateAndIsActive(deltaTime) ? 2.f : 1.f;
         const float boostMult     = boostCountdown.updateAndIsActive(deltaTime) ? 2.f : 1.f;
-        const float cooldownSpeed = ispiredMult * boostMult;
+        const float napBoostMult  = napBoostCountdown.updateAndIsActive(deltaTime) ? napBoostMultiplier : 1.f;
+        const float cooldownSpeed = ispiredMult * boostMult * napBoostMult;
 
         return cooldown.updateAndStop(deltaTime * cooldownSpeed) == CountdownStatusStop::AlreadyFinished;
     }

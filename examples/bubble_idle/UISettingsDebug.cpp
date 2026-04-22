@@ -355,6 +355,8 @@ void drawDebugStateEditors(Main& main)
         psvScalarInput("PPWitchCatBuffDuration", main.pt->psvPPWitchCatBuffDuration);
         psvScalarInput("PPUniRitualBuffPercentage", main.pt->psvPPUniRitualBuffPercentage);
         psvScalarInput("PPDevilRitualBuffPercentage", main.pt->psvPPDevilRitualBuffPercentage);
+        psvScalarInput("PPPowerNapDuration", main.pt->psvPPPowerNapDuration);
+        psvScalarInput("PPPowerNapStrength", main.pt->psvPPPowerNapStrength);
     }
 
     if (ImGui::CollapsingHeader("Cat Buff Countdown Values"))
@@ -402,6 +404,11 @@ void drawDebugStateEditors(Main& main)
         ImGui::Checkbox("unicatTranscendenceEnabled", &main.pt->perm.unicatTranscendenceEnabled);
         ImGui::Checkbox("devilcatHellsingedEnabled", &main.pt->perm.devilcatHellsingedEnabled);
         ImGui::Checkbox("autocastPurchased", &main.pt->perm.autocastPurchased);
+        ImGui::Checkbox("powerNapPurchased", &main.pt->perm.powerNapPurchased);
+
+        if (ImGui::Button("Trigger Power Nap boost on all cats"))
+            for (Cat& cat : main.pt->cats)
+                main.applyPowerNapBoost(cat);
     }
 
     if (ImGui::CollapsingHeader("Shrine Completion Flags"))

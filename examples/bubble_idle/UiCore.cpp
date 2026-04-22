@@ -103,7 +103,7 @@ bool Main::drawTabButton(const float             scaleMult,
 ////////////////////////////////////////////////////////////
 float Main::uiGetMaxWindowHeight() const
 {
-    return sf::base::max(getResolution().y - 46.f, (getResolution().y - 46.f) / profile.uiScale);
+    return sf::base::max(getResolution().y - 19.f, (getResolution().y - 19.f) / profile.uiScale);
 }
 
 ////////////////////////////////////////////////////////////
