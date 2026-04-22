@@ -132,6 +132,8 @@ struct Playthrough
     PurchasableScalingValue psvPPWitchCatBuffDuration{&PSVDataConstants::witchCatBuffDuration};
     PurchasableScalingValue psvPPUniRitualBuffPercentage{&PSVDataConstants::uniRitualBuffPercentage};
     PurchasableScalingValue psvPPDevilRitualBuffPercentage{&PSVDataConstants::devilRitualBuffPercentage};
+    PurchasableScalingValue psvPPPowerNapDuration{&PSVDataConstants::powerNapDuration};
+    PurchasableScalingValue psvPPPowerNapStrength{&PSVDataConstants::powerNapStrength};
 
     //
     // Currencies
@@ -208,6 +210,11 @@ struct Playthrough
 
         bool            autocastPurchased = false;
         sf::base::SizeT autocastIndex     = 0u;
+
+        // Gate for the Power Nap PP upgrade: when true, forced wake-ups
+        // (shake or wardencat bonk) grant the waking cat a temporary
+        // cooldown-reduction boost.
+        bool powerNapPurchased = false;
     };
 
     Permanent perm = {};

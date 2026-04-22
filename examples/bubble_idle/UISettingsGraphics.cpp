@@ -110,6 +110,18 @@ void Main::uiSettingsDrawGraphicsTab()
 
             ImGui::SetNextItemWidth(210.f * profile.uiScale);
             ImGui::SliderFloat("Lens Distortion", &profile.bsLensDistortion, 0.f, 10.f, "%.2f");
+
+            ImGui::SetNextItemWidth(210.f * profile.uiScale);
+            ImGui::SliderFloat("Rim Shine Strength", &profile.bsRimShineStrength, 0.f, 5.f, "%.2f");
+
+            ImGui::SetNextItemWidth(210.f * profile.uiScale);
+            ImGui::SliderFloat("Rim Shine Fall Rate", &profile.bsRimShineFallRate, 0.f, 0.02f, "%.4f");
+
+            ImGui::SetNextItemWidth(210.f * profile.uiScale);
+            ImGui::SliderFloat("Rim Shine Time Rate", &profile.bsRimShineTimeRate, 0.f, 3.f, "%.2f");
+
+            ImGui::SetNextItemWidth(210.f * profile.uiScale);
+            ImGui::SliderFloat("Rim Shine Arc", &profile.bsRimShineArc, 0.f, 0.99f, "%.2f");
         }
 
         ImGui::BeginDisabled(!profile.useBubbleShader);

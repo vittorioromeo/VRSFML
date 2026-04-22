@@ -298,6 +298,11 @@ struct Main
     sf::Shader::UniformLocation suBubbleLightness = shader.getUniformLocation("u_bubbleLightness").value();
     sf::Shader::UniformLocation suLensDistortion  = shader.getUniformLocation("u_lensDistortion").value();
 
+    sf::Shader::UniformLocation suRimShineStrength = shader.getUniformLocation("u_rimShineStrength").value();
+    sf::Shader::UniformLocation suRimShineFallRate = shader.getUniformLocation("u_rimShineFallRate").value();
+    sf::Shader::UniformLocation suRimShineTimeRate = shader.getUniformLocation("u_rimShineTimeRate").value();
+    sf::Shader::UniformLocation suRimShineArc      = shader.getUniformLocation("u_rimShineArc").value();
+
     float shaderTime = 0.f;
 
     ////////////////////////////////////////////////////////////
@@ -3503,6 +3508,10 @@ struct Main
     [[nodiscard]] bool canCatNap(const Cat& cat) const;
     void               beginCatNap(Cat& cat, float sleepDurationMs);
     void               gameLoopUpdateNapScheduler(float deltaTimeMs);
+
+    // Apply the Power Nap cooldown-reduction boost to a cat being forcibly
+    // woken (shake or wardencat bonk). No-op when the upgrade isn't owned.
+    void applyPowerNapBoost(Cat& cat);
 
     void popComboBubble(Bubble& bubble);
     void gameLoopUpdateComboBubblePayouts(float deltaTimeMs);

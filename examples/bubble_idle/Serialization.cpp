@@ -374,6 +374,8 @@ DEFINE_TWO_WAY_SERIALIZER(Cat)
 
     FIELD(inspiredCountdown);
     FIELD(boostCountdown);
+    FIELD(napBoostCountdown);
+    FIELD(napBoostMultiplier);
 
     FIELD(nameIdx);
 
@@ -733,6 +735,11 @@ DEFINE_TWO_WAY_SERIALIZER(Profile)
     FIELD(bsBubbleLightness);
     FIELD(bsLensDistortion);
 
+    FIELD(bsRimShineStrength);
+    FIELD(bsRimShineFallRate);
+    FIELD(bsRimShineTimeRate);
+    FIELD(bsRimShineArc);
+
     FIELD(statsLifetime);
 
     FIELD(resWidth);
@@ -973,6 +980,8 @@ DEFINE_TWO_WAY_SERIALIZER(Playthrough::Permanent)
 
     FIELD(autocastPurchased);
     FIELD(autocastIndex);
+
+    FIELD(powerNapPurchased);
 }
 
 ////////////////////////////////////////////////////////////
@@ -1019,6 +1028,8 @@ DEFINE_TWO_WAY_SERIALIZER(Playthrough)
     FIELD(psvPPWitchCatBuffDuration);
     FIELD(psvPPUniRitualBuffPercentage);
     FIELD(psvPPDevilRitualBuffPercentage);
+    FIELD(psvPPPowerNapDuration);
+    FIELD(psvPPPowerNapStrength);
 
     FIELD(money);
 

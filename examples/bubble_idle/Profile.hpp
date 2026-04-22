@@ -48,6 +48,11 @@ struct [[nodiscard]] Profile
     float bsBubbleLightness     = 0.15f;
     float bsLensDistortion      = 7.5f;
 
+    float bsRimShineStrength = 1.5f;
+    float bsRimShineFallRate = 0.003f;
+    float bsRimShineTimeRate = 0.6f;
+    float bsRimShineArc      = 0.8f;
+
     Stats statsLifetime;
 
     sf::Vec2u resWidth = {};

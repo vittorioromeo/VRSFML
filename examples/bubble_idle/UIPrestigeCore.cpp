@@ -97,6 +97,55 @@ void Main::uiPrestigeDrawCoreUpgrades()
         ImGui::NextColumn();
     }
 
+    // TODO P0: use a dedicated "power nap" separator image; reusing
+    // txrPrestigeSeparator7 (currently unused) as a placeholder.
+    if (checkUiUnlock(68u, pt->psvBubbleValue.nPurchases >= 1u))
+    {
+        uiImgsep2(txrPrestigeSeparator7, "power nap");
+
+        uiBeginColumns();
+
+        uiSetUnlockLabelY(68u);
+        (void)uiMakePrestigeOneTimeButton("Power nap",
+                                          4u,
+                                          pt->perm.powerNapPurchased,
+                                          "Forcibly waking a cat from a nap -- by shaking it, or via a wardencat bonk "
+                                          "-- grants that cat a temporary cooldown-reduction boost. The boost stacks "
+                                          "multiplicatively with other buffs (engicat, inspired, ...).\n\n(Note: cats "
+                                          "that wake naturally from a full nap get no boost.)");
+
+        if (checkUiUnlock(69u, pt->perm.powerNapPurchased))
+        {
+            uiSetUnlockLabelY(69u);
+
+            const float currentDuration = pt->psvPPPowerNapDuration.currentValue();
+            const float nextDuration    = pt->psvPPPowerNapDuration.nextValue();
+
+            uiMakePrestigePsvButtonValue("Boost duration",
+                                         pt->psvPPPowerNapDuration,
+                                         "%.2fs",
+                                         static_cast<double>(currentDuration / 1000.f),
+                                         "Increase the Power Nap boost duration from %.2fs to %.2fs.",
+                                         static_cast<double>(currentDuration / 1000.f),
+                                         static_cast<double>(nextDuration / 1000.f),
+                                         "Increase the Power Nap boost duration (MAX).");
+
+            const float currentStrength    = pt->psvPPPowerNapStrength.currentValue();
+            const float nextStrength       = pt->psvPPPowerNapStrength.nextValue();
+            const float currentCooldownMul = 1.f + currentStrength;
+            const float nextCooldownMul    = 1.f + nextStrength;
+
+            uiMakePrestigePsvButtonValue("Boost strength",
+                                         pt->psvPPPowerNapStrength,
+                                         "%.2fx",
+                                         static_cast<double>(currentCooldownMul),
+                                         "Increase the Power Nap cooldown speed-up from %.2fx to %.2fx.",
+                                         static_cast<double>(currentCooldownMul),
+                                         static_cast<double>(nextCooldownMul),
+                                         "Increase the Power Nap cooldown speed-up (MAX).");
+        }
+    }
+
     uiImgsep2(txrPrestigeSeparator5, "cats");
 
     uiBeginColumns();

@@ -260,4 +260,18 @@ inline constexpr PSVData uniRitualBuffPercentage //
 inline constexpr PSVData devilRitualBuffPercentage //
     {.nMaxPurchases = 24u, .cost = {.initial = 8.f, .exponential = 1.25f}, .value = {.initial = 1.f, .linear = 1.f}};
 
+// TODO P0: tune values
+// Power Nap: duration in ms that the cooldown-reduction boost lasts after a
+// forced wake (shake or wardencat bonk). Linear growth keeps the curve
+// predictable.
+inline constexpr PSVData powerNapDuration //
+    {.nMaxPurchases = 10u, .cost = {.initial = 4.f, .exponential = 1.25f}, .value = {.initial = 2000.f, .linear = 500.f}};
+
+// TODO P0: tune values
+// Power Nap: multiplier bonus added to 1.0 to yield the final cooldown
+// speed-up (e.g. value = 0.5 => 1.5x cooldown tick rate, stacking
+// multiplicatively with engicat/inspired boosts).
+inline constexpr PSVData powerNapStrength //
+    {.nMaxPurchases = 8u, .cost = {.initial = 6.f, .exponential = 1.3f}, .value = {.initial = 0.5f, .linear = 0.25f}};
+
 } // namespace PSVDataConstants
