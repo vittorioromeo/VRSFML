@@ -8,9 +8,9 @@
 #include "SFML/Audio/Sound.hpp"
 
 #include "SFML/Audio/AudioSettings.hpp"
-#include "SFML/Audio/MiniaudioUtils.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
-#include "SFML/Audio/SoundBase.hpp"
+#include "SFML/Audio/Priv/MiniaudioUtils.hpp"
+#include "SFML/Audio/Priv/SoundBase.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
 
 #include "SFML/System/Err.hpp"

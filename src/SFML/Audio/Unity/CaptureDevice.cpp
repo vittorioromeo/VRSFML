@@ -10,7 +10,7 @@
 #include "SFML/Audio/AudioContext.hpp"
 #include "SFML/Audio/CaptureDeviceHandle.hpp"
 #include "SFML/Audio/ChannelMap.hpp"
-#include "SFML/Audio/MiniaudioUtils.hpp"
+#include "SFML/Audio/Priv/MiniaudioUtils.hpp"
 #include "SFML/Audio/SoundChannel.hpp"
 
 #include "SFML/System/Err.hpp"

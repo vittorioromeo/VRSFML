@@ -9,9 +9,13 @@
 
 #include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/EffectProcessor.hpp"
-#include "SFML/Audio/MiniaudioUtils.hpp"
-#include "SFML/Audio/SoundBase.hpp"
+#include "SFML/Audio/Priv/MiniaudioUtils.hpp"
+#include "SFML/Audio/Priv/SoundBase.hpp"
 
+#include "SFML/System/Angle.hpp"
+#include "SFML/System/Vec3.hpp"
+
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Clamp.hpp"
 
 #include <miniaudio.h>

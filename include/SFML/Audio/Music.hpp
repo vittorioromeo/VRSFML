@@ -8,12 +8,9 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Audio/Export.hpp"
 
-#include "SFML/Audio/SoundStream.hpp"
+#include "SFML/Audio/Priv/MiniaudioSoundSource.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -31,7 +28,7 @@ struct AudioSettings;
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief Streamed music source built on top of `sf::SoundStream`
+/// \brief Streamed music source pulling samples from a `MusicReader`
 ///
 /// `Music` is the high-level streamed counterpart to
 /// `sf::Sound`: it pulls samples on demand from a
@@ -47,7 +44,7 @@ namespace sf
 /// `setLoopPoints` / `getLoopPoints`.
 ///
 ////////////////////////////////////////////////////////////
-class SFML_AUDIO_API Music : public SoundStream
+class SFML_AUDIO_API Music : public priv::MiniaudioSoundSource
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -182,46 +179,45 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const MusicReader& getMusicReader() const;
 
-protected:
     ////////////////////////////////////////////////////////////
-    /// \brief Request a new chunk of audio samples from the stream source
+    /// \brief Get the playback device this music is rendered through
     ///
-    /// This function writes the next samples to read from the audio
-    /// file into `outBuffer` (which is owned by the base class).
-    ///
-    /// \param outBuffer Destination buffer to fill with produced samples
-    ///
-    /// \return `true` to continue playback, `false` to stop
+    /// \return Reference to the playback device this music was constructed with
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool onGetData(base::Vector<base::I16>& outBuffer) override;
+    [[nodiscard]] PlaybackDevice& getPlaybackDevice() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Change the current playing position in the stream source
+    /// \brief Change the current playing position of the music
     ///
-    /// \param timeOffset New playing position, from the beginning of the music
+    /// The playing position can be changed when the music is
+    /// either paused or playing. Changing the playing position
+    /// when the music is stopped has no effect, since playing
+    /// it would reset the position.
     ///
-    ////////////////////////////////////////////////////////////
-    void onSeek(Time timeOffset) override;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Change the current playing position in the stream source to the loop offset
-    ///
-    /// This is called by the underlying `SoundStream` whenever it needs us to reset
-    /// the seek position for a loop. We then determine whether we are looping on a
-    /// loop point or the end-of-file, perform the seek, and return the new position.
-    ///
-    /// \return The seek position after looping (or `base::nullOpt` if there's no loop)
+    /// \param playingOffset New playing position, from the beginning of the music
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<base::U64> onLoop() override;
+    void setPlayingOffset(Time playingOffset) override;
 
 private:
+    ////////////////////////////////////////////////////////////
+    /// \brief Return the underlying `SoundBase`
+    ///
+    /// Inherited virtual -- routes the public
+    /// `MiniaudioSoundSource` API (volume, pitch, looping, …)
+    /// to the `ma_sound` owned by the internal
+    /// `SoundStream<MusicState>`, so there is only one
+    /// authoritative audio source per `Music`.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] priv::MiniaudioUtils::SoundBase& getSoundBase() const override;
+
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 196> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 2176> m_impl; //!< Holds the templated `SoundStream<MusicState>` (hidden from this header)
 };
 
 } // namespace sf
@@ -272,6 +268,6 @@ private:
 /// music.play();
 /// \endcode
 ///
-/// \see `sf::Sound`, `sf::SoundStream`
+/// \see `sf::Sound`, `sf::SoundStream`, `sf::AudioSettings`
 ///
 ////////////////////////////////////////////////////////////
