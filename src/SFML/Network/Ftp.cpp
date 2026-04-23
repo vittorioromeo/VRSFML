@@ -8,16 +8,21 @@
 #include "SFML/Network/Ftp.hpp"
 
 #include "SFML/Network/IpAddress.hpp"
+#include "SFML/Network/Socket.hpp"
+#include "SFML/Network/TcpSocket.hpp"
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
+#include "SFML/System/Time.hpp"
 
 #include "SFML/Base/Algorithm/Copy.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Span.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Vector.hpp"
