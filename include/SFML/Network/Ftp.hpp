@@ -13,6 +13,7 @@
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Time.hpp"
 
+#include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Span.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"

@@ -9,10 +9,12 @@
 
 #include "SFML/Network/IpAddress.hpp"
 #include "SFML/Network/Packet.hpp"
+#include "SFML/Network/Socket.hpp"
 #include "SFML/Network/SocketImpl.hpp"
 
 #include "SFML/System/Err.hpp"
 
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 

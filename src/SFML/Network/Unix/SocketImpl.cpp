@@ -7,16 +7,26 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Network/SocketImpl.hpp"
 
+#include "SFML/Network/Socket.hpp"
+#include "SFML/Network/SocketHandle.hpp"
+
 #include "SFML/System/Err.hpp"
 
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 #include <arpa/inet.h>
+#include <asm-generic/socket.h>
+#include <bits/types/struct_timeval.h>
 #include <fcntl.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
+#include <sys/select.h>
+#include <sys/socket.h>
 #include <unistd.h>
 
 #include <cerrno>

@@ -7,22 +7,28 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Network/TcpSocket.hpp"
 
+#include "SFML/Config.hpp"
+
 #include "SFML/Network/IpAddress.hpp"
 #include "SFML/Network/Packet.hpp"
+#include "SFML/Network/Socket.hpp"
 #include "SFML/Network/SocketImpl.hpp"
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Path.hpp"
+#include "SFML/System/Time.hpp"
 #include "SFML/System/UnicodeString.hpp"
 
 #include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/Builtin/Strlen.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
+#include "SFML/Base/StringView.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
 
@@ -33,9 +39,15 @@
     #include <mbedtls/entropy.h>
 #endif
 
+#include <mbedtls/build_info.h>
 #include <mbedtls/error.h>
 #include <mbedtls/net_sockets.h>
+#include <mbedtls/pk.h>
 #include <mbedtls/ssl.h>
+#include <mbedtls/threading.h>
+#include <mbedtls/x509.h>
+#include <mbedtls/x509_crl.h>
+#include <mbedtls/x509_crt.h>
 
 #if defined(SFML_SYSTEM_WINDOWS)
     #include "SFML/System/WindowsHeader.hpp"

@@ -7,10 +7,12 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Network/Socket.hpp"
 
+#include "SFML/Network/SocketHandle.hpp"
 #include "SFML/Network/SocketImpl.hpp"
 
 #include "SFML/System/Err.hpp"
 
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Exchange.hpp"
 
 

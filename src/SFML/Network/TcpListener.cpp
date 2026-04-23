@@ -7,6 +7,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Network/TcpListener.hpp"
 
+#include "SFML/Network/Socket.hpp"
+#include "SFML/Network/SocketHandle.hpp"
 #include "SFML/Network/SocketImpl.hpp"
 #include "SFML/Network/TcpSocket.hpp"
 
