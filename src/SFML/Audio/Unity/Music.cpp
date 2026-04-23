@@ -106,10 +106,13 @@ Music::~Music()
         return;
 #endif
 
-    // TODO P1: revisit?
-    // Stop the sound before `m_impl->samples` is destroyed, otherwise the audio
-    // callback can race with `onGetData()` during derived-member teardown.
-    pause();
+    // Must drain the audio thread before `m_impl->samples` is destroyed:
+    // member destruction order frees the samples vector in `Music::Impl`
+    // before `SoundStream::Impl::~Impl` gets to call `uninitSound`, so the
+    // audio callback can still be mid-`onGetData` on freed memory. Only
+    // `ma_sound_uninit` (via `detachFromEngine`) synchronizes; `pause()`
+    // does not.
+    detachFromEngine();
 }
 
 

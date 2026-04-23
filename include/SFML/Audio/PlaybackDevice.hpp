@@ -148,6 +148,14 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isDefault() const;
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the sample rate of the underlying audio engine
+    ///
+    /// \return Sample rate (number of audio samples to play per second)
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] unsigned int getSampleRate() const;
+
 private:
     // Friends
     using SoundBase = priv::MiniaudioUtils::SoundBase;

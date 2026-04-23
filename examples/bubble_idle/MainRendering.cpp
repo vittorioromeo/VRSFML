@@ -330,9 +330,9 @@ void Main::gameLoopDrawBubbles()
 
     static_assert(sf::base::getArraySize(batchToUseByType) == nBubbleTypes);
 
-    for (const auto & bubble : pt->bubbles)
+    for (const auto& bubble : pt->bubbles)
     {
-         if (!bubbleCullingBoundaries.isInside(bubble.position))
+        if (!bubbleCullingBoundaries.isInside(bubble.position))
             continue;
 
         constexpr float radiusToScale = 1.f / 256.f;
@@ -347,7 +347,7 @@ void Main::gameLoopDrawBubbles()
             constexpr float freezeMs = 450.f;
             const float     phase    = sf::base::clamp(1.f - bubble.pendingTransformMs / freezeMs, 0.f, 1.f);
 
-            const float bulge = phase < 0.5f ? easeOutBack(phase * 2.f) : 1.f - easeInBack((phase - 0.5f) * 2.f);
+            const float bulge     = phase < 0.5f ? easeOutBack(phase * 2.f) : 1.f - easeInBack((phase - 0.5f) * 2.f);
             pendingTransformScale = 1.f + bulge * 0.35f;
         }
 

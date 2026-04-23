@@ -160,6 +160,19 @@ protected:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] virtual base::Optional<base::U64> onLoop();
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Detach the stream from the audio engine and wait for the audio thread to drain
+    ///
+    /// Must be called from a derived class destructor body BEFORE any data
+    /// accessed by `onGetData` / `onSeek` / `onLoop` is torn down. Only
+    /// `ma_sound_uninit` (invoked here) synchronizes with the audio thread;
+    /// `pause()` / `stop()` do not. Without this call, the audio callback
+    /// may still be in flight and touch freed derived-class memory. This
+    /// method is idempotent.
+    ///
+    ////////////////////////////////////////////////////////////
+    void detachFromEngine();
+
 private:
     ////////////////////////////////////////////////////////////
     /// \brief Get the sound object

@@ -36,6 +36,14 @@
 #endif
 
 #define QOI_IMPLEMENTATION
+
+// Avoid conflicts when static linking:
+// See https://github.com/SFML/SFML/commit/548cdb9c394da1b08e563a1d7f6fa6225a6f3ece
+#define qoi_decode sf_qoi_decode
+#define qoi_encode sf_qoi_encode
+#define qoi_read   sf_qoi_read
+#define qoi_write  sf_qoi_write
+
 #include <qoi.h>
 
 #define STB_IMAGE_STATIC
