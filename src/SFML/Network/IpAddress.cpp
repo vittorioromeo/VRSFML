@@ -89,7 +89,7 @@ base::Optional<IpAddress> IpAddress::getLocalAddress()
     priv::SocketImpl::close(sock);
 
     // Finally build the IP address
-    return base::makeOptional<IpAddress>(priv::SocketImpl::getNtohl(address.sAddr()));
+    return base::makeOptional<IpAddress>(priv::SocketImpl::networkToHost(address.sAddr()));
 }
 
 

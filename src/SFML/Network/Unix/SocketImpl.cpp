@@ -81,9 +81,9 @@ AddrLength SockAddrIn::size() const
 SockAddrIn SocketImpl::createAddress(base::U32 address, unsigned short port)
 {
     auto addr            = sockaddr_in();
-    addr.sin_addr.s_addr = priv::SocketImpl::getHtonl(address);
+    addr.sin_addr.s_addr = priv::SocketImpl::hostToNetwork(address);
     addr.sin_family      = AF_INET;
-    addr.sin_port        = priv::SocketImpl::getHtons(port);
+    addr.sin_port        = priv::SocketImpl::hostToNetwork(port);
 
 #if defined(SFML_SYSTEM_MACOS)
     addr.sin_len = sizeof(addr);
@@ -150,37 +150,30 @@ bool SocketImpl::connect(SocketHandle handle, SockAddrIn& address)
 
 
 ////////////////////////////////////////////////////////////
-NetworkLong SocketImpl::getNtohl(NetworkLong netlong)
+NetworkLong SocketImpl::networkToHost(NetworkLong netlong)
 {
     return ::ntohl(netlong);
 }
 
 
 ////////////////////////////////////////////////////////////
-NetworkShort SocketImpl::getNtohs(NetworkShort netshort)
+NetworkShort SocketImpl::networkToHost(NetworkShort netshort)
 {
     return ::ntohs(netshort);
 }
 
 
 ////////////////////////////////////////////////////////////
-NetworkLong SocketImpl::getNtohl(SockAddrIn addr)
-{
-    return ::ntohl(addr.m_impl->sin_addr.s_addr);
-}
-
-
-////////////////////////////////////////////////////////////
-NetworkShort SocketImpl::getHtons(NetworkShort hostshort)
-{
-    return ::htons(hostshort);
-}
-
-
-////////////////////////////////////////////////////////////
-NetworkLong SocketImpl::getHtonl(NetworkLong hostlong)
+NetworkLong SocketImpl::hostToNetwork(NetworkLong hostlong)
 {
     return ::htonl(hostlong);
+}
+
+
+////////////////////////////////////////////////////////////
+NetworkShort SocketImpl::hostToNetwork(NetworkShort hostshort)
+{
+    return ::htons(hostshort);
 }
 
 
@@ -236,20 +229,25 @@ Socket::Status SocketImpl::getErrorStatus()
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<base::U32> SocketImpl::inetAddr(const char* data)
+base::Optional<base::U32> SocketImpl::parseIpv4(const char* data)
 {
-    const base::U32 ip = ::inet_addr(data);
-    return ip == INADDR_NONE ? base::nullOpt : base::makeOptional<base::U32>(ip);
+    in_addr address{};
+    if (::inet_pton(AF_INET, data, &address) != 1)
+        return base::nullOpt;
+
+    return base::makeOptional<base::U32>(address.s_addr);
 }
 
 
 ////////////////////////////////////////////////////////////
-const char* SocketImpl::addrToString(base::U32 addr)
+SocketImpl::Ipv4StringBuffer SocketImpl::addrToString(base::U32 netLong)
 {
     in_addr address{};
-    address.s_addr = addr;
+    address.s_addr = netLong;
 
-    return inet_ntoa(address);
+    Ipv4StringBuffer out{};
+    ::inet_ntop(AF_INET, &address, out.data, sizeof(out.data));
+    return out;
 }
 
 

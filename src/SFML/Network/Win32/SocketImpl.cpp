@@ -196,37 +196,30 @@ SocketHandle SocketImpl::invalidSocket()
 
 
 ////////////////////////////////////////////////////////////
-unsigned long SocketImpl::getNtohl(unsigned long netlong)
+unsigned long SocketImpl::networkToHost(unsigned long netlong)
 {
     return ::ntohl(netlong);
 }
 
 
 ////////////////////////////////////////////////////////////
-unsigned short SocketImpl::getNtohs(unsigned short netshort)
+unsigned short SocketImpl::networkToHost(unsigned short netshort)
 {
     return ::ntohs(netshort);
 }
 
 
 ////////////////////////////////////////////////////////////
-unsigned long SocketImpl::getNtohl(SockAddrIn addr)
-{
-    return ::ntohl(addr.m_impl->sin_addr.s_addr);
-}
-
-
-////////////////////////////////////////////////////////////
-unsigned short SocketImpl::getHtons(NetworkShort hostshort)
-{
-    return ::htons(hostshort);
-}
-
-
-////////////////////////////////////////////////////////////
-unsigned long SocketImpl::getHtonl(NetworkLong hostlong)
+unsigned long SocketImpl::hostToNetwork(NetworkLong hostlong)
 {
     return ::htonl(hostlong);
+}
+
+
+////////////////////////////////////////////////////////////
+unsigned short SocketImpl::hostToNetwork(NetworkShort hostshort)
+{
+    return ::htons(hostshort);
 }
 
 
@@ -249,20 +242,25 @@ int SocketImpl::select(SocketHandle handle, long long timeoutUs)
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<base::U32> SocketImpl::inetAddr(const char* data)
+base::Optional<base::U32> SocketImpl::parseIpv4(const char* data)
 {
-    const base::U32 ip = ::inet_addr(data);
-    return ip == INADDR_NONE ? base::nullOpt : base::makeOptional<base::U32>(ip);
+    in_addr address{};
+    if (::inet_pton(AF_INET, data, &address) != 1)
+        return base::nullOpt;
+
+    return base::makeOptional<base::U32>(address.s_addr);
 }
 
 
 ////////////////////////////////////////////////////////////
-const char* SocketImpl::addrToString(base::U32 addr)
+SocketImpl::Ipv4StringBuffer SocketImpl::addrToString(base::U32 netLong)
 {
     in_addr address{};
-    address.s_addr = addr;
+    address.s_addr = netLong;
 
-    return inet_ntoa(address);
+    Ipv4StringBuffer out{};
+    ::inet_ntop(AF_INET, &address, out.data, sizeof(out.data));
+    return out;
 }
 
 

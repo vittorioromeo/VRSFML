@@ -14,7 +14,6 @@
 
 #include "SFML/System/IO.hpp"
 
-#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/String.hpp"
 
@@ -37,10 +36,7 @@ public:
     /// \param port Port of the remote host
     ///
     ////////////////////////////////////////////////////////////
-    explicit NetworkRecorder(sf::IpAddress host, unsigned short port) :
-        m_host(host),
-        m_port(port),
-        m_socket(/* isBlocking */ true)
+    explicit NetworkRecorder(sf::IpAddress host, unsigned short port) : m_host(host), m_port(port)
     {
     }
 
@@ -63,12 +59,17 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool onStart(sf::CaptureDevice&) override
     {
-        if (m_socket.connect(m_host, m_port) == sf::Socket::Status::Done)
+        m_socket = sf::TcpSocket::create(/* isBlocking */ true);
+        if (!m_socket.hasValue())
+            return false;
+
+        if (m_socket->connect(m_host, m_port) == sf::Socket::Status::Done)
         {
             sf::cOut() << "Connected to server " << sf::IpAddressUtils::toString(m_host) << sf::endL;
             return true;
         }
 
+        m_socket.reset();
         return false;
     }
 
@@ -84,7 +85,7 @@ private:
         packet.append(samples, sampleCount * sizeof(sf::base::I16));
 
         // Send the audio packet to the server
-        return m_socket.send(packet) == sf::Socket::Status::Done;
+        return m_socket->send(packet) == sf::Socket::Status::Done;
     }
 
     ////////////////////////////////////////////////////////////
@@ -97,15 +98,15 @@ private:
         sf::Packet packet;
         packet << clientEndOfStream;
 
-        if (m_socket.send(packet) != sf::Socket::Status::Done)
+        if (m_socket->send(packet) != sf::Socket::Status::Done)
         {
             sf::cErr() << "Failed to send end-of-stream packet" << sf::endL;
             return false;
         }
 
         // Close the socket
-        [[maybe_unused]] const bool rc = m_socket.disconnect();
-        SFML_BASE_ASSERT(rc);
+        m_socket->disconnect();
+        m_socket.reset();
 
         return true;
     }
@@ -113,9 +114,9 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    sf::IpAddress  m_host;   ///< Address of the remote host
-    unsigned short m_port;   ///< Remote port
-    sf::TcpSocket  m_socket; ///< Socket used to communicate with the server
+    sf::IpAddress                     m_host;   ///< Address of the remote host
+    unsigned short                    m_port;   ///< Remote port
+    sf::base::Optional<sf::TcpSocket> m_socket; ///< Socket used to communicate with the server (created in onStart)
 };
 
 

@@ -19,6 +19,7 @@
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp" // IWYU pragma: keep
@@ -43,9 +44,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     NetworkAudioStream(sf::PlaybackDevice& playbackDevice) :
-        sf::SoundStream{playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, 44'100u},
-        m_listener(/* isBlocking */ true),
-        m_client(/* isBlocking */ true)
+        sf::SoundStream{playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, 44'100u}
     {
     }
 
@@ -67,15 +66,18 @@ public:
     {
         if (!m_hasFinished)
         {
-            // Listen to the given port for incoming connections
-            if (m_listener.listen(port) != sf::Socket::Status::Done)
+            // Create a server socket already listening on `port`
+            m_listener = sf::TcpListener::create(port, /* isBlocking */ true);
+            if (!m_listener.hasValue())
                 return;
             sf::cOut() << "Server is listening to port " << port << ", waiting for connections... " << sf::endL;
 
             // Wait for a connection
-            if (m_listener.accept(m_client) != sf::Socket::Status::Done)
+            auto acceptResult = m_listener->accept();
+            if (acceptResult.status != sf::Socket::Status::Done)
                 return;
-            sf::cOut() << "Client connected: " << sf::IpAddressUtils::toString(m_client.getRemoteAddress().value())
+            m_client = SFML_BASE_MOVE(acceptResult.socket);
+            sf::cOut() << "Client connected: " << sf::IpAddressUtils::toString(m_client->getRemoteAddress().value())
                        << sf::endL;
 
             // Start playback
@@ -139,7 +141,7 @@ private:
         {
             // Get waiting audio data from the network
             sf::Packet packet;
-            if (m_client.receive(packet) != sf::Socket::Status::Done)
+            if (m_client->receive(packet) != sf::Socket::Status::Done)
                 break;
 
             // Extract the message ID
@@ -180,12 +182,12 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    sf::TcpListener                 m_listener;
-    sf::TcpSocket                   m_client;
-    std::recursive_mutex            m_mutex;
-    sf::base::Vector<sf::base::I16> m_samples;
-    sf::base::SizeT                 m_offset{};
-    bool                            m_hasFinished{};
+    sf::base::Optional<sf::TcpListener> m_listener;
+    sf::base::Optional<sf::TcpSocket>   m_client;
+    std::recursive_mutex                m_mutex;
+    sf::base::Vector<sf::base::I16>     m_samples;
+    sf::base::SizeT                     m_offset{};
+    bool                                m_hasFinished{};
 };
 
 

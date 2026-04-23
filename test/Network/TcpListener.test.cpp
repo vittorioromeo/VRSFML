@@ -1,9 +1,11 @@
 #include "SFML/Network/TcpListener.hpp"
 
 // Other 1st party headers
+#include "SFML/Network/IpAddress.hpp"
 #include "SFML/Network/Socket.hpp"
 #include "SFML/Network/TcpSocket.hpp"
 
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/Trait/IsCopyAssignable.hpp"
 #include "SFML/Base/Trait/IsCopyConstructible.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
@@ -22,42 +24,26 @@ TEST_CASE("[Network] sf::TcpListener")
         STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::TcpListener));
     }
 
-    SECTION("Construction")
+    SECTION("Factory: valid port")
     {
-        const sf::TcpListener tcpListener(/* isBlocking */ true);
-        CHECK(tcpListener.getLocalPort() == 0);
+        auto listenerOpt = sf::TcpListener::create(sf::Socket::AnyPort, /* isBlocking */ true);
+        REQUIRE(listenerOpt.hasValue());
+
+        CHECK(listenerOpt->getLocalPort() != 0);
     }
 
-    SECTION("listen()")
+    SECTION("Factory: rejects broadcast address")
     {
-        sf::TcpListener tcpListener(/* isBlocking */ true);
-
-        SECTION("Valid")
-        {
-            CHECK(tcpListener.listen(0) == sf::Socket::Status::Done);
-            CHECK(tcpListener.getLocalPort() != 0);
-        }
-
-        SECTION("Invalid")
-        {
-            CHECK(tcpListener.listen(0, sf::IpAddress::Broadcast) == sf::Socket::Status::Error);
-            CHECK(tcpListener.getLocalPort() == 0);
-        }
+        CHECK(!sf::TcpListener::create(sf::Socket::AnyPort, /* isBlocking */ true, sf::IpAddress::Broadcast).hasValue());
     }
 
-    SECTION("close()")
+    SECTION("accept() without a pending connection (non-blocking)")
     {
-        sf::TcpListener tcpListener(/* isBlocking */ true);
-        CHECK(tcpListener.listen(0) == sf::Socket::Status::Done);
-        CHECK(tcpListener.getLocalPort() != 0);
-        CHECK(tcpListener.close());
-        CHECK(tcpListener.getLocalPort() == 0);
-    }
+        auto listenerOpt = sf::TcpListener::create(sf::Socket::AnyPort, /* isBlocking */ false);
+        REQUIRE(listenerOpt.hasValue());
 
-    SECTION("accept()")
-    {
-        sf::TcpListener tcpListener(/* isBlocking */ true);
-        sf::TcpSocket   tcpSocket(/* isBlocking */ true);
-        CHECK(tcpListener.accept(tcpSocket) == sf::Socket::Status::Error);
+        const auto result = listenerOpt->accept();
+        CHECK(result.status == sf::Socket::Status::NotReady);
+        CHECK(!result.socket.hasValue());
     }
 }

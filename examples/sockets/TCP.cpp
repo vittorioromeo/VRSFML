@@ -68,18 +68,19 @@ RZlDlROT9eBnJ76WeMDiPMz+7E/oUdvGCAhuZb0=
 ////////////////////////////////////////////////////////////
 void runTcpServer(unsigned short port, const bool tls)
 {
-    // Create a server socket to accept new connections
-    sf::TcpListener listener(/* isBlocking */ true);
-
-    // Listen to the given port for incoming connections
-    if (listener.listen(port) != sf::Socket::Status::Done)
+    // Create a server socket that is already listening on `port`
+    auto listenerOpt = sf::TcpListener::create(port, /* isBlocking */ true);
+    if (!listenerOpt.hasValue())
         return;
+
     sf::cOut() << "Server is listening to port " << port << ", waiting for connections... " << sf::endL;
 
     // Wait for a connection
-    sf::TcpSocket socket(/* isBlocking */ true);
-    if (listener.accept(socket) != sf::Socket::Status::Done)
+    auto acceptResult = listenerOpt->accept();
+    if (acceptResult.status != sf::Socket::Status::Done)
         return;
+
+    auto& socket = *acceptResult.socket;
     sf::cOut() << "Client connected: " << sf::IpAddressUtils::toString(socket.getRemoteAddress().value()) << sf::endL;
 
     if (tls)
@@ -131,7 +132,11 @@ void runTcpClient(unsigned short port, const bool tls)
     } while (!server.hasValue());
 
     // Create a socket for communicating with the server
-    sf::TcpSocket socket(/* isBlocking */ true);
+    auto socketOpt = sf::TcpSocket::create(/* isBlocking */ true);
+    if (!socketOpt.hasValue())
+        return;
+
+    auto& socket = *socketOpt;
 
     // Connect to the server
     if (socket.connect(server.value(), port) != sf::Socket::Status::Done)

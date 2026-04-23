@@ -20,45 +20,40 @@ namespace sf
 ////////////////////////////////////////////////////////////
 base::Optional<IpAddress> IpAddressUtils::resolve(base::StringView address)
 {
-    using namespace base::literals;
-
     if (address.empty())
     {
-        // Not generating en error message here as resolution failure is a valid outcome.
+        // Not generating an error message here as resolution failure is a valid outcome.
         return base::nullOpt;
     }
 
-    if (address == "255.255.255.255"_sv)
-    {
-        // The broadcast address needs to be handled explicitly,
-        // because it is also the value returned by inet_addr on error
-        return base::makeOptional(IpAddress::Broadcast);
-    }
-
-    if (address == "0.0.0.0"_sv)
-        return base::makeOptional(IpAddress::Any);
-
-    // Try to convert the address as a byte representation ("xxx.xxx.xxx.xxx")
-    if (const auto ip = priv::SocketImpl::inetAddr(address.data()); ip.hasValue())
-        return base::makeOptional<IpAddress>(priv::SocketImpl::getNtohl(*ip));
+    // Try to convert the address as a byte representation ("xxx.xxx.xxx.xxx").
+    // `parseIpv4` uses `inet_pton`, which (unlike the legacy `inet_addr`) has no
+    // ambiguity between "broadcast address" and "error", so we don't need to
+    // special-case `"255.255.255.255"` or `"0.0.0.0"` here.
+    if (const auto ip = priv::SocketImpl::parseIpv4(address.data()); ip.hasValue())
+        return base::makeOptional<IpAddress>(priv::SocketImpl::networkToHost(*ip));
 
     // Not a valid address, try to convert it as a host name
     const base::Optional converted = priv::SocketImpl::convertToHostname(address.data());
 
     if (!converted.hasValue())
     {
-        // Not generating en error message here as resolution failure is a valid outcome.
+        // Not generating an error message here as resolution failure is a valid outcome.
         return base::nullOpt;
     }
 
-    return base::makeOptional<IpAddress>(priv::SocketImpl::getNtohl(*converted));
+    return base::makeOptional<IpAddress>(priv::SocketImpl::networkToHost(*converted));
 }
 
 
 ////////////////////////////////////////////////////////////
 base::String IpAddressUtils::toString(IpAddress ipAddress)
 {
-    return priv::SocketImpl::addrToString(priv::SocketImpl::getNtohl(ipAddress.m_address));
+    // `m_address` is the host-byte-order integer representation of the four
+    // octets. `addrToString` wraps `inet_ntop`, which expects the address in
+    // *network* byte order, so we convert host -> network here.
+    const auto buf = priv::SocketImpl::addrToString(priv::SocketImpl::hostToNetwork(ipAddress.m_address));
+    return base::String{buf.data};
 }
 
 } // namespace sf

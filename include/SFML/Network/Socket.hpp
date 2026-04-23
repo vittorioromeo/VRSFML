@@ -82,7 +82,6 @@ public:
     /// In non-blocking mode, calls will always return immediately,
     /// using the return code to signal whether there was data
     /// available or not.
-    /// By default, all sockets are blocking.
     ///
     /// \param blocking `true` to set the socket as blocking, `false` for non-blocking
     ///
@@ -113,21 +112,23 @@ protected:
     };
 
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
+    /// \brief Construct from an already-valid OS handle
     ///
-    /// This constructor can only be accessed by derived classes.
+    /// Derived classes must obtain a valid handle via the factory
+    /// helpers below before constructing. A `Socket` always owns
+    /// a valid OS handle until it is moved-from or explicitly
+    /// closed by a derived class (e.g. `TcpSocket::disconnect`).
     ///
-    /// \param isBlocking Blocking mode enabled?
-    /// \param type Type of the socket (TCP or UDP)
+    /// \param type       Type of the socket (TCP or UDP)
+    /// \param handle     Valid OS-level socket handle
+    /// \param isBlocking Current blocking state of the handle
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Socket(Type type, bool isBlocking);
+    [[nodiscard]] Socket(Type type, SocketHandle handle, bool isBlocking);
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the internal handle of the socket
     ///
-    /// The returned handle may be invalid if the socket
-    /// was not created yet (or already destroyed).
     /// This function can only be accessed by derived classes.
     ///
     /// \return The internal (OS-specific) handle of the socket
@@ -136,31 +137,52 @@ protected:
     [[nodiscard]] SocketHandle getNativeHandle() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Create the internal representation of the socket
+    /// \brief Apply TCP-specific configuration to an open handle
     ///
-    /// This function can only be accessed by derived classes.
+    /// Sets the blocking mode and applies TCP options (TCP_NODELAY,
+    /// SO_NOSIGPIPE on macOS). Used by both `createTcpHandle` and
+    /// `TcpListener::accept` to keep the two configuration paths in
+    /// sync.
+    ///
+    /// \param handle     Valid OS-level TCP socket handle
+    /// \param isBlocking Desired blocking state
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool create();
+    static void configureTcpHandle(SocketHandle handle, bool isBlocking);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Create the internal representation of the socket
-    ///        from a socket handle
+    /// \brief Create a fully-configured TCP socket handle
     ///
-    /// This function can only be accessed by derived classes.
+    /// Equivalent to opening a TCP socket and calling
+    /// `configureTcpHandle` on it.
     ///
-    /// \param handle OS-specific handle of the socket to wrap
+    /// \param isBlocking Desired blocking state
+    ///
+    /// \return Valid handle on success, `invalidSocket` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool create(SocketHandle handle);
+    [[nodiscard]] static SocketHandle createTcpHandle(bool isBlocking);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Close the socket gracefully
+    /// \brief Create a fully-configured UDP socket handle
     ///
-    /// This function can only be accessed by derived classes.
+    /// Sets the blocking mode and enables broadcast.
+    ///
+    /// \param isBlocking Desired blocking state
+    ///
+    /// \return Valid handle on success, `invalidSocket` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool close();
+    [[nodiscard]] static SocketHandle createUdpHandle(bool isBlocking);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Close the OS handle and invalidate it
+    ///
+    /// After this call the socket is "dead": any further use is
+    /// a programming error. The destructor is safe.
+    ///
+    ////////////////////////////////////////////////////////////
+    void closeHandle();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the port to which the socket is bound locally

@@ -10,10 +10,12 @@
 #include "SFML/Network/IpAddress.hpp"
 #include "SFML/Network/Packet.hpp"
 #include "SFML/Network/Socket.hpp"
+#include "SFML/Network/SocketHandle.hpp"
 #include "SFML/Network/SocketImpl.hpp"
 
 #include "SFML/System/Err.hpp"
 
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 
@@ -21,8 +23,21 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-UdpSocket::UdpSocket(bool isBlocking) : Socket(Type::Udp, isBlocking), m_buffer(MaxDatagramSize)
+UdpSocket::UdpSocket(SocketHandle handle, bool isBlocking) :
+    Socket(Type::Udp, handle, isBlocking),
+    m_buffer(MaxDatagramSize)
 {
+}
+
+
+////////////////////////////////////////////////////////////
+base::Optional<UdpSocket> UdpSocket::create(bool isBlocking)
+{
+    const SocketHandle handle = createUdpHandle(isBlocking);
+    if (handle == priv::SocketImpl::invalidSocket())
+        return base::nullOpt;
+
+    return base::makeOptionalFromFunc([&] { return UdpSocket(handle, isBlocking); });
 }
 
 
@@ -36,19 +51,15 @@ unsigned short UdpSocket::getLocalPort() const
 ////////////////////////////////////////////////////////////
 Socket::Status UdpSocket::bind(unsigned short port, IpAddress address)
 {
-    // Close the socket if it is already bound
-    if (getNativeHandle() != priv::SocketImpl::invalidSocket())
-        (void)close(); // Intentionally discard
+    SFML_BASE_ASSERT(getNativeHandle() != priv::SocketImpl::invalidSocket() &&
+                     "UdpSocket handle must be valid (constructed via factory)");
 
-    // Create the internal socket if it doesn't exist
-    if (!create())
-        return Status::Error;
-
-    // Check if the address is valid
     if (address == IpAddress::Broadcast)
+    {
+        priv::err() << "Cannot bind UDP socket to broadcast address";
         return Status::Error;
+    }
 
-    // Bind the socket
     priv::SockAddrIn addr = priv::SocketImpl::createAddress(address.toInteger(), port);
     if (!priv::SocketImpl::bind(getNativeHandle(), addr))
     {
@@ -61,18 +72,10 @@ Socket::Status UdpSocket::bind(unsigned short port, IpAddress address)
 
 
 ////////////////////////////////////////////////////////////
-bool UdpSocket::unbind()
-{
-    return close();
-}
-
-
-////////////////////////////////////////////////////////////
 Socket::Status UdpSocket::send(const void* data, base::SizeT size, IpAddress remoteAddress, unsigned short remotePort)
 {
-    // Create the internal socket if it doesn't exist
-    if (!create())
-        return Status::Error;
+    SFML_BASE_ASSERT(getNativeHandle() != priv::SocketImpl::invalidSocket() &&
+                     "UdpSocket handle must be valid (constructed via factory)");
 
     // Make sure that all the data will fit in one datagram
     if (size > MaxDatagramSize)
@@ -112,6 +115,9 @@ Socket::Status UdpSocket::receive(void*                      data,
                                   base::Optional<IpAddress>& remoteAddress,
                                   unsigned short&            remotePort)
 {
+    SFML_BASE_ASSERT(getNativeHandle() != priv::SocketImpl::invalidSocket() &&
+                     "UdpSocket handle must be valid (constructed via factory)");
+
     // First clear the variables to fill
     received      = 0;
     remoteAddress = base::nullOpt;
@@ -146,8 +152,8 @@ Socket::Status UdpSocket::receive(void*                      data,
 
     // Fill the sender information
     received = static_cast<base::SizeT>(sizeReceived);
-    remoteAddress.emplace(priv::SocketImpl::getNtohl(address.sAddr()));
-    remotePort = priv::SocketImpl::getNtohs(address.sinPort());
+    remoteAddress.emplace(priv::SocketImpl::networkToHost(address.sAddr()));
+    remotePort = priv::SocketImpl::networkToHost(address.sinPort());
 
     return Status::Done;
 }
