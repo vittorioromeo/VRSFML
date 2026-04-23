@@ -319,7 +319,7 @@ TEST_CASE("[System] sf::Path")
 
     SECTION("operator<<(ostream, Path) with non-ASCII does not throw")
     {
-        // If streaming threw, doctest catches it and fails the test — no explicit guard needed.
+        // If streaming threw, doctest catches it and fails the test -- no explicit guard needed.
         std::ostringstream oss;
         oss << sf::Path(U"hello-🐌.txt");
         CHECK(!oss.str().empty());
