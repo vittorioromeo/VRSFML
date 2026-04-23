@@ -9,6 +9,7 @@
 #include "SFML/Network/Export.hpp"
 
 #include "SFML/Network/Socket.hpp"
+#include "SFML/Network/SocketHandle.hpp"
 
 #include "SFML/System/Time.hpp"
 #include "SFML/System/UnicodeString.hpp"
@@ -65,10 +66,18 @@ public:
     };
 
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
+    /// \brief Factory: create an unconnected TCP socket
+    ///
+    /// Creates the underlying OS handle and configures its
+    /// blocking mode and TCP-specific options. The returned
+    /// socket is ready to `connect` but is not yet connected.
+    ///
+    /// \param isBlocking Desired blocking state
+    ///
+    /// \return `TcpSocket` on success, `base::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit TcpSocket(bool isBlocking);
+    [[nodiscard]] static base::Optional<TcpSocket> create(bool isBlocking);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -144,12 +153,13 @@ public:
     /// In blocking mode, this function may take a while, especially
     /// if the remote peer is not reachable. The last parameter allows
     /// you to stop trying to connect after a given timeout.
-    /// If the socket is already connected, the connection is
-    /// forcibly disconnected before attempting to connect again.
+    ///
+    /// This function must be called only once per socket. To
+    /// reconnect, construct a new `TcpSocket` via the factory.
     ///
     /// \param remoteAddress Address of the remote peer
     /// \param remotePort    Port of the remote peer
-    /// \param timeout       base::Optional maximum time to wait
+    /// \param timeout       Optional maximum time to wait
     ///
     /// \return Status code
     ///
@@ -161,13 +171,16 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Disconnect the socket from its remote peer
     ///
-    /// This function gracefully closes the connection. If the
-    /// socket is not connected, this function has no effect.
+    /// This function gracefully closes the connection and
+    /// invalidates the underlying OS handle. After calling
+    /// `disconnect`, the socket must not be used further; to
+    /// establish a new connection, construct a new `TcpSocket`
+    /// via the factory.
     ///
     /// \see `connect`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool disconnect();
+    void disconnect();
 
     ////////////////////////////////////////////////////////////
     /// \brief Set up transport layer security as a client
@@ -593,6 +606,16 @@ public:
 
 private:
     friend class TcpListener;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Private constructor used by the factory and by
+    ///        `TcpListener::accept`
+    ///
+    /// \param handle     Valid OS-level socket handle
+    /// \param isBlocking Current blocking state of the handle
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] TcpSocket(SocketHandle handle, bool isBlocking);
 
     ////////////////////////////////////////////////////////////
     /// \brief Structure holding the data of a pending packet

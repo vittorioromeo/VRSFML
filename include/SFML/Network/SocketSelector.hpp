@@ -75,7 +75,7 @@ public:
     /// \see `remove`, `clear`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool add(Socket& socket);
+    [[nodiscard]] bool add(const Socket& socket);
 
     ////////////////////////////////////////////////////////////
     /// \brief Remove a socket from the selector
@@ -90,7 +90,7 @@ public:
     /// \see `add`, `clear`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool remove(Socket& socket);
+    [[nodiscard]] bool remove(const Socket& socket);
 
     ////////////////////////////////////////////////////////////
     /// \brief Remove all the sockets stored in the selector
@@ -113,7 +113,7 @@ public:
     /// If you use a timeout and no socket is ready before the timeout
     /// is over, the function returns `false`.
     ///
-    /// \param timeout Maximum time to wait, (use Time{} for infinity)
+    /// \param timeout Maximum time to wait, (use `Time{}` for infinity)
     ///
     /// \return `true` if there are sockets ready, `false` otherwise
     ///
@@ -139,7 +139,7 @@ public:
     /// \see `isReady`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isReady(Socket& socket) const;
+    [[nodiscard]] bool isReady(const Socket& socket) const;
 
 private:
     ////////////////////////////////////////////////////////////

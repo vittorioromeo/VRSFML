@@ -1,8 +1,9 @@
 #include "SFML/Network/Socket.hpp"
 
-#include "SFML/Network/SocketHandle.hpp"
+#include "SFML/Network/UdpSocket.hpp"
 
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/Trait/HasVirtualDestructor.hpp"
 #include "SFML/Base/Trait/IsConstructible.hpp"
 #include "SFML/Base/Trait/IsCopyAssignable.hpp"
@@ -12,18 +13,6 @@
 
 #include <Doctest.hpp>
 
-
-class TestSocket : public sf::Socket
-{
-public:
-    TestSocket() : sf::Socket(sf::Socket::Type::Udp, /* isBlocking */ true)
-    {
-    }
-
-    using sf::Socket::close;
-    using sf::Socket::create;
-    using sf::Socket::getNativeHandle;
-};
 
 TEST_CASE("[Network] sf::Socket")
 {
@@ -42,72 +31,54 @@ TEST_CASE("[Network] sf::Socket")
         STATIC_CHECK(sf::Socket::AnyPort == 0);
     }
 
-    const auto invalidHandle = static_cast<sf::SocketHandle>(-1);
-
-    SECTION("Construction")
+    // `sf::Socket` is abstract (protected ctor); use `sf::UdpSocket` to exercise
+    // the move/blocking behaviour inherited from the base.
+    SECTION("Factory produces a valid socket")
     {
-        const TestSocket testSocket;
-        CHECK(testSocket.isBlocking());
-        CHECK(testSocket.getNativeHandle() == invalidHandle);
+        auto socketOpt = sf::UdpSocket::create(/* isBlocking */ true);
+        REQUIRE(socketOpt.hasValue());
+
+        CHECK(socketOpt->isBlocking());
+
+        // Unbound: local port is 0 until `bind` is called.
+        CHECK(socketOpt->getLocalPort() == 0);
+    }
+
+    SECTION("Set/get blocking")
+    {
+        auto socketOpt = sf::UdpSocket::create(/* isBlocking */ true);
+        REQUIRE(socketOpt.hasValue());
+
+        socketOpt->setBlocking(false);
+        CHECK(!socketOpt->isBlocking());
     }
 
     SECTION("Move semantics")
     {
         SECTION("Construction")
         {
-            TestSocket movedTestSocket;
-            movedTestSocket.setBlocking(false);
-            CHECK(movedTestSocket.create());
-            const TestSocket testSocket(SFML_BASE_MOVE(movedTestSocket));
-            CHECK(!testSocket.isBlocking());
-            CHECK(testSocket.getNativeHandle() != invalidHandle);
+            auto movedOpt = sf::UdpSocket::create(/* isBlocking */ true);
+            REQUIRE(movedOpt.hasValue());
+
+            movedOpt->setBlocking(false);
+
+
+            const sf::UdpSocket socket(SFML_BASE_MOVE(*movedOpt));
+            CHECK(!socket.isBlocking());
         }
 
         SECTION("Assignment")
         {
-            TestSocket movedTestSocket;
-            movedTestSocket.setBlocking(false);
-            CHECK(movedTestSocket.create());
-            TestSocket testSocket;
-            testSocket = SFML_BASE_MOVE(movedTestSocket);
-            CHECK(!testSocket.isBlocking());
-            CHECK(testSocket.getNativeHandle() != invalidHandle);
+            auto movedOpt = sf::UdpSocket::create(/* isBlocking */ true);
+            REQUIRE(movedOpt.hasValue());
+
+            movedOpt->setBlocking(false);
+
+            auto targetOpt = sf::UdpSocket::create(/* isBlocking */ true);
+            REQUIRE(targetOpt.hasValue());
+
+            *targetOpt = SFML_BASE_MOVE(*movedOpt);
+            CHECK(!targetOpt->isBlocking());
         }
-    }
-
-    SECTION("Set/get blocking")
-    {
-        TestSocket testSocket;
-        testSocket.setBlocking(false);
-        CHECK(!testSocket.isBlocking());
-    }
-
-    SECTION("create()")
-    {
-        TestSocket testSocket;
-        CHECK(testSocket.create());
-        CHECK(testSocket.isBlocking());
-        CHECK(testSocket.getNativeHandle() != invalidHandle);
-
-        // Recreate socket to ensure nothing changed
-        CHECK(!testSocket.create()); // Fails because socket was already created
-        CHECK(testSocket.isBlocking());
-        CHECK(testSocket.getNativeHandle() != invalidHandle);
-    }
-
-    SECTION("close()")
-    {
-        TestSocket testSocket;
-        CHECK(testSocket.create());
-        CHECK(testSocket.isBlocking());
-        CHECK(testSocket.getNativeHandle() != invalidHandle);
-        CHECK(testSocket.close());
-        CHECK(testSocket.isBlocking());
-        CHECK(testSocket.getNativeHandle() == invalidHandle);
-
-        // Reclose socket to ensure nothing changed
-        CHECK(!testSocket.close()); // Fails because socket was already closed
-        CHECK(testSocket.isBlocking());
-        CHECK(testSocket.getNativeHandle() == invalidHandle);
     }
 }

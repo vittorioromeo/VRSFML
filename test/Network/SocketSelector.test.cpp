@@ -3,6 +3,7 @@
 // Other 1st party headers
 #include "SFML/Network/UdpSocket.hpp"
 
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/Trait/IsCopyAssignable.hpp"
 #include "SFML/Base/Trait/IsCopyConstructible.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
@@ -21,11 +22,12 @@ TEST_CASE("[Network] sf::SocketSelector")
         STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::SocketSelector));
     }
 
-    sf::UdpSocket socket(/* isBlocking */ true);
+    auto socketOpt = sf::UdpSocket::create(/* isBlocking */ true);
+    REQUIRE(socketOpt.hasValue());
 
     SECTION("Construction")
     {
         const sf::SocketSelector socketSelector;
-        CHECK(!socketSelector.isReady(socket));
+        CHECK(!socketSelector.isReady(*socketOpt));
     }
 }

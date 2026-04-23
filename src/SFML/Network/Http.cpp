@@ -9,11 +9,12 @@
 
 #include "SFML/Network/IpAddress.hpp"
 #include "SFML/Network/IpAddressUtils.hpp"
+#include "SFML/Network/Socket.hpp"
 #include "SFML/Network/TcpSocket.hpp"
 
 #include "SFML/System/IO.hpp"
+#include "SFML/System/Time.hpp"
 
-#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
@@ -382,15 +383,10 @@ void Http::Response::parse(const base::String& data)
 ////////////////////////////////////////////////////////////
 struct Http::Impl
 {
-    TcpSocket                 connection;   //!< Connection to the host
     base::Optional<IpAddress> host;         //!< Web host address
     base::String              hostName;     //!< Web host name
     unsigned short            port{0u};     //!< Port used for connection with host
     bool                      https{false}; //!< Use HTTPS
-
-    explicit Impl() : connection(/* isBlocking */ true)
-    {
-    }
 };
 
 
@@ -473,58 +469,67 @@ Http::Response Http::sendRequest(const Http::Request& request, Time timeout, con
     // Prepare the response
     Response received;
 
+    if (!m_impl->host.hasValue())
+        return received;
+
+    // Create a fresh socket for this request
+    auto connectionOpt = TcpSocket::create(/* isBlocking */ true);
+    if (!connectionOpt.hasValue())
+        return received;
+
+    auto& connection = *connectionOpt;
+
     // Connect the socket to the host
-    if (m_impl->host.hasValue() &&
-        m_impl->connection.connect(m_impl->host.value(), m_impl->port, timeout) == Socket::Status::Done)
+    if (connection.connect(*m_impl->host, m_impl->port, timeout) != Socket::Status::Done)
+        return received;
+
+    if (m_impl->https &&
+        (connection.setupTlsClient(m_impl->hostName, verifyServer) != TcpSocket::TlsStatus::HandshakeComplete))
     {
-        if (m_impl->https &&
-            (m_impl->connection.setupTlsClient(m_impl->hostName, verifyServer) != TcpSocket::TlsStatus::HandshakeComplete))
-            return received;
-
-        // Convert the request to string and send it through the connected socket
-        const base::String requestStr = prepareRequest(toSend.m_impl->fields,
-                                                       toSend.m_impl->method,
-                                                       toSend.m_impl->uri,
-                                                       toSend.m_impl->majorVersion,
-                                                       toSend.m_impl->minorVersion,
-                                                       toSend.m_impl->body);
-
-        if (!requestStr.empty())
-        {
-            // Send it through the socket
-            if (m_impl->connection.send(requestStr.cStr(), requestStr.size()) == Socket::Status::Done)
-            {
-                // Wait for the server's response
-                base::String receivedStr;
-                base::SizeT  size = 0;
-                char         buffer[1024];
-
-                // When the HTTPS connection makes use of TLS 1.3 new session ticket
-                // messages can be received by the client from the server at any time
-                // When these messages are received the receive function will return Socket::Status::Partial
-                // In this case We just continue to call receive until actual payload
-                // data is available, the connection is closed or an error occurs
-                auto result = m_impl->connection.receive(buffer, sizeof(buffer), size);
-
-                while ((result == Socket::Status::Done) || (result == Socket::Status::Partial))
-                {
-                    // Only append payload data when it has been completely received
-                    if (result == Socket::Status::Done)
-                        receivedStr.append(buffer, size);
-
-                    result = m_impl->connection.receive(buffer, sizeof(buffer), size);
-                }
-
-                // Build the Response object from the received data
-                received.parse(receivedStr);
-            }
-        }
-
-        // Close the connection
-        [[maybe_unused]] const bool rc = m_impl->connection.disconnect();
-        SFML_BASE_ASSERT(rc);
+        connection.disconnect();
+        return received;
     }
 
+    // Convert the request to string and send it through the connected socket
+    const base::String requestStr = prepareRequest(toSend.m_impl->fields,
+                                                   toSend.m_impl->method,
+                                                   toSend.m_impl->uri,
+                                                   toSend.m_impl->majorVersion,
+                                                   toSend.m_impl->minorVersion,
+                                                   toSend.m_impl->body);
+
+    if (!requestStr.empty())
+    {
+        // Send it through the socket
+        if (connection.send(requestStr.cStr(), requestStr.size()) == Socket::Status::Done)
+        {
+            // Wait for the server's response
+            base::String receivedStr;
+            base::SizeT  size = 0;
+            char         buffer[1024];
+
+            // When the HTTPS connection makes use of TLS 1.3 new session ticket
+            // messages can be received by the client from the server at any time
+            // When these messages are received the receive function will return Socket::Status::Partial
+            // In this case We just continue to call receive until actual payload
+            // data is available, the connection is closed or an error occurs
+            auto result = connection.receive(buffer, sizeof(buffer), size);
+
+            while ((result == Socket::Status::Done) || (result == Socket::Status::Partial))
+            {
+                // Only append payload data when it has been completely received
+                if (result == Socket::Status::Done)
+                    receivedStr.append(buffer, size);
+
+                result = connection.receive(buffer, sizeof(buffer), size);
+            }
+
+            // Build the Response object from the received data
+            received.parse(receivedStr);
+        }
+    }
+
+    connection.disconnect();
     return received;
 }
 
