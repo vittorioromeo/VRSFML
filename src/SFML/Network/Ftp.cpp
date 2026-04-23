@@ -20,6 +20,7 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Span.hpp"
@@ -64,8 +65,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Ftp&      m_ftp;        //!< Reference to the owner Ftp instance
-    TcpSocket m_dataSocket; //!< Socket used for data transfers
+    Ftp&                      m_ftp;        //!< Reference to the owner Ftp instance
+    base::Optional<TcpSocket> m_dataSocket; //!< Socket used for data transfers (created in `open`)
 };
 
 
@@ -195,15 +196,13 @@ base::Span<const base::String> Ftp::ListingResponse::getListing() const
 ////////////////////////////////////////////////////////////
 struct Ftp::Impl
 {
-    TcpSocket    commandSocket; //!< Socket holding the control connection with the server
-    base::String receiveBuffer; //!< Received command data that is yet to be processed
+    base::Optional<TcpSocket> commandSocket; //!< Socket holding the control connection with the server
+    base::String              receiveBuffer; //!< Received command data that is yet to be processed
 };
 
 
 ////////////////////////////////////////////////////////////
-Ftp::Ftp() : m_impl{TcpSocket{/* isBlocking */ true}, ""}
-{
-}
+Ftp::Ftp() = default;
 
 
 ////////////////////////////////////////////////////////////
@@ -216,9 +215,15 @@ Ftp::~Ftp()
 ////////////////////////////////////////////////////////////
 Ftp::Response Ftp::connect(IpAddress server, unsigned short port, Time timeout)
 {
-    // Connect to the server
-    if (m_impl->commandSocket.connect(server, port, timeout) != Socket::Status::Done)
+    m_impl->commandSocket = TcpSocket::create(/* isBlocking */ true);
+    if (!m_impl->commandSocket.hasValue())
         return Response(Response::Status::ConnectionFailed);
+
+    if (m_impl->commandSocket->connect(server, port, timeout) != Socket::Status::Done)
+    {
+        m_impl->commandSocket.reset();
+        return Response(Response::Status::ConnectionFailed);
+    }
 
     // Get the response to the connection
     return getResponse();
@@ -246,13 +251,17 @@ Ftp::Response Ftp::login(base::StringView name, base::StringView password)
 ////////////////////////////////////////////////////////////
 Ftp::Response Ftp::disconnect()
 {
+    if (!m_impl->commandSocket.hasValue())
+        return Response(Response::Status::ClosingConnection);
+
     // Send the exit command
     Response response = sendCommand("QUIT");
-    if (response.isOk())
-    {
-        [[maybe_unused]] const bool rc = m_impl->commandSocket.disconnect();
-        SFML_BASE_ASSERT(rc);
-    }
+
+    // Tear down the control connection unconditionally, even if QUIT failed
+    // or the server never replied: otherwise the socket would linger until
+    // the Ftp object is destroyed.
+    m_impl->commandSocket.reset();
+    m_impl->receiveBuffer.clear();
 
     return response;
 }
@@ -439,8 +448,11 @@ Ftp::Response Ftp::sendCommand(base::StringView command, base::StringView parame
         commandStr += "\r\n";
     }
 
+    if (!m_impl->commandSocket.hasValue())
+        return Response(Response::Status::ConnectionClosed);
+
     // Send it to the server
-    if (m_impl->commandSocket.send(commandStr.cStr(), commandStr.size()) != Socket::Status::Done)
+    if (m_impl->commandSocket->send(commandStr.cStr(), commandStr.size()) != Socket::Status::Done)
         return Response(Response::Status::ConnectionClosed);
 
     // Get the response
@@ -466,7 +478,8 @@ Ftp::Response Ftp::getResponse()
 
         if (m_impl->receiveBuffer.empty())
         {
-            if (m_impl->commandSocket.receive(buffer, sizeof(buffer), length) != Socket::Status::Done)
+            if (!m_impl->commandSocket.hasValue() ||
+                m_impl->commandSocket->receive(buffer, sizeof(buffer), length) != Socket::Status::Done)
                 return Response(Response::Status::ConnectionClosed);
         }
         else
@@ -590,7 +603,7 @@ Ftp::Response Ftp::getResponse()
 
 
 ////////////////////////////////////////////////////////////
-Ftp::DataChannel::DataChannel(Ftp& owner) : m_ftp(owner), m_dataSocket(/* isBlocking */ true)
+Ftp::DataChannel::DataChannel(Ftp& owner) : m_ftp(owner)
 {
 }
 
@@ -598,75 +611,79 @@ Ftp::DataChannel::DataChannel(Ftp& owner) : m_ftp(owner), m_dataSocket(/* isBloc
 ////////////////////////////////////////////////////////////
 Ftp::Response Ftp::DataChannel::open(Ftp::TransferMode mode)
 {
-    // Open a data connection in active mode (we connect to the server)
+    // Open a data connection in passive mode (we connect to the server)
     Ftp::Response response = m_ftp.sendCommand("PASV");
-    if (response.isOk())
+    if (!response.isOk())
+        return response;
+
+    // Extract the connection address and port from the response
+    const base::SizeT begin = response.getMessage().findFirstOf("0123456789");
+    if (begin == base::String::nPos)
+        return response;
+
+    const auto        str     = response.getMessage().substrByPosLen(begin).toString<base::String>();
+    const base::SizeT strSize = str.size();
+
+    base::SizeT index   = 0;
+    base::U8    data[6] = {0, 0, 0, 0, 0, 0};
+
+    for (unsigned char& datum : data)
     {
-        // Extract the connection address and port from the response
-        const base::SizeT begin = response.getMessage().findFirstOf("0123456789");
-        if (begin != base::String::nPos)
+        // Extract the current number
+        while (index < strSize && std::isdigit(static_cast<unsigned char>(str[index])))
         {
-            base::U8    data[6] = {0, 0, 0, 0, 0, 0};
-            auto        str     = response.getMessage().substrByPosLen(begin).toString<base::String>();
-            base::SizeT index   = 0;
-            for (unsigned char& datum : data)
-            {
-                // Extract the current number
-                while (std::isdigit(str[index]))
-                {
-                    datum = static_cast<base::U8>(
-                        static_cast<base::U8>(datum * 10) + static_cast<base::U8>(str[index] - '0'));
-                    ++index;
-                }
-
-                // Skip separator
-                ++index;
-            }
-
-            // Reconstruct connection port and address
-            const auto      port = static_cast<base::U16>(data[4] * 256 + data[5]);
-            const IpAddress address(data[0], data[1], data[2], data[3]);
-
-            // Connect the data channel to the server
-            if (m_dataSocket.connect(address, port) == Socket::Status::Done)
-            {
-                // Translate the transfer mode to the corresponding FTP parameter
-                base::String modeStr;
-                switch (mode)
-                {
-                    case Ftp::TransferMode::Binary:
-                        modeStr = "I";
-                        break;
-                    case Ftp::TransferMode::Ascii:
-                        modeStr = "A";
-                        break;
-                    case Ftp::TransferMode::Ebcdic:
-                        modeStr = "E";
-                        break;
-                }
-
-                // Set the transfer mode
-                response = m_ftp.sendCommand("TYPE", modeStr);
-            }
-            else
-            {
-                // Failed to connect to the server
-                response = Ftp::Response(Ftp::Response::Status::ConnectionFailed);
-            }
+            datum = static_cast<base::U8>(static_cast<base::U8>(datum * 10) + static_cast<base::U8>(str[index] - '0'));
+            ++index;
         }
+
+        // Skip separator
+        ++index;
     }
 
-    return response;
+    // Reconstruct connection port and address
+    const auto      port = static_cast<base::U16>(data[4] * 256 + data[5]);
+    const IpAddress address(data[0], data[1], data[2], data[3]);
+
+    // Create and connect the data channel socket
+    m_dataSocket = TcpSocket::create(/* isBlocking */ true);
+    if (!m_dataSocket.hasValue())
+        return Ftp::Response(Ftp::Response::Status::ConnectionFailed);
+
+    if (m_dataSocket->connect(address, port) != Socket::Status::Done)
+    {
+        m_dataSocket.reset();
+        return Ftp::Response(Ftp::Response::Status::ConnectionFailed);
+    }
+
+    // Translate the transfer mode to the corresponding FTP parameter
+    base::String modeStr;
+    switch (mode)
+    {
+        case Ftp::TransferMode::Binary:
+            modeStr = "I";
+            break;
+        case Ftp::TransferMode::Ascii:
+            modeStr = "A";
+            break;
+        case Ftp::TransferMode::Ebcdic:
+            modeStr = "E";
+            break;
+    }
+
+    // Set the transfer mode
+    return m_ftp.sendCommand("TYPE", modeStr);
 }
 
 
 ////////////////////////////////////////////////////////////
 void Ftp::DataChannel::receive(auto& stream)
 {
+    SFML_BASE_ASSERT(m_dataSocket.hasValue() && "DataChannel::receive called without open()");
+
     // Receive data
     char        buffer[1024];
     base::SizeT received = 0;
-    while (m_dataSocket.receive(buffer, sizeof(buffer), received) == Socket::Status::Done)
+    while (m_dataSocket->receive(buffer, sizeof(buffer), received) == Socket::Status::Done)
     {
         stream.write(buffer, static_cast<sf::base::PtrDiffT>(received));
 
@@ -677,15 +694,16 @@ void Ftp::DataChannel::receive(auto& stream)
         }
     }
 
-    // Close the data socket
-    [[maybe_unused]] const bool rc = m_dataSocket.disconnect();
-    SFML_BASE_ASSERT(rc);
+    // Tear down the data socket
+    m_dataSocket.reset();
 }
 
 
 ////////////////////////////////////////////////////////////
 void Ftp::DataChannel::send(auto& stream)
 {
+    SFML_BASE_ASSERT(m_dataSocket.hasValue() && "DataChannel::send called without open()");
+
     // Send data
     char        buffer[1024];
     base::SizeT count = 0;
@@ -706,7 +724,7 @@ void Ftp::DataChannel::send(auto& stream)
         if (count > 0)
         {
             // we could read more data from the stream: send them
-            if (m_dataSocket.send(buffer, count) != Socket::Status::Done)
+            if (m_dataSocket->send(buffer, count) != Socket::Status::Done)
                 break;
         }
         else
@@ -716,9 +734,8 @@ void Ftp::DataChannel::send(auto& stream)
         }
     }
 
-    // Close the data socket
-    [[maybe_unused]] const bool rc = m_dataSocket.disconnect();
-    SFML_BASE_ASSERT(rc);
+    // Tear down the data socket
+    m_dataSocket.reset();
 }
 
 } // namespace sf

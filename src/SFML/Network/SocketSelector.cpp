@@ -50,7 +50,7 @@ SocketSelector& SocketSelector::operator=(SocketSelector&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-bool SocketSelector::add(Socket& socket)
+bool SocketSelector::add(const Socket& socket)
 {
     const SocketHandle handle = socket.getNativeHandle();
 
@@ -97,7 +97,7 @@ bool SocketSelector::add(Socket& socket)
 
 
 ////////////////////////////////////////////////////////////
-bool SocketSelector::remove(Socket& socket)
+bool SocketSelector::remove(const Socket& socket)
 {
     const SocketHandle handle = socket.getNativeHandle();
 
@@ -162,7 +162,7 @@ bool SocketSelector::wait(Time timeout)
 
 
 ////////////////////////////////////////////////////////////
-bool SocketSelector::isReady(Socket& socket) const
+bool SocketSelector::isReady(const Socket& socket) const
 {
     const SocketHandle handle = socket.getNativeHandle();
 

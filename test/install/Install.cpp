@@ -17,6 +17,8 @@
 #include "SFML/System/Rect2.hpp"
 #include "SFML/System/UnicodeString.hpp"
 
+#include "SFML/Base/Optional.hpp"
+
 
 // Instantiate some types from each module to test for linker issues. This program is not meant be ran.
 int main()
@@ -33,10 +35,10 @@ int main()
     [[maybe_unused]] const sf::Vertex         vertex{};
 
     // Network
-    [[maybe_unused]] const sf::Ftp       ftp;
-    [[maybe_unused]] const sf::Http      http;
-    [[maybe_unused]] const sf::Packet    packet;
-    [[maybe_unused]] const sf::UdpSocket udpSocket(/* isBlocking */ true);
+    [[maybe_unused]] const sf::Ftp                           ftp;
+    [[maybe_unused]] const sf::Http                          http;
+    [[maybe_unused]] const sf::Packet                        packet;
+    [[maybe_unused]] const sf::base::Optional<sf::UdpSocket> udpSocket = sf::UdpSocket::create(/* isBlocking */ true);
 
     // System
     [[maybe_unused]] const sf::Angle         angle;

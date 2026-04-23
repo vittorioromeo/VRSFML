@@ -10,6 +10,7 @@
 
 #include "SFML/Network/IpAddress.hpp"
 #include "SFML/Network/Socket.hpp"
+#include "SFML/Network/SocketHandle.hpp"
 
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -36,10 +37,19 @@ public:
     };
 
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
+    /// \brief Factory: create an unbound UDP socket
+    ///
+    /// Creates the underlying OS handle and configures its
+    /// blocking mode. The returned socket can immediately be
+    /// used to `send` data; to receive data, call `bind` to
+    /// attach it to a local port.
+    ///
+    /// \param isBlocking Desired blocking state
+    ///
+    /// \return `UdpSocket` on success, `base::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit UdpSocket(bool isBlocking);
+    [[nodiscard]] static base::Optional<UdpSocket> create(bool isBlocking);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the port to which the socket is bound locally
@@ -64,34 +74,21 @@ public:
     /// will request an available port from the system.
     /// The chosen port can be retrieved by calling `getLocalPort()`.
     ///
-    /// Since the socket can only be bound to a single port at
-    /// any given moment, if it is already bound when this
-    /// function is called, it will be unbound from the previous
-    /// port before being bound to the new one.
+    /// This function must be called at most once per socket. To
+    /// bind to a different port, construct a new `UdpSocket`
+    /// via the factory.
+    ///
+    /// Binding to `sf::IpAddress::Broadcast` is rejected.
     ///
     /// \param port    Port to bind the socket to
     /// \param address Address of the interface to bind to
     ///
     /// \return Status code
     ///
-    /// \see `unbind`, `getLocalPort`
+    /// \see `getLocalPort`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Status bind(unsigned short port, IpAddress address = IpAddress::Any);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Unbind the socket from the local port to which it is bound
-    ///
-    /// The port that the socket was previously bound to is immediately
-    /// made available to the operating system after this function is called.
-    /// This means that a subsequent call to `bind()` will be able to re-bind
-    /// the port if no other process has done so in the mean time.
-    /// If the socket is not bound to a port, this function has no effect.
-    ///
-    /// \see `bind`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool unbind();
 
     ////////////////////////////////////////////////////////////
     /// \brief Send raw data to a remote peer
@@ -176,6 +173,12 @@ public:
 
 private:
     ////////////////////////////////////////////////////////////
+    /// \brief Private constructor used by the factory
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] UdpSocket(SocketHandle handle, bool isBlocking);
+
+    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     base::Vector<unsigned char> m_buffer; //!< Temporary buffer holding the received data in Receive(Packet)
@@ -224,17 +227,14 @@ private:
 /// lead to a big mess when trying to recompose a packet).
 ///
 /// If the socket is bound to a port, it is automatically
-/// unbound from it when the socket is destroyed. However,
-/// you can unbind the socket explicitly with the Unbind
-/// function if necessary, to stop receiving messages or
-/// make the port available for other sockets.
+/// unbound from it when the socket is destroyed.
 ///
 /// Usage example:
 /// \code
 /// // ----- The client -----
 ///
 /// // Create a socket and bind it to the port 55001
-/// sf::UdpSocket socket;
+/// auto socket = sf::UdpSocket::create(/* isBlocking */ true).value();
 /// socket.bind(55001);
 ///
 /// // Send a message to 192.168.1.50 on port 55002
@@ -252,7 +252,7 @@ private:
 /// // ----- The server -----
 ///
 /// // Create a socket and bind it to the port 55002
-/// sf::UdpSocket socket;
+/// auto socket = sf::UdpSocket::create(/* isBlocking */ true).value();
 /// socket.bind(55002);
 ///
 /// // Receive a message from anyone

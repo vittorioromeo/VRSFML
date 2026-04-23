@@ -140,7 +140,7 @@ Packet& Packet::operator>>(base::I16& data)
     if (checkSize(sizeof(data)))
     {
         SFML_BASE_MEMCPY(&data, &m_data[m_readPos], sizeof(data));
-        data = static_cast<base::I16>(priv::SocketImpl::getNtohs(static_cast<base::U16>(data)));
+        data = static_cast<base::I16>(priv::SocketImpl::networkToHost(static_cast<base::U16>(data)));
         m_readPos += sizeof(data);
     }
 
@@ -154,7 +154,7 @@ Packet& Packet::operator>>(base::U16& data)
     if (checkSize(sizeof(data)))
     {
         SFML_BASE_MEMCPY(&data, &m_data[m_readPos], sizeof(data));
-        data = priv::SocketImpl::getNtohs(data);
+        data = priv::SocketImpl::networkToHost(data);
         m_readPos += sizeof(data);
     }
 
@@ -168,7 +168,7 @@ Packet& Packet::operator>>(base::I32& data)
     if (checkSize(sizeof(data)))
     {
         SFML_BASE_MEMCPY(&data, &m_data[m_readPos], sizeof(data));
-        data = static_cast<base::I32>(priv::SocketImpl::getNtohl(static_cast<base::U32>(data)));
+        data = static_cast<base::I32>(priv::SocketImpl::networkToHost(static_cast<base::U32>(data)));
         m_readPos += sizeof(data);
     }
 
@@ -182,7 +182,7 @@ Packet& Packet::operator>>(base::U32& data)
     if (checkSize(sizeof(data)))
     {
         SFML_BASE_MEMCPY(&data, &m_data[m_readPos], sizeof(data));
-        data = priv::SocketImpl::getNtohl(data);
+        data = priv::SocketImpl::networkToHost(data);
         m_readPos += sizeof(data);
     }
 
@@ -396,7 +396,7 @@ Packet& Packet::operator<<(base::U8 data)
 ////////////////////////////////////////////////////////////
 Packet& Packet::operator<<(base::I16 data)
 {
-    const auto toWrite = static_cast<base::I16>(priv::SocketImpl::getHtons(static_cast<base::U16>(data)));
+    const auto toWrite = static_cast<base::I16>(priv::SocketImpl::hostToNetwork(static_cast<base::U16>(data)));
     append(&toWrite, sizeof(toWrite));
     return *this;
 }
@@ -405,7 +405,7 @@ Packet& Packet::operator<<(base::I16 data)
 ////////////////////////////////////////////////////////////
 Packet& Packet::operator<<(base::U16 data)
 {
-    const base::U16 toWrite = priv::SocketImpl::getHtons(data);
+    const base::U16 toWrite = priv::SocketImpl::hostToNetwork(data);
     append(&toWrite, sizeof(toWrite));
     return *this;
 }
@@ -414,7 +414,7 @@ Packet& Packet::operator<<(base::U16 data)
 ////////////////////////////////////////////////////////////
 Packet& Packet::operator<<(base::I32 data)
 {
-    const auto toWrite = static_cast<base::I32>(priv::SocketImpl::getHtonl(static_cast<base::U32>(data)));
+    const auto toWrite = static_cast<base::I32>(priv::SocketImpl::hostToNetwork(static_cast<base::U32>(data)));
     append(&toWrite, sizeof(toWrite));
     return *this;
 }
@@ -423,7 +423,7 @@ Packet& Packet::operator<<(base::I32 data)
 ////////////////////////////////////////////////////////////
 Packet& Packet::operator<<(base::U32 data)
 {
-    const base::U32 toWrite = priv::SocketImpl::getHtonl(data);
+    const base::U32 toWrite = priv::SocketImpl::hostToNetwork(data);
     append(&toWrite, sizeof(toWrite));
     return *this;
 }

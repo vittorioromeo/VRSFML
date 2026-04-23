@@ -12,6 +12,7 @@
 #include "SFML/Network/IpAddress.hpp"
 #include "SFML/Network/Packet.hpp"
 #include "SFML/Network/Socket.hpp"
+#include "SFML/Network/SocketHandle.hpp"
 #include "SFML/Network/SocketImpl.hpp"
 
 #include "SFML/System/Err.hpp"
@@ -679,8 +680,21 @@ struct TcpSocket::Impl
 
 
 ////////////////////////////////////////////////////////////
-TcpSocket::TcpSocket(bool isBlocking) : Socket(Type::Tcp, isBlocking), m_impl(base::makeUnique<Impl>())
+TcpSocket::TcpSocket(SocketHandle handle, bool isBlocking) :
+    Socket(Type::Tcp, handle, isBlocking),
+    m_impl(base::makeUnique<Impl>())
 {
+}
+
+
+////////////////////////////////////////////////////////////
+base::Optional<TcpSocket> TcpSocket::create(bool isBlocking)
+{
+    const SocketHandle handle = createTcpHandle(isBlocking);
+    if (handle == priv::SocketImpl::invalidSocket())
+        return base::nullOpt;
+
+    return base::makeOptionalFromFunc([&] { return TcpSocket(handle, isBlocking); });
 }
 
 
@@ -722,7 +736,7 @@ base::Optional<IpAddress> TcpSocket::getRemoteAddress() const
         return base::nullOpt;
     }
 
-    return base::makeOptional<IpAddress>(priv::SocketImpl::getNtohl(address));
+    return base::makeOptional<IpAddress>(priv::SocketImpl::networkToHost(address.sAddr()));
 }
 
 
@@ -745,20 +759,15 @@ unsigned short TcpSocket::getRemotePort() const
         return 0;
     }
 
-    return priv::SocketImpl::getNtohs(address.sinPort());
+    return priv::SocketImpl::networkToHost(address.sinPort());
 }
 
 
 ////////////////////////////////////////////////////////////
 Socket::Status TcpSocket::connect(IpAddress remoteAddress, unsigned short remotePort, Time timeout)
 {
-    // Disconnect the socket if it is already connected
-    if (getNativeHandle() != priv::SocketImpl::invalidSocket())
-        (void)disconnect(); // Intentionally discard
-
-    // Create the internal socket if it doesn't exist
-    if (!create())
-        return Status::Error;
+    SFML_BASE_ASSERT(getNativeHandle() != priv::SocketImpl::invalidSocket() &&
+                     "TcpSocket handle must be valid (constructed via factory and not yet disconnected)");
 
     // Create the remote address
     priv::SockAddrIn address = priv::SocketImpl::createAddress(remoteAddress.toInteger(), remotePort);
@@ -826,7 +835,7 @@ Socket::Status TcpSocket::connect(IpAddress remoteAddress, unsigned short remote
 
 
 ////////////////////////////////////////////////////////////
-bool TcpSocket::disconnect()
+void TcpSocket::disconnect()
 {
     if (m_impl->tlsState)
     {
@@ -841,13 +850,8 @@ bool TcpSocket::disconnect()
         m_impl->tlsState.reset();
     }
 
-    // Close the socket
-    const bool result = close();
-
-    // Reset the pending packet data
+    closeHandle();
     m_pendingPacket = PendingPacket{};
-
-    return result;
 }
 
 
@@ -1163,7 +1167,7 @@ Socket::Status TcpSocket::send(Packet& packet)
     const void* data = packet.onSend(size);
 
     // First convert the packet size to network byte order
-    base::U32 packetSize = priv::SocketImpl::getHtonl(static_cast<base::U32>(size));
+    base::U32 packetSize = priv::SocketImpl::hostToNetwork(static_cast<base::U32>(size));
 
     // Allocate memory for the data block to send
     m_blockToSendBuffer.resize(sizeof(packetSize) + size);
@@ -1229,12 +1233,12 @@ Socket::Status TcpSocket::receive(Packet& packet)
         }
 
         // The packet size has been fully received
-        packetSize = priv::SocketImpl::getNtohl(m_pendingPacket.size);
+        packetSize = priv::SocketImpl::networkToHost(m_pendingPacket.size);
     }
     else
     {
         // The packet size has already been received in a previous call
-        packetSize = priv::SocketImpl::getNtohl(m_pendingPacket.size);
+        packetSize = priv::SocketImpl::networkToHost(m_pendingPacket.size);
     }
 
     // Loop until we receive all the packet data

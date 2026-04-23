@@ -2,6 +2,8 @@
 #include "StringifyOptionalUtil.hpp"
 #include "StringifySfBaseStringUtil.hpp"
 
+#include "SFML/Network/IpAddress.hpp"
+#include "SFML/Network/Socket.hpp"
 #include "SFML/Network/SocketSelector.hpp"
 #include "SFML/Network/TcpListener.hpp"
 #include "SFML/Network/TcpSocket.hpp"
@@ -9,6 +11,9 @@
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Time.hpp"
 
+#include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Vector.hpp"
@@ -88,35 +93,47 @@ TEST_CASE("[Network] sf::Tcp Loopback")
     sf::base::Vector<Byte> buffer(testData.size());
     const auto*            recvEnd = buffer.data() + buffer.size();
 
-    sf::TcpListener tcpListener{/* isBlocking */ false};
-    REQUIRE(tcpListener.listen(sf::Socket::AnyPort) == sf::TcpListener::Status::Done);
+    auto tcpListenerOpt = sf::TcpListener::create(sf::Socket::AnyPort, /* isBlocking */ false);
+    REQUIRE(tcpListenerOpt.hasValue());
+
+    auto& tcpListener = *tcpListenerOpt;
 
     const auto localPort = tcpListener.getLocalPort();
     CHECK_FALSE(localPort == 0);
 
     SECTION("Non-TLS")
     {
-        sf::TcpSocket serverSocket{/* isBlocking */ true};
-        sf::TcpSocket clientSocket{/* isBlocking */ false};
+        auto clientSocketOpt = sf::TcpSocket::create(/* isBlocking */ false);
+        REQUIRE(clientSocketOpt.hasValue());
+
+        auto& clientSocket = *clientSocketOpt;
 
         CHECK(clientSocket.connect(sf::IpAddress(127, 0, 0, 1), localPort, sf::milliseconds(750)) ==
               sf::TcpSocket::Status::NotReady);
 
         auto start = sf::Clock::now();
 
+        sf::base::Optional<sf::TcpSocket> serverSocketOpt;
         while (true)
         {
-            const auto result = tcpListener.accept(serverSocket);
+            auto result = tcpListener.accept();
 
-            REQUIRE(((result == sf::TcpListener::Status::NotReady) || (result == sf::TcpListener::Status::Done)));
+            REQUIRE(((result.status == sf::TcpListener::Status::NotReady) ||
+                     (result.status == sf::TcpListener::Status::Done)));
 
-            if (result == sf::TcpListener::Status::Done)
+            if (result.status == sf::TcpListener::Status::Done)
+            {
+                serverSocketOpt = SFML_BASE_MOVE(result.socket);
                 break;
+            }
 
             REQUIRE((sf::Clock::now() - start < sf::milliseconds(750)));
         }
 
-        serverSocket.setBlocking(false);
+        REQUIRE(serverSocketOpt.hasValue());
+        auto& serverSocket = *serverSocketOpt;
+
+        // The accepted connection already inherits the listener's non-blocking state.
         CHECK(clientSocket.getRemoteAddress().hasValue());
         CHECK(serverSocket.getRemoteAddress().hasValue());
         CHECK_FALSE(clientSocket.getLocalPort() == 0);
@@ -144,7 +161,7 @@ TEST_CASE("[Network] sf::Tcp Loopback")
             }
             else if (serverSocket.getRemoteAddress())
             {
-                CHECK(serverSocket.disconnect());
+                serverSocket.disconnect();
             }
 
             {
@@ -157,7 +174,7 @@ TEST_CASE("[Network] sf::Tcp Loopback")
 
                 if (status == sf::TcpSocket::Status::Disconnected)
                 {
-                    CHECK(clientSocket.disconnect());
+                    clientSocket.disconnect();
                     break;
                 }
             }
@@ -170,27 +187,36 @@ TEST_CASE("[Network] sf::Tcp Loopback")
 
     SECTION("TLS")
     {
-        sf::TcpSocket serverSocket{/* isBlocking */ true};
-        sf::TcpSocket clientSocket{/* isBlocking */ false};
+        auto clientSocketOpt = sf::TcpSocket::create(/* isBlocking */ false);
+        REQUIRE(clientSocketOpt.hasValue());
+        auto& clientSocket = *clientSocketOpt;
 
         REQUIRE(clientSocket.connect(sf::IpAddress(127, 0, 0, 1), localPort, sf::milliseconds(750)) ==
                 sf::TcpSocket::Status::NotReady);
 
         auto start = sf::Clock::now();
 
+        sf::base::Optional<sf::TcpSocket> serverSocketOpt;
         while (true)
         {
-            const auto result = tcpListener.accept(serverSocket);
+            auto result = tcpListener.accept();
 
-            REQUIRE(((result == sf::TcpListener::Status::NotReady) || (result == sf::TcpListener::Status::Done)));
+            REQUIRE(((result.status == sf::TcpListener::Status::NotReady) ||
+                     (result.status == sf::TcpListener::Status::Done)));
 
-            if (result == sf::TcpListener::Status::Done)
+            if (result.status == sf::TcpListener::Status::Done)
+            {
+                serverSocketOpt = SFML_BASE_MOVE(result.socket);
                 break;
+            }
 
             REQUIRE((sf::Clock::now() - start < sf::milliseconds(750)));
         }
 
-        serverSocket.setBlocking(false);
+        REQUIRE(serverSocketOpt.hasValue());
+        auto& serverSocket = *serverSocketOpt;
+
+        // The accepted connection already inherits the listener's non-blocking state.
         CHECK(clientSocket.getRemoteAddress().hasValue());
         CHECK(serverSocket.getRemoteAddress().hasValue());
         CHECK_FALSE(clientSocket.getLocalPort() == 0);
@@ -240,7 +266,7 @@ TEST_CASE("[Network] sf::Tcp Loopback")
             }
             else if (serverSocket.getRemoteAddress())
             {
-                CHECK(serverSocket.disconnect());
+                serverSocket.disconnect();
             }
 
             {
@@ -253,7 +279,7 @@ TEST_CASE("[Network] sf::Tcp Loopback")
 
                 if (status == sf::TcpSocket::Status::Disconnected)
                 {
-                    CHECK(clientSocket.disconnect());
+                    clientSocket.disconnect();
                     break;
                 }
             }
