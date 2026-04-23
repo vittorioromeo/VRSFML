@@ -272,6 +272,13 @@ priv::MiniaudioUtils::SoundBase& SoundStream::getSoundBase() const
 
 
 ////////////////////////////////////////////////////////////
+void SoundStream::detachFromEngine()
+{
+    m_impl->soundBase.uninitSound();
+}
+
+
+////////////////////////////////////////////////////////////
 base::Optional<base::U64> SoundStream::onLoop()
 {
     onSeek(Time{});

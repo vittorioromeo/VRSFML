@@ -43,6 +43,7 @@
 #include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/Clamp.hpp"
+#include "SFML/Base/Constants.hpp"
 #include "SFML/Base/InPlaceVector.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
@@ -66,8 +67,6 @@ namespace
 {
 constexpr auto windowWidth  = 800u;
 constexpr auto windowHeight = 600u;
-constexpr auto pi           = 3.14159265359f;
-constexpr auto sqrt2        = 2.f * 0.707106781186547524401f;
 
 sf::Path resourcesDir()
 {
@@ -389,7 +388,7 @@ private:
                 {
                     case Type::Sine:
                     {
-                        value = tone.m_amplitude * sf::base::sin(2 * pi * tone.m_frequency * tone.m_time);
+                        value = tone.m_amplitude * sf::base::sin(2 * sf::base::pi * tone.m_frequency * tone.m_time);
                         break;
                     }
                     case Type::Square:
@@ -852,13 +851,13 @@ struct HighPassFilter : BiquadFilter
 
         static constexpr auto cutoffFrequency = 2000.f;
 
-        const auto c = sf::base::tan(pi * cutoffFrequency / static_cast<float>(musicReader.getSampleRate()));
+        const auto c = sf::base::tan(sf::base::pi * cutoffFrequency / static_cast<float>(playbackDevice.getSampleRate()));
 
-        Coefficients coefficients{.a0 = 1.f / (1.f + sqrt2 * c + sf::base::pow(c, 2.f)),
+        Coefficients coefficients{.a0 = 1.f / (1.f + sf::base::sqrt2 * c + sf::base::pow(c, 2.f)),
                                   .a1 = -2.f * coefficients.a0,
                                   .a2 = coefficients.a0,
                                   .b1 = 2.f * coefficients.a0 * (sf::base::pow(c, 2.f) - 1.f),
-                                  .b2 = coefficients.a0 * (1.f - sqrt2 * c + sf::base::pow(c, 2.f))};
+                                  .b2 = coefficients.a0 * (1.f - sf::base::sqrt2 * c + sf::base::pow(c, 2.f))};
 
         setCoefficients(coefficients);
     }
@@ -881,13 +880,14 @@ struct LowPassFilter : BiquadFilter
 
         static constexpr auto cutoffFrequency = 500.f;
 
-        const auto c = 1.f / sf::base::tan(pi * cutoffFrequency / static_cast<float>(musicReader.getSampleRate()));
+        const auto c = 1.f /
+                       sf::base::tan(sf::base::pi * cutoffFrequency / static_cast<float>(playbackDevice.getSampleRate()));
 
-        Coefficients coefficients{.a0 = 1.f / (1.f + sqrt2 * c + sf::base::pow(c, 2.f)),
+        Coefficients coefficients{.a0 = 1.f / (1.f + sf::base::sqrt2 * c + sf::base::pow(c, 2.f)),
                                   .a1 = 2.f * coefficients.a0,
                                   .a2 = coefficients.a0,
                                   .b1 = 2.f * coefficients.a0 * (1.f - sf::base::pow(c, 2.f)),
-                                  .b2 = coefficients.a0 * (1.f - sqrt2 * c + sf::base::pow(c, 2.f))};
+                                  .b2 = coefficients.a0 * (1.f - sf::base::sqrt2 * c + sf::base::pow(c, 2.f))};
 
         setCoefficients(coefficients);
     }
@@ -988,7 +988,7 @@ public:
         // this lambda hence we need to always have a usable state until the music and the
         // associated lambda are destroyed
         const bool success = m_music->setEffectProcessor(
-            [sampleRate = musicReader.getSampleRate(),
+            [sampleRate = playbackDevice.getSampleRate(),
              filters    = sf::base::Vector<ReverbFilter<float>>(),
              &enabled   = m_enabled](const float*  inputFrames,
                                    unsigned int& inputFrameCount,
