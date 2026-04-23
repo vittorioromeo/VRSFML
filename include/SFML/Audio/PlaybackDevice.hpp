@@ -25,7 +25,6 @@ namespace sf
 {
 class PlaybackDeviceHandle;
 class Sound;
-class SoundStream;
 struct Listener;
 } // namespace sf
 
@@ -161,7 +160,6 @@ private:
     using SoundBase = priv::MiniaudioUtils::SoundBase;
     friend SoundBase;
     friend Sound;
-    friend SoundStream;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the internal miniaudio engine pointer

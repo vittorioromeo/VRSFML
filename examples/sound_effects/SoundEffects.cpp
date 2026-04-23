@@ -363,20 +363,11 @@ private:
         Sawtooth
     };
 
-    struct ToneSoundStream : sf::SoundStream
+    struct ToneState
     {
         Tone& tone;
 
-        ToneSoundStream(Tone&                 theTone,
-                        sf::PlaybackDevice&   playbackDevice,
-                        const sf::ChannelMap& channelMap,
-                        const unsigned int    theSampleRate) :
-            sf::SoundStream(playbackDevice, channelMap, theSampleRate),
-            tone(theTone)
-        {
-        }
-
-        bool onGetData(sf::base::Vector<sf::base::I16>& outBuffer) override
+        bool onGetData(sf::base::Vector<sf::base::I16>& outBuffer)
         {
             const auto period = 1.f / tone.m_frequency;
 
@@ -424,11 +415,6 @@ private:
             }
 
             return true;
-        }
-
-        void onSeek(sf::Time) override
-        {
-            // It doesn't make sense to seek in a tone generator
         }
     };
 
@@ -490,7 +476,7 @@ public:
         if (!playbackDevice.applyListener(m_listener))
             sf::cErr() << "Failed to update listener\n";
 
-        m_toneSoundStream.emplace(*this, playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, sampleRate).play();
+        m_toneSoundStream.emplace(playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, sampleRate, *this).play();
     }
 
     void stop() override
@@ -523,7 +509,7 @@ private:
     sf::Text m_currentAmplitude;
     sf::Text m_currentFrequency;
 
-    sf::base::Optional<ToneSoundStream> m_toneSoundStream;
+    sf::base::Optional<sf::SoundStream<ToneState>> m_toneSoundStream;
 };
 
 
@@ -533,21 +519,11 @@ private:
 class Doppler : public Effect
 {
 private:
-    struct DopplerSoundStream : sf::SoundStream
+    struct DopplerState
     {
         Doppler& doppler;
 
-        DopplerSoundStream(Doppler&              theDoppler,
-                           sf::PlaybackDevice&   playbackDevice,
-                           const sf::ChannelMap& channelMap,
-                           const unsigned int    theSampleRate) :
-            sf::SoundStream(playbackDevice, channelMap, theSampleRate),
-            doppler(theDoppler)
-        {
-            setAttenuation(0.05f);
-        }
-
-        bool onGetData(sf::base::Vector<sf::base::I16>& outBuffer) override
+        bool onGetData(sf::base::Vector<sf::base::I16>& outBuffer)
         {
             const auto period = 1.f / doppler.m_frequency;
 
@@ -564,11 +540,6 @@ private:
             }
 
             return true;
-        }
-
-        void onSeek(sf::Time) override
-        {
-            // It doesn't make sense to seek in a tone generator
         }
     };
 
@@ -628,7 +599,9 @@ public:
         if (!playbackDevice.applyListener(m_listener))
             sf::cErr() << "Failed to update listener\n";
 
-        m_dopplerSoundStream.emplace(*this, playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, sampleRate).play();
+        auto& stream = m_dopplerSoundStream.emplace(playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, sampleRate, *this);
+        stream.setAttenuation(0.05f);
+        stream.play();
     }
 
     void stop() override
@@ -656,7 +629,7 @@ private:
     sf::Text        m_currentVelocity;
     sf::Text        m_currentFactor;
 
-    sf::base::Optional<DopplerSoundStream> m_dopplerSoundStream;
+    sf::base::Optional<sf::SoundStream<DopplerState>> m_dopplerSoundStream;
 };
 
 

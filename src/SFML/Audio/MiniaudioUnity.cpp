@@ -19,5 +19,5 @@
 #include "SFML/Audio/Unity/Sound.cpp"
 #include "SFML/Audio/Unity/SoundFileReaderWav.cpp"
 #include "SFML/Audio/Unity/SoundRecorder.cpp"
-#include "SFML/Audio/Unity/SoundStream.cpp"
+#include "SFML/Audio/Unity/SoundStreamStateImpl.cpp"
 // NOLINTEND(bugprone-suspicious-include)
