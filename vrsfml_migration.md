@@ -753,6 +753,92 @@ music.play();
 
 
 
+## `SoundStream` Is A Template, Not An Abstract Base
+
+- `sf::SoundStream` is now a class template parameterized by a user-provided `State` type, instead of an abstract base class to inherit from. You write a plain `struct` that exposes the hook methods and hand it to `sf::SoundStream<MyState>`.
+
+- The hooks (invoked on the audio thread):
+
+```cpp
+bool onGetData(sf::base::Vector<sf::base::I16>& outBuffer); // required
+void onSeek(sf::Time timeOffset);                           // optional
+sf::base::Optional<sf::base::U64> onLoop();                 // optional
+```
+
+- `onSeek` and `onLoop` are detected via `requires`. Omit `onSeek` if your generator can't seek; omit `onLoop` if it never loops.
+
+- `onGetData` now writes samples **into the provided `outBuffer` by reference** instead of returning a `Chunk` pointing at derived-class storage. The buffer is owned by the base class, so there is no pointer escape into the audio thread.
+
+```cpp
+//
+// BEFORE (upstream SFML)
+class MyStream : public sf::SoundStream
+{
+public:
+    MyStream() { initialize(channelCount, sampleRate, channelMap); }
+
+private:
+    bool onGetData(Chunk& data) override
+    {
+        data.samples     = m_samples.data();
+        data.sampleCount = m_samples.size();
+        return true;
+    }
+
+    void onSeek(sf::Time) override {}
+
+    std::vector<sf::Int16> m_samples;
+};
+
+MyStream stream;
+stream.play();
+
+//
+// AFTER (VRSFML)
+struct MyState
+{
+    bool onGetData(sf::base::Vector<sf::base::I16>& outBuffer)
+    {
+        outBuffer.resize(1024); // fill into the base-owned buffer
+        // ...fill `outBuffer` with 1024 samples...
+        return true; // keep streaming (false to stop)
+    }
+
+    // No `onSeek` needed -- omit it entirely for generators that can't seek.
+    // No `onLoop` needed -- omit it entirely for sources that don't loop.
+};
+
+sf::SoundStream<MyState> stream(playbackDevice,
+                                sf::ChannelMap{sf::SoundChannel::Mono},
+                                44'100u);
+stream.play();
+```
+
+- The channel map and sample rate are passed to the `SoundStream` constructor directly -- no more `initialize(...)` call in the derived class's constructor.
+
+- Extra constructor arguments after `sampleRate` are forwarded to `MyState`, so `MyState` can hold non-movable members (mutexes, atomics) without requiring the caller to materialize a `MyState` value first:
+
+```cpp
+struct MyState
+{
+    std::mutex mutex;
+    sf::base::Vector<sf::base::I16> samples;
+
+    MyState(int seed) : samples(seed) {}
+
+    bool onGetData(sf::base::Vector<sf::base::I16>& outBuffer) { /* ... */ }
+};
+
+sf::SoundStream<MyState> stream(playbackDevice, channelMap, sampleRate,
+                                /* forwarded to MyState ctor: */ 42);
+```
+
+- Destruction is safe by construction. `~SoundStream<State>` drains the audio thread **before** `State` is destroyed, so the audio callback can never touch freed memory.
+
+- Looping is controlled via the standard `setLooping(bool)` inherited from `MiniaudioSoundSource`. When streaming reaches EOF and looping is enabled, the base calls `state.onLoop()`; returning `sf::base::nullOpt` stops playback, returning a sample offset resumes from there.
+
+
+
 ## ContextSettings Without Antialiasing And sRGB Support
 
 - `sf::ContextSettings` no longer accepts `antialiasingLevel` or `sRgbCapable` for standard window creation.
