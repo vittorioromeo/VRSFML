@@ -284,19 +284,98 @@ shader.setUniform(ulPixelThreshold, (x + y) / 30);
 
 
 
-## Socket Blocking Behavior Must Be Specified At Construction Time
+## Network Module Factory API
 
-- Self-explanatory.
+- Socket classes (`sf::TcpSocket`, `sf::UdpSocket`, `sf::TcpListener`) are now constructed through static factory functions returning `sf::base::Optional<T>`.
+    - A socket instance always owns a valid OS handle (or is moved-from): the "created but not initialized" intermediate state is no longer representable.
+    - Blocking mode must be specified at creation time.
+
+### `sf::TcpSocket`
 
 ```cpp
 //
 // BEFORE (upstream SFML)
 sf::TcpSocket socket;
+socket.connect(address, port);
 
 //
 // AFTER (VRSFML)
-sf::TcpSocket socket(/* isBlocking */ true);
+auto socket = sf::TcpSocket::create(/* isBlocking */ true).value();
+if (socket.connect(address, port) != sf::Socket::Status::Done) { /* ... */ }
 ```
+
+### `sf::UdpSocket`
+
+```cpp
+//
+// BEFORE (upstream SFML)
+sf::UdpSocket socket;
+socket.bind(port);
+
+//
+// AFTER (VRSFML)
+auto socket = sf::UdpSocket::create(/* isBlocking */ true).value();
+if (socket.bind(port) != sf::Socket::Status::Done) { /* ... */ }
+```
+
+- `UdpSocket::unbind()` has been removed. Destroy the socket to unbind.
+- Binding to `sf::IpAddress::Broadcast` is explicitly rejected.
+
+### `sf::TcpListener`
+
+- `TcpListener::create` atomically opens the OS handle, binds it, and starts listening. There is no "created but not listening" intermediate state; no separate `listen()` call is needed.
+
+```cpp
+//
+// BEFORE (upstream SFML)
+sf::TcpListener listener;
+listener.listen(port);
+
+//
+// AFTER (VRSFML)
+auto listener = sf::TcpListener::create(port, /* isBlocking */ true).value();
+```
+
+- `accept()` now returns a `TcpListener::AcceptResult { Status, Optional<TcpSocket> }` instead of populating a pre-existing socket. The newly accepted connection comes back by value on success.
+
+```cpp
+//
+// BEFORE (upstream SFML)
+sf::TcpSocket client;
+if (listener.accept(client) == sf::Socket::Status::Done) { /* use `client` */ }
+
+//
+// AFTER (VRSFML)
+if (auto result = listener.accept(); result.status == sf::Socket::Status::Done)
+{
+    auto& client = *result.socket; // owned by `result`, move out if you need it elsewhere
+    /* use `client` */
+}
+```
+
+### `disconnect()` is terminal
+
+- `TcpSocket::disconnect()` now returns `void` and invalidates the underlying OS handle. After `disconnect()`, the socket is "dead" and must not be used further; to establish a new connection, construct a fresh `TcpSocket` via the factory.
+
+```cpp
+//
+// BEFORE (upstream SFML)
+socket.disconnect();
+socket.connect(address, port); // reconnect with same instance
+
+//
+// AFTER (VRSFML)
+socket.disconnect();
+
+// `socket` is now dead; construct a new one to reconnect:
+auto socket2 = sf::TcpSocket::create(/* isBlocking */ true).value();
+socket2.connect(address, port);
+```
+
+### `sf::IpAddressUtils` (unchanged API, better diagnostics)
+
+- `sf::IpAddressUtils::resolve(stringView)` internally uses `inet_pton` rather than the deprecated `inet_addr`, so it no longer has the historical ambiguity where `255.255.255.255` looked identical to a parse error.
+- `sf::IpAddressUtils::toString(ipAddress)` is now reentrant (uses `inet_ntop` with a caller-owned buffer instead of `inet_ntoa`'s static buffer) and safe to call from multiple threads concurrently.
 
 
 
