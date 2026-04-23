@@ -12,12 +12,14 @@
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Vec3.hpp"
 
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Trait/HasVirtualDestructor.hpp"
 #include "SFML/Base/Trait/IsConstructible.hpp"
 #include "SFML/Base/Trait/IsCopyAssignable.hpp"
 #include "SFML/Base/Trait/IsCopyConstructible.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include <Doctest.hpp>
 
@@ -33,7 +35,7 @@ public:
     }
 
 protected:
-    [[nodiscard]] bool onGetData(Chunk& /* data */) override
+    [[nodiscard]] bool onGetData(sf::base::Vector<sf::base::I16>& /* outBuffer */) override
     {
         return true;
     }
@@ -58,13 +60,6 @@ TEST_CASE("[Audio] sf::SoundStream" * doctest::skip(skipAudioDeviceTests))
         STATIC_CHECK(!SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::SoundStream));
         STATIC_CHECK(!SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::SoundStream));
         STATIC_CHECK(SFML_BASE_HAS_VIRTUAL_DESTRUCTOR(sf::SoundStream));
-    }
-
-    SECTION("Chunk")
-    {
-        const sf::SoundStream::Chunk chunk;
-        CHECK(chunk.samples == nullptr);
-        CHECK(chunk.sampleCount == 0);
     }
 
     SECTION("Construction")
