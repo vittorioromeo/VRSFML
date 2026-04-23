@@ -1376,6 +1376,7 @@ void Main::gameLoopUpdateCatActionWarden(const float /* deltaTimeMs */, Cat& cat
     bestTarget->napShakeProgress = 0.f;
 
     // Forced wake-up (wardencat bonk) grants the Power Nap cooldown boost.
+    // TODO P0: apply only on bonk and rename to "rude awakening"
     applyPowerNapBoost(*bestTarget);
 
     sounds.bonk.settings.position = {bestTarget->position.x, bestTarget->position.y};
