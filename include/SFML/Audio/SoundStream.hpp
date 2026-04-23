@@ -13,7 +13,7 @@
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
-#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -37,16 +37,6 @@ namespace sf
 class SFML_AUDIO_API SoundStream : public priv::MiniaudioSoundSource
 {
 public:
-    ////////////////////////////////////////////////////////////
-    /// \brief Structure defining a chunk of audio data to stream
-    ///
-    ////////////////////////////////////////////////////////////
-    struct [[nodiscard]] Chunk
-    {
-        const base::I16* samples{};     //!< Pointer to the audio samples
-        base::SizeT      sampleCount{}; //!< Number of samples pointed by Samples
-    };
-
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
@@ -124,18 +114,23 @@ protected:
     /// This function must be overridden by derived classes to provide
     /// the audio samples to play. It is called continuously by the
     /// streaming loop, in a separate thread.
-    /// The source can choose to stop the streaming loop at any time, by
-    /// returning `false` to the caller.
-    /// If you return `true` (i.e. continue streaming) it is important that
-    /// the returned array of samples is not empty; this would stop the stream
-    /// due to an internal limitation.
+    /// The implementation must write the produced samples into
+    /// `outBuffer` (which is passed empty) by resizing it or
+    /// appending to it. The buffer is owned by the base class and
+    /// lives longer than any derived-class members, so no pointer
+    /// escapes into the audio thread.
+    /// The source can choose to stop the streaming loop at any time,
+    /// by returning `false` to the caller.
+    /// If you return `true` (i.e. continue streaming) it is important
+    /// that `outBuffer` is non-empty on return; an empty buffer would
+    /// stop the stream due to an internal limitation.
     ///
-    /// \param data Chunk of data to fill
+    /// \param outBuffer Destination buffer to fill with produced samples
     ///
     /// \return `true` to continue playback, `false` to stop
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual bool onGetData(Chunk& data) = 0;
+    [[nodiscard]] virtual bool onGetData(base::Vector<base::I16>& outBuffer) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current playing position in the stream source
@@ -240,14 +235,14 @@ private:
 ///
 /// private:
 ///
-///     bool onGetData(Chunk& data) override
+///     bool onGetData(sf::base::Vector<sf::base::I16>& outBuffer) override
 ///     {
-///         // Fill the chunk with audio data from the stream source
+///         // Write produced samples into outBuffer
 ///         // (note: must not be empty if you want to continue playing)
-///         data.samples = ...;
+///         outBuffer.resize(...);
+///         ...
 ///
 ///         // Return true to continue playing
-///         data.sampleCount = ...;
 ///         return true;
 ///     }
 ///

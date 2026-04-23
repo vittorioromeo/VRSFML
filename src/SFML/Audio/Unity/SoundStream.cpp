@@ -80,21 +80,14 @@ struct SoundStream::Impl
     {
         auto& impl = *static_cast<Impl*>(dataSource);
 
-        // Try to fill our buffer with new samples if the source is still willing to stream data
+        // Try to fill our buffer with new samples if the source is still willing to stream data.
+        // The derived `onGetData` writes directly into our owned `sampleBuffer`, so no pointer
+        // to derived-class memory ever escapes into this audio thread.
         if (impl.sampleBuffer.empty() && impl.streaming.load(std::memory_order::acquire))
         {
-            Chunk chunk;
-
-            impl.streaming.store(impl.owner.onGetData(chunk), std::memory_order::release);
-
-            if (chunk.samples && chunk.sampleCount)
-            {
-                impl.sampleBuffer.clear();
-                impl.sampleBuffer.reserve(chunk.sampleCount);
-                impl.sampleBuffer.unsafeEmplaceBackRange(chunk.samples, chunk.sampleCount);
-
-                impl.sampleBufferCursor = 0;
-            }
+            impl.sampleBuffer.clear();
+            impl.streaming.store(impl.owner.onGetData(impl.sampleBuffer), std::memory_order::release);
+            impl.sampleBufferCursor = 0;
         }
 
         if (impl.sampleBuffer.empty())

@@ -13,6 +13,7 @@
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -185,15 +186,15 @@ protected:
     ////////////////////////////////////////////////////////////
     /// \brief Request a new chunk of audio samples from the stream source
     ///
-    /// This function fills the chunk from the next samples
-    /// to read from the audio file.
+    /// This function writes the next samples to read from the audio
+    /// file into `outBuffer` (which is owned by the base class).
     ///
-    /// \param data Chunk of data to fill
+    /// \param outBuffer Destination buffer to fill with produced samples
     ///
     /// \return `true` to continue playback, `false` to stop
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool onGetData(Chunk& data) override;
+    [[nodiscard]] bool onGetData(base::Vector<base::I16>& outBuffer) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current playing position in the stream source

@@ -50,6 +50,16 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
+    ~NetworkAudioStream() override
+    {
+        // Drain the audio thread before `m_samples`/`m_mutex`/`m_offset`/
+        // `m_hasFinished` are destroyed: `onGetData` reads all of them, and
+        // member destruction order would otherwise free them before
+        // `SoundStream::Impl::~Impl` calls `uninitSound`.
+        detachFromEngine();
+    }
+
+    ////////////////////////////////////////////////////////////
     /// Run the server, stream audio data from the client
     ///
     ////////////////////////////////////////////////////////////
@@ -86,7 +96,7 @@ private:
     /// /see SoundStream::OnGetData
     ///
     ////////////////////////////////////////////////////////////
-    bool onGetData(sf::SoundStream::Chunk& data) override
+    bool onGetData(sf::base::Vector<sf::base::I16>& outBuffer) override
     {
         // We have reached the end of the buffer and all audio data have been played: we can stop playback
         if ((m_offset >= m_samples.size()) && m_hasFinished)
@@ -96,21 +106,16 @@ private:
         while ((m_offset >= m_samples.size()) && !m_hasFinished)
             sf::sleep(sf::milliseconds(10));
 
-        // Copy samples into a local buffer to avoid synchronization problems
+        // Copy samples into the base-owned output buffer to avoid synchronization problems
         // (don't forget that we run in two separate threads)
         {
             const std::lock_guard lock(m_mutex);
-            m_tempBuffer.assignRange(m_samples.begin() +
-                                         static_cast<sf::base::Vector<sf::base::I16>::difference_type>(m_offset),
-                                     m_samples.end());
+            outBuffer.assignRange(m_samples.begin() + static_cast<sf::base::Vector<sf::base::I16>::difference_type>(m_offset),
+                                  m_samples.end());
         }
 
-        // Fill audio data to pass to the stream
-        data.samples     = m_tempBuffer.data();
-        data.sampleCount = m_tempBuffer.size();
-
         // Update the playing offset
-        m_offset += m_tempBuffer.size();
+        m_offset += outBuffer.size();
 
         return true;
     }
@@ -154,7 +159,7 @@ private:
                     const auto*           end   = begin + sampleCount * sizeof(sf::base::I16);
 
                     for (const auto* it = begin; it != end; ++it)
-                        m_tempBuffer.emplaceBack(*it);
+                        m_samples.emplaceBack(*it);
                 }
             }
             else if (id == serverEndOfStream)
@@ -179,7 +184,6 @@ private:
     sf::TcpSocket                   m_client;
     std::recursive_mutex            m_mutex;
     sf::base::Vector<sf::base::I16> m_samples;
-    sf::base::Vector<sf::base::I16> m_tempBuffer;
     sf::base::SizeT                 m_offset{};
     bool                            m_hasFinished{};
 };

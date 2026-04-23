@@ -376,9 +376,11 @@ private:
         {
         }
 
-        bool onGetData(sf::SoundStream::Chunk& chunk) override
+        bool onGetData(sf::base::Vector<sf::base::I16>& outBuffer) override
         {
             const auto period = 1.f / tone.m_frequency;
+
+            outBuffer.resize(chunkSize);
 
             for (auto i = 0u; i < chunkSize; ++i)
             {
@@ -416,13 +418,10 @@ private:
                     }
                 }
 
-                tone.m_sampleBuffer[i] = static_cast<sf::base::I16>(
+                outBuffer[i] = static_cast<sf::base::I16>(
                     sf::base::lround(value * std::numeric_limits<sf::base::I16>::max()));
                 tone.m_time += timePerSample;
             }
-
-            chunk.sampleCount = chunkSize;
-            chunk.samples     = tone.m_sampleBuffer.data();
 
             return true;
         }
@@ -514,11 +513,10 @@ private:
 
     sf::Listener& m_listener;
 
-    sf::base::Vector<sf::base::I16> m_sampleBuffer = sf::base::Vector<sf::base::I16>(chunkSize, 0);
-    Type                            m_type{Type::Triangle};
-    float                           m_amplitude{0.05f};
-    float                           m_frequency{220};
-    float                           m_time{};
+    Type  m_type{Type::Triangle};
+    float m_amplitude{0.05f};
+    float m_frequency{220};
+    float m_time{};
 
     sf::Text m_instruction;
     sf::Text m_currentType;
@@ -549,22 +547,21 @@ private:
             setAttenuation(0.05f);
         }
 
-        bool onGetData(sf::SoundStream::Chunk& chunk) override
+        bool onGetData(sf::base::Vector<sf::base::I16>& outBuffer) override
         {
             const auto period = 1.f / doppler.m_frequency;
+
+            outBuffer.resize(chunkSize);
 
             for (auto i = 0u; i < chunkSize; ++i)
             {
                 const auto value = doppler.m_amplitude * 2 *
                                    (doppler.m_time / period - sf::base::floor(0.5f + doppler.m_time / period));
 
-                doppler.m_sampleBuffer[i] = static_cast<sf::base::I16>(
+                outBuffer[i] = static_cast<sf::base::I16>(
                     sf::base::lround(value * std::numeric_limits<sf::base::I16>::max()));
                 doppler.m_time += timePerSample;
             }
-
-            chunk.sampleCount = chunkSize;
-            chunk.samples     = doppler.m_sampleBuffer.data();
 
             return true;
         }
@@ -646,10 +643,9 @@ private:
 
     sf::Listener& m_listener;
 
-    sf::base::Vector<sf::base::I16> m_sampleBuffer = sf::base::Vector<sf::base::I16>(chunkSize, 0);
-    float                           m_amplitude{0.05f};
-    float                           m_frequency{220};
-    float                           m_time{};
+    float m_amplitude{0.05f};
+    float m_frequency{220};
+    float m_time{};
 
     float           m_velocity{0.f};
     float           m_factor{1.f};
