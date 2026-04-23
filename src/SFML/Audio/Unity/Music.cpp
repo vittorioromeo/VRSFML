@@ -62,11 +62,10 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct Music::Impl
 {
-    base::Vector<base::I16> samples;        //!< Temporary buffer of samples
-    mutable std::mutex      loopMutex;      //!< Protects loopSpan and sampleOffset
-    Span<base::U64>         loopSpan;       //!< Loop range Specifier
-    MusicReader&            musicReader;    //!< The music reader
-    base::U64               sampleOffset{}; //!< Current offset in the stream
+    mutable std::mutex loopMutex;      //!< Protects loopSpan and sampleOffset
+    Span<base::U64>    loopSpan;       //!< Loop range Specifier
+    MusicReader&       musicReader;    //!< The music reader
+    base::U64          sampleOffset{}; //!< Current offset in the stream
 
     explicit Impl(MusicReader& theMusicReader, base::U64 theSampleCount) :
         loopSpan{0u, theSampleCount},
@@ -106,25 +105,25 @@ Music::~Music()
         return;
 #endif
 
-    // Must drain the audio thread before `m_impl->samples` is destroyed:
-    // member destruction order frees the samples vector in `Music::Impl`
-    // before `SoundStream::Impl::~Impl` gets to call `uninitSound`, so the
-    // audio callback can still be mid-`onGetData` on freed memory. Only
-    // `ma_sound_uninit` (via `detachFromEngine`) synchronizes; `pause()`
-    // does not.
+    // Must drain the audio thread before `m_impl` members are destroyed:
+    // `onGetData` locks `loopMutex` and reads `loopSpan`/`sampleOffset`/
+    // `musicReader`, all of which live in `Music::Impl` and die before
+    // `SoundStream::Impl::~Impl` gets to call `uninitSound`. Only
+    // `ma_sound_uninit` (via `detachFromEngine`) synchronizes with the
+    // audio callback; `pause()` does not.
     detachFromEngine();
 }
 
 
 ////////////////////////////////////////////////////////////
-bool Music::onGetData(SoundStream::Chunk& data)
+bool Music::onGetData(base::Vector<base::I16>& outBuffer)
 {
     const std::lock_guard lock(m_impl->loopMutex);
 
-    // Resize the internal buffer so that it can contain 1 second of audio samples
-    m_impl->samples.resize(m_impl->musicReader.getSampleRate() * m_impl->musicReader.getChannelCount());
+    // Size the output buffer to hold up to 1 second of audio samples
+    outBuffer.resize(m_impl->musicReader.getSampleRate() * m_impl->musicReader.getChannelCount());
 
-    base::SizeT     toFill  = m_impl->samples.size();
+    base::SizeT     toFill  = outBuffer.size();
     const base::U64 loopEnd = m_impl->loopSpan.offset + m_impl->loopSpan.length;
 
     // If the loop end is enabled and imminent, request less data.
@@ -134,18 +133,15 @@ bool Music::onGetData(SoundStream::Chunk& data)
         (m_impl->sampleOffset + toFill > loopEnd))
         toFill = static_cast<base::SizeT>(loopEnd - m_impl->sampleOffset);
 
-    // Fill the chunk parameters
-    data.samples = m_impl->samples.data();
-
     // `seekAndRead` is thread-safe
-    const auto [sampleOffset,
-                samplesRead] = m_impl->musicReader.seekAndRead(m_impl->sampleOffset, m_impl->samples.data(), toFill);
+    const auto [sampleOffset, samplesRead] = m_impl->musicReader.seekAndRead(m_impl->sampleOffset, outBuffer.data(), toFill);
 
-    data.sampleCount     = static_cast<base::SizeT>(samplesRead);
+    // Trim to the number of samples actually produced
+    outBuffer.resize(static_cast<base::SizeT>(samplesRead));
     m_impl->sampleOffset = sampleOffset + samplesRead;
 
     // Check if we have stopped obtaining samples or reached either the EOF or the loop end point
-    return (data.sampleCount != 0) && (m_impl->sampleOffset < m_impl->musicReader.getSampleCount()) &&
+    return (samplesRead != 0) && (m_impl->sampleOffset < m_impl->musicReader.getSampleCount()) &&
            (m_impl->sampleOffset != loopEnd || m_impl->loopSpan.length == 0);
 }
 
