@@ -349,7 +349,7 @@ void Main::gameLoopUpdateBubbles(const float deltaTimeMs)
                 const auto targetType             = static_cast<BubbleType>(bubble.pendingTransformTargetType);
                 const auto creditCatIdx           = bubble.pendingTransformCatIdx;
                 bubble.pendingTransformTargetType = 0u;
-                bubble.pendingTransformCatIdx     = 0xFFFFu;
+                bubble.pendingTransformCatIdx     = 0xFF'FFu;
 
                 turnBubbleInto(bubble, targetType);
 
@@ -362,9 +362,9 @@ void Main::gameLoopUpdateBubbles(const float deltaTimeMs)
                     // payouts flow back to the correct cat. Uses the current
                     // slot index because the vector may have reshuffled
                     // during the freeze window.
-                    if (creditCatIdx != 0xFFFFu)
+                    if (creditCatIdx != 0xFF'FFu)
                     {
-                        const auto bubbleIdx = static_cast<sf::base::SizeT>(&bubble - pt->bubbles.data());
+                        const auto bubbleIdx       = static_cast<sf::base::SizeT>(&bubble - pt->bubbles.data());
                         bombIdxToCatIdx[bubbleIdx] = static_cast<sf::base::SizeT>(creditCatIdx);
                     }
                 }
@@ -1145,7 +1145,7 @@ void Main::gameLoopUpdateCatActionUni(const float deltaTimeMs, Cat& cat)
         bToTransform.velocity                   = {0.f, 0.f};
         bToTransform.pendingTransformMs         = freezeMs;
         bToTransform.pendingTransformTargetType = static_cast<sf::base::U8>(asIdx(starBubbleType));
-        bToTransform.pendingTransformCatIdx     = 0xFFFFu;
+        bToTransform.pendingTransformCatIdx     = 0xFF'FFu;
         bToTransform.rotation = sf::base::positiveRemainder(bToTransform.rotation + deltaTimeMs, sf::base::tau);
 
         for (SizeT i = 0u; i < 8u; ++i)
@@ -1261,7 +1261,7 @@ void Main::gameLoopUpdateCatActionDevil(const float deltaTimeMs, Cat& cat)
         bubble.pendingTransformMs         = freezeMs;
         bubble.pendingTransformTargetType = static_cast<sf::base::U8>(asIdx(BubbleType::Bomb));
         bubble.pendingTransformCatIdx     = static_cast<sf::base::U16>(catIdx);
-        bubble.rotation = sf::base::positiveRemainder(bubble.rotation + deltaTimeMs, sf::base::tau);
+        bubble.rotation                   = sf::base::positiveRemainder(bubble.rotation + deltaTimeMs, sf::base::tau);
 
         for (SizeT i = 0u; i < 8u; ++i)
         {

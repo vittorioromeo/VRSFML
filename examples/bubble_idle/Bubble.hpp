@@ -48,7 +48,7 @@ struct [[nodiscard]] Bubble
     // sentinel (0xFFFF) it is credited in `bombIdxToCatIdx` at resolve time.
     float         pendingTransformMs         = 0.f;
     sf::base::U8  pendingTransformTargetType = 0u;
-    sf::base::U16 pendingTransformCatIdx     = 0xFFFFu;
+    sf::base::U16 pendingTransformCatIdx     = 0xFF'FFu;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline float getRadiusSquared() const
