@@ -6,14 +6,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Audio/Export.hpp"
-
 #include "SFML/Audio/Priv/MiniaudioSoundSource.hpp"
+#include "SFML/Audio/SoundStreamState.hpp"
 
-#include "SFML/Base/InPlacePImpl.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "SFML/Base/Macros.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -22,7 +18,6 @@
 namespace sf
 {
 class ChannelMap;
-class EffectProcessor;
 class PlaybackDevice;
 class Time;
 } // namespace sf
@@ -31,17 +26,90 @@ class Time;
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief Abstract base class for streamed audio sources
+/// \brief Public streamed audio source with the full audio API
+///
+/// `SoundStream<State>` is a concept-based audio stream that
+/// drives a user-provided `State` from the audio thread while
+/// exposing the usual `MiniaudioSoundSource` interface
+/// (`play` / `pause` / `setVolume` / `setPitch` / ...). Use
+/// it when you want to write a custom streamed source --
+/// synthesized tone, network audio, procedural effect -- and
+/// play it like a normal sound.
+///
+/// `State` is expected to expose:
+///
+/// \code
+/// bool                      onGetData(base::Vector<base::I16>& outBuffer);
+/// void                      onSeek(Time timeOffset);  // optional -- omit for generators that can't seek
+/// base::Optional<base::U64> onLoop();                 // optional -- omit if the source never loops
+/// \endcode
+///
+/// The destructor drains the audio thread before `State` is
+/// destroyed, so the audio callback can never touch freed
+/// memory. Miniaudio is an implementation detail and is not
+/// exposed through this header.
+///
+/// Usage example (a trivial silent generator):
+/// \code
+/// struct MyState
+/// {
+///     bool onGetData(sf::base::Vector<sf::base::I16>& outBuffer)
+///     {
+///         outBuffer.resize(1024); // 1024 samples of silence
+///         return true;            // keep streaming
+///     }
+/// };
+///
+/// sf::SoundStream<MyState> stream(playbackDevice,
+///                                 sf::ChannelMap{sf::SoundChannel::Mono},
+///                                 44'100u);
+///
+/// stream.setVolume(0.5f);
+/// stream.play();
+/// \endcode
+///
+/// Under the hood, `SoundStream` composes a
+/// `sf::SoundStreamState<State>` (which holds the state and
+/// the hidden miniaudio engine) and inherits
+/// `MiniaudioSoundSource` for the public audio API. If you
+/// want to hide `SoundStream.hpp` from your own public
+/// header -- like `sf::Music` does -- inherit
+/// `MiniaudioSoundSource` yourself and compose a
+/// `SoundStreamState<State>` in your pImpl.
+///
+/// \see `sf::SoundStreamState`, `sf::Music`, `sf::Sound`
 ///
 ////////////////////////////////////////////////////////////
-class SFML_AUDIO_API SoundStream : public priv::MiniaudioSoundSource
+template <typename State>
+class SoundStream : public priv::MiniaudioSoundSource
 {
 public:
+    ////////////////////////////////////////////////////////////
+    /// \brief Construct a stream and initialize the state in place
+    ///
+    /// Extra arguments after `sampleRate` are forwarded to the
+    /// `State` constructor.
+    ///
+    /// \param playbackDevice Playback device to render through (must outlive the stream)
+    /// \param channelMap     Layout of audio channels in the produced sample frames
+    /// \param sampleRate     Sample rate of the produced samples, in samples per second
+    /// \param stateArgs      Arguments forwarded to the `State` constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename... StateArgs>
+    explicit SoundStream(PlaybackDevice&    playbackDevice,
+                         const ChannelMap&  channelMap,
+                         const unsigned int sampleRate,
+                         StateArgs&&... stateArgs) :
+        m_state(playbackDevice, channelMap, sampleRate, SFML_BASE_FORWARD(stateArgs)...)
+    {
+    }
+
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    ~SoundStream() override;
+    ~SoundStream() override = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy constructor
@@ -68,19 +136,26 @@ public:
     SoundStream& operator=(SoundStream&&) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Change the current playing position of the stream
+    /// \brief Access the user-provided state
     ///
-    /// The playing position can be changed when the stream is
-    /// either paused or playing. Changing the playing position
-    /// when the stream is stopped has no effect, since playing
-    /// the stream would reset its position.
-    ///
-    /// \param playingOffset New playing position, from the beginning of the stream
-    ///
-    /// \see `getPlayingOffset`
+    /// \return Reference to the `State` held by this stream
     ///
     ////////////////////////////////////////////////////////////
-    void setPlayingOffset(Time playingOffset) override;
+    [[nodiscard]] State& state()
+    {
+        return m_state.state();
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Access the user-provided state (const overload)
+    ///
+    /// \return `const` reference to the `State` held by this stream
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] const State& state() const
+    {
+        return m_state.state();
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the playback device this stream is rendered through
@@ -88,176 +163,41 @@ public:
     /// \return Reference to the playback device this stream was constructed with
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] PlaybackDevice& getPlaybackDevice() const;
-
-protected:
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct the sound stream
-    ///
-    /// This constructor is meant to be called by derived
-    /// classes only. The derived class is responsible for
-    /// providing the channel layout and sample rate of the
-    /// stream up-front, since miniaudio uses them to set up the
-    /// data source. Both must remain constant for the lifetime
-    /// of the stream.
-    ///
-    /// \param playbackDevice Playback device to render through (must outlive the stream)
-    /// \param channelMap     Layout of audio channels in the produced sample frames
-    /// \param sampleRate     Sample rate of the produced samples, in samples per second
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit SoundStream(PlaybackDevice& playbackDevice, const ChannelMap& channelMap, unsigned int sampleRate);
+    [[nodiscard]] PlaybackDevice& getPlaybackDevice() const
+    {
+        return m_state.getPlaybackDevice();
+    }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Request a new chunk of audio samples from the stream source
+    /// \brief Change the current playing position of the stream
     ///
-    /// This function must be overridden by derived classes to provide
-    /// the audio samples to play. It is called continuously by the
-    /// streaming loop, in a separate thread.
-    /// The implementation must write the produced samples into
-    /// `outBuffer` (which is passed empty) by resizing it or
-    /// appending to it. The buffer is owned by the base class and
-    /// lives longer than any derived-class members, so no pointer
-    /// escapes into the audio thread.
-    /// The source can choose to stop the streaming loop at any time,
-    /// by returning `false` to the caller.
-    /// If you return `true` (i.e. continue streaming) it is important
-    /// that `outBuffer` is non-empty on return; an empty buffer would
-    /// stop the stream due to an internal limitation.
-    ///
-    /// \param outBuffer Destination buffer to fill with produced samples
-    ///
-    /// \return `true` to continue playback, `false` to stop
+    /// \param playingOffset New playing position, from the beginning of the stream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual bool onGetData(base::Vector<base::I16>& outBuffer) = 0;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Change the current playing position in the stream source
-    ///
-    /// This function must be overridden by derived classes to
-    /// allow random seeking into the stream source.
-    ///
-    /// \param timeOffset New playing position, relative to the beginning of the stream
-    ///
-    ////////////////////////////////////////////////////////////
-    virtual void onSeek(Time timeOffset) = 0;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Change the current playing position in the stream source to the beginning of the loop
-    ///
-    /// This function can be overridden by derived classes to
-    /// allow implementation of custom loop points. Otherwise,
-    /// it just calls `onSeek(Time{})` and returns 0.
-    ///
-    /// \return The seek position after looping (or `base::nullOpt` if there's no loop)
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual base::Optional<base::U64> onLoop();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Detach the stream from the audio engine and wait for the audio thread to drain
-    ///
-    /// Must be called from a derived class destructor body BEFORE any data
-    /// accessed by `onGetData` / `onSeek` / `onLoop` is torn down. Only
-    /// `ma_sound_uninit` (invoked here) synchronizes with the audio thread;
-    /// `pause()` / `stop()` do not. Without this call, the audio callback
-    /// may still be in flight and touch freed derived-class memory. This
-    /// method is idempotent.
-    ///
-    ////////////////////////////////////////////////////////////
-    void detachFromEngine();
+    void setPlayingOffset(const Time playingOffset) override
+    {
+        m_state.setPlayingOffset(playingOffset);
+    }
 
 private:
     ////////////////////////////////////////////////////////////
-    /// \brief Get the sound object
+    /// \brief Return the underlying `SoundBase`
     ///
-    /// \return The sound object
+    /// Routes the inherited `MiniaudioSoundSource` public API
+    /// (volume, pitch, looping, ...) to the `ma_sound` owned
+    /// by the internal `SoundStreamState<State>`, so there is
+    /// one authoritative audio source per `SoundStream`.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] priv::MiniaudioUtils::SoundBase& getSoundBase() const override;
+    [[nodiscard]] priv::MiniaudioUtils::SoundBase& getSoundBase() const override
+    {
+        return const_cast<SoundStream*>(this)->m_state.getSoundBase();
+    }
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    struct Impl;
-    base::InPlacePImpl<Impl, 2560> m_impl; //!< Implementation details
+    SoundStreamState<State> m_state; //!< State + hidden miniaudio engine
 };
 
 } // namespace sf
-
-
-////////////////////////////////////////////////////////////
-/// \class sf::SoundStream
-/// \ingroup audio
-///
-/// Unlike audio buffers (see `sf::SoundBuffer`), audio streams
-/// are never completely loaded in memory. Instead, the audio
-/// data is acquired continuously while the stream is playing.
-/// This behavior allows to play a sound with no loading delay,
-/// and keeps the memory consumption very low.
-///
-/// Sound sources that need to be streamed are usually big files
-/// (compressed audio musics that would eat hundreds of MB in memory)
-/// or files that would take a lot of time to be received
-/// (sounds played over the network).
-///
-/// `sf::SoundStream` is a base class that doesn't care about the
-/// stream source, which is left to the derived class. SFML provides
-/// a built-in specialization for big files (see `sf::Music`).
-/// No network stream source is provided, but you can write your own
-/// by combining this class with the network module.
-///
-/// A derived class has to override two virtual functions:
-/// \li `onGetData` fills a new chunk of audio data to be played
-/// \li `onSeek` changes the current playing position in the source
-///
-/// It is important to note that each SoundStream is played in its
-/// own separate thread, so that the streaming loop doesn't block the
-/// rest of the program. In particular, the `onGetData` and `onSeek`
-/// virtual functions may sometimes be called from this separate thread.
-/// It is important to keep this in mind, because you may have to take
-/// care of synchronization issues if you share data between threads.
-///
-/// Usage example:
-/// \code
-/// class CustomStream : public sf::SoundStream
-/// {
-/// public:
-///
-///     // The channel map and sample rate are passed to the SoundStream base constructor
-///     CustomStream(sf::PlaybackDevice& playbackDevice)
-///         : sf::SoundStream(playbackDevice,
-///                           {sf::SoundChannel::FrontLeft, sf::SoundChannel::FrontRight},
-///                           44100)
-///     {
-///     }
-///
-/// private:
-///
-///     bool onGetData(sf::base::Vector<sf::base::I16>& outBuffer) override
-///     {
-///         // Write produced samples into outBuffer
-///         // (note: must not be empty if you want to continue playing)
-///         outBuffer.resize(...);
-///         ...
-///
-///         // Return true to continue playing
-///         return true;
-///     }
-///
-///     void onSeek(sf::Time timeOffset) override
-///     {
-///         // Change the current position in the stream source
-///         ...
-///     }
-/// };
-///
-/// // Usage (assumes `playbackDevice` is an initialized sf::PlaybackDevice)
-/// CustomStream stream(playbackDevice);
-/// stream.play();
-/// \endcode
-///
-/// \see `sf::Music`
-///
-////////////////////////////////////////////////////////////

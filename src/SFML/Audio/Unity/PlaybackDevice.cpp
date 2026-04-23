@@ -9,8 +9,8 @@
 
 #include "SFML/Audio/AudioContext.hpp"
 #include "SFML/Audio/Listener.hpp"
-#include "SFML/Audio/MiniaudioUtils.hpp"
 #include "SFML/Audio/PlaybackDeviceHandle.hpp"
+#include "SFML/Audio/Priv/MiniaudioUtils.hpp"
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Err.hpp"
