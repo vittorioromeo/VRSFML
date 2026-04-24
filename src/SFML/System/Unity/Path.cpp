@@ -12,7 +12,6 @@
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Trait/IsSame.hpp"
 
-
 #include <filesystem>
 #include <ostream>
 #include <string>

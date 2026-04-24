@@ -167,10 +167,8 @@ public:
     /// after subsequent drawing will lead to undefined behavior if a mipmap
     /// had been previously generated.
     ///
-    /// \return `true` if mipmap generation was successful, `false` if unsuccessful
-    ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool generateMipmap();
+    void generateMipmap();
 
     ////////////////////////////////////////////////////////////
     /// \brief Activate or deactivate the render-texture for rendering

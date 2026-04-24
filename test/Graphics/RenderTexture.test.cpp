@@ -82,7 +82,7 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
     SECTION("generateMipmap()")
     {
         auto renderTexture = sf::RenderTexture::create({64, 64}).value();
-        CHECK(renderTexture.generateMipmap());
+        renderTexture.generateMipmap();
     }
 
     SECTION("setActive()")

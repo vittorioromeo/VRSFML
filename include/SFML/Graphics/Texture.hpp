@@ -380,17 +380,12 @@ public:
     /// have to be sampled from when heavily minified, usage of mipmaps
     /// can also improve rendering performance in certain scenarios.
     ///
-    /// Mipmap generation relies on the necessary OpenGL extension being
-    /// available. If it is unavailable or generation fails due to another
-    /// reason, this function will return `false`. Mipmap data is only valid from
-    /// the time it is generated until the next time the base level image is
-    /// modified, at which point this function will have to be called again to
-    /// regenerate it.
-    ///
-    /// \return `true` if mipmap generation was successful, `false` if unsuccessful
+    /// Mipmap data is only valid from the time it is generated until
+    /// the next time the base level image is modified, at which point
+    /// this function will have to be called again to regenerate it.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool generateMipmap();
+    void generateMipmap();
 
     ////////////////////////////////////////////////////////////
     /// \brief Swap the contents of this texture with those of another

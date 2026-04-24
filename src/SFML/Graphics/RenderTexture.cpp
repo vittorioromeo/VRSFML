@@ -532,9 +532,9 @@ TextureWrapMode RenderTexture::getWrapMode() const
 
 
 ////////////////////////////////////////////////////////////
-bool RenderTexture::generateMipmap()
+void RenderTexture::generateMipmap()
 {
-    return m_impl->texture.generateMipmap();
+    m_impl->texture.generateMipmap();
 }
 
 

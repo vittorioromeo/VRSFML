@@ -662,7 +662,7 @@ TextureWrapMode Texture::getWrapMode() const
 
 
 ////////////////////////////////////////////////////////////
-bool Texture::generateMipmap()
+void Texture::generateMipmap()
 {
     SFML_BASE_ASSERT(m_texture);
     SFML_BASE_ASSERT(glCheck(glIsTexture(m_texture)));
@@ -679,8 +679,6 @@ bool Texture::generateMipmap()
                             m_isSmooth ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_LINEAR));
 
     m_hasMipmap = true;
-
-    return true;
 }
 
 
