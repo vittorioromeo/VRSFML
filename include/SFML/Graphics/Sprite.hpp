@@ -24,7 +24,7 @@ namespace sf
 ///        own transformations, color, etc.
 ///
 ////////////////////////////////////////////////////////////
-struct SFML_GRAPHICS_API Sprite : TransformableMixin<Sprite>, GlobalAnchorPointMixin<Sprite>, LocalAnchorPointMixin<Sprite>
+struct SFML_GRAPHICS_API Sprite : TransformableMixin, GlobalAnchorPointMixin, LocalAnchorPointMixin
 {
     ////////////////////////////////////////////////////////////
     /// \brief Get the local bounding rectangle of the entity

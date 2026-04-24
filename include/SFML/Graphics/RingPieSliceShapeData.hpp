@@ -24,9 +24,7 @@ namespace sf
 /// \brief Data required to draw a ring pie slice shape
 ///
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] SFML_GRAPHICS_API RingPieSliceShapeData :
-    LocalAnchorPointMixin<RingPieSliceShapeData>,
-    GlobalAnchorPointMixin<RingPieSliceShapeData>
+struct [[nodiscard]] SFML_GRAPHICS_API RingPieSliceShapeData : LocalAnchorPointMixin, GlobalAnchorPointMixin
 {
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;

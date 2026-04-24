@@ -30,9 +30,7 @@ namespace sf
 /// shape class to draw the actual ellipse.
 ///
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] SFML_GRAPHICS_API EllipseShapeData :
-    LocalAnchorPointMixin<EllipseShapeData>,
-    GlobalAnchorPointMixin<EllipseShapeData>
+struct [[nodiscard]] SFML_GRAPHICS_API EllipseShapeData : LocalAnchorPointMixin, GlobalAnchorPointMixin
 {
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;

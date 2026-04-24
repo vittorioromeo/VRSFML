@@ -23,9 +23,7 @@ namespace sf
 /// \brief Data required to draw a rectangle shape
 ///
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] SFML_GRAPHICS_API RectangleShapeData :
-    LocalAnchorPointMixin<RectangleShapeData>,
-    GlobalAnchorPointMixin<RectangleShapeData>
+struct [[nodiscard]] SFML_GRAPHICS_API RectangleShapeData : LocalAnchorPointMixin, GlobalAnchorPointMixin
 {
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;

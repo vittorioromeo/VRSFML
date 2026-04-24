@@ -335,7 +335,7 @@ TODO P0: update
 
 ## Implementation changes
 
-- ➡️ **Changed C++ Standard to C++20:**
+- ➡️ **Changed C++ Standard to C++23:**
     - Some features (e.g. designated initializers. `[[likely]]`, `char8_t`, `constinit`, aggregate initialization using parentheses, concepts) are now used throughout the library.
 
 <br>

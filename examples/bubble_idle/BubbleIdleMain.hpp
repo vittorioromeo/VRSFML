@@ -110,7 +110,6 @@
 #include "SFML/Base/FloatMax.hpp"
 #include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
 #include "SFML/Base/Math/Pow.hpp"
@@ -1669,7 +1668,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Bubble* pickRandomBubbleInRadius(const sf::Vec2f center, const float radius)
     {
-        return pickRandomBubbleInRadiusMatching(center, radius, [](const Bubble&) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {
+        return pickRandomBubbleInRadiusMatching(center, radius, [] [[gnu::always_inline, gnu::flatten]] (const Bubble&) {
             return true;
         });
     }
@@ -1747,7 +1746,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     Cat& spawnCat(const sf::Vec2f pos, const CatType catType, const float hue)
     {
-        const auto meowPitch = [&]() -> float
+        const auto meowPitch = [&] -> float
         {
             switch (catType)
             {

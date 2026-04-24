@@ -23,7 +23,7 @@ namespace sf
 /// \brief Data required to draw a cog (gear) shape
 ///
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] SFML_GRAPHICS_API CogShapeData : LocalAnchorPointMixin<CogShapeData>, GlobalAnchorPointMixin<CogShapeData>
+struct [[nodiscard]] SFML_GRAPHICS_API CogShapeData : LocalAnchorPointMixin, GlobalAnchorPointMixin
 {
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;

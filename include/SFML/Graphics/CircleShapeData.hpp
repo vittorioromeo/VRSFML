@@ -30,9 +30,7 @@ namespace sf
 /// drawable batching system.
 ///
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] SFML_GRAPHICS_API CircleShapeData :
-    LocalAnchorPointMixin<CircleShapeData>,
-    GlobalAnchorPointMixin<CircleShapeData>
+struct [[nodiscard]] SFML_GRAPHICS_API CircleShapeData : LocalAnchorPointMixin, GlobalAnchorPointMixin
 {
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;

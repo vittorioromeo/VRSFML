@@ -225,7 +225,7 @@ public:
                 sf::cErr() << "Vulkan setup failed at step '" << fName << "'\n";
         };
 
-#define TRY_STEP(...) tryStep(#__VA_ARGS__, [&]() { __VA_ARGS__; })
+#define TRY_STEP(...) tryStep(#__VA_ARGS__, [&] { __VA_ARGS__; })
 
         // Vulkan setup procedure
         TRY_STEP({ setupInstance(); });

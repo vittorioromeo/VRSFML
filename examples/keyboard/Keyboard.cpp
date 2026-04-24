@@ -13,6 +13,7 @@
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Text.hpp"
+#include "SFML/Graphics/TextBase.inl" // IWYU pragma: keep, required: `ShinyText` below derives from `sf::Text`
 #include "SFML/Graphics/Transformable.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 #include "SFML/Graphics/View.hpp" // IWYU pragma: keep

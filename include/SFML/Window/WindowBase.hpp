@@ -52,7 +52,7 @@ namespace sf
 /// \brief Window that serves as a base for other windows
 ///
 ////////////////////////////////////////////////////////////
-class SFML_WINDOW_API WindowBase : public GlobalAnchorPointMixin<WindowBase>, public LocalAnchorPointMixin<WindowBase>
+class SFML_WINDOW_API WindowBase : public GlobalAnchorPointMixin, public LocalAnchorPointMixin
 {
 public:
     ////////////////////////////////////////////////////////////

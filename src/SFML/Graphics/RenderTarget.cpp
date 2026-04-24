@@ -57,7 +57,6 @@
 #include "SFML/Base/FunctionRef.hpp"
 #include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/ScopeGuard.hpp"
@@ -275,7 +274,7 @@ auto RenderTarget::addToAutoBatch(auto&&... xs)
 {
     SFML_BASE_ASSERT(m_autoBatchMode != AutoBatchMode::Disabled);
 
-    return withCurrentAutobatch([&](auto& batch) SFML_BASE_LAMBDA_ALWAYS_INLINE
+    return withCurrentAutobatch([&] [[gnu::always_inline]] (auto& batch)
     {
         const auto prevVertices = batch.getNumVertices();
         SFML_BASE_SCOPE_GUARD({ m_numAutoBatchVertices += batch.getNumVertices() - prevVertices; });

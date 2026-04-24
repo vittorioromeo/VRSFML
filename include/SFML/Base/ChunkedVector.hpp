@@ -884,10 +884,9 @@ public:
     }
 
 
-private:
     ////////////////////////////////////////////////////////////
     template <typename Self, typename F>
-    [[gnu::always_inline]] static void forEachImpl(Self& self, F&& fn)
+    [[gnu::always_inline]] void forEach(this Self&& self, F&& fn)
     {
         if (self.m_size == 0u)
             return;
@@ -918,7 +917,7 @@ private:
 
     ////////////////////////////////////////////////////////////
     template <typename Self, typename F>
-    [[gnu::always_inline]] static void forEachIndexedImpl(Self& self, F&& fn)
+    [[gnu::always_inline]] void forEachIndexed(this Self&& self, F&& fn)
     {
         if (self.m_size == 0u)
             return;
@@ -952,7 +951,7 @@ private:
 
     ////////////////////////////////////////////////////////////
     template <typename Self, typename F>
-    [[gnu::always_inline]] static void forEachBlockImpl(Self& self, F&& fn)
+    [[gnu::always_inline]] void forEachBlock(this Self&& self, F&& fn)
     {
         if (self.m_size == 0u)
             return;
@@ -979,7 +978,7 @@ private:
 
     ////////////////////////////////////////////////////////////
     template <typename Self, typename TPredicate>
-    [[nodiscard]] static auto findIfImpl(Self& self, TPredicate&& predicate) -> decltype(self.blockPtrAt(0u))
+    [[nodiscard]] auto findIf(this Self&& self, TPredicate&& predicate) -> decltype(self.blockPtrAt(0u))
     {
         const SizeT fullBlocks = self.m_size >> blockShift;
         const SizeT tail       = self.m_size & blockMask;
@@ -1006,71 +1005,6 @@ private:
         }
 
         return nullptr;
-    }
-
-
-public:
-    ////////////////////////////////////////////////////////////
-    template <typename F>
-    [[gnu::always_inline]] void forEach(F&& fn)
-    {
-        forEachImpl(*this, static_cast<F&&>(fn));
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    template <typename F>
-    [[gnu::always_inline]] void forEach(F&& fn) const
-    {
-        forEachImpl(*this, static_cast<F&&>(fn));
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    template <typename F>
-    [[gnu::always_inline]] void forEachIndexed(F&& fn)
-    {
-        forEachIndexedImpl(*this, static_cast<F&&>(fn));
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    template <typename F>
-    [[gnu::always_inline]] void forEachIndexed(F&& fn) const
-    {
-        forEachIndexedImpl(*this, static_cast<F&&>(fn));
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    template <typename F>
-    [[gnu::always_inline]] void forEachBlock(F&& fn)
-    {
-        forEachBlockImpl(*this, static_cast<F&&>(fn));
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    template <typename F>
-    [[gnu::always_inline]] void forEachBlock(F&& fn) const
-    {
-        forEachBlockImpl(*this, static_cast<F&&>(fn));
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    template <typename TPredicate>
-    [[nodiscard]] TItem* findIf(TPredicate&& predicate)
-    {
-        return findIfImpl(*this, static_cast<TPredicate&&>(predicate));
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    template <typename TPredicate>
-    [[nodiscard]] const TItem* findIf(TPredicate&& predicate) const
-    {
-        return findIfImpl(*this, static_cast<TPredicate&&>(predicate));
     }
 
 

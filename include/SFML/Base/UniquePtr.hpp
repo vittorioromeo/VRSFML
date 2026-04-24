@@ -24,7 +24,7 @@ namespace sf::base
 struct SFML_BASE_TRIVIAL_ABI UniquePtrDefaultDeleter
 {
     template <typename T>
-    [[gnu::always_inline]] constexpr void operator()(T* const ptr) const noexcept
+    [[gnu::always_inline]] static constexpr void operator()(T* const ptr) noexcept
     {
         static_assert(!SFML_BASE_IS_SAME(T, void), "can't delete pointer to incomplete type");
 

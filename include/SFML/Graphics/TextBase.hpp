@@ -38,11 +38,25 @@ struct RenderStates;
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief CRTP base class for text objects
+/// \brief Base class shared by `sf::Text` and `sf::GlyphMappedText`
 ///
 /// Holds all data and methods shared between `Text` (legacy
 /// lazy-loading path) and `GlyphMappedText` (explicit preloading
-/// path).
+/// path). The derived type is deduced at call time via C++23
+/// explicit object parameters on the hot methods that need it.
+///
+/// The deducing-this method templates are *declared* here but
+/// *defined* in `TextBase.inl`, force-instantiated for `sf::Text`
+/// and `sf::GlyphMappedText` inside `TextBase.cpp`. This keeps the
+/// public header free of heavy rendering includes (`RenderTarget.hpp`,
+/// `TextUtils.hpp`, etc.).
+///
+/// Note: users who further derive from `sf::Text` or
+/// `sf::GlyphMappedText` **must** `#include "SFML/Graphics/TextBase.inl"`
+/// in the TU that defines the derived type, so that per-derived-type
+/// template instantiations of `draw`, `findCharacterPos`, ... can
+/// be generated. Code that only uses `sf::Text` / `sf::GlyphMappedText`
+/// directly never needs the `.inl`.
 ///
 /// Derived classes must provide:
 /// - `const auto& getFontSource() const` -- returns Font& or GlyphMapping&
@@ -52,11 +66,7 @@ namespace sf
 /// - `bool isBold() const`
 ///
 ////////////////////////////////////////////////////////////
-template <typename TDerived>
-class SFML_GRAPHICS_API TextBase :
-    public TransformableMixin<TDerived>,
-    public GlobalAnchorPointMixin<TDerived>,
-    public LocalAnchorPointMixin<TDerived>
+class SFML_GRAPHICS_API TextBase : public TransformableMixin, public GlobalAnchorPointMixin, public LocalAnchorPointMixin
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -313,7 +323,8 @@ public:
     /// \return Position of the character
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vec2f findCharacterPos(base::SizeT index) const;
+    template <typename Self>
+    [[nodiscard]] Vec2f findCharacterPos(this const Self& self, base::SizeT index);
 
 
     ////////////////////////////////////////////////////////////
@@ -322,13 +333,12 @@ public:
     /// The returned rectangle is in local coordinates, which means
     /// that it ignores the transformations (translation, rotation,
     /// scale, etc...) that are applied to the entity.
-    /// In other words, this function returns the bounds of the
-    /// entity in the entity's coordinate system.
     ///
     /// \return Local bounding rectangle of the entity
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const Rect2f& getLocalBounds() const;
+    template <typename Self>
+    [[nodiscard]] const Rect2f& getLocalBounds(this const Self& self);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the global bounding rectangle of the entity
@@ -336,13 +346,12 @@ public:
     /// The returned rectangle is in global coordinates, which means
     /// that it takes into account the transformations (translation,
     /// rotation, scale, etc...) that are applied to the entity.
-    /// In other words, this function returns the bounds of the
-    /// text in the global 2D world's coordinate system.
     ///
     /// \return Global bounding rectangle of the entity
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Rect2f getGlobalBounds() const;
+    template <typename Self>
+    [[nodiscard]] Rect2f getGlobalBounds(this const Self& self);
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw the text to a render target
@@ -351,7 +360,8 @@ public:
     /// \param states Current render states
     ///
     ////////////////////////////////////////////////////////////
-    void draw(RenderTarget& target, RenderStates states) const;
+    template <typename Self>
+    void draw(this const Self& self, RenderTarget& target, RenderStates states);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a read-only span to the text's vertices.
@@ -367,11 +377,8 @@ public:
     /// - The remaining subrange contains all text fill vertices, if any.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] ConstVertexSpan getVertices() const
-    {
-        ensureGeometryUpdate();
-        return {m_vertices.data(), m_vertices.size()};
-    }
+    template <typename Self>
+    [[nodiscard]] ConstVertexSpan getVertices(this const Self& self);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a mutable span to the text's vertices.
@@ -379,11 +386,8 @@ public:
     /// \see `getVertices`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] VertexSpan getVerticesMut()
-    {
-        ensureGeometryUpdate();
-        return {m_vertices.data(), m_vertices.size()};
-    }
+    template <typename Self>
+    [[nodiscard]] VertexSpan getVerticesMut(this Self& self);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the index where the fill vertices start in `getVertices()`
@@ -407,7 +411,22 @@ protected:
     ///
     ////////////////////////////////////////////////////////////
     template <typename TData>
-    explicit TextBase(const TData& data);
+    explicit TextBase(const TData& data) :
+        m_string(data.string),
+        m_letterSpacing(data.letterSpacing),
+        m_lineSpacing(data.lineSpacing),
+        m_fillColor(data.fillColor),
+        m_outlineColor(data.outlineColor),
+        position{data.position},
+        scale{data.scale},
+        origin{data.origin},
+        rotation{data.rotation},
+        m_italic(data.italic),
+        m_underlined(data.underlined),
+        m_strikeThrough(data.strikeThrough),
+        m_geometryNeedUpdate{true}
+    {
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -436,7 +455,8 @@ protected:
     /// that the geometry is only updated when necessary.
     ///
     ////////////////////////////////////////////////////////////
-    void ensureGeometryUpdate() const;
+    template <typename Self>
+    void ensureGeometryUpdate(this const Self& self);
 
     ////////////////////////////////////////////////////////////
     // Member data
@@ -469,10 +489,10 @@ protected:
 /// \class sf::TextBase
 /// \ingroup graphics
 ///
-/// `sf::TextBase` is the **CRTP** base shared by `sf::Text`
-/// and `sf::GlyphMappedText`. It implements the parts of the
-/// text rendering pipeline that do not depend on the source of
-/// the glyphs:
+/// `sf::TextBase` is the base shared by `sf::Text` and
+/// `sf::GlyphMappedText`. It implements the parts of the text
+/// rendering pipeline that do not depend on the source of the
+/// glyphs:
 ///
 /// \li the string itself,
 /// \li letter spacing, line spacing, italic/underline/strike,

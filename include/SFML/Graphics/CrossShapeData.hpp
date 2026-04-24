@@ -23,9 +23,7 @@ namespace sf
 /// \brief Data required to draw a cross (plus) shape
 ///
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] SFML_GRAPHICS_API CrossShapeData :
-    LocalAnchorPointMixin<CrossShapeData>,
-    GlobalAnchorPointMixin<CrossShapeData>
+struct [[nodiscard]] SFML_GRAPHICS_API CrossShapeData : LocalAnchorPointMixin, GlobalAnchorPointMixin
 {
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;

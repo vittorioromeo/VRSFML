@@ -9,16 +9,16 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/DeclVal.hpp"
 #include "SFML/Base/IndexSequence.hpp"
-#include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/Launder.hpp"
 #include "SFML/Base/MakeIndexSequence.hpp"
 #include "SFML/Base/OverloadSet.hpp"
 #include "SFML/Base/PlacementNew.hpp"
 #include "SFML/Base/ScopeGuard.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Trait/AddConst.hpp"
-#include "SFML/Base/Trait/AddLvalueReference.hpp"
+#include "SFML/Base/Trait/Conditional.hpp"
+#include "SFML/Base/Trait/CopyCV.hpp"
 #include "SFML/Base/Trait/IsReference.hpp"
+#include "SFML/Base/Trait/IsRvalueReference.hpp"
 #include "SFML/Base/Trait/IsSame.hpp"
 #include "SFML/Base/Trait/IsTriviallyCopyAssignable.hpp"
 #include "SFML/Base/Trait/IsTriviallyCopyConstructible.hpp"
@@ -27,6 +27,7 @@
 #include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
 #include "SFML/Base/Trait/IsTriviallyRelocatable.hpp"
 #include "SFML/Base/Trait/RemoveCVRef.hpp"
+#include "SFML/Base/Trait/RemoveReference.hpp"
 #include "SFML/Base/TypePackElement.hpp"
 #include "SFML/Base/TypePackIndex.hpp"
 
@@ -59,6 +60,16 @@ template <SizeT>
 struct InPlaceIndex
 {
 };
+
+
+////////////////////////////////////////////////////////////
+// Models `std::forward_like<Self, T>`'s result type: propagates
+// the cv-ref qualification of `Self` (as deduced by a C++23
+// "deducing this" parameter `this Self&& self`) onto `T`.
+template <typename Self, typename T>
+using LikeT = Conditional<SFML_BASE_IS_RVALUE_REFERENCE(Self&&),
+                          CopyCV<SFML_BASE_REMOVE_REFERENCE(Self), T>&&,
+                          CopyCV<SFML_BASE_REMOVE_REFERENCE(Self), T>&>;
 
 } // namespace sf::base::priv
 
@@ -169,7 +180,7 @@ private:
 #define SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX_OBJ(obj, Is, ...)                               \
     do                                                                                          \
     {                                                                                           \
-        [&]<SizeT... Is>(IndexSequence<Is...>) SFML_BASE_LAMBDA_ALWAYS_INLINE                   \
+        [&]<SizeT... Is> [[gnu::always_inline]] (IndexSequence<Is...>)                          \
         { (..., (((obj).m_index == Is) ? ((__VA_ARGS__), 0) : 0)); }(alternativeIndexSequence); \
     } while (false)
 
@@ -180,23 +191,17 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    // Unchecked buffer accessors used by internal paths whose callers
+    // Unchecked buffer accessor used by internal paths whose callers
     // have already proven the active alternative (e.g. from inside
     // `DO_WITH_CURRENT_INDEX`). Public access goes through `as<T>()`,
     // which additionally asserts the discriminator.
     ////////////////////////////////////////////////////////////
-    template <typename T>
-    [[nodiscard, gnu::always_inline]] T& bufferAs() noexcept
+    template <typename T, typename Self>
+    [[nodiscard, gnu::always_inline]] auto&& bufferAs(this Self&& self) noexcept
     {
-        return *SFML_BASE_LAUNDER_CAST(T*, m_buffer);
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    template <typename T>
-    [[nodiscard, gnu::always_inline]] const T& bufferAs() const noexcept
-    {
-        return *SFML_BASE_LAUNDER_CAST(const T*, m_buffer);
+        using Ret = priv::LikeT<Self, T>;
+        using Ptr = SFML_BASE_REMOVE_REFERENCE(Ret)*;
+        return static_cast<Ret>(*SFML_BASE_LAUNDER_CAST(Ptr, self.m_buffer));
     }
 
 
@@ -212,10 +217,9 @@ private:
 
     ////////////////////////////////////////////////////////////
     // Each of the three recursive helpers below is a single static function
-    // template that perfect-forwards `self`, so we do not need to duplicate
-    // the body for `&`, `const&`, and `&&` versions. `getByIndex` already has
-    // overloads for all three ref-qualifiers, and reference collapsing on
-    // `static_cast<Self&&>(self)` picks the matching overload automatically.
+    // template that perfect-forwards `self`. `getByIndex` is itself a
+    // deducing-this template, so `static_cast<Self&&>(self).getByIndex<I>()`
+    // propagates the cvref onto the returned reference automatically.
     ////////////////////////////////////////////////////////////
     template <SizeT I, typename R, typename Self, typename Visitor>
     [[nodiscard, gnu::always_inline]] static R recursiveVisitImpl(Self&& self, Visitor&& visitor)
@@ -288,58 +292,6 @@ private:
         else
         {
             return recursiveVisitImplOpt5<I, R>(static_cast<Self&&>(self), static_cast<Visitor&&>(visitor));
-        }
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    // Shared dispatch body for the `&` and `const&` overloads of
-    // `recursiveVisit`: picks the best unrolling tier for the
-    // alternative count and forwards `self` through.
-    template <typename R, typename Self, typename Visitor>
-    [[nodiscard, gnu::always_inline]] static R recursiveVisitDispatch(Self&& self, Visitor&& visitor)
-    {
-        if constexpr (sizeof...(Alternatives) >= 10)
-            return recursiveVisitImplOpt10<0, R>(static_cast<Self&&>(self), static_cast<Visitor&&>(visitor));
-        else if constexpr (sizeof...(Alternatives) >= 5)
-            return recursiveVisitImplOpt5<0, R>(static_cast<Self&&>(self), static_cast<Visitor&&>(visitor));
-        else
-            return recursiveVisitImpl<0, R>(static_cast<Self&&>(self), static_cast<Visitor&&>(visitor));
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    // Shared dispatch body for the `&` and `const&` overloads of
-    // `linearVisit`. Uses `DO_WITH_CURRENT_INDEX_OBJ` on `self` so
-    // that reference-qualifier selection of `getByIndex` works in
-    // both overloads without duplicating the body.
-    template <typename R, typename Self, typename Visitor>
-    [[nodiscard, gnu::always_inline]] static R linearVisitDispatch(Self&& self, Visitor&& visitor)
-    {
-        if constexpr (SFML_BASE_IS_REFERENCE(R))
-        {
-            SFML_BASE_REMOVE_CVREF(R) * ret; // NOLINT(cppcoreguidelines-init-variables)
-            SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX_OBJ(self, I, ret = &(visitor(self.template getByIndex<I>())));
-            return static_cast<R>(*ret);
-        }
-        else if constexpr (SFML_BASE_IS_SAME(R, void))
-        {
-            SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX_OBJ(self, I, (visitor(self.template getByIndex<I>())));
-        }
-        else
-        {
-            alignas(R) Byte retBuffer[sizeof(R)];
-
-            SFML_BASE_SCOPE_GUARD({
-                if constexpr (!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(R))
-                    SFML_BASE_LAUNDER_CAST(R*, retBuffer)->~R();
-            });
-
-            SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX_OBJ(self,
-                                                        I,
-                                                        SFML_BASE_PLACEMENT_NEW(retBuffer)
-                                                            R(visitor(self.template getByIndex<I>())));
-            return *(SFML_BASE_LAUNDER_CAST(R*, retBuffer));
         }
     }
 
@@ -583,99 +535,48 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Pointer-typed access to alternative `T`, or `nullptr` if not active
     ///
-    ////////////////////////////////////////////////////////////
-    template <typename T>
-    [[nodiscard, gnu::always_inline]] T* getIf() noexcept
-    {
-        SFML_BASE_VARIANT_STATIC_ASSERT_INDEX_VALIDITY(indexOf<T>);
-        return m_index == indexOf<T> ? SFML_BASE_LAUNDER_CAST(T*, m_buffer) : nullptr;
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Pointer-typed access to alternative `T`, or `nullptr` if not active (const)
+    /// Constrained to lvalue variants: returning a pointer into an
+    /// rvalue's storage would dangle at the end of the full expression.
     ///
     ////////////////////////////////////////////////////////////
-    template <typename T>
-    [[nodiscard, gnu::always_inline]] const T* getIf() const noexcept
+    template <typename T, typename Self>
+    [[nodiscard, gnu::always_inline]] auto* getIf(this Self&& self) noexcept
+        requires(!SFML_BASE_IS_RVALUE_REFERENCE(Self &&))
     {
         SFML_BASE_VARIANT_STATIC_ASSERT_INDEX_VALIDITY(indexOf<T>);
-        return m_index == indexOf<T> ? SFML_BASE_LAUNDER_CAST(const T*, m_buffer) : nullptr;
+        using Ptr = CopyCV<SFML_BASE_REMOVE_REFERENCE(Self), T>*;
+        return self.m_index == indexOf<T> ? SFML_BASE_LAUNDER_CAST(Ptr, self.m_buffer) : nullptr;
     }
 
 
     ////////////////////////////////////////////////////////////
     /// \brief Unchecked access to alternative `T` (asserts that it is active)
     ///
-    ////////////////////////////////////////////////////////////
-    template <typename T>
-    [[nodiscard, gnu::always_inline]] T& as() & noexcept
-    {
-        SFML_BASE_VARIANT_STATIC_ASSERT_INDEX_VALIDITY(indexOf<T>);
-        SFML_BASE_ASSERT(m_index == indexOf<T>);
-        return *SFML_BASE_LAUNDER_CAST(T*, m_buffer);
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Unchecked access to alternative `T` (const overload)
+    /// Propagates the cv-ref qualification of `*this` onto the returned
+    /// reference: `T&`, `const T&`, `T&&`, or `const T&&` as appropriate.
     ///
     ////////////////////////////////////////////////////////////
-    template <typename T>
-    [[nodiscard, gnu::always_inline]] const T& as() const& noexcept
+    template <typename T, typename Self>
+    [[nodiscard, gnu::always_inline]] auto&& as(this Self&& self) noexcept
     {
         SFML_BASE_VARIANT_STATIC_ASSERT_INDEX_VALIDITY(indexOf<T>);
-        SFML_BASE_ASSERT(m_index == indexOf<T>);
-        return *SFML_BASE_LAUNDER_CAST(const T*, m_buffer);
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Unchecked access to alternative `T` (rvalue overload)
-    ///
-    ////////////////////////////////////////////////////////////
-    template <typename T>
-    [[nodiscard, gnu::always_inline]] T&& as() && noexcept
-    {
-        SFML_BASE_VARIANT_STATIC_ASSERT_INDEX_VALIDITY(indexOf<T>);
-        SFML_BASE_ASSERT(m_index == indexOf<T>);
-        return static_cast<T&&>(*SFML_BASE_LAUNDER_CAST(T*, m_buffer));
+        SFML_BASE_ASSERT(self.m_index == indexOf<T>);
+        return static_cast<Self&&>(self).template bufferAs<T>();
     }
 
 
     ////////////////////////////////////////////////////////////
     /// \brief Unchecked access to the alternative at index `I`
     ///
-    ////////////////////////////////////////////////////////////
-    template <SizeT I>
-    [[nodiscard, gnu::always_inline]] auto& getByIndex() & noexcept
-    {
-        SFML_BASE_VARIANT_STATIC_ASSERT_INDEX_VALIDITY(I);
-        return as<SFML_BASE_VARIANT_NTH_TYPE(I)>();
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Unchecked access to the alternative at index `I` (const overload)
+    /// Propagates the cv-ref qualification of `*this` onto the returned
+    /// reference (same rules as `as<T>()`).
     ///
     ////////////////////////////////////////////////////////////
-    template <SizeT I>
-    [[nodiscard, gnu::always_inline]] const auto& getByIndex() const& noexcept
+    template <SizeT I, typename Self>
+    [[nodiscard, gnu::always_inline]] auto&& getByIndex(this Self&& self) noexcept
     {
         SFML_BASE_VARIANT_STATIC_ASSERT_INDEX_VALIDITY(I);
-        return as<SFML_BASE_VARIANT_NTH_TYPE(I)>();
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Unchecked access to the alternative at index `I` (rvalue overload)
-    ///
-    ////////////////////////////////////////////////////////////
-    template <SizeT I>
-    [[nodiscard, gnu::always_inline]] auto&& getByIndex() && noexcept
-    {
-        SFML_BASE_VARIANT_STATIC_ASSERT_INDEX_VALIDITY(I);
-        return static_cast<SFML_BASE_VARIANT_NTH_TYPE(I) &&>(as<SFML_BASE_VARIANT_NTH_TYPE(I)>());
+        return static_cast<Self&&>(self).template as<SFML_BASE_VARIANT_NTH_TYPE(I)>();
     }
 
 
@@ -695,24 +596,17 @@ public:
     /// \return Whatever `visitor` returns
     ///
     ////////////////////////////////////////////////////////////
-    template <typename Visitor,
-              typename R = decltype(declVal<Visitor&&>()(declVal<SFML_BASE_ADD_LVALUE_REFERENCE(SFML_BASE_VARIANT_NTH_TYPE(0))>()))>
-    [[nodiscard, gnu::always_inline, gnu::flatten]] R recursiveVisit(Visitor&& visitor) &
+    template <typename Self,
+              typename Visitor,
+              typename R = decltype(declVal<Visitor&&>()(declVal<priv::LikeT<Self, SFML_BASE_VARIANT_NTH_TYPE(0)>>()))>
+    [[nodiscard, gnu::always_inline, gnu::flatten]] R recursiveVisit(this Self&& self, Visitor&& visitor)
     {
-        return recursiveVisitDispatch<R>(*this, static_cast<Visitor&&>(visitor));
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Visit the active alternative using a tail-call recursive dispatch (const overload)
-    ///
-    ////////////////////////////////////////////////////////////
-    template <typename Visitor,
-              typename R = decltype(declVal<Visitor&&>()(
-                  declVal<SFML_BASE_ADD_LVALUE_REFERENCE(AddConst<SFML_BASE_VARIANT_NTH_TYPE(0)>)>()))>
-    [[nodiscard, gnu::always_inline, gnu::flatten]] R recursiveVisit(Visitor&& visitor) const&
-    {
-        return recursiveVisitDispatch<R>(*this, static_cast<Visitor&&>(visitor));
+        if constexpr (sizeof...(Alternatives) >= 10)
+            return recursiveVisitImplOpt10<0, R>(static_cast<Self&&>(self), static_cast<Visitor&&>(visitor));
+        else if constexpr (sizeof...(Alternatives) >= 5)
+            return recursiveVisitImplOpt5<0, R>(static_cast<Self&&>(self), static_cast<Visitor&&>(visitor));
+        else
+            return recursiveVisitImpl<0, R>(static_cast<Self&&>(self), static_cast<Visitor&&>(visitor));
     }
 
 
@@ -724,23 +618,11 @@ public:
     /// pattern-matching style entry point.
     ///
     ////////////////////////////////////////////////////////////
-    template <typename... Fs>
-    [[nodiscard, gnu::always_inline, gnu::flatten]] auto recursiveMatch(
-        Fs&&... fs) & -> decltype(recursiveVisit(OverloadSet{static_cast<Fs&&>(fs)...}))
+    template <typename Self, typename... Fs>
+    [[nodiscard, gnu::always_inline, gnu::flatten]] auto recursiveMatch(this Self&& self, Fs&&... fs)
+        -> decltype(static_cast<Self&&>(self).recursiveVisit(OverloadSet{static_cast<Fs&&>(fs)...}))
     {
-        return recursiveVisit(OverloadSet{static_cast<Fs&&>(fs)...});
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Pattern-matching variant of `recursiveVisit` (const overload)
-    ///
-    ////////////////////////////////////////////////////////////
-    template <typename... Fs>
-    [[nodiscard, gnu::always_inline, gnu::flatten]] auto recursiveMatch(
-        Fs&&... fs) const& -> decltype(recursiveVisit(OverloadSet{static_cast<Fs&&>(fs)...}))
-    {
-        return recursiveVisit(OverloadSet{static_cast<Fs&&>(fs)...});
+        return static_cast<Self&&>(self).recursiveVisit(OverloadSet{static_cast<Fs&&>(fs)...});
     }
 
 
@@ -758,24 +640,38 @@ public:
     /// \return Whatever `visitor` returns
     ///
     ////////////////////////////////////////////////////////////
-    template <typename Visitor,
-              typename R = decltype(declVal<Visitor&&>()(declVal<SFML_BASE_ADD_LVALUE_REFERENCE(SFML_BASE_VARIANT_NTH_TYPE(0))>()))>
-    [[nodiscard, gnu::always_inline]] R linearVisit(Visitor&& visitor) &
+    template <typename Self,
+              typename Visitor,
+              typename R = decltype(declVal<Visitor&&>()(declVal<priv::LikeT<Self, SFML_BASE_VARIANT_NTH_TYPE(0)>>()))>
+    [[nodiscard, gnu::always_inline]] R linearVisit(this Self&& self, Visitor&& visitor)
     {
-        return linearVisitDispatch<R>(*this, static_cast<Visitor&&>(visitor));
-    }
+        if constexpr (SFML_BASE_IS_REFERENCE(R))
+        {
+            SFML_BASE_REMOVE_CVREF(R) * ret; // NOLINT(cppcoreguidelines-init-variables)
+            SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX_OBJ(self,
+                                                        I,
+                                                        ret = &(visitor(static_cast<Self&&>(self).template getByIndex<I>())));
+            return static_cast<R>(*ret);
+        }
+        else if constexpr (SFML_BASE_IS_SAME(R, void))
+        {
+            SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX_OBJ(self, I, (visitor(static_cast<Self&&>(self).template getByIndex<I>())));
+        }
+        else
+        {
+            alignas(R) Byte retBuffer[sizeof(R)];
 
+            SFML_BASE_SCOPE_GUARD({
+                if constexpr (!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(R))
+                    SFML_BASE_LAUNDER_CAST(R*, retBuffer)->~R();
+            });
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Visit the active alternative using a single linear dispatch (const overload)
-    ///
-    ////////////////////////////////////////////////////////////
-    template <typename Visitor,
-              typename R = decltype(declVal<Visitor&&>()(
-                  declVal<SFML_BASE_ADD_LVALUE_REFERENCE(AddConst<SFML_BASE_VARIANT_NTH_TYPE(0)>)>()))>
-    [[nodiscard, gnu::always_inline]] R linearVisit(Visitor&& visitor) const&
-    {
-        return linearVisitDispatch<R>(*this, static_cast<Visitor&&>(visitor));
+            SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX_OBJ(self,
+                                                        I,
+                                                        SFML_BASE_PLACEMENT_NEW(retBuffer)
+                                                            R(visitor(static_cast<Self&&>(self).template getByIndex<I>())));
+            return *(SFML_BASE_LAUNDER_CAST(R*, retBuffer));
+        }
     }
 
 
@@ -787,23 +683,11 @@ public:
     /// pattern-matching style entry point.
     ///
     ////////////////////////////////////////////////////////////
-    template <typename... Fs>
-    [[nodiscard, gnu::always_inline, gnu::flatten]] auto linearMatch(Fs&&... fs) & -> decltype(linearVisit(OverloadSet{
-        static_cast<Fs&&>(fs)...}))
+    template <typename Self, typename... Fs>
+    [[nodiscard, gnu::always_inline, gnu::flatten]] auto linearMatch(this Self&& self, Fs&&... fs)
+        -> decltype(static_cast<Self&&>(self).linearVisit(OverloadSet{static_cast<Fs&&>(fs)...}))
     {
-        return linearVisit(OverloadSet{static_cast<Fs&&>(fs)...});
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Pattern-matching variant of `linearVisit` (const overload)
-    ///
-    ////////////////////////////////////////////////////////////
-    template <typename... Fs>
-    [[nodiscard, gnu::always_inline, gnu::flatten]] auto linearMatch(Fs&&... fs) const& -> decltype(linearVisit(OverloadSet{
-        static_cast<Fs&&>(fs)...}))
-    {
-        return linearVisit(OverloadSet{static_cast<Fs&&>(fs)...});
+        return static_cast<Self&&>(self).linearVisit(OverloadSet{static_cast<Fs&&>(fs)...});
     }
 };
 

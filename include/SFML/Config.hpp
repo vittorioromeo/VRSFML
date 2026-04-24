@@ -86,8 +86,8 @@
 // Ensure minimum C++ language standard version is met
 ////////////////////////////////////////////////////////////
 // clang-format off
-#if (defined(_MSVC_LANG) && _MSVC_LANG < 202002L) || (!defined(_MSVC_LANG) && __cplusplus < 202002L)
-    #error "Enable C++20 or newer for your compiler (e.g. -std=c++20 for GCC/Clang or /std:c++20 for MSVC)"
+#if (defined(_MSVC_LANG) && _MSVC_LANG < 202302L) || (!defined(_MSVC_LANG) && __cplusplus < 202302L)
+    #error "Enable C++23 or newer for your compiler (e.g. -std=c++23 for GCC/Clang or /std:c++23 for MSVC)"
 #endif
 // clang-format on
 

@@ -14,16 +14,16 @@ namespace sf
 ////////////////////////////////////////////////////////////
 /// \brief Utility mixin providing anchor point functions for positioning
 ///
-/// This template class can be inherited by classes that have position
+/// This class can be inherited by classes that have position
 /// and bounds (like `sf::Transformable` based classes)
 /// to add convenient functions for getting and setting the object's position
 /// based on common anchor points (corners, centers, edges).
 ///
-/// It relies on the inheriting class `T` providing `getGlobalBounds()`
-/// and having a `position` member.
+/// It relies on the inheriting class providing `getGlobalBounds()`
+/// and having a `position` member. The derived type is deduced at call
+/// time via C++23 explicit object parameters.
 ///
 ////////////////////////////////////////////////////////////
-template <typename T>
 struct GlobalAnchorPointMixin
 {
     ////////////////////////////////////////////////////////////
@@ -38,18 +38,19 @@ struct GlobalAnchorPointMixin
     /// \return World coordinates of the calculated anchor point
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr auto getGlobalAnchorPoint(const Vec2f factors) const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
+    inline constexpr auto getGlobalAnchorPoint(this const auto& self, const Vec2f factors)
     {
-        return static_cast<const T&>(*this).getGlobalBounds().getAnchorPoint(factors);
+        return self.getGlobalBounds().getAnchorPoint(factors);
     }
 
 
 ////////////////////////////////////////////////////////////
-#define SFML_PRIV_DEFINE_MIXIN_GETTER(name, ...)                                                  \
-    /** \brief Get the position of the name anchor point */                                       \
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr auto name() const \
-    {                                                                                             \
-        return this->getGlobalAnchorPoint(__VA_ARGS__);                                           \
+#define SFML_PRIV_DEFINE_MIXIN_GETTER(name, ...)                                                                 \
+    /** \brief Get the position of the name anchor point */                                                      \
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr auto name(this auto const& self) \
+    {                                                                                                            \
+        return self.getGlobalAnchorPoint(__VA_ARGS__);                                                           \
     }
 
     ////////////////////////////////////////////////////////////
@@ -115,9 +116,10 @@ struct GlobalAnchorPointMixin
     /// \return Left edge X coordinate
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getGlobalLeft() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
+    inline constexpr float getGlobalLeft(this const auto& self)
     {
-        return static_cast<const T&>(*this).getGlobalBounds().getLeft();
+        return self.getGlobalBounds().getLeft();
     }
 
 
@@ -127,9 +129,10 @@ struct GlobalAnchorPointMixin
     /// \return Right edge X coordinate
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getGlobalRight() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
+    inline constexpr float getGlobalRight(this const auto& self)
     {
-        return static_cast<const T&>(*this).getGlobalBounds().getRight();
+        return self.getGlobalBounds().getRight();
     }
 
 
@@ -139,9 +142,10 @@ struct GlobalAnchorPointMixin
     /// \return Top edge Y coordinate
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getGlobalTop() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
+    inline constexpr float getGlobalTop(this const auto& self)
     {
-        return static_cast<const T&>(*this).getGlobalBounds().getTop();
+        return self.getGlobalBounds().getTop();
     }
 
 
@@ -151,9 +155,10 @@ struct GlobalAnchorPointMixin
     /// \return Bottom edge Y coordinate
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getGlobalBottom() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
+    inline constexpr float getGlobalBottom(this const auto& self)
     {
-        return static_cast<const T&>(*this).getGlobalBounds().getBottom();
+        return self.getGlobalBounds().getBottom();
     }
 
 
@@ -163,9 +168,10 @@ struct GlobalAnchorPointMixin
     /// \return Width of the object
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getGlobalWidth() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
+    inline constexpr float getGlobalWidth(this const auto& self)
     {
-        return static_cast<const T&>(*this).getGlobalBounds().size.x;
+        return self.getGlobalBounds().size.x;
     }
 
 
@@ -175,9 +181,10 @@ struct GlobalAnchorPointMixin
     /// \return Height of the object
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getGlobalHeight() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
+    inline constexpr float getGlobalHeight(this const auto& self)
     {
-        return static_cast<const T&>(*this).getGlobalBounds().size.y;
+        return self.getGlobalBounds().size.y;
     }
 
 
@@ -191,19 +198,22 @@ struct GlobalAnchorPointMixin
     /// \param newPosition Target world coordinates for the anchor point
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] inline constexpr void setGlobalAnchorPoint(const Vec2f factors, const Vec2f newPosition)
+    template <typename Self>
+    [[gnu::always_inline, gnu::flatten]]
+    inline constexpr void setGlobalAnchorPoint(this Self& self, const Vec2f factors, const Vec2f newPosition)
     {
-        const auto& bounds = static_cast<const T&>(*this).getGlobalBounds();
-        addPositionImpl(newPosition - bounds.position + bounds.getAnchorPointOffset(factors));
+        const auto& bounds = self.getGlobalBounds();
+        addPositionImpl(self, newPosition - bounds.position + bounds.getAnchorPointOffset(factors));
     }
 
 
 ////////////////////////////////////////////////////////////
-#define SFML_PRIV_DEFINE_MIXIN_SETTER(name, ...)                                             \
-    /** \brief Set the position based on the name anchor point */                            \
-    [[gnu::always_inline, gnu::flatten]] inline constexpr void name(const Vec2f newPosition) \
-    {                                                                                        \
-        this->setGlobalAnchorPoint(__VA_ARGS__, newPosition);                                \
+#define SFML_PRIV_DEFINE_MIXIN_SETTER(name, ...)                                                              \
+    /** \brief Set the position based on the name anchor point */                                             \
+    template <typename Self>                                                                                  \
+    [[gnu::always_inline, gnu::flatten]] inline constexpr void name(this Self& self, const Vec2f newPosition) \
+    {                                                                                                         \
+        self.setGlobalAnchorPoint(__VA_ARGS__, newPosition);                                                  \
     }
 
     ////////////////////////////////////////////////////////////
@@ -290,10 +300,12 @@ struct GlobalAnchorPointMixin
     /// \param newCoordinate Target X coordinate for the left edge
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] inline constexpr void setGlobalLeft(const float newCoordinate)
+    template <typename Self>
+    [[gnu::always_inline, gnu::flatten]]
+    inline constexpr void setGlobalLeft(this Self& self, const float newCoordinate)
     {
-        const auto& bounds = static_cast<const T&>(*this).getGlobalBounds();
-        addPositionImpl({newCoordinate - bounds.position.x, 0.f});
+        const auto& bounds = self.getGlobalBounds();
+        addPositionImpl(self, Vec2f{newCoordinate - bounds.position.x, 0.f});
     }
 
 
@@ -306,10 +318,12 @@ struct GlobalAnchorPointMixin
     /// \param newCoordinate Target X coordinate for the right edge
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] inline constexpr void setGlobalRight(const float newCoordinate)
+    template <typename Self>
+    [[gnu::always_inline, gnu::flatten]]
+    inline constexpr void setGlobalRight(this Self& self, const float newCoordinate)
     {
-        const auto& bounds = static_cast<const T&>(*this).getGlobalBounds();
-        addPositionImpl({newCoordinate - bounds.position.x - bounds.size.x, 0.f});
+        const auto& bounds = self.getGlobalBounds();
+        addPositionImpl(self, Vec2f{newCoordinate - bounds.position.x - bounds.size.x, 0.f});
     }
 
 
@@ -322,10 +336,12 @@ struct GlobalAnchorPointMixin
     /// \param newCoordinate Target Y coordinate for the top edge
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] inline constexpr void setGlobalTop(const float newCoordinate)
+    template <typename Self>
+    [[gnu::always_inline, gnu::flatten]]
+    inline constexpr void setGlobalTop(this Self& self, const float newCoordinate)
     {
-        const auto& bounds = static_cast<const T&>(*this).getGlobalBounds();
-        addPositionImpl({0.f, newCoordinate - bounds.position.y});
+        const auto& bounds = self.getGlobalBounds();
+        addPositionImpl(self, Vec2f{0.f, newCoordinate - bounds.position.y});
     }
 
 
@@ -338,10 +354,12 @@ struct GlobalAnchorPointMixin
     /// \param newCoordinate Target Y coordinate for the bottom edge
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] inline constexpr void setGlobalBottom(const float newCoordinate)
+    template <typename Self>
+    [[gnu::always_inline, gnu::flatten]]
+    inline constexpr void setGlobalBottom(this Self& self, const float newCoordinate)
     {
-        const auto& bounds = static_cast<const T&>(*this).getGlobalBounds();
-        addPositionImpl({0.f, newCoordinate - bounds.position.y - bounds.size.y});
+        const auto& bounds = self.getGlobalBounds();
+        addPositionImpl(self, Vec2f{0.f, newCoordinate - bounds.position.y - bounds.size.y});
     }
 
 
@@ -354,10 +372,12 @@ struct GlobalAnchorPointMixin
     /// \param newCoordinate Target X coordinate for the center
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] inline constexpr void setGlobalCenterX(const float newCoordinate)
+    template <typename Self>
+    [[gnu::always_inline, gnu::flatten]]
+    inline constexpr void setGlobalCenterX(this Self& self, const float newCoordinate)
     {
-        const auto& bounds = static_cast<const T&>(*this).getGlobalBounds();
-        addPositionImpl({newCoordinate - bounds.position.x - bounds.size.x / 2.f, 0.f});
+        const auto& bounds = self.getGlobalBounds();
+        addPositionImpl(self, Vec2f{newCoordinate - bounds.position.x - bounds.size.x / 2.f, 0.f});
     }
 
 
@@ -370,10 +390,12 @@ struct GlobalAnchorPointMixin
     /// \param newCoordinate Target Y coordinate for the center
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] inline constexpr void setGlobalCenterY(const float newCoordinate)
+    template <typename Self>
+    [[gnu::always_inline, gnu::flatten]]
+    inline constexpr void setGlobalCenterY(this Self& self, const float newCoordinate)
     {
-        const auto& bounds = static_cast<const T&>(*this).getGlobalBounds();
-        addPositionImpl({0.f, newCoordinate - bounds.position.y - bounds.size.y / 2.f});
+        const auto& bounds = self.getGlobalBounds();
+        addPositionImpl(self, Vec2f{0.f, newCoordinate - bounds.position.y - bounds.size.y / 2.f});
     }
 
 private:
@@ -382,7 +404,7 @@ private:
     ///
     /// Used by `addPositionImpl` to feed a computed `Vec2f` offset back
     /// into the inheriting class's `setPosition()` regardless of the
-    /// concrete coordinate type that `T` uses for its position.
+    /// concrete coordinate type the derived type uses for its position.
     ///
     ////////////////////////////////////////////////////////////
     struct AutoConvertingVec2f
@@ -400,25 +422,27 @@ private:
     ////////////////////////////////////////////////////////////
     /// \brief Add an offset to the inheriting object's position
     ///
-    /// Selects between two strategies based on the API exposed by `T`:
-    /// if `T` has a public `position` member, the offset is added in
-    /// place; otherwise, `T::setPosition` is called with the current
-    /// position plus the offset (with automatic conversion to `T`'s
-    /// position type via `AutoConvertingVec2f`).
+    /// Selects between two strategies based on the API exposed by the
+    /// derived type: if it has a public `position` member, the offset
+    /// is added in place; otherwise, `setPosition` is called with the
+    /// current position plus the offset (with automatic conversion to
+    /// the derived type's position type via `AutoConvertingVec2f`).
     ///
+    /// \param self   Inheriting object to mutate
     /// \param offset Offset to add to the current position, in world coordinates
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] inline constexpr void addPositionImpl(const Vec2f offset)
+    template <typename Self>
+    [[gnu::always_inline, gnu::flatten]]
+    static inline constexpr void addPositionImpl(Self& self, const Vec2f offset)
     {
-        if constexpr (requires { static_cast<T&>(*this).position; })
+        if constexpr (requires { self.position; })
         {
-            static_cast<T&>(*this).position += offset;
+            self.position += offset;
         }
-        else if constexpr (requires { static_cast<const T&>(*this).getPosition(); })
+        else if constexpr (requires { self.getPosition(); })
         {
-            static_cast<T&>(*this).setPosition(
-                AutoConvertingVec2f{static_cast<const T&>(*this).getPosition().toVec2f() + offset});
+            self.setPosition(AutoConvertingVec2f{self.getPosition().toVec2f() + offset});
         }
     }
 };
@@ -441,10 +465,9 @@ private:
 /// on individual edge coordinates (`getLeft()`, `setRight()`, etc.).
 ///
 /// To use this mixin, inherit from it publicly, e.g.:
-/// `struct MyObject : public sf::Transformable, public sf::GlobalAnchorPointMixin<MyObject>`
-/// The template argument `T` must be the type of the inheriting class itself.
+/// `struct MyObject : public sf::Transformable, public sf::GlobalAnchorPointMixin`
 /// The inheriting class must provide `getGlobalBounds()` and have a public
-/// `position` member of type `sf::Vec2f`.
+/// `position` member of type `sf::Vec2f` (or expose `getPosition`/`setPosition`).
 ///
 /// \see `sf::Transformable`
 ///

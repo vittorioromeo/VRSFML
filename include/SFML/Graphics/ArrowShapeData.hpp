@@ -30,9 +30,7 @@ namespace sf
 /// a rendering system or a shape class to draw the actual arrow.
 ///
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] SFML_GRAPHICS_API ArrowShapeData :
-    LocalAnchorPointMixin<ArrowShapeData>,
-    GlobalAnchorPointMixin<ArrowShapeData>
+struct [[nodiscard]] SFML_GRAPHICS_API ArrowShapeData : LocalAnchorPointMixin, GlobalAnchorPointMixin
 {
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;

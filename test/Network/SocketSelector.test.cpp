@@ -182,8 +182,8 @@ TEST_CASE("[Network] sf::SocketSelector")
     SECTION("add with default userData does not cause spurious ready entries")
     {
         sf::SocketSelector selector;
-        CHECK(selector.add(*socketOpt));                      // default userData == nullptr
-        CHECK(!selector.wait(sf::milliseconds(25)));          // no traffic
+        CHECK(selector.add(*socketOpt));             // default userData == nullptr
+        CHECK(!selector.wait(sf::milliseconds(25))); // no traffic
 
         // Nothing arrived, so the ready lists are empty regardless of userData.
         CHECK(selector.getReadyToReceive().size() == 0u);

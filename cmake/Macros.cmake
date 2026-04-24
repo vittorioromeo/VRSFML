@@ -111,8 +111,8 @@ macro(sfml_add_library module)
         target_compile_definitions(${target} PUBLIC -DSFML_OPENGL_ES)
     endif()
 
-    # enable C++20 support
-    target_compile_features(${target} PUBLIC cxx_std_20)
+    # enable C++23 support
+    target_compile_features(${target} PUBLIC cxx_std_23)
 
     # Add required flags for GCC if coverage reporting is enabled
     if(SFML_ENABLE_COVERAGE AND (SFML_COMPILER_GCC OR SFML_COMPILER_CLANG))

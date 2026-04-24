@@ -51,7 +51,6 @@
 #include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/FloatEpsilon.hpp"
-#include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
@@ -589,7 +588,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const ArrowShapeData& sdArrow)
 
     return drawTriangleFanShapeFromPoints(7u,
                                           sdArrow,
-                                          [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                                          [&] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i)
     {
         return ShapeUtils::computeArrowPoint(i, sdArrow.shaftLength, sdArrow.shaftWidth, sdArrow.headLength, sdArrow.headWidth);
     },
@@ -608,7 +607,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const CircleShapeData& sdCircle
 
     return drawTriangleFanShapeFromPoints(sdCircle.pointCount,
                                           sdCircle,
-                                          [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                                          [&] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i)
     {
         return ShapeUtils::computeCirclePointFromAngleStep(i, sdCircle.startAngle.asRadians(), angleStep, sdCircle.radius);
     });
@@ -659,9 +658,16 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const CurvedArrowShapeData& sd)
     const float angleStep    = sweepAngleRadians / static_cast<float>(numArcPoints - 1u);
     const float startRadians = sd.startAngle.asRadians();
 
-    generateRingVertices(sd.textureRect, sd.fillColor, sd.outerRadius, sd.innerRadius, [](const Vec2f p) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {
-        return p;
-    }, numArcPoints, startRadians, angleStep, invLocalBoundsSize, bodyFillVertexPtr);
+    generateRingVertices(sd.textureRect,
+                         sd.fillColor,
+                         sd.outerRadius,
+                         sd.innerRadius,
+                         [] [[gnu::always_inline, gnu::flatten]] (const Vec2f p) { return p; },
+                         numArcPoints,
+                         startRadians,
+                         angleStep,
+                         invLocalBoundsSize,
+                         bodyFillVertexPtr);
 
     m_storage.commitMoreVertices(bodyFillVertexCount);
     const Vec2f ringNaturalCenter = {sd.outerRadius, sd.outerRadius};
@@ -849,7 +855,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const EllipseShapeData& sdEllip
 
     return drawTriangleFanShapeFromPoints(sdEllipse.pointCount,
                                           sdEllipse,
-                                          [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                                          [&] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i)
     {
         return ShapeUtils::computeEllipsePointFromAngleStep(i,
                                                             sdEllipse.startAngle.asRadians(),
@@ -887,7 +893,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const PieSliceShapeData& sdPieS
 
     return drawTriangleFanShapeFromPoints(sdPieSlice.pointCount,
                                           sdPieSlice,
-                                          [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                                          [&] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i)
     {
         return ShapeUtils::computePieSlicePointFromArcAngleStep(i,
                                                                 sdPieSlice.radius,
@@ -904,7 +910,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const RectangleShapeData& sdRec
     if (!sdRectangle.hasVisibleGeometry()) [[unlikely]]
         return {};
 
-    return drawTriangleFanShapeFromPoints(4u, sdRectangle, [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {
+    return drawTriangleFanShapeFromPoints(4u, sdRectangle, [&] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i) {
         return ShapeUtils::computeRectanglePoint(i, sdRectangle.size);
     });
 }
@@ -919,7 +925,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const RoundedRectangleShapeData
 
     return drawTriangleFanShapeFromPoints(sdRoundedRectangle.cornerPointCount * 4u,
                                           sdRoundedRectangle,
-                                          [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                                          [&] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i)
     {
         return ShapeUtils::computeRoundedRectanglePoint(i,
                                                         sdRoundedRectangle.size,
@@ -962,9 +968,16 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const RingShapeData& sdRing)
     Vertex* const   reservedVertexPtr    = m_storage.reserveMoreVertices(fillVertexCount + totalOutlineVertices);
     Vertex* const   fillVertexPtr        = reservedVertexPtr;
 
-    generateRingVertices(sdRing.textureRect, sdRing.fillColor, sdRing.outerRadius, sdRing.innerRadius, [&](const Vec2f p) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {
-        return transform.transformPoint(p);
-    }, nPoints, sdRing.startAngle.asRadians(), angleStep, invLocalBoundsSize, fillVertexPtr);
+    generateRingVertices(sdRing.textureRect,
+                         sdRing.fillColor,
+                         sdRing.outerRadius,
+                         sdRing.innerRadius,
+                         [&] [[gnu::always_inline, gnu::flatten]] (const Vec2f p) { return transform.transformPoint(p); },
+                         nPoints,
+                         sdRing.startAngle.asRadians(),
+                         angleStep,
+                         invLocalBoundsSize,
+                         fillVertexPtr);
 
     //
     // Repeat first pair to close the strip
@@ -1013,7 +1026,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const RingShapeData& sdRing)
         // The inner outline walks the inner ring in reverse so its normals point away from the
         // hole (into the annulus), matching the outer outline's inward normals. This keeps
         // `outlineThickness > 0` drawing on top of the fill for both loops.
-        const auto getBoundaryPoint = [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+        const auto getBoundaryPoint = [&] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i)
         {
             SFML_BASE_ASSERT_AND_ASSUME(i < nPoints);
             const base::SizeT walked = reverseWalk ? (nPoints - 1u - i) : i;
@@ -1123,8 +1136,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const RingPieSliceShapeData& sd
                          sdRingPieSlice.fillColor,
                          sdRingPieSlice.outerRadius,
                          sdRingPieSlice.innerRadius,
-                         [&](const Vec2f p) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
-    { return transform.transformPoint(p); },
+                         [&] [[gnu::always_inline, gnu::flatten]] (const Vec2f p) { return transform.transformPoint(p); },
                          numArcPoints,
                          startRadians,
                          angleStep,
@@ -1160,7 +1172,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const RingPieSliceShapeData& sd
 
     //
     // Generate outline vertices
-    const auto getBoundaryPoint = [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+    const auto getBoundaryPoint = [&] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i)
     {
         SFML_BASE_ASSERT_AND_ASSUME(i < numBoundaryPoints);
         const auto fillVertexIdx = i < numArcPoints ? 2 * i : 2 * (2 * numArcPoints - 1 - i) + 1;
@@ -1205,7 +1217,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const StarShapeData& sdStar)
     SFML_BASE_ASSERT(nPoints != 0u);
     const float angleStep = base::tau / static_cast<float>(nPoints);
 
-    return drawTriangleFanShapeFromPoints(nPoints, sdStar, [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {
+    return drawTriangleFanShapeFromPoints(nPoints, sdStar, [&] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i) {
         return ShapeUtils::computeStarPointFromAngleStep(i, angleStep, sdStar.outerRadius, sdStar.innerRadius);
     });
 }
@@ -1218,7 +1230,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const CrossShapeData& sdCross)
     if (!sdCross.hasVisibleGeometry()) [[unlikely]]
         return {};
 
-    return drawTriangleFanShapeFromPoints(12u, sdCross, [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {
+    return drawTriangleFanShapeFromPoints(12u, sdCross, [&] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i) {
         return ShapeUtils::computeCrossPoint(i, sdCross.size, sdCross.armThickness);
     });
 }
@@ -1231,7 +1243,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const TrapezoidShapeData& sdTra
     if (!sdTrapezoid.hasVisibleGeometry()) [[unlikely]]
         return {};
 
-    return drawTriangleFanShapeFromPoints(4u, sdTrapezoid, [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {
+    return drawTriangleFanShapeFromPoints(4u, sdTrapezoid, [&] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i) {
         return ShapeUtils::computeTrapezoidPoint(i, sdTrapezoid.topWidth, sdTrapezoid.bottomWidth, sdTrapezoid.height);
     });
 }
@@ -1257,7 +1269,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const ChevronShapeData& sdChevr
     // symmetry. Inside the non-convex chevron for every valid `thickness`.
     const Vec2f localApex{(w + innerTipX) * 0.5f, h * 0.5f};
 
-    return drawTriangleFanShapeFromPoints(6u, sdChevron, [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {
+    return drawTriangleFanShapeFromPoints(6u, sdChevron, [&] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i) {
         return ShapeUtils::computeChevronPoint(i, sdChevron.size, sdChevron.thickness);
     }, &localApex);
 }
@@ -1272,7 +1284,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const HeartShapeData& sdHeart)
 
     return drawTriangleFanShapeFromPoints(sdHeart.pointCount,
                                           sdHeart,
-                                          [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                                          [&] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i)
     { return ShapeUtils::computeHeartPoint(i, sdHeart.pointCount, sdHeart.size); });
 }
 
@@ -1286,7 +1298,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const CogShapeData& sdCog)
 
     return drawTriangleFanShapeFromPoints(4u * sdCog.toothCount,
                                           sdCog,
-                                          [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                                          [&] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i)
     {
         return ShapeUtils::computeCogPoint(i, sdCog.toothCount, sdCog.outerRadius, sdCog.innerRadius, sdCog.toothWidthRatio);
     });
@@ -1337,9 +1349,9 @@ BatchedGeometry DrawableBatchImpl<TStorage>::addTextDataImpl(
                                      outlineThickness,
                                      textData.fillColor,
                                      textData.outlineColor,
-                                     [&](auto&&... xs) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                                     [&] [[gnu::always_inline, gnu::flatten]] (auto&&... xs)
     { return TextUtils::addLinePreTransformed(transform, vertexPtr, SFML_BASE_FORWARD(xs)...); },
-                                     [&](auto&&... xs) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                                     [&] [[gnu::always_inline, gnu::flatten]] (auto&&... xs)
     { return TextUtils::addGlyphQuadPreTransformed(transform, vertexPtr, SFML_BASE_FORWARD(xs)...); });
 
     m_storage.commitMoreIndices(6u * numQuads);
