@@ -24,9 +24,7 @@ namespace sf
 /// \brief Data required to draw a ring shape
 ///
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] SFML_GRAPHICS_API RingShapeData :
-    LocalAnchorPointMixin<RingShapeData>,
-    GlobalAnchorPointMixin<RingShapeData>
+struct [[nodiscard]] SFML_GRAPHICS_API RingShapeData : LocalAnchorPointMixin, GlobalAnchorPointMixin
 {
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;

@@ -57,7 +57,7 @@ function(sfml_add_imgui_dependencies)
         add_library(imgui ${IMGUI_SOURCES})
     endif()
 
-    target_compile_features(imgui PUBLIC cxx_std_20)
+    target_compile_features(imgui PUBLIC cxx_std_23)
 
     target_sources(imgui PUBLIC
                     FILE_SET public_headers

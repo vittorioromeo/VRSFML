@@ -199,7 +199,7 @@ void Main::uiMakeTooltip(const bool small)
 ////////////////////////////////////////////////////////////
 void Main::uiMakeShrineOrCatTooltip(const sf::Vec2f mousePos)
 {
-    const auto* hoveredShrine = [&]() -> const Shrine*
+    const auto* hoveredShrine = [&] -> const Shrine*
     {
         for (Shrine& shrine : pt->shrines)
             if ((mousePos - shrine.position).lengthSquared() <= shrine.getRadiusSquared())
@@ -208,7 +208,7 @@ void Main::uiMakeShrineOrCatTooltip(const sf::Vec2f mousePos)
         return nullptr;
     }();
 
-    const auto* hoveredCat = [&]() -> const Cat*
+    const auto* hoveredCat = [&] -> const Cat*
     {
         if (hoveredShrine == nullptr)
             for (const Cat& cat : pt->cats)

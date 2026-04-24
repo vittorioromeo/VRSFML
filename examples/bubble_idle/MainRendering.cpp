@@ -1429,7 +1429,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
 
         const float foo = easeInOutBack(ctx.main.copycatMaskAnim.getProgressBounced(3000.f)) * 0.5f;
 
-        const auto* txrMaskToUse = [&]() -> const sf::Rect2f*
+        const auto* txrMaskToUse = [&] -> const sf::Rect2f*
         {
             if (ctx.main.pt->copycatCopiedCatType == CatType::Witch)
                 return &ctx.main.txrCCMaskWitch;

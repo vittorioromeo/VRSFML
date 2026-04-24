@@ -23,9 +23,7 @@ namespace sf
 /// \brief Data required to draw a chevron shape
 ///
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] SFML_GRAPHICS_API ChevronShapeData :
-    LocalAnchorPointMixin<ChevronShapeData>,
-    GlobalAnchorPointMixin<ChevronShapeData>
+struct [[nodiscard]] SFML_GRAPHICS_API ChevronShapeData : LocalAnchorPointMixin, GlobalAnchorPointMixin
 {
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;

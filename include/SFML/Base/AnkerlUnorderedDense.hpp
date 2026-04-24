@@ -543,9 +543,7 @@ ANKERL_UNORDERED_DENSE_HASH_STATICCAST(bool);
 ANKERL_UNORDERED_DENSE_HASH_STATICCAST(char);
 ANKERL_UNORDERED_DENSE_HASH_STATICCAST(signed char);
 ANKERL_UNORDERED_DENSE_HASH_STATICCAST(unsigned char);
-#    if ANKERL_UNORDERED_DENSE_CPP_VERSION >= 202002L && defined(__cpp_char8_t)
 ANKERL_UNORDERED_DENSE_HASH_STATICCAST(char8_t);
-#    endif
 ANKERL_UNORDERED_DENSE_HASH_STATICCAST(char16_t);
 ANKERL_UNORDERED_DENSE_HASH_STATICCAST(char32_t);
 ANKERL_UNORDERED_DENSE_HASH_STATICCAST(wchar_t);
@@ -2305,11 +2303,6 @@ ANKERL_UNORDERED_DENSE_EXPORT template <class Key,
                                         class Bucket = bucket_type::standard,
                                         class BucketContainer = detail::default_container_t>
 using segmented_set = detail::table<Key, void, Hash, KeyEqual, Bucket, BucketContainer, true>;
-
-// deduction guides ///////////////////////////////////////////////////////////
-
-// deduction guides for alias templates are only possible since C++20
-// see https://en.cppreference.com/w/cpp/language/class_template_argument_deduction
 
 } // namespace ankerl::unordered_dense::inline ANKERL_UNORDERED_DENSE_NAMESPACE
 

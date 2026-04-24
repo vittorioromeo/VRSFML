@@ -25,9 +25,7 @@ namespace sf
 /// \brief Data required to draw an isosceles trapezoid shape
 ///
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] SFML_GRAPHICS_API TrapezoidShapeData :
-    LocalAnchorPointMixin<TrapezoidShapeData>,
-    GlobalAnchorPointMixin<TrapezoidShapeData>
+struct [[nodiscard]] SFML_GRAPHICS_API TrapezoidShapeData : LocalAnchorPointMixin, GlobalAnchorPointMixin
 {
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;

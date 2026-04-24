@@ -22,8 +22,8 @@ include(${doctest_SOURCE_DIR}/scripts/cmake/doctest.cmake)
 # add_library(tracyclient SHARED ${PROJECT_SOURCE_DIR}/tracy/public/TracyClient.cpp)
 # target_link_libraries(tracyclient PRIVATE ws2_32 winmm gdi32 dbghelp)
 
-# Build doctest in C++20 mode to enable C++20 features
-target_compile_features(doctest INTERFACE cxx_std_20)
+# Build doctest in C++23 mode to enable C++23 features
+target_compile_features(doctest INTERFACE cxx_std_23)
 
 # Ensure that doctest sources and headers are not analyzed by any tools
 set_target_properties(doctest PROPERTIES COMPILE_OPTIONS "" EXPORT_COMPILE_COMMANDS OFF)
