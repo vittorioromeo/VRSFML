@@ -11,6 +11,7 @@
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/Span.hpp"
 
 
 namespace sf
@@ -18,12 +19,27 @@ namespace sf
 class Socket;
 
 ////////////////////////////////////////////////////////////
-/// \brief Multiplexer that allows to read from multiple sockets
+/// \brief Multiplexer that waits for readability and/or writability on multiple sockets
 ///
 ////////////////////////////////////////////////////////////
 class SFML_NETWORK_API SocketSelector
 {
 public:
+    ////////////////////////////////////////////////////////////
+    /// \brief One entry in the ready-set views returned by
+    ///        `getReadyToReceive` / `getReadyToSend`
+    ///
+    /// `socket` is the socket that became ready; `userData` is
+    /// whatever opaque pointer the caller attached at `add` /
+    /// `addForSend` time (or `nullptr` if none was attached).
+    ///
+    ////////////////////////////////////////////////////////////
+    struct [[nodiscard]] ReadyEntry
+    {
+        Socket* socket   = nullptr;
+        void*   userData = nullptr;
+    };
+
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
@@ -61,33 +77,79 @@ public:
     SocketSelector& operator=(SocketSelector&&) noexcept;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Add a new socket to the selector
+    /// \brief Watch `socket` for readability (or a pending listener accept)
     ///
-    /// This function keeps a weak reference to the socket,
-    /// so you have to make sure that the socket is not destroyed
-    /// while it is stored in the selector.
-    /// This function does nothing if the socket is not valid.
+    /// Idempotent: if `socket` is already being watched for
+    /// read, this does nothing. If it was previously registered
+    /// only for write (via `addForSend`), this extends the
+    /// registration -- the socket will now fire on either.
     ///
-    /// \param socket Reference to the socket to add
+    /// The selector keeps a non-owning mutable reference to the
+    /// socket (it is handed back to the caller via the ready
+    /// lists, so the caller can call `send`/`receive` on it);
+    /// the caller must ensure the socket outlives the selector
+    /// (or is removed before it dies).
+    ///
+    /// `userData` is an opaque pointer the caller can attach to
+    /// the registration. It is reported back alongside the
+    /// socket in `getReadyToReceive()`'s results so the caller
+    /// can recover whatever owner / context object it belongs
+    /// to without maintaining a side-table. Each call to `add`
+    /// or `addForSend` on the same socket replaces the stored
+    /// `userData` with whatever is passed in (default
+    /// `nullptr`).
+    ///
+    /// \param socket   Reference to the socket to add
+    /// \param userData Opaque pointer reported back in `ReadyEntry::userData` (default: `nullptr`)
     ///
     /// \return `false` if an error occurs, `true` otherwise
     ///
-    /// \see `remove`, `clear`
+    /// \see `addForSend`, `remove`, `clear`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool add(const Socket& socket);
+    [[nodiscard]] bool add(Socket& socket, void* userData = nullptr);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Watch `socket` for writability
+    ///
+    /// Idempotent: if `socket` is already being watched for
+    /// write, this does nothing. If it was previously
+    /// registered only for read (via `add`), this extends the
+    /// registration -- the socket will now fire on either.
+    ///
+    /// The selector keeps a non-owning mutable reference to the
+    /// socket (it is handed back to the caller via the ready
+    /// lists, so the caller can call `send`/`receive` on it);
+    /// the caller must ensure the socket outlives the selector
+    /// (or is removed before it dies).
+    ///
+    /// Each call to `add` or `addForSend` on the same socket
+    /// replaces the stored `userData` with whatever is passed
+    /// in (default `nullptr`) -- see `add` for details.
+    ///
+    /// \param socket   Reference to the socket to add
+    /// \param userData Opaque pointer reported back in `ReadyEntry::userData` (default: `nullptr`)
+    ///
+    /// \return `false` if an error occurs, `true` otherwise
+    ///
+    /// \see `add`, `remove`, `clear`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool addForSend(Socket& socket, void* userData = nullptr);
 
     ////////////////////////////////////////////////////////////
     /// \brief Remove a socket from the selector
     ///
-    /// This function doesn't destroy the socket, it simply
-    /// removes the reference that the selector has to it.
+    /// Removes any read and/or write registration for the given
+    /// socket. After removal the socket is no longer observed
+    /// and will not appear in the ready lists or be reported by
+    /// `isReady` / `isReadyToSend`.
     ///
     /// \param socket Reference to the socket to remove
     ///
     /// \return `false` if an error occurs, `true` otherwise
     ///
-    /// \see `add`, `clear`
+    /// \see `add`, `addForSend`, `clear`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool remove(const Socket& socket);
@@ -95,58 +157,126 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Remove all the sockets stored in the selector
     ///
-    /// This function doesn't destroy any instance, it simply
-    /// removes all the references that the selector has to
-    /// external sockets.
+    /// The selector is left empty; observed sockets themselves
+    /// are unaffected.
     ///
-    /// \see `add`, `remove`
+    /// \see `add`, `addForSend`, `remove`
     ///
     ////////////////////////////////////////////////////////////
     void clear();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Wait until one or more sockets are ready to receive
+    /// \brief Wait until one or more observed sockets become ready
     ///
-    /// This function returns as soon as at least one socket has
-    /// some data available to be received. To know which sockets are
-    /// ready, use the `isReady` function.
-    /// If you use a timeout and no socket is ready before the timeout
-    /// is over, the function returns `false`.
+    /// Returns when any socket registered via `add` becomes
+    /// readable, any socket registered via `addForSend` becomes
+    /// writable, or the timeout expires. After a successful
+    /// return, the ready set is available via `getReadyToReceive`
+    /// / `getReadyToSend` and point-checkable via `isReady` /
+    /// `isReadyToSend`. A subsequent call to `wait` rebuilds
+    /// the ready set.
     ///
-    /// \param timeout Maximum time to wait, (use `Time{}` for infinity)
+    /// \param timeout Maximum time to wait; `Time{}` waits forever
     ///
-    /// \return `true` if there are sockets ready, `false` otherwise
+    /// \return `true` if at least one socket is ready, `false` on timeout
     ///
-    /// \see `isReady`
+    /// \see `getReadyToReceive`, `getReadyToSend`, `isReady`, `isReadyToSend`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool wait(Time timeout = {});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Test a socket to know if it is ready to receive data
+    /// \brief Sockets that became ready to receive on the last `wait`
     ///
-    /// This function must be used after a call to Wait, to know
-    /// which sockets are ready to receive data. If a socket is
-    /// ready, a call to receive will never block because we know
-    /// that there is data available to read.
-    /// Note that if this function returns `true` for a TcpListener,
-    /// this means that it is ready to accept a new connection.
+    /// Contains only sockets that were registered via `add` and
+    /// that the last `wait` reported as readable. Each
+    /// `ReadyEntry` bundles the ready `Socket*` with the
+    /// `userData` pointer the caller attached at registration
+    /// time.
+    ///
+    /// The returned view is valid until the next call to `wait`
+    /// / `add` / `addForSend` / `remove` / `clear`. Iterating
+    /// is O(M) where M is the ready count.
+    ///
+    /// \see `wait`, `getReadyToSend`, `ReadyEntry`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] base::Span<const ReadyEntry> getReadyToReceive() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Sockets that became ready to send on the last `wait`
+    ///
+    /// Contains only sockets that were registered via
+    /// `addForSend` and that the last `wait` reported as
+    /// writable. Each `ReadyEntry` bundles the ready `Socket*`
+    /// with the `userData` pointer the caller attached at
+    /// registration time.
+    ///
+    /// The returned view is valid until the next call to `wait`
+    /// / `add` / `addForSend` / `remove` / `clear`. Iterating
+    /// is O(M) where M is the ready count.
+    ///
+    /// \see `wait`, `getReadyToReceive`, `ReadyEntry`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] base::Span<const ReadyEntry> getReadyToSend() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Test whether a specific socket is ready to receive
+    ///
+    /// Reflects the state of the most recent `wait` call.
+    /// Before any `wait` has run, and after a `wait` that
+    /// timed out, this returns `false` for every socket. A
+    /// socket that was not registered via `add` can never
+    /// return `true`.
     ///
     /// \param socket Socket to test
     ///
-    /// \return `true` if the socket is ready to read, `false` otherwise
+    /// \return `true` if `socket` was reported ready to receive by the last `wait`, `false` otherwise
     ///
-    /// \see `isReady`
+    /// \see `wait`, `getReadyToReceive`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isReady(const Socket& socket) const;
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Test whether a specific socket is ready to send
+    ///
+    /// Reflects the state of the most recent `wait` call.
+    /// Before any `wait` has run, and after a `wait` that
+    /// timed out, this returns `false` for every socket. A
+    /// socket that was not registered via `addForSend` can
+    /// never return `true`.
+    ///
+    /// \param socket Socket to test
+    ///
+    /// \return `true` if `socket` was reported ready to send by the last `wait`, `false` otherwise
+    ///
+    /// \see `wait`, `getReadyToSend`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isReadyToSend(const Socket& socket) const;
+
 private:
+    ////////////////////////////////////////////////////////////
+    // Forward-declared pImpl type (must precede `addWith`, which takes it by reference)
+    ////////////////////////////////////////////////////////////
+    struct Impl;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Shared body for `add` / `addForSend`
+    ///
+    /// Implemented as a private static member so it can see
+    /// both `Impl` (declared inside this class) and
+    /// `Socket::getNativeHandle()` (friendship on `Socket`).
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool addWith(Impl& impl, Socket& socket, void* userData, bool forReceive, bool forSend);
+
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    struct Impl;
-    base::InPlacePImpl<Impl, 1792> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 4096> m_impl; //!< Implementation details
 };
 
 } // namespace sf
@@ -156,93 +286,66 @@ private:
 /// \class sf::SocketSelector
 /// \ingroup network
 ///
-/// Socket selectors provide a way to wait until some data is
-/// available on a set of sockets, instead of just one. This
-/// is convenient when you have multiple sockets that may
-/// possibly receive data, but you don't know which one will
-/// be ready first. In particular, it avoids to use a thread
-/// for each socket; with selectors, a single thread can handle
-/// all the sockets.
+/// Socket selectors let a single thread wait for activity on
+/// many sockets at once. Each registered socket is watched for
+/// readability (`add`), writability (`addForSend`), or both
+/// (by calling both). `wait` blocks until at least one watched
+/// event fires (or the timeout expires).
 ///
-/// All types of sockets can be used in a selector:
+/// All socket types can be registered:
 /// \li `sf::TcpListener`
 /// \li `sf::TcpSocket`
 /// \li `sf::UdpSocket`
 ///
-/// A selector doesn't store its own copies of the sockets
-/// (socket classes are not copyable anyway), it simply keeps
-/// a reference to the original sockets that you pass to the
-/// "add" function. Therefore, you can't use the selector as a
-/// socket container, you must store them outside and make sure
-/// that they are alive as long as they are used in the selector.
+/// A selector holds non-owning references -- it does not copy
+/// or store the sockets themselves. Callers must ensure
+/// registered sockets outlive the selector (or are removed
+/// before they die).
 ///
-/// Using a selector is simple:
-/// \li populate the selector with all the sockets that you want to observe
-/// \li make it wait until there is data available on any of the sockets
-/// \li test each socket to find out which ones are ready
+/// Typical usage:
+/// \li register every socket you want to observe via `add` and/or `addForSend`
+/// \li loop: `wait()`, then either iterate `getReadyToReceive` / `getReadyToSend`
+///   or point-check specific sockets with `isReady` / `isReadyToSend`
 ///
-/// Usage example:
+/// Usage example (accept + echo):
 /// \code
-/// // Create a socket to listen to new connections
-/// sf::TcpListener listener;
-/// if (listener.listen(55001) != sf::Socket::Status::Done)
-/// {
-///     // Handle error...
-/// }
+/// auto listener = sf::TcpListener::create(55001, /* blocking */ true).value();
+/// sf::base::Vector<sf::TcpSocket> clients;
 ///
-/// // Create a list to store the future clients
-/// std::vector<sf::TcpSocket> clients;
-///
-/// // Create a selector
 /// sf::SocketSelector selector;
+/// (void)selector.add(listener);
 ///
-/// // Add the listener to the selector
-/// selector.add(listener);
-///
-/// // Endless loop that waits for new connections
 /// while (running)
 /// {
-///     // Make the selector wait for data on any socket
-///     if (selector.wait())
-///     {
-///         // Test the listener
-///         if (selector.isReady(listener))
-///         {
-///             // The listener is ready: there is a pending connection
-///             sf::TcpSocket client;
-///             if (listener.accept(client) == sf::Socket::Status::Done)
-///             {
-///                 // Add the new client to the selector so that we will
-///                 // be notified when they send something
-///                 selector.add(client);
+///     if (!selector.wait(sf::milliseconds(100)))
+///         continue;
 ///
-///                 // Add the new client to the clients list
-///                 clients.push_back(std::move(client));
-///             }
-///             else
-///             {
-///                 // Handle error...
-///             }
-///         }
-///         else
+///     // New connection?
+///     if (selector.isReady(listener))
+///     {
+///         auto result = listener.accept();
+///         if (result.status == sf::Socket::Status::Done)
 ///         {
-///             // The listener socket is not ready, test all other sockets (the clients)
-///             for (sf::TcpSocket& client : clients)
-///             {
-///                 if (selector.isReady(client))
-///                 {
-///                     // The client has sent some data, we can receive it
-///                     sf::Packet packet;
-///                     if (client.receive(packet) == sf::Socket::Status::Done)
-///                     {
-///                         ...
-///                     }
-///                 }
-///             }
+///             auto& client = clients.emplaceBack(SFML_BASE_MOVE(result.socket));
+///             (void)selector.add(client);
 ///         }
+///     }
+///
+///     // Iterate only the ready clients (O(M), not O(N))
+///     for (const sf::Socket* sock : selector.getReadyToReceive())
+///     {
+///         if (sock == &listener)
+///             continue;
+///
+///         // ... receive / dispatch ...
 ///     }
 /// }
 /// \endcode
+///
+/// To wait for writability (e.g. to send only when the kernel
+/// send buffer has room) register the socket via `addForSend`
+/// and inspect `getReadyToSend()` / `isReadyToSend` after each
+/// `wait`.
 ///
 /// \see `sf::Socket`
 ///
