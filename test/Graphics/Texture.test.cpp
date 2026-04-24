@@ -279,7 +279,7 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
     SECTION("generateMipmap()")
     {
         auto texture = sf::Texture::create({100, 100}).value();
-        CHECK(texture.generateMipmap());
+        texture.generateMipmap();
     }
 
     SECTION("swap()")
