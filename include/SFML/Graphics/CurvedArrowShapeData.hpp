@@ -28,9 +28,7 @@ namespace sf
 /// thickness, angular span, and arrowhead dimensions.
 ///
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] SFML_GRAPHICS_API CurvedArrowShapeData :
-    LocalAnchorPointMixin<CurvedArrowShapeData>,
-    GlobalAnchorPointMixin<CurvedArrowShapeData>
+struct [[nodiscard]] SFML_GRAPHICS_API CurvedArrowShapeData : LocalAnchorPointMixin, GlobalAnchorPointMixin
 {
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;

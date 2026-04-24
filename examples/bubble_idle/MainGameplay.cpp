@@ -39,7 +39,6 @@
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
 #include "SFML/Base/Math/Pow.hpp"
 #include "SFML/Base/MinMax.hpp"
@@ -162,7 +161,7 @@ void Main::gameLoopUpdateCollisionsBubbleBubble(const float deltaTimeMs)
 {
     SFEX_PROFILE_SCOPE_AUTOLABEL();
 
-    auto func = [&](const SizeT bubbleIdxI, const SizeT bubbleIdxJ) SFML_BASE_LAMBDA_ALWAYS_INLINE
+    auto func = [&] [[gnu::always_inline]] (const SizeT bubbleIdxI, const SizeT bubbleIdxJ)
     {
         // TODO P2: technically this is a data race
         handleBubbleCollision(deltaTimeMs, pt->bubbles[bubbleIdxI], pt->bubbles[bubbleIdxJ]);

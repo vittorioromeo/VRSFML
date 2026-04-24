@@ -156,7 +156,7 @@ void Main::uiDraw(const sf::Vec2f mousePos)
     style.FrameRounding   = 10.f;
     style.WindowRounding  = 5.f;
 
-    static const auto initialStyleScales = [&]() -> ImGuiStyleScales
+    static const auto initialStyleScales = [&] -> ImGuiStyleScales
     {
         return {
             .windowPadding                    = style.WindowPadding,

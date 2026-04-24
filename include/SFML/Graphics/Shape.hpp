@@ -49,10 +49,7 @@ namespace sf
 /// \brief Base class for textured shapes with outline
 ///
 ////////////////////////////////////////////////////////////
-class SFML_GRAPHICS_API Shape :
-    public TransformableMixin<Shape>,
-    public GlobalAnchorPointMixin<Shape>,
-    public LocalAnchorPointMixin<Shape>
+class SFML_GRAPHICS_API Shape : public TransformableMixin, public GlobalAnchorPointMixin, public LocalAnchorPointMixin
 {
 public:
     ////////////////////////////////////////////////////////////

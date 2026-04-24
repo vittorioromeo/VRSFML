@@ -34,7 +34,6 @@
 #include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/InterferenceSize.hpp"
-#include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
@@ -364,7 +363,7 @@ int main()
     //
     //
     // Population functions
-    const auto pushParticle = [&](auto&& pushFn) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+    const auto pushParticle = [&] [[gnu::always_inline, gnu::flatten]] (auto&& pushFn)
     {
         pushFn(rng.getVec2f({0.f, 0.f}, windowSize),       // position
                rng.getVec2f({-0.5f, -0.5f}, {0.5f, 0.5f}), // velocity
@@ -389,7 +388,7 @@ int main()
         entities.reserve(n);
 
         for (sf::base::SizeT i = entities.size(); i < n; ++i)
-            pushParticle([&](auto&&... args) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+            pushParticle([&] [[gnu::always_inline, gnu::flatten]] (auto&&... args)
             { entities.emplaceBack(sf::base::makeUnique<ParticleOOP>(args...)); });
     };
 
@@ -404,8 +403,7 @@ int main()
         particlesAoS.reserve(n);
 
         for (sf::base::SizeT i = particlesAoS.size(); i < n; ++i)
-            pushParticle([&](auto&&... args) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
-            { particlesAoS.emplaceBack(args...); });
+            pushParticle([&] [[gnu::always_inline, gnu::flatten]] (auto&&... args) { particlesAoS.emplaceBack(args...); });
     };
 
     const auto populateParticlesSoA = [&](const sf::base::SizeT n)
@@ -419,7 +417,7 @@ int main()
         particlesSoA.reserve(n);
 
         for (sf::base::SizeT i = particlesSoA.getSize(); i < n; ++i)
-            pushParticle([&](auto&&... args) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN { particlesSoA.pushBack(args...); });
+            pushParticle([&] [[gnu::always_inline, gnu::flatten]] (auto&&... args) { particlesSoA.pushBack(args...); });
     };
 
     const auto populateParticles = [&](const sf::base::SizeT n)
@@ -466,7 +464,7 @@ int main()
             // This is the bottleneck, consider reusing the particle instead of shifting/swapping
             if (destroyParticles)
             {
-                const auto destroyPredicate = [](const float opacity) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                const auto destroyPredicate = [] [[gnu::always_inline, gnu::flatten]] (const float opacity)
                 { return opacity <= 0.f; };
 
                 if (useOOP)
@@ -503,7 +501,7 @@ int main()
                     else
                     {
                         sf::base::vectorEraseIf(particlesAoS,
-                                                [](const ParticleAoS& p) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                                                [] [[gnu::always_inline, gnu::flatten]] (const ParticleAoS& p)
                         { return p.opacity <= 0.f; });
                     }
                 }
@@ -526,20 +524,24 @@ int main()
                     }
                     else
                     {
-                        particlesSoA.with<1, 2>([](sf::Vec2f& velocity, const sf::Vec2f acc)
-                                                    SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN { velocity += acc; });
+                        particlesSoA.with<1, 2>(
+                            [] [[gnu::always_inline, gnu::flatten]] (sf::Vec2f & velocity, const sf::Vec2f acc)
+                        { velocity += acc; });
 
-                        particlesSoA.with<0, 1>([](sf::Vec2f& position, sf::Vec2f& velocity)
-                                                    SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN { position += velocity; });
+                        particlesSoA.with<0, 1>(
+                            [] [[gnu::always_inline, gnu::flatten]] (sf::Vec2f & position, sf::Vec2f & velocity)
+                        { position += velocity; });
 
-                        particlesSoA.with<3, 4>([](float& scale, const float scaleGrowth)
-                                                    SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN { scale += scaleGrowth; });
+                        particlesSoA.with<3, 4>(
+                            [] [[gnu::always_inline, gnu::flatten]] (float& scale, const float scaleGrowth)
+                        { scale += scaleGrowth; });
 
-                        particlesSoA.with<5, 6>([](float& opacity, const float opacityGrowth)
-                                                    SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN { opacity += opacityGrowth; });
+                        particlesSoA.with<5, 6>(
+                            [] [[gnu::always_inline, gnu::flatten]] (float& opacity, const float opacityGrowth)
+                        { opacity += opacityGrowth; });
 
-                        particlesSoA.with<7, 8>([](float& rotation, const float torque)
-                                                    SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN { rotation += torque; });
+                        particlesSoA.with<7, 8>([] [[gnu::always_inline, gnu::flatten]] (float& rotation, const float torque)
+                        { rotation += torque; });
                     }
                 }
                 else
@@ -567,46 +569,51 @@ int main()
                     if (unifiedSoAProcessing)
                     {
                         doInBatches(static_cast<sf::base::SizeT>(numEntities),
-                                    [&](const sf::base::SizeT /* iBatch */,
-                                        const sf::base::SizeT batchStartIdx,
-                                        const sf::base::SizeT batchEndIdx) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                                    [&] [[gnu::always_inline, gnu::flatten]] (const sf::base::SizeT /* iBatch */,
+                                                                              const sf::base::SizeT batchStartIdx,
+                                                                              const sf::base::SizeT batchEndIdx)
                         { particlesSoA.withAllSubRange(batchStartIdx, batchEndIdx, updateParticle); });
                     }
                     else
                     {
                         doInBatches(static_cast<sf::base::SizeT>(numEntities),
-                                    [&](const sf::base::SizeT /* iBatch */,
-                                        const sf::base::SizeT batchStartIdx,
-                                        const sf::base::SizeT batchEndIdx) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                                    [&] [[gnu::always_inline, gnu::flatten]] (const sf::base::SizeT /* iBatch */,
+                                                                              const sf::base::SizeT batchStartIdx,
+                                                                              const sf::base::SizeT batchEndIdx)
                         {
                             particlesSoA.withSubRange<1, 2>(batchStartIdx,
                                                             batchEndIdx,
-                                                            [](sf::Vec2f& velocity, const sf::Vec2f acc)
-                                                                SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                                                            [] [[gnu::always_inline,
+                                                                 gnu::flatten]] (sf::Vec2f & velocity, const sf::Vec2f acc)
+
                             { velocity += acc; });
 
                             particlesSoA.withSubRange<0, 1>(batchStartIdx,
                                                             batchEndIdx,
-                                                            [](sf::Vec2f& position, sf::Vec2f& velocity)
-                                                                SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                                                            [] [[gnu::always_inline,
+                                                                 gnu::flatten]] (sf::Vec2f & position, sf::Vec2f & velocity)
+
                             { position += velocity; });
 
                             particlesSoA.withSubRange<3, 4>(batchStartIdx,
                                                             batchEndIdx,
-                                                            [](float& scale, const float scaleGrowth)
-                                                                SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                                                            [] [[gnu::always_inline,
+                                                                 gnu::flatten]] (float& scale, const float scaleGrowth)
+
                             { scale += scaleGrowth; });
 
                             particlesSoA.withSubRange<5, 6>(batchStartIdx,
                                                             batchEndIdx,
-                                                            [](float& opacity, const float opacityGrowth)
-                                                                SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                                                            [] [[gnu::always_inline,
+                                                                 gnu::flatten]] (float& opacity, const float opacityGrowth)
+
                             { opacity += opacityGrowth; });
 
                             particlesSoA.withSubRange<7, 8>(batchStartIdx,
                                                             batchEndIdx,
-                                                            [](float& rotation, const float torque)
-                                                                SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                                                            [] [[gnu::always_inline,
+                                                                 gnu::flatten]] (float& rotation, const float torque)
+
                             { rotation += torque; });
                         });
                     }
@@ -614,9 +621,9 @@ int main()
                 else
                 {
                     doInBatches(static_cast<sf::base::SizeT>(numEntities),
-                                [&](const sf::base::SizeT /* iBatch */,
-                                    const sf::base::SizeT batchStartIdx,
-                                    const sf::base::SizeT batchEndIdx) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                                [&] [[gnu::always_inline, gnu::flatten]] (const sf::base::SizeT /* iBatch */,
+                                                                          const sf::base::SizeT batchStartIdx,
+                                                                          const sf::base::SizeT batchEndIdx)
                     {
                         for (sf::base::SizeT i = batchStartIdx; i < batchEndIdx; ++i)
                         {
@@ -758,8 +765,9 @@ int main()
 
             const auto nParticles = static_cast<sf::base::SizeT>(numEntities);
 
-            const auto makeParticleSprite = [&](const sf::Vec2f position, const float scale, const float rotation)
-                                                SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+            const auto makeParticleSprite =
+                [&] [[gnu::always_inline, gnu::flatten]] (const sf::Vec2f position, const float scale, const float rotation)
+
             {
                 return sf::Sprite{
                     .position    = position,
@@ -771,15 +779,19 @@ int main()
             };
 
             // Iterates over non-OOP particles, hoisting the SoA/AoS branch outside the inner loop
-            const auto forEachNonOOPParticle = [&](const sf::base::SizeT startIdx, const sf::base::SizeT endIdx, auto&& fn)
-                                                   SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+            const auto forEachNonOOPParticle =
+                [&] [[gnu::always_inline,
+                      gnu::flatten]] (const sf::base::SizeT startIdx, const sf::base::SizeT endIdx, auto&& fn)
+
             {
                 if (useSoA)
                 {
                     for (sf::base::SizeT i = startIdx; i < endIdx; ++i)
                         particlesSoA.withNth<0, 3, 7>(i,
-                                                      [&](const auto& position, const auto& scale, const auto& rotation)
-                                                          SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                                                      [&] [[gnu::always_inline, gnu::flatten]] (const auto& position,
+                                                                                                const auto& scale,
+                                                                                                const auto& rotation)
+
                         { fn(makeParticleSprite(position, scale, rotation)); });
                 }
                 else
@@ -803,7 +815,7 @@ int main()
                 // Use withLockedRenderStates to skip per-sprite RenderStates comparison
                 auto drawCtx = window.withLockedRenderStates({.texture = &textureAtlas.getTexture()});
 
-                forEachNonOOPParticle(0u, nParticles, [&](const sf::Sprite& sprite) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {
+                forEachNonOOPParticle(0u, nParticles, [&] [[gnu::always_inline, gnu::flatten]] (const sf::Sprite& sprite) {
                     drawCtx.draw(sprite);
                 });
             }
@@ -813,7 +825,7 @@ int main()
                 {
                     batch.clear();
 
-                    forEachNonOOPParticle(0u, nParticles, [&](const sf::Sprite& sprite) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {
+                    forEachNonOOPParticle(0u, nParticles, [&] [[gnu::always_inline, gnu::flatten]] (const sf::Sprite& sprite) {
                         batch.add(sprite);
                     });
 
@@ -839,7 +851,7 @@ int main()
                     {
                         forEachNonOOPParticle(batchStartIdx,
                                               batchEndIdx,
-                                              [&](const sf::Sprite& sprite) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                                              [&] [[gnu::always_inline, gnu::flatten]] (const sf::Sprite& sprite)
                         { batchesArray[iBatch].add(sprite); });
                     });
 

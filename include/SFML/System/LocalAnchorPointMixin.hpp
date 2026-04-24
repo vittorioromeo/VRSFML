@@ -14,15 +14,15 @@ namespace sf
 ////////////////////////////////////////////////////////////
 /// \brief Utility mixin providing anchor point functions for positioning
 ///
-/// This template class can be inherited by classes that have position
+/// This class can be inherited by classes that have position
 /// and bounds (like `sf::Transformable` based classes)
 /// to add convenient functions for getting and setting the object's position
 /// based on common anchor points (corners, centers, edges).
 ///
-/// It relies on the inheriting class `T` providing `getLocalBounds()`.
+/// It relies on the inheriting class providing `getLocalBounds()`.
+/// The derived type is deduced at call time via C++23 explicit object parameters.
 ///
 ////////////////////////////////////////////////////////////
-template <typename T>
 struct LocalAnchorPointMixin
 {
     ////////////////////////////////////////////////////////////
@@ -37,18 +37,19 @@ struct LocalAnchorPointMixin
     /// \return Local coordinates of the calculated anchor point
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr auto getLocalAnchorPoint(const Vec2f factors) const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
+    inline constexpr auto getLocalAnchorPoint(this const auto& self, const Vec2f factors)
     {
-        return static_cast<const T&>(*this).getLocalBounds().getAnchorPoint(factors);
+        return self.getLocalBounds().getAnchorPoint(factors);
     }
 
 
 ////////////////////////////////////////////////////////////
-#define SFML_PRIV_DEFINE_MIXIN_GETTER(name, ...)                                                  \
-    /** \brief Get the position of the name anchor point */                                       \
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr auto name() const \
-    {                                                                                             \
-        return this->getLocalAnchorPoint(__VA_ARGS__);                                            \
+#define SFML_PRIV_DEFINE_MIXIN_GETTER(name, ...)                                                                 \
+    /** \brief Get the position of the name anchor point */                                                      \
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr auto name(this auto const& self) \
+    {                                                                                                            \
+        return self.getLocalAnchorPoint(__VA_ARGS__);                                                            \
     }
 
     ////////////////////////////////////////////////////////////
@@ -114,9 +115,10 @@ struct LocalAnchorPointMixin
     /// \return Left edge X coordinate
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getLocalLeft() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
+    inline constexpr float getLocalLeft(this const auto& self)
     {
-        return static_cast<const T&>(*this).getLocalBounds().getLeft();
+        return self.getLocalBounds().getLeft();
     }
 
 
@@ -126,9 +128,10 @@ struct LocalAnchorPointMixin
     /// \return Right edge X coordinate
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getLocalRight() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
+    inline constexpr float getLocalRight(this const auto& self)
     {
-        return static_cast<const T&>(*this).getLocalBounds().getRight();
+        return self.getLocalBounds().getRight();
     }
 
 
@@ -138,9 +141,10 @@ struct LocalAnchorPointMixin
     /// \return Top edge Y coordinate
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getLocalTop() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
+    inline constexpr float getLocalTop(this const auto& self)
     {
-        return static_cast<const T&>(*this).getLocalBounds().getTop();
+        return self.getLocalBounds().getTop();
     }
 
 
@@ -150,9 +154,10 @@ struct LocalAnchorPointMixin
     /// \return Bottom edge Y coordinate
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getLocalBottom() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
+    inline constexpr float getLocalBottom(this const auto& self)
     {
-        return static_cast<const T&>(*this).getLocalBounds().getBottom();
+        return self.getLocalBounds().getBottom();
     }
 
 
@@ -162,9 +167,10 @@ struct LocalAnchorPointMixin
     /// \return Width of the object
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getLocalWidth() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
+    inline constexpr float getLocalWidth(this const auto& self)
     {
-        return static_cast<const T&>(*this).getLocalBounds().size.x;
+        return self.getLocalBounds().size.x;
     }
 
 
@@ -174,9 +180,10 @@ struct LocalAnchorPointMixin
     /// \return Height of the object
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getLocalHeight() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
+    inline constexpr float getLocalHeight(this const auto& self)
     {
-        return static_cast<const T&>(*this).getLocalBounds().size.y;
+        return self.getLocalBounds().size.y;
     }
 };
 
@@ -198,8 +205,7 @@ struct LocalAnchorPointMixin
 /// on individual edge coordinates (`getLeft()`, `setRight()`, etc.).
 ///
 /// To use this mixin, inherit from it publicly, e.g.:
-/// `struct MyObject : public sf::Transformable, public sf::LocalAnchorPointMixin<MyObject>`
-/// The template argument `T` must be the type of the inheriting class itself.
+/// `struct MyObject : public sf::Transformable, public sf::LocalAnchorPointMixin`
 /// The inheriting class must provide `getLocalBounds()`.
 ///
 /// \see `sf::Transformable`

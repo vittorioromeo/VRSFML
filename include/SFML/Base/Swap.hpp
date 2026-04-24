@@ -22,16 +22,16 @@ struct SwapFn
 
     ////////////////////////////////////////////////////////////
     template <typename T, SizeT N>
-    [[gnu::always_inline]] constexpr void operator()(T (&a)[N], T (&b)[N]) const noexcept
+    [[gnu::always_inline]] static constexpr void operator()(T (&a)[N], T (&b)[N]) noexcept
     {
         for (SizeT i = 0; i < N; ++i)
-            (*this)(a[i], b[i]);
+            operator()(a[i], b[i]);
     }
 
 
     ////////////////////////////////////////////////////////////
     template <typename T>
-    [[gnu::always_inline]] constexpr void operator()(T& a, T& b) const noexcept
+    [[gnu::always_inline]] static constexpr void operator()(T& a, T& b) noexcept
     {
         if constexpr (requires { a.swap(b); })
         {

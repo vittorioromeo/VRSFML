@@ -1149,7 +1149,7 @@ int main()
             currentPlaybackDeviceIndex = playbackDevices.size() - 1;
     }
 
-    const auto getCurrentPlaybackDevice = [&]() -> sf::PlaybackDevice&
+    const auto getCurrentPlaybackDevice = [&] -> sf::PlaybackDevice&
     { return playbackDevices[currentPlaybackDeviceIndex]; };
 
     // TODO P1: docs

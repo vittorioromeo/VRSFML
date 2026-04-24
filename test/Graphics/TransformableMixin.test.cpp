@@ -22,7 +22,7 @@
 #include <Doctest.hpp>
 
 
-struct TestTransformable : sf::TransformableMixin<TestTransformable>
+struct TestTransformable : sf::TransformableMixin
 {
     SFML_DEFINE_TRANSFORMABLE_DATA_MEMBERS;
 };

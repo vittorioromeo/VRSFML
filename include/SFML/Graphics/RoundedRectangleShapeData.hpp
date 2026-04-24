@@ -23,9 +23,7 @@ namespace sf
 /// \brief Data required to draw a rounded rectangle shape
 ///
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] SFML_GRAPHICS_API RoundedRectangleShapeData :
-    LocalAnchorPointMixin<RoundedRectangleShapeData>,
-    GlobalAnchorPointMixin<RoundedRectangleShapeData>
+struct [[nodiscard]] SFML_GRAPHICS_API RoundedRectangleShapeData : LocalAnchorPointMixin, GlobalAnchorPointMixin
 {
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;

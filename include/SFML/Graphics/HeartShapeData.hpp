@@ -23,9 +23,7 @@ namespace sf
 /// \brief Data required to draw a heart shape
 ///
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] SFML_GRAPHICS_API HeartShapeData :
-    LocalAnchorPointMixin<HeartShapeData>,
-    GlobalAnchorPointMixin<HeartShapeData>
+struct [[nodiscard]] SFML_GRAPHICS_API HeartShapeData : LocalAnchorPointMixin, GlobalAnchorPointMixin
 {
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;

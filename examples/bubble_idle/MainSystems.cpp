@@ -1079,7 +1079,7 @@ void Main::gameLoopUpdateCatActionNormal(const float /* deltaTimeMs */, Cat& cat
     };
 
     // Combo bubbles are player-only; cats must never target or pop them.
-    const auto pickRandomNonCombo = [&]() -> Bubble*
+    const auto pickRandomNonCombo = [&] -> Bubble*
     {
         return pickRandomBubbleInRadiusMatching({cx, cy}, range, [&](const Bubble& b) {
             return b.type != BubbleType::Combo;

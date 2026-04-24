@@ -68,7 +68,7 @@ void drawDebugQuickTools(Main& main)
     constexpr sf::base::I64   speedrunTimerStep = 1;
     constexpr sf::base::SizeT currencyStep      = 1u;
 
-    auto fullWidth = [&]() { return ImGui::GetContentRegionAvail().x - 140.f; };
+    auto fullWidth = [&] { return ImGui::GetContentRegionAvail().x - 140.f; };
 
     ImGui::Checkbox("Hide main UI", &main.uiState.debugHideUI);
     ImGui::Text("Active events: %zu", main.pt->activeEvents.size());

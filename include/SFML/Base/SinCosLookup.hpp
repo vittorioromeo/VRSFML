@@ -8,7 +8,6 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/AssertAndAssume.hpp"
-#include "SFML/Base/Builtin/IsConstantEvaluated.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Priv/ConstexprSinCos.hpp"
@@ -65,10 +64,14 @@ namespace sf::base
 {
     SFML_BASE_ASSERT_AND_ASSUME(radians >= 0.f && radians <= tau);
 
-    if (SFML_BASE_IS_CONSTANT_EVALUATED())
+    if consteval
+    {
         return priv::constexprSin(radians);
-
-    return priv::sinTableData[priv::sinLookupIdx(radians) & priv::sinMask];
+    }
+    else
+    {
+        return priv::sinTableData[priv::sinLookupIdx(radians) & priv::sinMask];
+    }
 }
 
 
@@ -85,10 +88,14 @@ namespace sf::base
 {
     SFML_BASE_ASSERT_AND_ASSUME(radians >= 0.f && radians <= tau);
 
-    if (SFML_BASE_IS_CONSTANT_EVALUATED())
+    if consteval
+    {
         return priv::constexprCos(radians);
-
-    return priv::sinTableData[priv::cosLookupIdx(radians) & priv::sinMask];
+    }
+    else
+    {
+        return priv::sinTableData[priv::cosLookupIdx(radians) & priv::sinMask];
+    }
 }
 
 
@@ -111,11 +118,17 @@ namespace sf::base
         float sin, cos;
     };
 
-    if (SFML_BASE_IS_CONSTANT_EVALUATED())
+    if consteval
+    {
         return Result{priv::constexprSin(radians), priv::constexprCos(radians)};
+    }
+    else
+    {
+        const auto sinIndex = static_cast<U32>(radians * priv::radToIndex);
 
-    const auto sinIndex = static_cast<U32>(radians * priv::radToIndex);
-    return Result{priv::sinTableData[sinIndex & priv::sinMask], priv::sinTableData[(sinIndex + 16'384u) & priv::sinMask]};
+        return Result{priv::sinTableData[sinIndex & priv::sinMask],
+                      priv::sinTableData[(sinIndex + 16'384u) & priv::sinMask]};
+    }
 }
 
 } // namespace sf::base

@@ -13,7 +13,6 @@
 #include "SFML/Base/Builtin/Unreachable.hpp"
 #include "SFML/Base/ClampMacro.hpp"
 #include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/MinMaxMacros.hpp"
 #include "SFML/Base/Remainder.hpp"
@@ -522,7 +521,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::const]] friend constexpr Color operator+(const Color lhs, const Color rhs)
     {
-        const auto clampedAdd = [](const base::U8 lc, const base::U8 rc) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN -> base::U8
+        const auto clampedAdd = [] [[gnu::always_inline, gnu::flatten]] (const base::U8 lc, const base::U8 rc) -> base::U8
         {
             const int intResult = int{lc} + int{rc};
             return static_cast<base::U8>(intResult < 255 ? intResult : 255);
@@ -547,7 +546,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::const]] friend constexpr Color operator-(const Color lhs, const Color rhs)
     {
-        const auto clampedSub = [](const base::U8 lc, const base::U8 rc) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN -> base::U8
+        const auto clampedSub = [] [[gnu::always_inline, gnu::flatten]] (const base::U8 lc, const base::U8 rc) -> base::U8
         {
             const int intResult = int{lc} - int{rc};
             return static_cast<base::U8>(intResult > 0 ? intResult : 0);
@@ -574,7 +573,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::const]] friend constexpr Color operator*(const Color lhs, const Color rhs)
     {
-        const auto scaledMul = [](const base::U8 lc, const base::U8 rc) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN -> base::U8
+        const auto scaledMul = [] [[gnu::always_inline, gnu::flatten]] (const base::U8 lc, const base::U8 rc) -> base::U8
         {
             const auto uint16Result = static_cast<base::U16>(base::U16{lc} * base::U16{rc});
             return static_cast<base::U8>(uint16Result / 255u);

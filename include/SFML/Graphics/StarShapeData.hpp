@@ -23,9 +23,7 @@ namespace sf
 /// \brief Data required to draw a star shape
 ///
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] SFML_GRAPHICS_API StarShapeData :
-    LocalAnchorPointMixin<StarShapeData>,
-    GlobalAnchorPointMixin<StarShapeData>
+struct [[nodiscard]] SFML_GRAPHICS_API StarShapeData : LocalAnchorPointMixin, GlobalAnchorPointMixin
 {
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;

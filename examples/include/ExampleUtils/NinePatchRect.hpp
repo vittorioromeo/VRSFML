@@ -31,10 +31,7 @@
 /// center stretches on both axes.
 ///
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] NinePatchRect :
-    sf::TransformableMixin<NinePatchRect>,
-    sf::GlobalAnchorPointMixin<NinePatchRect>,
-    sf::LocalAnchorPointMixin<NinePatchRect>
+struct [[nodiscard]] NinePatchRect : sf::TransformableMixin, sf::GlobalAnchorPointMixin, sf::LocalAnchorPointMixin
 {
     ////////////////////////////////////////////////////////////
     SFML_DEFINE_TRANSFORMABLE_DATA_MEMBERS;

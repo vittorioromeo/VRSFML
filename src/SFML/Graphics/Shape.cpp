@@ -14,7 +14,6 @@
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
 
-#include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
 
@@ -164,7 +163,7 @@ Rect2f Shape::getGlobalBounds() const
 ////////////////////////////////////////////////////////////
 void Shape::update(const sf::Vec2f* points, const base::SizeT pointCount)
 {
-    updateFromFunc([&points](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN { return points[i]; }, pointCount);
+    updateFromFunc([&points] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i) { return points[i]; }, pointCount);
 }
 
 

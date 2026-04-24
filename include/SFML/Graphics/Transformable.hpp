@@ -29,7 +29,7 @@ namespace sf
 /// base class.
 ///
 ////////////////////////////////////////////////////////////
-struct SFML_GRAPHICS_API Transformable : TransformableMixin<Transformable>
+struct SFML_GRAPHICS_API Transformable : TransformableMixin
 {
     SFML_DEFINE_TRANSFORMABLE_DATA_MEMBERS;
 };

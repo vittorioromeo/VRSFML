@@ -9,7 +9,6 @@
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/Glyph.hpp"
-#include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/TextData.hpp"
 #include "SFML/Graphics/Transform.hpp"
 #include "SFML/Graphics/Vertex.hpp"
@@ -21,7 +20,6 @@
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/Restrict.hpp"
-#include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Math/Floor.hpp"
@@ -303,7 +301,7 @@ inline auto createTextGeometryAndGetBounds(
             fAddLine(currOutlineIndex, x, y, outlineColor, offset, underlineThickness, outlineThickness);
     };
 
-    const auto updateBoundsAndAdvance = [&](const Glyph& fillGlyph) SFML_BASE_LAMBDA_ALWAYS_INLINE
+    const auto updateBoundsAndAdvance = [&] [[gnu::always_inline]] (const Glyph& fillGlyph)
     {
         if constexpr (CalculateBounds)
         {
@@ -445,31 +443,10 @@ inline auto createTextGeometryAndGetBounds(
         textData.outlineThickness,
         /* fillColor */ {},    // doesn't matter
         /* outlineColor */ {}, // doesn't matter
-        /* fAddLine */ [](auto&&...) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {},
-        /* fAddGlyphQuad */ [](auto&&...) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {});
+        /* fAddLine */ [] [[gnu::always_inline]] (auto&&...) {},
+        /* fAddGlyphQuad */ [] [[gnu::always_inline]] (auto&&...) {});
 }
 
-
-////////////////////////////////////////////////////////////
-[[nodiscard]] inline Rect2f precomputeTextLocalBounds(const Font& font, const Text& text)
-{
-    return createTextGeometryAndGetBounds</* CalculateBounds */ true>(
-        /* outlineVertexCount */ 0u,
-        font,
-        text.getString(),
-        text.isBold(),
-        text.isItalic(),
-        text.isUnderlined(),
-        text.isStrikeThrough(),
-        text.getCharacterSize(),
-        text.getLetterSpacing(),
-        text.getLineSpacing(),
-        text.getOutlineThickness(),
-        /* fillColor */ {},    // doesn't matter
-        /* outlineColor */ {}, // doesn't matter
-        /* fAddLine */ [](auto&&...) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {},
-        /* fAddGlyphQuad */ [](auto&&...) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {});
-}
 
 // TODO P1: precompute globalbounds as well?
 
