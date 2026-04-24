@@ -24,12 +24,9 @@
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/Vector.hpp"
 
-
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-conversion"
 
-#undef __cpp_lib_formatters
-#undef __glibcxx_want_formatters
 
 #define JSON_NO_IO
 #include "json.hpp"

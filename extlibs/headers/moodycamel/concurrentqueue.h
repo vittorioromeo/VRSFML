@@ -77,7 +77,19 @@
 #include <limits>
 #include <climits>		// for CHAR_BIT
 #include <array>
-#include <thread>		// partly for __WINPTHREADS_VERSION if on MinGW-w64 w/ POSIX threading
+
+
+#if __has_include(<bits/std_thread.h>) && __has_include(<bits/this_thread_sleep.h>)
+
+    #include <bits/std_thread.h>
+    #include <bits/this_thread_sleep.h>
+
+#else
+
+    #include <thread>
+
+#endif
+
 #include <mutex>        // used for thread exit synchronization
 
 // Platform-specific definitions of a numeric thread ID type and an invalid value

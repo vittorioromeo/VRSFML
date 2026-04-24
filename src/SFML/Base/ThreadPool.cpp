@@ -18,9 +18,6 @@
 
 #pragma GCC diagnostic pop
 
-#undef __cpp_lib_formatters
-#undef __glibcxx_want_formatters
-
 #include <atomic>
 
 #if __has_include(<bits/std_thread.h>) && __has_include(<bits/this_thread_sleep.h>)
