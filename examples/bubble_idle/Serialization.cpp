@@ -27,7 +27,6 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-conversion"
 
-
 #define JSON_NO_IO
 #include "json.hpp"
 
