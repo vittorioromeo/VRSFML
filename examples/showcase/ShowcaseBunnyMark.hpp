@@ -56,10 +56,23 @@ private:
     };
 
     ////////////////////////////////////////////////////////////
+    // Per-instance data for instanced rendering with precomputed cos/sin
+    ////////////////////////////////////////////////////////////
+    struct BunnyInstanceDataPrecomputed // NOLINT(cppcoreguidelines-pro-type-member-init)
+    {
+        sf::Vec2f position;
+        float     scale;
+        sf::Vec2f cosSin;
+        sf::Vec2f texRectPos;
+        sf::Vec2f texRectSize;
+    };
+
+    ////////////////////////////////////////////////////////////
     enum class DrawMode
     {
         Normal,
         Instanced,
+        InstancedPrecomputed,
     };
 
     ////////////////////////////////////////////////////////////
@@ -73,14 +86,16 @@ private:
     float m_time = 0.f;
 
     ////////////////////////////////////////////////////////////
-    sf::base::Vector<Bunny>             m_bunnies;
-    sf::base::Vector<sf::Sprite>        m_sprites;
-    sf::base::Vector<BunnyInstanceData> m_instanceData;
-    sf::base::SizeT                     m_bunnyTargetCount = 100'000u;
+    sf::base::Vector<Bunny>                        m_bunnies;
+    sf::base::Vector<sf::Sprite>                   m_sprites;
+    sf::base::Vector<BunnyInstanceData>            m_instanceData;
+    sf::base::Vector<BunnyInstanceDataPrecomputed> m_instanceDataPrecomputed;
+    sf::base::SizeT                                m_bunnyTargetCount = 100'000u;
 
     ////////////////////////////////////////////////////////////
     RNGFast  m_rng{/* seed */ 1234};
     DrawMode m_drawMode{DrawMode::Normal};
+    float    m_scaleMultiplier{1.f};
 
     ////////////////////////////////////////////////////////////
     // Instanced rendering resources
@@ -91,11 +106,20 @@ private:
     sf::VBOHandle                                   m_instanceVBO;
 
     ////////////////////////////////////////////////////////////
+    // Instanced rendering resources (precomputed cos/sin variant)
+    ////////////////////////////////////////////////////////////
+    sf::base::Optional<sf::Shader>                  m_instancedPrecomputedShader;
+    sf::base::Optional<sf::Shader::UniformLocation> m_ulInvTexSizePrecomputed;
+    sf::VAOHandle                                   m_vaoHandlePrecomputed;
+    sf::VBOHandle                                   m_instanceVBOPrecomputed;
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::Rect2f              addImgToAtlasWithRotatedHue(const sf::Path& path, float hueDegrees);
     [[nodiscard]] static sf::base::String toDigitSeparatedString(sf::base::SizeT value);
 
     ////////////////////////////////////////////////////////////
     void drawInstanced();
+    void drawInstancedPrecomputed();
 
 public:
     ////////////////////////////////////////////////////////////
