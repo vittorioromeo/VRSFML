@@ -6,6 +6,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/DeclVal.hpp"
 #include "SFML/Base/IndexSequence.hpp"
 #include "SFML/Base/LambdaMacros.hpp"
@@ -105,7 +106,7 @@ inline constexpr priv::InPlaceIndex<N> inPlaceIndex{};
 ///
 ////////////////////////////////////////////////////////////
 template <typename... Alternatives>
-class [[nodiscard]] Variant
+class Variant
 {
     static_assert(sizeof...(Alternatives) < 255);
 
@@ -179,14 +180,23 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    template <typename T, SizeT I, typename... Args>
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
-    [[nodiscard, gnu::always_inline]] explicit Variant(const priv::InPlaceType<T>, priv::InPlaceIndex<I>, Args&&... args) noexcept
-        :
-        m_index{static_cast<DiscriminatorType>(I)}
+    // Unchecked buffer accessors used by internal paths whose callers
+    // have already proven the active alternative (e.g. from inside
+    // `DO_WITH_CURRENT_INDEX`). Public access goes through `as<T>()`,
+    // which additionally asserts the discriminator.
+    ////////////////////////////////////////////////////////////
+    template <typename T>
+    [[nodiscard, gnu::always_inline]] T& bufferAs() noexcept
     {
-        SFML_BASE_VARIANT_STATIC_ASSERT_INDEX_VALIDITY(I);
-        SFML_BASE_PLACEMENT_NEW(m_buffer) T{static_cast<Args&&>(args)...};
+        return *SFML_BASE_LAUNDER_CAST(T*, m_buffer);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    template <typename T>
+    [[nodiscard, gnu::always_inline]] const T& bufferAs() const noexcept
+    {
+        return *SFML_BASE_LAUNDER_CAST(const T*, m_buffer);
     }
 
 
@@ -195,99 +205,146 @@ private:
     [[gnu::always_inline]] void destroyAt() noexcept
     {
         using Type = SFML_BASE_VARIANT_NTH_TYPE(I);
-        as<Type>().~Type();
+        // Discriminator check omitted: callers gate on `m_index == I` via `DO_WITH_CURRENT_INDEX`.
+        bufferAs<Type>().~Type();
     }
 
 
     ////////////////////////////////////////////////////////////
-    template <SizeT I, typename R, typename Visitor>
-    [[nodiscard, gnu::always_inline]] R recursiveVisitImpl(Visitor&& visitor)
+    // Each of the three recursive helpers below is a single static function
+    // template that perfect-forwards `self`, so we do not need to duplicate
+    // the body for `&`, `const&`, and `&&` versions. `getByIndex` already has
+    // overloads for all three ref-qualifiers, and reference collapsing on
+    // `static_cast<Self&&>(self)` picks the matching overload automatically.
+    ////////////////////////////////////////////////////////////
+    template <SizeT I, typename R, typename Self, typename Visitor>
+    [[nodiscard, gnu::always_inline]] static R recursiveVisitImpl(Self&& self, Visitor&& visitor)
     {
         if constexpr (I < sizeof...(Alternatives) - 1)
         {
-            return (m_index == I) ? visitor(getByIndex<I>())
-                                  : recursiveVisitImpl<I + 1, R>(static_cast<Visitor&&>(visitor));
+            return (self.m_index == I)
+                       ? visitor(static_cast<Self&&>(self).template getByIndex<I>())
+                       : recursiveVisitImpl<I + 1, R>(static_cast<Self&&>(self), static_cast<Visitor&&>(visitor));
         }
         else
         {
-            return visitor(getByIndex<I>());
+            return visitor(static_cast<Self&&>(self).template getByIndex<I>());
         }
     }
 
 
     ////////////////////////////////////////////////////////////
-    template <SizeT I, typename R, typename Visitor>
-    [[nodiscard, gnu::always_inline]] R recursiveVisitImplOpt5(Visitor&& visitor)
+    template <SizeT I, typename R, typename Self, typename Visitor>
+    [[nodiscard, gnu::always_inline]] static R recursiveVisitImplOpt5(Self&& self, Visitor&& visitor)
     {
         if constexpr (I == 0 && sizeof...(Alternatives) == 5)
         {
             // clang-format off
-            return (m_index == I + 0) ? visitor(getByIndex<I + 0>()) :
-                   (m_index == I + 1) ? visitor(getByIndex<I + 1>()) :
-                   (m_index == I + 2) ? visitor(getByIndex<I + 2>()) :
-                   (m_index == I + 3) ? visitor(getByIndex<I + 3>()) :
-                                       visitor(getByIndex<I + 4>()) ;
+            return (self.m_index == I + 0) ? visitor(static_cast<Self&&>(self).template getByIndex<I + 0>()) :
+                   (self.m_index == I + 1) ? visitor(static_cast<Self&&>(self).template getByIndex<I + 1>()) :
+                   (self.m_index == I + 2) ? visitor(static_cast<Self&&>(self).template getByIndex<I + 2>()) :
+                   (self.m_index == I + 3) ? visitor(static_cast<Self&&>(self).template getByIndex<I + 3>()) :
+                                             visitor(static_cast<Self&&>(self).template getByIndex<I + 4>()) ;
             // clang-format on
         }
         else if constexpr (I + 4 < sizeof...(Alternatives))
         {
             // clang-format off
-            return (m_index == I + 0) ? visitor(getByIndex<I + 0>()) :
-                   (m_index == I + 1) ? visitor(getByIndex<I + 1>()) :
-                   (m_index == I + 2) ? visitor(getByIndex<I + 2>()) :
-                   (m_index == I + 3) ? visitor(getByIndex<I + 3>()) :
-                   (m_index == I + 4) ? visitor(getByIndex<I + 4>()) :
-                   recursiveVisitImplOpt5<I + 5, R>(static_cast<Visitor&&>(visitor));
+            return (self.m_index == I + 0) ? visitor(static_cast<Self&&>(self).template getByIndex<I + 0>()) :
+                   (self.m_index == I + 1) ? visitor(static_cast<Self&&>(self).template getByIndex<I + 1>()) :
+                   (self.m_index == I + 2) ? visitor(static_cast<Self&&>(self).template getByIndex<I + 2>()) :
+                   (self.m_index == I + 3) ? visitor(static_cast<Self&&>(self).template getByIndex<I + 3>()) :
+                   (self.m_index == I + 4) ? visitor(static_cast<Self&&>(self).template getByIndex<I + 4>()) :
+                   recursiveVisitImplOpt5<I + 5, R>(static_cast<Self&&>(self), static_cast<Visitor&&>(visitor));
             // clang-format on
         }
         else
         {
-            return recursiveVisitImpl<I, R>(static_cast<Visitor&&>(visitor));
+            return recursiveVisitImpl<I, R>(static_cast<Self&&>(self), static_cast<Visitor&&>(visitor));
         }
     }
 
 
     ////////////////////////////////////////////////////////////
-    template <SizeT I, typename R, typename Visitor>
-    [[nodiscard, gnu::always_inline]] R recursiveVisitImplOpt10(Visitor&& visitor)
+    template <SizeT I, typename R, typename Self, typename Visitor>
+    [[nodiscard, gnu::always_inline]] static R recursiveVisitImplOpt10(Self&& self, Visitor&& visitor)
     {
         if constexpr (I + 9 < sizeof...(Alternatives))
         {
             // clang-format off
-            return (m_index == I + 0) ? visitor(getByIndex<I + 0>()) :
-                   (m_index == I + 1) ? visitor(getByIndex<I + 1>()) :
-                   (m_index == I + 2) ? visitor(getByIndex<I + 2>()) :
-                   (m_index == I + 3) ? visitor(getByIndex<I + 3>()) :
-                   (m_index == I + 4) ? visitor(getByIndex<I + 4>()) :
-                   (m_index == I + 5) ? visitor(getByIndex<I + 5>()) :
-                   (m_index == I + 6) ? visitor(getByIndex<I + 6>()) :
-                   (m_index == I + 7) ? visitor(getByIndex<I + 7>()) :
-                   (m_index == I + 8) ? visitor(getByIndex<I + 8>()) :
-                   (m_index == I + 9) ? visitor(getByIndex<I + 9>()) :
-                   recursiveVisitImplOpt10<I + 10, R>(static_cast<Visitor&&>(visitor));
+            return (self.m_index == I + 0) ? visitor(static_cast<Self&&>(self).template getByIndex<I + 0>()) :
+                   (self.m_index == I + 1) ? visitor(static_cast<Self&&>(self).template getByIndex<I + 1>()) :
+                   (self.m_index == I + 2) ? visitor(static_cast<Self&&>(self).template getByIndex<I + 2>()) :
+                   (self.m_index == I + 3) ? visitor(static_cast<Self&&>(self).template getByIndex<I + 3>()) :
+                   (self.m_index == I + 4) ? visitor(static_cast<Self&&>(self).template getByIndex<I + 4>()) :
+                   (self.m_index == I + 5) ? visitor(static_cast<Self&&>(self).template getByIndex<I + 5>()) :
+                   (self.m_index == I + 6) ? visitor(static_cast<Self&&>(self).template getByIndex<I + 6>()) :
+                   (self.m_index == I + 7) ? visitor(static_cast<Self&&>(self).template getByIndex<I + 7>()) :
+                   (self.m_index == I + 8) ? visitor(static_cast<Self&&>(self).template getByIndex<I + 8>()) :
+                   (self.m_index == I + 9) ? visitor(static_cast<Self&&>(self).template getByIndex<I + 9>()) :
+                   recursiveVisitImplOpt10<I + 10, R>(static_cast<Self&&>(self), static_cast<Visitor&&>(visitor));
             // clang-format on
         }
         else
         {
-            return recursiveVisitImplOpt5<I, R>(static_cast<Visitor&&>(visitor));
+            return recursiveVisitImplOpt5<I, R>(static_cast<Self&&>(self), static_cast<Visitor&&>(visitor));
+        }
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    // Shared dispatch body for the `&` and `const&` overloads of
+    // `recursiveVisit`: picks the best unrolling tier for the
+    // alternative count and forwards `self` through.
+    template <typename R, typename Self, typename Visitor>
+    [[nodiscard, gnu::always_inline]] static R recursiveVisitDispatch(Self&& self, Visitor&& visitor)
+    {
+        if constexpr (sizeof...(Alternatives) >= 10)
+            return recursiveVisitImplOpt10<0, R>(static_cast<Self&&>(self), static_cast<Visitor&&>(visitor));
+        else if constexpr (sizeof...(Alternatives) >= 5)
+            return recursiveVisitImplOpt5<0, R>(static_cast<Self&&>(self), static_cast<Visitor&&>(visitor));
+        else
+            return recursiveVisitImpl<0, R>(static_cast<Self&&>(self), static_cast<Visitor&&>(visitor));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    // Shared dispatch body for the `&` and `const&` overloads of
+    // `linearVisit`. Uses `DO_WITH_CURRENT_INDEX_OBJ` on `self` so
+    // that reference-qualifier selection of `getByIndex` works in
+    // both overloads without duplicating the body.
+    template <typename R, typename Self, typename Visitor>
+    [[nodiscard, gnu::always_inline]] static R linearVisitDispatch(Self&& self, Visitor&& visitor)
+    {
+        if constexpr (SFML_BASE_IS_REFERENCE(R))
+        {
+            SFML_BASE_REMOVE_CVREF(R) * ret; // NOLINT(cppcoreguidelines-init-variables)
+            SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX_OBJ(self, I, ret = &(visitor(self.template getByIndex<I>())));
+            return static_cast<R>(*ret);
+        }
+        else if constexpr (SFML_BASE_IS_SAME(R, void))
+        {
+            SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX_OBJ(self, I, (visitor(self.template getByIndex<I>())));
+        }
+        else
+        {
+            alignas(R) Byte retBuffer[sizeof(R)];
+
+            SFML_BASE_SCOPE_GUARD({
+                if constexpr (!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(R))
+                    SFML_BASE_LAUNDER_CAST(R*, retBuffer)->~R();
+            });
+
+            SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX_OBJ(self,
+                                                        I,
+                                                        SFML_BASE_PLACEMENT_NEW(retBuffer)
+                                                            R(visitor(self.template getByIndex<I>())));
+            return *(SFML_BASE_LAUNDER_CAST(R*, retBuffer));
         }
     }
 
 
 public:
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct an alternative in-place from its type
-    ///
-    /// \param args Arguments forwarded to `T`'s constructor
-    ///
-    ////////////////////////////////////////////////////////////
-    template <typename T, typename... Args>
-    [[nodiscard, gnu::always_inline]] explicit Variant(const priv::InPlaceType<T> inPlaceType, Args&&... args) noexcept :
-        Variant{inPlaceType, inPlaceIndex<indexOf<T>>, static_cast<Args&&>(args)...}
-    {
-    }
-
-
     ////////////////////////////////////////////////////////////
     /// \brief Construct an alternative in-place from its index
     ///
@@ -295,8 +352,24 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <SizeT I, typename... Args>
-    [[nodiscard, gnu::always_inline]] explicit Variant(const priv::InPlaceIndex<I> inPlaceIndex, Args&&... args) noexcept :
-        Variant{inPlaceType<SFML_BASE_VARIANT_NTH_TYPE(I)>, inPlaceIndex, static_cast<Args&&>(args)...}
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+    [[nodiscard, gnu::always_inline]] explicit Variant(const priv::InPlaceIndex<I>, Args&&... args) noexcept :
+        m_index{static_cast<DiscriminatorType>(I)}
+    {
+        SFML_BASE_VARIANT_STATIC_ASSERT_INDEX_VALIDITY(I);
+        SFML_BASE_PLACEMENT_NEW(m_buffer) SFML_BASE_VARIANT_NTH_TYPE(I){static_cast<Args&&>(args)...};
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Construct an alternative in-place from its type
+    ///
+    /// \param args Arguments forwarded to `T`'s constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename T, typename... Args>
+    [[nodiscard, gnu::always_inline]] explicit Variant(const priv::InPlaceType<T>, Args&&... args) noexcept :
+        Variant{inPlaceIndex<indexOf<T>>, static_cast<Args&&>(args)...}
     {
     }
 
@@ -332,10 +405,8 @@ public:
         : m_index{rhs.m_index}
     {
         SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I,
-                                                SFML_BASE_PLACEMENT_NEW(m_buffer) SFML_BASE_VARIANT_NTH_TYPE(
-                                                    I)(static_cast<const SFML_BASE_VARIANT_NTH_TYPE(I) &>(
-                                                    *SFML_BASE_LAUNDER_CAST(const SFML_BASE_VARIANT_NTH_TYPE(I)*,
-                                                                            rhs.m_buffer))));
+                                                SFML_BASE_PLACEMENT_NEW(m_buffer) SFML_BASE_VARIANT_NTH_TYPE(I)(
+                                                    rhs.template bufferAs<SFML_BASE_VARIANT_NTH_TYPE(I)>()));
     }
 
 
@@ -354,7 +425,7 @@ public:
         SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I,
                                                 SFML_BASE_PLACEMENT_NEW(m_buffer) SFML_BASE_VARIANT_NTH_TYPE(
                                                     I)(static_cast<SFML_BASE_VARIANT_NTH_TYPE(I) &&>(
-                                                    *SFML_BASE_LAUNDER_CAST(SFML_BASE_VARIANT_NTH_TYPE(I)*, rhs.m_buffer))));
+                                                    rhs.template bufferAs<SFML_BASE_VARIANT_NTH_TYPE(I)>())));
     }
 
 
@@ -385,14 +456,23 @@ public:
         if (this == &rhs)
             return *this;
 
-        // TODO P1: should use assignment when types are the same
+        if (m_index == rhs.m_index)
+        {
+            // Same alternative on both sides: delegate to the alternative's copy-assignment.
+            // Safer than destroy+construct (no transient destroyed state) and preserves the
+            // alternative's own self-assignment and exception-safety semantics.
+            SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I,
+                                                    bufferAs<SFML_BASE_VARIANT_NTH_TYPE(
+                                                        I)>() = rhs.template bufferAs<SFML_BASE_VARIANT_NTH_TYPE(I)>());
+            return *this;
+        }
 
         SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I, destroyAt<I>());
 
         SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX_OBJ(rhs,
                                                     I,
                                                     (SFML_BASE_PLACEMENT_NEW(m_buffer) SFML_BASE_VARIANT_NTH_TYPE(I)(
-                                                        rhs.template as<SFML_BASE_VARIANT_NTH_TYPE(I)>())));
+                                                        rhs.template bufferAs<SFML_BASE_VARIANT_NTH_TYPE(I)>())));
         m_index = rhs.m_index;
 
         return *this;
@@ -412,7 +492,14 @@ public:
         if (this == &rhs)
             return *this;
 
-        // TODO P1: should use assignment when types are the same
+        if (m_index == rhs.m_index)
+        {
+            // Same alternative on both sides: delegate to the alternative's move-assignment.
+            SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I,
+                                                    bufferAs<SFML_BASE_VARIANT_NTH_TYPE(I)>() = static_cast<SFML_BASE_VARIANT_NTH_TYPE(
+                                                        I) &&>(rhs.template bufferAs<SFML_BASE_VARIANT_NTH_TYPE(I)>()));
+            return *this;
+        }
 
         SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I, destroyAt<I>());
 
@@ -420,7 +507,7 @@ public:
                                                     I,
                                                     (SFML_BASE_PLACEMENT_NEW(m_buffer) SFML_BASE_VARIANT_NTH_TYPE(
                                                         I)(static_cast<SFML_BASE_VARIANT_NTH_TYPE(I) &&>(
-                                                        rhs.template as<SFML_BASE_VARIANT_NTH_TYPE(I)>()))));
+                                                        rhs.template bufferAs<SFML_BASE_VARIANT_NTH_TYPE(I)>()))));
         m_index = rhs.m_index;
 
         return *this;
@@ -444,9 +531,19 @@ public:
     [[gnu::always_inline]] Variant& operator=(T&& x)
         requires(!isSame<RemoveCVRefIndirect<T>, Variant>)
     {
-        SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I, destroyAt<I>());
-
         using Type = SFML_BASE_REMOVE_CVREF(T);
+
+        if (m_index == indexOf<Type>)
+        {
+            // Same alternative already active: delegate to the alternative's assignment.
+            // Also the only aliasing-safe branch when `x` binds to the currently-held value
+            // (e.g. `v = v.as<Type>()`); a destroy-then-construct sequence would read from
+            // destroyed storage.
+            bufferAs<Type>() = static_cast<T&&>(x);
+            return *this;
+        }
+
+        SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I, destroyAt<I>());
 
         SFML_BASE_PLACEMENT_NEW(m_buffer) Type{static_cast<T&&>(x)};
         m_index = indexOf<Type>;
@@ -464,6 +561,7 @@ public:
     template <typename T>
     [[nodiscard, gnu::always_inline]] bool is() const noexcept
     {
+        SFML_BASE_VARIANT_STATIC_ASSERT_INDEX_VALIDITY(indexOf<T>);
         return m_index == indexOf<T>;
     }
 
@@ -489,6 +587,7 @@ public:
     template <typename T>
     [[nodiscard, gnu::always_inline]] T* getIf() noexcept
     {
+        SFML_BASE_VARIANT_STATIC_ASSERT_INDEX_VALIDITY(indexOf<T>);
         return m_index == indexOf<T> ? SFML_BASE_LAUNDER_CAST(T*, m_buffer) : nullptr;
     }
 
@@ -500,6 +599,7 @@ public:
     template <typename T>
     [[nodiscard, gnu::always_inline]] const T* getIf() const noexcept
     {
+        SFML_BASE_VARIANT_STATIC_ASSERT_INDEX_VALIDITY(indexOf<T>);
         return m_index == indexOf<T> ? SFML_BASE_LAUNDER_CAST(const T*, m_buffer) : nullptr;
     }
 
@@ -511,6 +611,7 @@ public:
     template <typename T>
     [[nodiscard, gnu::always_inline]] T& as() & noexcept
     {
+        SFML_BASE_VARIANT_STATIC_ASSERT_INDEX_VALIDITY(indexOf<T>);
         SFML_BASE_ASSERT(m_index == indexOf<T>);
         return *SFML_BASE_LAUNDER_CAST(T*, m_buffer);
     }
@@ -523,6 +624,7 @@ public:
     template <typename T>
     [[nodiscard, gnu::always_inline]] const T& as() const& noexcept
     {
+        SFML_BASE_VARIANT_STATIC_ASSERT_INDEX_VALIDITY(indexOf<T>);
         SFML_BASE_ASSERT(m_index == indexOf<T>);
         return *SFML_BASE_LAUNDER_CAST(const T*, m_buffer);
     }
@@ -535,6 +637,7 @@ public:
     template <typename T>
     [[nodiscard, gnu::always_inline]] T&& as() && noexcept
     {
+        SFML_BASE_VARIANT_STATIC_ASSERT_INDEX_VALIDITY(indexOf<T>);
         SFML_BASE_ASSERT(m_index == indexOf<T>);
         return static_cast<T&&>(*SFML_BASE_LAUNDER_CAST(T*, m_buffer));
     }
@@ -596,18 +699,7 @@ public:
               typename R = decltype(declVal<Visitor&&>()(declVal<SFML_BASE_ADD_LVALUE_REFERENCE(SFML_BASE_VARIANT_NTH_TYPE(0))>()))>
     [[nodiscard, gnu::always_inline, gnu::flatten]] R recursiveVisit(Visitor&& visitor) &
     {
-        if constexpr (sizeof...(Alternatives) >= 10)
-        {
-            return recursiveVisitImplOpt10<0, R>(static_cast<Visitor&&>(visitor));
-        }
-        else if constexpr (sizeof...(Alternatives) >= 5)
-        {
-            return recursiveVisitImplOpt5<0, R>(static_cast<Visitor&&>(visitor));
-        }
-        else
-        {
-            return recursiveVisitImpl<0, R>(static_cast<Visitor&&>(visitor));
-        }
+        return recursiveVisitDispatch<R>(*this, static_cast<Visitor&&>(visitor));
     }
 
 
@@ -620,18 +712,7 @@ public:
                   declVal<SFML_BASE_ADD_LVALUE_REFERENCE(AddConst<SFML_BASE_VARIANT_NTH_TYPE(0)>)>()))>
     [[nodiscard, gnu::always_inline, gnu::flatten]] R recursiveVisit(Visitor&& visitor) const&
     {
-        if constexpr (sizeof...(Alternatives) >= 10)
-        {
-            return recursiveVisitImplOpt10<0, R>(static_cast<Visitor&&>(visitor));
-        }
-        else if constexpr (sizeof...(Alternatives) >= 5)
-        {
-            return recursiveVisitImplOpt5<0, R>(static_cast<Visitor&&>(visitor));
-        }
-        else
-        {
-            return recursiveVisitImpl<0, R>(static_cast<Visitor&&>(visitor));
-        }
+        return recursiveVisitDispatch<R>(*this, static_cast<Visitor&&>(visitor));
     }
 
 
@@ -681,28 +762,7 @@ public:
               typename R = decltype(declVal<Visitor&&>()(declVal<SFML_BASE_ADD_LVALUE_REFERENCE(SFML_BASE_VARIANT_NTH_TYPE(0))>()))>
     [[nodiscard, gnu::always_inline]] R linearVisit(Visitor&& visitor) &
     {
-        if constexpr (SFML_BASE_IS_REFERENCE(R))
-        {
-            SFML_BASE_REMOVE_CVREF(R) * ret; // NOLINT(cppcoreguidelines-init-variables)
-            SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I, ret = &(visitor(getByIndex<I>())));
-            return static_cast<R>(*ret);
-        }
-        else if constexpr (SFML_BASE_IS_SAME(R, void))
-        {
-            SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I, (visitor(getByIndex<I>())));
-        }
-        else
-        {
-            alignas(R) Byte retBuffer[sizeof(R)];
-
-            SFML_BASE_SCOPE_GUARD({
-                if constexpr (!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(R))
-                    SFML_BASE_LAUNDER_CAST(R*, retBuffer)->~R();
-            });
-
-            SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I, SFML_BASE_PLACEMENT_NEW(retBuffer) R(visitor(getByIndex<I>())));
-            return *(SFML_BASE_LAUNDER_CAST(R*, retBuffer));
-        }
+        return linearVisitDispatch<R>(*this, static_cast<Visitor&&>(visitor));
     }
 
 
@@ -715,28 +775,7 @@ public:
                   declVal<SFML_BASE_ADD_LVALUE_REFERENCE(AddConst<SFML_BASE_VARIANT_NTH_TYPE(0)>)>()))>
     [[nodiscard, gnu::always_inline]] R linearVisit(Visitor&& visitor) const&
     {
-        if constexpr (SFML_BASE_IS_REFERENCE(R))
-        {
-            SFML_BASE_REMOVE_CVREF(R) * ret; // NOLINT(cppcoreguidelines-init-variables)
-            SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I, ret = &(visitor(getByIndex<I>())));
-            return static_cast<R>(*ret);
-        }
-        else if constexpr (SFML_BASE_IS_SAME(R, void))
-        {
-            SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I, (visitor(getByIndex<I>())));
-        }
-        else
-        {
-            alignas(R) Byte retBuffer[sizeof(R)];
-
-            SFML_BASE_SCOPE_GUARD({
-                if constexpr (!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(R))
-                    SFML_BASE_LAUNDER_CAST(R*, retBuffer)->~R();
-            });
-
-            SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I, SFML_BASE_PLACEMENT_NEW(retBuffer) R(visitor(getByIndex<I>())));
-            return *(SFML_BASE_LAUNDER_CAST(R*, retBuffer));
-        }
+        return linearVisitDispatch<R>(*this, static_cast<Visitor&&>(visitor));
     }
 
 
