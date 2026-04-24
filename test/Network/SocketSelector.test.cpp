@@ -171,6 +171,24 @@ TEST_CASE("[Network] sf::SocketSelector")
         // but must not error out.
         CHECK(!moved.wait(sf::milliseconds(25)));
     }
+
+    SECTION("ReadyEntry is default-constructible and zero-initialized")
+    {
+        sf::SocketSelector::ReadyEntry entry;
+        CHECK(entry.socket == nullptr);
+        CHECK(entry.userData == nullptr);
+    }
+
+    SECTION("add with default userData does not cause spurious ready entries")
+    {
+        sf::SocketSelector selector;
+        CHECK(selector.add(*socketOpt));                      // default userData == nullptr
+        CHECK(!selector.wait(sf::milliseconds(25)));          // no traffic
+
+        // Nothing arrived, so the ready lists are empty regardless of userData.
+        CHECK(selector.getReadyToReceive().size() == 0u);
+        CHECK(selector.getReadyToSend().size() == 0u);
+    }
 }
 
 
@@ -385,6 +403,399 @@ TEST_CASE("[Network] sf::SocketSelector (loopback)")
         // After draining, a new wait should time out again.
         CHECK(!selector.wait(sf::milliseconds(50)));
         CHECK(!selector.isReady(receiver));
+    }
+
+    SECTION("getReadyToReceive: empty before wait and after a timed-out wait")
+    {
+        auto receiverOpt = sf::UdpSocket::create(/* isBlocking */ true);
+        REQUIRE(receiverOpt.hasValue());
+        auto& receiver = *receiverOpt;
+        REQUIRE(receiver.bind(sf::Socket::AnyPort, sf::IpAddress::LocalHost) == sf::Socket::Status::Done);
+
+        sf::SocketSelector selector;
+        REQUIRE(selector.add(receiver));
+
+        // Before any `wait`, the ready list must be empty.
+        CHECK(selector.getReadyToReceive().size() == 0u);
+        CHECK(selector.getReadyToSend().size() == 0u);
+
+        // A timed-out `wait` leaves both lists empty.
+        CHECK(!selector.wait(sf::milliseconds(50)));
+        CHECK(selector.getReadyToReceive().size() == 0u);
+        CHECK(selector.getReadyToSend().size() == 0u);
+    }
+
+    SECTION("getReadyToReceive: UDP receiver appears after datagram arrives")
+    {
+        auto receiverOpt = sf::UdpSocket::create(/* isBlocking */ true);
+        REQUIRE(receiverOpt.hasValue());
+
+        auto& receiver = *receiverOpt;
+        REQUIRE(receiver.bind(sf::Socket::AnyPort, sf::IpAddress::LocalHost) == sf::Socket::Status::Done);
+
+        auto senderOpt = sf::UdpSocket::create(/* isBlocking */ true);
+        REQUIRE(senderOpt.hasValue());
+
+        sf::SocketSelector selector;
+        REQUIRE(selector.add(receiver));
+
+        const char payload[] = "payload";
+        REQUIRE(senderOpt->send(payload, sizeof(payload), sf::IpAddress::LocalHost, receiver.getLocalPort()) ==
+                sf::Socket::Status::Done);
+
+        REQUIRE(waitUntil(selector, sf::milliseconds(500), [&] { return selector.getReadyToReceive().size() > 0u; }));
+
+        const auto receiveReady = selector.getReadyToReceive();
+        REQUIRE(receiveReady.size() == 1u);
+        CHECK(receiveReady[0].socket == &receiver);
+
+        // Sockets added for `Receive` must not appear in `getReadyToSend`.
+        CHECK(selector.getReadyToSend().size() == 0u);
+    }
+
+    SECTION("getReadyToReceive / getReadyToSend: only contain sockets that matched their registered direction")
+    {
+        // Two UDP sockets: one registered for read, one for write.
+        // Send nothing: only the send-registered one should show up (UDP sockets are always writable).
+        auto sockAOpt = sf::UdpSocket::create(/* isBlocking */ true);
+        auto sockBOpt = sf::UdpSocket::create(/* isBlocking */ true);
+        REQUIRE(sockAOpt.hasValue());
+        REQUIRE(sockBOpt.hasValue());
+
+        auto& sockA = *sockAOpt;
+        auto& sockB = *sockBOpt;
+
+        REQUIRE(sockA.bind(sf::Socket::AnyPort, sf::IpAddress::LocalHost) == sf::Socket::Status::Done);
+        REQUIRE(sockB.bind(sf::Socket::AnyPort, sf::IpAddress::LocalHost) == sf::Socket::Status::Done);
+
+        sf::SocketSelector selector;
+        REQUIRE(selector.add(sockA));        // Receive
+        REQUIRE(selector.addForSend(sockB)); // Send
+
+        // UDP send buffer has room -> sockB is immediately ready to send, sockA is not.
+        REQUIRE(selector.wait(sf::milliseconds(100)));
+
+        // sockB registered for send only -- appears in getReadyToSend, not getReadyToReceive.
+        const auto sendReady = selector.getReadyToSend();
+        REQUIRE(sendReady.size() == 1u);
+        CHECK(sendReady[0].socket == &sockB);
+
+        // sockA registered for receive only, nothing has been sent to it.
+        CHECK(selector.getReadyToReceive().size() == 0u);
+
+        // Point checks mirror the lists.
+        CHECK(!selector.isReady(sockA));
+        CHECK(selector.isReadyToSend(sockB));
+        // sockB was registered for send only, so `isReady` (which checks Receive) must be false.
+        CHECK(!selector.isReady(sockB));
+    }
+
+    SECTION("addForSend: TCP connect notifies writability")
+    {
+        auto listenerOpt = sf::TcpListener::create(sf::Socket::AnyPort, /* isBlocking */ false);
+        REQUIRE(listenerOpt.hasValue());
+        auto&      listener     = *listenerOpt;
+        const auto listenerPort = listener.getLocalPort();
+
+        auto clientOpt = sf::TcpSocket::create(/* isBlocking */ false);
+        REQUIRE(clientOpt.hasValue());
+        auto& client = *clientOpt;
+
+        // Kick off a non-blocking connect. The socket becomes writable once the handshake completes.
+        const auto status = client.connect(sf::IpAddress(127, 0, 0, 1), listenerPort, sf::milliseconds(750));
+        REQUIRE(((status == sf::Socket::Status::Done) || (status == sf::Socket::Status::NotReady)));
+
+        sf::SocketSelector selector;
+        REQUIRE(selector.addForSend(client));
+
+        REQUIRE(waitUntil(selector, sf::milliseconds(500), [&] { return selector.isReadyToSend(client); }));
+
+        // The client also shows up in the send-ready list.
+        const auto sendReady = selector.getReadyToSend();
+        REQUIRE(sendReady.size() == 1u);
+        CHECK(sendReady[0].socket == &client);
+
+        // Because we did not register for Receive, `isReady` stays false.
+        CHECK(!selector.isReady(client));
+        CHECK(selector.getReadyToReceive().size() == 0u);
+    }
+
+    SECTION("same socket can be registered for both read and write")
+    {
+        auto listenerOpt = sf::TcpListener::create(sf::Socket::AnyPort, /* isBlocking */ false);
+        REQUIRE(listenerOpt.hasValue());
+
+        auto&      listener     = *listenerOpt;
+        const auto listenerPort = listener.getLocalPort();
+
+        auto clientOpt = sf::TcpSocket::create(/* isBlocking */ false);
+        REQUIRE(clientOpt.hasValue());
+
+        auto& client = *clientOpt;
+
+        (void)client.connect(sf::IpAddress(127, 0, 0, 1), listenerPort, sf::milliseconds(750));
+
+        // Accept on the server side so we have a peer to send to us.
+        sf::base::Optional<sf::TcpSocket> serverSocketOpt;
+        const auto                        acceptStart = sf::Clock::now();
+        while (sf::Clock::now() - acceptStart < sf::milliseconds(750))
+        {
+            auto r = listener.accept();
+            if (r.status == sf::Socket::Status::Done)
+            {
+                serverSocketOpt = SFML_BASE_MOVE(r.socket);
+                break;
+            }
+        }
+        REQUIRE(serverSocketOpt.hasValue());
+
+        sf::SocketSelector selector;
+        // Enum-less API: register for both directions by calling both.
+        REQUIRE(selector.add(client));
+        REQUIRE(selector.addForSend(client));
+
+        const char      payload[] = "both";
+        sf::base::SizeT sent{};
+        REQUIRE(serverSocketOpt->send(payload, sizeof(payload), sent) == sf::Socket::Status::Done);
+
+        REQUIRE(waitUntil(selector, sf::milliseconds(500), [&] { return selector.isReady(client); }));
+
+        // Once the peer has sent and the connection is up, the client is ready both ways.
+        CHECK(selector.isReady(client));
+        CHECK(selector.isReadyToSend(client));
+
+        // Both ready lists contain the client exactly once.
+        REQUIRE(selector.getReadyToReceive().size() == 1u);
+        CHECK(selector.getReadyToReceive()[0].socket == &client);
+
+        REQUIRE(selector.getReadyToSend().size() == 1u);
+        CHECK(selector.getReadyToSend()[0].socket == &client);
+    }
+
+    SECTION("add and addForSend are idempotent and compose")
+    {
+        auto sockOpt = sf::UdpSocket::create(/* isBlocking */ true);
+        REQUIRE(sockOpt.hasValue());
+
+        auto& sock = *sockOpt;
+        REQUIRE(sock.bind(sf::Socket::AnyPort, sf::IpAddress::LocalHost) == sf::Socket::Status::Done);
+
+        sf::SocketSelector selector;
+
+        // Only addForSend -> only send-ready (UDP send buffer is always available).
+        REQUIRE(selector.addForSend(sock));
+        REQUIRE(selector.wait(sf::milliseconds(100)));
+        CHECK(selector.getReadyToSend().size() == 1u);
+        CHECK(selector.getReadyToReceive().size() == 0u);
+
+        // addForSend again is a no-op.
+        REQUIRE(selector.addForSend(sock));
+        REQUIRE(selector.wait(sf::milliseconds(100)));
+        CHECK(selector.getReadyToSend().size() == 1u);
+        CHECK(selector.getReadyToReceive().size() == 0u);
+
+        // Add receive-watching too: write registration stays, read is added.
+        REQUIRE(selector.add(sock));
+        REQUIRE(selector.wait(sf::milliseconds(100)));
+        CHECK(selector.getReadyToSend().size() == 1u);
+        // Nothing sent to `sock`, so readToReceive is still empty.
+        CHECK(selector.getReadyToReceive().size() == 0u);
+
+        // After `remove`, both readiness types are gone.
+        REQUIRE(selector.remove(sock));
+        CHECK(!selector.wait(sf::milliseconds(50)));
+        CHECK(selector.getReadyToSend().size() == 0u);
+        CHECK(selector.getReadyToReceive().size() == 0u);
+    }
+
+    SECTION("remove drops the socket from subsequent ready lists and point checks")
+    {
+        auto receiverOpt = sf::UdpSocket::create(/* isBlocking */ true);
+        REQUIRE(receiverOpt.hasValue());
+        auto& receiver = *receiverOpt;
+        REQUIRE(receiver.bind(sf::Socket::AnyPort, sf::IpAddress::LocalHost) == sf::Socket::Status::Done);
+
+        auto senderOpt = sf::UdpSocket::create(/* isBlocking */ true);
+        REQUIRE(senderOpt.hasValue());
+
+        sf::SocketSelector selector;
+        REQUIRE(selector.add(receiver));
+
+        const char payload[] = "x";
+        REQUIRE(senderOpt->send(payload, sizeof(payload), sf::IpAddress::LocalHost, receiver.getLocalPort()) ==
+                sf::Socket::Status::Done);
+
+        REQUIRE(waitUntil(selector, sf::milliseconds(500), [&] { return selector.getReadyToReceive().size() > 0u; }));
+        REQUIRE(selector.getReadyToReceive().size() == 1u);
+
+        // Now remove. The cached ready list must drop `receiver` immediately, and a fresh wait must not report it.
+        REQUIRE(selector.remove(receiver));
+        CHECK(selector.getReadyToReceive().size() == 0u);
+        CHECK(!selector.isReady(receiver));
+
+        CHECK(!selector.wait(sf::milliseconds(50)));
+        CHECK(selector.getReadyToReceive().size() == 0u);
+    }
+
+    SECTION("userData: default (nullptr) is reported back on ready entries")
+    {
+        auto receiverOpt = sf::UdpSocket::create(/* isBlocking */ true);
+        REQUIRE(receiverOpt.hasValue());
+        auto& receiver = *receiverOpt;
+        REQUIRE(receiver.bind(sf::Socket::AnyPort, sf::IpAddress::LocalHost) == sf::Socket::Status::Done);
+
+        auto senderOpt = sf::UdpSocket::create(/* isBlocking */ true);
+        REQUIRE(senderOpt.hasValue());
+
+        sf::SocketSelector selector;
+        // Default userData -- don't pass anything.
+        REQUIRE(selector.add(receiver));
+
+        const char payload[] = "default";
+        REQUIRE(senderOpt->send(payload, sizeof(payload), sf::IpAddress::LocalHost, receiver.getLocalPort()) ==
+                sf::Socket::Status::Done);
+
+        REQUIRE(waitUntil(selector, sf::milliseconds(500), [&] { return selector.getReadyToReceive().size() > 0u; }));
+
+        const auto ready = selector.getReadyToReceive();
+        REQUIRE(ready.size() == 1u);
+        CHECK(ready[0].socket == &receiver);
+        CHECK(ready[0].userData == nullptr); // Not passed at add time -> nullptr.
+    }
+
+    SECTION("userData: non-null pointer is delivered back on ready entries")
+    {
+        // A trivial owner-like object the user attaches to each socket.
+        struct Owner
+        {
+            int tag;
+        };
+
+        auto recvAOpt = sf::UdpSocket::create(/* isBlocking */ true);
+        auto recvBOpt = sf::UdpSocket::create(/* isBlocking */ true);
+        REQUIRE(recvAOpt.hasValue());
+        REQUIRE(recvBOpt.hasValue());
+
+        auto& recvA = *recvAOpt;
+        auto& recvB = *recvBOpt;
+
+        REQUIRE(recvA.bind(sf::Socket::AnyPort, sf::IpAddress::LocalHost) == sf::Socket::Status::Done);
+        REQUIRE(recvB.bind(sf::Socket::AnyPort, sf::IpAddress::LocalHost) == sf::Socket::Status::Done);
+
+        Owner ownerA{/* .tag = */ 1};
+        Owner ownerB{/* .tag = */ 2};
+
+        sf::SocketSelector selector;
+        REQUIRE(selector.add(recvA, &ownerA));
+        REQUIRE(selector.add(recvB, &ownerB));
+
+        auto senderOpt = sf::UdpSocket::create(/* isBlocking */ true);
+        REQUIRE(senderOpt.hasValue());
+
+        // Send to recvA only -- it should be the only one reported ready, with its matching userData.
+        const char payload[] = "a";
+        REQUIRE(senderOpt->send(payload, sizeof(payload), sf::IpAddress::LocalHost, recvA.getLocalPort()) ==
+                sf::Socket::Status::Done);
+
+        REQUIRE(waitUntil(selector, sf::milliseconds(500), [&] { return selector.getReadyToReceive().size() > 0u; }));
+
+        const auto ready = selector.getReadyToReceive();
+        REQUIRE(ready.size() == 1u);
+        CHECK(ready[0].socket == &recvA);
+        REQUIRE(ready[0].userData != nullptr);
+
+        // Recover the owner through the opaque userData pointer the selector handed back.
+        CHECK(static_cast<Owner*>(ready[0].userData) == &ownerA);
+        CHECK(static_cast<Owner*>(ready[0].userData)->tag == 1);
+    }
+
+    SECTION("userData: re-adding the same socket replaces the stored userData")
+    {
+        auto sockOpt = sf::UdpSocket::create(/* isBlocking */ true);
+        REQUIRE(sockOpt.hasValue());
+        auto& sock = *sockOpt;
+        REQUIRE(sock.bind(sf::Socket::AnyPort, sf::IpAddress::LocalHost) == sf::Socket::Status::Done);
+
+        int firstData  = 11;
+        int secondData = 22;
+
+        sf::SocketSelector selector;
+
+        // First registration -- attach firstData. UDP socket is immediately writable; also watch for send so we can trigger a wait.
+        REQUIRE(selector.addForSend(sock, &firstData));
+        REQUIRE(selector.wait(sf::milliseconds(100)));
+        {
+            const auto ready = selector.getReadyToSend();
+            REQUIRE(ready.size() == 1u);
+            CHECK(ready[0].userData == &firstData);
+        }
+
+        // Re-register for send with a different userData -- new value must win.
+        REQUIRE(selector.addForSend(sock, &secondData));
+        REQUIRE(selector.wait(sf::milliseconds(100)));
+        {
+            const auto ready = selector.getReadyToSend();
+            REQUIRE(ready.size() == 1u);
+            CHECK(ready[0].userData == &secondData);
+        }
+
+        // Re-register with default userData (nullptr) -- the stored value follows the call.
+        REQUIRE(selector.addForSend(sock));
+        REQUIRE(selector.wait(sf::milliseconds(100)));
+        {
+            const auto ready = selector.getReadyToSend();
+            REQUIRE(ready.size() == 1u);
+            CHECK(ready[0].userData == nullptr);
+        }
+    }
+
+    SECTION("userData: add() and addForSend() share the same per-socket slot")
+    {
+        auto listenerOpt = sf::TcpListener::create(sf::Socket::AnyPort, /* isBlocking */ false);
+        REQUIRE(listenerOpt.hasValue());
+        auto&      listener     = *listenerOpt;
+        const auto listenerPort = listener.getLocalPort();
+
+        auto clientOpt = sf::TcpSocket::create(/* isBlocking */ false);
+        REQUIRE(clientOpt.hasValue());
+        auto& client = *clientOpt;
+
+        (void)client.connect(sf::IpAddress(127, 0, 0, 1), listenerPort, sf::milliseconds(750));
+
+        // Accept on the server side so we get a peer that can send to us.
+        sf::base::Optional<sf::TcpSocket> serverSocketOpt;
+        const auto                        acceptStart = sf::Clock::now();
+        while (sf::Clock::now() - acceptStart < sf::milliseconds(750))
+        {
+            auto r = listener.accept();
+            if (r.status == sf::Socket::Status::Done)
+            {
+                serverSocketOpt = SFML_BASE_MOVE(r.socket);
+                break;
+            }
+        }
+        REQUIRE(serverSocketOpt.hasValue());
+
+        int tag = 99;
+
+        sf::SocketSelector selector;
+        // Register for read with `tag`, then for write WITHOUT userData:
+        // second call replaces userData back to nullptr, per documented semantics.
+        REQUIRE(selector.add(client, &tag));
+        REQUIRE(selector.addForSend(client));
+
+        const char      payload[] = "both";
+        sf::base::SizeT sent{};
+        REQUIRE(serverSocketOpt->send(payload, sizeof(payload), sent) == sf::Socket::Status::Done);
+
+        REQUIRE(waitUntil(selector, sf::milliseconds(500), [&] { return selector.isReady(client); }));
+
+        // Both ready lists report the same per-socket userData -- nullptr after the last addForSend().
+        REQUIRE(selector.getReadyToReceive().size() == 1u);
+        CHECK(selector.getReadyToReceive()[0].userData == nullptr);
+
+        REQUIRE(selector.getReadyToSend().size() == 1u);
+        CHECK(selector.getReadyToSend()[0].userData == nullptr);
     }
 }
 
