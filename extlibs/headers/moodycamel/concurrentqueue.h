@@ -78,7 +78,6 @@
 #include <climits>		// for CHAR_BIT
 #include <array>
 
-
 #if __has_include(<bits/std_thread.h>) && __has_include(<bits/this_thread_sleep.h>)
 
     #include <bits/std_thread.h>
