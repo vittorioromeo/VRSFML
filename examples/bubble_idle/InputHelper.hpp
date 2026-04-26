@@ -2,7 +2,6 @@
 
 #include "InputState.hpp"
 
-#include "SFML/Window/Event.hpp"
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/Mouse.hpp"
 
@@ -11,6 +10,12 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
+
+
+namespace sf
+{
+class Event;
+}
 
 
 ////////////////////////////////////////////////////////////
@@ -29,10 +34,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    void applyEvent(const sf::Event& event)
-    {
-        m_currentInputState.apply(event);
-    }
+    void applyEvent(const sf::Event& event);
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::pure]] bool isKeyDown(const sf::Keyboard::Key key) const
