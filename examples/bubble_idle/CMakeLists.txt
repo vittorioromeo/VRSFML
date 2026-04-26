@@ -2,6 +2,8 @@
 if (NOT SFML_OS_EMSCRIPTEN AND NOT ARCH_ARM64)
     set(SRC BubbleIdle.cpp
             BubbleIdleMain.cpp
+            InputHelper.cpp
+            InputState.cpp
             Serialization.cpp
             Steam.cpp
             CatNames.cpp
@@ -47,6 +49,8 @@ if (NOT SFML_OS_EMSCRIPTEN AND NOT ARCH_ARM64)
 else()
     set(SRC BubbleIdle.cpp
             BubbleIdleMain.cpp
+            InputHelper.cpp
+            InputState.cpp
             Serialization.cpp
             CatNames.cpp
             MainApp.cpp
