@@ -1,6 +1,7 @@
 # all source files
 if (NOT SFML_OS_EMSCRIPTEN AND NOT ARCH_ARM64)
     set(SRC BubbleIdle.cpp
+            BubbleIdleMain.cpp
             Serialization.cpp
             Steam.cpp
             CatNames.cpp
@@ -45,6 +46,7 @@ if (NOT SFML_OS_EMSCRIPTEN AND NOT ARCH_ARM64)
     add_definitions(-DBUBBLEBYTE_USE_STEAMWORKS=1)
 else()
     set(SRC BubbleIdle.cpp
+            BubbleIdleMain.cpp
             Serialization.cpp
             CatNames.cpp
             MainApp.cpp

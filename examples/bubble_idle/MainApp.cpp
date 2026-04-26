@@ -4,6 +4,7 @@
 #include "BubbleIdleMain.hpp"
 #include "Steam.hpp"
 
+#include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
 
 #include "SFML/System/IO.hpp"
