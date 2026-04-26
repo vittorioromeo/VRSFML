@@ -15,6 +15,7 @@
 #include "ParticleType.hpp"
 #include "Shrine.hpp"
 #include "ShrineType.hpp"
+#include "SweepAndPrune.hpp"
 
 #include "ExampleUtils/ControlFlow.hpp"
 #include "ExampleUtils/Easing.hpp"
@@ -168,7 +169,7 @@ void Main::gameLoopUpdateCollisionsBubbleBubble(const float deltaTimeMs)
     };
 
     const sf::base::SizeT nWorkers = threadPool.getWorkerCount();
-    sweepAndPrune.forEachUniqueIndexPair(nWorkers, threadPool, func);
+    sweepAndPrune->forEachUniqueIndexPair(nWorkers, threadPool, func);
 }
 
 

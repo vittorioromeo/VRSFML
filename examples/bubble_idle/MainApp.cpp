@@ -9,6 +9,7 @@
 #include "RNGSeedType.hpp"
 #include "Serialization.hpp"
 #include "Steam.hpp"
+#include "SweepAndPrune.hpp"
 
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Font.hpp"
@@ -430,6 +431,7 @@ Main::Main() :
     txrMMDuck(addImgResourceToAtlas("mmduck.png")),
     txrMMShrine(addImgResourceToAtlas("mmshrine.png")),
     txrCloud(addImgResourceToAtlas("cloud.png")),
+    sweepAndPrune(sf::base::makeUnique<SweepAndPrune>()),
     seed(static_cast<RNGSeedType>(sf::Clock::now().asMicroseconds())),
     shuffledCatNamesPerType(makeShuffledCatNames(rng)),
     threadPool(getTPWorkerCount()),
