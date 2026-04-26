@@ -72,7 +72,6 @@ private:
     {
         Normal,
         Instanced,
-        InstancedPrecomputed,
     };
 
     ////////////////////////////////////////////////////////////
@@ -106,20 +105,11 @@ private:
     sf::VBOHandle                                   m_instanceVBO;
 
     ////////////////////////////////////////////////////////////
-    // Instanced rendering resources (precomputed cos/sin variant)
-    ////////////////////////////////////////////////////////////
-    sf::base::Optional<sf::Shader>                  m_instancedPrecomputedShader;
-    sf::base::Optional<sf::Shader::UniformLocation> m_ulInvTexSizePrecomputed;
-    sf::VAOHandle                                   m_vaoHandlePrecomputed;
-    sf::VBOHandle                                   m_instanceVBOPrecomputed;
-
-    ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::Rect2f              addImgToAtlasWithRotatedHue(const sf::Path& path, float hueDegrees);
     [[nodiscard]] static sf::base::String toDigitSeparatedString(sf::base::SizeT value);
 
     ////////////////////////////////////////////////////////////
     void drawInstanced();
-    void drawInstancedPrecomputed();
 
 public:
     ////////////////////////////////////////////////////////////

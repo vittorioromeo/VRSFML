@@ -25,7 +25,6 @@
 
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Constants.hpp"
-#include "SFML/Base/Math/Cos.hpp"
 #include "SFML/Base/Math/Sin.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Span.hpp"
@@ -61,50 +60,6 @@ void main()
 
     float c = cos(instance_rotation);
     float s = sin(instance_rotation);
-    float x = local.x * c - local.y * s;
-    float y = local.x * s + local.y * c;
-    vec2 worldPos = instance_position + instance_scale * vec2(x, y);
-
-    gl_Position = vec4(dot(sf_u_mvpRow0, vec3(worldPos, 1.0)),
-                       dot(sf_u_mvpRow1, vec3(worldPos, 1.0)), 0.0, 1.0);
-
-    sf_v_color = vec4(1.0, 1.0, 1.0, 1.0);
-
-    vec2 final_texCoord = instance_texRectPos + (sf_a_texCoord * instance_texRectSize);
-    sf_v_texCoord = final_texCoord * sf_u_invTextureSize;
-}
-
-)glsl";
-
-
-////////////////////////////////////////////////////////////
-constexpr const char* bunnyInstancedPrecomputedVertexShader = R"glsl(
-
-layout(location = 0) uniform vec3 sf_u_mvpRow0;
-layout(location = 1) uniform vec3 sf_u_mvpRow1;
-layout(location = 2) uniform sampler2D sf_u_texture;
-layout(location = 3) uniform vec2 sf_u_invTextureSize;
-
-layout(location = 0) in vec2 sf_a_position;
-layout(location = 1) in vec4 sf_a_color;
-layout(location = 2) in vec2 sf_a_texCoord;
-
-// Per-instance attributes (rotation precomputed as cos/sin on the CPU)
-layout(location = 3) in vec2 instance_position;
-layout(location = 4) in float instance_scale;
-layout(location = 5) in vec2 instance_cosSin;
-layout(location = 6) in vec2 instance_texRectPos;
-layout(location = 7) in vec2 instance_texRectSize;
-
-out vec4 sf_v_color;
-out vec2 sf_v_texCoord;
-
-void main()
-{
-    vec2 local = sf_a_position * instance_texRectSize;
-
-    float c = instance_cosSin.x;
-    float s = instance_cosSin.y;
     float x = local.x * c - local.y * s;
     float y = local.x * s + local.y * c;
     vec2 worldPos = instance_position + instance_scale * vec2(x, y);
@@ -163,14 +118,6 @@ ExampleBunnyMark::ExampleBunnyMark(const GameDependencies& deps, sf::TextureAtla
 
     m_ulInvTexSize.emplace(m_instancedShader->getUniformLocation("sf_u_invTextureSize").value());
     m_instancedShader->setUniform(*m_ulInvTexSize, 1.f / m_textureAtlas.getTexture().getSize().toVec2f());
-
-    // Set up instanced rendering shader (precomputed cos/sin variant)
-    m_instancedPrecomputedShader.emplace(
-        sf::Shader::loadFromMemory({.vertexCode = bunnyInstancedPrecomputedVertexShader}).value());
-
-    m_ulInvTexSizePrecomputed.emplace(m_instancedPrecomputedShader->getUniformLocation("sf_u_invTextureSize").value());
-    m_instancedPrecomputedShader->setUniform(*m_ulInvTexSizePrecomputed,
-                                             1.f / m_textureAtlas.getTexture().getSize().toVec2f());
 }
 
 
@@ -281,60 +228,11 @@ void ExampleBunnyMark::drawInstanced()
 
 
 ////////////////////////////////////////////////////////////
-void ExampleBunnyMark::drawInstancedPrecomputed()
-{
-    const auto  nBunnies = m_bunnies.size();
-    const float scaleMul = m_scaleMultiplier;
-
-    m_instanceDataPrecomputed.resize(nBunnies);
-
-    for (sf::base::SizeT i = 0u; i < nBunnies; ++i)
-    {
-        const auto& [position, velocity, rotation, scale] = m_bunnies[i];
-        const auto& txr                                   = m_bunnyTextureRects[i % 8u];
-
-        const float r = rotation.asRadians();
-        m_instanceDataPrecomputed[i] = {position,
-                                        scale * scaleMul,
-                                        {sf::base::cos(r), sf::base::sin(r)},
-                                        txr.position,
-                                        txr.size};
-    }
-
-    auto setupAttribs = [&](sf::InstanceAttributeBinder& binder)
-    {
-        binder.uploadContiguousData(m_instanceVBOPrecomputed, m_instanceDataPrecomputed);
-
-        binder.setupField<&BunnyInstanceDataPrecomputed::position>(3);
-        binder.setupField<&BunnyInstanceDataPrecomputed::scale>(4);
-        binder.setupField<&BunnyInstanceDataPrecomputed::cosSin>(5);
-        binder.setupField<&BunnyInstanceDataPrecomputed::texRectPos>(6);
-        binder.setupField<&BunnyInstanceDataPrecomputed::texRectSize>(7);
-    };
-
-    m_deps.rtGame->drawInstancedIndexedVertices(
-        {
-            .vaoHandle     = m_vaoHandlePrecomputed,
-            .vertexSpan    = sf::instancedQuadVertices,
-            .indexSpan     = sf::instancedQuadIndices,
-            .instanceCount = nBunnies,
-            .primitiveType = sf::PrimitiveType::Triangles,
-        },
-        setupAttribs,
-        {.view = *m_deps.view, .texture = &m_textureAtlas.getTexture(), .shader = &*m_instancedPrecomputedShader});
-}
-
-
-////////////////////////////////////////////////////////////
 void ExampleBunnyMark::draw()
 {
     if (m_drawMode == DrawMode::Instanced)
     {
         drawInstanced();
-    }
-    else if (m_drawMode == DrawMode::InstancedPrecomputed)
-    {
-        drawInstancedPrecomputed();
     }
     else
     {
