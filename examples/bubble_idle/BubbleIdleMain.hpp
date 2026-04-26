@@ -30,7 +30,6 @@
 #include "Shrine.hpp"
 #include "ShrineType.hpp"
 #include "Sounds.hpp"
-#include "SweepAndPrune.hpp"
 #include "TextEffectWiggle.hpp"
 #include "TextParticle.hpp"
 #include "TextShakeEffect.hpp"
@@ -102,6 +101,7 @@
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/ThreadPool.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #include <cstdio>
@@ -121,6 +121,10 @@
 
 ////////////////////////////////////////////////////////////<
 extern bool debugMode;
+
+
+////////////////////////////////////////////////////////////
+class SweepAndPrune;
 
 
 ////////////////////////////////////////////////////////////
@@ -827,8 +831,10 @@ struct Main
                        .outlineThickness = 3.f}};
 
     ////////////////////////////////////////////////////////////
-    // Spatial partitioning
-    SweepAndPrune sweepAndPrune;
+    // Spatial partitioning (PImpl: full type only needed in `MainApp.cpp`,
+    // `GameUpdate.cpp`, and `MainGameplay.cpp` -- keeps `<atomic>` from
+    // being dragged into every TU including this header)
+    sf::base::UniquePtr<SweepAndPrune> sweepAndPrune;
 
     ////////////////////////////////////////////////////////////
     // Particles

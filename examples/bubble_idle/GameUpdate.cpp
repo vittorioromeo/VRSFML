@@ -2,6 +2,7 @@
 #include "Cat.hpp"
 #include "Countdown.hpp"
 #include "PlayerInput.hpp"
+#include "SweepAndPrune.hpp"
 
 #include "ExampleUtils/ProfilerImGui.hpp"
 
@@ -19,7 +20,7 @@ void Main::gameLoopUpdateFrameWorld(const float realDeltaTimeMs, FrameInput& fra
 
     gameLoopUpdateTransitions(deltaTimeMs);
 
-    sweepAndPrune.populate(pt->bubbles);
+    sweepAndPrune->populate(pt->bubbles);
 
     frameProcThisFrame = (frameProcCd.updateAndLoop(deltaTimeMs, 20.f) == CountdownStatusLoop::Looping);
 
