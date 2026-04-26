@@ -9,87 +9,138 @@
 
 #include "SFML/System/Rect2.hpp"
 
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
+#include "SFML/Base/ToChars.hpp"
+#include "SFML/Base/Trait/IsFloatingPoint.hpp"
 
-#include <limits>
-#include <ostream>
 
-
-namespace sf
+namespace
 {
-std::ostream& operator<<(std::ostream& os, const BlendMode& blendMode)
+////////////////////////////////////////////////////////////
+doctest::String floatToString(const float value, const int precision = 6)
 {
-    return os << "( " << static_cast<int>(blendMode.colorSrcFactor) << ", "
-              << static_cast<int>(blendMode.colorDstFactor) << ", " << static_cast<int>(blendMode.colorEquation) << ", "
-              << static_cast<int>(blendMode.alphaSrcFactor) << ", " << static_cast<int>(blendMode.alphaDstFactor)
-              << ", " << static_cast<int>(blendMode.alphaEquation) << " )";
+    char       buf[64];
+    char*      end = sf::base::toChars(buf, buf + sizeof(buf), value, precision);
+    const auto len = static_cast<doctest::String::size_type>(end - buf);
+    return {buf, len};
 }
 
-std::ostream& operator<<(std::ostream& os, const StencilComparison& comparison)
+
+////////////////////////////////////////////////////////////
+template <typename T>
+doctest::String intToString(const T value)
+{
+    char       buf[32];
+    char*      end = sf::base::toChars(buf, buf + sizeof(buf), value);
+    const auto len = static_cast<doctest::String::size_type>(end - buf);
+    return {buf, len};
+}
+
+
+////////////////////////////////////////////////////////////
+doctest::String hexToString(const sf::base::U32 value)
+{
+    char buf[10];
+    buf[0]    = '0';
+    buf[1]    = 'x';
+    int shift = 32;
+    int pos   = 2;
+    do
+    {
+        shift -= 4;
+        const unsigned nibble = (value >> shift) & 0xFu;
+        buf[pos++]            = static_cast<char>(nibble < 10 ? '0' + nibble : 'a' + (nibble - 10));
+    } while (shift > 0);
+    return {buf, static_cast<doctest::String::size_type>(pos)};
+}
+
+} // namespace
+
+
+namespace doctest
+{
+////////////////////////////////////////////////////////////
+String StringMaker<sf::BlendMode>::convert(const sf::BlendMode& blendMode)
+{
+    return String("( ") + intToString(static_cast<int>(blendMode.colorSrcFactor)) + ", " +
+           intToString(static_cast<int>(blendMode.colorDstFactor)) + ", " +
+           intToString(static_cast<int>(blendMode.colorEquation)) + ", " +
+           intToString(static_cast<int>(blendMode.alphaSrcFactor)) + ", " +
+           intToString(static_cast<int>(blendMode.alphaDstFactor)) + ", " +
+           intToString(static_cast<int>(blendMode.alphaEquation)) + " )";
+}
+
+
+////////////////////////////////////////////////////////////
+String StringMaker<sf::StencilComparison>::convert(const sf::StencilComparison comparison)
 {
     switch (comparison)
     {
-        case StencilComparison::Never:
-            return os << "Never";
-        case StencilComparison::Less:
-            return os << "Less";
-        case StencilComparison::LessEqual:
-            return os << "LessEqual";
-        case StencilComparison::Greater:
-            return os << "Greater";
-        case StencilComparison::GreaterEqual:
-            return os << "GreaterEqual";
-        case StencilComparison::Equal:
-            return os << "Equal";
-        case StencilComparison::NotEqual:
-            return os << "NotEqual";
-        case StencilComparison::Always:
-            return os << "Always";
+        case sf::StencilComparison::Never:
+            return "Never";
+        case sf::StencilComparison::Less:
+            return "Less";
+        case sf::StencilComparison::LessEqual:
+            return "LessEqual";
+        case sf::StencilComparison::Greater:
+            return "Greater";
+        case sf::StencilComparison::GreaterEqual:
+            return "GreaterEqual";
+        case sf::StencilComparison::Equal:
+            return "Equal";
+        case sf::StencilComparison::NotEqual:
+            return "NotEqual";
+        case sf::StencilComparison::Always:
+            return "Always";
     }
-
-    return os;
+    return "";
 }
 
-std::ostream& operator<<(std::ostream& os, const StencilUpdateOperation& updateOperation)
+
+////////////////////////////////////////////////////////////
+String StringMaker<sf::StencilUpdateOperation>::convert(const sf::StencilUpdateOperation updateOperation)
 {
     switch (updateOperation)
     {
-        case StencilUpdateOperation::Keep:
-            return os << "Keep";
-        case StencilUpdateOperation::Zero:
-            return os << "Zero";
-        case StencilUpdateOperation::Replace:
-            return os << "Replace";
-        case StencilUpdateOperation::Increment:
-            return os << "Increment";
-        case StencilUpdateOperation::Decrement:
-            return os << "Decrement";
-        case StencilUpdateOperation::Invert:
-            return os << "Invert";
+        case sf::StencilUpdateOperation::Keep:
+            return "Keep";
+        case sf::StencilUpdateOperation::Zero:
+            return "Zero";
+        case sf::StencilUpdateOperation::Replace:
+            return "Replace";
+        case sf::StencilUpdateOperation::Increment:
+            return "Increment";
+        case sf::StencilUpdateOperation::Decrement:
+            return "Decrement";
+        case sf::StencilUpdateOperation::Invert:
+            return "Invert";
     }
-
-    return os;
+    return "";
 }
 
-std::ostream& operator<<(std::ostream& os, const StencilMode& stencilMode)
+
+////////////////////////////////////////////////////////////
+String StringMaker<sf::StencilMode>::convert(const sf::StencilMode& stencilMode)
 {
-    return os << "( " << stencilMode.stencilComparison << ", " << stencilMode.stencilUpdateOperation << ", "
-              << stencilMode.stencilOnly << ", " << stencilMode.stencilReference.value << ", "
-              << stencilMode.stencilMask.value << " )";
+    return String("( ") + StringMaker<sf::StencilComparison>::convert(stencilMode.stencilComparison) + ", " +
+           StringMaker<sf::StencilUpdateOperation>::convert(stencilMode.stencilUpdateOperation) + ", " +
+           (stencilMode.stencilOnly ? "true" : "false") + ", " +
+           intToString(static_cast<unsigned int>(stencilMode.stencilReference.value)) + ", " +
+           intToString(static_cast<unsigned int>(stencilMode.stencilMask.value)) + " )";
 }
 
-std::ostream& operator<<(std::ostream& os, Color color)
+
+////////////////////////////////////////////////////////////
+String StringMaker<sf::Color>::convert(const sf::Color color)
 {
-    return os << "0x" << std::hex << color.toInteger() << std::dec << " (r=" << int{color.r} << ", g=" << int{color.g}
-              << ", b=" << int{color.b} << ", a=" << int{color.a} << ")";
+    return hexToString(color.toInteger()) + " (r=" + intToString(int{color.r}) + ", g=" + intToString(int{color.g}) +
+           ", b=" + intToString(int{color.b}) + ", a=" + intToString(int{color.a}) + ")";
 }
 
-std::ostream& operator<<(std::ostream& os, Approx<Color> color)
-{
-    return os << color.value;
-}
 
-std::ostream& operator<<(std::ostream& os, const Transform& transform)
+////////////////////////////////////////////////////////////
+String StringMaker<sf::Transform>::convert(const sf::Transform& transform)
 {
     // clang-format off
     float matrix[]{{},  {},  0.f, 0.f,
@@ -100,34 +151,66 @@ std::ostream& operator<<(std::ostream& os, const Transform& transform)
 
     transform.writeTo4x4Matrix(matrix);
 
-    os << matrix[0] << ", " << matrix[4] << ", " << matrix[12] << ", ";
-    os << matrix[1] << ", " << matrix[5] << ", " << matrix[13] << ", ";
-    os << matrix[3] << ", " << matrix[7] << ", " << matrix[15];
-
-    return os;
+    return floatToString(matrix[0]) + ", " + floatToString(matrix[4]) + ", " + floatToString(matrix[12]) + ", " +
+           floatToString(matrix[1]) + ", " + floatToString(matrix[5]) + ", " + floatToString(matrix[13]) + ", " +
+           floatToString(matrix[3]) + ", " + floatToString(matrix[7]) + ", " + floatToString(matrix[15]);
 }
 
-std::ostream& operator<<(std::ostream& os, const View& view)
+
+////////////////////////////////////////////////////////////
+namespace
 {
-    return os << "( center=" << view.center << ", size=" << view.size << ", rotation=" << view.rotation
-              << ", viewport=" << view.viewport << ", scissor=" << view.scissor << " )";
+doctest::String vec2ToString(const sf::Vec2<float> v)
+{
+    return doctest::String("(") + floatToString(v.x) + ", " + floatToString(v.y) + ")";
 }
 
 template <typename T>
-std::ostream& operator<<(std::ostream& os, const Rect2<T>& rect)
+doctest::String rectToString(const sf::Rect2<T>& rect)
 {
-    const auto flags = os.flags();
-    setStreamPrecision(os, std::numeric_limits<T>::max_digits10);
-    os << "(position=" << rect.position << ", size=" << rect.size << ")";
-    os.flags(flags);
-    return os;
+    if constexpr (sf::base::isFloatingPoint<T>)
+        return doctest::String("(position=(") + floatToString(rect.position.x) + ", " + floatToString(rect.position.y) +
+               "), size=(" + floatToString(rect.size.x) + ", " + floatToString(rect.size.y) + "))";
+    else
+        return doctest::String("(position=(") + intToString(rect.position.x) + ", " + intToString(rect.position.y) +
+               "), size=(" + intToString(rect.size.x) + ", " + intToString(rect.size.y) + "))";
+}
+} // namespace
+
+
+////////////////////////////////////////////////////////////
+String StringMaker<sf::View>::convert(const sf::View& view)
+{
+    return String("( center=") + vec2ToString(view.center) + ", size=" + vec2ToString(view.size) +
+           ", rotation=" + floatToString(view.rotation.asDegrees()) + " deg" +
+           ", viewport=" + rectToString(view.viewport) + ", scissor=" + rectToString(view.scissor) + " )";
 }
 
-template std::ostream& operator<<(std::ostream&, const Rect2<int>&);
-template std::ostream& operator<<(std::ostream&, const Rect2<float>&);
 
-} // namespace sf
+////////////////////////////////////////////////////////////
+template <typename T>
+String StringMaker<sf::Rect2<T>>::convert(const sf::Rect2<T>& rect)
+{
+    return rectToString(rect);
+}
 
+
+////////////////////////////////////////////////////////////
+String StringMaker<sf::View::ScissorRect>::convert(const sf::View::ScissorRect& scissorRect)
+{
+    return rectToString(static_cast<const sf::Rect2<float>&>(scissorRect));
+}
+
+
+////////////////////////////////////////////////////////////
+// Explicit instantiations for the rect types actually used by tests.
+template struct StringMaker<sf::Rect2<int>>;
+template struct StringMaker<sf::Rect2<float>>;
+
+} // namespace doctest
+
+
+////////////////////////////////////////////////////////////
 bool operator==(const sf::Transform& lhs, const Approx<sf::Transform>& rhs)
 {
     // clang-format off
@@ -152,6 +235,8 @@ bool operator==(const sf::Transform& lhs, const Approx<sf::Transform>& rhs)
            lhsMatrix[15] == Approx(rhsMatrix[15]);
 }
 
+
+////////////////////////////////////////////////////////////
 bool operator==(const sf::Color& lhs, const Approx<sf::Color>& rhs)
 {
     return sf::base::fabs(static_cast<float>(lhs.r - rhs.value.r)) < 2.f &&

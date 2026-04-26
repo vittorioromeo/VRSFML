@@ -1,22 +1,28 @@
 // Header for SFML unit tests.
 //
 // For a new system module test case, include this header.
-// This ensures that string conversions are visible and can be used by Catch2 for debug output.
+// This specializes `doctest::StringMaker` so doctest can stringify
+// SFML types for failure output without dragging `<ostream>`.
 
 #pragma once
 
-#include <iosfwd>
 
-// String conversions for Catch2
+#include <DoctestFwd.hpp>
+
+
+// Forward declarations
 namespace sf::base
 {
+class String;
+
 template <typename T, typename TDeleter>
 class UniquePtr;
-}
+} // namespace sf::base
 
 namespace sf
 {
 class Angle;
+class AutoWrapAngle;
 class UnicodeString;
 class Time;
 
@@ -28,25 +34,57 @@ struct Vec3;
 
 template <typename>
 class Rect2;
+} // namespace sf
 
-void setStreamPrecision(std::ostream& os, int maxDigits10);
 
-std::ostream& operator<<(std::ostream& os, const Angle& angle);
-std::ostream& operator<<(std::ostream& os, const UnicodeString& string);
-std::ostream& operator<<(std::ostream& os, Time time);
+namespace doctest
+{
+template <>
+struct StringMaker<sf::Angle>
+{
+    static String convert(const sf::Angle& angle);
+};
+
+template <>
+struct StringMaker<sf::AutoWrapAngle>
+{
+    static String convert(const sf::AutoWrapAngle& angle);
+};
+
+template <>
+struct StringMaker<sf::UnicodeString>
+{
+    static String convert(const sf::UnicodeString& string);
+};
+
+template <>
+struct StringMaker<sf::Time>
+{
+    static String convert(sf::Time time);
+};
 
 template <typename T>
-std::ostream& operator<<(std::ostream& os, Vec2<T> vec);
+struct StringMaker<sf::Vec2<T>>
+{
+    static String convert(const sf::Vec2<T>& vec);
+};
 
 template <typename T>
-std::ostream& operator<<(std::ostream& os, const Vec3<T>& vec);
+struct StringMaker<sf::Vec3<T>>
+{
+    static String convert(const sf::Vec3<T>& vec);
+};
 
 template <typename T, typename Del>
-std::ostream& operator<<(std::ostream& os, const sf::base::UniquePtr<T, Del>&)
+struct StringMaker<sf::base::UniquePtr<T, Del>>
 {
-    return os;
-}
-} // namespace sf
+    static String convert(const sf::base::UniquePtr<T, Del>&)
+    {
+        return "";
+    }
+};
+} // namespace doctest
+
 
 ////////////////////////////////////////////////////////////
 /// Class template for creating custom approximate comparisons.
@@ -69,5 +107,15 @@ bool operator==(const sf::Vec3<float>& lhs, const Approx<sf::Vec3<float>>& rhs);
 bool operator==(const sf::Angle& lhs, const Approx<sf::Angle>& rhs);
 bool operator==(const sf::Rect2<float>& lhs, const Approx<sf::Rect2<float>>& rhs);
 
+
+namespace doctest
+{
 template <typename T>
-std::ostream& operator<<(std::ostream& os, const Approx<T>& approx);
+struct StringMaker<::Approx<T>>
+{
+    static String convert(const ::Approx<T>& approx)
+    {
+        return toString(approx.value);
+    }
+};
+} // namespace doctest
