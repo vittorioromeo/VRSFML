@@ -15,7 +15,6 @@
 #include "ExactArray.hpp"
 #include "GameConstants.hpp"
 #include "HexSession.hpp"
-#include "IconsFontAwesome6.h"
 #include "InputHelper.hpp"
 #include "MemberGuard.hpp"
 #include "NotificationState.hpp"
@@ -66,7 +65,6 @@
 #include "SFML/Graphics/Shader.hpp"
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/Text.hpp"
-#include "SFML/Graphics/TextUtils.hpp"
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/TextureAtlas.hpp"
 #include "SFML/Graphics/TextureWrapMode.hpp"
@@ -93,7 +91,6 @@
 
 #include "SFML/Base/AnkerlUnorderedDense.hpp"
 #include "SFML/Base/Array.hpp"
-#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/FixedFunction.hpp"
 #include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/IntTypes.hpp"
@@ -199,149 +196,97 @@ struct Main
 ////////////////////////////////////////////////////////////
 // Audio context and playback device
 #ifndef BUBBLEBYTE_NO_AUDIO
-    sf::AudioContext   audioContext{sf::AudioContext::create().value()};
-    sf::PlaybackDevice playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};
+    sf::AudioContext   audioContext;
+    sf::PlaybackDevice playbackDevice;
 #endif
 
     ////////////////////////////////////////////////////////////
     // Graphics context
-    sf::GraphicsContext graphicsContext{sf::GraphicsContext::create().value()};
+    sf::GraphicsContext graphicsContext;
 
     ////////////////////////////////////////////////////////////
     // Shader with hue support and bubble effects
-    sf::Shader shader{[]
-    {
-        auto result = sf::Shader::loadFromFile(
-                          {.vertexPath = "resources/shader.vert", .fragmentPath = "resources/shader.frag"})
-                          .value();
-        result.setUniform(result.getUniformLocation("sf_u_texture").value(), sf::Shader::CurrentTexture);
-        return result;
-    }()};
+    sf::Shader shader;
 
-    sf::Shader::UniformLocation suBackgroundTexture = shader.getUniformLocation("u_backgroundTexture").value();
-    sf::Shader::UniformLocation suTime              = shader.getUniformLocation("u_time").value();
-    sf::Shader::UniformLocation suResolution        = shader.getUniformLocation("u_resolution").value();
-    sf::Shader::UniformLocation suBackgroundOrigin  = shader.getUniformLocation("u_backgroundOrigin").value();
-    sf::Shader::UniformLocation suBubbleEffect      = shader.getUniformLocation("u_bubbleEffect").value();
+    sf::Shader::UniformLocation suBackgroundTexture;
+    sf::Shader::UniformLocation suTime;
+    sf::Shader::UniformLocation suResolution;
+    sf::Shader::UniformLocation suBackgroundOrigin;
+    sf::Shader::UniformLocation suBubbleEffect;
 
-    sf::Shader::UniformLocation suIridescenceStrength = shader.getUniformLocation("u_iridescenceStrength").value();
-    sf::Shader::UniformLocation suEdgeFactorMin       = shader.getUniformLocation("u_edgeFactorMin").value();
-    sf::Shader::UniformLocation suEdgeFactorMax       = shader.getUniformLocation("u_edgeFactorMax").value();
-    sf::Shader::UniformLocation suEdgeFactorStrength  = shader.getUniformLocation("u_edgeFactorStrength").value();
-    sf::Shader::UniformLocation suDistorsionStrength  = shader.getUniformLocation("u_distorsionStrength").value();
+    sf::Shader::UniformLocation suIridescenceStrength;
+    sf::Shader::UniformLocation suEdgeFactorMin;
+    sf::Shader::UniformLocation suEdgeFactorMax;
+    sf::Shader::UniformLocation suEdgeFactorStrength;
+    sf::Shader::UniformLocation suDistorsionStrength;
 
-    sf::Shader::UniformLocation suSubTexOrigin = shader.getUniformLocation("u_subTexOrigin").value();
-    sf::Shader::UniformLocation suSubTexSize   = shader.getUniformLocation("u_subTexSize").value();
+    sf::Shader::UniformLocation suSubTexOrigin;
+    sf::Shader::UniformLocation suSubTexSize;
 
-    sf::Shader::UniformLocation suBubbleLightness = shader.getUniformLocation("u_bubbleLightness").value();
-    sf::Shader::UniformLocation suLensDistortion  = shader.getUniformLocation("u_lensDistortion").value();
+    sf::Shader::UniformLocation suBubbleLightness;
+    sf::Shader::UniformLocation suLensDistortion;
 
-    sf::Shader::UniformLocation suRimShineStrength = shader.getUniformLocation("u_rimShineStrength").value();
-    sf::Shader::UniformLocation suRimShineFallRate = shader.getUniformLocation("u_rimShineFallRate").value();
-    sf::Shader::UniformLocation suRimShineTimeRate = shader.getUniformLocation("u_rimShineTimeRate").value();
-    sf::Shader::UniformLocation suRimShineArc      = shader.getUniformLocation("u_rimShineArc").value();
+    sf::Shader::UniformLocation suRimShineStrength;
+    sf::Shader::UniformLocation suRimShineFallRate;
+    sf::Shader::UniformLocation suRimShineTimeRate;
+    sf::Shader::UniformLocation suRimShineArc;
 
     float shaderTime = 0.f;
 
     ////////////////////////////////////////////////////////////
     // Shader with post-processing effects
-    sf::Shader shaderPostProcess{[]
-    {
-        // TODO P2: (lib) add support for `#include` in shaders
-        auto result = sf::Shader::loadFromFile({.fragmentPath = "resources/postprocess.frag"}).value();
-        result.setUniform(result.getUniformLocation("sf_u_texture").value(), sf::Shader::CurrentTexture);
-        return result;
-    }()};
+    sf::Shader shaderPostProcess;
 
-    sf::Shader::UniformLocation suPPVibrance   = shaderPostProcess.getUniformLocation("u_vibrance").value();
-    sf::Shader::UniformLocation suPPSaturation = shaderPostProcess.getUniformLocation("u_saturation").value();
-    sf::Shader::UniformLocation suPPLightness  = shaderPostProcess.getUniformLocation("u_lightness").value();
-    sf::Shader::UniformLocation suPPSharpness  = shaderPostProcess.getUniformLocation("u_sharpness").value();
-    sf::Shader::UniformLocation suPPBlur       = shaderPostProcess.getUniformLocation("u_blur").value();
+    sf::Shader::UniformLocation suPPVibrance;
+    sf::Shader::UniformLocation suPPSaturation;
+    sf::Shader::UniformLocation suPPLightness;
+    sf::Shader::UniformLocation suPPSharpness;
+    sf::Shader::UniformLocation suPPBlur;
 
     ////////////////////////////////////////////////////////////
     // Shader for fluffy cat cloud rendering
-    sf::Shader shaderClouds{[]
-    {
-        auto result = sf::Shader::loadFromFile({.fragmentPath = "resources/clouds.frag"}).value();
-        result.setUniform(result.getUniformLocation("sf_u_texture").value(), sf::Shader::CurrentTexture);
-        return result;
-    }()};
+    sf::Shader shaderClouds;
 
-    sf::Shader::UniformLocation suCloudTime       = shaderClouds.getUniformLocation("u_time").value();
-    sf::Shader::UniformLocation suCloudResolution = shaderClouds.getUniformLocation("u_resolution").value();
+    sf::Shader::UniformLocation suCloudTime;
+    sf::Shader::UniformLocation suCloudResolution;
 
     ////////////////////////////////////////////////////////////
     // Shader for hexed cat phasing/distortion
-    sf::Shader shaderHexed{[]
-    {
-        auto result = sf::Shader::loadFromFile({.fragmentPath = "resources/hexed_cat.frag"}).value();
-        result.setUniform(result.getUniformLocation("sf_u_texture").value(), sf::Shader::CurrentTexture);
-        return result;
-    }()};
+    sf::Shader shaderHexed;
 
-    sf::Shader::UniformLocation suHexedTime = shaderHexed.getUniformLocation("u_time").value();
-    sf::Shader::UniformLocation suHexedSeed = shaderHexed.getUniformLocation("u_seed").value();
-    sf::Shader::UniformLocation suHexedDistortionStrength = shaderHexed.getUniformLocation("u_distortionStrength").value();
-    sf::Shader::UniformLocation suHexedShimmerStrength = shaderHexed.getUniformLocation("u_shimmerStrength").value();
+    sf::Shader::UniformLocation suHexedTime;
+    sf::Shader::UniformLocation suHexedSeed;
+    sf::Shader::UniformLocation suHexedDistortionStrength;
+    sf::Shader::UniformLocation suHexedShimmerStrength;
 
     ////////////////////////////////////////////////////////////
     // Shader for activated shrine background distortion
-    sf::Shader shaderShrineBackground{[]
-    {
-        auto result = sf::Shader::loadFromFile({.vertexPath   = "resources/shrine_background.vert",
-                                                .fragmentPath = "resources/shrine_background.frag"})
-                          .value();
-        result.setUniform(result.getUniformLocation("sf_u_texture").value(), sf::Shader::CurrentTexture);
-        return result;
-    }()};
+    sf::Shader shaderShrineBackground;
 
-    sf::Shader::UniformLocation suShrineBgTime = shaderShrineBackground.getUniformLocation("u_time").value();
-    sf::Shader::UniformLocation suShrineBgViewOrigin = shaderShrineBackground.getUniformLocation("u_viewOrigin").value();
-    sf::Shader::UniformLocation suShrineBgCenter = shaderShrineBackground.getUniformLocation("u_shrineCenter").value();
-    sf::Shader::UniformLocation suShrineBgRange  = shaderShrineBackground.getUniformLocation("u_shrineRange").value();
-    sf::Shader::UniformLocation suShrineBgTintR  = shaderShrineBackground.getUniformLocation("u_shrineTintR").value();
-    sf::Shader::UniformLocation suShrineBgTintG  = shaderShrineBackground.getUniformLocation("u_shrineTintG").value();
-    sf::Shader::UniformLocation suShrineBgTintB  = shaderShrineBackground.getUniformLocation("u_shrineTintB").value();
-    sf::Shader::UniformLocation suShrineBgTintA  = shaderShrineBackground.getUniformLocation("u_shrineTintA").value();
+    sf::Shader::UniformLocation suShrineBgTime;
+    sf::Shader::UniformLocation suShrineBgViewOrigin;
+    sf::Shader::UniformLocation suShrineBgCenter;
+    sf::Shader::UniformLocation suShrineBgRange;
+    sf::Shader::UniformLocation suShrineBgTintR;
+    sf::Shader::UniformLocation suShrineBgTintG;
+    sf::Shader::UniformLocation suShrineBgTintB;
+    sf::Shader::UniformLocation suShrineBgTintA;
     sf::Shader::UniformLocation
         suShrineBgDistortionStrength = shaderShrineBackground.getUniformLocation("u_distortionStrength").value();
-    sf::Shader::UniformLocation suShrineBgTintStrength = shaderShrineBackground.getUniformLocation("u_tintStrength").value();
-    sf::Shader::UniformLocation suShrineBgEffectStrength = shaderShrineBackground.getUniformLocation("u_effectStrength").value();
+    sf::Shader::UniformLocation suShrineBgTintStrength;
+    sf::Shader::UniformLocation suShrineBgEffectStrength;
 
     ////////////////////////////////////////////////////////////
     // Context settings
-    const unsigned int aaLevel = sf::base::min(16u, sf::RenderTexture::getMaximumAntiAliasingLevel());
+    const unsigned int aaLevel;
 
     ///////////////////////////////////////////////////////////
     // Profile (stores settings)
-    Profile profile{[&]
-    {
-        Profile out;
-
-        if (sf::Path{"userdata/profile.json"}.exists())
-        {
-            loadProfileFromFile(out);
-            sf::cOut() << "Loaded profile from file on startup\n";
-        }
-
-        return out;
-    }()};
+    Profile profile;
 
     ///////////////////////////////////////////////////////////
     // Game constants (loaded once on startup)
-    GameConstants gameConstants{[&]
-    {
-        GameConstants out;
-
-        if (sf::Path{"resources/game_constants.json"}.exists())
-        {
-            loadGameConstantsFromFile(out);
-            sf::cOut() << "Loaded game constants from file on startup\n";
-        }
-
-        return out;
-    }()};
+    GameConstants gameConstants;
 
     MEMBER_SCOPE_GUARD(Main, {
         sf::cOut() << "Saving profile to file on exit\n";
@@ -350,12 +295,12 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // SFML fonts
-    sf::Font fontMouldyCheese{sf::Font::openFromFile("resources/fredoka.ttf").value()};
+    sf::Font fontMouldyCheese;
 
     ////////////////////////////////////////////////////////////
     // Render window
     [[nodiscard]] sf::RenderWindow makeWindow();
-    sf::RenderWindow               window{makeWindow()};
+    sf::RenderWindow               window;
     float                          dpiScalingFactor = 1.f;
 
     ////////////////////////////////////////////////////////////
@@ -370,24 +315,7 @@ struct Main
     bool finishAfterDisplay    = false; // TODO P1: check if this solves flickering
 
     ////////////////////////////////////////////////////////////
-    bool loadingGuard{[&]
-    {
-        refreshWindowAutoBatchModeFromProfile();
-        window.clear(sf::Color::Black);
-
-        sf::TextData loadingTextData{.position         = window.getSize().toVec2f() / 2.f,
-                                     .string           = "Loading...",
-                                     .characterSize    = 48u,
-                                     .fillColor        = sf::Color::White,
-                                     .outlineColor     = colorBlueOutline,
-                                     .outlineThickness = 2.f};
-
-        loadingTextData.origin = sf::TextUtils::precomputeTextLocalBounds(fontMouldyCheese, loadingTextData).size / 2.f;
-        window.draw(fontMouldyCheese, loadingTextData);
-
-        window.display();
-        return true;
-    }()};
+    bool loadingGuard;
 
     ////////////////////////////////////////////////////////////
     // ImGui context
@@ -400,33 +328,17 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Texture atlas
-    sf::TextureAtlas textureAtlas{sf::Texture::create({6000u, 4096u}, {.smooth = true}).value()}; // TODO P0: make smaller
+    sf::TextureAtlas textureAtlas; // TODO P0: make smaller
 
     ////////////////////////////////////////////////////////////
     // SFML fonts
-    sf::Font fontSuperBakery{sf::Font::openFromFile("resources/fredoka.ttf", &textureAtlas).value()};
+    sf::Font fontSuperBakery;
 
     ////////////////////////////////////////////////////////////
     // ImGui fonts
-    ImFont* fontImGuiMouldyCheese{ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/fredoka.ttf", 28.f)};
-    ImFont* fontImGuiSuperBakery{ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/fredoka.ttf", 28.f)};
-    ImFont* fontImGuiFA{[]
-    {
-        static const ImWchar iconRanges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
-
-        ImFontConfig iconConfig;
-        iconConfig.MergeMode        = true;
-        iconConfig.PixelSnapH       = true;
-        iconConfig.GlyphMinAdvanceX = 18.0f; // Helps keep icons square
-        iconConfig.GlyphOffset.y    = -1.0f; // Moves icons down 2 pixels
-
-        // 3. Load FontAwesome into the SAME font object
-        auto* res = ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/fa-solid-900.ttf", 16.0f, &iconConfig, iconRanges);
-        SFML_BASE_ASSERT(res != nullptr);
-
-        ImGui::GetIO().Fonts->Build();
-        return res;
-    }()};
+    ImFont* fontImGuiMouldyCheese;
+    ImFont* fontImGuiSuperBakery;
+    ImFont* fontImGuiFA;
 
     ////////////////////////////////////////////////////////////
     // Music
@@ -474,133 +386,112 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Background and ImGui render textures
-    sf::RenderTexture rtBackground{
-        sf::RenderTexture::create(gameScreenSize.toVec2u(),
-                                  {.antiAliasingLevel = aaLevel, .smooth = true, .wrapMode = sf::TextureWrapMode::Repeat})
-            .value()};
+    sf::RenderTexture rtBackground;
 
-    sf::RenderTexture rtBackgroundProcessed{
-        sf::RenderTexture::create(gameScreenSize.toVec2u(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()};
+    sf::RenderTexture rtBackgroundProcessed;
 
-    sf::RenderTexture rtImGui{
-        sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()};
+    sf::RenderTexture rtImGui;
 
-    sf::RenderTexture rtCloudMask{
-        sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()};
+    sf::RenderTexture rtCloudMask;
 
-    sf::RenderTexture rtCloudProcessed{
-        sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()};
+    sf::RenderTexture rtCloudProcessed;
 
     ////////////////////////////////////////////////////////////
     // Game render texture (before post-processing)
-    sf::RenderTexture rtGame{
-        sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()};
+    sf::RenderTexture rtGame;
 
     ////////////////////////////////////////////////////////////
     // Hexed cat offscreen render textures (one per concurrent hex, for witch and copy-witch combined)
     static inline constexpr sf::Vec2u       hexedCatRenderTextureSize{640u, 640u};
     static inline constexpr sf::base::SizeT maxHexedCatRenderTextures = maxConcurrentHexes * 2u;
 
-    sf::base::Vector<sf::RenderTexture> hexedCatRenderTextures{[this]
-    {
-        sf::base::Vector<sf::RenderTexture> result;
-        result.reserve(maxHexedCatRenderTextures);
-
-        for (sf::base::SizeT i = 0u; i < maxHexedCatRenderTextures; ++i)
-            result.emplaceBack(
-                sf::RenderTexture::create(hexedCatRenderTextureSize, {.antiAliasingLevel = aaLevel, .smooth = true}).value());
-
-        return result;
-    }()};
+    sf::base::Vector<sf::RenderTexture> hexedCatRenderTextures;
 
     ////////////////////////////////////////////////////////////
     // Textures (not in atlas)
     static inline constexpr sf::TextureLoadSettings bgSettings{.smooth = true, .wrapMode = sf::TextureWrapMode::Repeat};
 
-    sf::Texture txLogo{sf::Texture::loadFromFile("resources/logo.png", {.smooth = true}).value()};
-    sf::Texture txFixedBg{
-        sf::Texture::loadFromFile("resources/fixedbg.png", {.smooth = true, .wrapMode = sf::TextureWrapMode::MirroredRepeat})
-            .value()};
-    sf::Texture txBackgroundChunk{sf::Texture::loadFromFile("resources/bgtest.png", bgSettings).value()};
-    sf::Texture txBackgroundChunkDesaturated{
-        sf::Texture::loadFromFile("resources/bgtestdesaturated.png", bgSettings).value()};
-    sf::Texture txClouds{sf::Texture::loadFromFile("resources/clouds.png", bgSettings).value()};
-    sf::Texture txTintedClouds{sf::Texture::loadFromFile("resources/tintedclouds.png", bgSettings).value()};
-    sf::Texture txBgSwamp{sf::Texture::loadFromFile("resources/bgswamp.png", bgSettings).value()};
-    sf::Texture txBgObservatory{sf::Texture::loadFromFile("resources/bgobservatory.png", bgSettings).value()};
-    sf::Texture txBgAimTraining{sf::Texture::loadFromFile("resources/bgaimtraining.png", bgSettings).value()};
-    sf::Texture txBgFactory{sf::Texture::loadFromFile("resources/bgfactory.png", bgSettings).value()};
-    sf::Texture txBgWindTunnel{sf::Texture::loadFromFile("resources/bgwindtunnel.png", bgSettings).value()};
-    sf::Texture txBgMagnetosphere{sf::Texture::loadFromFile("resources/bgmagnetosphere.png", bgSettings).value()};
-    sf::Texture txBgAuditorium{sf::Texture::loadFromFile("resources/bgauditorium.png", bgSettings).value()};
-    sf::Texture txDrawings{sf::Texture::loadFromFile("resources/drawings.png", {.smooth = true}).value()};
-    sf::Texture txTipBg{sf::Texture::loadFromFile("resources/tipbg.png", {.smooth = true}).value()};
-    sf::Texture txTipByte{sf::Texture::loadFromFile("resources/tipbyte.png", {.smooth = true}).value()};
-    sf::Texture txCursor{sf::Texture::loadFromFile("resources/cursor.png", {.smooth = true}).value()};
-    sf::Texture txCursorMultipop{sf::Texture::loadFromFile("resources/cursormultipop.png", {.smooth = true}).value()};
-    sf::Texture txCursorLaser{sf::Texture::loadFromFile("resources/cursorlaser.png", {.smooth = true}).value()};
-    sf::Texture txCursorGrab{sf::Texture::loadFromFile("resources/cursorgrab.png", {.smooth = true}).value()};
-    sf::Texture txArrow{sf::Texture::loadFromFile("resources/arrow.png", {.smooth = true}).value()};
-    sf::Texture txUnlock{sf::Texture::loadFromFile("resources/unlock.png", {.smooth = true}).value()};
-    sf::Texture txPurchasable{sf::Texture::loadFromFile("resources/purchasable.png", {.smooth = true}).value()};
-    sf::Texture txLetter{sf::Texture::loadFromFile("resources/letter.png", {.smooth = true}).value()};
-    sf::Texture txLetterText{sf::Texture::loadFromFile("resources/lettertext.png", {.smooth = true}).value()};
-    sf::Texture txFrame{sf::Texture::loadFromFile("resources/frame.png", {.smooth = true}).value()};
-    sf::Texture txFrameTiny{sf::Texture::loadFromFile("resources/frametiny.png", {.smooth = true}).value()};
-    sf::Texture txCloudBtn{sf::Texture::loadFromFile("resources/cloudbtn.png", {.smooth = true}).value()};
-    sf::Texture txCloudBtnSmall{sf::Texture::loadFromFile("resources/cloudbtnsmall.png", {.smooth = true}).value()};
-    sf::Texture txCloudBtnSquare{sf::Texture::loadFromFile("resources/cloudbtnsquare.png", {.smooth = true}).value()};
-    sf::Texture txCloudBtnSquare2{sf::Texture::loadFromFile("resources/cloudbtnsquare2.png", {.smooth = true}).value()};
+    sf::Texture txLogo;
+    sf::Texture txFixedBg;
+    sf::Texture txBackgroundChunk;
+    sf::Texture txBackgroundChunkDesaturated;
+    sf::Texture txClouds;
+    sf::Texture txTintedClouds;
+    sf::Texture txBgSwamp;
+    sf::Texture txBgObservatory;
+    sf::Texture txBgAimTraining;
+    sf::Texture txBgFactory;
+    sf::Texture txBgWindTunnel;
+    sf::Texture txBgMagnetosphere;
+    sf::Texture txBgAuditorium;
+    sf::Texture txDrawings;
+    sf::Texture txTipBg;
+    sf::Texture txTipByte;
+    sf::Texture txCursor;
+    sf::Texture txCursorMultipop;
+    sf::Texture txCursorLaser;
+    sf::Texture txCursorGrab;
+    sf::Texture txArrow;
+    sf::Texture txUnlock;
+    sf::Texture txPurchasable;
+    sf::Texture txLetter;
+    sf::Texture txLetterText;
+    sf::Texture txFrame;
+    sf::Texture txFrameTiny;
+    sf::Texture txCloudBtn;
+    sf::Texture txCloudBtnSmall;
+    sf::Texture txCloudBtnSquare;
+    sf::Texture txCloudBtnSquare2;
 
     ////////////////////////////////////////////////////////////
     // UI texture atlas
-    sf::TextureAtlas uiTextureAtlas{sf::Texture::create({2048u, 1024u}, {.smooth = true}).value()};
+    sf::TextureAtlas uiTextureAtlas;
 
     ////////////////////////////////////////////////////////////
     // Quick toolbar icons
-    sf::Rect2f txrIconVolume{addImgResourceToUIAtlas("iconvolumeon.png")};
-    sf::Rect2f txrIconBGM{addImgResourceToUIAtlas("iconmusicon.png")};
-    sf::Rect2f txrIconBg{addImgResourceToUIAtlas("iconbg.png")};
-    sf::Rect2f txrIconCfg{addImgResourceToUIAtlas("iconcfg.png")};
-    sf::Rect2f txrIconCopyCat{addImgResourceToUIAtlas("iconcopycat.png")};
+    sf::Rect2f txrIconVolume;
+    sf::Rect2f txrIconBGM;
+    sf::Rect2f txrIconBg;
+    sf::Rect2f txrIconCfg;
+    sf::Rect2f txrIconCopyCat;
 
     ////////////////////////////////////////////////////////////
     // Shop menu separator textures
-    sf::Rect2f txrMenuSeparator0{addImgResourceToUIAtlas("menuseparator0.png")};
-    sf::Rect2f txrMenuSeparator1{addImgResourceToUIAtlas("menuseparator1.png")};
-    sf::Rect2f txrMenuSeparator2{addImgResourceToUIAtlas("menuseparator2.png")};
-    sf::Rect2f txrMenuSeparator3{addImgResourceToUIAtlas("menuseparator3.png")};
-    sf::Rect2f txrMenuSeparator4{addImgResourceToUIAtlas("menuseparator4.png")};
-    sf::Rect2f txrMenuSeparator5{addImgResourceToUIAtlas("menuseparator5.png")};
-    sf::Rect2f txrMenuSeparator6{addImgResourceToUIAtlas("menuseparator6.png")};
-    sf::Rect2f txrMenuSeparator7{addImgResourceToUIAtlas("menuseparator7.png")};
-    sf::Rect2f txrMenuSeparator8{addImgResourceToUIAtlas("menuseparator8.png")};
+    sf::Rect2f txrMenuSeparator0;
+    sf::Rect2f txrMenuSeparator1;
+    sf::Rect2f txrMenuSeparator2;
+    sf::Rect2f txrMenuSeparator3;
+    sf::Rect2f txrMenuSeparator4;
+    sf::Rect2f txrMenuSeparator5;
+    sf::Rect2f txrMenuSeparator6;
+    sf::Rect2f txrMenuSeparator7;
+    sf::Rect2f txrMenuSeparator8;
 
     ////////////////////////////////////////////////////////////
     // Prestige menu separator textures
-    sf::Rect2f txrPrestigeSeparator0{addImgResourceToUIAtlas("prestigeseparator0.png")};
-    sf::Rect2f txrPrestigeSeparator1{addImgResourceToUIAtlas("prestigeseparator1.png")};
-    sf::Rect2f txrPrestigeSeparator2{addImgResourceToUIAtlas("prestigeseparator2.png")};
-    sf::Rect2f txrPrestigeSeparator3{addImgResourceToUIAtlas("prestigeseparator3.png")};
-    sf::Rect2f txrPrestigeSeparator4{addImgResourceToUIAtlas("prestigeseparator4.png")};
-    sf::Rect2f txrPrestigeSeparator5{addImgResourceToUIAtlas("prestigeseparator5.png")};
-    sf::Rect2f txrPrestigeSeparator6{addImgResourceToUIAtlas("prestigeseparator6.png")};
-    sf::Rect2f txrPrestigeSeparator7{addImgResourceToUIAtlas("prestigeseparator7.png")};
-    sf::Rect2f txrPrestigeSeparator8{addImgResourceToUIAtlas("prestigeseparator8.png")};
-    sf::Rect2f txrPrestigeSeparator9{addImgResourceToUIAtlas("prestigeseparator9.png")};
-    sf::Rect2f txrPrestigeSeparator10{addImgResourceToUIAtlas("prestigeseparator10.png")};
-    sf::Rect2f txrPrestigeSeparator11{addImgResourceToUIAtlas("prestigeseparator11.png")};
-    sf::Rect2f txrPrestigeSeparator12{addImgResourceToUIAtlas("prestigeseparator12.png")};
-    sf::Rect2f txrPrestigeSeparator13{addImgResourceToUIAtlas("prestigeseparator13.png")};
-    sf::Rect2f txrPrestigeSeparator14{addImgResourceToUIAtlas("prestigeseparator14.png")};
-    sf::Rect2f txrPrestigeSeparator15{addImgResourceToUIAtlas("prestigeseparator15.png")};
+    sf::Rect2f txrPrestigeSeparator0;
+    sf::Rect2f txrPrestigeSeparator1;
+    sf::Rect2f txrPrestigeSeparator2;
+    sf::Rect2f txrPrestigeSeparator3;
+    sf::Rect2f txrPrestigeSeparator4;
+    sf::Rect2f txrPrestigeSeparator5;
+    sf::Rect2f txrPrestigeSeparator6;
+    sf::Rect2f txrPrestigeSeparator7;
+    sf::Rect2f txrPrestigeSeparator8;
+    sf::Rect2f txrPrestigeSeparator9;
+    sf::Rect2f txrPrestigeSeparator10;
+    sf::Rect2f txrPrestigeSeparator11;
+    sf::Rect2f txrPrestigeSeparator12;
+    sf::Rect2f txrPrestigeSeparator13;
+    sf::Rect2f txrPrestigeSeparator14;
+    sf::Rect2f txrPrestigeSeparator15;
 
     ////////////////////////////////////////////////////////////
     // Magic menu separator textures
-    sf::Rect2f txrMagicSeparator0{addImgResourceToUIAtlas("magicseparator0.png")};
-    sf::Rect2f txrMagicSeparator1{addImgResourceToUIAtlas("magicseparator1.png")};
-    sf::Rect2f txrMagicSeparator2{addImgResourceToUIAtlas("magicseparator2.png")};
-    sf::Rect2f txrMagicSeparator3{addImgResourceToUIAtlas("magicseparator3.png")};
+    sf::Rect2f txrMagicSeparator0;
+    sf::Rect2f txrMagicSeparator1;
+    sf::Rect2f txrMagicSeparator2;
+    sf::Rect2f txrMagicSeparator3;
 
     ////////////////////////////////////////////////////////////
     // Background hues
@@ -622,134 +513,134 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Texture atlas rects
-    sf::Rect2f txrWhiteDot{textureAtlas.add(sf::GraphicsContext::getBuiltInWhiteDotTexture()).value()};
-    sf::Rect2f txrBubble{addImgResourceToAtlas("bubble2.png")};
-    sf::Rect2f txrBubbleStar{addImgResourceToAtlas("bubble3.png")};
-    sf::Rect2f txrBubbleNova{addImgResourceToAtlas("bubble4.png")};
-    sf::Rect2f txrBubbleGlass{addImgResourceToAtlas("bubbleglass.png")};
-    sf::Rect2f txrCat{addImgResourceToAtlas("cat.png")};
+    sf::Rect2f txrWhiteDot;
+    sf::Rect2f txrBubble;
+    sf::Rect2f txrBubbleStar;
+    sf::Rect2f txrBubbleNova;
+    sf::Rect2f txrBubbleGlass;
+    sf::Rect2f txrCat;
 
     // Wardencat composite: drawn back-to-front as guardhouse_back, wardencat
     // (with a tail-like body wobble), guardhouse_front, wardencatpaw.
-    sf::Rect2f txrGuardhouseBack{addImgResourceToAtlas("guardhouse_back.png")};
-    sf::Rect2f txrWardenCat{addImgResourceToAtlas("wardencat.png")};
-    sf::Rect2f txrGuardhouseFront{addImgResourceToAtlas("guardhouse_front.png")};
-    sf::Rect2f txrWardencatPaw{addImgResourceToAtlas("wardencatpaw.png")};
-    sf::Rect2f txrUniCat{addImgResourceToAtlas("unicat3.png")};
-    sf::Rect2f txrUniCat2{addImgResourceToAtlas("unicat2.png")};
-    sf::Rect2f txrUniCatWings{addImgResourceToAtlas("unicatwings.png")};
-    sf::Rect2f txrDevilCat2{addImgResourceToAtlas("devilcat2.png")};
-    sf::Rect2f txrDevilCat3{addImgResourceToAtlas("devilcat3.png")};
-    sf::Rect2f txrDevilCat3Arm{addImgResourceToAtlas("devilcat3arm.png")};
-    sf::Rect2f txrDevilCat3Book{addImgResourceToAtlas("devilcat3book.png")};
-    sf::Rect2f txrDevilCat3Tail{addImgResourceToAtlas("devilcat3tail.png")};
-    sf::Rect2f txrDevilCat2Book{addImgResourceToAtlas("devilcat2book.png")};
-    sf::Rect2f txrCatPaw{addImgResourceToAtlas("catpaw.png")};
-    sf::Rect2f txrCatTail{addImgResourceToAtlas("cattail.png")};
-    sf::Rect2f txrSmartCatHat{addImgResourceToAtlas("smartcathat.png")};
-    sf::Rect2f txrSmartCatDiploma{addImgResourceToAtlas("smartcatdiploma.png")};
-    sf::Rect2f txrBrainBack{addImgResourceToAtlas("brainback.png")};
-    sf::Rect2f txrBrainFront{addImgResourceToAtlas("brainfront.png")};
-    sf::Rect2f txrUniCatTail{addImgResourceToAtlas("unicattail.png")};
-    sf::Rect2f txrUniCat2Tail{addImgResourceToAtlas("unicat2tail.png")};
-    sf::Rect2f txrDevilCatTail2{addImgResourceToAtlas("devilcattail2.png")};
-    sf::Rect2f txrAstroCatTail{addImgResourceToAtlas("astrocattail.png")};
-    sf::Rect2f txrAstroCatFlag{addImgResourceToAtlas("astrocatflag.png")};
-    sf::Rect2f txrWitchCatTail{addImgResourceToAtlas("witchcattail.png")};
-    sf::Rect2f txrWizardCatTail{addImgResourceToAtlas("wizardcattail.png")};
-    sf::Rect2f txrMouseCatTail{addImgResourceToAtlas("mousecattail.png")};
-    sf::Rect2f txrMouseCatMouse{addImgResourceToAtlas("mousecatmouse.png")};
-    sf::Rect2f txrEngiCatTail{addImgResourceToAtlas("engicattail.png")};
-    sf::Rect2f txrEngiCatWrench{addImgResourceToAtlas("engicatwrench.png")};
-    sf::Rect2f txrRepulsoCatTail{addImgResourceToAtlas("repulsocattail.png")};
-    sf::Rect2f txrAttractoCatTail{addImgResourceToAtlas("attractocattail.png")};
-    sf::Rect2f txrCopyCatTail{addImgResourceToAtlas("copycattail.png")};
-    sf::Rect2f txrAttractoCatMagnet{addImgResourceToAtlas("attractocatmagnet.png")};
-    sf::Rect2f txrUniCatPaw{addImgResourceToAtlas("unicatpaw.png")};
-    sf::Rect2f txrDevilCatPaw{addImgResourceToAtlas("devilcatpaw.png")};
-    sf::Rect2f txrDevilCatPaw2{addImgResourceToAtlas("devilcatpaw2.png")};
-    sf::Rect2f txrParticle{addImgResourceToAtlas("particle.png")};
-    sf::Rect2f txrStarParticle{addImgResourceToAtlas("starparticle.png")};
-    sf::Rect2f txrFireParticle{addImgResourceToAtlas("fireparticle.png")};
-    sf::Rect2f txrFireParticle2{addImgResourceToAtlas("fireparticle2.png")};
-    sf::Rect2f txrSmokeParticle{addImgResourceToAtlas("smokeparticle.png")};
-    sf::Rect2f txrExplosionParticle{addImgResourceToAtlas("explosionparticle.png")};
-    sf::Rect2f txrTrailParticle{addImgResourceToAtlas("trailparticle.png")};
-    sf::Rect2f txrHexParticle{addImgResourceToAtlas("hexparticle.png")};
-    sf::Rect2f txrShrineParticle{addImgResourceToAtlas("shrineparticle.png")};
-    sf::Rect2f txrCogParticle{addImgResourceToAtlas("cogparticle.png")};
-    sf::Rect2f txrGlassParticle{addImgResourceToAtlas("glassparticle.png")};
-    sf::Rect2f txrWitchCat{addImgResourceToAtlas("witchcat.png")};
-    sf::Rect2f txrWitchCatPaw{addImgResourceToAtlas("witchcatpaw.png")};
-    sf::Rect2f txrAstroCat{addImgResourceToAtlas("astromeow.png")};
-    sf::Rect2f txrBomb{addImgResourceToAtlas("bomb.png")};
-    sf::Rect2f txrShrine{addImgResourceToAtlas("shrine.png")};
-    sf::Rect2f txrWizardCat{addImgResourceToAtlas("wizardcat.png")};
-    sf::Rect2f txrWizardCatPaw{addImgResourceToAtlas("wizardcatpaw.png")};
-    sf::Rect2f txrMouseCat{addImgResourceToAtlas("mousecat.png")};
-    sf::Rect2f txrMouseCatPaw{addImgResourceToAtlas("mousecatpaw.png")};
-    sf::Rect2f txrEngiCat{addImgResourceToAtlas("engicat.png")};
-    sf::Rect2f txrEngiCatPaw{addImgResourceToAtlas("engicatpaw.png")};
-    sf::Rect2f txrRepulsoCat{addImgResourceToAtlas("repulsocat.png")};
-    sf::Rect2f txrRepulsoCatPaw{addImgResourceToAtlas("repulsocatpaw.png")};
-    sf::Rect2f txrAttractoCat{addImgResourceToAtlas("attractocat.png")};
-    sf::Rect2f txrCopyCat{addImgResourceToAtlas("copycat.png")};
-    sf::Rect2f txrDuckCat{addImgResourceToAtlas("duck.png")};
-    sf::Rect2f txrDuckFlag{addImgResourceToAtlas("duckflag.png")};
-    sf::Rect2f txrAttractoCatPaw{addImgResourceToAtlas("attractocatpaw.png")};
-    sf::Rect2f txrCopyCatPaw{addImgResourceToAtlas("copycatpaw.png")};
-    sf::Rect2f txrDollNormal{addImgResourceToAtlas("dollnormal.png")};
-    sf::Rect2f txrDollUni{addImgResourceToAtlas("dolluni.png")};
-    sf::Rect2f txrDollDevil{addImgResourceToAtlas("dolldevil.png")};
-    sf::Rect2f txrDollAstro{addImgResourceToAtlas("dollastro.png")};
-    sf::Rect2f txrDollWizard{addImgResourceToAtlas("dollwizard.png")};
-    sf::Rect2f txrDollMouse{addImgResourceToAtlas("dollmouse.png")};
-    sf::Rect2f txrDollEngi{addImgResourceToAtlas("dollengi.png")};
-    sf::Rect2f txrDollRepulso{addImgResourceToAtlas("dollrepulso.png")};
-    sf::Rect2f txrDollAttracto{addImgResourceToAtlas("dollattracto.png")};
-    sf::Rect2f txrCoin{addImgResourceToAtlas("bytecoin.png")};
-    sf::Rect2f txrCatSoul{addImgResourceToAtlas("catsoul.png")};
-    sf::Rect2f txrHellPortal{addImgResourceToAtlas("hellportal.png")};
-    sf::Rect2f txrCatEyeLid0{addImgResourceToAtlas("cateyelid0.png")};
-    sf::Rect2f txrCatEyeLid1{addImgResourceToAtlas("cateyelid1.png")};
-    sf::Rect2f txrCatEyeLid2{addImgResourceToAtlas("cateyelid2.png")};
-    sf::Rect2f txrCatWhiteEyeLid0{addImgResourceToAtlas("catwhiteeyelid0.png")};
-    sf::Rect2f txrCatWhiteEyeLid1{addImgResourceToAtlas("catwhiteeyelid1.png")};
-    sf::Rect2f txrCatWhiteEyeLid2{addImgResourceToAtlas("catwhiteeyelid2.png")};
-    sf::Rect2f txrCatDarkEyeLid0{addImgResourceToAtlas("catdarkeyelid0.png")};
-    sf::Rect2f txrCatDarkEyeLid1{addImgResourceToAtlas("catdarkeyelid1.png")};
-    sf::Rect2f txrCatDarkEyeLid2{addImgResourceToAtlas("catdarkeyelid2.png")};
-    sf::Rect2f txrCatGrayEyeLid0{addImgResourceToAtlas("catgrayeyelid0.png")};
-    sf::Rect2f txrCatGrayEyeLid1{addImgResourceToAtlas("catgrayeyelid1.png")};
-    sf::Rect2f txrCatGrayEyeLid2{addImgResourceToAtlas("catgrayeyelid2.png")};
-    sf::Rect2f txrCatEars0{addImgResourceToAtlas("catears0.png")};
-    sf::Rect2f txrCatEars1{addImgResourceToAtlas("catears1.png")};
-    sf::Rect2f txrCatEars2{addImgResourceToAtlas("catears2.png")};
-    sf::Rect2f txrCatYawn0{addImgResourceToAtlas("catyawn0.png")};
-    sf::Rect2f txrCatYawn1{addImgResourceToAtlas("catyawn1.png")};
-    sf::Rect2f txrCatYawn2{addImgResourceToAtlas("catyawn2.png")};
-    sf::Rect2f txrCatYawn3{addImgResourceToAtlas("catyawn3.png")};
-    sf::Rect2f txrCatYawn4{addImgResourceToAtlas("catyawn4.png")};
-    sf::Rect2f txrCCMaskWitch{addImgResourceToAtlas("ccmaskwitch.png")};
-    sf::Rect2f txrCCMaskWizard{addImgResourceToAtlas("ccmaskwizard.png")};
-    sf::Rect2f txrCCMaskMouse{addImgResourceToAtlas("ccmaskmouse.png")};
-    sf::Rect2f txrCCMaskEngi{addImgResourceToAtlas("ccmaskengi.png")};
-    sf::Rect2f txrCCMaskRepulso{addImgResourceToAtlas("ccmaskrepulso.png")};
-    sf::Rect2f txrCCMaskAttracto{addImgResourceToAtlas("ccmaskattracto.png")};
-    sf::Rect2f txrMMNormal{addImgResourceToAtlas("mmcatnormal.png")};
-    sf::Rect2f txrMMUni{addImgResourceToAtlas("mmcatuni.png")};
-    sf::Rect2f txrMMDevil{addImgResourceToAtlas("mmcatdevil.png")};
-    sf::Rect2f txrMMAstro{addImgResourceToAtlas("mmcatastro.png")};
-    sf::Rect2f txrMMWitch{addImgResourceToAtlas("mmcatwitch.png")};
-    sf::Rect2f txrMMWizard{addImgResourceToAtlas("mmcatwizard.png")};
-    sf::Rect2f txrMMMouse{addImgResourceToAtlas("mmcatmouse.png")};
-    sf::Rect2f txrMMEngi{addImgResourceToAtlas("mmcatengi.png")};
-    sf::Rect2f txrMMRepulso{addImgResourceToAtlas("mmcatrepulso.png")};
-    sf::Rect2f txrMMAttracto{addImgResourceToAtlas("mmcatattracto.png")};
-    sf::Rect2f txrMMCopy{addImgResourceToAtlas("mmcatcopy.png")};
-    sf::Rect2f txrMMDuck{addImgResourceToAtlas("mmduck.png")};
-    sf::Rect2f txrMMShrine{addImgResourceToAtlas("mmshrine.png")};
-    sf::Rect2f txrCloud{addImgResourceToAtlas("cloud.png")};
+    sf::Rect2f txrGuardhouseBack;
+    sf::Rect2f txrWardenCat;
+    sf::Rect2f txrGuardhouseFront;
+    sf::Rect2f txrWardencatPaw;
+    sf::Rect2f txrUniCat;
+    sf::Rect2f txrUniCat2;
+    sf::Rect2f txrUniCatWings;
+    sf::Rect2f txrDevilCat2;
+    sf::Rect2f txrDevilCat3;
+    sf::Rect2f txrDevilCat3Arm;
+    sf::Rect2f txrDevilCat3Book;
+    sf::Rect2f txrDevilCat3Tail;
+    sf::Rect2f txrDevilCat2Book;
+    sf::Rect2f txrCatPaw;
+    sf::Rect2f txrCatTail;
+    sf::Rect2f txrSmartCatHat;
+    sf::Rect2f txrSmartCatDiploma;
+    sf::Rect2f txrBrainBack;
+    sf::Rect2f txrBrainFront;
+    sf::Rect2f txrUniCatTail;
+    sf::Rect2f txrUniCat2Tail;
+    sf::Rect2f txrDevilCatTail2;
+    sf::Rect2f txrAstroCatTail;
+    sf::Rect2f txrAstroCatFlag;
+    sf::Rect2f txrWitchCatTail;
+    sf::Rect2f txrWizardCatTail;
+    sf::Rect2f txrMouseCatTail;
+    sf::Rect2f txrMouseCatMouse;
+    sf::Rect2f txrEngiCatTail;
+    sf::Rect2f txrEngiCatWrench;
+    sf::Rect2f txrRepulsoCatTail;
+    sf::Rect2f txrAttractoCatTail;
+    sf::Rect2f txrCopyCatTail;
+    sf::Rect2f txrAttractoCatMagnet;
+    sf::Rect2f txrUniCatPaw;
+    sf::Rect2f txrDevilCatPaw;
+    sf::Rect2f txrDevilCatPaw2;
+    sf::Rect2f txrParticle;
+    sf::Rect2f txrStarParticle;
+    sf::Rect2f txrFireParticle;
+    sf::Rect2f txrFireParticle2;
+    sf::Rect2f txrSmokeParticle;
+    sf::Rect2f txrExplosionParticle;
+    sf::Rect2f txrTrailParticle;
+    sf::Rect2f txrHexParticle;
+    sf::Rect2f txrShrineParticle;
+    sf::Rect2f txrCogParticle;
+    sf::Rect2f txrGlassParticle;
+    sf::Rect2f txrWitchCat;
+    sf::Rect2f txrWitchCatPaw;
+    sf::Rect2f txrAstroCat;
+    sf::Rect2f txrBomb;
+    sf::Rect2f txrShrine;
+    sf::Rect2f txrWizardCat;
+    sf::Rect2f txrWizardCatPaw;
+    sf::Rect2f txrMouseCat;
+    sf::Rect2f txrMouseCatPaw;
+    sf::Rect2f txrEngiCat;
+    sf::Rect2f txrEngiCatPaw;
+    sf::Rect2f txrRepulsoCat;
+    sf::Rect2f txrRepulsoCatPaw;
+    sf::Rect2f txrAttractoCat;
+    sf::Rect2f txrCopyCat;
+    sf::Rect2f txrDuckCat;
+    sf::Rect2f txrDuckFlag;
+    sf::Rect2f txrAttractoCatPaw;
+    sf::Rect2f txrCopyCatPaw;
+    sf::Rect2f txrDollNormal;
+    sf::Rect2f txrDollUni;
+    sf::Rect2f txrDollDevil;
+    sf::Rect2f txrDollAstro;
+    sf::Rect2f txrDollWizard;
+    sf::Rect2f txrDollMouse;
+    sf::Rect2f txrDollEngi;
+    sf::Rect2f txrDollRepulso;
+    sf::Rect2f txrDollAttracto;
+    sf::Rect2f txrCoin;
+    sf::Rect2f txrCatSoul;
+    sf::Rect2f txrHellPortal;
+    sf::Rect2f txrCatEyeLid0;
+    sf::Rect2f txrCatEyeLid1;
+    sf::Rect2f txrCatEyeLid2;
+    sf::Rect2f txrCatWhiteEyeLid0;
+    sf::Rect2f txrCatWhiteEyeLid1;
+    sf::Rect2f txrCatWhiteEyeLid2;
+    sf::Rect2f txrCatDarkEyeLid0;
+    sf::Rect2f txrCatDarkEyeLid1;
+    sf::Rect2f txrCatDarkEyeLid2;
+    sf::Rect2f txrCatGrayEyeLid0;
+    sf::Rect2f txrCatGrayEyeLid1;
+    sf::Rect2f txrCatGrayEyeLid2;
+    sf::Rect2f txrCatEars0;
+    sf::Rect2f txrCatEars1;
+    sf::Rect2f txrCatEars2;
+    sf::Rect2f txrCatYawn0;
+    sf::Rect2f txrCatYawn1;
+    sf::Rect2f txrCatYawn2;
+    sf::Rect2f txrCatYawn3;
+    sf::Rect2f txrCatYawn4;
+    sf::Rect2f txrCCMaskWitch;
+    sf::Rect2f txrCCMaskWizard;
+    sf::Rect2f txrCCMaskMouse;
+    sf::Rect2f txrCCMaskEngi;
+    sf::Rect2f txrCCMaskRepulso;
+    sf::Rect2f txrCCMaskAttracto;
+    sf::Rect2f txrMMNormal;
+    sf::Rect2f txrMMUni;
+    sf::Rect2f txrMMDevil;
+    sf::Rect2f txrMMAstro;
+    sf::Rect2f txrMMWitch;
+    sf::Rect2f txrMMWizard;
+    sf::Rect2f txrMMMouse;
+    sf::Rect2f txrMMEngi;
+    sf::Rect2f txrMMRepulso;
+    sf::Rect2f txrMMAttracto;
+    sf::Rect2f txrMMCopy;
+    sf::Rect2f txrMMDuck;
+    sf::Rect2f txrMMShrine;
+    sf::Rect2f txrCloud;
 
     ////////////////////////////////////////////////////////////
     // Cat animation rects: eye blinking
@@ -981,13 +872,13 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Random number generation
-    RNGSeedType seed{static_cast<RNGSeedType>(sf::Clock::now().asMicroseconds())};
+    RNGSeedType seed;
     RNGFast     rng{seed};
     RNGFast     rngFast{seed}; // very fast, low-quality, but good enough for VFXs
 
     ////////////////////////////////////////////////////////////
     // Cat names
-    sf::base::Vector<sf::base::Vector<sf::base::StringView>> shuffledCatNamesPerType = makeShuffledCatNames(rng);
+    sf::base::Vector<sf::base::Vector<sf::base::StringView>> shuffledCatNamesPerType;
 
     ////////////////////////////////////////////////////////////
     // Prestige transition
@@ -1130,7 +1021,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Thread pool
-    sf::base::ThreadPool threadPool{getTPWorkerCount()};
+    sf::base::ThreadPool threadPool;
 
     ////////////////////////////////////////////////////////////
     // Cached views
