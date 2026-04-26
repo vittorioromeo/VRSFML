@@ -1,7 +1,5 @@
 #pragma once
 
-#include "CatConstants.hpp"
-
 
 // #define BUBBLEBYTE_NO_AUDIO 1
 #include "Achievements.hpp"
@@ -9,9 +7,7 @@
 #include "Bubble.hpp"
 #include "BubbleType.hpp"
 #include "Cat.hpp"
-#include "CatNames.hpp"
 #include "CatType.hpp"
-#include "Collision.hpp"
 #include "ComboState.hpp"
 #include "Constants.hpp"
 #include "Countdown.hpp"
@@ -35,13 +31,11 @@
 #include "Shrine.hpp"
 #include "ShrineType.hpp"
 #include "Sounds.hpp"
-#include "Stats.hpp"
 #include "SweepAndPrune.hpp"
 #include "TextEffectWiggle.hpp"
 #include "TextParticle.hpp"
 #include "TextShakeEffect.hpp"
 #include "UIState.hpp"
-#include "Version.hpp"
 
 #include "ExampleUtils/ControlFlow.hpp"
 #include "ExampleUtils/HueColor.hpp"
@@ -79,7 +73,6 @@
 #include "SFML/Graphics/View.hpp"
 
 #include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/Listener.hpp"
 #include "SFML/Audio/Music.hpp"
 #include "SFML/Audio/MusicReader.hpp"
@@ -88,8 +81,6 @@
 
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/Mouse.hpp"
-#include "SFML/Window/VideoMode.hpp"
-#include "SFML/Window/VideoModeUtils.hpp"
 #include "SFML/Window/WindowSettings.hpp" // IWYU pragma: keep
 
 #include "SFML/System/Angle.hpp"
@@ -100,18 +91,13 @@
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Vec2.hpp"
 
-#include "SFML/Base/Algorithm/Erase.hpp"
 #include "SFML/Base/AnkerlUnorderedDense.hpp"
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Clamp.hpp"
-#include "SFML/Base/Constants.hpp"
 #include "SFML/Base/FixedFunction.hpp"
-#include "SFML/Base/FloatMax.hpp"
 #include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
-#include "SFML/Base/Math/Ceil.hpp"
 #include "SFML/Base/Math/Pow.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
@@ -121,9 +107,7 @@
 #include "SFML/Base/ThreadPool.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#include <cstdarg>
 #include <cstdio>
-#include <ctime>
 
 #if defined(__GNUC__) || defined(__clang__)
     #define BUBBLE_IDLE_PRINTF_FORMAT(fmtIndex, firstArgIndex) __attribute__((format(printf, fmtIndex, firstArgIndex)))
@@ -162,60 +146,15 @@ struct CloudFrameDrawSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
 
 
 ////////////////////////////////////////////////////////////
-inline bool handleBubbleCollision(const float deltaTimeMs, Bubble& iBubble, Bubble& jBubble)
-{
-    const auto result = handleCollision(deltaTimeMs,
-                                        iBubble.position,
-                                        jBubble.position,
-                                        iBubble.velocity,
-                                        jBubble.velocity,
-                                        iBubble.radius,
-                                        jBubble.radius,
-                                        iBubble.type == BubbleType::Bomb ? 5.f : 1.f,
-                                        jBubble.type == BubbleType::Bomb ? 5.f : 1.f);
-
-    if (!result.hasValue())
-        return false;
-
-    iBubble.position += result->iDisplacement;
-    jBubble.position += result->jDisplacement;
-    iBubble.velocity += result->iVelocityChange;
-    jBubble.velocity += result->jVelocityChange;
-
-    return true;
-}
+bool handleBubbleCollision(float deltaTimeMs, Bubble& iBubble, Bubble& jBubble);
 
 
 ////////////////////////////////////////////////////////////
-inline bool handleCatCollision(const float deltaTimeMs, Cat& iCat, Cat& jCat)
-{
-    const auto
-        result = handleCollision(deltaTimeMs, iCat.position, jCat.position, {}, {}, iCat.getRadius(), jCat.getRadius(), 1.f, 1.f);
-
-    if (!result.hasValue())
-        return false;
-
-    if (!iCat.isHexedOrCopyHexed())
-        iCat.position += result->iDisplacement;
-
-    if (!jCat.isHexedOrCopyHexed())
-        jCat.position += result->jDisplacement;
-
-    return true;
-}
+bool handleCatCollision(float deltaTimeMs, Cat& iCat, Cat& jCat);
 
 
 ////////////////////////////////////////////////////////////
-inline bool handleCatShrineCollision(const float deltaTimeMs, Cat& cat, Shrine& shrine)
-{
-    const auto result = handleCollision(deltaTimeMs, cat.position, shrine.position, {}, {}, cat.getRadius(), 64.f, 1.f, 1.f);
-
-    if (!result.hasValue())
-        return false;
-
-    cat.position += result->iDisplacement;
-    return true;
-}
+bool handleCatShrineCollision(float deltaTimeMs, Cat& cat, Shrine& shrine);
 
 
 ////////////////////////////////////////////////////////////
@@ -420,12 +359,7 @@ struct Main
     float                          dpiScalingFactor = 1.f;
 
     ////////////////////////////////////////////////////////////
-    void refreshWindowAutoBatchModeFromProfile() // TODO P1: check if this solves flickering
-    {
-        window.setAutoBatchMode(profile.autobatchMode == 0   ? sf::RenderTarget::AutoBatchMode::Disabled
-                                : profile.autobatchMode == 1 ? sf::RenderTarget::AutoBatchMode::CPUStorage
-                                                             : sf::RenderTarget::AutoBatchMode::GPUStorage);
-    }
+    void refreshWindowAutoBatchModeFromProfile(); // TODO P1: check if this solves flickering
 
     ////////////////////////////////////////////////////////////
     bool flushAfterEveryBatch  = false; // TODO P1: check if this solves flickering
@@ -1112,16 +1046,7 @@ struct Main
     sf::base::Vector<HexedCatDrawCommand> hexedCatDrawCommands;
 
     ////////////////////////////////////////////////////////////
-    void drawBatch(const sf::CPUDrawableBatch& batch, const sf::RenderStates& states)
-    {
-        rtGame.draw(batch, states);
-
-        if (flushAfterEveryBatch)
-            rtGame.invokeGlFlush();
-
-        if (finishAfterEveryBatch)
-            rtGame.invokeGlFinish();
-    }
+    void drawBatch(const sf::CPUDrawableBatch& batch, const sf::RenderStates& states);
 
     ////////////////////////////////////////////////////////////
     // Screen shake effect state
@@ -1283,46 +1208,10 @@ struct Main
     Countdown                                              undoPPPurchaseTimer;
 
     ////////////////////////////////////////////////////////////
-    void saveMainPlaythroughToFile()
-    {
-        if constexpr (isDemoVersion)
-        {
-            if (ptMain.fullVersion)
-            {
-                sf::cOut() << "Cannot save non-demo playthrough in demo version!\n";
-                return;
-            }
-        }
-
-        ptMain.fullVersion = !isDemoVersion;
-        savePlaythroughToFile(ptMain, "userdata/playthrough.json");
-    }
+    void saveMainPlaythroughToFile();
 
     ////////////////////////////////////////////////////////////
-    void log(const char* format, ...) // NOLINT(modernize-avoid-variadic-functions)
-    {
-        if (!logFile)
-            return;
-
-        const std::time_t currentTime = std::time(nullptr);
-        const auto        localTime   = *std::localtime(&currentTime);
-
-        char timeBuffer[100]; // Buffer for the timestamp string
-        std::strftime(timeBuffer, sizeof(timeBuffer), "%Y-%m-%d %H:%M:%S", &localTime);
-
-        char messageBuffer[1024];
-
-        va_list args{};
-        va_start(args, format);
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
-        vsnprintf(messageBuffer, sizeof(messageBuffer), format, args);
-#pragma GCC diagnostic pop
-        va_end(args);
-
-        logFile << timeBuffer << " - " << messageBuffer << '\n';
-        logFile.flush();
-    }
+    void log(const char* format, ...); // NOLINT(modernize-avoid-variadic-functions)
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] bool inSpeedrunPlaythrough() const
@@ -1331,106 +1220,38 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void addMoney(const MoneyType reward)
-    {
-        pt->money += reward;
-        moneyGainedLastSecond += reward;
-    }
+    void addMoney(MoneyType reward);
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::base::Vector<sf::base::Vector<sf::base::StringView>> makeShuffledCatNames(RNGFast& rng)
-    {
-        sf::base::Vector<sf::base::Vector<sf::base::StringView>> result(nCatTypes);
-
-        for (SizeT i = 0u; i < nCatTypes; ++i)
-            result[i] = getShuffledCatNames(static_cast<CatType>(i), rng);
-
-        return result;
-    }
+    [[nodiscard]] static sf::base::Vector<sf::base::Vector<sf::base::StringView>> makeShuffledCatNames(RNGFast& rng);
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static unsigned int getTPWorkerCount()
-    {
-        const auto numThreads = static_cast<unsigned int>(sf::base::ThreadPool::getHardwareWorkerCount());
-        return (numThreads == 0u) ? 3u : numThreads - 1u;
-    }
+    [[nodiscard]] static unsigned int getTPWorkerCount();
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SizeT getNextCatNameIdx(const CatType catType)
-    {
-        return pt->nextCatNamePerType[asIdx(catType)]++ % shuffledCatNamesPerType[asIdx(catType)].size();
-    }
+    [[nodiscard]] SizeT getNextCatNameIdx(CatType catType);
 
     ////////////////////////////////////////////////////////////
-    Particle& implEmplaceParticle(const sf::Vec2f    position,
-                                  const ParticleType particleType,
-                                  const float        scaleMult,
-                                  const float        speedMult,
-                                  const float        opacity = 1.f)
-    {
-        return particles.emplaceBack(
-            ParticleData{
-                .position      = position,
-                .velocity      = rngFast.getVec2f({-0.75f, -0.75f}, {0.75f, 0.75f}) * speedMult,
-                .scale         = rngFast.getF(0.08f, 0.27f) * scaleMult,
-                .scaleDecay    = 0.f,
-                .accelerationY = 0.002f,
-                .opacity       = opacity,
-                .opacityDecay  = rngFast.getF(0.00025f, 0.0015f),
-                .rotation      = rngFast.getF(0.f, sf::base::tau),
-                .torque        = rngFast.getF(-0.002f, 0.002f),
-            },
-            sf::base::U8{0u},
-            particleType);
-    }
+    Particle& implEmplaceParticle(sf::Vec2f    position,
+                                  ParticleType particleType,
+                                  float        scaleMult,
+                                  float        speedMult,
+                                  float        opacity = 1.f);
 
     ////////////////////////////////////////////////////////////
-    bool spawnSpentCoinParticle(const ParticleData& particleData)
-    {
-        if (!profile.showParticles || !hudCullingBoundaries.isInside(particleData.position))
-            return false;
-
-        spentCoinParticles.emplaceBack(particleData, sf::base::U8{0u}, ParticleType::Coin);
-        return true;
-    }
+    bool spawnSpentCoinParticle(const ParticleData& particleData);
 
     ////////////////////////////////////////////////////////////
-    void spawnHUDTopParticle(const ParticleData& particleData, const float hue, const ParticleType particleType)
-    {
-        if (!profile.showParticles || !hudCullingBoundaries.isInside(particleData.position))
-            return;
-
-        hudTopParticles.emplaceBack(particleData, hueToByte(hue), particleType);
-    }
+    void spawnHUDTopParticle(const ParticleData& particleData, float hue, ParticleType particleType);
 
     ////////////////////////////////////////////////////////////
-    void spawnHUDBottomParticle(const ParticleData& particleData, const float hue, const ParticleType particleType)
-    {
-        if (!profile.showParticles || !hudCullingBoundaries.isInside(particleData.position))
-            return;
-
-        hudBottomParticles.emplaceBack(particleData, hueToByte(hue), particleType);
-    }
+    void spawnHUDBottomParticle(const ParticleData& particleData, float hue, ParticleType particleType);
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool spawnEarnedCoinParticle(const sf::Vec2f startPosition)
-    {
-        if (!profile.showParticles || !profile.showCoinParticles || !hudCullingBoundaries.isInside(startPosition))
-            return false;
-
-        earnedCoinParticles.emplaceBack(startPosition);
-        return true;
-    }
+    [[nodiscard]] bool spawnEarnedCoinParticle(sf::Vec2f startPosition);
 
     ////////////////////////////////////////////////////////////
-    void spawnParticle(const ParticleData& particleData, const float hue, const ParticleType particleType)
-    {
-        if (!profile.showParticles || !particleCullingBoundaries.isInside(particleData.position))
-            return;
-
-        // TODO P2: consider optimizing this pattern by just returning the emplaced particle and having the caller set the data
-        particles.emplaceBack(particleData, hueToByte(hue), particleType);
-    }
+    void spawnParticle(const ParticleData& particleData, float hue, ParticleType particleType);
 
     ////////////////////////////////////////////////////////////
     void spawnParticles(const SizeT n, const sf::Vec2f position, const auto... args)
@@ -1485,126 +1306,56 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void statBubblePopped(const BubbleType bubbleType, const bool byHand, const MoneyType reward)
-    {
-        withAllStats([&](Stats& stats)
-        {
-            stats.nBubblesPoppedByType[asIdx(bubbleType)] += 1u;
-            stats.revenueByType[asIdx(bubbleType)] += reward;
-        });
-
-        if (byHand)
-        {
-            withAllStats([&](Stats& stats)
-            {
-                stats.nBubblesHandPoppedByType[asIdx(bubbleType)] += 1u;
-                stats.revenueHandByType[asIdx(bubbleType)] += reward;
-            });
-        }
-    }
+    void statBubblePopped(BubbleType bubbleType, bool byHand, MoneyType reward);
 
     ////////////////////////////////////////////////////////////
-    void statExplosionRevenue(const MoneyType reward)
-    {
-        withAllStats([&](Stats& stats) { stats.explosionRevenue += reward; });
-    }
+    void statExplosionRevenue(MoneyType reward);
 
     ////////////////////////////////////////////////////////////
-    void statFlightRevenue(const MoneyType reward)
-    {
-        withAllStats([&](Stats& stats) { stats.flightRevenue += reward; });
-    }
+    void statFlightRevenue(MoneyType reward);
 
     ////////////////////////////////////////////////////////////
-    void statHellPortalRevenue(const MoneyType reward)
-    {
-        withAllStats([&](Stats& stats) { stats.hellPortalRevenue += reward; });
-    }
+    void statHellPortalRevenue(MoneyType reward);
 
     ////////////////////////////////////////////////////////////
-    void statSecondsPlayed()
-    {
-        withAllStats([&](Stats& stats) { stats.secondsPlayed += 1u; });
-    }
+    void statSecondsPlayed();
 
     ////////////////////////////////////////////////////////////
-    void statHighestStarBubblePopCombo(const sf::base::U64 comboValue)
-    {
-        withAllStats([&](Stats& stats)
-        { stats.highestStarBubblePopCombo = sf::base::max(stats.highestStarBubblePopCombo, comboValue); });
-    }
+    void statHighestStarBubblePopCombo(sf::base::U64 comboValue);
 
     ////////////////////////////////////////////////////////////
-    void statHighestNovaBubblePopCombo(const sf::base::U64 comboValue)
-    {
-        withAllStats([&](Stats& stats)
-        { stats.highestNovaBubblePopCombo = sf::base::max(stats.highestNovaBubblePopCombo, comboValue); });
-    }
+    void statHighestNovaBubblePopCombo(sf::base::U64 comboValue);
 
     ////////////////////////////////////////////////////////////
-    void statAbsorbedStarBubble()
-    {
-        withAllStats([&](Stats& stats) { stats.nAbsorbedStarBubbles += 1u; });
-    }
+    void statAbsorbedStarBubble();
 
     ////////////////////////////////////////////////////////////
-    void statSpellCast(const SizeT spellIndex)
-    {
-        withAllStats([&](Stats& stats) { stats.nSpellCasts[spellIndex] += 1u; });
-    }
+    void statSpellCast(SizeT spellIndex);
 
     ////////////////////////////////////////////////////////////
-    void statMaintenance(const SizeT nCatsHit)
-    {
-        withAllStats([&](Stats& stats) { stats.nMaintenances += nCatsHit; });
-    }
+    void statMaintenance(SizeT nCatsHit);
 
     ////////////////////////////////////////////////////////////
-    void statDisguise()
-    {
-        withAllStats([&](Stats& stats) { stats.nDisguises += 1u; });
-    }
+    void statDisguise();
 
     ////////////////////////////////////////////////////////////
-    void statDollCollected()
-    {
-        withAllStats([&](Stats& stats) { stats.nWitchcatDollsCollected += 1u; });
-    }
+    void statDollCollected();
 
     ////////////////////////////////////////////////////////////
-    void statRitual(const CatType catType)
-    {
-        withAllStats([&](Stats& stats) { stats.nWitchcatRitualsPerCatType[asIdx(catType)] += 1u; });
-    }
+    void statRitual(CatType catType);
 
     ////////////////////////////////////////////////////////////
-    void statHighestSimultaneousMaintenances(const sf::base::U64 value)
-    {
-        withAllStats([&](Stats& stats)
-        { stats.highestSimultaneousMaintenances = sf::base::max(stats.highestSimultaneousMaintenances, value); });
-    }
+    void statHighestSimultaneousMaintenances(sf::base::U64 value);
 
     ////////////////////////////////////////////////////////////
-    void statHighestDPS(const sf::base::U64 value)
-    {
-        withAllStats([&](Stats& stats) { stats.highestDPS = sf::base::max(stats.highestDPS, value); });
-    }
+    void statHighestDPS(sf::base::U64 value);
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool keyDown(const sf::Keyboard::Key key) const
-    {
-        return inputHelper.isKeyDown(key);
-    }
+    [[nodiscard]] bool keyDown(sf::Keyboard::Key key) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool mBtnDown(const sf::Mouse::Button button, const bool penetrateUI) const
-    {
-        if (ImGui::GetIO().WantCaptureMouse && !penetrateUI)
-            return false;
-
-        return inputHelper.isMouseButtonDown(button);
-    }
+    [[nodiscard]] bool mBtnDown(sf::Mouse::Button button, bool penetrateUI) const;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::Rect2f addImgResourceToAtlas(const sf::Path& path)
@@ -1619,15 +1370,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void playSound(const LoadedSound& ls, const sf::base::SizeT maxOverlap = 255u)
-    {
-#ifndef BUBBLEBYTE_NO_AUDIO
-        soundManager.playPooled(playbackDevice, ls, maxOverlap);
-#else
-        (void)ls;
-        (void)maxOverlap;
-#endif
-    }
+    void playSound(const LoadedSound& ls, sf::base::SizeT maxOverlap = 255u);
 
     ////////////////////////////////////////////////////////////
     void forEachBubbleInRadiusSquared(const sf::Vec2f center, const float radiusSq, auto&& func)
@@ -1666,18 +1409,10 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Bubble* pickRandomBubbleInRadius(const sf::Vec2f center, const float radius)
-    {
-        return pickRandomBubbleInRadiusMatching(center, radius, [] [[gnu::always_inline, gnu::flatten]] (const Bubble&) {
-            return true;
-        });
-    }
+    [[nodiscard]] Bubble* pickRandomBubbleInRadius(sf::Vec2f center, float radius);
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Vec2f getResolution() const
-    {
-        return window.getSize().toVec2f();
-    }
+    [[nodiscard]] sf::Vec2f getResolution() const;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] inline float getComputedCooldownByCatTypeOrCopyCat(const CatType catType) const
@@ -1692,37 +1427,16 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Vec2f getViewCenter() const
-    {
-        const sf::Vec2f currentViewSize = getCurrentGameViewSize();
-        return {clampGameViewCenterX(currentViewSize.x / 2.f + playerInputState.actualScroll * 2.f, currentViewSize.x),
-                currentViewSize.y / 2.f};
-    }
+    [[nodiscard]] sf::Vec2f getViewCenter() const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Vec2f getViewCenterWithoutScroll() const
-    {
-        const sf::Vec2f currentViewSize = getCurrentGameViewSize();
-        return {clampGameViewCenterX(currentViewSize.x / 2.f, currentViewSize.x), currentViewSize.y / 2.f};
-    }
+    [[nodiscard]] sf::Vec2f getViewCenterWithoutScroll() const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] CullingBoundaries getViewCullingBoundaries(const float offset) const
-    {
-        const sf::Vec2f viewSize{getCurrentGameViewSize()};
-        const sf::Vec2f viewCenter{getViewCenter()};
-
-        return {viewCenter.x - viewSize.x / 2.f + offset,
-                viewCenter.x + viewSize.x / 2.f - offset,
-                viewCenter.y - viewSize.y / 2.f + offset,
-                viewCenter.y + viewSize.y / 2.f - offset};
-    }
+    [[nodiscard]] CullingBoundaries getViewCullingBoundaries(float offset) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Vec2f getCatRangeCenter(const Cat& cat)
-    {
-        return cat.position + CatConstants::rangeOffsets[asIdx(cat.type)];
-    }
+    [[nodiscard]] static sf::Vec2f                                    getCatRangeCenter(const Cat& cat);
     [[nodiscard]] float                                               getWindRepulsionMult() const;
     [[nodiscard]] float                                               getWindAttractionMult() const;
     [[nodiscard]] static constexpr CatType                            shrineTypeToCatType(ShrineType shrineType);
@@ -1744,100 +1458,19 @@ struct Main
     [[nodiscard]] sf::Vec2u getNewResolution() const;
 
     ////////////////////////////////////////////////////////////
-    Cat& spawnCat(const sf::Vec2f pos, const CatType catType, const float hue)
-    {
-        const auto meowPitch = [&] -> float
-        {
-            switch (catType)
-            {
-                case CatType::Uni:
-                    return rng.getF(1.2f, 1.3f);
-                case CatType::Devil:
-                    return rng.getF(0.7f, 0.8f);
-                default:
-                    return rng.getF(0.9f, 1.1f);
-            }
-        }();
-
-        sounds.purrmeow.settings.position = {pos.x, pos.y};
-        sounds.purrmeow.settings.pitch    = meowPitch;
-        playSound(sounds.purrmeow);
-
-        spawnParticles(32, pos, ParticleType::Star, 0.5f, 0.75f);
-
-        playerInputState.catToPlace = nullptr;
-
-        Cat& newCat = pt->cats.emplaceBack(Cat{
-            .position    = pos,
-            .cooldown    = {.value = getComputedCooldownByCatTypeOrCopyCat(catType)},
-            .pawPosition = pos,
-            .hue         = hue,
-            .nameIdx     = getNextCatNameIdx(catType),
-            .type        = catType,
-        });
-
-        return newCat;
-    }
+    Cat& spawnCat(sf::Vec2f pos, CatType catType, float hue);
 
     ////////////////////////////////////////////////////////////
-    Cat& spawnCatCentered(const CatType catType, const float hue, const bool placeInHand = true)
-    {
-        const auto pos = gameView.screenToWorld(getResolution() / 2.f, window.getSize().toVec2f());
-
-        Cat& newCat = spawnCat(pos, catType, hue);
-
-        if (placeInHand)
-        {
-            playerInputState.catToPlace = &newCat;
-            newCat.dragTime             = 1000.f;
-
-            playerInputState.draggedCats.clear();
-            playerInputState.draggedCats.pushBack(&newCat);
-            playerInputState.draggedCatsStartedWithTouch        = false;
-            playerInputState.draggedCatsStartedFromAOESelection = false;
-
-            newCat.position    = playerInputState.lastMousePos;
-            newCat.pawPosition = playerInputState.lastMousePos;
-        }
-
-        return newCat;
-    }
+    Cat& spawnCatCentered(CatType catType, float hue, bool placeInHand = true);
 
     ////////////////////////////////////////////////////////////
-    Cat& spawnSpecialCat(const sf::Vec2f pos, const CatType catType)
-    {
-        ++pt->psvPerCatType[static_cast<SizeT>(catType)].nPurchases;
-        return spawnCat(pos, catType, /* hue */ 0.f);
-    }
+    Cat& spawnSpecialCat(sf::Vec2f pos, CatType catType);
 
     ////////////////////////////////////////////////////////////
-    void resetTipState()
-    {
-        tipTCByte.reset();
-        tipTCBackground.reset();
-        tipTCBytePreEnd.reset();
-        tipTCByteEnd.reset();
-        tipTCBackgroundEnd.reset();
-        tipCountdownChar.value = 0.f;
-        tipString              = "";
-        tipCharIdx             = 0u;
-    }
+    void resetTipState();
 
     ////////////////////////////////////////////////////////////
-    void doTip(const sf::base::String& str, const SizeT maxPrestigeLevel = 0u)
-    {
-        if (!profile.tipsEnabled || pt->psvBubbleValue.nPurchases > maxPrestigeLevel || inSpeedrunPlaythrough())
-            return;
-
-        playSound(sounds.byteMeow, /* maxOverlap */ 1u);
-
-        resetTipState();
-
-        tipTCByte.emplace(TargetedCountdown{.startingValue = 500.f});
-        tipTCByte->restart();
-
-        tipString = str + "\t\t\t\t\t";
-    }
+    void doTip(const sf::base::String& str, SizeT maxPrestigeLevel = 0u);
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] bool isUnicatTranscendenceActive() const
@@ -1852,86 +1485,31 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] float getAspectRatioScalingFactor(const sf::Vec2f originalSize, const sf::Vec2f windowSize) const
-    {
-        // Calculate the scale factors for both dimensions
-        const float scaleX = windowSize.x / originalSize.x;
-        const float scaleY = windowSize.y / originalSize.y;
-
-        // Use the smaller scale factor to maintain aspect ratio
-        return sf::base::min(scaleX, scaleY);
-    }
+    [[nodiscard]] float getAspectRatioScalingFactor(sf::Vec2f originalSize, sf::Vec2f windowSize) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] float getCappedGameViewAspectRatio(const sf::Vec2f originalSize, const sf::Vec2f windowSize) const
-    {
-        const float originalAspect = originalSize.x / originalSize.y;
-        const float windowAspect   = windowSize.x / windowSize.y;
-        // const float configuredMaxAspect = sf::base::max(maxGameViewAspectRatio, originalAspect);
-        // const float unlockedMapAspect   = pt != nullptr ? pt->getMapLimit() / originalSize.y : originalAspect;
-        // const float clampedMaxViewAspect = sf::base::min(configuredMaxAspect, unlockedMapAspect);
-
-        return sf::base::max(windowAspect, originalAspect);
-    }
+    [[nodiscard]] float getCappedGameViewAspectRatio(sf::Vec2f originalSize, sf::Vec2f windowSize) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Vec2f getExpandedGameViewSize(const sf::Vec2f originalSize, const sf::Vec2f windowSize) const
-    {
-        return {originalSize.y * getCappedGameViewAspectRatio(originalSize, windowSize), originalSize.y};
-    }
+    [[nodiscard]] sf::Vec2f getExpandedGameViewSize(sf::Vec2f originalSize, sf::Vec2f windowSize) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::View createScaledGameView(const sf::Vec2f originalSize, const sf::Vec2f windowSize) const
-    {
-        const float     originalAspect = originalSize.x / originalSize.y;
-        const float     windowAspect   = windowSize.x / windowSize.y;
-        const float     viewAspect     = getCappedGameViewAspectRatio(originalSize, windowSize);
-        const sf::Vec2f expandedSize   = getExpandedGameViewSize(originalSize, windowSize);
-        const float     viewportWidth  = viewAspect < windowAspect ? viewAspect / windowAspect : 1.f;
-        const float     viewportHeight = windowAspect < originalAspect ? windowAspect / originalAspect : 1.f;
-
-        return {.center   = originalSize / 2.f,
-                .size     = expandedSize,
-                .viewport = {{0.f, (1.f - viewportHeight) * 0.5f}, {viewportWidth, viewportHeight}}};
-    }
+    [[nodiscard]] sf::View createScaledGameView(sf::Vec2f originalSize, sf::Vec2f windowSize) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::View createScaledTopGameView(const sf::Vec2f originalSize, const sf::Vec2f windowSize) const
-    {
-        const sf::View scaledGameView = createScaledGameView(originalSize, windowSize);
-
-        return {.center   = scaledGameView.center,
-                .size     = scaledGameView.size.componentWiseDiv(scaledGameView.viewport.size),
-                .viewport = {{0.f, 0.f}, {1.f, 1.f}}};
-    }
+    [[nodiscard]] sf::View createScaledTopGameView(sf::Vec2f originalSize, sf::Vec2f windowSize) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Vec2f getCurrentGameViewSize() const
-    {
-        return getExpandedGameViewSize(gameScreenSize, getResolution());
-    }
+    [[nodiscard]] sf::Vec2f getCurrentGameViewSize() const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] float clampGameViewCenterX(const float desiredCenterX, const float viewWidth) const
-    {
-        if (viewWidth >= boundaries.x)
-            return boundaries.x / 2.f;
-
-        const float halfWidth = viewWidth / 2.f;
-        return sf::base::clamp(desiredCenterX, halfWidth, boundaries.x - halfWidth);
-    }
+    [[nodiscard]] float clampGameViewCenterX(float desiredCenterX, float viewWidth) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::View makeScaledHUDView(const sf::Vec2f resolution, float scale) const
-    {
-        return {.center = {resolution.x / (2.f * scale), resolution.y / (2.f * scale)}, .size = resolution / scale};
-    }
+    [[nodiscard]] sf::View makeScaledHUDView(sf::Vec2f resolution, float scale) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Vec2f getHUDMousePos() const
-    {
-        return nonScaledHUDView.screenToWorld(sf::Mouse::getPosition(window).toVec2f(), window.getSize().toVec2f());
-    }
+    [[nodiscard]] sf::Vec2f getHUDMousePos() const;
 
     ////////////////////////////////////////////////////////////
     template <sf::base::SizeT BufferIdx = 0u, typename T>
@@ -2146,28 +1724,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void switchToBGM(const sf::base::SizeT index, const bool force)
-    {
-#ifndef BUBBLEBYTE_NO_AUDIO
-        if (!force && lastPlayedMusic == bgmPaths[index])
-            return;
-
-        lastPlayedMusic     = bgmPaths[index];
-        bgmTransition.value = 1000.f;
-
-        auto& optNextMusic = getNextBGMBuffer();
-        optNextMusic.emplace(playbackDevice, sf::MusicReader::openFromFile(bgmPaths[index]).value());
-
-        optNextMusic->music.setVolume(0.f);
-        optNextMusic->music.setLooping(true);
-        optNextMusic->music.setAttenuation(0.f);
-        optNextMusic->music.setSpatializationEnabled(false);
-        optNextMusic->music.play();
-#else
-        (void)index;
-        (void)force;
-#endif
-    }
+    void switchToBGM(sf::base::SizeT index, bool force);
 
     ////////////////////////////////////////////////////////////
     static inline constexpr const char* bgmPaths[] = {
@@ -2183,56 +1740,16 @@ struct Main
     };
 
     ////////////////////////////////////////////////////////////
-    sf::base::Optional<BGMBuffer>& getCurrentBGMBuffer()
-    {
-        return bgmBuffers[currentBGMBufferIdx % 2u];
-    }
+    sf::base::Optional<BGMBuffer>& getCurrentBGMBuffer();
 
     ////////////////////////////////////////////////////////////
-    sf::base::Optional<BGMBuffer>& getNextBGMBuffer()
-    {
-        return bgmBuffers[(currentBGMBufferIdx + 1u) % 2u];
-    }
+    sf::base::Optional<BGMBuffer>& getNextBGMBuffer();
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] float getHueByCatType(const CatType catType)
-    {
-        if (catType == CatType::Normal)
-            return rng.getF(-20.f, 20.f);
-
-        if (catType == CatType::Uni)
-            return rng.getF(0.f, 360.f);
-
-        if (catType == CatType::Devil)
-            return rng.getF(-25.f, 25.f);
-
-        if (catType == CatType::Astro)
-            return rng.getF(-20.f, 20.f);
-
-        return 0;
-    }
+    [[nodiscard]] float getHueByCatType(CatType catType);
 
     ////////////////////////////////////////////////////////////
-    void beginPrestigeTransition(const PrestigePointsType ppReward)
-    {
-        playSound(sounds.prestige);
-
-        buyReminder = 0;
-
-        inPrestigeTransition    = true;
-        playerInputState.scroll = 0.f;
-
-        resetAllDraggedCats();
-        pt->onPrestige(ppReward);
-
-        profile.selectedBackground = 0;
-        profile.selectedBGM        = 0;
-
-        updateSelectedBackgroundSelectorIndex();
-        updateSelectedBGMSelectorIndex();
-
-        switchToBGM(static_cast<sf::base::SizeT>(profile.selectedBGM), /* force */ true);
-    }
+    void beginPrestigeTransition(PrestigePointsType ppReward);
 
     void uiBeginColumns() const;
     void uiCenteredText(const char* str, float offsetX = 0.f, float offsetY = 0.f);
@@ -2329,361 +1846,73 @@ struct Main
     void uiSettingsDrawDebugTab();
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::Optional<sf::Rect2f> getAoEDragRect(const sf::Vec2f mousePos) const
-    {
-        if (!playerInputState.catDragOrigin.hasValue())
-            return sf::base::nullOpt;
-
-        return sf::base::makeOptional<sf::Rect2f>(*playerInputState.catDragOrigin, mousePos - *playerInputState.catDragOrigin);
-    }
+    [[nodiscard]] sf::base::Optional<sf::Rect2f> getAoEDragRect(sf::Vec2f mousePos) const;
 
     ////////////////////////////////////////////////////////////
-    void resetAllDraggedCats()
-    {
-        playerInputState.catDragPressDuration = 0.f;
-        playerInputState.catDragOrigin.reset();
-        playerInputState.draggedCats.clear();
-        playerInputState.draggedCatsStartedWithTouch        = false;
-        playerInputState.draggedCatsStartedFromAOESelection = false;
-        playerInputState.catToPlace                         = nullptr;
-    }
+    void resetAllDraggedCats();
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::SizeT pickDragPivotCatIndex() const
-    {
-        SFML_BASE_ASSERT(!playerInputState.draggedCats.empty());
-
-        if (playerInputState.draggedCats.size() <= 2u)
-            return 0u;
-
-        // First calculate the centroid
-        sf::Vec2f centroid;
-
-        for (const Cat* cat : playerInputState.draggedCats)
-            centroid += cat->position;
-
-        centroid /= static_cast<float>(playerInputState.draggedCats.size());
-
-        // Find the position closest to the centroid
-        sf::base::SizeT closestIndex       = 0u;
-        float           minDistanceSquared = SFML_BASE_FLOAT_MAX;
-
-        for (sf::base::SizeT i = 0u; i < playerInputState.draggedCats.size(); ++i)
-        {
-            // Calculate squared distance (avoiding square root for performance)
-            const float distSquared = (playerInputState.draggedCats[i]->position - centroid).lengthSquared();
-
-            if (minDistanceSquared - distSquared < 64.f)
-            {
-                minDistanceSquared = distSquared;
-                closestIndex       = i;
-            }
-        }
-
-        return closestIndex;
-    }
+    [[nodiscard]] sf::base::SizeT pickDragPivotCatIndex() const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isCatBeingDragged(const Cat& cat) const
-    {
-        for (const Cat* c : playerInputState.draggedCats)
-            if (c == &cat)
-                return true;
-
-        return false;
-    }
+    [[nodiscard]] bool isCatBeingDragged(const Cat& cat) const;
 
     ////////////////////////////////////////////////////////////
-    void stopDraggingCat(const Cat& cat)
-    {
-        sf::base::vectorEraseIf(playerInputState.draggedCats, [&](const Cat* c) { return c == &cat; });
-    }
+    void stopDraggingCat(const Cat& cat);
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isWizardBusy() const
-    {
-        const Cat* wizardCat = getWizardCat();
-
-        if (wizardCat == nullptr)
-            return false;
-
-        return pt->absorbingWisdom || wizardCat->cooldown.value != 0.f || wizardCat->isHexedOrCopyHexed() ||
-               isCatBeingDragged(*wizardCat);
-    }
+    [[nodiscard]] bool isWizardBusy() const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Cat* findFirstCatByType(const CatType catType) const
-    {
-        for (Cat& cat : pt->cats)
-            if (cat.type == catType)
-                return &cat;
-
-        return nullptr;
-    }
+    [[nodiscard]] Cat* findFirstCatByType(CatType catType) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Cat* getWitchCat() const
-    {
-        return findFirstCatByType(CatType::Witch);
-    }
+    [[nodiscard]] Cat* getWitchCat() const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Cat* getWizardCat() const
-    {
-        return findFirstCatByType(CatType::Wizard);
-    }
+    [[nodiscard]] Cat* getWizardCat() const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Cat* getMouseCat() const
-    {
-        return findFirstCatByType(CatType::Mouse);
-    }
+    [[nodiscard]] Cat* getMouseCat() const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Cat* getEngiCat() const
-    {
-        return findFirstCatByType(CatType::Engi);
-    }
+    [[nodiscard]] Cat* getEngiCat() const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Cat* getRepulsoCat() const
-    {
-        return findFirstCatByType(CatType::Repulso);
-    }
+    [[nodiscard]] Cat* getRepulsoCat() const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Cat* getAttractoCat() const
-    {
-        return findFirstCatByType(CatType::Attracto);
-    }
+    [[nodiscard]] Cat* getAttractoCat() const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Cat* getCopyCat() const
-    {
-        return findFirstCatByType(CatType::Copy);
-    }
+    [[nodiscard]] Cat* getCopyCat() const;
 
     ////////////////////////////////////////////////////////////
-    void addCombo(int& xCombo, Countdown& xComboCountdown) const
-    {
-        if (xCombo == 0)
-        {
-            xCombo                = 1;
-            xComboCountdown.value = pt->psvComboStartTime.currentValue() * 1000.f;
-        }
-        else
-        {
-            xCombo += 1;
-            xComboCountdown.value += 150.f - sf::base::clamp(static_cast<float>(xCombo) * 10.f, 0.f, 100.f);
-        }
-    }
+    void addCombo(int& xCombo, Countdown& xComboCountdown) const;
 
     ////////////////////////////////////////////////////////////
-    static bool checkComboEnd(const float deltaTimeMs, int& xCombo, Countdown& xComboCountdown)
-    {
-        if (xComboCountdown.updateAndStop(deltaTimeMs) != CountdownStatusStop::JustFinished)
-            return false;
-
-        xCombo = 0;
-        return true;
-    }
+    static bool checkComboEnd(float deltaTimeMs, int& xCombo, Countdown& xComboCountdown);
 
     ////////////////////////////////////////////////////////////
-    void turnBubbleInto(Bubble& bubble, const BubbleType newType)
-    {
-        bubble.type = newType;
-
-        if (newType == BubbleType::Normal)
-        {
-            if (bubble.type == BubbleType::Bomb)
-                bombIdxToCatIdx.erase(static_cast<sf::base::SizeT>(&bubble - pt->bubbles.data()));
-
-            bubble.rotation = 0.f;
-            bubble.torque   = 0.f;
-            bubble.hueMod   = 0.f;
-
-            return;
-        }
-
-        if (newType == BubbleType::Star || newType == BubbleType::Nova)
-        {
-            bubble.hueMod = rng.getF(0.f, 360.f);
-            bubble.torque = 0.001f * rng.getSignF();
-
-            return;
-        }
-
-        if (newType == BubbleType::Bomb)
-        {
-            bubble.torque = 0.004f * rng.getSignF();
-            bubble.hueMod = 0.f;
-
-            return;
-        }
-    }
+    void turnBubbleInto(Bubble& bubble, BubbleType newType);
 
     ////////////////////////////////////////////////////////////
-    void doWizardSpellStarpawConversion(Cat& wizardCat)
-    {
-        const auto range       = getComputedRangeByCatTypeOrCopyCat(wizardCat.type);
-        const auto maxCooldown = getComputedCooldownByCatTypeOrCopyCat(wizardCat.type);
-
-        sounds.cast0.settings.position = {wizardCat.position.x, wizardCat.position.y};
-        playSound(sounds.cast0);
-
-        spawnParticlesNoGravity(256, wizardCat.position, ParticleType::Star, rngFast.getF(0.25f, 1.25f), rngFast.getF(0.5f, 3.f));
-
-        forEachBubbleInRadius(wizardCat.position,
-                              range,
-                              [&](Bubble& bubble)
-        {
-            if (bubble.type == BubbleType::Combo)
-                return ControlFlow::Continue;
-
-            if (pt->perm.starpawConversionIgnoreBombs && bubble.type != BubbleType::Normal)
-                return ControlFlow::Continue;
-
-            if (rng.getF(0.f, 99.f) > pt->psvStarpawPercentage.currentValue())
-                return ControlFlow::Continue;
-
-
-            turnBubbleInto(bubble, pt->perm.starpawNova ? BubbleType::Nova : BubbleType::Star);
-            bubble.velocity.y -= rng.getF(0.025f, 0.05f);
-
-            spawnParticles(1, bubble.position, ParticleType::Star, 0.5f, 0.35f);
-
-            return ControlFlow::Continue;
-        });
-
-        ++wizardCat.hits;
-        wizardCat.cooldown.value = maxCooldown * 2.f;
-    }
+    void doWizardSpellStarpawConversion(Cat& wizardCat);
 
     ////////////////////////////////////////////////////////////
-    void doWizardSpellMewltiplierAura(Cat& wizardCat)
-    {
-        const auto maxCooldown = getComputedCooldownByCatTypeOrCopyCat(wizardCat.type);
-
-        sounds.cast0.settings.position = {wizardCat.position.x, wizardCat.position.y};
-        playSound(sounds.cast0);
-
-        spawnParticlesNoGravity(256, wizardCat.position, ParticleType::Star, rngFast.getF(0.25f, 1.25f), rngFast.getF(0.5f, 3.f));
-
-        ++wizardCat.hits;
-        wizardCat.cooldown.value = maxCooldown * 2.f;
-    }
+    void doWizardSpellMewltiplierAura(Cat& wizardCat);
 
     ////////////////////////////////////////////////////////////
-    void doWizardSpellDarkUnion(Cat& wizardCat)
-    {
-        const auto range       = getComputedRangeByCatTypeOrCopyCat(wizardCat.type);
-        const auto maxCooldown = getComputedCooldownByCatTypeOrCopyCat(wizardCat.type);
-
-        Cat* witchCat = getWitchCat();
-
-        const bool castSuccessful = pt->hexSessions.empty() && witchCat != nullptr &&
-                                    (witchCat->position - wizardCat.position).lengthSquared() <= range * range;
-
-        if (castSuccessful)
-        {
-            sounds.cast0.settings.position = {wizardCat.position.x, wizardCat.position.y};
-            playSound(sounds.cast0);
-
-            spawnParticlesNoGravity(256,
-                                    wizardCat.position,
-                                    ParticleType::Star,
-                                    rngFast.getF(0.25f, 1.25f),
-                                    rngFast.getF(0.5f, 3.f));
-
-            spawnParticlesNoGravity(256,
-                                    witchCat->position,
-                                    ParticleType::Star,
-                                    rngFast.getF(0.25f, 1.25f),
-                                    rngFast.getF(0.5f, 3.f));
-
-            witchCat->cooldown.value -= witchCat->cooldown.value * (pt->psvDarkUnionPercentage.currentValue() / 100.f);
-        }
-        else
-        {
-            sounds.failcast.settings.position = {wizardCat.position.x, wizardCat.position.y};
-            playSound(sounds.failcast);
-        }
-
-        ++wizardCat.hits;
-        wizardCat.cooldown.value = maxCooldown * 4.f;
-    }
+    void doWizardSpellDarkUnion(Cat& wizardCat);
 
     ////////////////////////////////////////////////////////////
-    void doWizardSpellStasisField(Cat& wizardCat)
-    {
-        const auto maxCooldown = getComputedCooldownByCatTypeOrCopyCat(wizardCat.type);
-
-        sounds.cast0.settings.position = {wizardCat.position.x, wizardCat.position.y};
-        playSound(sounds.cast0);
-
-        spawnParticlesNoGravity(256, wizardCat.position, ParticleType::Star, rngFast.getF(0.25f, 1.25f), rngFast.getF(0.5f, 3.f));
-
-        ++wizardCat.hits;
-        wizardCat.cooldown.value = maxCooldown * 2.f;
-    }
+    void doWizardSpellStasisField(Cat& wizardCat);
 
     ////////////////////////////////////////////////////////////
     static inline constexpr ManaType spellManaCostByIndex[4] = {5u, 20u, 30u, 40u};
 
     ////////////////////////////////////////////////////////////
-    void castSpellByIndex(const sf::base::SizeT index, Cat* wizardCat, Cat* copyCat)
-    {
-        SFML_BASE_ASSERT(index < 4u);
-
-        const bool copyCatMustCast = copyCat != nullptr && pt->copycatCopiedCatType == CatType::Wizard;
-
-        wizardcatSpin.value = sf::base::tau;
-        statSpellCast(index);
-
-        if (index == 0u) // Starpaw Conversion
-        {
-            doWizardSpellStarpawConversion(*wizardCat);
-
-            if (copyCatMustCast)
-                doWizardSpellStarpawConversion(*copyCat);
-
-            return;
-        }
-
-        if (index == 1u) // Mewltiplier Aura
-        {
-            pt->mewltiplierAuraTimer += pt->perm.wizardCatDoubleMewltiplierDuration ? 12'000.f : 6000.f;
-
-            doWizardSpellMewltiplierAura(*wizardCat);
-
-            if (copyCatMustCast)
-                doWizardSpellMewltiplierAura(*copyCat);
-
-            return;
-        }
-
-        if (index == 2u) // Dark Union
-        {
-            doWizardSpellDarkUnion(*wizardCat);
-
-            if (copyCatMustCast)
-                doWizardSpellDarkUnion(*copyCat);
-
-            return;
-        }
-
-        if (index == 3u) // Stasis Field
-        {
-            pt->stasisFieldTimer += pt->perm.wizardCatDoubleStasisFieldDuration ? 12'000.f : 6000.f;
-
-            doWizardSpellStasisField(*wizardCat);
-
-            if (copyCatMustCast)
-                doWizardSpellStasisField(*copyCat);
-
-            return;
-        }
-    }
+    void castSpellByIndex(sf::base::SizeT index, Cat* wizardCat, Cat* copyCat);
 
     ////////////////////////////////////////////////////////////
     static constexpr auto formatTime(const sf::base::U64 seconds)
@@ -2724,124 +1953,13 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool mustApplyMewltiplierAura(const sf::Vec2f bubblePosition) const
-    {
-        if (pt->mewltiplierAuraTimer <= 0.f)
-            return false;
-
-        const Cat* wizardCat = getWizardCat();
-        if (wizardCat == nullptr)
-            return false;
-
-        const float wizardCatRangeSquared = pt->getComputedSquaredRangeByCatType(CatType::Wizard);
-
-        if ((wizardCat->position - bubblePosition).lengthSquared() <= wizardCatRangeSquared)
-            return true;
-
-        const Cat* copyCat = getCopyCat();
-        if (copyCat == nullptr || pt->copycatCopiedCatType != CatType::Wizard)
-            return false;
-
-        if ((copyCat->position - bubblePosition).lengthSquared() <= wizardCatRangeSquared)
-            return true;
-
-        return false;
-    }
+    [[nodiscard]] bool mustApplyMewltiplierAura(sf::Vec2f bubblePosition) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] MoneyType computeFinalReward(const Bubble& bubble,
-                                               const float   multiplier,
-                                               const float   comboMult,
-                                               const Cat*    popperCat) const
-    {
-        // Determine some information about the reward
-        const bool byPlayerClick = popperCat == nullptr;
-
-        const bool popperCatIsMousecat = //
-            !byPlayerClick && (popperCat->type == CatType::Mouse ||
-                               (popperCat->type == CatType::Copy && pt->copycatCopiedCatType == CatType::Mouse));
-
-        const bool popperCatIsNormal = !byPlayerClick && popperCat->type == CatType::Normal;
-
-        const bool mustApplyHandMult = byPlayerClick || popperCatIsMousecat; // mousecat benefits from click and cat mults
-        const bool mustApplyCatMult = !byPlayerClick;
-
-        const bool nearShrineOfClicking = byPlayerClick && ([&]
-        {
-            for (const Shrine& shrine : pt->shrines)
-                if (shrine.type == ShrineType::Clicking && shrine.isInRange(bubble.position))
-                    return true;
-
-            return false;
-        })();
-
-        // Base reward: bubble value by type multiplied by static multiplier (e.g. x10 for bombs, x20 for astro)
-        float result = static_cast<float>(pt->getComputedRewardByBubbleType(bubble.type)) * multiplier;
-
-        // Combo mult: applied for player clicks or mousecat clicks
-        result *= comboMult;
-
-        // Wizard spells: mewltiplier aura
-        if (mustApplyMewltiplierAura(bubble.position))
-            result *= pt->psvMewltiplierMult.currentValue();
-
-        // Global bonus -- mousecat (applies to clicks)
-        const bool isMouseBeingCopied = getCopyCat() != nullptr && pt->copycatCopiedCatType == CatType::Mouse;
-        if (mustApplyHandMult && getMouseCat() != nullptr)
-            result *= pt->psvPPMouseCatGlobalBonusMult.currentValue() * (isMouseBeingCopied ? 2.f : 1.f);
-
-        // Global bonus -- engicat (applies to cats)
-        const bool isEngiBeingCopied = getCopyCat() != nullptr && pt->copycatCopiedCatType == CatType::Engi;
-        if (mustApplyCatMult && getEngiCat() != nullptr)
-            result *= pt->psvPPEngiCatGlobalBonusMult.currentValue() * (isEngiBeingCopied ? 2.f : 1.f);
-
-        // Shrine of clicking: x5 reward for clicks
-        if (mustApplyHandMult && nearShrineOfClicking)
-            result *= 5.f;
-
-        // Ritual buff -- normalcat: x5 reward for cats
-        if (mustApplyCatMult && pt->buffCountdownsPerType[asIdx(CatType::Normal)].value > 0.f)
-            result *= 5.f;
-
-        // Ritual buff -- mousecat: x10 reward for clicks
-        if (mustApplyHandMult && pt->buffCountdownsPerType[asIdx(CatType::Mouse)].value > 0.f)
-            result *= 10.f;
-
-        // Genius cats: x2 reward for normal cats only
-        if (!byPlayerClick && popperCatIsNormal && pt->perm.geniusCatsPurchased)
-            result *= 2.f;
-
-        // Repulsocat: x2 reward for repelled bubbles
-        if (!bubble.repelledCountdown.isDone())
-            result *= 2.f;
-
-        // Attractocat: x2 reward for attracted bubbles
-        if (!bubble.attractedCountdown.isDone())
-            result *= 2.f;
-
-        return static_cast<MoneyType>(sf::base::ceil(result));
-    }
+    [[nodiscard]] MoneyType computeFinalReward(const Bubble& bubble, float multiplier, float comboMult, const Cat* popperCat) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Vec2u getReasonableWindowSize(const float scalingFactorMult = 1.f)
-    {
-        constexpr float gameRatio = gameScreenSize.x / gameScreenSize.y;
-
-        const auto fullscreenSize = sf::VideoModeUtils::getDesktopMode().size.toVec2f();
-
-        const float aspectRatio = fullscreenSize.x / fullscreenSize.y;
-
-        const bool isUltrawide = aspectRatio >= 2.f;
-        const bool isWide      = aspectRatio >= 1.6f && aspectRatio < 2.f;
-
-        const float scalingFactor = isUltrawide ? 0.9f : isWide ? 0.8f : 0.7f;
-
-        const auto windowSize = fullscreenSize * scalingFactor * scalingFactorMult;
-
-        const auto windowedWidth = windowSize.y * gameRatio + (uiWindowWidth + 35.f);
-
-        return sf::Vec2f{windowedWidth + 12.f, windowSize.y}.toVec2u();
-    }
+    [[nodiscard]] static sf::Vec2u getReasonableWindowSize(float scalingFactorMult = 1.f);
 
     ////////////////////////////////////////////////////////////
     struct SelectorEntry
@@ -2851,43 +1969,19 @@ struct Main
     };
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] int pickSelectedIndex(const sf::base::Vector<SelectorEntry>& entries, const int selectedIndex)
-    {
-        const auto selectedIndexU = static_cast<sf::base::SizeT>(selectedIndex);
-        return selectedIndexU < entries.size() ? entries[selectedIndexU].index : 0;
-    }
+    [[nodiscard]] int pickSelectedIndex(const sf::base::Vector<SelectorEntry>& entries, int selectedIndex);
 
     ////////////////////////////////////////////////////////////
-    void selectBackground(const sf::base::Vector<SelectorEntry>& entries, const int selectedIndex)
-    {
-        profile.selectedBackground = pickSelectedIndex(entries, selectedIndex);
-    }
+    void selectBackground(const sf::base::Vector<SelectorEntry>& entries, int selectedIndex);
 
     ////////////////////////////////////////////////////////////
-    void selectBGM(const sf::base::Vector<SelectorEntry>& entries, const int selectedIndex)
-    {
-        profile.selectedBGM = pickSelectedIndex(entries, selectedIndex);
-    }
+    void selectBGM(const sf::base::Vector<SelectorEntry>& entries, int selectedIndex);
 
     ////////////////////////////////////////////////////////////
-    void updateSelectedBackgroundSelectorIndex() const
-    {
-        auto& [entries, selectedIndex] = getBackgroundSelectorData();
-
-        for (sf::base::SizeT i = 0u; i < entries.size(); ++i)
-            if (profile.selectedBackground == entries[i].index)
-                selectedIndex = static_cast<int>(i);
-    }
+    void updateSelectedBackgroundSelectorIndex() const;
 
     ////////////////////////////////////////////////////////////
-    void updateSelectedBGMSelectorIndex() const
-    {
-        auto& [entries, selectedIndex] = getBGMSelectorData();
-
-        for (sf::base::SizeT i = 0u; i < entries.size(); ++i)
-            if (profile.selectedBGM == entries[i].index)
-                selectedIndex = static_cast<int>(i);
-    }
+    void updateSelectedBGMSelectorIndex() const;
 
     ////////////////////////////////////////////////////////////
     struct SelectorData
@@ -2897,324 +1991,31 @@ struct Main
     };
 
     ////////////////////////////////////////////////////////////
-    SelectorData& getBGMSelectorData() const
-    {
-        static thread_local SelectorData data;
-        data.entries.clear();
-
-        data.entries.emplaceBack(0, "Default");
-
-        if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Witch)])
-            data.entries.emplaceBack(1, "Ritual Circle");
-
-        if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Wizard)])
-            data.entries.emplaceBack(2, "The Wise One");
-
-        if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)])
-            data.entries.emplaceBack(3, "Click N Chill");
-
-        if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Engi)])
-            data.entries.emplaceBack(4, "Use More Cat");
-
-        if (data.selectedIndex == -1)
-        {
-            data.selectedIndex = [&]
-            {
-                for (sf::base::SizeT i = 0u; i < data.entries.size(); ++i)
-                    if (profile.selectedBGM == data.entries[i].index)
-                        return static_cast<int>(i);
-
-                return 0;
-            }();
-        }
-
-        return data;
-    }
+    SelectorData& getBGMSelectorData() const;
 
     ////////////////////////////////////////////////////////////
-    SelectorData& getBackgroundSelectorData() const
-    {
-        static thread_local SelectorData data;
-        data.entries.clear();
-
-        data.entries.emplaceBack(0, "Default");
-
-        if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Witch)])
-            data.entries.emplaceBack(1, "Swamp");
-
-        if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Wizard)])
-            data.entries.emplaceBack(2, "Observatory");
-
-        if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)])
-            data.entries.emplaceBack(3, "Aim Labs");
-
-        if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Engi)])
-            data.entries.emplaceBack(4, "Factory");
-
-        if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Repulso)])
-            data.entries.emplaceBack(5, "Wind Tunnel");
-
-        if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Attracto)])
-            data.entries.emplaceBack(6, "Magnetosphere");
-
-        if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Copy)])
-            data.entries.emplaceBack(7, "Auditorium");
-
-        if (data.selectedIndex == -1)
-        {
-            data.selectedIndex = [&]
-            {
-                for (sf::base::SizeT i = 0u; i < data.entries.size(); ++i)
-                    if (profile.selectedBackground == data.entries[i].index)
-                        return static_cast<int>(i);
-
-                return 0;
-            }();
-        }
-
-        return data;
-    }
+    SelectorData& getBackgroundSelectorData() const;
 
     ////////////////////////////////////////////////////////////
-    void reseedRNGs(const RNGSeedType newSeed)
-    {
-        seed    = newSeed;
-        rng     = RNGFast{seed};
-        rngFast = RNGFast{seed};
-    }
+    void reseedRNGs(RNGSeedType newSeed);
 
     ////////////////////////////////////////////////////////////
-    void forceResetGame(const bool goToShopTab = true)
-    {
-        soundManager.stopPlayingAll(sounds.ritual);
-        soundManager.stopPlayingAll(sounds.copyritual);
-
-        delayedActions.clear();
-
-        reseedRNGs(static_cast<RNGSeedType>(sf::Clock::now().asMicroseconds()));
-
-        shuffledCatNamesPerType = makeShuffledCatNames(rng);
-
-        *pt      = Playthrough{};
-        pt->seed = seed;
-
-        wasPrestigeAvailableLastFrame = false;
-        buyReminder                   = 0u;
-
-        resetAllDraggedCats();
-        resetTipState();
-
-        particles.clear();
-        textParticles.clear();
-        spentCoinParticles.clear();
-        hudBottomParticles.clear();
-        hudTopParticles.clear();
-        earnedCoinParticles.clear();
-
-        inPrestigeTransition = false;
-
-        comboState.combo            = 0u;
-        comboState.laserCursorCombo = 0;
-
-        comboState.comboNStars         = 0;
-        comboState.comboNOthers        = 0;
-        comboState.comboAccReward      = 0;
-        comboState.comboAccStarReward  = 0;
-        comboState.iComboAccReward     = 0;
-        comboState.iComboAccStarReward = 0;
-
-        playerInputState.scroll = 0.f;
-
-        screenShakeAmount = 0.f;
-        screenShakeTimer  = 0.f;
-
-        spentMoney            = 0u;
-        moneyGainedLastSecond = 0u;
-        samplerMoneyPerSecond.clear();
-
-        bombIdxToCatIdx.clear();
-        uiState.purchaseUnlockedEffects.clear();
-        uiState.btnWasDisabled.clear();
-        undoPPPurchase.clear();
-
-        if (goToShopTab)
-            uiState.shopSelectOnce = ImGuiTabItemFlags_SetSelected;
-
-        profile.selectedBackground = 0;
-        profile.selectedBGM        = 0;
-
-        updateSelectedBackgroundSelectorIndex();
-        updateSelectedBGMSelectorIndex();
-
-        switchToBGM(static_cast<sf::base::SizeT>(profile.selectedBGM), /* force */ true);
-    }
+    void forceResetGame(bool goToShopTab = true);
 
     ////////////////////////////////////////////////////////////
-    void forceResetProfile()
-    {
-        profile = Profile{};
-        forceResetGame();
-    }
+    void forceResetProfile();
 
     ////////////////////////////////////////////////////////////
-    TextParticle& makeRewardTextParticle(const sf::Vec2f position)
-    {
-        return textParticles.emplaceBack(TextParticle{
-            {.position = {position.x, position.y - 10.f},
-             .velocity = rngFast.getVec2f({-0.1f, -1.65f}, {0.1f, -1.35f}) * 0.395f,
-             .scale = sf::base::clamp(1.f + 0.1f * static_cast<float>(comboState.combo + 1) / 1.75f, 1.f, 3.f) * 0.5f,
-             .scaleDecay    = 0.f,
-             .accelerationY = 0.0035f,
-             .opacity       = 1.f,
-             .opacityDecay  = 0.0015f,
-             .rotation      = 0.f,
-             .torque        = rngFast.getF(-0.002f, 0.002f)}});
-    }
+    TextParticle& makeRewardTextParticle(sf::Vec2f position);
 
     ////////////////////////////////////////////////////////////
-    void shrineCollectReward(Shrine& shrine, const MoneyType reward, const Bubble& bubble)
-    {
-        shrine.collectedReward += reward;
-        shrine.textStatusShakeEffect.bump(rngFast, 1.5f);
-
-        spawnParticlesWithHue(wrapHue(shrine.getHue() + 40.f),
-                              6,
-                              shrine.getDrawPosition(),
-                              ParticleType::Fire,
-                              rngFast.getF(0.25f, 0.6f),
-                              0.75f);
-
-        spawnParticlesWithHue(shrine.getHue(), 6, shrine.getDrawPosition(), ParticleType::Shrine, rngFast.getF(0.6f, 1.f), 0.5f);
-
-        const auto diff = bubble.position - shrine.position;
-
-        spawnParticle({.position      = bubble.position,
-                       .velocity      = -diff.normalized() * 0.5f,
-                       .scale         = 1.5f,
-                       .scaleDecay    = 0.f,
-                       .accelerationY = 0.f,
-                       .opacity       = 1.f,
-                       .opacityDecay  = 0.00135f + (shrine.getRange() - diff.length()) / 22000.f,
-                       .rotation      = 0.f,
-                       .torque        = 0.f},
-                      /* hue */ 0.f,
-                      ParticleType::Bubble);
-    }
+    void shrineCollectReward(Shrine& shrine, MoneyType reward, const Bubble& bubble);
 
     ////////////////////////////////////////////////////////////
-    void doExplosion(Bubble& bubble)
-    {
-        sounds.explosion.settings.position = {bubble.position.x, bubble.position.y};
-        playSound(sounds.explosion);
-
-        for (sf::base::SizeT iP = 0u; iP < 16u; ++iP)
-        {
-            spawnParticle(
-                ParticleData{
-                    .position      = bubble.position,
-                    .velocity      = rngFast.getVec2f({-0.75f, -1.75f}, {0.75f, -0.75f}) * 0.3f,
-                    .scale         = rngFast.getF(0.08f, 0.27f) * 2.5f,
-                    .scaleDecay    = 0.0002f,
-                    .accelerationY = 0.002f,
-                    .opacity       = 0.65f,
-                    .opacityDecay  = rngFast.getF(0.00025f, 0.0015f),
-                    .rotation      = rngFast.getF(0.f, sf::base::tau),
-                    .torque        = rngFast.getF(-0.002f, 0.002f) * 5.f,
-                },
-                0.f,
-                ParticleType::Fire);
-
-            spawnParticle(ParticleData{.position = bubble.position,
-                                       .velocity = sf::Vec2f::fromAngle(rngFast.getF(0.4f, 0.8f),
-                                                                        sf::radians(sf::base::tau / static_cast<float>(16u) *
-                                                                                    static_cast<float>(iP))),
-                                       .scale         = rngFast.getF(0.08f, 0.27f) * 2.75f,
-                                       .scaleDecay    = -0.0025f,
-                                       .accelerationY = 0.000001f,
-                                       .opacity       = 0.35f,
-                                       .opacityDecay  = rngFast.getF(0.001f, 0.002f) * 0.6f,
-                                       .rotation      = rngFast.getF(0.f, sf::base::tau),
-                                       .torque        = rngFast.getF(-0.001f, 0.001f)},
-                          0.f,
-                          ParticleType::Explosion);
-        }
-
-        for (sf::base::SizeT iP = 0u; iP < 8u; ++iP)
-            spawnParticle(ParticleData{.position      = bubble.position,
-                                       .velocity      = {rngFast.getF(-0.15f, 0.15f), rngFast.getF(-0.15f, 0.05f)},
-                                       .scale         = rngFast.getF(0.65f, 1.f) * 1.25f,
-                                       .scaleDecay    = -0.0005f,
-                                       .accelerationY = -0.00017f,
-                                       .opacity       = rngFast.getF(0.5f, 0.75f) * 0.7f,
-                                       .opacityDecay  = rngFast.getF(0.00035f, 0.00055f) * 0.8f,
-                                       .rotation      = rngFast.getF(0.f, sf::base::tau),
-                                       .torque        = rngFast.getF(-0.002f, 0.002f)},
-                          0.f,
-                          ParticleType::Smoke);
-
-        // TODO P2: cleanup
-        const auto  bubbleIdx  = static_cast<sf::base::SizeT>(&bubble - pt->bubbles.data());
-        const auto* bombIdxItr = bombIdxToCatIdx.find(bubbleIdx);
-
-        Cat* catWhoMadeBomb = bombIdxItr != bombIdxToCatIdx.end() ? pt->cats.data() + bombIdxItr->second : nullptr;
-
-        const float explosionRadius = pt->getComputedBombExplosionRadius();
-
-        forEachBubbleInRadius(bubble.position,
-                              explosionRadius,
-                              [&](Bubble& otherBubble)
-        {
-            if (otherBubble.type == BubbleType::Bomb)
-                return ControlFlow::Continue;
-
-            if (otherBubble.type == BubbleType::Combo)
-                return ControlFlow::Continue;
-
-            const MoneyType otherReward = computeFinalReward(/* bubble     */ otherBubble,
-                                                             /* multiplier */ 10.f,
-                                                             /* comboMult  */ 1.f,
-                                                             /* popperCat  */ catWhoMadeBomb);
-
-            statExplosionRevenue(otherReward);
-
-            popWithRewardAndReplaceBubble({
-                .reward          = otherReward,
-                .bubble          = otherBubble,
-                .xCombo          = 1,
-                .popSoundOverlap = false,
-                .popperCat       = catWhoMadeBomb,
-                .multiPop        = false,
-            });
-
-            return ControlFlow::Continue;
-        });
-
-        if (pt->perm.witchCatBuffFlammableDolls)
-        {
-            for (HexSession& session : pt->hexSessions)
-                for (Doll& doll : session.dolls)
-                    if ((doll.position - bubble.position).length() <= explosionRadius && !doll.tcDeath.hasValue())
-                        collectDoll(doll, session);
-
-            for (HexSession& session : pt->copyHexSessions)
-                for (Doll& copyDoll : session.dolls)
-                    if ((copyDoll.position - bubble.position).length() <= explosionRadius && !copyDoll.tcDeath.hasValue())
-                        collectCopyDoll(copyDoll, session);
-        }
-
-        if (catWhoMadeBomb != nullptr)
-            bombIdxToCatIdx.erase(bombIdxItr);
-    }
+    void doExplosion(Bubble& bubble);
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Vec2f fromWorldToHud(const sf::Vec2f point) const
-    {
-        // From game coordinates to screen coordinates
-        const sf::Vec2f screenPos = gameView.worldToScreen(point, window.getSize().toVec2f());
-
-        // From screen coordinates to HUD view coordinates
-        return scaledHUDView.screenToWorld(screenPos, window.getSize().toVec2f());
-    }
+    [[nodiscard]] sf::Vec2f fromWorldToHud(sf::Vec2f point) const;
 
     ////////////////////////////////////////////////////////////
     struct [[nodiscard]] BubblePopData
@@ -3228,186 +2029,24 @@ struct Main
     };
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isBubbleInStasisField(const Bubble& bubble) const
-    {
-        if (pt->stasisFieldTimer <= 0.f)
-            return false;
-
-        const auto rangeSquared = pt->getComputedSquaredRangeByCatType(CatType::Wizard);
-
-        if (const Cat* wizardCat = getWizardCat(); wizardCat != nullptr)
-            if ((bubble.position - wizardCat->position).lengthSquared() <= rangeSquared)
-                return true;
-
-        if (const Cat* copyCat = getCopyCat(); copyCat != nullptr && pt->copycatCopiedCatType == CatType::Wizard)
-            if ((bubble.position - copyCat->position).lengthSquared() <= rangeSquared)
-                return true;
-
-        return false;
-    }
+    [[nodiscard]] bool isBubbleInStasisField(const Bubble& bubble) const;
 
     ////////////////////////////////////////////////////////////
-    void popWithRewardAndReplaceBubble(const BubblePopData& data)
-    {
-        const auto& [reward, bubble, xCombo, popSoundOverlap, popperCat, multiPop] = data;
-
-        const bool byPlayerClick = popperCat == nullptr;
-
-        // Combo bubbles are interactive only with player clicks: cats can't
-        // pop them (silently ignore the swing) and they never get destroyed
-        // or replaced -- they fall off the bottom on their own (ephemeral).
-        if (bubble.type == BubbleType::Combo && !byPlayerClick)
-            return;
-
-        // Bubble-transform (Unicat star / Devilcat bomb / ...) in progress:
-        // the bubble is frozen mid-air and inert until the animation resolves.
-        // Silently ignore any pop attempt so the transformation can complete.
-        if (bubble.pendingTransformMs > 0.f)
-            return;
-
-        statBubblePopped(bubble.type, byPlayerClick, reward);
-
-        if (byPlayerClick && bubble.type == BubbleType::Star)
-            statHighestStarBubblePopCombo(static_cast<sf::base::U64>(comboState.combo));
-
-        if (byPlayerClick && bubble.type == BubbleType::Nova)
-            statHighestNovaBubblePopCombo(static_cast<sf::base::U64>(comboState.combo));
-
-        const Shrine* collectorShrine = nullptr;
-        for (Shrine& shrine : pt->shrines)
-        {
-            if ((bubble.position - shrine.position).lengthSquared() > shrine.getRangeSquared())
-                continue;
-
-            collectorShrine = &shrine;
-            shrineCollectReward(shrine, reward, bubble);
-        }
-
-        const bool      collectedByShrine = collectorShrine != nullptr;
-        const sf::Vec2f tpPosition        = collectedByShrine ? collectorShrine->getDrawPosition() : bubble.position;
-
-        if (profile.showTextParticles)
-        {
-            auto& tp = makeRewardTextParticle(tpPosition);
-            std::snprintf(tp.buffer, sizeof(tp.buffer), "+$%llu", reward);
-        }
-
-        if (profile.accumulatingCombo && !multiPop && byPlayerClick && pt->comboPurchased && !collectedByShrine)
-        {
-            if (bubble.type == BubbleType::Star || bubble.type == BubbleType::Nova)
-                comboState.comboNStars += 1;
-            else
-                comboState.comboNOthers += 1;
-        }
-
-        if (profile.showCoinParticles)
-        {
-            if (!collectedByShrine && profile.showCoinParticles)
-                spawnSpentCoinParticle(
-                    {.position      = moneyText.getGlobalCenterRight() + sf::Vec2f{32.f, rngFast.getF(-12.f, 12.f)},
-                     .velocity      = {-0.25f, 0.f},
-                     .scale         = 0.25f,
-                     .scaleDecay    = 0.f,
-                     .accelerationY = 0.f,
-                     .opacity       = 0.f,
-                     .opacityDecay  = -0.003f,
-                     .rotation      = rngFast.getF(0.f, sf::base::tau),
-                     .torque        = 0.f});
-
-
-            const sf::Vec2f hudPos = fromWorldToHud(bubble.position);
-
-            if ((!profile.accumulatingCombo || !pt->comboPurchased || !byPlayerClick) && !collectedByShrine &&
-                spawnEarnedCoinParticle(hudPos))
-            {
-                const sf::Vec2f viewSize           = getCurrentGameViewSize();
-                const sf::Vec2f viewCenter         = getViewCenter();
-                sounds.coindelay.settings.position = {viewCenter.x - viewSize.x / 2.f + 25.f,
-                                                      viewCenter.y - viewSize.y / 2.f + 25.f};
-
-                sounds.coindelay.settings.pitch  = 1.f;
-                sounds.coindelay.settings.volume = profile.sfxVolume / 100.f * 0.5f;
-
-                playSound(sounds.coindelay, /* maxOverlap */ 64);
-            }
-        }
-
-        sounds.pop.settings.position = {bubble.position.x, bubble.position.y};
-        sounds.pop.settings.pitch    = remap(static_cast<float>(xCombo), 1, 10, 1.f, 2.f);
-
-        playSound(sounds.pop, popSoundOverlap ? 64u : 1u);
-
-        spawnParticles(32, bubble.position, ParticleType::Bubble, 0.5f, 0.5f);
-        spawnParticles(8, bubble.position, ParticleType::Bubble, 1.2f, 0.25f);
-
-        if (bubble.type == BubbleType::Star || bubble.type == BubbleType::Nova)
-            spawnParticles(16, bubble.position, ParticleType::Star, 0.5f, 0.35f);
-        else if (bubble.type == BubbleType::Bomb)
-            doExplosion(bubble);
-
-        if (popperCat != nullptr)
-        {
-            popperCat->moneyEarned += reward;
-            popperCat->textMoneyShakeEffect.bump(rngFast, 1.25f);
-        }
-
-        if (!collectedByShrine)
-        {
-            addMoney(reward);
-            moneyTextShakeEffect.bump(rngFast, 1.f + static_cast<float>(comboState.combo) * 0.1f);
-        }
-
-        if (bubble.type != BubbleType::Combo && !isBubbleInStasisField(bubble))
-        {
-            bubble = makeRandomBubble(*pt, rng, pt->getMapLimit(), 0.f);
-            bubble.position.y -= bubble.radius;
-        }
-    }
+    void popWithRewardAndReplaceBubble(const BubblePopData& data);
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isDebugModeEnabled() const
-    {
-        return debugMode;
-    }
+    [[nodiscard]] bool isDebugModeEnabled() const;
 
     ////////////////////////////////////////////////////////////
-    void gameLoopCheats() const
-    {
-        if (!isDebugModeEnabled())
-            return;
-
-        if (keyDown(sf::Keyboard::Key::F4))
-        {
-            pt->comboPurchased = true;
-            pt->mapPurchased   = true;
-        }
-        else if (keyDown(sf::Keyboard::Key::F5))
-        {
-            pt->money = 1'000'000'000u;
-        }
-        else if (keyDown(sf::Keyboard::Key::F6))
-        {
-            pt->money += 15u;
-        }
-        else if (keyDown(sf::Keyboard::Key::F7))
-        {
-            pt->prestigePoints += 15u;
-        }
-    }
+    void gameLoopCheats() const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Mouse::Button getLMB() const
-    {
-        return profile.invertMouseButtons ? sf::Mouse::Button::Right : sf::Mouse::Button::Left;
-    }
+    [[nodiscard]] sf::Mouse::Button getLMB() const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Mouse::Button getRMB() const
-    {
-        return profile.invertMouseButtons ? sf::Mouse::Button::Left : sf::Mouse::Button::Right;
-    }
-    [[nodiscard]] bool gameLoopHandleEvents(FrameInput& frameInput, bool shouldDrawUI);
-    void               gameLoopPrepareInput(FrameInput& frameInput, float deltaTimeMs);
+    [[nodiscard]] sf::Mouse::Button getRMB() const;
+    [[nodiscard]] bool              gameLoopHandleEvents(FrameInput& frameInput, bool shouldDrawUI);
+    void                            gameLoopPrepareInput(FrameInput& frameInput, float deltaTimeMs);
     void gameLoopUpdateFrameWorld(float deltaTimeMs, FrameInput& frameInput, FrameUpdateState& frameUpdate);
     void gameLoopUpdateFrameUi(sf::Time deltaTime, float deltaTimeMs, const FrameInput& frameInput);
     [[nodiscard]] FrameViewState gameLoopComputeViews();
