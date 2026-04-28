@@ -9,11 +9,16 @@
 ///
 /// `sf::base::minipfr` is a small fork of Boost.PFR that does not
 /// depend on the C++ standard library. It supports aggregate types of
-/// up to 32 fields and provides:
+/// up to 64 fields and provides:
+///
 /// - `numFields<T>` -- number of public data members
+///
 /// - `tieAsTuple(obj)` -- bind every field of `obj` into a tuple of refs
+///
 /// - `getField<I>(obj)` -- fetch the `I`-th field by index
+///
 /// - `forEachField(obj, fn)` -- invoke `fn` on each field in declaration order
+///
 /// - `getFieldName<T, I>()` / `tieAsFieldNamesTuple<T>()` -- extract
 ///   field names by parsing the compiler's pretty-function string
 ///
@@ -23,6 +28,7 @@
 ////////////////////////////////////////////////////////////
 
 
+////////////////////////////////////////////////////////////
 // Small fork of Boost.PFR that does not depend on the Standard Libary.
 // Boost.PFR license:
 /*
@@ -31,13 +37,13 @@
    Distributed under the Boost Software License, Version 1.0. (See accompanying
    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 */
+////////////////////////////////////////////////////////////
 
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/DeclVal.hpp"
 #include "SFML/Base/IndexSequence.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/MakeIndexSequence.hpp"
-#include "SFML/Base/MinMaxMacros.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Trait/IsArray.hpp"
@@ -163,43 +169,75 @@ template <typename T>
     // NOLINTBEGIN(readability-misleading-indentation)
 
     // clang-format off
-         if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x}; }) { return 32u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};   }) { return 31u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};     }) { return 30u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};       }) { return 29u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};         }) { return 28u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};           }) { return 27u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};             }) { return 26u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};               }) { return 25u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                 }) { return 24u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                   }) { return 23u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                     }) { return 22u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                       }) { return 21u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                         }) { return 20u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                           }) { return 19u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                             }) { return 18u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                               }) { return 17u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                 }) { return 16u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                   }) { return 15u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                     }) { return 14u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x};                                       }) { return 13u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x};                                         }) { return 12u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x};                                           }) { return 11u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x};                                             }) { return 10u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x};                                               }) { return 9u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x};                                                 }) { return 8u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x};                                                   }) { return 7u; }
-    else if constexpr (requires { T{x,x,x,x,x,x};                                                     }) { return 6u; }
-    else if constexpr (requires { T{x,x,x,x,x};                                                       }) { return 5u; }
-    else if constexpr (requires { T{x,x,x,x};                                                         }) { return 4u; }
-    else if constexpr (requires { T{x,x,x};                                                           }) { return 3u; }
-    else if constexpr (requires { T{x,x};                                                             }) { return 2u; }
-    else if constexpr (requires { T{x};                                                               }) { return 1u; }
-    else if constexpr (requires { T{};                                                                }) { return 0u; }
+         if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x}; }) { return 64u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};   }) { return 63u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};     }) { return 62u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};       }) { return 61u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};         }) { return 60u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};           }) { return 59u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};             }) { return 58u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};               }) { return 57u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                 }) { return 56u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                   }) { return 55u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                     }) { return 54u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                       }) { return 53u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                         }) { return 52u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                           }) { return 51u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                             }) { return 50u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                               }) { return 49u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                 }) { return 48u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                   }) { return 47u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                     }) { return 46u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                       }) { return 45u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                         }) { return 44u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                           }) { return 43u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                             }) { return 42u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                               }) { return 41u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                                 }) { return 40u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                                   }) { return 39u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                                     }) { return 38u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                                       }) { return 37u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                                         }) { return 36u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                                           }) { return 35u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                                             }) { return 34u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                                               }) { return 33u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                                                 }) { return 32u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                                                   }) { return 31u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                                                     }) { return 30u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                                                       }) { return 29u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                                                         }) { return 28u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                                                           }) { return 27u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                                                             }) { return 26u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                                                               }) { return 25u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                                                                 }) { return 24u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                                                                   }) { return 23u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                                                                     }) { return 22u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                                                                       }) { return 21u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                                                                         }) { return 20u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                                                                           }) { return 19u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                                                                             }) { return 18u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                                                                               }) { return 17u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                                                                                 }) { return 16u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                                                                                   }) { return 15u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x};                                                                                                     }) { return 14u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x};                                                                                                       }) { return 13u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x};                                                                                                         }) { return 12u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x};                                                                                                           }) { return 11u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x};                                                                                                             }) { return 10u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x};                                                                                                               }) { return 9u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x};                                                                                                                 }) { return 8u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x};                                                                                                                   }) { return 7u; }
+    else if constexpr (requires { T{x,x,x,x,x,x};                                                                                                                     }) { return 6u; }
+    else if constexpr (requires { T{x,x,x,x,x};                                                                                                                       }) { return 5u; }
+    else if constexpr (requires { T{x,x,x,x};                                                                                                                         }) { return 4u; }
+    else if constexpr (requires { T{x,x,x};                                                                                                                           }) { return 3u; }
+    else if constexpr (requires { T{x,x};                                                                                                                             }) { return 2u; }
+    else if constexpr (requires { T{x};                                                                                                                               }) { return 1u; }
+    else if constexpr (requires { T{};                                                                                                                                }) { return 0u; }
     // clang-format on
     else
     {
-        static_assert(sizeof(T) == 0, "Type is not aggregate initializable or has more than 32 fields.");
+        static_assert(sizeof(T) == 0, "Type is not aggregate initializable or has more than 64 fields.");
     }
 
     // NOLINTEND(readability-misleading-indentation)
@@ -336,10 +374,42 @@ constexpr auto tieAsTuple(T&& obj)
     else if MINIPFR_BRANCH(30, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D)
     else if MINIPFR_BRANCH(31, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E)
     else if MINIPFR_BRANCH(32, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F)
+    else if MINIPFR_BRANCH(33, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G)
+    else if MINIPFR_BRANCH(34, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H)
+    else if MINIPFR_BRANCH(35, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J)
+    else if MINIPFR_BRANCH(36, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K)
+    else if MINIPFR_BRANCH(37, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L)
+    else if MINIPFR_BRANCH(38, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M)
+    else if MINIPFR_BRANCH(39, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N)
+    else if MINIPFR_BRANCH(40, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O)
+    else if MINIPFR_BRANCH(41, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P)
+    else if MINIPFR_BRANCH(42, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q)
+    else if MINIPFR_BRANCH(43, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R)
+    else if MINIPFR_BRANCH(44, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S)
+    else if MINIPFR_BRANCH(45, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U)
+    else if MINIPFR_BRANCH(46, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V)
+    else if MINIPFR_BRANCH(47, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W)
+    else if MINIPFR_BRANCH(48, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X)
+    else if MINIPFR_BRANCH(49, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y)
+    else if MINIPFR_BRANCH(50, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z)
+    else if MINIPFR_BRANCH(51, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa)
+    else if MINIPFR_BRANCH(52, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb)
+    else if MINIPFR_BRANCH(53, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc)
+    else if MINIPFR_BRANCH(54, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd)
+    else if MINIPFR_BRANCH(55, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd,ee)
+    else if MINIPFR_BRANCH(56, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd,ee,ff)
+    else if MINIPFR_BRANCH(57, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd,ee,ff,gg)
+    else if MINIPFR_BRANCH(58, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd,ee,ff,gg,hh)
+    else if MINIPFR_BRANCH(59, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd,ee,ff,gg,hh,ii)
+    else if MINIPFR_BRANCH(60, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd,ee,ff,gg,hh,ii,jj)
+    else if MINIPFR_BRANCH(61, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd,ee,ff,gg,hh,ii,jj,kk)
+    else if MINIPFR_BRANCH(62, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd,ee,ff,gg,hh,ii,jj,kk,ll)
+    else if MINIPFR_BRANCH(63, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd,ee,ff,gg,hh,ii,jj,kk,ll,mm)
+    else if MINIPFR_BRANCH(64, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd,ee,ff,gg,hh,ii,jj,kk,ll,mm,nn)
             // clang-format on
             else
         {
-            static_assert(sizeof(T) == 0, "`tieAsTuple` supports up to 32 fields.");
+            static_assert(sizeof(T) == 0, "`tieAsTuple` supports up to 64 fields.");
         }
 
     // NOLINTEND(readability-misleading-indentation)
@@ -374,172 +444,245 @@ using FieldType = SFML_BASE_REMOVE_REFERENCE(decltype(getField<I>(declVal<T&>())
 namespace sf::base::minipfr::priv
 {
 ////////////////////////////////////////////////////////////
-struct CoreNameSkip // NOLINT(cppcoreguidelines-pro-type-member-init)
+// All field names of `T` are extracted from a single `__PRETTY_FUNCTION__`,
+// shaped like:
+//
+//   Clang: `... Refs = <wImpl.value.f0, wImpl.value.f1, ...>]`
+//   GCC:   `... Refs = {wImpl<T>.Wrap<T>::value.T::f0, wImpl<T>.Wrap<T>::value.T::f1, ...}]`
+//
+// On GCC the type T is rendered inline (e.g. `Members<0, int>`, or
+// `{anonymous}::Foo` for types in an unnamed namespace) so segments may
+// contain `,`, `<`, `>`, `{`, and `}` at depth > 0. The parser counts both
+// `<>` and `{}` as balanced bracket pairs and only treats those characters
+// as separators or close markers at depth 0.
+//
+// On Clang the type and the `<...>` template arguments are elided from the NTTP printout, so
+// segments are simple identifier chains -- the bracket tracking is harmless there.
+////////////////////////////////////////////////////////////
+#if defined(__clang__)
+
+inline constexpr char kOpenMarker[] = "Refs = <";
+
+enum : char
 {
-    ////////////////////////////////////////////////////////////
-    SizeT      sizeAtBegin;
-    SizeT      sizeAtEnd;
-    bool       isBackward;
-    StringView untilRuntime;
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] consteval StringView apply(StringView sv) const noexcept
-    {
-        // We use std::min here to make the compiler diagnostic shorter and
-        // cleaner in case of misconfigured SFML_BASE_MINIPFR_PRIV_CORE_PARSING
-        sv.removePrefix(SFML_BASE_MIN(sizeAtBegin, sv.size()));
-        sv.removeSuffix(SFML_BASE_MIN(sizeAtEnd, sv.size()));
-
-        if (untilRuntime.empty())
-            return sv;
-
-        const auto found = isBackward ? sv.rfind(untilRuntime) : sv.find(untilRuntime);
-
-        const auto cutUntil     = found + untilRuntime.size();
-        const auto safeCutUntil = SFML_BASE_MIN(cutUntil, sv.size());
-
-        return sv.substrByPosLen(safeCutUntil);
-    }
+    kCloseChar    = '>',
+    kNameMarkerCh = '.'
 };
 
-
-////////////////////////////////////////////////////////////
-// it might be compilation failed without this workaround sometimes
-// See https://github.com/llvm/llvm-project/issues/41751 for details
-template <typename>
-consteval StringView clangWorkaround(StringView value) noexcept
+enum : SizeT
 {
-    return value;
-}
+    kNameMarkerLen = 1u
+};
 
+#elif defined(__GNUC__)
 
-////////////////////////////////////////////////////////////
-#ifndef SFML_BASE_MINIPFR_PRIV_CORE_PARSING
-    #if defined(_MSC_VER) && !defined(__clang__)
-        #define SFML_BASE_MINIPFR_PRIV_CORE_PARSING                                \
-            {sizeof("auto __cdecl sf::base::minipfr::priv::nameOfFieldImpl<") - 1, \
-             sizeof(">(void) noexcept") - 1,                                       \
-             true,                                                                 \
-             "->"}
-    #elif defined(__clang__)
-        #define SFML_BASE_MINIPFR_PRIV_CORE_PARSING                                            \
-            {sizeof("auto sf::base::minipfr::priv::nameOfFieldImpl() [MsvcWorkaround = ") - 1, \
-             sizeof("}]") - 1,                                                                 \
-             true,                                                                             \
-             "."}
-    #elif defined(__GNUC__)
-        #define SFML_BASE_MINIPFR_PRIV_CORE_PARSING                                                           \
-            {sizeof("consteval auto sf::base::minipfr::priv::nameOfFieldImpl() [with MsvcWorkaround = ") - 1, \
-             sizeof(")]") - 1,                                                                                \
-             true,                                                                                            \
-             "::"}
-    #else
-        // Default parser for other platforms... Just skip nothing!
-        #define SFML_BASE_MINIPFR_PRIV_CORE_PARSING {0, 0, false, ""}
-    #endif
-#endif
+inline constexpr char kOpenMarker[] = "Refs = {";
 
-
-////////////////////////////////////////////////////////////
-template <typename MsvcWorkaround, auto ptr>
-consteval auto nameOfFieldImpl() noexcept
+enum : char
 {
-    // Some of the following compiler specific macro may be defined only
-    // inside the function body:
+    kCloseChar    = '}',
+    kNameMarkerCh = ':'
+};
 
-#ifndef SFML_BASE_MINIPFR_PRIV_FUNCTION_SIGNATURE
-    #if defined(__FUNCSIG__)
-        #define SFML_BASE_MINIPFR_PRIV_FUNCTION_SIGNATURE __FUNCSIG__
-    #elif defined(__PRETTY_FUNCTION__) || defined(__GNUC__) || defined(__clang__)
-        #define SFML_BASE_MINIPFR_PRIV_FUNCTION_SIGNATURE __PRETTY_FUNCTION__
-    #else
-        #define SFML_BASE_MINIPFR_PRIV_FUNCTION_SIGNATURE ""
-    #endif
+enum : SizeT
+{
+    kNameMarkerLen = 2u
+};
+
+#else
+    #error "MiniPFR field-name extraction is only supported on Clang and GCC"
 #endif
-
-    constexpr StringView sv = clangWorkaround<MsvcWorkaround>(SFML_BASE_MINIPFR_PRIV_FUNCTION_SIGNATURE);
-    static_assert(!sv.empty(), "Field name extraction misconfigured for your compiler");
-
-    constexpr CoreNameSkip skip SFML_BASE_MINIPFR_PRIV_CORE_PARSING;
-    static_assert(skip.sizeAtBegin + skip.sizeAtEnd + skip.untilRuntime.size() < sv.size(),
-                  "Field name extraction misconfigured for your compiler"
-                  "It attempts to skip more chars than available. ");
-
-    constexpr auto fn = skip.apply(sv);
-    static_assert(!fn.empty(),
-                  "Field name extraction misconfigured for your compiler"
-                  "It skipped all the input, leaving the field name empty. ");
-
-    Array<char, fn.size() + 1> res{};
-
-    char* out = res.data();
-    for (const char x : fn)
-        *out++ = x;
-
-    return res;
-}
 
 
 ////////////////////////////////////////////////////////////
 #ifdef __clang__
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wundefined-var-template"
-
-// clang 16 and earlier don't support address of non-static member as template parameter
-// but fortunately it's possible to use C++20 non-type template parameters in another way
-// even in clang 16 and more older clangs
-// all we need is to wrap pointer into 'ClangWrapper' and then pass it into template
-template <typename T>
-struct ClangWrapper
-{
-    T v;
-};
-template <typename T>
-ClangWrapper(T) -> ClangWrapper<T>;
-
-template <typename T>
-constexpr auto makeClangWrapper(const T& arg) noexcept
-{
-    return ClangWrapper{arg};
-}
-
-#else
-
-template <typename T>
-constexpr const T& makeClangWrapper(const T& arg) noexcept
-{
-    // It's everything OK with address of non-static member as template parameter support on this compiler
-    // so we don't need a wrapper here, just pass the pointer into template
-    return arg;
-}
-
 #endif
 
 
 ////////////////////////////////////////////////////////////
-template <typename MsvcWorkaround, auto ptr>
-consteval auto nameOfField() noexcept
+// The single NTTP-heavy template. Carrying all field references into one
+// `__PRETTY_FUNCTION__` is the whole point; downstream parsing happens in
+// non-NTTP code so we do not pay mangling cost for the same pack three times.
+////////////////////////////////////////////////////////////
+template <auto&... Refs>
+[[nodiscard]] consteval const char* getRawSignature() noexcept
 {
-    // Sanity check: known field name must match the deduced one
-    static_assert(sizeof(MsvcWorkaround) // do not trigger if `nameOfField()` is not used
-                      &&
-                      StringView{nameOfFieldImpl<CoreNameSkip, makeClangWrapper(&getFakeObject<CoreNameSkip>().sizeAtBegin)>()
-                                     .data()} == "sizeAtBegin",
-                  "Field name extraction misconfigured for your compiler");
-
-    return nameOfFieldImpl<MsvcWorkaround, ptr>();
+    return __PRETTY_FUNCTION__;
 }
 
 
 ////////////////////////////////////////////////////////////
-// Storing part of a string literal into an array minimizes the binary size.
+// Loose scratch buffer used during parsing. Tightened to exact size in
+// `computeStoredFieldNames` so end users only pay for the actual bytes.
+////////////////////////////////////////////////////////////
+template <SizeT N>
+struct RawFieldNames
+{
+    Array<char, 4096u>            chars{};
+    Array<unsigned short, N + 1u> offsets{};
+    SizeT                         total{};
+};
+
+
+////////////////////////////////////////////////////////////
+// Walks the signature once, char-by-char, tracking `<>` depth so that commas
+// inside template arguments are not mistaken for segment separators. Within
+// each segment, the rightmost depth-0 occurrence of `kNameMarkerCh` (".",
+// "::") marks the start of the field name.
 //
-// Without passing 'T' into 'nameOfField' different fields from different structures might have the same name!
-// See https://developercommunity.visualstudio.com/t/__FUNCSIG__-outputs-wrong-value-with-C/10458554 for details
-template <typename T, SizeT I>
-inline constexpr auto
-    storedNameOfField = nameOfField<T, makeClangWrapper(&(tieAsTuple(getFakeObject<T>()).template get<I>()))>();
+// `parseRawNames` is keyed on `N` only -- it is shared across every type that
+// has the same field count, so the heavy compile-time work happens once per
+// distinct field count rather than once per distinct type.
+////////////////////////////////////////////////////////////
+template <SizeT N>
+[[nodiscard]] consteval RawFieldNames<N> parseRawNames(const char* sig) noexcept
+{
+    RawFieldNames<N> r{};
+
+    if constexpr (N == 0u)
+    {
+        return r;
+    }
+    else
+    {
+        const char* p = sig;
+
+        // Locate the open marker at the start of the pack body.
+        while (true)
+        {
+            bool match = true;
+
+            for (SizeT k = 0u; kOpenMarker[k] != '\0'; ++k)
+            {
+                if (p[k] != kOpenMarker[k])
+                {
+                    match = false;
+                    break;
+                }
+            }
+
+            if (match)
+            {
+                p += sizeof(kOpenMarker) - 1u;
+                break;
+            }
+
+            ++p;
+        }
+
+        SizeT writeIdx = 0u;
+        for (SizeT i = 0u; i < N; ++i)
+        {
+            r.offsets[i] = static_cast<unsigned short>(writeIdx);
+
+            const char* nameStart = p;
+
+            // Hot path at depth 0: find the next segment terminator while
+            // tracking the rightmost name marker.
+            while (true)
+            {
+                const char c = *p;
+
+                if (c == ',' || c == kCloseChar)
+                    break;
+
+                if (c == kNameMarkerCh)
+                {
+                    nameStart = p + kNameMarkerLen;
+                    p         = nameStart;
+                    continue;
+                }
+
+                if (c == '<' || c == '{')
+                {
+                    // Depth > 0: skip to matching close. Both `<>` and `{}`
+                    // are tracked as balanced pairs because GCC may emit
+                    // either inside a segment (e.g. `<TmplArgs>` or
+                    // `{anonymous}` for unnamed-namespace types).
+                    int depth = 1;
+                    ++p;
+
+                    while (depth > 0)
+                    {
+                        const char d = *p;
+
+                        if (d == '<' || d == '{')
+                            ++depth;
+                        else if (d == '>' || d == '}')
+                            --depth;
+
+                        ++p;
+                    }
+
+                    continue;
+                }
+
+                ++p;
+            }
+
+            for (const char* c = nameStart; c != p; ++c)
+                r.chars[writeIdx++] = *c;
+
+            if (*p == ',')
+                p += 2u; // skip ", "
+        }
+
+        r.offsets[N] = static_cast<unsigned short>(writeIdx);
+        r.total      = writeIdx;
+
+        return r;
+    }
+}
+
+
+////////////////////////////////////////////////////////////
+template <SizeT N, SizeT TotalChars>
+struct PackedFieldNames
+{
+    // The branch that returns `PackedFieldNames<0, 0>` for empty aggregates is
+    // discarded by `if constexpr`, but the type is still instantiated. Clamp
+    // the chars array size so `Array<char, 0>` (unsupported) never appears.
+    Array<char, (TotalChars == 0u ? 1u : TotalChars)> chars{};
+    Array<unsigned short, N + 1u>                     offsets{};
+};
+
+
+////////////////////////////////////////////////////////////
+template <typename T, SizeT... Is>
+[[nodiscard]] consteval auto computeStoredFieldNames(IndexSequence<Is...>) noexcept
+{
+    constexpr SizeT n = sizeof...(Is);
+
+    if constexpr (n == 0u)
+    {
+        return PackedFieldNames<0u, 0u>{};
+    }
+    else
+    {
+        // A constexpr lvalue tuple is required so its `.get<I>()` lvalue refs
+        // are valid as `auto&` non-type template arguments.
+        constexpr auto        fakeTuple = tieAsTuple(getFakeObject<T>());
+        constexpr const char* sig       = getRawSignature<fakeTuple.template get<Is>()...>();
+        constexpr auto        raw       = parseRawNames<n>(sig);
+
+        PackedFieldNames<n, raw.total> packed{};
+
+        for (SizeT i = 0u; i < raw.total; ++i)
+            packed.chars[i] = raw.chars[i];
+
+        for (SizeT i = 0u; i <= n; ++i)
+            packed.offsets[i] = raw.offsets[i];
+
+        return packed;
+    }
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+inline constexpr auto storedFieldNames = computeStoredFieldNames<T>(MakeIndexSequence<numFields<T>>{});
 
 
 ////////////////////////////////////////////////////////////
@@ -551,14 +694,6 @@ inline constexpr auto
 ////////////////////////////////////////////////////////////
 template <SizeT>
 using AlwaysStringView = StringView;
-
-
-////////////////////////////////////////////////////////////
-template <typename T, SizeT... I>
-constexpr auto tieAsNamesTupleImpl(IndexSequence<I...>) noexcept
-{
-    return Tuple<AlwaysStringView<I>...>{StringView{storedNameOfField<T, I>.data()}...};
-}
 
 } // namespace sf::base::minipfr::priv
 
@@ -572,7 +707,10 @@ constexpr StringView getFieldName() noexcept
     static_assert(!SFML_BASE_IS_UNION(T), "union reflection is forbidden");
     static_assert(!SFML_BASE_IS_ARRAY(T), "impossible to extract name from C-style array");
 
-    return priv::storedNameOfField<T, I>.data();
+    constexpr const auto& packed = priv::storedFieldNames<T>;
+
+    return StringView{packed.chars.data() + packed.offsets[I],
+                      static_cast<SizeT>(packed.offsets[I + 1u] - packed.offsets[I])};
 }
 
 
@@ -583,7 +721,25 @@ constexpr auto tieAsFieldNamesTuple() noexcept
     static_assert(!SFML_BASE_IS_UNION(T), "union reflection is forbidden");
     static_assert(!SFML_BASE_IS_ARRAY(T), "impossible to extract name from C-style array");
 
-    return priv::tieAsNamesTupleImpl<T>(MakeIndexSequence<numFields<T>>{});
+    return []<SizeT... Is>(IndexSequence<Is...>)
+    { return priv::Tuple<priv::AlwaysStringView<Is>...>{getFieldName<T, Is>()...}; }(MakeIndexSequence<numFields<T>>{});
 }
 
 } // namespace sf::base::minipfr
+
+
+////////////////////////////////////////////////////////////
+namespace sf::base::minipfr::priv
+{
+////////////////////////////////////////////////////////////
+// Sanity-check on include.
+struct FieldNameSelfCheck
+{
+    int  alpha;
+    char beta;
+};
+
+static_assert(getFieldName<FieldNameSelfCheck, 0u>() == StringView{"alpha"});
+static_assert(getFieldName<FieldNameSelfCheck, 1u>() == StringView{"beta"});
+
+} // namespace sf::base::minipfr::priv
