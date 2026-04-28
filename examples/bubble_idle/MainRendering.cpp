@@ -6,7 +6,7 @@
 #include "CatConstants.hpp"
 #include "CatType.hpp"
 #include "Constants.hpp"
-#include "Countdown.hpp"
+#include "ExampleUtils/Progress.hpp"
 #include "Doll.hpp"
 #include "GameEvent.hpp"
 #include "HellPortal.hpp"
@@ -277,7 +277,7 @@ void Main::drawMinimap(bool               back,
 ////////////////////////////////////////////////////////////
 void Main::drawSplashScreen(sf::RenderTarget& rt, const sf::View& view, const sf::Vec2f resolution, const float hudScale) const
 {
-    const auto progress = easeInOutCubic(splashCountdown.getProgressBounced());
+    const auto progress = easeInOutCubic(splashCountdown.asProgress().getBounce());
 
     rt.draw(sf::Sprite{.position    = resolution / 2.f / hudScale,
                        .scale       = sf::Vec2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutCubic(progress)) / hudScale,
@@ -666,7 +666,7 @@ void Main::gameLoopDrawCats(const sf::Vec2f mousePos, const float deltaTimeMs)
 
 [[nodiscard]] bool Main::isCatPerformingRitual(Cat& witch, Cat& cat) const
 {
-    if (witch.cooldown.value > 10'000.f)
+    if (witch.cooldown.time > 10'000.f)
         return false;
 
     if (&cat == &witch)
@@ -764,7 +764,7 @@ void applyWitchAnimation(CatDrawContext& ctx, float& wobblePhase, Cat& witch)
 {
     if (&ctx.cat == &witch)
     {
-        if (witch.cooldown.value >= 10'000.f)
+        if (witch.cooldown.time >= 10'000.f)
         {
             if (wobblePhase > 0.f)
                 wobblePhase -= ctx.deltaTimeMs * 0.005f;
@@ -773,7 +773,7 @@ void applyWitchAnimation(CatDrawContext& ctx, float& wobblePhase, Cat& witch)
         }
         else
         {
-            const float frequency = remap(sf::base::min(witch.cooldown.value, 10'000.f), 0.f, 10'000.f, 0.1f, 0.05f);
+            const float frequency = remap(sf::base::min(witch.cooldown.time, 10'000.f), 0.f, 10'000.f, 0.1f, 0.05f);
 
             wobblePhase += frequency * ctx.deltaTimeMs * 0.05f;
             wobblePhase = sf::base::remainder(wobblePhase, sf::base::tau);
@@ -782,7 +782,7 @@ void applyWitchAnimation(CatDrawContext& ctx, float& wobblePhase, Cat& witch)
 
     if (ctx.main.isCatPerformingRitual(witch, ctx.cat))
     {
-        const float amplitude = remap(sf::base::min(witch.cooldown.value, 10'000.f), 0.f, 10'000.f, 0.5f, 0.f);
+        const float amplitude = remap(sf::base::min(witch.cooldown.time, 10'000.f), 0.f, 10'000.f, 0.5f, 0.f);
         ctx.catRotation       = sf::base::sin(wobblePhase) * amplitude;
     }
 }
@@ -827,7 +827,7 @@ void applyWitchAnimation(CatDrawContext& ctx, float& wobblePhase, Cat& witch)
         .shouldDisplayRangeCircle = false,
         .rangeInnerAlpha          = 0u,
         .maxCooldown              = main.getComputedCooldownByCatTypeOrCopyCat(cat.type),
-        .cooldownDiff             = cat.cooldown.value,
+        .cooldownDiff             = cat.cooldown.time,
         .catRotation              = 0.f,
         .bodyRotationExtra        = 0.f,
         .range                    = main.getComputedRangeByCatTypeOrCopyCat(cat.type),
@@ -873,7 +873,7 @@ void applyWitchAnimation(CatDrawContext& ctx, float& wobblePhase, Cat& witch)
         applyWitchAnimation(ctx, main.copyWitchcatWobblePhase, *ctx.copyCat);
 
     if (cat.type == CatType::Wizard)
-        ctx.catRotation += main.wizardcatSpin.value + main.wizardcatAbsorptionRotation;
+        ctx.catRotation += main.wizardcatSpin.time + main.wizardcatAbsorptionRotation;
 
     // Velocity-based body tilt while dragged + transient wake-wobble poke.
     ctx.catRotation += cat.dragTiltRadians;
@@ -903,8 +903,8 @@ void applyWitchAnimation(CatDrawContext& ctx, float& wobblePhase, Cat& witch)
 
     ctx.alpha    = ctx.insideDragRect ? static_cast<U8>(128u) : static_cast<U8>(255u);
     ctx.catColor = hueColor(cat.hue, ctx.alpha);
-    ctx.circleAlpha = cat.cooldown.value < 0.f ? static_cast<U8>(0u)
-                                               : static_cast<U8>(255.f - (cat.cooldown.value / ctx.maxCooldown * 225.f));
+    ctx.circleAlpha = cat.cooldown.time < 0.f ? static_cast<U8>(0u)
+                                               : static_cast<U8>(255.f - (cat.cooldown.time / ctx.maxCooldown * 225.f));
     ctx.circleColor        = CatConstants::colors[asIdx(cat.type)].withRotatedHue(cat.hue).withLightness(0.75f);
     ctx.circleOutlineColor = ctx.circleColor.withAlpha(ctx.rangeInnerAlpha == 0u ? ctx.circleAlpha : 255u);
     ctx.textOutlineColor   = ctx.circleColor.withLightness(0.25f);
@@ -1158,15 +1158,15 @@ void drawCatVisuals(const CatDrawContext& ctx)
     if (ctx.cat.flapCountdown.isDone() && ctx.cat.flapAnimCountdown.isDone())
     {
         if (ctx.main.rngFast.getI(0, 100) > 92)
-            ctx.cat.flapCountdown.value = 75.f;
+            ctx.cat.flapCountdown.time = 75.f;
         else
-            ctx.cat.flapCountdown.value = ctx.main.rngFast.getF(4500.f, 12'500.f);
+            ctx.cat.flapCountdown.time = ctx.main.rngFast.getF(4500.f, 12'500.f);
     }
 
-    if (ctx.cat.flapCountdown.updateAndStop(ctx.deltaTimeMs) == CountdownStatusStop::JustFinished)
-        ctx.cat.flapAnimCountdown.value = 75.f * Main::nEarRects;
+    if (ctx.cat.flapCountdown.tick(ctx.deltaTimeMs) == TickResult::JustFinished)
+        ctx.cat.flapAnimCountdown.time = 75.f * Main::nEarRects;
 
-    (void)ctx.cat.flapAnimCountdown.updateAndStop(ctx.deltaTimeMs);
+    (void)ctx.cat.flapAnimCountdown.tick(ctx.deltaTimeMs);
 
     if (ctx.cat.type == CatType::Normal)
     {
@@ -1175,24 +1175,24 @@ void drawCatVisuals(const CatDrawContext& ctx)
                        .scale    = ctx.catScale,
                        .origin   = ctx.main.txrCatEars0.size / 2.f,
                        .rotation = bodyRotation,
-                       .textureRect = *ctx.main.earRects[static_cast<unsigned int>(ctx.cat.flapAnimCountdown.value / 75.f) %
+                       .textureRect = *ctx.main.earRects[static_cast<unsigned int>(ctx.cat.flapAnimCountdown.time / 75.f) %
                                                          Main::nEarRects],
                        .color = ctx.attachmentHue});
     }
 
-    const auto yawnRectIdx = static_cast<unsigned int>(ctx.cat.yawnAnimCountdown.value / 75.f) % Main::nYawnRects;
+    const auto yawnRectIdx = static_cast<unsigned int>(ctx.cat.yawnAnimCountdown.time / 75.f) % Main::nYawnRects;
 
     if (ctx.cat.type != CatType::Devil && ctx.cat.type != CatType::Wizard && ctx.cat.type != CatType::Mouse &&
         ctx.cat.type != CatType::Engi)
     {
         if (ctx.cat.yawnCountdown.isDone() && ctx.cat.yawnAnimCountdown.isDone())
-            ctx.cat.yawnCountdown.value = ctx.main.rngFast.getF(7500.f, 20'000.f);
+            ctx.cat.yawnCountdown.time = ctx.main.rngFast.getF(7500.f, 20'000.f);
 
         if (ctx.cat.blinkAnimCountdown.isDone() &&
-            ctx.cat.yawnCountdown.updateAndStop(ctx.deltaTimeMs) == CountdownStatusStop::JustFinished)
-            ctx.cat.yawnAnimCountdown.value = 75.f * Main::nYawnRects;
+            ctx.cat.yawnCountdown.tick(ctx.deltaTimeMs) == TickResult::JustFinished)
+            ctx.cat.yawnAnimCountdown.time = 75.f * Main::nYawnRects;
 
-        (void)ctx.cat.yawnAnimCountdown.updateAndStop(ctx.deltaTimeMs);
+        (void)ctx.cat.yawnAnimCountdown.tick(ctx.deltaTimeMs);
 
         const sf::Vec2f yawnOrigin = ctx.main.txrCatYawn0.size / 2.f +
                                      (ctx.cat.type == CatType::Warden ? ctx.main.gameConstants.wardenCatYawnOriginOffset
@@ -1207,7 +1207,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
     }
     else
     {
-        ctx.cat.yawnCountdown.value = ctx.cat.yawnAnimCountdown.value = 0.f;
+        ctx.cat.yawnCountdown.time = ctx.cat.yawnAnimCountdown.time = 0.f;
     }
 
     if (ctx.cat.type == CatType::Normal && ctx.main.pt->perm.smartCatsPurchased)
@@ -1290,15 +1290,15 @@ void drawCatVisuals(const CatDrawContext& ctx)
     if (ctx.cat.blinkCountdown.isDone() && ctx.cat.blinkAnimCountdown.isDone())
     {
         if (ctx.main.rngFast.getI(0, 100) > 90)
-            ctx.cat.blinkCountdown.value = 75.f;
+            ctx.cat.blinkCountdown.time = 75.f;
         else
-            ctx.cat.blinkCountdown.value = ctx.main.rngFast.getF(1000.f, 4000.f);
+            ctx.cat.blinkCountdown.time = ctx.main.rngFast.getF(1000.f, 4000.f);
     }
 
-    if (ctx.cat.blinkCountdown.updateAndStop(ctx.deltaTimeMs) == CountdownStatusStop::JustFinished)
-        ctx.cat.blinkAnimCountdown.value = 75.f * Main::nEyeLidRects;
+    if (ctx.cat.blinkCountdown.tick(ctx.deltaTimeMs) == TickResult::JustFinished)
+        ctx.cat.blinkAnimCountdown.time = 75.f * Main::nEyeLidRects;
 
-    (void)ctx.cat.blinkAnimCountdown.updateAndStop(ctx.deltaTimeMs);
+    (void)ctx.cat.blinkAnimCountdown.tick(ctx.deltaTimeMs);
 
     const sf::Vec2f eyelidOrigin = ctx.main.txrCatEyeLid0.size / 2.f +
                                    (ctx.cat.type == CatType::Warden ? ctx.main.gameConstants.wardenCatEyelidOriginOffset
@@ -1333,7 +1333,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
                        .scale       = ctx.catScale,
                        .origin      = eyelidOrigin,
                        .rotation    = bodyRotation,
-                       .textureRect = *eyelidArray[static_cast<unsigned int>(ctx.cat.blinkAnimCountdown.value / 75.f) %
+                       .textureRect = *eyelidArray[static_cast<unsigned int>(ctx.cat.blinkAnimCountdown.time / 75.f) %
                                                    Main::nEyeLidRects],
                        .color       = ctx.attachmentHue});
     }
@@ -1420,14 +1420,14 @@ void drawCatVisuals(const CatDrawContext& ctx)
     if (ctx.cat.type == CatType::Copy)
     {
         if (ctx.main.copycatMaskAnim.isDone() &&
-            ctx.main.copycatMaskAnimCd.updateAndStop(ctx.deltaTimeMs) == CountdownStatusStop::AlreadyFinished)
-            ctx.main.copycatMaskAnim.value = 3000.f;
+            ctx.main.copycatMaskAnimCd.tick(ctx.deltaTimeMs) == TickResult::AlreadyFinished)
+            ctx.main.copycatMaskAnim.time = 3000.f;
 
         if (ctx.main.copycatMaskAnimCd.isDone() &&
-            ctx.main.copycatMaskAnim.updateAndStop(ctx.deltaTimeMs) == CountdownStatusStop::JustFinished)
-            ctx.main.copycatMaskAnimCd.value = 4000.f;
+            ctx.main.copycatMaskAnim.tick(ctx.deltaTimeMs) == TickResult::JustFinished)
+            ctx.main.copycatMaskAnimCd.time = 4000.f;
 
-        const float foo = easeInOutBack(ctx.main.copycatMaskAnim.getProgressBounced(3000.f)) * 0.5f;
+        const float foo = easeInOutBack(ctx.main.copycatMaskAnim.asProgress(3000.f).getBounce()) * 0.5f;
 
         const auto* txrMaskToUse = [&] -> const sf::Rect2f*
         {
@@ -1572,7 +1572,7 @@ void drawCatText(const CatDrawContext& ctx)
                 .fillColor          = sf::Color::whiteWithAlpha(128u),
                 .outlineColor       = ctx.textOutlineColor,
                 .outlineThickness   = 1.f,
-                .size               = sf::Vec2f{ctx.cat.cooldown.value / ctx.maxCooldown * 64.f, 3.f}.clampX(2.f, 64.f),
+                .size               = sf::Vec2f{ctx.cat.cooldown.time / ctx.maxCooldown * 64.f, 3.f}.clampX(2.f, 64.f),
                 .cornerRadius       = 1.f,
                 .cornerPointCount   = 8u,
             });
@@ -1864,15 +1864,15 @@ void Main::gameLoopDrawHellPortals()
     for (const HellPortal& hp : pt->hellPortals)
     {
         const float scaleMult = //
-            (hp.life.value > 1500.f)  ? easeOutBack(remap(hp.life.value, 1500.f, 1750.f, 1.f, 0.f))
-            : (hp.life.value < 250.f) ? easeOutBack(remap(hp.life.value, 0.f, 250.f, 0.f, 1.f))
+            (hp.life.time > 1500.f)  ? easeOutBack(remap(hp.life.time, 1500.f, 1750.f, 1.f, 0.f))
+            : (hp.life.time < 250.f) ? easeOutBack(remap(hp.life.time, 0.f, 250.f, 0.f, 1.f))
                                       : 1.f;
 
         cpuDrawableBatchBeforeCats.add(
             sf::Sprite{.position    = hp.getDrawPosition(),
                        .scale       = sf::Vec2f{1.f, 1.f} * scaleMult * hellPortalRadius / 256.f * 1.15f,
                        .origin      = txrHellPortal.size / 2.f,
-                       .rotation    = sf::radians(hp.life.value / 200.f),
+                       .rotation    = sf::radians(hp.life.time / 200.f),
                        .textureRect = txrHellPortal,
                        .color       = sf::Color::White});
     }
@@ -2043,16 +2043,16 @@ void Main::gameLoopDrawTextParticles()
 ////////////////////////////////////////////////////////////
 void Main::gameLoopDrawScrollArrowHint(const float deltaTimeMs)
 {
-    if (uiState.scrollArrowCountdown.value <= 0.f)
+    if (uiState.scrollArrowCountdown.time <= 0.f)
         return;
 
     if (playerInputState.scroll == 0.f)
-        (void)uiState.scrollArrowCountdown.updateAndLoop(deltaTimeMs, sf::base::tau * 350.f);
+        (void)uiState.scrollArrowCountdown.tickLooping(deltaTimeMs, sf::base::tau * 350.f);
     else
-        (void)uiState.scrollArrowCountdown.updateAndStop(deltaTimeMs);
+        (void)uiState.scrollArrowCountdown.tick(deltaTimeMs);
 
     const float blinkOpacity = easeInOutSine(sf::base::fabs(sf::base::sin(
-                                   sf::base::remainder(uiState.scrollArrowCountdown.value / 350.f, sf::base::tau)))) *
+                                   sf::base::remainder(uiState.scrollArrowCountdown.time / 350.f, sf::base::tau)))) *
                                255.f;
 
     const float arrowX = getLeftMostUsefulX();
@@ -2083,9 +2083,9 @@ void Main::gameLoopUpdatePurchaseUnlockedEffects(const float deltaTimeMs)
     {
         const float y = uiState.uiLabelToY[widgetLabel];
 
-        if (uiMenuFullyOpen && countdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::Running)
+        if (uiMenuFullyOpen && countdown.tick(deltaTimeMs) == TickResult::Running)
         {
-            const float x = remap(countdown.value, 0.f, 1000.f, 0.f, imguiWidth);
+            const float x = remap(countdown.time, 0.f, 1000.f, 0.f, imguiWidth);
 
             const auto pos = sf::Vec2f{uiMenuCueX + x, y + (14.f + rngFast.getF(-14.f, 14.f)) * profile.uiScale};
 
@@ -2105,11 +2105,11 @@ void Main::gameLoopUpdatePurchaseUnlockedEffects(const float deltaTimeMs)
 
         const bool arrowVisible = !arrowCountdown.isDone() &&
                                   (!uiMenuFullyOpen ||
-                                   arrowCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::Running);
+                                   arrowCountdown.tick(deltaTimeMs) == TickResult::Running);
 
         if (arrowVisible)
         {
-            const float blinkProgress = blinkFn(arrowCountdown.getProgressBounced(2000.f));
+            const float blinkProgress = blinkFn(arrowCountdown.asProgress(2000.f).getBounce());
 
             const auto arrowAlpha = static_cast<sf::base::U8>(easeInOutCubic(blinkProgress) * 255.f);
 
@@ -2198,14 +2198,14 @@ void Main::gameLoopDrawCursorComboText(const float deltaTimeMs, const float curs
 
     comboState.cursorComboText.scale *= (static_cast<float>(comboState.combo) * 0.65f) * cursorGrow * 0.3f;
     comboState.cursorComboText.scale += {0.85f, 0.85f};
-    comboState.cursorComboText.scale += sf::Vec2f{1.f, 1.f} * comboState.comboFailCountdown.value / 325.f;
+    comboState.cursorComboText.scale += sf::Vec2f{1.f, 1.f} * comboState.comboFailCountdown.time / 325.f;
     comboState.cursorComboText.scale *= scaleMult;
 
-    const auto minScale = sf::Vec2f{0.25f, 0.25f} + sf::Vec2f{0.25f, 0.25f} * comboState.comboFailCountdown.value / 125.f;
+    const auto minScale = sf::Vec2f{0.25f, 0.25f} + sf::Vec2f{0.25f, 0.25f} * comboState.comboFailCountdown.time / 125.f;
 
     comboState.cursorComboText.scale = comboState.cursorComboText.scale.componentWiseClamp(minScale, {1.5f, 1.5f});
 
-    if (comboState.comboFailCountdown.value > 0.f)
+    if (comboState.comboFailCountdown.time > 0.f)
     {
         comboState.cursorComboText.position += rngFast.getVec2f({-5.f, -5.f}, {5.f, 5.f});
         comboState.cursorComboText.setFillColor(sf::Color::Red.withAlpha(alphaU8));
@@ -2218,7 +2218,7 @@ void Main::gameLoopDrawCursorComboText(const float deltaTimeMs, const float curs
 ////////////////////////////////////////////////////////////
 void Main::gameLoopDrawCursorComboBar()
 {
-    if (!pt->comboPurchased || !profile.showCursorComboBar || comboState.comboCountdown.value == 0.f ||
+    if (!pt->comboPurchased || !profile.showCursorComboBar || comboState.comboCountdown.time == 0.f ||
         shouldDrawGrabbingCursor())
         return;
 
@@ -2244,7 +2244,7 @@ void Main::gameLoopDrawCursorComboBar()
             .fillColor          = sf::Color::blackWithAlpha(164u),
             .outlineColor       = comboState.cursorComboText.getOutlineColor(),
             .outlineThickness   = 1.f,
-            .size               = {64.f * scaleMult * comboState.comboCountdown.value / 700.f, 24.f * scaleMult},
+            .size               = {64.f * scaleMult * comboState.comboCountdown.time / 700.f, 24.f * scaleMult},
         },
         {.view = nonScaledHUDView});
 }
@@ -2323,24 +2323,24 @@ void Main::gameLoopTips(const float deltaTimeMs)
         return;
 
     bool mustSpawnByteParticles = false;
-    if (tipTCByte->updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+    if (tipTCByte->tick(deltaTimeMs) == TickResult::JustFinished)
     {
         mustSpawnByteParticles = true;
-        tipTCBackground.emplace(TargetedCountdown{.startingValue = 500.f});
+        tipTCBackground.emplace(TimedCountdown{.duration = 500.f});
         tipTCBackground->restart();
     }
 
     if (tipTCBackground.hasValue())
-        (void)tipTCBackground->updateAndStop(deltaTimeMs);
+        (void)tipTCBackground->tick(deltaTimeMs);
 
-    if (tipTCByteEnd.hasValue() && tipTCByteEnd->updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+    if (tipTCByteEnd.hasValue() && tipTCByteEnd->tick(deltaTimeMs) == TickResult::JustFinished)
     {
         resetTipState();
         return;
     }
 
-    const float bgProgress   = tipTCByteEnd.hasValue() ? tipTCByteEnd->getInvProgress() : tipTCBackground.getProgress();
-    const float byteProgress = tipTCByteEnd.hasValue() ? tipTCByteEnd->getInvProgress() : tipTCByte.getProgress();
+    const float bgProgress   = tipTCByteEnd.hasValue() ? tipTCByteEnd->asProgress().getRemaining() : getElapsedOr(tipTCBackground, 0.f);
+    const float byteProgress = tipTCByteEnd.hasValue() ? tipTCByteEnd->asProgress().getRemaining() : getElapsedOr(tipTCByte, 0.f);
 
     const float tipByteAlpha       = byteProgress * 255.f;
     const float tipBackgroundAlpha = bgProgress * 255.f;
@@ -2445,9 +2445,9 @@ void Main::gameLoopTips(const float deltaTimeMs)
 
     if (tipTCBackground.hasValue() && tipTCBackground->isDone() && tipCharIdx < tipString.size() &&
         tipCountdownChar.isDone())
-        tipCountdownChar.value = tipCharIdx > 0u ? getCharDelay(tipString[tipCharIdx - 1u]) : 50.f;
+        tipCountdownChar.time = tipCharIdx > 0u ? getCharDelay(tipString[tipCharIdx - 1u]) : 50.f;
 
-    if (tipCountdownChar.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+    if (tipCountdownChar.tick(deltaTimeMs) == TickResult::JustFinished)
     {
         if (getCharSound(tipString[tipCharIdx]))
         {
@@ -2459,14 +2459,14 @@ void Main::gameLoopTips(const float deltaTimeMs)
 
         if (tipCharIdx == tipString.size())
         {
-            tipTCBytePreEnd.emplace(TargetedCountdown{.startingValue = 250.f + static_cast<float>(tipString.size()) * 20.f});
+            tipTCBytePreEnd.emplace(TimedCountdown{.duration = 250.f + static_cast<float>(tipString.size()) * 20.f});
             tipTCBytePreEnd->restart();
         }
     }
 
-    if (tipTCBytePreEnd.hasValue() && tipTCBytePreEnd->updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+    if (tipTCBytePreEnd.hasValue() && tipTCBytePreEnd->tick(deltaTimeMs) == TickResult::JustFinished)
     {
-        tipTCByteEnd.emplace(TargetedCountdown{.startingValue = 750.f});
+        tipTCByteEnd.emplace(TimedCountdown{.duration = 750.f});
         tipTCByteEnd->restart();
     }
 

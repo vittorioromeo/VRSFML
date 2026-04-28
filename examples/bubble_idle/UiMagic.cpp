@@ -3,7 +3,7 @@
 #include "Aliases.hpp"
 #include "BubbleIdleMain.hpp"
 #include "Cat.hpp"
-#include "Countdown.hpp"
+#include "ExampleUtils/Progress.hpp"
 #include "PurchasableScalingValue.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"
@@ -71,7 +71,7 @@ void Main::uiTabBarMagic()
     ImGui::ProgressBar(pt->manaTimer / pt->getComputedManaCooldown());
     ImGui::PopStyleColor();
 
-    ImGui::Text("Wizard cooldown: %.2fs", static_cast<double>(wizardCat->cooldown.value / 1000.f));
+    ImGui::Text("Wizard cooldown: %.2fs", static_cast<double>(wizardCat->cooldown.time / 1000.f));
 
     uiImgsep(txrMagicSeparator2, "spells");
 
@@ -87,7 +87,7 @@ void Main::uiTabBarMagic()
             uiCenteredText("Cannot cast spells while absorbing wisdom...");
         else if (wizardCat->isHexedOrCopyHexed())
             uiCenteredText("Cannot cast spells while hexed...");
-        else if (wizardCat->cooldown.value > 0.f)
+        else if (wizardCat->cooldown.time > 0.f)
             uiCenteredText("Cannot cast spells while on cooldown...");
         else if (isCatBeingDragged(*wizardCat))
             uiCenteredText("Cannot cast spells while being dragged...");

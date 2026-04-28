@@ -2,10 +2,9 @@
 
 #include "Aliases.hpp"
 #include "CatType.hpp"
-#include "Countdown.hpp"
+#include "ExampleUtils/Progress.hpp"
 #include "TextShakeEffect.hpp"
 
-#include "ExampleUtils/Timer.hpp"
 
 #include "SFML/System/Priv/Vec2Base.hpp"
 
@@ -34,7 +33,7 @@ struct [[nodiscard]] Cat
     };
 
     ////////////////////////////////////////////////////////////
-    Timer spawnEffectTimer{};
+    Progress spawnEffectTimer{};
 
     sf::Vec2f position;
 
@@ -87,8 +86,8 @@ struct [[nodiscard]] Cat
 
     CatType type;
 
-    sf::base::Optional<BidirectionalTimer> hexedTimer{sf::base::nullOpt};
-    sf::base::Optional<BidirectionalTimer> hexedCopyTimer{sf::base::nullOpt};
+    sf::base::Optional<Transition> hexedTimer{sf::base::nullOpt};
+    sf::base::Optional<Transition> hexedCopyTimer{sf::base::nullOpt};
 
     MoneyType moneyEarned = 0u;
 
@@ -109,7 +108,7 @@ struct [[nodiscard]] Cat
     // the cat early by grabbing and shaking it: `napShakeProgress` (0..1)
     // accumulates drag motion and triggers wake-up on reaching 1.
     // `napWakeWobble` is a transient feedback rotation that decays to zero.
-    sf::base::Optional<BidirectionalTimer> napTransition{sf::base::nullOpt};
+    sf::base::Optional<Transition> napTransition{sf::base::nullOpt};
     sf::base::Optional<Countdown>          napSleepCountdown{sf::base::nullOpt};
     float                                  napShakeProgress{0.f};
     float                                  napWakeWobble{0.f};
@@ -167,14 +166,14 @@ struct [[nodiscard]] Cat
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline sf::base::Optional<BidirectionalTimer>& getHexedTimer()
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline sf::base::Optional<Transition>& getHexedTimer()
     {
         SFML_BASE_ASSERT(isHexedOrCopyHexed());
         return hexedTimer.hasValue() ? hexedTimer : hexedCopyTimer;
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline const sf::base::Optional<BidirectionalTimer>& getHexedTimer() const
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline const sf::base::Optional<Transition>& getHexedTimer() const
     {
         SFML_BASE_ASSERT(isHexedOrCopyHexed());
         return hexedTimer.hasValue() ? hexedTimer : hexedCopyTimer;
@@ -189,12 +188,12 @@ struct [[nodiscard]] Cat
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] inline bool updateCooldown(const float deltaTime)
     {
-        const float ispiredMult   = inspiredCountdown.updateAndIsActive(deltaTime) ? 2.f : 1.f;
-        const float boostMult     = boostCountdown.updateAndIsActive(deltaTime) ? 2.f : 1.f;
-        const float napBoostMult  = napBoostCountdown.updateAndIsActive(deltaTime) ? napBoostMultiplier : 1.f;
+        const float ispiredMult   = inspiredCountdown.tick(deltaTime) == TickResult::Running ? 2.f : 1.f;
+        const float boostMult     = boostCountdown.tick(deltaTime) == TickResult::Running ? 2.f : 1.f;
+        const float napBoostMult  = napBoostCountdown.tick(deltaTime) == TickResult::Running ? napBoostMultiplier : 1.f;
         const float cooldownSpeed = ispiredMult * boostMult * napBoostMult;
 
-        return cooldown.updateAndStop(deltaTime * cooldownSpeed) == CountdownStatusStop::AlreadyFinished;
+        return cooldown.tick(deltaTime * cooldownSpeed) == TickResult::AlreadyFinished;
     }
 
     ////////////////////////////////////////////////////////////

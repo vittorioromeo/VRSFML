@@ -2,7 +2,7 @@
 #include "BubbleIdleMain.hpp"
 #include "CatType.hpp"
 #include "Constants.hpp"
-#include "Countdown.hpp"
+#include "ExampleUtils/Progress.hpp"
 #include "PlayerInput.hpp"
 #include "Version.hpp"
 
@@ -240,9 +240,9 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
     gameLoopUpdateSpentMoneyEffect(deltaTimeMs);
     gameLoopUpdateComboText(deltaTimeMs, yBelowMinimap);
 
-    if (isDevilcatHellsingedActive() && pt->buffCountdownsPerType[asIdx(CatType::Devil)].value > 0.f)
+    if (isDevilcatHellsingedActive() && pt->buffCountdownsPerType[asIdx(CatType::Devil)].time > 0.f)
     {
-        if (portalStormTimer.updateAndLoop(deltaTimeMs, 10.f) == CountdownStatusLoop::Looping &&
+        if (portalStormTimer.tickLooping(deltaTimeMs, 10.f) == LoopResult::Looped &&
             rng.getF(0.f, 100.f) <= pt->psvPPDevilRitualBuffPercentage.currentValue())
         {
             const float offset    = 64.f;
@@ -250,7 +250,7 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
 
             pt->hellPortals.pushBack({
                 .position = portalPos,
-                .life     = Countdown{.value = 1750.f},
+                .life     = Countdown{.time = 1750.f},
                 .catIdx   = 100'000u,
             });
 
@@ -284,12 +284,12 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
     }
 
     if (shouldDrawUI && !uiState.debugHideUI)
-        if (comboState.comboCountdown.value > 25.f)
+        if (comboState.comboCountdown.time > 25.f)
             rtGame.draw(
                 sf::RoundedRectangleShapeData{
                     .position     = {comboState.comboText.getGlobalCenterRight().x + 3.f, yBelowMinimap + 51.f},
                     .fillColor    = sf::Color{75, 75, 75, 255},
-                    .size         = {100.f * comboState.comboCountdown.value / 700.f, 20.f},
+                    .size         = {100.f * comboState.comboCountdown.time / 700.f, 20.f},
                     .cornerRadius = 6.f,
                 },
                 {.view = scaledHUDView});
@@ -361,23 +361,23 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
     gameLoopDrawCursorComboText(deltaTimeMs, frameUpdate.cursorGrow);
     gameLoopDrawCursorComboBar();
 
-    if (splashCountdown.value > 0.f)
+    if (splashCountdown.time > 0.f)
         drawSplashScreen(rtGame, scaledHUDView, frameViews.resolution, profile.hudScale);
 
     if (victoryTC.hasValue())
     {
-        if (victoryTC->updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+        if (victoryTC->tick(deltaTimeMs) == TickResult::JustFinished)
         {
-            cdLetterAppear.value = 4000.f;
-            delayedActions.emplaceBack(Countdown{.value = 4000.f}, [this] { playSound(sounds.paper); });
+            cdLetterAppear.time = 4000.f;
+            delayedActions.emplaceBack(Countdown{.time = 4000.f}, [this] { playSound(sounds.paper); });
         }
 
         if (victoryTC->isDone())
         {
-            if (cdLetterAppear.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
-                cdLetterText.value = 10'000.f;
+            if (cdLetterAppear.tick(deltaTimeMs) == TickResult::JustFinished)
+                cdLetterText.time = 10'000.f;
 
-            const float progress = cdLetterAppear.getProgressBounced(4000.f);
+            const float progress = cdLetterAppear.asProgress(4000.f).getBounce();
 
             rtGame.draw(sf::Sprite{.position    = frameViews.resolution / 2.f / profile.hudScale,
                                    .scale       = sf::Vec2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutQuint(progress)) /
@@ -388,10 +388,10 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
                         {.view = scaledHUDView, .texture = &txLetter});
         }
 
-        (void)cdLetterText.updateAndStop(deltaTimeMs);
+        (void)cdLetterText.tick(deltaTimeMs);
 
-        const float textProgress = cdLetterText.value > 9000.f   ? remap(cdLetterText.value, 9000.f, 10'000.f, 1.f, 0.f)
-                                   : cdLetterText.value < 1000.f ? cdLetterText.value / 1000.f
+        const float textProgress = cdLetterText.time > 9000.f   ? remap(cdLetterText.time, 9000.f, 10'000.f, 1.f, 0.f)
+                                   : cdLetterText.time < 1000.f ? cdLetterText.time / 1000.f
                                                                  : 1.f;
 
         rtGame.draw(sf::Sprite{.position    = frameViews.resolution / 2.f / profile.hudScale,

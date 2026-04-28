@@ -1,6 +1,6 @@
 #include "BubbleIdleMain.hpp"
 #include "Cat.hpp"
-#include "Countdown.hpp"
+#include "ExampleUtils/Progress.hpp"
 #include "PlayerInput.hpp"
 #include "SweepAndPrune.hpp"
 
@@ -22,7 +22,7 @@ void Main::gameLoopUpdateFrameWorld(const float realDeltaTimeMs, FrameInput& fra
 
     sweepAndPrune->populate(pt->bubbles);
 
-    frameProcThisFrame = (frameProcCd.updateAndLoop(deltaTimeMs, 20.f) == CountdownStatusLoop::Looping);
+    frameProcThisFrame = (frameProcCd.tickLooping(deltaTimeMs, 20.f) == LoopResult::Looped);
 
     gameLoopUpdateBubbles(deltaTimeMs);
     gameLoopUpdateAttractoBuff(deltaTimeMs);
@@ -60,7 +60,7 @@ void Main::gameLoopUpdateFrameWorld(const float realDeltaTimeMs, FrameInput& fra
     gameLoopUpdateAutocast();
 
     for (auto& [delayCountdown, func] : delayedActions)
-        if (delayCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+        if (delayCountdown.tick(deltaTimeMs) == TickResult::JustFinished)
             func();
 
     sf::base::vectorEraseIf(delayedActions, [](const auto& delayedAction) {
@@ -92,7 +92,7 @@ void Main::gameLoopUpdateFrameUi(const sf::Time deltaTime, const float deltaTime
 {
     imGuiContext.update(window, deltaTime);
 
-    if (undoPPPurchaseTimer.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+    if (undoPPPurchaseTimer.tick(deltaTimeMs) == TickResult::JustFinished)
         undoPPPurchase.clear();
 
     cpuCloudUiDrawableBatch.clear();

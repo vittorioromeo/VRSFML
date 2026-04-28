@@ -79,7 +79,7 @@ void Main::uiShopDrawCoreUpgrades()
                 "keyboard.\nYou can also click on the minimap!");
 
             if (pt->psvBubbleValue.nPurchases == 0u)
-                uiState.scrollArrowCountdown.value = 2000.f;
+                uiState.scrollArrowCountdown.time = 2000.f;
         }
 
         if (checkUiUnlock(2u, pt->mapPurchased))

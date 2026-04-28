@@ -8,7 +8,7 @@
 #include "CatType.hpp"
 #include "Collision.hpp"
 #include "Constants.hpp"
-#include "Countdown.hpp"
+#include "ExampleUtils/Progress.hpp"
 #include "Doll.hpp"
 #include "HexSession.hpp"
 #include "Particle.hpp"
@@ -533,7 +533,7 @@ Cat& Main::spawnCat(const sf::Vec2f pos, const CatType catType, const float hue)
 
     Cat& newCat = pt->cats.emplaceBack(Cat{
         .position    = pos,
-        .cooldown    = {.value = getComputedCooldownByCatTypeOrCopyCat(catType)},
+        .cooldown    = {.time = getComputedCooldownByCatTypeOrCopyCat(catType)},
         .pawPosition = pos,
         .hue         = hue,
         .nameIdx     = getNextCatNameIdx(catType),
@@ -585,7 +585,7 @@ void Main::resetTipState()
     tipTCBytePreEnd.reset();
     tipTCByteEnd.reset();
     tipTCBackgroundEnd.reset();
-    tipCountdownChar.value = 0.f;
+    tipCountdownChar.time = 0.f;
     tipString              = "";
     tipCharIdx             = 0u;
 }
@@ -601,7 +601,7 @@ void Main::doTip(const sf::base::String& str, const SizeT maxPrestigeLevel)
 
     resetTipState();
 
-    tipTCByte.emplace(TargetedCountdown{.startingValue = 500.f});
+    tipTCByte.emplace(TimedCountdown{.duration = 500.f});
     tipTCByte->restart();
 
     tipString = str + "\t\t\t\t\t";
@@ -707,7 +707,7 @@ void Main::switchToBGM(const sf::base::SizeT index, const bool force)
         return;
 
     lastPlayedMusic     = bgmPaths[index];
-    bgmTransition.value = 1000.f;
+    bgmTransition.time = 1000.f;
 
     auto& optNextMusic = getNextBGMBuffer();
     optNextMusic.emplace(playbackDevice, sf::MusicReader::openFromFile(bgmPaths[index]).value());
@@ -864,7 +864,7 @@ bool Main::isWizardBusy() const
     if (wizardCat == nullptr)
         return false;
 
-    return pt->absorbingWisdom || wizardCat->cooldown.value != 0.f || wizardCat->isHexedOrCopyHexed() ||
+    return pt->absorbingWisdom || wizardCat->cooldown.time != 0.f || wizardCat->isHexedOrCopyHexed() ||
            isCatBeingDragged(*wizardCat);
 }
 
@@ -935,12 +935,12 @@ void Main::addCombo(int& xCombo, Countdown& xComboCountdown) const
     if (xCombo == 0)
     {
         xCombo                = 1;
-        xComboCountdown.value = pt->psvComboStartTime.currentValue() * 1000.f;
+        xComboCountdown.time = pt->psvComboStartTime.currentValue() * 1000.f;
     }
     else
     {
         xCombo += 1;
-        xComboCountdown.value += 150.f - sf::base::clamp(static_cast<float>(xCombo) * 10.f, 0.f, 100.f);
+        xComboCountdown.time += 150.f - sf::base::clamp(static_cast<float>(xCombo) * 10.f, 0.f, 100.f);
     }
 }
 
@@ -948,7 +948,7 @@ void Main::addCombo(int& xCombo, Countdown& xComboCountdown) const
 ////////////////////////////////////////////////////////////
 bool Main::checkComboEnd(const float deltaTimeMs, int& xCombo, Countdown& xComboCountdown)
 {
-    if (xComboCountdown.updateAndStop(deltaTimeMs) != CountdownStatusStop::JustFinished)
+    if (xComboCountdown.tick(deltaTimeMs) != TickResult::JustFinished)
         return false;
 
     xCombo = 0;
@@ -1025,7 +1025,7 @@ void Main::doWizardSpellStarpawConversion(Cat& wizardCat)
     });
 
     ++wizardCat.hits;
-    wizardCat.cooldown.value = maxCooldown * 2.f;
+    wizardCat.cooldown.time = maxCooldown * 2.f;
 }
 
 
@@ -1040,7 +1040,7 @@ void Main::doWizardSpellMewltiplierAura(Cat& wizardCat)
     spawnParticlesNoGravity(256, wizardCat.position, ParticleType::Star, rngFast.getF(0.25f, 1.25f), rngFast.getF(0.5f, 3.f));
 
     ++wizardCat.hits;
-    wizardCat.cooldown.value = maxCooldown * 2.f;
+    wizardCat.cooldown.time = maxCooldown * 2.f;
 }
 
 
@@ -1064,7 +1064,7 @@ void Main::doWizardSpellDarkUnion(Cat& wizardCat)
 
         spawnParticlesNoGravity(256, witchCat->position, ParticleType::Star, rngFast.getF(0.25f, 1.25f), rngFast.getF(0.5f, 3.f));
 
-        witchCat->cooldown.value -= witchCat->cooldown.value * (pt->psvDarkUnionPercentage.currentValue() / 100.f);
+        witchCat->cooldown.time -= witchCat->cooldown.time * (pt->psvDarkUnionPercentage.currentValue() / 100.f);
     }
     else
     {
@@ -1073,7 +1073,7 @@ void Main::doWizardSpellDarkUnion(Cat& wizardCat)
     }
 
     ++wizardCat.hits;
-    wizardCat.cooldown.value = maxCooldown * 4.f;
+    wizardCat.cooldown.time = maxCooldown * 4.f;
 }
 
 
@@ -1088,7 +1088,7 @@ void Main::doWizardSpellStasisField(Cat& wizardCat)
     spawnParticlesNoGravity(256, wizardCat.position, ParticleType::Star, rngFast.getF(0.25f, 1.25f), rngFast.getF(0.5f, 3.f));
 
     ++wizardCat.hits;
-    wizardCat.cooldown.value = maxCooldown * 2.f;
+    wizardCat.cooldown.time = maxCooldown * 2.f;
 }
 
 
@@ -1099,7 +1099,7 @@ void Main::castSpellByIndex(const sf::base::SizeT index, Cat* wizardCat, Cat* co
 
     const bool copyCatMustCast = copyCat != nullptr && pt->copycatCopiedCatType == CatType::Wizard;
 
-    wizardcatSpin.value = sf::base::tau;
+    wizardcatSpin.time = sf::base::tau;
     statSpellCast(index);
 
     if (index == 0u) // Starpaw Conversion
@@ -1223,11 +1223,11 @@ MoneyType Main::computeFinalReward(const Bubble& bubble, const float multiplier,
         result *= 5.f;
 
     // Ritual buff -- normalcat: x5 reward for cats
-    if (mustApplyCatMult && pt->buffCountdownsPerType[asIdx(CatType::Normal)].value > 0.f)
+    if (mustApplyCatMult && pt->buffCountdownsPerType[asIdx(CatType::Normal)].time > 0.f)
         result *= 5.f;
 
     // Ritual buff -- mousecat: x10 reward for clicks
-    if (mustApplyHandMult && pt->buffCountdownsPerType[asIdx(CatType::Mouse)].value > 0.f)
+    if (mustApplyHandMult && pt->buffCountdownsPerType[asIdx(CatType::Mouse)].time > 0.f)
         result *= 10.f;
 
     // Genius cats: x2 reward for normal cats only

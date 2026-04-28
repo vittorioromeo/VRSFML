@@ -5,7 +5,7 @@
 #include "BubbleIdleMain.hpp"
 #include "BubbleType.hpp"
 #include "CatType.hpp"
-#include "Countdown.hpp"
+#include "ExampleUtils/Progress.hpp"
 #include "ShrineConstants.hpp"
 
 #include "ExampleUtils/Profiler.hpp"
@@ -207,7 +207,7 @@ void Main::gameLoopUpdateAchievements()
 
     const auto unlockIfPrestige = [&](const bool condition)
     {
-        if (undoPPPurchaseTimer.value > 0.f) // don't unlock in undo grace period
+        if (undoPPPurchaseTimer.time > 0.f) // don't unlock in undo grace period
         {
             ++nextId;
             return;
@@ -229,7 +229,7 @@ void Main::gameLoopUpdateAchievements()
 
     const auto unlockIfGtEqPrestige = [&](const auto& value, const auto& threshold)
     {
-        if (undoPPPurchaseTimer.value > 0.f) // don't unlock in undo grace period
+        if (undoPPPurchaseTimer.time > 0.f) // don't unlock in undo grace period
         {
             ++nextId;
             return;
@@ -545,7 +545,7 @@ void Main::gameLoopUpdateAchievements()
 
     const auto nActiveBuffs = sf::base::countIf(pt->buffCountdownsPerType,
                                                 pt->buffCountdownsPerType + nCatTypes,
-                                                [](const Countdown& c) { return c.value > 0.f; });
+                                                [](const Countdown& c) { return c.time > 0.f; });
 
     unlockIfGtEq(nActiveBuffs, 2);
     unlockIfGtEq(nActiveBuffs, 3);
