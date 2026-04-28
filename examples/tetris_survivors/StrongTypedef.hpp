@@ -2,12 +2,6 @@
 
 
 ////////////////////////////////////////////////////////////
-// Note: types declared with `TSURV_DEFINE_STRONG_TYPEDEF` intentionally do not
-// specialize `std::hash` (avoiding `<functional>`). Use `ankerl::unordered_dense::map`
-// instead -- `SFML/Base/AnkerlUnorderedDense.hpp` provides a generic specialization
-// for any type exposing `T::UnderlyingType` and `toUnderlying()`, which all strong
-// typedefs satisfy.
-////////////////////////////////////////////////////////////
 #define TSURV_DEFINE_STRONG_TYPEDEF(name, underlyingType)                                                             \
                                                                                                                       \
     class [[nodiscard]] name final                                                                                    \
