@@ -103,14 +103,12 @@
 #include "SFML/Base/Trait/IsVoid.hpp"
 #include "SFML/Base/Trait/RemoveCVRef.hpp"
 #include "SFML/Base/Trait/UnderlyingType.hpp"
+#include "SFML/Base/Trait/VoidT.hpp"
+#include "SFML/Base/Swap.hpp"
 #include "SFML/Base/Vector.hpp"
 #include "SFML/Base/UIntPtrT.hpp"
 
-#if __has_include(<bits/functional_hash.h>)
-#    include <bits/functional_hash.h>
-#else
-#    include <functional>          // for hash
-#endif
+#include "SFML/Base/FwdStdHash.hpp"
 
 #    if defined(_MSC_VER) && defined(_M_X64)
 #        include <intrin.h>
@@ -587,15 +585,18 @@ namespace detail {
 struct nonesuch {};
 struct default_container_t {};
 
+struct false_t { static constexpr bool value = false; };
+struct true_t  { static constexpr bool value = true;  };
+
 template <class Default, class AlwaysVoid, template <class...> class Op, class... Args>
 struct detector {
-    using value_t = std::false_type;
+    using value_t = false_t;
     using type = Default;
 };
 
 template <class Default, template <class...> class Op, class... Args>
-struct detector<Default, std::void_t<Op<Args...>>, Op, Args...> {
-    using value_t = std::true_type;
+struct detector<Default, sf::base::VoidT<Op<Args...>>, Op, Args...> {
+    using value_t = true_t;
     using type = Op<Args...>;
 };
 
@@ -2005,15 +2006,13 @@ public:
                                               SFML_BASE_IS_NOTHROW_SWAPPABLE(Hash) &&
                                               SFML_BASE_IS_NOTHROW_SWAPPABLE(KeyEqual)))
     {
-        using std::swap;
-
-        swap(m_values, other.m_values);
-        swap(m_buckets, other.m_buckets);
-        swap(m_max_bucket_capacity, other.m_max_bucket_capacity);
-        swap(m_max_load_factor, other.m_max_load_factor);
-        swap(m_hash, other.m_hash);
-        swap(m_equal, other.m_equal);
-        swap(m_shifts, other.m_shifts);
+        sf::base::genericSwap(m_values, other.m_values);
+        sf::base::genericSwap(m_buckets, other.m_buckets);
+        sf::base::genericSwap(m_max_bucket_capacity, other.m_max_bucket_capacity);
+        sf::base::genericSwap(m_max_load_factor, other.m_max_load_factor);
+        sf::base::genericSwap(m_hash, other.m_hash);
+        sf::base::genericSwap(m_equal, other.m_equal);
+        sf::base::genericSwap(m_shifts, other.m_shifts);
     }
 
     friend void swap(table& lhs, table& rhs) noexcept(noexcept(lhs.swap(rhs)))
