@@ -26,7 +26,7 @@ namespace doctest
 ////////////////////////////////////////////////////////////
 String StringMaker<sf::VideoMode>::convert(const sf::VideoMode& videoMode)
 {
-    return intToString(videoMode.size.x) + "x" + intToString(videoMode.size.y) + "x" +
-           intToString(videoMode.bitsPerPixel);
+    return intToString(videoMode.size.x) + "x" + intToString(videoMode.size.y) + "x" + intToString(videoMode.bitsPerPixel);
 }
+
 } // namespace doctest
