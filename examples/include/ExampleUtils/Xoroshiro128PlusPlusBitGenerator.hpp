@@ -1,11 +1,15 @@
 #pragma once
 
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
 #include "SFML/Base/AssertAndAssume.hpp"
 #include "SFML/Base/IntTypes.hpp"
 
 
 ////////////////////////////////////////////////////////////
-/// \brief A fast pseudo-random number generator using the xoroshiro128+ algorithm.
+/// \brief A fast pseudo-random number generator using the xoroshiro128++ algorithm.
 ///
 /// Provides methods for generating integers, floats, vectors,
 /// and random directions/points within shapes. Can be seeded.
@@ -13,7 +17,7 @@
 /// Satisfies the C++ `UniformRandomBitGenerator` concept.
 ///
 ////////////////////////////////////////////////////////////
-class [[nodiscard]] Xoroshiro128PlusBitGenerator
+class [[nodiscard]] Xoroshiro128PlusPlusBitGenerator
 {
 public:
     using result_type = sf::base::U64; //!< Type returned by `operator()` and `next()`
@@ -31,9 +35,10 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] static inline constexpr sf::base::U64 rotl(
         const sf::base::U64 x,
-        const int           k) noexcept
+        const unsigned      k) noexcept
     {
-        return (x << k) | (x >> (64 - k));
+        SFML_BASE_ASSERT_AND_ASSUME(k < 64u);
+        return (x << k) | (x >> ((64u - k) & 63u));
     }
 
     ////////////////////////////////////////////////////////////
@@ -70,7 +75,7 @@ private:
         m_state[0] = splitmix64(seedValue);
         m_state[1] = splitmix64(seedValue);
 
-        // Ensure the initial state is not all zeros, which is invalid for xoroshiro128+
+        // Ensure the initial state is not all zeros, which is invalid for xoroshiro128++
         if (m_state[0] == 0ULL && m_state[1] == 0ULL)
         {
             m_state[0] = DefaultSeed::State0; // Fallback to default non-zero state
@@ -94,7 +99,7 @@ public:
     /// \brief Default constructor. Initializes with a fixed internal seed.
     ///
     ////////////////////////////////////////////////////////////
-    explicit Xoroshiro128PlusBitGenerator() noexcept : m_state{DefaultSeed::State0, DefaultSeed::State1}
+    explicit Xoroshiro128PlusPlusBitGenerator() noexcept : m_state{DefaultSeed::State0, DefaultSeed::State1}
     {
         // Ensure default state isn't all zeros (though these constants aren't)
         SFML_BASE_ASSERT_AND_ASSUME(m_state[0] != 0 || m_state[1] != 0);
@@ -106,7 +111,7 @@ public:
     /// \param seed The seed value.
     ///
     ////////////////////////////////////////////////////////////
-    explicit Xoroshiro128PlusBitGenerator(const SeedType seed) noexcept
+    explicit Xoroshiro128PlusPlusBitGenerator(const SeedType seed) noexcept
     {
         seedInternal(seed);
     }
@@ -116,7 +121,7 @@ public:
     ///
     /// \return A 64-bit unsigned integer.
     ///
-    /// Implements the core xoroshiro128+ algorithm step.
+    /// Implements the core xoroshiro128++ algorithm step.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] inline result_type next() noexcept
@@ -124,12 +129,12 @@ public:
         const sf::base::U64 s0 = m_state[0];
         sf::base::U64       s1 = m_state[1];
 
-        const sf::base::U64 result = s0 + s1; // The '+' part of xoroshiro128+
+        const sf::base::U64 result = rotl(s0 + s1, 17u) + s0; // The '++' scrambler
 
         s1 ^= s0;
 
-        m_state[0] = rotl(s0, 24) ^ s1 ^ (s1 << 16);
-        m_state[1] = rotl(s1, 37);
+        m_state[0] = rotl(s0, 49u) ^ s1 ^ (s1 << 21);
+        m_state[1] = rotl(s1, 28u);
 
         return result;
     }
