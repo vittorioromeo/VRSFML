@@ -32,18 +32,20 @@ void drainGLCommandQueue()
     glCheck(glFinish());
 }
 
+
+////////////////////////////////////////////////////////////
+sf::GraphicsContext& sharedGraphicsContext()
+{
+    static auto ctx = sf::GraphicsContext::create().value();
+    return ctx;
+}
+
 } // namespace
 
 
 TEST_CASE("[GLUtils] sf::priv::GLFenceSync / FenceUtils" * doctest::skip(skipDisplayTests))
 {
-    CHECK(!sf::WindowContext::isInstalled());
-    CHECK(!sf::GraphicsContext::isInstalled());
-
-    auto graphicsContext = sf::GraphicsContext::create().value();
-
-    CHECK(sf::WindowContext::isInstalled());
-    CHECK(sf::GraphicsContext::isInstalled());
+    (void)sharedGraphicsContext();
 
     SECTION("Type traits")
     {

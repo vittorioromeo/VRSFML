@@ -31,9 +31,26 @@
 #include <Doctest.hpp>
 
 
+namespace
+{
+sf::GraphicsContext& sharedGraphicsContext()
+{
+    static auto ctx = sf::GraphicsContext::create().value();
+    return ctx;
+}
+
+const sf::Font& sharedFont()
+{
+    (void)sharedGraphicsContext();
+    static auto font = sf::Font::openFromFile("tuffy.ttf").value();
+    return font;
+}
+} // namespace
+
+
 TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
 {
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    (void)sharedGraphicsContext();
 
     SECTION("Type traits")
     {
@@ -45,7 +62,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
         STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Text));
     }
 
-    const auto font = sf::Font::openFromFile("tuffy.ttf").value();
+    const auto& font = sharedFont();
 
     SECTION("Construction")
     {

@@ -178,10 +178,16 @@ else()
 endif()
 
 # Convenience for building and running tests in a single command
+include(ProcessorCount)
+ProcessorCount(SFML_RUNTESTS_PARALLEL)
+if(SFML_RUNTESTS_PARALLEL EQUAL 0)
+    set(SFML_RUNTESTS_PARALLEL 1)
+endif()
+
 add_custom_target(runtests DEPENDS test-sfml-base test-sfml-system test-sfml-glutils test-sfml-window test-sfml-graphics test-sfml-network test-sfml-audio)
 add_custom_command(TARGET runtests
                    COMMENT "Run tests"
                    POST_BUILD
-                   COMMAND ${COVERAGE_PREFIX} ${CMAKE_CTEST_COMMAND} --output-on-failure -C $<CONFIG>
+                   COMMAND ${COVERAGE_PREFIX} ${CMAKE_CTEST_COMMAND} --output-on-failure --parallel ${SFML_RUNTESTS_PARALLEL} -C $<CONFIG>
                    COMMAND ${CMAKE_COMMAND} -P "${PROJECT_BINARY_DIR}/patch_coverage.cmake"
                    VERBATIM)

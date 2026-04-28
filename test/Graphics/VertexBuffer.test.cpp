@@ -19,10 +19,20 @@
 #include <Doctest.hpp>
 
 
+namespace
+{
+sf::GraphicsContext& sharedGraphicsContext()
+{
+    static auto ctx = sf::GraphicsContext::create().value();
+    return ctx;
+}
+} // namespace
+
+
 // Skip these tests with [.display] because they produce flakey failures in CI when using xvfb-run
 TEST_CASE("[Graphics] sf::VertexBuffer", "[.display]")
 {
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    (void)sharedGraphicsContext();
 
     SECTION("Type traits")
     {
