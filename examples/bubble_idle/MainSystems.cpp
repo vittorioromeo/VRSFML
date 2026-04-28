@@ -7,7 +7,7 @@
 #include "Cat.hpp"
 #include "CatType.hpp"
 #include "Constants.hpp"
-#include "Countdown.hpp"
+#include "ExampleUtils/Progress.hpp"
 #include "Doll.hpp"
 #include "GameEvent.hpp"
 #include "HellPortal.hpp"
@@ -24,7 +24,6 @@
 #include "ExampleUtils/HueColor.hpp"
 #include "ExampleUtils/MathUtils.hpp"
 #include "ExampleUtils/Profiler.hpp"
-#include "ExampleUtils/Timer.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"
 
@@ -97,7 +96,7 @@ void Main::gameLoopUpdateTransitions(const float deltaTimeMs)
 
     auto targetBubbleCount = targetBubbleCountPerScreen * nPurchasedScreens;
 
-    const bool repulsoBuffActive = pt->buffCountdownsPerType[asIdx(CatType::Repulso)].value > 0.f;
+    const bool repulsoBuffActive = pt->buffCountdownsPerType[asIdx(CatType::Repulso)].time > 0.f;
 
     if (repulsoBuffActive)
         targetBubbleCount *= 2u;
@@ -111,7 +110,7 @@ void Main::gameLoopUpdateTransitions(const float deltaTimeMs)
     };
 
     // If we are still displaying the splash screen, exit early
-    if (splashCountdown.updateAndStop(deltaTimeMs) != CountdownStatusStop::AlreadyFinished)
+    if (splashCountdown.tick(deltaTimeMs) != TickResult::AlreadyFinished)
         return;
 
     // Spawn bubbles and shrines during normal gmaeplay
@@ -190,14 +189,14 @@ void Main::gameLoopUpdateTransitions(const float deltaTimeMs)
     SFML_BASE_ASSERT(inPrestigeTransition);
 
     // Despawn cats, dolls, copydolls, and shrines
-    if (catRemoveTimer.updateAndLoop(deltaTimeMs) == CountdownStatusLoop::Looping)
+    if (catRemoveTimer.tickLooping(deltaTimeMs) == LoopResult::Looped)
     {
         if (!pt->cats.empty())
         {
             for (auto& cat : pt->cats)
             {
                 cat.astroState.reset();
-                cat.cooldown.value = 100.f;
+                cat.cooldown.time = 100.f;
             }
 
             // Find rightmost cat
@@ -287,7 +286,7 @@ void Main::gameLoopUpdateTransitions(const float deltaTimeMs)
 
     // Despawn bubbles after other things
     if (gameElementsRemoved && !pt->bubbles.empty() &&
-        bubbleSpawnTimer.updateAndLoop(deltaTimeMs) == CountdownStatusLoop::Looping)
+        bubbleSpawnTimer.tickLooping(deltaTimeMs) == LoopResult::Looped)
     {
         const SizeT times = pt->bubbles.size() > 500u ? 25u : 1u;
 
@@ -439,7 +438,7 @@ void Main::gameLoopUpdateBubbles(const float deltaTimeMs)
         {
             float windVelocity = windMult[pt->windStrength] * (bubble.type == BubbleType::Bomb ? 0.01f : 0.9f);
 
-            if (pt->buffCountdownsPerType[asIdx(CatType::Repulso)].value > 0.f)
+            if (pt->buffCountdownsPerType[asIdx(CatType::Repulso)].time > 0.f)
                 windVelocity += 0.00015f;
 
             if (windVelocity > 0.f)
@@ -485,9 +484,9 @@ void Main::gameLoopUpdateBubbles(const float deltaTimeMs)
             if (sf::base::fabs(bubble.velocity.x) > 0.04f)
                 bubble.velocity.x = 0.04f;
 
-            const bool uniBuffEnabled       = pt->buffCountdownsPerType[asIdx(CatType::Uni)].value > 0.f;
+            const bool uniBuffEnabled       = pt->buffCountdownsPerType[asIdx(CatType::Uni)].time > 0.f;
             const bool devilBombBuffEnabled = !isDevilcatHellsingedActive() &&
-                                              pt->buffCountdownsPerType[asIdx(CatType::Devil)].value > 0.f;
+                                              pt->buffCountdownsPerType[asIdx(CatType::Devil)].time > 0.f;
 
             const bool willBeStar = uniBuffEnabled &&
                                     rng.getF(0.f, 100.f) <= pt->psvPPUniRitualBuffPercentage.currentValue();
@@ -519,8 +518,8 @@ void Main::gameLoopUpdateBubbles(const float deltaTimeMs)
         if (!isCombo)
             bubble.velocity.y += 0.00005f * deltaTimeMs;
 
-        (void)bubble.repelledCountdown.updateAndStop(deltaTimeMs);
-        (void)bubble.attractedCountdown.updateAndStop(deltaTimeMs);
+        (void)bubble.repelledCountdown.tick(deltaTimeMs);
+        (void)bubble.attractedCountdown.tick(deltaTimeMs);
     }
 
     // Ephemeral bubbles that have fallen off the bottom stay in `pt->bubbles`
@@ -618,7 +617,7 @@ void Main::popComboBubble(Bubble& bubble)
     PendingComboBubblePayout payout{
         .coins           = {},
         .coinsCollected  = 0u,
-        .settleCountdown = Countdown{.value = cfg.burstSettleDelayMs},
+        .settleCountdown = Countdown{.time = cfg.burstSettleDelayMs},
         .collectDelay    = {},
     };
     payout.coins.reserve(coinCount);
@@ -677,17 +676,17 @@ void Main::gameLoopUpdateComboBubblePayouts(const float deltaTimeMs)
 
         // Phase 2: settle delay -- coins keep drifting/damping but no
         // collection happens yet so the player sees the explosion settle.
-        if (p.settleCountdown.updateAndStop(deltaTimeMs) != CountdownStatusStop::AlreadyFinished &&
-            p.settleCountdown.value > 0.f)
+        if (p.settleCountdown.tick(deltaTimeMs) != TickResult::AlreadyFinished &&
+            p.settleCountdown.time > 0.f)
             continue;
 
         // Phase 3: collect -- every `coinDelayMs`, take the next settled coin,
         // route it to the HUD via the existing `EarnedCoinParticle` path, and
         // play the rising-pitch coin chime. Pitch climbs with `coinsCollected`.
-        if (p.collectDelay.updateAndLoop(deltaTimeMs, coinDelayMs) != CountdownStatusLoop::Looping)
+        if (p.collectDelay.tickLooping(deltaTimeMs, coinDelayMs) != LoopResult::Looped)
             continue;
 
-        p.collectDelay.value = coinDelayMs;
+        p.collectDelay.time = coinDelayMs;
 
         BurstingComboCoin* next = nullptr;
         for (BurstingComboCoin& c : p.coins)
@@ -759,7 +758,7 @@ void Main::gameLoopDrawComboBubbleBurstingCoins()
 ////////////////////////////////////////////////////////////
 void Main::gameLoopUpdateAttractoBuff(const float deltaTimeMs) const
 {
-    if (pt->buffCountdownsPerType[asIdx(CatType::Attracto)].value <= 0.f)
+    if (pt->buffCountdownsPerType[asIdx(CatType::Attracto)].time <= 0.f)
         return;
 
     const auto sqAttractoRange = pt->getComputedSquaredRangeByCatType(CatType::Attracto);
@@ -785,7 +784,7 @@ void Main::gameLoopUpdateAttractoBuff(const float deltaTimeMs) const
         const auto strength = (attractoRange - length) * 0.000017f;
         bubble.velocity += (diff / length * strength * getWindAttractionMult()) * 1.f * deltaTimeMs;
 
-        bubble.attractedCountdown.value = sf::base::max(bubble.attractedCountdown.value, 750.f);
+        bubble.attractedCountdown.time = sf::base::max(bubble.attractedCountdown.time, 750.f);
     };
 
     for (Bubble& bubble : pt->bubbles)
@@ -976,7 +975,7 @@ void Main::gameLoopUpdateAttractoBuff(const float deltaTimeMs) const
                     addCombo(comboState.combo, comboState.comboCountdown);
                     comboState.comboTextShakeEffect.bump(rngFast, 0.01f + static_cast<float>(comboState.combo) * 0.002f);
 
-                    comboState.comboCountdown.value = sf::base::min(comboState.comboCountdown.value,
+                    comboState.comboCountdown.time = sf::base::min(comboState.comboCountdown.time,
                                                                     pt->psvComboStartTime.currentValue() * 100.f);
 
                     comboState.combo = sf::base::min(comboState.combo, 998);
@@ -1075,7 +1074,7 @@ void Main::gameLoopUpdateCatActionNormal(const float /* deltaTimeMs */, Cat& cat
         cat.textStatusShakeEffect.bump(rngFast, 1.5f);
         ++cat.hits;
 
-        cat.cooldown.value = maxCooldown;
+        cat.cooldown.time = maxCooldown;
     };
 
     // Combo bubbles are player-only; cats must never target or pop them.
@@ -1225,7 +1224,7 @@ void Main::gameLoopUpdateCatActionUni(const float deltaTimeMs, Cat& cat)
     }
 
     cat.textStatusShakeEffect.bump(rngFast, 1.5f);
-    cat.cooldown.value = maxCooldown;
+    cat.cooldown.time = maxCooldown;
 }
 
 
@@ -1293,7 +1292,7 @@ void Main::gameLoopUpdateCatActionDevil(const float deltaTimeMs, Cat& cat)
 
         pt->hellPortals.pushBack({
             .position = portalPos,
-            .life     = Countdown{.value = 1750.f},
+            .life     = Countdown{.time = 1750.f},
             .catIdx   = static_cast<sf::base::SizeT>(&cat - pt->cats.data()),
         });
 
@@ -1304,7 +1303,7 @@ void Main::gameLoopUpdateCatActionDevil(const float deltaTimeMs, Cat& cat)
     cat.textStatusShakeEffect.bump(rngFast, 1.5f);
     ++cat.hits;
 
-    cat.cooldown.value = maxCooldown;
+    cat.cooldown.time = maxCooldown;
 }
 
 
@@ -1353,7 +1352,7 @@ void Main::gameLoopUpdateCatActionWarden(const float /* deltaTimeMs */, Cat& cat
             continue;
 
         // Already in the wake-fade -- don't double-trigger.
-        if (otherCat.napTransition->direction == TimerDirection::Backwards)
+        if (otherCat.napTransition->reversed)
             continue;
 
         if ((otherCat.position - cat.position).lengthSquared() > rangeSquared)
@@ -1371,7 +1370,7 @@ void Main::gameLoopUpdateCatActionWarden(const float /* deltaTimeMs */, Cat& cat
         return;
 
     // Wake them up: kick the fade backwards and clear the sleep countdown.
-    bestTarget->napTransition->direction = TimerDirection::Backwards;
+    bestTarget->napTransition->reversed = true;
     bestTarget->napSleepCountdown.reset();
     bestTarget->napShakeProgress = 0.f;
 
@@ -1432,7 +1431,7 @@ void Main::gameLoopUpdateCatActionWarden(const float /* deltaTimeMs */, Cat& cat
     cat.textStatusShakeEffect.bump(rngFast, 1.5f);
     ++cat.hits;
 
-    cat.cooldown.value = maxCooldown;
+    cat.cooldown.time = maxCooldown;
 }
 
 
@@ -1486,7 +1485,7 @@ void Main::hexCat(Cat& cat, const SizeT /* catIdx */, const bool copy)
     screenShakeAmount = 3.5f;
     screenShakeTimer  = 600.f;
 
-    (copy ? cat.hexedCopyTimer : cat.hexedTimer).emplace(BidirectionalTimer{.direction = TimerDirection::Forward});
+    (copy ? cat.hexedCopyTimer : cat.hexedTimer).emplace(Transition{});
 
     cat.wobbleRadians = 0.f;
 
@@ -1516,12 +1515,12 @@ void Main::hexCat(Cat& cat, const SizeT /* catIdx */, const bool copy)
     // Witchcat: refuse nap while any hex sessions are active or while the
     // ritual is winding up / cast (cooldown in the ritual band).
     if (cat.type == CatType::Witch)
-        if (!pt->hexSessions.empty() || cat.cooldown.value <= 10'000.f)
+        if (!pt->hexSessions.empty() || cat.cooldown.time <= 10'000.f)
             return false;
 
     // Copycat mimicking the witch: same guards against copy-side rituals.
     if (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Witch)
-        if (!pt->copyHexSessions.empty() || cat.cooldown.value <= 10'000.f)
+        if (!pt->copyHexSessions.empty() || cat.cooldown.time <= 10'000.f)
             return false;
 
     return true;
@@ -1534,12 +1533,12 @@ void Main::beginCatNap(Cat& cat, const float sleepDurationMs)
     if (isCatBeingDragged(cat))
         stopDraggingCat(cat);
 
-    cat.napTransition.emplace(BidirectionalTimer{.direction = TimerDirection::Forward});
+    cat.napTransition.emplace(Transition{});
 
     // A non-positive duration means "sleep indefinitely until shaken awake":
     // leave `napSleepCountdown` unset so the natural-wakeup branch never fires.
     if (sleepDurationMs > 0.f)
-        cat.napSleepCountdown.emplace(Countdown{.value = sleepDurationMs});
+        cat.napSleepCountdown.emplace(Countdown{.time = sleepDurationMs});
     else
         cat.napSleepCountdown.reset();
 
@@ -1554,7 +1553,7 @@ void Main::applyPowerNapBoost(Cat& cat)
     if (!pt->perm.powerNapPurchased)
         return;
 
-    cat.napBoostCountdown.value = pt->psvPPPowerNapDuration.currentValue();
+    cat.napBoostCountdown.time = pt->psvPPPowerNapDuration.currentValue();
     cat.napBoostMultiplier      = 1.f + pt->psvPPPowerNapStrength.currentValue();
 }
 
@@ -1564,7 +1563,7 @@ void Main::gameLoopUpdateNapScheduler(const float deltaTimeMs)
 {
     SFEX_PROFILE_SCOPE_AUTOLABEL();
 
-    if (inPrestigeTransition || splashCountdown.value > 0.f)
+    if (inPrestigeTransition || splashCountdown.time > 0.f)
         return;
 
     // Once the player has prestiged at least once, the nap system skips both
@@ -1582,9 +1581,9 @@ void Main::gameLoopUpdateNapScheduler(const float deltaTimeMs)
         if (!pt->scriptedNapDone)
         {
             if (!pt->scriptedNapPendingCountdown.hasValue())
-                pt->scriptedNapPendingCountdown.emplace(Countdown{.value = 5'000.f});
+                pt->scriptedNapPendingCountdown.emplace(Countdown{.time = 5'000.f});
 
-            if (pt->scriptedNapPendingCountdown->updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+            if (pt->scriptedNapPendingCountdown->tick(deltaTimeMs) == TickResult::JustFinished)
             {
                 pt->scriptedNapPendingCountdown.reset();
                 pt->scriptedNapDone = true;
@@ -1673,7 +1672,7 @@ void Main::gameLoopUpdateCatActionWitchImpl(const float /* deltaTimeMs */,
     if (otherCatCount == 0u)
     {
         wastedEffort       = true;
-        cat.cooldown.value = maxCooldown;
+        cat.cooldown.time = maxCooldown;
         return;
     }
 
@@ -1771,7 +1770,7 @@ void Main::gameLoopUpdateCatActionWitchImpl(const float /* deltaTimeMs */,
                      .wobbleRadians = rng.getF(0.f, sf::base::tau),
                      .buffPower     = buffPower,
                      .catType       = selected.type == CatType::Copy ? pt->copycatCopiedCatType : selected.type,
-                     .tcActivation  = {.startingValue = rng.getF(300.f, 600.f) * static_cast<float>(i + 1)},
+                     .tcActivation  = {.duration = rng.getF(300.f, 600.f) * static_cast<float>(i + 1)},
                      .tcDeath       = {}});
 
             d.tcActivation.restart();
@@ -1789,7 +1788,7 @@ void Main::gameLoopUpdateCatActionWitchImpl(const float /* deltaTimeMs */,
         doTip("Click on all the dolls to\nreceive a powerful timed buff!\nYou might need to scroll...");
     }
 
-    cat.cooldown.value = maxCooldown;
+    cat.cooldown.time = maxCooldown;
 }
 
 
@@ -1864,7 +1863,7 @@ void Main::gameLoopUpdateCatActionWizard(const float deltaTimeMs, Cat& cat)
         pt->wisdom += wisdomReward;
         turnBubbleInto(bubble, BubbleType::Normal);
 
-        cat.cooldown.value = maxCooldown;
+        cat.cooldown.time = maxCooldown;
 
         statAbsorbedStarBubble();
     }
@@ -1935,7 +1934,7 @@ void Main::gameLoopUpdateCatActionMouse(const float /* deltaTimeMs */, Cat& cat)
     cat.textStatusShakeEffect.bump(rngFast, 1.5f);
     ++cat.hits;
 
-    cat.cooldown.value = maxCooldown;
+    cat.cooldown.time = maxCooldown;
 }
 
 
@@ -1965,7 +1964,7 @@ void Main::gameLoopUpdateCatActionEngi(const float /* deltaTimeMs */, Cat& cat)
         sounds.maintenance.settings.position = {otherCat.position.x, otherCat.position.y};
         playSound(sounds.maintenance, /* maxOverlap */ 1u);
 
-        otherCat.boostCountdown.value = 1500.f;
+        otherCat.boostCountdown.time = 1500.f;
     }
 
     if (nCatsHit > 0)
@@ -1977,7 +1976,7 @@ void Main::gameLoopUpdateCatActionEngi(const float /* deltaTimeMs */, Cat& cat)
         statHighestSimultaneousMaintenances(nCatsHit);
     }
 
-    cat.cooldown.value = maxCooldown;
+    cat.cooldown.time = maxCooldown;
 }
 
 
@@ -2006,7 +2005,7 @@ void Main::gameLoopUpdateCatActionRepulso(const float /* deltaTimeMs */, Cat& ca
         }
     }
 
-    cat.cooldown.value = maxCooldown;
+    cat.cooldown.time = maxCooldown;
 }
 
 
@@ -2019,7 +2018,7 @@ void Main::gameLoopUpdateCatActionAttracto(const float /* deltaTimeMs */, Cat& c
 
     // TODO P1: ? maybe absorb all bubbles in range and give a reward based on the number of bubbles absorbed
 
-    cat.cooldown.value = maxCooldown;
+    cat.cooldown.time = maxCooldown;
 }
 
 
@@ -2077,7 +2076,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
 {
     SFEX_PROFILE_SCOPE_AUTOLABEL();
 
-    (void)wizardcatSpin.updateAndStop(deltaTimeMs * 0.015f);
+    (void)wizardcatSpin.tick(deltaTimeMs * 0.015f);
 
     for (SizeT catIdx = 0u; catIdx < pt->cats.size(); ++catIdx)
     {
@@ -2102,7 +2101,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
             else if (shrine.type == ShrineType::Automation && shrine.isActive())
             {
                 if (shrine.isInRange(cat.position))
-                    cat.boostCountdown.value = 250.f;
+                    cat.boostCountdown.time = 250.f;
             }
             else if (shrine.type == ShrineType::Voodoo && shrine.isActive())
             {
@@ -2162,7 +2161,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
             if (isCatBeingDragged(cat) && (cat.pawPosition - drawPosition).length() > 16.f)
                 cat.pawPosition = drawPosition + (cat.pawPosition - drawPosition).normalized() * 16.f;
 
-            if (cat.cooldown.value == 0.f && cat.pawOpacity > 10.f)
+            if (cat.cooldown.time == 0.f && cat.pawOpacity > 10.f)
             {
                 cat.pawOpacity -= 0.5f * deltaTimeMs;
                 cat.pawOpacity = sf::base::max(cat.pawOpacity, 0.f);
@@ -2170,11 +2169,11 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
         }
 
         // Spawn effect
-        const auto seStatus = cat.spawnEffectTimer.updateForwardAndStop(deltaTimeMs * 0.002f);
-        if (seStatus == TimerStatusStop::Running)
+        const auto seStatus = cat.spawnEffectTimer.advance(deltaTimeMs * 0.002f);
+        if (seStatus == TickResult::Running)
             continue;
 
-        if (seStatus == TimerStatusStop::JustFinished)
+        if (seStatus == TickResult::JustFinished)
         {
             spawnParticles(4, cat.position, ParticleType::Star, 0.5f, 0.75f);
         }
@@ -2207,9 +2206,9 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
 
         if (cat.isHexedOrCopyHexed())
         {
-            const auto res = cat.getHexedTimer()->updateAndStop(deltaTimeMs * 0.001f);
+            const auto res = cat.getHexedTimer()->tick(deltaTimeMs * 0.001f);
 
-            if (cat.getHexedTimer()->direction == TimerDirection::Backwards && res == TimerStatusStop::JustFinished)
+            if (cat.getHexedTimer()->reversed && res == TickResult::JustFinished)
                 cat.getHexedTimer().reset();
         }
 
@@ -2218,14 +2217,14 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
             auto& t = *cat.napTransition;
 
             // 500ms fade in/out.
-            (void)t.updateAndStop(deltaTimeMs * 0.002f);
+            (void)t.tick(deltaTimeMs * 0.002f);
 
-            const bool fullyAsleep = t.direction == TimerDirection::Forward && t.value >= 1.f;
+            const bool fullyAsleep = !t.reversed && t.value >= 1.f;
 
             if (fullyAsleep && cat.napSleepCountdown.hasValue())
-                if (cat.napSleepCountdown->updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+                if (cat.napSleepCountdown->tick(deltaTimeMs) == TickResult::JustFinished)
                 {
-                    t.direction = TimerDirection::Backwards;
+                    t.reversed = true;
                     cat.napSleepCountdown.reset();
                 }
 
@@ -2247,7 +2246,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
 
                 if (cat.napShakeProgress >= 1.f && fullyAsleep)
                 {
-                    t.direction = TimerDirection::Backwards;
+                    t.reversed = true;
                     cat.napSleepCountdown.reset();
                     cat.napShakeProgress = 0.f;
 
@@ -2266,7 +2265,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
             // Wobble decays back to zero.
             cat.napWakeWobble *= sf::base::pow(0.001f, deltaTimeMs * 0.001f);
 
-            if (t.direction == TimerDirection::Backwards && t.value <= 0.f)
+            if (t.reversed && t.value <= 0.f)
             {
                 cat.napTransition.reset();
                 cat.napSleepCountdown.reset();
@@ -2277,8 +2276,8 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
 
                 // Trigger a yawn right as the cat finishes waking up, and push
                 // the next natural yawn far out so it doesn't double-fire.
-                cat.yawnAnimCountdown.value = 75.f * static_cast<float>(Main::nYawnRects);
-                cat.yawnCountdown.value     = rngFast.getF(15'000.f, 25'000.f);
+                cat.yawnAnimCountdown.time = 75.f * static_cast<float>(Main::nYawnRects);
+                cat.yawnCountdown.time     = rngFast.getF(15'000.f, 25'000.f);
             }
 
             // Continuous per-cat sleep breath: each cat owns its own retrigger
@@ -2316,7 +2315,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
 
         const auto doWitchBehavior = [&](const float hueMod, auto& soundRitual, auto& soundRitualEnd)
         {
-            if (cat.cooldown.value < 100.f)
+            if (cat.cooldown.time < 100.f)
             {
                 soundManager.stopPlayingAll(soundRitual);
 
@@ -2329,9 +2328,9 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
                 }
             }
 
-            if (cat.cooldown.value < 10'000.f)
+            if (cat.cooldown.time < 10'000.f)
             {
-                if (cat.cooldown.value > 100.f && soundManager.countPlayingPooled(soundRitual) == 0u)
+                if (cat.cooldown.time > 100.f && soundManager.countPlayingPooled(soundRitual) == 0u)
                 {
                     soundRitual.settings.position = {cat.position.x, cat.position.y};
 
@@ -2339,7 +2338,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
                         playSound(soundRitual);
                 }
 
-                const float intensity = remap(cat.cooldown.value, 0.f, 10'000.f, 1.f, 0.f);
+                const float intensity = remap(cat.cooldown.time, 0.f, 10'000.f, 1.f, 0.f);
 
                 for (Cat& otherCat : pt->cats)
                 {
@@ -2348,8 +2347,8 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
 
                     if (&otherCat == &cat)
                         cat.hue = sf::base::sin(
-                                      sf::base::remainder(cat.cooldown.value /
-                                                              remap(cat.cooldown.value, 0.f, 10'000.f, 15.f, 150.f),
+                                      sf::base::remainder(cat.cooldown.time /
+                                                              remap(cat.cooldown.time, 0.f, 10'000.f, 15.f, 150.f),
                                                           sf::base::tau)) *
                                   50.f * intensity;
 
@@ -2422,7 +2421,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
             continue;
         }
 
-        if (pt->buffCountdownsPerType[asIdx(CatType::Normal)].value > 0.f && cat.pawOpacity >= 75.f)
+        if (pt->buffCountdownsPerType[asIdx(CatType::Normal)].time > 0.f && cat.pawOpacity >= 75.f)
         {
             spawnParticle({.position      = cat.pawPosition + rngFast.getVec2f({-12.f, -12.f}, {12.f, 12.f}),
                            .velocity      = rngFast.getVec2f({-0.015f, -0.015f}, {0.015f, 0.015f}),
@@ -2440,7 +2439,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
 
         const auto [cx, cy] = getCatRangeCenter(cat);
 
-        if (cat.inspiredCountdown.value > 0.f && rngFast.getF(0.f, 1.f) > 0.5f)
+        if (cat.inspiredCountdown.time > 0.f && rngFast.getF(0.f, 1.f) > 0.5f)
         {
             spawnParticle({.position      = drawPosition + sf::Vec2f{rngFast.getF(-catRadius, +catRadius), catRadius},
                            .velocity      = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
@@ -2455,8 +2454,8 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
                           ParticleType::Star);
         }
 
-        const float globalBoost = pt->buffCountdownsPerType[asIdx(CatType::Engi)].value;
-        if ((globalBoost > 0.f || cat.boostCountdown.value > 0.f) && rngFast.getF(0.f, 1.f) > 0.75f)
+        const float globalBoost = pt->buffCountdownsPerType[asIdx(CatType::Engi)].time;
+        if ((globalBoost > 0.f || cat.boostCountdown.time > 0.f) && rngFast.getF(0.f, 1.f) > 0.75f)
         {
             spawnParticle({.position = drawPosition + sf::Vec2f{rngFast.getF(-catRadius, +catRadius), catRadius - 25.f},
                            .velocity = rngFast.getVec2f({-0.025f, -0.015f}, {0.025f, 0.015f}),
@@ -2475,7 +2474,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
         // particles as a placeholder visual.
         // TODO P2: swap ParticleType::Star for a dedicated "Z" / dream-themed
         // particle type once that asset exists.
-        if (cat.napBoostCountdown.value > 0.f && rngFast.getF(0.f, 1.f) > 0.75f)
+        if (cat.napBoostCountdown.time > 0.f && rngFast.getF(0.f, 1.f) > 0.75f)
         {
             spawnParticle({.position = drawPosition + sf::Vec2f{rngFast.getF(-catRadius, +catRadius), catRadius - 25.f},
                            .velocity = rngFast.getVec2f({-0.025f, -0.015f}, {0.025f, 0.015f}),
@@ -2609,7 +2608,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
             {
                 cat.position.x = pt->getMapLimit() + catRadius;
 
-                if (pt->buffCountdownsPerType[asIdx(CatType::Astro)].value == 0.f) // loop if astro buff active
+                if (pt->buffCountdownsPerType[asIdx(CatType::Astro)].time == 0.f) // loop if astro buff active
                     wrapped = true;
             }
 
@@ -2617,7 +2616,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
             {
                 cat.astroState.reset();
                 cat.position.x     = startX;
-                cat.cooldown.value = maxCooldown;
+                cat.cooldown.time = maxCooldown;
             }
 
             continue;
@@ -2757,10 +2756,10 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
     if (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Witch && !pt->copyHexSessions.empty())
         return false;
 
-    if (cat.type == CatType::Witch && cat.cooldown.value <= 10'000.f)
+    if (cat.type == CatType::Witch && cat.cooldown.time <= 10'000.f)
         return false;
 
-    if (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Witch && cat.cooldown.value <= 10'000.f)
+    if (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Witch && cat.cooldown.time <= 10'000.f)
         return false;
 
     return true;
@@ -2959,7 +2958,7 @@ void Main::gameLoopUpdateShrines(const float deltaTimeMs)
             if (shrine.tcActivation.hasValue() || shrine.type != static_cast<ShrineType>(i))
                 continue;
 
-            shrine.tcActivation.emplace(TargetedCountdown{.startingValue = 2000.f});
+            shrine.tcActivation.emplace(TimedCountdown{.duration = 2000.f});
             shrine.tcActivation->restart();
 
             sounds.earthquakeFast.settings.position = {shrine.position.x, shrine.position.y};
@@ -2980,25 +2979,25 @@ void Main::gameLoopUpdateShrines(const float deltaTimeMs)
     {
         if (shrine.tcActivation.hasValue())
         {
-            const auto cdStatus = shrine.tcActivation->updateAndStop(deltaTimeMs);
+            const auto cdStatus = shrine.tcActivation->tick(deltaTimeMs);
 
-            if (cdStatus == CountdownStatusStop::Running)
+            if (cdStatus == TickResult::Running)
             {
                 spawnParticlesWithHue(wrapHue(shrine.getHue() + 40.f),
-                                      static_cast<SizeT>(1 + 12 * (1.f - shrine.tcActivation->getProgress())),
+                                      static_cast<SizeT>(1 + 12 * (1.f - shrine.tcActivation->asProgress().getElapsed())),
                                       shrine.getDrawPosition() + rngFast.getVec2f({-1.f, -1.f}, {1.f, 1.f}) * 32.f,
                                       ParticleType::Fire,
                                       rngFast.getF(0.25f, 1.f),
                                       0.75f);
 
                 spawnParticlesWithHue(shrine.getHue(),
-                                      static_cast<SizeT>(4 + 36 * (1.f - shrine.tcActivation->getProgress())),
+                                      static_cast<SizeT>(4 + 36 * (1.f - shrine.tcActivation->asProgress().getElapsed())),
                                       shrine.getDrawPosition() + rngFast.getVec2f({-1.f, -1.f}, {1.f, 1.f}) * 32.f,
                                       ParticleType::Shrine,
                                       rngFast.getF(0.35f, 1.2f),
                                       0.5f);
             }
-            else if (cdStatus == CountdownStatusStop::JustFinished)
+            else if (cdStatus == TickResult::JustFinished)
             {
                 playSound(sounds.woosh);
 
@@ -3070,7 +3069,7 @@ void Main::gameLoopUpdateShrines(const float deltaTimeMs)
         {
             if (!shrine.tcDeath.hasValue())
             {
-                shrine.tcDeath.emplace(TargetedCountdown{.startingValue = 5000.f});
+                shrine.tcDeath.emplace(TimedCountdown{.duration = 5000.f});
                 shrine.tcDeath->restart();
 
                 sounds.earthquake.settings.position = {shrine.position.x, shrine.position.y};
@@ -3080,9 +3079,9 @@ void Main::gameLoopUpdateShrines(const float deltaTimeMs)
             }
             else
             {
-                const auto cdStatus = shrine.tcDeath->updateAndStop(deltaTimeMs);
+                const auto cdStatus = shrine.tcDeath->tick(deltaTimeMs);
 
-                if (cdStatus == CountdownStatusStop::JustFinished)
+                if (cdStatus == TickResult::JustFinished)
                 {
                     playSound(sounds.woosh);
                     ++pt->nShrinesCompleted;
@@ -3188,9 +3187,9 @@ void Main::gameLoopUpdateShrines(const float deltaTimeMs)
 
                         playSound(sounds.quack);
 
-                        victoryTC.emplace(TargetedCountdown{.startingValue = 6500.f});
+                        victoryTC.emplace(TimedCountdown{.duration = 6500.f});
                         victoryTC->restart();
-                        delayedActions.emplaceBack(Countdown{.value = 7000.f}, [this] { playSound(sounds.letterchime); });
+                        delayedActions.emplaceBack(Countdown{.time = 7000.f}, [this] { playSound(sounds.letterchime); });
                     }
 
                     const auto catType = asIdx(shrineTypeToCatType(shrine.type));
@@ -3208,7 +3207,7 @@ void Main::gameLoopUpdateShrines(const float deltaTimeMs)
 
                     switchToBGM(static_cast<sf::base::SizeT>(profile.selectedBGM), /* force */ false);
                 }
-                else if (cdStatus == CountdownStatusStop::Running)
+                else if (cdStatus == TickResult::Running)
                 {
                     spawnParticlesWithHue(wrapHue(shrine.getHue() + 40.f),
                                           static_cast<SizeT>(1 + 12 * shrine.getDeathProgress()),
@@ -3250,7 +3249,7 @@ void Main::collectDollImpl(Doll& d, HexSession& session, const bool copy)
     screenShakeAmount = 1.5f;
     screenShakeTimer  = 500.f;
 
-    d.tcDeath.emplace(TargetedCountdown{.startingValue = 750.f});
+    d.tcDeath.emplace(TimedCountdown{.duration = 750.f});
     d.tcDeath->restart();
 
     const bool allDollsCollected = sf::base::allOf(session.dolls.begin(), session.dolls.end(), [&](const Doll& otherDoll) {
@@ -3284,13 +3283,13 @@ void Main::collectDollImpl(Doll& d, HexSession& session, const bool copy)
         constexpr float buffDurationSoftCap = 60'000.f;
         const float     buffDuration        = d.buffPower * 1000.f;
 
-        const float currentBuff = pt->buffCountdownsPerType[asIdx(d.catType)].value;
+        const float currentBuff = pt->buffCountdownsPerType[asIdx(d.catType)].time;
 
         const float factor = (currentBuff < buffDurationSoftCap)
                                  ? sf::base::pow((buffDurationSoftCap - currentBuff) / buffDurationSoftCap, 0.15f)
                                  : 0.1f;
 
-        pt->buffCountdownsPerType[asIdx(d.catType)].value += buffDuration * factor;
+        pt->buffCountdownsPerType[asIdx(d.catType)].time += buffDuration * factor;
 
         Cat* const hexedCat = getSessionTargetCat(session);
         SFML_BASE_ASSERT(hexedCat != nullptr);
@@ -3345,7 +3344,7 @@ void Main::gameLoopUpdateDollsImpl(const float                   deltaTimeMs,
         if (session.dolls.empty())
         {
             if (hexedCat != nullptr)
-                (copy ? hexedCat->hexedCopyTimer : hexedCat->hexedTimer)->direction = TimerDirection::Backwards;
+                (copy ? hexedCat->hexedCopyTimer : hexedCat->hexedTimer)->reversed = true;
 
             continue;
         }
@@ -3360,7 +3359,7 @@ void Main::gameLoopUpdateDollsImpl(const float                   deltaTimeMs,
 
             if (!d.tcActivation.isDone())
             {
-                (void)d.tcActivation.updateAndStop(deltaTimeMs);
+                (void)d.tcActivation.tick(deltaTimeMs);
                 continue;
             }
 
@@ -3392,7 +3391,7 @@ void Main::gameLoopUpdateDollsImpl(const float                   deltaTimeMs,
             }
             else
             {
-                (void)d.tcDeath->updateAndStop(deltaTimeMs);
+                (void)d.tcDeath->tick(deltaTimeMs);
 
                 spawnParticlesWithHue(wrapHue(d.hue + (copy ? 180.f : 0.f)),
                                       static_cast<SizeT>(1 + 12 * d.getDeathProgress()),
@@ -3438,7 +3437,7 @@ void Main::gameLoopUpdateHellPortals(const float deltaTimeMs)
 
     for (HellPortal& hp : pt->hellPortals)
     {
-        if (hp.life.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+        if (hp.life.tick(deltaTimeMs) == TickResult::JustFinished)
         {
             sounds.makeBomb.settings.position = {hp.position.x, hp.position.y};
             playSound(sounds.portaloff);
@@ -3467,7 +3466,7 @@ void Main::gameLoopUpdateHellPortals(const float deltaTimeMs)
 void Main::gameLoopUpdateWitchBuffs(const float deltaTimeMs)
 {
     for (Countdown& buffCountdown : pt->buffCountdownsPerType)
-        if (buffCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+        if (buffCountdown.tick(deltaTimeMs) == TickResult::JustFinished)
             playSound(sounds.buffoff);
 }
 
@@ -3527,7 +3526,7 @@ void Main::gameLoopUpdateEvents(const float deltaTimeMs)
 {
     SFEX_PROFILE_SCOPE_AUTOLABEL();
 
-    if (inPrestigeTransition || splashCountdown.value > 0.f)
+    if (inPrestigeTransition || splashCountdown.time > 0.f)
         return;
 
     const auto& eventsCfg = gameConstants.events;
@@ -3646,7 +3645,7 @@ void Main::gameLoopUpdateMana(const float deltaTimeMs)
 
     //
     // Mana mult buff
-    const float manaMult = pt->buffCountdownsPerType[asIdx(CatType::Wizard)].value > 0.f ? 3.5f : 1.f;
+    const float manaMult = pt->buffCountdownsPerType[asIdx(CatType::Wizard)].time > 0.f ? 3.5f : 1.f;
 
     //
     // Mana

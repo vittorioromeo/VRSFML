@@ -41,11 +41,11 @@ struct GameLoopFrameState
 #endif
 
     GameLoopFrameState frame;
-    frame.shouldDrawUI      = !inPrestigeTransition && splashCountdown.value <= 0.f;
-    frame.shouldDrawUIAlpha = inPrestigeTransition || splashCountdown.getProgress() < 0.75f
+    frame.shouldDrawUI      = !inPrestigeTransition && splashCountdown.time <= 0.f;
+    frame.shouldDrawUIAlpha = inPrestigeTransition || splashCountdown.asProgress().getElapsed() < 0.75f
                                   ? static_cast<sf::base::U8>(0u)
                                   : static_cast<sf::base::U8>(
-                                        remap(easeInOutSine(splashCountdown.getProgress()), 0.75f, 1.f, 0.f, 255.f));
+                                        remap(easeInOutSine(splashCountdown.asProgress().getElapsed()), 0.75f, 1.f, 0.f, 255.f));
 
     fps = 1.f / fpsClock.getElapsedTime().asSeconds();
     fpsClock.restart();

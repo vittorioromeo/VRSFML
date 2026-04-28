@@ -3,7 +3,7 @@
 #include "Cat.hpp"
 #include "CatConstants.hpp"
 #include "CatType.hpp"
-#include "Countdown.hpp"
+#include "ExampleUtils/Progress.hpp"
 #include "GameEvent.hpp"
 #include "Profile.hpp"
 #include "PurchasableScalingValue.hpp"
@@ -180,34 +180,34 @@ void drawDebugQuickTools(Main& main)
                    [&main]
     {
         if (auto* wc = main.getWitchCat())
-            wc->cooldown.value = 10.f;
+            wc->cooldown.time = 10.f;
     });
 
     drawButtonRow2("Ritual",
                    [&main]
     {
         if (auto* wc = main.getWitchCat())
-            wc->cooldown.value = 12000.f;
+            wc->cooldown.time = 12000.f;
     },
                    "Do Copy Ritual",
                    [&main]
     {
         if (auto* wc = main.getCopyCat())
-            wc->cooldown.value = 10.f;
+            wc->cooldown.time = 10.f;
     });
 
     drawButtonRow2("Copy Ritual",
                    [&main]
     {
         if (auto* wc = main.getCopyCat())
-            wc->cooldown.value = 12000.f;
+            wc->cooldown.time = 12000.f;
     },
                    "Do Letter",
                    [&main]
     {
-        main.victoryTC.emplace(TargetedCountdown{.startingValue = 6500.f});
+        main.victoryTC.emplace(TimedCountdown{.duration = 6500.f});
         main.victoryTC->restart();
-        main.delayedActions.emplaceBack(Countdown{.value = 7000.f}, [&main] { main.playSound(main.sounds.letterchime); });
+        main.delayedActions.emplaceBack(Countdown{.time = 7000.f}, [&main] { main.playSound(main.sounds.letterchime); });
     });
 
     drawButtonRow2("Do Tip", [&main] {
@@ -217,7 +217,7 @@ void drawDebugQuickTools(Main& main)
     });
 
     drawButtonRow2("Do Arrow",
-                   [&main] { main.uiState.scrollArrowCountdown.value = 2000.f; },
+                   [&main] { main.uiState.scrollArrowCountdown.time = 2000.f; },
                    "Do Prestige",
                    [&main]
     {
@@ -362,7 +362,7 @@ void drawDebugStateEditors(Main& main)
     if (ImGui::CollapsingHeader("Cat Buff Countdown Values"))
     {
         for (SizeT i = 0u; i < nCatTypes; ++i)
-            scalarInput((sf::base::toString(i) + "Buff").cStr(), main.pt->buffCountdownsPerType[i].value);
+            scalarInput((sf::base::toString(i) + "Buff").cStr(), main.pt->buffCountdownsPerType[i].time);
     }
 
     if (ImGui::CollapsingHeader("Per-cat Upgrade Tables"))

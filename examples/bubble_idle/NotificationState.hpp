@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Countdown.hpp"
+#include "ExampleUtils/Progress.hpp"
 
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/Vector.hpp"
@@ -18,5 +18,5 @@ struct NotificationData
 struct NotificationState
 {
     sf::base::Vector<NotificationData> queue;
-    TargetedCountdown                  countdown{.startingValue = 750.f};
+    TimedCountdown countdown{.duration = 750.f};
 };

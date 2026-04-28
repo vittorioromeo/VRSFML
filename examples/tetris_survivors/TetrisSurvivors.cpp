@@ -32,7 +32,7 @@
 #include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/Scaling.hpp"
 #include "ExampleUtils/SoundManager.hpp"
-#include "ExampleUtils/Timer.hpp"
+#include "ExampleUtils/Progress.hpp"
 
 #define SFEX_PROFILER_ENABLED
 #include "ExampleUtils/Profiler.hpp"
@@ -291,7 +291,7 @@ struct [[nodiscard]] EarnedXPParticle // NOLINT(cppcoreguidelines-pro-type-membe
     float delay;
     float startRotation = 0.f;
 
-    Timer progress{};
+    Progress progress{};
 };
 
 
@@ -2875,10 +2875,10 @@ private:
                 continue;
             }
 
-            (void)particle.progress.updateForwardAndStop(deltaTimeMs * 0.0015f);
+            (void)particle.progress.advance(deltaTimeMs * 0.0015f);
         }
 
-        sf::base::vectorEraseIf(m_earnedXPParticles, [&](const auto& p) { return p.progress.isDoneForward(); });
+        sf::base::vectorEraseIf(m_earnedXPParticles, [&](const auto& p) { return p.progress.isAtEnd(); });
     }
 
 

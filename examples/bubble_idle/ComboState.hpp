@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Countdown.hpp"
+#include "ExampleUtils/Progress.hpp"
 #include "TextShakeEffect.hpp"
 
 #include "SFML/Graphics/Color.hpp"

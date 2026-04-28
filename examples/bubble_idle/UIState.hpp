@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Countdown.hpp"
+#include "ExampleUtils/Progress.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"
 

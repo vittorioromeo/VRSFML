@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CatType.hpp"
-#include "Countdown.hpp"
+#include "ExampleUtils/Progress.hpp"
 
 #include "SFML/System/Priv/Vec2Base.hpp"
 
@@ -20,8 +20,8 @@ struct [[nodiscard]] Doll
     float     hue = 0.f;
     CatType   catType;
 
-    TargetedCountdown         tcActivation;
-    OptionalTargetedCountdown tcDeath;
+    TimedCountdown  tcActivation;
+    sf::base::Optional<TimedCountdown> tcDeath;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] inline bool isActive() const
@@ -32,13 +32,13 @@ struct [[nodiscard]] Doll
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] inline float getActivationProgress() const
     {
-        return tcActivation.getProgress();
+        return tcActivation.asProgress().getElapsed();
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] inline float getDeathProgress() const
     {
-        return tcDeath.getProgress();
+        return getElapsedOr(tcDeath, 0.f);
     }
 
     ////////////////////////////////////////////////////////////
