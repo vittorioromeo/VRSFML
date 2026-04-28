@@ -91,7 +91,6 @@
 #include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Trait/Conditional.hpp"
-#include "SFML/Base/Trait/EnableIf.hpp"
 #include "SFML/Base/Trait/IsConstructible.hpp"
 #include "SFML/Base/Trait/IsConvertible.hpp"
 #include "SFML/Base/Trait/IsEnum.hpp"
@@ -415,7 +414,8 @@ struct hash {
 };
 
 template <typename T>
-struct hash<T, typename std::hash<T>::is_avalanching> {
+    requires requires { typename std::hash<T>::is_avalanching; }
+struct hash<T> {
     using is_avalanching = void;
     auto operator()(T const& obj) const noexcept(noexcept(sf::base::declVal<std::hash<T>>().operator()(sf::base::declVal<T const&>())))
         -> sf::base::U64 {
@@ -453,7 +453,8 @@ struct hash<std::shared_ptr<T>> {
 */
 
 template <typename Enum>
-struct hash<Enum, sf::base::EnableIf<SFML_BASE_IS_ENUM(Enum)>> {
+    requires SFML_BASE_IS_ENUM(Enum)
+struct hash<Enum> {
     using is_avalanching = void;
     auto operator()(Enum e) const noexcept -> sf::base::U64 {
         using underlying = SFML_BASE_UNDERLYING_TYPE(Enum);
@@ -462,13 +463,30 @@ struct hash<Enum, sf::base::EnableIf<SFML_BASE_IS_ENUM(Enum)>> {
 };
 
 template <typename StringLike>
-struct hash<StringLike, sf::base::EnableIf<requires (const StringLike& stringLike) {
-    stringLike.data();
-    stringLike.size();
-}>> {
+    requires requires (const StringLike& stringLike) {
+        stringLike.data();
+        stringLike.size();
+    }
+struct hash<StringLike> {
     using is_avalanching = void;
     auto operator()(const StringLike& stringLike) const noexcept -> sf::base::U64 {
         return detail::wyhash::hash(stringLike.data(), sizeof(SFML_BASE_REMOVE_CVREF(decltype(stringLike[0]))) * stringLike.size());
+    }
+};
+
+// Strong-typedef-like wrappers (e.g. types produced by `TSURV_DEFINE_STRONG_TYPEDEF`):
+// any type that exposes `T::UnderlyingType` and a `toUnderlying()` accessor returning
+// something convertible to `sf::base::U64` is hashed by running the underlying value
+// through wyhash. Tagged avalanching to skip the second-stage mix.
+template <typename StrongTypedef>
+    requires requires (const StrongTypedef& s) {
+        typename StrongTypedef::UnderlyingType;
+        { static_cast<sf::base::U64>(s.toUnderlying()) };
+    }
+struct hash<StrongTypedef> {
+    using is_avalanching = void;
+    auto operator()(const StrongTypedef& value) const noexcept -> sf::base::U64 {
+        return detail::wyhash::hash(static_cast<sf::base::U64>(value.toUnderlying()));
     }
 };
 
