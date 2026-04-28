@@ -1,6 +1,10 @@
 #pragma once
 
-#include "ExampleUtils/Xoroshiro128PlusBitGenerator.hpp"
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include "ExampleUtils/Xoroshiro128PlusPlusBitGenerator.hpp"
 
 #include "SFML/System/Priv/Vec2Base.hpp"
 
@@ -18,7 +22,7 @@
 class [[nodiscard]] RNGFast
 {
 private:
-    Xoroshiro128PlusBitGenerator m_engine;
+    Xoroshiro128PlusPlusBitGenerator m_engine;
 
 public:
     using SeedType = sf::base::U64; //!< Type used for seeding
