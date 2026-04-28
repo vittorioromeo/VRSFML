@@ -25,9 +25,19 @@
 #include <Doctest.hpp>
 
 
+namespace
+{
+sf::GraphicsContext& sharedGraphicsContext()
+{
+    static auto ctx = sf::GraphicsContext::create().value();
+    return ctx;
+}
+} // namespace
+
+
 TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
 {
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    (void)sharedGraphicsContext();
 
     SECTION("Type traits")
     {

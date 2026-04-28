@@ -31,12 +31,18 @@ constexpr const T& asConst(T& t) noexcept
     return t;
 }
 
+sf::WindowContext& sharedWindowContext()
+{
+    static auto ctx = sf::WindowContext::create().value();
+    return ctx;
+}
+
 } // namespace
 
 
 TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 {
-    auto windowContext = sf::WindowContext::create().value();
+    (void)sharedWindowContext();
 
     SECTION("Type traits")
     {
@@ -96,7 +102,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
         {
             auto windowBase = sf::WindowBase::create({.size{360u, 240u}, .title = "WindowBase Tests"}).value();
 
-            constexpr auto timeout = sf::milliseconds(50);
+            constexpr auto timeout = sf::milliseconds(10);
 
             sf::Clock clock;
 

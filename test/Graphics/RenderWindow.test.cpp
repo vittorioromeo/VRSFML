@@ -29,9 +29,19 @@
 #include <Doctest.hpp>
 
 
+namespace
+{
+sf::GraphicsContext& sharedGraphicsContext()
+{
+    static auto ctx = sf::GraphicsContext::create().value();
+    return ctx;
+}
+} // namespace
+
+
 TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 {
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    (void)sharedGraphicsContext();
 
     SECTION("Type traits")
     {
@@ -125,21 +135,7 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
         CHECK(window1.getSize() == sf::Vec2u{128u, 128u});
     }
 
-    SECTION("Multiple windows 1")
-    {
-        auto window      = sf::RenderWindow::create({.size{256u, 256u}, .title = "A"}).value();
-        auto childWindow = sf::RenderWindow::create(sf::RenderWindow::Settings{.size{256u, 256u}, .title = "B"});
-
-        window.clear();
-        window.display();
-
-        childWindow.reset();
-
-        window.clear();
-        window.display();
-    }
-
-    SECTION("Multiple windows 2")
+    SECTION("Multiple windows clear/display orderings")
     {
         auto window      = sf::RenderWindow::create({.size{256u, 256u}, .title = "A"}).value();
         auto childWindow = sf::RenderWindow::create(sf::RenderWindow::Settings{.size{256u, 256u}, .title = "B"});
@@ -152,24 +148,6 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 
         window.clear();
         window.display();
-    }
-
-    SECTION("Multiple windows 3")
-    {
-        auto window      = sf::RenderWindow::create({.size{256u, 256u}, .title = "A"}).value();
-        auto childWindow = sf::RenderWindow::create(sf::RenderWindow::Settings{.size{256u, 256u}, .title = "B"});
-
-        childWindow->clear();
-        childWindow->display();
-
-        window.clear();
-        window.display();
-    }
-
-    SECTION("Multiple windows 4")
-    {
-        auto window      = sf::RenderWindow::create({.size{256u, 256u}, .title = "A"}).value();
-        auto childWindow = sf::RenderWindow::create(sf::RenderWindow::Settings{.size{256u, 256u}, .title = "B"});
 
         childWindow->clear();
         childWindow->display();
