@@ -10,7 +10,7 @@
 #include "CatType.hpp"
 #include "ComboState.hpp"
 #include "Constants.hpp"
-#include "Countdown.hpp"
+#include "ExampleUtils/Progress.hpp"
 #include "Doll.hpp"
 #include "ExactArray.hpp"
 #include "GameConstants.hpp"
@@ -42,7 +42,6 @@
 #include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/Sampler.hpp"
 #include "ExampleUtils/SoundManager.hpp"
-#include "ExampleUtils/Timer.hpp"
 
 // clang-format off
 #define SFEX_PROFILER_ENABLED
@@ -847,7 +846,7 @@ struct Main
     struct EarnedCoinParticle
     {
         sf::Vec2f startPosition;
-        Timer     progress{};
+        Progress     progress{};
     };
 
     sf::base::Vector<EarnedCoinParticle> earnedCoinParticles; // HUD space
@@ -892,8 +891,8 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Timers for transitions
-    TargetedCountdown bubbleSpawnTimer{.startingValue = 3.f};
-    TargetedCountdown catRemoveTimer{.startingValue = 100.f};
+    TimedCountdown bubbleSpawnTimer{.duration = 3.f};
+    TimedCountdown catRemoveTimer{.duration = 100.f};
 
     ////////////////////////////////////////////////////////////
     // Clock and accumulator for played time
@@ -977,15 +976,15 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Splash screen state
-    TargetedCountdown splashCountdown{.startingValue = 1.f}; // TODO P0: revert to 2500
+    TimedCountdown splashCountdown{.duration = 1.f}; // TODO P0: revert to 2500
 
     ////////////////////////////////////////////////////////////
     // Tip state
-    OptionalTargetedCountdown tipTCByte;
-    OptionalTargetedCountdown tipTCBackground;
-    OptionalTargetedCountdown tipTCBytePreEnd;
-    OptionalTargetedCountdown tipTCByteEnd;
-    OptionalTargetedCountdown tipTCBackgroundEnd;
+    sf::base::Optional<TimedCountdown> tipTCByte;
+    sf::base::Optional<TimedCountdown> tipTCBackground;
+    sf::base::Optional<TimedCountdown> tipTCBytePreEnd;
+    sf::base::Optional<TimedCountdown> tipTCByteEnd;
+    sf::base::Optional<TimedCountdown> tipTCBackgroundEnd;
     Countdown                 tipCountdownChar;
     sf::base::String          tipString;
     TextEffectWiggle          tipStringWiggle{0.00175f, 4.f};
@@ -1023,7 +1022,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     // Spent money count-down effect
     MoneyType spentMoney{0u};
-    Timer     spentMoneyTimer{.value = 0.f};
+    Progress  spentMoneyTimer{};
 
     ////////////////////////////////////////////////////////////
     // Thread pool
@@ -1077,7 +1076,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Victory state
-    OptionalTargetedCountdown victoryTC;
+    sf::base::Optional<TimedCountdown> victoryTC;
     Countdown                 cdLetterAppear;
     Countdown                 cdLetterText;
 
@@ -1562,7 +1561,7 @@ struct Main
                     availability += cost;
                 });
 
-                undoPPPurchaseTimer.value = 10000.f;
+                undoPPPurchaseTimer.time = 10000.f;
             }
         }
 
@@ -1612,7 +1611,7 @@ struct Main
                     availability += cost;
                 });
 
-                undoPPPurchaseTimer.value = 10000.f;
+                undoPPPurchaseTimer.time = 10000.f;
             }
         }
 
@@ -2010,7 +2009,7 @@ struct Main
             const auto strength = (getComputedRangeByCatTypeOrCopyCat(catType) - bcDiff.length()) * 0.000017f;
             bubble.velocity += (bcDiff.normalized() * strength * strengthMult) * direction * deltaTimeMs;
 
-            (bubble.*countdownPm).value = sf::base::max((bubble.*countdownPm).value, countdownTime);
+            (bubble.*countdownPm).time = sf::base::max((bubble.*countdownPm).time, countdownTime);
             return ControlFlow::Continue;
         };
     }

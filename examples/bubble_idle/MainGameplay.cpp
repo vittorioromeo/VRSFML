@@ -7,7 +7,7 @@
 #include "CatType.hpp"
 #include "Collision.hpp"
 #include "Constants.hpp"
-#include "Countdown.hpp"
+#include "ExampleUtils/Progress.hpp"
 #include "Doll.hpp"
 #include "HellPortal.hpp"
 #include "HexSession.hpp"
@@ -22,7 +22,6 @@
 #include "ExampleUtils/HueColor.hpp"
 #include "ExampleUtils/MathUtils.hpp"
 #include "ExampleUtils/Profiler.hpp"
-#include "ExampleUtils/Timer.hpp"
 
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Texture.hpp"
@@ -64,7 +63,7 @@ void Main::gameLoopUpdateCombo(const float                         deltaTimeMs,
     checkComboEnd(deltaTimeMs, pt->mouseCatCombo, pt->mouseCatComboCountdown);
 
     // Combo failure countdown for red text effect
-    (void)comboState.comboFailCountdown.updateAndStop(deltaTimeMs);
+    (void)comboState.comboFailCountdown.tick(deltaTimeMs);
 
     // Player combo data
     const auto playerLastCombo      = comboState.combo;
@@ -81,11 +80,11 @@ void Main::gameLoopUpdateCombo(const float                         deltaTimeMs,
         if (comboState.combo > 1)
         {
             playSound(sounds.scratch);
-            comboState.comboFailCountdown.value = 250.f;
+            comboState.comboFailCountdown.time = 250.f;
         }
 
         comboState.combo                = 0;
-        comboState.comboCountdown.value = 0.f;
+        comboState.comboCountdown.time = 0.f;
 
         playerJustEndedCombo = true;
     }
@@ -112,10 +111,10 @@ void Main::gameLoopUpdateCombo(const float                         deltaTimeMs,
     if (profile.accumulatingCombo)
     {
         if (comboState.iComboAccReward < comboState.comboAccReward &&
-            comboState.accComboDelay.updateAndLoop(deltaTimeMs, 35.f) == CountdownStatusLoop::Looping)
+            comboState.accComboDelay.tickLooping(deltaTimeMs, 35.f) == LoopResult::Looped)
         {
             ++comboState.iComboAccReward;
-            comboState.accComboDelay.value = 35.f;
+            comboState.accComboDelay.time = 35.f;
 
             if (spawnEarnedCoinParticle(fromWorldToHud(mousePos)))
             {
@@ -133,7 +132,7 @@ void Main::gameLoopUpdateCombo(const float                         deltaTimeMs,
         }
 
         if (comboState.iComboAccStarReward < comboState.comboAccStarReward &&
-            comboState.accComboStarDelay.updateAndLoop(deltaTimeMs, 75.f) == CountdownStatusLoop::Looping)
+            comboState.accComboStarDelay.tickLooping(deltaTimeMs, 75.f) == LoopResult::Looped)
         {
             ++comboState.iComboAccStarReward;
 
@@ -195,7 +194,7 @@ void Main::gameLoopUpdateCollisionsCatCat(const float deltaTimeMs)
                 if (pt->perm.astroCatInspirePurchased && catB.type != CatType::Astro &&
                     detectCollision(catA.position, catB.position, catA.getRadius(), catB.getRadius()))
                 {
-                    catB.inspiredCountdown.value = pt->getComputedInspirationDuration();
+                    catB.inspiredCountdown.time = pt->getComputedInspirationDuration();
 
                     pt->achAstrocatInspireByType[asIdx(catB.type)] = true;
                 }
@@ -369,9 +368,9 @@ void Main::gameLoopUpdateParticlesAndTextParticles(const float deltaTimeMs)
     });
 
     for (auto& earnedCoinParticle : earnedCoinParticles)
-        (void)earnedCoinParticle.progress.updateForwardAndStop(deltaTimeMs * 0.0015f);
+        (void)earnedCoinParticle.progress.advance(deltaTimeMs * 0.0015f);
 
-    sf::base::vectorEraseIf(earnedCoinParticles, [&](const auto& p) { return p.progress.isDoneForward(); });
+    sf::base::vectorEraseIf(earnedCoinParticles, [&](const auto& p) { return p.progress.isAtEnd(); });
 }
 
 
@@ -410,10 +409,10 @@ void Main::gameLoopUpdateSounds(const float deltaTimeMs, const sf::Vec2f mousePo
                 optMusic->music.setVolume(0.f);
         };
 
-        processMusic(optCurrentMusic, bgmTransition.getInvProgress(1000.f));
-        processMusic(optNextMusic, bgmTransition.getProgress(1000.f));
+        processMusic(optCurrentMusic, bgmTransition.asProgress(1000.f).getRemaining());
+        processMusic(optNextMusic, bgmTransition.asProgress(1000.f).getElapsed());
 
-        if (bgmTransition.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+        if (bgmTransition.tick(deltaTimeMs) == TickResult::JustFinished)
         {
             optCurrentMusic.reset();
             ++currentBGMBufferIdx;
@@ -619,7 +618,7 @@ void Main::gameLoopUpdateMoneyText(const float deltaTimeMs, const float yBelowMi
 ////////////////////////////////////////////////////////////
 void Main::gameLoopUpdateSpentMoneyEffect(const float deltaTimeMs)
 {
-    if (spentMoney == 0u || spentMoneyTimer.updateForwardAndLoop(deltaTimeMs * 0.08f) == TimerStatusLoop::Running)
+    if (spentMoney == 0u || spentMoneyTimer.advanceLooping(deltaTimeMs * 0.08f) == LoopResult::Running)
         return;
 
     if (profile.showCoinParticles)
@@ -738,7 +737,7 @@ void Main::gameLoopUpdateBuffText()
 
     for (SizeT i = 0u; i < nCatTypes; ++i)
     {
-        const float buffTime = pt->buffCountdownsPerType[i].value;
+        const float buffTime = pt->buffCountdownsPerType[i].time;
 
         if (buffTime == 0.f)
             continue;

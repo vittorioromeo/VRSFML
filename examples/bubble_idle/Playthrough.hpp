@@ -7,7 +7,7 @@
 #include "CatConstants.hpp"
 #include "CatType.hpp"
 #include "Constants.hpp"
-#include "Countdown.hpp"
+#include "ExampleUtils/Progress.hpp"
 #include "ExactArray.hpp"
 #include "GameEvent.hpp"
 #include "HellPortal.hpp"
@@ -384,7 +384,7 @@ struct Playthrough
         stasisFieldTimer     = 0.f;
 
         mouseCatCombo                = 0.f;
-        mouseCatComboCountdown.value = 0.f;
+        mouseCatComboCountdown.time = 0.f;
 
         multiPopEnabled = false;
         windStrength    = 0;

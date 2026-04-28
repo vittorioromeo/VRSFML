@@ -1,7 +1,7 @@
 #include "Aliases.hpp"
 #include "Bubble.hpp"
 #include "Cat.hpp"
-#include "Countdown.hpp"
+#include "ExampleUtils/Progress.hpp"
 #include "Doll.hpp"
 #include "GameConstants.hpp"
 #include "GameEvent.hpp"
@@ -16,7 +16,6 @@
 #include "Stats.hpp"
 #include "Version.hpp"
 
-#include "ExampleUtils/Timer.hpp"
 
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/IntTypes.hpp"
@@ -515,71 +514,46 @@ DEFINE_TWO_WAY_SERIALIZER(Shrine)
 
 
 ////////////////////////////////////////////////////////////
-void to_json(nlohmann::json& j, const Timer& p)
+void to_json(nlohmann::json& j, const Progress& p)
 {
     j = p.value;
 }
 
 
 ////////////////////////////////////////////////////////////
-void from_json(const nlohmann::json& j, Timer& p)
+void from_json(const nlohmann::json& j, Progress& p)
 {
     p.value = j;
 }
 
 
 ////////////////////////////////////////////////////////////
-DEFINE_TWO_WAY_SERIALIZER(BidirectionalTimer)
+DEFINE_TWO_WAY_SERIALIZER(Transition)
 {
     FIELD(value);
-
-    if constexpr (Serialize)
-    {
-        const bool dir = static_cast<bool>(p.direction);
-        writeField(j, "direction", dir);
-    }
-    else
-    {
-        bool dir{};
-        readField(j, "direction", dir);
-        p.direction = static_cast<TimerDirection>(dir);
-    }
+    FIELD(reversed);
 }
 
 
 ////////////////////////////////////////////////////////////
 void to_json(nlohmann::json& j, const Countdown& p)
 {
-    j = p.value;
+    j = p.time;
 }
 
 
 ////////////////////////////////////////////////////////////
 void from_json(const nlohmann::json& j, Countdown& p)
 {
-    p.value = j;
+    p.time = j;
 }
 
 
 ////////////////////////////////////////////////////////////
-DEFINE_TWO_WAY_SERIALIZER(TargetedCountdown)
+DEFINE_TWO_WAY_SERIALIZER(TimedCountdown)
 {
-    FIELD(value);
-    FIELD(startingValue);
-}
-
-
-////////////////////////////////////////////////////////////
-void to_json(nlohmann::json& j, const OptionalTargetedCountdown& p)
-{
-    to_json(j, p.asBase());
-}
-
-
-////////////////////////////////////////////////////////////
-void from_json(const nlohmann::json& j, OptionalTargetedCountdown& p)
-{
-    from_json(j, p.asBase());
+    FIELD(time);
+    FIELD(duration);
 }
 
 

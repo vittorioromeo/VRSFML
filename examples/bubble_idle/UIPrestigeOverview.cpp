@@ -194,7 +194,7 @@ void Main::uiPrestigeDrawOverview()
         if (undoPPPurchase.empty())
             ImGui::Text("%s", "");
         else
-            ImGui::Text("Undo time left: %.2fs", static_cast<double>(undoPPPurchaseTimer.value / 1000.f));
+            ImGui::Text("Undo time left: %.2fs", static_cast<double>(undoPPPurchaseTimer.time / 1000.f));
 
         uiSetFontScale(uiNormalFontScale);
 

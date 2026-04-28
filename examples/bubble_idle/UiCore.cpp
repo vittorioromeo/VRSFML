@@ -5,7 +5,7 @@
 #include "Cat.hpp"
 #include "CatType.hpp"
 #include "Constants.hpp"
-#include "Countdown.hpp"
+#include "ExampleUtils/Progress.hpp"
 #include "ImGuiNotify.hpp"
 #include "ParticleType.hpp"
 #include "PurchasableScalingValue.hpp"
@@ -772,8 +772,8 @@ bool Main::uiCheckPurchasability(const char* label, const bool disabled)
         {
             uiState.purchaseUnlockedEffects.pushBack({
                 .widgetLabel    = label,
-                .countdown      = Countdown{.value = 1000.f},
-                .arrowCountdown = Countdown{.value = 2000.f},
+                .countdown      = Countdown{.time = 1000.f},
+                .arrowCountdown = Countdown{.time = 2000.f},
                 .hue            = uiState.uiButtonHueMod,
                 .type           = 1, // now purchasable
             });
@@ -1006,8 +1006,8 @@ bool Main::checkUiUnlock(const sf::base::SizeT unlockId, const bool unlockCondit
         {
             uiState.purchaseUnlockedEffects.pushBack({
                 .widgetLabel    = label,
-                .countdown      = Countdown{.value = 1000.f},
-                .arrowCountdown = Countdown{.value = 2000.f},
+                .countdown      = Countdown{.time = 1000.f},
+                .arrowCountdown = Countdown{.time = 2000.f},
                 .hue            = uiState.uiButtonHueMod,
                 .type           = 0, // now unlocked
             });
@@ -1119,7 +1119,7 @@ void Main::gameLoopUpdateNotificationQueue(const float deltaTimeMs)
     if (notificationState.queue.empty())
         return;
 
-    if (notificationState.countdown.updateAndIsActive(deltaTimeMs))
+    if (notificationState.countdown.tick(deltaTimeMs) == TickResult::Running)
         return;
 
     notificationState.countdown.restart();
