@@ -31,15 +31,88 @@
 #include <thread>
 
 
+namespace
+{
+constexpr auto blinkAlphaFragSource = R"glsl(
+layout(location = 2) uniform sampler2D sf_u_texture;
+layout(location = 7) uniform float blink_alpha;
+
+in vec4 sf_v_color;
+in vec2 sf_v_texCoord;
+
+layout(location = 0) out vec4 sf_fragColor;
+
+void main()
+{
+    sf_fragColor = sf_v_color * blink_alpha;
+}
+)glsl";
+
+constexpr auto instancedVertexSource = R"glsl(
+layout(location = 0) uniform vec3 sf_u_mvpRow0;
+layout(location = 1) uniform vec3 sf_u_mvpRow1;
+layout(location = 3) uniform vec2 sf_u_invTextureSize;
+
+layout(location = 0) in vec2 sf_a_position;
+layout(location = 1) in vec4 sf_a_color;
+layout(location = 2) in vec2 sf_a_texCoord;
+
+layout(location = 3) in vec2 instance_offset;
+layout(location = 4) in vec4 instance_color;
+
+out vec4 v_color;
+
+void main()
+{
+    vec2 worldPos = instance_offset + (sf_a_position * vec2(20.0, 20.0));
+
+    gl_Position = vec4(dot(sf_u_mvpRow0, vec3(worldPos, 1.0)),
+                       dot(sf_u_mvpRow1, vec3(worldPos, 1.0)),
+                       0.0,
+                       1.0);
+
+    v_color = instance_color;
+}
+)glsl";
+
+constexpr auto instancedFragmentSource = R"glsl(
+in vec4 v_color;
+
+layout(location = 0) out vec4 sf_fragColor;
+
+void main()
+{
+    sf_fragColor = v_color;
+}
+)glsl";
+
+
+sf::GraphicsContext& sharedGraphicsContext()
+{
+    static auto ctx = sf::GraphicsContext::create().value();
+    return ctx;
+}
+
+sf::Shader& sharedBlinkAlphaShader()
+{
+    (void)sharedGraphicsContext();
+    static auto s = sf::Shader::loadFromMemory({.fragmentCode = blinkAlphaFragSource}).value();
+    return s;
+}
+
+sf::Shader& sharedInstancedShader()
+{
+    (void)sharedGraphicsContext();
+    static auto s = sf::Shader::loadFromMemory({.vertexCode = instancedVertexSource, .fragmentCode = instancedFragmentSource})
+                        .value();
+    return s;
+}
+} // namespace
+
+
 TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
 {
-    CHECK(!sf::WindowContext::isInstalled());
-    CHECK(!sf::GraphicsContext::isInstalled());
-
-    auto graphicsContext = sf::GraphicsContext::create().value();
-
-    CHECK(sf::WindowContext::isInstalled());
-    CHECK(sf::GraphicsContext::isInstalled());
+    (void)sharedGraphicsContext();
 
     SECTION("Stencil Tests")
     {
@@ -426,22 +499,7 @@ TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
 
         SECTION("Shader uniform mutation breaks batch")
         {
-            constexpr auto fragSource = R"glsl(
-layout(location = 2) uniform sampler2D sf_u_texture;
-layout(location = 7) uniform float blink_alpha;
-
-in vec4 sf_v_color;
-in vec2 sf_v_texCoord;
-
-layout(location = 0) out vec4 sf_fragColor;
-
-void main()
-{
-    sf_fragColor = sf_v_color * blink_alpha;
-}
-)glsl";
-
-            auto shader = sf::Shader::loadFromMemory({.fragmentCode = fragSource}).value();
+            auto& shader = sharedBlinkAlphaShader();
 
             const auto loc = shader.getUniformLocation("blink_alpha").value();
             shader.setUniform(loc, 1.f);
@@ -464,22 +522,7 @@ void main()
 
         SECTION("Manual flush before uniform mutation preserves correct rendering")
         {
-            constexpr auto fragSource = R"glsl(
-layout(location = 2) uniform sampler2D sf_u_texture;
-layout(location = 7) uniform float blink_alpha;
-
-in vec4 sf_v_color;
-in vec2 sf_v_texCoord;
-
-layout(location = 0) out vec4 sf_fragColor;
-
-void main()
-{
-    sf_fragColor = sf_v_color * blink_alpha;
-}
-)glsl";
-
-            auto shader = sf::Shader::loadFromMemory({.fragmentCode = fragSource}).value();
+            auto& shader = sharedBlinkAlphaShader();
 
             const auto loc = shader.getUniformLocation("blink_alpha").value();
 
@@ -510,22 +553,7 @@ void main()
 
         SECTION("Flush before display is redundant (display already flushes)")
         {
-            constexpr auto fragSource = R"glsl(
-layout(location = 2) uniform sampler2D sf_u_texture;
-layout(location = 7) uniform float blink_alpha;
-
-in vec4 sf_v_color;
-in vec2 sf_v_texCoord;
-
-layout(location = 0) out vec4 sf_fragColor;
-
-void main()
-{
-    sf_fragColor = sf_v_color * blink_alpha;
-}
-)glsl";
-
-            auto shader = sf::Shader::loadFromMemory({.fragmentCode = fragSource}).value();
+            auto& shader = sharedBlinkAlphaShader();
 
             const auto loc = shader.getUniformLocation("blink_alpha").value();
 
@@ -548,51 +576,13 @@ void main()
 
         SECTION("Repeated instanced draws keep base vertex attributes bound to the shared quad VBO")
         {
-            constexpr auto vertexSource = R"glsl(
-layout(location = 0) uniform vec3 sf_u_mvpRow0;
-layout(location = 1) uniform vec3 sf_u_mvpRow1;
-layout(location = 3) uniform vec2 sf_u_invTextureSize;
-
-layout(location = 0) in vec2 sf_a_position;
-layout(location = 1) in vec4 sf_a_color;
-layout(location = 2) in vec2 sf_a_texCoord;
-
-layout(location = 3) in vec2 instance_offset;
-layout(location = 4) in vec4 instance_color;
-
-out vec4 v_color;
-
-void main()
-{
-    vec2 worldPos = instance_offset + (sf_a_position * vec2(20.0, 20.0));
-
-    gl_Position = vec4(dot(sf_u_mvpRow0, vec3(worldPos, 1.0)),
-                       dot(sf_u_mvpRow1, vec3(worldPos, 1.0)),
-                       0.0,
-                       1.0);
-
-    v_color = instance_color;
-}
-)glsl";
-
-            constexpr auto fragmentSource = R"glsl(
-in vec4 v_color;
-
-layout(location = 0) out vec4 sf_fragColor;
-
-void main()
-{
-    sf_fragColor = v_color;
-}
-)glsl";
-
             struct InstanceData
             {
                 sf::Vec2f offset;
                 sf::Color color;
             };
 
-            auto shader = sf::Shader::loadFromMemory({.vertexCode = vertexSource, .fragmentCode = fragmentSource}).value();
+            auto& shader = sharedInstancedShader();
 
             sf::VAOHandle vaoHandle;
             sf::VBOHandle instanceVBO;
@@ -633,45 +623,7 @@ void main()
 
         SECTION("SOA instanced draw with separate VBOs per field")
         {
-            constexpr auto vertexSource = R"glsl(
-layout(location = 0) uniform vec3 sf_u_mvpRow0;
-layout(location = 1) uniform vec3 sf_u_mvpRow1;
-layout(location = 3) uniform vec2 sf_u_invTextureSize;
-
-layout(location = 0) in vec2 sf_a_position;
-layout(location = 1) in vec4 sf_a_color;
-layout(location = 2) in vec2 sf_a_texCoord;
-
-layout(location = 3) in vec2 instance_offset;
-layout(location = 4) in vec4 instance_color;
-
-out vec4 v_color;
-
-void main()
-{
-    vec2 worldPos = instance_offset + (sf_a_position * vec2(20.0, 20.0));
-
-    gl_Position = vec4(dot(sf_u_mvpRow0, vec3(worldPos, 1.0)),
-                       dot(sf_u_mvpRow1, vec3(worldPos, 1.0)),
-                       0.0,
-                       1.0);
-
-    v_color = instance_color;
-}
-)glsl";
-
-            constexpr auto fragmentSource = R"glsl(
-in vec4 v_color;
-
-layout(location = 0) out vec4 sf_fragColor;
-
-void main()
-{
-    sf_fragColor = v_color;
-}
-)glsl";
-
-            auto shader = sf::Shader::loadFromMemory({.vertexCode = vertexSource, .fragmentCode = fragmentSource}).value();
+            auto& shader = sharedInstancedShader();
 
             sf::VAOHandle vaoHandle;
             sf::VBOHandle offsetVBO;

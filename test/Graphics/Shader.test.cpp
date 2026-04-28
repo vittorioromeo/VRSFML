@@ -146,11 +146,17 @@ constexpr bool skipShaderFullTest = false;
 constexpr bool skipShaderFullTest = true;
 #endif
 
+sf::GraphicsContext& sharedGraphicsContext()
+{
+    static auto ctx = sf::GraphicsContext::create().value();
+    return ctx;
+}
+
 } // namespace
 
 TEST_CASE("[Graphics] sf::Shader" * doctest::skip(skipShaderFullTest))
 {
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    (void)sharedGraphicsContext();
 
     SECTION("Type traits")
     {

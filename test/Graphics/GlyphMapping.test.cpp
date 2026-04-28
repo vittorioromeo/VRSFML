@@ -15,12 +15,34 @@
 #include <Doctest.hpp>
 
 
+namespace
+{
+sf::GraphicsContext& sharedGraphicsContext()
+{
+    static auto ctx = sf::GraphicsContext::create().value();
+    return ctx;
+}
+
+sf::FontFace& sharedFontFace()
+{
+    (void)sharedGraphicsContext();
+    static auto face = sf::FontFace::openFromFile("tuffy.ttf").value();
+    return face;
+}
+
+sf::TextureAtlas& sharedAtlas()
+{
+    (void)sharedGraphicsContext();
+    static auto atlas = sf::TextureAtlas(sf::Texture::create({1024u, 1024u}, {.smooth = true}).value());
+    return atlas;
+}
+} // namespace
+
+
 TEST_CASE("[Graphics] sf::GlyphMapping" * doctest::skip(skipDisplayTests))
 {
-    auto graphicsContext = sf::GraphicsContext::create().value();
-
-    auto fontFace = sf::FontFace::openFromFile("tuffy.ttf").value();
-    auto atlas    = sf::TextureAtlas(sf::Texture::create({1024u, 1024u}, {.smooth = true}).value());
+    auto& fontFace = sharedFontFace();
+    auto& atlas    = sharedAtlas();
 
     const sf::UnicodeString testCodePoints = U"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";
 
