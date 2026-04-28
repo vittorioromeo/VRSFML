@@ -1,8 +1,12 @@
 #pragma once
 
-#include "SFML/Base/FwdStdHash.hpp" // IWYU pragma: keep
 
-
+////////////////////////////////////////////////////////////
+// Note: types declared with `TSURV_DEFINE_STRONG_TYPEDEF` intentionally do not
+// specialize `std::hash` (avoiding `<functional>`). Use `ankerl::unordered_dense::map`
+// instead -- `SFML/Base/AnkerlUnorderedDense.hpp` provides a generic specialization
+// for any type exposing `T::UnderlyingType` and `toUnderlying()`, which all strong
+// typedefs satisfy.
 ////////////////////////////////////////////////////////////
 #define TSURV_DEFINE_STRONG_TYPEDEF(name, underlyingType)                                                             \
                                                                                                                       \
@@ -100,19 +104,3 @@
             return m_value >= rhs.m_value;                                                                            \
         }                                                                                                             \
     }
-
-
-namespace std
-{
-////////////////////////////////////////////////////////////
-template <typename T>
-    requires requires { typename T::UnderlyingType; }
-struct hash<T>
-{
-    [[nodiscard, gnu::always_inline, gnu::pure]] auto operator()(const T& value) const noexcept
-    {
-        return std::hash<typename T::UnderlyingType>()(value.toUnderlying());
-    }
-};
-
-} // namespace std
