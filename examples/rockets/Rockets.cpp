@@ -1728,8 +1728,8 @@ int main()
             {
                 ImGui::PlotLines(label,
                                  samples.data(),
-                                 static_cast<int>(samples.size()),
-                                 0,
+                                 static_cast<int>(samples.capacity()),
+                                 static_cast<int>(samples.insertionIndex()),
                                  nullptr,
                                  0.f,
                                  upperBound,

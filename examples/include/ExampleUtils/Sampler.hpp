@@ -1,5 +1,9 @@
 #pragma once
 
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
 
@@ -60,6 +64,24 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline]] sf::base::SizeT capacity() const
+    {
+        return m_capacity;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// Index of the oldest sample in the circular buffer.
+    /// Pass this as `values_offset` to `ImGui::PlotLines` together with `data()` and `capacity()`
+    /// to plot in chronological order without copying.
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline]] sf::base::SizeT insertionIndex() const
+    {
+        return m_index;
+    }
+
+
+    ////////////////////////////////////////////////////////////
     void clear()
     {
         m_size  = 0u;
@@ -79,7 +101,7 @@ public:
 
             // Fill the rest with zeros
             for (sf::base::SizeT i = m_size; i < m_capacity; ++i)
-                target[i] = 0.f;
+                target[i] = T{};
         }
         else
         {

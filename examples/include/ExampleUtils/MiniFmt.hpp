@@ -7,6 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Abort.hpp"
+#include "SFML/Base/AssertAndAssume.hpp"
 #include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -128,6 +129,7 @@ template <typename T>
                                                                              const char* const bufferEnd,
                                                                              const char* const arg)
 {
+    SFML_BASE_ASSERT_AND_ASSUME(arg != nullptr);
     return copyStringIntoBuffer(buffer, bufferEnd, arg, SFML_BASE_STRLEN(arg));
 }
 

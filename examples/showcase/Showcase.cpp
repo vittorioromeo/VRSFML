@@ -133,8 +133,8 @@ private:
     {
         ImGui::PlotLines(label,
                          samples.data(),
-                         static_cast<int>(samples.size()),
-                         0,
+                         static_cast<int>(samples.capacity()),
+                         static_cast<int>(samples.insertionIndex()),
                          (sf::base::toString(samples.getAverageAs<double>()) + unit).cStr(),
                          0.f,
                          upperBound,
