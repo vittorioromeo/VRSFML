@@ -39,6 +39,45 @@ struct TextSpacingConstants
 
 
 ////////////////////////////////////////////////////////////
+/// \brief Layout-relevant subset of `TextData` (no transform, no colors)
+///
+/// Aggregates the fields of `TextData` that drive glyph layout. Bundling
+/// them avoids forwarding 8+ scalars individually through the layout API.
+///
+////////////////////////////////////////////////////////////
+struct TextLayoutInputs
+{
+    bool         bold;             //!< Bold characters
+    bool         italic;           //!< Italic characters
+    bool         underlined;       //!< Underlined characters
+    bool         strikeThrough;    //!< Strike through characters
+    unsigned int characterSize;    //!< Base size of characters, in pixels
+    float        letterSpacing;    //!< Spacing factor between letters
+    float        lineSpacing;      //!< Spacing factor between lines
+    float        outlineThickness; //!< Thickness of the text's outline
+};
+
+
+////////////////////////////////////////////////////////////
+/// \brief Build a `TextLayoutInputs` from a `TextData`
+///
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline]] inline TextLayoutInputs makeTextLayoutInputs(const TextData& textData)
+{
+    return {
+        .bold             = textData.bold,
+        .italic           = textData.italic,
+        .underlined       = textData.underlined,
+        .strikeThrough    = textData.strikeThrough,
+        .characterSize    = textData.characterSize,
+        .letterSpacing    = textData.letterSpacing,
+        .lineSpacing      = textData.lineSpacing,
+        .outlineThickness = textData.outlineThickness,
+    };
+}
+
+
+////////////////////////////////////////////////////////////
 template <typename TFontSource>
 [[nodiscard]] inline TextSpacingConstants precomputeSpacingConstants(
     const TFontSource& font,
@@ -61,14 +100,23 @@ template <typename TFontSource>
 
 
 ////////////////////////////////////////////////////////////
+/// \brief Count the number of textured quads needed to render a string
+///
+/// The returned value is the number of quads `createTextGeometryAndGetBounds`
+/// will emit for the same string and styling -- one quad per visible glyph,
+/// plus an extra quad per non-empty line for each enabled decoration
+/// (underline / strikethrough).
+///
+////////////////////////////////////////////////////////////
 [[nodiscard]] inline base::SizeT precomputeTextQuadCount(const UnicodeString& string, const bool isUnderlined, const bool isStrikeThrough)
 {
     SFML_BASE_ASSERT(!string.isEmpty());
 
-    base::SizeT result = 0u;
+    const base::SizeT linesPerNewline = base::SizeT{isUnderlined} + base::SizeT{isStrikeThrough};
 
-    char32_t prevChar        = 0;
-    bool     lineHasContents = false;
+    base::SizeT result          = 0u;
+    char32_t    prevChar        = 0;
+    bool        lineHasContents = false;
 
     for (const char32_t curChar : string)
     {
@@ -76,110 +124,53 @@ template <typename TFontSource>
         if (curChar == U'\r')
             continue;
 
-        // Apply the kerning offset
-        lineHasContents = true;
-
-        // If we're using the underlined or strike through style and there's a new line, draw a line
-        if (curChar == U'\n' && prevChar != U'\n')
+        if (curChar == U'\n')
         {
-            if (isUnderlined)
+            // A mid-string newline emits a decoration line for the line just ended.
+            // Consecutive newlines (empty lines) skip emission.
+            if (prevChar != U'\n')
+                result += linesPerNewline;
+
+            lineHasContents = false;
+        }
+        else
+        {
+            // Whitespace doesn't add a glyph quad but still counts as line content
+            // for the purposes of trailing-line decoration emission.
+            if (curChar != U' ' && curChar != U'\t')
                 ++result;
 
-            if (isStrikeThrough)
-                ++result;
+            lineHasContents = true;
         }
 
         prevChar = curChar;
-
-        // Handle special characters
-        switch (curChar)
-        {
-            case U' ':
-                [[fallthrough]];
-            case U'\t':
-                lineHasContents = true;
-                continue;
-            case U'\n':
-                lineHasContents = false;
-                continue;
-        }
-
-        // Apply the outline
-        ++result;
-
-        // Advance to the next character
-        lineHasContents = true;
     }
 
-    // If we're using the underlined style, add the last line
-    if (isUnderlined && lineHasContents)
-        ++result;
-
-    // If we're using the strike through style, add the last line across all characters
-    if (isStrikeThrough && lineHasContents)
-        ++result;
+    if (lineHasContents)
+        result += linesPerNewline;
 
     return result;
 }
 
 
 ////////////////////////////////////////////////////////////
-// Add an underline or strikethrough line to the vertex array
-inline void addLine(Vertex* const SFML_BASE_RESTRICT vertices,
-                    base::SizeT&                     index,
-                    const float                      lineLength,
-                    const float                      lineTop,
-                    const Color                      color,
-                    const float                      offset,
-                    const float                      thickness,
-                    const float                      outlineThickness)
+/// \brief Convenience overload that reads styling from a `TextData`
+///
+////////////////////////////////////////////////////////////
+[[nodiscard]] inline base::SizeT precomputeTextQuadCount(const TextData& textData)
 {
-    const float top    = SFML_BASE_MATH_FLOORF(lineTop + offset - (thickness / 2.f) + 0.5f);
-    const float bottom = top + SFML_BASE_MATH_FLOORF(thickness + 0.5f);
+    if (textData.string.isEmpty())
+        return 0u;
 
-    auto* ptr = vertices + index;
-
-    *ptr++ = {{-outlineThickness, top - outlineThickness}, color, {1.f, 1.f}};
-    *ptr++ = {{lineLength + outlineThickness, top - outlineThickness}, color, {1.f, 1.f}};
-    *ptr++ = {{-outlineThickness, bottom + outlineThickness}, color, {1.f, 1.f}};
-    *ptr++ = {{lineLength + outlineThickness, bottom + outlineThickness}, color, {1.f, 1.f}};
-
-    index += 4u;
+    return precomputeTextQuadCount(textData.string, textData.underlined, textData.strikeThrough);
 }
 
 
 ////////////////////////////////////////////////////////////
-// Add a glyph quad to the vertex array
-inline void addGlyphQuad(Vertex* const SFML_BASE_RESTRICT vertices,
-                         base::SizeT&                     index,
-                         const Vec2f                      position,
-                         const Color                      color,
-                         const Glyph&                     glyph,
-                         const float                      italicShear)
-{
-    constexpr Vec2f padding{1.f, 1.f};
-
-    const Vec2f p1 = glyph.bounds.position - padding;
-    const Vec2f p2 = glyph.bounds.position + glyph.bounds.size + padding;
-
-    const auto uv1 = glyph.textureRect.position - padding;
-    const auto uv2 = (glyph.textureRect.position + glyph.textureRect.size) + padding;
-
-    auto* ptr = vertices + index;
-
-    *ptr++ = {position + Vec2f{p1.x - italicShear * p1.y, p1.y}, color, {uv1.x, uv1.y}};
-    *ptr++ = {position + Vec2f{p2.x - italicShear * p1.y, p1.y}, color, {uv2.x, uv1.y}};
-    *ptr++ = {position + Vec2f{p1.x - italicShear * p2.y, p2.y}, color, {uv1.x, uv2.y}};
-    *ptr++ = {position + Vec2f{p2.x - italicShear * p2.y, p2.y}, color, {uv2.x, uv2.y}};
-
-    index += 4u;
-}
-
-
-////////////////////////////////////////////////////////////
-// Add an underline or strikethrough line to the vertex array (pre-transformed)
-inline void addLinePreTransformed(
-    const Transform&                 transform,
+// Add an underline or strikethrough line to the vertex array, optionally pre-transformed
+template <typename F>
+[[gnu::always_inline]] inline void addLineImpl(
+    F&&                              fTransform,
     Vertex* const SFML_BASE_RESTRICT vertices,
     base::SizeT&                     index,
     const float                      lineLength,
@@ -194,19 +185,20 @@ inline void addLinePreTransformed(
 
     auto* ptr = vertices + index;
 
-    *ptr++ = {transform.transformPoint({-outlineThickness, top - outlineThickness}), color, {1.f, 1.f}};
-    *ptr++ = {transform.transformPoint({lineLength + outlineThickness, top - outlineThickness}), color, {1.f, 1.f}};
-    *ptr++ = {transform.transformPoint({-outlineThickness, bottom + outlineThickness}), color, {1.f, 1.f}};
-    *ptr++ = {transform.transformPoint({lineLength + outlineThickness, bottom + outlineThickness}), color, {1.f, 1.f}};
+    *ptr++ = {fTransform({-outlineThickness, top - outlineThickness}), color, {1.f, 1.f}};
+    *ptr++ = {fTransform({lineLength + outlineThickness, top - outlineThickness}), color, {1.f, 1.f}};
+    *ptr++ = {fTransform({-outlineThickness, bottom + outlineThickness}), color, {1.f, 1.f}};
+    *ptr++ = {fTransform({lineLength + outlineThickness, bottom + outlineThickness}), color, {1.f, 1.f}};
 
     index += 4u;
 }
 
 
 ////////////////////////////////////////////////////////////
-// Add a glyph quad to the vertex array (pre-transformed)
-inline void addGlyphQuadPreTransformed(
-    const Transform&                 transform,
+// Add a glyph quad to the vertex array, optionally pre-transformed
+template <typename F>
+[[gnu::always_inline]] inline void addGlyphQuadImpl(
+    F&&                              fTransform,
     Vertex* const SFML_BASE_RESTRICT vertices,
     base::SizeT&                     index,
     const Vec2f                      position,
@@ -224,33 +216,103 @@ inline void addGlyphQuadPreTransformed(
 
     auto* ptr = vertices + index;
 
-    *ptr++ = {transform.transformPoint(position + Vec2f{p1.x - italicShear * p1.y, p1.y}), color, {uv1.x, uv1.y}};
-    *ptr++ = {transform.transformPoint(position + Vec2f{p2.x - italicShear * p1.y, p1.y}), color, {uv2.x, uv1.y}};
-    *ptr++ = {transform.transformPoint(position + Vec2f{p1.x - italicShear * p2.y, p2.y}), color, {uv1.x, uv2.y}};
-    *ptr++ = {transform.transformPoint(position + Vec2f{p2.x - italicShear * p2.y, p2.y}), color, {uv2.x, uv2.y}};
+    *ptr++ = {fTransform(position + Vec2f{p1.x - italicShear * p1.y, p1.y}), color, {uv1.x, uv1.y}};
+    *ptr++ = {fTransform(position + Vec2f{p2.x - italicShear * p1.y, p1.y}), color, {uv2.x, uv1.y}};
+    *ptr++ = {fTransform(position + Vec2f{p1.x - italicShear * p2.y, p2.y}), color, {uv1.x, uv2.y}};
+    *ptr++ = {fTransform(position + Vec2f{p2.x - italicShear * p2.y, p2.y}), color, {uv2.x, uv2.y}};
 
     index += 4u;
 }
 
 
 ////////////////////////////////////////////////////////////
+[[gnu::always_inline]] inline constexpr Vec2f identityTransformFn(const Vec2f v) noexcept
+{
+    return v;
+}
+
+
+////////////////////////////////////////////////////////////
+inline void addLine(Vertex* const SFML_BASE_RESTRICT vertices,
+                    base::SizeT&                     index,
+                    const float                      lineLength,
+                    const float                      lineTop,
+                    const Color                      color,
+                    const float                      offset,
+                    const float                      thickness,
+                    const float                      outlineThickness)
+{
+    addLineImpl(identityTransformFn, vertices, index, lineLength, lineTop, color, offset, thickness, outlineThickness);
+}
+
+
+////////////////////////////////////////////////////////////
+inline void addLinePreTransformed(
+    const Transform&                 transform,
+    Vertex* const SFML_BASE_RESTRICT vertices,
+    base::SizeT&                     index,
+    const float                      lineLength,
+    const float                      lineTop,
+    const Color                      color,
+    const float                      offset,
+    const float                      thickness,
+    const float                      outlineThickness)
+{
+    addLineImpl([&] [[gnu::always_inline]] (const Vec2f v) {
+        return transform.transformPoint(v);
+    }, vertices, index, lineLength, lineTop, color, offset, thickness, outlineThickness);
+}
+
+
+////////////////////////////////////////////////////////////
+inline void addGlyphQuad(Vertex* const SFML_BASE_RESTRICT vertices,
+                         base::SizeT&                     index,
+                         const Vec2f                      position,
+                         const Color                      color,
+                         const Glyph&                     glyph,
+                         const float                      italicShear)
+{
+    addGlyphQuadImpl(identityTransformFn, vertices, index, position, color, glyph, italicShear);
+}
+
+
+////////////////////////////////////////////////////////////
+inline void addGlyphQuadPreTransformed(
+    const Transform&                 transform,
+    Vertex* const SFML_BASE_RESTRICT vertices,
+    base::SizeT&                     index,
+    const Vec2f                      position,
+    const Color                      color,
+    const Glyph&                     glyph,
+    const float                      italicShear)
+{
+    addGlyphQuadImpl([&] [[gnu::always_inline]] (const Vec2f v) {
+        return transform.transformPoint(v);
+    }, vertices, index, position, color, glyph, italicShear);
+}
+
+
+////////////////////////////////////////////////////////////
+/// \brief Walk a string laying out glyphs, optionally emitting quads and/or computing bounds
+///
+/// The two callbacks are invoked once per emitted quad. Their signatures are:
+///
+///     fAddLine(idx&, lineLength, lineTop, offset, thickness, outlineThickness, isOutline)
+///     fAddGlyphQuad(idx&, position, glyph, italicShear, isOutline)
+///
+/// The `isOutline` flag tells the callback which color to use; this lets the
+/// layout function stay color-agnostic. Pass no-op lambdas to use this purely
+/// for bounds computation (see `precomputeTextLocalBounds`).
+///
+////////////////////////////////////////////////////////////
 template <bool CalculateBounds, typename TFontSource>
 inline auto createTextGeometryAndGetBounds(
-    const base::SizeT    outlineVertexCount,
-    const TFontSource&   font,
-    const UnicodeString& string,
-    const bool           isBold,
-    const bool           isItalic,
-    const bool           isUnderlined,
-    const bool           isStrikeThrough,
-    const unsigned int   characterSize,
-    const float          letterSpacing,
-    const float          lineSpacing,
-    const float          outlineThickness,
-    const Color          fillColor,    // TODO P1: remove?
-    const Color          outlineColor, // TODO P1: remove?
-    auto&&               fAddLine,
-    auto&&               fAddGlyphQuad)
+    const base::SizeT       outlineVertexCount,
+    const TFontSource&      font,
+    const UnicodeString&    string,
+    const TextLayoutInputs& inputs,
+    auto&&                  fAddLine,
+    auto&&                  fAddGlyphQuad)
 {
     if (string.isEmpty())
     {
@@ -261,15 +323,15 @@ inline auto createTextGeometryAndGetBounds(
     }
 
     // Compute values related to the text style
-    const float italicShear        = isItalic ? degrees(12).asRadians() : 0.f;
-    const float underlineOffset    = font.getUnderlinePosition(characterSize);
-    const float underlineThickness = font.getUnderlineThickness(characterSize);
+    const float italicShear        = inputs.italic ? degrees(12).asRadians() : 0.f;
+    const float underlineOffset    = font.getUnderlinePosition(inputs.characterSize);
+    const float underlineThickness = font.getUnderlineThickness(inputs.characterSize);
 
     // Compute the location of the strike through dynamically
     // We use the center point of the lowercase 'x' glyph as the reference
     // We reuse the underline thickness as the thickness of the strike through as well
-    const float strikeThroughOffset = isStrikeThrough
-                                          ? font.getGlyph(U'x', characterSize, isBold, /* outlineThickness */ 0.f)
+    const float strikeThroughOffset = inputs.strikeThrough
+                                          ? font.getGlyph(U'x', inputs.characterSize, inputs.bold, /* outlineThickness */ 0.f)
                                                 .bounds.getCenter()
                                                 .y
                                           : 0.f;
@@ -277,28 +339,32 @@ inline auto createTextGeometryAndGetBounds(
     // Precompute the variables needed by the algorithm
     const auto [whitespaceWidth,
                 finalLetterSpacing,
-                finalLineSpacing] = precomputeSpacingConstants(font, isBold, characterSize, letterSpacing, lineSpacing);
+                finalLineSpacing] = precomputeSpacingConstants(font,
+                                                               inputs.bold,
+                                                               inputs.characterSize,
+                                                               inputs.letterSpacing,
+                                                               inputs.lineSpacing);
 
     base::SizeT currFillIndex    = outlineVertexCount;
     base::SizeT currOutlineIndex = 0u;
 
     float x = 0.f;
-    auto  y = static_cast<float>(characterSize);
+    auto  y = static_cast<float>(inputs.characterSize);
 
     // Bounds state (only updated if `CalculateBounds` is `true`)
-    [[maybe_unused]] auto  minX = static_cast<float>(characterSize);
-    [[maybe_unused]] auto  minY = static_cast<float>(characterSize);
+    [[maybe_unused]] auto  minX = static_cast<float>(inputs.characterSize);
+    [[maybe_unused]] auto  minY = static_cast<float>(inputs.characterSize);
     [[maybe_unused]] float maxX = 0.f;
     [[maybe_unused]] float maxY = 0.f;
 
     char32_t prevChar = 0;
 
-    const auto addLines = [&](float offset)
+    const auto addLines = [&](const float offset)
     {
-        fAddLine(currFillIndex, x, y, fillColor, offset, underlineThickness, /* outlineThickness */ 0.f);
+        fAddLine(currFillIndex, x, y, offset, underlineThickness, /* outlineThickness */ 0.f, /* isOutline */ false);
 
-        if (outlineThickness != 0.f)
-            fAddLine(currOutlineIndex, x, y, outlineColor, offset, underlineThickness, outlineThickness);
+        if (inputs.outlineThickness != 0.f)
+            fAddLine(currOutlineIndex, x, y, offset, underlineThickness, inputs.outlineThickness, /* isOutline */ true);
     };
 
     const auto updateBoundsAndAdvance = [&] [[gnu::always_inline]] (const Glyph& fillGlyph)
@@ -329,16 +395,16 @@ inline auto createTextGeometryAndGetBounds(
             continue;
 
         // Apply the kerning offset
-        x += font.getKerning(prevChar, curChar, characterSize, isBold);
+        x += font.getKerning(prevChar, curChar, inputs.characterSize, inputs.bold);
 
         if (curChar == U'\n' && prevChar != U'\n')
         {
             // If we're using the underlined style and there's a new line, draw a line
-            if (isUnderlined)
+            if (inputs.underlined)
                 addLines(underlineOffset);
 
             // If we're using the strike through style and there's a new line, draw a line across all characters
-            if (isStrikeThrough)
+            if (inputs.strikeThrough)
                 addLines(strikeThroughOffset);
         }
 
@@ -379,20 +445,20 @@ inline auto createTextGeometryAndGetBounds(
             continue;
         }
 
-        if (outlineThickness == 0.f)
+        if (inputs.outlineThickness == 0.f)
         {
-            const Glyph& fillGlyph = font.getGlyph(curChar, characterSize, isBold, /* outlineThickness */ 0.f);
-            fAddGlyphQuad(currFillIndex, Vec2f{x, y}, fillColor, fillGlyph, italicShear);
+            const Glyph& fillGlyph = font.getGlyph(curChar, inputs.characterSize, inputs.bold, /* outlineThickness */ 0.f);
+            fAddGlyphQuad(currFillIndex, Vec2f{x, y}, fillGlyph, italicShear, /* isOutline */ false);
 
             updateBoundsAndAdvance(fillGlyph);
         }
         else
         {
             const auto& [fillGlyph,
-                         outlineGlyph] = font.getFillAndOutlineGlyph(curChar, characterSize, isBold, outlineThickness);
+                         outlineGlyph] = font.getFillAndOutlineGlyph(curChar, inputs.characterSize, inputs.bold, inputs.outlineThickness);
 
-            fAddGlyphQuad(currFillIndex, Vec2f{x, y}, fillColor, fillGlyph, italicShear);
-            fAddGlyphQuad(currOutlineIndex, Vec2f{x, y}, outlineColor, outlineGlyph, italicShear);
+            fAddGlyphQuad(currFillIndex, Vec2f{x, y}, fillGlyph, italicShear, /* isOutline */ false);
+            fAddGlyphQuad(currOutlineIndex, Vec2f{x, y}, outlineGlyph, italicShear, /* isOutline */ true);
 
             updateBoundsAndAdvance(fillGlyph);
         }
@@ -401,9 +467,9 @@ inline auto createTextGeometryAndGetBounds(
     // If we're using outline, update the current bounds
     if constexpr (CalculateBounds)
     {
-        if (outlineThickness != 0.f)
+        if (inputs.outlineThickness != 0.f)
         {
-            const float outline = SFML_BASE_MATH_FABSF(SFML_BASE_MATH_CEILF(outlineThickness));
+            const float outline = SFML_BASE_MATH_CEILF(SFML_BASE_MATH_FABSF(inputs.outlineThickness));
             minX -= outline;
             maxX += outline;
             minY -= outline;
@@ -412,11 +478,11 @@ inline auto createTextGeometryAndGetBounds(
     }
 
     // If we're using the underlined style, add the last line
-    if (isUnderlined && (x > 0))
+    if (inputs.underlined && (x > 0))
         addLines(underlineOffset);
 
     // If we're using the strike through style, add the last line across all characters
-    if (isStrikeThrough && (x > 0))
+    if (inputs.strikeThrough && (x > 0))
         addLines(strikeThroughOffset);
 
     if constexpr (CalculateBounds)
@@ -427,28 +493,58 @@ inline auto createTextGeometryAndGetBounds(
 
 
 ////////////////////////////////////////////////////////////
+/// \brief Compute the local bounding box of a piece of text without rendering it
+///
+////////////////////////////////////////////////////////////
 [[nodiscard]] inline Rect2f precomputeTextLocalBounds(const Font& font, const TextData& textData)
 {
     return createTextGeometryAndGetBounds</* CalculateBounds */ true>(
         /* outlineVertexCount */ 0u,
         font,
         textData.string,
-        textData.bold,
-        textData.italic,
-        textData.underlined,
-        textData.strikeThrough,
-        textData.characterSize,
-        textData.letterSpacing,
-        textData.lineSpacing,
-        textData.outlineThickness,
-        /* fillColor */ {},    // doesn't matter
-        /* outlineColor */ {}, // doesn't matter
+        makeTextLayoutInputs(textData),
         /* fAddLine */ [] [[gnu::always_inline]] (auto&&...) {},
         /* fAddGlyphQuad */ [] [[gnu::always_inline]] (auto&&...) {});
 }
 
 
-// TODO P1: precompute globalbounds as well?
+////////////////////////////////////////////////////////////
+/// \brief Compute the global (post-transform) bounding box of a piece of text
+///
+/// Applies the `position`, `scale`, `origin` and `rotation` from `textData` to
+/// the local bounds computed by `precomputeTextLocalBounds`.
+///
+////////////////////////////////////////////////////////////
+[[nodiscard]] inline Rect2f precomputeTextGlobalBounds(const Font& font, const TextData& textData)
+{
+    return Transform::fromPositionScaleOriginRotation(textData.position, textData.scale, textData.origin, textData.rotation)
+        .transformRect(precomputeTextLocalBounds(font, textData));
+}
+
+
+////////////////////////////////////////////////////////////
+/// \brief Compute the `origin` value that aligns a given anchor of `textData` to its position
+///
+/// `anchor` is in normalized rect-anchor coordinates: `{0, 0}` is the top-left
+/// of the local bounds, `{1, 1}` the bottom-right, `{0.5f, 0.f}` the
+/// top-center, and so on (matching `sf::Rect2::getAnchorPoint`).
+///
+/// Typical use:
+///
+/// \code
+/// textData.origin   = sf::TextUtils::computeAnchorOrigin(font, textData, {0.5f, 0.f});
+/// textData.position = {centerX, y};
+/// drawCtx.draw(font, textData);
+/// \endcode
+///
+/// Unlike `bounds.size * anchor`, this also accounts for `bounds.position`,
+/// so styled or italic text remains correctly anchored.
+///
+////////////////////////////////////////////////////////////
+[[nodiscard]] inline Vec2f computeAnchorOrigin(const Font& font, const TextData& textData, const Vec2f anchor)
+{
+    return precomputeTextLocalBounds(font, textData).getAnchorPoint(anchor);
+}
 
 } // namespace sf::TextUtils
 
@@ -461,12 +557,14 @@ inline auto createTextGeometryAndGetBounds(
 ///
 /// This namespace provides a collection of helper functions tailored for
 /// advanced text manipulation within SFML. These functions handle tasks
-/// such as calculating the bounding box of a string (`precomputeTextLocalBounds`),
-/// determining the number of quads required to render a given text
-/// (`precomputeTextQuadCount`), and generating the vertex data for
-/// text rendering, including handling styles like underline and strikethrough,
-/// as well as character and line spacing (`createTextGeometryAndGetBounds`,
-/// `addGlyphQuad`, `addLine`).
+/// such as calculating the bounding box of a string (`precomputeTextLocalBounds`,
+/// `precomputeTextGlobalBounds`), determining the number of quads required to
+/// render a given text (`precomputeTextQuadCount`), generating the vertex data
+/// for text rendering, including handling styles like underline and
+/// strikethrough, as well as character and line spacing
+/// (`createTextGeometryAndGetBounds`, `addGlyphQuad`, `addLine`), and
+/// computing anchor offsets for centered/aligned drawing
+/// (`computeAnchorOrigin`).
 ///
 /// While these utilities are predominantly used internally by the `sf::Text`
 /// class to manage and render text, they are exposed for users who might

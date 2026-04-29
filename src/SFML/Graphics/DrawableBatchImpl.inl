@@ -41,7 +41,6 @@
 #include "SFML/Graphics/Transform.hpp"
 #include "SFML/Graphics/TrapezoidShapeData.hpp"
 #include "SFML/Graphics/Vertex.hpp"
-#include "SFML/Graphics/VertexSpan.hpp"
 
 #include "SFML/System/Rect2.hpp"
 #include "SFML/System/Vec2.hpp"
@@ -51,7 +50,6 @@
 #include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/FloatEpsilon.hpp"
-#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/MinMax.hpp"
@@ -1335,24 +1333,54 @@ BatchedGeometry DrawableBatchImpl<TStorage>::addTextDataImpl(
 
     Vertex* const vertexPtr = m_storage.reserveMoreVertices(4u * numQuads);
 
+    const TextUtils::TextLayoutInputs layoutInputs{
+        .bold             = isBold,
+        .italic           = textData.italic,
+        .underlined       = textData.underlined,
+        .strikeThrough    = textData.strikeThrough,
+        .characterSize    = characterSize,
+        .letterSpacing    = textData.letterSpacing,
+        .lineSpacing      = textData.lineSpacing,
+        .outlineThickness = outlineThickness,
+    };
+
     TextUtils::createTextGeometryAndGetBounds<
         /* CalculateBounds */ false>(/* outlineVertexCount */ outlineQuadCount * 4u,
                                      glyphSource,
                                      textData.string,
-                                     isBold,
-                                     textData.italic,
-                                     textData.underlined,
-                                     textData.strikeThrough,
-                                     characterSize,
-                                     textData.letterSpacing,
-                                     textData.lineSpacing,
-                                     outlineThickness,
-                                     textData.fillColor,
-                                     textData.outlineColor,
-                                     [&] [[gnu::always_inline, gnu::flatten]] (auto&&... xs)
-    { return TextUtils::addLinePreTransformed(transform, vertexPtr, SFML_BASE_FORWARD(xs)...); },
-                                     [&] [[gnu::always_inline, gnu::flatten]] (auto&&... xs)
-    { return TextUtils::addGlyphQuadPreTransformed(transform, vertexPtr, SFML_BASE_FORWARD(xs)...); });
+                                     layoutInputs,
+                                     [&] [[gnu::always_inline, gnu::flatten]] (base::SizeT & idx,
+                                                                               const float lineLength,
+                                                                               const float lineTop,
+                                                                               const float offset,
+                                                                               const float thickness,
+                                                                               const float outlineT,
+                                                                               const bool  isOutline)
+    {
+        return TextUtils::addLinePreTransformed(transform,
+                                                vertexPtr,
+                                                idx,
+                                                lineLength,
+                                                lineTop,
+                                                isOutline ? textData.outlineColor : textData.fillColor,
+                                                offset,
+                                                thickness,
+                                                outlineT);
+    },
+                                     [&] [[gnu::always_inline, gnu::flatten]] (base::SizeT & idx,
+                                                                               const Vec2f  pos,
+                                                                               const Glyph& glyph,
+                                                                               const float  shear,
+                                                                               const bool   isOutline)
+    {
+        return TextUtils::addGlyphQuadPreTransformed(transform,
+                                                     vertexPtr,
+                                                     idx,
+                                                     pos,
+                                                     isOutline ? textData.outlineColor : textData.fillColor,
+                                                     glyph,
+                                                     shear);
+    });
 
     m_storage.commitMoreIndices(6u * numQuads);
     m_storage.commitMoreVertices(4u * numQuads);

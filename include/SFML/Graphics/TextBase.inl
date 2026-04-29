@@ -6,20 +6,18 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DrawQuadsSettings.hpp"
+#include "SFML/Graphics/Glyph.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/TextBase.hpp"
 #include "SFML/Graphics/TextUtils.hpp"
+#include "SFML/Graphics/VertexSpan.hpp"
 
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
-#include "SFML/System/UnicodeString.hpp"
 
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/SizeT.hpp"
 
@@ -152,24 +150,50 @@ void TextBase::ensureGeometryUpdate(this const Self& self)
     self.m_vertices.resize(outlineVertexCount + fillVertexCount);
     self.m_fillVerticesStartIndex = outlineVertexCount;
 
+    const TextUtils::TextLayoutInputs layoutInputs{
+        .bold             = self.isBold(),
+        .italic           = self.m_italic,
+        .underlined       = self.m_underlined,
+        .strikeThrough    = self.m_strikeThrough,
+        .characterSize    = charSize,
+        .letterSpacing    = self.m_letterSpacing,
+        .lineSpacing      = self.m_lineSpacing,
+        .outlineThickness = outlineThickness,
+    };
+
     self.m_bounds = TextUtils::createTextGeometryAndGetBounds<
         true>(outlineVertexCount,
               fontSource,
               self.m_string,
-              self.isBold(),
-              self.m_italic,
-              self.m_underlined,
-              self.m_strikeThrough,
-              charSize,
-              self.m_letterSpacing,
-              self.m_lineSpacing,
-              outlineThickness,
-              self.m_fillColor,
-              self.m_outlineColor,
-              [&self] [[gnu::always_inline, gnu::flatten]] (auto&&... xs)
-    { return TextUtils::addLine(self.m_vertices.data(), SFML_BASE_FORWARD(xs)...); },
-              [&self] [[gnu::always_inline, gnu::flatten]] (auto&&... xs)
-    { return TextUtils::addGlyphQuad(self.m_vertices.data(), SFML_BASE_FORWARD(xs)...); });
+              layoutInputs,
+              [&self] [[gnu::always_inline,
+                        gnu::flatten]] (base::SizeT & idx,
+                                        const float lineLength,
+                                        const float lineTop,
+                                        const float offset,
+                                        const float thickness,
+                                        const float outlineT,
+                                        const bool  isOutline)
+    {
+        return TextUtils::addLine(self.m_vertices.data(),
+                                  idx,
+                                  lineLength,
+                                  lineTop,
+                                  isOutline ? self.m_outlineColor : self.m_fillColor,
+                                  offset,
+                                  thickness,
+                                  outlineT);
+    },
+              [&self] [[gnu::always_inline,
+                        gnu::flatten]] (base::SizeT & idx, const Vec2f pos, const Glyph& glyph, const float shear, const bool isOutline)
+    {
+        return TextUtils::addGlyphQuad(self.m_vertices.data(),
+                                       idx,
+                                       pos,
+                                       isOutline ? self.m_outlineColor : self.m_fillColor,
+                                       glyph,
+                                       shear);
+    });
 }
 
 } // namespace sf
