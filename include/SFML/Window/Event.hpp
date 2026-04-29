@@ -296,7 +296,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename TEventSubtype>
-    [[nodiscard]] explicit(false) Event(const TEventSubtype& eventSubtype);
+    [[nodiscard]] /* implicit */ Event(const TEventSubtype& eventSubtype);
 
     ////////////////////////////////////////////////////////////
     /// \brief Check current event subtype
