@@ -229,9 +229,133 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
 
     SECTION("TextUtils helpers")
     {
-        CHECK(sf::TextUtils::precomputeTextQuadCount("A\nB", /* isUnderlined */ true, /* isStrikeThrough */ true) == 6u);
+        using sf::TextUtils::precomputeTextQuadCount;
 
-        CHECK(sf::TextUtils::precomputeTextLocalBounds(font, sf::TextData{}) == sf::Rect2f{});
+        SECTION("precomputeTextQuadCount with no styles")
+        {
+            // No underline / strikethrough -> just one quad per visible glyph
+            CHECK(precomputeTextQuadCount("A", false, false) == 1u);
+            CHECK(precomputeTextQuadCount("Abc", false, false) == 3u);
+
+            // Whitespace is not a glyph
+            CHECK(precomputeTextQuadCount(" ", false, false) == 0u);
+            CHECK(precomputeTextQuadCount("\t", false, false) == 0u);
+            CHECK(precomputeTextQuadCount("A B", false, false) == 2u);
+            CHECK(precomputeTextQuadCount("A\tB", false, false) == 2u);
+
+            // Newlines are not glyphs
+            CHECK(precomputeTextQuadCount("\n", false, false) == 0u);
+            CHECK(precomputeTextQuadCount("A\nB", false, false) == 2u);
+
+            // Carriage returns are skipped
+            CHECK(precomputeTextQuadCount("\r", false, false) == 0u);
+            CHECK(precomputeTextQuadCount("A\rB", false, false) == 2u);
+        }
+
+        SECTION("precomputeTextQuadCount with underline")
+        {
+            // Single line: 1 line emitted at the end + glyph quads
+            CHECK(precomputeTextQuadCount("A", true, false) == 2u);
+            CHECK(precomputeTextQuadCount("Abc", true, false) == 4u);
+
+            // Whitespace-only string still gets a trailing decoration line
+            CHECK(precomputeTextQuadCount(" ", true, false) == 1u);
+
+            // Two non-empty lines -> 2 underline lines + glyphs
+            CHECK(precomputeTextQuadCount("A\nB", true, false) == 4u);
+
+            // Consecutive newlines do not double-emit
+            CHECK(precomputeTextQuadCount("A\n\nB", true, false) == 4u);
+
+            // Trailing newline (line ends empty) -> only one underline (for the "A" line)
+            CHECK(precomputeTextQuadCount("A\n", true, false) == 2u);
+        }
+
+        SECTION("precomputeTextQuadCount with strikethrough")
+        {
+            // Same shape as underline-only, but emitted via the strikethrough branch
+            CHECK(precomputeTextQuadCount("A", false, true) == 2u);
+            CHECK(precomputeTextQuadCount("A\nB", false, true) == 4u);
+            CHECK(precomputeTextQuadCount("A\n\nB", false, true) == 4u);
+        }
+
+        SECTION("precomputeTextQuadCount with both decorations")
+        {
+            // Both underline and strikethrough emit one line each per non-empty line
+            CHECK(precomputeTextQuadCount("A", true, true) == 3u);
+            CHECK(precomputeTextQuadCount("A\nB", true, true) == 6u);
+            CHECK(precomputeTextQuadCount("A\n\nB", true, true) == 6u);
+        }
+
+        SECTION("precomputeTextQuadCount TextData overload")
+        {
+            // The overload returns 0 for an empty string instead of asserting
+            CHECK(precomputeTextQuadCount(sf::TextData{}) == 0u);
+
+            CHECK(precomputeTextQuadCount(sf::TextData{.string = "Abc", .characterSize = 18u}) == 3u);
+            CHECK(precomputeTextQuadCount(sf::TextData{.string = "Abc", .characterSize = 18u, .underlined = true}) == 4u);
+            CHECK(precomputeTextQuadCount(sf::TextData{.string = "A\nB", .characterSize = 18u, .strikeThrough = true}) ==
+                  4u);
+            CHECK(precomputeTextQuadCount(
+                      sf::TextData{.string = "A\nB", .characterSize = 18u, .underlined = true, .strikeThrough = true}) ==
+                  6u);
+        }
+
+        SECTION("precomputeTextLocalBounds")
+        {
+            // Empty string -> empty rect (early return)
+            CHECK(sf::TextUtils::precomputeTextLocalBounds(font, sf::TextData{}) == sf::Rect2f{});
+
+            // Matches what `sf::Text::getLocalBounds` returns for the same inputs
+            const sf::TextData td{.string = "Test", .characterSize = 18u};
+            const sf::Text     text(font, td);
+            CHECK(sf::TextUtils::precomputeTextLocalBounds(font, td) == text.getLocalBounds());
+        }
+
+        SECTION("precomputeTextGlobalBounds")
+        {
+            // Empty text -> empty rect transformed is still empty rect
+            CHECK(sf::TextUtils::precomputeTextGlobalBounds(font, sf::TextData{}) == sf::Rect2f{});
+
+            // Without any transform, global bounds equal local bounds
+            const sf::TextData td{.string = "Test", .characterSize = 18u};
+            CHECK(sf::TextUtils::precomputeTextGlobalBounds(font, td) == sf::TextUtils::precomputeTextLocalBounds(font, td));
+
+            // With a translation, global bounds shift accordingly
+            sf::TextData translated = td;
+            translated.position     = {100.f, 200.f};
+
+            const sf::Rect2f local         = sf::TextUtils::precomputeTextLocalBounds(font, translated);
+            const sf::Rect2f globalShifted = sf::TextUtils::precomputeTextGlobalBounds(font, translated);
+            CHECK(globalShifted.position == local.position + sf::Vec2f{100.f, 200.f});
+            CHECK(globalShifted.size == local.size);
+
+            // Matches what `sf::Text::getGlobalBounds` returns for the same inputs
+            sf::Text text(font, td);
+            text.position = {100.f, 200.f};
+            CHECK(sf::TextUtils::precomputeTextGlobalBounds(font, translated) == text.getGlobalBounds());
+        }
+
+        SECTION("computeAnchorOrigin")
+        {
+            // For an empty string, bounds is {} so any anchor returns {0, 0}
+            CHECK(sf::TextUtils::computeAnchorOrigin(font, sf::TextData{}, {0.5f, 0.5f}) == sf::Vec2f{});
+
+            const sf::TextData td{.string = "Test", .characterSize = 18u};
+            const sf::Rect2f   bounds = sf::TextUtils::precomputeTextLocalBounds(font, td);
+
+            // {0, 0} -> top-left anchor (== bounds.position)
+            CHECK(sf::TextUtils::computeAnchorOrigin(font, td, {0.f, 0.f}) == bounds.position);
+
+            // {1, 1} -> bottom-right anchor
+            CHECK(sf::TextUtils::computeAnchorOrigin(font, td, {1.f, 1.f}) == bounds.position + bounds.size);
+
+            // {0.5, 0} -> top-center anchor (matches Rect2 helper)
+            CHECK(sf::TextUtils::computeAnchorOrigin(font, td, {0.5f, 0.f}) == bounds.getTopCenter());
+
+            // {0.5, 0.5} -> center anchor (matches Rect2 helper)
+            CHECK(sf::TextUtils::computeAnchorOrigin(font, td, {0.5f, 0.5f}) == bounds.getCenter());
+        }
     }
 
     SECTION("Get bounds")

@@ -188,7 +188,7 @@ Main::Main() :
                                  .outlineColor     = colorBlueOutline,
                                  .outlineThickness = 2.f};
 
-    loadingTextData.origin = sf::TextUtils::precomputeTextLocalBounds(fontMouldyCheese, loadingTextData).size / 2.f;
+    loadingTextData.origin = sf::TextUtils::computeAnchorOrigin(fontMouldyCheese, loadingTextData, {0.5f, 0.5f});
     window.draw(fontMouldyCheese, loadingTextData);
 
     window.display();
