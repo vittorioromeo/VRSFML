@@ -161,7 +161,7 @@ private:
 
 public:
     ////////////////////////////////////////////////////////////
-    constexpr explicit String() noexcept : m_rep{}
+    constexpr /* implicit */ String() noexcept : m_rep{}
     {
         setSizeAndTerminate(0);
     }

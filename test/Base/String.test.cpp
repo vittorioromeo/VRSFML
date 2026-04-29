@@ -68,6 +68,14 @@ TEST_CASE("[Base] Base/String.hpp")
             STATIC_CHECK(str.capacity() == maxSsoSize);
             STATIC_CHECK(str.empty());
             STATIC_CHECK(str[0] == '\0');
+
+            // Default constructor is non-explicit: must work in copy-list-init contexts.
+            constexpr sf::base::String copyListInit = {};
+            STATIC_CHECK(copyListInit.isSso());
+            STATIC_CHECK(copyListInit.empty());
+
+            const auto returnsEmpty = []() -> sf::base::String { return {}; };
+            CHECK(returnsEmpty().empty());
         }
 
         SUBCASE("From const char*")
