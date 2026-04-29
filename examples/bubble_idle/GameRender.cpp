@@ -2,13 +2,13 @@
 #include "BubbleIdleMain.hpp"
 #include "CatType.hpp"
 #include "Constants.hpp"
-#include "ExampleUtils/Progress.hpp"
 #include "PlayerInput.hpp"
 #include "Version.hpp"
 
 #include "ExampleUtils/Easing.hpp"
 #include "ExampleUtils/MathUtils.hpp"
 #include "ExampleUtils/Profiler.hpp"
+#include "ExampleUtils/Progress.hpp"
 
 #include "SFML/Graphics/BlendMode.hpp"
 #include "SFML/Graphics/CircleShapeData.hpp"
@@ -229,7 +229,7 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
         for (sf::base::SizeT i = 0u; i < 3u; ++i)
         {
             demoInfoTextData.string = lines[i].data();
-            demoInfoTextData.origin.x = sf::TextUtils::precomputeTextLocalBounds(fontSuperBakery, demoInfoTextData).size.x;
+            demoInfoTextData.origin = sf::TextUtils::computeAnchorOrigin(fontSuperBakery, demoInfoTextData, {1.f, 0.f});
             demoInfoTextData.position = demoText.getGlobalBottomRight().addY(10.f + (static_cast<float>(i) * lineSpacing));
 
             rtGame.draw(fontSuperBakery, demoInfoTextData, {.view = scaledHUDView});
@@ -392,7 +392,7 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
 
         const float textProgress = cdLetterText.time > 9000.f   ? remap(cdLetterText.time, 9000.f, 10'000.f, 1.f, 0.f)
                                    : cdLetterText.time < 1000.f ? cdLetterText.time / 1000.f
-                                                                 : 1.f;
+                                                                : 1.f;
 
         rtGame.draw(sf::Sprite{.position    = frameViews.resolution / 2.f / profile.hudScale,
                                .scale       = sf::Vec2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutQuint(textProgress)) /
