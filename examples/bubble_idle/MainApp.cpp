@@ -181,15 +181,15 @@ Main::Main() :
     refreshWindowAutoBatchModeFromProfile();
     window.clear(sf::Color::Black);
 
-    sf::TextData loadingTextData{.position         = window.getSize().toVec2f() / 2.f,
-                                 .string           = "Loading...",
-                                 .characterSize    = 48u,
-                                 .fillColor        = sf::Color::White,
-                                 .outlineColor     = colorBlueOutline,
-                                 .outlineThickness = 2.f};
-
-    loadingTextData.origin = sf::TextUtils::computeAnchorOrigin(fontMouldyCheese, loadingTextData, {0.5f, 0.5f});
-    window.draw(fontMouldyCheese, loadingTextData);
+    window.draw(fontMouldyCheese,
+                sf::TextUtils::anchored(fontMouldyCheese,
+                                        sf::TextData{.position         = window.getSize().toVec2f() / 2.f,
+                                                     .string           = "Loading...",
+                                                     .characterSize    = 48u,
+                                                     .fillColor        = sf::Color::White,
+                                                     .outlineColor     = colorBlueOutline,
+                                                     .outlineThickness = 2.f},
+                                        {0.5f, 0.5f}));
 
     window.display();
     return true;
