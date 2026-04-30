@@ -493,6 +493,15 @@ namespace sf::priv
                           SDL_PROP_WINDOW_CREATE_TITLE_STRING,
                           windowSettings.title.toAnsiString<base::String>().data());
 
+    if (windowSettings.position.hasValue())
+    {
+        SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER, windowSettings.position->x);
+        SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, windowSettings.position->y);
+    }
+
+    if (!windowSettings.visible)
+        SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_HIDDEN_BOOLEAN, true);
+
 
     static int i = 0;
 
