@@ -804,6 +804,30 @@ struct [[nodiscard]] ImGuiContext::Impl
 
 
 ////////////////////////////////////////////////////////////
+void ImGuiContext::setCurrent()
+{
+    ::ImGui::SetCurrentContext(m_impl->imContext);
+}
+
+////////////////////////////////////////////////////////////
+bool ImGuiContext::isCurrent() const
+{
+    return ::ImGui::GetCurrentContext() == m_impl->imContext;
+}
+
+////////////////////////////////////////////////////////////
+void* ImGuiContext::getNativeImGuiContext()
+{
+    return m_impl->imContext;
+}
+
+////////////////////////////////////////////////////////////
+const void* ImGuiContext::getNativeImGuiContext() const
+{
+    return m_impl->imContext;
+}
+
+////////////////////////////////////////////////////////////
 void ImGuiContext::setActiveJoystickId(unsigned int newJoystickId)
 {
     SFML_BASE_ASSERT(newJoystickId < Joystick::MaxCount);
@@ -1008,7 +1032,7 @@ ImGuiContext& ImGuiContext::operator=(ImGuiContext&&) noexcept = default;
 ////////////////////////////////////////////////////////////
 void ImGuiContext::processEvent(const Window& window, const Event& event)
 {
-    ::ImGui::SetCurrentContext(m_impl->imContext);
+    setCurrent();
     m_impl->processEvent(window, event);
 }
 
@@ -1016,7 +1040,7 @@ void ImGuiContext::processEvent(const Window& window, const Event& event)
 ////////////////////////////////////////////////////////////
 void ImGuiContext::updateMouseCursor(Window& window)
 {
-    ::ImGui::SetCurrentContext(m_impl->imContext);
+    setCurrent();
     m_impl->updateMouseCursor(window);
 }
 
@@ -1031,7 +1055,7 @@ void ImGuiContext::update(RenderWindow& renderWindow, Time dt)
 ////////////////////////////////////////////////////////////
 void ImGuiContext::update(Window& window, RenderTarget& renderTarget, Time dt)
 {
-    ::ImGui::SetCurrentContext(m_impl->imContext);
+    setCurrent();
     m_impl->update(window, renderTarget, dt);
 }
 
@@ -1039,7 +1063,7 @@ void ImGuiContext::update(Window& window, RenderTarget& renderTarget, Time dt)
 ////////////////////////////////////////////////////////////
 void ImGuiContext::update(Vec2i mousePos, Vec2f displaySize, Time dt)
 {
-    ::ImGui::SetCurrentContext(m_impl->imContext);
+    setCurrent();
     m_impl->update(mousePos, displaySize, dt);
 }
 
@@ -1054,7 +1078,7 @@ void ImGuiContext::render(RenderWindow& window)
 ////////////////////////////////////////////////////////////
 void ImGuiContext::render(RenderTarget& target)
 {
-    ::ImGui::SetCurrentContext(m_impl->imContext);
+    setCurrent();
 
     // init rendering
     ::ImGui::GetIO().DisplaySize = toImVec2(target.getSize().toVec2f());
