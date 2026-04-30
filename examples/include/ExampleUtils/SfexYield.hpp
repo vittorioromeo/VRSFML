@@ -1,0 +1,38 @@
+#pragma once
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include "SFML/Base/Variant.hpp"
+
+
+namespace sfex
+{
+////////////////////////////////////////////////////////////
+// clang-format off
+struct NextFrame { };
+struct Wait      { float seconds; };
+struct Done      { };
+// clang-format on
+
+
+////////////////////////////////////////////////////////////
+using YieldBaseVariant = sf::base::Variant<NextFrame, Wait, Done>;
+
+
+////////////////////////////////////////////////////////////
+struct [[nodiscard]] Yield : YieldBaseVariant
+{
+    /* implicit */ Yield(const auto& x) noexcept : YieldBaseVariant{x}
+    {
+    }
+};
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] inline bool isFinished(const Yield& y) noexcept
+{
+    return y.is<Done>();
+}
+
+} // namespace sfex
