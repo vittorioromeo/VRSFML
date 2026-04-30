@@ -1,0 +1,242 @@
+
+////////////////////////////////////////////////////////////
+// === C++20 coroutine version =============================================
+//
+// The same cutscene rewritten as a C++20 coroutine. The function body
+// itself is shorter and slightly more direct -- locals are real
+// function-locals, no `SFEX_CO_*` macros -- but the cost is the
+// machinery below: a `Task` type, a `promise_type`, and one awaitable
+// per yield kind. None of the cutscene logic; pure plumbing.
+////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////
+// One awaitable per yield kind. Each one publishes its kind to the
+// `promise_type` via `await_transform` so the driver can read it.
+////////////////////////////////////////////////////////////
+struct WaitAwaitable
+{
+    Wait value;
+
+    [[nodiscard]] bool await_ready() const noexcept
+    {
+        return false;
+    }
+
+    void await_suspend(std::coroutine_handle<>) const noexcept
+    {
+    }
+
+    void await_resume() const noexcept
+    {
+    }
+};
+
+
+////////////////////////////////////////////////////////////
+struct NextFrameAwaitable
+{
+    [[nodiscard]] bool await_ready() const noexcept
+    {
+        return false;
+    }
+
+    void await_suspend(std::coroutine_handle<>) const noexcept
+    {
+    }
+
+    void await_resume() const noexcept
+    {
+    }
+};
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] inline WaitAwaitable wait(float seconds) noexcept
+{
+    return {Wait{seconds}};
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] inline NextFrameAwaitable nextFrame() noexcept
+{
+    return {};
+}
+
+
+////////////////////////////////////////////////////////////
+// What the driver reads after each tick. Mirrors the SFEX `Yield`
+// variant but as a tagged enum, since the driver reads it from the
+// promise (not as a return value).
+////////////////////////////////////////////////////////////
+struct CutsceneYield
+{
+    enum class Kind : unsigned char
+    {
+        NextFrame,
+        Wait,
+        Done
+    };
+
+    Kind  kind        = Kind::NextFrame;
+    float waitSeconds = 0.f;
+};
+
+
+////////////////////////////////////////////////////////////
+// Coroutine return-object + promise_type. The cutscene function
+// returns one of these; the driver `tick()`s it once per frame.
+////////////////////////////////////////////////////////////
+struct CutsceneTask
+{
+    struct promise_type
+    {
+        CutsceneYield currentYield;
+
+        CutsceneTask get_return_object()
+        {
+            return CutsceneTask{std::coroutine_handle<promise_type>::from_promise(*this)};
+        }
+
+        std::suspend_always initial_suspend() noexcept
+        {
+            return {};
+        }
+
+        std::suspend_always final_suspend() noexcept
+        {
+            currentYield.kind = CutsceneYield::Kind::Done;
+            return {};
+        }
+
+        void return_void() noexcept
+        {
+            currentYield.kind = CutsceneYield::Kind::Done;
+        }
+
+        [[noreturn]] void unhandled_exception()
+        {
+            std::terminate();
+        }
+
+        // Translate user-level awaitables into a yield the driver can read.
+        WaitAwaitable await_transform(WaitAwaitable a) noexcept
+        {
+            currentYield.kind        = CutsceneYield::Kind::Wait;
+            currentYield.waitSeconds = a.value.seconds;
+            return a;
+        }
+
+        NextFrameAwaitable await_transform(NextFrameAwaitable a) noexcept
+        {
+            currentYield.kind = CutsceneYield::Kind::NextFrame;
+            return a;
+        }
+    };
+
+    std::coroutine_handle<promise_type> handle;
+
+    explicit CutsceneTask(std::coroutine_handle<promise_type> h) noexcept : handle{h}
+    {
+    }
+
+    CutsceneTask(const CutsceneTask&)            = delete;
+    CutsceneTask& operator=(const CutsceneTask&) = delete;
+
+    CutsceneTask(CutsceneTask&& other) noexcept : handle{std::exchange(other.handle, {})}
+    {
+    }
+
+    CutsceneTask& operator=(CutsceneTask&& other) noexcept
+    {
+        if (handle)
+            handle.destroy();
+        handle = std::exchange(other.handle, {});
+        return *this;
+    }
+
+    ~CutsceneTask()
+    {
+        if (handle)
+            handle.destroy();
+    }
+
+    [[nodiscard]] CutsceneYield tick()
+    {
+        if (!handle.done())
+            handle.resume();
+
+        if (handle.done())
+            return CutsceneYield{CutsceneYield::Kind::Done, 0.f};
+
+        return handle.promise().currentYield;
+    }
+};
+
+
+////////////////////////////////////////////////////////////
+// The cutscene as an ordinary function. Note: locals like `paceIdx`,
+// `t`, `paceStartPos` are real function-locals -- the compiler stores
+// them in the (heap-allocated, possibly HALO'd) coroutine frame.
+////////////////////////////////////////////////////////////
+CutsceneTask cutscene(World& world)
+{
+    world.heroPos           = {200.f, 280.f};
+    world.villainPos        = {700.f, 280.f};
+    world.charactersVisible = true;
+
+    co_await wait(0.5f);
+
+    world.showText("Hero", "I finally got you.");
+    co_await wait(1.5f);
+
+    world.hideText();
+    co_await wait(0.3f);
+
+    world.showText("Villain", "You're too late!");
+    co_await wait(2.0f);
+
+    world.hideText();
+    co_await wait(0.3f);
+
+    for (int paceIdx = 0; paceIdx < 3; ++paceIdx)
+    {
+        const sf::Vec2f paceStartPos = world.villainPos;
+        float           t            = 0.f;
+
+        while (t < 1.f)
+        {
+            t                  = sf::base::min(t + world.dt * 3.f, 1.f);
+            world.villainPos.x = paceStartPos.x - 100.f * t;
+
+            co_await nextFrame();
+        }
+
+        co_await wait(0.30f);
+    }
+
+    world.showText("Hero", "Don't come any closer!");
+    co_await wait(1.5f);
+
+    world.hideText();
+    co_await wait(0.3f);
+
+    {
+        const sf::Vec2f paceStartPos = world.heroPos;
+        float           t            = 0.f;
+
+        while (t < 1.f)
+        {
+            t               = sf::base::min(t + world.dt * 3.f, 1.f);
+            world.heroPos.x = paceStartPos.x - 60.f * t;
+
+            co_await nextFrame();
+        }
+    }
+
+    co_await wait(2.f);
+
+    world.charactersVisible = false;
+    co_return;
+}
