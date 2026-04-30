@@ -25,8 +25,6 @@
 #include "SFML/Window/WindowHandle.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
-#include "SFML/GLUtils/GlContextTypeImpl.hpp"
-
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"
@@ -593,6 +591,12 @@ base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(WindowSettings windowSettin
     else
         SDLWindowImplImpl::setWindowNonExclusiveFullscreenIfNeeded(windowSettings.hasTitlebar, windowSettings.size, sdlWindowPtr);
 
+    windowImplPtr->setMinimumSize(windowSettings.minimumSize);
+    windowImplPtr->setMaximumSize(windowSettings.maximumSize);
+    windowImplPtr->setMouseCursorVisible(windowSettings.mouseCursorVisible);
+    windowImplPtr->setKeyRepeatEnabled(windowSettings.keyRepeatEnabled);
+    windowImplPtr->setJoystickThreshold(windowSettings.joystickThreshold);
+
     return base::UniquePtr<SDLWindowImpl>{windowImplPtr};
 }
 
@@ -624,11 +628,9 @@ base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(const WindowHandle handle)
         return nullptr;
     }
 
-    auto* windowImplPtr = new SDLWindowImpl{"handle",
-                                            static_cast<void*>(sdlWindowPtr),
-                                            /* isExternal */ true};
-
-    return base::UniquePtr<SDLWindowImpl>{windowImplPtr};
+    return base::UniquePtr<SDLWindowImpl>{new SDLWindowImpl{"handle",
+                                                            static_cast<void*>(sdlWindowPtr),
+                                                            /* isExternal */ true}};
 }
 
 
