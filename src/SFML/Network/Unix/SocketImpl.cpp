@@ -19,8 +19,6 @@
 #include "SFML/Base/SizeT.hpp"
 
 #include <arpa/inet.h>
-#include <asm-generic/socket.h>
-#include <bits/types/struct_timeval.h>
 #include <fcntl.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -28,6 +26,11 @@
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <unistd.h>
+
+#ifdef __CLANGD__
+    #include <asm-generic/socket.h>
+    #include <bits/types/struct_timeval.h>
+#endif
 
 #include <cerrno>
 
