@@ -100,6 +100,50 @@ public:
     ImGuiContext& operator=(ImGuiContext&&) noexcept;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Make this context's underlying Dear ImGui context the current one
+    ///
+    /// Equivalent to calling `ImGui::SetCurrentContext` on the
+    /// underlying Dear ImGui context. The other member functions of
+    /// this class call this automatically before interacting with
+    /// Dear ImGui, so it only needs to be invoked manually before
+    /// direct `ImGui::*` calls when more than one `sf::ImGuiContext`
+    /// instance is alive.
+    ///
+    ////////////////////////////////////////////////////////////
+    void setCurrent();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Check whether this context's underlying Dear ImGui context is the current one
+    ///
+    /// \return `true` if `ImGui::GetCurrentContext()` matches the
+    ///         underlying Dear ImGui context, `false` otherwise
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isCurrent() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the underlying Dear ImGui context
+    ///
+    /// Returns the opaque `ImGuiContext*` owned by this instance, for
+    /// interoperability with code that needs to call Dear ImGui APIs
+    /// taking an explicit context (e.g. `ImGui::SetCurrentContext`).
+    /// The returned pointer is owned by this instance and remains
+    /// valid until the `sf::ImGuiContext` is destroyed.
+    ///
+    /// \return Pointer to the underlying `ImGuiContext`, never null
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] void* getNativeImGuiContext();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the underlying Dear ImGui context (const overload)
+    ///
+    /// \return Pointer to the underlying `ImGuiContext`, never null
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] const void* getNativeImGuiContext() const;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Set which joystick provides input to ImGui's gamepad navigation
     ///
     /// By default, the first connected joystick (if any) is used.
@@ -107,30 +151,6 @@ public:
     /// joystick is selected automatically.
     ///
     /// \param joystickId Index of the joystick to use, in `[0, Joystick::MaxCount)`
-    ///
-    ////////////////////////////////////////////////////////////
-    void setCurrent();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isCurrent() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] void* getNativeImGuiContext();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] const void* getNativeImGuiContext() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
     void setActiveJoystickId(unsigned int joystickId);
