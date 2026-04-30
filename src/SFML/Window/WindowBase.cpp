@@ -39,11 +39,6 @@ WindowBase::WindowBase(base::PassKey<WindowBase>&&, base::UniquePtr<priv::SDLWin
 {
     SFML_BASE_ASSERT(m_impl != nullptr);
 
-    // Setup default behaviors (to get a consistent behavior across different implementations)
-    setVisible(true);
-    setMouseCursorVisible(true);
-    setKeyRepeatEnabled(true);
-
     // Get and cache the initial size of the window
     m_size = m_impl->getSize();
 }
