@@ -2,6 +2,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "ExampleUtils/SfexCoroutine.hpp"
+#include "ExampleUtils/SfexYield.hpp"
 
 #include "SFML/Graphics/CircleShapeData.hpp"
 #include "SFML/Graphics/Color.hpp"
@@ -21,7 +22,6 @@
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/String.hpp"
-#include "SFML/Base/Variant.hpp"
 
 
 namespace
@@ -31,22 +31,9 @@ constexpr sf::Vec2f worldSize{800.f, 600.f};
 
 
 ////////////////////////////////////////////////////////////
-// clang-format off
-struct NextFrame { };
-struct Wait      { float seconds; };
-struct Done      { };
-// clang-format on
-
-
-////////////////////////////////////////////////////////////
-using YieldBaseVariant = sf::base::Variant<NextFrame, Wait, Done>;
-
-struct Yield : YieldBaseVariant
-{
-    /* implicit */ Yield(const auto& x) noexcept : YieldBaseVariant{x}
-    {
-    }
-};
+using sfex::Done;
+using sfex::NextFrame;
+using sfex::Wait;
 
 
 ////////////////////////////////////////////////////////////
@@ -97,7 +84,7 @@ struct Cutscene : sfex::Coroutine
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Yield operator()(World& world)
+    [[nodiscard]] sfex::Yield operator()(World& world)
     {
         SFEX_CO_BEGIN;
 
@@ -166,6 +153,7 @@ struct Cutscene : sfex::Coroutine
 
 ////////////////////////////////////////////////////////////
 /// Main
+///
 ////////////////////////////////////////////////////////////
 int main()
 {

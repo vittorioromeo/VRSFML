@@ -2,7 +2,10 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "ExampleUtils/Easing.hpp"
+#include "ExampleUtils/MathUtils.hpp"
 #include "ExampleUtils/Scaling.hpp"
+#include "ExampleUtils/SfexCoroutine.hpp"
+#include "ExampleUtils/SfexYield.hpp"
 
 #include "SFML/Graphics/CircleShapeData.hpp"
 #include "SFML/Graphics/Color.hpp"
@@ -11,6 +14,7 @@
 #include "SFML/Graphics/RectangleShapeData.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/TextData.hpp"
+#include "SFML/Graphics/TextUtils.hpp"
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
@@ -22,11 +26,11 @@
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Algorithm/SwapAndPop.hpp"
-#include "SFML/Base/Builtin/Unreachable.hpp"
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -36,205 +40,41 @@
 #include "SFML/Base/Vector.hpp"
 
 
-#if defined(__clang__)
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wc2y-extensions"
-    #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
-#elif defined(__GNUC__)
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
-#endif
-
-
 namespace
 {
-// ============================================================================
-// CORE: SFEX COROUTINE STATE + MACROS
-// ============================================================================
-
-struct SfexCoroutine
-{
-    int state = 0;
-};
+////////////////////////////////////////////////////////////
+constexpr sf::Vec2f worldSize{800.f, 600.f};
 
 
-#define SFEX_CO_BEGIN                          \
-    static const int _sfex_base = __COUNTER__; \
-                                               \
-    switch (state)                             \
-    {                                          \
-        case 0:;
-
-#define SFEX_CO_YIELD(value)                    \
-    do                                          \
-    {                                           \
-        state = (__COUNTER__ + 1) - _sfex_base; \
-        return value;                           \
-                                                \
-        case (__COUNTER__ - _sfex_base):;       \
-    } while (0)
-
-#define SFEX_CO_RETURN(value) \
-    do                        \
-    {                         \
-        state = 0;            \
-        return value;         \
-    } while (0)
-
-#define SFEX_CO_END \
-    }               \
-                    \
-    SFML_BASE_UNREACHABLE();
-
-#define SFEX_CO_AWAIT(sub_call)                 \
-    do                                          \
-    {                                           \
-        state = (__COUNTER__ + 1) - _sfex_base; \
-                                                \
-        case (__COUNTER__ - _sfex_base):        \
-        {                                       \
-            auto _r = (sub_call);               \
-            if (!isFinished(_r))                \
-                return _r;                      \
-        }                                       \
-    } while (0)
-
-#define SFEX_CO_WAIT_UNTIL(yield_value, cond) \
-    while (!(cond))                           \
-    {                                         \
-        SFEX_CO_YIELD(yield_value);           \
-    }
-
-#define SFEX_CO_WAIT_WHILE(yield_value, cond) \
-    while (cond)                              \
-    {                                         \
-        SFEX_CO_YIELD(yield_value);           \
-    }
+////////////////////////////////////////////////////////////
+using sfex::Done;
+using sfex::NextFrame;
+using sfex::Wait;
+using sfex::Yield;
 
 
-// ============================================================================
-// PARALLEL COMPOSITION
-// ============================================================================
-
-template <typename Time = float>
-struct SfexParallelMixin
-{
-    Time parallelWait{};
-    bool parallelDone = false;
-};
-
-template <typename Child, typename Time, typename... CallArgs>
-[[nodiscard]] bool tickInParallel(Child& child, Time dt, CallArgs&&... args)
-{
-    if (child.parallelDone)
-        return false;
-
-    if (child.parallelWait > Time{})
-    {
-        child.parallelWait -= dt;
-        if (child.parallelWait < Time{})
-            child.parallelWait = Time{};
-        return true;
-    }
-
-    yieldApply(child(static_cast<CallArgs&&>(args)...), child);
-    return !child.parallelDone;
-}
-
-template <typename Time, typename Ctx, typename... Children>
-[[nodiscard]] bool tickAllInParallel(Time dt, Ctx& ctx, Children&... children)
-{
-    for (const bool r : {tickInParallel(children, dt, ctx)...})
-        if (r)
-            return false;
-
-    return true;
-}
-
-template <typename Time, typename Ctx, typename... Children>
-[[nodiscard]] bool tickAnyInParallel(Time dt, Ctx& ctx, Children&... children)
-{
-    for (const bool r : {tickInParallel(children, dt, ctx)...})
-        if (!r)
-            return true;
-
-    return false;
-}
-
-#define SFEX_CO_AWAIT_ALL(dt_expr, ctx_expr, next_yield, ...)  \
-    while (!tickAllInParallel(dt_expr, ctx_expr, __VA_ARGS__)) \
-    {                                                          \
-        SFEX_CO_YIELD(next_yield);                             \
-    }
-
-#define SFEX_CO_AWAIT_ANY(dt_expr, ctx_expr, next_yield, ...)  \
-    while (!tickAnyInParallel(dt_expr, ctx_expr, __VA_ARGS__)) \
-    {                                                          \
-        SFEX_CO_YIELD(next_yield);                             \
-    }
-
-
-// ============================================================================
-// YIELD TYPE
-// ============================================================================
-
-struct NextFrame
-{
-};
-
-struct Wait
-{
-    float seconds;
-};
-
-struct Done
-{
-};
-
-struct Yield : sf::base::Variant<NextFrame, Wait, Done>
-{
-    using Base = sf::base::Variant<NextFrame, Wait, Done>;
-
-    explicit(false) Yield(const auto& x) noexcept : Base{x}
-    {
-    }
-};
-
-[[nodiscard]] inline bool isFinished(const Yield& y) noexcept
-{
-    return y.is<Done>();
-}
-
-
-// ============================================================================
-// LERP + TWEEN
-// ============================================================================
-
-[[nodiscard, gnu::always_inline]] inline constexpr sf::Vec2f lerp(sf::Vec2f a, sf::Vec2f b, float t) noexcept
-{
-    return a + (b - a) * t;
-}
-
-[[nodiscard, gnu::always_inline]] inline constexpr float lerp(float a, float b, float t) noexcept
-{
-    return a + (b - a) * t;
-}
-
-
+////////////////////////////////////////////////////////////
 template <typename T>
 struct Tween
 {
+    ////////////////////////////////////////////////////////////
     float t = 0.f;
-    T     from{};
-    T     to{};
 
+    T from{};
+    T to{};
+
+
+    ////////////////////////////////////////////////////////////
     void start(T fromValue, T toValue)
     {
-        t    = 0.f;
+        t = 0.f;
+
         from = fromValue;
         to   = toValue;
     }
 
+
+    ////////////////////////////////////////////////////////////
     bool step(float dt, float duration)
     {
         if (t >= 1.f)
@@ -244,20 +84,16 @@ struct Tween
         return true;
     }
 
-    template <typename Easing>
-    [[nodiscard]] T sample(Easing&& easing) const
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] T sample(auto&& easingFn) const
     {
-        return lerp(from, to, easing(t));
+        return blend(from, to, easingFn(t));
     }
 };
 
 
-// ============================================================================
-// GAME ENTITIES
-// ============================================================================
-
-constexpr sf::Vec2f worldSize{800.f, 600.f};
-
+////////////////////////////////////////////////////////////
 struct Bullet
 {
     sf::Vec2f pos;
@@ -266,6 +102,8 @@ struct Bullet
     sf::Color color  = sf::Color::White;
 };
 
+
+////////////////////////////////////////////////////////////
 struct PlayerBullet
 {
     sf::Vec2f pos;
@@ -274,6 +112,8 @@ struct PlayerBullet
     bool      dead   = false;
 };
 
+
+////////////////////////////////////////////////////////////
 struct Player
 {
     sf::Vec2f pos           = {worldSize.x * 0.5f, worldSize.y - 60.f};
@@ -283,8 +123,12 @@ struct Player
     float     shootCooldown = 0.f;
 };
 
+
+////////////////////////////////////////////////////////////
 struct Boss
 {
+    ////////////////////////////////////////////////////////////
+    // game values
     sf::Vec2f homePos;
     sf::Vec2f pos;
     sf::Vec2f vel        = {0.f, 0.f};
@@ -292,44 +136,50 @@ struct Boss
     float     scale      = 1.f;
     sf::Color color      = {120u, 170u, 255u};
     sf::Color bodyTint   = {120u, 170u, 255u};
-    bool      weakPoint  = false;
     float     maxHp      = 120.f;
     float     hp         = 120.f;
     bool      alive      = true;
     float     deathTimer = 0.f;
 
-    // Per-boss coroutine scheduling.
+
+    ////////////////////////////////////////////////////////////
+    // per-boss coroutine scheduling
     float waitTimer = 0.f;
     float waitCarry = 0.f;
     float restartIn = 0.f;
+
+
+    ////////////////////////////////////////////////////////////
+    // flags to prevent conflicts between overlapping movement coroutines
+    bool dodging    = false;
+    bool busyMoving = false;
 };
 
 
-// ============================================================================
-// WORLD
-//
-// All the shared game state lives here. Note: the per-boss *scripts*
-// (`BossFight` instances) are NOT stored in `World` -- they live next to
-// `World` (in `main` and in `Snapshot`) as a parallel vector. Doing it
-// this way keeps `World` complete *before* the sub-coroutines are defined,
-// which in turn lets those sub-coroutines have plain (non-template)
-// `operator()(BossCtx)` methods instead of templated ones.
-// ============================================================================
-
+////////////////////////////////////////////////////////////
 struct World
 {
+    ////////////////////////////////////////////////////////////
     float dt   = 0.f;
     float time = 0.f;
 
+
+    ////////////////////////////////////////////////////////////
     Player player{};
 
+
+    ////////////////////////////////////////////////////////////
     sf::base::Vector<Boss>             bosses;
     sf::base::Vector<Bullet>           bullets;
     sf::base::Vector<PlayerBullet>     playerBullets;
     sf::base::Vector<sf::base::String> log;
 
+
+    ////////////////////////////////////////////////////////////
     static constexpr sf::base::SizeT maxLogLines = 22u;
 
+
+    ////////////////////////////////////////////////////////////
     void addLog(const char* who, const sf::base::String& what)
     {
         sf::base::String line = "[t=";
@@ -345,6 +195,8 @@ struct World
             log.erase(log.begin());
     }
 
+
+    ////////////////////////////////////////////////////////////
     void spawnBulletRing(sf::Vec2f source, int count, float speed, sf::Angle startAngle, sf::Color color, float bulletRadius)
     {
         const auto total = sf::radians(sf::base::tau);
@@ -360,6 +212,8 @@ struct World
         }
     }
 
+
+    ////////////////////////////////////////////////////////////
     void spawnAimedBullet(sf::Vec2f source, sf::Vec2f target, float speed, sf::Color color)
     {
         sf::Vec2f   dir = target - source;
@@ -375,8 +229,8 @@ struct World
         });
     }
 
-    // Populate `bosses` with the fixed starting roster. The caller is
-    // responsible for resizing any parallel `bossScripts` vector to match.
+
+    ////////////////////////////////////////////////////////////
     void initBosses()
     {
         bosses.clear();
@@ -390,8 +244,8 @@ struct World
 
         const Spawn spawns[]{
             {.home = {worldSize.x * 0.25f, 140.f}, .tint = {120u, 170u, 255u}, .maxHp = 100.f},
-            {.home = {worldSize.x * 0.50f, 100.f}, .tint = {255u, 180u, 120u}, .maxHp = 140.f},
-            {.home = {worldSize.x * 0.75f, 140.f}, .tint = {200u, 120u, 255u}, .maxHp = 100.f},
+            // {.home = {worldSize.x * 0.50f, 100.f}, .tint = {255u, 180u, 120u}, .maxHp = 140.f},
+            // {.home = {worldSize.x * 0.75f, 140.f}, .tint = {200u, 120u, 255u}, .maxHp = 100.f},
         };
 
         for (const Spawn& s : spawns)
@@ -409,7 +263,7 @@ struct World
 };
 
 
-// Context threaded through every coroutine.
+////////////////////////////////////////////////////////////
 struct BossCtx
 {
     World& world;
@@ -417,12 +271,9 @@ struct BossCtx
 };
 
 
-// ============================================================================
-// Game-layer glue
-// ============================================================================
-
-template <typename Child>
-void yieldApply(const Yield& y, Child& child)
+////////////////////////////////////////////////////////////
+// found via ADL by the coroutine system, used to apply yielded waits to the parallel child coroutines
+void yieldApply(const Yield& y, auto& child)
 {
     y.recursiveMatch( //
         [&](NextFrame) {},
@@ -430,20 +281,21 @@ void yieldApply(const Yield& y, Child& child)
         [&](Done) { child.parallelDone = true; });
 }
 
-struct BossCoroutine : SfexCoroutine, SfexParallelMixin<float>
+
+////////////////////////////////////////////////////////////
+struct BossCoroutine : sfex::Coroutine, sfex::CoroutineParallelMixin<float>
 {
 };
 
+
+////////////////////////////////////////////////////////////
 #define BOSS_CO_AWAIT_ALL(...)   SFEX_CO_AWAIT_ALL(ctx.world.dt, ctx, NextFrame{}, __VA_ARGS__)
 #define BOSS_CO_AWAIT_ANY(...)   SFEX_CO_AWAIT_ANY(ctx.world.dt, ctx, NextFrame{}, __VA_ARGS__)
 #define BOSS_CO_WAIT_UNTIL(cond) SFEX_CO_WAIT_UNTIL(NextFrame{}, cond)
 #define BOSS_CO_WAIT_WHILE(cond) SFEX_CO_WAIT_WHILE(NextFrame{}, cond)
 
 
-// ============================================================================
-// SUB-COROUTINES
-// ============================================================================
-
+////////////////////////////////////////////////////////////
 struct BulletRingBarrage : BossCoroutine
 {
     int       ringsToFire    = 3;
@@ -475,6 +327,7 @@ struct BulletRingBarrage : BossCoroutine
 };
 
 
+////////////////////////////////////////////////////////////
 struct DashAttack : BossCoroutine
 {
     sf::Vec2f dashTarget;
@@ -483,6 +336,9 @@ struct DashAttack : BossCoroutine
     Yield operator()(BossCtx ctx)
     {
         SFEX_CO_BEGIN;
+
+        BOSS_CO_WAIT_WHILE(ctx.self.dodging);
+        ctx.self.busyMoving = true;
 
         ctx.self.color = {255u, 80u, 80u};
         SFEX_CO_YIELD(Wait{0.50f});
@@ -507,34 +363,14 @@ struct DashAttack : BossCoroutine
         ctx.self.color = ctx.self.bodyTint;
         SFEX_CO_YIELD(Wait{0.40f});
 
+        ctx.self.busyMoving = false;
         SFEX_CO_RETURN(Done{});
         SFEX_CO_END;
     }
 };
 
 
-struct VulnerabilityWindow : BossCoroutine
-{
-    float duration = 1.0f;
-
-    Yield operator()(BossCtx ctx)
-    {
-        SFEX_CO_BEGIN;
-
-        ctx.self.weakPoint = true;
-        ctx.self.color     = {130u, 230u, 150u};
-        SFEX_CO_YIELD(Wait{duration});
-
-        ctx.self.weakPoint = false;
-        ctx.self.color     = ctx.self.bodyTint;
-        SFEX_CO_YIELD(Wait{0.25f});
-
-        SFEX_CO_RETURN(Done{});
-        SFEX_CO_END;
-    }
-};
-
-
+////////////////////////////////////////////////////////////
 struct AimedVolley : BossCoroutine
 {
     int   shotsToFire = 5;
@@ -558,6 +394,7 @@ struct AimedVolley : BossCoroutine
 };
 
 
+////////////////////////////////////////////////////////////
 struct SlamAttack : BossCoroutine
 {
     sf::Vec2f windupOffset = {0.f, -80.f};
@@ -568,6 +405,9 @@ struct SlamAttack : BossCoroutine
     Yield operator()(BossCtx ctx)
     {
         SFEX_CO_BEGIN;
+
+        BOSS_CO_WAIT_WHILE(ctx.self.dodging);
+        ctx.self.busyMoving = true;
 
         ctx.self.color = {255u, 220u, 60u};
         tween.start(ctx.self.pos, ctx.self.homePos + windupOffset);
@@ -596,12 +436,14 @@ struct SlamAttack : BossCoroutine
             SFEX_CO_YIELD(NextFrame{});
         }
 
+        ctx.self.busyMoving = false;
         SFEX_CO_RETURN(Done{});
         SFEX_CO_END;
     }
 };
 
 
+////////////////////////////////////////////////////////////
 struct PulseAttack : BossCoroutine
 {
     int   pulses      = 3;
@@ -650,6 +492,7 @@ struct PulseAttack : BossCoroutine
 };
 
 
+////////////////////////////////////////////////////////////
 struct SweepAttack : BossCoroutine
 {
     float sweepRange    = 120.f;
@@ -662,6 +505,9 @@ struct SweepAttack : BossCoroutine
     Yield operator()(BossCtx ctx)
     {
         SFEX_CO_BEGIN;
+
+        BOSS_CO_WAIT_WHILE(ctx.self.dodging);
+        ctx.self.busyMoving = true;
 
         ctx.self.color = {180u, 140u, 255u};
         tween.start(ctx.self.pos, ctx.self.homePos + sf::Vec2f{-sweepRange, 0.f});
@@ -687,13 +533,15 @@ struct SweepAttack : BossCoroutine
             SFEX_CO_YIELD(NextFrame{});
         }
 
-        ctx.self.color = ctx.self.bodyTint;
+        ctx.self.color      = ctx.self.bodyTint;
+        ctx.self.busyMoving = false;
         SFEX_CO_RETURN(Done{});
         SFEX_CO_END;
     }
 };
 
 
+////////////////////////////////////////////////////////////
 struct Timer : BossCoroutine
 {
     float duration = 1.f;
@@ -708,23 +556,98 @@ struct Timer : BossCoroutine
 };
 
 
-// ============================================================================
-// TOP-LEVEL BOSS FIGHT
-// ============================================================================
-
-struct BossFight : BossCoroutine
+////////////////////////////////////////////////////////////
+struct DodgeWatcher : BossCoroutine
 {
-    BulletRingBarrage   barrage;
-    DashAttack          dash;
-    VulnerabilityWindow window;
-    AimedVolley         volley;
-    SlamAttack          slam;
-    PulseAttack         pulse;
-    SweepAttack         sweep;
-    Timer               timer;
-    BulletRingBarrage   parallelBarrage;
-    SweepAttack         parallelSweep;
-    AimedVolley         parallelVolley;
+    float xThreshold = 45.f;
+
+    [[nodiscard]] bool playerIsUnderneath(BossCtx ctx) const
+    {
+        const float dx = sf::base::fabs(ctx.world.player.pos.x - ctx.self.pos.x);
+        return ctx.world.player.alive && !ctx.self.busyMoving && (dx <= xThreshold);
+    }
+
+    Yield operator()(BossCtx ctx)
+    {
+        SFEX_CO_BEGIN;
+
+        BOSS_CO_WAIT_UNTIL(playerIsUnderneath(ctx));
+        SFEX_CO_RETURN(Done{});
+
+        SFEX_CO_END;
+    }
+};
+
+
+////////////////////////////////////////////////////////////
+struct DodgeMove : BossCoroutine
+{
+    Tween<sf::Vec2f> tween{};
+
+    Yield operator()(BossCtx ctx)
+    {
+        SFEX_CO_BEGIN;
+        ctx.self.dodging = true;
+        ctx.self.color   = {255u, 255u, 100u}; // flash yellow
+
+        tween.start(ctx.self.pos, ctx.self.pos + sf::Vec2f{ctx.world.player.pos.x > ctx.self.pos.x ? 135.f : -135.f, 0.f});
+        while (tween.step(ctx.world.dt, 0.25f))
+        {
+            ctx.self.pos = tween.sample(easeOutQuint);
+            SFEX_CO_YIELD(NextFrame{});
+        }
+
+        ctx.self.color   = ctx.self.bodyTint;
+        ctx.self.dodging = false;
+        SFEX_CO_RETURN(Done{});
+        SFEX_CO_END;
+    }
+};
+
+
+////////////////////////////////////////////////////////////
+struct DodgeSupervisor : BossCoroutine
+{
+    DodgeWatcher watcher{};
+    DodgeMove    dodge{};
+
+    Yield operator()(BossCtx ctx)
+    {
+        SFEX_CO_BEGIN;
+
+        while (true)
+        {
+            watcher = {};
+            SFEX_CO_AWAIT(watcher(ctx));
+
+            ctx.world.addLog("BOSS", "player is underneath! dodging...");
+            dodge = {};
+            SFEX_CO_AWAIT(dodge(ctx));
+
+            // Edge-trigger: don't re-arm until the player has cleared the
+            // zone. Otherwise we'd dodge again next frame whenever the
+            // player tracks with us.
+            BOSS_CO_WAIT_WHILE(watcher.playerIsUnderneath(ctx));
+        }
+
+        SFEX_CO_END;
+    }
+};
+
+
+////////////////////////////////////////////////////////////
+struct BossPhases : BossCoroutine
+{
+    BulletRingBarrage barrage;
+    DashAttack        dash;
+    AimedVolley       volley;
+    SlamAttack        slam;
+    PulseAttack       pulse;
+    SweepAttack       sweep;
+    Timer             timer;
+    BulletRingBarrage parallelBarrage;
+    SweepAttack       parallelSweep;
+    AimedVolley       parallelVolley;
 
     Yield operator()(BossCtx ctx)
     {
@@ -805,11 +728,6 @@ struct BossFight : BossCoroutine
         };
         SFEX_CO_AWAIT(dash(ctx));
 
-        window = VulnerabilityWindow{
-            .duration = 0.80f,
-        };
-        SFEX_CO_AWAIT(window(ctx));
-
         // ----- PHASE 6: aimed volley -----
         volley = AimedVolley{
             .shotsToFire = 6,
@@ -835,20 +753,29 @@ struct BossFight : BossCoroutine
 };
 
 
-// ============================================================================
-// SNAPSHOT
-//
-// Scripts are stored alongside `World` (not inside it), so the snapshot
-// captures both pieces explicitly. Remains flat and copyable.
-// ============================================================================
+////////////////////////////////////////////////////////////
+struct BossFight : BossCoroutine
+{
+    BossPhases      phases;
+    DodgeSupervisor supervisor;
 
+    Yield operator()(BossCtx ctx)
+    {
+        SFEX_CO_BEGIN;
+
+        BOSS_CO_AWAIT_ANY(phases, supervisor);
+        SFEX_CO_RETURN(Done{});
+
+        SFEX_CO_END;
+    }
+};
+
+
+////////////////////////////////////////////////////////////
 struct Snapshot
 {
-    static constexpr sf::base::U32 currentVersion = 1u;
-
     World                       world;
     sf::base::Vector<BossFight> bossScripts;
-    sf::base::U32               version = currentVersion;
 };
 
 } // namespace
@@ -856,6 +783,7 @@ struct Snapshot
 
 ////////////////////////////////////////////////////////////
 /// Main
+///
 ////////////////////////////////////////////////////////////
 int main()
 {
@@ -887,10 +815,12 @@ int main()
 
     const auto doRestart = [&]
     {
-        world = World{};
+        world = {};
         world.initBosses();
+
         bossScripts.clear();
         resetScriptsToBosses();
+
         world.addLog("SYSTEM", "=== RESTART ===");
     };
 
@@ -899,6 +829,7 @@ int main()
         bool requestRestart   = false;
         bool requestQuickSave = false;
         bool requestQuickLoad = false;
+
         while (const sf::base::Optional event = window.pollEvent())
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
@@ -960,12 +891,16 @@ int main()
             const float speed = focus ? 140.f : 320.f;
 
             sf::Vec2f move{0.f, 0.f};
+
             if (sf::Keyboard::isKeyPressed(K::Left))
                 move.x -= 1.f;
+
             if (sf::Keyboard::isKeyPressed(K::Right))
                 move.x += 1.f;
+
             if (sf::Keyboard::isKeyPressed(K::Up))
                 move.y -= 1.f;
+
             if (sf::Keyboard::isKeyPressed(K::Down))
                 move.y += 1.f;
 
@@ -974,6 +909,7 @@ int main()
                 const float invLen = 1.f / move.length();
                 move *= invLen;
             }
+
             world.player.pos += move * (speed * dt);
 
             const float m      = world.player.drawRadius;
@@ -981,13 +917,16 @@ int main()
             world.player.pos.y = sf::base::clamp(world.player.pos.y, m, worldSize.y - m);
 
             world.player.shootCooldown = sf::base::max(world.player.shootCooldown - dt, 0.f);
+
             if (sf::Keyboard::isKeyPressed(K::Z) && world.player.shootCooldown == 0.f)
             {
                 world.player.shootCooldown = 0.07f;
+
                 world.playerBullets.emplaceBack(PlayerBullet{
                     .pos = world.player.pos + sf::Vec2f{-9.f, -6.f},
                     .vel = {0.f, -900.f},
                 });
+
                 world.playerBullets.emplaceBack(PlayerBullet{
                     .pos = world.player.pos + sf::Vec2f{9.f, -6.f},
                     .vel = {0.f, -900.f},
@@ -1012,8 +951,10 @@ int main()
                     boss.restartIn = sf::base::max(boss.restartIn - dt, 0.f);
                     if (boss.restartIn == 0.f)
                     {
-                        script         = BossFight{};
-                        boss.waitCarry = 0.f;
+                        script          = BossFight{};
+                        boss.waitCarry  = 0.f;
+                        boss.dodging    = false;
+                        boss.busyMoving = false;
                     }
                 }
                 else if (boss.waitTimer > 0.f)
@@ -1055,7 +996,6 @@ int main()
                 boss.alive      = false;
                 boss.deathTimer = 1.5f;
                 boss.vel        = {0.f, 0.f};
-                boss.weakPoint  = false;
                 world.addLog("BOSS", "defeated!");
             }
             if (!boss.alive && boss.deathTimer > 0.f)
@@ -1145,19 +1085,6 @@ int main()
                 .outlineThickness = 2.f,
                 .radius           = bossDrawRadius,
             });
-
-            if (boss.weakPoint)
-            {
-                const float wpRadius = boss.radius * 0.45f;
-                drawCtx.draw(sf::CircleShapeData{
-                    .position         = boss.pos,
-                    .origin           = {wpRadius, wpRadius},
-                    .fillColor        = {255u, 255u, 120u},
-                    .outlineColor     = sf::Color::Red,
-                    .outlineThickness = 2.f,
-                    .radius           = wpRadius,
-                });
-            }
         }
 
         for (const Bullet& b : world.bullets)
@@ -1221,6 +1148,7 @@ int main()
                     .outlineThickness = 1.f,
                     .size             = {barW, barH},
                 });
+
                 drawCtx.draw(sf::RectangleShapeData{
                     .position  = {barX + 1.f, barY + 1.f},
                     .fillColor = boss.bodyTint,
@@ -1248,19 +1176,21 @@ int main()
         const auto drawCenteredText = [&](const sf::base::String& str, float y, sf::Color col, unsigned size)
         {
             drawCtx.draw(font,
-                         sf::TextData{
-                             .position      = {worldSize.x * 0.5f - static_cast<float>(str.size()) * 0.25f * size, y},
-                             .string        = str,
-                             .characterSize = size,
-                             .fillColor     = col,
-                             .outlineColor  = sf::Color::Black,
-                             .outlineThickness = 2.f,
-                         });
+                         sf::TextUtils::anchored(font,
+                                                 sf::TextData{
+                                                     .position         = {worldSize.x * 0.5f, y},
+                                                     .string           = str,
+                                                     .characterSize    = size,
+                                                     .fillColor        = col,
+                                                     .outlineColor     = sf::Color::Black,
+                                                     .outlineThickness = 2.f,
+                                                 },
+                                                 {0.5f, 0.f}));
         };
 
         if (!world.player.alive)
         {
-            drawCenteredText("YOU DIED", worldSize.y * 0.4f, {255u, 80u, 80u}, 36u);
+            drawCenteredText("GAME OVER", worldSize.y * 0.4f, {255u, 80u, 80u}, 36u);
             drawCenteredText("Press R to restart", worldSize.y * 0.4f + 48.f, sf::Color::White, 18u);
         }
         else if (aliveCount == 0)
@@ -1271,7 +1201,7 @@ int main()
                     anyStillDying = true;
             if (!anyStillDying)
             {
-                drawCenteredText("BOSSES DEFEATED", worldSize.y * 0.4f, {120u, 255u, 140u}, 36u);
+                drawCenteredText("YOU WIN", worldSize.y * 0.4f, {120u, 255u, 140u}, 36u);
                 drawCenteredText("Press R to restart", worldSize.y * 0.4f + 48.f, sf::Color::White, 18u);
             }
         }
