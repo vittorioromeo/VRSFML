@@ -23,6 +23,7 @@ examples=(
     particles
     rockets
     shader
+    showcase
     sound_effects
     stencil
     tennis
