@@ -13,6 +13,9 @@ examples=(
     batching_benchmark
     block_puzzle
     bubble_idle
+    coroutine
+    coroutine_dialogue
+    coroutine_tutorial
     event_handling
     # ftp
     # http
