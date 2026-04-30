@@ -534,7 +534,7 @@ inline auto createTextGeometryAndGetBounds(
 /// \code
 /// textData.origin   = sf::TextUtils::computeAnchorOrigin(font, textData, {0.5f, 0.f});
 /// textData.position = {centerX, y};
-/// drawCtx.draw(font, textData);
+/// rt.draw(font, textData);
 /// \endcode
 ///
 /// Unlike `bounds.size * anchor`, this also accounts for `bounds.position`,
@@ -544,6 +544,32 @@ inline auto createTextGeometryAndGetBounds(
 [[nodiscard]] inline Vec2f computeAnchorOrigin(const Font& font, const TextData& textData, const Vec2f anchor)
 {
     return precomputeTextLocalBounds(font, textData).getAnchorPoint(anchor);
+}
+
+
+////////////////////////////////////////////////////////////
+/// \brief Return a copy of `textData` with its `origin` set to anchor it at `textData.position`
+///
+/// Convenience wrapper around `computeAnchorOrigin` that lets the caller draw
+/// anchored text in a single statement:
+///
+/// \code
+/// rt.draw(font, sf::TextUtils::anchored(font, {
+///     .position      = {centerX, y},
+///     .string        = "...",
+///     .characterSize = 24u,
+/// }, {0.5f, 0.f}));
+/// \endcode
+///
+/// To inset the text from its anchor by some pixel amount, fold the offset
+/// into `position` (subtracting from `position` is equivalent to adding to
+/// `origin`, since rendering uses `position - origin`).
+///
+////////////////////////////////////////////////////////////
+[[nodiscard]] inline TextData anchored(const Font& font, TextData textData, const Vec2f anchor)
+{
+    textData.origin = computeAnchorOrigin(font, textData, anchor);
+    return textData;
 }
 
 } // namespace sf::TextUtils

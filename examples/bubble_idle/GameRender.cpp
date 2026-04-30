@@ -229,10 +229,11 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
         for (sf::base::SizeT i = 0u; i < 3u; ++i)
         {
             demoInfoTextData.string = lines[i].data();
-            demoInfoTextData.origin = sf::TextUtils::computeAnchorOrigin(fontSuperBakery, demoInfoTextData, {1.f, 0.f});
             demoInfoTextData.position = demoText.getGlobalBottomRight().addY(10.f + (static_cast<float>(i) * lineSpacing));
 
-            rtGame.draw(fontSuperBakery, demoInfoTextData, {.view = scaledHUDView});
+            rtGame.draw(fontSuperBakery,
+                        sf::TextUtils::anchored(fontSuperBakery, demoInfoTextData, {1.f, 0.f}),
+                        {.view = scaledHUDView});
         }
     }
 

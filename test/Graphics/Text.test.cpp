@@ -356,6 +356,23 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             // {0.5, 0.5} -> center anchor (matches Rect2 helper)
             CHECK(sf::TextUtils::computeAnchorOrigin(font, td, {0.5f, 0.5f}) == bounds.getCenter());
         }
+
+        SECTION("anchored")
+        {
+            const sf::TextData td{.position = {100.f, 200.f}, .string = "Test", .characterSize = 18u};
+
+            // Returned TextData carries through every input field; only `origin` changes
+            const sf::TextData result = sf::TextUtils::anchored(font, td, {0.5f, 0.5f});
+            CHECK(result.position == td.position);
+            CHECK(result.string == td.string);
+            CHECK(result.characterSize == td.characterSize);
+
+            // The origin matches what `computeAnchorOrigin` would return for the same inputs
+            CHECK(result.origin == sf::TextUtils::computeAnchorOrigin(font, td, {0.5f, 0.5f}));
+
+            // Top-left anchor on an empty string yields the default-constructed origin
+            CHECK(sf::TextUtils::anchored(font, sf::TextData{}, {0.f, 0.f}).origin == sf::Vec2f{});
+        }
     }
 
     SECTION("Get bounds")
