@@ -93,19 +93,19 @@ Non-exhaustive table:
 
 | Standard Library   | VRSFML                  |
 |--------------------|-------------------------|
-| `std::optional`    | `sf::Base::Optional`    |
-| `std::unique_ptr`  | `sf::Base::UniquePtr`   |
-| `std::string_view` | `sf::Base::StringView`  |
-| `std::array`       | `sf::Base::Array`       |
-| `std::span`        | `sf::Base::Span`        |
+| `std::optional`    | `sf::base::Optional`    |
+| `std::unique_ptr`  | `sf::base::UniquePtr`   |
+| `std::string_view` | `sf::base::StringView`  |
+| `std::array`       | `sf::base::Array`       |
+| `std::span`        | `sf::base::Span`        |
 | `assert(...)`      | `SFML_BASE_ASSERT(...)` |
-| `std::uint8_t`     | `sf::Base::U8`          |
-| `std::uint16_t`    | `sf::Base::U16`         |
-| `std::uint32_t`    | `sf::Base::U32`         |
-| `std::int8_t`      | `sf::Base::I8`          |
-| `std::int16_t`     | `sf::Base::I16`         |
-| `std::int32_t`     | `sf::Base::I32`         |
-| `std::size_t`      | `sf::Base::SizeT`       |
+| `std::uint8_t`     | `sf::base::U8`          |
+| `std::uint16_t`    | `sf::base::U16`         |
+| `std::uint32_t`    | `sf::base::U32`         |
+| `std::int8_t`      | `sf::base::I8`          |
+| `std::int16_t`     | `sf::base::I16`         |
+| `std::int32_t`     | `sf::base::I32`         |
+| `std::size_t`      | `sf::base::SizeT`       |
 
 
 
@@ -184,7 +184,7 @@ int main()
 
 ## Optional-Based Factory Functions
 
-- Creation of objects/resources that can fail is done through factory functions returning an `sf::Base::Optional`.
+- Creation of objects/resources that can fail is done through factory functions returning an `sf::base::Optional`.
     - This ensures that the user decides how to handle the failure case.
 
 ```cpp
@@ -620,7 +620,7 @@ const float displayScale = sf::VideoModeUtils::getPrimaryDisplayContentScale();
 ## Windows Are Not Closable Anymore
 
 - `sf::Window::isOpen()` has been removed. A window object's lifetime dictates its existence.
-    - If you need to represent a window that might be closed or destroyed, wrap it in an `sf::Base::Optional<sf::RenderWindow>`.
+    - If you need to represent a window that might be closed or destroyed, wrap it in an `sf::base::Optional<sf::RenderWindow>`.
 
 ```cpp
 //
