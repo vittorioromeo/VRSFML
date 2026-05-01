@@ -1,15 +1,25 @@
+#include "StringifyOptionalUtil.hpp"
+#include "WindowUtil.hpp"
+
 #include "SFML/Window/Cursor.hpp"
 
-#include "SFML/System/Vec2.hpp"
+#include "SFML/Window/WindowContext.hpp"
+
+#include "SFML/System/Priv/Vec2Base.hpp"
+
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsDefaultConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <Doctest.hpp>
 
-#include <CommonTraits.hpp>
-#include <StringifyOptionalUtil.hpp>
-#include <WindowUtil.hpp>
-
 TEST_CASE("[Window] sf::Cursor" * doctest::skip(skipDisplayTests))
 {
+    auto windowContext = sf::WindowContext::create().value();
+
     SECTION("Type traits")
     {
         STATIC_CHECK(!SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::Cursor));

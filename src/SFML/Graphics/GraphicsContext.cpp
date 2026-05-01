@@ -7,8 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/GraphicsContext.hpp"
 
-#include "SFML/Config.hpp"
-
+#include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DefaultShader.hpp"
 #include "SFML/Graphics/Image.hpp"
 #include "SFML/Graphics/Shader.hpp"
@@ -20,6 +19,7 @@
 
 #include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
 
@@ -28,6 +28,8 @@
 
 namespace sf
 {
+namespace
+{
 ///////////////////////////////////////////////////////////
 struct GraphicsContextImpl
 {
@@ -35,8 +37,7 @@ struct GraphicsContextImpl
     Texture builtInWhiteDotTexture;
 };
 
-namespace
-{
+
 ///////////////////////////////////////////////////////////
 constinit sf::base::Optional<GraphicsContextImpl> installedGraphicsContext;
 constinit std::atomic<unsigned int>               graphicsContextRC{0u};
@@ -83,7 +84,7 @@ base::Optional<GraphicsContext> GraphicsContext::create()
     //
     // Install window context if necessary
     auto windowContext = WindowContext::isInstalled() ? WindowContext{base::PassKey<GraphicsContext>{}}
-                                                      : WindowContext::create().value();
+                                                      : WindowContext::create().value(); // TODO P1: propagate failure
 
     //
     // Initialize built-in shader

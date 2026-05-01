@@ -10,43 +10,43 @@
 
 
 // Windows' HWND is a type alias for struct HWND__*
-#if defined(SFML_SYSTEM_WINDOWS)
+#ifdef SFML_SYSTEM_WINDOWS
 struct HWND__; // NOLINT(bugprone-reserved-identifier)
 #endif
 
 namespace sf
 {
-#if defined(SFML_SYSTEM_WINDOWS)
+#ifdef SFML_SYSTEM_WINDOWS
 
 // Window handle is HWND (HWND__*) on Windows
 using WindowHandle = HWND__*;
 
-#elif defined(SFML_SYSTEM_LINUX_OR_BSD)
+#elifdef SFML_SYSTEM_LINUX_OR_BSD
 
 // Window handle is Window (unsigned long) on Unix - X11
 using WindowHandle = unsigned long;
 
-#elif defined(SFML_SYSTEM_MACOS)
+#elifdef SFML_SYSTEM_MACOS
 
 // Window handle is NSWindow or NSView (void*) on macOS - Cocoa
 using WindowHandle = void*;
 
-#elif defined(SFML_SYSTEM_IOS)
+#elifdef SFML_SYSTEM_IOS
 
 // Window handle is UIWindow (void*) on iOS - UIKit
 using WindowHandle = void*;
 
-#elif defined(SFML_SYSTEM_ANDROID)
+#elifdef SFML_SYSTEM_ANDROID
 
 // Window handle is ANativeWindow* (void*) on Android
 using WindowHandle = void*;
 
-#elif defined(SFML_SYSTEM_EMSCRIPTEN)
+#elifdef SFML_SYSTEM_EMSCRIPTEN
 
 // Window handle is string on Emscripten
 using WindowHandle = const char*;
 
-#elif defined(SFML_DOXYGEN)
+#elifdef SFML_DOXYGEN
 
 // Define type alias symbol so that Doxygen can attach some documentation to it
 using WindowHandle = "platform-specific";
@@ -65,10 +65,11 @@ using WindowHandle = "platform-specific";
 /// Platform        | Type
 /// ----------------|------------------------------------------------------------
 /// Windows         | \p HWND
-/// Linux/FreeBSD   | \p %Window
+/// Linux/FreeBSD   | \p %Window (X11)
 /// macOS           | either \p NSWindow* or \p NSView*, disguised as \p void*
-/// iOS             | \p UIWindow*
-/// Android         | \p ANativeWindow*
+/// iOS             | \p UIWindow*, disguised as \p void*
+/// Android         | \p ANativeWindow*, disguised as \p void*
+/// Emscripten      | CSS selector string (e.g. `"#canvas"`)
 ///
 /// \par macOS Specification
 ///

@@ -1,10 +1,15 @@
+#include "StringifyPathUtil.hpp"
+#include "StringifyStringViewUtil.hpp"
+
 #include "SFML/Network/Ftp.hpp"
 
-#include <Doctest.hpp>
+#include "SFML/Base/String.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
-#include <CommonTraits.hpp>
-#include <StringifyPathUtil.hpp>
-#include <StringifyStringViewUtil.hpp>
+#include <Doctest.hpp>
 
 
 TEST_CASE("[Network] sf::Ftp")

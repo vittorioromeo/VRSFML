@@ -6,8 +6,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Graphics/RenderTextureCreateSettings.hpp"
+
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
-#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Optional.hpp"
 
@@ -20,18 +22,42 @@ namespace sf
 class RenderWindow;
 class RenderTexture;
 class Event;
+struct View;
 struct WindowSettings;
 } // namespace sf
 
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Calculate a viewport that preserves the original aspect ratio.
+///
+/// Returns the normalized viewport rectangle needed to display
+/// content of aspect ratio `originalSize.x / originalSize.y` inside
+/// a target of size `newSize`, centered with letterboxing (top/bottom
+/// bars when the window is taller than the content) or pillarboxing
+/// (left/right bars when the window is wider than the content).
+/// When the aspect ratios match within a small tolerance, the full
+/// `[0, 1]` rectangle is returned.
+///
+/// \param newSize      The current size of the window or render target.
+/// \param originalSize The original size whose aspect ratio should be preserved.
+///
+/// \return A `sf::Rect2f` defining the viewport in normalized coordinates.
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] sf::Rect2f getAspectRatioAwareViewport(sf::Vec2f newSize, sf::Vec2f originalSize);
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Calculate the largest integer scale factor that fits the native resolution.
+///
+/// Returns the largest integer `n >= 1` such that
+/// `nativeResolution * n` fits inside `windowSize` along both axes.
+/// Used to drive pixel-perfect upscaling without fractional pixel
+/// distortion.
+///
+/// \param windowSize       The current size of the window or render target.
+/// \param nativeResolution The original, internal resolution of the content.
+///
+/// \return Integer scale factor as a float, always `>= 1`.
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] float getPixelPerfectScale(sf::Vec2f windowSize, sf::Vec2f nativeResolution);
@@ -54,18 +80,40 @@ struct WindowSettings;
 [[nodiscard]] sf::Rect2f getPixelPerfectViewport(sf::Vec2f windowSize, sf::Vec2f nativeResolution);
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Handles a window resize event without scaling the content.
+///
+/// Call this inside your event loop. If the event is a resize event,
+/// the view's size and center are updated to match the new window
+/// size, so one world unit keeps mapping to one pixel and any extra
+/// space simply reveals more of the world. The `originalSize`
+/// parameter is unused and only kept for signature symmetry with the
+/// other resize handlers.
+///
+/// \param event        The `sf::Event` to process.
+/// \param originalSize Unused, kept for signature symmetry.
+/// \param view         The `sf::View` to update.
+///
+/// \return True if the event was a resize event and was handled, false otherwise.
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool handleNonScalingResize(const sf::Event&           event,
-                                          [[maybe_unused]] sf::Vec2f originalSize,
-                                          sf::RenderWindow&          renderWindow);
+[[nodiscard]] bool handleNonScalingResize(const sf::Event& event, [[maybe_unused]] sf::Vec2f originalSize, sf::View& view);
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Handles a window resize event while preserving the original aspect ratio.
+///
+/// Call this inside your event loop. If the event is a resize event,
+/// the view is reset to display `originalSize` and its viewport is
+/// updated via `getAspectRatioAwareViewport` so the content stays
+/// centered with letterboxing or pillarboxing as needed.
+///
+/// \param event        The `sf::Event` to process.
+/// \param originalSize The original size whose aspect ratio should be preserved.
+/// \param view         The `sf::View` to update.
+///
+/// \return True if the event was a resize event and was handled, false otherwise.
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool handleAspectRatioAwareResize(const sf::Event& event, sf::Vec2f originalSize, sf::RenderWindow& renderWindow);
+[[nodiscard]] bool handleAspectRatioAwareResize(const sf::Event& event, sf::Vec2f originalSize, sf::View& view);
 
 ////////////////////////////////////////////////////////////
 /// \brief Handles a window resize event to maintain pixel-perfect scaling.
@@ -81,16 +129,37 @@ struct WindowSettings;
 /// \return True if the event was a resize event and was handled, false otherwise.
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool handlePixelPerfectResize(const sf::Event& event, sf::Vec2f nativeResolution, sf::RenderWindow& renderWindow);
+[[nodiscard]] bool handlePixelPerfectResize(const sf::Event& event, sf::Vec2f nativeResolution, sf::View& view);
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Create a render window scaled by the primary display's DPI content scale.
+///
+/// Multiplies `windowSettings.size` by the primary display's content
+/// scale (as reported by `sf::VideoModeUtils::getPrimaryDisplayContentScale`)
+/// before forwarding to `sf::RenderWindow::create`, so a window
+/// requested at e.g. 800x600 logical pixels comes out at 1600x1200
+/// on a 2x display.
+///
+/// \param windowSettings Window settings whose `size` is the logical, unscaled size.
+///
+/// \return The created render window, or empty on failure.
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] sf::base::Optional<sf::RenderWindow> makeDPIScaledRenderWindow(const sf::WindowSettings& windowSettings);
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Create a render texture, clamping anti-aliasing to the supported maximum.
+///
+/// Forwards to `sf::RenderTexture::create` after clamping
+/// `rtCreateSettings.antiAliasingLevel` to the value reported by
+/// `sf::RenderTexture::getMaximumAntiAliasingLevel`. A message is
+/// printed when clamping occurs.
+///
+/// \param resolution       Resolution of the render texture in pixels.
+/// \param rtCreateSettings Creation settings; `antiAliasingLevel` may be clamped.
+///
+/// \return The created render texture, or empty on failure.
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::base::Optional<sf::RenderTexture> makeAARenderTexture(sf::Vec2u resolution, unsigned int desiredAALevel);
+[[nodiscard]] sf::base::Optional<sf::RenderTexture> makeAARenderTexture(sf::Vec2u resolution,
+                                                                        sf::RenderTextureCreateSettings rtCreateSettings);

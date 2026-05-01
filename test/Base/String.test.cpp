@@ -5,6 +5,8 @@
 
 #include "SFML/Base/Algorithm/Copy.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Trait/IsCopyAssignable.hpp"
 #include "SFML/Base/Trait/IsCopyConstructible.hpp"
 #include "SFML/Base/Trait/IsMoveAssignable.hpp"
@@ -34,7 +36,7 @@ TEST_CASE("[Base] Base/String.hpp")
 {
     // A string guaranteed to be longer than the SSO buffer
     const char*    longStringLiteral = "This is a long string that will definitely not fit in SSO.";
-    constexpr auto maxSsoSize        = sf::base::String{}.capacity();
+    constexpr auto maxSsoSize        = sf::base::String::maxSsoSize;
 
     SECTION("Type traits")
     {
@@ -66,6 +68,14 @@ TEST_CASE("[Base] Base/String.hpp")
             STATIC_CHECK(str.capacity() == maxSsoSize);
             STATIC_CHECK(str.empty());
             STATIC_CHECK(str[0] == '\0');
+
+            // Default constructor is non-explicit: must work in copy-list-init contexts.
+            constexpr sf::base::String copyListInit = {};
+            STATIC_CHECK(copyListInit.isSso());
+            STATIC_CHECK(copyListInit.empty());
+
+            const auto returnsEmpty = []() -> sf::base::String { return {}; };
+            CHECK(returnsEmpty().empty());
         }
 
         SUBCASE("From const char*")
@@ -320,22 +330,27 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SUBCASE("append")
         {
-            sf::base::String str("Start");
+            // Build a string via two appends that stays within SSO
+            const sf::base::String partA(longStringLiteral, maxSsoSize / 3);
+            const sf::base::String partB(longStringLiteral, maxSsoSize / 3);
+            const sf::base::String partC(longStringLiteral, maxSsoSize / 3);
+
+            sf::base::String str(partA);
             CHECK(str.isSso());
 
-            str.append(sf::base::StringView("-Middle"));
+            str.append(sf::base::StringView(partB));
             CHECK(str.isSso());
-            CHECK(sf::base::StringView(str) == "Start-Middle");
 
-            str.append("-End");
+            str.append(sf::base::StringView(partC));
             CHECK(str.isSso());
-            CHECK(sf::base::StringView(str) == "Start-Middle-End");
+
+            const auto prefixSize = str.size();
 
             sf::base::String finalPart(longStringLiteral);
             str.append(finalPart);
             CHECK(!str.isSso());
-            CHECK(str.size() == 16 + finalPart.size());
-            CHECK(sf::base::StringView(str).substrByPosLen(16) == longStringLiteral);
+            CHECK(str.size() == prefixSize + finalPart.size());
+            CHECK(sf::base::StringView(str).substrByPosLen(prefixSize) == longStringLiteral);
         }
 
         SUBCASE("append2")
@@ -511,7 +526,7 @@ TEST_CASE("[Base] Base/String.hpp")
         // Sanity: capacity must be >= needed (so append won't reallocate)
         CHECK(s.capacity() == needed);
 
-        // Capture data pointer before append — if append reallocates, this will change.
+        // Capture data pointer before append -- if append reallocates, this will change.
         const char* dataBefore = s.data();
 
         // Perform self-append (source overlaps destination)
@@ -609,16 +624,17 @@ TEST_CASE("[Base] Base/String.hpp")
     {
         SECTION("s += s with SSO string (transitioning to heap)")
         {
-            // Choose a size that is SSO, but when doubled, is not.
-            // maxSsoSize is likely 23 on a 64-bit system, so 15 is a safe choice.
-            sf::base::String s = "sso-to-heap!!";
-            CHECK(s.size() == 13);
+            // Choose a size that fits SSO but when doubled exceeds maxSsoSize.
+            const auto       len = (maxSsoSize / 2) + 1;
+            sf::base::String s(longStringLiteral, len);
+            CHECK(s.size() == len);
             CHECK(s.isSso());
 
+            const sf::base::String expected = s + sf::base::StringView(s);
             s += s; // Self-append, should trigger grow() and use-after-free bug
 
-            CHECK(s.size() == 26);
-            CHECK(s == "sso-to-heap!!sso-to-heap!!");
+            CHECK(s.size() == len * 2);
+            CHECK(s == expected);
             CHECK(!s.isSso());
         }
 
@@ -662,6 +678,41 @@ TEST_CASE("[Base] Base/String.hpp")
             s.append(sf::base::StringView(s.data(), 3)); // Append "123"
 
             CHECK(s == "12345123");
+        }
+    }
+
+    SECTION("Self-Insert")
+    {
+        SECTION("insert with overlapping source and no reallocation")
+        {
+            sf::base::String s("abcdef");
+            s.reserve(12);
+
+            const char* const originalData = s.data();
+            s.insert(2, s.cStr() + 1);
+
+            CHECK(s.data() == originalData);
+            CHECK(s == "abbcdefcdef");
+        }
+
+        SECTION("insert with overlapping source and reallocation")
+        {
+            // Build a string that fits SSO but after insert(3, cStr()+2)
+            // produces a result of length (2*len - 2) that exceeds maxSsoSize.
+            const auto       len = (maxSsoSize / 2) + 2; // guarantees 2*len - 2 > maxSsoSize
+            sf::base::String s(longStringLiteral, len);
+            CHECK(s.isSso());
+
+            // Build the expected result: s[0..3] + s[2..] + s[3..]
+            sf::base::String expected;
+            expected.append(sf::base::StringView(s).substrByPosLen(0, 3));
+            expected.append(sf::base::StringView(s).substrByPosLen(2));
+            expected.append(sf::base::StringView(s).substrByPosLen(3));
+
+            s.insert(3, s.cStr() + 2);
+
+            CHECK(!s.isSso());
+            CHECK(s == expected);
         }
     }
 

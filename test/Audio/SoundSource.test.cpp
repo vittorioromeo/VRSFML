@@ -1,39 +1,47 @@
+#include "AudioUtil.hpp"
+#include "SystemUtil.hpp"
+
 #include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
+#include "SFML/Audio/Priv/MiniaudioSoundSource.hpp"
 #include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
 
+#include "SFML/System/Angle.hpp"
 #include "SFML/System/Path.hpp"
+#include "SFML/System/Vec3.hpp"
 
 #include "SFML/Base/FloatMax.hpp"
+#include "SFML/Base/Trait/HasVirtualDestructor.hpp"
+#include "SFML/Base/Trait/IsConstructible.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsMoveConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 
 #include <Doctest.hpp>
 
-#include <AudioUtil.hpp>
-#include <CommonTraits.hpp>
-#include <SystemUtil.hpp>
 
-
-#define SFML_TEST_CHECK_DEFAULT_VALUES(xSoundSource)                      \
-    CHECK((xSoundSource).getPitch() == 1.f);                              \
-    CHECK((xSoundSource).getPan() == 0.f);                                \
-    CHECK((xSoundSource).getVolume() == 1.f);                             \
-    CHECK((xSoundSource).isSpatializationEnabled());                      \
-    CHECK((xSoundSource).getPosition() == sf::Vec3{0.f, 0.f, 0.f});       \
-    CHECK((xSoundSource).getDirection() == sf::Vec3f{0.f, 0.f, -1.f});    \
-    CHECK((xSoundSource).getCone().innerAngle == sf::radians(6.283185f)); \
-    CHECK((xSoundSource).getCone().outerAngle == sf::radians(6.283185f)); \
-    CHECK((xSoundSource).getCone().outerGain == 1.f);                     \
-    CHECK((xSoundSource).getVelocity() == sf::Vec3f{});                   \
-    CHECK((xSoundSource).getDopplerFactor() == 1.f);                      \
-    CHECK((xSoundSource).getDirectionalAttenuationFactor() == 1.f);       \
-    CHECK(!(xSoundSource).isRelativeToListener());                        \
-    CHECK((xSoundSource).getMinDistance() == 1.f);                        \
-    CHECK((xSoundSource).getMaxDistance() == SFML_BASE_FLOAT_MAX);        \
-    CHECK((xSoundSource).getMinGain() == 0);                              \
-    CHECK((xSoundSource).getMaxGain() == 1.f);                            \
-    CHECK((xSoundSource).getAttenuation() == 1.f);                        \
+#define SFML_TEST_CHECK_DEFAULT_VALUES(xSoundSource)                   \
+    CHECK((xSoundSource).getPitch() == 1.f);                           \
+    CHECK((xSoundSource).getPan() == 0.f);                             \
+    CHECK((xSoundSource).getVolume() == 1.f);                          \
+    CHECK((xSoundSource).isSpatializationEnabled());                   \
+    CHECK((xSoundSource).getPosition() == sf::Vec3{0.f, 0.f, 0.f});    \
+    CHECK((xSoundSource).getDirection() == sf::Vec3f{0.f, 0.f, -1.f}); \
+    CHECK((xSoundSource).getCone().innerAngle == sf::Angle::Full);     \
+    CHECK((xSoundSource).getCone().outerAngle == sf::Angle::Full);     \
+    CHECK((xSoundSource).getCone().outerGain == 1.f);                  \
+    CHECK((xSoundSource).getVelocity() == sf::Vec3f{});                \
+    CHECK((xSoundSource).getDopplerFactor() == 1.f);                   \
+    CHECK((xSoundSource).getDirectionalAttenuationFactor() == 1.f);    \
+    CHECK(!(xSoundSource).isRelativeToListener());                     \
+    CHECK((xSoundSource).getMinDistance() == 1.f);                     \
+    CHECK((xSoundSource).getMaxDistance() == SFML_BASE_FLOAT_MAX);     \
+    CHECK((xSoundSource).getMinGain() == 0);                           \
+    CHECK((xSoundSource).getMaxGain() == 1.f);                         \
+    CHECK((xSoundSource).getAttenuation() == 1.f);                     \
     CHECK(!(xSoundSource).isPlaying());
 
 

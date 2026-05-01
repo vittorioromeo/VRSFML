@@ -5,11 +5,21 @@
 #include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/Scaling.hpp"
 
+#include "SFML/Graphics/BlendMode.hpp"
+#include "SFML/Graphics/RenderStates.hpp"
+
+#include "SFML/Window/Keyboard.hpp"
+
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Math/Fabs.hpp"
+
 #define SFEX_PROFILER_ENABLED
 #include "ExampleUtils/Profiler.hpp"
 #include "ExampleUtils/ProfilerImGui.hpp"
 
 #include "SFML/ImGui/ImGuiContext.hpp"
+#include "SFML/ImGui/IncludeImGui.hpp"
 
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/CurvedArrowShapeData.hpp"
@@ -62,9 +72,6 @@
 #include "SFML/Base/Variant.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#define IMGUI_DEFINE_MATH_OPERATORS
-#include <imgui.h>
-
 #include <initializer_list>
 
 // TODO P2:
@@ -76,7 +83,12 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-constexpr sf::Vec2f resolution{1024.f, 768.f};
+constexpr sf::Vec2f baseResolution{1024.f, 768.f};
+
+
+////////////////////////////////////////////////////////////
+constexpr float     zoomFactor        = 2.f;
+constexpr sf::Vec2f logicalResolution = baseResolution * zoomFactor;
 
 
 ////////////////////////////////////////////////////////////
@@ -548,13 +560,20 @@ private:
     ////////////////////////////////////////////////////////////
     sf::RenderWindow m_window = makeDPIScaledRenderWindow(
                                     {
-                                        .size           = resolution.toVec2u(),
+                                        .size           = baseResolution.toVec2u(),
                                         .title          = "Block Puzzle",
                                         .resizable      = true,
                                         .vsync          = true,
                                         .frametimeLimit = 144u,
                                     })
                                     .value();
+
+    ////////////////////////////////////////////////////////////
+    // For rendering logical game entities into the 2x render textures
+    sf::View m_worldView = sf::View::fromScreenSize(logicalResolution);
+
+    // For rendering the final texture to the window (this one gets aspect-ratio resized)
+    sf::View m_windowView = sf::View::fromScreenSize(logicalResolution);
 
     ////////////////////////////////////////////////////////////
     sf::Shader m_shader{[]
@@ -637,7 +656,7 @@ private:
     bool      m_editorObjectClockwise = false;
 
     //////////////////////////////////////////////////////////////
-    sf::TextureAtlas m_textureAtlas{sf::Texture::create({4096u, 4096u}, {.smooth = true}).value()};
+    sf::TextureAtlas m_textureAtlas{sf::Texture::create({4096u, 4096u}, {.smooth = false}).value()};
 
     ////////////////////////////////////////////////////////////
     const sf::Rect2f m_txrWhiteDotTrue = m_textureAtlas.add(sf::GraphicsContext::getBuiltInWhiteDotTexture()).value();
@@ -681,24 +700,24 @@ private:
     sf::CPUDrawableBatch m_dbObjectAttributes;
 
     //////////////////////////////////////////////////////////////
-    static inline constexpr float shadowTextureResMult = 1.f;
+    static inline constexpr float shadowTextureResMult = 0.25f;
 
     //////////////////////////////////////////////////////////////
     sf::RenderTexture m_rtSpriteBg{
-        sf::RenderTexture::create((m_window.getSize().toVec2f() * 2.f * shadowTextureResMult).toVec2u(),
-                                  {.antiAliasingLevel = m_aaLevel, .sRgbCapable = false})
+        sf::RenderTexture::create((logicalResolution.toVec2f() * shadowTextureResMult).toVec2u(),
+                                  {.antiAliasingLevel = m_aaLevel, .smooth = true})
             .value()};
 
     sf::RenderTexture m_rtSpriteBgTemp{
-        sf::RenderTexture::create((m_window.getSize().toVec2f() * 2.f * shadowTextureResMult).toVec2u(),
-                                  {.antiAliasingLevel = m_aaLevel, .sRgbCapable = false})
+        sf::RenderTexture::create((logicalResolution.toVec2f() * shadowTextureResMult).toVec2u(),
+                                  {.antiAliasingLevel = m_aaLevel, .smooth = true})
             .value()};
 
     sf::RenderTexture m_rtGame{
-        sf::RenderTexture::create(m_window.getSize() * 2u, {.antiAliasingLevel = m_aaLevel, .sRgbCapable = false}).value()};
+        sf::RenderTexture::create(logicalResolution.toVec2u(), {.antiAliasingLevel = m_aaLevel, .smooth = true}).value()};
 
     //////////////////////////////////////////////////////////////
-    sf::Texture m_txUndo        = sf::Texture::create(m_rtGame.getSize(), {.smooth = true}).value();
+    sf::Texture m_txUndo        = sf::Texture::create(logicalResolution.toVec2u(), {.smooth = true}).value();
     float       m_undoCountdown = 0.f;
 
     ////////////////////////////////////////////////////////////
@@ -1188,7 +1207,7 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] sf::Vec2f getMousePos() const noexcept
     {
-        return m_window.mapPixelToCoords(sf::Mouse::getPosition(m_window), m_window.getView()) * 2.f;
+        return m_windowView.screenToWorld(sf::Mouse::getPosition(m_window).toVec2f(), m_window.getSize().toVec2f());
     }
 
     ////////////////////////////////////////////////////////////
@@ -1270,7 +1289,7 @@ public:
                 if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                     return true;
 
-                if (handleAspectRatioAwareResize(*event, resolution, m_window))
+                if (handleAspectRatioAwareResize(*event, logicalResolution, m_windowView))
                     continue;
 
                 if (auto* eKeyPressed = event->getIf<sf::Event::KeyPressed>())
@@ -1373,6 +1392,7 @@ public:
                 SFEX_PROFILE_SCOPE("update");
 
                 m_time += deltaTimeMs;
+
                 m_shader.setUniform(m_ulTime, m_time);
 
                 if (!isLMBPressed())
@@ -1703,11 +1723,11 @@ public:
                                 m_dbObjectAttributes.add(sf::Sprite{
                                     .position = drawPosition,
                                     .scale = scaleMultiplier.rotatedBy(block.gravityDir.toVec2f().abs().angle()) * 0.6f,
-                                    .origin   = {64.f, 64.f},
-                                    .rotation = sf::radians(
-                                                    block.gravityDir.toVec2f().componentWiseMul({-1.f, 1.f}).angle().asRadians() +
-                                                    rotationRadians + arrowRotationRadians)
-                                                    .wrapUnsigned(),
+                                    .origin      = {64.f, 64.f},
+                                    .rotation    = sf::radians(
+                                                       block.gravityDir.toVec2f().componentWiseMul({-1.f, 1.f}).angle().asRadians() +
+                                                       rotationRadians + arrowRotationRadians)
+                                                       .wrapUnsigned(),
                                     .textureRect = m_txrGravArrow,
                                     .color       = getHueColor(kindToColor(blockImpl.kind).toHSL().hue),
                                 });
@@ -1841,11 +1861,6 @@ public:
 
                 m_window.setMouseCursor(*cursorToUse);
 
-                const sf::RenderStates states{
-                    .texture = &m_textureAtlas.getTexture(),
-                    .shader  = &m_shader,
-                };
-
                 for (int iX = 0; iX < 16; ++iX)
                     for (int iY = 0; iY < 16; ++iY)
                     {
@@ -1877,56 +1892,83 @@ public:
 
                 const auto updateShadowTexture = [&](const float blurRadius, const sf::base::U8 alpha, auto&&... toDraw)
                 {
-                    const auto downscaleSize = m_rtGame.getSize().toVec2f();
-
-                    sf::View downscaleView;
-                    downscaleView.size   = downscaleSize;
-                    downscaleView.center = downscaleSize / 2.f;
-
-                    // m_rtSpriteBg.setView(downscaleView);
+                    const float invScale = 1.f / shadowTextureResMult;
 
                     m_rtSpriteBg.clear(sf::Color::Transparent);
+
                     (...,
-                     m_rtSpriteBg.draw(toDraw, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shaderSpriteAlpha}));
+                     m_rtSpriteBg.draw(toDraw,
+                                       {
+                                           .view    = m_worldView,
+                                           .texture = &m_textureAtlas.getTexture(),
+                                           .shader  = &m_shaderSpriteAlpha,
+                                       }));
+
                     m_rtSpriteBg.display();
 
                     m_shaderBlurQuad.setUniform(m_ulBlurQuadBlurDirection, sf::Vec2f{1.f, 0.f});
-                    m_shaderBlurQuad.setUniform(m_ulBlurQuadRadiusPixels, blurRadius);
+                    m_shaderBlurQuad.setUniform(m_ulBlurQuadRadiusPixels, blurRadius * shadowTextureResMult);
 
                     m_rtSpriteBgTemp.clear(sf::Color::Transparent);
-                    m_rtSpriteBgTemp.draw(m_rtSpriteBg.getTexture(), {.shader = &m_shaderBlurQuad});
+                    m_rtSpriteBgTemp.draw(m_rtSpriteBg.getTexture(),
+                                          {.scale = {invScale, invScale}},
+                                          {.view = m_worldView, .shader = &m_shaderBlurQuad});
                     m_rtSpriteBgTemp.display();
+
 
                     m_shaderBlurQuad.setUniform(m_ulBlurQuadBlurDirection, sf::Vec2f{0.f, 1.f});
 
                     m_rtSpriteBg.clear(sf::Color::Transparent);
-                    m_rtSpriteBg.draw(m_rtSpriteBgTemp.getTexture(), {.shader = &m_shaderBlurQuad});
+                    m_rtSpriteBg.draw(m_rtSpriteBgTemp.getTexture(),
+                                      {.scale = {invScale, invScale}},
+                                      {.view = m_worldView, .shader = &m_shaderBlurQuad});
                     m_rtSpriteBg.display();
 
-                    m_shaderShadow.setUniform(m_ulShadowColor, sf::Color::blackMask(alpha).toVec4<sf::Glsl::Vec4>());
+                    m_shaderShadow.setUniform(m_ulShadowColor, sf::Color::blackWithAlpha(alpha).toVec4<sf::Glsl::Vec4>());
                 };
 
                 {
-                    SFEX_PROFILE_SCOPE("shadow pass");
+                    SFEX_PROFILE_SCOPE("rtGame");
+
+                    const float invScale = 1.f / shadowTextureResMult;
+
+                    const sf::RenderStates states{
+                        .view    = m_worldView,
+                        .texture = &m_textureAtlas.getTexture(),
+                        .shader  = &m_shader,
+                    };
+
+                    m_rtGame.flush();
+
+                    m_shader.setUniform(m_ulWaveEnabled, true);
 
                     m_rtGame.clear();
-                    m_shader.setUniform(m_ulWaveEnabled, true);
                     m_rtGame.draw(m_txLava,
                                   {.position = {0.f, 0.f}, .scale = {2.f, 2.f}, .color = getLavaColor()},
-                                  {.shader = &m_shader});
+                                  {.view = m_worldView, .shader = &m_shader});
+
                     m_rtGame.flush();
+
                     m_shader.setUniform(m_ulWaveEnabled, false);
+
                     m_rtGame.draw(m_dbBackground, states);
                     m_rtGame.draw(m_dbLavaParticles,
                                   {
                                       .blendMode = sf::BlendAdd,
+                                      .view      = m_worldView,
                                       .texture   = &m_textureAtlas.getTexture(),
                                       .shader    = &m_shader,
                                   });
                     m_rtGame.draw(m_dbTile, states);
 
-                    updateShadowTexture(/* blurRadius */ 10.f, /* alpha */ 128u, m_dbWall, m_dbObject);
-                    m_rtGame.draw(m_rtSpriteBg.getTexture(), {.position = {8.f, 8.f}}, {.shader = &m_shaderShadow});
+                    {
+                        SFEX_PROFILE_SCOPE("shadow pass 1");
+
+                        updateShadowTexture(/* blurRadius */ 10.f, /* alpha */ 128u, m_dbWall, m_dbObject);
+                        m_rtGame.draw(m_rtSpriteBg.getTexture(),
+                                      {.position = {8.f, 8.f}, .scale = {invScale, invScale}},
+                                      {.view = m_worldView, .shader = &m_shaderShadow});
+                    }
 
                     m_rtGame.draw(m_dbWall, states);
                     m_rtGame.draw(m_dbObject, states);
@@ -1934,42 +1976,49 @@ public:
                     m_rtGame.draw(m_dbLavaParticlesTop,
                                   {
                                       .blendMode = sf::BlendAdd,
+                                      .view      = m_worldView,
                                       .texture   = &m_textureAtlas.getTexture(),
                                       .shader    = &m_shader,
                                   });
 
-                    updateShadowTexture(/* blurRadius */ 5.f, /* alpha */ 196u, m_dbObjectAttributes);
-                    m_rtGame.draw(m_rtSpriteBg.getTexture(), {.position = {4.f, 4.f}}, {.shader = &m_shaderShadow});
+                    {
+                        SFEX_PROFILE_SCOPE("shadow pass 2");
+
+                        updateShadowTexture(/* blurRadius */ 5.f, /* alpha */ 196u, m_dbObjectAttributes);
+                        m_rtGame.draw(m_rtSpriteBg.getTexture(),
+                                      {.position = {4.f, 4.f}, .scale = {invScale, invScale}},
+                                      {
+                                          .view   = m_worldView,
+                                          .shader = &m_shaderShadow,
+                                      });
+                    }
 
                     m_rtGame.draw(m_dbObjectAttributes, states);
                 }
 
-                if (false)
-                    m_rtGame.draw(sf::RectangleShapeData{
+                m_rtGame.draw(
+                    sf::RectangleShapeData{
                         .position  = getMousePos(),
+                        .origin    = {10.f, 10.f},
                         .fillColor = sf::Color::Black,
                         .size      = {20.f, 20.f},
-                    });
+                    },
+                    {.view = m_worldView});
 
                 m_rtGame.display();
 
-
+                m_window.flush();
                 m_window.clear();
 
-                m_window.draw(m_rtGame.getTexture(),
-                              {
-                                  .scale = {0.5f, 0.5f},
-                              },
-                              {.shader = &m_shader});
+                m_window.draw(m_rtGame.getTexture(), {.view = m_windowView, .shader = &m_shader});
 
                 if (m_undoCountdown > 0.f)
                     m_window.draw(m_txUndo,
                                   {
-                                      .scale = {0.5f, 0.5f},
-                                      .color = sf::Color::whiteMask(static_cast<sf::base::U8>(
+                                      .color = sf::Color::whiteWithAlpha(static_cast<sf::base::U8>(
                                           remap(easeInOutSine(m_undoCountdown), 0.f, 1.f, 0.f, 255.f))),
                                   },
-                                  {.shader = &m_shader});
+                                  {.view = m_windowView, .shader = &m_shader});
 
                 m_imGuiContext.render(m_window);
             }

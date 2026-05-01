@@ -9,6 +9,7 @@
 
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/String.hpp"
+#include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Trait/IsSame.hpp"
 
 #include <filesystem>
@@ -118,6 +119,13 @@ Path Path::absolute() const
 
 
 ////////////////////////////////////////////////////////////
+Path Path::parent() const
+{
+    return Path{0, asVoidPtr(m_impl->fsPath.parent_path())};
+}
+
+
+////////////////////////////////////////////////////////////
 const Path::value_type* Path::c_str() const
 {
     return m_impl->fsPath.c_str();
@@ -125,7 +133,7 @@ const Path::value_type* Path::c_str() const
 
 
 ////////////////////////////////////////////////////////////
-bool Path::remove() const
+bool Path::removeFromDisk() const
 {
     return std::filesystem::remove(m_impl->fsPath);
 }
@@ -148,13 +156,16 @@ bool Path::exists() const
 ////////////////////////////////////////////////////////////
 bool Path::extensionIs(const base::StringView str) const
 {
-    const auto nativeExt = m_impl->fsPath.extension().string();
+    // `u8string()` is locale-independent; `string()` throws on MinGW/Clang64 when the
+    // extension contains characters outside the current codepage.
+    const auto nativeExt = m_impl->fsPath.extension().u8string();
 
     if (nativeExt.size() != str.size())
         return false;
 
     for (base::SizeT i = 0u; i < nativeExt.size(); ++i)
-        if (std::tolower(static_cast<int>(nativeExt[i])) != std::tolower(static_cast<int>(str[i])))
+        if (std::tolower(static_cast<int>(nativeExt[i])) !=
+            std::tolower(static_cast<int>(str[i]))) // TODO P1: non-locale tolower
             return false;
 
     return true;
@@ -179,7 +190,10 @@ Path operator/(const Path& lhs, const Path& rhs)
 ////////////////////////////////////////////////////////////
 std::ostream& operator<<(std::ostream& os, const Path& path)
 {
-    return os << path.m_impl->fsPath;
+    // Use `u8string()` rather than streaming `fsPath` directly: the latter uses the C locale,
+    // which throws on MinGW/Clang64 when the path contains characters outside the current codepage.
+    const auto u8 = path.m_impl->fsPath.u8string();
+    return os.write(reinterpret_cast<const char*>(u8.data()), static_cast<std::streamsize>(u8.size()));
 }
 
 
@@ -191,11 +205,16 @@ T Path::to() const
         return m_impl->fsPath;
     else if constexpr (SFML_BASE_IS_SAME(T, base::String))
     {
-        const auto res = m_impl->fsPath.string();
-        return base::String{res.data(), res.size()};
+        // `u8string()` is locale-independent; `string()` throws on MinGW/Clang64 when the
+        // path contains characters outside the current codepage.
+        const auto res = m_impl->fsPath.u8string();
+        return base::String{reinterpret_cast<const char*>(res.data()), res.size()};
     }
     else if constexpr (SFML_BASE_IS_SAME(T, std::string))
-        return m_impl->fsPath.string();
+    {
+        const auto res = m_impl->fsPath.u8string();
+        return std::string{reinterpret_cast<const char*>(res.data()), res.size()};
+    }
     else if constexpr (SFML_BASE_IS_SAME(T, std::u8string))
         return m_impl->fsPath.u8string();
     else if constexpr (SFML_BASE_IS_SAME(T, std::u32string))
@@ -207,6 +226,20 @@ T Path::to() const
         struct unsupported;
         return unsupported{};
     }
+}
+
+
+////////////////////////////////////////////////////////////
+bool Path::operator==(const Path& rhs) const
+{
+    return m_impl->fsPath == rhs.m_impl->fsPath;
+}
+
+
+////////////////////////////////////////////////////////////
+bool Path::operator!=(const Path& rhs) const
+{
+    return m_impl->fsPath != rhs.m_impl->fsPath;
 }
 
 
@@ -247,6 +280,8 @@ template std::filesystem::path Path::to<std::filesystem::path>() const;
 template std::string           Path::to<std::string>() const;
 template base::String          Path::to<base::String>() const;
 template std::u8string         Path::to<std::u8string>() const;
+template std::u32string        Path::to<std::u32string>() const;
+template std::wstring          Path::to<std::wstring>() const;
 
 
 ////////////////////////////////////////////////////////////

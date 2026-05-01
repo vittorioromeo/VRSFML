@@ -30,19 +30,23 @@
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
 #include "SFML/Window/Keyboard.hpp"
+#include "SFML/Window/Mouse.hpp"
 
+#include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Time.hpp"
 #include "SFML/System/UnicodeString.hpp"
-#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/Clamp.hpp"
+#include "SFML/Base/Constants.hpp"
 #include "SFML/Base/InPlaceVector.hpp"
 #include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Math/Floor.hpp"
 #include "SFML/Base/Math/Fmod.hpp"
@@ -50,6 +54,7 @@
 #include "SFML/Base/Math/Pow.hpp"
 #include "SFML/Base/Math/Sin.hpp"
 #include "SFML/Base/Math/Tan.hpp"
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/ToString.hpp"
@@ -62,8 +67,6 @@ namespace
 {
 constexpr auto windowWidth  = 800u;
 constexpr auto windowHeight = 600u;
-constexpr auto pi           = 3.14159265359f;
-constexpr auto sqrt2        = 2.f * 0.707106781186547524401f;
 
 sf::Path resourcesDir()
 {
@@ -140,7 +143,7 @@ public:
         // Synchronize listener audio position with graphical position
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
-        if (!playbackDevice.updateListener(m_listener))
+        if (!playbackDevice.applyListener(m_listener))
             sf::cErr() << "Failed to update listener\n";
 
         m_music
@@ -159,10 +162,10 @@ public:
     }
 
 private:
-    sf::Listener&                 m_listener;
-    sf::CircleShape               m_listenerShape{{.fillColor = sf::Color::Red, .radius = 20.f}};
-    sf::CircleShape               m_soundShape{{.radius = 20.f}};
-    sf::Vec2f                     m_position;
+    sf::Listener&   m_listener;
+    sf::CircleShape m_listenerShape{{.origin = {10.f, 10.f}, .fillColor = sf::Color::Red, .radius = 20.f}};
+    sf::CircleShape m_soundShape{{.origin = {10.f, 10.f}, .radius = 20.f}};
+    sf::Vec2f       m_position;
     sf::base::Optional<sf::Music> m_music;
 };
 
@@ -176,8 +179,18 @@ public:
     explicit PitchVolume(sf::Listener& listener, const sf::Font& font) :
         Effect("Pitch / Volume"),
         m_listener(listener),
-        m_pitchText(font, {.position = {windowWidth / 2.f - 120.f, windowHeight / 2.f - 80.f}}),
-        m_volumeText(font, {.position = {windowWidth / 2.f - 120.f, windowHeight / 2.f - 30.f}})
+        m_pitchText(font,
+                    {
+                        .position      = {windowWidth / 2.f - 120.f, windowHeight / 2.f - 80.f},
+                        .string        = "",
+                        .characterSize = 30u,
+                    }),
+        m_volumeText(font,
+                     {
+                         .position      = {windowWidth / 2.f - 120.f, windowHeight / 2.f - 30.f},
+                         .string        = "",
+                         .characterSize = 30u,
+                     })
     {
     }
 
@@ -195,8 +208,7 @@ public:
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
-        target.draw(m_pitchText, states);
-        target.draw(m_volumeText, states);
+        target.withRenderStates(states).drawAll(m_pitchText, m_volumeText);
     }
 
     void start(sf::PlaybackDevice& playbackDevice, sf::MusicReader& musicReader) override
@@ -205,7 +217,7 @@ public:
         // so that the music is right on top of the listener
         m_listener.position = {0.f, 0.f, 0.f};
 
-        if (!playbackDevice.updateListener(m_listener))
+        if (!playbackDevice.applyListener(m_listener))
             sf::cErr() << "Failed to update listener\n";
 
         m_music
@@ -268,11 +280,8 @@ public:
         statesCopy.transform = sf::Transform::Identity;
         statesCopy.transform.translate(m_position);
 
-        target.draw(m_soundConeOuter, statesCopy);
-        target.draw(m_soundConeInner, statesCopy);
-        target.draw(m_soundShape, statesCopy);
-        target.draw(m_listenerShape, states);
-        target.draw(m_text, states);
+        target.withRenderStates(statesCopy).drawAll(m_soundConeOuter, m_soundConeInner, m_soundShape);
+        target.withRenderStates(states).drawAll(m_listenerShape, m_text);
     }
 
     void start(sf::PlaybackDevice& playbackDevice, sf::MusicReader& musicReader) override
@@ -280,7 +289,7 @@ public:
         // Synchronize listener audio position with graphical position
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
-        if (!playbackDevice.updateListener(m_listener))
+        if (!playbackDevice.applyListener(m_listener))
             sf::cErr() << "Failed to update listener\n";
 
         // Sound cone parameters
@@ -324,12 +333,14 @@ public:
 
 private:
     sf::Listener&   m_listener;
-    sf::CircleShape m_listenerShape{{.position  = {(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f + 100.f},
-                                     .fillColor = sf::Color::Red,
-                                     .radius    = 20.f}};
-    sf::CircleShape m_soundShape{{.fillColor = sf::Color::Magenta, .radius = 20.f}};
-    sf::ConvexShape m_soundConeOuter{{.position = {20.f, 20.f}, .fillColor = sf::Color::Black, .pointCount = 3u}};
-    sf::ConvexShape m_soundConeInner{{.position = {20.f, 20.f}, .fillColor = sf::Color::Cyan, .pointCount = 3u}};
+    sf::CircleShape m_listenerShape{
+        {.position  = {(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f + 100.f},
+         .origin    = {10.f, 10.f},
+         .fillColor = sf::Color::Red,
+         .radius    = 20.f}};
+    sf::CircleShape m_soundShape{{.origin = {10.f, 10.f}, .fillColor = sf::Color::Magenta, .radius = 20.f}};
+    sf::ConvexShape m_soundConeOuter{{.position = {10.f, 10.f}, .fillColor = sf::Color::Black, .pointCount = 3u}};
+    sf::ConvexShape m_soundConeInner{{.position = {10.f, 10.f}, .fillColor = sf::Color::Cyan, .pointCount = 3u}};
     sf::Text        m_text;
     sf::Vec2f       m_position;
     sf::base::Optional<sf::Music> m_music;
@@ -352,22 +363,15 @@ private:
         Sawtooth
     };
 
-    struct ToneSoundStream : sf::SoundStream
+    struct ToneState
     {
         Tone& tone;
 
-        ToneSoundStream(Tone&                 theTone,
-                        sf::PlaybackDevice&   playbackDevice,
-                        const sf::ChannelMap& channelMap,
-                        const unsigned int    theSampleRate) :
-            sf::SoundStream(playbackDevice, channelMap, theSampleRate),
-            tone(theTone)
-        {
-        }
-
-        bool onGetData(sf::SoundStream::Chunk& chunk) override
+        bool onGetData(sf::base::Vector<sf::base::I16>& outBuffer)
         {
             const auto period = 1.f / tone.m_frequency;
+
+            outBuffer.resize(chunkSize);
 
             for (auto i = 0u; i < chunkSize; ++i)
             {
@@ -377,7 +381,7 @@ private:
                 {
                     case Type::Sine:
                     {
-                        value = tone.m_amplitude * sf::base::sin(2 * pi * tone.m_frequency * tone.m_time);
+                        value = tone.m_amplitude * sf::base::sin(2 * sf::base::pi * tone.m_frequency * tone.m_time);
                         break;
                     }
                     case Type::Square:
@@ -405,20 +409,12 @@ private:
                     }
                 }
 
-                tone.m_sampleBuffer[i] = static_cast<sf::base::I16>(
+                outBuffer[i] = static_cast<sf::base::I16>(
                     sf::base::lround(value * std::numeric_limits<sf::base::I16>::max()));
                 tone.m_time += timePerSample;
             }
 
-            chunk.sampleCount = chunkSize;
-            chunk.samples     = tone.m_sampleBuffer.data();
-
             return true;
-        }
-
-        void onSeek(sf::Time) override
-        {
-            // It doesn't make sense to seek in a tone generator
         }
     };
 
@@ -427,11 +423,29 @@ public:
         Effect("Tone Generator"),
         m_listener(listener),
         m_instruction(font,
-                      {.position = {windowWidth / 2.f - 370.f, windowHeight / 2.f - 200.f},
-                       .string   = "Press up and down arrows to change the current wave type"}),
-        m_currentType(font, {.position = {windowWidth / 2.f - 150.f, windowHeight / 2.f - 100.f}}),
-        m_currentAmplitude(font, {.position = {windowWidth / 2.f - 150.f, windowHeight / 2.f - 50.f}}),
-        m_currentFrequency(font, {.position = {windowWidth / 2.f - 150.f, windowHeight / 2.f}})
+                      {
+                          .position      = {windowWidth / 2.f - 370.f, windowHeight / 2.f - 200.f},
+                          .string        = "Press up and down arrows to change the current wave type",
+                          .characterSize = 30,
+                      }),
+        m_currentType(font,
+                      {
+                          .position      = {windowWidth / 2.f - 150.f, windowHeight / 2.f - 100.f},
+                          .string        = "",
+                          .characterSize = 30u,
+                      }),
+        m_currentAmplitude(font,
+                           {
+                               .position      = {windowWidth / 2.f - 150.f, windowHeight / 2.f - 50.f},
+                               .string        = "",
+                               .characterSize = 30u,
+                           }),
+        m_currentFrequency(font,
+                           {
+                               .position      = {windowWidth / 2.f - 150.f, windowHeight / 2.f},
+                               .string        = "",
+                               .characterSize = 30u,
+                           })
     {
     }
 
@@ -450,10 +464,7 @@ public:
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
-        target.draw(m_instruction, states);
-        target.draw(m_currentType, states);
-        target.draw(m_currentAmplitude, states);
-        target.draw(m_currentFrequency, states);
+        target.withRenderStates(states).drawAll(m_instruction, m_currentType, m_currentAmplitude, m_currentFrequency);
     }
 
     void start(sf::PlaybackDevice& playbackDevice, sf::MusicReader&) override
@@ -462,10 +473,10 @@ public:
         // so that the tone is right on top of the listener
         m_listener.position = {0.f, 0.f, 0.f};
 
-        if (!playbackDevice.updateListener(m_listener))
+        if (!playbackDevice.applyListener(m_listener))
             sf::cErr() << "Failed to update listener\n";
 
-        m_toneSoundStream.emplace(*this, playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, sampleRate).play();
+        m_toneSoundStream.emplace(playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, sampleRate, *this).play();
     }
 
     void stop() override
@@ -488,18 +499,17 @@ private:
 
     sf::Listener& m_listener;
 
-    sf::base::Vector<sf::base::I16> m_sampleBuffer = sf::base::Vector<sf::base::I16>(chunkSize, 0);
-    Type                            m_type{Type::Triangle};
-    float                           m_amplitude{0.05f};
-    float                           m_frequency{220};
-    float                           m_time{};
+    Type  m_type{Type::Triangle};
+    float m_amplitude{0.05f};
+    float m_frequency{220};
+    float m_time{};
 
     sf::Text m_instruction;
     sf::Text m_currentType;
     sf::Text m_currentAmplitude;
     sf::Text m_currentFrequency;
 
-    sf::base::Optional<ToneSoundStream> m_toneSoundStream;
+    sf::base::Optional<sf::SoundStream<ToneState>> m_toneSoundStream;
 };
 
 
@@ -509,43 +519,27 @@ private:
 class Doppler : public Effect
 {
 private:
-    struct DopplerSoundStream : sf::SoundStream
+    struct DopplerState
     {
         Doppler& doppler;
 
-        DopplerSoundStream(Doppler&              theDoppler,
-                           sf::PlaybackDevice&   playbackDevice,
-                           const sf::ChannelMap& channelMap,
-                           const unsigned int    theSampleRate) :
-            sf::SoundStream(playbackDevice, channelMap, theSampleRate),
-            doppler(theDoppler)
-        {
-            setAttenuation(0.05f);
-        }
-
-        bool onGetData(sf::SoundStream::Chunk& chunk) override
+        bool onGetData(sf::base::Vector<sf::base::I16>& outBuffer)
         {
             const auto period = 1.f / doppler.m_frequency;
+
+            outBuffer.resize(chunkSize);
 
             for (auto i = 0u; i < chunkSize; ++i)
             {
                 const auto value = doppler.m_amplitude * 2 *
                                    (doppler.m_time / period - sf::base::floor(0.5f + doppler.m_time / period));
 
-                doppler.m_sampleBuffer[i] = static_cast<sf::base::I16>(
+                outBuffer[i] = static_cast<sf::base::I16>(
                     sf::base::lround(value * std::numeric_limits<sf::base::I16>::max()));
                 doppler.m_time += timePerSample;
             }
 
-            chunk.sampleCount = chunkSize;
-            chunk.samples     = doppler.m_sampleBuffer.data();
-
             return true;
-        }
-
-        void onSeek(sf::Time) override
-        {
-            // It doesn't make sense to seek in a tone generator
         }
     };
 
@@ -553,8 +547,18 @@ public:
     explicit Doppler(sf::Listener& listener, const sf::Font& font) :
         Effect("Doppler Shift"),
         m_listener(listener),
-        m_currentVelocity(font, {.position = {windowWidth / 2.f - 150.f, windowHeight * 3.f / 4.f - 50.f}}),
-        m_currentFactor(font, {.position = {windowWidth / 2.f - 150.f, windowHeight * 3.f / 4.f}})
+        m_currentVelocity(font,
+                          {
+                              .position      = {windowWidth / 2.f - 150.f, windowHeight * 3.f / 4.f - 50.f},
+                              .string        = "",
+                              .characterSize = 30u,
+                          }),
+        m_currentFactor(font,
+                        {
+                            .position      = {windowWidth / 2.f - 150.f, windowHeight * 3.f / 4.f},
+                            .string        = "",
+                            .characterSize = 30u,
+                        })
     {
         m_position.y = (windowHeight - 20.f) / 2.f - 40.f;
     }
@@ -577,6 +581,7 @@ public:
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
         auto statesCopy(states);
+
         statesCopy.transform = sf::Transform::Identity;
         statesCopy.transform.translate(m_position - sf::Vec2f({20.f, 0.f}));
 
@@ -591,10 +596,12 @@ public:
         // Synchronize listener audio position with graphical position
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
-        if (!playbackDevice.updateListener(m_listener))
+        if (!playbackDevice.applyListener(m_listener))
             sf::cErr() << "Failed to update listener\n";
 
-        m_dopplerSoundStream.emplace(*this, playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, sampleRate).play();
+        auto& stream = m_dopplerSoundStream.emplace(playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, sampleRate, *this);
+        stream.setAttenuation(0.05f);
+        stream.play();
     }
 
     void stop() override
@@ -609,21 +616,20 @@ private:
 
     sf::Listener& m_listener;
 
-    sf::base::Vector<sf::base::I16> m_sampleBuffer = sf::base::Vector<sf::base::I16>(chunkSize, 0);
-    float                           m_amplitude{0.05f};
-    float                           m_frequency{220};
-    float                           m_time{};
+    float m_amplitude{0.05f};
+    float m_frequency{220};
+    float m_time{};
 
     float           m_velocity{0.f};
     float           m_factor{1.f};
     sf::CircleShape m_listenerShape{
         {.position = {(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f}, .fillColor = sf::Color::Red, .radius = 20.f}};
-    sf::CircleShape m_soundShape{{.radius = 20.f}};
+    sf::CircleShape m_soundShape{{.origin = {10.f, 10.f}, .radius = 20.f}};
     sf::Vec2f       m_position;
     sf::Text        m_currentVelocity;
     sf::Text        m_currentFactor;
 
-    sf::base::Optional<DopplerSoundStream> m_dopplerSoundStream;
+    sf::base::Optional<sf::SoundStream<DopplerState>> m_dopplerSoundStream;
 };
 
 
@@ -642,13 +648,13 @@ public:
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
         target.draw(m_listenerShape, states);
+        target.draw(m_enabledText, states);
+        target.draw(m_instructions, states);
 
         states.transform = sf::Transform::Identity;
         states.transform.translate(m_position);
 
         target.draw(m_soundShape, states);
-        target.draw(m_enabledText);
-        target.draw(m_instructions);
     }
 
     void start(sf::PlaybackDevice& playbackDevice, sf::MusicReader& musicReader) override
@@ -656,7 +662,7 @@ public:
         // Synchronize listener audio position with graphical position
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
-        if (!playbackDevice.updateListener(m_listener))
+        if (!playbackDevice.applyListener(m_listener))
             sf::cErr() << "Failed to update listener\n";
 
         m_music
@@ -678,8 +684,8 @@ protected:
     explicit Processing(sf::Listener& listener, const sf::Font& font, sf::base::String name) :
         Effect(SFML_BASE_MOVE(name)),
         m_listener(listener),
-        m_enabledText(font, {.string = "Processing: Enabled"}),
-        m_instructions(font, {.string = "Press Space to enable/disable processing"})
+        m_enabledText(font, {.string = "Processing: Enabled", .characterSize = 30u}),
+        m_instructions(font, {.string = "Press Space to enable/disable processing", .characterSize = 30u})
     {
         m_listenerShape.position = {(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f};
 
@@ -704,8 +710,8 @@ private:
         m_enabledText.setString(m_enabled ? "Processing: Enabled" : "Processing: Disabled");
     }
 
-    sf::CircleShape m_listenerShape{{.fillColor = sf::Color::Red, .radius = 20.f}};
-    sf::CircleShape m_soundShape{{.radius = 20.f}};
+    sf::CircleShape m_listenerShape{{.origin = {10.f, 10.f}, .fillColor = sf::Color::Red, .radius = 20.f}};
+    sf::CircleShape m_soundShape{{.origin = {10.f, 10.f}, .radius = 20.f}};
     sf::Vec2f       m_position;
     sf::Text        m_enabledText;
     sf::Text        m_instructions;
@@ -814,13 +820,13 @@ struct HighPassFilter : BiquadFilter
 
         static constexpr auto cutoffFrequency = 2000.f;
 
-        const auto c = sf::base::tan(pi * cutoffFrequency / static_cast<float>(musicReader.getSampleRate()));
+        const auto c = sf::base::tan(sf::base::pi * cutoffFrequency / static_cast<float>(playbackDevice.getSampleRate()));
 
-        Coefficients coefficients{.a0 = 1.f / (1.f + sqrt2 * c + sf::base::pow(c, 2.f)),
+        Coefficients coefficients{.a0 = 1.f / (1.f + sf::base::sqrt2 * c + sf::base::pow(c, 2.f)),
                                   .a1 = -2.f * coefficients.a0,
                                   .a2 = coefficients.a0,
                                   .b1 = 2.f * coefficients.a0 * (sf::base::pow(c, 2.f) - 1.f),
-                                  .b2 = coefficients.a0 * (1.f - sqrt2 * c + sf::base::pow(c, 2.f))};
+                                  .b2 = coefficients.a0 * (1.f - sf::base::sqrt2 * c + sf::base::pow(c, 2.f))};
 
         setCoefficients(coefficients);
     }
@@ -843,13 +849,14 @@ struct LowPassFilter : BiquadFilter
 
         static constexpr auto cutoffFrequency = 500.f;
 
-        const auto c = 1.f / sf::base::tan(pi * cutoffFrequency / static_cast<float>(musicReader.getSampleRate()));
+        const auto c = 1.f /
+                       sf::base::tan(sf::base::pi * cutoffFrequency / static_cast<float>(playbackDevice.getSampleRate()));
 
-        Coefficients coefficients{.a0 = 1.f / (1.f + sqrt2 * c + sf::base::pow(c, 2.f)),
+        Coefficients coefficients{.a0 = 1.f / (1.f + sf::base::sqrt2 * c + sf::base::pow(c, 2.f)),
                                   .a1 = 2.f * coefficients.a0,
                                   .a2 = coefficients.a0,
                                   .b1 = 2.f * coefficients.a0 * (1.f - sf::base::pow(c, 2.f)),
-                                  .b2 = coefficients.a0 * (1.f - sqrt2 * c + sf::base::pow(c, 2.f))};
+                                  .b2 = coefficients.a0 * (1.f - sf::base::sqrt2 * c + sf::base::pow(c, 2.f))};
 
         setCoefficients(coefficients);
     }
@@ -950,7 +957,7 @@ public:
         // this lambda hence we need to always have a usable state until the music and the
         // associated lambda are destroyed
         const bool success = m_music->setEffectProcessor(
-            [sampleRate = musicReader.getSampleRate(),
+            [sampleRate = playbackDevice.getSampleRate(),
              filters    = sf::base::Vector<ReverbFilter<float>>(),
              &enabled   = m_enabled](const float*  inputFrames,
                                    unsigned int& inputFrameCount,
@@ -1111,6 +1118,8 @@ int main()
                       })
                       .value();
 
+    auto windowView = sf::View::fromScreenSize(windowSize);
+
     // Load the application font and pass it to the Effect class
     const auto font = sf::Font::openFromFile(resourcesDir() / "tuffy.ttf").value();
 
@@ -1140,7 +1149,7 @@ int main()
             currentPlaybackDeviceIndex = playbackDevices.size() - 1;
     }
 
-    const auto getCurrentPlaybackDevice = [&]() -> sf::PlaybackDevice&
+    const auto getCurrentPlaybackDevice = [&] -> sf::PlaybackDevice&
     { return playbackDevices[currentPlaybackDeviceIndex]; };
 
     // TODO P1: docs
@@ -1220,7 +1229,7 @@ int main()
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
-            if (handleAspectRatioAwareResize(*event, windowSize, window))
+            if (handleAspectRatioAwareResize(*event, windowSize, windowView))
                 continue;
 
             if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
@@ -1314,22 +1323,19 @@ int main()
         }
 
         // Update the current example
-        const auto [x, y] = sf::Mouse::getPosition(window).toVec2f().componentWiseDiv(
-            window.getSize().toVec2f()); // TODO P2: wrong when resizing
+        const auto [x,
+                    y] = windowView.screenToWorld(sf::Mouse::getPosition(window).toVec2f(), window.getSize().toVec2f())
+                             .componentWiseDiv(windowSize.toVec2f());
+
         effects[current]->update(clock.getElapsedTime().asSeconds(), x, y);
 
         // Clear the window
         window.clear({50, 50, 50});
 
-        // Draw the current example
-        window.draw(*effects[current]);
-
-        // Draw the text
-        window.draw(textBackgroundTexture, {.position = {0.f, 520.f}, .color = {255, 255, 255, 200}});
-        window.draw(instructions);
-        window.draw(description);
-        window.draw(playbackDeviceText);
-        window.draw(playbackDeviceInstructions);
+        window.withRenderStates({.view = windowView})
+            .draw(*effects[current])
+            .draw(textBackgroundTexture, {.position = {0.f, 520.f}, .color = {255, 255, 255, 200}})
+            .drawAll(instructions, description, playbackDeviceText, playbackDeviceInstructions);
 
         // Finally, display the rendered frame on screen
         window.display();

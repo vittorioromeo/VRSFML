@@ -9,9 +9,13 @@
 
 #include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/EffectProcessor.hpp"
-#include "SFML/Audio/MiniaudioUtils.hpp"
-#include "SFML/Audio/SoundBase.hpp"
+#include "SFML/Audio/Priv/MiniaudioUtils.hpp"
+#include "SFML/Audio/Priv/SoundBase.hpp"
 
+#include "SFML/System/Angle.hpp"
+#include "SFML/System/Vec3.hpp"
+
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Clamp.hpp"
 
 #include <miniaudio.h>
@@ -22,8 +26,7 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 struct MiniaudioSoundSource::Impl
 {
-    AudioSettings   audioSettings;
-    EffectProcessor effectProcessor{};
+    AudioSettings audioSettings;
 };
 
 
@@ -175,7 +178,6 @@ void MiniaudioSoundSource::setAttenuation(const float attenuation)
 ////////////////////////////////////////////////////////////
 bool MiniaudioSoundSource::setEffectProcessor(const EffectProcessor& effectProcessor)
 {
-    m_impl->effectProcessor = effectProcessor;
     return getSoundBase().setAndConnectEffectProcessor(effectProcessor);
 }
 
@@ -305,7 +307,7 @@ float MiniaudioSoundSource::getAttenuation() const
 ////////////////////////////////////////////////////////////
 const EffectProcessor& MiniaudioSoundSource::getEffectProcessor() const
 {
-    return m_impl->effectProcessor;
+    return getSoundBase().effectProcessor;
 }
 
 
@@ -319,15 +321,8 @@ bool MiniaudioSoundSource::isLooping() const
 ////////////////////////////////////////////////////////////
 void MiniaudioSoundSource::applyAudioSettings(const AudioSettings& settings)
 {
+    m_impl->audioSettings = settings;
     getSoundBase().applyAudioSettings(settings);
-}
-
-
-////////////////////////////////////////////////////////////
-bool MiniaudioSoundSource::applySettingsAndEffectProcessorTo(MiniaudioUtils::SoundBase& soundBase) const
-{
-    soundBase.applyAudioSettings(m_impl->audioSettings);
-    return soundBase.setAndConnectEffectProcessor(m_impl->effectProcessor);
 }
 
 
@@ -341,13 +336,12 @@ Time MiniaudioSoundSource::getPlayingOffset() const
 ////////////////////////////////////////////////////////////
 bool MiniaudioSoundSource::resume()
 {
-    if (m_playing)
+    if (isPlaying())
         return true;
 
     if (const ma_result result = ma_sound_start(&getSoundBase().sound); result != MA_SUCCESS)
         return MiniaudioUtils::fail("start playing audio source", result);
 
-    m_playing = true;
     return true;
 }
 
@@ -355,13 +349,12 @@ bool MiniaudioSoundSource::resume()
 ////////////////////////////////////////////////////////////
 bool MiniaudioSoundSource::pause()
 {
-    if (!m_playing)
+    if (!isPlaying())
         return true;
 
     if (const ma_result result = ma_sound_stop(&getSoundBase().sound); result != MA_SUCCESS)
         return MiniaudioUtils::fail("stop playing audio source", result);
 
-    m_playing = false;
     return true;
 }
 
@@ -369,7 +362,7 @@ bool MiniaudioSoundSource::pause()
 ////////////////////////////////////////////////////////////
 bool MiniaudioSoundSource::isPlaying() const
 {
-    return m_playing;
+    return static_cast<bool>(ma_sound_is_playing(&getSoundBase().sound));
 }
 
 

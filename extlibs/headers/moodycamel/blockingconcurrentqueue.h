@@ -14,7 +14,14 @@
 #include <type_traits>
 #include <cerrno>
 #include <memory>
-#include <chrono>
+
+////////////////////////////////////////////////////////////
+#if __has_include(<bits/chrono.h>)
+    #include <bits/chrono.h> // IWYU pragma: export
+#else
+    #include <chrono> // IWYU pragma: export
+#endif
+
 #include <ctime>
 
 namespace moodycamel

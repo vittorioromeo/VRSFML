@@ -20,11 +20,14 @@
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/MinMax.hpp"
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/String.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -60,12 +63,12 @@ int main()
     // Axes labels in as strings
     const sf::base::Array<sf::base::String, 8> axisLabels = {"X", "Y", "Z", "R", "U", "V", "PovX", "PovY"};
 
-    constexpr sf::Vec2f windowSize{400.f, 775.f};
+    constexpr sf::Vec2f initialWindowSize{400.f, 775.f};
 
     // Create the window of the application
     auto window = makeDPIScaledRenderWindow(
                       {
-                          .size      = windowSize.toVec2u(),
+                          .size      = initialWindowSize.toVec2u(),
                           .title     = "Joystick",
                           .resizable = true,
                           .vsync     = true,
@@ -83,9 +86,6 @@ int main()
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
-
-            // if (handleAspectRatioAwareResize(*event, windowSize, window))
-            //     continue;
 
             if (const auto* joystickConnected = event->getIf<sf::Event::JoystickConnected>())
                 eventLog.pushBack(toStr("[Joystick ", joystickConnected->joystickId, "]: connected"));
@@ -127,26 +127,39 @@ int main()
             if (sf::Joystick::query(i))
                 ++connectedJoystickCount;
 
-        window.setSize({400u * sf::base::max(1u, connectedJoystickCount), 775u});
-        window.setView(sf::View{{775.f / 2.f, 775.f / 2.f}, {775.f, 775.f}});
+        const sf::Vec2f logicalSize = {400.f * static_cast<float>(sf::base::max(1u, connectedJoystickCount)), 775.f};
+
+        window.setSize(logicalSize.toVec2u());
+
+        const sf::View windowView{
+            .center   = logicalSize / 2.f,
+            .size     = logicalSize,
+            .viewport = getAspectRatioAwareViewport(window.getSize().toVec2f(), logicalSize),
+        };
 
         float xOffset      = 0.f;
         float yOffset      = 0.f;
         float yEventOffset = 0.f;
 
+        const auto drawCtx = window.withLockedRenderStates({.view = windowView, .texture = &font.getTexture()});
+
         const auto drawLabelValue = [&](const sf::UnicodeString& label, const sf::UnicodeString& value)
         {
-            window.draw(font,
-                        {.position         = {5.f + 320.f * xOffset, 50.f + yOffset * fontLineSpacing},
-                         .string           = label + ":",
-                         .characterSize    = characterSize,
-                         .outlineColor     = sf::Color::Blue,
-                         .outlineThickness = 0.5f});
+            drawCtx.draw(font,
+                         {
+                             .position         = {5.f + 320.f * xOffset, 50.f + yOffset * fontLineSpacing},
+                             .string           = label + ":",
+                             .characterSize    = characterSize,
+                             .outlineColor     = sf::Color::Blue,
+                             .outlineThickness = 0.5f,
+                         });
 
-            window.draw(font,
-                        {.position      = {80.f + 320.f * xOffset, 50.f + yOffset * fontLineSpacing},
-                         .string        = value,
-                         .characterSize = characterSize});
+            drawCtx.draw(font,
+                         {
+                             .position      = {80.f + 320.f * xOffset, 50.f + yOffset * fontLineSpacing},
+                             .string        = value,
+                             .characterSize = characterSize,
+                         });
 
             yOffset += 1.f;
         };
@@ -154,24 +167,29 @@ int main()
         // Clear the window
         window.clear();
 
-        window.draw(font,
-                    {.position         = {5.f, 5.f},
-                     .string           = toStr("Threshold: ", threshold, "  (Change with up/down arrow keys)"),
-                     .characterSize    = characterSize,
-                     .outlineColor     = sf::Color::Blue,
-                     .outlineThickness = 0.5f});
+        drawCtx.draw(font,
+                     {
+                         .position         = {5.f, 5.f},
+                         .string           = toStr("Threshold: ", threshold, "  (Change with up/down arrow keys)"),
+                         .characterSize    = characterSize,
+                         .outlineColor     = sf::Color::Blue,
+                         .outlineThickness = 0.5f,
+                     });
 
         for (const auto& eventStr : eventLog)
         {
-            window.draw(font,
-                        {.position         = {5.f, 500.f + yEventOffset * fontLineSpacing},
-                         .string           = eventStr,
-                         .characterSize    = characterSize,
-                         .outlineColor     = sf::Color::Blue,
-                         .outlineThickness = 0.5f});
+            drawCtx.draw(font,
+                         {
+                             .position         = {5.f, 500.f + yEventOffset * fontLineSpacing},
+                             .string           = eventStr,
+                             .characterSize    = characterSize,
+                             .outlineColor     = sf::Color::Blue,
+                             .outlineThickness = 0.5f,
+                         });
 
             ++yEventOffset;
         }
+
 
         for (unsigned int i = 0u; i < sf::Joystick::MaxCount; ++i)
         {

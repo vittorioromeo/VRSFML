@@ -13,16 +13,24 @@
 #include "SFML/Window/WindowHandle.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
-#include "SFML/System/Vec2.hpp"
 
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Trait/IsSame.hpp"
+#include "SFML/Base/TrivialAbi.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <SDL3/SDL_keycode.h>
 #include <SDL3/SDL_mouse.h>
+#include <SDL3/SDL_pixels.h>
+#include <SDL3/SDL_properties.h>
 #include <SDL3/SDL_scancode.h>
+#include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_touch.h>
 #include <SDL3/SDL_video.h>
 
@@ -296,10 +304,10 @@ public:
     [[nodiscard]] float getPrimaryDisplayContentScale() const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] float getWindowDisplayScale(SDL_Window& window) const;
+    [[nodiscard]] float getDisplayScale(SDL_Window& window) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SDLSurfaceUPtr createSurfaceFromPixels(Vec2u size, const base::U8* pixels) const;
+    [[nodiscard]] SDLSurfaceUPtr createSurfaceFromPixels(const base::U8* pixels, Vec2u size) const;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] unsigned int getJoystickButtonCount(SDL_Joystick& handle);
@@ -340,8 +348,5 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const char* getCurrentVideoDriver() const;
 };
-
-////////////////////////////////////////////////////////////
-[[nodiscard]] SDLLayer& getSDLLayerSingleton();
 
 } // namespace sf::priv

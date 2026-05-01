@@ -1,8 +1,12 @@
 #pragma once
 
-#include "ExampleUtils/Xoroshiro128PlusBitGenerator.hpp"
 
-#include "SFML/System/Vec2.hpp"
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include "ExampleUtils/Xoroshiro128PlusPlusBitGenerator.hpp"
+
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/AssertAndAssume.hpp"
 #include "SFML/Base/Constants.hpp"
@@ -18,7 +22,7 @@
 class [[nodiscard]] RNGFast
 {
 private:
-    Xoroshiro128PlusBitGenerator m_engine;
+    Xoroshiro128PlusPlusBitGenerator m_engine;
 
 public:
     using SeedType = sf::base::U64; //!< Type used for seeding
@@ -140,12 +144,23 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
+    /// \brief Generates either `-1.f` or `1.f` with equal probability.
+    ///
+    /// \return Either `-1.f` or `1.f`.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten]] inline float getSignF()
+    {
+        return static_cast<float>((m_engine() >> 63u) << 1u) - 1.f;
+    }
+
+    ////////////////////////////////////////////////////////////
     /// \brief Generates a random 2D unit vector (direction).
     ///
     /// \return A random `sf::Vec2f` with magnitude `1`.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] inline sf::Vec2f getRandomDirection()
+    [[nodiscard, gnu::always_inline, gnu::flatten]] inline sf::Vec2f getDirVec2f()
     {
         const float angle = getF(0.f, sf::base::tau);
         return {SFML_BASE_MATH_COSF(angle), SFML_BASE_MATH_SINF(angle)};

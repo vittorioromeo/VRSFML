@@ -101,9 +101,15 @@ public:
 /// supported by SFML, and thus extend the set of supported readable
 /// audio formats.
 ///
-/// A valid sound file reader must override the open, seek and write functions,
-/// as well as providing a static check function; the latter is used by
-/// SFML to find a suitable writer for a given input file.
+/// A valid sound file reader must override the `open`, `seek` and
+/// `read` virtual functions, as well as providing a static `check`
+/// function; the latter is used by SFML to find a suitable reader
+/// for a given input stream.
+///
+/// All sample data exchanged through this interface is 16-bit
+/// signed PCM. Readers that decode formats with different
+/// internal sample formats (e.g. floats) are responsible for
+/// converting on the fly inside `read`.
 ///
 /// To register a new reader, use the `sf::SoundFileFactory::registerReader`
 /// template function.

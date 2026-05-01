@@ -14,6 +14,7 @@
 #include "SFML/Window/JoystickCapabilities.hpp"
 #include "SFML/Window/JoystickManager.hpp"
 #include "SFML/Window/JoystickState.hpp"
+#include "SFML/Window/Mouse.hpp"
 #include "SFML/Window/SDLLayer.hpp"
 #include "SFML/Window/Sensor.hpp"
 #include "SFML/Window/SensorManager.hpp"
@@ -26,24 +27,32 @@
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Err.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Sleep.hpp"
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Utf.hpp"
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec3.hpp"
 
 #include "SFML/Base/AnkerlUnorderedDense.hpp"
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/EnumArray.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/ToString.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
+#include <SDL3/SDL_error.h>
 #include <SDL3/SDL_events.h>
+#include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_keycode.h>
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_properties.h>
 #include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_touch.h>
 #include <SDL3/SDL_video.h>
 
 #include <queue>
@@ -286,10 +295,10 @@ void SDLWindowImpl::processSDLEvent(const SDL_Event& e)
 
         case SDL_EVENT_TEXT_INPUT:
         {
-            char32_t     unicode   = 0;
-            const char*  keyBuffer = e.text.text;
-            const size_t length    = SFML_BASE_STRLEN(keyBuffer);
-            const auto*  iter      = keyBuffer;
+            char32_t    unicode   = 0;
+            const char* keyBuffer = e.text.text;
+            const auto  length    = SFML_BASE_STRLEN(keyBuffer);
+            const auto* iter      = keyBuffer;
 
             while (iter < keyBuffer + length)
             {
@@ -332,7 +341,7 @@ void SDLWindowImpl::processSDLEvent(const SDL_Event& e)
             pushEvent(Event::MouseWheelScrolled{
                 .wheel    = Mouse::Wheel::Vertical, // TODO P0: horizontal wheel support?
                 .delta    = static_cast<float>(e.wheel.y),
-                .position = {static_cast<int>(e.wheel.x), static_cast<int>(e.wheel.y)},
+                .position = {static_cast<int>(e.wheel.x), static_cast<int>(e.wheel.y)}, // TODO P0: this is wrong
             });
             break;
         }
@@ -487,6 +496,12 @@ void SDLWindowImpl::processSDLEvent(const SDL_Event& e)
         case SDL_EVENT_USER:
         case SDL_EVENT_LAST:
         case SDL_EVENT_ENUM_PADDING:
+        case SDL_EVENT_DISPLAY_USABLE_BOUNDS_CHANGED:
+        case SDL_EVENT_SCREEN_KEYBOARD_SHOWN:
+        case SDL_EVENT_SCREEN_KEYBOARD_HIDDEN:
+        case SDL_EVENT_PINCH_BEGIN:
+        case SDL_EVENT_PINCH_UPDATE:
+        case SDL_EVENT_PINCH_END:
             break;
     }
 }
@@ -495,7 +510,7 @@ void SDLWindowImpl::processSDLEvent(const SDL_Event& e)
 ////////////////////////////////////////////////////////////
 base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(WindowSettings windowSettings)
 {
-    if (!getSDLLayerSingleton().applyGLContextSettings(windowSettings.contextSettings))
+    if (!WindowContext::getSDLLayer().applyGLContextSettings(windowSettings.contextSettings))
         err() << "Failed to apply SDL GL context settings for SDL window";
 
     // Fullscreen style requires some tests
@@ -535,6 +550,8 @@ base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(WindowSettings windowSettin
                 err(/* multiLine */ true) << "Selected video mode (";
                 streamVideoMode(err(/* multiLine */ true), bestFullscreenMode);
                 err(/* multiLine */ true) << ")";
+
+                // TODO P1: actually switch?
             }
         }
     }
@@ -564,11 +581,21 @@ base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(WindowSettings windowSettin
                                             static_cast<void*>(sdlWindowPtr),
                                             /* isExternal */ false};
 
+#ifdef SFML_SYSTEM_EMSCRIPTEN
+    // This seems necessary on Emscripten to set the initial canvas size
+    SDL_SetWindowSize(sdlWindowPtr, static_cast<int>(windowSettings.size.x), static_cast<int>(windowSettings.size.y));
+#endif
 
     if (windowSettings.fullscreen)
         SDLWindowImplImpl::fullscreenWindow = windowImplPtr;
     else
         SDLWindowImplImpl::setWindowNonExclusiveFullscreenIfNeeded(windowSettings.hasTitlebar, windowSettings.size, sdlWindowPtr);
+
+    windowImplPtr->setMinimumSize(windowSettings.minimumSize);
+    windowImplPtr->setMaximumSize(windowSettings.maximumSize);
+    windowImplPtr->setMouseCursorVisible(windowSettings.mouseCursorVisible);
+    windowImplPtr->setKeyRepeatEnabled(windowSettings.keyRepeatEnabled);
+    windowImplPtr->setJoystickThreshold(windowSettings.joystickThreshold);
 
     return base::UniquePtr<SDLWindowImpl>{windowImplPtr};
 }
@@ -577,8 +604,23 @@ base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(WindowSettings windowSettin
 ////////////////////////////////////////////////////////////
 base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(const WindowHandle handle)
 {
-    SDL_Window* sdlWindowPtr = SDL_CreateWindowWithProperties(
-        makeSDLWindowPropertiesFromHandle(getSDLLayerSingleton().getCurrentVideoDriver(), handle));
+    const SDL_PropertiesID props = makeSDLWindowPropertiesFromHandle(WindowContext::getSDLLayer().getCurrentVideoDriver(),
+                                                                     handle);
+
+#if defined(SFML_SYSTEM_WINDOWS)
+    // Copy the pixel format from the shared GL context's hidden window instead of calling
+    // WIN_GL_SetupWindow, which fails for externally-created HWNDs (SetPixelFormat restrictions).
+    const auto& sharedCtx = static_cast<const priv::DerivedGlContextType&>(WindowContext::getSharedGlContext());
+    if (SDL_Window* const sharedSDLWindow = sharedCtx.getSDLWindow())
+    {
+        if (auto* const sharedHWND = SDL_GetPointerProperty(SDL_GetWindowProperties(sharedSDLWindow),
+                                                            SDL_PROP_WINDOW_WIN32_HWND_POINTER,
+                                                            nullptr))
+            SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WIN32_PIXEL_FORMAT_HWND_POINTER, sharedHWND);
+    }
+#endif
+
+    SDL_Window* sdlWindowPtr = SDL_CreateWindowWithProperties(props);
 
     if (sdlWindowPtr == nullptr)
     {
@@ -586,11 +628,9 @@ base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(const WindowHandle handle)
         return nullptr;
     }
 
-    auto* windowImplPtr = new SDLWindowImpl{"handle",
-                                            static_cast<void*>(sdlWindowPtr),
-                                            /* isExternal */ true};
-
-    return base::UniquePtr<SDLWindowImpl>{windowImplPtr};
+    return base::UniquePtr<SDLWindowImpl>{new SDLWindowImpl{"handle",
+                                                            static_cast<void*>(sdlWindowPtr),
+                                                            /* isExternal */ true}};
 }
 
 
@@ -863,7 +903,8 @@ Vec2i SDLWindowImpl::getPosition() const
 ////////////////////////////////////////////////////////////
 void SDLWindowImpl::setPosition(const Vec2i position)
 {
-    SDL_SetWindowPosition(m_impl->sdlWindow, position.x, position.y);
+    if (!SDL_SetWindowPosition(m_impl->sdlWindow, position.x, position.y))
+        err() << "Failed to set window position: " << SDL_GetError();
 }
 
 
@@ -871,7 +912,7 @@ void SDLWindowImpl::setPosition(const Vec2i position)
 Vec2u SDLWindowImpl::getSize() const
 {
     SFML_BASE_ASSERT(m_impl->sdlWindow);
-    return getSDLLayerSingleton().getWindowSize(*m_impl->sdlWindow);
+    return WindowContext::getSDLLayer().getWindowSize(*m_impl->sdlWindow);
 }
 
 
@@ -879,7 +920,7 @@ Vec2u SDLWindowImpl::getSize() const
 void SDLWindowImpl::setSize(const Vec2u size)
 {
     SFML_BASE_ASSERT(m_impl->sdlWindow);
-    getSDLLayerSingleton().setWindowSize(*m_impl->sdlWindow, size);
+    WindowContext::getSDLLayer().setWindowSize(*m_impl->sdlWindow, size);
 
     if (!isFullscreen())
         SDLWindowImplImpl::setWindowNonExclusiveFullscreenIfNeeded(hasTitlebar(), getSize(), m_impl->sdlWindow);
@@ -895,9 +936,9 @@ void SDLWindowImpl::setTitle(const UnicodeString& title)
 
 
 ////////////////////////////////////////////////////////////
-void SDLWindowImpl::setIcon(const Vec2u size, const base::U8* pixels)
+void SDLWindowImpl::setIcon(const base::U8* pixels, const Vec2u size)
 {
-    auto surface = getSDLLayerSingleton().createSurfaceFromPixels(size, pixels);
+    auto surface = WindowContext::getSDLLayer().createSurfaceFromPixels(pixels, size);
     if (surface == nullptr)
     {
         err() << "Failed to set icon";
@@ -979,9 +1020,9 @@ bool SDLWindowImpl::hasFocus() const
 
 
 ////////////////////////////////////////////////////////////
-float SDLWindowImpl::getWindowDisplayScale() const
+float SDLWindowImpl::getDisplayScale() const
 {
-    return priv::getSDLLayerSingleton().getWindowDisplayScale(*m_impl->sdlWindow);
+    return WindowContext::getSDLLayer().getDisplayScale(*m_impl->sdlWindow);
 }
 
 
@@ -1057,165 +1098,17 @@ SDL_Window* SDLWindowImpl::getSDLHandle() const
 ////////////////////////////////////////////////////////////
 void SDLWindowImpl::processEvents()
 {
-    const auto dispatchSDLEvent = [&](const SDL_WindowID windowID, const SDL_Event& e)
-    {
-        const auto* it = SDLWindowImplImpl::windowImplMap.find(windowID);
-        if (it == SDLWindowImplImpl::windowImplMap.end())
-            return;
-
-        it->second->processSDLEvent(e);
-    };
-
     SDL_Event e;
 
     while (SDL_PollEvent(&e))
-    {
-        switch (static_cast<SDL_EventType>(e.type))
+        if (SDL_Window* window = SDL_GetWindowFromEvent(&e))
         {
-            case SDL_EVENT_FIRST:
-            case SDL_EVENT_QUIT:
-            case SDL_EVENT_TERMINATING:
-            case SDL_EVENT_LOW_MEMORY:
-            case SDL_EVENT_WILL_ENTER_BACKGROUND:
-            case SDL_EVENT_DID_ENTER_BACKGROUND:
-            case SDL_EVENT_WILL_ENTER_FOREGROUND:
-            case SDL_EVENT_DID_ENTER_FOREGROUND:
-            case SDL_EVENT_LOCALE_CHANGED:
-            case SDL_EVENT_SYSTEM_THEME_CHANGED:
-            case SDL_EVENT_DISPLAY_ORIENTATION:
-            case SDL_EVENT_DISPLAY_ADDED:
-            case SDL_EVENT_DISPLAY_REMOVED:
-            case SDL_EVENT_DISPLAY_MOVED:
-            case SDL_EVENT_DISPLAY_DESKTOP_MODE_CHANGED:
-            case SDL_EVENT_DISPLAY_CURRENT_MODE_CHANGED:
-            case SDL_EVENT_DISPLAY_CONTENT_SCALE_CHANGED:
-                break;
+            const SDL_WindowID windowID = SDL_GetWindowID(window);
+            const auto*        it       = SDLWindowImplImpl::windowImplMap.find(windowID);
 
-            case SDL_EVENT_WINDOW_SHOWN:
-            case SDL_EVENT_WINDOW_HIDDEN:
-            case SDL_EVENT_WINDOW_EXPOSED:
-            case SDL_EVENT_WINDOW_MOVED:
-            case SDL_EVENT_WINDOW_RESIZED:
-            case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
-            case SDL_EVENT_WINDOW_METAL_VIEW_RESIZED:
-            case SDL_EVENT_WINDOW_MINIMIZED:
-            case SDL_EVENT_WINDOW_MAXIMIZED:
-            case SDL_EVENT_WINDOW_RESTORED:
-            case SDL_EVENT_WINDOW_MOUSE_ENTER:
-            case SDL_EVENT_WINDOW_MOUSE_LEAVE:
-            case SDL_EVENT_WINDOW_FOCUS_GAINED:
-            case SDL_EVENT_WINDOW_FOCUS_LOST:
-            case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
-            case SDL_EVENT_WINDOW_HIT_TEST:
-            case SDL_EVENT_WINDOW_ICCPROF_CHANGED:
-            case SDL_EVENT_WINDOW_DISPLAY_CHANGED:
-            case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED:
-            case SDL_EVENT_WINDOW_SAFE_AREA_CHANGED:
-            case SDL_EVENT_WINDOW_OCCLUDED:
-            case SDL_EVENT_WINDOW_ENTER_FULLSCREEN:
-            case SDL_EVENT_WINDOW_LEAVE_FULLSCREEN:
-            case SDL_EVENT_WINDOW_DESTROYED:
-            case SDL_EVENT_WINDOW_HDR_STATE_CHANGED:
-                dispatchSDLEvent(e.window.windowID, e);
-                break;
-
-            case SDL_EVENT_KEY_DOWN:
-            case SDL_EVENT_KEY_UP:
-                dispatchSDLEvent(e.key.windowID, e);
-                break;
-
-            case SDL_EVENT_TEXT_EDITING:
-            case SDL_EVENT_TEXT_INPUT:
-                dispatchSDLEvent(e.text.windowID, e);
-                break;
-
-            case SDL_EVENT_KEYMAP_CHANGED:
-            case SDL_EVENT_KEYBOARD_ADDED:
-            case SDL_EVENT_KEYBOARD_REMOVED:
-            case SDL_EVENT_TEXT_EDITING_CANDIDATES:
-                break;
-
-            case SDL_EVENT_MOUSE_MOTION:
-                dispatchSDLEvent(e.motion.windowID, e);
-                break;
-
-            case SDL_EVENT_MOUSE_BUTTON_DOWN:
-            case SDL_EVENT_MOUSE_BUTTON_UP:
-                dispatchSDLEvent(e.button.windowID, e);
-                break;
-
-            case SDL_EVENT_MOUSE_WHEEL:
-                dispatchSDLEvent(e.wheel.windowID, e);
-                break;
-
-            case SDL_EVENT_MOUSE_ADDED:
-            case SDL_EVENT_MOUSE_REMOVED:
-            case SDL_EVENT_JOYSTICK_AXIS_MOTION:
-            case SDL_EVENT_JOYSTICK_BALL_MOTION:
-            case SDL_EVENT_JOYSTICK_HAT_MOTION:
-            case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
-            case SDL_EVENT_JOYSTICK_BUTTON_UP:
-            case SDL_EVENT_JOYSTICK_ADDED:
-            case SDL_EVENT_JOYSTICK_REMOVED:
-            case SDL_EVENT_JOYSTICK_BATTERY_UPDATED:
-            case SDL_EVENT_JOYSTICK_UPDATE_COMPLETE:
-            case SDL_EVENT_GAMEPAD_AXIS_MOTION:
-            case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
-            case SDL_EVENT_GAMEPAD_BUTTON_UP:
-            case SDL_EVENT_GAMEPAD_ADDED:
-            case SDL_EVENT_GAMEPAD_REMOVED:
-            case SDL_EVENT_GAMEPAD_REMAPPED:
-            case SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN:
-            case SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION:
-            case SDL_EVENT_GAMEPAD_TOUCHPAD_UP:
-            case SDL_EVENT_GAMEPAD_SENSOR_UPDATE:
-            case SDL_EVENT_GAMEPAD_UPDATE_COMPLETE:
-            case SDL_EVENT_GAMEPAD_STEAM_HANDLE_UPDATED:
-                break;
-
-            case SDL_EVENT_FINGER_DOWN:
-            case SDL_EVENT_FINGER_UP:
-            case SDL_EVENT_FINGER_MOTION:
-            case SDL_EVENT_FINGER_CANCELED:
-                dispatchSDLEvent(e.tfinger.windowID, e);
-                break;
-
-            case SDL_EVENT_CLIPBOARD_UPDATE:
-            case SDL_EVENT_DROP_FILE:
-            case SDL_EVENT_DROP_TEXT:
-            case SDL_EVENT_DROP_BEGIN:
-            case SDL_EVENT_DROP_COMPLETE:
-            case SDL_EVENT_DROP_POSITION:
-            case SDL_EVENT_AUDIO_DEVICE_ADDED:
-            case SDL_EVENT_AUDIO_DEVICE_REMOVED:
-            case SDL_EVENT_AUDIO_DEVICE_FORMAT_CHANGED:
-            case SDL_EVENT_SENSOR_UPDATE:
-            case SDL_EVENT_PEN_PROXIMITY_IN:
-            case SDL_EVENT_PEN_PROXIMITY_OUT:
-            case SDL_EVENT_PEN_DOWN:
-            case SDL_EVENT_PEN_UP:
-            case SDL_EVENT_PEN_BUTTON_DOWN:
-            case SDL_EVENT_PEN_BUTTON_UP:
-            case SDL_EVENT_PEN_MOTION:
-            case SDL_EVENT_PEN_AXIS:
-            case SDL_EVENT_CAMERA_DEVICE_ADDED:
-            case SDL_EVENT_CAMERA_DEVICE_REMOVED:
-            case SDL_EVENT_CAMERA_DEVICE_APPROVED:
-            case SDL_EVENT_CAMERA_DEVICE_DENIED:
-            case SDL_EVENT_RENDER_TARGETS_RESET:
-            case SDL_EVENT_RENDER_DEVICE_RESET:
-            case SDL_EVENT_RENDER_DEVICE_LOST:
-            case SDL_EVENT_PRIVATE0:
-            case SDL_EVENT_PRIVATE1:
-            case SDL_EVENT_PRIVATE2:
-            case SDL_EVENT_PRIVATE3:
-            case SDL_EVENT_POLL_SENTINEL:
-            case SDL_EVENT_USER:
-            case SDL_EVENT_LAST:
-            case SDL_EVENT_ENUM_PADDING:
-                break;
+            if (it != SDLWindowImplImpl::windowImplMap.end())
+                it->second->processSDLEvent(e);
         }
-    }
 }
 
 } // namespace sf::priv

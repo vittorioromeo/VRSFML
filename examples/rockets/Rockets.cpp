@@ -4,11 +4,20 @@
 #include "ExampleUtils/Sampler.hpp"
 #include "ExampleUtils/Scaling.hpp"
 
+#include "SFML/Graphics/DrawInstancedIndexedVerticesSettings.hpp"
+#include "SFML/Graphics/InstancedQuad.hpp"
+#include "SFML/Graphics/PrimitiveType.hpp"
+
+#include "SFML/System/Angle.hpp"
+
+#include "SFML/Base/Macros.hpp"
+
 #define SFEX_PROFILER_ENABLED
 #include "ExampleUtils/Profiler.hpp"
 #include "ExampleUtils/ProfilerImGui.hpp"
 
 #include "SFML/ImGui/ImGuiContext.hpp"
+#include "SFML/ImGui/IncludeImGui.hpp"
 
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DefaultShader.hpp"
@@ -17,6 +26,7 @@
 #include "SFML/Graphics/Glsl.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
+#include "SFML/Graphics/InstanceAttributeBinder.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderTexture.hpp"
@@ -26,6 +36,8 @@
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/TextureAtlas.hpp"
+#include "SFML/Graphics/VAOHandle.hpp"
+#include "SFML/Graphics/VBOHandle.hpp"
 #include "SFML/Graphics/View.hpp" // IWYU pragma: keep
 
 #include "SFML/Window/EventUtils.hpp"
@@ -35,34 +47,19 @@
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Path.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
-#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Algorithm/SwapAndPop.hpp"
-#include "SFML/Base/Builtin/OffsetOf.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#define IMGUI_DEFINE_MATH_OPERATORS
-#include <imgui.h>
-
 
 namespace
 {
-////////////////////////////////////////////////////////////
-constexpr sf::Vertex instancedQuadVertices[4] = {
-    {{-0.5, -0.5}, sf::Color::White, {0.f, 0.f}}, // Top-left
-    {{0.5, -0.5}, sf::Color::White, {1.f, 0.f}},  // Top-right
-    {{0.5, 0.5}, sf::Color::White, {1.f, 1.f}},   // Bottom-right
-    {{-0.5, 0.5}, sf::Color::White, {0.f, 1.f}}   // Bottom-left
-};
-
-
-////////////////////////////////////////////////////////////
-constexpr unsigned int instancedQuadIndices[6] = {0u, 1u, 2u, 2u, 3u, 0u};
 
 
 ////////////////////////////////////////////////////////////
@@ -78,10 +75,11 @@ struct ParticleInstanceData // NOLINT(cppcoreguidelines-pro-type-member-init)
 ////////////////////////////////////////////////////////////
 constexpr const char* instancedVertexShader = R"glsl(
 
-layout(location = 0) uniform mat4 sf_u_mvpMatrix;
-layout(location = 1) uniform sampler2D sf_u_texture;
-layout(location = 2) uniform vec4 u_texRect;
-layout(location = 3) uniform vec2 u_invTexSize;
+layout(location = 0) uniform vec3 sf_u_mvpRow0;
+layout(location = 1) uniform vec3 sf_u_mvpRow1;
+layout(location = 2) uniform sampler2D sf_u_texture;
+layout(location = 3) uniform vec2 sf_u_invTextureSize;
+layout(location = 4) uniform vec4 u_texRect;
 
 layout(location = 0) in vec2 sf_a_position;
 layout(location = 1) in vec4 sf_a_color; // Unused but part of `sf::Vertex` struct
@@ -108,23 +106,22 @@ void main()
     float y = local.x * s + local.y * c;
     vec2 worldPos = instance_position + instance_scale * vec2(x, y);
 
-    gl_Position = sf_u_mvpMatrix * vec4(worldPos, 0.0, 1.0);
+    gl_Position = vec4(dot(sf_u_mvpRow0, vec3(worldPos, 1.0)), dot(sf_u_mvpRow1, vec3(worldPos, 1.0)), 0.0, 1.0);
 
     sf_v_color = vec4(1.0, 1.0, 1.0, instance_opacity);
 
     vec2 final_texCoord = u_texRect.xy + (sf_a_texCoord * u_texRect.zw);
-    sf_v_texCoord = final_texCoord * u_invTexSize;
+    sf_v_texCoord = final_texCoord * sf_u_invTextureSize;
 }
 
 )glsl";
 
 
 ////////////////////////////////////////////////////////////
-sf::Shader*                            instanceRenderingShader         = nullptr;
-const sf::Shader::UniformLocation*     instanceRenderingULTextureRect  = nullptr;
-const sf::Shader::UniformLocation*     instanceRenderingInvTextureSize = nullptr;
-sf::RenderTarget::VAOHandle*           instanceRenderingVAOGroup       = nullptr;
-sf::RenderTarget::VBOHandle*           instanceRenderingVBOs[8]        = {};
+sf::Shader*                            instanceRenderingShader        = nullptr;
+const sf::Shader::UniformLocation*     instanceRenderingULTextureRect = nullptr;
+sf::VAOHandle*                         instanceRenderingVAOGroup      = nullptr;
+sf::VBOHandle*                         instanceRenderingVBOs          = nullptr; // points to array of 4
 sf::base::Vector<ParticleInstanceData> instanceRenderingDataBuffer[2];
 
 
@@ -140,22 +137,29 @@ sf::Rect2f   txrRocket;
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::RenderTarget::DrawInstancedIndexedVerticesSettings makeInstancedDrawSettings(const sf::base::SizeT nInstances)
+[[nodiscard]] sf::DrawInstancedIndexedVerticesSettings makeInstancedDrawSettings(const sf::base::SizeT nInstances)
 {
-    return {.vaoHandle     = *instanceRenderingVAOGroup,
-            .vertexData    = instancedQuadVertices,
-            .vertexCount   = 4u,
-            .indexData     = instancedQuadIndices,
-            .indexCount    = 6u,
-            .instanceCount = nInstances,
-            .primitiveType = sf::PrimitiveType::Triangles,
-            .renderStates  = {.texture = txAtlas, .shader = instanceRenderingShader}};
+    return {
+        .vaoHandle     = *instanceRenderingVAOGroup,
+        .vertexSpan    = sf::instancedQuadVertices,
+        .indexSpan     = sf::instancedQuadIndices,
+        .instanceCount = nInstances,
+        .primitiveType = sf::PrimitiveType::Triangles,
+    };
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] sf::RenderStates makeInstancedDrawRenderStates(const sf::View& view)
+{
+    return {.view = view, .texture = txAtlas, .shader = instanceRenderingShader};
 }
 
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline]] inline void drawParticleImpl(
     sf::RenderTarget& rt,
+    const sf::View&   view,
     const sf::Vec2f   position,
     const sf::Vec2f   scale,
     const float       rotation,
@@ -169,14 +173,14 @@ sf::Rect2f   txrRocket;
             .origin      = txr.size / 2.f,
             .rotation    = sf::radians(rotation),
             .textureRect = txr,
-            .color       = sf::Color::whiteMask(static_cast<sf::base::U8>(opacity * 255.f)),
+            .color       = sf::Color::whiteWithAlpha(static_cast<sf::base::U8>(opacity * 255.f)),
         },
-        sf::RenderStates{.texture = txAtlas});
+        sf::RenderStates{.view = view, .texture = txAtlas});
 }
 
 
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] inline void drawRocketImpl(sf::RenderTarget& rt, const sf::Vec2f position)
+[[gnu::always_inline]] inline void drawRocketImpl(sf::RenderTarget& rt, const sf::View& view, const sf::Vec2f position)
 {
     rt.draw(
         sf::Sprite{
@@ -187,7 +191,7 @@ sf::Rect2f   txrRocket;
             .textureRect = txrRocket,
             .color       = sf::Color::White,
         },
-        sf::RenderStates{.texture = txAtlas});
+        sf::RenderStates{.view = view, .texture = txAtlas});
 }
 
 
@@ -216,7 +220,7 @@ struct Entity
         velocity += acceleration * dt;
     }
 
-    virtual void draw(sf::RenderTarget&)
+    virtual void draw(sf::RenderTarget&, const sf::View&)
     {
     }
 };
@@ -238,10 +242,10 @@ struct World
             entities[i]->update(dt);
     }
 
-    void draw(sf::RenderTarget& rt)
+    void draw(sf::RenderTarget& rt, const sf::View& view)
     {
         for (const auto& entity : entities)
-            entity->draw(rt);
+            entity->draw(rt, view);
     }
 
     template <typename T>
@@ -302,18 +306,18 @@ struct Particle : Entity // NOLINT(cppcoreguidelines-pro-type-member-init)
 ////////////////////////////////////////////////////////////
 struct SmokeParticle final : Particle
 {
-    void draw(sf::RenderTarget& rt) override
+    void draw(sf::RenderTarget& rt, const sf::View& view) override
     {
-        drawParticleImpl(rt, position, {scale, scale}, rotation, txrSmoke, opacity);
+        drawParticleImpl(rt, view, position, {scale, scale}, rotation, txrSmoke, opacity);
     }
 };
 
 ////////////////////////////////////////////////////////////
 struct FireParticle final : Particle
 {
-    void draw(sf::RenderTarget& rt) override
+    void draw(sf::RenderTarget& rt, const sf::View& view) override
     {
-        drawParticleImpl(rt, position, {scale, scale}, rotation, txrFire, opacity);
+        drawParticleImpl(rt, view, position, {scale, scale}, rotation, txrFire, opacity);
     }
 };
 
@@ -398,9 +402,9 @@ struct Rocket final : Entity
         }
     }
 
-    void draw(sf::RenderTarget& rt) override
+    void draw(sf::RenderTarget& rt, const sf::View& view) override
     {
-        drawRocketImpl(rt, position);
+        drawRocketImpl(rt, view, position);
     }
 };
 
@@ -636,28 +640,26 @@ struct World
     }
 
     ////////////////////////////////////////////////////////////
-    void draw(sf::RenderTarget& rt)
+    void draw(sf::RenderTarget& rt, const sf::View& view)
     {
-        const auto drawParticlesInstanced =
-            [&](const auto& instanceBuffer, const sf::base::SizeT vboIndexOffset, const sf::Rect2f& txr)
+        const auto drawParticlesInstanced = [&](const auto& instanceBuffer, const sf::Rect2f& txr)
         {
-            auto setupSpriteInstanceAttribs = [&](sf::RenderTarget::InstanceAttributeBinder& binder)
+            auto setupSpriteInstanceAttribs = [&](sf::InstanceAttributeBinder& binder)
             {
-                binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset]);
-                binder.uploadContiguousData(instanceBuffer.size(), instanceBuffer.data());
+                binder.uploadContiguousData(instanceRenderingVBOs[0], instanceBuffer);
 
-                constexpr auto stride = sizeof(ParticleInstanceData);
-
-                binder.setup(3, 2, sf::GlDataType::Float, false, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, position));
-                binder.setup(4, 1, sf::GlDataType::Float, false, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, scale));
-                binder.setup(5, 1, sf::GlDataType::Float, false, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, rotation));
-                binder.setup(6, 1, sf::GlDataType::Float, true, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, opacity));
+                binder.setupField<&ParticleInstanceData::position>(3);
+                binder.setupField<&ParticleInstanceData::scale>(4);
+                binder.setupField<&ParticleInstanceData::rotation>(5);
+                binder.setupField<&ParticleInstanceData::opacity>(6);
             };
 
             instanceRenderingShader->setUniform(*instanceRenderingULTextureRect,
                                                 sf::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
 
-            rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(instanceBuffer.size()), setupSpriteInstanceAttribs);
+            rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(instanceBuffer.size()),
+                                            setupSpriteInstanceAttribs,
+                                            makeInstancedDrawRenderStates(view));
         };
 
         const auto nParticles = particles.size();
@@ -674,19 +676,19 @@ struct World
 
         {
             SFEX_PROFILE_SCOPE("smoke particles");
-            drawParticlesInstanced(instanceRenderingDataBuffer[0], 0, txrSmoke);
+            drawParticlesInstanced(instanceRenderingDataBuffer[0], txrSmoke);
         }
 
         {
             SFEX_PROFILE_SCOPE("fire particles");
-            drawParticlesInstanced(instanceRenderingDataBuffer[1], 1, txrFire);
+            drawParticlesInstanced(instanceRenderingDataBuffer[1], txrFire);
         }
 
         {
             SFEX_PROFILE_SCOPE("rockets");
 
             for (const auto& r : rockets)
-                drawRocketImpl(rt, r.position);
+                drawRocketImpl(rt, view, r.position);
         }
     }
 };
@@ -890,10 +892,9 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
     }
 
     ////////////////////////////////////////////////////////////
-    void draw(sf::RenderTarget& rt)
+    void draw(sf::RenderTarget& rt, const sf::View& view)
     {
-        const auto drawParticlesInstanced =
-            [&](const sf::base::SizeT vboIndexOffset, const sf::Rect2f& txr, const auto& particles)
+        const auto drawParticlesInstanced = [&](const sf::Rect2f& txr, const auto& particles)
         {
             const auto nParticles = particles.size();
 
@@ -904,40 +905,39 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
                 instanceRenderingDataBuffer[0]
                     .emplaceBack(particles[i].position, particles[i].scale, particles[i].rotation, particles[i].opacity);
 
-            auto setupSpriteInstanceAttribs = [&](sf::RenderTarget::InstanceAttributeBinder& binder)
+            auto setupSpriteInstanceAttribs = [&](sf::InstanceAttributeBinder& binder)
             {
-                binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset]);
-                binder.uploadContiguousData(nParticles, instanceRenderingDataBuffer[0].data());
+                binder.uploadContiguousData(instanceRenderingVBOs[0], instanceRenderingDataBuffer[0]);
 
-                constexpr auto stride = sizeof(ParticleInstanceData);
-
-                binder.setup(3, 2, sf::GlDataType::Float, false, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, position));
-                binder.setup(4, 1, sf::GlDataType::Float, false, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, scale));
-                binder.setup(5, 1, sf::GlDataType::Float, false, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, rotation));
-                binder.setup(6, 1, sf::GlDataType::Float, true, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, opacity));
+                binder.setupField<&ParticleInstanceData::position>(3);
+                binder.setupField<&ParticleInstanceData::scale>(4);
+                binder.setupField<&ParticleInstanceData::rotation>(5);
+                binder.setupField<&ParticleInstanceData::opacity>(6);
             };
 
             instanceRenderingShader->setUniform(*instanceRenderingULTextureRect,
                                                 sf::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
 
-            rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(nParticles), setupSpriteInstanceAttribs);
+            rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(nParticles),
+                                            setupSpriteInstanceAttribs,
+                                            makeInstancedDrawRenderStates(view));
         };
 
         {
             SFEX_PROFILE_SCOPE("smoke particles");
-            drawParticlesInstanced(0, txrSmoke, smokeParticles);
+            drawParticlesInstanced(txrSmoke, smokeParticles);
         }
 
         {
             SFEX_PROFILE_SCOPE("fire particles");
-            drawParticlesInstanced(1, txrFire, fireParticles);
+            drawParticlesInstanced(txrFire, fireParticles);
         }
 
         {
             SFEX_PROFILE_SCOPE("rockets");
 
             for (const auto& r : rockets)
-                drawRocketImpl(rt, r.position);
+                drawRocketImpl(rt, view, r.position);
         }
     }
 };
@@ -1151,53 +1151,50 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
     }
 
     ////////////////////////////////////////////////////////////
-    void draw(sf::RenderTarget& rt)
+    void draw(sf::RenderTarget& rt, const sf::View& view)
     {
-        const auto drawParticlesInstanced =
-            [&](const sf::base::SizeT vboIndexOffset, const sf::Rect2f& txr, const auto& particles)
+        const auto drawParticlesInstanced = [&](const sf::Rect2f& txr, const auto& particles)
         {
             const auto nParticles = particles.positions.size();
 
-            auto setupSpriteInstanceAttribs = [&](sf::RenderTarget::InstanceAttributeBinder& binder)
+            auto setupSpriteInstanceAttribs = [&](sf::InstanceAttributeBinder& binder)
             {
-                binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 0]);
-                binder.uploadContiguousData(nParticles, particles.positions.data());
-                binder.setup(3, 2, sf::GlDataType::Float, false, sizeof(sf::Vec2f), 0u);
+                binder.uploadContiguousData(instanceRenderingVBOs[0], particles.positions);
+                binder.setupFlat<sf::Vec2f>(3);
 
-                binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 1]);
-                binder.uploadContiguousData(nParticles, particles.scales.data());
-                binder.setup(4, 1, sf::GlDataType::Float, false, sizeof(float), 0u);
+                binder.uploadContiguousData(instanceRenderingVBOs[1], particles.scales);
+                binder.setupFlat<float>(4);
 
-                binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 2]);
-                binder.uploadContiguousData(nParticles, particles.rotations.data());
-                binder.setup(5, 1, sf::GlDataType::Float, false, sizeof(float), 0u);
+                binder.uploadContiguousData(instanceRenderingVBOs[2], particles.rotations);
+                binder.setupFlat<float>(5);
 
-                binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 3]);
-                binder.uploadContiguousData(nParticles, particles.opacities.data());
-                binder.setup(6, 1, sf::GlDataType::Float, true, sizeof(float), 0u);
+                binder.uploadContiguousData(instanceRenderingVBOs[3], particles.opacities);
+                binder.setupFlat<float>(6);
             };
 
             instanceRenderingShader->setUniform(*instanceRenderingULTextureRect,
                                                 sf::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
 
-            rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(nParticles), setupSpriteInstanceAttribs);
+            rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(nParticles),
+                                            setupSpriteInstanceAttribs,
+                                            makeInstancedDrawRenderStates(view));
         };
 
         {
             SFEX_PROFILE_SCOPE("smoke particles");
-            drawParticlesInstanced(0, txrSmoke, smokeParticles);
+            drawParticlesInstanced(txrSmoke, smokeParticles);
         }
 
         {
             SFEX_PROFILE_SCOPE("fire particles");
-            drawParticlesInstanced(4, txrFire, fireParticles);
+            drawParticlesInstanced(txrFire, fireParticles);
         }
 
         {
             SFEX_PROFILE_SCOPE("rockets");
 
             for (const auto& r : rockets)
-                drawRocketImpl(rt, r.position);
+                drawRocketImpl(rt, view, r.position);
         }
     }
 };
@@ -1370,53 +1367,50 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
     }
 
     ////////////////////////////////////////////////////////////
-    void draw(sf::RenderTarget& rt)
+    void draw(sf::RenderTarget& rt, const sf::View& view)
     {
-        const auto drawParticlesInstanced =
-            [&](const sf::base::SizeT vboIndexOffset, const sf::Rect2f& txr, const auto& particles)
+        const auto drawParticlesInstanced = [&](const sf::Rect2f& txr, const auto& particles)
         {
             const auto nParticles = particles.getSize();
 
-            auto setupSpriteInstanceAttribs = [&](sf::RenderTarget::InstanceAttributeBinder& binder)
+            auto setupSpriteInstanceAttribs = [&](sf::InstanceAttributeBinder& binder)
             {
-                binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 0]);
-                binder.uploadContiguousData(nParticles, particles.template get<&Particle::position>().data());
-                binder.setup(3, 2, sf::GlDataType::Float, false, sizeof(sf::Vec2f), 0u);
+                binder.uploadContiguousData(instanceRenderingVBOs[0], particles.template get<&Particle::position>());
+                binder.setupFlat<sf::Vec2f>(3);
 
-                binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 1]);
-                binder.uploadContiguousData(nParticles, particles.template get<&Particle::scale>().data());
-                binder.setup(4, 1, sf::GlDataType::Float, false, sizeof(float), 0u);
+                binder.uploadContiguousData(instanceRenderingVBOs[1], particles.template get<&Particle::scale>());
+                binder.setupFlat<float>(4);
 
-                binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 2]);
-                binder.uploadContiguousData(nParticles, particles.template get<&Particle::rotation>().data());
-                binder.setup(5, 1, sf::GlDataType::Float, false, sizeof(float), 0u);
+                binder.uploadContiguousData(instanceRenderingVBOs[2], particles.template get<&Particle::rotation>());
+                binder.setupFlat<float>(5);
 
-                binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 3]);
-                binder.uploadContiguousData(nParticles, particles.template get<&Particle::opacity>().data());
-                binder.setup(6, 1, sf::GlDataType::Float, true, sizeof(float), 0u);
+                binder.uploadContiguousData(instanceRenderingVBOs[3], particles.template get<&Particle::opacity>());
+                binder.setupFlat<float>(6);
             };
 
             instanceRenderingShader->setUniform(*instanceRenderingULTextureRect,
                                                 sf::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
 
-            rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(nParticles), setupSpriteInstanceAttribs);
+            rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(nParticles),
+                                            setupSpriteInstanceAttribs,
+                                            makeInstancedDrawRenderStates(view));
         };
 
         {
             SFEX_PROFILE_SCOPE("smoke particles");
-            drawParticlesInstanced(0, txrSmoke, smokeParticles);
+            drawParticlesInstanced(txrSmoke, smokeParticles);
         }
 
         {
             SFEX_PROFILE_SCOPE("fire particles");
-            drawParticlesInstanced(4, txrFire, fireParticles);
+            drawParticlesInstanced(txrFire, fireParticles);
         }
 
         {
             SFEX_PROFILE_SCOPE("rockets");
 
             for (const auto& r : rockets)
-                drawRocketImpl(rt, r.position);
+                drawRocketImpl(rt, view, r.position);
         }
     }
 };
@@ -1465,10 +1459,10 @@ int main()
                       })
                       .value();
 
-    auto rtGame = makeAARenderTexture(resolution.toVec2u(), /* desiredAALevel */ 8u).value();
+    auto windowView = window.computeView();
+    auto worldView  = sf::View::fromScreenSize(resolution);
 
-    // TODO P0: GPUStorage is still glitchy, some synchronization issue persists...
-    window.setAutoBatchMode(sf::RenderTarget::AutoBatchMode::GPUStorage);
+    auto rtGame = makeAARenderTexture(resolution.toVec2u(), {.antiAliasingLevel = 8u}).value();
 
     //
     //
@@ -1506,20 +1500,14 @@ int main()
 
     instanceRenderingShader = &instancedRenderingShaderImpl;
 
-    auto instancedRenderingVAOGroupImpl = sf::RenderTarget::VAOHandle{};
+    auto instancedRenderingVAOGroupImpl = sf::VAOHandle{};
     instanceRenderingVAOGroup           = &instancedRenderingVAOGroupImpl;
 
-    sf::RenderTarget::VBOHandle instancedRenderingVBOsImpl[8];
-    for (sf::base::SizeT i = 0u; i < 8u; ++i)
-        instanceRenderingVBOs[i] = &instancedRenderingVBOsImpl[i];
+    sf::VBOHandle instanceRenderingVBOsImpl[4];
+    instanceRenderingVBOs = instanceRenderingVBOsImpl;
 
     const auto instanceRenderingULTextureRectImpl = instancedRenderingShaderImpl.getUniformLocation("u_texRect").value();
     instanceRenderingULTextureRect = &instanceRenderingULTextureRectImpl;
-
-    const auto instanceRenderingInvTextureSizeImpl = instancedRenderingShaderImpl.getUniformLocation("u_invTexSize").value();
-    instanceRenderingInvTextureSize = &instanceRenderingInvTextureSizeImpl;
-
-    instanceRenderingShader->setUniform(*instanceRenderingInvTextureSize, 1.f / txAtlas->getSize().toVec2f());
 
     //
     //
@@ -1632,7 +1620,7 @@ int main()
                 if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                     return 0;
 
-                if (handleAspectRatioAwareResize(*event, resolution, window))
+                if (handleAspectRatioAwareResize(*event, resolution, windowView))
                     continue;
 
                 if (auto* eKeyPressed = event->getIf<sf::Event::KeyPressed>())
@@ -1740,8 +1728,8 @@ int main()
             {
                 ImGui::PlotLines(label,
                                  samples.data(),
-                                 static_cast<int>(samples.size()),
-                                 0,
+                                 static_cast<int>(samples.capacity()),
+                                 static_cast<int>(samples.insertionIndex()),
                                  nullptr,
                                  0.f,
                                  upperBound,
@@ -1887,29 +1875,24 @@ int main()
 
             SFEX_PROFILE_SCOPE("draw");
 
+            worldView.size   = resolution / zoom;
+            worldView.center = {(resolution.x / zoom) / 2.f, resolution.y / 2.f};
+
             rtGame.clear();
-
-            const auto prevView = rtGame.getView();
-
-            rtGame.setView({.center   = {resolution.x / (2.f * zoom), resolution.y / 2.f},
-                            .size     = prevView.size / zoom,
-                            .viewport = prevView.viewport});
 
             if (drawStep)
             {
                 if (mode == Mode::OOP)
-                    oopWorld.draw(rtGame);
+                    oopWorld.draw(rtGame, worldView);
                 else if (mode == Mode::AOS)
-                    aosWorld.draw(rtGame);
+                    aosWorld.draw(rtGame, worldView);
                 else if (mode == Mode::AOSImproved)
-                    aosImprovedWorld.draw(rtGame);
+                    aosImprovedWorld.draw(rtGame, worldView);
                 else if (mode == Mode::SOAManual)
-                    soaManualWorld.draw(rtGame);
+                    soaManualWorld.draw(rtGame, worldView);
                 else if (mode == Mode::SOAMeta)
-                    soaMetaWorld.draw(rtGame);
+                    soaMetaWorld.draw(rtGame, worldView);
             }
-
-            rtGame.setView(prevView);
 
             rtGame.display();
         }
@@ -1921,7 +1904,7 @@ int main()
 
             window.clear();
 
-            window.draw(rtGame.getTexture());
+            window.draw(rtGame.getTexture(), {.view = windowView});
 
             if (drawUI)
                 imGuiContext.render(window);

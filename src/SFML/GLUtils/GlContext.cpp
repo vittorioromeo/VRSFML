@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/GLUtils/GlContext.hpp"
 
-#include "SFML/Config.hpp"
+#include "SFML/Config.hpp" // IWYU pragma: keep
 
 #include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/WindowContext.hpp"

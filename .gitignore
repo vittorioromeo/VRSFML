@@ -65,3 +65,9 @@ patch_coverage.cmake
 *.xcscheme
 *.pbxproj
 *.xcuserstate
+
+# Krita
+*.kra
+
+# Codex
+.codex

@@ -5,6 +5,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/DrawIndexedVerticesSettings.hpp"
 #include "SFML/Graphics/IndexType.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
@@ -16,6 +17,7 @@
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
 
 
@@ -126,14 +128,13 @@ public:
 
         const auto drawVertices = [&](const sf::base::Vector<sf::Vertex>& vertices)
         {
-            target.drawIndexedVertices({
-                .vertexData    = vertices.data(),
-                .vertexCount   = vertices.size(),
-                .indexData     = m_indices.data(),
-                .indexCount    = m_indices.size(),
-                .primitiveType = sf::PrimitiveType::Triangles,
-                .renderStates  = states,
-            });
+            target.drawIndexedVertices(
+                sf::DrawIndexedVerticesSettings{
+                    .vertexSpan    = vertices,
+                    .indexSpan     = m_indices,
+                    .primitiveType = sf::PrimitiveType::Triangles,
+                },
+                states);
         };
 
         drawVertices(m_verticesGlow);

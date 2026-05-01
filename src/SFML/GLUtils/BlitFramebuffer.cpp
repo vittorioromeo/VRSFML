@@ -7,10 +7,11 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/GLUtils/BlitFramebuffer.hpp"
 
-#include "SFML/Config.hpp"
-
 #include "SFML/GLUtils/GLCheck.hpp"
 #include "SFML/GLUtils/Glad.hpp"
+
+#include "SFML/System/Priv/Vec2Base.hpp"
+#include "SFML/System/Rect2.hpp"
 
 #include "SFML/Base/Swap.hpp"
 

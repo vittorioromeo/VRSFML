@@ -2,7 +2,7 @@
 
 #include "RNGSeedType.hpp"
 
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/AssertAndAssume.hpp"
 #include "SFML/Base/Constants.hpp"
@@ -88,7 +88,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] inline sf::Vec2f getRandomDirection()
+    [[nodiscard, gnu::always_inline, gnu::flatten]] inline sf::Vec2f getDirVec2f()
     {
         const float angle = getF(0.f, sf::base::tau);
         return {sf::base::cos(angle), sf::base::sin(angle)};

@@ -36,6 +36,7 @@ public:
     /// \brief Construct a thread pool with a specified number of workers.
     ///
     /// Creates and starts `workerCount` threads that will wait for tasks.
+    /// `workerCount` must be greater than zero.
     ///
     /// \param workerCount The number of worker threads to create.
     ///

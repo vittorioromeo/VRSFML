@@ -11,6 +11,7 @@
 #include "SFML/Window/VideoModeUtils.hpp"
 #include "SFML/Window/WindowBase.hpp"
 #include "SFML/Window/WindowContext.hpp"
+#include "SFML/Window/WindowHandle.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/GLUtils/GlContext.hpp"
@@ -20,8 +21,11 @@
 #include "SFML/System/Sleep.hpp"
 #include "SFML/System/Time.hpp"
 
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 
 #ifdef SFML_SYSTEM_EMSCRIPTEN
     #include <emscripten.h>
@@ -49,7 +53,7 @@ Window::Window(base::PassKey<Window>&&, WindowBase&& windowBase, const Settings&
     WindowBase(SFML_BASE_MOVE(windowBase)),
     m_impl(WindowContext::createGlContext(windowSettings.contextSettings, getWindowImpl(), bitsPerPixel))
 {
-    SFML_BASE_ASSERT(m_impl->glContext != nullptr);
+    SFML_BASE_ASSERT(m_impl->glContext != nullptr && "Failed to create GL context for window");
 
     // Setup default behaviors (to get a consistent behavior across different implementations)
     setVerticalSyncEnabled(windowSettings.vsync);
@@ -80,6 +84,9 @@ base::Optional<Window> Window::create(const Settings& windowSettings)
 base::Optional<Window> Window::create(const WindowHandle handle, const ContextSettings& contextSettings)
 {
     auto windowBase = WindowBase::create(handle);
+
+    if (!windowBase.hasValue())
+        return base::nullOpt;
 
     return base::Optional<Window>(base::inPlace,
                                   base::PassKey<Window>{},

@@ -6,7 +6,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 
 namespace sf
@@ -14,93 +14,94 @@ namespace sf
 ////////////////////////////////////////////////////////////
 /// \brief Utility mixin providing anchor point functions for positioning
 ///
-/// This template class can be inherited by classes that have position
+/// This class can be inherited by classes that have position
 /// and bounds (like `sf::Transformable` based classes)
 /// to add convenient functions for getting and setting the object's position
 /// based on common anchor points (corners, centers, edges).
 ///
-/// It relies on the inheriting class `T` providing `getLocalBounds()`.
+/// It relies on the inheriting class providing `getLocalBounds()`.
+/// The derived type is deduced at call time via C++23 explicit object parameters.
 ///
 ////////////////////////////////////////////////////////////
-template <typename T>
 struct LocalAnchorPointMixin
 {
     ////////////////////////////////////////////////////////////
-    /// \brief Get the world position of a specific anchor point
+    /// \brief Get the local position of a specific anchor point
     ///
-    /// Calculates the world coordinates of a point based on normalized
+    /// Calculates the local coordinates of a point based on normalized
     /// factors within the object's bounding box (or size for windows).
     /// `(0, 0)` corresponds to the top-left, `(1, 1)` to the bottom-right.
     ///
     /// \param factors Normalized factors `(x, y)` within the bounds `[0, 1]`
     ///
-    /// \return World coordinates of the calculated anchor point
+    /// \return Local coordinates of the calculated anchor point
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr auto getLocalAnchorPoint(const Vec2f factors) const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
+    inline constexpr auto getLocalAnchorPoint(this const auto& self, const Vec2f factors)
     {
-        return static_cast<const T&>(*this).getLocalBounds().getAnchorPoint(factors);
+        return self.getLocalBounds().getAnchorPoint(factors);
     }
 
 
 ////////////////////////////////////////////////////////////
-#define SFML_PRIV_DEFINE_MIXIN_GETTER(name, ...)                                                  \
-    /** \brief Get the position of the name anchor point */                                       \
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr auto name() const \
-    {                                                                                             \
-        return this->getLocalAnchorPoint(__VA_ARGS__);                                            \
+#define SFML_PRIV_DEFINE_MIXIN_GETTER(name, ...)                                                                 \
+    /** \brief Get the position of the name anchor point */                                                      \
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr auto name(this auto const& self) \
+    {                                                                                                            \
+        return self.getLocalAnchorPoint(__VA_ARGS__);                                                            \
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the world position of the top-left anchor point
+    /// \brief Get the local position of the top-left anchor point
     ///
     ////////////////////////////////////////////////////////////
     SFML_PRIV_DEFINE_MIXIN_GETTER(getLocalTopLeft, {0.f, 0.f});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the world position of the top-center anchor point
+    /// \brief Get the local position of the top-center anchor point
     ///
     ////////////////////////////////////////////////////////////
     SFML_PRIV_DEFINE_MIXIN_GETTER(getLocalTopCenter, {0.5f, 0.f});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the world position of the top-right anchor point
+    /// \brief Get the local position of the top-right anchor point
     ///
     ////////////////////////////////////////////////////////////
     SFML_PRIV_DEFINE_MIXIN_GETTER(getLocalTopRight, {1.f, 0.f});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the world position of the center-left anchor point
+    /// \brief Get the local position of the center-left anchor point
     ///
     ////////////////////////////////////////////////////////////
     SFML_PRIV_DEFINE_MIXIN_GETTER(getLocalCenterLeft, {0.f, 0.5f});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the world position of the center anchor point
+    /// \brief Get the local position of the center anchor point
     ///
     ////////////////////////////////////////////////////////////
     SFML_PRIV_DEFINE_MIXIN_GETTER(getLocalCenter, {0.5f, 0.5f});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the world position of the center-right anchor point
+    /// \brief Get the local position of the center-right anchor point
     ///
     ////////////////////////////////////////////////////////////
     SFML_PRIV_DEFINE_MIXIN_GETTER(getLocalCenterRight, {1.f, 0.5f});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the world position of the bottom-left anchor point
+    /// \brief Get the local position of the bottom-left anchor point
     ///
     ////////////////////////////////////////////////////////////
     SFML_PRIV_DEFINE_MIXIN_GETTER(getLocalBottomLeft, {0.f, 1.f});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the world position of the bottom-center anchor point
+    /// \brief Get the local position of the bottom-center anchor point
     ///
     ////////////////////////////////////////////////////////////
     SFML_PRIV_DEFINE_MIXIN_GETTER(getLocalBottomCenter, {0.5f, 1.f});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the world position of the bottom-right anchor point
+    /// \brief Get the local position of the bottom-right anchor point
     ///
     ////////////////////////////////////////////////////////////
     SFML_PRIV_DEFINE_MIXIN_GETTER(getLocalBottomRight, {1.f, 1.f});
@@ -109,50 +110,80 @@ struct LocalAnchorPointMixin
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the world X coordinate of the left edge
+    /// \brief Get the local X coordinate of the left edge
     ///
     /// \return Left edge X coordinate
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getLocalLeft() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
+    inline constexpr float getLocalLeft(this const auto& self)
     {
-        return static_cast<const T&>(*this).getLocalBounds().getLeft();
+        return self.getLocalBounds().getLeft();
     }
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the world X coordinate of the right edge
+    /// \brief Get the local X coordinate of the right edge
     ///
     /// \return Right edge X coordinate
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getLocalRight() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
+    inline constexpr float getLocalRight(this const auto& self)
     {
-        return static_cast<const T&>(*this).getLocalBounds().getRight();
+        return self.getLocalBounds().getRight();
     }
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the world Y coordinate of the top edge
+    /// \brief Get the local Y coordinate of the top edge
     ///
     /// \return Top edge Y coordinate
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getLocalTop() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
+    inline constexpr float getLocalTop(this const auto& self)
     {
-        return static_cast<const T&>(*this).getLocalBounds().getTop();
+        return self.getLocalBounds().getTop();
     }
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the world Y coordinate of the bottom edge
+    /// \brief Get the local Y coordinate of the bottom edge
     ///
     /// \return Bottom edge Y coordinate
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getLocalBottom() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
+    inline constexpr float getLocalBottom(this const auto& self)
     {
-        return static_cast<const T&>(*this).getLocalBounds().getBottom();
+        return self.getLocalBounds().getBottom();
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the local width of the object
+    ///
+    /// \return Width of the object
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
+    inline constexpr float getLocalWidth(this const auto& self)
+    {
+        return self.getLocalBounds().size.x;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the local height of the object
+    ///
+    /// \return Height of the object
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
+    inline constexpr float getLocalHeight(this const auto& self)
+    {
+        return self.getLocalBounds().size.y;
     }
 };
 
@@ -174,8 +205,7 @@ struct LocalAnchorPointMixin
 /// on individual edge coordinates (`getLeft()`, `setRight()`, etc.).
 ///
 /// To use this mixin, inherit from it publicly, e.g.:
-/// `struct MyObject : public sf::Transformable, public sf::LocalAnchorPointMixin<MyObject>`
-/// The template argument `T` must be the type of the inheriting class itself.
+/// `struct MyObject : public sf::Transformable, public sf::LocalAnchorPointMixin`
 /// The inheriting class must provide `getLocalBounds()`.
 ///
 /// \see `sf::Transformable`

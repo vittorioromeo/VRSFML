@@ -6,7 +6,8 @@
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
-#include "SFML/Base/StdChrono.hpp" // IWYU pragma: keep
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/StdChrono.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #pragma GCC diagnostic push
@@ -16,9 +17,6 @@
 #include <concurrentqueue.h>
 
 #pragma GCC diagnostic pop
-
-#undef __cpp_lib_formatters
-#undef __glibcxx_want_formatters
 
 #include <atomic>
 
@@ -32,6 +30,7 @@
     #include <thread>
 
 #endif
+
 
 namespace sf::base
 {
@@ -169,6 +168,8 @@ struct ThreadPool::Impl
 ////////////////////////////////////////////////////////////
 ThreadPool::ThreadPool(const SizeT workerCount)
 {
+    SFML_BASE_ASSERT(workerCount > 0u);
+
     for (SizeT i = 0u; i < workerCount; ++i)
         m_impl->workers.emplaceBack(m_impl->queue);
 

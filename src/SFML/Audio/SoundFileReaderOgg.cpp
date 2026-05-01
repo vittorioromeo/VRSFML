@@ -7,43 +7,60 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Audio/SoundFileReaderOgg.hpp"
 
+#include "SFML/Audio/SoundChannel.hpp"
+#include "SFML/Audio/SoundFileReader.hpp"
+
 #include "SFML/System/Err.hpp"
 #include "SFML/System/InputStream.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 
+#include <vorbis/codec.h>
 #include <vorbis/vorbisfile.h>
+
+#include <ogg/config_types.h>
 
 #include <cstdio>
 
 
 namespace
 {
+////////////////////////////////////////////////////////////
 sf::base::SizeT read(void* ptr, sf::base::SizeT size, sf::base::SizeT nmemb, void* data)
 {
     auto* stream = static_cast<sf::InputStream*>(data);
     return stream->read(ptr, size * nmemb).valueOr(static_cast<sf::base::SizeT>(-1));
 }
 
+
+////////////////////////////////////////////////////////////
 int seek(void* data, ogg_int64_t signedOffset, int whence)
 {
-    auto* stream = static_cast<sf::InputStream*>(data);
-    auto  offset = static_cast<sf::base::SizeT>(signedOffset);
+    auto*           stream = static_cast<sf::InputStream*>(data);
+    sf::base::SizeT offset{};
+
     switch (whence)
     {
         case SEEK_SET:
+            offset = static_cast<sf::base::SizeT>(signedOffset);
             break;
         case SEEK_CUR:
-            offset += stream->tell().value();
+            offset = static_cast<sf::base::SizeT>(static_cast<ogg_int64_t>(stream->tell().value()) + signedOffset);
             break;
         case SEEK_END:
-            offset = stream->getSize().value() - offset;
+            offset = static_cast<sf::base::SizeT>(static_cast<ogg_int64_t>(stream->getSize().value()) + signedOffset);
+            break;
     }
+
     const sf::base::Optional position = stream->seek(offset);
     return position.hasValue() ? static_cast<int>(*position) : -1;
 }
 
+
+////////////////////////////////////////////////////////////
 long tell(void* data)
 {
     auto*                    stream   = static_cast<sf::InputStream*>(data);
@@ -51,7 +68,10 @@ long tell(void* data)
     return position.hasValue() ? static_cast<long>(*position) : -1;
 }
 
+
+////////////////////////////////////////////////////////////
 ov_callbacks callbacks = {&read, &seek, nullptr, &tell};
+
 } // namespace
 
 

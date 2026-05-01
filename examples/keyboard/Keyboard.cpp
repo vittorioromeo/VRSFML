@@ -13,6 +13,9 @@
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Text.hpp"
+#include "SFML/Graphics/TextBase.inl" // IWYU pragma: keep, required: `ShinyText` below derives from `sf::Text`
+#include "SFML/Graphics/Transformable.hpp"
+#include "SFML/Graphics/Vertex.hpp"
 #include "SFML/Graphics/View.hpp" // IWYU pragma: keep
 
 #include "SFML/Audio/AudioContext.hpp"
@@ -27,15 +30,21 @@
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Time.hpp"
 
 #include "SFML/Base/Abort.hpp"
+#include "SFML/Base/Array.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Math/Round.hpp"
 #include "SFML/Base/MinMax.hpp"
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 #ifdef SFML_SYSTEM_IOS
@@ -595,7 +604,7 @@ class KeyboardView : public sf::Transformable
 {
 public:
     explicit KeyboardView(const sf::Font& font) :
-        m_labels(sf::Keyboard::ScancodeCount, sf::Text(font, {.characterSize = 14u}))
+        m_labels(sf::Keyboard::ScancodeCount, sf::Text(font, {.string = "", .characterSize = 14u}))
     {
         // Check all the scancodes are in the matrix exactly once
         {
@@ -632,7 +641,7 @@ public:
             if (rect.size.x < label.getLocalBounds().size.x + padding * 2.f + 2.f)
             {
                 sf::UnicodeString string = label.getString();
-                string.replace(" ", "\n");
+                string.replaceAllOccurrences(" ", "\n");
                 label.setString(string);
             }
             while (rect.size.x < label.getLocalBounds().size.x + padding * 2.f + 2.f)
@@ -701,10 +710,12 @@ public:
         });
     }
 
-    void drawOnto(sf::RenderTarget& target, sf::RenderStates states) const
+    void draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
         states.transform *= getTransform();
+
         target.draw(m_triangles, sf::PrimitiveType::Triangles, states);
+
         for (const sf::Text& label : m_labels)
             target.draw(label, states);
     }
@@ -1058,6 +1069,8 @@ int main()
                       })
                       .value();
 
+    auto windowView = window.computeView();
+
     // Load sound buffers
     const auto errorSoundBuffer    = sf::SoundBuffer::loadFromFile(resourcesDir() / "error_005.ogg").value();
     const auto pressedSoundBuffer  = sf::SoundBuffer::loadFromFile(resourcesDir() / "mouseclick1.ogg").value();
@@ -1091,12 +1104,8 @@ int main()
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
-            if (handleAspectRatioAwareResize(*event, windowSize, window))
+            if (handleAspectRatioAwareResize(*event, windowSize, windowView))
                 continue;
-
-            // Window size changed: adjust view appropriately
-            if (const auto* resized = event->getIf<sf::Event::Resized>())
-                window.setView({.center = resized->size.toVec2f() / 2.f, .size = resized->size.toVec2f()});
 
             // Key events: update text and play sound
             if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
@@ -1159,11 +1168,7 @@ int main()
 
         // Render frame
         window.clear();
-        keyboardView.drawOnto(window, sf::RenderStates{});
-        window.draw(keyPressedText);
-        window.draw(keyReleasedText);
-        window.draw(textEnteredText);
-        window.draw(keyPressedCheckText);
+        window.withRenderStates({.view = windowView}).drawAll(keyboardView, keyPressedText, keyReleasedText, textEnteredText);
         window.display();
     }
 

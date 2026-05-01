@@ -13,9 +13,12 @@
 #include "SFML/Window/EventUtils.hpp"
 
 #include "SFML/System/Path.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/UnicodeString.hpp"
 
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/String.hpp"
 #include "SFML/Base/ToString.hpp"
 #include "SFML/Base/Vector.hpp"
 
@@ -41,12 +44,26 @@ int main()
                       })
                       .value();
 
+    auto windowView = window.computeView();
+
     // Open the application font and pass it to the Effect class
     const auto font = sf::Font::openFromFile("resources/tuffy.ttf").value();
 
     // Create the mouse position and mouse raw movement texts
-    sf::Text mousePosition(font, {.position = {400.f, 300.f}, .characterSize = 20u, .fillColor = sf::Color::White});
-    sf::Text mouseRawMovement(font, {.characterSize = 20u, .fillColor = sf::Color::White});
+    sf::Text mousePosition(font,
+                           {
+                               .position      = {400.f, 300.f},
+                               .string        = "",
+                               .characterSize = 20u,
+                               .fillColor     = sf::Color::White,
+                           });
+
+    sf::Text mouseRawMovement(font,
+                              {
+                                  .string        = "",
+                                  .characterSize = 20u,
+                                  .fillColor     = sf::Color::White,
+                              });
 
     sf::base::Vector<sf::base::String> log;
 
@@ -57,7 +74,7 @@ int main()
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
-            if (handleAspectRatioAwareResize(*event, windowSize, window))
+            if (handleAspectRatioAwareResize(*event, windowSize, windowView))
                 continue;
 
             static const auto vec2ToString = [](const sf::Vec2i vec2)
@@ -76,13 +93,13 @@ int main()
         }
 
         window.clear();
-        window.draw(mousePosition);
+        window.draw(mousePosition, {.view = windowView});
 
         for (sf::base::SizeT i = 0u; i < log.size(); ++i)
         {
             mouseRawMovement.position = {50.f, static_cast<float>(i * 20) + 50.f};
             mouseRawMovement.setString(log[i]);
-            window.draw(mouseRawMovement);
+            window.draw(mouseRawMovement, {.view = windowView});
         }
 
         window.display();

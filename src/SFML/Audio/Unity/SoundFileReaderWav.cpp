@@ -8,13 +8,16 @@
 #include "SFML/Audio/SoundFileReaderWav.hpp"
 
 #include "SFML/Audio/ChannelMap.hpp"
-#include "SFML/Audio/MiniaudioUtils.hpp"
+#include "SFML/Audio/Priv/MiniaudioUtils.hpp"
+#include "SFML/Audio/SoundFileReader.hpp"
 
 #include "SFML/System/InputStream.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/GetArraySize.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 #include <miniaudio.h>

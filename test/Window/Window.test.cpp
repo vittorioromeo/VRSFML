@@ -1,19 +1,37 @@
 #include "SFML/Window/Window.hpp"
 
 #include "SFML/Window/WindowContext.hpp"
+#include "SFML/Window/WindowHandle.hpp"
+
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 // Other 1st party headers
+#include "SystemUtil.hpp"
+#include "WindowUtil.hpp"
+
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/Trait/HasVirtualDestructor.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <Doctest.hpp>
 
-#include <CommonTraits.hpp>
-#include <SystemUtil.hpp>
-#include <WindowUtil.hpp>
+
+namespace
+{
+sf::WindowContext& sharedWindowContext()
+{
+    static auto ctx = sf::WindowContext::create().value();
+    return ctx;
+}
+} // namespace
+
 
 TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 {
-    auto windowContext = sf::WindowContext::create().value();
+    (void)sharedWindowContext();
 
     SECTION("Type traits")
     {
@@ -91,41 +109,17 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
 
 // Creating multiple windows in Emscripten is not supported
 #ifndef SFML_SYSTEM_EMSCRIPTEN
-    SECTION("Multiple windows 1")
+    SECTION("Multiple windows display orderings")
     {
         auto window      = sf::Window::create({.size{256u, 256u}, .title = "A"}).value();
         auto childWindow = sf::Window::create(sf::Window::Settings{.size{256u, 256u}, .title = "B"});
 
-        window.display();
-        childWindow.reset();
-        window.display();
-    }
-
-    SECTION("Multiple windows 2")
-    {
-        auto window      = sf::Window::create({.size{256u, 256u}, .title = "A"}).value();
-        auto childWindow = sf::Window::create(sf::Window::Settings{.size{256u, 256u}, .title = "B"});
-
+        // Variant 1: parent display, child reset, parent display
         window.display();
         childWindow->display();
         window.display();
-    }
-
-    SECTION("Multiple windows 3")
-    {
-        auto window      = sf::Window::create({.size{256u, 256u}, .title = "A"}).value();
-        auto childWindow = sf::Window::create(sf::Window::Settings{.size{256u, 256u}, .title = "B"});
-
         childWindow->display();
         window.display();
-    }
-
-    SECTION("Multiple windows 4")
-    {
-        auto window      = sf::Window::create({.size{256u, 256u}, .title = "A"}).value();
-        auto childWindow = sf::Window::create(sf::Window::Settings{.size{256u, 256u}, .title = "B"});
-
-        childWindow->display();
         childWindow.reset();
         window.display();
     }

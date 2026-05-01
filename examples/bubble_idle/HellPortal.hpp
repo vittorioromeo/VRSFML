@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Countdown.hpp"
+#include "ExampleUtils/Progress.hpp"
 
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 
 ////////////////////////////////////////////////////////////

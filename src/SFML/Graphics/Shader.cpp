@@ -7,10 +7,10 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Shader.hpp"
 
-#include "SFML/Config.hpp"
-
 #include "SFML/Graphics/DefaultShader.hpp"
+#include "SFML/Graphics/Glsl.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/ShaderUtils.hpp"
 #include "SFML/Graphics/Texture.hpp"
 
 #include "SFML/GLUtils/GLCheck.hpp"
@@ -23,14 +23,14 @@
 #include "SFML/System/InputStream.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/PathUtils.hpp"
-#include "SFML/System/Vec2.hpp"
-#include "SFML/System/Vec3.hpp"
 
 #include "SFML/Base/AnkerlUnorderedDense.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/Exchange.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Vector.hpp"
@@ -156,61 +156,14 @@ struct [[nodiscard]] BufferSlice
 }
 
 
-////////////////////////////////////////////////////////////
-// Transforms an array of vec2s into a contiguous array of scalars
-[[nodiscard]] sf::base::Vector<float> flatten(const sf::Vec2f* vecArray, sf::base::SizeT length)
-{
-    constexpr sf::base::SizeT vecSize = 2u;
-
-    sf::base::Vector<float> contiguous(vecSize * length);
-
-    for (sf::base::SizeT i = 0; i < length; ++i)
-    {
-        contiguous[vecSize * i]     = vecArray[i].x;
-        contiguous[vecSize * i + 1] = vecArray[i].y;
-    }
-
-    return contiguous;
-}
-
-
-////////////////////////////////////////////////////////////
-// Transforms an array of vec3s into a contiguous array of scalars
-[[nodiscard]] sf::base::Vector<float> flatten(const sf::Vec3f* vecArray, sf::base::SizeT length)
-{
-    constexpr sf::base::SizeT vecSize = 3u;
-
-    sf::base::Vector<float> contiguous(vecSize * length);
-
-    for (sf::base::SizeT i = 0; i < length; ++i)
-    {
-        contiguous[vecSize * i]     = vecArray[i].x;
-        contiguous[vecSize * i + 1] = vecArray[i].y;
-        contiguous[vecSize * i + 2] = vecArray[i].z;
-    }
-
-    return contiguous;
-}
-
-
-////////////////////////////////////////////////////////////
-// Transforms an array of vec4s into a contiguous array of scalars
-[[nodiscard]] sf::base::Vector<float> flatten(const sf::Glsl::Vec4* vecArray, sf::base::SizeT length)
-{
-    constexpr sf::base::SizeT vecSize = 4u;
-
-    sf::base::Vector<float> contiguous(vecSize * length);
-
-    for (sf::base::SizeT i = 0; i < length; ++i)
-    {
-        contiguous[vecSize * i]     = vecArray[i].x;
-        contiguous[vecSize * i + 1] = vecArray[i].y;
-        contiguous[vecSize * i + 2] = vecArray[i].z;
-        contiguous[vecSize * i + 3] = vecArray[i].w;
-    }
-
-    return contiguous;
-}
+// Vec/Matrix types are standard-layout with no padding, so an array of N
+// elements is exactly N * componentCount contiguous floats. This lets us
+// pass the storage directly to glUniform*v without an intermediate copy.
+static_assert(sizeof(sf::Glsl::Vec2) == 2 * sizeof(float));
+static_assert(sizeof(sf::Glsl::Vec3) == 3 * sizeof(float));
+static_assert(sizeof(sf::Glsl::Vec4) == 4 * sizeof(float));
+static_assert(sizeof(sf::Glsl::Mat3) == 9 * sizeof(float));
+static_assert(sizeof(sf::Glsl::Mat4) == 16 * sizeof(float));
 
 
 ////////////////////////////////////////////////////////////
@@ -249,15 +202,21 @@ precision highp float;
     buffer.clear();
 
     buffer.emplaceRange(preamble.data(), preamble.size() - 1);
-    buffer.emplaceRange(src.data(), src.size() - 1);
+    buffer.emplaceRange(src.data(), src.size());
 
     return {buffer.data(), buffer.size()};
 }
 
 
 ////////////////////////////////////////////////////////////
-void printLinesWithNumbers(auto& os, sf::base::StringView text)
+void printLinesWithNumbers(sf::base::StringView text)
 {
+    auto os = sf::priv::err(/* multiLine */ true) << "\n\n";
+
+    constexpr sf::base::StringView lineDirectivePrefix{"#line "};
+    constexpr sf::base::StringView beginIncludePrefix{"// >>> begin included from \""};
+    constexpr sf::base::StringView endIncludePrefix{"// <<< end included from \""};
+
     sf::base::SizeT lineStart  = 0u;
     sf::base::SizeT lineNumber = 1u;
 
@@ -265,17 +224,60 @@ void printLinesWithNumbers(auto& os, sf::base::StringView text)
     {
         // Find the position of the next newline character.
         sf::base::SizeT newlinePos = text.find('\n', lineStart);
-        if (newlinePos == sf::base::StringView::nPos)
+        const bool      lastLine   = (newlinePos == sf::base::StringView::nPos);
+
+        const sf::base::StringView line = lastLine ? text.substrByPosLen(lineStart)
+                                                   : text.substrByPosLen(lineStart, newlinePos - lineStart);
+
+        // Check if this line is a #line directive and update the tracked line number
+        if (line.size() > lineDirectivePrefix.size() &&
+            line.substrByPosLen(0, lineDirectivePrefix.size()) == lineDirectivePrefix)
         {
-            // Print the remaining text as the final line.
-            os << lineNumber << " | " << text.substrByPosLen(lineStart) << "\n";
-            break;
+            // Parse the line number from the directive
+            unsigned int parsedLineNumber = 0;
+
+            for (sf::base::SizeT i = lineDirectivePrefix.size(); i < line.size(); ++i)
+            {
+                const char c = line[i];
+                if (c < '0' || c > '9')
+                    break;
+
+                parsedLineNumber = parsedLineNumber * 10 + static_cast<unsigned int>(c - '0');
+            }
+
+            if (parsedLineNumber > 0)
+                lineNumber = parsedLineNumber;
+        }
+        // Check for include begin/end markers -- print as separator lines
+        else if (line.size() > beginIncludePrefix.size() &&
+                 line.substrByPosLen(0, beginIncludePrefix.size()) == beginIncludePrefix)
+        {
+            os << "      | " << line << "\n";
+        }
+        else if (line.size() > endIncludePrefix.size() && line.substrByPosLen(0, endIncludePrefix.size()) == endIncludePrefix)
+        {
+            os << "      | " << line << "\n";
+        }
+        else
+        {
+            // Right-align line number in a 5-char field
+            if (lineNumber < 10)
+                os << "    ";
+            else if (lineNumber < 100)
+                os << "   ";
+            else if (lineNumber < 1000)
+                os << "  ";
+            else if (lineNumber < 10'000)
+                os << " ";
+
+            os << lineNumber << " | " << line << "\n";
+            ++lineNumber;
         }
 
-        // Print the current line with its line number and pipe separator.
-        os << lineNumber << " | " << text.substrByPosLen(lineStart, newlinePos - lineStart) << "\n";
-        lineStart = newlinePos + 1; // Move past the newline.
-        ++lineNumber;
+        if (lastLine)
+            break;
+
+        lineStart = newlinePos + 1;
     }
 }
 
@@ -302,13 +304,15 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct Shader::Impl
 {
-    unsigned int shaderProgram{};    //!< OpenGL identifier for the program
-    int          currentTexture{-1}; //!< Location of the current texture in the shader
+    unsigned int shaderProgram; //!< OpenGL identifier for the program
+
+    // NOLINTNEXTLINE(cppcoreguidelines-use-default-member-init, modernize-use-default-member-init)
+    int currentTexture; //!< Location of the current texture in the shader
 
     // TODO P1: protect with mutex? Change API?
     mutable ankerl::unordered_dense::map<int, const Texture*> textures; //!< Texture variables in the shader, mapped to their location
 
-    explicit Impl(unsigned int theShaderProgram) : shaderProgram(theShaderProgram)
+    explicit Impl(unsigned int theShaderProgram) : shaderProgram{theShaderProgram}, currentTexture{-1}
     {
     }
 
@@ -317,6 +321,20 @@ struct Shader::Impl
         currentTexture(base::exchange(rhs.currentTexture, -1)),
         textures(SFML_BASE_MOVE(rhs.textures))
     {
+    }
+
+    Impl& operator=(Impl&& rhs) noexcept
+    {
+        if (&rhs == this)
+            return *this;
+
+        destroyProgramIfNeeded(shaderProgram);
+
+        shaderProgram  = base::exchange(rhs.shaderProgram, 0u);
+        currentTexture = base::exchange(rhs.currentTexture, -1);
+        textures       = SFML_BASE_MOVE(rhs.textures);
+
+        return *this;
     }
 };
 
@@ -333,47 +351,35 @@ class [[nodiscard]] Shader::UniformBinder
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Constructor: set up state before uniform is set
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] explicit UniformBinder(unsigned int shaderProgram) :
-        m_currentProgram(static_cast<GLhandle>(castToGlHandle(shaderProgram)))
+    [[nodiscard, gnu::always_inline]] explicit UniformBinder(unsigned int currentProgramInt)
     {
-        SFML_BASE_ASSERT(m_currentProgram != 0);
+        const auto currentProgram = static_cast<GLhandle>(castToGlHandle(currentProgramInt));
+        SFML_BASE_ASSERT(currentProgram != 0);
 
-        // Enable program object
         glCheck(glGetIntegerv(GL_CURRENT_PROGRAM, reinterpret_cast<GLint*>(&m_savedProgram)));
 
-        if (m_currentProgram != m_savedProgram)
-            glCheck(glUseProgram(m_currentProgram));
+        m_needsRestore = (currentProgram != m_savedProgram);
+
+        if (m_needsRestore)
+            glCheck(glUseProgram(currentProgram));
     }
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Destructor: restore state after uniform is set
-    ///
+
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] ~UniformBinder()
     {
-        // Disable program object
-        if (m_currentProgram && (m_currentProgram != m_savedProgram))
+        if (m_needsRestore)
             glCheck(glUseProgram(m_savedProgram));
     }
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Deleted copy constructor
-    ///
-    ////////////////////////////////////////////////////////////
-    UniformBinder(const UniformBinder&) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Deleted copy assignment
-    ///
-    ////////////////////////////////////////////////////////////
+    UniformBinder(const UniformBinder&)            = delete;
     UniformBinder& operator=(const UniformBinder&) = delete;
 
 private:
-    GLhandle m_currentProgram; //!< Handle to the program object of the modified `sf::Shader` instance
-    GLhandle m_savedProgram{}; //!< Handle to the previously active program object
+    GLhandle m_savedProgram{};
+    bool     m_needsRestore{};
 };
 
 
@@ -389,20 +395,7 @@ Shader::Shader(Shader&& source) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-Shader& Shader::operator=(Shader&& rhs) noexcept
-{
-    if (&rhs == this)
-        return *this;
-
-    destroyProgramIfNeeded(m_impl->shaderProgram);
-
-    // Move the contents of rhs.
-    m_impl->shaderProgram  = base::exchange(rhs.m_impl->shaderProgram, 0u);
-    m_impl->currentTexture = base::exchange(rhs.m_impl->currentTexture, -1);
-    m_impl->textures       = SFML_BASE_MOVE(rhs.m_impl->textures);
-
-    return *this;
-}
+Shader& Shader::operator=(Shader&& rhs) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
@@ -444,9 +437,38 @@ base::Optional<Shader> Shader::loadFromFile(const LoadFromFileSettings& settings
     if (!readIntoBufferSlice("fragment", settings.fragmentPath, fragmentShaderSlice))
         return base::nullOpt;
 
-    return compile(vertexShaderSlice.hasValue() ? vertexShaderSlice->toView(buffer) : base::StringView{},
-                   geometryShaderSlice.hasValue() ? geometryShaderSlice->toView(buffer) : base::StringView{},
-                   fragmentShaderSlice.hasValue() ? fragmentShaderSlice->toView(buffer) : base::StringView{});
+    // Get source views
+    auto vertexView   = vertexShaderSlice.hasValue() ? vertexShaderSlice->toView(buffer) : base::StringView{};
+    auto geometryView = geometryShaderSlice.hasValue() ? geometryShaderSlice->toView(buffer) : base::StringView{};
+    auto fragmentView = fragmentShaderSlice.hasValue() ? fragmentShaderSlice->toView(buffer) : base::StringView{};
+
+    // Preprocess #include directives if present
+    base::Vector<char> ppVertexBuf;
+    base::Vector<char> ppGeometryBuf;
+    base::Vector<char> ppFragmentBuf;
+
+    const auto preprocessIfNeeded = [](base::StringView& source, const Path& shaderPath, base::Vector<char>& ppBuf) -> bool
+    {
+        if (source.data() == nullptr || source.find("#include") == base::StringView::nPos)
+            return true;
+
+        if (!ShaderUtils::preprocessGlslIncludes(source, shaderPath, ppBuf))
+            return false;
+
+        source = {ppBuf.data(), ppBuf.size()};
+        return true;
+    };
+
+    if (!preprocessIfNeeded(vertexView, settings.vertexPath, ppVertexBuf))
+        return base::nullOpt;
+
+    if (!preprocessIfNeeded(geometryView, settings.geometryPath, ppGeometryBuf))
+        return base::nullOpt;
+
+    if (!preprocessIfNeeded(fragmentView, settings.fragmentPath, ppFragmentBuf))
+        return base::nullOpt;
+
+    return compile(vertexView, geometryView, fragmentView);
 }
 
 
@@ -474,7 +496,7 @@ base::Optional<Shader> Shader::loadFromStream(const LoadFromStreamSettings& sett
         optBufferSlice = appendStreamContentsToVector(*optStream, buffer);
         if (!optBufferSlice.hasValue())
         {
-            priv::err() << "Failed to open " << typeStr << " shader from stream\n";
+            priv::err() << "Failed to open " << typeStr << " shader from stream";
             return false;
         }
 
@@ -518,14 +540,19 @@ base::Optional<Shader::UniformLocation> Shader::getUniformLocation(base::StringV
     uniformNameBuffer[uniformName.size()] = '\0';
 
     // Request the location from OpenGL
-    const int location = glGetUniformLocation(castToGlHandle(m_impl->shaderProgram), uniformNameBuffer);
+    const int location = glCheck(glGetUniformLocation(castToGlHandle(m_impl->shaderProgram), uniformNameBuffer));
     return location == -1 ? base::nullOpt : base::makeOptional(UniformLocation{location});
 }
 
 
 ////////////////////////////////////////////////////////////
+// Note that `glProgramUniform` is not supported on Emscripten.
+
+
+////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, float x) const
 {
+    ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
     glCheck(glUniform1f(location.m_value, x));
 }
@@ -534,6 +561,7 @@ void Shader::setUniform(UniformLocation location, float x) const
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, Glsl::Vec2 v) const
 {
+    ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
     glCheck(glUniform2f(location.m_value, v.x, v.y));
 }
@@ -542,6 +570,7 @@ void Shader::setUniform(UniformLocation location, Glsl::Vec2 v) const
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, const Glsl::Vec3& v) const
 {
+    ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
     glCheck(glUniform3f(location.m_value, v.x, v.y, v.z));
 }
@@ -550,6 +579,7 @@ void Shader::setUniform(UniformLocation location, const Glsl::Vec3& v) const
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, const Glsl::Vec4& v) const
 {
+    ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
     glCheck(glUniform4f(location.m_value, v.x, v.y, v.z, v.w));
 }
@@ -558,6 +588,7 @@ void Shader::setUniform(UniformLocation location, const Glsl::Vec4& v) const
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, int x) const
 {
+    ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
     glCheck(glUniform1i(location.m_value, x));
 }
@@ -566,6 +597,7 @@ void Shader::setUniform(UniformLocation location, int x) const
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, Glsl::Ivec2 v) const
 {
+    ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
     glCheck(glUniform2i(location.m_value, v.x, v.y));
 }
@@ -574,6 +606,7 @@ void Shader::setUniform(UniformLocation location, Glsl::Ivec2 v) const
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, const Glsl::Ivec3& v) const
 {
+    ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
     glCheck(glUniform3i(location.m_value, v.x, v.y, v.z));
 }
@@ -582,6 +615,7 @@ void Shader::setUniform(UniformLocation location, const Glsl::Ivec3& v) const
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, const Glsl::Ivec4& v) const
 {
+    ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
     glCheck(glUniform4i(location.m_value, v.x, v.y, v.z, v.w));
 }
@@ -618,6 +652,7 @@ void Shader::setUniform(UniformLocation location, const Glsl::Bvec4& v) const
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, const Glsl::Mat3& matrix) const
 {
+    ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
     glCheck(glUniformMatrix3fv(location.m_value, 1, GL_FALSE, matrix.array));
 }
@@ -626,6 +661,7 @@ void Shader::setUniform(UniformLocation location, const Glsl::Mat3& matrix) cons
 ////////////////////////////////////////////////////////////
 void Shader::setMat4Uniform(UniformLocation location, const float* matrixPtr) const
 {
+    ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
     glCheck(glUniformMatrix4fv(location.m_value, 1, GL_FALSE, matrixPtr));
 }
@@ -641,6 +677,8 @@ void Shader::setUniform(UniformLocation location, const Glsl::Mat4& matrix) cons
 ////////////////////////////////////////////////////////////
 bool Shader::setUniform(UniformLocation location, const Texture& texture) const
 {
+    ++m_uniformGeneration;
+
     SFML_BASE_ASSERT(m_impl->shaderProgram);
     SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
@@ -669,6 +707,8 @@ bool Shader::setUniform(UniformLocation location, const Texture& texture) const
 ////////////////////////////////////////////////////////////
 void Shader::setUniform(UniformLocation location, CurrentTextureType)
 {
+    ++m_uniformGeneration;
+
     SFML_BASE_ASSERT(m_impl->shaderProgram);
     SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
@@ -680,6 +720,7 @@ void Shader::setUniform(UniformLocation location, CurrentTextureType)
 ////////////////////////////////////////////////////////////
 void Shader::setUniformArray(UniformLocation location, const float* scalarArray, base::SizeT length)
 {
+    ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
     glCheck(glUniform1fv(location.m_value, static_cast<GLsizei>(length), scalarArray));
 }
@@ -688,57 +729,51 @@ void Shader::setUniformArray(UniformLocation location, const float* scalarArray,
 ////////////////////////////////////////////////////////////
 void Shader::setUniformArray(UniformLocation location, const Glsl::Vec2* vecArray, base::SizeT length)
 {
-    base::Vector<float> contiguous = flatten(vecArray, length);
+    ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
-    glCheck(glUniform2fv(location.m_value, static_cast<GLsizei>(length), contiguous.data()));
+    glCheck(glUniform2fv(location.m_value, static_cast<GLsizei>(length), reinterpret_cast<const float*>(vecArray)));
 }
 
 
 ////////////////////////////////////////////////////////////
 void Shader::setUniformArray(UniformLocation location, const Glsl::Vec3* vecArray, base::SizeT length)
 {
-    base::Vector<float> contiguous = flatten(vecArray, length);
+    ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
-    glCheck(glUniform3fv(location.m_value, static_cast<GLsizei>(length), contiguous.data()));
+    glCheck(glUniform3fv(location.m_value, static_cast<GLsizei>(length), reinterpret_cast<const float*>(vecArray)));
 }
 
 
 ////////////////////////////////////////////////////////////
 void Shader::setUniformArray(UniformLocation location, const Glsl::Vec4* vecArray, base::SizeT length)
 {
-    base::Vector<float> contiguous = flatten(vecArray, length);
+    ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
-    glCheck(glUniform4fv(location.m_value, static_cast<GLsizei>(length), contiguous.data()));
+    glCheck(glUniform4fv(location.m_value, static_cast<GLsizei>(length), reinterpret_cast<const float*>(vecArray)));
 }
 
 
 ////////////////////////////////////////////////////////////
 void Shader::setUniformArray(UniformLocation location, const Glsl::Mat3* matrixArray, base::SizeT length)
 {
-    const base::SizeT matrixSize = 3 * 3;
-
-    base::Vector<float> contiguous(matrixSize * length);
-
-    for (base::SizeT i = 0; i < length; ++i)
-        priv::copyMatrix(matrixArray[i].array, matrixSize, &contiguous[matrixSize * i]);
-
+    ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
-    glCheck(glUniformMatrix3fv(location.m_value, static_cast<GLsizei>(length), GL_FALSE, contiguous.data()));
+    glCheck(glUniformMatrix3fv(location.m_value,
+                               static_cast<GLsizei>(length),
+                               GL_FALSE,
+                               reinterpret_cast<const float*>(matrixArray)));
 }
 
 
 ////////////////////////////////////////////////////////////
 void Shader::setUniformArray(UniformLocation location, const Glsl::Mat4* matrixArray, base::SizeT length)
 {
-    const base::SizeT matrixSize = 4 * 4;
-
-    base::Vector<float> contiguous(matrixSize * length);
-
-    for (base::SizeT i = 0; i < length; ++i)
-        priv::copyMatrix(matrixArray[i].array, matrixSize, &contiguous[matrixSize * i]);
-
+    ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
-    glCheck(glUniformMatrix4fv(location.m_value, static_cast<GLsizei>(length), GL_FALSE, contiguous.data()));
+    glCheck(glUniformMatrix4fv(location.m_value,
+                               static_cast<GLsizei>(length),
+                               GL_FALSE,
+                               reinterpret_cast<const float*>(matrixArray)));
 }
 
 
@@ -789,7 +824,16 @@ bool Shader::isGeometryAvailable()
 
 
 ////////////////////////////////////////////////////////////
-Shader::Shader(base::PassKey<Shader>&&, unsigned int shaderProgram) : m_impl(shaderProgram)
+Shader::Shader(base::PassKey<Shader>&&, unsigned int shaderProgram) :
+    m_impl(
+        [&]
+{
+    SFML_BASE_ASSERT(shaderProgram != 0);
+    return shaderProgram;
+}()),
+    m_hasBuiltInUniformMVPRow0(glCheck(glGetUniformLocation(shaderProgram, "sf_u_mvpRow0")) != -1),
+    m_hasBuiltInUniformMVPRow1(glCheck(glGetUniformLocation(shaderProgram, "sf_u_mvpRow1")) != -1),
+    m_hasBuiltInUniformInvTextureSize(glCheck(glGetUniformLocation(shaderProgram, "sf_u_invTextureSize")) != -1)
 {
 }
 
@@ -842,7 +886,7 @@ base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
             priv::err() << "Failed to compile " << typeStr << " shader:" << '\n'
                         << static_cast<const char*>(log) << "\n\nSource code:\n";
 
-            printLinesWithNumbers(priv::err(/* multiLine */ true), adjustedShaderCode);
+            printLinesWithNumbers(adjustedShaderCode);
 
             glCheck(glDeleteShader(shader));
             glCheck(glDeleteProgram(shaderProgram));
@@ -888,11 +932,13 @@ base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
     {
         char log[1024]{};
         glCheck(glGetProgramInfoLog(shaderProgram, sizeof(log), nullptr, log));
+
         priv::err() << "Failed to link shader:" << '\n'
                     << static_cast<const char*>(log) << "VERTEX SOURCE:\n"
                     << vertexShaderCode << "\n\nFRAGMENT SOURCE:\n"
                     << fragmentShaderCode << "\n\nGEOMETRY SOURCE:\n"
                     << geometryShaderCode;
+
         glCheck(glDeleteProgram(shaderProgram));
         return base::nullOpt;
     }
@@ -900,6 +946,20 @@ base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
     // Force an OpenGL flush, so that the shader will appear updated
     // in all contexts immediately (solves problems in multi-threaded apps)
     glCheck(glFlush());
+
+#ifdef SFML_SYSTEM_EMSCRIPTEN
+    // Workaround for Emscripten bug with `-sGL_EXPLICIT_UNIFORM_LOCATION=1`:
+    // Emscripten lazily populates its internal uniform location table
+    // (`uniformLocsById`) only when `glGetUniformLocation` is called, NOT
+    // when `glUniform*` is called. So `glUniform*(loc, ...)` on a newly
+    // linked program silently does nothing -- the location resolves to
+    // `undefined` in JavaScript, and WebGL ignores the call.
+    // Calling `glGetUniformLocation` once forces the table to be built.
+    // See: src/lib/libwebgl.js `webglPrepareUniformLocationsBeforeFirstUse`
+    // See: https://github.com/emscripten-core/emscripten/issues/26672
+    glCheck(glGetUniformLocation(castToGlHandle(shaderProgram), "sf_u_mvpRow0"));
+    glCheck(glGetUniformLocation(castToGlHandle(shaderProgram), "sf_u_mvpRow1"));
+#endif
 
     return base::makeOptional<Shader>(base::PassKey<Shader>{}, castFromGlHandle(shaderProgram));
 }
@@ -909,11 +969,14 @@ base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
 void Shader::bindTextures() const
 {
     auto* it = m_impl->textures.begin();
+
     for (base::SizeT i = 0u; i < m_impl->textures.size(); ++i)
     {
         const auto index = static_cast<GLsizei>(i + 1);
+
         glCheck(glUniform1i(it->first, index));
         glCheck(glActiveTexture(GL_TEXTURE0 + static_cast<GLenum>(index)));
+
         it->second->bind();
         ++it;
     }
@@ -923,5 +986,3 @@ void Shader::bindTextures() const
 }
 
 } // namespace sf
-
-// TODO P2: add support for `#include` in shaders

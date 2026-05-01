@@ -1,7 +1,10 @@
 #include "SFML/Base/SmallVector.hpp"
 
+#include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/PlacementNew.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Swap.hpp"
 #include "SFML/Base/Trait/IsCopyAssignable.hpp"
 #include "SFML/Base/Trait/IsCopyConstructible.hpp"
 #include "SFML/Base/Trait/IsMoveAssignable.hpp"
@@ -13,6 +16,8 @@
 #include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
+#include "SFML/Base/Trait/IsTriviallyRelocatable.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include <Doctest.hpp>
 
@@ -406,6 +411,205 @@ TEST_CASE("[Base] Base/SmallVector.hpp")
         }
 
         CHECK(dtorCount == 6);
+    }
+
+    SECTION("Trivial relocation (memcpy) - inline mode")
+    {
+        // Simulate what happens when an outer Vector<SmallVector> grows and
+        // trivially relocates (memcpy) a SmallVector that is using inline storage.
+        using SV = sf::base::SmallVector<int, 4>;
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(SV));
+
+        alignas(SV) unsigned char srcBuf[sizeof(SV)];
+        alignas(SV) unsigned char dstBuf[sizeof(SV)];
+
+        // Construct a SmallVector in srcBuf using inline storage
+        SV* src = SFML_BASE_PLACEMENT_NEW(&srcBuf) SV();
+        src->emplaceBack(10);
+        src->emplaceBack(20);
+        src->emplaceBack(30);
+
+        CHECK(src->size() == 3);
+        CHECK(src->capacity() == 4);
+        CHECK(!src->isHeap());
+
+        // Trivially relocate: memcpy to dstBuf, skip destructor on src
+        SFML_BASE_MEMCPY(dstBuf, srcBuf, sizeof(SV));
+        // Do NOT call src->~SV() -- that's the point of trivial relocation
+
+        // The relocated SmallVector should work correctly from dstBuf
+        SV* dst = reinterpret_cast<SV*>(dstBuf);
+
+        CHECK(dst->size() == 3);
+        CHECK(dst->capacity() == 4);
+        CHECK(!dst->isHeap());
+        CHECK((*dst)[0] == 10);
+        CHECK((*dst)[1] == 20);
+        CHECK((*dst)[2] == 30);
+
+        // Can still mutate
+        dst->emplaceBack(40);
+        CHECK(dst->size() == 4);
+        CHECK((*dst)[3] == 40);
+
+        dst->~SV();
+    }
+
+    SECTION("Trivial relocation (memcpy) - heap mode")
+    {
+        using SV = sf::base::SmallVector<int, 2>;
+
+        alignas(SV) unsigned char srcBuf[sizeof(SV)];
+        alignas(SV) unsigned char dstBuf[sizeof(SV)];
+
+        // Construct a SmallVector that spills to heap
+        SV* src = SFML_BASE_PLACEMENT_NEW(&srcBuf) SV();
+        src->emplaceBack(1);
+        src->emplaceBack(2);
+        src->emplaceBack(3); // triggers heap allocation
+
+        CHECK(src->size() == 3);
+        CHECK(src->isHeap());
+
+        // Trivially relocate
+        SFML_BASE_MEMCPY(dstBuf, srcBuf, sizeof(SV));
+
+        SV* dst = reinterpret_cast<SV*>(dstBuf);
+
+        CHECK(dst->size() == 3);
+        CHECK(dst->isHeap());
+        CHECK((*dst)[0] == 1);
+        CHECK((*dst)[1] == 2);
+        CHECK((*dst)[2] == 3);
+
+        dst->~SV();
+    }
+
+    SECTION("Trivial relocation via Vector<SmallVector> growth")
+    {
+        // End-to-end test: a Vector of SmallVectors will use trivial
+        // relocation when it grows, exercising the real code path.
+        using SV = sf::base::SmallVector<int, 4>;
+
+        sf::base::Vector<SV> outer;
+
+        // Add enough SmallVectors to trigger multiple reallocations
+        for (sf::base::SizeT i = 0u; i < 20u; ++i)
+        {
+            SV sv;
+            sv.emplaceBack(static_cast<int>(i * 10u));
+            sv.emplaceBack(static_cast<int>(i * 10u + 1u));
+            sv.emplaceBack(static_cast<int>(i * 10u + 2u));
+
+            outer.emplaceBack(SFML_BASE_MOVE(sv));
+        }
+
+        // Verify all data survived the relocations
+        for (sf::base::SizeT i = 0u; i < 20u; ++i)
+        {
+            CHECK(outer[i].size() == 3);
+            CHECK(outer[i][0] == static_cast<int>(i * 10u));
+            CHECK(outer[i][1] == static_cast<int>(i * 10u + 1u));
+            CHECK(outer[i][2] == static_cast<int>(i * 10u + 2u));
+        }
+    }
+
+    SECTION("Self-aliasing: pushBack from own element (inline, no reallocation)")
+    {
+        sf::base::SmallVector<Obj, inlineCapacity> v;
+        v.emplaceBack(10);
+        v.emplaceBack(20);
+        v.emplaceBack(30);
+        REQUIRE(v.size() < v.capacity()); // still inline, room to spare
+
+        v.pushBack(v[0]);
+
+        CHECK(v.size() == 4);
+        CHECK(v[0].value == 10);
+        CHECK(v[1].value == 20);
+        CHECK(v[2].value == 30);
+        CHECK(v[3].value == 10);
+    }
+
+    SECTION("Self-aliasing: pushBack from own element (triggers heap allocation)")
+    {
+        sf::base::SmallVector<Obj, inlineCapacity> v;
+        for (sf::base::SizeT i = 0; i < inlineCapacity; ++i)
+            v.emplaceBack(static_cast<int>(i * 10));
+        REQUIRE(v.size() == v.capacity()); // full inline buffer
+
+        v.pushBack(v[0]); // must reallocate to heap
+
+        CHECK(v.size() == inlineCapacity + 1);
+        CHECK(v[0].value == 0);
+        CHECK(v[inlineCapacity].value == 0);
+    }
+
+    SECTION("Self-aliasing: insert at begin from last element")
+    {
+        sf::base::SmallVector<Obj, inlineCapacity> v;
+        v.emplaceBack(10);
+        v.emplaceBack(20);
+        v.emplaceBack(30);
+        REQUIRE(v.size() < v.capacity());
+
+        v.insert(v.begin(), v[2]);
+
+        CHECK(v.size() == 4);
+        CHECK(v[0].value == 30);
+        CHECK(v[1].value == 10);
+        CHECK(v[2].value == 20);
+        CHECK(v[3].value == 30);
+    }
+
+    SECTION("Self-aliasing: insert at middle from element that gets shifted")
+    {
+        sf::base::SmallVector<Obj, inlineCapacity> v;
+        v.emplaceBack(10);
+        v.emplaceBack(20);
+        v.emplaceBack(30);
+        REQUIRE(v.size() < v.capacity());
+
+        v.insert(v.begin() + 1, v[2]);
+
+        CHECK(v.size() == 4);
+        CHECK(v[0].value == 10);
+        CHECK(v[1].value == 30);
+        CHECK(v[2].value == 20);
+        CHECK(v[3].value == 30);
+    }
+
+    SECTION("Self-aliasing: emplace at begin from back()")
+    {
+        sf::base::SmallVector<Obj, inlineCapacity> v;
+        v.emplaceBack(10);
+        v.emplaceBack(20);
+        v.emplaceBack(30);
+        REQUIRE(v.size() < v.capacity());
+
+        const Obj& backRef = v.back();
+        v.emplace(v.begin(), backRef);
+
+        CHECK(v.size() == 4);
+        CHECK(v[0].value == 30);
+        CHECK(v[1].value == 10);
+        CHECK(v[2].value == 20);
+        CHECK(v[3].value == 30);
+    }
+
+    SECTION("Self-aliasing: emplaceBack from own element (triggers heap allocation)")
+    {
+        sf::base::SmallVector<Obj, inlineCapacity> v;
+        for (sf::base::SizeT i = 0; i < inlineCapacity; ++i)
+            v.emplaceBack(static_cast<int>((i + 1) * 10));
+        REQUIRE(v.size() == v.capacity());
+
+        const Obj& ref = v[1];
+        v.emplaceBack(ref);
+
+        CHECK(v.size() == inlineCapacity + 1);
+        CHECK(v[1].value == 20);
+        CHECK(v[inlineCapacity].value == 20);
     }
 }
 

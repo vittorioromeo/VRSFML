@@ -9,6 +9,8 @@
 
 #include "SFML/System/Time.hpp"
 
+#include "SFML/Base/IntTypes.hpp"
+
 #include <cerrno>
 #include <ctime>
 

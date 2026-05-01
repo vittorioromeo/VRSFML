@@ -6,7 +6,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Optional.hpp"
@@ -85,7 +85,7 @@ public:
     [[nodiscard]] base::Optional<Vec2u> pack(Vec2u rectSize);
 
     ////////////////////////////////////////////////////////////
-    /// \brief ATtempt to pack multiple rectangles at once.
+    /// \brief Attempt to pack multiple rectangles at once.
     ///
     /// This function tries to pack multiple rectangles into the bin
     /// in a single operation. The positions of the packed rectangles
@@ -115,7 +115,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 36'864> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
 };
 
 } // namespace sf

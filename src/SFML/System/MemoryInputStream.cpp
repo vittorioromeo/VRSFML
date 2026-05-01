@@ -11,6 +11,7 @@
 #include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 
 namespace sf

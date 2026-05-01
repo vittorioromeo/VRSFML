@@ -8,6 +8,7 @@
 #include "SFML/Window/SDLLayer.hpp"
 
 #include "SFML/Window/Cursor.hpp"
+#include "SFML/Window/DisplayOrientation.hpp"
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/Mouse.hpp"
 #include "SFML/Window/VideoMode.hpp"
@@ -15,30 +16,38 @@
 #include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
+#include "SFML/System/Rect2.hpp"
 #include "SFML/System/UnicodeStringUtfUtils.hpp"
-#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Abort.hpp"
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/Memcmp.hpp"
 #include "SFML/Base/Builtin/Strcmp.hpp"
 #include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/ScopeGuard.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 
 #include <SDL3/SDL_clipboard.h>
+#include <SDL3/SDL_error.h>
+#include <SDL3/SDL_guid.h>
 #include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_joystick.h>
+#include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_keycode.h>
+#include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_oldnames.h>
+#include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL_properties.h>
+#include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_scancode.h>
 #include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_touch.h>
 #include <SDL3/SDL_video.h>
-
-#include <string>
 
 
 ////////////////////////////////////////////////////////////
@@ -450,6 +459,7 @@ namespace sf::priv
 
 #if defined(SFML_SYSTEM_WINDOWS)
     SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, handle);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, static_cast<Sint64>(SDL_WINDOW_OPENGL));
 #elif defined(SFML_SYSTEM_LINUX_OR_BSD)
     if (currentVideoDriver != nullptr && SFML_BASE_STRCMP(currentVideoDriver, "wayland") == 0)
         SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER, reinterpret_cast<void*>(handle));
@@ -462,7 +472,7 @@ namespace sf::priv
 #elif defined(SFML_SYSTEM_ANDROID)
     // TODO P0: doesn't seem to be implemented in SDL
 #elif defined(SFML_SYSTEM_EMSCRIPTEN)
-    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID, handle);
+    SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING, handle);
 #endif
 
     return props;
@@ -482,6 +492,15 @@ namespace sf::priv
     SDL_SetStringProperty(props,
                           SDL_PROP_WINDOW_CREATE_TITLE_STRING,
                           windowSettings.title.toAnsiString<base::String>().data());
+
+    if (windowSettings.position.hasValue())
+    {
+        SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER, windowSettings.position->x);
+        SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, windowSettings.position->y);
+    }
+
+    if (!windowSettings.visible)
+        SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_HIDDEN_BOOLEAN, true);
 
 
     static int i = 0;
@@ -763,7 +782,7 @@ bool SDLLayer::isKeyPressedByScancode(const Keyboard::Scancode code) const noexc
 ////////////////////////////////////////////////////////////
 const char* SDLLayer::getScancodeDescription(const Keyboard::Scancode code) const noexcept
 {
-    return SDL_GetKeyName(mapSFMLKeycodeToSDL(localize(code)));
+    return SDL_GetKeyName(mapSFMLKeycodeToSDL(Keyboard::localize(code)));
 }
 
 
@@ -796,13 +815,14 @@ UnicodeString SDLLayer::getClipboardString() const noexcept
         return UnicodeString{};
 
     char* clipboardText = SDL_GetClipboardText();
+    SFML_BASE_SCOPE_GUARD({ SDL_free(static_cast<void*>(clipboardText)); });
+
     if (SFML_BASE_STRCMP(clipboardText, "") == 0)
     {
         err() << "`SDL_GetClipboardText` failed: " << SDL_GetError();
         return UnicodeString{};
     }
 
-    SFML_BASE_SCOPE_GUARD({ SDL_free(static_cast<void*>(clipboardText)); });
     return UnicodeStringUtfUtils::fromUtf8(clipboardText, clipboardText + SFML_BASE_STRLEN(clipboardText));
 }
 
@@ -810,7 +830,7 @@ UnicodeString SDLLayer::getClipboardString() const noexcept
 ////////////////////////////////////////////////////////////
 bool SDLLayer::setClipboardString(const UnicodeString& string) const noexcept
 {
-    if (!SDL_SetClipboardText(reinterpret_cast<const char*>(string.toUtf8<std::u8string>().c_str())))
+    if (!SDL_SetClipboardText(reinterpret_cast<const char*>(string.toUtf8<base::String>().cStr())))
     {
         err() << "`SDL_SetClipboardText` failed: " << SDL_GetError();
         return false;
@@ -922,7 +942,7 @@ float SDLLayer::getPrimaryDisplayContentScale() const
 
 
 ////////////////////////////////////////////////////////////
-float SDLLayer::getWindowDisplayScale(SDL_Window& window) const
+float SDLLayer::getDisplayScale(SDL_Window& window) const
 {
     const float result = SDL_GetWindowDisplayScale(&window);
 
@@ -937,7 +957,7 @@ float SDLLayer::getWindowDisplayScale(SDL_Window& window) const
 
 
 ////////////////////////////////////////////////////////////
-SDLSurfaceUPtr SDLLayer::createSurfaceFromPixels(Vec2u size, const base::U8* pixels) const
+SDLSurfaceUPtr SDLLayer::createSurfaceFromPixels(const base::U8* pixels, Vec2u size) const
 {
     SFML_BASE_ASSERT(pixels != nullptr);
 
@@ -1148,12 +1168,5 @@ const char* SDLLayer::getCurrentVideoDriver() const
     return driver;
 }
 
-
-////////////////////////////////////////////////////////////
-SDLLayer& getSDLLayerSingleton()
-{
-    static SDLLayer sdlLayer;
-    return sdlLayer;
-}
 
 } // namespace sf::priv

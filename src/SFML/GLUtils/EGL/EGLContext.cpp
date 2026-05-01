@@ -1,4 +1,3 @@
-#include <EGL/egl.h>
 // LICENSE AND COPYRIGHT (C) INFORMATION
 // https://github.com/vittorioromeo/VRSFML/blob/master/license.md
 
@@ -6,18 +5,21 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/GLUtils/EGL/EGLContext.hpp"
+
 #include "SFML/Window/SDLWindowImpl.hpp"
 #include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
 #include "SFML/Window/WindowContext.hpp"
+#include "SFML/Window/WindowHandle.hpp"
 
 #include "SFML/GLUtils/EGL/EGLCheck.hpp"
-#include "SFML/GLUtils/EGL/EGLContext.hpp"
 #include "SFML/GLUtils/EGL/EGLGlad.hpp"
 
 #include "SFML/System/Err.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
 
 
@@ -183,6 +185,8 @@ EGLConfig getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const sf:
 
     return bestConfig;
 #else
+    // TODO P1: these come from `sharedContextSettings`, not customizable...
+
     // Set our video contextSettings constraint
     const EGLint attributes[] =
         {EGL_BUFFER_SIZE,
@@ -200,9 +204,9 @@ EGLConfig getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const sf:
          EGL_SAMPLE_BUFFERS,
          0,
          EGL_SURFACE_TYPE,
+         EGL_WINDOW_BIT,
          EGL_RENDERABLE_TYPE,
-         EGL_OPENGL_ES_BIT,
-         EGL_NONE,
+         EGL_OPENGL_ES3_BIT,
          EGL_NONE};
 
     EGLint    configCount;
@@ -383,7 +387,7 @@ void EglContext::createContext(EglContext* shared)
 #ifndef SFML_SYSTEM_EMSCRIPTEN
     constexpr EGLint contextAttribs[]{EGL_CONTEXT_MAJOR_VERSION, 3, EGL_CONTEXT_MINOR_VERSION, 1, EGL_NONE};
 #else
-    constexpr EGLint contextAttribs[]{EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE, EGL_NONE};
+    constexpr EGLint contextAttribs[]{EGL_CONTEXT_CLIENT_VERSION, 3, EGL_NONE, EGL_NONE};
 #endif
 
     const EGLContext toShared = shared != nullptr ? shared->m_impl->context : EGL_NO_CONTEXT;
@@ -431,7 +435,6 @@ void EglContext::updateSettings()
 
     EGLint tmp = 0;
 
-    // Update the internal context contextSettings with the current config
     // Update the internal context settings with the current config
     if (eglCheck(eglGetConfigAttrib(m_impl->display, m_impl->config, EGL_DEPTH_SIZE, &tmp)) != EGL_FALSE)
         m_settings.depthBits = static_cast<unsigned int>(tmp);

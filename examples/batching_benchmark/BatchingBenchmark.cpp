@@ -12,16 +12,19 @@
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/TextureAtlas.hpp"
+#include "SFML/Graphics/View.hpp"
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
-#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -51,7 +54,7 @@ int main()
                           .size      = windowSize.toVec2u(),
                           .title     = "Vittorio's SFML fork: batching benchmark",
                           .resizable = false,
-                          .vsync     = true,
+                          .vsync     = false,
                       })
                       .value();
 
@@ -110,6 +113,7 @@ int main()
 
             auto& [text, sprite, torque] = entities.emplaceBack(sf::Text{i % 2u == 0u ? fontTuffy : fontMouldyCheese,
                                                                          {.string           = "abcdefABCDEF",
+                                                                          .characterSize    = 30u,
                                                                           .fillColor        = sf::Color::Black,
                                                                           .outlineColor     = sf::Color::White,
                                                                           .outlineThickness = 5.f}},
@@ -132,12 +136,10 @@ int main()
 
     //
     //
-    // Set up UI elements
-    bool useBatch    = true;
-    bool drawSprites = true;
-    bool drawText    = true;
-    int  numEntities = 50'000;
-    int  numFrames   = 240;
+    // Settings
+    constexpr bool useBatch    = true;
+    constexpr int  numEntities = 50'000;
+    int            numFrames   = 240;
 
 //
 //
@@ -150,37 +152,44 @@ int main()
     sf::CPUDrawableBatch drawableBatch;
 #endif
     populateEntities(static_cast<sf::base::SizeT>(numEntities));
-    drawableBatch.position = drawableBatch.origin = windowSize / 2.f;
 
-    sf::Clock  clock;
-    const auto startTime = clock.getElapsedTime();
+    if (useBatch)
+    {
+        drawableBatch.position = drawableBatch.origin = windowSize / 2.f;
+        drawableBatch.reserveQuads(static_cast<sf::base::SizeT>(numEntities) * 25u);
+    }
+    else
+    {
+        window.reserveAutoBatchQuads(static_cast<sf::base::SizeT>(numEntities) * 25u);
+    }
+
+    const sf::Clock clock;
+    const auto      startTime = clock.getElapsedTime();
 
     while (--numFrames > 0)
     {
         window.clear();
-        drawableBatch.clear();
 
-        drawableBatch.rotation += sf::degrees(2.f);
+        if (useBatch)
+        {
+            drawableBatch.clear();
+            drawableBatch.rotation += sf::degrees(2.f);
+        }
 
         while (window.pollEvent())
             ;
 
         for (const Entity& entity : entities)
         {
-            if (drawSprites)
+            if (useBatch)
             {
-                if (useBatch)
-                    drawableBatch.add(entity.sprite);
-                else
-                    window.draw(entity.sprite, {.texture = &textureAtlas.getTexture()});
+                drawableBatch.add(entity.sprite);
+                drawableBatch.add(entity.text);
             }
-
-            if (drawText)
+            else
             {
-                if (useBatch)
-                    drawableBatch.add(entity.text);
-                else
-                    window.draw(entity.text);
+                window.draw(entity.sprite, {.texture = &textureAtlas.getTexture()});
+                window.draw(entity.text);
             }
         }
 

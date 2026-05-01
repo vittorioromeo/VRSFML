@@ -2,13 +2,16 @@
 
 #include "Aliases.hpp"
 #include "Bubble.hpp"
+#include "BubbleType.hpp"
 #include "Cat.hpp"
 #include "CatConstants.hpp"
 #include "CatType.hpp"
 #include "Constants.hpp"
-#include "Doll.hpp"
+#include "ExampleUtils/Progress.hpp"
 #include "ExactArray.hpp"
+#include "GameEvent.hpp"
 #include "HellPortal.hpp"
+#include "HexSession.hpp"
 #include "Milestones.hpp"
 #include "PSVDataConstants.hpp"
 #include "PurchasableScalingValue.hpp"
@@ -18,10 +21,14 @@
 #include "Stats.hpp"
 #include "Version.hpp"
 
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Time.hpp"
-#include "SFML/System/Vec2.hpp"
 
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Pow.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -61,6 +68,7 @@ struct Playthrough
                     {&PSVDataConstants::catUni},
                     {&PSVDataConstants::catDevil},
                     {&PSVDataConstants::catAstro},
+                    {&PSVDataConstants::catWarden},
 
                     {&PSVDataConstants::catWitch},    // unused
                     {&PSVDataConstants::catWizard},   // unused
@@ -80,6 +88,7 @@ struct Playthrough
                     {&PSVDataConstants::catUniCooldownMult},
                     {&PSVDataConstants::catDevilCooldownMult},
                     {&PSVDataConstants::catAstroCooldownMult},
+                    {&PSVDataConstants::catWardenCooldownMult},
 
                     {&PSVDataConstants::catWitchCooldownMult},
                     {&PSVDataConstants::catWizardCooldownMult},
@@ -99,6 +108,7 @@ struct Playthrough
                     {&PSVDataConstants::catUniRangeDiv},
                     {&PSVDataConstants::catDevilRangeDiv},
                     {&PSVDataConstants::catAstroRangeDiv},
+                    {&PSVDataConstants::catWardenRangeDiv},
 
                     {&PSVDataConstants::catWitchRangeDiv},
                     {&PSVDataConstants::catWizardRangeDiv},
@@ -122,6 +132,8 @@ struct Playthrough
     PurchasableScalingValue psvPPWitchCatBuffDuration{&PSVDataConstants::witchCatBuffDuration};
     PurchasableScalingValue psvPPUniRitualBuffPercentage{&PSVDataConstants::uniRitualBuffPercentage};
     PurchasableScalingValue psvPPDevilRitualBuffPercentage{&PSVDataConstants::devilRitualBuffPercentage};
+    PurchasableScalingValue psvPPPowerNapDuration{&PSVDataConstants::powerNapDuration};
+    PurchasableScalingValue psvPPPowerNapStrength{&PSVDataConstants::powerNapStrength};
 
     //
     // Currencies
@@ -198,6 +210,11 @@ struct Playthrough
 
         bool            autocastPurchased = false;
         sf::base::SizeT autocastIndex     = 0u;
+
+        // Gate for the Power Nap PP upgrade: when true, forced wake-ups
+        // (shake or wardencat bonk) grant the waking cat a temporary
+        // cooldown-reduction boost.
+        bool powerNapPurchased = false;
     };
 
     Permanent perm = {};
@@ -218,9 +235,20 @@ struct Playthrough
     sf::base::Vector<Bubble>     bubbles;
     sf::base::Vector<Cat>        cats;
     sf::base::Vector<Shrine>     shrines;
-    sf::base::Vector<Doll>       dolls;
-    sf::base::Vector<Doll>       copyDolls;
+    sf::base::Vector<HexSession> hexSessions;
+    sf::base::Vector<HexSession> copyHexSessions;
     sf::base::Vector<HellPortal> hellPortals;
+
+    //
+    // Random events
+    sf::base::Vector<GameEvent> activeEvents;
+    sf::base::Optional<float>   nextEventSpawnMs;
+
+    //
+    // Monotonic counter assigned to every newly-spawned bubble. Used only to
+    // seed the rendered hue of Normal bubbles so it stays stable when earlier
+    // bubbles are removed.
+    sf::base::U32 nextBubbleHueSeed = 0u;
 
     //
     // Shrines
@@ -248,7 +276,22 @@ struct Playthrough
     bool shrineActivateTipShown = false;
     bool dollTipShown           = false;
     bool spendPPTipShown        = false;
+    bool napTipShown            = false;
     bool shrinesSpawned         = false;
+
+    //
+    // Nap scheduler state (outside of the event system).
+    //   - `scriptedNapDone` flips to `true` once the one-shot tutorial nap has
+    //     fired; the trigger is 5s after hitting 3 cats for the first time.
+    //   - `scriptedNapPendingCountdown` holds the in-flight 5s delay.
+    //   - The actual nap-cadence countdown is per-cat (`Cat::napScheduleCountdownMs`).
+    bool                          scriptedNapDone = false;
+    sf::base::Optional<Countdown> scriptedNapPendingCountdown;
+
+    // Flips to `true` the first time a cat finishes waking up from a nap;
+    // used as the "completed the nap tutorial" gate (e.g. for unlocking
+    // unicats pre-prestige).
+    bool anyCatEverWokenFromNap = false;
 
     //
     // New flags (v1.6.0)
@@ -341,7 +384,7 @@ struct Playthrough
         stasisFieldTimer     = 0.f;
 
         mouseCatCombo                = 0.f;
-        mouseCatComboCountdown.value = 0.f;
+        mouseCatComboCountdown.time = 0.f;
 
         multiPopEnabled = false;
         windStrength    = 0;
@@ -386,6 +429,7 @@ struct Playthrough
                                   15u, // Star
                                   1u,  // Bomb
                                   50u, // Nova
+                                  1u,  // Combo (the value is in the combo it builds, not the per-click reward)
                               });
 
         return baseRewards[asIdx(type)] * static_cast<MoneyType>(psvBubbleValue.currentValue() + 1.f);

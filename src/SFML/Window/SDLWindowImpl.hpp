@@ -9,7 +9,7 @@
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/WindowHandle.hpp"
 
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/IntTypes.hpp"
@@ -223,11 +223,11 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Change the window's icon
     ///
-    /// \param size   Icon's width and height, in pixels
     /// \param pixels Pointer to the pixels in memory, format must be RGBA 32 bits
+    /// \param size   Icon's width and height, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    void setIcon(Vec2u size, const base::U8* pixels);
+    void setIcon(const base::U8* pixels, Vec2u size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window
@@ -291,7 +291,7 @@ public:
     ///         DPI-aware, otherwise the scaling factor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] float getWindowDisplayScale() const;
+    [[nodiscard]] float getDisplayScale() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a Vulkan rendering surface

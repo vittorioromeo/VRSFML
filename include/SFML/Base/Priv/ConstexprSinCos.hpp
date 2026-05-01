@@ -4,6 +4,19 @@
 
 
 ////////////////////////////////////////////////////////////
+/// \file
+/// \brief `constexpr` polynomial approximations of `sin` and `cos`
+///
+/// Used by `sinLookup`/`cosLookup`/`sinCosLookup` when called in a
+/// constant-evaluated context, where the runtime lookup table cannot
+/// be accessed. The implementation normalizes the angle into
+/// `[-pi, pi]` and then evaluates a low-order polynomial that is
+/// good enough for compile-time use cases.
+///
+////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Constants.hpp"

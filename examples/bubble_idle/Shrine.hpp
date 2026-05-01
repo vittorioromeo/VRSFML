@@ -1,14 +1,14 @@
 #pragma once
 
 #include "Aliases.hpp"
-#include "Countdown.hpp"
+#include "ExampleUtils/Progress.hpp"
 #include "ShrineConstants.hpp"
 #include "ShrineType.hpp"
 #include "TextShakeEffect.hpp"
 
 #include "ExampleUtils/HueColor.hpp"
 
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/Math/Cos.hpp"
@@ -23,8 +23,8 @@ struct [[nodiscard]] Shrine
 
     float wobbleRadians = 0.f;
 
-    OptionalTargetedCountdown tcActivation;
-    OptionalTargetedCountdown tcDeath;
+    sf::base::Optional<TimedCountdown> tcActivation;
+    sf::base::Optional<TimedCountdown> tcDeath;
 
     TextShakeEffect textStatusShakeEffect;
 
@@ -35,19 +35,19 @@ struct [[nodiscard]] Shrine
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] inline bool isActive() const
     {
-        return tcActivation.isDone();
+        return isDoneOr(tcActivation);
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] inline float getActivationProgress() const
     {
-        return tcActivation.getProgress();
+        return getElapsedOr(tcActivation, 0.f);
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] inline float getDeathProgress() const
     {
-        return tcDeath.getProgress();
+        return getElapsedOr(tcDeath, 0.f);
     }
 
     ////////////////////////////////////////////////////////////

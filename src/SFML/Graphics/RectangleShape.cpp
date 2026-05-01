@@ -7,11 +7,13 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/RectangleShape.hpp"
 
+#include "SFML/Graphics/Shape.hpp"
 #include "SFML/Graphics/ShapeUtils.hpp"
 
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 
 namespace sf

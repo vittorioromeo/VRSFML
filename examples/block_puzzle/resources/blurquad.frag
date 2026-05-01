@@ -1,5 +1,5 @@
 layout(location = 0) out vec4 sf_fragColor;
-layout(location = 1) uniform sampler2D sf_u_texture;
+layout(location = 2) uniform sampler2D sf_u_texture;
 
 in vec4 sf_v_color;
 in vec2 sf_v_texCoord;
@@ -19,7 +19,7 @@ void main()
     blurredColor += texture(sf_u_texture, sf_v_texCoord) * centerWeight;
     totalWeight += centerWeight;
 
-    vec2 texelSize     = vec2(1.0) / textureSize(sf_u_texture, 0); // TODO P1: move to uniform
+    vec2 texelSize     = vec2(1.0) / vec2(textureSize(sf_u_texture, 0)); // TODO P1: move to uniform
     vec2 stepDirection = u_blurDirection * texelSize;
 
     for (int i = 1; i <= int(ceil(u_blurRadiusPixels)); ++i)

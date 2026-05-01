@@ -7,13 +7,13 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/WindowContext.hpp"
 
-#include "SFML/Config.hpp"
-
 #include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/JoystickManager.hpp"
-#include "SFML/Window/SDLLayer.hpp" // TODO P0:
+#include "SFML/Window/SDLLayer.hpp"
 #include "SFML/Window/SensorManager.hpp"
 
+#include "SFML/GLUtils/CopyFramebuffer.hpp"
+#include "SFML/GLUtils/FramebufferSaver.hpp"
 #include "SFML/GLUtils/GLCheck.hpp"
 #include "SFML/GLUtils/GLContextSaver.hpp"
 #include "SFML/GLUtils/GLDebugCallback.hpp"
@@ -22,15 +22,19 @@
 #include "SFML/GLUtils/GlContextTypeImpl.hpp"
 #include "SFML/GLUtils/GlFuncTypesImpl.hpp"
 #include "SFML/GLUtils/Glad.hpp"
+#include "SFML/GLUtils/TextureSaver.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/SignalErrHandler.hpp"
 
 #include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Algorithm/Find.hpp"
 #include "SFML/Base/AnkerlUnorderedDense.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
@@ -58,9 +62,13 @@ namespace
     if (!glGetErrorFunc || !glGetIntegervFunc || !glGetStringFunc)
         return result; // Empty vector
 
+    // Drain any pre-existing GL errors (Emscripten leaves errors after context setup)
+    while (glGetErrorFunc() != GL_NO_ERROR)
+        ;
+
     // Check whether a >= 3.0 context is available
     int majorVersion = 0;
-    glGetIntegervFunc(GL_MAJOR_VERSION, &majorVersion); // intentionally not checked, will be checked below
+    glCheckIgnoreWithFunc(glGetErrorFunc, glGetIntegervFunc(GL_MAJOR_VERSION, &majorVersion));
 
     auto glGetStringiFunc = reinterpret_cast<glGetStringiFuncType>(glContext.getFunction("glGetStringi"));
 
@@ -132,7 +140,7 @@ private:
     }
 
     ////////////////////////////////////////////////////////////
-    void unregisterImpl(auto idsPmr, const unsigned int glContextId, const unsigned int id)
+    void unregisterImpl(auto idsPmr, const unsigned int glContextId, const unsigned int id, auto fGlDeleteFunc)
     {
         std::lock_guard lock(m_mutex);
 
@@ -142,7 +150,7 @@ private:
         if (!idsSet.contains(id))
             return;
 
-        glCheck(glDeleteFramebuffers(1, &id));
+        glCheck(fGlDeleteFunc(1, &id));
         idsSet.erase(id);
     }
 
@@ -198,7 +206,7 @@ public:
     ////////////////////////////////////////////////////////////
     void unregisterFrameBuffer(const unsigned int glContextId, const unsigned int frameBufferId)
     {
-        unregisterImpl(&UnsharedContextResources::frameBufferIds, glContextId, frameBufferId);
+        unregisterImpl(&UnsharedContextResources::frameBufferIds, glContextId, frameBufferId, glDeleteFramebuffers);
     }
 
     ////////////////////////////////////////////////////////////
@@ -210,9 +218,262 @@ public:
     ////////////////////////////////////////////////////////////
     void unregisterVAO(const unsigned int glContextId, const unsigned int vaoId)
     {
-        unregisterImpl(&UnsharedContextResources::vaoIds, glContextId, vaoId);
+        unregisterImpl(&UnsharedContextResources::vaoIds, glContextId, vaoId, glDeleteVertexArrays);
     }
 };
+
+
+////////////////////////////////////////////////////////////
+struct ContextTransferScratch
+{
+    unsigned int readFramebuffer{};
+    unsigned int drawFramebuffer{};
+
+    unsigned int flipFramebuffer{};
+    unsigned int flipTexture{};
+    sf::Vec2u    flipTextureSize{};
+    bool         flipTextureSrgb{};
+};
+
+
+////////////////////////////////////////////////////////////
+class TransferScratchManager
+{
+private:
+    std::mutex                                                         m_mutex;
+    ankerl::unordered_dense::map<unsigned int, ContextTransferScratch> m_byContext;
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static unsigned int getActiveContextId()
+    {
+        SFML_BASE_ASSERT(sf::WindowContext::hasActiveThreadLocalGlContext());
+        return sf::WindowContext::getActiveThreadLocalGlContextId();
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] ContextTransferScratch& getOrCreateForActiveContext()
+    {
+        const auto [it, inserted] = m_byContext.try_emplace(getActiveContextId());
+        return it->second;
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static unsigned int ensureFramebuffer(unsigned int& framebufferId, const char* const what)
+    {
+        if (framebufferId != 0u)
+            return framebufferId;
+
+        glCheck(glGenFramebuffers(1, &framebufferId));
+
+        if (framebufferId == 0u)
+            sf::priv::err() << "Failed to create transfer scratch " << what;
+
+        return framebufferId;
+    }
+
+    ////////////////////////////////////////////////////////////
+    static void deleteFramebuffer(unsigned int& framebufferId)
+    {
+        if (framebufferId == 0u)
+            return;
+
+        glCheck(glDeleteFramebuffers(1, &framebufferId));
+        framebufferId = 0u;
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static unsigned int ensureFlipTexture(ContextTransferScratch& scratch, const sf::Vec2u size, const bool sRgb)
+    {
+        if (scratch.flipTexture != 0u && scratch.flipTextureSize == size && scratch.flipTextureSrgb == sRgb)
+            return scratch.flipTexture;
+
+        if (scratch.flipTexture != 0u)
+        {
+            glCheck(glDeleteTextures(1, &scratch.flipTexture));
+            scratch.flipTexture = 0u;
+        }
+
+        const sf::priv::TextureSaver textureSaver;
+
+        glCheck(glGenTextures(1, &scratch.flipTexture));
+
+        if (scratch.flipTexture == 0u)
+        {
+            sf::priv::err() << "Failed to create transfer scratch flip texture";
+            return 0u;
+        }
+
+        sf::priv::bindAndInitializeTexture(scratch.flipTexture, sRgb, size, GL_CLAMP_TO_EDGE);
+
+        scratch.flipTextureSize = size;
+        scratch.flipTextureSrgb = sRgb;
+
+        return scratch.flipTexture;
+    }
+
+    ////////////////////////////////////////////////////////////
+    static void deleteTexture(unsigned int& textureId)
+    {
+        if (textureId == 0u)
+            return;
+
+        glCheck(glDeleteTextures(1, &textureId));
+        textureId = 0u;
+    }
+
+public:
+    ////////////////////////////////////////////////////////////
+    TransferScratchManager() = default;
+
+    ////////////////////////////////////////////////////////////
+    ~TransferScratchManager()
+    {
+        // Verify that everything is already released for all contexts
+        if (!m_byContext.empty())
+        {
+            sf::priv::err() << "TransferScratchManager destroyed with unreleased resources for " << m_byContext.size()
+                            << " contexts";
+
+            sf::base::abort();
+        }
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] unsigned int getReadFramebuffer()
+    {
+        const std::lock_guard lock(m_mutex);
+
+        auto& scratch = getOrCreateForActiveContext();
+        return ensureFramebuffer(scratch.readFramebuffer, "read framebuffer");
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] unsigned int getDrawFramebuffer()
+    {
+        const std::lock_guard lock(m_mutex);
+
+        auto& scratch = getOrCreateForActiveContext();
+        return ensureFramebuffer(scratch.drawFramebuffer, "draw framebuffer");
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] unsigned int getFlipFramebuffer()
+    {
+        const std::lock_guard lock(m_mutex);
+
+        auto& scratch = getOrCreateForActiveContext();
+        return ensureFramebuffer(scratch.flipFramebuffer, "flip framebuffer");
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] unsigned int ensureFlipTexture(const sf::Vec2u size, const bool sRgb)
+    {
+        const std::lock_guard lock(m_mutex);
+
+        auto& scratch = getOrCreateForActiveContext();
+        return ensureFlipTexture(scratch, size, sRgb);
+    }
+
+    ////////////////////////////////////////////////////////////
+    void releaseForActiveContext()
+    {
+        if (!sf::WindowContext::isInstalled() || !sf::WindowContext::hasActiveThreadLocalGlContext())
+            return;
+
+        const std::lock_guard lock(m_mutex);
+
+        const unsigned int contextId = getActiveContextId();
+        auto*              it        = m_byContext.find(contextId);
+
+        if (it == m_byContext.end())
+            return;
+
+        deleteFramebuffer(it->second.readFramebuffer);
+        deleteFramebuffer(it->second.drawFramebuffer);
+
+        deleteFramebuffer(it->second.flipFramebuffer);
+        deleteTexture(it->second.flipTexture);
+
+        m_byContext.erase(it);
+    }
+};
+
+
+#ifdef SFML_OPENGL_ES
+////////////////////////////////////////////////////////////
+/// \brief Copy framebuffer contents with vertical flipping using reusable scratch storage
+///
+/// Copies source framebuffer contents to destination while vertically flipping
+/// the image. On OpenGL ES this uses a reusable intermediate texture/FBO pair.
+///
+/// \param sRgb   Whether the scratch texture should use sRGB storage
+/// \param size   Dimensions of the region to copy
+/// \param srcFBO Source framebuffer ID
+/// \param dstFBO Destination framebuffer ID
+/// \param srcPos Source region starting position (default: 0,0)
+/// \param dstPos Destination region starting position (default: 0,0)
+///
+/// \return True if copy succeeded, false otherwise
+///
+////////////////////////////////////////////////////////////
+bool copyFlippedFramebufferViaTransferScratch(
+    const unsigned int intermediateFBO,
+    const unsigned int tmpTextureNativeHandle,
+    const sf::Vec2u    size,
+    const unsigned int srcFBO,
+    const unsigned int dstFBO,
+    const sf::Vec2u    srcPos,
+    const sf::Vec2u    dstPos)
+{
+    if (intermediateFBO == 0u || tmpTextureNativeHandle == 0u)
+        return false;
+
+    const sf::priv::FramebufferSaver framebufferSaver;
+
+    glCheck(glBindFramebuffer(GL_FRAMEBUFFER, intermediateFBO));
+    glCheck(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tmpTextureNativeHandle, 0));
+
+    if (glCheck(glCheckFramebufferStatus(GL_FRAMEBUFFER)) != GL_FRAMEBUFFER_COMPLETE)
+    {
+        sf::priv::err() << "Failure to complete intermediate FBO in `copyFlippedFramebuffer`";
+        return false;
+    }
+
+    sf::priv::copyFramebuffer(/* invertYAxis */ false, size, srcFBO, intermediateFBO, srcPos, {});
+    sf::priv::copyFramebuffer(/* invertYAxis */ true, size, intermediateFBO, dstFBO, {}, dstPos);
+
+    return true;
+}
+#endif
+
+
+#ifndef SFML_OPENGL_ES
+////////////////////////////////////////////////////////////
+/// \brief Copy framebuffer contents with vertical flipping
+///
+/// Copies source framebuffer contents to destination while vertically flipping
+/// the image.
+///
+/// \param size   Dimensions of the region to copy
+/// \param srcFBO Source framebuffer ID
+/// \param dstFBO Destination framebuffer ID
+/// \param srcPos Source region starting position (default: 0,0)
+/// \param dstPos Destination region starting position (default: 0,0)
+///
+////////////////////////////////////////////////////////////
+void copyFlippedFramebufferViaDirectBlit(
+    [[maybe_unused]] const bool sRgb,
+    const sf::Vec2u             size,
+    const unsigned int          srcFBO,
+    const unsigned int          dstFBO,
+    const sf::Vec2u             srcPos,
+    const sf::Vec2u             dstPos)
+{
+    const sf::priv::FramebufferSaver framebufferSaver;
+    sf::priv::copyFramebuffer(/* invertYAxis */ true, size, srcFBO, dstFBO, srcPos, dstPos);
+}
+#endif
+
 
 } // namespace
 
@@ -220,7 +481,13 @@ public:
 struct WindowContextImpl
 {
     ////////////////////////////////////////////////////////////
+    priv::SDLLayer sdlLayer; //!< SDL layer instance, must be initialized before GL context
+
+    ////////////////////////////////////////////////////////////
     std::atomic<unsigned int> nextThreadLocalGlContextId{2u}; // 1 is reserved for shared context
+
+    ////////////////////////////////////////////////////////////
+    TransferScratchManager transferScratchManager; //!< Manager for the scratch FBOs and textures used for copy operations
 
     ////////////////////////////////////////////////////////////
     UnsharedContextResourcesManager unsharedContextResourcesManager;
@@ -267,8 +534,6 @@ WindowContextImpl& ensureInstalled()
 ////////////////////////////////////////////////////////////
 base::Optional<WindowContext> WindowContext::create()
 {
-    priv::getSDLLayerSingleton(); // TODO P0:
-
     const auto fail = [](const char* what)
     {
         priv::err() << "Error creating `sf::WindowContext`: " << what;
@@ -297,14 +562,20 @@ base::Optional<WindowContext> WindowContext::create()
     SFML_BASE_ASSERT(!hasActiveThreadLocalGlContext());
 
     if (!setActiveThreadLocalGlContextToSharedContext())
+    {
+        installedWindowContext.reset();
         return fail("could not enable shared context");
+    }
 
     SFML_BASE_ASSERT(isActiveGlContextSharedContext());
 
     //
     // Try to initialize shared GL context
     if (!wc.sharedGlContext.initialize(wc.sharedGlContext, sharedContextSettings))
+    {
+        installedWindowContext.reset();
         return fail("could not initialize shared context");
+    }
 
     //
     // Load extensions and entrypoints
@@ -321,7 +592,10 @@ base::Optional<WindowContext> WindowContext::create()
     const auto minorVersion = priv::getGLInteger(GL_MINOR_VERSION);
 
     if ((majorVersion < 1) || ((majorVersion == 1) && (minorVersion < 1)))
+    {
+        installedWindowContext.reset();
         return fail("support for OpenGL 1.1 or greater required, ensure hardware acceleration is enabled");
+    }
 #else
     // Need to drain errors here or subsequent assertion will fail on Emscripten, unsure why
     while (glGetError() != GL_NO_ERROR)
@@ -370,6 +644,13 @@ WindowContext::~WindowContext()
     SFML_BASE_ASSERT(!hasActiveThreadLocalGlContext());
 
     installedWindowContext.reset();
+}
+
+
+////////////////////////////////////////////////////////////
+priv::SDLLayer& WindowContext::getSDLLayer()
+{
+    return ensureInstalled().sdlLayer;
 }
 
 
@@ -424,12 +705,20 @@ void WindowContext::cleanupUnsharedFrameBuffers(priv::GlContext& glContext)
 {
     auto& wc = ensureInstalled();
 
-    if (&glContext == &wc.sharedGlContext)
+    const auto doCleanup = [&]
     {
+        // Make this context active so resources can be freed
         if (!setActiveThreadLocalGlContext(glContext, true))
             priv::err() << "Could not enable GL context in GlContext::cleanupUnsharedFrameBuffers()";
 
         wc.unsharedContextResourcesManager.unregisterAllResources(glContext.getId());
+        wc.transferScratchManager.releaseForActiveContext();
+    };
+
+
+    if (&glContext == &wc.sharedGlContext)
+    {
+        doCleanup();
         SFML_BASE_ASSERT(wc.unsharedContextResourcesManager.allEmpty());
 
         disableSharedGlContext();
@@ -438,12 +727,7 @@ void WindowContext::cleanupUnsharedFrameBuffers(priv::GlContext& glContext)
 
     // Save the current context so we can restore it later
     priv::GLContextSaver glContextSaver;
-
-    // Make this context active so resources can be freed
-    if (!setActiveThreadLocalGlContext(glContext, true))
-        priv::err() << "Could not enable GL context in GlContext::cleanupUnsharedFrameBuffers()";
-
-    wc.unsharedContextResourcesManager.unregisterAllResources(glContext.getId());
+    doCleanup();
 }
 
 
@@ -680,6 +964,55 @@ bool WindowContext::isExtensionAvailable(const char* const name)
 GlFunctionPointer WindowContext::getFunction(const char* const name)
 {
     return ensureInstalled().sharedGlContext.getFunction(name);
+}
+
+
+////////////////////////////////////////////////////////////
+unsigned int WindowContext::getTransferScratchReadFramebuffer()
+{
+    return ensureInstalled().transferScratchManager.getReadFramebuffer();
+}
+
+
+////////////////////////////////////////////////////////////
+unsigned int WindowContext::getTransferScratchDrawFramebuffer()
+{
+    return ensureInstalled().transferScratchManager.getDrawFramebuffer();
+}
+
+
+////////////////////////////////////////////////////////////
+unsigned int WindowContext::getTransferScratchFlipFramebuffer()
+{
+    return ensureInstalled().transferScratchManager.getFlipFramebuffer();
+}
+
+
+////////////////////////////////////////////////////////////
+unsigned int WindowContext::ensureTransferScratchFlipTexture(const Vec2u size, const bool sRgb)
+{
+    return ensureInstalled().transferScratchManager.ensureFlipTexture(size, sRgb);
+}
+
+
+////////////////////////////////////////////////////////////
+bool WindowContext::copyFlippedFramebuffer(
+    const bool         sRgb,
+    const Vec2u        size,
+    const unsigned int srcFBO,
+    const unsigned int dstFBO,
+    const Vec2u        srcPos,
+    const Vec2u        dstPos)
+{
+#ifdef SFML_OPENGL_ES
+    const unsigned int intermediateFBO        = getTransferScratchFlipFramebuffer();
+    const unsigned int tmpTextureNativeHandle = ensureTransferScratchFlipTexture(size, sRgb);
+
+    return copyFlippedFramebufferViaTransferScratch(intermediateFBO, tmpTextureNativeHandle, size, srcFBO, dstFBO, srcPos, dstPos);
+#else
+    copyFlippedFramebufferViaDirectBlit(sRgb, size, srcFBO, dstFBO, srcPos, dstPos);
+    return true;
+#endif
 }
 
 } // namespace sf

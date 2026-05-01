@@ -5,7 +5,7 @@
 
 #include "SFML/Graphics/Color.hpp"
 
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 
 namespace CatConstants
@@ -16,10 +16,11 @@ inline constexpr EXACT_ARRAY(
     colors,
     nCatTypes,
     {
-        {192u, 147u, 109u}, // Normal
-        {129u, 251u, 191u}, // Uni
-        {191u, 61u, 61u},   // Devil
-        sf::Color::White,   // Astro
+        {192u, 147u, 109u},  // Normal
+        {129u, 251u, 191u},  // Uni
+        {191u, 61u, 61u},    // Devil
+        sf::Color::White,    // Astro
+        sf::Color::DarkBlue, // Warden
 
         {90u, 155u, 48u},   // Witch
         {123u, 108u, 191u}, // Wizard
@@ -38,15 +39,16 @@ inline constexpr EXACT_ARRAY(
     actionNames,
     nCatTypes,
     {
-        "Pops",    // Normal
-        "Shines",  // Uni
-        "IEDs",    // Devil
-        "Flights", // Astro
+        "pops",    // Normal
+        "shines",  // Uni
+        "ieds",    // Devil
+        "flights", // Astro
+        "bonks",   // Warden
 
-        "Rituals", // Witch
-        "Spells",  // Wizard
-        "Clicks",  // Mouse
-        "Boosts",  // Engi
+        "rituals", // Witch
+        "spells",  // Wizard
+        "clicks",  // Mouse
+        "boosts",  // Engi
         "N/A",     // Repulso
         "N/A",     // Attracto
         "N/A",     // Copy
@@ -63,6 +65,7 @@ inline constexpr EXACT_ARRAY(
         3000.f,   // Uni
         7000.f,   // Devil
         10'000.f, // Astro
+        30'000.f, // Warden
 
         80'000.f, // Witch
         1500.f,   // Wizard
@@ -80,10 +83,11 @@ inline constexpr EXACT_ARRAY(
     baseRanges,
     nCatTypes,
     {
-        96.f, // Normal
-        64.f, // Uni
-        48.f, // Devil
-        48.f, // Astro
+        96.f,  // Normal
+        64.f,  // Uni
+        48.f,  // Devil
+        48.f,  // Astro
+        144.f, // Warden
 
         192.f, // Witch
         384.f, // Wizard
@@ -102,9 +106,10 @@ inline constexpr EXACT_ARRAY(
     nCatTypes,
     {
         {0.f, 0.f},    // Normal
-        {0.f, -100.f}, // Uni
+        {0.f, -124.f}, // Uni
         {0.f, 100.f},  // Devil
         {-64.f, 0.f},  // Astro
+        {0.f, 0.f},    // Warden
 
         {0.f, 0.f}, // Witch
         {0.f, 0.f}, // Wizard
@@ -126,6 +131,7 @@ inline constexpr EXACT_ARRAY(
         "Uni",
         "Devil",
         "Astro",
+        "Warden",
 
         "Witch",
         "Wizard",
@@ -147,6 +153,7 @@ inline constexpr EXACT_ARRAY(
         "Unicat",
         "Devilcat",
         "Astrocat",
+        "Wardencat",
 
         "Witchcat",
         "Wizardcat",

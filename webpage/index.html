@@ -1,0 +1,860 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>VRSFML — an opinionated fork of SFML</title>
+    <meta name="description" content="VRSFML is an opinionated fork of SFML: built-in Emscripten support, modern OpenGL, type-safe APIs, aggregate-based design, auto-batching, and far faster compile times.">
+    <meta name="color-scheme" content="dark light">
+
+    <!-- Avoid FOUC when applying the saved theme -->
+    <script>
+        (function () {
+            try {
+                var t = localStorage.getItem("vrsfml-theme");
+                if (t === "light" || t === "dark") {
+                    document.documentElement.setAttribute("data-theme", t);
+                }
+            } catch (e) {}
+        })();
+    </script>
+
+    <!--
+        Register coi-serviceworker so the page becomes cross-origin isolated.
+        That is what makes SharedArrayBuffer (and therefore the pthreaded WASM
+        demo) work inside the iframe further down the page.
+        Defaults to `coepCredentialless: true`, which is what we need to embed
+        the cross-origin demo from vittorioromeo.github.io.
+        On the first visit the page reloads itself once so the SW takes effect.
+    -->
+    <script src="coi-serviceworker.js"></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+
+    <!--
+        Two highlight.js theme stylesheets; the inactive one is `disabled` so
+        only the active theme paints code. The inline script below flips the
+        `disabled` flag based on `data-theme` (already set by the FOUC script
+        above), and `theme.js` flips them again on every theme toggle.
+    -->
+    <link id="hljs-dark"  rel="stylesheet"
+          href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.10.0/build/styles/vs2015.min.css">
+    <link id="hljs-light" rel="stylesheet"
+          href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.10.0/build/styles/vs.min.css" disabled>
+    <script>
+        (function () {
+            var theme = document.documentElement.getAttribute("data-theme") || "dark";
+            document.getElementById("hljs-dark").disabled  = (theme === "light");
+            document.getElementById("hljs-light").disabled = (theme === "dark");
+        })();
+    </script>
+
+    <!-- Highlight.js core + bundled languages. `defer` runs it after parsing. -->
+    <script defer src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.10.0/build/highlight.min.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+
+
+
+<!-- ============================================================== -->
+<!-- Hero                                                            -->
+<!-- ============================================================== -->
+<main class="container">
+
+    <section class="hero">
+
+          <button id="theme-toggle" class="icon-button" style="float: right; background-color: rgba(125,125,125,125); filter: invert(100%);" aria-label="Toggle dark / light theme" type="button">
+                    <!-- Sun -->
+                    <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="4"/>
+                        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+                    </svg>
+                    <!-- Moon -->
+                    <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/>
+                    </svg>
+                </button>
+
+        <hgroup>
+            <h1>VRSFML</h1>
+            <p><i>an opinionated fork of SFML</i></p>
+        </hgroup>
+        <p class="hero-pitch">
+            A modern C++23 multimedia library with first-class web support via
+            <strong>Emscripten</strong>, an immediate-mode drawing API in the spirit
+            of <strong>Dear ImGui</strong>, highly-optimized even for low-end devices, and exceptionally fast to compile.
+        </p>
+        <div class="hero-cta">
+            <a href="https://github.com/vittorioromeo/VRSFML" target="_blank" rel="noopener" role="button">Browse on GitHub</a>
+            <a href="https://vittorioromeo.github.io/VRSFML_HTML5_Examples/" target="_blank" rel="noopener" role="button" class="secondary">Try examples in your browser</a>
+        </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- Highlights                                                       -->
+    <!-- ============================================================== -->
+    <section id="highlights">
+        <h2>What makes it different</h2>
+        <div class="card-grid">
+
+            <article>
+                <h3>Runs in the browser</h3>
+                <p>
+                    Built-in Emscripten support. Every example compiles to WebGL2 and
+                    runs in a browser tab — no <code>#ifdef</code>s, no shims, no extra
+                    build tooling on the user side.
+                </p>
+            </article>
+
+            <article>
+                <h3>Modern OpenGL only</h3>
+                <p>
+                    No <code>glBegin</code>, no <code>glMatrixMode</code>. The pipeline
+                    targets OpenGL ES 3.1 with built-in shaders that work the same on
+                    desktop, mobile, and the web.
+                </p>
+            </article>
+
+            <article>
+                <h3>Safe by default</h3>
+                <p>
+                    Invalid states are unrepresentable.
+                    Resources are created via factory functions returning
+                    <code>sf::base::Optional</code>. Default-constructed empty objects are gone.
+                </p>
+            </article>
+
+            <article>
+                <h3>Aggregates everywhere</h3>
+                <p>
+                    <code>Vec2</code>, <code>Rect2</code>, <code>Transformable</code>,
+                    <code>Vertex</code>, <code>RenderStates</code>: all aggregates with
+                    public fields and designated initializers. No getter/setter dance.
+                </p>
+            </article>
+
+            <article>
+                <h3>Auto-batching</h3>
+                <p>
+                    Sequential draw calls sharing the same texture, shader, and blend
+                    mode collapse into a single GPU draw call automatically. Your
+                    drawing code stays straightforward.
+                </p>
+            </article>
+
+            <article>
+                <h3>No more white-square bug</h3>
+                <p>
+                    <code>Sprite</code> and <code>Shape</code> don't store a texture
+                    pointer. The texture is passed at draw time, so dangling-texture
+                    bugs become a compile error rather than UB.
+                </p>
+            </article>
+
+            <article>
+                <h3>Built-in ImGui</h3>
+                <p>
+                    A first-class <code>SFML::ImGui</code> module replaces the
+                    out-of-tree <code>imgui-sfml</code>. One CMake option, ImGui works
+                    on every supported platform including the web.
+                </p>
+            </article>
+
+            <article>
+                <h3>Multiple audio devices</h3>
+                <p>
+                    Play game audio on the speakers and voice chat on the headset, in
+                    the same process. Each <code>sf::Sound</code> is bound to a
+                    specific <code>PlaybackDevice</code>.
+                </p>
+            </article>
+
+            <article>
+                <h3>SDL3 backend</h3>
+                <p>
+                    Native Wayland, smoother resize, expanded scancodes, and far
+                    better controller mapping than upstream's hand-rolled platform
+                    code. Free upgrade, same SFML feel.
+                </p>
+            </article>
+
+            <article>
+                <h3>Stack traces on every error</h3>
+                <p>
+                    Assertion failures, lifetime-tracker fires, and library errors
+                    print a full call stack via vendored libbacktrace. No more
+                    guessing where things went wrong.
+                </p>
+            </article>
+
+            <article>
+                <h3>Immediate drawing API</h3>
+                <p>
+                    Don't let OOP get in the way of drawing. Skip the sprite and draw a texture directly, or draw a shape without creating an intermediate object at all.
+                </p>
+            </article>
+        </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- Code comparisons                                                 -->
+    <!-- ============================================================== -->
+    <section id="compare">
+        <h2>Code, side by side</h2>
+        <p class="muted">Same task, written in upstream SFML and in VRSFML.</p>
+
+        <article class="compare-block">
+            <h3>Loading a font and rendering some text</h3>
+            <div class="compare-grid">
+                <figure>
+                    <figcaption>SFML</figcaption>
+<pre><code class="lang-cpp">sf::Font font;                  <span class="cmt">// empty, invalid state</span>
+font.loadFromFile("arial.ttf"); <span class="cmt">// can fail (!)</span>
+
+<span class="cmt">// object-oriented: font reference is stored and can dangle</span>
+sf::Text text(font, "Hello", 30);
+
+<span class="cmt">// mutable state via setter/getter API</span>
+text.setPosition({100.f, 200.f});
+text.setLineSpacing(1.5f);
+
+<span class="cmt">// emits one OpenGL draw call (!)</span>
+window.draw(text);
+</code></pre>
+                </figure>
+                <figure>
+                    <figcaption>VRSFML</figcaption>
+<pre><code class="lang-cpp"><span class="cmt">// type-safe resource management</span>
+const auto font = sf::Font::openFromFile("arial.ttf").value();
+
+<span class="cmt">// immediate drawing API with automatic batching</span>
+window.draw(font, { .position      = {100.f, 200.f},
+                    .string        = "Hello",
+                    .characterSize = 30,
+                    .lineSpacing   = 1.5f });
+</code></pre>
+                </figure>
+            </div>
+        </article>
+
+        <article class="compare-block">
+            <h3>Moving, rotating, and rendering a sprite</h3>
+            <div class="compare-grid">
+                <figure>
+                    <figcaption>SFML</figcaption>
+<pre><code class="lang-cpp"><span class="cmt">// object-oriented: texture reference is stored and can dangle</span>
+sf::Sprite sprite{texture};
+
+<span class="cmt">// cumbsersome setter/getter API, additional state to manage</span>
+sprite.setPosition(logicalPosition + drawOffset);
+sprite.setRotation(sf::radians(logicalRotation));
+
+<span class="cmt">// no direct access to transform</span>
+if (sprite.getPosition().x &lt; 0)
+    sprite.setPosition({0, sprite.getPosition().y});
+
+<span class="cmt">// emits one OpenGL draw call (!)</span>
+window.draw(sprite);
+</code></pre>
+                </figure>
+                <figure>
+                    <figcaption>VRSFML</figcaption>
+<pre><code class="lang-cpp"><span class="cmt">// immediate drawing API with automatic batching</span>
+window.draw(texture, {
+    .position = (logicalPosition + drawOffset).clampMinX(0.f),
+    .rotation = sf::radians(logicalRotation)
+});
+</code></pre>
+                </figure>
+            </div>
+        </article>
+
+        <article class="compare-block">
+            <h3>Automatic batching</h3>
+            <div class="compare-grid">
+                <figure>
+                    <figcaption>SFML</figcaption>
+<pre><code class="lang-cpp">for (int i = 0; i &lt; 10000; ++i)
+{
+    // ... update drawable objects ...
+
+    window.draw(someSprite);
+    window.draw(someShape);
+    window.draw(someText);
+}
+
+<span class="cmt">// emits 30000 OpenGL draw calls (!)</span>
+</code></pre>
+                </figure>
+                <figure>
+                    <figcaption>VRSFML</figcaption>
+<pre><code class="lang-cpp">for (int i = 0; i &lt; 10000; ++i)
+{
+    // ... update drawable objects ...
+
+    window.draw(someSprite, { .texture = atlasTexture });
+    window.draw(someShape,  { .texture = atlasTexture });
+    window.draw(someText,   { .texture = atlasTexture });
+}
+
+<span class="cmt">// emits only 1 OpenGL draw call</span>
+</code></pre>
+                </figure>
+            </div>
+        </article>
+
+        <article class="compare-block">
+            <h3>Dangling resource issues prevented at compile time</h3>
+            <div class="compare-grid">
+                <figure>
+                    <figcaption>SFML</figcaption>
+<pre><code class="lang-cpp">sf::Sprite makeSprite()
+{
+    sf::Texture tx(/* ... */);
+    return sf::Sprite(tx);
+}
+
+window.draw(makeSprite()); <span class="cmt">// dangling texture, UB</span>
+</code></pre>
+                </figure>
+                <figure>
+                    <figcaption>VRSFML</figcaption>
+<pre><code class="lang-cpp">const sf::Sprite sprite{ .textureRect = texture.getRect() };
+
+<span class="cmt">// texture is passed at draw time, never stored on the sprite</span>
+window.draw(sprite, texture);
+
+<span class="cmt">// or skip the sprite entirely</span>
+window.draw(texture, { .position = {25.f, 25.f} });
+</code></pre>
+                </figure>
+            </div>
+        </article>
+
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- Shape gallery                                                    -->
+    <!-- ============================================================== -->
+    <section id="shapes">
+        <h2>Shapes that aren't just circles and rectangles</h2>
+        <p>
+            Fifteen shape primitives ship in the box, all designated-initializer
+            aggregates, all batchable.
+        </p>
+
+        <div class="shape-gallery" aria-label="Built-in shape primitives">
+
+            <div class="shape-tile">
+                <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="32" cy="32" r="24"/></svg>
+                <span>Circle</span>
+            </div>
+
+            <div class="shape-tile">
+                <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="10" y="16" width="44" height="32"/></svg>
+                <span>Rectangle</span>
+            </div>
+
+            <div class="shape-tile">
+                <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><ellipse cx="32" cy="32" rx="26" ry="16"/></svg>
+                <span>Ellipse</span>
+            </div>
+
+            <div class="shape-tile">
+                <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="32" cy="32" r="24"/><circle cx="32" cy="32" r="12"/></svg>
+                <span>Ring</span>
+            </div>
+
+            <div class="shape-tile">
+                <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M32 32 L32 8 A24 24 0 0 1 53 44 Z"/></svg>
+                <span>PieSlice</span>
+            </div>
+
+            <div class="shape-tile">
+                <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M32 8 A24 24 0 0 1 53 44 L42 38 A12 12 0 0 0 32 20 Z"/></svg>
+                <span>RingPieSlice</span>
+            </div>
+
+            <div class="shape-tile">
+                <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="8" y="14" width="48" height="36" rx="9"/></svg>
+                <span>RoundedRect</span>
+            </div>
+
+            <div class="shape-tile">
+                <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="32,6 38,25 58,25 42,37 48,57 32,45 16,57 22,37 6,25 26,25"/></svg>
+                <span>Star</span>
+            </div>
+
+            <div class="shape-tile">
+                <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M32 56 C 18 44 6 34 6 22 A 12 12 0 0 1 32 18 A 12 12 0 0 1 58 22 C 58 34 46 44 32 56 Z"/></svg>
+                <span>Heart</span>
+            </div>
+
+            <div class="shape-tile">
+                <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M27 4 L37 4 L39 14 L48 8 L56 16 L50 25 L60 27 L60 37 L50 39 L56 48 L48 56 L39 50 L37 60 L27 60 L25 50 L16 56 L8 48 L14 39 L4 37 L4 27 L14 25 L8 16 L16 8 L25 14 Z"/><circle cx="32" cy="32" r="8"/></svg>
+                <span>Cog</span>
+            </div>
+
+            <div class="shape-tile">
+                <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="24,6 40,6 40,24 58,24 58,40 40,40 40,58 24,58 24,40 6,40 6,24 24,24"/></svg>
+                <span>Cross</span>
+            </div>
+
+            <div class="shape-tile">
+                <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="14,16 36,32 14,48"/><polyline points="34,16 56,32 34,48"/></svg>
+                <span>Chevron</span>
+            </div>
+
+            <div class="shape-tile">
+                <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="6" y1="32" x2="50" y2="32"/><polyline points="38,18 58,32 38,46"/></svg>
+                <span>Arrow</span>
+            </div>
+
+            <div class="shape-tile">
+                <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8 50 Q 32 12 56 32"/><polyline points="46,18 58,28 50,40"/></svg>
+                <span>CurvedArrow</span>
+            </div>
+
+            <div class="shape-tile">
+                <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="14,50 22,14 42,14 50,50"/></svg>
+                <span>Trapezoid</span>
+            </div>
+
+        </div>
+
+<pre><code class="lang-cpp">const sf::CogShapeData gear{{
+    .position        = {120.f, 120.f},
+    .fillColor       = sf::Color::Yellow,
+    .outerRadius     = 80.f,
+    .innerRadius     = 50.f,
+    .toothCount      = 12u,
+    .toothWidthRatio = 0.5f,
+}};
+
+window.draw(gear);
+</code></pre>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- Quality-of-life: vectors, angles, anchors                        -->
+    <!-- ============================================================== -->
+    <section id="qol">
+        <h2>The little things you'll miss going back</h2>
+        <p>
+            Vector math, type-safe angles, and anchor-points are first-class — no
+            need for a side library of "math utils".
+        </p>
+
+        <div class="qol-grid">
+
+            <figure>
+                <figcaption>Vec2 utilities</figcaption>
+<pre><code class="lang-cpp"><span class="cmt">// Aim and home in on a target</span>
+auto toTarget = (target - pos);
+
+if (toTarget.length() &gt; 4.f)
+    pos = pos.movedTowards(
+        speed * dt,
+        toTarget.angle());
+</code></pre>
+            </figure>
+
+            <figure>
+                <figcaption>Type-safe angles</figcaption>
+<pre><code class="lang-cpp"><span class="cmt">// degrees vs radians, never confused again</span>
+sprite.rotation += sf::degrees(45.f);
+
+auto wrapped = sprite.rotation.wrapSigned();
+auto turned  = sprite.rotation.rotatedTowards(
+    target.angle(), sf::degrees(90.f) * dt);
+</code></pre>
+            </figure>
+
+            <figure>
+                <figcaption>Anchor points everywhere</figcaption>
+<pre><code class="lang-cpp"><span class="cmt">// Every shape, sprite, rect exposes anchors</span>
+auto c = sprite.getLocalCenter();
+auto br = bounds.getBottomRight();
+
+<span class="cmt">// Or arbitrary normalized factors:</span>
+auto p = bounds.getAnchorPoint({0.25f, 0.75f});
+</code></pre>
+            </figure>
+
+        </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- Performance                                                      -->
+    <!-- ============================================================== -->
+    <section id="performance">
+        <h2>Drawing performance</h2>
+        <p>
+            Bunnymark-style benchmark, 500 000 moving and rotating sprites, on a
+            <code>i9 13900k / RTX 4090</code>. Numbers from the
+            <a href="https://vittorioromeo.com/index/blog/vrsfml2.html" target="_blank" rel="noopener">batching deep-dive</a>.
+        </p>
+
+        <div class="bench-chart" role="img" aria-label="Bunnymark FPS, higher is better">
+            <div class="bench-row">
+                <span class="bench-label">SFML upstream<br><small>no batching</small></span>
+                <div class="bench-bar"><div class="fill" style="width: 4.4%;"></div></div>
+                <span class="bench-value">~3 FPS</span>
+            </div>
+            <div class="bench-row">
+                <span class="bench-label">VRSFML<br><small>autobatching (CPU buffer)</small></span>
+                <div class="bench-bar"><div class="fill" style="width: 76.5%;"></div></div>
+                <span class="bench-value">~62 FPS</span>
+            </div>
+            <div class="bench-row">
+                <span class="bench-label">VRSFML<br><small>autobatching (GPU buffer)</small></span>
+                <div class="bench-bar"><div class="fill" style="width: 100%;"></div></div>
+                <span class="bench-value">~81 FPS</span>
+            </div>
+        </div>
+
+        <p class="muted">
+            …or run it right here, on the page you're reading:
+        </p>
+
+        <div class="demo-frame">
+            <iframe
+                src="batching_embed.html"
+                title="VRSFML batching benchmark, running in your browser"
+                loading="lazy"
+                credentialless
+                allow="cross-origin-isolated; autoplay; gamepad"
+                referrerpolicy="no-referrer">
+            </iframe>
+        </div>
+        <p class="muted small">
+            Compiled to WebGL2 via Emscripten, from the same source as the native
+            build.
+            <a href="https://vittorioromeo.github.io/VRSFML_HTML5_Examples/batching.html" target="_blank" rel="noopener">Open full-screen →</a>
+        </p>
+
+        <h3 class="size-subhead">Smaller objects, better cache</h3>
+        <table>
+            <thead>
+                <tr><th>Type</th><th>SFML</th><th>VRSFML</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>sf::Transform</code></td><td>64 B</td><td>24 B</td></tr>
+                <tr><td><code>sf::Transformable</code></td><td>128 B</td><td>28 B</td></tr>
+                <tr><td><code>sf::Sprite</code></td><td>280 B</td><td>48 B</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- Compile times                                                    -->
+    <!-- ============================================================== -->
+    <section id="compile">
+        <h2>Compile times that don't ruin your day</h2>
+        <p>
+            VRSFML treats compile-time as a first-class concern. Catch-all headers
+            are gone, every translation unit gets aggressive PImpl, and the public
+            API uses <code>sf::base</code> vocabulary types instead of pulling in
+            <code>&lt;optional&gt;</code>, <code>&lt;memory&gt;</code>,
+            <code>&lt;type_traits&gt;</code>, or <code>&lt;iostream&gt;</code>.
+        </p>
+
+        <div class="bench-chart" role="img" aria-label="Approximate clean-build time, lower is better">
+            <div class="bench-row">
+                <span class="bench-label">SFML upstream</span>
+                <div class="bench-bar reverse"><div class="fill" style="width: 100%;"></div></div>
+                <span class="bench-value">baseline</span>
+            </div>
+            <div class="bench-row">
+                <span class="bench-label">VRSFML</span>
+                <div class="bench-bar reverse"><div class="fill good" style="width: 35%;"></div></div>
+                <span class="bench-value">~3× faster</span>
+            </div>
+        </div>
+        <p class="muted small">
+            Approximate, based on representative clean rebuilds of the
+            <code>SFML::Graphics</code> library. Replace with your own measurements
+            on your own hardware.
+        </p>
+
+        <ul class="compile-bullets">
+            <li>No <code>SFML/Graphics.hpp</code>-style catch-all headers.</li>
+            <li>Custom vocabulary types with minimal template depth.</li>
+            <li>In-place PImpl (no allocation, hides implementation).</li>
+            <li>Compiler built-ins for traits and index sequences.</li>
+            <li><code>extern template</code> for hot instantiations.</li>
+        </ul>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- SFML::Base — bring your own batteries                            -->
+    <!-- ============================================================== -->
+    <section id="batteries">
+        <h2>Bring your own batteries: <code>SFML::Base</code></h2>
+        <p>
+            VRSFML ships a small standalone utilities library used internally and
+            re-exported for users. Compile-time-friendly, allocation-conscious, and
+            independent from the C++ standard library where it matters.
+        </p>
+
+        <div class="batteries-grid">
+
+            <div class="battery">
+                <code>Optional · UniquePtr · Variant</code>
+                <small>Vocabulary types that don't pull in <code>&lt;optional&gt;</code> / <code>&lt;memory&gt;</code> / <code>&lt;variant&gt;</code>.</small>
+            </div>
+
+            <div class="battery">
+                <code>String · StringView · Span · Vector</code>
+                <small>Drop-ins for the standard equivalents, designed for fast compiles and good debug perf.</small>
+            </div>
+
+            <div class="battery">
+                <code>InPlaceVector&lt;T, N&gt;</code>
+                <small>Capacity-bounded, stack-only, no allocation. Ideal for sound pools and bounded queues.</small>
+            </div>
+
+            <div class="battery">
+                <code>SmallVector&lt;T, N&gt;</code>
+                <small>Inline storage with heap fallback. The right default when most cases stay small.</small>
+            </div>
+
+            <div class="battery">
+                <code>ChunkedVector&lt;T&gt;</code>
+                <small>Stable references on growth. Append-only structures, indexed entity arenas.</small>
+            </div>
+
+            <div class="battery">
+                <code>FixedFunction&lt;Sig, N&gt;</code>
+                <small>Allocation-free <code>std::function</code>: storage lives inline, no heap, no vtable surprise.</small>
+            </div>
+
+            <div class="battery">
+                <code>InPlacePImpl&lt;T, N&gt;</code>
+                <small>PImpl that hides the implementation without allocating. Used everywhere internally.</small>
+            </div>
+
+            <div class="battery">
+                <code>ThreadPool</code>
+                <small>Fixed-worker pool. No <code>&lt;thread&gt;</code> in your headers.</small>
+            </div>
+
+            <div class="battery">
+                <code>EnumArray · EnumClassBitwiseOps</code>
+                <small>Strongly-typed lookup tables and bitflag enums without macro gymnastics.</small>
+            </div>
+
+            <div class="battery">
+                <code>MiniPFR</code>
+                <small>Aggregate reflection — iterate fields by index, get field names, build SoA containers from any <code>struct</code>.</small>
+            </div>
+
+        </div>
+
+        <p class="muted small">
+            See the <a href="https://github.com/vittorioromeo/VRSFML/tree/master/examples/rockets" target="_blank" rel="noopener"><code>rockets</code> example</a>
+            for a struct-of-arrays container generated from a plain aggregate via <code>MiniPFR</code>.
+        </p>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- Rejected upstream                                                -->
+    <!-- ============================================================== -->
+    <section id="upstream">
+        <h2>Features upstream couldn't accept</h2>
+        <p>
+            VRSFML exists because some changes felt too disruptive for upstream's
+            roadmap. Each of the following was proposed, discussed, and ultimately
+            shelved or reverted on master. They all ship here.
+        </p>
+
+        <div class="upstream-callout">
+            <ol>
+                <li>
+                    Modern OpenGL ES backend, with Emscripten support
+                    <small>— deferred to a hypothetical future SFML 4.x.</small>
+                </li>
+                <li>
+                    Factory APIs returning <code>Optional</code>, no empty states
+                    <small>— reverted in <a href="https://github.com/SFML/SFML/pull/3152" target="_blank" rel="noopener">#3152</a>.</small>
+                </li>
+                <li>
+                    Sprites and shapes without a stored texture pointer
+                    <small>— rejected in <a href="https://github.com/SFML/SFML/pull/3072" target="_blank" rel="noopener">#3072</a> and <a href="https://github.com/SFML/SFML/pull/3080" target="_blank" rel="noopener">#3080</a>.</small>
+                </li>
+                <li>
+                    Cross-resource lifetime tracking
+                    <small>— rejected in <a href="https://github.com/SFML/SFML/pull/3097" target="_blank" rel="noopener">#3097</a>.</small>
+                </li>
+                <li>
+                    Removal of <code>sf::VertexArray</code> in favor of <code>std::vector&lt;Vertex&gt;</code>
+                    <small>— rejected in <a href="https://github.com/SFML/SFML/pull/3118" target="_blank" rel="noopener">#3118</a>.</small>
+                </li>
+                <li>
+                    Multiple simultaneous audio playback devices
+                    <small>— deemed out-of-scope.</small>
+                </li>
+                <li>
+                    Doctest as the testing framework
+                    <small>— replaced with Catch2.</small>
+                </li>
+            </ol>
+        </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- Built with VRSFML                                                -->
+    <!-- ============================================================== -->
+    <section id="built-with">
+        <h2>Built with VRSFML</h2>
+        <p>
+            Real games, on real storefronts, in production.
+        </p>
+
+        <div class="games-grid">
+
+            <a class="game-card" href="https://store.steampowered.com/app/3499760/BubbleByte/" target="_blank" rel="noopener">
+                <h3>BubbleByte</h3>
+                <p>
+                    Idle / incremental game. Uses VRSFML's autobatching to render
+                    thousands of moving bubbles, cats, and particles per frame.
+                </p>
+                <div class="game-tags">
+                    <span class="game-tag">Steam</span>
+                    <span class="game-tag">2025</span>
+                    <span class="game-tag">autobatching</span>
+                </div>
+            </a>
+
+            <a class="game-card" href="https://store.steampowered.com/app/1358090/Open_Hexagon/" target="_blank" rel="noopener">
+                <h3>Open Hexagon</h3>
+                <p>
+                    Open-source, community-driven spiritual successor to Super
+                    Hexagon. Lua-scripted levels, Steam Workshop, leaderboards.
+                </p>
+                <div class="game-tags">
+                    <span class="game-tag">Steam</span>
+                    <span class="game-tag">open source</span>
+                    <span class="game-tag">Lua</span>
+                </div>
+            </a>
+
+        </div>
+
+        <p class="in-tree-link">
+            In-repo, full-game examples worth reading:
+            <a href="https://github.com/vittorioromeo/VRSFML/tree/master/examples/tetris_survivors" target="_blank" rel="noopener"><code>tetris_survivors</code></a>,
+            <a href="https://github.com/vittorioromeo/VRSFML/tree/master/examples/bubble_idle" target="_blank" rel="noopener"><code>bubble_idle</code></a>
+            (BubbleByte's source),
+            <a href="https://github.com/vittorioromeo/VRSFML/tree/master/examples/rockets" target="_blank" rel="noopener"><code>rockets</code></a>
+            (SoA + reflection),
+            <a href="https://github.com/vittorioromeo/VRSFML/tree/master/examples/coroutine_dialogue" target="_blank" rel="noopener"><code>coroutine_dialogue</code></a>
+            (stackless coroutines on top of VRSFML).
+        </p>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- Get started                                                      -->
+    <!-- ============================================================== -->
+    <section id="start">
+        <h2>Get started</h2>
+        <pre><code class="lang-bash">git clone https://github.com/vittorioromeo/VRSFML
+cd VRSFML
+cmake --preset vrdev_clang
+cd build_vrdev_clang
+ninja
+</code></pre>
+        <p>
+            Coming from upstream SFML? The
+            <a href="https://github.com/vittorioromeo/VRSFML/blob/master/vrsfml_migration.md" target="_blank" rel="noopener">migration guide</a>
+            walks through every breaking change with before / after snippets.
+            Detailed build instructions for Windows, Ubuntu, and Emscripten live in
+            the <a href="https://github.com/vittorioromeo/VRSFML#how-to-build" target="_blank" rel="noopener">repo README</a>.
+        </p>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- Further reading                                                  -->
+    <!-- ============================================================== -->
+    <section id="reading">
+        <h2>Further reading</h2>
+        <ul class="reading-list">
+            <li>
+                <a href="https://vittorioromeo.com/index/blog/vrsfml.html" target="_blank" rel="noopener">VRSFML — design philosophy and motivation</a>
+                <small>Why this fork exists, what upstream rejected, and what was rebuilt.</small>
+            </li>
+            <li>
+                <a href="https://vittorioromeo.com/index/blog/vrsfml2.html" target="_blank" rel="noopener">Drawing 500k sprites at 60+ FPS</a>
+                <small>Drawable batching, persistent GPU buffers, aggregate <code>Transformable</code>.</small>
+            </li>
+            <li>
+                <a href="https://vittorioromeo.com/index/blog/vrsfml3.html" target="_blank" rel="noopener">Auto-batching, transparently</a>
+                <small>How <code>RenderTarget</code> collapses sequential draw calls into one.</small>
+            </li>
+            <li>
+                <a href="https://github.com/vittorioromeo/VRSFML/tree/master/examples/showcase" target="_blank" rel="noopener">Shape showcase example</a>
+                <small>Renders every built-in shape primitive in one program.</small>
+            </li>
+            <li>
+                <a href="https://github.com/vittorioromeo/VRSFML/tree/master/examples/vulkan" target="_blank" rel="noopener">Vulkan interop example</a>
+                <small>Drop down to Vulkan from inside an SFML window when you need to.</small>
+            </li>
+            <li>
+                <a href="https://github.com/vittorioromeo/VRSFML/blob/master/vrsfml_migration.md" target="_blank" rel="noopener">SFML → VRSFML migration guide</a>
+                <small>Every breaking change with before / after snippets.</small>
+            </li>
+        </ul>
+    </section>
+
+</main>
+
+<footer class="container">
+    <hr>
+    <small>
+        VRSFML is released under the <a href="https://github.com/vittorioromeo/VRSFML/blob/master/license.md" target="_blank" rel="noopener">zlib license</a>,
+        inherited from <a href="https://github.com/SFML/SFML" target="_blank" rel="noopener">upstream SFML</a>.
+        Built by <a href="https://vittorioromeo.com" target="_blank" rel="noopener">Vittorio Romeo</a>.
+    </small>
+</footer>
+
+<script src="theme.js" defer></script>
+
+<!-- Run highlight.js once the DOM and the deferred hljs script are both ready. -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        if (window.hljs) hljs.highlightAll();
+    });
+</script>
+
+<!--
+    Compute and apply the unitless scale factor for each `.demo-frame`. The
+    iframe inside is sized to the demo's native pixel buffer (1680x1050 for
+    the batching demo), and `transform: scale(var(--demo-scale))` shrinks it
+    to fit the wrapper. `scale()` only accepts unitless numbers, which is why
+    this can't be done in pure CSS without trig hacks.
+-->
+<script>
+    (function () {
+        function fit() {
+            document.querySelectorAll('.demo-frame').forEach(function (frame) {
+                var demoW = parseFloat(getComputedStyle(frame).getPropertyValue('--demo-w')) || 1680;
+                var rendered = frame.clientWidth;
+                if (demoW > 0 && rendered > 0) {
+                    frame.style.setProperty('--demo-scale', rendered / demoW);
+                }
+            });
+        }
+        fit();
+        if (typeof ResizeObserver === 'function') {
+            var ro = new ResizeObserver(fit);
+            document.querySelectorAll('.demo-frame').forEach(function (f) { ro.observe(f); });
+        } else {
+            window.addEventListener('resize', fit);
+        }
+    })();
+</script>
+</body>
+</html>

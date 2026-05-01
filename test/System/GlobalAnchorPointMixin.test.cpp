@@ -1,10 +1,20 @@
 #include "SFML/System/GlobalAnchorPointMixin.hpp"
 
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
 
-#include <Doctest.hpp>
+#include "SFML/Base/Trait/IsAggregate.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
+#include "SFML/Base/Trait/IsStandardLayout.hpp"
+#include "SFML/Base/Trait/IsTrivial.hpp"
+#include "SFML/Base/Trait/IsTriviallyAssignable.hpp"
+#include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
+#include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
 
-#include <CommonTraits.hpp>
+#include <Doctest.hpp>
 
 
 namespace
@@ -14,7 +24,7 @@ constexpr sf::Rect2f testRect{{53.f, 88.f}, {512.f, 5839.f}};
 
 
 ////////////////////////////////////////////////////////////
-struct TestLayoutObject : sf::GlobalAnchorPointMixin<TestLayoutObject>
+struct TestLayoutObject : sf::GlobalAnchorPointMixin
 {
     constexpr TestLayoutObject() = default;
 
@@ -49,18 +59,17 @@ TEST_CASE("[System] sf::GlobalAnchorPointMixin")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::GlobalAnchorPointMixin<TestLayoutObject>));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::GlobalAnchorPointMixin<TestLayoutObject>));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::GlobalAnchorPointMixin<TestLayoutObject>));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::GlobalAnchorPointMixin<TestLayoutObject>));
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::GlobalAnchorPointMixin));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::GlobalAnchorPointMixin));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::GlobalAnchorPointMixin));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::GlobalAnchorPointMixin));
 
-        STATIC_CHECK(SFML_BASE_IS_TRIVIAL(sf::GlobalAnchorPointMixin<TestLayoutObject>));
-        STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::GlobalAnchorPointMixin<TestLayoutObject>));
-        STATIC_CHECK(SFML_BASE_IS_AGGREGATE(sf::GlobalAnchorPointMixin<TestLayoutObject>));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::GlobalAnchorPointMixin<TestLayoutObject>));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::GlobalAnchorPointMixin<TestLayoutObject>));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::GlobalAnchorPointMixin<TestLayoutObject>,
-                                                       sf::GlobalAnchorPointMixin<TestLayoutObject>));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIAL(sf::GlobalAnchorPointMixin));
+        STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::GlobalAnchorPointMixin));
+        STATIC_CHECK(SFML_BASE_IS_AGGREGATE(sf::GlobalAnchorPointMixin));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::GlobalAnchorPointMixin));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::GlobalAnchorPointMixin));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::GlobalAnchorPointMixin, sf::GlobalAnchorPointMixin));
     }
 
     SECTION("getAnchorPoint")

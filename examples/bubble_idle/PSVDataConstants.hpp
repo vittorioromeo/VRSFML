@@ -62,7 +62,7 @@ inline constexpr PSVData catUniCooldownMult //
 inline constexpr PSVData catUniRangeDiv //
     {.nMaxPurchases = 9u,
      .cost          = {.initial = 10'000'000.f, .exponential = 1.85f},
-     .value         = {.initial = 0.6f, .multiplicative = -0.05f, .exponential = 0.8f, .flat = 0.4f}};
+     .value         = {.initial = 1.f, .multiplicative = -0.05f, .exponential = 0.8f, .flat = 0.4f}};
 
 inline constexpr PSVData catDevil //
     {.nMaxPurchases = 64u, .cost = {.initial = 15000.f, .exponential = 1.7f, .flat = -7000.f}, .value = {}};
@@ -162,7 +162,7 @@ inline constexpr PSVData catCopyCooldownMult //
     {.nMaxPurchases = 0u, .cost = {}, .value = {}};
 
 inline constexpr PSVData catCopyRangeDiv //
-    {.nMaxPurchases = 0u, .cost = {}, .value = {}};
+    {.nMaxPurchases = 0u, .cost = {}, .value = {1.f}};
 
 inline constexpr PSVData catDuck //
     {.nMaxPurchases = 0u, .cost = {}, .value = {}};
@@ -171,7 +171,7 @@ inline constexpr PSVData catDuckCooldownMult //
     {.nMaxPurchases = 0u, .cost = {}, .value = {}};
 
 inline constexpr PSVData catDuckRangeDiv //
-    {.nMaxPurchases = 0u, .cost = {}, .value = {}};
+    {.nMaxPurchases = 0u, .cost = {}, .value = {1.f}};
 
 inline constexpr PSVData catAstro //
     {.nMaxPurchases = 64u, .cost = {.initial = 1'000'000.f, .exponential = 1.85f}, .value = {}};
@@ -184,6 +184,20 @@ inline constexpr PSVData catAstroCooldownMult //
 inline constexpr PSVData catAstroRangeDiv //
     {.nMaxPurchases = 9u,
      .cost          = {.initial = 5'500'000.f, .exponential = 1.85f},
+     .value         = {.initial = 0.6f, .multiplicative = -0.045f, .exponential = 0.85f, .flat = 0.4f}};
+
+// TODO: rebalance Warden costs/scaling once it gates behind prestige points.
+inline constexpr PSVData catWarden //
+    {.nMaxPurchases = 32u, .cost = {.initial = 500.f, .linear = 250.f, .exponential = 1.7f, .flat = -200.f}, .value = {}};
+
+inline constexpr PSVData catWardenCooldownMult //
+    {.nMaxPurchases = 12u,
+     .cost          = {.initial = 5'000.f, .exponential = 1.85f, .flat = -2'500.f},
+     .value         = {.initial = 1.f, .linear = 0.015f, .multiplicative = 0.05f, .exponential = 0.8f}};
+
+inline constexpr PSVData catWardenRangeDiv //
+    {.nMaxPurchases = 9u,
+     .cost          = {.initial = 8'000.f, .exponential = 1.85f, .flat = -3'000.f},
      .value         = {.initial = 0.6f, .multiplicative = -0.045f, .exponential = 0.85f, .flat = 0.4f}};
 
 inline constexpr PSVData multiPopRange //
@@ -245,5 +259,19 @@ inline constexpr PSVData uniRitualBuffPercentage //
 
 inline constexpr PSVData devilRitualBuffPercentage //
     {.nMaxPurchases = 24u, .cost = {.initial = 8.f, .exponential = 1.25f}, .value = {.initial = 1.f, .linear = 1.f}};
+
+// TODO P0: tune values
+// Power Nap: duration in ms that the cooldown-reduction boost lasts after a
+// forced wake (shake or wardencat bonk). Linear growth keeps the curve
+// predictable.
+inline constexpr PSVData powerNapDuration //
+    {.nMaxPurchases = 10u, .cost = {.initial = 4.f, .exponential = 1.25f}, .value = {.initial = 2000.f, .linear = 500.f}};
+
+// TODO P0: tune values
+// Power Nap: multiplier bonus added to 1.0 to yield the final cooldown
+// speed-up (e.g. value = 0.5 => 1.5x cooldown tick rate, stacking
+// multiplicatively with engicat/inspired boosts).
+inline constexpr PSVData powerNapStrength //
+    {.nMaxPurchases = 8u, .cost = {.initial = 6.f, .exponential = 1.3f}, .value = {.initial = 0.5f, .linear = 0.25f}};
 
 } // namespace PSVDataConstants

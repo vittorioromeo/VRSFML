@@ -1,26 +1,49 @@
 #include "SFML/Graphics/Texture.hpp"
 
 // Other 1st party headers
+#include "GraphicsUtil.hpp"
+#include "LoadIntoMemoryUtil.hpp"
+#include "WindowUtil.hpp"
+
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
+#include "SFML/Graphics/TextureWrapMode.hpp"
 
 #include "SFML/System/FileInputStream.hpp"
 #include "SFML/System/Path.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsDefaultConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 #include "SFML/Base/Trait/IsNothrowSwappable.hpp"
 
 #include <Doctest.hpp>
 
-#include <CommonTraits.hpp>
-#include <GraphicsUtil.hpp>
-#include <LoadIntoMemoryUtil.hpp>
-#include <WindowUtil.hpp>
+
+namespace
+{
+sf::GraphicsContext& sharedGraphicsContext()
+{
+    static auto ctx = sf::GraphicsContext::create().value();
+    return ctx;
+}
+
+const sf::base::Vector<unsigned char>& sharedLogoBytes()
+{
+    static auto bytes = loadIntoMemory("sfml-logo-big.png");
+    return bytes;
+}
+} // namespace
 
 
 TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
 {
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    (void)sharedGraphicsContext();
 
     SECTION("Type traits")
     {
@@ -107,8 +130,8 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
 
     SECTION("loadFromMemory()")
     {
-        const auto memory  = loadIntoMemory("sfml-logo-big.png");
-        const auto texture = sf::Texture::loadFromMemory(memory.data(), memory.size()).value();
+        const auto& memory = sharedLogoBytes();
+        const auto  texture = sf::Texture::loadFromMemory(memory.data(), memory.size()).value();
         CHECK(texture.getSize() == sf::Vec2u{1001, 304});
         CHECK(!texture.isSmooth());
         CHECK(!texture.isSrgb());
@@ -272,7 +295,7 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
     SECTION("generateMipmap()")
     {
         auto texture = sf::Texture::create({100, 100}).value();
-        CHECK(texture.generateMipmap());
+        texture.generateMipmap();
     }
 
     SECTION("swap()")

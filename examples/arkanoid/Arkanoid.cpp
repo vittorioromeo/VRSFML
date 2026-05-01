@@ -4,6 +4,8 @@
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/RectangleShape.hpp"
+#include "SFML/Graphics/RectangleShapeData.hpp"
+#include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderTexture.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
@@ -11,12 +13,18 @@
 #include "SFML/Window/EventUtils.hpp"
 #include "SFML/Window/Keyboard.hpp"
 
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/RectUtils.hpp"
 
 #include "SFML/Base/Math/Fabs.hpp"
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Swap.hpp"
 #include "SFML/Base/Vector.hpp"
 
+
+namespace
+{
 
 constexpr sf::Vec2f resolution{800.f, 600.f};
 
@@ -208,15 +216,14 @@ public:
             m_player.setGlobalRight(boundaryRight);
     }
 
-    void drawOnto(sf::RenderTarget& renderTarget)
+    void draw(sf::RenderTarget& renderTarget, const sf::RenderStates& states) const
     {
-        renderTarget.draw(m_ball);
-        renderTarget.draw(m_player);
-
-        for (const sf::RectangleShape& brick : m_bricks)
-            renderTarget.draw(brick);
+        renderTarget.withLockedRenderStates(states).drawAll(m_ball, m_player, m_bricks);
     }
 };
+
+} // namespace
+
 
 int main()
 {
@@ -238,7 +245,10 @@ int main()
                       })
                       .value();
 
-    auto rtGame = makeAARenderTexture(resolution.toVec2u(), /* desiredAALevel */ 8u).value();
+    auto windowView = window.computeView();
+    auto worldView  = sf::View::fromScreenSize(resolution);
+
+    auto rtGame = makeAARenderTexture(resolution.toVec2u(), {.antiAliasingLevel = 8u}).value();
 
     //
     //
@@ -252,18 +262,18 @@ int main()
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
-            if (handleAspectRatioAwareResize(*event, resolution, window))
+            if (handleAspectRatioAwareResize(*event, resolution, windowView))
                 continue;
         }
 
         game.update();
 
         rtGame.clear();
-        game.drawOnto(rtGame);
+        rtGame.draw(game, {.view = worldView});
         rtGame.display();
 
         window.clear();
-        window.draw(rtGame.getTexture());
+        window.draw(rtGame.getTexture(), {.view = windowView});
         window.display();
     }
 

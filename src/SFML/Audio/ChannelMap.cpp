@@ -9,6 +9,9 @@
 
 #include "SFML/Audio/SoundChannel.hpp"
 
+#include "SFML/Base/Assert.hpp"
+#include "SFML/Base/InitializerList.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 namespace sf
 {
@@ -90,8 +93,8 @@ bool ChannelMap::isPermutationOf(const ChannelMap& rhs) const
     if (lhsSize == 0u)
         return true;
 
-    SFML_BASE_ASSERT(lhsSize <= 8u);
-    bool rhsMatched[8] = {false};
+    SFML_BASE_ASSERT(lhsSize <= SoundChannelCount);
+    bool rhsMatched[SoundChannelCount] = {};
 
     for (base::SizeT i = 0u; i < lhsSize; ++i)
     {

@@ -45,46 +45,55 @@ inline constexpr EXACT_ARRAY(
         R"(
 ~~ Shrine Of Voodoo ~~
 
-Spirits can be felt emanating from this shrine, where a Witchcat is sealed inside. The Witchcat performs rituals on nearby cats, hexing one of them and capturing their soul in voodoo dolls that appear around the map.
+Spirits emanate from this shrine.
 
-Collecting all the dolls will release the hex and trigger a powerful timed effect depending on the type of the cursed cat.
+A Witchcat is sealed inside, performing rituals on nearby cats and scattering voodoo dolls across the map.
 
-The spirits in the shrine seem to demand a cat... only one, at least. Careful getting too close!
+The spirits demand a cat sacrifice. Only one. Careful getting too close.
+
 )",
         R"(
 ~~ Shrine Of Magic ~~
 
-The legend says that a powerful Wizardcat is sealed inside, capable of absorbing wisdom from star bubbles and casting spells on demand. Guess the Wizardcat wasn't powerful enough to avoid being sealed...
+Legend says a powerful Wizardcat is sealed inside, capable of absorbing wisdom from star bubbles and casting spells on demand.
 
-The magic of star bubbles seem to be absorbed by the shrine, nullifying their benefits. Switch up your strategy!)",
+Apparently not powerful enough to avoid being sealed in the first place.
+
+The shrine absorbs star bubble magic, nullifying their bonus. Time to rethink your strategy.)",
         R"(
 ~~ Shrine Of Clicking ~~
 
-Rumor has it that a sneaky Mousecat is sealed inside, capable of clicking bubbles, keeping up combos, empowering nearby cats, and providing a global click reward value multiplier by merely existing. That's a mouthful.
+Rumor has it a sneaky Mousecat is sealed inside, clutching a stolen Logicat gaming mouse that somehow still works unplugged.
 
-The shrine repels cats, wanting you to prove your worth by clicking bubbles. Hope your finger is ready!)",
+The shrine repels cats. You'll have to prove your worth by clicking. Hope your finger is ready.)",
         R"(
 ~~ Shrine Of Automation ~~
 
-Stories of a crafty Engicat being sealed inside this shrine are told, capable of performing engine maintenance on nearby cats, temporarily increasing their speed, and providing a global cat reward value multiplier by merely existing.
+Stories tell of a crafty Engicat sealed inside, endlessly performing maintenance on machinery that doesn't exist.
 
-Bubbles near the shrine are immune to clicks. Prove your automation skils!)",
+Bubbles near the shrine are immune to clicks. Let your cats handle this one.)",
         R"(
 ~~ Shrine Of Repulsion ~~
 
-Experiments reveal that a Repulsocat is sealed inside, who continuously pushes bubbles away with a gigantic portable USB fan. Thankfully, other cats are too fat to be affected by the wind.
+Experiments reveal a Repulsocat sealed inside, continuously pushing bubbles away with a portable USB fan of alarming power.
 
-Seems like the wind is powerful enough to repel bubbles even from within the shrine.)",
+Other cats are too fat to be affected by the wind.
+
+The fan works even from inside the shrine. Can't explain that one.)",
         R"(
 ~~ Shrine Of Attraction ~~
 
-Electromagnetism readings suggest that an Attractocat is sealed inside, who continuously attracts bubbles with a huge magnet. Despite cats having an engine, they are not affected by the magnet -- can't really explain that one...
+Electromagnetism readings suggest an Attractocat is sealed inside, pulling bubbles toward the shrine with a magnet of unreasonable strength.
 
-The magnet is so powerful that its effects are felt even near the shrine.)",
+Cats are unaffected, despite presumably containing metal parts -- at least, according to the Engicat.
+
+The magnetic field extends well beyond the shrine walls.)",
         R"(
 ~~ Shrine Of Camouflage ~~
 
-If you squint, you can see the elusive Copycat hiding inside, who can transform into any other unique cat at will, mimicking their effects. The Copycat is so good at camouflage that they lack their own identity (and color).)",
+If you squint, you can see the elusive Copycat hiding inside, ready to mimic any unique cat at will.
+
+They're so good at camouflage that they lack their own identity. And color.)",
         R"(
 ~~ Shrine Of Victory ~~
 

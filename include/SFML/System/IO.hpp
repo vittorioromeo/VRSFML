@@ -9,7 +9,7 @@
 #include "SFML/System/Export.hpp"
 
 #include "SFML/Base/EnumClassBitwiseOps.hpp"
-#include "SFML/Base/FwdStdString.hpp" // IWYU pragma: keep
+#include "SFML/Base/FwdStdString.hpp"
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -73,7 +73,11 @@ inline constexpr EndLType endL;
 ////////////////////////////////////////////////////////////
 /// \brief Output stream wrapper for `std::ostream`.
 ///
-/// Uses PImpl to avoid exposing expensive headers in the public API.
+/// Provides a thin wrapper around `std::ostream` that hides the
+/// `<ostream>`/`<iostream>` headers behind a PImpl, so that translation
+/// units which include this header don't pay their compile-time cost.
+/// Use `sf::cOut()` and `sf::cErr()` to obtain instances bound to the
+/// standard output/error streams.
 ///
 ////////////////////////////////////////////////////////////
 class SFML_SYSTEM_API IOStreamOutput
@@ -86,15 +90,33 @@ private:
     base::InPlacePImpl<Impl, 512> m_impl; //!< Implementation details
 
 public:
+    ////////////////////////////////////////////////////////////
+    /// \brief Construct from a `std::streambuf`
+    ///
+    /// \param sbuf Pointer to the underlying stream buffer to wrap
+    ///
+    ////////////////////////////////////////////////////////////
     explicit IOStreamOutput(std::streambuf* sbuf);
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the underlying stream buffer pointer
+    ///
+    ////////////////////////////////////////////////////////////
     std::streambuf* rdbuf();
-    void            rdbuf(std::streambuf* sbuf);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Replace the underlying stream buffer
+    ///
+    /// \param sbuf New stream buffer pointer (may be `nullptr` to discard output)
+    ///
+    ////////////////////////////////////////////////////////////
+    void rdbuf(std::streambuf* sbuf);
 
     IOStreamOutput& operator<<(std::ios_base& (*func)(std::ios_base&));
     IOStreamOutput& operator<<(std::ostream& (*func)(std::ostream&));
 
     IOStreamOutput& operator<<(const char* value);
+    IOStreamOutput& operator<<(const base::String& value);
     IOStreamOutput& operator<<(FlushType);
     IOStreamOutput& operator<<(EndLType);
 
@@ -191,6 +213,7 @@ public:
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool readFromFile(base::StringView filename, std::string& target);
+[[nodiscard]] bool readFromFile(base::StringView filename, base::String& target);
 
 
 ////////////////////////////////////////////////////////////
@@ -210,6 +233,8 @@ enum class FileOpenMode
     trunc = 1L << 5,
 };
 
+
+////////////////////////////////////////////////////////////
 SFML_BASE_DEFINE_ENUM_CLASS_BITWISE_OPS(FileOpenMode);
 
 
@@ -243,6 +268,8 @@ enum class FormatFlags
     ios_fmtflags_end = 1L << 16,
 };
 
+
+////////////////////////////////////////////////////////////
 SFML_BASE_DEFINE_ENUM_CLASS_BITWISE_OPS(FormatFlags);
 
 
@@ -344,6 +371,7 @@ public:
     template <typename T>
     OutFileStream& operator<<(const T& value);
 
+    OutFileStream& operator<<(const base::String& value);
     OutFileStream& operator<<(SetFill fill);
     OutFileStream& operator<<(SetWidth width);
     OutFileStream& operator<<(Hex hex);
@@ -403,6 +431,7 @@ public:
         return operator<<(static_cast<const char*>(value));
     }
 
+    OutStringStream& operator<<(const base::String& value);
     OutStringStream& operator<<(SetFill fill);
     OutStringStream& operator<<(SetWidth width);
     OutStringStream& operator<<(Hex hex);

@@ -1,16 +1,22 @@
+#include "GraphicsUtil.hpp"
+#include "StringifyStdStringUtil.hpp"
+
 #include "SFML/System/UnicodeString.hpp"
 
 #include "SFML/System/UnicodeStringUtfUtils.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <Doctest.hpp>
 
-#include <CommonTraits.hpp>
-#include <GraphicsUtil.hpp>
-#include <StringifyStdStringUtil.hpp>
-
+#include <ios>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 
 namespace
@@ -21,10 +27,12 @@ namespace
 // and elsewhere where it is 32. Otherwise the tests would only work on
 // one OS or the other.
 template <typename T>
-auto selectAnsi(const std::basic_string<T>& stringWin, const std::basic_string<T>& stringUnix)
+auto selectAnsi([[maybe_unused]] const std::basic_string<T>& stringWin,
+                [[maybe_unused]] const std::basic_string<T>& stringUnix)
 {
     SFML_BASE_ASSERT(stringWin != stringUnix && "Invalid to select between identical inputs");
-#if defined(_WIN32) // TODO P1: fails under CLANG64 env
+
+#if defined(_WIN32) && !defined(__MINGW32__)
     return stringWin;
 #else
     return stringUnix;
@@ -39,6 +47,7 @@ template <typename T>
 auto selectWide(const std::basic_string<T>& string16, const std::basic_string<T>& string32)
 {
     SFML_BASE_ASSERT(string16 != string32 && "Invalid to select between identical inputs");
+
     if constexpr (sizeof(wchar_t) == 2)
         return string16;
     else
@@ -316,9 +325,9 @@ TEST_CASE("[System] sf::UnicodeString")
     SECTION("replace()")
     {
         sf::UnicodeString string("sfml is the worst");
-        string.replace(12, 5, "best!");
+        string.replaceRange(12, 5, "best!");
         CHECK(string == "sfml is the best!");
-        string.replace("the", "THE");
+        string.replaceAllOccurrences("the", "THE");
         CHECK(string == "sfml is THE best!");
     }
 

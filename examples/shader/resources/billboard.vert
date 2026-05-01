@@ -1,5 +1,4 @@
-layout(location = 0) uniform mat4 sf_u_mvpMatrix;
-layout(location = 1) uniform sampler2D sf_u_texture;
+#include "default_uniforms.glsl"
 
 layout(location = 0) in vec2 sf_a_position;
 layout(location = 1) in vec4 sf_a_color;
@@ -10,7 +9,9 @@ out vec2 sf_v_texCoord;
 
 void main()
 {
-    gl_Position   = sf_u_mvpMatrix * vec4(sf_a_position, 0.0, 1.0);
-    sf_v_texCoord = sf_a_texCoord / vec2(textureSize(sf_u_texture, 0));
+    vec3 pos = vec3(sf_a_position, 1.0);
+
+    gl_Position = vec4(dot(sf_u_mvpRow0, pos), dot(sf_u_mvpRow1, pos), 0.0, 1.0);
+    sf_v_texCoord = sf_a_texCoord * sf_u_invTextureSize;
     sf_v_color    = sf_a_color;
 }

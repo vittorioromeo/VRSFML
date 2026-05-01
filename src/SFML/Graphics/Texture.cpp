@@ -12,9 +12,9 @@
 #include "SFML/Graphics/TextureWrapMode.hpp"
 
 #include "SFML/Window/Window.hpp"
+#include "SFML/Window/WindowContext.hpp"
 
 #include "SFML/GLUtils/BlitFramebuffer.hpp"
-#include "SFML/GLUtils/CopyFramebuffer.hpp"
 #include "SFML/GLUtils/FramebufferSaver.hpp"
 #include "SFML/GLUtils/GLCheck.hpp"
 #include "SFML/GLUtils/GLSharedContextGuard.hpp"
@@ -24,13 +24,18 @@
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Path.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
 
+#include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Exchange.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Swap.hpp"
 #include "SFML/Base/Vector.hpp"
 
@@ -210,25 +215,12 @@ base::Optional<Texture> Texture::create(Vec2u size, const TextureCreateSettings&
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
 
-    const GLint textureWrapParam = TextureImpl::wrapModeToGl(settings.wrapMode);
+    sf::priv::bindAndInitializeTexture(texture.m_texture,
+                                       texture.m_sRgb,
+                                       size,
+                                       static_cast<unsigned int>(TextureImpl::wrapModeToGl(settings.wrapMode)));
 
-    // Initialize the texture
-    glCheck(glBindTexture(GL_TEXTURE_2D, texture.m_texture));
-    glCheck(glTexImage2D(GL_TEXTURE_2D,
-                         0,
-                         (texture.m_sRgb ? GL_SRGB8_ALPHA8 : GL_RGBA),
-                         static_cast<GLsizei>(texture.m_size.x),
-                         static_cast<GLsizei>(texture.m_size.y),
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         nullptr));
-    glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, textureWrapParam));
-    glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, textureWrapParam));
-    glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-    glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-    texture.m_cacheId = TextureImpl::getUniqueId();
-
+    texture.m_cacheId   = TextureImpl::getUniqueId();
     texture.m_hasMipmap = false;
 
     result->setSmooth(settings.smooth);
@@ -318,16 +310,15 @@ base::Optional<Texture> Texture::loadFromImage(const Image& image, const Texture
         // Make sure that the current texture binding will be preserved
         const priv::TextureSaver save;
 
-        // Copy the pixels to the texture, row by row
+        // Copy the pixels to the texture
         const base::U8* pixels = image.getPixelsPtr() + 4 * (rectangle.position.x + (size.x * rectangle.position.y));
         glCheck(glBindTexture(GL_TEXTURE_2D, result->m_texture));
-        for (int i = 0; i < rectangle.size.y; ++i)
-        {
-            glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, i, rectangle.size.x, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixels));
-            pixels += 4 * size.x;
-        }
 
-        glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, size.x); // restore after
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.size.x, rectangle.size.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+
+        glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, result->m_isSmooth ? GL_LINEAR : GL_NEAREST));
         result->m_hasMipmap = false;
 
         // Force an OpenGL flush, so that the texture will appear updated
@@ -363,9 +354,8 @@ Image Texture::copyToImage() const
 
     // OpenGL ES doesn't have the glGetTexImage function, the only way to read
     // from a texture is to bind it to a FBO and use glReadPixels
-    GLuint frameBuffer = 0u;
-    glCheck(glGenFramebuffers(1, &frameBuffer));
-    if (frameBuffer)
+    const auto frameBuffer = static_cast<GLuint>(WindowContext::getTransferScratchReadFramebuffer());
+    if (frameBuffer != 0u)
     {
         const priv::FramebufferSaver framebufferSaver;
 
@@ -378,11 +368,11 @@ Image Texture::copyToImage() const
                              GL_RGBA,
                              GL_UNSIGNED_BYTE,
                              pixels.data()));
-        glCheck(glDeleteFramebuffers(1, &frameBuffer));
     }
     else
     {
         priv::err() << "Failed to copy texture to image, failed to create frame buffer object";
+        base::abort();
     }
 
     auto result = sf::Image::create(m_size, pixels.data());
@@ -450,30 +440,25 @@ bool Texture::update(const Texture& texture, Vec2u dest)
 
     SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
-    GLuint sourceFrameBuffer = 0;
-    GLuint destFrameBuffer   = 0;
-    bool   success           = true;
+    const auto sourceFrameBuffer = static_cast<GLuint>(WindowContext::getTransferScratchReadFramebuffer());
+    if (sourceFrameBuffer == 0u)
+    {
+        priv::err() << "Cannot copy texture, failed to acquire source frame buffer object";
+        return false;
+    }
+
+    const auto destFrameBuffer = static_cast<GLuint>(WindowContext::getTransferScratchDrawFramebuffer());
+    if (destFrameBuffer == 0u)
+    {
+        priv::err() << "Cannot copy texture, failed to acquire destination frame buffer object";
+        return false;
+    }
+
+    bool success = true;
 
     {
         // Save the current bindings so we can restore them after we are done
         const priv::FramebufferSaver framebufferSaver;
-
-        // Create the framebuffers
-        glCheck(glGenFramebuffers(1, &sourceFrameBuffer));
-        if (!sourceFrameBuffer)
-        {
-            priv::err() << "Cannot copy texture, failed to create source frame buffer object";
-            return false;
-        }
-
-        glCheck(glGenFramebuffers(1, &destFrameBuffer));
-        if (!destFrameBuffer)
-        {
-            glCheck(glDeleteFramebuffers(1, &sourceFrameBuffer));
-
-            priv::err() << "Cannot copy texture, failed to create destination frame buffer object";
-            return false;
-        }
 
         // Link the source texture to the source frame buffer
         glCheck(glBindFramebuffer(GL_READ_FRAMEBUFFER, sourceFrameBuffer));
@@ -502,10 +487,6 @@ bool Texture::update(const Texture& texture, Vec2u dest)
             success = false;
         }
     }
-
-    // Delete the framebuffers
-    glCheck(glDeleteFramebuffers(1, &sourceFrameBuffer));
-    glCheck(glDeleteFramebuffers(1, &destFrameBuffer));
 
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
@@ -547,19 +528,18 @@ bool Texture::update(const Window& window, Vec2u dest)
 
     SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
-    GLuint destFrameBuffer = 0u;
+    const auto destFrameBuffer = static_cast<GLuint>(WindowContext::getTransferScratchDrawFramebuffer());
+    if (destFrameBuffer == 0u)
+    {
+        priv::err() << "Cannot copy texture, failed to acquire a frame buffer object";
+        return false;
+    }
+
+    bool success = true;
 
     {
         // Save the current bindings so we can restore them after we are done
         const priv::FramebufferSaver framebufferSaver;
-
-        // Create the destination framebuffers
-        glCheck(glGenFramebuffers(1, &destFrameBuffer));
-        if (!destFrameBuffer)
-        {
-            priv::err() << "Cannot copy texture, failed to create a frame buffer object";
-            return false;
-        }
 
         // Link the source texture to the source frame buffer
         glCheck(glBindFramebuffer(GL_READ_FRAMEBUFFER, 0u /* default FBO */));
@@ -578,27 +558,18 @@ bool Texture::update(const Window& window, Vec2u dest)
             // Since we don't want scissor testing to interfere with our copying, we temporarily disable it for the blit if it is enabled
             const priv::ScissorDisableGuard scissorDisableGuard;
 
-            // TODO P1: avoid creating this texture multiple times, also avoid creating in desktop GL
-            auto tmpTexture = Texture::create(window.getSize(), {.sRgb = m_sRgb, .smooth = m_isSmooth});
-
-            if (!tmpTexture.hasValue())
-                priv::err() << "Failure to create intermediate texture in `copyFlippedFramebuffer`";
-            else if (!priv::copyFlippedFramebuffer(tmpTexture->getNativeHandle(),
-                                                   window.getSize(),
-                                                   0u /* default FBO */,
-                                                   destFrameBuffer,
-                                                   {0u, 0u},
-                                                   dest))
-                priv::err() << "Error flipping render texture during FBO copy";
+            if (!WindowContext::copyFlippedFramebuffer(m_sRgb, window.getSize(), 0u /* default FBO */, destFrameBuffer, {0u, 0u}, dest))
+            {
+                priv::err() << "Cannot copy texture, failed to copy flipped framebuffer";
+                success = false;
+            }
         }
         else
         {
             priv::err() << "Cannot copy texture, failed to link texture to frame buffer";
+            success = false;
         }
     }
-
-    // Delete the framebuffers
-    glCheck(glDeleteFramebuffers(1, &destFrameBuffer));
 
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
@@ -613,7 +584,7 @@ bool Texture::update(const Window& window, Vec2u dest)
     // in all contexts immediately (solves problems in multi-threaded apps)
     glCheck(glFlush());
 
-    return true;
+    return success;
 }
 
 
@@ -691,7 +662,7 @@ TextureWrapMode Texture::getWrapMode() const
 
 
 ////////////////////////////////////////////////////////////
-bool Texture::generateMipmap()
+void Texture::generateMipmap()
 {
     SFML_BASE_ASSERT(m_texture);
     SFML_BASE_ASSERT(glCheck(glIsTexture(m_texture)));
@@ -708,8 +679,6 @@ bool Texture::generateMipmap()
                             m_isSmooth ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_LINEAR));
 
     m_hasMipmap = true;
-
-    return true;
 }
 
 

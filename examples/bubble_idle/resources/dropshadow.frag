@@ -1,4 +1,4 @@
-layout(location = 1) uniform sampler2D sf_u_texture;
+layout(location = 2) uniform sampler2D sf_u_texture;
 // uniform float blurStrength;   // Controls the Gaussian blur standard deviation.
 // uniform float shadowOpacity;  // Overall shadow opacity multiplier (0.0 to 1.0).
 

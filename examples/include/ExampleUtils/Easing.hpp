@@ -1,5 +1,9 @@
 #pragma once
 
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
 #include "SFML/Base/AssertAndAssume.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/Math/Cos.hpp"
@@ -19,7 +23,9 @@
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float easeInOutCubic(const float x) noexcept
 {
     SFML_BASE_ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
-    return x < 0.5f ? 4.f * x * x * x : 1.f - sf::base::pow(-2.f * x + 2.f, 3.f) / 2.f;
+
+    const float t = -2.f * x + 2.f;
+    return x < 0.5f ? 4.f * x * x * x : 1.f - (t * t * t) / 2.f;
 }
 
 
@@ -35,7 +41,9 @@
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float easeInOutQuint(const float x) noexcept
 {
     SFML_BASE_ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
-    return x < 0.5f ? 16.f * x * x * x * x * x : 1.f - sf::base::pow(-2.f * x + 2.f, 5.f) / 2.f;
+
+    const float t = -2.f * x + 2.f;
+    return x < 0.5f ? 16.f * x * x * x * x * x : 1.f - (t * t * t * t * t) / 2.f;
 }
 
 
@@ -47,9 +55,10 @@
     SFML_BASE_ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
 
     const float c2 = overshoot * 1.525f;
+    const float t1 = 2.f * x;
+    const float t2 = 2.f * x - 2.f;
 
-    return x < 0.5f ? (sf::base::pow(2.f * x, 2.f) * ((c2 + 1.f) * 2.f * x - c2)) / 2.f
-                    : (sf::base::pow(2.f * x - 2.f, 2.f) * ((c2 + 1.f) * (x * 2.f - 2.f) + c2) + 2.f) / 2.f;
+    return x < 0.5f ? (t1 * t1 * ((c2 + 1.f) * t1 - c2)) / 2.f : (t2 * t2 * ((c2 + 1.f) * t2 + c2) + 2.f) / 2.f;
 }
 
 
@@ -74,8 +83,9 @@
     SFML_BASE_ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
 
     const float c3 = overshoot + 1.f;
+    const float t  = x - 1.f;
 
-    return 1.f + c3 * sf::base::pow(x - 1.f, 3.f) + overshoot * sf::base::pow(x - 1.f, 2.f);
+    return 1.f + c3 * t * t * t + overshoot * t * t;
 }
 
 
@@ -126,7 +136,9 @@
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float easeOutQuint(const float x) noexcept
 {
     SFML_BASE_ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
-    return 1.f - sf::base::pow(1.f - x, 5.f);
+
+    const float t = 1.f - x;
+    return 1.f - t * t * t * t * t;
 }
 
 

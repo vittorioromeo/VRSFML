@@ -8,23 +8,27 @@
 #include "SFML/Graphics/RenderWindow.hpp"
 
 #include "SFML/Graphics/Image.hpp"
-#include "SFML/Graphics/View.hpp"
+#include "SFML/Graphics/RenderTarget.hpp"
 
-#include "SFML/Window/Event.hpp"
+#include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/WindowBase.hpp"
+#include "SFML/Window/WindowHandle.hpp"
 
 #include "SFML/GLUtils/GLCheck.hpp"
 #include "SFML/GLUtils/Glad.hpp"
 
+#include "SFML/System/Priv/Vec2Base.hpp"
+
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-RenderWindow::RenderWindow(base::PassKey<RenderWindow>&&, Window&& window) :
-    Window(SFML_BASE_MOVE(window)),
-    RenderTarget(View::fromRect({{0.f, 0.f}, getSize().toVec2f()}))
+RenderWindow::RenderWindow(base::PassKey<RenderWindow>&&, Window&& window) : Window(SFML_BASE_MOVE(window))
 {
     // Retrieve the framebuffer ID we have to bind when targeting the window for rendering
     // We assume that this window's context is still active at this point
@@ -81,7 +85,7 @@ Vec2u RenderWindow::getSize() const
 ////////////////////////////////////////////////////////////
 void RenderWindow::setIcon(const Image& icon)
 {
-    setIcon(icon.getSize(), icon.getPixelsPtr());
+    setIcon(icon.getPixelsPtr(), icon.getSize());
 }
 
 
@@ -115,52 +119,12 @@ bool RenderWindow::setActive(bool active)
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Event> RenderWindow::filterEvent(base::Optional<Event> event)
-{
-    if (event.hasValue() && event->getIf<Event::Resized>())
-        onResize();
-
-    return event;
-}
-
-
-////////////////////////////////////////////////////////////
-base::Optional<Event> RenderWindow::pollEvent()
-{
-    return filterEvent(WindowBase::pollEvent());
-}
-
-
-////////////////////////////////////////////////////////////
-base::Optional<Event> RenderWindow::waitEvent(Time timeout)
-{
-    return filterEvent(WindowBase::waitEvent(timeout));
-}
-
-
-////////////////////////////////////////////////////////////
 RenderTarget::DrawStatistics RenderWindow::display()
 {
     const auto result = RenderTarget::flush();
     RenderTarget::syncGPUEndFrame();
     Window::display();
     return result;
-}
-
-
-////////////////////////////////////////////////////////////
-void RenderWindow::setSize(const Vec2u& size)
-{
-    WindowBase::setSize(size);
-    onResize();
-}
-
-
-////////////////////////////////////////////////////////////
-void RenderWindow::onResize()
-{
-    // Update the current view (recompute the viewport, which is stored in relative coordinates)
-    setView(getView());
 }
 
 } // namespace sf

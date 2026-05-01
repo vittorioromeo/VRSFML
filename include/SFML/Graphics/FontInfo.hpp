@@ -14,12 +14,16 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief Holds various information about a font
+/// \brief General information about a font
+///
+/// Returned by `sf::Font::getInfo` and `sf::FontFace::getInfo`.
+/// Currently exposes the font family name; more fields may be
+/// added in the future without breaking source compatibility.
 ///
 ////////////////////////////////////////////////////////////
 struct SFML_GRAPHICS_API FontInfo
 {
-    UnicodeString family; //!< The font family
+    UnicodeString family; //!< Font family name (e.g. "DejaVu Sans")
 };
 
 } // namespace sf

@@ -1,14 +1,20 @@
 #include "SFML/Graphics/ConvexShape.hpp"
 
 // Other 1st party headers
+#include "SystemUtil.hpp"
+
 #include "SFML/Graphics/CircleShape.hpp"
 
+#include "SFML/System/Priv/Vec2Base.hpp"
+
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <Doctest.hpp>
 
-#include <CommonTraits.hpp>
-#include <SystemUtil.hpp>
 
 TEST_CASE("[Graphics] sf::ConvexShape")
 {

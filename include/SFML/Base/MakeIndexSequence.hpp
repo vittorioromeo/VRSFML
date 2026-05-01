@@ -4,6 +4,19 @@
 
 
 ////////////////////////////////////////////////////////////
+/// \file
+/// \brief `std::make_index_sequence<N>` replacement
+///
+/// `MakeIndexSequence<N>` evaluates to `IndexSequence<0, 1, ..., N-1>`.
+/// The implementation prefers compiler builtins (`__integer_pack` on
+/// GCC, `__make_integer_seq` on Clang/MSVC) so that the alias does not
+/// drag in `<utility>`. Falls back to `std::make_index_sequence` only
+/// when no builtin is available.
+///
+////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/IndexSequence.hpp"
@@ -69,5 +82,8 @@ using MakeIndexSequence = std::make_index_sequence<N>;
 #endif
 
 
+////////////////////////////////////////////////////////////
+/// \brief Macro form of `std::index_sequence_for`: produces an index sequence matching a parameter pack
+///
 ////////////////////////////////////////////////////////////
 #define SFML_BASE_INDEX_SEQUENCE_FOR(...) SFML_BASE_MAKE_INDEX_SEQUENCE(sizeof...(__VA_ARGS__))

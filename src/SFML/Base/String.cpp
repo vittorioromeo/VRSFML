@@ -6,10 +6,13 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/String.hpp"
 
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/Builtin/Memmove.hpp"
 #include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/Priv/VectorUtils.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/StringView.hpp"
 
 
 namespace
@@ -405,6 +408,16 @@ void String::insert(const SizeT pos, const char* const cStr)
     const SizeT oldSize = size();
     const SizeT newSize = oldSize + insertCount;
 
+    const char* const myData        = data();
+    const bool        srcInsideThis = (cStr >= myData) && (cStr < myData + oldSize);
+
+    if (srcInsideThis)
+    {
+        const String insertedCopy{cStr, insertCount};
+        insert(pos, insertedCopy.cStr());
+        return;
+    }
+
     // 1. Ensure we have enough capacity. This might reallocate and change `data()`.
     reserve(newSize);
 
@@ -430,8 +443,10 @@ void String::insert(const SizeT pos, const char* const cStr)
 ////////////////////////////////////////////////////////////
 void swap(String& lhs, String& rhs) noexcept
 {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wclass-memaccess"
+#ifdef __GNUC__
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wclass-memaccess"
+#endif
 
     alignas(String::RepUnion) char temp[sizeof(String::RepUnion)];
 
@@ -439,7 +454,9 @@ void swap(String& lhs, String& rhs) noexcept
     SFML_BASE_MEMCPY(&lhs.m_rep, &rhs.m_rep, sizeof(String::RepUnion));
     SFML_BASE_MEMCPY(&rhs.m_rep, &temp, sizeof(String::RepUnion));
 
-#pragma GCC diagnostic pop
+#ifdef __GNUC__
+    #pragma GCC diagnostic pop
+#endif
 }
 
 

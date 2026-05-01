@@ -12,6 +12,8 @@
 #include "SFML/Base/PlacementNew.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Trait/IsRvalueReference.hpp"
+#include "SFML/Base/Trait/IsSame.hpp"
+#include "SFML/Base/Trait/RemoveCVRef.hpp"
 #include "SFML/Base/Trait/RemoveReference.hpp"
 
 // TODO P1: provide triviallyrelocatable version
@@ -90,11 +92,13 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename TFFwd>
-    // NOLINTNEXTLINE(bugprone-forwarding-reference-overload)
+        requires(!base::isSame<base::RemoveCVRefIndirect<TFFwd>, FixedFunction>)
     [[nodiscard]] FixedFunction(TFFwd&& f) : FixedFunction()
     {
         using UnrefType = SFML_BASE_REMOVE_REFERENCE(TFFwd);
+
         static_assert(sizeof(UnrefType) <= TStorageSize);
+        static_assert(alignof(UnrefType) <= alignof(MaxAlignT));
 
         // NOLINTNEXTLINE(readability-non-const-parameter)
         m_methodPtr = [](char* s, FnPtrType, Ts... xs) -> RetType
@@ -129,8 +133,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    template <typename TFReturn, typename... TFs>
-    [[nodiscard]] FixedFunction(TFReturn (*f)(TFs...)) noexcept :
+    [[nodiscard]] FixedFunction(FnPtrType f) noexcept :
         functionPtr{f},
         m_methodPtr{[](char* /* unused */, FnPtrType xf, Ts... xs) -> RetType { return xf(SFML_BASE_FORWARD(xs)...); }},
         m_allocPtr{nullptr}
@@ -157,8 +160,8 @@ public:
             return;
         }
 
+        rhs.m_allocPtr(objStorage, const_cast<char*>(rhs.objStorage), Operation::CopyConstruct);
         m_allocPtr = rhs.m_allocPtr;
-        m_allocPtr(objStorage, const_cast<char*>(rhs.objStorage), Operation::CopyConstruct);
     }
 
 
@@ -169,6 +172,7 @@ public:
             return *this;
 
         destroyIfNeeded();
+        m_allocPtr = nullptr; // Safe empty state in case copy-construct throws
 
         m_methodPtr = rhs.m_methodPtr;
 
@@ -178,8 +182,8 @@ public:
             return *this;
         }
 
+        rhs.m_allocPtr(objStorage, const_cast<char*>(rhs.objStorage), Operation::CopyConstruct);
         m_allocPtr = rhs.m_allocPtr;
-        m_allocPtr(objStorage, const_cast<char*>(rhs.objStorage), Operation::CopyConstruct);
 
         return *this;
     }
@@ -212,6 +216,7 @@ public:
         m_allocPtr = rhs.m_allocPtr;
         m_allocPtr(objStorage, rhs.objStorage, Operation::MoveConstruct);
 
+        rhs.m_allocPtr(rhs.objStorage, nullptr, Operation::Destroy);
         rhs.m_methodPtr = nullptr;
         rhs.m_allocPtr  = nullptr;
     }
@@ -226,6 +231,7 @@ public:
         destroyIfNeeded();
 
         m_methodPtr = rhs.m_methodPtr;
+        m_allocPtr  = nullptr;
 
         if (rhs.m_allocPtr == nullptr)
         {
@@ -236,6 +242,7 @@ public:
         m_allocPtr = rhs.m_allocPtr;
         m_allocPtr(objStorage, rhs.objStorage, Operation::MoveConstruct);
 
+        rhs.m_allocPtr(rhs.objStorage, nullptr, Operation::Destroy);
         rhs.m_methodPtr = nullptr;
         rhs.m_allocPtr  = nullptr;
 

@@ -1,5 +1,9 @@
 #pragma once
 
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Color.hpp"
 
 #include "SFML/Base/AssertAndAssume.hpp"
@@ -13,6 +17,7 @@
     return sf::base::positiveRemainder(hue, 360.f);
 }
 
+
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr sf::base::U8 hueToByte(const float hue) noexcept
 {
@@ -20,17 +25,20 @@
     return static_cast<sf::base::U8>(hue / 360.f * 255.f);
 }
 
+
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float byteToHue(const sf::base::U8 byte) noexcept
 {
     return static_cast<float>(byte) / 255.f * 360.f;
 }
 
+
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr bool isHueColor(const sf::Color color) noexcept
 {
     return color.r == 1 && color.g == 1;
 }
+
 
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr sf::Color hueColor(const float hue,
@@ -40,6 +48,7 @@
     return sf::Color{1, 1, hueToByte(wrapHue(hue)), alpha};
 }
 
+
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr sf::Color hueByteColor(
     const sf::base::U8 hueByte,
@@ -48,6 +57,7 @@
     // R=1 and G=1 is used in the shader as a signal to make the color hue-based
     return sf::Color{1, 1, hueByte, alpha};
 }
+
 
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float extractHue(const sf::Color hueColor) noexcept

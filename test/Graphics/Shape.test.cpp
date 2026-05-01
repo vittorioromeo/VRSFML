@@ -3,15 +3,23 @@
 #include "SFML/Graphics/Color.hpp"
 
 // Other 1st party headers
-#include "SFML/Graphics/Texture.hpp"
+#include "GraphicsUtil.hpp"
+#include "SystemUtil.hpp"
+#include "WindowUtil.hpp"
 
+#include "SFML/System/Angle.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
+
+#include "SFML/Base/Trait/HasVirtualDestructor.hpp"
+#include "SFML/Base/Trait/IsConstructible.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsMoveConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 
 #include <Doctest.hpp>
 
-#include <CommonTraits.hpp>
-#include <GraphicsUtil.hpp>
-#include <WindowUtil.hpp>
 
 class TriangleShape : public sf::Shape
 {
