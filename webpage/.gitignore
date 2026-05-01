@@ -1,0 +1,7 @@
+# Local-test artifacts copied from VRSFML_HTML5_Examples for testing the embed
+# iframe via ./serve.sh. Not for distribution -- the deployed page iframes the
+# github.io URL instead.
+batching_embed.html
+batching.js
+batching.wasm
+*.wasm.map
