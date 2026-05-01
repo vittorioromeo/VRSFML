@@ -7,6 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BIN_DIR="${SCRIPT_DIR}/build_vrdev_emcc_linux_rel/bin"
 STAGING_DIR="${SCRIPT_DIR}/build_vrdev_emcc_linux_rel/staging"
 COI_SW="${SCRIPT_DIR}/emscripten/coi-serviceworker.js"
+EMBED_TEMPLATE="${SCRIPT_DIR}/emscripten/embed.html.in"
 
 examples=(
     arkanoid
@@ -37,6 +38,11 @@ fi
 
 if [[ ! -f "${COI_SW}" ]]; then
     echo "ERROR: ${COI_SW} does not exist." >&2
+    exit 1
+fi
+
+if [[ ! -f "${EMBED_TEMPLATE}" ]]; then
+    echo "ERROR: ${EMBED_TEMPLATE} does not exist." >&2
     exit 1
 fi
 
@@ -79,13 +85,83 @@ for example in "${examples[@]}"; do
     # so drop a copy alongside (the per-directory copy is what the browser fetches).
     cp "${COI_SW}" "${target_dir}/"
 
+    # Generate a minimal canvas-only embed wrapper for iframing into other
+    # pages (e.g. the VRSFML landing page). It loads the same `<example>.js`
+    # as the regular page, so no extra build / link step is required.
+    sed "s|@SFML_EMBED_JS@|${example}.js|g" "${EMBED_TEMPLATE}" \
+        > "${target_dir}/${example}_embed.html"
+
     copied=$((copied + 1))
-    echo "Staged ${example}"
+    echo "Staged ${example} (+ embed)"
 done
 
 echo
 echo "Done. Staged ${copied}/${#examples[@]} example(s) in ${STAGING_DIR}"
+
+# Pre-compress with brotli so static hosts that respect `Accept-Encoding: br`
+# (Cloudflare Pages, itch.io, nginx with `brotli_static on`, ...) can serve
+# the pre-built `.br` payloads instead of compressing on the fly. Typical
+# wins for our outputs are ~70-80% on .wasm and ~75-85% on .js / .html.
+# Hosts that don't honor pre-compressed files (e.g. GitHub Pages) just
+# ignore the .br twins.
+if BROTLI_BIN="$(command -v brotli)"; then
+    echo
+    JOBS="$(nproc 2>/dev/null || echo 4)"
+    echo "Pre-compressing with brotli (${BROTLI_BIN}) using ${JOBS} parallel jobs ..."
+
+    # Find every staged artifact worth compressing. Skip <1 KB files
+    # (overhead dwarfs the saving) and anything already ending in .br
+    # (the leading `rm -rf` already prevented stale .br files anyway).
+    mapfile -t to_compress < <(find "${STAGING_DIR}" -type f \
+        \( -name "*.html" -o -name "*.js" -o -name "*.wasm" \) \
+        -size +1024c -print)
+
+    if [[ ${#to_compress[@]} -gt 0 ]]; then
+        # Compress in parallel: each file is independent, so wall-clock
+        # scales with `nproc`. `--best` (level 11) stays in -- the extra
+        # CPU is what we're trading away to get the smallest possible payload.
+        # `--keep` leaves the raw file alongside; `--force` overwrites any
+        # previously compressed twin (cheap insurance against partial reruns).
+        printf '%s\0' "${to_compress[@]}" \
+            | xargs -0 -n1 -P"${JOBS}" "${BROTLI_BIN}" --best --keep --force
+
+        # Per-file size summary, sorted by raw size so the heaviest payload
+        # (almost always the .wasm) lands at the bottom for easy spotting.
+        raw_total=0
+        br_total=0
+        while IFS= read -r line; do
+            raw=$(awk '{print $1}' <<<"${line}")
+            br=$(awk '{print $2}' <<<"${line}")
+            name=$(awk '{print $3}' <<<"${line}")
+            raw_total=$((raw_total + raw))
+            br_total=$((br_total + br))
+            printf '  %-50s %8d -> %8d (%.0f%%)\n' \
+                "${name}" "${raw}" "${br}" \
+                "$(awk -v a="${br}" -v b="${raw}" 'BEGIN{printf "%.0f", (a/b)*100}')"
+        done < <(
+            for f in "${to_compress[@]}"; do
+                printf '%s %s %s\n' \
+                    "$(stat -c%s "${f}")" \
+                    "$(stat -c%s "${f}.br")" \
+                    "$(basename "${f}")"
+            done | sort -n
+        )
+
+        if [[ ${raw_total} -gt 0 ]]; then
+            echo
+            printf 'Total: %d bytes raw -> %d bytes brotli (%.0f%%)\n' \
+                "${raw_total}" "${br_total}" \
+                "$(awk -v a="${br_total}" -v b="${raw_total}" 'BEGIN{printf "%.0f", (a/b)*100}')"
+        fi
+    fi
+else
+    echo
+    echo "WARN: \`brotli\` not found in PATH -- skipping pre-compression."
+    echo "      Install it (e.g. \`apt install brotli\` / \`pacman -S brotli\`) for ~70-80% smaller payloads."
+fi
+
 if [[ ${#missing[@]} -gt 0 ]]; then
+    echo
     echo "Missing artifacts (these examples were skipped):"
     printf '  %s\n' "${missing[@]}"
     exit 2

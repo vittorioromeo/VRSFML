@@ -1,0 +1,674 @@
+/* ============================================================== */
+/* VRSFML landing page — custom styles on top of pico.css           */
+/* ============================================================== */
+
+:root {
+    --code-font: ui-monospace, "JetBrains Mono", "Fira Code", Menlo, Consolas, monospace;
+    --code-bg-light: #f4f4f7;
+    --code-bg-dark: #11161d;
+    --accent: var(--pico-primary);
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+main.container {
+    padding-top: 1.5rem;
+    padding-bottom: 4rem;
+}
+
+section {
+    margin-block: 4rem;
+}
+
+section > h2 {
+    margin-bottom: 0.25rem;
+}
+
+section > p.muted,
+section > p:first-of-type {
+    margin-top: 0.25rem;
+}
+
+.muted {
+    color: var(--pico-muted-color);
+}
+
+.small {
+    font-size: 0.85rem;
+}
+
+/* ============================================================== */
+/* Sticky top nav                                                   */
+/* ============================================================== */
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: saturate(140%) blur(8px);
+    background: color-mix(in srgb, var(--pico-background-color) 88%, transparent);
+    border-bottom: 1px solid var(--pico-muted-border-color);
+}
+
+.site-header nav {
+    padding-block: 0.6rem;
+}
+
+.brand {
+    text-decoration: none;
+    font-size: 1.05rem;
+    letter-spacing: 0.01em;
+}
+
+.brand strong {
+    color: var(--pico-color);
+}
+
+.icon-link,
+.icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border-radius: 0.5rem;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--pico-color);
+    cursor: pointer;
+    transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.icon-link:hover,
+.icon-button:hover {
+    background: var(--pico-secondary-background);
+    border-color: var(--pico-muted-border-color);
+}
+
+/* Theme toggle: show one icon at a time */
+.icon-button .icon-sun     { display: none; }
+.icon-button .icon-moon    { display: inline; }
+[data-theme="dark"] .icon-button .icon-sun  { display: inline; }
+[data-theme="dark"] .icon-button .icon-moon { display: none; }
+
+/* ============================================================== */
+/* Hero                                                             */
+/* ============================================================== */
+.hero {
+    margin-block: 3.5rem 4rem;
+    text-align: left;
+}
+
+.hero h1 {
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    line-height: 1;
+    margin-bottom: 0.4rem;
+    letter-spacing: -0.02em;
+}
+
+.hero hgroup > p {
+    font-size: clamp(1.1rem, 2.4vw, 1.35rem);
+    color: var(--pico-muted-color);
+    margin-bottom: 1.5rem;
+}
+
+.hero-pitch {
+    max-width: 48rem;
+    font-size: 1.05rem;
+    margin-bottom: 1.75rem;
+}
+
+.hero-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.hero-cta a[role="button"] {
+    margin: 0;
+}
+
+/* ============================================================== */
+/* Highlights — card grid                                           */
+/* ============================================================== */
+.card-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+    margin-top: 1.25rem;
+}
+
+.card-grid article {
+    margin: 0;
+    padding: 1.1rem 1.2rem;
+    border-radius: 0.6rem;
+    background: var(--pico-card-background-color);
+    border: 1px solid var(--pico-muted-border-color);
+    transition: transform 120ms ease, border-color 120ms ease;
+}
+
+.card-grid article:hover {
+    border-color: var(--pico-primary-border);
+    transform: translateY(-2px);
+}
+
+.card-grid article h3 {
+    font-size: 1.05rem;
+    margin-bottom: 0.5rem;
+}
+
+.card-grid article p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--pico-muted-color);
+}
+
+/* ============================================================== */
+/* Code comparison blocks                                           */
+/* ============================================================== */
+.compare-block {
+    margin: 2rem 0;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+.compare-block > h3 {
+    margin: 0 0 0.6rem 0;
+    font-size: 1.1rem;
+}
+
+.compare-grid {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: 1fr 1fr;
+}
+
+.compare-grid.single {
+    grid-template-columns: 1fr;
+}
+
+@media (max-width: 768px) {
+    .compare-grid { grid-template-columns: 1fr; }
+}
+
+.compare-grid figure {
+    margin: 0;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    border: 1px solid var(--pico-muted-border-color);
+    background: var(--code-bg-light);
+}
+
+[data-theme="dark"] .compare-grid figure {
+    background: var(--code-bg-dark);
+}
+
+.compare-grid figcaption {
+    padding: 0.45rem 0.85rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--pico-muted-color);
+    border-bottom: 1px solid var(--pico-muted-border-color);
+    background: color-mix(in srgb, var(--pico-card-background-color) 60%, transparent);
+}
+
+.compare-grid pre {
+    margin: 0;
+    padding: 0.9rem 1rem;
+    background: transparent;
+    border: 0;
+    overflow-x: auto;
+    font-family: var(--code-font);
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+.compare-grid pre code {
+    background: transparent;
+    padding: 0;
+    font-family: inherit;
+    color: var(--pico-code-color, var(--pico-color));
+}
+
+.compare-note {
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+    color: var(--pico-muted-color);
+}
+
+/* Inline comments inside code blocks */
+.cmt {
+    color: #7d8590;
+    font-style: italic;
+}
+[data-theme="light"] .cmt { color: #6a737d; }
+
+/* ============================================================== */
+/* Benchmark bars                                                   */
+/* ============================================================== */
+.bench-chart {
+    margin: 1.5rem 0;
+    display: grid;
+    gap: 0.55rem;
+}
+
+.bench-row {
+    display: grid;
+    grid-template-columns: 9rem 1fr 5.5rem;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+@media (max-width: 600px) {
+    .bench-row {
+        grid-template-columns: 7rem 1fr 4.5rem;
+        gap: 0.5rem;
+    }
+}
+
+.bench-label {
+    font-size: 0.85rem;
+    line-height: 1.2;
+}
+
+.bench-label small {
+    color: var(--pico-muted-color);
+    font-size: 0.78rem;
+}
+
+.bench-bar {
+    height: 1.4rem;
+    background: var(--pico-secondary-background);
+    border-radius: 0.4rem;
+    overflow: hidden;
+}
+
+.bench-bar .fill {
+    height: 100%;
+    background: var(--pico-primary);
+    border-radius: 0.4rem;
+    transition: width 600ms ease;
+}
+
+/* For "lower is better" charts (compile times) */
+.bench-bar.reverse .fill {
+    background: var(--pico-muted-border-color);
+}
+
+.bench-bar .fill.good {
+    background: var(--pico-primary);
+}
+
+.bench-value {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    text-align: right;
+    font-size: 0.9rem;
+}
+
+.size-subhead {
+    margin-top: 2.25rem;
+    font-size: 1.05rem;
+}
+
+/* ============================================================== */
+/* Compile-time bullets                                             */
+/* ============================================================== */
+.compile-bullets {
+    margin-top: 1.5rem;
+    padding-left: 1.2rem;
+}
+.compile-bullets li {
+    margin-bottom: 0.35rem;
+}
+
+/* ============================================================== */
+/* Get-started block                                                */
+/* ============================================================== */
+#start pre {
+    background: var(--code-bg-light);
+    padding: 1rem 1.1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--pico-muted-border-color);
+    overflow-x: auto;
+    font-family: var(--code-font);
+    font-size: 0.9rem;
+}
+
+[data-theme="dark"] #start pre {
+    background: var(--code-bg-dark);
+}
+
+#start pre code {
+    background: transparent;
+    padding: 0;
+    font-family: inherit;
+}
+
+/* ============================================================== */
+/* Reading list                                                     */
+/* ============================================================== */
+.reading-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 1rem;
+    display: grid;
+    gap: 0.75rem;
+}
+
+.reading-list li {
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: 0.5rem;
+    transition: border-color 120ms ease;
+}
+
+.reading-list li:hover {
+    border-color: var(--pico-primary-border);
+}
+
+.reading-list a {
+    font-weight: 600;
+}
+
+.reading-list small {
+    display: block;
+    margin-top: 0.2rem;
+    color: var(--pico-muted-color);
+    font-size: 0.85rem;
+}
+
+/* ============================================================== */
+/* Footer                                                           */
+/* ============================================================== */
+footer.container {
+    padding-block: 1.5rem 3rem;
+}
+
+footer hr {
+    margin-bottom: 1.25rem;
+}
+
+footer small {
+    color: var(--pico-muted-color);
+}
+
+/* ============================================================== */
+/* Inline <code> polish                                             */
+/* ============================================================== */
+:not(pre) > code {
+    font-family: var(--code-font);
+    font-size: 0.88em;
+    padding: 0.1em 0.35em;
+    border-radius: 0.3em;
+}
+
+/* ============================================================== */
+/* Shape gallery                                                    */
+/* ============================================================== */
+.shape-gallery {
+    display: grid;
+    gap: 0.6rem;
+    grid-template-columns: repeat(5, 1fr);
+    margin: 1.25rem 0 1.5rem;
+}
+
+@media (max-width: 720px) {
+    .shape-gallery { grid-template-columns: repeat(3, 1fr); }
+}
+
+.shape-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.9rem 0.6rem;
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: 0.5rem;
+    background: var(--pico-card-background-color);
+    transition: border-color 120ms ease;
+}
+
+.shape-tile:hover {
+    border-color: var(--pico-primary-border);
+}
+
+.shape-tile svg {
+    width: 48px;
+    height: 48px;
+    color: var(--pico-primary);
+}
+
+.shape-tile span {
+    font-size: 0.78rem;
+    color: var(--pico-muted-color);
+    font-family: var(--code-font);
+}
+
+/* ============================================================== */
+/* QoL three-up                                                     */
+/* ============================================================== */
+.qol-grid {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    margin-top: 1rem;
+}
+
+.qol-grid figure {
+    margin: 0;
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: 0.5rem;
+    overflow: hidden;
+    background: var(--code-bg-light);
+    display: flex;
+    flex-direction: column;
+}
+
+[data-theme="dark"] .qol-grid figure {
+    background: var(--code-bg-dark);
+}
+
+.qol-grid figcaption {
+    padding: 0.5rem 0.85rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--pico-muted-color);
+    border-bottom: 1px solid var(--pico-muted-border-color);
+    background: color-mix(in srgb, var(--pico-card-background-color) 60%, transparent);
+}
+
+.qol-grid pre {
+    margin: 0;
+    padding: 0.85rem 1rem;
+    background: transparent;
+    border: 0;
+    overflow-x: auto;
+    font-family: var(--code-font);
+    font-size: 0.82rem;
+    line-height: 1.5;
+    flex: 1;
+}
+
+.qol-grid pre code {
+    background: transparent;
+    padding: 0;
+    font-family: inherit;
+}
+
+/* ============================================================== */
+/* Live demo iframe                                                 */
+/* ============================================================== */
+/*
+    The embedded demo's canvas runs at its native pixel size (set in C++ by
+    `RenderWindow::create({.size = {DEMO_W, DEMO_H}})`). We size the iframe to
+    match exactly, then scale the iframe element itself with `transform: scale(...)`
+    so it fits the wrapper. The browser routes mouse events through the inverse
+    of the transform, so the canvas keeps receiving coordinates in its native
+    0..DEMO_W / 0..DEMO_H space -- which is what fixed-size SFML demos expect.
+    Override `--demo-w` / `--demo-h` per-iframe if a demo uses other dimensions.
+*/
+.demo-frame {
+    --demo-w: 1680;
+    --demo-h: 1050;
+    --demo-scale: 1; /* updated by the inline script in index.html */
+
+    aspect-ratio: var(--demo-w) / var(--demo-h);
+
+    margin: 1.25rem 0 0.5rem;
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: 0.5rem;
+    overflow: hidden;
+    background: #000;
+    position: relative;
+}
+
+.demo-frame iframe {
+    /* Native iframe size matches the canvas pixel buffer exactly. */
+    width: calc(var(--demo-w) * 1px);
+    height: calc(var(--demo-h) * 1px);
+
+    /* Scale the whole iframe down to fit the wrapper. `--demo-scale` is a
+       unitless ratio set by the inline script in index.html (must be unitless
+       because `scale()` rejects length values). */
+    transform: scale(var(--demo-scale));
+    transform-origin: top left;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+    border: 0;
+    display: block;
+}
+
+/* ============================================================== */
+/* SFML::Base batteries                                             */
+/* ============================================================== */
+.batteries-grid {
+    display: grid;
+    gap: 0.6rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr));
+    margin: 1.25rem 0;
+}
+
+.battery {
+    padding: 0.7rem 0.85rem;
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: 0.45rem;
+    background: var(--pico-card-background-color);
+    font-size: 0.88rem;
+}
+
+.battery code {
+    display: inline-block;
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+    color: var(--pico-color);
+    background: transparent;
+    padding: 0;
+}
+
+.battery small {
+    display: block;
+    color: var(--pico-muted-color);
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+/* ============================================================== */
+/* "Rejected upstream" callout                                      */
+/* ============================================================== */
+.upstream-callout {
+    margin-top: 1.25rem;
+    padding: 1.1rem 1.35rem;
+    border-left: 3px solid var(--pico-primary);
+    border-radius: 0.4rem;
+    background: color-mix(in srgb, var(--pico-primary) 6%, transparent);
+}
+
+.upstream-callout ol {
+    margin: 0.6rem 0 0;
+    padding-left: 1.2rem;
+}
+
+.upstream-callout li {
+    margin-bottom: 0.45rem;
+    font-size: 0.93rem;
+}
+
+.upstream-callout li small {
+    color: var(--pico-muted-color);
+    margin-left: 0.35rem;
+}
+
+.upstream-callout li a {
+    text-decoration: none;
+    border-bottom: 1px dotted currentColor;
+}
+
+/* ============================================================== */
+/* Built with VRSFML                                                */
+/* ============================================================== */
+.games-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    margin-top: 1rem;
+}
+
+.game-card {
+    display: block;
+    padding: 1.1rem 1.25rem;
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: 0.55rem;
+    background: var(--pico-card-background-color);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 120ms ease, transform 120ms ease;
+}
+
+.game-card:hover {
+    border-color: var(--pico-primary-border);
+    transform: translateY(-2px);
+    text-decoration: none;
+}
+
+.game-card h3 {
+    margin: 0 0 0.4rem;
+    font-size: 1.1rem;
+}
+
+.game-card p {
+    margin: 0 0 0.6rem;
+    color: var(--pico-muted-color);
+    font-size: 0.92rem;
+}
+
+.game-card .game-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+
+.game-card .game-tag {
+    font-size: 0.72rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    background: var(--pico-secondary-background);
+    color: var(--pico-muted-color);
+    font-family: var(--code-font);
+}
+
+.in-tree-link {
+    margin-top: 1rem;
+    font-size: 0.92rem;
+    color: var(--pico-muted-color);
+}
