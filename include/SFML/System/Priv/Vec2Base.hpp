@@ -340,6 +340,46 @@ struct [[nodiscard]] Vec2
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Clamps the X component of the `*this` to be at least `minX`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2 clampMinX(const T minX) const
+    {
+        return {x < minX ? minX : x, y};
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Clamps the Y component of the `*this` to be at least `minY`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2 clampMinY(const T minY) const
+    {
+        return {x, y < minY ? minY : y};
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Clamps the X component of the `*this` to be at most `maxX`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2 clampMaxX(const T maxX) const
+    {
+        return {x > maxX ? maxX : x, y};
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Clamps the Y component of the `*this` to be at most `maxY`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2 clampMaxY(const T maxY) const
+    {
+        return {x, y > maxY ? maxY : y};
+    }
+
+
+    ////////////////////////////////////////////////////////////
     /// \brief Returns a new vec2 with `newX` instead of the current X component
     ///
     ////////////////////////////////////////////////////////////
