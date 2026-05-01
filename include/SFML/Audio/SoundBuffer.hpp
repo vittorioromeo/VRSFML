@@ -22,7 +22,6 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
-class Sound;
 class ChannelMap;
 class InputSoundFile;
 class InputStream;
@@ -37,12 +36,25 @@ namespace sf
 ////////////////////////////////////////////////////////////
 /// \brief Storage for audio samples defining a sound
 ///
+/// `SoundBuffer` owns a contiguous array of 16-bit signed PCM
+/// samples plus the metadata needed to interpret them
+/// (sample rate, channel map). It is the heavy resource that
+/// `sf::Sound` reads from at playback time.
+///
+/// Buffers can be loaded from a file, an in-memory blob, a
+/// custom stream, or directly from raw samples, and saved
+/// back to a file. They can be freely copied and moved.
+///
+/// \see `sf::Sound`, `sf::SoundBufferRecorder`, `sf::InputSoundFile`
+///
 ////////////////////////////////////////////////////////////
 class SFML_AUDIO_API SoundBuffer
 {
 public:
     ////////////////////////////////////////////////////////////
     /// \brief Copy constructor
+    ///
+    /// Performs a deep copy of the sample data.
     ///
     ////////////////////////////////////////////////////////////
     SoundBuffer(const SoundBuffer& rhs);
@@ -327,14 +339,16 @@ private:
 /// // Load a new sound buffer from a file
 /// const auto buffer = sf::SoundBuffer::loadFromFile("sound.wav").value();
 ///
+/// // Assumes `playbackDevice` is an initialized sf::PlaybackDevice
+///
 /// // Create a sound source bound to the buffer
-/// sf::Sound sound1(buffer);
+/// sf::Sound sound1(playbackDevice, buffer);
 ///
 /// // Play the sound
 /// sound1.play();
 ///
 /// // Create another sound source bound to the same buffer
-/// sf::Sound sound2(buffer);
+/// sf::Sound sound2(playbackDevice, buffer);
 ///
 /// // Play it with a higher pitch -- the first sound remains unchanged
 /// sound2.setPitch(2);
@@ -351,8 +365,9 @@ private:
 ///     sf::SoundChannel::BackLeft,
 ///     sf::SoundChannel::LowFrequencyEffects
 /// };
-/// auto soundBuffer = sf::SoundBuffer(samples.data(), samples.size(), channelMap.size(), 44100, channelMap);
-/// auto sound = sf::Sound(soundBuffer);
+/// auto soundBuffer = sf::SoundBuffer::loadFromSamples(
+///     samples.data(), samples.size(), channelMap, 44100).value();
+/// sf::Sound sound(playbackDevice, soundBuffer);
 /// \endcode
 ///
 /// \see `sf::Sound`, `sf::SoundBufferRecorder`

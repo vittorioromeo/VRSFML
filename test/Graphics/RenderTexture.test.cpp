@@ -1,23 +1,43 @@
+#include "GraphicsUtil.hpp"
+#include "StringifyOptionalUtil.hpp"
+#include "SystemUtil.hpp"
+#include "WindowUtil.hpp"
+
 #include "SFML/Graphics/RenderTexture.hpp"
 
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
+#include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/Texture.hpp"
+#include "SFML/Graphics/TextureWrapMode.hpp"
 #include "SFML/Graphics/Vertex.hpp"
+
+#include "SFML/System/Priv/Vec2Base.hpp"
+
+#include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsDefaultConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <Doctest.hpp>
 
-#include <CommonTraits.hpp>
-#include <GraphicsUtil.hpp>
-#include <StringifyOptionalUtil.hpp>
-#include <SystemUtil.hpp>
-#include <WindowUtil.hpp>
+
+namespace
+{
+sf::GraphicsContext& sharedGraphicsContext()
+{
+    static auto ctx = sf::GraphicsContext::create().value();
+    return ctx;
+}
+} // namespace
 
 
 TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
 {
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    (void)sharedGraphicsContext();
 
     SECTION("Type traits")
     {
@@ -72,7 +92,7 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
     SECTION("generateMipmap()")
     {
         auto renderTexture = sf::RenderTexture::create({64, 64}).value();
-        CHECK(renderTexture.generateMipmap());
+        renderTexture.generateMipmap();
     }
 
     SECTION("setActive()")

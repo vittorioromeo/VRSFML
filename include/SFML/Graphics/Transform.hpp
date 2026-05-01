@@ -9,11 +9,11 @@
 #include "SFML/Graphics/Export.hpp"
 
 #include "SFML/System/Angle.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
-#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/AssertAndAssume.hpp"
-#include "SFML/Base/MinMaxMacros.hpp"
+#include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/SinCosLookup.hpp"
 
 
@@ -26,7 +26,14 @@ namespace sf
 struct [[nodiscard]] Transform
 {
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Build a translation-only transform
+    ///
+    /// Equivalent to `Identity` followed by `translate(position)`,
+    /// but expressed as a direct construction.
+    ///
+    /// \param position Translation to bake into the transform
+    ///
+    /// \return Transform that translates by `position`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] static constexpr Transform fromPosition(const Vec2f position)
@@ -43,7 +50,18 @@ struct [[nodiscard]] Transform
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Build a transform from a position, scale, and origin
+    ///
+    /// Equivalent to building the transform that
+    /// `sf::Transformable` with the same `position`, `scale`, and
+    /// `origin` (and a zero rotation) would produce. Useful as a
+    /// fast path when no rotation is involved.
+    ///
+    /// \param position World-space position
+    /// \param scale    Per-axis scale factors
+    /// \param origin   Origin of translation/scaling, in local space
+    ///
+    /// \return Transform that applies the requested translation and scaling
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] static constexpr Transform fromPositionScaleOrigin(
@@ -63,7 +81,21 @@ struct [[nodiscard]] Transform
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Build a transform from a position, scale, origin, and a precomputed (sine, cosine) pair
+    ///
+    /// This is the fully general form: it produces the same matrix
+    /// as the equivalent `Transformable`, but skips the trigonometry
+    /// by accepting `sine` and `cosine` directly. Pass values from
+    /// `sf::base::sinCosLookup` (or any equivalent source) when you
+    /// already have them, to avoid recomputing them per object.
+    ///
+    /// \param position World-space position
+    /// \param scale    Per-axis scale factors
+    /// \param origin   Origin of translation/rotation/scaling, in local space
+    /// \param sine     Sine of the rotation angle (must be in `[-1, 1]`)
+    /// \param cosine   Cosine of the rotation angle (must be in `[-1, 1]`)
+    ///
+    /// \return Transform that applies the requested translation, rotation, and scaling
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] static constexpr Transform fromPositionScaleOriginSinCos(
@@ -78,16 +110,16 @@ struct [[nodiscard]] Transform
 
         const float sxc = scale.x * cosine;
         const float syc = scale.y * cosine;
-        const float sxs = scale.x * -sine;
-        const float sys = scale.y * -sine;
-        const float tx  = -origin.x * sxc - origin.y * sys + position.x;
-        const float ty  = origin.x * sxs - origin.y * syc + position.y;
+        const float sxs = scale.x * sine;
+        const float sys = scale.y * sine;
+        const float tx  = -origin.x * sxc + origin.y * sys + position.x;
+        const float ty  = -origin.x * sxs - origin.y * syc + position.y;
 
         return {
             .a00 = sxc,
-            .a01 = sys,
+            .a01 = -sys,
             .a02 = tx,
-            .a10 = -sxs,
+            .a10 = sxs,
             .a11 = syc,
             .a12 = ty,
         };
@@ -95,25 +127,58 @@ struct [[nodiscard]] Transform
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Write the transform's salient values to a 4x4 matrix
+    /// \brief Build a transform from a position, scale, origin, and rotation
     ///
-    /// Given an identity 4x4 float matrix, this function writes
-    /// the salient transform elements to some of the spots of the
-    /// matrix, such that it is directly compatible with OpenGL functions.
+    /// Computes sine and cosine of `rotation`, so if you already have those values,
+    /// prefer `fromPositionScaleOriginSinCos` to avoid redundant trig calculations.
+    ///
+    /// \param position World-space position
+    /// \param scale    Per-axis scale factors
+    /// \param origin   Origin of translation/rotation/scaling, in local space
+    /// \param rotation Rotation angle
+    ///
+    /// \return Transform that applies the requested translation, rotation, and scaling
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] static constexpr Transform fromPositionScaleOriginRotation(
+        const Vec2f position,
+        const Vec2f scale,
+        const Vec2f origin,
+        const Angle rotation)
+    {
+        const auto [sine, cosine] = base::sinCosLookup(rotation.wrapUnsigned().asRadians());
+        return fromPositionScaleOriginSinCos(position, scale, origin, sine, cosine);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Write the 2D transform into a 4x4 column-major matrix
+    ///
+    /// This writes the six meaningful elements of the 2D transform
+    /// (`a00`, `a01`, `a02`, `a10`, `a11`, `a12`) into the appropriate
+    /// slots of a column-major 4x4 matrix. The remaining slots are
+    /// **not** touched, so the caller must pre-initialize `target`
+    /// to a 4x4 identity matrix (or to whatever Z/W column they need)
+    /// before calling this function.
+    ///
+    /// The resulting layout is directly compatible with OpenGL's
+    /// `glUniformMatrix4fv` and similar APIs.
     ///
     /// \code
     /// sf::Transform transform = ...;
     ///
-    /// float matrix[]{{},  {},  0.f, 0.f,
-    ///                {},  {},  0.f, 0.f,
-    ///                0.f, 0.f, 1.f, 0.f,
-    ///                {},  {},  0.f, 1.f};
+    /// float matrix[16] = {
+    ///     1.f, 0.f, 0.f, 0.f,
+    ///     0.f, 1.f, 0.f, 0.f,
+    ///     0.f, 0.f, 1.f, 0.f,
+    ///     0.f, 0.f, 0.f, 1.f,
+    /// };
     ///
     /// transform.writeTo4x4Matrix(matrix);
-    /// glLoadMatrixf(matrix);
+    /// // 'matrix' is now ready to be uploaded as a uniform.
     /// \endcode
     ///
-    /// \return Pointer to a 4x4 matrix
+    /// \param target Pre-initialized 4x4 matrix to write into
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] constexpr void writeTo4x4Matrix(float (&target)[16]) const
@@ -202,24 +267,20 @@ struct [[nodiscard]] Transform
     {
         const Vec2f p0 = transformPoint(rectangle.position);
 
-        // Transformed offset vec2 for the X-direction side
-        const Vec2f dx = {a00 * rectangle.size.x, a10 * rectangle.size.x};
+        // Per-axis edge contributions from each side of the rectangle
+        const float e0x = a00 * rectangle.size.x;
+        const float e0y = a10 * rectangle.size.x;
+        const float e1x = a01 * rectangle.size.y;
+        const float e1y = a11 * rectangle.size.y;
 
-        // Transformed offset vec2 for the Y-direction side
-        const Vec2f dy = {a01 * rectangle.size.y, a11 * rectangle.size.y};
+        // The minimum corner is p0 offset by the negative contributions
+        const float minX = p0.x + (e0x < 0.f ? e0x : 0.f) + (e1x < 0.f ? e1x : 0.f);
+        const float minY = p0.y + (e0y < 0.f ? e0y : 0.f) + (e1y < 0.f ? e1y : 0.f);
 
-        // Calculate other corners relative to `p0`
-        const Vec2f p1 = p0 + dy;
-        const Vec2f p2 = p0 + dx;
-        const Vec2f p3 = p2 + dy; // Or `p1 + dx`
-
-        // Compute the bounding rectangle of the transformed points
-        const float minX = SFML_BASE_MIN(SFML_BASE_MIN(p0.x, p1.x), SFML_BASE_MIN(p2.x, p3.x));
-        const float maxX = SFML_BASE_MAX(SFML_BASE_MAX(p0.x, p1.x), SFML_BASE_MAX(p2.x, p3.x));
-        const float minY = SFML_BASE_MIN(SFML_BASE_MIN(p0.y, p1.y), SFML_BASE_MIN(p2.y, p3.y));
-        const float maxY = SFML_BASE_MAX(SFML_BASE_MAX(p0.y, p1.y), SFML_BASE_MAX(p2.y, p3.y));
-
-        return Rect2f{{minX, minY}, {maxX - minX, maxY - minY}};
+        // The size is the sum of the absolute edge contributions
+        return Rect2f{{minX, minY},
+                      {SFML_BASE_MATH_FABSF(e0x) + SFML_BASE_MATH_FABSF(e1x),
+                       SFML_BASE_MATH_FABSF(e0y) + SFML_BASE_MATH_FABSF(e1y)}};
     }
 
 
@@ -397,12 +458,26 @@ struct [[nodiscard]] Transform
     {
         const auto [sine, cosine] = base::sinCosLookup(angle.wrapUnsigned().asRadians());
 
-        // clang-format off
-        const Transform rotation{cosine, -sine, center.x * (1.f - cosine) + center.y * sine,
-                                 sine,  cosine, center.y * (1.f - cosine) - center.x * sine};
-        // clang-format on
+        // Precompute the translation components of the rotation matrix
+        const float tx = center.x * (1.f - cosine) + center.y * sine;
+        const float ty = center.y * (1.f - cosine) - center.x * sine;
 
-        return combine(rotation);
+        // Apply the translation to the current translation column
+        a02 += a00 * tx + a01 * ty;
+        a12 += a10 * tx + a11 * ty;
+
+        // Apply the rotation to the scale/shear columns
+        const float m00 = a00;
+        const float m01 = a01;
+        const float m10 = a10;
+        const float m11 = a11;
+
+        a00 = m00 * cosine + m01 * sine;
+        a01 = m00 * -sine + m01 * cosine;
+        a10 = m10 * cosine + m11 * sine;
+        a11 = m10 * -sine + m11 * cosine;
+
+        return *this;
     }
 
 
@@ -507,40 +582,47 @@ inline constexpr Transform Transform::Identity{};
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::Transform
+/// \struct sf::Transform
 /// \ingroup graphics
 ///
-/// A `sf::Transform` specifies how to translate, rotate, scale,
-/// shear, project, whatever things. In mathematical terms, it defines
-/// how to transform a coordinate system into another.
+/// `sf::Transform` is a 2D affine transform that can translate,
+/// rotate, scale, and shear points. Internally it stores the six
+/// meaningful elements of the upper-left 2x3 block of a 4x4
+/// homogeneous matrix.
 ///
-/// For example, if you apply a rotation transform to a sprite, the
-/// result will be a rotated sprite. And anything that is transformed
-/// by this rotation transform will be rotated the same way, according
-/// to its initial position.
+/// In mathematical terms, a `sf::Transform` defines how to map a
+/// coordinate system into another. For example, applying a rotation
+/// transform to a sprite produces a rotated sprite, and applying it
+/// to a point produces the rotated point.
 ///
-/// Transforms are typically used for drawing. But they can also be
-/// used for any computation that requires to transform points between
-/// the local and global coordinate systems of an entity (like collision
+/// Transforms are most commonly used for drawing (via
+/// `sf::Transformable` or directly as part of `sf::RenderStates`),
+/// but they are equally useful for converting points between local
+/// and world space (e.g. for picking, hit testing, or collision
 /// detection).
 ///
 /// Example:
 /// \code
-/// // define a translation transform
+/// // Define a translation transform.
 /// sf::Transform translation;
-/// translation.translate(20, 50);
+/// translation.translate({20.f, 50.f});
 ///
-/// // define a rotation transform
+/// // Define a rotation transform.
 /// sf::Transform rotation;
-/// rotation.rotate(45);
+/// rotation.rotate(sf::degrees(45.f));
 ///
-/// // combine them
-/// sf::Transform transform = translation * rotation;
+/// // Combine them: 'transform' first applies 'rotation', then 'translation'.
+/// const sf::Transform transform = translation * rotation;
 ///
-/// // use the result to transform stuff...
-/// sf::Vec2f point = transform.transformPoint({10, 20});
-/// sf::Rect2f rect = transform.transformRect(sf::Rect2f({0, 0}, {10, 100}));
+/// // Use the result to transform points and rectangles.
+/// const sf::Vec2f  point = transform.transformPoint({10.f, 20.f});
+/// const sf::Rect2f rect  = transform.transformRect({{0.f, 0.f}, {10.f, 100.f}});
 /// \endcode
+///
+/// `sf::Transform` is an aggregate, can be created with designated
+/// initializers, and exposes static factory helpers (`fromPosition`,
+/// `fromPositionScaleOrigin`, `fromPositionScaleOriginSinCos`) for
+/// efficient construction from `Transformable`-style parameters.
 ///
 /// \see `sf::Transformable`, `sf::RenderStates`
 ///

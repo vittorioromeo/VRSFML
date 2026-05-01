@@ -102,7 +102,6 @@ elseif(${EMSCRIPTEN})
     )
 
     # -sEXCEPTION_STACK_TRACES=1 # Exceptions will contain stack traces and uncaught exceptions will display stack traces
-    # -sGL_ASSERTIONS=1          # Adds extra checks for error situations in the GL library
     # -sDETERMINISTIC=1          # Force `Date.now()`, `Math.random`, etc. to return deterministic results
     # -fwasm-exceptions          # TODO P1: -fwasm-exceptions seems to break examples
     # -sEXCEPTION_DEBUG=1        # Print out exceptions in emscriptened code (SPEWS WARNINGS)
@@ -111,16 +110,24 @@ elseif(${EMSCRIPTEN})
     set(SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_DEBUG
         -g3                                 # Enable debug mode
         -gsource-map                        # Generate a source map using LLVM debug information
+        --profiling-funcs                   # Preserves names in the WASM binary
 
         -sASSERTIONS=2                      # Add runtime assertions
         -sCHECK_NULL_WRITES=1               # Help detect `NULL` pointer usage
         -sSAFE_HEAP=1                       # Check each write to the heap
         -sSTACK_OVERFLOW_CHECK=1            # Adds a security cookie at the top of the stack
+        -sGL_ASSERTIONS=1                   # Adds extra checks for error situations in the GL library
     )
 
     set(SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_RELEASE
         -O3                                 # Enable advanced linker optimizations
         -flto                               # Link-time optimization
+
+        # NOTE: `--closure 1` was tried but breaks SDL3's Emscripten video
+        # backend at runtime (renames properties referenced from `EM_ASM`
+        # blocks in `library_html5.js` / `SDL_emscriptenvideo.c`).
+        #
+        # See: https://github.com/libsdl-org/SDL/issues/15491
 
         -SMINIFY_HTML=1                     # Runs generated `.html` file through `html-minifier`
     )
@@ -165,9 +172,12 @@ elseif(${EMSCRIPTEN})
         -sMAX_WEBGL_VERSION=2               # Specifies the highest WebGL version to target
         -sMIN_WEBGL_VERSION=2               # Specifies the lowest WebGL version to target
         -sSTACK_SIZE=4mb                    # Set the total stack size
-        -sTOTAL_MEMORY=64mb                 # Set the total memory size (needed for `bubble_idle` example)
+        -sTOTAL_MEMORY=128mb                # Set the total memory size (needed for `bubble_idle` example)
         -sUSE_PTHREADS=1                    # Enable threading support
         -sWASM=1                            # Compile code to WebAssembly
+
+        # Expose low-level memory access functions to JavaScript
+        -sEXPORTED_RUNTIME_METHODS=HEAPU32,HEAP8,getValue,setValue,requestFullscreen
 
         --emrun                             # Add native support for `emrun` (I/O capture)
 

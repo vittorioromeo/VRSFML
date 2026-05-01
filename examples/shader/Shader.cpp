@@ -9,6 +9,7 @@
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderTexture.hpp"
@@ -23,16 +24,22 @@
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/Mouse.hpp"
 
+#include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Path.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Time.hpp"
 #include "SFML/System/UnicodeString.hpp"
 
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Math/Cos.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
+#include "SFML/Base/Math/Sin.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/Vector.hpp"
 
@@ -110,27 +117,27 @@ public:
 
     explicit WaveBlur(const sf::Font& font, sf::Shader&& shader) :
         m_text(font,
-               {.position      = {30.f, 20.f},
-                .string        = "Praesent suscipit augue in velit pulvinar hendrerit varius purus aliquam.\n"
-                                 "Mauris mi odio, bibendum quis fringilla a, laoreet vel orci. Proin vitae vulputate tortor.\n"
-                                 "Praesent cursus ultrices justo, ut feugiat ante vehicula quis.\n"
-                                 "Donec fringilla scelerisque mauris et viverra.\n"
-                                 "Maecenas adipiscing ornare scelerisque. Nullam at libero elit.\n"
-                                 "Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis "
-                                 "egestas.\n"
-                                 "Nullam leo urna, tincidunt id semper eget, ultricies sed mi.\n"
-                                 "Morbi mauris massa, commodo id dignissim vel, lobortis et elit.\n"
-                                 "Fusce vel libero sed neque scelerisque venenatis.\n"
-                                 "Integer mattis tincidunt quam vitae iaculis.\n"
-                                 "Vivamus fringilla sem non velit venenatis fermentum.\n"
-                                 "Vivamus varius tincidunt nisi id vehicula.\n"
-                                 "Integer ullamcorper, enim vitae euismod rutrum, massa nisl semper ipsum,\n"
-                                 "vestibulum sodales sem ante in massa.\n"
-                                 "Vestibulum in augue non felis convallis viverra.\n"
-                                 "Mauris ultricies dolor sed massa convallis sed aliquet augue fringilla.\n"
-                                 "Duis erat eros, porta in accumsan in, blandit quis sem.\n"
-                                 "In hac habitasse platea dictumst. Etiam fringilla est id odio dapibus sit amet semper dui "
-                                 "laoreet.\n",
+               {.position = {30.f, 20.f},
+                .string = "Praesent suscipit augue in velit pulvinar hendrerit varius purus aliquam.\n"
+                          "Mauris mi odio, bibendum quis fringilla a, laoreet vel orci. Proin vitae vulputate tortor.\n"
+                          "Praesent cursus ultrices justo, ut feugiat ante vehicula quis.\n"
+                          "Donec fringilla scelerisque mauris et viverra.\n"
+                          "Maecenas adipiscing ornare scelerisque. Nullam at libero elit.\n"
+                          "Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis "
+                          "egestas.\n"
+                          "Nullam leo urna, tincidunt id semper eget, ultricies sed mi.\n"
+                          "Morbi mauris massa, commodo id dignissim vel, lobortis et elit.\n"
+                          "Fusce vel libero sed neque scelerisque venenatis.\n"
+                          "Integer mattis tincidunt quam vitae iaculis.\n"
+                          "Vivamus fringilla sem non velit venenatis fermentum.\n"
+                          "Vivamus varius tincidunt nisi id vehicula.\n"
+                          "Integer ullamcorper, enim vitae euismod rutrum, massa nisl semper ipsum,\n"
+                          "vestibulum sodales sem ante in massa.\n"
+                          "Vestibulum in augue non felis convallis viverra.\n"
+                          "Mauris ultricies dolor sed massa convallis sed aliquet augue fringilla.\n"
+                          "Duis erat eros, porta in accumsan in, blandit quis sem.\n"
+                          "In hac habitasse platea dictumst. Etiam fringilla est id odio dapibus sit amet semper dui "
+                          "laoreet.\n",
                 .characterSize = 22u}),
         m_shader(SFML_BASE_MOVE(shader)),
         m_ulWavePhase(m_shader.getUniformLocation("wave_phase").value()),
@@ -354,25 +361,19 @@ sf::base::Optional<StormBlink> tryLoadStormBlink()
 sf::base::Optional<Edge> tryLoadEdge()
 {
     // Create the off-screen surface
-    auto surface = sf::RenderTexture::create({800, 600});
+    auto surface = sf::RenderTexture::create({800, 600}, {.smooth = true});
     if (!surface.hasValue())
         return sf::base::nullOpt;
 
-    surface->setSmooth(true);
-
     // Load the background texture
-    auto backgroundTexture = sf::Texture::loadFromFile("resources/sfml.png");
+    auto backgroundTexture = sf::Texture::loadFromFile("resources/sfml.png", {.smooth = true});
     if (!backgroundTexture.hasValue())
         return sf::base::nullOpt;
 
-    backgroundTexture->setSmooth(true);
-
     // Load the entity texture
-    auto entityTexture = sf::Texture::loadFromFile("resources/devices.png");
+    auto entityTexture = sf::Texture::loadFromFile("resources/devices.png", {.smooth = true});
     if (!entityTexture.hasValue())
         return sf::base::nullOpt;
-
-    entityTexture->setSmooth(true);
 
     // Load the shader
     auto shader = sf::Shader::loadFromFile(
@@ -484,6 +485,8 @@ int main()
                       })
                       .value();
 
+    auto windowView = window.computeView();
+
     // Start the game loop
     const sf::Clock clock;
 
@@ -495,7 +498,7 @@ int main()
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
-            if (handleAspectRatioAwareResize(*event, windowSize, window))
+            if (handleAspectRatioAwareResize(*event, windowSize, windowView))
                 continue;
 
             if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
@@ -543,20 +546,20 @@ int main()
             window.clear(currentEffect == edgeEffect.asPtr() ? sf::Color::White : sf::Color(50, 50, 50));
 
             // Draw the current example
-            window.draw(*currentEffect);
+            window.draw(*currentEffect, {.view = windowView});
         }
         else
         {
             // Clear the window to grey to make sure the text is always readable
             window.clear(sf::Color(50, 50, 50));
-            window.draw(
-                sf::Text{font, {.position = {320.f, 200.f}, .string = "Shader not\nsupported", .characterSize = 36u}});
+            window.draw(sf::Text{font, {.position = {320.f, 200.f}, .string = "Shader not\nsupported", .characterSize = 36u}},
+                        {.view = windowView});
         }
 
         // Draw the text
-        window.draw(textBackgroundTexture, {.position = {0.f, 520.f}, .color = {255, 255, 255, 200}});
-        window.draw(instructions);
-        window.draw(description);
+        window.withRenderStates({.view = windowView})
+            .draw(textBackgroundTexture, {.position = {0.f, 520.f}, .color = {255, 255, 255, 200}})
+            .drawAll(instructions, description);
 
         // Finally, display the rendered frame on screen
         window.display();

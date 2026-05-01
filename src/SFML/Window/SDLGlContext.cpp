@@ -14,6 +14,9 @@
 
 #include "SFML/System/Err.hpp"
 
+#include "SFML/Base/Assert.hpp"
+
+#include <SDL3/SDL_error.h>
 #include <SDL3/SDL_video.h>
 
 
@@ -35,7 +38,7 @@ void SDLGlContext::destroyWindowIfNeeded()
 ////////////////////////////////////////////////////////////
 void SDLGlContext::initContext(SDLGlContext* const shared)
 {
-    auto& sdlLayer = getSDLLayerSingleton();
+    auto& sdlLayer = WindowContext::getSDLLayer();
 
     // Set context sharing attributes if a shared context is provided
     if (shared != nullptr)
@@ -74,7 +77,7 @@ SDLGlContext::SDLGlContext(const unsigned int id, SDLGlContext* const shared, co
     m_context(nullptr),
     m_ownsWindow(false)
 {
-    if (!getSDLLayerSingleton().applyGLContextSettings(m_settings))
+    if (!WindowContext::getSDLLayer().applyGLContextSettings(m_settings))
         err() << "Failed to apply SDL GL context settings for shared GL context hidden window";
 
     // Create a hidden window for the context
@@ -131,8 +134,18 @@ GlFunctionPointer SDLGlContext::getFunction(const char* const name) const
 
 
 ////////////////////////////////////////////////////////////
+SDL_Window* SDLGlContext::getSDLWindow() const noexcept
+{
+    return m_window;
+}
+
+
+////////////////////////////////////////////////////////////
 bool SDLGlContext::makeCurrent(const bool activate)
 {
+    SFML_BASE_ASSERT((!activate || m_context != nullptr) &&
+                     "Cannot activate SDL GL context: context was not successfully created");
+
     auto*       targetWindow  = activate ? m_window : nullptr;
     auto*       targetContext = activate ? m_context : nullptr;
     const char* targetAction  = activate ? "activate" : "deactivate";

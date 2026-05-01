@@ -8,11 +8,15 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
+#include "SFML/Graphics/BatchedGeometry.hpp"
+#include "SFML/Graphics/DrawIndexedVerticesSettings.hpp"
+#include "SFML/Graphics/DrawVerticesSettings.hpp"
 #include "SFML/Graphics/IndexType.hpp"
-#include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/Transformable.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 #include "SFML/Graphics/VertexSpan.hpp"
+
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Macros.hpp"
@@ -26,14 +30,22 @@
 namespace sf
 {
 class Font;
+class FontFace;
+class GlyphMappedText;
 class RenderTarget;
 class Shape;
 class Text;
 
 struct ArrowShapeData;
+struct ChevronShapeData;
 struct CircleShapeData;
+struct CogShapeData;
+struct CrossShapeData;
 struct CurvedArrowShapeData;
 struct EllipseShapeData;
+struct GlyphMapping;
+struct GlyphMappedTextData;
+struct HeartShapeData;
 struct PieSliceShapeData;
 struct RectangleShapeData;
 struct RingPieSliceShapeData;
@@ -41,6 +53,7 @@ struct RingShapeData;
 struct RoundedRectangleShapeData;
 struct Sprite;
 struct StarShapeData;
+struct TrapezoidShapeData;
 struct TextData;
 struct Transform;
 } // namespace sf
@@ -89,6 +102,15 @@ struct CPUStorage
     }
 
     ////////////////////////////////////////////////////////////
+    /// \brief Ensure the vertex storage can accommodate `count` vertices without changing the committed size
+    ///
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] void reserveVertexCapacity(const base::SizeT count)
+    {
+        vertices.reserve(count);
+    }
+
+    ////////////////////////////////////////////////////////////
     /// \brief Reserves capacity for more indices and returns a pointer to the new region
     ///
     /// Ensures that the internal index vector has enough capacity to
@@ -101,6 +123,15 @@ struct CPUStorage
     [[nodiscard, gnu::always_inline, gnu::flatten]] IndexType* reserveMoreIndices(const base::SizeT count)
     {
         return indices.reserveMore(count);
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Ensure the index storage can accommodate `count` indices without changing the committed size
+    ///
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] void reserveIndexCapacity(const base::SizeT count)
+    {
+        indices.reserve(count);
     }
 
     ////////////////////////////////////////////////////////////
@@ -180,9 +211,11 @@ struct CPUStorage
 struct PersistentGPUStorage
 {
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
+    /// \brief Default constructor (3 frame states for CPU/GPU pipelining)
     ///
-    /// Initializes the GPU storage, potentially allocating GPU resources.
+    /// Initializes the GPU storage with triple-buffered frame states
+    /// so that the CPU can fill a batch while the GPU is still
+    /// rendering from a previous one.
     ///
     ////////////////////////////////////////////////////////////
     explicit PersistentGPUStorage();
@@ -226,10 +259,7 @@ struct PersistentGPUStorage
     /// Does not deallocate or overwrite GPU memory, but marks it as unused.
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void clear()
-    {
-        nVertices = nIndices = 0u;
-    }
+    void clear();
 
     ////////////////////////////////////////////////////////////
     /// \brief Reserves capacity for more vertices and returns a pointer to the mapped region
@@ -245,6 +275,12 @@ struct PersistentGPUStorage
     [[nodiscard]] Vertex* reserveMoreVertices(base::SizeT count);
 
     ////////////////////////////////////////////////////////////
+    /// \brief Ensure the vertex buffer can accommodate `count` more vertices without changing the active count
+    ///
+    ////////////////////////////////////////////////////////////
+    void reserveVertexCapacity(base::SizeT count);
+
+    ////////////////////////////////////////////////////////////
     /// \brief Reserves capacity for more indices and returns a pointer to the mapped region
     ///
     /// Ensures that the GPU index buffer has enough capacity and returns
@@ -256,6 +292,12 @@ struct PersistentGPUStorage
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] IndexType* reserveMoreIndices(base::SizeT count);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Ensure the index buffer can accommodate `count` more indices without changing the active count
+    ///
+    ////////////////////////////////////////////////////////////
+    void reserveIndexCapacity(base::SizeT count);
 
     ////////////////////////////////////////////////////////////
     /// \brief Commits a number of previously reserved vertices
@@ -350,10 +392,21 @@ struct PersistentGPUStorage
     void flushIndexWritesToGPU(base::SizeT count, base::SizeT offset) const;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Commit all writes since the last submission, creating a GPU fence
+    ///
+    /// Used when a `PersistentGPUDrawableBatch` is submitted directly,
+    /// outside of `RenderTarget`'s internal GPU autobatching path. Must
+    /// be called after the draw command that consumes the batch has been
+    /// issued, so the fence covers the draw.
+    ///
+    ////////////////////////////////////////////////////////////
+    void commitPendingDrawSubmission() const;
+
+    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 128> impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 2048> impl; //!< Implementation details
 
     IndexType nVertices{}; //!< Number of "active" vertices in the buffer
     IndexType nIndices{};  //!< Number of "active" indices in the buffer
@@ -412,8 +465,8 @@ public:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] void reserveTriangles(const base::SizeT triangleCount)
     {
-        (void)m_storage.reserveMoreIndices(3u * triangleCount);
-        (void)m_storage.reserveMoreVertices(3u * triangleCount);
+        m_storage.reserveIndexCapacity(3u * triangleCount);
+        m_storage.reserveVertexCapacity(3u * triangleCount);
     }
 
     ////////////////////////////////////////////////////////////
@@ -429,8 +482,8 @@ public:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] void reserveQuads(const base::SizeT quadCount)
     {
-        (void)m_storage.reserveMoreIndices(6u * quadCount);
-        (void)m_storage.reserveMoreVertices(4u * quadCount);
+        m_storage.reserveIndexCapacity(6u * quadCount);
+        m_storage.reserveVertexCapacity(4u * quadCount);
     }
 
     ////////////////////////////////////////////////////////////
@@ -441,14 +494,12 @@ public:
     /// `sf::PrimitiveType::TriangleFan` and `sf::PrimitiveType::TriangleStrip`.
     /// Other types may lead to undefined behavior or be ignored.
     ///
-    /// \param vertexData Pointer to the array of vertices
-    /// \param vertexCount Number of vertices in the array
-    /// \param type Primitive type
+    /// \param settings Struct containing vertex data, count, and primitive type
     ///
     /// \warning Only supports triangle, fan, or strip, primitives.
     ///
     ////////////////////////////////////////////////////////////
-    void add(const Vertex* vertexData, base::SizeT vertexCount, PrimitiveType type);
+    void add(const DrawVerticesSettings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Adds raw indexed vertex data to the batch
@@ -460,20 +511,12 @@ public:
     ///
     /// Indices are adjusted to be relative to the start of the newly added vertices.
     ///
-    /// \param vertexData Pointer to the array of vertices
-    /// \param vertexCount Number of vertices in the array
-    /// \param indexData Pointer to the array of indices
-    /// \param indexCount Number of indices in the array
-    /// \param type Primitive type
+    /// \param settings Struct containing vertex data, index data, counts, and primitive type
     ///
     /// \warning Only supports triangle, fan, or strip, primitives.
     ///
     ////////////////////////////////////////////////////////////
-    void add(const Vertex*    vertexData,
-             base::SizeT      vertexCount,
-             const IndexType* indexData,
-             base::SizeT      indexCount,
-             PrimitiveType    type);
+    void add(const DrawIndexedVerticesSettings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Adds an `sf::Sprite` to the batch
@@ -507,7 +550,16 @@ public:
     ////////////////////////////////////////////////////////////
     void add(const Text& text);
 
-    // TODO P0: should return two vertex spans, one for fill and one for outline
+    ////////////////////////////////////////////////////////////
+    /// \brief Adds an `sf::GlyphMappedText` to the batch
+    ///
+    /// Extracts vertex data from the glyph-mapped text object (including fill and outline)
+    /// and appends it to the batch.
+    ///
+    /// \param text The glyph-mapped text object to add
+    ///
+    ////////////////////////////////////////////////////////////
+    void add(const GlyphMappedText& text);
 
     ////////////////////////////////////////////////////////////
     /// \brief Adds an arrow shape defined by `sf::ArrowShapeData` to the batch
@@ -517,12 +569,12 @@ public:
     ///
     /// \param sdArrow Data defining the arrow shape
     ///
-    /// \return A `VertexSpan` referring to the added vertices.
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
     ///
     /// \warning The returned span is invalidated after the next call to `add` or batch flush.
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan add(const ArrowShapeData& sdArrow);
+    BatchedGeometry add(const ArrowShapeData& sdArrow);
 
     ////////////////////////////////////////////////////////////
     /// \brief Adds a circle shape defined by `sf::CircleShapeData` to the batch
@@ -532,12 +584,12 @@ public:
     ///
     /// \param sdCircle Data defining the circle shape
     ///
-    /// \return A `VertexSpan` referring to the added vertices.
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
     ///
     /// \warning The returned span is invalidated after the next call to `add` or batch flush.
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan add(const CircleShapeData& sdCircle);
+    BatchedGeometry add(const CircleShapeData& sdCircle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Adds a curved arrow shape defined by `sf::CurvedArrowShapeData` to the batch
@@ -547,12 +599,12 @@ public:
     ///
     /// \param sdCurvedArrow Data defining the curved arrow shape
     ///
-    /// \return A `VertexSpan` referring to the added vertices.
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
     ///
     /// \warning The returned span is invalidated after the next call to `add` or batch flush.
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan add(const CurvedArrowShapeData& sdCurvedArrow);
+    BatchedGeometry add(const CurvedArrowShapeData& sdCurvedArrow);
 
     ////////////////////////////////////////////////////////////
     /// \brief Adds an ellipse shape defined by `sf::EllipseShapeData` to the batch
@@ -562,12 +614,12 @@ public:
     ///
     /// \param sdEllipse Data defining the ellipse shape
     ///
-    /// \return A `VertexSpan` referring to the added vertices.
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
     ///
     /// \warning The returned span is invalidated after the next call to `add` or batch flush.
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan add(const EllipseShapeData& sdEllipse);
+    BatchedGeometry add(const EllipseShapeData& sdEllipse);
 
     ////////////////////////////////////////////////////////////
     /// \brief Adds a pie slice shape defined by `sf::PieSliceShapeData` to the batch
@@ -577,12 +629,12 @@ public:
     ///
     /// \param sdPieSlice Data defining the pie slice shape
     ///
-    /// \return A `VertexSpan` referring to the added vertices.
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
     ///
     /// \warning The returned span is invalidated after the next call to `add` or batch flush.
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan add(const PieSliceShapeData& sdPieSlice);
+    BatchedGeometry add(const PieSliceShapeData& sdPieSlice);
 
     ////////////////////////////////////////////////////////////
     /// \brief Adds a rectangle shape defined by `sf::RectangleShapeData` to the batch
@@ -592,12 +644,12 @@ public:
     ///
     /// \param sdRectangle Data defining the rectangle shape
     ///
-    /// \return A `VertexSpan` referring to the added vertices.
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
     ///
     /// \warning The returned span is invalidated after the next call to `add` or batch flush.
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan add(const RectangleShapeData& sdRectangle);
+    BatchedGeometry add(const RectangleShapeData& sdRectangle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Adds a ring shape defined by `sf::RingShapeData` to the batch
@@ -607,12 +659,12 @@ public:
     ///
     /// \param sdRing Data defining the ring shape
     ///
-    /// \return A `VertexSpan` referring to the added vertices.
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
     ///
     /// \warning The returned span is invalidated after the next call to `add` or batch flush.
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan add(const RingShapeData& sdRing);
+    BatchedGeometry add(const RingShapeData& sdRing);
 
     ////////////////////////////////////////////////////////////
     /// \brief Adds a ring pie slice shape defined by `sf::RingPieSliceShapeData` to the batch
@@ -622,12 +674,12 @@ public:
     ///
     /// \param sdRingPieSlice Data defining the ring pie slice shape
     ///
-    /// \return A `VertexSpan` referring to the added vertices.
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
     ///
     /// \warning The returned span is invalidated after the next call to `add` or batch flush.
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan add(const RingPieSliceShapeData& sdRingPieSlice);
+    BatchedGeometry add(const RingPieSliceShapeData& sdRingPieSlice);
 
     ////////////////////////////////////////////////////////////
     /// \brief Adds a rounded rectangle shape defined by `sf::RoundedRectangleShapeData` to the batch
@@ -637,12 +689,12 @@ public:
     ///
     /// \param sdRoundedRectangle Data defining the rounded rectangle shape
     ///
-    /// \return A `VertexSpan` referring to the added vertices.
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
     ///
     /// \warning The returned span is invalidated after the next call to `add` or batch flush.
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan add(const RoundedRectangleShapeData& sdRoundedRectangle);
+    BatchedGeometry add(const RoundedRectangleShapeData& sdRoundedRectangle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Adds a star shape defined by `sf::StarShapeData` to the batch
@@ -652,12 +704,72 @@ public:
     ///
     /// \param sdStarShape Data defining the star shape
     ///
-    /// \return A `VertexSpan` referring to the added vertices.
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
     ///
     /// \warning The returned span is invalidated after the next call to `add` or batch flush.
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan add(const StarShapeData& sdStarShape);
+    BatchedGeometry add(const StarShapeData& sdStarShape);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Adds a cross (plus) shape defined by `sf::CrossShapeData` to the batch
+    ///
+    /// \param sdCross Data defining the cross shape
+    ///
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
+    ///
+    /// \warning The returned span is invalidated after the next call to `add` or batch flush.
+    ///
+    ////////////////////////////////////////////////////////////
+    BatchedGeometry add(const CrossShapeData& sdCross);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Adds a trapezoid shape defined by `sf::TrapezoidShapeData` to the batch
+    ///
+    /// \param sdTrapezoid Data defining the trapezoid shape
+    ///
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
+    ///
+    /// \warning The returned span is invalidated after the next call to `add` or batch flush.
+    ///
+    ////////////////////////////////////////////////////////////
+    BatchedGeometry add(const TrapezoidShapeData& sdTrapezoid);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Adds a chevron shape defined by `sf::ChevronShapeData` to the batch
+    ///
+    /// \param sdChevron Data defining the chevron shape
+    ///
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
+    ///
+    /// \warning The returned span is invalidated after the next call to `add` or batch flush.
+    ///
+    ////////////////////////////////////////////////////////////
+    BatchedGeometry add(const ChevronShapeData& sdChevron);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Adds a heart shape defined by `sf::HeartShapeData` to the batch
+    ///
+    /// \param sdHeart Data defining the heart shape
+    ///
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
+    ///
+    /// \warning The returned span is invalidated after the next call to `add` or batch flush.
+    ///
+    ////////////////////////////////////////////////////////////
+    BatchedGeometry add(const HeartShapeData& sdHeart);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Adds a cog (gear) shape defined by `sf::CogShapeData` to the batch
+    ///
+    /// \param sdCog Data defining the cog shape
+    ///
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
+    ///
+    /// \warning The returned span is invalidated after the next call to `add` or batch flush.
+    ///
+    ////////////////////////////////////////////////////////////
+    BatchedGeometry add(const CogShapeData& sdCog);
 
     ////////////////////////////////////////////////////////////
     /// \brief Adds text geometry defined by `sf::Font` and `sf::TextData` to the batch
@@ -669,12 +781,27 @@ public:
     /// \param font The font to use for generating text geometry
     /// \param textData Data defining the text to render
     ///
-    /// \return A `VertexSpan` referring to the added vertices.
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
     ///
     /// \warning The returned span is invalidated after the next call to `add` or batch flush.
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan add(const Font& font, const TextData& textData);
+    BatchedGeometry add(const Font& font, const TextData& textData);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Add text geometry using a glyph mapping (stateless)
+    ///
+    /// Generates vertices for text based on the provided glyph mapping and text data.
+    ///
+    /// \param glyphMapping The glyph mapping to use for generating text geometry
+    /// \param textData Data defining the text to render
+    ///
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
+    ///
+    /// \warning The returned span is invalidated after the next call to `add` or batch flush.
+    ///
+    ////////////////////////////////////////////////////////////
+    BatchedGeometry add(const FontFace& fontFace, const GlyphMapping& glyphMapping, const GlyphMappedTextData& textData);
 
     ////////////////////////////////////////////////////////////
     /// \brief Clears all geometry from the batch
@@ -734,17 +861,21 @@ private:
     /// \param nPoints Number of points on the shape's perimeter (excluding center)
     /// \param descriptor Shape-specific data (e.g., `CircleShapeData`)
     /// \param pointFn A function that takes an index and returns the coordinate of an outer point
-    /// \param centerOffset Offset for the central point of the fan, relative to the shape's origin
+    /// \param localApex Optional fan apex in LOCAL (untransformed) coordinates. When non-null, the
+    ///                  apex is transformed alongside the perimeter points, so the caller does not
+    ///                  need to pre-transform anything. When null, the world-space bounding-box
+    ///                  center of the perimeter is used (suitable for convex/centrally-symmetric
+    ///                  shapes).
     ///
-    /// \return A `VertexSpan` referring to the added vertices.
+    /// \return A `BatchedGeometry` with `fill` and `outline` spans referring to the added vertices.
     ///
     /// \warning The returned span is invalidated after the next call to `add` or batch flush.
     ///
     ////////////////////////////////////////////////////////////
-    VertexSpan drawTriangleFanShapeFromPoints(base::SizeT nPoints,
-                                              const auto& descriptor,
-                                              auto&&      pointFn,
-                                              Vec2f       centerOffset = {});
+    BatchedGeometry drawTriangleFanShapeFromPoints(base::SizeT  nPoints,
+                                                   const auto&  descriptor,
+                                                   auto&&       pointFn,
+                                                   const Vec2f* localApex = nullptr);
 
     ////////////////////////////////////////////////////////////
     /// \brief Adds vertices for a shape's fill to the batch
@@ -769,6 +900,28 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     void addShapeOutline(const Transform& transform, const Vertex* data, base::SizeT size);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Internal implementation that appends `text` (or `glyphMappedText`) vertices to the batch
+    ///
+    /// Generic over `sf::Text` and `sf::GlyphMappedText`.
+    ///
+    ////////////////////////////////////////////////////////////
+    void addTextImpl(const auto& text);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Internal implementation that appends stateless text vertices to the batch
+    ///
+    /// Generic over the glyph source (`sf::Font` or
+    /// `sf::GlyphMapping`) and the corresponding text data type
+    /// (`sf::TextData` or `sf::GlyphMappedTextData`).
+    ///
+    ////////////////////////////////////////////////////////////
+    BatchedGeometry addTextDataImpl(const auto&  glyphSource,
+                                    const auto&  textData,
+                                    bool         isBold,
+                                    unsigned int characterSize,
+                                    float        outlineThickness);
 
 protected:
     ////////////////////////////////////////////////////////////
@@ -800,15 +953,16 @@ namespace sf
 /// Example:
 /// \code
 /// sf::CPUDrawableBatch batch;
+///
 /// batch.add(sf::Sprite{/* ... */});
-/// batch.add(sf::TextData{/* ... */});
-/// batch.add(sf::CircleShape{/* ... */});
+/// batch.add(font, sf::TextData{/* ... */});
+/// batch.add(sf::CircleShapeData{/* ... */});
 /// // ... add more drawables
 ///
-/// window.draw(batch); // Data uploaded to GPU here
+/// window.draw(batch); // Vertex data uploaded to the GPU here
 /// \endcode
 ///
-/// \see sf::PersistentGPUDrawableBatch, sf::priv::DrawableBatchImpl, sf::priv::CPUStorage
+/// \see `sf::PersistentGPUDrawableBatch`, `sf::priv::DrawableBatchImpl`, `sf::priv::CPUStorage`
 ///
 ////////////////////////////////////////////////////////////
 class CPUDrawableBatch : public priv::DrawableBatchImpl<priv::CPUStorage>
@@ -828,15 +982,16 @@ class CPUDrawableBatch : public priv::DrawableBatchImpl<priv::CPUStorage>
 /// Example:
 /// \code
 /// sf::PersistentGPUDrawableBatch batch;
+///
 /// batch.add(sf::Sprite{/* ... */});
-/// batch.add(sf::TextData{/* ... */});
-/// batch.add(sf::CircleShape{/* ... */});
+/// batch.add(font, sf::TextData{/* ... */});
+/// batch.add(sf::CircleShapeData{/* ... */});
 /// // ... add more drawables
 ///
 /// window.draw(batch);
 /// \endcode
 ///
-/// \see sf::CPUDrawableBatch, sf::priv::DrawableBatchImpl, sf::priv::PersistentGPUStorage
+/// \see `sf::CPUDrawableBatch`, `sf::priv::DrawableBatchImpl`, `sf::priv::PersistentGPUStorage`
 ///
 ////////////////////////////////////////////////////////////
 class PersistentGPUDrawableBatch : public priv::DrawableBatchImpl<priv::PersistentGPUStorage>
@@ -898,49 +1053,62 @@ public:
 /// \class sf::DrawableBatch
 /// \ingroup graphics
 ///
-/// `sf::DrawableBatch` refers to a concept of batching drawables for performance,
-/// realized through concrete classes like `sf::CPUDrawableBatch` and
-/// `sf::PersistentGPUDrawableBatch`.
+/// `sf::DrawableBatch` is the concept of batching drawables for
+/// performance, realized through the concrete classes
+/// `sf::CPUDrawableBatch` and `sf::PersistentGPUDrawableBatch`.
 ///
-/// Batching draw calls is a common optimization technique in graphics programming.
-/// Instead of drawing each object (sprite, shape, text) individually, which
-/// can lead to many separate commands sent to the graphics card, objects
-/// are collected into a single "batch". This batch is then drawn with one
-/// (or very few) commands, reducing CPU overhead and often improving GPU efficiency.
+/// Batching is a fundamental optimization in graphics
+/// programming. Instead of issuing one draw call per object
+/// (sprite, shape, text glyph, ...), objects are collected into
+/// a single batch and drawn with one (or very few) GPU
+/// submissions. This eliminates the per-call CPU overhead and
+/// usually translates to better GPU utilization.
 ///
-/// SFML provides two main types of drawable batches:
+/// VRSFML provides two batch types:
 ///
-/// - `sf::CPUDrawableBatch`: Stores vertex data in CPU memory. Data is typically
-///   uploaded to the GPU when the batch is drawn. Simpler to manage for
-///   highly dynamic data. This is the only supported batch type for OpenGL ES.
+/// \li `sf::CPUDrawableBatch` -- vertex data lives in CPU memory.
+///     Uploaded to the GPU at draw time. Easier to reason about,
+///     no special platform requirements, recommended for highly
+///     dynamic content. This is the only supported batch type on
+///     OpenGL ES.
 ///
-/// - `sf::PersistentGPUDrawableBatch`: Stores vertex data in persistently mapped
-///   GPU memory. Can be faster for large or less frequently updated batches
-///   as it allows direct modification of GPU data.
+/// \li `sf::PersistentGPUDrawableBatch` -- vertex data lives in a
+///     GPU buffer that is persistently mapped to the application's
+///     address space. Avoids per-frame uploads at the cost of
+///     trickier synchronization. Available where
+///     `GL_ARB_buffer_storage` is supported.
 ///
-/// Both batch types inherit from `sf::Transformable`, allowing the entire
-/// group of batched objects to be transformed as a single unit.
+/// Both batch types inherit from `sf::Transformable`, so the
+/// **entire** group of batched drawables can be translated,
+/// rotated, scaled, and re-anchored as a single unit.
 ///
-/// Usage example (using `sf::CPUDrawableBatch`):
+/// Usage example with `sf::CPUDrawableBatch`:
 /// \code
 /// sf::CPUDrawableBatch batch;
 ///
-/// sf::CircleShape circle(50.f);
-/// circle.position = {100, 100};
-/// circle.setFillColor(sf::Color::Green);
+/// // Add several drawables to the batch.
+/// const sf::CircleShape circle{{
+///     .position  = {100.f, 100.f},
+///     .fillColor = sf::Color::Green,
+///     .radius    = 50.f,
+/// }};
 /// batch.add(circle);
 ///
-/// // The batch itself can be transformed
-/// batch.move({5, 5});
-/// batch.setRotation(10); // Rotates all contained items around the batch's origin
+/// batch.add(sf::Sprite{.textureRect = texture.getRect()});
+/// batch.add(font, sf::TextData{.string = "Hello", .characterSize = 32u});
 ///
-/// // Draw the entire batch with one call to sf::RenderTarget
+/// // The batch can be transformed as a whole, since it inherits from sf::Transformable.
+/// batch.position = {5.f, 5.f};
+/// batch.rotation = sf::degrees(10.f);
+///
+/// // Draw the entire batch with one call.
 /// window.draw(batch);
 /// \endcode
 ///
-/// Choose the batch type based on your specific needs for update frequency
-/// and performance characteristics.
+/// Use the batch type that matches your update frequency and
+/// platform constraints.
 ///
-/// \see sf::CPUDrawableBatch, sf::PersistentGPUDrawableBatch
+/// \see `sf::CPUDrawableBatch`, `sf::PersistentGPUDrawableBatch`,
+///      `sf::Transformable`
 ///
 ////////////////////////////////////////////////////////////

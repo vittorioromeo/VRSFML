@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Export.hpp"
 
-#include "SFML/Window/ContextSettings.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
@@ -22,27 +22,36 @@ namespace sf::priv
 {
 class EglContext;
 class GlContext;
-class JoystickManager;
-class SensorManager;
-class SDLWindowImpl;
-class SDLGlContext;
 class GLContextSaver;
 class GLSharedContextGuard;
+class JoystickManager;
+class SDLGlContext;
+class SDLLayer;
+class SDLWindowImpl;
+class SensorManager;
+
 } // namespace sf::priv
 
 
 namespace sf
 {
+class Cursor;
 class GraphicsContext;
 class RenderTarget;
 class RenderTexture;
 class Shader;
 class Texture;
 class VertexBuffer;
+class VideoModeUtils;
 class Window;
+struct Clipboard;
 struct ContextSettings;
+struct GLVAOGroup;
 struct Joystick;
+struct Keyboard;
+struct Mouse;
 struct Sensor;
+struct Touch;
 struct WindowContextImpl;
 using GlFunctionPointer = void (*)();
 } // namespace sf
@@ -53,14 +62,41 @@ struct TestContext;
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Process-wide window subsystem context
+///
+/// `WindowContext` is the central object that initializes
+/// the underlying SDL/OS layer used by every other type in
+/// the Window module. It must be created (via `create()`)
+/// before any window, cursor, joystick, sensor, etc. is
+/// accessed, and must outlive all of them.
+///
+/// Only one `WindowContext` can exist at a time. The simplest
+/// pattern is to construct one in `main()` and let it live
+/// until the program ends:
+/// \code
+/// int main()
+/// {
+///     auto windowContext = sf::WindowContext::create().value();
+///     // ... create windows, run main loop ...
+/// }
+/// \endcode
+///
+/// Most of the methods on `WindowContext` are private and
+/// only accessible to friend classes inside SFML; user code
+/// will typically only call `create()` and `isInstalled()`.
 ///
 ////////////////////////////////////////////////////////////
 class [[nodiscard]] SFML_WINDOW_API WindowContext
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Initialize the window subsystem and return a context
+    ///
+    /// Boots the underlying SDL layer (and any related OS
+    /// resources). Returns `base::nullOpt` if initialization
+    /// fails.
+    ///
+    /// \return The newly installed window context on success, `base::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<WindowContext> create();
@@ -68,14 +104,20 @@ public:
     ////////////////////////////////////////////////////////////
     /// \private
     ///
-    /// \brief TODO P1: docs
+    /// \brief Internal pass-key constructor
+    ///
+    /// Used by `create()` and by `sf::GraphicsContext` to
+    /// construct the singleton instance. Not callable from
+    /// user code.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit WindowContext(base::PassKey<WindowContext>&&);
     [[nodiscard]] explicit WindowContext(base::PassKey<GraphicsContext>&&);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Destructor
+    ///
+    /// Tears down the window subsystem.
     ///
     ////////////////////////////////////////////////////////////
     ~WindowContext();
@@ -85,7 +127,7 @@ public:
     WindowContext& operator=(const WindowContext&) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
     WindowContext(WindowContext&&) noexcept;
@@ -94,27 +136,33 @@ public:
     WindowContext& operator=(WindowContext&&) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Check if the window context is installed
+    /// \brief Check whether a window context is currently installed
     ///
-    /// Installation can be done by calling `create` early in
-    /// your program (e.g. in `main`).
+    /// Installation happens by constructing a `WindowContext`
+    /// (typically through `create()`).
+    ///
+    /// \return `true` if a window context is currently alive, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static bool isInstalled();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the currently active context's ID
+    /// \brief Get the currently active OpenGL context's ID
     ///
-    /// The context ID is used to identify contexts when
-    /// managing unshareable OpenGL resources.
+    /// The context ID is used to identify OpenGL contexts when
+    /// managing unshareable OpenGL resources (e.g. VAOs and
+    /// FBOs that cannot be shared between contexts).
     ///
-    /// \return The active context's ID or 0 if no context is currently active
+    /// \return The active context's ID, or `0` if no context is currently active
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static unsigned int getActiveThreadLocalGlContextId();
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Check whether a thread-local OpenGL context is currently active
+    ///
+    /// \return `true` if an OpenGL context is currently active on the
+    ///         calling thread, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static bool hasActiveThreadLocalGlContext();
@@ -128,19 +176,26 @@ private:
     friend priv::GlContext;  // for `onGlContextDestroyed` and `getActiveThreadLocalGlContextPtr`
     friend priv::GLContextSaver; // for `setActiveThreadLocalGlContext`, `getActiveThreadLocalGlContextPtr`, and `disableSharedGlContext`
     friend priv::GLSharedContextGuard; // for `setActiveThreadLocalGlContextToSharedContext`
-    friend priv::SDLGlContext;         // for `cleanupUnsharedFrameBuffers`
-    friend priv::SDLWindowImpl;        // for `getJoystickManager`
-
-    friend GraphicsContext; // for `setActiveThreadLocalGlContext`
-    friend Joystick;        // for `getJoystickManager`
-    friend RenderTarget;    // for `getActiveThreadLocalGlContextId`
-    friend RenderTexture;   // for `[un]registerUnsharedFrameBuffer`
-    friend Sensor;          // for `getSensorManager`
-    friend Shader;          // for `hasActiveThreadLocalGlContext`
-    friend TestContext;     // for `createGlContext`
-    friend Texture;         // for `hasActiveThreadLocalGlContext`
-    friend VertexBuffer;    // for `hasActiveThreadLocalGlContext`
-    friend Window;          // for `createGlContext`
+    friend priv::SDLGlContext;         // for `cleanupUnsharedFrameBuffers` and `getSDLLayer`
+    friend priv::JoystickManager;      // for `getSDLLayer`
+    friend priv::SDLWindowImpl;        // for `getJoystickManager` and `getSDLLayer`
+    friend Clipboard;                  // for `getSDLLayer`
+    friend Cursor;                     // for `getSDLLayer`
+    friend GLVAOGroup;                 // for `[un]registerUnsharedVAO`
+    friend GraphicsContext;            // for `setActiveThreadLocalGlContext`
+    friend Joystick;                   // for `getJoystickManager`
+    friend Keyboard;                   // for `getSDLLayer`
+    friend Mouse;                      // for `getSDLLayer`
+    friend RenderTarget;               // for `getActiveThreadLocalGlContextId`
+    friend RenderTexture;              // for `[un]registerUnsharedFrameBuffer`
+    friend Sensor;                     // for `getSensorManager`
+    friend Shader;                     // for `hasActiveThreadLocalGlContext`
+    friend TestContext;                // for `createGlContext`
+    friend Texture;                    // for `hasActiveThreadLocalGlContext`
+    friend Touch;                      // for `getSDLLayer`
+    friend VertexBuffer;               // for `hasActiveThreadLocalGlContext`
+    friend VideoModeUtils;             // for `getSDLLayer`
+    friend Window;                     // for `createGlContext`
     friend WindowContextImpl;
 
     ////////////////////////////////////////////////////////////
@@ -192,37 +247,46 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Register a framebuffer object that cannot be shared between contexts
+    ///
+    /// Used by `sf::RenderTexture` to track FBOs that need to
+    /// be torn down when the owning OpenGL context is destroyed.
     ///
     ////////////////////////////////////////////////////////////
     static void registerUnsharedFrameBuffer(unsigned int glContextId, unsigned int frameBufferId);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Unregister a previously registered unshared FBO
     ///
     ////////////////////////////////////////////////////////////
     static void unregisterUnsharedFrameBuffer(unsigned int glContextId, unsigned int frameBufferId);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Register a VAO that cannot be shared between contexts
+    ///
+    /// Used by `sf::GLVAOGroup` to track VAOs that need to be
+    /// torn down when the owning OpenGL context is destroyed.
     ///
     ////////////////////////////////////////////////////////////
     static void registerUnsharedVAO(unsigned int glContextId, unsigned int vaoId);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Unregister a previously registered unshared VAO
     ///
     ////////////////////////////////////////////////////////////
     static void unregisterUnsharedVAO(unsigned int glContextId, unsigned int vaoId);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Notify the context tracker that an OpenGL context is being destroyed
+    ///
+    /// Cleans up any unshared FBOs / VAOs registered against
+    /// the given context.
     ///
     ////////////////////////////////////////////////////////////
     static void onGlContextDestroyed(priv::GlContext& glContext);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Check whether the given OpenGL context is the global shared context
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static bool isSharedContext(priv::GlContext& glContext);
@@ -251,25 +315,29 @@ private:
     [[nodiscard]] static GlFunctionPointer getFunction(const char* name);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Activate or deactivate an OpenGL context on the current thread
+    ///
+    /// \return `true` on success, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static bool setActiveThreadLocalGlContext(priv::GlContext& glContext, bool active);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Make the global shared OpenGL context active on the current thread
+    ///
+    /// \return `true` on success, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static bool setActiveThreadLocalGlContextToSharedContext();
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Check whether the currently active GL context is the shared context
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static bool isActiveGlContextSharedContext();
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Deactivate the shared OpenGL context on the current thread, if any
     ///
     ////////////////////////////////////////////////////////////
     static void disableSharedGlContext();
@@ -293,6 +361,12 @@ private:
     [[nodiscard]] static priv::GlContext& getSharedGlContext();
 
     ////////////////////////////////////////////////////////////
+    /// \brief Get the SDL layer instance
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static priv::SDLLayer& getSDLLayer();
+
+    ////////////////////////////////////////////////////////////
     /// \brief Get the "global" joystick manager
     ///
     ////////////////////////////////////////////////////////////
@@ -303,6 +377,53 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static priv::SensorManager& getSensorManager();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get a reusable scratch framebuffer for read operations
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static unsigned int getTransferScratchReadFramebuffer();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get a reusable scratch framebuffer for draw operations
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static unsigned int getTransferScratchDrawFramebuffer();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get a reusable scratch framebuffer for intermediate flipped copies
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static unsigned int getTransferScratchFlipFramebuffer();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Ensure a scratch texture exists for intermediate flipped copies
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static unsigned int ensureTransferScratchFlipTexture(Vec2u size, bool sRgb);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Copy framebuffer contents with vertical flipping
+    ///
+    /// Copies source framebuffer contents to destination while vertically flipping
+    /// the image. On OpenGL ES this uses a reusable intermediate texture/FBO pair,
+    /// while on desktop OpenGL this is done via a direct blit with inverted coordinates.
+    ///
+    /// \param sRgb   Whether the scratch texture should use sRGB (only used for OpenGL ES)
+    /// \param size   Dimensions of the region to copy
+    /// \param srcFBO Source framebuffer ID
+    /// \param dstFBO Destination framebuffer ID
+    /// \param srcPos Source region starting position (default: 0,0)
+    /// \param dstPos Destination region starting position (default: 0,0)
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool copyFlippedFramebuffer(
+        bool         sRgb,
+        Vec2u        size,
+        unsigned int srcFBO,
+        unsigned int dstFBO,
+        Vec2u        srcPos = {0u, 0u},
+        Vec2u        dstPos = {0u, 0u});
 };
 
 } // namespace sf
@@ -312,6 +433,19 @@ private:
 /// \class sf::WindowContext
 /// \ingroup window
 ///
-/// TODO P1: docs
+/// `sf::WindowContext` is the lifetime root of VRSFML's
+/// window subsystem. Constructing one (via `create()`)
+/// initializes SDL and any OS-level resources used by
+/// windows, cursors, joysticks, sensors, the clipboard, and
+/// the OpenGL context tracker. Destroying it tears all of
+/// that down.
+///
+/// Only one `WindowContext` may exist at a time, and every
+/// other Window-module API requires that one is alive when
+/// it is called. The recommended pattern is to construct a
+/// `WindowContext` early in `main()` and let it live until
+/// the end of the program.
+///
+/// \see `sf::Window`, `sf::WindowBase`, `sf::GraphicsContext`
 ///
 ////////////////////////////////////////////////////////////

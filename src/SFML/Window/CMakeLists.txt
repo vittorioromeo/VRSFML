@@ -37,7 +37,7 @@ else()
     CPMAddPackage(
         NAME sdl
         GITHUB_REPOSITORY vittorioromeo/SDL
-        GIT_TAG 46cbee6f6858f0cd47e07c6e278f34c9e05228d5
+        GIT_TAG 401ed0a1864e0bb8833ce82a9989ce8624264701
         SYSTEM TRUE
     )
 endif()
@@ -65,45 +65,6 @@ if(SFML_OS_WINDOWS)
     set(PLATFORM_SRC
         ${SRCROOT}/Win32/Utils.hpp
         ${SRCROOT}/Win32/Win32ImplUnity.cpp
-    )
-elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
-    set(PLATFORM_SRC
-        ${SRCROOT}/Unix/Utils.hpp
-    )
-elseif(SFML_OS_MACOS)
-    enable_language(OBJC OBJCXX)
-    set(PLATFORM_SRC
-        ${SRCROOT}/macOS/cg_sf_conversion.hpp
-        ${SRCROOT}/macOS/cg_sf_conversion.mm
-        ${SRCROOT}/macOS/HIDInputManager.hpp
-        ${SRCROOT}/macOS/HIDInputManager.mm
-        ${SRCROOT}/macOS/NSImage+raw.h
-        ${SRCROOT}/macOS/NSImage+raw.mm
-        ${SRCROOT}/macOS/Scaling.h
-        ${SRCROOT}/macOS/SensorImpl.hpp
-        ${SRCROOT}/macOS/SFApplication.h
-        ${SRCROOT}/macOS/SFApplication.m
-        ${SRCROOT}/macOS/SFApplicationDelegate.h
-        ${SRCROOT}/macOS/SFApplicationDelegate.m
-        ${SRCROOT}/macOS/SFKeyboardModifiersHelper.h
-        ${SRCROOT}/macOS/SFKeyboardModifiersHelper.mm
-        ${SRCROOT}/macOS/SFOpenGLView.h
-        ${SRCROOT}/macOS/SFOpenGLView.mm
-        ${SRCROOT}/macOS/SFOpenGLView+keyboard.mm
-        ${SRCROOT}/macOS/SFOpenGLView+keyboard_priv.h
-        ${SRCROOT}/macOS/SFOpenGLView+mouse.mm
-        ${SRCROOT}/macOS/SFOpenGLView+mouse_priv.h
-        ${SRCROOT}/macOS/SFSilentResponder.h
-        ${SRCROOT}/macOS/SFSilentResponder.m
-        ${SRCROOT}/macOS/SFWindow.h
-        ${SRCROOT}/macOS/SFWindow.m
-        ${SRCROOT}/macOS/SFWindowController.h
-        ${SRCROOT}/macOS/SFWindowController.mm
-        ${SRCROOT}/macOS/SFViewController.h
-        ${SRCROOT}/macOS/SFViewController.mm
-        ${SRCROOT}/macOS/WindowImplDelegateProtocol.h
-        ${SRCROOT}/macOS/AutoreleasePoolWrapper.hpp
-        ${SRCROOT}/macOS/AutoreleasePoolWrapper.mm
     )
 elseif(SFML_OS_IOS)
     enable_language(OBJCXX)
@@ -138,9 +99,6 @@ if(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
         find_package(DRM REQUIRED)
         find_package(GBM REQUIRED)
         target_link_libraries(sfml-window PRIVATE DRM::DRM GBM::GBM)
-    else()
-        find_package(X11 REQUIRED COMPONENTS Xrandr Xcursor Xi)
-        target_link_libraries(sfml-window PRIVATE X11::X11 X11::Xrandr X11::Xcursor X11::Xi)
     endif()
 endif()
 

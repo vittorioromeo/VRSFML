@@ -15,24 +15,26 @@ class GlContext;
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-/// \brief Automatic wrapper for saving and restoring the current GL context
+/// \brief RAII guard that saves and restores the active thread-local GL context
+///
+/// On construction, captures a pointer to the GL context that is
+/// currently active on the calling thread (asserts that one exists).
+/// On destruction, re-activates that context, restoring whatever state
+/// existed before code in between possibly switched to a different
+/// context (for example via `GLSharedContextGuard`).
 ///
 ////////////////////////////////////////////////////////////
 class GLContextSaver
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// The current GL context is saved.
+    /// \brief Default constructor: snapshot the active GL context pointer
     ///
     ////////////////////////////////////////////////////////////
     GLContextSaver();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Destructor
-    ///
-    /// The previous GL context is restored.
+    /// \brief Destructor: re-activate the previously saved GL context
     ///
     ////////////////////////////////////////////////////////////
     ~GLContextSaver();
@@ -49,7 +51,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    priv::GlContext* m_glContext; //!< GL context to restore
+    priv::GlContext* m_glContext; //!< Saved active context, restored on destruction
 };
 
 } // namespace sf::priv

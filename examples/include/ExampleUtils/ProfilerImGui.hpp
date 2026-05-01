@@ -9,14 +9,14 @@
 #include "ExampleUtils/Profiler.hpp"
 #include "ExampleUtils/Sampler.hpp"
 
+#include "SFML/ImGui/IncludeImGui.hpp"
+
 #include "SFML/Base/Algorithm/Sort.hpp"
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Span.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#define IMGUI_DEFINE_MATH_OPERATORS
-#include <imgui.h>
 
 
 namespace sfex::priv
@@ -105,10 +105,16 @@ inline void renderNode(const SamplerVec<sf::base::U64>&             timeSamplers
     }
 
     constexpr const char spaces[33] = "                                ";
-    const char*          spacesPtr  = spaces + sizeof(spaces) - 1u - (info.depth * 2); // points to the null terminator
+
+    SFML_BASE_ASSERT(info.depth < 32); // We have 32 spaces, and we indent by 1 space per level, so max depth is 31 (0-based)
+    const char* spacesPtr = spaces + sizeof(spaces) - 1u - (info.depth * 2); // points to the null terminator
 
     // We use the node's ID as a unique identifier for ImGui
-    const bool isNodeOpen = ImGui::TreeNodeEx(reinterpret_cast<void*>(nodeId), nodeFlags, "%s", info.label.data());
+    const bool isNodeOpen = ImGui::TreeNodeEx(reinterpret_cast<void*>(nodeId),
+                                              nodeFlags,
+                                              "%.*s",
+                                              static_cast<int>(info.label.size()),
+                                              info.label.data());
 
     //
     // Column 2: time
@@ -133,7 +139,8 @@ inline void renderNode(const SamplerVec<sf::base::U64>&             timeSamplers
     ImGui::TableSetColumnIndex(3);
 
     ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
-    ImGui::Text("%s:%d", info.file.substrByPosLen(info.file.rfind('/') + 1u).data(), info.line);
+    const auto fileTail = info.file.substrByPosLen(info.file.rfind('/') + 1u);
+    ImGui::Text("%.*s:%d", static_cast<int>(fileTail.size()), fileTail.data(), info.line);
     ImGui::PopStyleColor();
 
     // Recurse into children if the node is open and has children

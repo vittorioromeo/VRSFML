@@ -9,11 +9,12 @@
 
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
-#include "SFML/Graphics/RenderTextureSettings.hpp"
+#include "SFML/Graphics/RenderTextureCreateSettings.hpp"
 #include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/View.hpp"
+#include "SFML/Graphics/TextureWrapMode.hpp"
 
-#include "SFML/GLUtils/CopyFramebuffer.hpp"
+#include "SFML/Window/WindowContext.hpp"
+
 #include "SFML/GLUtils/GLCheck.hpp"
 #include "SFML/GLUtils/GLRenderBufferObject.hpp"
 #include "SFML/GLUtils/GLUniqueResource.hpp"
@@ -21,11 +22,13 @@
 #include "SFML/GLUtils/Glad.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/AnkerlUnorderedDense.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
 
 
 namespace
@@ -90,6 +93,7 @@ void linkStencilDepthBuffer(const sf::base::Optional<sf::GLRenderBufferObject>& 
     return glCheck(glCheckFramebufferStatus(GL_FRAMEBUFFER)) == GL_FRAMEBUFFER_COMPLETE;
 }
 
+
 } // namespace
 
 
@@ -100,8 +104,8 @@ struct RenderTexture::Impl
 {
     using FramebufferIdMap = ankerl::unordered_dense::map<unsigned int, unsigned int>;
 
-    Texture texture;    //!< Target texture to draw on
-    Texture tmpTexture; //!< Temporary texture used for Y-axis flipping
+    Texture                 texture;    //!< Target texture to draw on
+    base::Optional<Texture> tmpTexture; //!< Temporary texture used for Y-axis flipping fallback or non multisample FBOs
 
     FramebufferIdMap framebuffers;    //!< Per-context OpenGL FBOs
     FramebufferIdMap auxFramebuffers; //!< Per-context auxiliary OpenGL FBOs (either multisample or temp for Y-flipping)
@@ -115,9 +119,7 @@ struct RenderTexture::Impl
     bool sRgb{};        //!< Must encode drawn pixels into sRGB color space
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Impl(Texture&& theTexture) :
-        texture(SFML_BASE_MOVE(theTexture)),
-        tmpTexture(Texture::create(texture.getSize(), {.sRgb = texture.isSrgb(), .smooth = texture.isSmooth()}).value())
+    [[nodiscard]] explicit Impl(Texture&& theTexture) : texture(SFML_BASE_MOVE(theTexture))
     {
     }
 
@@ -136,23 +138,56 @@ struct RenderTexture::Impl
         colorBuffer.reset();
 
         // Unregister FBOs with the contexts if they haven't already been destroyed
-        {
-            for (const auto& [glContextId, framebufferId] : framebuffers)
-                GraphicsContext::unregisterUnsharedFrameBuffer(glContextId, framebufferId);
+        for (const auto& [glContextId, framebufferId] : framebuffers)
+            GraphicsContext::unregisterUnsharedFrameBuffer(glContextId, framebufferId);
 
-            framebuffers.clear();
-        }
+        for (const auto& [glContextId, auxFramebufferId] : auxFramebuffers)
+            GraphicsContext::unregisterUnsharedFrameBuffer(glContextId, auxFramebufferId);
 
-        {
-            for (const auto& [glContextId, auxFramebufferId] : auxFramebuffers)
-                GraphicsContext::unregisterUnsharedFrameBuffer(glContextId, auxFramebufferId);
-
-            auxFramebuffers.clear();
-        }
+        framebuffers.clear();
+        auxFramebuffers.clear();
     }
 
 
 private:
+    ////////////////////////////////////////////////////////////
+    static void replaceFramebuffer(const unsigned int glContextId,
+                                   FramebufferIdMap&  framebuffersByContext,
+                                   const unsigned int framebufferId)
+    {
+        if (auto* it = framebuffersByContext.find(glContextId); it != framebuffersByContext.end())
+        {
+            if (it->second == framebufferId)
+                return;
+
+            GraphicsContext::unregisterUnsharedFrameBuffer(glContextId, it->second);
+            it->second = framebufferId;
+        }
+        else
+        {
+            framebuffersByContext.emplace(glContextId, framebufferId);
+        }
+
+        GraphicsContext::registerUnsharedFrameBuffer(glContextId, framebufferId);
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] Texture* ensureTmpTexture()
+    {
+        const auto size = texture.getSize();
+
+        if (!tmpTexture.hasValue() || tmpTexture->getSize() != size || tmpTexture->isSrgb() != texture.isSrgb())
+        {
+            tmpTexture = Texture::create(size, {.sRgb = texture.isSrgb(), .smooth = texture.isSmooth()});
+            return tmpTexture.asPtr();
+        }
+
+        if (tmpTexture->isSmooth() != texture.isSmooth())
+            tmpTexture->setSmooth(texture.isSmooth());
+
+        return tmpTexture.asPtr();
+    }
+
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool createFail(const char* what)
     {
@@ -176,8 +211,7 @@ private:
 
         // Register the FBO in our map and with the current context so it is automatically destroyed
         const unsigned int glContextId = GraphicsContext::getActiveThreadLocalGlContextId();
-        auxFramebuffers.try_emplace(glContextId, auxFramebufferId);
-        GraphicsContext::registerUnsharedFrameBuffer(glContextId, auxFramebufferId);
+        replaceFramebuffer(glContextId, auxFramebuffers, auxFramebufferId);
 
         return true;
     }
@@ -209,9 +243,16 @@ private:
         if (!tempFramebufferId)
             return createFail("failed to create the temp framebuffer object");
 
+        Texture* const currentTmpTexture = ensureTmpTexture();
+        if (currentTmpTexture == nullptr)
+        {
+            glCheck(glDeleteFramebuffers(1, &tempFramebufferId));
+            return createFail("failed to create the aux FBO texture");
+        }
+
         // Link the texture to the framebuffer
         glCheck(
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tmpTexture.getNativeHandle(), 0));
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, currentTmpTexture->getNativeHandle(), 0));
 
         return completeAuxFramebufferCreation(tempFramebufferId);
     }
@@ -232,19 +273,21 @@ private:
             linkStencilDepthBuffer(stencilDepthBuffer, stencil, depth);
 
         if (!isBoundFramebufferComplete())
+        {
+            glCheck(glDeleteFramebuffers(1, &framebufferId));
             return createFail("failed to link the target texture to the framebuffer");
+        }
 
         // Register the FBO in our map and with the current context so it is automatically destroyed
         const unsigned int glContextId = GraphicsContext::getActiveThreadLocalGlContextId();
-        framebuffers.try_emplace(glContextId, framebufferId);
-        GraphicsContext::registerUnsharedFrameBuffer(glContextId, framebufferId);
+        replaceFramebuffer(glContextId, framebuffers, framebufferId);
 
         return multisample ? createAuxMultisampleFramebuffer() : createAuxTempFramebuffer();
     }
 
 public:
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool create(const RenderTextureSettings& rtSettings)
+    [[nodiscard]] bool create(const RenderTextureCreateSettings& rtCreateSettings)
     {
         // OpenGL ES requires that all attachments have identical sizes
 
@@ -261,11 +304,14 @@ public:
 
         const auto size = texture.getSize();
 
-        sRgb = rtSettings.sRgbCapable;
+        sRgb = rtCreateSettings.sRgbCapable;
 
         // Check if the requested anti-aliasing level is supported
-        if (const auto samples = getMaximumAntiAliasingLevel(); rtSettings.antiAliasingLevel > samples)
-            return fail("unsupported anti-aliasing level ", rtSettings.antiAliasingLevel, ", maximum supported is ", samples);
+        if (const auto samples = getMaximumAntiAliasingLevel(); rtCreateSettings.antiAliasingLevel > samples)
+            return fail("unsupported anti-aliasing level ",
+                        rtCreateSettings.antiAliasingLevel,
+                        ", maximum supported is ",
+                        samples);
 
         const auto bindRenderbufferAndSetFormat =
             [&size](GLRenderBufferObject& rbo, const unsigned int antiAliasingLevel, const GLenum internalFormat)
@@ -279,9 +325,9 @@ public:
                                                      static_cast<GLsizei>(size.y)));
         };
 
-        depth       = rtSettings.depthBits != 0u;
-        stencil     = rtSettings.stencilBits != 0u;
-        multisample = rtSettings.antiAliasingLevel != 0u;
+        depth       = rtCreateSettings.depthBits != 0u;
+        stencil     = rtCreateSettings.stencilBits != 0u;
+        multisample = rtCreateSettings.antiAliasingLevel != 0u;
 
         // Create the (possibly multisample) depth/stencil buffer if requested
         if (stencil || depth)
@@ -290,7 +336,9 @@ public:
             if (!stencilDepthBuffer.hasValue())
                 return fail("failed to create the attached ", getBufferTypeStr(multisample, stencil, depth));
 
-            bindRenderbufferAndSetFormat(*stencilDepthBuffer, rtSettings.antiAliasingLevel, getGLInternalFormat(stencil, depth));
+            bindRenderbufferAndSetFormat(*stencilDepthBuffer,
+                                         rtCreateSettings.antiAliasingLevel,
+                                         getGLInternalFormat(stencil, depth));
         }
 
         // Create the multisample color buffer if needed
@@ -300,7 +348,7 @@ public:
             if (!colorBuffer.hasValue())
                 return fail("failed to create the attached multisample color buffer");
 
-            bindRenderbufferAndSetFormat(*colorBuffer, rtSettings.antiAliasingLevel, sRgb ? GL_SRGB8_ALPHA8 : GL_RGBA8);
+            bindRenderbufferAndSetFormat(*colorBuffer, rtCreateSettings.antiAliasingLevel, sRgb ? GL_SRGB8_ALPHA8 : GL_RGBA8);
         }
 
         // We can't create an FBO now if there is no active context
@@ -343,7 +391,6 @@ public:
             glCheck(glBindFramebuffer(GL_FRAMEBUFFER, it->second));
             return true;
         }
-
         return createFramebuffer();
     }
 
@@ -374,7 +421,7 @@ public:
         const priv::ScissorDisableGuard scissorDisableGuard;
 
         // Blit from the auxiliary (multisample or temp) FBO to the main FBO, flipping Y axis
-        if (!priv::copyFlippedFramebuffer(tmpTexture.getNativeHandle(), size, auxFramebufferIt->second, framebufferIt->second))
+        if (!WindowContext::copyFlippedFramebuffer(texture.isSrgb(), size, auxFramebufferIt->second, framebufferIt->second))
             priv::err() << "Error flipping render texture during FBO copy";
     }
 };
@@ -414,12 +461,12 @@ base::Optional<RenderTexture> RenderTexture::create(const Vec2u size)
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<RenderTexture> RenderTexture::create(const Vec2u size, const RenderTextureSettings& renderTextureSettings)
+base::Optional<RenderTexture> RenderTexture::create(const Vec2u size, const RenderTextureCreateSettings& rtCreateSettings)
 {
     base::Optional<RenderTexture> result; // Use a single local variable for NRVO
 
     // Create the texture
-    auto texture = sf::Texture::create(size, {.sRgb = renderTextureSettings.sRgbCapable});
+    auto texture = sf::Texture::create(size, {.sRgb = rtCreateSettings.sRgbCapable});
     if (!texture.hasValue())
     {
         priv::err() << "Impossible to create render texture (failed to create the target texture)";
@@ -432,11 +479,11 @@ base::Optional<RenderTexture> RenderTexture::create(const Vec2u size, const Rend
     // Mark the texture as being a framebuffer object attachment
     result->m_impl->texture.m_fboAttachment = true;
 
-    // We disable smoothing by default for render textures
-    result->setSmooth(false);
+    result->setSmooth(rtCreateSettings.smooth);
+    result->setWrapMode(rtCreateSettings.wrapMode);
 
     // Initialize the render texture
-    if (!result->m_impl->create(renderTextureSettings))
+    if (!result->m_impl->create(rtCreateSettings))
     {
         priv::err() << "Impossible to create render texture (failed to create render texture renderTextureImpl)";
 
@@ -485,9 +532,9 @@ TextureWrapMode RenderTexture::getWrapMode() const
 
 
 ////////////////////////////////////////////////////////////
-bool RenderTexture::generateMipmap()
+void RenderTexture::generateMipmap()
 {
-    return m_impl->texture.generateMipmap();
+    m_impl->texture.generateMipmap();
 }
 
 
@@ -544,9 +591,7 @@ const Texture& RenderTexture::getTexture() const
 
 
 ////////////////////////////////////////////////////////////
-RenderTexture::RenderTexture(base::PassKey<RenderTexture>&&, Texture&& texture) :
-    RenderTarget(View::fromRect({{0.f, 0.f}, texture.getSize().toVec2f()})),
-    m_impl(SFML_BASE_MOVE(texture))
+RenderTexture::RenderTexture(base::PassKey<RenderTexture>&&, Texture&& texture) : m_impl(SFML_BASE_MOVE(texture))
 {
 }
 

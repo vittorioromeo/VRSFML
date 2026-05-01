@@ -8,10 +8,16 @@
 #include "SFML/Window/Cursor.hpp"
 
 #include "SFML/Window/SDLLayer.hpp"
+#include "SFML/Window/WindowContext.hpp"
 
 #include "SFML/System/Err.hpp"
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
+
+#include <SDL3/SDL_error.h>
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_surface.h>
 
@@ -21,7 +27,7 @@ namespace sf
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool Cursor::reloadFromPixels(const base::U8* pixels, const Vec2u size, const Vec2u hotspot)
 {
-    auto surface = priv::getSDLLayerSingleton().createSurfaceFromPixels(size, pixels);
+    auto surface = WindowContext::getSDLLayer().createSurfaceFromPixels(pixels, size);
     if (surface == nullptr)
     {
         priv::err() << "Failed to reload cursor from pixels";
@@ -64,7 +70,6 @@ namespace sf
 ////////////////////////////////////////////////////////////
 Cursor::Cursor(base::PassKey<Cursor>&&) : m_sdlCursor{nullptr}
 {
-    (void)priv::getSDLLayerSingleton(); // TODO P0:
 }
 
 
@@ -108,13 +113,15 @@ base::Optional<Cursor> Cursor::loadFromPixels(const base::U8* pixels, Vec2u size
         return cursor; // Empty optional
 
     cursor.emplace(base::PassKey<Cursor>{});
+
     if (!cursor->reloadFromPixels(pixels, size, hotspot))
     {
         priv::err() << "Failed to load cursor from pixels (invalid arguments)";
+
+        cursor.reset();
         return cursor; // Empty optional
     }
 
-    // Error message generated in called function.
     return cursor;
 }
 

@@ -7,19 +7,26 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Image.hpp"
 
+#include "SFML/Graphics/Color.hpp"
+
 #include "SFML/System/Err.hpp"
 #include "SFML/System/IO.hpp"
 #include "SFML/System/InputStream.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/PathUtils.hpp"
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
+#include "SFML/System/Rect2.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/Memcpy.hpp"
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Swap.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
 
@@ -29,6 +36,14 @@
 #endif
 
 #define QOI_IMPLEMENTATION
+
+// Avoid conflicts when static linking:
+// See https://github.com/SFML/SFML/commit/548cdb9c394da1b08e563a1d7f6fa6225a6f3ece
+#define qoi_decode sf_qoi_decode
+#define qoi_encode sf_qoi_encode
+#define qoi_read   sf_qoi_read
+#define qoi_write  sf_qoi_write
+
 #include <qoi.h>
 
 #define STB_IMAGE_STATIC
@@ -44,6 +59,8 @@
 #include <stb_image_write.h>
 
 #pragma GCC diagnostic pop
+
+#include <cstdlib>
 
 
 namespace

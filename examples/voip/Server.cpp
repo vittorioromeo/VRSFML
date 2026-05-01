@@ -19,6 +19,7 @@
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp" // IWYU pragma: keep
@@ -31,21 +32,60 @@ constexpr sf::base::U8 serverAudioData   = 1;
 constexpr sf::base::U8 serverEndOfStream = 2;
 
 
+namespace
+{
+////////////////////////////////////////////////////////////
+/// State shared between the audio thread (`onGetData`/`onSeek`)
+/// and the network thread (`receiveLoop`). All heap-owned
+/// members live here; because the `SoundStream` template
+/// guarantees the state outlives the audio callback, there is
+/// no destructor-order UAF hazard.
+////////////////////////////////////////////////////////////
+struct NetworkState
+{
+    mutable std::recursive_mutex    mutex;
+    sf::base::Vector<sf::base::I16> samples;
+    sf::base::SizeT                 offset{};
+    bool                            hasFinished{};
+
+    ////////////////////////////////////////////////////////////
+    bool onGetData(sf::base::Vector<sf::base::I16>& outBuffer)
+    {
+        if ((offset >= samples.size()) && hasFinished)
+            return false;
+
+        // No new data has arrived since last update: wait until we get some
+        while ((offset >= samples.size()) && !hasFinished)
+            sf::sleep(sf::milliseconds(10));
+
+        {
+            const std::lock_guard lock(mutex);
+            outBuffer.assignRange(samples.begin() + static_cast<sf::base::Vector<sf::base::I16>::difference_type>(offset),
+                                  samples.end());
+        }
+
+        offset += outBuffer.size();
+        return true;
+    }
+
+    ////////////////////////////////////////////////////////////
+    void onSeek(sf::Time timeOffset)
+    {
+        offset = static_cast<sf::base::SizeT>(timeOffset.asMilliseconds()) * 44'100 * 1 / 1000;
+    }
+};
+
+
 ////////////////////////////////////////////////////////////
 /// Customized sound stream for acquiring audio data
 /// from the network
 ////////////////////////////////////////////////////////////
-class NetworkAudioStream : public sf::SoundStream
+class NetworkAudioStream : public sf::SoundStream<NetworkState>
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// Default constructor
-    ///
-    ////////////////////////////////////////////////////////////
     NetworkAudioStream(sf::PlaybackDevice& playbackDevice) :
-        sf::SoundStream{playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, 44'100u},
-        m_listener(/* isBlocking */ true),
-        m_client(/* isBlocking */ true)
+        sf::SoundStream<NetworkState>{playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, 44'100u}
     {
     }
 
@@ -55,134 +95,83 @@ public:
     ////////////////////////////////////////////////////////////
     void start(unsigned short port)
     {
-        if (!m_hasFinished)
+        auto& s = state();
+
+        if (!s.hasFinished)
         {
-            // Listen to the given port for incoming connections
-            if (m_listener.listen(port) != sf::Socket::Status::Done)
+            // Create a server socket already listening on `port`
+            m_listener = sf::TcpListener::create(port, /* isBlocking */ true);
+            if (!m_listener.hasValue())
                 return;
             sf::cOut() << "Server is listening to port " << port << ", waiting for connections... " << sf::endL;
 
             // Wait for a connection
-            if (m_listener.accept(m_client) != sf::Socket::Status::Done)
+            auto acceptResult = m_listener->accept();
+            if (acceptResult.status != sf::Socket::Status::Done)
                 return;
-            sf::cOut() << "Client connected: " << sf::IpAddressUtils::toString(m_client.getRemoteAddress().value())
+            m_client = SFML_BASE_MOVE(acceptResult.socket);
+            sf::cOut() << "Client connected: " << sf::IpAddressUtils::toString(m_client->getRemoteAddress().value())
                        << sf::endL;
 
-            // Start playback
             play();
-
-            // Start receiving audio data
             receiveLoop();
         }
         else
         {
-            // Start playback
             play();
         }
     }
 
 private:
     ////////////////////////////////////////////////////////////
-    /// /see SoundStream::OnGetData
-    ///
-    ////////////////////////////////////////////////////////////
-    bool onGetData(sf::SoundStream::Chunk& data) override
-    {
-        // We have reached the end of the buffer and all audio data have been played: we can stop playback
-        if ((m_offset >= m_samples.size()) && m_hasFinished)
-            return false;
-
-        // No new data has arrived since last update: wait until we get some
-        while ((m_offset >= m_samples.size()) && !m_hasFinished)
-            sf::sleep(sf::milliseconds(10));
-
-        // Copy samples into a local buffer to avoid synchronization problems
-        // (don't forget that we run in two separate threads)
-        {
-            const std::lock_guard lock(m_mutex);
-            m_tempBuffer.assignRange(m_samples.begin() +
-                                         static_cast<sf::base::Vector<sf::base::I16>::difference_type>(m_offset),
-                                     m_samples.end());
-        }
-
-        // Fill audio data to pass to the stream
-        data.samples     = m_tempBuffer.data();
-        data.sampleCount = m_tempBuffer.size();
-
-        // Update the playing offset
-        m_offset += m_tempBuffer.size();
-
-        return true;
-    }
-
-    ////////////////////////////////////////////////////////////
-    /// /see SoundStream::OnSeek
-    ///
-    ////////////////////////////////////////////////////////////
-    void onSeek(sf::Time timeOffset) override
-    {
-        m_offset = static_cast<sf::base::SizeT>(timeOffset.asMilliseconds()) * 44'100 * 1 / 1000;
-    }
-
-    ////////////////////////////////////////////////////////////
     /// Get audio data from the client until playback is stopped
-    ///
     ////////////////////////////////////////////////////////////
     void receiveLoop()
     {
-        while (!m_hasFinished)
+        auto& s = state();
+
+        while (!s.hasFinished)
         {
-            // Get waiting audio data from the network
             sf::Packet packet;
-            if (m_client.receive(packet) != sf::Socket::Status::Done)
+            if (m_client->receive(packet) != sf::Socket::Status::Done)
                 break;
 
-            // Extract the message ID
             sf::base::U8 id = 0;
             packet >> id;
 
             if (id == serverAudioData)
             {
-                // Extract audio samples from the packet, and append it to our samples buffer
                 const sf::base::SizeT sampleCount = (packet.getDataSize() - 1) / sizeof(sf::base::I16);
-
-                // Don't forget that the other thread can access the sample array at any time
-                // (so we protect any operation on it with the mutex)
                 {
-                    const std::lock_guard lock(m_mutex);
+                    const std::lock_guard lock(s.mutex);
                     const auto*           begin = static_cast<const char*>(packet.getData()) + 1;
                     const auto*           end   = begin + sampleCount * sizeof(sf::base::I16);
 
                     for (const auto* it = begin; it != end; ++it)
-                        m_tempBuffer.emplaceBack(*it);
+                        s.samples.emplaceBack(*it);
                 }
             }
             else if (id == serverEndOfStream)
             {
-                // End of stream reached: we stop receiving audio data
                 sf::cOut() << "Audio data has been 100% received!" << sf::endL;
-                m_hasFinished = true;
+                s.hasFinished = true;
             }
             else
             {
-                // Something's wrong...
                 sf::cOut() << "Invalid packet received..." << sf::endL;
-                m_hasFinished = true;
+                s.hasFinished = true;
             }
         }
     }
 
     ////////////////////////////////////////////////////////////
-    // Member data
+    // Member data (network-only; audio-thread state lives in `state()`)
     ////////////////////////////////////////////////////////////
-    sf::TcpListener                 m_listener;
-    sf::TcpSocket                   m_client;
-    std::recursive_mutex            m_mutex;
-    sf::base::Vector<sf::base::I16> m_samples;
-    sf::base::Vector<sf::base::I16> m_tempBuffer;
-    sf::base::SizeT                 m_offset{};
-    bool                            m_hasFinished{};
+    sf::base::Optional<sf::TcpListener> m_listener;
+    sf::base::Optional<sf::TcpSocket>   m_client;
 };
+
+} // namespace
 
 
 ////////////////////////////////////////////////////////////

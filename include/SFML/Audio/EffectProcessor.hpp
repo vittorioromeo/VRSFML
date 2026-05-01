@@ -29,19 +29,25 @@ namespace sf
 /// When the audio engine sources sound data from sound
 /// sources it will pass the data through an effects
 /// processor if one is set. The sound data will already be
-/// converted to the internal floating point format.
+/// converted to the internal floating point format and have
+/// the same sample rate as the audio device and engine. The
+/// device sample rate can differ from the sample rate of
+/// the source data so keep this in mind when setting up
+/// processing that is dependent on the sample rate. The
+/// sample rate of the current playback device can be
+/// retrieved using `sf::PlaybackDevice::getSampleRate()`.
 ///
 /// Sound data that is processed this way is provided in
 /// frames. Each frame contains 1 floating point sample per
 /// channel. If e.g. the data source provides stereo data,
 /// each frame will contain 2 floats.
 ///
-/// The effects processor function takes 4 parameters:
-///   - The input data frames, channels interleaved
-///   - The number of input data frames available
-///   - The buffer to write output data frames to, channels interleaved
-///   - The number of output data frames that the output buffer can hold
-///   - The channel count
+/// The effects processor function takes 5 parameters:
+///   - `inputFrames`: pointer to the input data frames, channels interleaved
+///   - `inputFrameCount`: in/out, number of input data frames available
+///   - `outputFrames`: pointer to the buffer to write output data frames to, channels interleaved
+///   - `outputFrameCount`: in/out, capacity of the output buffer in frames
+///   - `frameChannelCount`: number of channels per frame (engine channel count, see below)
 ///
 /// The input and output frame counts are in/out parameters.
 ///

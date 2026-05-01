@@ -1,4 +1,13 @@
 Diagnostics:
+  UnusedIncludes: Strict
+  MissingIncludes: Strict
   Suppress: "pp_including_mainfile_in_preamble"
+  ClangTidy:
+    # FastCheckFilter: None
+    Remove:
+      - cppcoreguidelines-use-enum-class
+      - cppcoreguidelines-pro-bounds-avoid-unchecked-container-access
+      - readability-inconsistent-ifelse-braces
 CompileFlags:
   CompilationDatabase: build_vrdev_clang
+  Add: [-D__CLANGD__]

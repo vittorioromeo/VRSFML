@@ -13,12 +13,15 @@
 #include "SFML/Window/Vulkan.hpp"
 #include "SFML/Window/WindowHandle.hpp"
 
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/UnicodeString.hpp"
-#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 
 
 namespace sf
@@ -35,11 +38,6 @@ WindowBase::WindowBase(base::PassKey<WindowBase>&&, base::UniquePtr<priv::SDLWin
     m_impl(SFML_BASE_MOVE(impl))
 {
     SFML_BASE_ASSERT(m_impl != nullptr);
-
-    // Setup default behaviors (to get a consistent behavior across different implementations)
-    setVisible(true);
-    setMouseCursorVisible(true);
-    setKeyRepeatEnabled(true);
 
     // Get and cache the initial size of the window
     m_size = m_impl->getSize();
@@ -154,6 +152,9 @@ void WindowBase::setMinimumSize(const Vec2u& minimumSize)
     setSize(getSize());
 }
 
+// TODO P1: minimumSize/maximumSize are not respected when the window is resized by the user. This is because we only
+// clamp the size when `setSize` is called, but not when processing a resize event
+
 
 ////////////////////////////////////////////////////////////
 void WindowBase::setMinimumSize(const base::Optional<Vec2u>& minimumSize)
@@ -190,7 +191,7 @@ void WindowBase::setMaximumSize(const Vec2u& maximumSize)
 void WindowBase::setMaximumSize(const base::Optional<Vec2u>& maximumSize)
 {
     if (maximumSize.hasValue())
-        setMinimumSize(*maximumSize);
+        setMaximumSize(*maximumSize);
     else
     {
         m_impl->setMaximumSize(base::nullOpt);
@@ -207,9 +208,9 @@ void WindowBase::setTitle(const UnicodeString& title)
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::setIcon(const Vec2u size, const base::U8* const pixels)
+void WindowBase::setIcon(const base::U8* const pixels, const Vec2u size)
 {
-    m_impl->setIcon(size, pixels);
+    m_impl->setIcon(pixels, size);
 }
 
 
@@ -270,9 +271,9 @@ bool WindowBase::hasFocus() const
 
 
 ////////////////////////////////////////////////////////////
-float WindowBase::getWindowDisplayScale() const
+float WindowBase::getDisplayScale() const
 {
-    return m_impl->getWindowDisplayScale();
+    return m_impl->getDisplayScale();
 }
 
 

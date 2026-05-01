@@ -26,7 +26,7 @@ namespace sf::base
 ///
 ////////////////////////////////////////////////////////////
 template <typename RandomIt>
-constexpr void insertionSort(const RandomIt first, const RandomIt last, auto&& comp)
+inline constexpr void insertionSort(const RandomIt first, const RandomIt last, auto&& comp)
 {
     if (first >= last)
         return;
@@ -88,7 +88,7 @@ namespace sf::base::priv
 ///
 ////////////////////////////////////////////////////////////
 template <typename RandomIt>
-void quickSortImpl(RandomIt first, RandomIt last, auto&& comp)
+inline constexpr void quickSortImpl(RandomIt first, RandomIt last, auto&& comp)
 {
     enum : int
     {
@@ -178,7 +178,7 @@ namespace sf::base
 ///
 ////////////////////////////////////////////////////////////
 template <typename RandomIt>
-[[gnu::always_inline]] inline void quickSort(const RandomIt first, const RandomIt last, auto&& comp)
+[[gnu::always_inline]] inline constexpr void quickSort(const RandomIt first, const RandomIt last, auto&& comp)
 {
     if (first >= last)
         return;
@@ -200,7 +200,7 @@ template <typename RandomIt>
 ///
 ////////////////////////////////////////////////////////////
 template <typename RandomIt>
-[[gnu::always_inline]] inline void quickSort(const RandomIt first, const RandomIt last)
+[[gnu::always_inline]] inline constexpr void quickSort(const RandomIt first, const RandomIt last)
 {
     quickSort(first, last, [](const auto& a, const auto& b) { return a < b; });
 }

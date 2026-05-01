@@ -12,9 +12,13 @@
 #include "LaserDirection.hpp"
 #include "RandomBag.hpp"
 #include "Tetramino.hpp"
+#include "TetraminoShapes.hpp"
 
+#include "SFML/Base/Array.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Pow.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
 
 
@@ -157,8 +161,9 @@ struct [[nodiscard]] World
     sf::base::U64 dropTickAccumulator = 0u;
     sf::base::U64 dropTickTarget      = 60u;
 
-    sf::base::U64 graceDropMoves    = 0u;
-    sf::base::U64 maxGraceDropMoves = 2u;
+    sf::base::U64 graceDropMoves      = 0u;
+    sf::base::U64 maxGraceDropMoves   = 2u;
+    bool          lastMoveWasRotation = false;
 
     sf::base::U32 playerLevel          = 1u;
     sf::base::U32 committedPlayerLevel = 1u;

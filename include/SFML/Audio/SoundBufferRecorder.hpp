@@ -49,21 +49,28 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Get the sound buffer containing the captured audio data
     ///
-    /// The sound buffer is valid only after the capture has ended.
-    /// This function provides a read-only access to the internal
-    /// sound buffer, but it can be copied if you need to
-    /// make any modification to it.
+    /// The sound buffer is built when the capture stops, so
+    /// this function must only be called after at least one
+    /// successful `start()`/`stop()` cycle on this recorder
+    /// (calling it before any data has been captured triggers
+    /// an assertion). The returned reference is read-only;
+    /// copy the buffer if you need to modify it.
     ///
-    /// \return Read-only access to the sound buffer
+    /// \return Read-only reference to the captured sound buffer
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const SoundBuffer& getBuffer() const;
 
 protected:
     ////////////////////////////////////////////////////////////
-    /// \brief Start capturing audio data
+    /// \brief Reset internal state in preparation for a new capture
     ///
-    /// \return `true` to start the capture, or `false` to abort it
+    /// Discards any samples held from a previous recording so
+    /// that the buffer only contains samples from the new run.
+    ///
+    /// \param captureDevice Capture device the recording is starting on
+    ///
+    /// \return Always `true`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool onStart(CaptureDevice& captureDevice) override;
@@ -71,16 +78,25 @@ protected:
     ////////////////////////////////////////////////////////////
     /// \brief Process a new chunk of recorded samples
     ///
-    /// \param samples     Pointer to the new chunk of recorded samples
-    /// \param sampleCount Number of samples pointed by \a samples
+    /// Appends the chunk to the internal sample buffer.
     ///
-    /// \return `true` to continue the capture, or `false` to stop it
+    /// \param samples     Pointer to the new chunk of recorded samples (interleaved 16-bit signed PCM)
+    /// \param sampleCount Number of samples pointed to by `samples`
+    ///
+    /// \return Always `true` (capture continues)
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool onProcessSamples(const base::I16* samples, base::SizeT sampleCount) override;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Stop capturing audio data
+    /// \brief Finalize the captured sound buffer
+    ///
+    /// Builds the final `sf::SoundBuffer` from the accumulated
+    /// samples once the capture has stopped.
+    ///
+    /// \param captureDevice Capture device the recording is stopping on
+    ///
+    /// \return `true` on success, `false` if the buffer could not be built
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool onStop(CaptureDevice& captureDevice) override;
@@ -100,42 +116,44 @@ private:
 /// \class sf::SoundBufferRecorder
 /// \ingroup audio
 ///
-/// `sf::SoundBufferRecorder` allows to access a recorded sound
-/// through a `sf::SoundBuffer`, so that it can be played, saved
-/// to a file, etc.
+/// `sf::SoundBufferRecorder` is the simplest concrete
+/// `sf::SoundRecorder`: every recorded chunk is appended into
+/// an internal `sf::SoundBuffer`, which can then be retrieved
+/// (and played, saved to a file, etc.) once the recording has
+/// stopped.
 ///
-/// It has the same simple interface as its base class (`start()`, `stop()`)
-/// and adds a function to retrieve the recorded sound buffer
-/// (`getBuffer()`).
-///
-/// As usual, don't forget to call the `isAvailable()` function
-/// before using this class (see `sf::SoundRecorder` for more details
-/// about this).
+/// It has the same interface as its base class
+/// (`start(captureDevice)` / `stop()`) and only adds the
+/// `getBuffer()` accessor.
 ///
 /// Usage example:
 /// \code
-/// if (sf::SoundBufferRecorder::isAvailable())
+/// // Open the default capture device
+/// auto audioContext  = sf::AudioContext::create().value();
+/// auto deviceHandle  = sf::AudioContext::getDefaultCaptureDeviceHandle().value();
+/// sf::CaptureDevice  captureDevice{deviceHandle};
+///
+/// // Record some audio data
+/// sf::SoundBufferRecorder recorder;
+/// if (!recorder.start(captureDevice))
 /// {
-///     // Record some audio data
-///     sf::SoundBufferRecorder recorder;
-///     if (!recorder.start())
-///     {
-///         // Handle error...
-///     }
-///     ...
-///     recorder.stop();
+///     // Handle error...
+/// }
 ///
-///     // Get the buffer containing the captured audio data
-///     const sf::SoundBuffer& buffer = recorder.getBuffer();
+/// // ... record for a while ...
 ///
-///     // Save it to a file (for example...)
-///     if (!buffer.saveToFile("my_record.ogg"))
-///     {
-///         // Handle error...
-///     }
+/// (void)recorder.stop();
+///
+/// // Get the buffer containing the captured audio data
+/// const sf::SoundBuffer& buffer = recorder.getBuffer();
+///
+/// // Save it to a file (for example)
+/// if (!buffer.saveToFile("my_record.ogg"))
+/// {
+///     // Handle error...
 /// }
 /// \endcode
 ///
-/// \see `sf::SoundRecorder`
+/// \see `sf::SoundRecorder`, `sf::CaptureDevice`
 ///
 ////////////////////////////////////////////////////////////

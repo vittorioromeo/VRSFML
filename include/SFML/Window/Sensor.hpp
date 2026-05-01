@@ -78,15 +78,15 @@ struct Sensor
 
 
 ////////////////////////////////////////////////////////////
-/// \namespace sf::Sensor
+/// \struct sf::Sensor
 /// \ingroup window
 ///
 /// `sf::Sensor` provides an interface to the state of the
 /// various sensors that a device provides.
 ///
-/// This namespace allows users to query the sensors values at any
+/// This struct allows users to query the sensors values at any
 /// time and directly, without having to deal with a window and
-/// its events. Compared to the SensorChanged event, `sf::Sensor`
+/// its events. Compared to the `SensorChanged` event, `sf::Sensor`
 /// can retrieve the state of a sensor at any time (you don't need to
 /// store and update its current value on your side).
 ///

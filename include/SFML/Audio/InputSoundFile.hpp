@@ -77,8 +77,12 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Open a sound file in memory for reading
     ///
-    /// The supported audio formats are: WAV (PCM only), OGG/Vorbis, FLAC.
+    /// The supported audio formats are: WAV (PCM only), OGG/Vorbis, FLAC, MP3.
     /// The supported sample sizes for FLAC and WAV are 8, 16, 24 and 32 bit.
+    ///
+    /// The provided memory buffer must remain valid for the
+    /// entire lifetime of the returned `InputSoundFile`, since
+    /// data is read on demand.
     ///
     /// \param data        Pointer to the file data in memory
     /// \param sizeInBytes Size of the data to load, in bytes
@@ -91,8 +95,12 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Open a sound file from a custom stream for reading
     ///
-    /// The supported audio formats are: WAV (PCM only), OGG/Vorbis, FLAC.
+    /// The supported audio formats are: WAV (PCM only), OGG/Vorbis, FLAC, MP3.
     /// The supported sample sizes for FLAC and WAV are 8, 16, 24 and 32 bit.
+    ///
+    /// The referenced stream must remain valid for the entire
+    /// lifetime of the returned `InputSoundFile`, since data is
+    /// read on demand.
     ///
     /// \param stream Source stream to read from
     ///
@@ -198,6 +206,10 @@ public:
 
     ////////////////////////////////////////////////////////////
     /// \brief Read audio samples from the open file
+    ///
+    /// Samples are written as interleaved 16-bit signed PCM.
+    /// A return value smaller than `maxCount` typically indicates
+    /// that the end of the file has been reached.
     ///
     /// \param samples  Pointer to the sample array to fill
     /// \param maxCount Maximum number of samples to read

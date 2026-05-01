@@ -8,16 +8,24 @@
 #include "SFML/Audio/Music.hpp"
 
 #include "SFML/Audio/AudioSettings.hpp"
-#include "SFML/Audio/InputSoundFile.hpp"
 #include "SFML/Audio/MusicReader.hpp"
+#include "SFML/Audio/Priv/MiniaudioSoundSource.hpp"
+#include "SFML/Audio/Priv/MiniaudioUtils.hpp"
+#include "SFML/Audio/Priv/SoundBase.hpp"
+#include "SFML/Audio/SoundStreamState.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/LifetimeDependant.hpp"
 #include "SFML/System/Time.hpp"
 
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
+
+#include <mutex>
 
 
 namespace
@@ -53,14 +61,120 @@ namespace
 
 namespace sf
 {
+namespace
+{
+////////////////////////////////////////////////////////////
+/// \brief State object owned by `SoundStreamState<MusicState>`
+///
+/// Holds all the audio-thread-touched data. Its methods
+/// (`onGetData`/`onSeek`/`onLoop`) are invoked by the audio
+/// callback; the `SoundStream` template guarantees the state
+/// outlives any in-flight callback.
+///
+////////////////////////////////////////////////////////////
+struct MusicState
+{
+    ////////////////////////////////////////////////////////////
+    mutable std::mutex                loopMutex;      //!< Protects `loopSpan` and `sampleOffset`
+    Music::Span<base::U64>            loopSpan;       //!< Loop range Specifier
+    MusicReader&                      musicReader;    //!< The music reader
+    const priv::MiniaudioSoundSource& source;         //!< Back-ref to the owning `Music` for `isLooping()`
+    base::U64                         sampleOffset{}; //!< Current offset in the stream
+
+    ////////////////////////////////////////////////////////////
+    explicit MusicState(MusicReader& theMusicReader, const priv::MiniaudioSoundSource& theSource, base::U64 sampleCount) :
+        loopSpan{0u, sampleCount},
+        musicReader(theMusicReader),
+        source(theSource)
+    {
+    }
+
+    ////////////////////////////////////////////////////////////
+    bool onGetData(base::Vector<base::I16>& outBuffer)
+    {
+        const std::lock_guard lock(loopMutex);
+
+        // Size the output buffer to hold up to 1 second of audio samples
+        outBuffer.resize(musicReader.getSampleRate() * musicReader.getChannelCount());
+
+        base::SizeT     toFill  = outBuffer.size();
+        const base::U64 loopEnd = loopSpan.offset + loopSpan.length;
+
+        // If the loop end is enabled and imminent, request less data so we trip an `onLoop()`.
+        if (source.isLooping() && (loopSpan.length != 0) && (sampleOffset <= loopEnd) && (sampleOffset + toFill > loopEnd))
+            toFill = static_cast<base::SizeT>(loopEnd - sampleOffset);
+
+        // `seekAndRead` is thread-safe
+        const auto [sampleOffsetAfter, samplesRead] = musicReader.seekAndRead(sampleOffset, outBuffer.data(), toFill);
+
+        outBuffer.resize(static_cast<base::SizeT>(samplesRead));
+        sampleOffset = sampleOffsetAfter + samplesRead;
+
+        return (samplesRead != 0) && (sampleOffset < musicReader.getSampleCount()) &&
+               (sampleOffset != loopEnd || loopSpan.length == 0);
+    }
+
+    ////////////////////////////////////////////////////////////
+    void onSeek(const Time timeOffset)
+    {
+        const std::lock_guard lock(loopMutex);
+        sampleOffset = timeToSamples(musicReader.getSampleRate(), musicReader.getChannelCount(), timeOffset);
+    }
+
+    ////////////////////////////////////////////////////////////
+    base::Optional<base::U64> onLoop()
+    {
+        const std::lock_guard lock(loopMutex);
+
+        if (!source.isLooping())
+            return base::nullOpt;
+
+        if ((loopSpan.length != 0) && (sampleOffset == loopSpan.offset + loopSpan.length))
+        {
+            sampleOffset = loopSpan.offset;
+            return base::makeOptional(sampleOffset);
+        }
+
+        if (sampleOffset >= musicReader.getSampleCount())
+        {
+            sampleOffset = 0u;
+            return base::makeOptional(sampleOffset);
+        }
+
+        return base::nullOpt;
+    }
+};
+
+} // namespace
+
+
+////////////////////////////////////////////////////////////
+struct Music::Impl
+{
+    SoundStreamState<MusicState> stream;
+
+    explicit Impl(PlaybackDevice& playbackDevice, MusicReader& musicReader, const priv::MiniaudioSoundSource& source) :
+        stream(playbackDevice,
+               musicReader.getChannelMap(),
+               musicReader.getSampleRate(),
+               musicReader,
+               source,
+               musicReader.getSampleCount())
+    {
+    }
+
+    ////////////////////////////////////////////////////////////
+    // Lifetime tracking
+    ////////////////////////////////////////////////////////////
+    SFML_DEFINE_LIFETIME_DEPENDANT(MusicReader);
+};
+
+
 ////////////////////////////////////////////////////////////
 Music::Music(PlaybackDevice& playbackDevice, MusicReader& musicReader, const AudioSettings& audioSettings) :
-    SoundStream(playbackDevice, musicReader.getChannelMap(), musicReader.getSampleRate()),
-    m_loopSpan{0u, musicReader.getSampleCount()},
-    m_musicReader(musicReader),
-    m_sampleOffset{0u}
+    m_impl(playbackDevice, musicReader, *this)
 {
-    SFML_UPDATE_LIFETIME_DEPENDANT(MusicReader, Music, this, (&m_musicReader));
+    SFML_UPDATE_LIFETIME_DEPENDANT(MusicReader, Music, (&*m_impl), (&m_impl->stream.state().musicReader));
     applyAudioSettings(audioSettings);
 }
 
@@ -77,92 +191,51 @@ Music::~Music() = default;
 
 
 ////////////////////////////////////////////////////////////
-bool Music::onGetData(SoundStream::Chunk& data)
+void Music::setPlayingOffset(const Time playingOffset)
 {
-    // Resize the internal buffer so that it can contain 1 second of audio samples
-    m_samples.resize(m_musicReader.getSampleRate() * m_musicReader.getChannelCount());
-
-    base::SizeT     toFill  = m_samples.size();
-    const base::U64 loopEnd = m_loopSpan.offset + m_loopSpan.length;
-
-    // If the loop end is enabled and imminent, request less data.
-    // This will trip an "onLoop()" call from the underlying SoundStream,
-    // and we can then take action.
-    if (isLooping() && (m_loopSpan.length != 0) && (m_sampleOffset <= loopEnd) && (m_sampleOffset + toFill > loopEnd))
-        toFill = static_cast<base::SizeT>(loopEnd - m_sampleOffset);
-
-    // Fill the chunk parameters
-    data.samples = m_samples.data();
-
-    // `seekAndRead` is thread-safe
-    const auto [sampleOffset, samplesRead] = m_musicReader.seekAndRead(m_sampleOffset, m_samples.data(), toFill);
-
-    data.sampleCount = samplesRead;
-    m_sampleOffset   = sampleOffset + samplesRead;
-
-    // Check if we have stopped obtaining samples or reached either the EOF or the loop end point
-    return (data.sampleCount != 0) && (m_sampleOffset < m_musicReader.getSampleCount()) &&
-           (m_sampleOffset != loopEnd || m_loopSpan.length == 0);
+    m_impl->stream.setPlayingOffset(playingOffset);
 }
 
 
 ////////////////////////////////////////////////////////////
-void Music::onSeek(const Time timeOffset)
+priv::MiniaudioUtils::SoundBase& Music::getSoundBase() const
 {
-    m_sampleOffset = timeToSamples(m_musicReader.getSampleRate(), m_musicReader.getChannelCount(), timeOffset);
-}
-
-
-////////////////////////////////////////////////////////////
-// Called by underlying SoundStream so we can determine where to loop.
-base::Optional<base::U64> Music::onLoop()
-{
-    if (isLooping() && (m_loopSpan.length != 0) && (m_sampleOffset == m_loopSpan.offset + m_loopSpan.length))
-    {
-        // Looping is enabled, and either we're at the loop end, or we're at the EOF
-        // when it's equivalent to the loop end (loop end takes priority). Send us to loop begin
-        m_sampleOffset = m_loopSpan.offset;
-        return base::makeOptional(m_sampleOffset);
-    }
-
-    if (isLooping() && (m_sampleOffset >= m_musicReader.getSampleCount()))
-    {
-        // If we're at the EOF, reset to 0
-        m_sampleOffset = 0u;
-        return base::makeOptional(m_sampleOffset);
-    }
-
-    return base::nullOpt;
+    return const_cast<Music*>(this)->m_impl->stream.getSoundBase();
 }
 
 
 ////////////////////////////////////////////////////////////
 Music::TimeSpan Music::getLoopPoints() const
 {
-    const auto sampleRate   = m_musicReader.getSampleRate();
-    const auto channelCount = m_musicReader.getChannelCount();
+    const auto& state = m_impl->stream.state();
 
-    return TimeSpan{samplesToTime(sampleRate, channelCount, m_loopSpan.offset),
-                    samplesToTime(sampleRate, channelCount, m_loopSpan.length)};
+    const auto sampleRate   = state.musicReader.getSampleRate();
+    const auto channelCount = state.musicReader.getChannelCount();
+
+    const std::lock_guard lock(state.loopMutex);
+
+    return TimeSpan{samplesToTime(sampleRate, channelCount, state.loopSpan.offset),
+                    samplesToTime(sampleRate, channelCount, state.loopSpan.length)};
 }
 
 
 ////////////////////////////////////////////////////////////
 void Music::setLoopPoints(const TimeSpan timePoints)
 {
-    const auto sampleRate   = m_musicReader.getSampleRate();
-    const auto channelCount = m_musicReader.getChannelCount();
+    auto& state = m_impl->stream.state();
+
+    const auto sampleRate   = state.musicReader.getSampleRate();
+    const auto channelCount = state.musicReader.getChannelCount();
 
     SFML_BASE_ASSERT(channelCount > 0u);
     SFML_BASE_ASSERT(sampleRate > 0u);
 
-    const auto fileChannelCount = m_musicReader.getSampleCount();
+    const auto fileSampleCount = state.musicReader.getSampleCount();
 
     Span<base::U64> samplePoints{timeToSamples(sampleRate, channelCount, timePoints.offset),
                                  timeToSamples(sampleRate, channelCount, timePoints.length)};
 
-    // Check our state. This averts a divide-by-zero.
-    if (fileChannelCount == 0u)
+    if (fileSampleCount == 0u)
     {
         priv::err() << "Music is not in a valid state to assign Loop Points.";
         return;
@@ -174,45 +247,34 @@ void Music::setLoopPoints(const TimeSpan timePoints)
     samplePoints.length += (channelCount - 1u);
     samplePoints.length -= (samplePoints.length % channelCount);
 
-    // Validate
-    if (samplePoints.offset >= fileChannelCount)
+    if (samplePoints.offset >= fileSampleCount)
     {
         priv::err() << "LoopPoints offset val must be in range [0, Duration).";
-        m_loopSpan = {0u, m_musicReader.getSampleCount()}; // Reset to default
+        state.loopSpan = {0u, state.musicReader.getSampleCount()};
         return;
     }
 
     if (samplePoints.length == 0u)
     {
         priv::err() << "LoopPoints length val must be nonzero.";
-        m_loopSpan = {0u, m_musicReader.getSampleCount()}; // Reset to default
+        state.loopSpan = {0u, state.musicReader.getSampleCount()};
         return;
     }
 
-    // Clamp End Point
-    samplePoints.length = base::min(samplePoints.length, fileChannelCount - samplePoints.offset);
+    samplePoints.length = base::min(samplePoints.length, fileSampleCount - samplePoints.offset);
 
-    // If this change has no effect, we can return without touching anything
-    if (samplePoints.offset == m_loopSpan.offset && samplePoints.length == m_loopSpan.length)
+    if (samplePoints.offset == state.loopSpan.offset && samplePoints.length == state.loopSpan.length)
         return;
 
-    // When we apply this change, we need to "reset" this instance and its buffer
-
-    // Get old playing status and position
     const bool oldIsPlaying = isPlaying();
     const Time oldPos       = getPlayingOffset();
 
-    // Unload
     stop();
+    state.loopSpan = samplePoints;
 
-    // Set
-    m_loopSpan = samplePoints;
-
-    // Restore
     if (oldPos != Time{})
         setPlayingOffset(oldPos);
 
-    // Resume
     if (oldIsPlaying)
         resume();
 }
@@ -221,7 +283,14 @@ void Music::setLoopPoints(const TimeSpan timePoints)
 ////////////////////////////////////////////////////////////
 const MusicReader& Music::getMusicReader() const
 {
-    return m_musicReader;
+    return m_impl->stream.state().musicReader;
+}
+
+
+////////////////////////////////////////////////////////////
+PlaybackDevice& Music::getPlaybackDevice() const
+{
+    return m_impl->stream.getPlaybackDevice();
 }
 
 } // namespace sf

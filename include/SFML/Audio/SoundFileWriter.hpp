@@ -74,9 +74,15 @@ public:
 /// supported by SFML, and thus extend the set of supported writable
 /// audio formats.
 ///
-/// A valid sound file writer must override the open and write functions,
-/// as well as providing a static check function; the latter is used by
-/// SFML to find a suitable writer for a given filename.
+/// A valid sound file writer must override the `open` and `write`
+/// virtual functions, as well as providing a static `check`
+/// function; the latter is used by SFML to find a suitable writer
+/// for a given filename (typically by extension).
+///
+/// All sample data exchanged through this interface is 16-bit
+/// signed PCM. Writers that encode to formats with different
+/// internal sample formats (e.g. floats) are responsible for
+/// converting on the fly inside `write`.
 ///
 /// To register a new writer, use the `sf::SoundFileFactory::registerWriter`
 /// template function.

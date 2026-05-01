@@ -4,6 +4,21 @@
 
 
 ////////////////////////////////////////////////////////////
+/// \file
+/// \brief Shared low-level helpers for `Vector`, `SmallVector`, `InPlaceVector`
+///
+/// All non-trivial element-management primitives (allocate / deallocate,
+/// construct / destroy / relocate ranges, erase, swap unequal ranges,
+/// `SFML_BASE_PRIV_DEFINE_COMMON_VECTOR_OPERATIONS` macro) live here so
+/// that the three vector flavors can share their implementation
+/// without inheritance or virtual dispatch. The helpers branch on
+/// trivial relocatability and trivial destructibility to fall back to
+/// `memcpy`/`memmove` whenever the element type permits it.
+///
+////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Builtin/Memcpy.hpp"
@@ -317,20 +332,6 @@ template <typename T>
     [[gnu::always_inline]] constexpr friend void swap(vectorType& lhs, vectorType& rhs) noexcept                               \
     {                                                                                                                          \
         lhs.swap(rhs);                                                                                                         \
-    }                                                                                                                          \
-                                                                                                                               \
-    template <typename... Ts>                                                                                                  \
-    [[gnu::always_inline, gnu::flatten]] constexpr TItem& emplaceBack(Ts&&... xs)                                              \
-    {                                                                                                                          \
-        reserve(size() + 1);                                                                                                   \
-        return unsafeEmplaceBack(static_cast<Ts&&>(xs)...);                                                                    \
-    }                                                                                                                          \
-                                                                                                                               \
-    template <typename T = TItem>                                                                                              \
-    [[gnu::always_inline, gnu::flatten]] constexpr TItem& pushBack(T&& x)                                                      \
-    {                                                                                                                          \
-        reserve(size() + 1);                                                                                                   \
-        return unsafeEmplaceBack(static_cast<T&&>(x));                                                                         \
     }                                                                                                                          \
                                                                                                                                \
     template <typename... Ts>                                                                                                  \

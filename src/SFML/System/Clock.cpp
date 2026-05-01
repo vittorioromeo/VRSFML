@@ -14,7 +14,7 @@
     #include "SFML/System/SuspendAwareClock.hpp"
 #endif
 
-#include "SFML/Base/StdChrono.hpp" // IWYU pragma: keep
+#include "SFML/Base/StdChrono.hpp"
 
 #include <ratio>
 #include <type_traits>

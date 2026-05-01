@@ -1,19 +1,3 @@
-// TODO P0: broken scaling on Wayland?
-
-#include "ExampleUtils/Easing.hpp"
-#include "ExampleUtils/HueColor.hpp"
-#include "ExampleUtils/LoadedSound.hpp"
-#include "ExampleUtils/MathUtils.hpp"
-#include "ExampleUtils/RNGFast.hpp"
-#include "ExampleUtils/SoundManager.hpp"
-#include "ExampleUtils/Timer.hpp"
-
-
-#define SFEX_PROFILER_ENABLED
-#include "ExampleUtils/Profiler.hpp"
-#include "ExampleUtils/ProfilerImGui.hpp"
-
-//
 #include "AnimationCommands.hpp"
 #include "AnimationTimeline.hpp"
 #include "BitmapFont.hpp"
@@ -31,6 +15,7 @@
 #include "LightningBolt.hpp"
 #include "Perk.hpp"
 #include "RandomBag.hpp"
+#include "ShapeBlockSequence.hpp"
 #include "ShapeDimension.hpp"
 #include "StringUtils.hpp"
 #include "Tetramino.hpp"
@@ -39,13 +24,28 @@
 #include "World.hpp"
 
 #include "ExampleUtils/ControlFlow.hpp"
+#include "ExampleUtils/Easing.hpp"
+#include "ExampleUtils/HueColor.hpp"
+#include "ExampleUtils/LoadedSound.hpp"
+#include "ExampleUtils/MathUtils.hpp"
 #include "ExampleUtils/MiniFmt.hpp"
+#include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/Scaling.hpp"
+#include "ExampleUtils/SoundManager.hpp"
+#include "ExampleUtils/Progress.hpp"
+
+#define SFEX_PROFILER_ENABLED
+#include "ExampleUtils/Profiler.hpp"
+#include "ExampleUtils/ProfilerImGui.hpp"
 
 #include "SFML/ImGui/ImGuiContext.hpp"
+#include "SFML/ImGui/IncludeImGui.hpp"
 
+#include "SFML/Graphics/BlendMode.hpp"
 #include "SFML/Graphics/CircleShapeData.hpp"
 #include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/DrawIndexedVerticesSettings.hpp"
+#include "SFML/Graphics/DrawTextureSettings.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
@@ -75,6 +75,7 @@
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
+#include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
 
@@ -89,10 +90,17 @@
 #include "SFML/Base/Algorithm/Find.hpp"
 #include "SFML/Base/Algorithm/Sort.hpp"
 #include "SFML/Base/AnkerlUnorderedDense.hpp"
+#include "SFML/Base/Array.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Builtin/Unreachable.hpp"
+#include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/InPlaceVector.hpp"
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Math/Floor.hpp"
 #include "SFML/Base/Math/Fmod.hpp"
+#include "SFML/Base/Math/Sin.hpp"
+#include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/OverloadSet.hpp"
 #include "SFML/Base/Remainder.hpp"
@@ -101,27 +109,27 @@
 #include "SFML/Base/ToString.hpp"
 #include "SFML/Base/Trait/IsConst.hpp"
 #include "SFML/Base/UniquePtr.hpp"
+#include "SFML/Base/Variant.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#define IMGUI_DEFINE_MATH_OPERATORS
-#include <imgui.h>
 
-
-namespace tsurv
+namespace
 {
 //////////////////////////////////////////////////////////////
-[[nodiscard]] static BitmapFont loadMinogramData()
-{
-    BitmapFont result;
+constexpr sf::base::Array<sf::base::StringView, 7>
+    glyphRows{"ABCDEFGHIJKLM",
+              "NOPQRSTUVWXYZ",
+              "abcdefghijklm",
+              "nopqrstuvwxyz",
+              "0123456789+-=",
+              "()[]{}<>/*:#%",
+              "!?.,'\"@&$"};
 
-    constexpr sf::base::Array<sf::base::StringView, 7>
-        glyphRows{"ABCDEFGHIJKLM",
-                  "NOPQRSTUVWXYZ",
-                  "abcdefghijklm",
-                  "nopqrstuvwxyz",
-                  "0123456789+-=",
-                  "()[]{}<>/*:#%",
-                  "!?.,'\"@&$"};
+
+//////////////////////////////////////////////////////////////
+[[nodiscard]] tsurv::BitmapFont loadMinogramData()
+{
+    tsurv::BitmapFont result;
 
     for (sf::base::SizeT iY = 0; iY < glyphRows.size(); ++iY)
         for (sf::base::SizeT iX = 0; iX < glyphRows[iY].size(); ++iX)
@@ -135,18 +143,9 @@ namespace tsurv
 
 
 //////////////////////////////////////////////////////////////
-[[nodiscard]] static BitmapFont loadTiny5Data()
+[[nodiscard]] tsurv::BitmapFont loadTiny5Data()
 {
-    BitmapFont result;
-
-    constexpr sf::base::Array<sf::base::StringView, 7>
-        glyphRows{"ABCDEFGHIJKLM",
-                  "NOPQRSTUVWXYZ",
-                  "abcdefghijklm",
-                  "nopqrstuvwxyz",
-                  "0123456789+-=",
-                  "()[]{}<>/*:#%",
-                  "!?.,'\"@&$"};
+    tsurv::BitmapFont result;
 
     sf::base::SizeT stepX = 15;
     sf::base::SizeT stepY = 17;
@@ -232,7 +231,10 @@ namespace tsurv
     return result;
 }
 
+} // namespace
 
+namespace tsurv
+{
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] CircleParticleData
 {
@@ -289,7 +291,7 @@ struct [[nodiscard]] EarnedXPParticle // NOLINT(cppcoreguidelines-pro-type-membe
     float delay;
     float startRotation = 0.f;
 
-    Timer progress{};
+    Progress progress{};
 };
 
 
@@ -595,6 +597,51 @@ struct DynamicPerk
 
 
 ////////////////////////////////////////////////////////////
+enum class TSpinType : sf::base::U8
+{
+    None,
+    Mini,
+    Full
+};
+
+
+////////////////////////////////////////////////////////////
+// Detect T-spin after a T-piece locks.
+// Standard 3-corner rule: the T-piece center is always at local (1,1).
+// Check the 4 diagonal corners around the center on the grid.
+// A corner counts as "occupied" if it's out of bounds or contains a block.
+// Full T-spin: 3+ corners occupied.
+// Mini T-spin: exactly 2 corners occupied (and last move was rotation).
+[[nodiscard]] inline TSpinType detectTSpin(const BlockGrid& grid, const Tetramino& tetramino, const bool lastMoveWasRotation)
+{
+    if (tetramino.tetraminoType != TetraminoType::T)
+        return TSpinType::None;
+
+    if (!lastMoveWasRotation)
+        return TSpinType::None;
+
+    // T-piece center is always at local position (1,1) in the 4x4 shape matrix
+    const sf::Vec2i center = tetramino.position + sf::Vec2i{1, 1};
+
+    const auto isOccupied = [&](const sf::Vec2i pos) -> bool { return !grid.isInBounds(pos) || grid.at(pos).hasValue(); };
+
+    int occupiedCorners = 0;
+    occupiedCorners += isOccupied(center + sf::Vec2i{-1, -1}) ? 1 : 0;
+    occupiedCorners += isOccupied(center + sf::Vec2i{+1, -1}) ? 1 : 0;
+    occupiedCorners += isOccupied(center + sf::Vec2i{-1, +1}) ? 1 : 0;
+    occupiedCorners += isOccupied(center + sf::Vec2i{+1, +1}) ? 1 : 0;
+
+    if (occupiedCorners >= 3)
+        return TSpinType::Full;
+
+    if (occupiedCorners == 2)
+        return TSpinType::Mini;
+
+    return TSpinType::None;
+}
+
+
+////////////////////////////////////////////////////////////
 class Game
 {
 private:
@@ -608,6 +655,10 @@ private:
                                         .frametimeLimit = 144u,
                                     })
                                     .value();
+
+    ////////////////////////////////////////////////////////////
+    sf::View m_worldView  = sf::View::fromScreenSize(resolution);
+    sf::View m_windowView = sf::View::fromScreenSize(resolution);
 
     ////////////////////////////////////////////////////////////
     sf::Shader m_shader{[]
@@ -705,7 +756,7 @@ private:
     ////////////////////////////////////////////////////////////
     void playSound(const LoadedSound& ls, const sf::base::SizeT maxOverlap = 255u)
     {
-        (void)m_playbackDevice.updateListener({.volume = 0.5f});
+        (void)m_playbackDevice.applyListener({.volume = 0.5f});
         m_soundManager.playPooled(m_playbackDevice, ls, maxOverlap);
     }
 
@@ -858,11 +909,8 @@ private:
 
 
     //////////////////////////////////////////////////////////////
-    sf::RenderTexture m_rtGame{
-        sf::RenderTexture::create(resolution.toVec2u(), {.antiAliasingLevel = 0u, .sRgbCapable = false}).value()};
-
-    sf::RenderTexture m_rtPostProcess{
-        sf::RenderTexture::create(resolution.toVec2u(), {.antiAliasingLevel = 0u, .sRgbCapable = false}).value()};
+    sf::RenderTexture m_rtGame{sf::RenderTexture::create(resolution.toVec2u(), {.smooth = false}).value()};
+    sf::RenderTexture m_rtPostProcess{sf::RenderTexture::create(resolution.toVec2u(), {.smooth = true}).value()};
 
 
     //////////////////////////////////////////////////////////////
@@ -900,7 +948,7 @@ private:
             .origin      = floorVec2(particle.origin),
             .rotation    = sf::radians(particle.rotation),
             .textureRect = particle.textureRect,
-            .color       = sf::Color::whiteMask(opacityAsAlpha),
+            .color       = sf::Color::whiteWithAlpha(opacityAsAlpha),
         };
     }
 
@@ -1020,7 +1068,7 @@ private:
             finalSquishMult += easeInOutSine(bounce(progress)) * 0.5f;
         }
 
-        const sf::RenderTarget::TextureDrawParams commonDrawParams{
+        const sf::DrawTextureSettings commonDrawParams{
             .position = floorVec2(position.addY(yOffset)).addX(1.f).addY(1.f),
             .scale    = sf::Vec2f{finalSquishMult, finalSquishMult} * options.scale,
             .origin   = floorVec2(drawBlockSize / 2.f),
@@ -1028,13 +1076,10 @@ private:
         };
 
         {
-            const auto [sine, cosine] = sf::base::sinCosLookup(commonDrawParams.rotation.wrapUnsigned().asRadians());
-
-            const auto transform = sf::Transform::fromPositionScaleOriginSinCos(commonDrawParams.position,
-                                                                                commonDrawParams.scale,
-                                                                                commonDrawParams.origin,
-                                                                                sine,
-                                                                                cosine);
+            const auto transform = sf::Transform::fromPositionScaleOriginRotation(commonDrawParams.position,
+                                                                                  commonDrawParams.scale,
+                                                                                  commonDrawParams.origin,
+                                                                                  commonDrawParams.rotation);
 
             mins = transform.transformPoint({0.f, 0.f});
             maxs = transform.transformPoint(drawBlockSize);
@@ -1045,9 +1090,9 @@ private:
 
         const bool hasTimer = block.tickTimerTarget != nullTickTimerTarget;
 
-        const bool doesNotHaveTimerOrIsPowerup = !hasTimer || block.powerup != BlockPowerup::None;
-
+        // const bool doesNotHaveTimerOrIsPowerup = !hasTimer || block.powerup != BlockPowerup::None;
         // const bool useNormalTexture  = block.health == 1u && !doesNotHaveTimerOrIsPowerup;
+
         const bool useDamagedTexture = block.health == 1u && hasTimer && block.powerup == BlockPowerup::None;
         const bool useArmoredTexture = block.health > 1u;
 
@@ -1062,7 +1107,7 @@ private:
                           .textureRect = txr,
                           .color       = commonDrawParams.color,
                       },
-                      {.shader = &m_shader});
+                      {.view = m_worldView, .shader = &m_shader});
 
         if (block.powerup != BlockPowerup::None && options.drawText)
         {
@@ -1076,7 +1121,7 @@ private:
                                   .textureRect = m_txrPowerupXP,
                                   .color       = commonDrawParams.color,
                               },
-                              {.shader = &m_shader});
+                              {.view = m_worldView, .shader = &m_shader});
             }
             else if (block.powerup == BlockPowerup::ColumnDrill)
             {
@@ -1092,7 +1137,7 @@ private:
                                   .textureRect = m_txrPowerupBomb,
                                   .color       = commonDrawParams.color,
                               },
-                              {.shader = &m_shader});
+                              {.view = m_worldView, .shader = &m_shader});
             }
         }
 
@@ -1103,16 +1148,16 @@ private:
                               .origin        = floorVec2(drawBlockSize / 2.f),
                               .string        = sf::base::toString(static_cast<unsigned int>(block.health - 1u)),
                               .characterSize = 5u,
-                              .fillColor     = sf::Color::blackMask(alpha),
+                              .fillColor     = sf::Color::blackWithAlpha(alpha),
                           }};
 
             text.setGlobalCenter(floorVec2(position.addY(yOffset) + sf::Vec2f{2.f, 3.f}));
-            m_rtGame.draw(text);
+            m_rtGame.draw(text, {.view = m_worldView});
 
-            text.setFillColor(sf::Color::whiteMask(alpha));
+            text.setFillColor(sf::Color::whiteWithAlpha(alpha));
 
             text.setGlobalCenter(floorVec2(position.addY(yOffset)) + sf::Vec2f{2.f, 2.f});
-            m_rtGame.draw(text);
+            m_rtGame.draw(text, {.view = m_worldView});
         }
 
         if (block.tickTimerTarget != nullTickTimerTarget && options.drawTimer)
@@ -1138,29 +1183,32 @@ private:
 
             const auto drawTimerLines = [&](const float embed)
             {
+                const auto drawCtx = m_rtGame.withLockedRenderStates(
+                    {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+
                 // top line
                 timerLine.position = commonDrawParams.position + sf::Vec2f{embed, embed};
                 timerLine.rotation = sf::degrees(0.f);
                 timerLine.size     = {(drawBlockSize.x - embed * 2.f) * p0, 1.f};
-                m_rtGame.draw(timerLine, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+                drawCtx.draw(timerLine);
 
                 // right line
                 timerLine.position = commonDrawParams.position + sf::Vec2f{drawBlockSize.x - embed - 1.f, embed};
                 timerLine.rotation = sf::degrees(0.f);
                 timerLine.size     = {1.f, (drawBlockSize.y - embed * 2.f) * p1};
-                m_rtGame.draw(timerLine, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+                drawCtx.draw(timerLine);
 
                 // bottom line
                 timerLine.position = commonDrawParams.position + sf::Vec2f{1.f - embed, 1.f - embed};
                 timerLine.rotation = sf::degrees(180.f);
                 timerLine.size     = {(drawBlockSize.x - embed * 2.f) * p2, 1.f};
-                m_rtGame.draw(timerLine, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+                drawCtx.draw(timerLine);
 
                 // left line
                 timerLine.position = commonDrawParams.position + sf::Vec2f{-drawBlockSize.x + embed + 2.f, 1.f - embed};
                 timerLine.rotation = sf::degrees(180.f);
                 timerLine.size     = {1.f, (drawBlockSize.y - embed * 2.f) * p3};
-                m_rtGame.draw(timerLine, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+                drawCtx.draw(timerLine);
             };
 
             if (useDamagedTexture)
@@ -1248,17 +1296,20 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    void moveTetramino(Tetramino& tetramino, const sf::Vec2i delta) const
+    void moveTetramino(Tetramino& tetramino, const sf::Vec2i delta)
     {
         const auto newPosition = tetramino.position + delta;
 
         if (m_world.blockGrid.isValidMove(tetramino.shape, newPosition))
-            tetramino.position = newPosition;
+        {
+            tetramino.position          = newPosition;
+            m_world.lastMoveWasRotation = false;
+        }
     }
 
 
     ////////////////////////////////////////////////////////////
-    void rotateTetramino(Tetramino& tetramino, const bool clockwise) const
+    void rotateTetramino(Tetramino& tetramino, const bool clockwise)
     {
         const auto nextRotationState = static_cast<RotationState>((tetramino.rotationState + (clockwise ? 1u : 3u)) % 4u);
 
@@ -1279,9 +1330,10 @@ private:
             if (!m_world.blockGrid.isValidMove(rotatedShape, testPosition))
                 continue;
 
-            tetramino.shape         = rotatedShape;
-            tetramino.position      = testPosition;
-            tetramino.rotationState = nextRotationState;
+            tetramino.shape             = rotatedShape;
+            tetramino.position          = testPosition;
+            tetramino.rotationState     = nextRotationState;
+            m_world.lastMoveWasRotation = true;
 
             return;
         }
@@ -1664,14 +1716,35 @@ private:
 
 
     ////////////////////////////////////////////////////////////
+    void handleTSpin(const TSpinType tSpinType, const Tetramino& tetramino)
+    {
+        (void)tetramino;
+
+        if (tSpinType == TSpinType::None)
+            return;
+
+        // TODO P1: add T-spin effects here, test detection
+        //
+        // `tSpinType` is `TSpinType::Full` or `TSpinType::Mini`.
+        // `tetramino.position` is the grid position of the locked T-piece.
+    }
+
+
+    ////////////////////////////////////////////////////////////
     void embedTetraminoAndClearLines(const Tetramino& tetramino)
     {
         handleTriggerTetraminoPlaced(tetramino);
+
+        // Detect T-spin before embedding (corners must be checked against the grid
+        // before the tetramino's blocks are placed into it)
+        const TSpinType tSpinType = detectTSpin(m_world.blockGrid, tetramino, m_world.lastMoveWasRotation);
 
         m_world.blockGrid.embedTetramino(tetramino);
         m_world.graceDropMoves = 0u;
 
         ++m_world.tetaminosPlaced;
+
+        handleTSpin(tSpinType, tetramino);
 
         if (const auto fullRows = findFullRows(); !fullRows.empty())
             m_animationTimelineP1.addInstantaneous(AnimClearLines{
@@ -1974,6 +2047,7 @@ private:
             .rotationState = RotationState{0u},
         });
 
+        m_world.lastMoveWasRotation    = false;
         m_currentTetraminoVisualCenter = toDrawCoordinates(m_world.currentTetramino->position);
     }
 
@@ -1988,7 +2062,7 @@ private:
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return ControlFlow::Break;
 
-            if (handleNonScalingResize(*event, resolution, m_window))
+            if (handleNonScalingResize(*event, resolution, m_windowView))
                 continue;
 
             if (auto* eKeyPressed = event->getIf<sf::Event::KeyPressed>())
@@ -2096,7 +2170,7 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] Block* pickRandomBlock()
+    [[nodiscard]] Block* pickRandomBlockMatching(auto&& predicate)
     {
         sf::base::SizeT count    = 0u;
         Block*          selected = nullptr;
@@ -2104,6 +2178,9 @@ private:
         for (auto& optBlock : m_world.blockGrid.getBlocks())
         {
             if (!optBlock.hasValue())
+                continue;
+
+            if (!predicate(*optBlock))
                 continue;
 
             ++count;
@@ -2118,27 +2195,16 @@ private:
 
 
     /////////////////////////////////////////////////////////////
+    [[nodiscard]] Block* pickRandomBlock()
+    {
+        return pickRandomBlockMatching([](const Block&) { return true; });
+    }
+
+
+    /////////////////////////////////////////////////////////////
     [[nodiscard]] Block* pickDamageableBlock()
     {
-        sf::base::SizeT count    = 0u;
-        Block*          selected = nullptr;
-
-        for (auto& optBlock : m_world.blockGrid.getBlocks())
-        {
-            if (!optBlock.hasValue())
-                continue;
-
-            if (optBlock->health <= 1u)
-                continue;
-
-            ++count;
-
-            // Select the current bubble with probability `1/count` (reservoir sampling)
-            if (m_rngFast.getI<sf::base::SizeT>(0, count - 1) == 0)
-                selected = optBlock.asPtr();
-        }
-
-        return (count == 0u) ? nullptr : selected;
+        return pickRandomBlockMatching([](const Block& block) { return block.health > 1u; });
     }
 
 
@@ -2809,10 +2875,10 @@ private:
                 continue;
             }
 
-            (void)particle.progress.updateForwardAndStop(deltaTimeMs * 0.0015f);
+            (void)particle.progress.advance(deltaTimeMs * 0.0015f);
         }
 
-        sf::base::vectorEraseIf(m_earnedXPParticles, [&](const auto& p) { return p.progress.isDoneForward(); });
+        sf::base::vectorEraseIf(m_earnedXPParticles, [&](const auto& p) { return p.progress.isAtEnd(); });
     }
 
 
@@ -3091,11 +3157,13 @@ private:
 
         const auto darkenAlpha = static_cast<sf::base::U8>((0.65f * m_menuDelayProgress) * 255.f);
 
-        m_rtGame.draw(sf::RectangleShapeData{
-            .position  = {0.f, 0.f},
-            .fillColor = sf::Color::blackMask(darkenAlpha),
-            .size      = resolution,
-        });
+        m_rtGame.draw(
+            sf::RectangleShapeData{
+                .position  = {0.f, 0.f},
+                .fillColor = sf::Color::blackWithAlpha(darkenAlpha),
+                .size      = resolution,
+            },
+            {.view = m_worldView});
 
         sf::Vec2f shopSize{280.f, 161.f};
 
@@ -3120,7 +3188,7 @@ private:
                 .outlineThickness = 1.f,
                 .size             = shopSize,
             },
-            {.transform = menuTransform});
+            {.transform = menuTransform, .view = m_worldView});
 
         m_textVerticesBuffer.clear();
         m_textIndicesBuffer.clear();
@@ -3154,7 +3222,7 @@ private:
                                              .outlineColor     = {135, 135, 135},
                                              .outlineThickness = 1.f,
                                              .size             = titleGlobalBounds.size + sf::Vec2f{16.f, 8.f}},
-                      {.transform = menuTransform});
+                      {.transform = menuTransform, .view = m_worldView});
 
         /*
 
@@ -3165,7 +3233,7 @@ private:
                 .fillColor = {135, 135, 135},
                 .size      = {shopSize.x - 8.f, 1.f},
             },
-            {.transform = menuTransform});
+            {.transform = menuTransform, .view = m_worldView});
 
         */
 
@@ -3202,14 +3270,14 @@ private:
                                                  .origin    = {0.f, 0.f},
                                                  .fillColor = sf::Color::VeryDarkBrown.withAlpha(100),
                                                  .size      = {32.f, 32.f}},
-                          {.transform = menuTransform});
+                          {.transform = menuTransform, .view = m_worldView});
 
             m_rtGame.draw(sf::RectangleShapeData{.position  = globalBounds.position - sf::Vec2f{1.f, 1.f},
                                                  .origin    = {0.f, 0.f},
                                                  .fillColor = sf::Color::VeryDarkBrown.withAlpha(100),
                                                  .size = globalBounds.size.withY(sf::base::max(40.f, globalBounds.size.y)) +
                                                          sf::Vec2f{2.f, 2.f}},
-                          {.transform = menuTransform});
+                          {.transform = menuTransform, .view = m_worldView});
 
             if (m_selectedPerk == iPerk)
             {
@@ -3217,7 +3285,7 @@ private:
                                                      .origin    = {0.f, 0.f},
                                                      .fillColor = sf::Color::VeryDarkGreen,
                                                      .size      = globalBounds.size + sf::Vec2f{2.f, 2.f}},
-                              {.transform = menuTransform});
+                              {.transform = menuTransform, .view = m_worldView});
             }
 
             perkDrawPos.y += sf::base::max(40.f, globalBounds.size.y) + 12.f;
@@ -3225,18 +3293,17 @@ private:
             ++iPerk;
         }
 
-        m_rtGame.drawIndexedVertices({
-            .vertexData    = m_textVerticesBuffer.data(),
-            .vertexCount   = m_textVerticesBuffer.size(),
-            .indexData     = m_textIndicesBuffer.data(),
-            .indexCount    = m_textIndicesBuffer.size(),
-            .primitiveType = sf::PrimitiveType::Triangles,
-            .renderStates =
-                {
-                    .transform = menuTransform,
-                    .texture   = &m_textureAtlas.getTexture(),
-                },
-        });
+        m_rtGame.drawIndexedVertices(
+            sf::DrawIndexedVerticesSettings{
+                .vertexSpan    = m_textVerticesBuffer,
+                .indexSpan     = m_textIndicesBuffer,
+                .primitiveType = sf::PrimitiveType::Triangles,
+            },
+            {
+                .transform = menuTransform,
+                .view      = m_worldView,
+                .texture   = &m_textureAtlas.getTexture(),
+            });
     }
 
 
@@ -3250,7 +3317,8 @@ private:
         ImGui::Begin("SFEX Profiler");
         sfex::showImguiProfiler();
         ImGui::End();
-        return;
+
+        return; // TODO P1: remove?
 
         {
             ImGui::Begin("Graphics settings", nullptr);
@@ -3430,14 +3498,16 @@ private:
 
         const sf::Vec2uz gridSize{m_world.blockGrid.getWidth(), m_world.blockGrid.getHeight() - gridGraceY};
 
-        m_rtGame.draw(sf::RectangleShapeData{
-            .position         = toDrawCoordinates(sf::Vec2uz{0, gridGraceY}),
-            .origin           = floorVec2(drawBlockSize / 2.f),
-            .fillColor        = {30, 30, 30},
-            .outlineColor     = {35, 35, 35},
-            .outlineThickness = 1.f,
-            .size             = gridSize.toVec2f().componentWiseMul(drawBlockSize).addX(2.f).addY(2.f),
-        });
+        m_rtGame.draw(
+            sf::RectangleShapeData{
+                .position         = toDrawCoordinates(sf::Vec2uz{0, gridGraceY}),
+                .origin           = floorVec2(drawBlockSize / 2.f),
+                .fillColor        = {30, 30, 30},
+                .outlineColor     = {35, 35, 35},
+                .outlineThickness = 1.f,
+                .size             = gridSize.toVec2f().componentWiseMul(drawBlockSize).addX(2.f).addY(2.f),
+            },
+            {.view = m_worldView});
 
         const auto dividerStartPos = toDrawCoordinates(sf::Vec2uz{0, gridGraceY});
 
@@ -3446,32 +3516,37 @@ private:
             {
                 m_rtGame.draw(m_textureAtlas.getTexture(),
                               {
-                                  .position = dividerStartPos - drawBlockSize + sf::Vec2f{3.f, 3.f} +
-                                              sf::Vec2uz{x, y}.toVec2f().componentWiseMul(drawBlockSize),
+                                  .position    = dividerStartPos - drawBlockSize + sf::Vec2f{3.f, 3.f} +
+                                                 sf::Vec2uz{x, y}.toVec2f().componentWiseMul(drawBlockSize),
                                   .textureRect = m_txrDivider,
                               },
                               {
+                                  .view   = m_worldView,
                                   .shader = &m_shader,
                               });
             }
 
-        m_rtGame.draw(sf::RectangleShapeData{
-            .position         = toDrawCoordinates(sf::Vec2uz{0, gridGraceY}) - sf::Vec2f{1.f, 1.f},
-            .origin           = floorVec2(drawBlockSize / 2.f),
-            .fillColor        = sf::Color::Transparent,
-            .outlineColor     = {35, 35, 35},
-            .outlineThickness = 1.f,
-            .size             = gridSize.toVec2f().componentWiseMul(drawBlockSize).addX(4.f).addY(4.f),
-        });
+        m_rtGame.draw(
+            sf::RectangleShapeData{
+                .position         = toDrawCoordinates(sf::Vec2uz{0, gridGraceY}) - sf::Vec2f{1.f, 1.f},
+                .origin           = floorVec2(drawBlockSize / 2.f),
+                .fillColor        = sf::Color::Transparent,
+                .outlineColor     = {35, 35, 35},
+                .outlineThickness = 1.f,
+                .size             = gridSize.toVec2f().componentWiseMul(drawBlockSize).addX(4.f).addY(4.f),
+            },
+            {.view = m_worldView});
 
-        m_rtGame.draw(sf::RectangleShapeData{
-            .position         = toDrawCoordinates(sf::Vec2uz{0, gridGraceY}) - sf::Vec2f{3.f, 3.f},
-            .origin           = floorVec2(drawBlockSize / 2.f),
-            .fillColor        = sf::Color::Transparent,
-            .outlineColor     = {135, 135, 135},
-            .outlineThickness = 1.f,
-            .size             = gridSize.toVec2f().componentWiseMul(drawBlockSize).addX(8.f).addY(8.f),
-        });
+        m_rtGame.draw(
+            sf::RectangleShapeData{
+                .position         = toDrawCoordinates(sf::Vec2uz{0, gridGraceY}) - sf::Vec2f{3.f, 3.f},
+                .origin           = floorVec2(drawBlockSize / 2.f),
+                .fillColor        = sf::Color::Transparent,
+                .outlineColor     = {135, 135, 135},
+                .outlineThickness = 1.f,
+                .size             = gridSize.toVec2f().componentWiseMul(drawBlockSize).addX(8.f).addY(8.f),
+            },
+            {.view = m_worldView});
     }
 
 
@@ -3731,9 +3806,9 @@ private:
             {
                 for (int i = 0; i < 2; ++i)
                     m_hueColorCircleShapeParticles.emplaceBack(CircleParticleData{
-                        .position = lastDrawPos - drillDrawOffset +
-                                    drillDirectionToVec2i(drillAnim->direction).toVec2f() * (radius / 2.f) +
-                                    m_rngFast.getVec2f({-3.f, -3.f}, {3.f, 3.f}),
+                        .position      = lastDrawPos - drillDrawOffset +
+                                         drillDirectionToVec2i(drillAnim->direction).toVec2f() * (radius / 2.f) +
+                                         m_rngFast.getVec2f({-3.f, -3.f}, {3.f, 3.f}),
                         .velocity      = m_rngFast.getVec2f({-0.75f, -2.15f}, {0.75f, -0.25f}) * 0.05f,
                         .scale         = m_rngFast.getF(0.08f, 0.27f) * 0.95f,
                         .scaleDecay    = 0.f,
@@ -3758,7 +3833,7 @@ private:
                                   .textureRect = m_txrDrill,
                                   .color       = hueColorFromPaletteIdx(paletteIdx, 255u),
                               },
-                              {.shader = &m_shader});
+                              {.view = m_worldView, .shader = &m_shader});
             }
         }
     }
@@ -3897,15 +3972,15 @@ private:
             // Draw main spike
             spike.position = floorVec2(offset + mainBlockDrawPos.addX(sf::base::floor(-drawBlockSize.x / 2.f)));
             spike.color    = mainColor;
-            m_rtGame.draw(spike, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+            m_rtGame.draw(spike, {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
 
             // Draw ghost spike
             if (drawGhost)
             {
                 spike.position = floorVec2(offset + ghostBlockDrawPos.addY(sf::base::floor(drawBlockSize.y / 2.f))) -
                                  sf::Vec2f{1.f, 1.f};
-                spike.color = ghostColor;
-                m_rtGame.draw(spike, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+                spike.color    = ghostColor;
+                m_rtGame.draw(spike, {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
             }
         }
     }
@@ -4032,12 +4107,12 @@ private:
             guide.setFillColor(mainColor.withAlpha(32));
             guide.setSize({1.f, (endPos - startPos).length()});
             guide.setGlobalAnchorPoint(guideAnchorPoint, startPos + guideOffset);
-            m_rtGame.draw(guide, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+            m_rtGame.draw(guide, {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
 
             guide.setFillColor(mainColor.withAlpha(16));
             guide.setSize({2.f, (endPos - startPos).length()});
             guide.setGlobalAnchorPoint(guideAnchorPoint, startPos + guideOffset);
-            m_rtGame.draw(guide, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+            m_rtGame.draw(guide, {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
 
             return endPos;
         };
@@ -4052,7 +4127,7 @@ private:
             // Draw main spike
             spike.position = mainSpikePos + (laserDir * 4).toVec2f();
             spike.color    = mainColor;
-            m_rtGame.draw(spike, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+            m_rtGame.draw(spike, {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
 
             if (!drawGhost)
                 continue;
@@ -4063,7 +4138,7 @@ private:
             // Draw ghost spike
             spike.position = ghostSpikePos + (laserDir * 4).toVec2f();
             spike.color    = ghostColor;
-            m_rtGame.draw(spike, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+            m_rtGame.draw(spike, {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
 
             const auto endPos = drawGuide(ghostSpikePos, laserDirection, rotation);
 
@@ -4285,12 +4360,12 @@ private:
         SFEX_PROFILE_SCOPE_AUTOLABEL();
 
         for (auto& lb : m_lightningBolts)
-            lb.draw(m_rtGame, {.blendMode = sf::BlendAdd});
+            lb.draw(m_rtGame, {.blendMode = sf::BlendAdd, .view = m_worldView});
 
         if (m_optLaserBeam.hasValue())
         {
-            m_optLaserBeam->draw(m_rtGame, {.blendMode = sf::BlendAdd});
-            m_optLaserBeam->draw(m_rtGame, {.blendMode = sf::BlendAdd});
+            m_optLaserBeam->draw(m_rtGame, {.blendMode = sf::BlendAdd, .view = m_worldView});
+            m_optLaserBeam->draw(m_rtGame, {.blendMode = sf::BlendAdd, .view = m_worldView});
         }
     }
 
@@ -4332,6 +4407,7 @@ private:
                     .pointCount  = 3u,
                 },
                 {
+                    .view    = m_worldView,
                     .texture = &m_textureAtlas.getTexture(),
                     .shader  = &m_shader,
                 });
@@ -4345,13 +4421,14 @@ private:
         SFEX_PROFILE_SCOPE_AUTOLABEL();
 
         for (const auto& particle : m_hueColorCircleShapeParticles)
-            m_rtGame.draw(particleToCircleData(particle), {.texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
+            m_rtGame.draw(particleToCircleData(particle),
+                          {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
 
         for (const auto& particle : m_fixedColorCircleShapeParticles)
-            m_rtGame.draw(particleToCircleData(particle), {});
+            m_rtGame.draw(particleToCircleData(particle), {.view = m_worldView});
 
         for (const auto& particle : m_fixedColorSpriteParticles)
-            m_rtGame.draw(particleToSpriteData(particle), {.texture = &m_textureAtlas.getTexture()});
+            m_rtGame.draw(particleToSpriteData(particle), {.view = m_worldView, .texture = &m_textureAtlas.getTexture()});
     }
 
 
@@ -4381,7 +4458,7 @@ private:
             .size             = {128.f, 64.f},
         }};
 
-        m_rtGame.draw(statsBorder);
+        m_rtGame.draw(statsBorder, {.view = m_worldView});
 
         m_textVerticesBuffer.clear();
         m_textIndicesBuffer.clear();
@@ -4416,14 +4493,13 @@ private:
             },
             sf::Transform::fromPosition(statsBorder.getGlobalTopLeft() + sf::Vec2f{4.f, 2.f}));
 
-        m_rtGame.drawIndexedVertices({
-            .vertexData    = m_textVerticesBuffer.data(),
-            .vertexCount   = m_textVerticesBuffer.size(),
-            .indexData     = m_textIndicesBuffer.data(),
-            .indexCount    = m_textIndicesBuffer.size(),
-            .primitiveType = sf::PrimitiveType::Triangles,
-            .renderStates  = {.texture = &m_textureAtlas.getTexture()},
-        });
+        m_rtGame.drawIndexedVertices(
+            sf::DrawIndexedVerticesSettings{
+                .vertexSpan    = m_textVerticesBuffer,
+                .indexSpan     = m_textIndicesBuffer,
+                .primitiveType = sf::PrimitiveType::Triangles,
+            },
+            {.view = m_worldView, .texture = &m_textureAtlas.getTexture()});
     }
 
 
@@ -4440,7 +4516,7 @@ private:
             .size             = {184.f, 64.f + 48.f},
         }};
 
-        m_rtGame.draw(statsBorder);
+        m_rtGame.draw(statsBorder, {.view = m_worldView});
 
         sf::base::String perksStr;
 
@@ -4464,14 +4540,13 @@ private:
             },
             sf::Transform::fromPosition(statsBorder.getGlobalTopLeft() + sf::Vec2f{4.f, 2.f}));
 
-        m_rtGame.drawIndexedVertices({
-            .vertexData    = m_textVerticesBuffer.data(),
-            .vertexCount   = m_textVerticesBuffer.size(),
-            .indexData     = m_textIndicesBuffer.data(),
-            .indexCount    = m_textIndicesBuffer.size(),
-            .primitiveType = sf::PrimitiveType::Triangles,
-            .renderStates  = {.texture = &m_textureAtlas.getTexture()},
-        });
+        m_rtGame.drawIndexedVertices(
+            sf::DrawIndexedVerticesSettings{
+                .vertexSpan    = m_textVerticesBuffer,
+                .indexSpan     = m_textIndicesBuffer,
+                .primitiveType = sf::PrimitiveType::Triangles,
+            },
+            {.view = m_worldView, .texture = &m_textureAtlas.getTexture()});
     }
 
 
@@ -4527,7 +4602,8 @@ private:
                                   .string        = "Next:",
                                   .characterSize = 16u,
                                   .outlineColor  = sf::Color::White,
-                              });
+                              },
+                              {.view = m_worldView});
 
             if (m_world.perkCanHoldTetramino == 1)
                 m_rtGame.draw(m_font,
@@ -4536,7 +4612,8 @@ private:
                                   .string        = "Held:",
                                   .characterSize = 16u,
                                   .outlineColor  = sf::Color::White,
-                              });
+                              },
+                              {.view = m_worldView});
 
             drawShop();
         }
@@ -4545,7 +4622,6 @@ private:
             SFEX_PROFILE_SCOPE("display rtgame");
             m_rtGame.display();
         }
-
 
         const auto screenShake = m_rngFast.getVec2f({-m_screenShakeAmount, -m_screenShakeAmount},
                                                     {m_screenShakeAmount, m_screenShakeAmount});
@@ -4565,26 +4641,22 @@ private:
         const sf::Vec2f windowSize = m_window.getSize().toVec2f();
         const sf::Vec2f rtGameSize = m_rtGame.getSize().toVec2f() * scale;
 
-        m_shaderCRT.setUniform(m_ulInputSize, m_rtGame.getSize().toVec2f());
-        m_shaderCRT.setUniform(m_ulTime, m_totalTime);
-
         if (m_rtPostProcess.getSize() != rtGameSize.toVec2u())
-        {
             m_rtPostProcess = sf::RenderTexture::create(rtGameSize.toVec2u()).value();
-
-            auto view = m_rtPostProcess.getView();
-
-            view.size   = m_rtGame.getSize().toVec2f();
-            view.center = view.size / 2.f;
-
-            m_rtPostProcess.setView(view);
-        }
 
         {
             SFEX_PROFILE_SCOPE("postprocess");
 
+            const auto postProcessInternalView = sf::View::fromScreenSize(m_rtGame.getSize().toVec2f());
+
+            m_rtPostProcess.flush();
+
+            m_shaderCRT.setUniform(m_ulInputSize, m_rtGame.getSize().toVec2f());
+            m_shaderCRT.setUniform(m_ulTime, m_totalTime);
+
             m_rtPostProcess.clear();
-            m_rtPostProcess.draw(m_rtGame.getTexture(), {.shader = m_useCRTShader ? &m_shaderCRT : nullptr});
+            m_rtPostProcess.draw(m_rtGame.getTexture(),
+                                 {.view = postProcessInternalView, .shader = m_useCRTShader ? &m_shaderCRT : nullptr});
             m_rtPostProcess.display();
         }
 
@@ -4592,13 +4664,19 @@ private:
         const float     quakeYOffset     = m_quakeSinEffectHardDrop.getValue() + m_quakeSinEffectLineClear.getValue();
         const sf::Vec2f finalPosition    = floorVec2(centeredPosition + screenShake.addY(quakeYOffset));
 
-
         {
             SFEX_PROFILE_SCOPE("final draw");
 
             m_window.clear();
-            m_window.draw(m_rtPostProcess.getTexture(), {.position = finalPosition}, {.shader = &m_shaderPostProcess});
-            m_imGuiContext.render(m_window);
+            m_window.draw(m_rtPostProcess.getTexture(),
+                          {.position = finalPosition},
+                          {.view = m_windowView, .shader = &m_shaderPostProcess});
+        }
+
+        {
+            SFEX_PROFILE_SCOPE("imgui");
+
+            m_imGuiContext.render(m_window); // TODO P0: causes gl error in emscripten
         }
 
         {
@@ -4612,10 +4690,8 @@ public:
     ////////////////////////////////////////////////////////////
     Game()
     {
-        m_rtGame.setSmooth(false);
-        m_rtPostProcess.setSmooth(true);
-        m_font.setSmooth(false);
-        m_fontMago2.setSmooth(false);
+        m_font.getTexture().setSmooth(false);      // TODO P1: add Font::openFromXXX overloads with TextureSettings
+        m_fontMago2.getTexture().setSmooth(false); // TODO P1: add Font::openFromXXX overloads with TextureSettings
 
         float scale = 4.f;
 

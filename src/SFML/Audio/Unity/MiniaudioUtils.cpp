@@ -5,17 +5,20 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Audio/MiniaudioUtils.hpp"
+#include "SFML/Audio/Priv/MiniaudioUtils.hpp"
 
 #include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/ChannelMap.hpp"
 #include "SFML/Audio/EffectProcessor.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
-#include "SFML/Audio/SoundBase.hpp"
+#include "SFML/Audio/Priv/SoundBase.hpp"
 #include "SFML/Audio/SoundChannel.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/LifetimeDependant.hpp"
 #include "SFML/System/Time.hpp"
+
+#include "SFML/Base/IntTypes.hpp"
 
 #ifdef SFML_ENABLE_LIFETIME_TRACKING
     #include "SFML/System/LifetimeDependee.hpp"
@@ -113,20 +116,45 @@ MiniaudioUtils::SoundBase::SoundBase(PlaybackDevice&   thePlaybackDevice,
 
 
 ////////////////////////////////////////////////////////////
+void MiniaudioUtils::SoundBase::uninitSound()
+{
+    // `ma_sound_uninit` detaches the sound from the engine graph and
+    // synchronizes with the audio thread, ensuring the read callback is
+    // not in flight after this call returns. Derived `Impl` types should
+    // call this explicitly before any data their read callback depends
+    // on is destroyed (member destruction order would otherwise free
+    // those buffers before this destructor runs).
+    if (soundUninitialized)
+        return;
+
+    ma_sound_uninit(&sound);
+    soundUninitialized = true;
+}
+
+
+////////////////////////////////////////////////////////////
 MiniaudioUtils::SoundBase::~SoundBase()
 {
 #ifdef SFML_ENABLE_LIFETIME_TRACKING
-    // Avoid undefined behavior when the destructor is called after the owning sound object
-    // fails a lifetime tracking test
+    // When the owning sound object fails a lifetime tracking test, its dependee
+    // has already been destroyed. We must still detach from the engine graph
+    // (otherwise the engine will access freed node memory during its own
+    // destruction), but skip `ma_data_source_uninit` as the data source may
+    // reference the freed dependee's memory.
 
     if (priv::LifetimeDependee::TestingModeGuard::fatalErrorTriggered("SoundBuffer") ||
         priv::LifetimeDependee::TestingModeGuard::fatalErrorTriggered("MusicReader"))
     {
+        uninitSound();
+
+        ma_node_uninit(&effectNode, nullptr);
+        effectNodeUninitialized = true;
+
         return;
     }
 #endif
 
-    ma_sound_uninit(&sound);
+    uninitSound();
 
     ma_node_uninit(&effectNode, nullptr);
     effectNodeUninitialized = true; // Only for debugging

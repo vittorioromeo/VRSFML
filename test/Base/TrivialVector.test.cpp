@@ -89,6 +89,19 @@ TEST_CASE("[Base] Base/Vector.hpp")
         CHECK(tv5.capacity() == 0u);
     }
 
+    SECTION("Copy construct empty vector")
+    {
+        const sf::base::Vector<int> source;
+        const sf::base::Vector<int> copy = source; // NOLINT(performance-unnecessary-copy-initialization)
+
+        CHECK(copy.data() == nullptr);
+        CHECK(copy.begin() == nullptr);
+        CHECK(copy.end() == nullptr);
+        CHECK(copy.size() == 0u);
+        CHECK(copy.capacity() == 0u);
+        CHECK(copy.empty());
+    }
+
     SECTION("Non-empty")
     {
         sf::base::Vector<int> tv;

@@ -1,4 +1,5 @@
-layout(location = 1) uniform sampler2D sf_u_texture;
+#include "default_uniforms.glsl"
+
 uniform float pixel_threshold;
 
 in vec4 sf_v_color;

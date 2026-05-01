@@ -111,8 +111,8 @@ macro(sfml_add_library module)
         target_compile_definitions(${target} PUBLIC -DSFML_OPENGL_ES)
     endif()
 
-    # enable C++20 support
-    target_compile_features(${target} PUBLIC cxx_std_20)
+    # enable C++23 support
+    target_compile_features(${target} PUBLIC cxx_std_23)
 
     # Add required flags for GCC if coverage reporting is enabled
     if(SFML_ENABLE_COVERAGE AND (SFML_COMPILER_GCC OR SFML_COMPILER_CLANG))
@@ -337,16 +337,6 @@ endmacro()
 #                           DEPENDS SFML::Network)
 macro(sfml_add_example target)
 
-    # list and copy resources for emscripten support
-    if(SFML_OS_EMSCRIPTEN)
-        if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/resources)
-            file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/../..)
-            file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-        endif()
-
-        file(GLOB GLOBBED_RESOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} resources/*)
-    endif()
-
     # parse the arguments
     cmake_parse_arguments(THIS "GUI_APP" "" "SOURCES;BUNDLE_RESOURCES;DEPENDS" ${ARGN})
 
@@ -414,7 +404,7 @@ macro(sfml_add_example target)
     # set the properties required for debugging
     set_target_properties(${target} PROPERTIES
         VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        
+
         XCODE_SCHEME_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         XCODE_GENERATE_SCHEME ON)
 
@@ -431,10 +421,26 @@ macro(sfml_add_example target)
         target_link_options(${target} PRIVATE ${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS})
         set_target_properties(${target} PROPERTIES SUFFIX ".html")
 
-        foreach(RESOURCE ${GLOBBED_RESOURCES})
-            target_link_options(${target} PRIVATE "SHELL:--embed-file ${RESOURCE}")
-        endforeach()
+        if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/resources)
+            # 1. Define a unique path for this target's resources in the build directory
+            set(TARGET_RESOURCE_STAGING_DIR "${CMAKE_CURRENT_BINARY_DIR}/staging_${target}")
+
+            # 2. Copy resources to this isolated staging area
+            # This prevents target A and target B from overwriting each other in the build folder
+            file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources DESTINATION ${TARGET_RESOURCE_STAGING_DIR})
+
+            # 3. Embed the isolated folder into the WASM virtual filesystem
+            # The syntax "physical_path@virtual_path" maps our unique staging folder
+            # to the "resources" folder the C++ code expects at runtime.
+            target_link_options(${target} PRIVATE
+                "SHELL:--embed-file ${TARGET_RESOURCE_STAGING_DIR}/resources@resources"
+            )
+
+            # Ensure the target rebuilds if resources change
+            set_property(TARGET ${target} APPEND PROPERTY SUBDIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/resources)
+        endif()
     endif()
+
     if(SFML_OS_IOS)
         sfml_set_common_ios_properties(${target})
     endif()
@@ -540,7 +546,13 @@ function(sfml_add_test target SOURCES DEPENDS)
 
     # Add the test
     if(NOT SFML_OS_EMSCRIPTEN)
-        doctest_discover_tests(${target} WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+        # Wire up LSan suppressions for the dbus / GL driver / Vulkan leaks that
+        # surface during graphics-context teardown. The suppressions list lives in
+        # `lsan_suppressions.txt` at the project root; without this wiring those
+        # known-benign leaks cause ctest failures on sanitizer builds.
+        doctest_discover_tests(${target}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+            PROPERTIES ENVIRONMENT "LSAN_OPTIONS=suppressions=${PROJECT_SOURCE_DIR}/lsan_suppressions.txt")
     endif()
 endfunction()
 

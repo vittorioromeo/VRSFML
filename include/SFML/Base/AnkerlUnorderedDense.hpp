@@ -83,7 +83,7 @@
 #include "SFML/Base/Builtin/Memset.hpp"
 #include "SFML/Base/DeclVal.hpp"
 #include "SFML/Base/Exchange.hpp"
-#include "SFML/Base/InitializerList.hpp" // IWYU pragma: keep
+#include "SFML/Base/InitializerList.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/MinMax.hpp"
@@ -91,7 +91,6 @@
 #include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Trait/Conditional.hpp"
-#include "SFML/Base/Trait/EnableIf.hpp"
 #include "SFML/Base/Trait/IsConstructible.hpp"
 #include "SFML/Base/Trait/IsConvertible.hpp"
 #include "SFML/Base/Trait/IsEnum.hpp"
@@ -103,17 +102,12 @@
 #include "SFML/Base/Trait/IsVoid.hpp"
 #include "SFML/Base/Trait/RemoveCVRef.hpp"
 #include "SFML/Base/Trait/UnderlyingType.hpp"
+#include "SFML/Base/Trait/VoidT.hpp"
+#include "SFML/Base/Swap.hpp"
 #include "SFML/Base/Vector.hpp"
+#include "SFML/Base/UIntPtrT.hpp"
 
-#include <cstdint> // uintptr_t
-
-//  #include <utility>          // for pair, piece...
-
-#if __has_include(<bits/functional_hash.h>)
-#    include <bits/functional_hash.h>
-#else
-#    include <functional>          // for hash
-#endif
+#include "SFML/Base/FwdStdHash.hpp"
 
 #    if defined(_MSC_VER) && defined(_M_X64)
 #        include <intrin.h>
@@ -128,21 +122,6 @@
 #        define ANKERL_UNORDERED_DENSE_UNLIKELY(x) (x) // NOLINT(cppcoreguidelines-macro-usage)
 #    endif
 
-#ifdef _LIBCPP_BEGIN_NAMESPACE_STD
-
-_LIBCPP_BEGIN_NAMESPACE_STD
-
-    template <typename> struct hash;
-
-_LIBCPP_END_NAMESPACE_STD
-
-#else
-
-namespace std {
-    template <typename> struct hash;
-} // namespace std
-
-#endif
 
 
 namespace ankerl::unordered_dense::inline ANKERL_UNORDERED_DENSE_NAMESPACE {
@@ -435,7 +414,8 @@ struct hash {
 };
 
 template <typename T>
-struct hash<T, typename std::hash<T>::is_avalanching> {
+    requires requires { typename std::hash<T>::is_avalanching; }
+struct hash<T> {
     using is_avalanching = void;
     auto operator()(T const& obj) const noexcept(noexcept(sf::base::declVal<std::hash<T>>().operator()(sf::base::declVal<T const&>())))
         -> sf::base::U64 {
@@ -448,7 +428,7 @@ struct hash<T*> {
     using is_avalanching = void;
     auto operator()(T* ptr) const noexcept -> sf::base::U64 {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        return detail::wyhash::hash(reinterpret_cast<uintptr_t>(ptr));
+        return detail::wyhash::hash(reinterpret_cast<sf::base::UIntPtrT>(ptr));
     }
 };
 
@@ -458,7 +438,7 @@ struct hash<std::unique_ptr<T>> {
     using is_avalanching = void;
     auto operator()(std::unique_ptr<T> const& ptr) const noexcept -> sf::base::U64 {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        return detail::wyhash::hash(reinterpret_cast<uintptr_t>(ptr.get()));
+        return detail::wyhash::hash(reinterpret_cast<sf::base::UIntPtrT>(ptr.get()));
     }
 };
 
@@ -467,13 +447,14 @@ struct hash<std::shared_ptr<T>> {
     using is_avalanching = void;
     auto operator()(std::shared_ptr<T> const& ptr) const noexcept -> sf::base::U64 {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        return detail::wyhash::hash(reinterpret_cast<uintptr_t>(ptr.get()));
+        return detail::wyhash::hash(reinterpret_cast<sf::base::UIntPtrT>(ptr.get()));
     }
 };
 */
 
 template <typename Enum>
-struct hash<Enum, sf::base::EnableIf<SFML_BASE_IS_ENUM(Enum)>> {
+    requires SFML_BASE_IS_ENUM(Enum)
+struct hash<Enum> {
     using is_avalanching = void;
     auto operator()(Enum e) const noexcept -> sf::base::U64 {
         using underlying = SFML_BASE_UNDERLYING_TYPE(Enum);
@@ -482,13 +463,30 @@ struct hash<Enum, sf::base::EnableIf<SFML_BASE_IS_ENUM(Enum)>> {
 };
 
 template <typename StringLike>
-struct hash<StringLike, sf::base::EnableIf<requires (const StringLike& stringLike) {
-    stringLike.data();
-    stringLike.size();
-}>> {
+    requires requires (const StringLike& stringLike) {
+        stringLike.data();
+        stringLike.size();
+    }
+struct hash<StringLike> {
     using is_avalanching = void;
     auto operator()(const StringLike& stringLike) const noexcept -> sf::base::U64 {
         return detail::wyhash::hash(stringLike.data(), sizeof(SFML_BASE_REMOVE_CVREF(decltype(stringLike[0]))) * stringLike.size());
+    }
+};
+
+// Strong-typedef-like wrappers (e.g. types produced by `TSURV_DEFINE_STRONG_TYPEDEF`):
+// any type that exposes `T::UnderlyingType` and a `toUnderlying()` accessor returning
+// something convertible to `sf::base::U64` is hashed by running the underlying value
+// through wyhash. Tagged avalanching to skip the second-stage mix.
+template <typename StrongTypedef>
+    requires requires (const StrongTypedef& s) {
+        typename StrongTypedef::UnderlyingType;
+        { static_cast<sf::base::U64>(s.toUnderlying()) };
+    }
+struct hash<StrongTypedef> {
+    using is_avalanching = void;
+    auto operator()(const StrongTypedef& value) const noexcept -> sf::base::U64 {
+        return detail::wyhash::hash(static_cast<sf::base::U64>(value.toUnderlying()));
     }
 };
 
@@ -561,9 +559,7 @@ ANKERL_UNORDERED_DENSE_HASH_STATICCAST(bool);
 ANKERL_UNORDERED_DENSE_HASH_STATICCAST(char);
 ANKERL_UNORDERED_DENSE_HASH_STATICCAST(signed char);
 ANKERL_UNORDERED_DENSE_HASH_STATICCAST(unsigned char);
-#    if ANKERL_UNORDERED_DENSE_CPP_VERSION >= 202002L && defined(__cpp_char8_t)
 ANKERL_UNORDERED_DENSE_HASH_STATICCAST(char8_t);
-#    endif
 ANKERL_UNORDERED_DENSE_HASH_STATICCAST(char16_t);
 ANKERL_UNORDERED_DENSE_HASH_STATICCAST(char32_t);
 ANKERL_UNORDERED_DENSE_HASH_STATICCAST(wchar_t);
@@ -607,15 +603,18 @@ namespace detail {
 struct nonesuch {};
 struct default_container_t {};
 
+struct false_t { static constexpr bool value = false; };
+struct true_t  { static constexpr bool value = true;  };
+
 template <class Default, class AlwaysVoid, template <class...> class Op, class... Args>
 struct detector {
-    using value_t = std::false_type;
+    using value_t = false_t;
     using type = Default;
 };
 
 template <class Default, template <class...> class Op, class... Args>
-struct detector<Default, std::void_t<Op<Args...>>, Op, Args...> {
-    using value_t = std::true_type;
+struct detector<Default, sf::base::VoidT<Op<Args...>>, Op, Args...> {
+    using value_t = true_t;
     using type = Op<Args...>;
 };
 
@@ -1488,7 +1487,11 @@ private:
     }
 
 public:
-    explicit table(sf::base::SizeT bucket_count = 0, const Hash& hash = Hash(), const KeyEqual& equal = KeyEqual()) :
+    table() : table(0u)
+    {
+    }
+
+    explicit table(sf::base::SizeT bucket_count, const Hash& hash = Hash(), const KeyEqual& equal = KeyEqual()) :
         m_values(),
         m_buckets(),
         m_hash(hash),
@@ -2021,15 +2024,13 @@ public:
                                               SFML_BASE_IS_NOTHROW_SWAPPABLE(Hash) &&
                                               SFML_BASE_IS_NOTHROW_SWAPPABLE(KeyEqual)))
     {
-        using std::swap;
-
-        swap(m_values, other.m_values);
-        swap(m_buckets, other.m_buckets);
-        swap(m_max_bucket_capacity, other.m_max_bucket_capacity);
-        swap(m_max_load_factor, other.m_max_load_factor);
-        swap(m_hash, other.m_hash);
-        swap(m_equal, other.m_equal);
-        swap(m_shifts, other.m_shifts);
+        sf::base::genericSwap(m_values, other.m_values);
+        sf::base::genericSwap(m_buckets, other.m_buckets);
+        sf::base::genericSwap(m_max_bucket_capacity, other.m_max_bucket_capacity);
+        sf::base::genericSwap(m_max_load_factor, other.m_max_load_factor);
+        sf::base::genericSwap(m_hash, other.m_hash);
+        sf::base::genericSwap(m_equal, other.m_equal);
+        sf::base::genericSwap(m_shifts, other.m_shifts);
     }
 
     friend void swap(table& lhs, table& rhs) noexcept(noexcept(lhs.swap(rhs)))
@@ -2319,11 +2320,6 @@ ANKERL_UNORDERED_DENSE_EXPORT template <class Key,
                                         class Bucket = bucket_type::standard,
                                         class BucketContainer = detail::default_container_t>
 using segmented_set = detail::table<Key, void, Hash, KeyEqual, Bucket, BucketContainer, true>;
-
-// deduction guides ///////////////////////////////////////////////////////////
-
-// deduction guides for alias templates are only possible since C++20
-// see https://en.cppreference.com/w/cpp/language/class_template_argument_deduction
 
 } // namespace ankerl::unordered_dense::inline ANKERL_UNORDERED_DENSE_NAMESPACE
 

@@ -6,7 +6,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 
 namespace sf::priv
@@ -14,15 +14,22 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 /// \brief Copy framebuffer contents between specified FBOs
 ///
-/// Binds the given source and destination framebuffer objects (FBOs) and performs
-/// a blit operation between them with optional vertical flipping.
+/// Binds `srcFBO` to `GL_READ_FRAMEBUFFER` and `dstFBO` to
+/// `GL_DRAW_FRAMEBUFFER` (asserting that both are framebuffer-complete
+/// in debug builds), then delegates to `blitFramebuffer` to copy a
+/// region of the requested size between them with optional Y-axis
+/// inversion.
 ///
 /// \param invertYAxis Whether to flip the source vertically during copy
 /// \param size        Dimensions of the region to copy
-/// \param srcFBO      Source framebuffer ID
-/// \param dstFBO      Destination framebuffer ID
-/// \param srcPos      Source region starting position (default: 0,0)
-/// \param dstPos      Destination region starting position (default: 0,0)
+/// \param srcFBO      Source framebuffer ID (`0` for the default framebuffer)
+/// \param dstFBO      Destination framebuffer ID (`0` for the default framebuffer)
+/// \param srcPos      Source region starting position (default: `{0, 0}`)
+/// \param dstPos      Destination region starting position (default: `{0, 0}`)
+///
+/// \note Modifies the read/draw framebuffer bindings as a side effect.
+///       Wrap the call in a `FramebufferSaver` if you need to preserve
+///       the surrounding state.
 ///
 ////////////////////////////////////////////////////////////
 void copyFramebuffer(bool         invertYAxis,
@@ -31,29 +38,5 @@ void copyFramebuffer(bool         invertYAxis,
                      unsigned int dstFBO,
                      Vec2u        srcPos = {0u, 0u},
                      Vec2u        dstPos = {0u, 0u});
-
-////////////////////////////////////////////////////////////
-/// \brief Copy framebuffer contents with vertical flipping
-///
-/// Copies source framebuffer contents to destination while vertically flipping
-/// the image. Uses an intermediate framebuffer for OpenGL ES compatibility.
-///
-/// \param tmpTextureNativeHandle Temporary texture handle for intermediate operations (OpenGL ES only)
-/// \param size                   Dimensions of the region to copy
-/// \param srcFBO                 Source framebuffer ID
-/// \param dstFBO                 Destination framebuffer ID
-/// \param srcPos                 Source region starting position (default: 0,0)
-/// \param dstPos                 Destination region starting position (default: 0,0)
-///
-/// \return True if copy succeeded, false otherwise
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] bool copyFlippedFramebuffer(
-    unsigned int tmpTextureNativeHandle,
-    Vec2u        size,
-    unsigned int srcFBO,
-    unsigned int dstFBO,
-    Vec2u        srcPos = {0u, 0u},
-    Vec2u        dstPos = {0u, 0u});
 
 } // namespace sf::priv

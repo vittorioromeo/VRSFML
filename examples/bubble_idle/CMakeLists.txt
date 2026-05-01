@@ -1,6 +1,42 @@
 # all source files
 if (NOT SFML_OS_EMSCRIPTEN AND NOT ARCH_ARM64)
-    set(SRC BubbleIdle.cpp Serialization.cpp Steam.cpp BubbleByteUI.cpp CatNames.cpp)
+    set(SRC BubbleIdle.cpp
+            BubbleIdleMain.cpp
+            InputHelper.cpp
+            InputState.cpp
+            Serialization.cpp
+            Steam.cpp
+            CatNames.cpp
+            MainApp.cpp
+            MainGameplay.cpp
+            GameRender.cpp
+            GameUpdate.cpp
+            MainLoop.cpp
+            PlayerInput.cpp
+            MainProgression.cpp
+            MainRendering.cpp
+            MainSystems.cpp
+            UIQuickbar.cpp
+            UIRuntime.cpp
+            UITabBar.cpp
+            UIShopCats.cpp
+            UIShopCore.cpp
+            UIShopGoals.cpp
+            UIPrestigeCore.cpp
+            UIPrestigeOverview.cpp
+            UIPrestigeShrines.cpp
+            UISettingsAudio.cpp
+            UISettingsData.cpp
+            UISettingsDebug.cpp
+            UISettingsDisplay.cpp
+            UISettingsGraphics.cpp
+            UISettingsUi.cpp
+            UiCore.cpp
+            UiMagic.cpp
+            UiPrestige.cpp
+            UiSettings.cpp
+            UiShop.cpp
+            UiStats.cpp)
 
     # set the correct steam library
     if (SFML_OS_WINDOWS)
@@ -11,7 +47,42 @@ if (NOT SFML_OS_EMSCRIPTEN AND NOT ARCH_ARM64)
 
     add_definitions(-DBUBBLEBYTE_USE_STEAMWORKS=1)
 else()
-    set(SRC BubbleIdle.cpp Serialization.cpp BubbleByteUI.cpp CatNames.cpp)
+    set(SRC BubbleIdle.cpp
+            BubbleIdleMain.cpp
+            InputHelper.cpp
+            InputState.cpp
+            Serialization.cpp
+            CatNames.cpp
+            MainApp.cpp
+            MainGameplay.cpp
+            GameRender.cpp
+            GameUpdate.cpp
+            MainLoop.cpp
+            PlayerInput.cpp
+            MainProgression.cpp
+            MainRendering.cpp
+            MainSystems.cpp
+            UIQuickbar.cpp
+            UIRuntime.cpp
+            UITabBar.cpp
+            UIShopCats.cpp
+            UIShopCore.cpp
+            UIShopGoals.cpp
+            UIPrestigeCore.cpp
+            UIPrestigeOverview.cpp
+            UIPrestigeShrines.cpp
+            UISettingsAudio.cpp
+            UISettingsData.cpp
+            UISettingsDebug.cpp
+            UISettingsDisplay.cpp
+            UISettingsGraphics.cpp
+            UISettingsUi.cpp
+            UiCore.cpp
+            UiMagic.cpp
+            UiPrestige.cpp
+            UiSettings.cpp
+            UiShop.cpp
+            UiStats.cpp)
     set(STEAM_LIB "")
 endif()
 
@@ -25,6 +96,10 @@ if (WIN32 AND NOT ARCH_ARM64)
 endif()
 
 target_include_directories(bubble_idle PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/public")
+
+# set_target_properties(bubble_idle PROPERTIES
+#                       UNITY_BUILD ON
+#                       UNITY_BUILD_BATCH_SIZE 0)
 
 if (WIN32 AND ${CMAKE_BUILD_TYPE} STREQUAL "Release")
     target_compile_options(bubble_idle PRIVATE "-Wl,-subsystem,windows" "-mwindows")
@@ -45,6 +120,10 @@ if (FALSE)
     endif()
 
     target_include_directories(bubble_idle_demo PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/public")
+
+    set_target_properties(bubble_idle_demo PROPERTIES
+                          UNITY_BUILD ON
+                          UNITY_BUILD_BATCH_SIZE 0)
 
     if (WIN32 AND ${CMAKE_BUILD_TYPE} STREQUAL "Release")
         target_compile_options(bubble_idle_demo PRIVATE "-Wl,-subsystem,windows" "-mwindows")

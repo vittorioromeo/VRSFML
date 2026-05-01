@@ -25,8 +25,16 @@ class Event;
 namespace sf::EventUtils
 {
 ////////////////////////////////////////////////////////////
-/// \brief Check if the event is `Event::Closed` or `Event::KeyPressed`
-///        with key `Keyboard::Key::Escape`
+/// \brief Check if the event is `Event::Closed` or an escape key press
+///
+/// Convenience helper for the common "exit on close or
+/// Escape" pattern. Returns `true` if the event is either
+/// `sf::Event::Closed` or `sf::Event::KeyPressed` with
+/// `code == sf::Keyboard::Key::Escape`.
+///
+/// \param event Event to inspect
+///
+/// \return `true` if the event matches, `false` otherwise
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_WINDOW_API bool isClosedOrEscapeKeyPressed(const Event& event);
@@ -37,8 +45,9 @@ namespace sf::EventUtils
 /// \namespace sf::EventUtils
 /// \ingroup window
 ///
-/// Provides event handling utilities
+/// Small collection of free helpers built on top of
+/// `sf::Event` for the most common event-loop patterns.
 ///
-/// \see sf::Event
+/// \see `sf::Event`
 ///
 ////////////////////////////////////////////////////////////

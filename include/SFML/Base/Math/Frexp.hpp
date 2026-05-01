@@ -14,6 +14,8 @@
     #define SFML_BASE_MATH_FREXPF(...) __builtin_frexpf(__VA_ARGS__)
     #define SFML_BASE_MATH_FREXPL(...) __builtin_frexpl(__VA_ARGS__)
 #else
+    #include <cmath> // IWYU pragma: keep
+
     #define SFML_BASE_MATH_FREXP(...)  ::std::frexp(__VA_ARGS__)
     #define SFML_BASE_MATH_FREXPF(...) ::std::frexpf(__VA_ARGS__)
     #define SFML_BASE_MATH_FREXPL(...) ::std::frexpl(__VA_ARGS__)
@@ -25,7 +27,7 @@ namespace sf::base
 {
 
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr auto frexp(const T arg0, int* exp) noexcept
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr auto frexp(const T arg0, int* exp) noexcept
 {
     if constexpr (SFML_BASE_IS_SAME(T, float))
         return SFML_BASE_MATH_FREXPF(arg0, exp);

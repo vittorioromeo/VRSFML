@@ -279,30 +279,39 @@ public:
     void draw(RenderTarget& target, RenderStates states) const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Bind a vertex buffer for rendering
+    /// \brief Bind this vertex buffer for raw OpenGL rendering
     ///
-    /// This function is not part of the graphics API, it mustn't be
-    /// used when drawing SFML entities. It must be used only if you
-    /// mix `sf::VertexBuffer` with OpenGL code.
+    /// This function is **not** part of the high-level graphics
+    /// API and must not be used when drawing VRSFML entities.
+    /// It exists only to support custom OpenGL geometry that
+    /// wants to source data from an `sf::VertexBuffer`.
+    ///
+    /// Call `sf::VertexBuffer::unbind()` to revert to no vertex
+    /// buffer being bound.
     ///
     /// \code
     /// sf::VertexBuffer vb1, vb2;
-    /// ...
-    /// sf::VertexBuffer::bind(&vb1);
-    /// // draw OpenGL stuff that use vb1...
-    /// sf::VertexBuffer::bind(&vb2);
-    /// // draw OpenGL stuff that use vb2...
-    /// sf::VertexBuffer::bind(nullptr);
-    /// // draw OpenGL stuff that use no vertex buffer...
+    /// // ...
+    /// vb1.bind();
+    /// // draw OpenGL stuff that uses vb1...
+    /// vb2.bind();
+    /// // draw OpenGL stuff that uses vb2...
+    /// sf::VertexBuffer::unbind();
+    /// // draw OpenGL stuff that uses no vertex buffer...
     /// \endcode
     ///
-    /// \param vertexBuffer Pointer to the vertex buffer to bind, can be null to use no vertex buffer
+    /// \see `unbind`
     ///
     ////////////////////////////////////////////////////////////
     void bind() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Unbind any bound vertex buffer
+    /// \brief Unbind any currently bound vertex buffer
+    ///
+    /// Counterpart of `bind`. Resets the OpenGL
+    /// `GL_ARRAY_BUFFER` binding to 0.
+    ///
+    /// \see `bind`
     ///
     ////////////////////////////////////////////////////////////
     static void unbind();
@@ -373,20 +382,21 @@ SFML_GRAPHICS_API void swap(VertexBuffer& lhs, VertexBuffer& rhs) noexcept;
 /// pending data transfers complete before the vertex buffer is sourced
 /// by the rendering pipeline.
 ///
-/// It inherits `sf::Drawable`, but unlike other drawables it
-/// is not transformable.
+/// Unlike most other built-in drawables, `sf::VertexBuffer` is
+/// not transformable. Apply any required transform via the
+/// `sf::RenderStates` you pass to the draw call.
 ///
 /// Example:
 /// \code
-/// sf::Vertex vertices[15];
-/// ...
+/// sf::Vertex vertices[15] = {/* ... */};
+///
 /// sf::VertexBuffer triangles(sf::PrimitiveType::Triangles);
-/// triangles.create(15);
-/// triangles.update(vertices);
-/// ...
+/// (void)triangles.create(15);
+/// (void)triangles.update(vertices);
+///
 /// window.draw(triangles);
 /// \endcode
 ///
-/// \see `sf::Vertex`
+/// \see `sf::Vertex`, `sf::DrawableBatch`
 ///
 ////////////////////////////////////////////////////////////

@@ -1,5 +1,6 @@
-layout(location = 1) uniform sampler2D sf_u_texture;
-layout(location = 3) uniform float edge_threshold;
+#include "default_uniforms.glsl"
+
+layout(location = 4) uniform float edge_threshold;
 
 in vec4 sf_v_color;
 in vec2 sf_v_texCoord;

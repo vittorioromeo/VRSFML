@@ -60,29 +60,7 @@ if(SFML_ENABLE_STACK_TRACES)
     add_definitions(-DSFML_ENABLE_STACK_TRACES)
 
     if (NOT SFML_OS_EMSCRIPTEN)
-        CPMAddPackage(
-            NAME cpptrace
-            GITHUB_REPOSITORY vittorioromeo/cpptrace
-            GIT_TAG bcd42b677bfd0209add98123e97e6236f81b9c9b
-            SYSTEM TRUE
-        )
-
-        if(TARGET libzstd_static)
-            target_compile_options(libzstd_static PRIVATE "-w")
-            set_target_properties(libzstd_static PROPERTIES UNITY_BUILD OFF)
-        endif()
-
-        if(TARGET dwarf)
-            target_compile_options(dwarf PRIVATE "-w")
-            set_target_properties(dwarf PROPERTIES UNITY_BUILD OFF)
-        endif()
-
-        target_compile_options(cpptrace-lib PRIVATE "-w")
-        set_target_properties(cpptrace-lib PROPERTIES UNITY_BUILD ON)
-        set_target_properties(cpptrace-lib PROPERTIES UNITY_BUILD_BATCH_SIZE 64)
-
-        # install(TARGETS cpptrace-lib EXPORT SFMLConfigExport)
-        # install(TARGETS dwarf EXPORT SFMLConfigExport)
+        add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/extlibs/libbacktrace)
     endif()
 endif()
 
@@ -382,8 +360,8 @@ else()
     # create SFML.framework
     add_library(SFML ${SFML_SOURCES})
 
-    # enable C++20 support
-    target_compile_features(SFML PUBLIC cxx_std_20)
+    # enable C++23 support
+    target_compile_features(SFML PUBLIC cxx_std_23)
 
     # set the target flags to use the appropriate C++ standard library
     sfml_set_stdlib(SFML)

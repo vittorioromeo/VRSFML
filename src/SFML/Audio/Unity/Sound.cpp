@@ -8,17 +8,20 @@
 #include "SFML/Audio/Sound.hpp"
 
 #include "SFML/Audio/AudioSettings.hpp"
-#include "SFML/Audio/MiniaudioUtils.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
-#include "SFML/Audio/SoundBase.hpp"
+#include "SFML/Audio/Priv/MiniaudioUtils.hpp"
+#include "SFML/Audio/Priv/SoundBase.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/LifetimeDependant.hpp"
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/Memcpy.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/MinMax.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 #include <miniaudio.h>
 
@@ -42,10 +45,8 @@ struct Sound::Impl
     }
 
     ////////////////////////////////////////////////////////////
-    static void onEnd(void* const userData, ma_sound* const soundPtr)
+    static void onEnd(void* const /* userData */, ma_sound* const soundPtr)
     {
-        static_cast<Impl*>(userData)->owner.m_playing = false;
-
         // Seek back to the start of the sound when it finishes playing
         if (const ma_result result = ma_sound_seek_to_pcm_frame(soundPtr, 0u); result != MA_SUCCESS)
             priv::MiniaudioUtils::fail("seek sound to frame 0", result);
@@ -172,7 +173,15 @@ Sound::Sound(PlaybackDevice& playbackDevice, const SoundBuffer& buffer) : Sound{
 
 
 ////////////////////////////////////////////////////////////
-Sound::~Sound() = default;
+Sound::~Sound()
+{
+    SFML_LIFETIME_DEPENDANT_RETURN_IF_TESTING_ERROR(SoundBuffer);
+
+    // TODO P1: revisit?
+    // Stop the sound before `Impl` begins tearing down, otherwise the audio
+    // callback can still race with `read()` during destruction.
+    pause();
+}
 
 
 ////////////////////////////////////////////////////////////

@@ -11,9 +11,9 @@
 ////////////////////////////////////////////////////////////
 // Explicit instantiation definitions
 ////////////////////////////////////////////////////////////
-template class sf::Vec3<float>;
-template class sf::Vec3<double>;
-template class sf::Vec3<long double>;
+template struct sf::Vec3<float>;
+template struct sf::Vec3<double>;
+template struct sf::Vec3<long double>;
 
 #define SFML_INSTANTIATE_VECTOR3_INTEGRAL_MEMBER_FUNCTIONS(type)                     \
     template type           sf::Vec3<type>::lengthSquared() const;                   \

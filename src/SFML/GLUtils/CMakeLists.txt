@@ -34,16 +34,6 @@ elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
             )
         endif()
     endif()
-elseif(SFML_OS_MACOS)
-    enable_language(OBJC OBJCXX)
-    set(PLATFORM_SRC
-        # ${SRCROOT}/macOS/SFOpenGLView.h
-        # ${SRCROOT}/macOS/SFOpenGLView.mm
-        # ${SRCROOT}/macOS/SFOpenGLView+keyboard.mm
-        # ${SRCROOT}/macOS/SFOpenGLView+keyboard_priv.h
-        # ${SRCROOT}/macOS/SFOpenGLView+mouse.mm
-        # ${SRCROOT}/macOS/SFOpenGLView+mouse_priv.h
-    )
 elseif(SFML_OS_IOS)
     enable_language(OBJCXX)
 elseif(SFML_OS_ANDROID)
@@ -73,9 +63,6 @@ if(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
         find_package(DRM REQUIRED)
         find_package(GBM REQUIRED)
         target_link_libraries(sfml-glutils PRIVATE DRM::DRM GBM::GBM)
-    else()
-        find_package(X11 REQUIRED COMPONENTS Xi)
-        target_link_libraries(sfml-glutils PRIVATE X11::X11 X11::Xi)
     endif()
 endif()
 

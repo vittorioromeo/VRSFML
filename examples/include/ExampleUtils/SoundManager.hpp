@@ -1,5 +1,9 @@
 #pragma once
 
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
 #include "ExampleUtils/LoadedSound.hpp"
 
 #include "SFML/Audio/PlaybackDevice.hpp"
@@ -9,23 +13,31 @@
 #include "SFML/Base/Algorithm/Find.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/InPlaceVector.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] SoundManager
 {
     ////////////////////////////////////////////////////////////
-    static inline constexpr sf::base::SizeT maxSounds = 256u;
+    enum : sf::base::SizeT
+    {
+        maxSounds = 256u
+    };
+
 
     ////////////////////////////////////////////////////////////
     sf::base::InPlaceVector<sf::Sound, maxSounds> soundsBeingPlayed;
 
+
     ////////////////////////////////////////////////////////////
     explicit SoundManager() = default;
+
 
     ////////////////////////////////////////////////////////////
     SoundManager(const SoundManager&) = delete;
     SoundManager(SoundManager&&)      = delete;
+
 
     ////////////////////////////////////////////////////////////
     void stopPlayingAll(const LoadedSound& ls)
@@ -34,6 +46,7 @@ struct [[nodiscard]] SoundManager
             if (sound.isPlaying() && &sound.getBuffer() == &ls.buffer)
                 sound.stop();
     }
+
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::pure]] sf::base::SizeT countPlayingPooled(const LoadedSound& ls) const
@@ -46,6 +59,7 @@ struct [[nodiscard]] SoundManager
 
         return acc;
     }
+
 
     ////////////////////////////////////////////////////////////
     bool playPooled(sf::PlaybackDevice& playbackDevice, const LoadedSound& ls, const sf::base::SizeT maxOverlap)

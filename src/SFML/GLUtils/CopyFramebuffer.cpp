@@ -7,16 +7,15 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/GLUtils/CopyFramebuffer.hpp"
 
-#include "SFML/Config.hpp"
+#include "SFML/Config.hpp" // IWYU pragma: keep
 
 #include "SFML/GLUtils/BlitFramebuffer.hpp"
-#include "SFML/GLUtils/FramebufferSaver.hpp"
 #include "SFML/GLUtils/GLCheck.hpp"
 #include "SFML/GLUtils/Glad.hpp"
 
-#ifdef SFML_OPENGL_ES
-    #include "SFML/System/Err.hpp"
-#endif
+#include "SFML/System/Priv/Vec2Base.hpp"
+
+#include "SFML/Base/Assert.hpp"
 
 
 namespace sf::priv
@@ -36,48 +35,6 @@ void copyFramebuffer(const bool         invertYAxis,
     SFML_BASE_ASSERT(glCheck(glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER)) == GL_FRAMEBUFFER_COMPLETE);
 
     blitFramebuffer(invertYAxis, size, srcPos, dstPos);
-}
-
-
-////////////////////////////////////////////////////////////
-bool copyFlippedFramebuffer([[maybe_unused]] const unsigned int tmpTextureNativeHandle,
-                            const Vec2u                         size,
-                            const unsigned int                  srcFBO,
-                            const unsigned int                  dstFBO,
-                            const Vec2u                         srcPos,
-                            const Vec2u                         dstPos)
-{
-    const FramebufferSaver framebufferSaver;
-
-#ifndef SFML_OPENGL_ES
-
-    priv::copyFramebuffer(/* invertYAxis */ true, size, srcFBO, dstFBO, srcPos, dstPos);
-    return true;
-
-#else
-
-    const GLuint intermediateFBO = priv::generateAndBindFramebuffer();
-    if (!intermediateFBO)
-    {
-        priv::err() << "Failure to create intermediate FBO in `copyFlippedFramebuffer`";
-        return false;
-    }
-
-    glCheck(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tmpTextureNativeHandle, 0));
-
-    if (glCheck(glCheckFramebufferStatus(GL_FRAMEBUFFER)) != GL_FRAMEBUFFER_COMPLETE)
-    {
-        priv::err() << "Failure to complete intermediate FBO in `copyFlippedFramebuffer`";
-        return false;
-    }
-
-    priv::copyFramebuffer(/* invertYAxis */ false, size, srcFBO, intermediateFBO, srcPos, dstPos);
-    priv::copyFramebuffer(/* invertYAxis */ true, size, intermediateFBO, dstFBO, srcPos, dstPos);
-
-    glCheck(glDeleteFramebuffers(1, &intermediateFBO));
-    return true;
-
-#endif
 }
 
 } // namespace sf::priv

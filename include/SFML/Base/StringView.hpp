@@ -20,6 +20,18 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
+/// \brief Non-owning view over a contiguous sequence of `char`
+///
+/// Lightweight `std::string_view` replacement that avoids the heavy
+/// `<string_view>` standard header. Provides the usual interface:
+/// length-aware comparisons, `find*` family, prefix/suffix removal,
+/// substring extraction, and friend operators against C strings.
+///
+/// `StringView` does not own its data; the caller must ensure the
+/// referenced character buffer outlives the view. The implicit
+/// constructor from `nullptr` is deleted to catch accidental misuse.
+///
+////////////////////////////////////////////////////////////
 class StringView
 {
 private:
@@ -39,7 +51,7 @@ private:
     #define SFML_BASE_PRIV_CONSTEXPR_STRLEN  SFML_BASE_STRLEN
     #define SFML_BASE_PRIV_CONSTEXPR_STRNCMP SFML_BASE_STRNCMP
 #else
-    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr SizeT constexprStrLen(const char* const cStr) noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] static constexpr SizeT constexprStrLen(const char* const cStr) noexcept
     {
         const char* end = cStr;
 
@@ -49,7 +61,7 @@ private:
         return static_cast<SizeT>(end - cStr);
     }
 
-    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr int constexprStrNCmp(const char* s1, const char* s2, SizeT n)
+    [[nodiscard, gnu::always_inline, gnu::pure]] static constexpr int constexprStrNCmp(const char* s1, const char* s2, SizeT n)
     {
         while (n && *s1 && (*s1 == *s2))
         {
@@ -87,10 +99,13 @@ public:
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr StringView(const char* const cStr) noexcept :
-        theData{cStr},
+        theData{[cStr]
+    {
+        SFML_BASE_ASSERT(cStr != nullptr); // assert before strlen to avoid UB
+        return cStr;
+    }()},
         theSize{SFML_BASE_PRIV_CONSTEXPR_STRLEN(cStr)}
     {
-        SFML_BASE_ASSERT(cStr != nullptr);
     }
 
 
@@ -500,6 +515,9 @@ public:
         if (lhs.theSize != rhs.theSize)
             return false;
 
+        if (lhs.theSize == 0u)
+            return true;
+
         return SFML_BASE_PRIV_CONSTEXPR_STRNCMP(lhs.theData, rhs.theData, lhs.theSize) == 0;
     }
 
@@ -590,8 +608,10 @@ public:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] friend void swap(StringView& lhs, StringView& rhs) noexcept
     {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wclass-memaccess"
+#ifndef __clang__
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wclass-memaccess"
+#endif
 
         alignas(StringView) char temp[sizeof(StringView)];
 
@@ -599,7 +619,9 @@ public:
         SFML_BASE_MEMCPY(&lhs, &rhs, sizeof(StringView));
         SFML_BASE_MEMCPY(&rhs, &temp, sizeof(StringView));
 
-#pragma GCC diagnostic pop
+#ifndef __clang__
+    #pragma GCC diagnostic pop
+#endif
     }
 
 

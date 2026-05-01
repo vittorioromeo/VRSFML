@@ -201,34 +201,28 @@ public:
     [[nodiscard]] static bool connect(SocketHandle handle, SockAddrIn& address);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Convert a 32-bit value from network to host byte order
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static NetworkLong getNtohl(NetworkLong netlong);
+    [[nodiscard]] static NetworkLong networkToHost(NetworkLong netlong);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Convert a 16-bit value from network to host byte order
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static NetworkShort getNtohs(NetworkShort netshort);
+    [[nodiscard]] static NetworkShort networkToHost(NetworkShort netshort);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Convert a 32-bit value from host to network byte order
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static NetworkLong getNtohl(SockAddrIn addr);
+    [[nodiscard]] static NetworkLong hostToNetwork(NetworkLong hostlong);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Convert a 16-bit value from host to network byte order
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static NetworkShort getHtons(NetworkShort hostshort);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static NetworkLong getHtonl(NetworkLong hostlong);
+    [[nodiscard]] static NetworkShort hostToNetwork(NetworkShort hostshort);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -237,16 +231,45 @@ public:
     [[nodiscard]] static int select(SocketHandle handle, long long timeoutUs);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Small NUL-terminated buffer holding an IPv4 string
+    ///        in presentation form (e.g. "255.255.255.255\0")
+    ///
+    /// Sized at `INET_ADDRSTRLEN` (16). Returned by value from
+    /// `addrToString` so the caller owns the storage (thread-safe,
+    /// reentrant, no static buffer).
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<base::U32> inetAddr(const char* data);
+    struct Ipv4StringBuffer
+    {
+        char data[16]{}; //!< INET_ADDRSTRLEN == 16
+    };
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Parse a dotted-quad IPv4 literal (e.g. "192.168.1.1")
+    ///
+    /// Implemented via `inet_pton`, which (unlike the deprecated
+    /// `inet_addr`) has no ambiguity between "broadcast address"
+    /// and "error".
+    ///
+    /// \param data NUL-terminated string
+    ///
+    /// \return Address in network byte order on success, `nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static const char* addrToString(base::U32 addr);
+    [[nodiscard]] static base::Optional<base::U32> parseIpv4(const char* data);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Format an IPv4 address as a dotted-quad string
+    ///
+    /// Implemented via `inet_ntop`, which writes into a
+    /// caller-provided buffer (unlike the non-reentrant `inet_ntoa`).
+    ///
+    /// \param netLong Address in network byte order
+    ///
+    /// \return NUL-terminated dotted-quad representation
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static Ipv4StringBuffer addrToString(base::U32 netLong);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs

@@ -1,18 +1,33 @@
+#include "SystemUtil.hpp"
+#include "WindowUtil.hpp"
+
 #include "SFML/Window/VideoMode.hpp"
 
 #include "SFML/Window/VideoModeUtils.hpp"
+#include "SFML/Window/WindowContext.hpp"
+
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/Algorithm/IsSorted.hpp"
+#include "SFML/Base/Trait/IsAggregate.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsDefaultConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
+#include "SFML/Base/Trait/IsStandardLayout.hpp"
+#include "SFML/Base/Trait/IsTrivial.hpp"
+#include "SFML/Base/Trait/IsTriviallyAssignable.hpp"
+#include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
+#include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
 
 #include <Doctest.hpp>
-
-#include <CommonTraits.hpp>
-#include <SystemUtil.hpp>
-#include <WindowUtil.hpp>
 
 
 TEST_CASE("[Window] sf::VideoMode" * doctest::skip(skipDisplayTests))
 {
+    auto windowContext = sf::WindowContext::create().value();
+
     SECTION("Type traits")
     {
         STATIC_CHECK(SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::VideoMode));

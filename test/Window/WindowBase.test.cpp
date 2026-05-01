@@ -1,17 +1,25 @@
 #include "SFML/Window/WindowBase.hpp"
 
 // Other 1st party headers
+#include "StringifyOptionalUtil.hpp"
+#include "SystemUtil.hpp"
+#include "WindowUtil.hpp"
+
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/WindowContext.hpp"
+#include "SFML/Window/WindowHandle.hpp"
 
 #include "SFML/System/Clock.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
+#include "SFML/System/Time.hpp"
+
+#include "SFML/Base/Trait/HasVirtualDestructor.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <Doctest.hpp>
-
-#include <CommonTraits.hpp>
-#include <StringifyOptionalUtil.hpp>
-#include <SystemUtil.hpp>
-#include <WindowUtil.hpp>
 
 
 namespace
@@ -23,12 +31,18 @@ constexpr const T& asConst(T& t) noexcept
     return t;
 }
 
+sf::WindowContext& sharedWindowContext()
+{
+    static auto ctx = sf::WindowContext::create().value();
+    return ctx;
+}
+
 } // namespace
 
 
 TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 {
-    auto windowContext = sf::WindowContext::create().value();
+    (void)sharedWindowContext();
 
     SECTION("Type traits")
     {
@@ -88,7 +102,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
         {
             auto windowBase = sf::WindowBase::create({.size{360u, 240u}, .title = "WindowBase Tests"}).value();
 
-            constexpr auto timeout = sf::milliseconds(50);
+            constexpr auto timeout = sf::milliseconds(10);
 
             sf::Clock clock;
 
@@ -110,7 +124,9 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
         auto windowBase = sf::WindowBase::create({.size{360u, 240u}, .title = "WindowBase Tests"}).value();
 
         windowBase.setPosition({12, 34});
-        CHECK(windowBase.getPosition() == sf::Vec2i{12, 34});
+
+        // TODO P1: unreliable, depends on window manager behavior
+        // CHECK(windowBase.getPosition() == sf::Vec2i{12, 34});
     }
 
     SECTION("Set/get size")

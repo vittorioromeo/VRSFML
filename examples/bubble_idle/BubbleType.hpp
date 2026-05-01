@@ -11,6 +11,7 @@ enum class [[nodiscard]] BubbleType : sf::base::U8
     Star   = 1u,
     Bomb   = 2u,
     Nova   = 3u,
+    Combo  = 4u, // event-spawned; invincible (cannot be popped/destroyed)
 
     Count
 };

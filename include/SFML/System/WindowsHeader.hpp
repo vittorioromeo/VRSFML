@@ -47,4 +47,4 @@
     #define _UNICODE 1 // NOLINT(bugprone-reserved-identifier)
 #endif
 
-#include <windows.h>
+#include <windows.h> // IWYU pragma: export

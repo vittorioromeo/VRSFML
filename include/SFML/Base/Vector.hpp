@@ -7,26 +7,47 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/InitializerList.hpp" // IWYU pragma: keep
+#include "SFML/Base/InitializerList.hpp"
 #include "SFML/Base/MinMaxMacros.hpp"
 #include "SFML/Base/PlacementNew.hpp"
 #include "SFML/Base/Priv/VectorUtils.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Swap.hpp"
+#include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
 
 
 namespace sf::base
 {
+////////////////////////////////////////////////////////////
+/// \brief Heap-allocated dynamic array, lightweight `std::vector` replacement
+///
+/// Provides the usual `std::vector` interface plus a few opinionated
+/// extras (`unsafeEmplaceBack`, `unsafePushBackMultiple`,
+/// `reserveMore`, `unsafeSetSize`) tuned for hot paths where the caller
+/// has already ensured enough capacity.
+///
+/// Implementation notes:
+/// - Storage is tracked with three pointers (`begin`, `end`, `endCap`)
+///   to make `size()`, `capacity()`, and `data()` extremely cheap and
+///   to avoid recomputing offsets in tight loops.
+/// - Growth is geometric (×1.5) and clamped to the requested target.
+/// - `Vector` is itself trivially relocatable.
+/// - Trivially relocatable element types are moved with `memcpy` rather
+///   than per-element move constructors.
+/// - Avoids the heavy `<vector>` standard header.
+///
 ////////////////////////////////////////////////////////////
 template <typename TItem>
 class [[nodiscard]] Vector
 {
 private:
     ////////////////////////////////////////////////////////////
-    TItem* m_data{nullptr};
-    TItem* m_endSize{nullptr};
-    TItem* m_endCapacity{nullptr};
+    // Member data
+    ////////////////////////////////////////////////////////////
+    TItem* m_data{nullptr};        //!< Pointer to the beginning of the storage, or `nullptr`
+    TItem* m_endSize{nullptr};     //!< Pointer one past the last constructed element
+    TItem* m_endCapacity{nullptr}; //!< Pointer one past the end of the allocated storage
 
 
     ////////////////////////////////////////////////////////////
@@ -58,6 +79,44 @@ private:
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Grow the buffer and construct a new element at `insertIndex`
+    ///
+    /// Allocates a new buffer, constructs the element at its target
+    /// position while the old buffer is still alive (so references
+    /// into the old buffer remain valid), then relocates existing
+    /// elements around it.
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename... Ts>
+    [[gnu::cold, gnu::noinline]] TItem* growAndEmplace(const SizeT insertIndex, Ts&&... xs)
+    {
+        const auto oldSize               = size();
+        const auto currentCapacity       = capacity();
+        const auto geometricGrowthTarget = currentCapacity + (currentCapacity / 2u);
+        const auto finalNewCapacity      = SFML_BASE_MAX(oldSize + 1, geometricGrowthTarget);
+
+        auto* newData = priv::VectorUtils::allocate<TItem>(finalNewCapacity);
+
+        // Construct new element first (old buffer still alive, references valid).
+        SFML_BASE_PLACEMENT_NEW(newData + insertIndex) TItem(static_cast<Ts&&>(xs)...);
+
+        // Relocate old elements around the newly constructed element.
+        if (m_data != nullptr)
+        {
+            priv::VectorUtils::relocateRange(newData, m_data, m_data + insertIndex);
+            priv::VectorUtils::relocateRange(newData + insertIndex + 1, m_data + insertIndex, m_endSize);
+            priv::VectorUtils::deallocate(m_data, currentCapacity);
+        }
+
+        m_data        = newData;
+        m_endSize     = newData + oldSize + 1;
+        m_endCapacity = newData + finalNewCapacity;
+
+        return newData + insertIndex;
+    }
+
+
 public:
     ////////////////////////////////////////////////////////////
     enum : bool
@@ -79,9 +138,15 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Default constructor, creates an empty vector with no allocation
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] Vector() = default;
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Destructor, destroys all elements and frees the storage
+    ///
     ////////////////////////////////////////////////////////////
     ~Vector()
     {
@@ -90,6 +155,11 @@ public:
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Construct a vector with `initialSize` default-constructed elements
+    ///
+    /// \param initialSize Number of elements to construct
+    ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit Vector(const SizeT initialSize)
     {
@@ -104,6 +174,12 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Construct a vector with `initialSize` copies of `value`
+    ///
+    /// \param initialSize Number of elements to construct
+    /// \param value       Value to copy into every element
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit Vector(const SizeT initialSize, const TItem& value)
     {
         if (initialSize == 0u)
@@ -116,6 +192,12 @@ public:
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Construct a vector by copying the range `[srcBegin, srcEnd)`
+    ///
+    /// \param srcBegin Pointer to the first source element
+    /// \param srcEnd   Pointer one past the last source element
+    ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit Vector(const TItem* const srcBegin, const TItem* const srcEnd)
     {
@@ -133,21 +215,38 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Construct a vector from a brace-enclosed initializer list
+    ///
+    /// \param iList Initializer list whose contents are copied into the vector
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] /* implicit */ Vector(const std::initializer_list<TItem> iList) : Vector(iList.begin(), iList.end())
     {
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] Vector(const Vector& rhs) :
-        m_data{rhs.m_data == nullptr ? nullptr : priv::VectorUtils::allocate<TItem>(rhs.size())},
-        m_endSize{m_data + rhs.size()},
-        m_endCapacity{m_data + rhs.size()}
+    /// \brief Copy constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline]] Vector(const Vector& rhs)
     {
+        const SizeT rhsSize = rhs.size();
+
+        if (rhsSize == 0u)
+            return;
+
+        m_data        = priv::VectorUtils::allocate<TItem>(rhsSize);
+        m_endSize     = m_data + rhsSize;
+        m_endCapacity = m_data + rhsSize;
+
         priv::VectorUtils::copyRange(m_data, rhs.m_data, rhs.m_endSize);
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Copy assignment
+    ///
     ////////////////////////////////////////////////////////////
     Vector& operator=(const Vector& rhs)
     {
@@ -165,6 +264,9 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Move constructor (steals storage from `rhs`)
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] Vector(Vector&& rhs) noexcept :
         m_data{rhs.m_data},
         m_endSize{rhs.m_endSize},
@@ -175,6 +277,9 @@ public:
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Move assignment (frees existing storage, then steals from `rhs`)
+    ///
     ////////////////////////////////////////////////////////////
     Vector& operator=(Vector&& rhs) noexcept
     {
@@ -195,6 +300,17 @@ public:
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Resize the vector to `newSize` elements
+    ///
+    /// If growing, additional elements are constructed from `args...`
+    /// (note: `args` are intentionally not perfect-forwarded so that they
+    /// can be reused for every newly constructed element). If shrinking,
+    /// trailing elements are destroyed in place; capacity is unchanged.
+    ///
+    /// \param newSize Target size after the call
+    /// \param args    Arguments forwarded to new element constructors when growing
+    ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void resize(const SizeT newSize, auto&&... args)
     {
@@ -217,28 +333,49 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Construct a new element in-place at position `pos`
+    ///
+    /// May invalidate iterators if the underlying buffer needs to grow.
+    /// `pos` is recomputed from its index after a potential reallocation.
+    ///
+    /// \param pos Iterator to the insertion position
+    /// \param xs  Arguments forwarded to the element's constructor
+    ///
+    /// \return Iterator to the newly inserted element
+    ///
+    ////////////////////////////////////////////////////////////
     template <typename... Ts>
     [[gnu::always_inline]] TItem* emplace(TItem* const pos, Ts&&... xs)
     {
         SFML_BASE_ASSERT(pos >= begin() && pos <= end());
 
-        // Save the index before `reserve` potentially invalidates `pos`.
         const auto index = static_cast<SizeT>(pos - m_data);
 
-        reserve(size() + 1);
+        if (size() >= capacity()) [[unlikely]]
+            return growAndEmplace(index, static_cast<Ts&&>(xs)...);
 
-        // Restore the insertion position iterator, which may point to new memory.
+        if (pos == m_endSize) // Append at end: no shift, no aliasing risk.
+        {
+            SFML_BASE_PLACEMENT_NEW(m_endSize) TItem(static_cast<Ts&&>(xs)...);
+            ++m_endSize;
+            return m_data + index;
+        }
+
+        // Construct a copy first to handle self-aliasing (`makeHole` shifts elements in-place,
+        // which invalidates any reference into the shifted region).
+        TItem        copy(static_cast<Ts&&>(xs)...);
         TItem* const currentPos = m_data + index;
-
         priv::VectorUtils::makeHole(currentPos, m_endSize);
+        SFML_BASE_PLACEMENT_NEW(currentPos) TItem(static_cast<TItem&&>(copy));
 
-        SFML_BASE_PLACEMENT_NEW(currentPos) TItem(static_cast<Ts&&>(xs)...);
         ++m_endSize;
-
-        return currentPos;
+        return m_data + index;
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Insert a copy of `value` at position `pos`
+    ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] TItem* insert(TItem* const pos, const TItem& value)
     {
@@ -247,12 +384,50 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Insert a moved-from `value` at position `pos`
+    ///
+    ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] TItem* insert(TItem* const pos, TItem&& value)
     {
         return emplace(pos, static_cast<TItem&&>(value));
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Append a copy or moved-from element
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename T = TItem>
+    [[gnu::always_inline, gnu::flatten]] TItem& pushBack(T&& x)
+    {
+        if (size() < capacity()) [[likely]]
+            return unsafeEmplaceBack(static_cast<T&&>(x));
+
+        return *growAndEmplace(size(), static_cast<T&&>(x));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Construct a new element in-place at the end
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename... Ts>
+    [[gnu::always_inline, gnu::flatten]] TItem& emplaceBack(Ts&&... xs)
+    {
+        if (size() < capacity()) [[likely]]
+            return unsafeEmplaceBack(static_cast<Ts&&>(xs)...);
+
+        return *growAndEmplace(size(), static_cast<Ts&&>(xs)...);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Shrink the allocated storage to match `size()`
+    ///
+    /// If `size() == 0`, the buffer is freed entirely. Otherwise the
+    /// elements are relocated into a freshly allocated buffer of exact
+    /// size.
+    ///
     ////////////////////////////////////////////////////////////
     void shrinkToFit()
     {
@@ -283,6 +458,17 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Ensure capacity is at least `targetCapacity`
+    ///
+    /// If the current capacity is already large enough, this is a no-op.
+    /// Returns a reference to the internal end pointer to enable hot-path
+    /// fused reserve+write idioms.
+    ///
+    /// \param targetCapacity Desired minimum capacity
+    ///
+    /// \return Reference to the internal end-of-size pointer
+    ///
+    ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] TItem*& reserve(const SizeT targetCapacity)
     {
         if (capacity() < targetCapacity) [[unlikely]]
@@ -293,12 +479,24 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Ensure capacity is at least `size() + n`
+    ///
+    /// Convenience wrapper around `reserve()`, useful when bulk-appending
+    /// `n` known elements.
+    ///
+    ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] TItem*& reserveMore(const SizeT n)
     {
         return reserve(size() + n);
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Append `count` copies of the elements at `ptr` without growing
+    ///
+    /// The caller is responsible for ensuring that `size() + count <= capacity()`.
+    /// Asserts in debug builds.
+    ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] void unsafeEmplaceBackRange(const TItem* const ptr, const SizeT count) noexcept
     {
@@ -312,6 +510,9 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Destroy all elements; capacity is unchanged
+    ///
+    ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] void clear() noexcept
     {
         priv::VectorUtils::destroyRange(m_data, m_endSize);
@@ -320,6 +521,9 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Get the number of constructed elements
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] SizeT size() const noexcept
     {
         return static_cast<SizeT>(m_endSize - m_data);
@@ -327,12 +531,25 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Get the number of elements the storage can hold without reallocating
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] SizeT capacity() const noexcept
     {
         return static_cast<SizeT>(m_endCapacity - m_data);
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Construct an element at the back without growing the buffer
+    ///
+    /// The caller is responsible for ensuring `size() < capacity()`.
+    /// Asserts in debug builds.
+    ///
+    /// \param xs Arguments forwarded to the element's constructor
+    ///
+    /// \return Reference to the newly constructed element
+    ///
     ////////////////////////////////////////////////////////////
     template <typename... Ts>
     [[gnu::always_inline]] TItem& unsafeEmplaceBack(Ts&&... xs)
@@ -346,6 +563,11 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Erase the element at iterator `it`, shifting subsequent elements left
+    ///
+    /// \return Iterator to the element that now occupies `it`'s position
+    ///
+    ////////////////////////////////////////////////////////////
     TItem* erase(TItem* const it)
     {
         priv::VectorUtils::eraseImpl(begin(), end(), it);
@@ -358,6 +580,11 @@ public:
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Erase the half-open range `[first, last)`, shifting subsequent elements left
+    ///
+    /// \return Iterator to the element that now occupies `first`'s position
+    ///
     ////////////////////////////////////////////////////////////
     TItem* erase(TItem* const first, TItem* const last)
     {
@@ -376,6 +603,12 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Append several elements at the back without growing the buffer
+    ///
+    /// The caller is responsible for ensuring that
+    /// `size() + sizeof...(items) <= capacity()`. Asserts in debug builds.
+    ///
+    ////////////////////////////////////////////////////////////
     template <typename... TItems>
     [[gnu::always_inline]] void unsafePushBackMultiple(TItems&&... items)
     {
@@ -388,12 +621,18 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Pointer to the underlying contiguous storage (or `nullptr` if empty and unallocated)
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem* data() noexcept
     {
         return m_data;
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Pointer to the underlying contiguous storage (const overload)
+    ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem* data() const noexcept
     {
@@ -402,6 +641,12 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Force the logical size to `newSize` without constructing or destroying elements
+    ///
+    /// Useful when the storage was filled by external code (e.g. `memcpy`,
+    /// I/O). The caller is responsible for ensuring `newSize <= capacity()`.
+    ///
+    ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] void unsafeSetSize(SizeT newSize) noexcept
     {
         SFML_BASE_ASSERT(newSize <= capacity());
@@ -409,6 +654,9 @@ public:
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Destroy the last element; asserts that the vector is non-empty
+    ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void popBack() noexcept
     {
@@ -420,6 +668,9 @@ public:
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Swap the contents of two vectors in O(1)
+    ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void swap(Vector& rhs) noexcept
     {
@@ -433,6 +684,9 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Reference to the first element; asserts that the vector is non-empty
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem& front() noexcept
     {
         SFML_BASE_ASSERT(!empty());
@@ -440,6 +694,9 @@ public:
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Reference to the first element (const overload)
+    ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem& front() const noexcept
     {
@@ -449,6 +706,9 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Reference to the last element; asserts that the vector is non-empty
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem& back() noexcept
     {
         SFML_BASE_ASSERT(!empty());
@@ -456,6 +716,9 @@ public:
     }
 
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Reference to the last element (const overload)
+    ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem& back() const noexcept
     {

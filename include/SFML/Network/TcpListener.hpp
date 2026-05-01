@@ -10,12 +10,14 @@
 
 #include "SFML/Network/IpAddress.hpp"
 #include "SFML/Network/Socket.hpp"
+#include "SFML/Network/SocketHandle.hpp"
+#include "SFML/Network/TcpSocket.hpp"
+
+#include "SFML/Base/Optional.hpp"
 
 
 namespace sf
 {
-class TcpSocket;
-
 ////////////////////////////////////////////////////////////
 /// \brief Socket that listens to new TCP connections
 ///
@@ -24,58 +26,49 @@ class SFML_NETWORK_API TcpListener : public Socket
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
+    /// \brief Result of `TcpListener::accept`
+    ///
+    /// When `status` is `Status::Done`, `socket` holds the newly
+    /// accepted connection. Otherwise `socket` is empty.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit TcpListener(bool isBlocking);
+    struct AcceptResult
+    {
+        Status                    status; //!< Operation status
+        base::Optional<TcpSocket> socket; //!< Accepted connection (only when `status == Done`)
+    };
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Factory: create a socket that is already listening
+    ///
+    /// Atomically creates the underlying OS handle, binds it to
+    /// `port`/`address` and starts listening for incoming
+    /// connections. There is no "created but not listening"
+    /// intermediate state.
+    ///
+    /// When providing `sf::Socket::AnyPort` as port, the system
+    /// picks an available port; retrieve it via `getLocalPort()`.
+    ///
+    /// Binding to `sf::IpAddress::Broadcast` is rejected.
+    ///
+    /// \param port       Port to listen on for incoming connections
+    /// \param isBlocking Desired blocking state
+    /// \param address    Interface address to bind to
+    ///
+    /// \return `TcpListener` on success, `base::nullOpt` on failure
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static base::Optional<TcpListener> create(unsigned short port,
+                                                            bool           isBlocking,
+                                                            IpAddress      address = IpAddress::Any);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the port to which the socket is bound locally
     ///
-    /// If the socket is not listening to a port, this function
-    /// returns 0.
-    ///
     /// \return Port to which the socket is bound
-    ///
-    /// \see `listen`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] unsigned short getLocalPort() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Start listening for incoming connection attempts
-    ///
-    /// This function makes the socket start listening on the
-    /// specified port, waiting for incoming connection attempts.
-    ///
-    /// If the socket is already listening on a port when this
-    /// function is called, it will stop listening on the old
-    /// port before starting to listen on the new port.
-    ///
-    /// When providing `sf::Socket::AnyPort` as port, the listener
-    /// will request an available port from the system.
-    /// The chosen port can be retrieved by calling `getLocalPort()`.
-    ///
-    /// \param port    Port to listen on for incoming connection attempts
-    /// \param address Address of the interface to listen on
-    ///
-    /// \return Status code
-    ///
-    /// \see `accept`, `close`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] Status listen(unsigned short port, IpAddress address = IpAddress::Any);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Stop listening and close the socket
-    ///
-    /// This function gracefully stops the listener. If the
-    /// socket is not listening, this function has no effect.
-    ///
-    /// \see `listen`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool close();
 
     ////////////////////////////////////////////////////////////
     /// \brief Accept a new connection
@@ -83,14 +76,19 @@ public:
     /// If the socket is in blocking mode, this function will
     /// not return until a connection is actually received.
     ///
-    /// \param socket Socket that will hold the new connection
-    ///
-    /// \return Status code
-    ///
-    /// \see `listen`
+    /// \return An `AcceptResult` whose `status` indicates the
+    ///         outcome and, on success, whose `socket` holds the
+    ///         newly accepted connection.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Status accept(TcpSocket& socket);
+    [[nodiscard]] AcceptResult accept();
+
+private:
+    ////////////////////////////////////////////////////////////
+    /// \brief Private constructor used by the factory
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] TcpListener(SocketHandle handle, bool isBlocking);
 };
 
 
@@ -105,7 +103,7 @@ public:
 /// a given port and waits for connections on that port.
 /// This is all it can do.
 ///
-/// When a new connection is received, you must call accept and
+/// When a new connection is received, you must call `accept` and
 /// the listener returns a new instance of `sf::TcpSocket` that
 /// is properly initialized and can be used to communicate with
 /// the new client.
@@ -115,27 +113,22 @@ public:
 /// directly. As a consequence, a listener socket will always
 /// return the new connections as `sf::TcpSocket` instances.
 ///
-/// A listener is automatically closed on destruction, like all
-/// other types of socket. However if you want to stop listening
-/// before the socket is destroyed, you can call its `close()`
-/// function.
+/// A listener is automatically closed on destruction.
 ///
 /// Usage example:
 /// \code
 /// // Create a listener socket and make it wait for new
 /// // connections on port 55001
-/// sf::TcpListener listener;
-/// listener.listen(55001);
+/// auto listener = sf::TcpListener::create(55001, /* isBlocking */ true).value();
 ///
 /// // Endless loop that waits for new connections
 /// while (running)
 /// {
-///     sf::TcpSocket client;
-///     if (listener.accept(client) == sf::Socket::Done)
+///     if (auto result = listener.accept(); result.status == sf::Socket::Status::Done)
 ///     {
 ///         // A new client just connected!
-///         std::cout << "New connection received from " << client.getRemoteAddress().value() << '\n';
-///         doSomethingWith(client);
+///         std::cout << "New connection received from " << result.socket->getRemoteAddress().value() << '\n';
+///         doSomethingWith(*result.socket);
 ///     }
 /// }
 /// \endcode

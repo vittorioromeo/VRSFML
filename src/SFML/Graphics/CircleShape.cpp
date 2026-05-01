@@ -7,12 +7,14 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/CircleShape.hpp"
 
+#include "SFML/Graphics/Shape.hpp"
 #include "SFML/Graphics/ShapeUtils.hpp"
 
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/LambdaMacros.hpp"
+#include "SFML/Base/Constants.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 
 namespace sf
@@ -83,7 +85,7 @@ void CircleShape::updateCircleGeometry()
 {
     const float angleStep = sf::base::tau / static_cast<float>(m_pointCount);
 
-    updateFromFunc([&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {
+    updateFromFunc([&] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i) {
         return ShapeUtils::computeCirclePointFromAngleStep(i, /* startAngle */ 0.f, angleStep, m_radius);
     }, m_pointCount);
 }

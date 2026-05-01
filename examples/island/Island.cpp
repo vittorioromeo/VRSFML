@@ -6,6 +6,7 @@
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Shader.hpp"
@@ -26,9 +27,12 @@
 #include "SFML/System/Vec2.hpp"
 #include "SFML/System/Vec3.hpp"
 
+#include "SFML/Base/Array.hpp"
 #include "SFML/Base/Clamp.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Pow.hpp"
 #include "SFML/Base/MinMax.hpp"
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/ThreadPool.hpp"
 #include "SFML/Base/Vector.hpp"
@@ -367,6 +371,7 @@ int main()
     auto terrainShader = sf::Shader::loadFromFile(
                              {.vertexPath = "resources/terrain.vert", .fragmentPath = "resources/terrain.frag"})
                              .value();
+
     const auto ulLightFactor = terrainShader.getUniformLocation("lightFactor").value();
 
     // Load the font
@@ -382,9 +387,12 @@ int main()
                       })
                       .value();
 
+    auto windowView = window.computeView();
+
     // Create all of our graphics resources
     sf::Text hudText(font,
                      {.position         = {5.f, 5.f},
+                      .string           = "",
                       .characterSize    = 14,
                       .fillColor        = sf::Color::White,
                       .outlineColor     = sf::Color::Black,
@@ -446,7 +454,7 @@ int main()
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
-            if (handleAspectRatioAwareResize(*event, windowSize.toVec2f(), window))
+            if (handleAspectRatioAwareResize(*event, windowSize.toVec2f(), windowView))
                 continue;
 
             // Arrow key pressed:
@@ -478,7 +486,7 @@ int main()
         // Clear, draw graphics objects and display
         window.clear();
 
-        window.draw(statusText);
+        window.draw(statusText, {.view = windowView});
 
         // Don't bother updating/drawing the VertexBuffer while terrain is being regenerated
         if (pendingTasks.load(std::memory_order::acquire) == 0u)
@@ -496,7 +504,7 @@ int main()
             }
 
             terrainShader.setUniform(ulLightFactor, lightFactor);
-            window.draw(terrain, {.shader = &terrainShader});
+            window.draw(terrain, {.view = windowView, .shader = &terrainShader});
         }
 
         // Update and draw the HUD text
@@ -511,7 +519,7 @@ int main()
 
         hudText.setString(oss.to<sf::UnicodeString>());
 
-        window.draw(hudText);
+        window.draw(hudText, {.view = windowView});
 
         // Display things on screen
         window.display();

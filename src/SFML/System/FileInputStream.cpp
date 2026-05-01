@@ -8,6 +8,8 @@
 #include "SFML/System/FileInputStream.hpp"
 
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 
 #ifdef SFML_SYSTEM_ANDROID
     #include "SFML/System/Android/Activity.hpp"
@@ -20,6 +22,8 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/SizeT.hpp"
+
+#include <cstdio>
 
 
 namespace sf
@@ -44,9 +48,10 @@ base::Optional<FileInputStream> FileInputStream::open(const Path& filename)
 #ifdef SFML_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
     {
-        m_androidFile = base::makeUnique<priv::ResourceStream>();
-        if (!m_androidFile->open(filename))
-            return false;
+        auto androidFile = base::makeUnique<priv::ResourceStream>();
+        if (!androidFile->open(filename))
+            return base::nullOpt;
+
         return androidFile->tell().hasValue()
                    ? base::makeOptional<FileInputStream>(base::PassKey<FileInputStream>{}, SFML_BASE_MOVE(androidFile))
                    : base::nullOpt;

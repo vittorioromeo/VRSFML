@@ -120,6 +120,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<IpAddress> getPublicAddress(Time timeout = {});
 
+
     ////////////////////////////////////////////////////////////
     /// \brief Overload of `operator==` to compare two IP addresses
     ///
@@ -130,6 +131,71 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] SFML_NETWORK_API bool operator==(const IpAddress& rhs) const = default;
+
+
+    ////////////////////////////////////////////////////////////
+    /// \relates IpAddress
+    /// \brief Overload of `operator<` to compare two IP addresses
+    ///
+    /// \param lhs  Left operand (a IP address)
+    /// \param rhs Right operand (a IP address)
+    ///
+    /// \return `true` if `lhs` is lesser than `rhs`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] friend bool operator<(const IpAddress lhs, const IpAddress rhs)
+    {
+        return lhs.m_address < rhs.m_address;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \relates IpAddress
+    /// \brief Overload of `operator>` to compare two IP addresses
+    ///
+    /// \param lhs  Left operand (a IP address)
+    /// \param rhs Right operand (a IP address)
+    ///
+    /// \return `true` if `lhs` is greater than `rhs`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] friend bool operator>(const IpAddress lhs, const IpAddress rhs)
+    {
+        return lhs.m_address > rhs.m_address;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \relates IpAddress
+    /// \brief Overload of `operator<=` to compare two IP addresses
+    ///
+    /// \param lhs  Left operand (a IP address)
+    /// \param rhs Right operand (a IP address)
+    ///
+    /// \return `true` if `lhs` is lesser or equal than `rhs`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] friend bool operator<=(const IpAddress lhs, const IpAddress rhs)
+    {
+        return lhs.m_address <= rhs.m_address;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \relates IpAddress
+    /// \brief Overload of `operator>=` to compare two IP addresses
+    ///
+    /// \param lhs  Left operand (a IP address)
+    /// \param rhs Right operand (a IP address)
+    ///
+    /// \return `true` if `lhs` is greater or equal than `rhs`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] friend bool operator>=(const IpAddress lhs, const IpAddress rhs)
+    {
+        return lhs.m_address >= rhs.m_address;
+    }
+
 
     ////////////////////////////////////////////////////////////
     // Static member data
@@ -142,57 +208,12 @@ public:
 
 private:
     friend IpAddressUtils;
-    friend SFML_NETWORK_API bool operator<(IpAddress lhs, IpAddress rhs);
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     base::U32 m_address; //!< Address stored as an unsigned 32 bit integer
 };
-
-////////////////////////////////////////////////////////////
-/// \brief Overload of `operator<` to compare two IP addresses
-///
-/// \param lhs  Left operand (a IP address)
-/// \param rhs Right operand (a IP address)
-///
-/// \return `true` if `lhs` is lesser than `rhs`
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_NETWORK_API bool operator<(IpAddress lhs, IpAddress rhs);
-
-////////////////////////////////////////////////////////////
-/// \brief Overload of `operator>` to compare two IP addresses
-///
-/// \param lhs  Left operand (a IP address)
-/// \param rhs Right operand (a IP address)
-///
-/// \return `true` if `lhs` is greater than `rhs`
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_NETWORK_API bool operator>(IpAddress lhs, IpAddress rhs);
-
-////////////////////////////////////////////////////////////
-/// \brief Overload of `operator<=` to compare two IP addresses
-///
-/// \param lhs  Left operand (a IP address)
-/// \param rhs Right operand (a IP address)
-///
-/// \return `true` if \a lhs is lesser or equal than \a rhs
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_NETWORK_API bool operator<=(IpAddress lhs, IpAddress rhs);
-
-////////////////////////////////////////////////////////////
-/// \brief Overload of `operator>=` to compare two IP addresses
-///
-/// \param lhs  Left operand (a IP address)
-/// \param rhs Right operand (a IP address)
-///
-/// \return `true` if `lhs` is greater or equal than `rhs`
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_NETWORK_API bool operator>=(IpAddress lhs, IpAddress rhs);
 
 } // namespace sf
 

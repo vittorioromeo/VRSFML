@@ -1,13 +1,19 @@
+#include "AudioUtil.hpp"
+
 #include "SFML/Audio/OutputSoundFile.hpp"
 
 #include "SFML/Audio/ChannelMap.hpp"
+#include "SFML/Audio/SoundChannel.hpp"
 
 #include "SFML/System/Path.hpp"
 
-#include <Doctest.hpp>
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsDefaultConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
-#include <AudioUtil.hpp>
-#include <CommonTraits.hpp>
+#include <Doctest.hpp>
 
 #include <string>
 
@@ -46,7 +52,7 @@ TEST_CASE("[Audio] sf::OutputSoundFile")
                     CHECK(sf::Path(filename).exists());
                 }
 
-                CHECK(sf::Path(filename).remove());
+                CHECK(sf::Path(filename).removeFromDisk());
             }
         }
     }

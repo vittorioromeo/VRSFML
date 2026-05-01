@@ -7,11 +7,11 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/ImGui/Backend.hpp"
 
+#include "SFML/ImGui/IncludeImGui.hpp"
+
 #include "SFML/GLUtils/GLCheck.hpp"
 #include "SFML/GLUtils/Glad.hpp"
 
-#define IMGUI_DEFINE_MATH_OPERATORS
-#include <imgui.h>
 
 #if defined(__APPLE__)
     #pragma GCC diagnostic ignored "-Wdeprecated-declarations"

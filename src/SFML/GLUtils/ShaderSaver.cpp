@@ -15,7 +15,7 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-ShaderSaver::ShaderSaver() : m_shaderBinding(static_cast<int>(priv::getGLInteger(GL_CURRENT_PROGRAM)))
+ShaderSaver::ShaderSaver() : m_shaderBinding(priv::getGLInteger(GL_CURRENT_PROGRAM))
 {
 }
 

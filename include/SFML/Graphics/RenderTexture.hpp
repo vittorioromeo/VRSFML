@@ -9,11 +9,12 @@
 #include "SFML/Graphics/Export.hpp"
 
 #include "SFML/Graphics/RenderTarget.hpp"
-#include "SFML/Graphics/RenderTextureSettings.hpp"
+#include "SFML/Graphics/RenderTextureCreateSettings.hpp"
 #include "SFML/Graphics/TextureWrapMode.hpp"
 
-#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 
+#include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
 
@@ -67,24 +68,39 @@ public:
     RenderTexture& operator=(RenderTexture&&) noexcept;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Create the render-texture
+    /// \brief Create a render texture of the given size
     ///
-    /// The last parameter, `settings`, is useful if you want to enable
-    /// multi-sampling or use the render-texture for OpenGL rendering that
-    /// requires a depth or stencil buffer. Otherwise it is unnecessary, and
-    /// you should leave this parameter at its default value.
+    /// Equivalent to calling the two-argument overload with
+    /// default `RenderTextureCreateSettings`.
     ///
-    /// After creation, the contents of the render-texture are undefined.
-    /// Call `RenderTexture::clear` first to ensure a single color fill.
+    /// After creation, the contents of the render texture are
+    /// undefined. Call `clear` before drawing to fill it.
     ///
-    /// \param size     Width and height of the render-texture
-    /// \param settings Additional settings for the OpenGL framebuffer
+    /// \param size Width and height of the render texture, in pixels
     ///
-    /// \return Render texture on success, `base::nullOpt` otherwise
+    /// \return Render texture on success, `base::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<RenderTexture> create(Vec2u size);
-    [[nodiscard]] static base::Optional<RenderTexture> create(Vec2u size, const RenderTextureSettings& renderTextureSettings);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Create a render texture of the given size with custom framebuffer settings
+    ///
+    /// `rtCreateSettings` lets you enable multisampling, request
+    /// a depth or stencil attachment, opt into sRGB encoding,
+    /// configure smoothing, or set the texture wrap mode. The
+    /// defaults match the simple `create(size)` overload.
+    ///
+    /// After creation, the contents of the render texture are
+    /// undefined. Call `clear` before drawing to fill it.
+    ///
+    /// \param size             Width and height of the render texture, in pixels
+    /// \param rtCreateSettings Framebuffer object creation parameters
+    ///
+    /// \return Render texture on success, `base::nullOpt` on failure
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static base::Optional<RenderTexture> create(Vec2u size, const RenderTextureCreateSettings& rtCreateSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the maximum anti-aliasing level supported by the system
@@ -118,24 +134,24 @@ public:
     [[nodiscard]] bool isSmooth() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Enable or disable texture repeating
+    /// \brief Set the wrap mode used when sampling the underlying texture
     ///
-    /// This function is similar to `Texture::setWrapMode`.
-    /// This parameter is disabled by default.
+    /// Same semantics as `sf::Texture::setWrapMode`. The default
+    /// is `TextureWrapMode::Clamp`.
     ///
-    /// \param wrapMode TODO P1: docs
+    /// \param wrapMode Wrap mode to apply
     ///
-    /// \see `getWrapMode`
+    /// \see `getWrapMode`, `sf::TextureWrapMode`
     ///
     ////////////////////////////////////////////////////////////
     void setWrapMode(TextureWrapMode wrapMode);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Tell whether the texture is repeated or not
+    /// \brief Get the wrap mode currently set on the underlying texture
     ///
-    /// \return TODO P1: docs
+    /// \return Active `sf::TextureWrapMode`
     ///
-    /// \see `setWrapMode`
+    /// \see `setWrapMode`, `sf::TextureWrapMode`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] TextureWrapMode getWrapMode() const;
@@ -151,10 +167,8 @@ public:
     /// after subsequent drawing will lead to undefined behavior if a mipmap
     /// had been previously generated.
     ///
-    /// \return `true` if mipmap generation was successful, `false` if unsuccessful
-    ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool generateMipmap();
+    void generateMipmap();
 
     ////////////////////////////////////////////////////////////
     /// \brief Activate or deactivate the render-texture for rendering

@@ -51,8 +51,11 @@ LifetimeDependant& LifetimeDependant::operator=(const LifetimeDependant& rhs) no
     if (&rhs == this)
         return *this;
 
+    subSelfAsDependant();
+
     m_dependeeName = rhs.m_dependeeName;
     m_dependee     = rhs.m_dependee;
+
     addSelfAsDependant();
 
     return *this;
@@ -65,6 +68,13 @@ LifetimeDependant& LifetimeDependant::operator=(LifetimeDependant&& rhs) noexcep
     m_dependeeName = rhs.m_dependeeName;
     m_dependee     = rhs.m_dependee;
     return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+bool LifetimeDependant::isTestingModeErrorTriggered() const noexcept
+{
+    return LifetimeDependee::TestingModeGuard::fatalErrorTriggered(m_dependeeName);
 }
 
 

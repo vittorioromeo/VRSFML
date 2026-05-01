@@ -13,11 +13,12 @@
 #include "SFML/Window/Keyboard.hpp"
 
 #include "SFML/System/Path.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/UnicodeString.hpp"
-#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/ToString.hpp"
 #include "SFML/Base/Trait/Decay.hpp"
@@ -50,20 +51,6 @@ namespace
 class Application
 {
 public:
-    ////////////////////////////////////////////////////////////
-    Application()
-    {
-        m_logText.setFillColor(sf::Color::White);
-
-        m_handlerText.setFillColor(sf::Color::White);
-        m_handlerText.setStyle(sf::Text::Style::Bold);
-        m_handlerText.position = {380.f, 260.f};
-
-        m_instructions.setFillColor(sf::Color::White);
-        m_instructions.setStyle(sf::Text::Style::Bold);
-        m_instructions.position = {380.f, 310.f};
-    }
-
     // The visitor we pass to event->visit in the "Visitor" handler
     // Make sure all defined operator()s return the same type.
     // The operator()s can also have void return type if there is nothing to return.
@@ -436,9 +423,30 @@ private:
 
     const sf::Font m_font{sf::Font::openFromFile("resources/tuffy.ttf").value()};
 
-    sf::Text m_logText{m_font, {.characterSize = 20u}};
-    sf::Text m_handlerText{m_font, {.string = "Current Handler: Classic", .characterSize = 24u}};
-    sf::Text m_instructions{m_font, {.string = "Press Enter to change handler type", .characterSize = 24u}};
+    sf::Text m_logText{m_font,
+                       {
+                           .string        = "",
+                           .characterSize = 20u,
+                           .fillColor     = sf::Color::White,
+                       }};
+
+    sf::Text m_handlerText{m_font,
+                           {
+                               .position      = {380.f, 260.f},
+                               .string        = "Current Handler: Classic",
+                               .characterSize = 24u,
+                               .fillColor     = sf::Color::White,
+                               .bold          = true,
+                           }};
+
+    sf::Text m_instructions{m_font,
+                            {
+                                .position      = {380.f, 310.f},
+                                .string        = "Press Enter to change handler type",
+                                .characterSize = 24u,
+                                .fillColor     = sf::Color::White,
+                                .bold          = true,
+                            }};
 
     sf::base::Vector<sf::base::String> m_log;
     HandlerType                        m_handlerType{HandlerType::Classic};

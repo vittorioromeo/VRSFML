@@ -12,11 +12,12 @@
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/AutoWrapAngle.hpp"
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
-#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/ClampMacro.hpp"
+#include "SFML/Base/Math/Lround.hpp"
 #include "SFML/Base/SinCosLookup.hpp"
 
 
@@ -29,23 +30,51 @@ namespace sf
 struct [[nodiscard]] SFML_GRAPHICS_API View
 {
     ////////////////////////////////////////////////////////////
-    /// \brief Scissor rectangle
+    /// \brief Normalized scissor rectangle, expressed as a fraction of the render target
+    ///
+    /// `ScissorRect` is a thin wrapper around `sf::Rect2f` that
+    /// asserts (in debug builds) that all four edges lie within
+    /// `[0, 1]`. Coordinates are interpreted as a ratio of the
+    /// render target's size, so that the scissor automatically
+    /// follows resize events.
+    ///
+    /// Use `fromRectClamped` if your input may fall outside the
+    /// allowed range and you want it silently clamped instead of
+    /// triggering an assertion.
     ///
     ////////////////////////////////////////////////////////////
     struct [[nodiscard]] ScissorRect : Rect2f
     {
+        ////////////////////////////////////////////////////////////
+        /// \brief Construct from explicit position and size
+        ///
+        /// \param thePosition Top-left corner, in `[0, 1]` along each axis
+        /// \param theSize     Size, in `[0, 1]` along each axis
+        ///
+        /// Asserts in debug builds that the resulting rectangle is
+        /// fully contained in `[0, 1] x [0, 1]`.
+        ///
         ////////////////////////////////////////////////////////////
         [[nodiscard, gnu::always_inline]] constexpr ScissorRect(Vec2f thePosition, Vec2f theSize) :
             Rect2f{thePosition, theSize}
         {
             SFML_BASE_ASSERT(position.x >= 0.f && position.x <= 1.f && "position.x must lie within [0, 1]");
             SFML_BASE_ASSERT(position.y >= 0.f && position.y <= 1.f && "position.y must lie within [0, 1]");
+
             SFML_BASE_ASSERT(size.x >= 0.f && "size.x must lie within [0, 1]");
             SFML_BASE_ASSERT(size.y >= 0.f && "size.y must lie within [0, 1]");
+
             SFML_BASE_ASSERT(position.x + size.x <= 1.f && "position.x + size.x must lie within [0, 1]");
             SFML_BASE_ASSERT(position.y + size.y <= 1.f && "position.y + size.y must lie within [0, 1]");
         }
 
+        ////////////////////////////////////////////////////////////
+        /// \brief Implicit conversion from a `Rect2f`
+        ///
+        /// Allows passing a regular `sf::Rect2f` anywhere a
+        /// `ScissorRect` is expected. The same `[0, 1]` assertions
+        /// apply.
+        ///
         ////////////////////////////////////////////////////////////
         [[nodiscard, gnu::always_inline]] constexpr /* implicit */ ScissorRect(const Rect2f& rect) :
             ScissorRect{rect.position, rect.size}
@@ -53,26 +82,32 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
         }
 
         ////////////////////////////////////////////////////////////
+        /// \brief Build a `ScissorRect` by clamping a (possibly out-of-range) rectangle
+        ///
+        /// Unlike the constructors, this factory does not assert.
+        /// Position is clamped to `[0, 1]` and size is clamped so
+        /// that `position + size` never exceeds `1`. The result is
+        /// always a valid `ScissorRect`.
+        ///
+        /// \param rect Source rectangle (any values allowed)
+        ///
+        /// \return Clamped `ScissorRect`
+        ///
+        ////////////////////////////////////////////////////////////
         [[nodiscard]] static constexpr ScissorRect fromRectClamped(sf::Rect2f rect)
         {
             // Clamp the position to the range `[0, 1]`
             rect.position.x = SFML_BASE_CLAMP(rect.position.x, 0.f, 1.f);
             rect.position.y = SFML_BASE_CLAMP(rect.position.y, 0.f, 1.f);
 
-            // Ensure the size is non-negative
-            rect.size.x = SFML_BASE_MAX(rect.size.x, 0.f);
-            rect.size.y = SFML_BASE_MAX(rect.size.y, 0.f);
-
-            // Adjust the size so that `position + size` doesn't exceed `1`
-            if (rect.position.x + rect.size.x > 1.f)
-                rect.size.x = 1.f - rect.position.x;
-
-            if (rect.position.y + rect.size.y > 1.f)
-                rect.size.y = 1.f - rect.position.y;
+            // Ensure the size is non-negative and so that `position + size` doesn't exceed `1`
+            rect.size.x = SFML_BASE_CLAMP(rect.size.x, 0.f, 1.f - rect.position.x);
+            rect.size.y = SFML_BASE_CLAMP(rect.size.y, 0.f, 1.f - rect.position.y);
 
             return ScissorRect{rect};
         }
     };
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a view from a rectangle
@@ -80,9 +115,28 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     /// \param rectangle Rectangle defining the zone to display
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::const]] static constexpr View fromRect(const Rect2f& rectangle)
+    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr View fromRect(const Rect2f& rectangle)
     {
         return {.center = rectangle.position + rectangle.size / 2.f, .size = rectangle.size};
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Create a view that exactly covers a render target of the given size
+    ///
+    /// The resulting view is centered on `size / 2` and has a size
+    /// of `size`, so that the world-to-screen mapping is the
+    /// identity (one world unit equals one pixel). This matches the
+    /// "default view" that `sf::RenderTarget` uses on creation.
+    ///
+    /// \param size Size of the target the view should cover, in pixels
+    ///
+    /// \return A view spanning `[0, 0, size.x, size.y]`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr View fromScreenSize(const Vec2f& size)
+    {
+        return {.center = size / 2.f, .size = size};
     }
 
 
@@ -98,22 +152,23 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::pure]] constexpr Transform getTransform() const
     {
-        // Rotation components
-        const float angle         = rotation.asRadians();
-        const auto [sine, cosine] = base::sinCosLookup(angle);
+        SFML_BASE_ASSERT(size.x != 0.f && "size.x must be non-zero");
+        SFML_BASE_ASSERT(size.y != 0.f && "size.y must be non-zero");
 
-        const float tx = -center.x * cosine - center.y * sine + center.x;
-        const float ty = center.x * sine - center.y * cosine + center.y;
-
-        // Projection components
         const float a = 2.f / size.x;
         const float b = -2.f / size.y;
-        const float c = -a * center.x;
-        const float d = -b * center.y;
 
-        // Rebuild the projection matrix
-        return {a * cosine, a * sine, a * tx + c, -b * sine, b * cosine, b * ty + d};
+        const auto [sine, cosine] = base::sinCosLookup(rotation.asRadians());
+
+        // Analytically derived matrix: Scale_proj * Rot_-theta * Trans_-center
+        return {a * cosine,
+                a * sine,
+                -a * (center.x * cosine + center.y * sine),
+                -b * sine,
+                b * cosine,
+                b * (center.x * sine - center.y * cosine)};
     }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the inverse projection transform of the view
@@ -127,7 +182,13 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::pure]] constexpr Transform getInverseTransform() const
     {
-        return getTransform().getInverse();
+        const auto [sine, cosine] = base::sinCosLookup(rotation.asRadians());
+
+        const float hw = size.x * 0.5f;
+        const float hh = size.y * 0.5f;
+
+        // Analytically derived inverse: Trans_center * Rot_theta * Scale_proj^-1
+        return {cosine * hw, sine * hh, center.x, sine * hw, -cosine * hh, center.y};
     }
 
 
@@ -142,33 +203,26 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     /// (e.g., a name tag or health bar) to a sprite in the world,
     /// by calculating its screen position every frame.
     ///
-    /// This function is the inverse of `unproject`.
+    /// This function is the inverse of `screenToWorld`.
     ///
     /// \param point The point to transform, in world coordinates.
     /// \param targetSize The size of the render target the view is applied to.
     ///
     /// \return The transformed point, in target (pixel) coordinates.
     ///
-    /// \see unproject
+    /// \see screenToWorld
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::pure]] Vec2f project(const Vec2f point, const Vec2f targetSize) const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] Vec2f worldToScreen(const Vec2f point, const Vec2f targetSize) const
     {
-        // First, transform the point by the view matrix into normalized device coordinates `[-1, 1]`
+        // 1. Transform to NDC [-1, 1]
         const Vec2f normalized = getTransform().transformPoint(point);
 
-        // Then convert from normalized coordinates to absolute pixel coordinates
+        // 2. Map from NDC to [0, 1] space and flip Y
+        const Vec2f relativePos = Vec2f(normalized.x + 1.f, 1.f - normalized.y) * 0.5f;
 
-        // 1. Map from `[-1, 1]` to `[0, 1]` and flip Y axis
-        const Vec2f relativePos = (normalized.componentWiseMul({1.f, -1.f}) + Vec2f{1.f, 1.f}) * 0.5f;
-
-        // 2. Scale by viewport size to get position relative to viewport's origin
-        const Vec2f viewportPixelPos = relativePos.componentWiseMul(viewport.size.componentWiseMul(targetSize));
-
-        // 3. Add viewport's origin to get absolute pixel position
-        const Vec2f absolutePixelPos = viewportPixelPos + viewport.position.componentWiseMul(targetSize);
-
-        return absolutePixelPos;
+        // 3. Map into viewport and finally scale up to target pixel size
+        return (relativePos.componentWiseMul(viewport.size) + viewport.position).componentWiseMul(targetSize);
     }
 
 
@@ -183,25 +237,24 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     /// into a position in the game world, for object selection, character
     /// movement, etc.
     ///
-    /// This function is the inverse of `project`.
+    /// This function is the inverse of `worldToScreen`.
     ///
     /// Usage example:
     /// \code
-    /// // Create a view and a hypothetical render target size
-    /// sf::View gameView({100, 100}, {200, 150}); // Centered at (100, 100), showing 200x150 world units
-    /// sf::Vec2f targetSize(800, 600);
+    /// // A view centered at (100, 100), showing 200x150 world units.
+    /// const sf::View      gameView{.center = {100.f, 100.f}, .size = {200.f, 150.f}};
+    /// const sf::Vec2f     targetSize{800.f, 600.f};
     ///
-    /// // Simulate a mouse click at pixel (400, 300), the center of the screen
-    /// sf::Vec2f mousePixelPos(400, 300);
+    /// // Simulate a mouse click at pixel (400, 300), the center of the screen.
+    /// const sf::Vec2f     mousePixelPos{400.f, 300.f};
     ///
-    /// // Find out where that click corresponds to in the game world
-    /// sf::Vec2f worldPos = gameView.unproject(mousePixelPos, targetSize);
-    /// // worldPos will be approximately (100, 100), the center of the view.
+    /// // Find out where that click corresponds to in the game world.
+    /// const sf::Vec2f worldPos = gameView.screenToWorld(mousePixelPos, targetSize);
+    /// // 'worldPos' will be approximately (100, 100), the center of the view.
     ///
-    /// // Now, let's go the other way to confirm.
-    /// // Where would the world origin (0, 0) appear on the screen?
-    /// sf::Vec2f originPixelPos = gameView.project({0, 0}, targetSize);
-    /// // originPixelPos will be approximately (0, 0), the top-left of the screen.
+    /// // Now go the other way to confirm: where does the world origin (0, 0)
+    /// // appear on the screen?
+    /// const sf::Vec2f originPixelPos = gameView.worldToScreen({0.f, 0.f}, targetSize);
     /// \endcode
     ///
     /// \param point The point to transform, in target (pixel) coordinates.
@@ -209,19 +262,68 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     ///
     /// \return The transformed point, in world coordinates.
     ///
-    /// \see project
+    /// \see worldToScreen
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::pure]] Vec2f unproject(const Vec2f point, const Vec2f targetSize) const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] Vec2f screenToWorld(const Vec2f point, const Vec2f targetSize) const
     {
-        // First, convert from absolute pixel coordinates to normalized device coordinates `[-1, 1]`
-        const Vec2f normalized = Vec2f(-1.f, 1.f) +
-                                 Vec2f(2.f, -2.f)
-                                     .componentWiseMul(point - viewport.position.componentWiseMul(targetSize))
-                                     .componentWiseDiv(viewport.size.componentWiseMul(targetSize));
+        // 1. Normalize window pixels to [0, 1]
+        const Vec2f windowNorm = point.componentWiseDiv(targetSize);
 
-        // Then transform by the inverse of the view matrix to get world coordinates
+        // 2. Localize to the viewport rectangle
+        const Vec2f relativePos = (windowNorm - viewport.position).componentWiseDiv(viewport.size);
+
+        // 3. Map from [0, 1] space back to NDC [-1, 1] space and flip Y
+        const Vec2f normalized = relativePos.componentWiseMul({2.f, -2.f}) + Vec2f{-1.f, 1.f};
+
+        // 4. Transform using the inverse
         return getInverseTransform().transformPoint(normalized);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the viewport of this view in pixels, applied to a specific size
+    ///
+    /// The viewport is defined in the view as a ratio, this function
+    /// simply applies this ratio to the current dimensions of the
+    /// render target to calculate the pixels rectangle that the viewport
+    /// actually covers in the target.
+    ///
+    /// \param targetSize The size of the render target
+    ///
+    /// \return Viewport rectangle, expressed in pixels
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] Rect2i computePixelViewport(const Vec2f targetSize) const
+    {
+        return Rect2<long>({SFML_BASE_MATH_LROUNDF(targetSize.x * viewport.position.x),
+                            SFML_BASE_MATH_LROUNDF(targetSize.y * viewport.position.y)},
+                           {SFML_BASE_MATH_LROUNDF(targetSize.x * viewport.size.x),
+                            SFML_BASE_MATH_LROUNDF(targetSize.y * viewport.size.y)})
+            .toRect2i();
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the scissor rectangle of a view, applied to a specific size
+    ///
+    /// The scissor rectangle is defined in the view as a ratio. This
+    /// function simply applies this ratio to the current dimensions
+    /// of the render target to calculate the pixels rectangle
+    /// that the scissor rectangle actually covers in the target.
+    ///
+    /// \param targetSize The size of the render target
+    ///
+    /// \return Scissor rectangle, expressed in pixels
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] Rect2i computePixelScissor(const Vec2f targetSize) const
+    {
+        return Rect2<long>({SFML_BASE_MATH_LROUNDF(targetSize.x * scissor.position.x),
+                            SFML_BASE_MATH_LROUNDF(targetSize.y * scissor.position.y)},
+                           {SFML_BASE_MATH_LROUNDF(targetSize.x * scissor.size.x),
+                            SFML_BASE_MATH_LROUNDF(targetSize.y * scissor.size.y)})
+            .toRect2i();
     }
 
 
@@ -231,11 +333,12 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     ////////////////////////////////////////////////////////////
     [[nodiscard]] SFML_GRAPHICS_API constexpr bool operator==(const View& rhs) const = default;
 
+
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vec2f center{500.f, 500.f}; //!< Center of the view, in scene coordinates
-    Vec2f size{1000.f, 1000.f}; //!< Size of the view, in scene coordinates
+    Vec2f center; //!< Center of the view, in scene coordinates
+    Vec2f size;   //!< Size of the view, in scene coordinates
 
     // NOLINTNEXTLINE(readability-redundant-member-init)
     AutoWrapAngle rotation{}; //!< Angle of rotation of the view rectangle
@@ -294,40 +397,36 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
 /// transform on vertices is necessary but a subset of the generated
 /// fragments should not have an effect on the stencil buffer or
 /// blend with the color buffer.
-//
-/// To apply a view, you have to assign it to the render target.
-/// Then, objects drawn in this render target will be
-/// affected by the view until you use another view.
+///
+/// `sf::View` is an aggregate, so it is constructed and modified
+/// directly through its public members. To apply a view to a draw
+/// call, pass it as part of the `sf::RenderStates` (`.view = ...`).
+/// Subsequent draw calls that do not specify a view will use
+/// whatever view the render target was last given via
+/// `setView` (the "default view" if none was set).
 ///
 /// Usage example:
 /// \code
 /// auto window = sf::RenderWindow::create(/* ... */).value();
 ///
-/// // Initialize the view to a rectangle located at (100, 100) and with a size of 400x200
-/// sf::View view([{100, 100}, {400, 200}});
+/// // A view rectangle located at (100, 100) with a size of 400x200.
+/// sf::View view = sf::View::fromRect({{100.f, 100.f}, {400.f, 200.f}});
 ///
-/// // Rotate it by 45 degrees
-/// view.rotation += sf::degrees(45);
+/// // Rotate it by 45 degrees.
+/// view.rotation += sf::degrees(45.f);
 ///
-/// // Set its target viewport to be half of the window
-/// view.setViewport([{0.f, 0.f}, {0.5f, 1.f}});
+/// // Restrict its target viewport to the left half of the window.
+/// view.viewport = {{0.f, 0.f}, {0.5f, 1.f}};
 ///
-/// // Apply it
-/// const auto defaultView = window.getView();
-/// window.setView(view);
+/// // Render 'someSprite' through the custom view.
+/// window.draw(someSprite, {.view = view});
 ///
-/// // Render stuff
-/// window.draw(someSprite);
-///
-/// // Set the default view back
-/// window.setView(defaultView);
-///
-/// // Render stuff not affected by the view
+/// // Render 'someText' through whatever view is currently active on the target.
 /// window.draw(someText);
 /// \endcode
 ///
 /// See also the note on coordinates and undistorted rendering in `sf::Transformable`.
 ///
-/// \see `sf::RenderWindow`, `sf::RenderTexture`
+/// \see `sf::RenderWindow`, `sf::RenderTexture`, `sf::RenderStates`
 ///
 ////////////////////////////////////////////////////////////

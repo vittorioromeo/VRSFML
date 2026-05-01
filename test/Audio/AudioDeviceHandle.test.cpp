@@ -1,6 +1,19 @@
 #include "SFML/Audio/AudioDeviceHandle.hpp"
 
-#include <CommonTraits.hpp>
+#include "SFML/Base/Trait/HasVirtualDestructor.hpp"
+#include "SFML/Base/Trait/IsAggregate.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsMoveConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
+#include "SFML/Base/Trait/IsStandardLayout.hpp"
+#include "SFML/Base/Trait/IsTrivial.hpp"
+#include "SFML/Base/Trait/IsTriviallyAssignable.hpp"
+#include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
+#include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
+
 
 static_assert(!SFML_BASE_HAS_VIRTUAL_DESTRUCTOR(sf::priv::AudioDeviceHandle));
 static_assert(!SFML_BASE_IS_TRIVIAL(sf::priv::AudioDeviceHandle));

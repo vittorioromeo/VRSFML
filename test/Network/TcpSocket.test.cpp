@@ -4,11 +4,17 @@
 #include "SFML/Network/IpAddress.hpp"
 #include "SFML/Network/IpAddressUtils.hpp"
 
+#include "SFML/System/Time.hpp"
+
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/String.hpp"
+#include "SFML/Base/Trait/HasVirtualDestructor.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <Doctest.hpp>
-
-#include <CommonTraits.hpp>
 
 
 TEST_CASE("[Network] sf::TcpSocket")
@@ -22,13 +28,15 @@ TEST_CASE("[Network] sf::TcpSocket")
         STATIC_CHECK(!SFML_BASE_HAS_VIRTUAL_DESTRUCTOR(sf::TcpSocket));
     }
 
-    SECTION("Construction")
+    SECTION("Factory construction")
     {
-        const sf::TcpSocket tcpSocket(/* isBlocking */ true);
-        CHECK(tcpSocket.getLocalPort() == 0);
-        CHECK(!tcpSocket.getRemoteAddress().hasValue());
-        CHECK(tcpSocket.getRemotePort() == 0);
-        CHECK(!tcpSocket.getCurrentCiphersuiteName().hasValue());
+        auto tcpSocketOpt = sf::TcpSocket::create(/* isBlocking */ true);
+        REQUIRE(tcpSocketOpt.hasValue());
+
+        CHECK(tcpSocketOpt->getLocalPort() == 0);
+        CHECK(!tcpSocketOpt->getRemoteAddress().hasValue());
+        CHECK(tcpSocketOpt->getRemotePort() == 0);
+        CHECK(!tcpSocketOpt->getCurrentCiphersuiteName().hasValue());
     }
 }
 
@@ -42,7 +50,11 @@ TEST_CASE("[Network] sf::TcpSocket Connection")
         const auto githubAddress = sf::IpAddressUtils::resolve("github.com");
         REQUIRE(githubAddress.hasValue());
 
-        sf::TcpSocket tcpSocket{/* isBlocking */ true};
+        auto tcpSocketOpt = sf::TcpSocket::create(/* isBlocking */ true);
+        REQUIRE(tcpSocketOpt.hasValue());
+
+        auto& tcpSocket = *tcpSocketOpt;
+
         CHECK(tcpSocket.setupTlsServer("", "") == sf::TcpSocket::TlsStatus::NotConnected);
         CHECK(tcpSocket.setupTlsClient("") == sf::TcpSocket::TlsStatus::NotConnected);
 
