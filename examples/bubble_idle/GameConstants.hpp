@@ -166,6 +166,20 @@ struct [[nodiscard]] GameConstants
     // and its art may not match the default cat-paw proportions.
     float wardenCatPawScale = 1.f;
 
+    // Windup pose: where the baton is raised (above and behind the
+    // wardencat) before the strike. Offset is added to the cat's draw
+    // position; the rotation is the absolute paw angle at the apex.
+    sf::Vec2f wardenCatBatonWindupOffset{100.f, -80.f};
+    float     wardenCatBatonWindupRotationDeg = -120.f;
+
+    // Per-phase durations for the wardencat baton sequence. Lookup table is
+    // ordered to match `Cat::WardenBonkState::Phase` (Windup, Travel, Hold,
+    // Return) so the renderer / per-frame tick can index by phase.
+    float wardenCatBatonWindupMs = 500.f;
+    float wardenCatBatonTravelMs = 100.f;
+    float wardenCatBatonHoldMs   = 250.f;
+    float wardenCatBatonReturnMs = 400.f;
+
     float catNameTextOffsetY    = 52.f;
     float catStatusTextOffsetY  = 72.f;
     float catCooldownBarOffsetY = 4.f;

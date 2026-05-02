@@ -499,6 +499,12 @@ void drawDebugStateEditors(Main& main)
             inputVec2("Warden eyelid origin offset", main.gameConstants.wardenCatEyelidOriginOffset);
             inputVec2("Warden yawn origin offset", main.gameConstants.wardenCatYawnOriginOffset);
             inputFloat("Warden paw scale", main.gameConstants.wardenCatPawScale);
+            inputVec2("Warden baton windup offset", main.gameConstants.wardenCatBatonWindupOffset);
+            inputFloat("Warden baton windup rotation (deg)", main.gameConstants.wardenCatBatonWindupRotationDeg);
+            inputFloat("Warden baton windup ms", main.gameConstants.wardenCatBatonWindupMs);
+            inputFloat("Warden baton travel ms", main.gameConstants.wardenCatBatonTravelMs);
+            inputFloat("Warden baton hold ms", main.gameConstants.wardenCatBatonHoldMs);
+            inputFloat("Warden baton return ms", main.gameConstants.wardenCatBatonReturnMs);
             drawSpriteAttachmentControls(main.profile.uiScale, "Devil back tail", main.gameConstants.devilBackTail);
             drawSpriteAttachmentControls(main.profile.uiScale, "Duck flag", main.gameConstants.duckFlag);
             drawSpriteAttachmentControls(main.profile.uiScale, "Smart diploma", main.gameConstants.smartDiploma);
