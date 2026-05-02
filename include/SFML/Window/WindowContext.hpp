@@ -391,16 +391,22 @@ private:
     [[nodiscard]] static unsigned int getTransferScratchDrawFramebuffer();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get a reusable scratch framebuffer for intermediate flipped copies
+    /// \brief Ensure the flip FBO has its scratch texture attached and is verified complete
+    ///
+    /// Like calling `getTransferScratchFlipFramebuffer` followed by
+    /// `ensureTransferScratchFlipTexture` and a one-shot
+    /// `glFramebufferTexture2D` + `glCheckFramebufferStatus`, but
+    /// performs the attach + status check only on first use (or after
+    /// the texture is recreated). Subsequent calls with the same
+    /// `size` and `sRgb` return the cached FBO immediately, avoiding a
+    /// per-frame `glCheckFramebufferStatus` (which forces a GPU
+    /// pipeline sync on Chrome's WebGL implementation, ~1.6 ms per
+    /// call).
+    ///
+    /// \return The flip FBO ID, or `0` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static unsigned int getTransferScratchFlipFramebuffer();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Ensure a scratch texture exists for intermediate flipped copies
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static unsigned int ensureTransferScratchFlipTexture(Vec2u size, bool sRgb);
+    [[nodiscard]] static unsigned int ensureTransferScratchFlipFramebufferReady(Vec2u size, bool sRgb);
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy framebuffer contents with vertical flipping
