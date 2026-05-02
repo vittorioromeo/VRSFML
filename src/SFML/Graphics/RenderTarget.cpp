@@ -1050,6 +1050,13 @@ void RenderTarget::resetGLStatesImpl()
 
 
 ////////////////////////////////////////////////////////////
+bool RenderTarget::isScissorEnabledCached() const
+{
+    return m_impl->cache.scissorEnabled;
+}
+
+
+////////////////////////////////////////////////////////////
 RenderTarget::DrawStatistics RenderTarget::flush()
 {
     // Warn if a shader's uniforms were mutated while a batch using that shader was pending.

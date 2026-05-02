@@ -395,7 +395,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    void updateTexture()
+    void updateTexture(const bool scissorEnabledCached)
     {
         // If multisampling is enabled, we need to resolve by blitting from our FBO with multisample
         // renderbuffer attachments to our FBO to which our target texture is attached
@@ -417,12 +417,19 @@ public:
         if (auxFramebufferIt == auxFramebuffers.end())
             return;
 
-        // Since we don't want scissor testing to interfere with blits, so we temporarily disable it if needed
-        const priv::ScissorDisableGuard scissorDisableGuard;
+        // Since we don't want scissor testing to interfere with blits, temporarily disable it if needed.
+        // The cached state is passed in by the caller to avoid a per-frame `glGetBooleanv` (which forces
+        // a GPU sync on some WebGL implementations -- ~1 ms per call).
+
+        if (scissorEnabledCached)
+            glCheck(glDisable(GL_SCISSOR_TEST));
 
         // Blit from the auxiliary (multisample or temp) FBO to the main FBO, flipping Y axis
         if (!WindowContext::copyFlippedFramebuffer(texture.isSrgb(), size, auxFramebufferIt->second, framebufferIt->second))
             priv::err() << "Error flipping render texture during FBO copy";
+
+        if (scissorEnabledCached)
+            glCheck(glEnable(GL_SCISSOR_TEST));
     }
 };
 
@@ -561,8 +568,11 @@ RenderTarget::DrawStatistics RenderTexture::display()
     result = RenderTarget::flush();
     RenderTarget::syncGPUEndFrame();
 
-    // Update the target texture
-    m_impl->updateTexture();
+    // Update the target texture. Pass the cached scissor-test state so the
+    // internal `ScissorDisableGuard` doesn't have to issue a synchronous
+    // `glGetBooleanv(GL_SCISSOR_TEST)` (which can cost ~1 ms per frame on
+    // some WebGL implementations).
+    m_impl->updateTexture(isScissorEnabledCached());
     m_impl->texture.invalidateMipmap();
 
     return result;

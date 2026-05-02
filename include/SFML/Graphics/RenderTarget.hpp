@@ -732,6 +732,33 @@ public:
 
 protected:
     ////////////////////////////////////////////////////////////
+    /// \brief Read the cached `GL_SCISSOR_TEST` state (no GL query)
+    ///
+    /// Returns the value tracked by the internal state cache,
+    /// avoiding a synchronous `glGetBooleanv` round-trip. The
+    /// cache is kept in sync by every code path inside
+    /// `RenderTarget` that touches scissor state.
+    ///
+    /// \warning If the cache has not yet been initialized
+    /// (`resetGLStates` has not run on this target on this
+    /// context), this returns the default-constructed value
+    /// (`false`) rather than the actual GL state. Callers in
+    /// hot paths should ensure the target has been activated
+    /// at least once before relying on this.
+    ///
+    /// \warning If the user manipulates `GL_SCISSOR_TEST`
+    /// directly via raw OpenGL outside of `RenderTarget`
+    /// without subsequently calling `resetGLStates`, this
+    /// value will drift from the real GL state. Same caveat
+    /// as for every other piece of cached state on
+    /// `RenderTarget` (blend mode, stencil, etc.).
+    ///
+    /// \return Cached scissor-test enable state
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isScissorEnabledCached() const;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
     /// Protected: instances of `RenderTarget` are always created
