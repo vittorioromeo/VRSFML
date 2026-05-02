@@ -123,12 +123,6 @@ elseif(${EMSCRIPTEN})
         -O3                                 # Enable advanced linker optimizations
         -flto                               # Link-time optimization
 
-        # NOTE: `--closure 1` was tried but breaks SDL3's Emscripten video
-        # backend at runtime (renames properties referenced from `EM_ASM`
-        # blocks in `library_html5.js` / `SDL_emscriptenvideo.c`).
-        #
-        # See: https://github.com/libsdl-org/SDL/issues/15491
-
         -SMINIFY_HTML=1                     # Runs generated `.html` file through `html-minifier`
     )
 
