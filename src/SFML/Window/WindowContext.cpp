@@ -233,6 +233,11 @@ struct ContextTransferScratch
     unsigned int flipTexture{};
     sf::Vec2u    flipTextureSize{};
     bool         flipTextureSrgb{};
+
+    // `true` once `flipTexture` has been attached to `flipFramebuffer` and the FBO has been verified complete. Reset
+    // whenever either is (re)created. Skipping  the per-frame `glFramebufferTexture2D` + `glCheckFramebufferStatus`
+    // saves ~1.6 ms / frame on Chrome's WebGL implementation (the status check forces a GPU pipeline sync).
+    bool flipFramebufferAttachmentValidated{};
 };
 
 
@@ -292,6 +297,9 @@ private:
             glCheck(glDeleteTextures(1, &scratch.flipTexture));
             scratch.flipTexture = 0u;
         }
+
+        // Texture handle is about to change -- any prior attachment to the flip FBO is now stale.
+        scratch.flipFramebufferAttachmentValidated = false;
 
         const sf::priv::TextureSaver textureSaver;
 
@@ -357,21 +365,64 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] unsigned int getFlipFramebuffer()
-    {
-        const std::lock_guard lock(m_mutex);
-
-        auto& scratch = getOrCreateForActiveContext();
-        return ensureFramebuffer(scratch.flipFramebuffer, "flip framebuffer");
-    }
-
-    ////////////////////////////////////////////////////////////
     [[nodiscard]] unsigned int ensureFlipTexture(const sf::Vec2u size, const bool sRgb)
     {
         const std::lock_guard lock(m_mutex);
 
         auto& scratch = getOrCreateForActiveContext();
         return ensureFlipTexture(scratch, size, sRgb);
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the flip FBO with the scratch texture attached and validated
+    ///
+    /// Lazily creates the flip framebuffer and the matching scratch
+    /// texture, attaches the texture, and runs `glCheckFramebufferStatus`
+    /// once. Subsequent calls with the same `size`/`sRgb` skip both the
+    /// attach and the status check entirely, returning the cached FBO
+    /// directly. The cache is invalidated whenever the texture has to be
+    /// recreated (different size, different sRgb, or first call) or when
+    /// the FBO itself is freshly created.
+    ///
+    /// \return The flip FBO ID, or `0` on failure
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] unsigned int ensureFlipFramebufferReady(const sf::Vec2u size, const bool sRgb)
+    {
+        const std::lock_guard lock(m_mutex);
+
+        auto& scratch = getOrCreateForActiveContext();
+
+        // If the FBO is about to be freshly created, the cached attachment is stale.
+        if (scratch.flipFramebuffer == 0u)
+            scratch.flipFramebufferAttachmentValidated = false;
+
+        const unsigned int fbo = ensureFramebuffer(scratch.flipFramebuffer, "flip framebuffer");
+        if (fbo == 0u)
+            return 0u;
+
+        // `ensureFlipTexture` resets `flipFramebufferAttachmentValidated` if the texture is recreated.
+        const unsigned int tex = ensureFlipTexture(scratch, size, sRgb);
+        if (tex == 0u)
+            return 0u;
+
+        if (!scratch.flipFramebufferAttachmentValidated)
+        {
+            const sf::priv::FramebufferSaver fbsaver;
+
+            glCheck(glBindFramebuffer(GL_FRAMEBUFFER, fbo));
+            glCheck(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0));
+
+            if (glCheck(glCheckFramebufferStatus(GL_FRAMEBUFFER)) != GL_FRAMEBUFFER_COMPLETE)
+            {
+                sf::priv::err() << "Failure to complete intermediate FBO in `copyFlippedFramebuffer`";
+                return 0u;
+            }
+
+            scratch.flipFramebufferAttachmentValidated = true;
+        }
+
+        return fbo;
     }
 
     ////////////////////////////////////////////////////////////
@@ -406,43 +457,43 @@ public:
 /// Copies source framebuffer contents to destination while vertically flipping
 /// the image. On OpenGL ES this uses a reusable intermediate texture/FBO pair.
 ///
-/// \param sRgb   Whether the scratch texture should use sRGB storage
-/// \param size   Dimensions of the region to copy
-/// \param srcFBO Source framebuffer ID
-/// \param dstFBO Destination framebuffer ID
-/// \param srcPos Source region starting position (default: 0,0)
-/// \param dstPos Destination region starting position (default: 0,0)
-///
-/// \return True if copy succeeded, false otherwise
+/// \param intermediateFBO The intermediate FBO ID (cannot be 0)
+/// \param size            Dimensions of the region to copy
+/// \param srcFBO          Source framebuffer ID
+/// \param dstFBO          Destination framebuffer ID
+/// \param srcPos          Source region starting position (default: 0,0)
+/// \param dstPos          Destination region starting position (default: 0,0)
 ///
 ////////////////////////////////////////////////////////////
-bool copyFlippedFramebufferViaTransferScratch(
+void copyFlippedFramebufferViaTransferScratch(
     const unsigned int intermediateFBO,
-    const unsigned int tmpTextureNativeHandle,
     const sf::Vec2u    size,
     const unsigned int srcFBO,
     const unsigned int dstFBO,
     const sf::Vec2u    srcPos,
     const sf::Vec2u    dstPos)
 {
-    if (intermediateFBO == 0u || tmpTextureNativeHandle == 0u)
-        return false;
+    SFML_BASE_ASSERT(intermediateFBO != 0u);
 
-    const sf::priv::FramebufferSaver framebufferSaver;
-
-    glCheck(glBindFramebuffer(GL_FRAMEBUFFER, intermediateFBO));
-    glCheck(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tmpTextureNativeHandle, 0));
-
-    if (glCheck(glCheckFramebufferStatus(GL_FRAMEBUFFER)) != GL_FRAMEBUFFER_COMPLETE)
-    {
-        sf::priv::err() << "Failure to complete intermediate FBO in `copyFlippedFramebuffer`";
-        return false;
-    }
-
+    // The intermediate FBO already has the scratch texture attached and verified
+    // complete by `TransferScratchManager::ensureFlipFramebufferReady`, so we can
+    // go straight to the two blits.
+    //
+    // Note that we do NOT save+restore `GL_{READ,DRAW}_FRAMEBUFFER_BINDING` here:
+    // each `gl.getParameter` query is cheap (~12us cached) but pure overhead, and
+    // both call sites tolerate the absence of restoration:
+    //
+    //   * `RenderTexture::Impl::updateTexture` (the hot path) does no FBO-dependent
+    //     work after this returns -- `invalidateMipmap` only touches `GL_TEXTURE_2D`
+    //     under a `TextureSaver`, and the next user-initiated draw goes through
+    //     `RenderTarget::setActive` which rebinds the appropriate FBO.
+    //
+    //   * `Texture::update(const Window&)` already wraps this call in its own
+    //     outer `FramebufferSaver`, so an inner one would have been strictly
+    //     redundant with it.
+    //
     sf::priv::copyFramebuffer(/* invertYAxis */ false, size, srcFBO, intermediateFBO, srcPos, {});
     sf::priv::copyFramebuffer(/* invertYAxis */ true, size, intermediateFBO, dstFBO, {}, dstPos);
-
-    return true;
 }
 #endif
 
@@ -982,16 +1033,9 @@ unsigned int WindowContext::getTransferScratchDrawFramebuffer()
 
 
 ////////////////////////////////////////////////////////////
-unsigned int WindowContext::getTransferScratchFlipFramebuffer()
+unsigned int WindowContext::ensureTransferScratchFlipFramebufferReady(const Vec2u size, const bool sRgb)
 {
-    return ensureInstalled().transferScratchManager.getFlipFramebuffer();
-}
-
-
-////////////////////////////////////////////////////////////
-unsigned int WindowContext::ensureTransferScratchFlipTexture(const Vec2u size, const bool sRgb)
-{
-    return ensureInstalled().transferScratchManager.ensureFlipTexture(size, sRgb);
+    return ensureInstalled().transferScratchManager.ensureFlipFramebufferReady(size, sRgb);
 }
 
 
@@ -1005,10 +1049,15 @@ bool WindowContext::copyFlippedFramebuffer(
     const Vec2u        dstPos)
 {
 #ifdef SFML_OPENGL_ES
-    const unsigned int intermediateFBO        = getTransferScratchFlipFramebuffer();
-    const unsigned int tmpTextureNativeHandle = ensureTransferScratchFlipTexture(size, sRgb);
+    // Lazily attach the scratch texture and validate completeness on first call;
+    // every subsequent call returns the cached, already-ready FBO.
+    const unsigned int intermediateFBO = ensureTransferScratchFlipFramebufferReady(size, sRgb);
 
-    return copyFlippedFramebufferViaTransferScratch(intermediateFBO, tmpTextureNativeHandle, size, srcFBO, dstFBO, srcPos, dstPos);
+    if (intermediateFBO == 0u)
+        return false; // error already logged by `ensureTransferScratchFlipFramebufferReady`
+
+    copyFlippedFramebufferViaTransferScratch(intermediateFBO, size, srcFBO, dstFBO, srcPos, dstPos);
+    return true;
 #else
     copyFlippedFramebufferViaDirectBlit(sRgb, size, srcFBO, dstFBO, srcPos, dstPos);
     return true;
