@@ -412,8 +412,27 @@ static void ImGui_ImplOpenGL3_SetupRenderState(ImDrawData* draw_data, int fb_wid
 }
 
 // OpenGL3 Render function.
-// Note that this implementation is little overcomplicated because we are saving/setting up/restoring every OpenGL state
-// explicitly. This is in order to be able to run within an OpenGL engine that doesn't do so.
+//
+// VRSFML deviation from upstream: the per-frame GL state backup + restore
+// (originally needed to coexist with engines that don't reset state on their
+// own) has been removed. On WebGL each `glGetIntegerv` / `glIsEnabled` is a
+// pipeline-sync (~22 of them upstream, ~1.6 ms / frame on Chrome), and SFML's
+// `ImGuiContext::render` already brackets this call with
+// `RenderTarget::resetGLStates()` on both sides, which puts the pipeline in
+// a known baseline before, and re-syncs SFML's state cache with reality
+// after.
+//
+// Contract: callers MUST ensure the render target's state cache is reset
+// after this function returns (currently done in `ImGuiContext::render`).
+//
+// IMPORTANT for any future multi-viewport work: ImGui's multi-viewport
+// (`ImGuiConfigFlags_ViewportsEnable`) renders secondary windows through
+// platform-IO `Renderer_RenderWindow` callbacks that bypass
+// `ImGuiContext::render`. This backend currently does NOT register those
+// callbacks (no `ImGuiBackendFlags_RendererHasViewports`), so the assumption
+// holds. If multi-viewport is ever enabled here, the renderer hook will need
+// to perform an equivalent state reset around each call, or this function
+// will leave the secondary contexts in an inconsistent state.
 void ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
 {
     // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
@@ -425,73 +444,9 @@ void ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
     ImGui_ImplOpenGL3_Data* bd = ImGui_ImplOpenGL3_GetBackendData();
     SFML_BASE_ASSERT(bd != nullptr);
 
-    // Backup GL state
-    GLenum last_active_texture;
-    glCheck(glGetIntegerv(GL_ACTIVE_TEXTURE, (GLint*)&last_active_texture));
+    // ImGui always renders with `GL_TEXTURE0` as the active texture unit;
+    // SFML's baseline is the same, so just set it without querying.
     glCheck(glActiveTexture(GL_TEXTURE0));
-    GLuint last_program;
-    glCheck(glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*)&last_program));
-    GLuint last_texture;
-    glCheck(glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint*)&last_texture));
-    #ifdef IMGUI_IMPL_OPENGL_MAY_HAVE_BIND_SAMPLER
-    GLuint last_sampler;
-    if (bd->GlVersion >= 330 || bd->GlProfileIsES3)
-    {
-        glCheck(glGetIntegerv(GL_SAMPLER_BINDING, (GLint*)&last_sampler));
-    }
-    else
-    {
-        last_sampler = 0;
-    }
-    #endif
-    GLuint last_array_buffer;
-    glCheck(glGetIntegerv(GL_ARRAY_BUFFER_BINDING, (GLint*)&last_array_buffer));
-    #ifndef IMGUI_IMPL_OPENGL_USE_VERTEX_ARRAY
-    // This is part of VAO on OpenGL 3.0+ and OpenGL ES 3.0+.
-    GLint last_element_array_buffer;
-    glCheck(glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &last_element_array_buffer));
-    ImGui_ImplOpenGL3_VtxAttribState last_vtx_attrib_state_pos;
-    last_vtx_attrib_state_pos.GetState(bd->AttribLocationVtxPos);
-    ImGui_ImplOpenGL3_VtxAttribState last_vtx_attrib_state_uv;
-    last_vtx_attrib_state_uv.GetState(bd->AttribLocationVtxUV);
-    ImGui_ImplOpenGL3_VtxAttribState last_vtx_attrib_state_color;
-    last_vtx_attrib_state_color.GetState(bd->AttribLocationVtxColor);
-    #endif
-    #ifdef IMGUI_IMPL_OPENGL_USE_VERTEX_ARRAY
-    GLuint last_vertex_array_object;
-    glCheck(glGetIntegerv(GL_VERTEX_ARRAY_BINDING, (GLint*)&last_vertex_array_object));
-    #endif
-    #ifdef IMGUI_IMPL_OPENGL_MAY_HAVE_POLYGON_MODE
-    GLint last_polygon_mode[2];
-    if (bd->HasPolygonMode)
-    {
-        glCheck(glGetIntegerv(GL_POLYGON_MODE, last_polygon_mode));
-    }
-    #endif
-    GLint last_viewport[4];
-    glCheck(glGetIntegerv(GL_VIEWPORT, last_viewport));
-    GLint last_scissor_box[4];
-    glCheck(glGetIntegerv(GL_SCISSOR_BOX, last_scissor_box));
-    GLenum last_blend_src_rgb;
-    glCheck(glGetIntegerv(GL_BLEND_SRC_RGB, (GLint*)&last_blend_src_rgb));
-    GLenum last_blend_dst_rgb;
-    glCheck(glGetIntegerv(GL_BLEND_DST_RGB, (GLint*)&last_blend_dst_rgb));
-    GLenum last_blend_src_alpha;
-    glCheck(glGetIntegerv(GL_BLEND_SRC_ALPHA, (GLint*)&last_blend_src_alpha));
-    GLenum last_blend_dst_alpha;
-    glCheck(glGetIntegerv(GL_BLEND_DST_ALPHA, (GLint*)&last_blend_dst_alpha));
-    GLenum last_blend_equation_rgb;
-    glCheck(glGetIntegerv(GL_BLEND_EQUATION_RGB, (GLint*)&last_blend_equation_rgb));
-    GLenum last_blend_equation_alpha;
-    glCheck(glGetIntegerv(GL_BLEND_EQUATION_ALPHA, (GLint*)&last_blend_equation_alpha));
-    GLboolean last_enable_blend        = glCheck(glIsEnabled(GL_BLEND));
-    GLboolean last_enable_cull_face    = glCheck(glIsEnabled(GL_CULL_FACE));
-    GLboolean last_enable_depth_test   = glCheck(glIsEnabled(GL_DEPTH_TEST));
-    GLboolean last_enable_stencil_test = glCheck(glIsEnabled(GL_STENCIL_TEST));
-    GLboolean last_enable_scissor_test = glCheck(glIsEnabled(GL_SCISSOR_TEST));
-    #ifdef IMGUI_IMPL_OPENGL_MAY_HAVE_PRIMITIVE_RESTART
-    GLboolean last_enable_primitive_restart = (bd->GlVersion >= 310) ? glCheck(glIsEnabled(GL_PRIMITIVE_RESTART)) : GL_FALSE;
-    #endif
 
     // Setup desired GL state
     // Recreate the VAO every time (this is to easily allow multiple GL contexts to be rendered to. VAO are not shared
@@ -607,77 +562,9 @@ void ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
     glCheck(glDeleteVertexArrays(1, &vertex_array_object));
     #endif
 
-    // Restore modified GL state
-    // This "glIsProgram()" check is required because if the program is "pending deletion" at the time of binding
-    // backup, it will have been deleted by now and will cause an OpenGL error. See #6220.
-    if (last_program == 0 || glCheck(glIsProgram(last_program)))
-        glCheck(glUseProgram(last_program));
-    glCheck(glBindTexture(GL_TEXTURE_2D, last_texture));
-    #ifdef IMGUI_IMPL_OPENGL_MAY_HAVE_BIND_SAMPLER
-    if (bd->GlVersion >= 330 || bd->GlProfileIsES3)
-        glCheck(glBindSampler(0, last_sampler));
-    #endif
-    glCheck(glActiveTexture(last_active_texture));
-    #ifdef IMGUI_IMPL_OPENGL_USE_VERTEX_ARRAY
-    glCheck(glBindVertexArray(last_vertex_array_object));
-    #endif
-    glCheck(glBindBuffer(GL_ARRAY_BUFFER, last_array_buffer));
-    #ifndef IMGUI_IMPL_OPENGL_USE_VERTEX_ARRAY
-    glCheck(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, last_element_array_buffer));
-    last_vtx_attrib_state_pos.SetState(bd->AttribLocationVtxPos);
-    last_vtx_attrib_state_uv.SetState(bd->AttribLocationVtxUV);
-    last_vtx_attrib_state_color.SetState(bd->AttribLocationVtxColor);
-    #endif
-    glCheck(glBlendEquationSeparate(last_blend_equation_rgb, last_blend_equation_alpha));
-    glCheck(glBlendFuncSeparate(last_blend_src_rgb, last_blend_dst_rgb, last_blend_src_alpha, last_blend_dst_alpha));
-    if (last_enable_blend)
-        glCheck(glEnable(GL_BLEND));
-    else
-        glCheck(glDisable(GL_BLEND));
-    if (last_enable_cull_face)
-        glCheck(glEnable(GL_CULL_FACE));
-    else
-        glCheck(glDisable(GL_CULL_FACE));
-    if (last_enable_depth_test)
-        glCheck(glEnable(GL_DEPTH_TEST));
-    else
-        glCheck(glDisable(GL_DEPTH_TEST));
-    if (last_enable_stencil_test)
-        glCheck(glEnable(GL_STENCIL_TEST));
-    else
-        glCheck(glDisable(GL_STENCIL_TEST));
-    if (last_enable_scissor_test)
-        glCheck(glEnable(GL_SCISSOR_TEST));
-    else
-        glCheck(glDisable(GL_SCISSOR_TEST));
-    #ifdef IMGUI_IMPL_OPENGL_MAY_HAVE_PRIMITIVE_RESTART
-    if (bd->GlVersion >= 310)
-    {
-        if (last_enable_primitive_restart)
-            glCheck(glEnable(GL_PRIMITIVE_RESTART));
-        else
-            glCheck(glDisable(GL_PRIMITIVE_RESTART));
-    }
-    #endif
-
-    #ifdef IMGUI_IMPL_OPENGL_MAY_HAVE_POLYGON_MODE
-    // Desktop OpenGL 3.0 and OpenGL 3.1 had separate polygon draw modes for front-facing and back-facing faces of polygons
-    if (bd->HasPolygonMode)
-    {
-        if (bd->GlVersion <= 310 || bd->GlProfileIsCompat)
-        {
-            glCheck(glPolygonMode(GL_FRONT, (GLenum)last_polygon_mode[0]));
-            glCheck(glPolygonMode(GL_BACK, (GLenum)last_polygon_mode[1]));
-        }
-        else
-        {
-            glCheck(glPolygonMode(GL_FRONT_AND_BACK, (GLenum)last_polygon_mode[0]));
-        }
-    }
-    #endif // IMGUI_IMPL_OPENGL_MAY_HAVE_POLYGON_MODE
-
-    glCheck(glViewport(last_viewport[0], last_viewport[1], (GLsizei)last_viewport[2], (GLsizei)last_viewport[3]));
-    glCheck(glScissor(last_scissor_box[0], last_scissor_box[1], (GLsizei)last_scissor_box[2], (GLsizei)last_scissor_box[3]));
+    // No state restore here -- the caller (`ImGuiContext::render`) calls
+    // `RenderTarget::resetGLStates()` after this returns to re-sync SFML's
+    // state cache with the GL pipeline.
     (void)bd; // Not all compilation paths use this
 }
 

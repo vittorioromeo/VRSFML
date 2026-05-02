@@ -26,9 +26,6 @@
 #include "SFML/Window/Mouse.hpp"
 #include "SFML/Window/Window.hpp"
 
-#include "SFML/GLUtils/ShaderSaver.hpp"
-#include "SFML/GLUtils/TextureSaver.hpp"
-
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
@@ -1083,12 +1080,18 @@ void ImGuiContext::render(RenderTarget& target)
     // init rendering
     ::ImGui::GetIO().DisplaySize = toImVec2(target.getSize().toVec2f());
 
-    priv::TextureSaver textureSaver;
-    priv::ShaderSaver  shaderSaver;
-
+    // The first `resetGLStates` puts the GL pipeline in a known SFML baseline
+    // for ImGui to overwrite. The second one, after `RenderDrawData`, re-syncs
+    // SFML's state cache with the GL pipeline (program, texture, blend, view,
+    // VAO, scissor enable) -- this lets us strip ImGui's own per-frame state
+    // backup/restore in `Backend.cpp`, which in WebGL costs ~25 pipeline-sync
+    // queries per frame.
     target.resetGLStates();
+
     ::ImGui::Render();
     priv::ImGui_ImplOpenGL3_RenderDrawData(::ImGui::GetDrawData());
+
+    target.resetGLStates();
 }
 
 
