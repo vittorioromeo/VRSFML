@@ -1045,6 +1045,14 @@ void RenderTarget::resetGLStatesImpl()
 
     VertexBuffer::unbind();
 
+    // Reapply the current view to re-sync `glViewport` / `glScissor` with
+    // `cache.lastView`. Otherwise, raw GL (or third-party code such as the
+    // ImGui backend) that mutated the viewport between draws can leave the
+    // pipeline pointing at the wrong rectangle: the next `applyDrawCacheStates`
+    // would compare `usedView == cache.lastView`, find them equal, and skip
+    // the `applyView` call that would otherwise correct it.
+    applyView(m_impl->cache.lastView);
+
     m_impl->cache.enable = true;
 }
 
