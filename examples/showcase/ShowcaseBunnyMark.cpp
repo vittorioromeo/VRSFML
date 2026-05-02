@@ -175,10 +175,10 @@ void ExampleBunnyMark::imgui()
 {
     ImGui::Begin("BunnyMark", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
 
-    constexpr const char* modeNames[] = {"Normal", "Instanced", "Instanced (precomputed cos/sin)"};
+    constexpr const char* modeNames[] = {"Normal", "Instanced"};
     int                   modeIndex   = static_cast<int>(m_drawMode);
 
-    if (ImGui::Combo("Draw mode", &modeIndex, modeNames, 3))
+    if (ImGui::Combo("Draw mode", &modeIndex, modeNames, 2))
         m_drawMode = static_cast<DrawMode>(modeIndex);
 
     ImGui::SliderFloat("Scale multiplier", &m_scaleMultiplier, 0.01f, 2.5f, "%.3f", ImGuiSliderFlags_NoRoundToFormat);
