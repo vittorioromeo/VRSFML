@@ -568,10 +568,8 @@ RenderTarget::DrawStatistics RenderTexture::display()
     result = RenderTarget::flush();
     RenderTarget::syncGPUEndFrame();
 
-    // Update the target texture. Pass the cached scissor-test state so the
-    // internal `ScissorDisableGuard` doesn't have to issue a synchronous
-    // `glGetBooleanv(GL_SCISSOR_TEST)` (which can cost ~1 ms per frame on
-    // some WebGL implementations).
+    // Update the target texture. Pass the cached scissor-test state so the internal scissor disabling guard doesn't have
+    // to issue a synchronous `glGetBooleanv(GL_SCISSOR_TEST)` (which can cost ~1 ms per frame on some WebGL implementations).
     m_impl->updateTexture(isScissorEnabledCached());
     m_impl->texture.invalidateMipmap();
 
