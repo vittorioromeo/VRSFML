@@ -98,6 +98,60 @@ done
 echo
 echo "Done. Staged ${copied}/${#examples[@]} example(s) in ${STAGING_DIR}"
 
+# Strip DWARF and other custom sections from the .wasm files. The build dir
+# keeps the original (debug-info-heavy) wasm for in-browser debugging via the
+# C/C++ DevTools extension; the staged copy we ship is lean. Typical reduction
+# for our outputs: 16 MB -> ~4 MB (~70% of the .wasm is DWARF before stripping).
+if STRIP_BIN="$(command -v wasm-strip)"; then
+    echo
+    JOBS="$(nproc 2>/dev/null || echo 4)"
+    echo "Stripping DWARF / custom sections from .wasm files (${STRIP_BIN}, ${JOBS} parallel jobs) ..."
+
+    mapfile -t to_strip < <(find "${STAGING_DIR}" -type f -name "*.wasm" -size +1024c -print)
+
+    if [[ ${#to_strip[@]} -gt 0 ]]; then
+        # Snapshot pre-strip sizes for the summary.
+        declare -A pre_strip_size
+        for f in "${to_strip[@]}"; do
+            pre_strip_size["${f}"]=$(stat -c%s "${f}")
+        done
+
+        printf '%s\0' "${to_strip[@]}" \
+            | xargs -0 -n1 -P"${JOBS}" "${STRIP_BIN}"
+
+        raw_total=0
+        stripped_total=0
+        while IFS= read -r line; do
+            raw=$(awk '{print $1}' <<<"${line}")
+            stripped=$(awk '{print $2}' <<<"${line}")
+            name=$(awk '{print $3}' <<<"${line}")
+            raw_total=$((raw_total + raw))
+            stripped_total=$((stripped_total + stripped))
+            printf '  %-50s %10d -> %10d (%.0f%%)\n' \
+                "${name}" "${raw}" "${stripped}" \
+                "$(awk -v a="${stripped}" -v b="${raw}" 'BEGIN{printf "%.0f", (a/b)*100}')"
+        done < <(
+            for f in "${to_strip[@]}"; do
+                printf '%s %s %s\n' \
+                    "${pre_strip_size[$f]}" \
+                    "$(stat -c%s "${f}")" \
+                    "$(basename "${f}")"
+            done | sort -n
+        )
+
+        if [[ ${raw_total} -gt 0 ]]; then
+            echo
+            printf 'Total: %d bytes pre-strip -> %d bytes stripped (%.0f%%)\n' \
+                "${raw_total}" "${stripped_total}" \
+                "$(awk -v a="${stripped_total}" -v b="${raw_total}" 'BEGIN{printf "%.0f", (a/b)*100}')"
+        fi
+    fi
+else
+    echo
+    echo "WARN: \`wasm-strip\` not found in PATH -- skipping debug-info strip."
+    echo "      Install it (e.g. \`pacman -S wabt\` / \`apt install wabt\`) for ~70% smaller .wasm files."
+fi
+
 # Pre-compress with brotli so static hosts that respect `Accept-Encoding: br`
 # (Cloudflare Pages, itch.io, nginx with `brotli_static on`, ...) can serve
 # the pre-built `.br` payloads instead of compressing on the fly. Typical

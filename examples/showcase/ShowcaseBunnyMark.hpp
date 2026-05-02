@@ -56,18 +56,6 @@ private:
     };
 
     ////////////////////////////////////////////////////////////
-    // Per-instance data for instanced rendering with precomputed cos/sin
-    ////////////////////////////////////////////////////////////
-    struct BunnyInstanceDataPrecomputed // NOLINT(cppcoreguidelines-pro-type-member-init)
-    {
-        sf::Vec2f position;
-        float     scale;
-        sf::Vec2f cosSin;
-        sf::Vec2f texRectPos;
-        sf::Vec2f texRectSize;
-    };
-
-    ////////////////////////////////////////////////////////////
     enum class DrawMode
     {
         Normal,
@@ -85,11 +73,10 @@ private:
     float m_time = 0.f;
 
     ////////////////////////////////////////////////////////////
-    sf::base::Vector<Bunny>                        m_bunnies;
-    sf::base::Vector<sf::Sprite>                   m_sprites;
-    sf::base::Vector<BunnyInstanceData>            m_instanceData;
-    sf::base::Vector<BunnyInstanceDataPrecomputed> m_instanceDataPrecomputed;
-    sf::base::SizeT                                m_bunnyTargetCount = 100'000u;
+    sf::base::Vector<Bunny>             m_bunnies;
+    sf::base::Vector<sf::Sprite>        m_sprites;
+    sf::base::Vector<BunnyInstanceData> m_instanceData;
+    sf::base::SizeT                     m_bunnyTargetCount = 100'000u;
 
     ////////////////////////////////////////////////////////////
     RNGFast  m_rng{/* seed */ 1234};
