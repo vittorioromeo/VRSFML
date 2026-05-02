@@ -2,9 +2,9 @@
 
 #include "Aliases.hpp"
 #include "CatType.hpp"
-#include "ExampleUtils/Progress.hpp"
 #include "TextShakeEffect.hpp"
 
+#include "ExampleUtils/Progress.hpp"
 
 #include "SFML/System/Priv/Vec2Base.hpp"
 
@@ -33,6 +33,44 @@ struct [[nodiscard]] Cat
     };
 
     ////////////////////////////////////////////////////////////
+    // Wardencat bonk animation state. Lazily emplaced when a wardencat
+    // starts a bonk action; reset when the return phase completes. Holds
+    // the windup -> travel -> return sequence so the per-frame tick and the
+    // renderer can drive the baton swing without bloating every Cat with
+    // warden-only fields.
+    //
+    // TODO P2: when more cat-specific structs accumulate, replace
+    // `Optional<WardenBonkState>` (and friends like `astroState`) with a
+    // single `sf::base::Variant<...>` keyed off `CatType`.
+    struct [[nodiscard]] WardenBonkState
+    {
+        // Sequential phases: Windup raises the baton up-and-behind; Travel
+        // swings forward to the target; Hold lingers on the strike pose;
+        // Return eases back to the idle windowsill. Each phase's start /
+        // end poses are derived on the fly from the cat's current state +
+        // game constants, so we don't need any snapshot fields:
+        //   - Windup start = idle paw pose
+        //   - Windup end   = drawPos + wardenCatBatonWindupOffset
+        //   - Travel start = (recomputed) windup-end pose
+        //   - Travel end   = `cat.pawPosition` (set when strike resolves)
+        //   - Hold pose    = `cat.pawPosition` (frozen)
+        //   - Return start = `cat.pawPosition`
+        //   - Return end   = idle paw pose
+        // Per-phase durations live in `GameConstants` so they're tunable.
+        enum class [[nodiscard]] Phase : sf::base::U8
+        {
+            Windup,
+            Travel,
+            Hold,
+            Return,
+        };
+
+        Phase                               phase   = Phase::Windup;
+        float                               phaseMs = 0.f; // counts down to 0
+        sf::base::Optional<sf::base::SizeT> pendingTargetIdx{sf::base::nullOpt};
+    };
+
+    ////////////////////////////////////////////////////////////
     Progress spawnEffectTimer{};
 
     sf::Vec2f position;
@@ -51,21 +89,9 @@ struct [[nodiscard]] Cat
     // the moment the action fires. Ticked down each frame; transient.
     float pawHoldMs = 0.f;
 
-    // Outgoing-swing animation toward `pawPosition`. `pawBonkTravelMs` counts
-    // down from `pawBonkTravelDurationMs` so the render can interpolate from
-    // the snapshotted start pose over the travel window instead of snapping.
-    sf::Vec2f pawBonkStartPos{};
-    sf::Angle pawBonkStartRotation{sf::Angle::Zero};
-    float     pawBonkTravelMs         = 0.f;
-    float     pawBonkTravelDurationMs = 0.f;
-
-    // Return phase: after the hold expires the paw eases back from its last
-    // struck pose toward the idle windowsill target over this window. The
-    // target is dynamic (it follows the cat), so only the START is cached.
-    sf::Vec2f pawBonkReturnStartPos{};
-    sf::Angle pawBonkReturnStartRotation{sf::Angle::Zero};
-    float     pawBonkReturnMs         = 0.f;
-    float     pawBonkReturnDurationMs = 0.f;
+    // Wardencat bonk animation state: lazily emplaced when a wardencat
+    // starts a bonk action, reset when the return phase completes.
+    sf::base::Optional<WardenBonkState> wardenBonk{sf::base::nullOpt};
 
     // While > 0 the cat rocks side-to-side like a struck pendulum -- used by
     // the Warden's bonk to give the target a visible reaction. Ticked down
@@ -109,9 +135,9 @@ struct [[nodiscard]] Cat
     // accumulates drag motion and triggers wake-up on reaching 1.
     // `napWakeWobble` is a transient feedback rotation that decays to zero.
     sf::base::Optional<Transition> napTransition{sf::base::nullOpt};
-    sf::base::Optional<Countdown>          napSleepCountdown{sf::base::nullOpt};
-    float                                  napShakeProgress{0.f};
-    float                                  napWakeWobble{0.f};
+    sf::base::Optional<Countdown>  napSleepCountdown{sf::base::nullOpt};
+    float                          napShakeProgress{0.f};
+    float                          napWakeWobble{0.f};
 
     // Transient per-frame kinematics used to derive a velocity-based tilt
     // while being dragged (and also the delta for `napShakeProgress`).

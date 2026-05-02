@@ -1335,13 +1335,20 @@ void Main::gameLoopUpdateCatActionWarden(const float /* deltaTimeMs */, Cat& cat
     const auto range        = getComputedRangeByCatTypeOrCopyCat(cat.type);
     const auto rangeSquared = range * range;
 
+    // Skip if a previous bonk is still resolving -- prevents stacking actions.
+    if (cat.wardenBonk.hasValue())
+        return;
+
     // Pick the most-deeply-asleep cat in range (favors the one closest to
     // fully napping, so the warden keeps the dorm orderly).
-    Cat*  bestTarget = nullptr;
-    float bestScore  = -1.f;
+    Cat*  bestTarget    = nullptr;
+    SizeT bestTargetIdx = 0u;
+    float bestScore     = -1.f;
 
-    for (Cat& otherCat : pt->cats)
+    for (SizeT i = 0u; i < pt->cats.size(); ++i)
     {
+        Cat& otherCat = pt->cats[i];
+
         if (&otherCat == &cat)
             continue;
 
@@ -1361,33 +1368,67 @@ void Main::gameLoopUpdateCatActionWarden(const float /* deltaTimeMs */, Cat& cat
         const float score = otherCat.napTransition->value;
         if (score > bestScore)
         {
-            bestScore  = score;
-            bestTarget = &otherCat;
+            bestScore     = score;
+            bestTarget    = &otherCat;
+            bestTargetIdx = i;
         }
     }
 
     if (bestTarget == nullptr)
         return;
 
+    // Start the windup: emplace the bonk-state container in Windup phase
+    // and remember the target so the strike fires when the phase countdown
+    // expires (in the per-frame paw update). All start/end poses are
+    // derived on the fly per phase, so no snapshots are stored.
+    auto& bonk = cat.wardenBonk.emplace();
+    bonk.phase = Cat::WardenBonkState::Phase::Windup;
+    bonk.phaseMs = gameConstants.wardenCatBatonWindupMs;
+    bonk.pendingTargetIdx.emplace(bestTargetIdx);
+
+    cat.pawOpacity    = 255.f;
+    cat.cooldown.time = maxCooldown;
+}
+
+
+////////////////////////////////////////////////////////////
+void Main::resolveWardenBonkStrike(Cat& cat)
+{
+    if (!cat.wardenBonk.hasValue() || !cat.wardenBonk->pendingTargetIdx.hasValue())
+        return;
+
+    const SizeT targetIdx = *cat.wardenBonk->pendingTargetIdx;
+    cat.wardenBonk->pendingTargetIdx.reset();
+
+    // The cats vector may have been modified during the windup; bail
+    // gracefully if the target index is no longer valid or no longer
+    // napping.
+    if (targetIdx >= pt->cats.size())
+        return;
+
+    Cat& target = pt->cats[targetIdx];
+    if (&target == &cat || !target.isNapping() || target.napTransition->reversed)
+        return;
+
     // Wake them up: kick the fade backwards and clear the sleep countdown.
-    bestTarget->napTransition->reversed = true;
-    bestTarget->napSleepCountdown.reset();
-    bestTarget->napShakeProgress = 0.f;
+    target.napTransition->reversed = true;
+    target.napSleepCountdown.reset();
+    target.napShakeProgress = 0.f;
 
     // Forced wake-up (wardencat bonk) grants the Power Nap cooldown boost.
     // TODO P0: apply only on bonk and rename to "rude awakening"
-    applyPowerNapBoost(*bestTarget);
+    applyPowerNapBoost(target);
 
-    sounds.bonk.settings.position = {bestTarget->position.x, bestTarget->position.y};
+    sounds.bonk.settings.position = {target.position.x, target.position.y};
     playSound(sounds.bonk, /* maxOverlap */ 4u);
 
-    sounds.napWake.settings.position = {bestTarget->position.x, bestTarget->position.y};
+    sounds.napWake.settings.position = {target.position.x, target.position.y};
     playSound(sounds.napWake, /* maxOverlap */ 2u);
 
     if (profile.showTextParticles)
     {
         auto& tp = textParticles.emplaceBack(TextParticle{
-            {.position      = bestTarget->position.addY(-40.f),
+            {.position      = target.position.addY(-40.f),
              .velocity      = rngFast.getVec2f({-0.1f, -1.65f}, {0.1f, -1.35f}) * 0.395f,
              .scale         = 0.8f,
              .scaleDecay    = 0.f,
@@ -1405,33 +1446,25 @@ void Main::gameLoopUpdateCatActionWarden(const float /* deltaTimeMs */, Cat& cat
         (void)std::snprintf(tp.buffer, sizeof(tp.buffer), "BONK!");
     }
 
-    constexpr float bonkTravelMs = 100.f; // outgoing swing duration
-    constexpr float bonkLingerMs = 250.f; // time the baton stays on the target
-
-    // Snapshot the current pose as the start of the outgoing swing, then set
-    // the destination; the render lerps between them over `bonkTravelMs`.
-    cat.pawBonkStartPos         = cat.pawPosition;
-    cat.pawBonkStartRotation    = cat.pawRotation;
-    cat.pawBonkTravelDurationMs = bonkTravelMs;
-    cat.pawBonkTravelMs         = bonkTravelMs;
-
-    cat.pawPosition = bestTarget->position - sf::Vec2f{0.f, 35.f};
+    // Set the strike target pose; the renderer's Travel branch lerps from
+    // the (recomputed) windup-end pose toward this. The renderer's Hold
+    // branch stays parked here, and the Return branch lerps from here back
+    // toward idle.
+    cat.pawPosition = target.position - sf::Vec2f{0.f, 35.f};
     cat.pawOpacity  = 255.f;
-    cat.pawRotation = (bestTarget->position - cat.position).angle() + sf::degrees(45);
+    cat.pawRotation = (target.position - cat.position).angle() + sf::degrees(45);
 
-    // Hold-mode spans travel + linger so the per-frame lerp stays suspended
-    // for the entire bonk and the baton doesn't snap back mid-swing.
-    cat.pawHoldMs = bonkTravelMs + bonkLingerMs;
-
+    // Advance to the Travel phase. Subsequent phase transitions
+    // (Travel → Hold → Return → reset) happen in the per-frame paw update.
+    cat.wardenBonk->phase   = Cat::WardenBonkState::Phase::Travel;
+    cat.wardenBonk->phaseMs = gameConstants.wardenCatBatonTravelMs;
 
     // Pendulum-style impact reaction on the target cat: rocks side-to-side
     // for ~500ms, synced roughly with the baton reaching the target.
-    bestTarget->bonkImpactMs = 500.f;
+    target.bonkImpactMs = 500.f;
 
     cat.textStatusShakeEffect.bump(rngFast, 1.5f);
     ++cat.hits;
-
-    cat.cooldown.time = maxCooldown;
 }
 
 
@@ -2129,28 +2162,45 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
         if (cat.bonkImpactMs > 0.f)
             cat.bonkImpactMs = sf::base::max(0.f, cat.bonkImpactMs - deltaTimeMs);
 
-        if (cat.pawHoldMs > 0.f)
+        // Wardencat baton sequence: tick the current phase's countdown; on
+        // expiry, advance to the next phase (Windup → Travel → Hold →
+        // Return → reset). Done BEFORE the pawHoldMs branch so the wardencat
+        // never falls through to the generic per-frame lerp while a bonk is
+        // in progress.
+        if (cat.wardenBonk.hasValue())
         {
-            const bool holdWillExpire = cat.pawHoldMs <= deltaTimeMs;
-            cat.pawHoldMs -= deltaTimeMs;
+            using Phase = Cat::WardenBonkState::Phase;
+            auto& bonk  = *cat.wardenBonk;
 
-            if (cat.pawBonkTravelMs > 0.f)
-                cat.pawBonkTravelMs = sf::base::max(0.f, cat.pawBonkTravelMs - deltaTimeMs);
+            bonk.phaseMs = sf::base::max(0.f, bonk.phaseMs - deltaTimeMs);
 
-            // The moment the hold ends for a Warden, kick off the return phase
-            // so the baton eases back instead of snapping to the windowsill.
-            if (holdWillExpire && cat.type == CatType::Warden)
+            if (bonk.phaseMs <= 0.f)
             {
-                constexpr float bonkReturnMs   = 400.f;
-                cat.pawBonkReturnStartPos      = cat.pawPosition;
-                cat.pawBonkReturnStartRotation = cat.pawRotation;
-                cat.pawBonkReturnMs            = bonkReturnMs;
-                cat.pawBonkReturnDurationMs    = bonkReturnMs;
+                switch (bonk.phase)
+                {
+                    case Phase::Windup:
+                        // Strike sets phase = Travel + phaseMs = travel ms.
+                        resolveWardenBonkStrike(cat);
+                        break;
+                    case Phase::Travel:
+                        bonk.phase   = Phase::Hold;
+                        bonk.phaseMs = gameConstants.wardenCatBatonHoldMs;
+                        break;
+                    case Phase::Hold:
+                        bonk.phase   = Phase::Return;
+                        bonk.phaseMs = gameConstants.wardenCatBatonReturnMs;
+                        break;
+                    case Phase::Return:
+                        cat.wardenBonk.reset();
+                        break;
+                }
             }
         }
-        else if (cat.pawBonkReturnMs > 0.f)
+        else if (cat.pawHoldMs > 0.f)
         {
-            cat.pawBonkReturnMs = sf::base::max(0.f, cat.pawBonkReturnMs - deltaTimeMs);
+            // Generic paw-hold (Uni transform etc.) -- suspends the lerp
+            // below for non-warden uses.
+            cat.pawHoldMs -= deltaTimeMs;
         }
         else
         {

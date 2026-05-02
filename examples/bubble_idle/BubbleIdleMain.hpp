@@ -1963,6 +1963,12 @@ struct Main
     void               gameLoopUpdateCatActionDevil(float /* deltaTimeMs */, Cat& cat);
     void               gameLoopUpdateCatActionAstro(float /* deltaTimeMs */, Cat& cat);
     void               gameLoopUpdateCatActionWarden(float /* deltaTimeMs */, Cat& cat);
+
+    // Resolve a queued wardencat windup: deals the bonk to
+    // `cat.pawBonkPendingTargetIdx` (if still valid + napping), kicks the
+    // travel/hold animation, and clears the pending state. Called from the
+    // per-frame paw update when the windup countdown reaches zero.
+    void resolveWardenBonkStrike(Cat& cat);
     [[nodiscard]] Cat* getSessionTargetCat(const HexSession& session) const;
     [[nodiscard]] bool anyCatHexedOrCopyHexed() const;
     [[nodiscard]] bool canHexMore() const;

@@ -1375,38 +1375,61 @@ void drawCatVisuals(const CatDrawContext& ctx)
         const auto pawScale = isWarden ? ctx.catScale * ctx.main.gameConstants.wardenCatPawScale : ctx.catScale * 0.85f;
         const auto pawAlpha = isWarden ? static_cast<U8>(255u) : static_cast<U8>(ctx.cat.pawOpacity);
 
-        // Warden paw state machine:
-        //  - Travel:  lerps start pose → `cat.pawPosition` over pawBonkTravelMs
-        //  - Hold:    stays at `cat.pawPosition`
-        //  - Return:  eases the snapshotted hold pose → idle windowsill spot
-        //  - Idle:    sits at the tunable windowsill offset
+        // Warden paw state machine. Each phase derives its start + end pose
+        // from the cat's current state -- no snapshots stored on Cat.
+        //   - Windup: idle pose       → windup-end pose (drawPos + offset)
+        //   - Travel: windup-end pose → cat.pawPosition (set at strike)
+        //   - Hold:   stays at cat.pawPosition
+        //   - Return: cat.pawPosition → idle pose
+        //   - Idle (no bonk): sits at the tunable windowsill offset
         const sf::Vec2f wardenIdlePos = isWarden ? ctx.anchorOffset(ctx.main.gameConstants.wardenCatPawOffset)
                                                  : sf::Vec2f{0.f, 0.f};
 
-        sf::Vec2f pawPosition = isWarden ? (ctx.cat.pawHoldMs > 0.f ? ctx.cat.pawPosition : wardenIdlePos)
+        sf::Vec2f pawPosition = isWarden ? wardenIdlePos
                                          : ctx.cat.pawPosition +
                                                (ctx.beingDragged ? ctx.main.gameConstants.regularPawDraggedOffset
                                                                  : ctx.main.gameConstants.regularPawIdleOffset);
 
         auto pawRotate = ctx.cat.type == CatType::Mouse ? sf::radians(-0.6f) : ctx.cat.pawRotation;
 
-        if (isWarden && ctx.cat.pawBonkTravelMs > 0.f && ctx.cat.pawBonkTravelDurationMs > 0.f)
+        if (isWarden && ctx.cat.wardenBonk.hasValue())
         {
-            const float t = easeInOutCubic(
-                sf::base::clamp(1.f - (ctx.cat.pawBonkTravelMs / ctx.cat.pawBonkTravelDurationMs), 0.f, 1.f));
+            using Phase = Cat::WardenBonkState::Phase;
+            const auto& bonk = *ctx.cat.wardenBonk;
 
-            pawPosition = ctx.cat.pawBonkStartPos + (ctx.cat.pawPosition - ctx.cat.pawBonkStartPos) * t;
-            pawRotate   = ctx.cat.pawBonkStartRotation.rotatedTowards(ctx.cat.pawRotation, t);
-        }
-        else if (isWarden && ctx.cat.pawBonkReturnMs > 0.f && ctx.cat.pawBonkReturnDurationMs > 0.f)
-        {
-            // Return-phase target is recomputed every frame so the paw tracks
-            // the cat's bobbing position while it eases back.
-            const float t = easeInOutCubic(
-                sf::base::clamp(1.f - (ctx.cat.pawBonkReturnMs / ctx.cat.pawBonkReturnDurationMs), 0.f, 1.f));
+            const float phaseDuration = bonk.phase == Phase::Windup ? ctx.main.gameConstants.wardenCatBatonWindupMs
+                                       : bonk.phase == Phase::Travel ? ctx.main.gameConstants.wardenCatBatonTravelMs
+                                       : bonk.phase == Phase::Hold   ? ctx.main.gameConstants.wardenCatBatonHoldMs
+                                                                     : ctx.main.gameConstants.wardenCatBatonReturnMs;
 
-            pawPosition = ctx.cat.pawBonkReturnStartPos + (wardenIdlePos - ctx.cat.pawBonkReturnStartPos) * t;
-            pawRotate   = ctx.cat.pawBonkReturnStartRotation.rotatedTowards(sf::degrees(-45.f), t);
+            const float t = phaseDuration > 0.f
+                                ? easeInOutCubic(sf::base::clamp(1.f - (bonk.phaseMs / phaseDuration), 0.f, 1.f))
+                                : 1.f;
+
+            const sf::Vec2f windupEndPos = ctx.cat.getDrawPosition(ctx.main.profile.enableCatBobbing) +
+                                           ctx.main.gameConstants.wardenCatBatonWindupOffset;
+            const sf::Angle windupEndRot = sf::degrees(ctx.main.gameConstants.wardenCatBatonWindupRotationDeg);
+            constexpr sf::Angle idleRot  = sf::degrees(-45.f);
+
+            switch (bonk.phase)
+            {
+                case Phase::Windup:
+                    pawPosition = wardenIdlePos + (windupEndPos - wardenIdlePos) * t;
+                    pawRotate   = idleRot.rotatedTowards(windupEndRot, t);
+                    break;
+                case Phase::Travel:
+                    pawPosition = windupEndPos + (ctx.cat.pawPosition - windupEndPos) * t;
+                    pawRotate   = windupEndRot.rotatedTowards(ctx.cat.pawRotation, t);
+                    break;
+                case Phase::Hold:
+                    pawPosition = ctx.cat.pawPosition;
+                    pawRotate   = ctx.cat.pawRotation;
+                    break;
+                case Phase::Return:
+                    pawPosition = ctx.cat.pawPosition + (wardenIdlePos - ctx.cat.pawPosition) * t;
+                    pawRotate   = ctx.cat.pawRotation.rotatedTowards(idleRot, t);
+                    break;
+            }
         }
 
         addCatSprite(sf::Sprite{.position    = pawPosition,

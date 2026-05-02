@@ -356,6 +356,15 @@ DEFINE_TWO_WAY_SERIALIZER(Cat::AstroState)
 
 
 ////////////////////////////////////////////////////////////
+DEFINE_TWO_WAY_SERIALIZER(Cat::WardenBonkState)
+{
+    FIELD(phase);
+    FIELD(phaseMs);
+    FIELD(pendingTargetIdx);
+}
+
+
+////////////////////////////////////////////////////////////
 DEFINE_TWO_WAY_SERIALIZER(Cat)
 {
     FIELD(spawnEffectTimer);
@@ -371,6 +380,8 @@ DEFINE_TWO_WAY_SERIALIZER(Cat)
     FIELD(boostCountdown);
     FIELD(napBoostCountdown);
     FIELD(napBoostMultiplier);
+
+    FIELD(wardenBonk);
 
     FIELD(nameIdx);
 
@@ -889,6 +900,12 @@ DEFINE_TWO_WAY_SERIALIZER(GameConstants)
     FIELD(wardenCatEyelidOriginOffset);
     FIELD(wardenCatYawnOriginOffset);
     FIELD(wardenCatPawScale);
+    FIELD(wardenCatBatonWindupOffset);
+    FIELD(wardenCatBatonWindupRotationDeg);
+    FIELD(wardenCatBatonWindupMs);
+    FIELD(wardenCatBatonTravelMs);
+    FIELD(wardenCatBatonHoldMs);
+    FIELD(wardenCatBatonReturnMs);
     FIELD(catNameTextOffsetY);
     FIELD(catStatusTextOffsetY);
     FIELD(catCooldownBarOffsetY);
