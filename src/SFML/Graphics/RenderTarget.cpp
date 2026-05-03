@@ -207,6 +207,16 @@ struct [[nodiscard]] StatesCache
 
     unsigned int lastVaoGroup{0u};          //!< Last bound vertex array object id
     unsigned int lastVaoGroupContextId{0u}; //!< Last bound vertex array object context id
+    unsigned int lastVaoGroupVboId{0u};     //!< GL id of `lastVaoGroup`'s shared VBO at the time `bindGLObjects` ran.
+                                            //!< If the underlying VBO is move-assigned (e.g. persistent ring-buffer
+                                            //!< growth), the new id won't match here and the next `setupDraw` must
+                                            //!< rebind + re-issue `glVertexAttribPointer` so the VAO's stored
+                                            //!< attribute-buffer mapping references the live handle.
+
+    bool glArrayBufferDirty{true}; //!< `true` when something may have left a buffer other than the active VAO's
+                                   //!< shared VBO bound as `GL_ARRAY_BUFFER` (instanced draw callbacks bind
+                                   //!< per-instance VBOs, etc.). The next non-rebind `setupDraw` rebinds the VAO's
+                                   //!< VBO so `streamVerticesToGPU` writes to the right buffer.
 
     BlendMode   lastBlendMode{BlendAlpha}; //!< Cached blending mode
     StencilMode lastStencilMode{};         //!< Cached stencil
@@ -246,6 +256,8 @@ struct [[nodiscard]] RenderTarget::Impl
 
         cache.lastVaoGroup          = theVAOGroup.getId();
         cache.lastVaoGroupContextId = GraphicsContext::getActiveThreadLocalGlContextId();
+        cache.lastVaoGroupVboId     = theVAOGroup.vbo.getId();
+        cache.glArrayBufferDirty    = false;
 
         RenderTargetImpl::setupVertexAttribPointers();
     }
@@ -661,6 +673,9 @@ void RenderTarget::immediateDrawInstancedVertices(const DrawInstancedVerticesSet
 
     invokeInstancedPrimitiveDrawCall(settings.primitiveType, 0, settings.vertexSpan.size(), settings.instanceCount);
     iab.markDrawSubmitted();
+
+    // The binder left a per-instance VBO bound to `GL_ARRAY_BUFFER`.
+    m_impl->cache.glArrayBufferDirty = true;
 }
 
 
@@ -685,6 +700,9 @@ void RenderTarget::immediateDrawInstancedIndexedVertices(const DrawInstancedInde
 
     invokeInstancedPrimitiveDrawCallIndexed(settings.primitiveType, 0, settings.indexSpan.size(), settings.instanceCount);
     iab.markDrawSubmitted();
+
+    // The binder left a per-instance VBO bound to `GL_ARRAY_BUFFER`.
+    m_impl->cache.glArrayBufferDirty = true;
 }
 
 
@@ -1019,9 +1037,11 @@ void RenderTarget::resetGLStatesImpl()
     glCheck(glEnable(GL_BLEND));
     glCheck(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
 
-    m_impl->cache.scissorEnabled = false;
-    m_impl->cache.stencilEnabled = false;
-    m_impl->cache.lastVaoGroup   = 0u;
+    m_impl->cache.scissorEnabled     = false;
+    m_impl->cache.stencilEnabled     = false;
+    m_impl->cache.lastVaoGroup       = 0u;
+    m_impl->cache.lastVaoGroupVboId  = 0u;
+    m_impl->cache.glArrayBufferDirty = true;
 
     m_impl->cache.glStatesSet = true;
 
@@ -1322,19 +1342,31 @@ void RenderTarget::setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& sta
     {
         const bool mustRebindVAO = m_impl->cache.lastVaoGroup == 0u || m_impl->cache.lastVaoGroup != vaoGroup.getId() ||
                                    m_impl->cache.lastVaoGroupContextId == 0u ||
-                                   m_impl->cache.lastVaoGroupContextId != GraphicsContext::getActiveThreadLocalGlContextId();
+                                   m_impl->cache.lastVaoGroupContextId !=
+                                       GraphicsContext::getActiveThreadLocalGlContextId() ||
+                                   m_impl->cache.lastVaoGroupVboId != vaoGroup.vbo.getId();
 
         if (!m_impl->cache.enable || mustRebindVAO)
-            m_impl->bindGLObjects(vaoGroup);
-        else
         {
-            // Instanced draw callbacks can leave a per-instance VBO bound as
-            // GL_ARRAY_BUFFER. Always rebind the VAO group's shared VBO so
-            // that (a) setupVertexAttribPointers wires attributes 0-2 to the
-            // correct buffer and (b) streamVerticesToGPU uploads into it.
-            vaoGroup.vbo.bind();
-            RenderTargetImpl::setupVertexAttribPointers();
+            // Full rebind path. Also runs after a persistent ring-buffer
+            // growth (which move-assigns a fresh VBO into the VAO group):
+            // the `lastVaoGroupVboId` mismatch above forces this branch so
+            // `setupVertexAttribPointers` re-captures the live VBO handle
+            // into the VAO's attribute state.
+            m_impl->bindGLObjects(vaoGroup);
         }
+        else if (m_impl->cache.glArrayBufferDirty)
+        {
+            // Same VAO as last draw and its attribute state is still valid,
+            // but a previous instanced-draw callback (or other buffer
+            // upload) bound a different `GL_ARRAY_BUFFER`. Rebind so the
+            // next `streamVerticesToGPU` uploads into the correct buffer.
+            // No `setupVertexAttribPointers` -- the VAO already holds the
+            // correct attribute-to-buffer association.
+            vaoGroup.vbo.bind();
+            m_impl->cache.glArrayBufferDirty = false;
+        }
+        // else: steady-state fast path -- zero GL calls.
     }
 
     // Select shader to be used

@@ -719,6 +719,97 @@ TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
             CHECK(image.getPixel({65, 15}) == sf::Color::Red);
         }
 
+        SECTION("Mixed instanced and immediate draws preserve GL_ARRAY_BUFFER for the active VAO")
+        {
+            // Regression: `setupDraw`'s non-rebind branch (taken for
+            // consecutive same-VAO draws when the cache is enabled) must
+            // ensure GL_ARRAY_BUFFER is bound to the active VAO's shared
+            // VBO before `streamVerticesToGPU` runs. The instanced binder
+            // path leaves a per-instance VBO bound; without proper
+            // restoration, the next same-VAO draw's `glBufferData` would
+            // overwrite the per-instance VBO storage instead of the shared
+            // mesh VBO, corrupting the next draw and (on desktop where
+            // per-instance VBOs are persistently mapped) tripping
+            // `GL_INVALID_OPERATION`.
+            //
+            // The test stresses transitions across all interesting
+            // cache-state combinations:
+            //   instanced -> instanced (same VAO, non-rebind branch)
+            //   instanced -> immediate (different VAO, rebind branch)
+            //   immediate -> instanced (different VAO, rebind branch)
+            auto rt = sf::RenderTexture::create({100, 100}).value();
+
+            auto& shader = sharedInstancedShader();
+
+            sf::VAOHandle vaoHandle;
+            sf::VBOHandle instanceVBO;
+
+            struct InstanceData
+            {
+                sf::Vec2f offset;
+                sf::Color color;
+            };
+
+            const auto drawInstanced = [&](sf::Vec2f offset, sf::Color color)
+            {
+                const InstanceData instance{offset, color};
+
+                auto setupAttribs = [&](sf::InstanceAttributeBinder& binder)
+                {
+                    binder.uploadContiguousData(instanceVBO, &instance);
+                    binder.setupField<&InstanceData::offset>(3);
+                    binder.setupField<&InstanceData::color>(4);
+                };
+
+                rt.drawInstancedIndexedVertices(
+                    {
+                        .vaoHandle     = vaoHandle,
+                        .vertexSpan    = sf::instancedQuadVertices,
+                        .indexSpan     = sf::instancedQuadIndices,
+                        .instanceCount = 1u,
+                        .primitiveType = sf::PrimitiveType::Triangles,
+                    },
+                    setupAttribs,
+                    {.view = sf::View::fromScreenSize({100.f, 100.f}), .shader = &shader});
+            };
+
+            rt.clear(sf::Color::Black);
+
+            // Two consecutive instanced draws on the same VAOHandle. After
+            // the first, GL_ARRAY_BUFFER points at the instance VBO; the
+            // second must rebind the VAO's shared mesh VBO before
+            // `streamVerticesToGPU` runs.
+            drawInstanced({15.f, 15.f}, sf::Color::Green);
+            drawInstanced({40.f, 15.f}, sf::Color::Red);
+
+            // Immediate non-instanced draw (different VAO -> rebind branch).
+            rt.draw(sf::RectangleShape{
+                {.position = {55.f, 5.f}, .fillColor = sf::Color::Blue, .size = {20.f, 20.f}}});
+
+            // Back to instanced (different VAO -> rebind branch).
+            drawInstanced({15.f, 40.f}, sf::Color::Yellow);
+
+            // Another consecutive instanced draw (same VAO -> non-rebind
+            // branch must once again restore GL_ARRAY_BUFFER).
+            drawInstanced({40.f, 40.f}, sf::Color::Magenta);
+
+            // Final transitions: instanced -> immediate -> instanced again.
+            rt.draw(sf::RectangleShape{
+                {.position = {55.f, 30.f}, .fillColor = sf::Color::Cyan, .size = {20.f, 20.f}}});
+            drawInstanced({15.f, 65.f}, sf::Color{255u, 128u, 0u, 255u}); // orange
+
+            rt.display();
+
+            const auto img = rt.getTexture().copyToImage();
+            CHECK(img.getPixel({15, 15}) == sf::Color::Green);
+            CHECK(img.getPixel({40, 15}) == sf::Color::Red);
+            CHECK(img.getPixel({65, 15}) == sf::Color::Blue);
+            CHECK(img.getPixel({15, 40}) == sf::Color::Yellow);
+            CHECK(img.getPixel({40, 40}) == sf::Color::Magenta);
+            CHECK(img.getPixel({65, 40}) == sf::Color::Cyan);
+            CHECK(img.getPixel({15, 65}) == sf::Color{255u, 128u, 0u, 255u});
+        }
+
 #ifndef SFML_OPENGL_ES
         SECTION("Persistent GPU batches can reserve before clear when reused across frames")
         {
