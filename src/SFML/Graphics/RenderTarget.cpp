@@ -213,11 +213,6 @@ struct [[nodiscard]] StatesCache
                                             //!< rebind + re-issue `glVertexAttribPointer` so the VAO's stored
                                             //!< attribute-buffer mapping references the live handle.
 
-    bool glArrayBufferDirty{true}; //!< `true` when something may have left a buffer other than the active VAO's
-                                   //!< shared VBO bound as `GL_ARRAY_BUFFER` (instanced draw callbacks bind
-                                   //!< per-instance VBOs, etc.). The next non-rebind `setupDraw` rebinds the VAO's
-                                   //!< VBO so `streamVerticesToGPU` writes to the right buffer.
-
     BlendMode   lastBlendMode{BlendAlpha}; //!< Cached blending mode
     StencilMode lastStencilMode{};         //!< Cached stencil
     base::U64   lastTextureId{0u};         //!< Cached texture
@@ -257,7 +252,6 @@ struct [[nodiscard]] RenderTarget::Impl
         cache.lastVaoGroup          = theVAOGroup.getId();
         cache.lastVaoGroupContextId = GraphicsContext::getActiveThreadLocalGlContextId();
         cache.lastVaoGroupVboId     = theVAOGroup.vbo.getId();
-        cache.glArrayBufferDirty    = false;
 
         RenderTargetImpl::setupVertexAttribPointers();
     }
@@ -673,9 +667,6 @@ void RenderTarget::immediateDrawInstancedVertices(const DrawInstancedVerticesSet
 
     invokeInstancedPrimitiveDrawCall(settings.primitiveType, 0, settings.vertexSpan.size(), settings.instanceCount);
     iab.markDrawSubmitted();
-
-    // The binder left a per-instance VBO bound to `GL_ARRAY_BUFFER`.
-    m_impl->cache.glArrayBufferDirty = true;
 }
 
 
@@ -700,9 +691,6 @@ void RenderTarget::immediateDrawInstancedIndexedVertices(const DrawInstancedInde
 
     invokeInstancedPrimitiveDrawCallIndexed(settings.primitiveType, 0, settings.indexSpan.size(), settings.instanceCount);
     iab.markDrawSubmitted();
-
-    // The binder left a per-instance VBO bound to `GL_ARRAY_BUFFER`.
-    m_impl->cache.glArrayBufferDirty = true;
 }
 
 
@@ -1037,11 +1025,10 @@ void RenderTarget::resetGLStatesImpl()
     glCheck(glEnable(GL_BLEND));
     glCheck(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
 
-    m_impl->cache.scissorEnabled     = false;
-    m_impl->cache.stencilEnabled     = false;
-    m_impl->cache.lastVaoGroup       = 0u;
-    m_impl->cache.lastVaoGroupVboId  = 0u;
-    m_impl->cache.glArrayBufferDirty = true;
+    m_impl->cache.scissorEnabled    = false;
+    m_impl->cache.stencilEnabled    = false;
+    m_impl->cache.lastVaoGroup      = 0u;
+    m_impl->cache.lastVaoGroupVboId = 0u;
 
     m_impl->cache.glStatesSet = true;
 
@@ -1355,18 +1342,18 @@ void RenderTarget::setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& sta
             // into the VAO's attribute state.
             m_impl->bindGLObjects(vaoGroup);
         }
-        else if (m_impl->cache.glArrayBufferDirty)
+        else
         {
-            // Same VAO as last draw and its attribute state is still valid,
-            // but a previous instanced-draw callback (or other buffer
-            // upload) bound a different `GL_ARRAY_BUFFER`. Rebind so the
-            // next `streamVerticesToGPU` uploads into the correct buffer.
-            // No `setupVertexAttribPointers` -- the VAO already holds the
-            // correct attribute-to-buffer association.
+            // Same VAO and its attribute state is still valid -- only the
+            // `GL_ARRAY_BUFFER` target binding may have drifted (instanced
+            // draw callbacks bind per-instance VBOs, `VertexBuffer::create`
+            // / `update` end with `glBindBuffer(GL_ARRAY_BUFFER, 0)`, and
+            // raw user GL between draws is unobservable). Rebind the VAO's
+            // shared VBO so the upcoming `streamVerticesToGPU` writes to
+            // the right buffer. No `setupVertexAttribPointers` -- the VAO
+            // already holds the correct attribute-to-buffer association.
             vaoGroup.vbo.bind();
-            m_impl->cache.glArrayBufferDirty = false;
         }
-        // else: steady-state fast path -- zero GL calls.
     }
 
     // Select shader to be used
