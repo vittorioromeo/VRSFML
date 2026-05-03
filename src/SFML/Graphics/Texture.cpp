@@ -210,18 +210,14 @@ base::Optional<Texture> Texture::create(Vec2u size, const TextureCreateSettings&
 
     // All the validity checks passed, we can store the new texture settings
     result.emplace(base::PassKey<Texture>{}, size, glTexture, settings.sRgb);
-    Texture& texture = *result;
 
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
 
-    sf::priv::bindAndInitializeTexture(texture.m_texture,
-                                       texture.m_sRgb,
-                                       size,
-                                       static_cast<unsigned int>(TextureImpl::wrapModeToGl(settings.wrapMode)));
-
-    texture.m_cacheId   = TextureImpl::getUniqueId();
-    texture.m_hasMipmap = false;
+    priv::bindAndInitializeTexture(result->m_texture,
+                                   result->m_sRgb,
+                                   size,
+                                   static_cast<unsigned int>(TextureImpl::wrapModeToGl(settings.wrapMode)));
 
     result->setSmooth(settings.smooth);
     result->setWrapMode(settings.wrapMode);
@@ -315,7 +311,8 @@ base::Optional<Texture> Texture::loadFromImage(const Image& image, const Texture
         glCheck(glBindTexture(GL_TEXTURE_2D, result->m_texture));
 
         glCheck(glPixelStorei(GL_UNPACK_ROW_LENGTH, size.x)); // restore after
-        glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.size.x, rectangle.size.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels));
+        glCheck(
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.size.x, rectangle.size.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels));
         glCheck(glPixelStorei(GL_UNPACK_ROW_LENGTH, 0));
 
         glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, result->m_isSmooth ? GL_LINEAR : GL_NEAREST));
