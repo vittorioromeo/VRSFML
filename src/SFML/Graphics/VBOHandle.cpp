@@ -96,7 +96,6 @@ base::SizeT VBOHandle::uploadStreamingData(const void* const data, const base::S
     SFML_BASE_MEMCPY(static_cast<char*>(m_impl->persistentRingBuffer.data()) + byteOffset, data, byteCount);
     m_impl->persistentRingBuffer.flushBytesToGPU(m_impl->vbo, byteOffset, byteCount);
 
-    bind();
     return byteOffset;
 #endif
 }
