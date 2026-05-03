@@ -1,7 +1,6 @@
 #include "Aliases.hpp"
 #include "Bubble.hpp"
 #include "Cat.hpp"
-#include "ExampleUtils/Progress.hpp"
 #include "Doll.hpp"
 #include "GameConstants.hpp"
 #include "GameEvent.hpp"
@@ -16,6 +15,7 @@
 #include "Stats.hpp"
 #include "Version.hpp"
 
+#include "ExampleUtils/Progress.hpp"
 
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/IntTypes.hpp"

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CatType.hpp"
+
 #include "ExampleUtils/Progress.hpp"
 
 #include "SFML/System/Priv/Vec2Base.hpp"
@@ -20,7 +21,7 @@ struct [[nodiscard]] Doll
     float     hue = 0.f;
     CatType   catType;
 
-    TimedCountdown  tcActivation;
+    TimedCountdown                     tcActivation;
     sf::base::Optional<TimedCountdown> tcDeath;
 
     ////////////////////////////////////////////////////////////

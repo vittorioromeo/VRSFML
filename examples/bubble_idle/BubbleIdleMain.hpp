@@ -10,7 +10,6 @@
 #include "CatType.hpp"
 #include "ComboState.hpp"
 #include "Constants.hpp"
-#include "ExampleUtils/Progress.hpp"
 #include "Doll.hpp"
 #include "ExactArray.hpp"
 #include "GameConstants.hpp"
@@ -39,6 +38,7 @@
 #include "ExampleUtils/HueColor.hpp"
 #include "ExampleUtils/LoadedSound.hpp"
 #include "ExampleUtils/MathUtils.hpp"
+#include "ExampleUtils/Progress.hpp"
 #include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/Sampler.hpp"
 #include "ExampleUtils/SoundManager.hpp"
@@ -846,7 +846,7 @@ struct Main
     struct EarnedCoinParticle
     {
         sf::Vec2f startPosition;
-        Progress     progress{};
+        Progress  progress{};
     };
 
     sf::base::Vector<EarnedCoinParticle> earnedCoinParticles; // HUD space
@@ -985,10 +985,10 @@ struct Main
     sf::base::Optional<TimedCountdown> tipTCBytePreEnd;
     sf::base::Optional<TimedCountdown> tipTCByteEnd;
     sf::base::Optional<TimedCountdown> tipTCBackgroundEnd;
-    Countdown                 tipCountdownChar;
-    sf::base::String          tipString;
-    TextEffectWiggle          tipStringWiggle{0.00175f, 4.f};
-    sf::base::SizeT           tipCharIdx{0u};
+    Countdown                          tipCountdownChar;
+    sf::base::String                   tipString;
+    TextEffectWiggle                   tipStringWiggle{0.00175f, 4.f};
+    sf::base::SizeT                    tipCharIdx{0u};
 
     ////////////////////////////////////////////////////////////
     // Text buffers
@@ -1077,8 +1077,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     // Victory state
     sf::base::Optional<TimedCountdown> victoryTC;
-    Countdown                 cdLetterAppear;
-    Countdown                 cdLetterText;
+    Countdown                          cdLetterAppear;
+    Countdown                          cdLetterText;
 
     ////////////////////////////////////////////////////////////
     // Input management
@@ -1968,7 +1968,7 @@ struct Main
     // `cat.pawBonkPendingTargetIdx` (if still valid + napping), kicks the
     // travel/hold animation, and clears the pending state. Called from the
     // per-frame paw update when the windup countdown reaches zero.
-    void resolveWardenBonkStrike(Cat& cat);
+    void               resolveWardenBonkStrike(Cat& cat);
     [[nodiscard]] Cat* getSessionTargetCat(const HexSession& session) const;
     [[nodiscard]] bool anyCatHexedOrCopyHexed() const;
     [[nodiscard]] bool canHexMore() const;

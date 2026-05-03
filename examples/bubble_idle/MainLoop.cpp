@@ -41,7 +41,7 @@ struct GameLoopFrameState
 #endif
 
     GameLoopFrameState frame;
-    frame.shouldDrawUI      = !inPrestigeTransition && splashCountdown.time <= 0.f;
+    frame.shouldDrawUI = !inPrestigeTransition && splashCountdown.time <= 0.f;
     frame.shouldDrawUIAlpha = inPrestigeTransition || splashCountdown.asProgress().getElapsed() < 0.75f
                                   ? static_cast<sf::base::U8>(0u)
                                   : static_cast<sf::base::U8>(

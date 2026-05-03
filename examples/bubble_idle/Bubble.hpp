@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BubbleType.hpp"
+
 #include "ExampleUtils/Progress.hpp"
 
 #include "SFML/System/Priv/Vec2Base.hpp"

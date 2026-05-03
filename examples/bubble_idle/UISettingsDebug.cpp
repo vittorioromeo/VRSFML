@@ -3,13 +3,14 @@
 #include "Cat.hpp"
 #include "CatConstants.hpp"
 #include "CatType.hpp"
-#include "ExampleUtils/Progress.hpp"
 #include "GameEvent.hpp"
 #include "Profile.hpp"
 #include "PurchasableScalingValue.hpp"
 #include "Serialization.hpp"
 #include "Shrine.hpp"
 #include "Version.hpp"
+
+#include "ExampleUtils/Progress.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"
 

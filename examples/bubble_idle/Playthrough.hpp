@@ -7,7 +7,6 @@
 #include "CatConstants.hpp"
 #include "CatType.hpp"
 #include "Constants.hpp"
-#include "ExampleUtils/Progress.hpp"
 #include "ExactArray.hpp"
 #include "GameEvent.hpp"
 #include "HellPortal.hpp"
@@ -20,6 +19,8 @@
 #include "ShrineType.hpp"
 #include "Stats.hpp"
 #include "Version.hpp"
+
+#include "ExampleUtils/Progress.hpp"
 
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Time.hpp"
@@ -383,7 +384,7 @@ struct Playthrough
         mewltiplierAuraTimer = 0.f;
         stasisFieldTimer     = 0.f;
 
-        mouseCatCombo                = 0.f;
+        mouseCatCombo               = 0.f;
         mouseCatComboCountdown.time = 0.f;
 
         multiPopEnabled = false;

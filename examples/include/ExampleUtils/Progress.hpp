@@ -78,8 +78,7 @@ struct [[nodiscard]] ProgressBase
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr float remapBounced(const float min,
-                                                                                     const float max) const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr float remapBounced(const float min, const float max) const noexcept
     {
         return min + getBounce() * (max - min);
     }
@@ -87,9 +86,10 @@ struct [[nodiscard]] ProgressBase
 
     ////////////////////////////////////////////////////////////
     template <class F>
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr float remapBouncedEased(F&&         easingFn,
-                                                                                          const float min,
-                                                                                          const float max) const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr float remapBouncedEased(
+        F&&         easingFn,
+        const float min,
+        const float max) const noexcept
     {
         return min + easingFn(getBounce()) * (max - min);
     }
@@ -352,7 +352,7 @@ struct [[nodiscard]] TimedCountdown : Countdown
 /// \brief Returns `opt->asProgress().getElapsed()` if present, else `fallback`.
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline]] inline float getElapsedOr(const sf::base::Optional<TimedCountdown>& opt,
-                                                            const float fallback) noexcept
+                                                            const float                               fallback) noexcept
 {
     return opt.hasValue() ? opt->asProgress().getElapsed() : fallback;
 }

@@ -5,10 +5,10 @@
 #include "BubbleIdleMain.hpp"
 #include "BubbleType.hpp"
 #include "CatType.hpp"
-#include "ExampleUtils/Progress.hpp"
 #include "ShrineConstants.hpp"
 
 #include "ExampleUtils/Profiler.hpp"
+#include "ExampleUtils/Progress.hpp"
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Time.hpp"

@@ -7,7 +7,6 @@
 #include "Cat.hpp"
 #include "CatType.hpp"
 #include "Constants.hpp"
-#include "ExampleUtils/Progress.hpp"
 #include "Doll.hpp"
 #include "GameEvent.hpp"
 #include "HellPortal.hpp"
@@ -24,6 +23,7 @@
 #include "ExampleUtils/HueColor.hpp"
 #include "ExampleUtils/MathUtils.hpp"
 #include "ExampleUtils/Profiler.hpp"
+#include "ExampleUtils/Progress.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"
 
@@ -285,8 +285,7 @@ void Main::gameLoopUpdateTransitions(const float deltaTimeMs)
     }
 
     // Despawn bubbles after other things
-    if (gameElementsRemoved && !pt->bubbles.empty() &&
-        bubbleSpawnTimer.tickLooping(deltaTimeMs) == LoopResult::Looped)
+    if (gameElementsRemoved && !pt->bubbles.empty() && bubbleSpawnTimer.tickLooping(deltaTimeMs) == LoopResult::Looped)
     {
         const SizeT times = pt->bubbles.size() > 500u ? 25u : 1u;
 
@@ -676,8 +675,7 @@ void Main::gameLoopUpdateComboBubblePayouts(const float deltaTimeMs)
 
         // Phase 2: settle delay -- coins keep drifting/damping but no
         // collection happens yet so the player sees the explosion settle.
-        if (p.settleCountdown.tick(deltaTimeMs) != TickResult::AlreadyFinished &&
-            p.settleCountdown.time > 0.f)
+        if (p.settleCountdown.tick(deltaTimeMs) != TickResult::AlreadyFinished && p.settleCountdown.time > 0.f)
             continue;
 
         // Phase 3: collect -- every `coinDelayMs`, take the next settled coin,
@@ -976,7 +974,7 @@ void Main::gameLoopUpdateAttractoBuff(const float deltaTimeMs) const
                     comboState.comboTextShakeEffect.bump(rngFast, 0.01f + static_cast<float>(comboState.combo) * 0.002f);
 
                     comboState.comboCountdown.time = sf::base::min(comboState.comboCountdown.time,
-                                                                    pt->psvComboStartTime.currentValue() * 100.f);
+                                                                   pt->psvComboStartTime.currentValue() * 100.f);
 
                     comboState.combo = sf::base::min(comboState.combo, 998);
                 }
@@ -1381,8 +1379,8 @@ void Main::gameLoopUpdateCatActionWarden(const float /* deltaTimeMs */, Cat& cat
     // and remember the target so the strike fires when the phase countdown
     // expires (in the per-frame paw update). All start/end poses are
     // derived on the fly per phase, so no snapshots are stored.
-    auto& bonk = cat.wardenBonk.emplace();
-    bonk.phase = Cat::WardenBonkState::Phase::Windup;
+    auto& bonk   = cat.wardenBonk.emplace();
+    bonk.phase   = Cat::WardenBonkState::Phase::Windup;
     bonk.phaseMs = gameConstants.wardenCatBatonWindupMs;
     bonk.pendingTargetIdx.emplace(bestTargetIdx);
 
@@ -1587,7 +1585,7 @@ void Main::applyPowerNapBoost(Cat& cat)
         return;
 
     cat.napBoostCountdown.time = pt->psvPPPowerNapDuration.currentValue();
-    cat.napBoostMultiplier      = 1.f + pt->psvPPPowerNapStrength.currentValue();
+    cat.napBoostMultiplier     = 1.f + pt->psvPPPowerNapStrength.currentValue();
 }
 
 
@@ -1704,7 +1702,7 @@ void Main::gameLoopUpdateCatActionWitchImpl(const float /* deltaTimeMs */,
 
     if (otherCatCount == 0u)
     {
-        wastedEffort       = true;
+        wastedEffort      = true;
         cat.cooldown.time = maxCooldown;
         return;
     }
@@ -2396,10 +2394,9 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
                         continue;
 
                     if (&otherCat == &cat)
-                        cat.hue = sf::base::sin(
-                                      sf::base::remainder(cat.cooldown.time /
-                                                              remap(cat.cooldown.time, 0.f, 10'000.f, 15.f, 150.f),
-                                                          sf::base::tau)) *
+                        cat.hue = sf::base::sin(sf::base::remainder(cat.cooldown.time /
+                                                                        remap(cat.cooldown.time, 0.f, 10'000.f, 15.f, 150.f),
+                                                                    sf::base::tau)) *
                                   50.f * intensity;
 
                     const auto diff2 = otherCat.position - cat.position;
@@ -2665,7 +2662,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
             if (wrapped && cat.position.x <= startX)
             {
                 cat.astroState.reset();
-                cat.position.x     = startX;
+                cat.position.x    = startX;
                 cat.cooldown.time = maxCooldown;
             }
 
