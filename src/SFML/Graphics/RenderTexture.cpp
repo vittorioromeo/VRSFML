@@ -351,10 +351,6 @@ public:
             bindRenderbufferAndSetFormat(*colorBuffer, rtCreateSettings.antiAliasingLevel, sRgb ? GL_SRGB8_ALPHA8 : GL_RGBA8);
         }
 
-        // We can't create an FBO now if there is no active context
-        if (!GraphicsContext::hasActiveThreadLocalGlContext())
-            return true;
-
         // Save the current bindings so we can restore them after we are done
         const auto readFramebuffer = priv::getGLInteger(GL_READ_FRAMEBUFFER_BINDING);
         const auto drawFramebuffer = priv::getGLInteger(GL_DRAW_FRAMEBUFFER_BINDING);
