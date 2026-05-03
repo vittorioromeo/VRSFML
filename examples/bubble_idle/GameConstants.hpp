@@ -170,7 +170,7 @@ struct [[nodiscard]] GameConstants
     // wardencat) before the strike. Offset is added to the cat's draw
     // position; the rotation is the absolute paw angle at the apex.
     sf::Vec2f wardenCatBatonWindupOffset{100.f, -80.f};
-    float     wardenCatBatonWindupRotationDeg = -120.f;
+    float     wardenCatBatonWindupRotationDeg = 120.f;
 
     // Per-phase durations for the wardencat baton sequence. Lookup table is
     // ordered to match `Cat::WardenBonkState::Phase` (Windup, Travel, Hold,
