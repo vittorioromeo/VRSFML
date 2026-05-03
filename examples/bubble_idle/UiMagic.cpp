@@ -3,8 +3,9 @@
 #include "Aliases.hpp"
 #include "BubbleIdleMain.hpp"
 #include "Cat.hpp"
-#include "ExampleUtils/Progress.hpp"
 #include "PurchasableScalingValue.hpp"
+
+#include "ExampleUtils/Progress.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"
 

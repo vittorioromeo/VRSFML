@@ -5,7 +5,6 @@
 #include "Cat.hpp"
 #include "CatType.hpp"
 #include "Constants.hpp"
-#include "ExampleUtils/Progress.hpp"
 #include "ImGuiNotify.hpp"
 #include "ParticleType.hpp"
 #include "PurchasableScalingValue.hpp"
@@ -16,6 +15,7 @@
 #include "ExampleUtils/Easing.hpp"
 #include "ExampleUtils/HueColor.hpp"
 #include "ExampleUtils/Profiler.hpp"
+#include "ExampleUtils/Progress.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"
 #include "SFML/ImGui/IncludeImGuiInternal.hpp"

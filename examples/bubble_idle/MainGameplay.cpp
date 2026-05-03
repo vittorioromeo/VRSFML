@@ -7,7 +7,6 @@
 #include "CatType.hpp"
 #include "Collision.hpp"
 #include "Constants.hpp"
-#include "ExampleUtils/Progress.hpp"
 #include "Doll.hpp"
 #include "HellPortal.hpp"
 #include "HexSession.hpp"
@@ -22,6 +21,7 @@
 #include "ExampleUtils/HueColor.hpp"
 #include "ExampleUtils/MathUtils.hpp"
 #include "ExampleUtils/Profiler.hpp"
+#include "ExampleUtils/Progress.hpp"
 
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Texture.hpp"
@@ -83,7 +83,7 @@ void Main::gameLoopUpdateCombo(const float                         deltaTimeMs,
             comboState.comboFailCountdown.time = 250.f;
         }
 
-        comboState.combo                = 0;
+        comboState.combo               = 0;
         comboState.comboCountdown.time = 0.f;
 
         playerJustEndedCombo = true;

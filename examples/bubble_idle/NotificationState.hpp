@@ -18,5 +18,5 @@ struct NotificationData
 struct NotificationState
 {
     sf::base::Vector<NotificationData> queue;
-    TimedCountdown countdown{.duration = 750.f};
+    TimedCountdown                     countdown{.duration = 750.f};
 };

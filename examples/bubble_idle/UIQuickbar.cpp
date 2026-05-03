@@ -141,7 +141,7 @@ void Main::uiDrawQuickbarCopyCat(const sf::Vec2f quickBarPos, Cat& copyCat)
                     pt->copycatCopiedCatType = static_cast<CatType>(i);
 
                     copyCat.cooldown.time = pt->getComputedCooldownByCatType(pt->copycatCopiedCatType);
-                    copyCat.hits           = 0u;
+                    copyCat.hits          = 0u;
 
                     sounds.smokebomb.settings.position = {copyCat.position.x, copyCat.position.y};
                     sounds.smokebomb.settings.position = {copyCat.position.x, copyCat.position.y};

@@ -1,7 +1,8 @@
 #pragma once
 
-#include "ExampleUtils/Progress.hpp"
 #include "TextShakeEffect.hpp"
+
+#include "ExampleUtils/Progress.hpp"
 
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Font.hpp"

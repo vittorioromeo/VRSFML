@@ -8,7 +8,6 @@
 #include "CatType.hpp"
 #include "Collision.hpp"
 #include "Constants.hpp"
-#include "ExampleUtils/Progress.hpp"
 #include "Doll.hpp"
 #include "HexSession.hpp"
 #include "Particle.hpp"
@@ -28,6 +27,7 @@
 #include "ExampleUtils/HueColor.hpp"
 #include "ExampleUtils/LoadedSound.hpp"
 #include "ExampleUtils/MathUtils.hpp"
+#include "ExampleUtils/Progress.hpp"
 #include "ExampleUtils/RNGFast.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"
@@ -586,8 +586,8 @@ void Main::resetTipState()
     tipTCByteEnd.reset();
     tipTCBackgroundEnd.reset();
     tipCountdownChar.time = 0.f;
-    tipString              = "";
-    tipCharIdx             = 0u;
+    tipString             = "";
+    tipCharIdx            = 0u;
 }
 
 
@@ -706,7 +706,7 @@ void Main::switchToBGM(const sf::base::SizeT index, const bool force)
     if (!force && lastPlayedMusic == bgmPaths[index])
         return;
 
-    lastPlayedMusic     = bgmPaths[index];
+    lastPlayedMusic    = bgmPaths[index];
     bgmTransition.time = 1000.f;
 
     auto& optNextMusic = getNextBGMBuffer();
@@ -934,7 +934,7 @@ void Main::addCombo(int& xCombo, Countdown& xComboCountdown) const
 {
     if (xCombo == 0)
     {
-        xCombo                = 1;
+        xCombo               = 1;
         xComboCountdown.time = pt->psvComboStartTime.currentValue() * 1000.f;
     }
     else

@@ -29,10 +29,10 @@
 #include "ExampleUtils/LoadedSound.hpp"
 #include "ExampleUtils/MathUtils.hpp"
 #include "ExampleUtils/MiniFmt.hpp"
+#include "ExampleUtils/Progress.hpp"
 #include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/Scaling.hpp"
 #include "ExampleUtils/SoundManager.hpp"
-#include "ExampleUtils/Progress.hpp"
 
 #define SFEX_PROFILER_ENABLED
 #include "ExampleUtils/Profiler.hpp"

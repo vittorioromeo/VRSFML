@@ -1,12 +1,12 @@
 #pragma once
 
 #include "Aliases.hpp"
-#include "ExampleUtils/Progress.hpp"
 #include "ShrineConstants.hpp"
 #include "ShrineType.hpp"
 #include "TextShakeEffect.hpp"
 
 #include "ExampleUtils/HueColor.hpp"
+#include "ExampleUtils/Progress.hpp"
 
 #include "SFML/System/Priv/Vec2Base.hpp"
 
