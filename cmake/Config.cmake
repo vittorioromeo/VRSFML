@@ -174,7 +174,7 @@ elseif(${EMSCRIPTEN})
         -sWASM=1                            # Compile code to WebAssembly
 
         # Expose low-level memory access functions to JavaScript
-        -sEXPORTED_RUNTIME_METHODS=HEAPU32,HEAP8,getValue,setValue,requestFullscreen
+        -sEXPORTED_RUNTIME_METHODS=HEAPU32,HEAP8,getValue,setValue,requestFullscreen,printErr
 
         --emrun                             # Add native support for `emrun` (I/O capture)
 
