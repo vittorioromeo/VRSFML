@@ -8,5 +8,66 @@
 #undef DOCTEST_CONFIG_USE_STD_HEADERS
 #undef DOCTEST_CONFIG_INCLUDE_TYPE_TRAITS
 
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#define DOCTEST_CONFIG_IMPLEMENT
 #include <doctest/doctest.h>
+
+#include <cstdio>
+
+
+////////////////////////////////////////////////////////////
+// Reporter that prints each test case's name + source location to stderr at
+// start, so when a test aborts hard (e.g. `value()` on a disengaged optional,
+// `SFML_BASE_ASSERT`, signal, etc.) the last-printed line identifies the
+// failing test. Without this, traces in Emscripten only contain
+// `DOCTEST_ANON_FUNC_<n>` with no name attached.
+namespace
+{
+struct ProgressReporter : doctest::IReporter
+{
+    explicit ProgressReporter(const doctest::ContextOptions&)
+    {
+    }
+
+    void test_case_start(const doctest::TestCaseData& tc) override
+    {
+        // NOLINTNEXTLINE(modernize-use-std-print)
+        std::fprintf(stderr, ">>> [doctest] starting: %s (%s:%d)\n", tc.m_name, tc.m_file.c_str(), tc.m_line);
+    }
+
+    void test_case_reenter(const doctest::TestCaseData& tc) override
+    {
+        // NOLINTNEXTLINE(modernize-use-std-print)
+        std::fprintf(stderr, ">>> [doctest] reentering: %s (%s:%d)\n", tc.m_name, tc.m_file.c_str(), tc.m_line);
+    }
+
+    void subcase_start(const doctest::SubcaseSignature& sc) override
+    {
+        // NOLINTNEXTLINE(modernize-use-std-print)
+        std::fprintf(stderr, ">>>   [doctest] subcase: %s (%s:%d)\n", sc.m_name.c_str(), sc.m_file, sc.m_line);
+    }
+
+    // clang-format off
+    void report_query(const doctest::QueryData&) override { }
+    void test_run_start() override { }
+    void test_run_end(const doctest::TestRunStats&) override { }
+    void test_case_end(const doctest::CurrentTestCaseStats&) override { }
+    void test_case_exception(const doctest::TestCaseException&) override { }
+    void subcase_end() override { }
+    void log_assert(const doctest::AssertData&) override { }
+    void log_message(const doctest::MessageData&) override { }
+    void test_case_skipped(const doctest::TestCaseData&) override { }
+    // clang-format on
+};
+
+} // namespace
+
+DOCTEST_REGISTER_REPORTER("progress", 1, ProgressReporter);
+
+
+////////////////////////////////////////////////////////////
+int main(int argc, char** argv)
+{
+    doctest::Context ctx(argc, argv);
+    ctx.setOption("reporters", "console,progress");
+    return ctx.run();
+}
