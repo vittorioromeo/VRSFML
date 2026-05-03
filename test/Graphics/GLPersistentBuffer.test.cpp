@@ -88,18 +88,12 @@ struct ScopedPersistentBuffer
     }
 };
 
-sf::GraphicsContext& sharedGraphicsContext()
-{
-    static auto ctx = sf::GraphicsContext::create().value();
-    return ctx;
-}
-
 } // namespace
 
 
 TEST_CASE("[GLUtils] sf::GLPersistentBuffer" * doctest::skip(skipDisplayTests))
 {
-    (void)sharedGraphicsContext();
+    auto graphicsContext = sf::GraphicsContext::create().value();
 
     SECTION("Type traits")
     {

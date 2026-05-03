@@ -21,29 +21,26 @@
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 #include "SFML/Base/Trait/IsNothrowSwappable.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include <Doctest.hpp>
 
 
 namespace
 {
-sf::GraphicsContext& sharedGraphicsContext()
-{
-    static auto ctx = sf::GraphicsContext::create().value();
-    return ctx;
-}
 
 const sf::base::Vector<unsigned char>& sharedLogoBytes()
 {
     static auto bytes = loadIntoMemory("sfml-logo-big.png");
     return bytes;
 }
+
 } // namespace
 
 
 TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
 {
-    (void)sharedGraphicsContext();
+    auto graphicsContext = sf::GraphicsContext::create().value();
 
     SECTION("Type traits")
     {
@@ -130,7 +127,7 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
 
     SECTION("loadFromMemory()")
     {
-        const auto& memory = sharedLogoBytes();
+        const auto& memory  = sharedLogoBytes();
         const auto  texture = sf::Texture::loadFromMemory(memory.data(), memory.size()).value();
         CHECK(texture.getSize() == sf::Vec2u{1001, 304});
         CHECK(!texture.isSmooth());

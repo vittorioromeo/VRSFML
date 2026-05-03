@@ -137,33 +137,12 @@ void main()
 }
 )glsl";
 
-
-sf::GraphicsContext& sharedGraphicsContext()
-{
-    static auto ctx = sf::GraphicsContext::create().value();
-    return ctx;
-}
-
-sf::Shader& sharedBlinkAlphaShader()
-{
-    (void)sharedGraphicsContext();
-    static auto s = sf::Shader::loadFromMemory({.fragmentCode = blinkAlphaFragSource}).value();
-    return s;
-}
-
-sf::Shader& sharedInstancedShader()
-{
-    (void)sharedGraphicsContext();
-    static auto s = sf::Shader::loadFromMemory({.vertexCode = instancedVertexSource, .fragmentCode = instancedFragmentSource})
-                        .value();
-    return s;
-}
 } // namespace
 
 
 TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
 {
-    (void)sharedGraphicsContext();
+    auto graphicsContext = sf::GraphicsContext::create().value();
 
     SECTION("Stencil Tests")
     {
@@ -550,7 +529,7 @@ TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
 
         SECTION("Shader uniform mutation breaks batch")
         {
-            auto& shader = sharedBlinkAlphaShader();
+            auto shader = sf::Shader::loadFromMemory({.fragmentCode = blinkAlphaFragSource}).value();
 
             const auto loc = shader.getUniformLocation("blink_alpha").value();
             shader.setUniform(loc, 1.f);
@@ -573,7 +552,7 @@ TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
 
         SECTION("Manual flush before uniform mutation preserves correct rendering")
         {
-            auto& shader = sharedBlinkAlphaShader();
+            auto shader = sf::Shader::loadFromMemory({.fragmentCode = blinkAlphaFragSource}).value();
 
             const auto loc = shader.getUniformLocation("blink_alpha").value();
 
@@ -604,7 +583,7 @@ TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
 
         SECTION("Flush before display is redundant (display already flushes)")
         {
-            auto& shader = sharedBlinkAlphaShader();
+            auto shader = sf::Shader::loadFromMemory({.fragmentCode = blinkAlphaFragSource}).value();
 
             const auto loc = shader.getUniformLocation("blink_alpha").value();
 
@@ -633,7 +612,9 @@ TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
                 sf::Color color;
             };
 
-            auto& shader = sharedInstancedShader();
+            auto shader = sf::Shader::loadFromMemory(
+                              {.vertexCode = instancedVertexSource, .fragmentCode = instancedFragmentSource})
+                              .value();
 
             sf::VAOHandle vaoHandle;
             sf::VBOHandle instanceVBO;
@@ -674,7 +655,9 @@ TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
 
         SECTION("SOA instanced draw with separate VBOs per field")
         {
-            auto& shader = sharedInstancedShader();
+            auto shader = sf::Shader::loadFromMemory(
+                              {.vertexCode = instancedVertexSource, .fragmentCode = instancedFragmentSource})
+                              .value();
 
             sf::VAOHandle vaoHandle;
             sf::VBOHandle offsetVBO;
@@ -739,7 +722,9 @@ TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
             //   immediate -> instanced (different VAO, rebind branch)
             auto rt = sf::RenderTexture::create({100, 100}).value();
 
-            auto& shader = sharedInstancedShader();
+            auto shader = sf::Shader::loadFromMemory(
+                              {.vertexCode = instancedVertexSource, .fragmentCode = instancedFragmentSource})
+                              .value();
 
             sf::VAOHandle vaoHandle;
             sf::VBOHandle instanceVBO;
@@ -783,8 +768,7 @@ TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
             drawInstanced({40.f, 15.f}, sf::Color::Red);
 
             // Immediate non-instanced draw (different VAO -> rebind branch).
-            rt.draw(sf::RectangleShape{
-                {.position = {55.f, 5.f}, .fillColor = sf::Color::Blue, .size = {20.f, 20.f}}});
+            rt.draw(sf::RectangleShape{{.position = {55.f, 5.f}, .fillColor = sf::Color::Blue, .size = {20.f, 20.f}}});
 
             // Back to instanced (different VAO -> rebind branch).
             drawInstanced({15.f, 40.f}, sf::Color::Yellow);
@@ -794,8 +778,7 @@ TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
             drawInstanced({40.f, 40.f}, sf::Color::Magenta);
 
             // Final transitions: instanced -> immediate -> instanced again.
-            rt.draw(sf::RectangleShape{
-                {.position = {55.f, 30.f}, .fillColor = sf::Color::Cyan, .size = {20.f, 20.f}}});
+            rt.draw(sf::RectangleShape{{.position = {55.f, 30.f}, .fillColor = sf::Color::Cyan, .size = {20.f, 20.f}}});
             drawInstanced({15.f, 65.f}, sf::Color{255u, 128u, 0u, 255u}); // orange
 
             rt.display();
@@ -993,6 +976,8 @@ void main()
             CHECK(rt.getTexture().copyToImage().getPixel({20, 20}) == sf::Color::Green);
         }
 
+#ifndef SFML_SYSTEM_EMSCRIPTEN
+        // Emscripten/WebGL does not support multiple GL contexts.
         SECTION("Shader cache is invalidated when active GL context changes")
         {
             // Regression: `readCurrentProgramOrQuery` uses `currentProgramCacheContextId`
@@ -1051,6 +1036,7 @@ void main()
 
             CHECK(rt.getTexture().copyToImage().getPixel({20, 20}) == sf::Color::Green);
         }
+#endif
 
         SECTION("Multiple RenderTextures with different views render correctly")
         {
@@ -1145,6 +1131,8 @@ void main()
             CHECK(img.getPixel({100, 15}) == sf::Color::Magenta);
         }
 
+#ifndef SFML_SYSTEM_EMSCRIPTEN
+        // Emscripten/WebGL does not support multiple GL contexts.
         SECTION("Persistent GL states are reset when an RT moves to a context already owned by another RT")
         {
             // Regression: when `setActive(true)` is called on a context whose
@@ -1214,5 +1202,6 @@ void main()
             // triangle was culled, so the pixel is still the red clear value.
             CHECK(rtA.getTexture().copyToImage().getPixel({20, 20}) == sf::Color::Green);
         }
+#endif
     }
 }
