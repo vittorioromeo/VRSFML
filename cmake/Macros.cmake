@@ -469,7 +469,7 @@ function(sfml_add_test target SOURCES DEPENDS)
         target_compile_options(${target} PRIVATE ${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS})
         target_link_options(${target} PRIVATE ${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS})
 
-        if (${target} STREQUAL "test-sfml-graphics")
+        if (${target} STREQUAL "test-sfml-graphics" OR ${target} STREQUAL "test-sfml-audio")
             set_target_properties(${target} PROPERTIES SUFFIX ".html")
         else()
             set_target_properties(${target} PROPERTIES SUFFIX ".js")
