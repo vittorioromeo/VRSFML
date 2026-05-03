@@ -123,13 +123,17 @@ void ExampleShapes::drawShapeAtCell(const sf::Vec2f cellPosition, const unsigned
             break;
 
         case 3u:
+        {
+            const auto h = 64.f + (16.f * getPhasedValue(0.1f, 1.f));
+
             drawShape("Rectangle",
                       sf::RectangleShapeData{
                           .position = cellPosition,
-                          .origin   = {64.f, 64.f},
-                          .size = {64.f + 64.f * getPhasedValue(0.06f, 2.f), 128.f - 64.f * getPhasedValue(0.06f, 2.f)},
+                          .origin   = {64.f, h / 2.f},
+                          .size     = {128.f, h},
                       });
-            break;
+        }
+        break;
 
         case 4u:
             drawShape("RoundedRectangle",
