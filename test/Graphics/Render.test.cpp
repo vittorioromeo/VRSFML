@@ -4,6 +4,7 @@
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DrawInstancedIndexedVerticesSettings.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
+#include "SFML/Graphics/Glsl.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
 #include "SFML/Graphics/InstanceAttributeBinder.hpp"
@@ -19,16 +20,64 @@
 #include "SFML/Graphics/VBOHandle.hpp"
 #include "SFML/Graphics/View.hpp"
 
+#include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/WindowContext.hpp"
 
 #include "SFML/GLUtils/GLCheck.hpp"
 #include "SFML/GLUtils/Glad.hpp"
 
+#include "SFML/System/Err.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"
 
 #include <Doctest.hpp>
 
 #include <thread>
+
+
+// Mirrors the trick in test/Window/Context.test.cpp: forces visibility of
+// `priv::GlContext`'s protected `getId()` so a test-only `TestContext`
+// helper can spin up additional GL contexts and switch between them.
+// `WindowContext` already declares `friend TestContext;` (a forward-decl in
+// the global namespace) for `createGlContext` access.
+#define protected public
+#include "../src/SFML/GLUtils/GlContext.hpp"
+#undef protected
+
+
+////////////////////////////////////////////////////////////
+// Test-only helper that owns a fresh GL context distinct from the shared
+// graphics context. Used to build true multi-context regression coverage.
+struct TestContext
+{
+    decltype(sf::WindowContext::createGlContext(sf::ContextSettings{})) glContext;
+
+    TestContext() : glContext(sf::WindowContext::createGlContext(sf::ContextSettings{}))
+    {
+        if (!sf::WindowContext::setActiveThreadLocalGlContext(*glContext, true))
+            sf::priv::err() << "Failed to activate TestContext on construction";
+    }
+
+    ~TestContext()
+    {
+        if (glContext != nullptr && !sf::WindowContext::setActiveThreadLocalGlContext(*glContext, false))
+            sf::priv::err() << "Failed to deactivate TestContext on destruction";
+    }
+
+    TestContext(const TestContext&)            = delete;
+    TestContext& operator=(const TestContext&) = delete;
+    TestContext(TestContext&&) noexcept        = default;
+    TestContext& operator=(TestContext&&) noexcept = default;
+
+    [[nodiscard]] bool setActive(bool active) const
+    {
+        return sf::WindowContext::setActiveThreadLocalGlContext(*glContext, active);
+    }
+
+    [[nodiscard]] unsigned int getId() const
+    {
+        return glContext->getId();
+    }
+};
 
 
 namespace
@@ -723,5 +772,224 @@ TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
             CHECK(image.getPixel({20, 20}) == sf::Color::Green);
         }
 #endif
+    }
+
+    SECTION("State-cache regression tests")
+    {
+        // Custom shader that emits the value of a single uniform as the fragment
+        // color. Decouples the rendered color from the geometry so we can prove
+        // which `setUniform` value the right program actually received.
+        constexpr auto solidColorFragSource = R"glsl(
+layout(location = 7) uniform vec4 u_color;
+
+in vec4 sf_v_color;
+in vec2 sf_v_texCoord;
+
+layout(location = 0) out vec4 sf_fragColor;
+
+void main()
+{
+    sf_fragColor = u_color;
+}
+)glsl";
+
+        SECTION("resetGLStates reapplies viewport after raw GL viewport mutation")
+        {
+            // Regression: `resetGLStatesImpl` previously did not reapply
+            // `cache.lastView`, so a raw `glViewport` between draws (or an
+            // ImGui backend) could leave the GL viewport mismatched with what
+            // SFML's cache claims is bound. The next draw with the same view
+            // would skip `applyView` (cache hit on `lastView`) and render at
+            // the wrong viewport.
+            auto rt = sf::RenderTexture::create({100, 100}).value();
+
+            const sf::RectangleShape leftRect{
+                {.position = {10.f, 10.f}, .fillColor = sf::Color::Green, .size = {20.f, 20.f}}};
+            const sf::RectangleShape rightRect{
+                {.position = {60.f, 60.f}, .fillColor = sf::Color::Red, .size = {20.f, 20.f}}};
+
+            rt.clear(sf::Color::Black);
+            rt.draw(leftRect);
+            rt.flush(); // commit the draw so cache.lastView is set on the live view
+
+            // Mutate the GL viewport behind SFML's back. Without the fix, the
+            // next `resetGLStates` + draw will inherit this 50x50 viewport.
+            glCheck(glViewport(0, 0, 50, 50));
+
+            rt.resetGLStates();
+
+            // Same view as before -- without the fix, `applyView` is skipped
+            // because `lastView == usedView`, so the rightRect would land
+            // outside the (still-50x50) viewport and not render.
+            rt.draw(rightRect);
+            rt.display();
+
+            const auto img = rt.getTexture().copyToImage();
+            CHECK(img.getPixel({15, 15}) == sf::Color::Green);
+            CHECK(img.getPixel({65, 65}) == sf::Color::Red);
+        }
+
+        SECTION("setUniform applies to the right shader when many shaders interleave")
+        {
+            // Regression: `Shader::UniformBinder` now reads the bound program
+            // from a thread_local cache instead of querying GL. Stress the
+            // cache by mutating uniforms on multiple shaders interleaved.
+            auto shaderA = sf::Shader::loadFromMemory({.fragmentCode = solidColorFragSource}).value();
+            auto shaderB = sf::Shader::loadFromMemory({.fragmentCode = solidColorFragSource}).value();
+            auto shaderC = sf::Shader::loadFromMemory({.fragmentCode = solidColorFragSource}).value();
+
+            const auto locA = shaderA.getUniformLocation("u_color").value();
+            const auto locB = shaderB.getUniformLocation("u_color").value();
+            const auto locC = shaderC.getUniformLocation("u_color").value();
+
+            // Many interleaved mutations -- each `setUniform` constructs a
+            // `UniformBinder` that reads from / writes to the program cache.
+            for (int i = 0; i < 8; ++i)
+            {
+                shaderA.setUniform(locA, sf::Glsl::Vec4{1.f, 0.f, 0.f, 1.f}); // red
+                shaderB.setUniform(locB, sf::Glsl::Vec4{0.f, 1.f, 0.f, 1.f}); // green
+                shaderC.setUniform(locC, sf::Glsl::Vec4{0.f, 0.f, 1.f, 1.f}); // blue
+            }
+
+            auto rt = sf::RenderTexture::create({60, 20}).value();
+            const sf::RectangleShape full{{.size = {20.f, 20.f}}};
+
+            rt.clear(sf::Color::Black);
+            rt.draw(full, sf::RenderStates{.shader = &shaderA});
+            rt.draw(sf::RectangleShape{{.position = {20.f, 0.f}, .size = {20.f, 20.f}}},
+                    sf::RenderStates{.shader = &shaderB});
+            rt.draw(sf::RectangleShape{{.position = {40.f, 0.f}, .size = {20.f, 20.f}}},
+                    sf::RenderStates{.shader = &shaderC});
+            rt.display();
+
+            const auto img = rt.getTexture().copyToImage();
+            CHECK(img.getPixel({10, 10}) == sf::Color::Red);
+            CHECK(img.getPixel({30, 10}) == sf::Color::Green);
+            CHECK(img.getPixel({50, 10}) == sf::Color::Blue);
+        }
+
+        SECTION("Destroying a shader does not poison the program cache")
+        {
+            // Regression: `destroyProgramIfNeeded` clears the cache if the
+            // destroyed program was the cached one. Without this, GL handle
+            // reuse could lead `useProgram(reusedHandle)` to skip the bind
+            // on a cache hit and leave the wrong (deleted) program current.
+            auto rt = sf::RenderTexture::create({40, 40}).value();
+            const sf::RectangleShape full{{.size = {40.f, 40.f}}};
+
+            {
+                auto shaderTemp = sf::Shader::loadFromMemory({.fragmentCode = solidColorFragSource}).value();
+                shaderTemp.setUniform(shaderTemp.getUniformLocation("u_color").value(),
+                                      sf::Glsl::Vec4{1.f, 0.f, 0.f, 1.f});
+
+                rt.clear(sf::Color::Black);
+                rt.draw(full, sf::RenderStates{.shader = &shaderTemp});
+                rt.display();
+                // shaderTemp's program is now in the cache as the last bound program.
+            }
+            // shaderTemp destroyed -- cache must be invalidated for that handle.
+
+            // A new shader may receive the same GL handle; either way, the
+            // cache must not skip the rebind.
+            auto shaderNew = sf::Shader::loadFromMemory({.fragmentCode = solidColorFragSource}).value();
+            shaderNew.setUniform(shaderNew.getUniformLocation("u_color").value(),
+                                 sf::Glsl::Vec4{0.f, 1.f, 0.f, 1.f});
+
+            rt.clear(sf::Color::Black);
+            rt.draw(full, sf::RenderStates{.shader = &shaderNew});
+            rt.display();
+
+            CHECK(rt.getTexture().copyToImage().getPixel({20, 20}) == sf::Color::Green);
+        }
+
+        SECTION("Shader cache is invalidated when active GL context changes")
+        {
+            // Regression: `readCurrentProgramOrQuery` uses `currentProgramCacheContextId`
+            // to detect when the cache was populated under a different GL
+            // context, falling back to a query in that case.
+            //
+            // To exercise this, spin up an explicit secondary GL context so
+            // the active-context id genuinely changes between calls.
+            // RenderTextures alone don't trigger it because they share the
+            // active context rather than carrying their own.
+            auto rt = sf::RenderTexture::create({40, 40}).value();
+
+            auto shader = sf::Shader::loadFromMemory({.fragmentCode = solidColorFragSource}).value();
+            const auto loc = shader.getUniformLocation("u_color").value();
+
+            const sf::RectangleShape full{{.size = {40.f, 40.f}}};
+
+            // 1) Prime the cache on the shared graphics context by drawing
+            //    once. After this, `currentProgramCacheValue` holds shader's
+            //    program id, tagged with the shared context's id.
+            shader.setUniform(loc, sf::Glsl::Vec4{1.f, 0.f, 0.f, 1.f});
+            rt.clear(sf::Color::Black);
+            rt.draw(full, sf::RenderStates{.shader = &shader});
+            rt.display();
+
+            // 2) Activate a fresh GL context. In this context, no shader is
+            //    bound -- `glGetIntegerv(GL_CURRENT_PROGRAM)` would return 0.
+            //    But the cache still holds the shader's program id from the
+            //    previous context. Without the per-context tag check, the
+            //    next `setUniform` would think shader is already bound and
+            //    skip the rebind, calling `glUniform4f` on whatever (or
+            //    nothing) is current in this context.
+            {
+                TestContext fresh;
+                CHECK(fresh.getId() != 0u);
+
+                // 3) Touch a uniform in the fresh context. With the fix, the
+                //    UniformBinder reads the cache, sees the context tag
+                //    mismatch, queries GL (which returns 0), so saves 0 and
+                //    binds the shader. Without the fix, it would trust the
+                //    stale cache value and skip the bind.
+                shader.setUniform(loc, sf::Glsl::Vec4{0.f, 1.f, 0.f, 1.f});
+            }
+            // TestContext destructor reactivates the shared context. Note
+            // that on the shared context, the cache value is now stale in
+            // a different way -- but that's the same context-tag-mismatch
+            // path, so the fix handles it equally.
+
+            // 4) Draw again on the shared context, this time with green.
+            //    With the fix: re-tag fires, fallback query runs, shader
+            //    rebinds correctly, uniform applies.
+            shader.setUniform(loc, sf::Glsl::Vec4{0.f, 1.f, 0.f, 1.f});
+            rt.clear(sf::Color::Black);
+            rt.draw(full, sf::RenderStates{.shader = &shader});
+            rt.display();
+
+            CHECK(rt.getTexture().copyToImage().getPixel({20, 20}) == sf::Color::Green);
+        }
+
+        SECTION("Multiple RenderTextures with different views render correctly")
+        {
+            // Regression: cross-context viewport state. Each RenderTexture
+            // has its own view and corresponding viewport. After the fix,
+            // `resetGLStatesImpl` reapplies `cache.lastView` per target, so
+            // switching contexts mid-frame doesn't leave the GL viewport
+            // pointing at the previous target's rectangle.
+            auto rtSmall = sf::RenderTexture::create({40, 40}).value();
+            auto rtLarge = sf::RenderTexture::create({80, 80}).value();
+
+            const sf::RectangleShape rectSmall{{.position = {10.f, 10.f}, .fillColor = sf::Color::Green, .size = {20.f, 20.f}}};
+            const sf::RectangleShape rectLarge{{.position = {30.f, 30.f}, .fillColor = sf::Color::Red, .size = {20.f, 20.f}}};
+
+            // Interleaved draws: each pass forces a setActive() between the
+            // two RTs. If the viewport tracking regresses, one of these
+            // produces blank pixels where geometry should be.
+            for (int i = 0; i < 3; ++i)
+            {
+                rtSmall.clear(sf::Color::Black);
+                rtSmall.draw(rectSmall);
+                rtSmall.display();
+
+                rtLarge.clear(sf::Color::Black);
+                rtLarge.draw(rectLarge);
+                rtLarge.display();
+            }
+
+            CHECK(rtSmall.getTexture().copyToImage().getPixel({20, 20}) == sf::Color::Green);
+            CHECK(rtLarge.getTexture().copyToImage().getPixel({40, 40}) == sf::Color::Red);
+        }
     }
 }

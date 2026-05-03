@@ -283,6 +283,56 @@ void printLinesWithNumbers(sf::base::StringView text)
 
 
 ////////////////////////////////////////////////////////////
+// Per-thread cache of the currently-bound shader program.
+//
+// All in-library `glUseProgram` calls go through `useProgram`, which keeps
+// `currentProgramCacheValue` in sync with GL. `UniformBinder` reads from
+// the cache instead of querying `GL_CURRENT_PROGRAM`.
+//
+// The cache is tagged with the GL context id that produced it. On read, if
+// the active context id differs from the tag we fall back to a one-time query
+// and re-tag.
+//
+// Stale-cache risks the tag does NOT cover:
+//
+// * Raw user `glUseProgram` -- caller must follow with `resetGLStates()`, same contract as every other SFML state cache.
+// * Program-handle reuse after deletion -- handled below by clearing the cache in `destroyProgramIfNeeded`.
+//
+thread_local unsigned int currentProgramCacheValue     = 0u;
+thread_local unsigned int currentProgramCacheContextId = 0u;
+
+
+////////////////////////////////////////////////////////////
+void useProgram(const unsigned int program)
+{
+    glCheck(glUseProgram(castToGlHandle(program)));
+
+    currentProgramCacheValue     = program;
+    currentProgramCacheContextId = sf::GraphicsContext::getActiveThreadLocalGlContextId();
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] unsigned int readCurrentProgramOrQuery()
+{
+    const unsigned int activeContextId = sf::GraphicsContext::getActiveThreadLocalGlContextId();
+
+    if (currentProgramCacheContextId == activeContextId)
+        return currentProgramCacheValue;
+
+    // Cache was tagged for a different context -- the value is meaningless
+    // for the current one. Fall back to a one-shot query and re-tag.
+    unsigned int current = 0u;
+    glCheck(glGetIntegerv(GL_CURRENT_PROGRAM, reinterpret_cast<GLint*>(&current)));
+
+    currentProgramCacheValue     = current;
+    currentProgramCacheContextId = activeContextId;
+
+    return current;
+}
+
+
+////////////////////////////////////////////////////////////
 void destroyProgramIfNeeded(const unsigned int program)
 {
     if (!program)
@@ -294,6 +344,13 @@ void destroyProgramIfNeeded(const unsigned int program)
     SFML_BASE_ASSERT(sf::GraphicsContext::hasActiveThreadLocalGlContext());
     SFML_BASE_ASSERT(glCheck(glIsProgram(castToGlHandle(program))));
     glCheck(glDeleteProgram(castToGlHandle(program)));
+
+    // GL handles can be reused after deletion. If the cache still names this
+    // handle, a future `useProgram(reusedId)` would skip the bind on a hit
+    // and leave the wrong program current. Clear the cache to force a real
+    // bind on the next operation.
+    if (currentProgramCacheValue == program)
+        currentProgramCacheValue = 0u;
 }
 
 } // namespace
@@ -353,15 +410,13 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] explicit UniformBinder(unsigned int currentProgramInt)
     {
-        const auto currentProgram = static_cast<GLhandle>(castToGlHandle(currentProgramInt));
-        SFML_BASE_ASSERT(currentProgram != 0);
+        SFML_BASE_ASSERT(currentProgramInt != 0u);
 
-        glCheck(glGetIntegerv(GL_CURRENT_PROGRAM, reinterpret_cast<GLint*>(&m_savedProgram)));
-
-        m_needsRestore = (currentProgram != m_savedProgram);
+        m_savedProgram = readCurrentProgramOrQuery();
+        m_needsRestore = (currentProgramInt != m_savedProgram);
 
         if (m_needsRestore)
-            glCheck(glUseProgram(currentProgram));
+            useProgram(currentProgramInt);
     }
 
 
@@ -369,7 +424,7 @@ public:
     [[gnu::always_inline]] ~UniformBinder()
     {
         if (m_needsRestore)
-            glCheck(glUseProgram(m_savedProgram));
+            useProgram(m_savedProgram);
     }
 
 
@@ -792,7 +847,7 @@ void Shader::bind() const
 
     // Enable the program
     SFML_BASE_ASSERT(glCheck(glIsProgram(castToGlHandle(m_impl->shaderProgram))));
-    glCheck(glUseProgram(castToGlHandle(m_impl->shaderProgram)));
+    useProgram(m_impl->shaderProgram);
 
     // Bind the textures
     bindTextures();
@@ -807,7 +862,7 @@ void Shader::bind() const
 void Shader::unbind()
 {
     SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
-    glCheck(glUseProgram({}));
+    useProgram(0u);
 }
 
 
