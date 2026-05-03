@@ -18,6 +18,8 @@
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/VAOHandle.hpp"
 #include "SFML/Graphics/VBOHandle.hpp"
+#include "SFML/Graphics/Vertex.hpp"
+#include "SFML/Graphics/VertexBuffer.hpp"
 #include "SFML/Graphics/View.hpp"
 
 #include "SFML/Window/ContextSettings.hpp"
@@ -63,9 +65,9 @@ struct TestContext
             sf::priv::err() << "Failed to deactivate TestContext on destruction";
     }
 
-    TestContext(const TestContext&)            = delete;
-    TestContext& operator=(const TestContext&) = delete;
-    TestContext(TestContext&&) noexcept        = default;
+    TestContext(const TestContext&)                = delete;
+    TestContext& operator=(const TestContext&)     = delete;
+    TestContext(TestContext&&) noexcept            = default;
     TestContext& operator=(TestContext&&) noexcept = default;
 
     [[nodiscard]] bool setActive(bool active) const
@@ -851,7 +853,7 @@ void main()
                 shaderC.setUniform(locC, sf::Glsl::Vec4{0.f, 0.f, 1.f, 1.f}); // blue
             }
 
-            auto rt = sf::RenderTexture::create({60, 20}).value();
+            auto                     rt = sf::RenderTexture::create({60, 20}).value();
             const sf::RectangleShape full{{.size = {20.f, 20.f}}};
 
             rt.clear(sf::Color::Black);
@@ -874,13 +876,12 @@ void main()
             // destroyed program was the cached one. Without this, GL handle
             // reuse could lead `useProgram(reusedHandle)` to skip the bind
             // on a cache hit and leave the wrong (deleted) program current.
-            auto rt = sf::RenderTexture::create({40, 40}).value();
+            auto                     rt = sf::RenderTexture::create({40, 40}).value();
             const sf::RectangleShape full{{.size = {40.f, 40.f}}};
 
             {
                 auto shaderTemp = sf::Shader::loadFromMemory({.fragmentCode = solidColorFragSource}).value();
-                shaderTemp.setUniform(shaderTemp.getUniformLocation("u_color").value(),
-                                      sf::Glsl::Vec4{1.f, 0.f, 0.f, 1.f});
+                shaderTemp.setUniform(shaderTemp.getUniformLocation("u_color").value(), sf::Glsl::Vec4{1.f, 0.f, 0.f, 1.f});
 
                 rt.clear(sf::Color::Black);
                 rt.draw(full, sf::RenderStates{.shader = &shaderTemp});
@@ -892,8 +893,7 @@ void main()
             // A new shader may receive the same GL handle; either way, the
             // cache must not skip the rebind.
             auto shaderNew = sf::Shader::loadFromMemory({.fragmentCode = solidColorFragSource}).value();
-            shaderNew.setUniform(shaderNew.getUniformLocation("u_color").value(),
-                                 sf::Glsl::Vec4{0.f, 1.f, 0.f, 1.f});
+            shaderNew.setUniform(shaderNew.getUniformLocation("u_color").value(), sf::Glsl::Vec4{0.f, 1.f, 0.f, 1.f});
 
             rt.clear(sf::Color::Black);
             rt.draw(full, sf::RenderStates{.shader = &shaderNew});
@@ -914,8 +914,8 @@ void main()
             // active context rather than carrying their own.
             auto rt = sf::RenderTexture::create({40, 40}).value();
 
-            auto shader = sf::Shader::loadFromMemory({.fragmentCode = solidColorFragSource}).value();
-            const auto loc = shader.getUniformLocation("u_color").value();
+            auto       shader = sf::Shader::loadFromMemory({.fragmentCode = solidColorFragSource}).value();
+            const auto loc    = shader.getUniformLocation("u_color").value();
 
             const sf::RectangleShape full{{.size = {40.f, 40.f}}};
 
@@ -971,8 +971,10 @@ void main()
             auto rtSmall = sf::RenderTexture::create({40, 40}).value();
             auto rtLarge = sf::RenderTexture::create({80, 80}).value();
 
-            const sf::RectangleShape rectSmall{{.position = {10.f, 10.f}, .fillColor = sf::Color::Green, .size = {20.f, 20.f}}};
-            const sf::RectangleShape rectLarge{{.position = {30.f, 30.f}, .fillColor = sf::Color::Red, .size = {20.f, 20.f}}};
+            const sf::RectangleShape rectSmall{
+                {.position = {10.f, 10.f}, .fillColor = sf::Color::Green, .size = {20.f, 20.f}}};
+            const sf::RectangleShape rectLarge{
+                {.position = {30.f, 30.f}, .fillColor = sf::Color::Red, .size = {20.f, 20.f}}};
 
             // Interleaved draws: each pass forces a setActive() between the
             // two RTs. If the viewport tracking regresses, one of these
@@ -990,6 +992,66 @@ void main()
 
             CHECK(rtSmall.getTexture().copyToImage().getPixel({20, 20}) == sf::Color::Green);
             CHECK(rtLarge.getTexture().copyToImage().getPixel({40, 40}) == sf::Color::Red);
+        }
+
+        SECTION("VertexBuffer draws correctly when interleaved with regular draws")
+        {
+            // Regression: `RenderTarget::draw(VertexBuffer&)` previously
+            // force-zeroed `cache.lastVaoGroup` before the DrawGuard,
+            // forcing a full VAO rebind. The light cache-hit path in
+            // `applyDrawCacheStates` should be sufficient: after
+            // `bindGLObjects(m_impl->vaoGroup)` at the end of the function
+            // restores the standard VAO's attribs, subsequent draws (regular
+            // or another VertexBuffer) must produce correct geometry.
+            //
+            // Mixed sequence below stresses the handoff:
+            //   regular draw -> VB draw -> regular draw -> VB draw -> regular draw
+            auto rt = sf::RenderTexture::create({120, 30}).value();
+            rt.clear(sf::Color::Black);
+
+            // 1) Regular draw to prime the cache.
+            rt.draw(sf::RectangleShape{{.position = {0.f, 0.f}, .fillColor = sf::Color::Green, .size = {20.f, 30.f}}});
+
+            // 2) VertexBuffer draw at x=[20, 40).
+            sf::VertexBuffer vb1{sf::PrimitiveType::TriangleStrip};
+            REQUIRE(vb1.create(4u));
+            const sf::Vertex v1[]{
+                {{20.f, 0.f}, sf::Color::Red, {0.f, 0.f}},
+                {{40.f, 0.f}, sf::Color::Red, {0.f, 0.f}},
+                {{20.f, 30.f}, sf::Color::Red, {0.f, 0.f}},
+                {{40.f, 30.f}, sf::Color::Red, {0.f, 0.f}},
+            };
+            REQUIRE(vb1.update(v1));
+            rt.draw(vb1);
+
+            // 3) Regular draw at x=[40, 60), checks the standard VAO
+            //    attribs were restored after the VB draw.
+            rt.draw(sf::RectangleShape{{.position = {40.f, 0.f}, .fillColor = sf::Color::Blue, .size = {20.f, 30.f}}});
+
+            // 4) Another VertexBuffer draw immediately after a regular draw.
+            sf::VertexBuffer vb2{sf::PrimitiveType::TriangleStrip};
+            REQUIRE(vb2.create(4u));
+            const sf::Vertex v2[]{
+                {{60.f, 0.f}, sf::Color::Yellow, {0.f, 0.f}},
+                {{80.f, 0.f}, sf::Color::Yellow, {0.f, 0.f}},
+                {{60.f, 30.f}, sf::Color::Yellow, {0.f, 0.f}},
+                {{80.f, 30.f}, sf::Color::Yellow, {0.f, 0.f}},
+            };
+            REQUIRE(vb2.update(v2));
+            rt.draw(vb2);
+
+            // 5) Final regular draw at x=[80, 120) -- same standard VAO
+            //    must again be in a valid state.
+            rt.draw(sf::RectangleShape{{.position = {80.f, 0.f}, .fillColor = sf::Color::Magenta, .size = {40.f, 30.f}}});
+
+            rt.display();
+
+            const auto img = rt.getTexture().copyToImage();
+            CHECK(img.getPixel({10, 15}) == sf::Color::Green);
+            CHECK(img.getPixel({30, 15}) == sf::Color::Red);
+            CHECK(img.getPixel({50, 15}) == sf::Color::Blue);
+            CHECK(img.getPixel({70, 15}) == sf::Color::Yellow);
+            CHECK(img.getPixel({100, 15}) == sf::Color::Magenta);
         }
     }
 }
