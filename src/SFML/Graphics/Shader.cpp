@@ -366,7 +366,9 @@ struct Shader::Impl
     // NOLINTNEXTLINE(cppcoreguidelines-use-default-member-init, modernize-use-default-member-init)
     int currentTexture; //!< Location of the current texture in the shader
 
-    // TODO P1: protect with mutex? Change API?
+    // Plain unsynchronized map: `sf::Shader` is single-thread-affine. The program object is a
+    // shared GL resource, but the map is CPU-side bookkeeping mutated by `setUniform(loc, Texture&)`
+    // and read by `bindTextures()`. Sharing a Shader across threads would race on this container.
     mutable ankerl::unordered_dense::map<int, const Texture*> textures; //!< Texture variables in the shader, mapped to their location
 
     explicit Impl(unsigned int theShaderProgram) : shaderProgram{theShaderProgram}, currentTexture{-1}
@@ -737,6 +739,7 @@ bool Shader::setUniform(UniformLocation location, const Texture& texture) const
     SFML_BASE_ASSERT(m_impl->shaderProgram);
     SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
+    // Mutates `m_impl->textures`; must be called from the Shader's owning thread.
     // Store the location -> texture mapping
     if (auto* const it = m_impl->textures.find(location.m_value); it != m_impl->textures.end())
     {
@@ -1021,6 +1024,7 @@ base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
 
 
 ////////////////////////////////////////////////////////////
+// Reads `m_impl->textures`; must be called from the Shader's owning thread.
 void Shader::bindTextures() const
 {
     auto* it = m_impl->textures.begin();
