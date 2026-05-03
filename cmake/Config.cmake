@@ -155,6 +155,9 @@ elseif(${EMSCRIPTEN})
         -pthread                            # Enable threading support
         -sPTHREAD_POOL_SIZE_STRICT=0        # Allow thread pool to grow indefinitely
 
+        # Raise `Error.stackTraceLimit` so SFML's `printStackTrace` shows full chains
+        --pre-js=${CMAKE_SOURCE_DIR}/emscripten/pre.js
+
         -Wno-limited-postlink-optimizations # warning: running limited binaryen optimizations because DWARF info requested (or indirectly required)
         -Wno-pthreads-mem-growth            # warning: -pthread + ALLOW_MEMORY_GROWTH may run non-wasm code slowly, see https://github.com/WebAssembly/design/issues/1271
 
