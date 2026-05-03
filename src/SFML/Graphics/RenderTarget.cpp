@@ -958,24 +958,18 @@ bool RenderTarget::setActive(const bool active)
         return true;
     }
 
-    // First ever activation or different RT activated on same context
-    if (loadedRenderTargetId != m_impl->id)
-    {
-        renderTargetId.store(m_impl->id);
-
-        if (loadedRenderTargetId == RenderTargetImpl::invalidId)
-            m_impl->cache.glStatesSet = false; // First-time activation
-
-        m_impl->cache.enable = false;
-        return true;
-    }
-
-    // Activation on a different context
-    SFML_BASE_ASSERT(loadedRenderTargetId != RenderTargetImpl::invalidId);
+    // The slot held either `invalidId` (first activation in this context)
+    // or a different RT id (another RT was last active here, possibly on
+    // a different context entirely). In both cases this RT's persistent
+    // GL state (cull, depth, color mask, ...) is not guaranteed to match
+    // what `cache.glStatesSet` claims -- it was set under whichever
+    // context the previous draw ran on, or never set at all. Force a
+    // full `resetGLStatesImpl` on the next `setupDraw`.
     SFML_BASE_ASSERT(loadedRenderTargetId != m_impl->id);
     renderTargetId.store(m_impl->id);
 
-    m_impl->cache.enable = false;
+    m_impl->cache.glStatesSet = false;
+    m_impl->cache.enable      = false;
     return true;
 }
 
