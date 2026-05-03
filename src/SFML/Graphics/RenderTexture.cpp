@@ -391,6 +391,7 @@ public:
             glCheck(glBindFramebuffer(GL_FRAMEBUFFER, it->second));
             return true;
         }
+
         return createFramebuffer();
     }
 

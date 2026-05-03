@@ -1053,5 +1053,75 @@ void main()
             CHECK(img.getPixel({70, 15}) == sf::Color::Yellow);
             CHECK(img.getPixel({100, 15}) == sf::Color::Magenta);
         }
+
+        SECTION("Persistent GL states are reset when an RT moves to a context already owned by another RT")
+        {
+            // Regression: when `setActive(true)` is called on a context whose
+            // slot in `contextRenderTargetMap` already holds a *different*
+            // RT id (not `invalidId`), `RenderTarget::setActive` clears
+            // `cache.enable` but leaves `cache.glStatesSet` untrue. The next
+            // `setupDraw` therefore skips `resetGLStatesImpl`, and persistent
+            // states owned only by that helper (`GL_CULL_FACE`,
+            // `GL_DEPTH_TEST`, `GL_COLOR_MASK`, the active texture unit)
+            // inherit whatever the previous occupant or raw GL code left in
+            // the context.
+            //
+            // We exercise the case using `GL_CULL_FACE` + `glCullFace(GL_FRONT_AND_BACK)`,
+            // which culls every triangle until something disables it.
+            auto rtA = sf::RenderTexture::create({40, 40}).value();
+            auto rtB = sf::RenderTexture::create({40, 40}).value();
+
+            const sf::RectangleShape full{{.fillColor = sf::Color::Green, .size = {40.f, 40.f}}};
+
+            // 1) Prime rtA on the shared graphics context. After this draw
+            //    rtA's `glStatesSet` is true, slot[shared] = rtA.id, and the
+            //    shared context's GL state is the one `resetGLStatesImpl`
+            //    establishes (cull off, etc.).
+            rtA.clear(sf::Color::Red);
+            rtA.draw(full);
+            rtA.display();
+
+            {
+                TestContext fresh;
+                CHECK(fresh.getId() != 0u);
+
+                // 2) Activate rtB on `fresh`. slot[fresh] starts invalid, so
+                //    rtB's `glStatesSet` is forced false → `setupDraw` runs
+                //    `resetGLStatesImpl` on `fresh` → `fresh`'s persistent
+                //    GL state is sane. After this, slot[fresh] = rtB.id.
+                rtB.clear(sf::Color::Black);
+                rtB.draw(full);
+                rtB.display();
+
+                // 3) Corrupt `fresh`'s persistent state behind SFML's back.
+                //    `GL_CULL_FACE` is touched only by `resetGLStatesImpl`
+                //    in the SFML pipeline, so it survives until that helper
+                //    runs again. `glCullFace(GL_FRONT_AND_BACK)` makes the
+                //    cull discard every triangle regardless of winding.
+                glCheck(glEnable(GL_CULL_FACE));
+                glCheck(glCullFace(GL_FRONT_AND_BACK));
+
+                // 4) Activate rtA on `fresh`. setActive sees slot[fresh] = rtB.id,
+                //    which is neither `invalidId` nor `rtA.id`. With the bug,
+                //    only `cache.enable` is reset; rtA's `glStatesSet` stays
+                //    true (carried over from step 1), so `setupDraw` skips
+                //    `resetGLStatesImpl` and the cull-everything state leaks
+                //    into the draw. The expected fix forces `glStatesSet =
+                //    false` on this branch (or tags it with the context id),
+                //    so the draw resets persistent state and the green quad
+                //    actually rasterizes.
+                rtA.clear(sf::Color::Red);
+                rtA.draw(full);
+                rtA.display();
+
+                // Restore `fresh`'s GL state before TestContext tears down.
+                glCheck(glDisable(GL_CULL_FACE));
+                glCheck(glCullFace(GL_BACK));
+            }
+
+            // With the fix: green wrote to the FBO. With the bug: every
+            // triangle was culled, so the pixel is still the red clear value.
+            CHECK(rtA.getTexture().copyToImage().getPixel({20, 20}) == sf::Color::Green);
+        }
     }
 }
