@@ -314,9 +314,9 @@ base::Optional<Texture> Texture::loadFromImage(const Image& image, const Texture
         const base::U8* pixels = image.getPixelsPtr() + 4 * (rectangle.position.x + (size.x * rectangle.position.y));
         glCheck(glBindTexture(GL_TEXTURE_2D, result->m_texture));
 
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, size.x); // restore after
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.size.x, rectangle.size.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+        glCheck(glPixelStorei(GL_UNPACK_ROW_LENGTH, size.x)); // restore after
+        glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rectangle.size.x, rectangle.size.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels));
+        glCheck(glPixelStorei(GL_UNPACK_ROW_LENGTH, 0));
 
         glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, result->m_isSmooth ? GL_LINEAR : GL_NEAREST));
         result->m_hasMipmap = false;
