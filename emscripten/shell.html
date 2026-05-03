@@ -1,77 +1,375 @@
 <!doctype html>
-<html lang="en-us">
+<html lang="en-us" data-theme="dark">
   <head>
     <script src="coi-serviceworker.js"></script>
 
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Vittorio's SFML Fork</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark light">
+    <title>VRSFML — Emscripten demo</title>
     <style>
-      .emscripten { padding-right: 0; margin-left: auto; margin-right: auto; display: block; }
-      textarea.emscripten { font-family: monospace; width: 80%; }
-      div.emscripten { text-align: center; }
-      div.emscripten_border { border: 1px solid black; }
-      /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
-      canvas.emscripten { border: 0px none; background-color: black; }
+      :root {
+        --bg:           #0e1217;
+        --bg-elev:      #151a22;
+        --fg:           #e6e9ef;
+        --muted:        #8a93a3;
+        --border:       #232a35;
+        --accent:       #38bdf8;
+        --accent-soft:  rgba(56, 189, 248, 0.12);
+        --code-font:    ui-monospace, "JetBrains Mono", "Fira Code", Menlo, Consolas, monospace;
+        --sans:         system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+
+      /*
+        Restore standard `hidden` attribute behavior. The Emscripten Module
+        setStatus() handler hides the spinner / progress bar by setting
+        `hidden = true` on those elements. Without this rule, our id-level
+        `display: flex` on `#spinner` outranks the user-agent `[hidden]`
+        rule and the spinner stays visible after loading.
+      */
+      [hidden] { display: none !important; }
+
+      /* Collapse the progress wrapper's margin when there is nothing to show. */
+      .progress-wrap:has(> progress[hidden]) { display: none; }
+
+      html, body {
+        background: var(--bg);
+        color: var(--fg);
+        font-family: var(--sans);
+        line-height: 1.5;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      a { color: var(--accent); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+
+      /* ============================================================== */
+      /* Top bar                                                          */
+      /* ============================================================== */
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 1.25rem;
+        border-bottom: 1px solid var(--border);
+        background: rgba(14, 18, 23, 0.85);
+        backdrop-filter: saturate(140%) blur(8px);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+
+      .topbar .brand {
+        font-family: var(--code-font);
+        font-weight: 700;
+        font-size: 1rem;
+        letter-spacing: 0.02em;
+        color: var(--fg);
+      }
+      .topbar .brand:hover { text-decoration: none; color: var(--accent); }
+
+      .topbar .links {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+
+      .topbar .icon-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.1rem;
+        height: 2.1rem;
+        border-radius: 0.45rem;
+        color: var(--fg);
+        transition: background-color 120ms ease;
+      }
+      .topbar .icon-link:hover {
+        background: var(--bg-elev);
+        text-decoration: none;
+      }
+
+      /* ============================================================== */
+      /* Stage layout                                                     */
+      /* ============================================================== */
+      .stage {
+        flex: 1;
+        max-width: 1280px;
+        width: 100%;
+        margin: 0 auto;
+        padding: 1.5rem 1rem 2.5rem;
+      }
+
+      /* ============================================================== */
+      /* Status + progress                                                */
+      /* ============================================================== */
+      .status {
+        text-align: center;
+        font-family: var(--code-font);
+        font-size: 0.88rem;
+        color: var(--muted);
+        min-height: 1.4rem;
+        margin: 0.25rem 0 0.6rem;
+      }
+
+      .progress-wrap {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 1rem;
+      }
+
+      progress {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 60%;
+        max-width: 24rem;
+        height: 6px;
+        border: 0;
+        border-radius: 999px;
+        background: var(--bg-elev);
+        overflow: hidden;
+      }
+      progress::-webkit-progress-bar { background: var(--bg-elev); border-radius: 999px; }
+      progress::-webkit-progress-value { background: var(--accent); border-radius: 999px; }
+      progress::-moz-progress-bar { background: var(--accent); border-radius: 999px; }
+
+      /* ============================================================== */
+      /* Spinner                                                          */
+      /* Subtle ring; replaces the original multi-color one.              */
+      /* ============================================================== */
+      #spinner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 1rem 0;
+      }
+      #spinner figcaption,
+      #spinner > div + center,
+      #spinner strong {
+        color: var(--muted);
+        font-family: var(--code-font);
+        font-size: 0.78rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        font-weight: 500;
+      }
 
       .spinner {
-        height: 50px;
-        width: 50px;
-        margin: 0px auto;
-        -webkit-animation: rotation .8s linear infinite;
-        -moz-animation: rotation .8s linear infinite;
-        -o-animation: rotation .8s linear infinite;
-        animation: rotation 0.8s linear infinite;
-        border-left: 10px solid rgb(0,150,240);
-        border-right: 10px solid rgb(0,150,240);
-        border-bottom: 10px solid rgb(0,150,240);
-        border-top: 10px solid rgb(100,0,200);
-        border-radius: 100%;
-        background-color: rgb(200,100,250);
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        border: 3px solid var(--border);
+        border-top-color: var(--accent);
+        animation: rotation 0.9s cubic-bezier(0.6, 0.1, 0.4, 0.9) infinite;
+        background: transparent;
       }
-      @-webkit-keyframes rotation {
-        from {-webkit-transform: rotate(0deg);}
-        to {-webkit-transform: rotate(360deg);}
-      }
-      @-moz-keyframes rotation {
-        from {-moz-transform: rotate(0deg);}
-        to {-moz-transform: rotate(360deg);}
-      }
-      @-o-keyframes rotation {
-        from {-o-transform: rotate(0deg);}
-        to {-o-transform: rotate(360deg);}
-      }
-      @keyframes rotation {
-        from {transform: rotate(0deg);}
-        to {transform: rotate(360deg);}
+      @keyframes rotation { to { transform: rotate(360deg); } }
+
+      /* ============================================================== */
+      /* Canvas frame                                                     */
+      /* The canvas element itself MUST NOT receive border/padding —      */
+      /* anything that grows its layout box will desync mouse coords.     */
+      /* The frame puts its border on a wrapper around the canvas.        */
+      /* ============================================================== */
+      .canvas-frame {
+        display: flex;
+        justify-content: center;
+        margin: 0 auto;
+        padding: 0;
+        border: 1px solid var(--border);
+        border-radius: 0.6rem;
+        background: #000;
+        overflow: hidden;
+        width: max-content;
+        max-width: 100%;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
       }
 
+      /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
+      canvas.emscripten {
+        border: 0px none;
+        padding: 0;
+        margin: 0;
+        background-color: black;
+        display: block;
+      }
+
+      /* ============================================================== */
+      /* Action bar                                                       */
+      /* ============================================================== */
+      .canvas-actions {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin: 1rem 0;
+      }
+
+      .btn {
+        appearance: none;
+        -webkit-appearance: none;
+        font-family: var(--sans);
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+        border-radius: 0.45rem;
+        border: 1px solid var(--border);
+        background: var(--bg-elev);
+        color: var(--fg);
+        cursor: pointer;
+        transition: border-color 120ms ease, background-color 120ms ease;
+      }
+      .btn:hover {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+      }
+      .btn:active { transform: translateY(1px); }
+      .btn:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      /* ============================================================== */
+      /* Console output                                                   */
+      /* ============================================================== */
+      details.console {
+        max-width: 64rem;
+        margin: 1.5rem auto 0;
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        background: var(--bg-elev);
+        overflow: hidden;
+      }
+
+      details.console summary {
+        list-style: none;
+        cursor: pointer;
+        padding: 0.55rem 0.9rem;
+        font-family: var(--code-font);
+        font-size: 0.78rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--muted);
+        user-select: none;
+      }
+      details.console summary::-webkit-details-marker { display: none; }
+      details.console summary::before {
+        content: "▸";
+        display: inline-block;
+        margin-right: 0.5rem;
+        transition: transform 120ms ease;
+      }
+      details.console[open] > summary::before { transform: rotate(90deg); }
+
+      details.console summary:hover { color: var(--fg); }
+
+      textarea.emscripten {
+        font-family: var(--code-font);
+        font-size: 0.82rem;
+        width: 100%;
+        border: 0;
+        border-top: 1px solid var(--border);
+        background: var(--bg);
+        color: var(--fg);
+        padding: 0.75rem 0.9rem;
+        resize: vertical;
+        outline: none;
+        display: block;
+        line-height: 1.45;
+      }
+
+      /* ============================================================== */
+      /* Footer                                                           */
+      /* ============================================================== */
+      .foot {
+        text-align: center;
+        font-size: 0.78rem;
+        color: var(--muted);
+        padding: 1rem;
+        border-top: 1px solid var(--border);
+      }
+      .foot a { color: var(--muted); }
+      .foot a:hover { color: var(--accent); }
     </style>
   </head>
   <body>
-    <hr/>
-    <figure style="overflow:visible;" id="spinner"><div class="spinner"></div><center style="margin-top:0.5em"><strong>emscripten</strong></center></figure>
-    <div class="emscripten" id="status">Downloading...</div>
-    <div class="emscripten">
-      <progress value="0" max="100" id="progress" hidden=1></progress>
-    </div>
-    <div class="emscripten_border">
-      <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
-    </div>
-    <hr/>
-    <div class="emscripten">
-      <input type="button" value="Fullscreen" onclick="Module.requestFullscreen(false, false)">
-    </div>
+    <!-- ============================================================== -->
+    <!-- Top bar — same wordmark / GitHub link as the landing page        -->
+    <!-- ============================================================== -->
+    <header class="topbar">
+      <a href="https://vittorioromeo.github.io/VRSFML/" class="brand" aria-label="VRSFML">VRSFML</a>
+      <div class="links">
+        <a href="https://github.com/vittorioromeo/VRSFML" target="_blank" rel="noopener" class="icon-link" aria-label="GitHub repository">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2c-3.2.7-3.87-1.36-3.87-1.36-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.69 1.25 3.35.95.1-.74.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.18-3.08-.12-.29-.51-1.46.11-3.04 0 0 .97-.31 3.18 1.17.92-.26 1.91-.39 2.9-.39s1.98.13 2.9.39c2.21-1.48 3.18-1.17 3.18-1.17.62 1.58.23 2.75.11 3.04.74.8 1.18 1.82 1.18 3.08 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.07.78 2.16v3.2c0 .31.21.67.8.55C20.21 21.39 23.5 17.08 23.5 12 23.5 5.65 18.35.5 12 .5z"/>
+          </svg>
+        </a>
+      </div>
+    </header>
 
-    <hr/>
-    <textarea class="emscripten" id="output" rows="8"></textarea>
-    <hr>
+    <!-- ============================================================== -->
+    <!-- Stage                                                            -->
+    <!-- ============================================================== -->
+    <main class="stage">
+      <figure id="spinner">
+        <div class="spinner"></div>
+        <figcaption>loading</figcaption>
+      </figure>
+
+      <div class="status" id="status">Downloading...</div>
+
+      <div class="progress-wrap">
+        <progress value="0" max="100" id="progress" hidden=1></progress>
+      </div>
+
+      <!--
+        DO NOT add padding/border/transform to the canvas itself, or
+        Emscripten's mouse-coordinate calculation will desynchronize from
+        the visible canvas pixels.
+
+        The visible border lives on `.canvas-frame`, which wraps the
+        canvas; the canvas's own layout box stays untouched.
+      -->
+      <div class="canvas-frame">
+        <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
+      </div>
+
+      <div class="canvas-actions">
+        <button class="btn" onclick="Module.requestFullscreen(false, false)">Fullscreen</button>
+      </div>
+
+      <details class="console">
+        <summary>Console output</summary>
+        <textarea class="emscripten" id="output" rows="8" readonly></textarea>
+      </details>
+    </main>
+
+    <footer class="foot">
+      <a href="https://github.com/vittorioromeo/VRSFML" target="_blank" rel="noopener">github.com/vittorioromeo/VRSFML</a>
+    </footer>
+
+    <!-- ============================================================== -->
+    <!-- Emscripten Module init — UNCHANGED from the original shell      -->
+    <!-- ============================================================== -->
     <script type='text/javascript'>
       var statusElement = document.getElementById('status');
       var progressElement = document.getElementById('progress');
       var spinnerElement = document.getElementById('spinner');
 
-      var Module = {
+      // Preserve fields already set on `Module` by `--pre-js` injectors
+      // (e.g. `--emrun`'s URL-to-argv shim, which writes `Module.arguments`).
+      // Plain `var Module = {...}` would replace that object wholesale and
+      // discard those fields.
+      var Module = (typeof Module === 'object' && Module) || {};
+      Object.assign(Module, {
         print: (function() {
           var element = document.getElementById('output');
           if (element) element.value = ''; // clear browser cache
@@ -126,7 +424,7 @@
           this.totalDependencies = Math.max(this.totalDependencies, left);
           Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
         }
-      };
+      });
       Module.setStatus('Downloading...');
       window.onerror = () => {
         Module.setStatus('Exception thrown, see JavaScript console');
