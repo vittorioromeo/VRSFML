@@ -7,6 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/RenderTarget.hpp"
 
+#include "SFML/Graphics/BatchedGeometry.hpp"
 #include "SFML/Graphics/BlendMode.hpp"
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DrawIndexedVerticesSettings.hpp"
@@ -40,7 +41,6 @@
 #include "SFML/Graphics/VBOHandle.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 #include "SFML/Graphics/VertexBuffer.hpp"
-#include "SFML/Graphics/VertexSpan.hpp"
 #include "SFML/Graphics/View.hpp"
 
 #include "SFML/GLUtils/GLCheck.hpp"
@@ -739,8 +739,6 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer,
                         base::SizeT         vertexCount,
                         const RenderStates& states)
 {
-    m_impl->cache.lastVaoGroup = 0u; // Force VAO rebind (TODO P0: why is this needed?)
-
     if (m_autoBatchMode != AutoBatchMode::Disabled)
         flush();
 
