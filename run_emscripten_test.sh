@@ -29,5 +29,5 @@ done
 if [ -n "$found" ]; then
     emrun "$found" -- "${@:2}"
 else
-    node ./bin/$target*.js "${@:2}"
+    node --stack-trace-limit=200 ./bin/$target*.js "${@:2}"
 fi
