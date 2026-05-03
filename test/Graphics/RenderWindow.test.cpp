@@ -29,19 +29,9 @@
 #include <Doctest.hpp>
 
 
-namespace
-{
-sf::GraphicsContext& sharedGraphicsContext()
-{
-    static auto ctx = sf::GraphicsContext::create().value();
-    return ctx;
-}
-} // namespace
-
-
 TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 {
-    (void)sharedGraphicsContext();
+    auto graphicsContext = sf::GraphicsContext::create().value();
 
     SECTION("Type traits")
     {
@@ -61,11 +51,11 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
                                     .value();
 
             CHECK(window.getSize() == sf::Vec2u{256, 256});
-#ifndef SFML_SYSTEM_EMSCRIPTEN
+            // SDL3 provides a real native handle on Emscripten too, so we
+            // can drop the Emscripten special case here.
             CHECK(window.getNativeHandle() != sf::WindowHandle());
+#ifndef SFML_SYSTEM_EMSCRIPTEN
             CHECK(window.getSettings().attributeFlags == sf::ContextSettings{}.attributeFlags);
-#else
-            CHECK(window.getNativeHandle() == sf::WindowHandle());
 #endif
             CHECK(!window.isSrgb());
 
@@ -85,11 +75,11 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
                                     .value();
 
             CHECK(window.getSize() == sf::Vec2u{240, 300});
-#ifndef SFML_SYSTEM_EMSCRIPTEN
+            // SDL3 provides a real native handle on Emscripten too, so we
+            // can drop the Emscripten special case here.
             CHECK(window.getNativeHandle() != sf::WindowHandle());
+#ifndef SFML_SYSTEM_EMSCRIPTEN
             CHECK(window.getSettings().attributeFlags == sf::ContextSettings{}.attributeFlags);
-#else
-            CHECK(window.getNativeHandle() == sf::WindowHandle());
 #endif
             CHECK(!window.isSrgb());
 
@@ -103,6 +93,14 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
         }
     }
 
+// `Texture::update(RenderWindow&)` reads back from the canvas's default
+// framebuffer (FBO 0). On Emscripten/WebGL this is unreliable: SDL3 creates
+// the WebGL2 context with the default `preserveDrawingBuffer = false`, so per
+// the WebGL spec the canvas drawing buffer is treated as write-only -- after
+// `glClear`, `glReadPixels`/`glBlitFramebuffer` from FBO 0 returns undefined
+// data (zeros in Chrome). To read back rendered output on Emscripten, draw to
+// a `RenderTexture` instead. Skipping this section there.
+#ifndef SFML_SYSTEM_EMSCRIPTEN
     SECTION("Clear")
     {
         auto window = sf::RenderWindow::create({.size{256u, 256u}, .title = "RenderWindow Tests"}).value();
@@ -123,6 +121,7 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
         CHECK(texture.update(window));
         CHECK(texture.copyToImage().getPixel(sf::Vec2u{196, 196}) == sf::Color::Blue);
     }
+#endif
 
 // Creating multiple windows in Emscripten is not supported
 #ifndef SFML_SYSTEM_EMSCRIPTEN

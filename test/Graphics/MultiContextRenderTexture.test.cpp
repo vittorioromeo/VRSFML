@@ -114,6 +114,9 @@ struct ScopedFramebufferHooks
 } // namespace
 
 
+// Emscripten/WebGL does not support multiple GL contexts, which this entire
+// test case exercises.
+#ifndef SFML_SYSTEM_EMSCRIPTEN
 TEST_CASE("[Graphics] MultiContext" * doctest::skip(skipDisplayTests))
 {
     sf::Vertex   vertices[]{{.position = {0.f, 0.f}}};
@@ -244,3 +247,4 @@ TEST_CASE("[Graphics] MultiContext" * doctest::skip(skipDisplayTests))
         CHECK(glad_glIsFramebuffer(retriedMainFramebuffer) == 0u);
     }
 }
+#endif

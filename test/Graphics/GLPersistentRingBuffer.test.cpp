@@ -91,20 +91,12 @@ void fillPattern(unsigned char* const dst, const sf::base::SizeT size, const uns
         dst[i] = static_cast<unsigned char>((i * 11u) ^ (salt + 0x17u));
 }
 
-
-////////////////////////////////////////////////////////////
-sf::GraphicsContext& sharedGraphicsContext()
-{
-    static auto ctx = sf::GraphicsContext::create().value();
-    return ctx;
-}
-
 } // namespace
 
 
 TEST_CASE("[GLUtils] sf::GLPersistentRingBuffer" * doctest::skip(skipDisplayTests))
 {
-    (void)sharedGraphicsContext();
+    auto graphicsContext = sf::GraphicsContext::create().value();
 
     SECTION("Type traits")
     {
