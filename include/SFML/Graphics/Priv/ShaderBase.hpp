@@ -431,6 +431,9 @@ public:
     ///
     /// \return `true` on success, `false` if no free texture units are available
     ///
+    /// \warning Updates an internal CPU-side map; not thread-safe. `sf::Shader`
+    ///          must only be mutated and bound from a single thread.
+    ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool setUniform(UniformLocation location, const Texture& texture) const;
 
