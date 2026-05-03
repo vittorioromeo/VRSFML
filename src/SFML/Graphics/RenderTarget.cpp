@@ -946,7 +946,7 @@ bool RenderTarget::setActive(const bool active)
     SFML_BASE_ASSERT(contextId < RenderTargetImpl::maxIdCount);
     std::atomic<RenderTargetImpl::IdType>& renderTargetId = RenderTargetImpl::contextRenderTargetMap[contextId];
 
-    const auto loadedRenderTargetId = renderTargetId.load();
+    [[maybe_unused]] const auto loadedRenderTargetId = renderTargetId.load();
 
     // Deactivation
     if (!active)
