@@ -26,16 +26,8 @@ for suffix in "-d.html" ".html"; do
     fi
 done
 
-# When Chrome is available, launch via emrun's `--browser=chrome` so we can
-# pass `--auto-open-devtools-for-tabs`. Set `EMRUN_NO_DEVTOOLS=1`` to skip this.
-chrome_browser_args="--auto-open-devtools-for-tabs"
-
 if [ -n "$found" ]; then
-    if [ -z "$EMRUN_NO_DEVTOOLS" ] && emrun --list-browsers 2>&1 | grep -qi '^\s*-\s*chrome\b'; then
-        emrun --browser=chrome --browser-args="$chrome_browser_args" "$found" -- "${@:2}"
-    else
-        emrun "$found" -- "${@:2}"
-    fi
+    emrun "$found" -- "${@:2}"
 else
     node --stack-trace-limit=200 ./bin/$target*.js "${@:2}"
 fi
