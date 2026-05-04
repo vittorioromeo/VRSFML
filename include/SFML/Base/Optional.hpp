@@ -681,7 +681,7 @@ public:
 private:
     union Buffer
     {
-        char dummy{}; // Needed by GCC for constant expression support
+        char dummy{}; // Needed by GCC for constant expression support, even with GCC 16.x
         T    obj;
 
         // clang-format off

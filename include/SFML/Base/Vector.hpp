@@ -570,12 +570,9 @@ public:
     ////////////////////////////////////////////////////////////
     TItem* erase(TItem* const it)
     {
-        priv::VectorUtils::eraseImpl(begin(), end(), it);
-        --m_endSize;
+        SFML_BASE_ASSERT(it >= begin() && it < end());
 
-        if constexpr (!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(TItem))
-            m_endSize->~TItem();
-
+        m_endSize = priv::VectorUtils::eraseImpl(end(), it);
         return it;
     }
 
