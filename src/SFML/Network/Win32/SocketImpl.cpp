@@ -196,30 +196,30 @@ SocketHandle SocketImpl::invalidSocket()
 
 
 ////////////////////////////////////////////////////////////
-unsigned long SocketImpl::networkToHost(unsigned long netlong)
+NetworkLong SocketImpl::networkToHost(NetworkLong netlong)
 {
-    return ::ntohl(netlong);
+    return static_cast<NetworkLong>(::ntohl(netlong));
 }
 
 
 ////////////////////////////////////////////////////////////
-unsigned short SocketImpl::networkToHost(unsigned short netshort)
+NetworkShort SocketImpl::networkToHost(NetworkShort netshort)
 {
-    return ::ntohs(netshort);
+    return static_cast<NetworkShort>(::ntohs(netshort));
 }
 
 
 ////////////////////////////////////////////////////////////
-unsigned long SocketImpl::hostToNetwork(NetworkLong hostlong)
+NetworkLong SocketImpl::hostToNetwork(NetworkLong hostlong)
 {
-    return ::htonl(hostlong);
+    return static_cast<NetworkLong>(::htonl(hostlong));
 }
 
 
 ////////////////////////////////////////////////////////////
-unsigned short SocketImpl::hostToNetwork(NetworkShort hostshort)
+NetworkShort SocketImpl::hostToNetwork(NetworkShort hostshort)
 {
-    return ::htons(hostshort);
+    return static_cast<NetworkShort>(::htons(hostshort));
 }
 
 
