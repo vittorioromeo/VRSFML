@@ -238,7 +238,7 @@ void readField(const nlohmann::json& j, const char* name, T& field)
         if (!it->is_array())
             return;
 
-        constexpr auto arraySize = getArraySize<T>::value;
+        constexpr auto arraySize = static_cast<sf::base::SizeT>(getArraySize<T>::value);
         const auto     n         = arraySize < it->size() ? arraySize : it->size();
 
         for (sf::base::SizeT i = 0u; i < n; ++i)
