@@ -1393,20 +1393,30 @@ void Main::gameLoopUpdateCatActionWarden(const float /* deltaTimeMs */, Cat& cat
 void Main::resolveWardenBonkStrike(Cat& cat)
 {
     if (!cat.wardenBonk.hasValue() || !cat.wardenBonk->pendingTargetIdx.hasValue())
+    {
+        // Bad call site (no state to resolve). Drop the container if it
+        // exists so the per-frame tick doesn't keep hitting this path.
+        cat.wardenBonk.reset();
         return;
+    }
 
     const SizeT targetIdx = *cat.wardenBonk->pendingTargetIdx;
     cat.wardenBonk->pendingTargetIdx.reset();
 
-    // The cats vector may have been modified during the windup; bail
-    // gracefully if the target index is no longer valid or no longer
-    // napping.
-    if (targetIdx >= pt->cats.size())
+    // Target invalidated during the windup (cats vector mutated, target
+    // already woke up, hexed away, ...): abort the bonk cleanly. Without
+    // this reset we'd softlock -- phase stays Windup, phaseMs stays 0, and
+    // the per-frame tick would call us again every frame forever.
+    const bool targetGone = targetIdx >= pt->cats.size() || &pt->cats[targetIdx] == &cat ||
+                            !pt->cats[targetIdx].isNapping() || pt->cats[targetIdx].napTransition->reversed;
+
+    if (targetGone)
+    {
+        cat.wardenBonk.reset();
         return;
+    }
 
     Cat& target = pt->cats[targetIdx];
-    if (&target == &cat || !target.isNapping() || target.napTransition->reversed)
-        return;
 
     // Wake them up: kick the fade backwards and clear the sleep countdown.
     target.napTransition->reversed = true;
@@ -2168,7 +2178,22 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
         if (cat.wardenBonk.hasValue())
         {
             using Phase = Cat::WardenBonkState::Phase;
-            auto& bonk  = *cat.wardenBonk;
+
+            // Self-healing: clear any inconsistent state so a single bad
+            // frame can't softlock the cat forever. Two known shapes:
+            //   1. Non-warden cat carrying bonk state (data corruption /
+            //      cat type changed under us / loaded from old save).
+            //   2. Stuck Windup -- pendingTargetIdx already consumed but
+            //      the strike never advanced the phase.
+            const bool stuck = cat.type != CatType::Warden ||
+                               (cat.wardenBonk->phase == Phase::Windup && !cat.wardenBonk->pendingTargetIdx.hasValue());
+            if (stuck)
+            {
+                cat.wardenBonk.reset();
+                continue;
+            }
+
+            auto& bonk = *cat.wardenBonk;
 
             bonk.phaseMs = sf::base::max(0.f, bonk.phaseMs - deltaTimeMs);
 
