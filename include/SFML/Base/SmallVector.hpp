@@ -523,12 +523,10 @@ public:
     ////////////////////////////////////////////////////////////
     TItem* erase(TItem* const it)
     {
-        priv::VectorUtils::eraseImpl(begin(), end(), it);
-        --m_size;
+        SFML_BASE_ASSERT(it >= begin() && it < end());
 
-        if constexpr (!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(TItem))
-            (data() + m_size)->~TItem();
-
+        TItem* const newEnd = priv::VectorUtils::eraseImpl(end(), it);
+        m_size              = static_cast<SizeT>(newEnd - data());
         return it;
     }
 

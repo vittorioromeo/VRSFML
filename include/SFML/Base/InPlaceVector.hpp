@@ -307,12 +307,10 @@ public:
     ////////////////////////////////////////////////////////////
     constexpr TItem* erase(TItem* const it)
     {
-        priv::VectorUtils::eraseImpl(begin(), end(), it);
-        --m_size;
+        SFML_BASE_ASSERT(it >= begin() && it < end());
 
-        if constexpr (!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(TItem))
-            (data() + m_size)->~TItem();
-
+        TItem* const newEnd = priv::VectorUtils::eraseImpl(end(), it);
+        m_size              = static_cast<SizeT>(newEnd - data());
         return it;
     }
 
@@ -325,8 +323,8 @@ public:
         if (first == last)
             return first; // No elements to erase
 
-        TItem* currWritePtr = priv::VectorUtils::eraseRangeImpl(end(), first, last);
-        m_size              = static_cast<SizeT>(currWritePtr - data());
+        TItem* const newEnd = priv::VectorUtils::eraseRangeImpl(end(), first, last);
+        m_size              = static_cast<SizeT>(newEnd - data());
 
         // Return an iterator to the element that now occupies the position
         // where the first erased element (`first`) was. This is `first` itself,

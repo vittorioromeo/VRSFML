@@ -27,9 +27,15 @@
 
 #else
 
+    #include "SFML/Base/Abort.hpp"
     #include "SFML/Base/Assert.hpp"
 
     ////////////////////////////////////////////////////////////
-    #define SFML_BASE_UNREACHABLE() SFML_ASSERT(false)
+    #define SFML_BASE_UNREACHABLE() \
+        do                          \
+        {                           \
+            SFML_ASSERT(false);     \
+            ::sf::base::abort();    \
+        } while (false)
 
 #endif

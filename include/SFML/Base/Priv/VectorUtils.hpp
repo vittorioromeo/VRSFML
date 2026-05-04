@@ -130,73 +130,103 @@ template <typename T>
 
 
 ////////////////////////////////////////////////////////////
+/// \brief Erase the element at `it`, shifting `[it+1, end)` left by 1
+///
+/// Takes full responsibility for the element-management contract:
+/// the element at `it` is logically removed, the survivors are
+/// shifted, and the slot at `end - 1` is left in an *uninitialized*
+/// state (no live object). The caller must update its size to the
+/// returned pointer (or equivalently `end - 1`) and must NOT call a
+/// destructor on the slot past the new end.
+///
+/// \return Pointer one past the last live element (i.e. `end - 1`)
+///
+////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline, gnu::flatten]] inline constexpr void eraseImpl([[maybe_unused]] T* begin, T* end, T* const it)
+[[gnu::always_inline, gnu::flatten]] inline constexpr T* eraseImpl(T* const end, T* const it)
 {
-    SFML_BASE_ASSERT(it >= begin && it < end);
+    SFML_BASE_ASSERT(it < end);
 
     T* const nextElement = it + 1;
 
-    if (nextElement < end)
+    if constexpr (SFML_BASE_IS_TRIVIALLY_RELOCATABLE(T))
     {
-        if constexpr (SFML_BASE_IS_TRIVIALLY_COPYABLE(T))
-        {
-            SFML_BASE_MEMMOVE(it,                                                 // Destination
-                              nextElement,                                        // Source
-                              static_cast<SizeT>(end - nextElement) * sizeof(T)); // Number of bytes
-        }
-        else
-        {
-            T* currentWrite = it;
-            T* currentRead  = nextElement;
+        // For non-trivially-destructible types we must release the resources
+        // held by `*it` before its bytes get overwritten by the memmove
+        // (otherwise we leak). For trivially destructible types (which include
+        // all trivially copyable types) the destroy is a no-op.
+        if constexpr (!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(T))
+            it->~T();
 
-            while (currentRead != end)
-                *currentWrite++ = static_cast<T&&>(*currentRead++);
-        }
+        // Bulk shift `[it+1, end)` over `[it, end-1)`.
+        if (nextElement < end)
+            SFML_BASE_MEMMOVE(static_cast<void*>(it), nextElement, static_cast<SizeT>(end - nextElement) * sizeof(T));
+
+        // The slot at `end - 1` now holds duplicate / dead bytes — caller must not dtor it.
+        return end - 1;
+    }
+    else
+    {
+        // Generic path: shift via move-assignment, then destroy whatever
+        // remains in the trailing slot (either the original element if
+        // erasing the last one, or a moved-from element after the shift).
+        T* currWrite = it;
+        T* currRead  = nextElement;
+
+        while (currRead != end)
+            *currWrite++ = static_cast<T&&>(*currRead++);
+
+        // `currWrite == end - 1`; destroy the trailing slot.
+        currWrite->~T();
+        return currWrite;
     }
 }
 
 
 ////////////////////////////////////////////////////////////
+/// \brief Erase the half-open range `[first, last)`, shifting the tail left
+///
+/// Same contract as `eraseImpl`: the helper takes full responsibility
+/// for destruction and leaves no live object past the returned pointer.
+///
+/// \return Pointer one past the last live element
+///
+////////////////////////////////////////////////////////////
 template <typename T>
 [[gnu::always_inline, gnu::flatten]] inline constexpr T* eraseRangeImpl(T* const end, T* const first, T* const last)
 {
-    SFML_BASE_ASSERT(first <= end);
+    SFML_BASE_ASSERT(first <= last);
     SFML_BASE_ASSERT(last <= end);
     SFML_BASE_ASSERT(first != last);
 
-    // Tracks the position where the next non-erased element should be moved to
-    T* currWritePtr = first;
-
-    // If `last` is not the end, elements from `last` onwards need to be shifted to the left to fill the gap
-    if (last != end)
+    if constexpr (SFML_BASE_IS_TRIVIALLY_RELOCATABLE(T))
     {
-        if constexpr (SFML_BASE_IS_TRIVIALLY_COPYABLE(T))
-        {
-            SFML_BASE_MEMMOVE(first,                                       // Destination
-                              last,                                        // Source
-                              static_cast<SizeT>(end - last) * sizeof(T)); // Number of bytes
+        // Release resources held by the erased elements before their bytes
+        // are overwritten / abandoned. No-op for trivially destructible T.
+        destroyRange(first, last);
 
-            // Update `currWritePtr` to the new logical end of the moved block
-            currWritePtr = first + (end - last);
-        }
-        else
-        {
-            T* currReadPtr = last;
+        // Bulk shift `[last, end)` over `[first, first + (end - last))`.
+        if (last < end)
+            SFML_BASE_MEMMOVE(static_cast<void*>(first), last, static_cast<SizeT>(end - last) * sizeof(T));
 
-            // Loop until all elements from `last` to `m_endSize` have been processed
-            while (currReadPtr != end)
-                *currWritePtr++ = static_cast<T&&>(*currReadPtr++);
-
-            // After the loop, `currWritePtr` points to the position after the last moved element
-        }
+        // Slots past `first + (end - last)` are now dead bytes — caller must not dtor them.
+        return first + (end - last);
     }
+    else
+    {
+        // Generic path: shift via move-assignment, then destroy the tail.
+        T* currWrite = first;
 
-    // If `last == m_endSize`, all elements from `first` to `m_endSize` are being erased
-    // No elements need to be moved. `currWritePtr` remains `first`.
+        T* currRead = last;
+        while (currRead != end)
+            *currWrite++ = static_cast<T&&>(*currRead++);
 
-    destroyRange(currWritePtr, end);
-    return currWritePtr;
+        // The tail `[currWrite, end)` covers both still-original elements
+        // (when more were erased than shifted) and moved-from elements
+        // (after the shift). Both need their destructors called.
+        destroyRange(currWrite, end);
+        return currWrite;
+    }
 }
 
 
@@ -213,7 +243,7 @@ template <typename T>
 
     if constexpr (SFML_BASE_IS_TRIVIALLY_COPYABLE(T) || SFML_BASE_IS_TRIVIALLY_RELOCATABLE(T))
     {
-        SFML_BASE_MEMMOVE(pos + 1,                                    // Destination
+        SFML_BASE_MEMMOVE(static_cast<void*>(pos + 1),                // Destination
                           pos,                                        // Source
                           static_cast<SizeT>(end - pos) * sizeof(T)); // Number of bytes
     }
