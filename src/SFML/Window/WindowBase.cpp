@@ -14,6 +14,7 @@
 #include "SFML/Window/WindowHandle.hpp"
 
 #include "SFML/System/Priv/Vec2Base.hpp"
+#include "SFML/System/Time.hpp"
 #include "SFML/System/UnicodeString.hpp"
 
 #include "SFML/Base/Assert.hpp"
@@ -80,6 +81,13 @@ WindowBase& WindowBase::operator=(WindowBase&&) noexcept = default;
 base::Optional<Event> WindowBase::pollEvent()
 {
     return filterEvent(m_impl->pollEvent());
+}
+
+
+////////////////////////////////////////////////////////////
+base::Optional<Event> WindowBase::waitEvent()
+{
+    return filterEvent(m_impl->waitEvent(Time{}));
 }
 
 

@@ -15,11 +15,10 @@
 #pragma once
 #pragma GCC system_header
 
-
-#define IMGUI_DEFINE_MATH_OPERATORS
 #include "IconsFontAwesome6.h"
-#include "imgui.h"
-#include "imgui_internal.h"
+
+#include "SFML/ImGui/IncludeImGui.hpp"
+#include "SFML/ImGui/IncludeImGuiInternal.hpp"
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Time.hpp"

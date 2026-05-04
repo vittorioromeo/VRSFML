@@ -14,6 +14,7 @@
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/View.hpp"
 
+#include "SFML/Window/Event.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
@@ -88,8 +89,10 @@ sf::Rect2f getPixelPerfectViewport(const sf::Vec2f windowSize, const sf::Vec2f n
 }
 
 
+namespace
+{
 ////////////////////////////////////////////////////////////
-static bool handleResizeImpl(const sf::Event& event, const sf::Vec2f originalSize, sf::View& view, auto&& fnViewport)
+bool handleResizeImpl(const sf::Event& event, const sf::Vec2f originalSize, sf::View& view, auto&& fnViewport)
 {
     const auto* eResized = event.getIf<sf::Event::Resized>();
     if (eResized == nullptr)
@@ -106,6 +109,8 @@ static bool handleResizeImpl(const sf::Event& event, const sf::Vec2f originalSiz
 
     return true;
 }
+
+} // namespace
 
 
 ////////////////////////////////////////////////////////////

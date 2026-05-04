@@ -10,6 +10,7 @@
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/StencilMode.hpp"
 
+#include "SFML/Window/Event.hpp" // IWYU pragma: keep
 #include "SFML/Window/EventUtils.hpp"
 
 #include "SFML/System/Angle.hpp"

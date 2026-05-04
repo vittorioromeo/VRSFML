@@ -24,6 +24,7 @@
 #include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
 
+#include "SFML/Window/Event.hpp" // IWYU pragma: keep
 #include "SFML/Window/EventUtils.hpp"
 #include "SFML/Window/WindowSettings.hpp" // IWYU pragma: keep
 
