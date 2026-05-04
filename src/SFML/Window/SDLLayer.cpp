@@ -585,10 +585,20 @@ DisplayOrientation mapSDLDisplayOrientationToSFML(const SDL_DisplayOrientation d
 ////////////////////////////////////////////////////////////
 SDLLayer::SDLLayer()
 {
-// Ensures window position is synced with DOM position on Emscripten.
 #ifdef SFML_SYSTEM_EMSCRIPTEN
+    // Ensures window position is synced with DOM position on Emscripten.
     if (!SDL_SetHint(SDL_HINT_VIDEO_SYNC_WINDOW_OPERATIONS, "1"))
-        err() << "`SDL_SetHint` failed: " << SDL_GetError();
+        err() << "`SDL_SetHint(SDL_HINT_VIDEO_SYNC_WINDOW_OPERATIONS)` failed: " << SDL_GetError();
+
+    // Tell SDL3 not to call `emscripten_sleep(0)` inside `SDL_GL_SwapWindow`.
+    // Our build links with `-sASYNCIFY_IGNORE_INDIRECT=1`, which means
+    // asyncify yields cannot occur inside indirect calls (and SDL invokes
+    // its `GL_SwapWindow` through a function pointer). Without this hint,
+    // each `RenderWindow::display()` traps with `unreachable`. Browsers
+    // already drive frame timing through `requestAnimationFrame`, so the
+    // implicit sleep was redundant for us anyway.
+    if (!SDL_SetHint(SDL_HINT_EMSCRIPTEN_ASYNCIFY, "0"))
+        err() << "`SDL_SetHint(SDL_HINT_EMSCRIPTEN_ASYNCIFY)` failed: " << SDL_GetError();
 #endif
 
     if (!SDL_InitSubSystem(SDL_INIT_VIDEO))

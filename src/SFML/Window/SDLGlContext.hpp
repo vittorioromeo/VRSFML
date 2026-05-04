@@ -14,7 +14,6 @@
 ////////////////////////////////////////////////////////////
 struct SDL_Window;
 struct SDL_GLContextState;
-using SDL_GLContext = SDL_GLContextState*;
 
 namespace sf::priv
 {
@@ -86,8 +85,11 @@ private:
     void destroyWindowIfNeeded();
 
     ////////////////////////////////////////////////////////////
-    SDL_Window*   m_window;     // SDL window associated with the context
-    SDL_GLContext m_context;    // SDL OpenGL context handle
-    bool          m_ownsWindow; // Whether the context owns the window (for offscreen contexts)
+    SDL_Window*         m_window;     // SDL window associated with the context
+    SDL_GLContextState* m_context;    // SDL OpenGL context handle
+    bool                m_ownsWindow; // Whether the context owns the window (for offscreen contexts)
+#ifdef SFML_SYSTEM_EMSCRIPTEN
+    bool m_vsyncRequested{true}; // Emscripten VSync support needs manual handling
+#endif
 };
 } // namespace sf::priv

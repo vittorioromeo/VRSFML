@@ -170,14 +170,22 @@ void SDLGlContext::display()
 ////////////////////////////////////////////////////////////
 void SDLGlContext::setVerticalSyncEnabled(const bool enabled)
 {
+#ifdef SFML_SYSTEM_EMSCRIPTEN
+    // Emscripten path is handled by `Window::display()`
+    m_vsyncRequested = enabled;
+#else
     if (!SDL_GL_SetSwapInterval(enabled ? 1 : 0))
         err() << "Failed to set vertical sync: " << SDL_GetError();
+#endif
 }
 
 
 ////////////////////////////////////////////////////////////
 bool SDLGlContext::isVerticalSyncEnabled() const
 {
+#ifdef SFML_SYSTEM_EMSCRIPTEN
+    return m_vsyncRequested;
+#else
     int interval{};
 
     if (!SDL_GL_GetSwapInterval(&interval))
@@ -187,6 +195,7 @@ bool SDLGlContext::isVerticalSyncEnabled() const
     }
 
     return interval != 0;
+#endif
 }
 
 
