@@ -392,6 +392,12 @@ macro(sfml_add_example target)
     set_target_warnings(${target})
     set_public_symbols_hidden(${target})
 
+    # Disable GCC's `-Wmissing-field-initializers`, too noisy when using
+    # aggregate initialization with many fields
+    if(SFML_COMPILER_GCC)
+        target_compile_options(${target} PRIVATE -Wno-missing-field-initializers)
+    endif()
+
     # set the debug suffix
     set_target_properties(${target} PROPERTIES DEBUG_POSTFIX -d)
 
