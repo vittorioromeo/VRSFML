@@ -479,6 +479,43 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Allocate exactly `targetCapacity` slots without ever
+    ///        invoking element move/copy/destroy
+    ///
+    /// This is the only way to grow a `Vector<T>` when `T` is
+    /// non-movable (e.g. `Worker` in the thread pool, where worker
+    /// threads capture `this` and the type is intentionally pinned).
+    /// Standard `reserve` / `resize` would fail to compile because they
+    /// instantiate the relocation path, which requires `T(T&&)`.
+    ///
+    /// \pre `size() == 0` -- any existing buffer is discarded by
+    ///      `operator delete` without running destructors. Calling this
+    ///      on a non-empty vector leaks resources held by the existing
+    ///      elements (debug-asserted).
+    ///
+    /// \param targetCapacity Number of element slots to allocate
+    ///
+    /// \return Reference to the internal end-of-size pointer (matches
+    ///         `reserve()` for the hot-path fused reserve+write idiom).
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] TItem*& unsafeAllocateCapacity(const SizeT targetCapacity)
+    {
+        SFML_BASE_ASSERT(size() == 0u);
+
+        auto* newData = priv::VectorUtils::allocate<TItem>(targetCapacity);
+
+        if (m_data != nullptr)
+            priv::VectorUtils::deallocate(m_data, capacity());
+
+        m_data        = newData;
+        m_endSize     = m_data;
+        m_endCapacity = m_data + targetCapacity;
+
+        return m_endSize;
+    }
+
+
+    ////////////////////////////////////////////////////////////
     /// \brief Ensure capacity is at least `size() + n`
     ///
     /// Convenience wrapper around `reserve()`, useful when bulk-appending

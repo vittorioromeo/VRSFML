@@ -7,6 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Err.hpp"
 
+#include "SFML/System/Atomic.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/PathUtils.hpp"
 
@@ -15,7 +16,6 @@
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Trait/IsSame.hpp"
 
-#include <atomic>
 #include <iostream>
 #include <mutex>
 #include <ostream>
@@ -28,9 +28,9 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 struct ErrStream::Impl
 {
-    std::ostream      stream;
-    std::mutex        mutex;
-    std::atomic<bool> multiLine;
+    std::ostream     stream;
+    std::mutex       mutex;
+    sf::Atomic<bool> multiLine;
 
     explicit Impl(std::streambuf* sbuf) : stream(sbuf)
     {
@@ -111,7 +111,7 @@ void ErrStream::rdbuf(std::streambuf* sbuf)
 ErrStream& err(bool multiLine)
 {
     static ErrStream stream(std::cerr.rdbuf());
-    stream.m_impl->multiLine.store(multiLine);
+    stream.m_impl->multiLine.store<sf::MemoryOrder::SeqCst>(multiLine);
     return stream;
 }
 
@@ -123,7 +123,7 @@ ErrStream::Guard ErrStream::operator<<(const T& value)
     m_impl->mutex.lock(); // Will be unlocked by `~Guard()`
     m_impl->stream << "[[SFML ERROR]]: " << value;
 
-    return Guard{m_impl->stream, &m_impl->mutex, m_impl->multiLine.load()};
+    return Guard{m_impl->stream, &m_impl->mutex, m_impl->multiLine.load<sf::MemoryOrder::SeqCst>()};
 }
 
 
@@ -133,7 +133,7 @@ ErrStream::Guard ErrStream::operator<<(const char* value)
     m_impl->mutex.lock(); // Will be unlocked by `~Guard()`
     m_impl->stream << "[[SFML ERROR]]: " << value;
 
-    return Guard{m_impl->stream, &m_impl->mutex, m_impl->multiLine.load()};
+    return Guard{m_impl->stream, &m_impl->mutex, m_impl->multiLine.load<sf::MemoryOrder::SeqCst>()};
 }
 
 
@@ -143,7 +143,7 @@ ErrStream::Guard ErrStream::operator<<(ErrFlushType)
     m_impl->mutex.lock(); // Will be unlocked by `~Guard()`
     m_impl->stream << std::flush;
 
-    return Guard{m_impl->stream, &m_impl->mutex, m_impl->multiLine.load()};
+    return Guard{m_impl->stream, &m_impl->mutex, m_impl->multiLine.load<sf::MemoryOrder::SeqCst>()};
 }
 
 
@@ -155,7 +155,7 @@ ErrStream::Guard ErrStream::operator<<(PathDebugFormatter pathDebugFormatter)
     m_impl->stream << "    Provided path: " << pathDebugFormatter.path.to<std::string>() << '\n'
                    << "    Absolute path: " << pathDebugFormatter.path.absolute();
 
-    return Guard{m_impl->stream, &m_impl->mutex, m_impl->multiLine.load()};
+    return Guard{m_impl->stream, &m_impl->mutex, m_impl->multiLine.load<sf::MemoryOrder::SeqCst>()};
 }
 
 

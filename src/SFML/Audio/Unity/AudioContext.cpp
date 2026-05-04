@@ -11,6 +11,7 @@
 #include "SFML/Audio/PlaybackDeviceHandle.hpp"
 #include "SFML/Audio/Priv/MiniaudioUtils.hpp"
 
+#include "SFML/System/Atomic.hpp"
 #include "SFML/System/Err.hpp"
 
 #include "SFML/Base/Abort.hpp"
@@ -20,8 +21,6 @@
 #include "SFML/Base/Vector.hpp"
 
 #include <miniaudio.h>
-
-#include <atomic>
 
 
 namespace
@@ -153,7 +152,7 @@ struct AudioContextImpl
 
 ////////////////////////////////////////////////////////////
 constinit sf::base::Optional<AudioContextImpl> installedAudioContext;
-constinit std::atomic<unsigned int>            audioContextRC{0u};
+constinit sf::Atomic<unsigned int>             audioContextRC{0u};
 
 
 ////////////////////////////////////////////////////////////
@@ -219,7 +218,7 @@ void* AudioContext::getMAContext()
 ////////////////////////////////////////////////////////////
 AudioContext::AudioContext(base::PassKey<AudioContext>&&)
 {
-    audioContextRC.fetch_add(1u, std::memory_order::relaxed);
+    audioContextRC.fetchAdd<sf::MemoryOrder::Relaxed>(1u);
 }
 
 
@@ -232,7 +231,7 @@ AudioContext::AudioContext(AudioContext&&) noexcept : AudioContext(base::PassKey
 ////////////////////////////////////////////////////////////
 AudioContext::~AudioContext()
 {
-    if (audioContextRC.fetch_sub(1u, std::memory_order::relaxed) > 1u)
+    if (audioContextRC.fetchSub<sf::MemoryOrder::Relaxed>(1u) > 1u)
         return;
 
     installedAudioContext.reset();

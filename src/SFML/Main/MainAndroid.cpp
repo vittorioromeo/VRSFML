@@ -21,11 +21,12 @@
 #include "SFML/System/Sleep.hpp"
 #include "SFML/System/Time.hpp"
 
+#include "SFML/Base/StdThread.hpp"
+
 #include <android/native_activity.h>
 #include <android/window.h>
 
 #include <mutex>
-#include <thread>
 
 #include <cstddef>
 

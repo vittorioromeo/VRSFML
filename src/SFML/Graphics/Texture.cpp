@@ -22,6 +22,7 @@
 #include "SFML/GLUtils/Glad.hpp"
 #include "SFML/GLUtils/TextureSaver.hpp"
 
+#include "SFML/System/Atomic.hpp"
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"
@@ -39,8 +40,6 @@
 #include "SFML/Base/Swap.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#include <atomic>
-
 
 namespace
 {
@@ -49,12 +48,12 @@ namespace TextureImpl
 {
 ////////////////////////////////////////////////////////////
 // Thread-safe unique identifier generator, is used for states cache (see RenderTarget)
-constinit std::atomic<unsigned int> nextUniqueId{1u}; // start at 1, zero is "no texture"
+constinit sf::Atomic<unsigned int> nextUniqueId{1u}; // start at 1, zero is "no texture"
 
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten]] inline unsigned int getUniqueId() noexcept
 {
-    return nextUniqueId.fetch_add(1u, std::memory_order::relaxed);
+    return nextUniqueId.fetchAdd<sf::MemoryOrder::Relaxed>(1u);
 }
 
 ////////////////////////////////////////////////////////////

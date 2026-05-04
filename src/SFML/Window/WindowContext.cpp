@@ -24,6 +24,7 @@
 #include "SFML/GLUtils/Glad.hpp"
 #include "SFML/GLUtils/TextureSaver.hpp"
 
+#include "SFML/System/Atomic.hpp"
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/SignalErrHandler.hpp"
@@ -39,7 +40,6 @@
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#include <atomic>
 #include <mutex>
 
 
@@ -535,7 +535,7 @@ struct WindowContextImpl
     priv::SDLLayer sdlLayer; //!< SDL layer instance, must be initialized before GL context
 
     ////////////////////////////////////////////////////////////
-    std::atomic<unsigned int> nextThreadLocalGlContextId{2u}; // 1 is reserved for shared context
+    sf::Atomic<unsigned int> nextThreadLocalGlContextId{2u}; // 1 is reserved for shared context
 
     ////////////////////////////////////////////////////////////
     TransferScratchManager transferScratchManager; //!< Manager for the scratch FBOs and textures used for copy operations
@@ -565,7 +565,7 @@ namespace
 {
 ////////////////////////////////////////////////////////////
 constinit base::Optional<WindowContextImpl> installedWindowContext;
-constinit std::atomic<unsigned int>         windowContextRC{0u};
+constinit sf::Atomic<unsigned int>          windowContextRC{0u};
 
 
 ////////////////////////////////////////////////////////////
@@ -662,7 +662,7 @@ base::Optional<WindowContext> WindowContext::create()
 ////////////////////////////////////////////////////////////
 WindowContext::WindowContext(base::PassKey<WindowContext>&&)
 {
-    windowContextRC.fetch_add(1u, std::memory_order::relaxed);
+    windowContextRC.fetchAdd<sf::MemoryOrder::Relaxed>(1u);
 }
 
 
@@ -681,7 +681,7 @@ WindowContext::WindowContext(WindowContext&&) noexcept : WindowContext(base::Pas
 ////////////////////////////////////////////////////////////
 WindowContext::~WindowContext()
 {
-    if (windowContextRC.fetch_sub(1u, std::memory_order::relaxed) > 1u)
+    if (windowContextRC.fetchSub<sf::MemoryOrder::Relaxed>(1u) > 1u)
         return;
 
     SFML_BASE_ASSERT(!ensureInstalled().unsharedContextResourcesManager.allNonSharedEmpty());
@@ -962,7 +962,7 @@ base::UniquePtr<priv::GlContext> WindowContext::createGlContextImpl(const Contex
     if (!setActiveThreadLocalGlContextToSharedContext())
         priv::err() << "Error enabling shared GL context in WindowContext::createGlContext()";
 
-    auto glContext = base::makeUnique<priv::SDLGlContext>(wc.nextThreadLocalGlContextId.fetch_add(1u),
+    auto glContext = base::makeUnique<priv::SDLGlContext>(wc.nextThreadLocalGlContextId.fetchAdd<sf::MemoryOrder::SeqCst>(1u),
                                                           &wc.sharedGlContext,
                                                           contextSettings,
                                                           SFML_BASE_FORWARD(args)...);

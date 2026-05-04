@@ -15,6 +15,7 @@
 
 #include "SFML/Window/WindowContext.hpp"
 
+#include "SFML/System/Atomic.hpp"
 #include "SFML/System/Err.hpp"
 
 #include "SFML/Base/Abort.hpp"
@@ -22,8 +23,6 @@
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
-
-#include <atomic>
 
 
 namespace sf
@@ -40,7 +39,7 @@ struct GraphicsContextImpl
 
 ///////////////////////////////////////////////////////////
 constinit sf::base::Optional<GraphicsContextImpl> installedGraphicsContext;
-constinit std::atomic<unsigned int>               graphicsContextRC{0u};
+constinit sf::Atomic<unsigned int>                graphicsContextRC{0u};
 
 
 ////////////////////////////////////////////////////////////
@@ -110,7 +109,7 @@ base::Optional<GraphicsContext> GraphicsContext::create()
 GraphicsContext::GraphicsContext(base::PassKey<GraphicsContext>&&, WindowContext&& windowContext) :
     m_impl(SFML_BASE_MOVE(windowContext))
 {
-    graphicsContextRC.fetch_add(1u, std::memory_order::relaxed);
+    graphicsContextRC.fetchAdd<sf::MemoryOrder::Relaxed>(1u);
 }
 
 
@@ -118,14 +117,14 @@ GraphicsContext::GraphicsContext(base::PassKey<GraphicsContext>&&, WindowContext
 GraphicsContext::GraphicsContext(GraphicsContext&& rhs) noexcept :
     m_impl(static_cast<WindowContext&&>(rhs.m_impl->windowContext))
 {
-    graphicsContextRC.fetch_add(1u, std::memory_order::relaxed);
+    graphicsContextRC.fetchAdd<sf::MemoryOrder::Relaxed>(1u);
 }
 
 
 ////////////////////////////////////////////////////////////
 GraphicsContext::~GraphicsContext()
 {
-    if (graphicsContextRC.fetch_sub(1u, std::memory_order::relaxed) > 1u)
+    if (graphicsContextRC.fetchSub<sf::MemoryOrder::Relaxed>(1u) > 1u)
         return;
 
     // Need to activate shared context during destruction to avoid GL errors when destroying texture and shader

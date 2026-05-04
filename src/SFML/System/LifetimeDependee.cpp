@@ -8,6 +8,7 @@
     ////////////////////////////////////////////////////////////
     #include "SFML/System/LifetimeDependee.hpp"
 
+    #include "SFML/System/Atomic.hpp"
     #include "SFML/System/Err.hpp"
 
     #include "SFML/Base/Abort.hpp"
@@ -18,21 +19,19 @@
     #include "SFML/Base/StackTrace.hpp"
     #include "SFML/Base/String.hpp"
 
-    #include <atomic>
-
     #include <cctype>
 
 
-using AtomicUInt = std::atomic<unsigned int>;
+using AtomicUInt = sf::Atomic<unsigned int>;
 
 static_assert(sizeof(AtomicUInt) == sizeof(unsigned int));
 static_assert(alignof(AtomicUInt) == alignof(unsigned int));
 
 namespace
 {
-std::atomic<bool>        lifetimeTrackingTestingMode{false};
-std::atomic<bool>        lifetimeTrackingFatalErrorTriggered{false};
-std::atomic<const char*> lifetimeTrackingTestingDependeeName{nullptr};
+constinit sf::Atomic<bool>        lifetimeTrackingTestingMode{false};
+constinit sf::Atomic<bool>        lifetimeTrackingFatalErrorTriggered{false};
+constinit sf::Atomic<const char*> lifetimeTrackingTestingDependeeName{nullptr};
 
 [[gnu::always_inline, gnu::const]] inline AtomicUInt& asAtomicUInt(char* ptr)
 {
@@ -47,25 +46,25 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 LifetimeDependee::TestingModeGuard::TestingModeGuard(const char* const dependeeName)
 {
-    lifetimeTrackingTestingMode.store(true, std::memory_order::seq_cst);
-    lifetimeTrackingTestingDependeeName.store(dependeeName, std::memory_order::seq_cst);
+    lifetimeTrackingTestingMode.store<sf::MemoryOrder::SeqCst>(true);
+    lifetimeTrackingTestingDependeeName.store<sf::MemoryOrder::SeqCst>(dependeeName);
 }
 
 
 ////////////////////////////////////////////////////////////
 LifetimeDependee::TestingModeGuard::~TestingModeGuard()
 {
-    lifetimeTrackingTestingMode.store(false, std::memory_order::seq_cst);
-    lifetimeTrackingFatalErrorTriggered.store(false, std::memory_order::seq_cst);
-    lifetimeTrackingTestingDependeeName.store(nullptr, std::memory_order::seq_cst);
+    lifetimeTrackingTestingMode.store<sf::MemoryOrder::SeqCst>(false);
+    lifetimeTrackingFatalErrorTriggered.store<sf::MemoryOrder::SeqCst>(false);
+    lifetimeTrackingTestingDependeeName.store<sf::MemoryOrder::SeqCst>(nullptr);
 }
 
 
 ////////////////////////////////////////////////////////////
 bool LifetimeDependee::TestingModeGuard::fatalErrorTriggered(const char* const dependeeName)
 {
-    return lifetimeTrackingFatalErrorTriggered.load(std::memory_order::seq_cst) &&
-           SFML_BASE_STRCMP(lifetimeTrackingTestingDependeeName.load(std::memory_order::seq_cst), dependeeName) == 0;
+    return lifetimeTrackingFatalErrorTriggered.load<sf::MemoryOrder::SeqCst>() &&
+           SFML_BASE_STRCMP(lifetimeTrackingTestingDependeeName.load<sf::MemoryOrder::SeqCst>(), dependeeName) == 0;
 }
 
 
@@ -129,7 +128,7 @@ LifetimeDependee& LifetimeDependee::operator=(LifetimeDependee&& rhs) noexcept
 ////////////////////////////////////////////////////////////
 LifetimeDependee::~LifetimeDependee()
 {
-    const unsigned int finalCount = asAtomicUInt(m_dependantCount).load(std::memory_order::relaxed);
+    const unsigned int finalCount = asAtomicUInt(m_dependantCount).load<sf::MemoryOrder::Relaxed>();
     asAtomicUInt(m_dependantCount).~AtomicUInt();
 
     if (finalCount == 0u)
@@ -155,12 +154,12 @@ LifetimeDependee::~LifetimeDependee()
     const auto dependeeNameLower  = toLowerStr(m_dependeeName);
     const auto dependantNameLower = toLowerStr(m_dependantName);
 
-    if (lifetimeTrackingTestingMode)
+    if (lifetimeTrackingTestingMode.load<sf::MemoryOrder::SeqCst>())
     {
         priv::err() << "LIFETIME TEST GUARD ERROR: a " << dependeeNameLower << " object was destroyed while existing "
                     << dependantNameLower << " objects depended on it.";
 
-        lifetimeTrackingFatalErrorTriggered = true;
+        lifetimeTrackingFatalErrorTriggered.store<sf::MemoryOrder::SeqCst>(true);
         return;
     }
 
@@ -215,15 +214,15 @@ LifetimeDependee::~LifetimeDependee()
 ////////////////////////////////////////////////////////////
 void LifetimeDependee::addDependant()
 {
-    asAtomicUInt(m_dependantCount).fetch_add(1u, std::memory_order::relaxed);
+    asAtomicUInt(m_dependantCount).fetchAdd<sf::MemoryOrder::Relaxed>(1u);
 }
 
 
 ////////////////////////////////////////////////////////////
 void LifetimeDependee::subDependant()
 {
-    SFML_BASE_ASSERT(asAtomicUInt(m_dependantCount).load(std::memory_order::relaxed) > 0u);
-    asAtomicUInt(m_dependantCount).fetch_sub(1u, std::memory_order::relaxed);
+    SFML_BASE_ASSERT(asAtomicUInt(m_dependantCount).load<sf::MemoryOrder::Relaxed>() > 0u);
+    asAtomicUInt(m_dependantCount).fetchSub<sf::MemoryOrder::Relaxed>(1u);
 }
 
 } // namespace sf::priv
