@@ -1425,7 +1425,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
                     break;
                 case Phase::Return:
                     pawPosition = ctx.cat.pawPosition + (wardenIdlePos - ctx.cat.pawPosition) * t;
-                    pawRotate   = ctx.cat.pawRotation.rotatedTowards(idleRot, t);
+                    pawRotate   = ctx.cat.pawRotation;
                     break;
             }
         }
