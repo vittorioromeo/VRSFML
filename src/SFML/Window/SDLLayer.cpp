@@ -502,16 +502,18 @@ namespace sf::priv
     if (!windowSettings.visible)
         SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_HIDDEN_BOOLEAN, true);
 
+    // TODO P1: review possible multi-canvas support
+    /*
+        static int i = 0;
 
-    static int i = 0;
-
-    if (i++ != 0)
-    {
-        char id[64];
-        SDL_snprintf(id, sizeof(id), "#canvas%d", i + 1);
-        SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING, id);
-        SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING, id);
-    }
+        if (i++ != 0)
+        {
+            char id[64];
+            SDL_snprintf(id, sizeof(id), "#canvas%d", i + 1);
+            SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING, id);
+            SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING, id);
+        }
+    */
 
     return props;
 }

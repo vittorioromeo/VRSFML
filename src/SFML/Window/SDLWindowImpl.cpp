@@ -585,6 +585,15 @@ base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(WindowSettings windowSettin
 #ifdef SFML_SYSTEM_EMSCRIPTEN
     // This seems necessary on Emscripten to set the initial canvas size
     SDL_SetWindowSize(sdlWindowPtr, static_cast<int>(windowSettings.size.x), static_cast<int>(windowSettings.size.y));
+
+    // The shared `SDLGlContext` creates a hidden 1x1 window during
+    // `GraphicsContext::create()`, which on Emscripten sets the canvas to
+    // `display: none` (via `Emscripten_HideWindow`). Subsequent regular
+    // window creations don't reset that style, leaving the user's canvas
+    // invisible. Force-show here to restore `display: block`, unless the
+    // caller explicitly requested a hidden window.
+    if (windowSettings.visible)
+        SDL_ShowWindow(sdlWindowPtr);
 #endif
 
     if (windowSettings.fullscreen)
