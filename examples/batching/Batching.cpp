@@ -19,6 +19,7 @@
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/TextureAtlas.hpp"
 
+#include "SFML/Window/Event.hpp" // IWYU pragma: keep
 #include "SFML/Window/EventUtils.hpp"
 
 #include "SFML/System/Angle.hpp"

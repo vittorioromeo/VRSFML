@@ -12,7 +12,9 @@
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/TextureAtlas.hpp"
-#include "SFML/Graphics/View.hpp"
+#include "SFML/Graphics/View.hpp" // IWYU pragma: keep
+
+#include "SFML/Window/Event.hpp" // IWYU pragma: keep
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
@@ -20,6 +22,7 @@
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
+#include "SFML/System/Time.hpp"
 
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/Optional.hpp"

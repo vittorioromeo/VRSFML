@@ -2,8 +2,6 @@
 
 #include "ExampleUtils/Progress.hpp"
 
-#include "SFML/ImGui/IncludeImGui.hpp"
-
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
 
@@ -53,6 +51,6 @@ struct UIState
     bool                                                 debugHideUI        = false;
     bool                                                 debugWindowVisible = true;
 
-    ImGuiTabItemFlags_ shopSelectOnce       = ImGuiTabItemFlags_SetSelected;
-    int                lastUiSelectedTabIdx = 1;
+    int shopSelectOnce       = 1 << 1; // ImGuiTabItemFlags_SetSelected;
+    int lastUiSelectedTabIdx = 1;
 };

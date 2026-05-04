@@ -8,7 +8,6 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Export.hpp"
 
-#include "SFML/Window/Event.hpp"
 #include "SFML/Window/WindowHandle.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
@@ -16,8 +15,6 @@
 #include "SFML/System/LocalAnchorPointMixin.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
-#include "SFML/System/Time.hpp"
-#include "SFML/System/UnicodeString.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
@@ -33,6 +30,9 @@ struct SDL_Window;
 namespace sf
 {
 class Cursor;
+class Event;
+class Time;
+class UnicodeString;
 } // namespace sf
 
 namespace sf::priv
@@ -172,7 +172,8 @@ public:
     /// \see `pollEvent`, `pollAndHandleEvents`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<Event> waitEvent(Time timeout = {});
+    [[nodiscard]] base::Optional<Event> waitEvent();
+    [[nodiscard]] base::Optional<Event> waitEvent(Time timeout);
 
     ////////////////////////////////////////////////////////////
     /// \brief Handle all pending events

@@ -13,10 +13,12 @@
 #include "SFML/Graphics/TextData.hpp"
 #include "SFML/Graphics/TextUtils.hpp"
 
+#include "SFML/Window/Event.hpp" // IWYU pragma: keep
 #include "SFML/Window/EventUtils.hpp"
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Path.hpp"
+#include "SFML/System/Time.hpp"
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/MinMax.hpp"

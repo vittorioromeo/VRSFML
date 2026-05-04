@@ -8,6 +8,8 @@
 #include "SFML/Graphics/InstancedQuad.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
 
+#include "SFML/Window/Event.hpp"
+
 #include "SFML/System/Angle.hpp"
 
 #include "SFML/Base/Macros.hpp"
