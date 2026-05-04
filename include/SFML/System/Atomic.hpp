@@ -71,7 +71,7 @@ inline constexpr bool isAtomicSupported = (SFML_BASE_IS_INTEGRAL(T) || SFML_BASE
 /// compares bit-patterns (which is also what the user sees).
 ///
 ////////////////////////////////////////////////////////////
-template <typename T, bool IsEnum = SFML_BASE_IS_ENUM(T)>
+template <typename T, bool IsEnum = base::isEnum<T>>
 struct AtomicStorage
 {
     using type = T;
@@ -86,15 +86,15 @@ struct AtomicStorage<T, /* IsEnum */ true>
 template <>
 struct AtomicStorage<float, /* IsEnum */ false>
 {
-    static_assert(sizeof(float) == sizeof(::sf::base::U32));
-    using type = ::sf::base::U32;
+    static_assert(sizeof(float) == sizeof(base::U32));
+    using type = base::U32;
 };
 
 template <>
 struct AtomicStorage<double, /* IsEnum */ false>
 {
-    static_assert(sizeof(double) == sizeof(::sf::base::U64));
-    using type = ::sf::base::U64;
+    static_assert(sizeof(double) == sizeof(base::U64));
+    using type = base::U64;
 };
 
 
@@ -179,8 +179,8 @@ template <typename T>
 /// wake call targets the same address. Spurious wakeups are allowed.
 ///
 ////////////////////////////////////////////////////////////
-SFML_SYSTEM_API void atomicWait32(const ::sf::base::U32* addr, ::sf::base::U32 expected) noexcept;
-SFML_SYSTEM_API void atomicWait64(const ::sf::base::U64* addr, ::sf::base::U64 expected) noexcept;
+SFML_SYSTEM_API void atomicWait32(const base::U32* addr, base::U32 expected) noexcept;
+SFML_SYSTEM_API void atomicWait64(const base::U64* addr, base::U64 expected) noexcept;
 SFML_SYSTEM_API void atomicNotifyOne(const void* addr) noexcept;
 SFML_SYSTEM_API void atomicNotifyAll(const void* addr) noexcept;
 
@@ -357,7 +357,7 @@ public:
     ////////////////////////////////////////////////////////////
     template <MemoryOrder MO>
     [[gnu::always_inline]] T fetchAdd(const T arg) noexcept
-        requires(::sf::base::isIntegral<T> && !SFML_BASE_IS_SAME(T, bool))
+        requires(base::isIntegral<T> && !base::isSame<T, bool>)
     {
         return __atomic_fetch_add(&m_value, arg, static_cast<int>(MO));
     }
@@ -366,7 +366,7 @@ public:
     ////////////////////////////////////////////////////////////
     template <MemoryOrder MO>
     [[gnu::always_inline]] T fetchSub(const T arg) noexcept
-        requires(::sf::base::isIntegral<T> && !SFML_BASE_IS_SAME(T, bool))
+        requires(base::isIntegral<T> && !base::isSame<T, bool>)
     {
         return __atomic_fetch_sub(&m_value, arg, static_cast<int>(MO));
     }
@@ -380,21 +380,21 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <MemoryOrder MO>
-    [[gnu::always_inline]] T fetchAdd(const ::sf::base::PtrDiffT arg) noexcept
-        requires(::sf::base::isPointer<T>)
+    [[gnu::always_inline]] T fetchAdd(const base::PtrDiffT arg) noexcept
+        requires(base::isPointer<T>)
     {
         using Pointee = typename priv::AtomicPointee<T>::type;
-        return __atomic_fetch_add(&m_value, arg * static_cast<::sf::base::PtrDiffT>(sizeof(Pointee)), static_cast<int>(MO));
+        return __atomic_fetch_add(&m_value, arg * static_cast<base::PtrDiffT>(sizeof(Pointee)), static_cast<int>(MO));
     }
 
 
     ////////////////////////////////////////////////////////////
     template <MemoryOrder MO>
-    [[gnu::always_inline]] T fetchSub(const ::sf::base::PtrDiffT arg) noexcept
-        requires(::sf::base::isPointer<T>)
+    [[gnu::always_inline]] T fetchSub(const base::PtrDiffT arg) noexcept
+        requires(base::isPointer<T>)
     {
         using Pointee = typename priv::AtomicPointee<T>::type;
-        return __atomic_fetch_sub(&m_value, arg * static_cast<::sf::base::PtrDiffT>(sizeof(Pointee)), static_cast<int>(MO));
+        return __atomic_fetch_sub(&m_value, arg * static_cast<base::PtrDiffT>(sizeof(Pointee)), static_cast<int>(MO));
     }
 
 
@@ -404,7 +404,7 @@ public:
     ////////////////////////////////////////////////////////////
     template <MemoryOrder MO>
     [[gnu::always_inline]] T fetchAnd(const T arg) noexcept
-        requires(::sf::base::isIntegral<T> && !SFML_BASE_IS_SAME(T, bool))
+        requires(base::isIntegral<T> && !base::isSame<T, bool>)
     {
         return __atomic_fetch_and(&m_value, arg, static_cast<int>(MO));
     }
@@ -413,7 +413,7 @@ public:
     ////////////////////////////////////////////////////////////
     template <MemoryOrder MO>
     [[gnu::always_inline]] T fetchOr(const T arg) noexcept
-        requires(::sf::base::isIntegral<T> && !SFML_BASE_IS_SAME(T, bool))
+        requires(base::isIntegral<T> && !base::isSame<T, bool>)
     {
         return __atomic_fetch_or(&m_value, arg, static_cast<int>(MO));
     }
@@ -422,7 +422,7 @@ public:
     ////////////////////////////////////////////////////////////
     template <MemoryOrder MO>
     [[gnu::always_inline]] T fetchXor(const T arg) noexcept
-        requires(::sf::base::isIntegral<T> && !SFML_BASE_IS_SAME(T, bool))
+        requires(base::isIntegral<T> && !base::isSame<T, bool>)
     {
         return __atomic_fetch_xor(&m_value, arg, static_cast<int>(MO));
     }
@@ -456,11 +456,11 @@ public:
         // (already `U32`/`U64`), and pointer-to-integer (where
         // `static_cast` is ill-formed by the language rules).
         if constexpr (sizeof(T) == 4u)
-            priv::atomicWait32(reinterpret_cast<const ::sf::base::U32*>(&m_value),
-                               SFML_BASE_BIT_CAST(::sf::base::U32, priv::toAtomicStorage<T>(expected)));
+            priv::atomicWait32(reinterpret_cast<const base::U32*>(&m_value),
+                               SFML_BASE_BIT_CAST(base::U32, priv::toAtomicStorage<T>(expected)));
         else
-            priv::atomicWait64(reinterpret_cast<const ::sf::base::U64*>(&m_value),
-                               SFML_BASE_BIT_CAST(::sf::base::U64, priv::toAtomicStorage<T>(expected)));
+            priv::atomicWait64(reinterpret_cast<const base::U64*>(&m_value),
+                               SFML_BASE_BIT_CAST(base::U64, priv::toAtomicStorage<T>(expected)));
     }
 
 
