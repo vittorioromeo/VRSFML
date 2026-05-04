@@ -72,15 +72,14 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 #if defined(SFML_SYSTEM_WINDOWS)
 using AddrLength    = int;
-using NetworkLong   = unsigned long;
-using NetworkShort  = unsigned short;
 using NetworkSSizeT = int;
 #else
 using AddrLength    = socklen_t;
-using NetworkLong   = base::U32;
-using NetworkShort  = base::U16;
 using NetworkSSizeT = ssize_t;
 #endif
+
+using NetworkLong  = base::U32;
+using NetworkShort = base::U16;
 
 ////////////////////////////////////////////////////////////
 /// \brief TODO P1: docs
