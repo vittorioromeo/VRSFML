@@ -18,6 +18,7 @@
 #include "SFML/Window/EventUtils.hpp"
 #include "SFML/Window/Keyboard.hpp"
 
+#include "SFML/System/Atomic.hpp"
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
@@ -40,8 +41,6 @@
 #define STB_PERLIN_IMPLEMENTATION
 #include <stb_perlin.h>
 
-#include <atomic>
-
 
 namespace
 {
@@ -56,8 +55,8 @@ constexpr unsigned int blockCount   = 32;
 constexpr unsigned int rowBlockSize = (resolution.y / blockCount) + 1;
 
 // Worker status
-bool                      bufferUploadPending = false;
-std::atomic<unsigned int> pendingTasks{0u};
+constinit bool                     bufferUploadPending = false;
+constinit sf::Atomic<unsigned int> pendingTasks{0u};
 
 struct Setting
 {
@@ -340,7 +339,7 @@ void generateTerrain(sf::base::ThreadPool& threadPool, sf::Vertex* buffer)
     bufferUploadPending = true;
 
     // Make sure the work queue is empty before queuing new work
-    while (pendingTasks.load(std::memory_order::acquire) > 0u)
+    while (pendingTasks.load<sf::MemoryOrder::Acquire>() > 0u)
         sf::sleep(sf::milliseconds(10));
 
     // Queue all the new work items
@@ -349,10 +348,10 @@ void generateTerrain(sf::base::ThreadPool& threadPool, sf::Vertex* buffer)
         {
             const unsigned int rowStart = rowBlockSize * i;
             processWorkItem(buffer + (resolution.x * rowStart * 6), i);
-            pendingTasks.fetch_sub(1u, std::memory_order::release);
+            pendingTasks.fetchSub<sf::MemoryOrder::Release>(1u);
         });
 
-    pendingTasks.fetch_add(blockCount, std::memory_order::release);
+    pendingTasks.fetchAdd<sf::MemoryOrder::Release>(blockCount);
 }
 
 } // namespace
@@ -489,7 +488,7 @@ int main()
         window.draw(statusText, {.view = windowView});
 
         // Don't bother updating/drawing the VertexBuffer while terrain is being regenerated
-        if (pendingTasks.load(std::memory_order::acquire) == 0u)
+        if (pendingTasks.load<sf::MemoryOrder::Acquire>() == 0u)
         {
             // If there is new data pending to be uploaded to the VertexBuffer, do it now
             if (bufferUploadPending)

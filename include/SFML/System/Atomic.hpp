@@ -1,0 +1,583 @@
+#pragma once
+// LICENSE AND COPYRIGHT (C) INFORMATION
+// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include "SFML/System/Export.hpp"
+
+#include "SFML/Base/Builtin/BitCast.hpp"
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/PtrDiffT.hpp"
+#include "SFML/Base/Trait/IsEnum.hpp"
+#include "SFML/Base/Trait/IsFloatingPoint.hpp"
+#include "SFML/Base/Trait/IsIntegral.hpp"
+#include "SFML/Base/Trait/IsPointer.hpp"
+#include "SFML/Base/Trait/IsSame.hpp"
+#include "SFML/Base/Trait/UnderlyingType.hpp"
+
+
+namespace sf
+{
+////////////////////////////////////////////////////////////
+/// \brief Memory ordering constraint for an atomic operation
+///
+/// The underlying values match the `__ATOMIC_*` constants the
+/// GCC/Clang builtins expect, so the cast to `int` is a no-op.
+///
+/// `Consume` is intentionally omitted: every mainstream compiler
+/// strengthens it to `Acquire`, and its formal semantics are widely
+/// considered a footgun. Use `Acquire` instead.
+///
+////////////////////////////////////////////////////////////
+enum class MemoryOrder : int
+{
+    Relaxed = __ATOMIC_RELAXED,
+    Acquire = __ATOMIC_ACQUIRE,
+    Release = __ATOMIC_RELEASE,
+    AcqRel  = __ATOMIC_ACQ_REL,
+    SeqCst  = __ATOMIC_SEQ_CST,
+};
+
+
+namespace priv
+{
+////////////////////////////////////////////////////////////
+template <typename T>
+struct AtomicPointee;
+
+template <typename T>
+struct AtomicPointee<T*>
+{
+    using type = T;
+};
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+inline constexpr bool isAtomicSupported = (SFML_BASE_IS_INTEGRAL(T) || SFML_BASE_IS_FLOATING_POINT(T) ||
+                                           SFML_BASE_IS_POINTER(T) || SFML_BASE_IS_ENUM(T));
+
+
+////////////////////////////////////////////////////////////
+/// \brief Storage representation used by the atomic builtins
+///
+/// The `__atomic_*_n` builtins on Clang accept only integer and
+/// pointer types. For floating-point and `enum` we therefore store
+/// the value as the matching integer and bit-cast at the API
+/// boundary. The atomic semantics are unaffected because CAS already
+/// compares bit-patterns (which is also what the user sees).
+///
+////////////////////////////////////////////////////////////
+template <typename T, bool IsEnum = SFML_BASE_IS_ENUM(T)>
+struct AtomicStorage
+{
+    using type = T;
+};
+
+template <typename T>
+struct AtomicStorage<T, /* IsEnum */ true>
+{
+    using type = SFML_BASE_UNDERLYING_TYPE(T);
+};
+
+template <>
+struct AtomicStorage<float, /* IsEnum */ false>
+{
+    static_assert(sizeof(float) == sizeof(::sf::base::U32));
+    using type = ::sf::base::U32;
+};
+
+template <>
+struct AtomicStorage<double, /* IsEnum */ false>
+{
+    static_assert(sizeof(double) == sizeof(::sf::base::U64));
+    using type = ::sf::base::U64;
+};
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+using AtomicStorageType = typename AtomicStorage<T>::type;
+
+
+////////////////////////////////////////////////////////////
+/// \brief No-op for non-float `T`, bit-cast for float/double
+///
+////////////////////////////////////////////////////////////
+template <typename T>
+[[nodiscard, gnu::always_inline]] inline constexpr AtomicStorageType<T> toAtomicStorage(const T value) noexcept
+{
+    if constexpr (SFML_BASE_IS_SAME(T, AtomicStorageType<T>))
+        return value;
+    else
+        return SFML_BASE_BIT_CAST(AtomicStorageType<T>, value);
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+[[nodiscard, gnu::always_inline]] inline constexpr T fromAtomicStorage(const AtomicStorageType<T> bits) noexcept
+{
+    if constexpr (SFML_BASE_IS_SAME(T, AtomicStorageType<T>))
+        return bits;
+    else
+        return SFML_BASE_BIT_CAST(T, bits);
+}
+
+
+////////////////////////////////////////////////////////////
+/// \brief Compile-time legality check for a CAS failure-order pair
+///
+/// Mirrors the C++ rule: the failure order must not be `Release` or
+/// `AcqRel`, and must not be stronger than the success order.
+///
+////////////////////////////////////////////////////////////
+[[nodiscard]] inline consteval bool isLegalCasFailureOrder(const MemoryOrder success, const MemoryOrder failure) noexcept
+{
+    if (failure == MemoryOrder::Release || failure == MemoryOrder::AcqRel)
+        return false;
+
+    // Ranks (low → high): Relaxed = 0, Acquire = 1, SeqCst = 2.
+    // (Release/AcqRel already rejected above.)
+    const auto rank = [](const MemoryOrder mo) -> int
+    {
+        if (mo == MemoryOrder::Relaxed)
+            return 0;
+
+        if (mo == MemoryOrder::Acquire || mo == MemoryOrder::Release)
+            return 1;
+
+        return 2; // AcqRel, SeqCst
+    };
+
+    return rank(failure) <= rank(success);
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] inline consteval bool isLegalLoadOrder(const MemoryOrder mo) noexcept
+{
+    return mo == MemoryOrder::Relaxed || mo == MemoryOrder::Acquire || mo == MemoryOrder::SeqCst;
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] inline consteval bool isLegalStoreOrder(const MemoryOrder mo) noexcept
+{
+    return mo == MemoryOrder::Relaxed || mo == MemoryOrder::Release || mo == MemoryOrder::SeqCst;
+}
+
+
+////////////////////////////////////////////////////////////
+/// \brief Platform wait/notify primitives (defined in AtomicWait.cpp)
+///
+/// Block the calling thread on a 4- or 8-byte aligned address until
+/// the value at that address differs bit-wise from `expected`, or a
+/// wake call targets the same address. Spurious wakeups are allowed.
+///
+////////////////////////////////////////////////////////////
+SFML_SYSTEM_API void atomicWait32(const ::sf::base::U32* addr, ::sf::base::U32 expected) noexcept;
+SFML_SYSTEM_API void atomicWait64(const ::sf::base::U64* addr, ::sf::base::U64 expected) noexcept;
+SFML_SYSTEM_API void atomicNotifyOne(const void* addr) noexcept;
+SFML_SYSTEM_API void atomicNotifyAll(const void* addr) noexcept;
+
+} // namespace priv
+
+
+////////////////////////////////////////////////////////////
+/// \brief Lock-free atomic wrapper around a numerical type
+///
+/// \tparam T `bool`, integer, pointer, or floating-point type with
+///           `sizeof(T) <= 8`
+///
+////////////////////////////////////////////////////////////
+template <typename T>
+class [[nodiscard]] Atomic
+{
+    static_assert(priv::isAtomicSupported<T>, "Atomic<T> requires T to be integral, pointer, or floating-point");
+
+    static_assert(sizeof(T) <= 8u,
+                  "Atomic<T> intentionally does not support 16-byte types to avoid pulling in libatomic");
+
+    static_assert(__atomic_always_lock_free(sizeof(T), nullptr),
+                  "Atomic<T> requires T to be natively lock-free on the target architecture");
+
+private:
+    ////////////////////////////////////////////////////////////
+    using Storage = priv::AtomicStorageType<T>;
+
+
+    ////////////////////////////////////////////////////////////
+    // Over-aligning to `sizeof(T)` guarantees lock-freedom on every
+    // target the builtins support. Power-of-two sizes only (1/2/4/8).
+    alignas(sizeof(T)) Storage m_value;
+
+
+public:
+    ////////////////////////////////////////////////////////////
+    enum : bool
+    {
+        enableTrivialRelocation = true
+    };
+
+
+    ////////////////////////////////////////////////////////////
+    using value_type = T;
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Default constructor; value-initalizes to zero (or null)
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] constexpr Atomic() noexcept : m_value{}
+    {
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Initialize with `value` (non-atomic)
+    ///
+    /// Marked `explicit` to match the "no implicit conversions" rule
+    /// of this API. Use brace-init or direct-init at the call site:
+    /// `Atomic<int> a{42};` (not `Atomic<int> a = 42;`).
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] explicit constexpr Atomic(const T value) noexcept : m_value{priv::toAtomicStorage<T>(value)}
+    {
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    Atomic(const Atomic&)            = delete;
+    Atomic& operator=(const Atomic&) = delete;
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Atomically load the current value
+    ///
+    ////////////////////////////////////////////////////////////
+    template <MemoryOrder MO>
+    [[nodiscard, gnu::always_inline]] T load() const noexcept
+    {
+        static_assert(priv::isLegalLoadOrder(MO), "load() memory order must be Relaxed, Acquire, or SeqCst");
+        return priv::fromAtomicStorage<T>(__atomic_load_n(&m_value, static_cast<int>(MO)));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Atomically store `value`
+    ///
+    ////////////////////////////////////////////////////////////
+    template <MemoryOrder MO>
+    [[gnu::always_inline]] void store(const T value) noexcept
+    {
+        static_assert(priv::isLegalStoreOrder(MO), "store() memory order must be Relaxed, Release, or SeqCst");
+        __atomic_store_n(&m_value, priv::toAtomicStorage<T>(value), static_cast<int>(MO));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Atomically replace with `value`, returning the previous value
+    ///
+    ////////////////////////////////////////////////////////////
+    template <MemoryOrder MO>
+    [[gnu::always_inline]] T exchange(const T value) noexcept
+    {
+        return priv::fromAtomicStorage<T>(
+            __atomic_exchange_n(&m_value, priv::toAtomicStorage<T>(value), static_cast<int>(MO)));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Strong CAS: replace with `desired` iff the current
+    ///        bit-pattern equals `expected`. Updates `expected` on failure.
+    ///
+    /// \return `true` on success, `false` on failure
+    ///
+    ////////////////////////////////////////////////////////////
+    template <MemoryOrder Success, MemoryOrder Failure>
+    [[gnu::always_inline]] bool compareExchangeStrong(T& expected, const T desired) noexcept
+    {
+        static_assert(priv::isLegalCasFailureOrder(Success, Failure),
+                      "compareExchangeStrong: failure order must not be Release/AcqRel "
+                      "and must not be stronger than the success order");
+
+        Storage expectedBits = priv::toAtomicStorage<T>(expected);
+
+        const bool ok = __atomic_compare_exchange_n(&m_value,
+                                                    &expectedBits,
+                                                    priv::toAtomicStorage<T>(desired),
+                                                    /* weak */ false,
+                                                    static_cast<int>(Success),
+                                                    static_cast<int>(Failure));
+
+        if (!ok)
+            expected = priv::fromAtomicStorage<T>(expectedBits);
+
+        return ok;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Weak CAS: like `compareExchangeStrong` but may spuriously
+    ///        fail. Useful inside a CAS retry loop.
+    ///
+    ////////////////////////////////////////////////////////////
+    template <MemoryOrder Success, MemoryOrder Failure>
+    [[gnu::always_inline]] bool compareExchangeWeak(T& expected, const T desired) noexcept
+    {
+        static_assert(priv::isLegalCasFailureOrder(Success, Failure),
+                      "compareExchangeWeak: failure order must not be Release/AcqRel "
+                      "and must not be stronger than the success order");
+
+        Storage expectedBits = priv::toAtomicStorage<T>(expected);
+
+        const bool ok = __atomic_compare_exchange_n(&m_value,
+                                                    &expectedBits,
+                                                    priv::toAtomicStorage<T>(desired),
+                                                    /* weak */ true,
+                                                    static_cast<int>(Success),
+                                                    static_cast<int>(Failure));
+
+        if (!ok)
+            expected = priv::fromAtomicStorage<T>(expectedBits);
+
+        return ok;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Atomic fetch-and-add
+    ///
+    /// \return The previous value
+    ///
+    ////////////////////////////////////////////////////////////
+    template <MemoryOrder MO>
+    [[gnu::always_inline]] T fetchAdd(const T arg) noexcept
+        requires(::sf::base::isIntegral<T> && !SFML_BASE_IS_SAME(T, bool))
+    {
+        return __atomic_fetch_add(&m_value, arg, static_cast<int>(MO));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    template <MemoryOrder MO>
+    [[gnu::always_inline]] T fetchSub(const T arg) noexcept
+        requires(::sf::base::isIntegral<T> && !SFML_BASE_IS_SAME(T, bool))
+    {
+        return __atomic_fetch_sub(&m_value, arg, static_cast<int>(MO));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Atomic fetch-and-add for pointer types (element units,
+    ///        scaled by `sizeof(*T)` to match `std::atomic` semantics)
+    ///
+    /// \return The previous pointer value
+    ///
+    ////////////////////////////////////////////////////////////
+    template <MemoryOrder MO>
+    [[gnu::always_inline]] T fetchAdd(const ::sf::base::PtrDiffT arg) noexcept
+        requires(::sf::base::isPointer<T>)
+    {
+        using Pointee = typename priv::AtomicPointee<T>::type;
+        return __atomic_fetch_add(&m_value, arg * static_cast<::sf::base::PtrDiffT>(sizeof(Pointee)), static_cast<int>(MO));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    template <MemoryOrder MO>
+    [[gnu::always_inline]] T fetchSub(const ::sf::base::PtrDiffT arg) noexcept
+        requires(::sf::base::isPointer<T>)
+    {
+        using Pointee = typename priv::AtomicPointee<T>::type;
+        return __atomic_fetch_sub(&m_value, arg * static_cast<::sf::base::PtrDiffT>(sizeof(Pointee)), static_cast<int>(MO));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Atomic fetch-and-AND (integral types only)
+    ///
+    ////////////////////////////////////////////////////////////
+    template <MemoryOrder MO>
+    [[gnu::always_inline]] T fetchAnd(const T arg) noexcept
+        requires(::sf::base::isIntegral<T> && !SFML_BASE_IS_SAME(T, bool))
+    {
+        return __atomic_fetch_and(&m_value, arg, static_cast<int>(MO));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    template <MemoryOrder MO>
+    [[gnu::always_inline]] T fetchOr(const T arg) noexcept
+        requires(::sf::base::isIntegral<T> && !SFML_BASE_IS_SAME(T, bool))
+    {
+        return __atomic_fetch_or(&m_value, arg, static_cast<int>(MO));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    template <MemoryOrder MO>
+    [[gnu::always_inline]] T fetchXor(const T arg) noexcept
+        requires(::sf::base::isIntegral<T> && !SFML_BASE_IS_SAME(T, bool))
+    {
+        return __atomic_fetch_xor(&m_value, arg, static_cast<int>(MO));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Block the calling thread until the stored value differs
+    ///        bit-wise from `expected`
+    ///
+    /// Spurious wakeups are allowed; callers should re-check in a
+    /// loop, or use `waitUntil` which does that for them.
+    ///
+    /// Requires `sizeof(T) == 4` or `sizeof(T) == 8` -- these are the
+    /// sizes the platform wait primitives (futex / WaitOnAddress /
+    /// `wasm.memory.atomic.wait`) operate on.
+    ///
+    ////////////////////////////////////////////////////////////
+    template <MemoryOrder MO>
+    void wait(const T expected) const noexcept
+        requires(sizeof(T) == 4u || sizeof(T) == 8u)
+    {
+        static_assert(priv::isLegalLoadOrder(MO), "wait() memory order must be Relaxed, Acquire, or SeqCst");
+
+        // Quick re-check before going to the kernel -- covers the common
+        // "value already changed" case without any syscall.
+        if (priv::toAtomicStorage<T>(load<MO>()) != priv::toAtomicStorage<T>(expected))
+            return;
+
+        // `SFML_BASE_BIT_CAST` (rather than `static_cast`) handles every
+        // case uniformly: integer-to-integer (no-op), float storage
+        // (already `U32`/`U64`), and pointer-to-integer (where
+        // `static_cast` is ill-formed by the language rules).
+        if constexpr (sizeof(T) == 4u)
+            priv::atomicWait32(reinterpret_cast<const ::sf::base::U32*>(&m_value),
+                               SFML_BASE_BIT_CAST(::sf::base::U32, priv::toAtomicStorage<T>(expected)));
+        else
+            priv::atomicWait64(reinterpret_cast<const ::sf::base::U64*>(&m_value),
+                               SFML_BASE_BIT_CAST(::sf::base::U64, priv::toAtomicStorage<T>(expected)));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Block the calling thread until `predicate(load<MO>())`
+    ///        returns `true`
+    ///
+    /// Convenience loop on top of `wait`. `predicate` is invoked with
+    /// the most recent observed value.
+    ///
+    ////////////////////////////////////////////////////////////
+    template <MemoryOrder MO>
+    [[gnu::always_inline, gnu::flatten]] void waitUntil(auto&& predicate) const noexcept
+        requires(sizeof(T) == 4u || sizeof(T) == 8u)
+    {
+        while (true)
+        {
+            const T val = load<MO>();
+
+            if (predicate(val))
+                return;
+
+            wait<MO>(val);
+        }
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Wake one waiter currently blocked in `wait`/`waitUntil`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] void notifyOne() noexcept
+        requires(sizeof(T) == 4u || sizeof(T) == 8u)
+    {
+        priv::atomicNotifyOne(static_cast<const void*>(&m_value));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Wake all waiters currently blocked in `wait`/`waitUntil`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] void notifyAll() noexcept
+        requires(sizeof(T) == 4u || sizeof(T) == 8u)
+    {
+        priv::atomicNotifyAll(static_cast<const void*>(&m_value));
+    }
+};
+
+
+////////////////////////////////////////////////////////////
+/// \brief Cross-thread memory fence
+///
+/// Prevents the compiler and CPU from reordering memory operations
+/// across this point, with the strength selected by `MO`.
+///
+////////////////////////////////////////////////////////////
+template <MemoryOrder MO>
+[[gnu::always_inline]] inline void atomicThreadFence() noexcept
+{
+    __atomic_thread_fence(static_cast<int>(MO));
+}
+
+
+////////////////////////////////////////////////////////////
+/// \brief Compiler-only fence (does not emit any CPU barrier)
+///
+/// Useful for synchronizing with a signal handler running on the
+/// same thread without paying for an interprocessor barrier.
+///
+////////////////////////////////////////////////////////////
+template <MemoryOrder MO>
+[[gnu::always_inline]] inline void atomicSignalFence() noexcept
+{
+    __atomic_signal_fence(static_cast<int>(MO));
+}
+
+} // namespace sf
+
+
+////////////////////////////////////////////////////////////
+/// \file
+/// \brief Lightweight `std::atomic` substitute built on `__atomic_*` builtins
+///
+/// `Atomic<T>` provides lock-free atomic operations for numerical
+/// types (integers, `bool`, `char`, pointers, and floating-point) on
+/// every target where the GCC/Clang `__atomic_*` builtins are
+/// available (x86, x86-64, ARM, ARM64, Emscripten/wasm, …) without
+/// pulling in the `<atomic>` header or the libatomic runtime library.
+///
+/// Differences vs. `std::atomic`:
+///
+/// - `sizeof(T) <= 8`: 16-byte atomics would pull in libatomic.
+///
+/// - `T` must be reported lock-free by `__atomic_always_lock_free`.
+///
+/// - **Memory order is a template parameter, never defaulted.**
+///   Callers always spell out `load<MemoryOrder::Relaxed>()`, etc.
+///   This produces strictly better codegen and lets us `static_assert`
+///   constraints (e.g. CAS failure order).
+///
+/// - No implicit conversions, no operator overloads -- call `load()`,
+///   `store()`, `fetchAdd()`, etc. explicitly. The value constructor
+///   is `explicit`.
+///
+/// - `Atomic<bool>` exposes load/store/exchange/CAS only (no
+///   `fetchAdd` / `fetchAnd` / etc.), matching `std::atomic<bool>`.
+///
+/// - Floating-point atomics expose only `load`/`store`/`exchange`/CAS,
+///   matching `std::atomic` prior to C++20.
+///
+/// Emscripten note: `wait`/`notifyOne`/`notifyAll` only work in
+/// builds with shared memory and pthreads (`-pthread`,
+/// `-sSHARED_MEMORY`), and rely on `Atomics.wait` which is unavailable
+/// on the browser main thread — so a blocking `wait` issued from the
+/// main thread will busy-spin or deadlock. Use `-sPROXY_TO_PTHREAD`
+/// (or otherwise ensure waits happen on a worker) if you need
+/// blocking semantics on the web.
+///
+////////////////////////////////////////////////////////////

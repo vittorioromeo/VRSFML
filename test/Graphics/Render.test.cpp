@@ -31,9 +31,9 @@
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"
 
-#include <Doctest.hpp>
+#include "SFML/Base/StdThread.hpp"
 
-#include <thread>
+#include <Doctest.hpp>
 
 
 // Mirrors the trick in test/Window/Context.test.cpp: forces visibility of

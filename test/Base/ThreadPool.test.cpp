@@ -1,8 +1,8 @@
 #include "SFML/Base/ThreadPool.hpp"
 
-#include <Doctest.hpp>
+#include "SFML/System/Atomic.hpp"
 
-#include <atomic>
+#include <Doctest.hpp>
 
 
 TEST_CASE("[Base] Base/ThreadPool.hpp")
@@ -37,46 +37,46 @@ TEST_CASE("[Base] Base/ThreadPool.hpp")
         REQUIRE(pool.getWorkerCount() == 32u);
     }
 
-    const auto doJoinTest = [](std::atomic<int>& result, const int nTasks)
+    const auto doJoinTest = [](sf::Atomic<int>& result, const int nTasks)
     {
         sf::base::ThreadPool pool(4u);
 
         for (int i = 0; i < nTasks; ++i)
-            pool.post([&] { result.fetch_add(1, std::memory_order::relaxed); });
+            pool.post([&] { result.fetchAdd<sf::MemoryOrder::Relaxed>(1); });
     };
 
     SECTION("Join 1 task on destruction")
     {
-        std::atomic<int> result = 0;
+        sf::Atomic<int> result{0};
         doJoinTest(result, 1);
-        REQUIRE(result.load(std::memory_order::relaxed) == 1);
+        REQUIRE(result.load<sf::MemoryOrder::Relaxed>() == 1);
     }
 
     SECTION("Join 2 tasks on destruction")
     {
-        std::atomic<int> result = 0;
+        sf::Atomic<int> result{0};
         doJoinTest(result, 2);
-        REQUIRE(result.load(std::memory_order::relaxed) == 2);
+        REQUIRE(result.load<sf::MemoryOrder::Relaxed>() == 2);
     }
 
     SECTION("Join 4 tasks on destruction")
     {
-        std::atomic<int> result = 0;
+        sf::Atomic<int> result{0};
         doJoinTest(result, 4);
-        REQUIRE(result.load(std::memory_order::relaxed) == 4);
+        REQUIRE(result.load<sf::MemoryOrder::Relaxed>() == 4);
     }
 
     SECTION("Join 8 tasks on destruction")
     {
-        std::atomic<int> result = 0;
+        sf::Atomic<int> result{0};
         doJoinTest(result, 8);
-        REQUIRE(result.load(std::memory_order::relaxed) == 8);
+        REQUIRE(result.load<sf::MemoryOrder::Relaxed>() == 8);
     }
 
     SECTION("Join 256 tasks on destruction")
     {
-        std::atomic<int> result = 0;
+        sf::Atomic<int> result{0};
         doJoinTest(result, 256);
-        REQUIRE(result.load(std::memory_order::relaxed) == 256);
+        REQUIRE(result.load<sf::MemoryOrder::Relaxed>() == 256);
     }
 }

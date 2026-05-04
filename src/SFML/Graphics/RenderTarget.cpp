@@ -47,6 +47,7 @@
 #include "SFML/GLUtils/GLVAOGroup.hpp"
 #include "SFML/GLUtils/Glad.hpp"
 
+#include "SFML/System/Atomic.hpp"
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
@@ -68,8 +69,6 @@
     #include "SFML/Base/Abort.hpp"
 #endif
 
-#include <atomic>
-
 
 namespace
 {
@@ -84,7 +83,7 @@ using IdType = unsigned int;
 ////////////////////////////////////////////////////////////
 // Unique identifier, used for identifying RenderTargets when
 // tracking the currently active RenderTarget within a given context
-constinit std::atomic<IdType> nextUniqueId{1ul};
+constinit sf::Atomic<IdType> nextUniqueId{1ul};
 
 
 ////////////////////////////////////////////////////////////
@@ -99,7 +98,7 @@ constexpr sf::base::SizeT maxIdCount{256ul};
 
 ////////////////////////////////////////////////////////////
 // Map to help us detect whether a different RenderTarget has been activated within a single context
-constinit sf::base::Array<std::atomic<IdType>, maxIdCount> contextRenderTargetMap{};
+constinit sf::base::Array<sf::Atomic<IdType>, maxIdCount> contextRenderTargetMap{};
 
 
 ////////////////////////////////////////////////////////////
@@ -108,7 +107,7 @@ constinit sf::base::Array<std::atomic<IdType>, maxIdCount> contextRenderTargetMa
 {
     SFML_BASE_ASSERT(contextId < maxIdCount);
 
-    const auto renderTargetId = contextRenderTargetMap[contextId].load();
+    const auto renderTargetId = contextRenderTargetMap[contextId].load<sf::MemoryOrder::SeqCst>();
     return (renderTargetId != invalidId) && (renderTargetId == id);
 }
 
@@ -240,7 +239,7 @@ struct [[nodiscard]] RenderTarget::Impl
 #endif
 
     ////////////////////////////////////////////////////////////
-    explicit Impl() : id(RenderTargetImpl::nextUniqueId.fetch_add(1u, std::memory_order::relaxed))
+    explicit Impl() : id(RenderTargetImpl::nextUniqueId.fetchAdd<sf::MemoryOrder::Relaxed>(1u))
     {
     }
 
@@ -950,15 +949,15 @@ bool RenderTarget::setActive(const bool active)
         return true;
 
     SFML_BASE_ASSERT(contextId < RenderTargetImpl::maxIdCount);
-    std::atomic<RenderTargetImpl::IdType>& renderTargetId = RenderTargetImpl::contextRenderTargetMap[contextId];
+    sf::Atomic<RenderTargetImpl::IdType>& renderTargetId = RenderTargetImpl::contextRenderTargetMap[contextId];
 
-    [[maybe_unused]] const auto loadedRenderTargetId = renderTargetId.load();
+    [[maybe_unused]] const auto loadedRenderTargetId = renderTargetId.load<sf::MemoryOrder::SeqCst>();
 
     // Deactivation
     if (!active)
     {
         SFML_BASE_ASSERT(loadedRenderTargetId != RenderTargetImpl::invalidId);
-        renderTargetId.store(RenderTargetImpl::invalidId);
+        renderTargetId.store<sf::MemoryOrder::SeqCst>(RenderTargetImpl::invalidId);
 
         m_impl->cache.enable = false;
         return true;
@@ -972,7 +971,7 @@ bool RenderTarget::setActive(const bool active)
     // context the previous draw ran on, or never set at all. Force a
     // full `resetGLStatesImpl` on the next `setupDraw`.
     SFML_BASE_ASSERT(loadedRenderTargetId != m_impl->id);
-    renderTargetId.store(m_impl->id);
+    renderTargetId.store<sf::MemoryOrder::SeqCst>(m_impl->id);
 
     m_impl->cache.glStatesSet = false;
     m_impl->cache.enable      = false;
