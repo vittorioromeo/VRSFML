@@ -22,6 +22,7 @@
 #include "SFML/Window/Mouse.hpp"
 
 #include "SFML/System/Priv/Vec2Base.hpp"
+#include "SFML/System/Rect2.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Remainder.hpp"
@@ -239,7 +240,11 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
 
     gameLoopUpdateMoneyText(deltaTimeMs, yBelowMinimap);
     gameLoopUpdateSpentMoneyEffect(deltaTimeMs);
-    gameLoopUpdateComboText(deltaTimeMs, yBelowMinimap);
+
+    sf::TextData     comboTextData   = gameLoopUpdateComboText(deltaTimeMs, yBelowMinimap);
+    const sf::Rect2f comboTextBounds = pt->comboPurchased
+                                           ? sf::TextUtils::precomputeTextGlobalBounds(fontSuperBakery, comboTextData)
+                                           : sf::Rect2f{};
 
     if (isDevilcatHellsingedActive() && pt->buffCountdownsPerType[asIdx(CatType::Devil)].time > 0.f)
     {
@@ -260,14 +265,15 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
         }
     }
 
-    gameLoopUpdateBuffText();
+    sf::TextData     buffTextData   = gameLoopUpdateBuffText(comboTextBounds);
+    const sf::Rect2f buffTextBounds = sf::TextUtils::precomputeTextGlobalBounds(fontSuperBakery, buffTextData);
 
-    if (!comboState.buffText.getString().isEmpty())
+    if (!buffTextData.string.isEmpty())
     {
         const sf::Vec2f offset{10.f, 10.f};
 
-        auto mins = comboState.buffText.getGlobalTopLeft() + offset;
-        auto maxs = comboState.buffText.getGlobalBottomRight() - offset - sf::Vec2{0.f, 20.f};
+        auto mins = buffTextBounds.position + offset;
+        auto maxs = buffTextBounds.position + buffTextBounds.size - offset - sf::Vec2{0.f, 20.f};
 
         mins = (mins.toVec2i() / 20 * 20).toVec2f();
         maxs = (maxs.toVec2i() / 20 * 20).toVec2f().addX(20.f).addY(5.f);
@@ -288,7 +294,7 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
         if (comboState.comboCountdown.time > 25.f)
             rtGame.draw(
                 sf::RoundedRectangleShapeData{
-                    .position     = {comboState.comboText.getGlobalCenterRight().x + 3.f, yBelowMinimap + 51.f},
+                    .position     = {comboTextBounds.position.x + comboTextBounds.size.x + 3.f, yBelowMinimap + 51.f},
                     .fillColor    = sf::Color{75, 75, 75, 255},
                     .size         = {100.f * comboState.comboCountdown.time / 700.f, 20.f},
                     .cornerRadius = 6.f,
@@ -326,16 +332,16 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
 
     if (!uiState.debugHideUI && pt->comboPurchased)
     {
-        comboState.comboText.setFillColorAlpha(shouldDrawUIAlpha);
-        comboState.comboText.setOutlineColorAlpha(shouldDrawUIAlpha);
-        rtGame.draw(comboState.comboText, {.view = scaledHUDView});
+        comboTextData.fillColor.a    = shouldDrawUIAlpha;
+        comboTextData.outlineColor.a = shouldDrawUIAlpha;
+        rtGame.draw(fontSuperBakery, comboTextData, {.view = scaledHUDView});
     }
 
     if (!uiState.debugHideUI)
     {
-        comboState.buffText.setFillColorAlpha(shouldDrawUIAlpha);
-        comboState.buffText.setOutlineColorAlpha(shouldDrawUIAlpha);
-        rtGame.draw(comboState.buffText, {.view = scaledHUDView});
+        buffTextData.fillColor.a    = shouldDrawUIAlpha;
+        buffTextData.outlineColor.a = shouldDrawUIAlpha;
+        rtGame.draw(fontSuperBakery, buffTextData, {.view = scaledHUDView});
     }
 
     gameLoopDrawImGui(shouldDrawUIAlpha);

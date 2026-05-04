@@ -817,7 +817,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Combo state
-    ComboState comboState{fontSuperBakery, fontMouldyCheese, moneyText.position, colorBlueOutline};
+    ComboState comboState{moneyText.position};
 
     ////////////////////////////////////////////////////////////
     // HUD demo text
@@ -830,9 +830,7 @@ struct Main
                        .outlineThickness = 3.f}};
 
     ////////////////////////////////////////////////////////////
-    // Spatial partitioning (PImpl: full type only needed in `MainApp.cpp`,
-    // `GameUpdate.cpp`, and `MainGameplay.cpp` -- keeps `<atomic>` from
-    // being dragged into every TU including this header)
+    // Spatial partitioning
     sf::base::UniquePtr<SweepAndPrune> sweepAndPrune;
 
     ////////////////////////////////////////////////////////////
@@ -2149,8 +2147,8 @@ struct Main
     void                gameLoopUpdateAndDrawBackground(float deltaTimeMs, const sf::View& gameBackgroundView);
     void                gameLoopUpdateMoneyText(float deltaTimeMs, float yBelowMinimap);
     void                gameLoopUpdateSpentMoneyEffect(float deltaTimeMs);
-    void                gameLoopUpdateComboText(float deltaTimeMs, float yBelowMinimap);
-    void                gameLoopUpdateBuffText();
+    sf::TextData        gameLoopUpdateComboText(float deltaTimeMs, float yBelowMinimap);
+    sf::TextData        gameLoopUpdateBuffText(const sf::Rect2f& comboBounds);
     void                gameLoopPrestigeAvailableReminder();
     void                gameLoopReminderBuyCombo();
     void                gameLoopReminderSpendPPs();

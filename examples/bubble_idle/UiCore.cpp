@@ -46,8 +46,6 @@
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#include <imgui.h>
-
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>

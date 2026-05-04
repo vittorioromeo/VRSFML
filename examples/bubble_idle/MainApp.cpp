@@ -36,8 +36,6 @@
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#include <imgui.h>
-
 ////////////////////////////////////////////////////////////
 bool debugMode = false;
 

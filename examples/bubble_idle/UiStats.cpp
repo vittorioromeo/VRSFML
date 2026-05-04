@@ -21,8 +21,6 @@
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
 
-#include <imgui.h>
-
 void Main::uiTabBarStats()
 {
     constexpr TabButtonPalette palette{

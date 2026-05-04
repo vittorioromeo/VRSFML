@@ -5,8 +5,6 @@
 #include "ExampleUtils/Progress.hpp"
 
 #include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/Text.hpp"
 
 #include "SFML/System/Priv/Vec2Base.hpp"
 
@@ -30,40 +28,14 @@ struct ComboState
     Countdown accComboStarDelay;      // Combo reward star spawns rate
     int       iComboAccStarReward{0}; // Index of spawned star in combo reward (used for pitch)
 
-    sf::Text        comboText;
+    sf::Vec2f       baseTextPosition; // Anchor for combo/buff HUD text (mirrors money text origin)
     TextShakeEffect comboTextShakeEffect;
-    sf::Text        buffText;
-    sf::Text        cursorComboText;
 
-    ComboState(const sf::Font&  hudFont,
-               const sf::Font&  cursorFont,
-               const sf::Vec2f  moneyTextPosition,
-               const sf::Color& outlineColor) :
-        comboText{hudFont,
-                  {
-                      .position         = moneyTextPosition.addY(35.f),
-                      .string           = "x1",
-                      .characterSize    = 48u,
-                      .fillColor        = sf::Color::White,
-                      .outlineColor     = outlineColor,
-                      .outlineThickness = 3.f,
-                  }},
-        buffText{hudFont,
-                 {
-                     .position         = moneyTextPosition.addY(70.f),
-                     .string           = "",
-                     .characterSize    = 48u,
-                     .fillColor        = sf::Color::White,
-                     .outlineColor     = outlineColor,
-                     .outlineThickness = 3.f,
-                 }},
-        cursorComboText{cursorFont,
-                        {
-                            .origin           = {0.f, 0.f},
-                            .string           = "",
-                            .characterSize    = 48u,
-                            .outlineThickness = 4.f,
-                        }}
+    int       cursorComboLastShown{0};   // Last value rendered by cursor combo text (preserved while it fades out)
+    float     cursorComboAlpha{0.f};     // Alpha used by cursor combo text/bar across the same frame
+    sf::Color cursorComboOutlineColor{}; // Outline color computed by cursor combo text, reused by the bar
+
+    explicit ComboState(const sf::Vec2f moneyTextPosition) : baseTextPosition{moneyTextPosition}
     {
     }
 };
