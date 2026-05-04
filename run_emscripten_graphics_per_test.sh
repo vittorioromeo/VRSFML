@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Run each Graphics test case in its own browser tab so that cumulative
-# SDL/Emscripten state never builds up across cases. Mirrors run_emscripten_test.sh
+# SDL/Emscripten state never builds up across cases. Mirrors run_test.sh
 # but loops over individual `-tc=` filters.
 #
 # Usage:
