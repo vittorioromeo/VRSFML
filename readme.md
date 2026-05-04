@@ -62,10 +62,10 @@
     ninja
     ```
 
-11. If the build succeeded, you should now be able to run examples directly from the build directory using the `run_emscripten_example.sh` script:
+11. If the build succeeded, you should now be able to run examples directly from the build directory using the `run_example.sh` script (it auto-detects Emscripten build directories by name and uses `emrun`):
 
     ```bash
-    ../run_emscripten_example.sh island
+    ../run_example.sh island
     ```
 
 
