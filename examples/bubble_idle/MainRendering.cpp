@@ -2193,44 +2193,51 @@ void Main::gameLoopDrawCursorComboText(const float deltaTimeMs, const float curs
     if (!pt->comboPurchased || !profile.showCursorComboText || shouldDrawGrabbingCursor())
         return;
 
-    static float alpha = 0.f;
-
     const float scaleMult = profile.cursorScale * dpiScalingFactor;
 
     if (comboState.combo >= 1)
-        alpha = 255.f;
-    else if (alpha > 0.f)
-        alpha -= deltaTimeMs * 0.5f;
+        comboState.cursorComboAlpha = 255.f;
+    else if (comboState.cursorComboAlpha > 0.f)
+        comboState.cursorComboAlpha -= deltaTimeMs * 0.5f;
 
-    const auto alphaU8 = static_cast<U8>(sf::base::clamp(alpha, 0.f, 255.f));
-
-    comboState.cursorComboText.position = sf::Mouse::getPosition(window).toVec2f() + sf::Vec2f{30.f, 48.f} * scaleMult;
-
-    comboState.cursorComboText.setFillColor(sf::Color::blackWithAlpha(alphaU8));
-    comboState.cursorComboText.setOutlineColor(
-        sf::Color{111u, 170u, 244u, alphaU8}.withRotatedHue(profile.cursorHue + currentBackgroundHue.asDegrees()));
+    const auto alphaU8 = static_cast<U8>(sf::base::clamp(comboState.cursorComboAlpha, 0.f, 255.f));
 
     if (comboState.combo > 0)
-        comboState.cursorComboText.setString("x" + sf::base::toString(comboState.combo + 1));
+        comboState.cursorComboLastShown = comboState.combo + 1;
 
-    comboState.comboTextShakeEffect.applyToText(comboState.cursorComboText);
+    comboState.cursorComboOutlineColor = sf::Color{111u, 170u, 244u, alphaU8}.withRotatedHue(
+        profile.cursorHue + currentBackgroundHue.asDegrees());
 
-    comboState.cursorComboText.scale *= (static_cast<float>(comboState.combo) * 0.65f) * cursorGrow * 0.3f;
-    comboState.cursorComboText.scale += {0.85f, 0.85f};
-    comboState.cursorComboText.scale += sf::Vec2f{1.f, 1.f} * comboState.comboFailCountdown.time / 325.f;
-    comboState.cursorComboText.scale *= scaleMult;
+    sf::TextData td{
+        .position         = sf::Mouse::getPosition(window).toVec2f() + sf::Vec2f{30.f, 48.f} * scaleMult,
+        .origin           = {0.f, 0.f},
+        .string           = comboState.cursorComboLastShown > 0
+                                ? sf::base::String{"x" + sf::base::toString(comboState.cursorComboLastShown)}
+                                : sf::base::String{""},
+        .characterSize    = 48u,
+        .fillColor        = sf::Color::blackWithAlpha(alphaU8),
+        .outlineColor     = comboState.cursorComboOutlineColor,
+        .outlineThickness = 4.f,
+    };
+
+    comboState.comboTextShakeEffect.applyToText(td);
+
+    td.scale *= (static_cast<float>(comboState.combo) * 0.65f) * cursorGrow * 0.3f;
+    td.scale += {0.85f, 0.85f};
+    td.scale += sf::Vec2f{1.f, 1.f} * comboState.comboFailCountdown.time / 325.f;
+    td.scale *= scaleMult;
 
     const auto minScale = sf::Vec2f{0.25f, 0.25f} + sf::Vec2f{0.25f, 0.25f} * comboState.comboFailCountdown.time / 125.f;
 
-    comboState.cursorComboText.scale = comboState.cursorComboText.scale.componentWiseClamp(minScale, {1.5f, 1.5f});
+    td.scale = td.scale.componentWiseClamp(minScale, {1.5f, 1.5f});
 
     if (comboState.comboFailCountdown.time > 0.f)
     {
-        comboState.cursorComboText.position += rngFast.getVec2f({-5.f, -5.f}, {5.f, 5.f});
-        comboState.cursorComboText.setFillColor(sf::Color::Red.withAlpha(alphaU8));
+        td.position += rngFast.getVec2f({-5.f, -5.f}, {5.f, 5.f});
+        td.fillColor = sf::Color::Red.withAlpha(alphaU8);
     }
 
-    rtGame.draw(comboState.cursorComboText, {.view = nonScaledHUDView, .shader = &shader});
+    rtGame.draw(fontMouldyCheese, td, {.view = nonScaledHUDView, .shader = &shader});
 }
 
 
@@ -2250,7 +2257,7 @@ void Main::gameLoopDrawCursorComboBar()
             .position           = cursorComboBarPosition,
             .outlineTextureRect = txrWhiteDot,
             .fillColor          = sf::Color::blackWithAlpha(80u),
-            .outlineColor       = comboState.cursorComboText.getOutlineColor(),
+            .outlineColor       = comboState.cursorComboOutlineColor,
             .outlineThickness   = 1.f,
             .size = {64.f * scaleMult * pt->psvComboStartTime.currentValue() * 1000.f / 700.f, 24.f * scaleMult},
         },
@@ -2261,7 +2268,7 @@ void Main::gameLoopDrawCursorComboBar()
             .position           = cursorComboBarPosition,
             .outlineTextureRect = txrWhiteDot,
             .fillColor          = sf::Color::blackWithAlpha(164u),
-            .outlineColor       = comboState.cursorComboText.getOutlineColor(),
+            .outlineColor       = comboState.cursorComboOutlineColor,
             .outlineThickness   = 1.f,
             .size               = {64.f * scaleMult * comboState.comboCountdown.time / 700.f, 24.f * scaleMult},
         },

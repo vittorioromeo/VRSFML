@@ -3,6 +3,7 @@
 #include "Aliases.hpp"
 #include "Bubble.hpp"
 #include "BubbleIdleMain.hpp"
+#include "BubbleType.hpp"
 #include "Cat.hpp"
 #include "CatType.hpp"
 #include "Collision.hpp"
@@ -24,12 +25,14 @@
 #include "ExampleUtils/Progress.hpp"
 
 #include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/TextData.hpp"
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/View.hpp"
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"
+#include "SFML/System/Rect2.hpp"
 
 #include "SFML/Base/Algorithm/AnyOf.hpp"
 #include "SFML/Base/Algorithm/Count.hpp"
@@ -650,24 +653,31 @@ void Main::gameLoopUpdateSpentMoneyEffect(const float deltaTimeMs)
 
 
 ////////////////////////////////////////////////////////////
-void Main::gameLoopUpdateComboText(const float deltaTimeMs, const float yBelowMinimap)
+sf::TextData Main::gameLoopUpdateComboText(const float deltaTimeMs, const float yBelowMinimap)
 {
     if (!pt->comboPurchased)
-        return;
-
-    comboState.comboText.setString("x" + sf::base::toString(comboState.combo + 1));
-    comboState.comboText.setOutlineColor(outlineHueColor);
+        return {};
 
     comboState.comboTextShakeEffect.update(deltaTimeMs);
-    comboState.comboTextShakeEffect.applyToText(comboState.comboText);
-    comboState.comboText.scale *= 0.5f;
 
-    comboState.comboText.position.y = yBelowMinimap + 45.f;
+    sf::TextData td{
+        .position         = {comboState.baseTextPosition.x, yBelowMinimap + 45.f},
+        .string           = "x" + sf::base::toString(comboState.combo + 1),
+        .characterSize    = 48u,
+        .fillColor        = sf::Color::White,
+        .outlineColor     = outlineHueColor,
+        .outlineThickness = 3.f,
+    };
+
+    comboState.comboTextShakeEffect.applyToText(td);
+    td.scale *= 0.5f;
+
+    return td;
 }
 
 
 ////////////////////////////////////////////////////////////
-void Main::gameLoopUpdateBuffText()
+sf::TextData Main::gameLoopUpdateBuffText(const sf::Rect2f& comboBounds)
 {
     const char* devilBuffName = (isDevilcatHellsingedActive()) ? "Portal Storm (Scales With Bomb Spawn Chance)"
                                                                : "Explosive Downpour (Bomb Spawn Chance)";
@@ -750,11 +760,15 @@ void Main::gameLoopUpdateBuffText()
                           static_cast<double>(buffTime / 1000.f)));
     }
 
-    comboState.buffText.setString(buffStrBuffer);
-    comboState.buffText.setOutlineColor(outlineHueColor);
-
-    comboState.buffText.position.y = comboState.comboText.getGlobalBottomLeft().y + 10.f;
-    comboState.buffText.scale      = {0.5f, 0.5f};
+    return {
+        .position         = {comboState.baseTextPosition.x, comboBounds.position.y + comboBounds.size.y + 10.f},
+        .scale            = {0.5f, 0.5f},
+        .string           = buffStrBuffer,
+        .characterSize    = 48u,
+        .fillColor        = sf::Color::White,
+        .outlineColor     = outlineHueColor,
+        .outlineThickness = 3.f,
+    };
 }
 
 

@@ -1,31 +1,13 @@
 #pragma once
 
+#include "SFML/System/Atomic.hpp"
+
 #include "SFML/Base/Algorithm/Sort.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/InterferenceSize.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include <atomic>
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-[[gnu::always_inline, gnu::flatten]] inline void atomicWaitUntil(std::atomic<T>&   a,
-                                                                 auto&&            predicate,
-                                                                 std::memory_order order = std::memory_order_acquire)
-{
-    while (true)
-    {
-        const T val = a.load(order);
-
-        if (predicate(val))
-            return;
-
-        a.wait(val, order);
-    }
-}
 
 
 ////////////////////////////////////////////////////////////
@@ -82,14 +64,14 @@ public:
         // Dynamic scheduling: each thread grabs the next row via atomic counter.
         // This naturally balances load since early rows (low i) have much more work
         // than late rows (high i) due to longer inner loops and less effective early-exit.
-        alignas(sf::base::hardwareDestructiveInterferenceSize) std::atomic<sf::base::SizeT> nextI{0};
-        alignas(sf::base::hardwareDestructiveInterferenceSize) std::atomic<sf::base::SizeT> nRemaining{nWorkers};
+        alignas(sf::base::hardwareDestructiveInterferenceSize) sf::Atomic<sf::base::SizeT> nextI{0};
+        alignas(sf::base::hardwareDestructiveInterferenceSize) sf::Atomic<sf::base::SizeT> nRemaining{nWorkers};
 
         auto worker = [&]
         {
             while (true)
             {
-                const auto i = nextI.fetch_add(1, std::memory_order_relaxed);
+                const auto i = nextI.fetchAdd<sf::MemoryOrder::Relaxed>(1);
 
                 if (i >= numObjects)
                     break;
@@ -98,8 +80,8 @@ public:
             }
 
             // Only notify when the last worker finishes (like std::latch).
-            if (nRemaining.fetch_sub(1, std::memory_order_release) == 1)
-                nRemaining.notify_one();
+            if (nRemaining.fetchSub<sf::MemoryOrder::Release>(1) == 1)
+                nRemaining.notifyOne();
         };
 
         // Launch asynchronous workers.
@@ -110,7 +92,7 @@ public:
         worker();
 
         // Wait until all workers finish.
-        atomicWaitUntil(nRemaining, [](sf::base::SizeT val) { return val == 0; });
+        nRemaining.waitUntil<sf::MemoryOrder::Acquire>([](sf::base::SizeT val) { return val == 0; });
     }
 
     ////////////////////////////////////////////////////////////
