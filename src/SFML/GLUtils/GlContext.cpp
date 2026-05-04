@@ -10,14 +10,16 @@
 #include "SFML/Config.hpp" // IWYU pragma: keep
 
 #include "SFML/Window/ContextSettings.hpp"
+#include "SFML/Window/SDLGlContext.hpp"
 #include "SFML/Window/WindowContext.hpp"
 
 #include "SFML/GLUtils/GLCheck.hpp"
-#include "SFML/GLUtils/GlContextTypeImpl.hpp"
 #include "SFML/GLUtils/GlFuncTypesImpl.hpp"
+#include "SFML/GLUtils/Glad.hpp"
 
 #include "SFML/System/Err.hpp"
 
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/Strstr.hpp"
 
 
@@ -55,7 +57,7 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
 {
     SFML_BASE_ASSERT(WindowContext::getActiveThreadLocalGlContextPtr() == this);
 
-    const auto& derivedSharedGlContext = static_cast<const DerivedGlContextType&>(sharedGlContext);
+    const auto& derivedSharedGlContext = static_cast<const SDLGlContext&>(sharedGlContext);
 
     // Try the new way first
     auto glGetIntegervFunc = reinterpret_cast<glGetIntegervFuncType>(

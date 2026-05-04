@@ -9,6 +9,7 @@
 
 #include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/JoystickManager.hpp"
+#include "SFML/Window/SDLGlContext.hpp"
 #include "SFML/Window/SDLLayer.hpp"
 #include "SFML/Window/SensorManager.hpp"
 
@@ -19,7 +20,6 @@
 #include "SFML/GLUtils/GLDebugCallback.hpp"
 #include "SFML/GLUtils/GLUtils.hpp"
 #include "SFML/GLUtils/GlContext.hpp"
-#include "SFML/GLUtils/GlContextTypeImpl.hpp"
 #include "SFML/GLUtils/GlFuncTypesImpl.hpp"
 #include "SFML/GLUtils/Glad.hpp"
 #include "SFML/GLUtils/TextureSaver.hpp"
@@ -51,7 +51,7 @@ namespace
 /// \brief Load our extensions vector with the supported extensions
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::base::Vector<sf::base::StringView> loadExtensions(priv::DerivedGlContextType& glContext)
+[[nodiscard]] sf::base::Vector<sf::base::StringView> loadExtensions(priv::SDLGlContext& glContext)
 {
     sf::base::Vector<sf::base::StringView> result; // Use a single local variable for NRVO
 
@@ -544,7 +544,7 @@ struct WindowContextImpl
     UnsharedContextResourcesManager unsharedContextResourcesManager;
 
     ////////////////////////////////////////////////////////////
-    priv::DerivedGlContextType sharedGlContext; //!< The hidden, inactive context that will be shared with all other contexts
+    priv::SDLGlContext   sharedGlContext; //!< The hidden, inactive context that will be shared with all other contexts
     std::recursive_mutex sharedGlContextMutex;
 
     ////////////////////////////////////////////////////////////
@@ -962,10 +962,10 @@ base::UniquePtr<priv::GlContext> WindowContext::createGlContextImpl(const Contex
     if (!setActiveThreadLocalGlContextToSharedContext())
         priv::err() << "Error enabling shared GL context in WindowContext::createGlContext()";
 
-    auto glContext = base::makeUnique<priv::DerivedGlContextType>(wc.nextThreadLocalGlContextId.fetch_add(1u),
-                                                                  &wc.sharedGlContext,
-                                                                  contextSettings,
-                                                                  SFML_BASE_FORWARD(args)...);
+    auto glContext = base::makeUnique<priv::SDLGlContext>(wc.nextThreadLocalGlContextId.fetch_add(1u),
+                                                          &wc.sharedGlContext,
+                                                          contextSettings,
+                                                          SFML_BASE_FORWARD(args)...);
 
     if (!setActiveThreadLocalGlContext(*glContext, true))
     {

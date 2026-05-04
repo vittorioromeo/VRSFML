@@ -9,8 +9,6 @@ if(SFML_OS_WINDOWS)
         list(APPEND PLATFORM_SRC
             ${SRCROOT}/EGL/EGLCheck.cpp
             ${SRCROOT}/EGL/EGLCheck.hpp
-            ${SRCROOT}/EGL/EGLContext.cpp
-            ${SRCROOT}/EGL/EGLContext.hpp
             ${SRCROOT}/EGL/EGLGlad.cpp
             ${SRCROOT}/EGL/EGLGlad.hpp
         )
@@ -27,23 +25,15 @@ elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
             list(APPEND PLATFORM_SRC
                 ${SRCROOT}/EGL/EGLCheck.cpp
                 ${SRCROOT}/EGL/EGLCheck.hpp
-                ${SRCROOT}/EGL/EGLContext.cpp
-                ${SRCROOT}/EGL/EGLContext.hpp
                 ${SRCROOT}/EGL/EGLGlad.cpp
                 ${SRCROOT}/EGL/EGLGlad.hpp
             )
         endif()
     endif()
+    endif()
 elseif(SFML_OS_IOS)
     enable_language(OBJCXX)
 elseif(SFML_OS_ANDROID)
-    set(PLATFORM_SRC
-        ${SRCROOT}/EGL/EGLCheck.cpp
-        ${SRCROOT}/EGL/EGLCheck.hpp
-        ${SRCROOT}/EGL/EGLContext.cpp
-        ${SRCROOT}/EGL/EGLContext.hpp
-    )
-elseif(SFML_OS_EMSCRIPTEN)
     set(PLATFORM_SRC
         ${SRCROOT}/EGL/EGLCheck.cpp
         ${SRCROOT}/EGL/EGLCheck.hpp

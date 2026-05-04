@@ -15,6 +15,7 @@
 #include "SFML/Window/JoystickManager.hpp"
 #include "SFML/Window/JoystickState.hpp"
 #include "SFML/Window/Mouse.hpp"
+#include "SFML/Window/SDLGlContext.hpp"
 #include "SFML/Window/SDLLayer.hpp"
 #include "SFML/Window/Sensor.hpp"
 #include "SFML/Window/SensorManager.hpp"
@@ -610,7 +611,7 @@ base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(const WindowHandle handle)
 #if defined(SFML_SYSTEM_WINDOWS)
     // Copy the pixel format from the shared GL context's hidden window instead of calling
     // WIN_GL_SetupWindow, which fails for externally-created HWNDs (SetPixelFormat restrictions).
-    const auto& sharedCtx = static_cast<const priv::DerivedGlContextType&>(WindowContext::getSharedGlContext());
+    const auto& sharedCtx = static_cast<const priv::SDLGlContext&>(WindowContext::getSharedGlContext());
     if (SDL_Window* const sharedSDLWindow = sharedCtx.getSDLWindow())
     {
         if (auto* const sharedHWND = SDL_GetPointerProperty(SDL_GetWindowProperties(sharedSDLWindow),
