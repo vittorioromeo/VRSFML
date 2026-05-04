@@ -302,6 +302,7 @@ TEST_CASE("[Graphics] sf::Shader" * doctest::skip(skipShaderFullTest))
         }
     }
 
+#ifndef SFML_SYSTEM_EMSCRIPTEN // see https://github.com/emscripten-core/emscripten/issues/26844
     SECTION("setUniformArray() readback")
     {
         // Fragment shader with uniform arrays at known layout locations.
@@ -436,4 +437,5 @@ void main()
                 CHECK(readback1[j] == raw1[j]);
         }
     }
+#endif
 }
