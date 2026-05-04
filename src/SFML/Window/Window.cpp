@@ -29,12 +29,36 @@
 
 #ifdef SFML_SYSTEM_EMSCRIPTEN
     #include <emscripten.h>
+    #include <emscripten/em_asm.h>
     #include <emscripten/html5.h>
 #endif
 
 
 namespace sf
 {
+#ifdef SFML_SYSTEM_EMSCRIPTEN
+namespace
+{
+////////////////////////////////////////////////////////////
+// Yield the wasm thread until the next browser `requestAnimationFrame` tick.
+// Used as a vsync-aligned alternative to `emscripten_sleep(0)` (which yields
+// via `setTimeout`, with no display-refresh alignment and a ~4ms minimum
+// delay -- causing the app to render far more frames than the display shows).
+//
+// `EM_ASYNC_JS` integrates with asyncify: the wasm side suspends until the
+// returned JS promise resolves, which happens inside the browser's RAF
+// callback -- i.e. on a display-refresh boundary.
+////////////////////////////////////////////////////////////
+// clang-format off
+EM_ASYNC_JS(void, sfml_yield_to_raf, (), {
+    await new Promise(resolve => requestAnimationFrame(resolve));
+});
+// clang-format on
+
+} // namespace
+#endif
+
+
 ////////////////////////////////////////////////////////////
 struct Window::Window::Impl
 {
@@ -192,7 +216,15 @@ void Window::display()
     }
 
 #ifdef SFML_SYSTEM_EMSCRIPTEN
-    emscripten_sleep(0u);
+    // The browser drives frame timing, not the GL driver. Pick the yield
+    // primitive based on whether the user requested vsync:
+    //   - vsync enabled  -> `requestAnimationFrame` (display-refresh-aligned)
+    //   - vsync disabled -> `setTimeout(0)` (run as fast as the JS task queue
+    //     allows -- ~4ms minimum, so still capped, but not display-aligned)
+    if (m_impl->glContext->isVerticalSyncEnabled())
+        sfml_yield_to_raf();
+    else
+        emscripten_sleep(0u);
 #endif
 }
 
