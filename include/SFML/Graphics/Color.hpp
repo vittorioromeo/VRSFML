@@ -51,6 +51,36 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Construct the color from four floating-point components
+    ///
+    /// The RGBA floating point must be in the range `[0, 1]`, the behavior
+    /// is undefined otherwise.
+    ///
+    /// \param r Red component of the color
+    /// \param g Green component of the color
+    /// \param b Blue component of the color
+    /// \param a Alpha component of the color (default is 1, for fully opaque
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr Color fromFloats(
+        const float r,
+        const float g,
+        const float b,
+        const float a = 1.f)
+    {
+        SFML_BASE_ASSERT_AND_ASSUME(r >= 0.f && r <= 1.f);
+        SFML_BASE_ASSERT_AND_ASSUME(g >= 0.f && g <= 1.f);
+        SFML_BASE_ASSERT_AND_ASSUME(b >= 0.f && b <= 1.f);
+        SFML_BASE_ASSERT_AND_ASSUME(a >= 0.f && a <= 1.f);
+
+        return {static_cast<base::U8>(r * 255.f + 0.5f),  // NOLINT(bugprone-incorrect-roundings)
+                static_cast<base::U8>(g * 255.f + 0.5f),  // NOLINT(bugprone-incorrect-roundings)
+                static_cast<base::U8>(b * 255.f + 0.5f),  // NOLINT(bugprone-incorrect-roundings)
+                static_cast<base::U8>(a * 255.f + 0.5f)}; // NOLINT(bugprone-incorrect-roundings)
+    }
+
+
+    ////////////////////////////////////////////////////////////
     /// \brief Construct the color from 32-bit unsigned integer
     ///
     /// The RGBA components are packed in the integer, with R in the
@@ -102,9 +132,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
 
         if (saturation == 0.f)
         {
-            // NOLINTBEGIN(bugprone-incorrect-roundings)
-            const auto gray = static_cast<base::U8>(lightness * 255.f + 0.5f);
-            // NOLINTEND(bugprone-incorrect-roundings)
+            const auto gray = static_cast<base::U8>(lightness * 255.f + 0.5f); // NOLINT(bugprone-incorrect-roundings)
             return {gray, gray, gray, alpha};
         }
 
