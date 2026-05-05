@@ -37,7 +37,7 @@ else()
     CPMAddPackage(
         NAME sdl
         GITHUB_REPOSITORY vittorioromeo/SDL
-        GIT_TAG 401ed0a1864e0bb8833ce82a9989ce8624264701
+        GIT_TAG e205361fb67ff53868dbc333eb2c491e11ff1a51
         SYSTEM TRUE
     )
 endif()
