@@ -287,7 +287,7 @@ constexpr unsigned int nullJoystickId = Joystick::MaxCount;
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] ImGuiContext::Impl
 {
-    ::ImGuiContext* imContext{::ImGui::CreateContext()};
+    ::ImGuiContext* imContext;
 
     bool windowHasFocus{false};
 
@@ -311,13 +311,27 @@ struct [[nodiscard]] ImGuiContext::Impl
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit Impl(const bool               loadDefaultFont,
+                                ImFontAtlas* const       sharedFontAtlas,
                                 const SetClipboardTextFn setClipboardTextFn,
                                 const GetClipboardTextFn getClipboardTextFn) :
+        imContext{::ImGui::CreateContext(sharedFontAtlas)},
         joystickId{getConnectedJoystickId()}
     {
         ImGuiIO& io = ::ImGui::GetIO();
 
-        if (loadDefaultFont && !io.Fonts->AddFontDefault())
+        // When a shared atlas is passed, `ImGui::CreateContext` does NOT set `OwnerContext`
+        // -- it leaves that to the caller. Per-frame atlas updates (`ImFontAtlasUpdateNewFrame`)
+        // are only run for the OwnerContext; non-owning contexts assert the atlas was already
+        // updated this frame. Claim ownership from the first sf::ImGuiContext that adopts the
+        // atlas, so users don't have to think about it. The owner context's `update()` must
+        // be called before any non-owner's in each frame, and the owner must outlive all
+        // non-owners (the natural order for FIFO-constructed / LIFO-destroyed containers).
+        if (sharedFontAtlas != nullptr && sharedFontAtlas->OwnerContext == nullptr)
+            sharedFontAtlas->OwnerContext = imContext;
+
+        // When sharing an atlas, only the first context to populate it should add the
+        // default font; subsequent contexts see fonts already there and skip.
+        if (loadDefaultFont && io.Fonts->Fonts.Size == 0 && !io.Fonts->AddFontDefault())
         {
             priv::err() << "Failed to load default ImGui font";
             base::abort();
@@ -905,8 +919,8 @@ const char* getClipboardTextFn(void* /* userData */)
 
 
 ////////////////////////////////////////////////////////////
-ImGuiContext::ImGuiContext(const bool loadDefaultFont) :
-    m_impl{base::makeUnique<Impl>(loadDefaultFont, &setClipboardTextFn, &getClipboardTextFn)}
+ImGuiContext::ImGuiContext(const bool loadDefaultFont, ImFontAtlas* const sharedFontAtlas) :
+    m_impl{base::makeUnique<Impl>(loadDefaultFont, sharedFontAtlas, &setClipboardTextFn, &getClipboardTextFn)}
 {
     initDefaultJoystickMapping();
 }
