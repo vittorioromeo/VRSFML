@@ -22,6 +22,8 @@
 ////////////////////////////////////////////////////////////
 // Forward declarations
 ////////////////////////////////////////////////////////////
+struct ImFontAtlas;
+
 namespace sf
 {
 class Event;
@@ -61,10 +63,24 @@ public:
     ///
     /// \param loadDefaultFont If `true`, load the default Dear ImGui font.
     ///                        Set to `false` if you intend to load your
-    ///                        own fonts via `ImGui::GetIO().Fonts`.
+    ///                        own fonts via `ImGui::GetIO().Fonts`. When
+    ///                        `sharedFontAtlas` already has fonts in it,
+    ///                        the default font is not added again.
+    ///
+    /// \param sharedFontAtlas Optional pre-existing font atlas to share with
+    ///                        other `ImGuiContext` instances. When non-null,
+    ///                        the underlying `ImGui::CreateContext` call
+    ///                        adopts the atlas instead of allocating its
+    ///                        own. The atlas must outlive every context
+    ///                        that references it. The first context to
+    ///                        upload glyph data to the GPU owns the GL
+    ///                        font texture; later contexts adopt it
+    ///                        (saving ~1 MB per extra context). Passing
+    ///                        `nullptr` (default) keeps the per-context
+    ///                        atlas behavior.
     ///
     ////////////////////////////////////////////////////////////
-    explicit ImGuiContext(bool loadDefaultFont = true);
+    explicit ImGuiContext(bool loadDefaultFont = true, ImFontAtlas* sharedFontAtlas = nullptr);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
