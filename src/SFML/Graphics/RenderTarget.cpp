@@ -310,7 +310,6 @@ RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
 
     syncGPUStartFrame();
 
-    ++m_frameCounter;
     m_currentDrawStats = {};
 
     // Unbind texture to fix RenderTexture preventing clear
@@ -331,6 +330,12 @@ RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
 ////////////////////////////////////////////////////////////
 void RenderTarget::clear(const Color color)
 {
+    // Drain any pending auto-batch first. Otherwise queued CPU-side draws would survive
+    // the `glClear` (the batch is just RAM until flushed) and be painted onto the cleared
+    // framebuffer at the next flush -- surprising the user who expected `clear` to wipe
+    // everything before it.
+    flush();
+
     if (!prepare())
         return;
 
@@ -342,6 +347,8 @@ void RenderTarget::clear(const Color color)
 ////////////////////////////////////////////////////////////
 void RenderTarget::clearStencil(const StencilValue stencilValue)
 {
+    flush(); // see comment in `clear(Color)`
+
     if (!prepare())
         return;
 
@@ -353,6 +360,8 @@ void RenderTarget::clearStencil(const StencilValue stencilValue)
 ////////////////////////////////////////////////////////////
 void RenderTarget::clear(const Color color, const StencilValue stencilValue)
 {
+    flush(); // see comment in `clear(Color)`
+
     if (!prepare())
         return;
 
@@ -1065,13 +1074,21 @@ bool RenderTarget::isScissorEnabledCached() const
 ////////////////////////////////////////////////////////////
 RenderTarget::DrawStatistics RenderTarget::flush()
 {
-    // Warn if a shader's uniforms were mutated while a batch using that shader was pending.
-    // The GL uniform change is immediate, so the pending batch will be drawn with the wrong values.
-    // The user should call flush() *before* setUniform(), not after.
-    if (m_numAutoBatchVertices > 0u && hasGenerationMismatch(m_lastRenderStates)) [[unlikely]]
+    if (m_numAutoBatchVertices > 0u)
     {
-        priv::err() << "Shader uniform mutation detected while autobatch was in flight -- "
-                       "call `flush()` before changing uniforms on a shader that is part of a pending draw";
+        if (m_lastRenderStates.shader != nullptr &&
+            m_lastRenderStates.shader->m_uniformGeneration != m_lastShaderGeneration) [[unlikely]]
+        {
+            priv::err() << "Shader uniform mutation detected while autobatch was in flight -- "
+                           "call `flush()` before mutating uniforms on a pending-draw shader";
+        }
+
+        if (m_lastRenderStates.texture != nullptr &&
+            m_lastRenderStates.texture->m_destructiveGeneration != m_lastTextureGeneration) [[unlikely]]
+        {
+            priv::err() << "Destructive texture mutation detected while autobatch was in flight -- "
+                           "call `flush()` before destructively modifying a pending-draw texture";
+        }
     }
 
     SFML_BASE_SCOPE_GUARD({

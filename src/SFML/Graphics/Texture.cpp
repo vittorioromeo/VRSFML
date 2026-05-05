@@ -382,6 +382,10 @@ void Texture::update(const base::U8* pixels)
 {
     // Update the whole texture
     update(pixels, m_size, {0, 0});
+
+    // Full-texture overwrite: every UV samples new content. (Sub-rect overloads are
+    // intentionally NOT bumped -- they support additive use cases like font atlases.)
+    ++m_destructiveGeneration;
 }
 
 
@@ -419,6 +423,8 @@ void Texture::update(const base::U8* pixels, Vec2u size, Vec2u dest)
     // Force an OpenGL flush, so that the texture data will appear updated
     // in all contexts immediately (solves problems in multi-threaded apps)
     glCheck(glFlush());
+
+    // Intentionally not bumping `m_destructiveGeneration` here.
 }
 
 
@@ -593,6 +599,7 @@ void Texture::setSmooth(bool smooth)
         return;
 
     m_isSmooth = smooth;
+    ++m_destructiveGeneration; // sampler state change visible to any in-flight batched draw
 
     SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
@@ -638,6 +645,7 @@ void Texture::setWrapMode(TextureWrapMode wrapMode)
         return;
 
     m_wrapMode = wrapMode;
+    ++m_destructiveGeneration; // sampler state change visible to any in-flight batched draw
 
     SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
@@ -746,6 +754,10 @@ void Texture::swap(Texture& rhs) noexcept
     base::genericSwap(m_fboAttachment, rhs.m_fboAttachment);
     base::genericSwap(m_hasMipmap, rhs.m_hasMipmap);
     base::genericSwap(m_cacheId, rhs.m_cacheId);
+
+    // Both textures' content/state was just replaced wholesale; bump on each.
+    ++m_destructiveGeneration;
+    ++rhs.m_destructiveGeneration;
 }
 
 

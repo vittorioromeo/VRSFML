@@ -570,6 +570,11 @@ RenderTarget::DrawStatistics RenderTexture::display()
     m_impl->updateTexture(isScissorEnabledCached());
     m_impl->texture.invalidateMipmap();
 
+    // Pixel content visible to samplers has just been replaced. Bumping this lets the auto-batch
+    // detect "user re-rendered into a texture I have outstanding draw refs to" and flush early
+    // (or assert under `withLockedRenderStates`).
+    ++m_impl->texture.m_destructiveGeneration;
+
     return result;
 }
 

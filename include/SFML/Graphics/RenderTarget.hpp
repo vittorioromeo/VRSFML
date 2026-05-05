@@ -16,6 +16,7 @@
 #include "SFML/Graphics/Priv/ShaderBase.hpp"
 #include "SFML/Graphics/Priv/ShapeDataConcept.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
+#include "SFML/Graphics/Texture.hpp" // needed for `hasGenerationMismatch` to access `Texture::m_destructiveGeneration`
 
 #include "SFML/System/Priv/Vec2Base.hpp"
 
@@ -39,7 +40,6 @@ class PersistentGPUDrawableBatch;
 class Shader;
 class Shape;
 class Text;
-class Texture;
 class VAOHandle;
 class VertexBuffer;
 
@@ -870,7 +870,8 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] bool hasGenerationMismatch(const RenderStates& states) const
     {
-        return states.shader != nullptr && states.shader->m_uniformGeneration != m_lastShaderGeneration;
+        return (states.shader != nullptr && states.shader->m_uniformGeneration != m_lastShaderGeneration) ||
+               (states.texture != nullptr && states.texture->m_destructiveGeneration != m_lastTextureGeneration);
     }
 
 
@@ -880,7 +881,8 @@ private:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void updateCachedGenerations(const RenderStates& states)
     {
-        m_lastShaderGeneration = states.shader != nullptr ? states.shader->m_uniformGeneration : base::U8{0};
+        m_lastShaderGeneration  = states.shader != nullptr ? states.shader->m_uniformGeneration : base::U8{0};
+        m_lastTextureGeneration = states.texture != nullptr ? states.texture->m_destructiveGeneration : base::U8{0};
     }
 
     ////////////////////////////////////////////////////////////
@@ -1200,12 +1202,12 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     DrawStatistics m_currentDrawStats{};                       //!< Statistics for current draw calls
-    base::SizeT    m_frameCounter{0u};                         //!< Monotonic frame counter (incremented on `prepare`)
     AutoBatchMode  m_autoBatchMode{AutoBatchMode::GPUStorage}; //!< Enable automatic batching of draw calls
     base::SizeT    m_numAutoBatchVertices{0u};                 //!< Number of vertices in the current autobatch
     base::SizeT    m_autoBatchVertexThreshold{32'768u};        //!< Threshold for batch vertex count
     RenderStates   m_lastRenderStates{};                       //!< Cached render states (autobatching)
-    base::U8       m_lastShaderGeneration{0}; //!< Cached shader uniform generation (autobatch invalidation)
+    base::U8       m_lastShaderGeneration{0};  //!< Cached shader uniform generation (autobatch invalidation)
+    base::U8       m_lastTextureGeneration{0}; //!< Cached texture destructive generation (autobatch invalidation)
     bool           m_isStateLocked{false}; //!< Whether render states are currently bound via `withLockedRenderStates`
 
     ////////////////////////////////////////////////////////////
