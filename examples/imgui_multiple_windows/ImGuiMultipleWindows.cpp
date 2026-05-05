@@ -25,7 +25,14 @@ int main()
                                            })
                       .value();
 
-    sf::ImGuiContext imGuiContext;
+    // Share one font atlas across both contexts. The caller-owned atlas must be populated
+    // before any ImGuiContext that references it is constructed. The main window's context
+    // drives the atlas (per-frame updates); the child window's context just consumes it.
+    // The driver also uploads the GL font texture; consumers adopt it.
+    ImFontAtlas sharedFontAtlas;
+    sharedFontAtlas.AddFontDefaultBitmap();
+
+    sf::ImGuiContext imGuiContext{sf::ImGuiContext::createOwningAtlas(sharedFontAtlas)};
 
     auto childWindow = sf::RenderWindow::create(sf::RenderWindow::Settings{
         .size  = {640u, 480u},
@@ -33,7 +40,7 @@ int main()
         .vsync = true,
     });
 
-    sf::base::Optional<sf::ImGuiContext> childImGuiContext{sf::base::inPlace};
+    sf::base::Optional<sf::ImGuiContext> childImGuiContext{sf::ImGuiContext::createSharingAtlas(sharedFontAtlas)};
 
     sf::Clock deltaClock;
     while (true)

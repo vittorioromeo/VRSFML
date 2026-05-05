@@ -312,6 +312,7 @@ struct [[nodiscard]] ImGuiContext::Impl
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit Impl(const bool               loadDefaultFont,
                                 ImFontAtlas* const       sharedFontAtlas,
+                                const bool               claimSharedAtlasOwnership,
                                 const SetClipboardTextFn setClipboardTextFn,
                                 const GetClipboardTextFn getClipboardTextFn) :
         imContext{::ImGui::CreateContext(sharedFontAtlas)},
@@ -319,20 +320,31 @@ struct [[nodiscard]] ImGuiContext::Impl
     {
         ImGuiIO& io = ::ImGui::GetIO();
 
-        // When a shared atlas is passed, `ImGui::CreateContext` does NOT set `OwnerContext`
-        // -- it leaves that to the caller. Per-frame atlas updates (`ImFontAtlasUpdateNewFrame`)
-        // are only run for the OwnerContext; non-owning contexts assert the atlas was already
-        // updated this frame. Claim ownership from the first sf::ImGuiContext that adopts the
-        // atlas, so users don't have to think about it. The owner context's `update()` must
-        // be called before any non-owner's in each frame, and the owner must outlive all
-        // non-owners (the natural order for FIFO-constructed / LIFO-destroyed containers).
-        if (sharedFontAtlas != nullptr && sharedFontAtlas->OwnerContext == nullptr)
-            sharedFontAtlas->OwnerContext = imContext;
-
-        // When sharing an atlas, only the first context to populate it should add the
-        // default font; subsequent contexts see fonts already there and skip.
-        if (loadDefaultFont && io.Fonts->Fonts.Size == 0 && !io.Fonts->AddFontDefault())
+        if (sharedFontAtlas != nullptr)
         {
+            // Shared mode: the caller owns the atlas and is expected to have populated it
+            // (e.g. `AddFontDefault`) before constructing any context. We never add fonts to
+            // the atlas in this mode and never own its storage.
+            //
+            // The driving context (`claimSharedAtlasOwnership == true`) makes two adjustments:
+            //
+            // 1. Sets `OwnerContext`: ImGui only runs `ImFontAtlasUpdateNewFrame` for the
+            //    owner; other contexts assert the atlas was already updated this frame.
+            //
+            // 2. Pre-increments `RefCount`: ImGui's `Shutdown` calls `IM_DELETE(atlas)` when
+            //    `RefCount` reaches 0 after the last context unregisters. For a caller-owned
+            //    (e.g. stack-allocated) atlas that's an invalid free. The +1 keeps the count
+            //    above 0; the remainder is harmlessly dropped when the user destroys the
+            //    atlas themselves.
+            if (claimSharedAtlasOwnership)
+            {
+                ++sharedFontAtlas->RefCount;
+                sharedFontAtlas->OwnerContext = imContext;
+            }
+        }
+        else if (loadDefaultFont && !io.Fonts->AddFontDefault())
+        {
+            // Owned mode: optionally seed the freshly-allocated atlas with the default font.
             priv::err() << "Failed to load default ImGui font";
             base::abort();
         }
@@ -919,10 +931,48 @@ const char* getClipboardTextFn(void* /* userData */)
 
 
 ////////////////////////////////////////////////////////////
-ImGuiContext::ImGuiContext(const bool loadDefaultFont, ImFontAtlas* const sharedFontAtlas) :
-    m_impl{base::makeUnique<Impl>(loadDefaultFont, sharedFontAtlas, &setClipboardTextFn, &getClipboardTextFn)}
+ImGuiContext::ImGuiContext(const bool loadDefaultFont) :
+    m_impl{base::makeUnique<Impl>(loadDefaultFont,
+                                  /* sharedFontAtlas */ nullptr,
+                                  /* claimSharedAtlasOwnership */ false,
+                                  &setClipboardTextFn,
+                                  &getClipboardTextFn)}
 {
     initDefaultJoystickMapping();
+}
+
+
+////////////////////////////////////////////////////////////
+ImGuiContext::ImGuiContext(ImFontAtlas& sharedFontAtlas, const bool claimOwnership) :
+    m_impl{base::makeUnique<Impl>(/* loadDefaultFont */ false,
+                                  &sharedFontAtlas,
+                                  claimOwnership,
+                                  &setClipboardTextFn,
+                                  &getClipboardTextFn)}
+{
+    initDefaultJoystickMapping();
+}
+
+
+////////////////////////////////////////////////////////////
+ImGuiContext ImGuiContext::createOwningAtlas(ImFontAtlas& atlas)
+{
+    SFML_BASE_ASSERT(atlas.OwnerContext == nullptr &&
+                     "ImGuiContext::createOwningAtlas: another context already drives this atlas. "
+                     "Use ImGuiContext::createSharingAtlas for additional contexts on the same atlas.");
+
+    return ImGuiContext{atlas, /* claimOwnership */ true};
+}
+
+
+////////////////////////////////////////////////////////////
+ImGuiContext ImGuiContext::createSharingAtlas(ImFontAtlas& atlas)
+{
+    SFML_BASE_ASSERT(atlas.OwnerContext != nullptr &&
+                     "ImGuiContext::createSharingAtlas: this atlas has no driver yet. "
+                     "Construct one via ImGuiContext::createOwningAtlas first.");
+
+    return ImGuiContext{atlas, /* claimOwnership */ false};
 }
 
 
