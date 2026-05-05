@@ -107,6 +107,7 @@ struct ImGui_ImplOpenGL3_Data
     bool   GlProfileIsCompat;
     GLint  GlProfileMask;
     GLuint FontTexture;
+    bool   OwnsFontTexture; // false if `FontTexture` was adopted from a shared `ImFontAtlas`
     GLuint ShaderHandle;
     GLint  AttribLocationTex; // Uniforms location
     GLint  AttribLocationProjMtx;
@@ -573,6 +574,16 @@ bool ImGui_ImplOpenGL3_CreateFontsTexture()
     ImGuiIO&                io = ::ImGui::GetIO();
     ImGui_ImplOpenGL3_Data* bd = ImGui_ImplOpenGL3_GetBackendData();
 
+    // If the atlas already has a GL texture (because another context sharing this atlas
+    // already uploaded it), adopt it instead of allocating a new one. The originating
+    // context owns the lifetime; we only bind & render through it.
+    if (const ImTextureID existing = io.Fonts->TexRef.GetTexID(); existing != ImTextureID_Invalid)
+    {
+        bd->FontTexture     = (GLuint)(intptr_t)existing;
+        bd->OwnsFontTexture = false;
+        return true;
+    }
+
     // Build texture atlas
     unsigned char* pixels;
     int            width, height;
@@ -599,6 +610,7 @@ bool ImGui_ImplOpenGL3_CreateFontsTexture()
 
     // Store our identifier
     io.Fonts->SetTexID((ImTextureID)(intptr_t)bd->FontTexture);
+    bd->OwnsFontTexture = true;
 
     // Restore state
     glCheck(glBindTexture(GL_TEXTURE_2D, last_texture));
@@ -610,12 +622,17 @@ void ImGui_ImplOpenGL3_DestroyFontsTexture()
 {
     ImGuiIO&                io = ::ImGui::GetIO();
     ImGui_ImplOpenGL3_Data* bd = ImGui_ImplOpenGL3_GetBackendData();
-    if (bd->FontTexture)
+    if (bd->FontTexture && bd->OwnsFontTexture)
     {
+        // Only the context that uploaded the GL texture is allowed to delete it. When the
+        // atlas is shared, non-owning contexts simply drop their reference; the owner
+        // (typically the first context to render) handles cleanup. Clearing the atlas's
+        // TexID lets a future context re-upload if it needs to.
         glCheck(glDeleteTextures(1, &bd->FontTexture));
         io.Fonts->SetTexID(0);
-        bd->FontTexture = 0;
     }
+    bd->FontTexture     = 0;
+    bd->OwnsFontTexture = false;
 }
 
 // If you get an error please report on github. You may try different GL context version or GLSL version. See GL<>GLSL version table at the top of this file.
