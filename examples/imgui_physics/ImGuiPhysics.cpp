@@ -35,6 +35,7 @@
 
 #include "SFML/Base/Math/Atan2.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
+#include "SFML/Base/Math/Sin.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
@@ -105,8 +106,10 @@ struct Screen
     sf::base::Optional<sf::ImGuiContext> imGuiContext;
 
     // Per-screen UI state
-    float     sliderValue{1.f};  // slider drives the box scale
-    float     currentScale{1.f}; // last applied scale; resync the shape when these diverge
+    float     sliderValue{1.f};    // slider drives the box scale
+    float     currentScale{1.f};   // last applied scale; resync the shape when these diverge
+    float     sliderVelocity{0.f}; // gravity-driven drift along the slider axis
+    bool      sliderActive{false}; // true while the user is dragging the slider this frame
     int       counter{0};
     bool      checkBox{false};
     sf::Vec2f cursorTexPos; // last known cursor in texture pixels (for the active screen)
@@ -451,6 +454,7 @@ int main()
             ImGui::Separator();
 
             ImGui::SliderFloat("Scale", &s.sliderValue, 0.5f, 2.f, "%.2fx");
+            s.sliderActive = ImGui::IsItemActive();
 
             if (ImGui::Button("Click me"))
                 ++s.counter;
@@ -497,7 +501,46 @@ int main()
             // `withLockedRenderStates`) -- correctness still requires this manual flush.
             window.flush();
 
-            // If the user moved the slider, resync the collision shape with the new scale.
+            // Gravity-driven slider drift. The slider's local axis is the body's +x; in world
+            // coords that direction is `(cos θ, sin θ)`. Gravity is `(0, +9.81)` (y-down), so
+            // the gravity component along the slider axis is proportional to `sin θ`. Below a
+            // small threshold we model static friction and don't move; above it we accelerate
+            // the slider value toward the "downhill" end. While the user is actively dragging
+            // the slider their input wins, so we zero the velocity instead.
+            constexpr float sliderFrictionSinThresh = 0.12f; // ~6.9°
+            constexpr float sliderGravityStrength   = 0.6f;  // slider units / s² when fully tilted
+            constexpr float sliderDamping           = 1.5f;  // per-second velocity decay
+            constexpr float sliderMin               = 0.5f;
+            constexpr float sliderMax               = 2.0f;
+
+            if (s.sliderActive)
+            {
+                s.sliderVelocity = 0.f;
+            }
+            else
+            {
+                const float bodyAngleRad = b2Rot_GetAngle(b2Body_GetRotation(s.bodyId));
+                const float gravityAlong = sf::base::sin(bodyAngleRad);
+
+                if (sf::base::fabs(gravityAlong) > sliderFrictionSinThresh)
+                    s.sliderVelocity += gravityAlong * sliderGravityStrength * dt.asSeconds();
+
+                s.sliderVelocity -= s.sliderVelocity * sliderDamping * dt.asSeconds();
+                s.sliderValue += s.sliderVelocity * dt.asSeconds();
+
+                if (s.sliderValue <= sliderMin)
+                {
+                    s.sliderValue    = sliderMin;
+                    s.sliderVelocity = 0.f;
+                }
+                else if (s.sliderValue >= sliderMax)
+                {
+                    s.sliderValue    = sliderMax;
+                    s.sliderVelocity = 0.f;
+                }
+            }
+
+            // If the slider moved (by the user or by gravity), resync the collision shape.
             if (sf::base::fabs(s.sliderValue - s.currentScale) > 0.001f)
                 rescaleScreenShape(s);
         }
