@@ -274,23 +274,29 @@ void SDLWindowImpl::processSDLEvent(const SDL_Event& e)
             if (!m_impl->keyRepeatEnabled && e.key.repeat)
                 return;
 
-            pushEvent(Event::KeyPressed{.code     = mapSDLKeycodeToSFML(e.key.key),
-                                        .scancode = mapSDLScancodeToSFML(e.key.scancode),
-                                        .alt      = static_cast<bool>(e.key.mod & SDL_KMOD_ALT),
-                                        .control  = static_cast<bool>(e.key.mod & SDL_KMOD_CTRL),
-                                        .shift    = static_cast<bool>(e.key.mod & SDL_KMOD_SHIFT),
-                                        .system   = static_cast<bool>(e.key.mod & SDL_KMOD_GUI)});
+            pushEvent(Event::KeyPressed{.code       = mapSDLKeycodeToSFML(e.key.key),
+                                        .scancode   = mapSDLScancodeToSFML(e.key.scancode),
+                                        .alt        = static_cast<bool>(e.key.mod & SDL_KMOD_ALT),
+                                        .control    = static_cast<bool>(e.key.mod & SDL_KMOD_CTRL),
+                                        .shift      = static_cast<bool>(e.key.mod & SDL_KMOD_SHIFT),
+                                        .system     = static_cast<bool>(e.key.mod & SDL_KMOD_GUI),
+                                        .capsLock   = static_cast<bool>(e.key.mod & SDL_KMOD_CAPS),
+                                        .numLock    = static_cast<bool>(e.key.mod & SDL_KMOD_NUM),
+                                        .scrollLock = static_cast<bool>(e.key.mod & SDL_KMOD_SCROLL)});
             break;
         }
 
         case SDL_EVENT_KEY_UP:
         {
-            pushEvent(Event::KeyReleased{.code     = mapSDLKeycodeToSFML(e.key.key),
-                                         .scancode = mapSDLScancodeToSFML(e.key.scancode),
-                                         .alt      = static_cast<bool>(e.key.mod & SDL_KMOD_ALT),
-                                         .control  = static_cast<bool>(e.key.mod & SDL_KMOD_CTRL),
-                                         .shift    = static_cast<bool>(e.key.mod & SDL_KMOD_SHIFT),
-                                         .system   = static_cast<bool>(e.key.mod & SDL_KMOD_GUI)});
+            pushEvent(Event::KeyReleased{.code       = mapSDLKeycodeToSFML(e.key.key),
+                                         .scancode   = mapSDLScancodeToSFML(e.key.scancode),
+                                         .alt        = static_cast<bool>(e.key.mod & SDL_KMOD_ALT),
+                                         .control    = static_cast<bool>(e.key.mod & SDL_KMOD_CTRL),
+                                         .shift      = static_cast<bool>(e.key.mod & SDL_KMOD_SHIFT),
+                                         .system     = static_cast<bool>(e.key.mod & SDL_KMOD_GUI),
+                                         .capsLock   = static_cast<bool>(e.key.mod & SDL_KMOD_CAPS),
+                                         .numLock    = static_cast<bool>(e.key.mod & SDL_KMOD_NUM),
+                                         .scrollLock = static_cast<bool>(e.key.mod & SDL_KMOD_SCROLL)});
             break;
         }
 
