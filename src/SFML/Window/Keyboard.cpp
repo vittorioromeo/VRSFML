@@ -59,8 +59,7 @@ UnicodeString Keyboard::getDescription(const Scancode code)
 ////////////////////////////////////////////////////////////
 void Keyboard::setVirtualKeyboardVisible(const bool visible)
 {
-    // TODO P0:
-    // not always applicable, dispatch to OS-specific SFML impls, check SDL?
+    WindowContext::getSDLLayer().setVirtualKeyboardVisible(visible);
 }
 
 } // namespace sf

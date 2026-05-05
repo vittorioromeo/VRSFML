@@ -194,7 +194,10 @@ struct SDLWindowImpl::Impl
             return;
         }
 
-        if (!SDL_StartTextInput(sdlWindow)) // TODO P1: might not want to call this on mobiles
+        // On platforms with a screen keyboard (Android, iOS, Steam Deck) `SDL_StartTextInput` shows
+        // the on-screen keyboard immediately; defer that to `Keyboard::setVirtualKeyboardVisible`.
+        // On desktop it just enables `TEXT_INPUT` events without any visual side-effect.
+        if (!SDL_HasScreenKeyboardSupport() && !SDL_StartTextInput(sdlWindow))
             err() << "Failed to start text input for window created from " << context << ": " << SDL_GetError();
     }
 
@@ -206,7 +209,10 @@ struct SDLWindowImpl::Impl
 
     ~Impl()
     {
-        if (!SDL_StopTextInput(sdlWindow))
+        // Only stop text input if it was actually started; on platforms with a screen keyboard
+        // we defer `SDL_StartTextInput` to `Keyboard::setVirtualKeyboardVisible`, so it may
+        // never have been enabled for this window.
+        if (SDL_TextInputActive(sdlWindow) && !SDL_StopTextInput(sdlWindow))
             err() << "Failed to stop text input for window: " << SDL_GetError();
 
         if (!isExternal)

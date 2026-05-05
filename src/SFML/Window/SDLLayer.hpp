@@ -271,6 +271,9 @@ public:
     [[nodiscard]] const char* getScancodeDescription(Keyboard::Scancode code) const noexcept;
 
     ////////////////////////////////////////////////////////////
+    void setVirtualKeyboardVisible(bool visible) const noexcept;
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] Vec2i getGlobalMousePosition() const noexcept;
 
     ////////////////////////////////////////////////////////////
