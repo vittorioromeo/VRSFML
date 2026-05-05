@@ -121,7 +121,7 @@ TEST_CASE("[Window] sf::Event")
         const auto& textEntered = *event.getIf<sf::Event::TextEntered>();
         CHECK(textEntered.unicode == 123'456);
 
-        event = sf::Event::KeyPressed{sf::Keyboard::Key::C, sf::Keyboard::Scan::C, true, true, true, true};
+        event = sf::Event::KeyPressed{sf::Keyboard::Key::C, sf::Keyboard::Scan::C, true, true, true, true, true, true, true};
         CHECK(event.is<sf::Event::KeyPressed>());
         CHECK(event.getIf<sf::Event::KeyPressed>());
         const auto& keyPressed = *event.getIf<sf::Event::KeyPressed>();
@@ -131,8 +131,11 @@ TEST_CASE("[Window] sf::Event")
         CHECK(keyPressed.control);
         CHECK(keyPressed.shift);
         CHECK(keyPressed.system);
+        CHECK(keyPressed.capsLock);
+        CHECK(keyPressed.numLock);
+        CHECK(keyPressed.scrollLock);
 
-        event = sf::Event::KeyReleased{sf::Keyboard::Key::D, sf::Keyboard::Scan::D, true, true, true, true};
+        event = sf::Event::KeyReleased{sf::Keyboard::Key::D, sf::Keyboard::Scan::D, true, true, true, true, true, true, true};
         CHECK(event.is<sf::Event::KeyReleased>());
         CHECK(event.getIf<sf::Event::KeyReleased>());
         const auto& keyReleased = *event.getIf<sf::Event::KeyReleased>();
@@ -142,6 +145,9 @@ TEST_CASE("[Window] sf::Event")
         CHECK(keyReleased.control);
         CHECK(keyReleased.shift);
         CHECK(keyReleased.system);
+        CHECK(keyReleased.capsLock);
+        CHECK(keyReleased.numLock);
+        CHECK(keyReleased.scrollLock);
 
         event = sf::Event::MouseWheelScrolled{sf::Mouse::Wheel::Horizontal, 3.14f, {4, 5}};
         CHECK(event.is<sf::Event::MouseWheelScrolled>());

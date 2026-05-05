@@ -78,12 +78,15 @@ public:
     ////////////////////////////////////////////////////////////
     struct KeyPressed
     {
-        Keyboard::Key      code{};     //!< Code of the key that has been pressed
-        Keyboard::Scancode scancode{}; //!< Physical code of the key that has been pressed
-        bool               alt{};      //!< Is the Alt key pressed?
-        bool               control{};  //!< Is the Control key pressed?
-        bool               shift{};    //!< Is the Shift key pressed?
-        bool               system{};   //!< Is the System key pressed?
+        Keyboard::Key      code{};       //!< Code of the key that has been pressed
+        Keyboard::Scancode scancode{};   //!< Physical code of the key that has been pressed
+        bool               alt{};        //!< Is the Alt key pressed?
+        bool               control{};    //!< Is the Control key pressed?
+        bool               shift{};      //!< Is the Shift key pressed?
+        bool               system{};     //!< Is the System key pressed?
+        bool               capsLock{};   //!< Is the CapsLock key toggled?
+        bool               numLock{};    //!< Is the NumLock key toggled?
+        bool               scrollLock{}; //!< Is the ScrollLock key toggled?
     };
 
     ////////////////////////////////////////////////////////////
@@ -92,12 +95,15 @@ public:
     ////////////////////////////////////////////////////////////
     struct KeyReleased
     {
-        Keyboard::Key      code{};     //!< Code of the key that has been released
-        Keyboard::Scancode scancode{}; //!< Physical code of the key that has been released
-        bool               alt{};      //!< Is the Alt key pressed?
-        bool               control{};  //!< Is the Control key pressed?
-        bool               shift{};    //!< Is the Shift key pressed?
-        bool               system{};   //!< Is the System key pressed?
+        Keyboard::Key      code{};       //!< Code of the key that has been released
+        Keyboard::Scancode scancode{};   //!< Physical code of the key that has been released
+        bool               alt{};        //!< Is the Alt key pressed?
+        bool               control{};    //!< Is the Control key pressed?
+        bool               shift{};      //!< Is the Shift key pressed?
+        bool               system{};     //!< Is the System key pressed?
+        bool               capsLock{};   //!< Is the CapsLock key toggled?
+        bool               numLock{};    //!< Is the NumLock key toggled?
+        bool               scrollLock{}; //!< Is the ScrollLock key toggled?
     };
 
     ////////////////////////////////////////////////////////////
