@@ -48,74 +48,6 @@
     #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
-#ifdef ANDROID
-    #ifdef USE_JNI
-
-        #include "SFML/System/NativeActivity.hpp"
-
-        #include <android/native_activity.h>
-        #include <jni.h>
-
-
-////////////////////////////////////////////////////////////
-[[nodiscard]] int keyboardIMEImpl(const int value)
-{
-    ANativeActivity* activity = sf::getNativeActivity();
-
-    JavaVM* vm  = activity->vm;
-    JNIEnv* env = activity->env;
-
-    JavaVMAttachArgs attachargs;
-    attachargs.version = JNI_VERSION_1_6;
-    attachargs.name    = "NativeThread";
-    attachargs.group   = nullptr;
-
-    jint res = vm->AttachCurrentThread(&env, &attachargs);
-    if (res == JNI_ERR)
-        return EXIT_FAILURE;
-
-    jclass natact  = env->FindClass("android/app/NativeActivity");
-    jclass context = env->FindClass("android/content/Context");
-
-    jfieldID fid    = env->GetStaticFieldID(context, "INPUT_METHOD_SERVICE", "Ljava/lang/String;");
-    jobject  svcstr = env->GetStaticObjectField(context, fid);
-
-    jmethodID getss   = env->GetMethodID(natact, "getSystemService", "(Ljava/lang/String;)Ljava/lang/Object;");
-    jobject   imm_obj = env->CallObjectMethod(activity->clazz, getss, svcstr);
-
-    jclass    imm_cls         = env->GetObjectClass(imm_obj);
-    jmethodID toggleSoftInput = env->GetMethodID(imm_cls, "toggleSoftInput", "(II)V");
-
-    env->CallVoidMethod(imm_obj, toggleSoftInput, value, 0);
-
-    env->DeleteLocalRef(imm_obj);
-    env->DeleteLocalRef(imm_cls);
-    env->DeleteLocalRef(svcstr);
-    env->DeleteLocalRef(context);
-    env->DeleteLocalRef(natact);
-
-    vm->DetachCurrentThread();
-
-    return 0;
-}
-
-
-////////////////////////////////////////////////////////////
-[[nodiscard]] int openKeyboardIME()
-{
-    return keyboardIMEImpl(2);
-}
-
-
-////////////////////////////////////////////////////////////
-[[nodiscard]] int closeKeyboardIME()
-{
-    return keyboardIMEImpl(1);
-}
-
-    #endif
-#endif
-
 // TODO P0: cleanup and rename funcs, etc
 
 static_assert(sizeof(unsigned int) <= sizeof(ImTextureID), "ImTextureID is not large enough to fit unsigned int.");
@@ -357,15 +289,9 @@ struct [[nodiscard]] ImGuiContext::Impl
 {
     ::ImGuiContext* imContext{::ImGui::CreateContext()};
 
-    bool                 windowHasFocus{false};
-    bool                 mouseMoved{false};
-    base::Array<bool, 3> mousePressed{};
+    bool windowHasFocus{false};
 
     ImGuiMouseCursor lastCursor{ImGuiMouseCursor_COUNT};
-
-    base::Array<bool, 3>  touchDown{};
-    base::Array<Vec2i, 3> touchPositions{};
-    Vec2i                 lastTouchPos;
 
     unsigned int joystickId;
     ImGuiKey     joystickMapping[Joystick::ButtonCount]{ImGuiKey_None};
@@ -377,11 +303,7 @@ struct [[nodiscard]] ImGuiContext::Impl
 
     base::Array<base::Optional<Cursor>, ImGuiMouseCursor_COUNT> mouseCursors;
 
-#ifdef ANDROID
-    #ifdef USE_JNI
     bool wantTextInput{false};
-    #endif
-#endif
 
     ////////////////////////////////////////////////////////////
     using SetClipboardTextFn = void (*)(void*, const char*);
@@ -558,8 +480,9 @@ struct [[nodiscard]] ImGuiContext::Impl
             return;
         }
 
-        if (!windowHasFocus)
-            return;
+        // Process input events regardless of focus state. The event that brings the window into
+        // focus arrives before `FocusGained`, and dropping it caused first-click drags from (0, 0)
+        // (cf. upstream imgui-sfml issues #337/#338/#88).
 
         if (const auto* resized = event.getIf<Event::Resized>())
         {
@@ -569,16 +492,12 @@ struct [[nodiscard]] ImGuiContext::Impl
         {
             io.AddMouseSourceEvent(ImGuiMouseSource_Mouse);
             io.AddMousePosEvent(static_cast<float>(eMouseMoved->position.x), static_cast<float>(eMouseMoved->position.y));
-
-            mouseMoved = true;
         }
         else if (const auto* mouseButtonPressed = event.getIf<Event::MouseButtonPressed>())
         {
             const int button = static_cast<int>(mouseButtonPressed->button);
-            if (button >= 0 && button < 3)
+            if (button >= 0 && button < ImGuiMouseButton_COUNT)
             {
-                mousePressed[static_cast<base::SizeT>(button)] = true;
-
                 io.AddMouseSourceEvent(ImGuiMouseSource_Mouse);
                 io.AddMouseButtonEvent(button, true);
             }
@@ -586,7 +505,7 @@ struct [[nodiscard]] ImGuiContext::Impl
         else if (const auto* mouseButtonReleased = event.getIf<Event::MouseButtonReleased>())
         {
             const int button = static_cast<int>(mouseButtonReleased->button);
-            if (button >= 0 && button < 3)
+            if (button >= 0 && button < ImGuiMouseButton_COUNT)
             {
                 io.AddMouseSourceEvent(ImGuiMouseSource_Mouse);
                 io.AddMouseButtonEvent(button, false);
@@ -594,37 +513,30 @@ struct [[nodiscard]] ImGuiContext::Impl
         }
         else if (const auto* eTouchMoved = event.getIf<Event::TouchMoved>())
         {
-            io.AddMouseSourceEvent(ImGuiMouseSource_TouchScreen);
-            io.AddMousePosEvent(static_cast<float>(eTouchMoved->position.x), static_cast<float>(eTouchMoved->position.y));
-
-            mouseMoved = false;
+            // ImGui has a single mouse cursor; only the primary finger drives it.
+            if (eTouchMoved->finger == 0)
+            {
+                io.AddMouseSourceEvent(ImGuiMouseSource_TouchScreen);
+                io.AddMousePosEvent(static_cast<float>(eTouchMoved->position.x),
+                                    static_cast<float>(eTouchMoved->position.y));
+            }
         }
         else if (const auto* touchBegan = event.getIf<Event::TouchBegan>())
         {
-            mouseMoved                = false;
-            const unsigned int button = touchBegan->finger;
-
-            if (button < 3)
+            if (touchBegan->finger == 0)
             {
-                touchDown[button]      = true;
-                touchPositions[button] = touchBegan->position;
-
                 io.AddMouseSourceEvent(ImGuiMouseSource_TouchScreen);
-                io.AddMouseButtonEvent(static_cast<int>(button), true);
+                io.AddMousePosEvent(static_cast<float>(touchBegan->position.x), static_cast<float>(touchBegan->position.y));
+                io.AddMouseButtonEvent(0, true);
             }
         }
         else if (const auto* touchEnded = event.getIf<Event::TouchEnded>())
         {
-            mouseMoved                = false;
-            const unsigned int button = touchEnded->finger;
-
-            if (button < 3)
+            if (touchEnded->finger == 0)
             {
-                touchDown[button]      = false;
-                touchPositions[button] = {};
-
                 io.AddMouseSourceEvent(ImGuiMouseSource_TouchScreen);
-                io.AddMouseButtonEvent(static_cast<int>(button), false);
+                io.AddMousePosEvent(static_cast<float>(touchEnded->position.x), static_cast<float>(touchEnded->position.y));
+                io.AddMouseButtonEvent(0, false);
             }
         }
         else if (const auto* mouseWheelScrolled = event.getIf<Event::MouseWheelScrolled>())
@@ -725,64 +637,44 @@ struct [[nodiscard]] ImGuiContext::Impl
     void update(Window& theWindow, RenderTarget& target, Time dt)
     {
         updateMouseCursor(theWindow);
-
-        if (!mouseMoved) // TODO P1: needed?
-        {
-            if (touchDown[0])
-                lastTouchPos = touchPositions[0];
-
-            update(lastTouchPos, target.getSize().toVec2f(), dt);
-        }
-        else
-        {
-            update(Mouse::getPosition(theWindow), target.getSize().toVec2f(), dt);
-        }
+        // Mouse position is fed via events in `processEvent`; nothing to inject here.
+        updateCommon(target.getSize().toVec2f(), dt);
     }
 
     ////////////////////////////////////////////////////////////
+    // The caller-provided `mousePos` overrides the cursor position fed to ImGui this frame.
+    // Useful when ImGui is rendered into a `RenderTexture` later drawn transformed elsewhere
+    // (e.g. into a 3D scene): the physical OS-window cursor doesn't match where the user
+    // perceives it, so the caller computes the cursor in the texture's coordinate system
+    // and passes it here. Subsequent `MouseMoved` events in `processEvent` will overwrite
+    // this on later frames -- callers using this overload typically suppress those.
     void update(Vec2i mousePos, Vec2f displaySize, Time dt)
+    {
+        ::ImGui::GetIO().AddMousePosEvent(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+        updateCommon(displaySize, dt);
+    }
+
+private:
+    ////////////////////////////////////////////////////////////
+    void updateCommon(Vec2f displaySize, Time dt)
     {
         ImGuiIO& io    = ::ImGui::GetIO();
         io.DisplaySize = toImVec2(displaySize);
         io.DeltaTime   = dt.asSeconds();
 
-        if (windowHasFocus)
-        {
-            if (io.WantSetMousePos)
-            {
-                Mouse::setPosition({static_cast<int>(io.MousePos.x), static_cast<int>(io.MousePos.y)});
-            }
-            else
-            {
-                io.AddMousePosEvent(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
-            }
+        if (windowHasFocus && io.WantSetMousePos)
+            Mouse::setPosition({static_cast<int>(io.MousePos.x), static_cast<int>(io.MousePos.y)});
 
-            for (unsigned int i = 0; i < 3; ++i)
-            {
-                const bool isDown = touchDown[i] || mousePressed[i] ||
-                                    Mouse::isButtonPressed(static_cast<Mouse::Button>(i));
-                io.AddMouseButtonEvent(static_cast<int>(i), isDown);
-
-                mousePressed[i] = false;
-                touchDown[i]    = false;
-            }
-        }
-
-#ifdef ANDROID
-    #ifdef USE_JNI
         if (io.WantTextInput && !wantTextInput)
         {
-            openKeyboardIME();
+            Keyboard::setVirtualKeyboardVisible(true);
             wantTextInput = true;
         }
-
-        if (!io.WantTextInput && wantTextInput)
+        else if (!io.WantTextInput && wantTextInput)
         {
-            closeKeyboardIME();
+            Keyboard::setVirtualKeyboardVisible(false);
             wantTextInput = false;
         }
-    #endif
-#endif
 
         // gamepad navigation
         if ((io.ConfigFlags & ImGuiConfigFlags_NavEnableGamepad) && joystickId != nullJoystickId)
