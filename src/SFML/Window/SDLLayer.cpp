@@ -799,6 +799,25 @@ const char* SDLLayer::getScancodeDescription(const Keyboard::Scancode code) cons
 
 
 ////////////////////////////////////////////////////////////
+void SDLLayer::setVirtualKeyboardVisible(const bool visible) const noexcept
+{
+    // No-op on platforms without a screen keyboard; on desktop, `SDL_StartTextInput`
+    // is already enabled at window creation and we don't want to toggle text input
+    // events as a side-effect of this call.
+    if (!SDL_HasScreenKeyboardSupport())
+        return;
+
+    SDL_Window* const focused = SDL_GetKeyboardFocus();
+    if (focused == nullptr)
+        return;
+
+    const bool ok = visible ? SDL_StartTextInput(focused) : SDL_StopTextInput(focused);
+    if (!ok)
+        err() << "Failed to " << (visible ? "show" : "hide") << " virtual keyboard: " << SDL_GetError();
+}
+
+
+////////////////////////////////////////////////////////////
 Vec2i SDLLayer::getGlobalMousePosition() const noexcept
 {
     Vec2f result;
