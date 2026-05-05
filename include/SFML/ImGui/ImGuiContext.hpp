@@ -61,26 +61,64 @@ public:
     /// switching between contexts is handled automatically by the
     /// member functions of this class.
     ///
-    /// \param loadDefaultFont If `true`, load the default Dear ImGui font.
-    ///                        Set to `false` if you intend to load your
-    ///                        own fonts via `ImGui::GetIO().Fonts`. When
-    ///                        `sharedFontAtlas` already has fonts in it,
-    ///                        the default font is not added again.
+    /// This overload creates a context that owns its own font atlas.
     ///
-    /// \param sharedFontAtlas Optional pre-existing font atlas to share with
-    ///                        other `ImGuiContext` instances. When non-null,
-    ///                        the underlying `ImGui::CreateContext` call
-    ///                        adopts the atlas instead of allocating its
-    ///                        own. The atlas must outlive every context
-    ///                        that references it. The first context to
-    ///                        upload glyph data to the GPU owns the GL
-    ///                        font texture; later contexts adopt it
-    ///                        (saving ~1 MB per extra context). Passing
-    ///                        `nullptr` (default) keeps the per-context
-    ///                        atlas behavior.
+    /// \param loadDefaultFont If `true`, load the default Dear ImGui font
+    ///                        into the owned atlas. Set to `false` if you
+    ///                        intend to load your own fonts manually via
+    ///                        `ImGui::GetIO().Fonts`.
     ///
     ////////////////////////////////////////////////////////////
-    explicit ImGuiContext(bool loadDefaultFont = true, ImFontAtlas* sharedFontAtlas = nullptr);
+    explicit ImGuiContext(bool loadDefaultFont = true);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Create a context that drives a caller-owned shared font atlas
+    ///
+    /// Use this factory to construct the **first** `ImGuiContext` for a
+    /// given shared atlas: this context is the one that runs ImGui's
+    /// per-frame atlas updates (`ImFontAtlasUpdateNewFrame`).
+    ///
+    /// The caller owns the atlas and is responsible for populating it
+    /// (e.g. `atlas.AddFontDefault()`) **before** calling this factory.
+    /// The factory does **not** add the default font and does **not**
+    /// transfer ownership of the atlas; the atlas must outlive every
+    /// `ImGuiContext` that references it.
+    ///
+    /// Pair with `createSharingAtlas` for additional contexts on the
+    /// same atlas. Exactly one driving context per atlas is allowed:
+    /// constructing a second driving context for the same atlas
+    /// triggers an assertion. The driving context's `update()` must
+    /// be called before any sharing context's in each frame.
+    ///
+    /// \param atlas Externally-owned, pre-populated font atlas. Must
+    ///              not already have a driver assigned.
+    ///
+    /// \return A driving context bound to the supplied atlas.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static ImGuiContext createOwningAtlas(ImFontAtlas& atlas);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Create a context that consumes a shared font atlas driven by another context
+    ///
+    /// Use this factory to construct **additional** `ImGuiContext`
+    /// instances after a driving context has been created via
+    /// `createOwningAtlas`. The sharing context inherits the driver's
+    /// font atlas state and (once the driver has rendered once)
+    /// adopts the same GL font texture, saving ~1 MB of GPU memory
+    /// per extra context.
+    ///
+    /// The atlas must already have a driving context; calling this
+    /// factory before `createOwningAtlas` triggers an assertion. The
+    /// driving context must outlive every sharing context that
+    /// references the same atlas.
+    ///
+    /// \param atlas Externally-owned, already-driven font atlas.
+    ///
+    /// \return A sharing context bound to the supplied atlas.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static ImGuiContext createSharingAtlas(ImFontAtlas& atlas);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -596,6 +634,16 @@ public:
     void drawRectFilled(const Rect2f& rect, Color color, float rounding = 0.f, int roundingCorners = 0x0F);
 
 private:
+    ////////////////////////////////////////////////////////////
+    /// \brief Internal constructor used by the shared-atlas static factories
+    ///
+    /// `claimOwnership` selects between the driver / consumer roles for
+    /// the supplied shared atlas (see `createOwningAtlas` /
+    /// `createSharingAtlas` for the semantics).
+    ///
+    ////////////////////////////////////////////////////////////
+    explicit ImGuiContext(ImFontAtlas& sharedFontAtlas, bool claimOwnership);
+
     ////////////////////////////////////////////////////////////
     /// \brief Apply a sensible default joystick mapping
     ///
