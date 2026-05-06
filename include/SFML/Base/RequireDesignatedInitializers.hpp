@@ -31,7 +31,7 @@ struct DesignatedInitializersRequired
 ///
 /// Place at the very top of an aggregate's member list. Adds a
 /// zero-sized sentinel (via `[[no_unique_address]]`) that can only
-/// be initialized by its in-class default — the explicit default
+/// be initialized by its in-class default -- the explicit default
 /// constructor rejects the copy-list-initialization that aggregate
 /// init performs for each positional brace element.
 ///

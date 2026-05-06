@@ -32,7 +32,7 @@ for suffix in "-d.html" ".html"; do
 done
 
 if [ -z "$found" ]; then
-    echo "No .html build for $target found in bin/ — Emscripten target not built?" >&2
+    echo "No .html build for $target found in bin/ -- Emscripten target not built?" >&2
     exit 1
 fi
 
@@ -51,7 +51,7 @@ if [ "${#test_names[@]}" -eq 0 ]; then
     exit 1
 fi
 
-# Per-run isolated Chrome profile — prevents the loop from clobbering the
+# Per-run isolated Chrome profile -- prevents the loop from clobbering the
 # user's normal browser session and lets --kill_exit terminate cleanly.
 profile_root="$(mktemp -d -t vrsfml-emrun-XXXXXX)"
 trap 'rm -rf "$profile_root"' EXIT

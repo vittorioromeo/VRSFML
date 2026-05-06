@@ -22,7 +22,7 @@ namespace sf
 /// \brief Decomposed transform defined by a position, a rotation and a scale
 ///
 /// Inheriting types expose the standard transformable data members
-/// (`position`, `scale`, `origin`, `rotation`) — typically via the
+/// (`position`, `scale`, `origin`, `rotation`) -- typically via the
 /// `SFML_DEFINE_TRANSFORMABLE_DATA_MEMBERS` macro. The derived type
 /// is deduced at call time via C++23 explicit object parameters.
 ///

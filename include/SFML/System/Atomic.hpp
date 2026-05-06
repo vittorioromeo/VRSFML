@@ -575,7 +575,7 @@ template <MemoryOrder MO>
 /// Emscripten note: `wait`/`notifyOne`/`notifyAll` only work in
 /// builds with shared memory and pthreads (`-pthread`,
 /// `-sSHARED_MEMORY`), and rely on `Atomics.wait` which is unavailable
-/// on the browser main thread — so a blocking `wait` issued from the
+/// on the browser main thread -- so a blocking `wait` issued from the
 /// main thread will busy-spin or deadlock. Use `-sPROXY_TO_PTHREAD`
 /// (or otherwise ensure waits happen on a worker) if you need
 /// blocking semantics on the web.

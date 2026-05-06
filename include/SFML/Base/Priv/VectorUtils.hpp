@@ -162,7 +162,7 @@ template <typename T>
         if (nextElement < end)
             SFML_BASE_MEMMOVE(static_cast<void*>(it), nextElement, static_cast<SizeT>(end - nextElement) * sizeof(T));
 
-        // The slot at `end - 1` now holds duplicate / dead bytes — caller must not dtor it.
+        // The slot at `end - 1` now holds duplicate / dead bytes -- caller must not dtor it.
         return end - 1;
     }
     else
@@ -209,7 +209,7 @@ template <typename T>
         if (last < end)
             SFML_BASE_MEMMOVE(static_cast<void*>(first), last, static_cast<SizeT>(end - last) * sizeof(T));
 
-        // Slots past `first + (end - last)` are now dead bytes — caller must not dtor them.
+        // Slots past `first + (end - last)` are now dead bytes -- caller must not dtor them.
         return first + (end - last);
     }
     else
