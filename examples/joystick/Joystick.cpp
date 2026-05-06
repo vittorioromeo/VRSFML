@@ -360,19 +360,19 @@ private:
             }
     }
 
-    void setAxis(sf::Joystick::Axis axis, float position)
+    void setAxis(sf::Joystick::Axis axis, float value)
     {
         for (auto& j : m_joysticks)
         {
             if (j.getXAxis() == axis)
             {
-                j.setX(position);
+                j.setX(value);
                 return;
             }
 
             if (j.getYAxis() == axis)
             {
-                j.setY(position);
+                j.setY(value);
                 return;
             }
         }
@@ -380,7 +380,7 @@ private:
         for (auto& t : m_triggers)
             if (t.getAxis() == axis)
             {
-                t.setValue(position);
+                t.setValue(value);
                 return;
             }
     }
