@@ -32,7 +32,11 @@ TEST_CASE("[Window] sf::ContextSettings")
 
         SECTION("Aggregate initialization -- Everything")
         {
-            constexpr sf::ContextSettings contextSettings{1, 1, 3, 5, sf::ContextSettings::Attribute::Core};
+            constexpr sf::ContextSettings contextSettings{.depthBits      = 1,
+                                                          .stencilBits    = 1,
+                                                          .majorVersion   = 3,
+                                                          .minorVersion   = 5,
+                                                          .attributeFlags = sf::ContextSettings::Attribute::Core};
             STATIC_CHECK(contextSettings.depthBits == 1);
             STATIC_CHECK(contextSettings.stencilBits == 1);
             STATIC_CHECK(contextSettings.majorVersion == 3);

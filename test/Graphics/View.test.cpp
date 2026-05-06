@@ -65,7 +65,7 @@ TEST_CASE("[Graphics] sf::View")
 
         SECTION("Center + size constructor")
         {
-            const sf::View view({520, 960}, {1080, 1920});
+            const sf::View view{.center = {520, 960}, .size = {1080, 1920}};
             CHECK(view.center == sf::Vec2f{520, 960});
             CHECK(view.size == sf::Vec2f{1080, 1920});
             CHECK(view.rotation == sf::Angle::Zero);
