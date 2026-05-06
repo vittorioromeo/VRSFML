@@ -743,4 +743,108 @@ TEST_CASE("[Base] Base/String.hpp")
 
         CHECK(!s.isSso());
     }
+
+    SECTION("ResizeAndOverwrite")
+    {
+        SECTION("Grow from SSO into heap, op fills the whole buffer")
+        {
+            sf::base::String s = "abc";
+            CHECK(s.isSso());
+            CHECK(s.size() == 3);
+
+            constexpr sf::base::SizeT requested = 100u; // > maxSsoSize
+            s.resizeAndOverwrite(requested,
+                                 [](char* buf, sf::base::SizeT n) -> sf::base::SizeT
+            {
+                for (sf::base::SizeT i = 0; i < n; ++i)
+                    buf[i] = static_cast<char>('a' + (i % 26));
+                return n;
+            });
+
+            CHECK(s.size() == requested);
+            CHECK(!s.isSso());
+            CHECK(s[0] == 'a');
+            CHECK(s[1] == 'b');
+            CHECK(s[25] == 'z');
+            CHECK(s[26] == 'a');
+            // Must always be null-terminated for cStr() callers.
+            CHECK(s.cStr()[requested] == '\0');
+        }
+
+        SECTION("Returning a smaller size truncates")
+        {
+            sf::base::String s;
+            s.resizeAndOverwrite(20u,
+                                 [](char* buf, sf::base::SizeT) -> sf::base::SizeT
+            {
+                buf[0] = 'h';
+                buf[1] = 'i';
+                return 2u;
+            });
+
+            CHECK(s.size() == 2u);
+            CHECK(s == "hi");
+            CHECK(s.cStr()[2] == '\0');
+        }
+
+        SECTION("Returning zero clears the string")
+        {
+            sf::base::String s = "previous";
+            s.resizeAndOverwrite(50u, [](char*, sf::base::SizeT) -> sf::base::SizeT { return 0u; });
+
+            CHECK(s.empty());
+            CHECK(s.size() == 0u);
+            CHECK(s.cStr()[0] == '\0');
+        }
+
+        SECTION("Existing prefix is preserved up to min(size(), newSize)")
+        {
+            // Matches std::string::resize_and_overwrite semantics: bytes up to
+            // the lesser of old and new size keep their values when op runs.
+            sf::base::String s = "Hello";
+            CHECK(s.isSso());
+
+            s.resizeAndOverwrite(8u,
+                                 [](char* buf, sf::base::SizeT n) -> sf::base::SizeT
+            {
+                // First 5 bytes are still "Hello"; only fill the new tail.
+                CHECK(buf[0] == 'H');
+                CHECK(buf[1] == 'e');
+                CHECK(buf[2] == 'l');
+                CHECK(buf[3] == 'l');
+                CHECK(buf[4] == 'o');
+                buf[5] = '!';
+                buf[6] = '!';
+                buf[7] = '!';
+                return n;
+            });
+
+            CHECK(s == "Hello!!!");
+        }
+
+        SECTION("Shrinking via newSize < size() keeps prefix and truncates")
+        {
+            sf::base::String s = "abcdefghij";
+            s.resizeAndOverwrite(3u,
+                                 [](char* buf, sf::base::SizeT n) -> sf::base::SizeT
+            {
+                CHECK(buf[0] == 'a');
+                CHECK(buf[1] == 'b');
+                CHECK(buf[2] == 'c');
+                return n;
+            });
+
+            CHECK(s.size() == 3u);
+            CHECK(s == "abc");
+        }
+
+        SECTION("newSize == 0 with empty string is a no-op")
+        {
+            sf::base::String s;
+            s.resizeAndOverwrite(0u, [](char*, sf::base::SizeT n) -> sf::base::SizeT { return n; });
+
+            CHECK(s.empty());
+            CHECK(s.cStr()[0] == '\0');
+        }
+    }
 }
