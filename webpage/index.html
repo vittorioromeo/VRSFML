@@ -200,6 +200,119 @@
     </section>
 
     <!-- ============================================================== -->
+    <!-- SFML vs VRSFML — decision table                                  -->
+    <!-- ============================================================== -->
+    <section id="pick">
+        <h2>SFML or VRSFML — which should I pick?</h2>
+        <p>
+            Both libraries are good at what they aim for; they aim at different
+            things. Use this table to decide before reading further.
+        </p>
+
+        <div class="compare-table-wrap">
+            <table class="compare-table">
+                <thead>
+                    <tr>
+                        <th>Dimension</th>
+                        <th>SFML 3.x</th>
+                        <th class="col-vrsfml">VRSFML</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Best for</td>
+                        <td>Beginners learning C++ and 2D graphics; small projects that want wide platform support today.</td>
+                        <td class="col-vrsfml">Experienced C++ devs after modern APIs, web deployment, and aggressive performance.</td>
+                    </tr>
+                    <tr>
+                        <td>C++ knowledge required</td>
+                        <td>Modest. C++17 features, forgiving API.</td>
+                        <td class="col-vrsfml">Solid intermediate-to-advanced. C++23, designated initializers, optional-based control flow, aggregate idioms.</td>
+                    </tr>
+                    <tr>
+                        <td>Stability</td>
+                        <td>Stable, semver-tracked releases. Public API rarely breaks within a minor version.</td>
+                        <td class="col-vrsfml">Experimental. Used in shipped games but evolving — expect occasional API breakage.</td>
+                    </tr>
+                    <tr>
+                        <td>API style</td>
+                        <td>Classic OOP. Class hierarchies, virtual <code>draw</code>, getter / setter pairs.</td>
+                        <td class="col-vrsfml">Multi-paradigm and data-oriented friendly. Aggregates with public fields, designated initializers; OOP available where it actually helps.</td>
+                    </tr>
+                    <tr>
+                        <td>Error handling</td>
+                        <td>Exceptions; resources have empty default states.</td>
+                        <td class="col-vrsfml"><code>sf::base::Optional</code> factories; no empty states; the public API does not throw.</td>
+                    </tr>
+                    <tr>
+                        <td>Lifetime safety</td>
+                        <td>Manual. The "white-square problem" is documented behavior.</td>
+                        <td class="col-vrsfml">Compile-time for sprites and shapes; runtime tracker for the rest of the resource graph in debug builds.</td>
+                    </tr>
+                    <tr>
+                        <td>Web (Emscripten / WebGL)</td>
+                        <td>Not supported.</td>
+                        <td class="col-vrsfml">First-class. Same source compiles native and WebGL2; every example runs in a browser tab.</td>
+                    </tr>
+                    <tr>
+                        <td>Mobile (Android / iOS)</td>
+                        <td>Supported.</td>
+                        <td class="col-vrsfml">Not yet shipped. The SDL3 backend should make porting straightforward — contributions welcome.</td>
+                    </tr>
+                    <tr>
+                        <td>Platform backend</td>
+                        <td>Hand-rolled per-OS code.</td>
+                        <td class="col-vrsfml">SDL3. Battle-tested; native Wayland, better controller mapping, smoother resize.</td>
+                    </tr>
+                    <tr>
+                        <td>OpenGL pipeline</td>
+                        <td>Mix of modern and legacy calls (<code>glBegin</code>, <code>glMatrixMode</code>, &hellip;).</td>
+                        <td class="col-vrsfml">Modern OpenGL ES 3.1 only.</td>
+                    </tr>
+                    <tr>
+                        <td>Drawable batching</td>
+                        <td>None. One draw call per drawable.</td>
+                        <td class="col-vrsfml">Transparent auto-batching, plus manual <code>DrawableBatch</code> and <code>TextureAtlas</code>.</td>
+                    </tr>
+                    <tr>
+                        <td>ImGui integration</td>
+                        <td>Out-of-tree <code>imgui-sfml</code> compatibility layer.</td>
+                        <td class="col-vrsfml">Built-in <code>SFML::ImGui</code> module.</td>
+                    </tr>
+                    <tr>
+                        <td>Multi-device audio</td>
+                        <td>One active playback device at a time.</td>
+                        <td class="col-vrsfml">Multiple simultaneous playback devices.</td>
+                    </tr>
+                    <tr>
+                        <td>Compile times</td>
+                        <td>Standard.</td>
+                        <td class="col-vrsfml">Notably faster on clean rebuilds (custom vocabulary types, header hygiene, PImpl everywhere).</td>
+                    </tr>
+                    <tr>
+                        <td>Reference docs</td>
+                        <td>Full Doxygen reference plus official tutorials.</td>
+                        <td class="col-vrsfml">Migration guide and commented examples; reference docs are sparse.</td>
+                    </tr>
+                    <tr>
+                        <td>Community &amp; bindings</td>
+                        <td>Large, established. Many third-party language bindings (Python, Rust, &hellip;).</td>
+                        <td class="col-vrsfml">Small. No third-party bindings yet — reach out to the author for help.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <p class="pick-summary">
+            <strong>Short version:</strong> pick SFML if you want the safer,
+            better-documented, beginner-friendly option with mobile support
+            today. Pick VRSFML if you want the web, modern OpenGL,
+            auto-batching, and faster builds, and you're comfortable on the
+            bleeding edge.
+        </p>
+    </section>
+
+    <!-- ============================================================== -->
     <!-- Code comparisons                                                 -->
     <!-- ============================================================== -->
     <section id="compare">

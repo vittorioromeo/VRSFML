@@ -9,6 +9,30 @@
     --accent: var(--pico-primary);
 }
 
+/* Cross-document view transitions: smooth crossfade on same-origin nav.
+   Falls back to instant nav on browsers without support (e.g. older Firefox).
+   Mirrors vittorioromeo.com/resources/css/custom.css. */
+@view-transition {
+    navigation: auto;
+}
+
+/*
+   Smooth dark / light theme switch + general hyperlink colour transition.
+
+   Universal `:where(*)` selector has zero specificity, so any element-level
+   `transition` declaration further down keeps precedence for its hover
+   behaviour. Elements without their own `transition` rule fall back to this
+   blanket one — which is exactly what we want for theme flips.
+*/
+:where(*, *::before, *::after) {
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease,
+        fill 0.2s ease,
+        stroke 0.2s ease;
+}
+
 html {
     scroll-behavior: smooth;
 }
@@ -407,6 +431,87 @@ footer small {
     font-size: 0.88em;
     padding: 0.1em 0.35em;
     border-radius: 0.3em;
+}
+
+/* ============================================================== */
+/* SFML vs VRSFML decision table                                    */
+/* ============================================================== */
+.compare-table-wrap {
+    margin: 1.25rem 0 0.75rem;
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: 0.55rem;
+    overflow-x: auto;
+    background: var(--pico-card-background-color);
+}
+
+.compare-table {
+    width: 100%;
+    margin: 0;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+    min-width: 40rem;
+}
+
+.compare-table thead th {
+    text-align: left;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--pico-muted-border-color);
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--pico-color);
+    background: color-mix(in srgb, var(--pico-card-background-color) 85%, transparent);
+    white-space: nowrap;
+}
+
+.compare-table thead th:first-child {
+    color: var(--pico-muted-color);
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+}
+
+.compare-table thead th.col-vrsfml,
+.compare-table tbody td.col-vrsfml {
+    background: color-mix(in srgb, var(--pico-primary) 5%, transparent);
+}
+
+.compare-table tbody td {
+    padding: 0.7rem 1rem;
+    vertical-align: top;
+    border-bottom: 1px solid var(--pico-muted-border-color);
+    line-height: 1.5;
+}
+
+.compare-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.compare-table tbody tr:hover td {
+    background: color-mix(in srgb, var(--pico-primary) 4%, transparent);
+}
+
+.compare-table tbody tr:hover td.col-vrsfml {
+    background: color-mix(in srgb, var(--pico-primary) 9%, transparent);
+}
+
+.compare-table tbody td:first-child {
+    font-weight: 600;
+    width: 14rem;
+    color: var(--pico-color);
+}
+
+.pick-summary {
+    margin-top: 1rem;
+    padding: 0.9rem 1.1rem;
+    border-left: 3px solid var(--pico-primary);
+    border-radius: 0.4rem;
+    background: color-mix(in srgb, var(--pico-primary) 6%, transparent);
+    font-size: 0.95rem;
+}
+
+.pick-summary strong {
+    color: var(--pico-color);
 }
 
 /* ============================================================== */

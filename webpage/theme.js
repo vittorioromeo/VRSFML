@@ -29,7 +29,23 @@
 
     btn.addEventListener("click", function () {
         var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
-        apply(next);
-        try { localStorage.setItem(STORAGE_KEY, next); } catch (e) {}
+
+        var commit = function () {
+            apply(next);
+            try { localStorage.setItem(STORAGE_KEY, next); } catch (e) {}
+        };
+
+        // Same-Document View Transitions API: the browser snapshots the
+        // current state, runs the mutation, snapshots the new state, then
+        // crossfades between the two. Far more reliable than per-property
+        // CSS transitions for theme flips, because every visible change
+        // (including ones the CSS `transition` rule doesn't list) animates
+        // uniformly. Same approach as vittorioromeo.com.
+        // Falls back to instant-apply on Safari < 18 / older Firefox.
+        if (typeof document.startViewTransition === "function") {
+            document.startViewTransition(commit);
+        } else {
+            commit();
+        }
     });
 })();
