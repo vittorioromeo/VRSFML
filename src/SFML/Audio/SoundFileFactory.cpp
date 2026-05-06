@@ -73,16 +73,16 @@ namespace sf
 ////////////////////////////////////////////////////////////
 base::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromFilename(const Path& filename)
 {
-    auto stream = FileInputStream::open(filename);
+    base::UniquePtr<SoundFileReader> result; // Use a single local variable for NRVO
 
+    auto stream = FileInputStream::open(filename);
     if (!stream.hasValue())
     {
         priv::err() << "Failed to open sound file (couldn't open stream)\n" << priv::PathDebugFormatter{filename};
-        return nullptr;
+        return result; // Null
     }
 
-    auto result = createReaderFromStream(*stream);
-
+    result = createReaderFromStream(*stream);
     if (result == nullptr)
         priv::err() << "Sound file: " << priv::PathDebugFormatter{filename};
 
