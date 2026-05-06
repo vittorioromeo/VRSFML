@@ -57,7 +57,7 @@ void requestUrl(const sf::base::StringView& url, int redirectsRemaining)
     sf::cOut() << "Server responded with HTTP status " << statusNum << '\n' << sf::endL;
 
     // Output body if its content type is text-based and not compressed
-    if (response.getField("Content-Type").toStringView().find("text") == 0)
+    if (response.getField("Content-Type").find("text") == 0)
     {
         if (const auto encoding = response.getField("Content-Encoding"); encoding.empty())
         {
@@ -84,7 +84,7 @@ void requestUrl(const sf::base::StringView& url, int redirectsRemaining)
 
         if (auto nextUrl = response.getField("Location"); !nextUrl.empty())
         {
-            if ((nextUrl.toStringView().find("http://") != 0) && (nextUrl.toStringView().find("https://") != 0))
+            if ((nextUrl.find("http://") != 0) && (nextUrl.find("https://") != 0))
                 nextUrl = host + nextUrl;
 
             sf::cOut() << "Following redirect to " << nextUrl << '\n' << sf::endL;
@@ -110,7 +110,7 @@ int main()
     {
         sf::cOut() << "Type the complete URL of the webpage to request: ";
         sf::cIn() >> url;
-    } while ((url.toStringView().find("http://") != 0) && (url.toStringView().find("https://") != 0));
+    } while ((url.find("http://") != 0) && (url.find("https://") != 0));
 
     sf::cOut() << "\nRequesting " << url << '\n' << sf::endL;
 
