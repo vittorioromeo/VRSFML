@@ -6,12 +6,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Config.hpp"
 
 #include "SFML/System/Export.hpp"
 
 #include "SFML/System/InputStream.hpp"
 
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 
