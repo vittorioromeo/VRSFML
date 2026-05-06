@@ -542,10 +542,10 @@ base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(WindowSettings windowSettin
             SFML_BASE_ASSERT(!VideoModeUtils::getFullscreenModes().empty() && "No video modes available");
             const auto bestFullscreenMode = VideoModeUtils::getFullscreenModes()[0];
 
-            VideoMode videoMode{windowSettings.size,
-                                windowSettings.bitsPerPixel,
-                                bestFullscreenMode.pixelDensity,
-                                bestFullscreenMode.refreshRate};
+            VideoMode videoMode{.size         = windowSettings.size,
+                                .bitsPerPixel = windowSettings.bitsPerPixel,
+                                .pixelDensity = bestFullscreenMode.pixelDensity,
+                                .refreshRate  = bestFullscreenMode.refreshRate};
 
             // Make sure that the chosen video mode is compatible
             if (!videoMode.isValid())
