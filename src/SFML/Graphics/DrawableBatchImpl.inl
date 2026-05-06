@@ -481,9 +481,10 @@ BatchedGeometry DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
     m_storage.commitMoreVertices(fillVertexCount);
 
     //
-    // Update fill vertex positions and compute inside bounds
+    // Update fill vertex positions and color, compute inside bounds
     fillVertexPtr[1].position    = transform.transformPoint(pointFn(0u)); // first point
-    sf::Vec2f fillBoundsPosition = fillVertexPtr[1].position;             // left and top
+    fillVertexPtr[1].color       = descriptor.fillColor;
+    sf::Vec2f fillBoundsPosition = fillVertexPtr[1].position; // left and top
 
     float fillBoundsMaxX = fillVertexPtr[1].position.x; // right
     float fillBoundsMaxY = fillVertexPtr[1].position.y; // bottom
@@ -493,6 +494,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
         Vertex& v = fillVertexPtr[1u + i];
 
         v.position = transform.transformPoint(pointFn(i));
+        v.color    = descriptor.fillColor;
 
         fillBoundsPosition.x = SFML_BASE_MIN(fillBoundsPosition.x, v.position.x);
         fillBoundsPosition.y = SFML_BASE_MIN(fillBoundsPosition.y, v.position.y);
@@ -508,17 +510,17 @@ BatchedGeometry DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
     // back to the world-space bbox center (valid for convex/centrally-symmetric shapes).
     fillVertexPtr[0].position            = (localApex != nullptr) ? transform.transformPoint(*localApex)
                                                                   : fillBoundsPosition + fillBoundsSize / 2.f;
+    fillVertexPtr[0].color               = descriptor.fillColor;
     fillVertexPtr[1u + nPoints].position = fillVertexPtr[1].position; // repeated first point
+    fillVertexPtr[1u + nPoints].color    = descriptor.fillColor;
 
     //
-    // Update fill color and tex coords (if the shape's fill is visible)
+    // Update fill tex coords (if the shape's fill is visible)
     if (fillBoundsSize.x > 0.f && fillBoundsSize.y > 0.f) [[likely]]
     {
         const Vertex* end = fillVertexPtr + fillVertexCount;
         for (Vertex* vertex = fillVertexPtr; vertex != end; ++vertex)
         {
-            vertex->color = descriptor.fillColor;
-
             const Vec2f ratio = (vertex->position - fillBoundsPosition).componentWiseDiv(fillBoundsSize);
             vertex->texCoords = descriptor.textureRect.position + descriptor.textureRect.size.componentWiseMul(ratio);
         }
@@ -659,11 +661,18 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const CurvedArrowShapeData& sd)
     const float angleStep    = sweepAngleRadians / static_cast<float>(numArcPoints - 1u);
     const float startRadians = sd.startAngle.asRadians();
 
+    // Shift the ring's natural center `(outerRadius, outerRadius)` to the origin, then apply the
+    // user-facing transform. Composing once lets `generateRingVertices` and the head-fill writes
+    // emit world-space positions directly, avoiding a second pass over body fill vertices.
+    const auto correctionTransform = Transform::fromPosition({-sd.outerRadius, -sd.outerRadius});
+    const auto fullTransform       = transform * correctionTransform;
+
     generateRingVertices(sd.textureRect,
                          sd.fillColor,
                          sd.outerRadius,
                          sd.innerRadius,
-                         [] [[gnu::always_inline, gnu::flatten]] (const Vec2f p) { return p; },
+                         [&] [[gnu::always_inline, gnu::flatten]] (const Vec2f p)
+    { return fullTransform.transformPoint(p); },
                          numArcPoints,
                          startRadians,
                          angleStep,
@@ -671,16 +680,6 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const CurvedArrowShapeData& sd)
                          bodyFillVertexPtr);
 
     m_storage.commitMoreVertices(bodyFillVertexCount);
-    const Vec2f ringNaturalCenter = {sd.outerRadius, sd.outerRadius};
-    Transform   correctionTransform;
-    correctionTransform.translate(-ringNaturalCenter); // Shift so the arc center is at (0,0)
-
-    for (base::SizeT i = 0; i < bodyFillVertexCount; ++i)
-    {
-        bodyFillVertexPtr[i].position = transform.transformPoint(
-            correctionTransform.transformPoint(bodyFillVertexPtr[i].position));
-        // Texture coords from generateRingVertices are assumed to be fine as they are relative.
-    }
 
     const base::SizeT numBodySegments    = numArcPoints - 1u;
     const base::SizeT bodyFillIndexCount = numBodySegments * 6u; // 2 triangles per segment, 3 indices per triangle
@@ -733,24 +732,21 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const CurvedArrowShapeData& sd)
     // Assign head vertices with transformation
     headFillVertexPtr[0] = {
         // Tip
-        .position = transform.transformPoint(
-            correctionTransform.transformPoint(headAttachPointLocal + tangentDir * (sd.headLength * sweepSign))),
+        .position  = fullTransform.transformPoint(headAttachPointLocal + tangentDir * (sd.headLength * sweepSign)),
         .color     = sd.fillColor,
         .texCoords = sd.textureRect.position + sd.textureRect.size.componentWiseMul({0.5f, 1.f}) // Example: Mid-top
     };
 
     headFillVertexPtr[1] = {
         // Outer Barb
-        .position = transform.transformPoint(
-            correctionTransform.transformPoint(headAttachPointLocal + radialOutDir * (sd.headWidth / 2.f))),
+        .position  = fullTransform.transformPoint(headAttachPointLocal + radialOutDir * (sd.headWidth / 2.f)),
         .color     = sd.fillColor,
         .texCoords = sd.textureRect.position + sd.textureRect.size.componentWiseMul({0.f, 0.f}) // Example: Top-left
     };
 
     headFillVertexPtr[2] = {
         // Inner Barb
-        .position = transform.transformPoint(
-            correctionTransform.transformPoint(headAttachPointLocal - radialOutDir * (sd.headWidth / 2.f))),
+        .position  = fullTransform.transformPoint(headAttachPointLocal - radialOutDir * (sd.headWidth / 2.f)),
         .color     = sd.fillColor,
         .texCoords = sd.textureRect.position + sd.textureRect.size.componentWiseMul({1.f, 0.f}) // Example: Top-right
     };
