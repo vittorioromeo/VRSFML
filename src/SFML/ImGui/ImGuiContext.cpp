@@ -944,11 +944,7 @@ ImGuiContext::ImGuiContext(const bool loadDefaultFont) :
 
 ////////////////////////////////////////////////////////////
 ImGuiContext::ImGuiContext(ImFontAtlas& sharedFontAtlas, const bool claimOwnership) :
-    m_impl{base::makeUnique<Impl>(/* loadDefaultFont */ false,
-                                  &sharedFontAtlas,
-                                  claimOwnership,
-                                  &setClipboardTextFn,
-                                  &getClipboardTextFn)}
+    m_impl{base::makeUnique<Impl>(/* loadDefaultFont */ false, &sharedFontAtlas, claimOwnership, &setClipboardTextFn, &getClipboardTextFn)}
 {
     initDefaultJoystickMapping();
 }
