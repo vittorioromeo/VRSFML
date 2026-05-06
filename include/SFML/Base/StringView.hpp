@@ -7,14 +7,11 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Builtin/Memcpy.hpp"
+#include "SFML/Base/Builtin/Memcmp.hpp"
+#include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/MinMaxMacros.hpp"
 #include "SFML/Base/SizeT.hpp"
-
-#ifndef __GNUC__
-    #include "SFML/Base/Builtin/Strlen.hpp"
-    #include "SFML/Base/Builtin/Strncmp.hpp"
-#endif
+#include "SFML/Base/Trait/IsSame.hpp"
 
 
 namespace sf::base
@@ -46,39 +43,39 @@ private:
         return false;
     }
 
+
     ////////////////////////////////////////////////////////////
-#ifndef __GNUC__
-    #define SFML_BASE_PRIV_CONSTEXPR_STRLEN  SFML_BASE_STRLEN
-    #define SFML_BASE_PRIV_CONSTEXPR_STRNCMP SFML_BASE_STRNCMP
-#else
-    [[nodiscard, gnu::always_inline, gnu::pure]] static constexpr SizeT constexprStrLen(const char* const cStr) noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] static constexpr int constexprMemCmp(const char* s1, const char* s2, SizeT n) noexcept
     {
-        const char* end = cStr;
-
-        while (*end != '\0')
-            ++end;
-
-        return static_cast<SizeT>(end - cStr);
-    }
-
-    [[nodiscard, gnu::always_inline, gnu::pure]] static constexpr int constexprStrNCmp(const char* s1, const char* s2, SizeT n)
-    {
-        while (n && *s1 && (*s1 == *s2))
+        if consteval
         {
-            ++s1;
-            ++s2;
-            --n;
+            for (SizeT i = 0; i < n; ++i)
+                if (s1[i] != s2[i])
+                    return static_cast<int>(static_cast<unsigned char>(s1[i])) -
+                           static_cast<int>(static_cast<unsigned char>(s2[i]));
+
+            return 0;
         }
 
-        if (n == 0)
-            return 0;
-
-        return *s1 - *s2;
+        return SFML_BASE_MEMCMP(s1, s2, n);
     }
 
-    #define SFML_BASE_PRIV_CONSTEXPR_STRLEN  constexprStrLen
-    #define SFML_BASE_PRIV_CONSTEXPR_STRNCMP constexprStrNCmp
-#endif
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] static constexpr SizeT constexprStrLen(const char* const cStr) noexcept
+    {
+        if consteval
+        {
+            const char* end = cStr;
+
+            while (*end != '\0')
+                ++end;
+
+            return static_cast<SizeT>(end - cStr);
+        }
+
+        return SFML_BASE_STRLEN(cStr);
+    }
 
 
 public:
@@ -104,7 +101,7 @@ public:
         SFML_BASE_ASSERT(cStr != nullptr); // assert before strlen to avoid UB
         return cStr;
     }()},
-        theSize{SFML_BASE_PRIV_CONSTEXPR_STRLEN(cStr)}
+        theSize{constexprStrLen(cStr)}
     {
     }
 
@@ -194,7 +191,7 @@ public:
         const char* const lastPossibleStart = theData + theSize - v.theSize;
 
         for (const char* p = theData + startPos; p <= lastPossibleStart; ++p)
-            if (SFML_BASE_PRIV_CONSTEXPR_STRNCMP(p, v.theData, v.theSize) == 0)
+            if (constexprMemCmp(p, v.theData, v.theSize) == 0)
                 return static_cast<SizeT>(p - theData);
 
         return nPos;
@@ -244,7 +241,7 @@ public:
 
         do
         {
-            if (SFML_BASE_PRIV_CONSTEXPR_STRNCMP(theData + pos, v.theData, v.theSize) == 0)
+            if (constexprMemCmp(theData + pos, v.theData, v.theSize) == 0)
                 return pos;
         } while (pos-- > 0);
 
@@ -330,15 +327,13 @@ public:
         if (empty())
             return nPos;
 
-        const SizeT maxIdx = SFML_BASE_MIN(theSize - 1, startPos);
+        SizeT pos = SFML_BASE_MIN(startPos, theSize - 1u);
 
-        for (SizeT i = 0u; i <= maxIdx; ++i)
+        do
         {
-            const SizeT j = maxIdx - i;
-
-            if (containsChar(theData[j], v))
-                return j;
-        }
+            if (containsChar(theData[pos], v))
+                return pos;
+        } while (pos-- > 0u);
 
         return nPos;
     }
@@ -417,15 +412,13 @@ public:
         if (empty())
             return nPos;
 
-        const SizeT maxIdx = SFML_BASE_MIN(theSize - 1, startPos);
+        SizeT pos = SFML_BASE_MIN(startPos, theSize - 1u);
 
-        for (SizeT i = 0u; i <= maxIdx; ++i)
+        do
         {
-            const SizeT j = maxIdx - i;
-
-            if (!containsChar(theData[j], v))
-                return j;
-        }
+            if (!containsChar(theData[pos], v))
+                return pos;
+        } while (pos-- > 0u);
 
         return nPos;
     }
@@ -437,9 +430,13 @@ public:
         if (empty())
             return nPos;
 
-        for (SizeT i = SFML_BASE_MIN(startPos, theSize - 1) + 1; i > 0; --i)
-            if (theData[i - 1] != c)
-                return i - 1;
+        SizeT pos = SFML_BASE_MIN(startPos, theSize - 1u);
+
+        do
+        {
+            if (theData[pos] != c)
+                return pos;
+        } while (pos-- > 0u);
 
         return nPos;
     }
@@ -459,6 +456,150 @@ public:
                                                                                const SizeT startPos = nPos) const noexcept
     {
         return findLastNotOf(StringView{cStr}, startPos);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool startsWith(const StringView prefix) const noexcept
+    {
+        return theSize >= prefix.theSize && constexprMemCmp(theData, prefix.theData, prefix.theSize) == 0;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool startsWith(const char c) const noexcept
+    {
+        return theSize > 0u && theData[0] == c;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool startsWith(const char* const cStr) const noexcept
+    {
+        return startsWith(StringView{cStr});
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool endsWith(const StringView suffix) const noexcept
+    {
+        return theSize >= suffix.theSize &&
+               constexprMemCmp(theData + theSize - suffix.theSize, suffix.theData, suffix.theSize) == 0;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool endsWith(const char c) const noexcept
+    {
+        return theSize > 0u && theData[theSize - 1u] == c;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool endsWith(const char* const cStr) const noexcept
+    {
+        return endsWith(StringView{cStr});
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool contains(const StringView needle) const noexcept
+    {
+        return find(needle) != nPos;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool contains(const char c) const noexcept
+    {
+        return find(c) != nPos;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool contains(const char* const cStr) const noexcept
+    {
+        return find(StringView{cStr}) != nPos;
+    }
+
+
+private:
+    // Pre: when `Splitter == StringView`, `splitter` must be non-empty (the
+    // public `forSplits(StringView)` overload asserts this before calling here).
+    // The single-char overload can't pass an empty splitter by construction.
+    template <typename Splitter, typename F>
+    [[gnu::always_inline]] constexpr void forSplitsImpl(Splitter splitter, F&& f) const
+    {
+        SizeT segStart = 0u;
+
+        while (segStart < theSize)
+        {
+            const SizeT splitPos = find(splitter, segStart);
+
+            if (splitPos == nPos)
+            {
+                f(StringView{theData + segStart, theSize - segStart});
+                return;
+            }
+
+            f(StringView{theData + segStart, splitPos - segStart});
+
+            if constexpr (SFML_BASE_IS_SAME(Splitter, char))
+                segStart = splitPos + 1u;
+            else
+                segStart = splitPos + splitter.theSize;
+        }
+    }
+
+
+public:
+    ////////////////////////////////////////////////////////////
+    /// \brief Invoke `f(segment)` for each segment delimited by `splitter`.
+    ///
+    /// Each `segment` is a `StringView` of the content NOT including the
+    /// `splitter` itself. A trailing `splitter` does not produce an extra
+    /// empty final segment, matching `std::getline` / `str.splitlines()`
+    /// semantics: `"a,b,".forSplits(",", ...)` yields exactly `"a"` and
+    /// `"b"`. A leading or embedded back-to-back `splitter` does produce
+    /// empty segments. Multi-character splitters use the standard
+    /// non-overlapping convention. `splitter` must be non-empty.
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename F>
+    [[gnu::always_inline, gnu::flatten]] constexpr void forSplits(const StringView splitter, F&& f) const
+    {
+        SFML_BASE_ASSERT(!splitter.empty() && "Splitter must be non-empty");
+        forSplitsImpl(splitter, static_cast<F&&>(f));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Invoke `f(segment)` for each segment delimited by a single character.
+    ///
+    /// Same semantics as the `StringView`-splitter overload, but uses the
+    /// faster single-character `find(char)` path internally.
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename F>
+    [[gnu::always_inline, gnu::flatten]] constexpr void forSplits(const char splitter, F&& f) const
+    {
+        forSplitsImpl(splitter, static_cast<F&&>(f));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Invoke `f(line)` for each line in the view, splitting on `'\n'`.
+    ///
+    /// Convenience wrapper for `forSplits('\n', ...)`. Each `line` excludes
+    /// the terminating `'\n'`; a trailing newline does not produce an extra
+    /// empty final line. Carriage returns in CRLF endings remain part of
+    /// the line view.
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename F>
+    [[gnu::always_inline, gnu::flatten]] constexpr void forLines(F&& f) const
+    {
+        forSplits('\n', static_cast<F&&>(f));
     }
 
 
@@ -518,7 +659,7 @@ public:
         if (lhs.theSize == 0u)
             return true;
 
-        return SFML_BASE_PRIV_CONSTEXPR_STRNCMP(lhs.theData, rhs.theData, lhs.theSize) == 0;
+        return constexprMemCmp(lhs.theData, rhs.theData, lhs.theSize) == 0;
     }
 
 
@@ -531,10 +672,27 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Lexicographic byte-wise comparison of two views.
+    ///
+    /// Treats embedded NUL bytes as ordinary data (the underlying primitive is
+    /// `memcmp`, not `strncmp`). The return value's *sign* is what matters and
+    /// is what callers like `operator<` consume:
+    /// - negative: `*this` is less than `rhs`
+    /// - zero    : `*this` equals `rhs`
+    /// - positive: `*this` is greater than `rhs`
+    ///
+    /// The exact magnitude is not normalised to `-1` / `+1` (unlike
+    /// `std::string::compare`); it can be any nonzero value returned by the
+    /// underlying byte comparison.
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr int compare(const StringView& rhs) const noexcept
     {
         const SizeT minSize = SFML_BASE_MIN(theSize, rhs.theSize);
-        const int   result  = SFML_BASE_PRIV_CONSTEXPR_STRNCMP(theData, rhs.theData, minSize);
+
+        // Avoid passing potentially-null pointers to `memcmp` for the trivial
+        // empty-operand case (well-defined in practice but UB by the C standard).
+        const int result = (minSize == 0u) ? 0 : constexprMemCmp(theData, rhs.theData, minSize);
 
         if (result != 0)
             return result;
@@ -606,22 +764,15 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] friend void swap(StringView& lhs, StringView& rhs) noexcept
+    [[gnu::always_inline]] friend constexpr void swap(StringView& lhs, StringView& rhs) noexcept
     {
-#ifndef __clang__
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wclass-memaccess"
-#endif
+        const char* const tmpData = lhs.theData;
+        lhs.theData               = rhs.theData;
+        rhs.theData               = tmpData;
 
-        alignas(StringView) char temp[sizeof(StringView)];
-
-        SFML_BASE_MEMCPY(&temp, &lhs, sizeof(StringView));
-        SFML_BASE_MEMCPY(&lhs, &rhs, sizeof(StringView));
-        SFML_BASE_MEMCPY(&rhs, &temp, sizeof(StringView));
-
-#ifndef __clang__
-    #pragma GCC diagnostic pop
-#endif
+        const SizeT tmpSize = lhs.theSize;
+        lhs.theSize         = rhs.theSize;
+        rhs.theSize         = tmpSize;
     }
 
 
@@ -631,11 +782,6 @@ public:
     const char* theData{nullptr};
     SizeT       theSize{0u};
 };
-
-
-////////////////////////////////////////////////////////////
-#undef SFML_BASE_PRIV_CONSTEXPR_STRNCMP
-#undef SFML_BASE_PRIV_CONSTEXPR_STRLEN
 
 
 } // namespace sf::base

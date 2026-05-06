@@ -348,7 +348,7 @@ void String::resize(const SizeT newSize, const char c)
 void String::erase(const SizeT index, SizeT count)
 {
     const SizeT currentSize = size();
-    SFML_BASE_ASSERT(index < currentSize && "Index is out of bounds");
+    SFML_BASE_ASSERT(index <= currentSize && "Index is out of bounds");
 
     // If count is nPos or goes past the end, clamp it to erase until the end.
     if (count == nPos || index + count > currentSize)
@@ -437,6 +437,99 @@ void String::insert(const SizeT pos, const char* const cStr)
 
     // 4. Update the size.
     setSizeAndTerminate(newSize);
+}
+
+
+////////////////////////////////////////////////////////////
+void String::replace(const SizeT pos, SizeT count, const StringView replacement)
+{
+    const SizeT oldSize = size();
+    SFML_BASE_ASSERT(pos <= oldSize && "Replacement position is out of bounds");
+
+    // Clamp `count` to the rest of the string (matches `erase` semantics).
+    if (count == nPos || pos + count > oldSize)
+        count = oldSize - pos;
+
+    // Self-aliasing: if `replacement` views into our own buffer, copy it first
+    // so the tail-shift below cannot smash it before we read it.
+    const char* const myData        = data();
+    const bool        srcInsideThis = (replacement.data() >= myData) && (replacement.data() < myData + oldSize);
+
+    if (srcInsideThis)
+    {
+        const String replacementCopy{replacement};
+        replace(pos, count, replacementCopy.toStringView());
+        return;
+    }
+
+    const SizeT replSize = replacement.size();
+    const SizeT newSize  = oldSize - count + replSize;
+
+    // Ensure capacity. Only grow when expanding; this might reallocate and invalidate `data()`.
+    if (newSize > oldSize)
+        reserve(newSize);
+
+    char* const d          = data();
+    const SizeT tailLength = oldSize - pos - count;
+
+    // Shift the tail (`[pos+count, oldSize)`) left or right by `replSize - count`.
+    if (replSize != count && tailLength > 0u)
+        SFML_BASE_MEMMOVE(d + pos + replSize, d + pos + count, tailLength);
+
+    // Copy the replacement into the freshly-sized hole.
+    if (replSize > 0u)
+        SFML_BASE_MEMCPY(d + pos, replacement.data(), replSize);
+
+    setSizeAndTerminate(newSize);
+}
+
+
+////////////////////////////////////////////////////////////
+bool String::replaceFirstOccurrence(const StringView target, const StringView replacement)
+{
+    if (target.empty())
+        return false;
+
+    const SizeT pos = toStringView().find(target);
+    if (pos == nPos)
+        return false;
+
+    replace(pos, target.size(), replacement);
+    return true;
+}
+
+
+////////////////////////////////////////////////////////////
+SizeT String::replaceAllOccurrences(const StringView target, const StringView replacement)
+{
+    if (target.empty())
+        return 0u;
+
+    // Either input might view into our own buffer. The buffer can move
+    // mid-loop (any expanding `replace` may reallocate), so copy aliasing
+    // inputs into stable storage once before iterating.
+    const char* const myData = data();
+    const SizeT       myLen  = size();
+    const auto aliasesUs     = [&](const StringView v) { return (v.data() >= myData) && (v.data() < myData + myLen); };
+
+    if (aliasesUs(target) || aliasesUs(replacement))
+    {
+        const String targetCopy{target};
+        const String replacementCopy{replacement};
+        return replaceAllOccurrences(targetCopy.toStringView(), replacementCopy.toStringView());
+    }
+
+    SizeT count = 0u;
+    SizeT pos   = 0u;
+
+    while ((pos = toStringView().find(target, pos)) != nPos)
+    {
+        replace(pos, target.size(), replacement);
+        pos += replacement.size(); // skip past the just-inserted replacement to avoid re-matching it
+        ++count;
+    }
+
+    return count;
 }
 
 
