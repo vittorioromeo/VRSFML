@@ -369,7 +369,7 @@ TEST_CASE("[Base] Base/String.hpp")
 
             str += longStringLiteral;
             CHECK(!str.isSso());
-            CHECK(str.toStringView().substrByPosLen(3) == longStringLiteral);
+            CHECK(str.substrByPosLen(3u) == longStringLiteral);
         }
     }
 
@@ -846,5 +846,469 @@ TEST_CASE("[Base] Base/String.hpp")
             CHECK(s.empty());
             CHECK(s.cStr()[0] == '\0');
         }
+    }
+
+    SECTION("Replace")
+    {
+        SECTION("Same-length replacement (no shift)")
+        {
+            sf::base::String s = "Hello, world!";
+            s.replace(7, 5, "WORLD");
+            CHECK(s == "Hello, WORLD!");
+            CHECK(s.size() == 13u);
+        }
+
+        SECTION("Shorter replacement (tail shifts left)")
+        {
+            sf::base::String s = "Hello, world!";
+            s.replace(7, 5, "you");
+            CHECK(s == "Hello, you!");
+            CHECK(s.size() == 11u);
+        }
+
+        SECTION("Longer replacement (tail shifts right)")
+        {
+            sf::base::String s = "Hello, world!";
+            s.replace(7, 5, "everybody");
+            CHECK(s == "Hello, everybody!");
+            CHECK(s.size() == 17u);
+        }
+
+        SECTION("Empty replacement acts as erase")
+        {
+            sf::base::String s = "Hello, world!";
+            s.replace(5, 7, "");
+            CHECK(s == "Hello!");
+            CHECK(s.size() == 6u);
+        }
+
+        SECTION("Zero count acts as insert")
+        {
+            sf::base::String s = "Hello!";
+            s.replace(5, 0, ", world");
+            CHECK(s == "Hello, world!");
+            CHECK(s.size() == 13u);
+        }
+
+        SECTION("Replace at beginning")
+        {
+            sf::base::String s = "abcdef";
+            s.replace(0, 3, "XYZW");
+            CHECK(s == "XYZWdef");
+        }
+
+        SECTION("Replace at end (pos == size)")
+        {
+            sf::base::String s = "abc";
+            s.replace(3, 0, "def");
+            CHECK(s == "abcdef");
+        }
+
+        SECTION("count == nPos clamps to end")
+        {
+            sf::base::String s = "Hello, world!";
+            s.replace(7, sf::base::String::nPos, "EVERYONE");
+            CHECK(s == "Hello, EVERYONE");
+        }
+
+        SECTION("count past end clamps to end")
+        {
+            sf::base::String s = "abcdef";
+            s.replace(2, 100u, "XYZ");
+            CHECK(s == "abXYZ");
+        }
+
+        SECTION("Replace whole string")
+        {
+            sf::base::String s = "abc";
+            s.replace(0, s.size(), "abcdefghij");
+            CHECK(s == "abcdefghij");
+        }
+
+        SECTION("Replace then content fits in original capacity (no realloc)")
+        {
+            sf::base::String s = "Hello, world!";
+            s.reserve(64);
+            const char* const originalData = s.data();
+
+            s.replace(7, 5, "everybody");
+
+            CHECK(s == "Hello, everybody!");
+            CHECK(s.data() == originalData); // no reallocation
+        }
+
+        SECTION("Replace forces growth out of SSO")
+        {
+            sf::base::String s = "abc";
+            CHECK(s.isSso());
+
+            s.replace(0, s.size(), longStringLiteral);
+
+            CHECK(!s.isSso());
+            CHECK(s == longStringLiteral);
+        }
+
+        SECTION("Self-aliasing replacement (substring of itself)")
+        {
+            // Replace [7..12) ("world") with the substring "Hello" already
+            // sitting at [0..5). The implementation must copy the source first
+            // before shifting the tail, otherwise the read would race the move.
+            sf::base::String s = "Hello, world!";
+            s.replace(7, 5, sf::base::StringView{s}.substrByPosLen(0, 5));
+
+            CHECK(s == "Hello, Hello!");
+        }
+
+        SECTION("Self-aliasing replacement that overlaps the replaced range")
+        {
+            // Source overlaps the destination: replace [3..6) with the
+            // substring at [4..7). Self-aliasing path must copy first.
+            sf::base::String s = "abcdefghij";
+            s.replace(3, 3, sf::base::StringView{s}.substrByPosLen(4, 3));
+
+            CHECK(s == "abcefgghij");
+        }
+
+        SECTION("Heap string self-aliasing forcing reallocation")
+        {
+            // Long string that's already on the heap; replace with a tail of
+            // itself that, after substitution, exceeds current capacity.
+            sf::base::String s(longStringLiteral);
+            CHECK(!s.isSso());
+
+            const auto             tailView = sf::base::StringView{s}.substrByPosLen(s.size() / 2);
+            const sf::base::String expected = sf::base::String{longStringLiteral} + sf::base::String{tailView};
+
+            // Replace zero chars at end with our own tail -> doubles the data.
+            s.replace(s.size(), 0, tailView);
+
+            CHECK(s == expected);
+        }
+
+        SECTION("Replace with empty replacement on empty string is a no-op")
+        {
+            sf::base::String s;
+            s.replace(0, 0, "");
+            CHECK(s.empty());
+        }
+
+        SECTION("Replace preserves null terminator")
+        {
+            sf::base::String s = "Hello, world!";
+            s.replace(7, 5, "you");
+            // `cStr()` must still produce a valid C-string at the new size.
+            CHECK(s.cStr()[s.size()] == '\0');
+        }
+
+        SECTION("Replace accepts String, StringView, const char* via implicit conversions")
+        {
+            sf::base::String s1 = "abc";
+            sf::base::String s2 = "abc";
+            sf::base::String s3 = "abc";
+
+            const sf::base::String     replString = "XX";
+            const sf::base::StringView replView   = "YY";
+
+            s1.replace(1, 1, replString);
+            s2.replace(1, 1, replView);
+            s3.replace(1, 1, "ZZ");
+
+            CHECK(s1 == "aXXc");
+            CHECK(s2 == "aYYc");
+            CHECK(s3 == "aZZc");
+        }
+    }
+
+    SECTION("ReplaceFirstOccurrence")
+    {
+        SECTION("Found")
+        {
+            sf::base::String s = "Hello, world!";
+            CHECK(s.replaceFirstOccurrence("world", "everybody"));
+            CHECK(s == "Hello, everybody!");
+        }
+
+        SECTION("Not found leaves string unchanged")
+        {
+            sf::base::String s = "Hello, world!";
+            CHECK_FALSE(s.replaceFirstOccurrence("xyz", "ABC"));
+            CHECK(s == "Hello, world!");
+        }
+
+        SECTION("Only first match is replaced")
+        {
+            sf::base::String s = "abc abc abc";
+            CHECK(s.replaceFirstOccurrence("abc", "XYZ"));
+            CHECK(s == "XYZ abc abc");
+        }
+
+        SECTION("Empty target returns false and leaves string unchanged")
+        {
+            sf::base::String s = "Hello";
+            CHECK_FALSE(s.replaceFirstOccurrence("", "X"));
+            CHECK(s == "Hello");
+        }
+
+        SECTION("Empty replacement acts as erase")
+        {
+            sf::base::String s = "Hello, world!";
+            CHECK(s.replaceFirstOccurrence(", world", ""));
+            CHECK(s == "Hello!");
+        }
+
+        SECTION("Replace at very start")
+        {
+            sf::base::String s = "abcabc";
+            CHECK(s.replaceFirstOccurrence("abc", "XX"));
+            CHECK(s == "XXabc");
+        }
+
+        SECTION("Replace at very end")
+        {
+            sf::base::String s = "abcabc";
+            CHECK(s.replaceFirstOccurrence("bc", "XYZ"));
+            CHECK(s == "aXYZabc"); // first "bc" at index 1
+        }
+
+        SECTION("Empty target on empty string returns false")
+        {
+            sf::base::String s;
+            CHECK_FALSE(s.replaceFirstOccurrence("", "X"));
+            CHECK(s.empty());
+        }
+
+        SECTION("Self-aliasing target view (substring of self)")
+        {
+            sf::base::String s   = "abcdef";
+            const auto       sub = sf::base::StringView{s}.substrByPosLen(2, 2); // "cd"
+            CHECK(s.replaceFirstOccurrence(sub, "XYZ"));
+            CHECK(s == "abXYZef");
+        }
+    }
+
+    SECTION("ReplaceAllOccurrences")
+    {
+        SECTION("Multiple matches")
+        {
+            sf::base::String s = "abc abc abc";
+            CHECK(s.replaceAllOccurrences("abc", "X") == 3u);
+            CHECK(s == "X X X");
+        }
+
+        SECTION("No matches leaves string unchanged and returns 0")
+        {
+            sf::base::String s = "Hello, world!";
+            CHECK(s.replaceAllOccurrences("xyz", "ABC") == 0u);
+            CHECK(s == "Hello, world!");
+        }
+
+        SECTION("Single match returns 1")
+        {
+            sf::base::String s = "Hello, world!";
+            CHECK(s.replaceAllOccurrences("world", "everybody") == 1u);
+            CHECK(s == "Hello, everybody!");
+        }
+
+        SECTION("Empty target returns 0 and leaves string unchanged")
+        {
+            sf::base::String s = "Hello";
+            CHECK(s.replaceAllOccurrences("", "X") == 0u);
+            CHECK(s == "Hello");
+        }
+
+        SECTION("Empty replacement removes all occurrences")
+        {
+            sf::base::String s = "abXYZabXYZab";
+            CHECK(s.replaceAllOccurrences("XYZ", "") == 2u);
+            CHECK(s == "ababab");
+        }
+
+        SECTION("Adjacent matches all replaced")
+        {
+            sf::base::String s = "aaaa";
+            // "aa" "aa" matches at 0 and 2; both get replaced.
+            CHECK(s.replaceAllOccurrences("aa", "X") == 2u);
+            CHECK(s == "XX");
+        }
+
+        SECTION("Replacement contains target -- does not infinite-loop")
+        {
+            sf::base::String s = "abc";
+            // "a" -> "aa": after replace, advance past it so we don't re-match.
+            CHECK(s.replaceAllOccurrences("a", "aa") == 1u);
+            CHECK(s == "aabc");
+        }
+
+        SECTION("Replacement equals target is a no-op (count is reported)")
+        {
+            sf::base::String s = "abcabc";
+            CHECK(s.replaceAllOccurrences("abc", "abc") == 2u);
+            CHECK(s == "abcabc");
+        }
+
+        SECTION("Overlapping target avoids re-matching its own output")
+        {
+            // Replacement "a" at every 2-char "aa": "aaaa" -> "aaa" -> "aa".
+            // We use the non-overlapping convention: jump past each replacement,
+            // so positions are 0 and 2 (after first replace -> "aaa"), then 1
+            // (after second replace -> "aa"). Two replacements total.
+            sf::base::String s = "aaaa";
+            CHECK(s.replaceAllOccurrences("aa", "a") == 2u);
+            CHECK(s == "aa");
+        }
+
+        SECTION("Replacement causes growth out of SSO")
+        {
+            sf::base::String s = "aXa";
+            CHECK(s.isSso());
+
+            // Replace each 'X' with the long literal -> result definitely heap.
+            const auto count = s.replaceAllOccurrences("X", longStringLiteral);
+            CHECK(count == 1u);
+            CHECK(!s.isSso());
+
+            sf::base::String expected = "a";
+            expected.append(longStringLiteral);
+            expected.append("a");
+            CHECK(s == expected);
+        }
+
+        SECTION("Self-aliasing target view (substring of self)")
+        {
+            sf::base::String s = "abcabcabc";
+            // Take a view of the first "abc" and replace all occurrences of
+            // it with "X". The aliasing-detection path must copy the target
+            // before the buffer reallocates.
+            const auto needle = sf::base::StringView{s}.substrByPosLen(0, 3);
+            CHECK(s.replaceAllOccurrences(needle, "X") == 3u);
+            CHECK(s == "XXX");
+        }
+
+        SECTION("Self-aliasing replacement view (substring of self)")
+        {
+            sf::base::String s = "ab_cd";
+            // Replace "_" with everything from index 0 to 2 ("ab"). View is
+            // taken before mutation; aliasing-detection path must copy it.
+            const auto repl = sf::base::StringView{s}.substrByPosLen(0, 2);
+            CHECK(s.replaceAllOccurrences("_", repl) == 1u);
+            CHECK(s ==
+                  "abab"
+                  "cd"); // "ab" + "ab" + "cd"
+        }
+
+        SECTION("Heap string with many matches forces multiple shifts")
+        {
+            // Build a long string of repeated tokens, then replace them all.
+            sf::base::String s;
+            for (int i = 0; i < 100; ++i)
+                s.append("foo,");
+
+            const auto count = s.replaceAllOccurrences("foo", "bar");
+            CHECK(count == 100u);
+
+            sf::base::String expected;
+            for (int i = 0; i < 100; ++i)
+                expected.append("bar,");
+            CHECK(s == expected);
+        }
+
+        SECTION("Empty replacement on empty string is a no-op")
+        {
+            sf::base::String s;
+            CHECK(s.replaceAllOccurrences("x", "") == 0u);
+            CHECK(s.empty());
+        }
+    }
+
+    SECTION("StringView bridge methods")
+    {
+        SECTION("forSplits is bridged from StringView (B)")
+        {
+            sf::base::String s = "alpha,beta,gamma";
+
+            sf::base::SizeT count = 0u;
+            s.forSplits(',',
+                        [&](sf::base::StringView seg)
+            {
+                ++count;
+                if (count == 1u)
+                    CHECK(seg == "alpha");
+                if (count == 2u)
+                    CHECK(seg == "beta");
+                if (count == 3u)
+                    CHECK(seg == "gamma");
+            });
+            CHECK(count == 3u);
+        }
+
+        SECTION("forSplits with StringView splitter is bridged from StringView (B)")
+        {
+            sf::base::String s = "foo::bar::baz";
+
+            sf::base::SizeT count = 0u;
+            s.forSplits("::",
+                        [&](sf::base::StringView seg)
+            {
+                ++count;
+                if (count == 1u)
+                    CHECK(seg == "foo");
+                if (count == 2u)
+                    CHECK(seg == "bar");
+                if (count == 3u)
+                    CHECK(seg == "baz");
+            });
+            CHECK(count == 3u);
+        }
+
+        SECTION("forLines side-effects are not elided (no gnu::pure on bridge) (C)")
+        {
+            // The bridge macro previously had `gnu::pure`, which would have
+            // allowed the optimizer to drop calls whose return value isn't used.
+            // `forLines` returns void and runs side-effecting user code, so
+            // any elision would be observable as a missed counter increment.
+            sf::base::String s    = "a\nb\nc\nd";
+            sf::base::SizeT  hits = 0u;
+            s.forLines([&](sf::base::StringView) { ++hits; });
+            CHECK(hits == 4u);
+        }
+    }
+
+    SECTION("erase at end-of-string is a no-op (E)")
+    {
+        // `std::string::erase(size())` is allowed and is a no-op (count
+        // clamps to 0). Previously this asserted; loosened to `<=`.
+        sf::base::String s = "Hello";
+
+        s.erase(s.size());
+        CHECK(s == "Hello");
+
+        s.erase(s.size(), 0u);
+        CHECK(s == "Hello");
+
+        s.erase(s.size(), sf::base::String::nPos);
+        CHECK(s == "Hello");
+
+        // Erasing the entire string still works at index 0.
+        s.erase(0u);
+        CHECK(s.empty());
+
+        // Erasing at the (now zero) size of an empty string is also valid.
+        s.erase(0u);
+        CHECK(s.empty());
+    }
+
+    SECTION("operator== distinguishes embedded NUL bytes (A)")
+    {
+        // String comparison goes through StringView's `==` (memcmp), so it
+        // must distinguish strings that differ AFTER an embedded NUL.
+        const char raw1[] = {'a', '\0', 'b'};
+        const char raw2[] = {'a', '\0', 'c'};
+
+        const sf::base::String s1{raw1, 3};
+        const sf::base::String s2{raw2, 3};
+
+        CHECK_FALSE(s1 == s2);
+        CHECK(s1 != s2);
+        CHECK(s1 == s1);
     }
 }

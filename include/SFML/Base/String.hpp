@@ -409,7 +409,66 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Replace `count` characters starting at `pos` with `replacement`.
+    ///
+    /// `count == nPos` (or any value extending past the end) is clamped to
+    /// `size() - pos`, mirroring `erase`.
+    ///
+    ////////////////////////////////////////////////////////////
+    void replace(SizeT pos, SizeT count, StringView replacement);
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Find the first occurrence of `target` and replace it with `replacement`.
+    ///
+    /// \return `true` if a replacement occurred, `false` if `target` was not
+    ///         found or was empty (an empty `target` is treated as no-match).
+    ///
+    ////////////////////////////////////////////////////////////
+    bool replaceFirstOccurrence(StringView target, StringView replacement);
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Replace every non-overlapping occurrence of `target` with `replacement`.
+    ///
+    /// Iteration resumes immediately past each replacement, so it terminates
+    /// even when `replacement` itself contains `target`. An empty `target`
+    /// performs no work and returns 0.
+    ///
+    /// \return Number of replacements performed.
+    ///
+    ////////////////////////////////////////////////////////////
+    SizeT replaceAllOccurrences(StringView target, StringView replacement);
+
+
+    ////////////////////////////////////////////////////////////
     friend void swap(String& lhs, String& rhs) noexcept;
+
+
+////////////////////////////////////////////////////////////
+// Bridge macro: forward `methodName(...)` to the equivalent on `StringView`.
+#define SFML_BASE_PRIV_DEFINE_STRING_VIEW_BRIDGE(methodName)                    \
+    decltype(auto) methodName(auto&&... args) const                             \
+    {                                                                           \
+        return toStringView().methodName(static_cast<decltype(args)>(args)...); \
+    }                                                                           \
+                                                                                \
+    static_assert(true)
+
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_BASE_PRIV_DEFINE_STRING_VIEW_BRIDGE(substrByPosLen);
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_BASE_PRIV_DEFINE_STRING_VIEW_BRIDGE(find);
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_BASE_PRIV_DEFINE_STRING_VIEW_BRIDGE(rfind);
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_BASE_PRIV_DEFINE_STRING_VIEW_BRIDGE(findFirstOf);
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_BASE_PRIV_DEFINE_STRING_VIEW_BRIDGE(findLastOf);
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_BASE_PRIV_DEFINE_STRING_VIEW_BRIDGE(findFirstNotOf);
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_BASE_PRIV_DEFINE_STRING_VIEW_BRIDGE(findLastNotOf);
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_BASE_PRIV_DEFINE_STRING_VIEW_BRIDGE(startsWith);
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_BASE_PRIV_DEFINE_STRING_VIEW_BRIDGE(endsWith);
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_BASE_PRIV_DEFINE_STRING_VIEW_BRIDGE(contains);
+    [[gnu::always_inline, gnu::flatten]] SFML_BASE_PRIV_DEFINE_STRING_VIEW_BRIDGE(forSplits);
+    [[gnu::always_inline, gnu::flatten]] SFML_BASE_PRIV_DEFINE_STRING_VIEW_BRIDGE(forLines);
+
+#undef SFML_BASE_PRIV_DEFINE_STRING_VIEW_BRIDGE
 };
 
 
