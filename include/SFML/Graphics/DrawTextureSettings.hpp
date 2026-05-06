@@ -11,6 +11,8 @@
 
 #include "SFML/System/Rect2.hpp"
 
+#include "SFML/Base/RequireDesignatedInitializers.hpp"
+
 
 namespace sf
 {
@@ -26,6 +28,8 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct DrawTextureSettings
 {
+    SFML_BASE_REQUIRE_DESIGNATED_INITIALIZERS;
+
     SFML_DEFINE_TRANSFORMABLE_DATA_MEMBERS;
     Rect2f textureRect{};       //!< Sub-rectangle of the source texture to display (`{}` means the full texture)
     Color  color{Color::White}; //!< Color used to tint (modulate) the texture

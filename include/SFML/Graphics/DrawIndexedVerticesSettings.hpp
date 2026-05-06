@@ -10,6 +10,7 @@
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
+#include "SFML/Base/RequireDesignatedInitializers.hpp"
 #include "SFML/Base/Span.hpp"
 
 
@@ -25,6 +26,8 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] DrawIndexedVerticesSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
+    SFML_BASE_REQUIRE_DESIGNATED_INITIALIZERS;
+
     base::Span<const Vertex>    vertexSpan;    //!< Range of unique vertices that will be referenced by the indices
     base::Span<const IndexType> indexSpan;     //!< Range of indices into `vertexSpan` defining the primitives
     PrimitiveType               primitiveType; //!< How to interpret the indexed primitives

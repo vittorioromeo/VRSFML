@@ -18,6 +18,7 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/ClampMacro.hpp"
 #include "SFML/Base/Math/Lround.hpp"
+#include "SFML/Base/RequireDesignatedInitializers.hpp"
 #include "SFML/Base/SinCosLookup.hpp"
 
 
@@ -29,6 +30,8 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] SFML_GRAPHICS_API View
 {
+    SFML_BASE_REQUIRE_DESIGNATED_INITIALIZERS;
+
     ////////////////////////////////////////////////////////////
     /// \brief Normalized scissor rectangle, expressed as a fraction of the render target
     ///

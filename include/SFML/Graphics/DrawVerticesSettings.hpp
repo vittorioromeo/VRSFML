@@ -9,6 +9,7 @@
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
+#include "SFML/Base/RequireDesignatedInitializers.hpp"
 #include "SFML/Base/Span.hpp"
 
 
@@ -24,6 +25,8 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] DrawVerticesSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
+    SFML_BASE_REQUIRE_DESIGNATED_INITIALIZERS;
+
     base::Span<const Vertex> vertexSpan;    //!< Range of vertices to draw
     PrimitiveType            primitiveType; //!< How to interpret the vertices (triangles, lines, ...)
 };

@@ -169,7 +169,8 @@ namespace sf::priv
 template <typename TStorage>
 void DrawableBatchImpl<TStorage>::add(const DrawVerticesSettings& settings)
 {
-    const auto& [vertexSpan, type] = settings;
+    const auto& vertexSpan = settings.vertexSpan;
+    const auto  type       = settings.primitiveType;
 
     if (vertexSpan.isNullOrEmpty())
         return;
@@ -243,7 +244,9 @@ void DrawableBatchImpl<TStorage>::add(const DrawVerticesSettings& settings)
 template <typename TStorage>
 void DrawableBatchImpl<TStorage>::add(const DrawIndexedVerticesSettings& settings)
 {
-    const auto& [vertexSpan, indexSpan, type] = settings;
+    const auto& vertexSpan = settings.vertexSpan;
+    const auto& indexSpan  = settings.indexSpan;
+    const auto  type       = settings.primitiveType;
 
     if (vertexSpan.isNullOrEmpty() || indexSpan.isNullOrEmpty())
         return;

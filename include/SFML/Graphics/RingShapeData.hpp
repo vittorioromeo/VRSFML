@@ -17,6 +17,8 @@
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
 
+#include "SFML/Base/RequireDesignatedInitializers.hpp"
+
 
 namespace sf
 {
@@ -26,6 +28,8 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] SFML_GRAPHICS_API RingShapeData : LocalAnchorPointMixin, GlobalAnchorPointMixin
 {
+    SFML_BASE_REQUIRE_DESIGNATED_INITIALIZERS;
+
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;
 

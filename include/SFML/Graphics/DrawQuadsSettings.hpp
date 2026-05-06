@@ -9,6 +9,7 @@
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
+#include "SFML/Base/RequireDesignatedInitializers.hpp"
 #include "SFML/Base/Span.hpp"
 
 
@@ -25,6 +26,8 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] DrawQuadsSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
+    SFML_BASE_REQUIRE_DESIGNATED_INITIALIZERS;
+
     base::Span<const Vertex> vertexSpan;    //!< Range of vertices laid out as groups of 4 corners
     PrimitiveType            primitiveType; //!< Primitive type used for the expanded triangles
 };

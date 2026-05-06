@@ -9,6 +9,7 @@
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
+#include "SFML/Base/RequireDesignatedInitializers.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Span.hpp"
 
@@ -34,6 +35,8 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] DrawInstancedVerticesSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
+    SFML_BASE_REQUIRE_DESIGNATED_INITIALIZERS;
+
     VAOHandle&               vaoHandle;     //!< VAO holding per-instance attribute streams
     base::Span<const Vertex> vertexSpan;    //!< Range of vertices defining a single instance
     base::SizeT              instanceCount; //!< Number of instances to draw

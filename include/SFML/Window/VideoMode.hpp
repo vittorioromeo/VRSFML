@@ -10,6 +10,8 @@
 
 #include "SFML/System/Priv/Vec2Base.hpp"
 
+#include "SFML/Base/RequireDesignatedInitializers.hpp"
+
 
 namespace sf
 {
@@ -19,6 +21,8 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] SFML_WINDOW_API VideoMode
 {
+    SFML_BASE_REQUIRE_DESIGNATED_INITIALIZERS;
+
     ////////////////////////////////////////////////////////////
     /// \brief Tell whether or not the video mode is valid
     ///
