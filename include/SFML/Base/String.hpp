@@ -376,6 +376,32 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Resize without zero-initializing the new range, then let `op`
+    ///        write the contents and report the final size.
+    ///
+    /// Mirrors `std::string::resize_and_overwrite` (C++23). `op(buf, newSize)`
+    /// is invoked with a pointer to the storage and the requested size; it
+    /// must return the actual number of characters to keep, which is then
+    /// used as the new size (and a null terminator is written there).
+    ///
+    /// The first `min(size(), newSize)` bytes retain their previous values;
+    /// the remaining bytes up to `newSize` are indeterminate before `op` runs.
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename Operation>
+    [[gnu::always_inline]] void resizeAndOverwrite(const SizeT newSize, Operation&& op)
+    {
+        if (newSize > capacity())
+            grow(newSize);
+
+        const auto actualSize = static_cast<SizeT>(static_cast<Operation&&>(op)(data(), newSize));
+        SFML_BASE_ASSERT(actualSize <= newSize && "resizeAndOverwrite: returned size exceeds requested size");
+
+        setSizeAndTerminate(actualSize);
+    }
+
+
+    ////////////////////////////////////////////////////////////
     void erase(SizeT index, SizeT count = nPos);
     void assign(const char* cStr, SizeT count);
     void insert(SizeT pos, char c);
