@@ -22,6 +22,8 @@
 #include "SFML/System/PathUtils.hpp"
 
 #include "SFML/Base/AnkerlUnorderedDense.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 
 
 namespace
@@ -71,55 +73,28 @@ namespace sf
 ////////////////////////////////////////////////////////////
 base::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromFilename(const Path& filename)
 {
-    // Wrap the input file into a file stream
     auto stream = FileInputStream::open(filename);
+
     if (!stream.hasValue())
     {
         priv::err() << "Failed to open sound file (couldn't open stream)\n" << priv::PathDebugFormatter{filename};
         return nullptr;
     }
 
-    // Test the filename in all the registered factories
-    for (const auto& [fpCreate, fpCheck] : getReaderFactoryMap())
-    {
-        if (!stream->seek(0).hasValue())
-        {
-            priv::err() << "Failed to seek sound stream";
-            return nullptr;
-        }
+    auto result = createReaderFromStream(*stream);
 
-        if (fpCheck(*stream))
-            return fpCreate();
-    }
+    if (result == nullptr)
+        priv::err() << "Sound file: " << priv::PathDebugFormatter{filename};
 
-    // No suitable reader found
-    priv::err() << "Failed to open sound file (format not supported)\n" << priv::PathDebugFormatter{filename};
-    return nullptr;
+    return result;
 }
 
 
 ////////////////////////////////////////////////////////////
 base::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromMemory(const void* data, base::SizeT sizeInBytes)
 {
-    // Wrap the memory file into a file stream
     MemoryInputStream stream(data, sizeInBytes);
-
-    // Test the stream for all the registered factories
-    for (const auto& [fpCreate, fpCheck] : getReaderFactoryMap())
-    {
-        if (!stream.seek(0).hasValue())
-        {
-            priv::err() << "Failed to seek sound stream";
-            return nullptr;
-        }
-
-        if (fpCheck(stream))
-            return fpCreate();
-    }
-
-    // No suitable reader found
-    priv::err() << "Failed to open sound file from memory (format not supported)";
-    return nullptr;
+    return createReaderFromStream(stream);
 }
 
 
