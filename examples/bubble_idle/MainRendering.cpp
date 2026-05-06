@@ -2500,12 +2500,12 @@ void Main::gameLoopTips(const float deltaTimeMs)
 
     sf::Text tipText{fontSuperBakery,
                      {
-                         .position      = {},
-                         .scale         = sf::Vec2f{0.5f, 0.5f} * easeInOutBack(byteProgress),
-                         .string        = tipString.toStringView().substrByPosLen(0, tipCharIdx).to<sf::base::String>(),
-                         .characterSize = 60u,
-                         .fillColor     = sf::Color::whiteWithAlpha(static_cast<sf::base::U8>(tipByteAlpha)),
-                         .outlineColor  = outlineHueColor.withAlpha(static_cast<sf::base::U8>(tipByteAlpha)),
+                         .position         = {},
+                         .scale            = sf::Vec2f{0.5f, 0.5f} * easeInOutBack(byteProgress),
+                         .string           = tipString.substrByPosLen(0u, tipCharIdx).to<sf::base::String>(),
+                         .characterSize    = 60u,
+                         .fillColor        = sf::Color::whiteWithAlpha(static_cast<sf::base::U8>(tipByteAlpha)),
+                         .outlineColor     = outlineHueColor.withAlpha(static_cast<sf::base::U8>(tipByteAlpha)),
                          .outlineThickness = 4.f,
                      }};
 
