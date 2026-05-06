@@ -16,6 +16,8 @@
 #include "SFML/System/LocalAnchorPointMixin.hpp"
 #include "SFML/System/Rect2.hpp"
 
+#include "SFML/Base/RequireDesignatedInitializers.hpp"
+
 
 namespace sf
 {
@@ -57,6 +59,8 @@ struct SFML_GRAPHICS_API Sprite : TransformableMixin, GlobalAnchorPointMixin, Lo
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
+    SFML_BASE_REQUIRE_DESIGNATED_INITIALIZERS;
+
     SFML_DEFINE_TRANSFORMABLE_DATA_MEMBERS;
     Rect2f textureRect;         //!< Rectangle defining the area of the source texture to display
     Color  color{Color::White}; //!< Color of the sprite

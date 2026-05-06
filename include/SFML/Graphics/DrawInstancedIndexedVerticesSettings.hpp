@@ -10,6 +10,7 @@
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
+#include "SFML/Base/RequireDesignatedInitializers.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Span.hpp"
 
@@ -35,6 +36,8 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] DrawInstancedIndexedVerticesSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
+    SFML_BASE_REQUIRE_DESIGNATED_INITIALIZERS;
+
     VAOHandle&                  vaoHandle;     //!< VAO holding per-instance attribute streams
     base::Span<const Vertex>    vertexSpan;    //!< Pool of vertices referenced by `indexSpan`
     base::Span<const IndexType> indexSpan;     //!< Indices defining the primitives of a single instance

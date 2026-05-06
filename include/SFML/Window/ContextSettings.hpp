@@ -9,6 +9,7 @@
 #include "SFML/Config.hpp"
 
 #include "SFML/Base/EnumClassBitwiseOps.hpp"
+#include "SFML/Base/RequireDesignatedInitializers.hpp"
 
 
 namespace sf
@@ -20,6 +21,8 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct ContextSettings
 {
+    SFML_BASE_REQUIRE_DESIGNATED_INITIALIZERS;
+
     ////////////////////////////////////////////////////////////
     /// \brief Bit flags describing OpenGL context attributes
     ///

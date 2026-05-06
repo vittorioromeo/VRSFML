@@ -13,6 +13,8 @@
 #include "SFML/Graphics/Transform.hpp"
 #include "SFML/Graphics/View.hpp"
 
+#include "SFML/Base/RequireDesignatedInitializers.hpp"
+
 
 ////////////////////////////////////////////////////////////
 // Forward declarations
@@ -32,6 +34,8 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
 {
+    SFML_BASE_REQUIRE_DESIGNATED_INITIALIZERS;
+
     BlendMode   blendMode{};   //!< Blending mode
     StencilMode stencilMode{}; //!< Stencil mode
 

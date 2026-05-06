@@ -12,6 +12,7 @@
 #include "SFML/System/UnicodeString.hpp"
 
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/RequireDesignatedInitializers.hpp"
 
 
 namespace sf
@@ -40,6 +41,8 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] WindowSettings
 {
+    SFML_BASE_REQUIRE_DESIGNATED_INITIALIZERS;
+
     base::Optional<Vec2i> position{base::nullOpt};    //!< Initial window position (`base::nullOpt` lets the OS pick)
     Vec2u                 size;                       //!< Window inner size in pixels (width, height)
     base::Optional<Vec2u> minimumSize{base::nullOpt}; //!< Initial minimum size enforced on user resizes

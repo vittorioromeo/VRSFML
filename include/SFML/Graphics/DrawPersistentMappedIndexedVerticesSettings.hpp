@@ -8,6 +8,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/PrimitiveType.hpp"
 
+#include "SFML/Base/RequireDesignatedInitializers.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 
@@ -32,6 +33,8 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] DrawPersistentMappedIndexedVerticesSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
+    SFML_BASE_REQUIRE_DESIGNATED_INITIALIZERS;
+
     const PersistentGPUDrawableBatch& gpuDrawableBatch; //!< Source of the persistent vertex/index buffers
     base::SizeT                       indexCount;       //!< Number of indices to consume from `indexOffset`
     base::SizeT                       indexOffset;      //!< Offset (in indices) into the persistent index buffer
