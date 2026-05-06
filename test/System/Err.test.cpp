@@ -29,16 +29,16 @@ TEST_CASE("[System] sf::err")
         const sf::OutStringStream stream;
         sf::priv::err().rdbuf(stream.rdbuf());
         sf::priv::err() << "Something went wrong!\n";
-        CHECK(stream.to<sf::base::String>().toStringView().find("Something went wrong!\n") != sf::base::String::nPos);
+        CHECK(stream.to<sf::base::String>().find("Something went wrong!\n") != sf::base::String::nPos);
 
         sf::priv::err().rdbuf(nullptr);
         sf::priv::err() << "Sent to the abyss";
-        CHECK(stream.to<sf::base::String>().toStringView().find("Something went wrong!\n") != sf::base::String::nPos);
+        CHECK(stream.to<sf::base::String>().find("Something went wrong!\n") != sf::base::String::nPos);
 
         sf::priv::err().rdbuf(stream.rdbuf());
         sf::priv::err() << "Back to the stringstream :)\n";
-        CHECK(stream.to<sf::base::String>().toStringView().find("Something went wrong!\n") != sf::base::String::nPos);
-        CHECK(stream.to<sf::base::String>().toStringView().find("Back to the stringstream :)\n") != sf::base::String::nPos);
+        CHECK(stream.to<sf::base::String>().find("Something went wrong!\n") != sf::base::String::nPos);
+        CHECK(stream.to<sf::base::String>().find("Back to the stringstream :)\n") != sf::base::String::nPos);
 
         // Restore sf::err to default stream defaultStreamBuffer
         sf::priv::err().rdbuf(defaultStreamBuffer);

@@ -302,7 +302,7 @@ void Http::Response::parse(const base::String& data)
     base::String version;
     if (in >> version)
     {
-        const auto prefix = version.toStringView().substrByPosLen(0, 5);
+        const auto prefix = version.substrByPosLen(0u, 5u);
 
         if ((version.size() >= 8) && (version[6] == '.') && (stringViewLowercaseEq(prefix, "http/")) &&
             std::isdigit(version[5]) && std::isdigit(version[7]))
@@ -409,16 +409,16 @@ Http::Http(const base::String& host, unsigned short port)
 bool Http::setHost(const base::String& host, unsigned short port)
 {
     // Check the protocol
-    if (stringViewLowercaseEq(host.toStringView().substrByPosLen(0, 7), "http://"))
+    if (stringViewLowercaseEq(host.substrByPosLen(0u, 7u), "http://"))
     {
         // HTTP protocol
-        m_impl->hostName = host.toStringView().substrByPosLen(7);
+        m_impl->hostName = host.substrByPosLen(7u);
         m_impl->port     = (port != 0 ? port : 80);
     }
-    else if (stringViewLowercaseEq(host.toStringView().substrByPosLen(0, 8), "https://"))
+    else if (stringViewLowercaseEq(host.substrByPosLen(0u, 8u), "https://"))
     {
         // HTTPS protocol
-        m_impl->hostName = host.toStringView().substrByPosLen(8);
+        m_impl->hostName = host.substrByPosLen(8u);
         m_impl->port     = (port != 0 ? port : 443);
         m_impl->https    = true;
     }

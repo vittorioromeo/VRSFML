@@ -145,7 +145,7 @@ TEST_CASE("[Network] sf::Http Connection")
             CHECK(!response.getField("server").empty());
             CHECK(!response.getField("Content-Type").empty());
             CHECK(!response.getField("content-type").empty());
-            CHECK(response.getBody().toStringView().find("SFML") != sf::base::StringView::nPos);
+            CHECK(response.getBody().find("SFML") != sf::base::StringView::nPos);
         }
 
         SECTION("Request Non-Existant Resource")
@@ -175,10 +175,8 @@ TEST_CASE("[Network] sf::Http Connection")
             CHECK(status == sf::Http::Response::Status::Ok);
             CHECK(response.getField("Content-Type") == "application/zip");
             CHECK(response.getField("content-type") == "application/zip");
-            CHECK(response.getField("Content-Disposition").toStringView().find("SFML-master.zip") !=
-                  sf::base::StringView::nPos);
-            CHECK(response.getField("content-disposition").toStringView().find("SFML-master.zip") !=
-                  sf::base::StringView::nPos);
+            CHECK(response.getField("Content-Disposition").find("SFML-master.zip") != sf::base::StringView::nPos);
+            CHECK(response.getField("content-disposition").find("SFML-master.zip") != sf::base::StringView::nPos);
         }
     }
 }
