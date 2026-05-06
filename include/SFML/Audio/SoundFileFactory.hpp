@@ -24,6 +24,26 @@ class SoundFileWriter;
 } // namespace sf
 
 
+namespace sf::priv
+{
+////////////////////////////////////////////////////////////
+template <typename T>
+base::UniquePtr<SoundFileReader> createReader()
+{
+    return base::makeUnique<T>();
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+base::UniquePtr<SoundFileWriter> createWriter()
+{
+    return base::makeUnique<T>();
+}
+
+} // namespace sf::priv
+
+
 namespace sf
 {
 ////////////////////////////////////////////////////////////
@@ -40,7 +60,10 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename T>
-    static void registerReader();
+    static void registerReader()
+    {
+        registerReaderImpl(&priv::createReader<T>, &T::check);
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Unregister a reader
@@ -49,14 +72,20 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename T>
-    static void unregisterReader();
+    static void unregisterReader()
+    {
+        unregisterReaderImpl(&priv::createReader<T>);
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Check if a reader is registered
     ///
     ////////////////////////////////////////////////////////////
     template <typename T>
-    [[nodiscard]] static bool isReaderRegistered();
+    [[nodiscard]] static bool isReaderRegistered()
+    {
+        return isReaderRegisteredImpl(&priv::createReader<T>);
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Register a new writer
@@ -65,7 +94,10 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename T>
-    static void registerWriter();
+    static void registerWriter()
+    {
+        registerWriterImpl(&priv::createWriter<T>, &T::check);
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Unregister a writer
@@ -74,14 +106,20 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename T>
-    static void unregisterWriter();
+    static void unregisterWriter()
+    {
+        unregisterWriterImpl(&priv::createWriter<T>);
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Check if a writer is registered
     ///
     ////////////////////////////////////////////////////////////
     template <typename T>
-    [[nodiscard]] static bool isWriterRegistered();
+    [[nodiscard]] static bool isWriterRegistered()
+    {
+        return isWriterRegisteredImpl(&priv::createWriter<T>);
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Instantiate the right reader for the given file on disk
@@ -153,8 +191,6 @@ private:
 };
 
 } // namespace sf
-
-#include "SFML/Audio/SoundFileFactory.inl"
 
 
 ////////////////////////////////////////////////////////////
