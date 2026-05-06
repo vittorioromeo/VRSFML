@@ -70,18 +70,18 @@
 ////////////////////////////////////////////////////////////
 // Conversions between `ImVec4` and `sf::Color`
 ////////////////////////////////////////////////////////////
-#define IM_VEC4_CLASS_EXTRA                                          \
-    [[gnu::always_inline, gnu::pure]] ImVec4(const ::sf::Color& c) : \
-        x(c.r / 255.f),                                              \
-        y(c.g / 255.f),                                              \
-        z(c.b / 255.f),                                              \
-        w(c.a / 255.f)                                               \
-    {                                                                \
-    }                                                                \
-                                                                     \
-    [[gnu::always_inline, gnu::pure]] operator ::sf::Color() const   \
-    {                                                                \
-        return ::sf::Color::fromFloats(x, y, z, w);                  \
+#define IM_VEC4_CLASS_EXTRA                                        \
+    [[gnu::always_inline]] ImVec4(const ::sf::Color& c) :          \
+        x(c.r / 255.f),                                            \
+        y(c.g / 255.f),                                            \
+        z(c.b / 255.f),                                            \
+        w(c.a / 255.f)                                             \
+    {                                                              \
+    }                                                              \
+                                                                   \
+    [[gnu::always_inline, gnu::pure]] operator ::sf::Color() const \
+    {                                                              \
+        return ::sf::Color::fromFloats(x, y, z, w);                \
     }
 
 
