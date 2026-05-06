@@ -151,7 +151,7 @@ struct [[nodiscard]] Progress : ProgressBase
 ///
 /// `tick` advances toward 1 if `!reversed`, else toward 0.
 /// `getElapsed` and `getRemaining` (inherited from `ProgressBase`) are
-/// direction-agnostic — they return the absolute fraction toward
+/// direction-agnostic -- they return the absolute fraction toward
 /// state-1; query `reversed` separately if direction matters.
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] Transition : ProgressBase

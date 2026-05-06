@@ -5,7 +5,7 @@
 # - On native builds, just delegates to the `runtests` ninja target which
 #   ctest-runs everything.
 # - On Emscripten builds (build dir name contains "emcc"), prompts per-suite
-#   and invokes the merged `run_test.sh` to launch each in turn — there is
+#   and invokes the merged `run_test.sh` to launch each in turn -- there is
 #   no equivalent of `runtests` for browser-based tests.
 #
 # Env:
