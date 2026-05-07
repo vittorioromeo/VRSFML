@@ -780,6 +780,27 @@ void IOStreamInput::clear()
 
 
 ////////////////////////////////////////////////////////////
+bool IOStreamInput::isGood() const
+{
+    return m_impl->stream.good();
+}
+
+
+////////////////////////////////////////////////////////////
+bool IOStreamInput::isEOF() const
+{
+    return m_impl->stream.eof();
+}
+
+
+////////////////////////////////////////////////////////////
+IOStreamInput::operator bool() const
+{
+    return static_cast<bool>(m_impl->stream);
+}
+
+
+////////////////////////////////////////////////////////////
 IOStreamOutput& cOut()
 {
     static IOStreamOutput stream(std::cout.rdbuf());
