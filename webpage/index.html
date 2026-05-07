@@ -675,22 +675,95 @@ auto p = bounds.getAnchorPoint({0.25f, 0.75f});
             <code>&lt;type_traits&gt;</code>, or <code>&lt;iostream&gt;</code>.
         </p>
 
-        <div class="bench-chart" role="img" aria-label="Approximate clean-build time, lower is better">
+        <p>
+            The chart below is the scenario closest to a real edit-build inner loop:
+            the SFML library is already compiled, and you rebuild six small example
+            programs (<code>island</code>, <code>shader</code>, <code>stencil</code>,
+            <code>tennis</code>, <code>keyboard</code>, <code>joystick</code>) from
+            scratch.
+        </p>
+
+        <div class="bench-chart" role="img" aria-label="Time to rebuild six example programs, lower is better">
             <div class="bench-row">
                 <span class="bench-label">SFML upstream</span>
                 <div class="bench-bar reverse"><div class="fill" style="width: 100%;"></div></div>
-                <span class="bench-value">baseline</span>
+                <span class="bench-value">726 ms</span>
             </div>
             <div class="bench-row">
                 <span class="bench-label">VRSFML</span>
-                <div class="bench-bar reverse"><div class="fill good" style="width: 35%;"></div></div>
-                <span class="bench-value">~3× faster</span>
+                <div class="bench-bar reverse"><div class="fill good" style="width: 39.6%;"></div></div>
+                <span class="bench-value">288 ms</span>
             </div>
         </div>
         <p class="muted small">
-            Approximate, based on representative clean rebuilds of the
-            <code>SFML::Graphics</code> library. Replace with your own measurements
-            on your own hardware.
+            <strong>2.5× faster wall time, 2.7× less compiler CPU work per file.</strong>
+            Six TUs each, same source set, debug build, lld, no ccache, 16 jobs.
+        </p>
+
+        <h3 class="size-subhead">Full picture, four scenarios</h3>
+        <p class="muted">
+            Selective rebuild: third-party deps (freetype, vorbis, ogg, flac,
+            harfbuzz, imgui, &hellip;) are kept on disk between iterations, so the
+            measurement reflects only SFML's own code plus the chosen examples and
+            tests — the workflow you actually have when iterating on a project.
+        </p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Scenario</th>
+                    <th>TUs</th>
+                    <th>SFML</th>
+                    <th>VRSFML</th>
+                    <th>Speedup</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Library only</td>
+                    <td>102 / 129</td>
+                    <td>3.69 s</td>
+                    <td>1.68 s</td>
+                    <td>2.20×</td>
+                </tr>
+                <tr>
+                    <td>Library + examples</td>
+                    <td>128 / 209</td>
+                    <td>4.55 s</td>
+                    <td>2.23 s</td>
+                    <td>2.04×</td>
+                </tr>
+                <tr>
+                    <td>Library + examples + tests</td>
+                    <td>221 / 350</td>
+                    <td>7.43 s</td>
+                    <td>3.67 s</td>
+                    <td>2.02×</td>
+                </tr>
+                <tr>
+                    <td>Six user TUs from scratch</td>
+                    <td>6 / 6</td>
+                    <td>726 ms</td>
+                    <td>288 ms</td>
+                    <td><strong>2.52×</strong></td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="muted small">
+            TUs column shows <em>SFML / VRSFML</em>. VRSFML compiles
+            <em>more</em> translation units in the first three rows (extra
+            <code>SFML::ImGui</code> module, more bundled examples, larger test
+            suite), and is still ~2× faster overall — meaning per-TU compiler
+            work is roughly 3–4× lower. The fourth row, where both projects
+            compile the same six user-side TUs, isolates that effect cleanly.
+        </p>
+        <p class="muted small">
+            Methodology: <code>hyperfine</code> 1 warmup + 3 timed runs,
+            <code>clang++</code>, debug build, <code>-fuse-ld=lld</code>,
+            <code>BUILD_SHARED_LIBS=OFF</code>, <code>SFML_USE_SYSTEM_DEPS=OFF</code>,
+            ccache disabled, <code>-j 16</code>, ninja. Between iterations only
+            SFML-owned object files and archives are deleted; bundled deps stay
+            built. Replace with your own measurements on your own hardware.
         </p>
 
         <ul class="compile-bullets">
