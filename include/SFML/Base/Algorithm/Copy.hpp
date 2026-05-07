@@ -6,13 +6,7 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-/// \brief Copy elements from one range to another
-///
-/// \param rangeBegin Iterator to the beginning of the source range
-/// \param rangeEnd   Iterator to the end of the source range
-/// \param targetIter Iterator to the beginning of the destination range
-///
-/// \return Iterator to the element past the last element copied
+/// \brief Copy `[rangeBegin, rangeEnd)` to `targetIter`, returning the destination end iterator
 ///
 ////////////////////////////////////////////////////////////
 template <typename ForwardIt, typename TargetForwardIt>

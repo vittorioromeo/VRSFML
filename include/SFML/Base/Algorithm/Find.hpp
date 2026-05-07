@@ -6,13 +6,7 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-/// \brief Find the first element equal to a target value in a range
-///
-/// \param rangeBegin Iterator to the beginning of the range
-/// \param rangeEnd   Iterator to the end of the range
-/// \param target     Value to search for
-///
-/// \return Iterator to the first element equal to target, or `rangeEnd` if not found
+/// \brief Find the first element equal to `target`, or `rangeEnd` if not found
 ///
 ////////////////////////////////////////////////////////////
 template <typename ForwardIt, typename T>
@@ -29,13 +23,7 @@ template <typename ForwardIt, typename T>
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Find the first element satisfying a predicate in a range
-///
-/// \param rangeBegin Iterator to the beginning of the range
-/// \param rangeEnd   Iterator to the end of the range
-/// \param predicate  Unary predicate function
-///
-/// \return Iterator to the first element for which predicate returns true, or `rangeEnd` if not found
+/// \brief Find the first element satisfying `predicate`, or `rangeEnd` if not found
 ///
 ////////////////////////////////////////////////////////////
 template <typename ForwardIt, typename Predicate>

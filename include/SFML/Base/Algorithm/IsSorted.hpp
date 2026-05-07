@@ -6,13 +6,7 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-/// \brief Check if a range is sorted according to a comparison function
-///
-/// \param first Iterator to the beginning of the range
-/// \param last  Iterator to the end of the range
-/// \param comp  Binary comparison function object
-///
-/// \return `true` if the range is sorted, `false` otherwise
+/// \brief `true` if the range is sorted according to `comp`
 ///
 ////////////////////////////////////////////////////////////
 template <typename ForwardIt, typename Comparer>

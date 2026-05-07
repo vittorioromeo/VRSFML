@@ -87,9 +87,6 @@ template <typename ForwardIt1, typename ForwardIt2>
 ////////////////////////////////////////////////////////////
 /// \brief Pairwise swap two ranges of equal length
 ///
-/// Iterates over `[first1, last1)` and `[first2, ...)`, swapping
-/// corresponding elements with `iterSwap`.
-///
 /// \return Iterator to the element past the last element of the second range
 ///
 ////////////////////////////////////////////////////////////

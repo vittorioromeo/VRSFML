@@ -66,12 +66,7 @@ struct [[nodiscard]] SourceLocation
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Capture the current source location at the call site
-    ///
-    /// Intended to be used as a default argument so that the captured
-    /// location refers to the caller, not to this function.
-    ///
-    /// \return A `SourceLocation` describing the call site
+    /// \brief Capture the call-site source location (use as a default argument)
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] static consteval SourceLocation current(
@@ -83,9 +78,7 @@ struct [[nodiscard]] SourceLocation
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the line number associated with the source location
-    ///
-    /// \return Line number of the captured source location
+    /// \brief Captured line number
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr unsigned int line() const noexcept
@@ -96,9 +89,7 @@ struct [[nodiscard]] SourceLocation
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the column number associated with the source location
-    ///
-    /// \return Column number of the captured source location
+    /// \brief Captured column number
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr unsigned int column() const noexcept
@@ -109,9 +100,7 @@ struct [[nodiscard]] SourceLocation
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the file name associated with the source location
-    ///
-    /// \return Null-terminated string containing the file path
+    /// \brief Captured null-terminated file path
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr const char* fileName() const noexcept
@@ -122,9 +111,7 @@ struct [[nodiscard]] SourceLocation
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the function name associated with the source location
-    ///
-    /// \return Null-terminated string containing the enclosing function name
+    /// \brief Captured null-terminated enclosing function name
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr const char* functionName() const noexcept

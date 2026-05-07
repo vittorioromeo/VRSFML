@@ -6,13 +6,7 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-/// \brief Check if any element in a range satisfies a predicate
-///
-/// \param rangeBegin Iterator to the beginning of the range
-/// \param rangeEnd   Iterator to the end of the range
-/// \param predicate  Unary predicate function
-///
-/// \return `true` if predicate returns true for at least one element, `false` otherwise
+/// \brief `true` if at least one element in the range satisfies `predicate`
 ///
 ////////////////////////////////////////////////////////////
 template <typename ForwardIt, typename Predicate>

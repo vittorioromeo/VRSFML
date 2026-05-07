@@ -12,15 +12,7 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-/// \brief Count the number of elements in a range that evaluate to true
-///
-/// Iterates through the range and increments a counter for each element
-/// that, when converted to bool, is true.
-///
-/// \param rangeBegin Iterator to the beginning of the range
-/// \param rangeEnd   Iterator to the end of the range
-///
-/// \return The number of elements evaluating to true
+/// \brief Count elements in the range that convert to `true`
 ///
 ////////////////////////////////////////////////////////////
 template <typename ForwardIt>
@@ -37,13 +29,7 @@ template <typename ForwardIt>
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Count the number of elements in a range equal to a specific value
-///
-/// \param rangeBegin Iterator to the beginning of the range
-/// \param rangeEnd   Iterator to the end of the range
-/// \param value      Value to compare elements against
-///
-/// \return The number of elements equal to value
+/// \brief Count elements in the range equal to `value`
 ///
 ////////////////////////////////////////////////////////////
 template <typename ForwardIt, typename T>
@@ -60,13 +46,7 @@ template <typename ForwardIt, typename T>
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Count the number of elements in a range satisfying a predicate
-///
-/// \param rangeBegin Iterator to the beginning of the range
-/// \param rangeEnd   Iterator to the end of the range
-/// \param predicate  Unary predicate function
-///
-/// \return The number of elements for which predicate returns true
+/// \brief Count elements in the range satisfying `predicate`
 ///
 ////////////////////////////////////////////////////////////
 template <typename ForwardIt, typename Predicate>
