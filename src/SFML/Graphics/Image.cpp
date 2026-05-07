@@ -76,33 +76,6 @@ void bufferFromCallback(void* const context, void* const data, int size)
 }
 
 ////////////////////////////////////////////////////////////
-// stb_image callbacks that operate on a sf::InputStream
-int read(void* const user, char* const data, int size)
-{
-    auto&                    stream = *static_cast<sf::InputStream*>(user);
-    const sf::base::Optional count  = stream.read(data, static_cast<sf::base::SizeT>(size));
-    return count.hasValue() ? static_cast<int>(*count) : -1;
-}
-
-
-////////////////////////////////////////////////////////////
-void skip(void* const user, int size)
-{
-    auto& stream = *static_cast<sf::InputStream*>(user);
-    if (!stream.seek(stream.tell().value() + static_cast<sf::base::SizeT>(size)).hasValue())
-        sf::priv::err() << "Failed to seek image loader input stream";
-}
-
-
-////////////////////////////////////////////////////////////
-int eof(void* const user)
-{
-    auto& stream = *static_cast<sf::InputStream*>(user);
-    return stream.tell().value() >= stream.getSize().value();
-}
-
-
-////////////////////////////////////////////////////////////
 // Deleter for STB pointers
 struct StbDeleter
 {
@@ -271,95 +244,46 @@ base::Optional<Image> Image::loadFromFile(const Path& filename)
 
 #endif
 
-    // Set up the stb_image callbacks for the input stream
-    const auto readStdIfStream = [](void* user, char* data, int size)
-    {
-        auto& file = *static_cast<InFileStream*>(user);
-        file.read(data, size);
-        return static_cast<int>(file.gcount());
-    };
+    // Read the entire file into the thread-local scratch buffer in a single
+    // native I/O call, then delegate to `loadFromMemory` which is the single
+    // decode entry point (handles QOI + stbi formats).
+    base::Vector<char>& scratch = getThreadLocalScratchCharBuffer();
 
-    const auto skipStdIfStream = [](void* user, int size)
+    if (!readFromFile(filename, scratch))
     {
-        auto& file = *static_cast<InFileStream*>(user);
-        if (!file.seekg(size, SeekDir::cur))
-            priv::err() << "Failed to seek image loader InFileStream";
-    };
-
-    const auto eofStdIfStream = [](void* user)
-    {
-        auto& file = *static_cast<InFileStream*>(user);
-        return static_cast<int>(file.isEOF());
-    };
-
-    const stbi_io_callbacks callbacks{readStdIfStream, skipStdIfStream, eofStdIfStream};
-
-    // Open file
-    InFileStream file(filename.c_str(), FileOpenMode::bin);
-    if (!file.isOpen())
-    {
-        // Error, failed to open the file
         priv::err() << "Failed to load image\n"
                     << priv::PathDebugFormatter{filename} << "\nReason: Failed to open the file";
+
         return base::nullOpt;
     }
 
-    // Read a (possible) QOI magic number
-    char qoiMagicNumber[4]{};
-    file.read(qoiMagicNumber, 4);
-
-    // Seek back to the start of the file for reading
-    file.seekg(0, SeekDir::beg);
-
-    // Read the QOI file if it's valid
-    if (isQoiMagicNumber(qoiMagicNumber, static_cast<base::SizeT>(file.gcount())))
+    // Hoist `result` to function scope so NRVO can apply (declaring it inside
+    // an `if (...)` initializer would defeat the optimisation).
+    auto result = loadFromMemory(scratch.data(), scratch.size());
+    if (!result.hasValue())
     {
-        // Get the size of the file
-        file.seekg(0, SeekDir::end);
-        const auto streamSize = file.tellg();
-        file.seekg(0, SeekDir::beg);
-
-        // Read in the file contents since QOI doesn't support streams
-        base::Vector<base::U8> buffer(static_cast<base::SizeT>(streamSize));
-        file.read(reinterpret_cast<char*>(buffer.data()), streamSize);
-        return loadQOIImpl(base::PassKey<Image>{}, buffer.data(), static_cast<base::SizeT>(streamSize));
+        // `loadFromMemory` already wrote a decoder-specific error; add path context.
+        priv::err() << "Failed to load image\n" << priv::PathDebugFormatter{filename};
     }
-
-    // Load the image and get a pointer to the pixels in memory
-    Vec2i imageSize;
-    int   channels = 0;
-
-    if (const auto ptr = StbPtr(
-            stbi_load_from_callbacks(&callbacks, &file, &imageSize.x, &imageSize.y, &channels, STBI_rgb_alpha)))
-    {
-        SFML_BASE_ASSERT(imageSize.x > 0 && "Loaded image from file with width == 0");
-        SFML_BASE_ASSERT(imageSize.y > 0 && "Loaded image from file with height == 0");
-
-        return base::makeOptional<Image>(base::PassKey<Image>{},
-                                         Vec2i{imageSize.x, imageSize.y}.toVec2u(),
-                                         ptr.get(),
-                                         ptr.get() + imageSize.x * imageSize.y * 4);
-    }
-
-    // Error, failed to load the image
-    priv::err() << "Failed to load image\n"
-                << priv::PathDebugFormatter{filename} << "\nReason: " << stbi_failure_reason();
-
-    return base::nullOpt;
+    return result;
 }
 
 
 ////////////////////////////////////////////////////////////
 base::Optional<Image> Image::loadFromMemory(const void* data, base::SizeT size)
 {
-    // Check input parameters
     if (data == nullptr || size == 0)
     {
         priv::err() << "Failed to load image from memory, no data provided";
         return base::nullOpt;
     }
 
-    // Load the image and get a pointer to the pixels in memory
+    // QOI fast path: detect by magic and decode in-place. This is the single
+    // QOI entry point -- `loadFromFile` and `loadFromStream` both delegate here.
+    if (isQoiMagicNumber(static_cast<const char*>(data), size))
+        return loadQOIImpl(base::PassKey<Image>{}, static_cast<const base::U8*>(data), size);
+
+    // stb_image path for everything else (PNG/JPG/BMP/...)
     int width    = 0;
     int height   = 0;
     int channels = 0;
@@ -386,61 +310,34 @@ base::Optional<Image> Image::loadFromMemory(const void* data, base::SizeT size)
 ////////////////////////////////////////////////////////////
 base::Optional<Image> Image::loadFromStream(InputStream& stream)
 {
-    // Make sure that the stream's reading position is at the beginning
+    // stb_image and QOI both need the entire encoded blob in memory anyway, so
+    // skip the streaming-callbacks dance: slurp the stream into the scratch
+    // buffer and delegate to `loadFromMemory`.
     if (!stream.seek(0).hasValue())
     {
         priv::err() << "Failed to seek image stream";
         return base::nullOpt;
     }
 
-    // Read a (possible) QOI magic number
-    char       qoiMagicNumber[4]{};
-    const auto qoiMagicCount = stream.read(qoiMagicNumber, 4);
-
-    if (const auto seekToStartResult = stream.seek(0); !seekToStartResult.hasValue())
+    const base::Optional streamSize = stream.getSize();
+    if (!streamSize.hasValue())
     {
-        priv::err() << "Failed to seek back the image stream";
+        priv::err() << "Failed to determine image stream size";
         return base::nullOpt;
     }
 
-    // Read the QOI file if it's valid
-    if (qoiMagicCount.hasValue() && isQoiMagicNumber(qoiMagicNumber, *qoiMagicCount))
+    base::Vector<char>& scratch = getThreadLocalScratchCharBuffer();
+    scratch.reserve(*streamSize);
+    scratch.unsafeSetSize(*streamSize);
+
+    const base::Optional readSize = stream.read(scratch.data(), *streamSize);
+    if (!readSize.hasValue() || *readSize != *streamSize)
     {
-        if (const auto streamSize = stream.getSize(); streamSize.hasValue())
-        {
-            // Read in the file contents since QOI doesn't support streams
-            base::Vector<base::U8> buffer(*streamSize);
-            const auto             readDataSize = stream.read(buffer.data(), *streamSize);
-            return loadQOIImpl(base::PassKey<Image>{}, buffer.data(), static_cast<base::SizeT>(*readDataSize));
-        }
-    }
-
-    // Setup the stb_image callbacks
-    stbi_io_callbacks callbacks;
-    callbacks.read = read;
-    callbacks.skip = skip;
-    callbacks.eof  = eof;
-
-    // Load the image and get a pointer to the pixels in memory
-    int width    = 0;
-    int height   = 0;
-    int channels = 0;
-
-    const StbPtr ptr(stbi_load_from_callbacks(&callbacks, &stream, &width, &height, &channels, STBI_rgb_alpha));
-
-    if (ptr == nullptr)
-    {
-        priv::err() << "Failed to load image from stream. Reason: " << stbi_failure_reason();
+        priv::err() << "Failed to read full image stream contents";
         return base::nullOpt;
     }
 
-    SFML_BASE_ASSERT(width > 0 && "Loaded image from stream with width == 0");
-    SFML_BASE_ASSERT(height > 0 && "Loaded image from stream with height == 0");
-
-    return base::makeOptional<Image>(base::PassKey<Image>{},
-                                     Vec2i{width, height}.toVec2u(),
-                                     ptr.get(),
-                                     ptr.get() + width * height * 4);
+    return loadFromMemory(scratch.data(), scratch.size());
 }
 
 
@@ -740,7 +637,9 @@ base::Vector<base::U8> Image::saveToMemory(SaveFormat format) const
     {
         if (const auto [data, size] = saveQOIImpl(m_pixels.data(), m_size); data)
         {
-            buffer.resize(size);
+            // Skip the zero-init pass that `resize` would do; we immediately overwrite via memcpy.
+            buffer.reserve(size);
+            buffer.unsafeSetSize(size);
             SFML_BASE_MEMCPY(buffer.data(), data.get(), size);
             return buffer;
         }
