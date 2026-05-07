@@ -6,15 +6,7 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-/// \brief Exchange the value of an object with a new value
-///
-/// Assigns `newVal` to `obj` and returns the old value of `obj`.
-/// Equivalent to `std::exchange`.
-///
-/// \param obj    Object whose value to exchange
-/// \param newVal New value to assign to `obj`
-///
-/// \return The old value of `obj`
+/// \brief Assign `newVal` to `obj` and return its old value
 ///
 ////////////////////////////////////////////////////////////
 template <typename T, typename U = T>

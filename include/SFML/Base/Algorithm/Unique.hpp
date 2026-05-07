@@ -12,16 +12,12 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-/// \brief Removes all except the first element from every consecutive group of equivalent elements
+/// \brief Remove all but the first element from each consecutive group of equal elements
 ///
-/// Removing is done by shifting the elements in the range in
-/// such a way that the elements that are not to be removed appear
-/// in the beginning of the range.
+/// Survivors are shifted to the front of the range; elements past the
+/// returned iterator are in a valid but unspecified state.
 ///
-/// \param first Iterator to the beginning of the range
-/// \param last  Iterator to the end of the range
-///
-/// \return An iterator to the new logical end of the range
+/// \return Iterator to the new logical end of the range
 ///
 ////////////////////////////////////////////////////////////
 template <typename ForwardIt>

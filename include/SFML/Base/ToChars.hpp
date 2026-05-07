@@ -55,13 +55,9 @@ inline constexpr const long long powersOf10[] = {
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Converts an unsigned integral value to a character string.
+/// \brief Write the decimal representation of an unsigned `value` into `[first, last)`
 ///
-/// \param first Pointer to the beginning of the character buffer.
-/// \param last  Pointer to one past the end of the character buffer.
-/// \param value The unsigned value to convert.
-///
-/// \return Pointer to one past the last character written.
+/// \return Pointer one past the last written character, or `nullptr` if the buffer is too small
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -97,15 +93,9 @@ template <typename T>
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-/// \brief Converts an integral value to a character string.
+/// \brief Write the decimal representation of an integral `value` into `[first, last)` (mimics `std::to_chars`)
 ///
-/// This is an internal helper that mimics std::to_chars.
-///
-/// \param first Pointer to the beginning of the character buffer.
-/// \param last  Pointer to the end of the character buffer (unused, kept for API consistency).
-/// \param value The integral value to convert.
-///
-/// \return Pointer to one past the last character written.
+/// \return Pointer one past the last written character, or `nullptr` if the buffer is too small
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -139,16 +129,9 @@ template <typename T>
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Converts a floating-point value to a character string.
+/// \brief Write a floating-point `value` into `[first, last)` with fixed `precision` (similar to `std::to_string`)
 ///
-/// This is a simple implementation with fixed precision, similar to std::to_string.
-///
-/// \param first Pointer to the beginning of the character buffer.
-/// \param last  Pointer to the end of the character buffer (unused, kept for API consistency).
-/// \param value The floating-point value to convert.
-/// \param precision The number of digits after the decimal point.
-///
-/// \return Pointer to one past the last character written.
+/// \return Pointer one past the last written character, or `nullptr` if the buffer is too small
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>

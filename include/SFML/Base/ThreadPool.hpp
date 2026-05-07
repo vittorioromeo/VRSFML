@@ -25,57 +25,37 @@ class ThreadPool
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief The type of task that can be executed by the pool.
-    ///
-    /// Uses `sf::base::FixedFunction` for non-allocating storage.
+    /// \brief Task type, stored inline via `FixedFunction` (no allocation)
     ///
     ////////////////////////////////////////////////////////////
     using Task = FixedFunction<void(), 128>;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct a thread pool with a specified number of workers.
-    ///
-    /// Creates and starts `workerCount` threads that will wait for tasks.
-    /// `workerCount` must be greater than zero.
-    ///
-    /// \param workerCount The number of worker threads to create.
+    /// \brief Start `workerCount` worker threads (must be > 0)
     ///
     ////////////////////////////////////////////////////////////
     explicit ThreadPool(SizeT workerCount);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Destructor.
-    ///
-    /// Waits for all currently executing and pending tasks to complete,
-    /// then stops and joins all worker threads.
+    /// \brief Wait for all pending tasks, then stop and join all workers
     ///
     ////////////////////////////////////////////////////////////
     ~ThreadPool();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Post a task to be executed by a worker thread.
-    ///
-    /// The task will be added to the queue and executed by the next
-    /// available worker thread.
-    ///
-    /// \param f The task (a callable object taking no arguments and returning void) to execute.
+    /// \brief Enqueue a task for the next available worker
     ///
     ////////////////////////////////////////////////////////////
     void post(Task&& f);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the number of workers in the pool.
-    ///
-    /// \return The number of workers.
+    /// \brief Number of workers in the pool
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] SizeT getWorkerCount() const noexcept;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the number of concurrent threads supported by the hardware.
-    ///
-    /// Provides a hint about the optimal number of threads for CPU-bound tasks.
-    /// Equivalent to `sf::Thread::hardwareConcurrency`.
+    /// \brief Hint at the optimal number of threads for CPU-bound tasks (equivalent to `sf::Thread::hardwareConcurrency`)
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static SizeT getHardwareWorkerCount() noexcept;
