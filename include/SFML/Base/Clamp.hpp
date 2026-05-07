@@ -14,14 +14,7 @@ namespace sf::base
 ////////////////////////////////////////////////////////////
 /// \brief Clamp `value` into the closed range `[minValue, maxValue]`
 ///
-/// Equivalent to `std::clamp`, but does not require `<algorithm>`.
-/// Asserts in debug builds that `minValue <= maxValue`.
-///
-/// \param value    Value to clamp
-/// \param minValue Lower bound
-/// \param maxValue Upper bound
-///
-/// \return Reference to `value` if in range, otherwise the closer bound
+/// \return Reference to `value` if in range, otherwise to the closer bound
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
