@@ -655,12 +655,14 @@ void Main::gameLoopUpdateSpentMoneyEffect(const float deltaTimeMs)
 ////////////////////////////////////////////////////////////
 sf::TextData Main::gameLoopUpdateComboText(const float deltaTimeMs, const float yBelowMinimap)
 {
+    sf::TextData td{};
+
     if (!pt->comboPurchased)
-        return {};
+        return td;
 
     comboState.comboTextShakeEffect.update(deltaTimeMs);
 
-    sf::TextData td{
+    td = {
         .position         = {comboState.baseTextPosition.x, yBelowMinimap + 45.f},
         .string           = "x" + sf::base::toString(comboState.combo + 1),
         .characterSize    = 48u,

@@ -232,13 +232,17 @@ Image::Image(base::PassKey<Image>&&, Vec2u size, const base::U8* itBegin, const 
 ////////////////////////////////////////////////////////////
 base::Optional<Image> Image::loadFromFile(const Path& filename)
 {
+    base::Optional<Image> result; // Use a single local variable for NRVO
+
 #ifdef SFML_SYSTEM_ANDROID
 
     if (priv::getActivityStatesPtr() != nullptr)
     {
         priv::ResourceStream stream;
+
         if (!stream.open(filename))
-            return false;
+            return result; // Empty optional
+
         return loadFromStream(stream);
     }
 
@@ -254,17 +258,18 @@ base::Optional<Image> Image::loadFromFile(const Path& filename)
         priv::err() << "Failed to load image\n"
                     << priv::PathDebugFormatter{filename} << "\nReason: Failed to open the file";
 
-        return base::nullOpt;
+        return result; // Empty optional
     }
 
     // Hoist `result` to function scope so NRVO can apply (declaring it inside
     // an `if (...)` initializer would defeat the optimisation).
-    auto result = loadFromMemory(scratch.data(), scratch.size());
+    result = loadFromMemory(scratch.data(), scratch.size());
     if (!result.hasValue())
     {
         // `loadFromMemory` already wrote a decoder-specific error; add path context.
         priv::err() << "Failed to load image\n" << priv::PathDebugFormatter{filename};
     }
+
     return result;
 }
 

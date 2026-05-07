@@ -8,6 +8,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wattributes"
 
 namespace sf
 {
@@ -113,6 +115,8 @@ struct [[nodiscard]] SFML_GRAPHICS_API StencilMode
 };
 
 } // namespace sf
+
+#pragma GCC diagnostic pop
 
 
 ////////////////////////////////////////////////////////////
