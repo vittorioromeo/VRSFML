@@ -26,6 +26,9 @@ namespace sf::base
 {
 class String;
 class StringView;
+
+template <typename TItem>
+class Vector;
 } // namespace sf::base
 
 namespace sf
@@ -202,18 +205,60 @@ public:
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Helper function to write a string to a file.
+/// \brief Helper function to write to a file.
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool writeToFile(base::StringView filename, base::StringView contents);
+[[nodiscard]] bool writeToFile(const Path& filename, base::StringView contents);
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Helper function to read the contents of a file into a string.
+/// \brief Helper function to read the contents of a file
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool readFromFile(base::StringView filename, std::string& target);
 [[nodiscard]] bool readFromFile(base::StringView filename, base::String& target);
+[[nodiscard]] bool readFromFile(base::StringView filename, base::Vector<char>& target);
+[[nodiscard]] bool readFromFile(const Path& filename, std::string& target);
+[[nodiscard]] bool readFromFile(const Path& filename, base::String& target);
+[[nodiscard]] bool readFromFile(const Path& filename, base::Vector<char>& target);
+
+
+////////////////////////////////////////////////////////////
+/// \brief Append the contents of a file to a `base::Vector<char>`.
+///
+/// Like `readFromFile(..., base::Vector<char>&)` but preserves the existing
+/// content of `target` and writes the file's bytes after it. The new range
+/// after a successful call is `target.data()[oldSize, oldSize + fileSize)`.
+/// Skips zero-init via `unsafeSetSize`. On failure, `target` may be in a
+/// partially-grown state; existing content up to `oldSize` is unchanged.
+///
+////////////////////////////////////////////////////////////
+[[nodiscard]] bool appendFromFile(base::StringView filename, base::Vector<char>& target);
+[[nodiscard]] bool appendFromFile(const Path& filename, base::Vector<char>& target);
+
+
+////////////////////////////////////////////////////////////
+/// \brief Returns a thread-local scratch `base::Vector<char>` for transient file I/O.
+///
+/// The buffer is recycled across calls on the same thread so its capacity
+/// grows monotonically toward the largest file ever loaded; subsequent loads
+/// of the same or smaller size do not allocate. Intended primarily as the
+/// destination passed to `readFromFile(StringView, base::Vector<char>&)` in
+/// resource-loading code paths.
+///
+/// \warning This API is **NOT re-entrant**. The returned reference must be
+///          fully consumed and released before any function on the same
+///          thread (directly or transitively) requests this buffer again --
+///          otherwise the second user will overwrite the first user's data.
+///          In practice: hold the reference in a single tight scope, do not
+///          pass it across calls into user code or third-party libraries
+///          that might also use it. Loaders that decode in place from the
+///          returned bytes (e.g. `stbi_load_from_memory`) are safe; loaders
+///          that themselves call `readFromFile` are not.
+///
+////////////////////////////////////////////////////////////
+[[nodiscard]] base::Vector<char>& getThreadLocalScratchCharBuffer();
 
 
 ////////////////////////////////////////////////////////////
