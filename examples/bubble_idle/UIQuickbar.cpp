@@ -10,7 +10,9 @@
 #include "SFML/ImGui/IncludeImGui.hpp"
 
 #include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/RectangleShapeData.hpp"
+#include "SFML/Graphics/RenderWindow.hpp"
 
 #include "SFML/System/Priv/Vec2Base.hpp"
 
@@ -56,15 +58,15 @@ void Main::uiDrawCloudWindowBackground()
 bool Main::uiDrawQuickbarIconButton(const char* label, const bool selected, const float scaleMult)
 {
     constexpr TabButtonPalette palette{
-        .idle    = ImVec4(0.15f, 0.35f, 0.60f, 1.0f),
-        .hovered = ImVec4(0.25f, 0.45f, 0.80f, 1.0f),
-        .active  = ImVec4(0.35f, 0.55f, 0.95f, 1.0f),
+        .idle    = sf::Color::fromFloats(0.15f, 0.35f, 0.60f, 1.0f),
+        .hovered = sf::Color::fromFloats(0.25f, 0.45f, 0.80f, 1.0f),
+        .active  = sf::Color::fromFloats(0.35f, 0.55f, 0.95f, 1.0f),
     };
 
-    ImGui::PushStyleColor(ImGuiCol_Button, selected ? palette.active : palette.idle);
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, selected ? palette.active : palette.hovered);
-    ImGui::PushStyleColor(ImGuiCol_ButtonActive, palette.active);
-    ImGui::PushStyleColor(ImGuiCol_Border, selected ? palette.active : palette.hovered);
+    ImGui::PushStyleColor(ImGuiCol_Button, (selected ? palette.active : palette.idle).toVec4<ImVec4>());
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (selected ? palette.active : palette.hovered).toVec4<ImVec4>());
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, palette.active.toVec4<ImVec4>());
+    ImGui::PushStyleColor(ImGuiCol_Border, (selected ? palette.active : palette.hovered).toVec4<ImVec4>());
     ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(ImGui::GetStyle().FramePadding.x + 1.f, -6.f * scaleMult));
 
@@ -72,7 +74,7 @@ bool Main::uiDrawQuickbarIconButton(const char* label, const bool selected, cons
 
     const auto outcome = uiAnimatedButton(txCloudBtnSquare2,
                                           label,
-                                          ImVec2(36.f * profile.uiScale * scaleMult, 22.f * profile.uiScale * scaleMult),
+                                          {36.f * profile.uiScale * scaleMult, 22.f * profile.uiScale * scaleMult},
                                           /* fontScale */ 1.35f * scaleMult,
                                           /* fontScaleMult */ 1.0f,
                                           /* btnSizeMult */ 1.3125f * scaleMult,

@@ -1,4 +1,5 @@
 #include "Aliases.hpp"
+#include "BGMStorage.hpp"
 #include "Bubble.hpp"
 #include "BubbleIdleMain.hpp"
 #include "BubbleType.hpp"
@@ -32,8 +33,15 @@
 
 #include "SFML/ImGui/IncludeImGui.hpp"
 
+#include "SFML/Graphics/DrawableBatch.hpp"
+#include "SFML/Graphics/Image.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
+#include "SFML/Graphics/RenderTexture.hpp"
+#include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/Text.hpp" // IWYU pragma: keep
+#include "SFML/Graphics/TextureAtlas.hpp"
+#include "SFML/Graphics/View.hpp"
 
 #include "SFML/Audio/Music.hpp"
 #include "SFML/Audio/MusicReader.hpp"
@@ -443,6 +451,20 @@ bool Main::mBtnDown(const sf::Mouse::Button button, const bool penetrateUI) cons
 
 
 ////////////////////////////////////////////////////////////
+sf::Rect2f Main::addImgResourceToAtlas(const sf::Path& path)
+{
+    return textureAtlas.add(sf::Image::loadFromFile("resources" / path).value()).value();
+}
+
+
+////////////////////////////////////////////////////////////
+sf::Rect2f Main::addImgResourceToUIAtlas(const sf::Path& path)
+{
+    return uiTextureAtlas.add(sf::Image::loadFromFile("resources" / path).value()).value();
+}
+
+
+////////////////////////////////////////////////////////////
 void Main::playSound(const LoadedSound& ls, const sf::base::SizeT maxOverlap)
 {
 #ifndef BUBBLEBYTE_NO_AUDIO
@@ -725,16 +747,16 @@ void Main::switchToBGM(const sf::base::SizeT index, const bool force)
 
 
 ////////////////////////////////////////////////////////////
-sf::base::Optional<Main::BGMBuffer>& Main::getCurrentBGMBuffer()
+sf::base::Optional<BGMBuffer>& Main::getCurrentBGMBuffer()
 {
-    return bgmBuffers[currentBGMBufferIdx % 2u];
+    return bgm.bgmBuffers[currentBGMBufferIdx % 2u];
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::base::Optional<Main::BGMBuffer>& Main::getNextBGMBuffer()
+sf::base::Optional<BGMBuffer>& Main::getNextBGMBuffer()
 {
-    return bgmBuffers[(currentBGMBufferIdx + 1u) % 2u];
+    return bgm.bgmBuffers[(currentBGMBufferIdx + 1u) % 2u];
 }
 
 

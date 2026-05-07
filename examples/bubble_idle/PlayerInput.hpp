@@ -1,14 +1,14 @@
 #pragma once
 
-#include "Cat.hpp"
-
-#include "SFML/Graphics/View.hpp"
-
 #include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/Vector.hpp"
+
+
+////////////////////////////////////////////////////////////
+struct Cat;
 
 
 ////////////////////////////////////////////////////////////
@@ -48,13 +48,4 @@ struct FrameUpdateState
 {
     sf::base::I64 elapsedUs{0};
     float         cursorGrow{0.f};
-};
-
-
-////////////////////////////////////////////////////////////
-struct FrameViewState
-{
-    sf::Vec2f resolution;
-    sf::View  scaledTopGameView;
-    sf::View  gameBackgroundView;
 };

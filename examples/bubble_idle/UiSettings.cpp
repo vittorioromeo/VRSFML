@@ -6,9 +6,9 @@
 void Main::uiTabBarSettings()
 {
     constexpr TabButtonPalette palette{
-        .idle    = ImVec4(0.15f, 0.35f, 0.60f, 1.0f),
-        .hovered = ImVec4(0.25f, 0.45f, 0.80f, 1.0f),
-        .active  = ImVec4(1.f, 1.f, 1.f, 1.0f),
+        .idle    = sf::Color::fromFloats(0.15f, 0.35f, 0.60f, 1.0f),
+        .hovered = sf::Color::fromFloats(0.25f, 0.45f, 0.80f, 1.0f),
+        .active  = sf::Color::fromFloats(1.f, 1.f, 1.f, 1.0f),
     };
 
     static int lastSelectedTabIdx = 0;

@@ -2,6 +2,7 @@
 if (NOT SFML_OS_EMSCRIPTEN AND NOT ARCH_ARM64)
     set(SRC BubbleIdle.cpp
             BubbleIdleMain.cpp
+            TextEffectWiggle.cpp
             InputHelper.cpp
             InputState.cpp
             Serialization.cpp
@@ -49,6 +50,7 @@ if (NOT SFML_OS_EMSCRIPTEN AND NOT ARCH_ARM64)
 else()
     set(SRC BubbleIdle.cpp
             BubbleIdleMain.cpp
+            TextEffectWiggle.cpp
             InputHelper.cpp
             InputState.cpp
             Serialization.cpp

@@ -48,32 +48,9 @@
 // clang-format on
 
 #include "SFML/ImGui/ImGuiContext.hpp"
-#include "SFML/ImGui/IncludeImGui.hpp"
 
 #include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/DrawTextureSettings.hpp"
-#include "SFML/Graphics/DrawableBatch.hpp"
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/Image.hpp"
-#include "SFML/Graphics/RenderStates.hpp"
-#include "SFML/Graphics/RenderTarget.hpp"
-#include "SFML/Graphics/RenderTexture.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Shader.hpp"
-#include "SFML/Graphics/Sprite.hpp"
-#include "SFML/Graphics/Text.hpp"
-#include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/TextureAtlas.hpp"
-#include "SFML/Graphics/TextureWrapMode.hpp"
-#include "SFML/Graphics/View.hpp"
-
-#include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/Listener.hpp"
-#include "SFML/Audio/Music.hpp"
-#include "SFML/Audio/MusicReader.hpp"
-#include "SFML/Audio/PlaybackDevice.hpp"
-#include "SFML/Audio/SoundBuffer.hpp"
 
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/Mouse.hpp"
@@ -94,7 +71,6 @@
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Math/Pow.hpp"
-#include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
@@ -110,6 +86,49 @@
 #else
     #define BUBBLE_IDLE_PRINTF_FORMAT(fmtIndex, firstArgIndex)
 #endif
+
+
+////////////////////////////////////////////////////////////
+struct ImFont;
+struct BGMBuffer;
+
+namespace sf
+{
+class AudioContext;
+class CPUDrawableBatch;
+class Font;
+class GraphicsContext;
+class PlaybackDevice;
+class RenderTarget;
+class RenderTexture;
+class RenderWindow;
+class Texture;
+class TextureAtlas;
+struct DrawTextureSettings;
+struct Listener;
+struct RenderStates;
+struct Sprite;
+class Text;
+struct TextData;
+struct View;
+} // namespace sf
+
+struct FrameViewState;
+struct MainBGMStorage;
+struct MainDrawableBatches;
+struct MainTextureStorage;
+struct MainTextStorage;
+
+using MainRenderTextureVector = sf::base::Vector<sf::RenderTexture>;
+
+template <typename T>
+struct MainOwnedDeleter
+{
+    void operator()(T* ptr) noexcept;
+};
+
+template <typename T>
+using MainOwnedPtr = sf::base::UniquePtr<T, MainOwnedDeleter<T>>;
 
 
 ////////////////////////////////////////////////////////////
@@ -199,13 +218,16 @@ struct Main
 ////////////////////////////////////////////////////////////
 // Audio context and playback device
 #ifndef BUBBLEBYTE_NO_AUDIO
-    sf::AudioContext   audioContext;
-    sf::PlaybackDevice playbackDevice;
+    MainOwnedPtr<sf::AudioContext>   audioContextStorage;
+    sf::AudioContext&                audioContext;
+    MainOwnedPtr<sf::PlaybackDevice> playbackDeviceStorage;
+    sf::PlaybackDevice&              playbackDevice;
 #endif
 
     ////////////////////////////////////////////////////////////
     // Graphics context
-    sf::GraphicsContext graphicsContext;
+    MainOwnedPtr<sf::GraphicsContext> graphicsContextStorage;
+    sf::GraphicsContext&              graphicsContext;
 
     ////////////////////////////////////////////////////////////
     // Shader with hue support and bubble effects
@@ -298,12 +320,14 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // SFML fonts
-    sf::Font fontMouldyCheese;
+    MainOwnedPtr<sf::Font> fontMouldyCheeseStorage;
+    sf::Font&              fontMouldyCheese;
 
     ////////////////////////////////////////////////////////////
     // Render window
     [[nodiscard]] sf::RenderWindow makeWindow();
-    sf::RenderWindow               window;
+    MainOwnedPtr<sf::RenderWindow> windowStorage;
+    sf::RenderWindow&              window;
     float                          dpiScalingFactor = 1.f;
 
     ////////////////////////////////////////////////////////////
@@ -331,11 +355,13 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Texture atlas
-    sf::TextureAtlas textureAtlas; // TODO P0: make smaller
+    MainOwnedPtr<sf::TextureAtlas> textureAtlasStorage;
+    sf::TextureAtlas&              textureAtlas; // TODO P0: make smaller
 
     ////////////////////////////////////////////////////////////
     // SFML fonts
-    sf::Font fontSuperBakery;
+    MainOwnedPtr<sf::Font> fontSuperBakeryStorage;
+    sf::Font&              fontSuperBakery;
 
     ////////////////////////////////////////////////////////////
     // ImGui fonts
@@ -356,26 +382,16 @@ struct Main
     sf::base::SizeT currentBGMBufferIdx = 0u; // which one of the two buffers is "current"
     Countdown       bgmTransition;            // fade in/out timer
 
-    struct BGMBuffer
-    {
-        sf::MusicReader musicReader;
-        sf::Music       music;
-
-        explicit BGMBuffer(sf::PlaybackDevice& playbackDevice, sf::MusicReader&& theMusicSource) :
-            musicReader{SFML_BASE_MOVE(theMusicSource)},
-            music{playbackDevice, musicReader}
-        {
-        }
-    };
-
-    sf::base::Array<sf::base::Optional<BGMBuffer>, 2u> bgmBuffers{sf::base::nullOpt, sf::base::nullOpt}; // for smooth fade
+    MainOwnedPtr<MainBGMStorage> bgmStorage;
+    MainBGMStorage&              bgm;
 
     ////////////////////////////////////////////////////////////
     // Sound management
     Sounds sounds{/* volumeMult */ 1.f};
 
-    SoundManager soundManager;
-    sf::Listener listener;
+    SoundManager               soundManager;
+    MainOwnedPtr<sf::Listener> listenerStorage;
+    sf::Listener&              listener;
 
     ////////////////////////////////////////////////////////////
     // Delayed actions
@@ -389,66 +405,74 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Background and ImGui render textures
-    sf::RenderTexture rtBackground;
+    MainOwnedPtr<sf::RenderTexture> rtBackgroundStorage;
+    sf::RenderTexture&              rtBackground;
 
-    sf::RenderTexture rtBackgroundProcessed;
+    MainOwnedPtr<sf::RenderTexture> rtBackgroundProcessedStorage;
+    sf::RenderTexture&              rtBackgroundProcessed;
 
-    sf::RenderTexture rtImGui;
+    MainOwnedPtr<sf::RenderTexture> rtImGuiStorage;
+    sf::RenderTexture&              rtImGui;
 
-    sf::RenderTexture rtCloudMask;
+    MainOwnedPtr<sf::RenderTexture> rtCloudMaskStorage;
+    sf::RenderTexture&              rtCloudMask;
 
-    sf::RenderTexture rtCloudProcessed;
+    MainOwnedPtr<sf::RenderTexture> rtCloudProcessedStorage;
+    sf::RenderTexture&              rtCloudProcessed;
 
     ////////////////////////////////////////////////////////////
     // Game render texture (before post-processing)
-    sf::RenderTexture rtGame;
+    MainOwnedPtr<sf::RenderTexture> rtGameStorage;
+    sf::RenderTexture&              rtGame;
 
     ////////////////////////////////////////////////////////////
     // Hexed cat offscreen render textures (one per concurrent hex, for witch and copy-witch combined)
     static inline constexpr sf::Vec2u       hexedCatRenderTextureSize{640u, 640u};
     static inline constexpr sf::base::SizeT maxHexedCatRenderTextures = maxConcurrentHexes * 2u;
 
-    sf::base::Vector<sf::RenderTexture> hexedCatRenderTextures;
+    MainOwnedPtr<MainRenderTextureVector> hexedCatRenderTexturesStorage;
+    MainRenderTextureVector&              hexedCatRenderTextures;
 
     ////////////////////////////////////////////////////////////
     // Textures (not in atlas)
-    static inline constexpr sf::TextureLoadSettings bgSettings{.smooth = true, .wrapMode = sf::TextureWrapMode::Repeat};
+    MainOwnedPtr<MainTextureStorage> textureStorage;
 
-    sf::Texture txLogo;
-    sf::Texture txFixedBg;
-    sf::Texture txBackgroundChunk;
-    sf::Texture txBackgroundChunkDesaturated;
-    sf::Texture txClouds;
-    sf::Texture txTintedClouds;
-    sf::Texture txBgSwamp;
-    sf::Texture txBgObservatory;
-    sf::Texture txBgAimTraining;
-    sf::Texture txBgFactory;
-    sf::Texture txBgWindTunnel;
-    sf::Texture txBgMagnetosphere;
-    sf::Texture txBgAuditorium;
-    sf::Texture txDrawings;
-    sf::Texture txTipBg;
-    sf::Texture txTipByte;
-    sf::Texture txCursor;
-    sf::Texture txCursorMultipop;
-    sf::Texture txCursorLaser;
-    sf::Texture txCursorGrab;
-    sf::Texture txArrow;
-    sf::Texture txUnlock;
-    sf::Texture txPurchasable;
-    sf::Texture txLetter;
-    sf::Texture txLetterText;
-    sf::Texture txFrame;
-    sf::Texture txFrameTiny;
-    sf::Texture txCloudBtn;
-    sf::Texture txCloudBtnSmall;
-    sf::Texture txCloudBtnSquare;
-    sf::Texture txCloudBtnSquare2;
+    sf::Texture& txLogo;
+    sf::Texture& txFixedBg;
+    sf::Texture& txBackgroundChunk;
+    sf::Texture& txBackgroundChunkDesaturated;
+    sf::Texture& txClouds;
+    sf::Texture& txTintedClouds;
+    sf::Texture& txBgSwamp;
+    sf::Texture& txBgObservatory;
+    sf::Texture& txBgAimTraining;
+    sf::Texture& txBgFactory;
+    sf::Texture& txBgWindTunnel;
+    sf::Texture& txBgMagnetosphere;
+    sf::Texture& txBgAuditorium;
+    sf::Texture& txDrawings;
+    sf::Texture& txTipBg;
+    sf::Texture& txTipByte;
+    sf::Texture& txCursor;
+    sf::Texture& txCursorMultipop;
+    sf::Texture& txCursorLaser;
+    sf::Texture& txCursorGrab;
+    sf::Texture& txArrow;
+    sf::Texture& txUnlock;
+    sf::Texture& txPurchasable;
+    sf::Texture& txLetter;
+    sf::Texture& txLetterText;
+    sf::Texture& txFrame;
+    sf::Texture& txFrameTiny;
+    sf::Texture& txCloudBtn;
+    sf::Texture& txCloudBtnSmall;
+    sf::Texture& txCloudBtnSquare;
+    sf::Texture& txCloudBtnSquare2;
 
     ////////////////////////////////////////////////////////////
     // UI texture atlas
-    sf::TextureAtlas uiTextureAtlas;
+    MainOwnedPtr<sf::TextureAtlas> uiTextureAtlasStorage;
+    sf::TextureAtlas&              uiTextureAtlas;
 
     ////////////////////////////////////////////////////////////
     // Quick toolbar icons
@@ -806,28 +830,18 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // HUD money text
-    sf::Text        moneyText{fontSuperBakery,
-                              {.position         = {10.f, 70.f},
-                               .string           = "$0",
-                               .characterSize    = 64u,
-                               .fillColor        = sf::Color::White,
-                               .outlineColor     = colorBlueOutline,
-                               .outlineThickness = 4.f}};
-    TextShakeEffect moneyTextShakeEffect;
+    MainOwnedPtr<MainTextStorage> textStorage;
+    sf::Text&                     moneyText;
+    TextShakeEffect               moneyTextShakeEffect;
 
     ////////////////////////////////////////////////////////////
     // Combo state
-    ComboState comboState{moneyText.position};
+    static inline constexpr sf::Vec2f moneyTextInitialPosition{10.f, 70.f};
+    ComboState                        comboState{moneyTextInitialPosition};
 
     ////////////////////////////////////////////////////////////
     // HUD demo text
-    sf::Text demoText{fontSuperBakery,
-                      {.position         = {},
-                       .string           = "DEMO VERSION",
-                       .characterSize    = 48u,
-                       .fillColor        = sf::Color::White,
-                       .outlineColor     = colorBlueOutline,
-                       .outlineThickness = 3.f}};
+    sf::Text& demoText;
 
     ////////////////////////////////////////////////////////////
     // Spatial partitioning
@@ -908,25 +922,27 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Batches for drawing
-    sf::CPUDrawableBatch bubbleDrawableBatch;
-    sf::CPUDrawableBatch starBubbleDrawableBatch;
-    sf::CPUDrawableBatch bombBubbleDrawableBatch;
-    sf::CPUDrawableBatch cpuCloudDrawableBatch;
-    sf::CPUDrawableBatch cpuTopCloudDrawableBatch;
-    sf::CPUDrawableBatch cpuCloudHudDrawableBatch;
-    sf::CPUDrawableBatch cpuCloudUiDrawableBatch;
-    sf::CPUDrawableBatch cpuDrawableBatchBeforeCats;
-    sf::CPUDrawableBatch cpuDrawableBatch;
-    sf::CPUDrawableBatch cpuDrawableBatchAfterCats;
-    sf::CPUDrawableBatch cpuDrawableBatchAdditive;
-    sf::CPUDrawableBatch minimapDrawableBatch;
-    sf::CPUDrawableBatch catTextDrawableBatch;
-    sf::CPUDrawableBatch hudDrawableBatch;
-    sf::CPUDrawableBatch hudTopDrawableBatch;     // drawn on top of ImGui
-    sf::CPUDrawableBatch hudBottomDrawableBatch;  // drawn below ImGui
-    sf::CPUDrawableBatch cpuTopDrawableBatch;     // drawn on top of ImGui
-    sf::CPUDrawableBatch catTextTopDrawableBatch; // drawn on top of ImGui
-    sf::CPUDrawableBatch tempDrawableBatch;       // for misc one-off draws (hexed cat effect)
+    MainOwnedPtr<MainDrawableBatches> drawableBatchesStorage;
+
+    sf::CPUDrawableBatch& bubbleDrawableBatch;
+    sf::CPUDrawableBatch& starBubbleDrawableBatch;
+    sf::CPUDrawableBatch& bombBubbleDrawableBatch;
+    sf::CPUDrawableBatch& cpuCloudDrawableBatch;
+    sf::CPUDrawableBatch& cpuTopCloudDrawableBatch;
+    sf::CPUDrawableBatch& cpuCloudHudDrawableBatch;
+    sf::CPUDrawableBatch& cpuCloudUiDrawableBatch;
+    sf::CPUDrawableBatch& cpuDrawableBatchBeforeCats;
+    sf::CPUDrawableBatch& cpuDrawableBatch;
+    sf::CPUDrawableBatch& cpuDrawableBatchAfterCats;
+    sf::CPUDrawableBatch& cpuDrawableBatchAdditive;
+    sf::CPUDrawableBatch& minimapDrawableBatch;
+    sf::CPUDrawableBatch& catTextDrawableBatch;
+    sf::CPUDrawableBatch& hudDrawableBatch;
+    sf::CPUDrawableBatch& hudTopDrawableBatch;     // drawn on top of ImGui
+    sf::CPUDrawableBatch& hudBottomDrawableBatch;  // drawn below ImGui
+    sf::CPUDrawableBatch& cpuTopDrawableBatch;     // drawn on top of ImGui
+    sf::CPUDrawableBatch& catTextTopDrawableBatch; // drawn on top of ImGui
+    sf::CPUDrawableBatch& tempDrawableBatch;       // for misc one-off draws (hexed cat effect)
 
     struct HexedCatDrawCommand // NOLINT(cppcoreguidelines-pro-type-member-init)
     {
@@ -990,32 +1006,9 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Text buffers
-    sf::Text textNameBuffer{fontSuperBakery,
-                            {
-                                .string           = "",
-                                .characterSize    = 48u,
-                                .fillColor        = sf::Color::White,
-                                .outlineColor     = colorBlueOutline,
-                                .outlineThickness = 3.f,
-                            }};
-
-    sf::Text textStatusBuffer{fontSuperBakery,
-                              {
-                                  .string           = "",
-                                  .characterSize    = 32u,
-                                  .fillColor        = sf::Color::White,
-                                  .outlineColor     = colorBlueOutline,
-                                  .outlineThickness = 2.f,
-                              }};
-
-    sf::Text textMoneyBuffer{fontSuperBakery,
-                             {
-                                 .string           = "",
-                                 .characterSize    = 24u,
-                                 .fillColor        = sf::Color::White,
-                                 .outlineColor     = colorBlueOutline,
-                                 .outlineThickness = 1.5f,
-                             }};
+    sf::Text& textNameBuffer;
+    sf::Text& textStatusBuffer;
+    sf::Text& textMoneyBuffer;
 
     ////////////////////////////////////////////////////////////
     // Spent money count-down effect
@@ -1028,9 +1021,14 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Cached views
-    sf::View gameView{.center = {1.f, 1.f}, .size = {1.f, 1.f}};         // TODO P1: compute on the fly, don't cache...
-    sf::View nonScaledHUDView{.center = {1.f, 1.f}, .size = {1.f, 1.f}}; // TODO P1: compute on the fly, don't cache...
-    sf::View scaledHUDView{.center = {1.f, 1.f}, .size = {1.f, 1.f}};    // TODO P1: compute on the fly, don't cache...
+    MainOwnedPtr<sf::View> gameViewStorage;
+    sf::View&              gameView; // TODO P1: compute on the fly, don't cache...
+
+    MainOwnedPtr<sf::View> nonScaledHUDViewStorage;
+    sf::View&              nonScaledHUDView; // TODO P1: compute on the fly, don't cache...
+
+    MainOwnedPtr<sf::View> scaledHUDViewStorage;
+    sf::View&              scaledHUDView; // TODO P1: compute on the fly, don't cache...
 
     ////////////////////////////////////////////////////////////
     // $ps sampler
@@ -1252,16 +1250,10 @@ struct Main
     [[nodiscard]] bool mBtnDown(sf::Mouse::Button button, bool penetrateUI) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Rect2f addImgResourceToAtlas(const sf::Path& path)
-    {
-        return textureAtlas.add(sf::Image::loadFromFile("resources" / path).value()).value();
-    }
+    [[nodiscard]] sf::Rect2f addImgResourceToAtlas(const sf::Path& path);
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Rect2f addImgResourceToUIAtlas(const sf::Path& path)
-    {
-        return uiTextureAtlas.add(sf::Image::loadFromFile("resources" / path).value()).value();
-    }
+    [[nodiscard]] sf::Rect2f addImgResourceToUIAtlas(const sf::Path& path);
 
     ////////////////////////////////////////////////////////////
     void playSound(const LoadedSound& ls, sf::base::SizeT maxOverlap = 255u);
@@ -1330,26 +1322,13 @@ struct Main
     [[nodiscard]] CullingBoundaries getViewCullingBoundaries(float offset) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Vec2f                                    getCatRangeCenter(const Cat& cat);
-    [[nodiscard]] float                                               getWindRepulsionMult() const;
-    [[nodiscard]] float                                               getWindAttractionMult() const;
-    [[nodiscard]] static constexpr CatType                            shrineTypeToCatType(ShrineType shrineType);
-    [[nodiscard, gnu::always_inline, gnu::flatten]] inline sf::Sprite particleToSprite(const Particle& particle) const
-    {
-        const auto  opacityAsAlpha = static_cast<sf::base::U8>(particle.opacity * 255.f);
-        const auto& textureRect    = particleRects[asIdx(particle.type)];
-
-        return {
-            .position    = particle.position,
-            .scale       = {particle.scale, particle.scale},
-            .origin      = textureRect.size / 2.f,
-            .rotation    = sf::radians(particle.rotation),
-            .textureRect = textureRect,
-            .color       = hueByteColor(particle.hueByte, opacityAsAlpha),
-        };
-    }
-    [[nodiscard]] sf::Vec2f getEdgeSpawnPosition(const sf::Rect2f& bounds, float thickness);
-    [[nodiscard]] sf::Vec2u getNewResolution() const;
+    [[nodiscard]] static sf::Vec2f         getCatRangeCenter(const Cat& cat);
+    [[nodiscard]] float                    getWindRepulsionMult() const;
+    [[nodiscard]] float                    getWindAttractionMult() const;
+    [[nodiscard]] static constexpr CatType shrineTypeToCatType(ShrineType shrineType);
+    [[nodiscard]] sf::Sprite               particleToSprite(const Particle& particle) const;
+    [[nodiscard]] sf::Vec2f                getEdgeSpawnPosition(const sf::Rect2f& bounds, float thickness);
+    [[nodiscard]] sf::Vec2u                getNewResolution() const;
 
     ////////////////////////////////////////////////////////////
     Cat& spawnCat(sf::Vec2f pos, CatType catType, float hue);
@@ -1482,22 +1461,22 @@ struct Main
 
     struct TabButtonPalette
     {
-        ImVec4 idle;
-        ImVec4 hovered;
-        ImVec4 active;
+        sf::Color idle;
+        sf::Color hovered;
+        sf::Color active;
     };
 
     [[nodiscard]] bool drawTabButton(float                   scaleMult,
                                      const char*             label,
                                      bool                    selected,
                                      const TabButtonPalette& palette,
-                                     ImVec2                  size   = {},
+                                     sf::Vec2f               size   = {},
                                      bool                    square = false);
 
     [[nodiscard]] AnimatedButtonOutcome uiAnimatedButton(
         const sf::Texture& tx,
         const char*        label,
-        const ImVec2&      btnSize,
+        sf::Vec2f          btnSize,
         float              fontScale,
         float              fontScaleMult,
         float              btnSizeMult  = 1.f,
@@ -1512,110 +1491,21 @@ struct Main
     bool makePrestigePurchasablePPButtonPSV(const char* label, PurchasableScalingValue& psv);
 
     ////////////////////////////////////////////////////////////
-    template <typename TCost>
     [[nodiscard]] bool makePSVButtonExByCurrency(
         const char*              label,
         PurchasableScalingValue& psv,
         SizeT                    times,
-        TCost                    cost,
-        TCost&                   availability,
-        const char*              currencyFmt)
-    {
-        const bool maxedOut = psv.nPurchases == psv.data->nMaxPurchases;
-
-        if (profile.hideMaxedOutPurchasables && maxedOut)
-            return false;
-
-        bool result = false;
-
-        if (maxedOut)
-            std::sprintf(uiState.uiBuffer, "MAX##%u", uiState.uiWidgetId++);
-        else if (cost == 0u || times == 0u)
-            std::sprintf(uiState.uiBuffer, "N/A##%u", uiState.uiWidgetId++);
-        else
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
-            std::sprintf(uiState.uiBuffer, currencyFmt, toStringWithSeparators(cost), uiState.uiWidgetId++);
-#pragma GCC diagnostic pop
-
-        ImGui::BeginDisabled(uiCheckPurchasability(label, maxedOut || availability < cost || cost == 0u));
-
-        uiMakeButtonLabels(label, uiState.uiLabelBuffer);
-        if (uiMakeButtonImpl(label, uiState.uiBuffer))
-        {
-            result = true;
-            availability -= cost;
-
-            if (&availability == &pt->money)
-                spentMoney += cost;
-
-            psv.nPurchases += times;
-
-            if (&availability == &pt->prestigePoints && times == 1u)
-            {
-                undoPPPurchase.emplaceBack([&psv, &availability, times, cost]
-                {
-                    psv.nPurchases -= times;
-                    availability += cost;
-                });
-
-                undoPPPurchaseTimer.time = 10000.f;
-            }
-        }
-
-        ImGui::EndDisabled();
-        return result;
-    }
+        MoneyType                cost,
+        MoneyType&               availability,
+        const char*              currencyFmt);
 
     ////////////////////////////////////////////////////////////
-    template <typename TCost>
     [[nodiscard]] bool makePurchasableButtonOneTimeByCurrency(
         const char* label,
         bool&       done,
-        TCost       cost,
-        TCost&      availability,
-        const char* currencyFmt)
-    {
-        bool result = false;
-
-        if (done)
-            std::sprintf(uiState.uiBuffer, "DONE##%u", uiState.uiWidgetId++);
-        else if (cost == 0u)
-            std::sprintf(uiState.uiBuffer, "FREE##%u", uiState.uiWidgetId++);
-        else
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
-            std::sprintf(uiState.uiBuffer, currencyFmt, toStringWithSeparators(cost), uiState.uiWidgetId++);
-#pragma GCC diagnostic pop
-
-        ImGui::BeginDisabled(uiCheckPurchasability(label, done || availability < cost));
-
-        uiMakeButtonLabels(label, uiState.uiLabelBuffer);
-        if (uiMakeButtonImpl(label, uiState.uiBuffer))
-        {
-            result = true;
-            availability -= cost;
-
-            if (&availability == &pt->money)
-                spentMoney += cost;
-
-            done = true;
-
-            if (&availability == &pt->prestigePoints && cost > 0u)
-            {
-                undoPPPurchase.emplaceBack([&availability, &done, cost]
-                {
-                    done = false;
-                    availability += cost;
-                });
-
-                undoPPPurchaseTimer.time = 10000.f;
-            }
-        }
-
-        ImGui::EndDisabled();
-        return result;
-    }
+        MoneyType   cost,
+        MoneyType&  availability,
+        const char* currencyFmt);
 
     ////////////////////////////////////////////////////////////
     void switchToBGM(sf::base::SizeT index, bool force);
@@ -1809,20 +1699,28 @@ struct Main
     void castSpellByIndex(sf::base::SizeT index, Cat* wizardCat, Cat* copyCat);
 
     ////////////////////////////////////////////////////////////
-    static constexpr auto formatTime(const sf::base::U64 seconds)
+    struct FormatTimeResult
     {
-        struct Result
-        {
-            sf::base::U64 h;
-            sf::base::U64 m;
-            sf::base::U64 s;
-        };
+        sf::base::U64 h;
+        sf::base::U64 m;
+        sf::base::U64 s;
+    };
 
-        return Result{seconds / 3600u, (seconds / 60u) % 60u, seconds % 60u};
+    [[nodiscard]] static constexpr FormatTimeResult formatTime(const sf::base::U64 seconds)
+    {
+        return {seconds / 3600u, (seconds / 60u) % 60u, seconds % 60u};
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static constexpr auto formatSpeedrunTime(const sf::Time time)
+    struct FormatSpeedrunTimeResult
+    {
+        sf::base::U64 hours;
+        sf::base::U64 mins;
+        sf::base::U64 secs;
+        sf::base::U64 millis;
+    };
+
+    [[nodiscard]] static constexpr FormatSpeedrunTimeResult formatSpeedrunTime(const sf::Time time)
     {
         const sf::base::I64 elapsedTime       = time.asMicroseconds();
         const sf::base::U64 totalMicroseconds = (elapsedTime >= 0) ? static_cast<sf::base::U64>(elapsedTime) : 0ULL;
@@ -1832,18 +1730,10 @@ struct Main
         constexpr sf::base::U64 usPerMin  = 60ULL * usPerSec;  // 60,000,000
         constexpr sf::base::U64 usPerHour = 60ULL * usPerMin;  // 3,600,000,000
 
-        struct Result
-        {
-            sf::base::U64 hours;
-            sf::base::U64 mins;
-            sf::base::U64 secs;
-            sf::base::U64 millis;
-        };
-
-        return Result{totalMicroseconds / usPerHour,
-                      (totalMicroseconds % usPerHour) / usPerMin,
-                      (totalMicroseconds % usPerMin) / usPerSec,
-                      (totalMicroseconds % usPerSec) / usPerMs};
+        return {totalMicroseconds / usPerHour,
+                (totalMicroseconds % usPerHour) / usPerMin,
+                (totalMicroseconds % usPerMin) / usPerSec,
+                (totalMicroseconds % usPerSec) / usPerMs};
     }
 
     ////////////////////////////////////////////////////////////
@@ -1985,38 +1875,14 @@ struct Main
     void               gameLoopUpdateCatActionCopy(float deltaTimeMs, Cat& cat);
     void               gameLoopUpdateCatActionDuck(float deltaTimeMs, Cat& cat);
     [[nodiscard]] auto makeMagnetAction(
-        const sf::Vec2f    position,
-        const CatType      catType,
-        const float        deltaTimeMs,
+        sf::Vec2f          position,
+        CatType            catType,
+        float              deltaTimeMs,
         auto               countdownPm,
-        const float        countdownTime,
-        const float        strengthMult,
-        const float        direction,
-        BubbleIgnoreFlags& ignoreFlags)
-    {
-        return [this, &ignoreFlags, deltaTimeMs, position, catType, countdownPm, countdownTime, strengthMult, direction](
-                   Bubble& bubble)
-        {
-            if (bubble.type == BubbleType::Combo)
-                return ControlFlow::Continue;
-
-            if (ignoreFlags.normal && bubble.type == BubbleType::Normal)
-                return ControlFlow::Continue;
-
-            if (ignoreFlags.star && (bubble.type == BubbleType::Star || bubble.type == BubbleType::Nova))
-                return ControlFlow::Continue;
-
-            if (ignoreFlags.bomb && bubble.type == BubbleType::Bomb)
-                return ControlFlow::Continue;
-
-            const auto bcDiff   = (position - bubble.position);
-            const auto strength = (getComputedRangeByCatTypeOrCopyCat(catType) - bcDiff.length()) * 0.000017f;
-            bubble.velocity += (bcDiff.normalized() * strength * strengthMult) * direction * deltaTimeMs;
-
-            (bubble.*countdownPm).time = sf::base::max((bubble.*countdownPm).time, countdownTime);
-            return ControlFlow::Continue;
-        };
-    }
+        float              countdownTime,
+        float              strengthMult,
+        float              direction,
+        BubbleIgnoreFlags& ignoreFlags);
 
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatActions(float deltaTimeMs);

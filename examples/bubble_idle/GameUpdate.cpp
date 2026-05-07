@@ -8,6 +8,8 @@
 
 #include "SFML/ImGui/IncludeImGui.hpp"
 
+#include "SFML/Graphics/DrawableBatch.hpp"
+
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/Algorithm/Erase.hpp"

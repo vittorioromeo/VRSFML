@@ -14,6 +14,9 @@
 
 #include "SFML/ImGui/IncludeImGui.hpp"
 
+#include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/View.hpp"
+
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Time.hpp"
 

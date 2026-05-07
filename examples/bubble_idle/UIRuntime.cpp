@@ -11,8 +11,10 @@
 #include "SFML/ImGui/IncludeImGui.hpp"
 
 #include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/RectangleShapeData.hpp"
 #include "SFML/Graphics/Texture.hpp"
+#include "SFML/Graphics/View.hpp"
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"

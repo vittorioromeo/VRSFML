@@ -2,6 +2,7 @@
 #include "BubbleIdleMain.hpp"
 #include "CatType.hpp"
 #include "Constants.hpp"
+#include "FrameViewState.hpp"
 #include "PlayerInput.hpp"
 #include "Version.hpp"
 
@@ -13,11 +14,18 @@
 #include "SFML/Graphics/BlendMode.hpp"
 #include "SFML/Graphics/CircleShapeData.hpp"
 #include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/DrawableBatch.hpp"
+#include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/RectangleShapeData.hpp"
+#include "SFML/Graphics/RenderTexture.hpp"
+#include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/RoundedRectangleShapeData.hpp"
 #include "SFML/Graphics/Sprite.hpp"
+#include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/TextData.hpp"
 #include "SFML/Graphics/TextUtils.hpp"
+#include "SFML/Graphics/Texture.hpp"
+#include "SFML/Graphics/TextureAtlas.hpp"
 
 #include "SFML/Window/Mouse.hpp"
 

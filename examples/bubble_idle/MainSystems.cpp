@@ -13,6 +13,7 @@
 #include "HexSession.hpp"
 #include "ParticleData.hpp"
 #include "ParticleType.hpp"
+#include "Playthrough.hpp"
 #include "Shrine.hpp"
 #include "ShrineType.hpp"
 #include "Stats.hpp"
@@ -28,7 +29,10 @@
 #include "SFML/ImGui/IncludeImGui.hpp"
 
 #include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/DrawableBatch.hpp"
+#include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Sprite.hpp"
+#include "SFML/Graphics/View.hpp"
 
 #include "SFML/Window/Keyboard.hpp"
 
@@ -2109,6 +2113,42 @@ void Main::gameLoopUpdateCatActionDuck(const float deltaTimeMs, Cat& cat)
 {
     constexpr float mults[4] = {1.f, 1.5f, 3.f, 4.5f};
     return mults[pt->windStrength];
+}
+
+
+////////////////////////////////////////////////////////////
+auto Main::makeMagnetAction(
+    const sf::Vec2f    position,
+    const CatType      catType,
+    const float        deltaTimeMs,
+    auto               countdownPm,
+    const float        countdownTime,
+    const float        strengthMult,
+    const float        direction,
+    BubbleIgnoreFlags& ignoreFlags)
+{
+    return [this, &ignoreFlags, deltaTimeMs, position, catType, countdownPm, countdownTime, strengthMult, direction](
+               Bubble& bubble)
+    {
+        if (bubble.type == BubbleType::Combo)
+            return ControlFlow::Continue;
+
+        if (ignoreFlags.normal && bubble.type == BubbleType::Normal)
+            return ControlFlow::Continue;
+
+        if (ignoreFlags.star && (bubble.type == BubbleType::Star || bubble.type == BubbleType::Nova))
+            return ControlFlow::Continue;
+
+        if (ignoreFlags.bomb && bubble.type == BubbleType::Bomb)
+            return ControlFlow::Continue;
+
+        const auto bcDiff   = (position - bubble.position);
+        const auto strength = (getComputedRangeByCatTypeOrCopyCat(catType) - bcDiff.length()) * 0.000017f;
+        bubble.velocity += (bcDiff.normalized() * strength * strengthMult) * direction * deltaTimeMs;
+
+        (bubble.*countdownPm).time = sf::base::max((bubble.*countdownPm).time, countdownTime);
+        return ControlFlow::Continue;
+    };
 }
 
 
