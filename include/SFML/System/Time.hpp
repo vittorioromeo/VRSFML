@@ -20,9 +20,7 @@ class Time
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// Sets the time value to zero.
+    /// \brief Construct a zero-valued time
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] constexpr Time() = default;
@@ -30,8 +28,6 @@ public:
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the time value as a number of seconds
-    ///
-    /// \return Time in seconds
     ///
     /// \see `asMilliseconds`, `asMicroseconds`
     ///
@@ -45,8 +41,6 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Return the time value as a number of milliseconds
     ///
-    /// \return Time in milliseconds
-    ///
     /// \see `asSeconds`, `asMicroseconds`
     ///
     ////////////////////////////////////////////////////////////
@@ -59,8 +53,6 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Return the time value as a number of microseconds
     ///
-    /// \return Time in microseconds
-    ///
     /// \see `asSeconds`, `asMilliseconds`
     ///
     ////////////////////////////////////////////////////////////
@@ -71,24 +63,14 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Overload of `operator==` to compare two time values
-    ///
-    /// \param rhs Right operand (a time)
-    ///
-    /// \return `true` if both time values are equal
+    /// \brief Equality comparison of two times
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator==(const Time& rhs) const = default;
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Time
-    /// \brief Overload of `operator<` to compare two time values
-    ///
-    /// \param lhs  Left operand (a time)
-    /// \param rhs Right operand (a time)
-    ///
-    /// \return `true` if `lhs` is lesser than `rhs`
+    /// \brief Less-than comparison of two times
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr bool operator<(const Time lhs, const Time rhs)
@@ -98,13 +80,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Time
-    /// \brief Overload of `operator>` to compare two time values
-    ///
-    /// \param lhs  Left operand (a time)
-    /// \param rhs Right operand (a time)
-    ///
-    /// \return `true` if `lhs` is greater than `rhs`
+    /// \brief Greater-than comparison of two times
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr bool operator>(const Time lhs, const Time rhs)
@@ -114,13 +90,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Time
-    /// \brief Overload of `operator<=` to compare two time values
-    ///
-    /// \param lhs  Left operand (a time)
-    /// \param rhs Right operand (a time)
-    ///
-    /// \return `true` if `lhs` is lesser or equal than `rhs`
+    /// \brief Less-than-or-equal comparison of two times
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr bool operator<=(const Time lhs, const Time rhs)
@@ -130,13 +100,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Time
-    /// \brief Overload of `operator>=` to compare two time values
-    ///
-    /// \param lhs  Left operand (a time)
-    /// \param rhs Right operand (a time)
-    ///
-    /// \return `true` if `lhs` is greater or equal than `rhs`
+    /// \brief Greater-than-or-equal comparison of two times
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr bool operator>=(const Time lhs, const Time rhs)
@@ -146,12 +110,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Time
-    /// \brief Overload of unary `operator-` to negate a time value
-    ///
-    /// \param rhs Right operand (a time)
-    ///
-    /// \return Opposite of the time value
+    /// \brief Negation of a time
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr Time operator-(const Time rhs)
@@ -161,13 +120,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Time
-    /// \brief Overload of binary `operator+` to add two time values
-    ///
-    /// \param lhs  Left operand (a time)
-    /// \param rhs Right operand (a time)
-    ///
-    /// \return Sum of the two times values
+    /// \brief Sum of two times
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr Time operator+(const Time lhs, const Time rhs)
@@ -177,13 +130,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Time
-    /// \brief Overload of binary `operator+=` to add/assign two time values
-    ///
-    /// \param lhs  Left operand (a time)
-    /// \param rhs Right operand (a time)
-    ///
-    /// \return Sum of the two times values
+    /// \brief Compound addition of two times
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] friend constexpr Time& operator+=(Time& lhs, const Time rhs)
@@ -194,13 +141,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Time
-    /// \brief Overload of binary `operator-` to subtract two time values
-    ///
-    /// \param lhs  Left operand (a time)
-    /// \param rhs Right operand (a time)
-    ///
-    /// \return Difference of the two times values
+    /// \brief Difference of two times
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr Time operator-(const Time lhs, const Time rhs)
@@ -210,13 +151,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Time
-    /// \brief Overload of binary `operator-=` to subtract/assign two time values
-    ///
-    /// \param lhs  Left operand (a time)
-    /// \param rhs Right operand (a time)
-    ///
-    /// \return Difference of the two times values
+    /// \brief Compound subtraction of two times
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] friend constexpr Time& operator-=(Time& lhs, const Time rhs)
@@ -227,13 +162,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Time
-    /// \brief Overload of binary `operator*` to scale a time value
-    ///
-    /// \param lhs  Left operand (a time)
-    /// \param rhs Right operand (a number)
-    ///
-    /// \return `lhs` multiplied by `rhs`
+    /// \brief Scale a time by a floating-point factor
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr Time operator*(const Time lhs, const float rhs)
@@ -243,13 +172,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Time
-    /// \brief Overload of binary `operator*` to scale a time value
-    ///
-    /// \param lhs  Left operand (a time)
-    /// \param rhs Right operand (a number)
-    ///
-    /// \return `lhs` multiplied by `rhs`
+    /// \brief Scale a time by an integer factor
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr Time operator*(const Time lhs, const base::I64 rhs)
@@ -259,13 +182,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Time
-    /// \brief Overload of binary `operator*` to scale a time value
-    ///
-    /// \param lhs  Left operand (a number)
-    /// \param rhs Right operand (a time)
-    ///
-    /// \return `lhs` multiplied by `rhs`
+    /// \brief Scale a time by a floating-point factor
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr Time operator*(const float lhs, const Time rhs)
@@ -275,13 +192,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Time
-    /// \brief Overload of binary `operator*` to scale a time value
-    ///
-    /// \param lhs  Left operand (a number)
-    /// \param rhs Right operand (a time)
-    ///
-    /// \return `lhs` multiplied by `rhs`
+    /// \brief Scale a time by an integer factor
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr Time operator*(const base::I64 lhs, const Time rhs)
@@ -291,13 +202,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Time
-    /// \brief Overload of binary `operator*=` to scale/assign a time value
-    ///
-    /// \param lhs  Left operand (a time)
-    /// \param rhs Right operand (a number)
-    ///
-    /// \return `lhs` multiplied by `rhs`
+    /// \brief Compound scale of a time by a floating-point factor
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] friend constexpr Time& operator*=(Time& lhs, const float rhs)
@@ -307,13 +212,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Time
-    /// \brief Overload of binary `operator*=` to scale/assign a time value
-    ///
-    /// \param lhs  Left operand (a time)
-    /// \param rhs Right operand (a number)
-    ///
-    /// \return `lhs` multiplied by `rhs`
+    /// \brief Compound scale of a time by an integer factor
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] friend constexpr Time& operator*=(Time& lhs, const base::I64 rhs)
@@ -323,13 +222,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Time
-    /// \brief Overload of binary `operator/` to scale a time value
-    ///
-    /// \param lhs  Left operand (a time)
-    /// \param rhs Right operand (a number)
-    ///
-    /// \return `lhs` divided by `rhs`
+    /// \brief Divide a time by a floating-point divisor
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr Time operator/(const Time lhs, const float rhs)
@@ -340,13 +233,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Time
-    /// \brief Overload of binary `operator/` to scale a time value
-    ///
-    /// \param lhs  Left operand (a time)
-    /// \param rhs Right operand (a number)
-    ///
-    /// \return `lhs` divided by `rhs`
+    /// \brief Divide a time by an integer divisor
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr Time operator/(const Time lhs, const base::I64 rhs)
@@ -357,13 +244,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Time
-    /// \brief Overload of binary `operator/=` to scale/assign a time value
-    ///
-    /// \param lhs  Left operand (a time)
-    /// \param rhs Right operand (a number)
-    ///
-    /// \return `lhs` divided by `rhs`
+    /// \brief Compound divide of a time by a floating-point divisor
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] friend constexpr Time& operator/=(Time& lhs, const float rhs)
@@ -374,13 +255,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Time
-    /// \brief Overload of binary `operator/=` to scale/assign a time value
-    ///
-    /// \param lhs  Left operand (a time)
-    /// \param rhs Right operand (a number)
-    ///
-    /// \return `lhs` divided by `rhs`
+    /// \brief Compound divide of a time by an integer divisor
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] friend constexpr Time& operator/=(Time& lhs, const base::I64 rhs)
@@ -391,13 +266,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Time
-    /// \brief Overload of binary `operator/` to compute the ratio of two time values
-    ///
-    /// \param lhs  Left operand (a time)
-    /// \param rhs Right operand (a time)
-    ///
-    /// \return `lhs` divided by `rhs`
+    /// \brief Ratio of two times as a floating-point value
     ///
     ////////////////////////////////////////////////////////////
     friend constexpr float operator/(const Time lhs, const Time rhs)
@@ -408,13 +277,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Time
-    /// \brief Overload of binary `operator%` to compute remainder of a time value
-    ///
-    /// \param lhs  Left operand (a time)
-    /// \param rhs Right operand (a time)
-    ///
-    /// \return `lhs` modulo `rhs`
+    /// \brief Remainder of one time divided by another
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr Time operator%(const Time lhs, const Time rhs)
@@ -425,13 +288,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Time
-    /// \brief Overload of binary `operator%=` to compute/assign remainder of a time value
-    ///
-    /// \param lhs  Left operand (a time)
-    /// \param rhs Right operand (a time)
-    ///
-    /// \return `lhs` modulo `rhs`
+    /// \brief Compound remainder of one time divided by another
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] friend constexpr Time& operator%=(Time& lhs, const Time rhs)
@@ -453,8 +310,6 @@ private:
     /// Prefer the `sf::microseconds`, `sf::milliseconds`, and
     /// `sf::seconds` factory functions for clarity at call sites.
     ///
-    /// \param microseconds Number of microseconds
-    ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr explicit Time(const base::I64 microseconds) :
         m_microseconds(microseconds)
@@ -470,12 +325,7 @@ private:
 
 
 ////////////////////////////////////////////////////////////
-/// \relates Time
 /// \brief Construct a time value from a number of seconds
-///
-/// \param amount Number of seconds
-///
-/// \return Time value constructed from the amount of seconds
 ///
 /// \see `milliseconds`, `microseconds`
 ///
@@ -486,12 +336,7 @@ private:
 }
 
 ////////////////////////////////////////////////////////////
-/// \relates Time
 /// \brief Construct a time value from a number of milliseconds
-///
-/// \param amount Number of milliseconds
-///
-/// \return Time value constructed from the amount of milliseconds
 ///
 /// \see `seconds`, `microseconds`
 ///
@@ -503,12 +348,7 @@ private:
 
 
 ////////////////////////////////////////////////////////////
-/// \relates Time
 /// \brief Construct a time value from a number of microseconds
-///
-/// \param amount Number of microseconds
-///
-/// \return Time value constructed from the amount of microseconds
 ///
 /// \see `seconds`, `milliseconds`
 ///
@@ -525,27 +365,18 @@ private:
 /// \class sf::Time
 /// \ingroup system
 ///
-/// `sf::Time` encapsulates a time value in a flexible way.
-/// It allows to define a time value either as a number of
-/// seconds, milliseconds or microseconds. It also works the
-/// other way round: you can read a time value as either
-/// a number of seconds, milliseconds or microseconds.
+/// `sf::Time` encapsulates a time value in a flexible way:
+/// it can be defined or read as a number of seconds,
+/// milliseconds, or microseconds, leaving the choice of
+/// representation to the user.
 ///
 /// `sf::Time` is intentionally decoupled from `<chrono>` to keep
 /// this header lightweight; conversions between `sf::Time` and
 /// `std::chrono::duration` are provided as opt-in helpers in
 /// `SFML/System/TimeChronoUtil.hpp` (see `sf::TimeChronoUtil`).
 ///
-/// By using such a flexible interface, the API doesn't
-/// impose any fixed type or resolution for time values,
-/// and let the user choose its own favorite representation.
-///
-/// Time values support the usual mathematical operations:
-/// you can add or subtract two times, multiply or divide
-/// a time by a number, compare two times, etc.
-///
-/// Since they represent a time span and not an absolute time
-/// value, times can also be negative.
+/// Time values support the usual arithmetic and comparison
+/// operations, and represent a span (so they may be negative).
 ///
 /// Usage example:
 /// \code

@@ -104,7 +104,7 @@ using AtomicStorageType = typename AtomicStorage<T>::type;
 
 
 ////////////////////////////////////////////////////////////
-/// \brief No-op for non-float `T`, bit-cast for float/double
+/// \brief Convert `T` to its atomic-storage representation (no-op for non-float, bit-cast for float/double)
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -268,8 +268,7 @@ SFML_SYSTEM_API void atomicNotifyAll(const void* addr) noexcept;
 ////////////////////////////////////////////////////////////
 /// \brief Lock-free atomic wrapper around a numerical type
 ///
-/// \tparam T `bool`, integer, pointer, or floating-point type with
-///           `sizeof(T) <= 8`
+/// \tparam T `bool`, integer, pointer, or floating-point type with `sizeof(T) <= 8`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -307,7 +306,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor; value-initalizes to zero (or null)
+    /// \brief Value-initialize to zero (or null)
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] constexpr Atomic() noexcept : m_value{}
@@ -334,7 +333,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Atomically load the current value
+    /// \brief Atomically load and return the current value
     ///
     ////////////////////////////////////////////////////////////
     template <MemoryOrder MO>
@@ -368,7 +367,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Atomically replace with `value`, returning the previous value
+    /// \brief Atomically replace the stored value with `value` and return the previous value
     ///
     ////////////////////////////////////////////////////////////
     template <MemoryOrder MO>
@@ -387,8 +386,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Strong CAS: replace with `desired` iff the current
-    ///        bit-pattern equals `expected`. Updates `expected` on failure.
+    /// \brief Strong CAS: replace with `desired` iff the current bit-pattern equals `expected`, updating `expected` on failure
     ///
     /// Equality is **bit-wise**, matching `std::atomic`. Floating-point
     /// callers should be aware: `+0.0f` vs `-0.0f` (different sign bit)
@@ -423,8 +421,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Weak CAS: like `compareExchangeStrong` but may spuriously
-    ///        fail. Useful inside a CAS retry loop.
+    /// \brief Weak CAS: like `compareExchangeStrong` but may spuriously fail (useful inside a CAS retry loop)
     ///
     ////////////////////////////////////////////////////////////
     template <MemoryOrder Success, MemoryOrder Failure>
@@ -451,9 +448,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Atomic fetch-and-add
-    ///
-    /// \return The previous value
+    /// \brief Atomically add `arg` and return the previous value
     ///
     ////////////////////////////////////////////////////////////
     template <MemoryOrder MO>
@@ -474,10 +469,9 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Atomic fetch-and-add for pointer types (element units,
-    ///        scaled by `sizeof(*T)` to match `std::atomic` semantics)
+    /// \brief Atomically advance the pointer by `arg` elements and return the previous value
     ///
-    /// \return The previous pointer value
+    /// `arg` is in element units, scaled by `sizeof(*T)` to match `std::atomic` pointer semantics.
     ///
     ////////////////////////////////////////////////////////////
     template <MemoryOrder MO>
@@ -510,7 +504,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Atomic fetch-and-AND (integral types only)
+    /// \brief Atomically bitwise-AND `arg` into the value and return the previous value (integral types only)
     ///
     ////////////////////////////////////////////////////////////
     template <MemoryOrder MO>
@@ -546,8 +540,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Block the calling thread until the stored value differs
-    ///        bit-wise from `expected`
+    /// \brief Block the calling thread until the stored value differs bit-wise from `expected`
     ///
     /// Spurious wakeups are allowed; callers should re-check in a
     /// loop, or use `waitUntil` which does that for them.
@@ -592,8 +585,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Block the calling thread until `predicate(load<MO>())`
-    ///        returns `true`
+    /// \brief Block the calling thread until `predicate(load<MO>())` returns `true`
     ///
     /// Convenience loop on top of `wait`. `predicate` is invoked with
     /// the most recent observed value.

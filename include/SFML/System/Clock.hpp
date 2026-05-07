@@ -32,11 +32,7 @@ class [[nodiscard]] SFML_SYSTEM_API Clock
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// Constructs a clock and immediately starts it. The elapsed
-    /// time is measured from this point on, until `restart()` or
-    /// `reset()` is called.
+    /// \brief Construct and immediately start the clock
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit Clock();
@@ -72,21 +68,13 @@ public:
     Clock& operator=(Clock&&) noexcept;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the elapsed time
-    ///
-    /// This function returns the time elapsed since the last call
-    /// to `restart()` (or the construction of the instance if `restart()`
-    /// has not been called).
-    ///
-    /// \return Time elapsed
+    /// \brief Time elapsed since construction or the last `restart()`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Time getElapsedTime() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Check whether the clock is running
-    ///
-    /// \return `true` if the clock is running, `false` otherwise
+    /// \brief `true` if the clock is currently running
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isRunning() const;
@@ -108,12 +96,9 @@ public:
     void stop();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Restart the clock
+    /// \brief Reset the time counter to zero, leaving the clock running
     ///
-    /// This function puts the time counter back to zero, returns
-    /// the elapsed time, and leaves the clock in a running state.
-    ///
-    /// \return Time elapsed
+    /// \return Elapsed time before the reset
     ///
     /// \see `reset`
     ///
@@ -121,12 +106,9 @@ public:
     Time restart();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Reset the clock
+    /// \brief Reset the time counter to zero, leaving the clock paused
     ///
-    /// This function puts the time counter back to zero, returns
-    /// the elapsed time, and leaves the clock in a paused state.
-    ///
-    /// \return Time elapsed
+    /// \return Elapsed time before the reset
     ///
     /// \see `restart`
     ///
@@ -134,14 +116,10 @@ public:
     Time reset();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the current time from the underlying monotonic clock
+    /// \brief Absolute time stamp from the OS's monotonic clock
     ///
-    /// The returned value is the absolute time reported by the OS's
-    /// most precise monotonic clock. It is not relative to any
-    /// `sf::Clock` instance and is mainly useful for measuring time
-    /// intervals between two `now()` calls.
-    ///
-    /// \return Current time stamp from the monotonic clock
+    /// Not relative to any `sf::Clock` instance; mainly useful for
+    /// measuring intervals between two `now()` calls.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static Time now();

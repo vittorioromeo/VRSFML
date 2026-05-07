@@ -28,17 +28,13 @@ class [[nodiscard]] AutoWrapAngle
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// Initializes the angle to 0 degrees.
+    /// \brief Default-construct to 0 degrees
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] constexpr AutoWrapAngle() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from an `sf::Angle`
-    ///
-    /// \param angle Angle to initialize from.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] inline constexpr /* implicit */ AutoWrapAngle(const Angle angle) :
@@ -49,9 +45,6 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Assign an `sf::Angle`
     ///
-    /// \param angle Angle to assign.
-    /// \return Reference to `*this`.
-    ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator=(const Angle angle) noexcept
     {
@@ -60,9 +53,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Implicit conversion to `sf::Angle`
-    ///
-    /// Returns the angle value, wrapped to the range `[0, 360)`.
+    /// \brief Implicitly convert to `sf::Angle` wrapped into `[0, 360)`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr operator Angle() const noexcept
@@ -71,9 +62,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Return the angle's value in degrees
-    ///
-    /// \return Angle in degrees
+    /// \brief Wrapped value in degrees
     ///
     /// \see `asRadians`
     ///
@@ -84,9 +73,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Return the angle's value in radians
-    ///
-    /// \return Angle in radians
+    /// \brief Wrapped value in radians
     ///
     /// \see `asDegrees`
     ///
@@ -97,10 +84,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Rotate towards another angle by a maximum step.
-    ///
-    /// Wraps the current angle before performing the rotation.
-    /// See `sf::Angle::rotatedTowards` for details.
+    /// \brief Rotate towards `other` by at most `speed`, wrapping first (see `sf::Angle::rotatedTowards`)
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle rotatedTowards(const Angle other,
@@ -110,9 +94,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Equality comparison operator
-    ///
-    /// Compares the underlying radian values after wrapping.
+    /// \brief Equality of the wrapped angle values
     ///
     ////////////////////////////////////////////////////////////
     friend constexpr bool operator==(AutoWrapAngle lhs, AutoWrapAngle rhs)
@@ -121,9 +103,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Addition assignment operator
-    ///
-    /// Adds `rhs` to the current angle value.
+    /// \brief Add `rhs` to the (unwrapped) angle value
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator+=(const Angle rhs)
@@ -133,9 +113,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Subtraction assignment operator
-    ///
-    /// Subtracts `rhs` from the current angle value.
+    /// \brief Subtract `rhs` from the (unwrapped) angle value
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator-=(const Angle rhs)
@@ -145,9 +123,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Multiplication assignment operator
-    ///
-    /// Multiplies the current angle value by `rhs`.
+    /// \brief Multiply the (unwrapped) angle value by `rhs`
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator*=(const float rhs)
@@ -157,9 +133,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Division assignment operator
-    ///
-    /// Divides the current angle value by `rhs`. Asserts if `rhs` is 0.
+    /// \brief Divide the (unwrapped) angle value by `rhs` (asserts `rhs != 0`)
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator/=(const float rhs)
@@ -171,10 +145,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Modulo assignment operator
-    ///
-    /// Assigns the result of `*this % rhs` to `*this`. Wraps the current angle
-    /// before performing the modulo operation. See `sf::Angle::operator%`.
+    /// \brief Assign `*this % rhs`, wrapping the current angle first (see `sf::Angle::operator%`)
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator%=(const Angle rhs)

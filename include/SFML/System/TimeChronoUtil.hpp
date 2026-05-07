@@ -16,23 +16,14 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief Utilities for converting between `sf::Time` and `<chrono>` durations.
-///
-/// This class provides static functions to facilitate seamless conversion
-/// between SFML's `sf::Time` and the standard C++ `<chrono>` library's duration types.
+/// \brief Utilities for converting between `sf::Time` and `<chrono>` durations
 ///
 ////////////////////////////////////////////////////////////
 class SFML_SYSTEM_API TimeChronoUtil
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Create a `Time` from a `std::chrono::duration`
-    ///
-    /// Converts any `std::chrono::duration` type into an equivalent `sf::Time`.
-    ///
-    /// \param duration The `std::chrono::duration` to convert.
-    ///
-    /// \return The equivalent `sf::Time` value.
+    /// \brief Convert any `std::chrono::duration` to the equivalent `sf::Time`
     ///
     ////////////////////////////////////////////////////////////
     template <typename Rep, typename Period>
@@ -45,10 +36,6 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Convert `time` to a `std::chrono::microseconds` duration
     ///
-    /// \param time The `sf::Time` to convert.
-    ///
-    /// \return The equivalent duration in `std::chrono::microseconds`.
-    ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static constexpr std::chrono::microseconds toDuration(const Time time)
     {
@@ -57,11 +44,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert `time` to a custom `std::chrono::duration`
-    ///
-    /// \param time The `sf::Time` to convert.
-    ///
-    /// \return The equivalent duration represented by the specified `std::chrono::duration` template instantiation.
+    /// \brief Convert `time` to a custom `std::chrono::duration<Rep, Period>`
     ///
     ////////////////////////////////////////////////////////////
     template <typename Rep, typename Period>

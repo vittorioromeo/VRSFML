@@ -70,58 +70,44 @@ public:
     FileInputStream& operator=(FileInputStream&&) noexcept;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Open the stream from a file path
+    /// \brief Open the file at `filename` for reading
     ///
-    /// \param filename Name of the file to open
-    ///
-    /// \return File input stream on success, `base::nullOpt` on error
+    /// \return Stream on success, `base::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<FileInputStream> open(const Path& filename);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Read data from the stream
+    /// \brief Read up to `size` bytes into `data`, advancing the reading position
     ///
-    /// After reading, the stream's reading position must be
-    /// advanced by the amount of bytes read.
-    ///
-    /// \param data Buffer where to copy the read data
-    /// \param size Desired number of bytes to read
-    ///
-    /// \return The number of bytes actually read, or `base::nullOpt` on error
+    /// \return Number of bytes actually read, or `base::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] base::Optional<base::SizeT> read(void* data, base::SizeT size) override;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Change the current reading position
+    /// \brief Move the reading position to `position` (offset from the beginning)
     ///
-    /// \param position The position to seek to, from the beginning
-    ///
-    /// \return The position actually sought to, or `base::nullOpt` on error
+    /// \return Position actually sought to, or `base::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] base::Optional<base::SizeT> seek(base::SizeT position) override;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the current reading position in the stream
-    ///
-    /// \return The current position, or `base::nullOpt` on error.
+    /// \brief Current reading position, or `base::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] base::Optional<base::SizeT> tell() override;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Return the size of the stream
-    ///
-    /// \return The total number of bytes available in the stream, or `base::nullOpt` on error
+    /// \brief Total number of bytes in the stream, or `base::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] base::Optional<base::SizeT> getSize() override;
 
 private:
     ////////////////////////////////////////////////////////////
-    /// \brief Deleter for stdio file stream that closes the file stream
+    /// \brief Deleter that closes the wrapped stdio file
     ///
     ////////////////////////////////////////////////////////////
     struct FileCloser
@@ -132,18 +118,12 @@ private:
 public:
     ////////////////////////////////////////////////////////////
     /// \private
-    ///
-    /// \brief Construct from file
-    ///
     ////////////////////////////////////////////////////////////
     explicit FileInputStream(base::PassKey<FileInputStream>&&, base::UniquePtr<std::FILE, FileCloser>&& file);
 
 #ifdef SFML_SYSTEM_ANDROID
     ////////////////////////////////////////////////////////////
     /// \private
-    ///
-    /// \brief Construct from resource stream
-    ///
     ////////////////////////////////////////////////////////////
     explicit FileInputStream(base::PassKey<FileInputStream>&&, base::UniquePtr<priv::ResourceStream>&& androidFile);
 #endif
@@ -166,21 +146,11 @@ private:
 /// \class sf::FileInputStream
 /// \ingroup system
 ///
-/// This class is a specialization of `InputStream` that
-/// reads from a file on disk.
+/// `InputStream` specialization that reads from a file on disk.
 ///
-/// It wraps a file in the common `InputStream` interface
-/// and therefore allows to use generic classes or functions
-/// that accept such a stream, with a file on disk as the data
-/// source.
-///
-/// In addition to the virtual functions inherited from
-/// `InputStream`, `FileInputStream` adds a function to
-/// specify the file to open.
-///
-/// SFML resource classes can usually be loaded directly from
-/// a filename, so this class shouldn't be useful to you unless
-/// you create your own algorithms that operate on an InputStream.
+/// SFML resource classes can usually be loaded directly from a filename,
+/// so this is mostly useful when writing custom algorithms over
+/// `InputStream`.
 ///
 /// Usage example:
 /// \code
