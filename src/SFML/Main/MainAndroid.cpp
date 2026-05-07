@@ -18,10 +18,8 @@
 #include "SFML/System/Android/Activity.hpp"
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Sleep.hpp"
+#include "SFML/System/Thread.hpp"
 #include "SFML/System/Time.hpp"
-
-#include "SFML/Base/StdThread.hpp"
 
 #include <android/native_activity.h>
 #include <android/window.h>
@@ -309,7 +307,7 @@ void onDestroy(ANativeActivity* activity)
     while (!states.terminated)
     {
         states.mutex.unlock();
-        sf::sleep(sf::milliseconds(20));
+        sf::ThisThread::sleepFor(sf::milliseconds(20));
         states.mutex.lock();
     }
 
@@ -345,7 +343,7 @@ void onNativeWindowCreated(ANativeActivity* activity, ANativeWindow* window)
     while (!(states.updated | states.terminated))
     {
         states.mutex.unlock();
-        sf::sleep(sf::milliseconds(10));
+        sf::ThisThread::sleepFor(sf::milliseconds(10));
         states.mutex.lock();
     }
 }
@@ -368,7 +366,7 @@ void onNativeWindowDestroyed(ANativeActivity* activity, ANativeWindow* /* window
     while (!(states.updated | states.terminated))
     {
         states.mutex.unlock();
-        sf::sleep(sf::milliseconds(10));
+        sf::ThisThread::sleepFor(sf::milliseconds(10));
         states.mutex.lock();
     }
 }
@@ -554,7 +552,7 @@ JNIEXPORT void ANativeActivity_onCreate(ANativeActivity* activity, void* savedSt
     sf::priv::err().rdbuf(&states->logcat);
 
     // Launch the main thread
-    std::thread(sf::priv::main, states).detach();
+    sf::Thread{[states] { sf::priv::main(states); }}.detach();
 
     // Wait for the main thread to be initialized
     states->mutex.lock();
@@ -562,7 +560,7 @@ JNIEXPORT void ANativeActivity_onCreate(ANativeActivity* activity, void* savedSt
     while (!(states->initialized | states->terminated))
     {
         states->mutex.unlock();
-        sf::sleep(sf::milliseconds(20));
+        sf::ThisThread::sleepFor(sf::milliseconds(20));
         states->mutex.lock();
     }
 

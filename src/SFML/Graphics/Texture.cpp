@@ -53,7 +53,7 @@ constinit sf::Atomic<unsigned int> nextUniqueId{1u}; // start at 1, zero is "no 
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten]] inline unsigned int getUniqueId() noexcept
 {
-    return nextUniqueId.fetchAdd<sf::MemoryOrder::Relaxed>(1u);
+    return nextUniqueId.fetchAddRelaxed(1u);
 }
 
 ////////////////////////////////////////////////////////////

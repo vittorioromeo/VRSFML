@@ -13,7 +13,7 @@
 #include "SFML/System/FileInputStream.hpp"
 #include "SFML/System/LifetimeDependee.hpp"
 #include "SFML/System/Path.hpp"
-#include "SFML/System/Sleep.hpp"
+#include "SFML/System/Thread.hpp"
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/Builtin/Memset.hpp"
@@ -146,19 +146,19 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
         // Wait for background thread to start
         music.play();
         while (!music.isPlaying())
-            sf::sleep(sf::milliseconds(10));
+            sf::ThisThread::sleepFor(sf::milliseconds(10));
         CHECK(music.isPlaying());
 
         // Wait for background thread to pause
         music.pause();
         while (music.isPlaying())
-            sf::sleep(sf::milliseconds(10));
+            sf::ThisThread::sleepFor(sf::milliseconds(10));
         CHECK(!music.isPlaying());
 
         // Wait for background thread to stop
         music.stop();
         while (music.isPlaying())
-            sf::sleep(sf::milliseconds(10));
+            sf::ThisThread::sleepFor(sf::milliseconds(10));
         CHECK(!music.isPlaying());
     }
 

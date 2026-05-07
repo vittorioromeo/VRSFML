@@ -15,7 +15,7 @@
 #include "SFML/Network/TcpSocket.hpp"
 
 #include "SFML/System/IO.hpp"
-#include "SFML/System/Sleep.hpp"
+#include "SFML/System/Thread.hpp"
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
@@ -56,7 +56,7 @@ struct NetworkState
 
         // No new data has arrived since last update: wait until we get some
         while ((offset >= samples.size()) && !hasFinished)
-            sf::sleep(sf::milliseconds(10));
+            sf::ThisThread::sleepFor(sf::milliseconds(10));
 
         {
             const std::lock_guard lock(mutex);
@@ -189,7 +189,7 @@ void doServer(sf::PlaybackDevice& playbackDevice, unsigned short port)
     while (audioStream.isPlaying())
     {
         // Leave some CPU time for other threads
-        sf::sleep(sf::milliseconds(100));
+        sf::ThisThread::sleepFor(sf::milliseconds(100));
     }
 
     sf::cIn().ignore(10'000, '\n');
@@ -205,6 +205,6 @@ void doServer(sf::PlaybackDevice& playbackDevice, unsigned short port)
     while (audioStream.isPlaying())
     {
         // Leave some CPU time for other threads
-        sf::sleep(sf::milliseconds(100));
+        sf::ThisThread::sleepFor(sf::milliseconds(100));
     }
 }

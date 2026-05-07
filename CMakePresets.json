@@ -120,8 +120,8 @@
       "cacheVariables": {
         "CMAKE_C_COMPILER": "gcc",
         "CMAKE_CXX_COMPILER": "g++",
-        "CMAKE_C_FLAGS": "$env{LINKER} $env{OFAST} $env{CXX_WARNINGS}",
-        "CMAKE_CXX_FLAGS": "$env{LINKER} -Wnrvo $env{OFAST} $env{CXX_WARNINGS}"
+        "CMAKE_C_FLAGS": "$env{LINKER} $env{OFAST} $env{CXX_WARNINGS} -Wno-maybe-uninitialized -Wno-null-dereference",
+        "CMAKE_CXX_FLAGS": "$env{LINKER} $env{OFAST} $env{CXX_WARNINGS} -Wnrvo -Wno-maybe-uninitialized -Wno-null-dereference"
       }
     },
     {

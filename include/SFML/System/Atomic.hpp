@@ -137,23 +137,27 @@ template <typename T>
 ////////////////////////////////////////////////////////////
 [[nodiscard]] inline consteval bool isLegalCasFailureOrder(const MemoryOrder success, const MemoryOrder failure) noexcept
 {
+    // Per the C++ standard: failure must not be `Release` or `AcqRel`,
+    // and must not be stronger than `success` in the partial order
+    //   `Relaxed`  <=  `Acquire`  <=  `AcqRel`  <=  `SeqCst`
+    //   `Relaxed`  <=  `Release`  <=  `AcqRel`  <=  `SeqCst`
+    // Acquire and Release are *incomparable*, so e.g.
+    // `<Success=Release, Failure=Acquire>` is illegal even though
+    // a naive linear ranking would accept it.
     if (failure == MemoryOrder::Release || failure == MemoryOrder::AcqRel)
         return false;
 
-    // Ranks (low → high): Relaxed = 0, Acquire = 1, SeqCst = 2.
-    // (Release/AcqRel already rejected above.)
-    const auto rank = [](const MemoryOrder mo) -> int
-    {
-        if (mo == MemoryOrder::Relaxed)
-            return 0;
+    // After the above check, `failure` is one of {`Relaxed`, `Acquire`, `SeqCst`}.
+    if (failure == MemoryOrder::Relaxed)
+        return true; // weakest; never stronger than anything
 
-        if (mo == MemoryOrder::Acquire || mo == MemoryOrder::Release)
-            return 1;
+    if (failure == MemoryOrder::Acquire)
+        return success == MemoryOrder::Acquire || // exactly equal
+               success == MemoryOrder::AcqRel ||  // includes `Acquire`
+               success == MemoryOrder::SeqCst;    // strictest
 
-        return 2; // AcqRel, SeqCst
-    };
-
-    return rank(failure) <= rank(success);
+    // `failure` == `MemoryOrder::SeqCst`: only matches `SeqCst` success.
+    return success == MemoryOrder::SeqCst;
 }
 
 
@@ -185,6 +189,80 @@ SFML_SYSTEM_API void atomicNotifyOne(const void* addr) noexcept;
 SFML_SYSTEM_API void atomicNotifyAll(const void* addr) noexcept;
 
 } // namespace priv
+
+
+////////////////////////////////////////////////////////////
+// Convenience-alias generators for `Atomic<T>` member functions.
+//
+// Spelling out `a.load<MemoryOrder::Relaxed>()` or
+// `a.template fetchAdd<MemoryOrder::SeqCst>(1)` everywhere is noisy
+// (and the `template` keyword is required at every dependent call
+// site). The macros below stamp out a per-order named alias for
+// each operation -- e.g. `loadRelaxed()`, `fetchAddSeqCst(v)` --
+// that simply forwards to the underlying templated method.
+//
+////////////////////////////////////////////////////////////
+// NOLINTBEGIN(bugprone-macro-parentheses)
+#define SFML_PRIV_ATOMIC_LOAD_ALIAS(Suffix)                                         \
+    [[nodiscard, gnu::always_inline, gnu::flatten]] T load##Suffix() const noexcept \
+    {                                                                               \
+        return load<MemoryOrder::Suffix>();                                         \
+    }
+
+#define SFML_PRIV_ATOMIC_STORE_ALIAS(Suffix)                                        \
+    [[gnu::always_inline, gnu::flatten]] void store##Suffix(const T value) noexcept \
+    {                                                                               \
+        store<MemoryOrder::Suffix>(value);                                          \
+    }
+
+#define SFML_PRIV_ATOMIC_EXCHANGE_ALIAS(Suffix)                                     \
+    [[gnu::always_inline, gnu::flatten]] T exchange##Suffix(const T value) noexcept \
+    {                                                                               \
+        return exchange<MemoryOrder::Suffix>(value);                                \
+    }
+
+#define SFML_PRIV_ATOMIC_WAIT_ALIAS(Suffix)                                                 \
+    [[gnu::always_inline, gnu::flatten]] void wait##Suffix(const T expected) const noexcept \
+        requires(sizeof(T) == 4u || sizeof(T) == 8u)                                        \
+    {                                                                                       \
+        wait<MemoryOrder::Suffix>(expected);                                                \
+    }
+
+#define SFML_PRIV_ATOMIC_WAITUNTIL_ALIAS(Suffix)                                                               \
+    [[gnu::always_inline, gnu::flatten, gnu::flatten]] void waitUntil##Suffix(auto&& predicate) const noexcept \
+        requires(sizeof(T) == 4u || sizeof(T) == 8u)                                                           \
+    {                                                                                                          \
+        waitUntil<MemoryOrder::Suffix>(static_cast<decltype(predicate)>(predicate));                           \
+    }
+
+#define SFML_PRIV_ATOMIC_FETCH_INT_ALIAS(Op, Suffix)                        \
+    [[gnu::always_inline, gnu::flatten]] T Op##Suffix(const T arg) noexcept \
+        requires(base::isIntegral<T> && !base::isSame<T, bool>)             \
+    {                                                                       \
+        return Op<MemoryOrder::Suffix>(arg);                                \
+    }
+
+#define SFML_PRIV_ATOMIC_FETCH_PTR_ALIAS(Op, Suffix)                                     \
+    [[gnu::always_inline, gnu::flatten]] T Op##Suffix(const base::PtrDiffT arg) noexcept \
+        requires(base::isPointer<T>)                                                     \
+    {                                                                                    \
+        return Op<MemoryOrder::Suffix>(arg);                                             \
+    }
+
+#define SFML_PRIV_ATOMIC_FETCH_INT_ALL_ORDERS(Op) \
+    SFML_PRIV_ATOMIC_FETCH_INT_ALIAS(Op, Relaxed) \
+    SFML_PRIV_ATOMIC_FETCH_INT_ALIAS(Op, Acquire) \
+    SFML_PRIV_ATOMIC_FETCH_INT_ALIAS(Op, Release) \
+    SFML_PRIV_ATOMIC_FETCH_INT_ALIAS(Op, AcqRel)  \
+    SFML_PRIV_ATOMIC_FETCH_INT_ALIAS(Op, SeqCst)
+
+#define SFML_PRIV_ATOMIC_FETCH_PTR_ALL_ORDERS(Op) \
+    SFML_PRIV_ATOMIC_FETCH_PTR_ALIAS(Op, Relaxed) \
+    SFML_PRIV_ATOMIC_FETCH_PTR_ALIAS(Op, Acquire) \
+    SFML_PRIV_ATOMIC_FETCH_PTR_ALIAS(Op, Release) \
+    SFML_PRIV_ATOMIC_FETCH_PTR_ALIAS(Op, AcqRel)  \
+    SFML_PRIV_ATOMIC_FETCH_PTR_ALIAS(Op, SeqCst)
+// NOLINTEND(bugprone-macro-parentheses)
 
 
 ////////////////////////////////////////////////////////////
@@ -266,6 +344,11 @@ public:
         return priv::fromAtomicStorage<T>(__atomic_load_n(&m_value, static_cast<int>(MO)));
     }
 
+    ////////////////////////////////////////////////////////////
+    SFML_PRIV_ATOMIC_LOAD_ALIAS(Relaxed);
+    SFML_PRIV_ATOMIC_LOAD_ALIAS(Acquire);
+    SFML_PRIV_ATOMIC_LOAD_ALIAS(SeqCst);
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Atomically store `value`
@@ -277,6 +360,11 @@ public:
         static_assert(priv::isLegalStoreOrder(MO), "store() memory order must be Relaxed, Release, or SeqCst");
         __atomic_store_n(&m_value, priv::toAtomicStorage<T>(value), static_cast<int>(MO));
     }
+
+    ////////////////////////////////////////////////////////////
+    SFML_PRIV_ATOMIC_STORE_ALIAS(Relaxed)
+    SFML_PRIV_ATOMIC_STORE_ALIAS(Release)
+    SFML_PRIV_ATOMIC_STORE_ALIAS(SeqCst)
 
 
     ////////////////////////////////////////////////////////////
@@ -290,10 +378,23 @@ public:
             __atomic_exchange_n(&m_value, priv::toAtomicStorage<T>(value), static_cast<int>(MO)));
     }
 
+    ////////////////////////////////////////////////////////////
+    SFML_PRIV_ATOMIC_EXCHANGE_ALIAS(Relaxed)
+    SFML_PRIV_ATOMIC_EXCHANGE_ALIAS(Acquire)
+    SFML_PRIV_ATOMIC_EXCHANGE_ALIAS(Release)
+    SFML_PRIV_ATOMIC_EXCHANGE_ALIAS(AcqRel)
+    SFML_PRIV_ATOMIC_EXCHANGE_ALIAS(SeqCst)
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Strong CAS: replace with `desired` iff the current
     ///        bit-pattern equals `expected`. Updates `expected` on failure.
+    ///
+    /// Equality is **bit-wise**, matching `std::atomic`. Floating-point
+    /// callers should be aware: `+0.0f` vs `-0.0f` (different sign bit)
+    /// compares unequal, and `NaN` compares equal to a `NaN` with the
+    /// same payload. This is rarely what value-equality semantics would
+    /// give and is an inherent property of any atomic-CAS over FP.
     ///
     /// \return `true` on success, `false` on failure
     ///
@@ -397,6 +498,16 @@ public:
         return __atomic_fetch_sub(&m_value, arg * static_cast<base::PtrDiffT>(sizeof(Pointee)), static_cast<int>(MO));
     }
 
+    ////////////////////////////////////////////////////////////
+    // Aliases for fetchAdd / fetchSub: integer overloads (5 orders x 2 ops).
+    SFML_PRIV_ATOMIC_FETCH_INT_ALL_ORDERS(fetchAdd)
+    SFML_PRIV_ATOMIC_FETCH_INT_ALL_ORDERS(fetchSub)
+
+    ////////////////////////////////////////////////////////////
+    // Aliases for fetchAdd / fetchSub: pointer overloads (5 orders x 2 ops).
+    SFML_PRIV_ATOMIC_FETCH_PTR_ALL_ORDERS(fetchAdd)
+    SFML_PRIV_ATOMIC_FETCH_PTR_ALL_ORDERS(fetchSub)
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Atomic fetch-and-AND (integral types only)
@@ -427,6 +538,12 @@ public:
         return __atomic_fetch_xor(&m_value, arg, static_cast<int>(MO));
     }
 
+    ////////////////////////////////////////////////////////////
+    // Aliases for fetchAnd / fetchOr / fetchXor (integer-only, 5 orders x 3 ops).
+    SFML_PRIV_ATOMIC_FETCH_INT_ALL_ORDERS(fetchAnd)
+    SFML_PRIV_ATOMIC_FETCH_INT_ALL_ORDERS(fetchOr)
+    SFML_PRIV_ATOMIC_FETCH_INT_ALL_ORDERS(fetchXor)
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Block the calling thread until the stored value differs
@@ -451,10 +568,15 @@ public:
         if (priv::toAtomicStorage<T>(load<MO>()) != priv::toAtomicStorage<T>(expected))
             return;
 
-        // `SFML_BASE_BIT_CAST` (rather than `static_cast`) handles every
-        // case uniformly: integer-to-integer (no-op), float storage
-        // (already `U32`/`U64`), and pointer-to-integer (where
-        // `static_cast` is ill-formed by the language rules).
+        // Two-step conversion of `expected` to the wait-primitive's word type:
+        //
+        //   1. `toAtomicStorage<T>` -> `Storage` (no-op for int/ptr,
+        //      `bit_cast` to U32/U64 for float/double).
+        //
+        //   2. `BIT_CAST(U32/U64, Storage)` -> futex word type (no-op for
+        //      integer `Storage`; pointer-to-integer reinterpret where
+        //      `static_cast` would be ill-formed).
+        //
         if constexpr (sizeof(T) == 4u)
             priv::atomicWait32(reinterpret_cast<const base::U32*>(&m_value),
                                SFML_BASE_BIT_CAST(base::U32, priv::toAtomicStorage<T>(expected)));
@@ -462,6 +584,11 @@ public:
             priv::atomicWait64(reinterpret_cast<const base::U64*>(&m_value),
                                SFML_BASE_BIT_CAST(base::U64, priv::toAtomicStorage<T>(expected)));
     }
+
+    ////////////////////////////////////////////////////////////
+    SFML_PRIV_ATOMIC_WAIT_ALIAS(Relaxed)
+    SFML_PRIV_ATOMIC_WAIT_ALIAS(Acquire)
+    SFML_PRIV_ATOMIC_WAIT_ALIAS(SeqCst)
 
 
     ////////////////////////////////////////////////////////////
@@ -487,6 +614,11 @@ public:
         }
     }
 
+    ////////////////////////////////////////////////////////////
+    SFML_PRIV_ATOMIC_WAITUNTIL_ALIAS(Relaxed)
+    SFML_PRIV_ATOMIC_WAITUNTIL_ALIAS(Acquire)
+    SFML_PRIV_ATOMIC_WAITUNTIL_ALIAS(SeqCst)
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Wake one waiter currently blocked in `wait`/`waitUntil`
@@ -509,6 +641,18 @@ public:
         priv::atomicNotifyAll(static_cast<const void*>(&m_value));
     }
 };
+
+
+// Pull-down the alias-generator macros once the class body is closed.
+#undef SFML_PRIV_ATOMIC_LOAD_ALIAS
+#undef SFML_PRIV_ATOMIC_STORE_ALIAS
+#undef SFML_PRIV_ATOMIC_EXCHANGE_ALIAS
+#undef SFML_PRIV_ATOMIC_WAIT_ALIAS
+#undef SFML_PRIV_ATOMIC_WAITUNTIL_ALIAS
+#undef SFML_PRIV_ATOMIC_FETCH_INT_ALIAS
+#undef SFML_PRIV_ATOMIC_FETCH_PTR_ALIAS
+#undef SFML_PRIV_ATOMIC_FETCH_INT_ALL_ORDERS
+#undef SFML_PRIV_ATOMIC_FETCH_PTR_ALL_ORDERS
 
 
 ////////////////////////////////////////////////////////////

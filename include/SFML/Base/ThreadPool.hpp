@@ -75,7 +75,7 @@ public:
     /// \brief Get the number of concurrent threads supported by the hardware.
     ///
     /// Provides a hint about the optimal number of threads for CPU-bound tasks.
-    /// Equivalent to `std::thread::hardware_concurrency`.
+    /// Equivalent to `sf::Thread::hardwareConcurrency`.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static SizeT getHardwareWorkerCount() noexcept;

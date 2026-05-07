@@ -218,7 +218,7 @@ void* AudioContext::getMAContext()
 ////////////////////////////////////////////////////////////
 AudioContext::AudioContext(base::PassKey<AudioContext>&&)
 {
-    audioContextRC.fetchAdd<sf::MemoryOrder::Relaxed>(1u);
+    audioContextRC.fetchAddRelaxed(1u);
 }
 
 
@@ -231,7 +231,7 @@ AudioContext::AudioContext(AudioContext&&) noexcept : AudioContext(base::PassKey
 ////////////////////////////////////////////////////////////
 AudioContext::~AudioContext()
 {
-    if (audioContextRC.fetchSub<sf::MemoryOrder::Relaxed>(1u) > 1u)
+    if (audioContextRC.fetchSubRelaxed(1u) > 1u)
         return;
 
     installedAudioContext.reset();

@@ -13,7 +13,7 @@
 
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
-#include "SFML/System/Sleep.hpp"
+#include "SFML/System/Thread.hpp"
 #include "SFML/System/Time.hpp"
 
 
@@ -42,7 +42,7 @@ void playSound(sf::PlaybackDevice& playbackDevice)
     while (sound.isPlaying())
     {
         // Leave some CPU time for other processes
-        sf::sleep(sf::milliseconds(100));
+        sf::ThisThread::sleepFor(sf::milliseconds(100));
 
         // Display the playing position
         sf::cOut() << "\rPlaying... " << sound.getPlayingOffset().asSeconds() << " sec        " << sf::flush;
@@ -75,7 +75,7 @@ void playMusic(sf::PlaybackDevice& playbackDevice, const sf::Path& filename)
     while (music.isPlaying())
     {
         // Leave some CPU time for other processes
-        sf::sleep(sf::milliseconds(100));
+        sf::ThisThread::sleepFor(sf::milliseconds(100));
 
         // Display the playing position
         sf::cOut() << "\rPlaying... " << music.getPlayingOffset().asSeconds() << " sec        " << sf::flush;

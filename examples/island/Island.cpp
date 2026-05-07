@@ -22,7 +22,7 @@
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
-#include "SFML/System/Sleep.hpp"
+#include "SFML/System/Thread.hpp"
 #include "SFML/System/Time.hpp"
 #include "SFML/System/UnicodeString.hpp"
 #include "SFML/System/Vec2.hpp"
@@ -339,8 +339,8 @@ void generateTerrain(sf::base::ThreadPool& threadPool, sf::Vertex* buffer)
     bufferUploadPending = true;
 
     // Make sure the work queue is empty before queuing new work
-    while (pendingTasks.load<sf::MemoryOrder::Acquire>() > 0u)
-        sf::sleep(sf::milliseconds(10));
+    while (pendingTasks.loadAcquire() > 0u)
+        sf::ThisThread::sleepFor(sf::milliseconds(10));
 
     // Queue all the new work items
     for (unsigned int i = 0u; i < blockCount; ++i)
@@ -348,10 +348,10 @@ void generateTerrain(sf::base::ThreadPool& threadPool, sf::Vertex* buffer)
         {
             const unsigned int rowStart = rowBlockSize * i;
             processWorkItem(buffer + (resolution.x * rowStart * 6), i);
-            pendingTasks.fetchSub<sf::MemoryOrder::Release>(1u);
+            pendingTasks.fetchSubRelease(1u);
         });
 
-    pendingTasks.fetchAdd<sf::MemoryOrder::Release>(blockCount);
+    pendingTasks.fetchAddRelease(blockCount);
 }
 
 } // namespace
@@ -488,7 +488,7 @@ int main()
         window.draw(statusText, {.view = windowView});
 
         // Don't bother updating/drawing the VertexBuffer while terrain is being regenerated
-        if (pendingTasks.load<sf::MemoryOrder::Acquire>() == 0u)
+        if (pendingTasks.loadAcquire() == 0u)
         {
             // If there is new data pending to be uploaded to the VertexBuffer, do it now
             if (bufferUploadPending)

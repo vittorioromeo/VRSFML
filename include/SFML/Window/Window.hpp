@@ -143,7 +143,7 @@ public:
     /// each call to `display()` to ensure that the current frame
     /// lasted long enough to match the framerate limit.
     /// SFML will try to match the given limit as much as it can,
-    /// but since it internally uses `sf::sleep`, whose precision
+    /// but since it internally uses `sf::ThisThread::sleepFor`, whose precision
     /// depends on the underlying OS, the results may be a little
     /// imprecise as well (for example, you can get 65 FPS when
     /// requesting 60).

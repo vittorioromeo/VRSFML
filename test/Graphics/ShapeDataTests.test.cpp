@@ -73,8 +73,6 @@ template <typename PointFn>
 }
 } // namespace
 
-
-////////////////////////////////////////////////////////////
 TEST_CASE("[Graphics] sf::ShapeData type traits")
 {
 #define SFML_PRIV_CHECK_TRAITS(T)                                 \
@@ -102,8 +100,6 @@ TEST_CASE("[Graphics] sf::ShapeData type traits")
 #undef SFML_PRIV_CHECK_TRAITS
 }
 
-
-////////////////////////////////////////////////////////////
 TEST_CASE("[Graphics] sf::CircleShapeData")
 {
     SECTION("Default local bounds")
@@ -160,8 +156,6 @@ TEST_CASE("[Graphics] sf::CircleShapeData")
     }
 }
 
-
-////////////////////////////////////////////////////////////
 TEST_CASE("[Graphics] sf::EllipseShapeData")
 {
     SECTION("Local bounds reflect both radii")
@@ -194,8 +188,6 @@ TEST_CASE("[Graphics] sf::EllipseShapeData")
     }
 }
 
-
-////////////////////////////////////////////////////////////
 TEST_CASE("[Graphics] sf::RingShapeData")
 {
     SECTION("Local bounds ignore inner radius")
@@ -232,8 +224,6 @@ TEST_CASE("[Graphics] sf::RingShapeData")
     }
 }
 
-
-////////////////////////////////////////////////////////////
 TEST_CASE("[Graphics] sf::RectangleShapeData")
 {
     SECTION("Local bounds")
@@ -276,8 +266,6 @@ TEST_CASE("[Graphics] sf::RectangleShapeData")
     }
 }
 
-
-////////////////////////////////////////////////////////////
 TEST_CASE("[Graphics] sf::RoundedRectangleShapeData")
 {
     SECTION("Local bounds")
@@ -299,8 +287,6 @@ TEST_CASE("[Graphics] sf::RoundedRectangleShapeData")
     }
 }
 
-
-////////////////////////////////////////////////////////////
 TEST_CASE("[Graphics] sf::StarShapeData")
 {
     SECTION("Local bounds are 2 * outerRadius square")
@@ -329,8 +315,6 @@ TEST_CASE("[Graphics] sf::StarShapeData")
     }
 }
 
-
-////////////////////////////////////////////////////////////
 TEST_CASE("[Graphics] sf::CogShapeData")
 {
     SECTION("Local bounds are 2 * outerRadius square")
@@ -359,8 +343,6 @@ TEST_CASE("[Graphics] sf::CogShapeData")
     }
 }
 
-
-////////////////////////////////////////////////////////////
 TEST_CASE("[Graphics] sf::PieSliceShapeData")
 {
     SECTION("Degenerate sweep yields a point at the hub")
@@ -448,8 +430,6 @@ TEST_CASE("[Graphics] sf::PieSliceShapeData")
     }
 }
 
-
-////////////////////////////////////////////////////////////
 TEST_CASE("[Graphics] sf::RingPieSliceShapeData")
 {
     SECTION("Full sweep produces full outer-ring bbox")
@@ -542,8 +522,6 @@ TEST_CASE("[Graphics] sf::RingPieSliceShapeData")
     }
 }
 
-
-////////////////////////////////////////////////////////////
 TEST_CASE("[Graphics] sf::CurvedArrowShapeData")
 {
     SECTION("Zero-sweep arrow yields an empty bounding box (nothing drawn)")
@@ -608,8 +586,6 @@ TEST_CASE("[Graphics] sf::CurvedArrowShapeData")
     }
 }
 
-
-////////////////////////////////////////////////////////////
 TEST_CASE("[Graphics] sf::ArrowShapeData")
 {
     SECTION("Local bounds track max(shaftWidth, headWidth)")
@@ -678,8 +654,6 @@ TEST_CASE("[Graphics] sf::ArrowShapeData")
     }
 }
 
-
-////////////////////////////////////////////////////////////
 TEST_CASE("[Graphics] sf::CrossShapeData")
 {
     SECTION("Local bounds match size")
@@ -715,8 +689,6 @@ TEST_CASE("[Graphics] sf::CrossShapeData")
     }
 }
 
-
-////////////////////////////////////////////////////////////
 TEST_CASE("[Graphics] sf::ChevronShapeData")
 {
     SECTION("Local bounds match size")
@@ -770,8 +742,6 @@ TEST_CASE("[Graphics] sf::ChevronShapeData")
     }
 }
 
-
-////////////////////////////////////////////////////////////
 TEST_CASE("[Graphics] sf::TrapezoidShapeData")
 {
     SECTION("Local bounds use max(topWidth, bottomWidth)")
@@ -810,8 +780,6 @@ TEST_CASE("[Graphics] sf::TrapezoidShapeData")
     }
 }
 
-
-////////////////////////////////////////////////////////////
 TEST_CASE("[Graphics] sf::HeartShapeData")
 {
     SECTION("Local bounds match size")
@@ -854,8 +822,6 @@ TEST_CASE("[Graphics] sf::HeartShapeData")
     }
 }
 
-
-////////////////////////////////////////////////////////////
 TEST_CASE("[Graphics] Centroid membership: convex shapes contain their centroid")
 {
     // A centroid is not guaranteed to lie inside a non-convex polygon in general, but for the
@@ -893,8 +859,6 @@ TEST_CASE("[Graphics] Centroid membership: convex shapes contain their centroid"
     }
 }
 
-
-////////////////////////////////////////////////////////////
 TEST_CASE("[Graphics] Anchor-point mixins")
 {
     SECTION("Local helpers read from getLocalBounds")
@@ -923,8 +887,6 @@ TEST_CASE("[Graphics] Anchor-point mixins")
     }
 }
 
-
-////////////////////////////////////////////////////////////
 TEST_CASE("[Graphics] Global bounds invariance under rotation about the geometric center")
 {
     // For any shape whose origin is placed at its geometric (local) center and whose local
@@ -955,8 +917,6 @@ TEST_CASE("[Graphics] Global bounds invariance under rotation about the geometri
     }
 }
 
-
-////////////////////////////////////////////////////////////
 TEST_CASE("[Graphics] hasVisibleGeometry")
 {
     // Default-constructed shape data should not report anything drawable: every type's
