@@ -133,10 +133,19 @@ base::Optional<SoundBuffer> SoundBuffer::loadFromStream(InputStream& stream)
         return buf;
     }
 
-    // Construct the `SoundBuffer` with `m_impl->samples` already pre-sized and read directly into it.
-    buf.emplace(base::PassKey<SoundBuffer>{}, info->sampleCount, info->channelMap, info->sampleRate);
+    // On 32-bit targets (e.g. Emscripten) `SizeT` is narrower than `U64`; reject files we can't address.
+    if (info->sampleCount > static_cast<base::U64>(static_cast<base::SizeT>(-1)))
+    {
+        priv::err() << "Failed to load sound buffer (sample count exceeds addressable range on this platform)";
+        return buf;
+    }
 
-    if (reader->read(buf->m_impl->samples.data(), info->sampleCount) != info->sampleCount)
+    const auto sampleCount = static_cast<base::SizeT>(info->sampleCount);
+
+    // Construct the `SoundBuffer` with `m_impl->samples` already pre-sized and read directly into it.
+    buf.emplace(base::PassKey<SoundBuffer>{}, sampleCount, info->channelMap, info->sampleRate);
+
+    if (reader->read(buf->m_impl->samples.data(), sampleCount) != info->sampleCount)
         buf.reset();
 
     return buf;
