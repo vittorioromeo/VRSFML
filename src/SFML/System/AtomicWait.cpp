@@ -181,7 +181,7 @@ void platformWait32(const base::U32* const addr, const base::U32 expected) noexc
     WaitOnAddress(const_cast<base::U32*>(addr), &compare, sizeof(compare), INFINITE);
 
 #elif defined(SFML_SYSTEM_EMSCRIPTEN)
-    emscripten_atomic_wait_u32(const_cast<base::U32*>(addr), expected, /* maxWaitMilliseconds */ -1);
+    emscripten_atomic_wait_u32(const_cast<base::U32*>(addr), expected, /* maxWaitNanoseconds */ -1);
 
 #else
     spinWait(addr, expected);
@@ -218,7 +218,7 @@ void platformWait64(const base::U64* const addr, const base::U64 expected) noexc
     WaitOnAddress(const_cast<base::U64*>(addr), &compare, sizeof(compare), INFINITE);
 
 #elif defined(SFML_SYSTEM_EMSCRIPTEN)
-    emscripten_atomic_wait_u64(const_cast<base::U64*>(addr), expected, /* maxWaitMilliseconds */ -1);
+    emscripten_atomic_wait_u64(const_cast<base::U64*>(addr), expected, /* maxWaitNanoseconds */ -1);
 
 #else
     spinWait(addr, expected);
