@@ -83,27 +83,16 @@ struct [[nodiscard]] BufferSlice
 
 
 ////////////////////////////////////////////////////////////
-// Read the contents of a file into an array of char
+// Read the contents of a file and append them (followed by a null terminator)
+// to `buffer`, returning the slice of `buffer` that holds the new contents.
 [[nodiscard]] sf::base::Optional<BufferSlice> appendFileContentsToVector(const sf::Path& filename, sf::base::Vector<char>& buffer)
 {
-    sf::InFileStream file(filename.c_str(), sf::FileOpenMode::bin);
+    const sf::base::SizeT bufferSizeBeforeRead = buffer.size();
 
-    if (!file)
+    if (!sf::appendFromFile(filename, buffer))
     {
         sf::priv::err() << "Failed to open shader file";
         return sf::base::nullOpt;
-    }
-
-    file.seekg(0, sf::SeekDir::end);
-    const auto size = file.tellg();
-
-    const sf::base::SizeT bufferSizeBeforeRead = buffer.size();
-
-    if (size > 0)
-    {
-        file.seekg(0, sf::SeekDir::beg);
-        buffer.resize(static_cast<sf::base::SizeT>(size) + bufferSizeBeforeRead);
-        file.read(buffer.data() + bufferSizeBeforeRead, static_cast<sf::base::PtrDiffT>(size));
     }
 
     buffer.pushBack('\0');
@@ -120,12 +109,9 @@ struct [[nodiscard]] BufferSlice
 
     if (!size.hasValue() || size.value() == 0)
     {
-        buffer.pushBack('\0');
+        sf::priv::err() << "Failed to read shader stream (empty or unsized)";
         return sf::base::nullOpt;
     }
-
-    const sf::base::SizeT bufferSizeBeforeRead = buffer.size();
-    buffer.resize(*size + bufferSizeBeforeRead);
 
     if (!stream.seek(0).hasValue())
     {
@@ -133,10 +119,16 @@ struct [[nodiscard]] BufferSlice
         return sf::base::nullOpt;
     }
 
+    const sf::base::SizeT bufferSizeBeforeRead = buffer.size();
+    buffer.reserve(bufferSizeBeforeRead + *size + 1u);
+    buffer.unsafeSetSize(bufferSizeBeforeRead + *size);
+
     const sf::base::Optional<sf::base::SizeT> read = stream.read(buffer.data() + bufferSizeBeforeRead, *size);
 
     if (!read.hasValue() || *read != *size)
     {
+        // Roll back the size grow so `buffer` is left as the caller saw it.
+        buffer.unsafeSetSize(bufferSizeBeforeRead);
         sf::priv::err() << "Failed to read stream contents into buffer";
         return sf::base::nullOpt;
     }
@@ -147,9 +139,14 @@ struct [[nodiscard]] BufferSlice
 
 
 ////////////////////////////////////////////////////////////
-// Return a thread-local vector for suitable use as a temporary buffer
-// This function is non-reentrant
-[[nodiscard]] sf::base::Vector<char>& getThreadLocalCharBuffer()
+// Return a thread-local vector used as the per-call concatenation buffer for
+// the vertex/geometry/fragment shader sources. Disjoint from
+// `sf::getThreadLocalScratchCharBuffer` (which is the I/O staging area used
+// inside `readFromFile` / `appendFromFile`); this one survives across the
+// individual file reads and lives until `compile()` returns.
+//
+// Non-reentrant by the same contract as the I/O scratch.
+[[nodiscard]] sf::base::Vector<char>& getThreadLocalShaderConcatBuffer()
 {
     static thread_local sf::base::Vector<char> result;
     return result;
@@ -459,7 +456,7 @@ Shader& Shader::operator=(Shader&& rhs) noexcept = default;
 base::Optional<Shader> Shader::loadFromFile(const LoadFromFileSettings& settings)
 {
     // Prepare thread-local buffer
-    base::Vector<char>& buffer = getThreadLocalCharBuffer();
+    base::Vector<char>& buffer = getThreadLocalShaderConcatBuffer();
     buffer.clear();
 
     // Helper function
@@ -540,7 +537,7 @@ base::Optional<Shader> Shader::loadFromMemory(const LoadFromMemorySettings& sett
 base::Optional<Shader> Shader::loadFromStream(const LoadFromStreamSettings& settings)
 {
     // Prepare thread-local buffer
-    base::Vector<char>& buffer = getThreadLocalCharBuffer();
+    base::Vector<char>& buffer = getThreadLocalShaderConcatBuffer();
     buffer.clear();
 
     // Helper function
