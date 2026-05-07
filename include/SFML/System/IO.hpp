@@ -180,6 +180,10 @@ public:
 
     void ignore(base::SizeT count, char delimiter);
     void clear();
+
+    [[nodiscard]] bool     isGood() const;
+    [[nodiscard]] bool     isEOF() const;
+    [[nodiscard]] explicit operator bool() const;
 };
 
 
