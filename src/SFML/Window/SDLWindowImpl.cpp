@@ -45,6 +45,7 @@
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/ToString.hpp"
 #include "SFML/Base/UniquePtr.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_events.h>
@@ -55,8 +56,6 @@
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_touch.h>
 #include <SDL3/SDL_video.h>
-
-#include <queue>
 
 
 ////////////////////////////////////////////////////////////
@@ -163,7 +162,7 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 struct SDLWindowImpl::Impl
 {
-    std::queue<Event> events; //!< Queue of available events
+    sf::base::Vector<Event> events; //!< Queue of available events (FIFO; popped from the front)
 
     JoystickState joystickStates[Joystick::MaxCount]{};    //!< Previous state of the joysticks
     bool          joystickConnected[Joystick::MaxCount]{}; //!< Previous connection state of the joysticks
@@ -750,7 +749,7 @@ base::Optional<Event> SDLWindowImpl::popEvent()
     if (!m_impl->events.empty())
     {
         event.emplace(m_impl->events.front());
-        m_impl->events.pop();
+        m_impl->events.erase(m_impl->events.begin());
     }
 
     return event;
@@ -787,7 +786,7 @@ SDLWindowImpl::SDLWindowImpl(const char* const context, void* const sdlWindow, c
 ////////////////////////////////////////////////////////////
 void SDLWindowImpl::pushEvent(const Event& event)
 {
-    m_impl->events.push(event);
+    m_impl->events.pushBack(event);
 }
 
 
