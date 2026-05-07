@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "../bubble_idle/TextEffectWiggle.cpp" // TODO P0: move to ExampleUtils
 #include "../bubble_idle/TextEffectWiggle.hpp" // TODO P1: avoid the relative path...?
 
 #include "ExampleUtils/RNGFast.hpp"

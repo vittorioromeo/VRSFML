@@ -7,6 +7,9 @@
 
 #include "SFML/ImGui/IncludeImGui.hpp"
 
+#include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/View.hpp"
+
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/Mouse.hpp"

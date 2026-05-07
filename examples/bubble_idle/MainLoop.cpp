@@ -1,7 +1,7 @@
 
 
-#include "Aliases.hpp"
 #include "BubbleIdleMain.hpp"
+#include "FrameViewState.hpp"
 #include "PlayerInput.hpp"
 #include "Serialization.hpp"
 

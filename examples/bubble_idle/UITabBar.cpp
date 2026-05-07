@@ -3,6 +3,8 @@
 
 #include "SFML/ImGui/IncludeImGui.hpp"
 
+#include "SFML/Graphics/Color.hpp"
+
 #include "SFML/Window/Keyboard.hpp"
 
 #include "SFML/Base/SizeT.hpp"
@@ -13,15 +15,15 @@ void Main::uiTabBar()
     constexpr float uiMenuAutoHideDelaySeconds = 1.25f;
 
     constexpr TabButtonPalette defaultPalette{
-        .idle    = ImVec4(0.15f, 0.35f, 0.60f, 1.0f),
-        .hovered = ImVec4(0.25f, 0.45f, 0.80f, 1.0f),
-        .active  = ImVec4(0.35f, 0.55f, 0.95f, 1.0f),
+        .idle    = sf::Color::fromFloats(0.15f, 0.35f, 0.60f, 1.0f),
+        .hovered = sf::Color::fromFloats(0.25f, 0.45f, 0.80f, 1.0f),
+        .active  = sf::Color::fromFloats(0.35f, 0.55f, 0.95f, 1.0f),
     };
 
     constexpr TabButtonPalette prestigePalette{
-        .idle    = ImVec4(0.53f, 0.20f, 0.33f, 1.0f),
-        .hovered = ImVec4(0.53f, 0.25f, 0.41f, 1.0f),
-        .active  = ImVec4(0.62f, 0.29f, 0.48f, 1.0f),
+        .idle    = sf::Color::fromFloats(0.53f, 0.20f, 0.33f, 1.0f),
+        .hovered = sf::Color::fromFloats(0.53f, 0.25f, 0.41f, 1.0f),
+        .active  = sf::Color::fromFloats(0.62f, 0.29f, 0.48f, 1.0f),
     };
 
     const auto keyboardSelectedTab = [&](const sf::Keyboard::Key key) -> bool

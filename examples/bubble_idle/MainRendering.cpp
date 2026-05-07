@@ -30,6 +30,7 @@
 #include "SFML/Graphics/CircleShapeData.hpp"
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
+#include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/RectangleShapeData.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTexture.hpp"
@@ -38,6 +39,8 @@
 #include "SFML/Graphics/RoundedRectangleShapeData.hpp"
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/Text.hpp"
+#include "SFML/Graphics/Texture.hpp"
+#include "SFML/Graphics/TextureAtlas.hpp"
 #include "SFML/Graphics/TextureWrapMode.hpp"
 #include "SFML/Graphics/TrapezoidShapeData.hpp"
 #include "SFML/Graphics/View.hpp"
@@ -72,6 +75,23 @@
 
 #include <cctype>
 #include <cstdio>
+
+////////////////////////////////////////////////////////////
+sf::Sprite Main::particleToSprite(const Particle& particle) const
+{
+    const auto  opacityAsAlpha = static_cast<sf::base::U8>(particle.opacity * 255.f);
+    const auto& textureRect    = particleRects[asIdx(particle.type)];
+
+    return {
+        .position    = particle.position,
+        .scale       = {particle.scale, particle.scale},
+        .origin      = textureRect.size / 2.f,
+        .rotation    = sf::radians(particle.rotation),
+        .textureRect = textureRect,
+        .color       = hueByteColor(particle.hueByte, opacityAsAlpha),
+    };
+}
+
 
 ////////////////////////////////////////////////////////////
 void Main::drawCloudFrame(const CloudFrameDrawSettings& settings)

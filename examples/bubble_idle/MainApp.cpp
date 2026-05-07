@@ -1,5 +1,6 @@
 
 
+#include "BGMStorage.hpp"
 #include "BubbleIdleApp.hpp"
 #include "BubbleIdleMain.hpp"
 #include "Constants.hpp"
@@ -11,17 +12,26 @@
 #include "Steam.hpp"
 #include "SweepAndPrune.hpp"
 
+#include "SFML/ImGui/IncludeImGui.hpp"
+
 #include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Priv/ShaderBase.hpp"
 #include "SFML/Graphics/RenderTexture.hpp"
+#include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/TextData.hpp"
 #include "SFML/Graphics/TextUtils.hpp"
 #include "SFML/Graphics/Texture.hpp"
+#include "SFML/Graphics/TextureAtlas.hpp"
 #include "SFML/Graphics/TextureWrapMode.hpp"
+#include "SFML/Graphics/View.hpp"
 
 #include "SFML/Audio/AudioContext.hpp"
+#include "SFML/Audio/Listener.hpp"
+#include "SFML/Audio/PlaybackDevice.hpp"
 
 #include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
@@ -35,6 +45,190 @@
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
+
+
+namespace
+{
+constexpr sf::TextureLoadSettings bgSettings{.smooth = true, .wrapMode = sf::TextureWrapMode::Repeat};
+} // namespace
+
+
+////////////////////////////////////////////////////////////
+struct MainDrawableBatches
+{
+    sf::CPUDrawableBatch bubbleDrawableBatch;
+    sf::CPUDrawableBatch starBubbleDrawableBatch;
+    sf::CPUDrawableBatch bombBubbleDrawableBatch;
+    sf::CPUDrawableBatch cpuCloudDrawableBatch;
+    sf::CPUDrawableBatch cpuTopCloudDrawableBatch;
+    sf::CPUDrawableBatch cpuCloudHudDrawableBatch;
+    sf::CPUDrawableBatch cpuCloudUiDrawableBatch;
+    sf::CPUDrawableBatch cpuDrawableBatchBeforeCats;
+    sf::CPUDrawableBatch cpuDrawableBatch;
+    sf::CPUDrawableBatch cpuDrawableBatchAfterCats;
+    sf::CPUDrawableBatch cpuDrawableBatchAdditive;
+    sf::CPUDrawableBatch minimapDrawableBatch;
+    sf::CPUDrawableBatch catTextDrawableBatch;
+    sf::CPUDrawableBatch hudDrawableBatch;
+    sf::CPUDrawableBatch hudTopDrawableBatch;
+    sf::CPUDrawableBatch hudBottomDrawableBatch;
+    sf::CPUDrawableBatch cpuTopDrawableBatch;
+    sf::CPUDrawableBatch catTextTopDrawableBatch;
+    sf::CPUDrawableBatch tempDrawableBatch;
+};
+
+
+////////////////////////////////////////////////////////////
+struct MainTextureStorage
+{
+    sf::Texture txLogo;
+    sf::Texture txFixedBg;
+    sf::Texture txBackgroundChunk;
+    sf::Texture txBackgroundChunkDesaturated;
+    sf::Texture txClouds;
+    sf::Texture txTintedClouds;
+    sf::Texture txBgSwamp;
+    sf::Texture txBgObservatory;
+    sf::Texture txBgAimTraining;
+    sf::Texture txBgFactory;
+    sf::Texture txBgWindTunnel;
+    sf::Texture txBgMagnetosphere;
+    sf::Texture txBgAuditorium;
+    sf::Texture txDrawings;
+    sf::Texture txTipBg;
+    sf::Texture txTipByte;
+    sf::Texture txCursor;
+    sf::Texture txCursorMultipop;
+    sf::Texture txCursorLaser;
+    sf::Texture txCursorGrab;
+    sf::Texture txArrow;
+    sf::Texture txUnlock;
+    sf::Texture txPurchasable;
+    sf::Texture txLetter;
+    sf::Texture txLetterText;
+    sf::Texture txFrame;
+    sf::Texture txFrameTiny;
+    sf::Texture txCloudBtn;
+    sf::Texture txCloudBtnSmall;
+    sf::Texture txCloudBtnSquare;
+    sf::Texture txCloudBtnSquare2;
+
+    MainTextureStorage() :
+        txLogo(sf::Texture::loadFromFile("resources/logo.png", {.smooth = true}).value()),
+        txFixedBg(sf::Texture::loadFromFile("resources/fixedbg.png",
+                                            {.smooth = true, .wrapMode = sf::TextureWrapMode::MirroredRepeat})
+                      .value()),
+        txBackgroundChunk(sf::Texture::loadFromFile("resources/bgtest.png", bgSettings).value()),
+        txBackgroundChunkDesaturated(sf::Texture::loadFromFile("resources/bgtestdesaturated.png", bgSettings).value()),
+        txClouds(sf::Texture::loadFromFile("resources/clouds.png", bgSettings).value()),
+        txTintedClouds(sf::Texture::loadFromFile("resources/tintedclouds.png", bgSettings).value()),
+        txBgSwamp(sf::Texture::loadFromFile("resources/bgswamp.png", bgSettings).value()),
+        txBgObservatory(sf::Texture::loadFromFile("resources/bgobservatory.png", bgSettings).value()),
+        txBgAimTraining(sf::Texture::loadFromFile("resources/bgaimtraining.png", bgSettings).value()),
+        txBgFactory(sf::Texture::loadFromFile("resources/bgfactory.png", bgSettings).value()),
+        txBgWindTunnel(sf::Texture::loadFromFile("resources/bgwindtunnel.png", bgSettings).value()),
+        txBgMagnetosphere(sf::Texture::loadFromFile("resources/bgmagnetosphere.png", bgSettings).value()),
+        txBgAuditorium(sf::Texture::loadFromFile("resources/bgauditorium.png", bgSettings).value()),
+        txDrawings(sf::Texture::loadFromFile("resources/drawings.png", {.smooth = true}).value()),
+        txTipBg(sf::Texture::loadFromFile("resources/tipbg.png", {.smooth = true}).value()),
+        txTipByte(sf::Texture::loadFromFile("resources/tipbyte.png", {.smooth = true}).value()),
+        txCursor(sf::Texture::loadFromFile("resources/cursor.png", {.smooth = true}).value()),
+        txCursorMultipop(sf::Texture::loadFromFile("resources/cursormultipop.png", {.smooth = true}).value()),
+        txCursorLaser(sf::Texture::loadFromFile("resources/cursorlaser.png", {.smooth = true}).value()),
+        txCursorGrab(sf::Texture::loadFromFile("resources/cursorgrab.png", {.smooth = true}).value()),
+        txArrow(sf::Texture::loadFromFile("resources/arrow.png", {.smooth = true}).value()),
+        txUnlock(sf::Texture::loadFromFile("resources/unlock.png", {.smooth = true}).value()),
+        txPurchasable(sf::Texture::loadFromFile("resources/purchasable.png", {.smooth = true}).value()),
+        txLetter(sf::Texture::loadFromFile("resources/letter.png", {.smooth = true}).value()),
+        txLetterText(sf::Texture::loadFromFile("resources/lettertext.png", {.smooth = true}).value()),
+        txFrame(sf::Texture::loadFromFile("resources/frame.png", {.smooth = true}).value()),
+        txFrameTiny(sf::Texture::loadFromFile("resources/frametiny.png", {.smooth = true}).value()),
+        txCloudBtn(sf::Texture::loadFromFile("resources/cloudbtn.png", {.smooth = true}).value()),
+        txCloudBtnSmall(sf::Texture::loadFromFile("resources/cloudbtnsmall.png", {.smooth = true}).value()),
+        txCloudBtnSquare(sf::Texture::loadFromFile("resources/cloudbtnsquare.png", {.smooth = true}).value()),
+        txCloudBtnSquare2(sf::Texture::loadFromFile("resources/cloudbtnsquare2.png", {.smooth = true}).value())
+    {
+    }
+};
+
+
+////////////////////////////////////////////////////////////
+struct MainTextStorage
+{
+    sf::Text moneyText;
+    sf::Text demoText;
+    sf::Text textNameBuffer;
+    sf::Text textStatusBuffer;
+    sf::Text textMoneyBuffer;
+
+    explicit MainTextStorage(const sf::Font& fontSuperBakery) :
+        moneyText(fontSuperBakery,
+                  {.position         = Main::moneyTextInitialPosition,
+                   .string           = "$0",
+                   .characterSize    = 64u,
+                   .fillColor        = sf::Color::White,
+                   .outlineColor     = colorBlueOutline,
+                   .outlineThickness = 4.f}),
+        demoText(fontSuperBakery,
+                 {.position         = {},
+                  .string           = "DEMO VERSION",
+                  .characterSize    = 48u,
+                  .fillColor        = sf::Color::White,
+                  .outlineColor     = colorBlueOutline,
+                  .outlineThickness = 3.f}),
+        textNameBuffer(fontSuperBakery,
+                       {
+                           .string           = "",
+                           .characterSize    = 48u,
+                           .fillColor        = sf::Color::White,
+                           .outlineColor     = colorBlueOutline,
+                           .outlineThickness = 3.f,
+                       }),
+        textStatusBuffer(fontSuperBakery,
+                         {
+                             .string           = "",
+                             .characterSize    = 32u,
+                             .fillColor        = sf::Color::White,
+                             .outlineColor     = colorBlueOutline,
+                             .outlineThickness = 2.f,
+                         }),
+        textMoneyBuffer(fontSuperBakery,
+                        {
+                            .string           = "",
+                            .characterSize    = 24u,
+                            .fillColor        = sf::Color::White,
+                            .outlineColor     = colorBlueOutline,
+                            .outlineThickness = 1.5f,
+                        })
+    {
+    }
+};
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+void MainOwnedDeleter<T>::operator()(T* ptr) noexcept
+{
+    delete ptr;
+}
+
+
+////////////////////////////////////////////////////////////
+template struct MainOwnedDeleter<sf::RenderTexture>;
+template struct MainOwnedDeleter<sf::AudioContext>;
+template struct MainOwnedDeleter<sf::TextureAtlas>;
+template struct MainOwnedDeleter<sf::RenderWindow>;
+template struct MainOwnedDeleter<sf::Font>;
+template struct MainOwnedDeleter<sf::GraphicsContext>;
+template struct MainOwnedDeleter<sf::Listener>;
+template struct MainOwnedDeleter<sf::PlaybackDevice>;
+template struct MainOwnedDeleter<sf::View>;
+template struct MainOwnedDeleter<MainDrawableBatches>;
+template struct MainOwnedDeleter<MainBGMStorage>;
+template struct MainOwnedDeleter<MainTextStorage>;
+template struct MainOwnedDeleter<MainTextureStorage>;
+template struct MainOwnedDeleter<MainRenderTextureVector>;
+
 
 ////////////////////////////////////////////////////////////
 bool debugMode = false;
@@ -62,10 +256,13 @@ Main::Main(hg::Steam::SteamManager& xSteamMgr) :
 Main::Main() :
 #endif
 #ifndef BUBBLEBYTE_NO_AUDIO
-    audioContext(sf::AudioContext::create().value()),
-    playbackDevice(sf::AudioContext::getDefaultPlaybackDeviceHandle().value()),
+    audioContextStorage(new sf::AudioContext{sf::AudioContext::create().value()}),
+    audioContext(*audioContextStorage),
+    playbackDeviceStorage(new sf::PlaybackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()}),
+    playbackDevice(*playbackDeviceStorage),
 #endif
-    graphicsContext(sf::GraphicsContext::create().value()),
+    graphicsContextStorage(new sf::GraphicsContext{sf::GraphicsContext::create().value()}),
+    graphicsContext(*graphicsContextStorage),
     shader(
         []
 {
@@ -171,8 +368,10 @@ Main::Main() :
 
     return out;
 }()),
-    fontMouldyCheese(sf::Font::openFromFile("resources/fredoka.ttf").value()),
-    window(makeWindow()),
+    fontMouldyCheeseStorage(new sf::Font{sf::Font::openFromFile("resources/fredoka.ttf").value()}),
+    fontMouldyCheese(*fontMouldyCheeseStorage),
+    windowStorage(new sf::RenderWindow{makeWindow()}),
+    window(*windowStorage),
     loadingGuard(
         [&]
 {
@@ -192,8 +391,10 @@ Main::Main() :
     window.display();
     return true;
 }()),
-    textureAtlas(sf::Texture::create({6000u, 4096u}, {.smooth = true}).value()),
-    fontSuperBakery(sf::Font::openFromFile("resources/fredoka.ttf", &textureAtlas).value()),
+    textureAtlasStorage(new sf::TextureAtlas{sf::Texture::create({6000u, 4096u}, {.smooth = true}).value()}),
+    textureAtlas(*textureAtlasStorage),
+    fontSuperBakeryStorage(new sf::Font{sf::Font::openFromFile("resources/fredoka.ttf", &textureAtlas).value()}),
+    fontSuperBakery(*fontSuperBakeryStorage),
     fontImGuiMouldyCheese(ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/fredoka.ttf", 28.f)),
     fontImGuiSuperBakery(ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/fredoka.ttf", 28.f)),
     fontImGuiFA(
@@ -214,20 +415,33 @@ Main::Main() :
     ImGui::GetIO().Fonts->Build();
     return res;
 }()),
-    rtBackground(
+    bgmStorage(new MainBGMStorage{}),
+    bgm(*bgmStorage),
+    listenerStorage(new sf::Listener{}),
+    listener(*listenerStorage),
+    rtBackgroundStorage(new sf::RenderTexture{
         sf::RenderTexture::create(gameScreenSize.toVec2u(),
                                   {.antiAliasingLevel = aaLevel, .smooth = true, .wrapMode = sf::TextureWrapMode::Repeat})
-            .value()),
-    rtBackgroundProcessed(
-        sf::RenderTexture::create(gameScreenSize.toVec2u(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()),
-    rtImGui(sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()),
-    rtCloudMask(sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()),
-    rtCloudProcessed(sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()),
-    rtGame(sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()),
-    hexedCatRenderTextures(
-        [this]
+            .value()}),
+    rtBackground(*rtBackgroundStorage),
+    rtBackgroundProcessedStorage(new sf::RenderTexture{
+        sf::RenderTexture::create(gameScreenSize.toVec2u(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()}),
+    rtBackgroundProcessed(*rtBackgroundProcessedStorage),
+    rtImGuiStorage(new sf::RenderTexture{
+        sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()}),
+    rtImGui(*rtImGuiStorage),
+    rtCloudMaskStorage(new sf::RenderTexture{
+        sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()}),
+    rtCloudMask(*rtCloudMaskStorage),
+    rtCloudProcessedStorage(new sf::RenderTexture{
+        sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()}),
+    rtCloudProcessed(*rtCloudProcessedStorage),
+    rtGameStorage(new sf::RenderTexture{
+        sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()}),
+    rtGame(*rtGameStorage),
+    hexedCatRenderTexturesStorage(new MainRenderTextureVector{[this]
 {
-    sf::base::Vector<sf::RenderTexture> result;
+    MainRenderTextureVector result;
     result.reserve(maxHexedCatRenderTextures);
 
     for (sf::base::SizeT i = 0u; i < maxHexedCatRenderTextures; ++i)
@@ -235,41 +449,42 @@ Main::Main() :
             sf::RenderTexture::create(hexedCatRenderTextureSize, {.antiAliasingLevel = aaLevel, .smooth = true}).value());
 
     return result;
-}()),
-    txLogo(sf::Texture::loadFromFile("resources/logo.png", {.smooth = true}).value()),
-    txFixedBg(sf::Texture::loadFromFile("resources/fixedbg.png",
-                                        {.smooth = true, .wrapMode = sf::TextureWrapMode::MirroredRepeat})
-                  .value()),
-    txBackgroundChunk(sf::Texture::loadFromFile("resources/bgtest.png", bgSettings).value()),
-    txBackgroundChunkDesaturated(sf::Texture::loadFromFile("resources/bgtestdesaturated.png", bgSettings).value()),
-    txClouds(sf::Texture::loadFromFile("resources/clouds.png", bgSettings).value()),
-    txTintedClouds(sf::Texture::loadFromFile("resources/tintedclouds.png", bgSettings).value()),
-    txBgSwamp(sf::Texture::loadFromFile("resources/bgswamp.png", bgSettings).value()),
-    txBgObservatory(sf::Texture::loadFromFile("resources/bgobservatory.png", bgSettings).value()),
-    txBgAimTraining(sf::Texture::loadFromFile("resources/bgaimtraining.png", bgSettings).value()),
-    txBgFactory(sf::Texture::loadFromFile("resources/bgfactory.png", bgSettings).value()),
-    txBgWindTunnel(sf::Texture::loadFromFile("resources/bgwindtunnel.png", bgSettings).value()),
-    txBgMagnetosphere(sf::Texture::loadFromFile("resources/bgmagnetosphere.png", bgSettings).value()),
-    txBgAuditorium(sf::Texture::loadFromFile("resources/bgauditorium.png", bgSettings).value()),
-    txDrawings(sf::Texture::loadFromFile("resources/drawings.png", {.smooth = true}).value()),
-    txTipBg(sf::Texture::loadFromFile("resources/tipbg.png", {.smooth = true}).value()),
-    txTipByte(sf::Texture::loadFromFile("resources/tipbyte.png", {.smooth = true}).value()),
-    txCursor(sf::Texture::loadFromFile("resources/cursor.png", {.smooth = true}).value()),
-    txCursorMultipop(sf::Texture::loadFromFile("resources/cursormultipop.png", {.smooth = true}).value()),
-    txCursorLaser(sf::Texture::loadFromFile("resources/cursorlaser.png", {.smooth = true}).value()),
-    txCursorGrab(sf::Texture::loadFromFile("resources/cursorgrab.png", {.smooth = true}).value()),
-    txArrow(sf::Texture::loadFromFile("resources/arrow.png", {.smooth = true}).value()),
-    txUnlock(sf::Texture::loadFromFile("resources/unlock.png", {.smooth = true}).value()),
-    txPurchasable(sf::Texture::loadFromFile("resources/purchasable.png", {.smooth = true}).value()),
-    txLetter(sf::Texture::loadFromFile("resources/letter.png", {.smooth = true}).value()),
-    txLetterText(sf::Texture::loadFromFile("resources/lettertext.png", {.smooth = true}).value()),
-    txFrame(sf::Texture::loadFromFile("resources/frame.png", {.smooth = true}).value()),
-    txFrameTiny(sf::Texture::loadFromFile("resources/frametiny.png", {.smooth = true}).value()),
-    txCloudBtn(sf::Texture::loadFromFile("resources/cloudbtn.png", {.smooth = true}).value()),
-    txCloudBtnSmall(sf::Texture::loadFromFile("resources/cloudbtnsmall.png", {.smooth = true}).value()),
-    txCloudBtnSquare(sf::Texture::loadFromFile("resources/cloudbtnsquare.png", {.smooth = true}).value()),
-    txCloudBtnSquare2(sf::Texture::loadFromFile("resources/cloudbtnsquare2.png", {.smooth = true}).value()),
-    uiTextureAtlas(sf::Texture::create({2048u, 1024u}, {.smooth = true}).value()),
+}()}),
+    hexedCatRenderTextures(*hexedCatRenderTexturesStorage),
+    textureStorage(new MainTextureStorage{}),
+    txLogo(textureStorage->txLogo),
+    txFixedBg(textureStorage->txFixedBg),
+    txBackgroundChunk(textureStorage->txBackgroundChunk),
+    txBackgroundChunkDesaturated(textureStorage->txBackgroundChunkDesaturated),
+    txClouds(textureStorage->txClouds),
+    txTintedClouds(textureStorage->txTintedClouds),
+    txBgSwamp(textureStorage->txBgSwamp),
+    txBgObservatory(textureStorage->txBgObservatory),
+    txBgAimTraining(textureStorage->txBgAimTraining),
+    txBgFactory(textureStorage->txBgFactory),
+    txBgWindTunnel(textureStorage->txBgWindTunnel),
+    txBgMagnetosphere(textureStorage->txBgMagnetosphere),
+    txBgAuditorium(textureStorage->txBgAuditorium),
+    txDrawings(textureStorage->txDrawings),
+    txTipBg(textureStorage->txTipBg),
+    txTipByte(textureStorage->txTipByte),
+    txCursor(textureStorage->txCursor),
+    txCursorMultipop(textureStorage->txCursorMultipop),
+    txCursorLaser(textureStorage->txCursorLaser),
+    txCursorGrab(textureStorage->txCursorGrab),
+    txArrow(textureStorage->txArrow),
+    txUnlock(textureStorage->txUnlock),
+    txPurchasable(textureStorage->txPurchasable),
+    txLetter(textureStorage->txLetter),
+    txLetterText(textureStorage->txLetterText),
+    txFrame(textureStorage->txFrame),
+    txFrameTiny(textureStorage->txFrameTiny),
+    txCloudBtn(textureStorage->txCloudBtn),
+    txCloudBtnSmall(textureStorage->txCloudBtnSmall),
+    txCloudBtnSquare(textureStorage->txCloudBtnSquare),
+    txCloudBtnSquare2(textureStorage->txCloudBtnSquare2),
+    uiTextureAtlasStorage(new sf::TextureAtlas{sf::Texture::create({2048u, 1024u}, {.smooth = true}).value()}),
+    uiTextureAtlas(*uiTextureAtlasStorage),
     txrIconVolume(addImgResourceToUIAtlas("iconvolumeon.png")),
     txrIconBGM(addImgResourceToUIAtlas("iconmusicon.png")),
     txrIconBg(addImgResourceToUIAtlas("iconbg.png")),
@@ -429,10 +644,42 @@ Main::Main() :
     txrMMDuck(addImgResourceToAtlas("mmduck.png")),
     txrMMShrine(addImgResourceToAtlas("mmshrine.png")),
     txrCloud(addImgResourceToAtlas("cloud.png")),
+    textStorage(new MainTextStorage{fontSuperBakery}),
+    moneyText(textStorage->moneyText),
+    demoText(textStorage->demoText),
     sweepAndPrune(sf::base::makeUnique<SweepAndPrune>()),
     seed(static_cast<RNGSeedType>(sf::Clock::now().asMicroseconds())),
     shuffledCatNamesPerType(makeShuffledCatNames(rng)),
+    drawableBatchesStorage(new MainDrawableBatches{}),
+    bubbleDrawableBatch(drawableBatchesStorage->bubbleDrawableBatch),
+    starBubbleDrawableBatch(drawableBatchesStorage->starBubbleDrawableBatch),
+    bombBubbleDrawableBatch(drawableBatchesStorage->bombBubbleDrawableBatch),
+    cpuCloudDrawableBatch(drawableBatchesStorage->cpuCloudDrawableBatch),
+    cpuTopCloudDrawableBatch(drawableBatchesStorage->cpuTopCloudDrawableBatch),
+    cpuCloudHudDrawableBatch(drawableBatchesStorage->cpuCloudHudDrawableBatch),
+    cpuCloudUiDrawableBatch(drawableBatchesStorage->cpuCloudUiDrawableBatch),
+    cpuDrawableBatchBeforeCats(drawableBatchesStorage->cpuDrawableBatchBeforeCats),
+    cpuDrawableBatch(drawableBatchesStorage->cpuDrawableBatch),
+    cpuDrawableBatchAfterCats(drawableBatchesStorage->cpuDrawableBatchAfterCats),
+    cpuDrawableBatchAdditive(drawableBatchesStorage->cpuDrawableBatchAdditive),
+    minimapDrawableBatch(drawableBatchesStorage->minimapDrawableBatch),
+    catTextDrawableBatch(drawableBatchesStorage->catTextDrawableBatch),
+    hudDrawableBatch(drawableBatchesStorage->hudDrawableBatch),
+    hudTopDrawableBatch(drawableBatchesStorage->hudTopDrawableBatch),
+    hudBottomDrawableBatch(drawableBatchesStorage->hudBottomDrawableBatch),
+    cpuTopDrawableBatch(drawableBatchesStorage->cpuTopDrawableBatch),
+    catTextTopDrawableBatch(drawableBatchesStorage->catTextTopDrawableBatch),
+    tempDrawableBatch(drawableBatchesStorage->tempDrawableBatch),
+    textNameBuffer(textStorage->textNameBuffer),
+    textStatusBuffer(textStorage->textStatusBuffer),
+    textMoneyBuffer(textStorage->textMoneyBuffer),
     threadPool(getTPWorkerCount()),
+    gameViewStorage(new sf::View{.center = {1.f, 1.f}, .size = {1.f, 1.f}}),
+    gameView(*gameViewStorage),
+    nonScaledHUDViewStorage(new sf::View{.center = {1.f, 1.f}, .size = {1.f, 1.f}}),
+    nonScaledHUDView(*nonScaledHUDViewStorage),
+    scaledHUDViewStorage(new sf::View{.center = {1.f, 1.f}, .size = {1.f, 1.f}}),
+    scaledHUDView(*scaledHUDViewStorage),
 #ifdef BUBBLEBYTE_USE_STEAMWORKS
     steamMgr(xSteamMgr),
     onSteamDeck(steamMgr.isOnSteamDeck())

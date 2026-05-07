@@ -22,8 +22,10 @@
 
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DrawTextureSettings.hpp"
+#include "SFML/Graphics/RenderTexture.hpp"
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/Texture.hpp"
+#include "SFML/Graphics/TextureAtlas.hpp"
 
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
@@ -71,13 +73,13 @@ bool Main::drawTabButton(const float             scaleMult,
                          const char*             label,
                          const bool              selected,
                          const TabButtonPalette& palette,
-                         const ImVec2            size,
+                         const sf::Vec2f         size,
                          const bool              square)
 {
-    ImGui::PushStyleColor(ImGuiCol_Button, selected ? palette.active : palette.idle);
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, selected ? palette.active : palette.hovered);
-    ImGui::PushStyleColor(ImGuiCol_ButtonActive, palette.active);
-    ImGui::PushStyleColor(ImGuiCol_Border, selected ? palette.active : palette.hovered);
+    ImGui::PushStyleColor(ImGuiCol_Button, (selected ? palette.active : palette.idle).toVec4<ImVec4>());
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (selected ? palette.active : palette.hovered).toVec4<ImVec4>());
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, palette.active.toVec4<ImVec4>());
+    ImGui::PushStyleColor(ImGuiCol_Border, (selected ? palette.active : palette.hovered).toVec4<ImVec4>());
     ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.f);
 
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 10.f);
@@ -428,7 +430,7 @@ It's a duck.)",
 Main::AnimatedButtonOutcome Main::uiAnimatedButton(
     const sf::Texture& tx,
     const char*        label,
-    const ImVec2&      btnSize,
+    const sf::Vec2f    btnSize,
     const float        fontScale,
     const float        fontScaleMult,
     const float        btnSizeMult,
@@ -445,7 +447,7 @@ Main::AnimatedButtonOutcome Main::uiAnimatedButton(
 
     const ImVec2 labelSize = ImGui::CalcTextSize(label, labelEnd, true);
 
-    const ImVec2 size = ImGui::CalcItemSize(btnSize,
+    const ImVec2 size = ImGui::CalcItemSize(ImVec2{btnSize.x, btnSize.y},
                                             labelSize.x + ImGui::GetStyle().FramePadding.x * 2.f,
                                             labelSize.y + ImGui::GetStyle().FramePadding.y * 2.f);
 
@@ -680,7 +682,7 @@ bool Main::uiMakeButtonImpl(const char* label, const char* xBuffer)
     uiPushButtonColors();
 
     bool clicked = false;
-    if (const auto outcome = uiAnimatedButton(txCloudBtn, xBuffer, ImVec2(scaledButtonWidth, 0.f), fontScale, fontScaleMult);
+    if (const auto outcome = uiAnimatedButton(txCloudBtn, xBuffer, {scaledButtonWidth, 0.f}, fontScale, fontScaleMult);
         outcome == AnimatedButtonOutcome::Clicked)
     {
         playSound(sounds.buy);
@@ -726,6 +728,61 @@ bool Main::uiMakeButtonImpl(const char* label, const char* xBuffer)
 
     ImGui::NextColumn();
     return clicked;
+}
+
+////////////////////////////////////////////////////////////
+bool Main::makePSVButtonExByCurrency(
+    const char*              label,
+    PurchasableScalingValue& psv,
+    const SizeT              times,
+    const MoneyType          cost,
+    MoneyType&               availability,
+    const char*              currencyFmt)
+{
+    const bool maxedOut = psv.nPurchases == psv.data->nMaxPurchases;
+
+    if (profile.hideMaxedOutPurchasables && maxedOut)
+        return false;
+
+    bool result = false;
+
+    if (maxedOut)
+        std::sprintf(uiState.uiBuffer, "MAX##%u", uiState.uiWidgetId++);
+    else if (cost == 0u || times == 0u)
+        std::sprintf(uiState.uiBuffer, "N/A##%u", uiState.uiWidgetId++);
+    else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+        std::sprintf(uiState.uiBuffer, currencyFmt, toStringWithSeparators(cost), uiState.uiWidgetId++);
+#pragma GCC diagnostic pop
+
+    ImGui::BeginDisabled(uiCheckPurchasability(label, maxedOut || availability < cost || cost == 0u));
+
+    uiMakeButtonLabels(label, uiState.uiLabelBuffer);
+    if (uiMakeButtonImpl(label, uiState.uiBuffer))
+    {
+        result = true;
+        availability -= cost;
+
+        if (&availability == &pt->money)
+            spentMoney += cost;
+
+        psv.nPurchases += times;
+
+        if (&availability == &pt->prestigePoints && times == 1u)
+        {
+            undoPPPurchase.emplaceBack([&psv, &availability, times, cost]
+            {
+                psv.nPurchases -= times;
+                availability += cost;
+            });
+
+            undoPPPurchaseTimer.time = 10000.f;
+        }
+    }
+
+    ImGui::EndDisabled();
+    return result;
 }
 
 ////////////////////////////////////////////////////////////
@@ -788,6 +845,55 @@ bool Main::uiCheckPurchasability(const char* label, const bool disabled)
 bool Main::makePurchasableButtonOneTime(const char* label, const MoneyType cost, bool& done)
 {
     return makePurchasableButtonOneTimeByCurrency(label, done, cost, pt->money, "$%s##%u");
+}
+
+////////////////////////////////////////////////////////////
+bool Main::makePurchasableButtonOneTimeByCurrency(
+    const char*     label,
+    bool&           done,
+    const MoneyType cost,
+    MoneyType&      availability,
+    const char*     currencyFmt)
+{
+    bool result = false;
+
+    if (done)
+        std::sprintf(uiState.uiBuffer, "DONE##%u", uiState.uiWidgetId++);
+    else if (cost == 0u)
+        std::sprintf(uiState.uiBuffer, "FREE##%u", uiState.uiWidgetId++);
+    else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+        std::sprintf(uiState.uiBuffer, currencyFmt, toStringWithSeparators(cost), uiState.uiWidgetId++);
+#pragma GCC diagnostic pop
+
+    ImGui::BeginDisabled(uiCheckPurchasability(label, done || availability < cost));
+
+    uiMakeButtonLabels(label, uiState.uiLabelBuffer);
+    if (uiMakeButtonImpl(label, uiState.uiBuffer))
+    {
+        result = true;
+        availability -= cost;
+
+        if (&availability == &pt->money)
+            spentMoney += cost;
+
+        done = true;
+
+        if (&availability == &pt->prestigePoints && cost > 0u)
+        {
+            undoPPPurchase.emplaceBack([&availability, &done, cost]
+            {
+                done = false;
+                availability += cost;
+            });
+
+            undoPPPurchaseTimer.time = 10000.f;
+        }
+    }
+
+    ImGui::EndDisabled();
+    return result;
 }
 
 ////////////////////////////////////////////////////////////
