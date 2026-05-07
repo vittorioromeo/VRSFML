@@ -26,15 +26,9 @@ namespace sf
 struct LocalAnchorPointMixin
 {
     ////////////////////////////////////////////////////////////
-    /// \brief Get the local position of a specific anchor point
+    /// \brief Local coordinates of an anchor point given normalized `factors` in `[0, 1]`
     ///
-    /// Calculates the local coordinates of a point based on normalized
-    /// factors within the object's bounding box (or size for windows).
-    /// `(0, 0)` corresponds to the top-left, `(1, 1)` to the bottom-right.
-    ///
-    /// \param factors Normalized factors `(x, y)` within the bounds `[0, 1]`
-    ///
-    /// \return Local coordinates of the calculated anchor point
+    /// `(0, 0)` is the top-left, `(1, 1)` is the bottom-right.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
@@ -110,9 +104,7 @@ struct LocalAnchorPointMixin
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the local X coordinate of the left edge
-    ///
-    /// \return Left edge X coordinate
+    /// \brief Local X coordinate of the left edge
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
@@ -123,9 +115,7 @@ struct LocalAnchorPointMixin
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the local X coordinate of the right edge
-    ///
-    /// \return Right edge X coordinate
+    /// \brief Local X coordinate of the right edge
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
@@ -136,9 +126,7 @@ struct LocalAnchorPointMixin
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the local Y coordinate of the top edge
-    ///
-    /// \return Top edge Y coordinate
+    /// \brief Local Y coordinate of the top edge
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
@@ -149,9 +137,7 @@ struct LocalAnchorPointMixin
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the local Y coordinate of the bottom edge
-    ///
-    /// \return Bottom edge Y coordinate
+    /// \brief Local Y coordinate of the bottom edge
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
@@ -162,9 +148,7 @@ struct LocalAnchorPointMixin
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the local width of the object
-    ///
-    /// \return Width of the object
+    /// \brief Local width of the object
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
@@ -175,9 +159,7 @@ struct LocalAnchorPointMixin
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the local height of the object
-    ///
-    /// \return Height of the object
+    /// \brief Local height of the object
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]

@@ -25,50 +25,35 @@ class SFML_SYSTEM_API MemoryInputStream : public InputStream
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Construct the stream from its data
-    ///
-    /// \param data        Pointer to the data in memory
-    /// \param sizeInBytes Size of the data, in bytes
+    /// \brief Construct from a pointer to `sizeInBytes` bytes of data
     ///
     ////////////////////////////////////////////////////////////
     MemoryInputStream(const void* data, base::SizeT sizeInBytes);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Read data from the stream
+    /// \brief Read up to `size` bytes into `data`, advancing the reading position
     ///
-    /// After reading, the stream's reading position must be
-    /// advanced by the amount of bytes read.
-    ///
-    /// \param data Buffer where to copy the read data
-    /// \param size Desired number of bytes to read
-    ///
-    /// \return The number of bytes actually read, or `base::nullOpt` on error
+    /// \return Number of bytes actually read, or `base::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] base::Optional<base::SizeT> read(void* data, base::SizeT size) override;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Change the current reading position
+    /// \brief Move the reading position to `position` (offset from the beginning)
     ///
-    /// \param position The position to seek to, from the beginning
-    ///
-    /// \return The position actually sought to, or `base::nullOpt` on error
+    /// \return Position actually sought to, or `base::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] base::Optional<base::SizeT> seek(base::SizeT position) override;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the current reading position in the stream
-    ///
-    /// \return The current position, or `base::nullOpt` on error.
+    /// \brief Current reading position, or `base::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] base::Optional<base::SizeT> tell() override;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Return the size of the stream
-    ///
-    /// \return The total number of bytes available in the stream, or `base::nullOpt` on error
+    /// \brief Total number of bytes in the stream, or `base::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] base::Optional<base::SizeT> getSize() override;
@@ -89,20 +74,12 @@ private:
 /// \class sf::MemoryInputStream
 /// \ingroup system
 ///
-/// This class is a specialization of `InputStream` that
-/// reads from data in memory.
+/// `InputStream` specialization that wraps a chunk of in-memory data,
+/// letting code written against `InputStream` operate on it.
 ///
-/// It wraps a memory chunk in the common `InputStream` interface
-/// and therefore allows to use generic classes or functions
-/// that accept such a stream, with content already loaded in memory.
-///
-/// In addition to the virtual functions inherited from
-/// `InputStream`, `MemoryInputStream` adds a function to
-/// specify the pointer and size of the data in memory.
-///
-/// SFML resource classes can usually be loaded directly from
-/// memory, so this class shouldn't be useful to you unless
-/// you create your own algorithms that operate on an InputStream.
+/// SFML resource classes can usually be loaded directly from memory,
+/// so this is mostly useful when writing custom algorithms over
+/// `InputStream`.
 ///
 /// Usage example:
 /// \code

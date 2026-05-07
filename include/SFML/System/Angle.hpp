@@ -31,9 +31,7 @@ class [[nodiscard]] Angle
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// Sets the angle value to zero.
+    /// \brief Default constructor, sets the angle value to zero.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] constexpr Angle() = default;
@@ -41,8 +39,6 @@ public:
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the angle's value in degrees
-    ///
-    /// \return Angle in degrees
     ///
     /// \see `asRadians`
     ///
@@ -55,8 +51,6 @@ public:
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the angle's value in radians
-    ///
-    /// \return Angle in radians
     ///
     /// \see `asDegrees`
     ///
@@ -93,8 +87,6 @@ public:
     /// </tr>
     /// </table>
     ///
-    /// \return Signed angle, wrapped to [-180°, 180°)
-    ///
     /// \see `wrapUnsigned`
     ///
     ////////////////////////////////////////////////////////////
@@ -130,8 +122,6 @@ public:
     /// </tr>
     /// </table>
     ///
-    /// \return Unsigned angle, wrapped to [0°, 360°)
-    ///
     /// \see `wrapSigned`
     ///
     ////////////////////////////////////////////////////////////
@@ -149,10 +139,7 @@ public:
     /// If the shortest difference is less than or equal to `speed`, `other` is returned.
     /// The result is normalized to the range `[0, 2*Pi)`.
     ///
-    /// \param other Target angle to rotate towards.
     /// \param speed Maximum rotation step in radians. Must be non-negative.
-    ///
-    /// \return Angle rotated towards `other`, clamped by `speed`.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle rotatedTowards(const Angle other,
@@ -199,28 +186,16 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Angle
-    /// \brief Overload of `operator==` to compare two angle values
+    /// \brief Equality comparison of two angles
     /// \note Does not automatically wrap the angle value
-    ///
-    /// \param lhs  Left operand (an angle)
-    /// \param rhs Right operand (an angle)
-    ///
-    /// \return `true` if `lhs` is equal to `rhs`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr bool operator==(Angle lhs, Angle rhs) = default;
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Angle
-    /// \brief Overload of `operator<` to compare two angle values
+    /// \brief Less-than comparison of two angles
     /// \note Does not automatically wrap the angle value
-    ///
-    /// \param lhs  Left operand (an angle)
-    /// \param rhs Right operand (an angle)
-    ///
-    /// \return `true` if `lhs` is less than `rhs`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr bool operator<(const Angle lhs, const Angle rhs)
@@ -230,14 +205,8 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Angle
-    /// \brief Overload of `operator>` to compare two angle values
+    /// \brief Greater-than comparison of two angles
     /// \note Does not automatically wrap the angle value
-    ///
-    /// \param lhs  Left operand (an angle)
-    /// \param rhs Right operand (an angle)
-    ///
-    /// \return `true` if `lhs` is greater than `rhs`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr bool operator>(const Angle lhs, const Angle rhs)
@@ -247,14 +216,8 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Angle
-    /// \brief Overload of `operator<=` to compare two angle values
+    /// \brief Less-than-or-equal comparison of two angles
     /// \note Does not automatically wrap the angle value
-    ///
-    /// \param lhs  Left operand (an angle)
-    /// \param rhs Right operand (an angle)
-    ///
-    /// \return `true` if `lhs` is less than or equal to `rhs`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr bool operator<=(const Angle lhs, const Angle rhs)
@@ -264,14 +227,8 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Angle
-    /// \brief Overload of `operator>=` to compare two angle values
+    /// \brief Greater-than-or-equal comparison of two angles
     /// \note Does not automatically wrap the angle value
-    ///
-    /// \param lhs  Left operand (an angle)
-    /// \param rhs Right operand (an angle)
-    ///
-    /// \return `true` if `lhs` is greater than or equal to `rhs`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr bool operator>=(const Angle lhs, const Angle rhs)
@@ -281,14 +238,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Angle
-    /// \brief Overload of unary `operator-` to negate an angle value.
-    ///
-    /// Represents a rotation in the opposite direction.
-    ///
-    /// \param rhs Right operand (an angle)
-    ///
-    /// \return Negative of the angle value
+    /// \brief Negation of an angle (rotation in the opposite direction)
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr Angle operator-(const Angle rhs)
@@ -298,13 +248,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Angle
-    /// \brief Overload of binary `operator+` to add two angle values
-    ///
-    /// \param lhs  Left operand (an angle)
-    /// \param rhs Right operand (an angle)
-    ///
-    /// \return Sum of the two angle values
+    /// \brief Sum of two angles
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr Angle operator+(const Angle lhs, const Angle rhs)
@@ -314,13 +258,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Angle
-    /// \brief Overload of binary `operator+=` to add/assign two angle values
-    ///
-    /// \param lhs  Left operand (an angle)
-    /// \param rhs Right operand (an angle)
-    ///
-    /// \return Sum of the two angle values
+    /// \brief Compound addition of two angles
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] friend constexpr Angle& operator+=(Angle& lhs, const Angle rhs)
@@ -331,13 +269,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Angle
-    /// \brief Overload of binary `operator-` to subtract two angle values
-    ///
-    /// \param lhs  Left operand (an angle)
-    /// \param rhs Right operand (an angle)
-    ///
-    /// \return Difference of the two angle values
+    /// \brief Difference of two angles
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr Angle operator-(const Angle lhs, const Angle rhs)
@@ -347,13 +279,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Angle
-    /// \brief Overload of binary `operator-=` to subtract/assign two angle values
-    ///
-    /// \param lhs  Left operand (an angle)
-    /// \param rhs Right operand (an angle)
-    ///
-    /// \return Difference of the two angle values
+    /// \brief Compound subtraction of two angles
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] friend constexpr Angle& operator-=(Angle& lhs, const Angle rhs)
@@ -364,13 +290,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Angle
-    /// \brief Overload of binary `operator*` to scale an angle value
-    ///
-    /// \param lhs  Left operand (an angle)
-    /// \param rhs Right operand (a number)
-    ///
-    /// \return `lhs` multiplied by `rhs`
+    /// \brief Scale an angle by a scalar
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr Angle operator*(const Angle lhs, const float rhs)
@@ -380,13 +300,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Angle
-    /// \brief Overload of binary `operator*` to scale an angle value
-    ///
-    /// \param lhs  Left operand (a number)
-    /// \param rhs Right operand (an angle)
-    ///
-    /// \return `lhs` multiplied by `rhs`
+    /// \brief Scale an angle by a scalar
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr Angle operator*(const float lhs, const Angle rhs)
@@ -396,13 +310,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Angle
-    /// \brief Overload of binary `operator*=` to scale/assign an angle value
-    ///
-    /// \param lhs  Left operand (an angle)
-    /// \param rhs Right operand (a number)
-    ///
-    /// \return `lhs` multiplied by `rhs`
+    /// \brief Compound scaling of an angle by a scalar
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] friend constexpr Angle& operator*=(Angle& lhs, const float rhs)
@@ -413,13 +321,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Angle
-    /// \brief Overload of binary `operator/` to scale an angle value
-    ///
-    /// \param lhs  Left operand (an angle)
-    /// \param rhs Right operand (a number)
-    ///
-    /// \return `lhs` divided by `rhs`
+    /// \brief Divide an angle by a scalar
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr Angle operator/(const Angle lhs, const float rhs)
@@ -430,13 +332,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Angle
-    /// \brief Overload of binary `operator/=` to scale/assign an angle value
-    ///
-    /// \param lhs  Left operand (an angle)
-    /// \param rhs Right operand (a number)
-    ///
-    /// \return `lhs` divided by `rhs`
+    /// \brief Compound division of an angle by a scalar
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] friend constexpr Angle& operator/=(Angle& lhs, const float rhs)
@@ -448,13 +344,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Angle
-    /// \brief Overload of binary `operator/` to compute the ratio of two angle values
-    ///
-    /// \param lhs  Left operand (an angle)
-    /// \param rhs Right operand (an angle)
-    ///
-    /// \return `lhs` divided by `rhs`
+    /// \brief Ratio of two angles
     ///
     ////////////////////////////////////////////////////////////
     friend constexpr float operator/(const Angle lhs, const Angle rhs)
@@ -465,8 +355,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Angle
-    /// \brief Overload of binary `operator%` to compute modulo of an angle value.
+    /// \brief Modulo of an angle by another angle (always non-negative).
     ///
     /// Right hand angle must be greater than zero.
     ///
@@ -475,11 +364,6 @@ public:
     /// sf::degrees(90) % sf::degrees(40)  // 10 degrees
     /// sf::degrees(-90) % sf::degrees(40) // 30 degrees (not -10)
     /// \endcode
-    ///
-    /// \param lhs  Left operand (an angle)
-    /// \param rhs Right operand (an angle)
-    ///
-    /// \return `lhs` modulo `rhs`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr Angle operator%(const Angle lhs, const Angle rhs)
@@ -490,13 +374,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Angle
-    /// \brief Overload of binary `operator%=` to compute/assign remainder of an angle value
-    ///
-    /// \param lhs  Left operand (an angle)
-    /// \param rhs Right operand (an angle)
-    ///
-    /// \return `lhs` modulo `rhs`
+    /// \brief Compound modulo of an angle by another angle
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] friend constexpr Angle& operator%=(Angle& lhs, const Angle rhs)
@@ -524,8 +402,6 @@ private:
     ///
     /// This constructor is for internal use. To construct angle values,
     /// use the `sf::radians` or `sf::degrees` free functions instead.
-    ///
-    /// \param theRadians Angle in radians
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] constexpr explicit Angle(const float theRadians) :
@@ -558,10 +434,6 @@ inline constexpr Angle Angle::Full{base::tau}; //!< Predefined 360 degree angle 
 ////////////////////////////////////////////////////////////
 /// \brief Construct an angle value from a number of degrees
 ///
-/// \param angle Number of degrees
-///
-/// \return Angle value constructed from the number of degrees
-///
 /// \see `radians`
 ///
 ////////////////////////////////////////////////////////////
@@ -573,10 +445,6 @@ inline constexpr Angle Angle::Full{base::tau}; //!< Predefined 360 degree angle 
 
 ////////////////////////////////////////////////////////////
 /// \brief Construct an angle value from a number of radians
-///
-/// \param angle Number of radians
-///
-/// \return Angle value constructed from the number of radians
 ///
 /// \see `degrees`
 ///
@@ -590,12 +458,7 @@ inline constexpr Angle Angle::Full{base::tau}; //!< Predefined 360 degree angle 
 namespace Literals
 {
 ////////////////////////////////////////////////////////////
-/// \relates sf::Angle
-/// \brief User defined literal for angles in degrees, e.g.\ `10.5_deg`
-///
-/// \param angle Angle in degrees
-///
-/// \return Angle
+/// \brief User-defined literal for angles in degrees, e.g.\ `10.5_deg`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] consteval Angle operator""_deg(const long double angle)
@@ -605,12 +468,7 @@ namespace Literals
 
 
 ////////////////////////////////////////////////////////////
-/// \relates sf::Angle
-/// \brief User defined literal for angles in degrees, e.g.\ `90_deg`
-///
-/// \param angle Angle in degrees
-///
-/// \return Angle
+/// \brief User-defined literal for angles in degrees, e.g.\ `90_deg`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] consteval Angle operator""_deg(const unsigned long long int angle)
@@ -620,12 +478,7 @@ namespace Literals
 
 
 ////////////////////////////////////////////////////////////
-/// \relates sf::Angle
-/// \brief User defined literal for angles in radians, e.g.\ `0.1_rad`
-///
-/// \param angle Angle in radians
-///
-/// \return Angle
+/// \brief User-defined literal for angles in radians, e.g.\ `0.1_rad`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] consteval Angle operator""_rad(const long double angle)
@@ -634,12 +487,7 @@ namespace Literals
 }
 
 ////////////////////////////////////////////////////////////
-/// \relates sf::Angle
-/// \brief User defined literal for angles in radians, e.g.\ `2_rad`
-///
-/// \param angle Angle in radians
-///
-/// \return Angle
+/// \brief User-defined literal for angles in radians, e.g.\ `2_rad`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] consteval Angle operator""_rad(const unsigned long long int angle)
@@ -655,19 +503,12 @@ namespace Literals
 /// \class sf::Angle
 /// \ingroup system
 ///
-/// `sf::Angle` encapsulates an angle value in a flexible way.
-/// It allows for defining an angle value either as a number
-/// of degrees or radians. It also works the other way
-/// around. You can read an angle value as either a number
-/// of degrees or radians.
+/// `sf::Angle` encapsulates an angle value, allowing it to be
+/// defined and read back as either degrees or radians, without
+/// imposing any fixed unit on the API.
 ///
-/// By using such a flexible interface, the API doesn't
-/// impose any fixed type or unit for angle values and lets
-/// the user choose their own preferred representation.
-///
-/// Angle values support the usual mathematical operations.
-/// You can add or subtract two angles, multiply or divide
-/// an angle by a number, compare two angles, etc.
+/// Angle values support the usual mathematical operations
+/// (addition, subtraction, scaling, comparison, etc.).
 ///
 /// Usage example:
 /// \code

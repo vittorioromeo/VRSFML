@@ -27,9 +27,7 @@ template <typename T>
 struct [[nodiscard]] Vec3
 {
     ////////////////////////////////////////////////////////////
-    /// \brief Length of the vec3 <i><b>(floating-point)</b></i>.
-    ///
-    /// If you are not interested in the actual length, but only in comparisons, consider using `lengthSquared()`.
+    /// \brief Length of the vec3 (floating-point); prefer `lengthSquared()` for comparisons
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_SYSTEM_API constexpr T length() const
@@ -42,9 +40,7 @@ struct [[nodiscard]] Vec3
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Square of vec3's length.
-    ///
-    /// Suitable for comparisons, more efficient than `length()`.
+    /// \brief Squared length; cheaper than `length()` and suitable for comparisons
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_API_EXPORT constexpr T lengthSquared() const
@@ -54,9 +50,9 @@ struct [[nodiscard]] Vec3
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Vector with same direction but length 1 <i><b>(floating-point)</b></i>.
+    /// \brief Vector of length 1 with the same direction (floating-point)
     ///
-    /// \pre `*this` is no zero vec3.
+    /// \pre `*this` is not the zero vec3.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_SYSTEM_API constexpr Vec3 normalized() const
@@ -69,7 +65,7 @@ struct [[nodiscard]] Vec3
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Dot product of two vec3s.
+    /// \brief Dot product
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_API_EXPORT constexpr T dot(const Vec3& rhs) const
@@ -79,7 +75,7 @@ struct [[nodiscard]] Vec3
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Cross product of two vec3s.
+    /// \brief Cross product
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_API_EXPORT constexpr Vec3 cross(const Vec3& rhs) const
@@ -89,12 +85,9 @@ struct [[nodiscard]] Vec3
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Component-wise multiplication of `*this` and `rhs`.
+    /// \brief Component-wise multiplication: `(x*rhs.x, y*rhs.y, z*rhs.z)` (Hadamard product)
     ///
-    /// Computes `(lhs.x*rhs.x, lhs.y*rhs.y, lhs.z*rhs.z)`.
-    ///
-    /// Scaling is the most common use case for component-wise multiplication/division.
-    /// This operation is also known as the Hadamard or Schur product.
+    /// Most useful for non-uniform scaling.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_API_EXPORT constexpr Vec3 componentWiseMul(const Vec3& rhs) const
@@ -104,13 +97,9 @@ struct [[nodiscard]] Vec3
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Component-wise division of `*this` and `rhs`.
+    /// \brief Component-wise division: `(x/rhs.x, y/rhs.y, z/rhs.z)`
     ///
-    /// Computes `(lhs.x/rhs.x, lhs.y/rhs.y, lhs.z/rhs.z)`.
-    ///
-    /// Scaling is the most common use case for component-wise multiplication/division.
-    ///
-    /// \pre Neither component of `rhs` is zero.
+    /// \pre No component of `rhs` is zero.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_API_EXPORT constexpr Vec3 componentWiseDiv(const Vec3& rhs) const
@@ -124,9 +113,7 @@ struct [[nodiscard]] Vec3
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert to another `Vec3` of type `OtherVec3`
-    ///
-    /// `OtherVec3` must be a `Vec3<...>` type.
+    /// \brief Convert to another `Vec3<U>` (`OtherVec3` must be a `Vec3<...>` type)
     ///
     ////////////////////////////////////////////////////////////
     template <typename OtherVec3>
@@ -138,25 +125,14 @@ struct [[nodiscard]] Vec3
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Overload of binary `operator==`
-    ///
-    /// This operator compares strict equality between two vec3s.
-    ///
-    /// \param rhs Right operand
-    ///
-    /// \return `true` if `lhs` is equal to `rhs`
+    /// \brief Strict member-wise equality
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr bool operator==(const Vec3<T>& rhs) const = default;
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Vec3
-    /// \brief Overload of unary `operator-`
-    ///
-    /// \param rhs Vector to negate
-    ///
-    /// \return Member-wise opposite of the vec3
+    /// \brief Member-wise negation
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr Vec3 operator-(const Vec3& rhs)
@@ -166,16 +142,7 @@ struct [[nodiscard]] Vec3
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Vec3
-    /// \brief Overload of binary `operator+=`
-    ///
-    /// This operator performs a member-wise addition of both vec3s,
-    /// and assigns the result to `lhs`.
-    ///
-    /// \param lhs  Left operand (a vec3)
-    /// \param rhs Right operand (a vec3)
-    ///
-    /// \return Reference to `lhs`
+    /// \brief Member-wise addition assignment
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] friend constexpr Vec3& operator+=(Vec3& lhs, const Vec3& rhs)
@@ -189,16 +156,7 @@ struct [[nodiscard]] Vec3
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Vec3
-    /// \brief Overload of binary `operator-=`
-    ///
-    /// This operator performs a member-wise subtraction of both vec3s,
-    /// and assigns the result to `lhs`.
-    ///
-    /// \param lhs  Left operand (a vec3)
-    /// \param rhs Right operand (a vec3)
-    ///
-    /// \return Reference to `lhs`
+    /// \brief Member-wise subtraction assignment
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] friend constexpr Vec3& operator-=(Vec3& lhs, const Vec3& rhs)
@@ -212,13 +170,7 @@ struct [[nodiscard]] Vec3
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Vec3
-    /// \brief Overload of binary `operator+`
-    ///
-    /// \param lhs  Left operand (a vec3)
-    /// \param rhs Right operand (a vec3)
-    ///
-    /// \return Member-wise addition of both vec3s
+    /// \brief Member-wise addition of two vec3s
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr Vec3 operator+(const Vec3& lhs, const Vec3& rhs)
@@ -228,13 +180,7 @@ struct [[nodiscard]] Vec3
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Vec3
-    /// \brief Overload of binary `operator-`
-    ///
-    /// \param lhs  Left operand (a vec3)
-    /// \param rhs Right operand (a vec3)
-    ///
-    /// \return Member-wise subtraction of both vec3s
+    /// \brief Member-wise subtraction of two vec3s
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr Vec3 operator-(const Vec3& lhs, const Vec3& rhs)
@@ -244,13 +190,7 @@ struct [[nodiscard]] Vec3
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Vec3
-    /// \brief Overload of binary `operator*`
-    ///
-    /// \param lhs  Left operand (a vec3)
-    /// \param rhs Right operand (a scalar value)
-    ///
-    /// \return Member-wise multiplication by `rhs`
+    /// \brief Member-wise multiplication of a vec3 by a scalar
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr Vec3 operator*(const Vec3& lhs, const T rhs)
@@ -260,13 +200,7 @@ struct [[nodiscard]] Vec3
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Vec3
-    /// \brief Overload of binary `operator*`
-    ///
-    /// \param lhs  Left operand (a scalar value)
-    /// \param rhs Right operand (a vec3)
-    ///
-    /// \return Member-wise multiplication by `lhs`
+    /// \brief Member-wise multiplication of a scalar by a vec3
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr Vec3 operator*(const T lhs, const Vec3& rhs)
@@ -276,16 +210,7 @@ struct [[nodiscard]] Vec3
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Vec3
-    /// \brief Overload of binary `operator*=`
-    ///
-    /// This operator performs a member-wise multiplication by `rhs`,
-    /// and assigns the result to `lhs`.
-    ///
-    /// \param lhs  Left operand (a vec3)
-    /// \param rhs Right operand (a scalar value)
-    ///
-    /// \return Reference to `lhs`
+    /// \brief Member-wise multiplication assignment by a scalar
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] friend constexpr Vec3& operator*=(Vec3& lhs, const T rhs)
@@ -299,13 +224,7 @@ struct [[nodiscard]] Vec3
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Vec3
-    /// \brief Overload of binary `operator/`
-    ///
-    /// \param lhs  Left operand (a vec3)
-    /// \param rhs Right operand (a scalar value)
-    ///
-    /// \return Member-wise division by `rhs`
+    /// \brief Member-wise division of a vec3 by a scalar (asserts `rhs != 0`)
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr Vec3 operator/(const Vec3& lhs, const T rhs)
@@ -317,16 +236,7 @@ struct [[nodiscard]] Vec3
 
 
     ////////////////////////////////////////////////////////////
-    /// \relates Vec3
-    /// \brief Overload of binary `operator/=`
-    ///
-    /// This operator performs a member-wise division by `rhs`,
-    /// and assigns the result to `lhs`.
-    ///
-    /// \param lhs  Left operand (a vec3)
-    /// \param rhs Right operand (a scalar value)
-    ///
-    /// \return Reference to `lhs`
+    /// \brief Member-wise division assignment by a scalar (asserts `rhs != 0`)
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] friend constexpr Vec3& operator/=(Vec3& lhs, const T rhs)

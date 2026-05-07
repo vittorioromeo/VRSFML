@@ -16,12 +16,8 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief Utility class for manipulating 2D axis-aligned rectangles.
+/// \brief 2D axis-aligned rectangle defined by a top-left `position` and a `size`.
 /// \ingroup system
-///
-/// A rectangle is defined by its top-left corner (`position`) and its
-/// dimensions (`size`). It is primarily used for defining regions,
-/// bounding boxes, or texture coordinates.
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -29,14 +25,10 @@ class [[nodiscard]] Rect2
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Check if a point is inside the rectangle's area
+    /// \brief Check if `point` is inside the rectangle's area
     ///
-    /// This check is non-inclusive. If the point lies on the
-    /// edge of the rectangle, this function will return `false`.
-    ///
-    /// \param point Point to test
-    ///
-    /// \return `true` if the point is inside, `false` otherwise
+    /// This check is non-inclusive: points on the right or bottom
+    /// edge are considered outside the rectangle.
     ///
     /// \see `findIntersection`
     ///
@@ -59,9 +51,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert to another `Rect2` of type `U`
-    ///
-    /// `U` must be a `Rect2<...>` type.
+    /// \brief Convert to another `Rect2` of type `U` (must be a `Rect2<...>`)
     ///
     ////////////////////////////////////////////////////////////
     template <typename U>
@@ -73,7 +63,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert `*this` to a `Rect2<int>`
+    /// \brief Convert to `Rect2<int>`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Rect2<int> toRect2i() const
@@ -83,7 +73,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert `*this` to a `Rect2<float>`
+    /// \brief Convert to `Rect2<float>`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Rect2<float> toRect2f() const
@@ -93,7 +83,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert `*this` to a `Rect2<unsigned int>`
+    /// \brief Convert to `Rect2<unsigned int>`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Rect2<unsigned int> toRect2u() const
@@ -103,7 +93,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert `*this` to a `Rect2<base::SizeT>`
+    /// \brief Convert to `Rect2<base::SizeT>`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Rect2<base::SizeT> toRect2uz() const
@@ -113,13 +103,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Overload of binary `operator==`
-    ///
-    /// This operator compares strict equality between two rectangles.
-    ///
-    /// \param rhs Right operand
-    ///
-    /// \return `true` if \a lhs is equal to \a rhs
+    /// \brief Strict member-wise equality
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator==(const Rect2<T>& rhs) const = default;
@@ -128,13 +112,8 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Get the world position of a specific anchor point within the rectangle
     ///
-    /// Calculates the world coordinates of a point based on normalized factors relative
-    /// to the rectangle's position and size. `(0, 0)` is the top-left corner,
-    /// `(1, 1)` is the bottom-right corner, `(0.5, 0.5)` is the center, etc.
-    ///
-    /// \param factors Normalized factors `(x, y)` in the range `[0, 1]`.
-    ///
-    /// \return Coordinates of the calculated anchor point
+    /// `factors` are normalized in the range `[0, 1]`: `(0, 0)` is the top-left,
+    /// `(1, 1)` is the bottom-right, `(0.5, 0.5)` is the center.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec2<T> getAnchorPoint(const Vec2f factors) const
@@ -216,14 +195,9 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Calculate the offset required to move the top-left corner
-    ///        so that a given anchor point aligns with the original top-left.
+    /// \brief Get the offset to apply so that the given anchor lands on the current top-left
     ///
-    /// This is useful for positioning the rectangle relative to one of its anchor points.
-    ///
-    /// \param factors Normalized factors `(x, y)` defining the anchor point.
-    ///
-    /// \return The offset vec2 to apply to the rectangle's position.
+    /// Useful for positioning the rectangle relative to one of its anchor points.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec2<T> getAnchorPointOffset(const Vec2f factors) const
@@ -233,11 +207,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the X coordinate of the left edge.
-    ///
-    /// Equivalent to `position.x`.
-    ///
-    /// \return The X coordinate of the left edge.
+    /// \brief Get the X coordinate of the left edge (i.e. `position.x`)
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr T getLeft() const
@@ -247,11 +217,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the X coordinate of the right edge.
-    ///
-    /// Equivalent to `position.x + size.x`.
-    ///
-    /// \return The X coordinate of the right edge.
+    /// \brief Get the X coordinate of the right edge (i.e. `position.x + size.x`)
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr T getRight() const
@@ -261,11 +227,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the Y coordinate of the top edge.
-    ///
-    /// Equivalent to `position.y`.
-    ///
-    /// \return The Y coordinate of the top edge.
+    /// \brief Get the Y coordinate of the top edge (i.e. `position.y`)
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr T getTop() const
@@ -275,11 +237,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the Y coordinate of the bottom edge.
-    ///
-    /// Equivalent to `position.y + size.y`.
-    ///
-    /// \return The Y coordinate of the bottom edge.
+    /// \brief Get the Y coordinate of the bottom edge (i.e. `position.y + size.y`)
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr T getBottom() const
@@ -289,13 +247,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the rectangle's position based on an anchor point.
-    ///
-    /// Moves the rectangle so that the anchor point specified by `factors`
-    /// aligns with the given `newPosition`.
-    ///
-    /// \param factors     Normalized factors `(x, y)` defining the anchor point.
-    /// \param newPosition Target coordinates for the anchor point.
+    /// \brief Move the rectangle so that the anchor identified by `factors` lands on `newPosition`
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] constexpr void setAnchorPoint(const Vec2f factors, const Vec2<T> newPosition)
@@ -313,73 +265,55 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the position based on the top-left anchor
-    ///
-    /// \param newPosition Target world coordinates for the anchor
+    /// \brief Move the rectangle so that the top-left anchor lands on `newPos`
     ///
     ////////////////////////////////////////////////////////////
     SFML_PRIV_DEFINE_RECT_ANCHOR_SETTER(setTopLeft, {0.f, 0.f});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the position based on the top-center anchor
-    ///
-    /// \param newPosition Target world coordinates for the anchor
+    /// \brief Move the rectangle so that the top-center anchor lands on `newPos`
     ///
     ////////////////////////////////////////////////////////////
     SFML_PRIV_DEFINE_RECT_ANCHOR_SETTER(setTopCenter, {0.5f, 0.f});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the position based on the top-right anchor
-    ///
-    /// \param newPosition Target world coordinates for the anchor
+    /// \brief Move the rectangle so that the top-right anchor lands on `newPos`
     ///
     ////////////////////////////////////////////////////////////
     SFML_PRIV_DEFINE_RECT_ANCHOR_SETTER(setTopRight, {1.f, 0.f});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the position based on the center-left anchor
-    ///
-    /// \param newPosition Target world coordinates for the anchor
+    /// \brief Move the rectangle so that the center-left anchor lands on `newPos`
     ///
     ////////////////////////////////////////////////////////////
     SFML_PRIV_DEFINE_RECT_ANCHOR_SETTER(setCenterLeft, {0.f, 0.5f});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the position based on the center anchor
-    ///
-    /// \param newPosition Target world coordinates for the anchor
+    /// \brief Move the rectangle so that the center anchor lands on `newPos`
     ///
     ////////////////////////////////////////////////////////////
     SFML_PRIV_DEFINE_RECT_ANCHOR_SETTER(setCenter, {0.5f, 0.5f});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the position based on the center-right anchor
-    ///
-    /// \param newPosition Target world coordinates for the anchor
+    /// \brief Move the rectangle so that the center-right anchor lands on `newPos`
     ///
     ////////////////////////////////////////////////////////////
     SFML_PRIV_DEFINE_RECT_ANCHOR_SETTER(setCenterRight, {1.f, 0.5f});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the position based on the bottom-left anchor
-    ///
-    /// \param newPosition Target world coordinates for the anchor
+    /// \brief Move the rectangle so that the bottom-left anchor lands on `newPos`
     ///
     ////////////////////////////////////////////////////////////
     SFML_PRIV_DEFINE_RECT_ANCHOR_SETTER(setBottomLeft, {0.f, 1.f});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the position based on the bottom-center anchor
-    ///
-    /// \param newPosition Target world coordinates for the anchor
+    /// \brief Move the rectangle so that the bottom-center anchor lands on `newPos`
     ///
     ////////////////////////////////////////////////////////////
     SFML_PRIV_DEFINE_RECT_ANCHOR_SETTER(setBottomCenter, {0.5f, 1.f});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the position based on the bottom-right anchor
-    ///
-    /// \param newPosition Target world coordinates for the anchor
+    /// \brief Move the rectangle so that the bottom-right anchor lands on `newPos`
     ///
     ////////////////////////////////////////////////////////////
     SFML_PRIV_DEFINE_RECT_ANCHOR_SETTER(setBottomRight, {1.f, 1.f});
@@ -388,11 +322,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the world X coordinate of the left edge.
-    ///
-    /// This directly sets the `position.x` component.
-    ///
-    /// \param newCoordinate The new X coordinate for the left edge.
+    /// \brief Set the X coordinate of the left edge (assigns `position.x`)
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] constexpr void setLeft(const T newCoordinate)
@@ -402,11 +332,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the world X coordinate of the right edge.
-    ///
-    /// This directly sets the `position.x` component.
-    ///
-    /// \param newCoordinate The new X coordinate for the right edge.
+    /// \brief Set the X coordinate of the right edge (adjusts `position.x` to keep `size.x`)
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] constexpr void setRight(const T newCoordinate)
@@ -416,11 +342,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the world Y coordinate of the top edge.
-    ///
-    /// This directly sets the `position.y` component.
-    ///
-    /// \param newCoordinate The new Y coordinate for the top edge.
+    /// \brief Set the Y coordinate of the top edge (assigns `position.y`)
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] constexpr void setTop(const T newCoordinate)
@@ -430,11 +352,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the world Y coordinate of the bottom edge.
-    ///
-    /// This directly sets the `position.y` component.
-    ///
-    /// \param newCoordinate The new Y coordinate for the bottom edge.
+    /// \brief Set the Y coordinate of the bottom edge (adjusts `position.y` to keep `size.y`)
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] constexpr void setBottom(const T newCoordinate)
@@ -475,32 +393,25 @@ extern template class sf::Rect2<sf::base::SizeT>;
 /// \ingroup system
 ///
 /// A rectangle is defined by its top-left corner (`position`) and its
-/// `size`. It is a very simple class defined for convenience, so its
-/// member variables are public and can be accessed directly, just like
-/// the vector classes (`Vec2` and `Vec3`).
+/// `size`. Member variables are public and can be accessed directly,
+/// just like in `Vec2` and `Vec3`.
 ///
-/// In addition to direct access to `position` and `size`, `sf::Rect2`
-/// provides convenience accessors for the four edges (`getLeft()`,
-/// `getTop()`, `getRight()`, `getBottom()` and their setter
-/// counterparts), as well as anchor-point helpers (`getCenter()`,
-/// `getTopLeft()`, `setBottomRight()`, etc.) for easy positioning.
+/// Convenience accessors are provided for the four edges (`getLeft()`,
+/// `getTop()`, `getRight()`, `getBottom()` and their setters) and for
+/// anchor points (`getCenter()`, `getTopLeft()`, `setBottomRight()`, etc.).
 /// Intersection testing is provided by `sf::findIntersection`.
 ///
-/// `sf::Rect2` uses the usual rules for its boundaries:
+/// Boundary rules:
 /// \li The left and top edges are included in the rectangle's area
 /// \li The right and bottom edges are excluded from the rectangle's area
 ///
-/// This means that `sf::Rect2i({0, 0}, {1, 1})` and `sf::Rect2i({1, 1}, {1, 1})`
-/// don't intersect.
+/// So `sf::Rect2i({0, 0}, {1, 1})` and `sf::Rect2i({1, 1}, {1, 1})` don't intersect.
 ///
-/// `sf::Rect2` is a template and may be used with any numeric type, but
-/// for simplicity type aliases for the instantiations used by SFML are given:
-/// \li `sf::Rect2<int>` is `sf::Rect2i`
-/// \li `sf::Rect2<float>` is `sf::Rect2f`
-/// \li `sf::Rect2<unsigned int>` is `sf::Rect2u`
-/// \li `sf::Rect2<sf::base::SizeT>` is `sf::Rect2uz`
-///
-/// So that you don't have to care about the template syntax.
+/// Type aliases are provided for the common instantiations:
+/// \li `sf::Rect2i`  -> `sf::Rect2<int>`
+/// \li `sf::Rect2f`  -> `sf::Rect2<float>`
+/// \li `sf::Rect2u`  -> `sf::Rect2<unsigned int>`
+/// \li `sf::Rect2uz` -> `sf::Rect2<sf::base::SizeT>`
 ///
 /// Usage example:
 /// \code

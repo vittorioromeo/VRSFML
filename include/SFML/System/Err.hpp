@@ -116,6 +116,4 @@ public:
 /// sf::priv::err().rdbuf(previous);
 /// \endcode
 ///
-/// \return Reference to `std::ostream` representing the SFML error stream
-///
 ////////////////////////////////////////////////////////////

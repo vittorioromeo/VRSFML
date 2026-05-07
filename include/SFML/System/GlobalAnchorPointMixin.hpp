@@ -27,15 +27,9 @@ namespace sf
 struct GlobalAnchorPointMixin
 {
     ////////////////////////////////////////////////////////////
-    /// \brief Get the world position of a specific anchor point
+    /// \brief World coordinates of an anchor point given normalized `factors` in `[0, 1]`
     ///
-    /// Calculates the world coordinates of a point based on normalized
-    /// factors within the object's bounding box (or size for windows).
-    /// `(0, 0)` corresponds to the top-left, `(1, 1)` to the bottom-right.
-    ///
-    /// \param factors Normalized factors `(x, y)` within the bounds `[0, 1]`
-    ///
-    /// \return World coordinates of the calculated anchor point
+    /// `(0, 0)` is the top-left, `(1, 1)` is the bottom-right.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
@@ -111,9 +105,7 @@ struct GlobalAnchorPointMixin
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the world X coordinate of the left edge
-    ///
-    /// \return Left edge X coordinate
+    /// \brief World X coordinate of the left edge
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
@@ -124,9 +116,7 @@ struct GlobalAnchorPointMixin
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the world X coordinate of the right edge
-    ///
-    /// \return Right edge X coordinate
+    /// \brief World X coordinate of the right edge
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
@@ -137,9 +127,7 @@ struct GlobalAnchorPointMixin
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the world Y coordinate of the top edge
-    ///
-    /// \return Top edge Y coordinate
+    /// \brief World Y coordinate of the top edge
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
@@ -150,9 +138,7 @@ struct GlobalAnchorPointMixin
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the world Y coordinate of the bottom edge
-    ///
-    /// \return Bottom edge Y coordinate
+    /// \brief World Y coordinate of the bottom edge
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
@@ -163,9 +149,7 @@ struct GlobalAnchorPointMixin
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the world width of the object
-    ///
-    /// \return Width of the object
+    /// \brief World width of the object
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
@@ -176,9 +160,7 @@ struct GlobalAnchorPointMixin
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the world height of the object
-    ///
-    /// \return Height of the object
+    /// \brief World height of the object
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
@@ -189,13 +171,7 @@ struct GlobalAnchorPointMixin
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the object's position based on an anchor point
-    ///
-    /// Moves the object so that the anchor point specified by `factors`
-    /// aligns with the given `newPosition` in world coordinates.
-    ///
-    /// \param factors     Normalized factors (x, y) defining the anchor point
-    /// \param newPosition Target world coordinates for the anchor point
+    /// \brief Move the object so the anchor point at `factors` lands at `newPosition`
     ///
     ////////////////////////////////////////////////////////////
     template <typename Self>
@@ -217,73 +193,55 @@ struct GlobalAnchorPointMixin
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the position based on the top-left anchor
-    ///
-    /// \param newPosition Target world coordinates for the anchor
+    /// \brief Set the world position of the top-left anchor
     ///
     ////////////////////////////////////////////////////////////
     SFML_PRIV_DEFINE_MIXIN_SETTER(setGlobalTopLeft, {0.f, 0.f});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the position based on the top-center anchor
-    ///
-    /// \param newPosition Target world coordinates for the anchor
+    /// \brief Set the world position of the top-center anchor
     ///
     ////////////////////////////////////////////////////////////
     SFML_PRIV_DEFINE_MIXIN_SETTER(setGlobalTopCenter, {0.5f, 0.f});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the position based on the top-right anchor
-    ///
-    /// \param newPosition Target world coordinates for the anchor
+    /// \brief Set the world position of the top-right anchor
     ///
     ////////////////////////////////////////////////////////////
     SFML_PRIV_DEFINE_MIXIN_SETTER(setGlobalTopRight, {1.f, 0.f});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the position based on the center-left anchor
-    ///
-    /// \param newPosition Target world coordinates for the anchor
+    /// \brief Set the world position of the center-left anchor
     ///
     ////////////////////////////////////////////////////////////
     SFML_PRIV_DEFINE_MIXIN_SETTER(setGlobalCenterLeft, {0.f, 0.5f});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the position based on the center anchor
-    ///
-    /// \param newPosition Target world coordinates for the anchor
+    /// \brief Set the world position of the center anchor
     ///
     ////////////////////////////////////////////////////////////
     SFML_PRIV_DEFINE_MIXIN_SETTER(setGlobalCenter, {0.5f, 0.5f});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the position based on the center-right anchor
-    ///
-    /// \param newPosition Target world coordinates for the anchor
+    /// \brief Set the world position of the center-right anchor
     ///
     ////////////////////////////////////////////////////////////
     SFML_PRIV_DEFINE_MIXIN_SETTER(setGlobalCenterRight, {1.f, 0.5f});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the position based on the bottom-left anchor
-    ///
-    /// \param newPosition Target world coordinates for the anchor
+    /// \brief Set the world position of the bottom-left anchor
     ///
     ////////////////////////////////////////////////////////////
     SFML_PRIV_DEFINE_MIXIN_SETTER(setGlobalBottomLeft, {0.f, 1.f});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the position based on the bottom-center anchor
-    ///
-    /// \param newPosition Target world coordinates for the anchor
+    /// \brief Set the world position of the bottom-center anchor
     ///
     ////////////////////////////////////////////////////////////
     SFML_PRIV_DEFINE_MIXIN_SETTER(setGlobalBottomCenter, {0.5f, 1.f});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the position based on the bottom-right anchor
-    ///
-    /// \param newPosition Target world coordinates for the anchor
+    /// \brief Set the world position of the bottom-right anchor
     ///
     ////////////////////////////////////////////////////////////
     SFML_PRIV_DEFINE_MIXIN_SETTER(setGlobalBottomRight, {1.f, 1.f});
@@ -292,12 +250,7 @@ struct GlobalAnchorPointMixin
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the world X coordinate of the left edge
-    ///
-    /// This moves the entire object horizontally so its left edge
-    /// aligns with `newCoordinate`.
-    ///
-    /// \param newCoordinate Target X coordinate for the left edge
+    /// \brief Move the object horizontally so its left edge lands at `newCoordinate`
     ///
     ////////////////////////////////////////////////////////////
     template <typename Self>
@@ -310,12 +263,7 @@ struct GlobalAnchorPointMixin
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the world X coordinate of the right edge
-    ///
-    /// This moves the entire object horizontally so its right edge
-    /// aligns with `newCoordinate`.
-    ///
-    /// \param newCoordinate Target X coordinate for the right edge
+    /// \brief Move the object horizontally so its right edge lands at `newCoordinate`
     ///
     ////////////////////////////////////////////////////////////
     template <typename Self>
@@ -328,12 +276,7 @@ struct GlobalAnchorPointMixin
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the world Y coordinate of the top edge
-    ///
-    /// This moves the entire object vertically so its top edge
-    /// aligns with `newCoordinate`.
-    ///
-    /// \param newCoordinate Target Y coordinate for the top edge
+    /// \brief Move the object vertically so its top edge lands at `newCoordinate`
     ///
     ////////////////////////////////////////////////////////////
     template <typename Self>
@@ -346,12 +289,7 @@ struct GlobalAnchorPointMixin
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the world Y coordinate of the bottom edge
-    ///
-    /// This moves the entire object vertically so its bottom edge
-    /// aligns with `newCoordinate`.
-    ///
-    /// \param newCoordinate Target Y coordinate for the bottom edge
+    /// \brief Move the object vertically so its bottom edge lands at `newCoordinate`
     ///
     ////////////////////////////////////////////////////////////
     template <typename Self>
@@ -364,12 +302,7 @@ struct GlobalAnchorPointMixin
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the world X coordinate of the center
-    ///
-    /// This moves the entire object horizontally so its center
-    /// aligns with `newCoordinate`.
-    ///
-    /// \param newCoordinate Target X coordinate for the center
+    /// \brief Move the object horizontally so its center lands at `newCoordinate`
     ///
     ////////////////////////////////////////////////////////////
     template <typename Self>
@@ -382,12 +315,7 @@ struct GlobalAnchorPointMixin
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the world Y coordinate of the center
-    ///
-    /// This moves the entire object vertically so its center
-    /// aligns with `newCoordinate`.
-    ///
-    /// \param newCoordinate Target Y coordinate for the center
+    /// \brief Move the object vertically so its center lands at `newCoordinate`
     ///
     ////////////////////////////////////////////////////////////
     template <typename Self>
@@ -420,16 +348,12 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Add an offset to the inheriting object's position
+    /// \brief Add a world-space `offset` to the inheriting object's position
     ///
-    /// Selects between two strategies based on the API exposed by the
-    /// derived type: if it has a public `position` member, the offset
-    /// is added in place; otherwise, `setPosition` is called with the
-    /// current position plus the offset (with automatic conversion to
+    /// Picks between two strategies depending on the derived API: a public
+    /// `position` member is mutated in place; otherwise `setPosition` is
+    /// called with the current position plus `offset` (auto-converted to
     /// the derived type's position type via `AutoConvertingVec2f`).
-    ///
-    /// \param self   Inheriting object to mutate
-    /// \param offset Offset to add to the current position, in world coordinates
     ///
     ////////////////////////////////////////////////////////////
     template <typename Self>
