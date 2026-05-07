@@ -6,7 +6,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Base/Array.hpp"
 #include "SFML/Base/AssertAndAssume.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/IntTypes.hpp"
@@ -43,7 +42,7 @@ inline constexpr float radToIndex = static_cast<float>(sinCount) / tau;
 
 
 ////////////////////////////////////////////////////////////
-extern const Array<float, sinCount> sinTableData;
+extern const float (&sinTableData)[sinCount];
 static_assert(sizeof(sinTableData) == sinCount * sizeof(float));
 
 } // namespace sf::base::priv
