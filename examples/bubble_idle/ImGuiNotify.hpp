@@ -17,6 +17,7 @@
 
 #include "IconsFontAwesome6.h"
 
+#include "SFML/ImGui/ImConfigSFML.hpp"
 #include "SFML/ImGui/IncludeImGui.hpp"
 #include "SFML/ImGui/IncludeImGuiInternal.hpp"
 
@@ -24,8 +25,13 @@
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
 
+#include <cstdarg>
+#include <cstddef>
+#include <cstdio>
+#include <cstring>
 
 /**
  * CONFIGURATION SECTION Start
