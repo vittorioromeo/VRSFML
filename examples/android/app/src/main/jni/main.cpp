@@ -11,7 +11,7 @@
 #include "SFML/Window/VideoModeUtils.hpp"
 
 #include "SFML/System/Path.hpp"
-#include "SFML/System/Sleep.hpp"
+#include "SFML/System/Thread.hpp"
 
 #include "SFML/Base/Optional.hpp"
 
@@ -170,7 +170,7 @@ int main(int, char**)
         }
         else
         {
-            sf::sleep(sf::milliseconds(100));
+            sf::ThisThread::sleepFor(sf::milliseconds(100));
         }
     }
 }

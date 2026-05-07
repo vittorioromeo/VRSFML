@@ -29,7 +29,7 @@
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Sleep.hpp"
+#include "SFML/System/Thread.hpp"
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Utf.hpp"
 #include "SFML/System/Vec3.hpp"
@@ -722,7 +722,7 @@ base::Optional<Event> SDLWindowImpl::waitEvent(const Time timeout)
     // so that we don't skip joystick events (which require polling)
     while (m_impl->events.empty() && !timedOut())
     {
-        sleep(milliseconds(10));
+        ThisThread::sleepFor(milliseconds(10));
         populateEventQueue();
     }
 

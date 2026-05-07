@@ -109,7 +109,7 @@ base::Optional<GraphicsContext> GraphicsContext::create()
 GraphicsContext::GraphicsContext(base::PassKey<GraphicsContext>&&, WindowContext&& windowContext) :
     m_impl(SFML_BASE_MOVE(windowContext))
 {
-    graphicsContextRC.fetchAdd<sf::MemoryOrder::Relaxed>(1u);
+    graphicsContextRC.fetchAddRelaxed(1u);
 }
 
 
@@ -117,14 +117,14 @@ GraphicsContext::GraphicsContext(base::PassKey<GraphicsContext>&&, WindowContext
 GraphicsContext::GraphicsContext(GraphicsContext&& rhs) noexcept :
     m_impl(static_cast<WindowContext&&>(rhs.m_impl->windowContext))
 {
-    graphicsContextRC.fetchAdd<sf::MemoryOrder::Relaxed>(1u);
+    graphicsContextRC.fetchAddRelaxed(1u);
 }
 
 
 ////////////////////////////////////////////////////////////
 GraphicsContext::~GraphicsContext()
 {
-    if (graphicsContextRC.fetchSub<sf::MemoryOrder::Relaxed>(1u) > 1u)
+    if (graphicsContextRC.fetchSubRelaxed(1u) > 1u)
         return;
 
     // Need to activate shared context during destruction to avoid GL errors when destroying texture and shader

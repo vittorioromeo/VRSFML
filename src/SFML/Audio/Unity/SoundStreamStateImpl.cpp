@@ -93,7 +93,7 @@ struct SoundStreamStateImpl::Internals
     static void onEnd(void* const userData, ma_sound* const soundPtr)
     {
         auto& internals = *static_cast<Internals*>(userData);
-        internals.streaming.store<sf::MemoryOrder::Release>(true);
+        internals.streaming.storeRelease(true);
 
         if (const ma_result result = ma_sound_seek_to_pcm_frame(soundPtr, 0u); result != MA_SUCCESS)
             MiniaudioUtils::fail("seek sound to frame 0", result);
@@ -110,12 +110,12 @@ struct SoundStreamStateImpl::Internals
         // Fill the buffer by asking the state for a chunk. The state
         // writes directly into `internals.sampleBuffer` -- no pointer
         // to derived-class memory ever escapes.
-        if (internals.sampleBuffer.empty() && internals.streaming.load<sf::MemoryOrder::Acquire>())
+        if (internals.sampleBuffer.empty() && internals.streaming.loadAcquire())
         {
             internals.sampleBuffer.clear();
 
             const bool keepStreaming = internals.callbacks.onGetData(internals.statePtr, internals.sampleBuffer);
-            internals.streaming.store<sf::MemoryOrder::Release>(keepStreaming);
+            internals.streaming.storeRelease(keepStreaming);
 
             internals.sampleBufferCursor = 0;
         }
@@ -149,11 +149,11 @@ struct SoundStreamStateImpl::Internals
             // Streaming has ended -- ask the state whether we should loop.
             // `onLoop` returning nullopt stops playback; a valid sample
             // position resumes from there.
-            if (!internals.streaming.load<sf::MemoryOrder::Acquire>())
+            if (!internals.streaming.loadAcquire())
             {
                 if (const base::Optional seekPositionAfterLoop = internals.callbacks.onLoop(internals.statePtr))
                 {
-                    internals.streaming.store<sf::MemoryOrder::Release>(true);
+                    internals.streaming.storeRelease(true);
                     internals.samplesProcessed = *seekPositionAfterLoop;
                 }
             }
@@ -171,7 +171,7 @@ struct SoundStreamStateImpl::Internals
         const auto channelCount = internals.channelMap.getSize();
         SFML_BASE_ASSERT(channelCount > 0u);
 
-        internals.streaming.store<sf::MemoryOrder::Release>(true);
+        internals.streaming.storeRelease(true);
 
         internals.sampleBuffer.clear();
         internals.sampleBufferCursor = 0u;
@@ -262,7 +262,7 @@ void SoundStreamStateImpl::setPlayingOffset(const Time playingOffset)
 
     const auto frameIndex = MiniaudioUtils::getFrameIndex(sound, playingOffset).value();
 
-    m_internals->streaming.store<sf::MemoryOrder::Release>(true);
+    m_internals->streaming.storeRelease(true);
 
     m_internals->sampleBuffer.clear();
     m_internals->sampleBufferCursor = 0;

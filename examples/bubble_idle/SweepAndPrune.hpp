@@ -71,7 +71,7 @@ public:
         {
             while (true)
             {
-                const auto i = nextI.fetchAdd<sf::MemoryOrder::Relaxed>(1);
+                const auto i = nextI.fetchAddRelaxed(1);
 
                 if (i >= numObjects)
                     break;
@@ -80,7 +80,7 @@ public:
             }
 
             // Only notify when the last worker finishes (like std::latch).
-            if (nRemaining.fetchSub<sf::MemoryOrder::Release>(1) == 1)
+            if (nRemaining.fetchSubRelease(1) == 1)
                 nRemaining.notifyOne();
         };
 
@@ -92,7 +92,7 @@ public:
         worker();
 
         // Wait until all workers finish.
-        nRemaining.waitUntil<sf::MemoryOrder::Acquire>([](sf::base::SizeT val) { return val == 0; });
+        nRemaining.waitUntilAcquire([](sf::base::SizeT val) { return val == 0; });
     }
 
     ////////////////////////////////////////////////////////////

@@ -30,8 +30,7 @@
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"
-
-#include "SFML/Base/StdThread.hpp"
+#include "SFML/System/Thread.hpp"
 
 #include <Doctest.hpp>
 
@@ -837,7 +836,7 @@ TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
 
             batch.clear();
 
-            std::thread worker([&batch, &rect] { batch.add(rect); });
+            sf::Thread worker{[&batch, &rect] { batch.add(rect); }};
             worker.join();
 
             batchRenderTexture.clear(sf::Color::Black);

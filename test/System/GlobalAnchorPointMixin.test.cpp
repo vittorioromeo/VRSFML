@@ -53,8 +53,6 @@ struct TestLayoutObject : sf::GlobalAnchorPointMixin
     return testObject.position == newPos - sf::Vec2f{testRect.size.x * factors.x, testRect.size.y * factors.y};
 }
 
-
-////////////////////////////////////////////////////////////
 TEST_CASE("[System] sf::GlobalAnchorPointMixin")
 {
     SECTION("Type traits")

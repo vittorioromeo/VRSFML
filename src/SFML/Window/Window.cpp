@@ -18,7 +18,7 @@
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Err.hpp"
-#include "SFML/System/Sleep.hpp"
+#include "SFML/System/Thread.hpp"
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/Assert.hpp"
@@ -211,7 +211,7 @@ void Window::display()
     // Limit the framerate if needed
     if (m_impl->frameTimeLimit != Time{})
     {
-        sleep(m_impl->frameTimeLimit - m_impl->clock.getElapsedTime());
+        ThisThread::sleepFor(m_impl->frameTimeLimit - m_impl->clock.getElapsedTime());
         m_impl->clock.restart();
     }
 

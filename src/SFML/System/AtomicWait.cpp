@@ -265,7 +265,7 @@ void atomicWait32(const base::U32* const addr, const base::U32 expected) noexcep
     // RMW pairs with the SeqCst load in `atomicNotifyOne`/`All`: at
     // least one of the two threads sees the other's effect, so we can
     // never simultaneously (a) miss a wake and (b) park.
-    slot.waiters.fetchAdd<MemoryOrder::SeqCst>(1u);
+    slot.waiters.fetchAddSeqCst(1u);
 
     // Re-check the value under the new ordering. If it has already
     // changed (e.g. the writer wrote between our caller's pre-check
@@ -273,7 +273,7 @@ void atomicWait32(const base::U32* const addr, const base::U32 expected) noexcep
     if (__atomic_load_n(addr, __ATOMIC_ACQUIRE) == expected)
         platformWait32(addr, expected);
 
-    slot.waiters.fetchSub<MemoryOrder::Release>(1u);
+    slot.waiters.fetchSubRelease(1u);
 }
 
 
@@ -282,12 +282,12 @@ void atomicWait64(const base::U64* const addr, const base::U64 expected) noexcep
 {
     auto& slot = slotFor(addr);
 
-    slot.waiters.fetchAdd<MemoryOrder::SeqCst>(1u);
+    slot.waiters.fetchAddSeqCst(1u);
 
     if (__atomic_load_n(addr, __ATOMIC_ACQUIRE) == expected)
         platformWait64(addr, expected);
 
-    slot.waiters.fetchSub<MemoryOrder::Release>(1u);
+    slot.waiters.fetchSubRelease(1u);
 }
 
 
@@ -301,7 +301,7 @@ void atomicNotifyOne(const void* const addr) noexcept
     // here; if we observe zero, the waiter (if any) has not yet
     // committed to parking and will see our value update through
     // its own re-check.
-    if (slotFor(addr).waiters.load<MemoryOrder::SeqCst>() == 0u)
+    if (slotFor(addr).waiters.loadSeqCst() == 0u)
         return;
 
     platformWake(addr, /* wakeOne */ true);
@@ -311,7 +311,7 @@ void atomicNotifyOne(const void* const addr) noexcept
 ////////////////////////////////////////////////////////////
 void atomicNotifyAll(const void* const addr) noexcept
 {
-    if (slotFor(addr).waiters.load<MemoryOrder::SeqCst>() == 0u)
+    if (slotFor(addr).waiters.loadSeqCst() == 0u)
         return;
 
     platformWake(addr, /* wakeOne */ false);

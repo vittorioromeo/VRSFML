@@ -662,7 +662,7 @@ base::Optional<WindowContext> WindowContext::create()
 ////////////////////////////////////////////////////////////
 WindowContext::WindowContext(base::PassKey<WindowContext>&&)
 {
-    windowContextRC.fetchAdd<sf::MemoryOrder::Relaxed>(1u);
+    windowContextRC.fetchAddRelaxed(1u);
 }
 
 
@@ -681,7 +681,7 @@ WindowContext::WindowContext(WindowContext&&) noexcept : WindowContext(base::Pas
 ////////////////////////////////////////////////////////////
 WindowContext::~WindowContext()
 {
-    if (windowContextRC.fetchSub<sf::MemoryOrder::Relaxed>(1u) > 1u)
+    if (windowContextRC.fetchSubRelaxed(1u) > 1u)
         return;
 
     SFML_BASE_ASSERT(!ensureInstalled().unsharedContextResourcesManager.allNonSharedEmpty());
@@ -962,7 +962,7 @@ base::UniquePtr<priv::GlContext> WindowContext::createGlContextImpl(const Contex
     if (!setActiveThreadLocalGlContextToSharedContext())
         priv::err() << "Error enabling shared GL context in WindowContext::createGlContext()";
 
-    auto glContext = base::makeUnique<priv::SDLGlContext>(wc.nextThreadLocalGlContextId.fetchAdd<sf::MemoryOrder::SeqCst>(1u),
+    auto glContext = base::makeUnique<priv::SDLGlContext>(wc.nextThreadLocalGlContextId.fetchAddSeqCst(1u),
                                                           &wc.sharedGlContext,
                                                           contextSettings,
                                                           SFML_BASE_FORWARD(args)...);

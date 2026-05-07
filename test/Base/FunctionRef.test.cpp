@@ -94,8 +94,6 @@ int sumViaRef(sf::base::FunctionRef<int(int, int)> f)
     return f(3, 4) + f(5, 6);
 }
 
-
-////////////////////////////////////////////////////////////
 TEST_CASE("[Base] Base/FunctionRef.hpp")
 {
     SECTION("Construction from free function pointer")

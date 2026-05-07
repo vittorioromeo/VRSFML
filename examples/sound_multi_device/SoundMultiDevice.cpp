@@ -12,7 +12,7 @@
 
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
-#include "SFML/System/Sleep.hpp"
+#include "SFML/System/Thread.hpp"
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/InPlaceVector.hpp"
@@ -84,7 +84,7 @@ int main()
     while (anySourcePlaying())
     {
         // Leave some CPU time for other processes
-        sf::sleep(sf::milliseconds(100));
+        sf::ThisThread::sleepFor(sf::milliseconds(100));
 
         // Display a message to show we're not frozen
         sf::cOut() << "\rPlaying... " << messageIcons[messageIconIndex++ % 4] << sf::flush;

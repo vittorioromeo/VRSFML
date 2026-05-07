@@ -46,25 +46,25 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 LifetimeDependee::TestingModeGuard::TestingModeGuard(const char* const dependeeName)
 {
-    lifetimeTrackingTestingMode.store<sf::MemoryOrder::SeqCst>(true);
-    lifetimeTrackingTestingDependeeName.store<sf::MemoryOrder::SeqCst>(dependeeName);
+    lifetimeTrackingTestingMode.storeSeqCst(true);
+    lifetimeTrackingTestingDependeeName.storeSeqCst(dependeeName);
 }
 
 
 ////////////////////////////////////////////////////////////
 LifetimeDependee::TestingModeGuard::~TestingModeGuard()
 {
-    lifetimeTrackingTestingMode.store<sf::MemoryOrder::SeqCst>(false);
-    lifetimeTrackingFatalErrorTriggered.store<sf::MemoryOrder::SeqCst>(false);
-    lifetimeTrackingTestingDependeeName.store<sf::MemoryOrder::SeqCst>(nullptr);
+    lifetimeTrackingTestingMode.storeSeqCst(false);
+    lifetimeTrackingFatalErrorTriggered.storeSeqCst(false);
+    lifetimeTrackingTestingDependeeName.storeSeqCst(nullptr);
 }
 
 
 ////////////////////////////////////////////////////////////
 bool LifetimeDependee::TestingModeGuard::fatalErrorTriggered(const char* const dependeeName)
 {
-    return lifetimeTrackingFatalErrorTriggered.load<sf::MemoryOrder::SeqCst>() &&
-           SFML_BASE_STRCMP(lifetimeTrackingTestingDependeeName.load<sf::MemoryOrder::SeqCst>(), dependeeName) == 0;
+    return lifetimeTrackingFatalErrorTriggered.loadSeqCst() &&
+           SFML_BASE_STRCMP(lifetimeTrackingTestingDependeeName.loadSeqCst(), dependeeName) == 0;
 }
 
 
@@ -128,7 +128,7 @@ LifetimeDependee& LifetimeDependee::operator=(LifetimeDependee&& rhs) noexcept
 ////////////////////////////////////////////////////////////
 LifetimeDependee::~LifetimeDependee()
 {
-    const unsigned int finalCount = asAtomicUInt(m_dependantCount).load<sf::MemoryOrder::Relaxed>();
+    const unsigned int finalCount = asAtomicUInt(m_dependantCount).loadRelaxed();
     asAtomicUInt(m_dependantCount).~AtomicUInt();
 
     if (finalCount == 0u)
@@ -154,12 +154,12 @@ LifetimeDependee::~LifetimeDependee()
     const auto dependeeNameLower  = toLowerStr(m_dependeeName);
     const auto dependantNameLower = toLowerStr(m_dependantName);
 
-    if (lifetimeTrackingTestingMode.load<sf::MemoryOrder::SeqCst>())
+    if (lifetimeTrackingTestingMode.loadSeqCst())
     {
         priv::err() << "LIFETIME TEST GUARD ERROR: a " << dependeeNameLower << " object was destroyed while existing "
                     << dependantNameLower << " objects depended on it.";
 
-        lifetimeTrackingFatalErrorTriggered.store<sf::MemoryOrder::SeqCst>(true);
+        lifetimeTrackingFatalErrorTriggered.storeSeqCst(true);
         return;
     }
 
@@ -214,15 +214,15 @@ LifetimeDependee::~LifetimeDependee()
 ////////////////////////////////////////////////////////////
 void LifetimeDependee::addDependant()
 {
-    asAtomicUInt(m_dependantCount).fetchAdd<sf::MemoryOrder::Relaxed>(1u);
+    asAtomicUInt(m_dependantCount).fetchAddRelaxed(1u);
 }
 
 
 ////////////////////////////////////////////////////////////
 void LifetimeDependee::subDependant()
 {
-    SFML_BASE_ASSERT(asAtomicUInt(m_dependantCount).load<sf::MemoryOrder::Relaxed>() > 0u);
-    asAtomicUInt(m_dependantCount).fetchSub<sf::MemoryOrder::Relaxed>(1u);
+    SFML_BASE_ASSERT(asAtomicUInt(m_dependantCount).loadRelaxed() > 0u);
+    asAtomicUInt(m_dependantCount).fetchSubRelaxed(1u);
 }
 
 } // namespace sf::priv

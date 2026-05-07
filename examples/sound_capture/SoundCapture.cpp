@@ -13,7 +13,7 @@
 
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
-#include "SFML/System/Sleep.hpp"
+#include "SFML/System/Thread.hpp"
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/SizeT.hpp"
@@ -134,7 +134,7 @@ int main()
             sf::cOut() << sf::flush;
 
             // Leave some CPU time for other threads
-            sf::sleep(sf::milliseconds(100));
+            sf::ThisThread::sleepFor(sf::milliseconds(100));
         }
     }
 

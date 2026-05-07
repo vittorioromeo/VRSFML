@@ -42,41 +42,41 @@ TEST_CASE("[Base] Base/ThreadPool.hpp")
         sf::base::ThreadPool pool(4u);
 
         for (int i = 0; i < nTasks; ++i)
-            pool.post([&] { result.fetchAdd<sf::MemoryOrder::Relaxed>(1); });
+            pool.post([&] { result.fetchAddRelaxed(1); });
     };
 
     SECTION("Join 1 task on destruction")
     {
         sf::Atomic<int> result{0};
         doJoinTest(result, 1);
-        REQUIRE(result.load<sf::MemoryOrder::Relaxed>() == 1);
+        REQUIRE(result.loadRelaxed() == 1);
     }
 
     SECTION("Join 2 tasks on destruction")
     {
         sf::Atomic<int> result{0};
         doJoinTest(result, 2);
-        REQUIRE(result.load<sf::MemoryOrder::Relaxed>() == 2);
+        REQUIRE(result.loadRelaxed() == 2);
     }
 
     SECTION("Join 4 tasks on destruction")
     {
         sf::Atomic<int> result{0};
         doJoinTest(result, 4);
-        REQUIRE(result.load<sf::MemoryOrder::Relaxed>() == 4);
+        REQUIRE(result.loadRelaxed() == 4);
     }
 
     SECTION("Join 8 tasks on destruction")
     {
         sf::Atomic<int> result{0};
         doJoinTest(result, 8);
-        REQUIRE(result.load<sf::MemoryOrder::Relaxed>() == 8);
+        REQUIRE(result.loadRelaxed() == 8);
     }
 
     SECTION("Join 256 tasks on destruction")
     {
         sf::Atomic<int> result{0};
         doJoinTest(result, 256);
-        REQUIRE(result.load<sf::MemoryOrder::Relaxed>() == 256);
+        REQUIRE(result.loadRelaxed() == 256);
     }
 }

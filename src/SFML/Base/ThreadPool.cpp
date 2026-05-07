@@ -5,12 +5,12 @@
 #include "SFML/Base/ThreadPool.hpp"
 
 #include "SFML/System/Atomic.hpp"
+#include "SFML/System/Thread.hpp"
+#include "SFML/System/Time.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/StdChrono.hpp"
-#include "SFML/Base/StdThread.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #pragma GCC diagnostic push
@@ -47,46 +47,46 @@ public:
     ////////////////////////////////////////////////////////////
     void start(sf::Atomic<SizeT>& remainingInits)
     {
-        m_thread = std::thread([this, &remainingInits]
+        m_thread = sf::Thread{[this, &remainingInits]
         {
             // Set the running flag and signal to the pool that we are initialized.
-            m_state.store<sf::MemoryOrder::Release>(State::Running);
-            remainingInits.fetchSub<sf::MemoryOrder::Release>(1u);
+            m_state.storeRelease(State::Running);
+            remainingInits.fetchSubRelease(1u);
 
             ThreadPool::Task taskBuffer;
 
-            while (m_state.load<sf::MemoryOrder::Acquire>() == State::Running)
+            while (m_state.loadAcquire() == State::Running)
             {
                 m_queue->wait_dequeue(m_ctok, taskBuffer); // Blocking
                 taskBuffer();
             }
 
             // Signal the thread pool to send dummy final tasks.
-            SFML_BASE_ASSERT(m_state.load<sf::MemoryOrder::Acquire>() == State::Stopped);
-            m_doneBlockingProcessing.store<sf::MemoryOrder::Release>(true);
+            SFML_BASE_ASSERT(m_state.loadAcquire() == State::Stopped);
+            m_doneBlockingProcessing.storeRelease(true);
 
-            while (m_state.load<sf::MemoryOrder::Acquire>() == State::Stopped)
+            while (m_state.loadAcquire() == State::Stopped)
             {
                 if (!m_queue->try_dequeue(m_ctok, taskBuffer)) // Non-blocking
                     break;                                     // No more tasks available
 
                 taskBuffer();
             }
-        });
+        }};
     }
 
     ////////////////////////////////////////////////////////////
     void stop() noexcept
     {
-        SFML_BASE_ASSERT(m_state.load<sf::MemoryOrder::Acquire>() == State::Running);
-        m_state.store<sf::MemoryOrder::Release>(State::Stopped);
+        SFML_BASE_ASSERT(m_state.loadAcquire() == State::Running);
+        m_state.storeRelease(State::Stopped);
     }
 
     ////////////////////////////////////////////////////////////
     void join() noexcept
     {
         SFML_BASE_ASSERT(m_thread.joinable());
-        SFML_BASE_ASSERT(m_state.load<sf::MemoryOrder::Acquire>() == State::Stopped);
+        SFML_BASE_ASSERT(m_state.loadAcquire() == State::Stopped);
 
         m_thread.join();
     }
@@ -94,7 +94,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isDoneBlockingProcessing() const noexcept
     {
-        return m_doneBlockingProcessing.load<sf::MemoryOrder::Acquire>();
+        return m_doneBlockingProcessing.loadAcquire();
     }
 
 private:
@@ -108,7 +108,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::thread            m_thread;                 //!< Worker thread
+    sf::Thread             m_thread;                 //!< Worker thread
     TaskQueue*             m_queue;                  //!< Pointer to queue
     TaskQueueConsumerToken m_ctok;                   //!< Consumer token
     sf::Atomic<State>      m_state;                  //!< State (controlled both by the pool and internally)
@@ -137,7 +137,7 @@ ThreadPool::ThreadPool(const SizeT workerCount)
     for (SizeT i = 0u; i < workerCount; ++i)
         m_impl->workers.unsafeEmplaceBack(m_impl->queue);
 
-    m_impl->remainingInits.store<sf::MemoryOrder::Relaxed>(workerCount);
+    m_impl->remainingInits.storeRelaxed(workerCount);
 
     for (Worker& w : m_impl->workers)
         w.start(m_impl->remainingInits);
@@ -158,8 +158,8 @@ ThreadPool::~ThreadPool()
     };
 
     // Busy wait until all workers are initialized.
-    while (m_impl->remainingInits.load<sf::MemoryOrder::Acquire>() > 0u)
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    while (m_impl->remainingInits.loadAcquire() > 0u)
+        sf::ThisThread::sleepFor(sf::milliseconds(1));
 
     // Signal all workers to exit their processing loops.
     for (Worker& w : m_impl->workers)
@@ -193,7 +193,7 @@ SizeT ThreadPool::getWorkerCount() const noexcept
 ////////////////////////////////////////////////////////////
 SizeT ThreadPool::getHardwareWorkerCount() noexcept
 {
-    return static_cast<SizeT>(std::thread::hardware_concurrency());
+    return static_cast<SizeT>(sf::Thread::hardwareConcurrency());
 }
 
 } // namespace sf::base
