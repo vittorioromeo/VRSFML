@@ -220,13 +220,11 @@ void ShaderUtils::emitLineDirective(base::Vector<char>& buffer, unsigned int lin
 ////////////////////////////////////////////////////////////
 base::Optional<base::StringView> ShaderUtils::parseIncludeDirective(base::StringView line)
 {
-    const auto fail = [&](const char* what) -> base::Optional<base::StringView>
+    const auto fail = [&](const char* what)
     {
         priv::err() << "Malformed GLSL #include directive (" << what << "): " << line;
         return base::nullOpt;
     };
-
-    const auto notAnInclude = base::makeOptional<base::StringView>();
 
     base::SizeT pos = 0;
 
@@ -238,16 +236,16 @@ base::Optional<base::StringView> ShaderUtils::parseIncludeDirective(base::String
     constexpr base::StringView includeKeyword{"#include"};
 
     if (line.size() - pos < includeKeyword.size())
-        return notAnInclude;
+        return base::makeOptional<base::StringView>(); // not an include
 
     if (line.substrByPosLen(pos, includeKeyword.size()) != includeKeyword)
-        return notAnInclude;
+        return base::makeOptional<base::StringView>(); // not an include
 
     pos += includeKeyword.size();
 
     // Must be followed by whitespace or quote (not e.g. #includeFoo)
     if (pos < line.size() && line[pos] != ' ' && line[pos] != '\t' && line[pos] != '"')
-        return notAnInclude;
+        return base::makeOptional<base::StringView>(); // not an include
 
     // At this point we know it's an #include directive -- any further issue is a hard error
 

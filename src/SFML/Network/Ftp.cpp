@@ -251,11 +251,16 @@ Ftp::Response Ftp::login(base::StringView name, base::StringView password)
 ////////////////////////////////////////////////////////////
 Ftp::Response Ftp::disconnect()
 {
+    Response response; // Use a single local variable for NRVO
+
     if (!m_impl->commandSocket.hasValue())
-        return Response(Response::Status::ClosingConnection);
+    {
+        response = Response(Response::Status::ConnectionClosed);
+        return response;
+    }
 
     // Send the exit command
-    Response response = sendCommand("QUIT");
+    response = sendCommand("QUIT");
 
     // Tear down the control connection unconditionally, even if QUIT failed
     // or the server never replied: otherwise the socket would linger until
@@ -612,7 +617,8 @@ Ftp::DataChannel::DataChannel(Ftp& owner) : m_ftp(owner)
 Ftp::Response Ftp::DataChannel::open(Ftp::TransferMode mode)
 {
     // Open a data connection in passive mode (we connect to the server)
-    Ftp::Response response = m_ftp.sendCommand("PASV");
+    Ftp::Response response = m_ftp.sendCommand("PASV"); // Use a single local variable for NRVO
+
     if (!response.isOk())
         return response;
 
@@ -647,12 +653,17 @@ Ftp::Response Ftp::DataChannel::open(Ftp::TransferMode mode)
     // Create and connect the data channel socket
     m_dataSocket = TcpSocket::create(/* isBlocking */ true);
     if (!m_dataSocket.hasValue())
-        return Ftp::Response(Ftp::Response::Status::ConnectionFailed);
+    {
+        response = Ftp::Response(Ftp::Response::Status::ConnectionFailed);
+        return response;
+    }
 
     if (m_dataSocket->connect(address, port) != Socket::Status::Done)
     {
         m_dataSocket.reset();
-        return Ftp::Response(Ftp::Response::Status::ConnectionFailed);
+
+        response = Ftp::Response(Ftp::Response::Status::ConnectionFailed);
+        return response;
     }
 
     // Translate the transfer mode to the corresponding FTP parameter
@@ -671,7 +682,8 @@ Ftp::Response Ftp::DataChannel::open(Ftp::TransferMode mode)
     }
 
     // Set the transfer mode
-    return m_ftp.sendCommand("TYPE", modeStr);
+    response = m_ftp.sendCommand("TYPE", modeStr);
+    return response;
 }
 
 
