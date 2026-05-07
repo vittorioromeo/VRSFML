@@ -23,7 +23,6 @@
 namespace sf
 {
 class ChannelMap;
-class InputSoundFile;
 class InputStream;
 class Path;
 class Sound;
@@ -146,7 +145,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<SoundBuffer> loadFromSamples(
         const base::I16*  samples,
-        base::U64         sampleCount,
+        base::SizeT       sampleCount,
         const ChannelMap& channelMap,
         unsigned int      sampleRate);
 
@@ -249,34 +248,21 @@ public:
     ////////////////////////////////////////////////////////////
     /// \private
     ///
-    /// \brief Construct from vector of samples
+    /// \brief Construct an uninitialized sound buffer with capacity for
+    ///        `sampleCount` PCM samples.
+    ///
+    /// The samples buffer is sized to `sampleCount` but its contents are NOT
+    /// zero-initialized. The caller (typically `loadFromStream`) is expected
+    /// to fill the buffer immediately via direct access. Computing duration
+    /// happens during construction based on `sampleCount`.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit SoundBuffer(base::PassKey<SoundBuffer>&&,
-                                       void*             samplesVectorPtr,
+                                       base::SizeT       sampleCount,
                                        const ChannelMap& channelMap,
                                        unsigned int      sampleRate);
 
 private:
-    ////////////////////////////////////////////////////////////
-    /// \brief Load the sound buffer taking ownership of a vector of audio samples
-    ///
-    ////////////////////////////////////////////////////////////
-    template <typename TVector>
-    [[nodiscard]] static base::Optional<SoundBuffer> loadFromSamplesImpl(TVector&&         samples,
-                                                                         const ChannelMap& channelMap,
-                                                                         unsigned int      sampleRate);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Initialize the internal state after loading a new sound
-    ///
-    /// \param file Sound file providing access to the new loaded sound
-    ///
-    /// \return `true` on successful initialization, `false` on failure
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<SoundBuffer> initialize(InputSoundFile& file);
-
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////

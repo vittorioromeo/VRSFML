@@ -8,15 +8,25 @@
 #include "SFML/Audio/SoundBuffer.hpp"
 
 #include "SFML/Audio/ChannelMap.hpp"
-#include "SFML/Audio/InputSoundFile.hpp"
 #include "SFML/Audio/OutputSoundFile.hpp"
+#include "SFML/Audio/SoundChannel.hpp"
+#include "SFML/Audio/SoundFileFactory.hpp"
+#include "SFML/Audio/SoundFileReader.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/IO.hpp"
+#include "SFML/System/InputStream.hpp"
+#include "SFML/System/MemoryInputStream.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Time.hpp"
 
-#include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Builtin/Memcpy.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
 
 
@@ -26,16 +36,23 @@ namespace sf
 struct SoundBuffer::Impl
 {
     ////////////////////////////////////////////////////////////
+    /// Allocate `samples` to hold exactly `theSampleCount` elements without
+    /// zero-initializing them; the caller is expected to fill the buffer via
+    /// `samples.data()` immediately after construction -- either by reading
+    /// from a `SoundFileReader` or by `memcpy`'ing caller-provided samples in.
+    /// `duration` is computed from the requested count.
     // NOLINTNEXTLINE(modernize-pass-by-value)
-    explicit Impl(base::Vector<base::I16>&& theSamples, const ChannelMap& theChannelMap, const unsigned int theSampleRate) :
-        samples(SFML_BASE_MOVE(theSamples)),
+    explicit Impl(base::SizeT theSampleCount, const ChannelMap& theChannelMap, const unsigned int theSampleRate) :
         channelMap(theChannelMap),
         sampleRate(theSampleRate)
     {
         SFML_BASE_ASSERT(channelMap.getSize() > 0u);
         SFML_BASE_ASSERT(sampleRate > 0u);
 
-        duration = seconds(static_cast<float>(samples.size()) / static_cast<float>(sampleRate) /
+        samples.reserve(theSampleCount);
+        samples.unsafeSetSize(theSampleCount);
+
+        duration = seconds(static_cast<float>(theSampleCount) / static_cast<float>(sampleRate) /
                            static_cast<float>(channelMap.getSize()));
     }
 
@@ -58,65 +75,93 @@ SoundBuffer::~SoundBuffer()                                     = default;
 ////////////////////////////////////////////////////////////
 base::Optional<SoundBuffer> SoundBuffer::loadFromFile(const Path& filename)
 {
-    if (base::Optional file = InputSoundFile::openFromFile(filename))
-        return initialize(*file);
+    // `SoundBuffer` decodes the entire file into PCM up front, so we don't need
+    // `InputSoundFile`'s streaming machinery (which exists for `MusicReader`).
+    // Read the encoded bytes through the native fast path, then delegate to the
+    // memory-based loader which picks a codec and decodes in-place.
+    base::Vector<char>& scratch = getThreadLocalScratchCharBuffer();
 
-    priv::err() << "Failed to open sound buffer from file";
-    return base::nullOpt;
+    if (!readFromFile(filename, scratch))
+    {
+        priv::err() << "Failed to open sound buffer from file";
+        return base::nullOpt;
+    }
+
+    return loadFromMemory(scratch.data(), scratch.size());
 }
 
 
 ////////////////////////////////////////////////////////////
 base::Optional<SoundBuffer> SoundBuffer::loadFromMemory(const void* data, base::SizeT sizeInBytes)
 {
-    if (base::Optional file = InputSoundFile::openFromMemory(data, sizeInBytes))
-        return initialize(*file);
-
-    priv::err() << "Failed to open sound buffer from memory";
-    return base::nullOpt;
+    MemoryInputStream stream{data, sizeInBytes};
+    return loadFromStream(stream);
 }
 
 
 ////////////////////////////////////////////////////////////
 base::Optional<SoundBuffer> SoundBuffer::loadFromStream(InputStream& stream)
 {
-    if (base::Optional file = InputSoundFile::openFromStream(stream))
-        return initialize(*file);
+    // Single named return so NRVO can apply -- failure paths return the
+    // already-empty `buf`, success path emplaces into it.
+    base::Optional<SoundBuffer> buf;
 
-    priv::err() << "Failed to open sound buffer from stream";
-    return base::nullOpt;
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename TVector>
-base::Optional<SoundBuffer> SoundBuffer::loadFromSamplesImpl(TVector&&          samples,
-                                                             const ChannelMap&  channelMap,
-                                                             const unsigned int sampleRate)
-{
-    if (channelMap.isEmpty() || sampleRate == 0u)
+    auto reader = SoundFileFactory::createReaderFromStream(stream);
+    if (reader == nullptr)
     {
-        priv::err() << "Failed to load sound buffer from samples ("
-                    << "array: " << samples.data() << ", "
-                    << "count: " << samples.size() << ", "
-                    << "channels: " << channelMap.getSize() << ", "
-                    << "samplerate: " << sampleRate << ")";
-
-        return base::nullOpt; // Empty optional
+        priv::err() << "Failed to open sound buffer (no codec for the data's format)";
+        return buf;
     }
 
-    // Take ownership of the audio samples
-    return base::makeOptional<SoundBuffer>(base::PassKey<SoundBuffer>{}, &samples, channelMap, sampleRate);
+    // `createReaderFromStream` advances the read position while sniffing the codec; rewind before handing the stream to `open`.
+    if (const base::Optional seekResult = stream.seek(0); !seekResult.hasValue() || *seekResult != 0)
+    {
+        priv::err() << "Failed to open sound buffer (rewind after codec detection failed)";
+        return buf;
+    }
+
+    const base::Optional info = reader->open(stream);
+    if (!info.hasValue())
+    {
+        priv::err() << "Failed to open sound buffer (codec rejected the data)";
+        return buf;
+    }
+
+    if (info->channelMap.isEmpty() || info->sampleRate == 0u)
+    {
+        priv::err() << "Failed to load sound buffer (codec returned invalid metadata)";
+        return buf;
+    }
+
+    // Construct the `SoundBuffer` with `m_impl->samples` already pre-sized and read directly into it.
+    buf.emplace(base::PassKey<SoundBuffer>{}, info->sampleCount, info->channelMap, info->sampleRate);
+
+    if (reader->read(buf->m_impl->samples.data(), info->sampleCount) != info->sampleCount)
+        buf.reset();
+
+    return buf;
 }
 
 
 ////////////////////////////////////////////////////////////
 base::Optional<SoundBuffer> SoundBuffer::loadFromSamples(const base::I16*   samples,
-                                                         const base::U64    sampleCount,
+                                                         const base::SizeT  sampleCount,
                                                          const ChannelMap&  channelMap,
                                                          const unsigned int sampleRate)
 {
-    return loadFromSamplesImpl(base::Vector<base::I16>(samples, samples + sampleCount), channelMap, sampleRate);
+    base::Optional<SoundBuffer> buf;
+
+    if (channelMap.isEmpty() || sampleRate == 0u)
+    {
+        priv::err() << "Failed to load sound buffer from samples (count: " << sampleCount
+                    << ", channels: " << channelMap.getSize() << ", sample rate: " << sampleRate << ")";
+
+        return buf;
+    }
+
+    buf.emplace(base::PassKey<SoundBuffer>{}, sampleCount, channelMap, sampleRate);
+    SFML_BASE_MEMCPY(buf->m_impl->samples.data(), samples, sampleCount * sizeof(base::I16));
+    return buf;
 }
 
 
@@ -178,23 +223,13 @@ Time SoundBuffer::getDuration() const
 
 
 ////////////////////////////////////////////////////////////
-SoundBuffer::SoundBuffer(base::PassKey<SoundBuffer>&&, void* samplesVectorPtr, const ChannelMap& channelMap, unsigned int sampleRate) :
-    m_impl(SFML_BASE_MOVE(*static_cast<base::Vector<base::I16>*>(samplesVectorPtr)), channelMap, sampleRate)
+SoundBuffer::SoundBuffer(base::PassKey<SoundBuffer>&&,
+                         base::SizeT       sampleCount,
+                         const ChannelMap& channelMap,
+                         unsigned int      sampleRate) :
+    m_impl(sampleCount, channelMap, sampleRate)
 {
 }
 
-
-////////////////////////////////////////////////////////////
-base::Optional<SoundBuffer> SoundBuffer::initialize(InputSoundFile& file)
-{
-    // Read the samples from the provided file
-    const base::U64         sampleCount = file.getSampleCount();
-    base::Vector<base::I16> samples(static_cast<base::SizeT>(sampleCount));
-
-    if (file.read(samples.data(), sampleCount) != sampleCount)
-        return base::nullOpt;
-
-    return loadFromSamplesImpl(SFML_BASE_MOVE(samples), file.getChannelMap(), file.getSampleRate());
-}
 
 } // namespace sf
