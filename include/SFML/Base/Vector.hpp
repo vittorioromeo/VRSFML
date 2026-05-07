@@ -156,9 +156,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct a vector with `initialSize` default-constructed elements
-    ///
-    /// \param initialSize Number of elements to construct
+    /// \brief Construct with `initialSize` default-constructed elements
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit Vector(const SizeT initialSize)
@@ -174,10 +172,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct a vector with `initialSize` copies of `value`
-    ///
-    /// \param initialSize Number of elements to construct
-    /// \param value       Value to copy into every element
+    /// \brief Construct with `initialSize` copies of `value`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit Vector(const SizeT initialSize, const TItem& value)
@@ -193,10 +188,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct a vector by copying the range `[srcBegin, srcEnd)`
-    ///
-    /// \param srcBegin Pointer to the first source element
-    /// \param srcEnd   Pointer one past the last source element
+    /// \brief Construct by copying the range `[srcBegin, srcEnd)`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit Vector(const TItem* const srcBegin, const TItem* const srcEnd)
@@ -215,9 +207,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct a vector from a brace-enclosed initializer list
-    ///
-    /// \param iList Initializer list whose contents are copied into the vector
+    /// \brief Construct from a brace-enclosed initializer list
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] /* implicit */ Vector(const std::initializer_list<TItem> iList) : Vector(iList.begin(), iList.end())
@@ -301,15 +291,12 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Resize the vector to `newSize` elements
+    /// \brief Resize to `newSize` elements
     ///
-    /// If growing, additional elements are constructed from `args...`
-    /// (note: `args` are intentionally not perfect-forwarded so that they
-    /// can be reused for every newly constructed element). If shrinking,
-    /// trailing elements are destroyed in place; capacity is unchanged.
-    ///
-    /// \param newSize Target size after the call
-    /// \param args    Arguments forwarded to new element constructors when growing
+    /// When growing, new elements are constructed from `args...` (intentionally
+    /// not perfect-forwarded, so the same args can be reused for every new
+    /// element). When shrinking, trailing elements are destroyed; capacity is
+    /// unchanged.
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void resize(const SizeT newSize, auto&&... args)
@@ -333,13 +320,9 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct a new element in-place at position `pos`
+    /// \brief Construct in-place at iterator `pos`; invalidates iterators on growth
     ///
-    /// May invalidate iterators if the underlying buffer needs to grow.
-    /// `pos` is recomputed from its index after a potential reallocation.
-    ///
-    /// \param pos Iterator to the insertion position
-    /// \param xs  Arguments forwarded to the element's constructor
+    /// `pos` is recomputed from its index across a potential reallocation.
     ///
     /// \return Iterator to the newly inserted element
     ///
@@ -460,13 +443,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Ensure capacity is at least `targetCapacity`
     ///
-    /// If the current capacity is already large enough, this is a no-op.
-    /// Returns a reference to the internal end pointer to enable hot-path
-    /// fused reserve+write idioms.
-    ///
-    /// \param targetCapacity Desired minimum capacity
-    ///
-    /// \return Reference to the internal end-of-size pointer
+    /// \return Reference to the internal end-of-size pointer to enable hot-path fused reserve+write idioms
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] TItem*& reserve(const SizeT targetCapacity)
@@ -532,7 +509,6 @@ public:
     /// \brief Append `count` copies of the elements at `ptr` without growing
     ///
     /// The caller is responsible for ensuring that `size() + count <= capacity()`.
-    /// Asserts in debug builds.
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] void unsafeEmplaceBackRange(const TItem* const ptr, const SizeT count) noexcept
@@ -578,14 +554,9 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct an element at the back without growing the buffer
+    /// \brief `emplaceBack` without growing
     ///
     /// The caller is responsible for ensuring `size() < capacity()`.
-    /// Asserts in debug builds.
-    ///
-    /// \param xs Arguments forwarded to the element's constructor
-    ///
-    /// \return Reference to the newly constructed element
     ///
     ////////////////////////////////////////////////////////////
     template <typename... Ts>
@@ -600,7 +571,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Erase the element at iterator `it`, shifting subsequent elements left
+    /// \brief Erase the element at `it`, shifting subsequent elements left
     ///
     /// \return Iterator to the element that now occupies `it`'s position
     ///
@@ -637,10 +608,9 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Append several elements at the back without growing the buffer
+    /// \brief Append several elements at the back without growing
     ///
-    /// The caller is responsible for ensuring that
-    /// `size() + sizeof...(items) <= capacity()`. Asserts in debug builds.
+    /// The caller is responsible for ensuring `size() + sizeof...(items) <= capacity()`.
     ///
     ////////////////////////////////////////////////////////////
     template <typename... TItems>
@@ -677,8 +647,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Force the logical size to `newSize` without constructing or destroying elements
     ///
-    /// Useful when the storage was filled by external code (e.g. `memcpy`,
-    /// I/O). The caller is responsible for ensuring `newSize <= capacity()`.
+    /// For storage filled by external code (`memcpy`, I/O); caller must ensure `newSize <= capacity()`.
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] void unsafeSetSize(SizeT newSize) noexcept

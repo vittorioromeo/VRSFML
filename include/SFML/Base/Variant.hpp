@@ -298,9 +298,7 @@ private:
 
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Construct an alternative in-place from its index
-    ///
-    /// \param args Arguments forwarded to the alternative's constructor
+    /// \brief Construct alternative `I` in-place from forwarded `args`
     ///
     ////////////////////////////////////////////////////////////
     template <SizeT I, typename... Args>
@@ -314,9 +312,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct an alternative in-place from its type
-    ///
-    /// \param args Arguments forwarded to `T`'s constructor
+    /// \brief Construct alternative `T` in-place from forwarded `args`
     ///
     ////////////////////////////////////////////////////////////
     template <typename T, typename... Args>
@@ -505,9 +501,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Check whether the variant currently holds alternative `T`
-    ///
-    /// \return `true` if the active alternative is `T`, `false` otherwise
+    /// \brief `true` if the active alternative is `T`
     ///
     ////////////////////////////////////////////////////////////
     template <typename T>
@@ -519,11 +513,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Check whether the variant currently holds the alternative at the given index
-    ///
-    /// \param index Discriminator value to compare against
-    ///
-    /// \return `true` if the active alternative index matches `index`
+    /// \brief `true` if the active alternative index equals `index`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] bool hasIndex(const DiscriminatorType index) const noexcept
@@ -581,19 +571,10 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Visit the active alternative using a tail-call recursive dispatch
+    /// \brief Visit the active alternative via tail-call recursive dispatch
     ///
-    /// The visitor must be callable with a reference to every alternative
-    /// type. The return type `R` is deduced from the visitor's call on the
-    /// first alternative.
-    ///
-    /// Recursive dispatch is generally faster for small alternative
-    /// counts; for larger counts the unrolled `Opt5` and `Opt10` helpers
-    /// are selected automatically.
-    ///
-    /// \param visitor Callable invoked with the active alternative
-    ///
-    /// \return Whatever `visitor` returns
+    /// Generally faster for small alternative counts. Return type is deduced
+    /// from the visitor's call on the first alternative.
     ///
     ////////////////////////////////////////////////////////////
     template <typename Self,
@@ -611,11 +592,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Like `recursiveVisit`, but takes one lambda per alternative
-    ///
-    /// The lambdas are combined into an `OverloadSet` and the resulting
-    /// callable is then forwarded to `recursiveVisit`. This is the
-    /// pattern-matching style entry point.
+    /// \brief Pattern-matching `recursiveVisit`: combines per-alternative lambdas via `OverloadSet`
     ///
     ////////////////////////////////////////////////////////////
     template <typename Self, typename... Fs>
@@ -627,17 +604,10 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Visit the active alternative using a single linear dispatch
+    /// \brief Visit the active alternative via a single linear (fold) dispatch
     ///
-    /// Unlike `recursiveVisit`, this implementation expands a single
-    /// fold expression that compares the discriminator against every
-    /// alternative index. It can produce better codegen for moderate
-    /// alternative counts when the visitor has a non-void, non-reference
-    /// return type.
-    ///
-    /// \param visitor Callable invoked with the active alternative
-    ///
-    /// \return Whatever `visitor` returns
+    /// Often produces better codegen than `recursiveVisit` for moderate
+    /// alternative counts when the visitor returns a non-void, non-reference type.
     ///
     ////////////////////////////////////////////////////////////
     template <typename Self,
@@ -676,11 +646,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Like `linearVisit`, but takes one lambda per alternative
-    ///
-    /// The lambdas are combined into an `OverloadSet` and the resulting
-    /// callable is then forwarded to `linearVisit`. This is the
-    /// pattern-matching style entry point.
+    /// \brief Pattern-matching `linearVisit`: combines per-alternative lambdas via `OverloadSet`
     ///
     ////////////////////////////////////////////////////////////
     template <typename Self, typename... Fs>

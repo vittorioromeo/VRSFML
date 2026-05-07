@@ -13,16 +13,7 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-/// \brief Sorts a range of elements using the insertion sort algorithm.
-///
-/// Insertion sort is efficient for small collections or nearly-sorted data.
-/// It is used internally by `quickSort` for small partitions.
-///
-/// \tparam RandomIt The type of the iterators, must meet the requirements of a random access iterator.
-///
-/// \param first Iterator to the first element of the range to sort.
-/// \param last  Iterator to the element following the last element of the range to sort.
-/// \param comp  A binary predicate that returns `true` if the first argument should be ordered before the second.
+/// \brief Insertion sort using `comp` as a strict-weak less-than
 ///
 ////////////////////////////////////////////////////////////
 template <typename RandomIt>
@@ -48,15 +39,7 @@ inline constexpr void insertionSort(const RandomIt first, const RandomIt last, a
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Sorts a range of elements using the insertion sort algorithm with `operator<`.
-///
-/// This is an overload of `insertionSort` that uses the default less-than
-/// operator for comparison.
-///
-/// \tparam RandomIt The type of the iterators, must meet the requirements of a random access iterator.
-///
-/// \param first Iterator to the first element of the range to sort.
-/// \param last  Iterator to the element following the last element of the range to sort.
+/// \brief `insertionSort` overload using `operator<`
 ///
 ////////////////////////////////////////////////////////////
 template <typename RandomIt>
@@ -71,20 +54,8 @@ template <typename RandomIt>
 namespace sf::base::priv
 {
 ////////////////////////////////////////////////////////////
-/// \brief Internal implementation of the introspective quicksort algorithm.
-///
-/// This function implements a hybrid sorting strategy:
-/// 1.  It uses median-of-three pivot selection to improve pivot choice and avoid worst-case behavior.
-/// 2.  It employs a Hoare-like partitioning scheme.
-/// 3.  It switches to `insertionSort` for small partitions, which is more efficient for small data sets.
-/// 4.  It uses an explicit loop with tail-call optimization to recurse on the smaller partition,
-///     limiting recursion depth to O(log n) and preventing stack overflow.
-///
-/// \tparam RandomIt The type of the iterators.
-///
-/// \param first Iterator to the first element of the range.
-/// \param last  Iterator to the element following the last element of the range.
-/// \param comp  The comparison function object.
+/// \brief Hybrid quicksort: median-of-three pivot, Hoare partitioning, insertion sort for small
+///        partitions, and tail-recursion on the larger side to keep stack depth at `O(log n)`
 ///
 ////////////////////////////////////////////////////////////
 template <typename RandomIt>
@@ -165,16 +136,7 @@ inline constexpr void quickSortImpl(RandomIt first, RandomIt last, auto&& comp)
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-/// \brief Sorts a range of elements into non-descending order using a hybrid quicksort.
-///
-/// This algorithm is not stable, meaning the relative order of equal elements
-/// is not guaranteed to be preserved. It has an average time complexity of O(n log n).
-///
-/// \tparam RandomIt The type of the iterators, must meet the requirements of a random access iterator.
-///
-/// \param first Iterator to the first element of the range to sort.
-/// \param last  Iterator to the element following the last element of the range to sort.
-/// \param comp  A binary predicate that returns `true` if the first argument should be ordered before the second.
+/// \brief Sort `[first, last)` in non-descending order under `comp` (unstable, hybrid quicksort)
 ///
 ////////////////////////////////////////////////////////////
 template <typename RandomIt>
@@ -188,15 +150,7 @@ template <typename RandomIt>
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Sorts a range of elements into non-descending order using `operator<`.
-///
-/// This is an overload of `quickSort` that uses the default less-than
-/// operator for comparison.
-///
-/// \tparam RandomIt The type of the iterators, must meet the requirements of a random access iterator.
-///
-/// \param first Iterator to the first element of the range to sort.
-/// \param last  Iterator to the element following the last element of the range to sort.
+/// \brief `quickSort` overload using `operator<`
 ///
 ////////////////////////////////////////////////////////////
 template <typename RandomIt>

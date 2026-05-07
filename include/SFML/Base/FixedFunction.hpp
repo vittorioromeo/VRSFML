@@ -85,10 +85,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief FixedFunction Constructor from functional object.
-    ///
-    /// \param f Functor object will be stored in the internal objStorage
-    /// using move constructor. Unmovable objects are prohibited explicitly.
+    /// \brief Construct from a callable; stored in internal storage via move construct (rejects unmovable callables)
     ///
     ////////////////////////////////////////////////////////////
     template <typename TFFwd>

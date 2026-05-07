@@ -132,12 +132,9 @@ template <typename T>
 ////////////////////////////////////////////////////////////
 /// \brief Erase the element at `it`, shifting `[it+1, end)` left by 1
 ///
-/// Takes full responsibility for the element-management contract:
-/// the element at `it` is logically removed, the survivors are
-/// shifted, and the slot at `end - 1` is left in an *uninitialized*
-/// state (no live object). The caller must update its size to the
-/// returned pointer (or equivalently `end - 1`) and must NOT call a
-/// destructor on the slot past the new end.
+/// Takes full responsibility for destruction: the slot at `end - 1`
+/// is left uninitialized after the call. The caller must update its
+/// size to the returned pointer and must NOT destroy the trailing slot.
 ///
 /// \return Pointer one past the last live element (i.e. `end - 1`)
 ///
@@ -186,10 +183,8 @@ template <typename T>
 ////////////////////////////////////////////////////////////
 /// \brief Erase the half-open range `[first, last)`, shifting the tail left
 ///
-/// Same contract as `eraseImpl`: the helper takes full responsibility
-/// for destruction and leaves no live object past the returned pointer.
-///
-/// \return Pointer one past the last live element
+/// Same destruction contract as `eraseImpl`: returns one past the last
+/// live element; trailing slots are left uninitialized.
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>

@@ -219,9 +219,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Destroy the held object and optionally take ownership of a new one
-    ///
-    /// \param ptr New pointer to take ownership of (defaults to `nullptr`)
+    /// \brief Destroy the held object and optionally take ownership of `ptr`
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] constexpr void reset(T* const ptr = nullptr) noexcept
@@ -232,9 +230,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Release ownership of the held pointer without destroying it
-    ///
-    /// \return The previously held pointer; the caller is now responsible for it
+    /// \brief Release ownership without destroying; caller owns the returned pointer
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] constexpr T* release() noexcept
@@ -247,9 +243,7 @@ public:
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Construct a `UniquePtr<T>` by forwarding `xs...` to `T`'s constructor
-///
-/// Equivalent to `std::make_unique`. Always uses brace-initialization.
+/// \brief `std::make_unique` equivalent; always uses brace-initialization
 ///
 ////////////////////////////////////////////////////////////
 template <typename T, typename... Ts>

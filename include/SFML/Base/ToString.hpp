@@ -17,14 +17,7 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-/// \brief Converts a numeric value to a string.
-///
-/// This function serves as a replacement for `std::to_string`,
-/// using the SFML/Base ecosystem.
-///
-/// \param value The numeric value to convert.
-///
-/// \return A string representing the value.
+/// \brief Convert a integral or floating-point value to a string
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -45,15 +38,7 @@ template <typename T>
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Append a numeric value's string representation to an existing `String`
-///
-/// Avoids the temporary allocation that `str += toString(value)` would
-/// otherwise require. Asserts in debug builds if the internal buffer
-/// is somehow too small (which should not happen for any supported
-/// integral or floating-point type).
-///
-/// \param str   String to append to
-/// \param value Numeric value to convert and append
+/// \brief Append a numeric value's string representation to `str` without intermediate allocations
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>

@@ -12,9 +12,7 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-/// \brief Get the size of a C-style array at compile time
-///
-/// \return Size of the array (number of elements)
+/// \brief Compile-time element count of a C-style array
 ///
 ////////////////////////////////////////////////////////////
 template <typename T, auto N>
@@ -25,9 +23,7 @@ template <typename T, auto N>
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Get the size of a C-style array member at compile time
-///
-/// \return Size of the array member (number of elements)
+/// \brief Compile-time element count of a C-style array member
 ///
 ////////////////////////////////////////////////////////////
 template <typename S, typename T, auto N>

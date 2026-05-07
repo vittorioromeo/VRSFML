@@ -139,8 +139,6 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Construct an engaged optional by copying `object`
     ///
-    /// \param object Value to copy into the optional
-    ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr explicit Optional(const T& object) : m_engaged{true}
     {
@@ -150,8 +148,6 @@ public:
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct an engaged optional by moving `object`
-    ///
-    /// \param object Value to move into the optional
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr explicit Optional(T&& object) noexcept : m_engaged{true}
@@ -318,11 +314,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct an engaged optional in-place from constructor arguments
-    ///
-    /// Forwards `args...` to `T`'s constructor without any intermediate copy or move.
-    ///
-    /// \param args Arguments forwarded to `T`'s constructor
+    /// \brief Construct an engaged optional in-place by forwarding `args` to `T`'s constructor
     ///
     ////////////////////////////////////////////////////////////
     template <typename... Args>
@@ -333,12 +325,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct an engaged optional from the result of an invocable
-    ///
-    /// Equivalent to constructing the value from `func()` while still benefiting
-    /// from guaranteed copy elision.
-    ///
-    /// \param func Invocable returning a value convertible to `T`
+    /// \brief Construct an engaged optional from `func()` (preserves guaranteed copy elision)
     ///
     ////////////////////////////////////////////////////////////
     template <typename F>
@@ -349,11 +336,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Replace the contained value, constructing a new one in-place
-    ///
-    /// Destroys the previous value if any, then constructs a new `T` from `args...`.
-    ///
-    /// \param args Arguments forwarded to `T`'s constructor
+    /// \brief Destroy the previous value (if any) and construct a new `T` in-place from `args`
     ///
     /// \return Reference to the newly constructed value
     ///
@@ -369,12 +352,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Replace the contained value with the result of an invocable
-    ///
-    /// Destroys the previous value if any, then constructs a new `T`
-    /// from `func()`. Useful when `T` is not movable.
-    ///
-    /// \param func Invocable returning a value convertible to `T`
+    /// \brief `emplace` from `func()`; works when `T` is not movable thanks to copy elision
     ///
     /// \return Reference to the newly constructed value
     ///
@@ -390,12 +368,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct a value in-place only if currently empty
-    ///
-    /// If the optional is already engaged, this is a no-op and the existing
-    /// value is returned. Otherwise behaves like `emplace`.
-    ///
-    /// \param args Arguments forwarded to `T`'s constructor when needed
+    /// \brief `emplace` if currently empty, otherwise no-op (returns the existing value)
     ///
     /// \return Reference to the contained value
     ///
@@ -412,12 +385,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct a value from an invocable only if currently empty
-    ///
-    /// If the optional is already engaged, this is a no-op. Otherwise
-    /// behaves like `emplaceFromFunc`.
-    ///
-    /// \param func Invocable returning a value convertible to `T` when needed
+    /// \brief `emplaceFromFunc` if currently empty, otherwise no-op
     ///
     /// \return Reference to the contained value
     ///
@@ -445,9 +413,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Access the contained value, throwing if empty
-    ///
-    /// \throw `BadOptionalAccess` (or aborts) when the optional is empty
+    /// \brief Access the contained value; throws `BadOptionalAccess` (or aborts) if empty
     ///
     /// \return Reference to the contained value
     ///
@@ -488,14 +454,10 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Return the contained value if engaged, otherwise `defaultValue`
+    /// \brief Reference to the contained value, or `defaultValue` if empty
     ///
-    /// Unlike `std::optional::value_or`, this overload returns by reference
-    /// to avoid an unnecessary copy of `defaultValue` in the empty case.
-    ///
-    /// \param defaultValue Value to return if the optional is empty
-    ///
-    /// \return Reference to either the contained value or `defaultValue`
+    /// Returns by reference (unlike `std::optional::value_or`) to avoid
+    /// copying `defaultValue` in the empty case.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T& valueOr(T& defaultValue) & noexcept
@@ -525,9 +487,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Check whether the optional contains a value
-    ///
-    /// \return `true` if engaged, `false` otherwise
+    /// \brief `true` if the optional is engaged
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool hasValue() const noexcept
@@ -602,11 +562,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get a pointer to the contained value, or `nullptr` if empty
-    ///
-    /// Unlike `operator->`, this is safe to call on an empty optional.
-    ///
-    /// \return Pointer to the value, or `nullptr`
+    /// \brief Pointer to the contained value, or `nullptr` if empty
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T* asPtr() noexcept
@@ -708,10 +664,7 @@ private:
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Construct an `Optional` whose value type is deduced from `object`
-///
-/// The element type is `RemoveCVRef<Object>`. Forwards `object` into the
-/// new optional.
+/// \brief Construct an `Optional` with element type deduced as `RemoveCVRef<Object>`
 ///
 ////////////////////////////////////////////////////////////
 template <typename Object>
@@ -722,9 +675,7 @@ template <typename Object>
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Construct an `Optional<T>` in-place from constructor arguments
-///
-/// Forwards `args...` to `T`'s constructor without intermediate copies.
+/// \brief Construct an `Optional<T>` in-place by forwarding `args` to `T`'s constructor
 ///
 ////////////////////////////////////////////////////////////
 template <typename T, typename... Args>
@@ -735,11 +686,8 @@ template <typename T, typename... Args>
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Construct an `Optional` from the result of an invocable
-///
-/// The element type is deduced from the return type of `f()`. The result
-/// is constructed in place inside the optional with guaranteed copy
-/// elision, so this also works with non-movable types.
+/// \brief Construct an `Optional` from `f()` with element type deduced from its return type;
+///        guaranteed copy elision means this works for non-movable types
 ///
 ////////////////////////////////////////////////////////////
 template <typename F>

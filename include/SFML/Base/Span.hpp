@@ -38,10 +38,7 @@ struct Span
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct a span from a pointer and a size
-    ///
-    /// \param data Pointer to the first element (may be `nullptr` only if `size == 0`)
-    /// \param size Number of elements in the range
+    /// \brief Construct from pointer and size; `data` may be null only if `size == 0`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr Span(T* data, SizeT size) : theData{data}, theSize{size}

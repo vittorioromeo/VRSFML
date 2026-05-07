@@ -51,10 +51,7 @@ static_assert(sizeof(sinTableData) == sinCount * sizeof(float));
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-/// \brief Return sine by using a lookup table.
-///
-/// Calculates an approximation of `sin(radians)` using a precomputed lookup table.
-/// This is faster than `std::sin` but less precise.
+/// \brief Lookup-table sine for `radians` (faster than `std::sin`, less precise)
 ///
 /// \param radians Angle in radians. Must be in the range `[0, 2*Pi]`.
 ///
@@ -75,10 +72,7 @@ namespace sf::base
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Return cosine by using a lookup table.
-///
-/// Calculates an approximation of `cos(radians)` using a precomputed lookup table.
-/// This is faster than `std::cos` but less precise.
+/// \brief Lookup-table cosine for `radians` (faster than `std::cos`, less precise)
 ///
 /// \param radians Angle in radians. Must be in the range `[0, 2*Pi]`.
 ///
@@ -99,13 +93,9 @@ namespace sf::base
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Return sine and cosine by using a lookup table.
-///
-/// Calculates approximations of `sin(radians)` and `cos(radians)` simultaneously
-/// using a precomputed lookup table. Faster than separate calls to `sinLookup` and `cosLookup`.
+/// \brief Combined sine+cosine lookup for `radians` (faster than separate calls)
 ///
 /// \param radians Angle in radians. Must be in the range `[0, 2*Pi]`.
-/// \return A struct containing the `sin` and `cos` results.
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr auto sinCosLookup(const float radians) noexcept

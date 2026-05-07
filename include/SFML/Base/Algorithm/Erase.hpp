@@ -13,16 +13,7 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-/// \brief Erase elements satisfying a predicate from a vector (stable)
-///
-/// Removes all elements from the vector for which the predicate
-/// returns `true`. This function modifies the vector in-place.
-/// Equivalent to `std::erase_if` for vectors.
-///
-/// \param vector    Vector to modify
-/// \param predicate Unary predicate function
-///
-/// \return The number of elements removed
+/// \brief Stable in-place equivalent of `std::erase_if` for vectors; returns the number of elements removed
 ///
 ////////////////////////////////////////////////////////////
 template <typename Vector, typename Predicate>

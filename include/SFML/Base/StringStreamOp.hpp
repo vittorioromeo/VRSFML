@@ -40,16 +40,7 @@ StreamLike& operator<<(StreamLike& stream, const String& s)
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Extracts a word from a stream into a string.
-///
-/// This operator mimics the behavior of std::istream >> std::string.
-/// It first skips any leading whitespace, then reads characters
-/// into the string until the next whitespace character or the end
-/// of the stream is reached.
-///
-/// \param stream The input stream to extract from.
-/// \param s      The string to store the extracted word.
-/// \return The stream object.
+/// \brief Extract one whitespace-delimited word into `s`, mimicking `std::istream >> std::string`
 ///
 ////////////////////////////////////////////////////////////
 template <typename StreamLike>

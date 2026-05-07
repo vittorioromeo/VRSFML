@@ -6,21 +6,8 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-/// \brief Finds the first pair of adjacent elements in a range that satisfy a predicate.
-///
-/// Searches the range `[first, last)` and returns an iterator to the first element `it`
-/// such that `predicate(*it, *(it + 1))` is `true`.
-///
-/// \tparam ForwardIt       The type of the iterators, must meet the requirements of a forward iterator.
-/// \tparam BinaryPredicate The type of the predicate function object.
-///
-/// \param first     Iterator to the beginning of the range to search.
-/// \param last      Iterator to the end of the range to search.
-/// \param predicate A binary predicate that takes two arguments and returns a value convertible to `bool`.
-///                  The predicate is applied to adjacent elements `(a, b)`.
-///
-/// \return An iterator to the first element of the first pair satisfying the predicate.
-///         If no such pair is found, `last` is returned.
+/// \brief Find the first iterator `it` in `[first, last)` such that `predicate(*it, *(it + 1))`,
+///        or `last` if no such pair exists
 ///
 ////////////////////////////////////////////////////////////
 template <typename ForwardIt, typename BinaryPredicate>
@@ -46,19 +33,7 @@ template <typename ForwardIt, typename BinaryPredicate>
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Finds the first pair of equal adjacent elements in a range.
-///
-/// This is an overload of `adjacentFind` that uses the equality operator (`==`)
-/// to compare adjacent elements. It returns an iterator to the first element `it`
-/// such that `*it == *(it + 1)` is `true`.
-///
-/// \tparam ForwardIt The type of the iterators, must meet the requirements of a forward iterator.
-///
-/// \param first Iterator to the beginning of the range to search.
-/// \param last  Iterator to the end of the range to search.
-///
-/// \return An iterator to the first element of the first pair of equal adjacent elements.
-///         If no such pair is found, `last` is returned.
+/// \brief `adjacentFind` overload using `operator==` to compare adjacent elements
 ///
 ////////////////////////////////////////////////////////////
 template <typename ForwardIt>
