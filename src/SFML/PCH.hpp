@@ -36,12 +36,6 @@
     #include "SFML/Base/Optional.hpp"
     #include "SFML/Base/UniquePtr.hpp"
 
-    #include <chrono>
-    #include <mutex>
-    #include <string>
-
-    #include <cstdlib>
-
     #ifdef SFML_BUILD_TEST_SUITE
         #undef DOCTEST_CONFIG_USE_STD_HEADERS
         #undef DOCTEST_CONFIG_INCLUDE_TYPE_TRAITS
