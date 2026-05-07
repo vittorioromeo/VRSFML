@@ -220,7 +220,7 @@ void ShaderUtils::emitLineDirective(base::Vector<char>& buffer, unsigned int lin
 ////////////////////////////////////////////////////////////
 base::Optional<base::StringView> ShaderUtils::parseIncludeDirective(base::StringView line)
 {
-    const auto fail = [&](const char* what)
+    const auto fail = [&](const char* what) -> base::Optional<base::StringView>
     {
         priv::err() << "Malformed GLSL #include directive (" << what << "): " << line;
         return base::nullOpt;
