@@ -41,7 +41,7 @@ int main()
                       })
                       .value();
 
-    auto windowView = window.computeView();
+    auto windowView = computeAspectRatioAwareView(window.getSize().toVec2f(), windowSize);
 
     const sf::RectangleShape red({
         .position{270.f, 70.f},

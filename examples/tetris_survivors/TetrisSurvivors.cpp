@@ -658,7 +658,7 @@ private:
 
     ////////////////////////////////////////////////////////////
     sf::View m_worldView  = sf::View::fromScreenSize(resolution);
-    sf::View m_windowView = sf::View::fromScreenSize(resolution);
+    sf::View m_windowView = m_window.computeView();
 
     ////////////////////////////////////////////////////////////
     sf::Shader m_shader{[]

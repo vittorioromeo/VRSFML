@@ -573,7 +573,7 @@ private:
     sf::View m_worldView = sf::View::fromScreenSize(logicalResolution);
 
     // For rendering the final texture to the window (this one gets aspect-ratio resized)
-    sf::View m_windowView = sf::View::fromScreenSize(logicalResolution);
+    sf::View m_windowView = computeAspectRatioAwareView(m_window.getSize().toVec2f(), logicalResolution);
 
     ////////////////////////////////////////////////////////////
     sf::Shader m_shader{[]

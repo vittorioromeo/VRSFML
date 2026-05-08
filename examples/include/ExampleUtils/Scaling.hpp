@@ -80,6 +80,45 @@ struct WindowSettings;
 [[nodiscard]] sf::Rect2f getPixelPerfectViewport(sf::Vec2f windowSize, sf::Vec2f nativeResolution);
 
 ////////////////////////////////////////////////////////////
+/// \brief Compute an aspect-ratio-aware view for a window of `windowSize`.
+///
+/// Mirrors the view state produced by `handleAspectRatioAwareResize`
+/// so the view is correctly sized at startup, before any resize event
+/// has fired. The view's size is set to `originalSize`, centered, and
+/// its viewport is computed via `getAspectRatioAwareViewport` so the
+/// content stays centered with letterboxing or pillarboxing as needed.
+///
+/// Use this in place of `sf::RenderTarget::computeView` when the
+/// window may have been created at a different size than the logical
+/// world resolution (e.g. via `makeDPIScaledRenderWindow` on a
+/// high-DPI display).
+///
+/// \param windowSize   The current size of the window or render target.
+/// \param originalSize The original size whose aspect ratio should be preserved.
+///
+/// \return A `sf::View` with size, center, and viewport set.
+///
+////////////////////////////////////////////////////////////
+[[nodiscard]] sf::View computeAspectRatioAwareView(sf::Vec2f windowSize, sf::Vec2f originalSize);
+
+////////////////////////////////////////////////////////////
+/// \brief Compute a pixel-perfect view for a window of `windowSize`.
+///
+/// Mirrors the view state produced by `handlePixelPerfectResize` so
+/// the view is correctly sized at startup, before any resize event
+/// has fired. The view's size is set to `nativeResolution`, centered,
+/// and its viewport is scaled by the largest integer factor that
+/// fits.
+///
+/// \param windowSize       The current size of the window or render target.
+/// \param nativeResolution The original, internal resolution of the content.
+///
+/// \return A `sf::View` with size, center, and viewport set.
+///
+////////////////////////////////////////////////////////////
+[[nodiscard]] sf::View computePixelPerfectView(sf::Vec2f windowSize, sf::Vec2f nativeResolution);
+
+////////////////////////////////////////////////////////////
 /// \brief Handles a window resize event without scaling the content.
 ///
 /// Call this inside your event loop. If the event is a resize event,

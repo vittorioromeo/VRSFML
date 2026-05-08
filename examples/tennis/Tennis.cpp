@@ -83,7 +83,7 @@ int main()
                       })
                       .value();
 
-    auto windowView = window.computeView();
+    auto windowView = computeAspectRatioAwareView(window.getSize().toVec2f(), gameSize);
 
     // Create an audio context and get the default playback device
     auto               audioContext = sf::AudioContext::create().value();
