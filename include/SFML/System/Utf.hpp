@@ -74,17 +74,11 @@ class Utf<8>
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Decode a single UTF-8 character
+    /// \brief Decode a single UTF-8 character into its Unicode codepoint
     ///
-    /// Decoding a character means finding its unique 32-bits
-    /// code (called the codepoint) in the Unicode standard.
+    /// On an invalid or incomplete sequence, `output` is set to `replacement`.
     ///
-    /// \param begin       Iterator pointing to the beginning of the input sequence
-    /// \param end         Iterator pointing to the end of the input sequence
-    /// \param output      Codepoint of the decoded UTF-8 character
-    /// \param replacement Replacement character to use in case the UTF-8 sequence is invalid
-    ///
-    /// \return Iterator pointing to one past the last read element of the input sequence
+    /// \return Iterator past the last consumed input element
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
@@ -143,16 +137,12 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Encode a single UTF-8 character
+    /// \brief Encode a Unicode codepoint as UTF-8, writing to `output`
     ///
-    /// Encoding a character means converting a unique 32-bits
-    /// code (called the codepoint) in the target encoding, UTF-8.
+    /// Codepoints not representable in UTF-8 are replaced with `replacement`,
+    /// or skipped entirely if `replacement` is `0`.
     ///
-    /// \param input       Codepoint to encode as UTF-8
-    /// \param output      Iterator pointing to the beginning of the output sequence
-    /// \param replacement Replacement for characters not convertible to UTF-8 (use 0 to skip them)
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// \return Iterator past the last written output element
     ///
     ////////////////////////////////////////////////////////////
     template <typename Out>
@@ -203,15 +193,9 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Advance to the next UTF-8 character
+    /// \brief Advance past the next UTF-8 character in `[begin, end)`
     ///
-    /// This function is necessary for multi-elements encodings, as
-    /// a single character may use more than 1 storage element.
-    ///
-    /// \param begin Iterator pointing to the beginning of the input sequence
-    /// \param end   Iterator pointing to the end of the input sequence
-    ///
-    /// \return Iterator pointing to one past the last read element of the input sequence
+    /// A single character may span multiple storage elements.
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
@@ -224,16 +208,10 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Count the number of characters of a UTF-8 sequence
+    /// \brief Count the number of characters in a UTF-8 sequence
     ///
-    /// This function is necessary for multi-elements encodings, as
-    /// a single character may use more than 1 storage element, thus the
-    /// total size can be different from `end - begin`.
-    ///
-    /// \param begin Iterator pointing to the beginning of the input sequence
-    /// \param end   Iterator pointing to the end of the input sequence
-    ///
-    /// \return Number of decoded characters in the input sequence
+    /// May differ from `end - begin` since a single character may
+    /// span multiple storage elements.
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
@@ -252,44 +230,24 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert an ANSI characters range to UTF-8
+    /// \brief Convert an ANSI sequence `[begin, end)` to UTF-8
     ///
-    /// Uses the supplied `facet` to convert each ANSI character to a
-    /// Unicode codepoint before encoding it as UTF-8. Pass an instance
-    /// of the desired locale's `std::ctype<wchar_t>` facet here.
-    ///
-    /// \param begin  Iterator pointing to the beginning of the input sequence
-    /// \param end    Iterator pointing to the end of the input sequence
-    /// \param output Iterator pointing to the beginning of the output sequence
-    /// \param facet  Facet to use for conversion
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// Uses `facet` (typically a locale's `std::ctype<wchar_t>`) to widen
+    /// each ANSI character to a Unicode codepoint before encoding as UTF-8.
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out, typename Facet>
     static Out fromAnsi(In begin, In end, Out output, const Facet& facet);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert a wide characters range to UTF-8
-    ///
-    /// \param begin  Iterator pointing to the beginning of the input sequence
-    /// \param end    Iterator pointing to the end of the input sequence
-    /// \param output Iterator pointing to the beginning of the output sequence
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// \brief Convert a wide-character sequence `[begin, end)` to UTF-8
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
     static Out fromWide(In begin, In end, Out output);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert a latin-1 (ISO-5589-1) characters range to UTF-8
-    ///
-    /// \param begin  Iterator pointing to the beginning of the input sequence
-    /// \param end    Iterator pointing to the end of the input sequence
-    /// \param output Iterator pointing to the beginning of the output sequence
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// \brief Convert a latin-1 (ISO-5589-1) sequence `[begin, end)` to UTF-8
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
@@ -307,48 +265,30 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert an UTF-8 characters range to ANSI characters
+    /// \brief Convert a UTF-8 sequence `[begin, end)` to ANSI
     ///
-    /// Uses the supplied `facet` to narrow each Unicode codepoint into
-    /// an ANSI character. Codepoints that cannot be represented in the
-    /// target encoding are substituted with `replacement` (or skipped if
-    /// `replacement` is `0`).
-    ///
-    /// \param begin       Iterator pointing to the beginning of the input sequence
-    /// \param end         Iterator pointing to the end of the input sequence
-    /// \param output      Iterator pointing to the beginning of the output sequence
-    /// \param replacement Replacement for characters not convertible to ANSI (use 0 to skip them)
-    /// \param facet       Facet to use for conversion
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// Uses `facet` to narrow each codepoint to ANSI. Codepoints not
+    /// representable are substituted with `replacement`, or skipped if
+    /// `replacement` is `0`.
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out, typename Facet>
     static Out toAnsi(In begin, In end, Out output, char replacement, const Facet& facet);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert an UTF-8 characters range to wide characters
+    /// \brief Convert a UTF-8 sequence `[begin, end)` to wide characters
     ///
-    /// \param begin       Iterator pointing to the beginning of the input sequence
-    /// \param end         Iterator pointing to the end of the input sequence
-    /// \param output      Iterator pointing to the beginning of the output sequence
-    /// \param replacement Replacement for characters not convertible to wide (use 0 to skip them)
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// Codepoints not representable as `wchar_t` are substituted with
+    /// `replacement`, or skipped if `replacement` is `0`.
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
     static Out toWide(In begin, In end, Out output, wchar_t replacement);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert an UTF-8 characters range to latin-1 (ISO-5589-1) characters
+    /// \brief Convert a UTF-8 sequence `[begin, end)` to latin-1 (ISO-5589-1)
     ///
-    /// \param begin       Iterator pointing to the beginning of the input sequence
-    /// \param end         Iterator pointing to the end of the input sequence
-    /// \param output      Iterator pointing to the beginning of the output sequence
-    /// \param replacement Replacement for characters not convertible to latin-1 (use 0 to skip them)
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// Codepoints outside the latin-1 range are substituted with `replacement`.
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
@@ -369,18 +309,10 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert a UTF-8 characters range to UTF-8
+    /// \brief Copy a UTF-8 sequence `[begin, end)` to `output`
     ///
-    /// This functions does nothing more than a direct copy;
-    /// it is defined only to provide the same interface as other
-    /// specializations of the `sf::Utf<>` template, and allow
-    /// generic code to be written on top of it.
-    ///
-    /// \param begin  Iterator pointing to the beginning of the input sequence
-    /// \param end    Iterator pointing to the end of the input sequence
-    /// \param output Iterator pointing to the beginning of the output sequence
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// Direct copy; provided so generic code can use the same interface
+    /// across all `sf::Utf<>` specializations.
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
@@ -392,26 +324,14 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert a UTF-8 characters range to UTF-16
-    ///
-    /// \param begin  Iterator pointing to the beginning of the input sequence
-    /// \param end    Iterator pointing to the end of the input sequence
-    /// \param output Iterator pointing to the beginning of the output sequence
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// \brief Convert a UTF-8 sequence `[begin, end)` to UTF-16
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
     static Out toUtf16(In begin, In end, Out output);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert a UTF-8 characters range to UTF-32
-    ///
-    /// \param begin  Iterator pointing to the beginning of the input sequence
-    /// \param end    Iterator pointing to the end of the input sequence
-    /// \param output Iterator pointing to the beginning of the output sequence
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// \brief Convert a UTF-8 sequence `[begin, end)` to UTF-32
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
@@ -439,17 +359,12 @@ class Utf<16>
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Decode a single UTF-16 character
+    /// \brief Decode a single UTF-16 character into its Unicode codepoint
     ///
-    /// Decoding a character means finding its unique 32-bits
-    /// code (called the codepoint) in the Unicode standard.
+    /// Handles surrogate pairs. On an invalid or incomplete sequence,
+    /// `output` is set to `replacement`.
     ///
-    /// \param begin       Iterator pointing to the beginning of the input sequence
-    /// \param end         Iterator pointing to the end of the input sequence
-    /// \param output      Codepoint of the decoded UTF-16 character
-    /// \param replacement Replacement character to use in case the UTF-16 sequence is invalid
-    ///
-    /// \return Iterator pointing to one past the last read element of the input sequence
+    /// \return Iterator past the last consumed input element
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
@@ -494,16 +409,13 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Encode a single UTF-16 character
+    /// \brief Encode a Unicode codepoint as UTF-16, writing to `output`
     ///
-    /// Encoding a character means converting a unique 32-bits
-    /// code (called the codepoint) in the target encoding, UTF-16.
+    /// Codepoints in the surrogate range or above U+10FFFF are replaced
+    /// with `replacement`, or skipped if `replacement` is `0`. Codepoints
+    /// above the BMP are emitted as a surrogate pair.
     ///
-    /// \param input       Codepoint to encode as UTF-16
-    /// \param output      Iterator pointing to the beginning of the output sequence
-    /// \param replacement Replacement for characters not convertible to UTF-16 (use 0 to skip them)
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// \return Iterator past the last written output element
     ///
     ////////////////////////////////////////////////////////////
     template <typename Out>
@@ -542,15 +454,9 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Advance to the next UTF-16 character
+    /// \brief Advance past the next UTF-16 character in `[begin, end)`
     ///
-    /// This function is necessary for multi-elements encodings, as
-    /// a single character may use more than 1 storage element.
-    ///
-    /// \param begin Iterator pointing to the beginning of the input sequence
-    /// \param end   Iterator pointing to the end of the input sequence
-    ///
-    /// \return Iterator pointing to one past the last read element of the input sequence
+    /// A single character may span two storage elements (surrogate pair).
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
@@ -563,16 +469,10 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Count the number of characters of a UTF-16 sequence
+    /// \brief Count the number of characters in a UTF-16 sequence
     ///
-    /// This function is necessary for multi-elements encodings, as
-    /// a single character may use more than 1 storage element, thus the
-    /// total size can be different from `end - begin`.
-    ///
-    /// \param begin Iterator pointing to the beginning of the input sequence
-    /// \param end   Iterator pointing to the end of the input sequence
-    ///
-    /// \return Number of decoded characters in the input sequence
+    /// May differ from `end - begin` since surrogate pairs encode a
+    /// single character in two storage elements.
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
@@ -591,43 +491,24 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert an ANSI characters range to UTF-16
+    /// \brief Convert an ANSI sequence `[begin, end)` to UTF-16
     ///
-    /// Uses the supplied `facet` to convert each ANSI character to a
-    /// Unicode codepoint before encoding it as UTF-16.
-    ///
-    /// \param begin  Iterator pointing to the beginning of the input sequence
-    /// \param end    Iterator pointing to the end of the input sequence
-    /// \param output Iterator pointing to the beginning of the output sequence
-    /// \param facet  Facet to use for conversion
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// Uses `facet` to widen each ANSI character to a Unicode codepoint
+    /// before encoding as UTF-16.
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out, typename Facet>
     static Out fromAnsi(In begin, In end, Out output, const Facet& facet);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert a wide characters range to UTF-16
-    ///
-    /// \param begin  Iterator pointing to the beginning of the input sequence
-    /// \param end    Iterator pointing to the end of the input sequence
-    /// \param output Iterator pointing to the beginning of the output sequence
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// \brief Convert a wide-character sequence `[begin, end)` to UTF-16
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
     static Out fromWide(In begin, In end, Out output);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert a latin-1 (ISO-5589-1) characters range to UTF-16
-    ///
-    /// \param begin  Iterator pointing to the beginning of the input sequence
-    /// \param end    Iterator pointing to the end of the input sequence
-    /// \param output Iterator pointing to the beginning of the output sequence
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// \brief Convert a latin-1 (ISO-5589-1) sequence `[begin, end)` to UTF-16
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
@@ -641,48 +522,30 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert an UTF-16 characters range to ANSI characters
+    /// \brief Convert a UTF-16 sequence `[begin, end)` to ANSI
     ///
-    /// Uses the supplied `facet` to narrow each Unicode codepoint into
-    /// an ANSI character. Codepoints that cannot be represented in the
-    /// target encoding are substituted with `replacement` (or skipped if
-    /// `replacement` is `0`).
-    ///
-    /// \param begin       Iterator pointing to the beginning of the input sequence
-    /// \param end         Iterator pointing to the end of the input sequence
-    /// \param output      Iterator pointing to the beginning of the output sequence
-    /// \param replacement Replacement for characters not convertible to ANSI (use 0 to skip them)
-    /// \param facet       Facet to use for conversion
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// Uses `facet` to narrow each codepoint to ANSI. Codepoints not
+    /// representable are substituted with `replacement`, or skipped if
+    /// `replacement` is `0`.
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out, typename Facet>
     static Out toAnsi(In begin, In end, Out output, char replacement, const Facet& facet);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert an UTF-16 characters range to wide characters
+    /// \brief Convert a UTF-16 sequence `[begin, end)` to wide characters
     ///
-    /// \param begin       Iterator pointing to the beginning of the input sequence
-    /// \param end         Iterator pointing to the end of the input sequence
-    /// \param output      Iterator pointing to the beginning of the output sequence
-    /// \param replacement Replacement for characters not convertible to wide (use 0 to skip them)
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// Codepoints not representable as `wchar_t` are substituted with
+    /// `replacement`, or skipped if `replacement` is `0`.
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
     static Out toWide(In begin, In end, Out output, wchar_t replacement);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert an UTF-16 characters range to latin-1 (ISO-5589-1) characters
+    /// \brief Convert a UTF-16 sequence `[begin, end)` to latin-1 (ISO-5589-1)
     ///
-    /// \param begin       Iterator pointing to the beginning of the input sequence
-    /// \param end         Iterator pointing to the end of the input sequence
-    /// \param output      Iterator pointing to the beginning of the output sequence
-    /// \param replacement Replacement for characters not convertible to latin-1 (use 0 to skip them)
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// Codepoints outside the latin-1 range are substituted with `replacement`.
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
@@ -702,13 +565,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert a UTF-16 characters range to UTF-8
-    ///
-    /// \param begin  Iterator pointing to the beginning of the input sequence
-    /// \param end    Iterator pointing to the end of the input sequence
-    /// \param output Iterator pointing to the beginning of the output sequence
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// \brief Convert a UTF-16 sequence `[begin, end)` to UTF-8
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
@@ -728,18 +585,10 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert a UTF-16 characters range to UTF-16
+    /// \brief Copy a UTF-16 sequence `[begin, end)` to `output`
     ///
-    /// This functions does nothing more than a direct copy;
-    /// it is defined only to provide the same interface as other
-    /// specializations of the `sf::Utf<>` template, and allow
-    /// generic code to be written on top of it.
-    ///
-    /// \param begin  Iterator pointing to the beginning of the input sequence
-    /// \param end    Iterator pointing to the end of the input sequence
-    /// \param output Iterator pointing to the beginning of the output sequence
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// Direct copy; provided so generic code can use the same interface
+    /// across all `sf::Utf<>` specializations.
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
@@ -751,13 +600,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert a UTF-16 characters range to UTF-32
-    ///
-    /// \param begin  Iterator pointing to the beginning of the input sequence
-    /// \param end    Iterator pointing to the end of the input sequence
-    /// \param output Iterator pointing to the beginning of the output sequence
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// \brief Convert a UTF-16 sequence `[begin, end)` to UTF-32
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
@@ -785,18 +628,10 @@ class Utf<32>
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Decode a single UTF-32 character
+    /// \brief Decode a single UTF-32 character into its Unicode codepoint
     ///
-    /// Decoding a character means finding its unique 32-bits
-    /// code (called the codepoint) in the Unicode standard.
-    /// For UTF-32, the character value is the same as the codepoint.
-    ///
-    /// \param begin       Iterator pointing to the beginning of the input sequence
-    /// \param end         Iterator pointing to the end of the input sequence
-    /// \param output      Codepoint of the decoded UTF-32 character
-    /// \param replacement Replacement character (unused for UTF-32, kept for API consistency)
-    ///
-    /// \return Iterator pointing to one past the last read element of the input sequence
+    /// For UTF-32 the character value is the codepoint, so this is a
+    /// direct copy. `replacement` is unused, kept for API consistency.
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
@@ -809,17 +644,10 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Encode a single UTF-32 character
+    /// \brief Encode a Unicode codepoint as UTF-32, writing to `output`
     ///
-    /// Encoding a character means converting a unique 32-bits
-    /// code (called the codepoint) in the target encoding, UTF-32.
-    /// For UTF-32, the codepoint is the same as the character value.
-    ///
-    /// \param input       Codepoint to encode as UTF-32
-    /// \param output      Iterator pointing to the beginning of the output sequence
-    /// \param replacement Replacement for characters not convertible to UTF-32 (use 0 to skip them)
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// For UTF-32 the codepoint is the character value, so this is a
+    /// direct write. `replacement` is unused, kept for API consistency.
     ///
     ////////////////////////////////////////////////////////////
     template <typename Out>
@@ -830,15 +658,9 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Advance to the next UTF-32 character
+    /// \brief Advance past the next UTF-32 character
     ///
-    /// This function is trivial for UTF-32, which can store
-    /// every character in a single storage element.
-    ///
-    /// \param begin Iterator pointing to the beginning of the input sequence
-    /// \param end   Iterator pointing to the end of the input sequence
-    ///
-    /// \return Iterator pointing to one past the last read element of the input sequence
+    /// Trivial for UTF-32: one storage element per character.
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
@@ -851,15 +673,10 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Count the number of characters of a UTF-32 sequence
+    /// \brief Count the number of characters in a UTF-32 sequence
     ///
-    /// This function is trivial for UTF-32, which can store
-    /// every character in a single storage element.
-    ///
-    /// \param begin Iterator pointing to the beginning of the input sequence
-    /// \param end   Iterator pointing to the end of the input sequence
-    ///
-    /// \return Number of decoded characters in the input sequence
+    /// Trivial for UTF-32: one storage element per character, so this
+    /// returns `end - begin`.
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
@@ -871,17 +688,9 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert an ANSI characters range to UTF-32
+    /// \brief Convert an ANSI sequence `[begin, end)` to UTF-32
     ///
-    /// Uses the supplied `facet` to widen each ANSI character into a
-    /// Unicode codepoint.
-    ///
-    /// \param begin  Iterator pointing to the beginning of the input sequence
-    /// \param end    Iterator pointing to the end of the input sequence
-    /// \param output Iterator pointing to the beginning of the output sequence
-    /// \param facet  Facet to use for conversion
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// Uses `facet` to widen each ANSI character into a Unicode codepoint.
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out, typename Facet>
@@ -896,13 +705,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert a wide characters range to UTF-32
-    ///
-    /// \param begin  Iterator pointing to the beginning of the input sequence
-    /// \param end    Iterator pointing to the end of the input sequence
-    /// \param output Iterator pointing to the beginning of the output sequence
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// \brief Convert a wide-character sequence `[begin, end)` to UTF-32
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
@@ -917,13 +720,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert a latin-1 (ISO-5589-1) characters range to UTF-32
-    ///
-    /// \param begin  Iterator pointing to the beginning of the input sequence
-    /// \param end    Iterator pointing to the end of the input sequence
-    /// \param output Iterator pointing to the beginning of the output sequence
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// \brief Convert a latin-1 (ISO-5589-1) sequence `[begin, end)` to UTF-32
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
@@ -937,20 +734,11 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert an UTF-32 characters range to ANSI characters
+    /// \brief Convert a UTF-32 sequence `[begin, end)` to ANSI
     ///
-    /// Uses the supplied `facet` to narrow each Unicode codepoint into
-    /// an ANSI character. Codepoints that cannot be represented in the
-    /// target encoding are substituted with `replacement` (or skipped if
-    /// `replacement` is `0`).
-    ///
-    /// \param begin       Iterator pointing to the beginning of the input sequence
-    /// \param end         Iterator pointing to the end of the input sequence
-    /// \param output      Iterator pointing to the beginning of the output sequence
-    /// \param replacement Replacement for characters not convertible to ANSI (use 0 to skip them)
-    /// \param facet       Facet to use for conversion
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// Uses `facet` to narrow each codepoint to ANSI. Codepoints not
+    /// representable are substituted with `replacement`, or skipped if
+    /// `replacement` is `0`.
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out, typename Facet>
@@ -965,14 +753,10 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert an UTF-32 characters range to wide characters
+    /// \brief Convert a UTF-32 sequence `[begin, end)` to wide characters
     ///
-    /// \param begin       Iterator pointing to the beginning of the input sequence
-    /// \param end         Iterator pointing to the end of the input sequence
-    /// \param output      Iterator pointing to the beginning of the output sequence
-    /// \param replacement Replacement for characters not convertible to wide (use 0 to skip them)
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// Codepoints not representable as `wchar_t` are substituted with
+    /// `replacement`, or skipped if `replacement` is `0`.
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
@@ -987,14 +771,9 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert an UTF-32 characters range to latin-1 (ISO-5589-1) characters
+    /// \brief Convert a UTF-32 sequence `[begin, end)` to latin-1 (ISO-5589-1)
     ///
-    /// \param begin       Iterator pointing to the beginning of the input sequence
-    /// \param end         Iterator pointing to the end of the input sequence
-    /// \param output      Iterator pointing to the beginning of the output sequence
-    /// \param replacement Replacement for characters not convertible to latin-1 (use 0 to skip them)
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// Codepoints outside the latin-1 range are substituted with `replacement`.
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
@@ -1014,13 +793,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert a UTF-32 characters range to UTF-8
-    ///
-    /// \param begin  Iterator pointing to the beginning of the input sequence
-    /// \param end    Iterator pointing to the end of the input sequence
-    /// \param output Iterator pointing to the beginning of the output sequence
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// \brief Convert a UTF-32 sequence `[begin, end)` to UTF-8
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
@@ -1035,13 +808,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert a UTF-32 characters range to UTF-16
-    ///
-    /// \param begin  Iterator pointing to the beginning of the input sequence
-    /// \param end    Iterator pointing to the end of the input sequence
-    /// \param output Iterator pointing to the beginning of the output sequence
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// \brief Convert a UTF-32 sequence `[begin, end)` to UTF-16
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
@@ -1056,18 +823,10 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert a UTF-32 characters range to UTF-32
+    /// \brief Copy a UTF-32 sequence `[begin, end)` to `output`
     ///
-    /// This functions does nothing more than a direct copy;
-    /// it is defined only to provide the same interface as other
-    /// specializations of the `sf::Utf<>` template, and allow
-    /// generic code to be written on top of it.
-    ///
-    /// \param begin  Iterator pointing to the beginning of the input sequence
-    /// \param end    Iterator pointing to the end of the input sequence
-    /// \param output Iterator pointing to the beginning of the output sequence
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// Direct copy; provided so generic code can use the same interface
+    /// across all `sf::Utf<>` specializations.
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
@@ -1079,16 +838,10 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Decode a single ANSI character to UTF-32
+    /// \brief Decode a single ANSI character to a UTF-32 codepoint
     ///
-    /// This function does not exist in other specializations
-    /// of `sf::Utf<>`, it is defined for convenience (it is used by
-    /// several other conversion functions).
-    ///
-    /// \param input  Input ANSI character
-    /// \param facet Facet to use for conversion
-    ///
-    /// \return Converted character
+    /// Helper used by other conversion functions. Only defined on the
+    /// UTF-32 specialization.
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Facet>
@@ -1099,15 +852,10 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Decode a single wide character to UTF-32
+    /// \brief Decode a single wide character to a UTF-32 codepoint
     ///
-    /// This function does not exist in other specializations
-    /// of `sf::Utf<>`, it is defined for convenience (it is used by
-    /// several other conversion functions).
-    ///
-    /// \param input Input wide character
-    ///
-    /// \return Converted character
+    /// Helper used by other conversion functions. Only defined on the
+    /// UTF-32 specialization.
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
@@ -1123,18 +871,12 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Encode a single UTF-32 character to ANSI
+    /// \brief Encode a single UTF-32 codepoint as ANSI
     ///
-    /// This function does not exist in other specializations
-    /// of `sf::Utf<>`, it is defined for convenience (it is used by
-    /// several other conversion functions).
-    ///
-    /// \param codepoint   Codepoint to encode as ANSI
-    /// \param output      Iterator pointing to the beginning of the output sequence
-    /// \param replacement Replacement if the input character is not convertible to ANSI (use 0 to skip it)
-    /// \param facet       Facet to use for conversion
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// Helper used by other conversion functions; uses `facet` to narrow
+    /// the codepoint, falling back to `replacement` (or skipping if `0`)
+    /// when the codepoint is not representable. Only defined on the
+    /// UTF-32 specialization.
     ///
     ////////////////////////////////////////////////////////////
     template <typename Out, typename Facet>
@@ -1147,17 +889,12 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Encode a single UTF-32 character to wide
+    /// \brief Encode a single UTF-32 codepoint as a wide character
     ///
-    /// This function does not exist in other specializations
-    /// of `sf::Utf<>`, it is defined for convenience (it is used by
-    /// several other conversion functions).
-    ///
-    /// \param codepoint   Codepoint to encode as a wide character
-    /// \param output      Iterator pointing to the beginning of the output sequence
-    /// \param replacement Replacement if the input character is not convertible to wide (use 0 to skip it)
-    ///
-    /// \return Iterator to the end of the output sequence which has been written
+    /// Helper used by other conversion functions. Codepoints not
+    /// representable as `wchar_t` are substituted with `replacement`,
+    /// or skipped if `replacement` is `0`. Only defined on the UTF-32
+    /// specialization.
     ///
     ////////////////////////////////////////////////////////////
     template <typename Out>
@@ -1351,19 +1088,12 @@ using Utf32 = Utf<32>;
 /// \class sf::Utf
 /// \ingroup system
 ///
-/// Utility class providing generic functions for UTF conversions.
+/// Low-level generic interface for counting, iterating, encoding and
+/// decoding Unicode characters across ANSI, wide, latin-1, UTF-8,
+/// UTF-16 and UTF-32. All members are static templates and the class
+/// is not meant to be instantiated.
 ///
-/// `sf::Utf` is a low-level, generic interface for counting, iterating,
-/// encoding and decoding Unicode characters and strings. It is able
-/// to handle ANSI, wide, latin-1, UTF-8, UTF-16 and UTF-32 encodings.
-///
-/// `sf::Utf<X>` functions are all static, these classes are not meant to
-/// be instantiated. All the functions are template, so that you
-/// can use any character / string type for a given encoding.
-///
-/// It has 3 specializations:
-/// \li `sf::Utf<8>` (with `sf::Utf8` type alias)
-/// \li `sf::Utf<16>` (with `sf::Utf16` type alias)
-/// \li `sf::Utf<32>` (with `sf::Utf32` type alias)
+/// Specializations: `sf::Utf<8>` / `sf::Utf8`, `sf::Utf<16>` / `sf::Utf16`,
+/// `sf::Utf<32>` / `sf::Utf32`.
 ///
 ////////////////////////////////////////////////////////////
