@@ -60,7 +60,7 @@ private:
 
     ////////////////////////////////////////////////////////////
     sf::View m_worldView  = sf::View::fromScreenSize(resolution);
-    sf::View m_windowView = sf::View::fromScreenSize(resolution);
+    sf::View m_windowView = computeAspectRatioAwareView(m_window.getSize().toVec2f(), resolution);
 
     ////////////////////////////////////////////////////////////
     sf::Clock m_clock;

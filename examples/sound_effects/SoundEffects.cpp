@@ -1118,7 +1118,7 @@ int main()
                       })
                       .value();
 
-    auto windowView = sf::View::fromScreenSize(windowSize);
+    auto windowView = computeAspectRatioAwareView(window.getSize().toVec2f(), windowSize);
 
     // Load the application font and pass it to the Effect class
     const auto font = sf::Font::openFromFile(resourcesDir() / "tuffy.ttf").value();

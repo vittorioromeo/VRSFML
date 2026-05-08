@@ -386,7 +386,7 @@ int main()
                       })
                       .value();
 
-    auto windowView = window.computeView();
+    auto windowView = computeAspectRatioAwareView(window.getSize().toVec2f(), windowSize.toVec2f());
 
     // Create all of our graphics resources
     sf::Text hudText(font,

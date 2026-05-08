@@ -246,7 +246,7 @@ int main()
                       })
                       .value();
 
-    auto windowView = window.computeView();
+    auto windowView = computeAspectRatioAwareView(window.getSize().toVec2f(), resolution);
     auto worldView  = sf::View::fromScreenSize(resolution);
 
     auto rtGame = makeAARenderTexture(resolution.toVec2u(), {.antiAliasingLevel = 8u}).value();

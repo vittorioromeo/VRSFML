@@ -799,7 +799,7 @@ int main()
                       })
                       .value();
 
-    auto windowView = window.computeView();
+    auto windowView = computeAspectRatioAwareView(window.getSize().toVec2f(), worldSize);
 
     const auto font = sf::Font::openFromFile("resources/tuffy.ttf").value();
 

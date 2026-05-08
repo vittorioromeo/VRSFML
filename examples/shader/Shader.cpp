@@ -485,7 +485,7 @@ int main()
                       })
                       .value();
 
-    auto windowView = window.computeView();
+    auto windowView = computeAspectRatioAwareView(window.getSize().toVec2f(), windowSize);
 
     // Start the game loop
     const sf::Clock clock;

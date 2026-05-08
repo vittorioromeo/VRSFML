@@ -92,7 +92,18 @@ sf::Rect2f getPixelPerfectViewport(const sf::Vec2f windowSize, const sf::Vec2f n
 namespace
 {
 ////////////////////////////////////////////////////////////
-bool handleResizeImpl(const sf::Event& event, const sf::Vec2f originalSize, sf::View& view, auto&& fnViewport)
+[[nodiscard]] sf::View computeViewImpl(const sf::Vec2f windowSize, const sf::Vec2f originalSize, auto&& fnViewport)
+{
+    return {
+        .center   = originalSize / 2.f,
+        .size     = originalSize,
+        .viewport = fnViewport(windowSize, originalSize),
+    };
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] bool handleResizeImpl(const sf::Event& event, const sf::Vec2f originalSize, sf::View& view, auto&& fnViewport)
 {
     const auto* eResized = event.getIf<sf::Event::Resized>();
     if (eResized == nullptr)
@@ -103,14 +114,28 @@ bool handleResizeImpl(const sf::Event& event, const sf::Vec2f originalSize, sf::
     if (newSize.x <= 0.f || newSize.y <= 0.f)
         return true;
 
-    view.size     = originalSize;
     view.center   = originalSize / 2.f;
+    view.size     = originalSize;
     view.viewport = fnViewport(newSize, originalSize);
 
     return true;
 }
 
 } // namespace
+
+
+////////////////////////////////////////////////////////////
+sf::View computeAspectRatioAwareView(const sf::Vec2f windowSize, const sf::Vec2f originalSize)
+{
+    return computeViewImpl(windowSize, originalSize, &getAspectRatioAwareViewport);
+}
+
+
+////////////////////////////////////////////////////////////
+sf::View computePixelPerfectView(const sf::Vec2f windowSize, const sf::Vec2f nativeResolution)
+{
+    return computeViewImpl(windowSize, nativeResolution, &getPixelPerfectViewport);
+}
 
 
 ////////////////////////////////////////////////////////////
@@ -125,8 +150,8 @@ bool handleNonScalingResize(const sf::Event& event, [[maybe_unused]] const sf::V
     if (newSize.x <= 0.f || newSize.y <= 0.f)
         return true;
 
-    view.size   = newSize;
     view.center = newSize / 2.f;
+    view.size   = newSize;
 
     return true;
 }

@@ -1135,7 +1135,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
         ctx.batchToUse.add(sf::CircleShapeData{
             .position   = ctx.catAnchor,
             .origin     = {4.f, 4.f},
-            .fillColor  = sf::Color{255u, 0u, 0u, ctx.alpha},
+            .fillColor  = {255u, 0u, 0u, ctx.alpha},
             .radius     = 4.f,
             .pointCount = 16u,
         });
