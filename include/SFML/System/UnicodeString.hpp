@@ -47,8 +47,7 @@ namespace sf
 class UnicodeStringUtfUtils;
 
 ////////////////////////////////////////////////////////////
-/// \brief Utility string class that automatically handles
-///        conversions between types and encodings
+/// \brief Utility string class that automatically handles conversions between types and encodings
 ///
 ////////////////////////////////////////////////////////////
 class [[nodiscard]] SFML_SYSTEM_API UnicodeString
@@ -72,9 +71,7 @@ public:
     // NOLINTEND(readability-identifier-naming)
 
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// This constructor creates an empty string.
+    /// \brief Construct an empty string
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] UnicodeString();
@@ -110,73 +107,47 @@ public:
     UnicodeString& operator=(UnicodeString&&) noexcept;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Deleted `std::nullptr_t` constructor
-    ///
-    /// Disallow construction from `nullptr` literal
+    /// \brief Disallow construction from `nullptr` literal
     ///
     ////////////////////////////////////////////////////////////
     UnicodeString(decltype(nullptr))                              = delete;
     UnicodeString(decltype(nullptr), const priv::FacetLike auto&) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct from a single ANSI character and a facet
-    ///
-    /// The source character is converted to UTF-32 according
-    /// to the given facet.
-    ///
-    /// \param ansiChar ANSI character to convert
-    /// \param facet    Facet to use for conversion
+    /// \brief Construct from a single ANSI character, converting to UTF-32 (using `facet` if provided)
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] UnicodeString(char ansiChar);
     [[nodiscard]] UnicodeString(char ansiChar, const priv::FacetLike auto& facet);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct from single wide character
-    ///
-    /// \param wideChar Wide character to convert
+    /// \brief Construct from a single wide character
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] UnicodeString(wchar_t wideChar);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct from single UTF-32 character
-    ///
-    /// \param utf32Char UTF-32 character to convert
+    /// \brief Construct from a single UTF-32 character
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] UnicodeString(char32_t utf32Char);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct from a null-terminated C-style ANSI string and a facet
-    ///
-    /// The source string is converted to UTF-32 according
-    /// to the given facet.
-    ///
-    /// \param ansiString ANSI string to convert
-    /// \param facet      Facet to use for conversion
+    /// \brief Construct from a null-terminated C-style ANSI string, converting to UTF-32 (using `facet` if provided)
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] UnicodeString(const char* ansiString);
     [[nodiscard]] UnicodeString(const char* ansiString, const priv::FacetLike auto& facet);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct from an ANSI string and a facet
-    ///
-    /// The source string is converted to UTF-32 according
-    /// to the given facet.
-    ///
-    /// \param ansiString ANSI string to convert
-    /// \param facet      Facet to use for conversion
+    /// \brief Construct from an ANSI string, converting to UTF-32 (using `facet` if provided)
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] UnicodeString(const priv::AnsiStringLike auto& ansiString);
     [[nodiscard]] UnicodeString(const priv::AnsiStringLike auto& ansiString, const priv::FacetLike auto& facet);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct from null-terminated C-style wide string
-    ///
-    /// \param wideString Wide string to convert
+    /// \brief Construct from a null-terminated C-style wide string
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] UnicodeString(const wchar_t* wideString);
@@ -184,38 +155,25 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Construct from a wide string
     ///
-    /// \param wideString Wide string to convert
-    ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] UnicodeString(const priv::WStringLike auto& wideString);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from a null-terminated C-style UTF-32 string
     ///
-    /// \param utf32String UTF-32 string to assign
-    ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] UnicodeString(const char32_t* utf32String);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct from an UTF-32 string
-    ///
-    /// \param utf32String UTF-32 string to assign
+    /// \brief Construct from a UTF-32 string
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] UnicodeString(const priv::U32StringLike auto& utf32String);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert the Unicode string to an ANSI string
+    /// \brief Convert the Unicode string to an ANSI string in the encoding defined by `facet`
     ///
-    /// The UTF-32 string is converted to an ANSI string in
-    /// the encoding defined by `facet`.
-    /// Characters that do not fit in the target encoding are
-    /// discarded from the returned string.
-    ///
-    /// \param facet  Facet to use for conversion
-    ///
-    /// \return Converted ANSI string
+    /// Characters that do not fit in the target encoding are discarded from the returned string.
     ///
     /// \see `toWideString`
     ///
@@ -229,10 +187,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Convert the Unicode string to a wide string
     ///
-    /// Characters that do not fit in the target encoding are
-    /// discarded from the returned string.
-    ///
-    /// \return Converted wide string
+    /// Characters that do not fit in the target encoding are discarded from the returned string.
     ///
     /// \see `toAnsiString`
     ///
@@ -243,8 +198,6 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Convert the Unicode string to a UTF-8 string
     ///
-    /// \return Converted UTF-8 string
-    ///
     /// \see `toUtf16`, `toUtf32`
     ///
     ////////////////////////////////////////////////////////////
@@ -253,8 +206,6 @@ public:
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert the Unicode string to a UTF-16 string
-    ///
-    /// \return Converted UTF-16 string
     ///
     /// \see `toUtf8`, `toUtf32`
     ///
@@ -265,10 +216,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Convert the Unicode string to a UTF-32 string
     ///
-    /// This function doesn't perform any conversion, since the
-    /// string is already stored as UTF-32 internally.
-    ///
-    /// \return Converted UTF-32 string
+    /// This is a no-op copy, since the string is already stored as UTF-32 internally.
     ///
     /// \see `toUtf8`, `toUtf16`
     ///
@@ -277,37 +225,23 @@ public:
     [[nodiscard]] TString toUtf32() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Overload of `operator+=` to append an UTF-32 string
-    ///
-    /// \param rhs UnicodeString to append
-    ///
-    /// \return Reference to self
+    /// \brief Append `rhs` to this string
     ///
     ////////////////////////////////////////////////////////////
     UnicodeString& operator+=(const UnicodeString& rhs);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Overload of `operator[]` to access a character by its position
+    /// \brief Read-only access to the character at `index`
     ///
-    /// This function provides read-only access to characters.
-    /// Note: the behavior is undefined if `index` is out of range.
-    ///
-    /// \param index Index of the character to get
-    ///
-    /// \return Character at position `index`
+    /// \pre `index` is in range
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] char32_t operator[](base::SizeT index) const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Overload of `operator[]` to access a character by its position
+    /// \brief Read-write access to the character at `index`
     ///
-    /// This function provides read and write access to characters.
-    /// Note: the behavior is undefined if `index` is out of range.
-    ///
-    /// \param index Index of the character to get
-    ///
-    /// \return Reference to the character at position `index`
+    /// \pre `index` is in range
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] char32_t& operator[](base::SizeT index);
@@ -315,27 +249,17 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Append a single UTF-32 character to the end of the string
     ///
-    /// \param character UTF-32 character to append
-    ///
     ////////////////////////////////////////////////////////////
     void pushBack(char32_t character);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Replace the contents of the string with a UTF-32 range
-    ///
-    /// All previously stored characters are discarded and replaced by
-    /// the characters in the half-open range `[begin, end)`.
-    ///
-    /// \param begin Pointer to the first UTF-32 character of the source range
-    /// \param end   Pointer one past the last UTF-32 character of the source range
+    /// \brief Replace the contents with the characters in the half-open range `[begin, end)`
     ///
     ////////////////////////////////////////////////////////////
     void assign(const char32_t* begin, const char32_t* end);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Clear the string
-    ///
-    /// This function removes all the characters from the string.
+    /// \brief Remove all characters from the string
     ///
     /// \see `isEmpty`, `erase`
     ///
@@ -343,9 +267,7 @@ public:
     void clear();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the size of the string
-    ///
-    /// \return Number of characters in the string
+    /// \brief Get the number of characters in the string
     ///
     /// \see `isEmpty`
     ///
@@ -353,9 +275,7 @@ public:
     [[nodiscard]] base::SizeT getSize() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Check whether the string is empty or not
-    ///
-    /// \return `true` if the string is empty (i.e. contains no character)
+    /// \brief Check whether the string is empty
     ///
     /// \see `clear`, `getSize`
     ///
@@ -363,37 +283,19 @@ public:
     [[nodiscard]] bool isEmpty() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Erase one or more characters from the string
-    ///
-    /// This function removes a sequence of `count` characters
-    /// starting from `position`.
-    ///
-    /// \param position Position of the first character to erase
-    /// \param count    Number of characters to erase
+    /// \brief Erase `count` characters starting from `position`
     ///
     ////////////////////////////////////////////////////////////
     void erase(base::SizeT position, base::SizeT count = 1);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Insert one or more characters into the string
-    ///
-    /// This function inserts the characters of `str`
-    /// into the string, starting from `position`.
-    ///
-    /// \param position Position of insertion
-    /// \param str      Characters to insert
+    /// \brief Insert the characters of `str` starting from `position`
     ///
     ////////////////////////////////////////////////////////////
     void insert(base::SizeT position, const UnicodeString& str);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Find a sequence of one or more characters in the string
-    ///
-    /// This function searches for the characters of `str`
-    /// in the string, starting from `start`.
-    ///
-    /// \param str   Characters to find
-    /// \param start Where to begin searching
+    /// \brief Find a sequence of characters in the string, starting from `start`
     ///
     /// \return Position of `str` in the string, or `UnicodeString::InvalidPos` if not found
     ///
@@ -401,65 +303,38 @@ public:
     [[nodiscard]] base::SizeT find(const UnicodeString& str, base::SizeT start = 0) const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Replace a substring with another string
+    /// \brief Replace the substring at `position` spanning `length` characters with `replaceWith`
     ///
-    /// This function replaces the substring that starts at index `position`
-    /// and spans `length` characters with the string `replaceWith`.
-    ///
-    /// \param position    Index of the first character to be replaced
-    /// \param length      Number of characters to replace. You can pass InvalidPos to
-    ///                    replace all characters until the end of the string.
-    /// \param replaceWith UnicodeString that replaces the given substring.
+    /// \param length Number of characters to replace, or `InvalidPos` to replace until the end of the string
     ///
     ////////////////////////////////////////////////////////////
     void replaceRange(base::SizeT position, base::SizeT length, const UnicodeString& replaceWith);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Replace all occurrences of a substring with a replacement string
-    ///
-    /// This function replaces all occurrences of `searchFor` in this string
-    /// with the string `replaceWith`.
-    ///
-    /// \param searchFor   The value being searched for
-    /// \param replaceWith The value that replaces found `searchFor` values
+    /// \brief Replace all occurrences of `searchFor` in this string with `replaceWith`
     ///
     ////////////////////////////////////////////////////////////
     void replaceAllOccurrences(const UnicodeString& searchFor, const UnicodeString& replaceWith);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Return a part of the string
+    /// \brief Return the substring starting at `position` and spanning `length` characters
     ///
-    /// This function returns the substring that starts at index `position`
-    /// and spans `length` characters.
-    ///
-    /// \param position Index of the first character
-    /// \param length   Number of characters to include in the substring (if
-    ///                 the string is shorter, as many characters as possible
-    ///                 are included). `InvalidPos` can be used to include all
-    ///                 characters until the end of the string.
-    ///
-    /// \return UnicodeString object containing a substring of this object
+    /// \param length Number of characters to include, clamped to the string length;
+    ///               pass `InvalidPos` to include all characters until the end of the string
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] UnicodeString substring(base::SizeT position, base::SizeT length = InvalidPos) const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get a pointer to the C-style array of characters
+    /// \brief Get a read-only pointer to the null-terminated C-style array of characters
     ///
-    /// This functions provides a read-only access to a
-    /// null-terminated C-style representation of the string.
-    /// The returned pointer is temporary and is meant only for
-    /// immediate use, thus it is not recommended to store it.
-    ///
-    /// \return Read-only pointer to the array of characters
+    /// The returned pointer is temporary and meant only for immediate use; do not store it.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const char32_t* getData() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Return an iterator to the beginning of the string
-    ///
-    /// \return Read-write iterator to the beginning of the string characters
+    /// \brief Return a read-write iterator to the beginning of the string
     ///
     /// \see `end`
     ///
@@ -467,9 +342,7 @@ public:
     [[nodiscard]] Iterator begin();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Return an iterator to the beginning of the string
-    ///
-    /// \return Read-only iterator to the beginning of the string characters
+    /// \brief Return a read-only iterator to the beginning of the string
     ///
     /// \see `end`
     ///
@@ -477,13 +350,9 @@ public:
     [[nodiscard]] ConstIterator begin() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Return an iterator to the end of the string
+    /// \brief Return a read-write iterator to one past the last character
     ///
-    /// The end iterator refers to 1 position past the last character;
-    /// thus it represents an invalid character and should never be
-    /// accessed.
-    ///
-    /// \return Read-write iterator to the end of the string characters
+    /// The end iterator must never be dereferenced.
     ///
     /// \see `begin`
     ///
@@ -491,13 +360,9 @@ public:
     [[nodiscard]] Iterator end();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Return an iterator to the end of the string
+    /// \brief Return a read-only iterator to one past the last character
     ///
-    /// The end iterator refers to 1 position past the last character;
-    /// thus it represents an invalid character and should never be
-    /// accessed.
-    ///
-    /// \return Read-only iterator to the end of the string characters
+    /// The end iterator must never be dereferenced.
     ///
     /// \see `begin`
     ///
@@ -522,85 +387,43 @@ private:
 };
 
 ////////////////////////////////////////////////////////////
-/// \relates UnicodeString
-/// \brief Overload of `operator==` to compare two UTF-32 strings
-///
-/// \param lhs  Left operand (a string)
-/// \param rhs Right operand (a string)
-///
-/// \return `true` if both strings are equal
+/// \brief Equality comparison between two strings
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_SYSTEM_API bool operator==(const UnicodeString& lhs, const UnicodeString& rhs);
 
 ////////////////////////////////////////////////////////////
-/// \relates UnicodeString
-/// \brief Overload of `operator!=` to compare two UTF-32 strings
-///
-/// \param lhs  Left operand (a string)
-/// \param rhs Right operand (a string)
-///
-/// \return `true` if both strings are different
+/// \brief Inequality comparison between two strings
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_SYSTEM_API bool operator!=(const UnicodeString& lhs, const UnicodeString& rhs);
 
 ////////////////////////////////////////////////////////////
-/// \relates UnicodeString
-/// \brief Overload of `operator<` to compare two UTF-32 strings
-///
-/// \param lhs  Left operand (a string)
-/// \param rhs Right operand (a string)
-///
-/// \return `true` if `lhs` is lexicographically before `rhs`
+/// \brief Lexicographically less-than comparison between two strings
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_SYSTEM_API bool operator<(const UnicodeString& lhs, const UnicodeString& rhs);
 
 ////////////////////////////////////////////////////////////
-/// \relates UnicodeString
-/// \brief Overload of `operator>` to compare two UTF-32 strings
-///
-/// \param lhs  Left operand (a string)
-/// \param rhs Right operand (a string)
-///
-/// \return `true` if `lhs` is lexicographically after `rhs`
+/// \brief Lexicographically greater-than comparison between two strings
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_SYSTEM_API bool operator>(const UnicodeString& lhs, const UnicodeString& rhs);
 
 ////////////////////////////////////////////////////////////
-/// \relates UnicodeString
-/// \brief Overload of `operator<=` to compare two UTF-32 strings
-///
-/// \param lhs  Left operand (a string)
-/// \param rhs Right operand (a string)
-///
-/// \return `true` if `lhs` is lexicographically before or equivalent to `rhs`
+/// \brief Lexicographically less-than-or-equal comparison between two strings
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_SYSTEM_API bool operator<=(const UnicodeString& lhs, const UnicodeString& rhs);
 
 ////////////////////////////////////////////////////////////
-/// \relates UnicodeString
-/// \brief Overload of `operator>=` to compare two UTF-32 strings
-///
-/// \param lhs  Left operand (a string)
-/// \param rhs Right operand (a string)
-///
-/// \return `true` if `lhs` is lexicographically after or equivalent to `rhs`
+/// \brief Lexicographically greater-than-or-equal comparison between two strings
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_SYSTEM_API bool operator>=(const UnicodeString& lhs, const UnicodeString& rhs);
 
 ////////////////////////////////////////////////////////////
-/// \relates UnicodeString
-/// \brief Overload of binary `operator+` to concatenate two strings
-///
-/// \param lhs  Left operand (a string)
-/// \param rhs Right operand (a string)
-///
-/// \return Concatenated string
+/// \brief Concatenation of two strings
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_SYSTEM_API UnicodeString operator+(const UnicodeString& lhs, const UnicodeString& rhs);
@@ -612,14 +435,10 @@ private:
 /// \class sf::UnicodeString
 /// \ingroup system
 ///
-/// `sf::UnicodeString` is a utility string class defined mainly for
-/// convenience. It is a Unicode string (implemented using
-/// UTF-32), thus it can store any character in the world
-/// (European, Chinese, Arabic, Hebrew, etc.).
-///
-/// It can handle conversions from/to ANSI and wide strings,
-/// so that you can work with standard string classes and still
-/// be compatible with functions taking a `sf::UnicodeString`.
+/// `sf::UnicodeString` is a UTF-32 string class that can store any
+/// character (European, Chinese, Arabic, Hebrew, etc.) and transparently
+/// converts to/from ANSI and wide strings, so standard string classes
+/// remain compatible with APIs taking a `sf::UnicodeString`.
 ///
 /// \code
 /// sf::UnicodeString s;
@@ -632,8 +451,8 @@ private:
 /// s += L'a';           // automatically converted from wide string
 /// \endcode
 ///
-/// Conversions involving ANSI strings use the default user facet. However
-/// it is possible to use a custom facet if necessary:
+/// Conversions involving ANSI strings use the default user facet, but
+/// a custom facet can be supplied:
 /// \code
 /// std::facet facet;
 /// sf::UnicodeString s;
@@ -642,16 +461,9 @@ private:
 /// s = sf::UnicodeString("hello", facet);
 /// \endcode
 ///
-/// `sf::UnicodeString` defines the most important functions of the
-/// standard `std::string` class: removing, random access, iterating,
-/// appending, comparing, etc. However it is a simple class
-/// provided for convenience, and you may have to consider using
-/// a more optimized class if your program requires complex string
-/// handling. The automatic conversion functions will then take
-/// care of converting your string to `sf::UnicodeString` whenever SFML
-/// requires it.
-///
-/// Please note that SFML also defines a low-level, generic
-/// interface for Unicode handling, see the `sf::Utf` classes.
+/// This class is a convenience wrapper that exposes the most common
+/// `std::string` operations (random access, iteration, append, compare,
+/// etc.); for heavy string processing prefer a more specialized class.
+/// For low-level Unicode handling, see the `sf::Utf` classes.
 ///
 ////////////////////////////////////////////////////////////

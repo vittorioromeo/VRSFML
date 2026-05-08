@@ -119,15 +119,12 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Spawn a new thread that will invoke `callable()`
     ///
-    /// Takes ownership of `callable` (heap-allocated for the
-    /// duration of the worker thread). Throws no C++ exceptions
-    /// -- uses `sf::base::abort()` if the OS refuses to spawn.
+    /// Takes ownership of `callable` (heap-allocated for the duration
+    /// of the worker thread). Throws no C++ exceptions -- uses
+    /// `sf::base::abort()` if the OS refuses to spawn.
     ///
     /// Implementation detail: each unique callable type instantiates
-    /// its own thunk, but the `Thread` ABI itself is type-erased
-    /// (stable across users of the header).
-    ///
-    /// \param callable Work to run on the new thread
+    /// its own thunk, but the `Thread` ABI itself is type-erased.
     ///
     ////////////////////////////////////////////////////////////
     template <typename F>

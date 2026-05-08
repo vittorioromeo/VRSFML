@@ -17,23 +17,14 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief Static functions for creating `sf::UnicodeString` from UTF data.
-///
-/// This class complements the standard `sf::UnicodeString` constructors
-/// by providing explicit functions for creating strings
-/// from raw UTF-8, UTF-16, or UTF-32 encoded byte sequences.
+/// \brief Builders that turn raw UTF-8/UTF-16/UTF-32 ranges into `sf::UnicodeString`
 ///
 ////////////////////////////////////////////////////////////
 class SFML_SYSTEM_API UnicodeStringUtfUtils
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Create a new sf::UnicodeString from a UTF-8 encoded string
-    ///
-    /// \param begin Forward iterator to the beginning of the UTF-8 sequence
-    /// \param end   Forward iterator to the end of the UTF-8 sequence
-    ///
-    /// \return A sf::UnicodeString containing the source string
+    /// \brief Build a `UnicodeString` from a UTF-8 range `[begin, end)`
     ///
     /// \see fromUtf16, fromUtf32
     ///
@@ -47,12 +38,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Create a new sf::UnicodeString from a UTF-16 encoded string
-    ///
-    /// \param begin Forward iterator to the beginning of the UTF-16 sequence
-    /// \param end   Forward iterator to the end of the UTF-16 sequence
-    ///
-    /// \return A sf::UnicodeString containing the source string
+    /// \brief Build a `UnicodeString` from a UTF-16 range `[begin, end)`
     ///
     /// \see fromUtf8, fromUtf32
     ///
@@ -66,16 +52,10 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Create a new sf::UnicodeString from a UTF-32 encoded string
+    /// \brief Build a `UnicodeString` from a UTF-32 range `[begin, end)`
     ///
-    /// This function is provided for consistency, it is equivalent to
-    /// using the constructors that takes a const char32_t* or
-    /// a std::u32string.
-    ///
-    /// \param begin Forward iterator to the beginning of the UTF-32 sequence
-    /// \param end   Forward iterator to the end of the UTF-32 sequence
-    ///
-    /// \return A sf::UnicodeString containing the source string
+    /// Provided for symmetry with the UTF-8/UTF-16 builders; equivalent
+    /// to the `const char32_t*` / `std::u32string` constructors.
     ///
     /// \see fromUtf8, fromUtf16
     ///

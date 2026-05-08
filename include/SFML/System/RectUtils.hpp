@@ -6,6 +6,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
 
 #include "SFML/Base/MinMaxMacros.hpp"
@@ -15,12 +16,9 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief Check the intersection between two rectangles
+/// \brief Compute the intersection of two rectangles, handling negative sizes correctly
 ///
-/// \param rect0 First rectangle
-/// \param rect1 Second rectangle
-///
-/// \return Intersection rectangle if intersecting, `base::nullOpt` otherwise
+/// \return Intersection rectangle if they overlap, `base::nullOpt` otherwise
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>

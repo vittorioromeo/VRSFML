@@ -30,41 +30,29 @@ public:
     virtual ~InputStream() = default;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Read data from the stream
+    /// \brief Read up to `size` bytes into `data`, advancing the reading position
     ///
-    /// After reading, the stream's reading position must be
-    /// advanced by the amount of bytes read.
-    ///
-    /// \param data Buffer where to copy the read data
-    /// \param size Desired number of bytes to read
-    ///
-    /// \return The number of bytes actually read, or `base::nullOpt` on error
+    /// \return Number of bytes actually read, or `base::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] virtual base::Optional<base::SizeT> read(void* data, base::SizeT size) = 0;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Change the current reading position
+    /// \brief Move the reading position to `position` (offset from the beginning)
     ///
-    /// \param position The position to seek to, from the beginning
-    ///
-    /// \return The position actually sought to, or `base::nullOpt` on error
+    /// \return Position actually sought to, or `base::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] virtual base::Optional<base::SizeT> seek(base::SizeT position) = 0;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the current reading position in the stream
-    ///
-    /// \return The current position, or `base::nullOpt` on error.
+    /// \brief Current reading position, or `base::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] virtual base::Optional<base::SizeT> tell() = 0;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Return the size of the stream
-    ///
-    /// \return The total number of bytes available in the stream, or `base::nullOpt` on error
+    /// \brief Total number of bytes in the stream, or `base::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] virtual base::Optional<base::SizeT> getSize() = 0;

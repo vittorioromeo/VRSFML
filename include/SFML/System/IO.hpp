@@ -48,9 +48,7 @@ struct FlushType
 };
 
 ////////////////////////////////////////////////////////////
-/// \brief Global used to flush an output stream.
-///
-/// Substitute for `std::flush`.
+/// \brief Global used to flush an output stream (substitute for `std::flush`)
 ///
 ////////////////////////////////////////////////////////////
 inline constexpr FlushType flush;
@@ -65,9 +63,7 @@ struct EndLType
 };
 
 ////////////////////////////////////////////////////////////
-/// \brief Global used to print a newline and flush an output stream.
-///
-/// Substitute for `std::endl`.
+/// \brief Prints a newline and flushes an output stream (substitute for `std::endl`)
 ///
 ////////////////////////////////////////////////////////////
 inline constexpr EndLType endL;
@@ -95,8 +91,6 @@ private:
 public:
     ////////////////////////////////////////////////////////////
     /// \brief Construct from a `std::streambuf`
-    ///
-    /// \param sbuf Pointer to the underlying stream buffer to wrap
     ///
     ////////////////////////////////////////////////////////////
     explicit IOStreamOutput(std::streambuf* sbuf);
@@ -266,9 +260,7 @@ public:
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Flags used to specify how a file should be opened.
-///
-/// Substitute for `std::ios_base::openmode`.
+/// \brief Flags used to specify how a file should be opened (substitute for `std::ios_base::openmode`)
 ///
 ////////////////////////////////////////////////////////////
 enum class FileOpenMode
@@ -288,9 +280,7 @@ SFML_BASE_DEFINE_ENUM_CLASS_BITWISE_OPS(FileOpenMode);
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Flags used to specify how a stream should be formatted.
-///
-/// Substitute for `std::ios_base::fmtflags`.
+/// \brief Flags used to specify how a stream should be formatted (substitute for `std::ios_base::fmtflags`)
 ///
 ////////////////////////////////////////////////////////////
 enum class FormatFlags
@@ -323,9 +313,7 @@ SFML_BASE_DEFINE_ENUM_CLASS_BITWISE_OPS(FormatFlags);
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Specifies the direction for seeking in a stream.
-///
-/// Substitute for `std::ios_base::seekdir`.
+/// \brief Specifies the direction for seeking in a stream (substitute for `std::ios_base::seekdir`)
 ///
 ////////////////////////////////////////////////////////////
 enum class SeekDir
@@ -337,9 +325,7 @@ enum class SeekDir
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Stream manipulator to set the fill character for an output stream.
-///
-/// Substitute for `std::setfill`.
+/// \brief Stream manipulator to set the fill character for an output stream (substitute for `std::setfill`)
 ///
 ////////////////////////////////////////////////////////////
 struct SetFill
@@ -349,9 +335,7 @@ struct SetFill
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Stream manipulator to set the field width for an output stream.
-///
-/// Substitute for `std::setw`.
+/// \brief Stream manipulator to set the field width for an output stream (substitute for `std::setw`)
 ///
 ////////////////////////////////////////////////////////////
 struct SetWidth
@@ -361,9 +345,7 @@ struct SetWidth
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Stream manipulator to set the precision for an output stream.
-///
-/// Substitute for `std::setprecision`.
+/// \brief Stream manipulator to set the precision for an output stream (substitute for `std::setprecision`)
 ///
 ////////////////////////////////////////////////////////////
 struct SetPrecision
@@ -373,9 +355,7 @@ struct SetPrecision
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Stream manipulator to set the output format to hexadecimal.
-///
-/// Substitute for `std::hex`.
+/// \brief Stream manipulator to set the output format to hexadecimal (substitute for `std::hex`)
 ///
 ////////////////////////////////////////////////////////////
 struct Hex
@@ -589,9 +569,7 @@ private:
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Reads a line from the input stream into the target variable.
-///
-/// Substitutes for `std::getline`.
+/// \brief Reads a line from the input stream into `target` (substitute for `std::getline`)
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -599,9 +577,7 @@ bool getLine(InStringStream& stream, T& target);
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Reads a line from the input stream into the target variable.
-///
-/// Substitutes for `std::getline`.
+/// \brief Reads a line from the input stream into `target` (substitute for `std::getline`)
 ///
 ////////////////////////////////////////////////////////////
 template <typename Stream, typename T>
@@ -609,9 +585,7 @@ bool getLine(Stream& stream, T& target);
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Reads a line from the input stream into the target variable.
-///
-/// Substitutes for `std::getline`.
+/// \brief Reads a line from the input stream into `target` (substitute for `std::getline`)
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -624,15 +598,11 @@ bool getLine(IOStreamInput& stream, T& target);
 /// \file SFML/System/IO.hpp
 /// \ingroup system
 ///
-/// This header provides classes for file and string input/output operations.
-/// It includes wrappers for standard streams like `std::cout`, `std::cin`, and `std::cerr`,
-/// as well as specialized classes for reading from and writing to files and strings.
+/// Classes for file and string I/O: wrappers for `std::cout`/`std::cin`/`std::cerr`,
+/// file and string streams, and stream manipulators/flags for formatting.
 ///
-/// It also defines various stream manipulators and flags for formatting output.
-///
-/// The classes are designed to be used in a way that minimizes dependencies on
-/// expensive headers, using the PImpl idiom to hide implementation details.
-///
-/// Functionality and API should be similar to the Standard Library's I/O streams.
+/// Implementation details are hidden behind PImpl to keep expensive standard
+/// library headers out of the public API. Functionality mirrors the Standard
+/// Library's I/O streams.
 ///
 ////////////////////////////////////////////////////////////
