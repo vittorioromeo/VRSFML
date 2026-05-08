@@ -1,5 +1,6 @@
 #include "BubbleIdleMain.hpp"
 #include "CatType.hpp"
+#include "UIState.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"
 

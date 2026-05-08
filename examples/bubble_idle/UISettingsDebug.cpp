@@ -8,6 +8,7 @@
 #include "PurchasableScalingValue.hpp"
 #include "Serialization.hpp"
 #include "Shrine.hpp"
+#include "UIState.hpp"
 #include "Version.hpp"
 
 #include "ExampleUtils/Progress.hpp"

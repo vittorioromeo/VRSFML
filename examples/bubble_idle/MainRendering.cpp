@@ -5,6 +5,7 @@
 #include "Cat.hpp"
 #include "CatConstants.hpp"
 #include "CatType.hpp"
+#include "ComboState.hpp"
 #include "Constants.hpp"
 #include "Doll.hpp"
 #include "GameEvent.hpp"
@@ -16,6 +17,7 @@
 #include "Shrine.hpp"
 #include "ShrineConstants.hpp"
 #include "ShrineType.hpp"
+#include "UIState.hpp"
 #include "Version.hpp"
 
 #include "ExampleUtils/Easing.hpp"

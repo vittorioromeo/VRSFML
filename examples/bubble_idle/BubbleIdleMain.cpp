@@ -8,9 +8,13 @@
 #include "CatNames.hpp"
 #include "CatType.hpp"
 #include "Collision.hpp"
+#include "ComboState.hpp"
 #include "Constants.hpp"
 #include "Doll.hpp"
 #include "HexSession.hpp"
+#include "InputHelper.hpp"
+#include "MainBombStorage.hpp"
+#include "NotificationState.hpp"
 #include "Particle.hpp"
 #include "ParticleData.hpp"
 #include "ParticleType.hpp"
@@ -22,6 +26,7 @@
 #include "ShrineType.hpp"
 #include "Stats.hpp"
 #include "TextParticle.hpp"
+#include "UIState.hpp"
 #include "Version.hpp"
 
 #include "ExampleUtils/ControlFlow.hpp"
@@ -1009,7 +1014,7 @@ void Main::turnBubbleInto(Bubble& bubble, const BubbleType newType)
     if (newType == BubbleType::Normal)
     {
         if (bubble.type == BubbleType::Bomb)
-            bombIdxToCatIdx.erase(static_cast<sf::base::SizeT>(&bubble - pt->bubbles.data()));
+            bombStorage->bombIdxToCatIdx.erase(static_cast<sf::base::SizeT>(&bubble - pt->bubbles.data()));
 
         bubble.rotation = 0.f;
         bubble.torque   = 0.f;
@@ -1496,7 +1501,7 @@ void Main::forceResetGame(const bool goToShopTab)
     moneyGainedLastSecond = 0u;
     samplerMoneyPerSecond.clear();
 
-    bombIdxToCatIdx.clear();
+    bombStorage->bombIdxToCatIdx.clear();
     uiState.purchaseUnlockedEffects.clear();
     uiState.btnWasDisabled.clear();
     undoPPPurchase.clear();
@@ -1622,9 +1627,9 @@ void Main::doExplosion(Bubble& bubble)
 
     // TODO P2: cleanup
     const auto  bubbleIdx  = static_cast<sf::base::SizeT>(&bubble - pt->bubbles.data());
-    const auto* bombIdxItr = bombIdxToCatIdx.find(bubbleIdx);
+    const auto* bombIdxItr = bombStorage->bombIdxToCatIdx.find(bubbleIdx);
 
-    Cat* catWhoMadeBomb = bombIdxItr != bombIdxToCatIdx.end() ? pt->cats.data() + bombIdxItr->second : nullptr;
+    Cat* catWhoMadeBomb = bombIdxItr != bombStorage->bombIdxToCatIdx.end() ? pt->cats.data() + bombIdxItr->second : nullptr;
 
     const float explosionRadius = pt->getComputedBombExplosionRadius();
 
@@ -1671,7 +1676,7 @@ void Main::doExplosion(Bubble& bubble)
     }
 
     if (catWhoMadeBomb != nullptr)
-        bombIdxToCatIdx.erase(bombIdxItr);
+        bombStorage->bombIdxToCatIdx.erase(bombIdxItr);
 }
 
 

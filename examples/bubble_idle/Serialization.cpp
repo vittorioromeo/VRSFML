@@ -27,6 +27,9 @@
 #pragma GCC diagnostic ignored "-Wsign-conversion"
 
 #define JSON_NO_IO
+#define JSON_HAS_FILESYSTEM           0
+#define JSON_HAS_THREE_WAY_COMPARISON 0
+#define JSON_HAS_RANGES               0
 #include "json.hpp"
 
 #pragma GCC diagnostic pop

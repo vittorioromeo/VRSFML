@@ -5,6 +5,7 @@
 #include "BubbleIdleMain.hpp"
 #include "BubbleType.hpp"
 #include "CatType.hpp"
+#include "ComboState.hpp"
 #include "ShrineConstants.hpp"
 
 #include "ExampleUtils/Profiler.hpp"

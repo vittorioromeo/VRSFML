@@ -8,6 +8,7 @@
 #include "Cat.hpp"
 #include "CatType.hpp"
 #include "Collision.hpp"
+#include "ComboState.hpp"
 #include "Constants.hpp"
 #include "Doll.hpp"
 #include "HellPortal.hpp"
