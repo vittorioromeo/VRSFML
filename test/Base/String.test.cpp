@@ -328,6 +328,75 @@ TEST_CASE("[Base] Base/String.hpp")
             CHECK(str[maxSsoSize + 1] == 'D');
         }
 
+        SUBCASE("popBack")
+        {
+            // Pop on SSO string
+            sf::base::String ssoStr("abc");
+            CHECK(ssoStr.isSso());
+            CHECK(ssoStr.size() == 3);
+
+            ssoStr.popBack();
+            CHECK(ssoStr.isSso());
+            CHECK(ssoStr.size() == 2);
+            CHECK(ssoStr == "ab");
+            CHECK(ssoStr.cStr()[2] == '\0'); // Null terminator written
+
+            ssoStr.popBack();
+            CHECK(ssoStr == "a");
+            CHECK(ssoStr.cStr()[1] == '\0');
+
+            ssoStr.popBack();
+            CHECK(ssoStr.empty());
+            CHECK(ssoStr.size() == 0);
+            CHECK(ssoStr == "");
+            CHECK(ssoStr.cStr()[0] == '\0');
+
+            // Pop on heap string preserves capacity and heap-ness
+            sf::base::String heapStr(longStringLiteral);
+            CHECK(!heapStr.isSso());
+
+            const auto origCap  = heapStr.capacity();
+            const auto origSize = heapStr.size();
+
+            heapStr.popBack();
+            CHECK(!heapStr.isSso());
+            CHECK(heapStr.size() == origSize - 1);
+            CHECK(heapStr.capacity() == origCap);
+            CHECK(heapStr.cStr()[heapStr.size()] == '\0');
+            CHECK(sf::base::StringView(heapStr) == sf::base::StringView(longStringLiteral, origSize - 1));
+
+            // Pop down to one character on heap (stays heap, capacity unchanged)
+            while (heapStr.size() > 1)
+                heapStr.popBack();
+
+            CHECK(!heapStr.isSso());
+            CHECK(heapStr.size() == 1);
+            CHECK(heapStr.capacity() == origCap);
+            CHECK(heapStr[0] == longStringLiteral[0]);
+
+            heapStr.popBack();
+            CHECK(!heapStr.isSso()); // Still on heap, popBack does not deallocate
+            CHECK(heapStr.empty());
+            CHECK(heapStr.capacity() == origCap);
+
+            // pushBack/popBack round-trip on a freshly-grown heap string
+            sf::base::String roundTrip;
+            for (sf::base::SizeT i = 0; i < maxSsoSize + 5; ++i)
+                roundTrip.pushBack(static_cast<char>('a' + (i % 26)));
+
+            CHECK(!roundTrip.isSso());
+            const auto rtSize = roundTrip.size();
+
+            roundTrip.pushBack('Z');
+            CHECK(roundTrip.size() == rtSize + 1);
+            CHECK(roundTrip.back() == 'Z');
+
+            roundTrip.popBack();
+            CHECK(roundTrip.size() == rtSize);
+            CHECK(roundTrip.back() == static_cast<char>('a' + ((rtSize - 1) % 26)));
+            CHECK(roundTrip.cStr()[roundTrip.size()] == '\0');
+        }
+
         SUBCASE("append")
         {
             // Build a string via two appends that stays within SSO

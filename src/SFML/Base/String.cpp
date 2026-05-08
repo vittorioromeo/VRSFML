@@ -248,6 +248,14 @@ void String::pushBack(const char c)
 
 
 ////////////////////////////////////////////////////////////
+void String::popBack() noexcept
+{
+    SFML_BASE_ASSERT(!empty() && "popBack on empty string");
+    setSizeAndTerminate(size() - 1u);
+}
+
+
+////////////////////////////////////////////////////////////
 String& String::append(const char c)
 {
     pushBack(c);
