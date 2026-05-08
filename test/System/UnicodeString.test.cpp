@@ -22,17 +22,20 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-// Return either argument depending on whether wchar_t is 16 or 32 bits
-// Lets us write tests that work on both Windows where wchar_t is 16 bits
-// and elsewhere where it is 32. Otherwise the tests would only work on
-// one OS or the other.
+// Pick the expected ANSI narrowing for a non-ASCII codepoint based on the
+// host C runtime, not the compiler. `std::ctype<wchar_t>::narrow` defers to
+// `wctob` in the global ("C") locale; on Windows the CRT honors the system
+// codepage (e.g. CP1252) so U+00FA narrows to 0xFA, while on Unix C-locale
+// `wctob` is ASCII-only and returns EOF, leaving the caller's replacement.
+// MinGW links against MSVCRT/UCRT and therefore behaves like MSVC here, so
+// the discriminator is `_WIN32` alone -- not `_WIN32 && !__MINGW32__`.
 template <typename T>
 auto selectAnsi([[maybe_unused]] const std::basic_string<T>& stringWin,
                 [[maybe_unused]] const std::basic_string<T>& stringUnix)
 {
     SFML_BASE_ASSERT(stringWin != stringUnix && "Invalid to select between identical inputs");
 
-#if defined(_WIN32) && !defined(__MINGW32__)
+#if defined(_WIN32)
     return stringWin;
 #else
     return stringUnix;
