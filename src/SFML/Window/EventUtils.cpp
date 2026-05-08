@@ -8,6 +8,7 @@
 #include "SFML/Window/EventUtils.hpp"
 
 #include "SFML/Window/Event.hpp"
+#include "SFML/Window/Keyboard.hpp"
 
 
 namespace sf::EventUtils
