@@ -59,7 +59,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     /// \param r Red component of the color
     /// \param g Green component of the color
     /// \param b Blue component of the color
-    /// \param a Alpha component of the color (default is 1, for fully opaque
+    /// \param a Alpha component of the color (default is 1, for fully opaque)
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::const]] static constexpr Color fromFloats(

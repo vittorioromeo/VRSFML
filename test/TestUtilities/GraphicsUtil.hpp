@@ -25,13 +25,6 @@ class Rect2;
 } // namespace sf
 
 
-// `View::ScissorRect` is a nested type that derives from `Rect2f`;
-// its definition lives in `SFML/Graphics/View.hpp` which test files already include
-// when they need it. The specialization's body in `GraphicsUtil.cpp` just slices
-// to `Rect2f`, so only the forward declaration is needed here.
-#include "SFML/Graphics/View.hpp" // IWYU pragma: keep
-
-
 namespace doctest
 {
 template <>
@@ -80,12 +73,6 @@ template <typename T>
 struct StringMaker<sf::Rect2<T>>
 {
     static String convert(const sf::Rect2<T>& rect);
-};
-
-template <>
-struct StringMaker<sf::View::ScissorRect>
-{
-    static String convert(const sf::View::ScissorRect& scissorRect);
 };
 } // namespace doctest
 

@@ -102,15 +102,15 @@ TEST_CASE("[Audio] sf::SoundFileFactory")
     {
         SECTION("Missing file")
         {
-            CHECK(!sf::SoundFileFactory::createReaderFromFilename("does/not/exist.wav"));
+            CHECK((sf::SoundFileFactory::createReaderFromFilename("does/not/exist.wav") == nullptr));
         }
 
         SECTION("Valid file")
         {
-            CHECK(sf::SoundFileFactory::createReaderFromFilename("ding.flac"));
-            CHECK(sf::SoundFileFactory::createReaderFromFilename("ding.mp3"));
-            CHECK(sf::SoundFileFactory::createReaderFromFilename("doodle_pop.ogg"));
-            CHECK(sf::SoundFileFactory::createReaderFromFilename("killdeer.wav"));
+            CHECK((sf::SoundFileFactory::createReaderFromFilename("ding.flac") != nullptr));
+            CHECK((sf::SoundFileFactory::createReaderFromFilename("ding.mp3") != nullptr));
+            CHECK((sf::SoundFileFactory::createReaderFromFilename("doodle_pop.ogg") != nullptr));
+            CHECK((sf::SoundFileFactory::createReaderFromFilename("killdeer.wav") != nullptr));
         }
     }
 
@@ -139,22 +139,22 @@ TEST_CASE("[Audio] sf::SoundFileFactory")
         }
 
         REQUIRE(stream.hasValue());
-        CHECK(sf::SoundFileFactory::createReaderFromStream(*stream));
+        CHECK((sf::SoundFileFactory::createReaderFromStream(*stream) != nullptr));
     }
 
     SECTION("createWriterFromFilename()")
     {
         SECTION("Invalid extension")
         {
-            CHECK(!sf::SoundFileFactory::createWriterFromFilename("cannot/write/to.txt"));
+            CHECK((sf::SoundFileFactory::createWriterFromFilename("cannot/write/to.txt") == nullptr));
         }
 
         SECTION("Valid extension")
         {
-            CHECK(sf::SoundFileFactory::createWriterFromFilename("file.flac"));
-            CHECK(!sf::SoundFileFactory::createWriterFromFilename("file.mp3")); // Mp3 writing not yet implemented
-            CHECK(sf::SoundFileFactory::createWriterFromFilename("file.ogg"));
-            CHECK(sf::SoundFileFactory::createWriterFromFilename("file.wav"));
+            CHECK((sf::SoundFileFactory::createWriterFromFilename("file.flac") != nullptr));
+            CHECK((sf::SoundFileFactory::createWriterFromFilename("file.mp3") == nullptr)); // Mp3 writing not yet implemented
+            CHECK((sf::SoundFileFactory::createWriterFromFilename("file.ogg") != nullptr));
+            CHECK((sf::SoundFileFactory::createWriterFromFilename("file.wav") != nullptr));
         }
     }
 }

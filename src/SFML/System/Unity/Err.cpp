@@ -9,6 +9,7 @@
 
 #include "SFML/System/Atomic.hpp"
 #include "SFML/System/Path.hpp"
+#include "SFML/System/PathStreamOp.hpp"
 #include "SFML/System/PathUtils.hpp"
 
 #include "SFML/Base/StackTrace.hpp"

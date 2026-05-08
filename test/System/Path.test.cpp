@@ -4,6 +4,8 @@
 
 #include "SFML/System/Path.hpp"
 
+#include "SFML/System/PathStreamOp.hpp"
+
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"

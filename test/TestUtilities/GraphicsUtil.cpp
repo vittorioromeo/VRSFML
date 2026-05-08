@@ -1,4 +1,4 @@
-#include "GraphicsUtil.hpp"
+#include "GraphicsViewUtil.hpp"
 #include "SystemUtil.hpp"
 
 #include "SFML/Graphics/BlendMode.hpp"
@@ -13,6 +13,8 @@
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/ToChars.hpp"
 #include "SFML/Base/Trait/IsFloatingPoint.hpp"
+
+#include <DoctestFwd.hpp>
 
 
 namespace
@@ -206,6 +208,21 @@ String StringMaker<sf::View::ScissorRect>::convert(const sf::View::ScissorRect& 
 // Explicit instantiations for the rect types actually used by tests.
 template struct StringMaker<sf::Rect2<int>>;
 template struct StringMaker<sf::Rect2<float>>;
+
+
+////////////////////////////////////////////////////////////
+// Defined out-of-line so the explicit instantiations below see the
+// `StringMaker<sf::Transform>` / `<sf::Color>` / `<sf::Rect2<float>>`
+// specializations (which only this TU includes).
+template <typename T>
+String StringMaker<::Approx<T>>::convert(const ::Approx<T>& approx)
+{
+    return toString(approx.value);
+}
+
+template struct StringMaker<::Approx<sf::Transform>>;
+template struct StringMaker<::Approx<sf::Color>>;
+template struct StringMaker<::Approx<sf::Rect2<float>>>;
 
 } // namespace doctest
 

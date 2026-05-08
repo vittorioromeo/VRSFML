@@ -1,4 +1,5 @@
-#include "StringifyStdStringUtil.hpp" // IWYU pragma: keep
+#include "StringifyStdStringUtil.hpp"     // IWYU pragma: keep
+#include "StringifyStdStringViewUtil.hpp" // IWYU pragma: keep
 
 #include "SFML/System/Utf.hpp"
 

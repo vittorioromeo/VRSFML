@@ -7,18 +7,16 @@
 #pragma once
 
 
-#include <DoctestFwd.hpp>
+namespace doctest
+{
+template <typename T>
+struct StringMaker;
+
+class String;
+} // namespace doctest
 
 
 // Forward declarations
-namespace sf::base
-{
-class String;
-
-template <typename T, typename TDeleter>
-class UniquePtr;
-} // namespace sf::base
-
 namespace sf
 {
 class Angle;
@@ -37,6 +35,25 @@ class Rect2;
 } // namespace sf
 
 
+////////////////////////////////////////////////////////////
+template <typename T>
+struct Approx
+{
+    explicit Approx(const T& t) : value(t)
+    {
+    }
+
+    const T& value;
+};
+
+bool operator==(const float& lhs, const Approx<float>& rhs);
+bool operator==(sf::Vec2<float> lhs, const Approx<sf::Vec2<float>>& rhs);
+bool operator==(const sf::Vec3<float>& lhs, const Approx<sf::Vec3<float>>& rhs);
+bool operator==(const sf::Angle& lhs, const Approx<sf::Angle>& rhs);
+bool operator==(const sf::Rect2<float>& lhs, const Approx<sf::Rect2<float>>& rhs);
+
+
+////////////////////////////////////////////////////////////
 namespace doctest
 {
 template <>
@@ -75,47 +92,10 @@ struct StringMaker<sf::Vec3<T>>
     static String convert(const sf::Vec3<T>& vec);
 };
 
-template <typename T, typename Del>
-struct StringMaker<sf::base::UniquePtr<T, Del>>
-{
-    static String convert(const sf::base::UniquePtr<T, Del>&)
-    {
-        return "";
-    }
-};
-} // namespace doctest
-
-
-////////////////////////////////////////////////////////////
-/// Class template for creating custom approximate comparisons.
-/// To register a new type, simply implement a custom operator==
-/// overload for that type.
-////////////////////////////////////////////////////////////
-template <typename T>
-struct Approx
-{
-    explicit Approx(const T& t) : value(t)
-    {
-    }
-
-    const T& value;
-};
-
-bool operator==(const float& lhs, const Approx<float>& rhs);
-bool operator==(sf::Vec2<float> lhs, const Approx<sf::Vec2<float>>& rhs);
-bool operator==(const sf::Vec3<float>& lhs, const Approx<sf::Vec3<float>>& rhs);
-bool operator==(const sf::Angle& lhs, const Approx<sf::Angle>& rhs);
-bool operator==(const sf::Rect2<float>& lhs, const Approx<sf::Rect2<float>>& rhs);
-
-
-namespace doctest
-{
 template <typename T>
 struct StringMaker<::Approx<T>>
 {
-    static String convert(const ::Approx<T>& approx)
-    {
-        return toString(approx.value);
-    }
+    static String convert(const ::Approx<T>& approx);
 };
+
 } // namespace doctest
