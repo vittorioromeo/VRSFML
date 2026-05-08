@@ -1,9 +1,8 @@
 #pragma once
 
-#include <DoctestFwd.hpp>
+#include "SFML/Base/FwdStdString.hpp"
 
-#include <string>
-#include <string_view>
+#include <DoctestFwd.hpp>
 
 namespace doctest
 {
@@ -32,15 +31,6 @@ struct StringMaker<std::basic_string<T>>
     static doctest::String convert(const std::basic_string<T>& s)
     {
         return reinterpret_cast<const char*>(s.c_str()); // TODO P3:
-    }
-};
-
-template <typename T>
-struct StringMaker<std::basic_string_view<T>>
-{
-    static doctest::String convert(const std::basic_string_view<T>& s)
-    {
-        return reinterpret_cast<const char*>(s.data()); // TODO P3:
     }
 };
 

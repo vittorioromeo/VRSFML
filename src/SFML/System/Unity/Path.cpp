@@ -5,7 +5,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/System/Path.hpp"
+#include "SFML/System/PathStreamOp.hpp"
 
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/String.hpp"
@@ -188,16 +188,6 @@ Path operator/(const Path& lhs, const Path& rhs)
 
 
 ////////////////////////////////////////////////////////////
-std::ostream& operator<<(std::ostream& os, const Path& path)
-{
-    // Use `u8string()` rather than streaming `fsPath` directly: the latter uses the C locale,
-    // which throws on MinGW/Clang64 when the path contains characters outside the current codepage.
-    const auto u8 = path.m_impl->fsPath.u8string();
-    return os.write(reinterpret_cast<const char*>(u8.data()), static_cast<std::streamsize>(u8.size()));
-}
-
-
-////////////////////////////////////////////////////////////
 template <typename T>
 T Path::to() const
 {
@@ -282,6 +272,16 @@ template base::String          Path::to<base::String>() const;
 template std::u8string         Path::to<std::u8string>() const;
 template std::u32string        Path::to<std::u32string>() const;
 template std::wstring          Path::to<std::wstring>() const;
+
+
+////////////////////////////////////////////////////////////
+std::ostream& operator<<(std::ostream& os, const Path& path)
+{
+    // Use UTF-8 rather than streaming `std::filesystem::path` directly: the latter uses
+    // the C locale, which throws on MinGW/Clang64 for some non-ASCII paths.
+    const auto u8 = path.to<std::string>();
+    return os.write(u8.data(), static_cast<std::streamsize>(u8.size()));
+}
 
 
 ////////////////////////////////////////////////////////////

@@ -28,7 +28,6 @@
 #include "SFML/Graphics/PieSliceShapeData.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RectangleShapeData.hpp"
-#include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RingPieSliceShapeData.hpp"
 #include "SFML/Graphics/RingShapeData.hpp"
 #include "SFML/Graphics/RoundedRectangleShapeData.hpp"

@@ -1,4 +1,3 @@
-#include "GraphicsUtil.hpp"
 #include "SystemUtil.hpp"
 
 #include "SFML/System/Angle.hpp"
@@ -101,6 +100,14 @@ String StringMaker<sf::Vec3<T>>::convert(const sf::Vec3<T>& vec)
 
 
 ////////////////////////////////////////////////////////////
+template <typename T>
+String StringMaker<::Approx<T>>::convert(const ::Approx<T>& approx)
+{
+    return toString(approx.value);
+}
+
+
+////////////////////////////////////////////////////////////
 // Explicit instantiations for the types actually used by tests.
 template struct StringMaker<sf::Vec2<int>>;
 template struct StringMaker<sf::Vec2<unsigned int>>;
@@ -109,6 +116,11 @@ template struct StringMaker<sf::Vec2<float>>;
 template struct StringMaker<sf::Vec3<int>>;
 template struct StringMaker<sf::Vec3<unsigned int>>;
 template struct StringMaker<sf::Vec3<float>>;
+
+template struct StringMaker<::Approx<float>>;
+template struct StringMaker<::Approx<sf::Angle>>;
+template struct StringMaker<::Approx<sf::Vec2<float>>>;
+template struct StringMaker<::Approx<sf::Vec3<float>>>;
 
 } // namespace doctest
 

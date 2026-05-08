@@ -1,4 +1,4 @@
-#include "GraphicsUtil.hpp"
+#include "GraphicsViewUtil.hpp"
 #include "SystemUtil.hpp"
 
 #include "SFML/Graphics/View.hpp"
