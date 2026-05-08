@@ -4,22 +4,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/System/Priv/Vec2Base.hpp"
-
 #include "SFML/Base/Math/Fabs.hpp"
-#include "SFML/Base/Math/Floor.hpp"
 
 
 namespace tsurv
 {
-////////////////////////////////////////////////////////////
-template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr sf::Vec2f floorVec2(const sf::Vec2<T> vec) noexcept
-{
-    return {sf::base::floor(vec.x), sf::base::floor(vec.y)};
-}
-
-
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float bounce(const float value) noexcept
 {

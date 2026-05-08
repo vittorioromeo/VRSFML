@@ -925,7 +925,7 @@ private:
         const auto opacityAsAlpha = static_cast<sf::base::U8>(particle.opacity * 255.f);
 
         return {
-            .position    = floorVec2(particle.position),
+            .position    = particle.position.componentWiseFloor(),
             .scale       = {particle.scale, particle.scale},
             .rotation    = sf::radians(particle.rotation),
             .textureRect = m_txrRedDot, // No texture
@@ -943,9 +943,9 @@ private:
         const auto opacityAsAlpha = static_cast<sf::base::U8>(particle.opacity * 255.f);
 
         return {
-            .position    = floorVec2(particle.position),
+            .position    = particle.position.componentWiseFloor(),
             .scale       = {particle.scale, particle.scale},
-            .origin      = floorVec2(particle.origin),
+            .origin      = particle.origin.componentWiseFloor(),
             .rotation    = sf::radians(particle.rotation),
             .textureRect = particle.textureRect,
             .color       = sf::Color::whiteWithAlpha(opacityAsAlpha),
@@ -997,7 +997,7 @@ private:
     template <typename T>
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] sf::Vec2f toDrawCoordinates(const sf::Vec2<T> position) const noexcept
     {
-        return floorVec2(drawOffset + position.toVec2f().componentWiseMul(drawBlockSize));
+        return (drawOffset + position.toVec2f().componentWiseMul(drawBlockSize)).componentWiseFloor();
     }
 
 
@@ -1069,9 +1069,9 @@ private:
         }
 
         const sf::DrawTextureSettings commonDrawParams{
-            .position = floorVec2(position.addY(yOffset)).addX(1.f).addY(1.f),
+            .position = position.addY(yOffset).componentWiseFloor().addX(1.f).addY(1.f),
             .scale    = sf::Vec2f{finalSquishMult, finalSquishMult} * options.scale,
-            .origin   = floorVec2(drawBlockSize / 2.f),
+            .origin   = (drawBlockSize / 2.f).componentWiseFloor(),
             .color    = hueColorFromPaletteIdx(block.paletteIdx, alpha),
         };
 
@@ -1145,18 +1145,18 @@ private:
         {
             sf::Text text{m_fontMago2,
                           {
-                              .origin        = floorVec2(drawBlockSize / 2.f),
+                              .origin        = (drawBlockSize / 2.f).componentWiseFloor(),
                               .string        = sf::base::toString(static_cast<unsigned int>(block.health - 1u)),
                               .characterSize = 5u,
                               .fillColor     = sf::Color::blackWithAlpha(alpha),
                           }};
 
-            text.setGlobalCenter(floorVec2(position.addY(yOffset) + sf::Vec2f{2.f, 3.f}));
+            text.setGlobalCenter((position.addY(yOffset) + sf::Vec2f{2.f, 3.f}).componentWiseFloor());
             m_rtGame.draw(text, {.view = m_worldView});
 
             text.setFillColor(sf::Color::whiteWithAlpha(alpha));
 
-            text.setGlobalCenter(floorVec2(position.addY(yOffset)) + sf::Vec2f{2.f, 2.f});
+            text.setGlobalCenter(position.addY(yOffset).componentWiseFloor() + sf::Vec2f{2.f, 2.f});
             m_rtGame.draw(text, {.view = m_worldView});
         }
 
@@ -1246,7 +1246,7 @@ private:
 
         // 1. Define the pivot point in the tetramino's local, unscaled coordinate space.
         // This is the center of the 4x4 grid.
-        const sf::Vec2f localPivot = floorVec2((drawBlockSize * static_cast<float>(shapeDimension)) / 2.f);
+        const sf::Vec2f localPivot = ((drawBlockSize * static_cast<float>(shapeDimension)) / 2.f).componentWiseFloor();
 
         for (sf::base::SizeT y = 0u; y < shapeDimension; ++y)
             for (sf::base::SizeT x = 0u; x < shapeDimension; ++x)
@@ -1258,7 +1258,7 @@ private:
 
                 // 2. Calculate this block's local center position, relative to the top-left corner.
                 const sf::Vec2f localBlockCenter = sf::Vec2uz{x, y}.toVec2f().componentWiseMul(drawBlockSize) +
-                                                   floorVec2(drawBlockSize / 2.f);
+                                                   (drawBlockSize / 2.f).componentWiseFloor();
 
                 // 3. Get the block's position vector relative to the central pivot.
                 sf::Vec2f positionRelativeToPivot = localBlockCenter - localPivot;
@@ -1268,7 +1268,7 @@ private:
                 positionRelativeToPivot = positionRelativeToPivot.rotatedBy(sf::degrees(rotation));
 
                 // 5. The final screen position is the tetramino's center plus the transformed relative vector.
-                const sf::Vec2f finalDrawPosition = floorVec2(centerPosition + positionRelativeToPivot);
+                const sf::Vec2f finalDrawPosition = (centerPosition + positionRelativeToPivot).componentWiseFloor();
 
                 // 6. Call drawBlock, passing all the necessary transform properties.
                 const auto [pos,
@@ -3501,7 +3501,7 @@ private:
         m_rtGame.draw(
             sf::RectangleShapeData{
                 .position         = toDrawCoordinates(sf::Vec2uz{0, gridGraceY}),
-                .origin           = floorVec2(drawBlockSize / 2.f),
+                .origin           = (drawBlockSize / 2.f).componentWiseFloor(),
                 .fillColor        = {30, 30, 30},
                 .outlineColor     = {35, 35, 35},
                 .outlineThickness = 1.f,
@@ -3529,7 +3529,7 @@ private:
         m_rtGame.draw(
             sf::RectangleShapeData{
                 .position         = toDrawCoordinates(sf::Vec2uz{0, gridGraceY}) - sf::Vec2f{1.f, 1.f},
-                .origin           = floorVec2(drawBlockSize / 2.f),
+                .origin           = (drawBlockSize / 2.f).componentWiseFloor(),
                 .fillColor        = sf::Color::Transparent,
                 .outlineColor     = {35, 35, 35},
                 .outlineThickness = 1.f,
@@ -3540,7 +3540,7 @@ private:
         m_rtGame.draw(
             sf::RectangleShapeData{
                 .position         = toDrawCoordinates(sf::Vec2uz{0, gridGraceY}) - sf::Vec2f{3.f, 3.f},
-                .origin           = floorVec2(drawBlockSize / 2.f),
+                .origin           = (drawBlockSize / 2.f).componentWiseFloor(),
                 .fillColor        = sf::Color::Transparent,
                 .outlineColor     = {135, 135, 135},
                 .outlineThickness = 1.f,
@@ -3796,7 +3796,7 @@ private:
             const auto gridHeight = m_world.blockGrid.getHeight();
 
             const auto lastDrawPos = getDrawPosition(nDrills - 1);
-            const auto lastGridPos = toGridCoordinates(floorVec2(lastDrawPos + sf::Vec2f{radius / 2.f, radius / 2.f}))
+            const auto lastGridPos = toGridCoordinates((lastDrawPos + sf::Vec2f{radius / 2.f, radius / 2.f}).componentWiseFloor())
                                          .componentWiseClamp({0, 0}, sf::Vec2uz{gridWidth - 1, gridHeight - 1}.toVec2i());
 
             const auto& optBlock = m_world.blockGrid.at(lastGridPos);
@@ -3827,8 +3827,8 @@ private:
             {
                 m_rtGame.draw(m_textureAtlas.getTexture(),
                               {
-                                  .position    = floorVec2(getDrawPosition(i)),
-                                  .origin      = floorVec2(sf::Vec2f{radius / 2.f, radius / 2.f}),
+                                  .position    = getDrawPosition(i).componentWiseFloor(),
+                                  .origin      = sf::Vec2f{radius / 2.f, radius / 2.f}.componentWiseFloor(),
                                   .rotation    = rotation,
                                   .textureRect = m_txrDrill,
                                   .color       = hueColorFromPaletteIdx(paletteIdx, 255u),
@@ -3937,7 +3937,7 @@ private:
         const sf::Vec2f positionRelativeToPivot = localBlockCenter - localPivot;
 
         // 4. The final world position is the tetramino's world center plus this relative vector.
-        return floorVec2(tetraminoCenter + positionRelativeToPivot);
+        return (tetraminoCenter + positionRelativeToPivot).componentWiseFloor();
     }
 
 
@@ -3959,7 +3959,7 @@ private:
 
         sf::Sprite spike{
             .scale       = sf::Vec2f{finalSquishMult, finalSquishMult},
-            .origin      = floorVec2(sf::Vec2f{drawBlockSize.x / 2.f, drawBlockSize.y / 2.f}),
+            .origin      = sf::Vec2f{drawBlockSize.x / 2.f, drawBlockSize.y / 2.f}.componentWiseFloor(),
             .rotation    = rotation,
             .textureRect = m_txrDrill,
         };
@@ -3970,14 +3970,14 @@ private:
             const sf::Vec2f ghostBlockDrawPos = getDrawPositionOfLocalBlock(bPos, ghostTetraminoCenter);
 
             // Draw main spike
-            spike.position = floorVec2(offset + mainBlockDrawPos.addX(sf::base::floor(-drawBlockSize.x / 2.f)));
+            spike.position = (offset + mainBlockDrawPos.addX(sf::base::floor(-drawBlockSize.x / 2.f))).componentWiseFloor();
             spike.color    = mainColor;
             m_rtGame.draw(spike, {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
 
             // Draw ghost spike
             if (drawGhost)
             {
-                spike.position = floorVec2(offset + ghostBlockDrawPos.addY(sf::base::floor(drawBlockSize.y / 2.f))) -
+                spike.position = (offset + ghostBlockDrawPos.addY(sf::base::floor(drawBlockSize.y / 2.f))).componentWiseFloor() -
                                  sf::Vec2f{1.f, 1.f};
                 spike.color    = ghostColor;
                 m_rtGame.draw(spike, {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
@@ -4077,7 +4077,7 @@ private:
 
         sf::Sprite spike{
             .scale       = sf::Vec2f{finalSquishMult, finalSquishMult},
-            .origin      = floorVec2(sf::Vec2f{drawBlockSize.x / 2.f, drawBlockSize.y / 2.f} - sf::Vec2f{2.f, 2.f}),
+            .origin      = (sf::Vec2f{drawBlockSize.x / 2.f, drawBlockSize.y / 2.f} - sf::Vec2f{2.f, 2.f}).componentWiseFloor(),
             .rotation    = rotation + sf::degrees(180.f + 45.f),
             .textureRect = m_txrEmitter,
         };
@@ -4122,7 +4122,7 @@ private:
             const sf::Vec2f mainBlockDrawPos  = getDrawPositionOfLocalBlock(bPos, mainTetraminoCenter);
             const sf::Vec2f ghostBlockDrawPos = getDrawPositionOfLocalBlock(bPos, ghostTetraminoCenter);
 
-            const auto mainSpikePos = floorVec2(offset + mainBlockDrawPos.addX(sf::base::floor(-drawBlockSize.x / 2.f)));
+            const auto mainSpikePos = (offset + mainBlockDrawPos.addX(sf::base::floor(-drawBlockSize.x / 2.f))).componentWiseFloor();
 
             // Draw main spike
             spike.position = mainSpikePos + (laserDir * 4).toVec2f();
@@ -4132,7 +4132,7 @@ private:
             if (!drawGhost)
                 continue;
 
-            const auto ghostSpikePos = floorVec2(offset + ghostBlockDrawPos.addY(sf::base::floor(drawBlockSize.y / 2.f))) -
+            const auto ghostSpikePos = (offset + ghostBlockDrawPos.addY(sf::base::floor(drawBlockSize.y / 2.f))).componentWiseFloor() -
                                        sf::Vec2f{1.f, 1.f};
 
             // Draw ghost spike
@@ -4223,7 +4223,7 @@ private:
 
         const auto color = hueColorFromPaletteIdx(getTetraminoPaletteIdx(tetramino), 255u);
 
-        auto tetraminoDrawPosition = floorVec2(visualCenter - drawBlockSize / 2.f) + sf::Vec2f{1, 1};
+        auto tetraminoDrawPosition = (visualCenter - drawBlockSize / 2.f).componentWiseFloor() + sf::Vec2f{1, 1};
 
         const sf::Vec2f ghostGridPosition = tetramino.position.toVec2f().withY(
             static_cast<float>(calculateGhostY(tetramino)));
@@ -4235,7 +4235,7 @@ private:
 
         if (m_world.perkDrill[DrillDirection::Down].hasValue())
             drawDrillSpikesForPerk(findDrillBlocks(tetramino, DrillDirection::Down),
-                                   floorVec2(sf::Vec2f{0.f + 2.f, drawBlockSize.y / 2.f + 2.f}),
+                                   sf::Vec2f{0.f + 2.f, drawBlockSize.y / 2.f + 2.f}.componentWiseFloor(),
                                    color,
                                    sf::degrees(0.f),
                                    visualCenter,
@@ -4245,7 +4245,7 @@ private:
 
         if (m_world.perkDrill[DrillDirection::Left].hasValue())
             drawDrillSpikesForPerk(findDrillBlocks(tetramino, DrillDirection::Left),
-                                   floorVec2(sf::Vec2f{-drawBlockSize.x / 2.f - 2.f, -drawBlockSize.y / 2.f + 2.f}),
+                                   sf::Vec2f{-drawBlockSize.x / 2.f - 2.f, -drawBlockSize.y / 2.f + 2.f}.componentWiseFloor(),
                                    color,
                                    sf::degrees(90.f),
                                    visualCenter,
@@ -4255,7 +4255,7 @@ private:
 
         if (m_world.perkDrill[DrillDirection::Right].hasValue())
             drawDrillSpikesForPerk(findDrillBlocks(tetramino, DrillDirection::Right),
-                                   floorVec2(sf::Vec2f{drawBlockSize.x + 2.f, -1.f - 2.f}),
+                                   sf::Vec2f{drawBlockSize.x + 2.f, -1.f - 2.f}.componentWiseFloor(),
                                    color,
                                    sf::degrees(270.f),
                                    visualCenter,
@@ -4293,7 +4293,7 @@ private:
 
         if (m_world.perkLaser[LaserDirection::Right].hasValue())
             drawLaserEmittersForPerk(findLaserBlocks(tetramino, LaserDirection::Right),
-                                     floorVec2(sf::Vec2f{drawBlockSize.x / 2.f, -1.f}),
+                                     sf::Vec2f{drawBlockSize.x / 2.f, -1.f}.componentWiseFloor(),
                                      color,
                                      sf::degrees(315.f),
                                      visualCenter,
@@ -4560,7 +4560,7 @@ private:
             syncShaderUniforms();
         }
 
-        m_rtGame.clear(sf::Color{9, 9, 9});
+        m_rtGame.clear({9u, 9u, 9u});
 
         {
             SFEX_PROFILE_SCOPE("rtGame");
@@ -4662,7 +4662,7 @@ private:
 
         const sf::Vec2f centeredPosition = (windowSize - rtGameSize) / 2.f;
         const float     quakeYOffset     = m_quakeSinEffectHardDrop.getValue() + m_quakeSinEffectLineClear.getValue();
-        const sf::Vec2f finalPosition    = floorVec2(centeredPosition + screenShake.addY(quakeYOffset));
+        const sf::Vec2f finalPosition    = (centeredPosition + screenShake.addY(quakeYOffset)).componentWiseFloor();
 
         {
             SFEX_PROFILE_SCOPE("final draw");
