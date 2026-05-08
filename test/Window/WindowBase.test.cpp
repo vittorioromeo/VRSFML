@@ -31,18 +31,12 @@ constexpr const T& asConst(T& t) noexcept
     return t;
 }
 
-sf::WindowContext& sharedWindowContext()
-{
-    static auto ctx = sf::WindowContext::create().value();
-    return ctx;
-}
-
 } // namespace
 
 
 TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 {
-    (void)sharedWindowContext();
+    auto windowContext = sf::WindowContext::create().value();
 
     SECTION("Type traits")
     {

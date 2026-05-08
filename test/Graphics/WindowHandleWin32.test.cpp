@@ -14,7 +14,6 @@
     #include "SFML/System/Priv/Vec2Base.hpp"
     #include "SFML/System/WindowsHeader.hpp" // IWYU pragma: keep
 
-    #include "SFML/Base/Assert.hpp"
     #include "SFML/Base/Optional.hpp"
 
     #include <Doctest.hpp>
@@ -22,24 +21,19 @@
 
 namespace
 {
-bool gotWmShowWindow1 = false;
-
 LRESULT WINAPI wndProc(HWND handle, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    switch (message)
+    if (message == WM_CLOSE)
     {
-        case WM_SHOWWINDOW:
-            gotWmShowWindow1 = true;
-            SFML_BASE_ASSERT(wParam == TRUE); // Window is being shown
-            SFML_BASE_ASSERT(lParam == 0);    // Message comes from a ShowWindow call
-            break;
-        case WM_CLOSE:
-            PostQuitMessage(0);
-            return 0;
+        PostQuitMessage(0);
+        return 0;
     }
     return DefWindowProcW(handle, message, wParam, lParam);
 }
 
+// Create the window already visible. The SDL-backed WindowBase/Window/RenderWindow
+// wrap a borrowed handle without altering its visibility, so the test exercises
+// takeover of an already-shown window.
 sf::WindowHandle createWindowWrapper(LPWSTR className, HINSTANCE hInstance, DWORD dwExStyle, bool withMenu)
 {
     HMENU hMenu = nullptr;
@@ -51,7 +45,7 @@ sf::WindowHandle createWindowWrapper(LPWSTR className, HINSTANCE hInstance, DWOR
     return CreateWindowExW(dwExStyle,
                            className,
                            L"WindowHandle Tests",
-                           WS_OVERLAPPEDWINDOW,
+                           WS_OVERLAPPEDWINDOW | WS_VISIBLE,
                            CW_USEDEFAULT,
                            CW_USEDEFAULT,
                            640,
@@ -85,7 +79,6 @@ void runWindowTest(DWORD exStyle, bool withMenu)
                                                         exStyle,
                                                         withMenu);
     REQUIRE(handle);
-    REQUIRE(!gotWmShowWindow1);
     REQUIRE(IsWindow(handle));
 
     RECT windowRect{};
@@ -202,12 +195,10 @@ void runWindowTest(DWORD exStyle, bool withMenu)
     }
 
     INFO("Final checks with exStyle: " << exStyle << ", withMenu: " << withMenu);
-    CHECK(gotWmShowWindow1);
     CHECK(IsWindow(handle));
 
     CHECK(DestroyWindow(handle));
     CHECK(UnregisterClassW(classInfo.lpszClassName, classInfo.hInstance));
-    gotWmShowWindow1 = false;
     CHECK(!IsWindow(handle));
 }
 } // anonymous namespace

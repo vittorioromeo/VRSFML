@@ -17,8 +17,6 @@
 
 namespace
 {
-bool gotWmShowWindow0 = false;
-
 class NativeWindow
 {
 public:
@@ -31,9 +29,12 @@ public:
         m_winClassId = RegisterClassW(&m_classInfo);
         SFML_BASE_ASSERT(m_winClassId);
 
+        // Create the window already visible. The SDL-backed WindowBase wraps a
+        // borrowed handle without altering its visibility, so the test exercises
+        // takeover of an already-shown window.
         m_handle = CreateWindowW(reinterpret_cast<LPWSTR>(static_cast<ULONG_PTR>(m_winClassId)),
                                  L"WindowBase Tests",
-                                 WS_OVERLAPPEDWINDOW,
+                                 WS_OVERLAPPEDWINDOW | WS_VISIBLE,
                                  CW_USEDEFAULT,
                                  CW_USEDEFAULT,
                                  640,
@@ -49,7 +50,6 @@ public:
     {
         DestroyWindow(m_handle);
         UnregisterClassW(m_classInfo.lpszClassName, m_classInfo.hInstance);
-        gotWmShowWindow0 = false;
     }
 
     [[nodiscard]] HWND getHandle() const
@@ -60,17 +60,10 @@ public:
 private:
     static LRESULT WINAPI wndProc(HWND handle, UINT message, WPARAM wParam, LPARAM lParam)
     {
-        switch (message)
+        if (message == WM_CLOSE)
         {
-            case WM_SHOWWINDOW:
-                gotWmShowWindow0 = true;
-                SFML_BASE_ASSERT(wParam == TRUE); // If wParam is TRUE, the window is being shown
-                SFML_BASE_ASSERT(
-                    lParam == 0); // If lParam is zero, the message was sent because of a call to the ShowWindow function
-                break;
-            case WM_CLOSE:
-                PostQuitMessage(0);
-                return 0;
+            PostQuitMessage(0);
+            return 0;
         }
         return DefWindowProcW(handle, message, wParam, lParam);
     }
@@ -101,7 +94,6 @@ TEST_CASE("[Window] sf::WindowBase (Win32)")
     CHECK(windowBase->getSize() == sf::Vec2(rect.right - rect.left, rect.bottom - rect.top).toVec2u());
     CHECK(windowBase->getNativeHandle() == handle);
 
-    CHECK(gotWmShowWindow0);
     CHECK(IsWindow(handle));
 
     windowBase.reset();
