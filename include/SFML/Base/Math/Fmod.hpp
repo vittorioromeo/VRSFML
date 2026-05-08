@@ -9,13 +9,11 @@
 
 ////////////////////////////////////////////////////////////
 #if SFML_BASE_PRIV_HAS_MATH_BUILTIN(fmod)
-    #include "SFML/Base/Math/Priv/ImplBuiltinWrapper.hpp"
-
     #define SFML_BASE_MATH_FMOD(...)  __builtin_fmod(__VA_ARGS__)
     #define SFML_BASE_MATH_FMODF(...) __builtin_fmodf(__VA_ARGS__)
     #define SFML_BASE_MATH_FMODL(...) __builtin_fmodl(__VA_ARGS__)
 #else
-    #include "SFML/Base/Math/Priv/ImplStdForwarder.hpp"
+    #include <cmath> // IWYU pragma: keep
 
     #define SFML_BASE_MATH_FMOD(...)  ::std::fmod(__VA_ARGS__)
     #define SFML_BASE_MATH_FMODF(...) ::std::fmodf(__VA_ARGS__)
@@ -24,8 +22,4 @@
 
 
 ////////////////////////////////////////////////////////////
-SFML_BASE_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_2ARG(fmod)
-
-
-////////////////////////////////////////////////////////////
-#include "SFML/Base/Math/Priv/ImplUndef.hpp"
+SFML_BASE_PRIV_DEFINE_MATH_WRAPPER_2ARG(fmod, FMOD)
