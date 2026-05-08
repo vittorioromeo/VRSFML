@@ -36,6 +36,8 @@
         #define NOMINMAX
     #endif
 
+    #include "SFML/System/WindowsHeader.hpp"
+
     #include <synchapi.h>
 
 #elif defined(SFML_SYSTEM_EMSCRIPTEN)
