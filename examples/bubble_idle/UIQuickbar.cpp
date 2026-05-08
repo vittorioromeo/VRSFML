@@ -6,6 +6,7 @@
 #include "IconsFontAwesome6.h"
 #include "ParticleData.hpp"
 #include "ParticleType.hpp"
+#include "UIState.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"
 

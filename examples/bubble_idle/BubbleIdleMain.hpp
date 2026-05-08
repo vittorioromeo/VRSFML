@@ -8,15 +8,11 @@
 #include "BubbleType.hpp"
 #include "Cat.hpp"
 #include "CatType.hpp"
-#include "ComboState.hpp"
 #include "Constants.hpp"
 #include "Doll.hpp"
 #include "ExactArray.hpp"
 #include "GameConstants.hpp"
 #include "HexSession.hpp"
-#include "InputHelper.hpp"
-#include "MemberGuard.hpp"
-#include "NotificationState.hpp"
 #include "Particle.hpp"
 #include "ParticleData.hpp"
 #include "ParticleType.hpp"
@@ -25,14 +21,12 @@
 #include "Profile.hpp"
 #include "PurchasableScalingValue.hpp"
 #include "RNGSeedType.hpp"
-#include "Serialization.hpp"
 #include "Shrine.hpp"
 #include "ShrineType.hpp"
 #include "Sounds.hpp"
 #include "TextEffectWiggle.hpp"
 #include "TextParticle.hpp"
 #include "TextShakeEffect.hpp"
-#include "UIState.hpp"
 
 #include "ExampleUtils/ControlFlow.hpp"
 #include "ExampleUtils/HueColor.hpp"
@@ -58,13 +52,11 @@
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
-#include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Rect2.hpp"
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Vec2.hpp"
 
-#include "SFML/Base/AnkerlUnorderedDense.hpp"
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/FixedFunction.hpp"
 #include "SFML/Base/GetArraySize.hpp"
@@ -88,6 +80,7 @@
 ////////////////////////////////////////////////////////////
 struct ImFont;
 struct BGMBuffer;
+struct ComboState;
 
 namespace sf
 {
@@ -95,6 +88,7 @@ class AudioContext;
 class CPUDrawableBatch;
 class Font;
 class GraphicsContext;
+class OutFileStream;
 class PlaybackDevice;
 class RenderTarget;
 class RenderTexture;
@@ -111,10 +105,14 @@ struct View;
 } // namespace sf
 
 struct FrameViewState;
+class InputHelper;
 struct MainBGMStorage;
+struct MainBombStorage;
 struct MainDrawableBatches;
 struct MainTextureStorage;
 struct MainTextStorage;
+struct NotificationState;
+struct UIState;
 
 using MainRenderTextureVector = sf::base::Vector<sf::RenderTexture>;
 
@@ -309,11 +307,6 @@ struct Main
     ///////////////////////////////////////////////////////////
     // Game constants (loaded once on startup)
     GameConstants gameConstants;
-
-    MEMBER_SCOPE_GUARD(Main, {
-        sf::cOut() << "Saving profile to file on exit\n";
-        saveProfileToFile(self.profile);
-    });
 
     ////////////////////////////////////////////////////////////
     // SFML fonts
@@ -784,10 +777,6 @@ struct Main
     // Playthrough (game state)
     Playthrough ptMain;
     Playthrough ptSpeedrun;
-    MEMBER_SCOPE_GUARD(Main, {
-        sf::cOut() << "Saving playthrough to file on exit\n";
-        self.saveMainPlaythroughToFile();
-    });
 
     ////////////////////////////////////////////////////////////
     // Currently active playthrough (game state)
@@ -834,7 +823,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     // Combo state
     static inline constexpr sf::Vec2f moneyTextInitialPosition{10.f, 70.f};
-    ComboState                        comboState{moneyTextInitialPosition};
+    MainOwnedPtr<ComboState>          comboStateStorage;
+    ComboState&                       comboState;
 
     ////////////////////////////////////////////////////////////
     // HUD demo text
@@ -1035,11 +1025,12 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Bomb-cat tracker for money earned
-    ankerl::unordered_dense::map<sf::base::SizeT, sf::base::SizeT> bombIdxToCatIdx;
+    MainOwnedPtr<MainBombStorage> bombStorage;
 
     ////////////////////////////////////////////////////////////
     // Notification queue
-    NotificationState notificationState;
+    MainOwnedPtr<NotificationState> notificationStateStorage;
+    NotificationState&              notificationState;
 
     ////////////////////////////////////////////////////////////
     // FPS counter
@@ -1047,7 +1038,8 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // UI state
-    UIState uiState;
+    MainOwnedPtr<UIState> uiStateStorage;
+    UIState&              uiState;
 
     ////////////////////////////////////////////////////////////
     // Portal storm buff countdown
@@ -1075,11 +1067,13 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Input management
-    InputHelper inputHelper;
+    MainOwnedPtr<InputHelper> inputHelperStorage;
+    InputHelper&              inputHelper;
 
     ////////////////////////////////////////////////////////////
     // Logging
-    sf::OutFileStream logFile{"bubblebyte.log", sf::FileOpenMode::out | sf::FileOpenMode::app};
+    MainOwnedPtr<sf::OutFileStream> logFileStorage;
+    sf::OutFileStream&              logFile;
 
     ////////////////////////////////////////////////////////////
     // Achievement progress tracking
@@ -2014,6 +2008,8 @@ struct Main
 #else
     Main();
 #endif
+    ~Main();
+
     void run();
 };
 

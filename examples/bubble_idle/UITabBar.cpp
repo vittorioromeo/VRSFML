@@ -1,5 +1,7 @@
 #include "BubbleIdleMain.hpp"
 #include "IconsFontAwesome6.h"
+#include "InputHelper.hpp"
+#include "UIState.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"
 

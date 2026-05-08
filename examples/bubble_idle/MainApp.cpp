@@ -3,14 +3,19 @@
 #include "BGMStorage.hpp"
 #include "BubbleIdleApp.hpp"
 #include "BubbleIdleMain.hpp"
+#include "ComboState.hpp"
 #include "Constants.hpp"
 #include "GameConstants.hpp"
 #include "IconsFontAwesome6.h"
+#include "InputHelper.hpp"
+#include "MainBombStorage.hpp"
+#include "NotificationState.hpp"
 #include "Profile.hpp"
 #include "RNGSeedType.hpp"
 #include "Serialization.hpp"
 #include "Steam.hpp"
 #include "SweepAndPrune.hpp"
+#include "UIState.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"
 
@@ -221,13 +226,19 @@ template struct MainOwnedDeleter<sf::RenderWindow>;
 template struct MainOwnedDeleter<sf::Font>;
 template struct MainOwnedDeleter<sf::GraphicsContext>;
 template struct MainOwnedDeleter<sf::Listener>;
+template struct MainOwnedDeleter<sf::OutFileStream>;
 template struct MainOwnedDeleter<sf::PlaybackDevice>;
 template struct MainOwnedDeleter<sf::View>;
+template struct MainOwnedDeleter<ComboState>;
+template struct MainOwnedDeleter<InputHelper>;
+template struct MainOwnedDeleter<MainBombStorage>;
 template struct MainOwnedDeleter<MainDrawableBatches>;
 template struct MainOwnedDeleter<MainBGMStorage>;
 template struct MainOwnedDeleter<MainTextStorage>;
 template struct MainOwnedDeleter<MainTextureStorage>;
 template struct MainOwnedDeleter<MainRenderTextureVector>;
+template struct MainOwnedDeleter<NotificationState>;
+template struct MainOwnedDeleter<UIState>;
 
 
 ////////////////////////////////////////////////////////////
@@ -646,6 +657,8 @@ Main::Main() :
     txrCloud(addImgResourceToAtlas("cloud.png")),
     textStorage(new MainTextStorage{fontSuperBakery}),
     moneyText(textStorage->moneyText),
+    comboStateStorage(new ComboState{moneyTextInitialPosition}),
+    comboState(*comboStateStorage),
     demoText(textStorage->demoText),
     sweepAndPrune(sf::base::makeUnique<SweepAndPrune>()),
     seed(static_cast<RNGSeedType>(sf::Clock::now().asMicroseconds())),
@@ -680,12 +693,21 @@ Main::Main() :
     nonScaledHUDView(*nonScaledHUDViewStorage),
     scaledHUDViewStorage(new sf::View{.center = {1.f, 1.f}, .size = {1.f, 1.f}}),
     scaledHUDView(*scaledHUDViewStorage),
+    bombStorage(new MainBombStorage{}),
+    notificationStateStorage(new NotificationState{}),
+    notificationState(*notificationStateStorage),
+    uiStateStorage(new UIState{}),
+    uiState(*uiStateStorage),
 #ifdef BUBBLEBYTE_USE_STEAMWORKS
     steamMgr(xSteamMgr),
-    onSteamDeck(steamMgr.isOnSteamDeck())
+    onSteamDeck(steamMgr.isOnSteamDeck()),
 #else
-    onSteamDeck(false)
+    onSteamDeck(false),
 #endif
+    inputHelperStorage(new InputHelper{}),
+    inputHelper(*inputHelperStorage),
+    logFileStorage(new sf::OutFileStream{"bubblebyte.log", sf::FileOpenMode::out | sf::FileOpenMode::app}),
+    logFile(*logFileStorage)
 {
     sounds.setupSounds(/* volumeOnly */ true, profile.sfxVolume / 100.f);
 
@@ -721,6 +743,16 @@ Main::Main() :
     //
     // Touch state
     playerInputState.fingerPositions.resize(10);
+}
+
+////////////////////////////////////////////////////////////
+Main::~Main()
+{
+    sf::cOut() << "Saving playthrough to file on exit\n";
+    saveMainPlaythroughToFile();
+
+    sf::cOut() << "Saving profile to file on exit\n";
+    saveProfileToFile(profile);
 }
 
 ////////////////////////////////////////////////////////////

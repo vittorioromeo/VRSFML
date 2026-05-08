@@ -2,6 +2,7 @@
 
 #include "BubbleIdleMain.hpp"
 #include "FrameViewState.hpp"
+#include "InputHelper.hpp"
 #include "PlayerInput.hpp"
 #include "Serialization.hpp"
 

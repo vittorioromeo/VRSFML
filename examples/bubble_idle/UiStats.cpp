@@ -11,6 +11,7 @@
 #include "ShrineConstants.hpp"
 #include "ShrineType.hpp"
 #include "Stats.hpp"
+#include "UIState.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"
 

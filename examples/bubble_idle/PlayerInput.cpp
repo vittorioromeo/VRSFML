@@ -2,7 +2,9 @@
 #include "Cat.hpp"
 #include "CatType.hpp"
 #include "Constants.hpp"
+#include "InputHelper.hpp"
 #include "PlayerInput.hpp"
+#include "UIState.hpp"
 #include "Version.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"

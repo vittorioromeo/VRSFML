@@ -5,7 +5,11 @@ if (NOT SFML_OS_EMSCRIPTEN AND NOT ARCH_ARM64)
             TextEffectWiggle.cpp
             InputHelper.cpp
             InputState.cpp
+            ImGuiNotify.cpp
             Serialization.cpp
+            Sounds.cpp
+            ../src/ExampleUtils/LoadedSound.cpp
+            ../src/ExampleUtils/ProfilerImGui.cpp
             Steam.cpp
             CatNames.cpp
             MainApp.cpp
@@ -53,7 +57,11 @@ else()
             TextEffectWiggle.cpp
             InputHelper.cpp
             InputState.cpp
+            ImGuiNotify.cpp
             Serialization.cpp
+            Sounds.cpp
+            ../src/ExampleUtils/LoadedSound.cpp
+            ../src/ExampleUtils/ProfilerImGui.cpp
             CatNames.cpp
             MainApp.cpp
             MainGameplay.cpp

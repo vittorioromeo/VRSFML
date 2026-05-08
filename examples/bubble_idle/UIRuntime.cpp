@@ -3,6 +3,7 @@
 #include "Constants.hpp"
 #include "ImGuiNotify.hpp"
 #include "Milestones.hpp"
+#include "UIState.hpp"
 #include "Version.hpp"
 
 #include "ExampleUtils/Easing.hpp"

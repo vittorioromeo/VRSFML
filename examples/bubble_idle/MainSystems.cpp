@@ -6,11 +6,14 @@
 #include "BubbleType.hpp"
 #include "Cat.hpp"
 #include "CatType.hpp"
+#include "ComboState.hpp"
 #include "Constants.hpp"
 #include "Doll.hpp"
 #include "GameEvent.hpp"
 #include "HellPortal.hpp"
 #include "HexSession.hpp"
+#include "InputHelper.hpp"
+#include "MainBombStorage.hpp"
 #include "ParticleData.hpp"
 #include "ParticleType.hpp"
 #include "Playthrough.hpp"
@@ -317,7 +320,7 @@ void Main::gameLoopUpdateTransitions(const float deltaTimeMs)
         moneyGainedLastSecond    = 0u;
         moneyGainedUsAccumulator = 0u;
         samplerMoneyPerSecond.clear();
-        bombIdxToCatIdx.clear();
+        bombStorage->bombIdxToCatIdx.clear();
 
         splashCountdown.restart();
         playSound(sounds.byteMeow);
@@ -366,8 +369,8 @@ void Main::gameLoopUpdateBubbles(const float deltaTimeMs)
                     // during the freeze window.
                     if (creditCatIdx != 0xFF'FFu)
                     {
-                        const auto bubbleIdx       = static_cast<sf::base::SizeT>(&bubble - pt->bubbles.data());
-                        bombIdxToCatIdx[bubbleIdx] = static_cast<sf::base::SizeT>(creditCatIdx);
+                        const auto bubbleIdx = static_cast<sf::base::SizeT>(&bubble - pt->bubbles.data());
+                        bombStorage->bombIdxToCatIdx[bubbleIdx] = static_cast<sf::base::SizeT>(creditCatIdx);
                     }
                 }
                 else

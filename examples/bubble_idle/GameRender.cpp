@@ -1,9 +1,11 @@
 #include "Aliases.hpp"
 #include "BubbleIdleMain.hpp"
 #include "CatType.hpp"
+#include "ComboState.hpp"
 #include "Constants.hpp"
 #include "FrameViewState.hpp"
 #include "PlayerInput.hpp"
+#include "UIState.hpp"
 #include "Version.hpp"
 
 #include "ExampleUtils/Easing.hpp"

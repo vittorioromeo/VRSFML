@@ -6,6 +6,7 @@
 #include "CatType.hpp"
 #include "Constants.hpp"
 #include "ImGuiNotify.hpp"
+#include "NotificationState.hpp"
 #include "ParticleType.hpp"
 #include "PurchasableScalingValue.hpp"
 #include "Shrine.hpp"
@@ -1232,7 +1233,7 @@ void Main::gameLoopUpdateNotificationQueue(const float deltaTimeMs)
 
     ImGuiToast toast{ImGuiToastType::None, 4500};
     toast.setWindowFlags(NOTIFY_DEFAULT_TOAST_FLAGS | ImGuiWindowFlags_NoBackground);
-    toast.setTitle(notification.title);
+    toast.setTitle("%s", notification.title);
     toast.setContent("%s", notification.content.cStr());
 
     ImGui::InsertNotification(toast);

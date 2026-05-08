@@ -4,6 +4,7 @@
 #include "BubbleIdleMain.hpp"
 #include "Cat.hpp"
 #include "PurchasableScalingValue.hpp"
+#include "UIState.hpp"
 
 #include "ExampleUtils/Progress.hpp"
 
