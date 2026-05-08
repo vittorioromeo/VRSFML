@@ -69,7 +69,6 @@
 #include "SFML/Base/FixedFunction.hpp"
 #include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Math/Pow.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -78,8 +77,6 @@
 #include "SFML/Base/ThreadPool.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include <cstdio>
 
 #if defined(__GNUC__) || defined(__clang__)
     #define BUBBLE_IDLE_PRINTF_FORMAT(fmtIndex, firstArgIndex) __attribute__((format(printf, fmtIndex, firstArgIndex)))
@@ -1922,21 +1919,7 @@ struct Main
     void gameLoopDrawComboBubbleBurstingCoins();
     void gameLoopUpdateMana(float deltaTimeMs);
     void gameLoopUpdateAutocast();
-    void pushNotification(const char* title, const char* format, const auto&... args)
-    {
-        if (!profile.enableNotifications)
-            return;
-
-        char fmtBuffer[1024]{};
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
-#pragma GCC diagnostic ignored "-Wformat-security"
-        std::snprintf(fmtBuffer, sizeof(fmtBuffer), format, args...);
-#pragma GCC diagnostic pop
-
-        notificationState.queue.emplaceBack(title, sf::base::String{fmtBuffer});
-    }
+    void pushNotification(const char* title, const char* format, ...) BUBBLE_IDLE_PRINTF_FORMAT(3, 4);
 
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateMilestones();
