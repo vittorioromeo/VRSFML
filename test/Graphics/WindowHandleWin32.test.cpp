@@ -136,7 +136,7 @@ void runWindowTest(DWORD exStyle, bool withMenu)
 
         SUBCASE("Custom context settings")
         {
-            static constexpr sf::ContextSettings contextSettings{1, 1, 1};
+            static constexpr sf::ContextSettings contextSettings{.depthBits = 1, .stencilBits = 1, .majorVersion = 1};
 
             window = sf::Window::create(handle, contextSettings);
             REQUIRE(window.hasValue());
@@ -176,8 +176,7 @@ void runWindowTest(DWORD exStyle, bool withMenu)
 
         SECTION("Custom context settings")
         {
-            static constexpr sf::ContextSettings contextSettings{/* depthBits*/ 1,
-                                                                 /* stencilBits */ 1};
+            static constexpr sf::ContextSettings contextSettings{.depthBits = 1, .stencilBits = 1};
 
             renderWindow = sf::RenderWindow::create(handle, contextSettings);
             REQUIRE(renderWindow.hasValue());
