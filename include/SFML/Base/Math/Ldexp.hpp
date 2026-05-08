@@ -38,7 +38,3 @@ template <typename T>
 }
 
 } // namespace sf::base
-
-
-////////////////////////////////////////////////////////////
-#include "SFML/Base/Math/Priv/ImplUndef.hpp"

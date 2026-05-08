@@ -9,13 +9,11 @@
 
 ////////////////////////////////////////////////////////////
 #if SFML_BASE_PRIV_HAS_MATH_BUILTIN(pow)
-    #include "SFML/Base/Math/Priv/ImplBuiltinWrapper.hpp"
-
     #define SFML_BASE_MATH_POW(...)  __builtin_pow(__VA_ARGS__)
     #define SFML_BASE_MATH_POWF(...) __builtin_powf(__VA_ARGS__)
     #define SFML_BASE_MATH_POWL(...) __builtin_powl(__VA_ARGS__)
 #else
-    #include "SFML/Base/Math/Priv/ImplStdForwarder.hpp"
+    #include <cmath> // IWYU pragma: keep
 
     #define SFML_BASE_MATH_POW(...)  ::std::pow(__VA_ARGS__)
     #define SFML_BASE_MATH_POWF(...) ::std::powf(__VA_ARGS__)
@@ -24,8 +22,4 @@
 
 
 ////////////////////////////////////////////////////////////
-SFML_BASE_PRIV_DEFINE_BUILTIN_MATH_WRAPPER_2ARG(pow)
-
-
-////////////////////////////////////////////////////////////
-#include "SFML/Base/Math/Priv/ImplUndef.hpp"
+SFML_BASE_PRIV_DEFINE_MATH_WRAPPER_2ARG(pow, POW)
