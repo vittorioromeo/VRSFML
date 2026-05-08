@@ -12,9 +12,13 @@
 #include <doctest/doctest.h>
 
 //
-#include "SFML/Config.hpp" // IYWU pragma: keep
+#include "SFML/Config.hpp" // IWYU pragma: keep
 
-#ifdef SFML_SYSTEM_EMSCIPTEN
+#ifdef SFML_SYSTEM_EMSCRIPTEN
+    #define SFML_PRIV_ENABLE_DOCTEST_VERBOSE_REPORTER
+#endif
+
+#ifdef SFML_PRIV_ENABLE_DOCTEST_VERBOSE_REPORTER
     #include <cstdio>
 #endif
 
@@ -37,7 +41,7 @@ struct ProgressReporter : doctest::IReporter
     {
         // NOLINTNEXTLINE(modernize-use-std-print)
 
-#ifdef SFML_SYSTEM_EMSCIPTEN
+#ifdef SFML_PRIV_ENABLE_DOCTEST_VERBOSE_REPORTER
         std::fprintf(stderr, ">>> [doctest] starting: %s (%s:%d)\n", tc.m_name, tc.m_file.c_str(), tc.m_line);
 #endif
     }
@@ -45,7 +49,7 @@ struct ProgressReporter : doctest::IReporter
     void test_case_reenter([[maybe_unused]] const doctest::TestCaseData& tc) override
     {
         // NOLINTNEXTLINE(modernize-use-std-print)
-#ifdef SFML_SYSTEM_EMSCIPTEN
+#ifdef SFML_PRIV_ENABLE_DOCTEST_VERBOSE_REPORTER
         std::fprintf(stderr, ">>> [doctest] reentering: %s (%s:%d)\n", tc.m_name, tc.m_file.c_str(), tc.m_line);
 #endif
     }
@@ -53,7 +57,7 @@ struct ProgressReporter : doctest::IReporter
     void subcase_start([[maybe_unused]] const doctest::SubcaseSignature& sc) override
     {
         // NOLINTNEXTLINE(modernize-use-std-print)
-#ifdef SFML_SYSTEM_EMSCIPTEN
+#ifdef SFML_PRIV_ENABLE_DOCTEST_VERBOSE_REPORTER
         std::fprintf(stderr, ">>>   [doctest] subcase: %s (%s:%d)\n", sc.m_name.c_str(), sc.m_file, sc.m_line);
 #endif
     }
