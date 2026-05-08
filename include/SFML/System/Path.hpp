@@ -17,11 +17,10 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief Represents a path in the filesystem.
+/// \brief Cross-platform filesystem path
 /// \ingroup system
 ///
-/// This class provides a cross-platform way to represent and manipulate filesystem paths.
-/// It uses PImpl to wrap `std::filesystem::path`, avoiding exposure of `<filesystem>` in SFML headers.
+/// PImpl wrapper around `std::filesystem::path` so that `<filesystem>` does not leak.
 ///
 ////////////////////////////////////////////////////////////
 class [[nodiscard]] SFML_SYSTEM_API Path
