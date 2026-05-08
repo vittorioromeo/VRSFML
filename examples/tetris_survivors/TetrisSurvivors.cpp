@@ -3796,7 +3796,8 @@ private:
             const auto gridHeight = m_world.blockGrid.getHeight();
 
             const auto lastDrawPos = getDrawPosition(nDrills - 1);
-            const auto lastGridPos = toGridCoordinates((lastDrawPos + sf::Vec2f{radius / 2.f, radius / 2.f}).componentWiseFloor())
+            const auto lastGridPos = toGridCoordinates(
+                                         (lastDrawPos + sf::Vec2f{radius / 2.f, radius / 2.f}).componentWiseFloor())
                                          .componentWiseClamp({0, 0}, sf::Vec2uz{gridWidth - 1, gridHeight - 1}.toVec2i());
 
             const auto& optBlock = m_world.blockGrid.at(lastGridPos);
@@ -3971,7 +3972,7 @@ private:
 
             // Draw main spike
             spike.position = (offset + mainBlockDrawPos.addX(sf::base::floor(-drawBlockSize.x / 2.f))).componentWiseFloor();
-            spike.color    = mainColor;
+            spike.color = mainColor;
             m_rtGame.draw(spike, {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
 
             // Draw ghost spike
@@ -3979,7 +3980,7 @@ private:
             {
                 spike.position = (offset + ghostBlockDrawPos.addY(sf::base::floor(drawBlockSize.y / 2.f))).componentWiseFloor() -
                                  sf::Vec2f{1.f, 1.f};
-                spike.color    = ghostColor;
+                spike.color = ghostColor;
                 m_rtGame.draw(spike, {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
             }
         }
@@ -4076,8 +4077,8 @@ private:
         float finalSquishMult = 1.f + squishMult;
 
         sf::Sprite spike{
-            .scale       = sf::Vec2f{finalSquishMult, finalSquishMult},
-            .origin      = (sf::Vec2f{drawBlockSize.x / 2.f, drawBlockSize.y / 2.f} - sf::Vec2f{2.f, 2.f}).componentWiseFloor(),
+            .scale = sf::Vec2f{finalSquishMult, finalSquishMult},
+            .origin = (sf::Vec2f{drawBlockSize.x / 2.f, drawBlockSize.y / 2.f} - sf::Vec2f{2.f, 2.f}).componentWiseFloor(),
             .rotation    = rotation + sf::degrees(180.f + 45.f),
             .textureRect = m_txrEmitter,
         };
@@ -4122,7 +4123,8 @@ private:
             const sf::Vec2f mainBlockDrawPos  = getDrawPositionOfLocalBlock(bPos, mainTetraminoCenter);
             const sf::Vec2f ghostBlockDrawPos = getDrawPositionOfLocalBlock(bPos, ghostTetraminoCenter);
 
-            const auto mainSpikePos = (offset + mainBlockDrawPos.addX(sf::base::floor(-drawBlockSize.x / 2.f))).componentWiseFloor();
+            const auto mainSpikePos = (offset + mainBlockDrawPos.addX(sf::base::floor(-drawBlockSize.x / 2.f)))
+                                          .componentWiseFloor();
 
             // Draw main spike
             spike.position = mainSpikePos + (laserDir * 4).toVec2f();
@@ -4132,7 +4134,8 @@ private:
             if (!drawGhost)
                 continue;
 
-            const auto ghostSpikePos = (offset + ghostBlockDrawPos.addY(sf::base::floor(drawBlockSize.y / 2.f))).componentWiseFloor() -
+            const auto ghostSpikePos = (offset + ghostBlockDrawPos.addY(sf::base::floor(drawBlockSize.y / 2.f)))
+                                           .componentWiseFloor() -
                                        sf::Vec2f{1.f, 1.f};
 
             // Draw ghost spike
