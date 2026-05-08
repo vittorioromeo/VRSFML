@@ -134,6 +134,29 @@ bool handleCatShrineCollision(const float deltaTimeMs, Cat& cat, Shrine& shrine)
 
 
 ////////////////////////////////////////////////////////////
+void Main::pushNotification(const char* const title, const char* const format, ...)
+{
+    if (!profile.enableNotifications)
+        return;
+
+    char fmtBuffer[1024]{};
+
+    std::va_list args;
+    va_start(args, format);
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#pragma GCC diagnostic ignored "-Wformat-security"
+    std::vsnprintf(fmtBuffer, sizeof(fmtBuffer), format, args);
+#pragma GCC diagnostic pop
+
+    va_end(args);
+
+    notificationState.queue.emplaceBack(title, sf::base::String{fmtBuffer});
+}
+
+
+////////////////////////////////////////////////////////////
 void Main::refreshWindowAutoBatchModeFromProfile() // TODO P1: check if this solves flickering
 {
     window.setAutoBatchMode(profile.autobatchMode == 0   ? sf::RenderTarget::AutoBatchMode::Disabled
