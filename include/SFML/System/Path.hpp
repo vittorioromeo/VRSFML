@@ -34,38 +34,26 @@ public:
 #endif
 
     ////////////////////////////////////////////////////////////
-    /// \brief Gets the path to the system's temporary directory
-    ///
-    /// \return Path representing the temporary directory.
+    /// \brief Path to the system's temporary directory
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static Path tempDirectoryPath();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// Constructs an empty path.
+    /// \brief Default-construct an empty path
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit Path();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Constructs a path from a source
-    ///
-    /// \tparam T Type of the source, typically a string type like `std::string`, `const char*`,
-    ///           `std::wstring`, `const wchar_t*`, or `std::filesystem::path`.
-    ///
-    /// \param source The source to construct the path from.
+    /// \brief Construct from a string-like or `std::filesystem::path` source
     ///
     ////////////////////////////////////////////////////////////
     template <typename T>
     [[nodiscard]] Path(const T& source);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Constructs a path from a null-terminated string source
-    ///
-    /// \tparam T Character type of the source string (e.g., `char`, `wchar_t`).
-    /// \param source The null-terminated string to construct the path from.
+    /// \brief Construct from a null-terminated `T*` (e.g. `const char*`, `const wchar_t*`)
     ///
     ////////////////////////////////////////////////////////////
     template <typename T>
@@ -102,127 +90,84 @@ public:
     Path& operator=(Path&&) noexcept;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Returns the filename component of the path.
-    ///
-    /// Example: `/foo/bar.txt` -> `bar.txt`
-    /// \return A new Path object representing the filename.
+    /// \brief Filename component (e.g. `/foo/bar.txt` -> `bar.txt`)
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Path filename() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Returns the extension of the filename component.
-    ///
-    /// Example: `/foo/bar.txt` -> `.txt`
-    /// \return A new Path object representing the extension, or an empty Path if no extension.
+    /// \brief Extension of the filename component (e.g. `/foo/bar.txt` -> `.txt`); empty path if none
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Path extension() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Returns the absolute version of the path.
-    ///
-    /// \return A new Path object representing the absolute path.
+    /// \brief Absolute version of this path
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Path absolute() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Returns the parent path (directory component)
-    ///
-    /// Example: `/foo/bar.txt` -> `/foo`
-    ///
-    /// \return A new Path object representing the parent directory.
+    /// \brief Parent directory component (e.g. `/foo/bar.txt` -> `/foo`)
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Path parent() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Returns a C-style string representation of the path
+    /// \brief Pointer to a null-terminated OS-native string (`wchar_t` on Windows, `char` on POSIX)
     ///
-    /// The returned pointer is to the internal representation native to the OS
-    /// (e.g., `const wchar_t*` on Windows, `const char*` on POSIX).
-    /// The lifetime of the pointed-to string is managed by the `Path` object.
-    ///
-    /// \return Pointer to a null-terminated string.
+    /// Lifetime is tied to this `Path` object.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const value_type* c_str() const; // NOLINT(readability-identifier-naming)
 
     ////////////////////////////////////////////////////////////
-    /// \brief Converts the path to a string of type `T`
-    ///
-    /// Supported `T` types include `std::string`, `std::wstring`, `std::u8string`,
-    /// `std::u32string`, and `std::filesystem::path`.
-    ///
-    /// \return The path converted to the specified string type.
+    /// \brief Convert to `T` (`std::string`, `std::wstring`, `std::u8string`, `std::u32string`, `std::filesystem::path`)
     ///
     ////////////////////////////////////////////////////////////
     template <typename T>
     [[nodiscard]] T to() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Removes the file or empty directory identified by the path
+    /// \brief Remove the file or empty directory at this path
     ///
-    /// \return `true` if removal succeeds, `false` otherwise.
+    /// \return `true` on success, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool removeFromDisk() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Checks if the path is empty
-    ///
-    /// \return `true` if the path is empty, `false` otherwise.
+    /// \brief `true` if the path is empty
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool empty() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Checks if the path refers to an existing file or directory
-    ///
-    /// \return `true` if the path exists, `false` otherwise.
+    /// \brief `true` if the path refers to an existing file or directory
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool exists() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Checks if the path's extension matches a given string
-    ///
-    /// \param str The string to compare the extension against.
-    ///
-    /// \return `true` if the extension matches, `false` otherwise.
+    /// \brief `true` if the path's extension matches `str`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool extensionIs(base::StringView str) const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Appends another path to this one
-    ///
-    /// \param rhs The path to append.
-    ///
-    /// \return Reference to this path after appending.
+    /// \brief Append `rhs` to this path
     ///
     ////////////////////////////////////////////////////////////
     Path& operator/=(const Path& rhs);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Concatenates two paths
-    ///
-    /// \param lhs The left-hand side path.
-    /// \param rhs The right-hand side path to append.
-    ///
-    /// \return A new `Path` object representing the concatenated path.
+    /// \brief Concatenate two paths into a new `Path`
     ///
     ////////////////////////////////////////////////////////////
     friend Path operator/(const Path& lhs, const Path& rhs);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Outputs the path to a stream
-    ///
-    /// \param os The output stream.
-    /// \param path The path to output.
-    ///
-    /// \return The output stream.
+    /// \brief Stream-insertion operator for `Path`
     ///
     ////////////////////////////////////////////////////////////
     friend std::ostream& operator<<(std::ostream& os, const Path& path);
