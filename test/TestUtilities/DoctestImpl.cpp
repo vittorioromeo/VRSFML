@@ -11,7 +11,12 @@
 #define DOCTEST_CONFIG_IMPLEMENT
 #include <doctest/doctest.h>
 
-#include <cstdio>
+//
+#include "SFML/Config.hpp" // IYWU pragma: keep
+
+#ifdef SFML_SYSTEM_EMSCIPTEN
+    #include <cstdio>
+#endif
 
 
 ////////////////////////////////////////////////////////////
@@ -28,22 +33,29 @@ struct ProgressReporter : doctest::IReporter
     {
     }
 
-    void test_case_start(const doctest::TestCaseData& tc) override
+    void test_case_start([[maybe_unused]] const doctest::TestCaseData& tc) override
     {
         // NOLINTNEXTLINE(modernize-use-std-print)
+
+#ifdef SFML_SYSTEM_EMSCIPTEN
         std::fprintf(stderr, ">>> [doctest] starting: %s (%s:%d)\n", tc.m_name, tc.m_file.c_str(), tc.m_line);
+#endif
     }
 
-    void test_case_reenter(const doctest::TestCaseData& tc) override
+    void test_case_reenter([[maybe_unused]] const doctest::TestCaseData& tc) override
     {
         // NOLINTNEXTLINE(modernize-use-std-print)
+#ifdef SFML_SYSTEM_EMSCIPTEN
         std::fprintf(stderr, ">>> [doctest] reentering: %s (%s:%d)\n", tc.m_name, tc.m_file.c_str(), tc.m_line);
+#endif
     }
 
-    void subcase_start(const doctest::SubcaseSignature& sc) override
+    void subcase_start([[maybe_unused]] const doctest::SubcaseSignature& sc) override
     {
         // NOLINTNEXTLINE(modernize-use-std-print)
+#ifdef SFML_SYSTEM_EMSCIPTEN
         std::fprintf(stderr, ">>>   [doctest] subcase: %s (%s:%d)\n", sc.m_name.c_str(), sc.m_file, sc.m_line);
+#endif
     }
 
     // clang-format off
