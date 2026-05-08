@@ -12,6 +12,7 @@
 #include "SFML/Base/AssertAndAssume.hpp"
 #include "SFML/Base/Math/Atan2.hpp"
 #include "SFML/Base/Math/Cos.hpp"
+#include "SFML/Base/Math/Floor.hpp"
 #include "SFML/Base/Math/Sin.hpp"
 #include "SFML/Base/Math/Sqrt.hpp"
 #include "SFML/Base/Trait/IsFloatingPoint.hpp"
@@ -21,7 +22,7 @@ namespace sf
 {
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec2<T> Vec2<T>::fromAngle(const T r, const Angle phi)
+constexpr Vec2<T> Vec2<T>::fromAngle(const T r, const Angle phi)
 {
     static_assert(SFML_BASE_IS_FLOATING_POINT(T));
 
@@ -31,7 +32,7 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr T Vec2<T>::length() const
+constexpr T Vec2<T>::length() const
 {
     static_assert(SFML_BASE_IS_FLOATING_POINT(T));
 
@@ -42,7 +43,7 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec2<T> Vec2<T>::normalized() const
+constexpr Vec2<T> Vec2<T>::normalized() const
 {
     static_assert(SFML_BASE_IS_FLOATING_POINT(T));
 
@@ -57,7 +58,7 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Angle Vec2<T>::angleTo(const Vec2 rhs) const
+constexpr Angle Vec2<T>::angleTo(const Vec2 rhs) const
 {
     static_assert(SFML_BASE_IS_FLOATING_POINT(T));
 
@@ -70,7 +71,7 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Angle Vec2<T>::angle() const
+constexpr Angle Vec2<T>::angle() const
 {
     static_assert(SFML_BASE_IS_FLOATING_POINT(T));
 
@@ -82,7 +83,7 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec2<T> Vec2<T>::rotatedBy(const Angle phi) const
+constexpr Vec2<T> Vec2<T>::rotatedBy(const Angle phi) const
 {
     static_assert(SFML_BASE_IS_FLOATING_POINT(T));
 
@@ -97,7 +98,7 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec2<T> Vec2<T>::movedTowards(const T r, const Angle phi) const
+constexpr Vec2<T> Vec2<T>::movedTowards(const T r, const Angle phi) const
 {
     static_assert(SFML_BASE_IS_FLOATING_POINT(T));
 
@@ -107,7 +108,7 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec2<T> Vec2<T>::projectedOnto(const Vec2 axis) const
+constexpr Vec2<T> Vec2<T>::projectedOnto(const Vec2 axis) const
 {
     static_assert(SFML_BASE_IS_FLOATING_POINT(T));
 
@@ -119,7 +120,7 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec2<T> Vec2<T>::clampMaxLength(const T maxLength) const
+constexpr Vec2<T> Vec2<T>::clampMaxLength(const T maxLength) const
 {
     static_assert(SFML_BASE_IS_FLOATING_POINT(T));
 
@@ -136,8 +137,7 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec2<T> Vec2<T>::clampMaxLengthSquared(
-    const T maxLengthSquared) const
+constexpr Vec2<T> Vec2<T>::clampMaxLengthSquared(const T maxLengthSquared) const
 {
     static_assert(SFML_BASE_IS_FLOATING_POINT(T));
 
@@ -154,7 +154,7 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec2<T> Vec2<T>::clampMinLength(const T minLength) const
+constexpr Vec2<T> Vec2<T>::clampMinLength(const T minLength) const
 {
     static_assert(SFML_BASE_IS_FLOATING_POINT(T));
 
@@ -174,8 +174,7 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec2<T> Vec2<T>::clampMinLengthSquared(
-    const T minLengthSquared) const
+constexpr Vec2<T> Vec2<T>::clampMinLengthSquared(const T minLengthSquared) const
 {
     static_assert(SFML_BASE_IS_FLOATING_POINT(T));
 
@@ -195,8 +194,7 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec2<T> Vec2<T>::clampLength(const T minLength,
-                                                                                                  const T maxLength) const
+constexpr Vec2<T> Vec2<T>::clampLength(const T minLength, const T maxLength) const
 {
     static_assert(SFML_BASE_IS_FLOATING_POINT(T));
 
@@ -230,9 +228,7 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec2<T> Vec2<T>::clampLengthSquared(
-    const T minLengthSquared,
-    const T maxLengthSquared) const
+constexpr Vec2<T> Vec2<T>::clampLengthSquared(const T minLengthSquared, const T maxLengthSquared) const
 {
     static_assert(SFML_BASE_IS_FLOATING_POINT(T));
 
@@ -257,6 +253,14 @@ template <typename T>
 
     // Must be currentLengthSquared > maxLengthSquared
     return *this * base::sqrt(maxLengthSquared / currentLengthSquared);
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+constexpr Vec2<T> Vec2<T>::componentWiseFloor() const
+{
+    return {base::floor(x), base::floor(y)};
 }
 
 } // namespace sf
