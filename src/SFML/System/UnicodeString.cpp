@@ -177,7 +177,7 @@ template <priv::WStringLike TString>
 TString UnicodeString::toWideString() const
 {
     // Prepare the output string
-    std::wstring output;
+    TString output;
     output.reserve(m_impl->string.size() + 1);
 
     // Convert
@@ -207,7 +207,7 @@ template <priv::U16StringLike TString>
 TString UnicodeString::toUtf16() const
 {
     // Prepare the output string
-    std::u16string output;
+    TString output;
     output.reserve(m_impl->string.size());
 
     // Convert
@@ -320,7 +320,7 @@ void UnicodeString::replaceAllOccurrences(const UnicodeString& searchFor, const 
     base::SizeT       pos  = find(searchFor);
 
     // Replace each occurrence of search
-    while (pos != InvalidPos)
+    while (pos != nPos)
     {
         replaceRange(pos, len, replaceWith);
         pos = find(searchFor, pos + step);
@@ -345,35 +345,28 @@ const char32_t* UnicodeString::getData() const
 ////////////////////////////////////////////////////////////
 UnicodeString::Iterator UnicodeString::begin()
 {
-    return m_impl->string.empty() ? nullptr : &(m_impl->string.front());
+    return m_impl->string.data();
 }
 
 
 ////////////////////////////////////////////////////////////
 UnicodeString::ConstIterator UnicodeString::begin() const
 {
-    return m_impl->string.empty() ? nullptr : &(m_impl->string.front());
+    return m_impl->string.data();
 }
 
 
 ////////////////////////////////////////////////////////////
 UnicodeString::Iterator UnicodeString::end()
 {
-    return m_impl->string.empty() ? nullptr : &(m_impl->string.front()) + m_impl->string.size();
+    return m_impl->string.data() + m_impl->string.size();
 }
 
 
 ////////////////////////////////////////////////////////////
 UnicodeString::ConstIterator UnicodeString::end() const
 {
-    return m_impl->string.empty() ? nullptr : &(m_impl->string.front()) + m_impl->string.size();
-}
-
-
-////////////////////////////////////////////////////////////
-void* UnicodeString::getImplString()
-{
-    return &m_impl->string;
+    return m_impl->string.data() + m_impl->string.size();
 }
 
 
@@ -427,10 +420,6 @@ UnicodeString operator+(const UnicodeString& lhs, const UnicodeString& rhs)
 
     return string;
 }
-
-
-////////////////////////////////////////////////////////////
-const base::SizeT UnicodeString::InvalidPos{std::u32string::npos};
 
 
 ////////////////////////////////////////////////////////////
