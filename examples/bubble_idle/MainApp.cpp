@@ -350,6 +350,7 @@ Main::Main() :
     suShrineBgTintG(shaderShrineBackground.getUniformLocation("u_shrineTintG").value()),
     suShrineBgTintB(shaderShrineBackground.getUniformLocation("u_shrineTintB").value()),
     suShrineBgTintA(shaderShrineBackground.getUniformLocation("u_shrineTintA").value()),
+    suShrineBgDistortionStrength(shaderShrineBackground.getUniformLocation("u_distortionStrength").value()),
     suShrineBgTintStrength(shaderShrineBackground.getUniformLocation("u_tintStrength").value()),
     suShrineBgEffectStrength(shaderShrineBackground.getUniformLocation("u_effectStrength").value()),
     aaLevel(sf::base::min(16u, sf::RenderTexture::getMaximumAntiAliasingLevel())),
