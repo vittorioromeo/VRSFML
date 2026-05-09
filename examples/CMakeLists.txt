@@ -1,7 +1,28 @@
 # ExampleUtils library
-add_library(ExampleUtils STATIC src/ExampleUtils/MiniFmt.cpp src/ExampleUtils/Scaling.cpp)
+set(INCROOT ${PROJECT_SOURCE_DIR}/examples/include/ExampleUtils)
+set(SRCROOT ${PROJECT_SOURCE_DIR}/examples/src/ExampleUtils)
+
+file(GLOB SRC CONFIGURE_DEPENDS "${INCROOT}/*.hpp" "${INCROOT}/*.inl" "${SRCROOT}/*.hpp" "${SRCROOT}/*.inl" "${SRCROOT}/*.cpp")
+
+if(NOT SFML_BUILD_AUDIO)
+    list(REMOVE_ITEM SRC "${SRCROOT}/LoadedSound.cpp")
+endif()
+
+if(NOT SFML_BUILD_IMGUI)
+    list(REMOVE_ITEM SRC "${SRCROOT}/ProfilerImGui.cpp")
+endif()
+
+add_library(ExampleUtils STATIC ${SRC})
 target_link_libraries(ExampleUtils PUBLIC SFML::System SFML::Window SFML::Graphics)
 target_include_directories(ExampleUtils PRIVATE ${PROJECT_SOURCE_DIR}/examples/include)
+
+if(SFML_BUILD_AUDIO)
+    target_link_libraries(ExampleUtils PRIVATE SFML::Audio)
+endif()
+
+if(SFML_BUILD_IMGUI)
+    target_link_libraries(ExampleUtils PRIVATE SFML::ImGui ImGui::ImGui)
+endif()
 
 # CLI based examples
 if(NOT SFML_OS_IOS AND NOT SFML_OS_EMSCRIPTEN)
