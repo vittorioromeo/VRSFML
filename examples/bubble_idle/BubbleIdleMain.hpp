@@ -291,8 +291,7 @@ struct Main
     sf::Shader::UniformLocation suShrineBgTintG;
     sf::Shader::UniformLocation suShrineBgTintB;
     sf::Shader::UniformLocation suShrineBgTintA;
-    sf::Shader::UniformLocation
-        suShrineBgDistortionStrength = shaderShrineBackground.getUniformLocation("u_distortionStrength").value();
+    sf::Shader::UniformLocation suShrineBgDistortionStrength;
     sf::Shader::UniformLocation suShrineBgTintStrength;
     sf::Shader::UniformLocation suShrineBgEffectStrength;
 
