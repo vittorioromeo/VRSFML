@@ -7,6 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Launder.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/MaxAlignT.hpp"
 #include "SFML/Base/PlacementNew.hpp"
@@ -99,7 +100,7 @@ public:
 
         // NOLINTNEXTLINE(readability-non-const-parameter)
         m_methodPtr = [](char* s, FnPtrType, Ts... xs) -> RetType
-        { return reinterpret_cast<UnrefType*>(s)->operator()(SFML_BASE_FORWARD(xs)...); };
+        { return SFML_BASE_LAUNDER_CAST(UnrefType*, s)->operator()(SFML_BASE_FORWARD(xs)...); };
 
         // NOLINTNEXTLINE(readability-non-const-parameter)
         m_allocPtr = [](char* s, void* o, const Operation operation)
@@ -107,7 +108,7 @@ public:
             if (operation == Operation::Destroy)
             {
                 SFML_BASE_ASSERT(s != nullptr);
-                reinterpret_cast<UnrefType*>(s)->~UnrefType();
+                SFML_BASE_LAUNDER_CAST(UnrefType*, s)->~UnrefType();
             }
             else if (operation == Operation::MoveConstruct)
             {
@@ -149,16 +150,21 @@ public:
     ////////////////////////////////////////////////////////////
     FixedFunction(const FixedFunction& rhs) : FixedFunction()
     {
-        m_methodPtr = rhs.m_methodPtr;
-
         if (rhs.m_allocPtr == nullptr)
         {
+            // Free-function path: no copy can throw, set both fields.
+            m_methodPtr = rhs.m_methodPtr;
             functionPtr = rhs.functionPtr;
             return;
         }
 
+        // Stored-callable path: the copy-construct can throw.
+        // Update our metadata only after it succeeds, so that a
+        // partially-constructed `*this` destroys cleanly during
+        // exception unwind (`m_allocPtr == nullptr` -> no-op).
         rhs.m_allocPtr(objStorage, const_cast<char*>(rhs.objStorage), Operation::CopyConstruct);
-        m_allocPtr = rhs.m_allocPtr;
+        m_methodPtr = rhs.m_methodPtr;
+        m_allocPtr  = rhs.m_allocPtr;
     }
 
 
@@ -169,18 +175,23 @@ public:
             return *this;
 
         destroyIfNeeded();
-        m_allocPtr = nullptr; // Safe empty state in case copy-construct throws
 
-        m_methodPtr = rhs.m_methodPtr;
+        m_allocPtr  = nullptr; // Safe empty state in case copy-construct throws
+        m_methodPtr = nullptr;
 
         if (rhs.m_allocPtr == nullptr)
         {
+            // Free-function path: no copy can throw, set both fields.
+            m_methodPtr = rhs.m_methodPtr;
             functionPtr = rhs.functionPtr;
             return *this;
         }
 
+        // Stored-callable path: the copy-construct can throw.
+        // Update our metadata only after it succeeds.
         rhs.m_allocPtr(objStorage, const_cast<char*>(rhs.objStorage), Operation::CopyConstruct);
-        m_allocPtr = rhs.m_allocPtr;
+        m_methodPtr = rhs.m_methodPtr;
+        m_allocPtr  = rhs.m_allocPtr;
 
         return *this;
     }
@@ -206,7 +217,10 @@ public:
 
         if (rhs.m_allocPtr == nullptr)
         {
-            functionPtr = rhs.functionPtr;
+            functionPtr     = rhs.functionPtr;
+            rhs.m_methodPtr = nullptr;
+            rhs.functionPtr = nullptr;
+
             return;
         }
 
@@ -232,7 +246,10 @@ public:
 
         if (rhs.m_allocPtr == nullptr)
         {
-            functionPtr = rhs.functionPtr;
+            functionPtr     = rhs.functionPtr;
+            rhs.m_methodPtr = nullptr;
+            rhs.functionPtr = nullptr;
+
             return *this;
         }
 
@@ -255,11 +272,37 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Invoke the wrapped callable
+    ///
+    /// Delegates to the `const`-qualified overload below; the
+    /// underlying trampoline always invokes the wrapped callable
+    /// through a non-`const` path regardless, so providing both
+    /// overloads is purely for API symmetry with `std::function`.
+    ///
+    ////////////////////////////////////////////////////////////
     template <typename... TArgs>
     [[gnu::always_inline, gnu::flatten]] RetType operator()(TArgs&&... args)
     {
+        return const_cast<const FixedFunction&>(*this)(SFML_BASE_FORWARD(args)...);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Invoke the wrapped callable through a `const` reference
+    ///
+    /// Mirrors `std::function::operator() const`. The wrapped callable
+    /// is invoked through a non-`const` path regardless of `*this`'s
+    /// const-ness, so a callable whose `operator()` is non-`const`
+    /// will mutate its captured state. This is a *logical* const
+    /// violation. Wrap mutable closures in a non-`const`
+    /// `FixedFunction` if you don't want this behavior.
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename... TArgs>
+    [[gnu::always_inline, gnu::flatten]] RetType operator()(TArgs&&... args) const
+    {
         SFML_BASE_ASSERT(m_methodPtr != nullptr);
-        return m_methodPtr(objStorage, functionPtr, SFML_BASE_FORWARD(args)...);
+        return m_methodPtr(const_cast<char*>(objStorage), functionPtr, SFML_BASE_FORWARD(args)...);
     }
 
 
