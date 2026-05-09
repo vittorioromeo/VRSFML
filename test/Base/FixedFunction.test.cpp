@@ -590,5 +590,110 @@ TEST_CASE("[Base] Base/FixedFunction.hpp")
     }
 }
 
+
+////////////////////////////////////////////////////////////
+// Free function used by the const-call test below.
+////////////////////////////////////////////////////////////
+[[nodiscard]] int squareInt(const int x)
+{
+    return x * x;
+}
+
+
+////////////////////////////////////////////////////////////
+TEST_CASE("[Base] sf::base::FixedFunction - const call operator")
+{
+    using FFi = sf::base::FixedFunction<int(int), 64>;
+
+    SECTION("Const call dispatches to free function pointer")
+    {
+        const FFi f{&squareInt};
+        CHECK(f(7) == 49);
+
+        // Non-const call should also work via the delegating overload.
+        FFi g{&squareInt};
+        CHECK(g(8) == 64);
+    }
+
+    SECTION("Const call dispatches to a const-callable closure")
+    {
+        int       captured = 10;
+        const FFi f{[captured](const int x) { return x + captured; }};
+
+        // Const lambdas have a `const operator()` -- safe to call
+        // through `const FFi&` with no logical-const violation.
+        CHECK(f(5) == 15);
+
+        // Repeated calls return the same value (no hidden mutation).
+        CHECK(f(5) == 15);
+        CHECK(f(0) == 10);
+    }
+
+    SECTION("Both overloads forward arguments and return value identically")
+    {
+        FFi       g{[](const int x) { return x + 1; }};
+        const FFi f{[](const int x) { return x + 1; }};
+
+        CHECK(f(3) == 4);
+        CHECK(g(3) == 4);
+        CHECK(f(-1) == 0);
+        CHECK(g(-1) == 0);
+    }
+
+    SECTION("Const call on a wrapped mutable lambda still runs (matches std::function)")
+    {
+        // A `mutable` lambda has a non-`const operator()`. Calling it
+        // through a const FixedFunction is the documented "logical
+        // const violation" case (matches std::function::operator()
+        // const). The call still works; the captured state mutates.
+        const FFi f{[count = 0](const int x) mutable { return ++count + x; }};
+        CHECK(f(0) == 1);
+        CHECK(f(0) == 2);
+        CHECK(f(0) == 3);
+    }
+
+    SECTION("Const call from a copied FixedFunction")
+    {
+        // After copy-construction, the destination is independently
+        // callable through const.
+        const FFi original{&squareInt};
+        const FFi copy(original); // NOLINT(performance-unnecessary-copy-initialization)
+
+        CHECK(original(4) == 16);
+        CHECK(copy(4) == 16);
+    }
+}
+
+
+////////////////////////////////////////////////////////////
+TEST_CASE("[Base] sf::base::FixedFunction - moved-from is empty regardless of payload kind")
+{
+    // Ensures the move ops uniformly null `m_methodPtr` -- previously
+    // a moved-from free-function FixedFunction was still callable,
+    // inconsistent with the stored-callable case.
+    using FFi = sf::base::FixedFunction<int(int), 64>;
+
+    SECTION("Move-construct from free-function FixedFunction")
+    {
+        FFi source{&squareInt};
+        FFi dest{static_cast<FFi&&>(source)};
+
+        CHECK(static_cast<bool>(dest));
+        CHECK(!static_cast<bool>(source));
+        CHECK(dest(6) == 36);
+    }
+
+    SECTION("Move-assign from free-function FixedFunction")
+    {
+        FFi source{&squareInt};
+        FFi dest{[](int) { return 0; }};
+        dest = static_cast<FFi&&>(source);
+
+        CHECK(static_cast<bool>(dest));
+        CHECK(!static_cast<bool>(source));
+        CHECK(dest(7) == 49);
+    }
+}
+
 } // namespace FixedFunctionTest
 } // namespace
