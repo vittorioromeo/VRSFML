@@ -321,8 +321,8 @@ TEST_CASE("[System] sf::UnicodeString")
         const sf::UnicodeString string("a little bit of this and a little bit of that");
         CHECK(string.find("a little bit") == 0);
         CHECK(string.find("a little bit", 15) == 25);
-        CHECK(string.find("a little bit", 1000) == sf::UnicodeString::InvalidPos);
-        CHECK(string.find("no way you find this") == sf::UnicodeString::InvalidPos);
+        CHECK(string.find("a little bit", 1000) == sf::UnicodeString::nPos);
+        CHECK(string.find("no way you find this") == sf::UnicodeString::nPos);
     }
 
     SECTION("replace()")

@@ -65,10 +65,8 @@ public:
     ////////////////////////////////////////////////////////////
     // Static member data
     ////////////////////////////////////////////////////////////
-    // NOLINTBEGIN(readability-identifier-naming)
     /// Represents an invalid position in the string
-    static const base::SizeT InvalidPos;
-    // NOLINTEND(readability-identifier-naming)
+    static constexpr base::SizeT nPos = static_cast<base::SizeT>(-1);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct an empty string
@@ -297,7 +295,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Find a sequence of characters in the string, starting from `start`
     ///
-    /// \return Position of `str` in the string, or `UnicodeString::InvalidPos` if not found
+    /// \return Position of `str` in the string, or `UnicodeString::nPos` if not found
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] base::SizeT find(const UnicodeString& str, base::SizeT start = 0) const;
@@ -305,7 +303,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Replace the substring at `position` spanning `length` characters with `replaceWith`
     ///
-    /// \param length Number of characters to replace, or `InvalidPos` to replace until the end of the string
+    /// \param length Number of characters to replace, or `nPos` to replace until the end of the string
     ///
     ////////////////////////////////////////////////////////////
     void replaceRange(base::SizeT position, base::SizeT length, const UnicodeString& replaceWith);
@@ -320,10 +318,10 @@ public:
     /// \brief Return the substring starting at `position` and spanning `length` characters
     ///
     /// \param length Number of characters to include, clamped to the string length;
-    ///               pass `InvalidPos` to include all characters until the end of the string
+    ///               pass `nPos` to include all characters until the end of the string
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] UnicodeString substring(base::SizeT position, base::SizeT length = InvalidPos) const;
+    [[nodiscard]] UnicodeString substring(base::SizeT position, base::SizeT length = nPos) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a read-only pointer to the null-terminated C-style array of characters
@@ -372,12 +370,6 @@ public:
 private:
     friend SFML_SYSTEM_API bool operator==(const UnicodeString& lhs, const UnicodeString& rhs);
     friend SFML_SYSTEM_API bool operator<(const UnicodeString& lhs, const UnicodeString& rhs);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Retrieve the string stored in the PImpl
-    ///
-    ////////////////////////////////////////////////////////////
-    void* getImplString();
 
     ////////////////////////////////////////////////////////////
     // Member data
