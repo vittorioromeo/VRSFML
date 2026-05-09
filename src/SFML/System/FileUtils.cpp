@@ -9,7 +9,11 @@
 
 #include "SFML/System/Path.hpp"
 
-#include <string>
+#include "SFML/Base/StringView.hpp"
+
+#ifdef SFML_SYSTEM_WINDOWS
+    #include <string>
+#endif
 
 #include <cstdio>
 
