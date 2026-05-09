@@ -967,6 +967,13 @@ public:
         return ref;
     }
 
+    // Alias to match SFML/Base naming used by `detail::vector`.
+    template <class... Args>
+    auto emplaceBack(Args&&... args) -> reference
+    {
+        return emplace_back(SFML_BASE_FORWARD(args)...);
+    }
+
     void clear()
     {
         if constexpr (!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(T))
