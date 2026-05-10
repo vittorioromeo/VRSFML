@@ -551,7 +551,7 @@ void Image::rotateHue(const float degrees)
 bool Image::saveToFile(const Path& filename) const
 {
     // Extract the extension
-    const Path extension     = filename.extension();
+    const Path extension     = filename.getExtension();
     const auto convertedSize = m_size.toVec2i();
 
     // Callback to write to output stream

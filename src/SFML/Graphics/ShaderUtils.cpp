@@ -109,7 +109,14 @@ constexpr unsigned int maxIncludeFilenameLength = 256;
             filenameBuf[includedFilename.size()] = '\0';
 
             // Resolve include path relative to base directory
-            const sf::Path includePath = (basePath / sf::Path(static_cast<const char*>(filenameBuf))).absolute();
+            const auto absMaybe = (basePath / sf::Path(static_cast<const char*>(filenameBuf))).getAbsolute();
+            if (!absMaybe)
+            {
+                sf::priv::err() << "Failed to resolve absolute path for GLSL #include '"
+                                << static_cast<const char*>(filenameBuf) << "'";
+                return false;
+            }
+            const sf::Path& includePath = *absMaybe;
 
             // Check for circular includes
             for (const auto& stackPath : includeStack)
@@ -161,7 +168,7 @@ constexpr unsigned int maxIncludeFilenameLength = 256;
             // Push to include stack and recursively process
             includeStack.pushBack(includePath);
 
-            if (!preprocessGlslIncludesImpl(includedSource, includePath.parent(), output, includeStack, depth + 1))
+            if (!preprocessGlslIncludesImpl(includedSource, includePath.getParent(), output, includeStack, depth + 1))
                 return false;
 
             includeStack.popBack();
@@ -283,12 +290,18 @@ bool ShaderUtils::preprocessGlslIncludes(base::StringView source, const Path& sh
     if (!source.empty() && source[source.size() - 1] == '\0')
         source.removeSuffix(1);
 
-    const Path absoluteShaderPath = shaderPath.absolute();
+    const auto absMaybe = shaderPath.getAbsolute();
+    if (!absMaybe)
+    {
+        priv::err() << "Failed to resolve absolute path for shader";
+        return false;
+    }
+    const Path& absoluteShaderPath = *absMaybe;
 
     base::Vector<Path> includeStack;
     includeStack.pushBack(absoluteShaderPath);
 
-    return preprocessGlslIncludesImpl(source, absoluteShaderPath.parent(), output, includeStack, 0);
+    return preprocessGlslIncludesImpl(source, absoluteShaderPath.getParent(), output, includeStack, 0);
 }
 
 } // namespace sf

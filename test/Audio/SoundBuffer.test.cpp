@@ -155,7 +155,7 @@ TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
         {
             for (const auto& extension : extensions)
             {
-                const auto filename = sf::Path::tempDirectoryPath() / sf::Path(stem + extension);
+                const auto filename = sf::Path::getTempDirectory().value() / sf::Path(stem + extension);
 
                 INFO("Filename: " << reinterpret_cast<const char*>(filename.to<std::u8string>().c_str()));
 

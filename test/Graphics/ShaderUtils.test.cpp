@@ -213,7 +213,7 @@ TEST_CASE("[Graphics] sf::ShaderUtils::preprocessGlslIncludes")
         TemporaryFile includedFile("float helper() { return 1.0; }\n");
 
         // Build the #include line pointing to the temp file's filename
-        const auto includedFilename = includedFile.getPath().filename().to<sf::base::String>();
+        const auto includedFilename = includedFile.getPath().getFilename().to<sf::base::String>();
 
         sf::base::String source;
         source.append("uniform float time;\n");
@@ -264,8 +264,8 @@ TEST_CASE("[Graphics] sf::ShaderUtils::preprocessGlslIncludes")
         // We need to know filenames beforehand, so create them in two steps
 
         // First, create file A that includes file B
-        const auto pathA = sf::Path::tempDirectoryPath() / "sfml_circular_a.glsl";
-        const auto pathB = sf::Path::tempDirectoryPath() / "sfml_circular_b.glsl";
+        const auto pathA = sf::Path::getTempDirectory().value() / sf::Path("sfml_circular_a.glsl");
+        const auto pathB = sf::Path::getTempDirectory().value() / sf::Path("sfml_circular_b.glsl");
 
         {
             constexpr sf::base::StringView contentA = "#include \"sfml_circular_b.glsl\"\n";
@@ -293,7 +293,7 @@ TEST_CASE("[Graphics] sf::ShaderUtils::preprocessGlslIncludes")
     {
         TemporaryFile innerFile("int inner_val = 42;\n");
 
-        const auto innerFilename = innerFile.getPath().filename().to<sf::base::String>();
+        const auto innerFilename = innerFile.getPath().getFilename().to<sf::base::String>();
 
         sf::base::String outerSource;
         outerSource.append("#include \"");
@@ -303,7 +303,7 @@ TEST_CASE("[Graphics] sf::ShaderUtils::preprocessGlslIncludes")
 
         TemporaryFile outerFile(outerSource.toStringView());
 
-        const auto outerFilename = outerFile.getPath().filename().to<sf::base::String>();
+        const auto outerFilename = outerFile.getPath().getFilename().to<sf::base::String>();
 
         sf::base::String mainSource;
         mainSource.append("#include \"");
@@ -367,7 +367,7 @@ TEST_CASE("[Graphics] sf::ShaderUtils::preprocessGlslIncludes")
     {
         TemporaryFile includedFile("// included line 1\n// included line 2\n");
 
-        const auto includedFilename = includedFile.getPath().filename().to<sf::base::String>();
+        const auto includedFilename = includedFile.getPath().getFilename().to<sf::base::String>();
 
         sf::base::String source;
         source.append("// line 1\n"); // line 1

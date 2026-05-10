@@ -5,24 +5,37 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/System/Path.hpp"
+
 #include "SFML/System/PathStreamOp.hpp"
 
+#include "SFML/Base/FunctionRef.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/StdChrono.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Trait/IsSame.hpp"
+#include "SFML/Base/Trait/RemoveCVRef.hpp"
 
 #include <filesystem>
+#include <ios>
 #include <ostream>
 #include <string>
+#include <string_view>
+#include <system_error>
+
+#include <cstdlib>
 
 
 namespace
 {
 ////////////////////////////////////////////////////////////
-const void* asVoidPtr(const std::filesystem::path& path)
+[[nodiscard, gnu::always_inline]] constexpr char asciiToLower(const char c) noexcept
 {
-    return &path;
+    return (c >= 'A' && c <= 'Z') ? static_cast<char>(c + 32) : c;
 }
 
 } // namespace
@@ -34,26 +47,68 @@ namespace sf
 struct Path::Impl
 {
     std::filesystem::path fsPath;
-    mutable std::string   buffer;
 
     Impl() = default;
 
-    Impl(const auto& source, std::string&& theBuffer) : fsPath{source}, buffer{SFML_BASE_MOVE(theBuffer)}
+    template <typename T>
+        requires(!base::isSame<base::RemoveCVRefIndirect<T>, Impl>)
+    explicit Impl(T&& source) : fsPath{SFML_BASE_FORWARD(source)}
     {
     }
 
-    Impl(const base::String& source, std::string&& theBuffer) :
-        fsPath{std::string(source.data(), source.size())},
-        buffer{SFML_BASE_MOVE(theBuffer)}
+    explicit Impl(const base::String& source) : fsPath{std::string_view{source.data(), source.size()}}
     {
     }
 };
 
 
 ////////////////////////////////////////////////////////////
-Path Path::tempDirectoryPath()
+base::Optional<Path> Path::getTempDirectory()
 {
-    return Path{0, asVoidPtr(std::filesystem::temp_directory_path())};
+    std::error_code ec;
+    auto            tmp = std::filesystem::temp_directory_path(ec);
+
+    if (ec)
+        return base::nullOpt;
+
+    return base::makeOptional(Path{0, &tmp});
+}
+
+
+////////////////////////////////////////////////////////////
+base::Optional<Path> Path::getCurrentDirectory()
+{
+    std::error_code ec;
+    auto            cwd = std::filesystem::current_path(ec);
+
+    if (ec)
+        return base::nullOpt;
+
+    return base::makeOptional(Path{0, &cwd});
+}
+
+
+////////////////////////////////////////////////////////////
+bool Path::setCurrentDirectory(const Path& path)
+{
+    std::error_code ec;
+    std::filesystem::current_path(path.m_impl->fsPath, ec);
+    return !ec;
+}
+
+
+////////////////////////////////////////////////////////////
+base::Optional<Path> Path::getHomeDirectory()
+{
+#ifdef SFML_SYSTEM_WINDOWS
+    if (const char* const userProfile = std::getenv("USERPROFILE"))
+        return base::makeOptional(Path{userProfile});
+#else
+    if (const char* const home = std::getenv("HOME"))
+        return base::makeOptional(Path{home});
+#endif
+
+    return base::nullOpt;
 }
 
 
@@ -63,7 +118,7 @@ Path::Path() = default;
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-Path::Path(const T& source) : m_impl(source, std::string{})
+Path::Path(const T& source) : m_impl(source)
 {
 }
 
@@ -75,7 +130,7 @@ template Path::Path(const std::filesystem::path&);
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-Path::Path(const T* source) : m_impl(source, std::string{})
+Path::Path(const T* source) : m_impl(source)
 {
 }
 
@@ -84,7 +139,7 @@ template Path::Path(const wchar_t*);
 template Path::Path(const char32_t*);
 
 ////////////////////////////////////////////////////////////
-Path::Path(int, const void* fsPath) : m_impl(*static_cast<const std::filesystem::path*>(fsPath), std::string{})
+Path::Path(int, const void* fsPath) : m_impl(*static_cast<const std::filesystem::path*>(fsPath))
 {
 }
 
@@ -98,30 +153,47 @@ Path& Path::operator=(Path&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-Path Path::filename() const
+Path Path::getFilename() const
 {
-    return Path{0, asVoidPtr(m_impl->fsPath.filename())};
+    const auto fn = m_impl->fsPath.filename();
+    return Path{0, &fn};
 }
 
 
 ////////////////////////////////////////////////////////////
-Path Path::extension() const
+Path Path::getStem() const
 {
-    return Path{0, asVoidPtr(m_impl->fsPath.extension())};
+    const auto s = m_impl->fsPath.stem();
+    return Path{0, &s};
 }
 
 
 ////////////////////////////////////////////////////////////
-Path Path::absolute() const
+Path Path::getExtension() const
 {
-    return Path{0, asVoidPtr(std::filesystem::absolute(m_impl->fsPath))};
+    const auto ext = m_impl->fsPath.extension();
+    return Path{0, &ext};
 }
 
 
 ////////////////////////////////////////////////////////////
-Path Path::parent() const
+base::Optional<Path> Path::getAbsolute() const
 {
-    return Path{0, asVoidPtr(m_impl->fsPath.parent_path())};
+    std::error_code ec;
+    const auto      abs = std::filesystem::absolute(m_impl->fsPath, ec);
+
+    if (ec)
+        return base::nullOpt;
+
+    return base::makeOptional(Path{0, &abs});
+}
+
+
+////////////////////////////////////////////////////////////
+Path Path::getParent() const
+{
+    const auto p = m_impl->fsPath.parent_path();
+    return Path{0, &p};
 }
 
 
@@ -129,13 +201,6 @@ Path Path::parent() const
 const Path::value_type* Path::c_str() const
 {
     return m_impl->fsPath.c_str();
-}
-
-
-////////////////////////////////////////////////////////////
-bool Path::removeFromDisk() const
-{
-    return std::filesystem::remove(m_impl->fsPath);
 }
 
 
@@ -149,28 +214,160 @@ bool Path::empty() const
 ////////////////////////////////////////////////////////////
 bool Path::exists() const
 {
-    return std::filesystem::exists(m_impl->fsPath);
+    std::error_code ec;
+    return std::filesystem::exists(m_impl->fsPath, ec);
+}
+
+
+////////////////////////////////////////////////////////////
+bool Path::isDirectory() const
+{
+    std::error_code ec;
+    return std::filesystem::is_directory(m_impl->fsPath, ec);
+}
+
+
+////////////////////////////////////////////////////////////
+bool Path::isRegularFile() const
+{
+    std::error_code ec;
+    return std::filesystem::is_regular_file(m_impl->fsPath, ec);
+}
+
+
+////////////////////////////////////////////////////////////
+bool Path::isSymlink() const
+{
+    std::error_code ec;
+    return std::filesystem::is_symlink(m_impl->fsPath, ec);
+}
+
+
+////////////////////////////////////////////////////////////
+base::Optional<base::U64> Path::getFileSize() const
+{
+    std::error_code ec;
+    const auto      size = std::filesystem::file_size(m_impl->fsPath, ec);
+
+    if (ec)
+        return base::nullOpt;
+
+    return base::makeOptional(static_cast<base::U64>(size));
+}
+
+
+////////////////////////////////////////////////////////////
+base::Optional<base::I64> Path::getLastWriteTimeSecondsSinceEpoch() const
+{
+    std::error_code ec;
+    const auto      ftime = std::filesystem::last_write_time(m_impl->fsPath, ec);
+
+    if (ec)
+        return base::nullOpt;
+
+    const auto sysTime = std::chrono::file_clock::to_sys(ftime);
+    const auto seconds = std::chrono::duration_cast<std::chrono::seconds>(sysTime.time_since_epoch()).count();
+    return base::makeOptional(static_cast<base::I64>(seconds));
 }
 
 
 ////////////////////////////////////////////////////////////
 bool Path::extensionIs(const base::StringView str) const
 {
-    // `u8string()` is locale-independent; `string()` throws on MinGW/Clang64 when the
-    // extension contains characters outside the current codepage.
-    const auto nativeExt = m_impl->fsPath.extension().u8string();
+    // Delegate the "what is the extension substring" decision to
+    // `std::filesystem::path::extension()` so we always match its
+    // semantics for `.`, `..`, leading-dot stems, etc.
+    // `.native()` returns a reference, so the only allocation is
+    // inside `extension()`'s returned path -- which is SSO-friendly
+    // for typical extensions like `.png`.
+    const auto  extPath   = m_impl->fsPath.extension();
+    const auto& nativeExt = extPath.native();
 
     if (nativeExt.size() != str.size())
         return false;
 
     for (base::SizeT i = 0u; i < nativeExt.size(); ++i)
-        if (std::tolower(static_cast<int>(nativeExt[i])) !=
-            std::tolower(static_cast<int>(str[i]))) // TODO P1: non-locale tolower
+        if (asciiToLower(static_cast<char>(nativeExt[i])) != asciiToLower(str[i]))
             return false;
 
     return true;
 }
 
+
+////////////////////////////////////////////////////////////
+bool Path::hasParent() const
+{
+    return m_impl->fsPath.has_parent_path();
+}
+
+
+////////////////////////////////////////////////////////////
+bool Path::removeFromDisk() const
+{
+    std::error_code ec;
+    return std::filesystem::remove(m_impl->fsPath, ec) && !ec;
+}
+
+
+////////////////////////////////////////////////////////////
+bool Path::copyFileTo(const Path& path) const
+{
+    std::error_code ec;
+    return std::filesystem::copy_file(m_impl->fsPath, path.m_impl->fsPath, ec) && !ec;
+}
+
+
+////////////////////////////////////////////////////////////
+bool Path::createLeafDirectory() const
+{
+    std::error_code ec;
+    return std::filesystem::create_directory(m_impl->fsPath, ec) && !ec;
+}
+
+
+////////////////////////////////////////////////////////////
+bool Path::createDirectoryTree() const
+{
+    std::error_code ec;
+    const bool      created = std::filesystem::create_directories(m_impl->fsPath, ec);
+
+    // `create_directories` returns false when the path already exists; that's not an error.
+    return !ec && (created || std::filesystem::is_directory(m_impl->fsPath, ec));
+}
+
+
+////////////////////////////////////////////////////////////
+bool Path::renameTo(const Path& target) const
+{
+    std::error_code ec;
+    std::filesystem::rename(m_impl->fsPath, target.m_impl->fsPath, ec);
+    return !ec;
+}
+
+
+////////////////////////////////////////////////////////////
+bool Path::forEachEntry(base::FunctionRef<void(const Path&)> callback) const
+{
+    std::error_code                     ec;
+    std::filesystem::directory_iterator it(m_impl->fsPath, ec);
+
+    if (ec)
+        return false;
+
+    const std::filesystem::directory_iterator end;
+    for (; it != end; it.increment(ec))
+    {
+        if (ec)
+            return false;
+
+        const auto& entryPath = it->path();
+        const Path  entry{0, &entryPath};
+
+        callback(entry);
+    }
+
+    return true;
+}
 
 ////////////////////////////////////////////////////////////
 Path& Path::operator/=(const Path& rhs)
@@ -183,7 +380,33 @@ Path& Path::operator/=(const Path& rhs)
 ////////////////////////////////////////////////////////////
 Path operator/(const Path& lhs, const Path& rhs)
 {
-    return Path{0, asVoidPtr(lhs.m_impl->fsPath / rhs.m_impl->fsPath)};
+    const auto joined = lhs.m_impl->fsPath / rhs.m_impl->fsPath;
+    return Path{0, &joined};
+}
+
+
+////////////////////////////////////////////////////////////
+Path operator/(Path&& lhs, const Path& rhs)
+{
+    lhs /= rhs;
+    return SFML_BASE_MOVE(lhs);
+}
+
+
+////////////////////////////////////////////////////////////
+Path& Path::operator+=(const Path& rhs)
+{
+    m_impl->fsPath += rhs.m_impl->fsPath;
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+Path operator+(const Path& lhs, const Path& rhs)
+{
+    auto result = lhs.m_impl->fsPath;
+    result += rhs.m_impl->fsPath;
+    return Path{0, &result};
 }
 
 
@@ -212,10 +435,9 @@ T Path::to() const
     else if constexpr (SFML_BASE_IS_SAME(T, std::wstring))
         return m_impl->fsPath.wstring();
     else
-    {
-        struct unsupported;
-        return unsupported{};
-    }
+        static_assert(false,
+                      "sf::Path::to<T>(): unsupported target type. Supported: std::filesystem::path, "
+                      "sf::base::String, std::string, std::u8string, std::u32string, std::wstring.");
 }
 
 
@@ -227,41 +449,10 @@ bool Path::operator==(const Path& rhs) const
 
 
 ////////////////////////////////////////////////////////////
-bool Path::operator!=(const Path& rhs) const
-{
-    return m_impl->fsPath != rhs.m_impl->fsPath;
-}
-
-
-////////////////////////////////////////////////////////////
 template <typename T>
 bool Path::operator==(const T* str) const
 {
     return m_impl->fsPath == std::filesystem::path(str);
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-bool Path::operator!=(const T* str) const
-{
-    return m_impl->fsPath != std::filesystem::path(str);
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-bool Path::operator==(const T& str) const
-{
-    return m_impl->fsPath == std::filesystem::path(str);
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-bool Path::operator!=(const T& str) const
-{
-    return m_impl->fsPath != std::filesystem::path(str);
 }
 
 
@@ -287,12 +478,6 @@ std::ostream& operator<<(std::ostream& os, const Path& path)
 ////////////////////////////////////////////////////////////
 template bool Path::operator== <char>(const char*) const;
 template bool Path::operator== <wchar_t>(const wchar_t*) const;
-template bool Path::operator== <std::string>(const std::string&) const;
-
-
-////////////////////////////////////////////////////////////
-template bool Path::operator!= <char>(const char*) const;
-template bool Path::operator!= <wchar_t>(const wchar_t*) const;
-template bool Path::operator!= <std::string>(const std::string&) const;
+template bool Path::operator== <char32_t>(const char32_t*) const;
 
 } // namespace sf

@@ -36,7 +36,7 @@ TEST_CASE("[Audio] sf::OutputSoundFile")
     {
         for (const auto& extension : extensions)
         {
-            const auto           filename = sf::Path::tempDirectoryPath() / sf::Path(stem + extension);
+            const auto           filename = sf::Path::getTempDirectory().value() / sf::Path(stem + extension);
             const sf::ChannelMap channelMap{sf::SoundChannel::FrontLeft, sf::SoundChannel::FrontRight};
 
             INFO("Filename: " << std::string(reinterpret_cast<const char*>(filename.to<std::u8string>().c_str())));

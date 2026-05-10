@@ -154,7 +154,7 @@ ErrStream::Guard ErrStream::operator<<(PathDebugFormatter pathDebugFormatter)
     m_impl->mutex.lock(); // Will be unlocked by `~Guard()`
 
     m_impl->stream << "    Provided path: " << pathDebugFormatter.path.to<std::string>() << '\n'
-                   << "    Absolute path: " << pathDebugFormatter.path.absolute();
+                   << "    Absolute path: " << pathDebugFormatter.path.getAbsolute().valueOr(Path{"<unavailable>"});
 
     return Guard{m_impl->stream, &m_impl->mutex, m_impl->multiLine.loadSeqCst()};
 }
@@ -189,7 +189,7 @@ ErrStream::Guard& ErrStream::Guard::operator<<(ErrFlushType)
 ErrStream::Guard& ErrStream::Guard::operator<<(PathDebugFormatter pathDebugFormatter)
 {
     m_stream << "    Provided path: " << pathDebugFormatter.path.to<std::string>() << '\n'
-             << "    Absolute path: " << pathDebugFormatter.path.absolute();
+             << "    Absolute path: " << pathDebugFormatter.path.getAbsolute().valueOr(Path{"<unavailable>"});
 
     return *this;
 }

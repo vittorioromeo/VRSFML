@@ -24,7 +24,7 @@ void glCheckError(const unsigned int openGlError, const char* const file, const 
 {
     if (!WindowContext::hasActiveThreadLocalGlContext())
     {
-        err() << "An internal OpenGL call failed in " << Path{file}.filename() << "(" << line << ")."
+        err() << "An internal OpenGL call failed in " << Path{file}.getFilename() << "(" << line << ")."
               << "\nExpression:\n   " << expression << "\nNo active OpenGL context on calling thread.\n";
 
 #ifdef SFML_FATAL_OPENGL_ERRORS
@@ -34,7 +34,7 @@ void glCheckError(const unsigned int openGlError, const char* const file, const 
 
     const auto logError = [&](const char* const error, const char* const description)
     {
-        err() << "An internal OpenGL call failed in " << Path{file}.filename() << "(" << line << ")."
+        err() << "An internal OpenGL call failed in " << Path{file}.getFilename() << "(" << line << ")."
               << "\nExpression:\n   " << expression << "\nError description:\n   " << error << "\n   " << description
               << '\n';
 

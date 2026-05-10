@@ -22,7 +22,7 @@ void eglCheckError(const unsigned int eglError, const char* file, unsigned int l
 {
     const auto logError = [&](const char* error, const char* description)
     {
-        err() << "An internal EGL call failed in " << Path{file}.filename() << " (" << line << ")."
+        err() << "An internal EGL call failed in " << Path{file}.getFilename() << " (" << line << ")."
               << "\nExpression:\n   " << expression << "\nError description:\n   " << error << "\n   " << description
               << '\n';
     };
