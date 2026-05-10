@@ -719,10 +719,10 @@ TEST_CASE("[Base] sf::base::Bitset - shift round-trip is monotonic for small shi
     // Bits whose left-shifted index `i + n < 128` survive both shifts
     // and end up back at their original position. Bit 127 is dropped
     // by the left shift (127 + 16 = 143 >= 128) and stays gone.
-    CHECK(b.test(0));   // 0 -> 16 -> 0
-    CHECK(b.test(31));  // 31 -> 47 -> 31
-    CHECK(b.test(64));  // 64 -> 80 -> 64
-    CHECK(b.test(95));  // 95 -> 111 -> 95
+    CHECK(b.test(0));    // 0 -> 16 -> 0
+    CHECK(b.test(31));   // 31 -> 47 -> 31
+    CHECK(b.test(64));   // 64 -> 80 -> 64
+    CHECK(b.test(95));   // 95 -> 111 -> 95
     CHECK(!b.test(127)); // dropped: 127 + 16 = 143 >= 128
     CHECK(b.count() == 4u);
 }
