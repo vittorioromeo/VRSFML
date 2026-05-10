@@ -251,8 +251,8 @@ void platformWake(const void* const addr, const bool wakeOne) noexcept
 
 #else
     // Spin-wait fallback wakes itself by re-loading; nothing to do.
-    static_cast<void>(addr);
-    static_cast<void>(wakeOne);
+    (void)addr;
+    (void)wakeOne;
 #endif
 }
 } // namespace
