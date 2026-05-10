@@ -77,7 +77,7 @@ namespace
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline]] inline void generateRingVertices(
     const sf::Rect2f&     textureRect,
-    const sf::Color&      fillColor,
+    const sf::Color       fillColor,
     const float           outerRadius,
     const float           innerRadius,
     auto&&                fTransform,
