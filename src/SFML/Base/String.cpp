@@ -10,6 +10,7 @@
 #include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/Builtin/Memmove.hpp"
 #include "SFML/Base/Builtin/Strlen.hpp"
+#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Priv/VectorUtils.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StringView.hpp"
@@ -609,6 +610,39 @@ String operator+(const String& lhs, const StringView rhs)
 String operator+(const String& lhs, const String& rhs)
 {
     return operatorPlusImpl(lhs.data(), lhs.size(), rhs.data(), rhs.size());
+}
+
+
+////////////////////////////////////////////////////////////
+String operator+(String&& lhs, const String& rhs)
+{
+    lhs += rhs;
+    return SFML_BASE_MOVE(lhs);
+}
+
+
+////////////////////////////////////////////////////////////
+String operator+(String&& lhs, const char rhs)
+{
+    lhs += rhs;
+    return SFML_BASE_MOVE(lhs);
+}
+
+
+////////////////////////////////////////////////////////////
+String operator+(String&& lhs, const char* const rhs)
+{
+    SFML_BASE_ASSERT(rhs != nullptr);
+    lhs += rhs;
+    return SFML_BASE_MOVE(lhs);
+}
+
+
+////////////////////////////////////////////////////////////
+String operator+(String&& lhs, const StringView rhs)
+{
+    lhs += rhs;
+    return SFML_BASE_MOVE(lhs);
 }
 
 } // namespace sf::base

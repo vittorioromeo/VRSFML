@@ -1380,4 +1380,70 @@ TEST_CASE("[Base] Base/String.hpp")
         CHECK(s1 != s2);
         CHECK(s1 == s1);
     }
+
+    SECTION("operator+ lvalue overloads")
+    {
+        const sf::base::String a = "foo";
+        const sf::base::String b = "bar";
+
+        CHECK(a + b == "foobar");
+        CHECK(a + 'x' == "foox");
+        CHECK('x' + a == "xfoo");
+        CHECK(a + "bar" == "foobar");
+        CHECK("bar" + a == "barfoo");
+        CHECK(a + sf::base::StringView{"bar"} == "foobar");
+        CHECK(sf::base::StringView{"bar"} + a == "barfoo");
+
+        // Source operands unaffected.
+        CHECK(a == "foo");
+        CHECK(b == "bar");
+    }
+
+    SECTION("operator+ rvalue-lhs reuses the buffer (no realloc)")
+    {
+        // Force the lhs onto the heap with capacity to spare so the
+        // append does not reallocate. The result should share the same
+        // heap pointer, proving that lhs was moved into the result and
+        // appended in-place rather than the impl allocating a fresh buffer.
+        sf::base::String lhs;
+        lhs.reserve(64u);
+        lhs = "abcdefghijklmnopqrstuvwxyz"; // > SSO max, on heap
+        REQUIRE(lhs.capacity() >= 28u);
+
+        const char* const lhsPtrBefore = lhs.data();
+
+        const sf::base::String result = static_cast<sf::base::String&&>(lhs) + sf::base::String{"!!"};
+        CHECK(result == "abcdefghijklmnopqrstuvwxyz!!");
+        CHECK(result.data() == lhsPtrBefore);
+    }
+
+    SECTION("operator+ rvalue-lhs overloads -- all argument types")
+    {
+        auto makeHeap = []
+        {
+            sf::base::String s;
+            s.reserve(64u);
+            s = "abcdefghijklmnopqrstuvwxyz";
+            return s;
+        };
+
+        CHECK(makeHeap() + sf::base::String{"!"} == "abcdefghijklmnopqrstuvwxyz!");
+        CHECK(makeHeap() + '!' == "abcdefghijklmnopqrstuvwxyz!");
+        CHECK(makeHeap() + "!!" == "abcdefghijklmnopqrstuvwxyz!!");
+        CHECK(makeHeap() + sf::base::StringView{"!!!"} == "abcdefghijklmnopqrstuvwxyz!!!");
+    }
+
+    SECTION("operator+ chained expressions feed the rvalue overload")
+    {
+        // `a + b + c + d` -- after the first `+`, subsequent operands see
+        // an rvalue lhs and reuse the buffer instead of reallocating.
+        // The buffer-reuse property is verified in the prior section;
+        // here we only check the result.
+        const sf::base::String a = "Hello, ";
+        const sf::base::String b = "beautiful ";
+        const sf::base::String c = "world";
+        const sf::base::String d = "!";
+
+        CHECK(a + b + c + d == "Hello, beautiful world!");
+    }
 }

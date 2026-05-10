@@ -484,6 +484,14 @@ public:
 
 
 ////////////////////////////////////////////////////////////
+// Rvalue overloads: reuse the lhs's buffer via `+=` instead of allocating
+[[nodiscard]] String operator+(String&& lhs, const String& rhs);
+[[nodiscard]] String operator+(String&& lhs, char rhs);
+[[nodiscard]] String operator+(String&& lhs, const char* rhs);
+[[nodiscard]] String operator+(String&& lhs, StringView rhs);
+
+
+////////////////////////////////////////////////////////////
 [[nodiscard, gnu::flatten, gnu::always_inline]] inline constexpr bool operator==(const String& lhs, const StringView rhs) noexcept
 {
     if (lhs.size() != rhs.size())
