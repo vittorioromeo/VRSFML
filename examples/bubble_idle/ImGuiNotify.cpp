@@ -236,12 +236,12 @@ const char* ImGuiToast::getButtonLabel()
 
 
 ////////////////////////////////////////////////////////////
-ImGuiToast::ImGuiToast(const ImGuiToastType type, const int dismissTime) : flags{NOTIFY_DEFAULT_TOAST_FLAGS}
+ImGuiToast::ImGuiToast(const ImGuiToastType toastType, const int toastDismissTime) : flags{NOTIFY_DEFAULT_TOAST_FLAGS}
 {
-    IM_ASSERT(type < ImGuiToastType::COUNT);
+    IM_ASSERT(toastType < ImGuiToastType::COUNT);
 
-    this->type        = type;
-    this->dismissTime = dismissTime;
+    this->type        = toastType;
+    this->dismissTime = toastDismissTime;
 
     this->creationTime = sf::Clock::now();
 
@@ -251,15 +251,15 @@ ImGuiToast::ImGuiToast(const ImGuiToastType type, const int dismissTime) : flags
 
 
 ////////////////////////////////////////////////////////////
-ImGuiToast::ImGuiToast(const ImGuiToastType type, const char* const format, ...) : ImGuiToast(type)
+ImGuiToast::ImGuiToast(const ImGuiToastType toastType, const char* const format, ...) : ImGuiToast(toastType)
 {
     NOTIFY_FORMAT(this->setContent, format);
 }
 
 
 ////////////////////////////////////////////////////////////
-ImGuiToast::ImGuiToast(const ImGuiToastType type, const int dismissTime, const char* const format, ...) :
-    ImGuiToast(type, dismissTime)
+ImGuiToast::ImGuiToast(const ImGuiToastType toastType, const int toastDismissTime, const char* const format, ...) :
+    ImGuiToast(toastType, toastDismissTime)
 {
     NOTIFY_FORMAT(this->setContent, format);
 }
