@@ -535,7 +535,7 @@ struct [[nodiscard]] ParticleData
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline]] inline sf::Sprite particleToSprite(const ParticleData& particle,
                                                                      const sf::Rect2f&   textureRect,
-                                                                     const sf::Color&    color)
+                                                                     const sf::Color     color)
 {
     const auto opacityAsAlpha = static_cast<sf::base::U8>(particle.opacity * 255.f);
 
