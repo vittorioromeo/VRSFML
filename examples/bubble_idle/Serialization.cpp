@@ -1107,45 +1107,49 @@ DEFINE_TWO_WAY_SERIALIZER(Version)
 namespace
 {
 ////////////////////////////////////////////////////////////
-void forceCopyFile(const sf::Path& from, const sf::Path& to)
-try
+bool forceCopyFile(const sf::Path& from, const sf::Path& to)
 {
-    to.removeFromDisk();
-    from.copyFileTo(to);
-} catch (...)
-{
-    sf::cOut() << "Failed to copy file from '" << from << "' to '" << to << "'\n";
+    (void)to.removeFromDisk();
+
+    if (!from.copyFileTo(to))
+    {
+        sf::cOut() << "Failed to copy file from '" << from << "' to '" << to << "'\n";
+        return false;
+    }
+
+    return true;
 }
 
 
 ////////////////////////////////////////////////////////////
 void doRotatingBackup(const std::string& filename)
-try
 {
-    forceCopyFile(filename + ".bak2", filename + ".bak3");
-    forceCopyFile(filename + ".bak1", filename + ".bak2");
-    forceCopyFile(filename + ".bak0", filename + ".bak1");
-    forceCopyFile(filename, filename + ".bak0");
-
-} catch (const std::exception& ex)
-{
-    sf::cOut() << "Failed to backup '" << filename << "' (" << ex.what() << ")\n";
+    (void)forceCopyFile(filename + ".bak2", filename + ".bak3");
+    (void)forceCopyFile(filename + ".bak1", filename + ".bak2");
+    (void)forceCopyFile(filename + ".bak0", filename + ".bak1");
+    (void)forceCopyFile(filename, filename + ".bak0");
 }
 
 } // namespace
 
 ////////////////////////////////////////////////////////////
-void saveProfileToFile(const Profile& profile, const char* filename)
-try
+bool saveProfileToFile(const Profile& profile, const char* filename)
 {
-    sf::Path{"userdata"}.createDirectoryTree();
+    if (!sf::Path{"userdata"}.createDirectoryTree())
+    {
+        sf::cOut() << "Failed to save profile to file '" << filename << "' (createDirectoryTree failed)\n";
+        return false;
+    }
+
     doRotatingBackup(filename);
 
     if (!sf::writeToFile(sf::base::StringView{filename}, nlohmann::json(profile).dump()))
-        throw std::runtime_error("writeToFile failed");
-} catch (const std::exception& ex)
-{
-    sf::cOut() << "Failed to save profile to file '" << filename << "' (" << ex.what() << ")\n";
+    {
+        sf::cOut() << "Failed to save profile to file '" << filename << "' (writeToFile failed)\n";
+        return false;
+    }
+
+    return true;
 }
 
 
@@ -1176,21 +1180,25 @@ try
 }
 
 ////////////////////////////////////////////////////////////
-void saveGameConstantsToFile(const GameConstants& gameConstants, const char* filename)
-try
+bool saveGameConstantsToFile(const GameConstants& gameConstants, const char* filename)
 {
     const sf::Path path{filename};
 
-    if (path.hasParent())
-        path.parent().createDirectoryTree();
+    if (path.hasParent() && !path.getParent().createDirectoryTree())
+    {
+        sf::cOut() << "Failed to save game constants to file '" << filename << "' (createDirectoryTree failed)\n";
+        return false;
+    }
 
     doRotatingBackup(filename);
 
     if (!sf::writeToFile(sf::base::StringView{filename}, nlohmann::json(gameConstants).dump(2)))
-        throw std::runtime_error("writeToFile failed");
-} catch (const std::exception& ex)
-{
-    sf::cOut() << "Failed to save game constants to file '" << filename << "' (" << ex.what() << ")\n";
+    {
+        sf::cOut() << "Failed to save game constants to file '" << filename << "' (writeToFile failed)\n";
+        return false;
+    }
+
+    return true;
 }
 
 
@@ -1211,17 +1219,23 @@ try
 
 
 ////////////////////////////////////////////////////////////
-void savePlaythroughToFile(const Playthrough& playthrough, const char* filename)
-try
+bool savePlaythroughToFile(const Playthrough& playthrough, const char* filename)
 {
-    sf::Path{"userdata"}.createDirectoryTree();
+    if (!sf::Path{"userdata"}.createDirectoryTree())
+    {
+        sf::cOut() << "Failed to save playthrough to file '" << filename << "' (createDirectoryTree failed)\n";
+        return false;
+    }
+
     doRotatingBackup(filename);
 
     if (!sf::writeToFile(sf::base::StringView{filename}, nlohmann::json(playthrough).dump()))
-        throw std::runtime_error("writeToFile failed");
-} catch (const std::exception& ex)
-{
-    sf::cOut() << "Failed to save playthrough to file '" << filename << "' (" << ex.what() << ")\n";
+    {
+        sf::cOut() << "Failed to save playthrough to file '" << filename << "' (writeToFile failed)\n";
+        return false;
+    }
+
+    return true;
 }
 
 

@@ -246,7 +246,7 @@ TEST_CASE("[Graphics] sf::Image")
         {
             SECTION("To .bmp")
             {
-                auto filename = sf::Path::tempDirectoryPath() / "test.bmp";
+                auto filename = sf::Path::getTempDirectory().value() / sf::Path("test.bmp");
                 CHECK(image.saveToFile(filename));
 
                 const auto loadedImage = sf::Image::loadFromFile(filename).value();
@@ -258,7 +258,7 @@ TEST_CASE("[Graphics] sf::Image")
 
             SECTION("To .tga")
             {
-                auto filename = sf::Path::tempDirectoryPath() / "test.tga";
+                auto filename = sf::Path::getTempDirectory().value() / sf::Path("test.tga");
                 CHECK(image.saveToFile(filename));
 
                 const auto loadedImage = sf::Image::loadFromFile(filename).value();
@@ -270,7 +270,7 @@ TEST_CASE("[Graphics] sf::Image")
 
             SECTION("To .png")
             {
-                auto filename = sf::Path::tempDirectoryPath() / "test.png";
+                auto filename = sf::Path::getTempDirectory().value() / sf::Path("test.png");
                 CHECK(image.saveToFile(filename));
 
                 const auto loadedImage = sf::Image::loadFromFile(filename).value();
@@ -282,7 +282,7 @@ TEST_CASE("[Graphics] sf::Image")
 
             SECTION("To .qoi")
             {
-                auto filename = sf::Path::tempDirectoryPath() / "test.qoi";
+                auto filename = sf::Path::getTempDirectory().value() / sf::Path("test.qoi");
                 CHECK(image.saveToFile(filename));
 
                 const auto loadedImage = sf::Image::loadFromFile(filename).value();
@@ -295,7 +295,7 @@ TEST_CASE("[Graphics] sf::Image")
             SECTION("To Spanish Latin1 filename .png")
             {
                 // small n with tilde, from Spanish, outside of ASCII, inside common Latin 1 codepage
-                auto filename = sf::Path::tempDirectoryPath() / U"test-ñ.png";
+                auto filename = sf::Path::getTempDirectory().value() / sf::Path(U"test-ñ.png");
                 CHECK(image.saveToFile(filename));
 
                 const auto loadedImage = sf::Image::loadFromFile(filename).value();
@@ -308,7 +308,7 @@ TEST_CASE("[Graphics] sf::Image")
             SECTION("To Polish filename .png")
             {
                 // small n with acute accent, from Polish, outside of Latin 1 codepage
-                auto filename = sf::Path::tempDirectoryPath() / U"test-ń.png";
+                auto filename = sf::Path::getTempDirectory().value() / sf::Path(U"test-ń.png");
                 CHECK(image.saveToFile(filename));
 
                 const auto loadedImage = sf::Image::loadFromFile(filename).value();
@@ -321,7 +321,7 @@ TEST_CASE("[Graphics] sf::Image")
             SECTION("To Japanese CJK filename .png")
             {
                 // CJK symbol for Sun, outside of any European language codepage
-                auto filename = sf::Path::tempDirectoryPath() / U"test-日.png";
+                auto filename = sf::Path::getTempDirectory().value() / sf::Path(U"test-日.png");
                 CHECK(image.saveToFile(filename));
 
                 const auto loadedImage = sf::Image::loadFromFile(filename).value();
@@ -334,7 +334,7 @@ TEST_CASE("[Graphics] sf::Image")
             SECTION("To emoji non-BMP Unicode filename .png")
             {
                 // snail emoji, outside of Unicode Basic Multilingual Plane
-                auto filename = sf::Path::tempDirectoryPath() / U"test-🐌.png";
+                auto filename = sf::Path::getTempDirectory().value() / sf::Path(U"test-🐌.png");
                 CHECK(image.saveToFile(filename));
 
                 const auto loadedImage = sf::Image::loadFromFile(filename).value();

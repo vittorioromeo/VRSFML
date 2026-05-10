@@ -24,7 +24,10 @@ inline Path getTemporaryFilePath()
     OutStringStream oss;
     oss << "sfmltemp_" << counter++ << ".tmp";
 
-    return Path::tempDirectoryPath() / oss.to<base::String>();
+    const auto tmp = Path::getTempDirectory();
+    SFML_BASE_ASSERT(tmp && "Failed to obtain temp directory");
+
+    return *tmp / Path(oss.to<base::String>());
 }
 
 

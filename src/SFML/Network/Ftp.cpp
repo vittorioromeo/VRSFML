@@ -374,7 +374,7 @@ Ftp::Response Ftp::download(const Path& remoteFile, const Path& localPath, Trans
         return response;
 
     // Create the file and truncate it if necessary
-    const Path    filepath = localPath / remoteFile.filename();
+    const Path    filepath = localPath / remoteFile.getFilename();
     OutFileStream file(filepath.to<base::String>(), FileOpenMode::bin | FileOpenMode::trunc);
 
     if (!file)
@@ -422,7 +422,7 @@ Ftp::Response Ftp::upload(const Path& localFile, const Path& remotePath, Transfe
         return response;
 
     // Tell the server to start the transfer
-    response = sendCommand(append ? "APPE" : "STOR", (remotePath / localFile.filename()).to<base::String>());
+    response = sendCommand(append ? "APPE" : "STOR", (remotePath / localFile.getFilename()).to<base::String>());
 
     if (!response.isOk())
         return response;
