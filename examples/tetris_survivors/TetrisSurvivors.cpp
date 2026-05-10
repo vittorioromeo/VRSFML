@@ -990,7 +990,7 @@ private:
 
     ////////////////////////////////////////////////////////////
     static inline constexpr sf::Vec2f drawBlockSize{11.f, 11.f};
-    static inline constexpr sf::Vec2f drawOffset{drawBlockSize.x + 3.f, drawBlockSize.y - drawBlockSize.y* gridGraceY + 3.f};
+    static inline constexpr sf::Vec2f drawOffset{drawBlockSize.x + 3.f, drawBlockSize.y - drawBlockSize.y * gridGraceY + 3.f};
 
 
     ////////////////////////////////////////////////////////////
