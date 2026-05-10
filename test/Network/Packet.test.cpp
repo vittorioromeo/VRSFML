@@ -9,6 +9,7 @@
 #include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/String.hpp"
 #include "SFML/Base/Trait/IsCopyAssignable.hpp"
 #include "SFML/Base/Trait/IsCopyConstructible.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
@@ -258,6 +259,12 @@ TEST_CASE("[Network] sf::Packet")
         SECTION("std::string")
         {
             const std::string string = "testing";
+            CHECK_PACKET_STRING_STREAM_OPERATORS(string, string.size() + 4);
+        }
+
+        SECTION("sf::base::String")
+        {
+            const sf::base::String string = "testing";
             CHECK_PACKET_STRING_STREAM_OPERATORS(string, string.size() + 4);
         }
 
