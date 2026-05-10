@@ -3,6 +3,8 @@
 #include "CatType.hpp"
 #include "ComboState.hpp"
 #include "Constants.hpp"
+#include "MainAtlasRects.hpp"
+#include "Playthrough.hpp"
 #include "UIState.hpp"
 #include "Version.hpp"
 
@@ -18,7 +20,7 @@ void Main::uiShopDrawCoreUpgrades()
 
     Cat* catMouse = getMouseCat();
 
-    uiImgsep(txrMenuSeparator0, "click upgrades", /* first */ true);
+    uiImgsep(atlasRects.txrMenuSeparator0, "click upgrades", /* first */ true);
 
     uiSetTooltipOnly(
         "Build your combo by popping bubbles quickly, increasing the value of each subsequent "
@@ -56,7 +58,7 @@ void Main::uiShopDrawCoreUpgrades()
 
     if (checkUiUnlock(1u, nCatNormal > 0 && pt->psvComboStartTime.nPurchases > 0))
     {
-        uiImgsep(txrMenuSeparator1, "exploration");
+        uiImgsep(atlasRects.txrMenuSeparator1, "exploration");
 
         if constexpr (isDemoVersion)
         {
@@ -116,7 +118,7 @@ void Main::uiShopDrawCoreUpgrades()
 
     if (checkUiUnlock(3u, nCatNormal > 0 && pt->psvComboStartTime.nPurchases > 0))
     {
-        uiImgsep(txrMenuSeparator2, "bubble upgrades");
+        uiImgsep(atlasRects.txrMenuSeparator2, "bubble upgrades");
 
         uiSetUnlockLabelY(3u);
         uiSetTooltip(
@@ -128,7 +130,7 @@ void Main::uiShopDrawCoreUpgrades()
 
     if (checkUiUnlock(4u, pt->comboPurchased && pt->psvComboStartTime.nPurchases > 0))
     {
-        uiImgsep(txrMenuSeparator3, "cats");
+        uiImgsep(atlasRects.txrMenuSeparator3, "cats");
 
         uiSetUnlockLabelY(4u);
         uiSetTooltip(
@@ -164,7 +166,7 @@ void Main::uiShopDrawCoreUpgrades()
     // the same section as Normal cats so the mechanic can be playtested.
     if (checkUiUnlock(4u, pt->comboPurchased && pt->psvComboStartTime.nPurchases > 0))
     {
-        uiImgsep(txrMenuSeparator3, "wardencats");
+        uiImgsep(atlasRects.txrMenuSeparator3, "wardencats");
 
         uiSetUnlockLabelY(68u);
 

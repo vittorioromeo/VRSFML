@@ -1,7 +1,10 @@
 #include "BubbleIdleMain.hpp"
+#include "BubbleIdleMainInline.hpp"
 #include "Cat.hpp"
 #include "CatConstants.hpp"
 #include "CatType.hpp"
+#include "MainAtlasRects.hpp"
+#include "Playthrough.hpp"
 #include "Version.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"
@@ -88,7 +91,7 @@ void Main::uiShopDrawSpecialCats()
     const bool catUnicornUpgradesUnlocked = catUnicornUnlocked && nCatUni >= 2 && nCatDevil >= 1;
     if (checkUiUnlock(6u, catUnicornUnlocked))
     {
-        uiImgsep(txrMenuSeparator4, "unicats");
+        uiImgsep(atlasRects.txrMenuSeparator4, "unicats");
 
         uiSetUnlockLabelY(6u);
         uiSetTooltip(
@@ -118,7 +121,7 @@ void Main::uiShopDrawSpecialCats()
     const bool catDevilUpgradesUnlocked = catDevilUnlocked && nCatDevil >= 2 && nCatAstro >= 1;
     if (checkUiUnlock(8u, catDevilUnlocked))
     {
-        uiImgsep(txrMenuSeparator5, "devilcats");
+        uiImgsep(atlasRects.txrMenuSeparator5, "devilcats");
 
         uiSetUnlockLabelY(8u);
         uiSetTooltip(
@@ -163,7 +166,7 @@ void Main::uiShopDrawSpecialCats()
     const bool astroCatUpgradesUnlocked = astroCatUnlocked && nCatDevil >= 9 && nCatAstro >= 5;
     if (checkUiUnlock(11u, astroCatUnlocked))
     {
-        uiImgsep(txrMenuSeparator6, "astrocats");
+        uiImgsep(atlasRects.txrMenuSeparator6, "astrocats");
 
         uiSetUnlockLabelY(11u);
         uiSetTooltip(
@@ -206,7 +209,7 @@ void Main::uiShopDrawUniqueCatBonuses()
     if (!anyUniqueCat)
         return;
 
-    uiImgsep(txrMenuSeparator7, "unique cats");
+    uiImgsep(atlasRects.txrMenuSeparator7, "unique cats");
 
     if (checkUiUnlock(13u, catWitch != nullptr))
     {

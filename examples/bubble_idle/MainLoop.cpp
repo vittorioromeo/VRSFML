@@ -4,6 +4,7 @@
 #include "FrameViewState.hpp"
 #include "InputHelper.hpp"
 #include "PlayerInput.hpp"
+#include "Playthrough.hpp"
 #include "Serialization.hpp"
 
 #include "ExampleUtils/Easing.hpp"

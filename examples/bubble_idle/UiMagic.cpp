@@ -3,6 +3,8 @@
 #include "Aliases.hpp"
 #include "BubbleIdleMain.hpp"
 #include "Cat.hpp"
+#include "MainAtlasRects.hpp"
+#include "Playthrough.hpp"
 #include "PurchasableScalingValue.hpp"
 #include "UIState.hpp"
 
@@ -29,7 +31,7 @@ void Main::uiTabBarMagic()
     ImGui::Spacing();
     ImGui::Spacing();
 
-    uiImgsep(txrMagicSeparator0, "wisdom", /* first */ true);
+    uiImgsep(atlasRects.txrMagicSeparator0, "wisdom", /* first */ true);
     ImGui::Columns(1);
 
     ImGui::Text("Wisdom points: %s WP", toStringWithSeparators(pt->wisdom));
@@ -59,7 +61,7 @@ void Main::uiTabBarMagic()
 
     uiState.uiButtonHueMod = 0.f;
 
-    uiImgsep(txrMagicSeparator1, "mana");
+    uiImgsep(atlasRects.txrMagicSeparator1, "mana");
     ImGui::Columns(1);
 
     ImGui::Text("Mana: %llu / %llu", pt->mana, pt->getComputedMaxMana());
@@ -75,7 +77,7 @@ void Main::uiTabBarMagic()
 
     ImGui::Text("Wizard cooldown: %.2fs", static_cast<double>(wizardCat->cooldown.time / 1000.f));
 
-    uiImgsep(txrMagicSeparator2, "spells");
+    uiImgsep(atlasRects.txrMagicSeparator2, "spells");
 
     if (pt->psvSpellCount.nPurchases == 0)
         ImGui::Text("No spells revealed yet...");
@@ -283,7 +285,7 @@ void Main::uiTabBarMagic()
 
     if (pt->psvSpellCount.nPurchases > 0 && pt->perm.autocastPurchased)
     {
-        uiImgsep(txrMagicSeparator3, "autocast");
+        uiImgsep(atlasRects.txrMagicSeparator3, "autocast");
 
         ImGui::Columns(1);
         uiState.uiButtonHueMod = 45.f;

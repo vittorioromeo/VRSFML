@@ -1,5 +1,7 @@
 #include "BubbleIdleMain.hpp"
 #include "CatType.hpp"
+#include "MainAtlasRects.hpp"
+#include "Playthrough.hpp"
 #include "UIState.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"
@@ -15,7 +17,7 @@ void Main::uiPrestigeDrawCoreUpgrades()
 
     if (checkUiUnlock(47u, pt->psvBubbleValue.nPurchases >= 3u))
     {
-        uiImgsep2(txrPrestigeSeparator4, "faster beginning");
+        uiImgsep2(atlasRects.txrPrestigeSeparator4, "faster beginning");
 
         uiSetUnlockLabelY(47u);
         (void)uiMakePrestigeOneTimeButton("Starter pack",
@@ -26,7 +28,7 @@ void Main::uiPrestigeDrawCoreUpgrades()
 
     if (checkUiUnlock(48u, pt->psvBubbleValue.nPurchases >= 1u))
     {
-        uiImgsep2(txrPrestigeSeparator2, "clicking tools");
+        uiImgsep2(atlasRects.txrPrestigeSeparator2, "clicking tools");
 
         uiSetUnlockLabelY(48u);
         if (uiMakePrestigeOneTimeButton("Multipop click",
@@ -69,7 +71,7 @@ void Main::uiPrestigeDrawCoreUpgrades()
         }
     }
 
-    uiImgsep2(txrPrestigeSeparator3, "wind effects");
+    uiImgsep2(atlasRects.txrPrestigeSeparator3, "wind effects");
 
     if (uiMakePrestigeOneTimeButton("Giant fan",
                                     6u,
@@ -99,10 +101,10 @@ void Main::uiPrestigeDrawCoreUpgrades()
     }
 
     // TODO P0: use a dedicated "power nap" separator image; reusing
-    // txrPrestigeSeparator7 (currently unused) as a placeholder.
+    // atlasRects.txrPrestigeSeparator7 (currently unused) as a placeholder.
     if (checkUiUnlock(68u, pt->psvBubbleValue.nPurchases >= 1u))
     {
-        uiImgsep2(txrPrestigeSeparator7, "power nap");
+        uiImgsep2(atlasRects.txrPrestigeSeparator7, "power nap");
 
         uiBeginColumns();
 
@@ -147,7 +149,7 @@ void Main::uiPrestigeDrawCoreUpgrades()
         }
     }
 
-    uiImgsep2(txrPrestigeSeparator5, "cats");
+    uiImgsep2(atlasRects.txrPrestigeSeparator5, "cats");
 
     uiBeginColumns();
 
@@ -197,7 +199,7 @@ void Main::uiPrestigeDrawCoreUpgrades()
 
     if (checkUiUnlock(53u, pt->psvBubbleValue.nPurchases >= 3))
     {
-        uiImgsep2(txrPrestigeSeparator6, "unicats");
+        uiImgsep2(atlasRects.txrPrestigeSeparator6, "unicats");
 
         uiBeginColumns();
 
@@ -230,7 +232,7 @@ void Main::uiPrestigeDrawCoreUpgrades()
 
     if (checkUiUnlock(55u, pt->psvBubbleValue.nPurchases >= 3))
     {
-        uiImgsep2(txrPrestigeSeparator7, "devilcats");
+        uiImgsep2(atlasRects.txrPrestigeSeparator7, "devilcats");
 
         uiBeginColumns();
 
@@ -253,7 +255,7 @@ void Main::uiPrestigeDrawCoreUpgrades()
 
     if (checkUiUnlock(56u, pt->getCatCountByType(CatType::Astro) >= 1u || pt->psvBubbleValue.nPurchases >= 3))
     {
-        uiImgsep2(txrPrestigeSeparator8, "astrocats");
+        uiImgsep2(atlasRects.txrPrestigeSeparator8, "astrocats");
 
         uiBeginColumns();
 

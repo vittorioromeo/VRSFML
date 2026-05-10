@@ -1,4 +1,5 @@
 #include "BubbleIdleMain.hpp"
+#include "MainShaders.hpp"
 #include "Profile.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"
@@ -85,7 +86,7 @@ void Main::uiSettingsDrawGraphicsTab()
 
     ImGui::Separator();
 
-    uiCheckbox("Bubble shader", &profile.useBubbleShader);
+    uiCheckbox("Bubble shaders.shader", &profile.useBubbleShader);
 
     ImGui::BeginDisabled(!profile.useBubbleShader);
     {

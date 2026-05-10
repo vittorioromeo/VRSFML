@@ -1,5 +1,6 @@
 #include "BubbleIdleMain.hpp"
 #include "BubbleType.hpp"
+#include "MainAtlasRects.hpp"
 #include "Playthrough.hpp"
 #include "UIState.hpp"
 #include "Version.hpp"
@@ -17,7 +18,7 @@ void Main::uiPrestigeDrawOverview()
     ImGui::Spacing();
     ImGui::Spacing();
 
-    uiImgsep(txrPrestigeSeparator0, "prestige", /* first */ true);
+    uiImgsep(atlasRects.txrPrestigeSeparator0, "prestige", /* first */ true);
     ImGui::Columns(1);
     uiSetFontScale(uiNormalFontScale);
 
@@ -160,7 +161,7 @@ void Main::uiPrestigeDrawOverview()
 
     uiSetFontScale(uiNormalFontScale);
 
-    uiImgsep(txrPrestigeSeparator1, "permanent upgrades");
+    uiImgsep(atlasRects.txrPrestigeSeparator1, "permanent upgrades");
     ImGui::Columns(1);
 
     uiSetFontScale(uiNormalFontScale * 1.1f);

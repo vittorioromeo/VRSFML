@@ -1,4 +1,6 @@
 #include "BubbleIdleMain.hpp"
+#include "Playthrough.hpp"
+#include "Profile.hpp"
 #include "UIState.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"

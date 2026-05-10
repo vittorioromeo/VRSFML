@@ -2,12 +2,16 @@
 
 #include "Aliases.hpp"
 #include "BubbleIdleMain.hpp"
+#include "BubbleIdleMainInline.hpp"
 #include "Cat.hpp"
 #include "CatType.hpp"
 #include "Constants.hpp"
 #include "ImGuiNotify.hpp"
+#include "MainShaders.hpp"
 #include "NotificationState.hpp"
 #include "ParticleType.hpp"
+#include "Playthrough.hpp"
+#include "Profile.hpp"
 #include "PurchasableScalingValue.hpp"
 #include "Shrine.hpp"
 #include "ShrineConstants.hpp"
@@ -18,6 +22,7 @@
 #include "ExampleUtils/Profiler.hpp"
 #include "ExampleUtils/Progress.hpp"
 
+#include "SFML/ImGui/ImGuiContext.hpp"
 #include "SFML/ImGui/IncludeImGui.hpp"
 #include "SFML/ImGui/IncludeImGuiInternal.hpp"
 
@@ -1212,7 +1217,7 @@ void Main::gameLoopDrawImGui(const sf::base::U8 shouldDrawUIAlpha)
     rtGame.draw(rtImGui.getTexture(),
                 {.scale = {1.f / profile.hudScale, 1.f / profile.hudScale},
                  .color = hueColor(currentBackgroundHue.asDegrees(), shouldDrawUIAlpha)},
-                {.view = scaledHUDView, .shader = &shader});
+                {.view = scaledHUDView, .shader = &shaders.shader});
 }
 
 ////////////////////////////////////////////////////////////

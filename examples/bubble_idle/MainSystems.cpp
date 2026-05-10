@@ -2,21 +2,26 @@
 
 #include "Aliases.hpp"
 #include "Bubble.hpp"
+#include "BubbleIdleHelpers.hpp"
 #include "BubbleIdleMain.hpp"
+#include "BubbleIdleMainInline.hpp"
 #include "BubbleType.hpp"
 #include "Cat.hpp"
 #include "CatType.hpp"
 #include "ComboState.hpp"
 #include "Constants.hpp"
 #include "Doll.hpp"
+#include "GameConstants.hpp"
 #include "GameEvent.hpp"
 #include "HellPortal.hpp"
 #include "HexSession.hpp"
 #include "InputHelper.hpp"
+#include "MainAtlasRects.hpp"
 #include "MainBombStorage.hpp"
 #include "ParticleData.hpp"
 #include "ParticleType.hpp"
 #include "Playthrough.hpp"
+#include "Profile.hpp"
 #include "Shrine.hpp"
 #include "ShrineType.hpp"
 #include "Stats.hpp"
@@ -750,9 +755,9 @@ void Main::gameLoopDrawComboBubbleBurstingCoins()
             cpuDrawableBatchAfterCats.add(sf::Sprite{
                 .position    = c.position,
                 .scale       = {0.18f, 0.18f},
-                .origin      = txrCoin.size / 2.f,
+                .origin      = atlasRects.txrCoin.size / 2.f,
                 .rotation    = sf::radians(spinPhase),
-                .textureRect = txrCoin,
+                .textureRect = atlasRects.txrCoin,
                 .color       = sf::Color::White,
             });
         }
@@ -2392,7 +2397,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
 
                 // Trigger a yawn right as the cat finishes waking up, and push
                 // the next natural yawn far out so it doesn't double-fire.
-                cat.yawnAnimCountdown.time = 75.f * static_cast<float>(Main::nYawnRects);
+                cat.yawnAnimCountdown.time = 75.f * static_cast<float>(MainAtlasRects::nYawnRects);
                 cat.yawnCountdown.time     = rngFast.getF(15'000.f, 25'000.f);
             }
 

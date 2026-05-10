@@ -1,6 +1,8 @@
 #include "Aliases.hpp"
 #include "Bubble.hpp"
+#include "BubbleIdleHelpers.hpp"
 #include "BubbleIdleMain.hpp"
+#include "BubbleIdleMainInline.hpp"
 #include "BubbleType.hpp"
 #include "Cat.hpp"
 #include "CatConstants.hpp"
@@ -8,12 +10,17 @@
 #include "ComboState.hpp"
 #include "Constants.hpp"
 #include "Doll.hpp"
+#include "GameConstants.hpp"
 #include "GameEvent.hpp"
 #include "HellPortal.hpp"
 #include "HexSession.hpp"
+#include "MainAtlasRects.hpp"
+#include "MainShaders.hpp"
 #include "Particle.hpp"
 #include "ParticleData.hpp"
 #include "ParticleType.hpp"
+#include "Playthrough.hpp"
+#include "Profile.hpp"
 #include "Shrine.hpp"
 #include "ShrineConstants.hpp"
 #include "ShrineType.hpp"
@@ -82,7 +89,7 @@
 sf::Sprite Main::particleToSprite(const Particle& particle) const
 {
     const auto  opacityAsAlpha = static_cast<sf::base::U8>(particle.opacity * 255.f);
-    const auto& textureRect    = particleRects[asIdx(particle.type)];
+    const auto& textureRect    = atlasRects.particleRects[asIdx(particle.type)];
 
     return {
         .position    = particle.position,
@@ -153,8 +160,8 @@ void Main::drawCloudFrame(const CloudFrameDrawSettings& settings)
             batch->add(sf::Sprite{
                 .position    = animatedP,
                 .scale       = {puffScale, puffScale},
-                .origin      = txrCloud.size / 2.f,
-                .textureRect = txrCloud,
+                .origin      = atlasRects.txrCloud.size / 2.f,
+                .textureRect = atlasRects.txrCloud,
                 .color       = color,
             });
 
@@ -167,8 +174,8 @@ void Main::drawCloudFrame(const CloudFrameDrawSettings& settings)
                     .position    = {p0.x + outwardX * clusterOutward + tangentX * clusterTangent,
                                     p0.y + outwardY * clusterOutward + tangentY * clusterTangent},
                     .scale       = {puffScale, puffScale},
-                    .origin      = txrCloud.size / 2.f,
-                    .textureRect = txrCloud,
+                    .origin      = atlasRects.txrCloud.size / 2.f,
+                    .textureRect = atlasRects.txrCloud,
                     .color       = color,
                 });
             }
@@ -257,18 +264,19 @@ void Main::drawMinimap(bool               back,
                 {.scale       = {hudScale, hudScale},
                  .textureRect = {{0.f, 0.f}, backgroundRectSize},
                  .color       = hueColor(hueMod, sf::base::min(shouldDrawUIAlpha, static_cast<sf::base::U8>(128u)))},
-                {.view = minimapView, .shader = &shader});
+                {.view = minimapView, .shader = &shaders.shader});
 
         rt.draw(txDrawings,
                 {.scale       = {hudScale, hudScale},
                  .textureRect = {{0.f, 0.f}, backgroundRectSize},
                  .color = sf::Color::whiteWithAlpha(sf::base::min(shouldDrawUIAlpha, static_cast<sf::base::U8>(215u)))},
-                {.view = minimapView, .shader = &shader});
+                {.view = minimapView, .shader = &shaders.shader});
 
         if (shouldDrawUIAlpha > 200u)
         {
             minimapDrawableBatch.scale = {hudScale, hudScale};
-            rt.draw(minimapDrawableBatch, {.view = minimapView, .texture = &textureAtlas.getTexture(), .shader = &shader});
+            rt.draw(minimapDrawableBatch,
+                    {.view = minimapView, .texture = &textureAtlas.getTexture(), .shader = &shaders.shader});
             minimapDrawableBatch.scale = {1.f, 1.f};
         }
 
@@ -288,7 +296,7 @@ void Main::drawMinimap(bool               back,
             .color       = hueColor(hueMod, shouldDrawUIAlpha),
         };
 
-        panel.draw(rt, txFrameTiny, {.view = hudView, .shader = &shader});
+        panel.draw(rt, txFrameTiny, {.view = hudView, .shader = &shaders.shader});
     }
 
     if (!back)
@@ -341,7 +349,11 @@ void Main::gameLoopDrawBubbles()
         return sf::base::remainder(static_cast<float>(bubble.hueSeed) * 2.f - hueRange / 2.f, hueRange) + magnetHueMod;
     };
 
-    const sf::Rect2f bubbleRects[]{txrBubble, txrBubbleStar, txrBomb, txrBubbleNova, txrBubbleGlass};
+    const sf::Rect2f bubbleRects[]{atlasRects.txrBubble,
+                                   atlasRects.txrBubbleStar,
+                                   atlasRects.txrBomb,
+                                   atlasRects.txrBubbleNova,
+                                   atlasRects.txrBubbleGlass};
     static_assert(sf::base::getArraySize(bubbleRects) == nBubbleTypes);
 
     sf::CPUDrawableBatch* const batchToUseByType[]{&bubbleDrawableBatch,
@@ -414,7 +426,7 @@ void Main::gameLoopDrawBubbles()
                 batchToUseByType[asIdx(bubble.type)]->add(sf::RingPieSliceShapeData{
                     .position    = bubble.position + shakeOffset,
                     .origin      = {outerR, outerR},
-                    .textureRect = txrWhiteDot,
+                    .textureRect = atlasRects.txrWhiteDot,
                     .fillColor   = sf::Color::whiteWithAlpha(64u),
                     .outerRadius = outerR,
                     .innerRadius = outerR - thickness,
@@ -431,11 +443,13 @@ void Main::gameLoopDrawBubbles()
 ////////////////////////////////////////////////////////////
 void Main::gameLoopDisplayBubblesWithoutShader()
 {
-    shader.setUniform(suBubbleEffect, false);
+    shaders.shader.setUniform(shaders.suBubbleEffect, false);
 
-    drawBatch(bubbleDrawableBatch, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
-    drawBatch(starBubbleDrawableBatch, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
-    drawBatch(bombBubbleDrawableBatch, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
+    drawBatch(bubbleDrawableBatch, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shaders.shader});
+    drawBatch(starBubbleDrawableBatch,
+              {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shaders.shader});
+    drawBatch(bombBubbleDrawableBatch,
+              {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shaders.shader});
 }
 
 
@@ -484,19 +498,19 @@ void Main::gameLoopDrawMinimapIcons()
     minimapDrawableBatch.clear();
 
     const sf::Rect2f* const mmCatTxrs[]{
-        &txrMMNormal,
-        &txrMMUni,
-        &txrMMDevil,
-        &txrMMAstro,
-        &txrMMNormal, // Warden -- TODO: dedicated minimap icon (reusing Normal)
-        &txrMMWitch,
-        &txrMMWizard,
-        &txrMMMouse,
-        &txrMMEngi,
-        &txrMMRepulso,
-        &txrMMAttracto,
-        &txrMMCopy,
-        &txrMMDuck,
+        &atlasRects.txrMMNormal,
+        &atlasRects.txrMMUni,
+        &atlasRects.txrMMDevil,
+        &atlasRects.txrMMAstro,
+        &atlasRects.txrMMNormal, // Warden -- TODO: dedicated minimap icon (reusing Normal)
+        &atlasRects.txrMMWitch,
+        &atlasRects.txrMMWizard,
+        &atlasRects.txrMMMouse,
+        &atlasRects.txrMMEngi,
+        &atlasRects.txrMMRepulso,
+        &atlasRects.txrMMAttracto,
+        &atlasRects.txrMMCopy,
+        &atlasRects.txrMMDuck,
     };
 
     static_assert(sf::base::getArraySize(mmCatTxrs) == nCatTypes);
@@ -508,9 +522,9 @@ void Main::gameLoopDrawMinimapIcons()
         minimapDrawableBatch.add(
             sf::Sprite{.position    = shrine.position,
                        .scale       = {0.7f, 0.7f},
-                       .origin      = txrMMShrine.size / 2.f,
+                       .origin      = atlasRects.txrMMShrine.size / 2.f,
                        .rotation    = sf::radians(0.f),
-                       .textureRect = txrMMShrine,
+                       .textureRect = atlasRects.txrMMShrine,
                        .color       = hueColor(shrine.getHue(), shrineAlpha)});
     }
 
@@ -534,9 +548,9 @@ void Main::gameLoopDrawMinimapIcons()
                 minimapDrawableBatch.add(
                     sf::Sprite{.position    = doll.position,
                                .scale       = {0.5f, 0.5f},
-                               .origin      = txrDollNormal.size / 2.f,
+                               .origin      = atlasRects.txrDollNormal.size / 2.f,
                                .rotation    = sf::radians(0.f),
-                               .textureRect = txrDollNormal,
+                               .textureRect = atlasRects.txrDollNormal,
                                .color       = hueColor(doll.hue + hueMod, 255u)});
     };
 
@@ -548,31 +562,31 @@ void Main::gameLoopDrawMinimapIcons()
 ////////////////////////////////////////////////////////////
 void Main::gameLoopDisplayBubblesWithShader()
 {
-    if (!shader.setUniform(suBackgroundTexture, rtBackgroundProcessed.getTexture()))
+    if (!shaders.shader.setUniform(shaders.suBackgroundTexture, rtBackgroundProcessed.getTexture()))
     {
         profile.useBubbleShader = false;
         gameLoopDisplayBubblesWithoutShader();
         return;
     }
 
-    shader.setUniform(suTime, shaderTime);
-    shader.setUniform(suResolution, rtBackgroundProcessed.getSize().toVec2f());
-    shader.setUniform(suBackgroundOrigin, gameView.center - gameView.size / 2.f);
-    shader.setUniform(suBubbleEffect, false);
+    shaders.shader.setUniform(shaders.suTime, shaderTime);
+    shaders.shader.setUniform(shaders.suResolution, rtBackgroundProcessed.getSize().toVec2f());
+    shaders.shader.setUniform(shaders.suBackgroundOrigin, gameView.center - gameView.size / 2.f);
+    shaders.shader.setUniform(shaders.suBubbleEffect, false);
 
-    shader.setUniform(suIridescenceStrength, profile.bsIridescenceStrength);
-    shader.setUniform(suEdgeFactorMin, profile.bsEdgeFactorMin);
-    shader.setUniform(suEdgeFactorMax, profile.bsEdgeFactorMax);
-    shader.setUniform(suEdgeFactorStrength, profile.bsEdgeFactorStrength);
-    shader.setUniform(suDistorsionStrength, profile.bsDistortionStrength);
+    shaders.shader.setUniform(shaders.suIridescenceStrength, profile.bsIridescenceStrength);
+    shaders.shader.setUniform(shaders.suEdgeFactorMin, profile.bsEdgeFactorMin);
+    shaders.shader.setUniform(shaders.suEdgeFactorMax, profile.bsEdgeFactorMax);
+    shaders.shader.setUniform(shaders.suEdgeFactorStrength, profile.bsEdgeFactorStrength);
+    shaders.shader.setUniform(shaders.suDistorsionStrength, profile.bsDistortionStrength);
 
-    shader.setUniform(suBubbleLightness, profile.bsBubbleLightness);
-    shader.setUniform(suLensDistortion, profile.bsLensDistortion);
+    shaders.shader.setUniform(shaders.suBubbleLightness, profile.bsBubbleLightness);
+    shaders.shader.setUniform(shaders.suLensDistortion, profile.bsLensDistortion);
 
-    shader.setUniform(suRimShineStrength, profile.bsRimShineStrength);
-    shader.setUniform(suRimShineFallRate, profile.bsRimShineFallRate);
-    shader.setUniform(suRimShineTimeRate, profile.bsRimShineTimeRate);
-    shader.setUniform(suRimShineArc, profile.bsRimShineArc);
+    shaders.shader.setUniform(shaders.suRimShineStrength, profile.bsRimShineStrength);
+    shaders.shader.setUniform(shaders.suRimShineFallRate, profile.bsRimShineFallRate);
+    shaders.shader.setUniform(shaders.suRimShineTimeRate, profile.bsRimShineTimeRate);
+    shaders.shader.setUniform(shaders.suRimShineArc, profile.bsRimShineArc);
 
     constexpr sf::BlendMode bubbleBlend(sf::BlendMode::Factor::One,
                                         sf::BlendMode::Factor::OneMinusSrcAlpha,
@@ -585,23 +599,23 @@ void Main::gameLoopDisplayBubblesWithShader()
         .blendMode = bubbleBlend,
         .view      = gameView,
         .texture   = &textureAtlas.getTexture(),
-        .shader    = &shader,
+        .shader    = &shaders.shader,
     };
 
-    shader.setUniform(suBubbleEffect, true);
-    shader.setUniform(suSubTexOrigin, txrBubble.position);
-    shader.setUniform(suSubTexSize, txrBubble.size);
+    shaders.shader.setUniform(shaders.suBubbleEffect, true);
+    shaders.shader.setUniform(shaders.suSubTexOrigin, atlasRects.txrBubble.position);
+    shaders.shader.setUniform(shaders.suSubTexSize, atlasRects.txrBubble.size);
 
     drawBatch(bubbleDrawableBatch, bubbleStates);
 
-    shader.setUniform(suBubbleLightness, profile.bsBubbleLightness * 1.25f);
-    shader.setUniform(suIridescenceStrength, profile.bsIridescenceStrength * 0.01f);
-    shader.setUniform(suSubTexOrigin, txrBubbleStar.position);
-    shader.setUniform(suSubTexSize, txrBubbleStar.size);
+    shaders.shader.setUniform(shaders.suBubbleLightness, profile.bsBubbleLightness * 1.25f);
+    shaders.shader.setUniform(shaders.suIridescenceStrength, profile.bsIridescenceStrength * 0.01f);
+    shaders.shader.setUniform(shaders.suSubTexOrigin, atlasRects.txrBubbleStar.position);
+    shaders.shader.setUniform(shaders.suSubTexSize, atlasRects.txrBubbleStar.size);
 
     drawBatch(starBubbleDrawableBatch, bubbleStates);
 
-    shader.setUniform(suBubbleEffect, false);
+    shaders.shader.setUniform(shaders.suBubbleEffect, false);
 
     drawBatch(bombBubbleDrawableBatch, bubbleStates);
 }
@@ -613,69 +627,71 @@ void Main::gameLoopDrawCats(const sf::Vec2f mousePos, const float deltaTimeMs)
     SFEX_PROFILE_SCOPE_AUTOLABEL();
 
     ////////////////////////////////////////////////////////////
-    const sf::Rect2f* const uniCatTxr     = isUnicatTranscendenceActive() ? &txrUniCat2 : &txrUniCat;
-    const sf::Rect2f* const uniCatTailTxr = isUnicatTranscendenceActive() ? &txrUniCat2Tail : &txrUniCatTail;
+    const sf::Rect2f* const uniCatTxr = isUnicatTranscendenceActive() ? &atlasRects.txrUniCat2 : &atlasRects.txrUniCat;
+    const sf::Rect2f* const uniCatTailTxr = isUnicatTranscendenceActive() ? &atlasRects.txrUniCat2Tail : &atlasRects.txrUniCatTail;
 
-    const sf::Rect2f* const devilCatTxr     = isDevilcatHellsingedActive() ? &txrDevilCat2 : &txrDevilCat3;
-    const sf::Rect2f* const devilCatPawTxr  = isDevilcatHellsingedActive() ? &txrDevilCatPaw2 : &txrDevilCat3Arm;
-    const sf::Rect2f* const devilCatTailTxr = isDevilcatHellsingedActive() ? &txrDevilCatTail2 : &txrDevilCat3Tail;
+    const sf::Rect2f* const devilCatTxr = isDevilcatHellsingedActive() ? &atlasRects.txrDevilCat2 : &atlasRects.txrDevilCat3;
+    const sf::Rect2f* const devilCatPawTxr  = isDevilcatHellsingedActive() ? &atlasRects.txrDevilCatPaw2
+                                                                           : &atlasRects.txrDevilCat3Arm;
+    const sf::Rect2f* const devilCatTailTxr = isDevilcatHellsingedActive() ? &atlasRects.txrDevilCatTail2
+                                                                           : &atlasRects.txrDevilCat3Tail;
 
     ////////////////////////////////////////////////////////////
     const sf::Rect2f* const catTxrsByType[] = {
-        &txrCat,       // Normal
-        uniCatTxr,     // Uni
-        devilCatTxr,   // Devil
-        &txrAstroCat,  // Astro
-        &txrWardenCat, // Warden (composite -- guardhouse drawn around it)
+        &atlasRects.txrCat,       // Normal
+        uniCatTxr,                // Uni
+        devilCatTxr,              // Devil
+        &atlasRects.txrAstroCat,  // Astro
+        &atlasRects.txrWardenCat, // Warden (composite -- guardhouse drawn around it)
 
-        &txrWitchCat,    // Witch
-        &txrWizardCat,   // Wizard
-        &txrMouseCat,    // Mouse
-        &txrEngiCat,     // Engi
-        &txrRepulsoCat,  // Repulso
-        &txrAttractoCat, // Attracto
-        &txrCopyCat,     // Copy
-        &txrDuckCat,     // Duck
+        &atlasRects.txrWitchCat,    // Witch
+        &atlasRects.txrWizardCat,   // Wizard
+        &atlasRects.txrMouseCat,    // Mouse
+        &atlasRects.txrEngiCat,     // Engi
+        &atlasRects.txrRepulsoCat,  // Repulso
+        &atlasRects.txrAttractoCat, // Attracto
+        &atlasRects.txrCopyCat,     // Copy
+        &atlasRects.txrDuckCat,     // Duck
     };
 
     static_assert(sf::base::getArraySize(catTxrsByType) == nCatTypes);
 
     ////////////////////////////////////////////////////////////
     const sf::Rect2f* const catPawTxrsByType[] = {
-        &txrCatPaw,       // Normal
-        &txrUniCatPaw,    // Uni
-        devilCatPawTxr,   // Devil
-        &txrWhiteDot,     // Astro
-        &txrWardencatPaw, // Warden (paw resting on the guardhouse windowsill)
+        &atlasRects.txrCatPaw,       // Normal
+        &atlasRects.txrUniCatPaw,    // Uni
+        devilCatPawTxr,              // Devil
+        &atlasRects.txrWhiteDot,     // Astro
+        &atlasRects.txrWardencatPaw, // Warden (paw resting on the guardhouse windowsill)
 
-        &txrWitchCatPaw,    // Witch
-        &txrWizardCatPaw,   // Wizard
-        &txrMouseCatPaw,    // Mouse
-        &txrEngiCatPaw,     // Engi
-        &txrRepulsoCatPaw,  // Repulso
-        &txrAttractoCatPaw, // Attracto
-        &txrCopyCatPaw,     // Copy
-        &txrWhiteDot,       // Duck
+        &atlasRects.txrWitchCatPaw,    // Witch
+        &atlasRects.txrWizardCatPaw,   // Wizard
+        &atlasRects.txrMouseCatPaw,    // Mouse
+        &atlasRects.txrEngiCatPaw,     // Engi
+        &atlasRects.txrRepulsoCatPaw,  // Repulso
+        &atlasRects.txrAttractoCatPaw, // Attracto
+        &atlasRects.txrCopyCatPaw,     // Copy
+        &atlasRects.txrWhiteDot,       // Duck
     };
 
     static_assert(sf::base::getArraySize(catPawTxrsByType) == nCatTypes);
 
     ////////////////////////////////////////////////////////////
     const sf::Rect2f* const catTailTxrsByType[] = {
-        &txrCatTail,      // Normal
-        uniCatTailTxr,    // Uni
-        devilCatTailTxr,  // Devil
-        &txrAstroCatTail, // Astro
-        &txrCatTail,      // Warden -- TODO: dedicated tail texture (reusing Normal)
+        &atlasRects.txrCatTail,      // Normal
+        uniCatTailTxr,               // Uni
+        devilCatTailTxr,             // Devil
+        &atlasRects.txrAstroCatTail, // Astro
+        &atlasRects.txrCatTail,      // Warden -- TODO: dedicated tail texture (reusing Normal)
 
-        &txrWitchCatTail,    // Witch
-        &txrWizardCatTail,   // Wizard
-        &txrMouseCatTail,    // Mouse
-        &txrEngiCatTail,     // Engi
-        &txrRepulsoCatTail,  // Repulso
-        &txrAttractoCatTail, // Attracto
-        &txrCopyCatTail,     // Copy
-        &txrWhiteDot,        // Duck
+        &atlasRects.txrWitchCatTail,    // Witch
+        &atlasRects.txrWizardCatTail,   // Wizard
+        &atlasRects.txrMouseCatTail,    // Mouse
+        &atlasRects.txrEngiCatTail,     // Engi
+        &atlasRects.txrRepulsoCatTail,  // Repulso
+        &atlasRects.txrAttractoCatTail, // Attracto
+        &atlasRects.txrCopyCatTail,     // Copy
+        &atlasRects.txrWhiteDot,        // Duck
     };
 
     static_assert(sf::base::getArraySize(catTailTxrsByType) == nCatTypes);
@@ -952,7 +968,7 @@ void drawCatRange(const CatDrawContext& ctx)
     ctx.batchToUse.add(sf::CircleShapeData{
         .position           = Main::getCatRangeCenter(ctx.cat),
         .origin             = {ctx.range, ctx.range},
-        .outlineTextureRect = ctx.main.txrWhiteDot,
+        .outlineTextureRect = ctx.main.atlasRects.txrWhiteDot,
         .fillColor          = (ctx.circleOutlineColor.withAlpha(ctx.rangeInnerAlpha)),
         .outlineColor       = ctx.circleOutlineColor,
         .outlineThickness   = ctx.main.profile.catRangeOutlineThickness,
@@ -1016,9 +1032,10 @@ void drawCatClouds(const CatDrawContext& ctx, const float cloudTime)
 
         ctx.cloudBatchToUse.add(sf::Sprite{
             .position    = cloudBasePos + sf::Vec2f{xOffset, yOffset},
-            .scale       = {radius / (ctx.main.txrCloud.size.x / 2.f), radius / (ctx.main.txrCloud.size.y / 2.f)},
-            .origin      = ctx.main.txrCloud.size / 2.f,
-            .textureRect = ctx.main.txrCloud,
+            .scale       = {radius / (ctx.main.atlasRects.txrCloud.size.x / 2.f),
+                            radius / (ctx.main.atlasRects.txrCloud.size.y / 2.f)},
+            .origin      = ctx.main.atlasRects.txrCloud.size / 2.f,
+            .textureRect = ctx.main.atlasRects.txrCloud,
         });
     }
 }
@@ -1055,9 +1072,9 @@ void drawCatVisuals(const CatDrawContext& ctx)
     {
         addCatSprite(sf::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.brainJarOffset),
                                 .scale       = ctx.catScale,
-                                .origin      = ctx.main.txrBrainBack.size / 2.f,
+                                .origin      = ctx.main.atlasRects.txrBrainBack.size / 2.f,
                                 .rotation    = ctx.bodyRotation(),
-                                .textureRect = ctx.main.txrBrainBack,
+                                .textureRect = ctx.main.atlasRects.txrBrainBack,
                                 .color       = ctx.catColor});
     }
 
@@ -1067,23 +1084,24 @@ void drawCatVisuals(const CatDrawContext& ctx)
             ctx.catRotation + (ctx.beingDragged ? -0.2f : 0.f) +
             sf::base::cos(ctx.cat.wobbleRadians) * (ctx.beingDragged ? 0.125f : 0.075f) * 0.75f);
 
-        addCatSprite(
-            sf::Sprite{.position = ctx.anchorOffset(ctx.main.gameConstants.uniWingsOffset),
-                       .scale    = ctx.catScale * 1.25f,
-                       .origin = ctx.main.txrUniCatWings.size / 2.f - ctx.main.gameConstants.uniWingsOriginOffsetFromCenter,
-                       .rotation    = wingRotation,
-                       .textureRect = ctx.main.txrUniCatWings,
-                       .color       = hueColor(ctx.cat.hue + 180.f, 180u)});
+        addCatSprite(sf::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.uniWingsOffset),
+                                .scale       = ctx.catScale * 1.25f,
+                                .origin      = ctx.main.atlasRects.txrUniCatWings.size / 2.f -
+                                               ctx.main.gameConstants.uniWingsOriginOffsetFromCenter,
+                                .rotation    = wingRotation,
+                                .textureRect = ctx.main.atlasRects.txrUniCatWings,
+                                .color       = hueColor(ctx.cat.hue + 180.f, 180u)});
     }
 
     if (ctx.cat.type == CatType::Devil)
     {
         addCatSprite(
-            sf::Sprite{.position = ctx.visualCatAnchor + ctx.main.gameConstants.devilBookOffset,
-                       .scale    = ctx.catScale * 1.55f,
-                       .origin   = ctx.main.txrDevilCat3Book.size / 2.f,
-                       .rotation = ctx.bodyRotation(),
-                       .textureRect = ctx.main.isDevilcatHellsingedActive() ? ctx.main.txrDevilCat2Book : ctx.main.txrDevilCat3Book,
+            sf::Sprite{.position    = ctx.visualCatAnchor + ctx.main.gameConstants.devilBookOffset,
+                       .scale       = ctx.catScale * 1.55f,
+                       .origin      = ctx.main.atlasRects.txrDevilCat3Book.size / 2.f,
+                       .rotation    = ctx.bodyRotation(),
+                       .textureRect = ctx.main.isDevilcatHellsingedActive() ? ctx.main.atlasRects.txrDevilCat2Book
+                                                                            : ctx.main.atlasRects.txrDevilCat3Book,
                        .color = hueColor(sf::base::remainder(ctx.cat.hue * 2.f - 15.f + static_cast<float>(ctx.cat.nameIdx) * 25.f,
                                                              60.f) -
                                              30.f,
@@ -1111,9 +1129,9 @@ void drawCatVisuals(const CatDrawContext& ctx)
         addCatSprite(sf::Sprite{
             .position    = ctx.anchorOffset(ctx.main.gameConstants.wardenGuardhouseBackOffset),
             .scale       = ctx.catScale,
-            .origin      = ctx.main.txrGuardhouseBack.size / 2.f,
+            .origin      = ctx.main.atlasRects.txrGuardhouseBack.size / 2.f,
             .rotation    = sf::radians(0.f),
-            .textureRect = ctx.main.txrGuardhouseBack,
+            .textureRect = ctx.main.atlasRects.txrGuardhouseBack,
             .color       = ctx.catColor,
         });
     }
@@ -1148,7 +1166,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
             .scale              = ctx.catScale,
             .origin             = ctx.catTxr.size / 2.f,
             .rotation           = bodyRotation.wrapUnsigned(),
-            .outlineTextureRect = ctx.main.txrWhiteDot,
+            .outlineTextureRect = ctx.main.atlasRects.txrWhiteDot,
             .fillColor          = sf::Color::Transparent,
             .outlineColor       = sf::Color{255u, 0u, 0u, ctx.alpha},
             .outlineThickness   = 4.f,
@@ -1162,7 +1180,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
                        .scale       = ctx.catScale,
                        .origin      = ctx.main.gameConstants.duckFlag.origin,
                        .rotation    = tailWiggleRotation,
-                       .textureRect = ctx.main.txrDuckFlag,
+                       .textureRect = ctx.main.atlasRects.txrDuckFlag,
                        .color       = ctx.catColor});
         return;
     }
@@ -1171,9 +1189,9 @@ void drawCatVisuals(const CatDrawContext& ctx)
     {
         addCatSprite(sf::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.smartHatOffset),
                                 .scale       = ctx.catScale,
-                                .origin      = ctx.main.txrSmartCatHat.size / 2.f,
+                                .origin      = ctx.main.atlasRects.txrSmartCatHat.size / 2.f,
                                 .rotation    = bodyRotation,
-                                .textureRect = ctx.main.txrSmartCatHat,
+                                .textureRect = ctx.main.atlasRects.txrSmartCatHat,
                                 .color       = ctx.catColor});
     }
 
@@ -1186,7 +1204,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
     }
 
     if (ctx.cat.flapCountdown.tick(ctx.deltaTimeMs) == TickResult::JustFinished)
-        ctx.cat.flapAnimCountdown.time = 75.f * Main::nEarRects;
+        ctx.cat.flapAnimCountdown.time = 75.f * MainAtlasRects::nEarRects;
 
     (void)ctx.cat.flapAnimCountdown.tick(ctx.deltaTimeMs);
 
@@ -1195,14 +1213,14 @@ void drawCatVisuals(const CatDrawContext& ctx)
         addCatSprite(
             sf::Sprite{.position = ctx.anchorOffset(ctx.catEyeOffset + ctx.main.gameConstants.earFlapOffset),
                        .scale    = ctx.catScale,
-                       .origin   = ctx.main.txrCatEars0.size / 2.f,
+                       .origin   = ctx.main.atlasRects.txrCatEars0.size / 2.f,
                        .rotation = bodyRotation,
-                       .textureRect = *ctx.main.earRects[static_cast<unsigned int>(ctx.cat.flapAnimCountdown.time / 75.f) %
-                                                         Main::nEarRects],
+                       .textureRect = *ctx.main.atlasRects.earRects[static_cast<unsigned int>(ctx.cat.flapAnimCountdown.time / 75.f) %
+                                                                    MainAtlasRects::nEarRects],
                        .color = ctx.attachmentHue});
     }
 
-    const auto yawnRectIdx = static_cast<unsigned int>(ctx.cat.yawnAnimCountdown.time / 75.f) % Main::nYawnRects;
+    const auto yawnRectIdx = static_cast<unsigned int>(ctx.cat.yawnAnimCountdown.time / 75.f) % MainAtlasRects::nYawnRects;
 
     if (ctx.cat.type != CatType::Devil && ctx.cat.type != CatType::Wizard && ctx.cat.type != CatType::Mouse &&
         ctx.cat.type != CatType::Engi)
@@ -1211,11 +1229,11 @@ void drawCatVisuals(const CatDrawContext& ctx)
             ctx.cat.yawnCountdown.time = ctx.main.rngFast.getF(7500.f, 20'000.f);
 
         if (ctx.cat.blinkAnimCountdown.isDone() && ctx.cat.yawnCountdown.tick(ctx.deltaTimeMs) == TickResult::JustFinished)
-            ctx.cat.yawnAnimCountdown.time = 75.f * Main::nYawnRects;
+            ctx.cat.yawnAnimCountdown.time = 75.f * MainAtlasRects::nYawnRects;
 
         (void)ctx.cat.yawnAnimCountdown.tick(ctx.deltaTimeMs);
 
-        const sf::Vec2f yawnOrigin = ctx.main.txrCatYawn0.size / 2.f +
+        const sf::Vec2f yawnOrigin = ctx.main.atlasRects.txrCatYawn0.size / 2.f +
                                      (ctx.cat.type == CatType::Warden ? ctx.main.gameConstants.wardenCatYawnOriginOffset
                                                                       : sf::Vec2f{0.f, 0.f});
 
@@ -1223,7 +1241,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
                                 .scale       = ctx.catScale,
                                 .origin      = yawnOrigin,
                                 .rotation    = bodyRotation,
-                                .textureRect = *ctx.main.catYawnRects[yawnRectIdx],
+                                .textureRect = *ctx.main.atlasRects.catYawnRects[yawnRectIdx],
                                 .color       = ctx.attachmentHue});
     }
     else
@@ -1238,7 +1256,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
                        .scale    = ctx.catScale,
                        .origin   = ctx.main.gameConstants.smartDiploma.origin,
                        .rotation = tailWiggleRotation,
-                       .textureRect = ctx.main.txrSmartCatDiploma,
+                       .textureRect = ctx.main.atlasRects.txrSmartCatDiploma,
                        .color       = ctx.catColor});
     }
     else if (ctx.cat.type == CatType::Astro && ctx.main.pt->perm.astroCatInspirePurchased)
@@ -1248,7 +1266,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
                        .scale       = ctx.catScale,
                        .origin      = ctx.main.gameConstants.astroFlag.origin,
                        .rotation    = tailWiggleRotation,
-                       .textureRect = ctx.main.txrAstroCatFlag,
+                       .textureRect = ctx.main.atlasRects.txrAstroCatFlag,
                        .color       = ctx.catColor});
     }
     else if (ctx.cat.type == CatType::Engi || ctx.isCopyCatWithType(CatType::Engi))
@@ -1258,7 +1276,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
                        .scale       = ctx.catScale,
                        .origin      = ctx.main.gameConstants.engiWrench.origin,
                        .rotation    = tailWiggleRotation,
-                       .textureRect = ctx.main.txrEngiCatWrench,
+                       .textureRect = ctx.main.atlasRects.txrEngiCatWrench,
                        .color       = ctx.catColor});
     }
     else if (ctx.cat.type == CatType::Attracto || ctx.isCopyCatWithType(CatType::Attracto))
@@ -1268,7 +1286,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
                        .scale       = ctx.catScale,
                        .origin      = ctx.main.gameConstants.attractoMagnet.origin,
                        .rotation    = tailWiggleRotation,
-                       .textureRect = ctx.main.txrAttractoCatMagnet,
+                       .textureRect = ctx.main.atlasRects.txrAttractoCatMagnet,
                        .color       = ctx.catColor});
     }
 
@@ -1294,19 +1312,19 @@ void drawCatVisuals(const CatDrawContext& ctx)
                                 .scale       = ctx.catScale,
                                 .origin      = ctx.main.gameConstants.mouseProp.origin,
                                 .rotation    = tailWiggleRotationInvertedDragged,
-                                .textureRect = ctx.main.txrMouseCatMouse,
+                                .textureRect = ctx.main.atlasRects.txrMouseCatMouse,
                                 .color       = ctx.catColor});
     }
 
     const auto& eyelidArray = (ctx.cat.type == CatType::Mouse || ctx.cat.type == CatType::Attracto ||
                                ctx.cat.type == CatType::Copy)
-                                  ? ctx.main.grayEyeLidRects
+                                  ? ctx.main.atlasRects.grayEyeLidRects
                               : (ctx.cat.type == CatType::Engi ||
                                  (ctx.cat.type == CatType::Devil && ctx.main.isDevilcatHellsingedActive()))
-                                  ? ctx.main.darkEyeLidRects
+                                  ? ctx.main.atlasRects.darkEyeLidRects
                               : (ctx.cat.type == CatType::Astro || ctx.cat.type == CatType::Uni)
-                                  ? ctx.main.whiteEyeLidRects
-                                  : ctx.main.eyeLidRects;
+                                  ? ctx.main.atlasRects.whiteEyeLidRects
+                                  : ctx.main.atlasRects.eyeLidRects;
 
     if (ctx.cat.blinkCountdown.isDone() && ctx.cat.blinkAnimCountdown.isDone())
     {
@@ -1317,11 +1335,11 @@ void drawCatVisuals(const CatDrawContext& ctx)
     }
 
     if (ctx.cat.blinkCountdown.tick(ctx.deltaTimeMs) == TickResult::JustFinished)
-        ctx.cat.blinkAnimCountdown.time = 75.f * Main::nEyeLidRects;
+        ctx.cat.blinkAnimCountdown.time = 75.f * MainAtlasRects::nEyeLidRects;
 
     (void)ctx.cat.blinkAnimCountdown.tick(ctx.deltaTimeMs);
 
-    const sf::Vec2f eyelidOrigin = ctx.main.txrCatEyeLid0.size / 2.f +
+    const sf::Vec2f eyelidOrigin = ctx.main.atlasRects.txrCatEyeLid0.size / 2.f +
                                    (ctx.cat.type == CatType::Warden ? ctx.main.gameConstants.wardenCatEyelidOriginOffset
                                                                     : sf::Vec2f{0.f, 0.f});
 
@@ -1350,21 +1368,22 @@ void drawCatVisuals(const CatDrawContext& ctx)
     else if (!ctx.cat.blinkAnimCountdown.isDone())
     {
         addCatSprite(
-            sf::Sprite{.position = ctx.anchorOffset(ctx.catEyeOffset + ctx.main.gameConstants.eyelidOffset),
-                       .scale    = ctx.catScale,
-                       .origin   = eyelidOrigin,
-                       .rotation = bodyRotation,
-                       .textureRect = *eyelidArray[static_cast<unsigned int>(ctx.cat.blinkAnimCountdown.time / 75.f) % Main::nEyeLidRects],
-                       .color = ctx.attachmentHue});
+            sf::Sprite{.position    = ctx.anchorOffset(ctx.catEyeOffset + ctx.main.gameConstants.eyelidOffset),
+                       .scale       = ctx.catScale,
+                       .origin      = eyelidOrigin,
+                       .rotation    = bodyRotation,
+                       .textureRect = *eyelidArray[static_cast<unsigned int>(ctx.cat.blinkAnimCountdown.time / 75.f) %
+                                                   MainAtlasRects::nEyeLidRects],
+                       .color       = ctx.attachmentHue});
     }
 
     if (ctx.cat.type == CatType::Normal && ctx.main.pt->perm.geniusCatsPurchased)
     {
         addCatSprite(sf::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.brainJarOffset),
                                 .scale       = ctx.catScale,
-                                .origin      = ctx.main.txrBrainFront.size / 2.f,
+                                .origin      = ctx.main.atlasRects.txrBrainFront.size / 2.f,
                                 .rotation    = bodyRotation,
-                                .textureRect = ctx.main.txrBrainFront,
+                                .textureRect = ctx.main.atlasRects.txrBrainFront,
                                 .color       = ctx.catColor});
     }
 
@@ -1376,9 +1395,9 @@ void drawCatVisuals(const CatDrawContext& ctx)
         addCatSprite(sf::Sprite{
             .position    = ctx.anchorOffset(ctx.main.gameConstants.wardenGuardhouseFrontOffset),
             .scale       = ctx.catScale,
-            .origin      = ctx.main.txrGuardhouseFront.size / 2.f,
+            .origin      = ctx.main.atlasRects.txrGuardhouseFront.size / 2.f,
             .rotation    = sf::radians(0.f),
-            .textureRect = ctx.main.txrGuardhouseFront,
+            .textureRect = ctx.main.atlasRects.txrGuardhouseFront,
             .color       = ctx.catColor,
         });
     }
@@ -1474,22 +1493,22 @@ void drawCatVisuals(const CatDrawContext& ctx)
         const auto* txrMaskToUse = [&] -> const sf::Rect2f*
         {
             if (ctx.main.pt->copycatCopiedCatType == CatType::Witch)
-                return &ctx.main.txrCCMaskWitch;
+                return &ctx.main.atlasRects.txrCCMaskWitch;
 
             if (ctx.main.pt->copycatCopiedCatType == CatType::Wizard)
-                return &ctx.main.txrCCMaskWizard;
+                return &ctx.main.atlasRects.txrCCMaskWizard;
 
             if (ctx.main.pt->copycatCopiedCatType == CatType::Mouse)
-                return &ctx.main.txrCCMaskMouse;
+                return &ctx.main.atlasRects.txrCCMaskMouse;
 
             if (ctx.main.pt->copycatCopiedCatType == CatType::Engi)
-                return &ctx.main.txrCCMaskEngi;
+                return &ctx.main.atlasRects.txrCCMaskEngi;
 
             if (ctx.main.pt->copycatCopiedCatType == CatType::Repulso)
-                return &ctx.main.txrCCMaskRepulso;
+                return &ctx.main.atlasRects.txrCCMaskRepulso;
 
             if (ctx.main.pt->copycatCopiedCatType == CatType::Attracto)
-                return &ctx.main.txrCCMaskAttracto;
+                return &ctx.main.atlasRects.txrCCMaskAttracto;
 
             return nullptr;
         }();
@@ -1610,7 +1629,7 @@ void drawCatText(const CatDrawContext& ctx)
                 .position = ctx.main.textStatusBuffer.getGlobalBottomCenter().addY(ctx.main.gameConstants.catCooldownBarOffsetY),
                 .scale              = {ctx.catScaleMult, ctx.catScaleMult},
                 .origin             = {32.f, 0.f},
-                .outlineTextureRect = ctx.main.txrWhiteDot,
+                .outlineTextureRect = ctx.main.atlasRects.txrWhiteDot,
                 .fillColor          = sf::Color::whiteWithAlpha(128u),
                 .outlineColor       = ctx.textOutlineColor,
                 .outlineThickness   = 1.f,
@@ -1693,8 +1712,8 @@ void Main::gameLoopDrawShrines(const sf::Vec2f mousePos)
             sf::Sprite{.position    = shrine.getDrawPosition(),
                        .scale       = sf::Vec2f{0.3f, 0.3f} * invDeathProgress +
                                       sf::Vec2f{1.25f, 1.25f} * shrine.textStatusShakeEffect.grow * 0.015f,
-                       .origin      = txrShrine.size / 2.f,
-                       .textureRect = txrShrine,
+                       .origin      = atlasRects.txrShrine.size / 2.f,
+                       .textureRect = atlasRects.txrShrine,
                        .color       = shrineColor});
 
         const auto range = shrine.getRange();
@@ -1705,7 +1724,7 @@ void Main::gameLoopDrawShrines(const sf::Vec2f mousePos)
             cpuDrawableBatchAfterCats.add(sf::CircleShapeData{
                 .position           = shrine.position,
                 .origin             = {range, range},
-                .outlineTextureRect = txrWhiteDot,
+                .outlineTextureRect = atlasRects.txrWhiteDot,
                 .fillColor          = circleOutlineColor.withAlpha(rangeInnerAlpha),
                 .outlineColor       = circleColor,
                 .outlineThickness   = 1.f,
@@ -1774,19 +1793,19 @@ void Main::gameLoopDrawDolls(const sf::Vec2f mousePos)
 
     ////////////////////////////////////////////////////////////
     const sf::Rect2f* dollTxrs[] = {
-        &txrDollNormal,   // Normal
-        &txrDollUni,      // Uni
-        &txrDollDevil,    // Devil
-        &txrDollAstro,    // Astro
-        &txrDollNormal,   // Warden -- TODO: dedicated doll texture (reusing Normal)
-        &txrDollNormal,   // Witch (missing, hexing a witchcat is not possible, even with copycat)
-        &txrDollWizard,   // Wizard
-        &txrDollMouse,    // Mouse
-        &txrDollEngi,     // Engi
-        &txrDollRepulso,  // Repulso
-        &txrDollAttracto, // Attracto
-        &txrDollNormal,   // Copy (missing, hexing a copycat hexes the mimicked cat)
-        &txrDollNormal,   // Duck (missing, cannot be hexed)
+        &atlasRects.txrDollNormal,   // Normal
+        &atlasRects.txrDollUni,      // Uni
+        &atlasRects.txrDollDevil,    // Devil
+        &atlasRects.txrDollAstro,    // Astro
+        &atlasRects.txrDollNormal,   // Warden -- TODO: dedicated doll texture (reusing Normal)
+        &atlasRects.txrDollNormal,   // Witch (missing, hexing a witchcat is not possible, even with copycat)
+        &atlasRects.txrDollWizard,   // Wizard
+        &atlasRects.txrDollMouse,    // Mouse
+        &atlasRects.txrDollEngi,     // Engi
+        &atlasRects.txrDollRepulso,  // Repulso
+        &atlasRects.txrDollAttracto, // Attracto
+        &atlasRects.txrDollNormal,   // Copy (missing, hexing a copycat hexes the mimicked cat)
+        &atlasRects.txrDollNormal,   // Duck (missing, cannot be hexed)
     };
 
     static_assert(sf::base::getArraySize(dollTxrs) == nCatTypes);
@@ -1913,9 +1932,9 @@ void Main::gameLoopDrawHellPortals()
         cpuDrawableBatchBeforeCats.add(
             sf::Sprite{.position    = hp.getDrawPosition(),
                        .scale       = sf::Vec2f{1.f, 1.f} * scaleMult * hellPortalRadius / 256.f * 1.15f,
-                       .origin      = txrHellPortal.size / 2.f,
+                       .origin      = atlasRects.txrHellPortal.size / 2.f,
                        .rotation    = sf::radians(hp.life.time / 200.f),
-                       .textureRect = txrHellPortal,
+                       .textureRect = atlasRects.txrHellPortal,
                        .color       = sf::Color::White});
     }
 }
@@ -1997,9 +2016,9 @@ void Main::gameLoopDrawEarnedCoinParticles()
         hudDrawableBatch.add(sf::Sprite{
             .position    = {blend(newPos2.x, newPos.x, 0.5f), newPos.y},
             .scale       = sf::Vec2f{0.25f, 0.25f} * opacityScale,
-            .origin      = txrCoin.size / 2.f,
+            .origin      = atlasRects.txrCoin.size / 2.f,
             .rotation    = sf::radians(particle.progress.remap(0.f, sf::base::tau)),
-            .textureRect = txrCoin,
+            .textureRect = atlasRects.txrCoin,
             .color       = sf::Color::whiteWithAlpha(static_cast<U8>(alpha)),
         });
     }
@@ -2161,7 +2180,7 @@ void Main::gameLoopUpdatePurchaseUnlockedEffects(const float deltaTimeMs)
                          .scale  = sf::Vec2f{0.25f, 0.25f} * (profile.uiScale + -0.15f * easeInOutBack(blinkProgress)),
                          .origin = tx.getRect().getCenterRight(),
                          .color  = hueColor(hue + currentBackgroundHue.asDegrees(), arrowAlpha)},
-                        {.view = nonScaledHUDView, .shader = &shader});
+                        {.view = nonScaledHUDView, .shader = &shaders.shader});
         }
     }
 
@@ -2205,7 +2224,7 @@ void Main::gameLoopDrawCursor(const float deltaTimeMs, const float cursorGrow)
                            dpiScalingFactor),
                  .origin = {5.f, 5.f},
                  .color  = hueColor(profile.cursorHue + currentBackgroundHue.asDegrees(), 255u)},
-                {.view = nonScaledHUDView, .shader = &shader});
+                {.view = nonScaledHUDView, .shader = &shaders.shader});
 }
 
 
@@ -2259,7 +2278,7 @@ void Main::gameLoopDrawCursorComboText(const float deltaTimeMs, const float curs
         td.fillColor = sf::Color::Red.withAlpha(alphaU8);
     }
 
-    rtGame.draw(fontMouldyCheese, td, {.view = nonScaledHUDView, .shader = &shader});
+    rtGame.draw(fontMouldyCheese, td, {.view = nonScaledHUDView, .shader = &shaders.shader});
 }
 
 
@@ -2277,7 +2296,7 @@ void Main::gameLoopDrawCursorComboBar()
     rtGame.draw(
         sf::RectangleShapeData{
             .position           = cursorComboBarPosition,
-            .outlineTextureRect = txrWhiteDot,
+            .outlineTextureRect = atlasRects.txrWhiteDot,
             .fillColor          = sf::Color::blackWithAlpha(80u),
             .outlineColor       = comboState.cursorComboOutlineColor,
             .outlineThickness   = 1.f,
@@ -2288,7 +2307,7 @@ void Main::gameLoopDrawCursorComboBar()
     rtGame.draw(
         sf::RectangleShapeData{
             .position           = cursorComboBarPosition,
-            .outlineTextureRect = txrWhiteDot,
+            .outlineTextureRect = atlasRects.txrWhiteDot,
             .fillColor          = sf::Color::blackWithAlpha(164u),
             .outlineColor       = comboState.cursorComboOutlineColor,
             .outlineThickness   = 1.f,
@@ -2576,11 +2595,11 @@ void Main::setPostProcessUniforms(const float vibrance,
                                   const float sharpness,
                                   const float blur) const
 {
-    shaderPostProcess.setUniform(suPPVibrance, vibrance);
-    shaderPostProcess.setUniform(suPPSaturation, saturation);
-    shaderPostProcess.setUniform(suPPLightness, lightness);
-    shaderPostProcess.setUniform(suPPSharpness, sharpness);
-    shaderPostProcess.setUniform(suPPBlur, blur);
+    shaders.shaderPostProcess.setUniform(shaders.suPPVibrance, vibrance);
+    shaders.shaderPostProcess.setUniform(shaders.suPPSaturation, saturation);
+    shaders.shaderPostProcess.setUniform(shaders.suPPLightness, lightness);
+    shaders.shaderPostProcess.setUniform(shaders.suPPSharpness, sharpness);
+    shaders.shaderPostProcess.setUniform(shaders.suPPBlur, blur);
 }
 
 
@@ -2595,7 +2614,7 @@ void Main::updateProcessedBackground()
                            profile.ppBGSharpness,
                            profile.ppBGBlur);
 
-    rtBackgroundProcessed.draw(rtBackground.getTexture(), {.shader = &shaderPostProcess});
+    rtBackgroundProcessed.draw(rtBackground.getTexture(), {.shader = &shaders.shaderPostProcess});
     rtBackgroundProcessed.display();
 }
 
@@ -2619,21 +2638,21 @@ void Main::drawActivatedShrineBackgroundEffects(sf::RenderTarget& rt,
 
         rt.flush();
 
-        shaderShrineBackground.setUniform(suShrineBgTime, shaderTime);
-        shaderShrineBackground.setUniform(suShrineBgViewOrigin, backgroundViewOrigin);
-        shaderShrineBackground.setUniform(suShrineBgCenter, center);
-        shaderShrineBackground.setUniform(suShrineBgRange, range);
-        shaderShrineBackground.setUniform(suShrineBgTintR, static_cast<float>(tint.r) / 255.f);
-        shaderShrineBackground.setUniform(suShrineBgTintG, static_cast<float>(tint.g) / 255.f);
-        shaderShrineBackground.setUniform(suShrineBgTintB, static_cast<float>(tint.b) / 255.f);
-        shaderShrineBackground.setUniform(suShrineBgTintA, static_cast<float>(tint.a) / 255.f);
-        shaderShrineBackground.setUniform(suShrineBgDistortionStrength, 1812.f);
-        shaderShrineBackground.setUniform(suShrineBgTintStrength, 0.2f);
-        shaderShrineBackground.setUniform(suShrineBgEffectStrength, effectStrength);
+        shaders.shaderShrineBackground.setUniform(shaders.suShrineBgTime, shaderTime);
+        shaders.shaderShrineBackground.setUniform(shaders.suShrineBgViewOrigin, backgroundViewOrigin);
+        shaders.shaderShrineBackground.setUniform(shaders.suShrineBgCenter, center);
+        shaders.shaderShrineBackground.setUniform(shaders.suShrineBgRange, range);
+        shaders.shaderShrineBackground.setUniform(shaders.suShrineBgTintR, static_cast<float>(tint.r) / 255.f);
+        shaders.shaderShrineBackground.setUniform(shaders.suShrineBgTintG, static_cast<float>(tint.g) / 255.f);
+        shaders.shaderShrineBackground.setUniform(shaders.suShrineBgTintB, static_cast<float>(tint.b) / 255.f);
+        shaders.shaderShrineBackground.setUniform(shaders.suShrineBgTintA, static_cast<float>(tint.a) / 255.f);
+        shaders.shaderShrineBackground.setUniform(shaders.suShrineBgDistortionStrength, 1812.f);
+        shaders.shaderShrineBackground.setUniform(shaders.suShrineBgTintStrength, 0.2f);
+        shaders.shaderShrineBackground.setUniform(shaders.suShrineBgEffectStrength, effectStrength);
 
         rt.draw(backgroundTexture,
                 {.textureRect = {{0.f, 0.f}, backgroundView.size}},
-                {.view = backgroundView, .texture = &backgroundTexture, .shader = &shaderShrineBackground});
+                {.view = backgroundView, .texture = &backgroundTexture, .shader = &shaders.shaderShrineBackground});
     };
 
     for (const Shrine& shrine : pt->shrines)
@@ -2720,8 +2739,8 @@ void Main::enqueueHexedCatDrawCommand(const sf::CPUDrawableBatch& batch,
     auto            toLocal    = sf::Transform::fromPosition(rtCenter - position);
 
     rtHexedCat.clear(sf::Color::Transparent);
-    shader.setUniform(suBubbleEffect, false);
-    rtHexedCat.draw(batch, {.transform = toLocal, .texture = &textureAtlas.getTexture(), .shader = &shader});
+    shaders.shader.setUniform(shaders.suBubbleEffect, false);
+    rtHexedCat.draw(batch, {.transform = toLocal, .texture = &textureAtlas.getTexture(), .shader = &shaders.shader});
     rtHexedCat.display();
 
     hexedCatDrawCommands.pushBack(
@@ -2745,17 +2764,17 @@ void Main::drawHexedCatDrawCommands(const sf::View& view, const bool top)
         const sf::Texture& texture    = rtHexedCat.getTexture();
 
         rtGame.flush();
-        shaderHexed.setUniform(suHexedTime, shaderTime);
-        shaderHexed.setUniform(suHexedSeed, command.phaseSeed);
-        shaderHexed.setUniform(suHexedDistortionStrength, blend(0.35f, 1.f, command.effectStrength));
-        shaderHexed.setUniform(suHexedShimmerStrength, blend(0.2f, 1.f, command.effectStrength));
+        shaders.shaderHexed.setUniform(shaders.suHexedTime, shaderTime);
+        shaders.shaderHexed.setUniform(shaders.suHexedSeed, command.phaseSeed);
+        shaders.shaderHexed.setUniform(shaders.suHexedDistortionStrength, blend(0.35f, 1.f, command.effectStrength));
+        shaders.shaderHexed.setUniform(shaders.suHexedShimmerStrength, blend(0.2f, 1.f, command.effectStrength));
 
         rtGame.draw(texture,
                     {.position    = command.position,
                      .origin      = texture.getSize().toVec2f() / 2.f,
                      .textureRect = texture.getRect(),
                      .color = sf::Color::whiteWithAlpha(static_cast<U8>(blend(255.f, 128.f, command.effectStrength)))},
-                    {.view = view, .texture = &texture, .shader = &shaderHexed});
+                    {.view = view, .texture = &texture, .shader = &shaders.shaderHexed});
     }
 }
 
@@ -2770,11 +2789,11 @@ void Main::gameLoopDisplayCloudBatch(const sf::CPUDrawableBatch& batch, const sf
     rtCloudMask.draw(batch, {.view = view, .texture = &textureAtlas.getTexture()});
     rtCloudMask.display();
 
-    shaderClouds.setUniform(suCloudTime, shaderTime);
-    shaderClouds.setUniform(suCloudResolution, rtCloudMask.getSize().toVec2f());
+    shaders.shaderClouds.setUniform(shaders.suCloudTime, shaderTime);
+    shaders.shaderClouds.setUniform(shaders.suCloudResolution, rtCloudMask.getSize().toVec2f());
 
     rtCloudProcessed.clear(sf::Color::Transparent);
-    rtCloudProcessed.draw(rtCloudMask.getTexture(), {.blendMode = sf::BlendNone, .shader = &shaderClouds});
+    rtCloudProcessed.draw(rtCloudMask.getTexture(), {.blendMode = sf::BlendNone, .shader = &shaders.shaderClouds});
     rtCloudProcessed.display();
 
     constexpr sf::BlendMode premultipliedAlphaBlend(sf::BlendMode::Factor::One,

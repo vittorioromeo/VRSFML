@@ -1,11 +1,15 @@
 #include "Aliases.hpp"
+#include "BubbleIdleHelpers.hpp"
 #include "BubbleIdleMain.hpp"
 #include "Cat.hpp"
 #include "CatConstants.hpp"
 #include "CatType.hpp"
 #include "IconsFontAwesome6.h"
+#include "MainShaders.hpp"
 #include "ParticleData.hpp"
 #include "ParticleType.hpp"
+#include "Playthrough.hpp"
+#include "Profile.hpp"
 #include "UIState.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"
@@ -374,7 +378,7 @@ void Main::uiDrawQuickbarQuickSettings(const sf::Vec2f quickBarPos)
 
         ImGui::Separator();
 
-        uiCheckbox("Bubble shader", &profile.useBubbleShader);
+        uiCheckbox("Bubble shaders.shader", &profile.useBubbleShader);
 
         ImGui::BeginDisabled(!profile.useBubbleShader);
         ImGui::SetNextItemWidth(210.f * profile.uiScale);

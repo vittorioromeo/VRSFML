@@ -1,8 +1,11 @@
 #include "Aliases.hpp"
+#include "BubbleIdleHelpers.hpp"
 #include "BubbleIdleMain.hpp"
 #include "Constants.hpp"
 #include "ImGuiNotify.hpp"
 #include "Milestones.hpp"
+#include "Playthrough.hpp"
+#include "Profile.hpp"
 #include "UIState.hpp"
 #include "Version.hpp"
 
