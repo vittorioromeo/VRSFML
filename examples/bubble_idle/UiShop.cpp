@@ -1,4 +1,5 @@
 #include "BubbleIdleMain.hpp"
+#include "MainAtlasRects.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"
 
@@ -19,7 +20,7 @@ void Main::uiTabBarShop()
 
     if (nextGoalsText != "")
     {
-        uiImgsep(txrMenuSeparator8, "next goals");
+        uiImgsep(atlasRects.txrMenuSeparator8, "next goals");
         ImGui::Columns(1);
 
         uiSetFontScale(uiSubBulletFontScale);

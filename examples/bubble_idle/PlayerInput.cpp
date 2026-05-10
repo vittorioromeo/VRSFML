@@ -4,9 +4,11 @@
 #include "Constants.hpp"
 #include "InputHelper.hpp"
 #include "PlayerInput.hpp"
+#include "Playthrough.hpp"
 #include "UIState.hpp"
 #include "Version.hpp"
 
+#include "SFML/ImGui/ImGuiContext.hpp"
 #include "SFML/ImGui/IncludeImGui.hpp"
 
 #include "SFML/Graphics/RenderWindow.hpp"

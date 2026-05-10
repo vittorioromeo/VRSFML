@@ -20,6 +20,7 @@
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/OverloadSet.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/Vector.hpp"
 
@@ -35,6 +36,8 @@
 #pragma GCC diagnostic pop
 
 #include "SFML/System/IO.hpp"
+#include "SFML/System/Path.hpp"
+#include "SFML/System/PathStreamOp.hpp" // IWYU pragma: keep
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Time.hpp"
 
@@ -45,7 +48,6 @@
 #include "SFML/Base/Trait/RemoveCVRef.hpp"
 
 #include <exception>
-#include <filesystem>
 #include <stdexcept>
 #include <string>
 
@@ -1105,14 +1107,14 @@ DEFINE_TWO_WAY_SERIALIZER(Version)
 namespace
 {
 ////////////////////////////////////////////////////////////
-void forceCopyFile(const std::filesystem::path& from, const std::filesystem::path& to)
+void forceCopyFile(const sf::Path& from, const sf::Path& to)
 try
 {
-    std::filesystem::remove(to);
-    std::filesystem::copy_file(from, to);
+    to.removeFromDisk();
+    from.copyFileTo(to);
 } catch (...)
 {
-    sf::cOut() << "Failed to copy file from '" << from.string() << "' to '" << to.string() << "'\n";
+    sf::cOut() << "Failed to copy file from '" << from << "' to '" << to << "'\n";
 }
 
 
@@ -1136,10 +1138,10 @@ try
 void saveProfileToFile(const Profile& profile, const char* filename)
 try
 {
-    std::filesystem::create_directories("userdata");
+    sf::Path{"userdata"}.createDirectoryTree();
     doRotatingBackup(filename);
 
-    if (!sf::writeToFile(filename, nlohmann::json(profile).dump()))
+    if (!sf::writeToFile(sf::base::StringView{filename}, nlohmann::json(profile).dump()))
         throw std::runtime_error("writeToFile failed");
 } catch (const std::exception& ex)
 {
@@ -1153,7 +1155,7 @@ try
 {
     sf::base::String contents;
 
-    if (!sf::readFromFile(filename, contents))
+    if (!sf::readFromFile(sf::base::StringView{filename}, contents))
         throw std::runtime_error("readFromFile failed");
 
     const auto parsed = nlohmann::json::parse(contents);
@@ -1177,14 +1179,14 @@ try
 void saveGameConstantsToFile(const GameConstants& gameConstants, const char* filename)
 try
 {
-    const std::filesystem::path path{filename};
+    const sf::Path path{filename};
 
-    if (path.has_parent_path())
-        std::filesystem::create_directories(path.parent_path());
+    if (path.hasParent())
+        path.parent().createDirectoryTree();
 
     doRotatingBackup(filename);
 
-    if (!sf::writeToFile(filename, nlohmann::json(gameConstants).dump(2)))
+    if (!sf::writeToFile(sf::base::StringView{filename}, nlohmann::json(gameConstants).dump(2)))
         throw std::runtime_error("writeToFile failed");
 } catch (const std::exception& ex)
 {
@@ -1198,7 +1200,7 @@ try
 {
     sf::base::String contents;
 
-    if (!sf::readFromFile(filename, contents))
+    if (!sf::readFromFile(sf::base::StringView{filename}, contents))
         throw std::runtime_error("readFromFile failed");
 
     nlohmann::json::parse(contents).get_to(gameConstants);
@@ -1212,10 +1214,10 @@ try
 void savePlaythroughToFile(const Playthrough& playthrough, const char* filename)
 try
 {
-    std::filesystem::create_directories("userdata");
+    sf::Path{"userdata"}.createDirectoryTree();
     doRotatingBackup(filename);
 
-    if (!sf::writeToFile(filename, nlohmann::json(playthrough).dump()))
+    if (!sf::writeToFile(sf::base::StringView{filename}, nlohmann::json(playthrough).dump()))
         throw std::runtime_error("writeToFile failed");
 } catch (const std::exception& ex)
 {
@@ -1269,7 +1271,7 @@ try
 {
     std::string contents;
 
-    if (!sf::readFromFile(filename, contents))
+    if (!sf::readFromFile(sf::base::StringView{filename}, contents))
         throw std::runtime_error("readFromFile failed");
 
     const auto parsed = nlohmann::json::parse(contents);

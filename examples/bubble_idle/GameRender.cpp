@@ -1,10 +1,16 @@
 #include "Aliases.hpp"
+#include "BubbleIdleHelpers.hpp"
 #include "BubbleIdleMain.hpp"
+#include "BubbleIdleMainInline.hpp"
 #include "CatType.hpp"
 #include "ComboState.hpp"
 #include "Constants.hpp"
 #include "FrameViewState.hpp"
+#include "MainAtlasRects.hpp"
+#include "MainShaders.hpp"
 #include "PlayerInput.hpp"
+#include "Playthrough.hpp"
+#include "Profile.hpp"
 #include "UIState.hpp"
 #include "Version.hpp"
 
@@ -141,7 +147,7 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
         cpuDrawableBatchBeforeCats.add(sf::CircleShapeData{
             .position           = frameInput.mousePos,
             .origin             = {range, range},
-            .outlineTextureRect = txrWhiteDot,
+            .outlineTextureRect = atlasRects.txrWhiteDot,
             .fillColor          = sf::Color::Transparent,
             .outlineColor       = (outlineHueColor.withAlpha(105u).withLightness(0.75f)),
             .outlineThickness   = 1.5f,
@@ -158,14 +164,16 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
     gameLoopDrawParticles();
     gameLoopDrawTextParticles();
     gameLoopDisplayCloudBatch(cpuCloudDrawableBatch, gameView);
-    drawBatch(cpuDrawableBatchBeforeCats, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
-    drawBatch(cpuDrawableBatch, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
+    drawBatch(cpuDrawableBatchBeforeCats,
+              {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shaders.shader});
+    drawBatch(cpuDrawableBatch, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shaders.shader});
     drawHexedCatDrawCommands(gameView, /* top */ false);
     gameLoopDrawComboBubbleBurstingCoins();
-    drawBatch(cpuDrawableBatchAfterCats, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
+    drawBatch(cpuDrawableBatchAfterCats,
+              {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shaders.shader});
     drawBatch(cpuDrawableBatchAdditive,
-              {.blendMode = sf::BlendAdd, .view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
-    drawBatch(catTextDrawableBatch, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
+              {.blendMode = sf::BlendAdd, .view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shaders.shader});
+    drawBatch(catTextDrawableBatch, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shaders.shader});
 
     gameLoopDrawScrollArrowHint(deltaTimeMs);
 
@@ -202,7 +210,7 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
         hudBottomDrawableBatch.clear();
         gameLoopDrawHUDBottomParticles();
         drawBatch(hudBottomDrawableBatch,
-                  {.view = nonScaledHUDView, .texture = &textureAtlas.getTexture(), .shader = &shader});
+                  {.view = nonScaledHUDView, .texture = &textureAtlas.getTexture(), .shader = &shaders.shader});
     }
 
     if (shouldDrawUI)
@@ -213,7 +221,8 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
             gameLoopDrawHUDParticles();
 
         gameLoopDrawEarnedCoinParticles();
-        drawBatch(hudDrawableBatch, {.view = scaledHUDView, .texture = &textureAtlas.getTexture(), .shader = &shader});
+        drawBatch(hudDrawableBatch,
+                  {.view = scaledHUDView, .texture = &textureAtlas.getTexture(), .shader = &shaders.shader});
     }
 
     if constexpr (isDemoVersion)
@@ -358,10 +367,10 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
 
     gameLoopDisplayCloudBatch(cpuTopCloudDrawableBatch, frameViews.scaledTopGameView);
     drawBatch(cpuTopDrawableBatch,
-              {.view = frameViews.scaledTopGameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
+              {.view = frameViews.scaledTopGameView, .texture = &textureAtlas.getTexture(), .shader = &shaders.shader});
     drawHexedCatDrawCommands(frameViews.scaledTopGameView, /* top */ true);
     drawBatch(catTextTopDrawableBatch,
-              {.view = frameViews.scaledTopGameView, .texture = &textureAtlas.getTexture(), .shader = &shader});
+              {.view = frameViews.scaledTopGameView, .texture = &textureAtlas.getTexture(), .shader = &shaders.shader});
 
     if (shouldDrawUI)
         gameLoopUpdatePurchaseUnlockedEffects(deltaTimeMs);
@@ -371,7 +380,7 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
         hudTopDrawableBatch.clear();
         gameLoopDrawHUDTopParticles();
         drawBatch(hudTopDrawableBatch,
-                  {.view = nonScaledHUDView, .texture = &textureAtlas.getTexture(), .shader = &shader});
+                  {.view = nonScaledHUDView, .texture = &textureAtlas.getTexture(), .shader = &shaders.shader});
     }
 
     gameLoopDrawCursor(deltaTimeMs, frameUpdate.cursorGrow);
@@ -490,7 +499,7 @@ void Main::gameLoopPresentFrame(const FrameViewState& frameViews)
                                                     sf::BlendMode::Factor::OneMinusSrcAlpha,
                                                     sf::BlendMode::Equation::Add);
 
-    window.draw(rtGame.getTexture(), {.blendMode = premultipliedAlphaBlend, .shader = &shaderPostProcess});
+    window.draw(rtGame.getTexture(), {.blendMode = premultipliedAlphaBlend, .shader = &shaders.shaderPostProcess});
 
     if (flushBeforeDisplay)
         rtGame.invokeGlFlush();

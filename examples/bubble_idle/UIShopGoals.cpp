@@ -1,5 +1,6 @@
 #include "BubbleIdleMain.hpp"
 #include "CatType.hpp"
+#include "Playthrough.hpp"
 
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"

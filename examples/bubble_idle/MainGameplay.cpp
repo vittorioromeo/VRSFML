@@ -4,6 +4,7 @@
 #include "BGMStorage.hpp"
 #include "Bubble.hpp"
 #include "BubbleIdleMain.hpp"
+#include "BubbleIdleMainInline.hpp"
 #include "BubbleType.hpp"
 #include "Cat.hpp"
 #include "CatType.hpp"
@@ -13,8 +14,11 @@
 #include "Doll.hpp"
 #include "HellPortal.hpp"
 #include "HexSession.hpp"
+#include "MainShaders.hpp"
 #include "ParticleData.hpp"
 #include "ParticleType.hpp"
+#include "Playthrough.hpp"
+#include "Profile.hpp"
 #include "Shrine.hpp"
 #include "ShrineType.hpp"
 #include "SweepAndPrune.hpp"
@@ -560,7 +564,7 @@ void Main::gameLoopUpdateAndDrawBackground(const float deltaTimeMs, const sf::Vi
                           .textureRect = {{playerInputState.actualScroll + backgroundScroll * 0.25f, 0.f}, chunkTextureRectSize},
                           .color = hueColor(currentBackgroundHue.asDegrees(), getAlpha(255.f)),
                       },
-                      {.view = gameBackgroundView, .shader = &shader});
+                      {.view = gameBackgroundView, .shader = &shaders.shader});
 
 
     static float firstCloudTimer       = 0.f;

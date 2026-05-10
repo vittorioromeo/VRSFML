@@ -1,5 +1,7 @@
 #include "BubbleIdleMain.hpp"
 #include "CatType.hpp"
+#include "MainAtlasRects.hpp"
+#include "Playthrough.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"
 
@@ -26,7 +28,7 @@ void Main::uiPrestigeDrawShrineCatUpgrades()
 {
     if (checkUiUnlock(58u, pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Witch)]))
     {
-        uiImgsep2(txrPrestigeSeparator9, "witchcat");
+        uiImgsep2(atlasRects.txrPrestigeSeparator9, "witchcat");
 
         uiBeginColumns();
 
@@ -110,7 +112,7 @@ void Main::uiPrestigeDrawShrineCatUpgrades()
 
     if (checkUiUnlock(59u, pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Wizard)]))
     {
-        uiImgsep2(txrPrestigeSeparator10, "wizardcat");
+        uiImgsep2(atlasRects.txrPrestigeSeparator10, "wizardcat");
 
         uiBeginColumns();
 
@@ -183,7 +185,7 @@ void Main::uiPrestigeDrawShrineCatUpgrades()
 
     if (checkUiUnlock(60u, pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)]))
     {
-        uiImgsep2(txrPrestigeSeparator11, "mousecat");
+        uiImgsep2(atlasRects.txrPrestigeSeparator11, "mousecat");
 
         uiBeginColumns();
 
@@ -206,7 +208,7 @@ void Main::uiPrestigeDrawShrineCatUpgrades()
 
     if (checkUiUnlock(61u, pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Engi)]))
     {
-        uiImgsep2(txrPrestigeSeparator12, "engicat");
+        uiImgsep2(atlasRects.txrPrestigeSeparator12, "engicat");
 
         uiBeginColumns();
 
@@ -229,7 +231,7 @@ void Main::uiPrestigeDrawShrineCatUpgrades()
 
     if (checkUiUnlock(62u, pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Repulso)]))
     {
-        uiImgsep2(txrPrestigeSeparator13, "repulsocat");
+        uiImgsep2(atlasRects.txrPrestigeSeparator13, "repulsocat");
 
         uiBeginColumns();
 
@@ -300,7 +302,7 @@ void Main::uiPrestigeDrawShrineCatUpgrades()
 
     if (checkUiUnlock(65u, pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Attracto)]))
     {
-        uiImgsep2(txrPrestigeSeparator14, "attractocat");
+        uiImgsep2(atlasRects.txrPrestigeSeparator14, "attractocat");
 
         uiBeginColumns();
 
@@ -338,7 +340,7 @@ void Main::uiPrestigeDrawShrineCatUpgrades()
 
     if (checkUiUnlock(67u, pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Copy)]))
     {
-        uiImgsep2(txrPrestigeSeparator15, "copycat");
+        uiImgsep2(atlasRects.txrPrestigeSeparator15, "copycat");
 
         uiBeginColumns();
 

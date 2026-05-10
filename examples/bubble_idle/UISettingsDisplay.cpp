@@ -1,4 +1,5 @@
 #include "BubbleIdleMain.hpp"
+#include "Profile.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"
 

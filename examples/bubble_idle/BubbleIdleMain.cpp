@@ -2,6 +2,7 @@
 #include "BGMStorage.hpp"
 #include "Bubble.hpp"
 #include "BubbleIdleMain.hpp"
+#include "BubbleIdleMainInline.hpp"
 #include "BubbleType.hpp"
 #include "Cat.hpp"
 #include "CatConstants.hpp"
