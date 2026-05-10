@@ -16,6 +16,7 @@
 #include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/String.hpp"
 
 #include <string>
 
@@ -299,6 +300,27 @@ Packet& Packet::operator>>(std::string& data)
 
 
 ////////////////////////////////////////////////////////////
+Packet& Packet::operator>>(base::String& data)
+{
+    // First extract string length
+    base::U32 length = 0;
+    *this >> length;
+
+    data.clear();
+    if ((length > 0) && checkSize(length))
+    {
+        // Then extract characters
+        data.assign(reinterpret_cast<char*>(&m_data[m_readPos]), length);
+
+        // Update reading position
+        m_readPos += length;
+    }
+
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
 Packet& Packet::operator>>(wchar_t* data)
 {
     SFML_BASE_ASSERT(data && "Packet::operator>> Data must not be null");
@@ -511,6 +533,21 @@ Packet& Packet::operator<<(const std::string& data)
     // Then insert characters
     if (length > 0)
         append(data.c_str(), length * sizeof(std::string::value_type));
+
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+Packet& Packet::operator<<(const base::String& data)
+{
+    // First insert string length
+    const auto length = static_cast<base::U32>(data.size());
+    *this << length;
+
+    // Then insert characters
+    if (length > 0)
+        append(data.data(), length);
 
     return *this;
 }
