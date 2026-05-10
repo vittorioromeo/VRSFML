@@ -17,19 +17,20 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Aliases.hpp"
 #include "Bubble.hpp"
 #include "BubbleIdleMain.hpp"
 #include "BubbleType.hpp"
+#include "CatType.hpp"
 #include "Playthrough.hpp"
 #include "Profile.hpp"
 
 #include "ExampleUtils/ControlFlow.hpp"
+#include "ExampleUtils/HueColor.hpp"
 #include "ExampleUtils/MathUtils.hpp"
 #include "ExampleUtils/RNGFast.hpp"
 
 #include "SFML/System/Vec2.hpp"
-
-#include "SFML/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
