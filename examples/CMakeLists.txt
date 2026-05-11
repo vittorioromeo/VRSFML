@@ -92,6 +92,7 @@ if(SFML_BUILD_GRAPHICS)
     add_subdirectory(stencil)
 
     if(NOT SFML_OS_IOS)
+        add_subdirectory(ankerl_next_benchmark)
         add_subdirectory(arkanoid)
         add_subdirectory(batching_benchmark)
         add_subdirectory(batching)

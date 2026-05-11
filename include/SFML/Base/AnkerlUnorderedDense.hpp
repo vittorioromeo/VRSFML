@@ -6,7 +6,7 @@
 ///////////////////////// ankerl::unordered_dense::{map, set} /////////////////////////
 
 // A fast & densely stored hashmap and hashset based on robin-hood backward shift deletion.
-// Version 4.5.0
+// Version 4.8.1
 // https://github.com/martinus/unordered_dense
 //
 // Licensed under the MIT License <http://opensource.org/licenses/MIT>.
@@ -33,32 +33,9 @@
 
 // NOLINTBEGIN(readability-identifier-naming)
 
-#ifndef ANKERL_UNORDERED_DENSE_H
-#define ANKERL_UNORDERED_DENSE_H
-
-
+#pragma once
 #pragma GCC system_header
 
-// see https://semver.org/spec/v2.0.0.html
-#define ANKERL_UNORDERED_DENSE_VERSION_MAJOR 4 // NOLINT(cppcoreguidelines-macro-usage) incompatible API changes
-#define ANKERL_UNORDERED_DENSE_VERSION_MINOR 5 // NOLINT(cppcoreguidelines-macro-usage) backwards compatible functionality
-#define ANKERL_UNORDERED_DENSE_VERSION_PATCH 0 // NOLINT(cppcoreguidelines-macro-usage) backwards compatible bug fixes
-
-// API versioning with inline namespace, see https://www.foonathan.net/2018/11/inline-namespaces/
-
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define ANKERL_UNORDERED_DENSE_VERSION_CONCAT1(major, minor, patch) v##major##_##minor##_##patch
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define ANKERL_UNORDERED_DENSE_VERSION_CONCAT(major, minor, patch) ANKERL_UNORDERED_DENSE_VERSION_CONCAT1(major, minor, patch)
-#define ANKERL_UNORDERED_DENSE_NAMESPACE   \
-    ANKERL_UNORDERED_DENSE_VERSION_CONCAT( \
-        ANKERL_UNORDERED_DENSE_VERSION_MAJOR, ANKERL_UNORDERED_DENSE_VERSION_MINOR, ANKERL_UNORDERED_DENSE_VERSION_PATCH)
-
-#if defined(_MSVC_LANG)
-#    define ANKERL_UNORDERED_DENSE_CPP_VERSION _MSVC_LANG
-#else
-#    define ANKERL_UNORDERED_DENSE_CPP_VERSION __cplusplus
-#endif
 
 #if defined(__GNUC__)
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
@@ -73,12 +50,7 @@
 #    define ANKERL_UNORDERED_DENSE_EXPORT
 #endif
 
-#if ANKERL_UNORDERED_DENSE_CPP_VERSION < 201703L
-#    error ankerl::unordered_dense requires C++17 or higher
-#else
-
 #include "SFML/Base/Abort.hpp"
-#include "SFML/Base/Array.hpp"
 #include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/Builtin/Memset.hpp"
 #include "SFML/Base/DeclVal.hpp"
@@ -88,6 +60,7 @@
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PlacementNew.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Trait/Conditional.hpp"
@@ -102,7 +75,6 @@
 #include "SFML/Base/Trait/IsVoid.hpp"
 #include "SFML/Base/Trait/RemoveCVRef.hpp"
 #include "SFML/Base/Trait/UnderlyingType.hpp"
-#include "SFML/Base/Trait/VoidT.hpp"
 #include "SFML/Base/Swap.hpp"
 #include "SFML/Base/Vector.hpp"
 #include "SFML/Base/UIntPtrT.hpp"
@@ -114,17 +86,7 @@
 #        pragma intrinsic(_umul128)
 #    endif
 
-#    if defined(__GNUC__) || defined(__INTEL_COMPILER) || defined(__clang__)
-#        define ANKERL_UNORDERED_DENSE_LIKELY(x) __builtin_expect(x, 1)   // NOLINT(cppcoreguidelines-macro-usage)
-#        define ANKERL_UNORDERED_DENSE_UNLIKELY(x) __builtin_expect(x, 0) // NOLINT(cppcoreguidelines-macro-usage)
-#    else
-#        define ANKERL_UNORDERED_DENSE_LIKELY(x) (x)   // NOLINT(cppcoreguidelines-macro-usage)
-#        define ANKERL_UNORDERED_DENSE_UNLIKELY(x) (x) // NOLINT(cppcoreguidelines-macro-usage)
-#    endif
-
-
-
-namespace ankerl::unordered_dense::inline ANKERL_UNORDERED_DENSE_NAMESPACE {
+namespace ankerl::unordered_dense::inline v4_8_1 {
 
 namespace detail {
 
@@ -219,7 +181,7 @@ public:
 
     template <typename U, typename... Args>
     void construct(U* p, Args&&... args) {
-        ::new (static_cast<void*>(p)) U(SFML_BASE_FORWARD(args)...);
+        SFML_BASE_PLACEMENT_NEW(static_cast<void*>(p)) U(SFML_BASE_FORWARD(args)...);
     }
 
     template <typename U>
@@ -242,11 +204,6 @@ public:
     template <typename U>
     constexpr bool operator==(const my_allocator<U>& /*other*/) const noexcept {
         return true;
-    }
-
-    template <typename U>
-    constexpr bool operator!=(const my_allocator<U>& /*other*/) const noexcept {
-        return false;
     }
 };
 
@@ -272,11 +229,6 @@ public:
     template <typename U>
     constexpr bool operator==(const my_allocator<U>& /*other*/) const noexcept {
         return true; // All stateless allocators are equal
-    }
-
-    template <typename U>
-    constexpr bool operator!=(const my_allocator<U>& /*other*/) const noexcept {
-        return false;
     }
 };
 
@@ -329,44 +281,44 @@ inline void mum(sf::base::U64* a, sf::base::U64* b) {
 }
 
 // multiply and xor mix function, aka MUM
-[[nodiscard]] inline auto mix(sf::base::U64 a, sf::base::U64 b) -> sf::base::U64 {
+[[nodiscard,gnu::always_inline]] inline auto mix(sf::base::U64 a, sf::base::U64 b) -> sf::base::U64 {
     mum(&a, &b);
     return a ^ b;
 }
 
 // read functions. WARNING: we don't care about endianness, so results are different on big endian!
-[[nodiscard]] inline auto r8(const sf::base::U8* p) -> sf::base::U64 {
-    sf::base::U64 v{};
+[[nodiscard,gnu::always_inline]] inline auto r8(const sf::base::U8* p) -> sf::base::U64 {
+    sf::base::U64 v;  // NOLINT(cppcoreguidelines-init-variables)
     SFML_BASE_MEMCPY(&v, p, 8U);
     return v;
 }
 
-[[nodiscard]] inline auto r4(const sf::base::U8* p) -> sf::base::U64 {
-    sf::base::U32 v{};
+[[nodiscard,gnu::always_inline]] inline auto r4(const sf::base::U8* p) -> sf::base::U64 {
+    sf::base::U32 v; // NOLINT(cppcoreguidelines-init-variables)
     SFML_BASE_MEMCPY(&v, p, 4);
     return v;
 }
 
 // reads 1, 2, or 3 bytes
-[[nodiscard]] inline auto r3(const sf::base::U8* p, sf::base::SizeT k) -> sf::base::U64 {
+[[nodiscard,gnu::always_inline]] inline auto r3(const sf::base::U8* p, sf::base::SizeT k) -> sf::base::U64 {
     return (static_cast<sf::base::U64>(p[0]) << 16U) | (static_cast<sf::base::U64>(p[k >> 1U]) << 8U) | p[k - 1];
 }
 
 [[maybe_unused]] [[nodiscard]] inline auto hash(void const* key, sf::base::SizeT len) -> sf::base::U64 {
-    static constexpr auto secret = sf::base::Array{sf::base::U64(0xa0761d6478bd642f),
-                                              sf::base::U64(0xe7037ed1a0b428db),
-                                              sf::base::U64(0x8ebc6af09c88c6e3),
-                                              sf::base::U64(0x589965cc75374cc3)};
+    static constexpr sf::base::U64 secret[4] = {0xa0761d6478bd642f,
+                                              0xe7037ed1a0b428db,
+                                              0x8ebc6af09c88c6e3,
+                                              0x589965cc75374cc3};
 
     auto const* p = static_cast<sf::base::U8 const*>(key);
     sf::base::U64 seed = secret[0];
     sf::base::U64 a{};
     sf::base::U64 b{};
-    if (ANKERL_UNORDERED_DENSE_LIKELY(len <= 16)) {
-        if (ANKERL_UNORDERED_DENSE_LIKELY(len >= 4)) {
+    if (len <= 16) [[likely]] {
+        if (len >= 4) [[likely]] {
             a = (r4(p) << 32U) | r4(p + ((len >> 3U) << 2U));
             b = (r4(p + len - 4) << 32U) | r4(p + len - 4 - ((len >> 3U) << 2U));
-        } else if (ANKERL_UNORDERED_DENSE_LIKELY(len > 0)) {
+        } else if (len > 0) [[likely]] {
             a = r3(p, len);
             b = 0;
         } else {
@@ -375,7 +327,7 @@ inline void mum(sf::base::U64* a, sf::base::U64* b) {
         }
     } else {
         sf::base::SizeT i = len;
-        if (ANKERL_UNORDERED_DENSE_UNLIKELY(i > 48)) {
+        if (i > 48) [[unlikely]] {
             sf::base::U64 see1 = seed;
             sf::base::U64 see2 = seed;
             do {
@@ -384,10 +336,10 @@ inline void mum(sf::base::U64* a, sf::base::U64* b) {
                 see2 = mix(r8(p + 32) ^ secret[3], r8(p + 40) ^ see2);
                 p += 48;
                 i -= 48;
-            } while (ANKERL_UNORDERED_DENSE_LIKELY(i > 48));
+            } while (i > 48);
             seed ^= see1 ^ see2;
         }
-        while (ANKERL_UNORDERED_DENSE_UNLIKELY(i > 16)) {
+        while (i > 16) {
             seed = mix(r8(p) ^ secret[1], r8(p + 8) ^ seed);
             i -= 16;
             p += 16;
@@ -576,6 +528,72 @@ ANKERL_UNORDERED_DENSE_HASH_STATICCAST(unsigned long long);
 #        pragma GCC diagnostic pop
 #    endif
 
+// Floating-point hashers (stdlib-free).
+//
+// Strategy: bit-cast the value to an unsigned integer through `SFML_BASE_MEMCPY`
+// (avoids any `std::bit_cast`/`std::hash`/`<cmath>` dependency) and run it
+// through wyhash.
+//
+// Two subtleties:
+// - `+0.0` and `-0.0` compare equal but have different bit patterns. We
+//   normalize: any zero (positive or negative) maps to the all-zero bit
+//   pattern before hashing.
+// - NaN: distinct NaN bit patterns hash to distinct values. Since `NaN != NaN`
+//   anyway, this never causes equality lookups to misbehave -- NaN keys are
+//   simply unreachable in a hash map, matching `std::hash<float>` behavior.
+namespace detail::wyhash {
+
+template <typename Float>
+[[nodiscard]] inline auto hashFloat(Float v) noexcept -> sf::base::U64 {
+    if constexpr (sizeof(Float) == sizeof(sf::base::U32)) {
+        // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
+        sf::base::U32 bits;
+        SFML_BASE_MEMCPY(&bits, &v, sizeof(bits));
+        // Branchless "zero out bits iff value is +-0.0":
+        // `bits << 1` strips the sign; the result is 0 only for +0.0/-0.0
+        // (subnormals/Inf/NaN all have a non-zero exponent or mantissa).
+        // `-U32{cond}` is 0 (when cond is false) or 0xFFFFFFFF (when true).
+        bits &= -sf::base::U32{(bits << 1) != 0u};
+        return hash(static_cast<sf::base::U64>(bits));
+    } else if constexpr (sizeof(Float) == sizeof(sf::base::U64)) {
+        // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
+        sf::base::U64 bits;
+        SFML_BASE_MEMCPY(&bits, &v, sizeof(bits));
+        bits &= -sf::base::U64{(bits << 1) != 0u};
+        return hash(bits);
+    } else {
+        // Wider than 64 bits (e.g. x87 80-bit `long double` stored in 12/16
+        // bytes, or IEEE-754 binary128). The sign-bit position differs
+        // between x87 (bit 79) and IEEE quad (bit 127), so the branchless
+        // bit-twiddling above isn't portable here; fall back to the FP
+        // compare. This branch is rare in practice -- most code uses
+        // `float`/`double`.
+        if (v == Float{0})
+            return hash(sf::base::U64{0});
+
+        sf::base::U64             buf[2]{};
+        constexpr sf::base::SizeT n = sizeof(Float) < sizeof(buf) ? sizeof(Float) : sizeof(buf);
+        SFML_BASE_MEMCPY(buf, &v, n);
+        return hash(buf[0] ^ buf[1]);
+    }
+}
+
+} // namespace detail::wyhash
+
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#    define ANKERL_UNORDERED_DENSE_HASH_FLOAT(T)                          \
+        template <>                                                      \
+        struct hash<T> {                                                 \
+            using is_avalanching = void;                                 \
+            auto operator()(T const& obj) const noexcept -> sf::base::U64 { \
+                return detail::wyhash::hashFloat(obj);                   \
+            }                                                            \
+        }
+
+ANKERL_UNORDERED_DENSE_HASH_FLOAT(float);
+ANKERL_UNORDERED_DENSE_HASH_FLOAT(double);
+ANKERL_UNORDERED_DENSE_HASH_FLOAT(long double);
+
 // bucket_type //////////////////////////////////////////////////////////
 
 namespace bucket_type {
@@ -600,57 +618,24 @@ ANKERL_UNORDERED_DENSE_PACK(struct big {
 
 namespace detail {
 
-struct nonesuch {};
 struct default_container_t {};
-
-struct false_t { static constexpr bool value = false; };
-struct true_t  { static constexpr bool value = true;  };
-
-template <class Default, class AlwaysVoid, template <class...> class Op, class... Args>
-struct detector {
-    using value_t = false_t;
-    using type = Default;
-};
-
-template <class Default, template <class...> class Op, class... Args>
-struct detector<Default, sf::base::VoidT<Op<Args...>>, Op, Args...> {
-    using value_t = true_t;
-    using type = Op<Args...>;
-};
-
-template <template <class...> class Op, class... Args>
-using is_detected = typename detail::detector<detail::nonesuch, void, Op, Args...>::value_t;
-
-template <template <class...> class Op, class... Args>
-constexpr bool is_detected_v = is_detected<Op, Args...>::value;
-
-template <typename T>
-using detect_avalanching = typename T::is_avalanching;
-
-template <typename T>
-using detect_is_transparent = typename T::is_transparent;
-
-template <typename T>
-using detect_iterator = typename T::iterator;
-
-template <typename T>
-using detect_reserve = decltype(sf::base::declVal<T&>().reserve(sf::base::SizeT{}));
 
 // enable_if helpers
 
 template <typename Mapped>
 constexpr bool is_map_v = !sf::base::isVoid<Mapped>;
 
-// clang-format off
 template <typename Hash, typename KeyEqual>
-constexpr bool is_transparent_v = is_detected_v<detect_is_transparent, Hash> && is_detected_v<detect_is_transparent, KeyEqual>;
-// clang-format on
+constexpr bool is_transparent_v = requires {
+    typename Hash::is_transparent;
+    typename KeyEqual::is_transparent;
+};
 
 template <typename From, typename To1, typename To2>
 constexpr bool is_neither_convertible_v = !SFML_BASE_IS_CONVERTIBLE(From, To1) && !SFML_BASE_IS_CONVERTIBLE(From, To2);
 
 template <typename T>
-constexpr bool has_reserve = is_detected_v<detect_reserve, T>;
+constexpr bool has_reserve = requires(T& t) { t.reserve(sf::base::SizeT{}); };
 
 // base type for map has mapped_type
 template <class T>
@@ -678,19 +663,19 @@ class segmented_vector
     class iter_t;
 
 public:
-    using pointer = T*;
-    using const_pointer = const T*;
+    using pointer         = T*;
+    using const_pointer   = const T*;
     using difference_type = sf::base::PtrDiffT;
-    using value_type = T;
-    using size_type = sf::base::SizeT;
-    using reference = T&;
+    using value_type      = T;
+    using size_type       = sf::base::SizeT;
+    using reference       = T&;
     using const_reference = const T&;
-    using iterator = iter_t<false>;
-    using const_iterator = iter_t<true>;
+    using iterator        = iter_t<false>;
+    using const_iterator  = iter_t<true>;
 
 private:
     detail::vector<pointer> m_blocks{};
-    sf::base::SizeT m_size{};
+    sf::base::SizeT         m_size{};
 
     // Calculates the maximum number for x in  (s << x) <= max_val
     static constexpr auto num_bits_closest(sf::base::SizeT max_val, sf::base::SizeT s) -> sf::base::SizeT
@@ -703,10 +688,10 @@ private:
         return f;
     }
 
-    using self_t = segmented_vector<T, MaxSegmentSizeBytes>;
-    static constexpr auto num_bits = num_bits_closest(MaxSegmentSizeBytes, sizeof(T));
+    using self_t                                = segmented_vector<T, MaxSegmentSizeBytes>;
+    static constexpr auto num_bits              = num_bits_closest(MaxSegmentSizeBytes, sizeof(T));
     static constexpr auto num_elements_in_block = 1U << num_bits;
-    static constexpr auto mask = num_elements_in_block - 1U;
+    static constexpr auto mask                  = num_elements_in_block - 1U;
 
     /**
      * Iterator class doubles as const_iterator and iterator
@@ -715,7 +700,7 @@ private:
     class iter_t
     {
         using ptr_t = typename sf::base::Conditional<IsConst, const segmented_vector::const_pointer*, segmented_vector::pointer*>;
-        ptr_t m_data{};
+        ptr_t           m_data{};
         sf::base::SizeT m_idx{};
 
         template <bool B>
@@ -723,10 +708,11 @@ private:
 
     public:
         using difference_type = segmented_vector::difference_type;
-        using value_type = T;
-        using reference = typename sf::base::Conditional<IsConst, const value_type&, value_type&>;
+        // Use the outer alias rather than `T` directly: VS2022 hits C2061 with
+        // the latter inside a nested class template (upstream issue, MSVC bug).
+        using value_type = typename segmented_vector::value_type;
+        using reference  = typename sf::base::Conditional<IsConst, const value_type&, value_type&>;
         using pointer = typename sf::base::Conditional<IsConst, segmented_vector::const_pointer, segmented_vector::pointer>;
-        // using iterator_category = std::forward_iterator_tag;
 
         iter_t() noexcept = default;
 
@@ -747,9 +733,11 @@ private:
             requires(IsConst && !OtherIsConst)
         {
             m_data = other.m_data;
-            m_idx = other.m_idx;
+            m_idx  = other.m_idx;
             return *this;
         }
+
+        // Random-access iterator ops.
 
         constexpr auto operator++() noexcept -> iter_t&
         {
@@ -764,13 +752,43 @@ private:
             return prev;
         }
 
-        constexpr auto operator+(difference_type diff) noexcept -> iter_t
+        constexpr auto operator--() noexcept -> iter_t&
+        {
+            --m_idx;
+            return *this;
+        }
+
+        constexpr auto operator--(int) noexcept -> iter_t
+        {
+            iter_t prev(*this);
+            this->operator--();
+            return prev;
+        }
+
+        [[nodiscard]] constexpr auto operator+(difference_type diff) const noexcept -> iter_t
         {
             return {m_data, static_cast<sf::base::SizeT>(static_cast<difference_type>(m_idx) + diff)};
         }
 
+        constexpr auto operator+=(difference_type diff) noexcept -> iter_t&
+        {
+            m_idx = static_cast<sf::base::SizeT>(static_cast<difference_type>(m_idx) + diff);
+            return *this;
+        }
+
+        [[nodiscard]] constexpr auto operator-(difference_type diff) const noexcept -> iter_t
+        {
+            return {m_data, static_cast<sf::base::SizeT>(static_cast<difference_type>(m_idx) - diff)};
+        }
+
+        constexpr auto operator-=(difference_type diff) noexcept -> iter_t&
+        {
+            m_idx = static_cast<sf::base::SizeT>(static_cast<difference_type>(m_idx) - diff);
+            return *this;
+        }
+
         template <bool OtherIsConst>
-        constexpr auto operator-(const iter_t<OtherIsConst>& other) noexcept -> difference_type
+        [[nodiscard]] constexpr auto operator-(const iter_t<OtherIsConst>& other) const noexcept -> difference_type
         {
             return static_cast<difference_type>(m_idx) - static_cast<difference_type>(other.m_idx);
         }
@@ -786,24 +804,42 @@ private:
         }
 
         template <bool O>
-        constexpr auto operator==(const iter_t<O>& o) const noexcept -> bool
+        [[nodiscard]] constexpr auto operator==(const iter_t<O>& o) const noexcept -> bool
         {
             return m_idx == o.m_idx;
         }
 
         template <bool O>
-        constexpr auto operator!=(const iter_t<O>& o) const noexcept -> bool
+        [[nodiscard]] constexpr auto operator<(const iter_t<O>& o) const noexcept -> bool
         {
-            return !(*this == o);
+            return m_idx < o.m_idx;
+        }
+
+        template <bool O>
+        [[nodiscard]] constexpr auto operator>(const iter_t<O>& o) const noexcept -> bool
+        {
+            return o < *this;
+        }
+
+        template <bool O>
+        [[nodiscard]] constexpr auto operator<=(const iter_t<O>& o) const noexcept -> bool
+        {
+            return !(o < *this);
+        }
+
+        template <bool O>
+        [[nodiscard]] constexpr auto operator>=(const iter_t<O>& o) const noexcept -> bool
+        {
+            return !(*this < o);
         }
     };
 
     // slow path: need to allocate a new segment every once in a while
     void increase_capacity()
     {
-        auto ba = detail::my_allocator<pointer>{};
+        auto    ba    = detail::my_allocator<T>{};
         pointer block = ba.allocate(num_elements_in_block);
-        m_blocks.push_back(block);
+        m_blocks.pushBack(block);
     }
 
     // Moves everything from other
@@ -828,7 +864,7 @@ private:
 
     void dealloc()
     {
-        auto ba = detail::my_allocator<pointer>{};
+        auto ba = detail::my_allocator<T>{};
         for (auto ptr : m_blocks)
         {
             ba.deallocate(ptr, num_elements_in_block);
@@ -838,6 +874,18 @@ private:
     [[nodiscard]] static constexpr auto calc_num_blocks_for_capacity(sf::base::SizeT capacity)
     {
         return (capacity + num_elements_in_block - 1U) / num_elements_in_block;
+    }
+
+    void resize_shrink(sf::base::SizeT new_size)
+    {
+        if constexpr (!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(T))
+        {
+            for (sf::base::SizeT i = new_size; i < m_size; ++i)
+            {
+                operator[](i).~T();
+            }
+        }
+        m_size = new_size;
     }
 
 public:
@@ -867,7 +915,7 @@ public:
         dealloc();
 
         m_blocks = SFML_BASE_MOVE(other.m_blocks);
-        m_size = sf::base::exchange(other.m_size, {});
+        m_size   = sf::base::exchange(other.m_size, {});
 
         return *this;
     }
@@ -954,6 +1002,40 @@ public:
         }
     }
 
+    void resize(sf::base::SizeT count)
+    {
+        if (count < m_size)
+        {
+            resize_shrink(count);
+        }
+        else if (count > m_size)
+        {
+            const sf::base::SizeT newElems = count - m_size;
+            reserve(count);
+            for (sf::base::SizeT i = 0; i < newElems; ++i)
+            {
+                emplace_back();
+            }
+        }
+    }
+
+    void resize(sf::base::SizeT count, const value_type& value)
+    {
+        if (count < m_size)
+        {
+            resize_shrink(count);
+        }
+        else if (count > m_size)
+        {
+            const sf::base::SizeT newElems = count - m_size;
+            reserve(count);
+            for (sf::base::SizeT i = 0; i < newElems; ++i)
+            {
+                emplace_back(value);
+            }
+        }
+    }
+
     template <class... Args>
     auto emplace_back(Args&&... args) -> reference
     {
@@ -962,7 +1044,7 @@ public:
             increase_capacity();
         }
         auto* ptr = static_cast<void*>(&operator[](m_size));
-        auto& ref = *new (ptr) T(SFML_BASE_FORWARD(args)...);
+        auto& ref = *SFML_BASE_PLACEMENT_NEW(ptr) T(SFML_BASE_FORWARD(args)...);
         ++m_size;
         return ref;
     }
@@ -988,7 +1070,7 @@ public:
 
     void shrink_to_fit()
     {
-        auto ba = detail::my_allocator<pointer>{};
+        auto ba                  = detail::my_allocator<T>{};
         auto num_blocks_required = calc_num_blocks_for_capacity(m_size);
         while (m_blocks.size() > num_blocks_required)
         {
@@ -1012,7 +1094,7 @@ template <class Key,
           bool IsSegmented>
 class table : public sf::base::Conditional<is_map_v<T>, base_table_type_map<T>, base_table_type_set>
 {
-    using underlying_value_type = typename sf::base::Conditional<is_map_v<T>, detail::pair<Key, T>, Key>;
+    using underlying_value_type     = typename sf::base::Conditional<is_map_v<T>, detail::pair<Key, T>, Key>;
     using underlying_container_type = sf::base::
         Conditional<IsSegmented, segmented_vector<underlying_value_type>, detail::vector<underlying_value_type>>;
 
@@ -1026,45 +1108,46 @@ private:
                                                         default_bucket_container_type,
                                                         BucketContainer>;
 
-    static constexpr sf::base::U8 initial_shifts = 64 - 2; // 2^(64-m_shift) number of buckets
-    static constexpr float default_max_load_factor = 0.8F;
+    static constexpr sf::base::U8 initial_shifts          = 64 - 2; // 2^(64-m_shift) number of buckets
+    static constexpr float        default_max_load_factor = 0.8F;
 
 public:
-    using key_type = Key;
-    using value_type = typename value_container_type::value_type;
-    using size_type = typename value_container_type::size_type;
+    using key_type        = Key;
+    using value_type      = typename value_container_type::value_type;
+    using size_type       = typename value_container_type::size_type;
     using difference_type = typename value_container_type::difference_type;
-    using hasher = Hash;
-    using key_equal = KeyEqual;
-    using reference = typename value_container_type::reference;
+    using hasher          = Hash;
+    using key_equal       = KeyEqual;
+    using reference       = typename value_container_type::reference;
     using const_reference = typename value_container_type::const_reference;
-    using pointer = typename value_container_type::pointer;
-    using const_pointer = typename value_container_type::const_pointer;
-    using const_iterator = typename value_container_type::const_iterator;
-    using iterator = sf::base::Conditional<is_map_v<T>, typename value_container_type::iterator, const_iterator>;
-    using bucket_type = Bucket;
+    using pointer         = typename value_container_type::pointer;
+    using const_pointer   = typename value_container_type::const_pointer;
+    using const_iterator  = typename value_container_type::const_iterator;
+    using iterator        = sf::base::Conditional<is_map_v<T>, typename value_container_type::iterator, const_iterator>;
+    using bucket_type     = Bucket;
 
 private:
-    using value_idx_type = decltype(Bucket::m_value_idx);
+    using value_idx_type            = decltype(Bucket::m_value_idx);
     using dist_and_fingerprint_type = decltype(Bucket::m_dist_and_fingerprint);
 
     static_assert(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(Bucket),
                   "assert there's no need to call destructor / std::destroy");
     static_assert(SFML_BASE_IS_TRIVIALLY_COPYABLE(Bucket), "assert we can just memset / memcpy");
 
-    value_container_type m_values{}; // Contains all the key-value pairs in one densely stored container. No holes.
+    value_container_type  m_values{}; // Contains all the key-value pairs in one densely stored container. No holes.
     bucket_container_type m_buckets{};
-    sf::base::SizeT m_max_bucket_capacity = 0;
-    float m_max_load_factor = default_max_load_factor;
-    Hash m_hash{};
-    KeyEqual m_equal{};
-    sf::base::U8 m_shifts = initial_shifts;
+    sf::base::SizeT       m_max_bucket_capacity = 0;
+    sf::base::SizeT       m_bucket_idx_mask     = 0; // bucket_count - 1; bucket_count is always a power of 2
+    float                 m_max_load_factor     = default_max_load_factor;
+    Hash                  m_hash{};
+    KeyEqual              m_equal{};
+    sf::base::U8          m_shifts = initial_shifts;
 
+    // Branchless wraparound using `bucket_count - 1` as a mask
+    // (bucket counts are always powers of two -- see `calc_num_buckets`).
     [[nodiscard]] auto next(value_idx_type bucket_idx) const -> value_idx_type
     {
-        return ANKERL_UNORDERED_DENSE_UNLIKELY(bucket_idx + 1U == bucket_count())
-                   ? 0
-                   : static_cast<value_idx_type>(bucket_idx + 1U);
+        return static_cast<value_idx_type>((bucket_idx + 1U) & m_bucket_idx_mask);
     }
 
     // Helper to access bucket through pointer types
@@ -1091,9 +1174,9 @@ private:
 
     // The goal of mixed_hash is to always produce a high quality 64bit hash.
     template <typename K>
-    [[nodiscard]] constexpr auto mixed_hash(const K& key) const -> sf::base::U64
+    [[nodiscard, gnu::pure]] constexpr auto mixed_hash(const K& key) const -> sf::base::U64
     {
-        if constexpr (is_detected_v<detect_avalanching, Hash>)
+        if constexpr (requires { typename Hash::is_avalanching; })
         {
             // we know that the hash is good because is_avalanching.
             if constexpr (sizeof(decltype(m_hash(key))) < sizeof(sf::base::U64))
@@ -1139,14 +1222,14 @@ private:
     template <typename K>
     [[nodiscard]] auto next_while_less(const K& key) const -> Bucket
     {
-        auto hash = mixed_hash(key);
+        auto hash                 = mixed_hash(key);
         auto dist_and_fingerprint = dist_and_fingerprint_from_hash(hash);
-        auto bucket_idx = bucket_idx_from_hash(hash);
+        auto bucket_idx           = bucket_idx_from_hash(hash);
 
         while (dist_and_fingerprint < at(m_buckets, bucket_idx).m_dist_and_fingerprint)
         {
             dist_and_fingerprint = dist_inc(dist_and_fingerprint);
-            bucket_idx = next(bucket_idx);
+            bucket_idx           = next(bucket_idx);
         }
         return {dist_and_fingerprint, bucket_idx};
     }
@@ -1155,11 +1238,26 @@ private:
     {
         while (0 != at(m_buckets, place).m_dist_and_fingerprint)
         {
-            bucket = sf::base::exchange(at(m_buckets, place), bucket);
+            bucket                        = sf::base::exchange(at(m_buckets, place), bucket);
             bucket.m_dist_and_fingerprint = dist_inc(bucket.m_dist_and_fingerprint);
-            place = next(place);
+            place                         = next(place);
         }
         at(m_buckets, place) = bucket;
+    }
+
+    // Robin-Hood backward-shift starting at `bucket_idx`. After this call,
+    // `bucket_idx` is either empty or contains an element with its preferred
+    // displacement. Used by both `do_erase` and `replace_key`.
+    void erase_and_shift_down(value_idx_type bucket_idx)
+    {
+        auto next_bucket_idx = next(bucket_idx);
+        while (at(m_buckets, next_bucket_idx).m_dist_and_fingerprint >= Bucket::dist_inc * 2)
+        {
+            auto& next_bucket         = at(m_buckets, next_bucket_idx);
+            at(m_buckets, bucket_idx) = {dist_dec(next_bucket.m_dist_and_fingerprint), next_bucket.m_value_idx};
+            bucket_idx                = sf::base::exchange(next_bucket_idx, next(next_bucket_idx));
+        }
+        at(m_buckets, bucket_idx) = {};
     }
 
     [[nodiscard]] static constexpr auto calc_num_buckets(sf::base::U8 shifts) -> sf::base::SizeT
@@ -1219,6 +1317,7 @@ private:
         m_buckets.clear();
         m_buckets.shrinkToFit();
         m_max_bucket_capacity = 0;
+        m_bucket_idx_mask     = 0;
     }
 
     void allocate_buckets_from_shift()
@@ -1248,6 +1347,7 @@ private:
         {
             m_max_bucket_capacity = static_cast<value_idx_type>(static_cast<float>(num_buckets) * max_load_factor());
         }
+        m_bucket_idx_mask = num_buckets - 1U; // num_buckets is always a power of two
     }
 
     void clear_buckets()
@@ -1271,7 +1371,7 @@ private:
         for (value_idx_type value_idx = 0, end_idx = static_cast<value_idx_type>(m_values.size()); value_idx < end_idx;
              ++value_idx)
         {
-            const auto& key = get_key(m_values[value_idx]);
+            const auto& key                     = get_key(m_values[value_idx]);
             auto [dist_and_fingerprint, bucket] = next_while_less(key);
 
             // we know for certain that key has not yet been inserted, so no need to check it.
@@ -1300,16 +1400,7 @@ private:
     void do_erase(value_idx_type bucket_idx, Op handle_erased_value)
     {
         const auto value_idx_to_remove = at(m_buckets, bucket_idx).m_value_idx;
-
-        // shift down until either empty or an element with correct spot is found
-        auto next_bucket_idx = next(bucket_idx);
-        while (at(m_buckets, next_bucket_idx).m_dist_and_fingerprint >= Bucket::dist_inc * 2)
-        {
-            at(m_buckets, bucket_idx) = {dist_dec(at(m_buckets, next_bucket_idx).m_dist_and_fingerprint),
-                                         at(m_buckets, next_bucket_idx).m_value_idx};
-            bucket_idx = sf::base::exchange(next_bucket_idx, next(next_bucket_idx));
-        }
-        at(m_buckets, bucket_idx) = {};
+        erase_and_shift_down(bucket_idx);
         handle_erased_value(SFML_BASE_MOVE(m_values[value_idx_to_remove]));
 
         // update m_values
@@ -1317,11 +1408,10 @@ private:
         {
             // no luck, we'll have to replace the value with the last one and update the index accordingly
             auto& val = m_values[value_idx_to_remove];
-            val = SFML_BASE_MOVE(m_values.back());
+            val       = SFML_BASE_MOVE(m_values.back());
 
             // update the values_idx of the moved entry. No need to play the info game, just look until we find the values_idx
-            auto mh = mixed_hash(get_key(val));
-            bucket_idx = bucket_idx_from_hash(mh);
+            bucket_idx = bucket_idx_from_hash(mixed_hash(get_key(val)));
 
             const auto values_idx_back = static_cast<value_idx_type>(m_values.size() - 1);
             while (values_idx_back != at(m_buckets, bucket_idx).m_value_idx)
@@ -1347,7 +1437,7 @@ private:
                !m_equal(key, get_key(m_values[at(m_buckets, bucket_idx).m_value_idx])))
         {
             dist_and_fingerprint = dist_inc(dist_and_fingerprint);
-            bucket_idx = next(bucket_idx);
+            bucket_idx           = next(bucket_idx);
         }
 
         if (dist_and_fingerprint != at(m_buckets, bucket_idx).m_dist_and_fingerprint)
@@ -1377,7 +1467,7 @@ private:
         m_values.emplaceBack(SFML_BASE_FORWARD(args)...);
 
         auto value_idx = static_cast<value_idx_type>(m_values.size() - 1);
-        if (ANKERL_UNORDERED_DENSE_UNLIKELY(is_full()))
+        if (is_full()) [[unlikely]]
         {
             increase_size();
         }
@@ -1393,9 +1483,9 @@ private:
     template <typename K, typename... Args>
     auto do_try_emplace(K&& key, Args&&... args) -> detail::pair<iterator, bool>
     {
-        auto hash = mixed_hash(key);
+        auto hash                 = mixed_hash(key);
         auto dist_and_fingerprint = dist_and_fingerprint_from_hash(hash);
-        auto bucket_idx = bucket_idx_from_hash(hash);
+        auto bucket_idx           = bucket_idx_from_hash(hash);
 
         while (true)
         {
@@ -1416,22 +1506,22 @@ private:
                                         [&] { return T(SFML_BASE_FORWARD(args)...); });
             }
             dist_and_fingerprint = dist_inc(dist_and_fingerprint);
-            bucket_idx = next(bucket_idx);
+            bucket_idx           = next(bucket_idx);
         }
     }
 
     template <typename K>
     auto do_find(const K& key) -> iterator
     {
-        if (ANKERL_UNORDERED_DENSE_UNLIKELY(empty()))
+        if (empty()) [[unlikely]]
         {
             return end();
         }
 
-        auto mh = mixed_hash(key);
-        auto dist_and_fingerprint = dist_and_fingerprint_from_hash(mh);
-        auto bucket_idx = bucket_idx_from_hash(mh);
-        auto* bucket = &at(m_buckets, bucket_idx);
+        auto  mh                   = mixed_hash(key);
+        auto  dist_and_fingerprint = dist_and_fingerprint_from_hash(mh);
+        auto  bucket_idx           = bucket_idx_from_hash(mh);
+        auto* bucket               = &at(m_buckets, bucket_idx);
 
         // unrolled loop. *Always* check a few directly, then enter the loop. This is faster.
         if (dist_and_fingerprint == bucket->m_dist_and_fingerprint && m_equal(key, get_key(m_values[bucket->m_value_idx])))
@@ -1439,16 +1529,16 @@ private:
             return begin() + static_cast<difference_type>(bucket->m_value_idx);
         }
         dist_and_fingerprint = dist_inc(dist_and_fingerprint);
-        bucket_idx = next(bucket_idx);
-        bucket = &at(m_buckets, bucket_idx);
+        bucket_idx           = next(bucket_idx);
+        bucket               = &at(m_buckets, bucket_idx);
 
         if (dist_and_fingerprint == bucket->m_dist_and_fingerprint && m_equal(key, get_key(m_values[bucket->m_value_idx])))
         {
             return begin() + static_cast<difference_type>(bucket->m_value_idx);
         }
         dist_and_fingerprint = dist_inc(dist_and_fingerprint);
-        bucket_idx = next(bucket_idx);
-        bucket = &at(m_buckets, bucket_idx);
+        bucket_idx           = next(bucket_idx);
+        bucket               = &at(m_buckets, bucket_idx);
 
         while (true)
         {
@@ -1464,8 +1554,8 @@ private:
                 return end();
             }
             dist_and_fingerprint = dist_inc(dist_and_fingerprint);
-            bucket_idx = next(bucket_idx);
-            bucket = &at(m_buckets, bucket_idx);
+            bucket_idx           = next(bucket_idx);
+            bucket               = &at(m_buckets, bucket_idx);
         }
     }
 
@@ -1479,7 +1569,7 @@ private:
     auto do_at(const K& key) -> Q&
         requires(is_map_v<Q>)
     {
-        if (auto it = find(key); ANKERL_UNORDERED_DENSE_LIKELY(end() != it))
+        if (auto it = find(key); end() != it) [[likely]]
         {
             return it->second;
         }
@@ -1516,23 +1606,23 @@ public:
     }
 
     template <class InputIt>
-    table(InputIt first,
-          InputIt last,
-          size_type bucket_count = 0,
-          const Hash& hash = Hash(),
-          const KeyEqual& equal = KeyEqual()) :
+    table(InputIt         first,
+          InputIt         last,
+          size_type       bucket_count = 0,
+          const Hash&     hash         = Hash(),
+          const KeyEqual& equal        = KeyEqual()) :
         table(bucket_count, hash, equal)
     {
         insert(first, last);
     }
 
-    table(const table& other) = default;
+    table(const table& other)     = default;
     table(table&& other) noexcept = default;
 
     table(std::initializer_list<value_type> ilist,
-          sf::base::SizeT bucket_count = 0,
-          const Hash& hash = Hash(),
-          const KeyEqual& equal = KeyEqual()) :
+          sf::base::SizeT                   bucket_count = 0,
+          const Hash&                       hash         = Hash(),
+          const KeyEqual&                   equal        = KeyEqual()) :
         table(bucket_count, hash, equal)
     {
         insert(ilist);
@@ -1554,11 +1644,11 @@ public:
     {
         if (&other != this)
         {
-            m_values = other.m_values;
+            m_values          = other.m_values;
             m_max_load_factor = other.m_max_load_factor;
-            m_hash = other.m_hash;
-            m_equal = other.m_equal;
-            m_shifts = initial_shifts;
+            m_hash            = other.m_hash;
+            m_equal           = other.m_equal;
+            m_shifts          = initial_shifts;
             copy_buckets(other);
         }
         return *this;
@@ -1570,13 +1660,14 @@ public:
     {
         if (&other != this)
         {
-            m_values = SFML_BASE_MOVE(other.m_values);
-            m_buckets = SFML_BASE_MOVE(other.m_buckets);
+            m_values              = SFML_BASE_MOVE(other.m_values);
+            m_buckets             = SFML_BASE_MOVE(other.m_buckets);
             m_max_bucket_capacity = sf::base::exchange(other.m_max_bucket_capacity, sf::base::SizeT{0});
-            m_shifts = sf::base::exchange(other.m_shifts, initial_shifts);
-            m_max_load_factor = sf::base::exchange(other.m_max_load_factor, default_max_load_factor);
-            m_hash = sf::base::exchange(other.m_hash, {});
-            m_equal = sf::base::exchange(other.m_equal, {});
+            m_bucket_idx_mask     = sf::base::exchange(other.m_bucket_idx_mask, sf::base::SizeT{0});
+            m_shifts              = sf::base::exchange(other.m_shifts, initial_shifts);
+            m_max_load_factor     = sf::base::exchange(other.m_max_load_factor, default_max_load_factor);
+            m_hash                = sf::base::exchange(other.m_hash, {});
+            m_equal               = sf::base::exchange(other.m_equal, {});
 
             // map "other" is now already usable, it's empty.
         }
@@ -1714,7 +1805,7 @@ public:
     // Discards the internally held container and replaces it with the one passed. Erases non-unique elements.
     auto replace(value_container_type&& container)
     {
-        if (ANKERL_UNORDERED_DENSE_UNLIKELY(container.size() > max_size()))
+        if (container.size() > max_size()) [[unlikely]]
         {
             sf::base::abort(); // on_error_too_many_elements();
         }
@@ -1737,9 +1828,9 @@ public:
         {
             const auto& key = get_key(m_values[value_idx]);
 
-            auto hash = mixed_hash(key);
+            auto hash                 = mixed_hash(key);
             auto dist_and_fingerprint = dist_and_fingerprint_from_hash(hash);
-            auto bucket_idx = bucket_idx_from_hash(hash);
+            auto bucket_idx           = bucket_idx_from_hash(hash);
 
             bool key_found = false;
             while (true)
@@ -1756,7 +1847,7 @@ public:
                     break;
                 }
                 dist_and_fingerprint = dist_inc(dist_and_fingerprint);
-                bucket_idx = next(bucket_idx);
+                bucket_idx           = next(bucket_idx);
             }
 
             if (key_found)
@@ -1822,9 +1913,9 @@ public:
     auto emplace(K&& key) -> detail::pair<iterator, bool>
         requires(!is_map_v<Q> && is_transparent_v<H, KE>)
     {
-        auto hash = mixed_hash(key);
+        auto hash                 = mixed_hash(key);
         auto dist_and_fingerprint = dist_and_fingerprint_from_hash(hash);
-        auto bucket_idx = bucket_idx_from_hash(hash);
+        auto bucket_idx           = bucket_idx_from_hash(hash);
 
         while (dist_and_fingerprint <= at(m_buckets, bucket_idx).m_dist_and_fingerprint)
         {
@@ -1835,7 +1926,7 @@ public:
                 return {begin() + static_cast<difference_type>(at(m_buckets, bucket_idx).m_value_idx), false};
             }
             dist_and_fingerprint = dist_inc(dist_and_fingerprint);
-            bucket_idx = next(bucket_idx);
+            bucket_idx           = next(bucket_idx);
         }
 
         // value is new, insert element first, so when exception happens we are in a valid state
@@ -1847,10 +1938,10 @@ public:
     {
         // we have to instantiate the value_type to be able to access the key.
         // 1. emplace_back the object so it is constructed. 2. If the key is already there, pop it later in the loop.
-        auto& key = get_key(m_values.emplaceBack(SFML_BASE_FORWARD(args)...));
-        auto hash = mixed_hash(key);
-        auto dist_and_fingerprint = dist_and_fingerprint_from_hash(hash);
-        auto bucket_idx = bucket_idx_from_hash(hash);
+        auto& key                  = get_key(m_values.emplaceBack(SFML_BASE_FORWARD(args)...));
+        auto  hash                 = mixed_hash(key);
+        auto  dist_and_fingerprint = dist_and_fingerprint_from_hash(hash);
+        auto  bucket_idx           = bucket_idx_from_hash(hash);
 
         while (dist_and_fingerprint <= at(m_buckets, bucket_idx).m_dist_and_fingerprint)
         {
@@ -1861,12 +1952,12 @@ public:
                 return {begin() + static_cast<difference_type>(at(m_buckets, bucket_idx).m_value_idx), false};
             }
             dist_and_fingerprint = dist_inc(dist_and_fingerprint);
-            bucket_idx = next(bucket_idx);
+            bucket_idx           = next(bucket_idx);
         }
 
         // value is new, place the bucket and shift up until we find an empty spot
         auto value_idx = static_cast<value_idx_type>(m_values.size() - 1);
-        if (ANKERL_UNORDERED_DENSE_UNLIKELY(is_full()))
+        if (is_full()) [[unlikely]]
         {
             // increase_size just rehashes all the data we have in m_values
             increase_size();
@@ -1927,9 +2018,70 @@ public:
         return do_try_emplace(SFML_BASE_FORWARD(key), SFML_BASE_FORWARD(args)...).first;
     }
 
+    // Replaces the key at `it` with `new_key` without invalidating iterators
+    // or references. Returns `{iterator, false}` pointing at the existing
+    // `new_key` (and makes no change) if `new_key` is already present in the
+    // table; otherwise `{it, true}`.
+    //
+    // Cheaper than erase+insert because the value never moves: only the
+    // key is replaced in place and the buckets are rewired.
+    template <typename K>
+    auto replace_key(iterator it, K&& new_key) -> detail::pair<iterator, bool>
+    {
+        const auto new_key_hash = mixed_hash(new_key);
+
+        // First, see if `new_key` already exists in the table.
+        auto dist_and_fingerprint = dist_and_fingerprint_from_hash(new_key_hash);
+        auto bucket_idx           = bucket_idx_from_hash(new_key_hash);
+        while (dist_and_fingerprint <= at(m_buckets, bucket_idx).m_dist_and_fingerprint)
+        {
+            const auto& bucket = at(m_buckets, bucket_idx);
+            if (dist_and_fingerprint == bucket.m_dist_and_fingerprint &&
+                m_equal(new_key, get_key(m_values[bucket.m_value_idx])))
+            {
+                return {begin() + static_cast<difference_type>(bucket.m_value_idx), false};
+            }
+            dist_and_fingerprint = dist_inc(dist_and_fingerprint);
+            bucket_idx           = next(bucket_idx);
+        }
+
+        // `const_cast` because set iterators are always `const`: we can't
+        // add another `get_key` overload returning a mutable reference
+        // without complicating the value-type discrimination.
+        auto&      target_key         = const_cast<key_type&>(get_key(*it));
+        const auto old_key_bucket_idx = bucket_idx_from_hash(mixed_hash(target_key));
+
+        // Replace the key *before* touching the buckets. If the assignment
+        // throws, the table state is still consistent (the buckets still
+        // index the unchanged value at the same position).
+        target_key = SFML_BASE_FORWARD(new_key);
+
+        const auto value_idx = static_cast<value_idx_type>(it - begin());
+
+        // Find the bucket owning our `value_idx`. Guaranteed to exist.
+        bucket_idx = old_key_bucket_idx;
+        while (value_idx != at(m_buckets, bucket_idx).m_value_idx)
+        {
+            bucket_idx = next(bucket_idx);
+        }
+        erase_and_shift_down(bucket_idx);
+
+        // Place the new bucket at the natural position for `new_key_hash`.
+        dist_and_fingerprint = dist_and_fingerprint_from_hash(new_key_hash);
+        bucket_idx           = bucket_idx_from_hash(new_key_hash);
+        while (dist_and_fingerprint < at(m_buckets, bucket_idx).m_dist_and_fingerprint)
+        {
+            dist_and_fingerprint = dist_inc(dist_and_fingerprint);
+            bucket_idx           = next(bucket_idx);
+        }
+        place_and_shift_up({dist_and_fingerprint, value_idx}, bucket_idx);
+
+        return {it, true};
+    }
+
     auto erase(iterator it) -> iterator
     {
-        auto hash = mixed_hash(get_key(*it));
+        auto hash       = mixed_hash(get_key(*it));
         auto bucket_idx = bucket_idx_from_hash(hash);
 
         const auto value_idx_to_remove = static_cast<value_idx_type>(it - cbegin());
@@ -1944,7 +2096,7 @@ public:
 
     auto extract(iterator it) -> value_type
     {
-        auto hash = mixed_hash(get_key(*it));
+        auto hash       = mixed_hash(get_key(*it));
         auto bucket_idx = bucket_idx_from_hash(hash);
 
         const auto value_idx_to_remove = static_cast<value_idx_type>(it - cbegin());
@@ -1974,14 +2126,14 @@ public:
 
     auto erase(const_iterator first, const_iterator last) -> iterator
     {
-        const auto idx_first = first - cbegin();
-        const auto idx_last = last - cbegin();
+        const auto idx_first     = first - cbegin();
+        const auto idx_last      = last - cbegin();
         const auto first_to_last = detail::my_distance(first, last);
-        const auto last_to_end = detail::my_distance(last, cend());
+        const auto last_to_end   = detail::my_distance(last, cend());
 
         // remove elements from left to right which moves elements from the end back
         const auto mid = idx_first + (sf::base::min)(first_to_last, last_to_end);
-        auto idx = idx_first;
+        auto       idx = idx_first;
         while (idx != mid)
         {
             erase(begin() + idx);
@@ -2034,6 +2186,7 @@ public:
         sf::base::genericSwap(m_values, other.m_values);
         sf::base::genericSwap(m_buckets, other.m_buckets);
         sf::base::genericSwap(m_max_bucket_capacity, other.m_max_bucket_capacity);
+        sf::base::genericSwap(m_bucket_idx_mask, other.m_bucket_idx_mask);
         sf::base::genericSwap(m_max_load_factor, other.m_max_load_factor);
         sf::base::genericSwap(m_hash, other.m_hash);
         sf::base::genericSwap(m_equal, other.m_equal);
@@ -2207,7 +2360,7 @@ public:
 
     void rehash(sf::base::SizeT count)
     {
-        count = (sf::base::min)(count, max_size());
+        count       = (sf::base::min)(count, max_size());
         auto shifts = calc_shifts_for_size((sf::base::max)(count, size()));
         if (shifts != m_shifts)
         {
@@ -2289,46 +2442,41 @@ public:
         }
         return true;
     }
-
-    friend auto operator!=(const table& a, const table& b) -> bool
-    {
-        return !(a == b);
-    }
 };
 
 } // namespace detail
 
 ANKERL_UNORDERED_DENSE_EXPORT template <class Key,
                                         class T,
-                                        class Hash = hash<Key>,
-                                        class KeyEqual = detail::EqualTo<Key>,
-                                        class Bucket = bucket_type::standard,
+                                        class Hash            = hash<Key>,
+                                        class KeyEqual        = detail::EqualTo<Key>,
+                                        class Bucket          = bucket_type::standard,
                                         class BucketContainer = detail::default_container_t>
 using map = detail::table<Key, T, Hash, KeyEqual, Bucket, BucketContainer, false>;
 
 ANKERL_UNORDERED_DENSE_EXPORT template <class Key,
                                         class T,
-                                        class Hash = hash<Key>,
-                                        class KeyEqual = detail::EqualTo<Key>,
-                                        class Bucket = bucket_type::standard,
+                                        class Hash            = hash<Key>,
+                                        class KeyEqual        = detail::EqualTo<Key>,
+                                        class Bucket          = bucket_type::standard,
                                         class BucketContainer = detail::default_container_t>
 using segmented_map = detail::table<Key, T, Hash, KeyEqual, Bucket, BucketContainer, true>;
 
 ANKERL_UNORDERED_DENSE_EXPORT template <class Key,
-                                        class Hash = hash<Key>,
-                                        class KeyEqual = detail::EqualTo<Key>,
-                                        class Bucket = bucket_type::standard,
+                                        class Hash            = hash<Key>,
+                                        class KeyEqual        = detail::EqualTo<Key>,
+                                        class Bucket          = bucket_type::standard,
                                         class BucketContainer = detail::default_container_t>
 using set = detail::table<Key, void, Hash, KeyEqual, Bucket, BucketContainer, false>;
 
 ANKERL_UNORDERED_DENSE_EXPORT template <class Key,
-                                        class Hash = hash<Key>,
-                                        class KeyEqual = detail::EqualTo<Key>,
-                                        class Bucket = bucket_type::standard,
+                                        class Hash            = hash<Key>,
+                                        class KeyEqual        = detail::EqualTo<Key>,
+                                        class Bucket          = bucket_type::standard,
                                         class BucketContainer = detail::default_container_t>
 using segmented_set = detail::table<Key, void, Hash, KeyEqual, Bucket, BucketContainer, true>;
 
-} // namespace ankerl::unordered_dense::inline ANKERL_UNORDERED_DENSE_NAMESPACE
+} // namespace ankerl::unordered_dense::inline v4_8_1
 
 
 // std extensions /////////////////////////////////////////////////////////////
@@ -2345,7 +2493,7 @@ auto erase_if(ankerl::unordered_dense::detail::table<Key, T, Hash, KeyEqual, Buc
 
     // going back to front because erase() invalidates the end iterator
     const auto old_size = map.size();
-    auto idx = old_size;
+    auto       idx      = old_size;
     while (idx)
     {
         --idx;
@@ -2361,8 +2509,6 @@ auto erase_if(ankerl::unordered_dense::detail::table<Key, T, Hash, KeyEqual, Buc
 
 } // namespace std
 
-    #endif
-#endif
 
 // NOLINTEND(readability-identifier-naming)
 
