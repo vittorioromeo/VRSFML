@@ -475,7 +475,7 @@ public:
     ////////////////////////////////////////////////////////////
     Utf8String& operator+=(char32_t codepoint)
     {
-        (void) appendCodepoint(codepoint);
+        (void)appendCodepoint(codepoint);
         return *this;
     }
 
@@ -550,11 +550,6 @@ public:
     /// well-formed UTF-8 `needle` always matches at codepoint
     /// boundaries.
     ///
-    /// Iteration resumes immediately past each replacement, so it
-    /// terminates even when `replacement` itself contains `needle`.
-    /// An empty `needle` performs no work and returns 0. Inputs that
-    /// alias the internal buffer are handled safely.
-    ///
     /// \return Number of replacements performed.
     ///
     ////////////////////////////////////////////////////////////
@@ -576,15 +571,6 @@ public:
 
     ////////////////////////////////////////////////////////////
     /// \brief Move the underlying byte storage out of an rvalue `Utf8String`
-    ///
-    /// Called on an rvalue (e.g. `std::move(s).asBytes()` or
-    /// `getReturnsByValue().asBytes()`), this moves the underlying
-    /// `base::String` out -- no heap copy. The source `Utf8String` is
-    /// left in a moved-from state (its bytes are empty afterwards).
-    ///
-    /// Mirrors the `std::optional::value() &&` / `value() const&`
-    /// pattern: same name, different semantics based on whether the
-    /// object is being kept or consumed.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] base::String asBytes() && noexcept
