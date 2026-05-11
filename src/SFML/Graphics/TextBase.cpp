@@ -8,11 +8,11 @@
 #include "SFML/Graphics/TextBase.hpp"
 
 #include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/GlyphMappedText.hpp"
-#include "SFML/Graphics/Text.hpp"
+#include "SFML/Graphics/GlyphMappedText.hpp" // IWYU pragma: keep
+#include "SFML/Graphics/Text.hpp"            // IWYU pragma: keep
 #include "SFML/Graphics/Vertex.hpp"
 
-#include "SFML/System/UnicodeString.hpp"
+#include "SFML/System/Utf8String.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -25,7 +25,7 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-void TextBase::setString(const UnicodeString& string)
+void TextBase::setString(const Utf8String& string)
 {
     if (m_string == string)
         return;
@@ -147,7 +147,7 @@ void TextBase::setOutlineColorAlpha(const base::U8 alpha)
 
 
 ////////////////////////////////////////////////////////////
-const UnicodeString& TextBase::getString() const
+const Utf8String& TextBase::getString() const
 {
     return m_string;
 }

@@ -7,11 +7,14 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Win32/Utils.hpp"
 
-#include "SFML/System/UnicodeString.hpp"
+#include "SFML/System/Utf.hpp"
 #include "SFML/System/WindowsHeader.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/BackInserter.hpp"
 #include "SFML/Base/String.hpp"
+
+#include <cwchar>
 
 
 namespace sf::priv
@@ -31,9 +34,15 @@ base::String getErrorString(DWORD error)
         return "Unknown error.";
     }
 
-    const sf::UnicodeString message = buffer;
+    const auto srcLen = std::wcslen(buffer);
+
+    base::String message;
+    message.reserve(srcLen * 3u);
+
+    Utf<16>::toUtf8(buffer, buffer + srcLen, base::BackInserter{message});
+
     LocalFree(buffer);
-    return message.toAnsiString<base::String>();
+    return message;
 }
 
 

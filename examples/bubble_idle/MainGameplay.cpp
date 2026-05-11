@@ -4,7 +4,7 @@
 #include "BGMStorage.hpp"
 #include "Bubble.hpp"
 #include "BubbleIdleMain.hpp"
-#include "BubbleIdleMainInline.hpp"
+#include "BubbleIdleMainInline.hpp" // IWYU pragma: keep
 #include "BubbleType.hpp"
 #include "Cat.hpp"
 #include "CatType.hpp"
@@ -12,6 +12,7 @@
 #include "ComboState.hpp"
 #include "Constants.hpp"
 #include "Doll.hpp"
+#include "ExampleProfiler/Profiler.hpp"
 #include "HellPortal.hpp"
 #include "HexSession.hpp"
 #include "MainShaders.hpp"
@@ -27,7 +28,6 @@
 #include "ExampleUtils/Easing.hpp"
 #include "ExampleUtils/HueColor.hpp"
 #include "ExampleUtils/MathUtils.hpp"
-#include "ExampleUtils/Profiler.hpp"
 #include "ExampleUtils/Progress.hpp"
 
 #include "SFML/Graphics/Color.hpp"

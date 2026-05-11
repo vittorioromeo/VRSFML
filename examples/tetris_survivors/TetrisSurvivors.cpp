@@ -9,6 +9,8 @@
 #include "Constants.hpp"
 #include "DefaultPerks.hpp"
 #include "DrillDirection.hpp"
+#include "ExampleProfiler/Profiler.hpp"
+#include "ExampleProfiler/ProfilerImGui.hpp"
 #include "LaserBeam.hpp"
 #include "LaserDirection.hpp"
 #include "LaserableBlocksInfo.hpp"
@@ -33,10 +35,6 @@
 #include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/Scaling.hpp"
 #include "ExampleUtils/SoundManager.hpp"
-
-#define SFEX_PROFILER_ENABLED
-#include "ExampleUtils/Profiler.hpp"
-#include "ExampleUtils/ProfilerImGui.hpp"
 
 #include "SFML/ImGui/ImGuiContext.hpp"
 #include "SFML/ImGui/IncludeImGui.hpp"

@@ -153,6 +153,46 @@ namespace sfex
 #endif
 }
 
+} // namespace sfex
+
+
+////////////////////////////////////////////////////////////
+// Linker-enforced configuration check.
+//
+// `SFEX_PROFILER_ENABLED` must be consistenly defined.
+////////////////////////////////////////////////////////////
+namespace sfex::priv
+{
+#ifdef SFEX_PROFILER_ENABLED
+void sfexProfilerLinkCheckEnabledOnly();
+#else
+void sfexProfilerLinkCheckDisabledOnly();
+#endif
+} // namespace sfex::priv
+
+
+////////////////////////////////////////////////////////////
+// Force-reference the macro-state-dependent tag from every TU that includes
+// this header. The address-of inside the initializer creates a relocation
+// against the symbol, so an unresolved reference is reported by the linker.
+// `[[gnu::used]]` keeps the variable from being optimized away even though
+// nothing in user code reads it. The anonymous namespace gives each TU its
+// own internal-linkage copy, sidestepping ODR concerns.
+////////////////////////////////////////////////////////////
+namespace
+{
+[[gnu::used, maybe_unused]] const auto sfexProfilerLinkCheckRef =
+#ifdef SFEX_PROFILER_ENABLED
+    &::sfex::priv::sfexProfilerLinkCheckEnabledOnly;
+#else
+    &::sfex::priv::sfexProfilerLinkCheckDisabledOnly;
+#endif
+} // namespace
+
+
+namespace sfex
+{
+
 
 ////////////////////////////////////////////////////////////
 // TODO P1: nicer interface?

@@ -24,7 +24,7 @@
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Thread.hpp"
 #include "SFML/System/Time.hpp"
-#include "SFML/System/UnicodeString.hpp"
+#include "SFML/System/Utf8String.hpp"
 #include "SFML/System/Vec2.hpp"
 #include "SFML/System/Vec3.hpp"
 
@@ -516,7 +516,7 @@ int main()
             oss << ((i == currentSetting) ? ">>  " : "       ") << settings[i].name << ":  " << *(settings[i].value)
                 << '\n';
 
-        hudText.setString(oss.to<sf::UnicodeString>());
+        hudText.setString(oss.to<sf::Utf8String>());
 
         window.draw(hudText, {.view = windowView});
 

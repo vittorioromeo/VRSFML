@@ -6,11 +6,9 @@
 #include "SystemUtil.hpp"
 #include "WindowUtil.hpp"
 
-#include "SFML/System/UnicodeString.hpp"
+#include "SFML/System/Utf8String.hpp"
 
 #include <Doctest.hpp>
-
-#include <string>
 
 
 #ifndef SFML_SYSTEM_EMSCRIPTEN // TODO P1: clipboard not implemented for emscripten
@@ -21,29 +19,29 @@ TEST_CASE("[Window] sf::Clipboard" * doctest::skip(skipDisplayTests))
     // Capture current clipboard state
     const auto currentClipboard = sf::Clipboard::getString();
 
-    sf::UnicodeString string;
+    sf::Utf8String string;
 
     SECTION("ASCII")
     {
-        string = "Snail";
+        string = u8"Snail";
     }
 
     SECTION("Latin1")
     {
-        string = U"Limacé";
+        string = u8"Limacé";
     }
 
     SECTION("Basic Multilingual Plane")
     {
-        string = U"カタツムリ";
+        string = u8"カタツムリ";
     }
 
     SECTION("Emoji")
     {
-        string = U"🐌";
+        string = u8"🐌";
     }
 
-    INFO("String: " << reinterpret_cast<const char*>(string.toUtf8<std::u8string>().c_str()));
+    INFO("String: " << string.cStr());
     CHECK(sf::Clipboard::setString(string));
     CHECK(sf::Clipboard::getString() == string);
 

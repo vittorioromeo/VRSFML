@@ -19,7 +19,7 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
-class UnicodeString;
+class Utf8String;
 } // namespace sf
 
 namespace sf::base
@@ -33,6 +33,12 @@ namespace sf
 ////////////////////////////////////////////////////////////
 /// \brief Utility class to build blocks of data to transfer
 ///        over the network
+///
+/// \note The wire format stores multi-byte values in host byte
+/// order and assumes both peers are little-endian. Every platform
+/// VRSFML targets (x86_64, ARM/AArch64 in its standard LE mode,
+/// WebAssembly, Apple Silicon, modern consoles) is little-endian.
+/// Big-endian hosts are unsupported.
 ///
 ////////////////////////////////////////////////////////////
 class SFML_NETWORK_API Packet
@@ -80,13 +86,22 @@ public:
     /// \brief Append data to the end of the packet
     ///
     /// \param data        Pointer to the sequence of bytes to append
-    /// \param sizeInBytes Number of bytes to append
+    ///                    (must not be `nullptr`)
+    /// \param sizeInBytes Number of bytes to append (must be `> 0`)
+    ///
+    /// \pre `data != nullptr`
+    /// \pre `sizeInBytes > 0`
+    ///
+    /// Both preconditions are checked via `SFML_BASE_ASSERT_AND_ASSUME`:
+    /// in debug builds a violation aborts; in release the compiler
+    /// assumes the conditions and may optimize accordingly. Guard
+    /// at the call-site if the source can legitimately be empty.
     ///
     /// \see `clear`
     /// \see `getReadPosition`
     ///
     ////////////////////////////////////////////////////////////
-    void append(const void* data, base::SizeT sizeInBytes);
+    Packet& append(const void* data, base::SizeT sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current reading position in the packet
@@ -247,11 +262,6 @@ public:
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator>>(char* data);
-
-    ////////////////////////////////////////////////////////////
-    /// \overload
-    ////////////////////////////////////////////////////////////
     Packet& operator>>(std::string& data);
 
     ////////////////////////////////////////////////////////////
@@ -262,17 +272,12 @@ public:
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator>>(wchar_t* data);
-
-    ////////////////////////////////////////////////////////////
-    /// \overload
-    ////////////////////////////////////////////////////////////
     Packet& operator>>(std::wstring& data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator>>(UnicodeString& data);
+    Packet& operator>>(Utf8String& data);
 
     ////////////////////////////////////////////////////////////
     /// Overload of `operator<<` to write data into the packet
@@ -333,11 +338,6 @@ public:
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator<<(const char* data);
-
-    ////////////////////////////////////////////////////////////
-    /// \overload
-    ////////////////////////////////////////////////////////////
     Packet& operator<<(const std::string& data);
 
     ////////////////////////////////////////////////////////////
@@ -348,17 +348,12 @@ public:
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator<<(const wchar_t* data);
-
-    ////////////////////////////////////////////////////////////
-    /// \overload
-    ////////////////////////////////////////////////////////////
     Packet& operator<<(const std::wstring& data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator<<(const UnicodeString& data);
+    Packet& operator<<(const Utf8String& data);
 
 protected:
     friend class TcpSocket;
@@ -393,7 +388,10 @@ protected:
     /// The function receives a pointer to the received data,
     /// and must fill the packet with the transformed bytes.
     /// The default implementation fills the packet directly
-    /// without transforming the data.
+    /// without transforming the data, by forwarding to `append`
+    /// (and therefore inherits its `data != nullptr && size > 0`
+    /// precondition). VRSFML's own `TcpSocket`/`UdpSocket`
+    /// guard the call against empty/null inputs.
     ///
     /// \param data Pointer to the received bytes
     /// \param size Number of bytes
@@ -417,9 +415,20 @@ private:
     [[nodiscard]] bool checkSize(base::SizeT size);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Return the send position stored in the PImpl
+    /// \brief Bytes available to read from the current position
     ///
-    /// Internally invoked by `TcpSocket`
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] base::SizeT remaining() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Bounds-checked memcpy from the read cursor; advances on success
+    ///
+    ////////////////////////////////////////////////////////////
+    Packet& readBytes(void* dst, base::SizeT size);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Return a reference to the send position used by
+    ///        `TcpSocket` to track partial sends across calls.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] base::SizeT& getSendPos();
@@ -446,8 +455,12 @@ private:
 ///
 /// Packets solve 2 fundamental problems that arise when
 /// transferring data over the network:
-/// \li data is interpreted correctly according to the endianness
+/// \li trivial types are serialized with a fixed wire size (so a
+///     `base::I32` is always 4 bytes on the wire regardless of host)
 /// \li the bounds of the packet are preserved (one send == one receive)
+///
+/// The wire format is host byte order and assumes both peers are
+/// little-endian (see the `\note` on the class above).
 ///
 /// The `sf::Packet` class provides both input and output modes.
 /// It is designed to follow the behavior of standard C++ streams,
@@ -490,9 +503,14 @@ private:
 /// Packets have built-in `operator>>` and << overloads for
 /// standard types:
 /// \li `bool`
-/// \li fixed-size integer types (`int[8|16|32]_t`, `uint[8|16|32]_t`)
+/// \li fixed-size integer types (`base::I8`/`base::U8` ... `base::I64`/`base::U64`)
 /// \li floating point numbers (`float`, `double`)
-/// \li string types (`char*`, `wchar_t*`, `std::string`, `std::wstring`, `sf::UnicodeString`)
+/// \li string types (`std::string`, `std::wstring`, `sf::base::String`, `sf::Utf8String`)
+///
+/// Raw `char*` / `wchar_t*` overloads are intentionally not provided
+/// because they would either rely on caller-supplied null termination
+/// on the write side or write past an unbounded output buffer on the
+/// read side. Use `.append(ptr, size)` and a string type instead.
 ///
 /// Like standard streams, it is also possible to define your own
 /// overloads of operators >> and << in order to handle your

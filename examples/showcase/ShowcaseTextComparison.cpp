@@ -9,7 +9,7 @@
 #include "SFML/Graphics/TextData.hpp"
 #include "SFML/Graphics/Texture.hpp"
 
-#include "SFML/System/UnicodeStringUtfUtils.hpp"
+#include "SFML/System/Utf8String.hpp"
 
 #include "SFML/Base/Builtin/Strlen.hpp"
 
@@ -37,10 +37,7 @@ void ExampleTextComparison::imgui()
 
     if (ImGui::InputTextMultiline("Text", m_inputBuffer, sizeof(m_inputBuffer)))
     {
-        const auto* begin = m_inputBuffer;
-        const auto* end   = m_inputBuffer + SFML_BASE_STRLEN(m_inputBuffer);
-
-        m_convertedStr = sf::UnicodeStringUtfUtils::fromUtf8(begin, end);
+        m_convertedStr = sf::Utf8String{m_inputBuffer, SFML_BASE_STRLEN(m_inputBuffer)};
 
         m_legacyText.setString(m_convertedStr);
         m_mappedText.setString(m_convertedStr);

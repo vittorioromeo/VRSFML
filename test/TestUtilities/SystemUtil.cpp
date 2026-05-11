@@ -4,11 +4,10 @@
 #include "SFML/System/AutoWrapAngle.hpp"
 #include "SFML/System/Rect2.hpp"
 #include "SFML/System/Time.hpp"
-#include "SFML/System/UnicodeString.hpp"
+#include "SFML/System/Utf8String.hpp"
 #include "SFML/System/Vec2.hpp"
 #include "SFML/System/Vec3.hpp"
 
-#include "SFML/Base/String.hpp"
 #include "SFML/Base/ToChars.hpp"
 #include "SFML/Base/Trait/IsFloatingPoint.hpp"
 
@@ -69,10 +68,9 @@ String StringMaker<sf::AutoWrapAngle>::convert(const sf::AutoWrapAngle& angle)
 
 
 ////////////////////////////////////////////////////////////
-String StringMaker<sf::UnicodeString>::convert(const sf::UnicodeString& string)
+String StringMaker<sf::Utf8String>::convert(const sf::Utf8String& string)
 {
-    const auto ansi = string.toAnsiString<sf::base::String>();
-    return {ansi.data(), static_cast<String::size_type>(ansi.size())};
+    return {string.data(), static_cast<String::size_type>(string.byteSize())};
 }
 
 

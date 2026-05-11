@@ -14,7 +14,7 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
-class UnicodeString;
+class Utf8String;
 } // namespace sf
 
 
@@ -30,13 +30,13 @@ struct SFML_WINDOW_API Clipboard
     /// \brief Get the content of the clipboard as string data
     ///
     /// This function returns the content of the clipboard
-    /// as a string. If the clipboard does not contain string
-    /// it returns an empty `sf::UnicodeString` object.
+    /// as a UTF-8 string. If the clipboard does not contain
+    /// string data, an empty `sf::Utf8String` is returned.
     ///
-    /// \return Clipboard contents as `sf::UnicodeString` object
+    /// \return Clipboard contents as a UTF-8 `sf::Utf8String`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static UnicodeString getString();
+    [[nodiscard]] static Utf8String getString();
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the content of the clipboard as string data
@@ -49,13 +49,13 @@ struct SFML_WINDOW_API Clipboard
     ///          guaranteed to work if there is currently an
     ///          open window for which events are being handled.
     ///
-    /// \param text `sf::UnicodeString` containing the data to be sent
+    /// \param text `sf::Utf8String` containing the data to be sent
     /// to the clipboard
     ///
     /// \return `true` if the clipboard was successfully set
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static bool setString(const UnicodeString& text);
+    [[nodiscard]] static bool setString(const Utf8String& text);
 };
 
 } // namespace sf
@@ -75,7 +75,7 @@ struct SFML_WINDOW_API Clipboard
 /// Usage example:
 /// \code
 /// // get the clipboard content as a string
-/// sf::UnicodeString string = sf::Clipboard::getString();
+/// sf::Utf8String string = sf::Clipboard::getString();
 ///
 /// // or use it in the event loop
 /// while (const sf::base::Optional event = window.pollEvent())
@@ -96,6 +96,6 @@ struct SFML_WINDOW_API Clipboard
 /// }
 /// \endcode
 ///
-/// \see `sf::UnicodeString`, `sf::Event`
+/// \see `sf::Utf8String`, `sf::Event`
 ///
 ////////////////////////////////////////////////////////////

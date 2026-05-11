@@ -2,7 +2,7 @@
 #include "Bubble.hpp"
 #include "BubbleIdleHelpers.hpp"
 #include "BubbleIdleMain.hpp"
-#include "BubbleIdleMainInline.hpp"
+#include "BubbleIdleMainInline.hpp" // IWYU pragma: keep
 #include "BubbleType.hpp"
 #include "Cat.hpp"
 #include "CatConstants.hpp"
@@ -10,6 +10,7 @@
 #include "ComboState.hpp"
 #include "Constants.hpp"
 #include "Doll.hpp"
+#include "ExampleProfiler/Profiler.hpp"
 #include "GameConstants.hpp"
 #include "GameEvent.hpp"
 #include "HellPortal.hpp"
@@ -32,7 +33,6 @@
 #include "ExampleUtils/MathUtils.hpp"
 #include "ExampleUtils/NinePatchRect.hpp"
 #include "ExampleUtils/NinePatchUtils.hpp"
-#include "ExampleUtils/Profiler.hpp"
 #include "ExampleUtils/Progress.hpp"
 
 #include "SFML/Graphics/BlendMode.hpp"

@@ -43,6 +43,7 @@ struct SDL_GUID;
 
 namespace sf
 {
+class Utf8String;
 struct ContextSettings;
 struct VideoMode;
 } // namespace sf
@@ -280,16 +281,16 @@ public:
     [[nodiscard]] bool setGlobalMousePosition(Vec2i position) const noexcept;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] UnicodeString getClipboardString() const noexcept;
+    [[nodiscard]] Utf8String getClipboardString() const noexcept;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool setClipboardString(const UnicodeString& string) const noexcept;
+    [[nodiscard]] bool setClipboardString(const Utf8String& string) const noexcept;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] float getDisplayContentScale(SDL_DisplayID displayID) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] UnicodeString getDisplayName(SDL_DisplayID displayID) const;
+    [[nodiscard]] Utf8String getDisplayName(SDL_DisplayID displayID) const;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Rect2i getDisplayBounds(SDL_DisplayID displayID) const;

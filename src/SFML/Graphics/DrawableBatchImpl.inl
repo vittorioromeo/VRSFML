@@ -1310,7 +1310,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::addTextDataImpl(
     const unsigned int characterSize,
     const float        outlineThickness)
 {
-    if (textData.string.isEmpty())
+    if (textData.string.empty())
         return {};
 
     const auto fillQuadCount = TextUtils::precomputeTextQuadCount(textData.string, textData.underlined, textData.strikeThrough);

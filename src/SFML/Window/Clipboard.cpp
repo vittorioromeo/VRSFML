@@ -10,20 +10,20 @@
 #include "SFML/Window/SDLLayer.hpp"
 #include "SFML/Window/WindowContext.hpp"
 
-#include "SFML/System/UnicodeString.hpp"
+#include "SFML/System/Utf8String.hpp"
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-UnicodeString Clipboard::getString()
+Utf8String Clipboard::getString()
 {
     return WindowContext::getSDLLayer().getClipboardString();
 }
 
 
 ////////////////////////////////////////////////////////////
-bool Clipboard::setString(const UnicodeString& text)
+bool Clipboard::setString(const Utf8String& text)
 {
     return WindowContext::getSDLLayer().setClipboardString(text);
 }

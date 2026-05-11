@@ -991,11 +991,11 @@ auto window = sf::RenderWindow::create({.size{800u, 600u},
 
 
 
-## `sf::String` Replaced By `sf::UnicodeString`
+## `sf::String` Replaced By `sf::Utf8String`
 
-- `sf::String` has been replaced by `sf::UnicodeString` with full UTF encoding support.
+- `sf::String` has been replaced by `sf::Utf8String`, a UTF-8-only string with codepoint iteration support.
 
-- Used throughout the API for window titles, clipboard text, keyboard descriptions, and joystick names.
+- Used throughout the API for window titles, clipboard text, keyboard descriptions, and joystick names -- all of which natively use UTF-8 at the OS / SDL boundary, so no conversion is required.
 
 
 

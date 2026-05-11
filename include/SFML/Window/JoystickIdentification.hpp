@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Export.hpp"
 
-#include "SFML/System/UnicodeString.hpp"
+#include "SFML/System/Utf8String.hpp"
 
 
 namespace sf::priv
@@ -28,10 +28,9 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 struct SFML_WINDOW_API JoystickIdentification
 {
-    UnicodeString name{
-        "No Joystick"}; //!< Human-readable name of the joystick (defaults to a placeholder when no joystick is connected)
-    unsigned int vendorId{};  //!< USB vendor identifier reported by the OS
-    unsigned int productId{}; //!< USB product identifier reported by the OS
+    Utf8String   name{"No Joystick"}; //!< Human-readable name (defaults to placeholder when no joystick connected)
+    unsigned int vendorId{};          //!< USB vendor identifier reported by the OS
+    unsigned int productId{};         //!< USB product identifier reported by the OS
 };
 
 } // namespace sf::priv

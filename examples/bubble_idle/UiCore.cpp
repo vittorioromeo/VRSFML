@@ -2,10 +2,11 @@
 
 #include "Aliases.hpp"
 #include "BubbleIdleMain.hpp"
-#include "BubbleIdleMainInline.hpp"
+#include "BubbleIdleMainInline.hpp" // IWYU pragma: keep
 #include "Cat.hpp"
 #include "CatType.hpp"
 #include "Constants.hpp"
+#include "ExampleProfiler/Profiler.hpp"
 #include "ImGuiNotify.hpp"
 #include "MainShaders.hpp"
 #include "NotificationState.hpp"
@@ -19,7 +20,6 @@
 
 #include "ExampleUtils/Easing.hpp"
 #include "ExampleUtils/HueColor.hpp"
-#include "ExampleUtils/Profiler.hpp"
 #include "ExampleUtils/Progress.hpp"
 
 #include "SFML/ImGui/ImGuiContext.hpp"

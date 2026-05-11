@@ -10,7 +10,7 @@
 #include "SFML/Graphics/TextureAtlas.hpp"
 
 #include "SFML/System/Path.hpp"
-#include "SFML/System/UnicodeString.hpp"
+#include "SFML/System/Utf8String.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -31,8 +31,8 @@ private:
                                      .value();
 
     ////////////////////////////////////////////////////////////
-    char              m_inputBuffer[256] = "Hello, World!";
-    sf::UnicodeString m_convertedStr     = "Hello, World!";
+    char           m_inputBuffer[256] = "Hello, World!";
+    sf::Utf8String m_convertedStr     = "Hello, World!";
 
     ////////////////////////////////////////////////////////////
     sf::Text            m_legacyText;

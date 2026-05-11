@@ -10,7 +10,7 @@
 #include "SFML/Window/SDLLayer.hpp"
 #include "SFML/Window/WindowContext.hpp"
 
-#include "SFML/System/UnicodeString.hpp"
+#include "SFML/System/Utf8String.hpp"
 
 
 namespace sf
@@ -50,7 +50,7 @@ Keyboard::Scancode Keyboard::delocalize(const Key key)
 
 
 ////////////////////////////////////////////////////////////
-UnicodeString Keyboard::getDescription(const Scancode code)
+Utf8String Keyboard::getDescription(const Scancode code)
 {
     return WindowContext::getSDLLayer().getScancodeDescription(code);
 }

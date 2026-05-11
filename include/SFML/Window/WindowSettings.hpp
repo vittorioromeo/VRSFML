@@ -9,7 +9,7 @@
 #include "SFML/Window/ContextSettings.hpp"
 
 #include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/UnicodeString.hpp"
+#include "SFML/System/Utf8String.hpp"
 
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/RequireDesignatedInitializers.hpp"
@@ -48,7 +48,7 @@ struct [[nodiscard]] WindowSettings
     base::Optional<Vec2u> minimumSize{base::nullOpt}; //!< Initial minimum size enforced on user resizes
     base::Optional<Vec2u> maximumSize{base::nullOpt}; //!< Initial maximum size enforced on user resizes
     unsigned int          bitsPerPixel{32u};          //!< Pixel depth, in bits per pixel
-    UnicodeString         title{"Untitled Window"};   //!< Title displayed in the window's title bar
+    Utf8String            title{"Untitled Window"};   //!< Title displayed in the window's title bar
     bool                  fullscreen{false};          //!< Whether the window is created in fullscreen mode
     bool                  resizable{true};            //!< Whether the window is resizable by the user
     bool                  closable{true};             //!< Whether the window has a system-provided close button

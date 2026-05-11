@@ -30,18 +30,15 @@
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
 #include "SFML/System/Time.hpp"
-#include "SFML/System/UnicodeString.hpp"
-#include "SFML/System/UnicodeStringUtfUtils.hpp"
+#include "SFML/System/Utf8String.hpp"
 
 #include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/Memcpy.hpp"
-#include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/String.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #if defined(__APPLE__)
@@ -909,21 +906,22 @@ struct [[nodiscard]] SpriteTextureData
 
 
 ////////////////////////////////////////////////////////////
-sf::base::String clipboardText;
+sf::Utf8String clipboardText;
 
 
 ////////////////////////////////////////////////////////////
 void setClipboardTextFn(void* /* userData */, const char* text)
 {
-    if (!Clipboard::setString(UnicodeStringUtfUtils::fromUtf8(text, text + SFML_BASE_STRLEN(text))))
+    if (!Clipboard::setString(Utf8String{text}))
         priv::err() << "Failed to set clipboard text from ImGui";
 }
 
 ////////////////////////////////////////////////////////////
 const char* getClipboardTextFn(void* /* userData */)
 {
-    auto tmp = Clipboard::getString().toUtf8<sf::base::String>();
-    clipboardText.assign(tmp.data(), tmp.size());
+    // Cache the clipboard string in a static buffer so that the pointer
+    // we hand back to ImGui stays valid until the next call.
+    clipboardText = Clipboard::getString();
     return clipboardText.cStr();
 }
 

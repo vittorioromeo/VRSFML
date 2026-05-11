@@ -14,7 +14,7 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
-class UnicodeString;
+class Utf8String;
 } // namespace sf
 
 
@@ -669,7 +669,7 @@ struct SFML_WINDOW_API Keyboard
     /// \return The localized description of the code
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static UnicodeString getDescription(Scancode code);
+    [[nodiscard]] static Utf8String getDescription(Scancode code);
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the virtual keyboard

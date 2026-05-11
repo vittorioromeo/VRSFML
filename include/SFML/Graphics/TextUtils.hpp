@@ -16,7 +16,7 @@
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
-#include "SFML/System/UnicodeString.hpp"
+#include "SFML/System/Utf8String.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/Restrict.hpp"
@@ -108,9 +108,9 @@ template <typename TFontSource>
 /// (underline / strikethrough).
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] inline base::SizeT precomputeTextQuadCount(const UnicodeString& string, const bool isUnderlined, const bool isStrikeThrough)
+[[nodiscard]] inline base::SizeT precomputeTextQuadCount(const Utf8String& string, const bool isUnderlined, const bool isStrikeThrough)
 {
-    SFML_BASE_ASSERT(!string.isEmpty());
+    SFML_BASE_ASSERT(!string.empty());
 
     const base::SizeT linesPerNewline = base::SizeT{isUnderlined} + base::SizeT{isStrikeThrough};
 
@@ -118,11 +118,11 @@ template <typename TFontSource>
     char32_t    prevChar        = 0;
     bool        lineHasContents = false;
 
-    for (const char32_t curChar : string)
+    string.forCodepoints([&] [[gnu::always_inline]] (const char32_t curChar)
     {
         // Skip the \r char to avoid weird graphical issues
         if (curChar == U'\r')
-            continue;
+            return;
 
         if (curChar == U'\n')
         {
@@ -144,7 +144,7 @@ template <typename TFontSource>
         }
 
         prevChar = curChar;
-    }
+    });
 
     if (lineHasContents)
         result += linesPerNewline;
@@ -159,7 +159,7 @@ template <typename TFontSource>
 ////////////////////////////////////////////////////////////
 [[nodiscard]] inline base::SizeT precomputeTextQuadCount(const TextData& textData)
 {
-    if (textData.string.isEmpty())
+    if (textData.string.empty())
         return 0u;
 
     return precomputeTextQuadCount(textData.string, textData.underlined, textData.strikeThrough);
@@ -309,12 +309,12 @@ template <bool CalculateBounds, typename TFontSource>
 inline auto createTextGeometryAndGetBounds(
     const base::SizeT       outlineVertexCount,
     const TFontSource&      font,
-    const UnicodeString&    string,
+    const Utf8String&       string,
     const TextLayoutInputs& inputs,
     auto&&                  fAddLine,
     auto&&                  fAddGlyphQuad)
 {
-    if (string.isEmpty())
+    if (string.empty())
     {
         if constexpr (CalculateBounds)
             return Rect2f{};
@@ -388,11 +388,11 @@ inline auto createTextGeometryAndGetBounds(
         x += fillGlyph.advance + finalLetterSpacing;
     };
 
-    for (const char32_t curChar : string)
+    string.forCodepoints([&] [[gnu::always_inline]] (const char32_t curChar)
     {
         // Skip the \r char to avoid weird graphical issues
         if (curChar == U'\r')
-            continue;
+            return;
 
         // Apply the kerning offset
         x += font.getKerning(prevChar, curChar, inputs.characterSize, inputs.bold);
@@ -442,7 +442,7 @@ inline auto createTextGeometryAndGetBounds(
             }
 
             // Next glyph, no need to create a quad for whitespace
-            continue;
+            return;
         }
 
         if (inputs.outlineThickness == 0.f)
@@ -462,7 +462,7 @@ inline auto createTextGeometryAndGetBounds(
 
             updateBoundsAndAdvance(fillGlyph);
         }
-    }
+    });
 
     // If we're using outline, update the current bounds
     if constexpr (CalculateBounds)

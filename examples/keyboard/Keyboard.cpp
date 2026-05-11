@@ -641,7 +641,7 @@ public:
 
             if (rect.size.x < label.getLocalBounds().size.x + padding * 2.f + 2.f)
             {
-                sf::UnicodeString string = label.getString();
+                sf::Utf8String string = label.getString();
                 string.replaceAllOccurrences(" ", "\n");
                 label.setString(string);
             }
@@ -975,7 +975,7 @@ float getSpacingFactor(const sf::Font& font)
     return static_cast<float>(lineSize) / font.getLineSpacing(textSize);
 }
 
-ShinyText makeShinyText(const sf::Font& font, const sf::UnicodeString& string, sf::Vec2f position)
+ShinyText makeShinyText(const sf::Font& font, const sf::Utf8String& string, sf::Vec2f position)
 {
     ShinyText text(font, {.string = string, .characterSize = textSize});
     text.setLineSpacing(getSpacingFactor(font));
@@ -985,7 +985,7 @@ ShinyText makeShinyText(const sf::Font& font, const sf::UnicodeString& string, s
     return text;
 }
 
-sf::Text makeText(const sf::Font& font, const sf::UnicodeString& string, sf::Vec2f position)
+sf::Text makeText(const sf::Font& font, const sf::Utf8String& string, sf::Vec2f position)
 {
     sf::Text text(font, {.string = string, .characterSize = textSize});
     text.setLineSpacing(getSpacingFactor(font));
@@ -1010,7 +1010,7 @@ bool somethingIsOdd(const KeyEventType& keyEvent)
 
 // Append information to string about a keyboard event
 template <typename KeyEventType>
-sf::UnicodeString keyEventDescription(sf::UnicodeString text, const KeyEventType& keyEvent)
+sf::Utf8String keyEventDescription(sf::Utf8String text, const KeyEventType& keyEvent)
 {
     text += "\n\n";
     text += keyIdentifier(keyEvent.code);
@@ -1028,15 +1028,15 @@ sf::UnicodeString keyEventDescription(sf::UnicodeString text, const KeyEventType
 }
 
 // Make a string describing a text event
-sf::UnicodeString textEventDescription(const sf::Event::TextEntered& textEntered)
+sf::Utf8String textEventDescription(const sf::Event::TextEntered& textEntered)
 {
-    sf::UnicodeString text = "Text Entered\n\n";
+    sf::Utf8String text = "Text Entered\n\n";
     text += textEntered.unicode;
     text += "\nU+";
 
     sf::OutStringStream oss;
     oss << sf::Hex{} << sf::SetWidth{4} << sf::SetFill{'0'} << static_cast<sf::base::U32>(textEntered.unicode);
-    text += oss.to<sf::UnicodeString>();
+    text += oss.to<sf::Utf8String>();
 
     return text;
 }
@@ -1154,7 +1154,7 @@ int main()
         keyReleasedText.update(frameTime);
         textEnteredText.update(frameTime);
         {
-            sf::UnicodeString text = "isKeyPressed(sf::Keyboard::Key)\n\n";
+            sf::Utf8String text = "isKeyPressed(sf::Keyboard::Key)\n\n";
             for (sf::base::SizeT keyIndex = 0u; keyIndex < sf::Keyboard::KeyCount; ++keyIndex)
             {
                 const auto key = static_cast<sf::Keyboard::Key>(keyIndex);

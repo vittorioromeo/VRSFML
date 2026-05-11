@@ -14,7 +14,7 @@
 
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/UnicodeString.hpp"
+#include "SFML/System/Utf8String.hpp"
 
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
@@ -38,7 +38,7 @@ namespace
 ////////////////////////////////////////////////////////////
 [[nodiscard]] sf::base::String scancodeToString(const sf::Keyboard::Scancode scancode)
 {
-    return sf::Keyboard::getDescription(scancode).toAnsiString<sf::base::String>();
+    return sf::Keyboard::getDescription(scancode).asBytes();
 }
 
 } // namespace

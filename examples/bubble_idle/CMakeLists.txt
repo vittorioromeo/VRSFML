@@ -103,6 +103,8 @@ endif()
 
 target_include_directories(bubble_idle PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/public")
 
+target_link_libraries(bubble_idle PRIVATE ExampleProfilerEnabled)
+
 # set_target_properties(bubble_idle PROPERTIES
 #                       UNITY_BUILD ON
 #                       UNITY_BUILD_BATCH_SIZE 0)

@@ -18,7 +18,7 @@
 #include "SFML/System/LocalAnchorPointMixin.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
-#include "SFML/System/UnicodeString.hpp"
+#include "SFML/System/Utf8String.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -72,15 +72,16 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Set the text's string
     ///
-    /// The `string` argument is a `sf::UnicodeString`, which can
-    /// automatically be constructed from standard string types.
-    /// So, the following calls are all valid:
+    /// The `string` argument is a `sf::Utf8String`. It can be
+    /// implicitly constructed from a UTF-8 encoded `const char*`,
+    /// `base::StringView`, or `base::String`. For text containing
+    /// non-ASCII characters, the source bytes must already be UTF-8.
+    ///
     /// \code
     /// text.setString("hello");
-    /// text.setString(L"hello");
-    /// text.setString(std::string("hello"));
-    /// text.setString(std::wstring(L"hello"));
+    /// text.setString(u8"カタツムリ");
     /// \endcode
+    ///
     /// A text's string is empty by default.
     ///
     /// \param string New string
@@ -88,7 +89,7 @@ public:
     /// \see `getString`
     ///
     ////////////////////////////////////////////////////////////
-    void setString(const UnicodeString& string);
+    void setString(const Utf8String& string);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the letter spacing factor
@@ -202,21 +203,15 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Get the text's string
     ///
-    /// The returned string is a `sf::UnicodeString`, which can automatically
-    /// be converted to standard string types. So, the following
-    /// lines of code are all valid:
-    /// \code
-    /// sf::UnicodeString s1 = text.getString();
-    /// std::string       s2 = text.getString();
-    /// std::wstring      s3 = text.getString();
-    /// \endcode
+    /// The returned string is a `sf::Utf8String`. It implicitly
+    /// converts to `base::StringView` for any byte-oriented sink.
     ///
-    /// \return Text's string
+    /// \return Text's string (UTF-8)
     ///
     /// \see `setString`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const UnicodeString& getString() const;
+    [[nodiscard]] const Utf8String& getString() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the size of the letter spacing factor
@@ -461,7 +456,7 @@ protected:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    UnicodeString m_string; //!< String to display
+    Utf8String m_string; //!< String to display
 
     mutable base::Vector<Vertex> m_vertices;        //!< Vertex array containing the outline and fill geometry
     mutable Rect2f               m_bounds;          //!< Bounding rectangle of the text (in local coordinates)

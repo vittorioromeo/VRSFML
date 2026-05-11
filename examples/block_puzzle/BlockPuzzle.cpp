@@ -1,3 +1,6 @@
+#include "ExampleProfiler/Profiler.hpp"
+#include "ExampleProfiler/ProfilerImGui.hpp"
+
 #include "ExampleUtils/ControlFlow.hpp"
 #include "ExampleUtils/Easing.hpp"
 #include "ExampleUtils/HueColor.hpp"
@@ -5,22 +8,10 @@
 #include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/Scaling.hpp"
 
-#include "SFML/Graphics/BlendMode.hpp"
-#include "SFML/Graphics/RenderStates.hpp"
-
-#include "SFML/Window/Keyboard.hpp"
-
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Macros.hpp"
-#include "SFML/Base/Math/Fabs.hpp"
-
-#define SFEX_PROFILER_ENABLED
-#include "ExampleUtils/Profiler.hpp"
-#include "ExampleUtils/ProfilerImGui.hpp"
-
 #include "SFML/ImGui/ImGuiContext.hpp"
 #include "SFML/ImGui/IncludeImGui.hpp"
 
+#include "SFML/Graphics/BlendMode.hpp"
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/CurvedArrowShapeData.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
@@ -29,6 +20,7 @@
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
 #include "SFML/Graphics/RectangleShapeData.hpp"
+#include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderTexture.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
@@ -48,6 +40,7 @@
 #include "SFML/Window/Cursor.hpp"
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
+#include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/Mouse.hpp"
 
 #include "SFML/System/Angle.hpp"
@@ -64,15 +57,16 @@
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/GetArraySize.hpp"
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
+#include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Math/Fmod.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Variant.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include <initializer_list>
 
 // TODO P2:
 // - keys should have different colors compared to blocks

@@ -32,7 +32,7 @@ namespace sf
 class Cursor;
 class Event;
 class Time;
-class UnicodeString;
+class Utf8String;
 } // namespace sf
 
 namespace sf::priv
@@ -337,7 +337,7 @@ public:
     /// \see `setIcon`
     ///
     ////////////////////////////////////////////////////////////
-    void setTitle(const UnicodeString& title);
+    void setTitle(const Utf8String& title);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the window's icon

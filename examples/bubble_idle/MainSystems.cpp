@@ -11,6 +11,7 @@
 #include "ComboState.hpp"
 #include "Constants.hpp"
 #include "Doll.hpp"
+#include "ExampleProfiler/Profiler.hpp"
 #include "GameConstants.hpp"
 #include "GameEvent.hpp"
 #include "HellPortal.hpp"
@@ -31,7 +32,6 @@
 #include "ExampleUtils/Easing.hpp"
 #include "ExampleUtils/HueColor.hpp"
 #include "ExampleUtils/MathUtils.hpp"
-#include "ExampleUtils/Profiler.hpp"
 #include "ExampleUtils/Progress.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"

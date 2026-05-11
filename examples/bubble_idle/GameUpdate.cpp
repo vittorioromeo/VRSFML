@@ -1,10 +1,10 @@
 #include "BubbleIdleMain.hpp"
 #include "Cat.hpp"
+#include "ExampleProfiler/ProfilerImGui.hpp"
 #include "PlayerInput.hpp"
 #include "Playthrough.hpp"
 #include "SweepAndPrune.hpp"
 
-#include "ExampleUtils/ProfilerImGui.hpp"
 #include "ExampleUtils/Progress.hpp"
 
 #include "SFML/ImGui/ImGuiContext.hpp"

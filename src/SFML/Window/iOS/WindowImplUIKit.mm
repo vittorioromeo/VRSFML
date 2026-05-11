@@ -13,6 +13,7 @@
 #include "SFML/Window/iOS/SFViewController.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/Utf8String.hpp"
 
 #include <UIKit/UIKit.h>
 
@@ -137,7 +138,7 @@ void WindowImplUIKit::setMaximumSize(const base::Optional<Vec2u>& /* maximumSize
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplUIKit::setTitle(const UnicodeString& /* title */)
+void WindowImplUIKit::setTitle(const Utf8String& /* title */)
 {
     // Not applicable
 }
