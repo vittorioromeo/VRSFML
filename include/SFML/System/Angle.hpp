@@ -437,7 +437,7 @@ inline constexpr Angle Angle::Full{base::tau}; //!< Predefined 360 degree angle 
 /// \see `radians`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Angle degrees(const float angle)
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr Angle degrees(const float angle)
 {
     return Angle(angle * (base::pi / 180.f));
 }
@@ -449,7 +449,7 @@ inline constexpr Angle Angle::Full{base::tau}; //!< Predefined 360 degree angle 
 /// \see `degrees`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Angle radians(const float angle)
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr Angle radians(const float angle)
 {
     return Angle(angle);
 }
