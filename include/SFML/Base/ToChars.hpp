@@ -67,25 +67,18 @@ inline constexpr const long long powersOf10[] = {
 template <typename T>
 [[nodiscard, gnu::always_inline, gnu::flatten]] constexpr char* unsignedToChars(char* const first, const char* const last, T value)
 {
+    // `do-while` covers `value == 0` without a separate branch: we always emit
+    // at least one digit, then keep dividing while bits remain.
     char* p = first;
 
-    if (value == T{0})
-    {
-        if (p >= last)
-            return nullptr; // Buffer too small
-
-        *p++ = '0';
-        return p;
-    }
-
-    while (value > T{0})
+    do
     {
         if (p >= last)
             return nullptr; // Buffer too small
 
         *p++ = '0' + static_cast<char>(value % 10);
         value /= 10;
-    }
+    } while (value > T{0});
 
     reverseChars(first, p);
     return p;
@@ -224,39 +217,39 @@ template <typename T>
     if (scaled > safeLLongUpper) [[unlikely]]
         return nullptr;
 
-    const auto roundedScaledValue = static_cast<MakeUnsigned<long long>>(base::rint(scaled));
+    // `value` is non-negative at this point (signbit branch already negated it)
+    // and `scaled <= 9e18 < LLONG_MAX`, so signed cast is well-defined.
+    const auto roundedScaledValue = static_cast<long long>(base::rint(scaled));
+    const auto finalIntPart       = roundedScaledValue / multiplier;
+    auto       finalFracPart      = roundedScaledValue % multiplier;
 
-    const auto finalIntPart  = static_cast<long long>(roundedScaledValue) / multiplier;
-    const auto finalFracPart = static_cast<long long>(roundedScaledValue) % multiplier;
-
-    p = priv::unsignedToChars(p, last, finalIntPart); // End of integer part
+    p = priv::unsignedToChars(p, last, finalIntPart);
 
     if (p == nullptr)
-        return nullptr; // Buffer too small
+        return nullptr;
 
-    if (p >= last)
-        return nullptr; // Buffer too small for decimal point
+    if (last - p < precision + 1) // '.' + `precision` digits
+        return nullptr;
 
     *p++ = '.';
 
-    char fracBuffer[20]; // A buffer for the fractional part (`long long` max is 19 digits)
+    // Write the fractional digits directly into [p, p + precision), backward.
+    // The output is always exactly `precision` chars wide; any shortfall vs. the
+    // natural digit count is filled with leading zeros on the left.
+    char* const fracStart  = p;
+    char* const fracOutEnd = p + precision;
+    char*       c          = fracOutEnd - 1;
 
-    const char* const fracEnd    = priv::unsignedToChars(fracBuffer, fracBuffer + sizeof(fracBuffer), finalFracPart);
-    const int         fracLength = static_cast<int>(fracEnd - fracBuffer);
-    const int         numLeadingZeros = precision - fracLength;
+    while (finalFracPart > 0)
+    {
+        *c-- = '0' + static_cast<char>(finalFracPart % 10);
+        finalFracPart /= 10;
+    }
 
-    if (last - p < precision)
-        return nullptr; // Buffer too small for fractional part
+    while (c >= fracStart)
+        *c-- = '0';
 
-    // 1. Add leading zeros to the main buffer if needed. This is much faster than memmove.
-    for (int i = 0; i < numLeadingZeros; ++i)
-        *p++ = '0';
-
-    // 2. Copy the generated fractional digits from the temp buffer.
-    for (char* c = fracBuffer; c < fracEnd; ++c)
-        *p++ = *c;
-
-    return p;
+    return fracOutEnd;
 }
 
 } // namespace sf::base

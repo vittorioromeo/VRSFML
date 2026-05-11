@@ -7,6 +7,7 @@ if (NOT SFML_OS_EMSCRIPTEN AND NOT ARCH_ARM64)
             InputState.cpp
             ImGuiNotify.cpp
             Serialization.cpp
+            cJSON.c
             Sounds.cpp
             Steam.cpp
             CatNames.cpp
@@ -57,6 +58,7 @@ else()
             InputState.cpp
             ImGuiNotify.cpp
             Serialization.cpp
+            cJSON.c
             Sounds.cpp
             CatNames.cpp
             MainApp.cpp
