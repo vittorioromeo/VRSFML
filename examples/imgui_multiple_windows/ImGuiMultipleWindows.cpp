@@ -8,6 +8,7 @@
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
+#include "SFML/Window/WindowSettings.hpp" // IWYU pragma: keep
 
 #include "SFML/System/Clock.hpp"
 
@@ -34,7 +35,7 @@ int main()
 
     sf::ImGuiContext imGuiContext{sf::ImGuiContext::createOwningAtlas(sharedFontAtlas)};
 
-    auto childWindow = sf::RenderWindow::create(sf::RenderWindow::Settings{
+    auto childWindow = sf::RenderWindow::create({
         .size  = {640u, 480u},
         .title = "ImGui-SFML Child window",
         .vsync = true,

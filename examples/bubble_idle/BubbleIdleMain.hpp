@@ -35,11 +35,9 @@
 
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/Mouse.hpp"
-#include "SFML/Window/WindowSettings.hpp" // IWYU pragma: keep
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
-#include "SFML/System/Path.hpp"
 #include "SFML/System/Rect2.hpp"
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Vec2.hpp"
@@ -76,17 +74,18 @@ class Font;
 class GraphicsContext;
 class ImGuiContext;
 class OutFileStream;
+class Path;
 class PlaybackDevice;
 class RenderTarget;
 class RenderTexture;
 class RenderWindow;
+class Text;
 class Texture;
 class TextureAtlas;
 struct DrawTextureSettings;
 struct Listener;
 struct RenderStates;
 struct Sprite;
-class Text;
 struct TextData;
 struct View;
 } // namespace sf

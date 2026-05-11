@@ -5,6 +5,7 @@
 #include "SFML/Network/IpAddressUtils.hpp"
 
 #include "SFML/System/Time.hpp"
+#include "SFML/System/Utf8String.hpp"
 
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/String.hpp"

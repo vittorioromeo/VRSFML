@@ -13,8 +13,11 @@
 #include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/Window.hpp"
 #include "SFML/Window/WindowContext.hpp"
+#include "SFML/Window/WindowSettings.hpp" // IWYU pragma: keep
 
+#include "SFML/System/Angle.hpp"
 #include "SFML/System/Rect2.hpp"
+#include "SFML/System/Time.hpp"
 #include "SFML/System/Utf8String.hpp"
 
 #include "SFML/Base/Optional.hpp"

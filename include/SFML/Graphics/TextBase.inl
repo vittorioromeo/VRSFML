@@ -17,6 +17,7 @@
 
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
+#include "SFML/System/Utf8StringCodepoints.hpp" // IWYU pragma: keep
 
 #include "SFML/Base/SizeT.hpp"
 

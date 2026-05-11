@@ -1,5 +1,8 @@
 #include "SFML/System/Utf8String.hpp"
 
+#include "SFML/System/Utf8StringCodepoints.hpp"
+
+#include "SFML/Base/InitializerList.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
@@ -9,8 +12,6 @@
 #include "SFML/Base/Vector.hpp"
 
 #include <Doctest.hpp>
-
-#include <initializer_list>
 
 
 ////////////////////////////////////////////////////////////
@@ -385,7 +386,7 @@ TEST_CASE("[System] sf::Utf8String - mutation")
         sf::Utf8String s;
         s.reserve(128u);
         for (int i = 0; i < 10; ++i)
-            (void) s.appendCodepoint(U'カ'); // 3 bytes each
+            (void)s.appendCodepoint(U'カ'); // 3 bytes each
         CHECK(s.byteSize() == 30u);
         CHECK(s.codepointCount() == 10u);
     }
@@ -467,7 +468,7 @@ TEST_CASE("[System] sf::Utf8String - equality and conversion")
 
         CHECK(taken.size() == 67u);
         CHECK(taken.data() == originalData); // heap pointer transferred, no copy
-        CHECK(s.empty());                  // source is moved-from
+        CHECK(s.empty());                    // source is moved-from
     }
 
     SECTION("asBytes() && on a returned-by-value temporary skips the copy")

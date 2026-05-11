@@ -8,6 +8,7 @@
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/WindowContext.hpp"
 #include "SFML/Window/WindowHandle.hpp"
+#include "SFML/Window/WindowSettings.hpp" // IWYU pragma: keep
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"

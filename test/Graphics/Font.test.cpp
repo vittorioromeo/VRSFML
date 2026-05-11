@@ -18,6 +18,7 @@
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
 
+#include "SFML/Base/String.hpp"
 #include "SFML/Base/Trait/IsCopyAssignable.hpp"
 #include "SFML/Base/Trait/IsCopyConstructible.hpp"
 #include "SFML/Base/Trait/IsDefaultConstructible.hpp"
@@ -25,8 +26,6 @@
 #include "SFML/Base/Trait/IsMoveConstructible.hpp"
 
 #include <Doctest.hpp>
-
-#include <string>
 
 
 TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
@@ -51,11 +50,11 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
 
         SECTION("Valid file")
         {
-            const std::u32string filenameSuffixes[] = {U"", U"-ń", U"-🐌"};
+            const sf::Path filenameSuffixes[] = {U"", U"-ń", U"-🐌"};
             for (const auto& filenameSuffix : filenameSuffixes)
             {
                 const sf::Path filename = U"tuffy" + filenameSuffix + U".ttf";
-                INFO("Filename: " << reinterpret_cast<const char*>(filename.to<std::u8string>().c_str()));
+                INFO("Filename: " << filename.to<sf::base::String>().cStr());
 
                 const auto font = sf::Font::openFromFile(filename).value();
 

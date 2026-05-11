@@ -13,10 +13,10 @@
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/Vulkan.hpp"
 #include "SFML/Window/WindowBase.hpp"
 #include "SFML/Window/WindowContext.hpp"
+#include "SFML/Window/WindowSettings.hpp" // IWYU pragma: keep
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"

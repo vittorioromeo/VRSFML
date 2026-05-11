@@ -19,8 +19,6 @@
 
 #include <Doctest.hpp>
 
-#include <string>
-
 
 TEST_CASE("[Audio] sf::InputSoundFile")
 {
@@ -42,14 +40,13 @@ TEST_CASE("[Audio] sf::InputSoundFile")
 
         SECTION("Valid file")
         {
-            const std::u32string filenameSuffixes[] = {U"", U"-ń", U"-🐌"};
+            const sf::Path filenameSuffixes[] = {U"", U"-ń", U"-🐌"};
             for (const auto& filenameSuffix : filenameSuffixes)
             {
 
                 SECTION("flac")
                 {
                     const sf::Path filename = U"ding" + filenameSuffix + U".flac";
-                    INFO("Filename: " << reinterpret_cast<const char*>(filename.to<std::u8string>().c_str()));
 
                     const auto inputSoundFile = sf::InputSoundFile::openFromFile(filename).value();
                     CHECK(inputSoundFile.getSampleCount() == 87'798);
@@ -62,7 +59,6 @@ TEST_CASE("[Audio] sf::InputSoundFile")
                 SECTION("mp3")
                 {
                     const sf::Path filename = U"ding" + filenameSuffix + U".mp3";
-                    INFO("Filename: " << reinterpret_cast<const char*>(filename.to<std::u8string>().c_str()));
 
                     const auto inputSoundFile = sf::InputSoundFile::openFromFile(filename).value();
                     CHECK(inputSoundFile.getSampleCount() == 87'798);
@@ -75,7 +71,6 @@ TEST_CASE("[Audio] sf::InputSoundFile")
                 SECTION("ogg")
                 {
                     const sf::Path filename = U"doodle_pop" + filenameSuffix + U".ogg";
-                    INFO("Filename: " << reinterpret_cast<const char*>(filename.to<std::u8string>().c_str()));
 
                     const auto inputSoundFile = sf::InputSoundFile::openFromFile(filename).value();
                     CHECK(inputSoundFile.getSampleCount() == 2'116'992);
@@ -88,7 +83,6 @@ TEST_CASE("[Audio] sf::InputSoundFile")
                 SECTION("wav")
                 {
                     const sf::Path filename = U"killdeer" + filenameSuffix + U".wav";
-                    INFO("Filename: " << reinterpret_cast<const char*>(filename.to<std::u8string>().c_str()));
 
                     const auto inputSoundFile = sf::InputSoundFile::openFromFile(filename).value();
                     CHECK(inputSoundFile.getSampleCount() == 112'941);

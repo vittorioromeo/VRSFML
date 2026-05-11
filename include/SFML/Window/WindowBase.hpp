@@ -9,7 +9,6 @@
 #include "SFML/Window/Export.hpp"
 
 #include "SFML/Window/WindowHandle.hpp"
-#include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/GlobalAnchorPointMixin.hpp"
 #include "SFML/System/LocalAnchorPointMixin.hpp"
@@ -33,6 +32,7 @@ class Cursor;
 class Event;
 class Time;
 class Utf8String;
+struct WindowSettings;
 } // namespace sf
 
 namespace sf::priv
@@ -56,12 +56,6 @@ class SFML_WINDOW_API WindowBase : public GlobalAnchorPointMixin, public LocalAn
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Window creation settings
-    ///
-    ////////////////////////////////////////////////////////////
-    using Settings = WindowSettings;
-
-    ////////////////////////////////////////////////////////////
     /// \brief Create a new window from a settings aggregate
     ///
     /// Creates a window with the size, title, style and pacing
@@ -78,7 +72,7 @@ public:
     /// \return The newly created window on success, `base::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<WindowBase> create(const Settings& windowSettings);
+    [[nodiscard]] static base::Optional<WindowBase> create(const WindowSettings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a window wrapping an existing native control

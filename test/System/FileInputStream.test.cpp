@@ -7,6 +7,7 @@
 #include "SFML/System/Path.hpp"
 
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Trait/IsCopyAssignable.hpp"
 #include "SFML/Base/Trait/IsCopyConstructible.hpp"
@@ -15,8 +16,6 @@
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <Doctest.hpp>
-
-#include <string>
 
 
 using sf::testing::TemporaryFile;
@@ -76,11 +75,11 @@ TEST_CASE("[System] sf::FileInputStream")
 #ifndef SFML_SYSTEM_EMSCRIPTEN // TODO P1: throws an exception on Emscripten
     SECTION("open()")
     {
-        const std::u32string filenameSuffixes[] = {U"", U"-ń", U"-🐌"};
+        const sf::Path filenameSuffixes[] = {U"", U"-ń", U"-🐌"};
         for (const auto& filenameSuffix : filenameSuffixes)
         {
             const sf::Path filename = U"test" + filenameSuffix + U".txt";
-            INFO("Filename: " << reinterpret_cast<const char*>(filename.to<std::u8string>().c_str()));
+            INFO("Filename: " << filename.to<sf::base::String>().cStr());
 
             auto fileInputStream = sf::FileInputStream::open(filename).value();
             CHECK(fileInputStream.read(buffer, 5).value() == 5);

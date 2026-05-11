@@ -20,8 +20,6 @@
 
 #include <Doctest.hpp>
 
-#include <string>
-
 
 TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
 {
@@ -96,13 +94,11 @@ TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
 
         SECTION("Valid file")
         {
-            const std::u32string filenameSuffixes[]{U"", U"-ń", U"-🐌"};
+            const sf::Path filenameSuffixes[]{U"", U"-ń", U"-🐌"};
 
             for (const auto& filenameSuffix : filenameSuffixes)
             {
                 const sf::Path filename = U"ding" + filenameSuffix + U".flac";
-
-                INFO("Filename: " << reinterpret_cast<const char*>(filename.to<std::u8string>().c_str()));
 
                 const auto soundBuffer = sf::SoundBuffer::loadFromFile("ding.flac").value();
 
@@ -148,16 +144,14 @@ TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("saveToFile()")
     {
-        const std::u32string stems[]{U"tmp", U"tmp-ń", U"tmp-🐌"};
-        const std::u32string extensions[]{U".wav", U".ogg", U".flac"};
+        const sf::Path stems[]{U"tmp", U"tmp-ń", U"tmp-🐌"};
+        const sf::Path extensions[]{U".wav", U".ogg", U".flac"};
 
         for (const auto& stem : stems)
         {
             for (const auto& extension : extensions)
             {
-                const auto filename = sf::Path::getTempDirectory().value() / sf::Path(stem + extension);
-
-                INFO("Filename: " << reinterpret_cast<const char*>(filename.to<std::u8string>().c_str()));
+                const auto filename = sf::Path::getTempDirectory().value() / (stem + extension);
 
                 {
                     const auto soundBuffer = sf::SoundBuffer::loadFromFile("ding.flac").value();

@@ -15,8 +15,6 @@
 
 #include <Doctest.hpp>
 
-#include <string>
-
 
 TEST_CASE("[Audio] sf::OutputSoundFile")
 {
@@ -29,17 +27,15 @@ TEST_CASE("[Audio] sf::OutputSoundFile")
         STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::OutputSoundFile));
     }
 
-    const std::u32string stems[]{U"tmp", U"tmp-ń", U"tmp-🐌"};
-    const std::u32string extensions[]{U".wav", U".ogg", U".flac"};
+    const sf::Path stems[]{U"tmp", U"tmp-ń", U"tmp-🐌"};
+    const sf::Path extensions[]{U".wav", U".ogg", U".flac"};
 
     for (const auto& stem : stems)
     {
         for (const auto& extension : extensions)
         {
-            const auto           filename = sf::Path::getTempDirectory().value() / sf::Path(stem + extension);
+            const auto           filename = sf::Path::getTempDirectory().value() / (stem + extension);
             const sf::ChannelMap channelMap{sf::SoundChannel::FrontLeft, sf::SoundChannel::FrontRight};
-
-            INFO("Filename: " << std::string(reinterpret_cast<const char*>(filename.to<std::u8string>().c_str())));
 
             SECTION("openFromFile()")
             {

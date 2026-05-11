@@ -10,6 +10,7 @@
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Time.hpp"
+#include "SFML/System/Utf8String.hpp"
 
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
