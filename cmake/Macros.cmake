@@ -58,6 +58,33 @@ function(sfml_set_common_ios_properties target)
     endif()
 endfunction()
 
+# Apply the Emscripten-specific compile and link options to `target`.
+#
+# Required for any TU that participates in a `--shared-memory` link (i.e.
+# every Emscripten build of VRSFML): the options pull in `-pthread`, which
+# enables the `atomics` and `bulk-memory` Wasm features. Without them,
+# `wasm-ld` rejects the resulting `.o` files at link time with
+# `--shared-memory is disallowed because it was not compiled with 'atomics'
+# or 'bulk-memory' features`.
+#
+# Usage:
+#     sfml_apply_emscripten_options(<target>)             # PRIVATE (default)
+#     sfml_apply_emscripten_options(<target> INTERFACE)   # for INTERFACE libs
+#
+# On non-Emscripten builds this is a no-op.
+macro(sfml_apply_emscripten_options target)
+    if(SFML_OS_EMSCRIPTEN)
+        set(_sfml_emscripten_visibility "PRIVATE")
+        if(${ARGC} GREATER 1)
+            set(_sfml_emscripten_visibility "${ARGV1}")
+        endif()
+        target_compile_options(${target} ${_sfml_emscripten_visibility} ${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS})
+        target_link_options(${target} ${_sfml_emscripten_visibility} ${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS})
+        unset(_sfml_emscripten_visibility)
+    endif()
+endmacro()
+
+
 # add a new target which is a SFML library
 # example: sfml_add_library(Graphics
 #                           SOURCES sprite.cpp image.cpp ...
@@ -80,9 +107,8 @@ macro(sfml_add_library module)
     add_library(SFML::${module} ALIAS ${target})
 
     # set required compile/link options for emscripten
+    sfml_apply_emscripten_options(${target})
     if(SFML_OS_EMSCRIPTEN)
-        target_compile_options(${target} PRIVATE ${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS})
-        target_link_options(${target} PRIVATE ${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS})
         set_target_properties(${target} PROPERTIES SUFFIX ".html")
     endif()
 
@@ -422,9 +448,8 @@ macro(sfml_add_example target)
     endif()
 
     # set required compile/link options for emscripten and preload resource files
+    sfml_apply_emscripten_options(${target})
     if(SFML_OS_EMSCRIPTEN)
-        target_compile_options(${target} PRIVATE ${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS})
-        target_link_options(${target} PRIVATE ${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS})
         set_target_properties(${target} PROPERTIES SUFFIX ".html")
 
         if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/resources)
@@ -471,10 +496,8 @@ function(sfml_add_test target SOURCES DEPENDS)
     add_executable(${target} ${SOURCES})
 
     # set required compile/link options for emscripten
+    sfml_apply_emscripten_options(${target})
     if(SFML_OS_EMSCRIPTEN)
-        target_compile_options(${target} PRIVATE ${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS})
-        target_link_options(${target} PRIVATE ${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS})
-
         if (${target} STREQUAL "test-sfml-graphics" OR ${target} STREQUAL "test-sfml-audio")
             set_target_properties(${target} PROPERTIES SUFFIX ".html")
         else()

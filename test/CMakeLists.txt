@@ -33,9 +33,8 @@ target_include_directories(doctest SYSTEM INTERFACE ${DOCTEST_INCLUDE_DIRS})
 # add flags required for emscripten support (e.g. pthread)
 if(SFML_OS_EMSCRIPTEN)
     target_compile_definitions(doctest INTERFACE DOCTEST_CONFIG_COLORS_NONE)
-    target_compile_options(doctest INTERFACE ${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS})
-    target_link_options(doctest INTERFACE ${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS})
 endif()
+sfml_apply_emscripten_options(doctest INTERFACE)
 
 set(TEST_SRCROOT ${PROJECT_SOURCE_DIR}/test)
 file(GLOB TEST_UTILITIES_SRC CONFIGURE_DEPENDS "${TEST_SRCROOT}/TestUtilities/*.cpp" "${TEST_SRCROOT}/TestUtilities/*.hpp" "${TEST_SRCROOT}/TestUtilities/*.inl")
@@ -92,6 +91,10 @@ add_subdirectory(Graphics)
 add_subdirectory(Network)
 add_subdirectory(System)
 add_subdirectory(Window)
+
+if(TARGET ExampleUtils)
+    add_subdirectory(ExampleUtils)
+endif()
 
 if(SFML_OS_ANDROID AND DEFINED ENV{LIBCXX_SHARED_SO})
     # Because we can only write to the tmp directory on the Android virtual device we will need to build our directory tree under it
@@ -185,6 +188,10 @@ if(SFML_RUNTESTS_PARALLEL EQUAL 0)
 endif()
 
 add_custom_target(runtests DEPENDS test-sfml-base test-sfml-system test-sfml-glutils test-sfml-window test-sfml-graphics test-sfml-network test-sfml-audio)
+
+if(TARGET test-example-utils)
+    add_dependencies(runtests test-example-utils)
+endif()
 add_custom_command(TARGET runtests
                    COMMENT "Run tests"
                    POST_BUILD
