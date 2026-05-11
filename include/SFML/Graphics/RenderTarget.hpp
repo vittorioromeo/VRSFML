@@ -86,6 +86,13 @@ public:
     };
 
     ////////////////////////////////////////////////////////////
+    enum : base::SizeT
+    {
+        drawQuadsMaxQuadsPerCall = 65'536u, //!< Max quad count for `drawQuads` (precomputed-index-buffer capacity).
+        drawQuadsMaxVerticesPerCall = drawQuadsMaxQuadsPerCall * 4u, //!< Max vertex count for `drawQuads` (multiple of 4).
+    };
+
+    ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
@@ -464,7 +471,22 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Draw quads defined by an array of vertices and precomputed quad indices
     ///
-    /// \param settings Draw settings
+    /// Each consecutive group of 4 vertices in `settings.vertexSpan` is
+    /// interpreted as one quad and expanded into two triangles by a
+    /// precomputed internal index buffer (pattern `0,1,2,1,2,3` per quad).
+    /// Vertex layout per quad must therefore place the shared diagonal
+    /// between the 2nd and 3rd vertex.
+    ///
+    /// \param settings Draw settings. `settings.vertexSpan.size()` must
+    ///                 be a multiple of 4 and at most
+    ///                 `drawQuadsMaxVerticesPerCall` (i.e. at most
+    ///                 `drawQuadsMaxQuadsPerCall` quads). Larger draws
+    ///                 must be split by the caller, or use
+    ///                 `drawIndexedVertices` with a caller-supplied
+    ///                 index buffer.
+    ///
+    /// \see `drawQuadsMaxQuadsPerCall`, `drawQuadsMaxVerticesPerCall`,
+    ///      `drawIndexedVertices`
     ///
     ////////////////////////////////////////////////////////////
     void drawQuads(const DrawQuadsSettings& settings, const RenderStates& states = {});
