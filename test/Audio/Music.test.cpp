@@ -27,8 +27,6 @@
 
 #include <Doctest.hpp>
 
-#include <string>
-
 
 TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
 {
@@ -64,12 +62,11 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
 
         SECTION("Valid file")
         {
-            const std::u32string filenameSuffixes[] = {U"", U"-ń", U"-🐌"};
+            const sf::Path filenameSuffixes[] = {U"", U"-ń", U"-🐌"};
 
             for (const auto& filenameSuffix : filenameSuffixes)
             {
                 const sf::Path filename = U"ding" + filenameSuffix + U".mp3";
-                INFO("Filename: " << reinterpret_cast<const char*>(filename.to<std::u8string>().c_str()));
 
                 auto musicReader = sf::MusicReader::openFromFile("ding.mp3").value();
                 CHECK(musicReader.getDuration() == sf::microseconds(1'990'884));

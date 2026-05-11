@@ -17,6 +17,7 @@
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
 #include "SFML/System/Utf8String.hpp"
+#include "SFML/System/Utf8StringCodepoints.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/Restrict.hpp"

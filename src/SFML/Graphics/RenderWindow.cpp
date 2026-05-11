@@ -11,8 +11,9 @@
 #include "SFML/Graphics/RenderTarget.hpp"
 
 #include "SFML/Window/ContextSettings.hpp"
-#include "SFML/Window/WindowBase.hpp"
+#include "SFML/Window/Window.hpp"
 #include "SFML/Window/WindowHandle.hpp"
+#include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/GLUtils/GLCheck.hpp"
 #include "SFML/GLUtils/Glad.hpp"
@@ -37,7 +38,7 @@ RenderWindow::RenderWindow(base::PassKey<RenderWindow>&&, Window&& window) : Win
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<RenderWindow> RenderWindow::create(const Settings& windowSettings)
+base::Optional<RenderWindow> RenderWindow::create(const WindowSettings& windowSettings)
 {
     auto window = Window::create(windowSettings);
 

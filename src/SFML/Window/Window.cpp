@@ -73,7 +73,7 @@ struct Window::Window::Impl
 
 
 ////////////////////////////////////////////////////////////
-Window::Window(base::PassKey<Window>&&, WindowBase&& windowBase, const Settings& windowSettings, unsigned int bitsPerPixel) :
+Window::Window(base::PassKey<Window>&&, WindowBase&& windowBase, const WindowSettings& windowSettings, unsigned int bitsPerPixel) :
     WindowBase(SFML_BASE_MOVE(windowBase)),
     m_impl(WindowContext::createGlContext(windowSettings.contextSettings, getWindowImpl(), bitsPerPixel))
 {
@@ -90,7 +90,7 @@ Window::Window(base::PassKey<Window>&&, WindowBase&& windowBase, const Settings&
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Window> Window::create(const Settings& windowSettings)
+base::Optional<Window> Window::create(const WindowSettings& windowSettings)
 {
     auto windowBase = WindowBase::create(windowSettings);
 

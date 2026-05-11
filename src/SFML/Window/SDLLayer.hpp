@@ -11,7 +11,6 @@
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/Mouse.hpp"
 #include "SFML/Window/WindowHandle.hpp"
-#include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
@@ -46,6 +45,7 @@ namespace sf
 class Utf8String;
 struct ContextSettings;
 struct VideoMode;
+struct WindowSettings;
 } // namespace sf
 
 

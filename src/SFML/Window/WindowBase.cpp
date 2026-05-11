@@ -12,6 +12,7 @@
 #include "SFML/Window/SDLWindowImpl.hpp"
 #include "SFML/Window/Vulkan.hpp"
 #include "SFML/Window/WindowHandle.hpp"
+#include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Time.hpp"
@@ -46,7 +47,7 @@ WindowBase::WindowBase(base::PassKey<WindowBase>&&, base::UniquePtr<priv::SDLWin
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<WindowBase> WindowBase::create(const Settings& windowSettings)
+base::Optional<WindowBase> WindowBase::create(const WindowSettings& windowSettings)
 {
     auto impl = priv::SDLWindowImpl::create(windowSettings);
 

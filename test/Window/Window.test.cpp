@@ -2,6 +2,7 @@
 
 #include "SFML/Window/WindowContext.hpp"
 #include "SFML/Window/WindowHandle.hpp"
+#include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Priv/Vec2Base.hpp"
 
@@ -102,7 +103,7 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
     SECTION("Multiple windows display orderings")
     {
         auto window      = sf::Window::create({.size{256u, 256u}, .title = "A"}).value();
-        auto childWindow = sf::Window::create(sf::Window::Settings{.size{256u, 256u}, .title = "B"});
+        auto childWindow = sf::Window::create(sf::WindowSettings{.size{256u, 256u}, .title = "B"});
 
         // Variant 1: parent display, child reset, parent display
         window.display();

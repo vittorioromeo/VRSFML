@@ -12,7 +12,6 @@
 #include "SFML/Network/SocketHandle.hpp"
 
 #include "SFML/System/Time.hpp"
-#include "SFML/System/Utf8String.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
@@ -30,6 +29,7 @@ namespace sf
 class TcpListener;
 class IpAddress;
 class Packet;
+class Utf8String;
 } // namespace sf
 
 namespace sf::base

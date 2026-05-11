@@ -10,6 +10,7 @@
 #include "SFML/Network/TcpSocket.hpp"
 
 #include "SFML/System/IO.hpp"
+#include "SFML/System/Utf8String.hpp"
 
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
