@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
-#include "SFML/System/UnicodeString.hpp"
+#include "SFML/System/Utf8String.hpp"
 
 
 namespace sf
@@ -23,7 +23,7 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct SFML_GRAPHICS_API FontInfo
 {
-    UnicodeString family; //!< Font family name (e.g. "DejaVu Sans")
+    Utf8String family; //!< Font family name (e.g. "DejaVu Sans"), UTF-8 encoded
 };
 
 } // namespace sf

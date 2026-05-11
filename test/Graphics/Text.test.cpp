@@ -18,7 +18,7 @@
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
-#include "SFML/System/UnicodeString.hpp"
+#include "SFML/System/Utf8String.hpp"
 
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
@@ -37,8 +37,8 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!SFML_BASE_IS_CONSTRUCTIBLE(sf::Text, sf::Font&&, sf::UnicodeString, unsigned int));
-        STATIC_CHECK(!SFML_BASE_IS_CONSTRUCTIBLE(sf::Text, const sf::Font&&, sf::UnicodeString, unsigned int));
+        STATIC_CHECK(!SFML_BASE_IS_CONSTRUCTIBLE(sf::Text, sf::Font&&, sf::Utf8String, unsigned int));
+        STATIC_CHECK(!SFML_BASE_IS_CONSTRUCTIBLE(sf::Text, const sf::Font&&, sf::Utf8String, unsigned int));
         STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Text));
         STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Text));
         STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Text));

@@ -126,7 +126,7 @@ bool setWindowNonExclusiveFullscreenIfNeeded([[maybe_unused]] const bool      ha
 {
     return "size={" + sf::base::toString(settings.size.x) + ", " + sf::base::toString(settings.size.y) + "}, " + //
            "bitsPerPixel=" + sf::base::toString(settings.bitsPerPixel) + ", " +                                  //
-           "title=\"" + settings.title.toAnsiString<sf::base::String>() + "\", " +                               //
+           "title=\"" + settings.title.asBytes() + "\", " +                                                      //
            "fullscreen=" + sf::base::toString(settings.fullscreen) + ", " +                                      //
            "resizable=" + sf::base::toString(settings.resizable) + ", " +                                        //
            "closable=" + sf::base::toString(settings.closable) + ", " +                                          //
@@ -949,9 +949,9 @@ void SDLWindowImpl::setSize(const Vec2u size)
 
 
 ////////////////////////////////////////////////////////////
-void SDLWindowImpl::setTitle(const UnicodeString& title)
+void SDLWindowImpl::setTitle(const Utf8String& title)
 {
-    if (!SDL_SetWindowTitle(m_impl->sdlWindow, title.toAnsiString<base::String>().data()))
+    if (!SDL_SetWindowTitle(m_impl->sdlWindow, title.cStr()))
         err() << "Failed to set window title: " << SDL_GetError();
 }
 

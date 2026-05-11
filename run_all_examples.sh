@@ -37,7 +37,6 @@ examples=(
     stencil
     tennis
     tetris_survivors
-    # text_benchmark
     # voip
     # vulkan
 )

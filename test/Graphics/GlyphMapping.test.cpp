@@ -10,7 +10,8 @@
 
 #include "SFML/System/LifetimeDependee.hpp"
 #include "SFML/System/Path.hpp"
-#include "SFML/System/UnicodeString.hpp"
+
+#include "SFML/Base/SizeT.hpp"
 
 #include <Doctest.hpp>
 
@@ -21,14 +22,15 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * doctest::skip(skipDisplayTests))
     auto fontFace        = sf::FontFace::openFromFile("tuffy.ttf").value();
     auto atlas           = sf::TextureAtlas(sf::Texture::create({1024u, 1024u}, {.smooth = true}).value());
 
-    const sf::UnicodeString testCodePoints = U"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";
+    static constexpr char32_t testCodePoints[] = U"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";
+    static constexpr sf::base::SizeT testCodePointsCount = (sizeof(testCodePoints) / sizeof(testCodePoints[0])) - 1u;
 
     SECTION("loadGlyphs basic")
     {
         auto result = fontFace.loadGlyphs(atlas,
                                           {
-                                              .codePoints       = testCodePoints.getData(),
-                                              .codePointCount   = testCodePoints.getSize(),
+                                              .codePoints       = testCodePoints,
+                                              .codePointCount   = testCodePointsCount,
                                               .characterSize    = 24,
                                               .bold             = false,
                                               .outlineThickness = 0.f,
@@ -49,8 +51,8 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * doctest::skip(skipDisplayTests))
         auto mapping = fontFace
                            .loadGlyphs(atlas,
                                        {
-                                           .codePoints       = testCodePoints.getData(),
-                                           .codePointCount   = testCodePoints.getSize(),
+                                           .codePoints       = testCodePoints,
+                                           .codePointCount   = testCodePointsCount,
                                            .characterSize    = 24,
                                            .bold             = false,
                                            .outlineThickness = 0.f,
@@ -70,8 +72,8 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * doctest::skip(skipDisplayTests))
         auto mapping = fontFace
                            .loadGlyphs(atlas,
                                        {
-                                           .codePoints       = testCodePoints.getData(),
-                                           .codePointCount   = testCodePoints.getSize(),
+                                           .codePoints       = testCodePoints,
+                                           .codePointCount   = testCodePointsCount,
                                            .characterSize    = 24,
                                            .bold             = false,
                                            .outlineThickness = 0.f,
@@ -85,8 +87,8 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * doctest::skip(skipDisplayTests))
     SECTION("loadGlyphs with outline")
     {
         auto result = fontFace.loadGlyphs(atlas,
-                                          {.codePoints       = testCodePoints.getData(),
-                                           .codePointCount   = testCodePoints.getSize(),
+                                          {.codePoints       = testCodePoints,
+                                           .codePointCount   = testCodePointsCount,
                                            .characterSize    = 24,
                                            .bold             = false,
                                            .outlineThickness = 2.f});
@@ -108,8 +110,8 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * doctest::skip(skipDisplayTests))
         auto mapping = fontFace
                            .loadGlyphs(atlas,
                                        {
-                                           .codePoints       = testCodePoints.getData(),
-                                           .codePointCount   = testCodePoints.getSize(),
+                                           .codePoints       = testCodePoints,
+                                           .codePointCount   = testCodePointsCount,
                                            .characterSize    = 24,
                                            .bold             = false,
                                            .outlineThickness = 2.f,
@@ -137,8 +139,8 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * doctest::skip(skipDisplayTests))
         auto mapping = fontFace
                            .loadGlyphs(atlas,
                                        {
-                                           .codePoints       = testCodePoints.getData(),
-                                           .codePointCount   = testCodePoints.getSize(),
+                                           .codePoints       = testCodePoints,
+                                           .codePointCount   = testCodePointsCount,
                                            .characterSize    = 24,
                                            .bold             = false,
                                            .outlineThickness = 2.f,
@@ -161,8 +163,8 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * doctest::skip(skipDisplayTests))
         auto mapping = fontFace
                            .loadGlyphs(atlas,
                                        {
-                                           .codePoints       = testCodePoints.getData(),
-                                           .codePointCount   = testCodePoints.getSize(),
+                                           .codePoints       = testCodePoints,
+                                           .codePointCount   = testCodePointsCount,
                                            .characterSize    = 18,
                                            .bold             = false,
                                            .outlineThickness = 3.f,
@@ -184,8 +186,8 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * doctest::skip(skipDisplayTests))
         auto mapping = fontFace
                            .loadGlyphs(atlas,
                                        {
-                                           .codePoints       = testCodePoints.getData(),
-                                           .codePointCount   = testCodePoints.getSize(),
+                                           .codePoints       = testCodePoints,
+                                           .codePointCount   = testCodePointsCount,
                                            .characterSize    = 24,
                                            .bold             = false,
                                            .outlineThickness = 0.f,
@@ -205,8 +207,8 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * doctest::skip(skipDisplayTests))
         auto mapping = fontFace
                            .loadGlyphs(atlas,
                                        {
-                                           .codePoints       = testCodePoints.getData(),
-                                           .codePointCount   = testCodePoints.getSize(),
+                                           .codePoints       = testCodePoints,
+                                           .codePointCount   = testCodePointsCount,
                                            .characterSize    = 24,
                                            .bold             = false,
                                            .outlineThickness = 0.f,
@@ -229,8 +231,8 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * doctest::skip(skipDisplayTests))
 
         auto result = fontFace.loadGlyphs(tinyAtlas,
                                           {
-                                              .codePoints       = testCodePoints.getData(),
-                                              .codePointCount   = testCodePoints.getSize(),
+                                              .codePoints       = testCodePoints,
+                                              .codePointCount   = testCodePointsCount,
                                               .characterSize    = 24,
                                               .bold             = false,
                                               .outlineThickness = 0.f,
@@ -249,8 +251,8 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * doctest::skip(skipDisplayTests))
                 auto localMapping = fontFace
                                         .loadGlyphs(atlas,
                                                     {
-                                                        .codePoints       = testCodePoints.getData(),
-                                                        .codePointCount   = testCodePoints.getSize(),
+                                                        .codePoints       = testCodePoints,
+                                                        .codePointCount   = testCodePointsCount,
                                                         .characterSize    = 24,
                                                         .bold             = false,
                                                         .outlineThickness = 0.f,
@@ -273,8 +275,8 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * doctest::skip(skipDisplayTests))
             auto mapping1 = fontFace
                                 .loadGlyphs(atlas,
                                             {
-                                                .codePoints       = testCodePoints.getData(),
-                                                .codePointCount   = testCodePoints.getSize(),
+                                                .codePoints       = testCodePoints,
+                                                .codePointCount   = testCodePointsCount,
                                                 .characterSize    = 24,
                                                 .bold             = false,
                                                 .outlineThickness = 0.f,
@@ -284,8 +286,8 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * doctest::skip(skipDisplayTests))
             auto mapping2 = fontFace
                                 .loadGlyphs(atlas,
                                             {
-                                                .codePoints       = testCodePoints.getData(),
-                                                .codePointCount   = testCodePoints.getSize(),
+                                                .codePoints       = testCodePoints,
+                                                .codePointCount   = testCodePointsCount,
                                                 .characterSize    = 18,
                                                 .bold             = false,
                                                 .outlineThickness = 0.f,
@@ -307,8 +309,8 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * doctest::skip(skipDisplayTests))
             auto mapping = fontFace
                                .loadGlyphs(atlas,
                                            {
-                                               .codePoints       = testCodePoints.getData(),
-                                               .codePointCount   = testCodePoints.getSize(),
+                                               .codePoints       = testCodePoints,
+                                               .codePointCount   = testCodePointsCount,
                                                .characterSize    = 24,
                                                .bold             = false,
                                                .outlineThickness = 0.f,
@@ -334,8 +336,8 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * doctest::skip(skipDisplayTests))
             auto mapping = fontFace
                                .loadGlyphs(atlas,
                                            {
-                                               .codePoints       = testCodePoints.getData(),
-                                               .codePointCount   = testCodePoints.getSize(),
+                                               .codePoints       = testCodePoints,
+                                               .codePointCount   = testCodePointsCount,
                                                .characterSize    = 24,
                                                .bold             = false,
                                                .outlineThickness = 0.f,
@@ -361,8 +363,8 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * doctest::skip(skipDisplayTests))
             auto mapping = fontFace
                                .loadGlyphs(atlas,
                                            {
-                                               .codePoints       = testCodePoints.getData(),
-                                               .codePointCount   = testCodePoints.getSize(),
+                                               .codePoints       = testCodePoints,
+                                               .codePointCount   = testCodePointsCount,
                                                .characterSize    = 24,
                                                .bold             = false,
                                                .outlineThickness = 0.f,

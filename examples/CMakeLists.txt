@@ -1,4 +1,9 @@
+# ===========================================================================
 # ExampleUtils library
+#
+# General-purpose example helpers (Sampler, Scaling, MiniFmt, LoadedSound, ...).
+# Profiling lives in its own pair of libraries below.
+# ===========================================================================
 set(INCROOT ${PROJECT_SOURCE_DIR}/examples/include/ExampleUtils)
 set(SRCROOT ${PROJECT_SOURCE_DIR}/examples/src/ExampleUtils)
 
@@ -6,10 +11,6 @@ file(GLOB SRC CONFIGURE_DEPENDS "${INCROOT}/*.hpp" "${INCROOT}/*.inl" "${SRCROOT
 
 if(NOT SFML_BUILD_AUDIO)
     list(REMOVE_ITEM SRC "${SRCROOT}/LoadedSound.cpp")
-endif()
-
-if(NOT SFML_BUILD_IMGUI)
-    list(REMOVE_ITEM SRC "${SRCROOT}/ProfilerImGui.cpp")
 endif()
 
 add_library(ExampleUtils STATIC ${SRC})
@@ -20,8 +21,52 @@ if(SFML_BUILD_AUDIO)
     target_link_libraries(ExampleUtils PRIVATE SFML::Audio)
 endif()
 
+
+# ===========================================================================
+# ExampleProfiler libraries (two flavors: enabled / disabled)
+#
+# Both compile the same source(s) but with different `SFEX_PROFILER_ENABLED`
+# states. Each example chooses one (or links neither, if it doesn't include
+# the profiler header at all):
+#
+#     target_link_libraries(my_example PRIVATE ExampleProfilerEnabled)
+#     target_link_libraries(my_example PRIVATE ExampleProfilerDisabled)
+#
+# The `SFEX_PROFILER_ENABLED` macro is `PUBLIC` on the enabled variant, so
+# linking it propagates the define to every consumer TU (no manual
+# `#define SFEX_PROFILER_ENABLED` needed). The link-check tag in
+# `Profiler.hpp` then guarantees the consumer's macro state matches the
+# library variant it linked against -- mismatches surface as
+# `undefined reference to sfex::priv::sfexProfilerLinkCheck*()`.
+# ===========================================================================
 if(SFML_BUILD_IMGUI)
-    target_link_libraries(ExampleUtils PRIVATE SFML::ImGui ImGui::ImGui)
+    set(PROFILER_INCROOT ${PROJECT_SOURCE_DIR}/examples/include/ExampleProfiler)
+    set(PROFILER_SRCROOT ${PROJECT_SOURCE_DIR}/examples/src/ExampleProfiler)
+
+    file(GLOB PROFILER_SRC CONFIGURE_DEPENDS
+        "${PROFILER_INCROOT}/*.hpp"
+        "${PROFILER_INCROOT}/*.inl"
+        "${PROFILER_SRCROOT}/*.hpp"
+        "${PROFILER_SRCROOT}/*.inl"
+        "${PROFILER_SRCROOT}/*.cpp")
+
+    function(sfml_add_example_profiler target_name enable_macro)
+        add_library(${target_name} STATIC ${PROFILER_SRC})
+
+        target_link_libraries(${target_name} PUBLIC SFML::System SFML::Window SFML::Graphics)
+        target_link_libraries(${target_name} PRIVATE SFML::ImGui ImGui::ImGui)
+        target_link_libraries(${target_name} PUBLIC ExampleUtils) # for `ExampleUtils/Sampler.hpp`
+
+        target_include_directories(${target_name} PRIVATE ${PROJECT_SOURCE_DIR}/examples/include)
+
+        if(${enable_macro})
+            # PUBLIC so every consumer TU of this variant gets the define.
+            target_compile_definitions(${target_name} PUBLIC SFEX_PROFILER_ENABLED)
+        endif()
+    endfunction()
+
+    sfml_add_example_profiler(ExampleProfilerEnabled  TRUE)
+    sfml_add_example_profiler(ExampleProfilerDisabled FALSE)
 endif()
 
 # CLI based examples
@@ -65,7 +110,6 @@ if(SFML_BUILD_GRAPHICS)
         add_subdirectory(shader)
         add_subdirectory(showcase)
         add_subdirectory(tetris_survivors)
-        add_subdirectory(text_benchmark)
 
         if (NOT SFML_OS_EMSCRIPTEN)
             add_subdirectory(imgui_multiple_windows)

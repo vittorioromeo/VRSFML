@@ -6,7 +6,7 @@
 #include "SystemUtil.hpp"
 #include "WindowUtil.hpp"
 
-#include "SFML/System/UnicodeString.hpp"
+#include "SFML/System/Utf8String.hpp" // IWYU pragma: keep
 
 #include <Doctest.hpp>
 

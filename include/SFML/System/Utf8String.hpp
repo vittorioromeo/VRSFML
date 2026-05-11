@@ -1,0 +1,746 @@
+#pragma once
+// LICENSE AND COPYRIGHT (C) INFORMATION
+// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include "SFML/System/Utf.hpp"
+
+#include "SFML/Base/Macros.hpp"
+#include "SFML/Base/PtrDiffT.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/String.hpp"
+#include "SFML/Base/StringView.hpp"
+#include "SFML/Base/Swap.hpp"
+
+
+namespace sf
+{
+////////////////////////////////////////////////////////////
+/// \brief Owning UTF-8 string with codepoint iteration
+///
+/// Wraps a `base::String` (raw UTF-8 byte storage) and exposes a
+/// `codepoints()` range that decodes one Unicode codepoint per
+/// step. Use this type wherever the API contract is explicitly
+/// "human-readable text encoded as UTF-8".
+///
+/// For arbitrary byte data, use `base::String` directly. For
+/// per-codepoint random access, decode once into a contiguous
+/// `char32_t` buffer.
+///
+////////////////////////////////////////////////////////////
+class [[nodiscard]] Utf8String
+{
+public:
+    ////////////////////////////////////////////////////////////
+    /// \brief Replacement codepoint for invalid/truncated UTF-8 sequences
+    ///
+    ////////////////////////////////////////////////////////////
+    static constexpr char32_t replacementCodepoint = 0xFF'FDu;
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Forward iterator over Unicode codepoints in the UTF-8 buffer
+    ///
+    /// Decodes one codepoint per `operator++`. Invalid or truncated
+    /// sequences yield `replacementCodepoint` and consume the rest
+    /// of the input buffer in a single step.
+    ///
+    ////////////////////////////////////////////////////////////
+    class [[nodiscard]] CodepointIter
+    {
+    public:
+        ////////////////////////////////////////////////////////////
+        // Standard iterator typedefs (excluding `iterator_category`,
+        // which would require pulling in `<iterator>`).
+        ////////////////////////////////////////////////////////////
+        using value_type      = char32_t;
+        using reference       = char32_t; //!< Dereference returns by value (proxy iterator)
+        using pointer         = const char32_t*;
+        using difference_type = base::PtrDiffT;
+
+
+    private:
+        ////////////////////////////////////////////////////////////
+        const char* m_ptr;          //!< Start of current codepoint
+        const char* m_end;          //!< One past the last byte
+        char32_t    m_current{};    //!< Cached decoded codepoint
+        base::SizeT m_currentLen{}; //!< Byte width of current codepoint
+
+
+        ////////////////////////////////////////////////////////////
+        [[gnu::always_inline]] void decodeAtPtr() noexcept
+        {
+            if (m_ptr >= m_end)
+            {
+                m_currentLen = 0u;
+                return;
+            }
+
+            const char* const next = Utf<8>::decode(m_ptr, m_end, m_current, replacementCodepoint);
+            m_currentLen           = static_cast<base::SizeT>(next - m_ptr);
+        }
+
+
+    public:
+        ////////////////////////////////////////////////////////////
+        CodepointIter(const char* ptr, const char* end) noexcept : m_ptr{ptr}, m_end{end}
+        {
+            decodeAtPtr();
+        }
+
+
+        ////////////////////////////////////////////////////////////
+        [[nodiscard, gnu::always_inline]] char32_t operator*() const noexcept
+        {
+            return m_current;
+        }
+
+
+        ////////////////////////////////////////////////////////////
+        [[gnu::always_inline]] CodepointIter& operator++() noexcept
+        {
+            m_ptr += m_currentLen;
+            decodeAtPtr();
+            return *this;
+        }
+
+
+        ////////////////////////////////////////////////////////////
+        [[gnu::always_inline]] CodepointIter operator++(int) noexcept
+        {
+            CodepointIter tmp = *this;
+            ++*this;
+            return tmp;
+        }
+
+
+        ////////////////////////////////////////////////////////////
+        [[nodiscard, gnu::always_inline]] bool operator==(const CodepointIter& rhs) const noexcept
+        {
+            return m_ptr == rhs.m_ptr;
+        }
+
+
+        ////////////////////////////////////////////////////////////
+        /// \brief Pointer to the first byte of the current codepoint
+        ///
+        /// Useful for slicing: `[i.bytePtr(), j.bytePtr())` is a
+        /// well-formed UTF-8 substring of the source buffer.
+        ///
+        ////////////////////////////////////////////////////////////
+        [[nodiscard, gnu::always_inline]] const char* bytePtr() const noexcept
+        {
+            return m_ptr;
+        }
+    };
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Forward range view over the codepoints in a `Utf8String`
+    ///
+    ////////////////////////////////////////////////////////////
+    class [[nodiscard]] CodepointRange
+    {
+    private:
+        const char* m_begin;
+        const char* m_end;
+
+    public:
+        ////////////////////////////////////////////////////////////
+        [[nodiscard]] CodepointRange(const char* b, const char* e) noexcept : m_begin{b}, m_end{e}
+        {
+        }
+
+
+        ////////////////////////////////////////////////////////////
+        [[nodiscard]] CodepointIter begin() const noexcept
+        {
+            return {m_begin, m_end};
+        }
+
+
+        ////////////////////////////////////////////////////////////
+        [[nodiscard]] CodepointIter end() const noexcept
+        {
+            return {m_end, m_end};
+        }
+    };
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Construct an empty UTF-8 string
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] Utf8String() = default;
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Disallow construction from `nullptr` literal
+    ///
+    ////////////////////////////////////////////////////////////
+    Utf8String(decltype(nullptr)) = delete;
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Construct from a null-terminated UTF-8 C string
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] /* implicit */ Utf8String(const char* utf8CStr) : m_bytes{utf8CStr}
+    {
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Construct from a pointer to UTF-8 bytes and an explicit byte count
+    ///
+    /// `utf8Bytes` does not need to be null-terminated; only `byteCount`
+    /// bytes are read. Useful when the source already provides a length
+    /// alongside a pointer (e.g. SDL queries that pre-compute `strlen`,
+    /// fixed-size buffers, slices).
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] explicit Utf8String(const char* utf8Bytes, base::SizeT byteCount) : m_bytes{utf8Bytes, byteCount}
+    {
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Construct from a null-terminated `u8"..."` literal
+    ///
+    /// In C++20, `u8"..."` literals have type `const char8_t[N]`
+    /// rather than `const char[N]`. `char8_t` has the same size,
+    /// alignment, and representation as `char` (it's an unsigned
+    /// version of `char` reserved for UTF-8 text), so reinterpreting
+    /// the pointer is safe and lets call sites write
+    /// `Utf8String s = u8"カタツムリ";` instead of escape sequences.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] /* implicit */ Utf8String(const char8_t* utf8CStr) : m_bytes{reinterpret_cast<const char*>(utf8CStr)}
+    {
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Construct from a `u8` pointer + byte count
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] explicit Utf8String(const char8_t* utf8Bytes, base::SizeT byteCount) :
+        m_bytes{reinterpret_cast<const char*>(utf8Bytes), byteCount}
+    {
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Construct from a UTF-8 byte view
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] /* implicit */ Utf8String(base::StringView utf8View) : m_bytes{utf8View}
+    {
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Take ownership of an existing UTF-8 byte buffer
+    ///
+    /// The bytes are assumed to already be UTF-8 encoded; no
+    /// validation is performed.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] /* implicit */ Utf8String(base::String utf8Bytes) noexcept : m_bytes{SFML_BASE_MOVE(utf8Bytes)}
+    {
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Implicit conversion to a `base::StringView` over the UTF-8 bytes
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] /* implicit */ operator base::StringView() const noexcept
+    {
+        return m_bytes;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Number of bytes in the underlying UTF-8 buffer
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] base::SizeT byteSize() const noexcept
+    {
+        return m_bytes.size();
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief `true` if the underlying UTF-8 buffer holds zero bytes
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool empty() const noexcept
+    {
+        return m_bytes.empty();
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Pointer to a null-terminated UTF-8 C string
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] const char* cStr() const noexcept
+    {
+        return m_bytes.cStr();
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Pointer to the first byte of the UTF-8 buffer (not necessarily null-terminated)
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] const char* data() const noexcept
+    {
+        return m_bytes.data();
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Number of Unicode codepoints in the string
+    ///
+    /// Linear in the byte length (decodes the buffer).
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] base::SizeT codepointCount() const
+    {
+        return Utf<8>::count(m_bytes.data(), m_bytes.data() + m_bytes.size());
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Forward range over the codepoints in this string
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] CodepointRange codepoints() const noexcept
+    {
+        return {m_bytes.data(), m_bytes.data() + m_bytes.size()};
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Invoke `fn` for every codepoint in the string
+    ///
+    /// Tighter than `for (cp : codepoints())` for performance-
+    /// sensitive loops: no iterator object, no cached state, one
+    /// `Utf<8>::decode` call per codepoint, single `ptr < end`
+    /// loop condition.
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename F>
+    [[gnu::always_inline]] void forCodepoints(F&& fn) const
+    {
+        const char*       ptr    = m_bytes.data();
+        const char* const endPtr = ptr + m_bytes.size();
+
+        while (ptr < endPtr)
+        {
+            char32_t cp{};
+            ptr = Utf<8>::decode(ptr, endPtr, cp, replacementCodepoint);
+            fn(cp);
+        }
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Reserve byte capacity to avoid reallocations
+    ///
+    /// Capacity is in bytes (not codepoints). For a worst-case
+    /// upper bound, reserve `4 * expectedCodepointCount`.
+    ///
+    ////////////////////////////////////////////////////////////
+    void reserve(base::SizeT byteCapacity)
+    {
+        m_bytes.reserve(byteCapacity);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Append a single codepoint, encoded as UTF-8
+    ///
+    /// \return `true` if the codepoint was a valid Unicode scalar
+    ///         value and was appended; `false` if it was rejected
+    ///         (lone surrogate `U+D800..U+DFFF`, or above `U+10FFFF`)
+    ///         and the buffer is unchanged.
+    ///
+    /// Use `operator+=(char32_t)` if you want chaining and don't
+    /// care about validity reporting.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool appendCodepoint(char32_t codepoint)
+    {
+        char       buf[4];
+        const auto byteCount = priv::encodeCodepointToBuffer(codepoint, buf);
+
+        if (byteCount == 0u)
+            return false;
+
+        m_bytes.append(buf, byteCount);
+        return true;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Append a single raw UTF-8 byte
+    ///
+    /// `pushBack` is **byte-oriented**, primarily provided so
+    /// `Utf8String` can act as a sink for `Utf<X>::toUtf8(...)` via
+    /// `base::BackInserter`. Pushing only the leading byte of a
+    /// multi-byte sequence (or, conversely, a continuation byte
+    /// without its leader) leaves the buffer in an invariant-
+    /// violating state that the codepoint iterator will treat as
+    /// truncated input. Callers are responsible for completing
+    /// every multi-byte sequence before the next `codepoints()`
+    /// traversal.
+    ///
+    ////////////////////////////////////////////////////////////
+    void pushBack(char byte)
+    {
+        m_bytes.pushBack(byte);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    Utf8String& append(const Utf8String& other)
+    {
+        m_bytes.append(other.m_bytes);
+        return *this;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    Utf8String& append(base::StringView utf8View)
+    {
+        m_bytes.append(utf8View);
+        return *this;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    Utf8String& append(const char* utf8CStr)
+    {
+        m_bytes.append(utf8CStr);
+        return *this;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    Utf8String& append(const char* utf8CStr, base::SizeT byteCount)
+    {
+        m_bytes.append(utf8CStr, byteCount);
+        return *this;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    Utf8String& operator+=(const Utf8String& rhs)
+    {
+        m_bytes += rhs.m_bytes;
+        return *this;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    Utf8String& operator+=(base::StringView utf8View)
+    {
+        m_bytes += utf8View;
+        return *this;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    Utf8String& operator+=(const char* utf8CStr)
+    {
+        m_bytes += utf8CStr;
+        return *this;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Append a single codepoint, encoded as UTF-8
+    ///
+    /// Equivalent to `appendCodepoint(cp)` but discards the validity
+    /// result so `text += someCodepoint` reads naturally and chains.
+    /// Invalid codepoints are silently dropped; use `appendCodepoint`
+    /// if you need to detect that case.
+    ///
+    ////////////////////////////////////////////////////////////
+    Utf8String& operator+=(char32_t codepoint)
+    {
+        (void) appendCodepoint(codepoint);
+        return *this;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    void clear() noexcept
+    {
+        m_bytes.clear();
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Find the first byte offset of the substring `needle`
+    ///
+    /// UTF-8 has the property that no codepoint encoding is a
+    /// substring of another, so byte-level search returns
+    /// codepoint-aligned matches.
+    ///
+    /// \return Byte offset of the match, or `base::StringView::nPos`
+    ///         if not found.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] base::SizeT find(base::StringView needle, base::SizeT startByte = 0u) const noexcept
+    {
+        return m_bytes.find(needle, startByte);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool startsWith(base::StringView prefix) const noexcept
+    {
+        return m_bytes.startsWith(prefix);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool endsWith(base::StringView suffix) const noexcept
+    {
+        return m_bytes.endsWith(suffix);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool contains(base::StringView needle) const noexcept
+    {
+        return m_bytes.contains(needle);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Replace the first occurrence of `needle` with `replacement`
+    ///
+    /// Byte-level substitution. See `replaceAllOccurrences` for the
+    /// UTF-8 self-synchronization guarantee.
+    ///
+    /// \return `true` if a replacement occurred, `false` if `needle`
+    ///         was not found or was empty.
+    ///
+    ////////////////////////////////////////////////////////////
+    bool replaceFirstOccurrence(base::StringView needle, base::StringView replacement)
+    {
+        return m_bytes.replaceFirstOccurrence(needle, replacement);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Replace every non-overlapping occurrence of `needle`
+    ///        with `replacement`
+    ///
+    /// Byte-level substitution. UTF-8 is self-synchronizing (no
+    /// codepoint encoding is a substring of another), so passing a
+    /// well-formed UTF-8 `needle` always matches at codepoint
+    /// boundaries.
+    ///
+    /// Iteration resumes immediately past each replacement, so it
+    /// terminates even when `replacement` itself contains `needle`.
+    /// An empty `needle` performs no work and returns 0. Inputs that
+    /// alias the internal buffer are handled safely.
+    ///
+    /// \return Number of replacements performed.
+    ///
+    ////////////////////////////////////////////////////////////
+    base::SizeT replaceAllOccurrences(base::StringView needle, base::StringView replacement)
+    {
+        return m_bytes.replaceAllOccurrences(needle, replacement);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Read-only access to the underlying byte storage
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] const base::String& asBytes() const& noexcept
+    {
+        return m_bytes;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move the underlying byte storage out of an rvalue `Utf8String`
+    ///
+    /// Called on an rvalue (e.g. `std::move(s).asBytes()` or
+    /// `getReturnsByValue().asBytes()`), this moves the underlying
+    /// `base::String` out -- no heap copy. The source `Utf8String` is
+    /// left in a moved-from state (its bytes are empty afterwards).
+    ///
+    /// Mirrors the `std::optional::value() &&` / `value() const&`
+    /// pattern: same name, different semantics based on whether the
+    /// object is being kept or consumed.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] base::String asBytes() && noexcept
+    {
+        return SFML_BASE_MOVE(m_bytes);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Swap contents with another `Utf8String` in O(1)
+    ///
+    ////////////////////////////////////////////////////////////
+    void swap(Utf8String& other) noexcept
+    {
+        base::genericSwap(m_bytes, other.m_bytes);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief ADL hook so `base::genericSwap` (and `std::swap`-style
+    ///        generic code) finds the optimized swap.
+    ///
+    ////////////////////////////////////////////////////////////
+    friend void swap(Utf8String& lhs, Utf8String& rhs) noexcept
+    {
+        lhs.swap(rhs);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] friend bool operator==(const Utf8String& lhs, const Utf8String& rhs) noexcept
+    {
+        return lhs.m_bytes == rhs.m_bytes;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] friend bool operator==(const Utf8String& lhs, base::StringView rhs) noexcept
+    {
+        return lhs.m_bytes == rhs;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] friend bool operator==(const Utf8String& lhs, const char* rhs) noexcept
+    {
+        return lhs.m_bytes == rhs;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Equality against a `u8"..."` literal
+    ///
+    /// Avoids forcing callers to `reinterpret_cast` or construct a
+    /// temporary `Utf8String` just to compare against a UTF-8 literal.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] friend bool operator==(const Utf8String& lhs, const char8_t* rhs) noexcept
+    {
+        return lhs.m_bytes == reinterpret_cast<const char*>(rhs);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Lexicographic ordering on the underlying UTF-8 bytes
+    ///
+    /// UTF-8 is designed so that byte-lex ordering coincides with
+    /// Unicode codepoint ordering -- comparing the raw bytes is
+    /// equivalent to comparing codepoints, without decoding.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] friend bool operator<(const Utf8String& lhs, const Utf8String& rhs) noexcept
+    {
+        return lhs.m_bytes < rhs.m_bytes;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] friend bool operator>(const Utf8String& lhs, const Utf8String& rhs) noexcept
+    {
+        return lhs.m_bytes > rhs.m_bytes;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] friend bool operator<=(const Utf8String& lhs, const Utf8String& rhs) noexcept
+    {
+        return lhs.m_bytes <= rhs.m_bytes;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] friend bool operator>=(const Utf8String& lhs, const Utf8String& rhs) noexcept
+    {
+        return lhs.m_bytes >= rhs.m_bytes;
+    }
+
+
+private:
+    ////////////////////////////////////////////////////////////
+    base::String m_bytes; //!< UTF-8 encoded byte storage
+};
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] inline Utf8String operator+(const Utf8String& lhs, const Utf8String& rhs)
+{
+    Utf8String result = lhs;
+    result += rhs;
+    return result;
+}
+
+
+////////////////////////////////////////////////////////////
+/// \brief Concatenation that reuses an rvalue lhs's buffer
+///
+/// Avoids the copy of `lhs` performed by the lvalue overload --
+/// useful for chained expressions like `a + b + c + d`.
+///
+////////////////////////////////////////////////////////////
+[[nodiscard]] inline Utf8String operator+(Utf8String&& lhs, const Utf8String& rhs)
+{
+    lhs += rhs;
+    return SFML_BASE_MOVE(lhs);
+}
+
+} // namespace sf
+
+
+////////////////////////////////////////////////////////////
+/// \class sf::Utf8String
+/// \ingroup system
+///
+/// `sf::Utf8String` is the canonical type for human-readable text
+/// stored as UTF-8. It wraps `sf::base::String` (UTF-8 bytes) and
+/// adds:
+///
+/// - A `codepoints()` range that yields one `char32_t` per Unicode
+///   codepoint, decoded on the fly. ASCII iterates at near
+///   pointer-walk speed; multi-byte sequences cost a few extra
+///   cycles per step.
+/// - Construction from `const char*`, `base::StringView`, and
+///   `base::String` -- the source bytes are taken to already be
+///   UTF-8.
+/// - An implicit conversion to `base::StringView` so that any
+///   byte-oriented sink (`SDL_*`, file I/O, network) accepts a
+///   `Utf8String` directly.
+///
+/// Use `base::String` if your bytes are not UTF-8 (binary data,
+/// HTTP body, certificate, etc.). Use `Utf8String` when the
+/// bytes are *meant* to be human-readable text.
+///
+/// \code
+/// sf::Utf8String s = "Hello, カタツムリ!";
+/// for (char32_t cp : s.codepoints())
+///     // ... per-codepoint work
+/// \endcode
+///
+////////////////////////////////////////////////////////////

@@ -1,6 +1,7 @@
 
 
 #include "BubbleIdleMain.hpp"
+#include "ExampleProfiler/Profiler.hpp"
 #include "FrameViewState.hpp"
 #include "InputHelper.hpp"
 #include "PlayerInput.hpp"
@@ -9,7 +10,6 @@
 
 #include "ExampleUtils/Easing.hpp"
 #include "ExampleUtils/MathUtils.hpp"
-#include "ExampleUtils/Profiler.hpp"
 
 #include "SFML/System/Time.hpp"
 

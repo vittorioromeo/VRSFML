@@ -15,7 +15,7 @@
 
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Time.hpp"
-#include "SFML/System/UnicodeString.hpp"
+#include "SFML/System/Utf8String.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/IntTypes.hpp"
@@ -209,7 +209,7 @@ void WindowBase::setMaximumSize(const base::Optional<Vec2u>& maximumSize)
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::setTitle(const UnicodeString& title)
+void WindowBase::setTitle(const Utf8String& title)
 {
     m_impl->setTitle(title);
 }

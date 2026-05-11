@@ -1,12 +1,10 @@
 #include "SFML/Network/Packet.hpp"
 
 // Other 1st party headers
-#include "StringifyVectorUtil.hpp"
 #include "SystemUtil.hpp"
 
-#include "SFML/System/UnicodeString.hpp"
+#include "SFML/System/Utf8String.hpp"
 
-#include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
@@ -23,7 +21,6 @@
 #include <string>
 
 #include <cstddef>
-#include <cwchar>
 
 
 #define CHECK_PACKET_STREAM_OPERATORS(expected)              \
@@ -47,25 +44,48 @@
         CHECK((expected) == received);                       \
     } while (false)
 
-#define CHECK_PACKET_STRING_STREAM_OPERATORS(expected, size)               \
-    do                                                                     \
-    {                                                                      \
-        sf::Packet packet;                                                 \
-        packet << (expected);                                              \
-        CHECK(packet.getReadPosition() == 0);                              \
-        CHECK(packet.getData() != nullptr);                                \
-        CHECK(packet.getDataSize() == (size));                             \
-        CHECK(!packet.endOfPacket());                                      \
-        CHECK(bool{packet});                                               \
-                                                                           \
-        SFML_BASE_REMOVE_CONST(decltype(expected)) received;               \
-        packet >> received;                                                \
-        CHECK(packet.getReadPosition() == (size));                         \
-        CHECK(packet.getData() != nullptr);                                \
-        CHECK(packet.getDataSize() == (size));                             \
-        CHECK(packet.endOfPacket());                                       \
-        CHECK(bool{packet});                                               \
-        CHECK(sf::UnicodeString(expected) == sf::UnicodeString(received)); \
+#define CHECK_PACKET_NARROW_STRING_STREAM_OPERATORS(expected, size)      \
+    do                                                                   \
+    {                                                                    \
+        sf::Packet packet;                                               \
+        packet << (expected);                                            \
+        CHECK(packet.getReadPosition() == 0);                            \
+        CHECK(packet.getData() != nullptr);                              \
+        CHECK(packet.getDataSize() == (size));                           \
+        CHECK(!packet.endOfPacket());                                    \
+        CHECK(bool{packet});                                             \
+                                                                         \
+        SFML_BASE_REMOVE_CONST(decltype(expected)) received;             \
+        packet >> received;                                              \
+        CHECK(packet.getReadPosition() == (size));                       \
+        CHECK(packet.getData() != nullptr);                              \
+        CHECK(packet.getDataSize() == (size));                           \
+        CHECK(packet.endOfPacket());                                     \
+        CHECK(bool{packet});                                             \
+        CHECK(sf::base::String{expected} == sf::base::String{received}); \
+    } while (false)
+
+#define CHECK_PACKET_WIDE_STRING_STREAM_OPERATORS(expected, size)                     \
+    do                                                                                \
+    {                                                                                 \
+        sf::Packet packet;                                                            \
+        packet << (expected);                                                         \
+        CHECK(packet.getReadPosition() == 0);                                         \
+        CHECK(packet.getData() != nullptr);                                           \
+        CHECK(packet.getDataSize() == (size));                                        \
+        CHECK(!packet.endOfPacket());                                                 \
+        CHECK(bool{packet});                                                          \
+                                                                                      \
+        SFML_BASE_REMOVE_CONST(decltype(expected)) received;                          \
+        packet >> received;                                                           \
+        CHECK(packet.getReadPosition() == (size));                                    \
+        CHECK(packet.getData() != nullptr);                                           \
+        CHECK(packet.getDataSize() == (size));                                        \
+        CHECK(packet.endOfPacket());                                                  \
+        CHECK(bool{packet});                                                          \
+        /* `std::wstring` is not stringifiable by doctest, so compare via `bool`. */  \
+        const bool roundTripEqual = std::wstring{expected} == std::wstring{received}; \
+        CHECK(roundTripEqual);                                                        \
     } while (false)
 
 struct Packet : sf::Packet
@@ -114,7 +134,7 @@ TEST_CASE("[Network] sf::Packet")
         CHECK(bool{packet});
     }
 
-    SECTION("Network ordering")
+    SECTION("Wire byte order (little-endian, host order)")
     {
         sf::Packet packet;
 
@@ -123,7 +143,7 @@ TEST_CASE("[Network] sf::Packet")
             packet << sf::base::U16{12'345};
             const auto*                       dataPtr = static_cast<const std::byte*>(packet.getData());
             const sf::base::Vector<std::byte> bytes(dataPtr, dataPtr + packet.getDataSize());
-            const sf::base::Vector<std::byte> expectedBytes{std::byte{0x30}, std::byte{0x39}};
+            const sf::base::Vector<std::byte> expectedBytes{std::byte{0x39}, std::byte{0x30}};
             CHECK((bytes == expectedBytes));
         }
 
@@ -132,7 +152,7 @@ TEST_CASE("[Network] sf::Packet")
             packet << sf::base::U32{1'234'567'890};
             const auto*                       dataPtr = static_cast<const std::byte*>(packet.getData());
             const sf::base::Vector<std::byte> bytes(dataPtr, dataPtr + packet.getDataSize());
-            const sf::base::Vector<std::byte> expectedBytes{std::byte{0x49}, std::byte{0x96}, std::byte{0x02}, std::byte{0xD2}};
+            const sf::base::Vector<std::byte> expectedBytes{std::byte{0xD2}, std::byte{0x02}, std::byte{0x96}, std::byte{0x49}};
             CHECK((bytes == expectedBytes));
         }
 
@@ -250,40 +270,29 @@ TEST_CASE("[Network] sf::Packet")
             CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<double>::max());
         }
 
-        SECTION("char*")
-        {
-            const char string[] = "testing";
-            CHECK_PACKET_STRING_STREAM_OPERATORS(string, SFML_BASE_STRLEN(string) + 4);
-        }
-
         SECTION("std::string")
         {
             const std::string string = "testing";
-            CHECK_PACKET_STRING_STREAM_OPERATORS(string, string.size() + 4);
+            CHECK_PACKET_NARROW_STRING_STREAM_OPERATORS(string, string.size() + 4);
         }
 
         SECTION("sf::base::String")
         {
             const sf::base::String string = "testing";
-            CHECK_PACKET_STRING_STREAM_OPERATORS(string, string.size() + 4);
-        }
-
-        SECTION("wchar_t*")
-        {
-            const wchar_t string[] = L"testing";
-            CHECK_PACKET_STRING_STREAM_OPERATORS(string, 4 * std::wcslen(string) + 4);
+            CHECK_PACKET_NARROW_STRING_STREAM_OPERATORS(string, string.size() + 4);
         }
 
         SECTION("std::wstring")
         {
             const std::wstring string = L"testing";
-            CHECK_PACKET_STRING_STREAM_OPERATORS(string, 4 * string.size() + 4);
+            CHECK_PACKET_WIDE_STRING_STREAM_OPERATORS(string, 4 * string.size() + 4);
         }
 
-        SECTION("sf::UnicodeString")
+        SECTION("sf::Utf8String")
         {
-            const sf::UnicodeString string = "testing";
-            CHECK_PACKET_STRING_STREAM_OPERATORS(string, 4 * string.getSize() + 4);
+            const sf::Utf8String string = "testing";
+            // New wire format: 4-byte length + UTF-8 byte payload.
+            CHECK_PACKET_NARROW_STRING_STREAM_OPERATORS(string, string.byteSize() + 4);
         }
     }
 

@@ -1,34 +1,25 @@
+#include "ExampleProfiler/Profiler.hpp"
+#include "ExampleProfiler/ProfilerImGui.hpp"
 #include "SoAPFR.hpp"
 
 #include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/Sampler.hpp"
 #include "ExampleUtils/Scaling.hpp"
 
-#include "SFML/Graphics/DrawInstancedIndexedVerticesSettings.hpp"
-#include "SFML/Graphics/InstancedQuad.hpp"
-#include "SFML/Graphics/PrimitiveType.hpp"
-
-#include "SFML/Window/Event.hpp"
-
-#include "SFML/System/Angle.hpp"
-
-#include "SFML/Base/Macros.hpp"
-
-#define SFEX_PROFILER_ENABLED
-#include "ExampleUtils/Profiler.hpp"
-#include "ExampleUtils/ProfilerImGui.hpp"
-
 #include "SFML/ImGui/ImGuiContext.hpp"
 #include "SFML/ImGui/IncludeImGui.hpp"
 
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DefaultShader.hpp"
+#include "SFML/Graphics/DrawInstancedIndexedVerticesSettings.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/Glsl.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
 #include "SFML/Graphics/InstanceAttributeBinder.hpp"
+#include "SFML/Graphics/InstancedQuad.hpp"
+#include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderTexture.hpp"
@@ -42,11 +33,13 @@
 #include "SFML/Graphics/VBOHandle.hpp"
 #include "SFML/Graphics/View.hpp" // IWYU pragma: keep
 
+#include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
 
+#include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"
@@ -54,6 +47,7 @@
 
 #include "SFML/Base/Algorithm/SwapAndPop.hpp"
 #include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/UniquePtr.hpp"

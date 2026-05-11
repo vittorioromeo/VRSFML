@@ -18,7 +18,7 @@
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Time.hpp"
-#include "SFML/System/UnicodeString.hpp"
+#include "SFML/System/Utf8String.hpp"
 
 #include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Assert.hpp"
@@ -101,9 +101,14 @@ constexpr int flags = 0;
             return "Unknown error.";
         }
 
-        const sf::UnicodeString message = buffer;
+        const auto srcLen = std::wcslen(buffer);
+
+        sf::base::String message;
+        message.reserve(srcLen * 3u);
+
+        sf::Utf<16>::toUtf8(buffer, buffer + srcLen, sf::base::BackInserter{message});
         LocalFree(buffer);
-        return message.toAnsiString<sf::base::String>();
+        return message;
     };
 
     const auto loadStore = [&](const char* store)
@@ -375,15 +380,15 @@ namespace sf
 struct TcpSocket::Impl
 {
     TcpSocket::TlsStatus setupTls(
-        TcpSocket&           socket,
-        const UnicodeString& hostname,
-        bool                 verifyPeer,
-        const Byte*          certificateChainData,
-        base::SizeT          certificateChainSize,
-        const Byte*          privateKeyData,
-        base::SizeT          privateKeySize,
-        const Byte*          privateKeyPasswordData,
-        base::SizeT          privateKeyPasswordSize)
+        TcpSocket&        socket,
+        const Utf8String& hostname,
+        bool              verifyPeer,
+        const Byte*       certificateChainData,
+        base::SizeT       certificateChainSize,
+        const Byte*       privateKeyData,
+        base::SizeT       privateKeySize,
+        const Byte*       privateKeyPasswordData,
+        base::SizeT       privateKeyPasswordSize)
     {
         // We can't set up TLS if the underlying TCP stream isn't connected yet
         if (!socket.getRemoteAddress().hasValue())
@@ -505,10 +510,7 @@ struct TcpSocket::Impl
             if (!isServer)
             {
                 // Set the hostname that is used for peer verification and sent via SNI if it is supported
-                if (auto result = mbedtls_ssl_set_hostname(&state.sslContext,
-                                                           reinterpret_cast<const char*>(
-                                                               hostname.toUtf8<base::String>().cStr()));
-                    result != 0)
+                if (auto result = mbedtls_ssl_set_hostname(&state.sslContext, hostname.cStr()); result != 0)
                 {
                     priv::err() << "Failed to set up TLS: " << tlsErrorString(result);
                     tlsState.reset();
@@ -856,14 +858,14 @@ void TcpSocket::disconnect()
 
 
 ////////////////////////////////////////////////////////////
-TcpSocket::TlsStatus TcpSocket::setupTlsClient(const UnicodeString& hostname, bool verifyPeer)
+TcpSocket::TlsStatus TcpSocket::setupTlsClient(const Utf8String& hostname, bool verifyPeer)
 {
     return m_impl->setupTls(*this, hostname, verifyPeer, nullptr, 0, nullptr, 0, nullptr, 0);
 }
 
 
 ////////////////////////////////////////////////////////////
-TcpSocket::TlsStatus TcpSocket::setupTlsClient(const UnicodeString& hostname, const char* certificateChainData)
+TcpSocket::TlsStatus TcpSocket::setupTlsClient(const Utf8String& hostname, const char* certificateChainData)
 {
     // Mbed TLS expects the terminating NULL to be part of the PEM data
     // When we pass the data to MbedTLS have to add 1 to the size of the strings to include the NULL-terminator
@@ -874,9 +876,9 @@ TcpSocket::TlsStatus TcpSocket::setupTlsClient(const UnicodeString& hostname, co
 
 
 ////////////////////////////////////////////////////////////
-TcpSocket::TlsStatus TcpSocket::setupTlsClient(const UnicodeString& hostname,
-                                               const Byte*          certificateChainData,
-                                               base::SizeT          certificateChainSize)
+TcpSocket::TlsStatus TcpSocket::setupTlsClient(const Utf8String& hostname,
+                                               const Byte*       certificateChainData,
+                                               base::SizeT       certificateChainSize)
 {
     SFML_BASE_ASSERT(certificateChainData != nullptr && certificateChainSize > 0 && "Certificate chain data not valid");
 
@@ -888,7 +890,7 @@ TcpSocket::TlsStatus TcpSocket::setupTlsClient(const UnicodeString& hostname,
 
 
 ////////////////////////////////////////////////////////////
-TcpSocket::TlsStatus TcpSocket::setupTlsClient(const UnicodeString& hostname, base::StringView certificateChainData)
+TcpSocket::TlsStatus TcpSocket::setupTlsClient(const Utf8String& hostname, base::StringView certificateChainData)
 {
     // Mbed TLS expects the terminating NULL to be part of the PEM data
     // For this reason we have to make a base::String copy of the function arguments
@@ -1166,8 +1168,9 @@ Socket::Status TcpSocket::send(Packet& packet)
     base::SizeT size = 0;
     const void* data = packet.onSend(size);
 
-    // First convert the packet size to network byte order
-    base::U32 packetSize = priv::SocketImpl::hostToNetwork(static_cast<base::U32>(size));
+    // Packet size prefix is written in host (little-endian) byte order;
+    // both peers are VRSFML and the wire format matches `Packet`'s body.
+    const auto packetSize = static_cast<base::U32>(size);
 
     // Allocate memory for the data block to send
     m_blockToSendBuffer.resize(sizeof(packetSize) + size);
@@ -1216,30 +1219,21 @@ Socket::Status TcpSocket::receive(Packet& packet)
     packet.clear();
 
     // We start by getting the size of the incoming packet
-    base::U32   packetSize = 0;
-    base::SizeT received   = 0;
-    if (m_pendingPacket.sizeReceived < sizeof(m_pendingPacket.size))
+    base::SizeT received = 0;
+    while (m_pendingPacket.sizeReceived < sizeof(m_pendingPacket.size))
     {
-        // Loop until we've received the entire size of the packet
-        // (even a 4 byte variable may be received in more than one call)
-        while (m_pendingPacket.sizeReceived < sizeof(m_pendingPacket.size))
-        {
-            char*        data   = reinterpret_cast<char*>(&m_pendingPacket.size) + m_pendingPacket.sizeReceived;
-            const Status status = receive(data, sizeof(m_pendingPacket.size) - m_pendingPacket.sizeReceived, received);
-            m_pendingPacket.sizeReceived += received;
+        // Loop until we've received the entire size prefix
+        // (even a 4-byte variable may arrive in more than one call)
+        char*        data   = reinterpret_cast<char*>(&m_pendingPacket.size) + m_pendingPacket.sizeReceived;
+        const Status status = receive(data, sizeof(m_pendingPacket.size) - m_pendingPacket.sizeReceived, received);
+        m_pendingPacket.sizeReceived += received;
 
-            if (status != Status::Done)
-                return status;
-        }
+        if (status != Status::Done)
+            return status;
+    }
 
-        // The packet size has been fully received
-        packetSize = priv::SocketImpl::networkToHost(m_pendingPacket.size);
-    }
-    else
-    {
-        // The packet size has already been received in a previous call
-        packetSize = priv::SocketImpl::networkToHost(m_pendingPacket.size);
-    }
+    // Size prefix is on the wire in host (little-endian) byte order.
+    const base::U32 packetSize = m_pendingPacket.size;
 
     // Loop until we receive all the packet data
     char buffer[1024]{};

@@ -11,7 +11,7 @@
 #include "SFML/System/Path.hpp"
 #include "SFML/System/PathStreamOp.hpp"
 #include "SFML/System/PathUtils.hpp"
-#include "SFML/System/UnicodeString.hpp"
+#include "SFML/System/Utf8String.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
@@ -1228,9 +1228,9 @@ T OutStringStream::to() const
 
 
 ////////////////////////////////////////////////////////////
-template UnicodeString OutStringStream::to() const;
-template std::string   OutStringStream::to() const;
-template base::String  OutStringStream::to() const;
+template Utf8String   OutStringStream::to() const;
+template std::string  OutStringStream::to() const;
+template base::String OutStringStream::to() const;
 
 
 ////////////////////////////////////////////////////////////

@@ -16,7 +16,7 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
-class UnicodeString;
+class Utf8String;
 } // namespace sf
 
 
@@ -126,7 +126,7 @@ public:
     /// \return Joystick name as reported by the OS
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const UnicodeString& getName() const;
+    [[nodiscard]] const Utf8String& getName() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the USB vendor identifier of the joystick

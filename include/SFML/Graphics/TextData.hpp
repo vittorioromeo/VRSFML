@@ -11,7 +11,7 @@
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Priv/TransformableMacros.hpp"
 
-#include "SFML/System/UnicodeString.hpp"
+#include "SFML/System/Utf8String.hpp"
 
 #include "SFML/Base/RequireDesignatedInitializers.hpp"
 
@@ -34,7 +34,7 @@ namespace sf
 /// where an array of `TextData` might be processed, or for serializing
 /// text properties to and from files.
 ///
-/// \see sf::Text, sf::Color, sf::UnicodeString
+/// \see sf::Text, sf::Color, sf::Utf8String
 ///
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] SFML_GRAPHICS_API TextData
@@ -43,17 +43,17 @@ struct [[nodiscard]] SFML_GRAPHICS_API TextData
 
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
 
-    UnicodeString string;                     //!< String to display
-    unsigned int  characterSize;              //!< Base size of characters, in pixels
-    float         letterSpacing{1.f};         //!< Spacing factor between letters
-    float         lineSpacing{1.f};           //!< Spacing factor between lines
-    Color         fillColor{Color::White};    //!< Text fill color
-    Color         outlineColor{Color::Black}; //!< Text outline color
-    float         outlineThickness{0.f};      //!< Thickness of the text's outline
-    bool          bold{false};                //!< Bold characters
-    bool          italic{false};              //!< Italic characters
-    bool          underlined{false};          //!< Underlined characters
-    bool          strikeThrough{false};       //!< Strike through characters
+    Utf8String   string;                     //!< UTF-8 string to display
+    unsigned int characterSize;              //!< Base size of characters, in pixels
+    float        letterSpacing{1.f};         //!< Spacing factor between letters
+    float        lineSpacing{1.f};           //!< Spacing factor between lines
+    Color        fillColor{Color::White};    //!< Text fill color
+    Color        outlineColor{Color::Black}; //!< Text outline color
+    float        outlineThickness{0.f};      //!< Thickness of the text's outline
+    bool         bold{false};                //!< Bold characters
+    bool         italic{false};              //!< Italic characters
+    bool         underlined{false};          //!< Underlined characters
+    bool         strikeThrough{false};       //!< Strike through characters
 };
 
 } // namespace sf

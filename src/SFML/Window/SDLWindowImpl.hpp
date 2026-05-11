@@ -25,7 +25,7 @@ struct SDL_Window;
 
 namespace sf
 {
-class UnicodeString;
+class Utf8String;
 class Time;
 struct ContextSettings;
 struct WindowSettings;
@@ -218,7 +218,7 @@ public:
     /// \param title New title
     ///
     ////////////////////////////////////////////////////////////
-    void setTitle(const UnicodeString& title);
+    void setTitle(const Utf8String& title);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the window's icon

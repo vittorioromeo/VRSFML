@@ -1,10 +1,11 @@
 #include "Aliases.hpp"
 #include "BubbleIdleHelpers.hpp"
 #include "BubbleIdleMain.hpp"
-#include "BubbleIdleMainInline.hpp"
+#include "BubbleIdleMainInline.hpp" // IWYU pragma: keep
 #include "CatType.hpp"
 #include "ComboState.hpp"
 #include "Constants.hpp"
+#include "ExampleProfiler/Profiler.hpp"
 #include "FrameViewState.hpp"
 #include "MainAtlasRects.hpp"
 #include "MainShaders.hpp"
@@ -16,7 +17,6 @@
 
 #include "ExampleUtils/Easing.hpp"
 #include "ExampleUtils/MathUtils.hpp"
-#include "ExampleUtils/Profiler.hpp"
 #include "ExampleUtils/Progress.hpp"
 
 #include "SFML/Graphics/BlendMode.hpp"
@@ -191,7 +191,7 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
     if (shouldDrawUI)
     {
         sf::Vec2f mins{10.f, 10.f};
-        sf::Vec2f maxs{20.f + static_cast<float>(moneyText.getString().getSize()) * 15.f, pt->comboPurchased ? 60.f : 40.f};
+        sf::Vec2f maxs{20.f + static_cast<float>(moneyText.getString().byteSize()) * 15.f, pt->comboPurchased ? 60.f : 40.f};
 
         mins.y += yBelowMinimap;
         maxs.y += yBelowMinimap;
@@ -287,7 +287,7 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
     sf::TextData     buffTextData   = gameLoopUpdateBuffText(comboTextBounds);
     const sf::Rect2f buffTextBounds = sf::TextUtils::precomputeTextGlobalBounds(fontSuperBakery, buffTextData);
 
-    if (!buffTextData.string.isEmpty())
+    if (!buffTextData.string.empty())
     {
         const sf::Vec2f offset{10.f, 10.f};
 

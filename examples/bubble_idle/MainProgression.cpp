@@ -6,11 +6,11 @@
 #include "BubbleType.hpp"
 #include "CatType.hpp"
 #include "ComboState.hpp"
+#include "ExampleProfiler/Profiler.hpp"
 #include "Playthrough.hpp"
 #include "Profile.hpp"
 #include "ShrineConstants.hpp"
 
-#include "ExampleUtils/Profiler.hpp"
 #include "ExampleUtils/Progress.hpp"
 
 #include "SFML/System/Clock.hpp"

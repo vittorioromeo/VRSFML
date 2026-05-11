@@ -1,6 +1,6 @@
-#include "ExampleUtils/ProfilerImGui.hpp"
+#include "ExampleProfiler/Profiler.hpp"
+#include "ExampleProfiler/ProfilerImGui.hpp"
 
-#include "ExampleUtils/Profiler.hpp"
 #include "ExampleUtils/Sampler.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"
@@ -13,7 +13,7 @@
 #include "SFML/Base/Vector.hpp"
 
 
-namespace sfex::priv
+namespace
 {
 ////////////////////////////////////////////////////////////
 using ChildrenMap = sf::base::Vector<sf::base::Vector<sfex::NodeId>>;
@@ -147,7 +147,7 @@ void renderNode(const SamplerVec<sf::base::U64>&             timeSamplers,
     }
 }
 
-} // namespace sfex::priv
+} // namespace
 
 
 namespace sfex
@@ -164,11 +164,10 @@ void showImguiProfiler()
     }
 
     // Pre-process the flat list into a tree structure
-    static thread_local priv::ChildrenMap               childrenMap(sfex::maxNodes);
-    static thread_local sf::base::Vector<sfex::NodeId>  rootNodes;
-    static thread_local priv::SamplerVec<sf::base::U64> nodeTimeSamplers(sfex::maxNodes,
-                                                                         Sampler<sf::base::U64>{/* capacity */ 64u});
-    static thread_local priv::SamplerVec<double> nodePercentSamplers(sfex::maxNodes, Sampler<double>{/* capacity */ 64u});
+    static thread_local ChildrenMap                    childrenMap(sfex::maxNodes);
+    static thread_local sf::base::Vector<sfex::NodeId> rootNodes;
+    static thread_local SamplerVec<sf::base::U64> nodeTimeSamplers(sfex::maxNodes, Sampler<sf::base::U64>{/* capacity */ 64u});
+    static thread_local SamplerVec<double> nodePercentSamplers(sfex::maxNodes, Sampler<double>{/* capacity */ 64u});
 
     sfex::populateNodes(scopeInfos, childrenMap, rootNodes); // Clears as the first step
 
@@ -178,7 +177,7 @@ void showImguiProfiler()
             continue;
 
         nodeTimeSamplers[i].record(static_cast<sf::base::U64>(scopeInfos[i].timeUs));
-        nodePercentSamplers[i].record(priv::calcNodePercentage(scopeInfos, scopeInfos[i]));
+        nodePercentSamplers[i].record(calcNodePercentage(scopeInfos, scopeInfos[i]));
     }
 
     // Set up the table for display
@@ -206,7 +205,7 @@ void showImguiProfiler()
             for (int i = 0; i < specs->SpecsCount; ++i)
             {
                 const ImGuiTableColumnSortSpecs* const sortSpec = &specs->Specs[i];
-                const int delta = priv::calcDelta(nodeTimeSamplers, nodePercentSamplers, infoA, infoB, sortSpec->ColumnUserID);
+                const int delta = calcDelta(nodeTimeSamplers, nodePercentSamplers, infoA, infoB, sortSpec->ColumnUserID);
 
                 if (delta == 0)
                     continue;
@@ -225,9 +224,32 @@ void showImguiProfiler()
 
     // Kick off rendering for each root node
     for (const auto rootId : rootNodes)
-        priv::renderNode(nodeTimeSamplers, nodePercentSamplers, rootId, scopeInfos, childrenMap);
+        renderNode(nodeTimeSamplers, nodePercentSamplers, rootId, scopeInfos, childrenMap);
 
     ImGui::EndTable();
 }
 
 } // namespace sfex
+
+
+////////////////////////////////////////////////////////////
+// Link-check tag definition (declared in `Profiler.hpp`).
+//
+// This TU is compiled twice -- once per profiler-library variant -- with
+// `SFEX_PROFILER_ENABLED` set or unset per variant via CMake. Each variant
+// defines exactly the tag matching its own compile state; user TUs linked
+// against a given variant must agree (the header's reference to the
+// matching tag forces the linker to surface mismatches).
+////////////////////////////////////////////////////////////
+namespace sfex::priv
+{
+#ifdef SFEX_PROFILER_ENABLED
+void sfexProfilerLinkCheckEnabledOnly()
+{
+}
+#else
+void sfexProfilerLinkCheckDisabledOnly()
+{
+}
+#endif
+} // namespace sfex::priv

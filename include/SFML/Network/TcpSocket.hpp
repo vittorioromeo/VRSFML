@@ -12,7 +12,7 @@
 #include "SFML/Network/SocketHandle.hpp"
 
 #include "SFML/System/Time.hpp"
-#include "SFML/System/UnicodeString.hpp"
+#include "SFML/System/Utf8String.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
@@ -234,7 +234,7 @@ public:
     /// \see `setupTlsServer`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] TlsStatus setupTlsClient(const sf::UnicodeString& hostname, bool verifyPeer = true);
+    [[nodiscard]] TlsStatus setupTlsClient(const sf::Utf8String& hostname, bool verifyPeer = true);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set up transport layer security as a client
@@ -292,7 +292,7 @@ public:
     /// \see `setupTlsServer`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] TlsStatus setupTlsClient(const sf::UnicodeString& hostname, const char* certificateChainData);
+    [[nodiscard]] TlsStatus setupTlsClient(const sf::Utf8String& hostname, const char* certificateChainData);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set up transport layer security as a client
@@ -347,9 +347,9 @@ public:
     /// \see `setupTlsServer`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] TlsStatus setupTlsClient(const sf::UnicodeString& hostname,
-                                           const Byte*              certificateChainData,
-                                           base::SizeT              certificateChainSize);
+    [[nodiscard]] TlsStatus setupTlsClient(const sf::Utf8String& hostname,
+                                           const Byte*           certificateChainData,
+                                           base::SizeT           certificateChainSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set up transport layer security as a client
@@ -403,7 +403,7 @@ public:
     /// \see `setupTlsServer`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] TlsStatus setupTlsClient(const sf::UnicodeString& hostname, base::StringView certificateChainData);
+    [[nodiscard]] TlsStatus setupTlsClient(const sf::Utf8String& hostname, base::StringView certificateChainData);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set up transport layer security as a server

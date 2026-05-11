@@ -25,18 +25,11 @@
 #include "TextParticle.hpp"
 #include "TextShakeEffect.hpp"
 
-#include "ExampleUtils/ControlFlow.hpp"
-#include "ExampleUtils/HueColor.hpp"
 #include "ExampleUtils/LoadedSound.hpp"
-#include "ExampleUtils/MathUtils.hpp"
 #include "ExampleUtils/Progress.hpp"
 #include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/Sampler.hpp"
 #include "ExampleUtils/SoundManager.hpp"
-
-// clang-format off
-#define SFEX_PROFILER_ENABLED
-// clang-format on
 
 #include "SFML/Graphics/Color.hpp"
 
@@ -55,7 +48,6 @@
 #include "SFML/Base/FixedFunction.hpp"
 #include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Math/Pow.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"

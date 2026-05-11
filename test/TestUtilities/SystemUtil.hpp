@@ -21,7 +21,7 @@ namespace sf
 {
 class Angle;
 class AutoWrapAngle;
-class UnicodeString;
+class Utf8String;
 class Time;
 
 template <typename>
@@ -69,9 +69,9 @@ struct StringMaker<sf::AutoWrapAngle>
 };
 
 template <>
-struct StringMaker<sf::UnicodeString>
+struct StringMaker<sf::Utf8String>
 {
-    static String convert(const sf::UnicodeString& string);
+    static String convert(const sf::Utf8String& string);
 };
 
 template <>

@@ -18,7 +18,6 @@
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
 
-#include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 
@@ -32,17 +31,18 @@ Vec2f TextBase::findCharacterPos(this const Self& self, base::SizeT index)
     const auto  charSize   = self.getCharacterSize();
     const bool  isBold     = self.isBold();
 
-    index = base::min(index, self.m_string.getSize());
-
     const auto [whitespaceWidth,
                 letterSpacing,
                 lineSpacing] = TextUtils::precomputeSpacingConstants(fontSource, isBold, charSize, self.m_letterSpacing, self.m_lineSpacing);
 
-    Vec2f    characterPos;
-    char32_t prevChar = 0;
-    for (base::SizeT i = 0u; i < index; ++i)
+    Vec2f       characterPos;
+    char32_t    prevChar = 0;
+    base::SizeT i        = 0u;
+
+    for (const char32_t curChar : self.m_string.codepoints())
     {
-        const char32_t curChar = self.m_string[i];
+        if (i++ >= index)
+            break;
 
         characterPos.x += fontSource.getKerning(prevChar, curChar, charSize, isBold);
         prevChar = curChar;
@@ -134,7 +134,7 @@ void TextBase::ensureGeometryUpdate(this const Self& self)
     self.m_fillVerticesStartIndex = 0u;
     self.m_bounds                 = {};
 
-    if (self.m_string.isEmpty())
+    if (self.m_string.empty())
         return;
 
     const auto& fontSource       = self.getFontSource();

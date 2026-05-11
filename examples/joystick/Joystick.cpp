@@ -481,7 +481,7 @@ private:
 [[nodiscard]] sf::base::String getJoystickName(unsigned int id)
 {
     if (const auto query = sf::Joystick::query(id))
-        return query->getName().toAnsiString<sf::base::String>();
+        return sf::base::String{query->getName().asBytes()};
 
     return {};
 }

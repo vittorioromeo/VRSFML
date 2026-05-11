@@ -15,7 +15,7 @@
 #include "SFML/Window/WindowContext.hpp"
 
 #include "SFML/System/Rect2.hpp"
-#include "SFML/System/UnicodeString.hpp"
+#include "SFML/System/Utf8String.hpp"
 
 #include "SFML/Base/Optional.hpp"
 
@@ -41,9 +41,9 @@ int main()
     [[maybe_unused]] const sf::base::Optional<sf::UdpSocket> udpSocket = sf::UdpSocket::create(/* isBlocking */ true);
 
     // System
-    [[maybe_unused]] const sf::Angle         angle;
-    [[maybe_unused]] const sf::UnicodeString string;
-    [[maybe_unused]] const sf::Time          time;
+    [[maybe_unused]] const sf::Angle      angle;
+    [[maybe_unused]] const sf::Utf8String string;
+    [[maybe_unused]] const sf::Time       time;
 
     // Window
     [[maybe_unused]] const sf::VideoMode videoMode{.size = {0u, 0u}};
