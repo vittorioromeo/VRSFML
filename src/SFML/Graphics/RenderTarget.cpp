@@ -894,10 +894,14 @@ void RenderTarget::drawIndexedVertices(const DrawIndexedVerticesSettings& settin
 ////////////////////////////////////////////////////////////
 void RenderTarget::drawQuads(const DrawQuadsSettings& settings, const RenderStates& states)
 {
+    // Keep the public per-call constants in sync with the precomputed index array.
+    static_assert(drawQuadsMaxQuadsPerCall * 6u == base::getArraySize(RenderTargetImpl::precomputedQuadIndices));
+    static_assert(drawQuadsMaxVerticesPerCall == drawQuadsMaxQuadsPerCall * 4u);
+
     const auto vertexCount = settings.vertexSpan.size();
 
     SFML_BASE_ASSERT(vertexCount % 4u == 0u);
-    SFML_BASE_ASSERT(vertexCount < base::getArraySize(RenderTargetImpl::precomputedQuadIndices) / 6u * 4u);
+    SFML_BASE_ASSERT(vertexCount <= drawQuadsMaxVerticesPerCall);
 
     drawIndexedVertices(
         {
