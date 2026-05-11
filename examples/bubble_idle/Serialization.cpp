@@ -14,26 +14,9 @@
 #include "Shrine.hpp"
 #include "Stats.hpp"
 #include "Version.hpp"
+#include "cJSON.h"
 
 #include "ExampleUtils/Progress.hpp"
-
-#include "SFML/Base/Array.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/OverloadSet.hpp"
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/Vector.hpp"
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsign-conversion"
-
-#define JSON_NO_IO
-#define JSON_HAS_FILESYSTEM           0
-#define JSON_HAS_THREE_WAY_COMPARISON 0
-#define JSON_HAS_RANGES               0
-#include "json.hpp"
-
-#pragma GCC diagnostic pop
 
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
@@ -41,11 +24,20 @@
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Time.hpp"
 
+#include "SFML/Base/Array.hpp"
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/OverloadSet.hpp"
+#include "SFML/Base/ScopeGuard.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
-#include "SFML/Base/Trait/IsArray.hpp"
+#include "SFML/Base/Trait/IsFloatingPoint.hpp"
+#include "SFML/Base/Trait/IsIntegral.hpp"
 #include "SFML/Base/Trait/IsSame.hpp"
 #include "SFML/Base/Trait/RemoveCVRef.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include <exception>
 #include <stdexcept>
@@ -53,233 +45,431 @@
 
 // NOLINTBEGIN(readability-identifier-naming, misc-use-internal-linkage)
 
-namespace sf
-{
-////////////////////////////////////////////////////////////
-template <typename T>
-void to_json(nlohmann::json& j, const Vec2<T>& p)
-{
-    j[0] = p.x;
-    j[1] = p.y;
-}
-
 
 ////////////////////////////////////////////////////////////
-template <typename T>
-void from_json(const nlohmann::json& j, Vec2<T>& p)
-{
-    p.x = j[0].get<T>();
-    p.y = j[1].get<T>();
-}
-
+// Map `Serialize == true` (writing) to `cJSON*` and `Serialize == false`
+// (reading) to `const cJSON*`. Hand-rolled to avoid `<type_traits>`.
 ////////////////////////////////////////////////////////////
-void to_json(nlohmann::json& j, const Time& p)
+namespace
 {
-    j = p.asMicroseconds();
-}
+template <bool>
+struct JsonNodeImpl;
+template <>
+struct JsonNodeImpl<true>
+{
+    using type = cJSON*;
+};
+template <>
+struct JsonNodeImpl<false>
+{
+    using type = const cJSON*;
+};
+template <bool Serialize>
+using JsonNode = typename JsonNodeImpl<Serialize>::type;
+} // namespace
 
 
 ////////////////////////////////////////////////////////////
-void from_json(const nlohmann::json& j, Time& p)
-{
-    p = microseconds(j.get<base::I64>());
-}
-
-} // namespace sf
-
-
-namespace sf::base
-{
+// Forward declaration of the per-type two-way serializer. Each
+// `DEFINE_TWO_WAY_SERIALIZER(T)` block (below) defines a concrete
+// overload for a specific `T`. The `requires(false)` here ensures
+// this declaration never wins overload resolution against a real
+// DEFINE block -- its only job is to make the primary `toJsonValue`
+// template's `if constexpr (requires { twoWaySerializer<...> })`
+// branch parseable before the DEFINE blocks come into view.
 ////////////////////////////////////////////////////////////
-template <typename T>
-void to_json(nlohmann::json& j, const Optional<T>& p)
-{
-    if (p.hasValue())
-        j = p.value();
-    else
-        j = nullptr;
-}
+template <bool Serialize, typename T>
+    requires(false)
+void twoWaySerializer(JsonNode<Serialize> j, T&& p);
 
 
 ////////////////////////////////////////////////////////////
-template <typename T>
-void from_json(const nlohmann::json& j, Optional<T>& p)
-{
-    if (j.is_null())
-        p.reset();
-    else
-        p.emplace(j.get<T>());
-}
-
-
-// `to_json` is not needed for `Vector` because `nlohmann::json`
-// has a catch-all overload for container-like types.
-
-
+// `toJsonValue` / `fromJsonValue` form the uniform read/write
+// dispatch table. All complex types (Vec2, Time, Optional, Vector,
+// Array, C-arrays, user structs) decay through these.
 ////////////////////////////////////////////////////////////
-template <typename T>
-void from_json(const nlohmann::json& j, Vector<T>& p)
-{
-    p.clear();
-    p.reserve(j.size());
-
-    for (const auto& item : j)
-        p.emplaceBack(item.get<T>());
-}
-
-
-////////////////////////////////////////////////////////////
-// `sf::base::Array<T, N>` round-trips as a JSON array of `T`. ADL picks
-// these up because the type lives in `sf::base`.
-template <typename T, SizeT N>
-void to_json(nlohmann::json& j, const Array<T, N>& p)
-{
-    j = nlohmann::json::array();
-    for (SizeT i = 0u; i < N; ++i)
-        j.push_back(p.elements[i]);
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T, SizeT N>
-void from_json(const nlohmann::json& j, Array<T, N>& p)
-{
-    if (!j.is_array())
-        return;
-
-    const auto n = N < j.size() ? N : j.size();
-    for (SizeT i = 0u; i < n; ++i)
-        j[i].get_to(p.elements[i]);
-}
-
-} // namespace sf::base
-
-
 namespace
 {
 ////////////////////////////////////////////////////////////
-template <typename>
-struct getArraySize;
-
+// Primary catch-all templates. These are the fall-through
+// for any type that doesn't match a more-specialized overload
+// (primitives, enums, Vec2, Time, Optional, Vector, Array,
+// C-arrays, or the explicit non-template overloads further
+// down). At instantiation, the `if constexpr` branch dispatches
+// via `twoWaySerializer<...>` when a `DEFINE_TWO_WAY_SERIALIZER`
+// for `T` exists; otherwise the compile fails with a clear
+// `static_assert`. The expression `requires { ... }` is
+// re-evaluated at instantiation when all `DEFINE` blocks are
+// visible via ADL on the argument types.
 ////////////////////////////////////////////////////////////
-template <typename T, auto N>
-struct getArraySize<T[N]>
+template <typename T>
+[[nodiscard]] cJSON* toJsonValue(const T& v)
 {
-    enum
+    if constexpr (requires(cJSON* obj) { twoWaySerializer<true>(obj, v); })
     {
-        value = N
-    };
-};
-
-
-////////////////////////////////////////////////////////////
-// Forward declarations for recursive C-array handling.
-template <typename T>
-void writeArrayElement(nlohmann::json& arr, const T& value);
-
-template <typename T>
-void readArrayElement(const nlohmann::json& j, T& out);
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-void writeField(nlohmann::json& j, const char* name, const T& field)
-{
-    if constexpr (!SFML_BASE_IS_ARRAY(T))
-    {
-        j[name] = field;
+        cJSON* obj = cJSON_CreateObject();
+        twoWaySerializer<true>(obj, v);
+        return obj;
     }
     else
     {
-        constexpr auto arraySize = getArraySize<T>::value;
+        static_assert(sizeof(T) == 0, "No toJsonValue overload for T and no DEFINE_TWO_WAY_SERIALIZER block.");
+        return nullptr;
+    }
+}
 
-        auto& arr = j[name];
-        arr       = nlohmann::json::array();
-
-        for (sf::base::SizeT i = 0u; i < arraySize; ++i)
-            writeArrayElement(arr, field[i]);
+template <typename T>
+void fromJsonValue(const cJSON* j, T& out)
+{
+    if constexpr (requires { twoWaySerializer<false>(j, out); })
+    {
+        if (cJSON_IsObject(j))
+            twoWaySerializer<false>(j, out);
+    }
+    else
+    {
+        static_assert(sizeof(T) == 0, "No fromJsonValue overload for T and no DEFINE_TWO_WAY_SERIALIZER block.");
     }
 }
 
 
 ////////////////////////////////////////////////////////////
-template <typename T>
-void writeArrayElement(nlohmann::json& arr, const T& value)
+// Forward declarations of custom non-template overloads. The
+// definitions live further down in the same anonymous namespace.
+// Forward-declaring them here makes them findable by Phase-1
+// unqualified lookup inside the recursive templates `Vector<T>`,
+// `Optional<T>`, etc. that come below the primary template.
+////////////////////////////////////////////////////////////
+[[nodiscard]] cJSON* toJsonValue(const Progress& p);
+void                 fromJsonValue(const cJSON* j, Progress& p);
+
+[[nodiscard]] cJSON* toJsonValue(const Countdown& p);
+void                 fromJsonValue(const cJSON* j, Countdown& p);
+
+[[nodiscard]] cJSON* toJsonValue(const PurchasableScalingValue& p);
+void                 fromJsonValue(const cJSON* j, PurchasableScalingValue& p);
+
+[[nodiscard]] cJSON* toJsonValue(const GameEvent& p);
+void                 fromJsonValue(const cJSON* j, GameEvent& p);
+
+
+////////////////////////////////////////////////////////////
+// Primitive overloads. `bool` is special-cased so it round-trips
+// as a JSON boolean. All other arithmetic types collapse into a
+// single number-typed pair via the `__is_arithmetic` builtin --
+// keeping the dispatch in one place avoids ~12 per-type overloads,
+// most of which would otherwise be unused in any given TU and trip
+// `-Wunused-function`.
+////////////////////////////////////////////////////////////
+inline cJSON* toJsonValue(bool v)
 {
-    if constexpr (!SFML_BASE_IS_ARRAY(T))
-    {
-        arr.push_back(value);
-    }
-    else
-    {
-        constexpr auto arraySize = getArraySize<T>::value;
+    return cJSON_CreateBool(v);
+}
 
-        nlohmann::json sub = nlohmann::json::array();
-        for (sf::base::SizeT i = 0u; i < arraySize; ++i)
-            writeArrayElement(sub, value[i]);
+template <typename T>
+    requires((SFML_BASE_IS_INTEGRAL(T) || SFML_BASE_IS_FLOATING_POINT(T)) && !SFML_BASE_IS_SAME(T, bool))
+cJSON* toJsonValue(const T& v)
+{
+    return cJSON_CreateNumber(static_cast<double>(v));
+}
 
-        arr.push_back(sub);
-    }
+inline void fromJsonValue(const cJSON* j, bool& out)
+{
+    if (cJSON_IsBool(j))
+        out = cJSON_IsTrue(j);
+    else if (cJSON_IsNumber(j))
+        out = cJSON_GetNumberValue(j) != 0.0;
+}
+
+template <typename T>
+    requires((SFML_BASE_IS_INTEGRAL(T) || SFML_BASE_IS_FLOATING_POINT(T)) && !SFML_BASE_IS_SAME(T, bool))
+void fromJsonValue(const cJSON* j, T& out)
+{
+    if (cJSON_IsNumber(j))
+        out = static_cast<T>(cJSON_GetNumberValue(j));
 }
 
 
 ////////////////////////////////////////////////////////////
+// Enum dispatch via compiler builtins (no `<type_traits>` include).
+////////////////////////////////////////////////////////////
 template <typename T>
-void readField(const nlohmann::json& j, const char* name, T& field)
+    requires(__is_enum(T))
+cJSON* toJsonValue(const T& v)
 {
-    if (!j.is_object())
+    return cJSON_CreateNumber(static_cast<double>(static_cast<__underlying_type(T)>(v)));
+}
+
+template <typename T>
+    requires(__is_enum(T))
+void fromJsonValue(const cJSON* j, T& out)
+{
+    if (cJSON_IsNumber(j))
+        out = static_cast<T>(static_cast<__underlying_type(T)>(cJSON_GetNumberValue(j)));
+}
+
+
+////////////////////////////////////////////////////////////
+// `sf::Vec2<T>` round-trips as a JSON array `[x, y]`.
+////////////////////////////////////////////////////////////
+template <typename T>
+cJSON* toJsonValue(const sf::Vec2<T>& p)
+{
+    cJSON* arr = cJSON_CreateArray();
+    cJSON_AddItemToArray(arr, toJsonValue(p.x));
+    cJSON_AddItemToArray(arr, toJsonValue(p.y));
+    return arr;
+}
+
+template <typename T>
+void fromJsonValue(const cJSON* j, sf::Vec2<T>& p)
+{
+    if (!cJSON_IsArray(j) || cJSON_GetArraySize(j) < 2)
+        return;
+    fromJsonValue(cJSON_GetArrayItem(j, 0), p.x);
+    fromJsonValue(cJSON_GetArrayItem(j, 1), p.y);
+}
+
+
+////////////////////////////////////////////////////////////
+// `sf::Time` stored as integer microseconds.
+////////////////////////////////////////////////////////////
+inline cJSON* toJsonValue(const sf::Time& t)
+{
+    return cJSON_CreateNumber(static_cast<double>(t.asMicroseconds()));
+}
+
+inline void fromJsonValue(const cJSON* j, sf::Time& t)
+{
+    if (cJSON_IsNumber(j))
+        t = sf::microseconds(static_cast<sf::base::I64>(cJSON_GetNumberValue(j)));
+}
+
+
+////////////////////////////////////////////////////////////
+// `sf::base::Optional<T>` round-trips as `null` or its contents.
+////////////////////////////////////////////////////////////
+template <typename T>
+cJSON* toJsonValue(const sf::base::Optional<T>& o)
+{
+    if (!o.hasValue())
+        return cJSON_CreateNull();
+    return toJsonValue(*o);
+}
+
+template <typename T>
+void fromJsonValue(const cJSON* j, sf::base::Optional<T>& o)
+{
+    if (cJSON_IsNull(j))
+    {
+        o.reset();
+        return;
+    }
+
+    o.emplace();
+    fromJsonValue(j, *o);
+}
+
+
+////////////////////////////////////////////////////////////
+// `sf::base::Vector<T>` as a JSON array.
+////////////////////////////////////////////////////////////
+template <typename T>
+cJSON* toJsonValue(const sf::base::Vector<T>& v)
+{
+    cJSON* arr = cJSON_CreateArray();
+    for (const auto& item : v)
+        cJSON_AddItemToArray(arr, toJsonValue(item));
+    return arr;
+}
+
+template <typename T>
+void fromJsonValue(const cJSON* j, sf::base::Vector<T>& v)
+{
+    v.clear();
+    if (!cJSON_IsArray(j))
         return;
 
-    const auto it = j.find(name);
-    if (it == j.end())
-        return;
+    v.reserve(static_cast<sf::base::SizeT>(cJSON_GetArraySize(j)));
 
-    if constexpr (!SFML_BASE_IS_ARRAY(T))
+    const cJSON* child{};
+    cJSON_ArrayForEach(child, j)
     {
-        it->template get_to<T>(field);
-    }
-    else
-    {
-        if (!it->is_array())
-            return;
-
-        constexpr auto arraySize = static_cast<sf::base::SizeT>(getArraySize<T>::value);
-        const auto     n         = arraySize < it->size() ? arraySize : it->size();
-
-        for (sf::base::SizeT i = 0u; i < n; ++i)
-            readArrayElement((*it)[i], field[i]);
+        T item{};
+        fromJsonValue(child, item);
+        v.emplaceBack(SFML_BASE_MOVE(item));
     }
 }
 
 
 ////////////////////////////////////////////////////////////
-template <typename T>
-void readArrayElement(const nlohmann::json& j, T& out)
+// `sf::base::Array<T, N>` as a JSON array.
+////////////////////////////////////////////////////////////
+template <typename T, sf::base::SizeT N>
+cJSON* toJsonValue(const sf::base::Array<T, N>& a)
 {
-    if constexpr (!SFML_BASE_IS_ARRAY(T))
+    cJSON* arr = cJSON_CreateArray();
+    for (sf::base::SizeT i = 0u; i < N; ++i)
+        cJSON_AddItemToArray(arr, toJsonValue(a.elements[i]));
+    return arr;
+}
+
+template <typename T, sf::base::SizeT N>
+void fromJsonValue(const cJSON* j, sf::base::Array<T, N>& a)
+{
+    if (!cJSON_IsArray(j))
+        return;
+
+    const auto n     = static_cast<sf::base::SizeT>(cJSON_GetArraySize(j));
+    const auto count = N < n ? N : n;
+    for (sf::base::SizeT i = 0u; i < count; ++i)
+        fromJsonValue(cJSON_GetArrayItem(j, static_cast<int>(i)), a.elements[i]);
+}
+
+
+////////////////////////////////////////////////////////////
+// Native C-arrays `T[N]` as JSON arrays (recurses for `T[N][M]`).
+////////////////////////////////////////////////////////////
+template <typename T, sf::base::SizeT N>
+cJSON* toJsonValue(const T (&arr)[N])
+{
+    cJSON* a = cJSON_CreateArray();
+    for (sf::base::SizeT i = 0u; i < N; ++i)
+        cJSON_AddItemToArray(a, toJsonValue(arr[i]));
+    return a;
+}
+
+template <typename T, sf::base::SizeT N>
+void fromJsonValue(const cJSON* j, T (&arr)[N])
+{
+    if (!cJSON_IsArray(j))
+        return;
+
+    const auto n     = static_cast<sf::base::SizeT>(cJSON_GetArraySize(j));
+    const auto count = N < n ? N : n;
+    for (sf::base::SizeT i = 0u; i < count; ++i)
+        fromJsonValue(cJSON_GetArrayItem(j, static_cast<int>(i)), arr[i]);
+}
+
+
+////////////////////////////////////////////////////////////
+// Single-field user types: round-trip as the underlying value
+// rather than as a JSON object, keeping the on-disk format compact.
+////////////////////////////////////////////////////////////
+#define DEFINE_SINGLE_FIELD_SERIALIZER(T, field)    \
+    inline cJSON* toJsonValue(const T& p)           \
+    {                                               \
+        return toJsonValue((p).field);              \
+    }                                               \
+    inline void fromJsonValue(const cJSON* j, T& p) \
+    {                                               \
+        fromJsonValue(j, (p).field);                \
+    }                                               \
+    static_assert(true)
+
+DEFINE_SINGLE_FIELD_SERIALIZER(Progress, value);
+DEFINE_SINGLE_FIELD_SERIALIZER(Countdown, time);
+DEFINE_SINGLE_FIELD_SERIALIZER(PurchasableScalingValue, nPurchases);
+
+#undef DEFINE_SINGLE_FIELD_SERIALIZER
+
+
+////////////////////////////////////////////////////////////
+// Event kinds are tagged by a string `kind` so the variant can
+// round-trip without positional coupling. Keep tags stable when
+// renaming types.
+////////////////////////////////////////////////////////////
+// Both overloads are reached through `GameEvent::linearVisit`'s generic
+// lambda; static analysis can't always prove every variant arm is hit
+// in this TU, so silence `-Wunused-function`.
+[[maybe_unused]] inline constexpr const char* eventKindTag(const EBubblefall&)
+{
+    return "bubblefall";
+}
+
+[[maybe_unused]] inline constexpr const char* eventKindTag(const EInvincibleBubble&)
+{
+    return "invincible_bubble";
+}
+
+
+////////////////////////////////////////////////////////////
+// `GameEvent` is a variant tagged by `kind`. Keep tags stable.
+////////////////////////////////////////////////////////////
+inline cJSON* toJsonValue(const GameEvent& p)
+{
+    cJSON* obj = cJSON_CreateObject();
+    p.linearVisit(sf::base::OverloadSet{
+        [&](const auto& e)
     {
-        j.get_to(out);
+        cJSON_AddStringToObject(obj, "kind", eventKindTag(e));
+        cJSON_AddItemToObject(obj, "data", toJsonValue(e));
+    },
+    });
+    return obj;
+}
+
+inline void fromJsonValue(const cJSON* j, GameEvent& p)
+{
+    if (!cJSON_IsObject(j))
+        return;
+
+    const cJSON* kindItem = cJSON_GetObjectItemCaseSensitive(j, "kind");
+    const cJSON* dataItem = cJSON_GetObjectItemCaseSensitive(j, "data");
+    if (kindItem == nullptr || dataItem == nullptr || !cJSON_IsString(kindItem))
+        return;
+
+    const char* const kind = cJSON_GetStringValue(kindItem);
+    if (kind == nullptr)
+        return;
+
+    const sf::base::StringView kindView{kind};
+    if (kindView == "bubblefall")
+    {
+        EBubblefall e{};
+        fromJsonValue(dataItem, e);
+        p = GameEvent{e};
     }
-    else
+    else if (kindView == "invincible_bubble")
     {
-        if (!j.is_array())
-            return;
-
-        constexpr auto arraySize = getArraySize<T>::value;
-        const auto     n         = arraySize < j.size() ? arraySize : j.size();
-
-        for (sf::base::SizeT i = 0u; i < n; ++i)
-            readArrayElement(j[i], out[i]);
+        EInvincibleBubble e{};
+        fromJsonValue(dataItem, e);
+        p = GameEvent{e};
     }
 }
 
+
+////////////////////////////////////////////////////////////
+// Object field helpers used directly by the `FIELD(...)` macro
+// inside every `DEFINE_TWO_WAY_SERIALIZER(T)` block.
+////////////////////////////////////////////////////////////
+template <typename T>
+void writeField(cJSON* obj, const char* name, const T& field)
+{
+    cJSON_AddItemToObject(obj, name, toJsonValue(field));
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+void readField(const cJSON* obj, const char* name, T& field)
+{
+    const cJSON* item = cJSON_GetObjectItemCaseSensitive(obj, name);
+    if (item != nullptr)
+        fromJsonValue(item, field);
+}
 
 } // namespace
 
 
 ////////////////////////////////////////////////////////////
+template <typename T, typename U>
+concept isSameDecayed = sf::base::isSame<SFML_BASE_REMOVE_CVREF(T), SFML_BASE_REMOVE_CVREF(U)>;
+
+
+////////////////////////////////////////////////////////////
 // Dispatch a named field to the write or read helper depending on direction.
-// All `twoWaySerializer` bodies use `j` (the json) and `p` (the object) as
+// All `twoWaySerializer` bodies use `j` (the cJSON node) and `p` (the object) as
 // convention, and this macro wraps the common lookup pattern.
 #define FIELD(x)                    \
     do                              \
@@ -295,33 +485,10 @@ void readArrayElement(const nlohmann::json& j, T& out)
 // Boilerplate-killer for the two-way serializer signature. `T` is the type
 // being serialized; the body is a sequence of `FIELD(x);` calls (one per
 // field). Each declared serializer is automatically picked up by the templated
-// `to_json` / `from_json` dispatchers below.
+// `toJsonValue` / `fromJsonValue` dispatchers above.
 #define DEFINE_TWO_WAY_SERIALIZER(T) \
     template <bool Serialize>        \
-    void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<T> auto&& p)
-
-
-////////////////////////////////////////////////////////////
-template <typename T, typename U>
-concept isSameDecayed = sf::base::isSame<SFML_BASE_REMOVE_CVREF(T), SFML_BASE_REMOVE_CVREF(U)>;
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-void to_json(nlohmann::json& j, const T& p)
-    requires(requires { twoWaySerializer<true>(j, p); })
-{
-    twoWaySerializer<true>(j, p);
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-void from_json(const nlohmann::json& j, T& p)
-    requires(requires { twoWaySerializer<false>(j, p); })
-{
-    twoWaySerializer<false>(j, p);
-}
+    void twoWaySerializer(JsonNode<Serialize> j, isSameDecayed<T> auto&& p)
 
 
 ////////////////////////////////////////////////////////////
@@ -461,61 +628,6 @@ DEFINE_TWO_WAY_SERIALIZER(EInvincibleBubble)
 
 
 ////////////////////////////////////////////////////////////
-// Event kinds are tagged by a string `kind` so the variant can round-trip
-// without positional coupling. Keep tags stable when renaming types.
-inline constexpr const char* eventKindTag(const EBubblefall&)
-{
-    return "bubblefall";
-}
-
-inline constexpr const char* eventKindTag(const EInvincibleBubble&)
-{
-    return "invincible_bubble";
-}
-
-
-////////////////////////////////////////////////////////////
-void to_json(nlohmann::json& j, const GameEvent& p)
-{
-    p.linearVisit(sf::base::OverloadSet{
-        [&](const auto& e)
-    {
-        j["kind"] = eventKindTag(e);
-        j["data"] = e;
-    },
-    });
-}
-
-
-////////////////////////////////////////////////////////////
-void from_json(const nlohmann::json& j, GameEvent& p)
-{
-    if (!j.is_object())
-        return;
-
-    const auto kindIt = j.find("kind");
-    const auto dataIt = j.find("data");
-    if (kindIt == j.end() || dataIt == j.end())
-        return;
-
-    const auto kind = kindIt->get<std::string>();
-
-    if (kind == "bubblefall")
-    {
-        EBubblefall e{};
-        dataIt->get_to(e);
-        p = GameEvent{e};
-    }
-    else if (kind == "invincible_bubble")
-    {
-        EInvincibleBubble e{};
-        dataIt->get_to(e);
-        p = GameEvent{e};
-    }
-}
-
-
-////////////////////////////////////////////////////////////
 DEFINE_TWO_WAY_SERIALIZER(Shrine)
 {
     FIELD(position);
@@ -530,20 +642,6 @@ DEFINE_TWO_WAY_SERIALIZER(Shrine)
 
 
 ////////////////////////////////////////////////////////////
-void to_json(nlohmann::json& j, const Progress& p)
-{
-    j = p.value;
-}
-
-
-////////////////////////////////////////////////////////////
-void from_json(const nlohmann::json& j, Progress& p)
-{
-    p.value = j;
-}
-
-
-////////////////////////////////////////////////////////////
 DEFINE_TWO_WAY_SERIALIZER(Transition)
 {
     FIELD(value);
@@ -552,38 +650,10 @@ DEFINE_TWO_WAY_SERIALIZER(Transition)
 
 
 ////////////////////////////////////////////////////////////
-void to_json(nlohmann::json& j, const Countdown& p)
-{
-    j = p.time;
-}
-
-
-////////////////////////////////////////////////////////////
-void from_json(const nlohmann::json& j, Countdown& p)
-{
-    p.time = j;
-}
-
-
-////////////////////////////////////////////////////////////
 DEFINE_TWO_WAY_SERIALIZER(TimedCountdown)
 {
     FIELD(time);
     FIELD(duration);
-}
-
-
-////////////////////////////////////////////////////////////
-void to_json(nlohmann::json& j, const PurchasableScalingValue& p)
-{
-    j = p.nPurchases;
-}
-
-
-////////////////////////////////////////////////////////////
-void from_json(const nlohmann::json& j, PurchasableScalingValue& p)
-{
-    p.nPurchases = j;
 }
 
 
@@ -1107,6 +1177,22 @@ DEFINE_TWO_WAY_SERIALIZER(Version)
 namespace
 {
 ////////////////////////////////////////////////////////////
+template <typename T>
+[[nodiscard]] sf::base::String serializeToJsonString(const T& value, bool pretty)
+{
+    cJSON* const root = toJsonValue(value);
+    SFML_BASE_SCOPE_GUARD({ cJSON_Delete(root); });
+
+    char* const buf = pretty ? cJSON_Print(root) : cJSON_PrintUnformatted(root);
+    if (buf == nullptr)
+        return {};
+    SFML_BASE_SCOPE_GUARD({ cJSON_free(buf); });
+
+    return sf::base::String{buf};
+}
+
+
+////////////////////////////////////////////////////////////
 bool forceCopyFile(const sf::Path& from, const sf::Path& to)
 {
     (void)to.removeFromDisk();
@@ -1143,7 +1229,7 @@ bool saveProfileToFile(const Profile& profile, const char* filename)
 
     doRotatingBackup(filename);
 
-    if (!sf::writeToFile(sf::base::StringView{filename}, nlohmann::json(profile).dump()))
+    if (!sf::writeToFile(sf::base::StringView{filename}, serializeToJsonString(profile, /* pretty */ false)))
     {
         sf::cOut() << "Failed to save profile to file '" << filename << "' (writeToFile failed)\n";
         return false;
@@ -1162,10 +1248,13 @@ try
     if (!sf::readFromFile(sf::base::StringView{filename}, contents))
         throw std::runtime_error("readFromFile failed");
 
-    const auto parsed = nlohmann::json::parse(contents);
+    cJSON* const parsed = cJSON_Parse(contents.cStr());
+    if (parsed == nullptr)
+        throw std::runtime_error("cJSON_Parse failed");
+    SFML_BASE_SCOPE_GUARD({ cJSON_Delete(parsed); });
 
     // Old saves used a JSON array at the root; new saves are objects.
-    if (!parsed.is_object())
+    if (!cJSON_IsObject(parsed))
     {
         sf::cOut() << "Profile '" << filename
                    << "' is in the legacy array format and cannot be loaded. Resetting to defaults.\n";
@@ -1173,7 +1262,7 @@ try
         return;
     }
 
-    parsed.get_to(profile);
+    fromJsonValue(parsed, profile);
 } catch (const std::exception& ex)
 {
     sf::cOut() << "Failed to load profile from file '" << filename << "' (" << ex.what() << ")\n";
@@ -1192,7 +1281,7 @@ bool saveGameConstantsToFile(const GameConstants& gameConstants, const char* fil
 
     doRotatingBackup(filename);
 
-    if (!sf::writeToFile(sf::base::StringView{filename}, nlohmann::json(gameConstants).dump(2)))
+    if (!sf::writeToFile(sf::base::StringView{filename}, serializeToJsonString(gameConstants, /* pretty */ true)))
     {
         sf::cOut() << "Failed to save game constants to file '" << filename << "' (writeToFile failed)\n";
         return false;
@@ -1211,7 +1300,12 @@ try
     if (!sf::readFromFile(sf::base::StringView{filename}, contents))
         throw std::runtime_error("readFromFile failed");
 
-    nlohmann::json::parse(contents).get_to(gameConstants);
+    cJSON* const parsed = cJSON_Parse(contents.cStr());
+    if (parsed == nullptr)
+        throw std::runtime_error("cJSON_Parse failed");
+    SFML_BASE_SCOPE_GUARD({ cJSON_Delete(parsed); });
+
+    fromJsonValue(parsed, gameConstants);
 } catch (const std::exception& ex)
 {
     sf::cOut() << "Failed to load game constants from file '" << filename << "' (" << ex.what() << ")\n";
@@ -1229,7 +1323,7 @@ bool savePlaythroughToFile(const Playthrough& playthrough, const char* filename)
 
     doRotatingBackup(filename);
 
-    if (!sf::writeToFile(sf::base::StringView{filename}, nlohmann::json(playthrough).dump()))
+    if (!sf::writeToFile(sf::base::StringView{filename}, serializeToJsonString(playthrough, /* pretty */ false)))
     {
         sf::cOut() << "Failed to save playthrough to file '" << filename << "' (writeToFile failed)\n";
         return false;
@@ -1283,15 +1377,18 @@ sf::base::StringView backwardsCompatibilityLoadChecks(const Version& parsedVersi
 sf::base::StringView loadPlaythroughFromFile(Playthrough& playthrough, const char* filename)
 try
 {
-    std::string contents;
+    sf::base::String contents;
 
     if (!sf::readFromFile(sf::base::StringView{filename}, contents))
         throw std::runtime_error("readFromFile failed");
 
-    const auto parsed = nlohmann::json::parse(contents);
+    cJSON* const parsed = cJSON_Parse(contents.cStr());
+    if (parsed == nullptr)
+        throw std::runtime_error("cJSON_Parse failed");
+    SFML_BASE_SCOPE_GUARD({ cJSON_Delete(parsed); });
 
     // Old saves used a JSON array at the root; new saves are objects.
-    if (!parsed.is_object())
+    if (!cJSON_IsObject(parsed))
     {
         sf::cOut() << "Playthrough '" << filename << "' is in the legacy array format and cannot be loaded.\n";
         playthrough = Playthrough{};
@@ -1299,7 +1396,7 @@ try
                "format and could not be loaded. A fresh playthrough has been started.";
     }
 
-    parsed.get_to(playthrough);
+    fromJsonValue(parsed, playthrough);
 
     if constexpr (isDemoVersion)
     {
@@ -1318,9 +1415,10 @@ try
         }
     }
 
-    Version parsedVersion{};
-    if (const auto it = parsed.find("version"); it != parsed.end())
-        it->get_to(parsedVersion);
+    Version            parsedVersion{};
+    const cJSON* const versionItem = cJSON_GetObjectItemCaseSensitive(parsed, "version");
+    if (versionItem != nullptr)
+        fromJsonValue(versionItem, parsedVersion);
 
     return backwardsCompatibilityLoadChecks(parsedVersion, playthrough);
 
