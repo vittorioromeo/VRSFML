@@ -51,13 +51,16 @@ TEST_CASE("[Base] Base/ToString.hpp")
 
         SUBCASE("Positive floats")
         {
-            CHECK(sf::base::toString(123.456f) == "123.456000");
+            // `123.456f` is actually stored as ~123.4560012817..., which matches
+            // `std::to_chars` output at fixed precision 6.
+            CHECK(sf::base::toString(123.456f) == "123.456001");
             CHECK(sf::base::toString(0.123) == "0.123000");
         }
 
         SUBCASE("Negative floats")
         {
             CHECK(sf::base::toString(-78.9) == "-78.900000");
+            // `-0.001f` is actually stored as ~-0.0010000000474..., matching `std::to_chars`.
             CHECK(sf::base::toString(-0.001f) == "-0.001000");
         }
 
