@@ -3,6 +3,19 @@
 // https://github.com/vittorioromeo/VRSFML/blob/master/license.md
 
 
+#if __has_builtin(__builtin_prefetch)
+
+    ////////////////////////////////////////////////////////////
+    #define SFML_BASE_PREFETCH(ptr, rw, locality) ((void)__builtin_prefetch(ptr, rw, locality))
+
+#else
+
+    ////////////////////////////////////////////////////////////
+    #define SFML_BASE_PREFETCH(ptr, rw, locality) ((void)0)
+
+#endif
+
+
 ////////////////////////////////////////////////////////////
 /// \file
 /// \brief Portable wrapper for `__builtin_prefetch`
@@ -29,16 +42,3 @@
 /// not rely on side effects in the argument expression.
 ///
 ////////////////////////////////////////////////////////////
-
-
-#if __has_builtin(__builtin_prefetch)
-
-    ////////////////////////////////////////////////////////////
-    #define SFML_BASE_PREFETCH(ptr, rw, locality) ((void)__builtin_prefetch(ptr, rw, locality))
-
-#else
-
-    ////////////////////////////////////////////////////////////
-    #define SFML_BASE_PREFETCH(ptr, rw, locality) ((void)0)
-
-#endif
