@@ -22,12 +22,8 @@ if(TARGET box2d)
     set_target_properties(box2d PROPERTIES FOLDER "Dependencies")
     target_compile_options(box2d PRIVATE "-w")
 
-    # Emscripten requires every TU to share the pthreads/atomics/bulk-memory feature flags,
-    # otherwise wasm-ld refuses to link with `--shared-memory`.
-    if(SFML_OS_EMSCRIPTEN)
-        target_compile_options(box2d PRIVATE ${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS})
-        target_link_options(box2d PRIVATE ${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS})
-    endif()
+    # add flags required for emscripten support (e.g. pthread)
+    sfml_apply_emscripten_options(box2d)
 endif()
 
 # define the imgui_physics target

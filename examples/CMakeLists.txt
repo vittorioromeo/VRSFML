@@ -21,6 +21,9 @@ if(SFML_BUILD_AUDIO)
     target_link_libraries(ExampleUtils PRIVATE SFML::Audio)
 endif()
 
+# add flags required for emscripten support (e.g. pthread)
+sfml_apply_emscripten_options(ExampleUtils)
+
 
 # ===========================================================================
 # ExampleProfiler libraries (two flavors: enabled / disabled)
@@ -63,6 +66,9 @@ if(SFML_BUILD_IMGUI)
             # PUBLIC so every consumer TU of this variant gets the define.
             target_compile_definitions(${target_name} PUBLIC SFEX_PROFILER_ENABLED)
         endif()
+
+        # add flags required for emscripten support (e.g. pthread)
+        sfml_apply_emscripten_options(${target_name})
     endfunction()
 
     sfml_add_example_profiler(ExampleProfilerEnabled  TRUE)
