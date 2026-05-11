@@ -6,6 +6,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Base/Builtin/Unreachable.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Trait/IsIntegral.hpp"
@@ -28,7 +29,7 @@ namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 template <typename In, typename Out>
-inline constexpr Out copyBits(In begin, const In end, Out output)
+[[gnu::always_inline]] inline constexpr Out copyBits(In begin, const In end, Out output)
 {
     using InputType = SFML_BASE_REMOVE_CVREF(decltype(*begin));
     static_assert(SFML_BASE_IS_INTEGRAL(InputType));
@@ -57,6 +58,210 @@ inline constexpr Out copyBits(In begin, const In end, Out output)
     return output;
 }
 
+
+////////////////////////////////////////////////////////////
+/// Number of trailing continuation bytes for each possible UTF-8
+/// lead byte. ASCII (`0x00`-`0x7F`) and stray continuation bytes
+/// (`0x80`-`0xBF`) map to `0`; lead bytes `0xC0`-`0xDF` map to
+/// `1`, `0xE0`-`0xEF` to `2`, etc.
+////////////////////////////////////////////////////////////
+inline constexpr base::U8 utf8TrailingBytes[256] =
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+     0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+     1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5};
+
+
+////////////////////////////////////////////////////////////
+/// Magic-constant offsets, indexed by `utf8TrailingBytes[leadByte]`,
+/// that recover the codepoint value once the input bytes have been
+/// folded into a single 32-bit accumulator. Derived from the standard
+/// CVTUTF algorithm.
+////////////////////////////////////////////////////////////
+inline constexpr base::U32 utf8DecodeOffsets[6] =
+    {0x00'00'00'00, 0x00'00'30'80, 0x00'0E'20'80, 0x03'C8'20'80, 0xFA'08'20'80, 0x82'08'20'80};
+
+
+////////////////////////////////////////////////////////////
+/// First-byte prefix for an n-byte UTF-8 sequence (indexed by
+/// the byte count, 1-4 in practice).
+////////////////////////////////////////////////////////////
+inline constexpr base::U8 utf8FirstBytes[7] = {0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC};
+
+
+////////////////////////////////////////////////////////////
+template <typename In, typename Facet>
+[[nodiscard, gnu::always_inline]] inline char32_t decodeAnsiImpl(In input, const Facet& facet)
+{
+    return static_cast<char32_t>(facet.widen(input));
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename In>
+[[nodiscard, gnu::always_inline]] inline char32_t decodeWideImpl(In input)
+{
+    // wchar_t encoding is platform-defined: UCS-2 on Windows, UCS-4 on Unix.
+    // A direct cast works for both (UCS-2 is a subset of UCS-4, UCS-4 *is* UTF-32).
+    return static_cast<char32_t>(input);
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename Out, typename Facet>
+[[gnu::always_inline]] inline Out encodeAnsiImpl(char32_t codepoint, Out output, char replacement, const Facet& facet)
+{
+    *output++ = facet.narrow(static_cast<wchar_t>(codepoint), replacement);
+    return output;
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename Out>
+[[gnu::always_inline]] inline Out encodeWideImpl(char32_t codepoint, Out output, wchar_t replacement)
+{
+    // For UCS-4 platforms (Unix), every valid codepoint fits in `wchar_t`.
+    // For UCS-2 platforms (Windows), only the BMP fits; non-BMP codepoints
+    // (and surrogates themselves) are replaced or dropped.
+    if constexpr (sizeof(wchar_t) == 4)
+    {
+        *output++ = static_cast<wchar_t>(codepoint);
+    }
+    else
+    {
+        if ((codepoint <= 0xFF'FF) && ((codepoint < 0xD8'00) || (codepoint > 0xDF'FF)))
+            *output++ = static_cast<wchar_t>(codepoint);
+        else if (replacement)
+            *output++ = replacement;
+    }
+
+    return output;
+}
+
+
+////////////////////////////////////////////////////////////
+/// \brief Encode a single codepoint into a raw 4-byte buffer
+///
+/// Returns the number of bytes actually written (1-4), or `0` if
+/// the codepoint is invalid (outside Unicode range or a high
+/// surrogate). The buffer must have room for at least 4 bytes;
+/// only the first `result` bytes are written, the remainder is
+/// untouched.
+///
+/// Used directly by `Utf8String::appendCodepoint` to skip the
+/// `BackInserter` per-byte function-call chain when the caller
+/// knows the destination is a contiguous byte buffer.
+///
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline]] inline base::SizeT encodeCodepointToBuffer(char32_t input, char out[4]) noexcept
+{
+    if ((input > 0x00'10'FF'FF) || ((input >= 0xD8'00) && (input <= 0xDB'FF))) [[unlikely]]
+        return 0u; // Invalid codepoint: outside Unicode range or a high surrogate.
+
+    // Compute byte count from codepoint magnitude.
+    base::SizeT bytestoWrite = 1;
+    if (input < 0x80)
+        bytestoWrite = 1;
+    else if (input < 0x8'00)
+        bytestoWrite = 2;
+    else if (input < 0x1'00'00)
+        bytestoWrite = 3;
+    else if (input <= 0x00'10'FF'FF)
+        bytestoWrite = 4;
+
+    // Lay down the bytes from least-significant onwards, then prefix the
+    // lead byte. Each continuation byte takes 6 bits of payload.
+    // `utf8FirstBytes` lives in `sf::priv` (one `.rodata` copy across
+    // all instantiations).
+    switch (bytestoWrite)
+    {
+        case 4:
+            out[3] = static_cast<char>((input | 0x80) & 0xBF);
+            input >>= 6;
+            [[fallthrough]];
+        case 3:
+            out[2] = static_cast<char>((input | 0x80) & 0xBF);
+            input >>= 6;
+            [[fallthrough]];
+        case 2:
+            out[1] = static_cast<char>((input | 0x80) & 0xBF);
+            input >>= 6;
+            [[fallthrough]];
+        case 1:
+            out[0] = static_cast<char>(input | utf8FirstBytes[bytestoWrite]);
+    }
+
+    return bytestoWrite;
+}
+
+
+////////////////////////////////////////////////////////////
+/// \brief Raw UTF-8 encoder (used by `sf::Utf<8>::encode` and by
+///        the UTF-16/UTF-32 → UTF-8 conversion bodies that need
+///        to reach across class boundaries).
+///
+////////////////////////////////////////////////////////////
+template <typename Out>
+[[gnu::always_inline]] inline Out encodeUtf8Impl(char32_t input, Out output, base::U8 replacement)
+{
+    char       buf[4];
+    const auto bytestoWrite = encodeCodepointToBuffer(input, buf);
+
+    if (bytestoWrite == 0u) [[unlikely]]
+    {
+        // Invalid codepoint: emit replacement byte if requested, otherwise drop.
+        if (replacement)
+            *output++ = static_cast<typename Out::container_type::value_type>(replacement);
+
+        return output;
+    }
+
+    return copyBits(buf, buf + bytestoWrite, output);
+}
+
+
+////////////////////////////////////////////////////////////
+/// \brief Raw UTF-16 encoder (used by `sf::Utf<16>::encode` and by
+///        UTF-8 → UTF-16 / UTF-32 → UTF-16 conversion bodies).
+///
+////////////////////////////////////////////////////////////
+template <typename Out>
+[[gnu::always_inline]] inline Out encodeUtf16Impl(char32_t input, Out output, char16_t replacement)
+{
+    if (input <= 0xFF'FF)
+    {
+        if ((input >= 0xD8'00) && (input <= 0xDF'FF))
+        {
+            // Reserved surrogate range -- not a valid codepoint.
+            if (replacement)
+                *output++ = replacement;
+        }
+        else
+        {
+            *output++ = static_cast<char16_t>(input);
+        }
+    }
+    else if (input > 0x00'10'FF'FF)
+    {
+        // Above the Unicode maximum.
+        if (replacement)
+            *output++ = replacement;
+    }
+    else
+    {
+        // Encode as a surrogate pair.
+        input -= 0x0'01'00'00;
+        *output++ = static_cast<char16_t>((input >> 10) + 0xD8'00);
+        *output++ = static_cast<char16_t>((input & 0x3'FFUL) + 0xDC'00);
+    }
+
+    return output;
+}
+
+
 } // namespace sf::priv
 
 
@@ -78,38 +283,55 @@ public:
     ///
     /// On an invalid or incomplete sequence, `output` is set to `replacement`.
     ///
+    /// **Precondition:** `begin != end`. Callers loop on `begin != end`
+    /// (or `begin < end`) before invoking `decode`, so this is always
+    /// true at the call site; the existing implementation already
+    /// dereferences `*begin` before checking truncation.
+    ///
+    /// **ASCII fast path:** when the lead byte has the high bit clear,
+    /// the codepoint equals the byte value and the iterator advances
+    /// by one. UI text is overwhelmingly ASCII (whitespace, digits,
+    /// punctuation, Latin letters) even in localized strings, so we
+    /// hint the branch and skip the `trailing[]`/`offsets[]` table
+    /// loads entirely.
+    ///
     /// \return Iterator past the last consumed input element
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
-    static In decode(In begin, In end, char32_t& output, char32_t replacement)
+    [[nodiscard, gnu::always_inline]] static In decode(In begin, In end, char32_t& output, char32_t replacement)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(char));
 
-        // clang-format off
-        // Some useful precomputed data
-        static constexpr base::U8 trailing[256] =
+        // ASCII fast path: a leading byte with the high bit clear is a
+        // single-byte codepoint that equals the byte value (U+0000..U+007F).
+        // No table touch, no truncation check (none possible for 1 byte).
+        const auto firstByte = static_cast<base::U8>(*begin);
+        if (firstByte < 0x80u) [[likely]]
         {
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5
-        };
+            output = firstByte;
+            return ++begin;
+        }
 
-        static constexpr base::U32 offsets[6] =
-        {
-            0x00000000, 0x00003080, 0x000E2080, 0x03C82080, 0xFA082080, 0x82082080
-        };
-        // clang-format on
+        // Slow path: multi-byte sequence (or stray continuation byte).
+        // Tables live in `sf::priv` so they're shared across all
+        // template instantiations of `decode` (one `.rodata` copy
+        // instead of one per `In` type).
+        const auto trailingBytes = priv::utf8TrailingBytes[firstByte];
 
-        // decode the character
-        const auto trailingBytes = trailing[static_cast<base::U8>(*begin)];
-        if (trailingBytes < (end - begin))
+        // The `trailing[]` table only produces values in [0, 5]; assert the
+        // invariant so GCC's value-range analysis can prove that the later
+        // `offsets[trailingBytes]` access stays in bounds (otherwise
+        // `-Warray-bounds` fires after the inline fast path makes the
+        // dataflow harder to track across instantiations).
+        if (trailingBytes > 5u)
+            SFML_BASE_UNREACHABLE();
+
+        if (trailingBytes < (end - begin)) [[likely]]
         {
+            // Already consumed `firstByte` mentally; fold it in and shift,
+            // then add the trailing bytes one at a time. The switch falls
+            // through to accumulate (trailingBytes + 1) bytes total.
             output = 0;
 
             // clang-format off
@@ -124,11 +346,11 @@ public:
             }
             // clang-format on
 
-            output -= offsets[trailingBytes];
+            output -= priv::utf8DecodeOffsets[trailingBytes];
         }
         else
         {
-            // Incomplete character
+            // Incomplete character at end of input -- consume the rest.
             begin  = end;
             output = replacement;
         }
@@ -146,50 +368,9 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename Out>
-    static Out encode(char32_t input, Out output, base::U8 replacement)
+    [[gnu::always_inline]] static Out encode(char32_t input, Out output, base::U8 replacement)
     {
-        // Some useful precomputed data
-        static constexpr base::U8 firstBytes[7] = {0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC};
-
-        // encode the character
-        if ((input > 0x00'10'FF'FF) || ((input >= 0xD8'00) && (input <= 0xDB'FF)))
-        {
-            // Invalid character
-            if (replacement)
-                *output++ = static_cast<typename Out::container_type::value_type>(replacement);
-        }
-        else
-        {
-            // Valid character
-
-            // Get the number of bytes to write
-            base::SizeT bytestoWrite = 1;
-
-            // clang-format off
-            if      (input <  0x80)       bytestoWrite = 1;
-            else if (input <  0x800)      bytestoWrite = 2;
-            else if (input <  0x10000)    bytestoWrite = 3;
-            else if (input <= 0x0010FFFF) bytestoWrite = 4;
-            // clang-format on
-
-            // Extract the bytes to write
-            unsigned char bytes[4]{};
-
-            // clang-format off
-            switch (bytestoWrite)
-            {
-                case 4: bytes[3] = static_cast<unsigned char>((input | 0x80) & 0xBF); input >>= 6; [[fallthrough]];
-                case 3: bytes[2] = static_cast<unsigned char>((input | 0x80) & 0xBF); input >>= 6; [[fallthrough]];
-                case 2: bytes[1] = static_cast<unsigned char>((input | 0x80) & 0xBF); input >>= 6; [[fallthrough]];
-                case 1: bytes[0] = static_cast<unsigned char> (input | firstBytes[bytestoWrite]);
-            }
-            // clang-format on
-
-            // Add them to the output
-            output = priv::copyBits(bytes, bytes + bytestoWrite, output);
-        }
-
-        return output;
+        return priv::encodeUtf8Impl(input, output, replacement);
     }
 
     ////////////////////////////////////////////////////////////
@@ -199,7 +380,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
-    static In next(In begin, In end)
+    [[nodiscard, gnu::always_inline]] static In next(In begin, In end)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(char));
 
@@ -215,7 +396,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
-    static base::SizeT count(In begin, In end)
+    [[nodiscard, gnu::flatten]] static base::SizeT count(In begin, In end)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(char));
 
@@ -237,21 +418,43 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out, typename Facet>
-    static Out fromAnsi(In begin, In end, Out output, const Facet& facet);
+    [[gnu::always_inline, gnu::flatten]] static Out fromAnsi(In begin, In end, Out output, const Facet& facet)
+    {
+        static_assert(sizeof(decltype(*begin)) == sizeof(char));
+
+        while (begin != end)
+        {
+            const char32_t codepoint = priv::decodeAnsiImpl(*begin++, facet);
+            output                   = encode(codepoint, output, 0);
+        }
+
+        return output;
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert a wide-character sequence `[begin, end)` to UTF-8
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
-    static Out fromWide(In begin, In end, Out output);
+    [[gnu::always_inline, gnu::flatten]] static Out fromWide(In begin, In end, Out output)
+    {
+        static_assert(sizeof(decltype(*begin)) == sizeof(wchar_t));
+
+        while (begin != end)
+        {
+            const char32_t codepoint = priv::decodeWideImpl(*begin++);
+            output                   = encode(codepoint, output, 0);
+        }
+
+        return output;
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert a latin-1 (ISO-5589-1) sequence `[begin, end)` to UTF-8
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
-    static Out fromLatin1(In begin, In end, Out output)
+    [[gnu::always_inline, gnu::flatten]] static Out fromLatin1(In begin, In end, Out output)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(char));
 
@@ -273,7 +476,19 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out, typename Facet>
-    static Out toAnsi(In begin, In end, Out output, char replacement, const Facet& facet);
+    [[gnu::always_inline, gnu::flatten]] static Out toAnsi(In begin, In end, Out output, char replacement, const Facet& facet)
+    {
+        static_assert(sizeof(decltype(*begin)) == sizeof(char));
+
+        while (begin != end)
+        {
+            char32_t codepoint = 0;
+            begin              = decode(begin, end, codepoint, 0);
+            output             = priv::encodeAnsiImpl(codepoint, output, replacement, facet);
+        }
+
+        return output;
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert a UTF-8 sequence `[begin, end)` to wide characters
@@ -283,7 +498,19 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
-    static Out toWide(In begin, In end, Out output, wchar_t replacement);
+    [[gnu::always_inline, gnu::flatten]] static Out toWide(In begin, In end, Out output, wchar_t replacement)
+    {
+        static_assert(sizeof(decltype(*begin)) == sizeof(char));
+
+        while (begin != end)
+        {
+            char32_t codepoint = 0;
+            begin              = decode(begin, end, codepoint, 0);
+            output             = priv::encodeWideImpl(codepoint, output, replacement);
+        }
+
+        return output;
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert a UTF-8 sequence `[begin, end)` to latin-1 (ISO-5589-1)
@@ -292,7 +519,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
-    static Out toLatin1(In begin, In end, Out output, char replacement)
+    [[gnu::always_inline, gnu::flatten]] static Out toLatin1(In begin, In end, Out output, char replacement)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(char));
 
@@ -316,7 +543,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
-    static Out toUtf8(In begin, In end, Out output)
+    [[gnu::always_inline]] static Out toUtf8(In begin, In end, Out output)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(char));
 
@@ -328,14 +555,26 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
-    static Out toUtf16(In begin, In end, Out output);
+    [[gnu::always_inline, gnu::flatten]] static Out toUtf16(In begin, In end, Out output)
+    {
+        static_assert(sizeof(decltype(*begin)) == sizeof(char));
+
+        while (begin != end)
+        {
+            char32_t codepoint = 0;
+            begin              = decode(begin, end, codepoint, 0);
+            output             = priv::encodeUtf16Impl(codepoint, output, char16_t{0});
+        }
+
+        return output;
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert a UTF-8 sequence `[begin, end)` to UTF-32
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
-    static Out toUtf32(In begin, In end, Out output)
+    [[gnu::always_inline, gnu::flatten]] static Out toUtf32(In begin, In end, Out output)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(char));
 
@@ -368,7 +607,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
-    static In decode(In begin, In end, char32_t& output, char32_t replacement)
+    [[nodiscard, gnu::always_inline]] static In decode(In begin, In end, char32_t& output, char32_t replacement)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(char16_t));
 
@@ -419,38 +658,9 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename Out>
-    static Out encode(char32_t input, Out output, char16_t replacement)
+    [[gnu::always_inline, gnu::flatten]] static Out encode(char32_t input, Out output, char16_t replacement)
     {
-        if (input <= 0xFF'FF)
-        {
-            // The character can be copied directly, we just need to check if it's in the valid range
-            if ((input >= 0xD8'00) && (input <= 0xDF'FF))
-            {
-                // Invalid character (this range is reserved)
-                if (replacement)
-                    *output++ = replacement;
-            }
-            else
-            {
-                // Valid character directly convertible to a single UTF-16 character
-                *output++ = static_cast<char16_t>(input);
-            }
-        }
-        else if (input > 0x00'10'FF'FF)
-        {
-            // Invalid character (greater than the maximum Unicode value)
-            if (replacement)
-                *output++ = replacement;
-        }
-        else
-        {
-            // The input character will be converted to two UTF-16 elements
-            input -= 0x0'01'00'00;
-            *output++ = static_cast<char16_t>((input >> 10) + 0xD8'00);
-            *output++ = static_cast<char16_t>((input & 0x3'FFUL) + 0xDC'00);
-        }
-
-        return output;
+        return priv::encodeUtf16Impl(input, output, replacement);
     }
 
     ////////////////////////////////////////////////////////////
@@ -460,7 +670,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
-    static In next(In begin, In end)
+    [[nodiscard, gnu::always_inline]] static In next(In begin, In end)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(char16_t));
 
@@ -476,7 +686,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
-    static base::SizeT count(In begin, In end)
+    [[nodiscard, gnu::flatten]] static base::SizeT count(In begin, In end)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(char16_t));
 
@@ -498,21 +708,43 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out, typename Facet>
-    static Out fromAnsi(In begin, In end, Out output, const Facet& facet);
+    [[gnu::always_inline, gnu::flatten]] static Out fromAnsi(In begin, In end, Out output, const Facet& facet)
+    {
+        static_assert(sizeof(decltype(*begin)) == sizeof(char));
+
+        while (begin != end)
+        {
+            const char32_t codepoint = priv::decodeAnsiImpl(*begin++, facet);
+            output                   = encode(codepoint, output, 0);
+        }
+
+        return output;
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert a wide-character sequence `[begin, end)` to UTF-16
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
-    static Out fromWide(In begin, In end, Out output);
+    [[gnu::always_inline, gnu::flatten]] static Out fromWide(In begin, In end, Out output)
+    {
+        static_assert(sizeof(decltype(*begin)) == sizeof(wchar_t));
+
+        while (begin != end)
+        {
+            const char32_t codepoint = priv::decodeWideImpl(*begin++);
+            output                   = encode(codepoint, output, 0);
+        }
+
+        return output;
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert a latin-1 (ISO-5589-1) sequence `[begin, end)` to UTF-16
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
-    static Out fromLatin1(In begin, In end, Out output)
+    [[gnu::always_inline, gnu::flatten]] static Out fromLatin1(In begin, In end, Out output)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(char));
 
@@ -530,7 +762,19 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out, typename Facet>
-    static Out toAnsi(In begin, In end, Out output, char replacement, const Facet& facet);
+    [[gnu::always_inline, gnu::flatten]] static Out toAnsi(In begin, In end, Out output, char replacement, const Facet& facet)
+    {
+        static_assert(sizeof(decltype(*begin)) == sizeof(char16_t));
+
+        while (begin != end)
+        {
+            char32_t codepoint = 0;
+            begin              = decode(begin, end, codepoint, 0);
+            output             = priv::encodeAnsiImpl(codepoint, output, replacement, facet);
+        }
+
+        return output;
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert a UTF-16 sequence `[begin, end)` to wide characters
@@ -540,7 +784,19 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
-    static Out toWide(In begin, In end, Out output, wchar_t replacement);
+    [[gnu::always_inline, gnu::flatten]] static Out toWide(In begin, In end, Out output, wchar_t replacement)
+    {
+        static_assert(sizeof(decltype(*begin)) == sizeof(char16_t));
+
+        while (begin != end)
+        {
+            char32_t codepoint = 0;
+            begin              = decode(begin, end, codepoint, 0);
+            output             = priv::encodeWideImpl(codepoint, output, replacement);
+        }
+
+        return output;
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert a UTF-16 sequence `[begin, end)` to latin-1 (ISO-5589-1)
@@ -549,7 +805,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
-    static Out toLatin1(In begin, In end, Out output, char replacement)
+    [[gnu::always_inline, gnu::flatten]] static Out toLatin1(In begin, In end, Out output, char replacement)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(char16_t));
 
@@ -569,7 +825,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
-    static Out toUtf8(In begin, In end, Out output)
+    [[gnu::always_inline, gnu::flatten]] static Out toUtf8(In begin, In end, Out output)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(char16_t));
 
@@ -592,7 +848,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
-    static Out toUtf16(In begin, In end, Out output)
+    [[gnu::always_inline]] static Out toUtf16(In begin, In end, Out output)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(char16_t));
 
@@ -604,7 +860,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
-    static Out toUtf32(In begin, In end, Out output)
+    [[gnu::always_inline, gnu::flatten]] static Out toUtf32(In begin, In end, Out output)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(char16_t));
 
@@ -635,7 +891,10 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
-    static In decode(In begin, [[maybe_unused]] In end, char32_t& output, [[maybe_unused]] char32_t replacement)
+    [[nodiscard, gnu::always_inline]] static In decode(In                        begin,
+                                                       [[maybe_unused]] In       end,
+                                                       char32_t&                 output,
+                                                       [[maybe_unused]] char32_t replacement)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(char32_t));
 
@@ -651,7 +910,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename Out>
-    static Out encode(char32_t input, Out output, [[maybe_unused]] char32_t replacement)
+    [[gnu::always_inline]] static Out encode(char32_t input, Out output, [[maybe_unused]] char32_t replacement)
     {
         *output++ = input;
         return output;
@@ -664,7 +923,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
-    static In next(In begin, [[maybe_unused]] In end)
+    [[nodiscard, gnu::always_inline]] static In next(In begin, [[maybe_unused]] In end)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(char32_t));
 
@@ -680,7 +939,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
-    [[nodiscard]] static base::SizeT count(In begin, In end)
+    [[nodiscard, gnu::always_inline]] static base::SizeT count(In begin, In end)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(char32_t));
 
@@ -694,7 +953,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out, typename Facet>
-    static Out fromAnsi(In begin, In end, Out output, const Facet& facet)
+    [[gnu::always_inline, gnu::flatten]] static Out fromAnsi(In begin, In end, Out output, const Facet& facet)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(char));
 
@@ -709,7 +968,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
-    static Out fromWide(In begin, In end, Out output)
+    [[gnu::always_inline, gnu::flatten]] static Out fromWide(In begin, In end, Out output)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(wchar_t));
 
@@ -724,7 +983,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
-    static Out fromLatin1(In begin, In end, Out output)
+    [[gnu::always_inline, gnu::flatten]] static Out fromLatin1(In begin, In end, Out output)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(char));
 
@@ -742,7 +1001,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out, typename Facet>
-    static Out toAnsi(In begin, In end, Out output, char replacement, const Facet& facet)
+    [[gnu::always_inline, gnu::flatten]] static Out toAnsi(In begin, In end, Out output, char replacement, const Facet& facet)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(char32_t));
 
@@ -760,7 +1019,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
-    static Out toWide(In begin, In end, Out output, wchar_t replacement)
+    [[gnu::always_inline, gnu::flatten]] static Out toWide(In begin, In end, Out output, wchar_t replacement)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(char32_t));
 
@@ -777,7 +1036,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
-    static Out toLatin1(In begin, In end, Out output, char replacement)
+    [[gnu::always_inline, gnu::flatten]] static Out toLatin1(In begin, In end, Out output, char replacement)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(char32_t));
 
@@ -797,7 +1056,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
-    static Out toUtf8(In begin, In end, Out output)
+    [[gnu::always_inline, gnu::flatten]] static Out toUtf8(In begin, In end, Out output)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(char32_t));
 
@@ -812,7 +1071,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
-    static Out toUtf16(In begin, In end, Out output)
+    [[gnu::always_inline, gnu::flatten]] static Out toUtf16(In begin, In end, Out output)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(char32_t));
 
@@ -830,7 +1089,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Out>
-    static Out toUtf32(In begin, In end, Out output)
+    [[gnu::always_inline]] static Out toUtf32(In begin, In end, Out output)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(char32_t));
 
@@ -840,239 +1099,55 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Decode a single ANSI character to a UTF-32 codepoint
     ///
-    /// Helper used by other conversion functions. Only defined on the
-    /// UTF-32 specialization.
+    /// Thin forwarder around `priv::decodeAnsiImpl` kept for API
+    /// compatibility.
     ///
     ////////////////////////////////////////////////////////////
     template <typename In, typename Facet>
-    [[nodiscard]] static char32_t decodeAnsi(In input, const Facet& facet)
+    [[nodiscard, gnu::always_inline]] static char32_t decodeAnsi(In input, const Facet& facet)
     {
-        // Use the facet to convert each character of the input string
-        return static_cast<char32_t>(facet.widen(input));
+        return priv::decodeAnsiImpl(input, facet);
     }
 
     ////////////////////////////////////////////////////////////
     /// \brief Decode a single wide character to a UTF-32 codepoint
     ///
-    /// Helper used by other conversion functions. Only defined on the
-    /// UTF-32 specialization.
+    /// Thin forwarder around `priv::decodeWideImpl` kept for API
+    /// compatibility.
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
-    [[nodiscard]] static char32_t decodeWide(In input)
+    [[nodiscard, gnu::always_inline]] static char32_t decodeWide(In input)
     {
-        // The encoding of wide characters is not well defined and is left to the system;
-        // however we can safely assume that it is UCS-2 on Windows and
-        // UCS-4 on Unix systems.
-        // In both cases, a simple copy is enough (UCS-2 is a subset of UCS-4,
-        // and UCS-4 *is* UTF-32).
-
-        return static_cast<char32_t>(input);
+        return priv::decodeWideImpl(input);
     }
 
     ////////////////////////////////////////////////////////////
     /// \brief Encode a single UTF-32 codepoint as ANSI
     ///
-    /// Helper used by other conversion functions; uses `facet` to narrow
-    /// the codepoint, falling back to `replacement` (or skipping if `0`)
-    /// when the codepoint is not representable. Only defined on the
-    /// UTF-32 specialization.
+    /// Thin forwarder around `priv::encodeAnsiImpl` kept for API
+    /// compatibility.
     ///
     ////////////////////////////////////////////////////////////
     template <typename Out, typename Facet>
-    static Out encodeAnsi(char32_t codepoint, Out output, char replacement, const Facet& facet)
+    [[gnu::always_inline, gnu::flatten]] static Out encodeAnsi(char32_t codepoint, Out output, char replacement, const Facet& facet)
     {
-        // Use the facet to convert each character of the input string
-        *output++ = facet.narrow(static_cast<wchar_t>(codepoint), replacement);
-
-        return output;
+        return priv::encodeAnsiImpl(codepoint, output, replacement, facet);
     }
 
     ////////////////////////////////////////////////////////////
     /// \brief Encode a single UTF-32 codepoint as a wide character
     ///
-    /// Helper used by other conversion functions. Codepoints not
-    /// representable as `wchar_t` are substituted with `replacement`,
-    /// or skipped if `replacement` is `0`. Only defined on the UTF-32
-    /// specialization.
+    /// Thin forwarder around `priv::encodeWideImpl` kept for API
+    /// compatibility.
     ///
     ////////////////////////////////////////////////////////////
     template <typename Out>
-    static Out encodeWide(char32_t codepoint, Out output, wchar_t replacement)
+    [[gnu::always_inline, gnu::flatten]] static Out encodeWide(char32_t codepoint, Out output, wchar_t replacement)
     {
-        // The encoding of wide characters is not well defined and is left to the system;
-        // however we can safely assume that it is UCS-2 on Windows and
-        // UCS-4 on Unix systems.
-        // For UCS-2 we need to check if the source characters fits in (UCS-2 is a subset of UCS-4).
-        // For UCS-4 we can do a direct copy (UCS-4 *is* UTF-32).
-
-        if constexpr (sizeof(wchar_t) == 4)
-        {
-            *output++ = static_cast<wchar_t>(codepoint);
-        }
-        else
-        {
-            if ((codepoint <= 0xFF'FF) && ((codepoint < 0xD8'00) || (codepoint > 0xDF'FF)))
-            {
-                *output++ = static_cast<wchar_t>(codepoint);
-            }
-            else if (replacement)
-            {
-                *output++ = replacement;
-            }
-        }
-
-        return output;
+        return priv::encodeWideImpl(codepoint, output, replacement);
     }
 };
-
-
-////////////////////////////////////////////////////////////
-template <typename In, typename Out, typename Facet>
-Out Utf<8>::fromAnsi(In begin, In end, Out output, const Facet& facet)
-{
-    static_assert(sizeof(decltype(*begin)) == sizeof(char));
-
-    while (begin != end)
-    {
-        const char32_t codepoint = Utf<32>::decodeAnsi(*begin++, facet);
-        output                   = encode(codepoint, output, 0);
-    }
-
-    return output;
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename In, typename Out>
-Out Utf<8>::fromWide(In begin, In end, Out output)
-{
-    static_assert(sizeof(decltype(*begin)) == sizeof(wchar_t));
-
-    while (begin != end)
-    {
-        const char32_t codepoint = Utf<32>::decodeWide(*begin++);
-        output                   = encode(codepoint, output, 0);
-    }
-
-    return output;
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename In, typename Out, typename Facet>
-Out Utf<8>::toAnsi(In begin, In end, Out output, char replacement, const Facet& facet)
-{
-    static_assert(sizeof(decltype(*begin)) == sizeof(char));
-
-    while (begin != end)
-    {
-        char32_t codepoint = 0;
-        begin              = decode(begin, end, codepoint, 0);
-        output             = Utf<32>::encodeAnsi(codepoint, output, replacement, facet);
-    }
-
-    return output;
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename In, typename Out>
-Out Utf<8>::toWide(In begin, In end, Out output, wchar_t replacement)
-{
-    static_assert(sizeof(decltype(*begin)) == sizeof(char));
-
-    while (begin != end)
-    {
-        char32_t codepoint = 0;
-        begin              = decode(begin, end, codepoint, 0);
-        output             = Utf<32>::encodeWide(codepoint, output, replacement);
-    }
-
-    return output;
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename In, typename Out>
-Out Utf<8>::toUtf16(In begin, In end, Out output)
-{
-    static_assert(sizeof(decltype(*begin)) == sizeof(char));
-
-    while (begin != end)
-    {
-        char32_t codepoint = 0;
-        begin              = decode(begin, end, codepoint, 0);
-        output             = Utf<16>::encode(codepoint, output, 0);
-    }
-
-    return output;
-}
-
-////////////////////////////////////////////////////////////
-template <typename In, typename Out, typename Facet>
-Out Utf<16>::fromAnsi(In begin, In end, Out output, const Facet& facet)
-{
-    static_assert(sizeof(decltype(*begin)) == sizeof(char));
-
-    while (begin != end)
-    {
-        const char32_t codepoint = Utf<32>::decodeAnsi(*begin++, facet);
-        output                   = encode(codepoint, output, 0);
-    }
-
-    return output;
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename In, typename Out>
-Out Utf<16>::fromWide(In begin, In end, Out output)
-{
-    static_assert(sizeof(decltype(*begin)) == sizeof(wchar_t));
-
-    while (begin != end)
-    {
-        const char32_t codepoint = Utf<32>::decodeWide(*begin++);
-        output                   = encode(codepoint, output, 0);
-    }
-
-    return output;
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename In, typename Out, typename Facet>
-Out Utf<16>::toAnsi(In begin, In end, Out output, char replacement, const Facet& facet)
-{
-    static_assert(sizeof(decltype(*begin)) == sizeof(char16_t));
-
-    while (begin != end)
-    {
-        char32_t codepoint = 0;
-        begin              = decode(begin, end, codepoint, 0);
-        output             = Utf<32>::encodeAnsi(codepoint, output, replacement, facet);
-    }
-
-    return output;
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename In, typename Out>
-Out Utf<16>::toWide(In begin, In end, Out output, wchar_t replacement)
-{
-    static_assert(sizeof(decltype(*begin)) == sizeof(char16_t));
-
-    while (begin != end)
-    {
-        char32_t codepoint = 0;
-        begin              = decode(begin, end, codepoint, 0);
-        output             = Utf<32>::encodeWide(codepoint, output, replacement);
-    }
-
-    return output;
-}
 
 
 ////////////////////////////////////////////////////////////
