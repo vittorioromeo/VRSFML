@@ -144,7 +144,7 @@ namespace
     (void)ai.exchangeAcqRel(1);
     (void)ai.exchangeSeqCst(1);
 
-    // fetchAdd / fetchSub / fetchAnd / fetchOr / fetchXor (integer) -- 5 orders × 5 ops
+    // fetchAdd / fetchSub / fetchAnd / fetchOr / fetchXor (integer) -- 5 orders x 5 ops
     (void)ai.fetchAddRelaxed(1);
     (void)ai.fetchAddAcquire(1);
     (void)ai.fetchAddRelease(1);
@@ -171,7 +171,7 @@ namespace
     (void)ai.fetchXorAcqRel(1);
     (void)ai.fetchXorSeqCst(1);
 
-    // fetchAdd / fetchSub (pointer) -- 5 orders × 2 ops
+    // fetchAdd / fetchSub (pointer) -- 5 orders x 2 ops
     sf::Atomic<int*> ap2{&dummy};
     (void)ap2.fetchAddRelaxed(1);
     (void)ap2.fetchAddAcquire(1);
@@ -184,7 +184,7 @@ namespace
     (void)ap2.fetchSubAcqRel(1);
     (void)ap2.fetchSubSeqCst(1);
 
-    // wait / waitUntil (4-byte) -- 3 orders × 2 ops
+    // wait / waitUntil (4-byte) -- 3 orders x 2 ops
     sf::Atomic<sf::base::U32> w32{0u};
     w32.waitRelaxed(0u);
     w32.waitAcquire(0u);
@@ -193,7 +193,7 @@ namespace
     w32.waitUntilAcquire([](sf::base::U32) { return true; });
     w32.waitUntilSeqCst([](sf::base::U32) { return true; });
 
-    // wait / waitUntil (8-byte) -- 3 orders × 2 ops
+    // wait / waitUntil (8-byte) -- 3 orders x 2 ops
     sf::Atomic<sf::base::U64> w64{0u};
     w64.waitRelaxed(0u);
     w64.waitAcquire(0u);

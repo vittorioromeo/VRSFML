@@ -31,7 +31,7 @@ namespace sf::base
 /// - Storage is tracked with three pointers (`begin`, `end`, `endCap`)
 ///   to make `size()`, `capacity()`, and `data()` extremely cheap and
 ///   to avoid recomputing offsets in tight loops.
-/// - Growth is geometric (×1.5) and clamped to the requested target.
+/// - Growth is geometric (x1.5) and clamped to the requested target.
 /// - `Vector` is itself trivially relocatable.
 /// - Trivially relocatable element types are moved with `memcpy` rather
 ///   than per-element move constructors.
