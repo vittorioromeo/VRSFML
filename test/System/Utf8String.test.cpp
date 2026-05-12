@@ -1,3 +1,5 @@
+#include "SystemUtil.hpp"
+
 #include "SFML/System/Utf8String.hpp"
 
 #include "SFML/System/Utf8StringCodepoints.hpp"
@@ -12,23 +14,6 @@
 #include "SFML/Base/Vector.hpp"
 
 #include <Doctest.hpp>
-
-
-////////////////////////////////////////////////////////////
-// Doctest stringification for `sf::Utf8String` so that failed
-// `CHECK(s == ...)` expressions render the actual contents.
-////////////////////////////////////////////////////////////
-namespace doctest
-{
-template <>
-struct StringMaker<sf::Utf8String>
-{
-    static String convert(const sf::Utf8String& value)
-    {
-        return String{value.cStr(), static_cast<String::size_type>(value.byteSize())};
-    }
-};
-} // namespace doctest
 
 
 namespace
