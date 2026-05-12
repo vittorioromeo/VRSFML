@@ -7,6 +7,7 @@
 #include "SFML/Base/Algorithm/Find.hpp"
 #include "SFML/Base/Algorithm/IsSorted.hpp"
 #include "SFML/Base/Algorithm/Remove.hpp"
+#include "SFML/Base/Algorithm/Rotate.hpp"
 #include "SFML/Base/Algorithm/SwapAndPop.hpp"
 #include "SFML/Base/Vector.hpp"
 
@@ -279,6 +280,110 @@ TEST_CASE("[Base] Base/Algorithm/*.hpp")
 
             auto* it = sf::base::adjacentFind(vec, vec + 5, greaterCmp);
             CHECK(it == vec + 5);
+        }
+    }
+
+    SECTION("Rotate")
+    {
+        SUBCASE("Rotate by 3 in middle of range")
+        {
+            int values[] = {1, 2, 3, 4, 5, 6, 7};
+
+            auto* it = sf::base::rotate(values, values + 3, values + 7);
+
+            CHECK(it == values + 4);
+            CHECK(values[0] == 4);
+            CHECK(values[1] == 5);
+            CHECK(values[2] == 6);
+            CHECK(values[3] == 7);
+            CHECK(values[4] == 1);
+            CHECK(values[5] == 2);
+            CHECK(values[6] == 3);
+        }
+
+        SUBCASE("Rotate by 1")
+        {
+            int values[] = {1, 2, 3, 4};
+
+            auto* it = sf::base::rotate(values, values + 1, values + 4);
+
+            CHECK(it == values + 3);
+            CHECK(values[0] == 2);
+            CHECK(values[1] == 3);
+            CHECK(values[2] == 4);
+            CHECK(values[3] == 1);
+        }
+
+        SUBCASE("Rotate by size - 1 (single element to the back)")
+        {
+            int values[] = {1, 2, 3, 4};
+
+            auto* it = sf::base::rotate(values, values + 3, values + 4);
+
+            CHECK(it == values + 1);
+            CHECK(values[0] == 4);
+            CHECK(values[1] == 1);
+            CHECK(values[2] == 2);
+            CHECK(values[3] == 3);
+        }
+
+        SUBCASE("Rotate with middle == first is a no-op")
+        {
+            int values[] = {1, 2, 3, 4};
+
+            auto* it = sf::base::rotate(values, values, values + 4);
+
+            CHECK(it == values + 4);
+            CHECK(values[0] == 1);
+            CHECK(values[1] == 2);
+            CHECK(values[2] == 3);
+            CHECK(values[3] == 4);
+        }
+
+        SUBCASE("Rotate with middle == last is a no-op")
+        {
+            int values[] = {1, 2, 3, 4};
+
+            auto* it = sf::base::rotate(values, values + 4, values + 4);
+
+            CHECK(it == values);
+            CHECK(values[0] == 1);
+            CHECK(values[1] == 2);
+            CHECK(values[2] == 3);
+            CHECK(values[3] == 4);
+        }
+
+        SUBCASE("Rotate at exact midpoint of even-sized range")
+        {
+            int values[] = {1, 2, 3, 4, 5, 6};
+
+            auto* it = sf::base::rotate(values, values + 3, values + 6);
+
+            CHECK(it == values + 3);
+            CHECK(values[0] == 4);
+            CHECK(values[1] == 5);
+            CHECK(values[2] == 6);
+            CHECK(values[3] == 1);
+            CHECK(values[4] == 2);
+            CHECK(values[5] == 3);
+        }
+
+        SUBCASE("Rotate with second segment larger than first (uneven)")
+        {
+            int values[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+            auto* it = sf::base::rotate(values, values + 2, values + 9);
+
+            CHECK(it == values + 7);
+            CHECK(values[0] == 3);
+            CHECK(values[1] == 4);
+            CHECK(values[2] == 5);
+            CHECK(values[3] == 6);
+            CHECK(values[4] == 7);
+            CHECK(values[5] == 8);
+            CHECK(values[6] == 9);
+            CHECK(values[7] == 1);
+            CHECK(values[8] == 2);
         }
     }
 }
