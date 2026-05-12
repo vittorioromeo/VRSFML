@@ -5,7 +5,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>VRSFML — an opinionated fork of SFML</title>
+    <title>VRSFML -- an opinionated fork of SFML</title>
     <meta name="description" content="VRSFML is an opinionated fork of SFML: built-in Emscripten support, modern OpenGL, type-safe APIs, aggregate-based design, auto-batching, and far faster compile times.">
     <meta name="color-scheme" content="dark light">
 
@@ -106,7 +106,7 @@
                 <h3>Runs in the browser</h3>
                 <p>
                     Built-in Emscripten support. Every example compiles to WebGL2 and
-                    runs in a browser tab — no <code>#ifdef</code>s, no shims, no extra
+                    runs in a browser tab -- no <code>#ifdef</code>s, no shims, no extra
                     build tooling on the user side.
                 </p>
             </article>
@@ -202,10 +202,10 @@
     </section>
 
     <!-- ============================================================== -->
-    <!-- SFML vs VRSFML — decision table                                  -->
+    <!-- SFML vs VRSFML -- decision table                                  -->
     <!-- ============================================================== -->
     <section id="pick">
-        <h2>SFML or VRSFML — which should I pick?</h2>
+        <h2>SFML or VRSFML -- which should I pick?</h2>
         <p>
             Both libraries are good at what they aim for; they aim at different
             things. Use this table to decide before reading further.
@@ -234,7 +234,7 @@
                     <tr>
                         <td>Stability</td>
                         <td>Stable, semver-tracked releases. Public API rarely breaks within a minor version.</td>
-                        <td class="col-vrsfml">Experimental. Used in shipped games but evolving — expect occasional API breakage.</td>
+                        <td class="col-vrsfml">Experimental. Used in shipped games but evolving -- expect occasional API breakage.</td>
                     </tr>
                     <tr>
                         <td>API style</td>
@@ -259,7 +259,7 @@
                     <tr>
                         <td>Mobile (Android / iOS)</td>
                         <td>Supported.</td>
-                        <td class="col-vrsfml">Not yet shipped. The SDL3 backend should make porting straightforward — contributions welcome.</td>
+                        <td class="col-vrsfml">Not yet shipped. The SDL3 backend should make porting straightforward -- contributions welcome.</td>
                     </tr>
                     <tr>
                         <td>Platform backend</td>
@@ -299,7 +299,7 @@
                     <tr>
                         <td>Community &amp; bindings</td>
                         <td>Large, established. Many third-party language bindings (Python, Rust, &hellip;).</td>
-                        <td class="col-vrsfml">Small. No third-party bindings yet — reach out to the author for help.</td>
+                        <td class="col-vrsfml">Small. No third-party bindings yet -- reach out to the author for help.</td>
                     </tr>
                 </tbody>
             </table>
@@ -559,7 +559,7 @@ window.draw(gear);
     <section id="qol">
         <h2>The little things you'll miss going back</h2>
         <p>
-            Vector math, type-safe angles, and anchor-points are first-class — no
+            Vector math, type-safe angles, and anchor-points are first-class -- no
             need for a side library of "math utils".
         </p>
 
@@ -698,7 +698,7 @@ auto p = bounds.getAnchorPoint({0.25f, 0.75f});
             </div>
         </div>
         <p class="muted small">
-            <strong>2.5× faster wall time, 2.7× less compiler CPU work per file.</strong>
+            <strong>2.5x faster wall time, 2.7x less compiler CPU work per file.</strong>
             Six TUs each, same source set, debug build, lld, no ccache, 16 jobs.
         </p>
 
@@ -707,7 +707,7 @@ auto p = bounds.getAnchorPoint({0.25f, 0.75f});
             Selective rebuild: third-party deps (freetype, vorbis, ogg, flac,
             harfbuzz, imgui, &hellip;) are kept on disk between iterations, so the
             measurement reflects only SFML's own code plus the chosen examples and
-            tests — the workflow you actually have when iterating on a project.
+            tests -- the workflow you actually have when iterating on a project.
         </p>
 
         <table>
@@ -726,28 +726,28 @@ auto p = bounds.getAnchorPoint({0.25f, 0.75f});
                     <td>102 / 129</td>
                     <td>3.69 s</td>
                     <td>1.68 s</td>
-                    <td>2.20×</td>
+                    <td>2.20x</td>
                 </tr>
                 <tr>
                     <td>Library + examples</td>
                     <td>128 / 209</td>
                     <td>4.55 s</td>
                     <td>2.23 s</td>
-                    <td>2.04×</td>
+                    <td>2.04x</td>
                 </tr>
                 <tr>
                     <td>Library + examples + tests</td>
                     <td>221 / 350</td>
                     <td>7.43 s</td>
                     <td>3.67 s</td>
-                    <td>2.02×</td>
+                    <td>2.02x</td>
                 </tr>
                 <tr>
                     <td>Six user TUs from scratch</td>
                     <td>6 / 6</td>
                     <td>726 ms</td>
                     <td>288 ms</td>
-                    <td><strong>2.52×</strong></td>
+                    <td><strong>2.52x</strong></td>
                 </tr>
             </tbody>
         </table>
@@ -755,8 +755,8 @@ auto p = bounds.getAnchorPoint({0.25f, 0.75f});
             TUs column shows <em>SFML / VRSFML</em>. VRSFML compiles
             <em>more</em> translation units in the first three rows (extra
             <code>SFML::ImGui</code> module, more bundled examples, larger test
-            suite), and is still ~2× faster overall — meaning per-TU compiler
-            work is roughly 3–4× lower. The fourth row, where both projects
+            suite), and is still ~2x faster overall -- meaning per-TU compiler
+            work is roughly 3-4x lower. The fourth row, where both projects
             compile the same six user-side TUs, isolates that effect cleanly.
         </p>
         <p class="muted small">
@@ -778,7 +778,7 @@ auto p = bounds.getAnchorPoint({0.25f, 0.75f});
     </section>
 
     <!-- ============================================================== -->
-    <!-- SFML::Base — bring your own batteries                            -->
+    <!-- SFML::Base -- bring your own batteries                            -->
     <!-- ============================================================== -->
     <section id="batteries">
         <h2>Bring your own batteries: <code>SFML::Base</code></h2>
@@ -837,7 +837,7 @@ auto p = bounds.getAnchorPoint({0.25f, 0.75f});
 
             <div class="battery">
                 <code>MiniPFR</code>
-                <small>Aggregate reflection — iterate fields by index, get field names, build SoA containers from any <code>struct</code>.</small>
+                <small>Aggregate reflection -- iterate fields by index, get field names, build SoA containers from any <code>struct</code>.</small>
             </div>
 
         </div>
@@ -863,31 +863,31 @@ auto p = bounds.getAnchorPoint({0.25f, 0.75f});
             <ol>
                 <li>
                     Modern OpenGL ES backend, with Emscripten support
-                    <small>— deferred to a hypothetical future SFML 4.x.</small>
+                    <small>-- deferred to a hypothetical future SFML 4.x.</small>
                 </li>
                 <li>
                     Factory APIs returning <code>Optional</code>, no empty states
-                    <small>— reverted in <a href="https://github.com/SFML/SFML/pull/3152" target="_blank" rel="noopener">#3152</a>.</small>
+                    <small>-- reverted in <a href="https://github.com/SFML/SFML/pull/3152" target="_blank" rel="noopener">#3152</a>.</small>
                 </li>
                 <li>
                     Sprites and shapes without a stored texture pointer
-                    <small>— rejected in <a href="https://github.com/SFML/SFML/pull/3072" target="_blank" rel="noopener">#3072</a> and <a href="https://github.com/SFML/SFML/pull/3080" target="_blank" rel="noopener">#3080</a>.</small>
+                    <small>-- rejected in <a href="https://github.com/SFML/SFML/pull/3072" target="_blank" rel="noopener">#3072</a> and <a href="https://github.com/SFML/SFML/pull/3080" target="_blank" rel="noopener">#3080</a>.</small>
                 </li>
                 <li>
                     Cross-resource lifetime tracking
-                    <small>— rejected in <a href="https://github.com/SFML/SFML/pull/3097" target="_blank" rel="noopener">#3097</a>.</small>
+                    <small>-- rejected in <a href="https://github.com/SFML/SFML/pull/3097" target="_blank" rel="noopener">#3097</a>.</small>
                 </li>
                 <li>
                     Removal of <code>sf::VertexArray</code> in favor of <code>std::vector&lt;Vertex&gt;</code>
-                    <small>— rejected in <a href="https://github.com/SFML/SFML/pull/3118" target="_blank" rel="noopener">#3118</a>.</small>
+                    <small>-- rejected in <a href="https://github.com/SFML/SFML/pull/3118" target="_blank" rel="noopener">#3118</a>.</small>
                 </li>
                 <li>
                     Multiple simultaneous audio playback devices
-                    <small>— deemed out-of-scope.</small>
+                    <small>-- deemed out-of-scope.</small>
                 </li>
                 <li>
                     Doctest as the testing framework
-                    <small>— replaced with Catch2.</small>
+                    <small>-- replaced with Catch2.</small>
                 </li>
             </ol>
         </div>
@@ -971,7 +971,7 @@ ninja
         <h2>Further reading</h2>
         <ul class="reading-list">
             <li>
-                <a href="https://vittorioromeo.com/index/blog/vrsfml.html" target="_blank" rel="noopener">VRSFML — design philosophy and motivation</a>
+                <a href="https://vittorioromeo.com/index/blog/vrsfml.html" target="_blank" rel="noopener">VRSFML -- design philosophy and motivation</a>
                 <small>Why this fork exists, what upstream rejected, and what was rebuilt.</small>
             </li>
             <li>

@@ -1,4 +1,4 @@
-# VRSFML — Vittorio Romeo's SFML Fork
+# VRSFML -- Vittorio Romeo's SFML Fork
 
 > *(This is a fork of SFML by Vittorio Romeo.)*
 

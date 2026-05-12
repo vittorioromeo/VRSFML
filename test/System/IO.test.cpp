@@ -560,7 +560,7 @@ TEST_CASE("[System] sf::writeToFile and sf::readFromFile")
     SECTION("Large file (multiple MiB) round-trips byte-exactly")
     {
         // Sized to comfortably exceed any plausible internal buffer in the
-        // fallback iostream path (typically 4–8 KiB) and force the native paths
+        // fallback iostream path (typically 4-8 KiB) and force the native paths
         // to issue more than one read/ReadFile call's worth of work.
         constexpr sf::base::SizeT bytes = 4u * 1024u * 1024u + 17u; // 4 MiB + odd tail
 

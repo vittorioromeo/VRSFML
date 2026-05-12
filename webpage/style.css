@@ -1,5 +1,5 @@
 /* ============================================================== */
-/* VRSFML landing page — custom styles on top of pico.css           */
+/* VRSFML landing page -- custom styles on top of pico.css           */
 /* ============================================================== */
 
 :root {
@@ -22,7 +22,7 @@
    Universal `:where(*)` selector has zero specificity, so any element-level
    `transition` declaration further down keeps precedence for its hover
    behaviour. Elements without their own `transition` rule fall back to this
-   blanket one — which is exactly what we want for theme flips.
+   blanket one -- which is exactly what we want for theme flips.
 */
 :where(*, *::before, *::after) {
     transition:
@@ -155,7 +155,7 @@ section > p:first-of-type {
 }
 
 /* ============================================================== */
-/* Highlights — card grid                                           */
+/* Highlights -- card grid                                           */
 /* ============================================================== */
 .card-grid {
     display: grid;

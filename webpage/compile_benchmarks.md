@@ -1,4 +1,4 @@
-# VRSFML vs upstream SFML — compilation benchmarks
+# VRSFML vs upstream SFML -- compilation benchmarks
 
 Wall-clock and CPU-time measurements for rebuilding VRSFML and upstream SFML
 from source under a typical day-to-day development configuration.
@@ -21,7 +21,7 @@ from source under a typical day-to-day development configuration.
 ### Selective clean
 
 Between hyperfine iterations the `--prepare` step removes only SFML-owned
-build outputs, not third-party dependencies — that matches what a developer
+build outputs, not third-party dependencies -- that matches what a developer
 actually does when iterating on their own code (you don't recompile
 `freetype` or `harfbuzz` on every keystroke).
 
@@ -58,7 +58,7 @@ step deletes only the six example object files and binaries.
 
 ## Results
 
-### Scenario 1 — Library only
+### Scenario 1 -- Library only
 
 | Command       | Mean        | Min     | Max     | Relative      |
 |---------------|------------:|--------:|--------:|--------------:|
@@ -67,7 +67,7 @@ step deletes only the six example object files and binaries.
 
 User CPU time: VRSFML 13.5 s, Upstream 39.6 s.
 
-### Scenario 2 — Library + examples
+### Scenario 2 -- Library + examples
 
 | Command       | Mean        | Min     | Max     | Relative      |
 |---------------|------------:|--------:|--------:|--------------:|
@@ -76,7 +76,7 @@ User CPU time: VRSFML 13.5 s, Upstream 39.6 s.
 
 User CPU time: VRSFML 24.5 s, Upstream 58.8 s.
 
-### Scenario 3 — Library + examples + tests
+### Scenario 3 -- Library + examples + tests
 
 | Command       | Mean        | Min     | Max     | Relative      |
 |---------------|------------:|--------:|--------:|--------------:|
@@ -85,7 +85,7 @@ User CPU time: VRSFML 24.5 s, Upstream 58.8 s.
 
 User CPU time: VRSFML 45.1 s, Upstream 103.9 s.
 
-### Scenario 4 — Six user TUs from scratch (library prebuilt)
+### Scenario 4 -- Six user TUs from scratch (library prebuilt)
 
 | Command       | Mean         | Min      | Max      | Relative      |
 |---------------|-------------:|---------:|---------:|--------------:|
@@ -97,7 +97,7 @@ User CPU time: VRSFML 1.36 s, Upstream 3.67 s.
 ## Translation-unit counts and per-TU cost
 
 The TU count is the number of `.o` files that the selective-clean step
-removes — i.e. the work each scenario actually performs.
+removes -- i.e. the work each scenario actually performs.
 
 | Scenario                       | VRSFML TUs           | Upstream TUs       | VRSFML CPU/TU | Upstream CPU/TU |
 |--------------------------------|----------------------|--------------------|--------------:|----------------:|
@@ -111,22 +111,22 @@ much work clang has to do to compile one translation unit on each side.
 
 ## Headline takeaways
 
-- VRSFML rebuilds **2.0–2.5× faster** in wall time across every scenario.
-- VRSFML actually compiles **more** TUs in scenarios 1–3 — extra
-  `SFML::ImGui` module, more bundled examples, larger test suite — and is
-  still ~2× faster. That means per-TU compiler work is roughly 3–4× lower.
+- VRSFML rebuilds **2.0-2.5x faster** in wall time across every scenario.
+- VRSFML actually compiles **more** TUs in scenarios 1-3 -- extra
+  `SFML::ImGui` module, more bundled examples, larger test suite -- and is
+  still ~2x faster. That means per-TU compiler work is roughly 3-4x lower.
 - Scenario 4, where both projects compile the same six user-side TUs that
   include `<SFML/Graphics.hpp>` / `<SFML/Audio.hpp>`, isolates the header
-  weight cleanly: ~2.7× less CPU per file.
+  weight cleanly: ~2.7x less CPU per file.
 - Removing third-party dep compilation from the loop (selective clean)
-  roughly halved the previous "full ninja clean" wall times — confirming
+  roughly halved the previous "full ninja clean" wall times -- confirming
   that most of a naive `ninja clean && ninja` cycle was time spent
   rebuilding bundled C libraries that no real workflow re-runs.
 
 ## What is still not strictly comparable
 
 - **`SFML::ImGui` module**. VRSFML ships an in-tree ImGui integration as a
-  separate library; upstream does not. Scenarios 1–3 charge VRSFML for that
+  separate library; upstream does not. Scenarios 1-3 charge VRSFML for that
   extra surface. Scenario 4 is unaffected (none of the chosen examples use
   ImGui).
 - **Example pool**. Even with `bubble_idle` excluded, VRSFML has more
@@ -144,11 +144,11 @@ both projects.
 The scripts used to produce these numbers live in `/tmp/sfml_bench/` on the
 machine that ran them; the relevant pieces are:
 
-- `configure_all.sh` — configures three build dirs per project (lib only,
+- `configure_all.sh` -- configures three build dirs per project (lib only,
   lib+examples, lib+examples+tests) with the flags listed above.
-- `run_benchmarks_selective.sh` — drives `hyperfine` for all four scenarios
+- `run_benchmarks_selective.sh` -- drives `hyperfine` for all four scenarios
   using the selective-clean prepare step.
-- `count_tus2.sh` — counts the `.o` files that each scenario's selective
+- `count_tus2.sh` -- counts the `.o` files that each scenario's selective
   clean would delete, after a full build.
 
 Both source trees were checked out fresh:
