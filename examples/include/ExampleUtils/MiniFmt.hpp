@@ -23,6 +23,22 @@
 namespace minifmt
 {
 ////////////////////////////////////////////////////////////
+/// \brief Stack-buffer size used by `formatTo` and `print` for staging.
+///
+/// Formatting that exceeds this size aborts via `sf::base::abort()`.
+/// Callers that need a different size should use `formatIntoBuffer`
+/// directly with their own buffer.
+////////////////////////////////////////////////////////////
+inline constexpr sf::base::SizeT stagingBufferSize = 512u;
+
+
+////////////////////////////////////////////////////////////
+/// \brief Default float precision when a spec omits `.N` (matches `std::format` / `printf`).
+////////////////////////////////////////////////////////////
+inline constexpr int defaultFloatPrecision = 6;
+
+
+////////////////////////////////////////////////////////////
 template <typename T>
 struct NonDeduced
 {
@@ -113,37 +129,6 @@ concept ConvertibleTo = SFML_BASE_IS_CONVERTIBLE(T, U);
 
 
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] inline constexpr char* writeRun(char* const           buffer,
-                                                       const char* const     bufferEnd,
-                                                       const char            c,
-                                                       const sf::base::SizeT n)
-{
-    if (n == 0u)
-        return buffer;
-
-    if (static_cast<sf::base::SizeT>(bufferEnd - buffer) < n)
-        return nullptr;
-
-    SFML_BASE_MEMSET(buffer, c, n);
-    return buffer + n;
-}
-
-
-////////////////////////////////////////////////////////////
-[[gnu::always_inline]] inline constexpr char* copyBytes(char* const           buffer,
-                                                        const char* const     bufferEnd,
-                                                        const char* const     src,
-                                                        const sf::base::SizeT len)
-{
-    if (static_cast<sf::base::SizeT>(bufferEnd - buffer) < len)
-        return nullptr;
-
-    SFML_BASE_MEMCPY(buffer, src, len);
-    return buffer + len;
-}
-
-
-////////////////////////////////////////////////////////////
 /// \brief Copy `[src, src+len)` into `buffer`, padding to `spec.width` if narrower.
 ///
 /// `defaultAlign` is used when `spec.align` is unset.
@@ -158,7 +143,13 @@ concept ConvertibleTo = SFML_BASE_IS_CONVERTIBLE(T, U);
 {
     // No padding needed (no width, or content already >= width)
     if (spec.width <= 0 || static_cast<sf::base::SizeT>(spec.width) <= len)
-        return copyBytes(buffer, bufferEnd, src, len);
+    {
+        if (static_cast<sf::base::SizeT>(bufferEnd - buffer) < len)
+            return nullptr;
+
+        SFML_BASE_MEMCPY(buffer, src, len);
+        return buffer + len;
+    }
 
     const auto padTotal = static_cast<sf::base::SizeT>(spec.width) - len;
     const char align    = spec.align == '\0' ? defaultAlign : spec.align;
@@ -208,7 +199,7 @@ template <typename T>
     if (spec.width <= 0)
     {
         if constexpr (sf::base::isFloatingPoint<T>)
-            return sf::base::toChars(buffer, bufferEnd, arg, spec.precision >= 0 ? spec.precision : 6);
+            return sf::base::toChars(buffer, bufferEnd, arg, spec.precision >= 0 ? spec.precision : defaultFloatPrecision);
         else
             return sf::base::toChars(buffer, bufferEnd, arg);
     }
@@ -221,7 +212,7 @@ template <typename T>
     char* const numEnd = [&]
     {
         if constexpr (sf::base::isFloatingPoint<T>)
-            return sf::base::toChars(temp, tempEnd, arg, spec.precision >= 0 ? spec.precision : 6);
+            return sf::base::toChars(temp, tempEnd, arg, spec.precision >= 0 ? spec.precision : defaultFloatPrecision);
         else
             return sf::base::toChars(temp, tempEnd, arg);
     }();
@@ -279,6 +270,15 @@ template <typename T>
 
 
 ////////////////////////////////////////////////////////////
+/// \brief Type-erased core of the format engine, lives in the `.cpp`.
+///
+/// Walks `formatStr` once, copying literal characters straight through and
+/// dispatching each `{...}` placeholder to `formatters[argIndex](buffer,
+/// bufferEnd, args[argIndex], spec)`. Returns a pointer to the byte after
+/// the last written character (a null terminator is also written one past
+/// that position when there's room), or `nullptr` if anything fails:
+/// buffer overflow, malformed placeholder, or mismatched argument count.
+////////////////////////////////////////////////////////////
 [[nodiscard]] char* formatIntoBufferImpl(
     char*                              buffer,
     sf::base::SizeT                    bufferSize,
@@ -330,14 +330,14 @@ concept FormatSink = requires(T& sink, const char* p, sf::base::SizeT n) { sink.
 ////////////////////////////////////////////////////////////
 /// \brief Format into any sink with an `append(const char*, SizeT)` method.
 ///
-/// The whole result is staged in a 512-byte stack buffer and flushed in one `append`,
-/// so the sink sees at most one allocation and one memcpy. Aborts if the formatted
-/// output exceeds 512 bytes.
+/// The whole result is staged in a `stagingBufferSize`-byte stack buffer and
+/// flushed in one `append`, so the sink sees at most one allocation and one
+/// memcpy. Aborts if the formatted output exceeds `stagingBufferSize`.
 ////////////////////////////////////////////////////////////
 template <FormatSink Sink, typename... Args>
 constexpr void formatTo(Sink& sink, typename NonDeduced<const FormatString<Args...>>::type formatString, const Args&... args)
 {
-    char              buffer[512];
+    char              buffer[stagingBufferSize];
     const auto* const endPtr = formatIntoBuffer(buffer, formatString, args...);
 
     if (endPtr == nullptr)
@@ -359,6 +359,11 @@ template <typename... Args>
 
 
 ////////////////////////////////////////////////////////////
+/// \brief Print a null-terminated formatted string, lives in the `.cpp`.
+///
+/// Backs the templated `print(...)` -- decoupling this one runtime line
+/// (`std::puts`) keeps `<cstdio>` out of the header.
+////////////////////////////////////////////////////////////
 void printImpl(const char* formattedString);
 
 
@@ -366,7 +371,7 @@ void printImpl(const char* formattedString);
 template <typename... Args>
 void print(const typename NonDeduced<const FormatString<Args...>>::type formatString, const Args&... args)
 {
-    char              buffer[512];
+    char              buffer[stagingBufferSize];
     const auto* const endPtr = formatIntoBuffer(buffer, formatString, args...);
 
     if (endPtr == nullptr)
