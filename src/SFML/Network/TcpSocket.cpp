@@ -51,9 +51,14 @@
 #include <mbedtls/x509_crt.h>
 
 #if defined(SFML_SYSTEM_WINDOWS)
+    #include "SFML/System/Utf.hpp"
     #include "SFML/System/WindowsHeader.hpp"
 
+    #include "SFML/Base/BackInserter.hpp"
+
     #include <wincrypt.h>
+
+    #include <cwchar>
 #elif defined(SFML_SYSTEM_MACOS)
     #include <Availability.h>
     #include <Security/Security.h>
