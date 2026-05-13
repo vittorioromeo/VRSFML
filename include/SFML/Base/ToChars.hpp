@@ -138,6 +138,10 @@ template <typename T>
 /// round-half-to-even, matching IEEE-754 and `std::to_chars`).
 ///
 /// \pre `precision >= 0 && precision <= 10`.
+/// \pre `value` is finite when compiled with `-ffinite-math-only` (or
+///      `-ffast-math`, which implies it). Under that flag the compiler may
+///      legally fold `__builtin_isnan` / `__builtin_isinf` to `false`, so
+///      NaN/inf inputs would silently produce garbage output.
 ///
 /// \return Pointer one past the last written character, or `nullptr` on:
 ///         - buffer too small,
@@ -163,6 +167,9 @@ template <typename T>
     char* p = first;
 
     // NaN: emit "nan" with no sign (matches `std::to_chars` and IEEE-754).
+    // Under `-ffinite-math-only`, this branch folds to dead code: that's
+    // intentional -- passing NaN under that flag is out of contract (see
+    // precondition in the doc).
     if (SFML_BASE_ISNAN(value)) [[unlikely]]
     {
         if (last - p < 3)
@@ -174,17 +181,18 @@ template <typename T>
         return p;
     }
 
-    // Sign via bit pattern so `-0.0` keeps its sign (matches `std::to_chars`).
+    // Sign via signbit so `-0.0` keeps its sign (matches `std::to_chars`).
     if (SFML_BASE_SIGNBIT(value))
     {
         if (p >= last)
-            return nullptr; // Buffer too small
+            return nullptr;
 
         *p++  = '-';
         value = -value;
     }
 
-    // Infinity: emit "inf" after any sign already written.
+    // Infinity: emit "inf" after any sign already written. Same out-of-contract
+    // status as NaN under `-ffinite-math-only`.
     if (SFML_BASE_ISINF(value)) [[unlikely]]
     {
         if (last - p < 3)
@@ -193,7 +201,6 @@ template <typename T>
         *p++ = 'i';
         *p++ = 'n';
         *p++ = 'f';
-
         return p;
     }
 

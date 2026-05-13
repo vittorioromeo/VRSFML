@@ -134,6 +134,13 @@ TEST_CASE("[Base] ToChars.hpp")
         CHECK_FLOAT_CONVERSION(0.7, "1", 0); // rint(0.7) is 1
     }
 
+#if !__FINITE_MATH_ONLY__
+    // These cases test behavior that `-ffinite-math-only` deliberately turns
+    // off: under that flag the compiler is allowed to assume NaN/inf never
+    // appear, and `numeric_limits<double>::infinity()` / `quiet_NaN()` (and
+    // even the `-0.0` literal) become UB. `toChars` documents the same
+    // precondition, so the special-value contract only applies when the flag
+    // is off.
     SECTION("Special values: NaN, infinity, negative zero")
     {
         // NaN: "nan", no sign (matches `std::to_chars` / IEEE-754)
@@ -148,6 +155,7 @@ TEST_CASE("[Base] ToChars.hpp")
         CHECK_FLOAT_CONVERSION(-0.0, "-0.00", 2);
         CHECK_FLOAT_CONVERSION(-0.0, "-0", 0);
     }
+#endif
 
     SECTION("Banker's rounding (round-half-to-even)")
     {
