@@ -33,6 +33,7 @@
 #include "ExampleUtils/HueColor.hpp"
 #include "ExampleUtils/MathUtils.hpp"
 #include "ExampleUtils/Progress.hpp"
+#include "ExampleUtils/SoundManager.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"
 
@@ -1813,7 +1814,8 @@ void Main::gameLoopUpdateCatActionWitchImpl(const float /* deltaTimeMs */,
         hexCat(selected, selectedIdx, copy);
         statRitual(selected.type);
 
-        auto& session = sessionsToUse.emplaceBack(HexSession{.catIdx = selectedIdx, .dolls = {}});
+        auto& session  = sessionsToUse.emplaceBack();
+        session.catIdx = selectedIdx;
         session.dolls.reserve(nDollsToSpawn);
 
         for (SizeT i = 0u; i < nDollsToSpawn; ++i)

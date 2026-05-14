@@ -3,6 +3,8 @@
 #include "ParticleData.hpp"
 #include "ParticleType.hpp"
 
+#include "SFML/Base/IntTypes.hpp"
+
 
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] Particle : ParticleData

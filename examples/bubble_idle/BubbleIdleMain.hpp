@@ -6,10 +6,8 @@
 #include "Aliases.hpp"
 #include "Bubble.hpp"
 #include "BubbleType.hpp"
-#include "Cat.hpp"
 #include "CatType.hpp"
 #include "Constants.hpp"
-#include "Doll.hpp"
 #include "ExactArray.hpp"
 #include "HexSession.hpp"
 #include "Particle.hpp"
@@ -18,18 +16,15 @@
 #include "PlayerInput.hpp"
 #include "PurchasableScalingValue.hpp"
 #include "RNGSeedType.hpp"
-#include "Shrine.hpp"
 #include "ShrineType.hpp"
 #include "Sounds.hpp"
 #include "TextEffectWiggle.hpp"
 #include "TextParticle.hpp"
 #include "TextShakeEffect.hpp"
 
-#include "ExampleUtils/LoadedSound.hpp"
 #include "ExampleUtils/Progress.hpp"
 #include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/Sampler.hpp"
-#include "ExampleUtils/SoundManager.hpp"
 
 #include "SFML/Graphics/Color.hpp"
 
@@ -65,6 +60,10 @@
 struct ImFont;
 struct BGMBuffer;
 struct ComboState;
+struct LoadedSound;
+struct SoundManager;
+struct Doll;
+struct Shrine;
 
 namespace sf
 {
@@ -264,7 +263,8 @@ struct Main
     // Sound management
     Sounds sounds{/* volumeMult */ 1.f};
 
-    SoundManager               soundManager;
+    MainOwnedPtr<SoundManager> soundManagerStorage;
+    SoundManager&              soundManager;
     MainOwnedPtr<sf::Listener> listenerStorage;
     sf::Listener&              listener;
 

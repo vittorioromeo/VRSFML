@@ -2,7 +2,9 @@
 if (NOT SFML_OS_EMSCRIPTEN AND NOT ARCH_ARM64)
     set(SRC BubbleIdle.cpp
             BubbleIdleMain.cpp
+            TextShakeEffect.cpp
             TextEffectWiggle.cpp
+            HexSession.cpp
             InputHelper.cpp
             InputState.cpp
             ImGuiNotify.cpp

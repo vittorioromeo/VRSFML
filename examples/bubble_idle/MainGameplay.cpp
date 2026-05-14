@@ -29,6 +29,7 @@
 #include "ExampleUtils/HueColor.hpp"
 #include "ExampleUtils/MathUtils.hpp"
 #include "ExampleUtils/Progress.hpp"
+#include "ExampleUtils/SoundManager.hpp"
 
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/RenderTexture.hpp"
