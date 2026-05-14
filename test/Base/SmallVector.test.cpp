@@ -99,11 +99,6 @@ struct Obj
         return value == rhs.value;
     }
 
-    bool operator!=(const Obj& rhs) const
-    {
-        return value != rhs.value;
-    }
-
     friend void swap(Obj& lhs, Obj& rhs) noexcept // used (found via ADL)
     {
         sf::base::genericSwap(lhs.value, rhs.value);
