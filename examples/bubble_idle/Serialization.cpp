@@ -39,10 +39,6 @@
 #include "SFML/Base/Trait/RemoveCVRef.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#include <exception>
-#include <stdexcept>
-#include <string>
-
 // NOLINTBEGIN(readability-identifier-naming, misc-use-internal-linkage)
 
 
@@ -1208,7 +1204,7 @@ bool forceCopyFile(const sf::Path& from, const sf::Path& to)
 
 
 ////////////////////////////////////////////////////////////
-void doRotatingBackup(const std::string& filename)
+void doRotatingBackup(const sf::base::String& filename)
 {
     (void)forceCopyFile(filename + ".bak2", filename + ".bak3");
     (void)forceCopyFile(filename + ".bak1", filename + ".bak2");
@@ -1240,17 +1236,24 @@ bool saveProfileToFile(const Profile& profile, const char* filename)
 
 
 ////////////////////////////////////////////////////////////
-void loadProfileFromFile(Profile& profile, const char* filename)
-try
+bool loadProfileFromFile(Profile& profile, const char* filename)
 {
+    const auto fail = [&](const char* reason)
+    {
+        sf::cOut() << "Failed to load profile from file '" << filename << "' (" << reason << ")\n";
+        return false;
+    };
+
     sf::base::String contents;
 
     if (!sf::readFromFile(sf::base::StringView{filename}, contents))
-        throw std::runtime_error("readFromFile failed");
+        return fail("readFromFile failed");
 
     cJSON* const parsed = cJSON_Parse(contents.cStr());
+
     if (parsed == nullptr)
-        throw std::runtime_error("cJSON_Parse failed");
+        return fail("cJSON_Parse failed");
+
     SFML_BASE_SCOPE_GUARD({ cJSON_Delete(parsed); });
 
     // Old saves used a JSON array at the root; new saves are objects.
@@ -1258,14 +1261,13 @@ try
     {
         sf::cOut() << "Profile '" << filename
                    << "' is in the legacy array format and cannot be loaded. Resetting to defaults.\n";
+
         profile = Profile{};
-        return;
+        return true;
     }
 
     fromJsonValue(parsed, profile);
-} catch (const std::exception& ex)
-{
-    sf::cOut() << "Failed to load profile from file '" << filename << "' (" << ex.what() << ")\n";
+    return true;
 }
 
 ////////////////////////////////////////////////////////////
@@ -1292,23 +1294,28 @@ bool saveGameConstantsToFile(const GameConstants& gameConstants, const char* fil
 
 
 ////////////////////////////////////////////////////////////
-void loadGameConstantsFromFile(GameConstants& gameConstants, const char* filename)
-try
+bool loadGameConstantsFromFile(GameConstants& gameConstants, const char* filename)
 {
+    const auto fail = [&](const char* reason)
+    {
+        sf::cOut() << "Failed to load game constants from file '" << filename << "' (" << reason << ")\n";
+        return false;
+    };
+
     sf::base::String contents;
 
     if (!sf::readFromFile(sf::base::StringView{filename}, contents))
-        throw std::runtime_error("readFromFile failed");
+        return fail("readFromFile failed");
 
     cJSON* const parsed = cJSON_Parse(contents.cStr());
+
     if (parsed == nullptr)
-        throw std::runtime_error("cJSON_Parse failed");
+        return fail("cJSON_Parse failed");
+
     SFML_BASE_SCOPE_GUARD({ cJSON_Delete(parsed); });
 
     fromJsonValue(parsed, gameConstants);
-} catch (const std::exception& ex)
-{
-    sf::cOut() << "Failed to load game constants from file '" << filename << "' (" << ex.what() << ")\n";
+    return true;
 }
 
 
@@ -1375,16 +1382,23 @@ sf::base::StringView backwardsCompatibilityLoadChecks(const Version& parsedVersi
 
 ////////////////////////////////////////////////////////////
 sf::base::StringView loadPlaythroughFromFile(Playthrough& playthrough, const char* filename)
-try
 {
+    const auto fail = [&](const char* reason)
+    {
+        sf::cOut() << "Failed to load playthrough from file '" << filename << "' (" << reason << ")\n";
+        return "";
+    };
+
     sf::base::String contents;
 
     if (!sf::readFromFile(sf::base::StringView{filename}, contents))
-        throw std::runtime_error("readFromFile failed");
+        return fail("readFromFile failed");
 
     cJSON* const parsed = cJSON_Parse(contents.cStr());
+
     if (parsed == nullptr)
-        throw std::runtime_error("cJSON_Parse failed");
+        return fail("cJSON_Parse failed");
+
     SFML_BASE_SCOPE_GUARD({ cJSON_Delete(parsed); });
 
     // Old saves used a JSON array at the root; new saves are objects.
@@ -1421,11 +1435,6 @@ try
         fromJsonValue(versionItem, parsedVersion);
 
     return backwardsCompatibilityLoadChecks(parsedVersion, playthrough);
-
-} catch (const std::exception& ex)
-{
-    sf::cOut() << "Failed to load playthrough from file '" << filename << "' (" << ex.what() << ")\n";
-    return "";
 }
 
 // NOLINTEND(readability-identifier-naming, misc-use-internal-linkage)
