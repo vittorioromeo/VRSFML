@@ -166,6 +166,7 @@ template <typename T>
 
     char* p = first;
 
+#if !__FINITE_MATH_ONLY__
     // NaN: emit "nan" with no sign (matches `std::to_chars` and IEEE-754).
     // Under `-ffinite-math-only`, this branch folds to dead code: that's
     // intentional -- passing NaN under that flag is out of contract (see
@@ -180,6 +181,7 @@ template <typename T>
         *p++ = 'n';
         return p;
     }
+#endif
 
     // Sign via signbit so `-0.0` keeps its sign (matches `std::to_chars`).
     if (SFML_BASE_SIGNBIT(value))
@@ -191,6 +193,7 @@ template <typename T>
         value = -value;
     }
 
+#if !__FINITE_MATH_ONLY__
     // Infinity: emit "inf" after any sign already written. Same out-of-contract
     // status as NaN under `-ffinite-math-only`.
     if (SFML_BASE_ISINF(value)) [[unlikely]]
@@ -203,6 +206,7 @@ template <typename T>
         *p++ = 'f';
         return p;
     }
+#endif
 
     // Out-of-range guard: the integer-part conversion casts to `long long`,
     // which is UB for values outside its range. Pick a threshold safely
