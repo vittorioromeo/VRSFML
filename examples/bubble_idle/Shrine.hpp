@@ -13,6 +13,7 @@
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/Math/Cos.hpp"
 #include "SFML/Base/Math/Sin.hpp"
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/Remainder.hpp"
 
 

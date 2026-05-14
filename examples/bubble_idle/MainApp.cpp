@@ -21,6 +21,8 @@
 #include "SweepAndPrune.hpp"
 #include "UIState.hpp"
 
+#include "ExampleUtils/SoundManager.hpp"
+
 #include "SFML/ImGui/ImGuiContext.hpp"
 #include "SFML/ImGui/IncludeImGui.hpp"
 
@@ -486,6 +488,8 @@ Main::Main() :
 }()),
     bgmStorage(new MainBGMStorage{}),
     bgm(*bgmStorage),
+    soundManagerStorage(new SoundManager{}),
+    soundManager(*soundManagerStorage),
     listenerStorage(new sf::Listener{}),
     listener(*listenerStorage),
     rtBackgroundStorage(new sf::RenderTexture{

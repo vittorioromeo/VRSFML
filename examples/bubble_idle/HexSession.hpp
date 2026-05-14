@@ -1,9 +1,10 @@
 #pragma once
 
-#include "Doll.hpp"
-
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
+
+
+struct Doll;
 
 
 ////////////////////////////////////////////////////////////
@@ -22,4 +23,7 @@ struct [[nodiscard]] HexSession
 {
     sf::base::SizeT        catIdx{0u};
     sf::base::Vector<Doll> dolls;
+
+    HexSession();
+    ~HexSession();
 };

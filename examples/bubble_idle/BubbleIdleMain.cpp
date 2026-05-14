@@ -36,6 +36,7 @@
 #include "ExampleUtils/MathUtils.hpp"
 #include "ExampleUtils/Progress.hpp"
 #include "ExampleUtils/RNGFast.hpp"
+#include "ExampleUtils/SoundManager.hpp"
 
 #include "SFML/ImGui/IncludeImGui.hpp"
 

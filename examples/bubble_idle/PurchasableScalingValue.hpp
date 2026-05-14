@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Aliases.hpp"
 #include "PSVData.hpp"
 
 #include "SFML/Base/SizeT.hpp"

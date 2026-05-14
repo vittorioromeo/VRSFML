@@ -6,6 +6,7 @@
 
 #include "ExampleUtils/Progress.hpp"
 
+#include "SFML/System/Angle.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/Assert.hpp"
