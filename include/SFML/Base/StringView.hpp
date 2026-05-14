@@ -664,14 +664,6 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] friend inline constexpr bool operator!=(const StringView& lhs,
-                                                                                         const StringView& rhs) noexcept
-    {
-        return !(lhs == rhs);
-    }
-
-
-    ////////////////////////////////////////////////////////////
     /// \brief Lexicographic byte-wise comparison of two views.
     ///
     /// Treats embedded NUL bytes as ordinary data (the underlying primitive is
@@ -712,14 +704,6 @@ public:
                                                                                          const char* const rhs) noexcept
     {
         return lhs == StringView{rhs};
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] friend inline constexpr bool operator!=(const StringView& lhs,
-                                                                                         const char* const rhs) noexcept
-    {
-        return !(lhs == rhs);
     }
 
 

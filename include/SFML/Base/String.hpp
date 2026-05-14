@@ -530,13 +530,6 @@ public:
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline constexpr bool operator!=(const String& lhs, const String& rhs) noexcept
-{
-    return !(lhs == rhs);
-}
-
-
-////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline]] inline constexpr bool operator<(const String& lhs, const String& rhs) noexcept
 {
     return lhs.toStringView() < rhs.toStringView();

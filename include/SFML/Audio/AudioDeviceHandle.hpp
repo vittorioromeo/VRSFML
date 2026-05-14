@@ -110,12 +110,6 @@ public:
     ////////////////////////////////////////////////////////////
     friend bool operator==(const AudioDeviceHandle& lhs, const AudioDeviceHandle& rhs);
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Compare two device handles for inequality
-    ///
-    ////////////////////////////////////////////////////////////
-    friend bool operator!=(const AudioDeviceHandle& lhs, const AudioDeviceHandle& rhs);
-
 protected:
     friend PlaybackDevice;
     friend PlaybackDeviceHandle;
@@ -169,12 +163,6 @@ private:
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool operator==(const AudioDeviceHandle& lhs, const AudioDeviceHandle& rhs);
-
-////////////////////////////////////////////////////////////
-/// \brief Compare inequality between device handles
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] bool operator!=(const AudioDeviceHandle& lhs, const AudioDeviceHandle& rhs);
 
 ////////////////////////////////////////////////////////////
 /// \brief CRTP-style strong typedef around `AudioDeviceHandle`

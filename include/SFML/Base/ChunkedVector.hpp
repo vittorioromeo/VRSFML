@@ -428,12 +428,6 @@ public:
         }
 
 
-        [[nodiscard, gnu::always_inline]] bool operator!=(const IteratorImpl& rhs) const noexcept
-        {
-            return !(*this == rhs);
-        }
-
-
         [[nodiscard, gnu::always_inline]] bool operator<(const IteratorImpl& rhs) const noexcept
         {
             SFML_BASE_ASSERT(m_owner == rhs.m_owner);
@@ -835,13 +829,6 @@ public:
         }
 
         return true;
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool operator!=(const ChunkedVector& rhs) const
-    {
-        return !(*this == rhs);
     }
 
 
