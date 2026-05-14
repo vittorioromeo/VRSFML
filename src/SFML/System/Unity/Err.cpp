@@ -20,7 +20,6 @@
 #include <iostream>
 #include <mutex>
 #include <ostream>
-#include <string>
 #include <string_view>
 
 
@@ -153,7 +152,7 @@ ErrStream::Guard ErrStream::operator<<(PathDebugFormatter pathDebugFormatter)
 {
     m_impl->mutex.lock(); // Will be unlocked by `~Guard()`
 
-    m_impl->stream << "    Provided path: " << pathDebugFormatter.path.to<std::string>() << '\n'
+    m_impl->stream << "    Provided path: " << pathDebugFormatter.path.to<base::String>() << '\n'
                    << "    Absolute path: " << pathDebugFormatter.path.getAbsolute().valueOr(Path{"<unavailable>"});
 
     return Guard{m_impl->stream, &m_impl->mutex, m_impl->multiLine.loadSeqCst()};
@@ -188,7 +187,7 @@ ErrStream::Guard& ErrStream::Guard::operator<<(ErrFlushType)
 ////////////////////////////////////////////////////////////
 ErrStream::Guard& ErrStream::Guard::operator<<(PathDebugFormatter pathDebugFormatter)
 {
-    m_stream << "    Provided path: " << pathDebugFormatter.path.to<std::string>() << '\n'
+    m_stream << "    Provided path: " << pathDebugFormatter.path.to<base::String>() << '\n'
              << "    Absolute path: " << pathDebugFormatter.path.getAbsolute().valueOr(Path{"<unavailable>"});
 
     return *this;
