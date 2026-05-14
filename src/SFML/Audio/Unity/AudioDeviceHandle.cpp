@@ -5,9 +5,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Audio/AudioDeviceHandle.hpp"
+
 #include "SFML/Audio/PlaybackDeviceHandle.hpp"
 
 #include "SFML/Base/Builtin/Memcmp.hpp"
+#include "SFML/Base/PassKey.hpp"
 
 #include <miniaudio.h>
 
@@ -88,11 +91,5 @@ bool operator==(const AudioDeviceHandle& lhs, const AudioDeviceHandle& rhs)
     return SFML_BASE_MEMCMP(&lhs.m_impl->maDeviceInfo.id, &rhs.m_impl->maDeviceInfo.id, sizeof(ma_device_id)) == 0;
 }
 
-
-////////////////////////////////////////////////////////////
-bool operator!=(const AudioDeviceHandle& lhs, const AudioDeviceHandle& rhs)
-{
-    return !(lhs == rhs);
-}
 
 } // namespace sf::priv

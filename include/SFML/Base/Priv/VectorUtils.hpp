@@ -348,11 +348,6 @@ template <typename T>
         return true;                                                                                                           \
     }                                                                                                                          \
                                                                                                                                \
-    [[nodiscard, gnu::always_inline]] constexpr bool operator!=(const vectorType& rhs) const                                   \
-    {                                                                                                                          \
-        return !(*this == rhs);                                                                                                \
-    }                                                                                                                          \
-                                                                                                                               \
     /* NOLINTNEXTLINE(bugprone-macro-parentheses) */                                                                           \
     [[gnu::always_inline]] constexpr friend void swap(vectorType& lhs, vectorType& rhs) noexcept                               \
     {                                                                                                                          \
