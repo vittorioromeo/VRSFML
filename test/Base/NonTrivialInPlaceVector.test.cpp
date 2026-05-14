@@ -88,15 +88,10 @@ struct Obj
         return *this;
     }
 
-    // Added for operator== tests
+    // Added for operator== tests (operator!= is synthesized by C++20 rewriting)
     bool operator==(const Obj& rhs) const
     {
         return value == rhs.value;
-    }
-
-    bool operator!=(const Obj& rhs) const
-    {
-        return value != rhs.value;
     }
 };
 

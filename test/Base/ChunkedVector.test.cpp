@@ -96,11 +96,6 @@ struct Obj
     {
         return value == rhs.value;
     }
-
-    [[nodiscard]] bool operator!=(const Obj& rhs) const
-    {
-        return value != rhs.value;
-    }
 };
 
 TEST_CASE("[Base] Base/ChunkedVector.hpp")
