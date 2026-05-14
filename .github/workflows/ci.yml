@@ -69,6 +69,17 @@ jobs:
 
       - name: Test
         run: |
+          set -euxo pipefail
+          # SDL3 nags on every backend probe if these aren't set; pin them
+          # before we even start Xvfb so logs stay readable.
+          export XDG_RUNTIME_DIR="/tmp/xdg-runtime-$$"
+          mkdir -p "$XDG_RUNTIME_DIR" && chmod 700 "$XDG_RUNTIME_DIR"
+          # Some minimal container images (incl. GitHub's hosted runner +
+          # archlinux base) ship without /tmp/.X11-unix; Xvfb won't recreate
+          # it if /tmp was just remounted as tmpfs.
+          mkdir -p /tmp/.X11-unix && chmod 1777 /tmp/.X11-unix
+          # Skip the Wayland/KMSDRM probes entirely -- there's no GPU here.
+          export SDL_VIDEODRIVER=x11
           xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" \
             ctest --test-dir build_${{ matrix.preset }} \
                   --output-on-failure \
