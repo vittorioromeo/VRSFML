@@ -65,7 +65,7 @@ constexpr unsigned int maxIncludeFilenameLength = 256;
 {
     if (depth > maxGlslIncludeDepth)
     {
-        sf::priv::err() << "GLSL #include depth limit exceeded (" << maxGlslIncludeDepth << ")";
+        sf::priv::errMsg("GLSL #include depth limit exceeded ({})", maxGlslIncludeDepth);
         return false;
     }
 
@@ -112,8 +112,8 @@ constexpr unsigned int maxIncludeFilenameLength = 256;
             const auto absMaybe = (basePath / sf::Path(static_cast<const char*>(filenameBuf))).getAbsolute();
             if (!absMaybe)
             {
-                sf::priv::err() << "Failed to resolve absolute path for GLSL #include '"
-                                << static_cast<const char*>(filenameBuf) << "'";
+                sf::priv::errMsg("Failed to resolve absolute path for GLSL #include '{}'",
+                                 static_cast<const char*>(filenameBuf));
                 return false;
             }
             const sf::Path& includePath = *absMaybe;
@@ -123,13 +123,12 @@ constexpr unsigned int maxIncludeFilenameLength = 256;
             {
                 if (stackPath == includePath)
                 {
-                    sf::priv::err() << "Circular GLSL #include detected for '" << static_cast<const char*>(filenameBuf)
-                                    << "':\n";
+                    sf::priv::errMsg("Circular GLSL #include detected for '{}':\n", static_cast<const char*>(filenameBuf));
 
                     for (const auto& p : includeStack)
-                        sf::priv::err(/* multiLine */ true) << "  " << p << " ->\n";
+                        sf::priv::errMsgMulti("  {} ->\n", p);
 
-                    sf::priv::err(/* multiLine */ true) << "  " << includePath << '\n';
+                    sf::priv::errMsgMulti("  {}{}", includePath, '\n');
                     return false;
                 }
             }
@@ -139,14 +138,14 @@ constexpr unsigned int maxIncludeFilenameLength = 256;
 
             if (!optFileContents.hasValue())
             {
-                sf::priv::err() << "Failed to open GLSL #include file '" << static_cast<const char*>(filenameBuf) << "'";
+                sf::priv::errMsg("Failed to open GLSL #include file '{}'", static_cast<const char*>(filenameBuf));
 
                 if (!includeStack.empty())
                 {
-                    sf::priv::err(/* multiLine */ true) << "\n  Include stack:\n";
+                    sf::priv::errMsgMulti("\n  Include stack:\n");
 
                     for (const auto& p : includeStack)
-                        sf::priv::err(/* multiLine */ true) << "    " << p << '\n';
+                        sf::priv::errMsgMulti("    {}{}", p, '\n');
                 }
 
                 return false;
@@ -229,7 +228,7 @@ base::Optional<base::StringView> ShaderUtils::parseIncludeDirective(base::String
 {
     const auto fail = [&](const char* what)
     {
-        priv::err() << "Malformed GLSL #include directive (" << what << "): " << line;
+        priv::errMsg("Malformed GLSL #include directive ({}): {}", what, line);
         return base::nullOpt;
     };
 
@@ -293,7 +292,7 @@ bool ShaderUtils::preprocessGlslIncludes(base::StringView source, const Path& sh
     const auto absMaybe = shaderPath.getAbsolute();
     if (!absMaybe)
     {
-        priv::err() << "Failed to resolve absolute path for shader";
+        priv::errMsg("Failed to resolve absolute path for shader");
         return false;
     }
     const Path& absoluteShaderPath = *absMaybe;

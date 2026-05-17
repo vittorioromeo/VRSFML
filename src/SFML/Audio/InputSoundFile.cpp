@@ -72,8 +72,8 @@ base::Optional<InputSoundFile> InputSoundFile::openFromFile(const Path& filename
     auto fileInputStream = FileInputStream::open(filename);
     if (!fileInputStream.hasValue())
     {
-        priv::err() << "Failed to open input sound file from file (couldn't open file input stream)\n"
-                    << priv::PathDebugFormatter{filename};
+        priv::errMsg("Failed to open input sound file from file (couldn't open file input stream)\n{}",
+                     priv::PathDebugFormatter{filename});
 
         return base::nullOpt;
     }
@@ -85,8 +85,8 @@ base::Optional<InputSoundFile> InputSoundFile::openFromFile(const Path& filename
     auto info = reader->open(*file);
     if (!info.hasValue())
     {
-        priv::err() << "Failed to open input sound file from file (reader open failure)\n"
-                    << priv::PathDebugFormatter{filename};
+        priv::errMsg("Failed to open input sound file from file (reader open failure)\n{}",
+                     priv::PathDebugFormatter{filename});
 
         return base::nullOpt;
     }
@@ -118,7 +118,7 @@ base::Optional<InputSoundFile> InputSoundFile::openFromMemory(const void* data, 
     base::Optional info = reader->open(*memory);
     if (!info.hasValue())
     {
-        priv::err() << "Failed to open input sound file from memory (reader open failure)";
+        priv::errMsg("Failed to open input sound file from memory (reader open failure)");
         return base::nullOpt;
     }
 
@@ -145,7 +145,7 @@ base::Optional<InputSoundFile> InputSoundFile::openFromStream(InputStream& strea
     // Don't forget to reset the stream to its beginning before re-opening it
     if (const base::Optional seekResult = stream.seek(0); !seekResult.hasValue() || *seekResult != 0)
     {
-        priv::err() << "Failed to open sound file from stream (cannot restart stream)";
+        priv::errMsg("Failed to open sound file from stream (cannot restart stream)");
         return base::nullOpt;
     }
 
@@ -153,7 +153,7 @@ base::Optional<InputSoundFile> InputSoundFile::openFromStream(InputStream& strea
     base::Optional info = reader->open(stream);
     if (!info.hasValue())
     {
-        priv::err() << "Failed to open input sound file from stream (reader open failure)";
+        priv::errMsg("Failed to open input sound file from stream (reader open failure)");
         return base::nullOpt;
     }
 

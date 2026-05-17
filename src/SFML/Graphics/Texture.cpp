@@ -92,14 +92,14 @@ Texture::Texture(const Texture& rhs) :
 
     if (!texture.hasValue())
     {
-        priv::err() << "Failed to copy texture, failed to create new texture";
+        priv::errMsg("Failed to copy texture, failed to create new texture");
         return;
     }
 
     *this = SFML_BASE_MOVE(*texture);
 
     if (!update(rhs))
-        priv::err() << "Failed to copy texture, failed to update from new texture";
+        priv::errMsg("Failed to copy texture, failed to update from new texture");
 }
 
 
@@ -179,7 +179,7 @@ base::Optional<Texture> Texture::create(Vec2u size, const TextureCreateSettings&
     // Check if texture parameters are valid before creating it
     if ((size.x == 0) || (size.y == 0))
     {
-        priv::err() << "Failed to create texture, invalid size (" << size.x << "x" << size.y << ")";
+        priv::errMsg("Failed to create texture, invalid size ({}x{})", size.x, size.y);
         return result; // Empty optional
     }
 
@@ -189,9 +189,11 @@ base::Optional<Texture> Texture::create(Vec2u size, const TextureCreateSettings&
     const unsigned int maxSize = getMaximumSize();
     if ((size.x > maxSize) || (size.y > maxSize))
     {
-        priv::err() << "Failed to create texture, its internal size is too high "
-                    << "(" << size.x << "x" << size.y << ", "
-                    << "maximum is " << maxSize << "x" << maxSize << ")";
+        priv::errMsg("Failed to create texture, its internal size is too high ({}x{}, maximum is {}x{})",
+                     size.x,
+                     size.y,
+                     maxSize,
+                     maxSize);
 
         return result; // Empty optional
     }
@@ -231,7 +233,7 @@ base::Optional<Texture> Texture::loadFromFile(const Path& filename, const Textur
     if (const base::Optional image = sf::Image::loadFromFile(filename))
         return loadFromImage(*image, settings);
 
-    priv::err() << "Failed to load texture from file";
+    priv::errMsg("Failed to load texture from file");
     return base::nullOpt;
 }
 
@@ -242,7 +244,7 @@ base::Optional<Texture> Texture::loadFromMemory(const void* data, base::SizeT si
     if (const base::Optional image = sf::Image::loadFromMemory(data, size))
         return loadFromImage(*image, settings);
 
-    priv::err() << "Failed to load texture from memory";
+    priv::errMsg("Failed to load texture from memory");
     return base::nullOpt;
 }
 
@@ -253,7 +255,7 @@ base::Optional<Texture> Texture::loadFromStream(InputStream& stream, const Textu
     if (const base::Optional image = sf::Image::loadFromStream(stream))
         return loadFromImage(*image, settings);
 
-    priv::err() << "Failed to load texture from stream";
+    priv::errMsg("Failed to load texture from stream");
     return base::nullOpt;
 }
 
@@ -367,7 +369,7 @@ Image Texture::copyToImage() const
     }
     else
     {
-        priv::err() << "Failed to copy texture to image, failed to create frame buffer object";
+        priv::errMsg("Failed to copy texture to image, failed to create frame buffer object");
         base::abort();
     }
 
@@ -445,14 +447,14 @@ bool Texture::update(const Texture& texture, Vec2u dest)
     const auto sourceFrameBuffer = static_cast<GLuint>(WindowContext::getTransferScratchReadFramebuffer());
     if (sourceFrameBuffer == 0u)
     {
-        priv::err() << "Cannot copy texture, failed to acquire source frame buffer object";
+        priv::errMsg("Cannot copy texture, failed to acquire source frame buffer object");
         return false;
     }
 
     const auto destFrameBuffer = static_cast<GLuint>(WindowContext::getTransferScratchDrawFramebuffer());
     if (destFrameBuffer == 0u)
     {
-        priv::err() << "Cannot copy texture, failed to acquire destination frame buffer object";
+        priv::errMsg("Cannot copy texture, failed to acquire destination frame buffer object");
         return false;
     }
 
@@ -485,7 +487,7 @@ bool Texture::update(const Texture& texture, Vec2u dest)
         }
         else
         {
-            priv::err() << "Cannot copy texture, failed to link texture to frame buffer";
+            priv::errMsg("Cannot copy texture, failed to link texture to frame buffer");
             success = false;
         }
     }
@@ -524,7 +526,7 @@ bool Texture::update(const Window& window, Vec2u dest)
 
     if (!window.setActive(true))
     {
-        priv::err() << "Failed to activate window in `Texture::update`";
+        priv::errMsg("Failed to activate window in `Texture::update`");
         return false;
     }
 
@@ -533,7 +535,7 @@ bool Texture::update(const Window& window, Vec2u dest)
     const auto destFrameBuffer = static_cast<GLuint>(WindowContext::getTransferScratchDrawFramebuffer());
     if (destFrameBuffer == 0u)
     {
-        priv::err() << "Cannot copy texture, failed to acquire a frame buffer object";
+        priv::errMsg("Cannot copy texture, failed to acquire a frame buffer object");
         return false;
     }
 
@@ -562,13 +564,13 @@ bool Texture::update(const Window& window, Vec2u dest)
 
             if (!WindowContext::copyFlippedFramebuffer(m_sRgb, window.getSize(), 0u /* default FBO */, destFrameBuffer, {0u, 0u}, dest))
             {
-                priv::err() << "Cannot copy texture, failed to copy flipped framebuffer";
+                priv::errMsg("Cannot copy texture, failed to copy flipped framebuffer");
                 success = false;
             }
         }
         else
         {
-            priv::err() << "Cannot copy texture, failed to link texture to frame buffer";
+            priv::errMsg("Cannot copy texture, failed to link texture to frame buffer");
             success = false;
         }
     }

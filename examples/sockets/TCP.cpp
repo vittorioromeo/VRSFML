@@ -12,6 +12,8 @@
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Utf8String.hpp"
 
+#include "SFML/Base/MiniFmt.hpp"
+#include "SFML/Base/MiniFmtNumeric.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
@@ -74,7 +76,7 @@ void runTcpServer(unsigned short port, const bool tls)
     if (!listenerOpt.hasValue())
         return;
 
-    sf::cOut() << "Server is listening to port " << port << ", waiting for connections... " << sf::endL;
+    sf::base::printLn("Server is listening to port {}, waiting for connections... ", port);
 
     // Wait for a connection
     auto acceptResult = listenerOpt->accept();
@@ -82,35 +84,35 @@ void runTcpServer(unsigned short port, const bool tls)
         return;
 
     auto& socket = *acceptResult.socket;
-    sf::cOut() << "Client connected: " << sf::IpAddressUtils::toString(socket.getRemoteAddress().value()) << sf::endL;
+    sf::base::printLn("Client connected: {}", sf::IpAddressUtils::toString(socket.getRemoteAddress().value()));
 
     if (tls)
     {
         // Setup TLS
         if (socket.setupTlsServer(certificate, privateKey) != sf::TcpSocket::TlsStatus::HandshakeComplete)
         {
-            sf::cOut() << "TLS handshake could not be completed" << sf::endL;
+            sf::base::printLn("TLS handshake could not be completed");
             return;
         }
 
-        sf::cOut() << "TLS set up" << sf::endL;
+        sf::base::printLn("TLS set up");
 
         if (auto ciphersuite = socket.getCurrentCiphersuiteName(); ciphersuite)
-            sf::cOut() << "Ciphersuite in use: " << *ciphersuite << sf::endL;
+            sf::base::printLn("Ciphersuite in use: {}", *ciphersuite);
     }
 
     // Send a message to the connected client
     const char out[] = "Hi, I'm the server";
     if (socket.send(out, sizeof(out)) != sf::Socket::Status::Done)
         return;
-    sf::cOut() << "Message sent to the client: \"" << out << '"' << sf::endL;
+    sf::base::printLn("Message sent to the client: \"{}{}", out, '"');
 
     // Receive a message back from the client
     char            in[128];
     sf::base::SizeT received = 0;
     if (socket.receive(in, sizeof(in), received) != sf::Socket::Status::Done)
         return;
-    sf::cOut() << "Answer received from the client: \"" << in << '"' << sf::endL;
+    sf::base::printLn("Answer received from the client: \"{}{}", in, '"');
 }
 
 
@@ -125,7 +127,7 @@ void runTcpClient(unsigned short port, const bool tls)
     sf::base::Optional<sf::IpAddress> server;
     do
     {
-        sf::cOut() << "Type the address or name of the server to connect to: ";
+        sf::base::print("Type the address or name of the server to connect to: ");
 
         sf::base::String addressStr;
         sf::cIn() >> addressStr;
@@ -142,7 +144,7 @@ void runTcpClient(unsigned short port, const bool tls)
     // Connect to the server
     if (socket.connect(server.value(), port) != sf::Socket::Status::Done)
         return;
-    sf::cOut() << "Connected to server " << sf::IpAddressUtils::toString(server.value()) << sf::endL;
+    sf::base::printLn("Connected to server {}", sf::IpAddressUtils::toString(server.value()));
 
     if (tls)
     {
@@ -150,10 +152,10 @@ void runTcpClient(unsigned short port, const bool tls)
         if (socket.setupTlsClient(commonName.to<sf::base::String>(), certificate) !=
             sf::TcpSocket::TlsStatus::HandshakeComplete)
             return;
-        sf::cOut() << "TLS set up" << sf::endL;
+        sf::base::printLn("TLS set up");
 
         if (auto ciphersuite = socket.getCurrentCiphersuiteName(); ciphersuite)
-            sf::cOut() << "Ciphersuite in use: " << *ciphersuite << sf::endL;
+            sf::base::printLn("Ciphersuite in use: {}", *ciphersuite);
     }
 
     // Receive a message from the server
@@ -161,11 +163,11 @@ void runTcpClient(unsigned short port, const bool tls)
     sf::base::SizeT received = 0;
     if (socket.receive(in, sizeof(in), received) != sf::Socket::Status::Done)
         return;
-    sf::cOut() << "Message received from the server: \"" << in << '"' << sf::endL;
+    sf::base::printLn("Message received from the server: \"{}{}", in, '"');
 
     // Send an answer to the server
     const char out[] = "Hi, I'm a client";
     if (socket.send(out, sizeof(out)) != sf::Socket::Status::Done)
         return;
-    sf::cOut() << "Message sent to the server: \"" << out << '"' << sf::endL;
+    sf::base::printLn("Message sent to the server: \"{}{}", out, '"');
 }

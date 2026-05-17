@@ -39,7 +39,7 @@ struct Sound::Impl
     {
         if (!soundBase.initialize(&onEnd))
         {
-            priv::err() << "Failed to initialize sound base";
+            priv::errMsg("Failed to initialize sound base");
             return;
         }
     }

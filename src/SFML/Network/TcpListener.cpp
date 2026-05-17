@@ -31,7 +31,7 @@ base::Optional<TcpListener> TcpListener::create(unsigned short port, bool isBloc
 {
     if (address == IpAddress::Broadcast)
     {
-        priv::err() << "Cannot create TCP listener bound to broadcast address";
+        priv::errMsg("Cannot create TCP listener bound to broadcast address");
         return base::nullOpt;
     }
 
@@ -43,14 +43,14 @@ base::Optional<TcpListener> TcpListener::create(unsigned short port, bool isBloc
 
     if (!priv::SocketImpl::bind(handle, addr))
     {
-        priv::err() << "Failed to bind listener socket to port " << port;
+        priv::errMsg("Failed to bind listener socket to port {}", port);
         priv::SocketImpl::close(handle);
         return base::nullOpt;
     }
 
     if (!priv::SocketImpl::listen(handle))
     {
-        priv::err() << "Failed to listen on port " << port;
+        priv::errMsg("Failed to listen on port {}", port);
         priv::SocketImpl::close(handle);
         return base::nullOpt;
     }

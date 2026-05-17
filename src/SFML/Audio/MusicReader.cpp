@@ -55,7 +55,7 @@ base::Optional<MusicReader> MusicReader::tryOpenFromInputSoundFile(base::Optiona
 {
     if (!optFile.hasValue())
     {
-        priv::err() << "Failed to open music from " << errorContext;
+        priv::errMsg("Failed to open music from {}", errorContext);
         return base::nullOpt;
     }
 

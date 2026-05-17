@@ -55,6 +55,7 @@
 #include "SFML/Base/Builtin/Memset.hpp"
 #include "SFML/Base/DeclVal.hpp"
 #include "SFML/Base/Exchange.hpp"
+#include "SFML/Base/FwdStdHash.hpp"
 #include "SFML/Base/InitializerList.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
@@ -63,6 +64,7 @@
 #include "SFML/Base/PlacementNew.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Swap.hpp"
 #include "SFML/Base/Trait/Conditional.hpp"
 #include "SFML/Base/Trait/IsConstructible.hpp"
 #include "SFML/Base/Trait/IsConvertible.hpp"
@@ -75,11 +77,8 @@
 #include "SFML/Base/Trait/IsVoid.hpp"
 #include "SFML/Base/Trait/RemoveCVRef.hpp"
 #include "SFML/Base/Trait/UnderlyingType.hpp"
-#include "SFML/Base/Swap.hpp"
-#include "SFML/Base/Vector.hpp"
 #include "SFML/Base/UIntPtrT.hpp"
-
-#include "SFML/Base/FwdStdHash.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #    if defined(_MSC_VER) && defined(_M_X64)
 #        include <intrin.h>

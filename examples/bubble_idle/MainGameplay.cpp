@@ -58,6 +58,8 @@
 #include "SFML/Base/Math/Ceil.hpp"
 #include "SFML/Base/Math/Pow.hpp"
 #include "SFML/Base/MinMax.hpp"
+#include "SFML/Base/MiniFmt.hpp"
+#include "SFML/Base/MiniFmtNumeric.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
@@ -482,7 +484,7 @@ void Main::gameLoopUpdateAutosave(const sf::base::I64 elapsedUs)
     if (autosaveUsAccumulator >= 180'000'000) // 3 min
     {
         autosaveUsAccumulator = 0;
-        sf::cOut() << "Autosaving...\n";
+        sf::base::printLn("Autosaving...");
         saveMainPlaythroughToFile();
     }
 }

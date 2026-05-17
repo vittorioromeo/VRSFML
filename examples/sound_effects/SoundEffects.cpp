@@ -36,6 +36,7 @@
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
+#include "SFML/System/PathMiniFmt.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Utf8String.hpp"
@@ -54,6 +55,8 @@
 #include "SFML/Base/Math/Pow.hpp"
 #include "SFML/Base/Math/Sin.hpp"
 #include "SFML/Base/Math/Tan.hpp"
+#include "SFML/Base/MiniFmt.hpp"
+#include "SFML/Base/MiniFmtNumeric.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
@@ -144,7 +147,7 @@ public:
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
         if (!playbackDevice.applyListener(m_listener))
-            sf::cErr() << "Failed to update listener\n";
+            sf::base::printErrLn("Failed to update listener");
 
         m_music
             .emplace(playbackDevice,
@@ -218,7 +221,7 @@ public:
         m_listener.position = {0.f, 0.f, 0.f};
 
         if (!playbackDevice.applyListener(m_listener))
-            sf::cErr() << "Failed to update listener\n";
+            sf::base::printErrLn("Failed to update listener");
 
         m_music
             .emplace(playbackDevice,
@@ -290,7 +293,7 @@ public:
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
         if (!playbackDevice.applyListener(m_listener))
-            sf::cErr() << "Failed to update listener\n";
+            sf::base::printErrLn("Failed to update listener");
 
         // Sound cone parameters
         static constexpr auto coneHeight     = windowHeight * 2.f;
@@ -474,7 +477,7 @@ public:
         m_listener.position = {0.f, 0.f, 0.f};
 
         if (!playbackDevice.applyListener(m_listener))
-            sf::cErr() << "Failed to update listener\n";
+            sf::base::printErrLn("Failed to update listener");
 
         m_toneSoundStream.emplace(playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, sampleRate, *this).play();
     }
@@ -597,7 +600,7 @@ public:
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
         if (!playbackDevice.applyListener(m_listener))
-            sf::cErr() << "Failed to update listener\n";
+            sf::base::printErrLn("Failed to update listener");
 
         auto& stream = m_dopplerSoundStream.emplace(playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, sampleRate, *this);
         stream.setAttenuation(0.05f);
@@ -663,7 +666,7 @@ public:
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
         if (!playbackDevice.applyListener(m_listener))
-            sf::cErr() << "Failed to update listener\n";
+            sf::base::printErrLn("Failed to update listener");
 
         m_music
             .emplace(playbackDevice,
@@ -797,7 +800,7 @@ protected:
 
         if (!success)
         {
-            sf::cErr() << "Failed to set effect processor\n";
+            sf::base::printErrLn("Failed to set effect processor");
             sf::base::abort();
         }
     }
@@ -928,7 +931,7 @@ struct Echo : Processing
 
         if (!success)
         {
-            sf::cErr() << "Failed to set effect processor\n";
+            sf::base::printErrLn("Failed to set effect processor");
             sf::base::abort();
         }
     }
@@ -990,7 +993,7 @@ public:
 
         if (!success)
         {
-            sf::cErr() << "Failed to set effect processor\n";
+            sf::base::printErrLn("Failed to set effect processor");
             sf::base::abort();
         }
     }
@@ -1127,7 +1130,7 @@ int main()
     const auto musicPath = resourcesDir() / "doodle_pop.ogg";
     if (!musicPath.exists())
     {
-        sf::cErr() << "Music file '" << musicPath << "' not found, aborting" << sf::endL;
+        sf::base::printErrLn("Music file '{}' not found, aborting", musicPath);
         return 1;
     }
 

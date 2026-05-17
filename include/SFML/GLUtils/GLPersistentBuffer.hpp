@@ -212,7 +212,7 @@ public:
     void unmapIfNeeded([[maybe_unused /* not available in EGL */]] TBufferObject& obj)
     {
 #ifdef SFML_OPENGL_ES
-        priv::err() << "FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES";
+        priv::errMsg("FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES");
         base::abort();
 #else
         if (m_mappedPtr == nullptr)
@@ -252,7 +252,7 @@ public:
                                                 [[maybe_unused]] const base::SizeT    byteCount) const
     {
 #ifdef SFML_OPENGL_ES
-        priv::err() << "FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES";
+        priv::errMsg("FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES");
         base::abort();
 #else
         const auto objId = obj.getId();
@@ -272,7 +272,7 @@ private:
                                                   [[maybe_unused]] const bool        preserveExistingData)
     {
 #ifdef SFML_OPENGL_ES
-        priv::err() << "FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES";
+        priv::errMsg("FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES");
         base::abort();
 #else
         SFML_BASE_ASSERT(m_capacity < byteCount);

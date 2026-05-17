@@ -118,7 +118,7 @@ bool SocketSelector::addWith(Impl& impl, Socket& socket, void* const userData, c
 
     if (handle == priv::SocketImpl::invalidSocket())
     {
-        priv::err() << "Attempted to add invalid socket to socket selector";
+        priv::errMsg("Attempted to add invalid socket to socket selector");
         return false;
     }
 
@@ -129,15 +129,17 @@ bool SocketSelector::addWith(Impl& impl, Socket& socket, void* const userData, c
 #if defined(SFML_SYSTEM_WINDOWS)
         if (static_cast<int>(impl.entries.size()) >= priv::SocketImpl::getFDSetSize())
         {
-            priv::err() << "The socket can't be added to the selector because the selector is full. This is a "
-                           "limitation of your operating system's FD_SETSIZE setting.";
+            priv::errMsg(
+                "The socket can't be added to the selector because the selector is full. This is a limitation of your "
+                "operating system's FD_SETSIZE setting.");
             return false;
         }
 #else
         if (handle >= priv::SocketImpl::getFDSetSize())
         {
-            priv::err() << "The socket can't be added to the selector because its ID is too high. This is a limitation "
-                           "of your operating system's FD_SETSIZE setting.";
+            priv::errMsg(
+                "The socket can't be added to the selector because its ID is too high. This is a limitation of your "
+                "operating system's FD_SETSIZE setting.");
             return false;
         }
 
@@ -186,15 +188,16 @@ bool SocketSelector::remove(const Socket& socket)
 
     if (handle == priv::SocketImpl::invalidSocket())
     {
-        priv::err() << "Attempted to remove invalid socket from socket selector";
+        priv::errMsg("Attempted to remove invalid socket from socket selector");
         return false;
     }
 
 #if !defined(SFML_SYSTEM_WINDOWS)
     if (handle >= priv::SocketImpl::getFDSetSize())
     {
-        priv::err() << "The socket can't be removed from the selector because its ID is too high. This is a "
-                       "limitation of your operating system's FD_SETSIZE setting.";
+        priv::errMsg(
+            "The socket can't be removed from the selector because its ID is too high. This is a limitation of your "
+            "operating system's FD_SETSIZE setting.");
         return false;
     }
 #endif

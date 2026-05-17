@@ -21,6 +21,8 @@
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"
 
+#include "SFML/Base/MiniFmt.hpp"
+#include "SFML/Base/MiniFmtNumeric.hpp"
 #include "SFML/Base/Optional.hpp"
 
 int main()
@@ -68,8 +70,12 @@ int main()
     // TODO P0:
     const auto modes = sf::VideoModeUtils::getFullscreenModes();
     for (const auto& mode : modes)
-        sf::cOut() << "Fullscreen mode: " << mode.size.x << "x" << mode.size.y << "; " << mode.bitsPerPixel << "bpp; "
-                   << mode.pixelDensity << "x pixel density; " << mode.refreshRate << "Hz\n";
+        sf::base::printLn("Fullscreen mode: {}x{}; {}bpp; {}x pixel density; {}Hz",
+                          mode.size.x,
+                          mode.size.y,
+                          mode.bitsPerPixel,
+                          mode.pixelDensity,
+                          mode.refreshRate);
 
     while (true)
     {
@@ -81,7 +87,7 @@ int main()
                 return 0;
 
             if (const auto* eResized = event->getIf<sf::Event::Resized>())
-                sf::cOut() << "Resized event: " << eResized->size.x << ", " << eResized->size.y << '\n';
+                sf::base::printLn("Resized event: {}, {}", eResized->size.x, eResized->size.y);
 
             if (const auto* eMouseMoved = event->getIf<sf::Event::MouseMoved>())
                 eventMousePosition = eMouseMoved->position;

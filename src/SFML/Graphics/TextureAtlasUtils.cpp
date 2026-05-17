@@ -24,7 +24,7 @@ namespace
 ////////////////////////////////////////////////////////////
 [[nodiscard]] sf::base::NullOpt fail(const char* what)
 {
-    sf::priv::err() << "Failed to " << what;
+    sf::priv::errMsg("Failed to {}", what);
     return sf::base::nullOpt;
 }
 

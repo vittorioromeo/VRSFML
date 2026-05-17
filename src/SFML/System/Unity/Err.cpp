@@ -7,228 +7,153 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Err.hpp"
 
-#include "SFML/System/Atomic.hpp"
-#include "SFML/System/Path.hpp"
-#include "SFML/System/PathStreamOp.hpp"
-#include "SFML/System/PathUtils.hpp"
-
+#include "SFML/Base/Builtin/Strlen.hpp"
+#include "SFML/Base/MiniFmt.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StackTrace.hpp"
 #include "SFML/Base/String.hpp"
-#include "SFML/Base/StringView.hpp"
-#include "SFML/Base/Trait/IsSame.hpp"
 
-#include <iostream>
 #include <mutex>
-#include <ostream>
-#include <string_view>
+
+#include <cstdio>
 
 
 namespace sf::priv
 {
-////////////////////////////////////////////////////////////
-struct ErrStream::Impl
+namespace
 {
-    std::ostream     stream;
-    std::mutex       mutex;
-    sf::Atomic<bool> multiLine;
-
-    explicit Impl(std::streambuf* sbuf) : stream(sbuf)
-    {
-    }
-};
+////////////////////////////////////////////////////////////
+constexpr const char  errPrefix[]   = "[[SFML ERROR]]: ";
+constexpr base::SizeT errPrefixSize = sizeof(errPrefix) - 1u; // exclude trailing '\0'
 
 
 ////////////////////////////////////////////////////////////
-ErrStream::Guard::Guard(std::ostream& stream, void* mutexPtr, bool multiLine) :
-    m_stream(stream),
-    m_mutexPtr(mutexPtr),
-    m_multiLine(multiLine)
+void defaultErrSink(void* /*ctx*/, const char* const data, const base::SizeT size)
 {
+    std::fwrite(data, 1u, size, stderr);
 }
 
 
 ////////////////////////////////////////////////////////////
-ErrStream::Guard::~Guard()
+[[nodiscard]] std::mutex& sinkMutex()
 {
-    if (!m_multiLine)
+    static std::mutex m;
+    return m;
+}
+
+
+////////////////////////////////////////////////////////////
+ErrSinkFn currentSinkFn  = &defaultErrSink;
+void*     currentSinkCtx = nullptr;
+
+} // namespace
+
+
+////////////////////////////////////////////////////////////
+void setErrSink(const ErrSinkFn fn, void* const ctx)
+{
+    const std::lock_guard lock(sinkMutex());
+    currentSinkFn  = fn != nullptr ? fn : &defaultErrSink;
+    currentSinkCtx = ctx;
+}
+
+
+////////////////////////////////////////////////////////////
+void emitErr(const char* const data, const base::SizeT size, const bool trailing)
+{
+    // Assemble prefix + content + (optional first '\n') into a single buffer so
+    // the sink sees one write covering the whole logical message.
+    base::String msg;
+    msg.reserve(errPrefixSize + size + 2u);
+    msg.append(errPrefix, errPrefixSize);
+    msg.append(data, size);
+
+    if (trailing)
+        msg += '\n';
+
+    const std::lock_guard lock(sinkMutex());
+
+    currentSinkFn(currentSinkCtx, msg.data(), msg.size());
+
+    if (trailing)
     {
 #ifdef SFML_ENABLE_STACK_TRACES
-        m_stream << '\n';
+        // Stack-trace output goes directly to `stderr` regardless of the
+        // installed sink -- matches historical behavior and avoids re-plumbing
+        // libbacktrace through a callback.
         base::priv::printStackTrace();
 #endif
 
-        m_stream << '\n' << std::flush;
+        const char nl = '\n';
+        currentSinkFn(currentSinkCtx, &nl, 1u);
     }
 
-    static_cast<std::mutex*>(m_mutexPtr)->unlock();
+    // Always flush stderr so partial multi-line error messages (built with
+    // `errMsgMulti`) remain visible even if a following emission never
+    // arrives -- e.g., the process crashes after a multi-line preamble.
+    // Cheap: when stderr is a TTY it's typically unbuffered already, so
+    // `fflush` is a fast path.
+    if (currentSinkFn == &defaultErrSink)
+        std::fflush(stderr);
 }
 
 
 ////////////////////////////////////////////////////////////
-ErrStream::Guard& ErrStream::Guard::operator<<(std::ostream& (*func)(std::ostream&))
+ErrMsgScope::ErrMsgScope() = default;
+
+
+////////////////////////////////////////////////////////////
+ErrMsgScope::~ErrMsgScope()
 {
-    return this->operator<< <decltype(func)>(func);
+    emitErr(m_buf->data(), m_buf->size(), m_trailing);
 }
 
 
 ////////////////////////////////////////////////////////////
-ErrStream::Guard& ErrStream::Guard::operator<<(std::ios_base& (*func)(std::ios_base&))
+void ErrMsgScope::append(const char* const text)
 {
-    return this->operator<< <decltype(func)>(func);
+    m_buf->append(text, SFML_BASE_STRLEN(text));
 }
 
 
 ////////////////////////////////////////////////////////////
-ErrStream::ErrStream(std::streambuf* sbuf) : m_impl(sbuf)
+void ErrMsgScope::append(const char* const data, const base::SizeT size)
 {
+    m_buf->append(data, size);
 }
 
 
 ////////////////////////////////////////////////////////////
-ErrStream::Guard ErrStream::operator<<(std::ostream& (*func)(std::ostream&))
+void ErrMsgScope::disableTrailing() noexcept
 {
-    return this->operator<< <decltype(func)>(func);
+    m_trailing = false;
 }
 
 
 ////////////////////////////////////////////////////////////
-std::streambuf* ErrStream::rdbuf()
+void ErrMsgScope::formatImpl(const base::priv::FmtSpan                 fmt,
+                             const void* const* const                  args,
+                             const base::priv::ErasedDispatchFn* const dispatchers,
+                             const base::SizeT                         argCount)
 {
-    const std::unique_lock lockGuard(m_impl->mutex);
-    return m_impl->stream.rdbuf();
-}
+    char             scratch[base::formatToStagingSize];
+    base::FormatSink sink{scratch, scratch + sizeof(scratch)};
 
+    base::priv::formatAssembleImpl(sink, fmt, args, dispatchers, argCount);
 
-////////////////////////////////////////////////////////////
-void ErrStream::rdbuf(std::streambuf* sbuf)
-{
-    const std::unique_lock lockGuard(m_impl->mutex);
-    m_impl->stream.rdbuf(sbuf);
-}
-
-
-////////////////////////////////////////////////////////////
-ErrStream& err(bool multiLine)
-{
-    static ErrStream stream(std::cerr.rdbuf());
-    stream.m_impl->multiLine.storeSeqCst(multiLine);
-    return stream;
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-ErrStream::Guard ErrStream::operator<<(const T& value)
-{
-    m_impl->mutex.lock(); // Will be unlocked by `~Guard()`
-    m_impl->stream << "[[SFML ERROR]]: " << value;
-
-    return Guard{m_impl->stream, &m_impl->mutex, m_impl->multiLine.loadSeqCst()};
-}
-
-
-////////////////////////////////////////////////////////////
-ErrStream::Guard ErrStream::operator<<(const char* value)
-{
-    m_impl->mutex.lock(); // Will be unlocked by `~Guard()`
-    m_impl->stream << "[[SFML ERROR]]: " << value;
-
-    return Guard{m_impl->stream, &m_impl->mutex, m_impl->multiLine.loadSeqCst()};
-}
-
-
-////////////////////////////////////////////////////////////
-ErrStream::Guard ErrStream::operator<<(ErrFlushType)
-{
-    m_impl->mutex.lock(); // Will be unlocked by `~Guard()`
-    m_impl->stream << std::flush;
-
-    return Guard{m_impl->stream, &m_impl->mutex, m_impl->multiLine.loadSeqCst()};
-}
-
-
-////////////////////////////////////////////////////////////
-ErrStream::Guard ErrStream::operator<<(PathDebugFormatter pathDebugFormatter)
-{
-    m_impl->mutex.lock(); // Will be unlocked by `~Guard()`
-
-    m_impl->stream << "    Provided path: " << pathDebugFormatter.path.to<base::String>() << '\n'
-                   << "    Absolute path: " << pathDebugFormatter.path.getAbsolute().valueOr(Path{"<unavailable>"});
-
-    return Guard{m_impl->stream, &m_impl->mutex, m_impl->multiLine.loadSeqCst()};
-}
-
-
-////////////////////////////////////////////////////////////
-template ErrStream::Guard ErrStream::operator<< <char>(const char&);
-template ErrStream::Guard ErrStream::operator<< <const char* const>(const char* const&);
-template ErrStream::Guard ErrStream::operator<< <int>(const int&);
-template ErrStream::Guard ErrStream::operator<< <long>(const long&);
-template ErrStream::Guard ErrStream::operator<< <unsigned long>(const unsigned long&);
-template ErrStream::Guard ErrStream::operator<< <unsigned long long>(const unsigned long long&);
-
-
-////////////////////////////////////////////////////////////
-ErrStream::Guard& ErrStream::Guard::operator<<(const char* value)
-{
-    m_stream << value;
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-ErrStream::Guard& ErrStream::Guard::operator<<(ErrFlushType)
-{
-    m_stream << std::flush;
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-ErrStream::Guard& ErrStream::Guard::operator<<(PathDebugFormatter pathDebugFormatter)
-{
-    m_stream << "    Provided path: " << pathDebugFormatter.path.to<base::String>() << '\n'
-             << "    Absolute path: " << pathDebugFormatter.path.getAbsolute().valueOr(Path{"<unavailable>"});
-
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-ErrStream::Guard& ErrStream::Guard::operator<<(const T& value)
-{
-    if constexpr (SFML_BASE_IS_SAME(T, base::String) || SFML_BASE_IS_SAME(T, base::StringView))
+    if (!sink.overflowed()) [[likely]]
     {
-        m_stream.write(value.data(), static_cast<std::streamsize>(value.size()));
-    }
-    else
-    {
-        m_stream << value;
+        m_buf->append(scratch, sink.size());
+        return;
     }
 
-    return *this;
+    // Stack scratch overflow: defer to the heap fallback path. The append
+    // trampoline targets `*m_buf` (a `base::String`), which is the same as
+    // calling `formatTo(*m_buf, ...)` on the slow path.
+    const auto appendFn = +[](void* s, const char* data, base::SizeT n)
+    { static_cast<base::String*>(s)->append(data, n); };
+
+    base::priv::formatToHeapFallback(&*m_buf, appendFn, fmt, args, dispatchers, argCount);
 }
-
-
-////////////////////////////////////////////////////////////
-template ErrStream::Guard& ErrStream::Guard::operator<< <base::String>(const base::String&);
-template ErrStream::Guard& ErrStream::Guard::operator<< <base::StringView>(const base::StringView&);
-template ErrStream::Guard& ErrStream::Guard::operator<< <bool>(const bool&);
-template ErrStream::Guard& ErrStream::Guard::operator<< <char>(const char&);
-template ErrStream::Guard& ErrStream::Guard::operator<< <const char* const>(const char* const&);
-template ErrStream::Guard& ErrStream::Guard::operator<< <float>(const float&);
-template ErrStream::Guard& ErrStream::Guard::operator<< <int>(const int&);
-template ErrStream::Guard& ErrStream::Guard::operator<< <long>(const long&);
-template ErrStream::Guard& ErrStream::Guard::operator<< <Path>(const Path&);
-template ErrStream::Guard& ErrStream::Guard::operator<< <short*>(short* const&);
-template ErrStream::Guard& ErrStream::Guard::operator<< <const short*>(const short* const&);
-template ErrStream::Guard& ErrStream::Guard::operator<< <std::string_view>(const std::string_view&);
-template ErrStream::Guard& ErrStream::Guard::operator<< <std::string>(const std::string&);
-template ErrStream::Guard& ErrStream::Guard::operator<< <unsigned int>(const unsigned int&);
-template ErrStream::Guard& ErrStream::Guard::operator<< <unsigned long long>(const unsigned long long&);
-template ErrStream::Guard& ErrStream::Guard::operator<< <unsigned long>(const unsigned long&);
-template ErrStream::Guard& ErrStream::Guard::operator<< <unsigned short>(const unsigned short&);
-template ErrStream::Guard& ErrStream::Guard::operator<< <void*>(void* const&);
 
 } // namespace sf::priv

@@ -170,7 +170,7 @@ base::Optional<Image> Image::create(Vec2u size, Color color)
 
     if (size.x == 0 || size.y == 0)
     {
-        priv::err() << "Failed to create image, invalid size (zero) provided";
+        priv::errMsg("Failed to create image, invalid size (zero) provided");
         return result; // Empty optional
     }
 
@@ -197,13 +197,13 @@ base::Optional<Image> Image::create(Vec2u size, const base::U8* pixels)
 {
     if (size.x == 0 || size.y == 0)
     {
-        priv::err() << "Failed to create image, invalid size (zero) provided";
+        priv::errMsg("Failed to create image, invalid size (zero) provided");
         return base::nullOpt;
     }
 
     if (pixels == nullptr)
     {
-        priv::err() << "Failed to create image, null pixels pointer provided";
+        priv::errMsg("Failed to create image, null pixels pointer provided");
         return base::nullOpt;
     }
 
@@ -255,8 +255,7 @@ base::Optional<Image> Image::loadFromFile(const Path& filename)
 
     if (!readFromFile(filename, scratch))
     {
-        priv::err() << "Failed to load image\n"
-                    << priv::PathDebugFormatter{filename} << "\nReason: Failed to open the file";
+        priv::errMsg("Failed to load image\n{}\nReason: Failed to open the file", priv::PathDebugFormatter{filename});
 
         return result; // Empty optional
     }
@@ -267,7 +266,7 @@ base::Optional<Image> Image::loadFromFile(const Path& filename)
     if (!result.hasValue())
     {
         // `loadFromMemory` already wrote a decoder-specific error; add path context.
-        priv::err() << "Failed to load image\n" << priv::PathDebugFormatter{filename};
+        priv::errMsg("Failed to load image\n{}", priv::PathDebugFormatter{filename});
     }
 
     return result;
@@ -279,7 +278,7 @@ base::Optional<Image> Image::loadFromMemory(const void* data, base::SizeT size)
 {
     if (data == nullptr || size == 0)
     {
-        priv::err() << "Failed to load image from memory, no data provided";
+        priv::errMsg("Failed to load image from memory, no data provided");
         return base::nullOpt;
     }
 
@@ -298,7 +297,7 @@ base::Optional<Image> Image::loadFromMemory(const void* data, base::SizeT size)
 
     if (ptr == nullptr)
     {
-        priv::err() << "Failed to load image from memory. Reason: " << stbi_failure_reason();
+        priv::errMsg("Failed to load image from memory. Reason: {}", stbi_failure_reason());
         return base::nullOpt;
     }
 
@@ -320,14 +319,14 @@ base::Optional<Image> Image::loadFromStream(InputStream& stream)
     // buffer and delegate to `loadFromMemory`.
     if (!stream.seek(0).hasValue())
     {
-        priv::err() << "Failed to seek image stream";
+        priv::errMsg("Failed to seek image stream");
         return base::nullOpt;
     }
 
     const base::Optional streamSize = stream.getSize();
     if (!streamSize.hasValue())
     {
-        priv::err() << "Failed to determine image stream size";
+        priv::errMsg("Failed to determine image stream size");
         return base::nullOpt;
     }
 
@@ -338,7 +337,7 @@ base::Optional<Image> Image::loadFromStream(InputStream& stream)
     const base::Optional readSize = stream.read(scratch.data(), *streamSize);
     if (!readSize.hasValue() || *readSize != *streamSize)
     {
-        priv::err() << "Failed to read full image stream contents";
+        priv::errMsg("Failed to read full image stream contents");
         return base::nullOpt;
     }
 
@@ -602,10 +601,10 @@ bool Image::saveToFile(const Path& filename) const
     }
     else
     {
-        priv::err() << "Image file extension " << extension << " not supported\n";
+        priv::errMsg("Image file extension {} not supported\n", extension);
     }
 
-    priv::err() << "Failed to save image\n" << priv::PathDebugFormatter{filename};
+    priv::errMsg("Failed to save image\n{}", priv::PathDebugFormatter{filename});
     return false;
 }
 

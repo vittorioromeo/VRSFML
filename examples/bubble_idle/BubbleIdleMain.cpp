@@ -73,6 +73,8 @@
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
 #include "SFML/Base/MinMax.hpp"
+#include "SFML/Base/MiniFmt.hpp"
+#include "SFML/Base/MiniFmtNumeric.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/ThreadPool.hpp"
@@ -192,7 +194,7 @@ void Main::saveMainPlaythroughToFile()
     {
         if (ptMain.fullVersion)
         {
-            sf::cOut() << "Cannot save non-demo playthrough in demo version!\n";
+            sf::base::printLn("Cannot save non-demo playthrough in demo version!");
             return;
         }
     }

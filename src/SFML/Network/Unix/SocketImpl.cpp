@@ -202,7 +202,7 @@ void SocketImpl::setBlocking(SocketHandle sock, bool block)
     const auto blockFlag = block ? (status & ~O_NONBLOCK) : (status | O_NONBLOCK);
 
     if (fcntl(sock, F_SETFL, blockFlag) == -1)
-        priv::err() << "Failed to set file status flags: " << errno;
+        priv::errMsg("Failed to set file status flags: {}", errno);
 }
 
 

@@ -122,7 +122,7 @@ constexpr int flags = 0;
 
         if (systemStore == nullptr)
         {
-            sf::priv::err() << "Failed to open Windows certificate store: " << getErrorString(GetLastError());
+            priv::errMsg("Failed to open Windows certificate store: {}", getErrorString(GetLastError()));
             return false;
         }
 
@@ -157,7 +157,7 @@ constexpr int flags = 0;
         }
 
         if (!CertCloseStore(systemStore, 0))
-            sf::priv::err() << "Failed to close Windows certificate store: " << getErrorString(GetLastError());
+            priv::errMsg("Failed to close Windows certificate store: {}", getErrorString(GetLastError()));
 
         return true;
     };
@@ -173,7 +173,7 @@ constexpr int flags = 0;
 
         if (auto result = mbedtls_x509_crt_parse_path(x509crt, path); result < 0)
         {
-            sf::priv::err() << "Failed to load CA certificate directory: " << tlsErrorString(result);
+            sf::priv::errMsg("Failed to load CA certificate directory: {}", tlsErrorString(result));
             return false;
         }
 
@@ -213,7 +213,7 @@ constexpr int flags = 0;
 
         if (status != errSecSuccess)
         {
-            priv::err() << "Failed to load system certificates: " << osStatusErrorString(status);
+            priv::errMsg("Failed to load system certificates: {}", osStatusErrorString(status));
             return false;
         }
 
@@ -226,7 +226,7 @@ constexpr int flags = 0;
             {
                 CFRelease(der);
                 CFRelease(certs);
-                priv::err() << "Failed to load system certificate: " << osStatusErrorString(result);
+                priv::errMsg("Failed to load system certificate: {}", osStatusErrorString(result));
                 return false;
             }
 
@@ -345,7 +345,7 @@ struct MbedTlsSharedState
                                                 personalizationString.size());
             result != 0)
         {
-            sf::priv::err() << "Failed to seed DRBG: " << tlsErrorString(result);
+            sf::priv::errMsg("Failed to seed DRBG: {}", tlsErrorString(result));
             SFML_BASE_ASSERT(false && "Failed to seed DRBG");
             sf::base::abort();
         }
@@ -353,7 +353,7 @@ struct MbedTlsSharedState
         // Initialize crypto library in Mbed TLS 4.x.x and later
         if (auto result = psa_crypto_init(); result != PSA_SUCCESS)
         {
-            sf::priv::err() << "Failed to initialize crypto library";
+            priv::errMsg("Failed to initialize crypto library");
             SFML_BASE_ASSERT(false && "Failed to initialize crypto library");
             sf::base::abort();
         }
@@ -413,11 +413,11 @@ struct TcpSocket::Impl
                     result != 0)
                 {
                     if (result < 0)
-                        priv::err() << "Failed to load provided certificate chain: " << tlsErrorString(result);
+                        priv::errMsg("Failed to load provided certificate chain: {}", tlsErrorString(result));
                     else if (result == 1)
-                        priv::err() << "Only 1 certificate could be loaded from provided certificate chain";
+                        priv::errMsg("Only 1 certificate could be loaded from provided certificate chain");
                     else
-                        priv::err() << "Only " << result << " certificates could be loaded from provided certificate chain";
+                        priv::errMsg("Only {} certificates could be loaded from provided certificate chain", result);
 
                     tlsState.reset();
                     return TlsStatus::Error;
@@ -431,7 +431,7 @@ struct TcpSocket::Impl
             {
                 if (auto result = loadSystemCertificates(&state.x509Crt, &state.x509Crl); !result)
                 {
-                    priv::err() << "Failed to load system certificates";
+                    priv::errMsg("Failed to load system certificates");
                     tlsState.reset();
                     return TlsStatus::Error;
                 }
@@ -459,7 +459,7 @@ struct TcpSocket::Impl
 
                 if (result != 0)
                 {
-                    priv::err() << "Failed to load provided private key: " << tlsErrorString(result);
+                    priv::errMsg("Failed to load provided private key: {}", tlsErrorString(result));
                     tlsState.reset();
                     return TlsStatus::Error;
                 }
@@ -471,7 +471,7 @@ struct TcpSocket::Impl
                                                           MBEDTLS_SSL_PRESET_DEFAULT);
                 result != 0)
             {
-                priv::err() << "Failed to set up TLS: " << tlsErrorString(result);
+                priv::errMsg("Failed to set up TLS: {}", tlsErrorString(result));
                 tlsState.reset();
                 return TlsStatus::Error;
             }
@@ -494,7 +494,7 @@ struct TcpSocket::Impl
                 if (auto result = mbedtls_ssl_conf_own_cert(&state.sslConfig, &state.x509Crt, &state.privateKeyContext);
                     result != 0)
                 {
-                    priv::err() << "Failed to load server certificate: " << tlsErrorString(result);
+                    priv::errMsg("Failed to load server certificate: {}", tlsErrorString(result));
                     tlsState.reset();
                     return TlsStatus::Error;
                 }
@@ -507,7 +507,7 @@ struct TcpSocket::Impl
 
             if (auto result = mbedtls_ssl_setup(&state.sslContext, &state.sslConfig); result != 0)
             {
-                priv::err() << "Failed to set up TLS: " << tlsErrorString(result);
+                priv::errMsg("Failed to set up TLS: {}", tlsErrorString(result));
                 tlsState.reset();
                 return TlsStatus::Error;
             }
@@ -517,7 +517,7 @@ struct TcpSocket::Impl
                 // Set the hostname that is used for peer verification and sent via SNI if it is supported
                 if (auto result = mbedtls_ssl_set_hostname(&state.sslContext, hostname.cStr()); result != 0)
                 {
-                    priv::err() << "Failed to set up TLS: " << tlsErrorString(result);
+                    priv::errMsg("Failed to set up TLS: {}", tlsErrorString(result));
                     tlsState.reset();
                     return TlsStatus::Error;
                 }
@@ -630,17 +630,17 @@ struct TcpSocket::Impl
 
                     if (errors.empty())
                     {
-                        priv::err() << "TLS certificate verification failed";
+                        priv::errMsg("TLS certificate verification failed");
                     }
                     else
                     {
                         errors.resize(errors.size() - 2);
-                        priv::err() << "TLS certificate verification failed: " << errors;
+                        priv::errMsg("TLS certificate verification failed: {}", errors);
                     }
                 }
                 else
                 {
-                    priv::err() << "TLS handshake failed: " << tlsErrorString(result);
+                    priv::errMsg("TLS handshake failed: {}", tlsErrorString(result));
                 }
 
                 tlsState.reset();
@@ -729,7 +729,7 @@ base::Optional<IpAddress> TcpSocket::getRemoteAddress() const
 {
     if (getNativeHandle() == priv::SocketImpl::invalidSocket())
     {
-        priv::err() << "Attempted to get remote address of invalid TCP socket";
+        priv::errMsg("Attempted to get remote address of invalid TCP socket");
         return base::nullOpt;
     }
 
@@ -739,7 +739,7 @@ base::Optional<IpAddress> TcpSocket::getRemoteAddress() const
 
     if (!priv::SocketImpl::getPeerName(getNativeHandle(), address, size))
     {
-        priv::err() << "Failed to retrieve remote address of invalid TCP socket";
+        priv::errMsg("Failed to retrieve remote address of invalid TCP socket");
         return base::nullOpt;
     }
 
@@ -752,7 +752,7 @@ unsigned short TcpSocket::getRemotePort() const
 {
     if (getNativeHandle() == priv::SocketImpl::invalidSocket())
     {
-        priv::err() << "Attempted to get remote port of invalid TCP socket";
+        priv::errMsg("Attempted to get remote port of invalid TCP socket");
         return 0;
     }
 
@@ -762,7 +762,7 @@ unsigned short TcpSocket::getRemotePort() const
 
     if (!priv::SocketImpl::getPeerName(getNativeHandle(), address, size))
     {
-        priv::err() << "Failed to retrieve remote port of TCP socket";
+        priv::errMsg("Failed to retrieve remote port of TCP socket");
         return 0;
     }
 
@@ -851,7 +851,7 @@ void TcpSocket::disconnect()
             if (auto result = mbedtls_ssl_close_notify(&m_impl->tlsState->sslContext);
                 (result != 0 && result != MBEDTLS_ERR_SSL_WANT_READ && result != MBEDTLS_ERR_SSL_WANT_WRITE &&
                  result != MBEDTLS_ERR_NET_CONN_RESET))
-                priv::err() << "Failed to notify TLS peer connection is being closed: " << tlsErrorString(result);
+                priv::errMsg("Failed to notify TLS peer connection is being closed: {}", tlsErrorString(result));
         }
 
         m_impl->tlsState.reset();
@@ -975,7 +975,7 @@ base::Optional<base::String> TcpSocket::getCurrentCiphersuiteName() const
 Socket::Status TcpSocket::send(const void* data, base::SizeT size)
 {
     if (!isBlocking())
-        priv::err() << "Warning: Partial sends might not be handled properly.";
+        priv::errMsg("Warning: Partial sends might not be handled properly.");
 
     base::SizeT sent = 0;
 
@@ -989,7 +989,7 @@ Socket::Status TcpSocket::send(const void* data, base::SizeT size, base::SizeT& 
     // Check the parameters
     if (!data || (size == 0))
     {
-        priv::err() << "Cannot send data over the network (no data to send)";
+        priv::errMsg("Cannot send data over the network (no data to send)");
         return Status::Error;
     }
 
@@ -1005,7 +1005,7 @@ Socket::Status TcpSocket::send(const void* data, base::SizeT size, base::SizeT& 
 
             if (!m_impl->tlsState->handshakeComplete)
             {
-                priv::err() << "TLS handshake must be complete before receiving application data";
+                priv::errMsg("TLS handshake must be complete before receiving application data");
                 return Status::Error;
             }
 
@@ -1079,7 +1079,7 @@ Socket::Status TcpSocket::receive(void* data, base::SizeT size, base::SizeT& rec
     // Check the destination buffer
     if (!data)
     {
-        priv::err() << "Cannot receive data from the network (the destination buffer is invalid)";
+        priv::errMsg("Cannot receive data from the network (the destination buffer is invalid)");
         return Status::Error;
     }
 
@@ -1093,7 +1093,7 @@ Socket::Status TcpSocket::receive(void* data, base::SizeT size, base::SizeT& rec
 
         if (!m_impl->tlsState->handshakeComplete)
         {
-            priv::err() << "TLS handshake must be complete before sending application data";
+            priv::errMsg("TLS handshake must be complete before sending application data");
             return Status::Error;
         }
 

@@ -4,27 +4,11 @@
 
 
 ////////////////////////////////////////////////////////////
-/// \file
-/// \brief Shared low-level helpers for `Vector`, `SmallVector`, `InPlaceVector`
-///
-/// All non-trivial element-management primitives (allocate / deallocate,
-/// construct / destroy / relocate ranges, erase, swap unequal ranges,
-/// `SFML_BASE_PRIV_DEFINE_COMMON_VECTOR_OPERATIONS` macro) live here so
-/// that the three vector flavors can share their implementation
-/// without inheritance or virtual dispatch. The helpers branch on
-/// trivial relocatability and trivial destructibility to fall back to
-/// `memcpy`/`memmove` whenever the element type permits it.
-///
-////////////////////////////////////////////////////////////
-
-
-////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/Builtin/Memmove.hpp"
 #include "SFML/Base/FwdStdAlignedNewDelete.hpp"
-#include "SFML/Base/MinMaxMacros.hpp"
 #include "SFML/Base/PlacementNew.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Swap.hpp"
@@ -267,7 +251,7 @@ template <typename T>
     const SizeT s1 = lhsSize;
     const SizeT s2 = rhsSize;
 
-    const SizeT commonSize = SFML_BASE_MIN(s1, s2);
+    const SizeT commonSize = s2 < s1 ? s2 : s1;
 
     for (SizeT i = 0u; i < commonSize; ++i)
         base::genericSwap(lhsData[i], rhsData[i]); // Swap elements in the common part
@@ -414,3 +398,18 @@ template <typename T>
 
 
 } // namespace sf::base::priv::VectorUtils
+
+
+////////////////////////////////////////////////////////////
+/// \file
+/// \brief Shared low-level helpers for `Vector`, `SmallVector`, `InPlaceVector`
+///
+/// All non-trivial element-management primitives (allocate / deallocate,
+/// construct / destroy / relocate ranges, erase, swap unequal ranges,
+/// `SFML_BASE_PRIV_DEFINE_COMMON_VECTOR_OPERATIONS` macro) live here so
+/// that the three vector flavors can share their implementation
+/// without inheritance or virtual dispatch. The helpers branch on
+/// trivial relocatability and trivial destructibility to fall back to
+/// `memcpy`/`memmove` whenever the element type permits it.
+///
+////////////////////////////////////////////////////////////

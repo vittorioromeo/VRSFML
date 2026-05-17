@@ -342,7 +342,7 @@ struct [[nodiscard]] ImGuiContext::Impl
         else if (loadDefaultFont && !io.Fonts->AddFontDefault())
         {
             // Owned mode: optionally seed the freshly-allocated atlas with the default font.
-            priv::err() << "Failed to load default ImGui font";
+            priv::errMsg("Failed to load default ImGui font");
             base::abort();
         }
 
@@ -913,7 +913,7 @@ sf::Utf8String clipboardText;
 void setClipboardTextFn(void* /* userData */, const char* text)
 {
     if (!Clipboard::setString(Utf8String{text}))
-        priv::err() << "Failed to set clipboard text from ImGui";
+        priv::errMsg("Failed to set clipboard text from ImGui");
 }
 
 ////////////////////////////////////////////////////////////

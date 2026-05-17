@@ -43,6 +43,8 @@
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Math/Round.hpp"
 #include "SFML/Base/MinMax.hpp"
+#include "SFML/Base/MiniFmt.hpp"
+#include "SFML/Base/MiniFmtNumeric.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
@@ -331,7 +333,7 @@ constexpr const char* keyIdentifier(sf::Keyboard::Key code)
 #undef CASE
     }
 
-    sf::cErr() << "invalid keyboard code";
+    sf::base::printErr("invalid keyboard code");
     sf::base::abort();
 }
 
@@ -593,7 +595,7 @@ constexpr const char* scancodeIdentifier(sf::Keyboard::Scancode scancode)
 #undef CASE
     }
 
-    sf::cErr() << "invalid keyboard scancode";
+    sf::base::printErr("invalid keyboard scancode");
     sf::base::abort();
 }
 

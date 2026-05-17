@@ -55,6 +55,8 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/MinMax.hpp"
+#include "SFML/Base/MiniFmt.hpp"
+#include "SFML/Base/MiniFmtNumeric.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
@@ -414,7 +416,7 @@ Main::Main() :
     if (sf::Path{"userdata/profile.json"}.exists())
     {
         loadProfileFromFile(out);
-        sf::cOut() << "Loaded profile from file on startup\n";
+        sf::base::printLn("Loaded profile from file on startup");
     }
 
     return out;
@@ -427,7 +429,7 @@ Main::Main() :
     if (sf::Path{"resources/game_constants.json"}.exists())
     {
         loadGameConstantsFromFile(out);
-        sf::cOut() << "Loaded game constants from file on startup\n";
+        sf::base::printLn("Loaded game constants from file on startup");
     }
 
     return out;
@@ -793,7 +795,7 @@ Main::Main() :
     if (sf::Path{"userdata/playthrough.json"}.exists())
     {
         loadPlaythroughFromFileAndReseed();
-        sf::cOut() << "Loaded playthrough from file on startup\n";
+        sf::base::printLn("Loaded playthrough from file on startup");
     }
     else
     {
@@ -816,10 +818,10 @@ Main::Main() :
 ////////////////////////////////////////////////////////////
 Main::~Main()
 {
-    sf::cOut() << "Saving playthrough to file on exit\n";
+    sf::base::printLn("Saving playthrough to file on exit");
     saveMainPlaythroughToFile();
 
-    sf::cOut() << "Saving profile to file on exit\n";
+    sf::base::printLn("Saving profile to file on exit");
     saveProfileToFile(profile);
 }
 

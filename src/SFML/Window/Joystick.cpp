@@ -118,8 +118,7 @@ base::Optional<Joystick::Query> Joystick::query(const unsigned int joystickId)
 {
     if (joystickId >= Joystick::MaxCount)
     {
-        priv::err() << "Invalid joystick index: " << joystickId << ", valid range is [0 .. " << (Joystick::MaxCount - 1)
-                    << "]";
+        priv::errMsg("Invalid joystick index: {}, valid range is [0 .. {}]", joystickId, (Joystick::MaxCount - 1));
 
         return base::nullOpt;
     }

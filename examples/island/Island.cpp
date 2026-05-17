@@ -33,6 +33,8 @@
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Pow.hpp"
 #include "SFML/Base/MinMax.hpp"
+#include "SFML/Base/MiniFmt.hpp"
+#include "SFML/Base/MiniFmtNumeric.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/ThreadPool.hpp"
@@ -415,7 +417,7 @@ int main()
     // Create our VertexBuffer with enough space to hold all the terrain geometry
     if (!terrain.create(resolution.x * resolution.y * 6))
     {
-        sf::cErr() << "Failed to create vertex buffer" << sf::endL;
+        sf::base::printErrLn("Failed to create vertex buffer");
         return 1;
     }
 
@@ -495,7 +497,7 @@ int main()
             {
                 if (!terrain.update(terrainStagingBuffer.data()))
                 {
-                    sf::cErr() << "Failed to update vertex buffer" << sf::endL;
+                    sf::base::printErrLn("Failed to update vertex buffer");
                     return 0;
                 }
 

@@ -101,7 +101,7 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
 
     if (channelCount == 0)
     {
-        priv::err() << "WAV sound file channel count 0";
+        priv::errMsg("WAV sound file channel count 0");
         return false;
     }
 
@@ -174,7 +174,7 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
 
             if (sf::base::adjacentFind(sortedChannelMap.begin(), sortedChannelMap.end()) != sortedChannelMap.end())
             {
-                priv::err() << "Duplicate channels in channel map";
+                priv::errMsg("Duplicate channels in channel map");
                 return false;
             }
         }
@@ -195,7 +195,7 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
                 return c.channel == channel;
             }) == targetChannelMap.end())
             {
-                priv::err() << "Could not map all input channels to a channel supported by WAV";
+                priv::errMsg("Could not map all input channels to a channel supported by WAV");
                 return false;
             }
         }
@@ -217,7 +217,7 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
     m_impl->file.open(filename.c_str(), FileOpenMode::bin);
     if (!m_impl->file)
     {
-        priv::err() << "Failed to open WAV sound file for writing\n" << priv::PathDebugFormatter{filename};
+        priv::errMsg("Failed to open WAV sound file for writing\n{}", priv::PathDebugFormatter{filename});
         return false;
     }
 
@@ -235,7 +235,7 @@ void SoundFileWriterWav::write(const base::I16* samples, base::U64 count)
     SFML_BASE_ASSERT(count % m_impl->channelCount == 0);
 
     if (count % m_impl->channelCount != 0)
-        priv::err() << "Writing samples to WAV sound file requires writing full frames at a time";
+        priv::errMsg("Writing samples to WAV sound file requires writing full frames at a time");
 
     while (count >= m_impl->channelCount)
     {

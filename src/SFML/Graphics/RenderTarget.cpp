@@ -304,7 +304,7 @@ RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
 {
     if (!setActive(true))
     {
-        priv::err() << "Failed to activate render target in `prepare`";
+        priv::errMsg("Failed to activate render target in `prepare`");
         return false;
     }
 
@@ -623,7 +623,7 @@ void RenderTarget::immediateDrawPersistentMappedIndexedVertices(
     [[maybe_unused]] const RenderStates&                                states)
 {
 #ifdef SFML_OPENGL_ES
-    priv::err() << "FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES";
+    priv::errMsg("FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES");
     base::abort();
 #else
     // Nothing to draw or inactive target
@@ -1014,7 +1014,7 @@ void RenderTarget::resetGLStatesImpl()
 // macOS unless a context switch really takes place
 #ifdef SFML_SYSTEM_MACOS
     if (!setActive(false))
-        priv::err() << "Failed to set render target inactive";
+        priv::errMsg("Failed to set render target inactive");
 #endif
 
     if (!setActive(true))
@@ -1023,7 +1023,7 @@ void RenderTarget::resetGLStatesImpl()
 #ifdef SFML_DEBUG
     // Make sure that the user didn't leave an unchecked OpenGL error
     if (const GLenum error = glGetError(); error != GL_NO_ERROR)
-        priv::err() << "OpenGL error (" << error << ") detected in user code, you should check for errors with glGetError()";
+        priv::errMsg("OpenGL error ({}) detected in user code, you should check for errors with glGetError()", error);
 #endif
 
     // Make sure that the texture unit which is active is the number 0
@@ -1083,15 +1083,17 @@ RenderTarget::DrawStatistics RenderTarget::flush()
         if (m_lastRenderStates.shader != nullptr &&
             m_lastRenderStates.shader->m_uniformGeneration != m_lastShaderGeneration) [[unlikely]]
         {
-            priv::err() << "Shader uniform mutation detected while autobatch was in flight -- "
-                           "call `flush()` before mutating uniforms on a pending-draw shader";
+            priv::errMsg(
+                "Shader uniform mutation detected while autobatch was in flight -- call `flush()` before mutating "
+                "uniforms on a pending-draw shader");
         }
 
         if (m_lastRenderStates.texture != nullptr &&
             m_lastRenderStates.texture->m_destructiveGeneration != m_lastTextureGeneration) [[unlikely]]
         {
-            priv::err() << "Destructive texture mutation detected while autobatch was in flight -- "
-                           "call `flush()` before destructively modifying a pending-draw texture";
+            priv::errMsg(
+                "Destructive texture mutation detected while autobatch was in flight -- call `flush()` before "
+                "destructively modifying a pending-draw texture");
         }
     }
 
@@ -1539,7 +1541,7 @@ void RenderTarget::invokePrimitiveDrawCallIndexedBaseVertex(
     [[maybe_unused]] const base::SizeT   vertexOffset)
 {
 #ifdef SFML_OPENGL_ES
-    priv::err() << "FATAL ERROR: `glDrawElementsBaseVertex` only available in OpenGL ES 3.2+ (unsupported)";
+    priv::errMsg("FATAL ERROR: `glDrawElementsBaseVertex` only available in OpenGL ES 3.2+ (unsupported)");
     base::abort();
 #else
     m_currentDrawStats.drawCalls += 1u;

@@ -91,7 +91,7 @@ struct [[nodiscard]] BufferSlice
 
     if (!sf::appendFromFile(filename, buffer))
     {
-        sf::priv::err() << "Failed to open shader file";
+        sf::priv::errMsg("Failed to open shader file");
         return sf::base::nullOpt;
     }
 
@@ -109,13 +109,13 @@ struct [[nodiscard]] BufferSlice
 
     if (!size.hasValue() || size.value() == 0)
     {
-        sf::priv::err() << "Failed to read shader stream (empty or unsized)";
+        sf::priv::errMsg("Failed to read shader stream (empty or unsized)");
         return sf::base::nullOpt;
     }
 
     if (!stream.seek(0).hasValue())
     {
-        sf::priv::err() << "Failed to seek shader stream";
+        sf::priv::errMsg("Failed to seek shader stream");
         return sf::base::nullOpt;
     }
 
@@ -129,7 +129,7 @@ struct [[nodiscard]] BufferSlice
     {
         // Roll back the size grow so `buffer` is left as the caller saw it.
         buffer.unsafeSetSize(bufferSizeBeforeRead);
-        sf::priv::err() << "Failed to read stream contents into buffer";
+        sf::priv::errMsg("Failed to read stream contents into buffer");
         return sf::base::nullOpt;
     }
 
@@ -208,7 +208,9 @@ precision highp float;
 ////////////////////////////////////////////////////////////
 void printLinesWithNumbers(sf::base::StringView text)
 {
-    auto os = sf::priv::err(/* multiLine */ true) << "\n\n";
+    sf::priv::ErrMsgScope scope;
+    scope.disableTrailing();
+    scope.append("\n\n");
 
     constexpr sf::base::StringView lineDirectivePrefix{"#line "};
     constexpr sf::base::StringView beginIncludePrefix{"// >>> begin included from \""};
@@ -246,28 +248,16 @@ void printLinesWithNumbers(sf::base::StringView text)
                 lineNumber = parsedLineNumber;
         }
         // Check for include begin/end markers -- print as separator lines
-        else if (line.size() > beginIncludePrefix.size() &&
-                 line.substrByPosLen(0, beginIncludePrefix.size()) == beginIncludePrefix)
+        else if ((line.size() > beginIncludePrefix.size() &&
+                  line.substrByPosLen(0, beginIncludePrefix.size()) == beginIncludePrefix) ||
+                 (line.size() > endIncludePrefix.size() &&
+                  line.substrByPosLen(0, endIncludePrefix.size()) == endIncludePrefix))
         {
-            os << "      | " << line << "\n";
-        }
-        else if (line.size() > endIncludePrefix.size() && line.substrByPosLen(0, endIncludePrefix.size()) == endIncludePrefix)
-        {
-            os << "      | " << line << "\n";
+            scope.format("      | {}\n", line);
         }
         else
         {
-            // Right-align line number in a 5-char field
-            if (lineNumber < 10)
-                os << "    ";
-            else if (lineNumber < 100)
-                os << "   ";
-            else if (lineNumber < 1000)
-                os << "  ";
-            else if (lineNumber < 10'000)
-                os << " ";
-
-            os << lineNumber << " | " << line << "\n";
+            scope.format("{:>5} | {}\n", lineNumber, line);
             ++lineNumber;
         }
 
@@ -469,7 +459,7 @@ base::Optional<Shader> Shader::loadFromFile(const LoadFromFileSettings& settings
         optBufferSlice = appendFileContentsToVector(optPath, buffer);
         if (!optBufferSlice.hasValue())
         {
-            priv::err() << "Failed to open " << typeStr << " shader file\n" << priv::PathDebugFormatter{optPath};
+            priv::errMsg("Failed to open {} shader file\n{}", typeStr, priv::PathDebugFormatter{optPath});
             return false;
         }
 
@@ -550,7 +540,7 @@ base::Optional<Shader> Shader::loadFromStream(const LoadFromStreamSettings& sett
         optBufferSlice = appendStreamContentsToVector(*optStream, buffer);
         if (!optBufferSlice.hasValue())
         {
-            priv::err() << "Failed to open " << typeStr << " shader from stream";
+            priv::errMsg("Failed to open {} shader from stream", typeStr);
             return false;
         }
 
@@ -748,8 +738,9 @@ bool Shader::setUniform(UniformLocation location, const Texture& texture) const
     // New entry, make sure there are enough texture units
     if (m_impl->textures.size() + 1 >= getMaxTextureUnits())
     {
-        priv::err() << "Impossible to use texture \"" << location.m_value << '"'
-                    << " \"for shader: all available texture units are used";
+        priv::errMsg("Impossible to use texture \"{}{} \"for shader: all available texture units are used",
+                     location.m_value,
+                     '"');
 
         return false;
     }
@@ -903,8 +894,9 @@ base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
     // Make sure we can use geometry shaders
     if (geometryShaderCode.data() != nullptr && !isGeometryAvailable())
     {
-        priv::err() << "Failed to create a shader: your system doesn't support geometry shaders "
-                    << "(you should test Shader::isGeometryAvailable() before trying to use geometry shaders)";
+        priv::errMsg(
+            "Failed to create a shader: your system doesn't support geometry shaders (you should test "
+            "Shader::isGeometryAvailable() before trying to use geometry shaders)");
 
         return base::nullOpt;
     }
@@ -938,8 +930,7 @@ base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
             char log[1024]{};
             glCheck(glGetShaderInfoLog(shader, sizeof(log), nullptr, log));
 
-            priv::err() << "Failed to compile " << typeStr << " shader:" << '\n'
-                        << static_cast<const char*>(log) << "\n\nSource code:\n";
+            priv::errMsg("Failed to compile {} shader:{}{}\n\nSource code:\n", typeStr, '\n', static_cast<const char*>(log));
 
             printLinesWithNumbers(adjustedShaderCode);
 
@@ -988,11 +979,12 @@ base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
         char log[1024]{};
         glCheck(glGetProgramInfoLog(shaderProgram, sizeof(log), nullptr, log));
 
-        priv::err() << "Failed to link shader:" << '\n'
-                    << static_cast<const char*>(log) << "VERTEX SOURCE:\n"
-                    << vertexShaderCode << "\n\nFRAGMENT SOURCE:\n"
-                    << fragmentShaderCode << "\n\nGEOMETRY SOURCE:\n"
-                    << geometryShaderCode;
+        priv::errMsg("Failed to link shader:{}{}VERTEX SOURCE:\n{}\n\nFRAGMENT SOURCE:\n{}\n\nGEOMETRY SOURCE:\n{}",
+                     '\n',
+                     static_cast<const char*>(log),
+                     vertexShaderCode,
+                     fragmentShaderCode,
+                     geometryShaderCode);
 
         glCheck(glDeleteProgram(shaderProgram));
         return base::nullOpt;

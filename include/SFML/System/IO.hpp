@@ -9,7 +9,7 @@
 #include "SFML/System/Export.hpp"
 
 #include "SFML/Base/EnumClassBitwiseOps.hpp"
-#include "SFML/Base/FwdStdString.hpp"
+#include "SFML/Base/FwdStdString.hpp" // TODO P1: remove?
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -39,106 +39,6 @@ class Path;
 
 namespace sf
 {
-////////////////////////////////////////////////////////////
-/// \brief Type used to flush an output stream.
-///
-////////////////////////////////////////////////////////////
-struct FlushType
-{
-};
-
-////////////////////////////////////////////////////////////
-/// \brief Global used to flush an output stream (substitute for `std::flush`)
-///
-////////////////////////////////////////////////////////////
-inline constexpr FlushType flush;
-
-
-////////////////////////////////////////////////////////////
-/// \brief Type used to print a newline and flush an output stream.
-///
-////////////////////////////////////////////////////////////
-struct EndLType
-{
-};
-
-////////////////////////////////////////////////////////////
-/// \brief Prints a newline and flushes an output stream (substitute for `std::endl`)
-///
-////////////////////////////////////////////////////////////
-inline constexpr EndLType endL;
-
-
-////////////////////////////////////////////////////////////
-/// \brief Output stream wrapper for `std::ostream`.
-///
-/// Provides a thin wrapper around `std::ostream` that hides the
-/// `<ostream>`/`<iostream>` headers behind a PImpl, so that translation
-/// units which include this header don't pay their compile-time cost.
-/// Use `sf::cOut()` and `sf::cErr()` to obtain instances bound to the
-/// standard output/error streams.
-///
-////////////////////////////////////////////////////////////
-class SFML_SYSTEM_API IOStreamOutput
-{
-    friend IOStreamOutput& cOut();
-    friend IOStreamOutput& cErr();
-
-private:
-    struct Impl;
-    base::InPlacePImpl<Impl, 512> m_impl; //!< Implementation details
-
-public:
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct from a `std::streambuf`
-    ///
-    ////////////////////////////////////////////////////////////
-    explicit IOStreamOutput(std::streambuf* sbuf);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the underlying stream buffer pointer
-    ///
-    ////////////////////////////////////////////////////////////
-    std::streambuf* rdbuf();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Replace the underlying stream buffer
-    ///
-    /// \param sbuf New stream buffer pointer (may be `nullptr` to discard output)
-    ///
-    ////////////////////////////////////////////////////////////
-    void rdbuf(std::streambuf* sbuf);
-
-    IOStreamOutput& operator<<(std::ios_base& (*func)(std::ios_base&));
-    IOStreamOutput& operator<<(std::ostream& (*func)(std::ostream&));
-
-    IOStreamOutput& operator<<(const char* value);
-    IOStreamOutput& operator<<(const base::String& value);
-    IOStreamOutput& operator<<(FlushType);
-    IOStreamOutput& operator<<(EndLType);
-
-    template <typename T>
-    IOStreamOutput& operator<<(const T& value);
-
-    template <base::SizeT N>
-    IOStreamOutput& operator<<(const char (&value)[N])
-    {
-        return operator<<(static_cast<const char*>(value));
-    }
-
-    template <typename T>
-    IOStreamOutput& operator<<(const T& value)
-        requires base::isEnum<T>
-    {
-        return operator<<(static_cast<base::UnderlyingType<T>>(value));
-    }
-
-    std::ostream& getOStream();
-
-    void flush();
-};
-
-
 ////////////////////////////////////////////////////////////
 /// \brief Input stream wrapper for `std::istream`.
 ///
@@ -182,21 +82,11 @@ public:
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Stream wrapping the standard output stream `std::cout`
+/// \brief Stream wrapping the standard input stream `std::cin`.
 ///
-////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_SYSTEM_API IOStreamOutput& cOut();
-
-
-////////////////////////////////////////////////////////////
-/// \brief Stream wrapping the standard error stream `std::cerr`
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_SYSTEM_API IOStreamOutput& cErr();
-
-
-////////////////////////////////////////////////////////////
-/// \brief Stream wrapping the standard input stream `std::cin`
+/// `std::cout` and `std::cerr` have been retired in favor of
+/// `sf::base::print` / `printLn` / `printErr` / `printErrLn`
+/// (see `<SFML/Base/MiniFmt.hpp>`).
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_SYSTEM_API IOStreamInput& cIn();
@@ -598,8 +488,10 @@ bool getLine(IOStreamInput& stream, T& target);
 /// \file SFML/System/IO.hpp
 /// \ingroup system
 ///
-/// Classes for file and string I/O: wrappers for `std::cout`/`std::cin`/`std::cerr`,
-/// file and string streams, and stream manipulators/flags for formatting.
+/// Classes for file and string I/O: a wrapper for `std::cin`, file and
+/// string streams, and stream manipulators/flags for formatting. For
+/// formatted output to stdout/stderr, see `sf::base::print` / `printLn`
+/// / `printErr` / `printErrLn` in `<SFML/Base/MiniFmt.hpp>`.
 ///
 /// Implementation details are hidden behind PImpl to keep expensive standard
 /// library headers out of the public API. Functionality mirrors the Standard

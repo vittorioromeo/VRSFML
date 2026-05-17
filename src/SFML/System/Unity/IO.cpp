@@ -228,7 +228,7 @@ bool readFromFileFallback(const Filename& filename, T& target, const bool isAppe
 
     const auto fail = [&]
     {
-        sf::priv::err() << "Failed to read from file '" << filename << "'\n";
+        sf::priv::errMsg("Failed to read from file '{}'\n", filename);
         return false;
     };
 
@@ -577,7 +577,7 @@ bool readFromFileImpl(const Filename& filename, T& target, const bool isAppend)
     sf::base::SizeT size = 0u;
     if (!nativeOpenAndStat(filename, handle, size))
     {
-        sf::priv::err() << "Failed to read from file '" << filename << "'\n";
+        sf::priv::errMsg("Failed to read from file '{}'\n", filename);
         return false;
     }
 
@@ -607,7 +607,7 @@ bool readFromFileImpl(const Filename& filename, T& target, const bool isAppend)
 
     if (!readOk)
     {
-        sf::priv::err() << "Failed to read the full contents of file '" << filename << "'\n";
+        sf::priv::errMsg("Failed to read the full contents of file '{}'\n", filename);
         return false;
     }
 
@@ -620,106 +620,6 @@ bool readFromFileImpl(const Filename& filename, T& target, const bool isAppend)
 
 namespace sf
 {
-////////////////////////////////////////////////////////////
-struct IOStreamOutput::Impl
-{
-    std::ostream stream;
-
-    explicit Impl(std::streambuf* sbuf) : stream(sbuf)
-    {
-    }
-};
-
-
-////////////////////////////////////////////////////////////
-IOStreamOutput::IOStreamOutput(std::streambuf* sbuf) : m_impl(sbuf)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-std::streambuf* IOStreamOutput::rdbuf()
-{
-    return m_impl->stream.rdbuf();
-}
-
-
-////////////////////////////////////////////////////////////
-void IOStreamOutput::rdbuf(std::streambuf* sbuf)
-{
-    m_impl->stream.rdbuf(sbuf);
-}
-
-
-////////////////////////////////////////////////////////////
-IOStreamOutput& IOStreamOutput::operator<<(const char* value)
-{
-    m_impl->stream << value;
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-IOStreamOutput& IOStreamOutput::operator<<(const base::String& value)
-{
-    m_impl->stream.write(value.data(), static_cast<std::streamsize>(value.size()));
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-IOStreamOutput& IOStreamOutput::operator<<(FlushType)
-{
-    m_impl->stream << std::flush;
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-IOStreamOutput& IOStreamOutput::operator<<(EndLType)
-{
-    m_impl->stream << std::endl;
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-IOStreamOutput& IOStreamOutput::operator<<(const T& value)
-{
-    if constexpr (SFML_BASE_IS_SAME(T, base::StringView))
-    {
-        m_impl->stream.write(value.data(), static_cast<std::streamsize>(value.size()));
-    }
-    else
-    {
-        m_impl->stream << value;
-    }
-
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-#define x(type) template IOStreamOutput& IOStreamOutput::operator<< <type>(type const&);
-SFML_BASE_OUT_STREAMABLE_TYPES_X(x)
-#undef x
-
-
-////////////////////////////////////////////////////////////
-std::ostream& IOStreamOutput::getOStream()
-{
-    return m_impl->stream;
-}
-
-
-////////////////////////////////////////////////////////////
-void IOStreamOutput::flush()
-{
-    m_impl->stream.flush();
-}
-
-
 ////////////////////////////////////////////////////////////
 struct IOStreamInput::Impl
 {
@@ -802,22 +702,6 @@ IOStreamInput::operator bool() const
 
 
 ////////////////////////////////////////////////////////////
-IOStreamOutput& cOut()
-{
-    static IOStreamOutput stream(std::cout.rdbuf());
-    return stream;
-}
-
-
-////////////////////////////////////////////////////////////
-IOStreamOutput& cErr()
-{
-    static IOStreamOutput stream(std::cerr.rdbuf());
-    return stream;
-}
-
-
-////////////////////////////////////////////////////////////
 IOStreamInput& cIn()
 {
     static IOStreamInput stream(std::cin.rdbuf());
@@ -886,7 +770,7 @@ bool writeToFile(base::StringView filename, base::StringView contents)
 
     if (!file)
     {
-        priv::err() << "Failed to write to file '" << filename << "'\n";
+        priv::errMsg("Failed to write to file '{}'\n", filename);
         return false;
     }
 
@@ -901,7 +785,7 @@ bool writeToFile(const Path& filename, base::StringView contents)
 
     if (!file)
     {
-        priv::err() << "Failed to write to file '" << filename << "'\n";
+        priv::errMsg("Failed to write to file '{}'\n", filename);
         return false;
     }
 
