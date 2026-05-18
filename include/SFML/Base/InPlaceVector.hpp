@@ -44,6 +44,7 @@ private:
 
 
 public:
+    // TODO P0: add trivial reloc macro
     ////////////////////////////////////////////////////////////
     enum : bool
     {
