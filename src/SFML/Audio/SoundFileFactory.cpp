@@ -78,13 +78,13 @@ base::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromFilename(cons
     auto stream = FileInputStream::open(filename);
     if (!stream.hasValue())
     {
-        priv::err() << "Failed to open sound file (couldn't open stream)\n" << priv::PathDebugFormatter{filename};
+        priv::errMsg("Failed to open sound file (couldn't open stream)\n{}", priv::PathDebugFormatter{filename});
         return result; // Null
     }
 
     result = createReaderFromStream(*stream);
     if (result == nullptr)
-        priv::err() << "Sound file: " << priv::PathDebugFormatter{filename};
+        priv::errMsg("Sound file: {}", priv::PathDebugFormatter{filename});
 
     return result;
 }
@@ -106,7 +106,7 @@ base::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromStream(InputS
     {
         if (!stream.seek(0).hasValue())
         {
-            priv::err() << "Failed to seek sound stream";
+            priv::errMsg("Failed to seek sound stream");
             return nullptr;
         }
 
@@ -115,7 +115,7 @@ base::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromStream(InputS
     }
 
     // No suitable reader found
-    priv::err() << "Failed to open sound file from stream (format not supported)";
+    priv::errMsg("Failed to open sound file from stream (format not supported)");
     return nullptr;
 }
 
@@ -131,7 +131,7 @@ base::UniquePtr<SoundFileWriter> SoundFileFactory::createWriterFromFilename(cons
     }
 
     // No suitable writer found
-    priv::err() << "Failed to open sound file (format not supported)\n" << priv::PathDebugFormatter{filename};
+    priv::errMsg("Failed to open sound file (format not supported)\n{}", priv::PathDebugFormatter{filename});
     return nullptr;
 }
 

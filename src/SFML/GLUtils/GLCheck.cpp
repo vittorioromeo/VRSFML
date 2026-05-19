@@ -24,8 +24,12 @@ void glCheckError(const unsigned int openGlError, const char* const file, const 
 {
     if (!WindowContext::hasActiveThreadLocalGlContext())
     {
-        err() << "An internal OpenGL call failed in " << Path{file}.getFilename() << "(" << line << ")."
-              << "\nExpression:\n   " << expression << "\nNo active OpenGL context on calling thread.\n";
+        errMsg(
+            "An internal OpenGL call failed in {}({}).\nExpression:\n   {}\nNo active OpenGL context on calling "
+            "thread.\n",
+            Path{file}.getFilename(),
+            line,
+            expression);
 
 #ifdef SFML_FATAL_OPENGL_ERRORS
         SFML_BASE_ASSERT(false && "OpenGL error (fatal OpenGL errors enabled)");
@@ -34,9 +38,13 @@ void glCheckError(const unsigned int openGlError, const char* const file, const 
 
     const auto logError = [&](const char* const error, const char* const description)
     {
-        err() << "An internal OpenGL call failed in " << Path{file}.getFilename() << "(" << line << ")."
-              << "\nExpression:\n   " << expression << "\nError description:\n   " << error << "\n   " << description
-              << '\n';
+        errMsg("An internal OpenGL call failed in {}({}).\nExpression:\n   {}\nError description:\n   {}\n   {}{}",
+               Path{file}.getFilename(),
+               line,
+               expression,
+               error,
+               description,
+               '\n');
 
 #ifdef SFML_FATAL_OPENGL_ERRORS
         SFML_BASE_ASSERT(false && "OpenGL error (fatal OpenGL errors enabled)");
@@ -86,7 +94,7 @@ void glCheckError(const unsigned int openGlError, const char* const file, const 
 ////////////////////////////////////////////////////////////
 void printUncheckedPriorGlError()
 {
-    err() << "(EXISTING UNCHECKED ERROR BEFORE THIS EXPRESSION)\n";
+    errMsg("(EXISTING UNCHECKED ERROR BEFORE THIS EXPRESSION)\n");
 }
 
 } // namespace sf::priv

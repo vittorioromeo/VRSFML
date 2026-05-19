@@ -7,8 +7,6 @@
 ////////////////////////////////////////////////////////////
 #include "ExampleUtils/Scaling.hpp"
 
-#include "ExampleUtils/MiniFmt.hpp"
-
 #include "SFML/Graphics/RenderTexture.hpp"
 #include "SFML/Graphics/RenderTextureCreateSettings.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
@@ -22,6 +20,8 @@
 #include "SFML/System/Rect2.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Fmt/Fmt.hpp"
+#include "SFML/Base/Fmt/FmtNumeric.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Math/Floor.hpp"
 #include "SFML/Base/MinMax.hpp"
@@ -192,9 +192,9 @@ sf::base::Optional<sf::RenderTexture> makeAARenderTexture(const sf::Vec2u       
 
     if (rtCreateSettings.antiAliasingLevel > maxAALevel)
     {
-        minifmt::print("Desired AA level {} higher than supported {}, falling back to maximum",
-                       rtCreateSettings.antiAliasingLevel,
-                       maxAALevel);
+        sf::base::printLn("Desired AA level {} higher than supported {}, falling back to maximum",
+                          rtCreateSettings.antiAliasingLevel,
+                          maxAALevel);
 
         rtCreateSettings.antiAliasingLevel = maxAALevel;
     }

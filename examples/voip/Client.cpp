@@ -14,6 +14,8 @@
 
 #include "SFML/System/IO.hpp"
 
+#include "SFML/Base/Fmt/Fmt.hpp"
+#include "SFML/Base/Fmt/FmtNumeric.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/String.hpp"
 
@@ -49,7 +51,7 @@ public:
     ~NetworkRecorder() override
     {
         if (!stop())
-            sf::cErr() << "Failed to stop network recorder on destruction" << sf::endL;
+            sf::base::printErrLn("Failed to stop network recorder on destruction");
     }
 
 private:
@@ -65,7 +67,7 @@ private:
 
         if (m_socket->connect(m_host, m_port) == sf::Socket::Status::Done)
         {
-            sf::cOut() << "Connected to server " << sf::IpAddressUtils::toString(m_host) << sf::endL;
+            sf::base::printLn("Connected to server {}", sf::IpAddressUtils::toString(m_host));
             return true;
         }
 
@@ -100,7 +102,7 @@ private:
 
         if (m_socket->send(packet) != sf::Socket::Status::Done)
         {
-            sf::cErr() << "Failed to send end-of-stream packet" << sf::endL;
+            sf::base::printErrLn("Failed to send end-of-stream packet");
             return false;
         }
 
@@ -131,7 +133,7 @@ void doClient(sf::CaptureDevice& captureDevice, unsigned short port)
     sf::base::Optional<sf::IpAddress> server;
     do
     {
-        sf::cOut() << "Type address or name of the server to connect to: ";
+        sf::base::print("Type address or name of the server to connect to: ");
 
         sf::base::String addressStr;
         sf::cIn() >> addressStr;
@@ -143,19 +145,19 @@ void doClient(sf::CaptureDevice& captureDevice, unsigned short port)
 
     // Wait for user input...
     sf::cIn().ignore(10'000, '\n');
-    sf::cOut() << "Press enter to start recording audio";
+    sf::base::print("Press enter to start recording audio");
     sf::cIn().ignore(10'000, '\n');
 
     // Start capturing audio data
     if (!recorder.start(captureDevice, 44'100))
     {
-        sf::cErr() << "Failed to start recorder" << sf::endL;
+        sf::base::printErrLn("Failed to start recorder");
         return;
     }
 
-    sf::cOut() << "Recording... press enter to stop";
+    sf::base::print("Recording... press enter to stop");
     sf::cIn().ignore(10'000, '\n');
 
     if (!recorder.stop())
-        sf::cErr() << "Failed to stop network recorder" << sf::endL;
+        sf::base::printErrLn("Failed to stop network recorder");
 }

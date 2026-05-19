@@ -10,6 +10,9 @@
 
 #include "SFML/System/IO.hpp"
 
+#include "SFML/Base/Fmt/Fmt.hpp"
+#include "SFML/Base/Fmt/FmtNumeric.hpp"
+
 
 ////////////////////////////////////////////////////////////
 /// Main
@@ -22,7 +25,7 @@ int main()
 
     // Client or server ?
     char who = 0;
-    sf::cOut() << "Do you want to be a server ('s') or a client ('c')? ";
+    sf::base::print("Do you want to be a server ('s') or a client ('c')? ");
     sf::cIn() >> who;
 
     if (who == 's')
@@ -45,6 +48,6 @@ int main()
     }
 
     // Wait until the user presses 'enter' key
-    sf::cOut() << "Press enter to exit..." << sf::endL;
+    sf::base::printLn("Press enter to exit...");
     sf::cIn().ignore(10'000, '\n');
 }

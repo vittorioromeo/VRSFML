@@ -15,6 +15,8 @@
 #include "SFML/System/Thread.hpp"
 #include "SFML/System/Time.hpp"
 
+#include "SFML/Base/Fmt/Fmt.hpp"
+#include "SFML/Base/Fmt/FmtNumeric.hpp"
 #include "SFML/Base/InPlaceVector.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -33,16 +35,16 @@ int main()
     const auto playbackDeviceHandles = sf::AudioContext::getAvailablePlaybackDeviceHandles();
     if (playbackDeviceHandles.empty())
     {
-        sf::cErr() << "No playback devices found.\n";
+        sf::base::printErrLn("No playback devices found.");
         return 1;
     }
 
-    sf::cOut() << "Found " << playbackDeviceHandles.size() << " playback devices:\n";
+    sf::base::printLn("Found {} playback devices:", playbackDeviceHandles.size());
 
     sf::base::InPlaceVector<sf::PlaybackDevice, 8> playbackDevices;
     for (const sf::PlaybackDeviceHandle& deviceHandle : playbackDeviceHandles)
     {
-        sf::cOut() << "  - " << deviceHandle.getName() << '\n';
+        sf::base::printLn("  - {}", deviceHandle.getName());
         playbackDevices.emplaceBack(deviceHandle);
     }
 
@@ -87,8 +89,8 @@ int main()
         sf::ThisThread::sleepFor(sf::milliseconds(100));
 
         // Display a message to show we're not frozen
-        sf::cOut() << "\rPlaying... " << messageIcons[messageIconIndex++ % 4] << sf::flush;
+        sf::base::print("\rPlaying... {}", messageIcons[messageIconIndex++ % 4]);
     }
 
-    sf::cOut() << '\n' << sf::endL;
+    sf::base::printLn("");
 }

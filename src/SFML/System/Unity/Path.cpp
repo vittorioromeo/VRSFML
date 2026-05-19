@@ -7,8 +7,12 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Path.hpp"
 
+#include "SFML/System/Fmt/FmtPath.hpp"
 #include "SFML/System/PathStreamOp.hpp"
+#include "SFML/System/PathUtils.hpp"
 
+#include "SFML/Base/Fmt/FmtSink.hpp"
+#include "SFML/Base/Fmt/FmtSpec.hpp"
 #include "SFML/Base/FunctionRef.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
@@ -473,6 +477,44 @@ std::ostream& operator<<(std::ostream& os, const Path& path)
     const auto u8 = path.to<std::string>();
     return os.write(u8.data(), static_cast<std::streamsize>(u8.size()));
 }
+
+
+////////////////////////////////////////////////////////////
+void fmtArg(base::FmtSink& sink, const Path& path, const base::FmtSpec&)
+{
+    // Same rationale as the stream-insertion operator above: emit UTF-8 to avoid
+    // locale-dependent encoding of `std::filesystem::path` on Windows.
+    const auto u8 = path.to<std::string>();
+    sink.append(u8.data(), static_cast<base::SizeT>(u8.size()));
+}
+
+} // namespace sf
+
+
+////////////////////////////////////////////////////////////
+namespace sf::priv
+{
+////////////////////////////////////////////////////////////
+void fmtArg(base::FmtSink& sink, const PathDebugFormatter& dbg, const base::FmtSpec&)
+{
+    // Two debug lines: input path + resolved absolute path (or sentinel).
+    sink.append("    Provided path: ", 19u);
+    fmtArg(sink, dbg.path, base::FmtSpec{});
+    sink.appendChar('\n');
+
+    sink.append("    Absolute path: ", 19u);
+    if (const auto abs = dbg.path.getAbsolute(); abs.hasValue())
+        fmtArg(sink, *abs, base::FmtSpec{});
+    else
+        sink.append("<unavailable>", 13u);
+}
+
+} // namespace sf::priv
+
+
+////////////////////////////////////////////////////////////
+namespace sf
+{
 
 
 ////////////////////////////////////////////////////////////

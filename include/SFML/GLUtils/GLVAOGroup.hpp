@@ -131,7 +131,7 @@ struct GLVAOGroup
 
             if (id == 0u)
             {
-                priv::err() << "Failed to create a vertex array object";
+                priv::errMsg("Failed to create a vertex array object");
                 base::abort();
             }
 

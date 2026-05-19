@@ -30,7 +30,6 @@
 #include "ExampleUtils/HueColor.hpp"
 #include "ExampleUtils/LoadedSound.hpp"
 #include "ExampleUtils/MathUtils.hpp"
-#include "ExampleUtils/MiniFmt.hpp"
 #include "ExampleUtils/Progress.hpp"
 #include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/Scaling.hpp"
@@ -93,6 +92,7 @@
 #include "SFML/Base/Builtin/Unreachable.hpp"
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Constants.hpp"
+#include "SFML/Base/Fmt/FmtToString.hpp"
 #include "SFML/Base/InPlaceVector.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Floor.hpp"
@@ -3194,8 +3194,8 @@ private:
         sf::base::String levelUpString = "^bold[](^wobble[5,1.2,0.5](LEVEL UP)^)^";
 
         if (m_rerollsLeftThisLevel > 0u)
-            levelUpString += minifmt::format("^color[190,190,190]( - Press SHIFT to reroll ({} left))^",
-                                             m_rerollsLeftThisLevel);
+            levelUpString += sf::base::fmtToString("^color[190,190,190]( - Press SHIFT to reroll ({} left))^",
+                                                   m_rerollsLeftThisLevel);
 
         const BitmapTextToVerticesOptions titleOpts = {
             .outVertices     = m_textVerticesBuffer,
@@ -3247,7 +3247,9 @@ private:
             sf::base::String perkDescription = wrapText(perk.getDescription(m_world), 38u);
             sf::base::String perkProgression = wrapText(perk.getProgressionStr(m_world), 38u);
 
-            const auto perkStr = minifmt::format("^bold[]({})^\n^hspace[0](^color[190,190,190]({})^)^", perkName, perkDescription);
+            const auto perkStr = sf::base::fmtToString("^bold[]({})^\n^hspace[0](^color[190,190,190]({})^)^",
+                                                       perkName,
+                                                       perkDescription);
 
             const auto transform = sf::Transform::fromPosition(perkDrawPos);
 
@@ -4464,7 +4466,7 @@ private:
         m_textVerticesBuffer.clear();
         m_textIndicesBuffer.clear();
 
-        auto statsStr = minifmt::format(
+        auto statsStr = sf::base::fmtToString(
             "^bold[](Level)^: {}\n"
             "^bold[](XP)^: {} / {}\n"
             "^bold[](Clock)^: {}s\n"
@@ -4523,7 +4525,7 @@ private:
 
         for (const auto& perk : m_perks)
             if (perk->isActive(m_world))
-                perksStr += minifmt::format("- {} {}\n", perk->getName(), perk->getInventoryStr(m_world));
+                perksStr += sf::base::fmtToString("- {} {}\n", perk->getName(), perk->getInventoryStr(m_world));
 
         m_textVerticesBuffer.clear();
         m_textIndicesBuffer.clear();

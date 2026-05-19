@@ -85,7 +85,7 @@ Window::Window(base::PassKey<Window>&&, WindowBase&& windowBase, const WindowSet
 
     // Activate the window
     if (!setActive())
-        priv::err() << "Failed to set window as active during initialization";
+        priv::errMsg("Failed to set window as active during initialization");
 }
 
 
@@ -196,7 +196,7 @@ bool Window::setActive(bool active) const
     if (WindowContext::setActiveThreadLocalGlContext(*m_impl->glContext, active))
         return true;
 
-    priv::err() << "Failed to activate the window's context";
+    priv::errMsg("Failed to activate the window's context");
     return false;
 }
 

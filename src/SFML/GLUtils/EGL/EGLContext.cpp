@@ -70,7 +70,7 @@ bool ensureInit()
         {
             // At this point, the failure is unrecoverable
             // Dump a message to the console and let the application terminate
-            sf::priv::err() << "Failed to load EGL entry points";
+            priv::errMsg("Failed to load EGL entry points");
 
             SFML_BASE_ASSERT(false);
 
@@ -125,13 +125,13 @@ EGLConfig getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const sf:
     // Determine the number of available configs
     EGLint configCount = 0;
     if (const auto rc = eglCheck(eglGetConfigs(display, nullptr, 0, &configCount)); rc == EGL_FALSE)
-        sf::priv::err() << "Failed to get EGL configs (1st call)";
+        priv::errMsg("Failed to get EGL configs (1st call)");
 
     // Retrieve the list of available configs
     sf::base::Vector<EGLConfig> configs(static_cast<sf::base::SizeT>(configCount));
 
     if (const auto rc = eglCheck(eglGetConfigs(display, configs.data(), configCount, &configCount)); rc == EGL_FALSE)
-        sf::priv::err() << "Failed to get EGL configs (2nd call)";
+        priv::errMsg("Failed to get EGL configs (2nd call)");
 
     // Evaluate all the returned configs, and pick the best one
     int       bestScore = 0x7F'FF'FF'FF;
@@ -216,7 +216,7 @@ EGLConfig getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const sf:
     eglCheck(eglChooseConfig(display, attributes, &config, 1, &configCount));
 
     if (configCount == 0)
-        sf::priv::err() << "Failed to get any EGL frame buffer configurations";
+        priv::errMsg("Failed to get any EGL frame buffer configurations");
 
     return config;
 #endif
@@ -417,7 +417,7 @@ void EglContext::destroySurface()
     // Seems to only be called by `SDLWindowImplAndroid`
 
     if (!WindowContext::setActiveThreadLocalGlContext(*this, false))
-        err() << "Failure to disable EGL context in `EglContext::destroySurface`";
+        errMsg("Failure to disable EGL context in `EglContext::destroySurface`");
 
     eglCheck(eglDestroySurface(m_impl->display, m_impl->surface));
     m_impl->surface = EGL_NO_SURFACE;

@@ -9,33 +9,23 @@
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Path.hpp"
-#include "SFML/System/PathStreamOp.hpp"
-#include "SFML/System/PathUtils.hpp"
-#include "SFML/System/Utf8String.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/ScopeGuard.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringStreamOp.hpp" // IWYU pragma: keep (provides `operator>>` for `base::String` used by `IN_STREAMABLE_TYPES_X`)
 #include "SFML/Base/StringView.hpp"
-#include "SFML/Base/StringViewStreamOp.hpp" // IWYU pragma: keep (provides `operator<<` for `base::StringView` used by `writeToFile`)
-#include "SFML/Base/Trait/IsEnum.hpp"
 #include "SFML/Base/Trait/IsSame.hpp"
-#include "SFML/Base/Trait/UnderlyingType.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#include <filesystem> // IWYU pragma: keep (used in macros)
-#include <fstream>
-#include <iomanip>
-#include <ios>
+#include <filesystem> // IWYU pragma: keep (used in `IN_STREAMABLE_TYPES_X`)
 #include <iostream>
 #include <istream>
-#include <ostream>
-#include <sstream>
 #include <string>
-#include <string_view>
 
 #include <cstdio>
 
@@ -58,47 +48,9 @@
     #define SFML_PRIV_IO_NATIVE_BACKEND 0 // Fallback to C stdio
 #endif
 
-// Note: `::sf::base::String` is intentionally absent from the macros below. It is handled by dedicated non-template
-// `operator<<` overloads on the output stream classes, which avoids an ambiguity with the free `operator<<` from
-// `StringStreamOp.hpp` when downstream code includes both headers.
-
-// clang-format off
-#define SFML_BASE_OUT_STREAMABLE_TYPES_X(x) \
-    x(bool)                    \
-                               \
-    x(char)                    \
-    x(unsigned char)           \
-                               \
-    x(short)                   \
-    x(unsigned short)          \
-                               \
-    x(int)                     \
-    x(unsigned int)            \
-                               \
-    x(long)                    \
-    x(unsigned long)           \
-                               \
-    x(long long)               \
-    x(unsigned long long)      \
-                               \
-    x(float)                   \
-    x(double)                  \
-    x(long double)             \
-                               \
-    x(short*)                  \
-    x(int*)                    \
-    x(void*)                   \
-                               \
-    x(const char*)             \
-                               \
-    x(::std::string_view)      \
-    x(::std::string)           \
-    x(::std::filesystem::path) \
-                               \
-    x(::sf::base::StringView)  \
-    x(::sf::Path)
-// clang-format on
-
+// Note: `::sf::base::String` is intentionally absent from the macro below. The remaining stream class
+// (`IOStreamInput`) has a dedicated `operator>>(base::String&)` overload to avoid an ambiguity with the
+// free `operator>>` from `StringStreamOp.hpp` when downstream code includes both headers.
 
 // clang-format off
 #define SFML_BASE_IN_STREAMABLE_TYPES_X(x) \
@@ -135,73 +87,6 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] constexpr std::ios_base::openmode mapFileOpenMode(const sf::FileOpenMode sfmlEnum)
-{
-    std::ios_base::openmode stlValue = {};
-
-    const auto mapFlag = [&](const auto sfmlFlag, std::ios_base::openmode stlFlag)
-    {
-        if ((sfmlEnum & sfmlFlag) != sf::FileOpenMode::none)
-            stlValue |= stlFlag;
-    };
-
-    mapFlag(sf::FileOpenMode::app, std::ios_base::app);
-    mapFlag(sf::FileOpenMode::ate, std::ios_base::ate);
-    mapFlag(sf::FileOpenMode::bin, std::ios_base::binary);
-    mapFlag(sf::FileOpenMode::in, std::ios_base::in);
-    mapFlag(sf::FileOpenMode::out, std::ios_base::out);
-    mapFlag(sf::FileOpenMode::trunc, std::ios_base::trunc);
-
-    return stlValue;
-}
-
-////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] constexpr std::ios_base::fmtflags mapFormatFlags(const sf::FormatFlags sfmlEnum)
-{
-    std::ios_base::fmtflags stlValue = {};
-
-    const auto mapFlag = [&](const auto sfmlFlag, std::ios_base::fmtflags stlFlag)
-    {
-        if ((sfmlEnum & sfmlFlag) != sf::FormatFlags::none)
-            stlValue |= stlFlag;
-    };
-
-    mapFlag(sf::FormatFlags::boolalpha, std::ios_base::boolalpha);
-    mapFlag(sf::FormatFlags::dec, std::ios_base::dec);
-    mapFlag(sf::FormatFlags::fixed, std::ios_base::fixed);
-    mapFlag(sf::FormatFlags::hex, std::ios_base::hex);
-    mapFlag(sf::FormatFlags::internal, std::ios_base::internal);
-    mapFlag(sf::FormatFlags::left, std::ios_base::left);
-    mapFlag(sf::FormatFlags::oct, std::ios_base::oct);
-    mapFlag(sf::FormatFlags::right, std::ios_base::right);
-    mapFlag(sf::FormatFlags::scientific, std::ios_base::scientific);
-    mapFlag(sf::FormatFlags::showbase, std::ios_base::showbase);
-    mapFlag(sf::FormatFlags::showpoint, std::ios_base::showpoint);
-    mapFlag(sf::FormatFlags::showpos, std::ios_base::showpos);
-    mapFlag(sf::FormatFlags::skipws, std::ios_base::skipws);
-    mapFlag(sf::FormatFlags::unitbuf, std::ios_base::unitbuf);
-    mapFlag(sf::FormatFlags::uppercase, std::ios_base::uppercase);
-
-    return stlValue;
-}
-
-////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] constexpr std::ios_base::seekdir mapSeekDir(const sf::SeekDir sfmlEnum)
-{
-    switch (sfmlEnum)
-    {
-        case sf::SeekDir::beg:
-            return std::ios_base::beg;
-        case sf::SeekDir::cur:
-            return std::ios_base::cur;
-        default:
-            SFML_BASE_ASSERT(sfmlEnum == sf::SeekDir::end);
-            return std::ios_base::end;
-    }
-}
-
-
-////////////////////////////////////////////////////////////
 // Convert either a `StringView` or a `Path` into a UTF-8 `std::string` for
 // use with C stdio's narrow-char `fopen`. Used by the fallback path.
 [[maybe_unused, gnu::always_inline]] inline std::string toUtf8FilenameForStdio(sf::base::StringView v)
@@ -228,7 +113,7 @@ bool readFromFileFallback(const Filename& filename, T& target, const bool isAppe
 
     const auto fail = [&]
     {
-        sf::priv::err() << "Failed to read from file '" << filename << "'\n";
+        sf::priv::errMsg("Failed to read from file '{}'\n", filename);
         return false;
     };
 
@@ -577,7 +462,7 @@ bool readFromFileImpl(const Filename& filename, T& target, const bool isAppend)
     sf::base::SizeT size = 0u;
     if (!nativeOpenAndStat(filename, handle, size))
     {
-        sf::priv::err() << "Failed to read from file '" << filename << "'\n";
+        sf::priv::errMsg("Failed to read from file '{}'\n", filename);
         return false;
     }
 
@@ -607,7 +492,7 @@ bool readFromFileImpl(const Filename& filename, T& target, const bool isAppend)
 
     if (!readOk)
     {
-        sf::priv::err() << "Failed to read the full contents of file '" << filename << "'\n";
+        sf::priv::errMsg("Failed to read the full contents of file '{}'\n", filename);
         return false;
     }
 
@@ -620,106 +505,6 @@ bool readFromFileImpl(const Filename& filename, T& target, const bool isAppend)
 
 namespace sf
 {
-////////////////////////////////////////////////////////////
-struct IOStreamOutput::Impl
-{
-    std::ostream stream;
-
-    explicit Impl(std::streambuf* sbuf) : stream(sbuf)
-    {
-    }
-};
-
-
-////////////////////////////////////////////////////////////
-IOStreamOutput::IOStreamOutput(std::streambuf* sbuf) : m_impl(sbuf)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-std::streambuf* IOStreamOutput::rdbuf()
-{
-    return m_impl->stream.rdbuf();
-}
-
-
-////////////////////////////////////////////////////////////
-void IOStreamOutput::rdbuf(std::streambuf* sbuf)
-{
-    m_impl->stream.rdbuf(sbuf);
-}
-
-
-////////////////////////////////////////////////////////////
-IOStreamOutput& IOStreamOutput::operator<<(const char* value)
-{
-    m_impl->stream << value;
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-IOStreamOutput& IOStreamOutput::operator<<(const base::String& value)
-{
-    m_impl->stream.write(value.data(), static_cast<std::streamsize>(value.size()));
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-IOStreamOutput& IOStreamOutput::operator<<(FlushType)
-{
-    m_impl->stream << std::flush;
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-IOStreamOutput& IOStreamOutput::operator<<(EndLType)
-{
-    m_impl->stream << std::endl;
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-IOStreamOutput& IOStreamOutput::operator<<(const T& value)
-{
-    if constexpr (SFML_BASE_IS_SAME(T, base::StringView))
-    {
-        m_impl->stream.write(value.data(), static_cast<std::streamsize>(value.size()));
-    }
-    else
-    {
-        m_impl->stream << value;
-    }
-
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-#define x(type) template IOStreamOutput& IOStreamOutput::operator<< <type>(type const&);
-SFML_BASE_OUT_STREAMABLE_TYPES_X(x)
-#undef x
-
-
-////////////////////////////////////////////////////////////
-std::ostream& IOStreamOutput::getOStream()
-{
-    return m_impl->stream;
-}
-
-
-////////////////////////////////////////////////////////////
-void IOStreamOutput::flush()
-{
-    m_impl->stream.flush();
-}
-
-
 ////////////////////////////////////////////////////////////
 struct IOStreamInput::Impl
 {
@@ -802,46 +587,10 @@ IOStreamInput::operator bool() const
 
 
 ////////////////////////////////////////////////////////////
-IOStreamOutput& cOut()
-{
-    static IOStreamOutput stream(std::cout.rdbuf());
-    return stream;
-}
-
-
-////////////////////////////////////////////////////////////
-IOStreamOutput& cErr()
-{
-    static IOStreamOutput stream(std::cerr.rdbuf());
-    return stream;
-}
-
-
-////////////////////////////////////////////////////////////
 IOStreamInput& cIn()
 {
     static IOStreamInput stream(std::cin.rdbuf());
     return stream;
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename Stream, typename T>
-bool getLine(Stream& stream, T& target)
-{
-    if constexpr (SFML_BASE_IS_SAME(T, std::string))
-    {
-        return static_cast<bool>(std::getline(stream, target));
-    }
-    else
-    {
-        std::string temp;
-        const auto  result = static_cast<bool>(std::getline(stream, temp));
-
-        target = base::String{temp.data(), temp.size()};
-
-        return result;
-    }
 }
 
 
@@ -866,46 +615,39 @@ bool getLine(IOStreamInput& stream, T& target)
 
 
 ////////////////////////////////////////////////////////////
-template bool getLine<std::istringstream, std::string>(std::istringstream&, std::string&);
-template bool getLine<std::istream, std::string>(std::istream&, std::string&);
-template bool getLine<std::istringstream, base::String>(std::istringstream&, base::String&);
-template bool getLine<std::istream, base::String>(std::istream&, base::String&);
-
-
-////////////////////////////////////////////////////////////
 template bool getLine<std::string>(IOStreamInput&, std::string&);
-template bool getLine<std::string>(InStringStream&, std::string&);
 template bool getLine<base::String>(IOStreamInput&, base::String&);
-template bool getLine<base::String>(InStringStream&, base::String&);
 
 
 ////////////////////////////////////////////////////////////
 bool writeToFile(base::StringView filename, base::StringView contents)
 {
-    std::ofstream file(filename.toString<std::string>(), std::ios::binary);
-
-    if (!file)
+    // `Path{StringView}` is unavailable; route via `std::string` (matches the
+    // pre-migration behavior, which constructed `std::ofstream` the same way).
+    auto optFile = OutFile::open(Path{filename.toString<std::string>()}, FileOpenMode::bin);
+    if (!optFile.hasValue())
     {
-        priv::err() << "Failed to write to file '" << filename << "'\n";
+        priv::errMsg("Failed to write to file '{}'\n", filename);
         return false;
     }
 
-    return static_cast<bool>(file << contents);
+    // Destructor closes; explicit close errors would be lost here, but the
+    // write itself is reported and that's the meaningful failure path.
+    return optFile->write(contents.data(), contents.size());
 }
 
 
 ////////////////////////////////////////////////////////////
 bool writeToFile(const Path& filename, base::StringView contents)
 {
-    std::ofstream file(filename.c_str(), std::ios::binary);
-
-    if (!file)
+    auto optFile = OutFile::open(filename, FileOpenMode::bin);
+    if (!optFile.hasValue())
     {
-        priv::err() << "Failed to write to file '" << filename << "'\n";
+        priv::errMsg("Failed to write to file '{}'\n", filename);
         return false;
     }
 
-    return static_cast<bool>(file << contents);
+    return optFile->write(contents.data(), contents.size());
 }
 
 
@@ -974,621 +716,322 @@ base::Vector<char>& getThreadLocalScratchCharBuffer()
 
 
 ////////////////////////////////////////////////////////////
-struct OutFileStream::Impl
+namespace
 {
-    std::ofstream ofs;
+////////////////////////////////////////////////////////////
+// Map our `FileOpenMode` flags to a `fopen`-style mode string.
+//
+// `OutFile` is always opened for writing, so the table only distinguishes
+// truncate-vs-append and text-vs-binary. The `in` / `ate` flags are
+// meaningless on an output handle and ignored. Returns one of:
+//     "w", "wb", "a", "ab"
+[[nodiscard, gnu::const]] constexpr const char* mapOutFileOpenMode(const sf::FileOpenMode mode) noexcept
+{
+    const bool append = (mode & sf::FileOpenMode::app) != sf::FileOpenMode::none;
+    const bool binary = (mode & sf::FileOpenMode::bin) != sf::FileOpenMode::none;
 
-    Impl() = default;
+    if (append)
+        return binary ? "ab" : "a";
 
-    Impl(auto&&... args) : ofs(static_cast<decltype(args)>(args)...)
-    {
-    }
+    return binary ? "wb" : "w";
+}
+
+
+////////////////////////////////////////////////////////////
+// Shared close helper for `OutFile` / `InFile` destructors and move
+// assignment. Closes `file` if non-null and reports any `fclose` error
+// via `errMsg`, tagged with `kindName` (e.g. "OutFile", "InFile") so the
+// log line is attributable. A moved-from object has `file == nullptr`,
+// which short-circuits to a no-op.
+void closeAndReport(std::FILE* const file, const char* const kindName)
+{
+    if (file == nullptr)
+        return;
+
+    if (std::fclose(file) != 0)
+        sf::priv::errMsg("sf::{}: `fclose` reported an error; buffered output may have been lost", kindName);
+}
+
+} // namespace
+
+
+////////////////////////////////////////////////////////////
+struct OutFile::Impl
+{
+    std::FILE* file; //!< Non-null on a live `OutFile`; null only in a moved-from object.
 };
 
 
 ////////////////////////////////////////////////////////////
-OutFileStream::OutFileStream(const Path& filename, FileOpenMode mode) : m_impl(filename.c_str(), mapFileOpenMode(mode))
+OutFile::OutFile(base::PassKey<OutFile>&&, void* file) noexcept : m_impl{static_cast<std::FILE*>(file)}
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-OutFileStream::OutFileStream()                                    = default;
-OutFileStream::~OutFileStream()                                   = default;
-OutFileStream::OutFileStream(OutFileStream&&) noexcept            = default;
-OutFileStream& OutFileStream::operator=(OutFileStream&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
-void OutFileStream::open(const Path& filename, FileOpenMode mode)
+OutFile::~OutFile()
 {
-    m_impl->ofs.open(filename.c_str(), mapFileOpenMode(mode));
+    closeAndReport(m_impl->file, "OutFile");
 }
 
 
 ////////////////////////////////////////////////////////////
-void OutFileStream::write(const char* data, base::PtrDiffT size)
+OutFile::OutFile(OutFile&& rhs) noexcept : m_impl{rhs.m_impl->file}
 {
-    m_impl->ofs.write(data, static_cast<std::streamsize>(size));
+    rhs.m_impl->file = nullptr;
 }
 
 
 ////////////////////////////////////////////////////////////
-void OutFileStream::flush()
+OutFile& OutFile::operator=(OutFile&& rhs) noexcept
 {
-    m_impl->ofs.flush();
+    if (&rhs == this)
+        return *this;
+
+    closeAndReport(m_impl->file, "OutFile");
+
+    m_impl->file     = rhs.m_impl->file;
+    rhs.m_impl->file = nullptr;
+
+    return *this;
 }
 
 
 ////////////////////////////////////////////////////////////
-void OutFileStream::close()
+base::Optional<OutFile> OutFile::open(const Path& filename, FileOpenMode mode)
 {
-    m_impl->ofs.close();
+    // `fopen` requires a NUL-terminated narrow-char path. `Path::c_str()`
+    // is `const wchar_t*` on Windows, so we go through a UTF-8 round-trip
+    // there; on Linux/BSD/macOS/Emscripten/Android the result is already
+    // narrow-char and the conversion is a no-op-ish copy.
+    const auto path = toUtf8FilenameForStdio(filename);
+
+    std::FILE* const file = std::fopen(path.c_str(), mapOutFileOpenMode(mode));
+    if (file == nullptr)
+        return base::nullOpt;
+
+    return base::makeOptional<OutFile>(base::PassKey<OutFile>{}, file);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool OutFileStream::isOpen() const
+bool OutFile::write(const char* data, base::SizeT size)
 {
-    return m_impl->ofs.is_open();
+    if (m_impl->file == nullptr)
+        return false;
+
+    return std::fwrite(data, 1u, size, m_impl->file) == size;
 }
 
 
 ////////////////////////////////////////////////////////////
-bool OutFileStream::isGood() const
+bool OutFile::flush()
 {
-    return m_impl->ofs.good();
+    if (m_impl->file == nullptr)
+        return false;
+
+    return std::fflush(m_impl->file) == 0;
 }
 
 
 ////////////////////////////////////////////////////////////
-void OutFileStream::seekPos(base::PtrDiffT absolutePos)
+bool OutFile::seekPos(base::PtrDiffT absolutePos)
 {
-    m_impl->ofs.seekp(static_cast<std::streamoff>(absolutePos));
+    if (m_impl->file == nullptr)
+        return false;
+
+    return std::fseek(m_impl->file, static_cast<long>(absolutePos), SEEK_SET) == 0;
 }
 
 
 ////////////////////////////////////////////////////////////
-base::PtrDiffT OutFileStream::tellPos()
+bool OutFile::tellPos(base::PtrDiffT& out)
 {
-    return static_cast<base::PtrDiffT>(m_impl->ofs.tellp());
+    if (m_impl->file == nullptr)
+        return false;
+
+    const long pos = std::ftell(m_impl->file);
+    if (pos < 0)
+        return false;
+
+    out = static_cast<base::PtrDiffT>(pos);
+    return true;
 }
 
 
 ////////////////////////////////////////////////////////////
-OutFileStream::operator bool() const
+void OutFile::append(const char* data, base::SizeT n)
 {
-    return static_cast<bool>(m_impl->ofs);
+    // `AppendSink` adapter: best-effort, return value lost. The Fmt
+    // pipeline buffers internally and only calls `append` once at the
+    // end, so a discarded failure here at worst corrupts the on-disk
+    // file silently. Use `write()` directly when that matters.
+    (void)write(data, n);
 }
 
 
 ////////////////////////////////////////////////////////////
-template <typename T>
-OutFileStream& OutFileStream::operator<<(const T& value)
+namespace
 {
-    if constexpr (base::isEnum<T>)
+////////////////////////////////////////////////////////////
+// Map our `FileOpenMode` flags to a `fopen`-style mode string for input.
+//
+// `InFile` always opens for reading. The only meaningful distinction left
+// is text vs. binary; `app` / `out` / `trunc` are ignored on the input
+// side. `ate` (open at end) is handled separately by `open()` via a
+// post-`fopen` seek -- mirroring `std::ios::ate` semantics.
+[[nodiscard, gnu::const]] constexpr const char* mapInFileOpenMode(const sf::FileOpenMode mode) noexcept
+{
+    return (mode & sf::FileOpenMode::bin) != sf::FileOpenMode::none ? "rb" : "r";
+}
+
+
+////////////////////////////////////////////////////////////
+// Map `SeekDir` to a stdio `SEEK_*` constant.
+[[nodiscard, gnu::const]] constexpr int mapSeekDirToStdio(const sf::SeekDir dir) noexcept
+{
+    switch (dir)
     {
-        return *m_impl << static_cast<base::UnderlyingType<T>>(value);
+        case sf::SeekDir::beg:
+            return SEEK_SET;
+        case sf::SeekDir::cur:
+            return SEEK_CUR;
+        default:
+            SFML_BASE_ASSERT(dir == sf::SeekDir::end);
+            return SEEK_END;
     }
-    else if constexpr (SFML_BASE_IS_SAME(T, base::StringView))
-    {
-        m_impl->ofs.write(value.data(), static_cast<std::streamsize>(value.size()));
-    }
-    else
-    {
-        m_impl->ofs << value;
-    }
-
-    return *this;
 }
 
-
-////////////////////////////////////////////////////////////
-#define x(type) template OutFileStream& OutFileStream::operator<< <type>(type const&);
-SFML_BASE_OUT_STREAMABLE_TYPES_X(x)
-#undef x
+} // namespace
 
 
 ////////////////////////////////////////////////////////////
-OutFileStream& OutFileStream::operator<<(const base::String& value)
+struct InFile::Impl
 {
-    m_impl->ofs.write(value.data(), static_cast<std::streamsize>(value.size()));
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-OutFileStream& OutFileStream::operator<<(SetFill fill)
-{
-    m_impl->ofs << std::setfill(fill.c);
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-OutFileStream& OutFileStream::operator<<(SetWidth width)
-{
-    m_impl->ofs << std::setw(width.width);
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-OutFileStream& OutFileStream::operator<<(Hex)
-{
-    m_impl->ofs << std::hex;
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-OutFileStream& OutFileStream::operator<<(std::ios_base& (*func)(std::ios_base&))
-{
-    m_impl->ofs << func;
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-OutFileStream& OutFileStream::operator<<(std::ostream& (*func)(std::ostream&))
-{
-    m_impl->ofs << func;
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-struct OutStringStream::Impl
-{
-    std::ostringstream oss;
-
-    Impl() = default;
-
-    Impl(auto&&... args) : oss(static_cast<decltype(args)>(args)...)
-    {
-    }
+    std::FILE* file; //!< Non-null on a live `InFile`; null only in a moved-from object.
 };
 
 
 ////////////////////////////////////////////////////////////
-OutStringStream::OutStringStream()                                      = default;
-OutStringStream::~OutStringStream()                                     = default;
-OutStringStream::OutStringStream(OutStringStream&&) noexcept            = default;
-OutStringStream& OutStringStream::operator=(OutStringStream&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
-OutStringStream::OutStringStream(const char* str) : m_impl(str)
+InFile::InFile(base::PassKey<InFile>&&, void* file) noexcept : m_impl{static_cast<std::FILE*>(file)}
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-std::streambuf* OutStringStream::rdbuf() const
+InFile::~InFile()
 {
-    return m_impl->oss.rdbuf();
+    closeAndReport(m_impl->file, "InFile");
 }
 
 
 ////////////////////////////////////////////////////////////
-void OutStringStream::write(const char* data, base::PtrDiffT size)
+InFile::InFile(InFile&& rhs) noexcept : m_impl{rhs.m_impl->file}
 {
-    m_impl->oss.write(data, static_cast<std::streamsize>(size));
+    rhs.m_impl->file = nullptr;
 }
 
 
 ////////////////////////////////////////////////////////////
-void OutStringStream::flush()
+InFile& InFile::operator=(InFile&& rhs) noexcept
 {
-    m_impl->oss.flush();
+    if (&rhs == this)
+        return *this;
+
+    closeAndReport(m_impl->file, "InFile");
+
+    m_impl->file     = rhs.m_impl->file;
+    rhs.m_impl->file = nullptr;
+
+    return *this;
 }
 
 
 ////////////////////////////////////////////////////////////
-void OutStringStream::setStr(base::StringView str)
+base::Optional<InFile> InFile::open(const Path& filename, FileOpenMode mode)
 {
-    m_impl->oss.str(str.toString<std::string>());
-}
+    const auto path = toUtf8FilenameForStdio(filename);
 
+    std::FILE* const file = std::fopen(path.c_str(), mapInFileOpenMode(mode));
+    if (file == nullptr)
+        return base::nullOpt;
 
-////////////////////////////////////////////////////////////
-void OutStringStream::setPrecision(base::PtrDiffT precision)
-{
-    m_impl->oss.precision(static_cast<std::streamsize>(precision));
-}
-
-
-////////////////////////////////////////////////////////////
-void OutStringStream::setFormatFlags(FormatFlags flags)
-{
-    m_impl->oss.setf(mapFormatFlags(flags));
-}
-
-
-////////////////////////////////////////////////////////////
-bool OutStringStream::isGood() const
-{
-    return m_impl->oss.good();
-}
-
-
-////////////////////////////////////////////////////////////
-OutStringStream::operator bool() const
-{
-    return static_cast<bool>(m_impl->oss);
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-T OutStringStream::to() const
-{
-    return T{m_impl->oss.str()};
-}
-
-
-////////////////////////////////////////////////////////////
-template Utf8String   OutStringStream::to() const;
-template std::string  OutStringStream::to() const;
-template base::String OutStringStream::to() const;
-
-
-////////////////////////////////////////////////////////////
-std::string OutStringStream::getString() const
-{
-    return m_impl->oss.str();
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-OutStringStream& OutStringStream::operator<<(const T& value)
-{
-    if constexpr (base::isEnum<T>)
+    // `FileOpenMode::ate`: seek to end on open, matching `std::ios::ate`.
+    // Callers query `tellPos()` immediately afterward to learn the file size.
+    if ((mode & FileOpenMode::ate) != FileOpenMode::none)
     {
-        m_impl->oss << static_cast<base::UnderlyingType<T>>(value);
-    }
-    else if constexpr (SFML_BASE_IS_SAME(T, base::StringView))
-    {
-        m_impl->oss.write(value.data(), static_cast<std::streamsize>(value.size()));
-    }
-    else
-    {
-        m_impl->oss << value;
+        if (std::fseek(file, 0, SEEK_END) != 0)
+        {
+            // Open succeeded but ate-seek failed; close out and report failure
+            // so the caller doesn't see a half-initialized handle.
+            (void)std::fclose(file);
+            return base::nullOpt;
+        }
     }
 
-    return *this;
+    return base::makeOptional<InFile>(base::PassKey<InFile>{}, file);
 }
 
 
 ////////////////////////////////////////////////////////////
-#define x(type) template OutStringStream& OutStringStream::operator<< <type>(type const&);
-SFML_BASE_OUT_STREAMABLE_TYPES_X(x)
-#undef x
-
-
-////////////////////////////////////////////////////////////
-OutStringStream& OutStringStream::operator<<(const base::String& value)
+bool InFile::read(char* data, base::SizeT size, base::SizeT& bytesRead)
 {
-    m_impl->oss.write(value.data(), static_cast<std::streamsize>(value.size()));
-    return *this;
+    if (m_impl->file == nullptr)
+        return false;
+
+    const base::SizeT got = std::fread(data, 1u, size, m_impl->file);
+
+    // Short read = either EOF (`feof`) or true I/O error (`ferror`). The
+    // first is normal -- the caller distinguishes via `isEOF()` after a
+    // short read. The second is the failure we report.
+    if (got != size && std::ferror(m_impl->file) != 0)
+        return false;
+
+    bytesRead = got;
+    return true;
 }
 
 
 ////////////////////////////////////////////////////////////
-OutStringStream& OutStringStream::operator<<(SetFill fill)
+bool InFile::seekPos(base::PtrDiffT absolutePos)
 {
-    m_impl->oss << std::setfill(fill.c);
-    return *this;
+    if (m_impl->file == nullptr)
+        return false;
+
+    return std::fseek(m_impl->file, static_cast<long>(absolutePos), SEEK_SET) == 0;
 }
 
 
 ////////////////////////////////////////////////////////////
-OutStringStream& OutStringStream::operator<<(SetWidth width)
+bool InFile::seekPos(base::PtrDiffT offset, SeekDir dir)
 {
-    m_impl->oss << std::setw(width.width);
-    return *this;
+    if (m_impl->file == nullptr)
+        return false;
+
+    return std::fseek(m_impl->file, static_cast<long>(offset), mapSeekDirToStdio(dir)) == 0;
 }
 
 
 ////////////////////////////////////////////////////////////
-OutStringStream& OutStringStream::operator<<(Hex)
+bool InFile::tellPos(base::PtrDiffT& out)
 {
-    m_impl->oss << std::hex;
-    return *this;
+    if (m_impl->file == nullptr)
+        return false;
+
+    const long pos = std::ftell(m_impl->file);
+    if (pos < 0)
+        return false;
+
+    out = static_cast<base::PtrDiffT>(pos);
+    return true;
 }
 
 
 ////////////////////////////////////////////////////////////
-OutStringStream& OutStringStream::operator<<(std::ios_base& (*func)(std::ios_base&))
+bool InFile::isEOF() const noexcept
 {
-    m_impl->oss << func;
-    return *this;
+    return m_impl->file != nullptr && std::feof(m_impl->file) != 0;
 }
 
-
-////////////////////////////////////////////////////////////
-OutStringStream& OutStringStream::operator<<(std::ostream& (*func)(std::ostream&))
-{
-    m_impl->oss << func;
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-struct InFileStream::Impl
-{
-    std::ifstream ifs;
-
-    Impl() = default;
-
-    Impl(auto&&... args) : ifs(static_cast<decltype(args)>(args)...)
-    {
-    }
-};
-
-
-////////////////////////////////////////////////////////////
-InFileStream::InFileStream()                                   = default;
-InFileStream::~InFileStream()                                  = default;
-InFileStream::InFileStream(InFileStream&&) noexcept            = default;
-InFileStream& InFileStream::operator=(InFileStream&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
-InFileStream::InFileStream(const Path& filename, FileOpenMode mode) : m_impl(filename.c_str(), mapFileOpenMode(mode))
-{
-}
-
-
-////////////////////////////////////////////////////////////
-void InFileStream::open(const Path& filename, FileOpenMode mode)
-{
-    m_impl->ifs.open(filename.c_str(), mapFileOpenMode(mode));
-}
-
-
-////////////////////////////////////////////////////////////
-InFileStream& InFileStream::read(char* data, base::PtrDiffT size)
-{
-    m_impl->ifs.read(data, static_cast<std::streamsize>(size));
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-void InFileStream::close()
-{
-    m_impl->ifs.close();
-}
-
-
-////////////////////////////////////////////////////////////
-InFileStream& InFileStream::seekg(base::PtrDiffT absolutePos)
-{
-    m_impl->ifs.seekg(static_cast<std::streamoff>(absolutePos));
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-InFileStream& InFileStream::seekg(base::PtrDiffT offset, SeekDir dir)
-{
-    m_impl->ifs.seekg(static_cast<std::streamoff>(offset), mapSeekDir(dir));
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-base::PtrDiffT InFileStream::gcount() const
-{
-    return static_cast<base::PtrDiffT>(m_impl->ifs.gcount());
-}
-
-
-////////////////////////////////////////////////////////////
-base::PtrDiffT InFileStream::tellg()
-{
-    return static_cast<base::PtrDiffT>(m_impl->ifs.tellg());
-}
-
-
-////////////////////////////////////////////////////////////
-bool InFileStream::isOpen() const
-{
-    return m_impl->ifs.is_open();
-}
-
-
-////////////////////////////////////////////////////////////
-bool InFileStream::isGood() const
-{
-    return m_impl->ifs.good();
-}
-
-
-////////////////////////////////////////////////////////////
-bool InFileStream::isEOF() const
-{
-    return m_impl->ifs.eof();
-}
-
-
-////////////////////////////////////////////////////////////
-InFileStream::operator bool() const
-{
-    return static_cast<bool>(m_impl->ifs);
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-InFileStream& InFileStream::operator>>(T& value)
-{
-    if constexpr (base::isEnum<T>)
-    {
-        m_impl->ifs >> static_cast<base::UnderlyingType<T>&>(value);
-    }
-    else
-    {
-        m_impl->ifs >> value;
-    }
-
-    return *this;
-}
-
-
-//////////////////////////////////////////////////////////////
-#define x(type) template InFileStream& InFileStream::operator>> <type>(type&); // NOLINT(bugprone-macro-parentheses)
-SFML_BASE_IN_STREAMABLE_TYPES_X(x)
-#undef x
-
-
-////////////////////////////////////////////////////////////
-struct InStringStream::Impl
-{
-    std::istringstream iss;
-
-    Impl() = default;
-
-    Impl(auto&&... args) : iss(static_cast<decltype(args)>(args)...)
-    {
-    }
-};
-
-
-////////////////////////////////////////////////////////////
-InStringStream::InStringStream()                                     = default;
-InStringStream::~InStringStream()                                    = default;
-InStringStream::InStringStream(InStringStream&&) noexcept            = default;
-InStringStream& InStringStream::operator=(InStringStream&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
-InStringStream::InStringStream(const std::string& str, FileOpenMode mode) : m_impl(str, mapFileOpenMode(mode))
-{
-}
-
-
-////////////////////////////////////////////////////////////
-InStringStream::InStringStream(const base::String& str, FileOpenMode mode) :
-    InStringStream{std::string{str.data(), str.size()}, mode}
-{
-}
-
-
-////////////////////////////////////////////////////////////
-InStringStream& InStringStream::get(char& ch)
-{
-    m_impl->iss.get(ch);
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-InStringStream& InStringStream::read(char* data, base::PtrDiffT size)
-{
-    m_impl->iss.read(data, static_cast<std::streamsize>(size));
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-void InStringStream::clear()
-{
-    m_impl->iss.clear();
-}
-
-
-////////////////////////////////////////////////////////////
-InStringStream& InStringStream::ignore(base::PtrDiffT count, char delim)
-{
-    m_impl->iss.ignore(static_cast<std::streamsize>(count), delim);
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-base::PtrDiffT InStringStream::gcount() const
-{
-    return static_cast<base::PtrDiffT>(m_impl->iss.gcount());
-}
-
-
-////////////////////////////////////////////////////////////
-base::PtrDiffT InStringStream::tellg()
-{
-    return static_cast<base::PtrDiffT>(m_impl->iss.tellg());
-}
-
-
-////////////////////////////////////////////////////////////
-bool InStringStream::isGood() const
-{
-    return m_impl->iss.good();
-}
-
-
-////////////////////////////////////////////////////////////
-bool InStringStream::isEOF() const
-{
-    return m_impl->iss.eof();
-}
-
-
-////////////////////////////////////////////////////////////
-InStringStream::operator bool() const
-{
-    return static_cast<bool>(m_impl->iss);
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-InStringStream& InStringStream::operator>>(T& value)
-{
-    if constexpr (base::isEnum<T>)
-    {
-        m_impl->iss >> static_cast<base::UnderlyingType<T>&>(value);
-    }
-    else
-    {
-        m_impl->iss >> value;
-    }
-
-    return *this;
-}
-
-
-//////////////////////////////////////////////////////////////
-InStringStream& InStringStream::operator>>(Hex)
-{
-    m_impl->iss >> std::hex;
-    return *this;
-}
-
-
-//////////////////////////////////////////////////////////////
-InStringStream& InStringStream::operator>>(base::String& value)
-{
-    std::string temp;
-    m_impl->iss >> temp;
-    value = base::String{temp.data(), temp.size()};
-    return *this;
-}
-
-
-//////////////////////////////////////////////////////////////
-#define x(type) template InStringStream& InStringStream::operator>> <type>(type&); // NOLINT(bugprone-macro-parentheses)
-SFML_BASE_IN_STREAMABLE_TYPES_X(x)
-#undef x
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-bool getLine(InStringStream& stream, T& target)
-{
-    return getLine(stream.m_impl->iss, target);
-}
 
 } // namespace sf

@@ -19,7 +19,7 @@ namespace sf::priv
 /// \brief Decode and log a known EGL error
 ///
 /// Translates a previously retrieved EGL error code into a human-readable
-/// description and writes it to `sf::priv::err()` along with the source
+/// description and writes it to `priv::errMsg` along with the source
 /// location of the offending call. Invoked by `EglScopedChecker` and
 /// not meant to be called directly by user code; use the `eglCheck`
 /// macro instead.

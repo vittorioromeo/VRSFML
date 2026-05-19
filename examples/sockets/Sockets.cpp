@@ -6,6 +6,9 @@
 
 #include "SFML/System/IO.hpp"
 
+#include "SFML/Base/Fmt/Fmt.hpp"
+#include "SFML/Base/Fmt/FmtNumeric.hpp"
+
 
 ////////////////////////////////////////////////////////////
 /// Main
@@ -18,19 +21,19 @@ int main()
 
     // TCP, UDP or connected UDP ?
     char protocol{};
-    sf::cOut() << "Do you want to use TCP (t) or UDP (u)? ";
+    sf::base::print("Do you want to use TCP (t) or UDP (u)? ");
     sf::cIn() >> protocol;
 
     // Client or server ?
     char who{};
-    sf::cOut() << "Do you want to be a server (s) or a client (c)? ";
+    sf::base::print("Do you want to be a server (s) or a client (c)? ");
     sf::cIn() >> who;
 
     if (protocol == 't')
     {
         // Enable TLS ?
         char tls{};
-        sf::cOut() << "Do you want to enable TLS (y) or not (n)? ";
+        sf::base::print("Do you want to enable TLS (y) or not (n)? ");
         sf::cIn() >> tls;
 
         // Test the TCP protocol
@@ -49,7 +52,7 @@ int main()
     }
 
     // Wait until the user presses 'enter' key
-    sf::cOut() << "Press enter to exit..." << sf::endL;
+    sf::base::printLn("Press enter to exit...");
     sf::cIn().ignore(10'000, '\n');
     sf::cIn().ignore(10'000, '\n');
 }

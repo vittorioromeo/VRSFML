@@ -4,8 +4,7 @@
 #include "SFML/System/Path.hpp"
 
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/PtrDiffT.hpp"
-#include "SFML/Base/String.hpp"
+#include "SFML/Base/Fmt/FmtToString.hpp"
 #include "SFML/Base/StringView.hpp"
 
 
@@ -21,13 +20,10 @@ inline Path getTemporaryFilePath()
 {
     static int counter = 0;
 
-    OutStringStream oss;
-    oss << "sfmltemp_" << counter++ << ".tmp";
-
     const auto tmp = Path::getTempDirectory();
     SFML_BASE_ASSERT(tmp && "Failed to obtain temp directory");
 
-    return *tmp / Path(oss.to<base::String>());
+    return *tmp / Path(base::fmtToString("sfmltemp_{}.tmp", counter++));
 }
 
 
@@ -49,11 +45,13 @@ public:
     /// Create a temporary file containing \a contents.
     explicit TemporaryFile(base::StringView contents) : m_path(getTemporaryFilePath())
     {
-        OutFileStream ofs(m_path);
-        SFML_BASE_ASSERT(ofs && "Stream encountered an error");
+        auto optFile = OutFile::open(m_path);
+        SFML_BASE_ASSERT(optFile.hasValue() && "Failed to open temporary file for writing");
 
-        ofs.write(contents.data(), static_cast<base::PtrDiffT>(contents.size()));
-        SFML_BASE_ASSERT(ofs && "Stream encountered an error");
+        [[maybe_unused]] const bool wrote = optFile->write(contents.data(), contents.size());
+        SFML_BASE_ASSERT(wrote && "Failed to write temporary file contents");
+
+        // Destructor of `optFile` closes the file when this body returns.
     }
 
     ~TemporaryFile()

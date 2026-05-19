@@ -7,4 +7,4 @@
 
 #include "SFML/Base/Vector.hpp"
 
-[[nodiscard]] sf::base::Vector<unsigned char> loadIntoMemory(const char* path);
+[[nodiscard]] sf::base::Vector<char> loadIntoMemory(const char* path);

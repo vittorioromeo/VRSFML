@@ -271,7 +271,7 @@ private:
         glCheck(glGenFramebuffers(1, &framebufferId));
 
         if (framebufferId == 0u)
-            sf::priv::err() << "Failed to create transfer scratch " << what;
+            priv::errMsg("Failed to create transfer scratch {}", what);
 
         return framebufferId;
     }
@@ -307,7 +307,7 @@ private:
 
         if (scratch.flipTexture == 0u)
         {
-            sf::priv::err() << "Failed to create transfer scratch flip texture";
+            priv::errMsg("Failed to create transfer scratch flip texture");
             return 0u;
         }
 
@@ -339,8 +339,7 @@ public:
         // Verify that everything is already released for all contexts
         if (!m_byContext.empty())
         {
-            sf::priv::err() << "TransferScratchManager destroyed with unreleased resources for " << m_byContext.size()
-                            << " contexts";
+            priv::errMsg("TransferScratchManager destroyed with unreleased resources for {} contexts", m_byContext.size());
 
             sf::base::abort();
         }
@@ -415,7 +414,7 @@ public:
 
             if (glCheck(glCheckFramebufferStatus(GL_FRAMEBUFFER)) != GL_FRAMEBUFFER_COMPLETE)
             {
-                sf::priv::err() << "Failure to complete intermediate FBO in `copyFlippedFramebuffer`";
+                priv::errMsg("Failure to complete intermediate FBO in `copyFlippedFramebuffer`");
                 return 0u;
             }
 
@@ -573,7 +572,7 @@ WindowContextImpl& ensureInstalled()
 {
     if (!installedWindowContext.hasValue()) [[unlikely]]
     {
-        priv::err() << "`sf::WindowContext` not installed -- did you forget to create one in `main`?";
+        priv::errMsg("`sf::WindowContext` not installed -- did you forget to create one in `main`?");
         base::abort();
     }
 
@@ -587,7 +586,7 @@ base::Optional<WindowContext> WindowContext::create()
 {
     const auto fail = [](const char* what)
     {
-        priv::err() << "Error creating `sf::WindowContext`: " << what;
+        priv::errMsg("Error creating `sf::WindowContext`: {}", what);
         return base::nullOpt;
     };
 
@@ -760,7 +759,7 @@ void WindowContext::cleanupUnsharedFrameBuffers(priv::GlContext& glContext)
     {
         // Make this context active so resources can be freed
         if (!setActiveThreadLocalGlContext(glContext, true))
-            priv::err() << "Could not enable GL context in GlContext::cleanupUnsharedFrameBuffers()";
+            priv::errMsg("Could not enable GL context in GlContext::cleanupUnsharedFrameBuffers()");
 
         wc.unsharedContextResourcesManager.unregisterAllResources(glContext.getId());
         wc.transferScratchManager.releaseForActiveContext();
@@ -849,7 +848,7 @@ bool WindowContext::setActiveThreadLocalGlContext(priv::GlContext& glContext, co
     // Activate/deactivate the context
     if (!glContext.makeCurrent(active))
     {
-        priv::err() << "`glContext.makeCurrent` failure in `WindowContext::setActiveThreadLocalGlContext`";
+        priv::errMsg("`glContext.makeCurrent` failure in `WindowContext::setActiveThreadLocalGlContext`");
         return false;
     }
 
@@ -891,7 +890,7 @@ void WindowContext::onGlContextDestroyed(priv::GlContext& glContext)
 
     if (!setActiveThreadLocalGlContextToSharedContext())
     {
-        priv::err() << "Failed to enable shared GL context in `WindowContext::onGlContextDestroyed`";
+        priv::errMsg("Failed to enable shared GL context in `WindowContext::onGlContextDestroyed`");
         SFML_BASE_ASSERT(false);
     }
 }
@@ -923,7 +922,7 @@ void WindowContext::disableSharedGlContext()
 
     if (!wc.sharedGlContext.makeCurrent(false))
     {
-        priv::err() << "Could not disable shared GL context in `WindowContext::disableSharedGlContext()`";
+        priv::errMsg("Could not disable shared GL context in `WindowContext::disableSharedGlContext()`");
         return;
     }
 
@@ -960,7 +959,7 @@ base::UniquePtr<priv::GlContext> WindowContext::createGlContextImpl(const Contex
     const std::lock_guard lock(wc.sharedGlContextMutex);
 
     if (!setActiveThreadLocalGlContextToSharedContext())
-        priv::err() << "Error enabling shared GL context in WindowContext::createGlContext()";
+        priv::errMsg("Error enabling shared GL context in WindowContext::createGlContext()");
 
     auto glContext = base::makeUnique<priv::SDLGlContext>(wc.nextThreadLocalGlContextId.fetchAddSeqCst(1u),
                                                           &wc.sharedGlContext,
@@ -969,13 +968,13 @@ base::UniquePtr<priv::GlContext> WindowContext::createGlContextImpl(const Contex
 
     if (!setActiveThreadLocalGlContext(*glContext, true))
     {
-        priv::err() << "Error enabling newly created GL context in GlContext::initialize()";
+        priv::errMsg("Error enabling newly created GL context in GlContext::initialize()");
         return nullptr;
     }
 
     if (!glContext->initialize(wc.sharedGlContext, contextSettings))
     {
-        priv::err() << "Error initializing newly created GL context in WindowContext::createGlContext()";
+        priv::errMsg("Error initializing newly created GL context in WindowContext::createGlContext()");
         return nullptr;
     }
 

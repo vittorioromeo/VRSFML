@@ -29,8 +29,7 @@ void SensorManager::setEnabled(Sensor::Type sensor, bool enabled)
     }
     else
     {
-        priv::err() << "Warning: trying to enable a sensor that is not available (call Sensor::isAvailable to check "
-                       "it)";
+        priv::errMsg("Warning: trying to enable a sensor that is not available (call Sensor::isAvailable to check it)");
     }
 }
 
@@ -85,7 +84,7 @@ SensorManager::SensorManager()
             else
             {
                 m_sensors[sensor].available = false;
-                priv::err() << "Warning: sensor " << i << " failed to open, will not be available";
+                priv::errMsg("Warning: sensor {} failed to open, will not be available", i);
             }
         }
     }

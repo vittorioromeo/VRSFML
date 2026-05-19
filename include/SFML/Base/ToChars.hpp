@@ -9,6 +9,7 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/IsInf.hpp"
 #include "SFML/Base/Builtin/IsNan.hpp"
+#include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/Builtin/Signbit.hpp"
 #include "SFML/Base/Math/Rint.hpp"
 #include "SFML/Base/Trait/IsFloatingPoint.hpp"
@@ -20,9 +21,7 @@
 namespace sf::base::priv
 {
 ////////////////////////////////////////////////////////////
-/// \brief Precomputed powers of 10 for performance
-///
-/// Supports up to 10 decimal places.
+/// \brief Precomputed powers of 10 (supports up to 10 decimal places)
 ///
 ////////////////////////////////////////////////////////////
 inline constexpr const long long powersOf10[] = {
@@ -41,47 +40,124 @@ inline constexpr const long long powersOf10[] = {
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Reverses the character sequence in the given range.
+/// \brief 200-byte ASCII table: bytes `[2*N .. 2*N+1]` hold the two-digit
+/// representation of `N` for `0 <= N < 100` (e.g. index 7 -> `"07"`)
 ///
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] inline constexpr void reverseChars(char* first, char* last)
-{
-    // `last` is one-past-the-end, so decrement it to point to the last character.
-    --last;
+inline constexpr char digitPairs[201] =
+    "0001020304050607080910111213141516171819"
+    "2021222324252627282930313233343536373839"
+    "4041424344454647484950515253545556575859"
+    "6061626364656667686970717273747576777879"
+    "8081828384858687888990919293949596979899";
 
-    while (first < last)
+
+////////////////////////////////////////////////////////////
+/// \brief Number of decimal digits needed to represent `value`
+///
+/// Cascading comparisons; compiler turns it into a small branch tree.
+/// Common cases (`< 100`) exit in one or two branches.
+///
+////////////////////////////////////////////////////////////
+template <typename T>
+[[nodiscard, gnu::always_inline, gnu::const]] inline constexpr int decimalDigitCount(const T x) noexcept
+{
+    static_assert(SFML_BASE_IS_UNSIGNED(T));
+
+    if constexpr (sizeof(T) <= 4)
     {
-        const char tmp = *first;
-        *first++       = *last;
-        *last--        = tmp;
+        // clang-format off
+        if (x < 10u) return 1;
+        if (x < 100u) return 2;
+        if (x < 1'000u) return 3;
+        if (x < 10'000u) return 4;
+        if (x < 100'000u) return 5;
+        if (x < 1'000'000u) return 6;
+        if (x < 10'000'000u) return 7;
+        if (x < 100'000'000u) return 8;
+        if (x < 1'000'000'000u) return 9;
+        // clang-format on
+
+        return 10;
+    }
+    else
+    {
+        // clang-format off
+        if (x < 10ull) return 1;
+        if (x < 100ull) return 2;
+        if (x < 1'000ull) return 3;
+        if (x < 10'000ull) return 4;
+        if (x < 100'000ull) return 5;
+        if (x < 1'000'000ull) return 6;
+        if (x < 10'000'000ull) return 7;
+        if (x < 100'000'000ull) return 8;
+        if (x < 1'000'000'000ull) return 9;
+        if (x < 10'000'000'000ull) return 10;
+        if (x < 100'000'000'000ull) return 11;
+        if (x < 1'000'000'000'000ull) return 12;
+        if (x < 10'000'000'000'000ull) return 13;
+        if (x < 100'000'000'000'000ull) return 14;
+        if (x < 1'000'000'000'000'000ull) return 15;
+        if (x < 10'000'000'000'000'000ull) return 16;
+        if (x < 100'000'000'000'000'000ull) return 17;
+        if (x < 1'000'000'000'000'000'000ull) return 18;
+        if (x < 10'000'000'000'000'000'000ull) return 19;
+        // clang-format on
+
+        return 20;
     }
 }
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Write the decimal representation of an unsigned `value` into `[first, last)`
+/// \brief Jeaiii-style: write the decimal representation of an unsigned
+/// `value` into `[first, last)` using a 200-byte digit-pair lookup table.
 ///
-/// \return Pointer one past the last written character, or `nullptr` if the buffer is too small
+/// Halves the number of `divide-by-10` operations vs. the naïve loop and
+/// avoids the in-place reverse pass: computes digit count up front, then
+/// writes pairs right-to-left straight into the destination.
+///
+/// \return Pointer one past the last written character, or `nullptr` if
+/// the buffer is too small.
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
 [[nodiscard, gnu::always_inline, gnu::flatten]] constexpr char* unsignedToChars(char* const first, const char* const last, T value)
 {
-    // `do-while` covers `value == 0` without a separate branch: we always emit
-    // at least one digit, then keep dividing while bits remain.
-    char* p = first;
+    static_assert(SFML_BASE_IS_UNSIGNED(T));
 
-    do
+    const int digits = decimalDigitCount(value);
+
+    if (last - first < digits)
+        return nullptr; // Buffer too small
+
+    char* const end = first + digits;
+    char*       p   = end;
+
+    // Two-at-a-time loop: divide by 100, look up the pair. Use literal `100u`
+    // for the comparison (rather than `T{100}`) so narrow types like `bool` /
+    // `unsigned char` don't trip the brace-init narrowing check.
+    while (value >= 100u)
     {
-        if (p >= last)
-            return nullptr; // Buffer too small
+        const auto pairIdx = static_cast<unsigned>(value % 100u) * 2u;
+        value              = static_cast<T>(value / 100u);
+        p -= 2;
+        SFML_BASE_MEMCPY(p, &digitPairs[pairIdx], 2);
+    }
 
-        *p++ = '0' + static_cast<char>(value % 10);
-        value /= 10;
-    } while (value > T{0});
+    // Tail: one or two digits left.
+    if (value >= 10u)
+    {
+        const auto pairIdx = static_cast<unsigned>(value) * 2u;
+        p -= 2;
+        SFML_BASE_MEMCPY(p, &digitPairs[pairIdx], 2);
+    }
+    else
+    {
+        *--p = static_cast<char>('0' + static_cast<unsigned>(value));
+    }
 
-    reverseChars(first, p);
-    return p;
+    return end;
 }
 
 } // namespace sf::base::priv
@@ -218,7 +294,9 @@ template <typename T>
         if (value > safeLLongUpper) [[unlikely]]
             return nullptr;
 
-        const auto roundedAsInt = static_cast<long long>(base::rint(value));
+        // `value` is non-negative here (signbit branch already negated it),
+        // so the unsigned cast is well-defined.
+        const auto roundedAsInt = static_cast<unsigned long long>(base::rint(value));
         return priv::unsignedToChars(p, last, roundedAsInt);
     }
 
@@ -229,10 +307,10 @@ template <typename T>
         return nullptr;
 
     // `value` is non-negative at this point (signbit branch already negated it)
-    // and `scaled <= 9e18 < LLONG_MAX`, so signed cast is well-defined.
-    const auto roundedScaledValue = static_cast<long long>(base::rint(scaled));
-    const auto finalIntPart       = roundedScaledValue / multiplier;
-    auto       finalFracPart      = roundedScaledValue % multiplier;
+    // and `scaled <= 9e18 < LLONG_MAX`, so the unsigned cast is well-defined.
+    const auto roundedScaledValue = static_cast<unsigned long long>(base::rint(scaled));
+    const auto finalIntPart       = roundedScaledValue / static_cast<unsigned long long>(multiplier);
+    auto       finalFracPart      = roundedScaledValue % static_cast<unsigned long long>(multiplier);
 
     p = priv::unsignedToChars(p, last, finalIntPart);
 

@@ -20,7 +20,6 @@
 
 #include "SFML/System/Atomic.hpp"
 #include "SFML/System/Clock.hpp"
-#include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Thread.hpp"
 #include "SFML/System/Time.hpp"
@@ -30,6 +29,8 @@
 
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/Clamp.hpp"
+#include "SFML/Base/Fmt/Fmt.hpp"
+#include "SFML/Base/Fmt/FmtNumeric.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Pow.hpp"
 #include "SFML/Base/MinMax.hpp"
@@ -415,7 +416,7 @@ int main()
     // Create our VertexBuffer with enough space to hold all the terrain geometry
     if (!terrain.create(resolution.x * resolution.y * 6))
     {
-        sf::cErr() << "Failed to create vertex buffer" << sf::endL;
+        sf::base::printErrLn("Failed to create vertex buffer");
         return 1;
     }
 
@@ -442,8 +443,8 @@ int main()
 
     sf::base::SizeT currentSetting = 0;
 
-    sf::OutStringStream oss;
-    sf::Clock           clock;
+    sf::Utf8String hudBuf;
+    sf::Clock      clock;
 
     while (true)
     {
@@ -495,7 +496,7 @@ int main()
             {
                 if (!terrain.update(terrainStagingBuffer.data()))
                 {
-                    sf::cErr() << "Failed to update vertex buffer" << sf::endL;
+                    sf::base::printErrLn("Failed to update vertex buffer");
                     return 0;
                 }
 
@@ -507,16 +508,22 @@ int main()
         }
 
         // Update and draw the HUD text
-        oss.setStr("");
-        oss << "Frame:  " << clock.restart().asMilliseconds() << "ms\n"
-            << "perlinOctaves:  " << perlinOctaves << "\n\n"
-            << "Use the arrow keys to change the values.\nUse the return key to regenerate the terrain.\n\n";
+        hudBuf.clear();
+        sf::base::fmtTo(hudBuf,
+                        "Frame:  {}ms\n"
+                        "perlinOctaves:  {}\n\n"
+                        "Use the arrow keys to change the values.\nUse the return key to regenerate the terrain.\n\n",
+                        clock.restart().asMilliseconds(),
+                        perlinOctaves);
 
         for (sf::base::SizeT i = 0; i < settings.size(); ++i)
-            oss << ((i == currentSetting) ? ">>  " : "       ") << settings[i].name << ":  " << *(settings[i].value)
-                << '\n';
+            sf::base::fmtTo(hudBuf,
+                            "{}{}:  {}\n",
+                            (i == currentSetting) ? ">>  " : "       ",
+                            settings[i].name,
+                            *(settings[i].value));
 
-        hudText.setString(oss.to<sf::Utf8String>());
+        hudText.setString(hudBuf);
 
         window.draw(hudText, {.view = windowView});
 

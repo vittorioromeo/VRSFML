@@ -137,7 +137,7 @@ struct PlaybackDevice::Impl
 PlaybackDevice::PlaybackDevice(const PlaybackDeviceHandle& playbackDeviceHandle) : m_impl(playbackDeviceHandle)
 {
     if (!m_impl->initialize())
-        priv::err() << "Failed to initialize the playback device";
+        priv::errMsg("Failed to initialize the playback device");
 }
 
 

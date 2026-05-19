@@ -233,7 +233,7 @@ void Music::setLoopPoints(const TimeSpan timePoints)
 
     if (fileSampleCount == 0u)
     {
-        priv::err() << "Music is not in a valid state to assign Loop Points.";
+        priv::errMsg("Music is not in a valid state to assign Loop Points.");
         return;
     }
 
@@ -245,14 +245,14 @@ void Music::setLoopPoints(const TimeSpan timePoints)
 
     if (samplePoints.offset >= fileSampleCount)
     {
-        priv::err() << "LoopPoints offset val must be in range [0, Duration).";
+        priv::errMsg("LoopPoints offset val must be in range [0, Duration).");
         state.loopSpan = {0u, state.musicReader.getSampleCount()};
         return;
     }
 
     if (samplePoints.length == 0u)
     {
-        priv::err() << "LoopPoints length val must be nonzero.";
+        priv::errMsg("LoopPoints length val must be nonzero.");
         state.loopSpan = {0u, state.musicReader.getSampleCount()};
         return;
     }

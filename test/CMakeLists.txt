@@ -92,9 +92,6 @@ add_subdirectory(Network)
 add_subdirectory(System)
 add_subdirectory(Window)
 
-if(TARGET ExampleUtils)
-    add_subdirectory(ExampleUtils)
-endif()
 
 if(SFML_OS_ANDROID AND DEFINED ENV{LIBCXX_SHARED_SO})
     # Because we can only write to the tmp directory on the Android virtual device we will need to build our directory tree under it
@@ -189,9 +186,6 @@ endif()
 
 add_custom_target(runtests DEPENDS test-sfml-base test-sfml-system test-sfml-glutils test-sfml-window test-sfml-graphics test-sfml-network test-sfml-audio)
 
-if(TARGET test-example-utils)
-    add_dependencies(runtests test-example-utils)
-endif()
 add_custom_command(TARGET runtests
                    COMMENT "Run tests"
                    POST_BUILD

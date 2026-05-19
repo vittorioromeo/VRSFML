@@ -8,6 +8,7 @@
 #include "SFML/Audio/SoundFileWriterFlac.hpp"
 
 #include "SFML/Audio/ChannelMap.hpp"
+#include "SFML/Audio/SoundChannel.hpp"
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/FileUtils.hpp"
@@ -15,7 +16,9 @@
 #include "SFML/System/PathUtils.hpp"
 
 #include "SFML/Base/Algorithm/Find.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/MinMax.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
 
@@ -73,7 +76,7 @@ bool SoundFileWriterFlac::open(const Path& filename, unsigned int sampleRate, un
     switch (channelCount)
     {
         case 0:
-            priv::err() << "No channels to write to FLAC file";
+            priv::errMsg("No channels to write to FLAC file");
             return false;
         case 1:
             targetChannelMap = {SoundChannel::Mono};
@@ -122,14 +125,14 @@ bool SoundFileWriterFlac::open(const Path& filename, unsigned int sampleRate, un
                                 SoundChannel::SideRight};
             break;
         default:
-            priv::err() << "FLAC files with more than 8 channels not supported";
+            priv::errMsg("FLAC files with more than 8 channels not supported");
             return false;
     }
 
     // Check if the channel map contains channels that we cannot remap to a mapping supported by FLAC
     if (!channelMap.isPermutationOf(targetChannelMap))
     {
-        priv::err() << "Provided channel map cannot be reordered to a channel map supported by FLAC";
+        priv::errMsg("Provided channel map cannot be reordered to a channel map supported by FLAC");
         return false;
     }
 
@@ -142,7 +145,7 @@ bool SoundFileWriterFlac::open(const Path& filename, unsigned int sampleRate, un
     m_impl->encoder.reset(FLAC__stream_encoder_new());
     if (!m_impl->encoder)
     {
-        priv::err() << "Failed to write flac file (failed to allocate encoder)\n" << priv::PathDebugFormatter{filename};
+        priv::errMsg("Failed to write flac file (failed to allocate encoder)\n{}", priv::PathDebugFormatter{filename});
         return false;
     }
 
@@ -158,7 +161,7 @@ bool SoundFileWriterFlac::open(const Path& filename, unsigned int sampleRate, un
     if (FLAC__stream_encoder_init_FILE(m_impl->encoder.get(), m_impl->file, nullptr, nullptr) !=
         FLAC__STREAM_ENCODER_INIT_STATUS_OK)
     {
-        priv::err() << "Failed to write flac file (failed to open the file)\n" << priv::PathDebugFormatter{filename};
+        priv::errMsg("Failed to write flac file (failed to open the file)\n{}", priv::PathDebugFormatter{filename});
         m_impl->encoder.reset();
         return false;
     }

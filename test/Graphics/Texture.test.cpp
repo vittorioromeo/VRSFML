@@ -29,7 +29,7 @@
 namespace
 {
 
-const sf::base::Vector<unsigned char>& sharedLogoBytes()
+const sf::base::Vector<char>& sharedLogoBytes()
 {
     static auto bytes = loadIntoMemory("sfml-logo-big.png");
     return bytes;

@@ -18,6 +18,8 @@
     #include "SFML/System/Time.hpp"
 
     #include "SFML/Base/Abort.hpp"
+    #include "SFML/Base/Fmt/Fmt.hpp"
+    #include "SFML/Base/Fmt/FmtNumeric.hpp"
 #endif
 
 
@@ -77,7 +79,7 @@ struct [[nodiscard]] Database
     {
         if (nextNodeId >= maxNodes) [[unlikely]]
         {
-            sf::cErr() << "SFEX Profiler: exceeded maximum number of nodes (" << maxNodes << ")\n";
+            sf::base::printErrLn("SFEX Profiler: exceeded maximum number of nodes ({})", maxNodes);
             sf::base::abort();
         }
 

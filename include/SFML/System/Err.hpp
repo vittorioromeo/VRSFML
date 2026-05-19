@@ -8,112 +8,148 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Export.hpp"
 
-#include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/System/Fmt/FmtPath.hpp" // IWYU pragma: keep -- makes fmtArg(Path) visible at errMsg call sites
 
-#include <iosfwd>
+#include "SFML/Base/Fmt/Fmt.hpp"
+#include "SFML/Base/Fmt/FmtNumeric.hpp" // IWYU pragma: export -- errMsg call sites typically format numeric arguments
+#include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/SizeT.hpp"
+
+
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+namespace sf::base
+{
+class String;
+} // namespace sf::base
 
 
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-struct PathDebugFormatter;
+/// \brief Callback installed via `setErrSink` to redirect error output.
+///
+/// Receives the fully-assembled error text (already prefixed with
+/// "[[SFML ERROR]]: " for the first chunk of an emission). May be
+/// invoked once or twice per error -- once for the message body, once
+/// for the trailing newline that follows an optional stack trace.
+////////////////////////////////////////////////////////////
+using ErrSinkFn = void (*)(void* ctx, const char* data, base::SizeT size);
+
 
 ////////////////////////////////////////////////////////////
-struct ErrFlushType
-{
-};
+/// \brief Install a custom error sink. `nullptr` restores the default
+/// (writes to `stderr`). Used by Android (logcat) and tests.
+////////////////////////////////////////////////////////////
+SFML_SYSTEM_API void setErrSink(ErrSinkFn fn, void* ctx);
 
-inline constexpr ErrFlushType errFlush;
 
 ////////////////////////////////////////////////////////////
-class SFML_SYSTEM_API ErrStream
+/// \brief Out-of-line emission helper. Called by `errMsg` / `~ErrMsgScope`.
+///
+/// Acquires the err mutex, prepends the "[[SFML ERROR]]: " prefix, and
+/// writes through the installed sink. When `trailing == true` it also
+/// emits a stack trace + trailing newline. Stderr is always flushed at
+/// the end of the call so partial messages remain visible if the process
+/// crashes before the next emission.
+////////////////////////////////////////////////////////////
+SFML_SYSTEM_API void emitErr(const char* data, base::SizeT size, bool trailing);
+
+
+////////////////////////////////////////////////////////////
+/// \brief Scoped error-message builder.
+///
+/// Composes a single error message across multiple `format` / `append`
+/// calls (useful for loops, conditional content, multi-line diagnostics).
+/// On destruction emits the accumulated content atomically: one prefix,
+/// one optional trailing newline + stack trace, one flush.
+///
+/// Buffering avoids holding the err lock across user formatting work --
+/// the lock is taken only once, during the final emission.
+///
+/// `base::String` is intentionally not exposed in this header. The
+/// member buffer is stored opaquely via `InPlacePImpl`; format and
+/// append operations route through `fmtImpl` / `append`, both
+/// defined in `Err.cpp` where the full `String` type is available.
+////////////////////////////////////////////////////////////
+class SFML_SYSTEM_API ErrMsgScope
 {
-    friend ErrStream& err(bool multiLine);
+public:
+    ErrMsgScope();
+    ~ErrMsgScope();
+
+    ErrMsgScope(const ErrMsgScope&)            = delete;
+    ErrMsgScope& operator=(const ErrMsgScope&) = delete;
+
+    ErrMsgScope(ErrMsgScope&&)            = delete;
+    ErrMsgScope& operator=(ErrMsgScope&&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Append a null-terminated string to the buffered message.
+    /// For raw byte spans, use the two-argument overload.
+    ////////////////////////////////////////////////////////////
+    void append(const char* text);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Append `size` bytes from `data` to the buffered message.
+    ////////////////////////////////////////////////////////////
+    void append(const char* data, base::SizeT size);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Append formatted content to the buffered message.
+    ///
+    /// Routes through `base::fmtTo`, which uses `*this` as an `AppendSink`
+    /// (via the two-argument `append` overload above). Stack-scratched on
+    /// the fast path, heap-fallback on overflow -- both end in a single
+    /// `append(scratch, size)` call to this scope.
+    ////////////////////////////////////////////////////////////
+    template <typename... Args>
+    void fmt(typename base::NonDeduced<const base::FmtString<Args...>>::type fmtStr, const Args&... args)
+    {
+        base::fmtTo(*this, fmtStr, args...);
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Suppress the trailing newline + stack trace on destruction.
+    /// Use for multi-line messages that the caller has formatted to end
+    /// in their own newline, or when no stack trace is wanted.
+    ////////////////////////////////////////////////////////////
+    void disableTrailing() noexcept;
 
 private:
-    class SFML_SYSTEM_API Guard
-    {
-    public:
-        explicit Guard(std::ostream& stream, void* mutexPtr, bool multiLine);
-        ~Guard();
-
-        Guard(const Guard&)            = delete;
-        Guard& operator=(const Guard&) = delete;
-
-        Guard(Guard&&)            = delete;
-        Guard& operator=(Guard&&) = delete;
-
-        Guard& operator<<(std::ios_base& (*func)(std::ios_base&));
-        Guard& operator<<(std::ostream& (*func)(std::ostream&));
-
-        Guard& operator<<(const char* value);
-        Guard& operator<<(ErrFlushType);
-        Guard& operator<<(PathDebugFormatter);
-
-        template <typename T>
-        Guard& operator<<(const T& value);
-
-    private:
-        std::ostream& m_stream;
-        void*         m_mutexPtr;
-        bool          m_multiLine;
-    };
-
-    struct Impl;
-    base::InPlacePImpl<Impl, 512> m_impl; //!< Implementation details
-
-public:
-    explicit ErrStream(std::streambuf* sbuf);
-
-    Guard operator<<(std::ostream& (*func)(std::ostream&));
-
-    std::streambuf* rdbuf();
-    void            rdbuf(std::streambuf* sbuf);
-
-    Guard operator<<(const char* value);
-    Guard operator<<(ErrFlushType);
-    Guard operator<<(PathDebugFormatter);
-
-    template <typename T>
-    Guard operator<<(const T& value);
+    // Buffer-sized for the layout of `base::String` (3 pointers/sizes on
+    // x86_64 = 24 bytes; rounded up for headroom and 32-bit safety).
+    base::InPlacePImpl<base::String, 32> m_buf;
+    bool                                 m_trailing{true};
 };
 
+
 ////////////////////////////////////////////////////////////
-/// \brief Standard stream used by SFML to output warnings and errors
+/// \brief Atomic single-emission error. Equivalent to a scoped
+/// `ErrMsgScope` that lives just long enough to format `fmt` / `args`.
 ///
+/// Output shape: `"[[SFML ERROR]]: " + content + "\n" + stack_trace + "\n"`.
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_SYSTEM_API ErrStream& err(bool multiLine = false);
+template <typename... Args>
+void errMsg(typename base::NonDeduced<const base::FmtString<Args...>>::type fmtStr, const Args&... args)
+{
+    ErrMsgScope scope;
+    scope.fmt(fmtStr, args...);
+}
+
+
+////////////////////////////////////////////////////////////
+/// \brief Atomic single-emission error with no trailing newline / stack
+/// trace. Use when the caller's format string already supplies them or
+/// when emitting a logical line of a larger composed message.
+////////////////////////////////////////////////////////////
+template <typename... Args>
+void errMsgMulti(typename base::NonDeduced<const base::FmtString<Args...>>::type fmtStr, const Args&... args)
+{
+    ErrMsgScope scope;
+    scope.disableTrailing();
+    scope.fmt(fmtStr, args...);
+}
 
 } // namespace sf::priv
-
-
-////////////////////////////////////////////////////////////
-/// \fn sf::err
-/// \ingroup system
-///
-/// By default, `sf::priv::err()` outputs to the same location as `std::cerr`,
-/// (-> the stderr descriptor) which is the console if there's
-/// one available.
-///
-/// It is a standard `std::ostream` instance, so it supports all the
-/// insertion operations defined by the STL
-/// (`operator<<`, manipulators, etc.).
-///
-/// `sf::priv::err()` can be redirected to write to another output, independently
-/// of `std::cerr`, by using the `rdbuf()` function provided by the
-/// `std::ostream` class.
-///
-/// Example:
-/// \code
-/// // Redirect to a file
-/// std::ofstream file("sfml-log.txt");
-/// std::streambuf* previous = sf::priv::err().rdbuf(file.rdbuf());
-///
-/// // Redirect to nothing
-/// sf::priv::err().rdbuf(nullptr);
-///
-/// // Restore the original output
-/// sf::priv::err().rdbuf(previous);
-/// \endcode
-///
-////////////////////////////////////////////////////////////

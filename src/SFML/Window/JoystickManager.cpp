@@ -210,7 +210,7 @@ void JoystickManager::update()
 
         if (count > intMaxCount)
         {
-            priv::err() << "SDL reported " << count << " joysticks, but SFML supports a maximum of " << intMaxCount;
+            priv::errMsg("SDL reported {} joysticks, but SFML supports a maximum of {}", count, intMaxCount);
             count = intMaxCount;
         }
 
@@ -285,7 +285,7 @@ void JoystickManager::update()
 
             if (joyImpl->handle == nullptr)
             {
-                priv::err() << "Failed to open joystick: " << SDL_GetError();
+                priv::errMsg("Failed to open joystick: {}", SDL_GetError());
                 joyImpl.reset();
             }
             else

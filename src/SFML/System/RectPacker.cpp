@@ -55,7 +55,7 @@ base::Optional<Vec2u> RectPacker::pack(const Vec2u rectSize)
 {
     const auto fail = [&](const char* what)
     {
-        priv::err() << "Failure packing rectangle with size {" << rectSize.x << ", " << rectSize.y << "}: " << what;
+        priv::errMsg("Failure packing rectangle with size {{{}, {}}}: {}", rectSize.x, rectSize.y, what);
         return base::nullOpt;
     };
 
@@ -86,7 +86,7 @@ bool RectPacker::packMultiple(const base::Span<Vec2u> outPositions, const base::
 {
     const auto fail = [&](const char* what)
     {
-        priv::err() << "Failure packing multiple rectangles: " << what;
+        priv::errMsg("Failure packing multiple rectangles: {}", what);
         return false;
     };
 

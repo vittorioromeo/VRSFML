@@ -75,12 +75,12 @@ VertexBuffer::VertexBuffer(const VertexBuffer& rhs) : m_primitiveType(rhs.m_prim
     {
         if (!create(rhs.m_size))
         {
-            priv::err() << "Could not create vertex buffer for copying";
+            priv::errMsg("Could not create vertex buffer for copying");
             return;
         }
 
         if (!update(rhs))
-            priv::err() << "Could not copy vertex buffer";
+            priv::errMsg("Could not copy vertex buffer");
     }
 }
 
@@ -109,7 +109,7 @@ bool VertexBuffer::create(base::SizeT vertexCount)
 
     if (!m_buffer)
     {
-        priv::err() << "Could not create vertex buffer, generation failed";
+        priv::errMsg("Could not create vertex buffer, generation failed");
         return false;
     }
 

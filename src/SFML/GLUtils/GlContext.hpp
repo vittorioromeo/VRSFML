@@ -156,7 +156,7 @@ private:
     /// \brief Warn if the created context does not match the requested settings
     ///
     /// Compares `m_settings` against the originally requested settings
-    /// and emits a warning to `priv::err()` if version, depth/stencil
+    /// and emits a warning to `priv::errMsg` if version, depth/stencil
     /// bits, profile, or attribute flags do not match.
     ///
     /// \param requestedSettings Settings originally requested at

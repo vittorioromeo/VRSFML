@@ -34,7 +34,7 @@ bool isAvailable([[maybe_unused]] bool requireGraphics)
 
         if (!computeAvailable)
         {
-            priv::err() << "Failed to load Vulkan library: " << SDL_GetError();
+            priv::errMsg("Failed to load Vulkan library: {}", SDL_GetError());
             return false;
         }
 
@@ -45,13 +45,13 @@ bool isAvailable([[maybe_unused]] bool requireGraphics)
 
         if (extensions == nullptr)
         {
-            priv::err() << "Failed to get Vulkan extensions: " << SDL_GetError();
+            priv::errMsg("Failed to get Vulkan extensions: {}", SDL_GetError());
             graphicsAvailable = false;
         }
 
         if (count == 0)
         {
-            priv::err() << "No Vulkan extensions available";
+            priv::errMsg("No Vulkan extensions available");
             graphicsAvailable = false;
         }
     }
@@ -67,7 +67,7 @@ VulkanFunctionPointer getFunction(const char* name, const VkInstance instance)
 
     if (!isAvailable(/* requireGraphics */ false))
     {
-        priv::err() << "Tried to get Vulkan function pointer when Vulkan is not available";
+        priv::errMsg("Tried to get Vulkan function pointer when Vulkan is not available");
         return nullptr;
     }
 
@@ -76,7 +76,7 @@ VulkanFunctionPointer getFunction(const char* name, const VkInstance instance)
 
     if (vkGetInstanceProcAddr == nullptr)
     {
-        priv::err() << "Failed to get Vulkan function pointer: " << SDL_GetError();
+        priv::errMsg("Failed to get Vulkan function pointer: {}", SDL_GetError());
         return nullptr;
     }
 
@@ -89,7 +89,7 @@ base::Span<const char* const> getGraphicsRequiredInstanceExtensions()
 {
     if (!isAvailable(/* requireGraphics */ true))
     {
-        priv::err() << "Tried to get graphics required instance extensions when Vulkan is not available";
+        priv::errMsg("Tried to get graphics required instance extensions when Vulkan is not available");
         return {};
     }
 
@@ -98,7 +98,7 @@ base::Span<const char* const> getGraphicsRequiredInstanceExtensions()
 
     if (extensions == nullptr)
     {
-        priv::err() << "Failed to get Vulkan extensions: " << SDL_GetError();
+        priv::errMsg("Failed to get Vulkan extensions: {}", SDL_GetError());
         return {};
     }
 
@@ -115,13 +115,13 @@ bool createVulkanSurface(const VkInstance&            instance,
 
     if (!isAvailable(true))
     {
-        priv::err() << "Tried to create Vulkan surface when Vulkan is not available";
+        priv::errMsg("Tried to create Vulkan surface when Vulkan is not available");
         return false;
     }
 
     if (!SDL_Vulkan_CreateSurface(static_cast<SDL_Window*>(sdlWindowHandle), instance, allocator, &surface))
     {
-        priv::err() << "Failed to create Vulkan surface: " << SDL_GetError();
+        priv::errMsg("Failed to create Vulkan surface: {}", SDL_GetError());
         return false;
     }
 

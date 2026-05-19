@@ -9,8 +9,10 @@
 #include "SFML/System/Export.hpp"
 
 #include "SFML/Base/EnumClassBitwiseOps.hpp"
-#include "SFML/Base/FwdStdString.hpp"
+#include "SFML/Base/FwdStdString.hpp" // TODO P1: remove?
 #include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Trait/IsEnum.hpp"
@@ -39,106 +41,6 @@ class Path;
 
 namespace sf
 {
-////////////////////////////////////////////////////////////
-/// \brief Type used to flush an output stream.
-///
-////////////////////////////////////////////////////////////
-struct FlushType
-{
-};
-
-////////////////////////////////////////////////////////////
-/// \brief Global used to flush an output stream (substitute for `std::flush`)
-///
-////////////////////////////////////////////////////////////
-inline constexpr FlushType flush;
-
-
-////////////////////////////////////////////////////////////
-/// \brief Type used to print a newline and flush an output stream.
-///
-////////////////////////////////////////////////////////////
-struct EndLType
-{
-};
-
-////////////////////////////////////////////////////////////
-/// \brief Prints a newline and flushes an output stream (substitute for `std::endl`)
-///
-////////////////////////////////////////////////////////////
-inline constexpr EndLType endL;
-
-
-////////////////////////////////////////////////////////////
-/// \brief Output stream wrapper for `std::ostream`.
-///
-/// Provides a thin wrapper around `std::ostream` that hides the
-/// `<ostream>`/`<iostream>` headers behind a PImpl, so that translation
-/// units which include this header don't pay their compile-time cost.
-/// Use `sf::cOut()` and `sf::cErr()` to obtain instances bound to the
-/// standard output/error streams.
-///
-////////////////////////////////////////////////////////////
-class SFML_SYSTEM_API IOStreamOutput
-{
-    friend IOStreamOutput& cOut();
-    friend IOStreamOutput& cErr();
-
-private:
-    struct Impl;
-    base::InPlacePImpl<Impl, 512> m_impl; //!< Implementation details
-
-public:
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct from a `std::streambuf`
-    ///
-    ////////////////////////////////////////////////////////////
-    explicit IOStreamOutput(std::streambuf* sbuf);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the underlying stream buffer pointer
-    ///
-    ////////////////////////////////////////////////////////////
-    std::streambuf* rdbuf();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Replace the underlying stream buffer
-    ///
-    /// \param sbuf New stream buffer pointer (may be `nullptr` to discard output)
-    ///
-    ////////////////////////////////////////////////////////////
-    void rdbuf(std::streambuf* sbuf);
-
-    IOStreamOutput& operator<<(std::ios_base& (*func)(std::ios_base&));
-    IOStreamOutput& operator<<(std::ostream& (*func)(std::ostream&));
-
-    IOStreamOutput& operator<<(const char* value);
-    IOStreamOutput& operator<<(const base::String& value);
-    IOStreamOutput& operator<<(FlushType);
-    IOStreamOutput& operator<<(EndLType);
-
-    template <typename T>
-    IOStreamOutput& operator<<(const T& value);
-
-    template <base::SizeT N>
-    IOStreamOutput& operator<<(const char (&value)[N])
-    {
-        return operator<<(static_cast<const char*>(value));
-    }
-
-    template <typename T>
-    IOStreamOutput& operator<<(const T& value)
-        requires base::isEnum<T>
-    {
-        return operator<<(static_cast<base::UnderlyingType<T>>(value));
-    }
-
-    std::ostream& getOStream();
-
-    void flush();
-};
-
-
 ////////////////////////////////////////////////////////////
 /// \brief Input stream wrapper for `std::istream`.
 ///
@@ -169,7 +71,14 @@ public:
     IOStreamInput& operator>>(T& value)
         requires base::isEnum<T>
     {
-        return operator>>(static_cast<base::UnderlyingType<T>>(value));
+        // Parse through a local of the underlying integral type, then copy
+        // back. We can't pass `static_cast<UT>(value)` directly because it
+        // produces an rvalue, which won't bind to the non-enum overload's
+        // `T&` parameter.
+        base::UnderlyingType<T> tmp{};
+        operator>>(tmp);
+        value = static_cast<T>(tmp);
+        return *this;
     }
 
     void ignore(base::SizeT count, char delimiter);
@@ -182,21 +91,11 @@ public:
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Stream wrapping the standard output stream `std::cout`
+/// \brief Stream wrapping the standard input stream `std::cin`.
 ///
-////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_SYSTEM_API IOStreamOutput& cOut();
-
-
-////////////////////////////////////////////////////////////
-/// \brief Stream wrapping the standard error stream `std::cerr`
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_SYSTEM_API IOStreamOutput& cErr();
-
-
-////////////////////////////////////////////////////////////
-/// \brief Stream wrapping the standard input stream `std::cin`
+/// `std::cout` and `std::cerr` have been retired in favor of
+/// `sf::base::print` / `printLn` / `printErr` / `printErrLn`
+/// (see `<SFML/Base/Fmt/Fmt.hpp>`).
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_SYSTEM_API IOStreamInput& cIn();
@@ -280,39 +179,6 @@ SFML_BASE_DEFINE_ENUM_CLASS_BITWISE_OPS(FileOpenMode);
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Flags used to specify how a stream should be formatted (substitute for `std::ios_base::fmtflags`)
-///
-////////////////////////////////////////////////////////////
-enum class FormatFlags
-{
-    none             = 0,
-    boolalpha        = 1L << 0,
-    dec              = 1L << 1,
-    fixed            = 1L << 2,
-    hex              = 1L << 3,
-    internal         = 1L << 4,
-    left             = 1L << 5,
-    oct              = 1L << 6,
-    right            = 1L << 7,
-    scientific       = 1L << 8,
-    showbase         = 1L << 9,
-    showpoint        = 1L << 10,
-    showpos          = 1L << 11,
-    skipws           = 1L << 12,
-    unitbuf          = 1L << 13,
-    uppercase        = 1L << 14,
-    adjustfield      = left | right | internal,
-    basefield        = dec | oct | hex,
-    floatfield       = scientific | fixed,
-    ios_fmtflags_end = 1L << 16,
-};
-
-
-////////////////////////////////////////////////////////////
-SFML_BASE_DEFINE_ENUM_CLASS_BITWISE_OPS(FormatFlags);
-
-
-////////////////////////////////////////////////////////////
 /// \brief Specifies the direction for seeking in a stream (substitute for `std::ios_base::seekdir`)
 ///
 ////////////////////////////////////////////////////////////
@@ -325,267 +191,173 @@ enum class SeekDir
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Stream manipulator to set the fill character for an output stream (substitute for `std::setfill`)
+/// \brief Output file handle (replaces `std::ofstream`).
+///
+/// Backed by C stdio's `FILE*` -- no iostream/streambuf machinery, no
+/// locale. RAII: construction is only possible through the factory,
+/// which returns `sf::base::nullOpt` if the file can't be opened; once
+/// you have an `OutFile` it represents an open file. The destructor
+/// closes the underlying handle (silently -- callers cannot detect a
+/// close error in this design).
+///
+/// Move-only. Every fallible I/O operation returns its own success
+/// status via `[[nodiscard]] bool`; there is no sticky-good flag.
+/// \code
+///     auto opt = sf::OutFile::open(path, sf::FileOpenMode::bin);
+///     if (!opt.hasValue()) handleOpenError();
+///     auto& file = *opt;
+///     if (!file.write(data, size)) handleWriteError();
+///     // destructor closes
+/// \endcode
+///
+/// Satisfies `sf::base::AppendSink` (via `append`) for composition with
+/// `sf::base::fmtTo` / `print` / `printLn`. Errors are **not** visible
+/// through the sink path because Fmt buffers internally; use `write()`
+/// directly when strict error propagation is required.
 ///
 ////////////////////////////////////////////////////////////
-struct SetFill
-{
-    char c; //!< The fill character
-};
-
-
-////////////////////////////////////////////////////////////
-/// \brief Stream manipulator to set the field width for an output stream (substitute for `std::setw`)
-///
-////////////////////////////////////////////////////////////
-struct SetWidth
-{
-    int width; //!< The field width
-};
-
-
-////////////////////////////////////////////////////////////
-/// \brief Stream manipulator to set the precision for an output stream (substitute for `std::setprecision`)
-///
-////////////////////////////////////////////////////////////
-struct SetPrecision
-{
-    int precision; //!< The precision
-};
-
-
-////////////////////////////////////////////////////////////
-/// \brief Stream manipulator to set the output format to hexadecimal (substitute for `std::hex`)
-///
-////////////////////////////////////////////////////////////
-struct Hex
-{
-};
-
-
-////////////////////////////////////////////////////////////
-/// \brief Provides an interface for writing to files, similar to `std::ofstream`.
-///
-/// Uses PImpl to avoid exposing expensive headers in the public API.
-///
-////////////////////////////////////////////////////////////
-class OutFileStream
+class OutFile
 {
 public:
-    explicit OutFileStream();
-    explicit OutFileStream(const Path& filename, FileOpenMode mode = FileOpenMode::out);
+    ////////////////////////////////////////////////////////////
+    /// \brief Open a file for output.
+    ///
+    /// \return `OutFile` on success, `sf::base::nullOpt` on open failure.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static base::Optional<OutFile> open(const Path& filename, FileOpenMode mode = FileOpenMode::out);
 
-    ~OutFileStream();
+    ~OutFile();
 
-    OutFileStream(const OutFileStream&)            = delete;
-    OutFileStream& operator=(const OutFileStream&) = delete;
+    OutFile(const OutFile&)            = delete;
+    OutFile& operator=(const OutFile&) = delete;
 
-    OutFileStream(OutFileStream&&) noexcept;
-    OutFileStream& operator=(OutFileStream&&) noexcept;
+    OutFile(OutFile&&) noexcept;
+    OutFile& operator=(OutFile&&) noexcept;
 
-    void open(const Path& filename, FileOpenMode mode);
-    void write(const char* data, base::PtrDiffT size);
-    void flush();
-    void close();
+    [[nodiscard]] bool write(const char* data, base::SizeT size);
+    [[nodiscard]] bool flush();
 
-    void seekPos(base::PtrDiffT absolutePos);
+    [[nodiscard]] bool seekPos(base::PtrDiffT absolutePos);
+    [[nodiscard]] bool tellPos(base::PtrDiffT& out);
 
-    [[nodiscard]] base::PtrDiffT tellPos();
+    ////////////////////////////////////////////////////////////
+    /// \brief `AppendSink` adapter for `fmtTo` / `print` / `printLn`.
+    /// Errors are lost in this path -- use `write()` for explicit
+    /// error handling.
+    ////////////////////////////////////////////////////////////
+    void append(const char* data, base::SizeT n);
 
-    [[nodiscard]] bool isOpen() const;
-    [[nodiscard]] bool isGood() const;
-
-    [[nodiscard]] explicit operator bool() const;
-
-    template <typename T>
-    OutFileStream& operator<<(const T& value);
-
-    OutFileStream& operator<<(const base::String& value);
-    OutFileStream& operator<<(SetFill fill);
-    OutFileStream& operator<<(SetWidth width);
-    OutFileStream& operator<<(Hex hex);
-    OutFileStream& operator<<(std::ios_base& (*func)(std::ios_base&));
-    OutFileStream& operator<<(std::ostream& (*func)(std::ostream&));
+    ////////////////////////////////////////////////////////////
+    /// \private Constructor for internal use by `open`. The
+    /// `PassKey` parameter restricts who can call it.
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] explicit OutFile(base::PassKey<OutFile>&&, void* file) noexcept;
 
 private:
     struct Impl;
-    base::InPlacePImpl<Impl, 768> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, sizeof(void*)> m_impl; //!< Holds a `FILE*`.
 };
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Provides an interface for writing to strings, similar to `std::ostringstream`.
+/// \brief Input file handle (replaces `std::ifstream`).
 ///
-/// Uses PImpl to avoid exposing expensive headers in the public API.
+/// Backed by C stdio's `FILE*` -- no iostream/streambuf machinery, no
+/// locale. RAII: construction is only possible through the factory,
+/// which returns `sf::base::nullOpt` if the file can't be opened; once
+/// you have an `InFile` it represents an open file. The destructor
+/// closes the underlying handle (silently).
+///
+/// Move-only. Every fallible I/O operation returns its own success
+/// status via `[[nodiscard]] bool`; there is no sticky-good flag.
+///
+/// EOF is distinct from I/O failure: `read()` returns `true` with a
+/// short `bytesRead` (possibly 0) when EOF is reached without error.
+/// Use `isEOF()` (matching `feof`) to detect EOF after such a read.
+///
+/// For full-file loads, prefer the `sf::readFromFile` helpers in this
+/// header -- they take native fast paths on Windows/POSIX. Use `InFile`
+/// when you need streaming reads, seeking, or composition with
+/// `sf::base::Scanner` (via `sf::FileSource`).
 ///
 ////////////////////////////////////////////////////////////
-class OutStringStream
+class InFile
 {
 public:
-    explicit OutStringStream();
-    explicit OutStringStream(const char* str);
+    ////////////////////////////////////////////////////////////
+    /// \brief Open a file for input.
+    ///
+    /// \return `InFile` on success, `sf::base::nullOpt` on open failure.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static base::Optional<InFile> open(const Path& filename, FileOpenMode mode = FileOpenMode::in);
 
-    ~OutStringStream();
+    ~InFile();
 
-    OutStringStream(const OutStringStream&)            = delete;
-    OutStringStream& operator=(const OutStringStream&) = delete;
+    InFile(const InFile&)            = delete;
+    InFile& operator=(const InFile&) = delete;
 
-    OutStringStream(OutStringStream&&) noexcept;
-    OutStringStream& operator=(OutStringStream&&) noexcept;
+    InFile(InFile&&) noexcept;
+    InFile& operator=(InFile&&) noexcept;
 
-    [[nodiscard]] std::streambuf* rdbuf() const;
+    ////////////////////////////////////////////////////////////
+    /// \brief Read up to `size` bytes into `data`. On success returns
+    /// `true` and writes the actual count to `bytesRead` -- this can
+    /// be less than `size` at EOF (use `isEOF()` to distinguish from
+    /// "no more available" mid-read). Returns `false` on I/O error;
+    /// `bytesRead` is left untouched.
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool read(char* data, base::SizeT size, base::SizeT& bytesRead);
 
-    void write(const char* data, base::PtrDiffT size);
-    void flush();
+    [[nodiscard]] bool seekPos(base::PtrDiffT absolutePos);
+    [[nodiscard]] bool seekPos(base::PtrDiffT offset, SeekDir dir);
 
-    void setStr(base::StringView str);
-    void setPrecision(base::PtrDiffT precision);
-    void setFormatFlags(FormatFlags flags);
+    [[nodiscard]] bool tellPos(base::PtrDiffT& out);
 
-    template <typename T>
-    [[nodiscard]] T to() const;
+    [[nodiscard]] bool isEOF() const noexcept;
 
-    [[nodiscard]] std::string getString() const;
+    ////////////////////////////////////////////////////////////
+    /// \private Constructor for internal use by `open`. The
+    /// `PassKey` parameter restricts who can call it.
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] explicit InFile(base::PassKey<InFile>&&, void* file) noexcept;
 
-    [[nodiscard]] bool isGood() const;
+private:
+    struct Impl;
+    base::InPlacePImpl<Impl, sizeof(void*)> m_impl; //!< Holds a `FILE*`.
+};
 
-    [[nodiscard]] explicit operator bool() const;
 
-    template <typename T>
-    OutStringStream& operator<<(const T& value);
+////////////////////////////////////////////////////////////
+/// \brief `sf::base::ScannerSource` adapter over an `InFile`.
+///
+/// Holds the `InFile` by reference -- the file must outlive the scanner.
+/// Used as `sf::base::Scanner{sf::FileSource{file}}`. Duck-typed: this
+/// header doesn't include `<SFML/Base/Scanner.hpp>` to satisfy the
+/// concept; the `refill` signature alone is enough.
+///
+/// Per-byte error visibility is lost in this path: `InFile::read` failure
+/// is folded into a 0-byte return, which the scanner treats as EOF.
+/// Callers that need to detect I/O errors mid-parse should use `InFile`
+/// directly.
+///
+////////////////////////////////////////////////////////////
+struct FileSource
+{
+    InFile& file;
 
-    template <auto N>
-    OutStringStream& operator<<(const char (&value)[N])
+    [[gnu::always_inline]] base::SizeT refill(char* const dst, const base::SizeT n)
     {
-        return operator<<(static_cast<const char*>(value));
+        base::SizeT bytesRead = 0u;
+        return file.read(dst, n, bytesRead) ? bytesRead : 0u;
     }
-
-    OutStringStream& operator<<(const base::String& value);
-    OutStringStream& operator<<(SetFill fill);
-    OutStringStream& operator<<(SetWidth width);
-    OutStringStream& operator<<(Hex hex);
-    OutStringStream& operator<<(std::ios_base& (*func)(std::ios_base&));
-    OutStringStream& operator<<(std::ostream& (*func)(std::ostream&));
-
-private:
-    struct Impl;
-    base::InPlacePImpl<Impl, 768> m_impl; //!< Implementation details
 };
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Provides an interface for reading from files, similar to `std::ifstream`.
-///
-/// Uses PImpl to avoid exposing expensive headers in the public API.
-///
-////////////////////////////////////////////////////////////
-class InFileStream
-{
-public:
-    explicit InFileStream();
-    explicit InFileStream(const Path& filename, FileOpenMode mode);
-
-    ~InFileStream();
-
-    InFileStream(const InFileStream&)            = delete;
-    InFileStream& operator=(const InFileStream&) = delete;
-
-    InFileStream(InFileStream&&) noexcept;
-    InFileStream& operator=(InFileStream&&) noexcept;
-
-    void          open(const Path& filename, FileOpenMode mode);
-    InFileStream& read(char* data, base::PtrDiffT size);
-    void          close();
-
-    InFileStream& seekg(base::PtrDiffT absolutePos);
-    InFileStream& seekg(base::PtrDiffT offset, SeekDir dir);
-
-    [[nodiscard]] base::PtrDiffT gcount() const;
-    [[nodiscard]] base::PtrDiffT tellg();
-
-    [[nodiscard]] bool isOpen() const;
-    [[nodiscard]] bool isGood() const;
-    [[nodiscard]] bool isEOF() const;
-
-    [[nodiscard]] explicit operator bool() const;
-
-    template <typename T>
-    InFileStream& operator>>(T& value);
-
-private:
-    struct Impl;
-    base::InPlacePImpl<Impl, 768> m_impl; //!< Implementation details
-};
-
-
-////////////////////////////////////////////////////////////
-/// \brief Provides an interface for reading from strings, similar to `std::istringstream`.
-///
-/// Uses PImpl to avoid exposing expensive headers in the public API.
-///
-////////////////////////////////////////////////////////////
-class InStringStream
-{
-    template <typename T>
-    friend bool getLine(InStringStream&, T&);
-
-public:
-    explicit InStringStream();
-    explicit InStringStream(const std::string& str, FileOpenMode mode = FileOpenMode::in);
-    explicit InStringStream(const base::String& str, FileOpenMode mode = FileOpenMode::in);
-
-    ~InStringStream();
-
-    InStringStream(const InStringStream&)            = delete;
-    InStringStream& operator=(const InStringStream&) = delete;
-
-    InStringStream(InStringStream&&) noexcept;
-    InStringStream& operator=(InStringStream&&) noexcept;
-
-    InStringStream& get(char& ch);
-    InStringStream& read(char* data, base::PtrDiffT size);
-
-    void            clear();
-    InStringStream& ignore(base::PtrDiffT count = 1, char delim = '\n');
-
-    [[nodiscard]] base::PtrDiffT gcount() const;
-    [[nodiscard]] base::PtrDiffT tellg();
-
-    [[nodiscard]] bool isGood() const;
-    [[nodiscard]] bool isEOF() const;
-
-    [[nodiscard]] explicit operator bool() const;
-
-    template <typename T>
-    InStringStream& operator>>(T& value);
-
-    InStringStream& operator>>(Hex hex);
-    InStringStream& operator>>(base::String& value);
-
-private:
-    struct Impl;
-    base::InPlacePImpl<Impl, 768> m_impl; //!< Implementation details
-};
-
-
-////////////////////////////////////////////////////////////
-/// \brief Reads a line from the input stream into `target` (substitute for `std::getline`)
-///
-////////////////////////////////////////////////////////////
-template <typename T>
-bool getLine(InStringStream& stream, T& target);
-
-
-////////////////////////////////////////////////////////////
-/// \brief Reads a line from the input stream into `target` (substitute for `std::getline`)
-///
-////////////////////////////////////////////////////////////
-template <typename Stream, typename T>
-bool getLine(Stream& stream, T& target);
-
-
-////////////////////////////////////////////////////////////
-/// \brief Reads a line from the input stream into `target` (substitute for `std::getline`)
+/// \brief Reads a line from `stream` into `target` (substitute for `std::getline`).
+/// Returns `true` on success, `false` on EOF or stream error.
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -598,11 +370,13 @@ bool getLine(IOStreamInput& stream, T& target);
 /// \file SFML/System/IO.hpp
 /// \ingroup system
 ///
-/// Classes for file and string I/O: wrappers for `std::cout`/`std::cin`/`std::cerr`,
-/// file and string streams, and stream manipulators/flags for formatting.
+/// File I/O (`OutFile` / `InFile`, plus `readFromFile` / `writeToFile`
+/// helpers) and a thin wrapper around `std::cin`. For formatted output to
+/// stdout/stderr, see `sf::base::print` / `printLn` / `printErr` /
+/// `printErrLn` in `<SFML/Base/Fmt/Fmt.hpp>`. For in-memory parsing, see
+/// `sf::base::Scanner` (and `sf::FileSource` for scanner-over-`InFile`).
 ///
 /// Implementation details are hidden behind PImpl to keep expensive standard
-/// library headers out of the public API. Functionality mirrors the Standard
-/// Library's I/O streams.
+/// library headers out of the public API.
 ///
 ////////////////////////////////////////////////////////////

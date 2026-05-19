@@ -72,7 +72,7 @@ class CPUDrawableBatch;
 class Font;
 class GraphicsContext;
 class ImGuiContext;
-class OutFileStream;
+class OutFile;
 class Path;
 class PlaybackDevice;
 class RenderTarget;
@@ -670,9 +670,10 @@ struct Main
     InputHelper&              inputHelper;
 
     ////////////////////////////////////////////////////////////
-    // Logging
-    MainOwnedPtr<sf::OutFileStream> logFileStorage;
-    sf::OutFileStream&              logFile;
+    // Logging -- `logFile` is a non-owning view that may be null if
+    // the log file failed to open (e.g. read-only filesystem).
+    MainOwnedPtr<sf::OutFile> logFileStorage;
+    sf::OutFile*              logFile;
 
     ////////////////////////////////////////////////////////////
     // Achievement progress tracking

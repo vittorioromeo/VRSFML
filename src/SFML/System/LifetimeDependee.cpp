@@ -156,55 +156,58 @@ LifetimeDependee::~LifetimeDependee()
 
     if (lifetimeTrackingTestingMode.loadSeqCst())
     {
-        priv::err() << "LIFETIME TEST GUARD ERROR: a " << dependeeNameLower << " object was destroyed while existing "
-                    << dependantNameLower << " objects depended on it.";
+        sf::priv::
+            errMsg("LIFETIME TEST GUARD ERROR: a {} object was destroyed while existing {} objects depended on it.",
+                   dependeeNameLower,
+                   dependantNameLower);
 
         lifetimeTrackingFatalErrorTriggered.storeSeqCst(true);
         return;
     }
 
-    priv::err(true /* multiLine */) << "FATAL ERROR: a " << dependeeNameLower << " object was destroyed while existing "
-                                    << dependantNameLower << " objects depended on it.\n\n";
+    priv::errMsgMulti("FATAL ERROR: a {} object was destroyed while existing {} objects depended on it.\n\n",
+                      dependeeNameLower,
+                      dependantNameLower);
 
-    priv::err(true /* multiLine */)
-        << "Please ensure that every " << dependeeNameLower << " object outlives all of the " << dependantNameLower
-        << " objects associated with it, otherwise those " << dependantNameLower
-        << "s will try to access the memory of the destroyed " << dependeeNameLower
-        << ", causing undefined behavior (e.g., crashes, segfaults, or unexpected run-time behavior).\n\n";
+    priv::errMsgMulti(
+        "Please ensure that every {} object outlives all of the {} objects associated with it, otherwise those {}s "
+        "will try to access the memory of the destroyed {}, causing undefined behavior (e.g., crashes, segfaults, or "
+        "unexpected run-time behavior).\n\n",
+        dependeeNameLower,
+        dependantNameLower,
+        dependantNameLower,
+        dependeeNameLower);
 
-    priv::err(true /* multiLine */)
-        << "One of the ways this issue can occur is when a " << dependeeNameLower
-        << " object is created as a local variable in a function and passed to a " << dependantNameLower
-        << " object. When the function has finished executing, the local " << dependeeNameLower
-        << " object will be destroyed, and the " << dependantNameLower
-        << " object associated with it will now be referring to invalid memory. Example:\n\n";
+    priv::errMsgMulti(
+        "One of the ways this issue can occur is when a {} object is created as a local variable in a function and "
+        "passed to a {} object. When the function has finished executing, the local {} object will be destroyed, and "
+        "the {} object associated with it will now be referring to invalid memory. Example:\n\n",
+        dependeeNameLower,
+        dependantNameLower,
+        dependeeNameLower,
+        dependantNameLower);
 
     // clang-format off
-    priv::err(true /* multiLine */) << "    sf::" << m_dependantName << " create" << m_dependantName << "()\n"
-          << "    {\n"
-          << "        " << "sf::" << m_dependeeName << " " << dependeeNameLower << "(/* ... */);\n"
-          << "        " << "sf::" << m_dependantName << " " << dependantNameLower << "(" << dependeeNameLower << ", /* ... */);\n"
-          << "        " << "\n"
-          << "        " << "return " << dependantNameLower << ";\n"
-          << "        " << "//     ^" << toTildes(dependantNameLower) << "\n"
-          << "        " << "// ERROR: `" << dependeeNameLower << "` will be destroyed right after\n"
-          << "        " << "//        `" << dependantNameLower << "` is returned from the function!\n"
-          << "    }\n\n";
+    priv::errMsgMulti("    sf::{} create{}()\n    {{\n        sf::{} {}(/* ... */);\n        sf::{} {}({}, /* ... */);\n        \n        return {};\n        //     ^{}\n        // ERROR: `{}` will be destroyed right after\n        //        `{}` is returned from the function!\n    }}\n\n", m_dependantName, m_dependantName, m_dependeeName, dependeeNameLower, m_dependantName, dependantNameLower, dependeeNameLower, dependantNameLower, toTildes(dependantNameLower), dependeeNameLower, dependantNameLower);
     // clang-format on
 
-    priv::err(true /* multiLine */)
-        << "Another possible cause of this error is storing both a " << dependeeNameLower << " and a " << dependantNameLower
-        << " together in a data structure (e.g., `class`, `struct`, container, pair, etc...), and then moving "
-           "that data structure (i.e., returning it from a function, or using `std::move`) -- the internal "
-           "references between the "
-        << dependeeNameLower << " and " << dependantNameLower
-        << " will not be updated, resulting in the same lifetime issue.\n\n";
+    priv::errMsgMulti(
+        "Another possible cause of this error is storing both a {} and a {} together in a data structure (e.g., "
+        "`class`, `struct`, container, pair, etc...), and then moving that data structure (i.e., returning it from a "
+        "function, or using `std::move`) -- the internal references between the {} and {} will not be updated, "
+        "resulting in the same lifetime issue.\n\n",
+        dependeeNameLower,
+        dependantNameLower,
+        dependeeNameLower,
+        dependantNameLower);
 
-    priv::err(true /* multiLine */) << "In general, make sure that all your " << dependeeNameLower
-                                    << " objects are destroyed *after* all the " << dependantNameLower
-                                    << " objects depending on them to avoid these sort of issues.";
+    priv::errMsgMulti(
+        "In general, make sure that all your {} objects are destroyed *after* all the {} objects depending on them to "
+        "avoid these sort of issues.",
+        dependeeNameLower,
+        dependantNameLower);
 
-    priv::err() << '\n';
+    priv::errMsg("{}", '\n');
 
     base::priv::printStackTrace();
     base::abort();

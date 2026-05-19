@@ -36,13 +36,13 @@ struct TestContext
     TestContext() : glContext(sf::WindowContext::createGlContext(sf::ContextSettings{}))
     {
         if (!setActive(true))
-            sf::priv::err() << "Failed to set context as active during construction";
+            sf::priv::errMsg("Failed to set context as active during construction");
     }
 
     ~TestContext()
     {
         if (glContext != nullptr && !setActive(false))
-            sf::priv::err() << "Failed to set context as inactive during destruction";
+            sf::priv::errMsg("Failed to set context as inactive during destruction");
     }
 
     [[nodiscard]] bool setActive(bool active) const
