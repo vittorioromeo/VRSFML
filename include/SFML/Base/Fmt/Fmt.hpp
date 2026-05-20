@@ -17,7 +17,7 @@
 #include "SFML/Base/Fmt/FmtSink.hpp"            // IWYU pragma: export
 #include "SFML/Base/Fmt/FmtSpan.hpp"            // IWYU pragma: export
 #include "SFML/Base/Fmt/FmtSpec.hpp"            // IWYU pragma: export
-#include "SFML/Base/Fmt/FmtStringLike.hpp"      // IWYU pragma: export
+#include "SFML/Base/Fmt/FmtString.hpp"          // IWYU pragma: export
 #include "SFML/Base/NonDeduced.hpp"
 #include "SFML/Base/SizeT.hpp"
 

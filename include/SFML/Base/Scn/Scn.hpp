@@ -51,8 +51,10 @@ concept HasScnArg = ScnSource<S> && requires(S& src, T& out) { static_cast<bool>
 /// \brief Low-level entry point. Dispatches to `scnArg(src, out)` and
 /// returns the parser's success bit verbatim.
 ///
-/// On `false`, `out` is left in an unspecified state -- callers that
-/// need the original value back must keep their own copy.
+/// On `false`, `out` and the source position are unspecified: a parser may
+/// consume a partial token before discovering that it cannot produce a value.
+/// Callers that need transactional behavior must keep their own copy of `out`
+/// and use a source with explicit mark/restore support.
 ////////////////////////////////////////////////////////////
 template <ScnSource S, typename T>
 [[nodiscard]] constexpr bool scnInto(S& src, T& out)

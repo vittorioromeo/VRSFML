@@ -15,6 +15,7 @@
 #include "SFML/Base/Trait/IsIntegral.hpp"
 #include "SFML/Base/Trait/IsSame.hpp"
 #include "SFML/Base/Trait/IsUnsigned.hpp"
+#include "SFML/Base/Trait/MakeUnsigned.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -22,9 +23,10 @@
 /// Built-in `scnArg` overloads for integers, floats, and `bool`,
 /// plus `scnRadix<T>` for explicit-radix unsigned parsing.
 ///
-/// Header-only: the numeric parsers use bounded scratch buffers. If a
-/// digit run exceeds the scratch size, they consume the rest of that
-/// run and fail rather than succeeding on a truncated prefix.
+/// Header-only: decimal integer parsing is incremental and has no scratch
+/// limit. Float and explicit-radix parsers use bounded scratch buffers; if
+/// a digit run exceeds the scratch size, they consume the rest of that run
+/// and fail rather than succeeding on a truncated prefix.
 ///
 /// Transitively re-exported by `<SFML/Base/Scn/Scn.hpp>`.
 ////////////////////////////////////////////////////////////
@@ -62,9 +64,8 @@ namespace priv
 /// (rejected for unsigned destinations) followed by decimal digits.
 /// Stops at the first non-digit byte (which is *not* consumed).
 ///
-/// Returns `false` on EOF / no-digits / overflow. Bounded scratch:
-/// at most 24 bytes -- comfortably covers any 64-bit decimal value;
-/// longer digit runs are consumed and rejected.
+/// Returns `false` on EOF / no-digits / overflow. No scratch buffer is used;
+/// overflow is checked incrementally while the maximal digit run is consumed.
 ////////////////////////////////////////////////////////////
 template <typename T, ScnSource S>
     requires(isIntegral<T> && !SFML_BASE_IS_SAME(T, bool))
@@ -72,38 +73,67 @@ template <typename T, ScnSource S>
 {
     scnSkipWhitespace(src);
 
-    char  tmp[24];
-    SizeT n = 0u;
-
     auto c = src.peek();
     if (!c)
         return false;
 
+    bool isNegative = false;
     if (*c == '+' || *c == '-')
     {
-        tmp[n++] = *c;
+        isNegative = *c == '-';
         src.consume();
         c = src.peek();
     }
 
-    bool scratchOverflow = false;
+    using UnsignedT = MakeUnsigned<T>;
+
+    UnsignedT result   = 0;
+    bool      gotAny   = false;
+    bool      overflow = false;
+
+    constexpr auto maxPositive = static_cast<UnsignedT>(priv::maxIntegral<T>());
+    const auto     limit       = [&]
+    {
+        if constexpr (isUnsigned<T>)
+            return maxPositive;
+        else
+            return isNegative ? static_cast<UnsignedT>(maxPositive + 1u) : maxPositive;
+    }();
 
     while (c && priv::isDigit(*c))
     {
-        if (n < sizeof(tmp))
-            tmp[n++] = *c;
-        else
-            scratchOverflow = true;
+        gotAny = true;
+
+        const auto digit = static_cast<UnsignedT>(*c - '0');
+        if (!overflow)
+        {
+            if (result > limit / 10u || (result == limit / 10u && digit > limit % 10u))
+                overflow = true;
+            else
+                result = static_cast<UnsignedT>(result * 10u + digit);
+        }
 
         src.consume();
         c = src.peek();
     }
 
-    if (scratchOverflow)
+    if (!gotAny || overflow)
         return false;
 
-    const auto r = fromChars(tmp, tmp + n, out);
-    return r.ec == FromCharsError::None && r.ptr != tmp;
+    if constexpr (isUnsigned<T>)
+    {
+        if (isNegative)
+            return false;
+
+        out = static_cast<T>(result);
+    }
+    else
+    {
+        out = isNegative ? (result == 0u ? T{0} : static_cast<T>(-static_cast<T>(result - 1u) - T{1}))
+                         : static_cast<T>(result);
+    }
+
+    return true;
 }
 
 

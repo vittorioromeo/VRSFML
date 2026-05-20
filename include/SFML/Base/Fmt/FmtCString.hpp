@@ -16,9 +16,10 @@ namespace sf::base
 {
 ////////////////////////////////////////////////////////////
 // Null-terminated C string
-[[nodiscard, gnu::always_inline]] inline constexpr FmtResult fmtArg(FmtSink& sink, const char* const arg, const FmtSpec&) noexcept
+[[nodiscard, gnu::always_inline]] inline constexpr FmtResult fmtArg(FmtSink& sink, const char* const arg, const FmtSpec& spec) noexcept
 {
     SFML_BASE_ASSERT_AND_ASSUME(arg != nullptr);
+    SFML_BASE_ASSERT(spec.precision < 0 && spec.type == '\0');
     return sink.append(arg, SFML_BASE_STRLEN(arg));
 }
 

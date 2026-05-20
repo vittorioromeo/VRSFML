@@ -107,10 +107,8 @@ TEST_CASE("[System] Fmt.hpp - precision spec {:.Nf}")
         CHECK(sf::base::fmtToString("{:.2}", 3.14159) == sf::base::String{"3.14"});
     }
 
-    SECTION("Integer args ignore precision (no-op)")
-    {
-        CHECK(sf::base::fmtToString("{:.3}", 42) == sf::base::String{"42"});
-    }
+    // Precision is only valid for floating-point arguments. Integer/string
+    // formatters assert on precision in debug builds.
 }
 
 

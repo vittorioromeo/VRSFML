@@ -21,6 +21,8 @@ template <typename T>
     requires isIntegral<T>
 FmtResult fmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec)
 {
+    SFML_BASE_ASSERT(spec.precision < 0 && spec.type != 'f');
+
     // 64 covers the worst case: 64-bit binary (`{:b}` on `unsigned long long`).
     // Decimal and signed cases (max 20 chars + sign) and hex/oct also fit, so
     // the helper returns a non-null pointer on every code path below.
@@ -68,6 +70,8 @@ template <typename T>
     requires isFloatingPoint<T>
 FmtResult fmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec)
 {
+    SFML_BASE_ASSERT(spec.type == '\0' || spec.type == 'f');
+
     const int prec = spec.precision >= 0 ? spec.precision : defaultFloatPrecision;
 
     // 40 covers sign + ~20-digit integral part + '.' + up to 10 fractional digits + slack.

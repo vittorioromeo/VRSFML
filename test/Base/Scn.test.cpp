@@ -295,9 +295,14 @@ TEST_CASE("[Base] Scn - integer parsing skips whitespace")
 
     SUBCASE("unsigned rejects negative")
     {
-        auto src = stringSource("-1");
+        auto src = stringSource("-1x");
 
         CHECK_FALSE(sf::base::scn<unsigned int>(src).hasValue());
+        CHECK(src.bytesConsumed() == 2u);
+
+        char c = '\0';
+        CHECK(sf::base::scnInto(src, c));
+        CHECK(c == 'x');
     }
 
     SUBCASE("signed minimum is accepted")
@@ -309,7 +314,21 @@ TEST_CASE("[Base] Scn - integer parsing skips whitespace")
         CHECK(*v == -2'147'483'648);
     }
 
-    SUBCASE("overlong digit run is consumed and rejected")
+    SUBCASE("signed below minimum is consumed and rejected")
+    {
+        auto src = stringSource("-2147483649x");
+
+        int v = 123;
+        CHECK_FALSE(sf::base::scnInto(src, v));
+        CHECK(v == 123);
+        CHECK(src.bytesConsumed() == 11u);
+
+        char c = '\0';
+        CHECK(sf::base::scnInto(src, c));
+        CHECK(c == 'x');
+    }
+
+    SUBCASE("many leading zeroes are accepted")
     {
         sf::base::String input;
         for (sf::base::SizeT i = 0u; i < 32u; ++i)
@@ -319,9 +338,23 @@ TEST_CASE("[Base] Scn - integer parsing skips whitespace")
         auto src = stringSource(input.toStringView());
 
         unsigned v = 123u;
+        CHECK(sf::base::scnInto(src, v));
+        CHECK(v == 1u);
+        CHECK(src.bytesConsumed() == 33u);
+
+        char c = '\0';
+        CHECK(sf::base::scnInto(src, c));
+        CHECK(c == 'x');
+    }
+
+    SUBCASE("overflowing digit run is consumed and rejected")
+    {
+        auto src = stringSource("99999999999999999999999999999999x");
+
+        unsigned v = 123u;
         CHECK_FALSE(sf::base::scnInto(src, v));
         CHECK(v == 123u);
-        CHECK(src.bytesConsumed() == 33u);
+        CHECK(src.bytesConsumed() == 32u);
 
         char c = '\0';
         CHECK(sf::base::scnInto(src, c));
@@ -465,9 +498,14 @@ TEST_CASE("[Base] Scn - bool parsing")
 
     SUBCASE("'truncated' literal fails")
     {
-        auto src = stringSource("tru");
+        auto src = stringSource("trux");
 
         CHECK_FALSE(sf::base::scn<bool>(src).hasValue());
+        CHECK(src.bytesConsumed() == 3u);
+
+        char c = '\0';
+        CHECK(sf::base::scnInto(src, c));
+        CHECK(c == 'x');
     }
 }
 
