@@ -12,7 +12,7 @@
 #include "SFML/Base/StackTrace.hpp"
 #include "SFML/Base/String.hpp"
 
-#include <mutex>
+#include <mutex> // TODO P1: replace with an atomic wait?
 
 #include <cstdio>
 

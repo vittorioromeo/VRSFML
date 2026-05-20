@@ -10,7 +10,7 @@
 #include "SFML/System/Path.hpp"
 
 #ifdef SFML_SYSTEM_WINDOWS
-    #include <string>
+    #include <string> // TODO P1: we can probably remove this and use a wchar_t buffer
 #endif
 
 #include <cstdio>
