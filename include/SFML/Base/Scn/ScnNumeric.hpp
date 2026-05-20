@@ -1,0 +1,272 @@
+#pragma once
+// LICENSE AND COPYRIGHT (C) INFORMATION
+// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include "SFML/Base/FromChars.hpp"
+#include "SFML/Base/FromCharsRadix.hpp"
+#include "SFML/Base/Radix.hpp"
+#include "SFML/Base/Scn/ScnCore.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Trait/IsFloatingPoint.hpp"
+#include "SFML/Base/Trait/IsIntegral.hpp"
+#include "SFML/Base/Trait/IsSame.hpp"
+#include "SFML/Base/Trait/IsUnsigned.hpp"
+
+
+////////////////////////////////////////////////////////////
+/// \file
+/// Built-in `scnArg` overloads for integers, floats, and `bool`,
+/// plus `scnRadix<T>` for explicit-radix unsigned parsing.
+///
+/// Header-only: the numeric parsers use bounded scratch buffers. If a
+/// digit run exceeds the scratch size, they consume the rest of that
+/// run and fail rather than succeeding on a truncated prefix.
+///
+/// Transitively re-exported by `<SFML/Base/Scn/Scn.hpp>`.
+////////////////////////////////////////////////////////////
+
+
+namespace sf::base
+{
+namespace priv
+{
+////////////////////////////////////////////////////////////
+// `priv::isDigit` (from `FromChars.hpp`) covers the decimal case;
+// the radix variant below extends it to hex digits with a base check.
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline]] inline constexpr bool scnIsDigitForRadix(const char c, const unsigned base) noexcept
+{
+    if (c >= '0' && c <= '9')
+        return static_cast<unsigned>(c - '0') < base;
+
+    if (c >= 'a' && c <= 'f')
+        return static_cast<unsigned>(c - 'a' + 10) < base;
+
+    if (c >= 'A' && c <= 'F')
+        return static_cast<unsigned>(c - 'A' + 10) < base;
+
+    return false;
+}
+
+} // namespace priv
+
+
+////////////////////////////////////////////////////////////
+/// \brief `scnArg` for any standard integral type (excluding `bool`).
+///
+/// Skips leading whitespace, then reads an optional `+` / `-` sign
+/// (rejected for unsigned destinations) followed by decimal digits.
+/// Stops at the first non-digit byte (which is *not* consumed).
+///
+/// Returns `false` on EOF / no-digits / overflow. Bounded scratch:
+/// at most 24 bytes -- comfortably covers any 64-bit decimal value;
+/// longer digit runs are consumed and rejected.
+////////////////////////////////////////////////////////////
+template <typename T, ScnSource S>
+    requires(isIntegral<T> && !SFML_BASE_IS_SAME(T, bool))
+[[nodiscard]] bool scnArg(S& src, T& out)
+{
+    scnSkipWhitespace(src);
+
+    char  tmp[24];
+    SizeT n = 0u;
+
+    auto c = src.peek();
+    if (!c)
+        return false;
+
+    if (*c == '+' || *c == '-')
+    {
+        tmp[n++] = *c;
+        src.consume();
+        c = src.peek();
+    }
+
+    bool scratchOverflow = false;
+
+    while (c && priv::isDigit(*c))
+    {
+        if (n < sizeof(tmp))
+            tmp[n++] = *c;
+        else
+            scratchOverflow = true;
+
+        src.consume();
+        c = src.peek();
+    }
+
+    if (scratchOverflow)
+        return false;
+
+    const auto r = fromChars(tmp, tmp + n, out);
+    return r.ec == FromCharsError::None && r.ptr != tmp;
+}
+
+
+////////////////////////////////////////////////////////////
+/// \brief `scnArg` for floats. Skips whitespace, then optional sign,
+/// integer part, optional `.fraction`. Exponent form (`e` / `E`) is
+/// not supported -- matches `fromChars` for float.
+////////////////////////////////////////////////////////////
+template <typename T, ScnSource S>
+    requires isFloatingPoint<T>
+[[nodiscard]] bool scnArg(S& src, T& out)
+{
+    scnSkipWhitespace(src);
+
+    // 40 covers sign + ~20-digit integral part + '.' + 10 fractional + slack.
+    char  tmp[40];
+    SizeT n               = 0u;
+    bool  scratchOverflow = false;
+
+    const auto appendScratch = [&](const char x)
+    {
+        if (n < sizeof(tmp))
+            tmp[n++] = x;
+        else
+            scratchOverflow = true;
+    };
+
+    auto c = src.peek();
+    if (!c)
+        return false;
+
+    if (*c == '+' || *c == '-')
+    {
+        appendScratch(*c);
+        src.consume();
+        c = src.peek();
+    }
+
+    // Integer part
+    while (c && priv::isDigit(*c))
+    {
+        appendScratch(*c);
+        src.consume();
+        c = src.peek();
+    }
+
+    // Fractional part
+    if (c && *c == '.')
+    {
+        appendScratch(*c);
+        src.consume();
+        c = src.peek();
+
+        while (c && priv::isDigit(*c))
+        {
+            appendScratch(*c);
+            src.consume();
+            c = src.peek();
+        }
+    }
+
+    if (scratchOverflow)
+        return false;
+
+    const auto r = fromChars(tmp, tmp + n, out);
+    return r.ec == FromCharsError::None && r.ptr != tmp;
+}
+
+
+////////////////////////////////////////////////////////////
+/// \brief `scnArg` for `bool`. Skips whitespace, then accepts:
+///   - literal `true` or `false` (case-sensitive), or
+///   - a single `'0'` / `'1'` digit.
+///
+/// Anything else returns `false`. The minimal-match strategy means
+/// `1abc` parses as `1` and leaves `abc` on the source.
+////////////////////////////////////////////////////////////
+template <ScnSource S>
+[[nodiscard]] bool scnArg(S& src, bool& out)
+{
+    scnSkipWhitespace(src);
+
+    auto c = src.peek();
+    if (!c)
+        return false;
+
+    if (*c == '0')
+    {
+        src.consume();
+        out = false;
+        return true;
+    }
+
+    if (*c == '1')
+    {
+        src.consume();
+        out = true;
+        return true;
+    }
+
+    // Match against `true` or `false` byte-by-byte. If the prefix matches
+    // but the source runs out partway through, the parse fails -- and the
+    // matched prefix has been consumed (`out` is left unspecified).
+    const auto matchLiteral = [&](const char* const lit, const SizeT len, const bool value) -> bool
+    {
+        for (SizeT i = 0u; i < len; ++i)
+        {
+            auto pc = src.peek();
+            if (!pc || *pc != lit[i])
+                return false;
+            src.consume();
+        }
+        out = value;
+        return true;
+    };
+
+    if (*c == 't')
+        return matchLiteral("true", 4u, true);
+
+    if (*c == 'f')
+        return matchLiteral("false", 5u, false);
+
+    return false;
+}
+
+
+////////////////////////////////////////////////////////////
+/// \brief Parse an unsigned integer in the given `radix`. Skips
+/// whitespace, then consumes the maximal run of digits valid for the
+/// chosen radix. No sign accepted -- matches `fromCharsRadix`.
+///
+/// Returns `false` on EOF, no-digits, or overflow.
+////////////////////////////////////////////////////////////
+template <typename T, ScnSource S>
+    requires(isIntegral<T> && isUnsigned<T>)
+[[nodiscard]] bool scnRadix(S& src, T& out, const Radix radix)
+{
+    scnSkipWhitespace(src);
+
+    char       tmp[scnNumericScratchSize];
+    SizeT      n    = 0u;
+    const auto base = static_cast<unsigned>(radix);
+
+    bool scratchOverflow = false;
+
+    while (auto c = src.peek())
+    {
+        if (!priv::scnIsDigitForRadix(*c, base))
+            break;
+
+        if (n < sizeof(tmp))
+            tmp[n++] = *c;
+        else
+            scratchOverflow = true;
+
+        src.consume();
+    }
+
+    if (scratchOverflow)
+        return false;
+
+    const auto r = fromCharsRadix(tmp, tmp + n, out, radix);
+    return r.ec == FromCharsError::None && r.ptr != tmp;
+}
+
+} // namespace sf::base

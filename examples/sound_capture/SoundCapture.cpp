@@ -11,13 +11,14 @@
 #include "SFML/Audio/SoundBufferRecorder.hpp"
 #include "SFML/Audio/SoundRecorder.hpp"
 
-#include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Thread.hpp"
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/Fmt/Fmt.hpp"
 #include "SFML/Base/Fmt/FmtNumeric.hpp"
+#include "SFML/Base/Scn/ScnStdin.hpp"
+#include "SFML/Base/Scn/ScnString.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 
@@ -59,20 +60,20 @@ int main()
 
         do
         {
-            sf::cIn() >> deviceIndex;
-            sf::cIn().ignore(10'000, '\n');
+            (void)sf::base::scnStdinInto(deviceIndex);
+            sf::base::scnStdinIgnoreLine();
         } while (deviceIndex >= deviceHandles.size());
     }
 
     // Choose the sample rate
     unsigned int sampleRate = 0;
     sf::base::print("Please choose the sample rate for sound capture (44100 is CD quality): ");
-    sf::cIn() >> sampleRate;
-    sf::cIn().ignore(10'000, '\n');
+    (void)sf::base::scnStdinInto(sampleRate);
+    sf::base::scnStdinIgnoreLine();
 
     // Wait for user input...
     sf::base::print("Press enter to start recording audio");
-    sf::cIn().ignore(10'000, '\n');
+    sf::base::scnStdinIgnoreLine();
 
     // Create the capture device
     sf::CaptureDevice captureDevice(deviceHandles[deviceIndex]);
@@ -88,7 +89,7 @@ int main()
     }
 
     sf::base::print("Recording... press enter to stop");
-    sf::cIn().ignore(10'000, '\n');
+    sf::base::scnStdinIgnoreLine();
 
     if (!recorder.stop())
         sf::base::printErrLn("Failed to stop sound buffer recorder");
@@ -106,17 +107,16 @@ int main()
                       buffer.getChannelCount());
 
     // Choose what to do with the recorded sound data
-    char choice = 0;
     sf::base::print("What do you want to do with captured sound (p = play, s = save) ? ");
-    sf::cIn() >> choice;
-    sf::cIn().ignore(10'000, '\n');
+    const char choice = sf::base::scnStdin<char>().valueOr('p');
+    sf::base::scnStdinIgnoreLine();
 
     if (choice == 's')
     {
         // Choose the filename
         sf::base::String filename;
         sf::base::print("Choose the file to create: ");
-        sf::getLine(sf::cIn(), filename);
+        (void)sf::base::scnStdinReadLine(filename);
 
         // Save the buffer
         if (!buffer.saveToFile(filename))
@@ -144,9 +144,9 @@ int main()
     }
 
     // Finished!
-    sf::base::printLn("{}Done!", '\n');
+    sf::base::printLn("\nDone!");
 
     // Wait until the user presses 'enter' key
     sf::base::printLn("Press enter to exit...");
-    sf::cIn().ignore(10'000, '\n');
+    sf::base::scnStdinIgnoreLine();
 }

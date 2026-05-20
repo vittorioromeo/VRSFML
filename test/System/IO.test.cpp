@@ -9,7 +9,8 @@
 
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
-#include "SFML/Base/Scanner.hpp"
+#include "SFML/Base/Scn/Scn.hpp"
+#include "SFML/Base/Scn/ScnString.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
@@ -216,17 +217,90 @@ TEST_CASE("[System] sf::OutFile and sf::InFile")
 }
 
 
-TEST_CASE("[System] sf::FileSource with sf::base::Scanner")
+TEST_CASE("[System] sf::InFile peek/consume cache semantics")
 {
     using namespace sf::base::literals;
 
-    SECTION("readLine across multiple file refills")
+    const TemporaryFile temporaryFile("ABCD"_sv);
+
+    SECTION("peek without consume is idempotent")
     {
-        // The file is intentionally larger than the scanner's staging buffer
-        // (512B) so that the line accumulator must cross at least one refill.
-        sf::base::String payload;
-        payload.reserve(2u * sf::base::Scanner<sf::FileSource>::bufferSize + 16u);
-        for (sf::base::SizeT i = 0u; i < 2u * sf::base::Scanner<sf::FileSource>::bufferSize; ++i)
+        auto optFile = sf::InFile::open(temporaryFile.getPath(), sf::FileOpenMode::bin);
+        REQUIRE(optFile.hasValue());
+
+        CHECK(*optFile->peek() == 'A');
+        CHECK(*optFile->peek() == 'A'); // Still 'A' -- cache hit, no advance.
+
+        optFile->consume();
+        CHECK(*optFile->peek() == 'B');
+    }
+
+    SECTION("peek + read delivers cached byte first")
+    {
+        auto optFile = sf::InFile::open(temporaryFile.getPath(), sf::FileOpenMode::bin);
+        REQUIRE(optFile.hasValue());
+
+        CHECK(*optFile->peek() == 'A');
+
+        char            buf[4]{};
+        sf::base::SizeT got = 0u;
+        CHECK(optFile->read(buf, 3, got));
+        CHECK(got == 3u);
+        CHECK(sf::base::StringView(buf, 3) == "ABC"_sv);
+    }
+
+    SECTION("tellPos accounts for peeked-but-not-consumed byte")
+    {
+        auto optFile = sf::InFile::open(temporaryFile.getPath(), sf::FileOpenMode::bin);
+        REQUIRE(optFile.hasValue());
+
+        sf::base::PtrDiffT pos = -1;
+        CHECK(optFile->tellPos(pos));
+        CHECK(pos == 0);
+
+        CHECK(*optFile->peek() == 'A');
+        CHECK(optFile->tellPos(pos));
+        CHECK(pos == 0); // The peek must not advance the visible position.
+
+        optFile->consume();
+        CHECK(optFile->tellPos(pos));
+        CHECK(pos == 1);
+    }
+
+    SECTION("seekPos drops the peek cache")
+    {
+        auto optFile = sf::InFile::open(temporaryFile.getPath(), sf::FileOpenMode::bin);
+        REQUIRE(optFile.hasValue());
+
+        CHECK(*optFile->peek() == 'A');
+        CHECK(optFile->seekPos(2)); // jump to 'C'
+        CHECK(*optFile->peek() == 'C');
+    }
+
+    SECTION("peek at EOF returns nullOpt")
+    {
+        auto optFile = sf::InFile::open(temporaryFile.getPath(), sf::FileOpenMode::bin);
+        REQUIRE(optFile.hasValue());
+
+        CHECK(optFile->seekPos(4));
+        CHECK_FALSE(optFile->peek().hasValue());
+        CHECK(optFile->isEOF());
+    }
+}
+
+
+TEST_CASE("[System] sf::InFile as sf::base::ScnSource")
+{
+    using namespace sf::base::literals;
+
+    SECTION("scnReadLine over a multi-KiB file")
+    {
+        // Big enough to exercise the FILE* internal buffer transitioning
+        // mid-line (stdio default buffer is typically 4-8 KiB).
+        sf::base::String          payload;
+        constexpr sf::base::SizeT longLineSize = 16u * 1024u;
+        payload.reserve(longLineSize + 16u);
+        for (sf::base::SizeT i = 0u; i < longLineSize; ++i)
             payload.append('x');
         payload.append("\nshort\n");
 
@@ -234,34 +308,32 @@ TEST_CASE("[System] sf::FileSource with sf::base::Scanner")
 
         auto optFile = sf::InFile::open(temporaryFile.getPath(), sf::FileOpenMode::bin);
         REQUIRE(optFile.hasValue());
-        sf::base::Scanner scanner{sf::FileSource{*optFile}};
 
         sf::base::String line;
-        CHECK(scanner.readLine(line));
-        CHECK(line.size() == 2u * sf::base::Scanner<sf::FileSource>::bufferSize);
+        CHECK(sf::base::scnReadLine(*optFile, line));
+        CHECK(line.size() == longLineSize);
 
-        CHECK(scanner.readLine(line));
+        CHECK(sf::base::scnReadLine(*optFile, line));
         CHECK(line == sf::base::String{"short"});
 
-        CHECK(!scanner.readLine(line));
-        CHECK(scanner.atEnd());
+        CHECK(!sf::base::scnReadLine(*optFile, line));
+        CHECK(sf::base::scnAtEnd(*optFile));
     }
 
-    SECTION("readInt / readToken from a file")
+    SECTION("scn<int> / scn<String> from a file")
     {
         const TemporaryFile temporaryFile("42 hello\n3.14 world"_sv);
 
         auto optFile = sf::InFile::open(temporaryFile.getPath(), sf::FileOpenMode::bin);
         REQUIRE(optFile.hasValue());
-        sf::base::Scanner scanner{sf::FileSource{*optFile}};
 
-        int v = 0;
-        CHECK(scanner.readInt(v));
-        CHECK(v == 42);
+        const auto v = sf::base::scn<int>(*optFile);
+        REQUIRE(v.hasValue());
+        CHECK(*v == 42);
 
-        sf::base::String tok;
-        CHECK(scanner.readToken(tok));
-        CHECK(tok == sf::base::String{"hello"});
+        const auto tok = sf::base::scn<sf::base::String>(*optFile);
+        REQUIRE(tok.hasValue());
+        CHECK(*tok == sf::base::String{"hello"});
     }
 }
 

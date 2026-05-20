@@ -15,10 +15,6 @@
 #include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Trait/IsEnum.hpp"
-#include "SFML/Base/Trait/UnderlyingType.hpp"
-
-#include <iosfwd>
 
 
 ////////////////////////////////////////////////////////////
@@ -41,66 +37,6 @@ class Path;
 
 namespace sf
 {
-////////////////////////////////////////////////////////////
-/// \brief Input stream wrapper for `std::istream`.
-///
-/// Uses PImpl to avoid exposing expensive headers in the public API.
-///
-////////////////////////////////////////////////////////////
-class SFML_SYSTEM_API IOStreamInput
-{
-    friend IOStreamInput& cIn();
-
-    template <typename T>
-    friend bool getLine(IOStreamInput&, T&);
-
-private:
-    struct Impl;
-    base::InPlacePImpl<Impl, 512> m_impl; //!< Implementation details
-
-public:
-    explicit IOStreamInput(std::streambuf* sbuf);
-
-    std::streambuf* rdbuf();
-    void            rdbuf(std::streambuf* sbuf);
-
-    template <typename T>
-    IOStreamInput& operator>>(T& value);
-
-    template <typename T>
-    IOStreamInput& operator>>(T& value)
-        requires base::isEnum<T>
-    {
-        // Parse through a local of the underlying integral type, then copy
-        // back. We can't pass `static_cast<UT>(value)` directly because it
-        // produces an rvalue, which won't bind to the non-enum overload's
-        // `T&` parameter.
-        base::UnderlyingType<T> tmp{};
-        operator>>(tmp);
-        value = static_cast<T>(tmp);
-        return *this;
-    }
-
-    void ignore(base::SizeT count, char delimiter);
-    void clear();
-
-    [[nodiscard]] bool     isGood() const;
-    [[nodiscard]] bool     isEOF() const;
-    [[nodiscard]] explicit operator bool() const;
-};
-
-
-////////////////////////////////////////////////////////////
-/// \brief Stream wrapping the standard input stream `std::cin`.
-///
-/// `std::cout` and `std::cerr` have been retired in favor of
-/// `sf::base::print` / `printLn` / `printErr` / `printErrLn`
-/// (see `<SFML/Base/Fmt/Fmt.hpp>`).
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_SYSTEM_API IOStreamInput& cIn();
-
-
 ////////////////////////////////////////////////////////////
 /// \brief Helper function to write to a file.
 ///
@@ -278,8 +214,12 @@ private:
 ///
 /// For full-file loads, prefer the `sf::readFromFile` helpers in this
 /// header -- they take native fast paths on Windows/POSIX. Use `InFile`
-/// when you need streaming reads, seeking, or composition with
-/// `sf::base::Scanner` (via `sf::FileSource`).
+/// when you need streaming reads, seeking, or per-byte parsing via
+/// `<SFML/Base/Scn/...>`.
+///
+/// `InFile` directly satisfies `sf::base::ScnSource` (via `peek` /
+/// `consume`), so it can be handed to `sf::base::scn<T>` /
+/// `sf::base::scnInto` / friends without an external adapter.
 ///
 ////////////////////////////////////////////////////////////
 class InFile
@@ -307,6 +247,10 @@ public:
     /// be less than `size` at EOF (use `isEOF()` to distinguish from
     /// "no more available" mid-read). Returns `false` on I/O error;
     /// `bytesRead` is left untouched.
+    ///
+    /// A pending peek-cached byte (set by `peek()` without a matching
+    /// `consume()`) is delivered as the first byte of the output and
+    /// the cache is cleared.
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool read(char* data, base::SizeT size, base::SizeT& bytesRead);
 
@@ -318,6 +262,20 @@ public:
     [[nodiscard]] bool isEOF() const noexcept;
 
     ////////////////////////////////////////////////////////////
+    /// \brief `ScnSource`: return the next byte without consuming it,
+    /// or `base::nullOpt` at EOF / on I/O error. Holds a 1-byte
+    /// read-ahead cache internally so repeated `peek()` is idempotent.
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] base::Optional<char> peek();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief `ScnSource`: drop the byte most recently returned by
+    /// `peek()` -- subsequent reads start at the byte after.
+    /// Undefined if not preceded by a successful `peek()`.
+    ////////////////////////////////////////////////////////////
+    void consume() noexcept;
+
+    ////////////////////////////////////////////////////////////
     /// \private Constructor for internal use by `open`. The
     /// `PassKey` parameter restricts who can call it.
     ////////////////////////////////////////////////////////////
@@ -325,43 +283,9 @@ public:
 
 private:
     struct Impl;
-    base::InPlacePImpl<Impl, sizeof(void*)> m_impl; //!< Holds a `FILE*`.
+    base::InPlacePImpl<Impl, sizeof(void*) * 2> m_impl; //!< `FILE*` + 1-byte peek cache (int-sized).
 };
 
-
-////////////////////////////////////////////////////////////
-/// \brief `sf::base::ScannerSource` adapter over an `InFile`.
-///
-/// Holds the `InFile` by reference -- the file must outlive the scanner.
-/// Used as `sf::base::Scanner{sf::FileSource{file}}`. Duck-typed: this
-/// header doesn't include `<SFML/Base/Scanner.hpp>` to satisfy the
-/// concept; the `refill` signature alone is enough.
-///
-/// Per-byte error visibility is lost in this path: `InFile::read` failure
-/// is folded into a 0-byte return, which the scanner treats as EOF.
-/// Callers that need to detect I/O errors mid-parse should use `InFile`
-/// directly.
-///
-////////////////////////////////////////////////////////////
-struct FileSource
-{
-    InFile& file;
-
-    [[gnu::always_inline]] base::SizeT refill(char* const dst, const base::SizeT n)
-    {
-        base::SizeT bytesRead = 0u;
-        return file.read(dst, n, bytesRead) ? bytesRead : 0u;
-    }
-};
-
-
-////////////////////////////////////////////////////////////
-/// \brief Reads a line from `stream` into `target` (substitute for `std::getline`).
-/// Returns `true` on success, `false` on EOF or stream error.
-///
-////////////////////////////////////////////////////////////
-template <typename T>
-bool getLine(IOStreamInput& stream, T& target);
 
 } // namespace sf
 
@@ -370,13 +294,16 @@ bool getLine(IOStreamInput& stream, T& target);
 /// \file SFML/System/IO.hpp
 /// \ingroup system
 ///
-/// File I/O (`OutFile` / `InFile`, plus `readFromFile` / `writeToFile`
-/// helpers) and a thin wrapper around `std::cin`. For formatted output to
-/// stdout/stderr, see `sf::base::print` / `printLn` / `printErr` /
-/// `printErrLn` in `<SFML/Base/Fmt/Fmt.hpp>`. For in-memory parsing, see
-/// `sf::base::Scanner` (and `sf::FileSource` for scanner-over-`InFile`).
+/// File I/O: `OutFile` / `InFile`, plus the `readFromFile` /
+/// `writeToFile` helpers. For formatted output to stdout/stderr, see
+/// `sf::base::print` / `printLn` / `printErr` / `printErrLn` in
+/// `<SFML/Base/Fmt/Fmt.hpp>`. For input parsing -- in-memory or from
+/// stdin -- see `<SFML/Base/Scn/Scn.hpp>` and
+/// `<SFML/Base/Scn/ScnStdin.hpp>`. `InFile` itself satisfies
+/// `sf::base::ScnSource`, so it can be handed to `scn<T>` / `scnInto`
+/// directly.
 ///
-/// Implementation details are hidden behind PImpl to keep expensive standard
-/// library headers out of the public API.
+/// Implementation details are hidden behind PImpl to keep expensive
+/// standard library headers out of the public API.
 ///
 ////////////////////////////////////////////////////////////

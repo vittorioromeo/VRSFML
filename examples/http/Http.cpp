@@ -3,11 +3,11 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Network/Http.hpp"
 
-#include "SFML/System/IO.hpp"
-
 #include "SFML/Base/Fmt/Fmt.hpp"
 #include "SFML/Base/Fmt/FmtNumeric.hpp"
 #include "SFML/Base/FromChars.hpp"
+#include "SFML/Base/Scn/ScnStdin.hpp"
+#include "SFML/Base/Scn/ScnString.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
 
@@ -110,7 +110,7 @@ int main()
     do
     {
         sf::base::print("Type the complete URL of the webpage to request: ");
-        sf::cIn() >> url;
+        (void)sf::base::scnStdinInto(url);
     } while ((url.find("http://") != 0) && (url.find("https://") != 0));
 
     sf::base::printLn("\nRequesting {}", url);
@@ -120,6 +120,6 @@ int main()
 
     // Wait until the user presses 'enter' key
     sf::base::printLn("Press enter to exit...");
-    sf::cIn().ignore(10'000, '\n');
-    sf::cIn().ignore(10'000, '\n');
+    sf::base::scnStdinIgnoreLine();
+    sf::base::scnStdinIgnoreLine();
 }

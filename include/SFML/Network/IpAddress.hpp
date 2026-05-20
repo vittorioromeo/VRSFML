@@ -19,8 +19,6 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
-class IOStreamInput;
-class IOStreamOutput;
 class IpAddressUtils;
 } // namespace sf
 

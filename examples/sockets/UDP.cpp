@@ -8,11 +8,11 @@
 #include "SFML/Network/Socket.hpp"
 #include "SFML/Network/UdpSocket.hpp"
 
-#include "SFML/System/IO.hpp"
-
 #include "SFML/Base/Fmt/Fmt.hpp"
 #include "SFML/Base/Fmt/FmtNumeric.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/Scn/ScnStdin.hpp"
+#include "SFML/Base/Scn/ScnString.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 
@@ -65,7 +65,7 @@ void runUdpClient(unsigned short port)
         sf::base::print("Type the address or name of the server to connect to: ");
 
         sf::base::String addressStr;
-        sf::cIn() >> addressStr;
+        (void)sf::base::scnStdinInto(addressStr);
         server = sf::IpAddressUtils::resolve(addressStr);
     } while (!server.hasValue());
 

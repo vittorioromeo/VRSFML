@@ -29,7 +29,7 @@ inline constexpr char fmtArgDefaultAlign<T> = '>';
 ////////////////////////////////////////////////////////////
 template <typename T>
     requires isIntegral<T>
-SFML_SYSTEM_API void fmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec);
+[[nodiscard]] SFML_SYSTEM_API FmtResult fmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec);
 
 
 ////////////////////////////////////////////////////////////
@@ -38,7 +38,7 @@ SFML_SYSTEM_API void fmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec);
 ////////////////////////////////////////////////////////////
 template <typename T>
     requires isFloatingPoint<T>
-SFML_SYSTEM_API void fmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec);
+[[nodiscard]] SFML_SYSTEM_API FmtResult fmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec);
 
 
 ////////////////////////////////////////////////////////////
@@ -54,10 +54,10 @@ SFML_SYSTEM_API void fmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec);
 // pointer (`dispatchFmtArgErased`) or directly by it (`dispatchFmtArg`), so
 // the loss of inlining at consumer call sites is negligible.
 ////////////////////////////////////////////////////////////
-#define SFML_BASE_FMT_EXTERN(T)                                                                       \
-    extern template SFML_SYSTEM_API void fmtArg<T>(FmtSink&, const T&, const FmtSpec&);               \
-    extern template SFML_SYSTEM_API void priv::dispatchFmtArg<T>(FmtSink&, const T&, const FmtSpec&); \
-    extern template SFML_SYSTEM_API void priv::dispatchFmtArgErased<T>(FmtSink&, const void*, const FmtSpec&)
+#define SFML_BASE_FMT_EXTERN(T)                                                                            \
+    extern template SFML_SYSTEM_API FmtResult fmtArg<T>(FmtSink&, const T&, const FmtSpec&);               \
+    extern template SFML_SYSTEM_API FmtResult priv::dispatchFmtArg<T>(FmtSink&, const T&, const FmtSpec&); \
+    extern template SFML_SYSTEM_API FmtResult priv::dispatchFmtArgErased<T>(FmtSink&, const void*, const FmtSpec&)
 
 SFML_BASE_FMT_EXTERN(bool);
 SFML_BASE_FMT_EXTERN(char);
@@ -83,9 +83,9 @@ SFML_BASE_FMT_EXTERN(double);
 ////////////////////////////////////////////////////////////
 template <typename T>
     requires isEnum<T>
-[[gnu::always_inline]] inline void fmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec)
+[[nodiscard, gnu::always_inline]] inline FmtResult fmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec)
 {
-    fmtArg(sink, static_cast<UnderlyingType<T>>(arg), spec);
+    return fmtArg(sink, static_cast<UnderlyingType<T>>(arg), spec);
 }
 
 } // namespace sf::base

@@ -24,12 +24,32 @@ struct FmtString;
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
+/// \brief Result of a Fmt operation.
+////////////////////////////////////////////////////////////
+enum class [[nodiscard]] FmtResult
+{
+    ok,       //!< Formatting/writing succeeded
+    overflow, //!< Destination buffer was too small; retrying with more room may succeed
+    failed    //!< Formatter could not produce output; retrying with more room will not help
+};
+
+
+////////////////////////////////////////////////////////////
+#define SFML_BASE_FMT_TRY(...)                                        \
+    do                                                                \
+    {                                                                 \
+        const ::sf::base::FmtResult sfmlFmtTryResult = (__VA_ARGS__); \
+        if (sfmlFmtTryResult != ::sf::base::FmtResult::ok)            \
+            return sfmlFmtTryResult;                                  \
+    } while (false)
+
+
+////////////////////////////////////////////////////////////
 /// \brief Output sink that custom `fmtArg` overloads write into.
 ///
-/// Wraps a contiguous `[begin, end)` byte range. All writes go through
-/// `ensureRoom`, which either succeeds or sets a sticky `overflowed`
-/// flag. Once overflowed, all further writes are no-ops -- callers don't
-/// need to short-circuit themselves.
+/// Wraps a contiguous `[begin, end)` byte range. All fallible writes return
+/// a `FmtResult`; callers should propagate non-`ok` results immediately
+/// (usually via `SFML_BASE_FMT_TRY`).
 ///
 /// \note `fmt(...)` recursion requires the full `<SFML/Base/Fmt/Fmt.hpp>`
 /// header. This forward header only provides the byte-level API.
@@ -53,13 +73,6 @@ public:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] constexpr FmtSink(char* const begin, const SizeT n) noexcept : FmtSink{begin, begin + n}
     {
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr bool overflowed() const noexcept
-    {
-        return m_overflowed;
     }
 
 
@@ -92,13 +105,12 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] constexpr bool ensureRoom(const SizeT n) noexcept
+    [[nodiscard, gnu::always_inline]] constexpr FmtResult ensureRoom(const SizeT n) const noexcept
     {
         if (static_cast<SizeT>(m_end - m_pos) >= n) [[likely]]
-            return true;
+            return FmtResult::ok;
 
-        m_overflowed = true;
-        return false;
+        return FmtResult::overflow;
     }
 
 
@@ -110,23 +122,23 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] constexpr void append(const char* const data, const SizeT n) noexcept
+    [[nodiscard, gnu::always_inline]] constexpr FmtResult append(const char* const data, const SizeT n) noexcept
     {
-        if (!ensureRoom(n))
-            return;
+        SFML_BASE_FMT_TRY(ensureRoom(n));
 
         SFML_BASE_MEMCPY(m_pos, data, n);
         m_pos += n;
+        return FmtResult::ok;
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] constexpr void appendChar(const char c) noexcept
+    [[nodiscard, gnu::always_inline]] constexpr FmtResult appendChar(const char c) noexcept
     {
-        if (!ensureRoom(1u))
-            return;
+        SFML_BASE_FMT_TRY(ensureRoom(1u));
 
         *m_pos++ = c;
+        return FmtResult::ok;
     }
 
 
@@ -136,7 +148,7 @@ public:
     /// call it, by design.
     ////////////////////////////////////////////////////////////
     template <typename... Args>
-    constexpr void fmt(typename NonDeduced<const FmtString<Args...>>::type fmtStr, const Args&... args);
+    [[nodiscard]] constexpr FmtResult fmt(typename NonDeduced<const FmtString<Args...>>::type fmtStr, const Args&... args);
 
 private:
     ////////////////////////////////////////////////////////////
@@ -145,8 +157,6 @@ private:
     char* m_begin;
     char* m_pos;
     char* m_end;
-
-    bool m_overflowed = false;
 };
 
 } // namespace sf::base

@@ -9,12 +9,13 @@
 #include "SFML/Network/TcpListener.hpp"
 #include "SFML/Network/TcpSocket.hpp"
 
-#include "SFML/System/IO.hpp"
 #include "SFML/System/Utf8String.hpp"
 
 #include "SFML/Base/Fmt/Fmt.hpp"
 #include "SFML/Base/Fmt/FmtNumeric.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/Scn/ScnStdin.hpp"
+#include "SFML/Base/Scn/ScnString.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
@@ -130,7 +131,7 @@ void runTcpClient(unsigned short port, const bool tls)
         sf::base::print("Type the address or name of the server to connect to: ");
 
         sf::base::String addressStr;
-        sf::cIn() >> addressStr;
+        (void)sf::base::scnStdinInto(addressStr);
         server = sf::IpAddressUtils::resolve(addressStr);
     } while (!server.hasValue());
 

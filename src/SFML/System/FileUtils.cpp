@@ -9,8 +9,6 @@
 
 #include "SFML/System/Path.hpp"
 
-#include "SFML/Base/StringView.hpp"
-
 #ifdef SFML_SYSTEM_WINDOWS
     #include <string>
 #endif
@@ -21,13 +19,16 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-std::FILE* openFile(const Path& filename, base::StringView mode)
+std::FILE* openFile(const Path& filename, const char* const mode)
 {
 #ifdef SFML_SYSTEM_WINDOWS
-    const std::wstring wmode(mode.begin(), mode.end());
-    return _wfopen(filename.c_str(), wmode.data());
+    std::wstring wmode;
+    for (const char* p = mode; *p != '\0'; ++p)
+        wmode += static_cast<wchar_t>(*p);
+
+    return _wfopen(filename.c_str(), wmode.c_str());
 #else
-    return std::fopen(filename.c_str(), mode.data());
+    return std::fopen(filename.c_str(), mode);
 #endif
 }
 

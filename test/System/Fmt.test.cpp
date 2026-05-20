@@ -373,23 +373,23 @@ TEST_CASE("[System] Fmt.hpp - fmtTo() into base::String")
     SECTION("Appends to non-empty sink")
     {
         sf::base::String s = "prefix:";
-        sf::base::fmtTo(s, " {} = {:.2f}", "pi", 3.14159);
+        CHECK(sf::base::fmtTo(s, " {} = {:.2f}", "pi", 3.14159) == sf::base::FmtResult::ok);
         CHECK(s == sf::base::String{"prefix: pi = 3.14"});
     }
 
     SECTION("Format into fresh sink")
     {
         sf::base::String s;
-        sf::base::fmtTo(s, "{:>8}", "abc");
+        CHECK(sf::base::fmtTo(s, "{:>8}", "abc") == sf::base::FmtResult::ok);
         CHECK(s == sf::base::String{"     abc"});
     }
 
     SECTION("Repeated fmtTo accumulates")
     {
         sf::base::String s;
-        sf::base::fmtTo(s, "{}-", 1);
-        sf::base::fmtTo(s, "{}-", 2);
-        sf::base::fmtTo(s, "{}", 3);
+        CHECK(sf::base::fmtTo(s, "{}-", 1) == sf::base::FmtResult::ok);
+        CHECK(sf::base::fmtTo(s, "{}-", 2) == sf::base::FmtResult::ok);
+        CHECK(sf::base::fmtTo(s, "{}", 3) == sf::base::FmtResult::ok);
         CHECK(s == sf::base::String{"1-2-3"});
     }
 }
@@ -401,7 +401,7 @@ TEST_CASE("[System] Fmt.hpp - fmtTo() into Utf8String")
     SECTION("Build a HUD-style string")
     {
         sf::Utf8String text;
-        sf::base::fmtTo(text, "Frame: {:>5}ms / Delta: {:.2f}", 16, 0.016667);
+        CHECK(sf::base::fmtTo(text, "Frame: {:>5}ms / Delta: {:.2f}", 16, 0.016667) == sf::base::FmtResult::ok);
 
         const auto bytes = text.asBytes();
         CHECK(sf::base::StringView{bytes.data(), bytes.size()} == sf::base::StringView{"Frame:    16ms / Delta: 0.02"});
@@ -410,7 +410,7 @@ TEST_CASE("[System] Fmt.hpp - fmtTo() into Utf8String")
     SECTION("Appends to a Utf8String already containing UTF-8 content")
     {
         sf::Utf8String text{u8"café "};
-        sf::base::fmtTo(text, "= {}", 42);
+        CHECK(sf::base::fmtTo(text, "= {}", 42) == sf::base::FmtResult::ok);
 
         const auto bytes = text.asBytes();
         CHECK(sf::base::StringView{bytes.data(), bytes.size()} == sf::base::StringView{"café = 42"});
@@ -464,9 +464,9 @@ struct FixedTag
     const char* text;
 };
 
-inline void fmtArg(sf::base::FmtSink& sink, const FixedTag& t, const sf::base::FmtSpec&) noexcept
+[[nodiscard]] inline sf::base::FmtResult fmtArg(sf::base::FmtSink& sink, const FixedTag& t, const sf::base::FmtSpec&) noexcept
 {
-    sink.append(t.text, SFML_BASE_STRLEN(t.text));
+    return sink.append(t.text, SFML_BASE_STRLEN(t.text));
 }
 
 
@@ -479,9 +479,9 @@ struct Vec2f
     float y;
 };
 
-inline void fmtArg(sf::base::FmtSink& sink, const Vec2f& v, const sf::base::FmtSpec&)
+[[nodiscard]] inline sf::base::FmtResult fmtArg(sf::base::FmtSink& sink, const Vec2f& v, const sf::base::FmtSpec&)
 {
-    sink.fmt("({}, {})", v.x, v.y);
+    return sink.fmt("({}, {})", v.x, v.y);
 }
 
 
@@ -499,16 +499,16 @@ struct MiniVec
 };
 
 template <typename T>
-inline void fmtArg(sf::base::FmtSink& sink, const MiniVec<T>& v, const sf::base::FmtSpec&)
+[[nodiscard]] inline sf::base::FmtResult fmtArg(sf::base::FmtSink& sink, const MiniVec<T>& v, const sf::base::FmtSpec&)
 {
-    sink.appendChar('[');
+    SFML_BASE_FMT_TRY(sink.appendChar('['));
     for (sf::base::SizeT i = 0u; i < v.size; ++i)
     {
         if (i != 0u)
-            sink.append(", ", 2u);
-        sink.fmt("{}", v.data[i]);
+            SFML_BASE_FMT_TRY(sink.append(", ", 2u));
+        SFML_BASE_FMT_TRY(sink.fmt("{}", v.data[i]));
     }
-    sink.appendChar(']');
+    return sink.appendChar(']');
 }
 
 
@@ -520,7 +520,7 @@ struct RightHex
     unsigned int value;
 };
 
-inline void fmtArg(sf::base::FmtSink& sink, const RightHex& h, const sf::base::FmtSpec&)
+[[nodiscard]] inline sf::base::FmtResult fmtArg(sf::base::FmtSink& sink, const RightHex& h, const sf::base::FmtSpec&)
 {
     char            buf[12]{};
     sf::base::SizeT n = 0u;
@@ -545,7 +545,20 @@ inline void fmtArg(sf::base::FmtSink& sink, const RightHex& h, const sf::base::F
     for (sf::base::SizeT i = 0u; i < n; ++i)
         buf[i] = tmp[n - 1u - i];
 
-    sink.append(buf, n);
+    return sink.append(buf, n);
+}
+
+
+////////////////////////////////////////////////////////////
+// Pattern E: formatter-level failure, distinct from destination overflow.
+////////////////////////////////////////////////////////////
+struct FailTag
+{
+};
+
+[[nodiscard]] inline sf::base::FmtResult fmtArg(sf::base::FmtSink&, const FailTag&, const sf::base::FmtSpec&) noexcept
+{
+    return sf::base::FmtResult::failed;
 }
 } // namespace customtypes
 } // anonymous namespace
@@ -699,30 +712,29 @@ TEST_CASE("[System] Fmt.hpp - FmtSink direct use (low-level API)")
         char              buf[64];
         sf::base::FmtSink sink{buf, sizeof(buf)};
 
-        sink.append("[", 1u);
-        sink.fmt("{}", 42);
-        sink.append("] ", 2u);
-        sink.appendChar('=');
-        sink.fmt(" {:.1f}", 3.14);
+        CHECK(sink.append("[", 1u) == sf::base::FmtResult::ok);
+        CHECK(sink.fmt("{}", 42) == sf::base::FmtResult::ok);
+        CHECK(sink.append("] ", 2u) == sf::base::FmtResult::ok);
+        CHECK(sink.appendChar('=') == sf::base::FmtResult::ok);
+        CHECK(sink.fmt(" {:.1f}", 3.14) == sf::base::FmtResult::ok);
 
-        REQUIRE_FALSE(sink.overflowed());
         CHECK(sf::base::StringView{buf, sink.size()} == sf::base::StringView{"[42] = 3.1"});
     }
 
-    SECTION("Overflow sets sticky bit, further writes no-op")
+    SECTION("Overflow is returned eagerly and does not change the sink")
     {
         char              buf[5];
         sf::base::FmtSink sink{buf, sizeof(buf)};
 
-        sink.append("hello", 5u); // exactly fills buffer
-        CHECK_FALSE(sink.overflowed());
+        CHECK(sink.append("hello", 5u) == sf::base::FmtResult::ok); // exactly fills buffer
 
-        sink.append("!", 1u); // overflow
-        CHECK(sink.overflowed());
+        CHECK(sink.append("!", 1u) == sf::base::FmtResult::overflow);
+        CHECK(sink.size() == 5u);
 
-        sink.append(" world", 6u); // no-op (still overflowed)
-        CHECK(sink.overflowed());
-        CHECK(sink.size() == 5u); // size frozen at last good write
+        char              larger[16];
+        sf::base::FmtSink fresh{larger, sizeof(larger)};
+        CHECK(fresh.append(" world", 6u) == sf::base::FmtResult::ok);
+        CHECK(fresh.size() == 6u);
     }
 
     SECTION("Mark + atMark survives interleaved writes")
@@ -730,12 +742,32 @@ TEST_CASE("[System] Fmt.hpp - FmtSink direct use (low-level API)")
         char              buf[64];
         sf::base::FmtSink sink{buf, sizeof(buf)};
 
-        sink.append("aa", 2u);
+        CHECK(sink.append("aa", 2u) == sf::base::FmtResult::ok);
         const auto m = sink.mark();
-        sink.append("bb", 2u);
+        CHECK(sink.append("bb", 2u) == sf::base::FmtResult::ok);
 
         CHECK(m == 2u);
         CHECK(sink.atMark(m) == buf + 2);
+    }
+}
+
+
+////////////////////////////////////////////////////////////
+TEST_CASE("[System] Fmt.hpp - formatter failure is not treated as overflow")
+{
+    using customtypes::FailTag;
+
+    SECTION("fmtIntoBuffer returns nullptr")
+    {
+        char buf[64];
+        CHECK(sf::base::fmtIntoBuffer(buf, "{}", FailTag{}) == nullptr);
+    }
+
+    SECTION("fmtTo returns failed without appending partial output")
+    {
+        sf::base::String out = "prefix";
+        CHECK(sf::base::fmtTo(out, "{}{}", "ok", FailTag{}) == sf::base::FmtResult::failed);
+        CHECK(out == sf::base::String{"prefix"});
     }
 }
 
@@ -751,7 +783,7 @@ TEST_CASE("[System] Fmt.hpp - fmtTo() large output (heap fallback path)")
             big += sf::base::String{"0123456789"}; // 1000 chars
 
         sf::base::String out;
-        sf::base::fmtTo(out, "[{}]", sf::base::StringView{big.data(), big.size()});
+        CHECK(sf::base::fmtTo(out, "[{}]", sf::base::StringView{big.data(), big.size()}) == sf::base::FmtResult::ok);
 
         REQUIRE(out.size() == big.size() + 2u);
         CHECK(out.data()[0] == '[');
@@ -767,7 +799,7 @@ TEST_CASE("[System] Fmt.hpp - fmtTo() large output (heap fallback path)")
             mid += sf::base::String{"0123456789"}; // 500 chars
 
         sf::base::String out;
-        sf::base::fmtTo(out, "{}", sf::base::StringView{mid.data(), mid.size()});
+        CHECK(sf::base::fmtTo(out, "{}", sf::base::StringView{mid.data(), mid.size()}) == sf::base::FmtResult::ok);
 
         CHECK(out.size() == mid.size());
     }
@@ -795,7 +827,7 @@ TEST_CASE("[System] Fmt.hpp - boundary conditions")
     SECTION("Very wide width is honored")
     {
         sf::base::String out;
-        sf::base::fmtTo(out, "[{:>1000}]", "x");
+        CHECK(sf::base::fmtTo(out, "[{:>1000}]", "x") == sf::base::FmtResult::ok);
         CHECK(out.size() == 1002u);
         CHECK(out.data()[0] == '[');
         CHECK(out.data()[out.size() - 2u] == 'x');
@@ -829,7 +861,7 @@ TEST_CASE("[System] Fmt.hpp - boundary conditions")
         const customtypes::MiniVec<customtypes::Vec2f> v{values, 60u};
 
         sf::base::String out;
-        sf::base::fmtTo(out, "{}", v);
+        CHECK(sf::base::fmtTo(out, "{}", v) == sf::base::FmtResult::ok);
 
         CHECK(out.size() == 1320u);
         CHECK(out.data()[0] == '[');

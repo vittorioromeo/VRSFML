@@ -8,6 +8,7 @@
 #include "SFML/System/IO.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/FileUtils.hpp"
 #include "SFML/System/Path.hpp"
 
 #include "SFML/Base/Assert.hpp"
@@ -17,14 +18,10 @@
 #include "SFML/Base/ScopeGuard.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
-#include "SFML/Base/StringStreamOp.hpp" // IWYU pragma: keep (provides `operator>>` for `base::String` used by `IN_STREAMABLE_TYPES_X`)
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Trait/IsSame.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#include <filesystem> // IWYU pragma: keep (used in `IN_STREAMABLE_TYPES_X`)
-#include <iostream>
-#include <istream>
 #include <string>
 
 #include <cstdio>
@@ -47,42 +44,6 @@
 #else
     #define SFML_PRIV_IO_NATIVE_BACKEND 0 // Fallback to C stdio
 #endif
-
-// Note: `::sf::base::String` is intentionally absent from the macro below. The remaining stream class
-// (`IOStreamInput`) has a dedicated `operator>>(base::String&)` overload to avoid an ambiguity with the
-// free `operator>>` from `StringStreamOp.hpp` when downstream code includes both headers.
-
-// clang-format off
-#define SFML_BASE_IN_STREAMABLE_TYPES_X(x) \
-    x(bool)                    \
-                               \
-    x(char)                    \
-    x(unsigned char)           \
-                               \
-    x(short)                   \
-    x(unsigned short)          \
-                               \
-    x(int)                     \
-    x(unsigned int)            \
-                               \
-    x(long)                    \
-    x(unsigned long)           \
-                               \
-    x(long long)               \
-    x(unsigned long long)      \
-                               \
-    x(float)                   \
-    x(double)                  \
-    x(long double)             \
-                               \
-    x(void*)                   \
-                               \
-    x(::std::string)           \
-    x(::std::filesystem::path) \
-                               \
-    x(::sf::base::String)
-// clang-format on
-
 
 namespace
 {
@@ -506,120 +467,6 @@ bool readFromFileImpl(const Filename& filename, T& target, const bool isAppend)
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-struct IOStreamInput::Impl
-{
-    std::istream stream;
-
-    explicit Impl(std::streambuf* sbuf) : stream(sbuf)
-    {
-    }
-};
-
-
-////////////////////////////////////////////////////////////
-IOStreamInput::IOStreamInput(std::streambuf* sbuf) : m_impl(sbuf)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-std::streambuf* IOStreamInput::rdbuf()
-{
-    return m_impl->stream.rdbuf();
-}
-
-
-////////////////////////////////////////////////////////////
-void IOStreamInput::rdbuf(std::streambuf* sbuf)
-{
-    m_impl->stream.rdbuf(sbuf);
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-IOStreamInput& IOStreamInput::operator>>(T& value)
-{
-    m_impl->stream >> value;
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-#define x(type) template IOStreamInput& IOStreamInput::operator>> <type>(type&); // NOLINT(bugprone-macro-parentheses)
-SFML_BASE_IN_STREAMABLE_TYPES_X(x)
-#undef x
-
-
-////////////////////////////////////////////////////////////
-void IOStreamInput::ignore(base::SizeT count, char delimiter)
-{
-    m_impl->stream.ignore(static_cast<std::streamsize>(count), delimiter);
-}
-
-
-////////////////////////////////////////////////////////////
-void IOStreamInput::clear()
-{
-    m_impl->stream.clear();
-}
-
-
-////////////////////////////////////////////////////////////
-bool IOStreamInput::isGood() const
-{
-    return m_impl->stream.good();
-}
-
-
-////////////////////////////////////////////////////////////
-bool IOStreamInput::isEOF() const
-{
-    return m_impl->stream.eof();
-}
-
-
-////////////////////////////////////////////////////////////
-IOStreamInput::operator bool() const
-{
-    return static_cast<bool>(m_impl->stream);
-}
-
-
-////////////////////////////////////////////////////////////
-IOStreamInput& cIn()
-{
-    static IOStreamInput stream(std::cin.rdbuf());
-    return stream;
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-bool getLine(IOStreamInput& stream, T& target)
-{
-    if constexpr (SFML_BASE_IS_SAME(T, std::string))
-    {
-        return static_cast<bool>(std::getline(stream.m_impl->stream, target));
-    }
-    else
-    {
-        std::string temp;
-        const auto  result = static_cast<bool>(std::getline(stream.m_impl->stream, temp));
-
-        target = base::String{temp.data(), temp.size()};
-
-        return result;
-    }
-}
-
-
-////////////////////////////////////////////////////////////
-template bool getLine<std::string>(IOStreamInput&, std::string&);
-template bool getLine<base::String>(IOStreamInput&, base::String&);
-
-
-////////////////////////////////////////////////////////////
 bool writeToFile(base::StringView filename, base::StringView contents)
 {
     // `Path{StringView}` is unavailable; route via `std::string` (matches the
@@ -800,13 +647,7 @@ OutFile& OutFile::operator=(OutFile&& rhs) noexcept
 ////////////////////////////////////////////////////////////
 base::Optional<OutFile> OutFile::open(const Path& filename, FileOpenMode mode)
 {
-    // `fopen` requires a NUL-terminated narrow-char path. `Path::c_str()`
-    // is `const wchar_t*` on Windows, so we go through a UTF-8 round-trip
-    // there; on Linux/BSD/macOS/Emscripten/Android the result is already
-    // narrow-char and the conversion is a no-op-ish copy.
-    const auto path = toUtf8FilenameForStdio(filename);
-
-    std::FILE* const file = std::fopen(path.c_str(), mapOutFileOpenMode(mode));
+    std::FILE* const file = openFile(filename, mapOutFileOpenMode(mode));
     if (file == nullptr)
         return base::nullOpt;
 
@@ -908,12 +749,23 @@ namespace
 ////////////////////////////////////////////////////////////
 struct InFile::Impl
 {
-    std::FILE* file; //!< Non-null on a live `InFile`; null only in a moved-from object.
+    std::FILE* file;   //!< Non-null on a live `InFile`; null only in a moved-from object.
+    int        peeked; //!< 1-byte `ScnSource` cache: byte value cast through `unsigned char`, or sentinel below.
 };
 
 
 ////////////////////////////////////////////////////////////
-InFile::InFile(base::PassKey<InFile>&&, void* file) noexcept : m_impl{static_cast<std::FILE*>(file)}
+namespace
+{
+// `InFile::peek()` returns a single non-negative byte or EOF; the cache
+// uses `-2` as its "empty" sentinel because that value is reserved (real
+// `fgetc` only ever returns `[0, 255]` or `EOF == -1`).
+constexpr int peekCacheEmpty = -2;
+} // namespace
+
+
+////////////////////////////////////////////////////////////
+InFile::InFile(base::PassKey<InFile>&&, void* file) noexcept : m_impl{static_cast<std::FILE*>(file), peekCacheEmpty}
 {
 }
 
@@ -926,9 +778,10 @@ InFile::~InFile()
 
 
 ////////////////////////////////////////////////////////////
-InFile::InFile(InFile&& rhs) noexcept : m_impl{rhs.m_impl->file}
+InFile::InFile(InFile&& rhs) noexcept : m_impl{rhs.m_impl->file, rhs.m_impl->peeked}
 {
-    rhs.m_impl->file = nullptr;
+    rhs.m_impl->file   = nullptr;
+    rhs.m_impl->peeked = peekCacheEmpty;
 }
 
 
@@ -940,8 +793,10 @@ InFile& InFile::operator=(InFile&& rhs) noexcept
 
     closeAndReport(m_impl->file, "InFile");
 
-    m_impl->file     = rhs.m_impl->file;
-    rhs.m_impl->file = nullptr;
+    m_impl->file       = rhs.m_impl->file;
+    m_impl->peeked     = rhs.m_impl->peeked;
+    rhs.m_impl->file   = nullptr;
+    rhs.m_impl->peeked = peekCacheEmpty;
 
     return *this;
 }
@@ -950,9 +805,7 @@ InFile& InFile::operator=(InFile&& rhs) noexcept
 ////////////////////////////////////////////////////////////
 base::Optional<InFile> InFile::open(const Path& filename, FileOpenMode mode)
 {
-    const auto path = toUtf8FilenameForStdio(filename);
-
-    std::FILE* const file = std::fopen(path.c_str(), mapInFileOpenMode(mode));
+    std::FILE* const file = openFile(filename, mapInFileOpenMode(mode));
     if (file == nullptr)
         return base::nullOpt;
 
@@ -979,6 +832,29 @@ bool InFile::read(char* data, base::SizeT size, base::SizeT& bytesRead)
     if (m_impl->file == nullptr)
         return false;
 
+    if (size == 0u)
+    {
+        bytesRead = 0u;
+        return true;
+    }
+
+    base::SizeT prefix = 0u;
+
+    // Deliver the peek-cached byte (if any) as the first byte of the read.
+    if (m_impl->peeked != peekCacheEmpty && m_impl->peeked != EOF)
+    {
+        *data++ = static_cast<char>(static_cast<unsigned char>(m_impl->peeked));
+        ++prefix;
+        --size;
+    }
+    m_impl->peeked = peekCacheEmpty;
+
+    if (size == 0u)
+    {
+        bytesRead = prefix;
+        return true;
+    }
+
     const base::SizeT got = std::fread(data, 1u, size, m_impl->file);
 
     // Short read = either EOF (`feof`) or true I/O error (`ferror`). The
@@ -987,7 +863,7 @@ bool InFile::read(char* data, base::SizeT size, base::SizeT& bytesRead)
     if (got != size && std::ferror(m_impl->file) != 0)
         return false;
 
-    bytesRead = got;
+    bytesRead = prefix + got;
     return true;
 }
 
@@ -998,6 +874,10 @@ bool InFile::seekPos(base::PtrDiffT absolutePos)
     if (m_impl->file == nullptr)
         return false;
 
+    // Drop any peek-cached byte: after seeking, the cached byte's position
+    // is no longer adjacent to the next read.
+    m_impl->peeked = peekCacheEmpty;
+
     return std::fseek(m_impl->file, static_cast<long>(absolutePos), SEEK_SET) == 0;
 }
 
@@ -1007,6 +887,8 @@ bool InFile::seekPos(base::PtrDiffT offset, SeekDir dir)
 {
     if (m_impl->file == nullptr)
         return false;
+
+    m_impl->peeked = peekCacheEmpty;
 
     return std::fseek(m_impl->file, static_cast<long>(offset), mapSeekDirToStdio(dir)) == 0;
 }
@@ -1022,7 +904,12 @@ bool InFile::tellPos(base::PtrDiffT& out)
     if (pos < 0)
         return false;
 
-    out = static_cast<base::PtrDiffT>(pos);
+    // A peeked-but-unconsumed byte sits one position "before" the FILE's
+    // logical cursor (we already pulled it via `fgetc`). Adjust so callers
+    // see a stable cursor across peek calls.
+    const long adj = (m_impl->peeked != peekCacheEmpty && m_impl->peeked != EOF) ? 1 : 0;
+
+    out = static_cast<base::PtrDiffT>(pos - adj);
     return true;
 }
 
@@ -1030,7 +917,38 @@ bool InFile::tellPos(base::PtrDiffT& out)
 ////////////////////////////////////////////////////////////
 bool InFile::isEOF() const noexcept
 {
+    // While a peek-cached byte exists, we have not yet "reached" EOF from
+    // the caller's point of view, even if the FILE's internal EOF flag is set
+    // (which can happen if `fgetc` returned a byte but the next call would EOF).
+    if (m_impl->peeked != peekCacheEmpty && m_impl->peeked != EOF)
+        return false;
+
     return m_impl->file != nullptr && std::feof(m_impl->file) != 0;
+}
+
+
+////////////////////////////////////////////////////////////
+base::Optional<char> InFile::peek()
+{
+    if (m_impl->file == nullptr)
+        return base::nullOpt;
+
+    if (m_impl->peeked == peekCacheEmpty)
+        m_impl->peeked = std::fgetc(m_impl->file);
+
+    if (m_impl->peeked == EOF)
+        return base::nullOpt;
+
+    return base::makeOptional(static_cast<char>(static_cast<unsigned char>(m_impl->peeked)));
+}
+
+
+////////////////////////////////////////////////////////////
+void InFile::consume() noexcept
+{
+    // Pre: a successful `peek()` preceded this call. Drop the cache so
+    // the next `peek()` pulls a fresh byte.
+    m_impl->peeked = peekCacheEmpty;
 }
 
 

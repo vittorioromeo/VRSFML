@@ -22,7 +22,9 @@
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
-#include "SFML/Base/Scanner.hpp"
+#include "SFML/Base/Scn/Scn.hpp"
+#include "SFML/Base/Scn/ScnString.hpp"
+#include "SFML/Base/Scn/ScnStringSource.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Span.hpp"
 #include "SFML/Base/String.hpp"
@@ -496,19 +498,21 @@ Ftp::Response Ftp::getResponse()
         }
 
         // There can be several lines inside the received buffer, extract them all
-        base::Scanner scanner{base::StringSource{base::StringView{buffer, length}}};
-        while (!scanner.atEnd())
+        base::ScnStringSource scanner{base::StringView{buffer, length}};
+        while (!base::scnAtEnd(scanner))
         {
             // Try to extract the code
             unsigned int code = 0;
-            if (scanner.readInt(code))
+            if (base::scnInto(scanner, code))
             {
                 // Extract the separator (next byte verbatim, no whitespace skip).
                 // Failure here means the buffer ended right after the code -- the
                 // response is malformed.
-                char separator = 0;
-                if (!scanner.readChar(separator))
+                const auto sep = scanner.peek();
+                if (!sep)
                     return Response(Response::Status::InvalidResponse);
+                const char separator = *sep;
+                scanner.consume();
 
                 // The '-' character means a multiline response
                 if ((separator == '-') && !isInsideMultiline)
@@ -522,7 +526,7 @@ Ftp::Response Ftp::getResponse()
 
                     // Extract the line. Failure leaves `message` indeterminate;
                     // the subsequent `erase(size - 1)` would underflow, so bail.
-                    if (!scanner.readLine(message))
+                    if (!base::scnReadLine(scanner, message))
                         return Response(Response::Status::InvalidResponse);
 
                     // Remove the ending '\r' (all lines are terminated by "\r\n")
@@ -537,7 +541,7 @@ Ftp::Response Ftp::getResponse()
                     {
                         // Extract the line; same rationale as above for failing on EOF.
                         base::String line;
-                        if (!scanner.readLine(line))
+                        if (!base::scnReadLine(scanner, line))
                             return Response(Response::Status::InvalidResponse);
 
                         // Remove the ending '\r' (all lines are terminated by "\r\n")
@@ -563,7 +567,7 @@ Ftp::Response Ftp::getResponse()
                     // The line we just read was actually not a response,
                     // only a new part of the current multiline response
                     base::String line;
-                    if (!scanner.readLine(line))
+                    if (!base::scnReadLine(scanner, line))
                         return Response(Response::Status::InvalidResponse);
 
                     if (!line.empty())
@@ -579,10 +583,11 @@ Ftp::Response Ftp::getResponse()
             else if (lastCode != 0)
             {
                 // We are in the middle of a multiline response: the current line
-                // didn't start with a numeric code. `readInt` failed without
-                // consuming any bytes, so the line is intact below.
+                // didn't start with a numeric code. `scnInto` for the int failed
+                // without consuming any bytes (after the initial whitespace skip),
+                // so the rest of the line is intact below.
                 base::String line;
-                if (!scanner.readLine(line))
+                if (!base::scnReadLine(scanner, line))
                     return Response(Response::Status::InvalidResponse);
 
                 if (!line.empty())

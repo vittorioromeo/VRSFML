@@ -12,13 +12,13 @@
 #include "SFML/Audio/SoundBuffer.hpp"
 
 #include "SFML/System/Fmt/FmtPath.hpp"
-#include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Thread.hpp"
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/Fmt/Fmt.hpp"
 #include "SFML/Base/Fmt/FmtNumeric.hpp"
+#include "SFML/Base/Scn/ScnStdin.hpp"
 
 
 namespace
@@ -122,5 +122,5 @@ int main()
 
     // Wait until the user presses 'enter' key
     sf::base::printLn("Press enter to exit...");
-    sf::cIn().ignore(10'000, '\n');
+    sf::base::scnStdinIgnoreLine();
 }

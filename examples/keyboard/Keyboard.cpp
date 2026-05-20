@@ -1035,7 +1035,7 @@ sf::Utf8String textEventDescription(const sf::Event::TextEntered& textEntered)
     text += textEntered.unicode;
     text += "\nU+";
 
-    sf::base::fmtTo(text, "{:0>4x}", static_cast<sf::base::U32>(textEntered.unicode));
+    (void)sf::base::fmtTo(text, "{:0>4x}", static_cast<sf::base::U32>(textEntered.unicode));
 
     return text;
 }

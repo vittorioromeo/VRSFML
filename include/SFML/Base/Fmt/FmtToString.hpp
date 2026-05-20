@@ -28,7 +28,7 @@ template <typename... Args>
 [[nodiscard]] String fmtToString(typename NonDeduced<const FmtString<Args...>>::type fmtStr, const Args&... args)
 {
     String out;
-    fmtTo(out, fmtStr, args...);
+    (void)fmtTo(out, fmtStr, args...);
     return out;
 }
 

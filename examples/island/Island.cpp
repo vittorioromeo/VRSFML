@@ -509,19 +509,20 @@ int main()
 
         // Update and draw the HUD text
         hudBuf.clear();
-        sf::base::fmtTo(hudBuf,
-                        "Frame:  {}ms\n"
-                        "perlinOctaves:  {}\n\n"
-                        "Use the arrow keys to change the values.\nUse the return key to regenerate the terrain.\n\n",
-                        clock.restart().asMilliseconds(),
-                        perlinOctaves);
+        (void)sf::base::fmtTo(hudBuf,
+                              "Frame:  {}ms\n"
+                              "perlinOctaves:  {}\n\n"
+                              "Use the arrow keys to change the values.\nUse the return key to regenerate the "
+                              "terrain.\n\n",
+                              clock.restart().asMilliseconds(),
+                              perlinOctaves);
 
         for (sf::base::SizeT i = 0; i < settings.size(); ++i)
-            sf::base::fmtTo(hudBuf,
-                            "{}{}:  {}\n",
-                            (i == currentSetting) ? ">>  " : "       ",
-                            settings[i].name,
-                            *(settings[i].value));
+            (void)sf::base::fmtTo(hudBuf,
+                                  "{}{}:  {}\n",
+                                  (i == currentSetting) ? ">>  " : "       ",
+                                  settings[i].name,
+                                  *(settings[i].value));
 
         hudText.setString(hudBuf);
 

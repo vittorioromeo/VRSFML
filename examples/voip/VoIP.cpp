@@ -8,10 +8,9 @@
 #include "SFML/Audio/CaptureDevice.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 
-#include "SFML/System/IO.hpp"
-
 #include "SFML/Base/Fmt/Fmt.hpp"
 #include "SFML/Base/Fmt/FmtNumeric.hpp"
+#include "SFML/Base/Scn/ScnStdin.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -24,9 +23,8 @@ int main()
     const unsigned short port = 2435;
 
     // Client or server ?
-    char who = 0;
     sf::base::print("Do you want to be a server ('s') or a client ('c')? ");
-    sf::cIn() >> who;
+    const char who = sf::base::scnStdin<char>().valueOr('c');
 
     if (who == 's')
     {
@@ -49,5 +47,5 @@ int main()
 
     // Wait until the user presses 'enter' key
     sf::base::printLn("Press enter to exit...");
-    sf::cIn().ignore(10'000, '\n');
+    sf::base::scnStdinIgnoreLine();
 }

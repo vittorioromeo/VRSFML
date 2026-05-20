@@ -19,7 +19,10 @@
 #include "SFML/Base/Fmt/Fmt.hpp"
 #include "SFML/Base/Fmt/FmtToString.hpp"
 #include "SFML/Base/Optional.hpp"
-#include "SFML/Base/Scanner.hpp"
+#include "SFML/Base/Radix.hpp"
+#include "SFML/Base/Scn/Scn.hpp"
+#include "SFML/Base/Scn/ScnString.hpp"
+#include "SFML/Base/Scn/ScnStringSource.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
@@ -60,10 +63,10 @@ using FieldTable = std::map<sf::base::String, sf::base::String>; // Use an order
 
 
 ////////////////////////////////////////////////////////////
-void parseFields(auto& scanner, FieldTable& fields)
+void parseFields(sf::base::ScnStringSource& scanner, FieldTable& fields)
 {
     sf::base::String line;
-    while (scanner.readLine(line) && line.size() > 2)
+    while (sf::base::scnReadLine(scanner, line) && line.size() > 2)
     {
         const auto lineView = line.toStringView();
 
@@ -125,11 +128,11 @@ void parseFields(auto& scanner, FieldTable& fields)
 
     // Request line
     sf::base::String request;
-    sf::base::fmtTo(request, "{} {} HTTP/{}.{}\r\n", methodStr, uri, majorVersion, minorVersion);
+    (void)sf::base::fmtTo(request, "{} {} HTTP/{}.{}\r\n", methodStr, uri, majorVersion, minorVersion);
 
     // Fields, blank line, body
     for (const auto& [fieldKey, fieldValue] : fields)
-        sf::base::fmtTo(request, "{}: {}\r\n", fieldKey, fieldValue);
+        (void)sf::base::fmtTo(request, "{}: {}\r\n", fieldKey, fieldValue);
 
     request += "\r\n";
     request += body;
@@ -296,11 +299,11 @@ const base::String& Http::Response::getBody() const
 ////////////////////////////////////////////////////////////
 void Http::Response::parse(const base::String& data)
 {
-    base::Scanner scanner{base::StringSource{data.toStringView()}};
+    base::ScnStringSource scanner{data.toStringView()};
 
     // Extract the HTTP version from the first line
     base::String version;
-    if (scanner.readToken(version))
+    if (base::scnInto(scanner, version))
     {
         const auto prefix = version.substrByPosLen(0u, 5u);
 
@@ -320,7 +323,7 @@ void Http::Response::parse(const base::String& data)
 
     // Extract the status code from the first line
     int status = 0;
-    if (!scanner.readInt(status))
+    if (!base::scnInto(scanner, status))
     {
         // Invalid status code
         m_impl->status = Status::InvalidResponse;
@@ -330,7 +333,7 @@ void Http::Response::parse(const base::String& data)
     m_impl->status = static_cast<Status>(status);
 
     // Ignore the end of the first line
-    scanner.skipPast('\n');
+    base::scnSkipPast(scanner, '\n');
 
     // Parse the other lines, which contain fields, one by one
     parseFields(scanner, m_impl->fields);
@@ -340,9 +343,12 @@ void Http::Response::parse(const base::String& data)
     // Determine whether the transfer is chunked
     if (toLower(getField("transfer-encoding")) != "chunked")
     {
-        char c{};
-        while (scanner.readChar(c))
-            m_impl->body.pushBack(c);
+        // Drain whatever remains of the source into the body, byte by byte.
+        while (auto c = scanner.peek())
+        {
+            m_impl->body.pushBack(*c);
+            scanner.consume();
+        }
     }
     else
     {
@@ -350,19 +356,24 @@ void Http::Response::parse(const base::String& data)
         base::SizeT length = 0;
 
         // Read all chunks, identified by a chunk-size not being 0
-        while (scanner.readIntRadix(length, base::Radix::Hex) && length != 0u)
+        while (base::scnRadix(scanner, length, base::Radix::Hex) && length != 0u)
         {
             // Drop the rest of the line (chunk-extension)
-            scanner.skipPast('\n');
+            base::scnSkipPast(scanner, '\n');
 
             // Copy the actual content data
-            char c{};
-            for (base::SizeT i = 0; i < length && scanner.readChar(c); ++i)
-                m_impl->body.pushBack(c);
+            for (base::SizeT i = 0u; i < length; ++i)
+            {
+                auto c = scanner.peek();
+                if (!c)
+                    break;
+                m_impl->body.pushBack(*c);
+                scanner.consume();
+            }
         }
 
         // Drop the rest of the line (chunk-extension)
-        scanner.skipPast('\n');
+        base::scnSkipPast(scanner, '\n');
 
         // Read all trailers (if present)
         parseFields(scanner, m_impl->fields);

@@ -107,7 +107,7 @@ public:
     template <typename... Args>
     void fmt(typename base::NonDeduced<const base::FmtString<Args...>>::type fmtStr, const Args&... args)
     {
-        base::fmtTo(*this, fmtStr, args...);
+        (void)base::fmtTo(*this, fmtStr, args...);
     }
 
     ////////////////////////////////////////////////////////////

@@ -20,6 +20,7 @@ class Path;
 
 namespace sf::base
 {
+enum class FmtResult;
 struct FmtSpec;
 class FmtSink;
 } // namespace sf::base
@@ -36,7 +37,7 @@ namespace sf
 ////////////////////////////////////////////////////////////
 /// \brief `Fmt` ADL hook for `sf::Path`. Emits the path as UTF-8.
 ////////////////////////////////////////////////////////////
-SFML_SYSTEM_API void fmtArg(base::FmtSink& sink, const Path& path, const base::FmtSpec& spec);
+[[nodiscard]] SFML_SYSTEM_API base::FmtResult fmtArg(base::FmtSink& sink, const Path& path, const base::FmtSpec& spec);
 
 } // namespace sf
 
@@ -50,6 +51,8 @@ namespace sf::priv
 ///     Provided path: <input>
 ///     Absolute path: <canonical or "<unavailable>">
 ////////////////////////////////////////////////////////////
-SFML_SYSTEM_API void fmtArg(base::FmtSink& sink, const PathDebugFormatter& dbg, const base::FmtSpec& spec);
+[[nodiscard]] SFML_SYSTEM_API base::FmtResult fmtArg(base::FmtSink&            sink,
+                                                     const PathDebugFormatter& dbg,
+                                                     const base::FmtSpec&      spec);
 
 } // namespace sf::priv

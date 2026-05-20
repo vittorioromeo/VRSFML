@@ -19,7 +19,7 @@ namespace sf::base
 ////////////////////////////////////////////////////////////
 template <typename T>
     requires isIntegral<T>
-void fmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec)
+FmtResult fmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec)
 {
     // 64 covers the worst case: 64-bit binary (`{:b}` on `unsigned long long`).
     // Decimal and signed cases (max 20 chars + sign) and hex/oct also fit, so
@@ -59,14 +59,14 @@ void fmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec)
     }
 
     SFML_BASE_ASSERT(end != nullptr && "Numeric `fmtArg` ran out of buffer -- buf[64] should always fit");
-    sink.append(buf, static_cast<SizeT>(end - buf));
+    return end == nullptr ? FmtResult::failed : sink.append(buf, static_cast<SizeT>(end - buf));
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
     requires isFloatingPoint<T>
-void fmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec)
+FmtResult fmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec)
 {
     const int prec = spec.precision >= 0 ? spec.precision : defaultFloatPrecision;
 
@@ -74,7 +74,13 @@ void fmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec)
     char buf[40];
 
     char* const end = toChars(buf, buf + sizeof(buf), arg, prec);
-    sink.append(buf, static_cast<SizeT>(end - buf));
+    if (end == nullptr)
+    {
+        SFML_BASE_ASSERT(false && "Floating-point `fmtArg` could not represent the value in its fixed buffer");
+        return FmtResult::failed;
+    }
+
+    return sink.append(buf, static_cast<SizeT>(end - buf));
 }
 
 
@@ -85,10 +91,10 @@ void fmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec)
 // dispatcher table takes the address of; pre-emitting them avoids per-TU
 // weak symbols.
 ////////////////////////////////////////////////////////////
-#define SFML_BASE_FMT_INSTANTIATE(T)                                           \
-    template void fmtArg<T>(FmtSink&, const T&, const FmtSpec&);               \
-    template void priv::dispatchFmtArg<T>(FmtSink&, const T&, const FmtSpec&); \
-    template void priv::dispatchFmtArgErased<T>(FmtSink&, const void*, const FmtSpec&)
+#define SFML_BASE_FMT_INSTANTIATE(T)                                                \
+    template FmtResult fmtArg<T>(FmtSink&, const T&, const FmtSpec&);               \
+    template FmtResult priv::dispatchFmtArg<T>(FmtSink&, const T&, const FmtSpec&); \
+    template FmtResult priv::dispatchFmtArgErased<T>(FmtSink&, const void*, const FmtSpec&)
 
 SFML_BASE_FMT_INSTANTIATE(bool);
 SFML_BASE_FMT_INSTANTIATE(char);

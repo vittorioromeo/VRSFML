@@ -480,12 +480,12 @@ std::ostream& operator<<(std::ostream& os, const Path& path)
 
 
 ////////////////////////////////////////////////////////////
-void fmtArg(base::FmtSink& sink, const Path& path, const base::FmtSpec&)
+base::FmtResult fmtArg(base::FmtSink& sink, const Path& path, const base::FmtSpec&)
 {
     // Same rationale as the stream-insertion operator above: emit UTF-8 to avoid
     // locale-dependent encoding of `std::filesystem::path` on Windows.
     const auto u8 = path.to<std::string>();
-    sink.append(u8.data(), static_cast<base::SizeT>(u8.size()));
+    return sink.append(u8.data(), static_cast<base::SizeT>(u8.size()));
 }
 
 } // namespace sf
@@ -495,18 +495,18 @@ void fmtArg(base::FmtSink& sink, const Path& path, const base::FmtSpec&)
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-void fmtArg(base::FmtSink& sink, const PathDebugFormatter& dbg, const base::FmtSpec&)
+base::FmtResult fmtArg(base::FmtSink& sink, const PathDebugFormatter& dbg, const base::FmtSpec&)
 {
     // Two debug lines: input path + resolved absolute path (or sentinel).
-    sink.append("    Provided path: ", 19u);
-    fmtArg(sink, dbg.path, base::FmtSpec{});
-    sink.appendChar('\n');
+    SFML_BASE_FMT_TRY(sink.append("    Provided path: ", 19u));
+    SFML_BASE_FMT_TRY(fmtArg(sink, dbg.path, base::FmtSpec{}));
+    SFML_BASE_FMT_TRY(sink.appendChar('\n'));
 
-    sink.append("    Absolute path: ", 19u);
+    SFML_BASE_FMT_TRY(sink.append("    Absolute path: ", 19u));
     if (const auto abs = dbg.path.getAbsolute(); abs.hasValue())
-        fmtArg(sink, *abs, base::FmtSpec{});
+        return fmtArg(sink, *abs, base::FmtSpec{});
     else
-        sink.append("<unavailable>", 13u);
+        return sink.append("<unavailable>", 13u);
 }
 
 } // namespace sf::priv

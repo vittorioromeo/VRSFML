@@ -6,11 +6,11 @@
 #include "SFML/Network/IpAddress.hpp"
 #include "SFML/Network/IpAddressUtils.hpp"
 
-#include "SFML/System/IO.hpp"
-
 #include "SFML/Base/Fmt/Fmt.hpp"
 #include "SFML/Base/Fmt/FmtNumeric.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/Scn/ScnStdin.hpp"
+#include "SFML/Base/Scn/ScnString.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -19,9 +19,9 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
-inline void fmtArg(sf::base::FmtSink& sink, const Ftp::Response& response, const sf::base::FmtSpec&)
+[[nodiscard]] inline sf::base::FmtResult fmtArg(sf::base::FmtSink& sink, const Ftp::Response& response, const sf::base::FmtSpec&)
 {
-    sink.fmt("{}{}", static_cast<int>(response.getStatus()), response.getMessage());
+    return sink.fmt("{}{}", static_cast<int>(response.getStatus()), response.getMessage());
 }
 } // namespace sf
 
@@ -39,7 +39,7 @@ int main()
         sf::base::print("Enter the FTP server address: ");
 
         sf::base::String addressStr;
-        sf::cIn() >> addressStr;
+        (void)sf::base::scnStdinInto(addressStr);
         address = sf::IpAddressUtils::resolve(addressStr);
     } while (!address.hasValue());
 
@@ -54,9 +54,9 @@ int main()
     sf::base::String user;
     sf::base::String password;
     sf::base::print("User name: ");
-    sf::cIn() >> user;
+    (void)sf::base::scnStdinInto(user);
     sf::base::print("Password: ");
-    sf::cIn() >> password;
+    (void)sf::base::scnStdinInto(password);
 
     // Login to the server
     const sf::Ftp::Response loginResponse = server.login(user, password);
@@ -76,7 +76,7 @@ int main()
             '\n');
 
         sf::base::print("Your choice: ");
-        sf::cIn() >> choice;
+        (void)sf::base::scnStdinInto(choice);
         sf::base::printLn("");
 
         switch (choice)
@@ -85,8 +85,8 @@ int main()
             {
                 // Wrong choice
                 sf::base::printLn("Invalid choice!");
-                sf::cIn().clear();
-                sf::cIn().ignore(10'000, '\n');
+
+                sf::base::scnStdinIgnoreLine();
                 break;
             }
 
@@ -116,7 +116,7 @@ int main()
                 // Change the current directory
                 sf::base::String directory;
                 sf::base::print("Choose a directory: ");
-                sf::cIn() >> directory;
+                (void)sf::base::scnStdinInto(directory);
                 sf::base::printLn("{}", server.changeDirectory(directory));
                 break;
             }
@@ -126,7 +126,7 @@ int main()
                 // Create a new directory
                 sf::base::String directory;
                 sf::base::print("Name of the directory to create: ");
-                sf::cIn() >> directory;
+                (void)sf::base::scnStdinInto(directory);
                 sf::base::printLn("{}", server.createDirectory(directory));
                 break;
             }
@@ -136,7 +136,7 @@ int main()
                 // Remove an existing directory
                 sf::base::String directory;
                 sf::base::print("Name of the directory to remove: ");
-                sf::cIn() >> directory;
+                (void)sf::base::scnStdinInto(directory);
                 sf::base::printLn("{}", server.deleteDirectory(directory));
                 break;
             }
@@ -147,9 +147,9 @@ int main()
                 sf::base::String source;
                 sf::base::String destination;
                 sf::base::print("Name of the file to rename: ");
-                sf::cIn() >> source;
+                (void)sf::base::scnStdinInto(source);
                 sf::base::print("New name: ");
-                sf::cIn() >> destination;
+                (void)sf::base::scnStdinInto(destination);
                 sf::base::printLn("{}", server.renameFile(source, destination));
                 break;
             }
@@ -159,7 +159,7 @@ int main()
                 // Remove an existing directory
                 sf::base::String filename;
                 sf::base::print("Name of the file to remove: ");
-                sf::cIn() >> filename;
+                (void)sf::base::scnStdinInto(filename);
                 sf::base::printLn("{}", server.deleteFile(filename));
                 break;
             }
@@ -170,9 +170,9 @@ int main()
                 sf::base::String filename;
                 sf::base::String directory;
                 sf::base::print("Filename of the file to download (relative to current directory): ");
-                sf::cIn() >> filename;
+                (void)sf::base::scnStdinInto(filename);
                 sf::base::print("Directory to download the file to: ");
-                sf::cIn() >> directory;
+                (void)sf::base::scnStdinInto(directory);
                 sf::base::printLn("{}", server.download(filename, directory));
                 break;
             }
@@ -183,9 +183,9 @@ int main()
                 sf::base::String filename;
                 sf::base::String directory;
                 sf::base::print("Path of the file to upload (absolute or relative to working directory): ");
-                sf::cIn() >> filename;
+                (void)sf::base::scnStdinInto(filename);
                 sf::base::print("Directory to upload the file to (relative to current directory): ");
-                sf::cIn() >> directory;
+                (void)sf::base::scnStdinInto(directory);
                 sf::base::printLn("{}", server.upload(filename, directory));
                 break;
             }
@@ -204,6 +204,6 @@ int main()
 
     // Wait until the user presses 'enter' key
     sf::base::printLn("Press enter to exit...");
-    sf::cIn().ignore(10'000, '\n');
-    sf::cIn().ignore(10'000, '\n');
+    sf::base::scnStdinIgnoreLine();
+    sf::base::scnStdinIgnoreLine();
 }

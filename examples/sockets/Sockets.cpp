@@ -4,10 +4,9 @@
 #include "TCP.hpp"
 #include "UDP.hpp"
 
-#include "SFML/System/IO.hpp"
-
 #include "SFML/Base/Fmt/Fmt.hpp"
 #include "SFML/Base/Fmt/FmtNumeric.hpp"
+#include "SFML/Base/Scn/ScnStdin.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -20,21 +19,18 @@ int main()
     const unsigned short port = 50'001;
 
     // TCP, UDP or connected UDP ?
-    char protocol{};
     sf::base::print("Do you want to use TCP (t) or UDP (u)? ");
-    sf::cIn() >> protocol;
+    const char protocol = sf::base::scnStdin<char>().valueOr('u');
 
     // Client or server ?
-    char who{};
     sf::base::print("Do you want to be a server (s) or a client (c)? ");
-    sf::cIn() >> who;
+    const char who = sf::base::scnStdin<char>().valueOr('c');
 
     if (protocol == 't')
     {
         // Enable TLS ?
-        char tls{};
         sf::base::print("Do you want to enable TLS (y) or not (n)? ");
-        sf::cIn() >> tls;
+        const char tls = sf::base::scnStdin<char>().valueOr('n');
 
         // Test the TCP protocol
         if (who == 's')
@@ -53,6 +49,6 @@ int main()
 
     // Wait until the user presses 'enter' key
     sf::base::printLn("Press enter to exit...");
-    sf::cIn().ignore(10'000, '\n');
-    sf::cIn().ignore(10'000, '\n');
+    sf::base::scnStdinIgnoreLine();
+    sf::base::scnStdinIgnoreLine();
 }

@@ -243,25 +243,21 @@ namespace sf::base::priv
 /// `FmtNumeric.hpp` so consumer TUs skip the per-TU codegen.
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr void dispatchFmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec) noexcept
+[[nodiscard]] constexpr FmtResult dispatchFmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec) noexcept
 {
-    if (sink.overflowed())
-        return;
-
     const auto startMark = sink.mark();
 
-    fmtArg(sink, arg, spec); // ADL
+    SFML_BASE_FMT_TRY(fmtArg(sink, arg, spec)); // ADL
 
-    if (sink.overflowed() || spec.width <= 0)
-        return;
+    if (spec.width <= 0)
+        return FmtResult::ok;
 
     const auto contentSize = sink.mark() - startMark;
     if (static_cast<SizeT>(spec.width) <= contentSize)
-        return;
+        return FmtResult::ok;
 
     const auto padTotal = static_cast<SizeT>(spec.width) - contentSize;
-    if (!sink.ensureRoom(padTotal))
-        return;
+    SFML_BASE_FMT_TRY(sink.ensureRoom(padTotal));
 
     constexpr char defAlign = fmtArgDefaultAlign<T>;
     const char     align    = spec.align == '\0' ? defAlign : spec.align;
@@ -281,18 +277,19 @@ constexpr void dispatchFmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec) 
         SFML_BASE_MEMSET(start + padLeft + contentSize, spec.fill, padRight);
 
     sink.advance(padTotal);
+    return FmtResult::ok;
 }
 
 
 ////////////////////////////////////////////////////////////
-using ErasedDispatchFn = void (*)(FmtSink&, const void*, const FmtSpec&);
+using ErasedDispatchFn = FmtResult (*)(FmtSink&, const void*, const FmtSpec&);
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr void dispatchFmtArgErased(FmtSink& sink, const void* const erasedArg, const FmtSpec& spec) noexcept
+[[nodiscard]] constexpr FmtResult dispatchFmtArgErased(FmtSink& sink, const void* const erasedArg, const FmtSpec& spec) noexcept
 {
-    dispatchFmtArg(sink, *static_cast<const T*>(erasedArg), spec);
+    return dispatchFmtArg(sink, *static_cast<const T*>(erasedArg), spec);
 }
 
 
@@ -300,11 +297,8 @@ constexpr void dispatchFmtArgErased(FmtSink& sink, const void* const erasedArg, 
 /// \brief Type-erased core. Walks `fmtStr` once, copying literals and
 /// dispatching `{...}` placeholders via `dispatchers`.
 ////////////////////////////////////////////////////////////
-SFML_SYSTEM_API void fmtAssembleImpl(FmtSink&                sink,
-                                     FmtSpan                 fmtStr,
-                                     const void* const*      args,
-                                     const ErasedDispatchFn* dispatchers,
-                                     SizeT                   argCount);
+[[nodiscard]] SFML_SYSTEM_API FmtResult
+    fmtAssembleImpl(FmtSink& sink, FmtSpan fmtStr, const void* const* args, const ErasedDispatchFn* dispatchers, SizeT argCount);
 
 
 ////////////////////////////////////////////////////////////
@@ -312,7 +306,7 @@ SFML_SYSTEM_API void fmtAssembleImpl(FmtSink&                sink,
 /// `base::String` until the format succeeds, then flushes once through
 /// `appendFn`.
 ////////////////////////////////////////////////////////////
-SFML_SYSTEM_API void fmtToHeapFallback(
+[[nodiscard]] SFML_SYSTEM_API FmtResult fmtToHeapFallback(
     void* userSink,
     void (*appendFn)(void*, const char*, SizeT),
     FmtSpan                 fmtStr,
@@ -352,7 +346,7 @@ struct StderrSink
 
 ////////////////////////////////////////////////////////////
 template <typename... Args>
-constexpr void fmtAssemble(FmtSink& sink, const FmtSpan fmtStr, const Args&... args)
+[[nodiscard]] constexpr FmtResult fmtAssemble(FmtSink& sink, const FmtSpan fmtStr, const Args&... args)
 {
     // Size both arrays at `sizeof...(Args) + 1` so the empty-pack case still
     // produces a 1-element array (zero-initialized, never indexed because
@@ -361,7 +355,7 @@ constexpr void fmtAssemble(FmtSink& sink, const FmtSpan fmtStr, const Args&... a
     const void* const          erasedArgs[sizeof...(Args) + 1]  = {&args...};
     constexpr ErasedDispatchFn dispatchers[sizeof...(Args) + 1] = {&dispatchFmtArgErased<Args>...};
 
-    fmtAssembleImpl(sink, fmtStr, erasedArgs, dispatchers, sizeof...(Args));
+    return fmtAssembleImpl(sink, fmtStr, erasedArgs, dispatchers, sizeof...(Args));
 }
 
 } // namespace sf::base::priv
@@ -372,9 +366,9 @@ namespace sf::base
 {
 ////////////////////////////////////////////////////////////
 template <typename... Args>
-constexpr void FmtSink::fmt(typename NonDeduced<const FmtString<Args...>>::type fmtStr, const Args&... args)
+constexpr FmtResult FmtSink::fmt(typename NonDeduced<const FmtString<Args...>>::type fmtStr, const Args&... args)
 {
-    priv::fmtAssemble(*this, fmtStr.str, args...);
+    return priv::fmtAssemble(*this, fmtStr.str, args...);
 }
 
 
@@ -382,10 +376,10 @@ constexpr void FmtSink::fmt(typename NonDeduced<const FmtString<Args...>>::type 
 /// \brief Format into a fixed buffer.
 ///
 /// Returns a pointer one past the last written character on success, or
-/// `nullptr` on overflow. The buffer is **not** null-terminated -- callers
-/// that need a C string must reserve an extra byte and write `'\0'` at
-/// the returned pointer themselves. On overflow the buffer contents are
-/// indeterminate (may hold a partial write).
+/// `nullptr` on overflow / formatter failure. The buffer is **not**
+/// null-terminated -- callers that need a C string must reserve an extra
+/// byte and write `'\0'` at the returned pointer themselves. On failure the
+/// buffer contents are indeterminate (may hold a partial write).
 ///
 /// Matches `fmt::format_to` / `std::format_to` semantics; differs from
 /// `snprintf` in that overflow is hard-fail rather than truncate.
@@ -397,9 +391,7 @@ template <typename... Args>
                                             const Args&... args)
 {
     FmtSink sink{buffer, buffer + bufferSize};
-    priv::fmtAssemble(sink, fmtStr.str, args...);
-
-    if (sink.overflowed())
+    if (priv::fmtAssemble(sink, fmtStr.str, args...) != FmtResult::ok)
         return nullptr;
 
     return sink.position();
@@ -428,11 +420,12 @@ concept AppendSink = requires(T& sink, const char* p, SizeT n) { sink.append(p, 
 ///
 /// Tries to fit into a `fmtScratchSize`-byte stack buffer first;
 /// on overflow falls back to a doubling heap buffer (so there is no
-/// hard size limit). Either way, the user sink receives the formatted
-/// output in a single `append` call.
+/// hard size limit). Formatter failures are returned immediately. On
+/// success, the user sink receives the formatted output in a single
+/// `append` call.
 ////////////////////////////////////////////////////////////
 template <AppendSink Sink, typename... Args>
-void fmtTo(Sink& userSink, typename NonDeduced<const FmtString<Args...>>::type fmtStr, const Args&... args)
+[[nodiscard]] FmtResult fmtTo(Sink& userSink, typename NonDeduced<const FmtString<Args...>>::type fmtStr, const Args&... args)
 {
     char    scratch[fmtScratchSize];
     FmtSink sink{scratch, scratch + sizeof(scratch)};
@@ -441,17 +434,20 @@ void fmtTo(Sink& userSink, typename NonDeduced<const FmtString<Args...>>::type f
     const void* const                erasedArgs[sizeof...(Args) + 1]  = {&args...};
     constexpr priv::ErasedDispatchFn dispatchers[sizeof...(Args) + 1] = {&priv::dispatchFmtArgErased<Args>...};
 
-    priv::fmtAssembleImpl(sink, fmtStr.str, erasedArgs, dispatchers, sizeof...(Args));
+    const FmtResult result = priv::fmtAssembleImpl(sink, fmtStr.str, erasedArgs, dispatchers, sizeof...(Args));
 
-    if (!sink.overflowed()) [[likely]]
+    if (result == FmtResult::ok) [[likely]]
     {
         userSink.append(scratch, sink.size());
-        return;
+        return FmtResult::ok;
     }
+
+    if (result == FmtResult::failed)
+        return FmtResult::failed;
 
     const auto appendFn = +[](void* s, const char* data, SizeT n) { static_cast<Sink*>(s)->append(data, n); };
 
-    priv::fmtToHeapFallback(&userSink, appendFn, fmtStr.str, erasedArgs, dispatchers, sizeof...(Args));
+    return priv::fmtToHeapFallback(&userSink, appendFn, fmtStr.str, erasedArgs, dispatchers, sizeof...(Args));
 }
 
 
@@ -463,7 +459,7 @@ template <typename... Args>
 void print(typename NonDeduced<const FmtString<Args...>>::type fmtStr, const Args&... args)
 {
     priv::StdoutSink sink;
-    fmtTo(sink, fmtStr, args...);
+    (void)fmtTo(sink, fmtStr, args...);
     priv::fmtFlushStdout();
 }
 
@@ -477,8 +473,8 @@ template <typename... Args>
 void printLn(typename NonDeduced<const FmtString<Args...>>::type fmtStr, const Args&... args)
 {
     priv::StdoutSink sink;
-    fmtTo(sink, fmtStr, args...);
-    priv::fmtWriteStdoutNewline();
+    if (fmtTo(sink, fmtStr, args...) == FmtResult::ok)
+        priv::fmtWriteStdoutNewline();
 }
 
 
@@ -490,7 +486,7 @@ template <typename... Args>
 void printErr(typename NonDeduced<const FmtString<Args...>>::type fmtStr, const Args&... args)
 {
     priv::StderrSink sink;
-    fmtTo(sink, fmtStr, args...);
+    (void)fmtTo(sink, fmtStr, args...);
     priv::fmtFlushStderr();
 }
 
@@ -502,8 +498,8 @@ template <typename... Args>
 void printErrLn(typename NonDeduced<const FmtString<Args...>>::type fmtStr, const Args&... args)
 {
     priv::StderrSink sink;
-    fmtTo(sink, fmtStr, args...);
-    priv::fmtWriteStderrNewline();
+    if (fmtTo(sink, fmtStr, args...) == FmtResult::ok)
+        priv::fmtWriteStderrNewline();
     priv::fmtFlushStderr();
 }
 
@@ -518,7 +514,7 @@ void printErrLn(typename NonDeduced<const FmtString<Args...>>::type fmtStr, cons
 template <AppendSink Sink, typename... Args>
 void print(Sink& sink, typename NonDeduced<const FmtString<Args...>>::type fmtStr, const Args&... args)
 {
-    fmtTo(sink, fmtStr, args...);
+    (void)fmtTo(sink, fmtStr, args...);
 }
 
 
@@ -532,8 +528,8 @@ void print(Sink& sink, typename NonDeduced<const FmtString<Args...>>::type fmtSt
 template <AppendSink Sink, typename... Args>
 void printLn(Sink& sink, typename NonDeduced<const FmtString<Args...>>::type fmtStr, const Args&... args)
 {
-    fmtTo(sink, fmtStr, args...);
-    sink.append("\n", 1u);
+    if (fmtTo(sink, fmtStr, args...) == FmtResult::ok)
+        sink.append("\n", 1u);
 }
 
 } // namespace sf::base

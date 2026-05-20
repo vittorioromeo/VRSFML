@@ -12,11 +12,11 @@
 #include "SFML/Network/Socket.hpp"
 #include "SFML/Network/TcpSocket.hpp"
 
-#include "SFML/System/IO.hpp"
-
 #include "SFML/Base/Fmt/Fmt.hpp"
 #include "SFML/Base/Fmt/FmtNumeric.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/Scn/ScnStdin.hpp"
+#include "SFML/Base/Scn/ScnString.hpp"
 #include "SFML/Base/String.hpp"
 
 
@@ -136,7 +136,7 @@ void doClient(sf::CaptureDevice& captureDevice, unsigned short port)
         sf::base::print("Type address or name of the server to connect to: ");
 
         sf::base::String addressStr;
-        sf::cIn() >> addressStr;
+        (void)sf::base::scnStdinInto(addressStr);
         server = sf::IpAddressUtils::resolve(addressStr);
     } while (!server.hasValue());
 
@@ -144,9 +144,9 @@ void doClient(sf::CaptureDevice& captureDevice, unsigned short port)
     NetworkRecorder recorder(server.value(), port);
 
     // Wait for user input...
-    sf::cIn().ignore(10'000, '\n');
+    sf::base::scnStdinIgnoreLine();
     sf::base::print("Press enter to start recording audio");
-    sf::cIn().ignore(10'000, '\n');
+    sf::base::scnStdinIgnoreLine();
 
     // Start capturing audio data
     if (!recorder.start(captureDevice, 44'100))
@@ -156,7 +156,7 @@ void doClient(sf::CaptureDevice& captureDevice, unsigned short port)
     }
 
     sf::base::print("Recording... press enter to stop");
-    sf::cIn().ignore(10'000, '\n');
+    sf::base::scnStdinIgnoreLine();
 
     if (!recorder.stop())
         sf::base::printErrLn("Failed to stop network recorder");
