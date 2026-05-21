@@ -2,6 +2,7 @@
 #include "StringifyStringViewUtil.hpp"
 
 #include "SFML/Base/StringView.hpp"
+#include "SFML/Base/StringViewSplits.hpp" // IWYU pragma: keep
 
 #include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/SizeT.hpp"
