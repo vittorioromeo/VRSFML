@@ -9,6 +9,7 @@
 #include "SFML/System/Export.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/Builtin/Memmove.hpp"
 #include "SFML/Base/Builtin/Memset.hpp"
 #include "SFML/Base/Builtin/Strlen.hpp"
@@ -136,7 +137,23 @@ constexpr void parseFmtSpec(const char*& p, const char* const end, FmtSpec& spec
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Walk the format string, validating each placeholder and counting them.
+/// \brief Per-format-string properties extracted at consteval.
+///
+/// `placeholderCount` is matched against `sizeof...(Args)` for the count
+/// invariant. `hasEscapes` is set when the parser steps over a `{{` or
+/// `}}` -- the runtime needs to know about these because they require
+/// `{` / `}` translation and disqualify the literal-only fast path.
+////////////////////////////////////////////////////////////
+struct FmtStringInfo
+{
+    SizeT placeholderCount;
+    bool  hasEscapes;
+};
+
+
+////////////////////////////////////////////////////////////
+/// \brief Walk the format string once, validating each placeholder and
+/// reporting placeholder count + escape presence.
 ///
 /// Throws (at consteval) on:
 ///   - unclosed `{`
@@ -145,12 +162,12 @@ constexpr void parseFmtSpec(const char*& p, const char* const end, FmtSpec& spec
 ///   - width >= 65536 or precision > 10
 ///   - unknown type tag (anything outside `d` / `x` / `X` / `o` / `b` / `f`)
 ////////////////////////////////////////////////////////////
-[[nodiscard]] consteval SizeT countPlaceholders(const FmtSpan fmtStr)
+[[nodiscard]] consteval FmtStringInfo analyzeFmtString(const FmtSpan fmtStr)
 {
     const auto*       p   = fmtStr.data;
     const auto* const end = p + fmtStr.size;
 
-    SizeT count = 0u;
+    FmtStringInfo info{0u, false};
 
     while (p < end)
     {
@@ -159,6 +176,7 @@ constexpr void parseFmtSpec(const char*& p, const char* const end, FmtSpec& spec
             // Escaped '{{' -> '{'
             if (p + 1 < end && p[1] == '{')
             {
+                info.hasEscapes = true;
                 p += 2;
                 continue;
             }
@@ -180,13 +198,14 @@ constexpr void parseFmtSpec(const char*& p, const char* const end, FmtSpec& spec
                 throw "Invalid format string: malformed spec (expected '}')";
 
             ++p; // skip '}'
-            ++count;
+            ++info.placeholderCount;
         }
         else if (*p == '}')
         {
             // Escaped '}}' -> '}'
             if (p + 1 < end && p[1] == '}')
             {
+                info.hasEscapes = true;
                 p += 2;
                 continue;
             }
@@ -198,7 +217,7 @@ constexpr void parseFmtSpec(const char*& p, const char* const end, FmtSpec& spec
         }
     }
 
-    return count;
+    return info;
 }
 
 } // namespace sf::base::priv
@@ -209,17 +228,27 @@ namespace sf::base
 {
 ////////////////////////////////////////////////////////////
 /// \brief Compile-time-validated format string: ensures placeholder
-/// count matches `sizeof...(Args)`.
+/// count matches `sizeof...(Args)` and exposes the "pure-literal"
+/// property used by the runtime fast path.
+///
+/// `isPureLiteral` is true when the string carries no placeholders AND
+/// no `{{` / `}}` escapes -- in that case the runtime can skip the whole
+/// assemble loop and write the bytes directly to the sink.
 ////////////////////////////////////////////////////////////
 template <typename... Args>
 struct [[nodiscard]] FmtString
 {
     priv::FmtSpan str;
+    bool          isPureLiteral = false;
 
     consteval FmtString(const char* const s) : str{s, SFML_BASE_STRLEN(s)}
     {
-        if (priv::countPlaceholders(str) != sizeof...(Args))
+        const priv::FmtStringInfo info = priv::analyzeFmtString(str);
+
+        if (info.placeholderCount != sizeof...(Args))
             throw "Mismatch between number of '{}' and number of arguments.";
+
+        isPureLiteral = (info.placeholderCount == 0u) && !info.hasEscapes;
     }
 };
 
@@ -316,6 +345,18 @@ template <typename T>
 
 
 ////////////////////////////////////////////////////////////
+/// \brief Heap-fallback for `fmtArgTo`. Same growing-buffer strategy
+/// as `fmtToHeapFallback`, but calls a single `dispatcher` instead of
+/// walking a format string.
+////////////////////////////////////////////////////////////
+[[nodiscard]] SFML_SYSTEM_API FmtResult fmtArgToHeapFallback(
+    void* userSink,
+    void (*appendFn)(void*, const char*, SizeT),
+    const void*      erasedArg,
+    ErasedDispatchFn dispatcher);
+
+
+////////////////////////////////////////////////////////////
 SFML_SYSTEM_API void fmtWriteStdout(const char* data, SizeT size);
 SFML_SYSTEM_API void fmtWriteStdoutNewline();
 SFML_SYSTEM_API void fmtFlushStdout();
@@ -390,6 +431,18 @@ template <typename... Args>
                                             typename NonDeduced<const FmtString<Args...>>::type fmtStr,
                                             const Args&... args)
 {
+    // Fast path: literal-only string skips the whole assemble loop.
+    if constexpr (sizeof...(Args) == 0)
+    {
+        if (fmtStr.isPureLiteral) [[likely]]
+        {
+            if (bufferSize < fmtStr.str.size)
+                return nullptr;
+            SFML_BASE_MEMCPY(buffer, fmtStr.str.data, fmtStr.str.size);
+            return buffer + fmtStr.str.size;
+        }
+    }
+
     FmtSink sink{buffer, buffer + bufferSize};
     if (priv::fmtAssemble(sink, fmtStr.str, args...) != FmtResult::ok)
         return nullptr;
@@ -414,27 +467,32 @@ template <SizeT N, typename... Args>
 template <typename T>
 concept AppendSink = requires(T& sink, const char* p, SizeT n) { sink.append(p, n); };
 
+} // namespace sf::base
+
 
 ////////////////////////////////////////////////////////////
-/// \brief Format into any sink with `append(const char*, SizeT)`.
-///
-/// Tries to fit into a `fmtScratchSize`-byte stack buffer first;
-/// on overflow falls back to a doubling heap buffer (so there is no
-/// hard size limit). Formatter failures are returned immediately. On
-/// success, the user sink receives the formatted output in a single
-/// `append` call.
+namespace sf::base::priv
+{
 ////////////////////////////////////////////////////////////
-template <AppendSink Sink, typename... Args>
-[[nodiscard]] FmtResult fmtTo(Sink& userSink, typename NonDeduced<const FmtString<Args...>>::type fmtStr, const Args&... args)
+/// \brief Shared scratch-buffer + heap-fallback protocol for `fmtTo`-family
+/// functions.
+///
+/// Runs `scratchFn(sink)` against a `fmtScratchSize` stack buffer; on
+/// success, flushes the buffer to `userSink` and returns `ok`. On `failed`,
+/// propagates. On `overflow`, hands off to `heapFn(userSink, appendFn)`
+/// which is expected to grow a heap buffer until the format fits.
+///
+/// `scratchFn` and `heapFn` are passed as templates so the lambdas are
+/// fully inlined into the caller -- the helper has zero overhead vs. the
+/// inlined version, but lets `fmtTo` / `fmtArgTo` share the protocol.
+////////////////////////////////////////////////////////////
+template <AppendSink Sink, typename ScratchFn, typename HeapFn>
+[[nodiscard, gnu::always_inline]] inline FmtResult fmtViaScratchOrHeap(Sink& userSink, ScratchFn&& scratchFn, HeapFn&& heapFn)
 {
     char    scratch[fmtScratchSize];
     FmtSink sink{scratch, scratch + sizeof(scratch)};
 
-    // See `priv::fmtAssemble`: trailing-sentinel sizing avoids the empty-pack branch.
-    const void* const                erasedArgs[sizeof...(Args) + 1]  = {&args...};
-    constexpr priv::ErasedDispatchFn dispatchers[sizeof...(Args) + 1] = {&priv::dispatchFmtArgErased<Args>...};
-
-    const FmtResult result = priv::fmtAssembleImpl(sink, fmtStr.str, erasedArgs, dispatchers, sizeof...(Args));
+    const FmtResult result = scratchFn(sink);
 
     if (result == FmtResult::ok) [[likely]]
     {
@@ -447,7 +505,110 @@ template <AppendSink Sink, typename... Args>
 
     const auto appendFn = +[](void* s, const char* data, SizeT n) { static_cast<Sink*>(s)->append(data, n); };
 
-    return priv::fmtToHeapFallback(&userSink, appendFn, fmtStr.str, erasedArgs, dispatchers, sizeof...(Args));
+    return heapFn(&userSink, appendFn);
+}
+
+} // namespace sf::base::priv
+
+
+////////////////////////////////////////////////////////////
+namespace sf::base
+{
+////////////////////////////////////////////////////////////
+/// \brief Format into any sink with `append(const char*, SizeT)`.
+///
+/// Tries to fit into a `fmtScratchSize`-byte stack buffer first;
+/// on overflow falls back to a doubling heap buffer (so there is no
+/// hard size limit). Formatter failures are returned immediately. On
+/// success, the user sink receives the formatted output in a single
+/// `append` call.
+////////////////////////////////////////////////////////////
+template <AppendSink Sink, typename... Args>
+[[nodiscard]] FmtResult fmtTo(Sink& userSink, typename NonDeduced<const FmtString<Args...>>::type fmtStr, const Args&... args)
+{
+    // Fast path: literal-only string bypasses the scratch + assemble loop
+    // and writes the bytes straight to the sink in one call.
+    if constexpr (sizeof...(Args) == 0)
+    {
+        if (fmtStr.isPureLiteral) [[likely]]
+        {
+            userSink.append(fmtStr.str.data, fmtStr.str.size);
+            return FmtResult::ok;
+        }
+    }
+
+    // See `priv::fmtAssemble`: trailing-sentinel sizing avoids the empty-pack branch.
+    const void* const                erasedArgs[sizeof...(Args) + 1]  = {&args...};
+    constexpr priv::ErasedDispatchFn dispatchers[sizeof...(Args) + 1] = {&priv::dispatchFmtArgErased<Args>...};
+
+    return priv::fmtViaScratchOrHeap(userSink, [&](FmtSink& sink) {
+        return priv::fmtAssembleImpl(sink, fmtStr.str, erasedArgs, dispatchers, sizeof...(Args));
+    }, [&](void* us, void (*append)(void*, const char*, SizeT)) {
+        return priv::fmtToHeapFallback(us, append, fmtStr.str, erasedArgs, dispatchers, sizeof...(Args));
+    });
+}
+
+
+////////////////////////////////////////////////////////////
+// Forward-declare `String` so the no-`[[nodiscard]]` overload below can take
+// it by reference without pulling `<SFML/Base/String.hpp>` into the include
+// closure. Callers that pass an actual `String&` will already have the full
+// header in scope (which they need to construct one); callers that only use
+// the other sinks pay nothing.
+////////////////////////////////////////////////////////////
+class String;
+
+
+////////////////////////////////////////////////////////////
+/// \brief `fmtTo` overload for `String` sinks: returns `void`.
+///
+/// `String` grows on demand, so the only failure modes the generic overload
+/// can produce -- "ran out of room" on the scratch / heap fallback -- can't
+/// happen here. Returning `void` removes the `[[nodiscard]] FmtResult` tax
+/// (no `(void)` cast at every "build a debug string" call site) and matches
+/// the use case: you're not going to react to a failure that can't occur.
+///
+/// Out-of-contract user `fmtArg` overloads that return `FmtResult::failed`
+/// still abort the formatting (no partial write to the sink), but the
+/// signal is swallowed here. Callers that need to observe formatter-side
+/// failures should drop down to the generic `fmtTo(Sink&, ...)` above
+/// (e.g. wrap their `String&` as an `AppendSink`-conforming local).
+////////////////////////////////////////////////////////////
+template <typename... Args>
+void fmtTo(String& userSink, typename NonDeduced<const FmtString<Args...>>::type fmtStr, const Args&... args)
+{
+    (void)fmtTo<String, Args...>(userSink, fmtStr, args...);
+}
+
+
+////////////////////////////////////////////////////////////
+/// \brief Stringify a single value directly into a sink, bypassing the
+/// format-string machinery.
+///
+/// Calls the ADL `fmtArg(sink, value, {})` once into a `fmtScratchSize`
+/// scratch buffer; on overflow falls back to the same doubling heap
+/// strategy as `fmtTo`. Skips placeholder parsing, the erased-dispatch
+/// table, and `fmtAssembleImpl` entirely -- intended for hot per-element
+/// stringification (e.g. `concat(a, b, c)`).
+////////////////////////////////////////////////////////////
+template <AppendSink Sink, typename T>
+[[nodiscard]] FmtResult fmtArgTo(Sink& userSink, const T& value)
+{
+    return priv::fmtViaScratchOrHeap(userSink,
+                                     [&](FmtSink& sink) { return fmtArg(sink, value, FmtSpec{}); }, // ADL
+                                     [&](void* us, void (*append)(void*, const char*, SizeT))
+    { return priv::fmtArgToHeapFallback(us, append, &value, &priv::dispatchFmtArgErased<T>); });
+}
+
+
+////////////////////////////////////////////////////////////
+/// \brief `fmtArgTo` overload for `String` sinks: returns `void`. Same
+/// rationale as the `fmtTo(String&, ...)` overload above.
+////////////////////////////////////////////////////////////
+template <typename T>
+void fmtArgTo(String& userSink, const T& value)
+{
+    (void)fmtArgTo<String, T>(userSink, value);
 }
 
 
@@ -458,6 +619,18 @@ template <AppendSink Sink, typename... Args>
 template <typename... Args>
 void print(typename NonDeduced<const FmtString<Args...>>::type fmtStr, const Args&... args)
 {
+    if constexpr (sizeof...(Args) == 0)
+    {
+        // Fast path: literal-only string goes straight to stdio, skipping the
+        // 512-byte scratch buffer + assemble loop + final memcpy.
+        if (fmtStr.isPureLiteral) [[likely]]
+        {
+            priv::fmtWriteStdout(fmtStr.str.data, fmtStr.str.size);
+            priv::fmtFlushStdout();
+            return;
+        }
+    }
+
     priv::StdoutSink sink;
     (void)fmtTo(sink, fmtStr, args...);
     priv::fmtFlushStdout();
@@ -472,6 +645,16 @@ void print(typename NonDeduced<const FmtString<Args...>>::type fmtStr, const Arg
 template <typename... Args>
 void printLn(typename NonDeduced<const FmtString<Args...>>::type fmtStr, const Args&... args)
 {
+    if constexpr (sizeof...(Args) == 0)
+    {
+        if (fmtStr.isPureLiteral) [[likely]]
+        {
+            priv::fmtWriteStdout(fmtStr.str.data, fmtStr.str.size);
+            priv::fmtWriteStdoutNewline();
+            return;
+        }
+    }
+
     priv::StdoutSink sink;
     if (fmtTo(sink, fmtStr, args...) == FmtResult::ok)
         priv::fmtWriteStdoutNewline();
@@ -485,6 +668,16 @@ void printLn(typename NonDeduced<const FmtString<Args...>>::type fmtStr, const A
 template <typename... Args>
 void printErr(typename NonDeduced<const FmtString<Args...>>::type fmtStr, const Args&... args)
 {
+    if constexpr (sizeof...(Args) == 0)
+    {
+        if (fmtStr.isPureLiteral) [[likely]]
+        {
+            priv::fmtWriteStderr(fmtStr.str.data, fmtStr.str.size);
+            priv::fmtFlushStderr();
+            return;
+        }
+    }
+
     priv::StderrSink sink;
     (void)fmtTo(sink, fmtStr, args...);
     priv::fmtFlushStderr();
@@ -497,6 +690,17 @@ void printErr(typename NonDeduced<const FmtString<Args...>>::type fmtStr, const 
 template <typename... Args>
 void printErrLn(typename NonDeduced<const FmtString<Args...>>::type fmtStr, const Args&... args)
 {
+    if constexpr (sizeof...(Args) == 0)
+    {
+        if (fmtStr.isPureLiteral) [[likely]]
+        {
+            priv::fmtWriteStderr(fmtStr.str.data, fmtStr.str.size);
+            priv::fmtWriteStderrNewline();
+            priv::fmtFlushStderr();
+            return;
+        }
+    }
+
     priv::StderrSink sink;
     if (fmtTo(sink, fmtStr, args...) == FmtResult::ok)
         priv::fmtWriteStderrNewline();

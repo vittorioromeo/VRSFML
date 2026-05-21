@@ -6,7 +6,7 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-/// \brief Trait to intentionally suppress function template argument deduction
+/// \brief Intentionally suppress function template argument deduction
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>

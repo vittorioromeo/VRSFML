@@ -872,8 +872,8 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    template <typename Self, typename F>
-    [[gnu::always_inline]] void forEach(this Self&& self, F&& fn)
+    template <typename F>
+    [[gnu::always_inline]] void forEach(this auto&& self, F&& fn)
     {
         if (self.m_size == 0u)
             return;
@@ -903,8 +903,8 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    template <typename Self, typename F>
-    [[gnu::always_inline]] void forEachIndexed(this Self&& self, F&& fn)
+    template <typename F>
+    [[gnu::always_inline]] void forEachIndexed(this auto&& self, F&& fn)
     {
         if (self.m_size == 0u)
             return;
@@ -937,8 +937,8 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    template <typename Self, typename F>
-    [[gnu::always_inline]] void forEachBlock(this Self&& self, F&& fn)
+    template <typename F>
+    [[gnu::always_inline]] void forEachBlock(this auto&& self, F&& fn)
     {
         if (self.m_size == 0u)
             return;
@@ -964,8 +964,8 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    template <typename Self, typename TPredicate>
-    [[nodiscard]] auto findIf(this Self&& self, TPredicate&& predicate) -> decltype(self.blockPtrAt(0u))
+    template <typename TPredicate>
+    [[nodiscard]] auto findIf(this auto&& self, TPredicate&& predicate) -> decltype(self.blockPtrAt(0u))
     {
         const SizeT fullBlocks = self.m_size >> blockShift;
         const SizeT tail       = self.m_size & blockMask;

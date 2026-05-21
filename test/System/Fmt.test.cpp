@@ -371,23 +371,23 @@ TEST_CASE("[System] Fmt.hpp - fmtTo() into base::String")
     SECTION("Appends to non-empty sink")
     {
         sf::base::String s = "prefix:";
-        CHECK(sf::base::fmtTo(s, " {} = {:.2f}", "pi", 3.14159) == sf::base::FmtResult::ok);
+        sf::base::fmtTo(s, " {} = {:.2f}", "pi", 3.14159);
         CHECK(s == sf::base::String{"prefix: pi = 3.14"});
     }
 
     SECTION("Format into fresh sink")
     {
         sf::base::String s;
-        CHECK(sf::base::fmtTo(s, "{:>8}", "abc") == sf::base::FmtResult::ok);
+        sf::base::fmtTo(s, "{:>8}", "abc");
         CHECK(s == sf::base::String{"     abc"});
     }
 
     SECTION("Repeated fmtTo accumulates")
     {
         sf::base::String s;
-        CHECK(sf::base::fmtTo(s, "{}-", 1) == sf::base::FmtResult::ok);
-        CHECK(sf::base::fmtTo(s, "{}-", 2) == sf::base::FmtResult::ok);
-        CHECK(sf::base::fmtTo(s, "{}", 3) == sf::base::FmtResult::ok);
+        sf::base::fmtTo(s, "{}-", 1);
+        sf::base::fmtTo(s, "{}-", 2);
+        sf::base::fmtTo(s, "{}", 3);
         CHECK(s == sf::base::String{"1-2-3"});
     }
 }
@@ -764,7 +764,7 @@ TEST_CASE("[System] Fmt.hpp - formatter failure is not treated as overflow")
     SECTION("fmtTo returns failed without appending partial output")
     {
         sf::base::String out = "prefix";
-        CHECK(sf::base::fmtTo(out, "{}{}", "ok", FailTag{}) == sf::base::FmtResult::failed);
+        sf::base::fmtTo(out, "{}{}", "ok", FailTag{});
         CHECK(out == sf::base::String{"prefix"});
     }
 }
@@ -781,7 +781,7 @@ TEST_CASE("[System] Fmt.hpp - fmtTo() large output (heap fallback path)")
             big += sf::base::String{"0123456789"}; // 1000 chars
 
         sf::base::String out;
-        CHECK(sf::base::fmtTo(out, "[{}]", sf::base::StringView{big.data(), big.size()}) == sf::base::FmtResult::ok);
+        sf::base::fmtTo(out, "[{}]", sf::base::StringView{big.data(), big.size()});
 
         REQUIRE(out.size() == big.size() + 2u);
         CHECK(out.data()[0] == '[');
@@ -797,7 +797,7 @@ TEST_CASE("[System] Fmt.hpp - fmtTo() large output (heap fallback path)")
             mid += sf::base::String{"0123456789"}; // 500 chars
 
         sf::base::String out;
-        CHECK(sf::base::fmtTo(out, "{}", sf::base::StringView{mid.data(), mid.size()}) == sf::base::FmtResult::ok);
+        sf::base::fmtTo(out, "{}", sf::base::StringView{mid.data(), mid.size()});
 
         CHECK(out.size() == mid.size());
     }
@@ -825,7 +825,7 @@ TEST_CASE("[System] Fmt.hpp - boundary conditions")
     SECTION("Very wide width is honored")
     {
         sf::base::String out;
-        CHECK(sf::base::fmtTo(out, "[{:>1000}]", "x") == sf::base::FmtResult::ok);
+        sf::base::fmtTo(out, "[{:>1000}]", "x");
         CHECK(out.size() == 1002u);
         CHECK(out.data()[0] == '[');
         CHECK(out.data()[out.size() - 2u] == 'x');
@@ -859,7 +859,7 @@ TEST_CASE("[System] Fmt.hpp - boundary conditions")
         const customtypes::MiniVec<customtypes::Vec2f> v{values, 60u};
 
         sf::base::String out;
-        CHECK(sf::base::fmtTo(out, "{}", v) == sf::base::FmtResult::ok);
+        sf::base::fmtTo(out, "{}", v);
 
         CHECK(out.size() == 1320u);
         CHECK(out.data()[0] == '[');

@@ -7,6 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Fmt/Fmt.hpp"
 
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 
@@ -96,12 +97,19 @@ FmtResult fmtAssembleImpl(FmtSink&                 sink,
 
 
 ////////////////////////////////////////////////////////////
-FmtResult fmtToHeapFallback(void* const userSink,
-                            void (*appendFn)(void*, const char*, SizeT),
-                            const FmtSpan                 fmtStr,
-                            const void* const* const      args,
-                            const ErasedDispatchFn* const dispatchers,
-                            const SizeT                   argCount)
+namespace
+{
+////////////////////////////////////////////////////////////
+/// \brief Shared growing-buffer loop. Doubles capacity until `formatFn`
+/// reports something other than `overflow`. On success flushes the
+/// owned buffer once through `appendFn`; on `failed` propagates without
+/// flushing. `formatFn` is templated so the per-iteration call is
+/// inlined into the loop.
+////////////////////////////////////////////////////////////
+template <typename FormatFn>
+[[nodiscard, gnu::always_inline]] inline FmtResult heapFallbackLoop(void* const userSink,
+                                                                    void (*appendFn)(void*, const char*, SizeT),
+                                                                    FormatFn&& formatFn)
 {
     String    buf;
     SizeT     cap     = fmtScratchSize * 2u;
@@ -119,7 +127,7 @@ FmtResult fmtToHeapFallback(void* const userSink,
                                [&](char* const data, const SizeT capacity) -> SizeT
         {
             FmtSink sink{data, data + capacity};
-            result = fmtAssembleImpl(sink, fmtStr, args, dispatchers, argCount);
+            result = formatFn(sink);
 
             if (result != FmtResult::ok)
                 return 0u;
@@ -145,6 +153,32 @@ FmtResult fmtToHeapFallback(void* const userSink,
 
     appendFn(userSink, buf.data(), buf.size());
     return FmtResult::ok;
+}
+
+} // namespace
+
+
+////////////////////////////////////////////////////////////
+FmtResult fmtToHeapFallback(void* const userSink,
+                            void (*appendFn)(void*, const char*, SizeT),
+                            const FmtSpan                 fmtStr,
+                            const void* const* const      args,
+                            const ErasedDispatchFn* const dispatchers,
+                            const SizeT                   argCount)
+{
+    return heapFallbackLoop(userSink, appendFn, [&](FmtSink& sink) {
+        return fmtAssembleImpl(sink, fmtStr, args, dispatchers, argCount);
+    });
+}
+
+
+////////////////////////////////////////////////////////////
+FmtResult fmtArgToHeapFallback(void* const userSink,
+                               void (*appendFn)(void*, const char*, SizeT),
+                               const void* const      erasedArg,
+                               const ErasedDispatchFn dispatcher)
+{
+    return heapFallbackLoop(userSink, appendFn, [&](FmtSink& sink) { return dispatcher(sink, erasedArg, FmtSpec{}); });
 }
 
 
