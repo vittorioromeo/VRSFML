@@ -16,6 +16,7 @@
 #include "SFML/Base/Fmt/FmtArgDefaultAlign.hpp" // IWYU pragma: export
 #include "SFML/Base/Fmt/FmtCString.hpp"         // IWYU pragma: export
 #include "SFML/Base/Fmt/FmtSink.hpp"            // IWYU pragma: export
+#include "SFML/Base/Fmt/FmtSinkRef.hpp"         // IWYU pragma: export
 #include "SFML/Base/Fmt/FmtSpan.hpp"            // IWYU pragma: export
 #include "SFML/Base/Fmt/FmtSpec.hpp"            // IWYU pragma: export
 #include "SFML/Base/Fmt/FmtString.hpp"          // IWYU pragma: export
@@ -332,16 +333,14 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 /// \brief Heap-fallback for `fmtTo` / `print`. Allocates a doubling
-/// `base::String` until the format succeeds, then flushes once through
-/// `appendFn`.
+/// `base::String` until the format succeeds, then flushes once
+/// through `userSink`.
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_SYSTEM_API FmtResult fmtToHeapFallback(
-    void* userSink,
-    void (*appendFn)(void*, const char*, SizeT),
-    FmtSpan                 fmtStr,
-    const void* const*      args,
-    const ErasedDispatchFn* dispatchers,
-    SizeT                   argCount);
+[[nodiscard]] SFML_SYSTEM_API FmtResult fmtToHeapFallback(FmtSinkRef              userSink,
+                                                          FmtSpan                 fmtStr,
+                                                          const void* const*      args,
+                                                          const ErasedDispatchFn* dispatchers,
+                                                          SizeT                   argCount);
 
 
 ////////////////////////////////////////////////////////////
@@ -349,11 +348,9 @@ template <typename T>
 /// as `fmtToHeapFallback`, but calls a single `dispatcher` instead of
 /// walking a format string.
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_SYSTEM_API FmtResult fmtArgToHeapFallback(
-    void* userSink,
-    void (*appendFn)(void*, const char*, SizeT),
-    const void*      erasedArg,
-    ErasedDispatchFn dispatcher);
+[[nodiscard]] SFML_SYSTEM_API FmtResult fmtArgToHeapFallback(FmtSinkRef       userSink,
+                                                             const void*      erasedArg,
+                                                             ErasedDispatchFn dispatcher);
 
 
 ////////////////////////////////////////////////////////////
@@ -477,17 +474,24 @@ namespace sf::base::priv
 /// \brief Shared scratch-buffer + heap-fallback protocol for `fmtTo`-family
 /// functions.
 ///
-/// Runs `scratchFn(sink)` against a `fmtScratchSize` stack buffer; on
-/// success, flushes the buffer to `userSink` and returns `ok`. On `failed`,
-/// propagates. On `overflow`, hands off to `heapFn(userSink, appendFn)`
-/// which is expected to grow a heap buffer until the format fits.
+/// Templated on the sink type so the success-path flush is a direct,
+/// inlined `userSink.append(...)` call (static dispatch). `FmtSinkRef`
+/// satisfies `AppendSink`, so opting into dynamic dispatch just means
+/// passing one explicitly.
+///
+/// On `overflow`, hands off to `heapFn(FmtSinkRef{userSink})` -- the
+/// heap fallback lives out-of-line in `.cpp` and can't be templated on
+/// `Sink` without dragging `String` into this header, so it always
+/// accepts a type-erased ref. That indirect call only fires when the
+/// scratch buffer overflows, which is rare.
 ///
 /// `scratchFn` and `heapFn` are passed as templates so the lambdas are
-/// fully inlined into the caller -- the helper has zero overhead vs. the
-/// inlined version, but lets `fmtTo` / `fmtArgTo` share the protocol.
+/// fully inlined into the caller.
 ////////////////////////////////////////////////////////////
 template <AppendSink Sink, typename ScratchFn, typename HeapFn>
-[[nodiscard, gnu::always_inline]] inline FmtResult fmtViaScratchOrHeap(Sink& userSink, ScratchFn&& scratchFn, HeapFn&& heapFn)
+[[nodiscard, gnu::always_inline]] inline FmtResult fmtViaScratchOrHeap(Sink&       userSink,
+                                                                       ScratchFn&& scratchFn,
+                                                                       HeapFn&&    heapFn)
 {
     char    scratch[fmtScratchSize];
     FmtSink sink{scratch, scratch + sizeof(scratch)};
@@ -503,9 +507,7 @@ template <AppendSink Sink, typename ScratchFn, typename HeapFn>
     if (result == FmtResult::failed)
         return FmtResult::failed;
 
-    const auto appendFn = +[](void* s, const char* data, SizeT n) { static_cast<Sink*>(s)->append(data, n); };
-
-    return heapFn(&userSink, appendFn);
+    return heapFn(FmtSinkRef{userSink});
 }
 
 } // namespace sf::base::priv
@@ -517,14 +519,21 @@ namespace sf::base
 ////////////////////////////////////////////////////////////
 /// \brief Format into any sink with `append(const char*, SizeT)`.
 ///
-/// Tries to fit into a `fmtScratchSize`-byte stack buffer first;
-/// on overflow falls back to a doubling heap buffer (so there is no
-/// hard size limit). Formatter failures are returned immediately. On
-/// success, the user sink receives the formatted output in a single
-/// `append` call.
+/// Templated on `Sink` so the success path uses static dispatch
+/// (`userSink.append(...)` is a direct, inlined call). Users who want
+/// dynamic dispatch instead pass an `FmtSinkRef` (which itself satisfies
+/// `AppendSink`); the same template handles both, but the indirect call
+/// only happens for the type-erased case.
+///
+/// Tries to fit into a `fmtScratchSize`-byte stack buffer first; on
+/// overflow falls back to a doubling heap buffer (no hard size limit).
+/// Formatter failures are returned immediately. On success the sink
+/// receives the formatted output in a single `append` call.
 ////////////////////////////////////////////////////////////
 template <AppendSink Sink, typename... Args>
-[[nodiscard]] FmtResult fmtTo(Sink& userSink, typename NonDeduced<const FmtString<Args...>>::type fmtStr, const Args&... args)
+[[nodiscard]] FmtResult fmtTo(Sink&                                               userSink,
+                              typename NonDeduced<const FmtString<Args...>>::type fmtStr,
+                              const Args&... args)
 {
     // Fast path: literal-only string bypasses the scratch + assemble loop
     // and writes the bytes straight to the sink in one call.
@@ -541,11 +550,11 @@ template <AppendSink Sink, typename... Args>
     const void* const                erasedArgs[sizeof...(Args) + 1]  = {&args...};
     constexpr priv::ErasedDispatchFn dispatchers[sizeof...(Args) + 1] = {&priv::dispatchFmtArgErased<Args>...};
 
-    return priv::fmtViaScratchOrHeap(userSink, [&](FmtSink& sink) {
-        return priv::fmtAssembleImpl(sink, fmtStr.str, erasedArgs, dispatchers, sizeof...(Args));
-    }, [&](void* us, void (*append)(void*, const char*, SizeT)) {
-        return priv::fmtToHeapFallback(us, append, fmtStr.str, erasedArgs, dispatchers, sizeof...(Args));
-    });
+    return priv::fmtViaScratchOrHeap(userSink,
+                                     [&](FmtSink& sink)
+    { return priv::fmtAssembleImpl(sink, fmtStr.str, erasedArgs, dispatchers, sizeof...(Args)); },
+                                     [&](FmtSinkRef us)
+    { return priv::fmtToHeapFallback(us, fmtStr.str, erasedArgs, dispatchers, sizeof...(Args)); });
 }
 
 
@@ -596,8 +605,8 @@ template <AppendSink Sink, typename T>
 {
     return priv::fmtViaScratchOrHeap(userSink,
                                      [&](FmtSink& sink) { return fmtArg(sink, value, FmtSpec{}); }, // ADL
-                                     [&](void* us, void (*append)(void*, const char*, SizeT))
-    { return priv::fmtArgToHeapFallback(us, append, &value, &priv::dispatchFmtArgErased<T>); });
+                                     [&](FmtSinkRef us)
+    { return priv::fmtArgToHeapFallback(us, &value, &priv::dispatchFmtArgErased<T>); });
 }
 
 

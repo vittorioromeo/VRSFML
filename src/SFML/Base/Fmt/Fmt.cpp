@@ -102,14 +102,12 @@ namespace
 ////////////////////////////////////////////////////////////
 /// \brief Shared growing-buffer loop. Doubles capacity until `formatFn`
 /// reports something other than `overflow`. On success flushes the
-/// owned buffer once through `appendFn`; on `failed` propagates without
+/// owned buffer once through `userSink`; on `failed` propagates without
 /// flushing. `formatFn` is templated so the per-iteration call is
 /// inlined into the loop.
 ////////////////////////////////////////////////////////////
 template <typename FormatFn>
-[[nodiscard, gnu::always_inline]] inline FmtResult heapFallbackLoop(void* const userSink,
-                                                                    void (*appendFn)(void*, const char*, SizeT),
-                                                                    FormatFn&& formatFn)
+[[nodiscard, gnu::always_inline]] inline FmtResult heapFallbackLoop(FmtSinkRef userSink, FormatFn&& formatFn)
 {
     String    buf;
     SizeT     cap     = fmtScratchSize * 2u;
@@ -151,7 +149,7 @@ template <typename FormatFn>
     if (!success)
         return result;
 
-    appendFn(userSink, buf.data(), buf.size());
+    userSink.append(buf.data(), buf.size());
     return FmtResult::ok;
 }
 
@@ -159,26 +157,22 @@ template <typename FormatFn>
 
 
 ////////////////////////////////////////////////////////////
-FmtResult fmtToHeapFallback(void* const userSink,
-                            void (*appendFn)(void*, const char*, SizeT),
+FmtResult fmtToHeapFallback(const FmtSinkRef              userSink,
                             const FmtSpan                 fmtStr,
                             const void* const* const      args,
                             const ErasedDispatchFn* const dispatchers,
                             const SizeT                   argCount)
 {
-    return heapFallbackLoop(userSink, appendFn, [&](FmtSink& sink) {
-        return fmtAssembleImpl(sink, fmtStr, args, dispatchers, argCount);
-    });
+    return heapFallbackLoop(userSink, [&](FmtSink& sink) { return fmtAssembleImpl(sink, fmtStr, args, dispatchers, argCount); });
 }
 
 
 ////////////////////////////////////////////////////////////
-FmtResult fmtArgToHeapFallback(void* const userSink,
-                               void (*appendFn)(void*, const char*, SizeT),
+FmtResult fmtArgToHeapFallback(const FmtSinkRef       userSink,
                                const void* const      erasedArg,
                                const ErasedDispatchFn dispatcher)
 {
-    return heapFallbackLoop(userSink, appendFn, [&](FmtSink& sink) { return dispatcher(sink, erasedArg, FmtSpec{}); });
+    return heapFallbackLoop(userSink, [&](FmtSink& sink) { return dispatcher(sink, erasedArg, FmtSpec{}); });
 }
 
 
