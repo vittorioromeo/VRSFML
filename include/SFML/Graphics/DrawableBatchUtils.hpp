@@ -65,6 +65,13 @@ namespace sf::DrawableBatchUtils
 
 
 ////////////////////////////////////////////////////////////
+// Emits the 6 indices for one quad whose 4 vertices are laid out as
+// `(TL, BL, TR, BR)` -- the canonical sprite/text vertex order also used
+// by the immediate `PrimitiveType::TriangleStrip` path. The two triangles
+// `(TL, BL, TR)` and `(TR, BL, BR)` are exactly what GL would emit from a
+// 4-vertex strip in this order, so the rendered result is identical
+// regardless of which path (immediate strip vs. batched indexed) the
+// caller chose -- including winding.
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendQuadIndices(
     IndexType * SFML_BASE_RESTRICT & SFML_BASE_RESTRICT indexPtr,
     const IndexType                                     startIndex) noexcept
@@ -201,6 +208,13 @@ namespace sf::DrawableBatchUtils
 
 
 ////////////////////////////////////////////////////////////
+// Outline vertices are laid out as a triangle strip (alternating
+// inner/outer pairs along the perimeter). To match the winding GL
+// produces for a real `PrimitiveType::TriangleStrip` -- which the
+// immediate Shape path uses -- we must flip odd triangles via
+// `appendTriangleStripIndices`. Emitting plain `(i, i+1, i+2)` here
+// would produce alternating CW/CCW windings, which silently culls half
+// the outline if the user enables face culling.
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendShapeOutlineIndicesAndVertices(
     const Transform&                       transform,
     const Vertex* SFML_BASE_RESTRICT const outlineData,
@@ -212,7 +226,7 @@ namespace sf::DrawableBatchUtils
     SFML_BASE_ASSERT(outlineSize > 2u);
 
     for (IndexType i = 0u; i < outlineSize - 2u; ++i)
-        appendTriangleIndices(indexPtr, nextOutlineIndex + i);
+        appendTriangleStripIndices(indexPtr, nextOutlineIndex, i);
 
     appendTransformedVertices(transform, outlineData, outlineSize, vertexPtr);
 }
