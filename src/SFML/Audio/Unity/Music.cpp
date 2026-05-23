@@ -14,8 +14,10 @@
 #include "SFML/Audio/Priv/SoundBase.hpp"
 #include "SFML/Audio/SoundStreamState.hpp"
 
+#include "SFML/System/AtomicMutex.hpp"
 #include "SFML/System/Err.hpp"
 #include "SFML/System/LifetimeDependant.hpp"
+#include "SFML/System/LockGuard.hpp"
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/Assert.hpp"
@@ -24,8 +26,6 @@
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include <mutex>
 
 
 namespace
@@ -76,7 +76,7 @@ struct Music::Impl
     struct MusicState
     {
         ////////////////////////////////////////////////////////////
-        mutable std::mutex                loopMutex;      //!< Protects `loopSpan` and `sampleOffset`
+        mutable AtomicMutex               loopMutex;      //!< Protects `loopSpan` and `sampleOffset`
         Music::Span<base::U64>            loopSpan;       //!< Loop range Specifier
         MusicReader&                      musicReader;    //!< The music reader
         const priv::MiniaudioSoundSource& source;         //!< Back-ref to the owning `Music` for `isLooping()`
@@ -93,7 +93,7 @@ struct Music::Impl
         ////////////////////////////////////////////////////////////
         bool onGetData(base::Vector<base::I16>& outBuffer)
         {
-            const std::lock_guard lock(loopMutex);
+            const LockGuard lock(loopMutex);
 
             // Size the output buffer to hold up to 1 second of audio samples
             outBuffer.resize(musicReader.getSampleRate() * musicReader.getChannelCount());
@@ -119,14 +119,14 @@ struct Music::Impl
         ////////////////////////////////////////////////////////////
         void onSeek(const Time timeOffset)
         {
-            const std::lock_guard lock(loopMutex);
+            const LockGuard lock(loopMutex);
             sampleOffset = timeToSamples(musicReader.getSampleRate(), musicReader.getChannelCount(), timeOffset);
         }
 
         ////////////////////////////////////////////////////////////
         base::Optional<base::U64> onLoop()
         {
-            const std::lock_guard lock(loopMutex);
+            const LockGuard lock(loopMutex);
 
             if (!source.isLooping())
                 return base::nullOpt;
@@ -208,7 +208,7 @@ Music::TimeSpan Music::getLoopPoints() const
     const auto sampleRate   = state.musicReader.getSampleRate();
     const auto channelCount = state.musicReader.getChannelCount();
 
-    const std::lock_guard lock(state.loopMutex);
+    const LockGuard lock(state.loopMutex);
 
     return TimeSpan{samplesToTime(sampleRate, channelCount, state.loopSpan.offset),
                     samplesToTime(sampleRate, channelCount, state.loopSpan.length)};

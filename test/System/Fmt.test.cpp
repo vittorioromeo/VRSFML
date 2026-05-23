@@ -1,10 +1,17 @@
 #include "StringifySfBaseStringUtil.hpp" // IWYU pragma: keep
 #include "StringifyStringViewUtil.hpp"   // IWYU pragma: keep
 
+#include "SFML/Base/Fmt/Fmt.hpp"
+
 #include "SFML/System/Utf8String.hpp"
 
 #include "SFML/Base/Builtin/Strlen.hpp"
+#include "SFML/Base/Fmt/FmtArgDefaultAlign.hpp"
+#include "SFML/Base/Fmt/FmtResult.hpp"
+#include "SFML/Base/Fmt/FmtSink.hpp"
+#include "SFML/Base/Fmt/FmtSpec.hpp"
 #include "SFML/Base/Fmt/FmtToString.hpp"
+#include "SFML/Base/NonDeduced.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
@@ -318,6 +325,55 @@ TEST_CASE("[System] Fmt.hpp - integer type variety")
         char        buf[16];
         const auto* end = sf::base::fmtIntoBuffer(buf, "{}", 'A');
         CHECK(end != nullptr);
+    }
+}
+
+
+////////////////////////////////////////////////////////////
+TEST_CASE("[System] Fmt.hpp - bool formats as 'true'/'false'")
+{
+    SECTION("Default presentation matches std::format / fmt::format")
+    {
+        CHECK(sf::base::fmtToString("{}", true) == sf::base::String{"true"});
+        CHECK(sf::base::fmtToString("{}", false) == sf::base::String{"false"});
+    }
+
+    SECTION("Multiple bools in one format string")
+    {
+        CHECK(sf::base::fmtToString("{}/{}", true, false) == sf::base::String{"true/false"});
+        CHECK(sf::base::fmtToString("a={} b={}", false, true) == sf::base::String{"a=false b=true"});
+    }
+
+    SECTION("Default alignment is left (matches string-like types)")
+    {
+        CHECK(sf::base::fmtToString("[{:8}]", true) == sf::base::String{"[true    ]"});
+        CHECK(sf::base::fmtToString("[{:8}]", false) == sf::base::String{"[false   ]"});
+    }
+
+    SECTION("Explicit alignment overrides the default")
+    {
+        CHECK(sf::base::fmtToString("[{:>8}]", true) == sf::base::String{"[    true]"});
+        CHECK(sf::base::fmtToString("[{:>8}]", false) == sf::base::String{"[   false]"});
+        CHECK(sf::base::fmtToString("[{:^8}]", true) == sf::base::String{"[  true  ]"});
+    }
+
+    SECTION("Custom fill character")
+    {
+        CHECK(sf::base::fmtToString("[{:.>8}]", true) == sf::base::String{"[....true]"});
+        CHECK(sf::base::fmtToString("[{:*<8}]", false) == sf::base::String{"[false***]"});
+    }
+
+    SECTION("Width equal to or smaller than content -- no padding")
+    {
+        CHECK(sf::base::fmtToString("[{:4}]", true) == sf::base::String{"[true]"});
+        CHECK(sf::base::fmtToString("[{:3}]", false) == sf::base::String{"[false]"}); // wider than width
+    }
+
+    SECTION("Numeric form available via explicit int cast")
+    {
+        CHECK(sf::base::fmtToString("{}/{}", static_cast<int>(true), static_cast<int>(false)) ==
+              sf::base::String{"1/"
+                               "0"});
     }
 }
 

@@ -9,7 +9,9 @@
 
 #include "SFML/Audio/InputSoundFile.hpp"
 
+#include "SFML/System/AtomicMutex.hpp"
 #include "SFML/System/Err.hpp"
+#include "SFML/System/LockGuard.hpp"
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
@@ -19,8 +21,6 @@
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
-#include <mutex>
-
 
 namespace sf
 {
@@ -28,7 +28,7 @@ namespace sf
 struct MusicReader::Impl
 {
     InputSoundFile file;  //!< Input sound file
-    std::mutex     mutex; //!< Mutex protecting the data
+    AtomicMutex    mutex; //!< Mutex protecting the data
 
     explicit Impl(InputSoundFile&& theFile) : file(SFML_BASE_MOVE(theFile))
     {
@@ -124,7 +124,7 @@ MusicReader::SeekAndReadResult MusicReader::seekAndRead(const base::U64  sampleO
                                                         base::I16* const samples,
                                                         const base::U64  maxCount)
 {
-    const std::lock_guard lock(m_impl->mutex);
+    const LockGuard lock(m_impl->mutex);
 
     const auto clampedSampleOffset = m_impl->file.seek(sampleOffset);
     const auto readSamples         = m_impl->file.read(samples, maxCount);

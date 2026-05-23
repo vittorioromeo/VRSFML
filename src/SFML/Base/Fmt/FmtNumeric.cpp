@@ -8,6 +8,10 @@
 #include "SFML/Base/Fmt/FmtNumeric.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Fmt/Fmt.hpp"
+#include "SFML/Base/Fmt/FmtResult.hpp"
+#include "SFML/Base/Fmt/FmtSink.hpp"
+#include "SFML/Base/Fmt/FmtSpec.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/ToChars.hpp"
 #include "SFML/Base/ToCharsRadix.hpp"
@@ -30,13 +34,13 @@ FmtResult fmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec)
 
     const char* end = nullptr;
 
-    // `bool` is degenerate under any radix (only 0 / 1) and `MakeUnsigned<bool>`
-    // is ill-formed, so the radix path is bypassed entirely. Decimal output of
-    // `0` / `1` is unchanged from `{:d}` / `{:x}` / etc., which is what callers
-    // would reasonably expect anyway.
+    // `bool` is formatted as a string ("true" / "false") by default, matching
+    // `std::format` and `fmt::format`. The radix specs (`{:b}`, `{:x}`, etc.)
+    // and `MakeUnsigned<bool>` would be ill-formed anyway, so the path is
+    // bypassed entirely. Callers who want numeric output can cast to `int`.
     if constexpr (SFML_BASE_IS_SAME(T, bool))
     {
-        end = toChars(buf, buf + sizeof(buf), arg);
+        return arg ? sink.append("true", 4u) : sink.append("false", 5u);
     }
     else
     {

@@ -6,7 +6,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/Radix.hpp" // IWYU pragma: export
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Trait/IsIntegral.hpp"
@@ -63,7 +62,9 @@ template <typename T>
     if (static_cast<SizeT>(last - first) < n)
         return nullptr;
 
-    SFML_BASE_MEMCPY(first, p, n);
+    for (SizeT i = 0u; i < n; ++i)
+        first[i] = p[i];
+
     return first + n;
 }
 

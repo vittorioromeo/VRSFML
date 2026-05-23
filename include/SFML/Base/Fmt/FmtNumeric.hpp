@@ -9,6 +9,7 @@
 #include "SFML/System/Export.hpp"
 
 #include "SFML/Base/Fmt/Fmt.hpp"
+#include "SFML/Base/Fmt/FmtResult.hpp"
 #include "SFML/Base/Trait/IsEnum.hpp"
 #include "SFML/Base/Trait/IsFloatingPoint.hpp"
 #include "SFML/Base/Trait/IsIntegral.hpp"
@@ -21,6 +22,14 @@ namespace sf::base
 template <typename T>
     requires(isIntegral<T> || isFloatingPoint<T>)
 inline constexpr char fmtArgDefaultAlign<T> = '>';
+
+
+////////////////////////////////////////////////////////////
+// `bool` formats as the string `"true"` / `"false"`, so left-align by
+// default (matching string-like types). Overrides the numeric '>' above.
+////////////////////////////////////////////////////////////
+template <>
+inline constexpr char fmtArgDefaultAlign<bool> = '<';
 
 
 ////////////////////////////////////////////////////////////

@@ -15,13 +15,15 @@
 #include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/Fmt/FmtArgDefaultAlign.hpp" // IWYU pragma: export
 #include "SFML/Base/Fmt/FmtCString.hpp"         // IWYU pragma: export
-#include "SFML/Base/Fmt/FmtSink.hpp"            // IWYU pragma: export
-#include "SFML/Base/Fmt/FmtSinkRef.hpp"         // IWYU pragma: export
-#include "SFML/Base/Fmt/FmtSpan.hpp"            // IWYU pragma: export
-#include "SFML/Base/Fmt/FmtSpec.hpp"            // IWYU pragma: export
-#include "SFML/Base/Fmt/FmtString.hpp"          // IWYU pragma: export
+#include "SFML/Base/Fmt/FmtResult.hpp"
+#include "SFML/Base/Fmt/FmtSink.hpp"    // IWYU pragma: export
+#include "SFML/Base/Fmt/FmtSinkRef.hpp" // IWYU pragma: export
+#include "SFML/Base/Fmt/FmtSpan.hpp"    // IWYU pragma: export
+#include "SFML/Base/Fmt/FmtSpec.hpp"    // IWYU pragma: export
+#include "SFML/Base/Fmt/FmtString.hpp"  // IWYU pragma: export
 #include "SFML/Base/NonDeduced.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Trait/IsSame.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -336,11 +338,12 @@ template <typename T>
 /// `base::String` until the format succeeds, then flushes once
 /// through `userSink`.
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_SYSTEM_API FmtResult fmtToHeapFallback(FmtSinkRef              userSink,
-                                                          FmtSpan                 fmtStr,
-                                                          const void* const*      args,
-                                                          const ErasedDispatchFn* dispatchers,
-                                                          SizeT                   argCount);
+[[nodiscard]] SFML_SYSTEM_API FmtResult fmtToHeapFallback(
+    FmtSinkRef              userSink,
+    FmtSpan                 fmtStr,
+    const void* const*      args,
+    const ErasedDispatchFn* dispatchers,
+    SizeT                   argCount);
 
 
 ////////////////////////////////////////////////////////////
@@ -348,9 +351,8 @@ template <typename T>
 /// as `fmtToHeapFallback`, but calls a single `dispatcher` instead of
 /// walking a format string.
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_SYSTEM_API FmtResult fmtArgToHeapFallback(FmtSinkRef       userSink,
-                                                             const void*      erasedArg,
-                                                             ErasedDispatchFn dispatcher);
+[[nodiscard]] SFML_SYSTEM_API FmtResult
+    fmtArgToHeapFallback(FmtSinkRef userSink, const void* erasedArg, ErasedDispatchFn dispatcher);
 
 
 ////////////////////////////////////////////////////////////
@@ -489,9 +491,7 @@ namespace sf::base::priv
 /// fully inlined into the caller.
 ////////////////////////////////////////////////////////////
 template <AppendSink Sink, typename ScratchFn, typename HeapFn>
-[[nodiscard, gnu::always_inline]] inline FmtResult fmtViaScratchOrHeap(Sink&       userSink,
-                                                                       ScratchFn&& scratchFn,
-                                                                       HeapFn&&    heapFn)
+[[nodiscard, gnu::always_inline]] inline FmtResult fmtViaScratchOrHeap(Sink& userSink, ScratchFn&& scratchFn, HeapFn&& heapFn)
 {
     char    scratch[fmtScratchSize];
     FmtSink sink{scratch, scratch + sizeof(scratch)};
@@ -517,23 +517,31 @@ template <AppendSink Sink, typename ScratchFn, typename HeapFn>
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-/// \brief Format into any sink with `append(const char*, SizeT)`.
+// Forward-declare `String` so the generic `fmtTo` below can exclude it
+// from overload resolution (the dedicated `String&` overload further
+// down has a different return type / nodiscard policy). Including
+// `<SFML/Base/String.hpp>` here would defeat the whole header-tier story.
+////////////////////////////////////////////////////////////
+class String;
+
+} // namespace sf::base
+
+
+////////////////////////////////////////////////////////////
+namespace sf::base::priv
+{
+////////////////////////////////////////////////////////////
+/// \brief Shared implementation for both `fmtTo` overloads.
 ///
-/// Templated on `Sink` so the success path uses static dispatch
-/// (`userSink.append(...)` is a direct, inlined call). Users who want
-/// dynamic dispatch instead pass an `FmtSinkRef` (which itself satisfies
-/// `AppendSink`); the same template handles both, but the indirect call
-/// only happens for the type-erased case.
-///
-/// Tries to fit into a `fmtScratchSize`-byte stack buffer first; on
-/// overflow falls back to a doubling heap buffer (no hard size limit).
-/// Formatter failures are returned immediately. On success the sink
-/// receives the formatted output in a single `append` call.
+/// Lives in `priv` so the dedicated `String&` overload can delegate here
+/// without going through the constrained public `fmtTo` (which excludes
+/// `Sink == String` to disambiguate overload resolution). Templated on
+/// `Sink`, so `userSink.append(...)` is a *dependent* member access ->
+/// only checked at instantiation time -> safe with forward-declared
+/// `String` at the public overload's site.
 ////////////////////////////////////////////////////////////
 template <AppendSink Sink, typename... Args>
-[[nodiscard]] FmtResult fmtTo(Sink&                                               userSink,
-                              typename NonDeduced<const FmtString<Args...>>::type fmtStr,
-                              const Args&... args)
+FmtResult fmtToImpl(Sink& userSink, typename NonDeduced<const FmtString<Args...>>::type fmtStr, const Args&... args)
 {
     // Fast path: literal-only string bypasses the scratch + assemble loop
     // and writes the bytes straight to the sink in one call.
@@ -550,22 +558,42 @@ template <AppendSink Sink, typename... Args>
     const void* const                erasedArgs[sizeof...(Args) + 1]  = {&args...};
     constexpr priv::ErasedDispatchFn dispatchers[sizeof...(Args) + 1] = {&priv::dispatchFmtArgErased<Args>...};
 
-    return priv::fmtViaScratchOrHeap(userSink,
-                                     [&](FmtSink& sink)
-    { return priv::fmtAssembleImpl(sink, fmtStr.str, erasedArgs, dispatchers, sizeof...(Args)); },
-                                     [&](FmtSinkRef us)
-    { return priv::fmtToHeapFallback(us, fmtStr.str, erasedArgs, dispatchers, sizeof...(Args)); });
+    return priv::fmtViaScratchOrHeap(userSink, [&](FmtSink& sink) {
+        return priv::fmtAssembleImpl(sink, fmtStr.str, erasedArgs, dispatchers, sizeof...(Args));
+    }, [&](FmtSinkRef us) { return priv::fmtToHeapFallback(us, fmtStr.str, erasedArgs, dispatchers, sizeof...(Args)); });
 }
 
+} // namespace sf::base::priv
+
 
 ////////////////////////////////////////////////////////////
-// Forward-declare `String` so the no-`[[nodiscard]]` overload below can take
-// it by reference without pulling `<SFML/Base/String.hpp>` into the include
-// closure. Callers that pass an actual `String&` will already have the full
-// header in scope (which they need to construct one); callers that only use
-// the other sinks pay nothing.
+namespace sf::base
+{
 ////////////////////////////////////////////////////////////
-class String;
+/// \brief Format into any sink with `append(const char*, SizeT)`.
+///
+/// Templated on `Sink` so the success path uses static dispatch
+/// (`userSink.append(...)` is a direct, inlined call). Users who want
+/// dynamic dispatch instead pass an `FmtSinkRef` (which itself satisfies
+/// `AppendSink`); the same template handles both, but the indirect call
+/// only happens for the type-erased case.
+///
+/// Tries to fit into a `fmtScratchSize`-byte stack buffer first; on
+/// overflow falls back to a doubling heap buffer (no hard size limit).
+/// Formatter failures are returned immediately. On success the sink
+/// receives the formatted output in a single `append` call.
+///
+/// The `String` sink is excluded here -- see the dedicated `void`-returning
+/// overload below. Without this constraint, both overloads are equally
+/// viable for a `String&` argument (partial ordering ties for an empty
+/// `Args...` pack).
+////////////////////////////////////////////////////////////
+template <AppendSink Sink, typename... Args>
+    requires(!SFML_BASE_IS_SAME(Sink, String))
+[[nodiscard]] FmtResult fmtTo(Sink& userSink, typename NonDeduced<const FmtString<Args...>>::type fmtStr, const Args&... args)
+{
+    return priv::fmtToImpl<Sink, Args...>(userSink, fmtStr, args...);
+}
 
 
 ////////////////////////////////////////////////////////////
@@ -586,7 +614,12 @@ class String;
 template <typename... Args>
 void fmtTo(String& userSink, typename NonDeduced<const FmtString<Args...>>::type fmtStr, const Args&... args)
 {
-    (void)fmtTo<String, Args...>(userSink, fmtStr, args...);
+    // Delegate to the shared `priv::fmtToImpl`, which is templated on `Sink`
+    // so `userSink.append(...)` is a dependent member access -- only checked
+    // when this overload is instantiated (where `<SFML/Base/String.hpp>` is
+    // already in scope). The forward declaration of `String` in this header
+    // is sufficient because we only *name* the type here, never access members.
+    (void)priv::fmtToImpl<String, Args...>(userSink, fmtStr, args...);
 }
 
 

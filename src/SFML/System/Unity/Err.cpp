@@ -7,12 +7,13 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Err.hpp"
 
+#include "SFML/System/AtomicMutex.hpp"
+#include "SFML/System/LockGuard.hpp"
+
 #include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StackTrace.hpp"
 #include "SFML/Base/String.hpp"
-
-#include <mutex> // TODO P1: replace with an atomic wait?
 
 #include <cstdio>
 
@@ -34,9 +35,9 @@ void defaultErrSink(void* /*ctx*/, const char* const data, const base::SizeT siz
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] std::mutex& sinkMutex()
+[[nodiscard]] AtomicMutex& sinkMutex()
 {
-    static std::mutex m;
+    static AtomicMutex m;
     return m;
 }
 
@@ -51,7 +52,7 @@ void*     currentSinkCtx = nullptr;
 ////////////////////////////////////////////////////////////
 void setErrSink(const ErrSinkFn fn, void* const ctx)
 {
-    const std::lock_guard lock(sinkMutex());
+    const LockGuard lock(sinkMutex());
     currentSinkFn  = fn != nullptr ? fn : &defaultErrSink;
     currentSinkCtx = ctx;
 }
@@ -70,7 +71,7 @@ void emitErr(const char* const data, const base::SizeT size, const bool trailing
     if (trailing)
         msg += '\n';
 
-    const std::lock_guard lock(sinkMutex());
+    const LockGuard lock(sinkMutex());
 
     currentSinkFn(currentSinkCtx, msg.data(), msg.size());
 

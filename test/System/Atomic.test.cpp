@@ -5,6 +5,7 @@
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
+#include "SFML/Base/Trait/IsConstructible.hpp"
 #include "SFML/Base/Trait/IsTriviallyRelocatable.hpp"
 #include "SFML/Base/Vector.hpp"
 
@@ -51,8 +52,8 @@ static_assert(alignof(sf::Atomic<double>) >= 8u);
 
 
 ////////////////////////////////////////////////////////////
-static_assert(!__is_constructible(sf::Atomic<int>, const sf::Atomic<int>&));
-static_assert(!__is_constructible(sf::Atomic<int>, sf::Atomic<int>&&));
+static_assert(!SFML_BASE_IS_CONSTRUCTIBLE(sf::Atomic<int>, const sf::Atomic<int>&));
+static_assert(!SFML_BASE_IS_CONSTRUCTIBLE(sf::Atomic<int>, sf::Atomic<int>&&));
 
 
 ////////////////////////////////////////////////////////////

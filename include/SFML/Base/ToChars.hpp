@@ -9,11 +9,11 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/IsInf.hpp"
 #include "SFML/Base/Builtin/IsNan.hpp"
-#include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/Builtin/Signbit.hpp"
 #include "SFML/Base/Math/Rint.hpp"
 #include "SFML/Base/Trait/IsFloatingPoint.hpp"
 #include "SFML/Base/Trait/IsIntegral.hpp"
+#include "SFML/Base/Trait/IsSame.hpp"
 #include "SFML/Base/Trait/IsUnsigned.hpp"
 #include "SFML/Base/Trait/MakeUnsigned.hpp"
 
@@ -142,7 +142,9 @@ template <typename T>
         const auto pairIdx = static_cast<unsigned>(value % 100u) * 2u;
         value              = static_cast<T>(value / 100u);
         p -= 2;
-        SFML_BASE_MEMCPY(p, &digitPairs[pairIdx], 2);
+
+        p[0] = digitPairs[pairIdx];
+        p[1] = digitPairs[pairIdx + 1u];
     }
 
     // Tail: one or two digits left.
@@ -150,7 +152,9 @@ template <typename T>
     {
         const auto pairIdx = static_cast<unsigned>(value) * 2u;
         p -= 2;
-        SFML_BASE_MEMCPY(p, &digitPairs[pairIdx], 2);
+
+        p[0] = digitPairs[pairIdx];
+        p[1] = digitPairs[pairIdx + 1u];
     }
     else
     {
@@ -175,7 +179,15 @@ template <typename T>
 [[nodiscard]] constexpr char* toChars(char* first, const char* const last, const T value)
     requires isIntegral<T>
 {
-    if constexpr (isUnsigned<T>)
+    if constexpr (SFML_BASE_IS_SAME(T, bool))
+    {
+        if (first >= last)
+            return nullptr;
+
+        *first++ = value ? '1' : '0';
+        return first;
+    }
+    else if constexpr (isUnsigned<T>)
     {
         return priv::unsignedToChars(first, last, value);
     }

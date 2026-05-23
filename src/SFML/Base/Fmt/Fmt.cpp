@@ -163,14 +163,14 @@ FmtResult fmtToHeapFallback(const FmtSinkRef              userSink,
                             const ErasedDispatchFn* const dispatchers,
                             const SizeT                   argCount)
 {
-    return heapFallbackLoop(userSink, [&](FmtSink& sink) { return fmtAssembleImpl(sink, fmtStr, args, dispatchers, argCount); });
+    return heapFallbackLoop(userSink, [&](FmtSink& sink) {
+        return fmtAssembleImpl(sink, fmtStr, args, dispatchers, argCount);
+    });
 }
 
 
 ////////////////////////////////////////////////////////////
-FmtResult fmtArgToHeapFallback(const FmtSinkRef       userSink,
-                               const void* const      erasedArg,
-                               const ErasedDispatchFn dispatcher)
+FmtResult fmtArgToHeapFallback(const FmtSinkRef userSink, const void* const erasedArg, const ErasedDispatchFn dispatcher)
 {
     return heapFallbackLoop(userSink, [&](FmtSink& sink) { return dispatcher(sink, erasedArg, FmtSpec{}); });
 }

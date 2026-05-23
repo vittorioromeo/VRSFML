@@ -8,6 +8,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Export.hpp"
 
+#include "SFML/Base/Fmt/FmtResult.hpp"
+
 
 ////////////////////////////////////////////////////////////
 // Forward declarations
@@ -20,7 +22,6 @@ class Path;
 
 namespace sf::base
 {
-enum class FmtResult;
 struct FmtSpec;
 class FmtSink;
 } // namespace sf::base

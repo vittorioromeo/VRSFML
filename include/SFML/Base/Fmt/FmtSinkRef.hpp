@@ -38,8 +38,8 @@ public:
     /// to a default-constructed `FmtSinkRef` silently discards them.
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] constexpr FmtSinkRef() noexcept :
-    m_sink{nullptr},
-    m_appendFn{+[](void*, const char*, SizeT) {}}
+        m_sink{nullptr},
+        m_appendFn{+[](void*, const char*, SizeT) {}}
     {
     }
 
@@ -54,8 +54,8 @@ public:
     ////////////////////////////////////////////////////////////
     template <typename Sink>
     [[gnu::always_inline]] FmtSinkRef(Sink& sink) noexcept :
-    m_sink{&sink},
-    m_appendFn{+[](void* s, const char* data, SizeT n) { static_cast<Sink*>(s)->append(data, n); }}
+        m_sink{&sink},
+        m_appendFn{+[](void* s, const char* data, SizeT n) { static_cast<Sink*>(s)->append(data, n); }}
     {
     }
 

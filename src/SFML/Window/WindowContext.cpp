@@ -25,7 +25,9 @@
 #include "SFML/GLUtils/TextureSaver.hpp"
 
 #include "SFML/System/Atomic.hpp"
+#include "SFML/System/AtomicMutex.hpp"
 #include "SFML/System/Err.hpp"
+#include "SFML/System/LockGuard.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/SignalErrHandler.hpp"
 
@@ -39,8 +41,6 @@
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include <mutex>
 
 
 namespace sf
@@ -122,13 +122,13 @@ struct UnsharedContextResources
 class UnsharedContextResourcesManager
 {
 private:
-    mutable std::mutex                                                   m_mutex;
+    mutable AtomicMutex                                                  m_mutex;
     ankerl::unordered_dense::map<unsigned int, UnsharedContextResources> m_mapping;
 
     ////////////////////////////////////////////////////////////
     void registerImpl(auto idsPmr, const unsigned int glContextId, const unsigned int id)
     {
-        std::lock_guard lock(m_mutex);
+        LockGuard lock(m_mutex);
 
         auto& resources = m_mapping[glContextId];
         auto& idsSet    = (resources.*idsPmr);
@@ -142,7 +142,7 @@ private:
     ////////////////////////////////////////////////////////////
     void unregisterImpl(auto idsPmr, const unsigned int glContextId, const unsigned int id, auto fGlDeleteFunc)
     {
-        std::lock_guard lock(m_mutex);
+        LockGuard lock(m_mutex);
 
         auto& resources = m_mapping[glContextId];
         auto& idsSet    = (resources.*idsPmr);
@@ -158,7 +158,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool allEmpty() const
     {
-        std::lock_guard lock(m_mutex);
+        LockGuard lock(m_mutex);
 
         for (const auto& [glContextId, resources] : m_mapping)
             if (!resources.allEmpty())
@@ -170,7 +170,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool allNonSharedEmpty() const
     {
-        std::lock_guard lock(m_mutex);
+        LockGuard lock(m_mutex);
 
         for (const auto& [glContextId, resources] : m_mapping)
             if (glContextId != 1u && !resources.allEmpty())
@@ -182,7 +182,7 @@ public:
     ////////////////////////////////////////////////////////////
     void unregisterAllResources(const unsigned int glContextId)
     {
-        std::lock_guard lock(m_mutex);
+        LockGuard lock(m_mutex);
 
         auto& resources = m_mapping[glContextId];
         if (resources.allEmpty())
@@ -245,7 +245,7 @@ struct ContextTransferScratch
 class TransferScratchManager
 {
 private:
-    std::mutex                                                         m_mutex;
+    AtomicMutex                                                        m_mutex;
     ankerl::unordered_dense::map<unsigned int, ContextTransferScratch> m_byContext;
 
     ////////////////////////////////////////////////////////////
@@ -348,7 +348,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] unsigned int getReadFramebuffer()
     {
-        const std::lock_guard lock(m_mutex);
+        const LockGuard lock(m_mutex);
 
         auto& scratch = getOrCreateForActiveContext();
         return ensureFramebuffer(scratch.readFramebuffer, "read framebuffer");
@@ -357,7 +357,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] unsigned int getDrawFramebuffer()
     {
-        const std::lock_guard lock(m_mutex);
+        const LockGuard lock(m_mutex);
 
         auto& scratch = getOrCreateForActiveContext();
         return ensureFramebuffer(scratch.drawFramebuffer, "draw framebuffer");
@@ -366,7 +366,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] unsigned int ensureFlipTexture(const sf::Vec2u size, const bool sRgb)
     {
-        const std::lock_guard lock(m_mutex);
+        const LockGuard lock(m_mutex);
 
         auto& scratch = getOrCreateForActiveContext();
         return ensureFlipTexture(scratch, size, sRgb);
@@ -388,7 +388,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] unsigned int ensureFlipFramebufferReady(const sf::Vec2u size, const bool sRgb)
     {
-        const std::lock_guard lock(m_mutex);
+        const LockGuard lock(m_mutex);
 
         auto& scratch = getOrCreateForActiveContext();
 
@@ -430,7 +430,7 @@ public:
         if (!sf::WindowContext::isInstalled() || !sf::WindowContext::hasActiveThreadLocalGlContext())
             return;
 
-        const std::lock_guard lock(m_mutex);
+        const LockGuard lock(m_mutex);
 
         const unsigned int contextId = getActiveContextId();
         auto*              it        = m_byContext.find(contextId);
@@ -543,8 +543,8 @@ struct WindowContextImpl
     UnsharedContextResourcesManager unsharedContextResourcesManager;
 
     ////////////////////////////////////////////////////////////
-    priv::SDLGlContext   sharedGlContext; //!< The hidden, inactive context that will be shared with all other contexts
-    std::recursive_mutex sharedGlContextMutex;
+    priv::SDLGlContext sharedGlContext; //!< The hidden, inactive context that will be shared with all other contexts
+    AtomicMutex        sharedGlContextMutex;
 
     ////////////////////////////////////////////////////////////
     base::Vector<sf::base::StringView> extensions; //!< Supported OpenGL extensions
@@ -956,7 +956,7 @@ base::UniquePtr<priv::GlContext> WindowContext::createGlContextImpl(const Contex
 {
     auto& wc = ensureInstalled();
 
-    const std::lock_guard lock(wc.sharedGlContextMutex);
+    const LockGuard lock(wc.sharedGlContextMutex);
 
     if (!setActiveThreadLocalGlContextToSharedContext())
         priv::errMsg("Error enabling shared GL context in WindowContext::createGlContext()");
