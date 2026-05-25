@@ -2,18 +2,20 @@
 
 #include "SFML/System/Path.hpp"
 
+#include "SFML/Base/String.hpp"
+
 #include <DoctestFwd.hpp>
 
-namespace doctest
+namespace tst
 {
 
 template <>
 struct StringMaker<sf::Path>
 {
-    static doctest::String convert(const sf::Path&)
+    static sf::base::String convert(const sf::Path&)
     {
-        return ""; // TODO P3:
+        return detail::defaultStringification();
     }
 };
 
-} // namespace doctest
+} // namespace tst

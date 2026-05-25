@@ -68,7 +68,7 @@ namespace
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::const]] inline sf::base::I32 quantizeOutlineThickness(const float outlineThickness)
+[[nodiscard, gnu::always_inline, gnu::const]] inline sf::base::I32 fontFaceQuantizeOutlineThickness(const float outlineThickness)
 {
     return static_cast<sf::base::I32>(outlineThickness * float{1 << 6});
 }
@@ -386,7 +386,7 @@ struct FontFace::Impl
             if (outlineThickness != 0.f)
             {
                 FT_Stroker_Set(m_ftStroker,
-                               static_cast<FT_Fixed>(quantizeOutlineThickness(outlineThickness)),
+                               static_cast<FT_Fixed>(fontFaceQuantizeOutlineThickness(outlineThickness)),
                                FT_STROKER_LINECAP_ROUND,
                                FT_STROKER_LINEJOIN_ROUND,
                                0);

@@ -70,6 +70,7 @@ void appendToString(String& str, const T value)
 
 ////////////////////////////////////////////////////////////
 /// \brief Append a `bool` to `str` as "true" / "false".
+///
 ////////////////////////////////////////////////////////////
 inline void appendToString(String& str, const bool value)
 {

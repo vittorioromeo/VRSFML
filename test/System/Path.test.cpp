@@ -6,7 +6,6 @@
 
 #include "SFML/System/Fmt/FmtPath.hpp" // IWYU pragma: keep -- enables `fmtArg(Path, ...)` for the format test
 #include "SFML/System/IO.hpp"
-#include "SFML/System/PathStreamOp.hpp" // IWYU pragma: keep -- doctest stringification uses `operator<<`
 
 #include "SFML/Base/Fmt/FmtToString.hpp"
 #include "SFML/Base/Macros.hpp"

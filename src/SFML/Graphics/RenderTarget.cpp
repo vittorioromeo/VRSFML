@@ -206,11 +206,19 @@ struct [[nodiscard]] StatesCache
 
     unsigned int lastVaoGroup{0u};          //!< Last bound vertex array object id
     unsigned int lastVaoGroupContextId{0u}; //!< Last bound vertex array object context id
-    unsigned int lastVaoGroupVboId{0u};     //!< GL id of `lastVaoGroup`'s shared VBO at the time `bindGLObjects` ran.
-                                            //!< If the underlying VBO is move-assigned (e.g. persistent ring-buffer
-                                            //!< growth), the new id won't match here and the next `setupDraw` must
-                                            //!< rebind + re-issue `glVertexAttribPointer` so the VAO's stored
-                                            //!< attribute-buffer mapping references the live handle.
+
+    unsigned int lastVaoGroupVboId{0u}; //!< GL id of `lastVaoGroup`'s shared VBO at the time `bindGLObjects` ran.
+                                        //!< If the underlying VBO is move-assigned (e.g. persistent ring-buffer
+                                        //!< growth), the new id won't match here and the next `setupDraw` must
+                                        //!< rebind + re-issue `glVertexAttribPointer` so the VAO's stored
+                                        //!< attribute-buffer mapping references the live handle.
+
+    unsigned int lastVaoGroupEboId{0u}; //!< GL id of `lastVaoGroup`'s shared EBO at the time `bindGLObjects` ran.
+                                        //!< Same rationale as `lastVaoGroupVboId`: the persistent index buffer
+                                        //!< may grow independently of the vertex buffer, move-assigning a fresh
+                                        //!< EBO. The VAO's recorded `GL_ELEMENT_ARRAY_BUFFER` would then point
+                                        //!< at a deleted handle; the mismatch here forces a full rebind so the
+                                        //!< VAO captures the live EBO via `ebo.bind()`.
 
     BlendMode   lastBlendMode{BlendAlpha}; //!< Cached blending mode
     StencilMode lastStencilMode{};         //!< Cached stencil
@@ -251,6 +259,7 @@ struct [[nodiscard]] RenderTarget::Impl
         cache.lastVaoGroup          = theVAOGroup.getId();
         cache.lastVaoGroupContextId = GraphicsContext::getActiveThreadLocalGlContextId();
         cache.lastVaoGroupVboId     = theVAOGroup.vbo.getId();
+        cache.lastVaoGroupEboId     = theVAOGroup.ebo.getId();
 
         RenderTargetImpl::setupVertexAttribPointers();
     }
@@ -290,7 +299,9 @@ auto RenderTarget::addToAutoBatch(auto&&... xs)
 
 
 ////////////////////////////////////////////////////////////
-RenderTarget::RenderTarget() = default;
+RenderTarget::RenderTarget(const bool isSrgb) : m_isSrgb{isSrgb}
+{
+}
 
 
 ////////////////////////////////////////////////////////////
@@ -943,14 +954,6 @@ void RenderTarget::drawInstancedIndexedVertices(const DrawInstancedIndexedVertic
 
 
 ////////////////////////////////////////////////////////////
-bool RenderTarget::isSrgb() const
-{
-    // By default sRGB encoding is not enabled for an arbitrary RenderTarget
-    return false;
-}
-
-
-////////////////////////////////////////////////////////////
 bool RenderTarget::setActive(const bool active)
 {
     // Mark this RenderTarget as active or no longer active in the tracking map
@@ -1353,7 +1356,8 @@ void RenderTarget::setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& sta
                                    m_impl->cache.lastVaoGroupContextId == 0u ||
                                    m_impl->cache.lastVaoGroupContextId !=
                                        GraphicsContext::getActiveThreadLocalGlContextId() ||
-                                   m_impl->cache.lastVaoGroupVboId != vaoGroup.vbo.getId();
+                                   m_impl->cache.lastVaoGroupVboId != vaoGroup.vbo.getId() ||
+                                   m_impl->cache.lastVaoGroupEboId != vaoGroup.ebo.getId();
 
         if (!m_impl->cache.enable || mustRebindVAO)
         {

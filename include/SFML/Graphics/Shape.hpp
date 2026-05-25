@@ -335,6 +335,8 @@ protected:
         {
             m_vertices.clear();
             m_verticesEndIndex = 0;
+            m_insideBounds     = {};
+            m_bounds           = {};
             return;
         }
 

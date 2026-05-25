@@ -25,7 +25,7 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-template <typename T, typename... Args>
-inline constexpr bool isAssignable = SFML_BASE_IS_ASSIGNABLE(T, Args...);
+template <typename T, typename U>
+inline constexpr bool isAssignable = SFML_BASE_IS_ASSIGNABLE(T, U);
 
 } // namespace sf::base

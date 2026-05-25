@@ -3,61 +3,28 @@ set_target_warnings(test-sfml-install)
 
 set(CMAKE_POLICY_VERSION_MINIMUM "3.5")
 
-set(DOCTEST_NO_INSTALL ON CACHE BOOL "")
-set(DOCTEST_WITH_MAIN_IN_STATIC_LIB OFF CACHE BOOL "" FORCE)
-
-CPMAddPackage(
-    NAME doctest
-    GITHUB_REPOSITORY vittorioromeo/doctest
-    GIT_TAG d44d4f6e66232d716af82f00a063759e9d0e50d6
-    SYSTEM TRUE
-)
-
-include(${doctest_SOURCE_DIR}/scripts/cmake/doctest.cmake)
-
-# include_directories(${PROJECT_SOURCE_DIR}/tracy/public/tracy/)
-# add_definitions(-include Tracy.hpp)
-# add_definitions(-DTRACY_ENABLE)
-#
-# add_library(tracyclient SHARED ${PROJECT_SOURCE_DIR}/tracy/public/TracyClient.cpp)
-# target_link_libraries(tracyclient PRIVATE ws2_32 winmm gdi32 dbghelp)
-
-# Build doctest in C++23 mode to enable C++23 features
-target_compile_features(doctest INTERFACE cxx_std_23)
-
-# Ensure that doctest sources and headers are not analyzed by any tools
-set_target_properties(doctest PROPERTIES COMPILE_OPTIONS "" EXPORT_COMPILE_COMMANDS OFF)
-set_target_properties(doctest PROPERTIES FOLDER "Dependencies")
-get_target_property(DOCTEST_INCLUDE_DIRS doctest INTERFACE_INCLUDE_DIRECTORIES)
-target_include_directories(doctest SYSTEM INTERFACE ${DOCTEST_INCLUDE_DIRS})
-# add flags required for emscripten support (e.g. pthread)
-if(SFML_OS_EMSCRIPTEN)
-    target_compile_definitions(doctest INTERFACE DOCTEST_CONFIG_COLORS_NONE)
-endif()
-sfml_apply_emscripten_options(doctest INTERFACE)
-
 set(TEST_SRCROOT ${PROJECT_SOURCE_DIR}/test)
-file(GLOB TEST_UTILITIES_SRC CONFIGURE_DEPENDS "${TEST_SRCROOT}/TestUtilities/*.cpp" "${TEST_SRCROOT}/TestUtilities/*.hpp" "${TEST_SRCROOT}/TestUtilities/*.inl")
+file(GLOB TEST_UTILITIES_SRC CONFIGURE_DEPENDS
+    "${TEST_SRCROOT}/TestUtilities/*.cpp"
+    "${TEST_SRCROOT}/TestUtilities/*.hpp"
+    "${TEST_SRCROOT}/TestUtilities/*.inl"
+    "${TEST_SRCROOT}/TestUtilities/Tst/*.cpp"
+    "${TEST_SRCROOT}/TestUtilities/Tst/*.hpp"
+    "${TEST_SRCROOT}/TestUtilities/Tst/Detail/*.hpp"
+)
 
 add_library(sfml-test-main STATIC ${TEST_UTILITIES_SRC})
 target_include_directories(sfml-test-main PUBLIC TestUtilities)
-target_compile_definitions(sfml-test-main PUBLIC DOCTEST_CONFIG_REQUIRE_STRINGIFICATION_FOR_ALL_USED_TYPES)
-
-# Suppress warnings for the doctest implementation (matches the old doctest_with_main `-w` flag)
-set_source_files_properties("${TEST_SRCROOT}/TestUtilities/DoctestImpl.cpp" PROPERTIES COMPILE_OPTIONS "-w")
 
 set_target_warnings(sfml-test-main)
 
-target_link_libraries(sfml-test-main PUBLIC SFML::System doctest::doctest)
+target_link_libraries(sfml-test-main PUBLIC SFML::System)
 
 # enable precompiled headers
 if (SFML_ENABLE_PCH)
-    message(VERBOSE "enabling PCH for doctest")
+    message(VERBOSE "enabling PCH for sfml-test-main")
 
     target_precompile_headers(sfml-test-main REUSE_FROM sfml-system)
-
-    target_include_directories(sfml-system PUBLIC ${DOCTEST_INCLUDE_DIRS})
-    target_link_libraries(sfml-system PUBLIC $<BUILD_INTERFACE:doctest::doctest>)
 
     find_package(Threads REQUIRED)
     target_link_libraries(sfml-test-main PRIVATE Threads::Threads)

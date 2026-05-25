@@ -127,6 +127,9 @@ void Shape::setOutlineThickness(float thickness)
 ////////////////////////////////////////////////////////////
 void Shape::setMiterLimit(float miterLimit)
 {
+    if (m_miterLimit == miterLimit)
+        return;
+
     m_miterLimit = miterLimit;
     updateOutline();
 }

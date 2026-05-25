@@ -2,19 +2,20 @@
 
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/String.hpp"
 
 #include <DoctestFwd.hpp>
 
-namespace doctest
+namespace tst
 {
 
 template <typename T, sf::base::SizeT N>
 struct StringMaker<sf::base::Array<T, N>>
 {
-    static doctest::String convert(const sf::base::Array<T, N>&)
+    static sf::base::String convert(const sf::base::Array<T, N>&)
     {
-        return ""; // TODO P3:
+        return detail::defaultStringification();
     }
 };
 
-} // namespace doctest
+} // namespace tst

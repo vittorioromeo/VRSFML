@@ -2,18 +2,20 @@
 
 #include "SFML/Network/IpAddress.hpp"
 
+#include "SFML/Base/String.hpp"
+
 #include <DoctestFwd.hpp>
 
-namespace doctest
+namespace tst
 {
 
 template <>
 struct StringMaker<sf::IpAddress>
 {
-    static doctest::String convert(const sf::IpAddress&)
+    static sf::base::String convert(const sf::IpAddress&)
     {
-        return ""; // TODO P3:
+        return detail::defaultStringification();
     }
 };
 
-} // namespace doctest
+} // namespace tst

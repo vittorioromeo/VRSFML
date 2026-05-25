@@ -102,7 +102,7 @@ public:
     [[nodiscard]] static Shader& getBuiltInShader();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Returns the built-in 1x1 white texture
+    /// \brief Returns the built-in 2x2 white texture
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static Texture& getBuiltInWhiteDotTexture();

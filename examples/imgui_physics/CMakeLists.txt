@@ -22,6 +22,16 @@ if(TARGET box2d)
     set_target_properties(box2d PROPERTIES FOLDER "Dependencies")
     target_compile_options(box2d PRIVATE "-w")
 
+    # Box2D's `timer.c` calls `pthread_setname_np` -- a `_GNU_SOURCE`
+    # extension. In its own (non-unity) build the `_GNU_SOURCE` is
+    # implied by the C standard library's default include order; under
+    # CMake's unity build, `timer.c` is merged with other TUs and the
+    # implicit declaration triggers `-Werror=implicit-function-declaration`.
+    # Force `_GNU_SOURCE` to pull the declaration explicitly, and
+    # disable unity for the third-party C code regardless.
+    target_compile_definitions(box2d PRIVATE _GNU_SOURCE=1)
+    set_target_properties(box2d PROPERTIES UNITY_BUILD OFF)
+
     # add flags required for emscripten support (e.g. pthread)
     sfml_apply_emscripten_options(box2d)
 endif()

@@ -1,37 +1,38 @@
 #pragma once
 
 #include "SFML/Base/FwdStdString.hpp"
+#include "SFML/Base/String.hpp"
 
 #include <DoctestFwd.hpp>
 
-namespace doctest
+namespace tst
 {
 
 template <>
 struct StringMaker<char8_t>
 {
-    static doctest::String convert(const char8_t&)
+    static sf::base::String convert(const char8_t&)
     {
-        return ""; // TODO P3:
+        return detail::defaultStringification();
     }
 };
 
 template <>
 struct StringMaker<char16_t>
 {
-    static doctest::String convert(const char16_t&)
+    static sf::base::String convert(const char16_t&)
     {
-        return ""; // TODO P3:
+        return detail::defaultStringification();
     }
 };
 
 template <typename T>
 struct StringMaker<std::basic_string<T>>
 {
-    static doctest::String convert(const std::basic_string<T>& s)
+    static sf::base::String convert(const std::basic_string<T>& s)
     {
-        return reinterpret_cast<const char*>(s.c_str()); // TODO P3:
+        return sf::base::String{reinterpret_cast<const char*>(s.c_str())};
     }
 };
 
-} // namespace doctest
+} // namespace tst

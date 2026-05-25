@@ -685,6 +685,7 @@ void Texture::generateMipmap()
                             m_isSmooth ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_LINEAR));
 
     m_hasMipmap = true;
+    ++m_destructiveGeneration; // MIN_FILTER changed; in-flight batched draws would sample with the old filter
 }
 
 
@@ -703,6 +704,7 @@ void Texture::invalidateMipmap()
     glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_isSmooth ? GL_LINEAR : GL_NEAREST));
 
     m_hasMipmap = false;
+    ++m_destructiveGeneration; // MIN_FILTER changed; in-flight batched draws would sample with the old filter
 }
 
 

@@ -1,8 +1,8 @@
 // Header for SFML unit tests.
 //
 // For a new window module test case, include this header.
-// This specializes `doctest::StringMaker` so doctest can stringify
-// `sf::VideoMode` for failure output without dragging `<ostream>`.
+// Specializes `tst::StringMaker` so the bespoke testing library can
+// stringify `sf::VideoMode` for failure output.
 
 #pragma once
 
@@ -22,11 +22,11 @@ struct VideoMode;
 } // namespace sf
 
 
-namespace doctest
+namespace tst
 {
 template <>
 struct StringMaker<sf::VideoMode>
 {
-    static String convert(const sf::VideoMode& videoMode);
+    static sf::base::String convert(const sf::VideoMode& videoMode);
 };
-} // namespace doctest
+} // namespace tst

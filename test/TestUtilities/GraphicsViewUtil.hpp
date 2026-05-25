@@ -7,11 +7,11 @@
 #include "SFML/Graphics/View.hpp"
 
 
-namespace doctest
+namespace tst
 {
 template <>
 struct StringMaker<sf::View::ScissorRect>
 {
-    static String convert(const sf::View::ScissorRect& scissorRect);
+    static sf::base::String convert(const sf::View::ScissorRect& scissorRect);
 };
-} // namespace doctest
+} // namespace tst

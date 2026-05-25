@@ -1,55 +1,12 @@
-#include "SFML/Base/Math/Fabs.hpp"
+// LICENSE AND COPYRIGHT (C) INFORMATION
+// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
 
-#include <Doctest.hpp>
+
+////////////////////////////////////////////////////////////
+// Placeholder TU. Historically held doctest-specific glue (Catch2
+// `margin()`, custom `StringMaker` bodies). All of that has moved into
+// the bespoke library under `Tst/` -- nothing remains to define here.
+////////////////////////////////////////////////////////////
 
 
-namespace doctest::Matchers
-{
-
-bool operator==(float value, const WithinRel& withinRel)
-{
-    return static_cast<double>(value) == doctest::Approx(withinRel.target).epsilon(withinRel.epsilon);
-}
-
-bool operator==(float value, const WithinAbs& withinAbs)
-{
-    return sf::base::fabs(value) == WithinRel{withinAbs.target, withinAbs.epsilon};
-}
-
-} // namespace doctest::Matchers
-
-namespace Catch
-{
-
-Approx& Approx::margin(double newMargin)
-{
-    epsilon(newMargin);
-    return *this;
-}
-
-} // namespace Catch
-
-namespace doctest
-{
-
-doctest::String StringMaker<char32_t>::convert(const char32_t&)
-{
-    return ""; // TODO P3:
-}
-
-doctest::String StringMaker<Matchers::WithinRel>::convert(const Matchers::WithinRel&)
-{
-    return ""; // TODO P3:
-}
-
-doctest::String StringMaker<Matchers::WithinAbs>::convert(const Matchers::WithinAbs&)
-{
-    return ""; // TODO P3:
-}
-
-doctest::String StringMaker<Catch::Approx>::convert(const Catch::Approx&)
-{
-    return ""; // TODO P3:
-}
-
-} // namespace doctest
+#include "Doctest.hpp" // IWYU pragma: keep

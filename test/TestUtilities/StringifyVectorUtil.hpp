@@ -1,20 +1,21 @@
 #pragma once
 
+#include "SFML/Base/String.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #include <DoctestFwd.hpp>
 
 
-namespace doctest
+namespace tst
 {
 
 template <typename T>
 struct StringMaker<sf::base::Vector<T>>
 {
-    static doctest::String convert(const sf::base::Vector<T>&)
+    static sf::base::String convert(const sf::base::Vector<T>&)
     {
-        return ""; // TODO P3:
+        return detail::defaultStringification();
     }
 };
 
-} // namespace doctest
+} // namespace tst

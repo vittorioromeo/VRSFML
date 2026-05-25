@@ -210,17 +210,6 @@ public:
     [[nodiscard]] Vec2u getSize() const override;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Tell if the render-texture will use sRGB encoding when drawing on it
-    ///
-    /// You can request sRGB encoding for a render-texture
-    /// by having the sRgbCapable flag set for the context parameter of `create()` method
-    ///
-    /// \return `true` if the render-texture use sRGB encoding, `false` otherwise
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isSrgb() const override;
-
-    ////////////////////////////////////////////////////////////
     /// \brief Get a read-only reference to the target texture
     ///
     /// After drawing to the render-texture and calling Display,

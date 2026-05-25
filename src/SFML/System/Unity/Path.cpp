@@ -8,9 +8,9 @@
 #include "SFML/System/Path.hpp"
 
 #include "SFML/System/Fmt/FmtPath.hpp"
-#include "SFML/System/PathStreamOp.hpp"
 #include "SFML/System/PathUtils.hpp"
 
+#include "SFML/Base/Fmt/FmtResult.hpp"
 #include "SFML/Base/Fmt/FmtSink.hpp"
 #include "SFML/Base/Fmt/FmtSpec.hpp"
 #include "SFML/Base/FunctionRef.hpp"
@@ -24,9 +24,13 @@
 #include "SFML/Base/Trait/IsSame.hpp"
 #include "SFML/Base/Trait/RemoveCVRef.hpp"
 
+// `<ios>` and `<ostream>` are intentionally NOT included here -- in
+// libstdc++16 `<ostream>` pulls in `<format>` which adds ~3 s of
+// `std::format` template instantiations and turns this Unity TU
+// (Err + IO + Path) into one of the slowest parses in the build. The
+// stream-insertion operator for `Path` lives in `PathStreamOp.cpp`
+// instead.
 #include <filesystem>
-#include <ios>     // TODO P1: needed?
-#include <ostream> // TODO P1: needed?
 #include <string>
 #include <string_view>
 #include <system_error>
@@ -469,14 +473,8 @@ template std::u32string        Path::to<std::u32string>() const;
 template std::wstring          Path::to<std::wstring>() const;
 
 
-////////////////////////////////////////////////////////////
-std::ostream& operator<<(std::ostream& os, const Path& path)
-{
-    // Use UTF-8 rather than streaming `std::filesystem::path` directly: the latter uses
-    // the C locale, which throws on MinGW/Clang64 for some non-ASCII paths.
-    const auto u8 = path.to<std::string>();
-    return os.write(u8.data(), static_cast<std::streamsize>(u8.size()));
-}
+// `operator<<(std::ostream&, const Path&)` lives in `PathStreamOp.cpp`
+// -- see the `<ostream>` comment near the top of this file.
 
 
 ////////////////////////////////////////////////////////////

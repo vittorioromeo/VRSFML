@@ -41,14 +41,19 @@ base::Optional<Rect2f> TextureAtlasUtils::add(
     const base::U8* pixels,
     Vec2u           size)
 {
-    const auto packedPosition = rectPacker.pack(size + padding);
+    // Reserve the full padded region so neighbouring entries are kept at
+    // arm's length on every side, then upload the content offset by `padding`
+    // so the same number of padding pixels sit between this entry and its
+    // top/left and bottom/right neighbours.
+    const auto packedPosition = rectPacker.pack(size + padding * 2u);
 
     if (!packedPosition.hasValue())
         return fail("pack pixel array rectangle for texture atlas");
 
-    targetTexture.update(pixels, size, *packedPosition);
+    const Vec2u uploadPos = *packedPosition + padding;
+    targetTexture.update(pixels, size, uploadPos);
 
-    return base::makeOptional<Rect2f>(packedPosition->to<Vec2f>(), size.to<Vec2f>());
+    return base::makeOptional<Rect2f>(uploadPos.to<Vec2f>(), size.to<Vec2f>());
 }
 
 
@@ -62,15 +67,18 @@ base::Optional<Rect2f> TextureAtlasUtils::add(Texture& targetTexture, RectPacker
 ////////////////////////////////////////////////////////////
 base::Optional<Rect2f> TextureAtlasUtils::add(Texture& targetTexture, RectPacker& rectPacker, Vec2u padding, const Texture& texture)
 {
-    const auto packedPosition = rectPacker.pack(texture.getSize() + padding);
+    // See pixel-array overload for the +padding/-padding rationale.
+    const auto packedPosition = rectPacker.pack(texture.getSize() + padding * 2u);
 
     if (!packedPosition.hasValue())
         return fail("pack texture rectangle for texture atlas");
 
-    if (!targetTexture.update(texture, *packedPosition))
+    const Vec2u uploadPos = *packedPosition + padding;
+
+    if (!targetTexture.update(texture, uploadPos))
         return fail("update texture for texture atlas");
 
-    return base::makeOptional<Rect2f>(packedPosition->to<Vec2f>(), texture.getSize().to<Vec2f>());
+    return base::makeOptional<Rect2f>(uploadPos.to<Vec2f>(), texture.getSize().to<Vec2f>());
 }
 
 } // namespace sf

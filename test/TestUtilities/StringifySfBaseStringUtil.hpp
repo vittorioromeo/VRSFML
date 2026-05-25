@@ -5,16 +5,16 @@
 #include <DoctestFwd.hpp>
 
 
-namespace doctest
+namespace tst
 {
 
 template <>
 struct StringMaker<sf::base::String>
 {
-    static doctest::String convert(const sf::base::String& sv)
+    static sf::base::String convert(const sf::base::String& sv)
     {
-        return sv.data();
+        return sv;
     }
 };
 
-} // namespace doctest
+} // namespace tst

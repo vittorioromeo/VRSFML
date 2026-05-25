@@ -142,8 +142,8 @@ TEST_CASE("[Base] ToChars.hpp")
 
     SECTION("u64 / i64 digit-count transitions")
     {
-        using U64 = sf::base::U64;
-        using I64 = sf::base::I64;
+        using sf::base::I64;
+        using sf::base::U64;
 
         // Every 10^N boundary for u64 (digits 10..20)
         CHECK_INTEGER_CONVERSION(static_cast<U64>(9'999'999'999ull), "9999999999");

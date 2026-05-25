@@ -8,6 +8,8 @@
 #include "SFML/System/Vec2.hpp"
 #include "SFML/System/Vec3.hpp"
 
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/String.hpp"
 #include "SFML/Base/ToChars.hpp"
 #include "SFML/Base/Trait/IsFloatingPoint.hpp"
 
@@ -17,91 +19,107 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-// Build a `doctest::String` from a float, without dragging `<ostream>`/`<format>`.
-doctest::String floatToString(const float value, const int precision = 6)
+sf::base::String sysFloatToString(const float value, const int precision = 6)
 {
     char       buf[64];
     char*      end = sf::base::toChars(buf, buf + sizeof(buf), value, precision);
-    const auto len = static_cast<doctest::String::size_type>(end - buf);
-    return {buf, len};
+    const auto len = static_cast<sf::base::SizeT>(end - buf);
+    return sf::base::String{buf, len};
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-doctest::String intToString(const T value)
+sf::base::String sysIntToString(const T value)
 {
     char       buf[32];
     char*      end = sf::base::toChars(buf, buf + sizeof(buf), value);
-    const auto len = static_cast<doctest::String::size_type>(end - buf);
-    return {buf, len};
+    const auto len = static_cast<sf::base::SizeT>(end - buf);
+    return sf::base::String{buf, len};
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-doctest::String numToString(const T value)
+sf::base::String numToString(const T value)
 {
     if constexpr (sf::base::isFloatingPoint<T>)
-        return floatToString(static_cast<float>(value));
+        return sysFloatToString(static_cast<float>(value));
     else
-        return intToString(value);
+        return sysIntToString(value);
 }
 
 } // namespace
 
 
-namespace doctest
+namespace tst
 {
 ////////////////////////////////////////////////////////////
-String StringMaker<sf::Angle>::convert(const sf::Angle& angle)
+sf::base::String StringMaker<sf::Angle>::convert(const sf::Angle& angle)
 {
-    return floatToString(angle.asDegrees()) + " deg";
+    return sysFloatToString(angle.asDegrees()) + sf::base::String{" deg"};
 }
 
 
 ////////////////////////////////////////////////////////////
-String StringMaker<sf::AutoWrapAngle>::convert(const sf::AutoWrapAngle& angle)
+sf::base::String StringMaker<sf::AutoWrapAngle>::convert(const sf::AutoWrapAngle& angle)
 {
-    return floatToString(angle.asDegrees()) + " deg";
+    return sysFloatToString(angle.asDegrees()) + sf::base::String{" deg"};
 }
 
 
 ////////////////////////////////////////////////////////////
-String StringMaker<sf::Utf8String>::convert(const sf::Utf8String& string)
+sf::base::String StringMaker<sf::Utf8String>::convert(const sf::Utf8String& string)
 {
-    return {string.data(), static_cast<String::size_type>(string.byteSize())};
+    return sf::base::String{string.data(), static_cast<sf::base::SizeT>(string.byteSize())};
 }
 
 
 ////////////////////////////////////////////////////////////
-String StringMaker<sf::Time>::convert(const sf::Time time)
+sf::base::String StringMaker<sf::Time>::convert(const sf::Time time)
 {
-    return intToString(time.asMicroseconds()) + "us";
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-String StringMaker<sf::Vec2<T>>::convert(const sf::Vec2<T>& vec)
-{
-    return String("(") + numToString(vec.x) + ", " + numToString(vec.y) + ")";
+    return sysIntToString(time.asMicroseconds()) + sf::base::String{"us"};
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-String StringMaker<sf::Vec3<T>>::convert(const sf::Vec3<T>& vec)
+sf::base::String StringMaker<sf::Vec2<T>>::convert(const sf::Vec2<T>& vec)
 {
-    return String("(") + numToString(vec.x) + ", " + numToString(vec.y) + ", " + numToString(vec.z) + ")";
+    return sf::base::String{"("} + numToString(vec.x) + sf::base::String{", "} + numToString(vec.y) +
+           sf::base::String{")"};
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-String StringMaker<::Approx<T>>::convert(const ::Approx<T>& approx)
+sf::base::String StringMaker<sf::Vec3<T>>::convert(const sf::Vec3<T>& vec)
 {
-    return toString(approx.value);
+    return sf::base::String{"("} + numToString(vec.x) + sf::base::String{", "} + numToString(vec.y) +
+           sf::base::String{", "} + numToString(vec.z) + sf::base::String{")"};
+}
+
+
+////////////////////////////////////////////////////////////
+// Use the `stringify<T>` entry point (with its `if constexpr`
+// fallback) rather than `StringMaker<T>::convert` directly -- the
+// latter would require every wrapped type's StringMaker
+// specialization to be visible in this TU, which is not always the
+// case (e.g. `sf::Color`'s specialization lives in
+// `GraphicsUtil.hpp`).
+////////////////////////////////////////////////////////////
+// Inline dispatch (mirrors the now-removed `tst::stringify` helper).
+// Some `T` (e.g. `sf::Color`) only have their `StringMaker`
+// specialization in scope in other utility headers; fall back to the
+// generic placeholder for those cases rather than requiring the
+// caller TU to drag in every dependency.
+template <typename T>
+sf::base::String StringMaker<::Approx<T>>::convert(const ::Approx<T>& approx)
+{
+    if constexpr (requires { ::tst::StringMaker<T>{}; })
+        return ::tst::StringMaker<T>::convert(approx.value);
+    else
+        return ::tst::detail::defaultStringification();
 }
 
 
@@ -120,13 +138,36 @@ template struct StringMaker<::Approx<sf::Angle>>;
 template struct StringMaker<::Approx<sf::Vec2<float>>>;
 template struct StringMaker<::Approx<sf::Vec3<float>>>;
 
-} // namespace doctest
+} // namespace tst
+
+
+////////////////////////////////////////////////////////////
+// Forward-declared graphics-side Approx specializations needed by the
+// graphics tests' explicit-instantiation block in `GraphicsUtil.cpp`.
+// The template body lives here (SystemUtil), so the instantiations
+// need to be here too -- a `.cpp` instantiation outside the file that
+// defines the template body produces no symbol.
+////////////////////////////////////////////////////////////
+namespace sf
+{
+struct Color;
+struct Transform;
+template <typename>
+class Rect2;
+} // namespace sf
+
+namespace tst
+{
+template struct StringMaker<::Approx<sf::Color>>;
+template struct StringMaker<::Approx<sf::Transform>>;
+template struct StringMaker<::Approx<sf::Rect2<float>>>;
+} // namespace tst
 
 
 ////////////////////////////////////////////////////////////
 bool operator==(const float& lhs, const Approx<float>& rhs)
 {
-    return static_cast<double>(lhs) == doctest::Approx(static_cast<double>(rhs.value)).epsilon(1e-3);
+    return static_cast<double>(lhs) == ::tst::Approx(static_cast<double>(rhs.value)).epsilon(1e-3);
 }
 
 

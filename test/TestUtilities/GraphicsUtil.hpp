@@ -1,8 +1,8 @@
 // Header for SFML unit tests.
 //
 // For a new graphics module test case, include this header.
-// This specializes `doctest::StringMaker` so doctest can stringify
-// SFML graphics types for failure output without dragging `<ostream>`.
+// Specializes `tst::StringMaker` so the bespoke testing library can
+// stringify SFML graphics types for failure output.
 
 #pragma once
 
@@ -25,56 +25,56 @@ class Rect2;
 } // namespace sf
 
 
-namespace doctest
+namespace tst
 {
 template <>
 struct StringMaker<sf::BlendMode>
 {
-    static String convert(const sf::BlendMode& blendMode);
+    static sf::base::String convert(const sf::BlendMode& blendMode);
 };
 
 template <>
 struct StringMaker<sf::StencilComparison>
 {
-    static String convert(sf::StencilComparison comparison);
+    static sf::base::String convert(sf::StencilComparison comparison);
 };
 
 template <>
 struct StringMaker<sf::StencilUpdateOperation>
 {
-    static String convert(sf::StencilUpdateOperation updateOperation);
+    static sf::base::String convert(sf::StencilUpdateOperation updateOperation);
 };
 
 template <>
 struct StringMaker<sf::StencilMode>
 {
-    static String convert(const sf::StencilMode& stencilMode);
+    static sf::base::String convert(const sf::StencilMode& stencilMode);
 };
 
 template <>
 struct StringMaker<sf::Color>
 {
-    static String convert(sf::Color color);
+    static sf::base::String convert(sf::Color color);
 };
 
 template <>
 struct StringMaker<sf::Transform>
 {
-    static String convert(const sf::Transform& transform);
+    static sf::base::String convert(const sf::Transform& transform);
 };
 
 template <>
 struct StringMaker<sf::View>
 {
-    static String convert(const sf::View& view);
+    static sf::base::String convert(const sf::View& view);
 };
 
 template <typename T>
 struct StringMaker<sf::Rect2<T>>
 {
-    static String convert(const sf::Rect2<T>& rect);
+    static sf::base::String convert(const sf::Rect2<T>& rect);
 };
-} // namespace doctest
+} // namespace tst
 
 
 bool operator==(const sf::Transform& lhs, const Approx<sf::Transform>& rhs);

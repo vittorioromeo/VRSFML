@@ -78,6 +78,7 @@ function(set_target_warnings target)
     if(SFML_COMPILER_CLANG OR SFML_COMPILER_CLANG_CL)
         target_compile_options(${target} PRIVATE
             -Wno-unknown-warning-option # do not warn on GCC-specific warning diagnostic pragmas
+            -Wno-c2y-extensions # `__COUNTER__` is universally supported across GCC/Clang/MSVC
         )
     endif()
 

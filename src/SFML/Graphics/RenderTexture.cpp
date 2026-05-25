@@ -588,13 +588,6 @@ Vec2u RenderTexture::getSize() const
 
 
 ////////////////////////////////////////////////////////////
-bool RenderTexture::isSrgb() const
-{
-    return m_impl->sRgb;
-}
-
-
-////////////////////////////////////////////////////////////
 const Texture& RenderTexture::getTexture() const
 {
     return m_impl->texture;
@@ -602,7 +595,9 @@ const Texture& RenderTexture::getTexture() const
 
 
 ////////////////////////////////////////////////////////////
-RenderTexture::RenderTexture(base::PassKey<RenderTexture>&&, Texture&& texture) : m_impl(SFML_BASE_MOVE(texture))
+RenderTexture::RenderTexture(base::PassKey<RenderTexture>&&, Texture&& texture) :
+    RenderTarget{texture.isSrgb()},
+    m_impl(SFML_BASE_MOVE(texture))
 {
 }
 

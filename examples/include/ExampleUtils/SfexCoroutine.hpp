@@ -29,30 +29,29 @@
 //   before a yield are silently re-initialized every call, or rejected
 //   by the compiler ("jump into protected scope") inside nested scopes.
 //
-// Diagnostic suppressions:
-//   This header pushes `-Wc2y-extensions` and `-Wimplicit-fallthrough`
-//   without popping. The suppressions deliberately leak to any TU that
-//   includes the header, since the macros emit warning-tripping code at
-//   every expansion site.
 ////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Base/Builtin/Pragma.hpp"
 #include "SFML/Base/Builtin/Unreachable.hpp"
 #include "SFML/Base/IntTypes.hpp"
 
 
 ////////////////////////////////////////////////////////////
+#define SFEX_PRIV_CO_CASE_WARNINGS_PUSH    \
+    SFML_BASE_PRAGMA(GCC diagnostic push); \
+    SFML_BASE_PRAGMA(GCC diagnostic ignored "-Wimplicit-fallthrough")
+
 #if defined(__clang__)
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wc2y-extensions"
-    #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
-#elif defined(__GNUC__)
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+    #define SFEX_PRIV_CO_C2Y_PUSH SFML_BASE_PRAGMA(GCC diagnostic ignored "-Wc2y-extensions")
+#else
+    #define SFEX_PRIV_CO_C2Y_PUSH static_assert(true)
 #endif
+
+#define SFEX_PRIV_CO_CASE_WARNINGS_POP SFML_BASE_PRAGMA(GCC diagnostic pop)
 
 
 namespace sfex
@@ -195,11 +194,15 @@ template <typename Time, typename Ctx, typename... Children>
 ///
 ////////////////////////////////////////////////////////////
 #define SFEX_CO_BEGIN                                          \
+    SFEX_PRIV_CO_CASE_WARNINGS_PUSH;                           \
+    SFEX_PRIV_CO_C2Y_PUSH;                                     \
+                                                               \
     static constexpr ::sf::base::U32 _sfex_base = __COUNTER__; \
                                                                \
     switch (state)                                             \
     {                                                          \
-        case 0:;
+        case 0:;                                               \
+            SFEX_PRIV_CO_CASE_WARNINGS_POP
 
 
 ////////////////////////////////////////////////////////////
@@ -213,13 +216,20 @@ template <typename Time, typename Ctx, typename... Children>
 /// \see `SFEX_CO_RETURN`, `SFEX_CO_AWAIT`
 ///
 ////////////////////////////////////////////////////////////
+
+// Push must precede the `__COUNTER__` use (clang flags it as a C2y
+// extension), so it spans the whole `do { ... }` block.
 #define SFEX_CO_YIELD(value)                    \
     do                                          \
     {                                           \
+        SFEX_PRIV_CO_CASE_WARNINGS_PUSH;        \
+        SFEX_PRIV_CO_C2Y_PUSH;                  \
+                                                \
         state = (__COUNTER__ + 1) - _sfex_base; \
         return value;                           \
                                                 \
         case (__COUNTER__ - _sfex_base):;       \
+            SFEX_PRIV_CO_CASE_WARNINGS_POP;     \
     } while (0)
 
 
@@ -277,9 +287,14 @@ template <typename Time, typename Ctx, typename... Children>
 /// \see `SFEX_CO_AWAIT_ALL`, `SFEX_CO_AWAIT_ANY`
 ///
 ////////////////////////////////////////////////////////////
+// Push must precede the `__COUNTER__` use (clang flags it as a C2y
+// extension), so it spans the whole `do { ... }` block.
 #define SFEX_CO_AWAIT(sub_call)                 \
     do                                          \
     {                                           \
+        SFEX_PRIV_CO_CASE_WARNINGS_PUSH;        \
+        SFEX_PRIV_CO_C2Y_PUSH;                  \
+                                                \
         state = (__COUNTER__ + 1) - _sfex_base; \
                                                 \
         case (__COUNTER__ - _sfex_base):        \
@@ -289,6 +304,8 @@ template <typename Time, typename Ctx, typename... Children>
             if (!isFinished(_r))                \
                 return _r;                      \
         }                                       \
+                                                \
+            SFEX_PRIV_CO_CASE_WARNINGS_POP;     \
     } while (0)
 
 

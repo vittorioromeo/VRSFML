@@ -288,12 +288,15 @@ private:
                                      /* data */ nullptr,
                                      GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT));
 
+        // Per ARB_buffer_storage (issue 6): when `GL_MAP_PERSISTENT_BIT` is set,
+        // the `GL_MAP_INVALIDATE_*` bits are ignored. The buffer was just created
+        // (no prior contents to discard), so there is nothing useful to invalidate
+        // anyway -- dropped to keep the flag set minimal.
         void* const newMappedPtr = glCheck(
             glMapNamedBufferRange(newObj.getId(),
                                   /* offset */ 0u,
                                   /* length */ static_cast<GLsizeiptr>(newCapacity),
                                   GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_UNSYNCHRONIZED_BIT |
-                                      GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT |
                                       GL_MAP_FLUSH_EXPLICIT_BIT));
 
         SFML_BASE_ASSERT(newMappedPtr != nullptr);

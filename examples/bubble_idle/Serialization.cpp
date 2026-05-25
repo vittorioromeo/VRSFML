@@ -36,10 +36,12 @@
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
+#include "SFML/Base/Trait/IsEnum.hpp"
 #include "SFML/Base/Trait/IsFloatingPoint.hpp"
 #include "SFML/Base/Trait/IsIntegral.hpp"
 #include "SFML/Base/Trait/IsSame.hpp"
 #include "SFML/Base/Trait/RemoveCVRef.hpp"
+#include "SFML/Base/Trait/UnderlyingType.hpp"
 #include "SFML/Base/Vector.hpp"
 
 // NOLINTBEGIN(readability-identifier-naming, misc-use-internal-linkage)
@@ -193,18 +195,18 @@ void fromJsonValue(const cJSON* j, T& out)
 // Enum dispatch via compiler builtins (no `<type_traits>` include).
 ////////////////////////////////////////////////////////////
 template <typename T>
-    requires(__is_enum(T))
+    requires(SFML_BASE_IS_ENUM(T))
 cJSON* toJsonValue(const T& v)
 {
-    return cJSON_CreateNumber(static_cast<double>(static_cast<__underlying_type(T)>(v)));
+    return cJSON_CreateNumber(static_cast<double>(static_cast<SFML_BASE_UNDERLYING_TYPE(T)>(v)));
 }
 
 template <typename T>
-    requires(__is_enum(T))
+    requires(SFML_BASE_IS_ENUM(T))
 void fromJsonValue(const cJSON* j, T& out)
 {
     if (cJSON_IsNumber(j))
-        out = static_cast<T>(static_cast<__underlying_type(T)>(cJSON_GetNumberValue(j)));
+        out = static_cast<T>(static_cast<SFML_BASE_UNDERLYING_TYPE(T)>(cJSON_GetNumberValue(j)));
 }
 
 

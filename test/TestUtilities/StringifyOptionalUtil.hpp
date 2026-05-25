@@ -1,19 +1,20 @@
 #pragma once
 
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/String.hpp"
 
 #include <DoctestFwd.hpp>
 
-namespace doctest
+namespace tst
 {
 
 template <typename T>
 struct StringMaker<sf::base::Optional<T>>
 {
-    static doctest::String convert(const sf::base::Optional<T>&)
+    static sf::base::String convert(const sf::base::Optional<T>&)
     {
-        return ""; // TODO P3:
+        return detail::defaultStringification();
     }
 };
 
-} // namespace doctest
+} // namespace tst

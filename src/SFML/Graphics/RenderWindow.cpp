@@ -18,6 +18,7 @@
 #include "SFML/GLUtils/GLCheck.hpp"
 #include "SFML/GLUtils/Glad.hpp"
 
+#include "SFML/System/Err.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/Assert.hpp"
@@ -91,13 +92,6 @@ void RenderWindow::setIcon(const Image& icon)
 
 
 ////////////////////////////////////////////////////////////
-bool RenderWindow::isSrgb() const
-{
-    return false;
-}
-
-
-////////////////////////////////////////////////////////////
 bool RenderWindow::setActive(bool active)
 {
     bool result = Window::setActive(active);
@@ -122,6 +116,16 @@ bool RenderWindow::setActive(bool active)
 ////////////////////////////////////////////////////////////
 RenderTarget::DrawStatistics RenderWindow::display()
 {
+    // Make sure the right context is current before issuing any GL --
+    // `RenderTexture::display()` already does this; symmetric here so a
+    // user juggling two `RenderWindow`s without an explicit `setActive`
+    // doesn't accidentally drive `flush()` against the wrong context.
+    if (!setActive(true))
+    {
+        priv::errMsg("Failed to activate render window in `display`");
+        return {};
+    }
+
     const auto result = RenderTarget::flush();
     RenderTarget::syncGPUEndFrame();
     Window::display();
