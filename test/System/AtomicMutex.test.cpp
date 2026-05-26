@@ -222,3 +222,78 @@ TEST_CASE("[System] sf::AtomicMutex - ping-pong between two threads")
     CHECK(countA == rounds);
     CHECK(countB == rounds);
 }
+
+
+////////////////////////////////////////////////////////////
+TEST_CASE("[System] sf::AtomicMutex - lock/unlock balance with mixed lock + tryLock")
+{
+    // Drives the 3-state state machine simultaneously through both entry
+    // points: blocking `lock` (which inflates state 1 -> 2 to announce
+    // waiters) and `tryLock` (which must NEVER inflate to 2 -- a failed
+    // tryLock has not committed to parking and so must not force the
+    // current owner to wake on unlock). Each thread reports its own
+    // successful-acquisition count; the shared counter must equal the
+    // sum, otherwise an increment was lost (mutual exclusion broken).
+
+    constexpr int threadCount = 8;
+    constexpr int iterations  = 50'000;
+    static_assert(iterations % 2 == 0, "blocking-lock count below assumes even iterations");
+
+    sf::AtomicMutex m;
+    long long       counter = 0;
+
+    // Per-thread acquired-count -- no false-sharing concerns for correctness;
+    // each thread writes only its own slot.
+    long long perThreadAcquired[threadCount] = {};
+
+    sf::base::Vector<sf::Thread> threads;
+    threads.reserve(threadCount);
+
+    for (int i = 0; i < threadCount; ++i)
+    {
+        threads.emplaceBack(
+            [&, i]
+        {
+            for (int j = 0; j < iterations; ++j)
+            {
+                // Alternate `lock` and `tryLock` based on (i+j) parity so
+                // both paths see meaningful contention. For even
+                // `iterations`, each thread issues exactly `iterations/2`
+                // blocking locks and `iterations/2` tryLock attempts.
+                if (((i + j) & 1) != 0)
+                {
+                    if (m.tryLock())
+                    {
+                        ++counter;
+                        ++perThreadAcquired[i];
+                        m.unlock();
+                    }
+                }
+                else
+                {
+                    m.lock();
+                    ++counter;
+                    ++perThreadAcquired[i];
+                    m.unlock();
+                }
+            }
+        });
+    }
+
+    for (auto& t : threads)
+        t.join();
+
+    long long expected = 0;
+    for (const long long acquired : perThreadAcquired)
+        expected += acquired;
+
+    // Primary balance check: shared counter equals the sum of per-thread
+    // acquired counts. Any inequality means an increment was lost.
+    CHECK(counter == expected);
+
+    // Sanity floor: blocking locks always succeed, so at minimum we expect
+    // `threadCount * iterations/2` increments. If `counter` ever falls
+    // below this, the test isn't actually running the workload.
+    constexpr long long blockingLockOps = static_cast<long long>(threadCount) * (iterations / 2);
+    CHECK(counter >= blockingLockOps);
+}
