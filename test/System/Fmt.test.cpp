@@ -318,13 +318,45 @@ TEST_CASE("[System] Fmt.hpp - integer type variety")
                                "00"});
     }
 
-    SECTION("char dispatches as integer")
+    SECTION("char formats as a glyph by default (matches libfmt)")
     {
-        // `char` is integral; default formatting prints decimal code, not glyph.
-        // We just check it succeeds; exact behavior is implementation-defined-signedness.
-        char        buf[16];
-        const auto* end = sf::base::fmtIntoBuffer(buf, "{}", 'A');
-        CHECK(end != nullptr);
+        CHECK(sf::base::fmtToString("{}", 'A') == sf::base::String{"A"});
+        CHECK(sf::base::fmtToString("{}", '\n') == sf::base::String{"\n"});
+        CHECK(sf::base::fmtToString("[{}]", '"') == sf::base::String{"[\"]"});
+        CHECK(sf::base::fmtToString("{}{}{}", 'a', 'b', 'c') == sf::base::String{"abc"});
+    }
+
+    SECTION("`:c` on char also emits the glyph")
+    {
+        CHECK(sf::base::fmtToString("{:c}", 'A') == sf::base::String{"A"});
+        CHECK(sf::base::fmtToString("{:c}", '\n') == sf::base::String{"\n"});
+    }
+
+    SECTION("`:d` on char emits the numeric code")
+    {
+        CHECK(sf::base::fmtToString("{:d}", 'A') == sf::base::String{"65"});
+        CHECK(sf::base::fmtToString("{:d}", '0') == sf::base::String{"48"});
+    }
+
+    SECTION("`:x` / `:X` / `:o` / `:b` on char emit the numeric code in that radix")
+    {
+        CHECK(sf::base::fmtToString("{:x}", 'A') == sf::base::String{"41"});
+        CHECK(sf::base::fmtToString("{:X}", 'A') == sf::base::String{"41"});
+        CHECK(sf::base::fmtToString("{:o}", 'A') == sf::base::String{"101"});
+        CHECK(sf::base::fmtToString("{:b}", 'A') == sf::base::String{"1000001"});
+    }
+
+    SECTION("`:c` on an integer emits the lowest byte as a glyph")
+    {
+        CHECK(sf::base::fmtToString("{:c}", 65) == sf::base::String{"A"});
+        CHECK(sf::base::fmtToString("{:c}", 0x41u) == sf::base::String{"A"});
+    }
+
+    SECTION("char default alignment is left, like a string")
+    {
+        CHECK(sf::base::fmtToString("[{:3}]", 'A') == sf::base::String{"[A  ]"});
+        CHECK(sf::base::fmtToString("[{:>3}]", 'A') == sf::base::String{"[  A]"});
+        CHECK(sf::base::fmtToString("[{:^3}]", 'A') == sf::base::String{"[ A ]"});
     }
 }
 

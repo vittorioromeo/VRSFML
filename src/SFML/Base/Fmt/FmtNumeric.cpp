@@ -58,6 +58,8 @@ FmtResult fmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec)
             case 'b':
                 end = toCharsRadix(buf, buf + sizeof(buf), arg, Radix::Bin);
                 break;
+            case 'c': // emit lowest byte as a single glyph (matches `libfmt`)
+                return sink.appendChar(static_cast<char>(arg));
             default: // '\0' or 'd' -> signed/unsigned decimal
                 end = toChars(buf, buf + sizeof(buf), arg);
                 break;
@@ -105,7 +107,6 @@ FmtResult fmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec)
     template FmtResult priv::dispatchFmtArgErased<T>(FmtSink&, const void*, const FmtSpec&)
 
 SFML_BASE_FMT_INSTANTIATE(bool);
-SFML_BASE_FMT_INSTANTIATE(char);
 SFML_BASE_FMT_INSTANTIATE(signed char);
 SFML_BASE_FMT_INSTANTIATE(unsigned char);
 SFML_BASE_FMT_INSTANTIATE(short);
@@ -120,5 +121,26 @@ SFML_BASE_FMT_INSTANTIATE(float);
 SFML_BASE_FMT_INSTANTIATE(double);
 
 #undef SFML_BASE_FMT_INSTANTIATE
+
+
+////////////////////////////////////////////////////////////
+FmtResult fmtArg(FmtSink& sink, const char& arg, const FmtSpec& spec)
+{
+    // Default ('\0') and explicit `:c` -> glyph. Matches `libfmt` /
+    // `std::format`: passing a character literal to `{}` prints the
+    // character, not its code-point. The numeric tags fall through to
+    // the integer formatter (cast preserves signedness, like `libfmt`).
+    if (spec.type == '\0' || spec.type == 'c')
+        return sink.appendChar(arg);
+
+    return fmtArg<int>(sink, static_cast<int>(arg), spec);
+}
+
+
+////////////////////////////////////////////////////////////
+// Dispatcher instantiations for `char`. The `fmtArg` symbol is provided
+// by the non-template definition above, so it is NOT instantiated here.
+template FmtResult priv::dispatchFmtArg<char>(FmtSink&, const char&, const FmtSpec&);
+template FmtResult priv::dispatchFmtArgErased<char>(FmtSink&, const void*, const FmtSpec&);
 
 } // namespace sf::base

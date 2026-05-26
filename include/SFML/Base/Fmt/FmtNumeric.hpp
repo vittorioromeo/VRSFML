@@ -33,12 +33,30 @@ inline constexpr char fmtArgDefaultAlign<bool> = '<';
 
 
 ////////////////////////////////////////////////////////////
+// `char` formats as a glyph by default (matching `libfmt` / `std::format`),
+// so left-align like other string-like types. Overrides the numeric '>' above.
+// `signed char` / `unsigned char` keep numeric right-alignment.
+////////////////////////////////////////////////////////////
+template <>
+inline constexpr char fmtArgDefaultAlign<char> = '<';
+
+
+////////////////////////////////////////////////////////////
 /// \brief Integer `fmtArg`. Body defined in `FmtNumeric.cpp`;
 /// explicit instantiations cover every standard integer type.
 ////////////////////////////////////////////////////////////
 template <typename T>
     requires isIntegral<T>
 [[nodiscard]] SFML_SYSTEM_API FmtResult fmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec);
+
+
+////////////////////////////////////////////////////////////
+/// \brief `char` `fmtArg`: formats as a single-byte glyph by default and
+/// on `:c`, dispatches to the integer overload on `:d` / `:x` / `:X` /
+/// `:o` / `:b`. Matches `libfmt` / `std::format` semantics; `signed char`
+/// and `unsigned char` still go through the integer template above.
+////////////////////////////////////////////////////////////
+[[nodiscard]] SFML_SYSTEM_API FmtResult fmtArg(FmtSink& sink, const char& arg, const FmtSpec& spec);
 
 
 ////////////////////////////////////////////////////////////
@@ -69,7 +87,6 @@ template <typename T>
     extern template SFML_SYSTEM_API FmtResult priv::dispatchFmtArgErased<T>(FmtSink&, const void*, const FmtSpec&)
 
 SFML_BASE_FMT_EXTERN(bool);
-SFML_BASE_FMT_EXTERN(char);
 SFML_BASE_FMT_EXTERN(signed char);
 SFML_BASE_FMT_EXTERN(unsigned char);
 SFML_BASE_FMT_EXTERN(short);
@@ -84,6 +101,11 @@ SFML_BASE_FMT_EXTERN(float);
 SFML_BASE_FMT_EXTERN(double);
 
 #undef SFML_BASE_FMT_EXTERN
+
+// `char` has a non-template `fmtArg` (declared above), so only the
+// dispatcher instantiations are pre-emitted here.
+extern template SFML_SYSTEM_API FmtResult priv::dispatchFmtArg<char>(FmtSink&, const char&, const FmtSpec&);
+extern template SFML_SYSTEM_API FmtResult priv::dispatchFmtArgErased<char>(FmtSink&, const void*, const FmtSpec&);
 
 
 ////////////////////////////////////////////////////////////

@@ -684,7 +684,7 @@ template <MemoryOrder MO>
 /// `Atomic<T>` provides lock-free atomic operations for numerical
 /// types (integers, `bool`, `char`, pointers, and floating-point) on
 /// every target where the GCC/Clang `__atomic_*` builtins are
-/// available (x86, x86-64, ARM, ARM64, Emscripten/wasm, …) without
+/// available (x86, x86-64, ARM, ARM64, Emscripten/wasm, ...) without
 /// pulling in the `<atomic>` header or the libatomic runtime library.
 ///
 /// Differences vs. `std::atomic`:

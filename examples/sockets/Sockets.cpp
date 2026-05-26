@@ -21,16 +21,19 @@ int main()
     // TCP, UDP or connected UDP ?
     sf::base::print("Do you want to use TCP (t) or UDP (u)? ");
     const char protocol = sf::base::scnStdin<char>().valueOr('u');
+    sf::base::scnStdinIgnoreLine();
 
     // Client or server ?
     sf::base::print("Do you want to be a server (s) or a client (c)? ");
     const char who = sf::base::scnStdin<char>().valueOr('c');
+    sf::base::scnStdinIgnoreLine();
 
     if (protocol == 't')
     {
         // Enable TLS ?
         sf::base::print("Do you want to enable TLS (y) or not (n)? ");
         const char tls = sf::base::scnStdin<char>().valueOr('n');
+        sf::base::scnStdinIgnoreLine();
 
         // Test the TCP protocol
         if (who == 's')

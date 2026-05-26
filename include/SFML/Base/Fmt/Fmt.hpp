@@ -121,15 +121,15 @@ constexpr void parseFmtSpec(const char*& p, const char* const end, FmtSpec& spec
     }
 
     // Type tag. Accepted set: 'd' (decimal int), 'x' / 'X' (hex), 'o' (octal),
-    // 'b' (binary), 'f' (float fixed). Anything else is malformed.
+    // 'b' (binary), 'c' (char glyph), 'f' (float fixed). Anything else is malformed.
     if (p < end && *p != '}')
     {
         const char t = *p;
-        if (t != 'd' && t != 'x' && t != 'X' && t != 'o' && t != 'b' && t != 'f')
+        if (t != 'd' && t != 'x' && t != 'X' && t != 'o' && t != 'b' && t != 'c' && t != 'f')
         {
             if consteval
             {
-                throw "Format spec type tag must be one of d/x/X/o/b/f or omitted";
+                throw "Format spec type tag must be one of d/x/X/o/b/c/f or omitted";
             }
             SFML_BASE_ASSERT(false);
         }

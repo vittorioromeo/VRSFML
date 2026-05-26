@@ -15,7 +15,7 @@ namespace sf::base
 ///     width     = decimal digits (0..65535)
 ///     precision = '.' followed by decimal digits (0..10, floats only)
 ///     type      = 'd' (decimal int), 'x' / 'X' (hex), 'o' (octal),
-///                 'b' (binary), 'f' (float fixed)
+///                 'b' (binary), 'c' (char glyph), 'f' (float fixed)
 ///
 /// Type tag validation is strict: anything outside the set above is
 /// rejected at consteval. Non-decimal integer tags ('x', 'X', 'o', 'b')
