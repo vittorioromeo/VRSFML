@@ -6,8 +6,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Config.hpp" // IWYU pragma: keep
-
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/PlacementNew.hpp"
@@ -90,7 +88,6 @@ inline constexpr struct FromFunc { } fromFunc;
             buffer.obj.~T();                                   \
         }                                                      \
     } while (false)
-
 // NOLINTEND(bugprone-macro-parentheses)
 
 

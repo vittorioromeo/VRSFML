@@ -15,12 +15,12 @@ namespace sf::base::priv
 /// in-class default member initializer) unaffected.
 ///
 ////////////////////////////////////////////////////////////
-struct DesignatedInitializersRequired
+struct ReqDInit
 {
-    explicit DesignatedInitializersRequired() = default;
+    explicit ReqDInit() = default;
 
     [[nodiscard, gnu::always_inline, gnu::pure]]
-    constexpr bool operator==(const DesignatedInitializersRequired&) const noexcept = default;
+    constexpr bool operator==(const ReqDInit&) const noexcept = default;
 };
 
 } // namespace sf::base::priv
@@ -41,10 +41,10 @@ struct DesignatedInitializersRequired
 /// - `MyData{1, 2}` does not compile
 /// - `MyData{{}, 1, 2}` does not compile
 ///
-/// \see `sf::base::priv::DesignatedInitializersRequired`
+/// \see `sf::base::priv::ReqDInit`
 ///
 ////////////////////////////////////////////////////////////
-#define SFML_BASE_REQUIRE_DESIGNATED_INITIALIZERS                                                       \
-    [[no_unique_address]] ::sf::base::priv::DesignatedInitializersRequired _sfmlBaseDesignatedInitGuard \
-    {                                                                                                   \
+#define SFML_BASE_REQUIRE_DESIGNATED_INITIALIZERS                    \
+    [[no_unique_address]] ::sf::base::priv::ReqDInit _sfBaseReqDInit \
+    {                                                                \
     }
