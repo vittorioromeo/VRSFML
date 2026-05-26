@@ -6,6 +6,7 @@
 #include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
+#include "SFML/Base/StringViewSplits.hpp" // IWYU pragma: keep
 #include "SFML/Base/Trait/IsAggregate.hpp"
 #include "SFML/Base/Trait/IsStandardLayout.hpp"
 #include "SFML/Base/Trait/IsTrivial.hpp"

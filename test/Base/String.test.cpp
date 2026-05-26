@@ -7,6 +7,7 @@
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StringView.hpp"
+#include "SFML/Base/StringViewSplits.hpp" // IWYU pragma: keep
 #include "SFML/Base/Trait/IsCopyAssignable.hpp"
 #include "SFML/Base/Trait/IsCopyConstructible.hpp"
 #include "SFML/Base/Trait/IsMoveAssignable.hpp"
