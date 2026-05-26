@@ -5,7 +5,7 @@
 
 ////////////////////////////////////////////////////////////
 /// \file
-/// \brief Fixed-width integer aliases (`I8`/`U8` … `I64`/`U64`)
+/// \brief Fixed-width integer aliases (`I8`/`U8` ... `I64`/`U64`)
 ///
 /// `<cstdint>` equivalents that do not require including `<cstdint>`.
 /// On GCC and Clang the types are picked from compiler-defined size
