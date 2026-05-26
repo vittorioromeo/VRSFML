@@ -7,6 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/AssertAndAssume.hpp"
 #include "SFML/Base/InitializerList.hpp"
 #include "SFML/Base/MinMaxMacros.hpp"
 #include "SFML/Base/PlacementNew.hpp"
@@ -89,7 +90,7 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     template <typename... Ts>
-    [[gnu::cold, gnu::noinline]] TItem* growAndEmplace(const SizeT insertIndex, Ts&&... xs)
+    [[gnu::cold, gnu::noinline, gnu::returns_nonnull]] TItem* growAndEmplace(const SizeT insertIndex, Ts&&... xs)
     {
         const auto oldSize               = size();
         const auto currentCapacity       = capacity();
@@ -97,6 +98,7 @@ private:
         const auto finalNewCapacity      = SFML_BASE_MAX(oldSize + 1, geometricGrowthTarget);
 
         auto* newData = priv::VectorUtils::allocate<TItem>(finalNewCapacity);
+        SFML_BASE_ASSERT_AND_ASSUME(newData != nullptr);
 
         // Construct new element first (old buffer still alive, references valid).
         SFML_BASE_PLACEMENT_NEW(newData + insertIndex) TItem(static_cast<Ts&&>(xs)...);
@@ -566,7 +568,10 @@ public:
         SFML_BASE_ASSERT(m_data != nullptr);
         SFML_BASE_ASSERT(m_endSize != nullptr);
 
-        return *(SFML_BASE_PLACEMENT_NEW(m_endSize++) TItem(static_cast<Ts&&>(xs)...));
+        auto* const slot = m_endSize++; // Prevents GCC warnings
+        SFML_BASE_ASSERT_AND_ASSUME(slot != nullptr);
+
+        return *(SFML_BASE_PLACEMENT_NEW(slot) TItem(static_cast<Ts&&>(xs)...));
     }
 
 
