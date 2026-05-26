@@ -205,7 +205,7 @@ private:
     /// \brief Return the underlying `SoundBase`
     ///
     /// Inherited virtual -- routes the public
-    /// `MiniaudioSoundSource` API (volume, pitch, looping, …)
+    /// `MiniaudioSoundSource` API (volume, pitch, looping, ...)
     /// to the `ma_sound` owned by the internal
     /// `SoundStream<MusicState>`, so there is only one
     /// authoritative audio source per `Music`.
