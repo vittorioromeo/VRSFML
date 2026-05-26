@@ -7,8 +7,7 @@
 /// \brief Custom placement-new overload that does not require including `<new>`
 ///
 /// The extra `int` parameter disambiguates this overload from the
-/// standard placement-new declared in `<new>`, so this header can be
-/// included without dragging in the entire `<new>` standard header.
+/// standard placement-new.
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::const]] inline constexpr void* operator new(decltype(sizeof(int)), int, void* ptr) noexcept
