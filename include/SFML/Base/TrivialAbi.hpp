@@ -8,9 +8,7 @@
 ///
 /// `trivial_abi` lets a non-trivial type be passed in registers (and
 /// memcpy'd in calling conventions) by ignoring its non-trivial
-/// special members at the ABI boundary. Used by `UniquePtr` so it can
-/// be passed as cheaply as a raw pointer. Expands to nothing on
-/// non-Clang compilers.
+/// special members at the ABI boundary.
 ///
 ////////////////////////////////////////////////////////////
 #ifdef __clang__
