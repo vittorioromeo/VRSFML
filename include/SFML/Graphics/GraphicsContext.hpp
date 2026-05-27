@@ -32,7 +32,7 @@ namespace sf
 ///
 /// `sf::GraphicsContext` is a process-wide singleton that owns
 /// the OpenGL ES function loader, the shared default shader,
-/// the built-in 1x1 white texture, and various per-thread GL
+/// the built-in 2x2 white texture, and various per-thread GL
 /// context bookkeeping.
 ///
 /// One `GraphicsContext` must exist before any other graphics
@@ -56,7 +56,7 @@ public:
     ///
     /// Initializes the underlying window context, loads OpenGL
     /// ES function pointers, and registers the built-in shader
-    /// and the built-in 1x1 white texture. Only one
+    /// and the built-in 2x2 white texture. Only one
     /// `GraphicsContext` may be alive at a time.
     ///
     /// \return `GraphicsContext` on success, `base::nullOpt` on failure
@@ -102,7 +102,7 @@ public:
     [[nodiscard]] static Shader& getBuiltInShader();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Returns the built-in 1x1 white texture
+    /// \brief Returns the built-in 2x2 white texture
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static Texture& getBuiltInWhiteDotTexture();
@@ -187,7 +187,7 @@ private:
     [[nodiscard]] static Shader& getInstalledBuiltInShader();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Returns the built-in 1x1 white texture (private `static` version)
+    /// \brief Returns the built-in 2x2 white texture (private `static` version)
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static Texture& getInstalledBuiltInWhiteDotTexture();
@@ -209,7 +209,7 @@ private:
 /// `sf::GraphicsContext` is the explicit, RAII-managed
 /// container for VRSFML's graphics global state. It owns the
 /// shared OpenGL ES function loader, the built-in default
-/// shader, and the built-in 1x1 white texture (used by every
+/// shader, and the built-in 2x2 white texture (used by every
 /// non-textured draw call).
 ///
 /// VRSFML refuses to maintain hidden global state, so the
