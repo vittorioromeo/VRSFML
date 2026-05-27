@@ -17,7 +17,7 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-/// \brief Convert a integral or floating-point value to a string
+/// \brief Convert an integral or floating-point value to a string
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -38,6 +38,16 @@ template <typename T>
 
 
 ////////////////////////////////////////////////////////////
+/// \brief Convert a `bool` to a string ("true" / "false").
+///
+////////////////////////////////////////////////////////////
+[[nodiscard]] inline String toString(const bool value)
+{
+    return value ? String{"true"} : String{"false"};
+}
+
+
+////////////////////////////////////////////////////////////
 /// \brief Append a numeric value's string representation to `str` without intermediate allocations
 ///
 ////////////////////////////////////////////////////////////
@@ -51,6 +61,19 @@ void appendToString(String& str, const T value)
     SFML_BASE_ASSERT(end != nullptr);
 
     str.append(buffer, static_cast<SizeT>(end - buffer));
+}
+
+
+////////////////////////////////////////////////////////////
+/// \brief Append a `bool` to `str` as "true" / "false".
+///
+////////////////////////////////////////////////////////////
+inline void appendToString(String& str, const bool value)
+{
+    if (value)
+        str.append("true", 4u);
+    else
+        str.append("false", 5u);
 }
 
 } // namespace sf::base
