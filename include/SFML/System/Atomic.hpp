@@ -221,15 +221,15 @@ SFML_SYSTEM_API void atomicNotifyAll(const void* addr) noexcept;
         return exchange<MemoryOrder::Suffix>(value);                                \
     }
 
-#define SFML_PRIV_ATOMIC_WAIT_ALIAS(Suffix)                                                 \
-    [[gnu::always_inline, gnu::flatten]] void wait##Suffix(const T expected) const noexcept \
-        requires(sizeof(T) == 4u || sizeof(T) == 8u)                                        \
-    {                                                                                       \
-        wait<MemoryOrder::Suffix>(expected);                                                \
+#define SFML_PRIV_ATOMIC_WAIT_ALIAS(Suffix)                                                     \
+    [[gnu::always_inline, gnu::flatten]] void waitOnce##Suffix(const T expected) const noexcept \
+        requires(sizeof(T) == 4u || sizeof(T) == 8u)                                            \
+    {                                                                                           \
+        waitOnce<MemoryOrder::Suffix>(expected);                                                \
     }
 
 #define SFML_PRIV_ATOMIC_WAITUNTIL_ALIAS(Suffix)                                                               \
-    [[gnu::always_inline, gnu::flatten, gnu::flatten]] void waitUntil##Suffix(auto&& predicate) const noexcept \
+    [[gnu::always_inline, gnu::flatten]] void waitUntil##Suffix(auto&& predicate) const noexcept \
         requires(sizeof(T) == 4u || sizeof(T) == 8u)                                                           \
     {                                                                                                          \
         waitUntil<MemoryOrder::Suffix>(static_cast<decltype(predicate)>(predicate));                           \
@@ -540,10 +540,17 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Block the calling thread until the stored value differs bit-wise from `expected`
+    /// \brief Park the calling thread at most once if the stored value still equals `expected`
     ///
-    /// Spurious wakeups are allowed; callers should re-check in a
-    /// loop, or use `waitUntil` which does that for them.
+    /// Single-shot primitive: parks if the value matches `expected`,
+    /// then returns -- the return may be spurious (the value might not
+    /// have changed), so callers must re-check in a loop. For the
+    /// usual "wait until a condition holds" pattern, use `waitUntil`
+    /// which loops on a predicate.
+    ///
+    /// Differs from `std::atomic::wait`, which loops internally until
+    /// it observes a different value; this is the lower-level primitive
+    /// `std::atomic::wait` is built on top of.
     ///
     /// Requires `sizeof(T) == 4` or `sizeof(T) == 8` -- these are the
     /// sizes the platform wait primitives (futex / WaitOnAddress /
@@ -551,10 +558,10 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <MemoryOrder MO>
-    void wait(const T expected) const noexcept
+    void waitOnce(const T expected) const noexcept
         requires(sizeof(T) == 4u || sizeof(T) == 8u)
     {
-        static_assert(priv::isLegalLoadOrder(MO), "wait() memory order must be Relaxed, Acquire, or SeqCst");
+        static_assert(priv::isLegalLoadOrder(MO), "waitOnce() memory order must be Relaxed, Acquire, or SeqCst");
 
         // Quick re-check before going to the kernel -- covers the common
         // "value already changed" case without any syscall.
@@ -587,8 +594,8 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Block the calling thread until `predicate(load<MO>())` returns `true`
     ///
-    /// Convenience loop on top of `wait`. `predicate` is invoked with
-    /// the most recent observed value.
+    /// Convenience loop on top of `waitOnce`. `predicate` is invoked
+    /// with the most recent observed value.
     ///
     ////////////////////////////////////////////////////////////
     template <MemoryOrder MO>
@@ -602,7 +609,7 @@ public:
             if (predicate(val))
                 return;
 
-            wait<MO>(val);
+            waitOnce<MO>(val);
         }
     }
 
@@ -613,7 +620,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Wake one waiter currently blocked in `wait`/`waitUntil`
+    /// \brief Wake one waiter currently blocked in `waitOnce`/`waitUntil`
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void notifyOne() noexcept
@@ -624,7 +631,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Wake all waiters currently blocked in `wait`/`waitUntil`
+    /// \brief Wake all waiters currently blocked in `waitOnce`/`waitUntil`
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void notifyAll() noexcept
@@ -684,7 +691,7 @@ template <MemoryOrder MO>
 /// `Atomic<T>` provides lock-free atomic operations for numerical
 /// types (integers, `bool`, `char`, pointers, and floating-point) on
 /// every target where the GCC/Clang `__atomic_*` builtins are
-/// available (x86, x86-64, ARM, ARM64, Emscripten/wasm, …) without
+/// available (x86, x86-64, ARM, ARM64, Emscripten/wasm, ...) without
 /// pulling in the `<atomic>` header or the libatomic runtime library.
 ///
 /// Differences vs. `std::atomic`:
