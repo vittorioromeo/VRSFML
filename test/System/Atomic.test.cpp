@@ -5,6 +5,7 @@
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
+#include "SFML/Base/Trait/IsConstructible.hpp"
 #include "SFML/Base/Trait/IsTriviallyRelocatable.hpp"
 #include "SFML/Base/Vector.hpp"
 
@@ -51,8 +52,8 @@ static_assert(alignof(sf::Atomic<double>) >= 8u);
 
 
 ////////////////////////////////////////////////////////////
-static_assert(!__is_constructible(sf::Atomic<int>, const sf::Atomic<int>&));
-static_assert(!__is_constructible(sf::Atomic<int>, sf::Atomic<int>&&));
+static_assert(!SFML_BASE_IS_CONSTRUCTIBLE(sf::Atomic<int>, const sf::Atomic<int>&));
+static_assert(!SFML_BASE_IS_CONSTRUCTIBLE(sf::Atomic<int>, sf::Atomic<int>&&));
 
 
 ////////////////////////////////////////////////////////////
@@ -100,19 +101,19 @@ namespace
     int dummy = 0;
 
     sf::Atomic<sf::base::U32> a32{0u};
-    a32.waitAcquire(0u);
+    a32.waitOnceAcquire(0u);
 
     sf::Atomic<sf::base::U64> a64{0u};
-    a64.waitAcquire(0u);
+    a64.waitOnceAcquire(0u);
 
     sf::Atomic<float> af{0.0f};
-    af.waitAcquire(0.0f);
+    af.waitOnceAcquire(0.0f);
 
     sf::Atomic<double> ad{0.0};
-    ad.waitAcquire(0.0);
+    ad.waitOnceAcquire(0.0);
 
     sf::Atomic<int*> ap{&dummy};
-    ap.waitAcquire(&dummy); // pointer wait must compile
+    ap.waitOnceAcquire(&dummy); // pointer wait must compile
 }
 
 
@@ -186,18 +187,18 @@ namespace
 
     // wait / waitUntil (4-byte) -- 3 orders x 2 ops
     sf::Atomic<sf::base::U32> w32{0u};
-    w32.waitRelaxed(0u);
-    w32.waitAcquire(0u);
-    w32.waitSeqCst(0u);
+    w32.waitOnceRelaxed(0u);
+    w32.waitOnceAcquire(0u);
+    w32.waitOnceSeqCst(0u);
     w32.waitUntilRelaxed([](sf::base::U32) { return true; });
     w32.waitUntilAcquire([](sf::base::U32) { return true; });
     w32.waitUntilSeqCst([](sf::base::U32) { return true; });
 
     // wait / waitUntil (8-byte) -- 3 orders x 2 ops
     sf::Atomic<sf::base::U64> w64{0u};
-    w64.waitRelaxed(0u);
-    w64.waitAcquire(0u);
-    w64.waitSeqCst(0u);
+    w64.waitOnceRelaxed(0u);
+    w64.waitOnceAcquire(0u);
+    w64.waitOnceSeqCst(0u);
     w64.waitUntilRelaxed([](sf::base::U64) { return true; });
     w64.waitUntilAcquire([](sf::base::U64) { return true; });
     w64.waitUntilSeqCst([](sf::base::U64) { return true; });
@@ -538,7 +539,7 @@ TEST_CASE("[System] SFML/System/Atomic.hpp - CAS-loop float increment (no fetchA
 // wait / waitUntil are only available for sizeof(T) in {4, 8}
 ////////////////////////////////////////////////////////////
 template <typename A, typename T>
-concept HasWait = requires(A& a, T v) { a.waitAcquire(v); };
+concept HasWait = requires(A& a, T v) { a.waitOnceAcquire(v); };
 
 static_assert(HasWait<sf::Atomic<sf::base::U32>, sf::base::U32>);
 static_assert(HasWait<sf::Atomic<sf::base::U64>, sf::base::U64>);

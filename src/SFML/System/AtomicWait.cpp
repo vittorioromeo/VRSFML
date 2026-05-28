@@ -303,6 +303,16 @@ void atomicNotifyOne(const void* const addr) noexcept
     // here; if we observe zero, the waiter (if any) has not yet
     // committed to parking and will see our value update through
     // its own re-check.
+    //
+    // NOTE: matches libstdc++/libc++ exactly -- no SC fence before
+    // the load. The SC totality on `waiters` does not by itself force
+    // visibility of a prior non-SC store on the user's value atomic,
+    // so callers that pair `notify*` with a non-SC store (e.g. a plain
+    // `storeRelease`) have a theoretical missed-wake race. The stdlibs
+    // tacitly assume users pair with SC stores; users of this code must
+    // do the same. To close the hole, insert
+    // `__atomic_thread_fence(__ATOMIC_SEQ_CST)` immediately before the
+    // load below.
     if (slotFor(addr).waiters.loadSeqCst() == 0u)
         return;
 
@@ -313,6 +323,7 @@ void atomicNotifyOne(const void* const addr) noexcept
 ////////////////////////////////////////////////////////////
 void atomicNotifyAll(const void* const addr) noexcept
 {
+    // See `atomicNotifyOne` for the missed-wake caveat.
     if (slotFor(addr).waiters.loadSeqCst() == 0u)
         return;
 
