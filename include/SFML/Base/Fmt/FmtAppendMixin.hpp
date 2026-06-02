@@ -8,7 +8,6 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Fmt/Fmt.hpp"               // IWYU pragma: export -- consumers of `.appendFmt` want Fmt itself too
 #include "SFML/Base/Fmt/FmtAppendMixinFwd.hpp" // IWYU pragma: export
-#include "SFML/Base/Fmt/FmtResult.hpp"
 #include "SFML/Base/NonDeduced.hpp"
 
 
@@ -16,19 +15,23 @@ namespace sf::base
 {
 ////////////////////////////////////////////////////////////
 template <typename... Args>
-constexpr bool FmtAppendMixin::appendFmt(this auto&&                                         self,
+constexpr void FmtAppendMixin::appendFmt(this auto&&                                         self,
                                          typename NonDeduced<const FmtString<Args...>>::type fmtStr,
                                          const Args&... args)
 {
-    return fmtTo(self, fmtStr, args...) == FmtResult::Ok;
+    // The `FmtResult` is discarded by design: this mixin is for sinks
+    // that grow on demand and cannot run out of room (e.g. `String`,
+    // `Utf8String`). Sinks with a `FmtResult`-returning `append` should
+    // call `fmtTo(*this, ...)` directly and inspect the result.
+    (void)fmtTo(self, fmtStr, args...);
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-bool FmtAppendMixin::appendArg(this auto&& self, const T& value)
+void FmtAppendMixin::appendArg(this auto&& self, const T& value)
 {
-    return fmtArgTo(self, value) == FmtResult::Ok;
+    (void)fmtArgTo(self, value);
 }
 
 } // namespace sf::base

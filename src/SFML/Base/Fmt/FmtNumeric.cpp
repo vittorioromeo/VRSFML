@@ -25,7 +25,11 @@ template <typename T>
     requires isIntegral<T>
 FmtResult fmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec)
 {
-    SFML_BASE_ASSERT(spec.precision < 0 && spec.type != 'f');
+    if (spec.precision >= 0 || spec.type == 'f') [[unlikely]]
+    {
+        SFML_BASE_ASSERT(false && "invalid integral format spec");
+        return FmtResult::Failed;
+    }
 
     // 64 covers the worst case: 64-bit binary (`{:b}` on `unsigned long long`).
     // Decimal and signed cases (max 20 chars + sign) and hex/oct also fit, so
@@ -40,6 +44,12 @@ FmtResult fmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec)
     // bypassed entirely. Callers who want numeric output can cast to `int`.
     if constexpr (SFML_BASE_IS_SAME(T, bool))
     {
+        if (spec.type != '\0') [[unlikely]]
+        {
+            SFML_BASE_ASSERT(false && "invalid bool format spec");
+            return FmtResult::Failed;
+        }
+
         return arg ? sink.append("true", 4u) : sink.append("false", 5u);
     }
     else
@@ -60,9 +70,13 @@ FmtResult fmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec)
                 break;
             case 'c': // emit lowest byte as a single glyph (matches `libfmt`)
                 return sink.appendChar(static_cast<char>(arg));
-            default: // '\0' or 'd' -> signed/unsigned decimal
+            case '\0':
+            case 'd':
                 end = toChars(buf, buf + sizeof(buf), arg);
                 break;
+            default:
+                SFML_BASE_ASSERT(false && "invalid integral format spec");
+                return FmtResult::Failed;
         }
     }
 
@@ -76,7 +90,11 @@ template <typename T>
     requires isFloatingPoint<T>
 FmtResult fmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec)
 {
-    SFML_BASE_ASSERT(spec.type == '\0' || spec.type == 'f');
+    if (spec.type != '\0' && spec.type != 'f') [[unlikely]]
+    {
+        SFML_BASE_ASSERT(false && "invalid floating-point format spec");
+        return FmtResult::Failed;
+    }
 
     const int prec = spec.precision >= 0 ? spec.precision : defaultFloatPrecision;
 
@@ -107,18 +125,22 @@ FmtResult fmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec)
     template FmtResult priv::dispatchFmtArgErased<T>(FmtSink&, const void*, const FmtSpec&)
 
 SFML_BASE_FMT_INSTANTIATE(bool);
+
 SFML_BASE_FMT_INSTANTIATE(signed char);
-SFML_BASE_FMT_INSTANTIATE(unsigned char);
 SFML_BASE_FMT_INSTANTIATE(short);
-SFML_BASE_FMT_INSTANTIATE(unsigned short);
 SFML_BASE_FMT_INSTANTIATE(int);
-SFML_BASE_FMT_INSTANTIATE(unsigned int);
 SFML_BASE_FMT_INSTANTIATE(long);
-SFML_BASE_FMT_INSTANTIATE(unsigned long);
 SFML_BASE_FMT_INSTANTIATE(long long);
+
+SFML_BASE_FMT_INSTANTIATE(unsigned char);
+SFML_BASE_FMT_INSTANTIATE(unsigned short);
+SFML_BASE_FMT_INSTANTIATE(unsigned int);
+SFML_BASE_FMT_INSTANTIATE(unsigned long);
 SFML_BASE_FMT_INSTANTIATE(unsigned long long);
+
 SFML_BASE_FMT_INSTANTIATE(float);
 SFML_BASE_FMT_INSTANTIATE(double);
+SFML_BASE_FMT_INSTANTIATE(long double);
 
 #undef SFML_BASE_FMT_INSTANTIATE
 
@@ -126,6 +148,12 @@ SFML_BASE_FMT_INSTANTIATE(double);
 ////////////////////////////////////////////////////////////
 FmtResult fmtArg(FmtSink& sink, const char& arg, const FmtSpec& spec)
 {
+    if (spec.precision >= 0) [[unlikely]]
+    {
+        SFML_BASE_ASSERT(false && "invalid char format spec");
+        return FmtResult::Failed;
+    }
+
     // Default ('\0') and explicit `:c` -> glyph. Matches `libfmt` /
     // `std::format`: passing a character literal to `{}` prints the
     // character, not its code-point. The numeric tags fall through to

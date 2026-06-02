@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Export.hpp"
 
-#include "SFML/Base/Assert.hpp"
+#include "SFML/Base/AssertAndAssume.hpp"
 #include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/Builtin/Memmove.hpp"
 #include "SFML/Base/Builtin/Memset.hpp"
@@ -26,7 +26,7 @@
 #include "SFML/Base/Trait/IsSame.hpp"
 
 
-////////////////////////////////////////////////////////////s
+////////////////////////////////////////////////////////////
 // This header intentionally OMITS the numeric `fmtArg` overloads
 // (int, float) -- they live in `<SFML/Base/Fmt/FmtNumeric.hpp>` and pull
 // in `ToChars` + integer/floating-point traits. Callers that want to
@@ -67,16 +67,16 @@ namespace sf::base::priv
 // text in the log) and `[[assume(false)]]` makes the path unreachable
 // in release so the optimizer drops the dead checks.
 ////////////////////////////////////////////////////////////
-#define SFML_BASE_PRIV_FMT_FAIL(msg)      \
-    do                                    \
-    {                                     \
-        if consteval                      \
-        {                                 \
-            throw(msg);                   \
-        }                                 \
-                                          \
-        SFML_BASE_ASSERT(false && (msg)); \
-                                          \
+#define SFML_BASE_PRIV_FMT_FAIL(msg)                 \
+    do                                               \
+    {                                                \
+        if consteval                                 \
+        {                                            \
+            throw(msg);                              \
+        }                                            \
+                                                     \
+        SFML_BASE_ASSERT_AND_ASSUME(false && (msg)); \
+                                                     \
     } while (false)
 
 
@@ -119,7 +119,12 @@ constexpr void parseFmtSpec(const char*& p, const char* const end, FmtSpec& spec
     if (p < end && *p == '.')
     {
         ++p;
+
+        if (p >= end || !isDigit(*p))
+            SFML_BASE_PRIV_FMT_FAIL("Format spec precision requires at least one digit");
+
         spec.precision = 0;
+
         while (p < end && isDigit(*p))
         {
             spec.precision = spec.precision * 10 + (*p - '0');
@@ -137,6 +142,7 @@ constexpr void parseFmtSpec(const char*& p, const char* const end, FmtSpec& spec
     if (p < end && *p != '}')
     {
         const char t = *p;
+
         if (t != 'd' && t != 'x' && t != 'X' && t != 'o' && t != 'b' && t != 'c' && t != 'f')
             SFML_BASE_PRIV_FMT_FAIL("Format spec type tag must be one of d/x/X/o/b/c/f or omitted");
 
@@ -174,7 +180,7 @@ struct FmtStringInfo
 ///   - unescaped `}`
 ///   - malformed spec body (anything that leaves the parser short of `}`)
 ///   - width >= 65536 or precision > 10
-///   - unknown type tag (anything outside `d` / `x` / `X` / `o` / `b` / `f`)
+///   - unknown type tag (anything outside `d` / `x` / `X` / `o` / `b` / `c` / `f`)
 ////////////////////////////////////////////////////////////
 [[nodiscard]] consteval FmtStringInfo analyzeFmtString(const FmtSpan fmtStr)
 {
@@ -205,6 +211,12 @@ struct FmtStringInfo
                 parseFmtSpec(p, end, spec);
             }
 
+            // Bare throws here (no `SFML_BASE_PRIV_FMT_FAIL`): this
+            // function is `consteval`, so the macro's `if consteval`
+            // branch would be trivially always-true and trigger
+            // `-Wredundant-consteval-if`. The macro stays for
+            // `parseFmtSpec`, which is `constexpr` and reachable at
+            // runtime.
             if (p >= end)
                 throw "Invalid format string: Unclosed '{'";
 
@@ -288,27 +300,32 @@ namespace sf::base::priv
 template <typename T>
 [[nodiscard]] constexpr FmtResult dispatchFmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec) noexcept
 {
-    const auto startMark = sink.mark();
+    const SizeT startOffset = sink.size();
 
     SFML_BASE_FMT_TRY(fmtArg(sink, arg, spec)); // ADL
 
     if (spec.width <= 0)
         return FmtResult::Ok;
 
-    const auto contentSize = sink.mark() - startMark;
+    const SizeT contentSize = sink.size() - startOffset;
     if (static_cast<SizeT>(spec.width) <= contentSize)
         return FmtResult::Ok;
 
-    const auto padTotal = static_cast<SizeT>(spec.width) - contentSize;
+    const SizeT padTotal = static_cast<SizeT>(spec.width) - contentSize;
     SFML_BASE_FMT_TRY(sink.ensureRoom(padTotal));
 
-    constexpr char defAlign = fmtArgDefaultAlign<T>;
-    const char     align    = spec.align == '\0' ? defAlign : spec.align;
+    // `:c` formats the value as a single glyph regardless of the source
+    // argument type, so the visual semantics are character-like -- left-
+    // align by default to match `libfmt` / `std::format`, overriding the
+    // numeric `'>'` that `fmtArgDefaultAlign<T>` reports for integer T.
+    constexpr char defAlign    = fmtArgDefaultAlign<T>;
+    const char     effDefAlign = spec.type == 'c' ? '<' : defAlign;
+    const char     align       = spec.align == '\0' ? effDefAlign : spec.align;
 
     const SizeT padLeft  = (align == '<') ? 0u : (align == '^') ? padTotal / 2u : padTotal;
     const SizeT padRight = padTotal - padLeft;
 
-    char* const start = sink.atMark(startMark);
+    char* const start = sink.atOffset(startOffset);
 
     if (padLeft != 0u)
     {
@@ -395,6 +412,7 @@ struct StderrSink
     }
 };
 
+
 ////////////////////////////////////////////////////////////
 template <typename... Args>
 [[nodiscard]] constexpr FmtResult fmtAssemble(FmtSink& sink, const FmtSpan fmtStr, const Args&... args)
@@ -473,6 +491,9 @@ template <SizeT N, typename... Args>
 
 ////////////////////////////////////////////////////////////
 /// \brief Sink that accepts `append(const char*, SizeT)`.
+///
+/// An `append` returning `FmtResult` has that result propagated. Other
+/// return types are treated as infallible append operations.
 ////////////////////////////////////////////////////////////
 template <typename T>
 concept AppendSink = requires(T& sink, const char* p, SizeT n) { sink.append(p, n); };
@@ -483,6 +504,20 @@ concept AppendSink = requires(T& sink, const char* p, SizeT n) { sink.append(p, 
 ////////////////////////////////////////////////////////////
 namespace sf::base::priv
 {
+////////////////////////////////////////////////////////////
+template <AppendSink Sink>
+[[nodiscard, gnu::always_inline]] inline FmtResult appendToSink(Sink& sink, const char* const data, const SizeT size)
+{
+    if constexpr (SFML_BASE_IS_SAME(decltype(sink.append(data, size)), FmtResult))
+        return sink.append(data, size);
+    else
+    {
+        sink.append(data, size);
+        return FmtResult::Ok;
+    }
+}
+
+
 ////////////////////////////////////////////////////////////
 /// \brief Shared scratch-buffer + heap-fallback protocol for `fmtTo`-family
 /// functions.
@@ -510,10 +545,7 @@ template <AppendSink Sink, typename ScratchFn, typename HeapFn>
     const FmtResult result = scratchFn(sink);
 
     if (result == FmtResult::Ok) [[likely]]
-    {
-        userSink.append(scratch, sink.size());
-        return FmtResult::Ok;
-    }
+        return appendToSink(userSink, scratch, sink.size());
 
     if (result == FmtResult::Failed)
         return FmtResult::Failed;
@@ -525,31 +557,12 @@ template <AppendSink Sink, typename ScratchFn, typename HeapFn>
 
 
 ////////////////////////////////////////////////////////////
-namespace sf::base
-{
-////////////////////////////////////////////////////////////
-// Forward-declare `String` so the generic `fmtTo` below can exclude it
-// from overload resolution (the dedicated `String&` overload further
-// down has a different return type / nodiscard policy). Including
-// `<SFML/Base/String.hpp>` here would defeat the whole header-tier story.
-////////////////////////////////////////////////////////////
-class String;
-
-} // namespace sf::base
-
-
-////////////////////////////////////////////////////////////
 namespace sf::base::priv
 {
 ////////////////////////////////////////////////////////////
-/// \brief Shared implementation for both `fmtTo` overloads.
-///
-/// Lives in `priv` so the dedicated `String&` overload can delegate here
-/// without going through the constrained public `fmtTo` (which excludes
-/// `Sink == String` to disambiguate overload resolution). Templated on
-/// `Sink`, so `userSink.append(...)` is a *dependent* member access ->
-/// only checked at instantiation time -> safe with forward-declared
-/// `String` at the public overload's site.
+/// \brief Shared implementation for `fmtTo`. Templated on `Sink` so
+/// `userSink.append(...)` is a *dependent* member access -- only checked
+/// at instantiation time.
 ////////////////////////////////////////////////////////////
 template <AppendSink Sink, typename... Args>
 FmtResult fmtToImpl(Sink& userSink, typename NonDeduced<const FmtString<Args...>>::type fmtStr, const Args&... args)
@@ -559,10 +572,7 @@ FmtResult fmtToImpl(Sink& userSink, typename NonDeduced<const FmtString<Args...>
     if constexpr (sizeof...(Args) == 0)
     {
         if (fmtStr.isPureLiteral) [[likely]]
-        {
-            userSink.append(fmtStr.str.data, fmtStr.str.size);
-            return FmtResult::Ok;
-        }
+            return priv::appendToSink(userSink, fmtStr.str.data, fmtStr.str.size);
     }
 
     // See `priv::fmtAssemble`: trailing-sentinel sizing avoids the empty-pack branch.
@@ -594,43 +604,14 @@ namespace sf::base
 /// Formatter failures are returned immediately. On success the sink
 /// receives the formatted output in a single `append` call.
 ///
-/// The `String` sink is excluded here -- see the dedicated `void`-returning
-/// overload below. Without this constraint, both overloads are equally
-/// viable for a `String&` argument (partial ordering ties for an empty
-/// `Args...` pack).
+/// Sinks that genuinely cannot fail (e.g. `String` / `Utf8String`,
+/// which grow on demand) can ignore the result via `(void)`. The
+/// `FmtAppendMixin` does this internally for `.appendFmt(...)`.
 ////////////////////////////////////////////////////////////
 template <AppendSink Sink, typename... Args>
-    requires(!SFML_BASE_IS_SAME(Sink, String))
 [[nodiscard]] FmtResult fmtTo(Sink& userSink, typename NonDeduced<const FmtString<Args...>>::type fmtStr, const Args&... args)
 {
     return priv::fmtToImpl<Sink, Args...>(userSink, fmtStr, args...);
-}
-
-
-////////////////////////////////////////////////////////////
-/// \brief `fmtTo` overload for `String` sinks: returns `void`.
-///
-/// `String` grows on demand, so the only failure modes the generic overload
-/// can produce -- "ran out of room" on the scratch / heap fallback -- can't
-/// happen here. Returning `void` removes the `[[nodiscard]] FmtResult` tax
-/// (no `(void)` cast at every "build a debug string" call site) and matches
-/// the use case: you're not going to react to a failure that can't occur.
-///
-/// Out-of-contract user `fmtArg` overloads that return `FmtResult::Failed`
-/// still abort the formatting (no partial write to the sink), but the
-/// signal is swallowed here. Callers that need to observe formatter-side
-/// failures should drop down to the generic `fmtTo(Sink&, ...)` above
-/// (e.g. wrap their `String&` as an `AppendSink`-conforming local).
-////////////////////////////////////////////////////////////
-template <typename... Args>
-void fmtTo(String& userSink, typename NonDeduced<const FmtString<Args...>>::type fmtStr, const Args&... args)
-{
-    // Delegate to the shared `priv::fmtToImpl`, which is templated on `Sink`
-    // so `userSink.append(...)` is a dependent member access -- only checked
-    // when this overload is instantiated (where `<SFML/Base/String.hpp>` is
-    // already in scope). The forward declaration of `String` in this header
-    // is sufficient because we only *name* the type here, never access members.
-    (void)priv::fmtToImpl<String, Args...>(userSink, fmtStr, args...);
 }
 
 
@@ -651,17 +632,6 @@ template <AppendSink Sink, typename T>
                                      [&](FmtSink& sink) { return fmtArg(sink, value, FmtSpec{}); }, // ADL
                                      [&](FmtSinkRef us)
     { return priv::fmtArgToHeapFallback(us, &value, &priv::dispatchFmtArgErased<T>); });
-}
-
-
-////////////////////////////////////////////////////////////
-/// \brief `fmtArgTo` overload for `String` sinks: returns `void`. Same
-/// rationale as the `fmtTo(String&, ...)` overload above.
-////////////////////////////////////////////////////////////
-template <typename T>
-void fmtArgTo(String& userSink, const T& value)
-{
-    (void)fmtArgTo<String, T>(userSink, value);
 }
 
 

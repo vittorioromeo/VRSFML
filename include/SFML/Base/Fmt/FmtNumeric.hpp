@@ -61,7 +61,7 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 /// \brief Floating-point `fmtArg`. Body defined in `FmtNumeric.cpp`;
-/// explicit instantiations cover `float` and `double`.
+/// explicit instantiations cover every standard floating-point type.
 ////////////////////////////////////////////////////////////
 template <typename T>
     requires isFloatingPoint<T>
@@ -81,31 +81,35 @@ template <typename T>
 // pointer (`dispatchFmtArgErased`) or directly by it (`dispatchFmtArg`), so
 // the loss of inlining at consumer call sites is negligible.
 ////////////////////////////////////////////////////////////
-#define SFML_BASE_FMT_EXTERN(T)                                                                            \
-    extern template SFML_SYSTEM_API FmtResult fmtArg<T>(FmtSink&, const T&, const FmtSpec&);               \
-    extern template SFML_SYSTEM_API FmtResult priv::dispatchFmtArg<T>(FmtSink&, const T&, const FmtSpec&); \
-    extern template SFML_SYSTEM_API FmtResult priv::dispatchFmtArgErased<T>(FmtSink&, const void*, const FmtSpec&)
+#define SFML_BASE_FMT_EXTERN(T)                                                            \
+    extern template FmtResult fmtArg<T>(FmtSink&, const T&, const FmtSpec&);               \
+    extern template FmtResult priv::dispatchFmtArg<T>(FmtSink&, const T&, const FmtSpec&); \
+    extern template FmtResult priv::dispatchFmtArgErased<T>(FmtSink&, const void*, const FmtSpec&)
 
 SFML_BASE_FMT_EXTERN(bool);
+
 SFML_BASE_FMT_EXTERN(signed char);
-SFML_BASE_FMT_EXTERN(unsigned char);
 SFML_BASE_FMT_EXTERN(short);
-SFML_BASE_FMT_EXTERN(unsigned short);
 SFML_BASE_FMT_EXTERN(int);
-SFML_BASE_FMT_EXTERN(unsigned int);
 SFML_BASE_FMT_EXTERN(long);
-SFML_BASE_FMT_EXTERN(unsigned long);
 SFML_BASE_FMT_EXTERN(long long);
+
+SFML_BASE_FMT_EXTERN(unsigned char);
+SFML_BASE_FMT_EXTERN(unsigned short);
+SFML_BASE_FMT_EXTERN(unsigned int);
+SFML_BASE_FMT_EXTERN(unsigned long);
 SFML_BASE_FMT_EXTERN(unsigned long long);
+
 SFML_BASE_FMT_EXTERN(float);
 SFML_BASE_FMT_EXTERN(double);
+SFML_BASE_FMT_EXTERN(long double);
 
 #undef SFML_BASE_FMT_EXTERN
 
 // `char` has a non-template `fmtArg` (declared above), so only the
 // dispatcher instantiations are pre-emitted here.
-extern template SFML_SYSTEM_API FmtResult priv::dispatchFmtArg<char>(FmtSink&, const char&, const FmtSpec&);
-extern template SFML_SYSTEM_API FmtResult priv::dispatchFmtArgErased<char>(FmtSink&, const void*, const FmtSpec&);
+extern template FmtResult priv::dispatchFmtArg<char>(FmtSink&, const char&, const FmtSpec&);
+extern template FmtResult priv::dispatchFmtArgErased<char>(FmtSink&, const void*, const FmtSpec&);
 
 
 ////////////////////////////////////////////////////////////
