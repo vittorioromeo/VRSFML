@@ -6,6 +6,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Base/Fmt/FmtAppendMixinFwd.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
@@ -27,8 +28,12 @@ namespace sf
 /// per-codepoint random access, decode once into a contiguous
 /// `char32_t` buffer.
 ///
+/// Inherits `base::FmtAppendMixin`, which exposes `.appendFmt(fmt, args...)`
+/// for formatted append. Include `<SFML/Base/Fmt/FmtAppendMixin.hpp>`
+/// at the call site to bring in the template body.
+///
 ////////////////////////////////////////////////////////////
-class [[nodiscard]] Utf8String
+class [[nodiscard]] Utf8String : public base::FmtAppendMixin
 {
 public:
     ////////////////////////////////////////////////////////////

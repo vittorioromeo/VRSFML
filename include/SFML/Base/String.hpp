@@ -8,6 +8,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtin/Memcmp.hpp"
+#include "SFML/Base/Fmt/FmtAppendMixinFwd.hpp"
 #include "SFML/Base/FwdStdAlignedNewDelete.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StringView.hpp"
@@ -23,8 +24,12 @@ namespace sf::base
 /// to fit within the SFML/Base module. It avoids heap allocations
 /// for small strings by storing them within the object itself.
 ///
+/// Inherits `FmtAppendMixin`, which exposes `.appendFmt(fmt, args...)`
+/// for formatted append. Include `<SFML/Base/Fmt/FmtAppendMixin.hpp>`
+/// at the call site to bring in the template body.
+///
 ////////////////////////////////////////////////////////////
-class [[nodiscard]] String
+class [[nodiscard]] String : public FmtAppendMixin
 {
 public:
     ////////////////////////////////////////////////////////////
