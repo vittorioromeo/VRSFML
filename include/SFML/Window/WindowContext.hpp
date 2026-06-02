@@ -41,6 +41,7 @@ class RenderTarget;
 class RenderTexture;
 class Shader;
 class Texture;
+class Utf8String;
 class VertexBuffer;
 class VideoModeUtils;
 class Window;
@@ -157,6 +158,16 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static unsigned int getActiveThreadLocalGlContextId();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Set the app ID for the compositor
+    ///
+    /// The app ID is used to identify the windows to the compositor
+    /// for purposes of assigning icons, grouping and other user-defined rules
+    /// depending on the platform.
+    ///
+    ////////////////////////////////////////////////////////////
+    static void setAppId(const Utf8String& id);
 
     ////////////////////////////////////////////////////////////
     /// \brief Check whether a thread-local OpenGL context is currently active
