@@ -18,6 +18,8 @@
 
 #include <Doctest.hpp>
 
+#include <limits>
+
 
 namespace
 {
@@ -37,6 +39,37 @@ template <typename... Args>
         return {};
     return sf::base::StringView{buffer, static_cast<sf::base::SizeT>(end - buffer)};
 }
+
+
+////////////////////////////////////////////////////////////
+template <auto>
+struct FmtStringAccepted
+{
+};
+
+
+////////////////////////////////////////////////////////////
+template <typename... Args>
+concept AcceptsEmptyPrecision = requires {
+    typename FmtStringAccepted<[] consteval {
+        (void)sf::base::FmtString<Args...>{"{:.}"};
+        return true;
+    }()>;
+};
+
+
+////////////////////////////////////////////////////////////
+template <typename... Args>
+concept AcceptsEmptyPrecisionF = requires {
+    typename FmtStringAccepted<[] consteval {
+        (void)sf::base::FmtString<Args...>{"{:.f}"};
+        return true;
+    }()>;
+};
+
+
+static_assert(!AcceptsEmptyPrecision<double>);
+static_assert(!AcceptsEmptyPrecisionF<double>);
 
 } // namespace FmtTest
 } // namespace
@@ -66,6 +99,25 @@ TEST_CASE("[System] Fmt.hpp - format() basics")
     {
         CHECK(sf::base::fmtToString("{}", 3.5) == sf::base::String{"3.500000"});
         CHECK(sf::base::fmtToString("{}", -0.25) == sf::base::String{"-0.250000"});
+    }
+
+    SECTION("Every arithmetic type")
+    {
+        CHECK(sf::base::fmtToString("{}", false) == sf::base::String{"false"});
+        CHECK(sf::base::fmtToString("{}", 'A') == sf::base::String{"A"});
+        CHECK(sf::base::fmtToString("{}", static_cast<signed char>(-1)) == sf::base::String{"-1"});
+        CHECK(sf::base::fmtToString("{}", static_cast<unsigned char>(1)) == sf::base::String{"1"});
+        CHECK(sf::base::fmtToString("{}", static_cast<short>(-1)) == sf::base::String{"-1"});
+        CHECK(sf::base::fmtToString("{}", static_cast<unsigned short>(1)) == sf::base::String{"1"});
+        CHECK(sf::base::fmtToString("{}", -1) == sf::base::String{"-1"});
+        CHECK(sf::base::fmtToString("{}", 1u) == sf::base::String{"1"});
+        CHECK(sf::base::fmtToString("{}", -1l) == sf::base::String{"-1"});
+        CHECK(sf::base::fmtToString("{}", 1ul) == sf::base::String{"1"});
+        CHECK(sf::base::fmtToString("{}", -1ll) == sf::base::String{"-1"});
+        CHECK(sf::base::fmtToString("{}", 1ull) == sf::base::String{"1"});
+        CHECK(sf::base::fmtToString("{}", 1.f) == sf::base::String{"1.000000"});
+        CHECK(sf::base::fmtToString("{}", 1.) == sf::base::String{"1.000000"});
+        CHECK(sf::base::fmtToString("{}", 1.L) == sf::base::String{"1.000000"});
     }
 
     SECTION("Single string-like arg")
@@ -459,23 +511,23 @@ TEST_CASE("[System] Fmt.hpp - fmtTo() into base::String")
     SECTION("Appends to non-empty sink")
     {
         sf::base::String s = "prefix:";
-        sf::base::fmtTo(s, " {} = {:.2f}", "pi", 3.14159);
+        (void)sf::base::fmtTo(s, " {} = {:.2f}", "pi", 3.14159);
         CHECK(s == sf::base::String{"prefix: pi = 3.14"});
     }
 
     SECTION("Format into fresh sink")
     {
         sf::base::String s;
-        sf::base::fmtTo(s, "{:>8}", "abc");
+        (void)sf::base::fmtTo(s, "{:>8}", "abc");
         CHECK(s == sf::base::String{"     abc"});
     }
 
     SECTION("Repeated fmtTo accumulates")
     {
         sf::base::String s;
-        sf::base::fmtTo(s, "{}-", 1);
-        sf::base::fmtTo(s, "{}-", 2);
-        sf::base::fmtTo(s, "{}", 3);
+        (void)sf::base::fmtTo(s, "{}-", 1);
+        (void)sf::base::fmtTo(s, "{}-", 2);
+        (void)sf::base::fmtTo(s, "{}", 3);
         CHECK(s == sf::base::String{"1-2-3"});
     }
 }
@@ -487,7 +539,7 @@ TEST_CASE("[System] Fmt.hpp - fmtTo() into Utf8String")
     SECTION("Build a HUD-style string")
     {
         sf::Utf8String text;
-        CHECK(sf::base::fmtTo(text, "Frame: {:>5}ms / Delta: {:.2f}", 16, 0.016667) == sf::base::FmtResult::ok);
+        CHECK(sf::base::fmtTo(text, "Frame: {:>5}ms / Delta: {:.2f}", 16, 0.016667) == sf::base::FmtResult::Ok);
 
         const auto bytes = text.asBytes();
         CHECK(sf::base::StringView{bytes.data(), bytes.size()} == sf::base::StringView{"Frame:    16ms / Delta: 0.02"});
@@ -496,7 +548,7 @@ TEST_CASE("[System] Fmt.hpp - fmtTo() into Utf8String")
     SECTION("Appends to a Utf8String already containing UTF-8 content")
     {
         sf::Utf8String text{u8"café "};
-        CHECK(sf::base::fmtTo(text, "= {}", 42) == sf::base::FmtResult::ok);
+        CHECK(sf::base::fmtTo(text, "= {}", 42) == sf::base::FmtResult::Ok);
 
         const auto bytes = text.asBytes();
         CHECK(sf::base::StringView{bytes.data(), bytes.size()} == sf::base::StringView{"café = 42"});
@@ -644,7 +696,24 @@ struct FailTag
 
 [[nodiscard]] inline sf::base::FmtResult fmtArg(sf::base::FmtSink&, const FailTag&, const sf::base::FmtSpec&) noexcept
 {
-    return sf::base::FmtResult::failed;
+    return sf::base::FmtResult::Failed;
+}
+
+
+////////////////////////////////////////////////////////////
+struct RetryTag
+{
+    int* attemptCount;
+};
+
+[[nodiscard]] inline sf::base::FmtResult fmtArg(sf::base::FmtSink& sink, const RetryTag& t, const sf::base::FmtSpec&) noexcept
+{
+    ++*t.attemptCount;
+
+    for (int i = 0; i < 600; ++i)
+        SFML_BASE_FMT_TRY(sink.appendChar('x'));
+
+    return sf::base::FmtResult::Ok;
 }
 } // namespace customtypes
 } // anonymous namespace
@@ -798,11 +867,11 @@ TEST_CASE("[System] Fmt.hpp - FmtSink direct use (low-level API)")
         char              buf[64];
         sf::base::FmtSink sink{buf, sizeof(buf)};
 
-        CHECK(sink.append("[", 1u) == sf::base::FmtResult::ok);
-        CHECK(sink.fmt("{}", 42) == sf::base::FmtResult::ok);
-        CHECK(sink.append("] ", 2u) == sf::base::FmtResult::ok);
-        CHECK(sink.appendChar('=') == sf::base::FmtResult::ok);
-        CHECK(sink.fmt(" {:.1f}", 3.14) == sf::base::FmtResult::ok);
+        CHECK(sink.append("[", 1u) == sf::base::FmtResult::Ok);
+        CHECK(sink.fmt("{}", 42) == sf::base::FmtResult::Ok);
+        CHECK(sink.append("] ", 2u) == sf::base::FmtResult::Ok);
+        CHECK(sink.appendChar('=') == sf::base::FmtResult::Ok);
+        CHECK(sink.fmt(" {:.1f}", 3.14) == sf::base::FmtResult::Ok);
 
         CHECK(sf::base::StringView{buf, sink.size()} == sf::base::StringView{"[42] = 3.1"});
     }
@@ -812,28 +881,28 @@ TEST_CASE("[System] Fmt.hpp - FmtSink direct use (low-level API)")
         char              buf[5];
         sf::base::FmtSink sink{buf, sizeof(buf)};
 
-        CHECK(sink.append("hello", 5u) == sf::base::FmtResult::ok); // exactly fills buffer
+        CHECK(sink.append("hello", 5u) == sf::base::FmtResult::Ok); // exactly fills buffer
 
-        CHECK(sink.append("!", 1u) == sf::base::FmtResult::overflow);
+        CHECK(sink.append("!", 1u) == sf::base::FmtResult::Overflow);
         CHECK(sink.size() == 5u);
 
         char              larger[16];
         sf::base::FmtSink fresh{larger, sizeof(larger)};
-        CHECK(fresh.append(" world", 6u) == sf::base::FmtResult::ok);
+        CHECK(fresh.append(" world", 6u) == sf::base::FmtResult::Ok);
         CHECK(fresh.size() == 6u);
     }
 
-    SECTION("Mark + atMark survives interleaved writes")
+    SECTION("size() as checkpoint + atOffset survives interleaved writes")
     {
         char              buf[64];
         sf::base::FmtSink sink{buf, sizeof(buf)};
 
-        CHECK(sink.append("aa", 2u) == sf::base::FmtResult::ok);
-        const auto m = sink.mark();
-        CHECK(sink.append("bb", 2u) == sf::base::FmtResult::ok);
+        CHECK(sink.append("aa", 2u) == sf::base::FmtResult::Ok);
+        const sf::base::SizeT m = sink.size();
+        CHECK(sink.append("bb", 2u) == sf::base::FmtResult::Ok);
 
         CHECK(m == 2u);
-        CHECK(sink.atMark(m) == buf + 2);
+        CHECK(sink.atOffset(m) == buf + 2);
     }
 }
 
@@ -852,9 +921,29 @@ TEST_CASE("[System] Fmt.hpp - formatter failure is not treated as overflow")
     SECTION("fmtTo returns failed without appending partial output")
     {
         sf::base::String out = "prefix";
-        sf::base::fmtTo(out, "{}{}", "ok", FailTag{});
+        (void)sf::base::fmtTo(out, "{}{}", "ok", FailTag{});
         CHECK(out == sf::base::String{"prefix"});
     }
+}
+
+
+////////////////////////////////////////////////////////////
+TEST_CASE("[System] Fmt.hpp - invalid built-in specs fail in release")
+{
+#ifndef SFML_DEBUG
+    sf::base::String out = "prefix";
+    char             buffer[16];
+    sf::base::FmtSink sink{buffer, sizeof(buffer)};
+
+    CHECK(sf::base::fmtTo(out, "{:f}", 42) == sf::base::FmtResult::Failed);
+    CHECK(sf::base::fmtArg(sink, 42, sf::base::FmtSpec{.type = 'q'}) == sf::base::FmtResult::Failed);
+    CHECK(sf::base::fmtTo(out, "{:x}", 1.5) == sf::base::FmtResult::Failed);
+    CHECK(sf::base::fmtTo(out, "{:.2}", "abc") == sf::base::FmtResult::Failed);
+    CHECK(sf::base::fmtTo(out, "{:.2}", sf::base::StringView{"abc"}) == sf::base::FmtResult::Failed);
+    CHECK(sf::base::fmtTo(out, "{:.2}", 'a') == sf::base::FmtResult::Failed);
+    CHECK(sf::base::fmtTo(out, "{:x}", true) == sf::base::FmtResult::Failed);
+    CHECK(out == sf::base::String{"prefix"});
+#endif
 }
 
 
@@ -869,7 +958,7 @@ TEST_CASE("[System] Fmt.hpp - fmtTo() large output (heap fallback path)")
             big += sf::base::String{"0123456789"}; // 1000 chars
 
         sf::base::String out;
-        sf::base::fmtTo(out, "[{}]", sf::base::StringView{big.data(), big.size()});
+        (void)sf::base::fmtTo(out, "[{}]", sf::base::StringView{big.data(), big.size()});
 
         REQUIRE(out.size() == big.size() + 2u);
         CHECK(out.data()[0] == '[');
@@ -885,9 +974,29 @@ TEST_CASE("[System] Fmt.hpp - fmtTo() large output (heap fallback path)")
             mid += sf::base::String{"0123456789"}; // 500 chars
 
         sf::base::String out;
-        sf::base::fmtTo(out, "{}", sf::base::StringView{mid.data(), mid.size()});
+        (void)sf::base::fmtTo(out, "{}", sf::base::StringView{mid.data(), mid.size()});
 
         CHECK(out.size() == mid.size());
+    }
+
+    SECTION("Custom formatter is retried after overflow")
+    {
+        int              attemptCount = 0;
+        sf::base::String out;
+
+        CHECK(sf::base::fmtTo(out, "{}", customtypes::RetryTag{&attemptCount}) == sf::base::FmtResult::Ok);
+        CHECK(attemptCount == 2);
+        CHECK(out.size() == 600u);
+    }
+
+    SECTION("Destination sink overflow is propagated")
+    {
+        char              buffer[1];
+        sf::base::FmtSink sink{buffer, sizeof(buffer)};
+
+        CHECK(sf::base::fmtTo(sink, "too large") == sf::base::FmtResult::Overflow);
+        CHECK(sf::base::fmtTo(sink, "{:>600}", "") == sf::base::FmtResult::Overflow);
+        CHECK(sink.size() == 0u);
     }
 }
 
@@ -913,7 +1022,7 @@ TEST_CASE("[System] Fmt.hpp - boundary conditions")
     SECTION("Very wide width is honored")
     {
         sf::base::String out;
-        sf::base::fmtTo(out, "[{:>1000}]", "x");
+        (void)sf::base::fmtTo(out, "[{:>1000}]", "x");
         CHECK(out.size() == 1002u);
         CHECK(out.data()[0] == '[');
         CHECK(out.data()[out.size() - 2u] == 'x');
@@ -934,6 +1043,54 @@ TEST_CASE("[System] Fmt.hpp - boundary conditions")
         CHECK(sf::base::fmtToString("{:.10f}", 0.5) == sf::base::String{"0.5000000000"});
     }
 
+    SECTION("Large finite double inside the toChars range")
+    {
+        // The float backend (`toChars`) uses an `int64` scaled
+        // representation: `|value| * 10^precision` must fit in
+        // `int64` (~9.2e18). 9e12 * 10^6 (default precision) = 9e18,
+        // safely below.
+        sf::base::String out;
+
+        CHECK(sf::base::fmtTo(out, "{}", 9'000'000'000'000.0) == sf::base::FmtResult::Ok);
+        CHECK(out == sf::base::String{"9000000000000.000000"});
+    }
+
+    SECTION("Large double recovered by reducing precision")
+    {
+        // 10^13 * 10^3 = 10^16 < ~9.2e18, so a smaller precision
+        // formats values that overflow at the default precision.
+        sf::base::String out;
+
+        CHECK(sf::base::fmtTo(out, "{:.3f}", 10'000'000'000'000.0) == sf::base::FmtResult::Ok);
+        CHECK(out == sf::base::String{"10000000000000.000"});
+    }
+
+    SECTION("Double beyond toChars range reports Failed")
+    {
+        // 10^13 * 10^6 (default precision) = 10^19 > ~9.2e18, so the
+        // backend reports `Failed`. The sink is left unchanged.
+        sf::base::String out = "prefix:";
+
+        CHECK(sf::base::fmtTo(out, "{}", 10'000'000'000'000.0) == sf::base::FmtResult::Failed);
+        CHECK(out == sf::base::String{"prefix:"});
+    }
+
+    SECTION("Maximum finite double reports Failed (out of toChars range)")
+    {
+        // `std::numeric_limits<double>::max()` is ~1.8e308, far beyond
+        // the int64-scaled representation even at precision 0.
+        sf::base::String out = "prefix:";
+
+        CHECK(sf::base::fmtTo(out, "{}", std::numeric_limits<double>::max()) == sf::base::FmtResult::Failed);
+        CHECK(sf::base::fmtTo(out, "{:.0f}", std::numeric_limits<double>::max()) == sf::base::FmtResult::Failed);
+        CHECK(out == sf::base::String{"prefix:"});
+    }
+
+    SECTION("Long double")
+    {
+        CHECK(sf::base::fmtToString("{}", 123.5L) == sf::base::String{"123.500000"});
+    }
+
     SECTION("Recursive format from a custom type writes more than 512 bytes")
     {
         // 60 Vec2f values, each emits "(1.000000, 1.000000)" (20 chars) + ", " separator
@@ -947,7 +1104,7 @@ TEST_CASE("[System] Fmt.hpp - boundary conditions")
         const customtypes::MiniVec<customtypes::Vec2f> v{values, 60u};
 
         sf::base::String out;
-        sf::base::fmtTo(out, "{}", v);
+        (void)sf::base::fmtTo(out, "{}", v);
 
         CHECK(out.size() == 1320u);
         CHECK(out.data()[0] == '[');
