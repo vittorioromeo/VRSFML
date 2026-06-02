@@ -31,8 +31,9 @@ namespace sf::base
 /// The inheriting type must satisfy the `AppendSink` concept (have
 /// `append(const char* data, SizeT n)`). The formatter's `FmtResult` is
 /// discarded -- intended for sinks that grow on demand and cannot run
-/// out of room (e.g. `String`, `Utf8String`). Sinks where `append` may
-/// fail should call `fmtTo(*this, ...)` directly and inspect the result.
+/// out of room (e.g. `String`, `Utf8String`). Sinks with a
+/// `FmtResult`-returning `append` should call `fmtTo(*this, ...)`
+/// directly and inspect the result.
 ///
 /// \note The body of `appendFmt` lives in `<SFML/Base/Fmt/FmtAppendMixin.hpp>`.
 /// Including only the forward header is enough to inherit, construct, and
@@ -43,10 +44,10 @@ namespace sf::base
 struct FmtAppendMixin
 {
     template <typename... Args>
-    constexpr bool appendFmt(this auto&& self, typename NonDeduced<const FmtString<Args...>>::type fmtStr, const Args&... args);
+    constexpr void appendFmt(this auto&& self, typename NonDeduced<const FmtString<Args...>>::type fmtStr, const Args&... args);
 
     template <typename T>
-    bool appendArg(this auto&& self, const T& value);
+    void appendArg(this auto&& self, const T& value);
 };
 
 } // namespace sf::base

@@ -102,8 +102,8 @@ namespace
 {
 ////////////////////////////////////////////////////////////
 /// \brief Shared growing-buffer loop. Doubles capacity until `formatFn`
-/// reports something other than `overflow`. On success flushes the
-/// owned buffer once through `userSink`; on `failed` propagates without
+/// reports something other than `Overflow`. On success flushes the
+/// owned buffer once through `userSink`; on `Failed` propagates without
 /// flushing. `formatFn` is templated so the per-iteration call is
 /// inlined into the loop.
 ////////////////////////////////////////////////////////////
@@ -150,8 +150,7 @@ template <typename FormatFn>
     if (!success)
         return result;
 
-    userSink.append(buf.data(), buf.size());
-    return FmtResult::Ok;
+    return userSink.append(buf.data(), buf.size());
 }
 
 } // namespace

@@ -26,7 +26,12 @@ template <typename T>
         static_cast<SizeT>(arg.size());
     }
 {
-    SFML_BASE_ASSERT(spec.precision < 0 && spec.type == '\0');
+    if (spec.precision >= 0 || spec.type != '\0') [[unlikely]]
+    {
+        SFML_BASE_ASSERT(false && "invalid string format spec");
+        return FmtResult::Failed;
+    }
+
     return sink.append(static_cast<const char*>(arg.data()), static_cast<SizeT>(arg.size()));
 }
 

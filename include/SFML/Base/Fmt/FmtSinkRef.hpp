@@ -6,7 +6,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Base/Fmt/FmtResult.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Trait/IsSame.hpp"
 
 
 namespace sf::base
@@ -19,6 +21,9 @@ namespace sf::base
 /// constructible from any object exposing that method, so callers can
 /// pass `String&`, `StdoutSink`, an ofstream-wrapping adapter, etc.
 /// without templating the receiving function on the sink type.
+///
+/// If `Sink::append` returns `FmtResult`, that result is propagated.
+/// Other return types are treated as infallible append operations.
 ///
 /// Trivially copyable (two pointers). The reference is non-owning --
 /// callers must keep the underlying sink alive while a `FmtSinkRef`
@@ -39,7 +44,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] constexpr FmtSinkRef() noexcept :
         m_sink{nullptr},
-        m_appendFn{+[](void*, const char*, SizeT) {}}
+        m_appendFn{+[](void*, const char*, SizeT) { return FmtResult::Ok; }}
     {
     }
 
@@ -55,15 +60,24 @@ public:
     template <typename Sink>
     [[gnu::always_inline]] FmtSinkRef(Sink& sink) noexcept :
         m_sink{&sink},
-        m_appendFn{+[](void* s, const char* data, SizeT n) { static_cast<Sink*>(s)->append(data, n); }}
+        m_appendFn{+[](void* s, const char* data, SizeT n)
+        {
+            if constexpr (SFML_BASE_IS_SAME(decltype(static_cast<Sink*>(s)->append(data, n)), FmtResult))
+                return static_cast<Sink*>(s)->append(data, n);
+            else
+            {
+                static_cast<Sink*>(s)->append(data, n);
+                return FmtResult::Ok;
+            }
+        }}
     {
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void append(const char* const data, const SizeT n) const
+    [[nodiscard, gnu::always_inline]] FmtResult append(const char* const data, const SizeT n) const
     {
-        m_appendFn(m_sink, data, n);
+        return m_appendFn(m_sink, data, n);
     }
 
 
@@ -75,7 +89,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    using AppendFn = void (*)(void*, const char*, SizeT);
+    using AppendFn = FmtResult (*)(void*, const char*, SizeT);
 
 
     ////////////////////////////////////////////////////////////

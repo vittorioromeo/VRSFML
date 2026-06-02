@@ -23,7 +23,13 @@ namespace sf::base
                                                                     [[maybe_unused]] const FmtSpec& spec) noexcept
 {
     SFML_BASE_ASSERT_AND_ASSUME(arg != nullptr);
-    SFML_BASE_ASSERT(spec.precision < 0 && spec.type == '\0');
+
+    if (spec.precision >= 0 || spec.type != '\0') [[unlikely]]
+    {
+        SFML_BASE_ASSERT(false && "invalid C string format spec");
+        return FmtResult::Failed;
+    }
+
     return sink.append(arg, SFML_BASE_STRLEN(arg));
 }
 

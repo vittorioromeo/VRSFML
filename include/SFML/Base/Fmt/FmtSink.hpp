@@ -28,7 +28,7 @@ namespace sf::base
 /// \brief Output sink that custom `fmtArg` overloads write into.
 ///
 /// Wraps a contiguous `[begin, end)` byte range. All fallible writes return
-/// a `FmtResult`; callers should propagate non-`ok` results immediately
+/// a `FmtResult`; callers should propagate non-`Ok` results immediately
 /// (usually via `SFML_BASE_FMT_TRY`).
 ///
 /// \note `fmt(...)` recursion requires the full `<SFML/Base/Fmt/Fmt.hpp>`
@@ -37,10 +37,6 @@ namespace sf::base
 class FmtSink
 {
 public:
-    ////////////////////////////////////////////////////////////
-    using Mark = SizeT;
-
-
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] constexpr FmtSink(char* const begin, char* const end) noexcept :
         m_begin{begin},
@@ -64,6 +60,18 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline]] constexpr char* end() const noexcept
+    {
+        return m_end;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Bytes written so far (equivalently: a checkpoint that
+    /// can be passed to `atOffset(n)` to recover the byte address it
+    /// referred to). `dispatchFmtArg` uses it that way to bracket a
+    /// `fmtArg` call and pad the produced range in-place.
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr SizeT size() const noexcept
     {
         return static_cast<SizeT>(m_pos - m_begin);
@@ -71,16 +79,13 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr Mark mark() const noexcept
-    {
-        return static_cast<SizeT>(m_pos - m_begin);
-    }
-
-
+    /// \brief Address of the `n`-th byte from `begin()`, regardless of
+    /// the current write position. Pair with `size()` as a checkpoint
+    /// to come back to.
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr char* atMark(const Mark m) const noexcept
+    [[nodiscard, gnu::always_inline]] constexpr char* atOffset(const SizeT n) const noexcept
     {
-        return m_begin + m;
+        return m_begin + n;
     }
 
 
