@@ -4,6 +4,8 @@
 
 #include "SFML/System/Utf8StringCodepoints.hpp"
 
+#include "SFML/Base/Fmt/FmtAppendMixin.hpp"
+#include "SFML/Base/Fmt/FmtNumeric.hpp" // IWYU pragma: keep -- enables int/float `fmtArg`
 #include "SFML/Base/InitializerList.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -775,6 +777,86 @@ TEST_CASE("[System] sf::Utf8String - operator+ rvalue overload")
         // Source operands unaffected.
         CHECK(a == "left");
         CHECK(b == "right");
+    }
+}
+
+
+////////////////////////////////////////////////////////////
+TEST_CASE("[System] sf::Utf8String - FmtAppendMixin (appendFmt / appendArg)")
+{
+    SECTION("appendFmt on empty string")
+    {
+        sf::Utf8String s;
+        s.appendFmt("hello");
+        CHECK(s == "hello");
+    }
+
+    SECTION("appendFmt with single placeholder")
+    {
+        sf::Utf8String s;
+        s.appendFmt("answer = {}", 42);
+        CHECK(s == "answer = 42");
+    }
+
+    SECTION("appendFmt with multiple heterogeneous placeholders")
+    {
+        sf::Utf8String s;
+        s.appendFmt("{}-{}-{}", 1, 'x', sf::base::StringView{"end"});
+        CHECK(s == "1-x-end");
+    }
+
+    SECTION("appendFmt with width / precision / type-tag spec")
+    {
+        sf::Utf8String s;
+        s.appendFmt("[{:5}][{:x}][{:.3}]", 7, 255, 3.14159);
+        CHECK(s == "[    7][ff][3.142]");
+    }
+
+    SECTION("appendFmt is genuinely appending, not replacing")
+    {
+        sf::Utf8String s = "prefix:";
+        s.appendFmt(" v={}", 7);
+        CHECK(s == "prefix: v=7");
+
+        s.appendFmt(",{}", 11);
+        CHECK(s == "prefix: v=7,11");
+    }
+
+    SECTION("appendFmt preserves multibyte UTF-8 content already in the sink")
+    {
+        sf::Utf8String s = "\xC3\xA9"; // U+00E9 'é'
+        s.appendFmt(" n={}", 42);
+        // Existing multibyte sequence must be untouched -- appendFmt is byte-level.
+        CHECK(s == "\xC3\xA9 n=42");
+    }
+
+    SECTION("appendFmt round-trips a multibyte literal argument")
+    {
+        sf::Utf8String s;
+        // The format engine treats arguments as bytes; the multibyte
+        // literal in the format string flows through unchanged.
+        s.appendFmt("snail: \xF0\x9F\x90\x8C tag={}", 7);
+        CHECK(s == "snail: \xF0\x9F\x90\x8C tag=7");
+    }
+
+    SECTION("appendArg appends a single value with no spec")
+    {
+        sf::Utf8String s = "n=";
+        s.appendArg(42);
+        CHECK(s == "n=42");
+
+        s.appendArg(',' /*char*/);
+        CHECK(s == "n=42,");
+
+        s.appendArg(sf::base::StringView{"tail"});
+        CHECK(s == "n=42,tail");
+    }
+
+    SECTION("appendArg with float renders default precision")
+    {
+        sf::Utf8String s;
+        s.appendArg(3.14159);
+        CHECK(s == "3.141590");
     }
 }
 

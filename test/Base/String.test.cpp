@@ -4,6 +4,8 @@
 #include "SFML/Base/String.hpp"
 
 #include "SFML/Base/Algorithm/Copy.hpp"
+#include "SFML/Base/Fmt/FmtAppendMixin.hpp"
+#include "SFML/Base/Fmt/FmtNumeric.hpp" // IWYU pragma: keep -- enables int/float `fmtArg`
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StringView.hpp"
@@ -1446,5 +1448,81 @@ TEST_CASE("[Base] Base/String.hpp")
         const sf::base::String d = "!";
 
         CHECK(a + b + c + d == "Hello, beautiful world!");
+    }
+
+    SECTION("appendFmt (FmtAppendMixin) on empty string")
+    {
+        sf::base::String s;
+        s.appendFmt("hello");
+        CHECK(s == "hello");
+    }
+
+    SECTION("appendFmt with single placeholder")
+    {
+        sf::base::String s;
+        s.appendFmt("answer = {}", 42);
+        CHECK(s == "answer = 42");
+    }
+
+    SECTION("appendFmt with multiple heterogeneous placeholders")
+    {
+        sf::base::String s;
+        s.appendFmt("{}-{}-{}", 1, 'x', sf::base::StringView{"end"});
+        CHECK(s == "1-x-end");
+    }
+
+    SECTION("appendFmt with width / precision / type-tag spec")
+    {
+        sf::base::String s;
+        s.appendFmt("[{:5}][{:x}][{:.3}]", 7, 255, 3.14159);
+        CHECK(s == "[    7][ff][3.142]");
+    }
+
+    SECTION("appendFmt is genuinely appending (not replacing)")
+    {
+        sf::base::String s = "prefix:";
+        s.appendFmt(" v={}", 7);
+        CHECK(s == "prefix: v=7");
+
+        // Second appendFmt continues onto the existing buffer.
+        s.appendFmt(",{}", 11);
+        CHECK(s == "prefix: v=7,11");
+    }
+
+    SECTION("appendFmt grows an SSO buffer onto the heap when needed")
+    {
+        sf::base::String s = "abc";
+        // Long format expansion forces growth beyond SSO.
+        s.appendFmt("-{}-{}-{}-{}-{}-{}-{}-{}",
+                    "alpha",
+                    "beta",
+                    "gamma",
+                    "delta",
+                    "epsilon",
+                    "zeta",
+                    "eta",
+                    "theta");
+        CHECK(s == "abc-alpha-beta-gamma-delta-epsilon-zeta-eta-theta");
+    }
+
+    SECTION("appendArg appends a single value with no spec")
+    {
+        sf::base::String s = "n=";
+        s.appendArg(42);
+        CHECK(s == "n=42");
+
+        s.appendArg(',' /*char*/);
+        CHECK(s == "n=42,");
+
+        s.appendArg(sf::base::StringView{"tail"});
+        CHECK(s == "n=42,tail");
+    }
+
+    SECTION("appendArg with float renders default precision")
+    {
+        sf::base::String s;
+        s.appendArg(3.14159);
+        // `defaultFloatPrecision == 6` ({:.6f}).
+        CHECK(s == "3.141590");
     }
 }
