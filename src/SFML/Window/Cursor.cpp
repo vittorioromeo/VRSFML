@@ -30,14 +30,14 @@ namespace sf
     auto surface = WindowContext::getSDLLayer().createSurfaceFromPixels(pixels, size);
     if (surface == nullptr)
     {
-        priv::err() << "Failed to reload cursor from pixels";
+        priv::errMsg("Failed to reload cursor from pixels");
         return false;
     }
 
     SDL_Cursor* cursor = SDL_CreateColorCursor(surface.get(), static_cast<int>(hotspot.x), static_cast<int>(hotspot.y));
     if (cursor == nullptr)
     {
-        priv::err() << "Failed to create cursor from surface: " << SDL_GetError();
+        priv::errMsg("Failed to create cursor from surface: {}", SDL_GetError());
         return false;
     }
 
@@ -55,7 +55,7 @@ namespace sf
     SDL_Cursor* cursor = SDL_CreateSystemCursor(priv::cursorTypeToSDLCursor(type));
     if (cursor == nullptr)
     {
-        priv::err() << "Failed to create system cursor: " << SDL_GetError();
+        priv::errMsg("Failed to create system cursor: {}", SDL_GetError());
         return false;
     }
 
@@ -116,7 +116,7 @@ base::Optional<Cursor> Cursor::loadFromPixels(const base::U8* pixels, Vec2u size
 
     if (!cursor->reloadFromPixels(pixels, size, hotspot))
     {
-        priv::err() << "Failed to load cursor from pixels (invalid arguments)";
+        priv::errMsg("Failed to load cursor from pixels (invalid arguments)");
 
         cursor.reset();
         return cursor; // Empty optional

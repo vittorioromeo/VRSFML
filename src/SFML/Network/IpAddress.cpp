@@ -59,7 +59,7 @@ base::Optional<IpAddress> IpAddress::getLocalAddress()
     const SocketHandle sock = priv::SocketImpl::udpSocket();
     if (sock == priv::SocketImpl::invalidSocket())
     {
-        priv::err() << "Failed to retrieve local address (invalid socket)";
+        priv::errMsg("Failed to retrieve local address (invalid socket)");
         return base::nullOpt;
     }
 
@@ -71,7 +71,7 @@ base::Optional<IpAddress> IpAddress::getLocalAddress()
     {
         priv::SocketImpl::close(sock);
 
-        priv::err() << "Failed to retrieve local address (socket connection failure)";
+        priv::errMsg("Failed to retrieve local address (socket connection failure)");
         return base::nullOpt;
     }
 
@@ -81,7 +81,7 @@ base::Optional<IpAddress> IpAddress::getLocalAddress()
     {
         priv::SocketImpl::close(sock);
 
-        priv::err() << "Failed to retrieve local address (socket local address retrieval failure)";
+        priv::errMsg("Failed to retrieve local address (socket local address retrieval failure)");
         return base::nullOpt;
     }
 
@@ -112,8 +112,8 @@ base::Optional<IpAddress> IpAddress::getPublicAddress(Time timeout)
     if (status == Http::Response::Status::Ok)
         return IpAddressUtils::resolve(page.getBody());
 
-    priv::err() << "Failed to retrieve public address from external IP resolution server (HTTP response status "
-                << static_cast<int>(status) << ")";
+    priv::errMsg("Failed to retrieve public address from external IP resolution server (HTTP response status {})",
+                 static_cast<int>(status));
 
     return base::nullOpt;
 }

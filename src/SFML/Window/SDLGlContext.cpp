@@ -51,7 +51,7 @@ void SDLGlContext::initContext(SDLGlContext* const shared)
 
         // The next created context will be shared with the current one
         if (!sdlLayer.setGLAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1))
-            err() << "Failed to set shared GL context attribute";
+            errMsg("Failed to set shared GL context attribute");
     }
 
     // Create the OpenGL context
@@ -59,14 +59,14 @@ void SDLGlContext::initContext(SDLGlContext* const shared)
 
     if (!m_context)
     {
-        err() << "Failed to create SDL GL context: " << SDL_GetError();
+        errMsg("Failed to create SDL GL context: {}", SDL_GetError());
         destroyWindowIfNeeded();
         return;
     }
 
     // Reset sharing attribute to default
     if (!sdlLayer.setGLAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 0))
-        err() << "Failed to reset shared GL context attribute";
+        errMsg("Failed to reset shared GL context attribute");
 }
 
 
@@ -78,13 +78,13 @@ SDLGlContext::SDLGlContext(const unsigned int id, SDLGlContext* const shared, co
     m_ownsWindow(false)
 {
     if (!WindowContext::getSDLLayer().applyGLContextSettings(m_settings))
-        err() << "Failed to apply SDL GL context settings for shared GL context hidden window";
+        errMsg("Failed to apply SDL GL context settings for shared GL context hidden window");
 
     // Create a hidden window for the context
     m_window = SDL_CreateWindow("", 1, 1, SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
     if (m_window == nullptr)
     {
-        err() << "Failed to create hidden window for SDLGlContext: " << SDL_GetError();
+        errMsg("Failed to create hidden window for SDLGlContext: {}", SDL_GetError());
         return;
     }
 
@@ -152,7 +152,7 @@ bool SDLGlContext::makeCurrent(const bool activate)
 
     if (!SDL_GL_MakeCurrent(targetWindow, targetContext))
     {
-        err() << "Failed to " << targetAction << " SDL GL context: " << SDL_GetError();
+        errMsg("Failed to {} SDL GL context: {}", targetAction, SDL_GetError());
         return false;
     }
 
@@ -175,7 +175,7 @@ void SDLGlContext::setVerticalSyncEnabled(const bool enabled)
     m_vsyncRequested = enabled;
 #else
     if (!SDL_GL_SetSwapInterval(enabled ? 1 : 0))
-        err() << "Failed to set vertical sync: " << SDL_GetError();
+        errMsg("Failed to set vertical sync: {}", SDL_GetError());
 #endif
 }
 
@@ -190,7 +190,7 @@ bool SDLGlContext::isVerticalSyncEnabled() const
 
     if (!SDL_GL_GetSwapInterval(&interval))
     {
-        err() << "Failed to get vertical sync: " << SDL_GetError();
+        errMsg("Failed to get vertical sync: {}", SDL_GetError());
         return false;
     }
 

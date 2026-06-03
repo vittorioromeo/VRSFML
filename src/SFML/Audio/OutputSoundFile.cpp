@@ -41,8 +41,7 @@ base::Optional<OutputSoundFile> OutputSoundFile::openFromFile(
 
     if (channelCount != channelMap.getSize())
     {
-        priv::err() << "Channel count (" << channelCount << ") does not match channel map size ("
-                    << channelMap.getSize() << ")";
+        priv::errMsg("Channel count ({}) does not match channel map size ({})", channelCount, channelMap.getSize());
 
         return base::nullOpt;
     }
@@ -58,7 +57,7 @@ base::Optional<OutputSoundFile> OutputSoundFile::openFromFile(
     // Pass the stream to the reader
     if (!writer->open(filename, sampleRate, channelCount, channelMap))
     {
-        priv::err() << "Failed to open output sound file from file (writer open failure)";
+        priv::errMsg("Failed to open output sound file from file (writer open failure)");
         return base::nullOpt;
     }
 

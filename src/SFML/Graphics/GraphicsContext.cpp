@@ -47,7 +47,7 @@ GraphicsContextImpl& ensureInstalled()
 {
     if (!installedGraphicsContext.hasValue()) [[unlikely]]
     {
-        priv::err() << "`sf::GraphicsContext` not installed -- did you forget to create one in `main`?";
+        priv::errMsg("`sf::GraphicsContext` not installed -- did you forget to create one in `main`?");
         base::abort();
     }
 
@@ -71,7 +71,7 @@ base::Optional<GraphicsContext> GraphicsContext::create()
 {
     const auto fail = [](const char* what)
     {
-        priv::err() << "Error creating `sf::GraphicsContext`: " << what;
+        priv::errMsg("Error creating `sf::GraphicsContext`: {}", what);
         return base::nullOpt;
     };
 

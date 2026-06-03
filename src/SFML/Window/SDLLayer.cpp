@@ -587,7 +587,7 @@ SDLLayer::SDLLayer()
 #ifdef SFML_SYSTEM_EMSCRIPTEN
     // Ensures window position is synced with DOM position on Emscripten.
     if (!SDL_SetHint(SDL_HINT_VIDEO_SYNC_WINDOW_OPERATIONS, "1"))
-        err() << "`SDL_SetHint(SDL_HINT_VIDEO_SYNC_WINDOW_OPERATIONS)` failed: " << SDL_GetError();
+        errMsg("`SDL_SetHint(SDL_HINT_VIDEO_SYNC_WINDOW_OPERATIONS)` failed: {}", SDL_GetError());
 
     // Tell SDL3 not to call `emscripten_sleep(0)` inside `SDL_GL_SwapWindow`.
     // Our build links with `-sASYNCIFY_IGNORE_INDIRECT=1`, which means
@@ -597,12 +597,12 @@ SDLLayer::SDLLayer()
     // already drive frame timing through `requestAnimationFrame`, so the
     // implicit sleep was redundant for us anyway.
     if (!SDL_SetHint(SDL_HINT_EMSCRIPTEN_ASYNCIFY, "0"))
-        err() << "`SDL_SetHint(SDL_HINT_EMSCRIPTEN_ASYNCIFY)` failed: " << SDL_GetError();
+        errMsg("`SDL_SetHint(SDL_HINT_EMSCRIPTEN_ASYNCIFY)` failed: {}", SDL_GetError());
 #endif
 
     if (!SDL_InitSubSystem(SDL_INIT_VIDEO))
     {
-        err() << "`SDL_Init` failed: " << SDL_GetError();
+        errMsg("`SDL_Init` failed: {}", SDL_GetError());
         base::abort();
     }
 }
@@ -623,7 +623,7 @@ SDLAllocatedArray<SDL_DisplayID> SDLLayer::getDisplays() const
 
     if (displays == nullptr)
     {
-        err() << "`SDL_GetDisplays` failed: " << SDL_GetError();
+        errMsg("`SDL_GetDisplays` failed: {}", SDL_GetError());
         return nullptr;
     }
 
@@ -641,7 +641,7 @@ SDLAllocatedArray<SDL_DisplayMode*> SDLLayer::getFullscreenDisplayModesForDispla
 
     if (modes == nullptr)
     {
-        err() << "`SDL_GetFullscreenDisplayModes` failed for display " << displayId << ": " << SDL_GetError();
+        errMsg("`SDL_GetFullscreenDisplayModes` failed for display {}: {}", displayId, SDL_GetError());
         return nullptr;
     }
 
@@ -658,7 +658,7 @@ const SDL_PixelFormatDetails* SDLLayer::getPixelFormatDetails(const SDL_PixelFor
 
     if (result == nullptr)
     {
-        err() << "`SDL_GetPixelFormatDetails` failed for format " << static_cast<int>(format) << ": " << SDL_GetError();
+        errMsg("`SDL_GetPixelFormatDetails` failed for format {}: {}", static_cast<int>(format), SDL_GetError());
         return nullptr;
     }
 
@@ -675,7 +675,7 @@ const SDL_DisplayMode* SDLLayer::getDesktopDisplayMode(const SDL_DisplayID displ
 
     if (result == nullptr)
     {
-        err() << "`SDL_GetDesktopDisplayMode` failed for display " << displayId << ": " << SDL_GetError();
+        errMsg("`SDL_GetDesktopDisplayMode` failed for display {}: {}", displayId, SDL_GetError());
         return nullptr;
     }
 
@@ -690,13 +690,13 @@ const SDL_DisplayMode* SDLLayer::getPrimaryDisplayDesktopDisplayMode() const
 
     if (displays.empty())
     {
-        err() << "`getPrimaryDisplayDesktopDisplayMode` failed: no displays";
+        errMsg("`getPrimaryDisplayDesktopDisplayMode` failed: no displays");
         return nullptr;
     }
 
     if (!displays.valid())
     {
-        err() << "`getPrimaryDisplayDesktopDisplayMode` failed: invalid displays";
+        errMsg("`getPrimaryDisplayDesktopDisplayMode` failed: invalid displays");
         return nullptr;
     }
 
@@ -712,7 +712,7 @@ SDLAllocatedArray<SDL_TouchID> SDLLayer::getTouchDevices()
 
     if (ids == nullptr)
     {
-        err() << "`SDL_GetTouchDevices` failed: " << SDL_GetError();
+        errMsg("`SDL_GetTouchDevices` failed: {}", SDL_GetError());
         return nullptr;
     }
 
@@ -730,7 +730,7 @@ SDLAllocatedArray<SDL_Finger*> SDLLayer::getTouchFingers(const SDL_TouchID touch
 
     if (fingers == nullptr)
     {
-        err() << "`SDL_GetTouchFingers` failed for touch device " << touchDeviceId << ": " << SDL_GetError();
+        errMsg("`SDL_GetTouchFingers` failed for touch device {}: {}", touchDeviceId, SDL_GetError());
         return nullptr;
     }
 
@@ -810,7 +810,7 @@ void SDLLayer::setVirtualKeyboardVisible(const bool visible) const noexcept
 
     const bool ok = visible ? SDL_StartTextInput(focused) : SDL_StopTextInput(focused);
     if (!ok)
-        err() << "Failed to " << (visible ? "show" : "hide") << " virtual keyboard: " << SDL_GetError();
+        errMsg("Failed to {} virtual keyboard: {}", (visible ? "show" : "hide"), SDL_GetError());
 }
 
 
@@ -828,7 +828,7 @@ bool SDLLayer::setGlobalMousePosition(const Vec2i position) const noexcept
 {
     if (!SDL_WarpMouseGlobal(static_cast<float>(position.x), static_cast<float>(position.y)))
     {
-        err() << "`SDL_WarpMouseGlobal` failed: " << SDL_GetError();
+        errMsg("`SDL_WarpMouseGlobal` failed: {}", SDL_GetError());
         return false;
     }
 
@@ -847,7 +847,7 @@ Utf8String SDLLayer::getClipboardString() const noexcept
 
     if (SFML_BASE_STRCMP(clipboardText, "") == 0)
     {
-        err() << "`SDL_GetClipboardText` failed: " << SDL_GetError();
+        errMsg("`SDL_GetClipboardText` failed: {}", SDL_GetError());
         return Utf8String{};
     }
 
@@ -860,7 +860,7 @@ bool SDLLayer::setClipboardString(const Utf8String& string) const noexcept
 {
     if (!SDL_SetClipboardText(string.cStr()))
     {
-        err() << "`SDL_SetClipboardText` failed: " << SDL_GetError();
+        errMsg("`SDL_SetClipboardText` failed: {}", SDL_GetError());
         return false;
     }
 
@@ -876,7 +876,7 @@ float SDLLayer::getDisplayContentScale(const SDL_DisplayID displayID) const
     const float result = SDL_GetDisplayContentScale(displayID);
     if (result == 0.f)
     {
-        err() << "`SDL_GetDisplayContentScale` failed:" << SDL_GetError();
+        errMsg("`SDL_GetDisplayContentScale` failed:{}", SDL_GetError());
         return 1.f;
     }
 
@@ -892,7 +892,7 @@ Utf8String SDLLayer::getDisplayName(const SDL_DisplayID displayID) const
     const char* const name = SDL_GetDisplayName(displayID);
     if (name == nullptr)
     {
-        err() << "`SDL_GetDisplayName` failed: " << SDL_GetError();
+        errMsg("`SDL_GetDisplayName` failed: {}", SDL_GetError());
         return Utf8String{};
     }
 
@@ -908,7 +908,7 @@ Rect2i SDLLayer::getDisplayBounds(const SDL_DisplayID displayID) const
     SDL_Rect out{};
     if (!SDL_GetDisplayBounds(displayID, &out))
     {
-        err() << "`SDL_GetDisplayBounds` failed: " << SDL_GetError();
+        errMsg("`SDL_GetDisplayBounds` failed: {}", SDL_GetError());
         return Rect2i{};
     }
 
@@ -924,7 +924,7 @@ Rect2i SDLLayer::getDisplayUsableBounds(const SDL_DisplayID displayID) const
     SDL_Rect out{};
     if (!SDL_GetDisplayUsableBounds(displayID, &out))
     {
-        err() << "`SDL_GetDisplayUsableBounds` failed: " << SDL_GetError();
+        errMsg("`SDL_GetDisplayUsableBounds` failed: {}", SDL_GetError());
         return Rect2i{};
     }
 
@@ -955,13 +955,13 @@ float SDLLayer::getPrimaryDisplayContentScale() const
 
     if (!displays.valid())
     {
-        err() << "`getDisplayContentScale` failed: could not get displays";
+        errMsg("`getDisplayContentScale` failed: could not get displays");
         return 1.f;
     }
 
     if (displays.size() == 0)
     {
-        err() << "`getDisplayContentScale` failed: no displays found";
+        errMsg("`getDisplayContentScale` failed: no displays found");
         return 1.f;
     }
 
@@ -976,7 +976,7 @@ float SDLLayer::getDisplayScale(SDL_Window& window) const
 
     if (result == 0.f)
     {
-        err() << "`SDL_GetWindowDisplayScale` failed: " << SDL_GetError();
+        errMsg("`SDL_GetWindowDisplayScale` failed: {}", SDL_GetError());
         return 1.f;
     }
 
@@ -997,7 +997,7 @@ SDLSurfaceUPtr SDLLayer::createSurfaceFromPixels(const base::U8* pixels, Vec2u s
 
     if (surface == nullptr)
     {
-        err() << "`SDL_CreateSurfaceFrom` failed: " << SDL_GetError();
+        errMsg("`SDL_CreateSurfaceFrom` failed: {}", SDL_GetError());
         return nullptr;
     }
 
@@ -1012,7 +1012,7 @@ unsigned int SDLLayer::getJoystickButtonCount(SDL_Joystick& handle)
 
     if (count == -1)
     {
-        err() << "`SDL_GetNumJoystickButtons` failed: " << SDL_GetError();
+        errMsg("`SDL_GetNumJoystickButtons` failed: {}", SDL_GetError());
         return 0u;
     }
 
@@ -1027,7 +1027,7 @@ unsigned int SDLLayer::getJoystickAxisCount(SDL_Joystick& handle)
 
     if (count == -1)
     {
-        err() << "`SDL_GetNumJoystickAxes` failed: " << SDL_GetError();
+        errMsg("`SDL_GetNumJoystickAxes` failed: {}", SDL_GetError());
         return 0u;
     }
 
@@ -1042,7 +1042,7 @@ unsigned int SDLLayer::getJoystickHatCount(SDL_Joystick& handle)
 
     if (count == -1)
     {
-        err() << "`SDL_GetNumJoystickHats` failed: " << SDL_GetError();
+        errMsg("`SDL_GetNumJoystickHats` failed: {}", SDL_GetError());
         return 0u;
     }
 
@@ -1057,7 +1057,7 @@ unsigned int SDLLayer::getJoystickHatCount(SDL_Joystick& handle)
 
     if (name == nullptr)
     {
-        err() << "`SDL_GetJoystickName` failed: " << SDL_GetError();
+        errMsg("`SDL_GetJoystickName` failed: {}", SDL_GetError());
         return nullptr;
     }
 
@@ -1072,7 +1072,7 @@ unsigned int SDLLayer::getJoystickHatCount(SDL_Joystick& handle)
 
     if (vendor == 0u)
     {
-        err() << "`SDL_GetJoystickVendor` failed: " << SDL_GetError();
+        errMsg("`SDL_GetJoystickVendor` failed: {}", SDL_GetError());
         return 0u;
     }
 
@@ -1087,7 +1087,7 @@ unsigned int SDLLayer::getJoystickHatCount(SDL_Joystick& handle)
 
     if (product == 0u)
     {
-        err() << "`SDL_GetJoystickProduct` failed: " << SDL_GetError();
+        errMsg("`SDL_GetJoystickProduct` failed: {}", SDL_GetError());
         return 0u;
     }
 
@@ -1106,7 +1106,7 @@ unsigned int SDLLayer::getJoystickHatCount(SDL_Joystick& handle)
 void SDLLayer::setWindowSize(SDL_Window& window, const Vec2u size) const
 {
     if (!SDL_SetWindowSize(&window, static_cast<int>(size.x), static_cast<int>(size.y)))
-        err() << "`SDL_SetWindowSize` failed: " << SDL_GetError();
+        errMsg("`SDL_SetWindowSize` failed: {}", SDL_GetError());
 }
 
 
@@ -1116,7 +1116,7 @@ void SDLLayer::setWindowSize(SDL_Window& window, const Vec2u size) const
     Vec2i result;
 
     if (!SDL_GetWindowSize(&window, &result.x, &result.y))
-        err() << "`SDL_GetWindowSize` failed: " << SDL_GetError();
+        errMsg("`SDL_GetWindowSize` failed: {}", SDL_GetError());
 
     return result.toVec2u();
 }
@@ -1129,7 +1129,7 @@ VideoMode SDLLayer::getVideoModeFromSDLDisplayMode(const SDL_DisplayMode& mode) 
 
     if (info == nullptr)
     {
-        err() << "Failed to get pixel format details for display mode";
+        errMsg("Failed to get pixel format details for display mode");
         return {};
     }
 
@@ -1150,7 +1150,7 @@ bool SDLLayer::setGLAttribute(const int attribute, const int value) const
     if (SDL_GL_SetAttribute(sdlAttribute, value))
         return true;
 
-    err() << "Failed to set SDL attribute '" << getSDLGLAttrName(sdlAttribute) << "': " << SDL_GetError();
+    errMsg("Failed to set SDL attribute '{}': {}", getSDLGLAttrName(sdlAttribute), SDL_GetError());
     return false;
 }
 
@@ -1191,7 +1191,7 @@ const char* SDLLayer::getCurrentVideoDriver() const
     const char* driver = SDL_GetCurrentVideoDriver();
 
     if (driver == nullptr)
-        err() << "`SDL_GetCurrentVideoDriver` failed: " << SDL_GetError();
+        errMsg("`SDL_GetCurrentVideoDriver` failed: {}", SDL_GetError());
 
     return driver;
 }

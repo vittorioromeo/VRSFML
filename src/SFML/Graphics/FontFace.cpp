@@ -68,7 +68,7 @@ namespace
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::const]] inline sf::base::I32 quantizeOutlineThickness(const float outlineThickness)
+[[nodiscard, gnu::always_inline, gnu::const]] inline sf::base::I32 fontFaceQuantizeOutlineThickness(const float outlineThickness)
 {
     return static_cast<sf::base::I32>(outlineThickness * float{1 << 6});
 }
@@ -151,7 +151,7 @@ struct FontFace::Impl
     {
         const auto fail = [&](const char* what)
         {
-            priv::err() << "Failed to load font from stream (type:" << type << "): " << what;
+            priv::errMsg("Failed to load font from stream (type:{}): {}", type, what);
             return false;
         };
 
@@ -386,14 +386,14 @@ struct FontFace::Impl
             if (outlineThickness != 0.f)
             {
                 FT_Stroker_Set(m_ftStroker,
-                               static_cast<FT_Fixed>(quantizeOutlineThickness(outlineThickness)),
+                               static_cast<FT_Fixed>(fontFaceQuantizeOutlineThickness(outlineThickness)),
                                FT_STROKER_LINECAP_ROUND,
                                FT_STROKER_LINEJOIN_ROUND,
                                0);
 
                 if (FT_Glyph_Stroke(&glyphDesc, m_ftStroker, true) != FT_Err_Ok)
                 {
-                    sf::priv::err() << "Failed to outline glyph";
+                    priv::errMsg("Failed to outline glyph");
                     return result;
                 }
             }
@@ -401,7 +401,7 @@ struct FontFace::Impl
 
         if (FT_Glyph_To_Bitmap(&glyphDesc, FT_RENDER_MODE_NORMAL, nullptr, 1) != FT_Err_Ok)
         {
-            sf::priv::err() << "Failed to render glyph to bitmap";
+            priv::errMsg("Failed to render glyph to bitmap");
             return result;
         }
 
@@ -414,7 +414,7 @@ struct FontFace::Impl
                 FT_Bitmap_Embolden(m_ftLibrary, &bitmap, weight, weight);
 
             if (outlineThickness != 0.f)
-                sf::priv::err() << "Failed to outline glyph (no fallback available)";
+                priv::errMsg("Failed to outline glyph (no fallback available)");
         }
 
         result.glyph.advance = static_cast<float>(bitmapGlyph->root.advance.x >> 16) +
@@ -506,20 +506,19 @@ private:
 
         if (FT_IS_SCALABLE(m_ftFace))
         {
-            priv::err() << "Failed to set font size to " << characterSize;
+            priv::errMsg("Failed to set font size to {}", characterSize);
             return false;
         }
 
-        auto& multilineErr = priv::err(true /* multiLine */);
-        multilineErr << "Failed to set bitmap font size to " << characterSize << '\n' << "Available sizes are: ";
+        priv::ErrMsgScope scope;
+        scope.fmt("Failed to set bitmap font size to {}\nAvailable sizes are: ", characterSize);
 
         for (int i = 0; i < m_ftFace->num_fixed_sizes; ++i)
         {
             const long size = (m_ftFace->available_sizes[i].y_ppem + 32) >> 6;
-            multilineErr << size << " ";
+            scope.fmt("{} ", size);
         }
 
-        multilineErr << '\n';
         return false;
     }
 
@@ -562,7 +561,7 @@ base::Optional<FontFace> FontFace::openFromFile(const Path& filename)
     auto optStream = FileInputStream::open(filename);
     if (!optStream.hasValue())
     {
-        priv::err() << "Failed to load font face (" << priv::PathDebugFormatter{filename} << "): failed to open file";
+        priv::errMsg("Failed to load font face ({}): failed to open file", priv::PathDebugFormatter{filename});
         return result;
     }
 
@@ -572,7 +571,7 @@ base::Optional<FontFace> FontFace::openFromFile(const Path& filename)
     auto optStream = ResourceStream::open(filename);
     if (!optStream.hasValue())
     {
-        priv::err() << "Failed to load font face (" << priv::PathDebugFormatter{filename} << "): failed to open file";
+        priv::errMsg("Failed to load font face ({}): failed to open file", priv::PathDebugFormatter{filename});
         return result;
     }
 
@@ -584,7 +583,7 @@ base::Optional<FontFace> FontFace::openFromFile(const Path& filename)
     if (result.hasValue())
         result->m_impl->setOwnedStream(SFML_BASE_MOVE(stream));
     else
-        priv::err() << priv::PathDebugFormatter{filename};
+        priv::errMsg("{}", priv::PathDebugFormatter{filename});
 
     return result;
 }
@@ -597,7 +596,7 @@ base::Optional<FontFace> FontFace::openFromMemory(const void* data, base::SizeT 
 
     if (!data)
     {
-        priv::err() << "Failed to load font face from memory: provided data pointer is null";
+        priv::errMsg("Failed to load font face from memory: provided data pointer is null");
         return result;
     }
 
@@ -629,7 +628,7 @@ base::Optional<FontFace> FontFace::openFromStream(InputStream& stream)
 {
     if (!stream.seek(0).hasValue())
     {
-        priv::err() << "Failed to seek font face stream";
+        priv::errMsg("Failed to seek font face stream");
         return base::nullOpt;
     }
 
@@ -709,7 +708,7 @@ base::Optional<Glyph> FontFace::rasterizeAndPackGlyph(
 
         if (!optRect.hasValue())
         {
-            priv::err() << "Failed to add glyph to the atlas (code point: " << static_cast<unsigned int>(codePoint) << ")";
+            priv::errMsg("Failed to add glyph to the atlas (code point: {})", static_cast<unsigned int>(codePoint));
             return base::nullOpt;
         }
 

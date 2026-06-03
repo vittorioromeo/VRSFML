@@ -17,6 +17,8 @@
 #include "SFML/Base/Algorithm/Find.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/MinMax.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 #include <vorbis/vorbisenc.h>
 
@@ -29,12 +31,12 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 struct SoundFileWriterOgg::Impl
 {
-    unsigned int     channelCount{};  //!< Channel count of the sound being written
-    base::SizeT      remapTable[8]{}; //!< Table we use to remap source to target channel order
-    OutFileStream    file;            //!< Output file
-    ogg_stream_state ogg{};           //!< OGG stream
-    vorbis_info      vorbis{};        //!< Vorbis handle
-    vorbis_dsp_state state{};         //!< Current encoding state
+    unsigned int            channelCount{};  //!< Channel count of the sound being written
+    base::SizeT             remapTable[8]{}; //!< Table we use to remap source to target channel order
+    base::Optional<OutFile> file;            //!< Output file (empty before `open()`)
+    ogg_stream_state        ogg{};           //!< OGG stream
+    vorbis_info             vorbis{};        //!< Vorbis handle
+    vorbis_dsp_state        state{};         //!< Current encoding state
 };
 
 
@@ -65,7 +67,7 @@ bool SoundFileWriterOgg::open(const Path& filename, unsigned int sampleRate, uns
     switch (channelCount)
     {
         case 0:
-            priv::err() << "No channels to write to Vorbis file";
+            priv::errMsg("No channels to write to Vorbis file");
             return false;
         case 1:
             targetChannelMap = {SoundChannel::Mono};
@@ -114,14 +116,14 @@ bool SoundFileWriterOgg::open(const Path& filename, unsigned int sampleRate, uns
                                 SoundChannel::LowFrequencyEffects};
             break;
         default:
-            priv::err() << "Vorbis files with more than 8 channels not supported";
+            priv::errMsg("Vorbis files with more than 8 channels not supported");
             return false;
     }
 
     // Check if the channel map contains channels that we cannot remap to a mapping supported by FLAC
     if (!channelMap.isPermutationOf(targetChannelMap))
     {
-        priv::err() << "Provided channel map cannot be reordered to a channel map supported by Vorbis";
+        priv::errMsg("Provided channel map cannot be reordered to a channel map supported by Vorbis");
         return false;
     }
 
@@ -158,17 +160,17 @@ bool SoundFileWriterOgg::open(const Path& filename, unsigned int sampleRate, uns
     int status = vorbis_encode_init_vbr(&m_impl->vorbis, static_cast<long>(channelCount), static_cast<long>(sampleRate), 0.4f);
     if (status < 0)
     {
-        priv::err() << "Failed to write ogg/vorbis file (unsupported bitrate)\n" << priv::PathDebugFormatter{filename};
+        priv::errMsg("Failed to write ogg/vorbis file (unsupported bitrate)\n{}", priv::PathDebugFormatter{filename});
         close();
         return false;
     }
     vorbis_analysis_init(&m_impl->state, &m_impl->vorbis);
 
     // Open the file after the vorbis setup is ok
-    m_impl->file.open(filename, FileOpenMode::bin);
-    if (!m_impl->file)
+    m_impl->file = OutFile::open(filename, FileOpenMode::bin);
+    if (!m_impl->file.hasValue())
     {
-        priv::err() << "Failed to write ogg/vorbis file (cannot open file)\n" << priv::PathDebugFormatter{filename};
+        priv::errMsg("Failed to write ogg/vorbis file (cannot open file)\n{}", priv::PathDebugFormatter{filename});
         close();
         return false;
     }
@@ -185,8 +187,8 @@ bool SoundFileWriterOgg::open(const Path& filename, unsigned int sampleRate, uns
     vorbis_comment_clear(&comment);
     if (status < 0)
     {
-        priv::err() << "Failed to write ogg/vorbis file (cannot generate the headers)\n"
-                    << priv::PathDebugFormatter{filename};
+        priv::errMsg("Failed to write ogg/vorbis file (cannot generate the headers)\n{}",
+                     priv::PathDebugFormatter{filename});
         close();
         return false;
     }
@@ -200,8 +202,13 @@ bool SoundFileWriterOgg::open(const Path& filename, unsigned int sampleRate, uns
     ogg_page page;
     while (ogg_stream_flush(&m_impl->ogg, &page) > 0)
     {
-        m_impl->file.write(reinterpret_cast<const char*>(page.header), page.header_len);
-        m_impl->file.write(reinterpret_cast<const char*>(page.body), page.body_len);
+        if (!m_impl->file->write(reinterpret_cast<const char*>(page.header), static_cast<base::SizeT>(page.header_len)) ||
+            !m_impl->file->write(reinterpret_cast<const char*>(page.body), static_cast<base::SizeT>(page.body_len)))
+        {
+            priv::errMsg("ogg/vorbis: header page write failed\n{}", priv::PathDebugFormatter{filename});
+            close();
+            return false;
+        }
     }
 
     return true;
@@ -262,12 +269,21 @@ void SoundFileWriterOgg::flushBlocks()
             // Write the packet to the ogg stream
             ogg_stream_packetin(&m_impl->ogg, &packet);
 
-            // If the stream produced new pages, write them to the output file
+            // If the stream produced new pages, write them to the output file.
+            // `flushBlocks` returns `void` (the public `write` API can't propagate
+            // errors), so a per-page failure is logged and we bail out of the
+            // inner loops -- the resulting file will be truncated/corrupt.
             ogg_page page;
             while (ogg_stream_flush(&m_impl->ogg, &page) > 0)
             {
-                m_impl->file.write(reinterpret_cast<const char*>(page.header), page.header_len);
-                m_impl->file.write(reinterpret_cast<const char*>(page.body), page.body_len);
+                if (!m_impl->file->write(reinterpret_cast<const char*>(page.header),
+                                         static_cast<base::SizeT>(page.header_len)) ||
+                    !m_impl->file->write(reinterpret_cast<const char*>(page.body), static_cast<base::SizeT>(page.body_len)))
+                {
+                    priv::errMsg("ogg/vorbis: page write failed; output truncated");
+                    vorbis_block_clear(&block);
+                    return;
+                }
             }
         }
     }
@@ -280,14 +296,15 @@ void SoundFileWriterOgg::flushBlocks()
 ////////////////////////////////////////////////////////////
 void SoundFileWriterOgg::close()
 {
-    if (m_impl->file.isOpen())
+    if (m_impl->file.hasValue())
     {
         // Submit an empty packet to mark the end of stream
         vorbis_analysis_wrote(&m_impl->state, 0);
         flushBlocks();
 
-        // Close the file
-        m_impl->file.close();
+        // Reset the Optional -- the destructor closes the OS handle. Close
+        // errors are unobservable in the RAII path.
+        m_impl->file.reset();
     }
 
     // Clear all the ogg/vorbis structures

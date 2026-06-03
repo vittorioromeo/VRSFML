@@ -29,7 +29,7 @@ GLContextSaver::~GLContextSaver()
     SFML_BASE_ASSERT(m_glContext != nullptr);
 
     if (!WindowContext::setActiveThreadLocalGlContext(*m_glContext, true))
-        err() << "Could not restore context in `GLContextSaver::~GLContextSaver()`";
+        errMsg("Could not restore context in `GLContextSaver::~GLContextSaver()`");
 }
 
 } // namespace sf::priv

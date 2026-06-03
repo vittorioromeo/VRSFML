@@ -22,9 +22,13 @@ void eglCheckError(const unsigned int eglError, const char* file, unsigned int l
 {
     const auto logError = [&](const char* error, const char* description)
     {
-        err() << "An internal EGL call failed in " << Path{file}.getFilename() << " (" << line << ")."
-              << "\nExpression:\n   " << expression << "\nError description:\n   " << error << "\n   " << description
-              << '\n';
+        errMsg("An internal EGL call failed in {} ({}).\nExpression:\n   {}\nError description:\n   {}\n   {}{}",
+               Path{file}.getFilename(),
+               line,
+               expression,
+               error,
+               description,
+               '\n');
     };
 
     SFML_BASE_ASSERT(eglError != EGL_SUCCESS);

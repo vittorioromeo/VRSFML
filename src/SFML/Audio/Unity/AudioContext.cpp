@@ -29,7 +29,7 @@ namespace
 void maLogCallback(void*, ma_uint32 level, const char* message)
 {
     if (level <= MA_LOG_LEVEL_WARNING)
-        sf::priv::err() << "miniaudio " << ma_log_level_to_string(level) << ": " << message << sf::priv::errFlush;
+        sf::priv::errMsg("miniaudio {}: {}", ma_log_level_to_string(level), message);
 }
 
 
@@ -84,7 +84,7 @@ void maLogCallback(void*, ma_uint32 level, const char* message)
 
         // Warn if no devices were found using the default backend list
         if (backendList == nullptr)
-            sf::priv::err() << "No audio playback devices available on the system";
+            sf::priv::errMsg("No audio playback devices available on the system");
 
         // Clean up the context if we didn't find any devices (TODO P1: why?)
         ma_context_uninit(&maContext);
@@ -117,7 +117,7 @@ sf::base::Vector<THandle> getAvailableDeviceHandles(sf::base::PassKey<sf::AudioC
     if (const ma_result result = fMAContextGetDevices(&maContext, &maDeviceInfosPtr, &maDeviceInfoCount);
         result != MA_SUCCESS)
     {
-        sf::priv::err() << "Failed to get audio " << type << " devices: " << ma_result_description(result);
+        sf::priv::errMsg("Failed to get audio {} devices: {}", type, ma_result_description(result));
 
         return deviceHandles; // Empty device handle vector
     }
@@ -160,7 +160,7 @@ AudioContextImpl& ensureInstalled()
 {
     if (!installedAudioContext.hasValue()) [[unlikely]]
     {
-        sf::priv::err() << "`sf::AudioContext` not installed -- did you forget to create one in `main`?";
+        sf::priv::errMsg("`sf::AudioContext` not installed -- did you forget to create one in `main`?");
         sf::base::abort();
     }
 
@@ -177,7 +177,7 @@ base::Optional<AudioContext> AudioContext::create()
 {
     const auto fail = [](const char* what)
     {
-        priv::err() << "Error creating `sf::AudioContext`: " << what;
+        priv::errMsg("Error creating `sf::AudioContext`: {}", what);
         return base::nullOpt;
     };
 

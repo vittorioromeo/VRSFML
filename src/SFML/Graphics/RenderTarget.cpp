@@ -206,11 +206,19 @@ struct [[nodiscard]] StatesCache
 
     unsigned int lastVaoGroup{0u};          //!< Last bound vertex array object id
     unsigned int lastVaoGroupContextId{0u}; //!< Last bound vertex array object context id
-    unsigned int lastVaoGroupVboId{0u};     //!< GL id of `lastVaoGroup`'s shared VBO at the time `bindGLObjects` ran.
-                                            //!< If the underlying VBO is move-assigned (e.g. persistent ring-buffer
-                                            //!< growth), the new id won't match here and the next `setupDraw` must
-                                            //!< rebind + re-issue `glVertexAttribPointer` so the VAO's stored
-                                            //!< attribute-buffer mapping references the live handle.
+
+    unsigned int lastVaoGroupVboId{0u}; //!< GL id of `lastVaoGroup`'s shared VBO at the time `bindGLObjects` ran.
+                                        //!< If the underlying VBO is move-assigned (e.g. persistent ring-buffer
+                                        //!< growth), the new id won't match here and the next `setupDraw` must
+                                        //!< rebind + re-issue `glVertexAttribPointer` so the VAO's stored
+                                        //!< attribute-buffer mapping references the live handle.
+
+    unsigned int lastVaoGroupEboId{0u}; //!< GL id of `lastVaoGroup`'s shared EBO at the time `bindGLObjects` ran.
+                                        //!< Same rationale as `lastVaoGroupVboId`: the persistent index buffer
+                                        //!< may grow independently of the vertex buffer, move-assigning a fresh
+                                        //!< EBO. The VAO's recorded `GL_ELEMENT_ARRAY_BUFFER` would then point
+                                        //!< at a deleted handle; the mismatch here forces a full rebind so the
+                                        //!< VAO captures the live EBO via `ebo.bind()`.
 
     BlendMode   lastBlendMode{BlendAlpha}; //!< Cached blending mode
     StencilMode lastStencilMode{};         //!< Cached stencil
@@ -251,6 +259,7 @@ struct [[nodiscard]] RenderTarget::Impl
         cache.lastVaoGroup          = theVAOGroup.getId();
         cache.lastVaoGroupContextId = GraphicsContext::getActiveThreadLocalGlContextId();
         cache.lastVaoGroupVboId     = theVAOGroup.vbo.getId();
+        cache.lastVaoGroupEboId     = theVAOGroup.ebo.getId();
 
         RenderTargetImpl::setupVertexAttribPointers();
     }
@@ -290,7 +299,9 @@ auto RenderTarget::addToAutoBatch(auto&&... xs)
 
 
 ////////////////////////////////////////////////////////////
-RenderTarget::RenderTarget() = default;
+RenderTarget::RenderTarget(const bool isSrgb) : m_isSrgb{isSrgb}
+{
+}
 
 
 ////////////////////////////////////////////////////////////
@@ -304,7 +315,7 @@ RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
 {
     if (!setActive(true))
     {
-        priv::err() << "Failed to activate render target in `prepare`";
+        priv::errMsg("Failed to activate render target in `prepare`");
         return false;
     }
 
@@ -623,7 +634,7 @@ void RenderTarget::immediateDrawPersistentMappedIndexedVertices(
     [[maybe_unused]] const RenderStates&                                states)
 {
 #ifdef SFML_OPENGL_ES
-    priv::err() << "FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES";
+    priv::errMsg("FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES");
     base::abort();
 #else
     // Nothing to draw or inactive target
@@ -943,14 +954,6 @@ void RenderTarget::drawInstancedIndexedVertices(const DrawInstancedIndexedVertic
 
 
 ////////////////////////////////////////////////////////////
-bool RenderTarget::isSrgb() const
-{
-    // By default sRGB encoding is not enabled for an arbitrary RenderTarget
-    return false;
-}
-
-
-////////////////////////////////////////////////////////////
 bool RenderTarget::setActive(const bool active)
 {
     // Mark this RenderTarget as active or no longer active in the tracking map
@@ -1014,7 +1017,7 @@ void RenderTarget::resetGLStatesImpl()
 // macOS unless a context switch really takes place
 #ifdef SFML_SYSTEM_MACOS
     if (!setActive(false))
-        priv::err() << "Failed to set render target inactive";
+        priv::errMsg("Failed to set render target inactive");
 #endif
 
     if (!setActive(true))
@@ -1023,7 +1026,7 @@ void RenderTarget::resetGLStatesImpl()
 #ifdef SFML_DEBUG
     // Make sure that the user didn't leave an unchecked OpenGL error
     if (const GLenum error = glGetError(); error != GL_NO_ERROR)
-        priv::err() << "OpenGL error (" << error << ") detected in user code, you should check for errors with glGetError()";
+        priv::errMsg("OpenGL error ({}) detected in user code, you should check for errors with glGetError()", error);
 #endif
 
     // Make sure that the texture unit which is active is the number 0
@@ -1083,15 +1086,17 @@ RenderTarget::DrawStatistics RenderTarget::flush()
         if (m_lastRenderStates.shader != nullptr &&
             m_lastRenderStates.shader->m_uniformGeneration != m_lastShaderGeneration) [[unlikely]]
         {
-            priv::err() << "Shader uniform mutation detected while autobatch was in flight -- "
-                           "call `flush()` before mutating uniforms on a pending-draw shader";
+            priv::errMsg(
+                "Shader uniform mutation detected while autobatch was in flight -- call `flush()` before mutating "
+                "uniforms on a pending-draw shader");
         }
 
         if (m_lastRenderStates.texture != nullptr &&
             m_lastRenderStates.texture->m_destructiveGeneration != m_lastTextureGeneration) [[unlikely]]
         {
-            priv::err() << "Destructive texture mutation detected while autobatch was in flight -- "
-                           "call `flush()` before destructively modifying a pending-draw texture";
+            priv::errMsg(
+                "Destructive texture mutation detected while autobatch was in flight -- call `flush()` before "
+                "destructively modifying a pending-draw texture");
         }
     }
 
@@ -1351,7 +1356,8 @@ void RenderTarget::setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& sta
                                    m_impl->cache.lastVaoGroupContextId == 0u ||
                                    m_impl->cache.lastVaoGroupContextId !=
                                        GraphicsContext::getActiveThreadLocalGlContextId() ||
-                                   m_impl->cache.lastVaoGroupVboId != vaoGroup.vbo.getId();
+                                   m_impl->cache.lastVaoGroupVboId != vaoGroup.vbo.getId() ||
+                                   m_impl->cache.lastVaoGroupEboId != vaoGroup.ebo.getId();
 
         if (!m_impl->cache.enable || mustRebindVAO)
         {
@@ -1539,7 +1545,7 @@ void RenderTarget::invokePrimitiveDrawCallIndexedBaseVertex(
     [[maybe_unused]] const base::SizeT   vertexOffset)
 {
 #ifdef SFML_OPENGL_ES
-    priv::err() << "FATAL ERROR: `glDrawElementsBaseVertex` only available in OpenGL ES 3.2+ (unsupported)";
+    priv::errMsg("FATAL ERROR: `glDrawElementsBaseVertex` only available in OpenGL ES 3.2+ (unsupported)");
     base::abort();
 #else
     m_currentDrawStats.drawCalls += 1u;

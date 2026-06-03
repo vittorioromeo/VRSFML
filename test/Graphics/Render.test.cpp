@@ -55,13 +55,13 @@ struct TestContext
     TestContext() : glContext(sf::WindowContext::createGlContext(sf::ContextSettings{}))
     {
         if (!sf::WindowContext::setActiveThreadLocalGlContext(*glContext, true))
-            sf::priv::err() << "Failed to activate TestContext on construction";
+            sf::priv::errMsg("Failed to activate TestContext on construction");
     }
 
     ~TestContext()
     {
         if (glContext != nullptr && !sf::WindowContext::setActiveThreadLocalGlContext(*glContext, false))
-            sf::priv::err() << "Failed to deactivate TestContext on destruction";
+            sf::priv::errMsg("Failed to deactivate TestContext on destruction");
     }
 
     TestContext(const TestContext&)                = delete;

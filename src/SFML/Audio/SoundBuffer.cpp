@@ -83,7 +83,7 @@ base::Optional<SoundBuffer> SoundBuffer::loadFromFile(const Path& filename)
 
     if (!readFromFile(filename, scratch))
     {
-        priv::err() << "Failed to open sound buffer from file";
+        priv::errMsg("Failed to open sound buffer from file");
         return base::nullOpt;
     }
 
@@ -109,34 +109,34 @@ base::Optional<SoundBuffer> SoundBuffer::loadFromStream(InputStream& stream)
     auto reader = SoundFileFactory::createReaderFromStream(stream);
     if (reader == nullptr)
     {
-        priv::err() << "Failed to open sound buffer (no codec for the data's format)";
+        priv::errMsg("Failed to open sound buffer (no codec for the data's format)");
         return buf;
     }
 
     // `createReaderFromStream` advances the read position while sniffing the codec; rewind before handing the stream to `open`.
     if (const base::Optional seekResult = stream.seek(0); !seekResult.hasValue() || *seekResult != 0)
     {
-        priv::err() << "Failed to open sound buffer (rewind after codec detection failed)";
+        priv::errMsg("Failed to open sound buffer (rewind after codec detection failed)");
         return buf;
     }
 
     const base::Optional info = reader->open(stream);
     if (!info.hasValue())
     {
-        priv::err() << "Failed to open sound buffer (codec rejected the data)";
+        priv::errMsg("Failed to open sound buffer (codec rejected the data)");
         return buf;
     }
 
     if (info->channelMap.isEmpty() || info->sampleRate == 0u)
     {
-        priv::err() << "Failed to load sound buffer (codec returned invalid metadata)";
+        priv::errMsg("Failed to load sound buffer (codec returned invalid metadata)");
         return buf;
     }
 
     // On 32-bit targets (e.g. Emscripten) `SizeT` is narrower than `U64`; reject files we can't address.
     if (info->sampleCount > static_cast<base::U64>(static_cast<base::SizeT>(-1)))
     {
-        priv::err() << "Failed to load sound buffer (sample count exceeds addressable range on this platform)";
+        priv::errMsg("Failed to load sound buffer (sample count exceeds addressable range on this platform)");
         return buf;
     }
 
@@ -162,8 +162,10 @@ base::Optional<SoundBuffer> SoundBuffer::loadFromSamples(const base::I16*   samp
 
     if (channelMap.isEmpty() || sampleRate == 0u)
     {
-        priv::err() << "Failed to load sound buffer from samples (count: " << sampleCount
-                    << ", channels: " << channelMap.getSize() << ", sample rate: " << sampleRate << ")";
+        priv::errMsg("Failed to load sound buffer from samples (count: {}, channels: {}, sample rate: {})",
+                     sampleCount,
+                     channelMap.getSize(),
+                     sampleRate);
 
         return buf;
     }
