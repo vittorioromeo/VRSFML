@@ -138,10 +138,7 @@ template <typename FormatFn>
         if (result == FmtResult::Overflow)
         {
             if (cap > static_cast<SizeT>(-1) / 2u)
-            {
-                SFML_BASE_ASSERT(false && "Fmt heap fallback capacity overflow");
                 return FmtResult::Failed;
-            }
 
             cap *= 2u;
         }
