@@ -45,7 +45,7 @@ extern "C"
 
 namespace
 {
-constexpr GLenum GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT = 0x8C'D6u; // NOLINT(readability-identifier-naming)
+constexpr GLenum kGlFramebufferIncompleteAttachment = 0x8C'D6u; // NOLINT(readability-identifier-naming)
 
 
 struct ScopedFramebufferHooks
@@ -64,7 +64,7 @@ struct ScopedFramebufferHooks
         ++checkFramebufferStatusCallCount;
 
         if (failOnSecondFramebufferStatusCheck && checkFramebufferStatusCallCount == 2u)
-            return GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
+            return kGlFramebufferIncompleteAttachment;
 
         return originalCheckFramebufferStatus(target);
     }

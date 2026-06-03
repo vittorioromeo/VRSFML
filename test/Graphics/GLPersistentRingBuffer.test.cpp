@@ -36,14 +36,17 @@ using ERingBuffer = sf::GLPersistentRingBuffer<EBO>;
 
 ////////////////////////////////////////////////////////////
 template <typename TBufferObject>
-void readbackBufferBytes(const TBufferObject& obj, const sf::base::SizeT offset, const sf::base::SizeT size, unsigned char* const out)
+void ringReadbackBufferBytes(const TBufferObject&  obj,
+                             const sf::base::SizeT offset,
+                             const sf::base::SizeT size,
+                             unsigned char* const  out)
 {
     glCheck(glGetNamedBufferSubData(obj.getId(), static_cast<GLintptr>(offset), static_cast<GLsizeiptr>(size), out));
 }
 
 
 ////////////////////////////////////////////////////////////
-void drainGLCommandQueue()
+void ringDrainGLCommandQueue()
 {
     glCheck(glFinish());
 }
@@ -176,7 +179,7 @@ TEST_CASE("[GLUtils] sf::GLPersistentRingBuffer" * doctest::skip(skipDisplayTest
         (void)sb.buffer.beginWrite(sb.obj, 64u);
         (void)sb.buffer.beginWrite(sb.obj, 32u);
 
-        drainGLCommandQueue();
+        ringDrainGLCommandQueue();
         sb.buffer.drain();
 
         const auto offsetAfter = sb.buffer.beginWrite(sb.obj, 16u);
@@ -271,7 +274,7 @@ TEST_CASE("[GLUtils] sf::GLPersistentRingBuffer" * doctest::skip(skipDisplayTest
         CHECK(offset0 == 0u);
         sb.buffer.commit();
 
-        drainGLCommandQueue();
+        ringDrainGLCommandQueue();
         sb.buffer.drain();
 
         const auto offsetAfter = sb.buffer.beginWrite(sb.obj, 50u);
@@ -286,7 +289,7 @@ TEST_CASE("[GLUtils] sf::GLPersistentRingBuffer" * doctest::skip(skipDisplayTest
         CHECK(offset0 == 0u);
         sb.buffer.commit();
 
-        drainGLCommandQueue();
+        ringDrainGLCommandQueue();
 
         // reclaim() is non-blocking but with a drained pipeline the fence has signaled.
         sb.buffer.reclaim();
@@ -305,7 +308,7 @@ TEST_CASE("[GLUtils] sf::GLPersistentRingBuffer" * doctest::skip(skipDisplayTest
             CHECK(sb.buffer.beginWrite(sb.obj, 100u) == 0u);
             CHECK(sb.buffer.beginWrite(sb.obj, 50u) == 100u);
             sb.buffer.commit();
-            drainGLCommandQueue();
+            ringDrainGLCommandQueue();
         }
     }
 
@@ -324,7 +327,7 @@ TEST_CASE("[GLUtils] sf::GLPersistentRingBuffer" * doctest::skip(skipDisplayTest
         sb.buffer.flushBytesToGPU(sb.obj, offset, 512u);
 
         unsigned char readback[512]{};
-        readbackBufferBytes(sb.obj, offset, 512u, readback);
+        ringReadbackBufferBytes(sb.obj, offset, 512u, readback);
         CHECK(SFML_BASE_MEMCMP(readback, pattern, 512u) == 0);
     }
 
@@ -351,8 +354,8 @@ TEST_CASE("[GLUtils] sf::GLPersistentRingBuffer" * doctest::skip(skipDisplayTest
 
         unsigned char readbackA[128]{};
         unsigned char readbackB[64]{};
-        readbackBufferBytes(sb.obj, 0u, 128u, readbackA);
-        readbackBufferBytes(sb.obj, 128u, 64u, readbackB);
+        ringReadbackBufferBytes(sb.obj, 0u, 128u, readbackA);
+        ringReadbackBufferBytes(sb.obj, 128u, 64u, readbackB);
 
         CHECK(SFML_BASE_MEMCMP(readbackA, patternA, 128u) == 0);
         CHECK(SFML_BASE_MEMCMP(readbackB, patternB, 64u) == 0);
@@ -387,8 +390,8 @@ TEST_CASE("[GLUtils] sf::GLPersistentRingBuffer" * doctest::skip(skipDisplayTest
 
         unsigned char readbackA[100]{};
         unsigned char readbackB[1024]{};
-        readbackBufferBytes(sb.obj, 0u, 100u, readbackA);
-        readbackBufferBytes(sb.obj, 100u, 1024u, readbackB);
+        ringReadbackBufferBytes(sb.obj, 0u, 100u, readbackA);
+        ringReadbackBufferBytes(sb.obj, 100u, 1024u, readbackB);
 
         CHECK(SFML_BASE_MEMCMP(readbackA, patternA, 100u) == 0);
         CHECK(SFML_BASE_MEMCMP(readbackB, patternB, 1024u) == 0);
@@ -417,8 +420,8 @@ TEST_CASE("[GLUtils] sf::GLPersistentRingBuffer" * doctest::skip(skipDisplayTest
 
         unsigned char readbackA[100]{};
         unsigned char readbackB[1024]{};
-        readbackBufferBytes(sb.obj, 0u, 100u, readbackA);
-        readbackBufferBytes(sb.obj, 100u, 1024u, readbackB);
+        ringReadbackBufferBytes(sb.obj, 0u, 100u, readbackA);
+        ringReadbackBufferBytes(sb.obj, 100u, 1024u, readbackB);
 
         CHECK(SFML_BASE_MEMCMP(readbackA, patternA, 100u) == 0);
         CHECK(SFML_BASE_MEMCMP(readbackB, patternB, 1024u) == 0);
@@ -448,7 +451,7 @@ TEST_CASE("[GLUtils] sf::GLPersistentRingBuffer" * doctest::skip(skipDisplayTest
         sb.buffer.commit();
 
         unsigned char readback[256]{};
-        readbackBufferBytes(sb.obj, 0u, 256u, readback);
+        ringReadbackBufferBytes(sb.obj, 0u, 256u, readback);
         CHECK(SFML_BASE_MEMCMP(readback, fresh, 256u) == 0);
     }
 
@@ -479,11 +482,11 @@ TEST_CASE("[GLUtils] sf::GLPersistentRingBuffer" * doctest::skip(skipDisplayTest
         sb.buffer.commit();
 
         unsigned char readback[total]{};
-        readbackBufferBytes(sb.obj, 0u, total, readback);
+        ringReadbackBufferBytes(sb.obj, 0u, total, readback);
         CHECK(SFML_BASE_MEMCMP(readback, expected, total) == 0);
 
         // Frame 2: drain (simulating clear), fill again from 0.
-        drainGLCommandQueue();
+        ringDrainGLCommandQueue();
         sb.buffer.drain();
 
         for (sf::base::SizeT i = 0u; i < numChunks; ++i)
@@ -541,7 +544,7 @@ TEST_CASE("[GLUtils] sf::GLPersistentRingBuffer" * doctest::skip(skipDisplayTest
         CHECK(dest.buffer.capacity() == originalCap);
 
         // Destination can drain + reuse normally.
-        drainGLCommandQueue();
+        ringDrainGLCommandQueue();
         dest.buffer.drain();
 
         const auto offsetAfter = dest.buffer.beginWrite(dest.obj, 128u);
@@ -581,10 +584,10 @@ TEST_CASE("[GLUtils] sf::GLPersistentRingBuffer" * doctest::skip(skipDisplayTest
         sb.buffer.commit();
 
         unsigned char readback[256]{};
-        readbackBufferBytes(sb.obj, 0u, 256u, readback);
+        ringReadbackBufferBytes(sb.obj, 0u, 256u, readback);
         CHECK(SFML_BASE_MEMCMP(readback, pattern, 256u) == 0);
 
-        drainGLCommandQueue();
+        ringDrainGLCommandQueue();
         sb.buffer.drain();
 
         const auto offsetAfter = sb.buffer.beginWrite(sb.obj, 64u);

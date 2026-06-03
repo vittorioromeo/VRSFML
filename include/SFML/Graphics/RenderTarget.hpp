@@ -546,10 +546,17 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Tell if the render target will use sRGB encoding when drawing on it
     ///
+    /// The sRGB state is a fact of the underlying target type
+    /// (always `false` for `RenderWindow`; set at creation time for
+    /// `RenderTexture`) and is captured once at construction.
+    ///
     /// \return `true` if the render target use sRGB encoding, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual bool isSrgb() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] bool isSrgb() const
+    {
+        return m_isSrgb;
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Activate or deactivate the render target for rendering
@@ -787,8 +794,10 @@ protected:
     /// through one of the concrete subclasses (`sf::RenderWindow`,
     /// `sf::RenderTexture`).
     ///
+    /// \param isSrgb Whether the target uses sRGB encoding (captured once)
+    ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit RenderTarget();
+    [[nodiscard]] explicit RenderTarget(bool isSrgb = false);
 
     ////////////////////////////////////////////////////////////
     /// \brief Synchronize the GPU with the CPU (beginning of a frame)
@@ -903,8 +912,8 @@ private:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void updateCachedGenerations(const RenderStates& states)
     {
-        m_lastShaderGeneration  = states.shader != nullptr ? states.shader->m_uniformGeneration : base::U8{0};
-        m_lastTextureGeneration = states.texture != nullptr ? states.texture->m_destructiveGeneration : base::U8{0};
+        m_lastShaderGeneration  = states.shader != nullptr ? states.shader->m_uniformGeneration : base::U32{0};
+        m_lastTextureGeneration = states.texture != nullptr ? states.texture->m_destructiveGeneration : base::U32{0};
     }
 
     ////////////////////////////////////////////////////////////
@@ -1228,9 +1237,10 @@ private:
     base::SizeT    m_numAutoBatchVertices{0u};                 //!< Number of vertices in the current autobatch
     base::SizeT    m_autoBatchVertexThreshold{32'768u};        //!< Threshold for batch vertex count
     RenderStates   m_lastRenderStates{};                       //!< Cached render states (autobatching)
-    base::U8       m_lastShaderGeneration{0};  //!< Cached shader uniform generation (autobatch invalidation)
-    base::U8       m_lastTextureGeneration{0}; //!< Cached texture destructive generation (autobatch invalidation)
+    base::U32      m_lastShaderGeneration{0};  //!< Cached shader uniform generation (autobatch invalidation)
+    base::U32      m_lastTextureGeneration{0}; //!< Cached texture destructive generation (autobatch invalidation)
     bool           m_isStateLocked{false}; //!< Whether render states are currently bound via `withLockedRenderStates`
+    bool           m_isSrgb{false};        //!< Whether the target uses sRGB encoding (set at construction)
 
     ////////////////////////////////////////////////////////////
     struct Impl;

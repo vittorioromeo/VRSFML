@@ -6,10 +6,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Window/WindowContext.hpp"
+
 #include "SFML/GLUtils/GLCheck.hpp"
-#include "SFML/GLUtils/GLSharedContextGuard.hpp"
 #include "SFML/GLUtils/GLUniqueResource.hpp"
 #include "SFML/GLUtils/Glad.hpp"
+
+#include "SFML/Base/Assert.hpp"
 
 
 namespace sf::priv
@@ -24,10 +27,10 @@ namespace sf::priv
 /// and matching `BindingType` (e.g. `GL_ARRAY_BUFFER_BINDING`) template
 /// parameters.
 ///
-/// Creation and destruction always happen on the shared GL context (via
-/// `GLSharedContextGuard`) so that buffer objects can be safely accessed
-/// from any context that shares resources with it. Binding and querying
-/// happen on whatever context is currently active.
+/// Buffer objects are shareable across all GL contexts in the same share
+/// group, so `create` / `destroy` are valid from any currently active
+/// context -- the caller is required to ensure one is current. Binding and
+/// querying likewise happen on whatever context is currently active.
 ///
 /// \tparam BufferType  GL buffer target enum (e.g. `GL_ARRAY_BUFFER`)
 /// \tparam BindingType GL binding-point query enum (e.g. `GL_ARRAY_BUFFER_BINDING`)
@@ -39,8 +42,10 @@ struct GLBufferObjectFuncs
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] static void create(unsigned int& id)
     {
-        // Always create buffers on the shared context
-        GLSharedContextGuard guard;
+        // Buffers are shareable across the share group, so creation is valid
+        // from any current context. Caller must have one active -- saves the
+        // two `makeCurrent` syscalls of a `GLSharedContextGuard`.
+        SFML_BASE_ASSERT(WindowContext::hasActiveThreadLocalGlContext());
         glCheck(glGenBuffers(1, &id));
     }
 
@@ -48,8 +53,8 @@ struct GLBufferObjectFuncs
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] static void destroy(unsigned int& id)
     {
-        // Always destroy buffers on the shared context
-        GLSharedContextGuard guard;
+        // See `create` -- destruction is also valid from any current context.
+        SFML_BASE_ASSERT(WindowContext::hasActiveThreadLocalGlContext());
         glCheck(glDeleteBuffers(1, &id));
     }
 

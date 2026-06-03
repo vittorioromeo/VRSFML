@@ -500,7 +500,7 @@ private:
     bool            m_hasMipmap{};     //!< Has the mipmap been generated?
     unsigned int    m_cacheId;         //!< Unique number that identifies the texture to the render target's cache
 
-    mutable base::U8 m_destructiveGeneration{0}; //!< Bumped on every non-additive mutation (autobatch invalidation)
+    base::U32 m_destructiveGeneration{0}; //!< Bumped on every non-additive mutation (autobatch invalidation)
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking
