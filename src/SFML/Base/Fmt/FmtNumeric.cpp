@@ -102,10 +102,9 @@ FmtResult fmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec)
     char buf[40];
 
     char* const end = toChars(buf, buf + sizeof(buf), arg, prec);
+
     if (end == nullptr)
-    {
         return FmtResult::Failed;
-    }
 
     return sink.append(buf, static_cast<SizeT>(end - buf));
 }
