@@ -3,9 +3,11 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Network/Http.hpp"
 
-#include "SFML/System/IO.hpp"
-
+#include "SFML/Base/Fmt/Fmt.hpp"
+#include "SFML/Base/Fmt/FmtNumeric.hpp"
 #include "SFML/Base/FromChars.hpp"
+#include "SFML/Base/Scn/ScnStdin.hpp"
+#include "SFML/Base/Scn/ScnString.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
 
@@ -40,7 +42,7 @@ void requestUrl(const sf::base::StringView& url, int redirectsRemaining)
 
     if (ec != sf::base::FromCharsError::None)
     {
-        sf::cOut() << "Invalid port number in URL: " << port << '\n' << sf::endL;
+        sf::base::printLn("Invalid port number in URL: {}", port);
         return;
     }
 
@@ -54,19 +56,18 @@ void requestUrl(const sf::base::StringView& url, int redirectsRemaining)
 
     // Check the numeric status code and display the result
     const auto statusNum = static_cast<int>(response.getStatus());
-    sf::cOut() << "Server responded with HTTP status " << statusNum << '\n' << sf::endL;
+    sf::base::printLn("Server responded with HTTP status {}", statusNum);
 
     // Output body if its content type is text-based and not compressed
     if (response.getField("Content-Type").find("text") == 0)
     {
         if (const auto encoding = response.getField("Content-Encoding"); encoding.empty())
         {
-            sf::cOut() << response.getBody() << sf::endL;
+            sf::base::printLn("{}", response.getBody());
         }
         else
         {
-            sf::cOut() << encoding << " compressed body content, length: " << response.getBody().size() << '\n'
-                       << sf::endL;
+            sf::base::printLn("{} compressed body content, length: {}", encoding, response.getBody().size());
         }
     }
 
@@ -78,7 +79,7 @@ void requestUrl(const sf::base::StringView& url, int redirectsRemaining)
     {
         if (redirectsRemaining == 0)
         {
-            sf::cOut() << "Maximum number of redirects reached" << sf::endL;
+            sf::base::printLn("Maximum number of redirects reached");
             return;
         }
 
@@ -87,7 +88,7 @@ void requestUrl(const sf::base::StringView& url, int redirectsRemaining)
             if ((nextUrl.find("http://") != 0) && (nextUrl.find("https://") != 0))
                 nextUrl = host + nextUrl;
 
-            sf::cOut() << "Following redirect to " << nextUrl << '\n' << sf::endL;
+            sf::base::printLn("Following redirect to {}", nextUrl);
             requestUrl(nextUrl, redirectsRemaining - 1);
         }
     }
@@ -108,17 +109,17 @@ int main()
 
     do
     {
-        sf::cOut() << "Type the complete URL of the webpage to request: ";
-        sf::cIn() >> url;
+        sf::base::print("Type the complete URL of the webpage to request: ");
+        (void)sf::base::scnStdinInto(url);
     } while ((url.find("http://") != 0) && (url.find("https://") != 0));
 
-    sf::cOut() << "\nRequesting " << url << '\n' << sf::endL;
+    sf::base::printLn("\nRequesting {}", url);
 
     // Request the URL stopping at a maximum of 16 redirects
     requestUrl(url, 16);
 
     // Wait until the user presses 'enter' key
-    sf::cOut() << "Press enter to exit..." << sf::endL;
-    sf::cIn().ignore(10'000, '\n');
-    sf::cIn().ignore(10'000, '\n');
+    sf::base::printLn("Press enter to exit...");
+    sf::base::scnStdinIgnoreLine();
+    sf::base::scnStdinIgnoreLine();
 }

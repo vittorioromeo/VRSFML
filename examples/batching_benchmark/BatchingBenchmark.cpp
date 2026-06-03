@@ -25,6 +25,8 @@
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/Constants.hpp"
+#include "SFML/Base/Fmt/Fmt.hpp"
+#include "SFML/Base/Fmt/FmtNumeric.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
@@ -148,10 +150,10 @@ int main()
 //
 // Set up benchmark
 #ifndef SFML_OPENGL_ES
-    sf::cOut() << "OpenGL ES not detected, using persistent GPU batching\n";
+    sf::base::printLn("OpenGL ES not detected, using persistent GPU batching");
     sf::PersistentGPUDrawableBatch drawableBatch;
 #else
-    sf::cOut() << "OpenGL ES detected, using CPU storage-backed batching\n";
+    sf::base::printLn("OpenGL ES detected, using CPU storage-backed batching");
     sf::CPUDrawableBatch drawableBatch;
 #endif
     populateEntities(static_cast<sf::base::SizeT>(numEntities));
@@ -204,5 +206,5 @@ int main()
 
     const auto finalTime = clock.getElapsedTime() - startTime;
 
-    sf::cOut() << "FINAL TIME: " << finalTime.asMilliseconds() << " ms\n";
+    sf::base::printLn("FINAL TIME: {} ms", finalTime.asMilliseconds());
 }

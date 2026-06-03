@@ -53,6 +53,8 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Constants.hpp"
+#include "SFML/Base/Fmt/Fmt.hpp"
+#include "SFML/Base/Fmt/FmtNumeric.hpp"
 #include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
@@ -482,7 +484,7 @@ void Main::gameLoopUpdateAutosave(const sf::base::I64 elapsedUs)
     if (autosaveUsAccumulator >= 180'000'000) // 3 min
     {
         autosaveUsAccumulator = 0;
-        sf::cOut() << "Autosaving...\n";
+        sf::base::printLn("Autosaving...");
         saveMainPlaythroughToFile();
     }
 }

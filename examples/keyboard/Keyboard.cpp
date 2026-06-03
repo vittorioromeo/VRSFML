@@ -29,7 +29,6 @@
 #include "SFML/Window/WindowSettings.hpp" // IWYU pragma: keep
 
 #include "SFML/System/Clock.hpp"
-#include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Rect2.hpp"
@@ -38,6 +37,8 @@
 #include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Fmt/Fmt.hpp"
+#include "SFML/Base/Fmt/FmtNumeric.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
@@ -331,7 +332,7 @@ constexpr const char* keyIdentifier(sf::Keyboard::Key code)
 #undef CASE
     }
 
-    sf::cErr() << "invalid keyboard code";
+    sf::base::printErr("invalid keyboard code");
     sf::base::abort();
 }
 
@@ -593,7 +594,7 @@ constexpr const char* scancodeIdentifier(sf::Keyboard::Scancode scancode)
 #undef CASE
     }
 
-    sf::cErr() << "invalid keyboard scancode";
+    sf::base::printErr("invalid keyboard scancode");
     sf::base::abort();
 }
 
@@ -1034,9 +1035,7 @@ sf::Utf8String textEventDescription(const sf::Event::TextEntered& textEntered)
     text += textEntered.unicode;
     text += "\nU+";
 
-    sf::OutStringStream oss;
-    oss << sf::Hex{} << sf::SetWidth{4} << sf::SetFill{'0'} << static_cast<sf::base::U32>(textEntered.unicode);
-    text += oss.to<sf::Utf8String>();
+    (void)sf::base::fmtTo(text, "{:0>4x}", static_cast<sf::base::U32>(textEntered.unicode));
 
     return text;
 }

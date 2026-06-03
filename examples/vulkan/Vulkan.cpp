@@ -30,6 +30,8 @@
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/Clamp.hpp"
+#include "SFML/Base/Fmt/Fmt.hpp"
+#include "SFML/Base/Fmt/FmtNumeric.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Cos.hpp"
 #include "SFML/Base/Math/Sin.hpp"
@@ -191,7 +193,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     const char* pMessage,
     void*)
 {
-    sf::cErr() << pMessage << sf::endL;
+    sf::base::printErrLn("{}", pMessage);
 
     return VK_FALSE;
 }
@@ -207,7 +209,7 @@ private:
     void failStep(sf::base::SourceLocation sl = sf::base::SourceLocation::current())
     {
         vulkanAvailable = false;
-        sf::cErr() << "Vulkan setup failed at step '" << sl.functionName() << "', line " << sl.line() << '\n';
+        sf::base::printErrLn("Vulkan setup failed at step '{}', line {}", sl.functionName(), sl.line());
     }
 
 public:
@@ -222,7 +224,7 @@ public:
             f(); // sets `vulkanAvailable` to false if it fails
 
             if (!vulkanAvailable)
-                sf::cErr() << "Vulkan setup failed at step '" << fName << "'\n";
+                sf::base::printErrLn("Vulkan setup failed at step '{}'", fName);
         };
 
 #define TRY_STEP(...) tryStep(#__VA_ARGS__, [&] { __VA_ARGS__; })
