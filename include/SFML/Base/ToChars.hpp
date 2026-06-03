@@ -7,6 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Builtin/Clzll.hpp"
 #include "SFML/Base/Builtin/IsInf.hpp"
 #include "SFML/Base/Builtin/IsNan.hpp"
 #include "SFML/Base/Builtin/Signbit.hpp"
@@ -53,59 +54,75 @@ inline constexpr char digitPairs[201] =
 
 
 ////////////////////////////////////////////////////////////
+/// \brief Maps a value's top set-bit index (0..63) to its decimal digit count
+///
+/// `decimalDigitsFromTopBit[b]` is the digit count of the largest 64-bit value
+/// whose highest set bit is `b`. Because all values sharing a top bit span at
+/// most one decimal-length boundary, this is the exact digit count or an
+/// over-estimate by exactly one, corrected by a single comparison below.
+///
+////////////////////////////////////////////////////////////
+inline constexpr unsigned char decimalDigitsFromTopBit[64] = {
+    1,  1,  1,  2,  2,  2,  3,  3,  3,  4,  4,  4,  4,  5,  5,  5,  6,  6,  6,  7,  7,  7,
+    7,  8,  8,  8,  9,  9,  9,  10, 10, 10, 10, 11, 11, 11, 12, 12, 12, 13, 13, 13, 13, 14,
+    14, 14, 15, 15, 15, 16, 16, 16, 16, 17, 17, 17, 18, 18, 18, 19, 19, 19, 19, 20};
+
+
+////////////////////////////////////////////////////////////
+/// \brief Smallest values requiring a given decimal digit count
+///
+/// `decimalThreshold[t] == 10^(t-1)` is the smallest `t`-digit number, used to
+/// correct the over-estimate from `decimalDigitsFromTopBit`. Indices `0` and `1`
+/// are `0` so the correction is a no-op for the single-digit / zero case.
+///
+////////////////////////////////////////////////////////////
+inline constexpr unsigned long long decimalThreshold[21] = {
+    0ull,
+    0ull,
+    10ull,
+    100ull,
+    1'000ull,
+    10'000ull,
+    100'000ull,
+    1'000'000ull,
+    10'000'000ull,
+    100'000'000ull,
+    1'000'000'000ull,
+    10'000'000'000ull,
+    100'000'000'000ull,
+    1'000'000'000'000ull,
+    10'000'000'000'000ull,
+    100'000'000'000'000ull,
+    1'000'000'000'000'000ull,
+    10'000'000'000'000'000ull,
+    100'000'000'000'000'000ull,
+    1'000'000'000'000'000'000ull,
+    10'000'000'000'000'000'000ull};
+
+
+////////////////////////////////////////////////////////////
 /// \brief Number of decimal digits needed to represent `value`
 ///
-/// Cascading comparisons; compiler turns it into a small branch tree.
-/// Common cases (`< 100`) exit in one or two branches.
+/// Branchless: one count-leading-zeros to find the top set bit, a table lookup
+/// for a digit-count estimate (exact or one too high), and a single comparison
+/// to correct the off-by-one. Latency is independent of the input's magnitude.
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::const]] inline constexpr int decimalDigitCount(const T x) noexcept
+[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr int decimalDigitCount(const T x) noexcept
 {
     static_assert(SFML_BASE_IS_UNSIGNED(T));
 
-    if constexpr (sizeof(T) <= 4)
-    {
-        // clang-format off
-        if (x < 10u) return 1;
-        if (x < 100u) return 2;
-        if (x < 1'000u) return 3;
-        if (x < 10'000u) return 4;
-        if (x < 100'000u) return 5;
-        if (x < 1'000'000u) return 6;
-        if (x < 10'000'000u) return 7;
-        if (x < 100'000'000u) return 8;
-        if (x < 1'000'000'000u) return 9;
-        // clang-format on
+    // Widen to 64-bit so a single `clzll`-based path covers every unsigned width.
+    const unsigned long long n = x;
 
-        return 10;
-    }
-    else
-    {
-        // clang-format off
-        if (x < 10ull) return 1;
-        if (x < 100ull) return 2;
-        if (x < 1'000ull) return 3;
-        if (x < 10'000ull) return 4;
-        if (x < 100'000ull) return 5;
-        if (x < 1'000'000ull) return 6;
-        if (x < 10'000'000ull) return 7;
-        if (x < 100'000'000ull) return 8;
-        if (x < 1'000'000'000ull) return 9;
-        if (x < 10'000'000'000ull) return 10;
-        if (x < 100'000'000'000ull) return 11;
-        if (x < 1'000'000'000'000ull) return 12;
-        if (x < 10'000'000'000'000ull) return 13;
-        if (x < 100'000'000'000'000ull) return 14;
-        if (x < 1'000'000'000'000'000ull) return 15;
-        if (x < 10'000'000'000'000'000ull) return 16;
-        if (x < 100'000'000'000'000'000ull) return 17;
-        if (x < 1'000'000'000'000'000'000ull) return 18;
-        if (x < 10'000'000'000'000'000'000ull) return 19;
-        // clang-format on
+    // `n | 1ull` keeps the operand nonzero: `__builtin_clzll(0)` is UB and the
+    // `0` and `1` cases share digit count `1`, so the `| 1` is load-bearing.
+    const int t = decimalDigitsFromTopBit[63 - SFML_BASE_CLZLL(n | 1ull)];
 
-        return 20;
-    }
+    // Subtract one when the estimate over-counts (i.e. `n` is below the smallest
+    // `t`-digit value); `decimalThreshold[1] == 0` makes this a no-op for `t == 1`.
+    return t - (n < decimalThreshold[t]);
 }
 
 
