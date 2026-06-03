@@ -1,5 +1,6 @@
 #include "GraphicsUtil.hpp"
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/Graphics/Color.hpp"
 
@@ -15,8 +16,6 @@
 #include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 TEST_CASE("[Graphics] sf::Color")

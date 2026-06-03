@@ -1,11 +1,11 @@
+#include "Tst/Tst.hpp"
+
 #include "SFML/Window/ContextSettings.hpp"
 
 #include "SFML/Base/Trait/IsTriviallyCopyAssignable.hpp"
 #include "SFML/Base/Trait/IsTriviallyCopyConstructible.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 TEST_CASE("[Window] sf::ContextSettings")

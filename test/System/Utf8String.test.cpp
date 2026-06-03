@@ -1,4 +1,5 @@
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/System/Utf8String.hpp"
 
@@ -14,8 +15,6 @@
 #include "SFML/Base/Swap.hpp"
 #include "SFML/Base/Trait/IsSame.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 namespace

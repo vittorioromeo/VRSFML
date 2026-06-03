@@ -1,4 +1,5 @@
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/System/Angle.hpp"
 
@@ -11,8 +12,6 @@
 #include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 TEST_CASE("[System] sf::Angle")

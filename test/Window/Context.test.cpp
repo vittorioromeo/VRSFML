@@ -2,6 +2,7 @@
 #include "SFML/Window/WindowContext.hpp"
 
 // Other 1st party headers
+#include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
 #include "SFML/Window/ContextSettings.hpp"
@@ -14,8 +15,6 @@
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 #include "SFML/Base/UniquePtr.hpp"
-
-#include "Tst/Tst.hpp"
 
 #if defined(SFML_SYSTEM_WINDOWS)
     #define GLAPI __stdcall

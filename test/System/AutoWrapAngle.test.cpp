@@ -1,4 +1,5 @@
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/System/AutoWrapAngle.hpp"
 
@@ -12,8 +13,6 @@
 #include "SFML/Base/Trait/IsTriviallyAssignable.hpp"
 #include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
 #include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 TEST_CASE("[System] sf::AutoWrapAngle")

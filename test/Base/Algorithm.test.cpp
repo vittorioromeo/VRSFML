@@ -1,3 +1,5 @@
+#include "Tst/Tst.hpp"
+
 #include "SFML/Base/Algorithm/AdjacentFind.hpp"
 #include "SFML/Base/Algorithm/AllOf.hpp"
 #include "SFML/Base/Algorithm/AnyOf.hpp"
@@ -10,8 +12,6 @@
 #include "SFML/Base/Algorithm/Rotate.hpp"
 #include "SFML/Base/Algorithm/SwapAndPop.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 TEST_CASE("[Base] Base/Algorithm/*.hpp")

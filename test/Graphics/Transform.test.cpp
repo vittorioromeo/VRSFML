@@ -1,5 +1,6 @@
 #include "GraphicsUtil.hpp"
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/Graphics/Transform.hpp"
 
@@ -17,8 +18,6 @@
 #include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 TEST_CASE("[Graphics] sf::Transform")

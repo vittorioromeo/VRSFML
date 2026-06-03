@@ -1,5 +1,6 @@
 #include "GraphicsUtil.hpp"
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/Graphics/RenderTarget.hpp"
 
@@ -15,8 +16,6 @@
 #include "SFML/Base/Trait/IsCopyConstructible.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 namespace

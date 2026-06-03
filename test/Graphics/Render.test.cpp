@@ -1,4 +1,5 @@
 #include "GraphicsUtil.hpp"
+#include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
 #include "SFML/Graphics/Color.hpp"
@@ -31,8 +32,6 @@
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Thread.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 // Mirrors the trick in test/Window/Context.test.cpp: forces visibility of

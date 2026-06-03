@@ -1,10 +1,10 @@
 
+#include "Tst/Tst.hpp"
+
 #include "SFML/Base/BackInserter.hpp"
 
 #include "SFML/Base/Algorithm/Copy.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 TEST_CASE("[Base] Base/BackInserter.hpp")

@@ -1,6 +1,7 @@
 #include "StringifyOptionalUtil.hpp"
 #include "StringifyStringViewUtil.hpp"
 #include "TemporaryFile.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/System/FileInputStream.hpp"
 
@@ -14,8 +15,6 @@
 #include "SFML/Base/Trait/IsDefaultConstructible.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 using sf::testing::TemporaryFile;

@@ -1,8 +1,7 @@
+#include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
 #include "SFML/Window/Mouse.hpp"
-
-#include "Tst/Tst.hpp"
 
 TEST_CASE("[Window] sf::Mouse" * tst::skip(skipDisplayTests))
 {

@@ -6,6 +6,7 @@
 // Other 1st party headers
 #include "AudioUtil.hpp"
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/Audio/SoundBuffer.hpp"
 
@@ -23,8 +24,6 @@
 #include "SFML/Base/Trait/IsMoveConstructible.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
-
-#include "Tst/Tst.hpp"
 
 TEST_CASE("[Audio] sf::Sound" * tst::skip(skipAudioDeviceTests))
 {

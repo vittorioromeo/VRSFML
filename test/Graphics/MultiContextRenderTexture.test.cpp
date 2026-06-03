@@ -1,6 +1,7 @@
 #include "GraphicsUtil.hpp"
 #include "StringifyOptionalUtil.hpp"
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
 #include "SFML/Graphics/DrawIndexedVerticesSettings.hpp"
@@ -16,8 +17,6 @@
 
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 #if defined(_WIN32)

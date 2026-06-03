@@ -1,10 +1,10 @@
+#include "Tst/Tst.hpp"
+
 #include "SFML/Base/FromChars.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/ToString.hpp"
-
-#include "Tst/Tst.hpp"
 
 #include <limits>
 

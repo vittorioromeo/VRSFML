@@ -1,3 +1,5 @@
+#include "Tst/Tst.hpp"
+
 #include "SFML/System/GlobalAnchorPointMixin.hpp"
 
 #include "SFML/System/Priv/Vec2Base.hpp"
@@ -13,8 +15,6 @@
 #include "SFML/Base/Trait/IsTriviallyAssignable.hpp"
 #include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
 #include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 namespace

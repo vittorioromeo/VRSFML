@@ -4,6 +4,7 @@
 #include "AudioUtil.hpp"
 #include "LoadIntoMemoryUtil.hpp"
 #include "SystemUtil.hpp" // IWYU pragma: keep
+#include "Tst/Tst.hpp"
 
 #include "SFML/System/FileInputStream.hpp"
 #include "SFML/System/Path.hpp"
@@ -17,8 +18,6 @@
 #include "SFML/Base/Trait/IsMoveConstructible.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 TEST_CASE("[Audio] sf::SoundBuffer" * tst::skip(skipAudioDeviceTests))

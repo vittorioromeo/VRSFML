@@ -1,9 +1,9 @@
+#include "Tst/Tst.hpp"
+
 #include "SFML/Base/SourceLocation.hpp"
 
 #include "SFML/Base/Builtin/Strcmp.hpp"
 #include "SFML/Base/Builtin/Strstr.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 TEST_CASE("[Base] Base/SourceLocation.hpp")

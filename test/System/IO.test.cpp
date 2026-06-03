@@ -2,6 +2,7 @@
 #include "StringifyStdStringUtil.hpp"
 #include "StringifyStringViewUtil.hpp"
 #include "TemporaryFile.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/System/IO.hpp"
 
@@ -20,8 +21,6 @@
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include "Tst/Tst.hpp"
 
 #include <string>
 

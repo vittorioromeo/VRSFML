@@ -1,8 +1,8 @@
+#include "Tst/Tst.hpp"
+
 #include "SFML/Base/Swap.hpp"
 
 #include "SFML/Base/Vector.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 namespace

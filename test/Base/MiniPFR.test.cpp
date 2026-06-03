@@ -1,10 +1,9 @@
 #include "StringifyStringViewUtil.hpp" // IWYU pragma: keep
+#include "Tst/Tst.hpp"
 
 #include "SFML/Base/MiniPFR.hpp"
 
 #include "SFML/Base/Trait/IsSame.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 namespace

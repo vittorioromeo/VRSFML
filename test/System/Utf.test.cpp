@@ -1,12 +1,11 @@
 #include "StringifyStdStringUtil.hpp"     // IWYU pragma: keep
 #include "StringifyStdStringViewUtil.hpp" // IWYU pragma: keep
+#include "Tst/Tst.hpp"
 
 #include "SFML/System/Utf.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/BackInserter.hpp"
-
-#include "Tst/Tst.hpp"
 
 #include <locale>
 #include <string_view>

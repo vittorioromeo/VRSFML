@@ -4,11 +4,10 @@
 
 // Other 1st party headers
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
 #include "SFML/System/Utf8String.hpp" // IWYU pragma: keep
-
-#include "Tst/Tst.hpp"
 
 // We're limited on what can be tested. Without control over the hardware and the
 // configuration of the operating system, certain things cannot be tested. In

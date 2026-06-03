@@ -1,5 +1,6 @@
 #include "StringifyIpAddressUtil.hpp"
 #include "StringifySfBaseStringUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/Network/IpAddress.hpp"
 
@@ -15,8 +16,6 @@
 #include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 using namespace sf::base::literals;

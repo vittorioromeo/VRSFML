@@ -30,8 +30,7 @@ struct Result
     // Implicit converting ctor so the SFINAE-fallback path (where the
     // user's `lhs op rhs` returns plain `bool` after our templated
     // operator drops out) still feeds into `const Result =` cleanly.
-    constexpr /*implicit*/ Result(bool p) noexcept :
-        passed{p} // NOLINT(google-explicit-constructor)
+    constexpr /*implicit*/ Result(bool p) noexcept : passed{p} // NOLINT(google-explicit-constructor)
     {
     }
 
@@ -123,7 +122,7 @@ struct ExpressionLhs
     SFML_BASE_PRAGMA(GCC diagnostic ignored "-Wconversion");                                             \
                                                                                                          \
     template <typename R>                                                                                \
-    auto operator op(const R& rhs)                                                \
+    auto operator op(const R& rhs)                                                                       \
         const->decltype((void)(static_cast<const L&>(lhs) op static_cast<const R&>(rhs)), Result{false}) \
     {                                                                                                    \
         bool res = static_cast<bool>(lhs op rhs);                                                        \

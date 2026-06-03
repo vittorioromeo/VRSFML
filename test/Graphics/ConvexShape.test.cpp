@@ -2,6 +2,7 @@
 
 // Other 1st party headers
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/Graphics/CircleShape.hpp"
 
@@ -12,8 +13,6 @@
 #include "SFML/Base/Trait/IsCopyConstructible.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 TEST_CASE("[Graphics] sf::ConvexShape")

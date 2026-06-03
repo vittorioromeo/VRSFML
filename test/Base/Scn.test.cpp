@@ -1,5 +1,6 @@
 #include "StringifySfBaseStringUtil.hpp"
 #include "StringifyStringViewUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/Base/Scn/Scn.hpp"
 
@@ -11,8 +12,6 @@
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 ////////////////////////////////////////////////////////////

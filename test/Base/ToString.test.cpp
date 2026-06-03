@@ -1,9 +1,8 @@
 #include "StringifySfBaseStringUtil.hpp" // IWYU pragma: keep
 #include "StringifyStringViewUtil.hpp"   // IWYU pragma: keep
+#include "Tst/Tst.hpp"
 
 #include "SFML/Base/ToString.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 TEST_CASE("[Base] Base/ToString.hpp")

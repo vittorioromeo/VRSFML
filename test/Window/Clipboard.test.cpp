@@ -4,11 +4,10 @@
 
 // Other 1st party headers
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
 #include "SFML/System/Utf8String.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 #ifndef SFML_SYSTEM_EMSCRIPTEN // TODO P1: clipboard not implemented for emscripten

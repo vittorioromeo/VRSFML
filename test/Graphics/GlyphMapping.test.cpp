@@ -1,4 +1,5 @@
 #include "GraphicsUtil.hpp"
+#include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
 #include "SFML/Graphics/GlyphMapping.hpp"
@@ -12,8 +13,6 @@
 #include "SFML/System/Path.hpp"
 
 #include "SFML/Base/SizeT.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 TEST_CASE("[Graphics] sf::GlyphMapping" * tst::skip(skipDisplayTests))

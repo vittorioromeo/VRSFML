@@ -1,5 +1,6 @@
 #include "StringifySfBaseStringUtil.hpp"
 #include "StringifyStringViewUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/Base/StringView.hpp"
 
@@ -19,8 +20,6 @@
 #include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
 #include "SFML/Base/Trait/IsTriviallyRelocatable.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 TEST_CASE("[Base] Base/StringView.hpp")

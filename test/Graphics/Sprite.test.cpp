@@ -4,6 +4,7 @@
 
 // Other 1st party headers
 #include "GraphicsUtil.hpp"
+#include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
 #include "SFML/Graphics/Texture.hpp"
@@ -21,8 +22,6 @@
 #include "SFML/Base/Trait/IsTriviallyAssignable.hpp"
 #include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
 #include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 TEST_CASE("[Graphics] sf::Sprite" * tst::skip(skipDisplayTests))

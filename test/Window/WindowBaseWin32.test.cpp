@@ -3,6 +3,7 @@
 #ifdef SFML_SYSTEM_WINDOWS
 
     #include "SystemUtil.hpp"
+    #include "Tst/Tst.hpp"
 
     #include "SFML/Window/WindowBase.hpp"
     #include "SFML/Window/WindowContext.hpp"
@@ -11,8 +12,6 @@
 
     #include "SFML/Base/Assert.hpp"
     #include "SFML/Base/Optional.hpp"
-
-    #include "Tst/Tst.hpp"
 
 
 namespace

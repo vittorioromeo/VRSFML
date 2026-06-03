@@ -1,12 +1,11 @@
 #include "StringifyStringViewUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/Base/ToCharsRadix.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StringView.hpp"
-
-#include "Tst/Tst.hpp"
 
 #include <limits>
 

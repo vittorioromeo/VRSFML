@@ -228,11 +228,11 @@ SFML_SYSTEM_API void atomicNotifyAll(const void* addr) noexcept;
         waitOnce<MemoryOrder::Suffix>(expected);                                                \
     }
 
-#define SFML_PRIV_ATOMIC_WAITUNTIL_ALIAS(Suffix)                                                               \
+#define SFML_PRIV_ATOMIC_WAITUNTIL_ALIAS(Suffix)                                                 \
     [[gnu::always_inline, gnu::flatten]] void waitUntil##Suffix(auto&& predicate) const noexcept \
-        requires(sizeof(T) == 4u || sizeof(T) == 8u)                                                           \
-    {                                                                                                          \
-        waitUntil<MemoryOrder::Suffix>(static_cast<decltype(predicate)>(predicate));                           \
+        requires(sizeof(T) == 4u || sizeof(T) == 8u)                                             \
+    {                                                                                            \
+        waitUntil<MemoryOrder::Suffix>(static_cast<decltype(predicate)>(predicate));             \
     }
 
 #define SFML_PRIV_ATOMIC_FETCH_INT_ALIAS(Op, Suffix)                        \

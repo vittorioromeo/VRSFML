@@ -1,10 +1,10 @@
+#include "Tst/Tst.hpp"
+
 #include "SFML/System/Err.hpp"
 
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 namespace
