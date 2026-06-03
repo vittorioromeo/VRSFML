@@ -227,7 +227,7 @@ void Main::log(const char* format, ...) // NOLINT(modernize-avoid-variadic-funct
     va_end(args);
 
     sf::base::printLn(*logFile, "{} - {}", static_cast<const char*>(timeBuffer), static_cast<const char*>(messageBuffer));
-    (void)logFile->flush(); // best-effort: a flush failure on the log is logged via... well, the log we couldn't flush.
+    (void)logFile->flush();
 }
 
 
