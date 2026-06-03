@@ -96,12 +96,12 @@ void Socket::configureTcpHandle(SocketHandle handle, bool isBlocking)
 
     // Disable the Nagle algorithm (i.e. removes buffering of TCP packets)
     if (!priv::SocketImpl::disableNagle(handle))
-        priv::err() << "Failed to set socket option \"TCP_NODELAY\"; packets will be buffered";
+        priv::errMsg("Failed to set socket option \"TCP_NODELAY\"; packets will be buffered");
 
     // On macOS, disable the SIGPIPE signal on disconnection
 #ifdef SFML_SYSTEM_MACOS
     if (!priv::SocketImpl::disableSigpipe(handle))
-        priv::err() << "Failed to set socket option \"SO_NOSIGPIPE\"";
+        priv::errMsg("Failed to set socket option \"SO_NOSIGPIPE\"");
 #endif
 }
 
@@ -112,7 +112,7 @@ SocketHandle Socket::createTcpHandle(bool isBlocking)
     const SocketHandle handle = priv::SocketImpl::tcpSocket();
     if (handle == priv::SocketImpl::invalidSocket())
     {
-        priv::err() << "Failed to create TCP socket";
+        priv::errMsg("Failed to create TCP socket");
         return handle;
     }
 
@@ -127,7 +127,7 @@ SocketHandle Socket::createUdpHandle(bool isBlocking)
     const SocketHandle handle = priv::SocketImpl::udpSocket();
     if (handle == priv::SocketImpl::invalidSocket())
     {
-        priv::err() << "Failed to create UDP socket";
+        priv::errMsg("Failed to create UDP socket");
         return handle;
     }
 
@@ -135,7 +135,7 @@ SocketHandle Socket::createUdpHandle(bool isBlocking)
 
     // Enable broadcast by default for UDP sockets
     if (!priv::SocketImpl::enableBroadcast(handle))
-        priv::err() << "Failed to enable broadcast on UDP socket";
+        priv::errMsg("Failed to enable broadcast on UDP socket");
 
     return handle;
 }
@@ -163,7 +163,7 @@ unsigned short Socket::getLocalPortImpl(const char* socketTypeStr) const
 
     if (!priv::SocketImpl::getSockName(m_socket, address, size))
     {
-        priv::err() << "Failed to retrieve local port of " << socketTypeStr;
+        priv::errMsg("Failed to retrieve local port of {}", socketTypeStr);
         return 0;
     }
 

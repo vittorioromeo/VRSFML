@@ -105,9 +105,11 @@ struct Font::Impl
 
         if (!optGlyph.hasValue())
         {
-            priv::err() << "Failed to load glyph for code point " << static_cast<unsigned int>(codePoint)
-                        << ", character size " << characterSize << ", bold " << bold << ", outline thickness "
-                        << outlineThickness;
+            priv::errMsg("Failed to load glyph for code point {}, character size {}, bold {}, outline thickness {}",
+                         static_cast<unsigned int>(codePoint),
+                         characterSize,
+                         bold,
+                         outlineThickness);
 
             base::abort();
         }
@@ -192,7 +194,7 @@ base::Optional<Font> Font::openFromStream(InputStream& stream, TextureAtlas* tex
 {
     if (!stream.seek(0).hasValue())
     {
-        priv::err() << "Failed to seek font stream";
+        priv::errMsg("Failed to seek font stream");
         return base::nullOpt;
     }
 

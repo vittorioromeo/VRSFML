@@ -72,7 +72,7 @@ struct SoundStreamStateImpl::Internals
         callbacks(theCallbacks)
     {
         if (!soundBase.initialize(&onEnd))
-            priv::err() << "Failed to initialize sound base";
+            priv::errMsg("Failed to initialize sound base");
     }
 
     ////////////////////////////////////////////////////////////

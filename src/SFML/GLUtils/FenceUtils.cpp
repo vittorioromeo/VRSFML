@@ -37,7 +37,7 @@ GLFenceSync makeFence()
 
     if (fenceToCreate == nullptr) [[unlikely]]
     {
-        priv::err() << "FATAL ERROR: Error creating fence sync object";
+        priv::errMsg("FATAL ERROR: Error creating fence sync object");
         base::abort();
     }
 
@@ -62,7 +62,7 @@ bool tryWaitOnFence(GLFenceSync& fenceToWaitOn)
 
     if (waitResult == GL_WAIT_FAILED) [[unlikely]]
     {
-        sf::priv::err() << "FATAL ERROR: Error waiting on GPU fence";
+        priv::errMsg("FATAL ERROR: Error waiting on GPU fence");
         sf::base::abort();
     }
 
@@ -88,13 +88,13 @@ void waitOnFence(GLFenceSync& fenceToWaitOn)
 
     if (waitResult == GL_WAIT_FAILED) [[unlikely]]
     {
-        sf::priv::err() << "FATAL ERROR: Error waiting on GPU fence";
+        priv::errMsg("FATAL ERROR: Error waiting on GPU fence");
         sf::base::abort();
     }
 
     if (waitResult == GL_TIMEOUT_EXPIRED) [[unlikely]]
     {
-        sf::priv::err() << "FATAL ERROR: Fence wait timed out";
+        priv::errMsg("FATAL ERROR: Fence wait timed out");
         sf::base::abort();
     }
 
