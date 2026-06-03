@@ -24,4 +24,5 @@ namespace sf
 {
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_SYSTEM_API std::FILE* openFile(const Path& filename, const char* mode);
+
 } // namespace sf
