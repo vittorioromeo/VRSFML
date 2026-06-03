@@ -269,14 +269,14 @@ TEST_CASE("[Graphics] sf::ShaderUtils::preprocessGlslIncludes")
 
         {
             constexpr sf::base::StringView contentA = "#include \"sfml_circular_b.glsl\"\n";
-            sf::OutFileStream              ofs(pathA);
-            ofs.write(contentA.data(), static_cast<sf::base::PtrDiffT>(contentA.size()));
+            auto                           optFile  = sf::OutFile::open(pathA);
+            [[maybe_unused]] const bool    ok       = optFile->write(contentA.data(), contentA.size());
         }
 
         {
             constexpr sf::base::StringView contentB = "#include \"sfml_circular_a.glsl\"\n";
-            sf::OutFileStream              ofs(pathB);
-            ofs.write(contentB.data(), static_cast<sf::base::PtrDiffT>(contentB.size()));
+            auto                           optFile  = sf::OutFile::open(pathB);
+            [[maybe_unused]] const bool    ok       = optFile->write(contentB.data(), contentB.size());
         }
 
         const sf::base::StringView source = "#include \"sfml_circular_b.glsl\"\n";

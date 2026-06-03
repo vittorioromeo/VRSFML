@@ -561,8 +561,11 @@ BatchedGeometry DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
 
     auto* outlineIndexPtr = m_storage.reserveMoreIndices(outlineIndexCount);
 
+    // Outline vertices are strip-laid (inner/outer pairs); use strip indices
+    // so the winding stays consistent across all triangles -- matches the
+    // immediate `PrimitiveType::TriangleStrip` rendering path.
     for (IndexType i = 0u; i < outlineVertexCount - 2; ++i)
-        DrawableBatchUtils::appendTriangleIndices(outlineIndexPtr, firstOutlineVertexIndex + i);
+        DrawableBatchUtils::appendTriangleStripIndices(outlineIndexPtr, firstOutlineVertexIndex, i);
 
     m_storage.commitMoreIndices(outlineIndexCount);
 
@@ -1036,10 +1039,13 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const RingShapeData& sdRing)
                                       nPoints,
                                       sdRing.miterLimit);
 
-        // Generate outline indices
+        // Generate outline indices. Outline vertices are strip-laid
+        // (inner/outer pairs along the ring), so we emit strip-style
+        // indices to keep winding consistent across the loop -- matches
+        // the immediate `PrimitiveType::TriangleStrip` rendering path.
         IndexType* chosenOutlineIndexPtrStart = chosenOutlineIndexPtr;
         for (IndexType i = 0u; i < outlineVerticesPerLoop - 2u; ++i)
-            DrawableBatchUtils::appendTriangleIndices(chosenOutlineIndexPtrStart, firstChonsenOutlineLoopVertexIndex + i);
+            DrawableBatchUtils::appendTriangleStripIndices(chosenOutlineIndexPtrStart, firstChonsenOutlineLoopVertexIndex, i);
     };
 
     //
