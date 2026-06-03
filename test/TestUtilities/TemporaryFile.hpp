@@ -3,14 +3,36 @@
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 
+#include "SFML/Config.hpp"
+
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/PtrDiffT.hpp"
-#include "SFML/Base/String.hpp"
+#include "SFML/Base/Fmt/FmtToString.hpp"
 #include "SFML/Base/StringView.hpp"
+#include "SFML/Base/UIntPtrT.hpp"
+
+#if defined(SFML_SYSTEM_WINDOWS)
+    #include <process.h>
+#elif __has_include(<unistd.h>)
+    #include <unistd.h>
+#endif
 
 
 namespace sf::testing
 {
+////////////////////////////////////////////////////////////
+[[nodiscard]] inline unsigned int getProcessUniqueId() noexcept
+{
+#if defined(SFML_SYSTEM_WINDOWS)
+    return static_cast<unsigned int>(::_getpid());
+#elif __has_include(<unistd.h>)
+    return static_cast<unsigned int>(::getpid());
+#else
+    static const int fallbackProcessToken = 0;
+    return static_cast<unsigned int>(reinterpret_cast<base::UIntPtrT>(&fallbackProcessToken));
+#endif
+}
+
+
 ////////////////////////////////////////////////////////////
 /// \brief Generate a unique temporary file path
 ///
@@ -21,13 +43,10 @@ inline Path getTemporaryFilePath()
 {
     static int counter = 0;
 
-    OutStringStream oss;
-    oss << "sfmltemp_" << counter++ << ".tmp";
-
     const auto tmp = Path::getTempDirectory();
     SFML_BASE_ASSERT(tmp && "Failed to obtain temp directory");
 
-    return *tmp / Path(oss.to<base::String>());
+    return *tmp / Path(base::fmtToString("sfmltemp_{}_{}.tmp", getProcessUniqueId(), counter++));
 }
 
 
@@ -49,11 +68,13 @@ public:
     /// Create a temporary file containing \a contents.
     explicit TemporaryFile(base::StringView contents) : m_path(getTemporaryFilePath())
     {
-        OutFileStream ofs(m_path);
-        SFML_BASE_ASSERT(ofs && "Stream encountered an error");
+        auto optFile = OutFile::open(m_path);
+        SFML_BASE_ASSERT(optFile.hasValue() && "Failed to open temporary file for writing");
 
-        ofs.write(contents.data(), static_cast<base::PtrDiffT>(contents.size()));
-        SFML_BASE_ASSERT(ofs && "Stream encountered an error");
+        [[maybe_unused]] const bool wrote = optFile->write(contents.data(), contents.size());
+        SFML_BASE_ASSERT(wrote && "Failed to write temporary file contents");
+
+        // Destructor of `optFile` closes the file when this body returns.
     }
 
     ~TemporaryFile()

@@ -1,8 +1,9 @@
 // Header for SFML unit tests.
 //
 // For a new graphics module test case, include this header.
-// This specializes `doctest::StringMaker` so doctest can stringify
-// SFML graphics types for failure output without dragging `<ostream>`.
+// Declares the `stringifyValue` ADL overloads so the bespoke testing
+// library can render SFML graphics types for failure output. (`Rect2` is
+// rendered by the framework itself, see `Tst/Detail/StringifyValue.hpp`.)
 
 #pragma once
 
@@ -22,59 +23,17 @@ struct View;
 
 template <typename>
 class Rect2;
+
+// `stringifyValue` ADL overloads -- found when these operands need
+// rendering for a failed assertion.
+sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const BlendMode& blendMode) noexcept;
+sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, StencilComparison comparison) noexcept;
+sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, StencilUpdateOperation updateOperation) noexcept;
+sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const StencilMode& stencilMode) noexcept;
+sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const Color& color) noexcept;
+sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const Transform& transform) noexcept;
+sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const View& view) noexcept;
 } // namespace sf
-
-
-namespace doctest
-{
-template <>
-struct StringMaker<sf::BlendMode>
-{
-    static String convert(const sf::BlendMode& blendMode);
-};
-
-template <>
-struct StringMaker<sf::StencilComparison>
-{
-    static String convert(sf::StencilComparison comparison);
-};
-
-template <>
-struct StringMaker<sf::StencilUpdateOperation>
-{
-    static String convert(sf::StencilUpdateOperation updateOperation);
-};
-
-template <>
-struct StringMaker<sf::StencilMode>
-{
-    static String convert(const sf::StencilMode& stencilMode);
-};
-
-template <>
-struct StringMaker<sf::Color>
-{
-    static String convert(sf::Color color);
-};
-
-template <>
-struct StringMaker<sf::Transform>
-{
-    static String convert(const sf::Transform& transform);
-};
-
-template <>
-struct StringMaker<sf::View>
-{
-    static String convert(const sf::View& view);
-};
-
-template <typename T>
-struct StringMaker<sf::Rect2<T>>
-{
-    static String convert(const sf::Rect2<T>& rect);
-};
-} // namespace doctest
 
 
 bool operator==(const sf::Transform& lhs, const Approx<sf::Transform>& rhs);

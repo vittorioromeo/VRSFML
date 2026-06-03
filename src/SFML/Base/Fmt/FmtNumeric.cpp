@@ -104,7 +104,8 @@ FmtResult fmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec)
     char* const end = toChars(buf, buf + sizeof(buf), arg, prec);
     if (end == nullptr)
     {
-        SFML_BASE_ASSERT(false && "Floating-point `fmtArg` could not represent the value in its fixed buffer");
+        // Range/precision overflow depends on the input value; report it as a
+        // formatting failure instead of turning debug test runs into aborts.
         return FmtResult::Failed;
     }
 

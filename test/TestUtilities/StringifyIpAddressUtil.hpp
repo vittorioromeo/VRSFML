@@ -2,18 +2,5 @@
 
 #include "SFML/Network/IpAddress.hpp"
 
-#include <DoctestFwd.hpp>
-
-namespace doctest
-{
-
-template <>
-struct StringMaker<sf::IpAddress>
-{
-    static doctest::String convert(const sf::IpAddress&)
-    {
-        return ""; // TODO P3:
-    }
-};
-
-} // namespace doctest
+// The test runner renders this type as "<?>" via the catch-all in
+// `Tst/Detail/StringifyValue.hpp`; no dedicated stringifier is needed.

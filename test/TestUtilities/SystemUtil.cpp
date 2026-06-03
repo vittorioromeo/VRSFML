@@ -8,8 +8,9 @@
 #include "SFML/System/Vec2.hpp"
 #include "SFML/System/Vec3.hpp"
 
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/String.hpp"
 #include "SFML/Base/ToChars.hpp"
-#include "SFML/Base/Trait/IsFloatingPoint.hpp"
 
 #include <Doctest.hpp>
 
@@ -17,116 +18,113 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-// Build a `doctest::String` from a float, without dragging `<ostream>`/`<format>`.
-doctest::String floatToString(const float value, const int precision = 6)
+sf::base::String sysFloatToString(const float value, const int precision = 6)
 {
     char       buf[64];
     char*      end = sf::base::toChars(buf, buf + sizeof(buf), value, precision);
-    const auto len = static_cast<doctest::String::size_type>(end - buf);
-    return {buf, len};
+    const auto len = static_cast<sf::base::SizeT>(end - buf);
+    return sf::base::String{buf, len};
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-doctest::String intToString(const T value)
+sf::base::String sysIntToString(const T value)
 {
     char       buf[32];
     char*      end = sf::base::toChars(buf, buf + sizeof(buf), value);
-    const auto len = static_cast<doctest::String::size_type>(end - buf);
-    return {buf, len};
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-doctest::String numToString(const T value)
-{
-    if constexpr (sf::base::isFloatingPoint<T>)
-        return floatToString(static_cast<float>(value));
-    else
-        return intToString(value);
+    const auto len = static_cast<sf::base::SizeT>(end - buf);
+    return sf::base::String{buf, len};
 }
 
 } // namespace
 
 
-namespace doctest
+namespace sf
 {
 ////////////////////////////////////////////////////////////
-String StringMaker<sf::Angle>::convert(const sf::Angle& angle)
+sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const sf::Angle& angle) noexcept
 {
-    return floatToString(angle.asDegrees()) + " deg";
+    const sf::base::String s = sysFloatToString(angle.asDegrees()) + sf::base::String{" deg"};
+    return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
 
 ////////////////////////////////////////////////////////////
-String StringMaker<sf::AutoWrapAngle>::convert(const sf::AutoWrapAngle& angle)
+sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const sf::AutoWrapAngle& angle) noexcept
 {
-    return floatToString(angle.asDegrees()) + " deg";
+    const sf::base::String s = sysFloatToString(angle.asDegrees()) + sf::base::String{" deg"};
+    return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
 
 ////////////////////////////////////////////////////////////
-String StringMaker<sf::Utf8String>::convert(const sf::Utf8String& string)
+sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const sf::Utf8String& string) noexcept
 {
-    return {string.data(), static_cast<String::size_type>(string.byteSize())};
+    const sf::base::String s{string.data(), static_cast<sf::base::SizeT>(string.byteSize())};
+    return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
 
 ////////////////////////////////////////////////////////////
-String StringMaker<sf::Time>::convert(const sf::Time time)
+sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const sf::Time& time) noexcept
 {
-    return intToString(time.asMicroseconds()) + "us";
+    const sf::base::String s = sysIntToString(time.asMicroseconds()) + sf::base::String{"us"};
+    return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
+} // namespace sf
 
+
+////////////////////////////////////////////////////////////
+// `::Approx<T>` renders as `Approx(<value>)`, recursing through the same
+// ADL-enabled dispatch for its nested value. Wrapped types whose
+// `stringifyValue` overload is not visible in this TU (e.g. `sf::Color`)
+// render their value as "<?>" -- matching the prior behavior.
 ////////////////////////////////////////////////////////////
 template <typename T>
-String StringMaker<sf::Vec2<T>>::convert(const sf::Vec2<T>& vec)
+sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const ::Approx<T>& approx) noexcept
 {
-    return String("(") + numToString(vec.x) + ", " + numToString(vec.y) + ")";
+    sf::base::SizeT len = ::tst::detail::copyInto(buf, cap, "Approx(", 7u);
+    len += ::tst::detail::renderValue(buf + len, cap - len, approx.value);
+
+    if (len < cap)
+        buf[len++] = ')';
+
+    return len;
 }
 
 
 ////////////////////////////////////////////////////////////
-template <typename T>
-String StringMaker<sf::Vec3<T>>::convert(const sf::Vec3<T>& vec)
-{
-    return String("(") + numToString(vec.x) + ", " + numToString(vec.y) + ", " + numToString(vec.z) + ")";
-}
+// Explicit instantiations for the wrapped types actually used by tests.
+template sf::base::SizeT stringifyValue(char*, sf::base::SizeT, const ::Approx<float>&) noexcept;
+template sf::base::SizeT stringifyValue(char*, sf::base::SizeT, const ::Approx<sf::Angle>&) noexcept;
+template sf::base::SizeT stringifyValue(char*, sf::base::SizeT, const ::Approx<sf::Vec2<float>>&) noexcept;
+template sf::base::SizeT stringifyValue(char*, sf::base::SizeT, const ::Approx<sf::Vec3<float>>&) noexcept;
 
 
 ////////////////////////////////////////////////////////////
-template <typename T>
-String StringMaker<::Approx<T>>::convert(const ::Approx<T>& approx)
-{
-    return toString(approx.value);
-}
-
-
+// Graphics-side wrapped types: the value renders as "<?>" here (their
+// `stringifyValue` overload lives in `GraphicsUtil`), but the `::Approx`
+// instantiations must live in the TU that defines the template body.
 ////////////////////////////////////////////////////////////
-// Explicit instantiations for the types actually used by tests.
-template struct StringMaker<sf::Vec2<int>>;
-template struct StringMaker<sf::Vec2<unsigned int>>;
-template struct StringMaker<sf::Vec2<float>>;
+namespace sf
+{
+struct Color;
+struct Transform;
+template <typename>
+class Rect2;
+} // namespace sf
 
-template struct StringMaker<sf::Vec3<int>>;
-template struct StringMaker<sf::Vec3<unsigned int>>;
-template struct StringMaker<sf::Vec3<float>>;
-
-template struct StringMaker<::Approx<float>>;
-template struct StringMaker<::Approx<sf::Angle>>;
-template struct StringMaker<::Approx<sf::Vec2<float>>>;
-template struct StringMaker<::Approx<sf::Vec3<float>>>;
-
-} // namespace doctest
+template sf::base::SizeT stringifyValue(char*, sf::base::SizeT, const ::Approx<sf::Color>&) noexcept;
+template sf::base::SizeT stringifyValue(char*, sf::base::SizeT, const ::Approx<sf::Transform>&) noexcept;
+template sf::base::SizeT stringifyValue(char*, sf::base::SizeT, const ::Approx<sf::Rect2<float>>&) noexcept;
 
 
 ////////////////////////////////////////////////////////////
 bool operator==(const float& lhs, const Approx<float>& rhs)
 {
-    return static_cast<double>(lhs) == doctest::Approx(static_cast<double>(rhs.value)).epsilon(1e-3);
+    return static_cast<double>(lhs) == ::tst::Approx(static_cast<double>(rhs.value)).epsilon(1e-3);
 }
 
 
