@@ -45,20 +45,23 @@ function(set_target_warnings target)
             -Wall
             -Wextra # reasonable and standard
             -Wshadow # warn the user if a variable declaration shadows one from a parent context
-            -Wnon-virtual-dtor # warn the user if a class with virtual functions has a non-virtual destructor. This helps catch hard to track down memory errors
             -Wcast-align # warn for potential performance problem casts
             -Wunused # warn on anything being unused
-            -Woverloaded-virtual # warn if you overload (not override) a virtual function
             -Wconversion # warn on type conversions that may lose data
             -Wsign-conversion # warn on sign conversions
             -Wdouble-promotion # warn if float is implicit promoted to double
             -Wformat=2 # warn on security issues around functions that format output (ie printf)
             -Wimplicit-fallthrough # warn when a missing break causes control flow to continue at the next case in a switch statement
-            -Wsuggest-override # warn when 'override' could be used on a member function overriding a virtual function
             -Wnull-dereference # warn if a null dereference is detected
-            -Wold-style-cast # warn for c-style casts
             -Wpedantic # warn if non-standard C++ is used
             $<$<BOOL:${SFML_OS_ANDROID}>:-Wno-main> # allow main() to be called
+
+            # C++-only diagnostics -- wrapped so GCC/Clang don't whine when
+            # the same target compiles a C source (e.g. `cJSON.c`).
+            $<$<COMPILE_LANGUAGE:CXX>:-Wnon-virtual-dtor>  # virtual functions but non-virtual destructor
+            $<$<COMPILE_LANGUAGE:CXX>:-Woverloaded-virtual> # overloads (not overrides) a virtual function
+            $<$<COMPILE_LANGUAGE:CXX>:-Wsuggest-override>  # `override` could be used on a member function
+            $<$<COMPILE_LANGUAGE:CXX>:-Wold-style-cast>    # warn for C-style casts
         )
     endif()
 
@@ -75,6 +78,7 @@ function(set_target_warnings target)
     if(SFML_COMPILER_CLANG OR SFML_COMPILER_CLANG_CL)
         target_compile_options(${target} PRIVATE
             -Wno-unknown-warning-option # do not warn on GCC-specific warning diagnostic pragmas
+            -Wno-c2y-extensions # `__COUNTER__` is universally supported across GCC/Clang/MSVC
         )
     endif()
 
