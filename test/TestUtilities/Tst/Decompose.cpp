@@ -7,6 +7,7 @@
 #include "Tst/Detail/StringifyValue.hpp"
 #include "Tst/Tst.hpp"
 
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Fmt/Fmt.hpp"
 #include "SFML/Base/Fmt/FmtNumeric.hpp" // IWYU pragma: keep
 #include "SFML/Base/SizeT.hpp"
@@ -41,11 +42,10 @@ const char* kindLabel(AssertKind k) noexcept
             return "REQUIRE";
         case AssertKind::RequireFalse:
             return "REQUIRE_FALSE";
-        case AssertKind::Warn:
+        default:
+            SFML_BASE_ASSERT(k == AssertKind::Warn);
             return "WARN";
     }
-
-    return "ASSERT";
 }
 
 
