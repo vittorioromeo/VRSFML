@@ -16,7 +16,13 @@
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Utf8String.hpp"
 
+#include "SFML/Base/Fmt/Fmt.hpp"
+#include "SFML/Base/Fmt/FmtToString.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/Radix.hpp"
+#include "SFML/Base/Scn/Scn.hpp"
+#include "SFML/Base/Scn/ScnString.hpp"
+#include "SFML/Base/Scn/ScnStringSource.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
@@ -57,10 +63,10 @@ using FieldTable = std::map<sf::base::String, sf::base::String>; // Use an order
 
 
 ////////////////////////////////////////////////////////////
-void parseFields(auto& in, FieldTable& fields)
+void parseFields(sf::base::ScnStringSource& scanner, FieldTable& fields)
 {
     sf::base::String line;
-    while (sf::getLine(in, line) && (line.size() > 2))
+    while (sf::base::scnReadLine(scanner, line) && line.size() > 2)
     {
         const auto lineView = line.toStringView();
 
@@ -72,7 +78,7 @@ void parseFields(auto& in, FieldTable& fields)
         const auto field = sf::base::String{lineView.substrByPosLen(0, pos)};
         auto       value = sf::base::String{lineView.substrByPosLen(pos + 2)};
 
-        // Remove any trailing \r
+        // Remove any trailing '\r' (CRLF line endings)
         if (!value.empty() && (value.back() == '\r'))
             value.erase(value.size() - 1);
 
@@ -99,43 +105,39 @@ void parseFields(auto& in, FieldTable& fields)
     const unsigned int              minorVersion,
     const sf::base::String&         body)
 {
-    sf::OutStringStream oss;
-
     // Convert the method to its string representation
+    const char* methodStr = "";
     switch (method)
     {
         case sf::Http::Request::Method::Get:
-            oss << "GET";
+            methodStr = "GET";
             break;
         case sf::Http::Request::Method::Post:
-            oss << "POST";
+            methodStr = "POST";
             break;
         case sf::Http::Request::Method::Head:
-            oss << "HEAD";
+            methodStr = "HEAD";
             break;
         case sf::Http::Request::Method::Put:
-            oss << "PUT";
+            methodStr = "PUT";
             break;
         case sf::Http::Request::Method::Delete:
-            oss << "DELETE";
+            methodStr = "DELETE";
             break;
     }
 
-    // Write the first line containing the request type
-    oss << " " << uri << " ";
-    oss << "HTTP/" << majorVersion << "." << minorVersion << "\r\n";
+    // Request line
+    sf::base::String request;
+    (void)sf::base::fmtTo(request, "{} {} HTTP/{}.{}\r\n", methodStr, uri, majorVersion, minorVersion);
 
-    // Write fields
+    // Fields, blank line, body
     for (const auto& [fieldKey, fieldValue] : fields)
-        oss << fieldKey << ": " << fieldValue << "\r\n";
+        (void)sf::base::fmtTo(request, "{}: {}\r\n", fieldKey, fieldValue);
 
-    // Use an extra \r\n to separate the header from the body
-    oss << "\r\n";
+    request += "\r\n";
+    request += body;
 
-    // Add the body
-    oss << body;
-
-    return oss.to<sf::base::String>();
+    return request;
 }
 
 } // namespace
@@ -297,11 +299,11 @@ const base::String& Http::Response::getBody() const
 ////////////////////////////////////////////////////////////
 void Http::Response::parse(const base::String& data)
 {
-    sf::InStringStream in(data);
+    base::ScnStringSource scanner{data.toStringView()};
 
     // Extract the HTTP version from the first line
     base::String version;
-    if (in >> version)
+    if (base::scnInto(scanner, version))
     {
         const auto prefix = version.substrByPosLen(0u, 5u);
 
@@ -321,34 +323,31 @@ void Http::Response::parse(const base::String& data)
 
     // Extract the status code from the first line
     int status = 0;
-    if (in >> status)
-    {
-        m_impl->status = static_cast<Status>(status);
-    }
-    else
+    if (!base::scnInto(scanner, status))
     {
         // Invalid status code
         m_impl->status = Status::InvalidResponse;
         return;
     }
 
+    m_impl->status = static_cast<Status>(status);
+
     // Ignore the end of the first line
-    in.ignore(2'147'483'647, '\n');
+    base::scnSkipPast(scanner, '\n');
 
     // Parse the other lines, which contain fields, one by one
-    parseFields(in, m_impl->fields);
+    parseFields(scanner, m_impl->fields);
 
     m_impl->body.clear();
 
     // Determine whether the transfer is chunked
     if (toLower(getField("transfer-encoding")) != "chunked")
     {
-        while (!in.isEOF())
+        // Drain whatever remains of the source into the body, byte by byte.
+        while (auto c = scanner.peek())
         {
-            char c; // NOLINT(cppcoreguidelines-init-variables)
-            in.get(c);
-
-            m_impl->body.pushBack(c);
+            m_impl->body.pushBack(*c);
+            scanner.consume();
         }
     }
     else
@@ -357,26 +356,27 @@ void Http::Response::parse(const base::String& data)
         base::SizeT length = 0;
 
         // Read all chunks, identified by a chunk-size not being 0
-        while (in >> Hex{} >> length)
+        while (base::scnRadix(scanner, length, base::Radix::Hex) && length != 0u)
         {
             // Drop the rest of the line (chunk-extension)
-            in.ignore(2'147'483'647, '\n');
+            base::scnSkipPast(scanner, '\n');
 
             // Copy the actual content data
-            for (base::SizeT i = 0; ((i < length) && (!in.isEOF())); ++i)
+            for (base::SizeT i = 0u; i < length; ++i)
             {
-                char c; // NOLINT(cppcoreguidelines-init-variables)
-                in.get(c);
-
-                m_impl->body.pushBack(c);
+                auto c = scanner.peek();
+                if (!c)
+                    break;
+                m_impl->body.pushBack(*c);
+                scanner.consume();
             }
         }
 
         // Drop the rest of the line (chunk-extension)
-        in.ignore(2'147'483'647, '\n');
+        base::scnSkipPast(scanner, '\n');
 
         // Read all trailers (if present)
-        parseFields(in, m_impl->fields);
+        parseFields(scanner, m_impl->fields);
     }
 }
 
@@ -455,11 +455,7 @@ Http::Response Http::sendRequest(const Http::Request& request, Time timeout, con
         toSend.setField("Host", m_impl->hostName);
 
     if (!toSend.hasField("Content-Length"))
-    {
-        OutStringStream oss;
-        oss << toSend.m_impl->body.size();
-        toSend.setField("Content-Length", oss.to<base::String>());
-    }
+        toSend.setField("Content-Length", base::fmtToString("{}", toSend.m_impl->body.size()));
 
     if ((toSend.m_impl->method == Request::Method::Post) && !toSend.hasField("Content-Type"))
         toSend.setField("Content-Type", "application/x-www-form-urlencoded");

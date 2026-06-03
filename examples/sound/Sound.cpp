@@ -11,10 +11,14 @@
 #include "SFML/Audio/PlaybackDeviceHandle.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
 
-#include "SFML/System/IO.hpp"
+#include "SFML/System/Fmt/FmtPath.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Thread.hpp"
 #include "SFML/System/Time.hpp"
+
+#include "SFML/Base/Fmt/Fmt.hpp"
+#include "SFML/Base/Fmt/FmtNumeric.hpp"
+#include "SFML/Base/Scn/ScnStdin.hpp"
 
 
 namespace
@@ -29,10 +33,13 @@ void playSound(sf::PlaybackDevice& playbackDevice)
     const auto buffer = sf::SoundBuffer::loadFromFile("resources/killdeer.wav").value();
 
     // Display sound information
-    sf::cOut() << "killdeer.wav:" << '\n'
-               << " " << buffer.getDuration().asSeconds() << " seconds" << '\n'
-               << " " << buffer.getSampleRate() << " samples / sec" << '\n'
-               << " " << buffer.getChannelCount() << " channels" << '\n';
+    sf::base::printLn("killdeer.wav:{} {} seconds{} {} samples / sec{} {} channels",
+                      '\n',
+                      buffer.getDuration().asSeconds(),
+                      '\n',
+                      buffer.getSampleRate(),
+                      '\n',
+                      buffer.getChannelCount());
 
     // Create a sound instance and play it
     sf::Sound sound(playbackDevice, buffer);
@@ -45,10 +52,10 @@ void playSound(sf::PlaybackDevice& playbackDevice)
         sf::ThisThread::sleepFor(sf::milliseconds(100));
 
         // Display the playing position
-        sf::cOut() << "\rPlaying... " << sound.getPlayingOffset().asSeconds() << " sec        " << sf::flush;
+        sf::base::print("\rPlaying... {} sec        ", sound.getPlayingOffset().asSeconds());
     }
 
-    sf::cOut() << '\n' << sf::endL;
+    sf::base::printLn("");
 }
 
 
@@ -62,10 +69,14 @@ void playMusic(sf::PlaybackDevice& playbackDevice, const sf::Path& filename)
     auto musicReader = sf::MusicReader::openFromFile("resources" / filename).value();
 
     // Display music information
-    sf::cOut() << filename << ":" << '\n'
-               << " " << musicReader.getDuration().asSeconds() << " seconds" << '\n'
-               << " " << musicReader.getSampleRate() << " samples / sec" << '\n'
-               << " " << musicReader.getChannelCount() << " channels" << '\n';
+    sf::base::printLn("{}:{} {} seconds{} {} samples / sec{} {} channels",
+                      filename,
+                      '\n',
+                      musicReader.getDuration().asSeconds(),
+                      '\n',
+                      musicReader.getSampleRate(),
+                      '\n',
+                      musicReader.getChannelCount());
 
     // Play it
     sf::Music music(playbackDevice, musicReader);
@@ -78,10 +89,10 @@ void playMusic(sf::PlaybackDevice& playbackDevice, const sf::Path& filename)
         sf::ThisThread::sleepFor(sf::milliseconds(100));
 
         // Display the playing position
-        sf::cOut() << "\rPlaying... " << music.getPlayingOffset().asSeconds() << " sec        " << sf::flush;
+        sf::base::print("\rPlaying... {} sec        ", music.getPlayingOffset().asSeconds());
     }
 
-    sf::cOut() << '\n' << sf::endL;
+    sf::base::printLn("");
 }
 
 } // namespace
@@ -110,6 +121,6 @@ int main()
     playMusic(playbackDevice, "ding.mp3");
 
     // Wait until the user presses 'enter' key
-    sf::cOut() << "Press enter to exit..." << sf::endL;
-    sf::cIn().ignore(10'000, '\n');
+    sf::base::printLn("Press enter to exit...");
+    sf::base::scnStdinIgnoreLine();
 }

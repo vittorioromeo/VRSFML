@@ -14,13 +14,15 @@
 #include "SFML/Network/TcpListener.hpp"
 #include "SFML/Network/TcpSocket.hpp"
 
-#include "SFML/System/IO.hpp"
 #include "SFML/System/Thread.hpp"
 #include "SFML/System/Time.hpp"
 
+#include "SFML/Base/Fmt/Fmt.hpp"
+#include "SFML/Base/Fmt/FmtNumeric.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/Scn/ScnStdin.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp" // IWYU pragma: keep
 #include "SFML/Base/Vector.hpp"
@@ -103,15 +105,14 @@ public:
             m_listener = sf::TcpListener::create(port, /* isBlocking */ true);
             if (!m_listener.hasValue())
                 return;
-            sf::cOut() << "Server is listening to port " << port << ", waiting for connections... " << sf::endL;
+            sf::base::printLn("Server is listening to port {}, waiting for connections... ", port);
 
             // Wait for a connection
             auto acceptResult = m_listener->accept();
             if (acceptResult.status != sf::Socket::Status::Done)
                 return;
             m_client = SFML_BASE_MOVE(acceptResult.socket);
-            sf::cOut() << "Client connected: " << sf::IpAddressUtils::toString(m_client->getRemoteAddress().value())
-                       << sf::endL;
+            sf::base::printLn("Client connected: {}", sf::IpAddressUtils::toString(m_client->getRemoteAddress().value()));
 
             play();
             receiveLoop();
@@ -153,12 +154,12 @@ private:
             }
             else if (id == serverEndOfStream)
             {
-                sf::cOut() << "Audio data has been 100% received!" << sf::endL;
+                sf::base::printLn("Audio data has been 100% received!");
                 s.hasFinished = true;
             }
             else
             {
-                sf::cOut() << "Invalid packet received..." << sf::endL;
+                sf::base::printLn("Invalid packet received...");
                 s.hasFinished = true;
             }
         }
@@ -192,11 +193,11 @@ void doServer(sf::PlaybackDevice& playbackDevice, unsigned short port)
         sf::ThisThread::sleepFor(sf::milliseconds(100));
     }
 
-    sf::cIn().ignore(10'000, '\n');
+    sf::base::scnStdinIgnoreLine();
 
     // Wait until the user presses 'enter' key
-    sf::cOut() << "Press enter to replay the sound..." << sf::endL;
-    sf::cIn().ignore(10'000, '\n');
+    sf::base::printLn("Press enter to replay the sound...");
+    sf::base::scnStdinIgnoreLine();
 
     // Replay the sound (just to make sure replaying the received data is OK)
     audioStream.play();
