@@ -4,7 +4,7 @@
 
 #include "SFML/Window/WindowContext.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 TEST_CASE("[Window] sf::Joystick")
 {

@@ -15,7 +15,7 @@
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 #if defined(SFML_SYSTEM_WINDOWS)
     #define GLAPI __stdcall
@@ -89,7 +89,7 @@ struct TestContext
     }
 };
 
-TEST_CASE("[Window] TestContext" * doctest::skip(skipDisplayTests))
+TEST_CASE("[Window] TestContext" * tst::skip(skipDisplayTests))
 {
     {
         CHECK(!sf::WindowContext::isInstalled());

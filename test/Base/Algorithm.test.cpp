@@ -11,7 +11,7 @@
 #include "SFML/Base/Algorithm/SwapAndPop.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
 TEST_CASE("[Base] Base/Algorithm/*.hpp")

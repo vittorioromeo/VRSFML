@@ -26,10 +26,10 @@
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
-TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
+TEST_CASE("[Graphics] sf::RenderWindow" * tst::skip(skipDisplayTests))
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
 

@@ -12,7 +12,7 @@
     #include "SFML/Base/Assert.hpp"
     #include "SFML/Base/Optional.hpp"
 
-    #include <Doctest.hpp>
+    #include "Tst/Tst.hpp"
 
 
 namespace

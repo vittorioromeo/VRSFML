@@ -12,10 +12,10 @@
 
 #include "SFML/System/Priv/Vec2Base.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
-TEST_CASE("[Graphics] sf::TextureAtlas" * doctest::skip(skipDisplayTests))
+TEST_CASE("[Graphics] sf::TextureAtlas" * tst::skip(skipDisplayTests))
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
 

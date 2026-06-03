@@ -8,7 +8,7 @@
 
 #include "SFML/System/Utf8String.hpp" // IWYU pragma: keep
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 // We're limited on what can be tested. Without control over the hardware and the
 // configuration of the operating system, certain things cannot be tested. In
@@ -18,7 +18,7 @@
 // Regardless this test case represents a best faith effort to cover some of this
 // code in a way that is hopefully not prone to fail on different machines.
 
-TEST_CASE("[Window] sf::Keyboard" * doctest::skip(skipDisplayTests))
+TEST_CASE("[Window] sf::Keyboard" * tst::skip(skipDisplayTests))
 {
     auto windowContext = sf::WindowContext::create().value();
 

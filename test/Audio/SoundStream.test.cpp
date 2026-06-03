@@ -21,7 +21,7 @@
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
 namespace
@@ -38,7 +38,7 @@ using TestSoundStream = sf::SoundStream<TestState>;
 
 } // namespace
 
-TEST_CASE("[Audio] sf::SoundStream" * doctest::skip(skipAudioDeviceTests))
+TEST_CASE("[Audio] sf::SoundStream" * tst::skip(skipAudioDeviceTests))
 {
     auto               audioContext = sf::AudioContext::create().value();
     sf::PlaybackDevice playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};

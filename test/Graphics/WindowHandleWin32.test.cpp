@@ -16,7 +16,7 @@
 
     #include "SFML/Base/Optional.hpp"
 
-    #include <Doctest.hpp>
+    #include "Tst/Tst.hpp"
 
 
 namespace

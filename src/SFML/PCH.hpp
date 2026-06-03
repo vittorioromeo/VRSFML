@@ -36,13 +36,6 @@
     #include "SFML/Base/Optional.hpp"
     #include "SFML/Base/UniquePtr.hpp"
 
-    #ifdef SFML_BUILD_TEST_SUITE
-        #undef DOCTEST_CONFIG_USE_STD_HEADERS
-        #undef DOCTEST_CONFIG_INCLUDE_TYPE_TRAITS
-
-        #include <doctest/parts/doctest_fwd.h>
-    #endif // SFML_BUILD_TEST_SUITE
-
     #ifdef SFML_BUILD_AUDIO
     // #include <miniaudio.h> // TODO P2: restore, needs CMake to be fixed
     #endif

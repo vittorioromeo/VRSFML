@@ -12,7 +12,7 @@
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -482,16 +482,16 @@ TEST_CASE("[Base] Scn - float parsing")
     {
         auto src = stringSource("3.14 -2.5 0.0");
 
-        CHECK(*sf::base::scn<double>(src) == doctest::Approx(3.14));
-        CHECK(*sf::base::scn<double>(src) == doctest::Approx(-2.5));
-        CHECK(*sf::base::scn<double>(src) == doctest::Approx(0.0));
+        CHECK(*sf::base::scn<double>(src) == tst::Approx(3.14));
+        CHECK(*sf::base::scn<double>(src) == tst::Approx(-2.5));
+        CHECK(*sf::base::scn<double>(src) == tst::Approx(0.0));
     }
 
     SUBCASE("integer-only is accepted")
     {
         auto src = stringSource("42");
 
-        CHECK(*sf::base::scn<float>(src) == doctest::Approx(42.0));
+        CHECK(*sf::base::scn<float>(src) == tst::Approx(42.0));
     }
 
     SUBCASE("overlong float token is consumed and rejected")
@@ -505,7 +505,7 @@ TEST_CASE("[Base] Scn - float parsing")
 
         double v = 12.0;
         CHECK_FALSE(sf::base::scnInto(src, v));
-        CHECK(v == doctest::Approx(12.0));
+        CHECK(v == tst::Approx(12.0));
         CHECK(src.bytesConsumed() == 48u);
 
         char c = '\0';
@@ -593,7 +593,7 @@ TEST_CASE("[Base] Scn - mixed value types in one source")
     REQUIRE(tok.hasValue());
     CHECK(*tok == sf::base::String{"hello"});
 
-    CHECK(*sf::base::scn<double>(src) == doctest::Approx(3.14));
+    CHECK(*sf::base::scn<double>(src) == tst::Approx(3.14));
     CHECK(*sf::base::scn<bool>(src) == true);
 
     // `scnArg<char>` does not skip leading whitespace.

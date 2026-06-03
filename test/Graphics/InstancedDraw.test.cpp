@@ -19,7 +19,7 @@
 
 #include "SFML/System/Priv/Vec2Base.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
 // On Emscripten, WebGL contexts cannot share resources. SFML's
@@ -27,7 +27,7 @@
 // shaders, textures, and buffers created in that environment still
 // function correctly (uniform uploads, texture sampling, vertex data).
 
-TEST_CASE("[Graphics] Shared-resource rendering" * doctest::skip(skipDisplayTests))
+TEST_CASE("[Graphics] Shared-resource rendering" * tst::skip(skipDisplayTests))
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
     auto renderTexture   = sf::RenderTexture::create({100, 100}).value();

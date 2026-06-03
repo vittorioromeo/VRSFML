@@ -39,7 +39,7 @@ fi
 filter_pattern="${1:-*}"
 
 # Collect TEST_CASE names from test/Graphics/*.cpp. We grep the first string
-# literal after TEST_CASE( and ignore decorators like `* doctest::skip(...)`.
+# literal after TEST_CASE( and ignore decorators like `* tst::skip(...)`.
 mapfile -t test_names < <(
     grep -hE '^TEST_CASE\s*\(\s*"' "$script_dir"/test/Graphics/*.cpp \
         | sed -E 's/^TEST_CASE\s*\(\s*"([^"]+)".*/\1/' \
@@ -82,7 +82,7 @@ for name in "${test_names[@]}"; do
     profile_dir="$profile_root/$idx"
     mkdir -p "$profile_dir"
 
-    # Pass the doctest filter as a single `-tc=<name>` token (per shell.html
+    # Pass the test-case filter as a single `-tc=<name>` token (per shell.html
     # `Module.arguments` plumbing). Quote the name so spaces survive.
     if emrun \
         --browser=chrome \

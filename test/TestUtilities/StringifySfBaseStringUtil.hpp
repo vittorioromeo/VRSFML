@@ -1,9 +1,9 @@
 #pragma once
 
+#include "Tst/Detail/StringifyValue.hpp"
+
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
-
-#include <DoctestFwd.hpp>
 
 
 namespace sf::base

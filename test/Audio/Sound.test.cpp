@@ -24,9 +24,9 @@
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
-TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
+TEST_CASE("[Audio] sf::Sound" * tst::skip(skipAudioDeviceTests))
 {
     auto               audioContext = sf::AudioContext::create().value();
     sf::PlaybackDevice playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};

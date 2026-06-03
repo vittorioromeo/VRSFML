@@ -15,7 +15,7 @@
 #include "SFML/Base/Trait/IsSame.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
 namespace
@@ -157,7 +157,7 @@ TEST_CASE("[System] sf::Utf8String - construction and basic accessors")
         const sf::Utf8String s{buffer, 5u};
         CHECK(s.byteSize() == 5u);
         CHECK(s.codepointCount() == 4u);
-        // doctest can't stringify `char8_t[]`, so compare against a same-typed temporary.
+        // the test framework cannot stringify `char8_t[]`, so compare against a same-typed temporary.
         CHECK(s == sf::Utf8String{u8"café"});
     }
 }

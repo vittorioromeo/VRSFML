@@ -4,7 +4,7 @@
 
 #include "SFML/Base/Trait/IsSame.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
 namespace

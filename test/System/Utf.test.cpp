@@ -6,7 +6,7 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/BackInserter.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 #include <locale>
 #include <string_view>

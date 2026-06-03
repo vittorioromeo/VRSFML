@@ -30,7 +30,7 @@ struct Result
     // Implicit converting ctor so the SFINAE-fallback path (where the
     // user's `lhs op rhs` returns plain `bool` after our templated
     // operator drops out) still feeds into `const Result =` cleanly.
-    [[gnu::always_inline]] constexpr /*implicit*/ Result(bool p) noexcept :
+    constexpr /*implicit*/ Result(bool p) noexcept :
         passed{p} // NOLINT(google-explicit-constructor)
     {
     }
@@ -93,7 +93,7 @@ struct ExpressionLhs
     const L&   lhs;
     AssertKind kind;
 
-    [[gnu::always_inline]] ExpressionLhs(const L& in, AssertKind k) noexcept : lhs{in}, kind{k}
+    ExpressionLhs(const L& in, AssertKind k) noexcept : lhs{in}, kind{k}
     {
     }
 
@@ -123,7 +123,7 @@ struct ExpressionLhs
     SFML_BASE_PRAGMA(GCC diagnostic ignored "-Wconversion");                                             \
                                                                                                          \
     template <typename R>                                                                                \
-    [[gnu::always_inline]] auto operator op(const R& rhs)                                                \
+    auto operator op(const R& rhs)                                                \
         const->decltype((void)(static_cast<const L&>(lhs) op static_cast<const R&>(rhs)), Result{false}) \
     {                                                                                                    \
         bool res = static_cast<bool>(lhs op rhs);                                                        \
@@ -182,7 +182,7 @@ struct ExpressionLhs
 
 
     // Conversion to Result for unary expressions like CHECK(b)
-    [[gnu::always_inline]] operator Result() const // NOLINT(google-explicit-constructor)
+    operator Result() const // NOLINT(google-explicit-constructor)
     {
         bool res = static_cast<bool>(lhs);
         if (kind == AssertKind::CheckFalse || kind == AssertKind::RequireFalse)
@@ -213,12 +213,12 @@ class ExpressionDecomposer
 public:
     AssertKind kind;
 
-    [[gnu::always_inline]] explicit ExpressionDecomposer(AssertKind k) noexcept : kind{k}
+    explicit ExpressionDecomposer(AssertKind k) noexcept : kind{k}
     {
     }
 
     template <typename L>
-    [[gnu::always_inline]] ExpressionLhs<L> operator<<(const L& operand) const noexcept
+    ExpressionLhs<L> operator<<(const L& operand) const noexcept
     {
         return ExpressionLhs<L>(operand, kind);
     }

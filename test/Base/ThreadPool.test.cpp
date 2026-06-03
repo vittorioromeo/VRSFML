@@ -2,7 +2,7 @@
 
 #include "SFML/System/Atomic.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
 TEST_CASE("[Base] Base/ThreadPool.hpp")

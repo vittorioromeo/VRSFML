@@ -1,6 +1,7 @@
 .cache/
 .idea/
 .vs/
+.claude/
 
 
 build2/

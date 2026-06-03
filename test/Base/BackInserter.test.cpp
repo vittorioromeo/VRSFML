@@ -4,7 +4,7 @@
 #include "SFML/Base/Algorithm/Copy.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
 TEST_CASE("[Base] Base/BackInserter.hpp")

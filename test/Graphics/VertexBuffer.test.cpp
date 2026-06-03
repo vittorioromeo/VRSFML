@@ -16,7 +16,7 @@
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 #include "SFML/Base/Trait/IsNothrowSwappable.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
 // Skip these tests with [.display] because they produce flakey failures in CI when using xvfb-run

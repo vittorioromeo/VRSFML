@@ -6,7 +6,7 @@
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StringView.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 #include <limits>
 

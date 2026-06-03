@@ -9,7 +9,7 @@
 #include "SFML/Base/Trait/IsTriviallyRelocatable.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
 namespace
@@ -531,7 +531,7 @@ TEST_CASE("[System] SFML/System/Atomic.hpp - CAS-loop float increment (no fetchA
 
     const double expected = static_cast<double>(threadCount) * static_cast<double>(incrementsPerThread) *
                             static_cast<double>(perStep);
-    CHECK(static_cast<double>(total.loadSeqCst()) == doctest::Approx(expected));
+    CHECK(static_cast<double>(total.loadSeqCst()) == tst::Approx(expected));
 }
 
 

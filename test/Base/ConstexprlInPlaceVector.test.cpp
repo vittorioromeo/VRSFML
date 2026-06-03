@@ -2,7 +2,7 @@
 
     #include "SFML/Base/InPlaceVector.hpp"
 
-    #include <Doctest.hpp>
+    #include "Tst/Tst.hpp"
 
 
 namespace

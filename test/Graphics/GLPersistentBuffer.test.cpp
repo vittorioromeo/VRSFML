@@ -21,7 +21,7 @@
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
 #ifndef SFML_OPENGL_ES
@@ -91,7 +91,7 @@ struct ScopedPersistentBuffer
 } // namespace
 
 
-TEST_CASE("[GLUtils] sf::GLPersistentBuffer" * doctest::skip(skipDisplayTests))
+TEST_CASE("[GLUtils] sf::GLPersistentBuffer" * tst::skip(skipDisplayTests))
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
 

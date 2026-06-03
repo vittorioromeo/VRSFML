@@ -25,10 +25,10 @@
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
-TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
+TEST_CASE("[Audio] sf::Music" * tst::skip(skipAudioDeviceTests))
 {
     auto               audioContext = sf::AudioContext::create().value();
     sf::PlaybackDevice playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};
