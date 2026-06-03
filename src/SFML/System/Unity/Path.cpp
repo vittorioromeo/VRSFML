@@ -24,12 +24,6 @@
 #include "SFML/Base/Trait/IsSame.hpp"
 #include "SFML/Base/Trait/RemoveCVRef.hpp"
 
-// `<ios>` and `<ostream>` are intentionally NOT included here -- in
-// libstdc++16 `<ostream>` pulls in `<format>` which adds ~3 s of
-// `std::format` template instantiations and turns this Unity TU
-// (Err + IO + Path) into one of the slowest parses in the build. The
-// stream-insertion operator for `Path` lives in `PathStreamOp.cpp`
-// instead.
 #include <filesystem>
 #include <string>
 #include <string_view>
@@ -501,10 +495,11 @@ base::FmtResult fmtArg(base::FmtSink& sink, const PathDebugFormatter& dbg, const
     SFML_BASE_FMT_TRY(sink.appendChar('\n'));
 
     SFML_BASE_FMT_TRY(sink.append("    Absolute path: ", 19u));
+
     if (const auto abs = dbg.path.getAbsolute(); abs.hasValue())
         return fmtArg(sink, *abs, base::FmtSpec{});
-    else
-        return sink.append("<unavailable>", 13u);
+
+    return sink.append("<unavailable>", 13u);
 }
 
 } // namespace sf::priv
