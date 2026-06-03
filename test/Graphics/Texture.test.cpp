@@ -23,7 +23,7 @@
 #include "SFML/Base/Trait/IsNothrowSwappable.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
 namespace
@@ -38,7 +38,7 @@ const sf::base::Vector<char>& sharedLogoBytes()
 } // namespace
 
 
-TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
+TEST_CASE("[Graphics] sf::Texture" * tst::skip(skipDisplayTests))
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
 

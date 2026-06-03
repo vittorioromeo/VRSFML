@@ -11,3 +11,17 @@ Diagnostics:
 CompileFlags:
   CompilationDatabase: build_vrdev_clang
   Add: [-D__CLANGD__]
+
+---
+# `build_vrdev_clang` uses CMake unity builds, so individual `.cpp` files
+# under test/ (e.g. test/TestUtilities/Tst/Approx.cpp) have no entry of
+# their own in `compile_commands.json` -- they are folded into a unity
+# wrapper. Without these include paths, clangd's fallback flags can't
+# resolve includes like `Tst/Approx.hpp` or `SFML/...`.
+If:
+  PathMatch: test/.*\.(cpp|hpp|inl)
+CompileFlags:
+  Add:
+    - -std=c++23
+    - -I/home/vittorioromeo/OHW/VRSFML/test/TestUtilities
+    - -I/home/vittorioromeo/OHW/VRSFML/include

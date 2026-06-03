@@ -22,10 +22,10 @@
 #include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
 #include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
-TEST_CASE("[Graphics] sf::Sprite" * doctest::skip(skipDisplayTests))
+TEST_CASE("[Graphics] sf::Sprite" * tst::skip(skipDisplayTests))
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
 

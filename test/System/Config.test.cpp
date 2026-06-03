@@ -1,6 +1,6 @@
 #include "SFML/Config.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 TEST_CASE("[System] SFML/Config.hpp")
 {

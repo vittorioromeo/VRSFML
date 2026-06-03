@@ -32,7 +32,7 @@ void emitMessageRaw(AssertKind kind, const char* file, int line, const char* dat
 ///
 /// Uses a fixed 1 KiB stack buffer instead of a `sf::base::String`,
 /// keeping this header free of `<SFML/Base/String.hpp>` -- a measurable
-/// per-TU win across the ~130 test files that include `Doctest.hpp`.
+/// per-TU win across the ~130 test files that include `Tst.hpp`.
 /// Messages longer than 1 KiB are silently truncated; in practice INFO
 /// payloads are short (file paths, ints, a few words).
 ///

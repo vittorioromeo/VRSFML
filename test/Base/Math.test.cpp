@@ -1,7 +1,7 @@
 #include "SFML/Base/Math/Frexp.hpp"
 #include "SFML/Base/Math/Ldexp.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
 TEST_CASE("[Base] Base/Math.hpp")

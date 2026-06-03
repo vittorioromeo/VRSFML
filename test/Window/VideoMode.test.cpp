@@ -21,10 +21,10 @@
 #include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
 #include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
-TEST_CASE("[Window] sf::VideoMode" * doctest::skip(skipDisplayTests))
+TEST_CASE("[Window] sf::VideoMode" * tst::skip(skipDisplayTests))
 {
     auto windowContext = sf::WindowContext::create().value();
 

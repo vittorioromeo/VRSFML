@@ -1,6 +1,6 @@
 #include "SFML/Base/Exchange.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
 TEST_CASE("[Base] Base/Algorithm.hpp")

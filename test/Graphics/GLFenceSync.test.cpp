@@ -16,7 +16,7 @@
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
 #ifndef SFML_OPENGL_ES
@@ -35,7 +35,7 @@ void drainGLCommandQueue()
 } // namespace
 
 
-TEST_CASE("[GLUtils] sf::priv::GLFenceSync / FenceUtils" * doctest::skip(skipDisplayTests))
+TEST_CASE("[GLUtils] sf::priv::GLFenceSync / FenceUtils" * tst::skip(skipDisplayTests))
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
 

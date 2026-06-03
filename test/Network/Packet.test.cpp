@@ -15,7 +15,7 @@
 #include "SFML/Base/Trait/RemoveConst.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 #include <limits>
 #include <string>
@@ -83,7 +83,7 @@
         CHECK(packet.getDataSize() == (size));                                        \
         CHECK(packet.endOfPacket());                                                  \
         CHECK(bool{packet});                                                          \
-        /* `std::wstring` is not stringifiable by doctest, so compare via `bool`. */  \
+        /* `std::wstring` is not stringifiable by the test framework, so compare via `bool`. */  \
         const bool roundTripEqual = std::wstring{expected} == std::wstring{received}; \
         CHECK(roundTripEqual);                                                        \
     } while (false)

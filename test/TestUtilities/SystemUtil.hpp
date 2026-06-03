@@ -8,8 +8,6 @@
 
 #include "SFML/Base/SizeT.hpp"
 
-#include <DoctestFwd.hpp>
-
 
 // Forward declarations
 namespace sf

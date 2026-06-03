@@ -3,7 +3,7 @@
 #include "SFML/Base/Builtin/Strcmp.hpp"
 #include "SFML/Base/Builtin/Strstr.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
 TEST_CASE("[Base] Base/SourceLocation.hpp")

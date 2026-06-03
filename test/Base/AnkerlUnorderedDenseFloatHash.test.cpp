@@ -2,7 +2,7 @@
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
 namespace

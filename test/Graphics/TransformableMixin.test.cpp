@@ -19,7 +19,7 @@
 #include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
 #include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
 struct TestTransformable : sf::TransformableMixin

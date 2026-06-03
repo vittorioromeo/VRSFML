@@ -352,10 +352,11 @@ TODO P0: update
 
 <br>
 
-- ➡️ **Changed testing framework from Catch to Doctest:**
+- ➡️ **Changed testing framework from Catch to Doctest, then to a bespoke solution:**
     - Doctest used to be upstream SFML's testing framework as per my proposal.
     - Doctest was changed to Catch2 in this PR <https://github.com/SFML/SFML/pull/2452> despite my objections.
     - Doctest has almost feature-parity with Catch2 but an insanely better compilation time impact: <https://github.com/doctest/doctest/>.
+    - Later replaced Doctest with a bespoke small testing framework to further minimize compilation time.
 
 <br>
 

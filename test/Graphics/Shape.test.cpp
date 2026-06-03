@@ -18,7 +18,7 @@
 #include "SFML/Base/Trait/IsMoveConstructible.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
 class TriangleShape : public sf::Shape
@@ -38,7 +38,7 @@ private:
     sf::Vec2f m_points[3];
 };
 
-TEST_CASE("[Graphics] sf::Shape" * doctest::skip(skipDisplayTests))
+TEST_CASE("[Graphics] sf::Shape" * tst::skip(skipDisplayTests))
 {
     SECTION("Type traits")
     {

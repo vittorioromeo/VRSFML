@@ -32,7 +32,7 @@
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Thread.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
 // Mirrors the trick in test/Window/Context.test.cpp: forces visibility of
@@ -139,7 +139,7 @@ void main()
 } // namespace
 
 
-TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
+TEST_CASE("[Graphics] Render Tests" * tst::skip(skipDisplayTests))
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
 

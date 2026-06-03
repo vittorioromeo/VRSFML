@@ -7,7 +7,7 @@
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
 namespace

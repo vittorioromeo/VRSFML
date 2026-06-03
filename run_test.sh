@@ -5,7 +5,7 @@
 # falls back to node); otherwise runs the native test binary directly.
 #
 # Usage:
-#   ./run_test.sh <Suite> [doctest-args...]
+#   ./run_test.sh <Suite> [test-runner-args...]
 #   e.g.  ./run_test.sh Graphics -tc='*Sprite*'
 #
 # Env:

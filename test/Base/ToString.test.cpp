@@ -3,7 +3,7 @@
 
 #include "SFML/Base/ToString.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
 TEST_CASE("[Base] Base/ToString.hpp")

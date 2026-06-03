@@ -5,7 +5,7 @@
 
 #include "SFML/Base/Macros.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 #if defined(SFML_ENABLE_LIFETIME_TRACKING)
 

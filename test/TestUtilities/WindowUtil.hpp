@@ -8,8 +8,6 @@
 
 #include "SFML/Base/SizeT.hpp"
 
-#include <DoctestFwd.hpp>
-
 
 #ifdef SFML_RUN_DISPLAY_TESTS
 inline constexpr bool skipDisplayTests = false;

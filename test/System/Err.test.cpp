@@ -4,7 +4,7 @@
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
 namespace

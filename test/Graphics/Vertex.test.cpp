@@ -10,7 +10,7 @@
 #include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
 TEST_CASE("[Graphics] sf::Vertex")

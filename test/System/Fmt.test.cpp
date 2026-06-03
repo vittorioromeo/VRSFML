@@ -79,7 +79,7 @@ using namespace FmtTest;
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] Fmt.hpp - format() basics")
+TEST_CASE("[System] Fmt.hpp - format() basics")
 {
     SECTION("No args, plain text")
     {
@@ -144,7 +144,7 @@ TEST_CASE("[Base] Fmt.hpp - format() basics")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] Fmt.hpp - precision spec {:.Nf}")
+TEST_CASE("[System] Fmt.hpp - precision spec {:.Nf}")
 {
     SECTION("Float precision")
     {
@@ -172,7 +172,7 @@ TEST_CASE("[Base] Fmt.hpp - precision spec {:.Nf}")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] Fmt.hpp - width spec {:N}")
+TEST_CASE("[System] Fmt.hpp - width spec {:N}")
 {
     SECTION("Numbers default to right-align")
     {
@@ -206,7 +206,7 @@ TEST_CASE("[Base] Fmt.hpp - width spec {:N}")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] Fmt.hpp - explicit alignment {:<N}, {:>N}, {:^N}")
+TEST_CASE("[System] Fmt.hpp - explicit alignment {:<N}, {:>N}, {:^N}")
 {
     SECTION("Right-align '>'")
     {
@@ -232,7 +232,7 @@ TEST_CASE("[Base] Fmt.hpp - explicit alignment {:<N}, {:>N}, {:^N}")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] Fmt.hpp - custom fill character")
+TEST_CASE("[System] Fmt.hpp - custom fill character")
 {
     SECTION("Zero-pad on the left")
     {
@@ -258,7 +258,7 @@ TEST_CASE("[Base] Fmt.hpp - custom fill character")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] Fmt.hpp - combined specs (width + precision)")
+TEST_CASE("[System] Fmt.hpp - combined specs (width + precision)")
 {
     SECTION("Width + precision, right-aligned")
     {
@@ -283,7 +283,7 @@ TEST_CASE("[Base] Fmt.hpp - combined specs (width + precision)")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] Fmt.hpp - integer radix specs {:x}, {:X}, {:o}, {:b}, {:d}")
+TEST_CASE("[System] Fmt.hpp - integer radix specs {:x}, {:X}, {:o}, {:b}, {:d}")
 {
     SECTION("Lowercase hex")
     {
@@ -336,7 +336,7 @@ TEST_CASE("[Base] Fmt.hpp - integer radix specs {:x}, {:X}, {:o}, {:b}, {:d}")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] Fmt.hpp - mixed-spec multi-arg")
+TEST_CASE("[System] Fmt.hpp - mixed-spec multi-arg")
 {
     const auto result = sf::base::fmtToString("[{:>5}|{:<5}|{:^5}]", 1, 2, 3);
     CHECK(result == sf::base::String{"[    1|2    |  3  ]"});
@@ -347,7 +347,7 @@ TEST_CASE("[Base] Fmt.hpp - mixed-spec multi-arg")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] Fmt.hpp - integer type variety")
+TEST_CASE("[System] Fmt.hpp - integer type variety")
 {
     SECTION("signed/unsigned")
     {
@@ -414,7 +414,7 @@ TEST_CASE("[Base] Fmt.hpp - integer type variety")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] Fmt.hpp - bool formats as 'true'/'false'")
+TEST_CASE("[System] Fmt.hpp - bool formats as 'true'/'false'")
 {
     SECTION("Default presentation matches std::format / fmt::format")
     {
@@ -463,7 +463,7 @@ TEST_CASE("[Base] Fmt.hpp - bool formats as 'true'/'false'")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] Fmt.hpp - fmtIntoBuffer raw API")
+TEST_CASE("[System] Fmt.hpp - fmtIntoBuffer raw API")
 {
     char buf[512];
 
@@ -506,7 +506,7 @@ TEST_CASE("[Base] Fmt.hpp - fmtIntoBuffer raw API")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] Fmt.hpp - fmtTo() into base::String")
+TEST_CASE("[System] Fmt.hpp - fmtTo() into base::String")
 {
     SECTION("Appends to non-empty sink")
     {
@@ -534,7 +534,7 @@ TEST_CASE("[Base] Fmt.hpp - fmtTo() into base::String")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] Fmt.hpp - fmtTo() into Utf8String")
+TEST_CASE("[System] Fmt.hpp - fmtTo() into Utf8String")
 {
     SECTION("Build a HUD-style string")
     {
@@ -557,7 +557,7 @@ TEST_CASE("[Base] Fmt.hpp - fmtTo() into Utf8String")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] Fmt.hpp - edge cases")
+TEST_CASE("[System] Fmt.hpp - edge cases")
 {
     SECTION("Empty format string")
     {
@@ -729,7 +729,7 @@ inline constexpr char fmtArgDefaultAlign<customtypes::RightHex> = '>';
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] Fmt.hpp - custom fmtArg (Pattern A: zero-scratch byte copy)")
+TEST_CASE("[System] Fmt.hpp - custom fmtArg (Pattern A: zero-scratch byte copy)")
 {
     using customtypes::FixedTag;
 
@@ -754,7 +754,7 @@ TEST_CASE("[Base] Fmt.hpp - custom fmtArg (Pattern A: zero-scratch byte copy)")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] Fmt.hpp - custom fmtArg (Pattern B: recursive composition)")
+TEST_CASE("[System] Fmt.hpp - custom fmtArg (Pattern B: recursive composition)")
 {
     using customtypes::Vec2f;
 
@@ -789,7 +789,7 @@ TEST_CASE("[Base] Fmt.hpp - custom fmtArg (Pattern B: recursive composition)")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] Fmt.hpp - custom fmtArg (Pattern C: nested containers)")
+TEST_CASE("[System] Fmt.hpp - custom fmtArg (Pattern C: nested containers)")
 {
     using customtypes::MiniVec;
     using customtypes::Vec2f;
@@ -838,7 +838,7 @@ TEST_CASE("[Base] Fmt.hpp - custom fmtArg (Pattern C: nested containers)")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] Fmt.hpp - custom fmtArgDefaultAlign specialization")
+TEST_CASE("[System] Fmt.hpp - custom fmtArgDefaultAlign specialization")
 {
     using customtypes::RightHex;
 
@@ -860,7 +860,7 @@ TEST_CASE("[Base] Fmt.hpp - custom fmtArgDefaultAlign specialization")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] Fmt.hpp - FmtSink direct use (low-level API)")
+TEST_CASE("[System] Fmt.hpp - FmtSink direct use (low-level API)")
 {
     SECTION("Plain bytes + format mix")
     {
@@ -908,7 +908,7 @@ TEST_CASE("[Base] Fmt.hpp - FmtSink direct use (low-level API)")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] Fmt.hpp - formatter failure is not treated as overflow")
+TEST_CASE("[System] Fmt.hpp - formatter failure is not treated as overflow")
 {
     using customtypes::FailTag;
 
@@ -928,7 +928,7 @@ TEST_CASE("[Base] Fmt.hpp - formatter failure is not treated as overflow")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] Fmt.hpp - invalid built-in specs fail in release")
+TEST_CASE("[System] Fmt.hpp - invalid built-in specs fail in release")
 {
 #ifndef SFML_DEBUG
     sf::base::String out = "prefix";
@@ -948,7 +948,7 @@ TEST_CASE("[Base] Fmt.hpp - invalid built-in specs fail in release")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] Fmt.hpp - fmtTo() large output (heap fallback path)")
+TEST_CASE("[System] Fmt.hpp - fmtTo() large output (heap fallback path)")
 {
     SECTION("Output larger than 512-byte staging buffer succeeds")
     {
@@ -1002,7 +1002,7 @@ TEST_CASE("[Base] Fmt.hpp - fmtTo() large output (heap fallback path)")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] Fmt.hpp - boundary conditions")
+TEST_CASE("[System] Fmt.hpp - boundary conditions")
 {
     SECTION("Exact fit -- buffer size equals output (no terminator reserved)")
     {
@@ -1114,7 +1114,7 @@ TEST_CASE("[Base] Fmt.hpp - boundary conditions")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] Fmt.hpp - composition + width interaction")
+TEST_CASE("[System] Fmt.hpp - composition + width interaction")
 {
     SECTION("Outer width pads composed inner content uniformly")
     {

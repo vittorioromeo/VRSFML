@@ -18,7 +18,7 @@
 #include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
 TEST_CASE("[Graphics] sf::View")
@@ -221,16 +221,16 @@ TEST_CASE("[Graphics] sf::View")
         view.viewport = sf::Rect2f({0, 0}, {.5f, 1});
 
         const auto [x1, y1] = view.screenToWorld({0, 0}, size);
-        CHECK_THAT(x1, Catch::Matchers::WithinRel(5, 1e-4));
-        CHECK_THAT(y1, Catch::Matchers::WithinRel(5, 1e-4));
+        CHECK_THAT(x1, tst::Matchers::WithinRel(5, 1e-4));
+        CHECK_THAT(y1, tst::Matchers::WithinRel(5, 1e-4));
 
         const auto [x2, y2] = view.screenToWorld({1, 1}, size);
-        CHECK_THAT(x2, Catch::Matchers::WithinRel(8.125, 1e-4));
-        CHECK_THAT(y2, Catch::Matchers::WithinRel(7.0833, 1e-4));
+        CHECK_THAT(x2, tst::Matchers::WithinRel(8.125, 1e-4));
+        CHECK_THAT(y2, tst::Matchers::WithinRel(7.0833, 1e-4));
 
         const auto [x3, y3] = view.screenToWorld({320, 240}, size);
-        CHECK_THAT(x3, Catch::Matchers::WithinRel(1005, 1e-5));
-        CHECK_THAT(y3, Catch::Matchers::WithinRel(505, 1e-5));
+        CHECK_THAT(x3, tst::Matchers::WithinRel(1005, 1e-5));
+        CHECK_THAT(y3, tst::Matchers::WithinRel(505, 1e-5));
     }
 
     SECTION("project")
@@ -242,15 +242,15 @@ TEST_CASE("[Graphics] sf::View")
         view.viewport = sf::Rect2f({.25f, 0}, {1, 1});
 
         const auto [x1, y1] = view.worldToScreen({0, 0}, size);
-        CHECK_THAT(x1, Catch::Matchers::WithinRel(156.8, 1e-2));
-        CHECK_THAT(y1, Catch::Matchers::WithinRel(-2.4, 1e-2));
+        CHECK_THAT(x1, tst::Matchers::WithinRel(156.8, 1e-2));
+        CHECK_THAT(y1, tst::Matchers::WithinRel(-2.4, 1e-2));
 
         const auto [x2, y2] = view.worldToScreen({-500, 0}, size);
-        CHECK_THAT(x2, Catch::Matchers::WithinRel(-163.1, 1e-2));
-        CHECK_THAT(y2, Catch::Matchers::WithinRel(-2.4, 1e-2));
+        CHECK_THAT(x2, tst::Matchers::WithinRel(-163.1, 1e-2));
+        CHECK_THAT(y2, tst::Matchers::WithinRel(-2.4, 1e-2));
 
         const auto [x3, y3] = view.worldToScreen({0, -250}, size);
-        CHECK_THAT(x3, Catch::Matchers::WithinRel(156.8, 1e-2));
-        CHECK_THAT(y3, Catch::Matchers::WithinRel(-122.3, 1e-2));
+        CHECK_THAT(x3, tst::Matchers::WithinRel(156.8, 1e-2));
+        CHECK_THAT(y3, tst::Matchers::WithinRel(-122.3, 1e-2));
     }
 }

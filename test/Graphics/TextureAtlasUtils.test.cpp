@@ -13,10 +13,10 @@
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/RectPacker.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
-TEST_CASE("[Graphics] sf::TextureAtlasUtils" * doctest::skip(skipDisplayTests))
+TEST_CASE("[Graphics] sf::TextureAtlasUtils" * tst::skip(skipDisplayTests))
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
 

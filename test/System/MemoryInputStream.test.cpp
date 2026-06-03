@@ -8,7 +8,7 @@
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 TEST_CASE("[System] sf::MemoryInputStream")
 {

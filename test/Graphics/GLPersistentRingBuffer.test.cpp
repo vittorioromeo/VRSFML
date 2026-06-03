@@ -20,7 +20,7 @@
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
 #ifndef SFML_OPENGL_ES
@@ -97,7 +97,7 @@ void fillPattern(unsigned char* const dst, const sf::base::SizeT size, const uns
 } // namespace
 
 
-TEST_CASE("[GLUtils] sf::GLPersistentRingBuffer" * doctest::skip(skipDisplayTests))
+TEST_CASE("[GLUtils] sf::GLPersistentRingBuffer" * tst::skip(skipDisplayTests))
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
 

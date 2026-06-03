@@ -2,9 +2,9 @@
 
 #include "SFML/Window/Mouse.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
-TEST_CASE("[Window] sf::Mouse" * doctest::skip(skipDisplayTests))
+TEST_CASE("[Window] sf::Mouse" * tst::skip(skipDisplayTests))
 {
     SECTION("isButtonPressed()")
     {

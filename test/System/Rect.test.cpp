@@ -16,7 +16,7 @@
 #include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 TEMPLATE_TEST_CASE("[System] sf::Rect2", "", int, float)
 {

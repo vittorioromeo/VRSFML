@@ -20,7 +20,7 @@
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
 namespace
@@ -35,7 +35,7 @@ constexpr const T& asConst(T& t) noexcept
 } // namespace
 
 
-TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
+TEST_CASE("[Window] sf::WindowBase" * tst::skip(skipDisplayTests))
 {
     auto windowContext = sf::WindowContext::create().value();
 

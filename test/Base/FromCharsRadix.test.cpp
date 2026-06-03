@@ -4,7 +4,7 @@
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/ToCharsRadix.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 #include <initializer_list>
 

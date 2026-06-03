@@ -17,7 +17,7 @@
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
 #if defined(_WIN32)
@@ -117,7 +117,7 @@ struct ScopedFramebufferHooks
 // Emscripten/WebGL does not support multiple GL contexts, which this entire
 // test case exercises.
 #ifndef SFML_SYSTEM_EMSCRIPTEN
-TEST_CASE("[Graphics] MultiContext" * doctest::skip(skipDisplayTests))
+TEST_CASE("[Graphics] MultiContext" * tst::skip(skipDisplayTests))
 {
     sf::Vertex   vertices[]{{.position = {0.f, 0.f}}};
     unsigned int indices[] = {0};

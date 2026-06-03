@@ -1,4 +1,5 @@
 #include "SystemUtil.hpp"
+#include "Tst/Detail/StringifyValue.hpp"
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/AutoWrapAngle.hpp"
@@ -12,7 +13,7 @@
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/ToChars.hpp"
 
-#include <Doctest.hpp>
+#include "Tst/Tst.hpp"
 
 
 namespace
