@@ -36,7 +36,7 @@ template <typename T>
     else if constexpr (SFML_BASE_IS_SAME(T, long double))
         return SFML_BASE_MATH_FREXPL(arg0, exp);
     else
-        static_assert(sizeof(T) == 0);
+        static_assert(false);
 }
 
 } // namespace sf::base
