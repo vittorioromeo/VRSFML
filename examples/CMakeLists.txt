@@ -1,7 +1,7 @@
 # ===========================================================================
 # ExampleUtils library
 #
-# General-purpose example helpers (Sampler, Scaling, MiniFmt, LoadedSound, ...).
+# General-purpose example helpers (Sampler, Scaling, Fmt, LoadedSound, ...).
 # Profiling lives in its own pair of libraries below.
 # ===========================================================================
 set(INCROOT ${PROJECT_SOURCE_DIR}/examples/include/ExampleUtils)
