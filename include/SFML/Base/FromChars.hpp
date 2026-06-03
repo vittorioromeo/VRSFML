@@ -6,6 +6,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Base/FromCharsResult.hpp" // IWYU pragma: export
 #include "SFML/Base/Trait/IsFloatingPoint.hpp"
 #include "SFML/Base/Trait/IsIntegral.hpp"
 #include "SFML/Base/Trait/IsUnsigned.hpp"
@@ -45,29 +46,6 @@ template <typename T>
 namespace sf::base
 {
 //////////////////////////////////////////////////////////////
-/// \brief Outcome of a `fromChars` parse attempt
-///
-//////////////////////////////////////////////////////////////
-enum class [[nodiscard]] FromCharsError
-{
-    None,            //!< Successful parse
-    InvalidArgument, //!< No digits found, or sign without digits
-    ResultOutOfRange //!< Value would overflow the destination type
-};
-
-
-//////////////////////////////////////////////////////////////
-/// \brief Result type returned from `fromChars`, mirroring `std::from_chars_result`
-///
-//////////////////////////////////////////////////////////////
-struct [[nodiscard]] FromCharsResult
-{
-    const char*    ptr; //!< One past the last character successfully consumed
-    FromCharsError ec;  //!< Error code (`None` on success)
-};
-
-
-//////////////////////////////////////////////////////////////
 /// \brief Parse an integer from `[first, last)` into `value`
 ///
 /// Stricter than `strtol`: only base-10 digits and an optional leading
@@ -104,29 +82,46 @@ template <typename T>
         return {first, FromCharsError::InvalidArgument};
     }
 
-    T result = 0;
+    using UnsignedT = MakeUnsigned<T>;
 
-    constexpr auto limit = priv::maxIntegral<T>();
+    UnsignedT result = 0;
+
+    constexpr auto maxPositive = static_cast<UnsignedT>(priv::maxIntegral<T>());
+    const auto     limit       = [&]
+    {
+        if constexpr (SFML_BASE_IS_UNSIGNED(T))
+        {
+            return maxPositive;
+        }
+        else
+        {
+            return isNegative ? static_cast<UnsignedT>(maxPositive + 1u) : maxPositive;
+        }
+    }();
 
     while (first != last && priv::isDigit(*first))
     {
-        const int digit = *first - '0';
+        const auto digit = static_cast<UnsignedT>(*first - '0');
 
         // Check for overflow before multiplication
-        if (result > limit / 10 || (result == limit / 10 && static_cast<T>(digit) > limit % 10))
+        if (result > limit / 10u || (result == limit / 10u && digit > limit % 10u))
             return {first, FromCharsError::ResultOutOfRange};
 
-        result = static_cast<T>(result * 10 + static_cast<T>(digit));
+        result = static_cast<UnsignedT>(result * 10u + digit);
         ++first;
     }
 
     if constexpr (!SFML_BASE_IS_UNSIGNED(T))
     {
-        value = isNegative ? -result : result;
+        // Negate without overflow: `result` may hold `|T_MIN|`, which doesn't fit in `T`,
+        // so the naive `-static_cast<T>(result)` would be UB. `-(result - 1) - 1` keeps
+        // every intermediate within `T`'s range (`|T_MIN| - 1 == T_MAX`).
+        value = isNegative ? (result == 0u ? T{0} : static_cast<T>(-static_cast<T>(result - 1u) - T{1}))
+                           : static_cast<T>(result);
     }
     else
     {
-        value = result;
+        value = static_cast<T>(result);
     }
 
     return {first, FromCharsError::None}; // Success

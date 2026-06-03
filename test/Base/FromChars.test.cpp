@@ -76,6 +76,19 @@ TEST_CASE("[Base] FromChars.hpp")
             CHECK(result.ec == sf::base::FromCharsError::None);
             CHECK(iValue == std::numeric_limits<int>::max());
 
+            // Signed int min
+            sf::base::String iMinStr = sf::base::toString(std::numeric_limits<int>::min());
+            result                   = sf::base::fromChars(iMinStr.cStr(), iMinStr.cStr() + iMinStr.size(), iValue);
+            CHECK(result.ec == sf::base::FromCharsError::None);
+            CHECK(iValue == std::numeric_limits<int>::min());
+
+            // Signed long long min
+            long long        llValue  = 0;
+            sf::base::String llMinStr = sf::base::toString(std::numeric_limits<long long>::min());
+            result = sf::base::fromChars(llMinStr.cStr(), llMinStr.cStr() + llMinStr.size(), llValue);
+            CHECK(result.ec == sf::base::FromCharsError::None);
+            CHECK(llValue == std::numeric_limits<long long>::min());
+
             // Unsigned long long max
             unsigned long long ullValue     = 0;
             sf::base::String   ullMaxString = sf::base::toString(std::numeric_limits<unsigned long long>::max());
