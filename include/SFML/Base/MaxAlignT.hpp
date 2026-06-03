@@ -15,8 +15,11 @@ namespace sf::base
 ////////////////////////////////////////////////////////////
 struct MaxAlignT
 {
-    alignas(alignof(long long)) long long a;
-    alignas(alignof(long double)) long double b;
+    long long   a [[gnu::aligned(alignof(long long))]];
+    long double b [[gnu::aligned(alignof(long double))]];
+#if defined(__i386__)
+    __float128 c [[gnu::aligned(alignof(__float128))]];
+#endif
 };
 
 } // namespace sf::base
