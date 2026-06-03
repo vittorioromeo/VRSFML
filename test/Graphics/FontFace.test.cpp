@@ -7,6 +7,7 @@
 
 // Other 1st party headers
 #include "LoadIntoMemoryUtil.hpp"
+#include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
 #include "SFML/System/FileInputStream.hpp"
@@ -17,8 +18,6 @@
 #include "SFML/Base/Trait/IsDefaultConstructible.hpp"
 #include "SFML/Base/Trait/IsMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsMoveConstructible.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 TEST_CASE("[Graphics] sf::FontFace" * tst::skip(skipDisplayTests))

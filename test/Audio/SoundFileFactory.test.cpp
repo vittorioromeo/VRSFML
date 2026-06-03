@@ -3,6 +3,7 @@
 // Other 1st party headers
 #include "StringifyOptionalUtil.hpp"
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/Audio/ChannelMap.hpp"
 #include "SFML/Audio/SoundFileReader.hpp"
@@ -18,8 +19,6 @@
 #include "SFML/Base/Trait/IsTriviallyCopyConstructible.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 namespace

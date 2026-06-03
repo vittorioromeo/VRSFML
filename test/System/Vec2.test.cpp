@@ -1,4 +1,5 @@
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/System/Vec2.hpp"
 
@@ -17,8 +18,6 @@
 #include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
-
-#include "Tst/Tst.hpp"
 
 using namespace sf::Literals;
 

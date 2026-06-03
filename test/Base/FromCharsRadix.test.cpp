@@ -1,10 +1,10 @@
+#include "Tst/Tst.hpp"
+
 #include "SFML/Base/FromCharsRadix.hpp"
 
 #include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/ToCharsRadix.hpp"
-
-#include "Tst/Tst.hpp"
 
 #include <initializer_list>
 

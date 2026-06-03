@@ -61,15 +61,15 @@ public:
     [[gnu::always_inline]] FmtSinkRef(Sink& sink) noexcept :
         m_sink{&sink},
         m_appendFn{+[](void* s, const char* data, SizeT n)
+    {
+        if constexpr (SFML_BASE_IS_SAME(decltype(static_cast<Sink*>(s)->append(data, n)), FmtResult))
+            return static_cast<Sink*>(s)->append(data, n);
+        else
         {
-            if constexpr (SFML_BASE_IS_SAME(decltype(static_cast<Sink*>(s)->append(data, n)), FmtResult))
-                return static_cast<Sink*>(s)->append(data, n);
-            else
-            {
-                static_cast<Sink*>(s)->append(data, n);
-                return FmtResult::Ok;
-            }
-        }}
+            static_cast<Sink*>(s)->append(data, n);
+            return FmtResult::Ok;
+        }
+    }}
     {
     }
 

@@ -1,4 +1,5 @@
 #include "GraphicsUtil.hpp"
+#include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
 #include "SFML/Graphics/Color.hpp"
@@ -18,8 +19,6 @@
 #include "SFML/Graphics/View.hpp"
 
 #include "SFML/System/Priv/Vec2Base.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 // On Emscripten, WebGL contexts cannot share resources. SFML's

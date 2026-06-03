@@ -7,6 +7,7 @@
 #include "AudioUtil.hpp"
 #include "LoadIntoMemoryUtil.hpp"
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/Audio/MusicReader.hpp"
 
@@ -24,8 +25,6 @@
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 TEST_CASE("[Audio] sf::Music" * tst::skip(skipAudioDeviceTests))

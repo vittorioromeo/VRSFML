@@ -1,3 +1,5 @@
+#include "Tst/Tst.hpp"
+
 #include "SFML/System/Atomic.hpp"
 
 #include "SFML/System/Thread.hpp"
@@ -8,8 +10,6 @@
 #include "SFML/Base/Trait/IsConstructible.hpp"
 #include "SFML/Base/Trait/IsTriviallyRelocatable.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 namespace

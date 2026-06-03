@@ -1,6 +1,8 @@
 #include "SFML/Network/TcpSocket.hpp"
 
 // Other 1st party headers
+#include "Tst/Tst.hpp"
+
 #include "SFML/Network/IpAddress.hpp"
 #include "SFML/Network/IpAddressUtils.hpp"
 
@@ -14,8 +16,6 @@
 #include "SFML/Base/Trait/IsCopyConstructible.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 TEST_CASE("[Network] sf::TcpSocket")

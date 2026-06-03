@@ -1,6 +1,6 @@
-#include "SFML/Window/Vulkan.hpp"
-
 #include "Tst/Tst.hpp"
+
+#include "SFML/Window/Vulkan.hpp"
 
 TEST_CASE("[Window] sf::Vulkan")
 {

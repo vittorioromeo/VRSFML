@@ -1,4 +1,5 @@
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/Graphics/ArrowShapeData.hpp"
 #include "SFML/Graphics/ChevronShapeData.hpp"
@@ -29,8 +30,6 @@
 #include "SFML/Base/Trait/IsCopyConstructible.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 namespace

@@ -1,4 +1,5 @@
 #include "StringifyOptionalUtil.hpp"
+#include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
 #include "SFML/Window/Cursor.hpp"
@@ -13,8 +14,6 @@
 #include "SFML/Base/Trait/IsDefaultConstructible.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
-
-#include "Tst/Tst.hpp"
 
 TEST_CASE("[Window] sf::Cursor" * tst::skip(skipDisplayTests))
 {

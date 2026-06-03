@@ -1,5 +1,6 @@
 #include "StringifyStringViewUtil.hpp"
 #include "TemporaryFile.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/Graphics/ShaderUtils.hpp"
 
@@ -11,8 +12,6 @@
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 using sf::testing::TemporaryFile;

@@ -1,6 +1,8 @@
 #include "SFML/Graphics/Shader.hpp"
 
 // Other 1st party headers
+#include "Tst/Tst.hpp"
+
 #include "SFML/Graphics/Glsl.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 
@@ -16,8 +18,6 @@
 #include "SFML/Base/Trait/IsDefaultConstructible.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 namespace

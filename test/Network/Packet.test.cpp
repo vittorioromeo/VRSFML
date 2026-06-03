@@ -2,6 +2,7 @@
 
 // Other 1st party headers
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/System/Utf8String.hpp"
 
@@ -14,8 +15,6 @@
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 #include "SFML/Base/Trait/RemoveConst.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include "Tst/Tst.hpp"
 
 #include <limits>
 #include <string>
@@ -65,27 +64,27 @@
         CHECK(sf::base::String{expected} == sf::base::String{received}); \
     } while (false)
 
-#define CHECK_PACKET_WIDE_STRING_STREAM_OPERATORS(expected, size)                     \
-    do                                                                                \
-    {                                                                                 \
-        sf::Packet packet;                                                            \
-        packet << (expected);                                                         \
-        CHECK(packet.getReadPosition() == 0);                                         \
-        CHECK(packet.getData() != nullptr);                                           \
-        CHECK(packet.getDataSize() == (size));                                        \
-        CHECK(!packet.endOfPacket());                                                 \
-        CHECK(bool{packet});                                                          \
-                                                                                      \
-        SFML_BASE_REMOVE_CONST(decltype(expected)) received;                          \
-        packet >> received;                                                           \
-        CHECK(packet.getReadPosition() == (size));                                    \
-        CHECK(packet.getData() != nullptr);                                           \
-        CHECK(packet.getDataSize() == (size));                                        \
-        CHECK(packet.endOfPacket());                                                  \
-        CHECK(bool{packet});                                                          \
-        /* `std::wstring` is not stringifiable by the test framework, so compare via `bool`. */  \
-        const bool roundTripEqual = std::wstring{expected} == std::wstring{received}; \
-        CHECK(roundTripEqual);                                                        \
+#define CHECK_PACKET_WIDE_STRING_STREAM_OPERATORS(expected, size)                               \
+    do                                                                                          \
+    {                                                                                           \
+        sf::Packet packet;                                                                      \
+        packet << (expected);                                                                   \
+        CHECK(packet.getReadPosition() == 0);                                                   \
+        CHECK(packet.getData() != nullptr);                                                     \
+        CHECK(packet.getDataSize() == (size));                                                  \
+        CHECK(!packet.endOfPacket());                                                           \
+        CHECK(bool{packet});                                                                    \
+                                                                                                \
+        SFML_BASE_REMOVE_CONST(decltype(expected)) received;                                    \
+        packet >> received;                                                                     \
+        CHECK(packet.getReadPosition() == (size));                                              \
+        CHECK(packet.getData() != nullptr);                                                     \
+        CHECK(packet.getDataSize() == (size));                                                  \
+        CHECK(packet.endOfPacket());                                                            \
+        CHECK(bool{packet});                                                                    \
+        /* `std::wstring` is not stringifiable by the test framework, so compare via `bool`. */ \
+        const bool roundTripEqual = std::wstring{expected} == std::wstring{received};           \
+        CHECK(roundTripEqual);                                                                  \
     } while (false)
 
 struct Packet : sf::Packet

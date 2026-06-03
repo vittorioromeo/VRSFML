@@ -2,6 +2,7 @@
 
 // Other 1st party headers
 #include "GraphicsUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/System/FileInputStream.hpp"
 #include "SFML/System/Path.hpp"
@@ -17,8 +18,6 @@
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 TEST_CASE("[Graphics] sf::Image")

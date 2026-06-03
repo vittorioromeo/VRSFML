@@ -3,6 +3,7 @@
 // Other 1st party headers
 #include "StringifyOptionalUtil.hpp"
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
 #include "SFML/Window/Event.hpp"
@@ -19,8 +20,6 @@
 #include "SFML/Base/Trait/IsCopyConstructible.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 namespace

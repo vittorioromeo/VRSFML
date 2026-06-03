@@ -1,4 +1,5 @@
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/System/Thread.hpp"
 
@@ -11,8 +12,6 @@
 #include "SFML/Base/Trait/IsCopyConstructible.hpp"
 #include "SFML/Base/Trait/IsMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsMoveConstructible.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 ////////////////////////////////////////////////////////////

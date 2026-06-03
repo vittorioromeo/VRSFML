@@ -1,6 +1,7 @@
 #include "GraphicsUtil.hpp"
 #include "StringifyOptionalUtil.hpp"
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
 #include "SFML/Graphics/RenderTexture.hpp"
@@ -21,8 +22,6 @@
 #include "SFML/Base/Trait/IsDefaultConstructible.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 TEST_CASE("[Graphics] sf::RenderTexture" * tst::skip(skipDisplayTests))

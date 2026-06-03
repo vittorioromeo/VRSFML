@@ -1,6 +1,6 @@
-#include "SFML/Base/Clamp.hpp"
-
 #include "Tst/Tst.hpp"
+
+#include "SFML/Base/Clamp.hpp"
 
 
 TEST_CASE("[Base] Base/Clamp.hpp")

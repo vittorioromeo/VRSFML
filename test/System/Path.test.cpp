@@ -1,6 +1,7 @@
 #include "StringifySfBaseStringUtil.hpp" // IWYU: pragma keep
 #include "StringifyStdStringUtil.hpp"    // IWYU: pragma keep
 #include "TemporaryFile.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/System/Path.hpp"
 
@@ -16,8 +17,6 @@
 #include "SFML/Base/Trait/IsDefaultConstructible.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
-
-#include "Tst/Tst.hpp"
 
 #include <filesystem>
 #include <string>

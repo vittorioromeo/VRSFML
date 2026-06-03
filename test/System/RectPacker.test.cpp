@@ -1,12 +1,11 @@
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/System/RectPacker.hpp"
 
 #include "SFML/System/Priv/Vec2Base.hpp"
 
 #include "SFML/Base/Optional.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 namespace

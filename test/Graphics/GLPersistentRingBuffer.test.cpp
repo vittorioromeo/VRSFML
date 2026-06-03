@@ -1,3 +1,4 @@
+#include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
 #include "SFML/GLUtils/GLPersistentRingBuffer.hpp"
@@ -19,8 +20,6 @@
 #include "SFML/Base/Trait/IsCopyConstructible.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 #ifndef SFML_OPENGL_ES

@@ -1,3 +1,5 @@
+#include "Tst/Tst.hpp"
+
 #include "SFML/System/AtomicMutex.hpp"
 
 #include "SFML/System/LockGuard.hpp"
@@ -6,8 +8,6 @@
 #include "SFML/Base/Trait/IsAssignable.hpp"
 #include "SFML/Base/Trait/IsConstructible.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 namespace
@@ -251,8 +251,7 @@ TEST_CASE("[System] sf::AtomicMutex - lock/unlock balance with mixed lock + tryL
 
     for (int i = 0; i < threadCount; ++i)
     {
-        threads.emplaceBack(
-            [&, i]
+        threads.emplaceBack([&, i]
         {
             for (int j = 0; j < iterations; ++j)
             {

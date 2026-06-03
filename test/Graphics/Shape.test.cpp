@@ -5,6 +5,7 @@
 // Other 1st party headers
 #include "GraphicsUtil.hpp"
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
 #include "SFML/System/Angle.hpp"
@@ -17,8 +18,6 @@
 #include "SFML/Base/Trait/IsCopyConstructible.hpp"
 #include "SFML/Base/Trait/IsMoveConstructible.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 class TriangleShape : public sf::Shape

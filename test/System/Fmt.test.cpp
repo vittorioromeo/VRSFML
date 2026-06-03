@@ -1,5 +1,6 @@
 #include "StringifySfBaseStringUtil.hpp" // IWYU pragma: keep
 #include "StringifyStringViewUtil.hpp"   // IWYU pragma: keep
+#include "Tst/Tst.hpp"
 
 #include "SFML/Base/Fmt/Fmt.hpp"
 
@@ -15,8 +16,6 @@
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
-
-#include "Tst/Tst.hpp"
 
 #include <limits>
 
@@ -51,7 +50,8 @@ struct FmtStringAccepted
 ////////////////////////////////////////////////////////////
 template <typename... Args>
 concept AcceptsEmptyPrecision = requires {
-    typename FmtStringAccepted<[] consteval {
+    typename FmtStringAccepted<[] consteval
+    {
         (void)sf::base::FmtString<Args...>{"{:.}"};
         return true;
     }()>;
@@ -61,7 +61,8 @@ concept AcceptsEmptyPrecision = requires {
 ////////////////////////////////////////////////////////////
 template <typename... Args>
 concept AcceptsEmptyPrecisionF = requires {
-    typename FmtStringAccepted<[] consteval {
+    typename FmtStringAccepted<[] consteval
+    {
         (void)sf::base::FmtString<Args...>{"{:.f}"};
         return true;
     }()>;
@@ -931,8 +932,8 @@ TEST_CASE("[System] Fmt.hpp - formatter failure is not treated as overflow")
 TEST_CASE("[System] Fmt.hpp - invalid built-in specs fail in release")
 {
 #ifndef SFML_DEBUG
-    sf::base::String out = "prefix";
-    char             buffer[16];
+    sf::base::String  out = "prefix";
+    char              buffer[16];
     sf::base::FmtSink sink{buffer, sizeof(buffer)};
 
     CHECK(sf::base::fmtTo(out, "{:f}", 42) == sf::base::FmtResult::Failed);

@@ -1,5 +1,6 @@
 #include "StringifyIpAddressUtil.hpp"
 #include "StringifySfBaseStringUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/Network/Http.hpp"
 
@@ -12,8 +13,6 @@
 #include "SFML/Base/Trait/IsMoveConstructible.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 TEST_CASE("[Network] sf::Http")

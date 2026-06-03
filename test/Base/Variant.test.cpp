@@ -1,3 +1,5 @@
+#include "Tst/Tst.hpp"
+
 #include "SFML/Base/Variant.hpp"
 
 #include "SFML/Base/Trait/IsAggregate.hpp"
@@ -11,8 +13,6 @@
 #include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
 #include "SFML/Base/Trait/IsTriviallyRelocatable.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 namespace

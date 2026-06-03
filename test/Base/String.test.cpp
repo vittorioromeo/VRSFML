@@ -1,5 +1,6 @@
 #include "StringifySfBaseStringUtil.hpp" // IWYU pragma: keep
 #include "StringifyStringViewUtil.hpp"   // IWYU pragma: keep
+#include "Tst/Tst.hpp"
 
 #include "SFML/Base/String.hpp"
 
@@ -17,8 +18,6 @@
 #include "SFML/Base/Trait/IsTrivial.hpp"
 #include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
 #include "SFML/Base/Trait/IsTriviallyRelocatable.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 namespace
@@ -1493,15 +1492,7 @@ TEST_CASE("[Base] Base/String.hpp")
     {
         sf::base::String s = "abc";
         // Long format expansion forces growth beyond SSO.
-        s.appendFmt("-{}-{}-{}-{}-{}-{}-{}-{}",
-                    "alpha",
-                    "beta",
-                    "gamma",
-                    "delta",
-                    "epsilon",
-                    "zeta",
-                    "eta",
-                    "theta");
+        s.appendFmt("-{}-{}-{}-{}-{}-{}-{}-{}", "alpha", "beta", "gamma", "delta", "epsilon", "zeta", "eta", "theta");
         CHECK(s == "abc-alpha-beta-gamma-delta-epsilon-zeta-eta-theta");
     }
 

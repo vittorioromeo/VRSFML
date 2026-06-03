@@ -1,3 +1,5 @@
+#include "Tst/Tst.hpp"
+
 #include "SFML/Base/Bitset.hpp"
 
 #include "SFML/Base/Builtin/Popcountll.hpp"
@@ -5,8 +7,6 @@
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Trait/IsTriviallyRelocatable.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 namespace

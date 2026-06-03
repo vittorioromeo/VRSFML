@@ -1,9 +1,9 @@
 #pragma once
 
+#include "SFML/Config.hpp"
+
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
-
-#include "SFML/Config.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Fmt/FmtToString.hpp"

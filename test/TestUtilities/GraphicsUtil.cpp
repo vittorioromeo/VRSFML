@@ -1,5 +1,6 @@
 #include "GraphicsViewUtil.hpp"
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/Graphics/BlendMode.hpp"
 #include "SFML/Graphics/Color.hpp"
@@ -15,8 +16,6 @@
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/ToChars.hpp"
 #include "SFML/Base/Trait/IsFloatingPoint.hpp"
-
-#include "Tst/Tst.hpp"
 
 
 namespace
