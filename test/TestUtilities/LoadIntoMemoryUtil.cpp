@@ -6,19 +6,12 @@
 #include "SFML/Base/Assert.hpp"
 
 
-sf::base::Vector<unsigned char> loadIntoMemory(const char* path)
+sf::base::Vector<char> loadIntoMemory(const char* path)
 {
-    sf::InFileStream file(sf::Path{path}, sf::FileOpenMode::bin | sf::FileOpenMode::ate);
-    SFML_BASE_ASSERT(file);
+    sf::base::Vector<char> buffer;
 
-    const auto size = file.tellg();
-    file.seekg(0, sf::SeekDir::beg);
+    [[maybe_unused]] const bool ok = sf::readFromFile(sf::Path{path}, buffer);
+    SFML_BASE_ASSERT(ok);
 
-    sf::base::Vector<unsigned char> buffer(static_cast<sf::base::SizeT>(size));
-
-    [[maybe_unused]] const auto& result = file.read(reinterpret_cast<char*>(buffer.data()),
-                                                    static_cast<sf::base::PtrDiffT>(size));
-
-    SFML_BASE_ASSERT(result);
     return buffer;
 }

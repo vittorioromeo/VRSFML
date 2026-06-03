@@ -1,20 +1,18 @@
 #pragma once
 
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 
 #include <DoctestFwd.hpp>
 
 
-namespace doctest
+namespace sf::base
 {
-
-template <>
-struct StringMaker<sf::base::String>
+// Found by ADL when an `sf::base::String` operand needs rendering for a
+// failed assertion.
+[[gnu::always_inline]] inline sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const String& s) noexcept
 {
-    static doctest::String convert(const sf::base::String& sv)
-    {
-        return sv.data();
-    }
-};
+    return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
+}
 
-} // namespace doctest
+} // namespace sf::base

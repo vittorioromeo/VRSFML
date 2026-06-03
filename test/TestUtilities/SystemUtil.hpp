@@ -1,19 +1,14 @@
 // Header for SFML unit tests.
 //
 // For a new system module test case, include this header.
-// This specializes `doctest::StringMaker` so doctest can stringify
-// SFML types for failure output without dragging `<ostream>`.
+// Declares the `stringifyValue` ADL overloads so the bespoke testing
+// library can render SFML system types for failure output.
 
 #pragma once
 
+#include "SFML/Base/SizeT.hpp"
 
-namespace doctest
-{
-template <typename T>
-struct StringMaker;
-
-class String;
-} // namespace doctest
+#include <DoctestFwd.hpp>
 
 
 // Forward declarations
@@ -36,6 +31,11 @@ class Rect2;
 
 
 ////////////////////////////////////////////////////////////
+// Legacy per-test `::Approx<T>` wrapper -- predates the introduction
+// of `tst::Approx` and is kept for source compatibility with existing
+// tests that pattern-match on it via the `bool operator==` overloads
+// below.
+////////////////////////////////////////////////////////////
 template <typename T>
 struct Approx
 {
@@ -54,48 +54,22 @@ bool operator==(const sf::Rect2<float>& lhs, const Approx<sf::Rect2<float>>& rhs
 
 
 ////////////////////////////////////////////////////////////
-namespace doctest
+// `stringifyValue` ADL overloads -- found when these operands need
+// rendering for a failed assertion. (`Vec2`/`Vec3`/`Rect2` are rendered
+// by the framework itself, see `Tst/Detail/StringifyValue.hpp`.)
+////////////////////////////////////////////////////////////
+namespace sf
 {
-template <>
-struct StringMaker<sf::Angle>
-{
-    static String convert(const sf::Angle& angle);
-};
+sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const Angle& angle) noexcept;
+sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const AutoWrapAngle& angle) noexcept;
+sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const Utf8String& string) noexcept;
+sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const Time& time) noexcept;
+} // namespace sf
 
-template <>
-struct StringMaker<sf::AutoWrapAngle>
-{
-    static String convert(const sf::AutoWrapAngle& angle);
-};
 
-template <>
-struct StringMaker<sf::Utf8String>
-{
-    static String convert(const sf::Utf8String& string);
-};
-
-template <>
-struct StringMaker<sf::Time>
-{
-    static String convert(sf::Time time);
-};
-
+////////////////////////////////////////////////////////////
+// The legacy `::Approx<T>` wrapper renders as `Approx(<value>)`, recursing
+// through the same dispatch for its nested value.
+////////////////////////////////////////////////////////////
 template <typename T>
-struct StringMaker<sf::Vec2<T>>
-{
-    static String convert(const sf::Vec2<T>& vec);
-};
-
-template <typename T>
-struct StringMaker<sf::Vec3<T>>
-{
-    static String convert(const sf::Vec3<T>& vec);
-};
-
-template <typename T>
-struct StringMaker<::Approx<T>>
-{
-    static String convert(const ::Approx<T>& approx);
-};
-
-} // namespace doctest
+sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const ::Approx<T>& approx) noexcept;
