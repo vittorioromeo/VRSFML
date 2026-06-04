@@ -530,7 +530,7 @@ private:
 /// Usage example:
 /// \code
 /// // Declare and create a new window
-/// za::SDLWindowBase window({.size{800u, 600u}, .title = "SFML Window"});
+/// za::SDLWindowBase window({.size{800u, 600u}, .title = "Zancle Window"});
 ///
 /// // The main loop - ends as soon as the window is closed
 /// while (true)

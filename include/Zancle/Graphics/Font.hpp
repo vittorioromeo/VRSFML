@@ -1,6 +1,6 @@
 #pragma once
 // LICENSE AND COPYRIGHT (C) INFORMATION
-// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
 
 
 ////////////////////////////////////////////////////////////
@@ -93,7 +93,7 @@ public:
     /// fonts (and other resources) pack their glyphs into the same
     /// GPU texture, which is more efficient when batching.
     ///
-    /// \warning VRSFML does not preload all the font data in this
+    /// \warning Zancle does not preload all the font data in this
     /// function. The file must remain accessible for as long as the
     /// `za::Font` object lives, since glyphs are loaded on demand.
     ///
@@ -410,7 +410,7 @@ private:
 /// references (or, ideally, a shared `za::TextureAtlas`) rather
 /// than copies whenever possible.
 ///
-/// Lifetime: in VRSFML, `za::Text` does not copy the font; it only
+/// Lifetime: in Zancle, `za::Text` does not copy the font; it only
 /// references it via `za::Font&`. The font must therefore outlive
 /// every `za::Text` that uses it. Debug builds with
 /// `ZA_ENABLE_LIFETIME_TRACKING` will detect violations

@@ -1,6 +1,6 @@
 #pragma once
 // LICENSE AND COPYRIGHT (C) INFORMATION
-// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
 
 
 ////////////////////////////////////////////////////////////
@@ -36,7 +36,7 @@ namespace za
 ///
 /// \note The wire format stores multi-byte values in host byte
 /// order and assumes both peers are little-endian. Every platform
-/// VRSFML targets (x86_64, ARM/AArch64 in its standard LE mode,
+/// Zancle targets (x86_64, ARM/AArch64 in its standard LE mode,
 /// WebAssembly, Apple Silicon, modern consoles) is little-endian.
 /// Big-endian hosts are unsupported.
 ///
@@ -390,7 +390,7 @@ protected:
     /// The default implementation fills the packet directly
     /// without transforming the data, by forwarding to `append`
     /// (and therefore inherits its `data != nullptr && size > 0`
-    /// precondition). VRSFML's own `TcpSocket`/`UdpSocket`
+    /// precondition). Zancle's own `TcpSocket`/`UdpSocket`
     /// guard the call against empty/null inputs.
     ///
     /// \param data Pointer to the received bytes

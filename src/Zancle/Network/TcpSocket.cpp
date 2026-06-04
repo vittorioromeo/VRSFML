@@ -1,5 +1,5 @@
 // LICENSE AND COPYRIGHT (C) INFORMATION
-// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
 
 
 ////////////////////////////////////////////////////////////
@@ -1162,7 +1162,7 @@ Socket::Status TcpSocket::send(Packet& packet)
     const void* data = packet.onSend(size);
 
     // Packet size prefix is written in host (little-endian) byte order;
-    // both peers are VRSFML and the wire format matches `Packet`'s body.
+    // both peers are Zancle and the wire format matches `Packet`'s body.
     const auto packetSize = static_cast<zb::U32>(size);
 
     // Allocate memory for the data block to send

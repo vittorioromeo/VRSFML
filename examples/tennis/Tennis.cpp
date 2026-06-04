@@ -77,7 +77,7 @@ int main()
                       {
                           .size         = gameSize.toVec2u(),
                           .bitsPerPixel = 32u,
-                          .title        = "SFML Tennis",
+                          .title        = "Zancle Tennis",
                           .resizable    = true,
                           .vsync        = true,
                       })

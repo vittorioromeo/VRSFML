@@ -1,6 +1,6 @@
-# VRSFML vs upstream SFML -- compilation benchmarks
+# Zancle vs upstream SFML -- compilation benchmarks
 
-Wall-clock and CPU-time measurements for rebuilding VRSFML and upstream SFML
+Wall-clock and CPU-time measurements for rebuilding Zancle and upstream SFML
 from source under a typical day-to-day development configuration.
 
 ## Setup
@@ -15,7 +15,7 @@ from source under a typical day-to-day development configuration.
 - **Caching**: `ccache` disabled (`CMAKE_CXX_COMPILER_LAUNCHER=`).
 - **PCH**: off (`ZA_ENABLE_PCH=OFF`).
 - **Hardware**: 32-thread x86-64 Linux workstation, NVMe SSD.
-- **VRSFML**: `bubble_idle` example excluded for fairness (commercial-game
+- **Zancle**: `bubble_idle` example excluded for fairness (commercial-game
   source tree, much larger than upstream's example pool).
 
 ### Selective clean
@@ -38,10 +38,10 @@ find <build>/bin -maxdepth 1 -name 'test-*' -delete             # scenario 3
 _deps/**                  # all CPM/FetchContent source trees
 libfreetyped.a            # freetype
 libharfbuzzd.a            # upstream only
-libimgui.a / libSDL3.a    # VRSFML only
+libimgui.a / libSDL3.a    # Zancle only
 libvorbisd.a / liboggd.a / libFLACd.a   # both
 libmbed*.a                # both (SFTP example)
-src/SFML/ImGui/CMakeFiles/imgui.dir/**/*.o    # VRSFML's bundled imgui code
+src/SFML/ImGui/CMakeFiles/imgui.dir/**/*.o    # Zancle's bundled imgui code
 ```
 
 ## Scenarios
@@ -62,44 +62,44 @@ step deletes only the six example object files and binaries.
 
 | Command       | Mean        | Min     | Max     | Relative      |
 |---------------|------------:|--------:|--------:|--------------:|
-| `VRSFML s1`   | 1.678 s ± 0.016 | 1.660 s | 1.692 s | **1.00**      |
+| `Zancle s1`   | 1.678 s ± 0.016 | 1.660 s | 1.692 s | **1.00**      |
 | `Upstream s1` | 3.692 s ± 0.027 | 3.671 s | 3.722 s | 2.20 ± 0.03   |
 
-User CPU time: VRSFML 13.5 s, Upstream 39.6 s.
+User CPU time: Zancle 13.5 s, Upstream 39.6 s.
 
 ### Scenario 2 -- Library + examples
 
 | Command       | Mean        | Min     | Max     | Relative      |
 |---------------|------------:|--------:|--------:|--------------:|
-| `VRSFML s2`   | 2.233 s ± 0.057 | 2.169 s | 2.279 s | **1.00**      |
+| `Zancle s2`   | 2.233 s ± 0.057 | 2.169 s | 2.279 s | **1.00**      |
 | `Upstream s2` | 4.548 s ± 0.225 | 4.304 s | 4.748 s | 2.04 ± 0.11   |
 
-User CPU time: VRSFML 24.5 s, Upstream 58.8 s.
+User CPU time: Zancle 24.5 s, Upstream 58.8 s.
 
 ### Scenario 3 -- Library + examples + tests
 
 | Command       | Mean        | Min     | Max     | Relative      |
 |---------------|------------:|--------:|--------:|--------------:|
-| `VRSFML s3`   | 3.673 s ± 0.008 | 3.664 s | 3.680 s | **1.00**      |
+| `Zancle s3`   | 3.673 s ± 0.008 | 3.664 s | 3.680 s | **1.00**      |
 | `Upstream s3` | 7.434 s ± 0.061 | 7.389 s | 7.504 s | 2.02 ± 0.02   |
 
-User CPU time: VRSFML 45.1 s, Upstream 103.9 s.
+User CPU time: Zancle 45.1 s, Upstream 103.9 s.
 
 ### Scenario 4 -- Six user TUs from scratch (library prebuilt)
 
 | Command       | Mean         | Min      | Max      | Relative      |
 |---------------|-------------:|---------:|---------:|--------------:|
-| `VRSFML s4`   | 287.8 ms ± 22.8 | 262.6 ms | 306.9 ms | **1.00**      |
+| `Zancle s4`   | 287.8 ms ± 22.8 | 262.6 ms | 306.9 ms | **1.00**      |
 | `Upstream s4` | 726.3 ms ± 33.0 | 694.7 ms | 760.6 ms | 2.52 ± 0.23   |
 
-User CPU time: VRSFML 1.36 s, Upstream 3.67 s.
+User CPU time: Zancle 1.36 s, Upstream 3.67 s.
 
 ## Translation-unit counts and per-TU cost
 
 The TU count is the number of `.o` files that the selective-clean step
 removes -- i.e. the work each scenario actually performs.
 
-| Scenario                       | VRSFML TUs           | Upstream TUs       | VRSFML CPU/TU | Upstream CPU/TU |
+| Scenario                       | Zancle TUs           | Upstream TUs       | Zancle CPU/TU | Upstream CPU/TU |
 |--------------------------------|----------------------|--------------------|--------------:|----------------:|
 | S1 Library only                | 129                  | 102                | 105 ms        | 388 ms          |
 | S2 Library + examples          | 209  (129 + 80)      | 128  (102 + 26)    | 117 ms        | 459 ms          |
@@ -111,8 +111,8 @@ much work clang has to do to compile one translation unit on each side.
 
 ## Headline takeaways
 
-- VRSFML rebuilds **2.0-2.5x faster** in wall time across every scenario.
-- VRSFML actually compiles **more** TUs in scenarios 1-3 -- extra
+- Zancle rebuilds **2.0-2.5x faster** in wall time across every scenario.
+- Zancle actually compiles **more** TUs in scenarios 1-3 -- extra
   `Zancle::ImGui` module, more bundled examples, larger test suite -- and is
   still ~2x faster. That means per-TU compiler work is roughly 3-4x lower.
 - Scenario 4, where both projects compile the same six user-side TUs that
@@ -125,18 +125,18 @@ much work clang has to do to compile one translation unit on each side.
 
 ## What is still not strictly comparable
 
-- **`Zancle::ImGui` module**. VRSFML ships an in-tree ImGui integration as a
-  separate library; upstream does not. Scenarios 1-3 charge VRSFML for that
+- **`Zancle::ImGui` module**. Zancle ships an in-tree ImGui integration as a
+  separate library; upstream does not. Scenarios 1-3 charge Zancle for that
   extra surface. Scenario 4 is unaffected (none of the chosen examples use
   ImGui).
-- **Example pool**. Even with `bubble_idle` excluded, VRSFML has more
+- **Example pool**. Even with `bubble_idle` excluded, Zancle has more
   example apps than upstream, so scenario 2 (and 3) build more example
-  binaries on the VRSFML side.
-- **Test suite size**. VRSFML's test suite has more cases. Scenario 3
+  binaries on the Zancle side.
+- **Test suite size**. Zancle's test suite has more cases. Scenario 3
   reflects that.
 
 A future "strictly comparable" run would add `ZA_BUILD_IMGUI=OFF` to
-VRSFML's configure and reduce the example/test set to the intersection of
+Zancle's configure and reduce the example/test set to the intersection of
 both projects.
 
 ## Reproducing
@@ -154,7 +154,7 @@ machine that ran them; the relevant pieces are:
 Both source trees were checked out fresh:
 
 ```bash
-git clone https://github.com/vittorioromeo/VRSFML       ~/OHW/VRSFML
+git clone https://github.com/vittorioromeo/Zancle       ~/OHW/Zancle
 git clone --depth 1 https://github.com/SFML/SFML        ~/OHW/SFMLUpstreamForBenchmark
 ```
 

@@ -1,4 +1,4 @@
-# VRSFML -- Vittorio Romeo's SFML Fork
+# Zancle -- Vittorio Romeo's SFML Fork
 
 > *(This is a fork of SFML by Vittorio Romeo.)*
 
@@ -23,13 +23,13 @@
 4. Clone this repository:
 
     ```bash
-    git clone https://github.com/vittorioromeo/VRSFML
+    git clone https://github.com/vittorioromeo/Zancle
     ```
 
 5. Enter the directory and run CMake with one of the presets:
 
     ```bash
-    cd VRSFML
+    cd Zancle
     cmake --preset vrdev_clang
     ```
 
@@ -103,10 +103,10 @@ mkdir -p work
 cd work
 
 # Clone the repo
-git clone https://github.com/vittorioromeo/VRSFML.git
+git clone https://github.com/vittorioromeo/Zancle.git
 
 # Cmake Configure and Build
-cd VRSFML
+cd Zancle
 git checkout try-fix-build
 cmake --preset ${PRESET}
 cmake --build build_${PRESET}

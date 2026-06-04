@@ -1115,7 +1115,7 @@ int main()
     auto window = makeDPIScaledRenderWindow(
                       {
                           .size      = windowSize.toVec2u(),
-                          .title     = "SFML Sound Effects",
+                          .title     = "Zancle Sound Effects",
                           .resizable = true,
                           .vsync     = true,
                       })

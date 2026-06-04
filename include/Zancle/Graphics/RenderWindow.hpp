@@ -1,6 +1,6 @@
 #pragma once
 // LICENSE AND COPYRIGHT (C) INFORMATION
-// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
 
 
 ////////////////////////////////////////////////////////////
@@ -207,7 +207,7 @@ private:
 ///
 /// \code
 /// // Declare and create a new render window.
-/// auto window = za::RenderWindow::create({.size = {800u, 600u}, .title = "SFML Window"}).value();
+/// auto window = za::RenderWindow::create({.size = {800u, 600u}, .title = "Zancle Window"}).value();
 ///
 /// // Limit the framerate to 60 frames per second (optional).
 /// window.setFramerateLimit(60u);
@@ -227,7 +227,7 @@ private:
 ///     window.clear();
 ///
 ///     // Draw some graphical entities.
-///     window.draw(sprite, texture); // texture passed at draw time in VRSFML
+///     window.draw(sprite, texture); // texture passed at draw time in Zancle
 ///     window.draw(circle);
 ///     window.draw(text);
 ///
@@ -239,14 +239,14 @@ private:
 /// Like `za::Window`, `za::RenderWindow` is still able to render
 /// direct OpenGL geometry. It is even possible to mix together
 /// custom OpenGL calls (using OpenGL ES 3.1 only -- the legacy
-/// fixed-function pipeline is not available in VRSFML) and
-/// regular VRSFML drawing commands. When doing so, call
-/// `resetGLStates` between the two so that VRSFML can re-establish
+/// fixed-function pipeline is not available in Zancle) and
+/// regular Zancle drawing commands. When doing so, call
+/// `resetGLStates` between the two so that Zancle can re-establish
 /// the OpenGL state it expects.
 ///
 /// \code
 /// // Create the render window.
-/// auto window = za::RenderWindow::create({.size = {800u, 600u}, .title = "SFML OpenGL"}).value();
+/// auto window = za::RenderWindow::create({.size = {800u, 600u}, .title = "Zancle OpenGL"}).value();
 ///
 /// // Load some assets to display.
 /// const auto       texture = za::Texture::loadFromFile("circle.png").value();

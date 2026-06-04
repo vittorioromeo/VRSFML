@@ -1,6 +1,6 @@
 #pragma once
 // LICENSE AND COPYRIGHT (C) INFORMATION
-// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
 
 
 ////////////////////////////////////////////////////////////
@@ -28,7 +28,7 @@ class WindowContext;
 namespace za
 {
 ////////////////////////////////////////////////////////////
-/// \brief Explicit owner of the global graphics state for VRSFML
+/// \brief Explicit owner of the global graphics state for Zancle
 ///
 /// `za::GraphicsContext` is a process-wide singleton that owns
 /// the OpenGL ES function loader, the shared default shader,
@@ -43,7 +43,7 @@ namespace za
 /// throughout the program. When the local variable goes out
 /// of scope, every graphics resource is shut down deterministically.
 ///
-/// VRSFML deliberately avoids hidden global state, which is
+/// Zancle deliberately avoids hidden global state, which is
 /// why this class is a first-class object instead of a magical
 /// auto-init.
 ///
@@ -207,12 +207,12 @@ private:
 /// \ingroup graphics
 ///
 /// `za::GraphicsContext` is the explicit, RAII-managed
-/// container for VRSFML's graphics global state. It owns the
+/// container for Zancle's graphics global state. It owns the
 /// shared OpenGL ES function loader, the built-in default
 /// shader, and the built-in 2x2 white texture (used by every
 /// non-textured draw call).
 ///
-/// VRSFML refuses to maintain hidden global state, so the
+/// Zancle refuses to maintain hidden global state, so the
 /// `GraphicsContext` must be created **explicitly**, before
 /// any `za::RenderWindow`, `za::RenderTexture`, `za::Texture`,
 /// `za::Shader`, or `za::Font` is constructed. The recommended

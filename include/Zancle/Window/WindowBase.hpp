@@ -1,6 +1,6 @@
 #pragma once
 // LICENSE AND COPYRIGHT (C) INFORMATION
-// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
 
 
 ////////////////////////////////////////////////////////////
@@ -486,7 +486,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Get the underlying `SDL_Window*` backing this window
     ///
-    /// VRSFML's windowing layer is implemented on top of SDL.
+    /// Zancle's windowing layer is implemented on top of SDL.
     /// This accessor exposes the raw `SDL_Window*` for code
     /// that needs to interoperate with SDL directly.
     ///
@@ -626,7 +626,7 @@ private:
 /// \class za::WindowBase
 /// \ingroup window
 ///
-/// `za::WindowBase` is the base class for all VRSFML windows.
+/// `za::WindowBase` is the base class for all Zancle windows.
 /// It owns the OS-level window resource and provides the
 /// common interface for moving, resizing, showing/hiding,
 /// controlling the cursor, and pumping events. It does *not*
@@ -646,7 +646,7 @@ private:
 /// auto windowContext = za::WindowContext::create().value();
 ///
 /// // Create a new window
-/// auto window = za::WindowBase::create({.size = {800u, 600u}, .title = "SFML Window"}).value();
+/// auto window = za::WindowBase::create({.size = {800u, 600u}, .title = "Zancle Window"}).value();
 ///
 /// // The main loop - ends as soon as the window is closed
 /// while (true)

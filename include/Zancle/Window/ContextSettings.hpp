@@ -1,6 +1,6 @@
 #pragma once
 // LICENSE AND COPYRIGHT (C) INFORMATION
-// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
 
 
 ////////////////////////////////////////////////////////////
@@ -133,7 +133,7 @@ inline bool ContextSettings::isDebug() const
 /// requested OpenGL version, and a small set of attribute
 /// flags (core profile, debug context, ...).
 ///
-/// VRSFML's graphics module is designed to run on a core
+/// Zancle's graphics module is designed to run on a core
 /// profile OpenGL (or OpenGL ES / WebGL2) context, so the
 /// defaults already select an appropriate version and the
 /// `Core` attribute. Most users only need to touch

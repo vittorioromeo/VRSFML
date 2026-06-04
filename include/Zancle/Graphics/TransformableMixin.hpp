@@ -1,6 +1,6 @@
 #pragma once
 // LICENSE AND COPYRIGHT (C) INFORMATION
-// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
 
 
 ////////////////////////////////////////////////////////////
@@ -125,7 +125,7 @@ private:
 /// \li `getTransform()`            -- return the combined `za::Transform`,
 /// \li `getInverseTransform()`     -- return the inverse of the combined transform.
 ///
-/// VRSFML's built-in drawables (`za::Sprite`, `za::Shape`,
+/// Zancle's built-in drawables (`za::Sprite`, `za::Shape`,
 /// `za::Text`, `za::GlyphMappedText`, ...) all use this mixin
 /// to expose a consistent transform API. Use it (or
 /// `za::Transformable`) for your own non-polymorphic drawable

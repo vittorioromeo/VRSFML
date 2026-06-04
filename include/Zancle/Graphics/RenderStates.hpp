@@ -1,6 +1,6 @@
 #pragma once
 // LICENSE AND COPYRIGHT (C) INFORMATION
-// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
 
 
 ////////////////////////////////////////////////////////////
@@ -72,7 +72,7 @@ struct [[nodiscard]] ZA_GRAPHICS_API RenderStates
 /// High-level objects such as `za::Sprite`, `za::Shape`, and
 /// `za::Text` may need some of these to be set up before drawing.
 /// In particular, `za::Sprite` and `za::Shape` do not own a
-/// texture in VRSFML: you must either pass the texture as a draw
+/// texture in Zancle: you must either pass the texture as a draw
 /// argument or assign it to `RenderStates::texture` yourself.
 ///
 /// The transform is special: drawables that have their own

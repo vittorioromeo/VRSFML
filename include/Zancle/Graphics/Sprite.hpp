@@ -1,6 +1,6 @@
 #pragma once
 // LICENSE AND COPYRIGHT (C) INFORMATION
-// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
 
 
 ////////////////////////////////////////////////////////////
@@ -77,7 +77,7 @@ struct ZA_GRAPHICS_API Sprite : TransformableMixin, GlobalAnchorPointMixin, Loca
 /// draw a textured quad with its own transform and color tint.
 /// It is the building block for displaying images on screen.
 ///
-/// Like all transformable types in VRSFML, `za::Sprite` exposes
+/// Like all transformable types in Zancle, `za::Sprite` exposes
 /// the standard public members `position`, `scale`, `origin`,
 /// and `rotation` (via `ZA_DEFINE_TRANSFORMABLE_DATA_MEMBERS`),
 /// plus the sprite-specific `textureRect` (sub-rectangle of the

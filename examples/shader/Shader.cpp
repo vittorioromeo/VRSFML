@@ -479,7 +479,7 @@ int main()
     auto window = makeDPIScaledRenderWindow(
                       {
                           .size      = windowSize.toVec2u(),
-                          .title     = "SFML Shader",
+                          .title     = "Zancle Shader",
                           .resizable = true,
                           .vsync     = true,
                       })

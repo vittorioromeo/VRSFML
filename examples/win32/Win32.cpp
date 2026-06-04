@@ -73,12 +73,12 @@ int main()
     windowClass.hCursor       = nullptr;
     windowClass.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BACKGROUND);
     windowClass.lpszMenuName  = nullptr;
-    windowClass.lpszClassName = TEXT("SFML App");
+    windowClass.lpszClassName = TEXT("Zancle App");
     RegisterClass(&windowClass);
 
     // Create the main window
-    HWND window = CreateWindow(TEXT("SFML App"),
-                               TEXT("SFML Win32"),
+    HWND window = CreateWindow(TEXT("Zancle App"),
+                               TEXT("Zancle Win32"),
                                WS_SYSMENU | WS_VISIBLE,
                                200,
                                200,
@@ -168,5 +168,5 @@ int main()
     DestroyWindow(window);
 
     // Don't forget to unregister the window class
-    UnregisterClass(TEXT("SFML App"), instance);
+    UnregisterClass(TEXT("Zancle App"), instance);
 }

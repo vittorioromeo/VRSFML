@@ -1,6 +1,6 @@
 #pragma once
 // LICENSE AND COPYRIGHT (C) INFORMATION
-// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
 
 
 ////////////////////////////////////////////////////////////
@@ -77,7 +77,7 @@ struct ZA_GRAPHICS_API Transformable : TransformableMixin
 /// center, for example. To do such things, use `za::Transform` directly.
 ///
 /// `za::Transformable` can be used as a **non-polymorphic** base
-/// class -- VRSFML deliberately removes virtual interfaces from
+/// class -- Zancle deliberately removes virtual interfaces from
 /// the drawable hierarchy.
 /// \code
 /// struct MyEntity : za::Transformable

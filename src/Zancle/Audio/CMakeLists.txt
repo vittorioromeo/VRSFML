@@ -175,7 +175,7 @@ target_include_directories(zancle-audio SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/ex
 
 # needed because PCH is defined in the System module
 if(ZA_ENABLE_PCH)
-    # TODO P2: restore, needs to be fixed when VRSFML is used as a dependency
+    # TODO P2: restore, needs to be fixed when Zancle is used as a dependency
     # target_include_directories(zancle-system SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/extlibs/headers/miniaudio")
 endif()
 

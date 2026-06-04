@@ -1,6 +1,6 @@
 #pragma once
 // LICENSE AND COPYRIGHT (C) INFORMATION
-// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
 
 
 ////////////////////////////////////////////////////////////
@@ -450,7 +450,7 @@ private:
 /// \class za::WindowContext
 /// \ingroup window
 ///
-/// `za::WindowContext` is the lifetime root of VRSFML's
+/// `za::WindowContext` is the lifetime root of Zancle's
 /// window subsystem. Constructing one (via `create()`)
 /// initializes SDL and any OS-level resources used by
 /// windows, cursors, joysticks, sensors, the clipboard, and

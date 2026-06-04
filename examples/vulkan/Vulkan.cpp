@@ -481,9 +481,9 @@ public:
         // Register our application information
         VkApplicationInfo applicationInfo  = VkApplicationInfo();
         applicationInfo.sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-        applicationInfo.pApplicationName   = "SFML Vulkan Test";
+        applicationInfo.pApplicationName   = "Zancle Vulkan Test";
         applicationInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-        applicationInfo.pEngineName        = "SFML Vulkan Test Engine";
+        applicationInfo.pEngineName        = "Zancle Vulkan Test Engine";
         applicationInfo.engineVersion      = VK_MAKE_VERSION(1, 0, 0);
         applicationInfo.apiVersion         = VK_API_VERSION_1_0;
 

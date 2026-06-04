@@ -1,4 +1,4 @@
-# SFML to VRSFML Migration Guide
+# SFML to Zancle Migration Guide
 
 
 
@@ -48,7 +48,7 @@ za::RenderWindow window(
 window.setVerticalSyncEnabled(true);
 
 //
-// AFTER (VRSFML)
+// AFTER (Zancle)
 za::RenderWindow window({.size = gameSize.toVec2u(),
                          .bitsPerPixel = 32u,
                          .title = "SFML Tennis",
@@ -69,7 +69,7 @@ ball.setFillColor(za::Color::White);
 ball.setOrigin({ballRadius / 2.f, ballRadius / 2.f});
 
 //
-// AFTER (VRSFML)
+// AFTER (Zancle)
 za::CircleShape ball{{.origin           = {ballRadius / 2.f, ballRadius / 2.f},
                         .fillColor        = za::Color::White,
                         .outlineColor     = za::Color::Black,
@@ -81,17 +81,17 @@ za::CircleShape ball{{.origin           = {ballRadius / 2.f, ballRadius / 2.f},
 
 ## Standard Library Replacements
 
-- To optimize compilation speed and debug run-time performance, VRSFML uses custom types instead of Standard Library ones.
+- To optimize compilation speed and debug run-time performance, Zancle uses custom types instead of Standard Library ones.
     - Check out the `SFML/Base` module to see all of them.
 
-- VRSFML types use the `pascalCase` convention, and some APIs might be very different (or missing).
+- Zancle types use the `pascalCase` convention, and some APIs might be very different (or missing).
 
-- You can still use Standard Library types if you want, but you might have to convert them in some VRSFML APIs.
-    - However, you'll see a drastic compilation time improvement and debug performance improvement if you choose to use VRSFML types (and do not include the Standard headers).
+- You can still use Standard Library types if you want, but you might have to convert them in some Zancle APIs.
+    - However, you'll see a drastic compilation time improvement and debug performance improvement if you choose to use Zancle types (and do not include the Standard headers).
 
 Non-exhaustive table:
 
-| Standard Library   | VRSFML                  |
+| Standard Library   | Zancle                  |
 |--------------------|-------------------------|
 | `std::optional`    | `zb::Optional`    |
 | `std::unique_ptr`  | `zb::UniquePtr`   |
@@ -111,7 +111,7 @@ Non-exhaustive table:
 
 ## Aggregatification Of Types
 
-- Many types in VRSFML are now aggregate types (everything is public, no constructors).
+- Many types in Zancle are now aggregate types (everything is public, no constructors).
     - This improves usage syntax, simplifies the implementation, and improves debug performance / compilation times.
 
 - Notably, `za::Transformable` is now an aggregate. Every transformable object will be affected.
@@ -131,7 +131,7 @@ else if (ball.getPosition().y + ballRadius > gameHeight)
 }
 
 //
-// AFTER (VRSFML)
+// AFTER (Zancle)
 if (ball.position.y - ballRadius < 0.f)
 {
     ballAngle       = -ballAngle;
@@ -164,7 +164,7 @@ int main()
 }
 
 //
-// AFTER (VRSFML)
+// AFTER (Zancle)
 int main()
 {
     // Create an audio context and get the default playback device
@@ -193,7 +193,7 @@ int main()
 const za::Texture zancleLogoTexture(resourcesDir() / "sfml_logo.png");
 
 //
-// AFTER (VRSFML)
+// AFTER (Zancle)
 const auto zancleLogoTexture = za::Texture::loadFromFile(resourcesDir() / "sfml_logo.png").value();
 ```
 
@@ -225,7 +225,7 @@ window.draw(rightPaddle);
 window.draw(ball);
 
 //
-// AFTER (VRSFML)
+// AFTER (Zancle)
 const auto zancleLogoTexture = za::Texture::loadFromFile(resourcesDir() / "sfml_logo.png").value();
 const za::Sprite zancleLogo({.position = {170.f, 50.f}});
 // ...
@@ -235,7 +235,7 @@ window.draw(rightPaddle);
 window.draw(ball);
 ```
 
-Note that textures can be drawn directly in VRSFML, without the need of using a sprite:
+Note that textures can be drawn directly in Zancle, without the need of using a sprite:
 
 ```cpp
 window.draw(zancleLogoTexture, {.position = {170.f, 50.f}});
@@ -254,7 +254,7 @@ shader.setUniform("texture", za::Shader::CurrentTexture);
 shader.setUniform("pixel_threshold", (x + y) / 30);
 
 //
-// AFTER (VRSFML)
+// AFTER (Zancle)
 auto ulTexture = shader.getUniformLocation("za_u_texture").value(); // cache this
 auto ulPixelThreshold = shader.getUniformLocation("pixel_threshold").value(); // cache this
 
@@ -299,7 +299,7 @@ za::TcpSocket socket;
 socket.connect(address, port);
 
 //
-// AFTER (VRSFML)
+// AFTER (Zancle)
 auto socket = za::TcpSocket::create(/* isBlocking */ true).value();
 if (socket.connect(address, port) != za::Socket::Status::Done) { /* ... */ }
 ```
@@ -313,7 +313,7 @@ za::UdpSocket socket;
 socket.bind(port);
 
 //
-// AFTER (VRSFML)
+// AFTER (Zancle)
 auto socket = za::UdpSocket::create(/* isBlocking */ true).value();
 if (socket.bind(port) != za::Socket::Status::Done) { /* ... */ }
 ```
@@ -332,7 +332,7 @@ za::TcpListener listener;
 listener.listen(port);
 
 //
-// AFTER (VRSFML)
+// AFTER (Zancle)
 auto listener = za::TcpListener::create(port, /* isBlocking */ true).value();
 ```
 
@@ -345,7 +345,7 @@ za::TcpSocket client;
 if (listener.accept(client) == za::Socket::Status::Done) { /* use `client` */ }
 
 //
-// AFTER (VRSFML)
+// AFTER (Zancle)
 if (auto result = listener.accept(); result.status == za::Socket::Status::Done)
 {
     auto& client = *result.socket; // owned by `result`, move out if you need it elsewhere
@@ -364,7 +364,7 @@ socket.disconnect();
 socket.connect(address, port); // reconnect with same instance
 
 //
-// AFTER (VRSFML)
+// AFTER (Zancle)
 socket.disconnect();
 
 // `socket` is now dead; construct a new one to reconnect:
@@ -437,7 +437,7 @@ void main()
 
 ### Reconstructing `mat4` from `za_u_mvpRow0`/`za_u_mvpRow1`
 
-VRSFML uploads only the 6 meaningful values of the 2D affine MVP transform instead of a full `mat4`. If your custom shader needs the full matrix (e.g., for a geometry shader), you can reconstruct it:
+Zancle uploads only the 6 meaningful values of the 2D affine MVP transform instead of a full `mat4`. If your custom shader needs the full matrix (e.g., for a geometry shader), you can reconstruct it:
 
 ```glsl
 layout(location = 0) uniform vec3 za_u_mvpRow0;
@@ -525,7 +525,7 @@ if (za::Joystick::isConnected(0))
 }
 
 //
-// AFTER (VRSFML)
+// AFTER (Zancle)
 if (const auto query = za::Joystick::query(0); query.hasValue())
 {
     bool pressed = query->isButtonPressed(2);
@@ -547,7 +547,7 @@ if (const auto query = za::Joystick::query(0); query.hasValue())
 
 ## SDL3 Backend
 
-- VRSFML transitions to utilizing SDL3 as its backend for window creation, input handling, and platform-specific heavy lifting.
+- Zancle transitions to utilizing SDL3 as its backend for window creation, input handling, and platform-specific heavy lifting.
     - This drastically improves platform compatibility (Wayland native support, better controller mapping, smoother resize events) compared to upstream SFML's custom backend code.
 
 
@@ -562,7 +562,7 @@ Sound/music volume is now in `[0.0, 1.0]` range instead of `[0.0, 100.0]` range.
 sound.setVolume(50.f); // Half volume
 
 //
-// AFTER (VRSFML)
+// AFTER (Zancle)
 sound.setVolume(0.5f); // Half volume
 ```
 
@@ -570,7 +570,7 @@ sound.setVolume(0.5f); // Half volume
 
 ## Autobatching
 
-- VRSFML features a powerful transparent autobatcher built into `za::RenderTarget`.
+- Zancle features a powerful transparent autobatcher built into `za::RenderTarget`.
     - If enabled, sequential draw calls sharing the same `RenderStates` (texture, shader, blend mode) are aggregated automatically and sent to the GPU in a single operation.
     - You do not need to manually manage `za::CPUDrawableBatch` if you sort your draw calls by texture/state.
 
@@ -588,7 +588,7 @@ window.draw(sprite3, {.texture = &atlas.getTexture()});
 
 ## High DPI Support
 
-- VRSFML provides proper High DPI support via SDL3's display scaling infrastructure.
+- Zancle provides proper High DPI support via SDL3's display scaling infrastructure.
 
 - Query the display scale factor at runtime with `window.getDisplayScale()`:
 
@@ -598,7 +598,7 @@ window.draw(sprite3, {.texture = &atlas.getTexture()});
 // No standard mechanism for high DPI support.
 
 //
-// AFTER (VRSFML)
+// AFTER (Zancle)
 const float scale = window.getDisplayScale();
 // Returns 1.f for standard DPI (96), 2.f for Retina "@2x" displays, etc.
 ```
@@ -613,7 +613,7 @@ const float displayScale = za::VideoModeUtils::getPrimaryDisplayContentScale();
 
 - `za::VideoMode` includes a `pixelDensity` field reflecting the HiDPI scale for each video mode.
 
-- VRSFML does **not** automatically scale your coordinates -- you must apply `getDisplayScale()` manually for UI elements, text sizing, etc.
+- Zancle does **not** automatically scale your coordinates -- you must apply `getDisplayScale()` manually for UI elements, text sizing, etc.
 
 
 
@@ -633,7 +633,7 @@ while (window.isOpen())
 }
 
 //
-// AFTER (VRSFML)
+// AFTER (Zancle)
 auto window = za::RenderWindow::create(...).value();
 
 while (true)
@@ -652,7 +652,7 @@ while (true)
 
 - The math vector types have been shortened to align with standard graphics terminology and for conciseness.
 
-| Upstream SFML   | VRSFML       |
+| Upstream SFML   | Zancle       |
 |-----------------|--------------|
 | `za::Vector2i`  | `za::Vec2i`  |
 | `za::Vector2u`  | `za::Vec2u`  |
@@ -667,7 +667,7 @@ while (true)
 
 - Fixed-width integer types live in `za::base`:
 
-| Upstream SFML | VRSFML          |
+| Upstream SFML | Zancle          |
 |---------------|-----------------|
 | `za::Int8`    | `zb::I8`  |
 | `za::Uint8`   | `zb::U8`  |
@@ -743,7 +743,7 @@ music.openFromFile("music.ogg");
 music.play();
 
 //
-// AFTER (VRSFML)
+// AFTER (Zancle)
 auto musicReader = za::MusicReader::openFromFile("music.ogg").value();
 za::Music music(playbackDevice, musicReader);
 music.play();
@@ -794,7 +794,7 @@ MyStream stream;
 stream.play();
 
 //
-// AFTER (VRSFML)
+// AFTER (Zancle)
 struct MyState
 {
     bool onGetData(zb::Vector<zb::I16>& outBuffer)
@@ -843,7 +843,7 @@ za::SoundStream<MyState> stream(playbackDevice, channelMap, sampleRate,
 
 - `za::ContextSettings` no longer accepts `antialiasingLevel` or `sRgbCapable` for standard window creation.
     - Relying on the OS window manager for MSAA and sRGB is historically buggy and inconsistent across drivers.
-    - Instead, VRSFML encourages rendering to an `za::RenderTexture` created with `za::RenderTextureCreateSettings` (where MSAA and sRGB are strictly controlled via FBOs), and blitting the final result to the window.
+    - Instead, Zancle encourages rendering to an `za::RenderTexture` created with `za::RenderTextureCreateSettings` (where MSAA and sRGB are strictly controlled via FBOs), and blitting the final result to the window.
 
 
 
@@ -866,7 +866,7 @@ za::Vertex vertex;
 vertex.texCoords = {0.5f, 0.5f}; // Could be normalized or pixels depending on CoordinateType
 
 //
-// AFTER (VRSFML)
+// AFTER (Zancle)
 za::Vertex vertex;
 vertex.texCoords = {128.f, 128.f}; // Always pixel coordinates (e.g. center of a 256x256 texture)
 ```
@@ -892,7 +892,7 @@ window.setView(uiView);
 window.draw(button);  // uses uiView
 
 //
-// AFTER (VRSFML)
+// AFTER (Zancle)
 za::View gameView = za::View::fromRect({{0.f, 0.f}, {800.f, 600.f}});
 window.draw(sprite, {.view = gameView, .texture = &texture});
 window.draw(text,   {.view = gameView});
@@ -911,7 +911,7 @@ window.draw(button, {.view = uiView});
 za::Vec2f worldPos = window.mapPixelToCoords(mousePos, gameView);
 
 //
-// AFTER (VRSFML)
+// AFTER (Zancle)
 za::Vec2f worldPos = gameView.screenToWorld(mousePos.toVec2f(), window.getSize().toVec2f());
 za::Vec2f screenPos = gameView.worldToScreen(entityPos, window.getSize().toVec2f());
 ```
@@ -937,7 +937,7 @@ while (window.pollEvent(event))
 }
 
 //
-// AFTER (VRSFML)
+// AFTER (Zancle)
 while (const auto event = window.pollEvent())
 {
     if (event->is<za::Event::Closed>())
@@ -979,7 +979,7 @@ window.pollAndHandleEvents(
 za::RenderWindow window(videoMode, "Title", za::Style::Titlebar | za::Style::Close);
 
 //
-// AFTER (VRSFML)
+// AFTER (Zancle)
 auto window = za::RenderWindow::create({.size{800u, 600u},
                                         .title = "Title",
                                         .resizable = false,
@@ -1010,7 +1010,7 @@ sprite.setRotation(45.f);
 float rot = sprite.getRotation();
 
 //
-// AFTER (VRSFML)
+// AFTER (Zancle)
 sprite.rotation = za::degrees(45.f);
 float rot = sprite.rotation.asDegrees();
 ```
@@ -1079,7 +1079,7 @@ za::Text text(font, "Hello", 30);
 text.setFillColor(za::Color::Red);
 
 //
-// AFTER (VRSFML)
+// AFTER (Zancle)
 auto font = za::Font::openFromFile("font.ttf").value();
 za::Text text(font, {.string = "Hello",
                       .characterSize = 30u,
@@ -1094,7 +1094,7 @@ za::Text text(font, {.string = "Hello",
 text.setStyle(za::Text::Bold | za::Text::Italic);
 
 //
-// AFTER (VRSFML)
+// AFTER (Zancle)
 za::Text text(font, {.string = "Hello",
                       .bold = true,
                       .italic = true});
@@ -1108,7 +1108,7 @@ za::Text text(font, {.string = "Hello",
 
 ## New Shape Types
 
-- VRSFML adds several new shape types beyond the original circle, rectangle, and convex shapes:
+- Zancle adds several new shape types beyond the original circle, rectangle, and convex shapes:
 
 | Shape             | Data Struct                     |
 |-------------------|---------------------------------|
@@ -1141,7 +1141,7 @@ za::Text text(font, {.string = "Hello",
 
 ## Lifetime Tracking
 
-- VRSFML has an optional compile-time lifetime tracking system (`ZA_ENABLE_LIFETIME_TRACKING`) that catches dangling references in debug builds.
+- Zancle has an optional compile-time lifetime tracking system (`ZA_ENABLE_LIFETIME_TRACKING`) that catches dangling references in debug builds.
 
 - For example, constructing an `za::Text` from a temporary `za::Font` is a compile error (deleted overload). At runtime, if a `SoundBuffer` is destroyed while a `Sound` still references it, the lifetime tracker will assert.
 

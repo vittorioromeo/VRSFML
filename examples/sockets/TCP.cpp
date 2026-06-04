@@ -24,7 +24,7 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-constexpr zb::StringView commonName = "SFML TLS Example"; // Part of certificate
+constexpr zb::StringView commonName = "Zancle TLS Example"; // Part of certificate
 
 
 ////////////////////////////////////////////////////////////

@@ -381,7 +381,7 @@ int main()
     auto window = makeDPIScaledRenderWindow(
                       {
                           .size      = windowSize,
-                          .title     = "SFML Island",
+                          .title     = "Zancle Island",
                           .resizable = true,
                           .vsync     = true,
                       })

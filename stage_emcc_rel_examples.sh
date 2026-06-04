@@ -86,7 +86,7 @@ for example in "${examples[@]}"; do
     cp "${COI_SW}" "${target_dir}/"
 
     # Generate a minimal canvas-only embed wrapper for iframing into other
-    # pages (e.g. the VRSFML landing page). It loads the same `<example>.js`
+    # pages (e.g. the Zancle landing page). It loads the same `<example>.js`
     # as the regular page, so no extra build / link step is required.
     sed "s|@ZA_EMBED_JS@|${example}.js|g" "${EMBED_TEMPLATE}" \
         > "${target_dir}/${example}_embed.html"

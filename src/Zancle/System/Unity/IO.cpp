@@ -1,5 +1,5 @@
 // LICENSE AND COPYRIGHT (C) INFORMATION
-// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
 
 
 ////////////////////////////////////////////////////////////
@@ -27,7 +27,7 @@
 #include <cstdio>
 
 // Native fast-path file reads. The C++ iostream layer has overhead that becomes noticeable for the small/medium files
-// VRSFML typically loads. We bypass it where we can and fall back to C stdio if no native path is available.
+// Zancle typically loads. We bypass it where we can and fall back to C stdio if no native path is available.
 #if defined(ZA_SYSTEM_WINDOWS)
     #include "Zancle/System/WindowsHeader.hpp"
 

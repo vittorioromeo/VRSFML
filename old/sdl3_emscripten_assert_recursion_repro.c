@@ -25,9 +25,9 @@
  *       SDL_abort();   // ← on Emscripten+Asyncify, may not halt
  *   }
  *
- * REAL-WORLD CRASH (VRSFML on Emscripten)
+ * REAL-WORLD CRASH (Zancle on Emscripten)
  * ----------------------------------------
- * VRSFML initializes SDL3 with SDL_INIT_VIDEO and lazily SDL_INIT_JOYSTICK.
+ * Zancle initializes SDL3 with SDL_INIT_VIDEO and lazily SDL_INIT_JOYSTICK.
  * During program shutdown on Emscripten, an assertion fires in SDL's
  * joystick/gamepad quit path. The resulting recursion produces:
  *

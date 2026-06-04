@@ -1,5 +1,5 @@
 // LICENSE AND COPYRIGHT (C) INFORMATION
-// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
 
 
 ////////////////////////////////////////////////////////////
@@ -414,7 +414,7 @@ static void ImGui_ImplOpenGL3_SetupRenderState(ImDrawData* draw_data, int fb_wid
 
 // OpenGL3 Render function.
 //
-// VRSFML deviation from upstream: the per-frame GL state backup + restore
+// Zancle deviation from upstream: the per-frame GL state backup + restore
 // (originally needed to coexist with engines that don't reset state on their
 // own) has been removed. On WebGL each `glGetIntegerv` / `glIsEnabled` is a
 // pipeline-sync (~22 of them upstream, ~1.6 ms / frame on Chrome), and SFML's

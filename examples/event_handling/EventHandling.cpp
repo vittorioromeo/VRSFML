@@ -415,7 +415,7 @@ private:
     za::RenderWindow m_window = makeDPIScaledRenderWindow(
                                     {
                                         .size      = {800u, 600u},
-                                        .title     = "SFML Event Handling",
+                                        .title     = "Zancle Event Handling",
                                         .resizable = true,
                                         .vsync     = true,
                                     })

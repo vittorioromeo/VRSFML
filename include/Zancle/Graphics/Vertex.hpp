@@ -1,6 +1,6 @@
 #pragma once
 // LICENSE AND COPYRIGHT (C) INFORMATION
-// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
 
 
 ////////////////////////////////////////////////////////////
@@ -37,7 +37,7 @@ struct [[nodiscard]] Vertex
 /// \ingroup graphics
 ///
 /// A vertex is an "improved point". It has a position plus a few
-/// extra attributes used for drawing: in VRSFML, vertices also carry
+/// extra attributes used for drawing: in Zancle, vertices also carry
 /// a color and a pair of texture coordinates.
 ///
 /// The vertex is the basic building block of all drawing. Everything
@@ -46,7 +46,7 @@ struct [[nodiscard]] Vertex
 /// are grouped to create more complex 2D entities such as sprites,
 /// texts, and shapes.
 ///
-/// When using the higher-level graphical entities of VRSFML (`za::Sprite`,
+/// When using the higher-level graphical entities of Zancle (`za::Sprite`,
 /// `za::Text`, `za::Shape`, ...) you do not need to deal with vertices
 /// directly. However, if you want to define your own 2D entities --
 /// such as tiled maps or particle systems -- working with vertices
@@ -71,7 +71,7 @@ struct [[nodiscard]] Vertex
 ///
 /// `za::Vertex` is an aggregate, so it can be brace-initialized in
 /// member-declaration order, or with C++20 designated initializers
-/// (which VRSFML requires) to set only a subset of members:
+/// (which Zancle requires) to set only a subset of members:
 ///
 /// \code
 /// za::Vertex v0{{5.f, 5.f}};                             // explicit 'position', defaulted 'color' and 'texCoords'

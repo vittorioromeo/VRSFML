@@ -1,6 +1,6 @@
 #pragma once
 // LICENSE AND COPYRIGHT (C) INFORMATION
-// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
 
 
 ////////////////////////////////////////////////////////////
@@ -294,7 +294,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Draw a sprite to the render target
     ///
-    /// VRSFML sprites do not own their texture: the texture must
+    /// Zancle sprites do not own their texture: the texture must
     /// be supplied at draw time, either inline (preferred for
     /// one-offs) or through `RenderStates::texture`.
     ///
@@ -1255,7 +1255,7 @@ private:
 /// \ingroup graphics
 ///
 /// `za::RenderTarget` is the abstract base of every 2D render
-/// target in VRSFML. It is the surface onto which sprites,
+/// target in Zancle. It is the surface onto which sprites,
 /// shapes, text, and raw vertex data are drawn, hiding the
 /// underlying OpenGL state from user code.
 ///
@@ -1287,7 +1287,7 @@ private:
 /// \li Native interop with raw OpenGL via `setActive`, `bind`,
 ///     `unbind`, and `resetGLStates`. Calling
 ///     `resetGLStates` is required after issuing direct OpenGL
-///     commands so that subsequent VRSFML draws produce the
+///     commands so that subsequent Zancle draws produce the
 ///     expected output.
 ///
 /// `za::RenderTarget` is move-only and is not safe to access

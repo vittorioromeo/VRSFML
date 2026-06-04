@@ -34,7 +34,7 @@ int main()
     auto window = makeDPIScaledRenderWindow(
                       {
                           .size            = windowSize.toVec2u(),
-                          .title           = "SFML Stencil",
+                          .title           = "Zancle Stencil",
                           .resizable       = true,
                           .vsync           = true,
                           .contextSettings = {.depthBits = 0u, .stencilBits = 8u},

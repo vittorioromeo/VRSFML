@@ -1,5 +1,5 @@
 // LICENSE AND COPYRIGHT (C) INFORMATION
-// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
 
 
 ////////////////////////////////////////////////////////////
@@ -95,7 +95,7 @@ int main()
     auto window = makeDPIScaledRenderWindow(
                       {
                           .size           = (resolution * 3.f).toVec2u(),
-                          .title          = "SFML Pixel-Perfect",
+                          .title          = "Zancle Pixel-Perfect",
                           .resizable      = true,
                           .vsync          = true,
                           .frametimeLimit = 144u,

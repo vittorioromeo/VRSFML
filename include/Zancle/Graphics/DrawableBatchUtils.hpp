@@ -1,6 +1,6 @@
 #pragma once
 // LICENSE AND COPYRIGHT (C) INFORMATION
-// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
 
 
 ////////////////////////////////////////////////////////////
@@ -262,7 +262,7 @@ namespace za::DrawableBatchUtils
 ///
 /// Most application code does not need this header; it is
 /// exposed for advanced users that build their own batching
-/// pipelines on top of VRSFML.
+/// pipelines on top of Zancle.
 ///
 /// \see `za::DrawableBatch`, `za::CPUDrawableBatch`,
 ///      `za::PersistentGPUDrawableBatch`, `za::Vertex`,

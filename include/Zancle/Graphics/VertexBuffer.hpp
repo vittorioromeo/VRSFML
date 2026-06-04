@@ -1,6 +1,6 @@
 #pragma once
 // LICENSE AND COPYRIGHT (C) INFORMATION
-// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
 
 
 ////////////////////////////////////////////////////////////
@@ -282,7 +282,7 @@ public:
     /// \brief Bind this vertex buffer for raw OpenGL rendering
     ///
     /// This function is **not** part of the high-level graphics
-    /// API and must not be used when drawing VRSFML entities.
+    /// API and must not be used when drawing Zancle entities.
     /// It exists only to support custom OpenGL geometry that
     /// wants to source data from an `za::VertexBuffer`.
     ///

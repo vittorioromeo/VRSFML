@@ -1,6 +1,6 @@
 #pragma once
 // LICENSE AND COPYRIGHT (C) INFORMATION
-// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
 
 
 ////////////////////////////////////////////////////////////
@@ -444,7 +444,7 @@ public:
     ///
     /// Counterpart of `bind`. Call this after you are done with
     /// raw OpenGL drawing that used a `za::Texture` so that the
-    /// next VRSFML draw call starts from a clean texture binding.
+    /// next Zancle draw call starts from a clean texture binding.
     ///
     ////////////////////////////////////////////////////////////
     static void unbind();
@@ -581,7 +581,7 @@ ZA_GRAPHICS_API void swap(Texture& lhs, Texture& rhs) noexcept;
 /// // failure). For graceful error handling, inspect the optional.
 /// const auto texture = za::Texture::loadFromFile("texture.png").value();
 ///
-/// // Build a sprite from the texture and draw it. In VRSFML, the
+/// // Build a sprite from the texture and draw it. In Zancle, the
 /// // texture is passed to `draw` rather than stored on the sprite,
 /// // so the sprite cannot accidentally outlive the texture.
 /// const za::Sprite sprite{.textureRect = texture.getRect()};

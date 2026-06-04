@@ -1,6 +1,6 @@
 #pragma once
 // LICENSE AND COPYRIGHT (C) INFORMATION
-// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
 
 #ifndef ZA_ENABLE_PCH
     #error "PCH header included, but `ZA_ENABLE_PCH` was not defined"

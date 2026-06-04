@@ -1,6 +1,6 @@
 #pragma once
 // LICENSE AND COPYRIGHT (C) INFORMATION
-// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
 
 
 ////////////////////////////////////////////////////////////
@@ -458,7 +458,7 @@ template <typename TData>
 /// own geometry.
 ///
 /// Unlike upstream SFML, `za::Shape` is **not** a virtual base.
-/// VRSFML deliberately removes the `za::Drawable` interface and
+/// Zancle deliberately removes the `za::Drawable` interface and
 /// the `vector<unique_ptr<Drawable>>` pattern in favor of flat
 /// concrete types. Each shape stores its tessellated vertex data
 /// directly and is drawn through the dedicated `RenderTarget::draw`

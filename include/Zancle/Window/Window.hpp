@@ -1,6 +1,6 @@
 #pragma once
 // LICENSE AND COPYRIGHT (C) INFORMATION
-// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
 
 
 ////////////////////////////////////////////////////////////
@@ -248,7 +248,7 @@ private:
 /// auto windowContext = za::WindowContext::create().value();
 ///
 /// // Create a new window
-/// auto window = za::Window::create({.size = {800u, 600u}, .title = "SFML Window"}).value();
+/// auto window = za::Window::create({.size = {800u, 600u}, .title = "Zancle Window"}).value();
 ///
 /// // Limit the framerate to 60 frames per second (this step is optional)
 /// window.setFramerateLimit(60);

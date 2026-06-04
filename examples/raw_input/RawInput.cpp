@@ -38,7 +38,7 @@ int main()
     auto window = makeDPIScaledRenderWindow(
                       {
                           .size      = windowSize.toVec2u(),
-                          .title     = "SFML Raw Mouse Input",
+                          .title     = "Zancle Raw Mouse Input",
                           .resizable = true,
                           .vsync     = true,
                       })

@@ -1,16 +1,16 @@
 #pragma once
 // LICENSE AND COPYRIGHT (C) INFORMATION
-// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
 
 
 ////////////////////////////////////////////////////////////
-// Dear ImGui user configuration for VRSFML
+// Dear ImGui user configuration for Zancle
 //
 // This header is injected into Dear ImGui via the
 // `IMGUI_USER_CONFIG` compile definition (set by the
 // `zancle-imgui` CMake target). It does three things:
 //
-//   1. Wires `IM_ASSERT` into VRSFML's assertion macro.
+//   1. Wires `IM_ASSERT` into Zancle's assertion macro.
 //   2. Defines `IM_VEC2_CLASS_EXTRA` and `IM_VEC4_CLASS_EXTRA`
 //      so that `ImVec2`/`ImVec4` interoperate seamlessly with
 //      `za::Vec2<T>` and `za::Color`.
@@ -92,6 +92,6 @@
 
 
 ////////////////////////////////////////////////////////////
-// Route Dear ImGui assertions through VRSFML's assertion macro
+// Route Dear ImGui assertions through Zancle's assertion macro
 ////////////////////////////////////////////////////////////
 #define IM_ASSERT ZB_ASSERT

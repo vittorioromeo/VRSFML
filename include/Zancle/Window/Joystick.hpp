@@ -1,6 +1,6 @@
 #pragma once
 // LICENSE AND COPYRIGHT (C) INFORMATION
-// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
 
 
 ////////////////////////////////////////////////////////////
@@ -65,7 +65,7 @@ struct Joystick
     ////////////////////////////////////////////////////////////
     /// \brief Refresh the cached state of every joystick
     ///
-    /// This function is used internally by VRSFML's event loop,
+    /// This function is used internally by Zancle's event loop,
     /// so you normally don't have to call it explicitly.
     /// However, you may need to call it if you want to query
     /// joystick state without having created a window yet (or

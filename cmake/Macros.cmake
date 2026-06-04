@@ -61,7 +61,7 @@ endfunction()
 # Apply the Emscripten-specific compile and link options to `target`.
 #
 # Required for any TU that participates in a `--shared-memory` link (i.e.
-# every Emscripten build of VRSFML): the options pull in `-pthread`, which
+# every Emscripten build of Zancle): the options pull in `-pthread`, which
 # enables the `atomics` and `bulk-memory` Wasm features. Without them,
 # `wasm-ld` rejects the resulting `.o` files at link time with
 # `--shared-memory is disallowed because it was not compiled with 'atomics'

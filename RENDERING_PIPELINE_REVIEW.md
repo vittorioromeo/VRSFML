@@ -1,4 +1,4 @@
-# VRSFML Rendering Pipeline -- Deep Review
+# Zancle Rendering Pipeline -- Deep Review
 
 > Scope: every layer between a user's `window.draw(x)` call and the GL driver. Covers `RenderTarget`, `RenderWindow`/`RenderTexture`, the `DrawableBatch` family, `Shader`, `Texture`, the `GLUtils` infrastructure (persistent + ring buffers, fences, VAO groups, debug), the drawable types (`Sprite`/`Shape`/`Text`/`VertexBuffer`), `GraphicsContext`, and the helpers that bridge them.
 >
@@ -8,7 +8,7 @@
 
 ## 1. Executive summary
 
-VRSFML's rendering pipeline is a **well-engineered, modern-OpenGL 2D renderer** that has already shed almost everything that made upstream SFML slow: legacy GL is gone, `glBegin`/`glEnd` is gone, the per-call `glGetIntegerv(GL_CURRENT_PROGRAM)` is gone, the inheritance/`Drawable` virtual mess is gone. In its place is a small, mostly-template, mostly-data-oriented core:
+Zancle's rendering pipeline is a **well-engineered, modern-OpenGL 2D renderer** that has already shed almost everything that made upstream SFML slow: legacy GL is gone, `glBegin`/`glEnd` is gone, the per-call `glGetIntegerv(GL_CURRENT_PROGRAM)` is gone, the inheritance/`Drawable` virtual mess is gone. In its place is a small, mostly-template, mostly-data-oriented core:
 
 * A **`RenderTarget` state cache** that tracks blend mode, stencil mode, scissor, program ID, texture ID, VAO/VBO IDs and a `lastView` for redundancy-skipping;
 * An **auto-batching layer** with three modes (`Disabled`, `CPUStorage`, `GPUStorage`) wrapped around a single shared `DrawableBatchImpl` template -- the **GPU mode uses persistent-mapped buffers triple-buffered across frames via GL fences**, which is genuinely state-of-the-art for a 2D library;
@@ -292,7 +292,7 @@ Other texture-side issues:
 
 ### 8.1 Strengths
 
-* **Texture-pointer-free `Sprite`/`Shape`** is one of the clearest correctness wins in VRSFML's design -- eliminates the "white square problem" at compile time. The DESIGN.md sales pitch is accurate.
+* **Texture-pointer-free `Sprite`/`Shape`** is one of the clearest correctness wins in Zancle's design -- eliminates the "white square problem" at compile time. The DESIGN.md sales pitch is accurate.
 * **`Text` outline rendering is a single draw call** (vs upstream's two) -- verified. Storage order is `[outline | fill]` so the outline is rendered first and the fill on top, all in one `drawQuads` ([TextBase.inl:91-104](include/SFML/Graphics/TextBase.inl#L91)).
 * **`InstanceAttributeBinder` defers `glVertexAttribPointer` calls** until after the user's setup callback returns ([InstanceAttributeBinder.cpp:176-199](src/SFML/Graphics/InstanceAttributeBinder.cpp#L176)). Crucial correctness property: `VBOHandle::uploadStreamingData` may move-assign a new GL name into the buffer mid-callback, which would invalidate any attribute pointer captured during the callback.
 * **`Sprite`, `Vertex`, `RenderStates` are aggregates** with designated initializers throughout -- clean modern C++.
@@ -488,7 +488,7 @@ The interplay between `syncGPUStartFrame`, `syncGPUEndFrame`, `gpuAutoBatchIndex
 
 ## 14. Conclusion
 
-The VRSFML rendering pipeline is in unusually good shape for a 2D library. The architectural decisions -- flat data-oriented drawables, modern-GL-only, persistent-mapped triple-buffered batching, generation-tracked autobatch invalidation, two-vec3 MVP -- are decisions a competent professional graphics engineer would make from scratch today.
+The Zancle rendering pipeline is in unusually good shape for a 2D library. The architectural decisions -- flat data-oriented drawables, modern-GL-only, persistent-mapped triple-buffered batching, generation-tracked autobatch invalidation, two-vec3 MVP -- are decisions a competent professional graphics engineer would make from scratch today.
 
 The work to do is concentrated in three areas:
 

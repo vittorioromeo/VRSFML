@@ -793,7 +793,7 @@ int main()
     auto window = makeDPIScaledRenderWindow(
                       {
                           .size      = worldSize.toVec2u(),
-                          .title     = "SFML Coroutine (macro-based boss fight)",
+                          .title     = "Zancle Coroutine (macro-based boss fight)",
                           .resizable = true,
                           .vsync     = true,
                       })

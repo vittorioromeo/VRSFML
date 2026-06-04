@@ -1,6 +1,6 @@
 #pragma once
 // LICENSE AND COPYRIGHT (C) INFORMATION
-// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
 
 
 ////////////////////////////////////////////////////////////
@@ -1064,7 +1064,7 @@ public:
 /// submissions. This eliminates the per-call CPU overhead and
 /// usually translates to better GPU utilization.
 ///
-/// VRSFML provides two batch types:
+/// Zancle provides two batch types:
 ///
 /// \li `za::CPUDrawableBatch` -- vertex data lives in CPU memory.
 ///     Uploaded to the GPU at draw time. Easier to reason about,

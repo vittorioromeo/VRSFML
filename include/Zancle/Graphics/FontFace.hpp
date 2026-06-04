@@ -1,6 +1,6 @@
 #pragma once
 // LICENSE AND COPYRIGHT (C) INFORMATION
-// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
 
 
 ////////////////////////////////////////////////////////////
@@ -296,7 +296,7 @@ private:
 /// \class za::FontFace
 /// \ingroup graphics
 ///
-/// `za::FontFace` is the lower-level building block of VRSFML's
+/// `za::FontFace` is the lower-level building block of Zancle's
 /// text rendering pipeline. It owns a FreeType face plus the
 /// font's binary data, and exposes:
 ///

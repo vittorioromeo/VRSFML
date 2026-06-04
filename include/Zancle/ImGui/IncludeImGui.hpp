@@ -1,12 +1,12 @@
 #pragma once
 // LICENSE AND COPYRIGHT (C) INFORMATION
-// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
 
 
 ////////////////////////////////////////////////////////////
 // Public Dear ImGui include shim
 //
-// Pulls in `<imgui.h>` after applying VRSFML's `IMGUI_USER_CONFIG`
+// Pulls in `<imgui.h>` after applying Zancle's `IMGUI_USER_CONFIG`
 // (`ImConfigSFML.hpp`), which injects implicit conversions between
 // `ImVec2`/`ImVec4` and `za::Vec2`/`za::Color`. User code that
 // needs Dear ImGui types or `ImGui::*` functions should include
