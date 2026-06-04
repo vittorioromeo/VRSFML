@@ -7,9 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Network/Export.hpp"
-
 #include "Zancle/Network/IpAddress.hpp"
-
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/StringView.hpp"
 

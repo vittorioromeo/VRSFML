@@ -98,25 +98,25 @@ IncludeCategories:
   - Priority: 1
     Regex: '^\"ExampleUtils\/(.*)\"$'
   - Priority: 2
-    Regex: '^\"SFML\/Config.hpp\"$'
+    Regex: '^\"Zancle\/Config.hpp\"$'
   - Priority: 3
-    Regex: '^\"SFML\/(.+)\/Export.hpp\"$'
+    Regex: '^\"Zancle\/(.+)\/Export.hpp\"$'
   - Priority: 4
-    Regex: '^\"SFML\/ImGui'
+    Regex: '^\"Zancle\/ImGui'
   - Priority: 5
-    Regex: '^\"SFML\/Graphics'
+    Regex: '^\"Zancle\/Graphics'
   - Priority: 6
-    Regex: '^\"SFML\/Audio'
+    Regex: '^\"Zancle\/Audio'
   - Priority: 7
-    Regex: '^\"SFML\/Network'
+    Regex: '^\"Zancle\/Network'
   - Priority: 8
-    Regex: '^\"SFML\/Window'
+    Regex: '^\"Zancle\/Window'
   - Priority: 9
-    Regex: '^\"SFML\/GLUtils'
+    Regex: '^\"Zancle\/GLUtils'
   - Priority: 10
-    Regex: '^\"SFML\/System'
+    Regex: '^\"Zancle\/System'
   - Priority: 11
-    Regex: '^\"SFML\/Base'
+    Regex: '^\"ZancleBase'
   - Priority: 12
     Regex: '^\"ExampleUtils'
   - Priority: -100
@@ -124,7 +124,7 @@ IncludeCategories:
   - Priority: 22
     Regex: '^<(imgui|glad|gl|X11|jni|android|stb_|GLES2|vorbis|miniaudio|blockingconcurrentqueue|concurrentqueue|SDL3|boost)'
   - Priority: 23
-    Regex: '^<(AudioUtil|SystemUtil|GraphicsUtil|WindowUtil|StringifyVectorUtil|StringifyOptionalUtil|StringifyPathUtil|StringifyStdStringUtil|StringifyStringViewUtil|StringifyArrayUtil|StringifyIpAddressUtil|StringifySfBaseStringUtil|LoadIntoMemoryUtil)'
+    Regex: '^<(AudioUtil|SystemUtil|GraphicsUtil|WindowUtil|StringifyVectorUtil|StringifyOptionalUtil|StringifyPathUtil|StringifyStdStringUtil|StringifyStringViewUtil|StringifyArrayUtil|StringifyIpAddressUtil|StringifyZbStringUtil|LoadIntoMemoryUtil)'
   - Priority: 24
     Regex: '^<([^c](.+)|coroutine|charconv|chrono|complex|concepts|condition_variable)>$'
   - Priority: 25

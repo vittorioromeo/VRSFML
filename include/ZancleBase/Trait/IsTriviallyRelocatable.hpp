@@ -56,7 +56,7 @@ inline constexpr bool enableTrivialRelocation = priv::hasEnabledTrivialRelocatio
 
 
 ////////////////////////////////////////////////////////////
-#define ZB_IS_TRIVIALLY_RELOCATABLE(...)                                                                    \
+#define ZB_IS_TRIVIALLY_RELOCATABLE(...)                                                             \
     (ZB_IS_TRIVIALLY_RELOCATABLE_BY_BUILTIN(__VA_ARGS__) || ZB_IS_TRIVIALLY_COPYABLE(__VA_ARGS__) || \
      ::zb::enableTrivialRelocation<__VA_ARGS__>)
 

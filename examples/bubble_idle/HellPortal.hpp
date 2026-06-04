@@ -1,15 +1,15 @@
 #pragma once
 
-#include "ExampleUtils/Progress.hpp"
-
 #include "Zancle/System/Priv/Vec2Base.hpp"
+
+#include "ExampleUtils/Progress.hpp"
 
 
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] HellPortal
 {
-    za::Vec2f       position;
-    Countdown       life;
+    za::Vec2f position;
+    Countdown life;
     zb::SizeT catIdx;
 
     ////////////////////////////////////////////////////////////

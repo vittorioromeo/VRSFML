@@ -1,14 +1,12 @@
 #pragma once
 
 #include "ShowcaseExample.hpp"
-
 #include "Zancle/Graphics/FontFace.hpp"
 #include "Zancle/Graphics/GlyphMappedText.hpp"
 #include "Zancle/Graphics/GlyphMapping.hpp"
 #include "Zancle/Graphics/Text.hpp"
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/TextureAtlas.hpp"
-
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Utf8String.hpp"
 

@@ -7,9 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Export.hpp"
-
 #include "Zancle/System/LifetimeDependee.hpp"
-
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/PassKey.hpp"
 #include "ZancleBase/SizeT.hpp"
@@ -124,8 +122,8 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static zb::Optional<Font> openFromMemory(const void*   data,
-                                                             zb::SizeT   sizeInBytes,
-                                                             TextureAtlas* textureAtlas = nullptr);
+                                                           zb::SizeT     sizeInBytes,
+                                                           TextureAtlas* textureAtlas = nullptr);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a font from a custom input stream

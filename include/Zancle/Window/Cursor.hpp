@@ -7,7 +7,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Window/Export.hpp"
-
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/PassKey.hpp"
@@ -155,9 +154,9 @@ public:
     ///         `zb::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<Cursor> loadFromPixels(const zb::U8*    pixels,
-                                                               Vec2<unsigned int> size,
-                                                               Vec2<unsigned int> hotspot);
+    [[nodiscard]] static zb::Optional<Cursor> loadFromPixels(const zb::U8*      pixels,
+                                                             Vec2<unsigned int> size,
+                                                             Vec2<unsigned int> hotspot);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a native system cursor

@@ -7,9 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Network/Export.hpp"
-
 #include "Zancle/System/Time.hpp"
-
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Optional.hpp"
 

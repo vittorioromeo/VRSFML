@@ -1,7 +1,5 @@
 #include "Tst/Tst.hpp"
-
 #include "ZancleBase/ChunkedVector.hpp"
-
 #include "ZancleBase/Macros.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/Trait/IsCopyAssignable.hpp"
@@ -259,7 +257,7 @@ TEST_CASE("[Base] Base/ChunkedVector.hpp")
 
         zb::SizeT blockCount   = 0u;
         zb::SizeT elementCount = 0u;
-        int             blockSum     = 0;
+        int       blockSum     = 0;
 
         asConst(vec).forEachBlock([&](const int* begin, const int* end)
         {

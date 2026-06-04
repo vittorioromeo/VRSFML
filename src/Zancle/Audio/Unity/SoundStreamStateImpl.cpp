@@ -5,17 +5,14 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Audio/Priv/SoundStreamStateImpl.hpp"
-
 #include "Zancle/Audio/ChannelMap.hpp"
 #include "Zancle/Audio/PlaybackDevice.hpp"
 #include "Zancle/Audio/Priv/MiniaudioUtils.hpp"
 #include "Zancle/Audio/Priv/SoundBase.hpp"
-
+#include "Zancle/Audio/Priv/SoundStreamStateImpl.hpp"
 #include "Zancle/System/Atomic.hpp"
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/Time.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Memcpy.hpp"
 #include "ZancleBase/IntTypes.hpp"
@@ -48,12 +45,12 @@ struct SoundStreamStateImpl::Internals
     MiniaudioUtils::SoundBase soundBase; //!< MUST be first member
 
     ////////////////////////////////////////////////////////////
-    ChannelMap              channelMap;
-    unsigned int            sampleRate{};
+    ChannelMap          channelMap;
+    unsigned int        sampleRate{};
     zb::Vector<zb::I16> sampleBuffer;
-    zb::SizeT             sampleBufferCursor{};
-    zb::U64               samplesProcessed{};
-    za::Atomic<bool>        streaming{true};
+    zb::SizeT           sampleBufferCursor{};
+    zb::U64             samplesProcessed{};
+    za::Atomic<bool>    streaming{true};
 
     ////////////////////////////////////////////////////////////
     void*                         statePtr; //!< Opaque pointer to the `State` owned by `SoundStreamState<State>`
@@ -129,14 +126,14 @@ struct SoundStreamStateImpl::Internals
         const auto channelCount = internals.channelMap.getSize();
 
         *framesRead = zb::min(frameCount,
-                                static_cast<ma_uint64>(
-                                    (internals.sampleBuffer.size() - internals.sampleBufferCursor) / channelCount));
+                              static_cast<ma_uint64>(
+                                  (internals.sampleBuffer.size() - internals.sampleBufferCursor) / channelCount));
 
         const auto sampleCount = *framesRead * channelCount;
 
         ZB_MEMCPY(framesOut,
-                         internals.sampleBuffer.data() + internals.sampleBufferCursor,
-                         static_cast<zb::SizeT>(sampleCount) * sizeof(internals.sampleBuffer[0]));
+                  internals.sampleBuffer.data() + internals.sampleBufferCursor,
+                  static_cast<zb::SizeT>(sampleCount) * sizeof(internals.sampleBuffer[0]));
 
         internals.sampleBufferCursor += static_cast<zb::SizeT>(sampleCount);
         internals.samplesProcessed += sampleCount;

@@ -1,9 +1,7 @@
 #pragma once
 
 #include "CatType.hpp"
-
 #include "Zancle/System/Priv/Vec2Base.hpp"
-
 #include "ZancleBase/Array.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/SizeT.hpp"
@@ -192,13 +190,13 @@ struct [[nodiscard]] GameConstants
     // `game_constants.json` and can be tweaked live from the debug menu.
     struct [[nodiscard]] BubblefallTuning
     {
-        float           durationMs       = 12'000.f;
-        float           regionWidth      = 240.f;
-        float           spawnIntervalMs  = 10.f;
+        float     durationMs       = 12'000.f;
+        float     regionWidth      = 240.f;
+        float     spawnIntervalMs  = 10.f;
         zb::SizeT bubblesPerTick   = 3u;
-        float           initialVelocityY = 0.55f;
-        float           velocityJitterY  = 0.25f;
-        float           velocityJitterX  = 0.05f;
+        float     initialVelocityY = 0.55f;
+        float     velocityJitterY  = 0.25f;
+        float     velocityJitterX  = 0.05f;
 
         // Fraction of `durationMs` spent ramping the spawn rate up from zero
         // at the start (`attackRatio`) and down to zero at the end
@@ -220,14 +218,14 @@ struct [[nodiscard]] GameConstants
         float spawnYOffsetTopMax = 3.f;
 
         // Combo mechanic tuning.
-        float         comboTimerMaxMs      = 1000.f;  // window after each click before the bubble pops
+        float   comboTimerMaxMs      = 1000.f;  // window after each click before the bubble pops
         zb::U32 maxClicks            = 25u;     // auto-pop after this many clicks
-        float         rewardScalePerClick  = 5.f;     // base coins per click
-        float         rewardClickExponent  = 1.5f;    // reward = base * pow(clicks, exp)
-        float         ambientRepelRadius   = 128.f;   // gentle "stand-out" push while alive
-        float         ambientRepelStrength = 0.0018f; // per-ms velocity push factor
-        float         popRepelRadius       = 360.f;   // burst on pop
-        float         popRepelImpulse      = 0.95f;   // one-shot velocity kick
+        float   rewardScalePerClick  = 5.f;     // base coins per click
+        float   rewardClickExponent  = 1.5f;    // reward = base * pow(clicks, exp)
+        float   ambientRepelRadius   = 128.f;   // gentle "stand-out" push while alive
+        float   ambientRepelStrength = 0.0018f; // per-ms velocity push factor
+        float   popRepelRadius       = 360.f;   // burst on pop
+        float   popRepelImpulse      = 0.95f;   // one-shot velocity kick
 
         // Per-click visual feedback: coins-of-energy fly into the bubble and
         // it puffs up slightly to telegraph progress.
@@ -238,8 +236,8 @@ struct [[nodiscard]] GameConstants
 
         // Spawn position safety margin so the bubble never appears flush
         // against either horizontal edge of the map.
-        float         spawnEdgeMarginPx   = 300.f;
-        float         payoutCoinDelayMs   = 35.f; // ms between rising-pitch coin collections
+        float   spawnEdgeMarginPx   = 300.f;
+        float   payoutCoinDelayMs   = 35.f; // ms between rising-pitch coin collections
         zb::U32 payoutCoinsPerClick = 2u;   // coins spewed per click
         zb::U32 payoutMaxCoins      = 80u;  // hard cap on the spew
 

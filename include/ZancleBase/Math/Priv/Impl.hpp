@@ -41,19 +41,19 @@
 
 
 ////////////////////////////////////////////////////////////
-#define ZB_PRIV_DEFINE_MATH_WRAPPER_1ARG(name, NAME)                                                      \
-    namespace zb                                                                                           \
+#define ZB_PRIV_DEFINE_MATH_WRAPPER_1ARG(name, NAME)                                                             \
+    namespace zb                                                                                                 \
     {                                                                                                            \
                                                                                                                  \
     template <typename T>                                                                                        \
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr auto name(const T arg) noexcept \
     {                                                                                                            \
-        if constexpr (ZB_IS_SAME(T, float))                                                               \
-            return ZB_MATH_##NAME##F(arg);                                                                \
-        else if constexpr (ZB_IS_SAME(T, double))                                                         \
-            return ZB_MATH_##NAME(arg);                                                                   \
-        else if constexpr (ZB_IS_SAME(T, long double))                                                    \
-            return ZB_MATH_##NAME##L(arg);                                                                \
+        if constexpr (ZB_IS_SAME(T, float))                                                                      \
+            return ZB_MATH_##NAME##F(arg);                                                                       \
+        else if constexpr (ZB_IS_SAME(T, double))                                                                \
+            return ZB_MATH_##NAME(arg);                                                                          \
+        else if constexpr (ZB_IS_SAME(T, long double))                                                           \
+            return ZB_MATH_##NAME##L(arg);                                                                       \
         else                                                                                                     \
             static_assert(false);                                                                                \
     }                                                                                                            \
@@ -61,19 +61,19 @@
     } // namespace zb
 
 ////////////////////////////////////////////////////////////
-#define ZB_PRIV_DEFINE_MATH_WRAPPER_2ARG(name, NAME)                                                                     \
-    namespace zb                                                                                                          \
+#define ZB_PRIV_DEFINE_MATH_WRAPPER_2ARG(name, NAME)                                                                            \
+    namespace zb                                                                                                                \
     {                                                                                                                           \
                                                                                                                                 \
     template <typename T>                                                                                                       \
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr auto name(const T arg0, const T arg1) noexcept \
     {                                                                                                                           \
-        if constexpr (ZB_IS_SAME(T, float))                                                                              \
-            return ZB_MATH_##NAME##F(arg0, arg1);                                                                        \
-        else if constexpr (ZB_IS_SAME(T, double))                                                                        \
-            return ZB_MATH_##NAME(arg0, arg1);                                                                           \
-        else if constexpr (ZB_IS_SAME(T, long double))                                                                   \
-            return ZB_MATH_##NAME##L(arg0, arg1);                                                                        \
+        if constexpr (ZB_IS_SAME(T, float))                                                                                     \
+            return ZB_MATH_##NAME##F(arg0, arg1);                                                                               \
+        else if constexpr (ZB_IS_SAME(T, double))                                                                               \
+            return ZB_MATH_##NAME(arg0, arg1);                                                                                  \
+        else if constexpr (ZB_IS_SAME(T, long double))                                                                          \
+            return ZB_MATH_##NAME##L(arg0, arg1);                                                                               \
         else                                                                                                                    \
             static_assert(false);                                                                                               \
     }                                                                                                                           \

@@ -5,9 +5,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Window/EventUtils.hpp"
-
 #include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
 #include "Zancle/Window/Keyboard.hpp"
 
 

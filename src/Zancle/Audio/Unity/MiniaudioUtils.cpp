@@ -5,19 +5,16 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Audio/Priv/MiniaudioUtils.hpp"
-
 #include "Zancle/Audio/AudioSettings.hpp"
 #include "Zancle/Audio/ChannelMap.hpp"
 #include "Zancle/Audio/EffectProcessor.hpp"
 #include "Zancle/Audio/PlaybackDevice.hpp"
+#include "Zancle/Audio/Priv/MiniaudioUtils.hpp"
 #include "Zancle/Audio/Priv/SoundBase.hpp"
 #include "Zancle/Audio/SoundChannel.hpp"
-
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/LifetimeDependant.hpp"
 #include "Zancle/System/Time.hpp"
-
 #include "ZancleBase/IntTypes.hpp"
 
 #ifdef ZA_ENABLE_LIFETIME_TRACKING
@@ -54,9 +51,9 @@ void MiniaudioUtils::SoundBase::nodeOnProcess(
 
 ////////////////////////////////////////////////////////////
 void MiniaudioUtils::SoundBase::processEffect(const float** const framesIn,
-                                              zb::U32&          frameCountIn,
+                                              zb::U32&            frameCountIn,
                                               float** const       framesOut,
-                                              zb::U32&          frameCountOut)
+                                              zb::U32&            frameCountOut)
 {
     // If a processor is set, call it
     if (effectProcessor)

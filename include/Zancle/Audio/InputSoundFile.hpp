@@ -6,10 +6,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Audio/Export.hpp"
-
 #include "Zancle/Audio/ChannelMap.hpp"
-
+#include "Zancle/Audio/Export.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/PassKey.hpp"
@@ -247,18 +245,18 @@ public:
                                  zb::UniquePtr<SoundFileReader>&&            reader,
                                  zb::UniquePtr<InputStream, StreamDeleter>&& stream,
                                  zb::U64                                     sampleCount,
-                                 unsigned int                                  sampleRate,
-                                 ChannelMap&&                                  channelMap);
+                                 unsigned int                                sampleRate,
+                                 ChannelMap&&                                channelMap);
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    zb::UniquePtr<SoundFileReader> m_reader; //!< Reader that handles I/O on the file's format
+    zb::UniquePtr<SoundFileReader>            m_reader; //!< Reader that handles I/O on the file's format
     zb::UniquePtr<InputStream, StreamDeleter> m_stream{nullptr, false}; //!< Input stream used to access the file's data
-    /* logically const */ zb::U64    m_sampleCount{};                   //!< Total number of samples in the file
-    /* logically const */ unsigned int m_sampleRate{};                    //!< Number of samples per second
-    /* logically const */ ChannelMap   m_channelMap; //!< The map of position in sample frame to sound channel
+    /* logically const */ zb::U64             m_sampleCount{};          //!< Total number of samples in the file
+    /* logically const */ unsigned int        m_sampleRate{};           //!< Number of samples per second
+    /* logically const */ ChannelMap          m_channelMap; //!< The map of position in sample frame to sound channel
 };
 
 } // namespace za

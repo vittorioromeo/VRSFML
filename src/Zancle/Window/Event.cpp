@@ -15,7 +15,7 @@ template <typename>
 constexpr bool isEventSubtype = false;
 
 #define ZA_PRIV_EVENT_X_IS_EVENT_SUBTYPE(x) \
-    template <>                               \
+    template <>                             \
     constexpr bool isEventSubtype<x> = true
 
 ZA_PRIV_EVENTS_X_MACRO(ZA_PRIV_EVENT_X_IS_EVENT_SUBTYPE, ZA_PRIV_EVENT_X_SEMICOLON);

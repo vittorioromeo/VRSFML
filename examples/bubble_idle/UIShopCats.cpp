@@ -6,7 +6,6 @@
 #include "MainAtlasRects.hpp"
 #include "Playthrough.hpp"
 #include "Version.hpp"
-
 #include "Zancle/ImGui/IncludeImGui.hpp"
 
 #include <cstdio>

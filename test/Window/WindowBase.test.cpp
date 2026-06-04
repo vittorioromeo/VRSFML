@@ -5,16 +5,13 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
-
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Time.hpp"
 #include "Zancle/Window/Event.hpp"
 #include "Zancle/Window/WindowContext.hpp"
 #include "Zancle/Window/WindowHandle.hpp"
 #include "Zancle/Window/WindowSettings.hpp" // IWYU pragma: keep
-
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Time.hpp"
-
 #include "ZancleBase/Trait/HasVirtualDestructor.hpp"
 #include "ZancleBase/Trait/IsCopyAssignable.hpp"
 #include "ZancleBase/Trait/IsCopyConstructible.hpp"

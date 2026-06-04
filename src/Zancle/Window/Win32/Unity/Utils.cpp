@@ -5,11 +5,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Window/Win32/Utils.hpp"
-
 #include "Zancle/System/Utf.hpp"
 #include "Zancle/System/WindowsHeader.hpp"
-
+#include "Zancle/Window/Win32/Utils.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/BackInserter.hpp"
 #include "ZancleBase/String.hpp"

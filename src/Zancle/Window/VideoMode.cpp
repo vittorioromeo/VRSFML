@@ -6,9 +6,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Window/VideoMode.hpp"
-
 #include "Zancle/Window/VideoModeUtils.hpp"
-
 #include "ZancleBase/Algorithm/Find.hpp"
 #include "ZancleBase/Span.hpp"
 

@@ -5,9 +5,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/System/NativeActivity.hpp"
-
 #include "Zancle/System/Android/Activity.hpp"
+#include "Zancle/System/NativeActivity.hpp"
 
 
 namespace za

@@ -7,7 +7,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/GlDataType.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/InPlaceVector.hpp"
 #include "ZancleBase/SizeT.hpp"
@@ -282,8 +281,8 @@ private:
         unsigned int size;
         GlDataType   type;
         bool         normalized;
-        zb::SizeT  stride;
-        zb::SizeT  byteOffset;
+        zb::SizeT    stride;
+        zb::SizeT    byteOffset;
     };
 
     ////////////////////////////////////////////////////////////
@@ -292,9 +291,9 @@ private:
     zb::SizeT                             m_instanceCount;
     zb::InPlaceVector<VBOHandle*, 8u>     m_touchedVBOHandles;
     zb::InPlaceVector<DeferredSetup, 16u> m_deferredSetups;
-    VBOHandle*                              m_currentVBOHandle{nullptr};
+    VBOHandle*                            m_currentVBOHandle{nullptr};
     zb::SizeT                             m_currentUploadByteOffset{0u};
-    bool                                    m_drawSubmitted{false};
+    bool                                  m_drawSubmitted{false};
 };
 
 } // namespace za

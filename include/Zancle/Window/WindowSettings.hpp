@@ -6,11 +6,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Window/ContextSettings.hpp"
-
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Utf8String.hpp"
-
+#include "Zancle/Window/ContextSettings.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/RequireDesignatedInitializers.hpp"
 
@@ -44,22 +42,22 @@ struct [[nodiscard]] WindowSettings
     ZB_REQUIRE_DESIGNATED_INITIALIZERS;
 
     zb::Optional<Vec2i> position{zb::nullOpt};    //!< Initial window position (`zb::nullOpt` lets the OS pick)
-    Vec2u                 size;                       //!< Window inner size in pixels (width, height)
+    Vec2u               size;                     //!< Window inner size in pixels (width, height)
     zb::Optional<Vec2u> minimumSize{zb::nullOpt}; //!< Initial minimum size enforced on user resizes
     zb::Optional<Vec2u> maximumSize{zb::nullOpt}; //!< Initial maximum size enforced on user resizes
-    unsigned int          bitsPerPixel{32u};          //!< Pixel depth, in bits per pixel
-    Utf8String            title{"Untitled Window"};   //!< Title displayed in the window's title bar
-    bool                  fullscreen{false};          //!< Whether the window is created in fullscreen mode
-    bool                  resizable{true};            //!< Whether the window is resizable by the user
-    bool                  closable{true};             //!< Whether the window has a system-provided close button
-    bool                  hasTitlebar{true};          //!< Whether the window has a title bar / borders
-    bool                  visible{true};              //!< Whether the window is initially shown
-    bool                  vsync{false};               //!< Whether vertical sync is enabled at creation time
-    unsigned int          frametimeLimit{0u};         //!< Framerate limit, in FPS (`0` for no limit)
-    bool                  mouseCursorVisible{true};   //!< Whether the mouse cursor is initially visible
-    bool                  keyRepeatEnabled{true};     //!< Whether key repeat events are initially enabled
-    float                 joystickThreshold{0.1f};    //!< Initial joystick "move" event threshold, in `[0, 100]`
-    ContextSettings       contextSettings{};          //!< OpenGL context creation parameters
+    unsigned int        bitsPerPixel{32u};        //!< Pixel depth, in bits per pixel
+    Utf8String          title{"Untitled Window"}; //!< Title displayed in the window's title bar
+    bool                fullscreen{false};        //!< Whether the window is created in fullscreen mode
+    bool                resizable{true};          //!< Whether the window is resizable by the user
+    bool                closable{true};           //!< Whether the window has a system-provided close button
+    bool                hasTitlebar{true};        //!< Whether the window has a title bar / borders
+    bool                visible{true};            //!< Whether the window is initially shown
+    bool                vsync{false};             //!< Whether vertical sync is enabled at creation time
+    unsigned int        frametimeLimit{0u};       //!< Framerate limit, in FPS (`0` for no limit)
+    bool                mouseCursorVisible{true}; //!< Whether the mouse cursor is initially visible
+    bool                keyRepeatEnabled{true};   //!< Whether key repeat events are initially enabled
+    float               joystickThreshold{0.1f};  //!< Initial joystick "move" event threshold, in `[0, 100]`
+    ContextSettings     contextSettings{};        //!< OpenGL context creation parameters
 };
 
 // TODO P0: add refresh rate and other fields

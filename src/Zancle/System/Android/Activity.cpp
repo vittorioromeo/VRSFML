@@ -6,7 +6,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/System/Android/Activity.hpp"
-
 #include "ZancleBase/Assert.hpp"
 
 #include <android/log.h>
@@ -46,7 +45,7 @@ ActivityStates& getActivity()
 {
     ActivityStates* const states = getActivityStatesPtr();
     ZB_ASSERT(states != nullptr &&
-                     "Cannot dereference null activity states pointer. Call priv::resetActivity() to initialize it.");
+              "Cannot dereference null activity states pointer. Call priv::resetActivity() to initialize it.");
 
     return *states;
 }

@@ -8,7 +8,6 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/PrimitiveType.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
-
 #include "ZancleBase/RequireDesignatedInitializers.hpp"
 #include "ZancleBase/Span.hpp"
 
@@ -28,7 +27,7 @@ struct [[nodiscard]] DrawVerticesSettings // NOLINT(cppcoreguidelines-pro-type-m
     ZB_REQUIRE_DESIGNATED_INITIALIZERS;
 
     zb::Span<const Vertex> vertexSpan;    //!< Range of vertices to draw
-    PrimitiveType            primitiveType; //!< How to interpret the vertices (triangles, lines, ...)
+    PrimitiveType          primitiveType; //!< How to interpret the vertices (triangles, lines, ...)
 };
 
 } // namespace za

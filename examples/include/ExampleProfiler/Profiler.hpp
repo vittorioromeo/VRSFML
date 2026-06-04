@@ -16,7 +16,6 @@
     #include "Zancle/System/Clock.hpp"
     #include "Zancle/System/IO.hpp"
     #include "Zancle/System/Time.hpp"
-
     #include "ZancleBase/Abort.hpp"
     #include "ZancleBase/Fmt/Fmt.hpp"
     #include "ZancleBase/Fmt/FmtNumeric.hpp"
@@ -30,8 +29,8 @@ using NodeId = zb::SizeT;
 
 
 ////////////////////////////////////////////////////////////
-inline constexpr auto          nullNode = static_cast<NodeId>(-1u);
-inline constexpr NodeId        maxNodes = 512u;
+inline constexpr auto    nullNode = static_cast<NodeId>(-1u);
+inline constexpr NodeId  maxNodes = 512u;
 inline constexpr zb::I64 nullTime = -1;
 
 
@@ -72,10 +71,7 @@ struct [[nodiscard]] Database
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] ScopeInfo& initNode(const zb::StringView label,
-                                      const zb::StringView file,
-                                      const zb::StringView func,
-                                      const int                  line)
+    [[nodiscard]] ScopeInfo& initNode(const zb::StringView label, const zb::StringView file, const zb::StringView func, const int line)
     {
         if (nextNodeId >= maxNodes) [[unlikely]]
         {
@@ -198,9 +194,9 @@ namespace sfex
 
 ////////////////////////////////////////////////////////////
 // TODO P1: nicer interface?
-inline void populateNodes([[maybe_unused]] zb::Span<const ScopeInfo>             scopeInfos,
+inline void populateNodes([[maybe_unused]] zb::Span<const ScopeInfo>       scopeInfos,
                           [[maybe_unused]] zb::Vector<zb::Vector<NodeId>>& childrenMap,
-                          [[maybe_unused]] zb::Vector<NodeId>&                   rootNodes)
+                          [[maybe_unused]] zb::Vector<NodeId>&             rootNodes)
 {
 #ifdef SFEX_PROFILER_ENABLED
     childrenMap.resize(maxNodes);

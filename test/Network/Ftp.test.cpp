@@ -1,9 +1,7 @@
 #include "StringifyPathUtil.hpp"
 #include "StringifyStringViewUtil.hpp"
 #include "Tst/Tst.hpp"
-
 #include "Zancle/Network/Ftp.hpp"
-
 #include "ZancleBase/String.hpp"
 #include "ZancleBase/Trait/IsCopyAssignable.hpp"
 #include "ZancleBase/Trait/IsCopyConstructible.hpp"

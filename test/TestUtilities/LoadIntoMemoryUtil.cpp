@@ -1,8 +1,6 @@
 #include "LoadIntoMemoryUtil.hpp"
-
 #include "Zancle/System/IO.hpp"
 #include "Zancle/System/Path.hpp"
-
 #include "ZancleBase/Assert.hpp"
 
 

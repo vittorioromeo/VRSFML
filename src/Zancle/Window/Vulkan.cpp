@@ -5,10 +5,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Window/Vulkan.hpp"
-
 #include "Zancle/System/Err.hpp"
-
+#include "Zancle/Window/Vulkan.hpp"
 #include "ZancleBase/Assert.hpp"
 
 #define VK_NO_PROTOTYPES

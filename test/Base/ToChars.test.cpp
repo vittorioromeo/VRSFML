@@ -1,35 +1,33 @@
 #include "StringifyStringViewUtil.hpp"
 #include "Tst/Tst.hpp"
-
-#include "ZancleBase/ToChars.hpp"
-
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/StringView.hpp"
+#include "ZancleBase/ToChars.hpp"
 
 #include <limits>
 
 
-#define CHECK_INTEGER_CONVERSION(value, expected_str)                                                    \
-    do                                                                                                   \
-    {                                                                                                    \
-        char              buffer[64];                                                                    \
-        const char* const last = buffer + sizeof(buffer);                                                \
-        const char*       end  = zb::toChars(buffer, last, value);                                 \
-                                                                                                         \
-        CHECK(end != nullptr);                                                                           \
+#define CHECK_INTEGER_CONVERSION(value, expected_str)                                        \
+    do                                                                                       \
+    {                                                                                        \
+        char              buffer[64];                                                        \
+        const char* const last = buffer + sizeof(buffer);                                    \
+        const char*       end  = zb::toChars(buffer, last, value);                           \
+                                                                                             \
+        CHECK(end != nullptr);                                                               \
         CHECK(zb::StringView(buffer, static_cast<zb::SizeT>(end - buffer)) == expected_str); \
     } while (false)
 
 
-#define CHECK_FLOAT_CONVERSION(value, expected_str, precision)                                           \
-    do                                                                                                   \
-    {                                                                                                    \
-        char              buffer[64];                                                                    \
-        const char* const last = buffer + sizeof(buffer);                                                \
-        const char*       end  = zb::toChars(buffer, last, value, precision);                      \
-                                                                                                         \
-        CHECK(end != nullptr);                                                                           \
+#define CHECK_FLOAT_CONVERSION(value, expected_str, precision)                               \
+    do                                                                                       \
+    {                                                                                        \
+        char              buffer[64];                                                        \
+        const char* const last = buffer + sizeof(buffer);                                    \
+        const char*       end  = zb::toChars(buffer, last, value, precision);                \
+                                                                                             \
+        CHECK(end != nullptr);                                                               \
         CHECK(zb::StringView(buffer, static_cast<zb::SizeT>(end - buffer)) == expected_str); \
     } while (false)
 

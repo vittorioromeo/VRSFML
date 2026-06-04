@@ -6,24 +6,22 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/GLUtils/Glad.hpp"
 #include "Zancle/Graphics/BlendMode.hpp"
 #include "Zancle/Graphics/GlDataType.hpp"
 #include "Zancle/Graphics/PrimitiveType.hpp"
 #include "Zancle/Graphics/StencilMode.hpp"
-
-#include "Zancle/GLUtils/Glad.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/GetArraySize.hpp"
 
 
 ////////////////////////////////////////////////////////////
-#define ZA_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(fnName, sfEnumType, ...)                                        \
+#define ZA_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(fnName, sfEnumType, ...)                                          \
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr GLenum fnName(const sfEnumType sfEnumValue) \
     {                                                                                                                 \
         constexpr GLenum glValues[] __VA_ARGS__;                                                                      \
                                                                                                                       \
-        ZB_ASSERT(static_cast<unsigned int>(sfEnumValue) < ::zb::getArraySize(glValues));                \
+        ZB_ASSERT(static_cast<unsigned int>(sfEnumValue) < ::zb::getArraySize(glValues));                             \
         return glValues[static_cast<unsigned int>(sfEnumValue)];                                                      \
     }
 
@@ -50,15 +48,15 @@ ZA_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
 ////////////////////////////////////////////////////////////
 // Convert an za::BlendMode::Equation constant to the corresponding OpenGL constant.
 ZA_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(equationToGlConstant,
-                                              za::BlendMode::Equation,
-                                              {GL_FUNC_ADD, GL_FUNC_SUBTRACT, GL_FUNC_REVERSE_SUBTRACT, GL_MIN, GL_MAX});
+                                            za::BlendMode::Equation,
+                                            {GL_FUNC_ADD, GL_FUNC_SUBTRACT, GL_FUNC_REVERSE_SUBTRACT, GL_MIN, GL_MAX});
 
 
 ////////////////////////////////////////////////////////////
 // Convert an UpdateOperation constant to the corresponding OpenGL constant.
 ZA_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(stencilOperationToGlConstant,
-                                              za::StencilUpdateOperation,
-                                              {GL_KEEP, GL_ZERO, GL_REPLACE, GL_INCR, GL_DECR, GL_INVERT});
+                                            za::StencilUpdateOperation,
+                                            {GL_KEEP, GL_ZERO, GL_REPLACE, GL_INCR, GL_DECR, GL_INVERT});
 
 
 ////////////////////////////////////////////////////////////

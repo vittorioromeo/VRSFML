@@ -6,10 +6,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Audio/Export.hpp"
-
 #include "Zancle/Audio/ChannelMap.hpp"
-
+#include "Zancle/Audio/Export.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Optional.hpp"
 
@@ -38,7 +36,7 @@ public:
     ////////////////////////////////////////////////////////////
     struct Info
     {
-        zb::U64    sampleCount{}; //!< Total number of samples in the file
+        zb::U64      sampleCount{}; //!< Total number of samples in the file
         unsigned int sampleRate{};  //!< Samples rate of the sound, in samples per second
         ChannelMap   channelMap;    //!< Map of position in sample frame to sound channel
     };

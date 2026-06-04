@@ -14,7 +14,6 @@
 #pragma GCC system_header
 
 #include "Zancle/System/Time.hpp"
-
 #include "ZancleBase/IntTypes.hpp"
 
 #include <cstdarg>

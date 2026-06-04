@@ -1,16 +1,16 @@
 #pragma once
 
-#include "ExampleUtils/Progress.hpp"
-
 #include "ZancleBase/String.hpp"
 #include "ZancleBase/Vector.hpp"
+
+#include "ExampleUtils/Progress.hpp"
 
 
 ////////////////////////////////////////////////////////////
 struct NotificationData
 {
-    const char*      title;
-    zb::String content;
+    const char* title;
+    zb::String  content;
 };
 
 
@@ -18,5 +18,5 @@ struct NotificationData
 struct NotificationState
 {
     zb::Vector<NotificationData> queue;
-    TimedCountdown                     countdown{.duration = 750.f};
+    TimedCountdown               countdown{.duration = 750.f};
 };

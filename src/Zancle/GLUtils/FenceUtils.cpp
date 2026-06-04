@@ -6,13 +6,10 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/GLUtils/FenceUtils.hpp"
-
 #include "Zancle/GLUtils/GLCheck.hpp"
 #include "Zancle/GLUtils/GLFenceSync.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
-
 #include "Zancle/System/Err.hpp"
-
 #include "ZancleBase/Abort.hpp"
 #include "ZancleBase/Assert.hpp"
 

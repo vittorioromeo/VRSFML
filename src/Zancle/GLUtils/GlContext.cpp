@@ -5,20 +5,15 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/GLUtils/GlContext.hpp"
-
 #include "Zancle/Config.hpp" // IWYU pragma: keep
-
+#include "Zancle/GLUtils/GLCheck.hpp"
+#include "Zancle/GLUtils/GlContext.hpp"
+#include "Zancle/GLUtils/GlFuncTypesImpl.hpp"
+#include "Zancle/GLUtils/Glad.hpp"
+#include "Zancle/System/Err.hpp"
 #include "Zancle/Window/ContextSettings.hpp"
 #include "Zancle/Window/SDLGlContext.hpp"
 #include "Zancle/Window/WindowContext.hpp"
-
-#include "Zancle/GLUtils/GLCheck.hpp"
-#include "Zancle/GLUtils/GlFuncTypesImpl.hpp"
-#include "Zancle/GLUtils/Glad.hpp"
-
-#include "Zancle/System/Err.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Strstr.hpp"
 

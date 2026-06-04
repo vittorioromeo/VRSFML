@@ -11,16 +11,12 @@
 #include "Playthrough.hpp"
 #include "Profile.hpp"
 #include "UIState.hpp"
-
-#include "Zancle/ImGui/IncludeImGui.hpp"
-
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/DrawableBatch.hpp"
 #include "Zancle/Graphics/RectangleShapeData.hpp"
 #include "Zancle/Graphics/RenderWindow.hpp"
-
+#include "Zancle/ImGui/IncludeImGui.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
-
 #include "ZancleBase/Clamp.hpp"
 #include "ZancleBase/Constants.hpp"
 #include "ZancleBase/FloatMax.hpp"

@@ -1,24 +1,19 @@
 #include "SystemUtil.hpp"
-
 #include "Zancle/Graphics/RenderWindow.hpp"
 
 // Other 1st party headers
 #include "GraphicsUtil.hpp"
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
-
 #include "Zancle/Graphics/GraphicsContext.hpp"
 #include "Zancle/Graphics/Image.hpp"
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/View.hpp"
-
-#include "Zancle/Window/ContextSettings.hpp"
-#include "Zancle/Window/WindowHandle.hpp"
-
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-
+#include "Zancle/Window/ContextSettings.hpp"
+#include "Zancle/Window/WindowHandle.hpp"
 #include "ZancleBase/Macros.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/Trait/HasVirtualDestructor.hpp"

@@ -1,9 +1,7 @@
 #include "GraphicsUtil.hpp"
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
-
 #include "Zancle/Graphics/Color.hpp"
-
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Trait/IsAggregate.hpp"
 #include "ZancleBase/Trait/IsStandardLayout.hpp"

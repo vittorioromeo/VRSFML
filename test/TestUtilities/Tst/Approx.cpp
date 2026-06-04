@@ -6,7 +6,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Tst/Approx.hpp"
-
 #include "ZancleBase/Math/Fabs.hpp"
 
 

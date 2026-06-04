@@ -2,21 +2,17 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Server.hpp"
-
 #include "Zancle/Audio/ChannelMap.hpp"
 #include "Zancle/Audio/PlaybackDevice.hpp"
 #include "Zancle/Audio/SoundChannel.hpp"
 #include "Zancle/Audio/SoundStream.hpp"
-
 #include "Zancle/Network/IpAddressUtils.hpp"
 #include "Zancle/Network/Packet.hpp"
 #include "Zancle/Network/Socket.hpp"
 #include "Zancle/Network/TcpListener.hpp"
 #include "Zancle/Network/TcpSocket.hpp"
-
 #include "Zancle/System/Thread.hpp"
 #include "Zancle/System/Time.hpp"
-
 #include "ZancleBase/Fmt/Fmt.hpp"
 #include "ZancleBase/Fmt/FmtNumeric.hpp"
 #include "ZancleBase/IntTypes.hpp"
@@ -45,10 +41,10 @@ namespace
 ////////////////////////////////////////////////////////////
 struct NetworkState
 {
-    mutable std::recursive_mutex    mutex;
-    zb::Vector<zb::I16> samples;
-    zb::SizeT                 offset{};
-    bool                            hasFinished{};
+    mutable std::recursive_mutex mutex;
+    zb::Vector<zb::I16>          samples;
+    zb::SizeT                    offset{};
+    bool                         hasFinished{};
 
     ////////////////////////////////////////////////////////////
     bool onGetData(zb::Vector<zb::I16>& outBuffer)

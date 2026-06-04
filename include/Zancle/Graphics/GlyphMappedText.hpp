@@ -7,12 +7,10 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Export.hpp"
-
 #include "Zancle/Graphics/Glyph.hpp"
 #include "Zancle/Graphics/GlyphMappedTextData.hpp"
 #include "Zancle/Graphics/GlyphMapping.hpp"
 #include "Zancle/Graphics/TextBase.hpp"
-
 #include "Zancle/System/LifetimeDependant.hpp"
 
 

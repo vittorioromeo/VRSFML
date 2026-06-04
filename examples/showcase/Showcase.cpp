@@ -4,35 +4,29 @@
 #include "ShowcaseIndividualShape.hpp"
 #include "ShowcaseShapes.hpp"
 #include "ShowcaseTextComparison.hpp"
-
-#include "ExampleUtils/Sampler.hpp"
-#include "ExampleUtils/Scaling.hpp"
-
-#include "Zancle/ImGui/ImGuiContext.hpp"
-#include "Zancle/ImGui/IncludeImGui.hpp"
-
+#include "Zancle/Audio/AudioContext.hpp"
 #include "Zancle/Graphics/Font.hpp"
 #include "Zancle/Graphics/GraphicsContext.hpp"
 #include "Zancle/Graphics/Image.hpp"
 #include "Zancle/Graphics/RenderTexture.hpp"
 #include "Zancle/Graphics/RenderWindow.hpp"
 #include "Zancle/Graphics/TextureAtlas.hpp"
-
-#include "Zancle/Audio/AudioContext.hpp"
-
-#include "Zancle/Window/Event.hpp"
-#include "Zancle/Window/EventUtils.hpp"
-#include "Zancle/Window/Keyboard.hpp"
-
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/Keyboard.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/String.hpp"
 #include "ZancleBase/ToString.hpp"
+
+#include "ExampleUtils/Sampler.hpp"
+#include "ExampleUtils/Scaling.hpp"
 
 
 namespace
@@ -75,8 +69,8 @@ private:
     Sampler<float> m_samplesFPS{/* capacity */ 64u};
 
     ////////////////////////////////////////////////////////////
-    unsigned int    m_lastFrameDrawCallCount = 0u;
-    zb::SizeT m_lastFrameDrawnVertices = 0u;
+    unsigned int m_lastFrameDrawCallCount = 0u;
+    zb::SizeT    m_lastFrameDrawnVertices = 0u;
 
     ////////////////////////////////////////////////////////////
     za::TextureAtlas m_textureAtlas{za::Texture::create({1024u, 1024u}, {.smooth = true}).value()};

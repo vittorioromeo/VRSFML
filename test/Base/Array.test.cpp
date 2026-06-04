@@ -1,7 +1,5 @@
 #include "Tst/Tst.hpp"
-
 #include "ZancleBase/Array.hpp"
-
 #include "ZancleBase/Trait/IsAggregate.hpp"
 #include "ZancleBase/Trait/IsStandardLayout.hpp"
 #include "ZancleBase/Trait/IsTrivial.hpp"
@@ -109,8 +107,8 @@ TEST_CASE("[Base] Base/Array.hpp")
         STATIC_CHECK(ZB_IS_AGGREGATE(zb::Array<NonTrivialButRelocatable, 5>));
         STATIC_CHECK(!ZB_IS_TRIVIALLY_COPYABLE(zb::Array<NonTrivialButRelocatable, 5>));
         STATIC_CHECK(!ZB_IS_TRIVIALLY_DESTRUCTIBLE(zb::Array<NonTrivialButRelocatable, 5>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_ASSIGNABLE(zb::Array<NonTrivialButRelocatable, 5>,
-                                                        zb::Array<NonTrivialButRelocatable, 5>));
+        STATIC_CHECK(
+            !ZB_IS_TRIVIALLY_ASSIGNABLE(zb::Array<NonTrivialButRelocatable, 5>, zb::Array<NonTrivialButRelocatable, 5>));
 
         STATIC_CHECK(ZB_IS_TRIVIALLY_RELOCATABLE(zb::Array<NonTrivialButRelocatable, 5>));
     }

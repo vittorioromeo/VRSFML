@@ -1,5 +1,4 @@
 #include "Tst/Tst.hpp"
-
 #include "ZancleBase/Algorithm/AdjacentFind.hpp"
 #include "ZancleBase/Algorithm/AllOf.hpp"
 #include "ZancleBase/Algorithm/AnyOf.hpp"
@@ -109,20 +108,20 @@ TEST_CASE("[Base] Base/Algorithm/*.hpp")
 
         // Check with no elements to remove
         zb::Vector<int> vecOdd{1, 3, 5, 7};
-        auto*                 newEndOdd = zb::removeIf(vecOdd.begin(), vecOdd.end(), isEven);
+        auto*           newEndOdd = zb::removeIf(vecOdd.begin(), vecOdd.end(), isEven);
         CHECK((newEndOdd == vecOdd.end()));
         CHECK((vecOdd == zb::Vector<int>{1, 3, 5, 7}));
 
         // Check with all elements to remove
         zb::Vector<int> vecEven{2, 4, 6, 8};
-        auto*                 newEndEven = zb::removeIf(vecEven.begin(), vecEven.end(), isEven);
+        auto*           newEndEven = zb::removeIf(vecEven.begin(), vecEven.end(), isEven);
         CHECK((newEndEven == vecEven.begin()));
     }
 
     SECTION("VectorEraseIf")
     {
         zb::Vector<int> v{1, 2, 3, 4, 5, 6, 7, 8};
-        auto                  isEven = [](int x) { return x % 2 == 0; };
+        auto            isEven = [](int x) { return x % 2 == 0; };
 
         zb::SizeT removedCount = zb::vectorEraseIf(v, isEven);
 
@@ -172,7 +171,7 @@ TEST_CASE("[Base] Base/Algorithm/*.hpp")
     SECTION("VectorSwapAndPopIf")
     {
         zb::Vector<int> v{1, 2, 3, 4, 5, 6, 7, 8};
-        auto                  isEven = [](int x) { return x % 2 == 0; };
+        auto            isEven = [](int x) { return x % 2 == 0; };
 
         zb::SizeT removedCount = zb::vectorSwapAndPopIf(v, isEven);
 

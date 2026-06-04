@@ -11,10 +11,8 @@
 #include "Zancle/Graphics/RenderStates.hpp"
 #include "Zancle/Graphics/RenderTarget.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
-
 #include "Zancle/System/Time.hpp"
 #include "Zancle/System/Vec2.hpp"
-
 #include "ZancleBase/Constants.hpp"
 #include "ZancleBase/Math/Ceil.hpp"
 #include "ZancleBase/Remainder.hpp"
@@ -110,11 +108,11 @@ public:
             const float distance = beamLength * progress;
 
             // Calculate the displacement from the first (primary) wave
-            const float sineInput1 = zb::positiveRemainder(timeOffset1 + distance * spatialFrequency1, zb::tau);
+            const float sineInput1    = zb::positiveRemainder(timeOffset1 + distance * spatialFrequency1, zb::tau);
             const float displacement1 = zb::sinLookup(sineInput1) * wobbleAmplitude1;
 
             // Calculate the displacement from the second (detail) wave
-            const float sineInput2 = zb::positiveRemainder(timeOffset2 + distance * spatialFrequency2, zb::tau);
+            const float sineInput2    = zb::positiveRemainder(timeOffset2 + distance * spatialFrequency2, zb::tau);
             const float displacement2 = zb::sinLookup(sineInput2) * wobbleAmplitude2;
 
             // The final displacement is the sum of both waves

@@ -5,11 +5,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/System/Path.hpp"
-
 #include "Zancle/System/Fmt/FmtPath.hpp"
+#include "Zancle/System/Path.hpp"
 #include "Zancle/System/PathUtils.hpp"
-
 #include "ZancleBase/Fmt/FmtResult.hpp"
 #include "ZancleBase/Fmt/FmtSink.hpp"
 #include "ZancleBase/Fmt/FmtSpec.hpp"
@@ -461,7 +459,7 @@ bool Path::operator==(const T* str) const
 ////////////////////////////////////////////////////////////
 template std::filesystem::path Path::to<std::filesystem::path>() const;
 template std::string           Path::to<std::string>() const;
-template zb::String          Path::to<zb::String>() const;
+template zb::String            Path::to<zb::String>() const;
 template std::u8string         Path::to<std::u8string>() const;
 template std::u32string        Path::to<std::u32string>() const;
 template std::wstring          Path::to<std::wstring>() const;

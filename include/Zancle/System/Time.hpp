@@ -311,8 +311,7 @@ private:
     /// `za::seconds` factory functions for clarity at call sites.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr explicit Time(const zb::I64 microseconds) :
-        m_microseconds(microseconds)
+    [[nodiscard, gnu::always_inline]] constexpr explicit Time(const zb::I64 microseconds) : m_microseconds(microseconds)
     {
     }
 

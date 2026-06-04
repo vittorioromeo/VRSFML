@@ -5,7 +5,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Color.hpp"
-
 #include "ZancleBase/AssertAndAssume.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Remainder.hpp"
@@ -50,9 +49,8 @@
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr za::Color hueByteColor(
-    const zb::U8 hueByte,
-    const zb::U8 alpha) noexcept
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr za::Color hueByteColor(const zb::U8 hueByte,
+                                                                                                    const zb::U8 alpha) noexcept
 {
     // R=1 and G=1 is used in the shader as a signal to make the color hue-based
     return za::Color{1, 1, hueByte, alpha};

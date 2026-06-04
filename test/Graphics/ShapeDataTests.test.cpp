@@ -1,6 +1,5 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
-
 #include "Zancle/Graphics/ArrowShapeData.hpp"
 #include "Zancle/Graphics/ChevronShapeData.hpp"
 #include "Zancle/Graphics/CircleShapeData.hpp"
@@ -17,11 +16,9 @@
 #include "Zancle/Graphics/ShapeUtils.hpp"
 #include "Zancle/Graphics/StarShapeData.hpp"
 #include "Zancle/Graphics/TrapezoidShapeData.hpp"
-
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Rect2.hpp"
 #include "Zancle/System/Vec2.hpp"
-
 #include "ZancleBase/Constants.hpp"
 #include "ZancleBase/Math/Fabs.hpp"
 #include "ZancleBase/Remainder.hpp"
@@ -74,7 +71,7 @@ template <typename PointFn>
 
 TEST_CASE("[Graphics] za::ShapeData type traits")
 {
-#define ZA_PRIV_CHECK_TRAITS(T)                                 \
+#define ZA_PRIV_CHECK_TRAITS(T)                            \
     STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::T));         \
     STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::T));            \
     STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::T)); \
@@ -354,9 +351,7 @@ TEST_CASE("[Graphics] za::PieSliceShapeData")
 
     SECTION("Full circle sweep produces full-disk local bounds")
     {
-        const za::PieSliceShapeData sd{.radius     = 10.f,
-                                       .startAngle = za::degrees(0.f),
-                                       .sweepAngle = za::radians(zb::tau)};
+        const za::PieSliceShapeData sd{.radius = 10.f, .startAngle = za::degrees(0.f), .sweepAngle = za::radians(zb::tau)};
         // With sweep == tau, every cardinal is in range -- bbox fills the enclosing square.
         CHECK(rectsApproxEqual(sd.getLocalBounds(), {{0.f, 0.f}, {20.f, 20.f}}));
     }

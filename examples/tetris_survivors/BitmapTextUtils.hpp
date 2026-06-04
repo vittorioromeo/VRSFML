@@ -6,14 +6,11 @@
 ////////////////////////////////////////////////////////////
 #include "BitmapFont.hpp"
 #include "BitmapTextAlignment.hpp"
-
 #include "Zancle/Graphics/IndexType.hpp"
 #include "Zancle/Graphics/Transform.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
-
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-
 #include "ZancleBase/FromChars.hpp"
 #include "ZancleBase/InPlaceVector.hpp"
 #include "ZancleBase/Math/Sin.hpp"
@@ -30,11 +27,11 @@ struct [[nodiscard]] BitmapTextToVerticesOptions // NOLINT(cppcoreguidelines-pro
 {
     zb::Vector<za::Vertex>&    outVertices;
     zb::Vector<za::IndexType>& outIndices;
-    const BitmapFont&                bitmapFont;
-    za::Rect2f                       fontTextureRect;
-    BitmapTextAlignment              alignment;
-    za::Color                        baseColor;
-    float                            time;
+    const BitmapFont&          bitmapFont;
+    za::Rect2f                 fontTextureRect;
+    BitmapTextAlignment        alignment;
+    za::Color                  baseColor;
+    float                      time;
     zb::StringView             string;
 };
 
@@ -207,7 +204,7 @@ inline auto bitmapTextToVertices(const BitmapTextToVerticesOptions& options)
 
     // --- Pass 2: Generate vertices directly ---
 
-    za::Vec2f       cursor         = {0.f, 0.f};
+    za::Vec2f cursor         = {0.f, 0.f};
     zb::SizeT currentLineIdx = 0u;
 
     const auto getAlignedX = [&](const zb::SizeT lineIdx)

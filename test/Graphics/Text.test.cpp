@@ -1,26 +1,21 @@
 #include "SystemUtil.hpp"
-
-#include "Zancle/Graphics/Text.hpp"
-
 #include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/Text.hpp"
 
 // Other 1st party headers
 #include "GraphicsUtil.hpp"
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
-
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/Font.hpp"
 #include "Zancle/Graphics/TextData.hpp"
 #include "Zancle/Graphics/TextUtils.hpp"
-
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/LifetimeDependee.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
 #include "Zancle/System/Utf8String.hpp"
-
 #include "ZancleBase/Macros.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/Trait/IsConstructible.hpp"

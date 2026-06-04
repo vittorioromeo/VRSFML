@@ -8,7 +8,6 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
-
 #include "ZancleBase/AssertAndAssume.hpp"
 #include "ZancleBase/Math/Atan2.hpp"
 #include "ZancleBase/Math/Cos.hpp"
@@ -183,7 +182,7 @@ constexpr Vec2<T> Vec2<T>::clampMinLengthSquared(const T minLengthSquared) const
     const T currentLengthSquared = lengthSquared();
 
     ZB_ASSERT_AND_ASSUME((currentLengthSquared != T{0} || minLengthSquared == T{0}) &&
-                                "cannot clamp zero vec2 to a positive minimum squared length");
+                         "cannot clamp zero vec2 to a positive minimum squared length");
 
     if (currentLengthSquared >= minLengthSquared)
         return *this;
@@ -233,12 +232,12 @@ constexpr Vec2<T> Vec2<T>::clampLengthSquared(const T minLengthSquared, const T 
     static_assert(ZB_IS_FLOATING_POINT(T));
 
     ZB_ASSERT_AND_ASSUME(minLengthSquared >= T{0} && minLengthSquared <= maxLengthSquared &&
-                                "0 <= minLengthSquared <= maxLengthSquared required");
+                         "0 <= minLengthSquared <= maxLengthSquared required");
 
     const T currentLengthSquared = lengthSquared();
 
     ZB_ASSERT_AND_ASSUME((currentLengthSquared != T{0} || minLengthSquared == T{0}) &&
-                                "cannot clamp zero vec2 to a positive minimum squared length");
+                         "cannot clamp zero vec2 to a positive minimum squared length");
 
     if (currentLengthSquared >= minLengthSquared && currentLengthSquared <= maxLengthSquared)
         return *this;

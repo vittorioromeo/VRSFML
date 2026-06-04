@@ -1,12 +1,10 @@
 #pragma once
 
 #include "BubbleType.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "ZancleBase/IntTypes.hpp"
 
 #include "ExampleUtils/Progress.hpp"
-
-#include "Zancle/System/Priv/Vec2Base.hpp"
-
-#include "ZancleBase/IntTypes.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -39,7 +37,7 @@ struct [[nodiscard]] Bubble
     // becomes the bespoke combo window: each subsequent click resets it; if it
     // reaches 0 the bubble pops with payout. `comboClickCount` is the running
     // tally of clicks on this bubble -- drives the payout magnitude.
-    float         comboTimerMs    = 0.f;
+    float   comboTimerMs    = 0.f;
     zb::U32 comboClickCount = 0u;
 
     // Pending bubble transformation (Unicat star, Devilcat bomb, ...).
@@ -47,7 +45,7 @@ struct [[nodiscard]] Bubble
     // (cannot be popped). When the timer reaches 0, the bubble turns into
     // `pendingTransformTargetType`; if `pendingTransformCatIdx` is not the
     // sentinel (0xFFFF) it is credited in `bombIdxToCatIdx` at resolve time.
-    float         pendingTransformMs         = 0.f;
+    float   pendingTransformMs         = 0.f;
     zb::U8  pendingTransformTargetType = 0u;
     zb::U16 pendingTransformCatIdx     = 0xFF'FFu;
 

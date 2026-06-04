@@ -3,10 +3,8 @@
 // Other 1st party headers
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
-
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/Transform.hpp"
-
 #include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
 #include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
 #include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"

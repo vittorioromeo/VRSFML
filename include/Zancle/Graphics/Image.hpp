@@ -6,13 +6,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Graphics/Export.hpp"
-
 #include "Zancle/Graphics/Color.hpp"
-
+#include "Zancle/Graphics/Export.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Optional.hpp"
@@ -344,7 +341,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vec2u                  m_size;   //!< Image size
+    Vec2u              m_size;   //!< Image size
     zb::Vector<zb::U8> m_pixels; //!< Pixels of the image
 };
 

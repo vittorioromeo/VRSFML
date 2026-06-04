@@ -5,25 +5,20 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Graphics/RenderTexture.hpp"
-
-#include "Zancle/Graphics/GraphicsContext.hpp"
-#include "Zancle/Graphics/RenderTarget.hpp"
-#include "Zancle/Graphics/RenderTextureCreateSettings.hpp"
-#include "Zancle/Graphics/Texture.hpp"
-#include "Zancle/Graphics/TextureWrapMode.hpp"
-
-#include "Zancle/Window/WindowContext.hpp"
-
 #include "Zancle/GLUtils/GLCheck.hpp"
 #include "Zancle/GLUtils/GLRenderBufferObject.hpp"
 #include "Zancle/GLUtils/GLUniqueResource.hpp"
 #include "Zancle/GLUtils/GLUtils.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
-
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/RenderTarget.hpp"
+#include "Zancle/Graphics/RenderTexture.hpp"
+#include "Zancle/Graphics/RenderTextureCreateSettings.hpp"
+#include "Zancle/Graphics/Texture.hpp"
+#include "Zancle/Graphics/TextureWrapMode.hpp"
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
-
+#include "Zancle/Window/WindowContext.hpp"
 #include "ZancleBase/AnkerlUnorderedDense.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Macros.hpp"
@@ -70,9 +65,7 @@ namespace
 
 
 ////////////////////////////////////////////////////////////
-void linkStencilDepthBuffer(const zb::Optional<za::GLRenderBufferObject>& stencilDepthBuffer,
-                            const bool                                          stencil,
-                            const bool                                          depth)
+void linkStencilDepthBuffer(const zb::Optional<za::GLRenderBufferObject>& stencilDepthBuffer, const bool stencil, const bool depth)
 {
     if (!stencilDepthBuffer.hasValue())
         return;
@@ -104,7 +97,7 @@ struct RenderTexture::Impl
 {
     using FramebufferIdMap = ankerl::unordered_dense::map<unsigned int, unsigned int>;
 
-    Texture                 texture;    //!< Target texture to draw on
+    Texture               texture;    //!< Target texture to draw on
     zb::Optional<Texture> tmpTexture; //!< Temporary texture used for Y-axis flipping fallback or non multisample FBOs
 
     FramebufferIdMap framebuffers;    //!< Per-context OpenGL FBOs

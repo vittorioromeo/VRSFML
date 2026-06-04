@@ -7,7 +7,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/System/Priv/Vec2Base.hpp"
-
 #include "ZancleBase/MinMaxMacros.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/Trait/IsSame.hpp"
@@ -130,7 +129,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-#define ZA_PRIV_DEFINE_RECT_ANCHOR_GETTER(name, ...)                                        \
+#define ZA_PRIV_DEFINE_RECT_ANCHOR_GETTER(name, ...)                                          \
     /** \brief Get the position of the name anchor point */                                   \
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec2<T> name() const \
     {                                                                                         \
@@ -257,7 +256,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-#define ZA_PRIV_DEFINE_RECT_ANCHOR_SETTER(name, ...)                             \
+#define ZA_PRIV_DEFINE_RECT_ANCHOR_SETTER(name, ...)                               \
     /** \brief Set the position based on the name anchor point */                  \
     [[gnu::always_inline, gnu::flatten]] constexpr void name(const Vec2<T> newPos) \
     {                                                                              \

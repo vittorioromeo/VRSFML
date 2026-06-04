@@ -1,7 +1,5 @@
 #include "Tst/Tst.hpp"
-
 #include "ZancleBase/FixedFunction.hpp"
-
 #include "ZancleBase/Macros.hpp"
 
 

@@ -7,7 +7,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/System/Export.hpp"
-
 #include "ZancleBase/AssertAndAssume.hpp"
 #include "ZancleBase/Builtin/Memcpy.hpp"
 #include "ZancleBase/Builtin/Memmove.hpp"
@@ -68,15 +67,15 @@ namespace zb::priv
 // in release so the optimizer drops the dead checks.
 ////////////////////////////////////////////////////////////
 #define ZB_PRIV_FMT_FAIL(msg)                 \
-    do                                               \
-    {                                                \
-        if consteval                                 \
-        {                                            \
-            throw(msg);                              \
-        }                                            \
-                                                     \
+    do                                        \
+    {                                         \
+        if consteval                          \
+        {                                     \
+            throw(msg);                       \
+        }                                     \
+                                              \
         ZB_ASSERT_AND_ASSUME(false && (msg)); \
-                                                     \
+                                              \
     } while (false)
 
 

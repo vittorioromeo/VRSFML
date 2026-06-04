@@ -1,14 +1,12 @@
-#include "StringifySfBaseStringUtil.hpp" // IWYU pragma: keep
+#include "StringifyZbStringUtil.hpp" // IWYU pragma: keep
 #include "StringifyStringViewUtil.hpp"   // IWYU pragma: keep
 #include "Tst/Tst.hpp"
-
-#include "ZancleBase/String.hpp"
-
 #include "ZancleBase/Algorithm/Copy.hpp"
 #include "ZancleBase/Fmt/FmtAppendMixin.hpp"
 #include "ZancleBase/Fmt/FmtNumeric.hpp" // IWYU pragma: keep -- enables int/float `fmtArg`
 #include "ZancleBase/Macros.hpp"
 #include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/String.hpp"
 #include "ZancleBase/StringView.hpp"
 #include "ZancleBase/StringViewSplits.hpp" // IWYU pragma: keep
 #include "ZancleBase/Trait/IsCopyAssignable.hpp"
@@ -504,9 +502,9 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SUBCASE("SSO with Heap")
         {
-            zb::String a("Short");
-            zb::String b(longStringLiteral);
-            const char*      bPtr = b.data();
+            zb::String  a("Short");
+            zb::String  b(longStringLiteral);
+            const char* bPtr = b.data();
 
             swap(a, b);
 
@@ -517,10 +515,10 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SUBCASE("Heap with Heap")
         {
-            zb::String a(longStringLiteral);
-            zb::String b("Another long string that is also on the heap");
-            const char*      aPtr = a.data();
-            const char*      bPtr = b.data();
+            zb::String  a(longStringLiteral);
+            zb::String  b("Another long string that is also on the heap");
+            const char* aPtr = a.data();
+            const char* bPtr = b.data();
 
             swap(a, b);
 
@@ -584,7 +582,7 @@ TEST_CASE("[Base] Base/String.hpp")
 
         // Prepare a reasonably large string so it uses heap storage
         const zb::SizeT initialSize = 128;
-        const auto            pattern     = makePattern(initialSize);
+        const auto      pattern     = makePattern(initialSize);
 
         // Construct our zb::String on the heap
         zb::String s(pattern.cStr(), static_cast<zb::SizeT>(pattern.size()));
@@ -614,8 +612,7 @@ TEST_CASE("[Base] Base/String.hpp")
         CHECK(zb::StringView{s.cStr(), initialSize} == zb::StringView{pattern.cStr(), initialSize});
 
         // Second half equals original
-        CHECK(zb::StringView{s.cStr() + initialSize, initialSize} ==
-              zb::StringView{pattern.cStr(), initialSize});
+        CHECK(zb::StringView{s.cStr() + initialSize, initialSize} == zb::StringView{pattern.cStr(), initialSize});
     }
 
     SECTION("Self-Assignment")
@@ -650,8 +647,8 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SECTION("s = s.toStringView() with SSO string")
         {
-            zb::String s            = "sso view";
-            const char*      originalData = s.data();
+            zb::String  s            = "sso view";
+            const char* originalData = s.data();
 
             s = s.toStringView();
 
@@ -661,8 +658,8 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SECTION("s = s.toStringView() with Heap string")
         {
-            zb::String s            = makeLongString("heap view assignment");
-            const char*      originalData = s.data();
+            zb::String  s            = makeLongString("heap view assignment");
+            const char* originalData = s.data();
 
             s = s.toStringView();
 
@@ -696,7 +693,7 @@ TEST_CASE("[Base] Base/String.hpp")
         SECTION("s += s with SSO string (transitioning to heap)")
         {
             // Choose a size that fits SSO but when doubled exceeds maxSsoSize.
-            const auto       len = (maxSsoSize / 2) + 1;
+            const auto len = (maxSsoSize / 2) + 1;
             zb::String s(longStringLiteral, len);
             CHECK(s.size() == len);
             CHECK(s.isSso());
@@ -770,7 +767,7 @@ TEST_CASE("[Base] Base/String.hpp")
         {
             // Build a string that fits SSO but after insert(3, cStr()+2)
             // produces a result of length (2*len - 2) that exceeds maxSsoSize.
-            const auto       len = (maxSsoSize / 2) + 2; // guarantees 2*len - 2 > maxSsoSize
+            const auto len = (maxSsoSize / 2) + 2; // guarantees 2*len - 2 > maxSsoSize
             zb::String s(longStringLiteral, len);
             CHECK(s.isSso());
 
@@ -1047,7 +1044,7 @@ TEST_CASE("[Base] Base/String.hpp")
             zb::String s(longStringLiteral);
             CHECK(!s.isSso());
 
-            const auto             tailView = zb::StringView{s}.substrByPosLen(s.size() / 2);
+            const auto       tailView = zb::StringView{s}.substrByPosLen(s.size() / 2);
             const zb::String expected = zb::String{longStringLiteral} + zb::String{tailView};
 
             // Replace zero chars at end with our own tail -> doubles the data.
@@ -1151,7 +1148,7 @@ TEST_CASE("[Base] Base/String.hpp")
         SECTION("Self-aliasing target view (substring of self)")
         {
             zb::String s   = "abcdef";
-            const auto       sub = zb::StringView{s}.substrByPosLen(2, 2); // "cd"
+            const auto sub = zb::StringView{s}.substrByPosLen(2, 2); // "cd"
             CHECK(s.replaceFirstOccurrence(sub, "XYZ"));
             CHECK(s == "abXYZef");
         }

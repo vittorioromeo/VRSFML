@@ -2,12 +2,10 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "UDP.hpp"
-
 #include "Zancle/Network/IpAddress.hpp"
 #include "Zancle/Network/IpAddressUtils.hpp"
 #include "Zancle/Network/Socket.hpp"
 #include "Zancle/Network/UdpSocket.hpp"
-
 #include "ZancleBase/Fmt/Fmt.hpp"
 #include "ZancleBase/Fmt/FmtNumeric.hpp"
 #include "ZancleBase/Optional.hpp"
@@ -36,10 +34,10 @@ void runUdpServer(unsigned short port)
     zb::printLn("Server is listening to port {}, waiting for a message... ", port);
 
     // Wait for a message
-    char                              in[128];
+    char                        in[128];
     zb::SizeT                   received = 0;
     zb::Optional<za::IpAddress> sender;
-    unsigned short                    senderPort = 0;
+    unsigned short              senderPort = 0;
     if (socket.receive(in, sizeof(in), received, sender, senderPort) != za::Socket::Status::Done)
         return;
     zb::printLn("Message received from client {}: \"{}{}", za::IpAddressUtils::toString(sender.value()), in, '"');
@@ -83,10 +81,10 @@ void runUdpClient(unsigned short port)
     zb::printLn("Message sent to the server: \"{}{}", out, '"');
 
     // Receive an answer from anyone (but most likely from the server)
-    char                              in[128];
+    char                        in[128];
     zb::SizeT                   received = 0;
     zb::Optional<za::IpAddress> sender;
-    unsigned short                    senderPort = 0;
+    unsigned short              senderPort = 0;
     if (socket.receive(in, sizeof(in), received, sender, senderPort) != za::Socket::Status::Done)
         return;
     zb::printLn("Message received from {}: \"{}{}", za::IpAddressUtils::toString(sender.value()), in, '"');

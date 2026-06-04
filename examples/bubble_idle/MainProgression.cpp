@@ -10,17 +10,15 @@
 #include "Playthrough.hpp"
 #include "Profile.hpp"
 #include "ShrineConstants.hpp"
-
-#include "ExampleUtils/Progress.hpp"
-
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/Time.hpp"
-
 #include "ZancleBase/Algorithm/Count.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/MinMax.hpp"
 #include "ZancleBase/SizeT.hpp"
+
+#include "ExampleUtils/Progress.hpp"
 
 ////////////////////////////////////////////////////////////
 void Main::gameLoopUpdateMilestones()
@@ -226,8 +224,7 @@ void Main::gameLoopUpdateAchievements()
 
         unlockIf(static_cast<zb::SizeT>(value) >= static_cast<zb::SizeT>(threshold));
 
-        achievementProgress[nextId - 1u].emplace(static_cast<zb::SizeT>(value),
-                                                 static_cast<zb::SizeT>(threshold));
+        achievementProgress[nextId - 1u].emplace(static_cast<zb::SizeT>(value), static_cast<zb::SizeT>(threshold));
     };
 
     const auto unlockIfGtEqPrestige = [&](const auto& value, const auto& threshold)
@@ -547,8 +544,8 @@ void Main::gameLoopUpdateAchievements()
     unlockIfGtEqPrestige(pt->psvPPDevilRitualBuffPercentage.nPurchases, 24);
 
     const auto nActiveBuffs = zb::countIf(pt->buffCountdownsPerType,
-                                                pt->buffCountdownsPerType + nCatTypes,
-                                                [](const Countdown& c) { return c.time > 0.f; });
+                                          pt->buffCountdownsPerType + nCatTypes,
+                                          [](const Countdown& c) { return c.time > 0.f; });
 
     unlockIfGtEq(nActiveBuffs, 2);
     unlockIfGtEq(nActiveBuffs, 3);
@@ -727,8 +724,7 @@ void Main::gameLoopUpdateAchievements()
     unlockIf(pt->geniusCatIgnoreBubbles.normal && pt->geniusCatIgnoreBubbles.star && pt->geniusCatIgnoreBubbles.bomb); // Secret
     unlockIf(wastedEffort);
 
-    const auto minutesToMicroseconds = [](const zb::I64 nMinutes) -> zb::I64
-    { return nMinutes * 60 * 1'000'000; };
+    const auto minutesToMicroseconds = [](const zb::I64 nMinutes) -> zb::I64 { return nMinutes * 60 * 1'000'000; };
 
     const bool inSpeedrunMode = inSpeedrunPlaythrough();
 

@@ -4,8 +4,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "ZancleBase/String.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Memcpy.hpp"
 #include "ZancleBase/Builtin/Memmove.hpp"
@@ -13,6 +11,7 @@
 #include "ZancleBase/Macros.hpp"
 #include "ZancleBase/Priv/VectorUtils.hpp"
 #include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/String.hpp"
 #include "ZancleBase/StringView.hpp"
 
 
@@ -20,10 +19,10 @@ namespace
 {
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline]] inline zb::String operatorPlusImpl(
-    const char* const     lhs,
-    const zb::SizeT lhsSize,
-    const char* const     rhs,
-    const zb::SizeT rhsSize)
+    const char* const lhs,
+    const zb::SizeT   lhsSize,
+    const char* const rhs,
+    const zb::SizeT   rhsSize)
 {
     zb::String result;
     result.reserve(lhsSize + rhsSize);
@@ -437,8 +436,8 @@ void String::insert(const SizeT pos, const char* const cStr)
     if (pos < oldSize)
     {
         ZB_MEMMOVE(d + pos + insertCount, // Destination
-                          d + pos,               // Source
-                          oldSize - pos);        // Number of characters to move
+                   d + pos,               // Source
+                   oldSize - pos);        // Number of characters to move
     }
 
     // 3. Copy the new content into the created space.

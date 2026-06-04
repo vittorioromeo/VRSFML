@@ -12,9 +12,8 @@
 namespace zb
 {
 ////////////////////////////////////////////////////////////
-#define ZB_IS_FLOATING_POINT(...)                                                \
-    (ZB_IS_SAME(__VA_ARGS__, float) || ZB_IS_SAME(__VA_ARGS__, double) || \
-     ZB_IS_SAME(__VA_ARGS__, long double))
+#define ZB_IS_FLOATING_POINT(...) \
+    (ZB_IS_SAME(__VA_ARGS__, float) || ZB_IS_SAME(__VA_ARGS__, double) || ZB_IS_SAME(__VA_ARGS__, long double))
 
 
 ////////////////////////////////////////////////////////////

@@ -6,14 +6,11 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Audio/AudioContext.hpp"
-
 #include "Zancle/Audio/CaptureDeviceHandle.hpp"
 #include "Zancle/Audio/PlaybackDeviceHandle.hpp"
 #include "Zancle/Audio/Priv/MiniaudioUtils.hpp"
-
 #include "Zancle/System/Atomic.hpp"
 #include "Zancle/System/Err.hpp"
-
 #include "ZancleBase/Abort.hpp"
 #include "ZancleBase/Macros.hpp"
 #include "ZancleBase/Optional.hpp"
@@ -104,9 +101,9 @@ void maLogCallback(void*, ma_uint32 level, const char* message)
 ////////////////////////////////////////////////////////////
 template <typename THandle, typename F>
 zb::Vector<THandle> getAvailableDeviceHandles(zb::PassKey<za::AudioContext>&& passKey,
-                                                    ma_context&                           maContext,
-                                                    const char*                           type,
-                                                    F&&                                   fMAContextGetDevices)
+                                              ma_context&                     maContext,
+                                              const char*                     type,
+                                              F&&                             fMAContextGetDevices)
 {
     zb::Vector<THandle> deviceHandles; // Use a single local variable for NRVO
 
@@ -152,7 +149,7 @@ struct AudioContextImpl
 
 ////////////////////////////////////////////////////////////
 constinit zb::Optional<AudioContextImpl> installedAudioContext;
-constinit za::Atomic<unsigned int>             audioContextRC{0u};
+constinit za::Atomic<unsigned int>       audioContextRC{0u};
 
 
 ////////////////////////////////////////////////////////////

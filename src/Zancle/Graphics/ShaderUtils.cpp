@@ -6,11 +6,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/ShaderUtils.hpp"
-
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/IO.hpp"
 #include "Zancle/System/Path.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Memcpy.hpp"
 #include "ZancleBase/Macros.hpp"
@@ -44,10 +42,10 @@ constexpr unsigned int maxIncludeFilenameLength = 256;
 // Recursively preprocess GLSL #include directives
 [[nodiscard]] bool preprocessGlslIncludesImpl(
     zb::StringView        source,
-    const za::Path&             basePath,
+    const za::Path&       basePath,
     zb::Vector<char>&     output,
     zb::Vector<za::Path>& includeStack,
-    unsigned int                depth)
+    unsigned int          depth)
 {
     if (depth > maxGlslIncludeDepth)
     {
@@ -58,14 +56,14 @@ constexpr unsigned int maxIncludeFilenameLength = 256;
     // Emit #line directive to set correct line numbering for this file
     za::ShaderUtils::emitLineDirective(output, 1);
 
-    unsigned int    lineNumber = 0;
-    zb::SizeT lineStart  = 0;
+    unsigned int lineNumber = 0;
+    zb::SizeT    lineStart  = 0;
 
     while (lineStart < source.size())
     {
         // Find end of current line
-        zb::SizeT lineEnd  = source.find('\n', lineStart);
-        const bool      lastLine = (lineEnd == zb::StringView::nPos);
+        zb::SizeT  lineEnd  = source.find('\n', lineStart);
+        const bool lastLine = (lineEnd == zb::StringView::nPos);
 
         if (lastLine)
             lineEnd = source.size();

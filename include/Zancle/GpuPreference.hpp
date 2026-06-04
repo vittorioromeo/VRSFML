@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////
 #if defined(ZA_SYSTEM_WINDOWS)
 
-    #define ZA_DEFINE_DISCRETE_GPU_PREFERENCE                                                  \
+    #define ZA_DEFINE_DISCRETE_GPU_PREFERENCE                                                    \
         extern "C" __declspec(dllexport) unsigned long NvOptimusEnablement                  = 1; \
         extern "C" __declspec(dllexport) unsigned long AmdPowerXpressRequestHighPerformance = 1;
 

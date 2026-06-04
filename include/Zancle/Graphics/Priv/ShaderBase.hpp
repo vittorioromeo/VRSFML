@@ -7,9 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Export.hpp"
-
 #include "Zancle/Graphics/Priv/GlslFwd.hpp"
-
 #include "ZancleBase/InPlacePImpl.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/PassKey.hpp"
@@ -619,8 +617,8 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static zb::Optional<Shader> compile(zb::StringView vertexShaderCode,
-                                                        zb::StringView geometryShaderCode,
-                                                        zb::StringView fragmentShaderCode);
+                                                      zb::StringView geometryShaderCode,
+                                                      zb::StringView fragmentShaderCode);
 
     ////////////////////////////////////////////////////////////
     /// \brief Bind all the textures used by the shader

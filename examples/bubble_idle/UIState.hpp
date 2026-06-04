@@ -1,23 +1,22 @@
 #pragma once
 
-#include "ExampleUtils/Progress.hpp"
-
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-
 #include "ZancleBase/AnkerlUnorderedDense.hpp"
 #include "ZancleBase/String.hpp"
 #include "ZancleBase/Vector.hpp"
+
+#include "ExampleUtils/Progress.hpp"
 
 
 ////////////////////////////////////////////////////////////
 struct PurchaseUnlockedEffect
 {
     zb::String widgetLabel;
-    Countdown        countdown;
-    Countdown        arrowCountdown;
-    float            hue;
-    int              type;
+    Countdown  countdown;
+    Countdown  arrowCountdown;
+    float      hue;
+    int        type;
 };
 
 
@@ -48,8 +47,8 @@ struct UIState
 
     zb::Vector<PurchaseUnlockedEffect>             purchaseUnlockedEffects;
     ankerl::unordered_dense::map<zb::String, bool> btnWasDisabled;
-    bool                                                 debugHideUI        = false;
-    bool                                                 debugWindowVisible = true;
+    bool                                           debugHideUI        = false;
+    bool                                           debugWindowVisible = true;
 
     int shopSelectOnce       = 1 << 1; // ImGuiTabItemFlags_SetSelected;
     int lastUiSelectedTabIdx = 1;

@@ -7,7 +7,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/System/Export.hpp"
-
 #include "ZancleBase/Fmt/FmtResult.hpp"
 
 
@@ -52,8 +51,6 @@ namespace za::priv
 ///     Provided path: <input>
 ///     Absolute path: <canonical or "<unavailable>">
 ////////////////////////////////////////////////////////////
-[[nodiscard]] ZA_SYSTEM_API zb::FmtResult fmtArg(zb::FmtSink&            sink,
-                                                     const PathDebugFormatter& dbg,
-                                                     const zb::FmtSpec&      spec);
+[[nodiscard]] ZA_SYSTEM_API zb::FmtResult fmtArg(zb::FmtSink& sink, const PathDebugFormatter& dbg, const zb::FmtSpec& spec);
 
 } // namespace za::priv

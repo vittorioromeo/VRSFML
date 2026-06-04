@@ -1,5 +1,4 @@
 #include "Tst/Tst.hpp"
-
 #include "ZancleBase/InPlaceVector.hpp"
 #include "ZancleBase/Macros.hpp"
 #include "ZancleBase/SizeT.hpp"
@@ -562,7 +561,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
     {
         resetCounters();
         zb::InPlaceVector<Obj, 10> tv;
-        Obj                              source[] = {Obj(10), Obj(20), Obj(30)};
+        Obj                        source[] = {Obj(10), Obj(20), Obj(30)};
         CHECK(intCtorCount == 3); // For source array
         resetCounters();
 

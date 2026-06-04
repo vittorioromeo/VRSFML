@@ -5,15 +5,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Audio/MusicReader.hpp"
-
 #include "Zancle/Audio/InputSoundFile.hpp"
-
+#include "Zancle/Audio/MusicReader.hpp"
 #include "Zancle/System/AtomicMutex.hpp"
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/LockGuard.hpp"
 #include "Zancle/System/Time.hpp"
-
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Macros.hpp"
 #include "ZancleBase/Optional.hpp"
@@ -51,7 +48,7 @@ MusicReader& MusicReader::operator=(MusicReader&&) noexcept = default;
 
 ////////////////////////////////////////////////////////////
 zb::Optional<MusicReader> MusicReader::tryOpenFromInputSoundFile(zb::Optional<InputSoundFile>&& optFile,
-                                                                   const char* const                errorContext)
+                                                                 const char* const              errorContext)
 {
     if (!optFile.hasValue())
     {
@@ -120,9 +117,7 @@ const ChannelMap& MusicReader::getChannelMap() const
 
 
 ////////////////////////////////////////////////////////////
-MusicReader::SeekAndReadResult MusicReader::seekAndRead(const zb::U64  sampleOffset,
-                                                        zb::I16* const samples,
-                                                        const zb::U64  maxCount)
+MusicReader::SeekAndReadResult MusicReader::seekAndRead(const zb::U64 sampleOffset, zb::I16* const samples, const zb::U64 maxCount)
 {
     const LockGuard lock(m_impl->mutex);
 

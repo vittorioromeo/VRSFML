@@ -7,16 +7,13 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Export.hpp"
-
 #include "Zancle/Graphics/Priv/ShapeMacros.hpp"
 #include "Zancle/Graphics/Priv/TransformableMacros.hpp"
-
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/GlobalAnchorPointMixin.hpp"
 #include "Zancle/System/LocalAnchorPointMixin.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-
 #include "ZancleBase/RequireDesignatedInitializers.hpp"
 
 

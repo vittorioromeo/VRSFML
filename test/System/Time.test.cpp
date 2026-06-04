@@ -1,10 +1,7 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
-
 #include "Zancle/System/Time.hpp"
-
 #include "Zancle/System/TimeChronoUtil.hpp"
-
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/StdChrono.hpp"
 #include "ZancleBase/Trait/IsAggregate.hpp"

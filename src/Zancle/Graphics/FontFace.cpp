@@ -6,12 +6,10 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/FontFace.hpp"
-
 #include "Zancle/Graphics/FontInfo.hpp"
 #include "Zancle/Graphics/Glyph.hpp"
 #include "Zancle/Graphics/GlyphMapping.hpp"
 #include "Zancle/Graphics/TextureAtlas.hpp"
-
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/FileInputStream.hpp"
 #include "Zancle/System/InputStream.hpp"
@@ -19,7 +17,6 @@
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/PathUtils.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
-
 #include "ZancleBase/AnkerlUnorderedDense.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/IntTypes.hpp"
@@ -472,7 +469,7 @@ struct FontFace::Impl
             {
                 for (unsigned int x = padding; x < size.x - padding; ++x)
                 {
-                    const zb::SizeT index  = x + y * size.x;
+                    const zb::SizeT index        = x + y * size.x;
                     m_pixelBuffer[index * 4 + 3] = pixels[x - padding];
                 }
 

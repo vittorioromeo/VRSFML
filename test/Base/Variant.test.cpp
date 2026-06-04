@@ -1,7 +1,4 @@
 #include "Tst/Tst.hpp"
-
-#include "ZancleBase/Variant.hpp"
-
 #include "ZancleBase/Trait/IsAggregate.hpp"
 #include "ZancleBase/Trait/IsStandardLayout.hpp"
 #include "ZancleBase/Trait/IsTrivial.hpp"
@@ -13,6 +10,7 @@
 #include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
 #include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
 #include "ZancleBase/Trait/IsTriviallyRelocatable.hpp"
+#include "ZancleBase/Variant.hpp"
 
 
 namespace
@@ -151,8 +149,7 @@ TEST_CASE("[Base] Base/Variant.hpp")
         STATIC_CHECK(!ZB_IS_AGGREGATE(zb::Variant<NonTrivial, char>));
         STATIC_CHECK(!ZB_IS_TRIVIALLY_COPYABLE(zb::Variant<NonTrivial, char>));
         STATIC_CHECK(!ZB_IS_TRIVIALLY_DESTRUCTIBLE(zb::Variant<NonTrivial, char>));
-        STATIC_CHECK(
-            !ZB_IS_TRIVIALLY_ASSIGNABLE(zb::Variant<NonTrivial, char>, zb::Variant<NonTrivial, char>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_ASSIGNABLE(zb::Variant<NonTrivial, char>, zb::Variant<NonTrivial, char>));
 
         STATIC_CHECK(!ZB_IS_TRIVIALLY_RELOCATABLE(zb::Variant<NonTrivial, char>));
 
@@ -168,7 +165,7 @@ TEST_CASE("[Base] Base/Variant.hpp")
         STATIC_CHECK(!ZB_IS_TRIVIALLY_COPYABLE(zb::Variant<NonTrivialButRelocatable, char>));
         STATIC_CHECK(!ZB_IS_TRIVIALLY_DESTRUCTIBLE(zb::Variant<NonTrivialButRelocatable, char>));
         STATIC_CHECK(!ZB_IS_TRIVIALLY_ASSIGNABLE(zb::Variant<NonTrivialButRelocatable, char>,
-                                                        zb::Variant<NonTrivialButRelocatable, char>));
+                                                 zb::Variant<NonTrivialButRelocatable, char>));
 
         STATIC_CHECK(ZB_IS_TRIVIALLY_RELOCATABLE(zb::Variant<NonTrivialButRelocatable, char>));
     }

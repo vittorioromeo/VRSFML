@@ -7,11 +7,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Network/Export.hpp"
-
 #include "Zancle/Network/IpAddress.hpp"
 #include "Zancle/Network/Socket.hpp"
 #include "Zancle/Network/SocketHandle.hpp"
-
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/Vector.hpp"
@@ -130,11 +128,11 @@ public:
     /// \see `send`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Status receive(void*                      data,
+    [[nodiscard]] Status receive(void*                    data,
                                  zb::SizeT                size,
                                  zb::SizeT&               received,
                                  zb::Optional<IpAddress>& remoteAddress,
-                                 unsigned short&            remotePort);
+                                 unsigned short&          remotePort);
 
     ////////////////////////////////////////////////////////////
     /// \brief Send a formatted packet of data to a remote peer

@@ -15,7 +15,7 @@
 /// \brief Define the data members of a transformable object's settings
 ///
 ////////////////////////////////////////////////////////////
-#define ZA_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE                                  \
+#define ZA_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE                                    \
     ::za::Vec2f position{};      /*!< Position of the object in the 2D world */               \
     ::za::Vec2f scale{1.f, 1.f}; /*!< Scale of the object */                                  \
     ::za::Vec2f origin{};        /*!< Origin of translation/rotation/scaling of the object */ \
@@ -29,7 +29,7 @@
 /// \brief Define the data members of a transformable object
 ///
 ////////////////////////////////////////////////////////////
-#define ZA_DEFINE_TRANSFORMABLE_DATA_MEMBERS                                                \
+#define ZA_DEFINE_TRANSFORMABLE_DATA_MEMBERS                                                  \
     ::za::Vec2f position{};      /*!< Position of the object in the 2D world */               \
     ::za::Vec2f scale{1.f, 1.f}; /*!< Scale of the object */                                  \
     ::za::Vec2f origin{};        /*!< Origin of translation/rotation/scaling of the object */ \

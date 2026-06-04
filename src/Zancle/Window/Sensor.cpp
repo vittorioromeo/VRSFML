@@ -6,7 +6,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Window/Sensor.hpp"
-
 #include "Zancle/Window/SensorManager.hpp"
 #include "Zancle/Window/WindowContext.hpp"
 

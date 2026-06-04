@@ -8,7 +8,6 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/PrimitiveType.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
-
 #include "ZancleBase/RequireDesignatedInitializers.hpp"
 #include "ZancleBase/Span.hpp"
 
@@ -29,7 +28,7 @@ struct [[nodiscard]] DrawQuadsSettings // NOLINT(cppcoreguidelines-pro-type-memb
     ZB_REQUIRE_DESIGNATED_INITIALIZERS;
 
     zb::Span<const Vertex> vertexSpan;    //!< Range of vertices laid out as groups of 4 corners
-    PrimitiveType            primitiveType; //!< Primitive type used for the expanded triangles
+    PrimitiveType          primitiveType; //!< Primitive type used for the expanded triangles
 };
 
 } // namespace za

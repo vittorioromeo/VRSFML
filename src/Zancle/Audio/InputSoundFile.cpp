@@ -5,12 +5,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Audio/InputSoundFile.hpp"
-
 #include "Zancle/Audio/ChannelMap.hpp"
+#include "Zancle/Audio/InputSoundFile.hpp"
 #include "Zancle/Audio/SoundFileFactory.hpp"
 #include "Zancle/Audio/SoundFileReader.hpp"
-
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/FileInputStream.hpp"
 #include "Zancle/System/InputStream.hpp"
@@ -18,7 +16,6 @@
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/PathUtils.hpp"
 #include "Zancle/System/Time.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Macros.hpp"
@@ -92,11 +89,11 @@ zb::Optional<InputSoundFile> InputSoundFile::openFromFile(const Path& filename)
     }
 
     return zb::makeOptional<InputSoundFile>(zb::PassKey<InputSoundFile>{},
-                                              ZB_MOVE(reader),
-                                              ZB_MOVE(file),
-                                              info->sampleCount,
-                                              info->sampleRate,
-                                              ZB_MOVE(info->channelMap));
+                                            ZB_MOVE(reader),
+                                            ZB_MOVE(file),
+                                            info->sampleCount,
+                                            info->sampleRate,
+                                            ZB_MOVE(info->channelMap));
 }
 
 
@@ -123,11 +120,11 @@ zb::Optional<InputSoundFile> InputSoundFile::openFromMemory(const void* data, zb
     }
 
     return zb::makeOptional<InputSoundFile>(zb::PassKey<InputSoundFile>{},
-                                              ZB_MOVE(reader),
-                                              ZB_MOVE(memory),
-                                              info->sampleCount,
-                                              info->sampleRate,
-                                              ZB_MOVE(info->channelMap));
+                                            ZB_MOVE(reader),
+                                            ZB_MOVE(memory),
+                                            info->sampleCount,
+                                            info->sampleRate,
+                                            ZB_MOVE(info->channelMap));
 }
 
 
@@ -158,11 +155,11 @@ zb::Optional<InputSoundFile> InputSoundFile::openFromStream(InputStream& stream)
     }
 
     return zb::makeOptional<InputSoundFile>(zb::PassKey<InputSoundFile>{},
-                                              ZB_MOVE(reader),
-                                              zb::UniquePtr<InputStream, StreamDeleter>{&stream, false},
-                                              info->sampleCount,
-                                              info->sampleRate,
-                                              ZB_MOVE(info->channelMap));
+                                            ZB_MOVE(reader),
+                                            zb::UniquePtr<InputStream, StreamDeleter>{&stream, false},
+                                            info->sampleCount,
+                                            info->sampleRate,
+                                            ZB_MOVE(info->channelMap));
 }
 
 
@@ -241,8 +238,7 @@ zb::U64 InputSoundFile::seek(zb::U64 sampleOffset)
 ////////////////////////////////////////////////////////////
 zb::U64 InputSoundFile::seek(Time timeOffset)
 {
-    return seek(
-        static_cast<zb::SizeT>(timeOffset.asSeconds() * static_cast<float>(m_sampleRate)) * m_channelMap.getSize());
+    return seek(static_cast<zb::SizeT>(timeOffset.asSeconds() * static_cast<float>(m_sampleRate)) * m_channelMap.getSize());
 }
 
 
@@ -265,8 +261,8 @@ InputSoundFile::InputSoundFile(zb::PassKey<InputSoundFile>&&,
                                zb::UniquePtr<SoundFileReader>&&            reader,
                                zb::UniquePtr<InputStream, StreamDeleter>&& stream,
                                zb::U64                                     sampleCount,
-                               unsigned int                                  sampleRate,
-                               ChannelMap&&                                  channelMap) :
+                               unsigned int                                sampleRate,
+                               ChannelMap&&                                channelMap) :
     m_reader(ZB_MOVE(reader)),
     m_stream(ZB_MOVE(stream)),
     m_sampleCount(sampleCount),

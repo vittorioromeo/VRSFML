@@ -6,7 +6,6 @@
 ////////////////////////////////////////////////////////////
 #include "ShapeBlockSequence.hpp"
 #include "ShapeDimension.hpp"
-
 #include "ZancleBase/Array.hpp"
 
 

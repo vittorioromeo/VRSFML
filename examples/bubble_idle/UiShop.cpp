@@ -1,8 +1,6 @@
 #include "BubbleIdleMain.hpp"
 #include "MainAtlasRects.hpp"
-
 #include "Zancle/ImGui/IncludeImGui.hpp"
-
 #include "ZancleBase/String.hpp"
 
 void Main::uiTabBarShop()

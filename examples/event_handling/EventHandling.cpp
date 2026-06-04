@@ -1,21 +1,16 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "ExampleUtils/Scaling.hpp"
-
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/Font.hpp"
 #include "Zancle/Graphics/GraphicsContext.hpp"
 #include "Zancle/Graphics/RenderWindow.hpp"
 #include "Zancle/Graphics/Text.hpp"
-
-#include "Zancle/Window/Event.hpp"
-#include "Zancle/Window/Keyboard.hpp"
-
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Utf8String.hpp"
-
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/Keyboard.hpp"
 #include "ZancleBase/Macros.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/SizeT.hpp"
@@ -24,6 +19,8 @@
 #include "ZancleBase/Trait/Decay.hpp"
 #include "ZancleBase/Trait/IsSame.hpp"
 #include "ZancleBase/Vector.hpp"
+
+#include "ExampleUtils/Scaling.hpp"
 
 
 namespace
@@ -449,8 +446,8 @@ private:
                             }};
 
     zb::Vector<zb::String> m_log;
-    HandlerType                        m_handlerType{HandlerType::Classic};
-    bool                               m_mustClose{false};
+    HandlerType            m_handlerType{HandlerType::Classic};
+    bool                   m_mustClose{false};
 };
 
 

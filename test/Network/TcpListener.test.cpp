@@ -2,11 +2,9 @@
 
 // Other 1st party headers
 #include "Tst/Tst.hpp"
-
 #include "Zancle/Network/IpAddress.hpp"
 #include "Zancle/Network/Socket.hpp"
 #include "Zancle/Network/TcpSocket.hpp"
-
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/Trait/IsCopyAssignable.hpp"
 #include "ZancleBase/Trait/IsCopyConstructible.hpp"

@@ -8,7 +8,6 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-
 #include "ZancleBase/MinMaxMacros.hpp"
 #include "ZancleBase/Optional.hpp"
 
@@ -61,8 +60,7 @@ template <typename T>
         return zb::nullOpt;
 
     // Intersection found
-    return zb::makeOptional<Rect2<T>>(Vec2<T>{interLeft, interTop},
-                                        Vec2<T>{interRight - interLeft, interBottom - interTop});
+    return zb::makeOptional<Rect2<T>>(Vec2<T>{interLeft, interTop}, Vec2<T>{interRight - interLeft, interBottom - interTop});
 }
 
 } // namespace za

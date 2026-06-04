@@ -5,10 +5,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Window/SensorImpl.hpp"
-
 #include "Zancle/System/Time.hpp"
-
+#include "Zancle/Window/SensorImpl.hpp"
 #include "ZancleBase/EnumArray.hpp"
 #include "ZancleBase/Optional.hpp"
 
@@ -25,9 +23,9 @@
 
 namespace
 {
-ALooper*                                                            looper;
-ASensorManager*                                                     sensorManager;
-ASensorEventQueue*                                                  sensorEventQueue;
+ALooper*                                                      looper;
+ASensorManager*                                               sensorManager;
+ASensorEventQueue*                                            sensorEventQueue;
 zb::EnumArray<za::Sensor::Type, za::Vec3f, za::Sensor::Count> sensorData;
 } // namespace
 
@@ -144,7 +142,7 @@ int SensorImpl::processSensorEvents(int /* fd */, int /* events */, void* /* sen
     while (ASensorEventQueue_getEvents(sensorEventQueue, &event, 1) > 0)
     {
         zb::Optional<Sensor::Type> type;
-        Vec3f                        data;
+        Vec3f                      data;
 
         switch (event.type)
         {

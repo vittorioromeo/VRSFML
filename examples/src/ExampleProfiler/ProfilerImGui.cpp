@@ -1,16 +1,14 @@
 #include "ExampleProfiler/Profiler.hpp"
 #include "ExampleProfiler/ProfilerImGui.hpp"
-
-#include "ExampleUtils/Sampler.hpp"
-
 #include "Zancle/ImGui/IncludeImGui.hpp"
-
 #include "ZancleBase/Algorithm/Sort.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Span.hpp"
 #include "ZancleBase/StringView.hpp"
 #include "ZancleBase/Vector.hpp"
+
+#include "ExampleUtils/Sampler.hpp"
 
 
 namespace
@@ -40,10 +38,10 @@ using SamplerVec = zb::Vector<Sampler<T>>;
 
 ////////////////////////////////////////////////////////////
 [[nodiscard]] int calcDelta(const SamplerVec<zb::U64>& timeSamplers,
-                            const SamplerVec<double>&        percentSamplers,
-                            const sfex::ScopeInfo&           infoA,
-                            const sfex::ScopeInfo&           infoB,
-                            const unsigned int               columnUserID)
+                            const SamplerVec<double>&  percentSamplers,
+                            const sfex::ScopeInfo&     infoA,
+                            const sfex::ScopeInfo&     infoB,
+                            const unsigned int         columnUserID)
 {
     if (columnUserID == 0u) // Sort by label
         return infoA.label.compare(infoB.label);
@@ -77,10 +75,10 @@ using SamplerVec = zb::Vector<Sampler<T>>;
 
 ////////////////////////////////////////////////////////////
 void renderNode(const SamplerVec<zb::U64>&             timeSamplers,
-                const SamplerVec<double>&                    percentSamplers,
-                const sfex::NodeId                           nodeId,
+                const SamplerVec<double>&              percentSamplers,
+                const sfex::NodeId                     nodeId,
                 const zb::Span<const sfex::ScopeInfo>& allNodes,
-                const ChildrenMap&                           childrenMap)
+                const ChildrenMap&                     childrenMap)
 {
     const auto& info     = allNodes[nodeId];
     const auto& children = childrenMap[nodeId];
@@ -164,9 +162,9 @@ void showImguiProfiler()
     }
 
     // Pre-process the flat list into a tree structure
-    static thread_local ChildrenMap                    childrenMap(sfex::maxNodes);
+    static thread_local ChildrenMap              childrenMap(sfex::maxNodes);
     static thread_local zb::Vector<sfex::NodeId> rootNodes;
-    static thread_local SamplerVec<zb::U64> nodeTimeSamplers(sfex::maxNodes, Sampler<zb::U64>{/* capacity */ 64u});
+    static thread_local SamplerVec<zb::U64>      nodeTimeSamplers(sfex::maxNodes, Sampler<zb::U64>{/* capacity */ 64u});
     static thread_local SamplerVec<double> nodePercentSamplers(sfex::maxNodes, Sampler<double>{/* capacity */ 64u});
 
     sfex::populateNodes(scopeInfos, childrenMap, rootNodes); // Clears as the first step

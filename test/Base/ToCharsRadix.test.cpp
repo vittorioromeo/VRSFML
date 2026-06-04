@@ -1,11 +1,9 @@
 #include "StringifyStringViewUtil.hpp"
 #include "Tst/Tst.hpp"
-
-#include "ZancleBase/ToCharsRadix.hpp"
-
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/StringView.hpp"
+#include "ZancleBase/ToCharsRadix.hpp"
 
 #include <limits>
 
@@ -108,10 +106,7 @@ TEST_CASE("[Base] ToCharsRadix.hpp - signed values emit raw bit pattern (no sign
 
     SECTION("LLONG_MIN as 64-bit hex")
     {
-        const auto* end = zb::toCharsRadix(buf,
-                                                 buf + sizeof(buf),
-                                                 std::numeric_limits<long long>::min(),
-                                                 zb::Radix::Hex);
+        const auto* end = zb::toCharsRadix(buf, buf + sizeof(buf), std::numeric_limits<long long>::min(), zb::Radix::Hex);
         CHECK(view(buf, end) == "8000000000000000");
     }
 }

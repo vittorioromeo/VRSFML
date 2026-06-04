@@ -8,10 +8,8 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Vertex.hpp"
 #include "Zancle/Graphics/VertexUtils.hpp"
-
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-
 #include "ZancleBase/Span.hpp"
 
 

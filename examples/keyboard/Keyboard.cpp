@@ -1,10 +1,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Window/Keyboard.hpp"
-
-#include "ExampleUtils/Scaling.hpp"
-
+#include "Zancle/Audio/AudioContext.hpp"
+#include "Zancle/Audio/AudioSettings.hpp" // IWYU pragma: keep
+#include "Zancle/Audio/PlaybackDevice.hpp"
+#include "Zancle/Audio/Sound.hpp"
+#include "Zancle/Audio/SoundBuffer.hpp"
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/DrawableBatch.hpp"
 #include "Zancle/Graphics/Font.hpp"
@@ -17,23 +18,15 @@
 #include "Zancle/Graphics/Transformable.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
 #include "Zancle/Graphics/View.hpp" // IWYU pragma: keep
-
-#include "Zancle/Audio/AudioContext.hpp"
-#include "Zancle/Audio/AudioSettings.hpp" // IWYU pragma: keep
-#include "Zancle/Audio/PlaybackDevice.hpp"
-#include "Zancle/Audio/Sound.hpp"
-#include "Zancle/Audio/SoundBuffer.hpp"
-
-#include "Zancle/Window/Event.hpp" // IWYU pragma: keep
-#include "Zancle/Window/EventUtils.hpp"
-#include "Zancle/Window/WindowSettings.hpp" // IWYU pragma: keep
-
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
 #include "Zancle/System/Time.hpp"
-
+#include "Zancle/Window/Event.hpp" // IWYU pragma: keep
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/Keyboard.hpp"
+#include "Zancle/Window/WindowSettings.hpp" // IWYU pragma: keep
 #include "ZancleBase/Abort.hpp"
 #include "ZancleBase/Array.hpp"
 #include "ZancleBase/Assert.hpp"
@@ -47,6 +40,8 @@
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/Vector.hpp"
+
+#include "ExampleUtils/Scaling.hpp"
 
 
 #ifdef ZA_SYSTEM_IOS
@@ -771,7 +766,7 @@ private:
         }
 
         zb::Vector<Cell> cells;
-        float                  marginBottom;
+        float            marginBottom;
     };
 
     const zb::Array<Row, 9> m_matrix{{

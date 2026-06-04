@@ -5,16 +5,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/GLUtils/CopyFramebuffer.hpp"
-
 #include "Zancle/Config.hpp" // IWYU pragma: keep
-
 #include "Zancle/GLUtils/BlitFramebuffer.hpp"
+#include "Zancle/GLUtils/CopyFramebuffer.hpp"
 #include "Zancle/GLUtils/GLCheck.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
-
 #include "Zancle/System/Priv/Vec2Base.hpp"
-
 #include "ZancleBase/Assert.hpp"
 
 

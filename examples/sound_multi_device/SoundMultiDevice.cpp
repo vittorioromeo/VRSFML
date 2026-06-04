@@ -9,12 +9,10 @@
 #include "Zancle/Audio/PlaybackDeviceHandle.hpp"
 #include "Zancle/Audio/Sound.hpp"
 #include "Zancle/Audio/SoundBuffer.hpp"
-
 #include "Zancle/System/IO.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Thread.hpp"
 #include "Zancle/System/Time.hpp"
-
 #include "ZancleBase/Fmt/Fmt.hpp"
 #include "ZancleBase/Fmt/FmtNumeric.hpp"
 #include "ZancleBase/InPlaceVector.hpp"
@@ -72,8 +70,8 @@ int main()
         music2.emplace(playbackDevices[3], musicSource2).play();
 
     // Keep program alive while sounds are playing and display spinning icon
-    const char      messageIcons[]{'-', '\\', '|', '/'};
-    zb::SizeT messageIconIndex = 0u;
+    const char messageIcons[]{'-', '\\', '|', '/'};
+    zb::SizeT  messageIconIndex = 0u;
 
     const auto anySourcePlaying = [&]
     {

@@ -5,12 +5,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/System/IO.hpp"
-
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/FileUtils.hpp"
+#include "Zancle/System/IO.hpp"
 #include "Zancle/System/Path.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/PassKey.hpp"
@@ -233,7 +231,7 @@ bool readFromFileFallback(const Filename& filename, T& target, const bool isAppe
     {
         // `ReadFile` takes a DWORD; cap each call at a safe chunk size.
         constexpr zb::SizeT maxChunk = static_cast<zb::SizeT>(0x7f'ff'ff'ffu);
-        const ::DWORD             chunk    = static_cast<::DWORD>(size > maxChunk ? maxChunk : size);
+        const ::DWORD       chunk    = static_cast<::DWORD>(size > maxChunk ? maxChunk : size);
 
         ::DWORD bytesRead = 0u;
         if (!::ReadFile(handle, buffer, chunk, &bytesRead, nullptr) || bytesRead == 0u)
@@ -416,7 +414,7 @@ bool readFromFileImpl(const Filename& filename, T& target, const bool isAppend)
 #else
     #if ZA_PRIV_IO_NATIVE_BACKEND == 1 // Windows
     ::HANDLE handle = INVALID_HANDLE_VALUE;
-    #else                                // POSIX
+    #else                              // POSIX
     int handle = -1;
     #endif
 

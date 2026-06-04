@@ -1,13 +1,10 @@
-#include "StringifySfBaseStringUtil.hpp"
+#include "StringifyZbStringUtil.hpp"
 #include "StringifyStdStringUtil.hpp"
 #include "StringifyStringViewUtil.hpp"
 #include "TemporaryFile.hpp"
 #include "Tst/Tst.hpp"
-
 #include "Zancle/System/IO.hpp"
-
 #include "Zancle/System/Path.hpp"
-
 #include "ZancleBase/Macros.hpp"
 #include "ZancleBase/PtrDiffT.hpp"
 #include "ZancleBase/Scn/Scn.hpp"
@@ -73,7 +70,7 @@ TEST_CASE("[System] za::OutFile and za::InFile")
             auto optIfs = za::InFile::open(temporaryFile.getPath(), za::FileOpenMode::bin);
             REQUIRE(optIfs.hasValue());
 
-            char            buffer[14] = {};
+            char      buffer[14] = {};
             zb::SizeT got        = 0;
             CHECK(optIfs->read(buffer, 14, got));
             CHECK(got == 14u);
@@ -104,7 +101,7 @@ TEST_CASE("[System] za::OutFile and za::InFile")
 
         auto optIfs = za::InFile::open(temporaryFile.getPath(), za::FileOpenMode::bin);
         REQUIRE(optIfs.hasValue());
-        char            buffer[7] = {};
+        char      buffer[7] = {};
         zb::SizeT got       = 0;
         CHECK(optIfs->read(buffer, 6, got));
         CHECK(got == 6u);
@@ -126,7 +123,7 @@ TEST_CASE("[System] za::OutFile and za::InFile")
         CHECK(optIfs->tellPos(pos));
         CHECK(pos == 6);
 
-        char            buffer[6] = {};
+        char      buffer[6] = {};
         zb::SizeT got       = 0;
         CHECK(optIfs->read(buffer, 5, got));
         CHECK(got == 5u);
@@ -159,7 +156,7 @@ TEST_CASE("[System] za::OutFile and za::InFile")
         // `seekPos(1, cur)` should land at logical position 1 -> next read 'b'.
         CHECK(optIfs->seekPos(1, za::SeekDir::cur));
 
-        char            ch  = '\0';
+        char      ch  = '\0';
         zb::SizeT got = 0;
         CHECK(optIfs->read(&ch, 1, got));
         CHECK(got == 1u);
@@ -173,7 +170,7 @@ TEST_CASE("[System] za::OutFile and za::InFile")
         auto optIfs = za::InFile::open(temporaryFile.getPath(), za::FileOpenMode::bin);
         REQUIRE(optIfs.hasValue());
 
-        char            buffer[8] = {};
+        char      buffer[8] = {};
         zb::SizeT got       = 0;
 
         // The read returns success with a short count -- EOF is normal,
@@ -217,7 +214,7 @@ TEST_CASE("[System] za::OutFile and za::InFile")
             auto optIfs = za::InFile::open(target.getPath(), za::FileOpenMode::bin);
             REQUIRE(optIfs.hasValue());
 
-            char            buffer[5] = {};
+            char      buffer[5] = {};
             zb::SizeT got       = 0;
             CHECK(optIfs->read(buffer, 5, got));
             CHECK(got == 5u);
@@ -231,7 +228,7 @@ TEST_CASE("[System] za::OutFile and za::InFile")
 
             za::InFile ifs = ZB_MOVE(*optMoved);
 
-            char            buffer[5] = {};
+            char      buffer[5] = {};
             zb::SizeT got       = 0;
             CHECK(ifs.read(buffer, 5, got));
             CHECK(got == 5u);
@@ -266,7 +263,7 @@ TEST_CASE("[System] za::InFile peek/consume cache semantics")
 
         CHECK(*optFile->peek() == 'A');
 
-        char            buf[4]{};
+        char      buf[4]{};
         zb::SizeT got = 0u;
         CHECK(optFile->read(buf, 3, got));
         CHECK(got == 3u);
@@ -404,7 +401,7 @@ TEST_CASE("[System] za::writeToFile and za::readFromFile")
     {
         // The native fast path goes through a single buffered read, so make sure
         // it doesn't truncate at NUL or mangle non-ASCII bytes.
-        const char                 raw[] = {'a', '\0', 'b', '\xff', '\x01', '\x80', 'z'};
+        const char           raw[] = {'a', '\0', 'b', '\xff', '\x01', '\x80', 'z'};
         const zb::StringView payload(raw, sizeof(raw));
 
         const TemporaryFile temporaryFile;
@@ -574,7 +571,7 @@ TEST_CASE("[System] za::writeToFile and za::readFromFile")
 
     SECTION("Binary content with embedded NULs round-trips through zb::Vector<char>")
     {
-        const char                 raw[] = {'a', '\0', 'b', '\xff', '\x01', '\x80', 'z'};
+        const char           raw[] = {'a', '\0', 'b', '\xff', '\x01', '\x80', 'z'};
         const zb::StringView payload(raw, sizeof(raw));
 
         const TemporaryFile temporaryFile;
@@ -592,8 +589,8 @@ TEST_CASE("[System] za::writeToFile and za::readFromFile")
     {
         // Exercise the `zb::StringView` filename overloads: the rest of the
         // suite uses the `Path` overloads; these tests cover the alternate API.
-        const TemporaryFile        temporaryFile;
-        const auto                 pathOwning = temporaryFile.getPath().to<std::string>();
+        const TemporaryFile  temporaryFile;
+        const auto           pathOwning = temporaryFile.getPath().to<std::string>();
         const zb::StringView pathView{pathOwning.data(), pathOwning.size()};
 
         CHECK(za::writeToFile(pathView, "Hello via StringView"_sv));
@@ -707,8 +704,8 @@ TEST_CASE("[System] za::appendFromFile")
 
     SECTION("Append via StringView filename overload")
     {
-        const TemporaryFile        temporaryFile;
-        const auto                 pathOwning = temporaryFile.getPath().to<std::string>();
+        const TemporaryFile  temporaryFile;
+        const auto           pathOwning = temporaryFile.getPath().to<std::string>();
         const zb::StringView pathView{pathOwning.data(), pathOwning.size()};
 
         CHECK(za::writeToFile(pathView, " world"_sv));

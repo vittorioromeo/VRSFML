@@ -2,15 +2,12 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "TCP.hpp"
-
 #include "Zancle/Network/IpAddress.hpp"
 #include "Zancle/Network/IpAddressUtils.hpp"
 #include "Zancle/Network/Socket.hpp"
 #include "Zancle/Network/TcpListener.hpp"
 #include "Zancle/Network/TcpSocket.hpp"
-
 #include "Zancle/System/Utf8String.hpp"
-
 #include "ZancleBase/Fmt/Fmt.hpp"
 #include "ZancleBase/Fmt/FmtNumeric.hpp"
 #include "ZancleBase/Optional.hpp"
@@ -109,7 +106,7 @@ void runTcpServer(unsigned short port, const bool tls)
     zb::printLn("Message sent to the client: \"{}{}", out, '"');
 
     // Receive a message back from the client
-    char            in[128];
+    char      in[128];
     zb::SizeT received = 0;
     if (socket.receive(in, sizeof(in), received) != za::Socket::Status::Done)
         return;
@@ -150,8 +147,7 @@ void runTcpClient(unsigned short port, const bool tls)
     if (tls)
     {
         // Setup TLS
-        if (socket.setupTlsClient(commonName.to<zb::String>(), certificate) !=
-            za::TcpSocket::TlsStatus::HandshakeComplete)
+        if (socket.setupTlsClient(commonName.to<zb::String>(), certificate) != za::TcpSocket::TlsStatus::HandshakeComplete)
             return;
         zb::printLn("TLS set up");
 
@@ -160,7 +156,7 @@ void runTcpClient(unsigned short port, const bool tls)
     }
 
     // Receive a message from the server
-    char            in[128];
+    char      in[128];
     zb::SizeT received = 0;
     if (socket.receive(in, sizeof(in), received) != za::Socket::Status::Done)
         return;

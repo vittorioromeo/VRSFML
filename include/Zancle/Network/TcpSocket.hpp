@@ -7,12 +7,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Network/Export.hpp"
-
 #include "Zancle/Network/Socket.hpp"
 #include "Zancle/Network/SocketHandle.hpp"
-
 #include "Zancle/System/Time.hpp"
-
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/SizeT.hpp"
@@ -349,7 +346,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] TlsStatus setupTlsClient(const za::Utf8String& hostname,
                                            const Byte*           certificateChainData,
-                                           zb::SizeT           certificateChainSize);
+                                           zb::SizeT             certificateChainSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set up transport layer security as a client
@@ -454,11 +451,11 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] TlsStatus setupTlsServer(
         const Byte* certificateChainData,
-        zb::SizeT certificateChainSize,
+        zb::SizeT   certificateChainSize,
         const Byte* privateKeyData,
-        zb::SizeT privateKeySize,
+        zb::SizeT   privateKeySize,
         const Byte* privateKeyPasswordData,
-        zb::SizeT privateKeyPasswordSize);
+        zb::SizeT   privateKeyPasswordSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set up transport layer security as a server
@@ -631,10 +628,10 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    struct Impl;                      // TODO P1: review impl
+    struct Impl;                // TODO P1: review impl
     zb::UniquePtr<Impl> m_impl; //!< Implementation details
 
-    PendingPacket      m_pendingPacket;     //!< Temporary data of the packet currently being received
+    PendingPacket    m_pendingPacket;     //!< Temporary data of the packet currently being received
     zb::Vector<Byte> m_blockToSendBuffer; //!< Buffer used to prepare data being sent from the socket
 };
 

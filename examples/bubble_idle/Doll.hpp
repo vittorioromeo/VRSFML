@@ -1,15 +1,13 @@
 #pragma once
 
 #include "CatType.hpp"
-
-#include "ExampleUtils/Progress.hpp"
-
 #include "Zancle/System/Priv/Vec2Base.hpp"
-
 #include "ZancleBase/Constants.hpp"
 #include "ZancleBase/Math/Cos.hpp"
 #include "ZancleBase/Math/Sin.hpp"
 #include "ZancleBase/Remainder.hpp"
+
+#include "ExampleUtils/Progress.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -21,7 +19,7 @@ struct [[nodiscard]] Doll
     float     hue = 0.f;
     CatType   catType;
 
-    TimedCountdown                     tcActivation;
+    TimedCountdown               tcActivation;
     zb::Optional<TimedCountdown> tcDeath;
 
     ////////////////////////////////////////////////////////////

@@ -8,7 +8,6 @@
 ////////////////////////////////////////////////////////////
 #include "Tst/Detail/StringifyValue.hpp"
 #include "Tst/TstFwd.hpp"
-
 #include "ZancleBase/Builtin/Pragma.hpp"
 #include "ZancleBase/Trait/IsArray.hpp"
 
@@ -38,7 +37,7 @@ struct Result
 // NOLINTBEGIN(bugprone-macro-parentheses)
 // Match doctest's behavior: once decomposition produced a Result, any
 // further operator chaining means the assertion expression needs rewriting.
-#define ZA_TST_FORBID_RESULT_OP(op)                                                                   \
+#define ZA_TST_FORBID_RESULT_OP(op)                                                                     \
     template <typename R>                                                                               \
     Result& operator op(const R&)                                                                       \
     {                                                                                                   \
@@ -108,18 +107,18 @@ struct ExpressionLhs
 // inside `_Pragma(...)` arguments and split them across lines, which
 // produces ill-formed code -- `_Pragma` requires a single string literal
 // token, not a concatenation expression.)
-#define ZA_TST_DECL_CMP_OP(op)                                                                         \
+#define ZA_TST_DECL_CMP_OP(op)                                                                           \
                                                                                                          \
-    ZB_PRAGMA(GCC diagnostic push);                                                               \
+    ZB_PRAGMA(GCC diagnostic push);                                                                      \
     /* Suppress the unknown-pragma warning before mentioning Clang-only options below. */                \
-    ZB_PRAGMA(GCC diagnostic ignored "-Wpragmas");                                                \
-    ZB_PRAGMA(GCC diagnostic ignored "-Wunknown-warning-option");                                 \
-    ZB_PRAGMA(GCC diagnostic ignored "-Wsign-compare");                                           \
-    ZB_PRAGMA(GCC diagnostic ignored "-Wsign-conversion");                                        \
-    ZB_PRAGMA(GCC diagnostic ignored "-Wimplicit-int-float-conversion");                          \
-    ZB_PRAGMA(GCC diagnostic ignored "-Wdouble-promotion");                                       \
-    ZB_PRAGMA(GCC diagnostic ignored "-Wfloat-equal");                                            \
-    ZB_PRAGMA(GCC diagnostic ignored "-Wconversion");                                             \
+    ZB_PRAGMA(GCC diagnostic ignored "-Wpragmas");                                                       \
+    ZB_PRAGMA(GCC diagnostic ignored "-Wunknown-warning-option");                                        \
+    ZB_PRAGMA(GCC diagnostic ignored "-Wsign-compare");                                                  \
+    ZB_PRAGMA(GCC diagnostic ignored "-Wsign-conversion");                                               \
+    ZB_PRAGMA(GCC diagnostic ignored "-Wimplicit-int-float-conversion");                                 \
+    ZB_PRAGMA(GCC diagnostic ignored "-Wdouble-promotion");                                              \
+    ZB_PRAGMA(GCC diagnostic ignored "-Wfloat-equal");                                                   \
+    ZB_PRAGMA(GCC diagnostic ignored "-Wconversion");                                                    \
                                                                                                          \
     template <typename R>                                                                                \
     auto operator op(const R& rhs)                                                                       \
@@ -149,7 +148,7 @@ struct ExpressionLhs
 // NOLINTBEGIN(bugprone-macro-parentheses)
 // Reject low-precedence/logical operators before the fallback conversion can
 // turn CHECK_FALSE(a && b) into a plain bool expression with inverted logic lost.
-#define ZA_TST_FORBID_EXPR_LHS_OP(op)                                                                 \
+#define ZA_TST_FORBID_EXPR_LHS_OP(op)                                                                   \
     template <typename R>                                                                               \
     ExpressionLhs& operator op(const R&)                                                                \
     {                                                                                                   \

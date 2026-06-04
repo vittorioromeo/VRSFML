@@ -5,15 +5,12 @@
 #include "LoadIntoMemoryUtil.hpp"
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
-
 #include "Zancle/Graphics/GraphicsContext.hpp"
 #include "Zancle/Graphics/Image.hpp"
 #include "Zancle/Graphics/TextureWrapMode.hpp"
-
 #include "Zancle/System/FileInputStream.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
-
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Macros.hpp"
 #include "ZancleBase/Trait/IsCopyAssignable.hpp"

@@ -5,13 +5,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Audio/SoundRecorder.hpp"
-
 #include "Zancle/Audio/CaptureDevice.hpp"
-
+#include "Zancle/Audio/SoundRecorder.hpp"
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/LifetimeDependant.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/SizeT.hpp"
@@ -29,7 +26,7 @@ SoundRecorder::SoundRecorder() = default;
 SoundRecorder::~SoundRecorder()
 {
     ZB_ASSERT(m_lastCaptureDevice == nullptr &&
-                     "The sound recorder must be stopped before destroying the capture device");
+              "The sound recorder must be stopped before destroying the capture device");
 }
 
 

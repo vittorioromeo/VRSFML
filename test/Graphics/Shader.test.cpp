@@ -2,16 +2,12 @@
 
 // Other 1st party headers
 #include "Tst/Tst.hpp"
-
-#include "Zancle/Graphics/Glsl.hpp"
-#include "Zancle/Graphics/GraphicsContext.hpp"
-
 #include "Zancle/GLUtils/GLCheck.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
-
+#include "Zancle/Graphics/Glsl.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
 #include "Zancle/System/FileInputStream.hpp"
 #include "Zancle/System/Path.hpp"
-
 #include "ZancleBase/Macros.hpp"
 #include "ZancleBase/Trait/IsCopyAssignable.hpp"
 #include "ZancleBase/Trait/IsCopyConstructible.hpp"

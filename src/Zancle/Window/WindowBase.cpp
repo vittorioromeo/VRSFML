@@ -5,19 +5,16 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Window/WindowBase.hpp"
-
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Time.hpp"
+#include "Zancle/System/Utf8String.hpp"
 #include "Zancle/Window/Cursor.hpp"
 #include "Zancle/Window/Event.hpp"
 #include "Zancle/Window/SDLWindowImpl.hpp"
 #include "Zancle/Window/Vulkan.hpp"
+#include "Zancle/Window/WindowBase.hpp"
 #include "Zancle/Window/WindowHandle.hpp"
 #include "Zancle/Window/WindowSettings.hpp"
-
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Time.hpp"
-#include "Zancle/System/Utf8String.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Macros.hpp"
@@ -36,8 +33,7 @@ priv::SDLWindowImpl& WindowBase::getWindowImpl()
 
 
 ////////////////////////////////////////////////////////////
-WindowBase::WindowBase(zb::PassKey<WindowBase>&&, zb::UniquePtr<priv::SDLWindowImpl>&& impl) :
-    m_impl(ZB_MOVE(impl))
+WindowBase::WindowBase(zb::PassKey<WindowBase>&&, zb::UniquePtr<priv::SDLWindowImpl>&& impl) : m_impl(ZB_MOVE(impl))
 {
     ZB_ASSERT(m_impl != nullptr);
 
@@ -51,8 +47,7 @@ zb::Optional<WindowBase> WindowBase::create(const WindowSettings& windowSettings
 {
     auto impl = priv::SDLWindowImpl::create(windowSettings);
 
-    return impl ? zb::Optional<WindowBase>(zb::inPlace, zb::PassKey<WindowBase>{}, ZB_MOVE(impl))
-                : zb::nullOpt;
+    return impl ? zb::Optional<WindowBase>(zb::inPlace, zb::PassKey<WindowBase>{}, ZB_MOVE(impl)) : zb::nullOpt;
 }
 
 
@@ -61,8 +56,7 @@ zb::Optional<WindowBase> WindowBase::create(const WindowHandle handle)
 {
     auto impl = priv::SDLWindowImpl::create(handle);
 
-    return impl ? zb::Optional<WindowBase>(zb::inPlace, zb::PassKey<WindowBase>{}, ZB_MOVE(impl))
-                : zb::nullOpt;
+    return impl ? zb::Optional<WindowBase>(zb::inPlace, zb::PassKey<WindowBase>{}, ZB_MOVE(impl)) : zb::nullOpt;
 }
 
 

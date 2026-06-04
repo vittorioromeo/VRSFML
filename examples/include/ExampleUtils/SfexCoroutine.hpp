@@ -41,8 +41,8 @@
 
 
 ////////////////////////////////////////////////////////////
-#define SFEX_PRIV_CO_CASE_WARNINGS_PUSH    \
-    ZB_PRAGMA(GCC diagnostic push); \
+#define SFEX_PRIV_CO_CASE_WARNINGS_PUSH \
+    ZB_PRAGMA(GCC diagnostic push);     \
     ZB_PRAGMA(GCC diagnostic ignored "-Wimplicit-fallthrough")
 
 #if defined(__clang__)
@@ -193,15 +193,15 @@ template <typename Time, typename Ctx, typename... Children>
 /// \see `SFEX_CO_END`
 ///
 ////////////////////////////////////////////////////////////
-#define SFEX_CO_BEGIN                                          \
-    SFEX_PRIV_CO_CASE_WARNINGS_PUSH;                           \
-    SFEX_PRIV_CO_C2Y_PUSH;                                     \
-                                                               \
+#define SFEX_CO_BEGIN                                    \
+    SFEX_PRIV_CO_CASE_WARNINGS_PUSH;                     \
+    SFEX_PRIV_CO_C2Y_PUSH;                               \
+                                                         \
     static constexpr ::zb::U32 _sfex_base = __COUNTER__; \
-                                                               \
-    switch (state)                                             \
-    {                                                          \
-        case 0:;                                               \
+                                                         \
+    switch (state)                                       \
+    {                                                    \
+        case 0:;                                         \
             SFEX_PRIV_CO_CASE_WARNINGS_POP
 
 

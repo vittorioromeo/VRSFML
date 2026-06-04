@@ -1,5 +1,3 @@
-#include "ExampleUtils/RNGFast.hpp"
-
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/DrawableBatch.hpp"
 #include "Zancle/Graphics/Font.hpp"
@@ -13,9 +11,6 @@
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/TextureAtlas.hpp"
 #include "Zancle/Graphics/View.hpp" // IWYU pragma: keep
-
-#include "Zancle/Window/Event.hpp" // IWYU pragma: keep
-
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/IO.hpp"
@@ -23,13 +18,15 @@
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
 #include "Zancle/System/Time.hpp"
-
+#include "Zancle/Window/Event.hpp" // IWYU pragma: keep
 #include "ZancleBase/Constants.hpp"
 #include "ZancleBase/Fmt/Fmt.hpp"
 #include "ZancleBase/Fmt/FmtNumeric.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/Vector.hpp"
+
+#include "ExampleUtils/RNGFast.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -113,8 +110,8 @@ int main()
 
         for (zb::SizeT i = 0u; i < n; ++i)
         {
-            const zb::SizeT type        = i % 6u;
-            const za::Rect2f&     textureRect = spriteTextureRects[type];
+            const zb::SizeT   type        = i % 6u;
+            const za::Rect2f& textureRect = spriteTextureRects[type];
 
             auto& [text, sprite, torque] = entities.emplaceBack(za::Text{i % 2u == 0u ? fontTuffy : fontMouldyCheese,
                                                                          {.string           = "abcdefABCDEF",

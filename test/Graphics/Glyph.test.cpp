@@ -1,10 +1,7 @@
 #include "GraphicsUtil.hpp"
 #include "Tst/Tst.hpp"
-
 #include "Zancle/Graphics/Glyph.hpp"
-
 #include "Zancle/System/Rect2.hpp"
-
 #include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
 #include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
 #include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"

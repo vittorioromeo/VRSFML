@@ -10,11 +10,9 @@
 #include "Zancle/Audio/SoundBuffer.hpp"
 #include "Zancle/Audio/SoundBufferRecorder.hpp"
 #include "Zancle/Audio/SoundRecorder.hpp"
-
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Thread.hpp"
 #include "Zancle/System/Time.hpp"
-
 #include "ZancleBase/Fmt/Fmt.hpp"
 #include "ZancleBase/Fmt/FmtNumeric.hpp"
 #include "ZancleBase/Scn/ScnStdin.hpp"
@@ -99,12 +97,12 @@ int main()
 
     // Display captured sound information
     zb::printLn("Sound information:{} {} seconds{} {} samples / seconds{} {} channels",
-                      '\n',
-                      buffer.getDuration().asSeconds(),
-                      '\n',
-                      buffer.getSampleRate(),
-                      '\n',
-                      buffer.getChannelCount());
+                '\n',
+                buffer.getDuration().asSeconds(),
+                '\n',
+                buffer.getSampleRate(),
+                '\n',
+                buffer.getChannelCount());
 
     // Choose what to do with the recorded sound data
     zb::print("What do you want to do with captured sound (p = play, s = save) ? ");

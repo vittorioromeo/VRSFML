@@ -3,12 +3,10 @@
 // Other 1st party headers
 #include "GraphicsUtil.hpp"
 #include "Tst/Tst.hpp"
-
 #include "Zancle/System/FileInputStream.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/SizeT.hpp"
@@ -454,12 +452,9 @@ TEST_CASE("[Graphics] za::Image")
 
             // Create the composited color for via the alpha composite over operation
             const auto a = static_cast<zb::U8>(source.a + (dest.a * (255 - source.a)) / 255);
-            const auto r = static_cast<zb::U8>(
-                ((source.r * source.a) + ((dest.r * dest.a) * (255 - source.a)) / 255) / a);
-            const auto g = static_cast<zb::U8>(
-                ((source.g * source.a) + ((dest.g * dest.a) * (255 - source.a)) / 255) / a);
-            const auto b = static_cast<zb::U8>(
-                ((source.b * source.a) + ((dest.b * dest.a) * (255 - source.a)) / 255) / a);
+            const auto r = static_cast<zb::U8>(((source.r * source.a) + ((dest.r * dest.a) * (255 - source.a)) / 255) / a);
+            const auto g = static_cast<zb::U8>(((source.g * source.a) + ((dest.g * dest.a) * (255 - source.a)) / 255) / a);
+            const auto b = static_cast<zb::U8>(((source.b * source.a) + ((dest.b * dest.a) * (255 - source.a)) / 255) / a);
             const za::Color composite(r, g, b, a);
 
             auto       image1 = za::Image::create(za::Vec2u{10, 10}, dest).value();

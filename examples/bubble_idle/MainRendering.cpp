@@ -27,14 +27,6 @@
 #include "ShrineType.hpp"
 #include "UIState.hpp"
 #include "Version.hpp"
-
-#include "ExampleUtils/Easing.hpp"
-#include "ExampleUtils/HueColor.hpp"
-#include "ExampleUtils/MathUtils.hpp"
-#include "ExampleUtils/NinePatchRect.hpp"
-#include "ExampleUtils/NinePatchUtils.hpp"
-#include "ExampleUtils/Progress.hpp"
-
 #include "Zancle/Graphics/BlendMode.hpp"
 #include "Zancle/Graphics/CircleShapeData.hpp"
 #include "Zancle/Graphics/Color.hpp"
@@ -53,15 +45,12 @@
 #include "Zancle/Graphics/TextureWrapMode.hpp"
 #include "Zancle/Graphics/TrapezoidShapeData.hpp"
 #include "Zancle/Graphics/View.hpp"
-
-#include "Zancle/Window/Mouse.hpp"
-#include "Zancle/Window/VideoMode.hpp"
-#include "Zancle/Window/VideoModeUtils.hpp"
-
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-
+#include "Zancle/Window/Mouse.hpp"
+#include "Zancle/Window/VideoMode.hpp"
+#include "Zancle/Window/VideoModeUtils.hpp"
 #include "ZancleBase/Algorithm/Erase.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Clamp.hpp"
@@ -81,6 +70,13 @@
 #include "ZancleBase/StringView.hpp"
 #include "ZancleBase/ToString.hpp"
 #include "ZancleBase/Vector.hpp"
+
+#include "ExampleUtils/Easing.hpp"
+#include "ExampleUtils/HueColor.hpp"
+#include "ExampleUtils/MathUtils.hpp"
+#include "ExampleUtils/NinePatchRect.hpp"
+#include "ExampleUtils/NinePatchUtils.hpp"
+#include "ExampleUtils/Progress.hpp"
 
 #include <cctype>
 #include <cstdio>
@@ -148,8 +144,7 @@ void Main::drawCloudFrame(const CloudFrameDrawSettings& settings)
                                         outwardOffsetMult;
 
             const float tangentOffset = restTangent +
-                                        zb::cos(time * (0.6f + noise2 * 0.7f) + noiseSeed * 0.47f) *
-                                            (0.5f + noise2 * 2.f) +
+                                        zb::cos(time * (0.6f + noise2 * 0.7f) + noiseSeed * 0.47f) * (0.5f + noise2 * 2.f) +
                                         zb::sin(phase0 * 1.37f + noise1 * 3.f) * 0.75f;
 
             const za::Vec2f animatedP{p0.x + outwardX * outwardOffset + tangentX * tangentOffset,
@@ -184,11 +179,7 @@ void Main::drawCloudFrame(const CloudFrameDrawSettings& settings)
 }
 
 ////////////////////////////////////////////////////////////
-void Main::drawMinimap(bool               back,
-                       za::RenderTarget&  rt,
-                       const za::View&    hudView,
-                       const za::Vec2f    resolution,
-                       const zb::U8 shouldDrawUIAlpha)
+void Main::drawMinimap(bool back, za::RenderTarget& rt, const za::View& hudView, const za::Vec2f resolution, const zb::U8 shouldDrawUIAlpha)
 {
     constexpr za::Vec2f minimapPos = {10.f, 10.f};
 
@@ -269,7 +260,7 @@ void Main::drawMinimap(bool               back,
         rt.draw(txDrawings,
                 {.scale       = {hudScale, hudScale},
                  .textureRect = {{0.f, 0.f}, backgroundRectSize},
-                 .color = za::Color::whiteWithAlpha(zb::min(shouldDrawUIAlpha, static_cast<zb::U8>(215u)))},
+                 .color       = za::Color::whiteWithAlpha(zb::min(shouldDrawUIAlpha, static_cast<zb::U8>(215u)))},
                 {.view = minimapView, .shader = &shaders.shader});
 
         if (shouldDrawUIAlpha > 200u)
@@ -730,47 +721,47 @@ struct CatTextureTables
 
 struct CatDrawContext
 {
-    Main&                          main;
-    Cat&                           cat;
-    za::CPUDrawableBatch&          batchToUse;
-    za::CPUDrawableBatch&          textBatchToUse;
-    za::CPUDrawableBatch&          spriteBatchToUse;
-    za::CPUDrawableBatch&          cloudBatchToUse;
-    Cat*                           witchCat;
-    Cat*                           copyCat;
-    const za::Rect2f&              catTxr;
-    const za::Rect2f&              catPawTxr;
-    const za::Rect2f&              catTailTxr;
-    za::Vec2f                      catTailOffset;
-    za::Vec2f                      catEyeOffset;
-    float                          deltaTimeMs;
-    za::Vec2f                      mousePos;
-    bool                           drawHexedWithShader;
-    bool                           beingDragged;
+    Main&                    main;
+    Cat&                     cat;
+    za::CPUDrawableBatch&    batchToUse;
+    za::CPUDrawableBatch&    textBatchToUse;
+    za::CPUDrawableBatch&    spriteBatchToUse;
+    za::CPUDrawableBatch&    cloudBatchToUse;
+    Cat*                     witchCat;
+    Cat*                     copyCat;
+    const za::Rect2f&        catTxr;
+    const za::Rect2f&        catPawTxr;
+    const za::Rect2f&        catTailTxr;
+    za::Vec2f                catTailOffset;
+    za::Vec2f                catEyeOffset;
+    float                    deltaTimeMs;
+    za::Vec2f                mousePos;
+    bool                     drawHexedWithShader;
+    bool                     beingDragged;
     zb::Optional<za::Rect2f> dragRect;
-    bool                           insideDragRect;
-    bool                           hovered;
-    bool                           shouldDisplayRangeCircle;
-    U8                             rangeInnerAlpha;
-    float                          maxCooldown;
-    float                          cooldownDiff;
-    float                          catRotation;
-    float                          bodyRotationExtra; // tail-wobble + bonk pendulum etc. (added on top of catRotation)
-    float                          range;
-    U8                             alpha;
-    za::Color                      catColor;
-    U8                             circleAlpha;
-    za::Color                      circleColor;
-    za::Color                      circleOutlineColor;
-    za::Color                      textOutlineColor;
-    bool                           shouldDrawCatRange;
-    float                          catScaleMult;
-    za::Vec2f                      catScale;
-    za::Vec2f                      catAnchor;
-    za::Vec2f                      visualCatAnchor;
-    za::Vec2f                      pushDown;
-    za::Color                      attachmentHue;
-    float                          hexedEffectStrength;
+    bool                     insideDragRect;
+    bool                     hovered;
+    bool                     shouldDisplayRangeCircle;
+    U8                       rangeInnerAlpha;
+    float                    maxCooldown;
+    float                    cooldownDiff;
+    float                    catRotation;
+    float                    bodyRotationExtra; // tail-wobble + bonk pendulum etc. (added on top of catRotation)
+    float                    range;
+    U8                       alpha;
+    za::Color                catColor;
+    U8                       circleAlpha;
+    za::Color                circleColor;
+    za::Color                circleOutlineColor;
+    za::Color                textOutlineColor;
+    bool                     shouldDrawCatRange;
+    float                    catScaleMult;
+    za::Vec2f                catScale;
+    za::Vec2f                catAnchor;
+    za::Vec2f                visualCatAnchor;
+    za::Vec2f                pushDown;
+    za::Color                attachmentHue;
+    float                    hexedEffectStrength;
 
     [[nodiscard]] bool isCopyCatWithType(const CatType copiedType) const
     {
@@ -1103,7 +1094,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
                        .textureRect = ctx.main.isDevilcatHellsingedActive() ? ctx.main.atlasRects.txrDevilCat2Book
                                                                             : ctx.main.atlasRects.txrDevilCat3Book,
                        .color = hueColor(zb::remainder(ctx.cat.hue * 2.f - 15.f + static_cast<float>(ctx.cat.nameIdx) * 25.f,
-                                                             60.f) -
+                                                       60.f) -
                                              30.f,
                                          255u)});
     }
@@ -2112,8 +2103,8 @@ void Main::gameLoopDrawScrollArrowHint(const float deltaTimeMs)
     else
         (void)uiState.scrollArrowCountdown.tick(deltaTimeMs);
 
-    const float blinkOpacity = easeInOutSine(zb::fabs(zb::sin(
-                                   zb::remainder(uiState.scrollArrowCountdown.time / 350.f, zb::tau)))) *
+    const float blinkOpacity = easeInOutSine(
+                                   zb::fabs(zb::sin(zb::remainder(uiState.scrollArrowCountdown.time / 350.f, zb::tau)))) *
                                255.f;
 
     const float arrowX = getLeftMostUsefulX();
@@ -2135,9 +2126,9 @@ void Main::gameLoopDrawScrollArrowHint(const float deltaTimeMs)
 ////////////////////////////////////////////////////////////
 void Main::gameLoopUpdatePurchaseUnlockedEffects(const float deltaTimeMs)
 {
-    const float imguiWidth = uiWindowWidth * profile.uiScale;
-    const auto  blinkFn    = [](const float value) { return (1 - zb::cos(2.f * zb::pi * value)) / 2.f; };
-    const float uiMenuCueX = uiState.uiMenuLastDrawSize.x > 1.f ? uiState.uiMenuLastDrawPos.x : uiGetWindowPos().x;
+    const float imguiWidth      = uiWindowWidth * profile.uiScale;
+    const auto  blinkFn         = [](const float value) { return (1 - zb::cos(2.f * zb::pi * value)) / 2.f; };
+    const float uiMenuCueX      = uiState.uiMenuLastDrawSize.x > 1.f ? uiState.uiMenuLastDrawPos.x : uiGetWindowPos().x;
     const bool  uiMenuFullyOpen = uiState.uiMenuRevealT >= 0.999f;
 
     for (auto& [widgetLabel, countdown, arrowCountdown, hue, type] : uiState.purchaseUnlockedEffects)
@@ -2219,11 +2210,11 @@ void Main::gameLoopDrawCursor(const float deltaTimeMs, const float cursorGrow)
                 : pt->multiPopEnabled      ? txCursorMultipop
                                            : txCursor,
                 {.position = za::Mouse::getPosition(window).toVec2f(),
-                 .scale = za::Vec2f{profile.cursorScale, profile.cursorScale} *
-                          ((1.f + easeInOutBack(cursorGrow) * zb::pow(static_cast<float>(comboState.combo), 0.09f)) *
-                           dpiScalingFactor),
-                 .origin = {5.f, 5.f},
-                 .color  = hueColor(profile.cursorHue + currentBackgroundHue.asDegrees(), 255u)},
+                 .scale    = za::Vec2f{profile.cursorScale, profile.cursorScale} *
+                             ((1.f + easeInOutBack(cursorGrow) * zb::pow(static_cast<float>(comboState.combo), 0.09f)) *
+                              dpiScalingFactor),
+                 .origin   = {5.f, 5.f},
+                 .color    = hueColor(profile.cursorHue + currentBackgroundHue.asDegrees(), 255u)},
                 {.view = nonScaledHUDView, .shader = &shaders.shader});
 }
 
@@ -2250,11 +2241,10 @@ void Main::gameLoopDrawCursorComboText(const float deltaTimeMs, const float curs
         profile.cursorHue + currentBackgroundHue.asDegrees());
 
     za::TextData td{
-        .position         = za::Mouse::getPosition(window).toVec2f() + za::Vec2f{30.f, 48.f} * scaleMult,
-        .origin           = {0.f, 0.f},
-        .string           = comboState.cursorComboLastShown > 0
-                                ? zb::String{"x" + zb::toString(comboState.cursorComboLastShown)}
-                                : zb::String{""},
+        .position = za::Mouse::getPosition(window).toVec2f() + za::Vec2f{30.f, 48.f} * scaleMult,
+        .origin   = {0.f, 0.f},
+        .string = comboState.cursorComboLastShown > 0 ? zb::String{"x" + zb::toString(comboState.cursorComboLastShown)}
+                                                      : zb::String{""},
         .characterSize    = 48u,
         .fillColor        = za::Color::blackWithAlpha(alphaU8),
         .outlineColor     = comboState.cursorComboOutlineColor,

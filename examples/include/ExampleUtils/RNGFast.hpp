@@ -4,10 +4,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "ExampleUtils/Xoroshiro128PlusPlusBitGenerator.hpp"
-
 #include "Zancle/System/Priv/Vec2Base.hpp"
-
 #include "ZancleBase/AssertAndAssume.hpp"
 #include "ZancleBase/Constants.hpp"
 #include "ZancleBase/IntTypes.hpp"
@@ -16,6 +13,8 @@
 #include "ZancleBase/Math/Sqrt.hpp"
 #include "ZancleBase/Trait/IsIntegral.hpp"
 #include "ZancleBase/Trait/MakeUnsigned.hpp"
+
+#include "ExampleUtils/Xoroshiro128PlusPlusBitGenerator.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -92,8 +91,8 @@ public:
         // We extract 24 random bits, which is enough to fill the 23-bit mantissa of a float,
         // and normalize by dividing by (2^24 - 1).
 
-        const auto  randomBits = static_cast<zb::U32>(m_engine.next() >> (64u - 24u)); // Extract 24 bits.
-        const float normalized = static_cast<float>(randomBits) / float{(1 << 24) - 1};      // Normalize to [0, 1].
+        const auto  randomBits = static_cast<zb::U32>(m_engine.next() >> (64u - 24u));  // Extract 24 bits.
+        const float normalized = static_cast<float>(randomBits) / float{(1 << 24) - 1}; // Normalize to [0, 1].
 
         return min + normalized * (max - min);
     }

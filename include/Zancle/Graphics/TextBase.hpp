@@ -6,20 +6,17 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Graphics/Export.hpp"
-
 #include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/Export.hpp"
 #include "Zancle/Graphics/Priv/TransformableMacros.hpp"
 #include "Zancle/Graphics/TransformableMixin.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
 #include "Zancle/Graphics/VertexSpan.hpp"
-
 #include "Zancle/System/GlobalAnchorPointMixin.hpp"
 #include "Zancle/System/LocalAnchorPointMixin.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
 #include "Zancle/System/Utf8String.hpp"
-
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/Vector.hpp"
@@ -458,9 +455,9 @@ protected:
     ////////////////////////////////////////////////////////////
     Utf8String m_string; //!< String to display
 
-    mutable zb::Vector<Vertex> m_vertices;        //!< Vertex array containing the outline and fill geometry
-    mutable Rect2f               m_bounds;          //!< Bounding rectangle of the text (in local coordinates)
-    mutable zb::SizeT m_fillVerticesStartIndex{}; //!< Index in the vertex array where the fill vertices start
+    mutable zb::Vector<Vertex> m_vertices;                 //!< Vertex array containing the outline and fill geometry
+    mutable Rect2f             m_bounds;                   //!< Bounding rectangle of the text (in local coordinates)
+    mutable zb::SizeT          m_fillVerticesStartIndex{}; //!< Index in the vertex array where the fill vertices start
 
     float m_letterSpacing{1.f};         //!< Spacing factor between letters
     float m_lineSpacing{1.f};           //!< Spacing factor between lines

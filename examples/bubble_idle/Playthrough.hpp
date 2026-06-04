@@ -19,17 +19,15 @@
 #include "ShrineType.hpp"
 #include "Stats.hpp"
 #include "Version.hpp"
-
-#include "ExampleUtils/Progress.hpp"
-
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Time.hpp"
-
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Math/Pow.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/Vector.hpp"
+
+#include "ExampleUtils/Progress.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -209,7 +207,7 @@ struct Playthrough
         bool unicatTranscendenceEnabled = true;
         bool devilcatHellsingedEnabled  = true;
 
-        bool            autocastPurchased = false;
+        bool      autocastPurchased = false;
         zb::SizeT autocastIndex     = 0u;
 
         // Gate for the Power Nap PP upgrade: when true, forced wake-ups
@@ -286,7 +284,7 @@ struct Playthrough
     //     fired; the trigger is 5s after hitting 3 cats for the first time.
     //   - `scriptedNapPendingCountdown` holds the in-flight 5s delay.
     //   - The actual nap-cadence countdown is per-cat (`Cat::napScheduleCountdownMs`).
-    bool                          scriptedNapDone = false;
+    bool                    scriptedNapDone = false;
     zb::Optional<Countdown> scriptedNapPendingCountdown;
 
     // Flips to `true` the first time a cat finishes waking up from a nap;
@@ -301,7 +299,7 @@ struct Playthrough
     //
     // Speedrunning
     zb::Optional<za::Time> speedrunStartTime;
-    SpeedrunningSplits           speedrunSplits;
+    SpeedrunningSplits     speedrunSplits;
 
     //
     // Demo mode

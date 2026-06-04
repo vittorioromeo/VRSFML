@@ -6,15 +6,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Window/Export.hpp"
-
-#include "Zancle/Window/WindowHandle.hpp"
-
 #include "Zancle/System/GlobalAnchorPointMixin.hpp"
 #include "Zancle/System/LocalAnchorPointMixin.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-
+#include "Zancle/Window/Export.hpp"
+#include "Zancle/Window/WindowHandle.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/PassKey.hpp"
@@ -615,7 +612,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     zb::UniquePtr<priv::SDLWindowImpl> m_impl; //!< Platform-specific implementation of the window
-    Vec2u                                m_size; //!< Current size of the window
+    Vec2u                              m_size; //!< Current size of the window
 };
 
 } // namespace za

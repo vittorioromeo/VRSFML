@@ -7,9 +7,7 @@
 #include "ShapeBlockSequence.hpp"
 #include "ShapeDimension.hpp"
 #include "ShapeMatrix.hpp"
-
 #include "Zancle/System/Priv/Vec2Base.hpp"
-
 #include "ZancleBase/Array.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/SizeT.hpp"

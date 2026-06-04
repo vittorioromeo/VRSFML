@@ -1,10 +1,7 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
-
 #include "Zancle/System/Utf8String.hpp"
-
 #include "Zancle/System/Utf8StringCodepoints.hpp"
-
 #include "ZancleBase/Fmt/FmtAppendMixin.hpp"
 #include "ZancleBase/Fmt/FmtNumeric.hpp" // IWYU pragma: keep -- enables int/float `fmtArg`
 #include "ZancleBase/InitializerList.hpp"
@@ -76,14 +73,14 @@ TEST_CASE("[System] za::Utf8String - construction and basic accessors")
     SECTION("Construct from zb::StringView")
     {
         const zb::StringView view = "view";
-        const za::Utf8String       s    = view;
+        const za::Utf8String s    = view;
         CHECK(s.byteSize() == 4u);
         CHECK(s.codepointCount() == 4u);
     }
 
     SECTION("Construct from zb::String (move)")
     {
-        zb::String     owning = "moved";
+        zb::String           owning = "moved";
         const za::Utf8String s      = static_cast<zb::String&&>(owning);
         CHECK(s.byteSize() == 5u);
         CHECK(s.codepointCount() == 5u);
@@ -230,7 +227,7 @@ TEST_CASE("[System] za::Utf8String - forCodepoints")
 {
     SECTION("ASCII walk")
     {
-        const za::Utf8String       s = "abc";
+        const za::Utf8String s = "abc";
         zb::Vector<char32_t> out;
         s.forCodepoints([&](char32_t cp) { out.pushBack(cp); });
         CHECK(equals(out, {U'a', U'b', U'c'}));
@@ -261,7 +258,7 @@ TEST_CASE("[System] za::Utf8String - forCodepoints")
 
     SECTION("Truncated trailing sequence yields one replacement codepoint")
     {
-        const za::Utf8String       s = "\xF0\x9F";
+        const za::Utf8String s = "\xF0\x9F";
         zb::Vector<char32_t> out;
         s.forCodepoints([&](char32_t cp) { out.pushBack(cp); });
         CHECK(out.size() == 1u);
@@ -271,7 +268,7 @@ TEST_CASE("[System] za::Utf8String - forCodepoints")
     SECTION("Callback may mutate captured state freely")
     {
         const za::Utf8String s          = "hello";
-        zb::SizeT      asciiCount = 0;
+        zb::SizeT            asciiCount = 0;
         s.forCodepoints([&](char32_t cp)
         {
             if (cp < 0x80u)
@@ -409,7 +406,7 @@ TEST_CASE("[System] za::Utf8String - equality and conversion")
 
     SECTION("Equality with zb::StringView")
     {
-        const za::Utf8String       s    = "hello";
+        const za::Utf8String s    = "hello";
         const zb::StringView view = "hello";
         CHECK(static_cast<bool>(s == view));
         CHECK(static_cast<bool>(view == s));
@@ -420,7 +417,7 @@ TEST_CASE("[System] za::Utf8String - equality and conversion")
 
     SECTION("Implicit conversion to zb::StringView")
     {
-        const za::Utf8String       s = "hello";
+        const za::Utf8String s = "hello";
         const zb::StringView v = s;
         CHECK(v.size() == 5u);
         CHECK(v.data() == s.data());

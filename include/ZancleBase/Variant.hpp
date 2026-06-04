@@ -67,9 +67,7 @@ struct InPlaceIndex
 // the cv-ref qualification of `Self` (as deduced by a C++23
 // "deducing this" parameter `this Self&& self`) onto `T`.
 template <typename Self, typename T>
-using LikeT = Conditional<ZB_IS_RVALUE_REFERENCE(Self&&),
-                          CopyCV<ZB_REMOVE_REFERENCE(Self), T>&&,
-                          CopyCV<ZB_REMOVE_REFERENCE(Self), T>&>;
+using LikeT = Conditional<ZB_IS_RVALUE_REFERENCE(Self&&), CopyCV<ZB_REMOVE_REFERENCE(Self), T>&&, CopyCV<ZB_REMOVE_REFERENCE(Self), T>&>;
 
 } // namespace zb::priv
 
@@ -171,13 +169,13 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-#define ZB_VARIANT_STATIC_ASSERT_INDEX_VALIDITY(I)                                            \
+#define ZB_VARIANT_STATIC_ASSERT_INDEX_VALIDITY(I)                                             \
     static_assert((I) != ::zb::badTypePackIndex, "Alternative type not supported by variant"); \
     static_assert((I) >= 0 && (I) < alternativeCount, "Alternative index out of range")
 
 
     ////////////////////////////////////////////////////////////
-#define ZB_VARIANT_DO_WITH_CURRENT_INDEX_OBJ(obj, Is, ...)                               \
+#define ZB_VARIANT_DO_WITH_CURRENT_INDEX_OBJ(obj, Is, ...)                                      \
     do                                                                                          \
     {                                                                                           \
         [&]<SizeT... Is> [[gnu::always_inline]] (IndexSequence<Is...>)                          \
@@ -186,8 +184,7 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-#define ZB_VARIANT_DO_WITH_CURRENT_INDEX(Is, ...) \
-    ZB_VARIANT_DO_WITH_CURRENT_INDEX_OBJ((*this), Is, __VA_ARGS__)
+#define ZB_VARIANT_DO_WITH_CURRENT_INDEX(Is, ...) ZB_VARIANT_DO_WITH_CURRENT_INDEX_OBJ((*this), Is, __VA_ARGS__)
 
 
     ////////////////////////////////////////////////////////////
@@ -353,8 +350,8 @@ public:
         : m_index{rhs.m_index}
     {
         ZB_VARIANT_DO_WITH_CURRENT_INDEX(I,
-                                                ZB_PLACEMENT_NEW(m_buffer) ZB_VARIANT_NTH_TYPE(I)(
-                                                    rhs.template bufferAs<ZB_VARIANT_NTH_TYPE(I)>()));
+                                         ZB_PLACEMENT_NEW(m_buffer)
+                                             ZB_VARIANT_NTH_TYPE(I)(rhs.template bufferAs<ZB_VARIANT_NTH_TYPE(I)>()));
     }
 
 
@@ -371,9 +368,9 @@ public:
         : m_index{rhs.m_index}
     {
         ZB_VARIANT_DO_WITH_CURRENT_INDEX(I,
-                                                ZB_PLACEMENT_NEW(m_buffer) ZB_VARIANT_NTH_TYPE(
-                                                    I)(static_cast<ZB_VARIANT_NTH_TYPE(I) &&>(
-                                                    rhs.template bufferAs<ZB_VARIANT_NTH_TYPE(I)>())));
+                                         ZB_PLACEMENT_NEW(m_buffer)
+                                             ZB_VARIANT_NTH_TYPE(I)(static_cast<ZB_VARIANT_NTH_TYPE(I) &&>(
+                                                 rhs.template bufferAs<ZB_VARIANT_NTH_TYPE(I)>())));
     }
 
 
@@ -410,17 +407,16 @@ public:
             // Safer than destroy+construct (no transient destroyed state) and preserves the
             // alternative's own self-assignment and exception-safety semantics.
             ZB_VARIANT_DO_WITH_CURRENT_INDEX(I,
-                                                    bufferAs<ZB_VARIANT_NTH_TYPE(
-                                                        I)>() = rhs.template bufferAs<ZB_VARIANT_NTH_TYPE(I)>());
+                                             bufferAs<ZB_VARIANT_NTH_TYPE(I)>() = rhs.template bufferAs<ZB_VARIANT_NTH_TYPE(I)>());
             return *this;
         }
 
         ZB_VARIANT_DO_WITH_CURRENT_INDEX(I, destroyAt<I>());
 
         ZB_VARIANT_DO_WITH_CURRENT_INDEX_OBJ(rhs,
-                                                    I,
-                                                    (ZB_PLACEMENT_NEW(m_buffer) ZB_VARIANT_NTH_TYPE(I)(
-                                                        rhs.template bufferAs<ZB_VARIANT_NTH_TYPE(I)>())));
+                                             I,
+                                             (ZB_PLACEMENT_NEW(m_buffer) ZB_VARIANT_NTH_TYPE(I)(
+                                                 rhs.template bufferAs<ZB_VARIANT_NTH_TYPE(I)>())));
         m_index = rhs.m_index;
 
         return *this;
@@ -444,18 +440,18 @@ public:
         {
             // Same alternative on both sides: delegate to the alternative's move-assignment.
             ZB_VARIANT_DO_WITH_CURRENT_INDEX(I,
-                                                    bufferAs<ZB_VARIANT_NTH_TYPE(I)>() = static_cast<ZB_VARIANT_NTH_TYPE(
-                                                        I) &&>(rhs.template bufferAs<ZB_VARIANT_NTH_TYPE(I)>()));
+                                             bufferAs<ZB_VARIANT_NTH_TYPE(I)>() = static_cast<ZB_VARIANT_NTH_TYPE(I) &&>(
+                                                 rhs.template bufferAs<ZB_VARIANT_NTH_TYPE(I)>()));
             return *this;
         }
 
         ZB_VARIANT_DO_WITH_CURRENT_INDEX(I, destroyAt<I>());
 
         ZB_VARIANT_DO_WITH_CURRENT_INDEX_OBJ(rhs,
-                                                    I,
-                                                    (ZB_PLACEMENT_NEW(m_buffer) ZB_VARIANT_NTH_TYPE(
-                                                        I)(static_cast<ZB_VARIANT_NTH_TYPE(I) &&>(
-                                                        rhs.template bufferAs<ZB_VARIANT_NTH_TYPE(I)>()))));
+                                             I,
+                                             (ZB_PLACEMENT_NEW(m_buffer)
+                                                  ZB_VARIANT_NTH_TYPE(I)(static_cast<ZB_VARIANT_NTH_TYPE(I) &&>(
+                                                      rhs.template bufferAs<ZB_VARIANT_NTH_TYPE(I)>()))));
         m_index = rhs.m_index;
 
         return *this;
@@ -619,8 +615,8 @@ public:
         {
             ZB_REMOVE_CVREF(R) * ret; // NOLINT(cppcoreguidelines-init-variables)
             ZB_VARIANT_DO_WITH_CURRENT_INDEX_OBJ(self,
-                                                        I,
-                                                        ret = &(visitor(static_cast<Self&&>(self).template getByIndex<I>())));
+                                                 I,
+                                                 ret = &(visitor(static_cast<Self&&>(self).template getByIndex<I>())));
             return static_cast<R>(*ret);
         }
         else if constexpr (ZB_IS_SAME(R, void))
@@ -637,9 +633,9 @@ public:
             });
 
             ZB_VARIANT_DO_WITH_CURRENT_INDEX_OBJ(self,
-                                                        I,
-                                                        ZB_PLACEMENT_NEW(retBuffer)
-                                                            R(visitor(static_cast<Self&&>(self).template getByIndex<I>())));
+                                                 I,
+                                                 ZB_PLACEMENT_NEW(retBuffer)
+                                                     R(visitor(static_cast<Self&&>(self).template getByIndex<I>())));
             return *(ZB_LAUNDER_CAST(R*, retBuffer));
         }
     }

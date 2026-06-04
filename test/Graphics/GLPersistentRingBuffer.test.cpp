@@ -1,17 +1,12 @@
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
-
-#include "Zancle/GLUtils/GLPersistentRingBuffer.hpp"
-
-#include "Zancle/Graphics/GraphicsContext.hpp"
-
-#include "Zancle/Window/WindowContext.hpp"
-
 #include "Zancle/GLUtils/GLBufferObject.hpp"
 #include "Zancle/GLUtils/GLCheck.hpp"
+#include "Zancle/GLUtils/GLPersistentRingBuffer.hpp"
 #include "Zancle/GLUtils/GLUniqueResource.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
-
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Window/WindowContext.hpp"
 #include "ZancleBase/Builtin/Memcmp.hpp"
 #include "ZancleBase/Builtin/Memcpy.hpp"
 #include "ZancleBase/Macros.hpp"
@@ -35,10 +30,7 @@ using ERingBuffer = za::GLPersistentRingBuffer<EBO>;
 
 ////////////////////////////////////////////////////////////
 template <typename TBufferObject>
-void ringReadbackBufferBytes(const TBufferObject&  obj,
-                             const zb::SizeT offset,
-                             const zb::SizeT size,
-                             unsigned char* const  out)
+void ringReadbackBufferBytes(const TBufferObject& obj, const zb::SizeT offset, const zb::SizeT size, unsigned char* const out)
 {
     glCheck(glGetNamedBufferSubData(obj.getId(), static_cast<GLintptr>(offset), static_cast<GLsizeiptr>(size), out));
 }

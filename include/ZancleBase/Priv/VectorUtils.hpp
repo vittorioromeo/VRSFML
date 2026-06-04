@@ -223,8 +223,8 @@ template <typename T>
     if constexpr (ZB_IS_TRIVIALLY_COPYABLE(T) || ZB_IS_TRIVIALLY_RELOCATABLE(T))
     {
         ZB_MEMMOVE(static_cast<void*>(pos + 1),                // Destination
-                          pos,                                        // Source
-                          static_cast<SizeT>(end - pos) * sizeof(T)); // Number of bytes
+                   pos,                                        // Source
+                   static_cast<SizeT>(end - pos) * sizeof(T)); // Number of bytes
     }
     else
     {
@@ -266,17 +266,17 @@ template <typename T>
 
 
 ////////////////////////////////////////////////////////////
-#define ZB_PRIV_DEFINE_COMMON_VECTOR_OPERATIONS(vectorType)                                                             \
+#define ZB_PRIV_DEFINE_COMMON_VECTOR_OPERATIONS(vectorType)                                                                    \
                                                                                                                                \
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr TItem& operator[](const SizeT i) noexcept             \
     {                                                                                                                          \
-        ZB_ASSERT(i < size());                                                                                          \
+        ZB_ASSERT(i < size());                                                                                                 \
         return *(data() + i);                                                                                                  \
     }                                                                                                                          \
                                                                                                                                \
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr const TItem& operator[](const SizeT i) const noexcept \
     {                                                                                                                          \
-        ZB_ASSERT(i < size());                                                                                          \
+        ZB_ASSERT(i < size());                                                                                                 \
         return *(data() + i);                                                                                                  \
     }                                                                                                                          \
                                                                                                                                \
@@ -341,12 +341,12 @@ template <typename T>
     template <typename... Ts>                                                                                                  \
     [[gnu::always_inline]] constexpr TItem& reEmplaceByIterator(TItem* const it, Ts&&... xs)                                   \
     {                                                                                                                          \
-        ZB_ASSERT(it >= begin() && it < end());                                                                         \
+        ZB_ASSERT(it >= begin() && it < end());                                                                                \
                                                                                                                                \
-        if constexpr (!ZB_IS_TRIVIALLY_DESTRUCTIBLE(TItem))                                                             \
+        if constexpr (!ZB_IS_TRIVIALLY_DESTRUCTIBLE(TItem))                                                                    \
             it->~TItem();                                                                                                      \
                                                                                                                                \
-        return *(ZB_PLACEMENT_NEW(it) TItem(static_cast<Ts&&>(xs)...));                                                 \
+        return *(ZB_PLACEMENT_NEW(it) TItem(static_cast<Ts&&>(xs)...));                                                        \
     }                                                                                                                          \
                                                                                                                                \
     template <typename... Ts>                                                                                                  \
@@ -375,9 +375,9 @@ template <typename T>
                                                                                                                                \
     [[gnu::always_inline]] constexpr void assignRange(const TItem* const b, const TItem* const e)                              \
     {                                                                                                                          \
-        ZB_ASSERT(b != nullptr);                                                                                        \
-        ZB_ASSERT(e != nullptr);                                                                                        \
-        ZB_ASSERT(b <= e);                                                                                              \
+        ZB_ASSERT(b != nullptr);                                                                                               \
+        ZB_ASSERT(e != nullptr);                                                                                               \
+        ZB_ASSERT(b <= e);                                                                                                     \
                                                                                                                                \
         const auto count = static_cast<SizeT>(e - b);                                                                          \
                                                                                                                                \
@@ -390,7 +390,7 @@ template <typename T>
                                                                                                                                \
     [[gnu::always_inline]] constexpr void eraseAt(const SizeT index)                                                           \
     {                                                                                                                          \
-        ZB_ASSERT(index < size());                                                                                      \
+        ZB_ASSERT(index < size());                                                                                             \
         erase(data() + index);                                                                                                 \
     }                                                                                                                          \
                                                                                                                                \

@@ -6,17 +6,14 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Font.hpp"
-
 #include "Zancle/Graphics/FontFace.hpp"
 #include "Zancle/Graphics/FontInfo.hpp"
 #include "Zancle/Graphics/Glyph.hpp"
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/TextureAtlas.hpp"
-
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/InputStream.hpp"
 #include "Zancle/System/Path.hpp"
-
 #include "ZancleBase/Abort.hpp"
 #include "ZancleBase/AnkerlUnorderedDense.hpp"
 #include "ZancleBase/Assert.hpp"
@@ -53,8 +50,7 @@ namespace
     const bool     bold,
     const char32_t index)
 {
-    return (zb::U64{bitCastU32(quantizeOutlineThickness(outlineThickness))} << 32) | (zb::U64{bold} << 31) |
-           index;
+    return (zb::U64{bitCastU32(quantizeOutlineThickness(outlineThickness))} << 32) | (zb::U64{bold} << 31) | index;
 }
 
 } // namespace
@@ -95,7 +91,7 @@ struct Font::Impl
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] auto loadGlyphImpl(auto&              glyphsByCharacterSize,
-                                     const zb::U64    key,
+                                     const zb::U64      key,
                                      const char32_t     codePoint,
                                      const unsigned int characterSize,
                                      const bool         bold,
@@ -121,7 +117,7 @@ struct Font::Impl
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] const Glyph& getGlyphImpl(
         auto&              glyphsByCharacterSize,
-        const zb::U64    key,
+        const zb::U64      key,
         const char32_t     codePoint,
         const unsigned int characterSize,
         const bool         bold,
@@ -135,10 +131,10 @@ struct Font::Impl
 
 
     ////////////////////////////////////////////////////////////
-    mutable FontFace                     fontFace;
-    TextureAtlas*                        textureAtlasPtr;
+    mutable FontFace                   fontFace;
+    TextureAtlas*                      textureAtlasPtr;
     mutable zb::Optional<TextureAtlas> fallbackTextureAtlas;
-    mutable GlyphTable                   glyphs;
+    mutable GlyphTable                 glyphs;
 };
 
 

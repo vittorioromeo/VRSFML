@@ -1,7 +1,5 @@
 #include "Tst/Tst.hpp"
-
 #include "ZancleBase/FunctionRef.hpp"
-
 #include "ZancleBase/Macros.hpp"
 
 
@@ -118,15 +116,15 @@ TEST_CASE("[Base] Base/FunctionRef.hpp")
 
     SECTION("Construction from stateless lambda")
     {
-        auto                         lam = [] { return 99; };
+        auto                   lam = [] { return 99; };
         zb::FunctionRef<int()> fr(lam);
         CHECK(fr() == 99);
     }
 
     SECTION("Construction from stateful lambda (capture by value)")
     {
-        int                          x   = 7;
-        auto                         lam = [x] { return x * 3; };
+        int                    x   = 7;
+        auto                   lam = [x] { return x * 3; };
         zb::FunctionRef<int()> fr(lam);
         CHECK(fr() == 21);
     }
@@ -147,14 +145,14 @@ TEST_CASE("[Base] Base/FunctionRef.hpp")
 
     SECTION("Construction from const functor")
     {
-        const CallableConst          cc{123};
+        const CallableConst    cc{123};
         zb::FunctionRef<int()> fr(cc);
         CHECK(fr() == 123);
     }
 
     SECTION("Construction from mutable functor")
     {
-        CallableMutable              cm;
+        CallableMutable        cm;
         zb::FunctionRef<int()> fr(cm);
         CHECK(fr() == 1);
         CHECK(fr() == 2);
@@ -164,7 +162,7 @@ TEST_CASE("[Base] Base/FunctionRef.hpp")
 
     SECTION("Construction from functor with arguments")
     {
-        const CallableWithArgs               cwa{3};
+        const CallableWithArgs         cwa{3};
         zb::FunctionRef<int(int, int)> fr(cwa);
         CHECK(fr(2, 3) == 15);
         CHECK(fr(10, 0) == 30);
@@ -219,8 +217,8 @@ TEST_CASE("[Base] Base/FunctionRef.hpp")
 
     SECTION("Void return type")
     {
-        int                           out = 0;
-        auto                          lam = [&out] { out = 42; };
+        int                     out = 0;
+        auto                    lam = [&out] { out = 42; };
         zb::FunctionRef<void()> fr(lam);
         fr();
         CHECK(out == 42);
@@ -228,7 +226,7 @@ TEST_CASE("[Base] Base/FunctionRef.hpp")
 
     SECTION("Void return type - free function")
     {
-        int                               out = 0;
+        int                         out = 0;
         zb::FunctionRef<void(int&)> fr(freeFunctionVoid);
         fr(out);
         CHECK(out == 777);
@@ -266,7 +264,7 @@ TEST_CASE("[Base] Base/FunctionRef.hpp")
             }
         };
 
-        auto                               lam = [](Move&& m) { return m.v; };
+        auto                         lam = [](Move&& m) { return m.v; };
         zb::FunctionRef<int(Move&&)> fr(lam);
 
         Move m(88);

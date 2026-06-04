@@ -6,11 +6,8 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/GLUtils/GLContextSaver.hpp"
-
-#include "Zancle/Window/WindowContext.hpp"
-
 #include "Zancle/System/Err.hpp"
-
+#include "Zancle/Window/WindowContext.hpp"
 #include "ZancleBase/Assert.hpp"
 
 

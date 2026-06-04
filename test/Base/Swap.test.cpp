@@ -1,7 +1,5 @@
 #include "Tst/Tst.hpp"
-
 #include "ZancleBase/Swap.hpp"
-
 #include "ZancleBase/Vector.hpp"
 
 

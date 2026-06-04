@@ -29,17 +29,8 @@
 #include "TextParticle.hpp"
 #include "UIState.hpp"
 #include "Version.hpp"
-
-#include "ExampleUtils/ControlFlow.hpp"
-#include "ExampleUtils/HueColor.hpp"
-#include "ExampleUtils/LoadedSound.hpp"
-#include "ExampleUtils/MathUtils.hpp"
-#include "ExampleUtils/Progress.hpp"
-#include "ExampleUtils/RNGFast.hpp"
-#include "ExampleUtils/SoundManager.hpp"
-
-#include "Zancle/ImGui/IncludeImGui.hpp"
-
+#include "Zancle/Audio/Music.hpp"
+#include "Zancle/Audio/MusicReader.hpp"
 #include "Zancle/Graphics/DrawableBatch.hpp"
 #include "Zancle/Graphics/Image.hpp"
 #include "Zancle/Graphics/RenderStates.hpp"
@@ -49,22 +40,17 @@
 #include "Zancle/Graphics/Text.hpp" // IWYU pragma: keep
 #include "Zancle/Graphics/TextureAtlas.hpp"
 #include "Zancle/Graphics/View.hpp"
-
-#include "Zancle/Audio/Music.hpp"
-#include "Zancle/Audio/MusicReader.hpp"
-
-#include "Zancle/Window/Keyboard.hpp"
-#include "Zancle/Window/Mouse.hpp"
-#include "Zancle/Window/VideoMode.hpp"
-#include "Zancle/Window/VideoModeUtils.hpp"
-
+#include "Zancle/ImGui/IncludeImGui.hpp"
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/IO.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-
+#include "Zancle/Window/Keyboard.hpp"
+#include "Zancle/Window/Mouse.hpp"
+#include "Zancle/Window/VideoMode.hpp"
+#include "Zancle/Window/VideoModeUtils.hpp"
 #include "ZancleBase/Algorithm/Erase.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Clamp.hpp"
@@ -79,6 +65,14 @@
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/ThreadPool.hpp"
 #include "ZancleBase/Vector.hpp"
+
+#include "ExampleUtils/ControlFlow.hpp"
+#include "ExampleUtils/HueColor.hpp"
+#include "ExampleUtils/LoadedSound.hpp"
+#include "ExampleUtils/MathUtils.hpp"
+#include "ExampleUtils/Progress.hpp"
+#include "ExampleUtils/RNGFast.hpp"
+#include "ExampleUtils/SoundManager.hpp"
 
 #include <cstdarg>
 #include <cstdio>
@@ -873,7 +867,7 @@ zb::SizeT Main::pickDragPivotCatIndex() const
 
     // Find the position closest to the centroid
     zb::SizeT closestIndex       = 0u;
-    float           minDistanceSquared = ZB_FLOAT_MAX;
+    float     minDistanceSquared = ZB_FLOAT_MAX;
 
     for (zb::SizeT i = 0u; i < playerInputState.draggedCats.size(); ++i)
     {
@@ -1534,10 +1528,10 @@ void Main::forceResetProfile()
 TextParticle& Main::makeRewardTextParticle(const za::Vec2f position)
 {
     return textParticles.emplaceBack(TextParticle{
-        {.position   = {position.x, position.y - 10.f},
-         .velocity   = rngFast.getVec2f({-0.1f, -1.65f}, {0.1f, -1.35f}) * 0.395f,
-         .scale      = zb::clamp(1.f + 0.1f * static_cast<float>(comboState.combo + 1) / 1.75f, 1.f, 3.f) * 0.5f,
-         .scaleDecay = 0.f,
+        {.position      = {position.x, position.y - 10.f},
+         .velocity      = rngFast.getVec2f({-0.1f, -1.65f}, {0.1f, -1.35f}) * 0.395f,
+         .scale         = zb::clamp(1.f + 0.1f * static_cast<float>(comboState.combo + 1) / 1.75f, 1.f, 3.f) * 0.5f,
+         .scaleDecay    = 0.f,
          .accelerationY = 0.0035f,
          .opacity       = 1.f,
          .opacityDecay  = 0.0015f,
@@ -1600,10 +1594,10 @@ void Main::doExplosion(Bubble& bubble)
             0.f,
             ParticleType::Fire);
 
-        spawnParticle(ParticleData{.position = bubble.position,
-                                   .velocity = za::Vec2f::fromAngle(rngFast.getF(0.4f, 0.8f),
-                                                                    za::radians(zb::tau / static_cast<float>(16u) *
-                                                                                static_cast<float>(iP))),
+        spawnParticle(ParticleData{.position      = bubble.position,
+                                   .velocity      = za::Vec2f::fromAngle(rngFast.getF(0.4f, 0.8f),
+                                                                         za::radians(zb::tau / static_cast<float>(16u) *
+                                                                                     static_cast<float>(iP))),
                                    .scale         = rngFast.getF(0.08f, 0.27f) * 2.75f,
                                    .scaleDecay    = -0.0025f,
                                    .accelerationY = 0.000001f,

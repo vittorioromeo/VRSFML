@@ -5,9 +5,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Window/Stub/StubSensorImpl.hpp"
-
 #include "Zancle/System/Err.hpp"
+#include "Zancle/Window/Stub/StubSensorImpl.hpp"
 
 
 namespace za::priv

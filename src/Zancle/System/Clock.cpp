@@ -6,7 +6,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/System/Clock.hpp"
-
 #include "Zancle/System/Time.hpp"
 #include "Zancle/System/TimeChronoUtil.hpp"
 

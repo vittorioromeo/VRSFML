@@ -5,10 +5,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "ZancleBase/Optional.hpp"
-
 #include "Zancle/Config.hpp" // IWYU pragma: keep
-
+#include "ZancleBase/Optional.hpp"
 #include "ZancleBase/StackTrace.hpp"
 
 #include <cstdio>

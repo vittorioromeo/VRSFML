@@ -5,11 +5,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/System/Err.hpp"
-
 #include "Zancle/System/AtomicMutex.hpp"
+#include "Zancle/System/Err.hpp"
 #include "Zancle/System/LockGuard.hpp"
-
 #include "ZancleBase/Builtin/Strlen.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/StackTrace.hpp"
@@ -23,8 +21,8 @@ namespace za::priv
 namespace
 {
 ////////////////////////////////////////////////////////////
-constexpr const char  errPrefix[]   = "[[ZANCLE ERROR]]: ";
-constexpr zb::SizeT errPrefixSize = sizeof(errPrefix) - 1u; // exclude trailing '\0'
+constexpr const char errPrefix[]   = "[[ZANCLE ERROR]]: ";
+constexpr zb::SizeT  errPrefixSize = sizeof(errPrefix) - 1u; // exclude trailing '\0'
 
 
 ////////////////////////////////////////////////////////////

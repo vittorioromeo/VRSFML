@@ -18,8 +18,7 @@
 
 
 ////////////////////////////////////////////////////////////
-#define ZB_PREFETCH_FOR_READ(ptr) \
-    ZB_PREFETCH(ptr, /* read-only */ 0, /* high temporal locality (L1 cache) */ 3)
+#define ZB_PREFETCH_FOR_READ(ptr) ZB_PREFETCH(ptr, /* read-only */ 0, /* high temporal locality (L1 cache) */ 3)
 
 
 namespace zb

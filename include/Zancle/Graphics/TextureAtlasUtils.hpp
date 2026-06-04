@@ -7,13 +7,10 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Export.hpp"
-
 #include "Zancle/Graphics/Texture.hpp"
-
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
 #include "Zancle/System/RectPacker.hpp"
-
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Optional.hpp"
 
@@ -61,11 +58,11 @@ struct ZA_GRAPHICS_API TextureAtlasUtils
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static zb::Optional<Rect2f> add(
-        Texture&        targetTexture,
-        RectPacker&     rectPacker,
-        Vec2u           padding,
+        Texture&      targetTexture,
+        RectPacker&   rectPacker,
+        Vec2u         padding,
         const zb::U8* pixels,
-        Vec2u           size);
+        Vec2u         size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Pack the pixels of an `za::Image` into the target texture
@@ -96,9 +93,9 @@ struct ZA_GRAPHICS_API TextureAtlasUtils
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static zb::Optional<Rect2f> add(Texture&       targetTexture,
-                                                    RectPacker&    rectPacker,
-                                                    Vec2u          padding,
-                                                    const Texture& texture);
+                                                  RectPacker&    rectPacker,
+                                                  Vec2u          padding,
+                                                  const Texture& texture);
 };
 
 } // namespace za

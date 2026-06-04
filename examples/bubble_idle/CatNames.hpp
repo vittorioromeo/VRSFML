@@ -2,13 +2,12 @@
 
 #include "CatType.hpp"
 #include "ExactArray.hpp"
-
-#include "ExampleUtils/RNGFast.hpp"
-
 #include "ZancleBase/GetArraySize.hpp"
 #include "ZancleBase/Span.hpp"
 #include "ZancleBase/StringView.hpp"
 #include "ZancleBase/Vector.hpp"
+
+#include "ExampleUtils/RNGFast.hpp"
 
 
 ////////////////////////////////////////////////////////////

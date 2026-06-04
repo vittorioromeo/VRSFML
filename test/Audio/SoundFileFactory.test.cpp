@@ -4,15 +4,12 @@
 #include "StringifyOptionalUtil.hpp"
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
-
 #include "Zancle/Audio/ChannelMap.hpp"
 #include "Zancle/Audio/SoundFileReader.hpp"
 #include "Zancle/Audio/SoundFileWriter.hpp"
-
 #include "Zancle/System/FileInputStream.hpp"
 #include "Zancle/System/InputStream.hpp"
 #include "Zancle/System/Path.hpp"
-
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"

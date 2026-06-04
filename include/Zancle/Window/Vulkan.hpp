@@ -7,9 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Window/Export.hpp"
-
 #include "Zancle/Window/WindowHandle.hpp"
-
 #include "ZancleBase/Span.hpp"
 
 
@@ -134,9 +132,9 @@ struct VulkanSurfaceData
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] ZA_WINDOW_API bool createVulkanSurface(const VkInstance&            instance,
-                                                       void*                        windowHandle,
-                                                       VkSurfaceKHR&                surface,
-                                                       const VkAllocationCallbacks* allocator);
+                                                     void*                        windowHandle,
+                                                     VkSurfaceKHR&                surface,
+                                                     const VkAllocationCallbacks* allocator);
 
 } // namespace Vulkan
 } // namespace za

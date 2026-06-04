@@ -6,9 +6,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Network/SocketImpl.hpp"
-
 #include "Zancle/System/WindowsHeader.hpp"
-
 #include "ZancleBase/Builtin/Memcpy.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Optional.hpp"

@@ -7,10 +7,8 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/RenderTextureCreateSettings.hpp"
-
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-
 #include "ZancleBase/Optional.hpp"
 
 
@@ -200,5 +198,5 @@ struct WindowSettings;
 /// \return The created render texture, or empty on failure.
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] zb::Optional<za::RenderTexture> makeAARenderTexture(za::Vec2u resolution,
-                                                                        za::RenderTextureCreateSettings rtCreateSettings);
+[[nodiscard]] zb::Optional<za::RenderTexture> makeAARenderTexture(za::Vec2u                       resolution,
+                                                                  za::RenderTextureCreateSettings rtCreateSettings);

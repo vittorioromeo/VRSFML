@@ -6,7 +6,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/System/FileUtils.hpp"
-
 #include "Zancle/System/Path.hpp"
 
 #ifdef ZA_SYSTEM_WINDOWS

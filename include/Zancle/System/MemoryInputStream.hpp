@@ -8,9 +8,7 @@
 ////////////////////////////////////////////////////////////
 
 #include "Zancle/System/Export.hpp"
-
 #include "Zancle/System/InputStream.hpp"
-
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/SizeT.hpp"
 
@@ -63,8 +61,8 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     const unsigned char* m_data{};   //!< Pointer to the data in memory
-    zb::SizeT          m_size{};   //!< Total size of the data
-    zb::SizeT          m_offset{}; //!< Current reading position
+    zb::SizeT            m_size{};   //!< Total size of the data
+    zb::SizeT            m_offset{}; //!< Current reading position
 };
 
 } // namespace za

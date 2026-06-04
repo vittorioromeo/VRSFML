@@ -8,7 +8,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/System/Export.hpp"
-
 #include "ZancleBase/StdChrono.hpp"
 
 

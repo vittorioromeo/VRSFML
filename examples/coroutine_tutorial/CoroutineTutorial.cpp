@@ -1,9 +1,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "ExampleUtils/SfexCoroutine.hpp"
-#include "ExampleUtils/SfexYield.hpp"
-
 #include "Zancle/Graphics/CircleShapeData.hpp"
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/Font.hpp"
@@ -12,22 +9,22 @@
 #include "Zancle/Graphics/RenderWindow.hpp"
 #include "Zancle/Graphics/TextData.hpp"
 #include "Zancle/Graphics/TextUtils.hpp"
-
-#include "Zancle/Window/Event.hpp"
-#include "Zancle/Window/EventUtils.hpp"
-#include "Zancle/Window/Keyboard.hpp"
-
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Time.hpp"
 #include "Zancle/System/Vec2.hpp"
-
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/Keyboard.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/MinMax.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/String.hpp"
 #include "ZancleBase/Vector.hpp"
+
+#include "ExampleUtils/SfexCoroutine.hpp"
+#include "ExampleUtils/SfexYield.hpp"
 
 
 namespace
@@ -102,7 +99,7 @@ struct Guard
 ////////////////////////////////////////////////////////////
 struct Dialogue
 {
-    bool             visible = false;
+    bool       visible = false;
     zb::String fullText;
     zb::String displayedText;
 };
@@ -120,7 +117,7 @@ struct World
     zb::Vector<Pickup> keys;
     zb::Vector<Door>   doors;
 
-    Dialogue         dialogue;
+    Dialogue   dialogue;
     zb::String objective;
 
     // game progress flags
@@ -330,7 +327,7 @@ struct DialogueBeat : sfex::Coroutine
 {
     ////////////////////////////////////////////////////////////
     zb::String text;
-    Typewriter       typewriter;
+    Typewriter typewriter;
 
 
     ////////////////////////////////////////////////////////////
@@ -672,11 +669,7 @@ void driveCoroutine(auto& coro, World& world, float& waitTimer, bool& done)
 
 
 ////////////////////////////////////////////////////////////
-void drawWorld(za::RenderWindow&       window,
-               const za::Font&         font,
-               const World&            world,
-               const zb::String& statusMessage,
-               float                   statusMessageAlpha)
+void drawWorld(za::RenderWindow& window, const za::Font& font, const World& world, const zb::String& statusMessage, float statusMessageAlpha)
 {
     window.clear({18u, 22u, 30u});
 
@@ -917,12 +910,12 @@ int main()
 
     const auto font = za::Font::openFromFile("resources/tuffy.ttf").value();
 
-    GameState                     gs;
+    GameState               gs;
     zb::Optional<GameState> quickSave;
 
-    zb::String statusMessage;
-    float            statusMessageT  = 0.f;
-    constexpr float  statusFlashTime = 1.6f;
+    zb::String      statusMessage;
+    float           statusMessageT  = 0.f;
+    constexpr float statusFlashTime = 1.6f;
 
     const auto flashStatus = [&](const char* msg)
     {

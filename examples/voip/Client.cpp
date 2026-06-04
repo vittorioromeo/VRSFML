@@ -2,16 +2,13 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Client.hpp"
-
 #include "Zancle/Audio/CaptureDeviceHandle.hpp"
 #include "Zancle/Audio/SoundRecorder.hpp"
-
 #include "Zancle/Network/IpAddress.hpp"
 #include "Zancle/Network/IpAddressUtils.hpp"
 #include "Zancle/Network/Packet.hpp"
 #include "Zancle/Network/Socket.hpp"
 #include "Zancle/Network/TcpSocket.hpp"
-
 #include "ZancleBase/Fmt/Fmt.hpp"
 #include "ZancleBase/Fmt/FmtNumeric.hpp"
 #include "ZancleBase/Optional.hpp"
@@ -116,8 +113,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    za::IpAddress                     m_host;   ///< Address of the remote host
-    unsigned short                    m_port;   ///< Remote port
+    za::IpAddress               m_host;   ///< Address of the remote host
+    unsigned short              m_port;   ///< Remote port
     zb::Optional<za::TcpSocket> m_socket; ///< Socket used to communicate with the server (created in onStart)
 };
 

@@ -7,7 +7,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/System/Export.hpp"
-
 #include "ZancleBase/Fmt/Fmt.hpp"
 #include "ZancleBase/Fmt/FmtResult.hpp"
 #include "ZancleBase/Trait/IsEnum.hpp"
@@ -81,7 +80,7 @@ template <typename T>
 // pointer (`dispatchFmtArgErased`) or directly by it (`dispatchFmtArg`), so
 // the loss of inlining at consumer call sites is negligible.
 ////////////////////////////////////////////////////////////
-#define ZB_FMT_EXTERN(T)                                                            \
+#define ZB_FMT_EXTERN(T)                                                                   \
     extern template FmtResult fmtArg<T>(FmtSink&, const T&, const FmtSpec&);               \
     extern template FmtResult priv::dispatchFmtArg<T>(FmtSink&, const T&, const FmtSpec&); \
     extern template FmtResult priv::dispatchFmtArgErased<T>(FmtSink&, const void*, const FmtSpec&)

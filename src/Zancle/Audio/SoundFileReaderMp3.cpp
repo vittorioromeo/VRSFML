@@ -31,10 +31,8 @@
 #undef MINIMP3_NO_STDIO
 
 #include "Zancle/Audio/SoundFileReaderMp3.hpp"
-
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/InputStream.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Memcmp.hpp"
 #include "ZancleBase/IntTypes.hpp"
@@ -54,7 +52,7 @@ namespace
 ////////////////////////////////////////////////////////////
 [[nodiscard]] int seekCallback(uint64_t offset, void* data) // cannot use base here due to mismatch on unix
 {
-    auto*                    stream   = static_cast<za::InputStream*>(data);
+    auto*              stream   = static_cast<za::InputStream*>(data);
     const zb::Optional position = stream->seek(static_cast<zb::SizeT>(offset));
     return position.hasValue() ? 0 : -1;
 }
@@ -77,8 +75,8 @@ struct SoundFileReaderMp3::Impl
 {
     mp3dec_io_t io{};
     mp3dec_ex_t decoder{};
-    zb::U64   numSamples{}; // Decompressed audio storage size
-    zb::U64   position{};   // Position in decompressed audio buffer
+    zb::U64     numSamples{}; // Decompressed audio storage size
+    zb::U64     position{};   // Position in decompressed audio buffer
 };
 
 
@@ -164,7 +162,7 @@ void SoundFileReaderMp3::seek(zb::U64 sampleOffset)
 zb::U64 SoundFileReaderMp3::read(zb::I16* samples, zb::U64 maxCount)
 {
     zb::U64 toRead = zb::min(maxCount, m_impl->numSamples - m_impl->position);
-    toRead           = zb::U64{mp3dec_ex_read(&m_impl->decoder, samples, static_cast<zb::SizeT>(toRead))};
+    toRead         = zb::U64{mp3dec_ex_read(&m_impl->decoder, samples, static_cast<zb::SizeT>(toRead))};
     m_impl->position += toRead;
     return toRead;
 }

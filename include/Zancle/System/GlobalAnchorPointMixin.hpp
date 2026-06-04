@@ -40,7 +40,7 @@ struct GlobalAnchorPointMixin
 
 
 ////////////////////////////////////////////////////////////
-#define ZA_PRIV_DEFINE_MIXIN_GETTER(name, ...)                                                                 \
+#define ZA_PRIV_DEFINE_MIXIN_GETTER(name, ...)                                                                   \
     /** \brief Get the position of the name anchor point */                                                      \
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr auto name(this auto const& self) \
     {                                                                                                            \
@@ -184,7 +184,7 @@ struct GlobalAnchorPointMixin
 
 
 ////////////////////////////////////////////////////////////
-#define ZA_PRIV_DEFINE_MIXIN_SETTER(name, ...)                                                              \
+#define ZA_PRIV_DEFINE_MIXIN_SETTER(name, ...)                                                                \
     /** \brief Set the position based on the name anchor point */                                             \
     template <typename Self>                                                                                  \
     [[gnu::always_inline, gnu::flatten]] inline constexpr void name(this Self& self, const Vec2f newPosition) \

@@ -6,9 +6,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/EllipseShapeData.hpp"
-
 #include "Zancle/Graphics/Priv/EllipticalGlobalBounds.hpp"
-
 #include "Zancle/System/Rect2.hpp"
 
 

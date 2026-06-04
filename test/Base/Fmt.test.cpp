@@ -1,12 +1,9 @@
-#include "StringifySfBaseStringUtil.hpp" // IWYU pragma: keep
+#include "StringifyZbStringUtil.hpp" // IWYU pragma: keep
 #include "StringifyStringViewUtil.hpp"   // IWYU pragma: keep
 #include "Tst/Tst.hpp"
-
-#include "ZancleBase/Fmt/Fmt.hpp"
-
 #include "Zancle/System/Utf8String.hpp"
-
 #include "ZancleBase/Builtin/Strlen.hpp"
+#include "ZancleBase/Fmt/Fmt.hpp"
 #include "ZancleBase/Fmt/FmtArgDefaultAlign.hpp"
 #include "ZancleBase/Fmt/FmtResult.hpp"
 #include "ZancleBase/Fmt/FmtSink.hpp"
@@ -30,8 +27,8 @@ namespace FmtTest // for unity builds
 ////////////////////////////////////////////////////////////
 template <typename... Args>
 [[nodiscard]] zb::StringView formatToView(char (&buffer)[512],
-                                                typename zb::NonDeduced<const zb::FmtString<Args...>>::type fmt,
-                                                const Args&... args)
+                                          typename zb::NonDeduced<const zb::FmtString<Args...>>::type fmt,
+                                          const Args&... args)
 {
     char* const end = zb::fmtIntoBuffer(buffer, fmt, args...);
     if (end == nullptr)
@@ -364,11 +361,11 @@ TEST_CASE("[Base] Fmt.hpp - integer type variety")
     {
         CHECK(zb::fmtToString("{}", static_cast<long long>(-1'234'567'890'123LL)) ==
               zb::String{"-123456789012"
-                               "3"});
+                         "3"});
         CHECK(zb::fmtToString("{}", static_cast<unsigned long long>(18'000'000'000'000ULL)) ==
               zb::String{"180000"
-                               "000000"
-                               "00"});
+                         "000000"
+                         "00"});
     }
 
     SECTION("char formats as a glyph by default (matches libfmt)")
@@ -458,7 +455,7 @@ TEST_CASE("[Base] Fmt.hpp - bool formats as 'true'/'false'")
     {
         CHECK(zb::fmtToString("{}/{}", static_cast<int>(true), static_cast<int>(false)) ==
               zb::String{"1/"
-                               "0"});
+                         "0"});
     }
 }
 
@@ -633,7 +630,7 @@ struct Vec2f
 template <typename T>
 struct MiniVec
 {
-    const T*        data;
+    const T*  data;
     zb::SizeT size;
 };
 
@@ -661,10 +658,10 @@ struct RightHex
 
 [[nodiscard]] inline zb::FmtResult fmtArg(zb::FmtSink& sink, const RightHex& h, const zb::FmtSpec&)
 {
-    char            buf[12]{};
-    zb::SizeT n = 0u;
-    unsigned int    v = h.value;
-    char            tmp[10];
+    char         buf[12]{};
+    zb::SizeT    n = 0u;
+    unsigned int v = h.value;
+    char         tmp[10];
 
     if (v == 0u)
     {
@@ -768,9 +765,9 @@ TEST_CASE("[Base] Fmt.hpp - custom fmtArg (Pattern B: recursive composition)")
     {
         CHECK(zb::fmtToString("a={} b={}", Vec2f{1.f, 2.f}, Vec2f{3.f, 4.f}) ==
               zb::String{"a=(1.000000, "
-                               "2.000000) "
-                               "b=(3.000000, "
-                               "4.000000)"});
+                         "2.000000) "
+                         "b=(3.000000, "
+                         "4.000000)"});
     }
 
     SECTION("Outer width pads the whole composed result")
@@ -833,7 +830,7 @@ TEST_CASE("[Base] Fmt.hpp - custom fmtArg (Pattern C: nested containers)")
         const MiniVec<MiniVec<customtypes::Vec2f>> grid{rows, 2u};
 
         CHECK(zb::fmtToString("{}", grid) == zb::String{"[[(1.000000, 1.000000)], [(2.000000, 2.000000), "
-                                                                    "(3.000000, 3.000000)]]"});
+                                                        "(3.000000, 3.000000)]]"});
     }
 }
 
@@ -865,7 +862,7 @@ TEST_CASE("[Base] Fmt.hpp - FmtSink direct use (low-level API)")
 {
     SECTION("Plain bytes + format mix")
     {
-        char              buf[64];
+        char        buf[64];
         zb::FmtSink sink{buf, sizeof(buf)};
 
         CHECK(sink.append("[", 1u) == zb::FmtResult::Ok);
@@ -879,7 +876,7 @@ TEST_CASE("[Base] Fmt.hpp - FmtSink direct use (low-level API)")
 
     SECTION("Overflow is returned eagerly and does not change the sink")
     {
-        char              buf[5];
+        char        buf[5];
         zb::FmtSink sink{buf, sizeof(buf)};
 
         CHECK(sink.append("hello", 5u) == zb::FmtResult::Ok); // exactly fills buffer
@@ -887,7 +884,7 @@ TEST_CASE("[Base] Fmt.hpp - FmtSink direct use (low-level API)")
         CHECK(sink.append("!", 1u) == zb::FmtResult::Overflow);
         CHECK(sink.size() == 5u);
 
-        char              larger[16];
+        char        larger[16];
         zb::FmtSink fresh{larger, sizeof(larger)};
         CHECK(fresh.append(" world", 6u) == zb::FmtResult::Ok);
         CHECK(fresh.size() == 6u);
@@ -895,7 +892,7 @@ TEST_CASE("[Base] Fmt.hpp - FmtSink direct use (low-level API)")
 
     SECTION("size() as checkpoint + atOffset survives interleaved writes")
     {
-        char              buf[64];
+        char        buf[64];
         zb::FmtSink sink{buf, sizeof(buf)};
 
         CHECK(sink.append("aa", 2u) == zb::FmtResult::Ok);
@@ -933,7 +930,7 @@ TEST_CASE("[Base] Fmt.hpp - invalid built-in specs fail in release")
 {
 #ifndef ZA_DEBUG
     zb::String  out = "prefix";
-    char              buffer[16];
+    char        buffer[16];
     zb::FmtSink sink{buffer, sizeof(buffer)};
 
     CHECK(zb::fmtTo(out, "{:f}", 42) == zb::FmtResult::Failed);
@@ -982,7 +979,7 @@ TEST_CASE("[Base] Fmt.hpp - fmtTo() large output (heap fallback path)")
 
     SECTION("Custom formatter is retried after overflow")
     {
-        int              attemptCount = 0;
+        int        attemptCount = 0;
         zb::String out;
 
         CHECK(zb::fmtTo(out, "{}", customtypes::RetryTag{&attemptCount}) == zb::FmtResult::Ok);
@@ -992,7 +989,7 @@ TEST_CASE("[Base] Fmt.hpp - fmtTo() large output (heap fallback path)")
 
     SECTION("Destination sink overflow is propagated")
     {
-        char              buffer[1];
+        char        buffer[1];
         zb::FmtSink sink{buffer, sizeof(buffer)};
 
         CHECK(zb::fmtTo(sink, "too large") == zb::FmtResult::Overflow);

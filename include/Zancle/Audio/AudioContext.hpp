@@ -6,11 +6,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Audio/Export.hpp"
-
 #include "Zancle/Audio/CaptureDeviceHandle.hpp"
+#include "Zancle/Audio/Export.hpp"
 #include "Zancle/Audio/PlaybackDeviceHandle.hpp"
-
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/PassKey.hpp"
 #include "ZancleBase/Vector.hpp"

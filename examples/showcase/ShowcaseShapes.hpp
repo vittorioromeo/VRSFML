@@ -1,9 +1,7 @@
 #pragma once
 
 #include "ShowcaseExample.hpp"
-
 #include "Zancle/Graphics/BatchedGeometry.hpp"
-
 #include "Zancle/System/Priv/Vec2Base.hpp"
 
 

@@ -7,9 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Config.hpp"
-
 #include "Zancle/System/Export.hpp"
-
 #include "ZancleBase/FunctionRef.hpp"
 #include "ZancleBase/InPlacePImpl.hpp"
 #include "ZancleBase/IntTypes.hpp"

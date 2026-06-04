@@ -6,13 +6,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Window/Export.hpp"
-
 #include "Zancle/Window/ContextSettings.hpp"
+#include "Zancle/Window/Export.hpp"
 #include "Zancle/Window/WindowBase.hpp"
 #include "Zancle/Window/WindowHandle.hpp"
 #include "Zancle/Window/WindowSettings.hpp"
-
 #include "ZancleBase/InPlacePImpl.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/PassKey.hpp"

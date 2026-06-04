@@ -5,10 +5,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Graphics/Image.hpp"
-
 #include "Zancle/Graphics/Color.hpp"
-
+#include "Zancle/Graphics/Image.hpp"
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/IO.hpp"
 #include "Zancle/System/InputStream.hpp"
@@ -16,7 +14,6 @@
 #include "Zancle/System/PathUtils.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Memcpy.hpp"
 #include "ZancleBase/IntTypes.hpp"
@@ -117,7 +114,7 @@ using MallocPtr = zb::UniquePtr<zb::U8, MallocPointerDeleter>;
 ////////////////////////////////////////////////////////////
 struct QOISaveData
 {
-    MallocPtr       ptr;
+    MallocPtr ptr;
     zb::SizeT size;
 };
 
@@ -141,9 +138,7 @@ struct QOISaveData
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] zb::Optional<za::Image> loadQOIImpl(zb::PassKey<za::Image>&& passKey,
-                                                        const zb::U8* const      data,
-                                                        const zb::SizeT          size)
+[[nodiscard]] zb::Optional<za::Image> loadQOIImpl(zb::PassKey<za::Image>&& passKey, const zb::U8* const data, const zb::SizeT size)
 {
     qoi_desc   formatDesc{};
     const auto ptr = MallocPtr(static_cast<zb::U8*>(qoi_decode(data, static_cast<int>(size), &formatDesc, 4)));
@@ -152,10 +147,7 @@ struct QOISaveData
         return zb::nullOpt;
 
     const za::Vec2u imageSize{formatDesc.width, formatDesc.height};
-    return zb::makeOptional<za::Image>(ZB_MOVE(passKey),
-                                             imageSize,
-                                             ptr.get(),
-                                             ptr.get() + imageSize.x * imageSize.y * 4);
+    return zb::makeOptional<za::Image>(ZB_MOVE(passKey), imageSize, ptr.get(), ptr.get() + imageSize.x * imageSize.y * 4);
 }
 
 } // namespace
@@ -305,9 +297,9 @@ zb::Optional<Image> Image::loadFromMemory(const void* data, zb::SizeT size)
     ZB_ASSERT(height > 0 && "Loaded image from memory with height == 0");
 
     return zb::makeOptional<Image>(zb::PassKey<Image>{},
-                                     Vec2i{width, height}.toVec2u(),
-                                     ptr.get(),
-                                     ptr.get() + width * height * 4);
+                                   Vec2i{width, height}.toVec2u(),
+                                   ptr.get(),
+                                   ptr.get() + width * height * 4);
 }
 
 
@@ -405,12 +397,12 @@ bool Image::copy(const Image& source, Vec2u dest, const Rect2i& sourceRect, bool
     const Vec2u dstSize(zb::min(m_size.x - dest.x, srcRect.size.x), zb::min(m_size.y - dest.y, srcRect.size.y));
 
     // Precompute as much as possible
-    const zb::SizeT  pitch     = static_cast<zb::SizeT>(dstSize.x) * 4;
+    const zb::SizeT    pitch     = static_cast<zb::SizeT>(dstSize.x) * 4;
     const unsigned int srcStride = source.m_size.x * 4;
     const unsigned int dstStride = m_size.x * 4;
 
     const zb::U8* srcPixels = source.m_pixels.data() + (srcRect.position.x + srcRect.position.y * source.m_size.x) * 4;
-    zb::U8* dstPixels = m_pixels.data() + (dest.x + dest.y * m_size.x) * 4;
+    zb::U8*       dstPixels = m_pixels.data() + (dest.x + dest.y * m_size.x) * 4;
 
     // Copy the pixels
     if (applyAlpha)
@@ -427,7 +419,7 @@ bool Image::copy(const Image& source, Vec2u dest, const Rect2i& sourceRect, bool
                 // Interpolate RGBA components using the alpha values of the destination and source pixels
                 const zb::U8 srcAlpha = src[3];
                 const zb::U8 dstAlpha = dst[3];
-                const auto     outAlpha = static_cast<zb::U8>(srcAlpha + dstAlpha - srcAlpha * dstAlpha / 255);
+                const auto   outAlpha = static_cast<zb::U8>(srcAlpha + dstAlpha - srcAlpha * dstAlpha / 255);
 
                 dst[3] = outAlpha;
 
@@ -465,7 +457,7 @@ void Image::setPixel(Vec2u coords, Color color)
     ZB_ASSERT(coords.y < m_size.y && "Image::setPixel() y coordinate is out of bounds");
 
     const auto index = (coords.x + coords.y * m_size.x) * 4;
-    zb::U8*  pixel = &m_pixels[index];
+    zb::U8*    pixel = &m_pixels[index];
 
     *pixel++ = color.r;
     *pixel++ = color.g;
@@ -480,7 +472,7 @@ Color Image::getPixel(Vec2u coords) const
     ZB_ASSERT(coords.x < m_size.x && "Image::getPixel() x coordinate is out of bounds");
     ZB_ASSERT(coords.y < m_size.y && "Image::getPixel() y coordinate is out of bounds");
 
-    const auto      index = (coords.x + coords.y * m_size.x) * 4;
+    const auto    index = (coords.x + coords.y * m_size.x) * 4;
     const zb::U8* pixel = &m_pixels[index];
 
     return {pixel[0], pixel[1], pixel[2], pixel[3]};

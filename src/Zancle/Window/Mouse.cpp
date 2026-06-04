@@ -5,14 +5,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/Window/Mouse.hpp"
-
 #include "Zancle/Window/SDLLayer.hpp"
 #include "Zancle/Window/WindowBase.hpp"
 #include "Zancle/Window/WindowContext.hpp"
-
-#include "Zancle/System/Priv/Vec2Base.hpp"
-
 #include "ZancleBase/Assert.hpp"
 
 #include <SDL3/SDL_mouse.h>

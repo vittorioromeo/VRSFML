@@ -15,7 +15,7 @@ template struct za::Vec3<float>;
 template struct za::Vec3<double>;
 template struct za::Vec3<long double>;
 
-#define ZA_INSTANTIATE_VECTOR3_INTEGRAL_MEMBER_FUNCTIONS(type)                     \
+#define ZA_INSTANTIATE_VECTOR3_INTEGRAL_MEMBER_FUNCTIONS(type)                       \
     template type           za::Vec3<type>::lengthSquared() const;                   \
     template type           za::Vec3<type>::dot(const Vec3& rhs) const;              \
     template za::Vec3<type> za::Vec3<type>::cross(const Vec3& rhs) const;            \

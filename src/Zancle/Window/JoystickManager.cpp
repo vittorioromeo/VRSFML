@@ -5,16 +5,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Window/JoystickManager.hpp"
-
+#include "Zancle/System/Err.hpp"
 #include "Zancle/Window/JoystickCapabilities.hpp"
 #include "Zancle/Window/JoystickIdentification.hpp"
+#include "Zancle/Window/JoystickManager.hpp"
 #include "Zancle/Window/JoystickState.hpp"
 #include "Zancle/Window/SDLLayer.hpp"
 #include "Zancle/Window/WindowContext.hpp"
-
-#include "Zancle/System/Err.hpp"
-
 #include "ZancleBase/Algorithm/AnyOf.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Optional.hpp"
@@ -144,9 +141,9 @@ struct JoystickImpl
 struct JoystickManager::Impl
 {
     zb::Optional<JoystickImpl> impls[Joystick::MaxCount];           //!< Joystick implementations
-    JoystickState                states[Joystick::MaxCount];          //!< Joystick states
-    JoystickCapabilities         capabilities[Joystick::MaxCount];    //!< Joystick capabilities
-    JoystickIdentification       identifications[Joystick::MaxCount]; //!< Joystick identifications
+    JoystickState              states[Joystick::MaxCount];          //!< Joystick states
+    JoystickCapabilities       capabilities[Joystick::MaxCount];    //!< Joystick capabilities
+    JoystickIdentification     identifications[Joystick::MaxCount]; //!< Joystick identifications
 };
 
 
@@ -237,8 +234,8 @@ void JoystickManager::update()
             continue; // Empty slot
 
         if (zb::anyOf(connectedJoystickInfos,
-                        connectedJoystickInfos + nextInfoIdx,
-                        [&](const zb::Optional<JoystickInfo>& info)
+                      connectedJoystickInfos + nextInfoIdx,
+                      [&](const zb::Optional<JoystickInfo>& info)
         {
             ZB_ASSERT(info.hasValue());
             return info->id == joyImpl->id;

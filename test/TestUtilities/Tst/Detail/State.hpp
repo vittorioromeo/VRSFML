@@ -98,9 +98,9 @@ struct ContextState
     int         currentTestLine   = 0;
 
     // Rendered operands of the most recent failed assertion (cold path).
-    char            decompBuf[512];
+    char      decompBuf[512];
     zb::SizeT decompLen = 0u;
-    bool            hasDecomp = false;
+    bool      hasDecomp = false;
 
     // Sentinel thrown by `REQUIRE` failure to unwind the test body.
     struct RequireFailedException

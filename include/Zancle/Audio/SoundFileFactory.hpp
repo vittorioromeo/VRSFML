@@ -7,7 +7,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Audio/Export.hpp"
-
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/UniquePtr.hpp"
 

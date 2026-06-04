@@ -4,14 +4,12 @@
 #include "Zancle/Graphics/GraphicsContext.hpp"
 #include "Zancle/Graphics/RenderWindow.hpp"
 #include "Zancle/Graphics/Texture.hpp"
-
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Time.hpp"
 #include "Zancle/System/WindowsHeader.hpp"
-
 #include "ZancleBase/Math/Cos.hpp"
 
 
@@ -150,9 +148,9 @@ int main()
 
                 // Draw sprite 1 on view 1
                 zancleView1.draw(texture1,
-                               {.position = texture1.getSize().toVec2f() / 2.f,
-                                .origin   = texture1.getSize().toVec2f() / 2.f,
-                                .rotation = za::degrees(time * 100)});
+                                 {.position = texture1.getSize().toVec2f() / 2.f,
+                                  .origin   = texture1.getSize().toVec2f() / 2.f,
+                                  .rotation = za::degrees(time * 100)});
 
                 // Draw sprite 2 on view 2
                 zancleView2.draw(texture2, {.position = {zb::cos(time) * 100.f, 0.f}});

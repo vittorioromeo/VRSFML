@@ -1,7 +1,6 @@
 #include "BubbleIdleMain.hpp"
 #include "MainShaders.hpp"
 #include "Profile.hpp"
-
 #include "Zancle/ImGui/IncludeImGui.hpp"
 
 namespace

@@ -1,10 +1,7 @@
 #include "Tst/Tst.hpp"
-
 #include "Zancle/System/AtomicMutex.hpp"
-
 #include "Zancle/System/LockGuard.hpp"
 #include "Zancle/System/Thread.hpp"
-
 #include "ZancleBase/Trait/IsAssignable.hpp"
 #include "ZancleBase/Trait/IsConstructible.hpp"
 #include "ZancleBase/Vector.hpp"

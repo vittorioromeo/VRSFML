@@ -1,12 +1,9 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
-
-#include "Zancle/System/Thread.hpp"
-
 #include "Zancle/System/Atomic.hpp"
 #include "Zancle/System/Clock.hpp"
+#include "Zancle/System/Thread.hpp"
 #include "Zancle/System/Time.hpp"
-
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Trait/IsCopyAssignable.hpp"
 #include "ZancleBase/Trait/IsCopyConstructible.hpp"
@@ -195,7 +192,7 @@ TEST_CASE("[System] SFML/System/Thread.hpp - sleep sleeps for at least the given
 
 TEST_CASE("[System] SFML/System/Thread.hpp - many threads each see distinct ids")
 {
-    constexpr int             threadCount = 8;
+    constexpr int       threadCount = 8;
     za::Atomic<zb::U32> distinctSum{0u};
 
     za::Thread threads[threadCount]{};

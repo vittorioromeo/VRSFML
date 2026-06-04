@@ -6,15 +6,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Rect2.hpp"
 #include "Zancle/Window/Cursor.hpp"
 #include "Zancle/Window/DisplayOrientation.hpp"
 #include "Zancle/Window/Keyboard.hpp"
 #include "Zancle/Window/Mouse.hpp"
 #include "Zancle/Window/WindowHandle.hpp"
-
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Macros.hpp"
@@ -120,14 +118,12 @@ template <typename T>
 struct SDLAllocatedArray
 {
     ////////////////////////////////////////////////////////////
-    SDLUPtr<T>  ptr;
-    zb::SizeT count;
+    SDLUPtr<T> ptr;
+    zb::SizeT  count;
 
 
     ////////////////////////////////////////////////////////////
-    explicit SDLAllocatedArray(SDLUPtr<T>&& thePtr, const zb::SizeT theCount) :
-        ptr{ZB_MOVE(thePtr)},
-        count{theCount}
+    explicit SDLAllocatedArray(SDLUPtr<T>&& thePtr, const zb::SizeT theCount) : ptr{ZB_MOVE(thePtr)}, count{theCount}
     {
     }
 

@@ -17,25 +17,17 @@
 #include "Shrine.hpp"
 #include "ShrineConstants.hpp"
 #include "UIState.hpp"
-
-#include "ExampleUtils/Easing.hpp"
-#include "ExampleUtils/HueColor.hpp"
-#include "ExampleUtils/Progress.hpp"
-
-#include "Zancle/ImGui/ImGuiContext.hpp"
-#include "Zancle/ImGui/IncludeImGui.hpp"
-#include "Zancle/ImGui/IncludeImGuiInternal.hpp"
-
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/DrawTextureSettings.hpp"
 #include "Zancle/Graphics/RenderTexture.hpp"
 #include "Zancle/Graphics/Sprite.hpp"
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/TextureAtlas.hpp"
-
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
+#include "Zancle/ImGui/IncludeImGuiInternal.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-
 #include "ZancleBase/Algorithm/AnyOf.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Strlen.hpp"
@@ -53,6 +45,10 @@
 #include "ZancleBase/ToString.hpp"
 #include "ZancleBase/UniquePtr.hpp"
 #include "ZancleBase/Vector.hpp"
+
+#include "ExampleUtils/Easing.hpp"
+#include "ExampleUtils/HueColor.hpp"
+#include "ExampleUtils/Progress.hpp"
 
 #include <cstdarg>
 #include <cstdio>
@@ -817,13 +813,13 @@ bool Main::uiCheckPurchasability(const char* label, const bool disabled)
         uiState.btnWasDisabled[label] = false;
 
         const bool anyPurchaseUnlockedEffectWithSameLabel = zb::anyOf(uiState.purchaseUnlockedEffects.begin(),
-                                                                            uiState.purchaseUnlockedEffects.end(),
-                                                                            [&](const PurchaseUnlockedEffect& effect)
+                                                                      uiState.purchaseUnlockedEffects.end(),
+                                                                      [&](const PurchaseUnlockedEffect& effect)
         { return effect.widgetLabel == label; });
 
         const bool anyPurchaseUnlockedEffectWithSameY = zb::anyOf(uiState.purchaseUnlockedEffects.begin(),
-                                                                        uiState.purchaseUnlockedEffects.end(),
-                                                                        [&](const PurchaseUnlockedEffect& effect)
+                                                                  uiState.purchaseUnlockedEffects.end(),
+                                                                  [&](const PurchaseUnlockedEffect& effect)
         {
             const auto* it = uiState.uiLabelToY.find(effect.widgetLabel);
             return it != uiState.uiLabelToY.end() && it->second == uiState.uiLabelToY[label];
@@ -1080,8 +1076,8 @@ bool Main::uiRadio(const char* label, int* i, const int value)
 ////////////////////////////////////////////////////////////
 void Main::uiSetUnlockLabelY(const zb::SizeT unlockId)
 {
-    const zb::String label = zb::toString(unlockId);
-    uiState.uiLabelToY[label]    = ImGui::GetCursorScreenPos().y;
+    const zb::String label    = zb::toString(unlockId);
+    uiState.uiLabelToY[label] = ImGui::GetCursorScreenPos().y;
 }
 
 ////////////////////////////////////////////////////////////
@@ -1100,13 +1096,13 @@ bool Main::checkUiUnlock(const zb::SizeT unlockId, const bool unlockCondition)
         profile.uiUnlocks[unlockId] = true;
 
         const bool anyPurchaseUnlockedEffectWithSameLabel = zb::anyOf(uiState.purchaseUnlockedEffects.begin(),
-                                                                            uiState.purchaseUnlockedEffects.end(),
-                                                                            [&](const PurchaseUnlockedEffect& effect)
+                                                                      uiState.purchaseUnlockedEffects.end(),
+                                                                      [&](const PurchaseUnlockedEffect& effect)
         { return effect.widgetLabel == label; });
 
         const bool anyPurchaseUnlockedEffectWithSameY = zb::anyOf(uiState.purchaseUnlockedEffects.begin(),
-                                                                        uiState.purchaseUnlockedEffects.end(),
-                                                                        [&](const PurchaseUnlockedEffect& effect)
+                                                                  uiState.purchaseUnlockedEffects.end(),
+                                                                  [&](const PurchaseUnlockedEffect& effect)
         {
             const auto* it = uiState.uiLabelToY.find(effect.widgetLabel);
             return it != uiState.uiLabelToY.end() && it->second == uiState.uiLabelToY[label];

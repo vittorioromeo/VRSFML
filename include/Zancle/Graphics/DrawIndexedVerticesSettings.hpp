@@ -9,7 +9,6 @@
 #include "Zancle/Graphics/IndexType.hpp"
 #include "Zancle/Graphics/PrimitiveType.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
-
 #include "ZancleBase/RequireDesignatedInitializers.hpp"
 #include "ZancleBase/Span.hpp"
 
@@ -30,7 +29,7 @@ struct [[nodiscard]] DrawIndexedVerticesSettings // NOLINT(cppcoreguidelines-pro
 
     zb::Span<const Vertex>    vertexSpan;    //!< Range of unique vertices that will be referenced by the indices
     zb::Span<const IndexType> indexSpan;     //!< Range of indices into `vertexSpan` defining the primitives
-    PrimitiveType               primitiveType; //!< How to interpret the indexed primitives
+    PrimitiveType             primitiveType; //!< How to interpret the indexed primitives
 };
 
 } // namespace za

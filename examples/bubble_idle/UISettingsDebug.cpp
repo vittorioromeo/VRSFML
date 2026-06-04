@@ -12,23 +12,19 @@
 #include "Shrine.hpp"
 #include "UIState.hpp"
 #include "Version.hpp"
-
-#include "ExampleUtils/Progress.hpp"
-
-#include "Zancle/ImGui/IncludeImGui.hpp"
-
 #include "Zancle/Graphics/RenderWindow.hpp"
 #include "Zancle/Graphics/View.hpp"
-
+#include "Zancle/ImGui/IncludeImGui.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Time.hpp"
-
 #include "ZancleBase/Clamp.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/String.hpp"
 #include "ZancleBase/ToString.hpp"
 #include "ZancleBase/Vector.hpp"
+
+#include "ExampleUtils/Progress.hpp"
 
 namespace
 {
@@ -69,9 +65,9 @@ void drawButtonRow2(const char* label0, TAction0&& action0, const char* label1, 
 
 void drawDebugQuickTools(Main& main)
 {
-    static int                catTypeN          = 0;
+    static int          catTypeN          = 0;
     static zb::I64      speedrunTimerSet  = 0;
-    static char               filenameBuf[128]  = "userdata/custom.json";
+    static char         filenameBuf[128]  = "userdata/custom.json";
     constexpr zb::I64   speedrunTimerStep = 1;
     constexpr zb::SizeT currencyStep      = 1u;
 
@@ -146,7 +142,7 @@ void drawDebugQuickTools(Main& main)
     if (ImGui::Button("Nap random cat", {fullWidth(), 0.f}))
     {
         zb::SizeT eligibleCount = 0u;
-        Cat*            selected      = nullptr;
+        Cat*      selected      = nullptr;
 
         for (Cat& candidate : main.pt->cats)
         {
@@ -293,7 +289,7 @@ void drawDebugStateEditors(Main& main)
     ImGui::PushFont(main.fontImGuiMouldyCheese);
 
     zb::SizeT integerStep = 1u;
-    float           floatStep   = 1.f;
+    float     floatStep   = 1.f;
     zb::SizeT counter     = 0u;
 
     const auto scalarInput = [&](const char* label, float& value)
@@ -615,11 +611,11 @@ void Main::uiDrawDebugWindow()
 
 void Main::uiSettingsDrawDebugTab()
 {
-    const float spacing      = ImGui::GetStyle().ItemSpacing.x;
-    const float contentWidth = ImGui::GetContentRegionAvail().x;
-    const float desiredLeft  = 430.f * profile.uiScale;
-    const float minLeft      = 460.f * profile.uiScale;
-    const float maxLeft      = contentWidth * 0.48f;
+    const float spacing       = ImGui::GetStyle().ItemSpacing.x;
+    const float contentWidth  = ImGui::GetContentRegionAvail().x;
+    const float desiredLeft   = 430.f * profile.uiScale;
+    const float minLeft       = 460.f * profile.uiScale;
+    const float maxLeft       = contentWidth * 0.48f;
     const float leftPaneWidth = maxLeft > minLeft ? zb::clamp(desiredLeft, minLeft, maxLeft) : contentWidth * 0.5f;
 
     ImGui::BeginChild("DebugQuickToolsPane", {leftPaneWidth, 0.f}, true);

@@ -7,15 +7,14 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Color.hpp" // IWYU pragma: keep
-
-#include "Zancle/System/Rect2.hpp" // IWYU pragma: keep
+#include "Zancle/System/Rect2.hpp"   // IWYU pragma: keep
 
 
 ////////////////////////////////////////////////////////////
 /// \brief Define the data members of a shape's settings
 ///
 ////////////////////////////////////////////////////////////
-#define ZA_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE                                                             \
+#define ZA_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE                                                               \
     ::za::Rect2f textureRect{};                    /*!< Area of the source texture to display for the fill */    \
     ::za::Rect2f outlineTextureRect{};             /*!< Area of the source texture to display for the outline */ \
     ::za::Color  fillColor{::za::Color::White};    /*!< Fill color */                                            \

@@ -6,12 +6,10 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Audio/SoundFileWriterWav.hpp"
-
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/IO.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/PathUtils.hpp"
-
 #include "ZancleBase/Algorithm/AdjacentFind.hpp"
 #include "ZancleBase/Algorithm/Find.hpp"
 #include "ZancleBase/Algorithm/Sort.hpp"
@@ -61,7 +59,7 @@ namespace za::priv
 struct SoundFileWriterWav::Impl
 {
     zb::Optional<za::OutFile> file;             //!< Output file handle (empty before `open()`)
-    unsigned int                channelCount{};   //!< Channel count of the sound being written
+    unsigned int              channelCount{};   //!< Channel count of the sound being written
     zb::SizeT                 remapTable[18]{}; //!< Table we use to remap source to target channel order
 };
 
@@ -155,7 +153,7 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
 
         struct SupportedChannel
         {
-            zb::U32    bit;
+            zb::U32      bit;
             SoundChannel channel;
         };
 

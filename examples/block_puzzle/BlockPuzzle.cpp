@@ -1,16 +1,10 @@
 #include "ExampleProfiler/Profiler.hpp"
 #include "ExampleProfiler/ProfilerImGui.hpp"
-
-#include "ExampleUtils/ControlFlow.hpp"
-#include "ExampleUtils/Easing.hpp"
-#include "ExampleUtils/HueColor.hpp"
-#include "ExampleUtils/MathUtils.hpp"
-#include "ExampleUtils/RNGFast.hpp"
-#include "ExampleUtils/Scaling.hpp"
-
-#include "Zancle/ImGui/ImGuiContext.hpp"
-#include "Zancle/ImGui/IncludeImGui.hpp"
-
+#include "Zancle/Audio/AudioContext.hpp"
+#include "Zancle/Audio/Music.hpp"
+#include "Zancle/Audio/MusicReader.hpp"
+#include "Zancle/Audio/Sound.hpp"
+#include "Zancle/Audio/SoundBuffer.hpp"
 #include "Zancle/Graphics/BlendMode.hpp"
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/CurvedArrowShapeData.hpp"
@@ -30,25 +24,18 @@
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/TextureAtlas.hpp"
 #include "Zancle/Graphics/View.hpp"
-
-#include "Zancle/Audio/AudioContext.hpp"
-#include "Zancle/Audio/Music.hpp"
-#include "Zancle/Audio/MusicReader.hpp"
-#include "Zancle/Audio/Sound.hpp"
-#include "Zancle/Audio/SoundBuffer.hpp"
-
-#include "Zancle/Window/Cursor.hpp"
-#include "Zancle/Window/Event.hpp"
-#include "Zancle/Window/EventUtils.hpp"
-#include "Zancle/Window/Keyboard.hpp"
-#include "Zancle/Window/Mouse.hpp"
-
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Rect2.hpp"
 #include "Zancle/System/Vec2.hpp"
-
+#include "Zancle/Window/Cursor.hpp"
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/Keyboard.hpp"
+#include "Zancle/Window/Mouse.hpp"
 #include "ZancleBase/Abort.hpp"
 #include "ZancleBase/Algorithm/Erase.hpp"
 #include "ZancleBase/Algorithm/Sort.hpp"
@@ -67,6 +54,13 @@
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/Variant.hpp"
 #include "ZancleBase/Vector.hpp"
+
+#include "ExampleUtils/ControlFlow.hpp"
+#include "ExampleUtils/Easing.hpp"
+#include "ExampleUtils/HueColor.hpp"
+#include "ExampleUtils/MathUtils.hpp"
+#include "ExampleUtils/RNGFast.hpp"
+#include "ExampleUtils/Scaling.hpp"
 
 // TODO P2:
 // - keys should have different colors compared to blocks
@@ -160,10 +154,10 @@ enum class GravityType : zb::U8
 ////////////////////////////////////////////////////////////
 struct Block
 {
-    za::Vec2i                     position;
-    BlockType                     type;
-    za::Vec2i                     gravityDir = {0, 0};
-    bool                          fixed      = false;
+    za::Vec2i               position;
+    BlockType               type;
+    za::Vec2i               gravityDir = {0, 0};
+    bool                    fixed      = false;
     zb::Optional<BlockKind> locked     = {};
 };
 
@@ -620,10 +614,10 @@ private:
     za::Clock m_fpsClock;
 
     ////////////////////////////////////////////////////////////
-    zb::Vector<World>             m_prevWorlds;
-    World                               m_world;
+    zb::Vector<World>       m_prevWorlds;
+    World                   m_world;
     zb::Optional<zb::SizeT> m_grabbedObjectId;
-    zb::Vector<TurnEvent>         m_turnEvents;
+    zb::Vector<TurnEvent>   m_turnEvents;
 
     ////////////////////////////////////////////////////////////
     zb::Vector<ParticleData> m_lavaParticlesTop;
@@ -1458,9 +1452,8 @@ public:
                         p.scale   = zb::max(p.scale - p.scaleDecay * deltaTimeMs, 0.f);
                     }
 
-                    zb::vectorEraseIf(particleLikeVec, [](const auto& particleLike) {
-                        return particleLike.opacity <= 0.f;
-                    });
+                    zb::vectorEraseIf(particleLikeVec,
+                                      [](const auto& particleLike) { return particleLike.opacity <= 0.f; });
                 };
 
                 updateParticleLike(m_lavaParticles);
@@ -1651,7 +1644,7 @@ public:
                                 if (rotateGravityDir->objectId != objectId)
                                     return false;
 
-                                const float mult = rotateGravityDir->clockwise ? 1.f : -1.f;
+                                const float mult     = rotateGravityDir->clockwise ? 1.f : -1.f;
                                 arrowRotationRadians = easeInOutSine(rotateGravityDir->progress) * zb::halfPi * mult;
 
                                 scaleMultiplier.x += 0.35f * easeInOutSine(bounce(rotateGravityDir->progress));

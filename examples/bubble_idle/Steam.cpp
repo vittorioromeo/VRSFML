@@ -14,7 +14,6 @@
 
 #include "Zancle/System/Fmt/FmtPath.hpp"
 #include "Zancle/System/IO.hpp"
-
 #include "ZancleBase/AnkerlUnorderedDense.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Fmt/Fmt.hpp"
@@ -130,9 +129,9 @@ public:
 
     bool setRichPresenceInGame(zb::StringView levelNameFormat);
 
-    bool                                   setAndStoreStat(zb::StringView name, int data);
-    [[nodiscard]] bool                     getAchievement(bool* out, zb::StringView name);
-    [[nodiscard]] bool                     getStat(int* out, zb::StringView name);
+    bool                             setAndStoreStat(zb::StringView name, int data);
+    [[nodiscard]] bool               getAchievement(bool* out, zb::StringView name);
+    [[nodiscard]] bool               getStat(int* out, zb::StringView name);
     [[nodiscard]] zb::Optional<bool> isAchievementUnlocked(const char* name);
 
     bool updateHardcodedAchievements();

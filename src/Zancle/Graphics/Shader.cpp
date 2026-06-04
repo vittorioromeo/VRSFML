@@ -5,25 +5,21 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Graphics/Shader.hpp"
-
-#include "Zancle/Graphics/DefaultShader.hpp"
-#include "Zancle/Graphics/Glsl.hpp"
-#include "Zancle/Graphics/GraphicsContext.hpp"
-#include "Zancle/Graphics/ShaderUtils.hpp"
-#include "Zancle/Graphics/Texture.hpp"
-
 #include "Zancle/GLUtils/GLCheck.hpp"
 #include "Zancle/GLUtils/GLSharedContextGuard.hpp"
 #include "Zancle/GLUtils/GLUtils.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
-
+#include "Zancle/Graphics/DefaultShader.hpp"
+#include "Zancle/Graphics/Glsl.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/Shader.hpp"
+#include "Zancle/Graphics/ShaderUtils.hpp"
+#include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/IO.hpp"
 #include "Zancle/System/InputStream.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/PathUtils.hpp"
-
 #include "ZancleBase/AnkerlUnorderedDense.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Memcpy.hpp"
@@ -102,8 +98,7 @@ struct [[nodiscard]] BufferSlice
 
 ////////////////////////////////////////////////////////////
 // Read the contents of a stream into an array of char
-[[nodiscard]] zb::Optional<BufferSlice> appendStreamContentsToVector(za::InputStream&        stream,
-                                                                           zb::Vector<char>& buffer)
+[[nodiscard]] zb::Optional<BufferSlice> appendStreamContentsToVector(za::InputStream& stream, zb::Vector<char>& buffer)
 {
     const zb::Optional<zb::SizeT> size = stream.getSize();
 
@@ -221,11 +216,11 @@ void printLinesWithNumbers(zb::StringView text)
     while (lineStart < text.size())
     {
         // Find the position of the next newline character.
-        zb::SizeT newlinePos = text.find('\n', lineStart);
-        const bool      lastLine   = (newlinePos == zb::StringView::nPos);
+        zb::SizeT  newlinePos = text.find('\n', lineStart);
+        const bool lastLine   = (newlinePos == zb::StringView::nPos);
 
         const zb::StringView line = lastLine ? text.substrByPosLen(lineStart)
-                                                   : text.substrByPosLen(lineStart, newlinePos - lineStart);
+                                             : text.substrByPosLen(lineStart, newlinePos - lineStart);
 
         // Check if this line is a #line directive and update the tracked line number
         if (line.size() > lineDirectivePrefix.size() &&
@@ -449,8 +444,7 @@ zb::Optional<Shader> Shader::loadFromFile(const LoadFromFileSettings& settings)
     buffer.clear();
 
     // Helper function
-    const auto readIntoBufferSlice =
-        [&](const char* typeStr, const Path& optPath, zb::Optional<BufferSlice>& optBufferSlice)
+    const auto readIntoBufferSlice = [&](const char* typeStr, const Path& optPath, zb::Optional<BufferSlice>& optBufferSlice)
     {
         if (optPath.empty())
             return true;
@@ -886,8 +880,8 @@ Shader::Shader(zb::PassKey<Shader>&&, unsigned int shaderProgram) :
 
 ////////////////////////////////////////////////////////////
 zb::Optional<Shader> Shader::compile(zb::StringView vertexShaderCode,
-                                       zb::StringView geometryShaderCode,
-                                       zb::StringView fragmentShaderCode)
+                                     zb::StringView geometryShaderCode,
+                                     zb::StringView fragmentShaderCode)
 {
     ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 

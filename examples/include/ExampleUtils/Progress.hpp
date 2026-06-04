@@ -351,8 +351,7 @@ struct [[nodiscard]] TimedCountdown : Countdown
 ////////////////////////////////////////////////////////////
 /// \brief Returns `opt->asProgress().getElapsed()` if present, else `fallback`.
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline float getElapsedOr(const zb::Optional<TimedCountdown>& opt,
-                                                            const float                               fallback) noexcept
+[[nodiscard, gnu::always_inline]] inline float getElapsedOr(const zb::Optional<TimedCountdown>& opt, const float fallback) noexcept
 {
     return opt.hasValue() ? opt->asProgress().getElapsed() : fallback;
 }

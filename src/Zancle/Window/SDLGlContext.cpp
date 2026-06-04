@@ -5,15 +5,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Window/SDLGlContext.hpp"
-
+#include "Zancle/System/Err.hpp"
 #include "Zancle/Window/ContextSettings.hpp"
+#include "Zancle/Window/SDLGlContext.hpp"
 #include "Zancle/Window/SDLLayer.hpp"
 #include "Zancle/Window/SDLWindowImpl.hpp"
 #include "Zancle/Window/WindowContext.hpp"
-
-#include "Zancle/System/Err.hpp"
-
 #include "ZancleBase/Assert.hpp"
 
 #include <SDL3/SDL_error.h>
@@ -144,7 +141,7 @@ SDL_Window* SDLGlContext::getSDLWindow() const noexcept
 bool SDLGlContext::makeCurrent(const bool activate)
 {
     ZB_ASSERT((!activate || m_context != nullptr) &&
-                     "Cannot activate SDL GL context: context was not successfully created");
+              "Cannot activate SDL GL context: context was not successfully created");
 
     auto*       targetWindow  = activate ? m_window : nullptr;
     auto*       targetContext = activate ? m_context : nullptr;

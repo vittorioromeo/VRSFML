@@ -149,7 +149,5 @@
 
     const float c4 = (2.f * zb::pi) / 3.f;
 
-    return x == 0.f   ? 0.f
-           : x == 1.f ? 1.f
-                      : zb::pow(2.f, -10.f * x) * zb::sin((x * 10.f - 0.75f) * c4) + 1.f;
+    return x == 0.f ? 0.f : x == 1.f ? 1.f : zb::pow(2.f, -10.f * x) * zb::sin((x * 10.f - 0.75f) * c4) + 1.f;
 }

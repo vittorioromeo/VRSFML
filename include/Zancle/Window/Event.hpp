@@ -6,14 +6,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Vec3.hpp"
 #include "Zancle/Window/Joystick.hpp"
 #include "Zancle/Window/Keyboard.hpp"
 #include "Zancle/Window/Mouse.hpp"
 #include "Zancle/Window/Sensor.hpp"
-
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Vec3.hpp"
-
 #include "ZancleBase/Variant.hpp"
 
 
@@ -421,8 +419,7 @@ private:
 #define ZA_PRIV_EVENT_X_EXPAND(x) x
 #define ZA_PRIV_EVENT_X_COMMA()   ,
 
-#define ZA_PRIV_EVENT_VARIANT_TYPE \
-    ::zb::Variant<ZA_PRIV_EVENTS_X_MACRO(ZA_PRIV_EVENT_X_EXPAND, ZA_PRIV_EVENT_X_COMMA)>
+#define ZA_PRIV_EVENT_VARIANT_TYPE ::zb::Variant<ZA_PRIV_EVENTS_X_MACRO(ZA_PRIV_EVENT_X_EXPAND, ZA_PRIV_EVENT_X_COMMA)>
 
     using VariantType = ZA_PRIV_EVENT_VARIANT_TYPE;
 

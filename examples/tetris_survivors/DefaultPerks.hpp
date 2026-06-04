@@ -8,7 +8,6 @@
 #include "LaserDirection.hpp"
 #include "Perk.hpp"
 #include "World.hpp"
-
 #include "ZancleBase/Fmt/FmtToString.hpp"
 #include "ZancleBase/String.hpp"
 
@@ -31,7 +30,7 @@ struct [[nodiscard]] PerkChainLightning : Perk
     [[nodiscard]] zb::String getDescription(const World& world) const override
     {
         return zb::fmtToString("Each time lightning strikes, add a {}% chance to hit an additional block.",
-                                     world.perkChainLightning + chanceIncrease);
+                               world.perkChainLightning + chanceIncrease);
     }
 
     /////////////////////////////////////////////////////////////
@@ -194,8 +193,8 @@ struct [[nodiscard]] PerkVerticalDrillUnlock : Perk
     [[nodiscard]] zb::String getInventoryStr(const World& world) const override
     {
         return zb::fmtToString("(penetration: {}, coverage: {})",
-                                     world.perkDrill[DrillDirection::Down]->maxPenetration,
-                                     world.perkDrill[DrillDirection::Down]->coverage);
+                               world.perkDrill[DrillDirection::Down]->maxPenetration,
+                               world.perkDrill[DrillDirection::Down]->coverage);
     }
 
     /////////////////////////////////////////////////////////////
@@ -235,15 +234,15 @@ struct [[nodiscard]] PerkVerticalDrillPenetration : Perk
     [[nodiscard]] zb::String getDescription(const World& world) const override
     {
         return zb::fmtToString("Increase the maximum number of blocks damaged to {}.",
-                                     world.perkDrill[DrillDirection::Down]->maxPenetration + penetrationIncrease);
+                               world.perkDrill[DrillDirection::Down]->maxPenetration + penetrationIncrease);
     }
 
     /////////////////////////////////////////////////////////////
     [[nodiscard]] zb::String getProgressionStr(const World& world) const override
     {
         return zb::fmtToString("{} -> {}",
-                                     world.perkDrill[DrillDirection::Down]->maxPenetration,
-                                     world.perkDrill[DrillDirection::Down]->maxPenetration + penetrationIncrease);
+                               world.perkDrill[DrillDirection::Down]->maxPenetration,
+                               world.perkDrill[DrillDirection::Down]->maxPenetration + penetrationIncrease);
     }
 
     /////////////////////////////////////////////////////////////
@@ -498,8 +497,7 @@ struct [[nodiscard]] PerkDeleteFloorPerNTetraminos : Perk
     [[nodiscard]] zb::String getDescription(const World& world) const override
     {
         if (!world.perkDeleteFloorPerNTetraminos.hasValue())
-            return zb::fmtToString("Every {} tetraminos you place, delete the bottom row of the grid.",
-                                         initialThreshold);
+            return zb::fmtToString("Every {} tetraminos you place, delete the bottom row of the grid.", initialThreshold);
 
         return "Decrease the number of tetraminos needed to trigger the Janitor effect.";
     }
@@ -511,8 +509,8 @@ struct [[nodiscard]] PerkDeleteFloorPerNTetraminos : Perk
             return zb::fmtToString("Activates at {}", initialThreshold);
 
         return zb::fmtToString("{} -> {}",
-                                     world.perkDeleteFloorPerNTetraminos->nTetraminos,
-                                     world.perkDeleteFloorPerNTetraminos->nTetraminos - 1);
+                               world.perkDeleteFloorPerNTetraminos->nTetraminos,
+                               world.perkDeleteFloorPerNTetraminos->nTetraminos - 1);
     }
 
     /////////////////////////////////////////////////////////////
@@ -562,9 +560,8 @@ struct [[nodiscard]] PerkRndHitPerNTetraminos : Perk
     [[nodiscard]] zb::String getDescription(const World& world) const override
     {
         if (!world.perkRndHitPerNTetraminos.hasValue())
-            return zb::
-                fmtToString("Every {} tetraminos you place, randomly damage a block with a lightning strike.",
-                            initialThreshold);
+            return zb::fmtToString("Every {} tetraminos you place, randomly damage a block with a lightning strike.",
+                                   initialThreshold);
 
         return "Decrease the number of tetraminos needed to trigger the On-Placement Strike.";
     }
@@ -576,8 +573,8 @@ struct [[nodiscard]] PerkRndHitPerNTetraminos : Perk
             return zb::fmtToString("Activates at {}", initialThreshold);
 
         return zb::fmtToString("{} -> {}",
-                                     world.perkRndHitPerNTetraminos->nTetraminos,
-                                     world.perkRndHitPerNTetraminos->nTetraminos - 1);
+                               world.perkRndHitPerNTetraminos->nTetraminos,
+                               world.perkRndHitPerNTetraminos->nTetraminos - 1);
     }
 
     /////////////////////////////////////////////////////////////
@@ -675,8 +672,7 @@ struct [[nodiscard]] PerkHorizontalDrillUnlock : Perk
     [[nodiscard]] zb::String getDescription(const World&) const override
     {
         const auto* lowerCaseDirectionStr = (TDirection == DrillDirection::Left) ? "left" : "right";
-        return zb::fmtToString("Damage blocks directly adjacent to the {} of the placed tetramino.",
-                                     lowerCaseDirectionStr);
+        return zb::fmtToString("Damage blocks directly adjacent to the {} of the placed tetramino.", lowerCaseDirectionStr);
     }
 
     /////////////////////////////////////////////////////////////
@@ -689,8 +685,8 @@ struct [[nodiscard]] PerkHorizontalDrillUnlock : Perk
     [[nodiscard]] zb::String getInventoryStr(const World& world) const override
     {
         return zb::fmtToString("(penetration: {}, coverage: {})",
-                                     world.perkDrill[TDirection]->maxPenetration,
-                                     world.perkDrill[TDirection]->coverage);
+                               world.perkDrill[TDirection]->maxPenetration,
+                               world.perkDrill[TDirection]->coverage);
     }
 
     /////////////////////////////////////////////////////////////
@@ -732,15 +728,15 @@ struct [[nodiscard]] PerkHorizontalDrillPenetration : Perk
     [[nodiscard]] zb::String getDescription(const World& world) const override
     {
         return zb::fmtToString("Increase the maximum number of blocks damaged to {}.",
-                                     world.perkDrill[TDirection]->maxPenetration + penetrationIncrease);
+                               world.perkDrill[TDirection]->maxPenetration + penetrationIncrease);
     }
 
     /////////////////////////////////////////////////////////////
     [[nodiscard]] zb::String getProgressionStr(const World& world) const override
     {
         return zb::fmtToString("{} -> {}",
-                                     world.perkDrill[TDirection]->maxPenetration,
-                                     world.perkDrill[TDirection]->maxPenetration + penetrationIncrease);
+                               world.perkDrill[TDirection]->maxPenetration,
+                               world.perkDrill[TDirection]->maxPenetration + penetrationIncrease);
     }
 
     /////////////////////////////////////////////////////////////
@@ -788,15 +784,15 @@ struct [[nodiscard]] PerkHorizontalDrillCoverage : Perk
     [[nodiscard]] zb::String getDescription(const World& world) const override
     {
         return zb::fmtToString("Increase the maximum length of the drill to {} blocks.",
-                                     world.perkDrill[TDirection]->coverage + lengthIncrease);
+                               world.perkDrill[TDirection]->coverage + lengthIncrease);
     }
 
     /////////////////////////////////////////////////////////////
     [[nodiscard]] zb::String getProgressionStr(const World& world) const override
     {
         return zb::fmtToString("{} -> {}",
-                                     world.perkDrill[TDirection]->coverage,
-                                     world.perkDrill[TDirection]->coverage + lengthIncrease);
+                               world.perkDrill[TDirection]->coverage,
+                               world.perkDrill[TDirection]->coverage + lengthIncrease);
     }
 
     /////////////////////////////////////////////////////////////
@@ -855,8 +851,7 @@ struct [[nodiscard]] PerkDiagonalLaserUnlock : Perk
     [[nodiscard]] zb::String getDescription(const World&) const override
     {
         const auto* lowerCaseDirectionStr = (TDirection == LaserDirection::Left) ? "southwest" : "southeast";
-        return zb::fmtToString("Damage blocks placed diagonally to the {} of the placed tetramino.",
-                                     lowerCaseDirectionStr);
+        return zb::fmtToString("Damage blocks placed diagonally to the {} of the placed tetramino.", lowerCaseDirectionStr);
     }
 
     /////////////////////////////////////////////////////////////
@@ -869,8 +864,8 @@ struct [[nodiscard]] PerkDiagonalLaserUnlock : Perk
     [[nodiscard]] zb::String getInventoryStr(const World& world) const override
     {
         return zb::fmtToString("(penetration: {}, bounce: {})",
-                                     world.perkLaser[TDirection]->maxPenetration,
-                                     world.perkLaser[TDirection]->bounce ? "yes" : "no");
+                               world.perkLaser[TDirection]->maxPenetration,
+                               world.perkLaser[TDirection]->bounce ? "yes" : "no");
     }
 
     /////////////////////////////////////////////////////////////
@@ -912,15 +907,15 @@ struct [[nodiscard]] PerkDiagonalLaserPenetration : Perk
     [[nodiscard]] zb::String getDescription(const World& world) const override
     {
         return zb::fmtToString("Increase the maximum number of blocks damaged to {}.",
-                                     world.perkLaser[TDirection]->maxPenetration + penetrationIncrease);
+                               world.perkLaser[TDirection]->maxPenetration + penetrationIncrease);
     }
 
     /////////////////////////////////////////////////////////////
     [[nodiscard]] zb::String getProgressionStr(const World& world) const override
     {
         return zb::fmtToString("{} -> {}",
-                                     world.perkLaser[TDirection]->maxPenetration,
-                                     world.perkLaser[TDirection]->maxPenetration + penetrationIncrease);
+                               world.perkLaser[TDirection]->maxPenetration,
+                               world.perkLaser[TDirection]->maxPenetration + penetrationIncrease);
     }
 
     /////////////////////////////////////////////////////////////
@@ -965,8 +960,7 @@ struct [[nodiscard]] PerkDiagonalLaserBounce : Perk
     {
         const auto* lowerCaseDirectionStr = (TDirection == LaserDirection::Left) ? "southwest" : "southeast";
 
-        return zb::fmtToString("Lasers fired {} will now bounce off the sides of the grid once.",
-                                     lowerCaseDirectionStr);
+        return zb::fmtToString("Lasers fired {} will now bounce off the sides of the grid once.", lowerCaseDirectionStr);
     }
 
     /////////////////////////////////////////////////////////////

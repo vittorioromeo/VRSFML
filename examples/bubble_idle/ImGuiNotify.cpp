@@ -1,12 +1,9 @@
 #include "IconsFontAwesome6.h"
 #include "ImGuiNotify.hpp"
-
 #include "Zancle/ImGui/ImConfigSFML.hpp"
 #include "Zancle/ImGui/IncludeImGui.hpp"
 #include "Zancle/ImGui/IncludeImGuiInternal.hpp"
-
 #include "Zancle/System/Clock.hpp"
-
 #include "ZancleBase/Builtin/Memset.hpp"
 #include "ZancleBase/Builtin/Strlen.hpp"
 #include "ZancleBase/SizeT.hpp"
@@ -206,7 +203,7 @@ ImGuiToastPhase ImGuiToast::getPhase()
 float ImGuiToast::getFadePercent()
 {
     const ImGuiToastPhase phase   = getPhase();
-    const zb::I32   elapsed = getElapsedTime().asMilliseconds();
+    const zb::I32         elapsed = getElapsedTime().asMilliseconds();
 
     if (phase == ImGuiToastPhase::FadeIn)
         return (static_cast<float>(elapsed) / static_cast<float>(NOTIFY_FADE_IN_OUT_TIME)) * NOTIFY_OPACITY;

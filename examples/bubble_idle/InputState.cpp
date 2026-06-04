@@ -1,7 +1,5 @@
 #include "InputState.hpp"
-
 #include "Zancle/Window/Event.hpp"
-
 #include "ZancleBase/SizeT.hpp"
 
 
@@ -35,7 +33,7 @@ void InputState::apply(const za::Event& event)
     if (const auto* e = event.getIf<za::Event::MouseButtonPressed>())
     {
         buttons[static_cast<zb::SizeT>(e->button)] = true;
-        mousePosition                                    = e->position;
+        mousePosition                              = e->position;
 
         return;
     }
@@ -43,7 +41,7 @@ void InputState::apply(const za::Event& event)
     if (const auto* e = event.getIf<za::Event::MouseButtonReleased>())
     {
         buttons[static_cast<zb::SizeT>(e->button)] = false;
-        mousePosition                                    = e->position;
+        mousePosition                              = e->position;
 
         return;
     }

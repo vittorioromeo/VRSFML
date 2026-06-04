@@ -3,12 +3,8 @@
 #include "Aliases.hpp"
 #include "CatType.hpp"
 #include "TextShakeEffect.hpp"
-
-#include "ExampleUtils/Progress.hpp"
-
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Constants.hpp"
 #include "ZancleBase/IntTypes.hpp"
@@ -17,6 +13,8 @@
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/Remainder.hpp"
 #include "ZancleBase/SizeT.hpp"
+
+#include "ExampleUtils/Progress.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -66,8 +64,8 @@ struct [[nodiscard]] Cat
             Return,
         };
 
-        Phase                               phase   = Phase::Windup;
-        float                               phaseMs = 0.f; // counts down to 0
+        Phase                   phase   = Phase::Windup;
+        float                   phaseMs = 0.f; // counts down to 0
         zb::Optional<zb::SizeT> pendingTargetIdx{zb::nullOpt};
     };
 
@@ -137,8 +135,8 @@ struct [[nodiscard]] Cat
     // `napWakeWobble` is a transient feedback rotation that decays to zero.
     zb::Optional<Transition> napTransition{zb::nullOpt};
     zb::Optional<Countdown>  napSleepCountdown{zb::nullOpt};
-    float                          napShakeProgress{0.f};
-    float                          napWakeWobble{0.f};
+    float                    napShakeProgress{0.f};
+    float                    napWakeWobble{0.f};
 
     // Transient per-frame kinematics used to derive a velocity-based tilt
     // while being dragged (and also the delta for `napShakeProgress`).

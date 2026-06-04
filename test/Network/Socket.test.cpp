@@ -1,9 +1,6 @@
 #include "Tst/Tst.hpp"
-
 #include "Zancle/Network/Socket.hpp"
-
 #include "Zancle/Network/UdpSocket.hpp"
-
 #include "ZancleBase/Macros.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/Trait/HasVirtualDestructor.hpp"

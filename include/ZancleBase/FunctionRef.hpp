@@ -60,8 +60,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] FunctionRef(FnPtrType fn) noexcept :
         m_obj{reinterpret_cast<void*>(fn)},
-        m_thunk{[](void* o, Ts&&... args) -> TReturn
-    { return reinterpret_cast<FnPtrType>(o)(ZB_FORWARD(args)...); }}
+        m_thunk{[](void* o, Ts&&... args) -> TReturn { return reinterpret_cast<FnPtrType>(o)(ZB_FORWARD(args)...); }}
     {
         ZB_ASSERT(fn != nullptr);
     }

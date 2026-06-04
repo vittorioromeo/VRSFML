@@ -5,16 +5,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Network/UdpSocket.hpp"
-
 #include "Zancle/Network/IpAddress.hpp"
 #include "Zancle/Network/Packet.hpp"
 #include "Zancle/Network/Socket.hpp"
 #include "Zancle/Network/SocketHandle.hpp"
 #include "Zancle/Network/SocketImpl.hpp"
-
+#include "Zancle/Network/UdpSocket.hpp"
 #include "Zancle/System/Err.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/SizeT.hpp"
@@ -52,7 +49,7 @@ unsigned short UdpSocket::getLocalPort() const
 Socket::Status UdpSocket::bind(unsigned short port, IpAddress address)
 {
     ZB_ASSERT(getNativeHandle() != priv::SocketImpl::invalidSocket() &&
-                     "UdpSocket handle must be valid (constructed via factory)");
+              "UdpSocket handle must be valid (constructed via factory)");
 
     if (address == IpAddress::Broadcast)
     {
@@ -75,7 +72,7 @@ Socket::Status UdpSocket::bind(unsigned short port, IpAddress address)
 Socket::Status UdpSocket::send(const void* data, zb::SizeT size, IpAddress remoteAddress, unsigned short remotePort)
 {
     ZB_ASSERT(getNativeHandle() != priv::SocketImpl::invalidSocket() &&
-                     "UdpSocket handle must be valid (constructed via factory)");
+              "UdpSocket handle must be valid (constructed via factory)");
 
     // Make sure that all the data will fit in one datagram
     if (size > MaxDatagramSize)
@@ -110,14 +107,14 @@ Socket::Status UdpSocket::send(const void* data, zb::SizeT size, IpAddress remot
 
 
 ////////////////////////////////////////////////////////////
-Socket::Status UdpSocket::receive(void*                      data,
+Socket::Status UdpSocket::receive(void*                    data,
                                   zb::SizeT                size,
                                   zb::SizeT&               received,
                                   zb::Optional<IpAddress>& remoteAddress,
-                                  unsigned short&            remotePort)
+                                  unsigned short&          remotePort)
 {
     ZB_ASSERT(getNativeHandle() != priv::SocketImpl::invalidSocket() &&
-                     "UdpSocket handle must be valid (constructed via factory)");
+              "UdpSocket handle must be valid (constructed via factory)");
 
     // First clear the variables to fill
     received      = 0;
@@ -172,7 +169,7 @@ Socket::Status UdpSocket::send(Packet& packet, IpAddress remoteAddress, unsigned
     // to the packet's data.
 
     // Get the data to send from the packet
-    zb::SizeT size = 0;
+    zb::SizeT   size = 0;
     const void* data = packet.onSend(size);
 
     // Send it
@@ -186,7 +183,7 @@ Socket::Status UdpSocket::receive(Packet& packet, zb::Optional<IpAddress>& remot
     // See the detailed comment in send(Packet) above.
 
     // Receive the datagram
-    zb::SizeT  received = 0;
+    zb::SizeT    received = 0;
     const Status status   = receive(m_buffer.data(), m_buffer.size(), received, remoteAddress, remotePort);
 
     // If we received valid data, we can copy it to the user packet

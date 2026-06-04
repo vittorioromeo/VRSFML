@@ -5,15 +5,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Graphics/Texture.hpp"
-
-#include "Zancle/Graphics/GraphicsContext.hpp"
-#include "Zancle/Graphics/Image.hpp"
-#include "Zancle/Graphics/TextureWrapMode.hpp"
-
-#include "Zancle/Window/Window.hpp"
-#include "Zancle/Window/WindowContext.hpp"
-
 #include "Zancle/GLUtils/BlitFramebuffer.hpp"
 #include "Zancle/GLUtils/FramebufferSaver.hpp"
 #include "Zancle/GLUtils/GLCheck.hpp"
@@ -21,13 +12,17 @@
 #include "Zancle/GLUtils/GLUtils.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
 #include "Zancle/GLUtils/TextureSaver.hpp"
-
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/Image.hpp"
+#include "Zancle/Graphics/Texture.hpp"
+#include "Zancle/Graphics/TextureWrapMode.hpp"
 #include "Zancle/System/Atomic.hpp"
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-
+#include "Zancle/Window/Window.hpp"
+#include "Zancle/Window/WindowContext.hpp"
 #include "ZancleBase/Abort.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Exchange.hpp"

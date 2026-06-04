@@ -2,16 +2,13 @@
 
 // Other 1st party headers
 #include "Tst/Tst.hpp"
-
 #include "Zancle/Network/IpAddress.hpp"
 #include "Zancle/Network/Socket.hpp"
 #include "Zancle/Network/TcpListener.hpp"
 #include "Zancle/Network/TcpSocket.hpp"
 #include "Zancle/Network/UdpSocket.hpp"
-
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/Time.hpp"
-
 #include "ZancleBase/Macros.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/SizeT.hpp"
@@ -226,10 +223,10 @@ TEST_CASE("[Network] za::SocketSelector (loopback)")
         REQUIRE(waitUntil(selector, za::milliseconds(500), [&] { return selector.isReady(receiver); }));
 
         // A ready receiver's `receive` must return immediately with the payload.
-        char                              buffer[64]{};
+        char                        buffer[64]{};
         zb::SizeT                   received{};
         zb::Optional<za::IpAddress> remoteAddress;
-        unsigned short                    remotePort{};
+        unsigned short              remotePort{};
         CHECK(receiver.receive(buffer, sizeof(buffer), received, remoteAddress, remotePort) == za::Socket::Status::Done);
         CHECK(received == sizeof(payload));
     }
@@ -330,7 +327,7 @@ TEST_CASE("[Network] za::SocketSelector (loopback)")
 
         // Drive the accept loop until we have the accepted server-side socket.
         zb::Optional<za::TcpSocket> serverSocketOpt;
-        const auto                        acceptStart = za::Clock::now();
+        const auto                  acceptStart = za::Clock::now();
 
         while (za::Clock::now() - acceptStart < za::milliseconds(750))
         {
@@ -352,14 +349,14 @@ TEST_CASE("[Network] za::SocketSelector (loopback)")
         CHECK(!selector.wait(za::milliseconds(50)));
         CHECK(!selector.isReady(client));
 
-        const char      payload[] = "ping";
-        zb::SizeT sent{};
+        const char payload[] = "ping";
+        zb::SizeT  sent{};
         REQUIRE(serverSocket.send(payload, sizeof(payload), sent) == za::Socket::Status::Done);
         CHECK(sent == sizeof(payload));
 
         REQUIRE(waitUntil(selector, za::milliseconds(500), [&] { return selector.isReady(client); }));
 
-        char            buffer[64]{};
+        char      buffer[64]{};
         zb::SizeT received{};
         CHECK(client.receive(buffer, sizeof(buffer), received) == za::Socket::Status::Done);
         CHECK(received == sizeof(payload));
@@ -394,10 +391,10 @@ TEST_CASE("[Network] za::SocketSelector (loopback)")
         REQUIRE(waitUntil(selector, za::milliseconds(500), [&] { return selector.isReady(receiver); }));
 
         // Drain the datagram so we return to a "no data pending" state.
-        char                              buffer[64]{};
+        char                        buffer[64]{};
         zb::SizeT                   received{};
         zb::Optional<za::IpAddress> remoteAddress;
-        unsigned short                    remotePort{};
+        unsigned short              remotePort{};
         CHECK(receiver.receive(buffer, sizeof(buffer), received, remoteAddress, remotePort) == za::Socket::Status::Done);
 
         // After draining, a new wait should time out again.
@@ -537,7 +534,7 @@ TEST_CASE("[Network] za::SocketSelector (loopback)")
 
         // Accept on the server side so we have a peer to send to us.
         zb::Optional<za::TcpSocket> serverSocketOpt;
-        const auto                        acceptStart = za::Clock::now();
+        const auto                  acceptStart = za::Clock::now();
         while (za::Clock::now() - acceptStart < za::milliseconds(750))
         {
             auto r = listener.accept();
@@ -554,8 +551,8 @@ TEST_CASE("[Network] za::SocketSelector (loopback)")
         REQUIRE(selector.add(client));
         REQUIRE(selector.addForSend(client));
 
-        const char      payload[] = "both";
-        zb::SizeT sent{};
+        const char payload[] = "both";
+        zb::SizeT  sent{};
         REQUIRE(serverSocketOpt->send(payload, sizeof(payload), sent) == za::Socket::Status::Done);
 
         REQUIRE(waitUntil(selector, za::milliseconds(500), [&] { return selector.isReady(client); }));
@@ -764,7 +761,7 @@ TEST_CASE("[Network] za::SocketSelector (loopback)")
 
         // Accept on the server side so we get a peer that can send to us.
         zb::Optional<za::TcpSocket> serverSocketOpt;
-        const auto                        acceptStart = za::Clock::now();
+        const auto                  acceptStart = za::Clock::now();
         while (za::Clock::now() - acceptStart < za::milliseconds(750))
         {
             auto r = listener.accept();
@@ -784,8 +781,8 @@ TEST_CASE("[Network] za::SocketSelector (loopback)")
         REQUIRE(selector.add(client, &tag));
         REQUIRE(selector.addForSend(client));
 
-        const char      payload[] = "both";
-        zb::SizeT sent{};
+        const char payload[] = "both";
+        zb::SizeT  sent{};
         REQUIRE(serverSocketOpt->send(payload, sizeof(payload), sent) == za::Socket::Status::Done);
 
         REQUIRE(waitUntil(selector, za::milliseconds(500), [&] { return selector.isReady(client); }));

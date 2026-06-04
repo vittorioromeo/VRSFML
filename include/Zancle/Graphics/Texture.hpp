@@ -7,13 +7,10 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Export.hpp"
-
 #include "Zancle/Graphics/TextureWrapMode.hpp"
-
 #include "Zancle/System/LifetimeDependee.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/PassKey.hpp"
@@ -156,8 +153,8 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static zb::Optional<Texture> loadFromMemory(const void*                data,
-                                                                zb::SizeT                size,
-                                                                const TextureLoadSettings& settings = {});
+                                                              zb::SizeT                  size,
+                                                              const TextureLoadSettings& settings = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Load a texture from a custom input stream
@@ -174,8 +171,7 @@ public:
     /// \see `loadFromFile`, `loadFromMemory`, `loadFromImage`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<Texture> loadFromStream(InputStream&               stream,
-                                                                const TextureLoadSettings& settings = {});
+    [[nodiscard]] static zb::Optional<Texture> loadFromStream(InputStream& stream, const TextureLoadSettings& settings = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Load a texture from an existing `za::Image`

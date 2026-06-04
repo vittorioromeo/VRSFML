@@ -51,7 +51,7 @@ private:
 } // namespace za::priv
 
     // NOLINTBEGIN(bugprone-macro-parentheses)
-    #define ZA_DEFINE_LIFETIME_DEPENDEE(dependeeType, dependantType)               \
+    #define ZA_DEFINE_LIFETIME_DEPENDEE(dependeeType, dependantType)                 \
         friend dependantType;                                                        \
         mutable ::za::priv::LifetimeDependee m_sfPrivLifetimeDependee##dependantType \
         {                                                                            \

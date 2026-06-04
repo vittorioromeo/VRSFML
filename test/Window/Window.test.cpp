@@ -1,16 +1,13 @@
+#include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/Window/Window.hpp"
-
 #include "Zancle/Window/WindowContext.hpp"
 #include "Zancle/Window/WindowHandle.hpp"
 #include "Zancle/Window/WindowSettings.hpp"
-
-#include "Zancle/System/Priv/Vec2Base.hpp"
 
 // Other 1st party headers
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
-
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/Trait/HasVirtualDestructor.hpp"
 #include "ZancleBase/Trait/IsCopyAssignable.hpp"

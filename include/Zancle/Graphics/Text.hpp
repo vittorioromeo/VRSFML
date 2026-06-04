@@ -7,10 +7,8 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Export.hpp"
-
 #include "Zancle/Graphics/TextBase.hpp"
 #include "Zancle/Graphics/TextData.hpp"
-
 #include "Zancle/System/LifetimeDependant.hpp"
 
 

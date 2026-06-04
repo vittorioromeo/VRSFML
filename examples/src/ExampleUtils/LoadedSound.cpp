@@ -1,8 +1,7 @@
-#include "ExampleUtils/LoadedSound.hpp"
-
 #include "Zancle/Audio/SoundBuffer.hpp"
-
 #include "Zancle/System/Path.hpp"
+
+#include "ExampleUtils/LoadedSound.hpp"
 
 
 ////////////////////////////////////////////////////////////

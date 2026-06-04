@@ -1,12 +1,10 @@
-#include "StringifySfBaseStringUtil.hpp"
+#include "StringifyZbStringUtil.hpp"
 #include "StringifyStringViewUtil.hpp"
 #include "Tst/Tst.hpp"
-
-#include "ZancleBase/StringView.hpp"
-
 #include "ZancleBase/Builtin/Strlen.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/String.hpp"
+#include "ZancleBase/StringView.hpp"
 #include "ZancleBase/StringViewSplits.hpp" // IWYU pragma: keep
 #include "ZancleBase/Trait/IsAggregate.hpp"
 #include "ZancleBase/Trait/IsStandardLayout.hpp"
@@ -128,7 +126,7 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
     SECTION("Size method")
     {
-        const char*          str  = "Hello World";
+        const char*    str  = "Hello World";
         zb::StringView view = str;
 
         SECTION("Non-zero size")
@@ -148,7 +146,7 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
     SECTION("Empty method")
     {
-        const char*          str  = "Hello World";
+        const char*    str  = "Hello World";
         zb::StringView view = str;
 
         SECTION("Non-empty string")
@@ -170,7 +168,7 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
     SECTION("Data method")
     {
-        const char*          str  = "Hello World";
+        const char*    str  = "Hello World";
         zb::StringView view = str;
 
         REQUIRE(view.data() == str);
@@ -180,7 +178,7 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
     SECTION("Operator[] method")
     {
-        const char*          str  = "Hello World";
+        const char*    str  = "Hello World";
         zb::StringView view = str;
 
         REQUIRE(view.data() == str);
@@ -1021,7 +1019,7 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
         SECTION("Lines view into the original buffer (no allocation)")
         {
-            const char                 source[] = "first\nsecond\nthird";
+            const char           source[] = "first\nsecond\nthird";
             const zb::StringView sv{source, sizeof(source) - 1};
 
             zb::SizeT count = 0u;
@@ -1151,7 +1149,7 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
         SECTION("Segments view into the original buffer (no allocation)")
         {
-            const char                 source[] = "alpha::beta::gamma";
+            const char           source[] = "alpha::beta::gamma";
             const zb::StringView sv{source, sizeof(source) - 1};
 
             zb::SizeT count = 0u;
@@ -1298,7 +1296,7 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
         SECTION("find finds the right offset across NULs")
         {
-            const char                 haystack[] = {'x', 'a', '\0', 'b', 'y', 'a', '\0', 'c', 'z'};
+            const char           haystack[] = {'x', 'a', '\0', 'b', 'y', 'a', '\0', 'c', 'z'};
             const zb::StringView hv{haystack, 9};
 
             const char needle1[] = {'a', '\0', 'b'};
@@ -1312,7 +1310,7 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
         SECTION("rfind honours bytes past NUL")
         {
-            const char                 haystack[] = {'x', 'a', '\0', 'b', 'y', 'a', '\0', 'b', 'z'};
+            const char           haystack[] = {'x', 'a', '\0', 'b', 'y', 'a', '\0', 'b', 'z'};
             const zb::StringView hv{haystack, 9};
 
             const char needle[] = {'a', '\0', 'b'};
@@ -1339,7 +1337,7 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
         SECTION("contains honours bytes past NUL")
         {
-            const char                 haystack[] = {'x', 'a', '\0', 'c', 'y'};
+            const char           haystack[] = {'x', 'a', '\0', 'c', 'y'};
             const zb::StringView hv{haystack, 5};
 
             const char needle1[] = {'a', '\0', 'b'};
@@ -1398,9 +1396,9 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
         SECTION("Self-swap is a no-op")
         {
-            zb::StringView a = "stable";
-            const auto* const    p = a.data();
-            const auto           s = a.size();
+            zb::StringView    a = "stable";
+            const auto* const p = a.data();
+            const auto        s = a.size();
 
             swap(a, a); // ADL-found friend
 

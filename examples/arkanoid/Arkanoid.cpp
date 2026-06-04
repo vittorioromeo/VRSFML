@@ -1,5 +1,3 @@
-#include "ExampleUtils/Scaling.hpp"
-
 #include "Zancle/Graphics/CircleShape.hpp"
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/GraphicsContext.hpp"
@@ -9,19 +7,18 @@
 #include "Zancle/Graphics/RenderTarget.hpp"
 #include "Zancle/Graphics/RenderTexture.hpp"
 #include "Zancle/Graphics/RenderWindow.hpp"
-
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/RectUtils.hpp"
 #include "Zancle/Window/Event.hpp" // IWYU pragma: keep
 #include "Zancle/Window/EventUtils.hpp"
 #include "Zancle/Window/Keyboard.hpp"
-
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/RectUtils.hpp"
-
 #include "ZancleBase/Math/Fabs.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/Swap.hpp"
 #include "ZancleBase/Vector.hpp"
+
+#include "ExampleUtils/Scaling.hpp"
 
 
 namespace

@@ -7,7 +7,6 @@
 ////////////////////////////////////////////////////////////
 #include "Tst/Detail/State.hpp"
 #include "Tst/Tst.hpp"
-
 #include "ZancleBase/Builtin/Strcmp.hpp"
 #include "ZancleBase/Builtin/Strlen.hpp"
 #include "ZancleBase/Builtin/Strstr.hpp"
@@ -335,14 +334,14 @@ void printSummary(const ContextState& ctx)
 {
     (void)zb::printLn("");
     (void)zb::printLn("[tst] test cases:  {} | passed: {} | failed: {} | skipped: {}",
-                            ctx.totalTestCases,
-                            ctx.totalTestCases - ctx.failedTestCases - ctx.skippedTestCases,
-                            ctx.failedTestCases,
-                            ctx.skippedTestCases);
+                      ctx.totalTestCases,
+                      ctx.totalTestCases - ctx.failedTestCases - ctx.skippedTestCases,
+                      ctx.failedTestCases,
+                      ctx.skippedTestCases);
     (void)zb::printLn("[tst] assertions:  {} | passed: {} | failed: {}",
-                            ctx.totalAssertions,
-                            ctx.totalAssertions - ctx.failedAssertions,
-                            ctx.failedAssertions);
+                      ctx.totalAssertions,
+                      ctx.totalAssertions - ctx.failedAssertions,
+                      ctx.failedAssertions);
 }
 
 } // namespace

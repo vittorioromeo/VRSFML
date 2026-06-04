@@ -6,16 +6,13 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Network/Http.hpp"
-
 #include "Zancle/Network/IpAddress.hpp"
 #include "Zancle/Network/IpAddressUtils.hpp"
 #include "Zancle/Network/Socket.hpp"
 #include "Zancle/Network/TcpSocket.hpp"
-
 #include "Zancle/System/IO.hpp"
 #include "Zancle/System/Time.hpp"
 #include "Zancle/System/Utf8String.hpp"
-
 #include "ZancleBase/Fmt/Fmt.hpp"
 #include "ZancleBase/Fmt/FmtToString.hpp"
 #include "ZancleBase/Optional.hpp"
@@ -100,10 +97,10 @@ void parseFields(zb::ScnStringSource& scanner, FieldTable& fields)
 [[nodiscard]] zb::String prepareRequest(
     const FieldTable&               fields,
     const za::Http::Request::Method method,
-    const zb::String&         uri,
+    const zb::String&               uri,
     const unsigned int              majorVersion,
     const unsigned int              minorVersion,
-    const zb::String&         body)
+    const zb::String&               body)
 {
     // Convert the method to its string representation
     const char* methodStr = "";
@@ -150,10 +147,10 @@ struct Http::Request::Impl
 {
     FieldTable   fields;          //!< Fields of the header associated to their value
     Method       method;          //!< Method to use for the request
-    zb::String uri;             //!< Target URI of the request
+    zb::String   uri;             //!< Target URI of the request
     unsigned int majorVersion{1}; //!< Major HTTP version
     unsigned int minorVersion{};  //!< Minor HTTP version
-    zb::String body;            //!< Body of the request
+    zb::String   body;            //!< Body of the request
 
     explicit Impl(Method theMethod) : method(theMethod)
     {
@@ -245,7 +242,7 @@ struct Http::Response::Impl
     Status       status{Status::ConnectionFailed}; //!< Status code
     unsigned int majorVersion{};                   //!< Major HTTP version
     unsigned int minorVersion{};                   //!< Minor HTTP version
-    zb::String body;                             //!< Body of the response
+    zb::String   body;                             //!< Body of the response
 };
 
 
@@ -386,8 +383,8 @@ struct Http::Impl
 {
     zb::Optional<IpAddress> host;         //!< Web host address
     zb::String              hostName;     //!< Web host name
-    unsigned short            port{0u};     //!< Port used for connection with host
-    bool                      https{false}; //!< Use HTTPS
+    unsigned short          port{0u};     //!< Port used for connection with host
+    bool                    https{false}; //!< Use HTTPS
 };
 
 
@@ -489,11 +486,11 @@ Http::Response Http::sendRequest(const Http::Request& request, Time timeout, con
 
     // Convert the request to string and send it through the connected socket
     const zb::String requestStr = prepareRequest(toSend.m_impl->fields,
-                                                   toSend.m_impl->method,
-                                                   toSend.m_impl->uri,
-                                                   toSend.m_impl->majorVersion,
-                                                   toSend.m_impl->minorVersion,
-                                                   toSend.m_impl->body);
+                                                 toSend.m_impl->method,
+                                                 toSend.m_impl->uri,
+                                                 toSend.m_impl->majorVersion,
+                                                 toSend.m_impl->minorVersion,
+                                                 toSend.m_impl->body);
 
     if (!requestStr.empty())
     {
@@ -503,7 +500,7 @@ Http::Response Http::sendRequest(const Http::Request& request, Time timeout, con
             // Wait for the server's response
             zb::String receivedStr;
             zb::SizeT  size = 0;
-            char         buffer[1024];
+            char       buffer[1024];
 
             // When the HTTPS connection makes use of TLS 1.3 new session ticket
             // messages can be received by the client from the server at any time

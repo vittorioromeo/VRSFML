@@ -1,18 +1,15 @@
 #include "StringifyIpAddressUtil.hpp"
 #include "StringifyOptionalUtil.hpp"
-#include "StringifySfBaseStringUtil.hpp"
+#include "StringifyZbStringUtil.hpp"
 #include "Tst/Tst.hpp"
-
 #include "Zancle/Network/IpAddress.hpp"
 #include "Zancle/Network/Socket.hpp"
 #include "Zancle/Network/SocketSelector.hpp"
 #include "Zancle/Network/TcpListener.hpp"
 #include "Zancle/Network/TcpSocket.hpp"
-
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/Time.hpp"
 #include "Zancle/System/Utf8String.hpp"
-
 #include "ZancleBase/Macros.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/SizeT.hpp"
@@ -91,7 +88,7 @@ TEST_CASE("[Network] za::Tcp Loopback")
     const auto* sendEnd = testData.data() + testData.size();
 
     zb::Vector<Byte> buffer(testData.size());
-    const auto*            recvEnd = buffer.data() + buffer.size();
+    const auto*      recvEnd = buffer.data() + buffer.size();
 
     auto tcpListenerOpt = za::TcpListener::create(za::Socket::AnyPort, /* isBlocking */ false);
     REQUIRE(tcpListenerOpt.hasValue());
@@ -153,7 +150,7 @@ TEST_CASE("[Network] za::Tcp Loopback")
         {
             if (sendPtr != sendEnd)
             {
-                zb::SizeT sent{};
+                zb::SizeT  sent{};
                 const auto status = serverSocket.send(sendPtr, static_cast<zb::SizeT>(sendEnd - sendPtr), sent);
                 REQUIRE_FALSE(status == za::TcpSocket::Status::Error);
                 REQUIRE_FALSE(status == za::TcpSocket::Status::Disconnected);
@@ -165,7 +162,7 @@ TEST_CASE("[Network] za::Tcp Loopback")
             }
 
             {
-                zb::SizeT received{};
+                zb::SizeT  received{};
                 const auto status = clientSocket.receive(recvPtr, static_cast<zb::SizeT>(recvEnd - recvPtr), received);
                 REQUIRE_FALSE(status == za::TcpSocket::Status::Error);
                 if (received > 0)
@@ -258,7 +255,7 @@ TEST_CASE("[Network] za::Tcp Loopback")
         {
             if (sendPtr != sendEnd)
             {
-                zb::SizeT sent{};
+                zb::SizeT  sent{};
                 const auto status = serverSocket.send(sendPtr, static_cast<zb::SizeT>(sendEnd - sendPtr), sent);
                 REQUIRE_FALSE(status == za::TcpSocket::Status::Error);
                 REQUIRE_FALSE(status == za::TcpSocket::Status::Disconnected);
@@ -270,7 +267,7 @@ TEST_CASE("[Network] za::Tcp Loopback")
             }
 
             {
-                zb::SizeT received{};
+                zb::SizeT  received{};
                 const auto status = clientSocket.receive(recvPtr, static_cast<zb::SizeT>(recvEnd - recvPtr), received);
                 REQUIRE_FALSE(status == za::TcpSocket::Status::Error);
                 if (received > 0)

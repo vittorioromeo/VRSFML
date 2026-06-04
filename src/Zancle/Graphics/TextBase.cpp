@@ -5,15 +5,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Graphics/TextBase.hpp"
-
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/GlyphMappedText.hpp" // IWYU pragma: keep
 #include "Zancle/Graphics/Text.hpp"            // IWYU pragma: keep
+#include "Zancle/Graphics/TextBase.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
-
 #include "Zancle/System/Utf8String.hpp"
-
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/SizeT.hpp"
 
@@ -224,8 +221,8 @@ zb::U8 TextBase::getOutlineColorAlpha() const
 // `zancle-graphics` so that downstream TUs only need the declarations
 // in `TextBase.hpp` (no heavy rendering includes).
 ////////////////////////////////////////////////////////////
-#define ZA_PRIV_INSTANTIATE_TEXTBASE_DEDUCING_THIS(TDerived)                                                       \
-    template za::Vec2f           za::TextBase::findCharacterPos<TDerived>(const TDerived&, zb::SizeT);         \
+#define ZA_PRIV_INSTANTIATE_TEXTBASE_DEDUCING_THIS(TDerived)                                                         \
+    template za::Vec2f           za::TextBase::findCharacterPos<TDerived>(const TDerived&, zb::SizeT);               \
     template const za::Rect2f&   za::TextBase::getLocalBounds<TDerived>(const TDerived&);                            \
     template za::Rect2f          za::TextBase::getGlobalBounds<TDerived>(const TDerived&);                           \
     template void                za::TextBase::draw<TDerived>(const TDerived&, za::RenderTarget&, za::RenderStates); \

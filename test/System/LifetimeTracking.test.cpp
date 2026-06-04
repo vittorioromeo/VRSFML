@@ -1,9 +1,7 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
-
 #include "Zancle/System/LifetimeDependant.hpp"
 #include "Zancle/System/LifetimeDependee.hpp"
-
 #include "ZancleBase/Macros.hpp"
 
 #if defined(ZA_ENABLE_LIFETIME_TRACKING)

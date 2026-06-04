@@ -5,14 +5,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Window/WindowContext.hpp"
-
-#include "Zancle/Window/ContextSettings.hpp"
-#include "Zancle/Window/JoystickManager.hpp"
-#include "Zancle/Window/SDLGlContext.hpp"
-#include "Zancle/Window/SDLLayer.hpp"
-#include "Zancle/Window/SensorManager.hpp"
-
 #include "Zancle/GLUtils/CopyFramebuffer.hpp"
 #include "Zancle/GLUtils/FramebufferSaver.hpp"
 #include "Zancle/GLUtils/GLCheck.hpp"
@@ -23,7 +15,6 @@
 #include "Zancle/GLUtils/GlFuncTypesImpl.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
 #include "Zancle/GLUtils/TextureSaver.hpp"
-
 #include "Zancle/System/Atomic.hpp"
 #include "Zancle/System/AtomicMutex.hpp"
 #include "Zancle/System/Err.hpp"
@@ -31,7 +22,12 @@
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/SignalErrHandler.hpp"
 #include "Zancle/System/Utf8String.hpp"
-
+#include "Zancle/Window/ContextSettings.hpp"
+#include "Zancle/Window/JoystickManager.hpp"
+#include "Zancle/Window/SDLGlContext.hpp"
+#include "Zancle/Window/SDLLayer.hpp"
+#include "Zancle/Window/SensorManager.hpp"
+#include "Zancle/Window/WindowContext.hpp"
 #include "ZancleBase/Abort.hpp"
 #include "ZancleBase/Algorithm/Find.hpp"
 #include "ZancleBase/AnkerlUnorderedDense.hpp"
@@ -567,7 +563,7 @@ namespace
 {
 ////////////////////////////////////////////////////////////
 constinit zb::Optional<WindowContextImpl> installedWindowContext;
-constinit za::Atomic<unsigned int>          windowContextRC{0u};
+constinit za::Atomic<unsigned int>        windowContextRC{0u};
 
 
 ////////////////////////////////////////////////////////////
@@ -961,8 +957,7 @@ void WindowContext::loadGLEntryPointsViaGLAD()
 
 ////////////////////////////////////////////////////////////
 template <typename... GLContextArgs>
-zb::UniquePtr<priv::GlContext> WindowContext::createGlContextImpl(const ContextSettings& contextSettings,
-                                                                    GLContextArgs&&... args)
+zb::UniquePtr<priv::GlContext> WindowContext::createGlContextImpl(const ContextSettings& contextSettings, GLContextArgs&&... args)
 {
     auto& wc = ensureInstalled();
 
@@ -972,9 +967,9 @@ zb::UniquePtr<priv::GlContext> WindowContext::createGlContextImpl(const ContextS
         priv::errMsg("Error enabling shared GL context in WindowContext::createGlContext()");
 
     auto glContext = zb::makeUnique<priv::SDLGlContext>(wc.nextThreadLocalGlContextId.fetchAddSeqCst(1u),
-                                                          &wc.sharedGlContext,
-                                                          contextSettings,
-                                                          ZB_FORWARD(args)...);
+                                                        &wc.sharedGlContext,
+                                                        contextSettings,
+                                                        ZB_FORWARD(args)...);
 
     if (!setActiveThreadLocalGlContext(*glContext, true))
     {
@@ -1005,8 +1000,8 @@ zb::UniquePtr<priv::GlContext> WindowContext::createGlContext(const ContextSetti
 
 ////////////////////////////////////////////////////////////
 zb::UniquePtr<priv::GlContext> WindowContext::createGlContext(const ContextSettings&     contextSettings,
-                                                                const priv::SDLWindowImpl& owner,
-                                                                const unsigned int         bitsPerPixel)
+                                                              const priv::SDLWindowImpl& owner,
+                                                              const unsigned int         bitsPerPixel)
 {
     return createGlContextImpl(contextSettings, owner, bitsPerPixel);
 }

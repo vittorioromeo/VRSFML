@@ -6,9 +6,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/DefaultShader.hpp"
-
 #include "Zancle/Graphics/Shader.hpp"
-
 #include "ZancleBase/Optional.hpp"
 
 

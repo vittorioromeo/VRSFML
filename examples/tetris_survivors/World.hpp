@@ -13,7 +13,6 @@
 #include "RandomBag.hpp"
 #include "Tetramino.hpp"
 #include "TetraminoShapes.hpp"
-
 #include "ZancleBase/Array.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Math/Pow.hpp"
@@ -163,7 +162,7 @@ struct [[nodiscard]] World
 
     zb::U64 graceDropMoves      = 0u;
     zb::U64 maxGraceDropMoves   = 2u;
-    bool          lastMoveWasRotation = false;
+    bool    lastMoveWasRotation = false;
 
     zb::U32 playerLevel          = 1u;
     zb::U32 committedPlayerLevel = 1u;

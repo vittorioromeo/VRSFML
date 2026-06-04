@@ -5,17 +5,14 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Audio/PlaybackDevice.hpp"
-
 #include "Zancle/Audio/AudioContext.hpp"
 #include "Zancle/Audio/Listener.hpp"
+#include "Zancle/Audio/PlaybackDevice.hpp"
 #include "Zancle/Audio/PlaybackDeviceHandle.hpp"
 #include "Zancle/Audio/Priv/MiniaudioUtils.hpp"
-
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/Vec3.hpp"
-
 #include "ZancleBase/Clamp.hpp"
 
 #include <miniaudio.h>

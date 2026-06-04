@@ -5,14 +5,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Audio/SoundFileReaderOgg.hpp"
-
 #include "Zancle/Audio/SoundChannel.hpp"
 #include "Zancle/Audio/SoundFileReader.hpp"
-
+#include "Zancle/Audio/SoundFileReaderOgg.hpp"
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/InputStream.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Optional.hpp"
@@ -39,7 +36,7 @@ zb::SizeT read(void* ptr, zb::SizeT size, zb::SizeT nmemb, void* data)
 ////////////////////////////////////////////////////////////
 int seek(void* data, ogg_int64_t signedOffset, int whence)
 {
-    auto*           stream = static_cast<za::InputStream*>(data);
+    auto*     stream = static_cast<za::InputStream*>(data);
     zb::SizeT offset{};
 
     switch (whence)
@@ -63,7 +60,7 @@ int seek(void* data, ogg_int64_t signedOffset, int whence)
 ////////////////////////////////////////////////////////////
 long tell(void* data)
 {
-    auto*                    stream   = static_cast<za::InputStream*>(data);
+    auto*              stream   = static_cast<za::InputStream*>(data);
     const zb::Optional position = stream->tell();
     return position.hasValue() ? static_cast<long>(*position) : -1;
 }
@@ -218,7 +215,7 @@ zb::Optional<SoundFileReader::Info> SoundFileReaderOgg::open(InputStream& stream
 void SoundFileReaderOgg::seek(zb::U64 sampleOffset)
 {
     ZB_ASSERT(m_impl->vorbis.datasource != nullptr &&
-                     "Vorbis datasource is missing. Call SoundFileReaderOgg::open() to initialize it.");
+              "Vorbis datasource is missing. Call SoundFileReaderOgg::open() to initialize it.");
 
     ov_pcm_seek(&m_impl->vorbis, static_cast<ogg_int64_t>(sampleOffset / m_impl->channelCount));
 }
@@ -228,7 +225,7 @@ void SoundFileReaderOgg::seek(zb::U64 sampleOffset)
 zb::U64 SoundFileReaderOgg::read(zb::I16* samples, zb::U64 maxCount)
 {
     ZB_ASSERT(m_impl->vorbis.datasource != nullptr &&
-                     "Vorbis datasource is missing. Call SoundFileReaderOgg::open() to initialize it.");
+              "Vorbis datasource is missing. Call SoundFileReaderOgg::open() to initialize it.");
 
     // Try to read the requested number of samples, stop only on error or end of file
     zb::U64 count = 0;

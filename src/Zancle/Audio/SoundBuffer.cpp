@@ -5,21 +5,18 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Audio/SoundBuffer.hpp"
-
 #include "Zancle/Audio/ChannelMap.hpp"
 #include "Zancle/Audio/OutputSoundFile.hpp"
+#include "Zancle/Audio/SoundBuffer.hpp"
 #include "Zancle/Audio/SoundChannel.hpp"
 #include "Zancle/Audio/SoundFileFactory.hpp"
 #include "Zancle/Audio/SoundFileReader.hpp"
-
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/IO.hpp"
 #include "Zancle/System/InputStream.hpp"
 #include "Zancle/System/MemoryInputStream.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Time.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Memcpy.hpp"
 #include "ZancleBase/IntTypes.hpp"
@@ -58,9 +55,9 @@ struct SoundBuffer::Impl
 
     ////////////////////////////////////////////////////////////
     zb::Vector<zb::I16> samples;                        //!< Samples buffer
-    ChannelMap              channelMap{SoundChannel::Mono}; //!< The map of position in sample frame to sound channel
-    unsigned int            sampleRate{44'100};             //!< Number of samples per second
-    Time                    duration;                       //!< Sound duration
+    ChannelMap          channelMap{SoundChannel::Mono}; //!< The map of position in sample frame to sound channel
+    unsigned int        sampleRate{44'100};             //!< Number of samples per second
+    Time                duration;                       //!< Sound duration
 };
 
 
@@ -153,10 +150,10 @@ zb::Optional<SoundBuffer> SoundBuffer::loadFromStream(InputStream& stream)
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<SoundBuffer> SoundBuffer::loadFromSamples(const zb::I16*   samples,
-                                                         const zb::SizeT  sampleCount,
-                                                         const ChannelMap&  channelMap,
-                                                         const unsigned int sampleRate)
+zb::Optional<SoundBuffer> SoundBuffer::loadFromSamples(const zb::I16*     samples,
+                                                       const zb::SizeT    sampleCount,
+                                                       const ChannelMap&  channelMap,
+                                                       const unsigned int sampleRate)
 {
     zb::Optional<SoundBuffer> buf;
 
@@ -234,10 +231,7 @@ Time SoundBuffer::getDuration() const
 
 
 ////////////////////////////////////////////////////////////
-SoundBuffer::SoundBuffer(zb::PassKey<SoundBuffer>&&,
-                         zb::SizeT       sampleCount,
-                         const ChannelMap& channelMap,
-                         unsigned int      sampleRate) :
+SoundBuffer::SoundBuffer(zb::PassKey<SoundBuffer>&&, zb::SizeT sampleCount, const ChannelMap& channelMap, unsigned int sampleRate) :
     m_impl(sampleCount, channelMap, sampleRate)
 {
 }

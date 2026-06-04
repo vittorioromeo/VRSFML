@@ -1,16 +1,13 @@
-#include "Zancle/Graphics/TextureAtlas.hpp"
-
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/Texture.hpp"
+#include "Zancle/Graphics/TextureAtlas.hpp"
 
 // Other 1st party headers
 #include "GraphicsUtil.hpp"
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
-
 #include "Zancle/Graphics/GraphicsContext.hpp"
 #include "Zancle/Graphics/Image.hpp"
-
 #include "Zancle/System/Priv/Vec2Base.hpp"
 
 

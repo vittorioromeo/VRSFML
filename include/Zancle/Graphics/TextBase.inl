@@ -14,11 +14,9 @@
 #include "Zancle/Graphics/TextBase.hpp"
 #include "Zancle/Graphics/TextUtils.hpp"
 #include "Zancle/Graphics/VertexSpan.hpp"
-
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
 #include "Zancle/System/Utf8StringCodepoints.hpp" // IWYU pragma: keep
-
 #include "ZancleBase/SizeT.hpp"
 
 
@@ -36,8 +34,8 @@ Vec2f TextBase::findCharacterPos(this const Self& self, zb::SizeT index)
                 letterSpacing,
                 lineSpacing] = TextUtils::precomputeSpacingConstants(fontSource, isBold, charSize, self.m_letterSpacing, self.m_lineSpacing);
 
-    Vec2f       characterPos;
-    char32_t    prevChar = 0;
+    Vec2f     characterPos;
+    char32_t  prevChar = 0;
     zb::SizeT i        = 0u;
 
     for (const char32_t curChar : self.m_string.codepoints())

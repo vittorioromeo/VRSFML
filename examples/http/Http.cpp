@@ -2,7 +2,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Network/Http.hpp"
-
 #include "ZancleBase/Fmt/Fmt.hpp"
 #include "ZancleBase/Fmt/FmtNumeric.hpp"
 #include "ZancleBase/FromChars.hpp"
@@ -23,15 +22,13 @@ void requestUrl(const zb::StringView& url, int redirectsRemaining)
     // Split the URL up into host and resource parts
     const auto resourcePos = url.find('/', url.find("://") + 3);
 
-    const auto resource = (resourcePos != zb::StringView::nPos) ? url.substrByPosLen(resourcePos)
-                                                                      : zb::StringView("/");
+    const auto resource = (resourcePos != zb::StringView::nPos) ? url.substrByPosLen(resourcePos) : zb::StringView("/");
 
     const auto host = url.substrByPosLen(0, resourcePos);
 
     const auto portPos = host.find(':', 6);
 
-    const auto port = (portPos != zb::StringView::nPos) ? host.substrByPosLen(portPos + 1)
-                                                              : zb::StringView("0");
+    const auto port = (portPos != zb::StringView::nPos) ? host.substrByPosLen(portPos + 1) : zb::StringView("0");
 
     // Create a new HTTP client
     za::Http http;

@@ -6,7 +6,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Window/WindowBase.hpp" // NOLINT(misc-header-include-cycle)
-
 #include "ZancleBase/OverloadSet.hpp"
 
 
@@ -50,7 +49,7 @@ void WindowBase::pollAndHandleEvents(Handlers&&... handlers)
     static_assert(sizeof...(Handlers) > 0, "Must provide at least one handler");
 
     auto visitor = zb::OverloadSet{priv::functionPointerToFunctionObject(static_cast<Handlers&&>(handlers))...,
-                                         [](const priv::DelayOverloadResolution&) { /* ignore */ }};
+                                   [](const priv::DelayOverloadResolution&) { /* ignore */ }};
 
     // Disable misc-const-correctness for this line since clang-tidy
     // complains about it even though the code would become incorrect

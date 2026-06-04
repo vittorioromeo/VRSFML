@@ -7,11 +7,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Transform.hpp"
-
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Rect2.hpp"
 #include "Zancle/System/Vec2.hpp"
-
 #include "ZancleBase/Constants.hpp"
 #include "ZancleBase/Math/Fabs.hpp"
 #include "ZancleBase/Math/Sqrt.hpp"

@@ -6,9 +6,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/CircleShapeData.hpp"
-
 #include "Zancle/Graphics/Priv/EllipticalGlobalBounds.hpp"
-
 #include "Zancle/System/Rect2.hpp"
 
 

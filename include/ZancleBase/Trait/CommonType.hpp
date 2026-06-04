@@ -142,9 +142,7 @@ struct CommonType<T> : public CommonType<T, T>
 ////////////////////////////////////////////////////////////
 template <typename T, typename U>
 struct CommonType<T, U> :
-    Conditional<ZB_IS_SAME(T, ZB_DECAY(T)) && ZB_IS_SAME(U, ZB_DECAY(U)),
-                CommonType2Impl<T, U>,
-                CommonType<ZB_DECAY(T), ZB_DECAY(U)>>
+    Conditional<ZB_IS_SAME(T, ZB_DECAY(T)) && ZB_IS_SAME(U, ZB_DECAY(U)), CommonType2Impl<T, U>, CommonType<ZB_DECAY(T), ZB_DECAY(U)>>
 {
 };
 

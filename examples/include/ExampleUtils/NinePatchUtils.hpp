@@ -71,7 +71,7 @@ struct [[nodiscard]] NinePatchBorders
 
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr zb::Array<float, 3> makeNinePatchPositions(
-    const float                      origin,
+    const float                origin,
     const zb::Array<float, 3>& slices) noexcept
 {
     return {origin, origin + slices[0], origin + slices[0] + slices[1]};

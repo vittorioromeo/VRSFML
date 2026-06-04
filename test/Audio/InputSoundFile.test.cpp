@@ -5,11 +5,9 @@
 #include "StringifyArrayUtil.hpp" // IWYU pragma: keep
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
-
 #include "Zancle/System/FileInputStream.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Time.hpp"
-
 #include "ZancleBase/Array.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Trait/IsCopyAssignable.hpp"

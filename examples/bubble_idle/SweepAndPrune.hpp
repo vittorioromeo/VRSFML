@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Zancle/System/Atomic.hpp"
-
 #include "ZancleBase/Algorithm/Sort.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/InterferenceSize.hpp"
@@ -16,7 +15,7 @@ class SweepAndPrune
 private:
     struct AABB
     {
-        float         minX, maxX, minY, maxY;
+        float   minX, maxX, minY, maxY;
         zb::U32 objIdx;
     };
 

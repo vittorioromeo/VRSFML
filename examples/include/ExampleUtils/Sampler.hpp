@@ -125,5 +125,5 @@ private:
 
     zb::SizeT m_size  = 0; // Number of valid samples currently in the buffer
     zb::SizeT m_index = 0; // Next index for insertion
-    T               m_sum   = 0; // Running sum for fast averaging
+    T         m_sum   = 0; // Running sum for fast averaging
 };

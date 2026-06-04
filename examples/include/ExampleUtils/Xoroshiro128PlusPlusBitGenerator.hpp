@@ -33,9 +33,8 @@ private:
     /// \return Rotated value
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] static inline constexpr zb::U64 rotl(
-        const zb::U64 x,
-        const unsigned      k) noexcept
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] static inline constexpr zb::U64 rotl(const zb::U64 x,
+                                                                                                     const unsigned k) noexcept
     {
         ZB_ASSERT_AND_ASSUME(k < 64u);
         return (x << k) | (x >> ((64u - k) & 63u));

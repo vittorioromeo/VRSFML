@@ -13,14 +13,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Window/Event.hpp"
-
 #include "Zancle/System/Android/Activity.hpp"
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Thread.hpp"
 #include "Zancle/System/Time.hpp"
-
+#include "Zancle/Window/Event.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/String.hpp"
 

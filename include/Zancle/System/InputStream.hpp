@@ -7,9 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Config.hpp"
-
 #include "Zancle/System/Export.hpp"
-
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/SizeT.hpp"
 

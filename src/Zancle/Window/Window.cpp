@@ -5,22 +5,18 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Window/Window.hpp"
-
-#include "Zancle/Window/VideoMode.hpp"
-#include "Zancle/Window/VideoModeUtils.hpp"
-#include "Zancle/Window/WindowBase.hpp"
-#include "Zancle/Window/WindowContext.hpp"
-#include "Zancle/Window/WindowHandle.hpp"
-#include "Zancle/Window/WindowSettings.hpp"
-
 #include "Zancle/GLUtils/GlContext.hpp"
-
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/Thread.hpp"
 #include "Zancle/System/Time.hpp"
-
+#include "Zancle/Window/VideoMode.hpp"
+#include "Zancle/Window/VideoModeUtils.hpp"
+#include "Zancle/Window/Window.hpp"
+#include "Zancle/Window/WindowBase.hpp"
+#include "Zancle/Window/WindowContext.hpp"
+#include "Zancle/Window/WindowHandle.hpp"
+#include "Zancle/Window/WindowSettings.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Macros.hpp"
 #include "ZancleBase/Optional.hpp"
@@ -63,8 +59,8 @@ EM_ASYNC_JS(void, sfml_yield_to_raf, (), {
 struct Window::Window::Impl
 {
     zb::UniquePtr<priv::GlContext> glContext;      //!< Platform-specific implementation of the OpenGL context
-    Clock                            clock;          //!< Clock for measuring the elapsed time between frames
-    Time                             frameTimeLimit; //!< Current framerate limit
+    Clock                          clock;          //!< Clock for measuring the elapsed time between frames
+    Time                           frameTimeLimit; //!< Current framerate limit
 
     explicit Impl(zb::UniquePtr<priv::GlContext>&& theContext) : glContext(ZB_MOVE(theContext))
     {
@@ -96,10 +92,10 @@ zb::Optional<Window> Window::create(const WindowSettings& windowSettings)
 
     return windowBase.hasValue()
                ? zb::Optional<Window>(zb::inPlace,
-                                        zb::PassKey<Window>{},
-                                        ZB_MOVE(*windowBase),
-                                        windowSettings,
-                                        windowSettings.bitsPerPixel)
+                                      zb::PassKey<Window>{},
+                                      ZB_MOVE(*windowBase),
+                                      windowSettings,
+                                      windowSettings.bitsPerPixel)
                : zb::nullOpt;
 }
 
@@ -113,10 +109,10 @@ zb::Optional<Window> Window::create(const WindowHandle handle, const ContextSett
         return zb::nullOpt;
 
     return zb::Optional<Window>(zb::inPlace,
-                                  zb::PassKey<Window>{},
-                                  ZB_MOVE(*windowBase),
-                                  WindowSettings{.size{}, .contextSettings = contextSettings},
-                                  VideoModeUtils::getDesktopMode().bitsPerPixel);
+                                zb::PassKey<Window>{},
+                                ZB_MOVE(*windowBase),
+                                WindowSettings{.size{}, .contextSettings = contextSettings},
+                                VideoModeUtils::getDesktopMode().bitsPerPixel);
 }
 
 

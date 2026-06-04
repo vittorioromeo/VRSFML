@@ -5,21 +5,17 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Network/TcpSocket.hpp"
-
 #include "Zancle/Config.hpp"
-
 #include "Zancle/Network/IpAddress.hpp"
 #include "Zancle/Network/Packet.hpp"
 #include "Zancle/Network/Socket.hpp"
 #include "Zancle/Network/SocketHandle.hpp"
 #include "Zancle/Network/SocketImpl.hpp"
-
+#include "Zancle/Network/TcpSocket.hpp"
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Time.hpp"
 #include "Zancle/System/Utf8String.hpp"
-
 #include "ZancleBase/Abort.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Memcpy.hpp"
@@ -53,7 +49,6 @@
 #if defined(ZA_SYSTEM_WINDOWS)
     #include "Zancle/System/Utf.hpp"
     #include "Zancle/System/WindowsHeader.hpp"
-
     #include "ZancleBase/BackInserter.hpp"
 
     #include <wincrypt.h>
@@ -199,8 +194,8 @@ constexpr int flags = 0;
     {
         static constexpr auto osStatusErrorString = [](OSStatus status)
         {
-            CFStringRef  stringRef = SecCopyErrorMessageString(status, nullptr);
-            zb::String string(CFStringGetCStringPtr(stringRef, kCFStringEncodingUTF8));
+            CFStringRef stringRef = SecCopyErrorMessageString(status, nullptr);
+            zb::String  string(CFStringGetCStringPtr(stringRef, kCFStringEncodingUTF8));
             CFRelease(stringRef);
             return string;
         };
@@ -324,7 +319,7 @@ struct MbedTlsSharedState
 
         static constexpr zb::StringView
             personalizationString = "zancle-network-" ZA_NUMBER_TO_STRING(ZA_VERSION_MAJOR) "." ZA_NUMBER_TO_STRING(
-            ZA_VERSION_MINOR) "." ZA_NUMBER_TO_STRING(ZA_VERSION_PATCH) "-mbedtls-" MBEDTLS_VERSION_STRING_FULL;
+                ZA_VERSION_MINOR) "." ZA_NUMBER_TO_STRING(ZA_VERSION_PATCH) "-mbedtls-" MBEDTLS_VERSION_STRING_FULL;
 
         if (auto result = mbedtls_ctr_drbg_seed(&ctrDrbgContext,
                                                 mbedtls_entropy_func,
@@ -377,11 +372,11 @@ struct TcpSocket::Impl
         const Utf8String& hostname,
         bool              verifyPeer,
         const Byte*       certificateChainData,
-        zb::SizeT       certificateChainSize,
+        zb::SizeT         certificateChainSize,
         const Byte*       privateKeyData,
-        zb::SizeT       privateKeySize,
+        zb::SizeT         privateKeySize,
         const Byte*       privateKeyPasswordData,
-        zb::SizeT       privateKeyPasswordSize)
+        zb::SizeT         privateKeyPasswordSize)
     {
         // We can't set up TLS if the underlying TCP stream isn't connected yet
         if (!socket.getRemoteAddress().hasValue())
@@ -762,7 +757,7 @@ unsigned short TcpSocket::getRemotePort() const
 Socket::Status TcpSocket::connect(IpAddress remoteAddress, unsigned short remotePort, Time timeout)
 {
     ZB_ASSERT(getNativeHandle() != priv::SocketImpl::invalidSocket() &&
-                     "TcpSocket handle must be valid (constructed via factory and not yet disconnected)");
+              "TcpSocket handle must be valid (constructed via factory and not yet disconnected)");
 
     // Create the remote address
     priv::SockAddrIn address = priv::SocketImpl::createAddress(remoteAddress.toInteger(), remotePort);
@@ -862,16 +857,14 @@ TcpSocket::TlsStatus TcpSocket::setupTlsClient(const Utf8String& hostname, const
 {
     // Mbed TLS expects the terminating NULL to be part of the PEM data
     // When we pass the data to MbedTLS have to add 1 to the size of the strings to include the NULL-terminator
-    return setupTlsClient(hostname,
-                          reinterpret_cast<const Byte*>(certificateChainData),
-                          ZB_STRLEN(certificateChainData) + 1);
+    return setupTlsClient(hostname, reinterpret_cast<const Byte*>(certificateChainData), ZB_STRLEN(certificateChainData) + 1);
 }
 
 
 ////////////////////////////////////////////////////////////
 TcpSocket::TlsStatus TcpSocket::setupTlsClient(const Utf8String& hostname,
                                                const Byte*       certificateChainData,
-                                               zb::SizeT       certificateChainSize)
+                                               zb::SizeT         certificateChainSize)
 {
     ZB_ASSERT(certificateChainData != nullptr && certificateChainSize > 0 && "Certificate chain data not valid");
 
@@ -900,11 +893,11 @@ TcpSocket::TlsStatus TcpSocket::setupTlsClient(const Utf8String& hostname, zb::S
 ////////////////////////////////////////////////////////////
 TcpSocket::TlsStatus TcpSocket::setupTlsServer(
     const Byte* certificateChainData,
-    zb::SizeT certificateChainSize,
+    zb::SizeT   certificateChainSize,
     const Byte* privateKeyData,
-    zb::SizeT privateKeySize,
+    zb::SizeT   privateKeySize,
     const Byte* privateKeyPasswordData,
-    zb::SizeT privateKeyPasswordSize)
+    zb::SizeT   privateKeyPasswordSize)
 {
     ZB_ASSERT(certificateChainData != nullptr && certificateChainSize > 0 && "Certificate chain data not valid");
     ZB_ASSERT(privateKeyData != nullptr && privateKeySize > 0 && "Private key data not valid");
@@ -989,7 +982,7 @@ Socket::Status TcpSocket::send(const void* data, zb::SizeT size, zb::SizeT& sent
         {
             // Handle sending over a TLS stream
             ZB_ASSERT(m_impl->tlsState->handshakeComplete &&
-                             "TLS handshake must be complete before receiving application data");
+                      "TLS handshake must be complete before receiving application data");
 
             if (!m_impl->tlsState->handshakeComplete)
             {
@@ -1077,7 +1070,7 @@ Socket::Status TcpSocket::receive(void* data, zb::SizeT size, zb::SizeT& receive
     {
         // Handle receiving over a TLS stream
         ZB_ASSERT(m_impl->tlsState->handshakeComplete &&
-                         "TLS handshake must be complete before sending application data");
+                  "TLS handshake must be complete before sending application data");
 
         if (!m_impl->tlsState->handshakeComplete)
         {
@@ -1158,7 +1151,7 @@ Socket::Status TcpSocket::send(Packet& packet)
     // data corruption on the receiving end.
 
     // Get the data to send from the packet
-    zb::SizeT size = 0;
+    zb::SizeT   size = 0;
     const void* data = packet.onSend(size);
 
     // Packet size prefix is written in host (little-endian) byte order;
@@ -1184,7 +1177,7 @@ Socket::Status TcpSocket::send(Packet& packet)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-conversion"
     // Send the data block
-    zb::SizeT  sent   = 0;
+    zb::SizeT    sent   = 0;
     const Status status = send(m_blockToSendBuffer.data() + packet.getSendPos(),
                                static_cast<priv::SocketImpl::Size>(m_blockToSendBuffer.size() - packet.getSendPos()),
                                sent);
@@ -1234,7 +1227,7 @@ Socket::Status TcpSocket::receive(Packet& packet)
     {
         // Receive a chunk of data
         const zb::SizeT sizeToGet = zb::min(packetSize - m_pendingPacket.data.size(), sizeof(buffer));
-        const Status      status    = receive(buffer, sizeToGet, received);
+        const Status    status    = receive(buffer, sizeToGet, received);
         if (status != Status::Done)
             return status;
 

@@ -5,14 +5,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Audio/SoundFileReaderWav.hpp"
-
 #include "Zancle/Audio/ChannelMap.hpp"
 #include "Zancle/Audio/Priv/MiniaudioUtils.hpp"
 #include "Zancle/Audio/SoundFileReader.hpp"
-
+#include "Zancle/Audio/SoundFileReaderWav.hpp"
 #include "Zancle/System/InputStream.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/GetArraySize.hpp"
 #include "ZancleBase/IntTypes.hpp"
@@ -27,7 +24,7 @@ namespace
 {
 ma_result onRead(ma_decoder* decoder, void* buffer, zb::SizeT bytesToRead, zb::SizeT* bytesRead)
 {
-    auto*                    stream = static_cast<za::InputStream*>(decoder->pUserData);
+    auto*              stream = static_cast<za::InputStream*>(decoder->pUserData);
     const zb::Optional count  = stream->read(buffer, bytesToRead);
 
     if (!count.hasValue())
@@ -74,7 +71,7 @@ namespace za::priv
 struct SoundFileReaderWav::Impl
 {
     zb::Optional<ma_decoder> decoder;        //!< wav decoder
-    ma_uint32                  channelCount{}; //!< Number of channels
+    ma_uint32                channelCount{}; //!< Number of channels
 };
 
 
@@ -175,7 +172,7 @@ zb::Optional<SoundFileReader::Info> SoundFileReaderWav::open(InputStream& stream
 void SoundFileReaderWav::seek(zb::U64 sampleOffset)
 {
     ZB_ASSERT(m_impl->decoder.hasValue() &&
-                     "wav decoder not initialized. Call SoundFileReaderWav::open() to initialize it.");
+              "wav decoder not initialized. Call SoundFileReaderWav::open() to initialize it.");
 
     if (const ma_result result = ma_decoder_seek_to_pcm_frame(m_impl->decoder.asPtr(), sampleOffset / m_impl->channelCount);
         result != MA_SUCCESS)
@@ -187,7 +184,7 @@ void SoundFileReaderWav::seek(zb::U64 sampleOffset)
 zb::U64 SoundFileReaderWav::read(zb::I16* samples, zb::U64 maxCount)
 {
     ZB_ASSERT(m_impl->decoder.hasValue() &&
-                     "wav decoder not initialized. Call SoundFileReaderWav::open() to initialize it.");
+              "wav decoder not initialized. Call SoundFileReaderWav::open() to initialize it.");
 
     ma_uint64 framesRead{};
 

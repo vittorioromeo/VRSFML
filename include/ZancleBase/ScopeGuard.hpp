@@ -51,10 +51,10 @@ ScopeGuard(F) -> ScopeGuard<F>; // Needed by clang-cl
 /// Usage: `ZB_SCOPE_GUARD({ cleanup(); });`
 ///
 ////////////////////////////////////////////////////////////
-#define ZB_SCOPE_GUARD(...)                                            \
+#define ZB_SCOPE_GUARD(...)                                      \
     const ::zb::ScopeGuard ZB_TOKEN_PASTE(_scopeGuard, __LINE__) \
-    {                                                                         \
-        [&] __VA_ARGS__                                                       \
+    {                                                            \
+        [&] __VA_ARGS__                                          \
     }
 
 } // namespace zb

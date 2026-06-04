@@ -6,13 +6,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Graphics/Export.hpp"
-
 #include "Zancle/Graphics/BlendMode.hpp"
+#include "Zancle/Graphics/Export.hpp"
 #include "Zancle/Graphics/StencilMode.hpp"
 #include "Zancle/Graphics/Transform.hpp"
 #include "Zancle/Graphics/View.hpp"
-
 #include "ZancleBase/RequireDesignatedInitializers.hpp"
 
 

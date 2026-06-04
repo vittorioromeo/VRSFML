@@ -1,6 +1,5 @@
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
-
 #include "Zancle/Window/Mouse.hpp"
 
 TEST_CASE("[Window] za::Mouse" * tst::skip(skipDisplayTests))

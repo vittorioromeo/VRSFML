@@ -1,14 +1,6 @@
 #include "ExampleProfiler/Profiler.hpp"
 #include "ExampleProfiler/ProfilerImGui.hpp"
 #include "SoAPFR.hpp"
-
-#include "ExampleUtils/RNGFast.hpp"
-#include "ExampleUtils/Sampler.hpp"
-#include "ExampleUtils/Scaling.hpp"
-
-#include "Zancle/ImGui/ImGuiContext.hpp"
-#include "Zancle/ImGui/IncludeImGui.hpp"
-
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/DefaultShader.hpp"
 #include "Zancle/Graphics/DrawInstancedIndexedVerticesSettings.hpp"
@@ -32,19 +24,18 @@
 #include "Zancle/Graphics/VAOHandle.hpp"
 #include "Zancle/Graphics/VBOHandle.hpp"
 #include "Zancle/Graphics/View.hpp" // IWYU pragma: keep
-
-#include "Zancle/Window/Event.hpp"
-#include "Zancle/Window/EventUtils.hpp"
-#include "Zancle/Window/Keyboard.hpp"
-#include "Zancle/Window/VideoMode.hpp"
-#include "Zancle/Window/VideoModeUtils.hpp"
-
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/Keyboard.hpp"
+#include "Zancle/Window/VideoMode.hpp"
+#include "Zancle/Window/VideoModeUtils.hpp"
 #include "ZancleBase/Algorithm/SwapAndPop.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Macros.hpp"
@@ -52,6 +43,10 @@
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/UniquePtr.hpp"
 #include "ZancleBase/Vector.hpp"
+
+#include "ExampleUtils/RNGFast.hpp"
+#include "ExampleUtils/Sampler.hpp"
+#include "ExampleUtils/Scaling.hpp"
 
 
 namespace
@@ -114,11 +109,11 @@ void main()
 
 
 ////////////////////////////////////////////////////////////
-za::Shader*                            instanceRenderingShader        = nullptr;
-const za::Shader::UniformLocation*     instanceRenderingULTextureRect = nullptr;
-za::VAOHandle*                         instanceRenderingVAOGroup      = nullptr;
-za::VBOHandle*                         instanceRenderingVBOs          = nullptr; // points to array of 4
-zb::Vector<ParticleInstanceData> instanceRenderingDataBuffer[2];
+za::Shader*                        instanceRenderingShader        = nullptr;
+const za::Shader::UniformLocation* instanceRenderingULTextureRect = nullptr;
+za::VAOHandle*                     instanceRenderingVAOGroup      = nullptr;
+za::VBOHandle*                     instanceRenderingVBOs          = nullptr; // points to array of 4
+zb::Vector<ParticleInstanceData>   instanceRenderingDataBuffer[2];
 
 
 ////////////////////////////////////////////////////////////
@@ -518,8 +513,8 @@ struct Rocket // NOLINT(cppcoreguidelines-pro-type-member-init)
 struct World
 {
     zb::Vector<zb::Optional<Emitter>> emitters;
-    zb::Vector<Particle>                    particles;
-    zb::Vector<Rocket>                      rockets;
+    zb::Vector<Particle>              particles;
+    zb::Vector<Rocket>                rockets;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] zb::SizeT addEmitter(const Emitter& emitter)
@@ -623,7 +618,7 @@ struct World
         zb::vectorSwapAndPopIf(particles, [](const Particle& p) { return p.opacity <= 0.f; });
 
         zb::vectorSwapAndPopIf(rockets,
-                                     [&](const Rocket& r)
+                               [&](const Rocket& r)
         {
             if (r.position.x <= 1680.f + 64.f)
                 return false;
@@ -794,9 +789,9 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
 {
     zb::Vector<zb::Optional<Emitter>> smokeEmitters;
     zb::Vector<zb::Optional<Emitter>> fireEmitters;
-    zb::Vector<Particle>                    smokeParticles;
-    zb::Vector<Particle>                    fireParticles;
-    zb::Vector<Rocket>                      rockets;
+    zb::Vector<Particle>              smokeParticles;
+    zb::Vector<Particle>              fireParticles;
+    zb::Vector<Rocket>                rockets;
 
     ////////////////////////////////////////////////////////////
     void update(const float dt)
@@ -875,7 +870,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
         zb::vectorSwapAndPopIf(fireParticles, [](const Particle& p) { return p.opacity <= 0.f; });
 
         zb::vectorSwapAndPopIf(rockets,
-                                     [&](const Rocket& r)
+                               [&](const Rocket& r)
         {
             if (r.position.x <= 1680.f + 64.f)
                 return false;
@@ -1009,9 +1004,9 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
 {
     zb::Vector<zb::Optional<Emitter>> smokeEmitters;
     zb::Vector<zb::Optional<Emitter>> fireEmitters;
-    ParticleSoA                                   smokeParticles;
-    ParticleSoA                                   fireParticles;
-    zb::Vector<Rocket>                      rockets;
+    ParticleSoA                       smokeParticles;
+    ParticleSoA                       fireParticles;
+    zb::Vector<Rocket>                rockets;
 
     ////////////////////////////////////////////////////////////
     void update(const float dt)
@@ -1129,12 +1124,11 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
             soa.forEachVector([&](auto& vec) { vec.resize(currentSize); });
         };
 
-        soaEraseIf(smokeParticles,
-                   [](const ParticleSoA& soa, const zb::SizeT i) { return soa.opacities[i] <= 0.f; });
+        soaEraseIf(smokeParticles, [](const ParticleSoA& soa, const zb::SizeT i) { return soa.opacities[i] <= 0.f; });
         soaEraseIf(fireParticles, [](const ParticleSoA& soa, const zb::SizeT i) { return soa.opacities[i] <= 0.f; });
 
         zb::vectorSwapAndPopIf(rockets,
-                                     [&](const Rocket& r)
+                               [&](const Rocket& r)
         {
             if (r.position.x <= 1680.f + 64.f)
                 return false;
@@ -1246,9 +1240,9 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
 {
     zb::Vector<zb::Optional<Emitter>> smokeEmitters;
     zb::Vector<zb::Optional<Emitter>> fireEmitters;
-    ParticleSoA                                   smokeParticles;
-    ParticleSoA                                   fireParticles;
-    zb::Vector<Rocket>                      rockets;
+    ParticleSoA                       smokeParticles;
+    ParticleSoA                       fireParticles;
+    zb::Vector<Rocket>                rockets;
 
     ////////////////////////////////////////////////////////////
     void update(const float dt)
@@ -1350,7 +1344,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
         fireParticles.eraseIfBySwapping<&Particle::opacity>([](const float opacity) { return opacity <= 0.f; });
 
         zb::vectorSwapAndPopIf(rockets,
-                                     [&](const Rocket& r)
+                               [&](const Rocket& r)
         {
             if (r.position.x <= 1680.f + 64.f)
                 return false;

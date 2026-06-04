@@ -4,9 +4,7 @@
 #include "Playthrough.hpp"
 #include "UIState.hpp"
 #include "Version.hpp"
-
 #include "Zancle/ImGui/IncludeImGui.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Clamp.hpp"
 #include "ZancleBase/SizeT.hpp"
@@ -40,7 +38,7 @@ void Main::uiPrestigeDrawOverview()
     const auto maxPrestigeLevel        = zb::SizeT{20u};
 
     zb::SizeT maxPurchaseablePrestigeLevel = currentPrestigeLevel;
-    MoneyType       maxCost                      = 0u;
+    MoneyType maxCost                      = 0u;
 
     for (zb::SizeT iPrestige = currentPrestigeLevel + 1u; iPrestige < maxPrestigeLevel; ++iPrestige)
     {

@@ -7,7 +7,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/System/Export.hpp"
-
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/Scn/Scn.hpp" // IWYU pragma: export -- scn<T> / scnInto
 

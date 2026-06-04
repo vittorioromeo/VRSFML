@@ -11,11 +11,9 @@
 #include "Zancle/Graphics/RenderStates.hpp"
 #include "Zancle/Graphics/RenderTarget.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
-
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Time.hpp"
 #include "Zancle/System/Vec2.hpp"
-
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/Vector.hpp"
@@ -30,11 +28,11 @@ private:
     ////////////////////////////////////////////////////////////
     struct [[nodiscard]] BoltSegment
     {
-        za::Vec2f    start;
-        za::Vec2f    end;
-        float        thickness;
-        int          depth;
-        zb::U8 alpha;
+        za::Vec2f start;
+        za::Vec2f end;
+        float     thickness;
+        int       depth;
+        zb::U8    alpha;
     };
 
 public:
@@ -74,8 +72,8 @@ public:
             {
                 const za::Vec2f dir = current.end - current.start;
 
-                const auto startPointIdx = rng.template getI<zb::SizeT>(1u, (pointChainBuffer.size() - 2u) / 2u);
-                const za::Vec2f branchStart = pointChainBuffer[startPointIdx];
+                const auto      startPointIdx = rng.template getI<zb::SizeT>(1u, (pointChainBuffer.size() - 2u) / 2u);
+                const za::Vec2f branchStart   = pointChainBuffer[startPointIdx];
 
                 // Create the new branch and add it to the queue.
                 const float     branchLength = dir.length() * rng.getF(branchLengthMin, branchLengthMax);
@@ -144,11 +142,11 @@ public:
 private:
     ////////////////////////////////////////////////////////////
     void generatePointChain(zb::Vector<za::Vec2f>& out,
-                            auto&&                       rng,
-                            const za::Vec2f              start,
-                            const za::Vec2f              end,
-                            const float                  jaggedness,
-                            const int                    depth)
+                            auto&&                 rng,
+                            const za::Vec2f        start,
+                            const za::Vec2f        end,
+                            const float            jaggedness,
+                            const int              depth)
     {
         if (depth <= 0)
         {

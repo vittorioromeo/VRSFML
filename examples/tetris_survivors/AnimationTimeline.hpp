@@ -16,7 +16,7 @@ struct [[nodiscard]] AnimationTimeline
 {
     ////////////////////////////////////////////////////////////
     zb::InPlaceVector<TCommand, 128> commands;
-    float                                  timeOnCurrentCommand = 0.f;
+    float                            timeOnCurrentCommand = 0.f;
 
 
     ////////////////////////////////////////////////////////////

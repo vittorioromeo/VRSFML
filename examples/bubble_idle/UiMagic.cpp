@@ -7,10 +7,9 @@
 #include "Playthrough.hpp"
 #include "PurchasableScalingValue.hpp"
 #include "UIState.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
 #include "ExampleUtils/Progress.hpp"
-
-#include "Zancle/ImGui/IncludeImGui.hpp"
 
 #include <cstdio>
 

@@ -1,10 +1,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Window/Joystick.hpp"
-
-#include "ExampleUtils/Scaling.hpp"
-
 #include "Zancle/Graphics/CircleShapeData.hpp"
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/Font.hpp"
@@ -16,15 +12,13 @@
 #include "Zancle/Graphics/Text.hpp"
 #include "Zancle/Graphics/Transformable.hpp"
 #include "Zancle/Graphics/View.hpp" // IWYU pragma: keep
-
-#include "Zancle/Window/Event.hpp"
-#include "Zancle/Window/EventUtils.hpp"
-#include "Zancle/Window/Keyboard.hpp"
-
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/Joystick.hpp"
+#include "Zancle/Window/Keyboard.hpp"
 #include "ZancleBase/Array.hpp"
 #include "ZancleBase/Macros.hpp"
 #include "ZancleBase/Optional.hpp"
@@ -32,14 +26,15 @@
 #include "ZancleBase/ToString.hpp"
 #include "ZancleBase/Vector.hpp"
 
+#include "ExampleUtils/Scaling.hpp"
+
 
 namespace
 {
 ////////////////////////////////////////////////////////////
 // Axis labels as C strings
 ////////////////////////////////////////////////////////////
-constexpr zb::Array<const char*, za::Joystick::AxisCount> axisLabels =
-    {"X", "Y", "Z", "R", "U", "V", "PovX", "PovY"};
+constexpr zb::Array<const char*, za::Joystick::AxisCount> axisLabels = {"X", "Y", "Z", "R", "U", "V", "PovX", "PovY"};
 
 
 ////////////////////////////////////////////////////////////
@@ -119,9 +114,9 @@ private:
 class JoystickDisplay : public za::Transformable
 {
 public:
-    JoystickDisplay(const za::Font&                  font,
-                    za::Joystick::Axis               xAxis,
-                    za::Joystick::Axis               yAxis,
+    JoystickDisplay(const za::Font&            font,
+                    za::Joystick::Axis         xAxis,
+                    za::Joystick::Axis         yAxis,
                     zb::Optional<unsigned int> button = zb::nullOpt) :
         m_xAxis(xAxis),
         m_yAxis(yAxis),
@@ -197,13 +192,13 @@ private:
     static constexpr float radius          = 50.f;
     static constexpr float indicatorRadius = 5.f;
 
-    za::Joystick::Axis               m_xAxis;
-    za::Joystick::Axis               m_yAxis;
+    za::Joystick::Axis         m_xAxis;
+    za::Joystick::Axis         m_yAxis;
     zb::Optional<unsigned int> m_button;
-    za::Text                         m_label;
-    float                            m_xValue{};
-    float                            m_yValue{};
-    bool                             m_pressed{};
+    za::Text                   m_label;
+    float                      m_xValue{};
+    float                      m_yValue{};
+    bool                       m_pressed{};
 };
 
 
@@ -275,12 +270,10 @@ public:
                 })
     {
         // Sticks
-        m_joysticks
-            .emplaceBack(font, za::Joystick::Axis::X, za::Joystick::Axis::Y, zb::makeOptional<unsigned int>(10u))
+        m_joysticks.emplaceBack(font, za::Joystick::Axis::X, za::Joystick::Axis::Y, zb::makeOptional<unsigned int>(10u))
             .position = {displaySize.x / 2.f - 100.f, displaySize.y - 50.f};
 
-        m_joysticks
-            .emplaceBack(font, za::Joystick::Axis::Z, za::Joystick::Axis::R, zb::makeOptional<unsigned int>(11u))
+        m_joysticks.emplaceBack(font, za::Joystick::Axis::Z, za::Joystick::Axis::R, zb::makeOptional<unsigned int>(11u))
             .position = {displaySize.x / 2.f + 100.f, displaySize.y - 50.f};
 
         // Face buttons (north/south/east/west diamond)
@@ -388,7 +381,7 @@ private:
     zb::Vector<JoystickDisplay> m_joysticks;
     zb::Vector<AxisDisplay>     m_triggers;
     zb::Vector<ButtonDisplay>   m_buttons;
-    za::Text                          m_label;
+    za::Text                    m_label;
 };
 
 
@@ -469,7 +462,7 @@ public:
     }
 
 private:
-    za::Text                        m_label;
+    za::Text                  m_label;
     zb::Vector<AxisDisplay>   m_axisDisplays;
     zb::Vector<ButtonDisplay> m_buttonDisplays;
 };
@@ -572,7 +565,7 @@ int main()
     }
 
     // The actual displays - toggle between generic and gamepad with Tab
-    bool                               showingGamepad = true;
+    bool                         showingGamepad = true;
     zb::Optional<GamepadDisplay> gamepadDisplay;
     zb::Optional<GenericDisplay> genericDisplay;
 

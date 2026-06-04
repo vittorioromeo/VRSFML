@@ -5,14 +5,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Audio/SoundFileReaderFlac.hpp"
-
 #include "Zancle/Audio/SoundChannel.hpp"
 #include "Zancle/Audio/SoundFileReader.hpp"
-
+#include "Zancle/Audio/SoundFileReaderFlac.hpp"
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/InputStream.hpp"
-
 #include "ZancleBase/Algorithm/Copy.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/IntTypes.hpp"
@@ -34,12 +31,12 @@ namespace
 ////////////////////////////////////////////////////////////
 struct FlacClientData
 {
-    za::InputStream*                stream{};
-    za::SoundFileReader::Info       info;
+    za::InputStream*          stream{};
+    za::SoundFileReader::Info info;
     zb::I16*                  buffer{};
     zb::U64                   remaining{};
-    zb::Vector<zb::I16> leftovers;
-    bool                            error{};
+    zb::Vector<zb::I16>       leftovers;
+    bool                      error{};
 };
 
 
@@ -252,7 +249,7 @@ struct SoundFileReaderFlac::Impl
     };
 
     zb::UniquePtr<FLAC__StreamDecoder, FlacStreamDecoderDeleter> decoder; //!< FLAC decoder
-    FlacClientData clientData; //!< Structure passed to the decoder callbacks
+    FlacClientData clientData;                                            //!< Structure passed to the decoder callbacks
 };
 
 
@@ -339,7 +336,7 @@ zb::Optional<SoundFileReader::Info> SoundFileReaderFlac::open(InputStream& strea
 void SoundFileReaderFlac::seek(zb::U64 sampleOffset)
 {
     ZB_ASSERT(m_impl->decoder != nullptr &&
-                     "No decoder available. Call SoundFileReaderFlac::open() to create a new one.");
+              "No decoder available. Call SoundFileReaderFlac::open() to create a new one.");
 
     // Reset the callback data (the "write" callback will be called)
     m_impl->clientData.buffer    = nullptr;
@@ -373,7 +370,7 @@ void SoundFileReaderFlac::seek(zb::U64 sampleOffset)
 zb::U64 SoundFileReaderFlac::read(zb::I16* samples, zb::U64 maxCount)
 {
     ZB_ASSERT(m_impl->decoder != nullptr &&
-                     "No decoder available. Call SoundFileReaderFlac::open() to create a new one.");
+              "No decoder available. Call SoundFileReaderFlac::open() to create a new one.");
 
     // If there are leftovers from previous call, use it first
     const zb::SizeT left = m_impl->clientData.leftovers.size();
@@ -386,7 +383,7 @@ zb::U64 SoundFileReaderFlac::read(zb::I16* samples, zb::U64 maxCount)
                 samples[i] = m_impl->clientData.leftovers[i];
 
             m_impl->clientData.leftovers = zb::Vector<zb::I16>(m_impl->clientData.leftovers.begin() + maxCount,
-                                                                   m_impl->clientData.leftovers.end());
+                                                               m_impl->clientData.leftovers.end());
 
             return maxCount;
         }

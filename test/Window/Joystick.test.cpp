@@ -1,8 +1,6 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
-
 #include "Zancle/Window/Joystick.hpp"
-
 #include "Zancle/Window/WindowContext.hpp"
 
 TEST_CASE("[Window] za::Joystick")

@@ -8,7 +8,6 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/System/Rect2.hpp"
 #include "Zancle/System/Vec2.hpp"
-
 #include "ZancleBase/Constants.hpp"
 #include "ZancleBase/MinMaxMacros.hpp"
 #include "ZancleBase/Remainder.hpp"

@@ -7,7 +7,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Export.hpp"
-
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/StringView.hpp"
 #include "ZancleBase/Vector.hpp"

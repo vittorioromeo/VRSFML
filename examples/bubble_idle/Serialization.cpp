@@ -14,17 +14,12 @@
 #include "Shrine.hpp"
 #include "Stats.hpp"
 #include "Version.hpp"
-#include "cJSON.h"
-
-#include "ExampleUtils/Progress.hpp"
-
 #include "Zancle/System/Fmt/FmtPath.hpp"
 #include "Zancle/System/IO.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/PathStreamOp.hpp" // IWYU pragma: keep
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Time.hpp"
-
 #include "ZancleBase/Array.hpp"
 #include "ZancleBase/Fmt/Fmt.hpp"
 #include "ZancleBase/Fmt/FmtNumeric.hpp"
@@ -43,6 +38,9 @@
 #include "ZancleBase/Trait/RemoveCVRef.hpp"
 #include "ZancleBase/Trait/UnderlyingType.hpp"
 #include "ZancleBase/Vector.hpp"
+#include "cJSON.h"
+
+#include "ExampleUtils/Progress.hpp"
 
 // NOLINTBEGIN(readability-identifier-naming, misc-use-internal-linkage)
 
@@ -1264,8 +1262,7 @@ bool loadProfileFromFile(Profile& profile, const char* filename)
     // Old saves used a JSON array at the root; new saves are objects.
     if (!cJSON_IsObject(parsed))
     {
-        zb::printLn("Profile '{}' is in the legacy array format and cannot be loaded. Resetting to defaults.",
-                          filename);
+        zb::printLn("Profile '{}' is in the legacy array format and cannot be loaded. Resetting to defaults.", filename);
 
         profile = Profile{};
         return true;
@@ -1352,12 +1349,12 @@ zb::StringView backwardsCompatibilityLoadChecks(const Version& parsedVersion, Pl
         return "";
 
     zb::printLn("Loaded playthrough version {}.{}.{} does not match current version {}.{}.{}",
-                      parsedVersion.major,
-                      parsedVersion.minor,
-                      parsedVersion.patch,
-                      currentVersion.major,
-                      currentVersion.minor,
-                      currentVersion.patch);
+                parsedVersion.major,
+                parsedVersion.minor,
+                parsedVersion.patch,
+                currentVersion.major,
+                currentVersion.minor,
+                currentVersion.patch);
 
     // Prestige point scaling buff compensation
     if (parsedVersion.major == 1 && parsedVersion.minor <= 4)
@@ -1376,11 +1373,11 @@ zb::StringView backwardsCompatibilityLoadChecks(const Version& parsedVersion, Pl
                                                                                      /* levelBias */ 1u);
 
             zb::printLn("Old accumulated pps: {}{}New accumulated pps: {}{}Adding {} prestige points",
-                              oldAccumulatedPPs,
-                              '\n',
-                              newAccumulatedPPs,
-                              '\n',
-                              newAccumulatedPPs - oldAccumulatedPPs);
+                        oldAccumulatedPPs,
+                        '\n',
+                        newAccumulatedPPs,
+                        '\n',
+                        newAccumulatedPPs - oldAccumulatedPPs);
 
             playthrough.prestigePoints += newAccumulatedPPs - oldAccumulatedPPs;
 

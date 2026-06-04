@@ -1,15 +1,14 @@
 #pragma once
 
 #include "PSVData.hpp"
-
 #include "ZancleBase/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] PurchasableScalingValue
 {
-    const PSVData*  data; // TODO P2: eww
-    zb::SizeT nPurchases = 0u;
+    const PSVData* data; // TODO P2: eww
+    zb::SizeT      nPurchases = 0u;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] inline constexpr float costAt(const zb::SizeT n) const
@@ -42,9 +41,8 @@ struct [[nodiscard]] PurchasableScalingValue
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] inline constexpr float cumulativeCostBetween(
-        const zb::SizeT nStart /* inclusive */,
-        const zb::SizeT nEnd /* exclusive */) const
+    [[nodiscard, gnu::always_inline]] inline constexpr float cumulativeCostBetween(const zb::SizeT nStart /* inclusive */,
+                                                                                   const zb::SizeT nEnd /* exclusive */) const
     {
         float totalCost = 0.f;
 

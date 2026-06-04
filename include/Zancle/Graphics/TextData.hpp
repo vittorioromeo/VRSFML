@@ -6,13 +6,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Graphics/Export.hpp"
-
 #include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/Export.hpp"
 #include "Zancle/Graphics/Priv/TransformableMacros.hpp"
-
 #include "Zancle/System/Utf8String.hpp"
-
 #include "ZancleBase/RequireDesignatedInitializers.hpp"
 
 

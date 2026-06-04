@@ -453,7 +453,7 @@ public:
 
 ////////////////////////////////////////////////////////////
 // Bridge macro: forward `methodName(...)` to the equivalent on `StringView`.
-#define ZB_PRIV_DEFINE_STRING_VIEW_BRIDGE(methodName)                    \
+#define ZB_PRIV_DEFINE_STRING_VIEW_BRIDGE(methodName)                           \
     decltype(auto) methodName(auto&&... args) const                             \
     {                                                                           \
         return toStringView().methodName(static_cast<decltype(args)>(args)...); \

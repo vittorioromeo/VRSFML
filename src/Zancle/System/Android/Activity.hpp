@@ -6,10 +6,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Window/Event.hpp"
-
 #include "Zancle/GLUtils/EGL/EGLContext.hpp"
-
+#include "Zancle/Window/Event.hpp"
 #include "ZancleBase/EnumArray.hpp"
 #include "ZancleBase/SizeT.hpp"
 

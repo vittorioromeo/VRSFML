@@ -1,12 +1,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "ExampleUtils/Easing.hpp"
-#include "ExampleUtils/MathUtils.hpp"
-#include "ExampleUtils/Scaling.hpp"
-#include "ExampleUtils/SfexCoroutine.hpp"
-#include "ExampleUtils/SfexYield.hpp"
-
 #include "Zancle/Graphics/CircleShapeData.hpp"
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/Font.hpp"
@@ -15,17 +9,14 @@
 #include "Zancle/Graphics/RenderWindow.hpp"
 #include "Zancle/Graphics/TextData.hpp"
 #include "Zancle/Graphics/TextUtils.hpp"
-
-#include "Zancle/Window/Event.hpp"
-#include "Zancle/Window/EventUtils.hpp"
-#include "Zancle/Window/Keyboard.hpp"
-
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Time.hpp"
 #include "Zancle/System/Vec2.hpp"
-
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/Keyboard.hpp"
 #include "ZancleBase/Algorithm/SwapAndPop.hpp"
 #include "ZancleBase/Clamp.hpp"
 #include "ZancleBase/Constants.hpp"
@@ -39,6 +30,12 @@
 #include "ZancleBase/ToString.hpp"
 #include "ZancleBase/Variant.hpp"
 #include "ZancleBase/Vector.hpp"
+
+#include "ExampleUtils/Easing.hpp"
+#include "ExampleUtils/MathUtils.hpp"
+#include "ExampleUtils/Scaling.hpp"
+#include "ExampleUtils/SfexCoroutine.hpp"
+#include "ExampleUtils/SfexYield.hpp"
 
 
 namespace
@@ -170,10 +167,10 @@ struct World
 
 
     ////////////////////////////////////////////////////////////
-    zb::Vector<Boss>             bosses;
-    zb::Vector<Bullet>           bullets;
-    zb::Vector<PlayerBullet>     playerBullets;
-    zb::Vector<zb::String> log;
+    zb::Vector<Boss>         bosses;
+    zb::Vector<Bullet>       bullets;
+    zb::Vector<PlayerBullet> playerBullets;
+    zb::Vector<zb::String>   log;
 
 
     ////////////////////////////////////////////////////////////
@@ -775,7 +772,7 @@ struct BossFight : BossCoroutine
 ////////////////////////////////////////////////////////////
 struct Snapshot
 {
-    World                       world;
+    World                 world;
     zb::Vector<BossFight> bossScripts;
 };
 
@@ -803,7 +800,7 @@ int main()
 
     const auto font = za::Font::openFromFile("resources/tuffy.ttf").value();
 
-    World                       world;
+    World                 world;
     zb::Vector<BossFight> bossScripts; // parallel to `world.bosses`
 
     const auto resetScriptsToBosses = [&] { bossScripts.resize(world.bosses.size()); };
@@ -811,7 +808,7 @@ int main()
     world.initBosses();
     resetScriptsToBosses();
 
-    za::Clock                    frameClock;
+    za::Clock              frameClock;
     zb::Optional<Snapshot> quickSave;
 
     const auto doRestart = [&]
@@ -1021,7 +1018,7 @@ int main()
 
         // ---- Enemy bullets vs player ----
         zb::vectorSwapAndPopIf(world.bullets,
-                                     [&](Bullet& b)
+                               [&](Bullet& b)
         {
             b.pos += b.vel * dt;
 
@@ -1042,7 +1039,7 @@ int main()
 
         // ---- Player bullets vs bosses ----
         zb::vectorSwapAndPopIf(world.playerBullets,
-                                     [&](PlayerBullet& b)
+                               [&](PlayerBullet& b)
         {
             b.pos += b.vel * dt;
 

@@ -17,7 +17,7 @@
 /// for flag-style scoped enums (`enum class Flags : unsigned int`).
 ///
 ////////////////////////////////////////////////////////////
-#define ZB_DEFINE_ENUM_CLASS_BITWISE_OPS(enumType)                                                                        \
+#define ZB_DEFINE_ENUM_CLASS_BITWISE_OPS(enumType)                                                                               \
                                                                                                                                  \
     [[nodiscard, maybe_unused, gnu::always_inline, gnu::const]] inline constexpr bool operator!(const enumType lhs) noexcept     \
     {                                                                                                                            \
@@ -27,27 +27,27 @@
     [[nodiscard, maybe_unused, gnu::always_inline, gnu::const]] inline constexpr enumType operator|(const enumType lhs,          \
                                                                                                     const enumType rhs) noexcept \
     {                                                                                                                            \
-        return static_cast<enumType>(static_cast<ZB_UNDERLYING_TYPE(enumType)>(lhs) |                                     \
-                                     static_cast<ZB_UNDERLYING_TYPE(enumType)>(rhs));                                     \
+        return static_cast<enumType>(                                                                                            \
+            static_cast<ZB_UNDERLYING_TYPE(enumType)>(lhs) | static_cast<ZB_UNDERLYING_TYPE(enumType)>(rhs));                    \
     }                                                                                                                            \
                                                                                                                                  \
     [[nodiscard, maybe_unused, gnu::always_inline, gnu::const]] inline constexpr enumType operator&(const enumType lhs,          \
                                                                                                     const enumType rhs) noexcept \
     {                                                                                                                            \
-        return static_cast<enumType>(static_cast<ZB_UNDERLYING_TYPE(enumType)>(lhs) &                                     \
-                                     static_cast<ZB_UNDERLYING_TYPE(enumType)>(rhs));                                     \
+        return static_cast<enumType>(                                                                                            \
+            static_cast<ZB_UNDERLYING_TYPE(enumType)>(lhs) & static_cast<ZB_UNDERLYING_TYPE(enumType)>(rhs));                    \
     }                                                                                                                            \
                                                                                                                                  \
     [[nodiscard, maybe_unused, gnu::always_inline, gnu::const]] inline constexpr enumType operator^(const enumType lhs,          \
                                                                                                     const enumType rhs) noexcept \
     {                                                                                                                            \
-        return static_cast<enumType>(static_cast<ZB_UNDERLYING_TYPE(enumType)>(lhs) ^                                     \
-                                     static_cast<ZB_UNDERLYING_TYPE(enumType)>(rhs));                                     \
+        return static_cast<enumType>(                                                                                            \
+            static_cast<ZB_UNDERLYING_TYPE(enumType)>(lhs) ^ static_cast<ZB_UNDERLYING_TYPE(enumType)>(rhs));                    \
     }                                                                                                                            \
                                                                                                                                  \
     [[nodiscard, maybe_unused, gnu::always_inline, gnu::const]] inline constexpr enumType operator~(const enumType lhs) noexcept \
     {                                                                                                                            \
-        return static_cast<enumType>(~static_cast<ZB_UNDERLYING_TYPE(enumType)>(lhs));                                    \
+        return static_cast<enumType>(~static_cast<ZB_UNDERLYING_TYPE(enumType)>(lhs));                                           \
     }                                                                                                                            \
                                                                                                                                  \
     [[maybe_unused, gnu::always_inline]] inline constexpr enumType& operator|=(enumType& lhs, const enumType rhs) noexcept       \

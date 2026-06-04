@@ -7,11 +7,9 @@
 ////////////////////////////////////////////////////////////
 #include "Tst/Approx.hpp"
 #include "Tst/Detail/StringifyValue.hpp"
-
 #include "Zancle/System/Rect2.hpp"
 #include "Zancle/System/Vec2.hpp"
 #include "Zancle/System/Vec3.hpp"
-
 #include "ZancleBase/Builtin/Memcpy.hpp"
 #include "ZancleBase/Fmt/Fmt.hpp"
 #include "ZancleBase/Fmt/FmtCString.hpp" // IWYU pragma: keep
@@ -42,12 +40,12 @@ zb::SizeT copyInto(char* buf, zb::SizeT cap, const char* data, zb::SizeT n) noex
 
 
 ////////////////////////////////////////////////////////////
-#define ZA_TST_DEFINE_STRINGIFY_NUMERIC(T)                                     \
+#define ZA_TST_DEFINE_STRINGIFY_NUMERIC(T)                           \
     zb::SizeT stringifyValue(char* buf, zb::SizeT cap, T v) noexcept \
-    {                                                                            \
-        zb::FmtSink sink{buf, cap};                                        \
-        (void)sink.fmt("{}", v);                                                 \
-        return sink.size();                                                      \
+    {                                                                \
+        zb::FmtSink sink{buf, cap};                                  \
+        (void)sink.fmt("{}", v);                                     \
+        return sink.size();                                          \
     }
 
 ZA_TST_DEFINE_STRINGIFY_NUMERIC(short)

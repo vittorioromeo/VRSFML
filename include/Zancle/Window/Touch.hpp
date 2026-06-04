@@ -7,7 +7,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Window/Export.hpp"
-
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Span.hpp"
 #include "ZancleBase/StringView.hpp"
@@ -47,7 +46,7 @@ struct ZA_WINDOW_API Touch
     struct Device // NOLINT(cppcoreguidelines-pro-type-member-init)
     {
         zb::U64        id;   //!< OS-assigned identifier of the touch device
-        DeviceType       type; //!< Kind of touch device (direct / indirect)
+        DeviceType     type; //!< Kind of touch device (direct / indirect)
         zb::StringView name; //!< Human-readable name of the touch device
     };
 

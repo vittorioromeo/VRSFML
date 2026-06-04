@@ -1,11 +1,8 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
-
-#include "Zancle/System/Vec2.hpp"
-
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
-
+#include "Zancle/System/Vec2.hpp"
 #include "ZancleBase/Math/Sqrt.hpp"
 #include "ZancleBase/Trait/IsAggregate.hpp"
 #include "ZancleBase/Trait/IsSame.hpp"
@@ -69,11 +66,9 @@ TEMPLATE_TEST_CASE("[System] za::Vec2", "", int, float)
             CHECK(za::Vec2f::fromAngle(0, -360_deg) == za::Vec2f{0, 0});
 
             CHECK(za::Vec2f::fromAngle(1, 0_deg) == za::Vec2f{1, 0});
-            CHECK(za::Vec2f::fromAngle(1, 45_deg) ==
-                  Approx(za::Vec2f(zb::sqrt(2.f) / 2.f, zb::sqrt(2.f) / 2.f)));
+            CHECK(za::Vec2f::fromAngle(1, 45_deg) == Approx(za::Vec2f(zb::sqrt(2.f) / 2.f, zb::sqrt(2.f) / 2.f)));
             CHECK(za::Vec2f::fromAngle(1, 90_deg) == Approx(za::Vec2f{0, 1}));
-            CHECK(za::Vec2f::fromAngle(1, 135_deg) ==
-                  Approx(za::Vec2f(-zb::sqrt(2.f) / 2.f, zb::sqrt(2.f) / 2.f)));
+            CHECK(za::Vec2f::fromAngle(1, 135_deg) == Approx(za::Vec2f(-zb::sqrt(2.f) / 2.f, zb::sqrt(2.f) / 2.f)));
             CHECK(za::Vec2f::fromAngle(1, 180_deg) == Approx(za::Vec2f(-1, 0)));
             CHECK(za::Vec2f::fromAngle(1, 270_deg) == Approx(za::Vec2f(0, -1)));
             CHECK(za::Vec2f::fromAngle(1, 360_deg) == Approx(za::Vec2f{1, 0}));
@@ -83,11 +78,9 @@ TEMPLATE_TEST_CASE("[System] za::Vec2", "", int, float)
             CHECK(za::Vec2f::fromAngle(1, -360_deg) == Approx(za::Vec2f{1, 0}));
 
             CHECK(za::Vec2f::fromAngle(-1, 0_deg) == za::Vec2f(-1, 0));
-            CHECK(za::Vec2f::fromAngle(-1, 45_deg) ==
-                  Approx(za::Vec2f(-zb::sqrt(2.f) / 2.f, -zb::sqrt(2.f) / 2.f)));
+            CHECK(za::Vec2f::fromAngle(-1, 45_deg) == Approx(za::Vec2f(-zb::sqrt(2.f) / 2.f, -zb::sqrt(2.f) / 2.f)));
             CHECK(za::Vec2f::fromAngle(-1, 90_deg) == Approx(za::Vec2f(0, -1)));
-            CHECK(za::Vec2f::fromAngle(-1, 135_deg) ==
-                  Approx(za::Vec2f(zb::sqrt(2.f) / 2.f, -zb::sqrt(2.f) / 2.f)));
+            CHECK(za::Vec2f::fromAngle(-1, 135_deg) == Approx(za::Vec2f(zb::sqrt(2.f) / 2.f, -zb::sqrt(2.f) / 2.f)));
             CHECK(za::Vec2f::fromAngle(-1, 180_deg) == Approx(za::Vec2f{1, 0}));
             CHECK(za::Vec2f::fromAngle(-1, 270_deg) == Approx(za::Vec2f{0, 1}));
             CHECK(za::Vec2f::fromAngle(-1, 360_deg) == Approx(za::Vec2f(-1, 0)));

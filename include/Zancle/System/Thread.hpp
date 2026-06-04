@@ -7,7 +7,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/System/Export.hpp"
-
 #include "ZancleBase/FwdStdAlignedNewDelete.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/PlacementNew.hpp"
@@ -277,7 +276,7 @@ private:
     ////////////////////////////////////////////////////////////
     alignas(zb::U64) unsigned char m_native[16]{};
     zb::U64 m_id{0u};
-    bool      m_joinable{false};
+    bool    m_joinable{false};
 };
 
 

@@ -6,10 +6,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Window/Export.hpp"
-
 #include "Zancle/System/Priv/Vec2Base.hpp"
-
+#include "Zancle/Window/Export.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/PassKey.hpp"
 #include "ZancleBase/UniquePtr.hpp"
@@ -220,7 +218,7 @@ private:
     ////////////////////////////////////////////////////////////
     template <typename... GLContextArgs>
     [[nodiscard]] static zb::UniquePtr<priv::GlContext> createGlContextImpl(const ContextSettings& contextSettings,
-                                                                              GLContextArgs&&... args);
+                                                                            GLContextArgs&&... args);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context, not associated to a window
@@ -247,8 +245,8 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static zb::UniquePtr<priv::GlContext> createGlContext(const ContextSettings&     contextSettings,
-                                                                          const priv::SDLWindowImpl& owner,
-                                                                          unsigned int               bitsPerPixel);
+                                                                        const priv::SDLWindowImpl& owner,
+                                                                        unsigned int               bitsPerPixel);
 
     ////////////////////////////////////////////////////////////
     /// \brief Notify unshared resources of context destruction

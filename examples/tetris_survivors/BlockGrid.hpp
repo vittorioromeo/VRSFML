@@ -8,13 +8,11 @@
 #include "IndexUtils.hpp"
 #include "ShapeDimension.hpp"
 #include "Tetramino.hpp"
-
-#include "ExampleUtils/ControlFlow.hpp"
-
 #include "Zancle/System/Priv/Vec2Base.hpp"
-
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/Vector.hpp"
+
+#include "ExampleUtils/ControlFlow.hpp"
 
 
 namespace tsurv
@@ -25,8 +23,8 @@ class [[nodiscard]] BlockGrid
 private:
     ////////////////////////////////////////////////////////////
     zb::Vector<zb::Optional<Block>> m_blocks;
-    zb::SizeT                             m_width;
-    zb::SizeT                             m_height;
+    zb::SizeT                       m_width;
+    zb::SizeT                       m_height;
 
 
 public:

@@ -5,9 +5,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "ZancleBase/StackTrace.hpp"
-
 #include "Zancle/Config.hpp" // IWYU pragma: keep
+#include "ZancleBase/StackTrace.hpp"
 
 #ifdef ZA_ENABLE_STACK_TRACES
 
@@ -135,11 +134,7 @@ const Palette& getPalette()
 
 
 ////////////////////////////////////////////////////////////
-void syminfoCallback(void* data,
-                     zb::UIntPtrT /* pc */,
-                     const char* symname,
-                     zb::UIntPtrT /* symval */,
-                     zb::UIntPtrT /* symsize */)
+void syminfoCallback(void* data, zb::UIntPtrT /* pc */, const char* symname, zb::UIntPtrT /* symval */, zb::UIntPtrT /* symsize */)
 {
     *static_cast<const char**>(data) = symname;
 }

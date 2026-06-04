@@ -1,10 +1,7 @@
 #include "Tst/Tst.hpp"
-
 #include "Zancle/System/Atomic.hpp"
-
 #include "Zancle/System/Thread.hpp"
 #include "Zancle/System/Time.hpp"
-
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/PtrDiffT.hpp"
 #include "ZancleBase/Trait/IsConstructible.hpp"
@@ -76,7 +73,7 @@ concept HasFetchAddT = requires(A& a, T v) { a.fetchAddRelaxed(v); };
 
 static_assert(HasFetchAddT<za::Atomic<int>, int>);
 static_assert(HasFetchAddT<za::Atomic<int*>, zb::PtrDiffT>); // pointer takes ptrdiff_t
-static_assert(!HasFetchAddT<za::Atomic<float>, float>);            // floats have no fetchAdd
+static_assert(!HasFetchAddT<za::Atomic<float>, float>);      // floats have no fetchAdd
 static_assert(!HasFetchAddT<za::Atomic<double>, double>);
 
 
@@ -458,8 +455,8 @@ TEST_CASE("[System] SFML/System/Atomic.hpp - thread fences (smoke)")
 
 TEST_CASE("[System] SFML/System/Atomic.hpp - concurrent fetchAdd is consistent")
 {
-    constexpr int             threadCount         = 8;
-    constexpr int             incrementsPerThread = 50'000;
+    constexpr int       threadCount         = 8;
+    constexpr int       incrementsPerThread = 50'000;
     za::Atomic<zb::I64> counter{0};
 
     zb::Vector<za::Thread> threads;
@@ -552,7 +549,7 @@ static_assert(!HasWait<za::Atomic<zb::U16>, zb::U16>);
 
 TEST_CASE("[System] SFML/System/Atomic.hpp - waitUntil / notifyOne (latch pattern)")
 {
-    constexpr int             workerCount = 6;
+    constexpr int       workerCount = 6;
     za::Atomic<zb::U32> nRemaining{static_cast<zb::U32>(workerCount)};
 
     zb::Vector<za::Thread> workers;
@@ -581,7 +578,7 @@ TEST_CASE("[System] SFML/System/Atomic.hpp - notifyAll wakes multiple waiters")
 {
     za::Atomic<zb::U32>    gate{0u};
     za::Atomic<zb::U32>    woken{0u};
-    constexpr int                waiterCount = 4;
+    constexpr int          waiterCount = 4;
     zb::Vector<za::Thread> waiters;
     waiters.reserve(waiterCount);
 

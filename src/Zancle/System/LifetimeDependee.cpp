@@ -6,11 +6,9 @@
     ////////////////////////////////////////////////////////////
     // Headers
     ////////////////////////////////////////////////////////////
-    #include "Zancle/System/LifetimeDependee.hpp"
-
     #include "Zancle/System/Atomic.hpp"
     #include "Zancle/System/Err.hpp"
-
+    #include "Zancle/System/LifetimeDependee.hpp"
     #include "ZancleBase/Abort.hpp"
     #include "ZancleBase/Assert.hpp"
     #include "ZancleBase/Builtin/Strcmp.hpp"

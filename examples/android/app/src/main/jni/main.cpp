@@ -5,14 +5,11 @@
 #include "Zancle/Graphics/Text.hpp"
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/View.hpp"
-
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/Thread.hpp"
 #include "Zancle/Window/Event.hpp"
 #include "Zancle/Window/EventUtils.hpp"
 #include "Zancle/Window/VideoModeUtils.hpp"
-
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Thread.hpp"
-
 #include "ZancleBase/Optional.hpp"
 
 // Do we want to showcase direct JNI/NDK interaction?

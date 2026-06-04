@@ -42,8 +42,8 @@ namespace tst::detail
 template <typename T>
 [[gnu::always_inline]] inline zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const T&) noexcept
 {
-    const char*     src = "<?>";
-    zb::SizeT n   = 0u;
+    const char* src = "<?>";
+    zb::SizeT   n   = 0u;
 
     while (src[n] != '\0' && n < cap)
     {

@@ -7,14 +7,11 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Export.hpp"
-
 #include "Zancle/Graphics/Transform.hpp"
-
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/AutoWrapAngle.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/ClampMacro.hpp"
 #include "ZancleBase/Math/Lround.hpp"
@@ -324,8 +321,7 @@ struct [[nodiscard]] ZA_GRAPHICS_API View
     {
         return Rect2<long>({ZB_MATH_LROUNDF(targetSize.x * scissor.position.x),
                             ZB_MATH_LROUNDF(targetSize.y * scissor.position.y)},
-                           {ZB_MATH_LROUNDF(targetSize.x * scissor.size.x),
-                            ZB_MATH_LROUNDF(targetSize.y * scissor.size.y)})
+                           {ZB_MATH_LROUNDF(targetSize.x * scissor.size.x), ZB_MATH_LROUNDF(targetSize.y * scissor.size.y)})
             .toRect2i();
     }
 

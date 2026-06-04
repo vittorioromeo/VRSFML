@@ -1,17 +1,14 @@
-#include "Zancle/Graphics/Shape.hpp"
-
 #include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/Shape.hpp"
 
 // Other 1st party headers
 #include "GraphicsUtil.hpp"
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
-
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-
 #include "ZancleBase/Trait/HasVirtualDestructor.hpp"
 #include "ZancleBase/Trait/IsConstructible.hpp"
 #include "ZancleBase/Trait/IsCopyAssignable.hpp"

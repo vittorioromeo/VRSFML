@@ -11,10 +11,8 @@
 #include "Zancle/Graphics/Sprite.hpp"
 #include "Zancle/Graphics/Transform.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
-
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Restrict.hpp"
 #include "ZancleBase/Math/Fabs.hpp"
@@ -72,9 +70,8 @@ namespace za::DrawableBatchUtils
 // 4-vertex strip in this order, so the rendered result is identical
 // regardless of which path (immediate strip vs. batched indexed) the
 // caller chose -- including winding.
-[[gnu::always_inline, gnu::flatten]] inline constexpr void appendQuadIndices(
-    IndexType * ZB_RESTRICT & ZB_RESTRICT indexPtr,
-    const IndexType                                     startIndex) noexcept
+[[gnu::always_inline, gnu::flatten]] inline constexpr void appendQuadIndices(IndexType * ZB_RESTRICT & ZB_RESTRICT indexPtr,
+                                                                             const IndexType startIndex) noexcept
 {
     // Triangle 0 (Top-left, Bottom-left, Top-right)
     *indexPtr++ = startIndex;
@@ -90,9 +87,9 @@ namespace za::DrawableBatchUtils
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendPreTransformedSpriteQuadVertices(
-    const Transform&                 transform,
-    const Rect2f&                    textureRect,
-    const Color                      color,
+    const Transform&          transform,
+    const Rect2f&             textureRect,
+    const Color               color,
     Vertex* ZB_RESTRICT const vertexPtr)
 {
     const auto& [position, size] = textureRect;
@@ -130,7 +127,7 @@ namespace za::DrawableBatchUtils
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendPreTransformedTextQuadVertices(
     Vertex* const ZB_RESTRICT vertexPtr,
-    const Transform&                 transform,
+    const Transform&          transform,
     const Vertex& ZB_RESTRICT a,
     const Vertex& ZB_RESTRICT b,
     const Vertex& ZB_RESTRICT c,
@@ -145,8 +142,8 @@ namespace za::DrawableBatchUtils
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline void appendSpriteIndicesAndVertices(
-    const Sprite&                    sprite,
-    const IndexType                  nextIndex,
+    const Sprite&             sprite,
+    const IndexType           nextIndex,
     IndexType* ZB_RESTRICT    indexPtr,
     Vertex* ZB_RESTRICT const vertexPtr) noexcept
 {
@@ -157,11 +154,11 @@ namespace za::DrawableBatchUtils
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendTextIndicesAndVertices(
-    const Transform&                       transform,
+    const Transform&                transform,
     const Vertex* ZB_RESTRICT const data,
-    const IndexType                        numQuads,
-    const IndexType                        nextIndex,
-    IndexType*                             indexPtr,
+    const IndexType                 numQuads,
+    const IndexType                 nextIndex,
+    IndexType*                      indexPtr,
     Vertex* ZB_RESTRICT             vertexPtr) noexcept
 {
     for (IndexType i = 0u; i < numQuads; ++i)
@@ -179,9 +176,9 @@ namespace za::DrawableBatchUtils
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendTransformedVertices(
-    const Transform&                 transform,
+    const Transform&          transform,
     const Vertex* ZB_RESTRICT data,
-    const zb::SizeT                size,
+    const zb::SizeT           size,
     Vertex* ZB_RESTRICT       vertexPtr)
 {
     for (const auto* const target = data + size; data != target; ++data)
@@ -191,11 +188,11 @@ namespace za::DrawableBatchUtils
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendShapeFillIndicesAndVertices(
-    const Transform&                       transform,
+    const Transform&                transform,
     const Vertex* ZB_RESTRICT const fillData,
-    const IndexType                        fillSize,
-    const IndexType                        nextFillIndex,
-    IndexType*                             indexPtr,
+    const IndexType                 fillSize,
+    const IndexType                 nextFillIndex,
+    IndexType*                      indexPtr,
     Vertex* ZB_RESTRICT             vertexPtr) noexcept
 {
     ZB_ASSERT(fillSize > 2u);
@@ -216,11 +213,11 @@ namespace za::DrawableBatchUtils
 // would produce alternating CW/CCW windings, which silently culls half
 // the outline if the user enables face culling.
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendShapeOutlineIndicesAndVertices(
-    const Transform&                       transform,
+    const Transform&                transform,
     const Vertex* ZB_RESTRICT const outlineData,
-    const IndexType                        outlineSize,
-    const IndexType                        nextOutlineIndex,
-    IndexType*                             indexPtr,
+    const IndexType                 outlineSize,
+    const IndexType                 nextOutlineIndex,
+    IndexType*                      indexPtr,
     Vertex* ZB_RESTRICT             vertexPtr) noexcept
 {
     ZB_ASSERT(outlineSize > 2u);

@@ -1,24 +1,21 @@
 #pragma once
 
 #include "ShowcaseExample.hpp"
-
-#include "ExampleUtils/RNGFast.hpp"
-
 #include "Zancle/Graphics/Image.hpp"
 #include "Zancle/Graphics/Shader.hpp"
 #include "Zancle/Graphics/Sprite.hpp"
 #include "Zancle/Graphics/VAOHandle.hpp"
 #include "Zancle/Graphics/VBOHandle.hpp"
-
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/String.hpp"
 #include "ZancleBase/Vector.hpp"
+
+#include "ExampleUtils/RNGFast.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -88,11 +85,11 @@ private:
     ////////////////////////////////////////////////////////////
     zb::Optional<za::Shader>                  m_instancedShader;
     zb::Optional<za::Shader::UniformLocation> m_ulInvTexSize;
-    za::VAOHandle                                   m_vaoHandle;
-    za::VBOHandle                                   m_instanceVBO;
+    za::VAOHandle                             m_vaoHandle;
+    za::VBOHandle                             m_instanceVBO;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] za::Rect2f              addImgToAtlasWithRotatedHue(const za::Path& path, float hueDegrees);
+    [[nodiscard]] za::Rect2f        addImgToAtlasWithRotatedHue(const za::Path& path, float hueDegrees);
     [[nodiscard]] static zb::String toDigitSeparatedString(zb::SizeT value);
 
     ////////////////////////////////////////////////////////////

@@ -1,21 +1,18 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Audio/Sound.hpp"
-
 #include "Zancle/Audio/AudioContext.hpp"
 #include "Zancle/Audio/AudioSettings.hpp"
 #include "Zancle/Audio/Music.hpp"
 #include "Zancle/Audio/MusicReader.hpp"
 #include "Zancle/Audio/PlaybackDevice.hpp"
 #include "Zancle/Audio/PlaybackDeviceHandle.hpp"
+#include "Zancle/Audio/Sound.hpp"
 #include "Zancle/Audio/SoundBuffer.hpp"
-
 #include "Zancle/System/Fmt/FmtPath.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Thread.hpp"
 #include "Zancle/System/Time.hpp"
-
 #include "ZancleBase/Fmt/Fmt.hpp"
 #include "ZancleBase/Fmt/FmtNumeric.hpp"
 #include "ZancleBase/Scn/ScnStdin.hpp"
@@ -34,12 +31,12 @@ void playSound(za::PlaybackDevice& playbackDevice)
 
     // Display sound information
     zb::printLn("killdeer.wav:{} {} seconds{} {} samples / sec{} {} channels",
-                      '\n',
-                      buffer.getDuration().asSeconds(),
-                      '\n',
-                      buffer.getSampleRate(),
-                      '\n',
-                      buffer.getChannelCount());
+                '\n',
+                buffer.getDuration().asSeconds(),
+                '\n',
+                buffer.getSampleRate(),
+                '\n',
+                buffer.getChannelCount());
 
     // Create a sound instance and play it
     za::Sound sound(playbackDevice, buffer);
@@ -70,13 +67,13 @@ void playMusic(za::PlaybackDevice& playbackDevice, const za::Path& filename)
 
     // Display music information
     zb::printLn("{}:{} {} seconds{} {} samples / sec{} {} channels",
-                      filename,
-                      '\n',
-                      musicReader.getDuration().asSeconds(),
-                      '\n',
-                      musicReader.getSampleRate(),
-                      '\n',
-                      musicReader.getChannelCount());
+                filename,
+                '\n',
+                musicReader.getDuration().asSeconds(),
+                '\n',
+                musicReader.getSampleRate(),
+                '\n',
+                musicReader.getChannelCount());
 
     // Play it
     za::Music music(playbackDevice, musicReader);

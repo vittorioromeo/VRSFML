@@ -5,22 +5,17 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Graphics/RenderWindow.hpp"
-
+#include "Zancle/GLUtils/GLCheck.hpp"
+#include "Zancle/GLUtils/Glad.hpp"
 #include "Zancle/Graphics/Image.hpp"
 #include "Zancle/Graphics/RenderTarget.hpp"
-
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/System/Err.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/Window/ContextSettings.hpp"
 #include "Zancle/Window/Window.hpp"
 #include "Zancle/Window/WindowHandle.hpp"
 #include "Zancle/Window/WindowSettings.hpp"
-
-#include "Zancle/GLUtils/GLCheck.hpp"
-#include "Zancle/GLUtils/Glad.hpp"
-
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Macros.hpp"
 #include "ZancleBase/Optional.hpp"
@@ -43,9 +38,8 @@ zb::Optional<RenderWindow> RenderWindow::create(const WindowSettings& windowSett
 {
     auto window = Window::create(windowSettings);
 
-    return window.hasValue()
-               ? zb::Optional<RenderWindow>(zb::inPlace, zb::PassKey<RenderWindow>{}, ZB_MOVE(*window))
-               : zb::nullOpt;
+    return window.hasValue() ? zb::Optional<RenderWindow>(zb::inPlace, zb::PassKey<RenderWindow>{}, ZB_MOVE(*window))
+                             : zb::nullOpt;
 }
 
 
@@ -54,9 +48,8 @@ zb::Optional<RenderWindow> RenderWindow::create(const WindowHandle handle, const
 {
     auto window = Window::create(handle, contextSettings);
 
-    return window.hasValue()
-               ? zb::Optional<RenderWindow>(zb::inPlace, zb::PassKey<RenderWindow>{}, ZB_MOVE(*window))
-               : zb::nullOpt;
+    return window.hasValue() ? zb::Optional<RenderWindow>(zb::inPlace, zb::PassKey<RenderWindow>{}, ZB_MOVE(*window))
+                             : zb::nullOpt;
 }
 
 

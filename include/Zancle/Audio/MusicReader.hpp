@@ -7,9 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Audio/Export.hpp"
-
 #include "Zancle/System/LifetimeDependee.hpp"
-
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/PassKey.hpp"
@@ -255,7 +253,7 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static zb::Optional<MusicReader> tryOpenFromInputSoundFile(zb::Optional<InputSoundFile>&& optFile,
-                                                                               const char* errorContext);
+                                                                             const char* errorContext);
 
 
     ////////////////////////////////////////////////////////////

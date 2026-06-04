@@ -5,15 +5,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Audio/SoundFileWriterOgg.hpp"
-
 #include "Zancle/Audio/ChannelMap.hpp"
-
+#include "Zancle/Audio/SoundFileWriterOgg.hpp"
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/IO.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/PathUtils.hpp"
-
 #include "ZancleBase/Algorithm/Find.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/MinMax.hpp"
@@ -31,12 +28,12 @@ namespace za::priv
 ////////////////////////////////////////////////////////////
 struct SoundFileWriterOgg::Impl
 {
-    unsigned int            channelCount{};  //!< Channel count of the sound being written
+    unsigned int          channelCount{};  //!< Channel count of the sound being written
     zb::SizeT             remapTable[8]{}; //!< Table we use to remap source to target channel order
     zb::Optional<OutFile> file;            //!< Output file (empty before `open()`)
-    ogg_stream_state        ogg{};           //!< OGG stream
-    vorbis_info             vorbis{};        //!< Vorbis handle
-    vorbis_dsp_state        state{};         //!< Current encoding state
+    ogg_stream_state      ogg{};           //!< OGG stream
+    vorbis_info           vorbis{};        //!< Vorbis handle
+    vorbis_dsp_state      state{};         //!< Current encoding state
 };
 
 
@@ -276,8 +273,7 @@ void SoundFileWriterOgg::flushBlocks()
             ogg_page page;
             while (ogg_stream_flush(&m_impl->ogg, &page) > 0)
             {
-                if (!m_impl->file->write(reinterpret_cast<const char*>(page.header),
-                                         static_cast<zb::SizeT>(page.header_len)) ||
+                if (!m_impl->file->write(reinterpret_cast<const char*>(page.header), static_cast<zb::SizeT>(page.header_len)) ||
                     !m_impl->file->write(reinterpret_cast<const char*>(page.body), static_cast<zb::SizeT>(page.body_len)))
                 {
                     priv::errMsg("ogg/vorbis: page write failed; output truncated");

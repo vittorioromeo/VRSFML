@@ -1,15 +1,12 @@
 #pragma once
 
 #include "ShowcaseExample.hpp"
-
 #include "Zancle/Audio/Music.hpp"
 #include "Zancle/Audio/MusicReader.hpp"
 #include "Zancle/Audio/PlaybackDevice.hpp"
 #include "Zancle/Audio/Sound.hpp"
 #include "Zancle/Audio/SoundBuffer.hpp"
-
 #include "Zancle/System/Path.hpp"
-
 #include "ZancleBase/InPlaceVector.hpp"
 #include "ZancleBase/Optional.hpp"
 

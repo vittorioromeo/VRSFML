@@ -1,7 +1,5 @@
 #include "Tst/Tst.hpp"
-
 #include "ZancleBase/FromChars.hpp"
-
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/String.hpp"
 #include "ZancleBase/ToString.hpp"
@@ -70,28 +68,28 @@ TEST_CASE("[Base] FromChars.hpp")
         SECTION("Max/Min Values")
         {
             // Signed int max
-            int              iValue  = 0;
+            int        iValue  = 0;
             zb::String iMaxStr = zb::toString(std::numeric_limits<int>::max());
-            auto             result  = zb::fromChars(iMaxStr.cStr(), iMaxStr.cStr() + iMaxStr.size(), iValue);
+            auto       result  = zb::fromChars(iMaxStr.cStr(), iMaxStr.cStr() + iMaxStr.size(), iValue);
             CHECK(result.ec == zb::FromCharsError::None);
             CHECK(iValue == std::numeric_limits<int>::max());
 
             // Signed int min
             zb::String iMinStr = zb::toString(std::numeric_limits<int>::min());
-            result                   = zb::fromChars(iMinStr.cStr(), iMinStr.cStr() + iMinStr.size(), iValue);
+            result             = zb::fromChars(iMinStr.cStr(), iMinStr.cStr() + iMinStr.size(), iValue);
             CHECK(result.ec == zb::FromCharsError::None);
             CHECK(iValue == std::numeric_limits<int>::min());
 
             // Signed long long min
-            long long        llValue  = 0;
+            long long  llValue  = 0;
             zb::String llMinStr = zb::toString(std::numeric_limits<long long>::min());
-            result = zb::fromChars(llMinStr.cStr(), llMinStr.cStr() + llMinStr.size(), llValue);
+            result              = zb::fromChars(llMinStr.cStr(), llMinStr.cStr() + llMinStr.size(), llValue);
             CHECK(result.ec == zb::FromCharsError::None);
             CHECK(llValue == std::numeric_limits<long long>::min());
 
             // Unsigned long long max
             unsigned long long ullValue     = 0;
-            zb::String   ullMaxString = zb::toString(std::numeric_limits<unsigned long long>::max());
+            zb::String         ullMaxString = zb::toString(std::numeric_limits<unsigned long long>::max());
             result = zb::fromChars(ullMaxString.cStr(), ullMaxString.cStr() + ullMaxString.size(), ullValue);
             CHECK(result.ec == zb::FromCharsError::None);
             CHECK(ullValue == std::numeric_limits<unsigned long long>::max());
@@ -131,16 +129,16 @@ TEST_CASE("[Base] FromChars.hpp")
         SECTION("Error: Result Out Of Range")
         {
             // Overflow for signed int
-            int              iValue       = 1; // Should not be modified
+            int        iValue       = 1; // Should not be modified
             zb::String iOverflowStr = zb::toString(std::numeric_limits<long long>::max());
-            auto result = zb::fromChars(iOverflowStr.cStr(), iOverflowStr.cStr() + iOverflowStr.size(), iValue);
+            auto       result = zb::fromChars(iOverflowStr.cStr(), iOverflowStr.cStr() + iOverflowStr.size(), iValue);
             CHECK(result.ec == zb::FromCharsError::ResultOutOfRange);
             CHECK(iValue == 1);
 
             // Overflow for uint8_t
-            zb::U8 u8Value = 1;
-            const char*  str     = "256";
-            result               = zb::fromChars(str, str + 3, u8Value);
+            zb::U8      u8Value = 1;
+            const char* str     = "256";
+            result              = zb::fromChars(str, str + 3, u8Value);
             CHECK(result.ec == zb::FromCharsError::ResultOutOfRange);
             CHECK(u8Value == 1);
 

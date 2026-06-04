@@ -1,6 +1,5 @@
-#include "Zancle/Audio/Music.hpp"
-
 #include "Zancle/Audio/AudioContext.hpp"
+#include "Zancle/Audio/Music.hpp"
 #include "Zancle/Audio/PlaybackDevice.hpp"
 
 // Other 1st party headers
@@ -8,15 +7,12 @@
 #include "LoadIntoMemoryUtil.hpp"
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
-
 #include "Zancle/Audio/MusicReader.hpp"
-
 #include "Zancle/System/FileInputStream.hpp"
 #include "Zancle/System/LifetimeDependee.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Thread.hpp"
 #include "Zancle/System/Time.hpp"
-
 #include "ZancleBase/Builtin/Memset.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/Trait/HasVirtualDestructor.hpp"

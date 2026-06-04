@@ -5,16 +5,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Graphics/GlyphMappedText.hpp"
-
 #include "Zancle/Graphics/FontFace.hpp"
 #include "Zancle/Graphics/Glyph.hpp"
+#include "Zancle/Graphics/GlyphMappedText.hpp"
 #include "Zancle/Graphics/GlyphMapping.hpp"
 #include "Zancle/Graphics/TextBase.hpp"
 #include "Zancle/Graphics/Texture.hpp"
-
 #include "Zancle/System/LifetimeDependant.hpp"
-
 #include "ZancleBase/Assert.hpp"
 
 

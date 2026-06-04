@@ -15,11 +15,8 @@
 #include "ShrineType.hpp"
 #include "Stats.hpp"
 #include "UIState.hpp"
-
-#include "Zancle/ImGui/IncludeImGui.hpp"
-
 #include "Zancle/Graphics/Color.hpp"
-
+#include "Zancle/ImGui/IncludeImGui.hpp"
 #include "ZancleBase/Algorithm/Count.hpp"
 #include "ZancleBase/GetArraySize.hpp"
 #include "ZancleBase/IntTypes.hpp"
@@ -382,7 +379,7 @@ void Main::uiTabBarStats()
         case 3:
         {
             const zb::SizeT nAchievementsUnlocked = zb::countTruthy(profile.unlockedAchievements,
-                                                                                profile.unlockedAchievements + nAchievements);
+                                                                    profile.unlockedAchievements + nAchievements);
 
             uiSetFontScale(uiNormalFontScale);
             ImGui::Text("%zu / %zu achievements unlocked", nAchievementsUnlocked, zb::getArraySize(achievementData));

@@ -41,17 +41,17 @@ private:
 } // namespace za::priv
 
     // NOLINTBEGIN(bugprone-macro-parentheses)
-    #define ZA_DEFINE_LIFETIME_DEPENDANT(dependantType)                              \
+    #define ZA_DEFINE_LIFETIME_DEPENDANT(dependantType)                                \
         mutable ::za::priv::LifetimeDependant m_sfPrivLifetimeDependant##dependantType \
         {                                                                              \
             #dependantType                                                             \
         }
 
     #define ZA_UPDATE_LIFETIME_DEPENDANT(dependantType, dependeeType, thisPtr, dependantMemberPtr) \
-        thisPtr->m_sfPrivLifetimeDependant##dependantType.update(                                    \
+        thisPtr->m_sfPrivLifetimeDependant##dependantType.update(                                  \
             dependantMemberPtr == nullptr ? nullptr : &dependantMemberPtr->m_sfPrivLifetimeDependee##dependeeType)
 
-    #define ZA_LIFETIME_DEPENDANT_RETURN_IF_TESTING_ERROR(dependeeType)              \
+    #define ZA_LIFETIME_DEPENDANT_RETURN_IF_TESTING_ERROR(dependeeType)                \
         do                                                                             \
         {                                                                              \
             if (m_sfPrivLifetimeDependant##dependeeType.isTestingModeErrorTriggered()) \

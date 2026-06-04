@@ -1,11 +1,4 @@
 #include "../bubble_idle/SoA.hpp" // TODO P1: avoid the relative path...?
-
-#include "ExampleUtils/RNGFast.hpp"
-#include "ExampleUtils/Sampler.hpp"
-
-#include "Zancle/ImGui/ImGuiContext.hpp"
-#include "Zancle/ImGui/IncludeImGui.hpp"
-
 #include "Zancle/Graphics/DrawableBatch.hpp"
 #include "Zancle/Graphics/Font.hpp"
 #include "Zancle/Graphics/GraphicsContext.hpp"
@@ -18,16 +11,15 @@
 #include "Zancle/Graphics/Text.hpp"
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/TextureAtlas.hpp"
-
-#include "Zancle/Window/Event.hpp" // IWYU pragma: keep
-#include "Zancle/Window/EventUtils.hpp"
-
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-
+#include "Zancle/Window/Event.hpp" // IWYU pragma: keep
+#include "Zancle/Window/EventUtils.hpp"
 #include "ZancleBase/Algorithm/Erase.hpp"
 #include "ZancleBase/Algorithm/SwapAndPop.hpp"
 #include "ZancleBase/Clamp.hpp"
@@ -43,6 +35,9 @@
 #include "ZancleBase/ToString.hpp"
 #include "ZancleBase/UniquePtr.hpp"
 #include "ZancleBase/Vector.hpp"
+
+#include "ExampleUtils/RNGFast.hpp"
+#include "ExampleUtils/Sampler.hpp"
 
 #include <latch>
 
@@ -293,19 +288,19 @@ int main()
 #endif
         ;
 
-    auto          batchType                = BatchType::Disabled;
-    auto          autobatchType            = defaultBatchType;
+    auto    batchType                = BatchType::Disabled;
+    auto    autobatchType            = defaultBatchType;
     zb::U64 autoBatchVertexThreshold = 32'768u;
-    bool          multithreadedUpdate      = false;
-    bool          multithreadedDraw        = false;
-    bool          useOOP                   = false;
-    bool          useSoA                   = false;
-    bool          unifiedSoAProcessing     = false;
-    bool          destroyParticles         = true;
-    bool          destroyBySwapping        = true;
+    bool    multithreadedUpdate      = false;
+    bool    multithreadedDraw        = false;
+    bool    useOOP                   = false;
+    bool    useSoA                   = false;
+    bool    unifiedSoAProcessing     = false;
+    bool    destroyParticles         = true;
+    bool    destroyBySwapping        = true;
     zb::U64 nWorkers                 = nMaxWorkers;
-    int           numEntities              = 50'000;
-    bool          drawStep                 = true;
+    int     numEntities              = 50'000;
+    bool    drawStep                 = true;
 
     //
     //
@@ -339,7 +334,7 @@ int main()
             pool.post([&, i]
             {
                 const zb::SizeT batchStartIdx = i * particlesPerBatch;
-                const zb::SizeT batchEndIdx = (i == nWorkers - 1u) ? nParticlesTotal : (i + 1u) * particlesPerBatch;
+                const zb::SizeT batchEndIdx   = (i == nWorkers - 1u) ? nParticlesTotal : (i + 1u) * particlesPerBatch;
 
                 f(i, batchStartIdx, batchEndIdx);
 
@@ -373,7 +368,7 @@ int main()
                rng.getF(-0.002f, 0.002f),                  // scaleGrowth
                rng.getF(0.75f, 1.f),                       // opacity
                rng.getF(-0.0015f, -0.0005f),               // opacityGrowth
-               rng.getF(0.f, zb::tau),               // rotation
+               rng.getF(0.f, zb::tau),                     // rotation
                rng.getF(-0.005f, 0.005f)                   // torque
         );
     };
@@ -501,9 +496,9 @@ int main()
                     }
                     else
                     {
-                        zb::vectorEraseIf(particlesAoS,
-                                                [] [[gnu::always_inline, gnu::flatten]] (const ParticleAoS& p)
-                        { return p.opacity <= 0.f; });
+                        zb::vectorEraseIf(particlesAoS, [] [[gnu::always_inline, gnu::flatten]] (const ParticleAoS& p) {
+                            return p.opacity <= 0.f;
+                        });
                     }
                 }
             }
@@ -673,10 +668,7 @@ int main()
 #endif
             };
 
-            if (ImGui::Combo("Batch type",
-                             reinterpret_cast<int*>(&batchType),
-                             batchTypeItems,
-                             zb::getArraySize(batchTypeItems)))
+            if (ImGui::Combo("Batch type", reinterpret_cast<int*>(&batchType), batchTypeItems, zb::getArraySize(batchTypeItems)))
                 clearSamples();
 
             ImGui::BeginDisabled(batchType != BatchType::Disabled);
@@ -781,8 +773,7 @@ int main()
 
             // Iterates over non-OOP particles, hoisting the SoA/AoS branch outside the inner loop
             const auto forEachNonOOPParticle =
-                [&] [[gnu::always_inline,
-                      gnu::flatten]] (const zb::SizeT startIdx, const zb::SizeT endIdx, auto&& fn)
+                [&] [[gnu::always_inline, gnu::flatten]] (const zb::SizeT startIdx, const zb::SizeT endIdx, auto&& fn)
 
             {
                 if (useSoA)
@@ -846,9 +837,7 @@ int main()
                         batch.clear();
 
                     doInBatches(nParticles,
-                                [&](const zb::SizeT iBatch,
-                                    const zb::SizeT batchStartIdx,
-                                    const zb::SizeT batchEndIdx)
+                                [&](const zb::SizeT iBatch, const zb::SizeT batchStartIdx, const zb::SizeT batchEndIdx)
                     {
                         forEachNonOOPParticle(batchStartIdx,
                                               batchEndIdx,

@@ -6,7 +6,6 @@
 #include "Tst/Detail/State.hpp"
 #include "Tst/Detail/StringifyValue.hpp"
 #include "Tst/Tst.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Fmt/Fmt.hpp"
 #include "ZancleBase/Fmt/FmtNumeric.hpp" // IWYU pragma: keep
@@ -70,9 +69,9 @@ void emitActiveSubcases(const ContextState& ctx)
     {
         const auto& subcase = ctx.traversal.activeSubcases.data()[i];
         (void)zb::printErrLn("  subcase: {} ({}:{})",
-                                   decomposeNonNull(subcase.name),
-                                   decomposeNonNull(subcase.file),
-                                   subcase.line);
+                             decomposeNonNull(subcase.name),
+                             decomposeNonNull(subcase.file),
+                             subcase.line);
     }
 }
 
@@ -95,9 +94,9 @@ void emitFailureBanner(AssertKind kind, const char* file, int line, const char* 
 
     (void)zb::printErrLn("{}:{}: FAILED: {}({})", file, line, kindLabel(kind), exprStr);
     (void)zb::printErrLn("  test case: {} ({}:{})",
-                               decomposeNonNull(ctx.currentTestName),
-                               decomposeNonNull(ctx.currentTestFile),
-                               ctx.currentTestLine);
+                         decomposeNonNull(ctx.currentTestName),
+                         decomposeNonNull(ctx.currentTestFile),
+                         ctx.currentTestLine);
     emitActiveSubcases(ctx);
 
     emitDecomposition(ctx);
@@ -115,9 +114,9 @@ void emitWarningBanner(const char* file, int line, const char* exprStr)
 
     (void)zb::printErrLn("{}:{}: WARNING: WARN({})", file, line, exprStr);
     (void)zb::printErrLn("  test case: {} ({}:{})",
-                               decomposeNonNull(ctx.currentTestName),
-                               decomposeNonNull(ctx.currentTestFile),
-                               ctx.currentTestLine);
+                         decomposeNonNull(ctx.currentTestName),
+                         decomposeNonNull(ctx.currentTestFile),
+                         ctx.currentTestLine);
     emitActiveSubcases(ctx);
 
     emitDecomposition(ctx);
@@ -164,8 +163,8 @@ bool handleAssertion(Result res, AssertKind kind, const char* file, int line, co
 ////////////////////////////////////////////////////////////
 void recordDecomposition(const char* opStr, const void* lhs, StringifyFn lhsFn, const void* rhs, StringifyFn rhsFn) noexcept
 {
-    auto&                 ctx  = contextState();
-    char* const           base = ctx.decompBuf;
+    auto&           ctx  = contextState();
+    char* const     base = ctx.decompBuf;
     const zb::SizeT cap  = sizeof(ctx.decompBuf);
     zb::SizeT       len  = 0u;
 

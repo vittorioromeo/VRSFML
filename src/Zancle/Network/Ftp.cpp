@@ -6,16 +6,13 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Network/Ftp.hpp"
-
 #include "Zancle/Network/IpAddress.hpp"
 #include "Zancle/Network/Socket.hpp"
 #include "Zancle/Network/TcpSocket.hpp"
-
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/IO.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Time.hpp"
-
 #include "ZancleBase/Algorithm/Copy.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Fmt/FmtToString.hpp"
@@ -68,7 +65,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Ftp&                      m_ftp;        //!< Reference to the owner Ftp instance
+    Ftp&                    m_ftp;        //!< Reference to the owner Ftp instance
     zb::Optional<TcpSocket> m_dataSocket; //!< Socket used for data transfers (created in `open`)
 };
 
@@ -76,7 +73,7 @@ private:
 ////////////////////////////////////////////////////////////
 struct Ftp::Response::Impl
 {
-    Status       status;  //!< Status code returned from the server
+    Status     status;  //!< Status code returned from the server
     zb::String message; //!< Last message received from the server
 };
 
@@ -293,9 +290,9 @@ Ftp::DirectoryResponse Ftp::getWorkingDirectory()
 Ftp::ListingResponse Ftp::getDirectoryListing(zb::StringView directory)
 {
     // Open a data channel on default port (20) using ASCII transfer mode
-    zb::String listing;
-    DataChannel  data(*this);
-    Response     response = data.open(TransferMode::Ascii);
+    zb::String  listing;
+    DataChannel data(*this);
+    Response    response = data.open(TransferMode::Ascii);
     if (response.isOk())
     {
         // Tell the server to send us the listing
@@ -476,12 +473,12 @@ Ftp::Response Ftp::getResponse()
     // will start by the same code
     unsigned int lastCode          = 0;
     bool         isInsideMultiline = false;
-    zb::String message;
+    zb::String   message;
 
     for (;;)
     {
         // Receive the response from the server
-        char        buffer[1024];
+        char      buffer[1024];
         zb::SizeT length = 0;
 
         if (m_impl->receiveBuffer.empty())
@@ -631,7 +628,7 @@ Ftp::Response Ftp::DataChannel::open(Ftp::TransferMode mode)
     if (begin == zb::String::nPos)
         return response;
 
-    const auto        str     = response.getMessage().substrByPosLen(begin).toString<zb::String>();
+    const auto      str     = response.getMessage().substrByPosLen(begin).toString<zb::String>();
     const zb::SizeT strSize = str.size();
 
     zb::SizeT index   = 0;
@@ -711,7 +708,7 @@ void Ftp::DataChannel::receive(auto& stream)
     };
 
     // Receive data
-    char        buffer[1024];
+    char      buffer[1024];
     zb::SizeT received = 0;
     while (m_dataSocket->receive(buffer, sizeof(buffer), received) == Socket::Status::Done)
     {

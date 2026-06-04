@@ -6,7 +6,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Glsl.hpp"
-
 #include "Zancle/Graphics/Transform.hpp"
 
 

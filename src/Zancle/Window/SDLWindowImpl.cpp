@@ -5,10 +5,14 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Window/SDLWindowImpl.hpp"
-
 #include "Zancle/Config.hpp"
-
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/Err.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Thread.hpp"
+#include "Zancle/System/Time.hpp"
+#include "Zancle/System/Utf.hpp"
+#include "Zancle/System/Vec3.hpp"
 #include "Zancle/Window/Event.hpp"
 #include "Zancle/Window/Joystick.hpp"
 #include "Zancle/Window/JoystickCapabilities.hpp"
@@ -17,6 +21,7 @@
 #include "Zancle/Window/Mouse.hpp"
 #include "Zancle/Window/SDLGlContext.hpp"
 #include "Zancle/Window/SDLLayer.hpp"
+#include "Zancle/Window/SDLWindowImpl.hpp"
 #include "Zancle/Window/Sensor.hpp"
 #include "Zancle/Window/SensorManager.hpp"
 #include "Zancle/Window/VideoMode.hpp"
@@ -25,15 +30,6 @@
 #include "Zancle/Window/WindowContext.hpp"
 #include "Zancle/Window/WindowHandle.hpp"
 #include "Zancle/Window/WindowSettings.hpp"
-
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Thread.hpp"
-#include "Zancle/System/Time.hpp"
-#include "Zancle/System/Utf.hpp"
-#include "Zancle/System/Vec3.hpp"
-
 #include "ZancleBase/AnkerlUnorderedDense.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Strlen.hpp"
@@ -124,19 +120,19 @@ bool setWindowNonExclusiveFullscreenIfNeeded([[maybe_unused]] const bool      ha
 ////////////////////////////////////////////////////////////
 [[nodiscard]] zb::String windowSettingsToString(const za::WindowSettings& settings)
 {
-    return "size={" + zb::toString(settings.size.x) + ", " + zb::toString(settings.size.y) + "}, " + //
-           "bitsPerPixel=" + zb::toString(settings.bitsPerPixel) + ", " +                                  //
-           "title=\"" + settings.title.asBytes() + "\", " +                                                      //
-           "fullscreen=" + zb::toString(settings.fullscreen) + ", " +                                      //
-           "resizable=" + zb::toString(settings.resizable) + ", " +                                        //
-           "closable=" + zb::toString(settings.closable) + ", " +                                          //
-           "hasTitlebar=" + zb::toString(settings.hasTitlebar) + ", " +                                    //
-           "vsync=" + zb::toString(settings.vsync) + ", " +                                                //
-           "frametimeLimit=" + zb::toString(settings.frametimeLimit) + ", " +                              //
-           "contextSettings={depthBits=" + zb::toString(settings.contextSettings.depthBits) +              //
-           ", stencilBits=" + zb::toString(settings.contextSettings.stencilBits) +                         //
-           ", majorVersion=" + zb::toString(settings.contextSettings.majorVersion) +                       //
-           ", minorVersion=" + zb::toString(settings.contextSettings.minorVersion) +                       //
+    return "size={" + zb::toString(settings.size.x) + ", " + zb::toString(settings.size.y) + "}, " +                //
+           "bitsPerPixel=" + zb::toString(settings.bitsPerPixel) + ", " +                                           //
+           "title=\"" + settings.title.asBytes() + "\", " +                                                         //
+           "fullscreen=" + zb::toString(settings.fullscreen) + ", " +                                               //
+           "resizable=" + zb::toString(settings.resizable) + ", " +                                                 //
+           "closable=" + zb::toString(settings.closable) + ", " +                                                   //
+           "hasTitlebar=" + zb::toString(settings.hasTitlebar) + ", " +                                             //
+           "vsync=" + zb::toString(settings.vsync) + ", " +                                                         //
+           "frametimeLimit=" + zb::toString(settings.frametimeLimit) + ", " +                                       //
+           "contextSettings={depthBits=" + zb::toString(settings.contextSettings.depthBits) +                       //
+           ", stencilBits=" + zb::toString(settings.contextSettings.stencilBits) +                                  //
+           ", majorVersion=" + zb::toString(settings.contextSettings.majorVersion) +                                //
+           ", minorVersion=" + zb::toString(settings.contextSettings.minorVersion) +                                //
            ", attributeFlags=" + zb::toString(static_cast<unsigned int>(settings.contextSettings.attributeFlags)) + //
            "}";
 }
@@ -661,8 +657,8 @@ zb::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(const WindowHandle handle)
     }
 
     return zb::UniquePtr<SDLWindowImpl>{new SDLWindowImpl{"handle",
-                                                            static_cast<void*>(sdlWindowPtr),
-                                                            /* isExternal */ true}};
+                                                          static_cast<void*>(sdlWindowPtr),
+                                                          /* isExternal */ true}};
 }
 
 

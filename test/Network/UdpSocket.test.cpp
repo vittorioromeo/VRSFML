@@ -1,11 +1,8 @@
 #include "StringifyIpAddressUtil.hpp"
 #include "Tst/Tst.hpp"
-
-#include "Zancle/Network/UdpSocket.hpp"
-
 #include "Zancle/Network/IpAddress.hpp"
 #include "Zancle/Network/Socket.hpp"
-
+#include "Zancle/Network/UdpSocket.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/Trait/HasVirtualDestructor.hpp"
@@ -82,10 +79,10 @@ TEST_CASE("[Network] za::UdpSocket")
         CHECK(senderOpt->send(payload, sizeof(payload), za::IpAddress::LocalHost, receiverPort) == za::Socket::Status::Done);
 
         // Poll a few times to ride out loopback scheduling jitter.
-        char                              buffer[sizeof(payload)]{};
+        char                        buffer[sizeof(payload)]{};
         zb::SizeT                   received{};
         zb::Optional<za::IpAddress> sender;
-        unsigned short                    senderPort{};
+        unsigned short              senderPort{};
 
         za::Socket::Status receiveStatus = za::Socket::Status::NotReady;
         for (int attempt = 0; attempt < 100 && receiveStatus != za::Socket::Status::Done; ++attempt)

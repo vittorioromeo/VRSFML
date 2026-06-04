@@ -7,9 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/System/Export.hpp"
-
 #include "Zancle/System/Fmt/FmtPath.hpp" // IWYU pragma: keep -- makes fmtArg(Path) visible at errMsg call sites
-
 #include "ZancleBase/Fmt/Fmt.hpp"
 #include "ZancleBase/Fmt/FmtNumeric.hpp" // IWYU pragma: export -- errMsg call sites typically format numeric arguments
 #include "ZancleBase/InPlacePImpl.hpp"
@@ -121,7 +119,7 @@ private:
     // Buffer-sized for the layout of `zb::String` (3 pointers/sizes on
     // x86_64 = 24 bytes; rounded up for headroom and 32-bit safety).
     zb::InPlacePImpl<zb::String, 32> m_buf;
-    bool                                 m_trailing{true};
+    bool                             m_trailing{true};
 };
 
 

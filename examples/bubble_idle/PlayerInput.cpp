@@ -7,19 +7,14 @@
 #include "Playthrough.hpp"
 #include "UIState.hpp"
 #include "Version.hpp"
-
-#include "Zancle/ImGui/ImGuiContext.hpp"
-#include "Zancle/ImGui/IncludeImGui.hpp"
-
 #include "Zancle/Graphics/RenderWindow.hpp"
 #include "Zancle/Graphics/View.hpp"
-
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/Window/Event.hpp"
 #include "Zancle/Window/Keyboard.hpp"
 #include "Zancle/Window/Mouse.hpp"
-
-#include "Zancle/System/Priv/Vec2Base.hpp"
-
 #include "ZancleBase/Algorithm/Erase.hpp"
 #include "ZancleBase/Math/Lround.hpp"
 #include "ZancleBase/MinMax.hpp"
@@ -34,16 +29,14 @@ void clampDemoPlaythrough(Main& main)
     if constexpr (!isDemoVersion)
         return;
 
-    const auto clampNPurchases = [](auto& psv)
-    { psv.nPurchases = zb::min(psv.nPurchases, psv.data->nMaxPurchases); };
+    const auto clampNPurchases = [](auto& psv) { psv.nPurchases = zb::min(psv.nPurchases, psv.data->nMaxPurchases); };
 
     clampNPurchases(main.pt->psvMapExtension);
     clampNPurchases(main.pt->psvShrineActivation);
     clampNPurchases(main.pt->psvBubbleValue);
 
-    zb::vectorEraseIf(main.pt->cats, [](const Cat& cat) {
-        return cat.type >= CatType::Mouse && cat.type <= CatType::Duck;
-    });
+    zb::vectorEraseIf(main.pt->cats,
+                      [](const Cat& cat) { return cat.type >= CatType::Mouse && cat.type <= CatType::Duck; });
 }
 
 [[nodiscard]] zb::Vector<za::Vec2f> collectDownFingers(const Main& main)
@@ -74,7 +67,7 @@ void handleGameLoopScrollInput(Main& main, const float deltaTimeMs, const zb::Ve
         main.inputHelper.wasMouseButtonJustPressed(za::Mouse::Button::Extra2))
     {
         const auto nextScrollScreenIndex = zb::min(currentScrollScreenIndex + 1u, main.pt->getMapLimitIncreases());
-        main.playerInputState.scroll = static_cast<float>(nextScrollScreenIndex) * gameScreenSize.x * 0.5f;
+        main.playerInputState.scroll     = static_cast<float>(nextScrollScreenIndex) * gameScreenSize.x * 0.5f;
     }
     else if ((main.inputHelper.wasKeyJustPressed(za::Keyboard::Key::PageUp) ||
               main.inputHelper.wasMouseButtonJustPressed(za::Mouse::Button::Extra1)) &&

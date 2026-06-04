@@ -5,14 +5,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Graphics/DrawableBatch.hpp"
-#include "Zancle/Graphics/IndexType.hpp"
-#include "Zancle/Graphics/Vertex.hpp"
-
 #include "Zancle/GLUtils/GLBufferObject.hpp"
 #include "Zancle/GLUtils/GLPersistentRingBuffer.hpp"
 #include "Zancle/GLUtils/GLVAOGroup.hpp"
-
+#include "Zancle/Graphics/DrawableBatch.hpp"
+#include "Zancle/Graphics/IndexType.hpp"
+#include "Zancle/Graphics/Vertex.hpp"
 #include "ZancleBase/Array.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Macros.hpp"

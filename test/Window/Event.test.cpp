@@ -1,16 +1,12 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
-
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Vec3.hpp"
 #include "Zancle/Window/Event.hpp"
-
 #include "Zancle/Window/Joystick.hpp"
 #include "Zancle/Window/Keyboard.hpp"
 #include "Zancle/Window/Mouse.hpp"
 #include "Zancle/Window/Sensor.hpp"
-
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Vec3.hpp"
-
 #include "ZancleBase/Trait/IsAggregate.hpp"
 #include "ZancleBase/Trait/IsCopyAssignable.hpp"
 #include "ZancleBase/Trait/IsCopyConstructible.hpp"

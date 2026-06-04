@@ -124,9 +124,7 @@ public:
             }
         };
 
-        m_allocPtr(objStorage,
-                   &f,
-                   ZB_IS_RVALUE_REFERENCE(TFFwd&&) ? Operation::MoveConstruct : Operation::CopyConstruct);
+        m_allocPtr(objStorage, &f, ZB_IS_RVALUE_REFERENCE(TFFwd&&) ? Operation::MoveConstruct : Operation::CopyConstruct);
     }
 
 

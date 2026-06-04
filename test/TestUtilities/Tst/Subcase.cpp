@@ -8,7 +8,6 @@
 #include "Tst/Detail/State.hpp"
 #include "Tst/Detail/Subcase.hpp"
 #include "Tst/TstFwd.hpp"
-
 #include "ZancleBase/Builtin/Strcmp.hpp"
 #include "ZancleBase/SizeT.hpp"
 
@@ -84,12 +83,12 @@ void TraversalState::resetForRun() noexcept
 bool TraversalState::advance() noexcept
 {
     const zb::SizeT maxDepth = decisionPath.size() < discoveredDecisionPath.size() ? decisionPath.size()
-                                                                                         : discoveredDecisionPath.size();
+                                                                                   : discoveredDecisionPath.size();
 
     for (zb::SizeT depth = maxDepth; depth > 0u; --depth)
     {
         const zb::SizeT index = depth - 1u;
-        const auto&           dp    = discoveredDecisionPath.data()[index];
+        const auto&     dp    = discoveredDecisionPath.data()[index];
 
         if (decisionPath.data()[index] + 1u < dp.branchCount)
         {
@@ -134,7 +133,7 @@ bool TraversalState::tryEnterSubcase(const SubcaseSignature& sig)
 {
     DecisionPoint& point = ensureDecisionPoint(*this);
 
-    auto&                 subcases     = point.subcases;
+    auto&           subcases     = point.subcases;
     zb::SizeT       siblingIndex = 0u;
     const zb::SizeT subcasesSize = subcases.size();
 

@@ -44,7 +44,7 @@ struct ReqDInit
 /// \see `zb::priv::ReqDInit`
 ///
 ////////////////////////////////////////////////////////////
-#define ZB_REQUIRE_DESIGNATED_INITIALIZERS                    \
+#define ZB_REQUIRE_DESIGNATED_INITIALIZERS                     \
     [[no_unique_address]] ::zb::priv::ReqDInit _sfBaseReqDInit \
-    {                                                                \
+    {                                                          \
     }

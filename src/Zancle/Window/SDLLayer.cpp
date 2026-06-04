@@ -5,21 +5,18 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Window/SDLLayer.hpp"
-
-#include "Zancle/Window/Cursor.hpp"
-#include "Zancle/Window/DisplayOrientation.hpp"
-#include "Zancle/Window/Keyboard.hpp"
-#include "Zancle/Window/Mouse.hpp"
-#include "Zancle/Window/VideoMode.hpp"
-#include "Zancle/Window/WindowHandle.hpp"
-#include "Zancle/Window/WindowSettings.hpp"
-
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
 #include "Zancle/System/Utf8String.hpp"
-
+#include "Zancle/Window/Cursor.hpp"
+#include "Zancle/Window/DisplayOrientation.hpp"
+#include "Zancle/Window/Keyboard.hpp"
+#include "Zancle/Window/Mouse.hpp"
+#include "Zancle/Window/SDLLayer.hpp"
+#include "Zancle/Window/VideoMode.hpp"
+#include "Zancle/Window/WindowHandle.hpp"
+#include "Zancle/Window/WindowSettings.hpp"
 #include "ZancleBase/Abort.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Memcmp.hpp"
@@ -50,7 +47,7 @@
 
 
 ////////////////////////////////////////////////////////////
-#define ZA_PRIV_SDL_ATTR_X_LIST                                             \
+#define ZA_PRIV_SDL_ATTR_X_LIST                                               \
     X(SDL_GL_RED_SIZE, "SDL_GL_RED_SIZE")                                     \
     X(SDL_GL_GREEN_SIZE, "SDL_GL_GREEN_SIZE")                                 \
     X(SDL_GL_BLUE_SIZE, "SDL_GL_BLUE_SIZE")                                   \
@@ -105,7 +102,7 @@ namespace
 
 
 ////////////////////////////////////////////////////////////
-#define ZA_PRIV_SFML_SDL_KEYCODE_MAPPING                                  \
+#define ZA_PRIV_SFML_SDL_KEYCODE_MAPPING                                    \
     X(SDLK_UNKNOWN, ::za::Keyboard::Key::Unknown)                           \
     X(SDLK_RETURN, ::za::Keyboard::Key::Enter)                              \
     X(SDLK_ESCAPE, ::za::Keyboard::Key::Escape)                             \
@@ -386,7 +383,7 @@ namespace za::priv
     switch (sdlKey)
     {
 #define X(sdlKey, zancleKey) \
-    case sdlKey:           \
+    case sdlKey:             \
         return zancleKey;
         ZA_PRIV_SFML_SDL_KEYCODE_MAPPING
 #undef X

@@ -1,11 +1,9 @@
-#include "StringifySfBaseStringUtil.hpp"
+#include "StringifyZbStringUtil.hpp"
 #include "StringifyStringViewUtil.hpp"
 #include "Tst/Tst.hpp"
-
-#include "ZancleBase/Scn/Scn.hpp"
-
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/Radix.hpp"
+#include "ZancleBase/Scn/Scn.hpp"
 #include "ZancleBase/Scn/ScnNumeric.hpp"
 #include "ZancleBase/Scn/ScnString.hpp"
 #include "ZancleBase/Scn/ScnStringSource.hpp"
@@ -370,7 +368,7 @@ TEST_CASE("[Base] Scn - scnRadix")
 
     SUBCASE("hex lowercase")
     {
-        auto            src = stringSource("abcd");
+        auto      src = stringSource("abcd");
         zb::SizeT v   = 0u;
         CHECK(scnRadix(src, v, Radix::Hex));
         CHECK(v == 0xab'cdu);

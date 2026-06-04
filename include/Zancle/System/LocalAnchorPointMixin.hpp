@@ -39,7 +39,7 @@ struct LocalAnchorPointMixin
 
 
 ////////////////////////////////////////////////////////////
-#define ZA_PRIV_DEFINE_MIXIN_GETTER(name, ...)                                                                 \
+#define ZA_PRIV_DEFINE_MIXIN_GETTER(name, ...)                                                                   \
     /** \brief Get the position of the name anchor point */                                                      \
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr auto name(this auto const& self) \
     {                                                                                                            \

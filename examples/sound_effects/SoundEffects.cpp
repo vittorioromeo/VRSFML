@@ -1,20 +1,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "ExampleUtils/Scaling.hpp"
-
-#include "Zancle/Graphics/CircleShape.hpp"
-#include "Zancle/Graphics/Color.hpp"
-#include "Zancle/Graphics/ConvexShape.hpp"
-#include "Zancle/Graphics/Font.hpp"
-#include "Zancle/Graphics/GraphicsContext.hpp"
-#include "Zancle/Graphics/RenderStates.hpp"
-#include "Zancle/Graphics/RenderTarget.hpp"
-#include "Zancle/Graphics/RenderWindow.hpp"
-#include "Zancle/Graphics/Text.hpp"
-#include "Zancle/Graphics/Texture.hpp"
-#include "Zancle/Graphics/Transform.hpp"
-
 #include "Zancle/Audio/AudioContext.hpp"
 #include "Zancle/Audio/AudioSettings.hpp"
 #include "Zancle/Audio/ChannelMap.hpp"
@@ -26,12 +12,17 @@
 #include "Zancle/Audio/PlaybackDeviceHandle.hpp"
 #include "Zancle/Audio/SoundChannel.hpp"
 #include "Zancle/Audio/SoundStream.hpp"
-
-#include "Zancle/Window/Event.hpp"
-#include "Zancle/Window/EventUtils.hpp"
-#include "Zancle/Window/Keyboard.hpp"
-#include "Zancle/Window/Mouse.hpp"
-
+#include "Zancle/Graphics/CircleShape.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/ConvexShape.hpp"
+#include "Zancle/Graphics/Font.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/RenderStates.hpp"
+#include "Zancle/Graphics/RenderTarget.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/Text.hpp"
+#include "Zancle/Graphics/Texture.hpp"
+#include "Zancle/Graphics/Transform.hpp"
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/Fmt/FmtPath.hpp"
@@ -40,7 +31,10 @@
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Time.hpp"
 #include "Zancle/System/Utf8String.hpp"
-
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/Keyboard.hpp"
+#include "Zancle/Window/Mouse.hpp"
 #include "ZancleBase/Abort.hpp"
 #include "ZancleBase/Array.hpp"
 #include "ZancleBase/Clamp.hpp"
@@ -62,6 +56,8 @@
 #include "ZancleBase/String.hpp"
 #include "ZancleBase/ToString.hpp"
 #include "ZancleBase/Vector.hpp"
+
+#include "ExampleUtils/Scaling.hpp"
 
 #include <limits>
 
@@ -165,10 +161,10 @@ public:
     }
 
 private:
-    za::Listener&   m_listener;
-    za::CircleShape m_listenerShape{{.origin = {10.f, 10.f}, .fillColor = za::Color::Red, .radius = 20.f}};
-    za::CircleShape m_soundShape{{.origin = {10.f, 10.f}, .radius = 20.f}};
-    za::Vec2f       m_position;
+    za::Listener&           m_listener;
+    za::CircleShape         m_listenerShape{{.origin = {10.f, 10.f}, .fillColor = za::Color::Red, .radius = 20.f}};
+    za::CircleShape         m_soundShape{{.origin = {10.f, 10.f}, .radius = 20.f}};
+    za::Vec2f               m_position;
     zb::Optional<za::Music> m_music;
 };
 
@@ -241,11 +237,11 @@ public:
     }
 
 private:
-    za::Listener&                 m_listener;
-    float                         m_pitch{1.f};
-    float                         m_volume{100.f};
-    za::Text                      m_pitchText;
-    za::Text                      m_volumeText;
+    za::Listener&           m_listener;
+    float                   m_pitch{1.f};
+    float                   m_volume{100.f};
+    za::Text                m_pitchText;
+    za::Text                m_volumeText;
     zb::Optional<za::Music> m_music;
 };
 
@@ -397,23 +393,19 @@ private:
                     case Type::Triangle:
                     {
                         value = 4 * tone.m_amplitude / period *
-                                    zb::fabs(
-                                        zb::fmod(((zb::fmod((tone.m_time - period / 4), period)) + period),
-                                                       period) -
-                                        period / 2) -
+                                    zb::fabs(zb::fmod(((zb::fmod((tone.m_time - period / 4), period)) + period), period) -
+                                             period / 2) -
                                 tone.m_amplitude;
                         break;
                     }
                     case Type::Sawtooth:
                     {
-                        value = tone.m_amplitude * 2 *
-                                (tone.m_time / period - zb::floor(0.5f + tone.m_time / period));
+                        value = tone.m_amplitude * 2 * (tone.m_time / period - zb::floor(0.5f + tone.m_time / period));
                         break;
                     }
                 }
 
-                outBuffer[i] = static_cast<zb::I16>(
-                    zb::lround(value * std::numeric_limits<zb::I16>::max()));
+                outBuffer[i] = static_cast<zb::I16>(zb::lround(value * std::numeric_limits<zb::I16>::max()));
                 tone.m_time += timePerSample;
             }
 
@@ -460,9 +452,8 @@ public:
         m_currentAmplitude.setString("Amplitude: " + zb::toString(m_amplitude));
         m_currentFrequency.setString("Frequency: " + zb::toString(m_frequency) + " Hz");
 
-        m_currentType.setString(
-            zb::String{"Wave Type: "} +
-            zb::Array{"Sine", "Square", "Triangle", "Sawtooth"}[static_cast<zb::SizeT>(m_type)]);
+        m_currentType.setString(zb::String{"Wave Type: "} +
+                                zb::Array{"Sine", "Square", "Triangle", "Sawtooth"}[static_cast<zb::SizeT>(m_type)]);
     }
 
     void draw(za::RenderTarget& target, za::RenderStates states) const override
@@ -496,9 +487,9 @@ public:
     }
 
 private:
-    static constexpr unsigned int    sampleRate{44'100};
-    static constexpr zb::SizeT chunkSize{sampleRate / 100};
-    static constexpr float           timePerSample{1.f / float{sampleRate}};
+    static constexpr unsigned int sampleRate{44'100};
+    static constexpr zb::SizeT    chunkSize{sampleRate / 100};
+    static constexpr float        timePerSample{1.f / float{sampleRate}};
 
     za::Listener& m_listener;
 
@@ -537,8 +528,7 @@ private:
                 const auto value = doppler.m_amplitude * 2 *
                                    (doppler.m_time / period - zb::floor(0.5f + doppler.m_time / period));
 
-                outBuffer[i] = static_cast<zb::I16>(
-                    zb::lround(value * std::numeric_limits<zb::I16>::max()));
+                outBuffer[i] = static_cast<zb::I16>(zb::lround(value * std::numeric_limits<zb::I16>::max()));
                 doppler.m_time += timePerSample;
             }
 
@@ -613,9 +603,9 @@ public:
     }
 
 private:
-    static constexpr unsigned int    sampleRate{44'100};
-    static constexpr zb::SizeT chunkSize{sampleRate / 100};
-    static constexpr float           timePerSample{1.f / float{sampleRate}};
+    static constexpr unsigned int sampleRate{44'100};
+    static constexpr zb::SizeT    chunkSize{sampleRate / 100};
+    static constexpr float        timePerSample{1.f / float{sampleRate}};
 
     za::Listener& m_listener;
 
@@ -756,13 +746,11 @@ protected:
         // this lambda hence we need to always have usable coefficients and state until the music and the
         // associated lambda are destroyed
         const bool success = m_music->setEffectProcessor(
-            [coefficients,
-             &enabled = m_enabled,
-             state    = zb::Vector<State>()](const float*  inputFrames,
-                                                unsigned int& inputFrameCount,
-                                                float*        outputFrames,
-                                                unsigned int& outputFrameCount,
-                                                unsigned int  frameChannelCount) mutable
+            [coefficients, &enabled = m_enabled, state = zb::Vector<State>()](const float*  inputFrames,
+                                                                              unsigned int& inputFrameCount,
+                                                                              float*        outputFrames,
+                                                                              unsigned int& outputFrameCount,
+                                                                              unsigned int  frameChannelCount) mutable
         {
             // IMPORTANT: The channel count of the audio engine currently sourcing data from this sound
             // will always be provided in frameChannelCount, this can be different from the channel count
@@ -852,8 +840,7 @@ struct LowPassFilter : BiquadFilter
 
         static constexpr auto cutoffFrequency = 500.f;
 
-        const auto c = 1.f /
-                       zb::tan(zb::pi * cutoffFrequency / static_cast<float>(playbackDevice.getSampleRate()));
+        const auto c = 1.f / zb::tan(zb::pi * cutoffFrequency / static_cast<float>(playbackDevice.getSampleRate()));
 
         Coefficients coefficients{.a0 = 1.f / (1.f + zb::sqrt2 * c + zb::pow(c, 2.f)),
                                   .a1 = 2.f * coefficients.a0,
@@ -1019,7 +1006,7 @@ private:
     private:
         zb::Vector<T> m_buffer;
         zb::SizeT     m_cursor{};
-        const float         m_gain{};
+        const float   m_gain{};
     };
 
     template <typename T>
@@ -1088,12 +1075,12 @@ private:
         }
 
     private:
-        AllPassFilter<T>      m_allPass[4];
-        FIRFilter<T>          m_fir;
-        zb::Vector<T>   m_buffer;
-        zb::SizeT       m_cursor{};
-        const zb::SizeT m_interval{m_buffer.size() / 3};
-        const float           m_feedbackGain{};
+        AllPassFilter<T> m_allPass[4];
+        FIRFilter<T>     m_fir;
+        zb::Vector<T>    m_buffer;
+        zb::SizeT        m_cursor{};
+        const zb::SizeT  m_interval{m_buffer.size() / 3};
+        const float      m_feedbackGain{};
     };
 };
 
@@ -1172,16 +1159,15 @@ int main()
     Echo           echoEffect(listener, font);
     Reverb         reverbEffect(listener, font);
 
-    const zb::Array<Effect*, 9>
-        effects{&surroundEffect,
-                &pitchVolumeEffect,
-                &attenuationEffect,
-                &toneEffect,
-                &dopplerEffect,
-                &highPassFilterEffect,
-                &lowPassFilterEffect,
-                &echoEffect,
-                &reverbEffect};
+    const zb::Array<Effect*, 9> effects{&surroundEffect,
+                                        &pitchVolumeEffect,
+                                        &attenuationEffect,
+                                        &toneEffect,
+                                        &dopplerEffect,
+                                        &highPassFilterEffect,
+                                        &lowPassFilterEffect,
+                                        &echoEffect,
+                                        &reverbEffect};
 
     zb::SizeT current = 0;
 
@@ -1205,8 +1191,7 @@ int main()
                                  .fillColor     = {80, 80, 80}});
 
     // Utility functions
-    const auto getCurrentDeviceName = [&]
-    { return zb::String{getCurrentPlaybackDevice().getDeviceHandle().getName()}; };
+    const auto getCurrentDeviceName = [&] { return zb::String{getCurrentPlaybackDevice().getDeviceHandle().getName()}; };
 
     // Create the playback device text
     za::Text playbackDeviceText(font,

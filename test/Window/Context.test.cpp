@@ -4,11 +4,8 @@
 // Other 1st party headers
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
-
-#include "Zancle/Window/ContextSettings.hpp"
-
 #include "Zancle/System/Err.hpp"
-
+#include "Zancle/Window/ContextSettings.hpp"
 #include "ZancleBase/Macros.hpp"
 #include "ZancleBase/Trait/IsCopyAssignable.hpp"
 #include "ZancleBase/Trait/IsCopyConstructible.hpp"

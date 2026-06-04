@@ -3,11 +3,9 @@
 ////////////////////////////////////////////////////////////
 #include "Client.hpp"
 #include "Server.hpp"
-
 #include "Zancle/Audio/AudioContext.hpp"
 #include "Zancle/Audio/CaptureDevice.hpp"
 #include "Zancle/Audio/PlaybackDevice.hpp"
-
 #include "ZancleBase/Fmt/Fmt.hpp"
 #include "ZancleBase/Fmt/FmtNumeric.hpp"
 #include "ZancleBase/Scn/ScnStdin.hpp"

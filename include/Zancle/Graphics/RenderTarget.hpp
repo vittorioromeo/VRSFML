@@ -6,20 +6,17 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Graphics/Export.hpp"
-
 #include "Zancle/Graphics/BatchedGeometry.hpp"
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/DrawTextureSettings.hpp"
 #include "Zancle/Graphics/DrawVerticesSettings.hpp"
+#include "Zancle/Graphics/Export.hpp"
 #include "Zancle/Graphics/PrimitiveType.hpp"
 #include "Zancle/Graphics/Priv/ShaderBase.hpp"
 #include "Zancle/Graphics/Priv/ShapeDataConcept.hpp"
 #include "Zancle/Graphics/RenderStates.hpp"
 #include "Zancle/Graphics/Texture.hpp" // needed for `hasGenerationMismatch` to access `Texture::m_destructiveGeneration`
-
 #include "Zancle/System/Priv/Vec2Base.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/FunctionRef.hpp"
 #include "ZancleBase/InPlacePImpl.hpp"
@@ -82,7 +79,7 @@ public:
     struct DrawStatistics
     {
         unsigned int drawCalls{0u};     //!< Number of draw calls
-        zb::SizeT  drawnVertices{0u}; //!< Number of vertices drawn
+        zb::SizeT    drawnVertices{0u}; //!< Number of vertices drawn
     };
 
     ////////////////////////////////////////////////////////////
@@ -387,10 +384,7 @@ public:
     /// \param states       Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const VertexBuffer& vertexBuffer,
-              zb::SizeT         firstVertex,
-              zb::SizeT         vertexCount,
-              const RenderStates& states = {});
+    void draw(const VertexBuffer& vertexBuffer, zb::SizeT firstVertex, zb::SizeT vertexCount, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a shape from its plain `*ShapeData` description
@@ -514,9 +508,9 @@ public:
     /// \param states   Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void drawInstancedVertices(const DrawInstancedVerticesSettings&              settings,
+    void drawInstancedVertices(const DrawInstancedVerticesSettings&            settings,
                                zb::FunctionRef<void(InstanceAttributeBinder&)> setupFn,
-                               const RenderStates&                               states = {});
+                               const RenderStates&                             states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw an instanced and indexed primitive
@@ -531,9 +525,9 @@ public:
     /// \param states   Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void drawInstancedIndexedVertices(const DrawInstancedIndexedVerticesSettings&       settings,
+    void drawInstancedIndexedVertices(const DrawInstancedIndexedVerticesSettings&     settings,
                                       zb::FunctionRef<void(InstanceAttributeBinder&)> setupFn,
-                                      const RenderStates&                               states = {});
+                                      const RenderStates&                             states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the rendering region of the target
@@ -880,9 +874,9 @@ private:
     /// Does not flush any batch in flight.
     ///
     ////////////////////////////////////////////////////////////
-    void immediateDrawInstancedVertices(const DrawInstancedVerticesSettings&              settings,
+    void immediateDrawInstancedVertices(const DrawInstancedVerticesSettings&            settings,
                                         zb::FunctionRef<void(InstanceAttributeBinder&)> setupFn,
-                                        const RenderStates&                               states);
+                                        const RenderStates&                             states);
 
     ////////////////////////////////////////////////////////////
     /// \brief Immediately draw an instanced and indexed primitive
@@ -891,9 +885,9 @@ private:
     /// Does not flush any batch in flight.
     ///
     ////////////////////////////////////////////////////////////
-    void immediateDrawInstancedIndexedVertices(const DrawInstancedIndexedVerticesSettings&       settings,
+    void immediateDrawInstancedIndexedVertices(const DrawInstancedIndexedVerticesSettings&     settings,
                                                zb::FunctionRef<void(InstanceAttributeBinder&)> setupFn,
-                                               const RenderStates&                               states);
+                                               const RenderStates&                             states);
 
     ////////////////////////////////////////////////////////////
     /// \brief Check whether shader/texture generation counters diverge from cached values
@@ -929,9 +923,9 @@ private:
         if (m_isStateLocked)
         {
             ZB_ASSERT(m_lastRenderStates == states && !hasGenerationMismatch(states) &&
-                             "State mutation detected while inside a 'withLockedRenderStates' context!\n If you are "
-                             "drawing Text, Shapes, or Sprites, you must explicitly bind their Texture to the context "
-                             "upfront.");
+                      "State mutation detected while inside a 'withLockedRenderStates' context!\n If you are "
+                      "drawing Text, Shapes, or Sprites, you must explicitly bind their Texture to the context "
+                      "upfront.");
 
             if (m_numAutoBatchVertices >= m_autoBatchVertexThreshold)
                 flush();
@@ -1081,9 +1075,9 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     void invokePrimitiveDrawCallIndexedBaseVertex(PrimitiveType type,
-                                                  zb::SizeT   indexCount,
-                                                  zb::SizeT   indexOffset,
-                                                  zb::SizeT   vertexOffset);
+                                                  zb::SizeT     indexCount,
+                                                  zb::SizeT     indexOffset,
+                                                  zb::SizeT     vertexOffset);
 
     ////////////////////////////////////////////////////////////
     /// \brief Invoke primitive draw call: instanced, non-indexed
@@ -1098,10 +1092,7 @@ private:
     /// \param instanceCount Number of instances to draw
     ///
     ////////////////////////////////////////////////////////////
-    void invokeInstancedPrimitiveDrawCall(PrimitiveType type,
-                                          zb::SizeT   vertexOffset,
-                                          zb::SizeT   vertexCount,
-                                          zb::SizeT   instanceCount);
+    void invokeInstancedPrimitiveDrawCall(PrimitiveType type, zb::SizeT vertexOffset, zb::SizeT vertexCount, zb::SizeT instanceCount);
 
     ////////////////////////////////////////////////////////////
     /// \brief Invoke primitive draw call: instanced, indexed
@@ -1117,9 +1108,9 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     void invokeInstancedPrimitiveDrawCallIndexed(PrimitiveType type,
-                                                 zb::SizeT   indexOffset,
-                                                 zb::SizeT   indexCount,
-                                                 zb::SizeT   instanceCount);
+                                                 zb::SizeT     indexOffset,
+                                                 zb::SizeT     indexCount,
+                                                 zb::SizeT     instanceCount);
 
     ////////////////////////////////////////////////////////////
     /// \brief Forward a draw description to the active auto-batch
@@ -1234,11 +1225,11 @@ private:
     ////////////////////////////////////////////////////////////
     DrawStatistics m_currentDrawStats{};                       //!< Statistics for current draw calls
     AutoBatchMode  m_autoBatchMode{AutoBatchMode::GPUStorage}; //!< Enable automatic batching of draw calls
-    zb::SizeT    m_numAutoBatchVertices{0u};                 //!< Number of vertices in the current autobatch
-    zb::SizeT    m_autoBatchVertexThreshold{32'768u};        //!< Threshold for batch vertex count
+    zb::SizeT      m_numAutoBatchVertices{0u};                 //!< Number of vertices in the current autobatch
+    zb::SizeT      m_autoBatchVertexThreshold{32'768u};        //!< Threshold for batch vertex count
     RenderStates   m_lastRenderStates{};                       //!< Cached render states (autobatching)
-    zb::U32      m_lastShaderGeneration{0};  //!< Cached shader uniform generation (autobatch invalidation)
-    zb::U32      m_lastTextureGeneration{0}; //!< Cached texture destructive generation (autobatch invalidation)
+    zb::U32        m_lastShaderGeneration{0};  //!< Cached shader uniform generation (autobatch invalidation)
+    zb::U32        m_lastTextureGeneration{0}; //!< Cached texture destructive generation (autobatch invalidation)
     bool           m_isStateLocked{false}; //!< Whether render states are currently bound via `withLockedRenderStates`
     bool           m_isSrgb{false};        //!< Whether the target uses sRGB encoding (set at construction)
 

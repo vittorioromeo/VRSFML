@@ -5,11 +5,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Graphics/Export.hpp"
-
 #include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/Export.hpp"
 #include "Zancle/Graphics/Glsl.hpp" // NOLINT(misc-header-include-cycle)
-
 #include "ZancleBase/Builtin/Memcpy.hpp"
 #include "ZancleBase/SizeT.hpp"
 

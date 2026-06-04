@@ -7,7 +7,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/System/Export.hpp"
-
 #include "ZancleBase/Builtin/BitCast.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/PtrDiffT.hpp"
@@ -57,8 +56,8 @@ struct AtomicPointee<T*>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-inline constexpr bool isAtomicSupported = (ZB_IS_INTEGRAL(T) || ZB_IS_FLOATING_POINT(T) ||
-                                           ZB_IS_POINTER(T) || ZB_IS_ENUM(T));
+inline constexpr bool isAtomicSupported = (ZB_IS_INTEGRAL(T) || ZB_IS_FLOATING_POINT(T) || ZB_IS_POINTER(T) ||
+                                           ZB_IS_ENUM(T));
 
 
 ////////////////////////////////////////////////////////////
@@ -203,41 +202,41 @@ ZA_SYSTEM_API void atomicNotifyAll(const void* addr) noexcept;
 //
 ////////////////////////////////////////////////////////////
 // NOLINTBEGIN(bugprone-macro-parentheses)
-#define ZA_PRIV_ATOMIC_LOAD_ALIAS(Suffix)                                         \
+#define ZA_PRIV_ATOMIC_LOAD_ALIAS(Suffix)                                           \
     [[nodiscard, gnu::always_inline, gnu::flatten]] T load##Suffix() const noexcept \
     {                                                                               \
         return load<MemoryOrder::Suffix>();                                         \
     }
 
-#define ZA_PRIV_ATOMIC_STORE_ALIAS(Suffix)                                        \
+#define ZA_PRIV_ATOMIC_STORE_ALIAS(Suffix)                                          \
     [[gnu::always_inline, gnu::flatten]] void store##Suffix(const T value) noexcept \
     {                                                                               \
         store<MemoryOrder::Suffix>(value);                                          \
     }
 
-#define ZA_PRIV_ATOMIC_EXCHANGE_ALIAS(Suffix)                                     \
+#define ZA_PRIV_ATOMIC_EXCHANGE_ALIAS(Suffix)                                       \
     [[gnu::always_inline, gnu::flatten]] T exchange##Suffix(const T value) noexcept \
     {                                                                               \
         return exchange<MemoryOrder::Suffix>(value);                                \
     }
 
-#define ZA_PRIV_ATOMIC_WAIT_ALIAS(Suffix)                                                     \
+#define ZA_PRIV_ATOMIC_WAIT_ALIAS(Suffix)                                                       \
     [[gnu::always_inline, gnu::flatten]] void waitOnce##Suffix(const T expected) const noexcept \
         requires(sizeof(T) == 4u || sizeof(T) == 8u)                                            \
     {                                                                                           \
         waitOnce<MemoryOrder::Suffix>(expected);                                                \
     }
 
-#define ZA_PRIV_ATOMIC_WAITUNTIL_ALIAS(Suffix)                                                 \
+#define ZA_PRIV_ATOMIC_WAITUNTIL_ALIAS(Suffix)                                                   \
     [[gnu::always_inline, gnu::flatten]] void waitUntil##Suffix(auto&& predicate) const noexcept \
         requires(sizeof(T) == 4u || sizeof(T) == 8u)                                             \
     {                                                                                            \
         waitUntil<MemoryOrder::Suffix>(static_cast<decltype(predicate)>(predicate));             \
     }
 
-#define ZA_PRIV_ATOMIC_FETCH_INT_ALIAS(Op, Suffix)                        \
+#define ZA_PRIV_ATOMIC_FETCH_INT_ALIAS(Op, Suffix)                          \
     [[gnu::always_inline, gnu::flatten]] T Op##Suffix(const T arg) noexcept \
-        requires(zb::isIntegral<T> && !zb::isSame<T, bool>)             \
+        requires(zb::isIntegral<T> && !zb::isSame<T, bool>)                 \
     {                                                                       \
         return Op<MemoryOrder::Suffix>(arg);                                \
     }
@@ -245,8 +244,8 @@ ZA_SYSTEM_API void atomicNotifyAll(const void* addr) noexcept;
 #define ZA_PRIV_ATOMIC_FETCH_PTR_ALIAS(Op, Suffix)                                     \
     [[gnu::always_inline, gnu::flatten]] T Op##Suffix(const zb::PtrDiffT arg) noexcept \
         requires(zb::isPointer<T>)                                                     \
-    {                                                                                    \
-        return Op<MemoryOrder::Suffix>(arg);                                             \
+    {                                                                                  \
+        return Op<MemoryOrder::Suffix>(arg);                                           \
     }
 
 #define ZA_PRIV_ATOMIC_FETCH_INT_ALL_ORDERS(Op) \

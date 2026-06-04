@@ -7,9 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Config.hpp"
-
 #include "Zancle/GLUtils/Glad.hpp" // not expensive, included everwhere `GLCheck.hpp` is included
-
 #include "ZancleBase/Assert.hpp"
 
 

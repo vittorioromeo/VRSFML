@@ -8,7 +8,6 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/System/Utf.hpp"
 #include "Zancle/System/Utf8String.hpp"
-
 #include "ZancleBase/PtrDiffT.hpp"
 #include "ZancleBase/SizeT.hpp"
 
@@ -41,7 +40,7 @@ private:
     const char* m_ptr;          //!< Start of current codepoint
     const char* m_end;          //!< One past the last byte
     char32_t    m_current{};    //!< Cached decoded codepoint
-    zb::SizeT m_currentLen{}; //!< Byte width of current codepoint
+    zb::SizeT   m_currentLen{}; //!< Byte width of current codepoint
 
 
     ////////////////////////////////////////////////////////////

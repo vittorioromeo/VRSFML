@@ -6,12 +6,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/CircleShape.hpp"
-
 #include "Zancle/Graphics/Shape.hpp"
 #include "Zancle/Graphics/ShapeUtils.hpp"
-
 #include "Zancle/System/Priv/Vec2Base.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Constants.hpp"
 #include "ZancleBase/SizeT.hpp"

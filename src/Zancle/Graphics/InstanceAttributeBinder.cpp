@@ -5,22 +5,18 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Graphics/InstanceAttributeBinder.hpp"
-
-#include "Zancle/Graphics/GlDataType.hpp"
-#include "Zancle/Graphics/Priv/EnumToGlEnumConversions.hpp"
-#include "Zancle/Graphics/VBOHandle.hpp"
-
 #include "Zancle/GLUtils/GLCheck.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
-
+#include "Zancle/Graphics/GlDataType.hpp"
+#include "Zancle/Graphics/InstanceAttributeBinder.hpp"
+#include "Zancle/Graphics/Priv/EnumToGlEnumConversions.hpp"
+#include "Zancle/Graphics/VBOHandle.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Unreachable.hpp"
 #include "ZancleBase/SizeT.hpp"
 
 #ifdef ZA_OPENGL_ES
     #include "Zancle/System/Err.hpp"
-
     #include "ZancleBase/Abort.hpp"
 #endif
 
@@ -154,8 +150,8 @@ void InstanceAttributeBinder::setup(
     const unsigned int size,
     const GlDataType   type,
     const bool         normalized,
-    const zb::SizeT  stride,
-    const zb::SizeT  fieldOffset)
+    const zb::SizeT    stride,
+    const zb::SizeT    fieldOffset)
 {
     ZB_ASSERT(size >= 1u && size <= 4u);
     ZB_ASSERT(stride > 0u);

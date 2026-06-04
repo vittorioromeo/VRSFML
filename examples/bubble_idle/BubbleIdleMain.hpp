@@ -21,22 +21,14 @@
 #include "TextEffectWiggle.hpp"
 #include "TextParticle.hpp"
 #include "TextShakeEffect.hpp"
-
-#include "ExampleUtils/Progress.hpp"
-#include "ExampleUtils/RNGFast.hpp"
-#include "ExampleUtils/Sampler.hpp"
-
 #include "Zancle/Graphics/Color.hpp"
-
-#include "Zancle/Window/Keyboard.hpp"
-#include "Zancle/Window/Mouse.hpp"
-
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/Rect2.hpp"
 #include "Zancle/System/Time.hpp"
 #include "Zancle/System/Vec2.hpp"
-
+#include "Zancle/Window/Keyboard.hpp"
+#include "Zancle/Window/Mouse.hpp"
 #include "ZancleBase/Array.hpp"
 #include "ZancleBase/FixedFunction.hpp"
 #include "ZancleBase/GetArraySize.hpp"
@@ -48,6 +40,10 @@
 #include "ZancleBase/ThreadPool.hpp"
 #include "ZancleBase/UniquePtr.hpp"
 #include "ZancleBase/Vector.hpp"
+
+#include "ExampleUtils/Progress.hpp"
+#include "ExampleUtils/RNGFast.hpp"
+#include "ExampleUtils/Sampler.hpp"
 
 #if defined(__GNUC__) || defined(__clang__)
     #define BUBBLE_IDLE_PRINTF_FORMAT(fmtIndex, firstArgIndex) __attribute__((format(printf, fmtIndex, firstArgIndex)))
@@ -254,7 +250,7 @@ struct Main
     const char* lastPlayedMusic = bgmPathNormal; // to avoid restarting the same song
 
     zb::SizeT currentBGMBufferIdx = 0u; // which one of the two buffers is "current"
-    Countdown       bgmTransition;            // fade in/out timer
+    Countdown bgmTransition;            // fade in/out timer
 
     MainOwnedPtr<MainBGMStorage> bgmStorage;
     MainBGMStorage&              bgm;
@@ -272,7 +268,7 @@ struct Main
     // Delayed actions
     struct DelayedAction
     {
-        Countdown                            delayCountdown;
+        Countdown                      delayCountdown;
         zb::FixedFunction<void(), 128> action;
     };
 
@@ -302,7 +298,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Hexed cat offscreen render textures (one per concurrent hex, for witch and copy-witch combined)
-    static inline constexpr za::Vec2u       hexedCatRenderTextureSize{640u, 640u};
+    static inline constexpr za::Vec2u hexedCatRenderTextureSize{640u, 640u};
     static inline constexpr zb::SizeT maxHexedCatRenderTextures = maxConcurrentHexes * 2u;
 
     MainOwnedPtr<MainRenderTextureVector> hexedCatRenderTexturesStorage;
@@ -466,9 +462,9 @@ struct Main
     struct [[nodiscard]] PendingComboBubblePayout
     {
         zb::Vector<BurstingComboCoin> coins;
-        SizeT                               coinsCollected{0u}; // total collected so far (drives pitch)
-        Countdown                           settleCountdown{};  // burst → collect transition
-        Countdown                           collectDelay{};
+        SizeT                         coinsCollected{0u}; // total collected so far (drives pitch)
+        Countdown                     settleCountdown{};  // burst → collect transition
+        Countdown                     collectDelay{};
     };
 
     zb::Vector<PendingComboBubblePayout> pendingComboBubblePayouts;
@@ -494,12 +490,12 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Clock and accumulator for played time
-    za::Clock     playedClock;
-    zb::I64 playedUsAccumulator{0};
-    zb::I64 autosaveUsAccumulator{0};
-    zb::I64 fixedBgSlideAccumulator{0}; // for menu background slide
-    float         fixedBgSlideTarget = 0.f;
-    float         fixedBgSlide       = 0.f;
+    za::Clock playedClock;
+    zb::I64   playedUsAccumulator{0};
+    zb::I64   autosaveUsAccumulator{0};
+    zb::I64   fixedBgSlideAccumulator{0}; // for menu background slide
+    float     fixedBgSlideTarget = 0.f;
+    float     fixedBgSlide       = 0.f;
 
     ////////////////////////////////////////////////////////////
     // FPS and delta time clocks
@@ -533,10 +529,10 @@ struct Main
     struct HexedCatDrawCommand // NOLINT(cppcoreguidelines-pro-type-member-init)
     {
         zb::SizeT renderTextureIndex;
-        za::Vec2f       position;
-        float           phaseSeed;
-        float           effectStrength;
-        bool            top;
+        za::Vec2f position;
+        float     phaseSeed;
+        float     effectStrength;
+        bool      top;
     };
 
     zb::Vector<HexedCatDrawCommand> hexedCatDrawCommands;
@@ -585,9 +581,9 @@ struct Main
     zb::Optional<TimedCountdown> tipTCBytePreEnd;
     zb::Optional<TimedCountdown> tipTCByteEnd;
     zb::Optional<TimedCountdown> tipTCBackgroundEnd;
-    Countdown                          tipCountdownChar;
+    Countdown                    tipCountdownChar;
     zb::String                   tipString;
-    TextEffectWiggle                   tipStringWiggle{0.00175f, 4.f};
+    TextEffectWiggle             tipStringWiggle{0.00175f, 4.f};
     zb::SizeT                    tipCharIdx{0u};
 
     ////////////////////////////////////////////////////////////
@@ -620,7 +616,7 @@ struct Main
     // $ps sampler
     MoneyType      moneyGainedLastSecond{0u};
     Sampler<float> samplerMoneyPerSecond{/* capacity */ 60u};
-    zb::I64  moneyGainedUsAccumulator{0};
+    zb::I64        moneyGainedUsAccumulator{0};
 
     ////////////////////////////////////////////////////////////
     // Bomb-cat tracker for money earned
@@ -661,8 +657,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     // Victory state
     zb::Optional<TimedCountdown> victoryTC;
-    Countdown                          cdLetterAppear;
-    Countdown                          cdLetterText;
+    Countdown                    cdLetterAppear;
+    Countdown                    cdLetterText;
 
     ////////////////////////////////////////////////////////////
     // Input management
@@ -688,7 +684,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     // PP purchase undo
     zb::Vector<zb::FixedFunction<void(), 128>> undoPPPurchase;
-    Countdown                                              undoPPPurchaseTimer;
+    Countdown                                  undoPPPurchaseTimer;
 
     ////////////////////////////////////////////////////////////
     void saveMainPlaythroughToFile();
@@ -1092,48 +1088,48 @@ struct Main
         return makePrestigePurchasablePPButtonPSV(buttonLabel, psv);
     }
 
-    void                           uiDrawCloudWindowBackground();
-    [[nodiscard]] bool             uiDrawQuickbarIconButton(const char* label, bool selected, float scaleMult = 1.f);
-    void                           uiDrawQuickbarCopyCat(za::Vec2f quickBarPos, Cat& copyCat);
-    void                           uiDrawQuickbarBackgroundSelector(za::Vec2f quickBarPos);
-    void                           uiDrawQuickbarBGMSelector(za::Vec2f quickBarPos);
-    void                           uiDrawQuickbarQuickSettings(za::Vec2f quickBarPos);
-    void                           uiDrawQuickbarVolumeControls(za::Vec2f quickBarPos);
-    void                           uiDrawQuickbar();
-    void                           uiDrawMinimapZoomButtons();
-    void                           uiDrawDebugWindow();
-    void                           uiDraw(za::Vec2f mousePos);
-    void                           uiDpsMeter();
-    void                           uiSpeedrunning();
-    void                           uiTabBar();
-    void                           uiSetUnlockLabelY(zb::SizeT unlockId);
-    [[nodiscard]] bool             checkUiUnlock(zb::SizeT unlockId, bool unlockCondition);
-    void                           uiImageFromAtlas(const za::Rect2f& txr, const za::DrawTextureSettings& drawParams);
-    void                           uiImgsep(const za::Rect2f& txr, const char* sepLabel, bool first = false);
-    void                           uiImgsep2(const za::Rect2f& txr, const char* sepLabel);
-    void                           uiTabBarShop();
-    void                           uiShopDrawCoreUpgrades();
-    void                           uiShopDrawSpecialCats();
-    void                           uiShopDrawUniqueCatBonuses();
+    void                     uiDrawCloudWindowBackground();
+    [[nodiscard]] bool       uiDrawQuickbarIconButton(const char* label, bool selected, float scaleMult = 1.f);
+    void                     uiDrawQuickbarCopyCat(za::Vec2f quickBarPos, Cat& copyCat);
+    void                     uiDrawQuickbarBackgroundSelector(za::Vec2f quickBarPos);
+    void                     uiDrawQuickbarBGMSelector(za::Vec2f quickBarPos);
+    void                     uiDrawQuickbarQuickSettings(za::Vec2f quickBarPos);
+    void                     uiDrawQuickbarVolumeControls(za::Vec2f quickBarPos);
+    void                     uiDrawQuickbar();
+    void                     uiDrawMinimapZoomButtons();
+    void                     uiDrawDebugWindow();
+    void                     uiDraw(za::Vec2f mousePos);
+    void                     uiDpsMeter();
+    void                     uiSpeedrunning();
+    void                     uiTabBar();
+    void                     uiSetUnlockLabelY(zb::SizeT unlockId);
+    [[nodiscard]] bool       checkUiUnlock(zb::SizeT unlockId, bool unlockCondition);
+    void                     uiImageFromAtlas(const za::Rect2f& txr, const za::DrawTextureSettings& drawParams);
+    void                     uiImgsep(const za::Rect2f& txr, const char* sepLabel, bool first = false);
+    void                     uiImgsep2(const za::Rect2f& txr, const char* sepLabel);
+    void                     uiTabBarShop();
+    void                     uiShopDrawCoreUpgrades();
+    void                     uiShopDrawSpecialCats();
+    void                     uiShopDrawUniqueCatBonuses();
     [[nodiscard]] zb::String uiShopBuildNextGoalsText();
-    void uiShopCooldownButton(const char* label, CatType catType, const char* additionalInfo = "");
-    void uiShopRangeButton(const char* label, CatType catType, const char* additionalInfo = "");
-    bool uiCheckbox(const char* label, bool* b);
-    bool uiRadio(const char* label, int* i, int value);
-    void uiTabBarPrestige();
-    void uiPrestigeDrawOverview();
-    void uiPrestigeDrawCoreUpgrades();
-    void uiPrestigeUnsealButton(PrestigePointsType ppCost, const char* catName, CatType type);
-    void uiPrestigeDrawShrineCatUpgrades();
-    void uiTabBarMagic();
-    void uiTabBarStats();
-    void uiTabBarSettings();
-    void uiSettingsDrawAudioTab();
-    void uiSettingsDrawUiTab();
-    void uiSettingsDrawGraphicsTab();
-    void uiSettingsDrawDisplayTab();
-    void uiSettingsDrawDataTab();
-    void uiSettingsDrawDebugTab();
+    void                     uiShopCooldownButton(const char* label, CatType catType, const char* additionalInfo = "");
+    void                     uiShopRangeButton(const char* label, CatType catType, const char* additionalInfo = "");
+    bool                     uiCheckbox(const char* label, bool* b);
+    bool                     uiRadio(const char* label, int* i, int value);
+    void                     uiTabBarPrestige();
+    void                     uiPrestigeDrawOverview();
+    void                     uiPrestigeDrawCoreUpgrades();
+    void                     uiPrestigeUnsealButton(PrestigePointsType ppCost, const char* catName, CatType type);
+    void                     uiPrestigeDrawShrineCatUpgrades();
+    void                     uiTabBarMagic();
+    void                     uiTabBarStats();
+    void                     uiTabBarSettings();
+    void                     uiSettingsDrawAudioTab();
+    void                     uiSettingsDrawUiTab();
+    void                     uiSettingsDrawGraphicsTab();
+    void                     uiSettingsDrawDisplayTab();
+    void                     uiSettingsDrawDataTab();
+    void                     uiSettingsDrawDebugTab();
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] zb::Optional<za::Rect2f> getAoEDragRect(za::Vec2f mousePos) const;
@@ -1277,7 +1273,7 @@ struct Main
     struct SelectorData
     {
         zb::Vector<SelectorEntry> entries;
-        int                             selectedIndex = -1;
+        int                       selectedIndex = -1;
     };
 
     ////////////////////////////////////////////////////////////
@@ -1342,21 +1338,21 @@ struct Main
     [[nodiscard]] FrameViewState gameLoopComputeViews();
     void                         gameLoopRenderFrame(float                   deltaTimeMs,
                                                      bool                    shouldDrawUI,
-                                                     zb::U8            shouldDrawUIAlpha,
+                                                     zb::U8                  shouldDrawUIAlpha,
                                                      const FrameInput&       frameInput,
                                                      const FrameUpdateState& frameUpdate,
                                                      const FrameViewState&   frameViews);
     void                         gameLoopPresentFrame(const FrameViewState& frameViews);
-    void               gameLoopUpdateScrolling(float deltaTimeMs, const zb::Vector<za::Vec2f>& downFingers);
-    void               gameLoopUpdateTransitions(float deltaTimeMs);
-    void               gameLoopUpdateBubbles(float deltaTimeMs);
-    void               gameLoopUpdateAttractoBuff(float deltaTimeMs) const;
-    [[nodiscard]] bool gameLoopUpdateBubbleClick(zb::Optional<za::Vec2f>& clickPosition);
-    void               gameLoopUpdateCatActionNormal(float /* deltaTimeMs */, Cat& cat);
-    void               gameLoopUpdateCatActionUni(float /* deltaTimeMs */, Cat& cat);
-    void               gameLoopUpdateCatActionDevil(float /* deltaTimeMs */, Cat& cat);
-    void               gameLoopUpdateCatActionAstro(float /* deltaTimeMs */, Cat& cat);
-    void               gameLoopUpdateCatActionWarden(float /* deltaTimeMs */, Cat& cat);
+    void                         gameLoopUpdateScrolling(float deltaTimeMs, const zb::Vector<za::Vec2f>& downFingers);
+    void                         gameLoopUpdateTransitions(float deltaTimeMs);
+    void                         gameLoopUpdateBubbles(float deltaTimeMs);
+    void                         gameLoopUpdateAttractoBuff(float deltaTimeMs) const;
+    [[nodiscard]] bool           gameLoopUpdateBubbleClick(zb::Optional<za::Vec2f>& clickPosition);
+    void                         gameLoopUpdateCatActionNormal(float /* deltaTimeMs */, Cat& cat);
+    void                         gameLoopUpdateCatActionUni(float /* deltaTimeMs */, Cat& cat);
+    void                         gameLoopUpdateCatActionDevil(float /* deltaTimeMs */, Cat& cat);
+    void                         gameLoopUpdateCatActionAstro(float /* deltaTimeMs */, Cat& cat);
+    void                         gameLoopUpdateCatActionWarden(float /* deltaTimeMs */, Cat& cat);
 
     // Resolve a queued wardencat windup: deals the bonk to
     // `cat.pawBonkPendingTargetIdx` (if still valid + napping), kicks the
@@ -1368,10 +1364,7 @@ struct Main
     [[nodiscard]] bool canHexMore() const;
     [[nodiscard]] bool canCopyHexMore() const;
     void               hexCat(Cat& cat, SizeT catIdx, bool copy);
-    void               gameLoopUpdateCatActionWitchImpl(float /* deltaTimeMs */,
-                                                        Cat&                          cat,
-                                                        zb::Vector<HexSession>& sessionsToUse,
-                                                        SizeT                         nCatsToHex);
+    void gameLoopUpdateCatActionWitchImpl(float /* deltaTimeMs */, Cat& cat, zb::Vector<HexSession>& sessionsToUse, SizeT nCatsToHex);
     void               gameLoopUpdateCatActionWitch(float deltaTimeMs, Cat& cat);
     void               gameLoopUpdateCatActionWizard(float deltaTimeMs, Cat& cat);
     void               gameLoopUpdateCatActionMouse(float /* deltaTimeMs */, Cat& cat);
@@ -1487,9 +1480,9 @@ struct Main
     void                recreateWindow();
     void                resizeWindow();
     [[nodiscard]] float gameLoopUpdateCursorGrowthEffect(float deltaTimeMs, bool anyBubblePoppedByClicking);
-    void                gameLoopUpdateCombo(float                         deltaTimeMs,
-                                            bool                          anyBubblePoppedByClicking,
-                                            za::Vec2f                     mousePos,
+    void                gameLoopUpdateCombo(float                   deltaTimeMs,
+                                            bool                    anyBubblePoppedByClicking,
+                                            za::Vec2f               mousePos,
                                             zb::Optional<za::Vec2f> clickPosition);
     void                gameLoopUpdateCollisionsBubbleBubble(float deltaTimeMs);
     void                gameLoopUpdateCollisionsCatCat(float deltaTimeMs);

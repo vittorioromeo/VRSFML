@@ -36,7 +36,7 @@ namespace za::priv
 {
 ////////////////////////////////////////////////////////////
 template <typename T>
-concept ShapeDataConcept =                             //
+concept ShapeDataConcept =                      //
     ZB_IS_SAME(T, ArrowShapeData) ||            //
     ZB_IS_SAME(T, ChevronShapeData) ||          //
     ZB_IS_SAME(T, CircleShapeData) ||           //

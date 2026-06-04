@@ -5,15 +5,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Graphics/Shape.hpp"
-
 #include "Zancle/Graphics/RenderTarget.hpp"
+#include "Zancle/Graphics/Shape.hpp"
 #include "Zancle/Graphics/ShapeUtils.hpp"
 #include "Zancle/Graphics/VertexUtils.hpp"
-
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/Vector.hpp"
 

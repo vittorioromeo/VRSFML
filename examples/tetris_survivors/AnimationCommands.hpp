@@ -8,7 +8,6 @@
 #include "DrillDirection.hpp"
 #include "LaserDirection.hpp"
 #include "Tetramino.hpp"
-
 #include "ZancleBase/InPlaceVector.hpp"
 #include "ZancleBase/Variant.hpp"
 

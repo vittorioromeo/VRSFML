@@ -1,7 +1,5 @@
 #include "Tst/Tst.hpp"
-
 #include "ZancleBase/Span.hpp"
-
 #include "ZancleBase/Trait/IsAggregate.hpp"
 #include "ZancleBase/Trait/IsConstructible.hpp"
 #include "ZancleBase/Trait/IsStandardLayout.hpp"

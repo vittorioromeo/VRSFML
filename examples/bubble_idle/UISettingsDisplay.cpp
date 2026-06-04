@@ -1,10 +1,7 @@
 #include "BubbleIdleMain.hpp"
 #include "Profile.hpp"
-
-#include "Zancle/ImGui/IncludeImGui.hpp"
-
 #include "Zancle/Graphics/RenderWindow.hpp"
-
+#include "Zancle/ImGui/IncludeImGui.hpp"
 #include "Zancle/Window/VideoMode.hpp"
 #include "Zancle/Window/VideoModeUtils.hpp"
 

@@ -6,14 +6,11 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/CurvedArrowShapeData.hpp"
-
 #include "Zancle/Graphics/Priv/ArcBounds.hpp"
 #include "Zancle/Graphics/ShapeUtils.hpp"
 #include "Zancle/Graphics/Transform.hpp"
-
 #include "Zancle/System/Rect2.hpp"
 #include "Zancle/System/Vec2.hpp"
-
 #include "ZancleBase/Constants.hpp"
 #include "ZancleBase/Math/Fabs.hpp"
 #include "ZancleBase/MinMaxMacros.hpp"

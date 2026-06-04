@@ -12,7 +12,6 @@
 #include "Tst/Detail/StringifyValue.hpp" // IWYU pragma: export
 #include "Tst/Detail/Subcase.hpp"        // IWYU pragma: export
 #include "Tst/TstFwd.hpp"                // IWYU pragma: export
-
 #include "ZancleBase/Builtin/Pragma.hpp"
 #include "ZancleBase/SizeT.hpp"
 
@@ -47,12 +46,12 @@ struct MessageBuilder // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
     static constexpr zb::SizeT capacity = 1024u;
 
-    char            buf[capacity]; // intentionally uninitialized -- avoid zeroing 1 KiB on every CHECK
+    char      buf[capacity]; // intentionally uninitialized -- avoid zeroing 1 KiB on every CHECK
     zb::SizeT len = 0u;
 
     void appendRaw(const char* data, zb::SizeT n) noexcept;
 
-#define ZA_TST_MSGB_DECL_PAIR(T)               \
+#define ZA_TST_MSGB_DECL_PAIR(T)                 \
     MessageBuilder&  operator*(T v) & noexcept;  \
     MessageBuilder&  operator<<(T v) & noexcept; \
     MessageBuilder&& operator*(T v) && noexcept; \
@@ -164,7 +163,7 @@ void noteNothrowSuccess() noexcept;
 // in `TestCaseHandle::operator*(const char*)` (it just sets the name);
 // any subsequent comma-separated args are dropped by the discarded
 // comma-operator expression.
-#define ZA_TST_TEST_CASE_IMPL(func, ...)                                                          \
+#define ZA_TST_TEST_CASE_IMPL(func, ...)                                                            \
     /* NOLINTNEXTLINE(misc-use-anonymous-namespace) */                                              \
     static void func();                                                                             \
     namespace                                                                                       \
@@ -179,7 +178,7 @@ void noteNothrowSuccess() noexcept;
 #define TEST_CASE(...) ZA_TST_TEST_CASE_IMPL(ZA_TST_ANON(zancleTstFunc_), __VA_ARGS__)
 
 // NOLINTBEGIN(bugprone-macro-parentheses)
-#define ZA_TST_SUBCASE_IMPL(var, name)                                       \
+#define ZA_TST_SUBCASE_IMPL(var, name)                                         \
     if (const ::tst::detail::SubcaseScope var(name, __FILE__, __LINE__); !var) \
     {                                                                          \
     }                                                                          \
@@ -202,7 +201,7 @@ template <typename T>
 }
 } // namespace tst::detail
 
-#define ZA_TST_DECLARE_TYPE_NAME(type, str)                    \
+#define ZA_TST_DECLARE_TYPE_NAME(type, str)                      \
     namespace tst::detail                                        \
     {                                                            \
     template <>                                                  \
@@ -226,7 +225,7 @@ ZA_TST_DECLARE_TYPE_NAME(char, "char")
 
 
 // NOLINTBEGIN(bugprone-macro-parentheses)
-#define ZA_TST_TEMPLATE_TEST_CASE_IMPL(func, regfunc, name, T, ...)                                                    \
+#define ZA_TST_TEMPLATE_TEST_CASE_IMPL(func, regfunc, name, T, ...)                                                      \
     template <typename T>                                                                                                \
     static void func();                                                                                                  \
     namespace                                                                                                            \
@@ -252,23 +251,23 @@ ZA_TST_DECLARE_TYPE_NAME(char, "char")
 // CHECK / REQUIRE family
 ////////////////////////////////////////////////////////////
 // NOLINTBEGIN(bugprone-macro-parentheses)
-#define ZA_TST_ASSERT_IMPL(kind, ...)                                                                                      \
-    do                                                                                                                       \
-    {                                                                                                                        \
-        ZB_PRAGMA(GCC diagnostic push);                                                                               \
-        /* Suppress the unknown-pragma warning before mentioning Clang-only options below. */                                \
-        ZB_PRAGMA(GCC diagnostic ignored "-Wpragmas");                                                                \
-        ZB_PRAGMA(GCC diagnostic ignored "-Wunknown-warning-option");                                                 \
-        ZB_PRAGMA(GCC diagnostic ignored "-Woverloaded-shift-op-parentheses");                                        \
-        ZB_PRAGMA(GCC diagnostic ignored "-Wsign-compare");                                                           \
-        ZB_PRAGMA(GCC diagnostic ignored "-Wsign-conversion");                                                        \
-                                                                                                                             \
+#define ZA_TST_ASSERT_IMPL(kind, ...)                                                                                          \
+    do                                                                                                                         \
+    {                                                                                                                          \
+        ZB_PRAGMA(GCC diagnostic push);                                                                                        \
+        /* Suppress the unknown-pragma warning before mentioning Clang-only options below. */                                  \
+        ZB_PRAGMA(GCC diagnostic ignored "-Wpragmas");                                                                         \
+        ZB_PRAGMA(GCC diagnostic ignored "-Wunknown-warning-option");                                                          \
+        ZB_PRAGMA(GCC diagnostic ignored "-Woverloaded-shift-op-parentheses");                                                 \
+        ZB_PRAGMA(GCC diagnostic ignored "-Wsign-compare");                                                                    \
+        ZB_PRAGMA(GCC diagnostic ignored "-Wsign-conversion");                                                                 \
+                                                                                                                               \
         const ::tst::detail::Result zancleTstRes = ::tst::detail::ExpressionDecomposer(::tst::detail::AssertKind::kind)        \
-                                                 << __VA_ARGS__;                                                             \
-                                                                                                                             \
+                                                   << __VA_ARGS__;                                                             \
+                                                                                                                               \
         (void)::tst::detail::handleAssertion(zancleTstRes, ::tst::detail::AssertKind::kind, __FILE__, __LINE__, #__VA_ARGS__); \
-                                                                                                                             \
-        ZB_PRAGMA(GCC diagnostic pop);                                                                                \
+                                                                                                                               \
+        ZB_PRAGMA(GCC diagnostic pop);                                                                                         \
     } while (false)
 // NOLINTEND(bugprone-macro-parentheses)
 
@@ -296,15 +295,15 @@ ZA_TST_DECLARE_TYPE_NAME(char, "char")
 #define CHECK_NOTHROW(...)                                                           \
     do                                                                               \
     {                                                                                \
-        bool zancleTstNothrowOk = true;                                                \
+        bool zancleTstNothrowOk = true;                                              \
         try                                                                          \
         {                                                                            \
             (void)(__VA_ARGS__);                                                     \
         } catch (...) /* NOLINT(bugprone-empty-catch) */                             \
         {                                                                            \
-            zancleTstNothrowOk = false;                                                \
+            zancleTstNothrowOk = false;                                              \
         }                                                                            \
-        if (zancleTstNothrowOk)                                                        \
+        if (zancleTstNothrowOk)                                                      \
             ::tst::detail::noteNothrowSuccess();                                     \
         else                                                                         \
             (void)::tst::detail::checkNothrowImpl(__FILE__, __LINE__, #__VA_ARGS__); \
@@ -326,7 +325,7 @@ ZA_TST_DECLARE_TYPE_NAME(char, "char")
 // `*` has higher precedence than `<<`, so the chain folds left
 // starting at `Builder{} * <first sub-expr>`.
 ////////////////////////////////////////////////////////////
-#define INFO(...)                                     \
+#define INFO(...)                                   \
     const ::tst::detail::ScopedMessage ZA_TST_ANON( \
         zancleTstInfo_)(__FILE__, __LINE__, (::tst::detail::MessageBuilder{} * __VA_ARGS__))
 

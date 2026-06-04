@@ -15,7 +15,7 @@ template struct za::Vec2<float>;
 template struct za::Vec2<double>;
 template struct za::Vec2<long double>;
 
-#define ZA_INSTANTIATE_VECTOR2_INTEGRAL_MEMBER_FUNCTIONS(type)          \
+#define ZA_INSTANTIATE_VECTOR2_INTEGRAL_MEMBER_FUNCTIONS(type)            \
     template type           za::Vec2<type>::lengthSquared() const;        \
     template za::Vec2<type> za::Vec2<type>::perpendicular() const;        \
     template type           za::Vec2<type>::dot(Vec2) const;              \

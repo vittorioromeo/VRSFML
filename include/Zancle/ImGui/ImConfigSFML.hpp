@@ -26,10 +26,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Graphics/Color.hpp" // IWYU pragma: keep
-
+#include "Zancle/Graphics/Color.hpp"       // IWYU pragma: keep
 #include "Zancle/System/Priv/Vec2Base.hpp" // IWYU pragma: keep
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/IntTypes.hpp" // IWYU pragma: keep
 

@@ -40,10 +40,8 @@
 #include "Zancle/Graphics/Transform.hpp"
 #include "Zancle/Graphics/TrapezoidShapeData.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
-
 #include "Zancle/System/Rect2.hpp"
 #include "Zancle/System/Vec2.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/AssertAndAssume.hpp"
 #include "ZancleBase/Builtin/Memcpy.hpp"
@@ -61,9 +59,9 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] inline void updateOutlineVerticesColorAndTextureRect(const auto&           descriptor,
-                                                                            za::Vertex* const     outlineVertexPtr,
-                                                                            const zb::SizeT outlineVertexCount)
+[[gnu::always_inline]] inline void updateOutlineVerticesColorAndTextureRect(const auto&       descriptor,
+                                                                            za::Vertex* const outlineVertexPtr,
+                                                                            const zb::SizeT   outlineVertexCount)
 {
     const za::Vertex* const end = outlineVertexPtr + outlineVertexCount;
     for (za::Vertex* vertex = outlineVertexPtr; vertex != end; ++vertex)
@@ -76,16 +74,16 @@ namespace
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline]] inline void generateRingVertices(
-    const za::Rect2f&     textureRect,
-    const za::Color       fillColor,
-    const float           outerRadius,
-    const float           innerRadius,
-    auto&&                fTransform,
-    const zb::SizeT numArcPoints,
-    const float           startRadians,
-    const float           angleStep,
-    const za::Vec2f       invLocalBoundsSize,
-    za::Vertex* const     fillVertexPtr)
+    const za::Rect2f& textureRect,
+    const za::Color   fillColor,
+    const float       outerRadius,
+    const float       innerRadius,
+    auto&&            fTransform,
+    const zb::SizeT   numArcPoints,
+    const float       startRadians,
+    const float       angleStep,
+    const za::Vec2f   invLocalBoundsSize,
+    za::Vertex* const fillVertexPtr)
 {
     for (unsigned int i = 0u; i < numArcPoints; ++i)
     {
@@ -177,7 +175,7 @@ void DrawableBatchImpl<TStorage>::add(const DrawVerticesSettings& settings)
     const auto* vertexData  = vertexSpan.data();
     const auto  vertexCount = vertexSpan.size();
 
-    IndexType   numTrianglesInStripOrFan = 0u; // Only used for triangle strips and triangle fans
+    IndexType numTrianglesInStripOrFan = 0u; // Only used for triangle strips and triangle fans
     zb::SizeT numIndicesToGenerate     = 0u;
 
     switch (type)
@@ -256,7 +254,7 @@ void DrawableBatchImpl<TStorage>::add(const DrawIndexedVerticesSettings& setting
     const auto* indexData  = indexSpan.data();
     const auto  indexCount = indexSpan.size();
 
-    IndexType   numTrianglesInStripOrFan = 0u; // Only used for triangle strips and triangle fans
+    IndexType numTrianglesInStripOrFan = 0u; // Only used for triangle strips and triangle fans
     zb::SizeT numIndicesToGenerate     = 0u;
 
     // Type-specific assertions. The core logic of copying indices is type-agnostic.
@@ -458,7 +456,7 @@ void DrawableBatchImpl<TStorage>::add(const Shape& shape)
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
 BatchedGeometry DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
-    const zb::SizeT  nPoints,
+    const zb::SizeT    nPoints,
     const auto&        descriptor,
     auto&&             pointFn,
     const Vec2f* const localApex)
@@ -473,7 +471,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
 
     // TODO P1: improve, also add to RenderTarget
 
-    const zb::SizeT fillVertexCount = nPoints + 2u;                  // +2 for center and repeated first point
+    const zb::SizeT fillVertexCount = nPoints + 2u;                    // +2 for center and repeated first point
     const IndexType firstFillVertexIndex = m_storage.getNumVertices(); // index of 1st fill vertex (center of the triangle fan)
 
     Vertex* const fillVertexPtr = m_storage.reserveMoreVertices(fillVertexCount);
@@ -636,9 +634,8 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const CurvedArrowShapeData& sd)
 
     // Adjust `pointCount` based on sweep angle for consistent smoothness
     const unsigned int numArcPoints = zb::max(2u,
-                                                static_cast<unsigned int>(ZB_MATH_CEILF(
-                                                    static_cast<float>(sd.pointCount) *
-                                                    (absSweepAngleRadians / zb::halfPi))));
+                                              static_cast<unsigned int>(ZB_MATH_CEILF(
+                                                  static_cast<float>(sd.pointCount) * (absSweepAngleRadians / zb::halfPi))));
 
     // Reserve memory upfront to avoid pointer invalidation
     const zb::SizeT bodyFillVertexCount = 2u * numArcPoints;
@@ -646,8 +643,8 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const CurvedArrowShapeData& sd)
     const zb::SizeT outlinePerimeterPointCount = numArcPoints + 3u + numArcPoints;
 
     const zb::SizeT outlineVertexCount = sd.outlineThickness != 0.f
-                                               ? (outlinePerimeterPointCount + 1u) * 2u // For closed triangle strip
-                                               : 0u;
+                                             ? (outlinePerimeterPointCount + 1u) * 2u // For closed triangle strip
+                                             : 0u;
 
     Vertex* const reservedVertexPtr = m_storage.reserveMoreVertices(bodyFillVertexCount + 3u + outlineVertexCount);
 
@@ -711,8 +708,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const CurvedArrowShapeData& sd)
     const IndexType firstHeadFillVertexIndex = m_storage.getNumVertices();
     Vertex* const   headFillVertexPtr        = reservedVertexPtr + bodyFillVertexCount; // After body
 
-    const float endAngleRad = zb::positiveRemainder(startRadians + static_cast<float>(numArcPoints - 1u) * angleStep,
-                                                      zb::tau);
+    const float endAngleRad = zb::positiveRemainder(startRadians + static_cast<float>(numArcPoints - 1u) * angleStep, zb::tau);
     const auto [endAngleRadSin, endAngleRadCos] = zb::sinCosLookup(endAngleRad);
 
     // Centerline point at the end of the body's curve (local, untransformed)
@@ -822,7 +818,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const CurvedArrowShapeData& sd)
         m_storage.commitMoreVertices(outlineVertexCount);
 
         const zb::SizeT outlineIndexCount = 3u * (outlineVertexCount - 2u); // Triangle strip indices
-        IndexType*        outlineIndexPtr   = m_storage.reserveMoreIndices(outlineIndexCount);
+        IndexType*      outlineIndexPtr   = m_storage.reserveMoreIndices(outlineIndexCount);
 
         for (IndexType i = 0u; i < outlineVertexCount - 2u; ++i)
             DrawableBatchUtils::appendTriangleStripIndices(outlineIndexPtr, firstOutlineVertexIndex, i);
@@ -959,9 +955,9 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const RingShapeData& sdRing)
     const zb::SizeT fillVertexCount = 2u * nPoints + 2u; // `nPoints` pairs + repeated start pair
 
     const zb::SizeT outlineVerticesPerLoop = nPoints * 2u + 2u; // nPoints original points -> nPoints inner/outer
-                                                                  // pairs + duplicated start pair for closed loop
+                                                                // pairs + duplicated start pair for closed loop
     const zb::SizeT totalOutlineVertices = sdRing.outlineThickness != 0.f ? outlineVerticesPerLoop * 2u
-                                                                            : 0u; // Outer + Inner loop
+                                                                          : 0u; // Outer + Inner loop
 
     const IndexType firstFillVertexIndex = m_storage.getNumVertices();
     Vertex* const   reservedVertexPtr    = m_storage.reserveMoreVertices(fillVertexCount + totalOutlineVertices);
@@ -1004,7 +1000,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const RingShapeData& sdRing)
         return {.fill = {fillVertexPtr, fillVertexCount}, .outline = {}};
 
     const zb::SizeT outlineIndicesPerLoop = 3u * (outlineVerticesPerLoop - 2u); // Indices for triangles from the strip
-    const zb::SizeT totalOutlineIndices = outlineIndicesPerLoop * 2u;
+    const zb::SizeT totalOutlineIndices   = outlineIndicesPerLoop * 2u;
 
     const IndexType  firstOutlineVertexIndex = m_storage.getNumVertices();
     Vertex* const    outlineVertexPtr        = reservedVertexPtr + fillVertexCount;
@@ -1108,9 +1104,8 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const RingPieSliceShapeData& sd
     const float startRadians  = sdRingPieSlice.startAngle.asRadians();
 
     const unsigned int numArcPoints = zb::max(3u,
-                                                static_cast<unsigned int>(ZB_MATH_CEILF(
-                                                    static_cast<float>(sdRingPieSlice.pointCount) *
-                                                    (absSweepAngle / zb::tau))));
+                                              static_cast<unsigned int>(ZB_MATH_CEILF(
+                                                  static_cast<float>(sdRingPieSlice.pointCount) * (absSweepAngle / zb::tau))));
 
     const float angleStep = sweepRadians / static_cast<float>(numArcPoints - 1u);
 
@@ -1127,8 +1122,8 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const RingPieSliceShapeData& sd
 
     const zb::SizeT numBoundaryPoints    = 2u * numArcPoints;
     const zb::SizeT totalOutlineVertices = (sdRingPieSlice.outlineThickness != 0.f && numArcPoints >= 3u)
-                                                 ? (numBoundaryPoints + 1u) * 2u
-                                                 : 0u;
+                                               ? (numBoundaryPoints + 1u) * 2u
+                                               : 0u;
 
     const IndexType firstFillVertexIndex = m_storage.getNumVertices();
     Vertex* const   reservedVertexPtr    = m_storage.reserveMoreVertices(fillVertexCount + totalOutlineVertices);

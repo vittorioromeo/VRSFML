@@ -7,7 +7,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/System/Angle.hpp"
-
 #include "ZancleBase/Assert.hpp"
 
 

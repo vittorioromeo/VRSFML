@@ -1,17 +1,13 @@
 #include "GraphicsUtil.hpp"
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
-
-#include "Zancle/Graphics/GlyphMapping.hpp"
-
 #include "Zancle/Graphics/FontFace.hpp"
 #include "Zancle/Graphics/GlyphMappedText.hpp"
+#include "Zancle/Graphics/GlyphMapping.hpp"
 #include "Zancle/Graphics/GraphicsContext.hpp"
 #include "Zancle/Graphics/TextureAtlas.hpp"
-
 #include "Zancle/System/LifetimeDependee.hpp"
 #include "Zancle/System/Path.hpp"
-
 #include "ZancleBase/SizeT.hpp"
 
 
@@ -21,7 +17,7 @@ TEST_CASE("[Graphics] za::GlyphMapping" * tst::skip(skipDisplayTests))
     auto fontFace        = za::FontFace::openFromFile("tuffy.ttf").value();
     auto atlas           = za::TextureAtlas(za::Texture::create({1024u, 1024u}, {.smooth = true}).value());
 
-    static constexpr char32_t testCodePoints[] = U"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";
+    static constexpr char32_t  testCodePoints[]    = U"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";
     static constexpr zb::SizeT testCodePointsCount = (sizeof(testCodePoints) / sizeof(testCodePoints[0])) - 1u;
 
     SECTION("loadGlyphs basic")

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Zancle/Graphics/View.hpp"
-
 #include "Zancle/System/Priv/Vec2Base.hpp"
 
 

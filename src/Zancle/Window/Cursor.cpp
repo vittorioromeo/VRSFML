@@ -5,14 +5,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Window/Cursor.hpp"
-
-#include "Zancle/Window/SDLLayer.hpp"
-#include "Zancle/Window/WindowContext.hpp"
-
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
-
+#include "Zancle/Window/Cursor.hpp"
+#include "Zancle/Window/SDLLayer.hpp"
+#include "Zancle/Window/WindowContext.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/PassKey.hpp"

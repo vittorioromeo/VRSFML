@@ -7,7 +7,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/PrimitiveType.hpp"
-
 #include "ZancleBase/RequireDesignatedInitializers.hpp"
 #include "ZancleBase/SizeT.hpp"
 
@@ -36,9 +35,9 @@ struct [[nodiscard]] DrawPersistentMappedIndexedVerticesSettings // NOLINT(cppco
     ZB_REQUIRE_DESIGNATED_INITIALIZERS;
 
     const PersistentGPUDrawableBatch& gpuDrawableBatch; //!< Source of the persistent vertex/index buffers
-    zb::SizeT                       indexCount;       //!< Number of indices to consume from `indexOffset`
-    zb::SizeT                       indexOffset;      //!< Offset (in indices) into the persistent index buffer
-    zb::SizeT                       vertexOffset;     //!< Base vertex offset added to each fetched index
+    zb::SizeT                         indexCount;       //!< Number of indices to consume from `indexOffset`
+    zb::SizeT                         indexOffset;      //!< Offset (in indices) into the persistent index buffer
+    zb::SizeT                         vertexOffset;     //!< Base vertex offset added to each fetched index
     PrimitiveType                     primitiveType;    //!< How to interpret the indexed primitives
 };
 

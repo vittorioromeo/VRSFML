@@ -5,16 +5,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Audio/CaptureDevice.hpp"
-
 #include "Zancle/Audio/AudioContext.hpp"
+#include "Zancle/Audio/CaptureDevice.hpp"
 #include "Zancle/Audio/CaptureDeviceHandle.hpp"
 #include "Zancle/Audio/ChannelMap.hpp"
 #include "Zancle/Audio/Priv/MiniaudioUtils.hpp"
 #include "Zancle/Audio/SoundChannel.hpp"
-
 #include "Zancle/System/Err.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Memcpy.hpp"
 #include "ZancleBase/IntTypes.hpp"
@@ -40,8 +37,7 @@ struct CaptureDevice::Impl
         ZB_MEMCPY(impl.samples.data(), input, frameCount * channelCount * sizeof(zb::I16));
 
         // Notify the derived class of the availability of new samples
-        ZB_ASSERT(impl.processSamplesFunc != nullptr &&
-                         "processSamplesFunc callback not registered in capture device");
+        ZB_ASSERT(impl.processSamplesFunc != nullptr && "processSamplesFunc callback not registered in capture device");
         ZB_ASSERT(impl.soundRecorder != nullptr && "processSamplesFunc callback user data is null");
         if (impl.processSamplesFunc(impl.soundRecorder, impl.samples.data(), impl.samples.size()))
             return;
@@ -97,10 +93,10 @@ struct CaptureDevice::Impl
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    CaptureDeviceHandle     captureDeviceHandle;            //!< Capture device handle
-    ma_uint32               sampleRate{44'100u};            //!< Sample rate
+    CaptureDeviceHandle captureDeviceHandle;            //!< Capture device handle
+    ma_uint32           sampleRate{44'100u};            //!< Sample rate
     zb::Vector<zb::I16> samples;                        //!< Buffer to store captured samples
-    ChannelMap              channelMap{SoundChannel::Mono}; //!< The map of position in sample frame to sound channel
+    ChannelMap          channelMap{SoundChannel::Mono}; //!< The map of position in sample frame to sound channel
 
     SoundRecorder*     soundRecorder{nullptr}; //!< Used in the miniaudio device callback
     ProcessSamplesFunc processSamplesFunc{};   //!< Used in the miniaudio device callback
@@ -124,7 +120,7 @@ CaptureDevice::CaptureDevice(const CaptureDeviceHandle& playbackDeviceHandle) : 
 CaptureDevice::~CaptureDevice()
 {
     ZB_ASSERT((!m_impl->deviceInitialized || !ma_device_is_started(&m_impl->maDevice)) &&
-                     "The miniaudio capture device must be stopped before destroying the capture device");
+              "The miniaudio capture device must be stopped before destroying the capture device");
 }
 
 

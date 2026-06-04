@@ -7,9 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Config.hpp"
-
 #include "Zancle/Window/Joystick.hpp"
-
 #include "ZancleBase/EnumArray.hpp"
 
 
@@ -21,7 +19,7 @@ namespace za::priv
 ////////////////////////////////////////////////////////////
 struct JoystickCapabilities
 {
-    unsigned int buttonCount{};                                        //!< Number of buttons supported by the joystick
+    unsigned int buttonCount{};                                      //!< Number of buttons supported by the joystick
     zb::EnumArray<Joystick::Axis, bool, Joystick::AxisCount> axes{}; //!< Support for each axis
 };
 

@@ -67,26 +67,26 @@ inline constexpr struct FromFunc { } fromFunc;
 ////////////////////////////////////////////////////////////
 // NOLINTBEGIN(bugprone-macro-parentheses)
 #define ZA_PRIV_OPTIONAL_DESTROY_IF_ENGAGED(T, engaged, buffer) \
-    do                                                            \
-    {                                                             \
-        if constexpr (!ZB_IS_TRIVIALLY_DESTRUCTIBLE(T))    \
-        {                                                         \
-            if (engaged)                                          \
-                buffer.obj.~T();                                  \
-        }                                                         \
+    do                                                          \
+    {                                                           \
+        if constexpr (!ZB_IS_TRIVIALLY_DESTRUCTIBLE(T))         \
+        {                                                       \
+            if (engaged)                                        \
+                buffer.obj.~T();                                \
+        }                                                       \
     } while (false)
 // NOLINTEND(bugprone-macro-parentheses)
 
 
 ////////////////////////////////////////////////////////////
 // NOLINTBEGIN(bugprone-macro-parentheses)
-#define ZA_PRIV_OPTIONAL_DESTROY(T, buffer)                  \
-    do                                                         \
-    {                                                          \
+#define ZA_PRIV_OPTIONAL_DESTROY(T, buffer)             \
+    do                                                  \
+    {                                                   \
         if constexpr (!ZB_IS_TRIVIALLY_DESTRUCTIBLE(T)) \
-        {                                                      \
-            buffer.obj.~T();                                   \
-        }                                                      \
+        {                                               \
+            buffer.obj.~T();                            \
+        }                                               \
     } while (false)
 // NOLINTEND(bugprone-macro-parentheses)
 

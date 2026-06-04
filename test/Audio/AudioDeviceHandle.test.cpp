@@ -1,5 +1,4 @@
 #include "Zancle/Audio/AudioDeviceHandle.hpp"
-
 #include "ZancleBase/Trait/HasVirtualDestructor.hpp"
 #include "ZancleBase/Trait/IsAggregate.hpp"
 #include "ZancleBase/Trait/IsCopyAssignable.hpp"

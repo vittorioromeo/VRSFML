@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ShowcaseExample.hpp"
-
 #include "Zancle/Graphics/ArrowShapeData.hpp"
 #include "Zancle/Graphics/ChevronShapeData.hpp"
 #include "Zancle/Graphics/CircleShapeData.hpp"
@@ -17,7 +16,6 @@
 #include "Zancle/Graphics/RoundedRectangleShapeData.hpp"
 #include "Zancle/Graphics/StarShapeData.hpp"
 #include "Zancle/Graphics/TrapezoidShapeData.hpp"
-
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 

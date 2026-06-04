@@ -5,14 +5,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Audio/SoundBufferRecorder.hpp"
-
 #include "Zancle/Audio/CaptureDevice.hpp"
 #include "Zancle/Audio/SoundBuffer.hpp"
+#include "Zancle/Audio/SoundBufferRecorder.hpp"
 #include "Zancle/Audio/SoundRecorder.hpp"
-
 #include "Zancle/System/Err.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Memcpy.hpp"
 #include "ZancleBase/Optional.hpp"
@@ -24,7 +21,7 @@ namespace za
 ////////////////////////////////////////////////////////////
 struct SoundBufferRecorder::Impl
 {
-    zb::Vector<zb::I16>     samples; //!< Temporary sample buffer to hold the recorded data
+    zb::Vector<zb::I16>       samples; //!< Temporary sample buffer to hold the recorded data
     zb::Optional<SoundBuffer> buffer;  //!< Sound buffer that will contain the recorded data
 };
 
@@ -87,8 +84,7 @@ bool SoundBufferRecorder::onStop(CaptureDevice& captureDevice)
 ////////////////////////////////////////////////////////////
 const SoundBuffer& SoundBufferRecorder::getBuffer() const
 {
-    ZB_ASSERT(m_impl->buffer.hasValue() &&
-                     "SoundBufferRecorder::getBuffer() Cannot return reference to null buffer");
+    ZB_ASSERT(m_impl->buffer.hasValue() && "SoundBufferRecorder::getBuffer() Cannot return reference to null buffer");
     return *m_impl->buffer;
 }
 

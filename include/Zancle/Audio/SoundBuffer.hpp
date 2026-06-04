@@ -7,9 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Audio/Export.hpp"
-
 #include "Zancle/System/LifetimeDependee.hpp"
-
 #include "ZancleBase/InPlacePImpl.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Optional.hpp"
@@ -144,8 +142,8 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static zb::Optional<SoundBuffer> loadFromSamples(
-        const zb::I16*  samples,
-        zb::SizeT       sampleCount,
+        const zb::I16*    samples,
+        zb::SizeT         sampleCount,
         const ChannelMap& channelMap,
         unsigned int      sampleRate);
 
@@ -258,7 +256,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit SoundBuffer(zb::PassKey<SoundBuffer>&&,
-                                       zb::SizeT       sampleCount,
+                                       zb::SizeT         sampleCount,
                                        const ChannelMap& channelMap,
                                        unsigned int      sampleRate);
 

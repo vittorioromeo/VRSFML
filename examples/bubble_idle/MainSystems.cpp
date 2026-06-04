@@ -27,28 +27,16 @@
 #include "ShrineType.hpp"
 #include "Stats.hpp"
 #include "TextParticle.hpp"
-
-#include "ExampleUtils/ControlFlow.hpp"
-#include "ExampleUtils/Easing.hpp"
-#include "ExampleUtils/HueColor.hpp"
-#include "ExampleUtils/MathUtils.hpp"
-#include "ExampleUtils/Progress.hpp"
-#include "ExampleUtils/SoundManager.hpp"
-
-#include "Zancle/ImGui/IncludeImGui.hpp"
-
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/DrawableBatch.hpp"
 #include "Zancle/Graphics/RenderWindow.hpp"
 #include "Zancle/Graphics/Sprite.hpp"
 #include "Zancle/Graphics/View.hpp"
-
-#include "Zancle/Window/Keyboard.hpp"
-
+#include "Zancle/ImGui/IncludeImGui.hpp"
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
-
+#include "Zancle/Window/Keyboard.hpp"
 #include "ZancleBase/Algorithm/AllOf.hpp"
 #include "ZancleBase/Algorithm/AnyOf.hpp"
 #include "ZancleBase/Algorithm/Count.hpp"
@@ -73,6 +61,13 @@
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/Vector.hpp"
 
+#include "ExampleUtils/ControlFlow.hpp"
+#include "ExampleUtils/Easing.hpp"
+#include "ExampleUtils/HueColor.hpp"
+#include "ExampleUtils/MathUtils.hpp"
+#include "ExampleUtils/Progress.hpp"
+#include "ExampleUtils/SoundManager.hpp"
+
 #include <utility>
 
 #include <cstdio>
@@ -86,12 +81,11 @@ void Main::gameLoopUpdateScrolling(const float deltaTimeMs, const zb::Vector<za:
 
     //
     // Scrolling
-    playerInputState
-        .scroll = zb::clamp(playerInputState.scroll,
-                                  0.f,
-                                  zb::max(0.f,
+    playerInputState.scroll = zb::clamp(playerInputState.scroll,
+                                        0.f,
+                                        zb::max(0.f,
                                                 zb::min(pt->getMapLimit() / 2.f - getCurrentGameViewSize().x / 2.f,
-                                                              (boundaries.x - getCurrentGameViewSize().x) / 2.f)));
+                                                        (boundaries.x - getCurrentGameViewSize().x) / 2.f)));
 
     playerInputState.actualScroll = exponentialApproach(playerInputState.actualScroll, playerInputState.scroll, deltaTimeMs, 75.f);
 }
@@ -375,7 +369,7 @@ void Main::gameLoopUpdateBubbles(const float deltaTimeMs)
                     // during the freeze window.
                     if (creditCatIdx != 0xFF'FFu)
                     {
-                        const auto bubbleIdx = static_cast<zb::SizeT>(&bubble - pt->bubbles.data());
+                        const auto bubbleIdx                    = static_cast<zb::SizeT>(&bubble - pt->bubbles.data());
                         bombStorage->bombIdxToCatIdx[bubbleIdx] = static_cast<zb::SizeT>(creditCatIdx);
                     }
                 }
@@ -544,9 +538,8 @@ void Main::gameLoopUpdateBubbles(const float deltaTimeMs)
 ////////////////////////////////////////////////////////////
 void Main::gameLoopReapEphemeralBubbles()
 {
-    zb::vectorEraseIf(pt->bubbles, [&](const Bubble& b) {
-        return b.ephemeral && (b.position.y - b.radius > boundaries.y);
-    });
+    zb::vectorEraseIf(pt->bubbles,
+                      [&](const Bubble& b) { return b.ephemeral && (b.position.y - b.radius > boundaries.y); });
 }
 
 
@@ -624,7 +617,7 @@ void Main::popComboBubble(Bubble& bubble)
 
     // Queue the burst-then-collect coin spew. Capped to avoid pathological cases.
     const SizeT coinCount = zb::min(static_cast<SizeT>(cfg.payoutMaxCoins),
-                                          static_cast<SizeT>(clicks) * static_cast<SizeT>(cfg.payoutCoinsPerClick));
+                                    static_cast<SizeT>(clicks) * static_cast<SizeT>(cfg.payoutCoinsPerClick));
 
     PendingComboBubblePayout payout{
         .coins           = {},
@@ -638,8 +631,7 @@ void Main::popComboBubble(Bubble& bubble)
     {
         // Spread coins evenly around a circle (with jitter) and give them a
         // randomized outward speed so the explosion looks organic.
-        const float angle = static_cast<float>(i) * (zb::tau / static_cast<float>(coinCount)) +
-                            rngFast.getF(-0.25f, 0.25f);
+        const float angle = static_cast<float>(i) * (zb::tau / static_cast<float>(coinCount)) + rngFast.getF(-0.25f, 0.25f);
         const float speed = rngFast.getF(cfg.burstSpeedMin, cfg.burstSpeedMax);
 
         payout.coins.pushBack(BurstingComboCoin{
@@ -728,7 +720,7 @@ void Main::gameLoopUpdateComboBubblePayouts(const float deltaTimeMs)
     }
 
     zb::vectorEraseIf(pendingComboBubblePayouts,
-                            [](const PendingComboBubblePayout& p)
+                      [](const PendingComboBubblePayout& p)
     {
         for (const BurstingComboCoin& c : p.coins)
             if (!c.collected)
@@ -882,15 +874,15 @@ void Main::gameLoopUpdateAttractoBuff(const float deltaTimeMs) const
 
             ++firstClickedBubble->comboClickCount;
             firstClickedBubble->comboTimerMs = zb::max(cfg.comboTimerMaxMs -
-                                                                 static_cast<float>(firstClickedBubble->comboClickCount) * 25.f,
-                                                             100.f);
+                                                           static_cast<float>(firstClickedBubble->comboClickCount) * 25.f,
+                                                       100.f);
 
             // Slight per-click size growth, capped, so the bubble visibly
             // "fattens" as the player builds the combo.
             const float currentGrowth = firstClickedBubble->radius - cfg.maxRadius;
             if (currentGrowth < cfg.radiusGrowthMax)
                 firstClickedBubble->radius += zb::min(cfg.radiusGrowthPerClick,
-                                                            cfg.radiusGrowthMax - zb::max(0.f, currentGrowth));
+                                                      cfg.radiusGrowthMax - zb::max(0.f, currentGrowth));
 
             sounds.pop.settings.position = {firstClickedBubble->position.x, firstClickedBubble->position.y};
             sounds.pop.settings.pitch = remap(static_cast<float>(firstClickedBubble->comboClickCount), 1.f, 30.f, 1.2f, 2.5f);
@@ -987,7 +979,7 @@ void Main::gameLoopUpdateAttractoBuff(const float deltaTimeMs) const
                     comboState.comboTextShakeEffect.bump(rngFast, 0.01f + static_cast<float>(comboState.combo) * 0.002f);
 
                     comboState.comboCountdown.time = zb::min(comboState.comboCountdown.time,
-                                                                   pt->psvComboStartTime.currentValue() * 100.f);
+                                                             pt->psvComboStartTime.currentValue() * 100.f);
 
                     comboState.combo = zb::min(comboState.combo, 998);
                 }
@@ -1156,7 +1148,7 @@ void Main::gameLoopUpdateCatActionUni(const float deltaTimeMs, Cat& cat)
         bToTransform.pendingTransformMs         = freezeMs;
         bToTransform.pendingTransformTargetType = static_cast<zb::U8>(asIdx(starBubbleType));
         bToTransform.pendingTransformCatIdx     = 0xFF'FFu;
-        bToTransform.rotation = zb::positiveRemainder(bToTransform.rotation + deltaTimeMs, zb::tau);
+        bToTransform.rotation                   = zb::positiveRemainder(bToTransform.rotation + deltaTimeMs, zb::tau);
 
         for (SizeT i = 0u; i < 8u; ++i)
         {
@@ -1687,9 +1679,9 @@ void Main::gameLoopUpdateNapScheduler(const float deltaTimeMs)
 
 
 void Main::gameLoopUpdateCatActionWitchImpl(const float /* deltaTimeMs */,
-                                            Cat&                          cat,
+                                            Cat&                    cat,
                                             zb::Vector<HexSession>& sessionsToUse,
-                                            const SizeT                   nCatsToHex)
+                                            const SizeT             nCatsToHex)
 {
     const auto maxCooldown = getComputedCooldownByCatTypeOrCopyCat(cat.type);
     const auto range       = getComputedRangeByCatTypeOrCopyCat(cat.type);
@@ -1757,8 +1749,7 @@ void Main::gameLoopUpdateCatActionWitchImpl(const float /* deltaTimeMs */,
     }
 
     const auto nDollsToSpawn = zb::max(SizeT{2u},
-                                             static_cast<SizeT>(
-                                                 buffPower * (pt->perm.witchCatBuffFewerDolls ? 1.f : 2.f) / 4.f));
+                                       static_cast<SizeT>(buffPower * (pt->perm.witchCatBuffFewerDolls ? 1.f : 2.f) / 4.f));
 
     const auto isPositionFarFromOtherDolls = [&](const za::Vec2f position) -> bool
     {
@@ -2469,9 +2460,8 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
                         continue;
 
                     if (&otherCat == &cat)
-                        cat.hue = zb::sin(zb::remainder(cat.cooldown.time /
-                                                                        remap(cat.cooldown.time, 0.f, 10'000.f, 15.f, 150.f),
-                                                                    zb::tau)) *
+                        cat.hue = zb::sin(zb::remainder(cat.cooldown.time / remap(cat.cooldown.time, 0.f, 10'000.f, 15.f, 150.f),
+                                                        zb::tau)) *
                                   50.f * intensity;
 
                     const auto diff2 = otherCat.position - cat.position;
@@ -3454,10 +3444,10 @@ void Main::collectCopyDoll(Doll& d, HexSession& session)
 
 
 ////////////////////////////////////////////////////////////
-void Main::gameLoopUpdateDollsImpl(const float                   deltaTimeMs,
-                                   const za::Vec2f               mousePos,
+void Main::gameLoopUpdateDollsImpl(const float             deltaTimeMs,
+                                   const za::Vec2f         mousePos,
                                    zb::Vector<HexSession>& sessionsToUse,
-                                   const bool                    copy)
+                                   const bool              copy)
 {
     for (HexSession& session : sessionsToUse)
     {
@@ -3749,7 +3739,7 @@ void Main::gameLoopUpdateEvents(const float deltaTimeMs)
         (void)ev.linearVisit(tickEvent);
 
     zb::vectorEraseIf(pt->activeEvents,
-                            [&](GameEvent& ev)
+                      [&](GameEvent& ev)
     {
         return ev.linearVisit(zb::OverloadSet{
             [](const EBubblefall& e) { return e.remainingMs <= 0.f; },

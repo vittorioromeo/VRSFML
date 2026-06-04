@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Zancle/System/Priv/Vec2Base.hpp"
-
 #include "ZancleBase/Vector.hpp"
 
 
@@ -37,8 +36,8 @@ public:
 
 private:
     zb::Vector<za::Vec2f> m_oldVertexPositions;
-    float                       m_time = 0.f;
-    float                       m_frequency;
-    float                       m_amplitude;
-    float                       m_phase;
+    float                 m_time = 0.f;
+    float                 m_frequency;
+    float                 m_amplitude;
+    float                 m_phase;
 };

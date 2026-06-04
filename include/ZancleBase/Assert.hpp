@@ -19,12 +19,12 @@ namespace zb::priv
 } // namespace zb::priv
 
     ////////////////////////////////////////////////////////////
-    #define ZB_ASSERT(...)                                                  \
-        do                                                                         \
-        {                                                                          \
-            if (!static_cast<bool>(__VA_ARGS__)) [[unlikely]]                      \
+    #define ZB_ASSERT(...)                                                   \
+        do                                                                   \
+        {                                                                    \
+            if (!static_cast<bool>(__VA_ARGS__)) [[unlikely]]                \
                 ::zb::priv::assertFailure(#__VA_ARGS__, __FILE__, __LINE__); \
-                                                                                   \
+                                                                             \
         } while (false)
 
 #else

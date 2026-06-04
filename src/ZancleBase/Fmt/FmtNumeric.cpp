@@ -5,10 +5,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "ZancleBase/Fmt/FmtNumeric.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Fmt/Fmt.hpp"
+#include "ZancleBase/Fmt/FmtNumeric.hpp"
 #include "ZancleBase/Fmt/FmtResult.hpp"
 #include "ZancleBase/Fmt/FmtSink.hpp"
 #include "ZancleBase/Fmt/FmtSpec.hpp"
@@ -117,7 +116,7 @@ FmtResult fmtArg(FmtSink& sink, const T& arg, const FmtSpec& spec)
 // dispatcher table takes the address of; pre-emitting them avoids per-TU
 // weak symbols.
 ////////////////////////////////////////////////////////////
-#define ZB_FMT_INSTANTIATE(T)                                                \
+#define ZB_FMT_INSTANTIATE(T)                                                       \
     template FmtResult fmtArg<T>(FmtSink&, const T&, const FmtSpec&);               \
     template FmtResult priv::dispatchFmtArg<T>(FmtSink&, const T&, const FmtSpec&); \
     template FmtResult priv::dispatchFmtArgErased<T>(FmtSink&, const void*, const FmtSpec&)

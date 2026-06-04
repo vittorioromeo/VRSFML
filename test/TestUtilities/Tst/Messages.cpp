@@ -4,7 +4,6 @@
 
 #include "Tst/Detail/State.hpp"
 #include "Tst/Tst.hpp"
-
 #include "ZancleBase/Builtin/Memcpy.hpp"
 #include "ZancleBase/Builtin/Strlen.hpp"
 #include "ZancleBase/Fmt/Fmt.hpp"
@@ -96,7 +95,7 @@ void appendChar(MessageBuilder& mb, char c) noexcept
 // of declarations.
 ////////////////////////////////////////////////////////////
 // NOLINTBEGIN(bugprone-macro-parentheses)
-#define ZA_TST_MSGB_DEF_PAIR(T, body)                          \
+#define ZA_TST_MSGB_DEF_PAIR(T, body)                            \
                                                                  \
     MessageBuilder& MessageBuilder::operator*(T v) & noexcept    \
     {                                                            \
@@ -145,7 +144,7 @@ ZA_TST_MSGB_DEF_PAIR(double, appendNumeric(*this, v))
 // Operator-comma overloads for the `MESSAGE("a", b)` form.
 ////////////////////////////////////////////////////////////
 // NOLINTBEGIN(bugprone-macro-parentheses, misc-unconventional-assign-operator)
-#define ZA_TST_MSGB_COMMA_DEF(T, body)                          \
+#define ZA_TST_MSGB_COMMA_DEF(T, body)                            \
     MessageBuilder&& operator,(MessageBuilder&& mb, T v) noexcept \
     {                                                             \
         body;                                                     \

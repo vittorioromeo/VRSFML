@@ -5,10 +5,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/System/SignalErrHandler.hpp"
-
 #include "Zancle/System/Err.hpp"
-
+#include "Zancle/System/SignalErrHandler.hpp"
 #include "ZancleBase/Abort.hpp"
 
 #include <csignal>

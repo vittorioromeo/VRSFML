@@ -7,20 +7,16 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Config.hpp" // IWYU pragma: keep
-
 #include "Zancle/GLUtils/GLBufferObject.hpp"
 #include "Zancle/GLUtils/GLUniqueResource.hpp"
-
 #include "ZancleBase/SizeT.hpp"
 
 #ifdef ZA_OPENGL_ES
     #include "Zancle/System/Err.hpp"
-
     #include "ZancleBase/Abort.hpp"
 #else
     #include "Zancle/GLUtils/GLCheck.hpp"
     #include "Zancle/GLUtils/Glad.hpp"
-
     #include "ZancleBase/Assert.hpp"
     #include "ZancleBase/Builtin/Memcpy.hpp"
     #include "ZancleBase/Macros.hpp"
@@ -248,8 +244,8 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void flushBytesToGPU([[maybe_unused]] const TBufferObject& obj,
-                                                [[maybe_unused]] const zb::SizeT    byteOffset,
-                                                [[maybe_unused]] const zb::SizeT    byteCount) const
+                                                [[maybe_unused]] const zb::SizeT      byteOffset,
+                                                [[maybe_unused]] const zb::SizeT      byteCount) const
     {
 #ifdef ZA_OPENGL_ES
         priv::errMsg("FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES");
@@ -267,9 +263,9 @@ public:
 
 private:
     ////////////////////////////////////////////////////////////
-    [[gnu::cold, gnu::noinline]] void reserveImpl([[maybe_unused]] TBufferObject&    obj,
+    [[gnu::cold, gnu::noinline]] void reserveImpl([[maybe_unused]] TBufferObject&  obj,
                                                   [[maybe_unused]] const zb::SizeT byteCount,
-                                                  [[maybe_unused]] const bool        preserveExistingData)
+                                                  [[maybe_unused]] const bool      preserveExistingData)
     {
 #ifdef ZA_OPENGL_ES
         priv::errMsg("FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES");
@@ -320,7 +316,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    void*       m_mappedPtr{nullptr}; //!< Write-only mapped pointer
+    void*     m_mappedPtr{nullptr}; //!< Write-only mapped pointer
     zb::SizeT m_capacity{0u};       //!< Currently allocated capacity of the buffer
 };
 

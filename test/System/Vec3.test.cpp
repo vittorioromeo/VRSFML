@@ -1,8 +1,6 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
-
 #include "Zancle/System/Vec3.hpp"
-
 #include "ZancleBase/Trait/IsAggregate.hpp"
 #include "ZancleBase/Trait/IsSame.hpp"
 #include "ZancleBase/Trait/IsStandardLayout.hpp"

@@ -12,13 +12,11 @@
 #include "Zancle/Graphics/TextData.hpp"
 #include "Zancle/Graphics/Transform.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
-
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
 #include "Zancle/System/Utf8String.hpp"
 #include "Zancle/System/Utf8StringCodepoints.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Restrict.hpp"
 #include "ZancleBase/Math/Ceil.hpp"
@@ -116,8 +114,8 @@ template <typename TFontSource>
     const zb::SizeT linesPerNewline = zb::SizeT{isUnderlined} + zb::SizeT{isStrikeThrough};
 
     zb::SizeT result          = 0u;
-    char32_t    prevChar        = 0;
-    bool        lineHasContents = false;
+    char32_t  prevChar        = 0;
+    bool      lineHasContents = false;
 
     string.forCodepoints([&] [[gnu::always_inline]] (const char32_t curChar)
     {
@@ -171,15 +169,15 @@ template <typename TFontSource>
 // Add an underline or strikethrough line to the vertex array, optionally pre-transformed
 template <typename F>
 [[gnu::always_inline]] inline void addLineImpl(
-    F&&                              fTransform,
+    F&&                       fTransform,
     Vertex* const ZB_RESTRICT vertices,
-    zb::SizeT&                     index,
-    const float                      lineLength,
-    const float                      lineTop,
-    const Color                      color,
-    const float                      offset,
-    const float                      thickness,
-    const float                      outlineThickness)
+    zb::SizeT&                index,
+    const float               lineLength,
+    const float               lineTop,
+    const Color               color,
+    const float               offset,
+    const float               thickness,
+    const float               outlineThickness)
 {
     const float top    = ZB_MATH_FLOORF(lineTop + offset - (thickness / 2.f) + 0.5f);
     const float bottom = top + ZB_MATH_FLOORF(thickness + 0.5f);
@@ -199,13 +197,13 @@ template <typename F>
 // Add a glyph quad to the vertex array, optionally pre-transformed
 template <typename F>
 [[gnu::always_inline]] inline void addGlyphQuadImpl(
-    F&&                              fTransform,
+    F&&                       fTransform,
     Vertex* const ZB_RESTRICT vertices,
-    zb::SizeT&                     index,
-    const Vec2f                      position,
-    const Color                      color,
-    const Glyph&                     glyph,
-    const float                      italicShear)
+    zb::SizeT&                index,
+    const Vec2f               position,
+    const Color               color,
+    const Glyph&              glyph,
+    const float               italicShear)
 {
     constexpr Vec2f padding{1.f, 1.f};
 
@@ -235,13 +233,13 @@ template <typename F>
 
 ////////////////////////////////////////////////////////////
 inline void addLine(Vertex* const ZB_RESTRICT vertices,
-                    zb::SizeT&                     index,
-                    const float                      lineLength,
-                    const float                      lineTop,
-                    const Color                      color,
-                    const float                      offset,
-                    const float                      thickness,
-                    const float                      outlineThickness)
+                    zb::SizeT&                index,
+                    const float               lineLength,
+                    const float               lineTop,
+                    const Color               color,
+                    const float               offset,
+                    const float               thickness,
+                    const float               outlineThickness)
 {
     addLineImpl(identityTransformFn, vertices, index, lineLength, lineTop, color, offset, thickness, outlineThickness);
 }
@@ -249,15 +247,15 @@ inline void addLine(Vertex* const ZB_RESTRICT vertices,
 
 ////////////////////////////////////////////////////////////
 inline void addLinePreTransformed(
-    const Transform&                 transform,
+    const Transform&          transform,
     Vertex* const ZB_RESTRICT vertices,
-    zb::SizeT&                     index,
-    const float                      lineLength,
-    const float                      lineTop,
-    const Color                      color,
-    const float                      offset,
-    const float                      thickness,
-    const float                      outlineThickness)
+    zb::SizeT&                index,
+    const float               lineLength,
+    const float               lineTop,
+    const Color               color,
+    const float               offset,
+    const float               thickness,
+    const float               outlineThickness)
 {
     addLineImpl([&] [[gnu::always_inline]] (const Vec2f v) {
         return transform.transformPoint(v);
@@ -267,11 +265,11 @@ inline void addLinePreTransformed(
 
 ////////////////////////////////////////////////////////////
 inline void addGlyphQuad(Vertex* const ZB_RESTRICT vertices,
-                         zb::SizeT&                     index,
-                         const Vec2f                      position,
-                         const Color                      color,
-                         const Glyph&                     glyph,
-                         const float                      italicShear)
+                         zb::SizeT&                index,
+                         const Vec2f               position,
+                         const Color               color,
+                         const Glyph&              glyph,
+                         const float               italicShear)
 {
     addGlyphQuadImpl(identityTransformFn, vertices, index, position, color, glyph, italicShear);
 }
@@ -279,13 +277,13 @@ inline void addGlyphQuad(Vertex* const ZB_RESTRICT vertices,
 
 ////////////////////////////////////////////////////////////
 inline void addGlyphQuadPreTransformed(
-    const Transform&                 transform,
+    const Transform&          transform,
     Vertex* const ZB_RESTRICT vertices,
-    zb::SizeT&                     index,
-    const Vec2f                      position,
-    const Color                      color,
-    const Glyph&                     glyph,
-    const float                      italicShear)
+    zb::SizeT&                index,
+    const Vec2f               position,
+    const Color               color,
+    const Glyph&              glyph,
+    const float               italicShear)
 {
     addGlyphQuadImpl([&] [[gnu::always_inline]] (const Vec2f v) {
         return transform.transformPoint(v);
@@ -308,7 +306,7 @@ inline void addGlyphQuadPreTransformed(
 ////////////////////////////////////////////////////////////
 template <bool CalculateBounds, typename TFontSource>
 inline auto createTextGeometryAndGetBounds(
-    const zb::SizeT       outlineVertexCount,
+    const zb::SizeT         outlineVertexCount,
     const TFontSource&      font,
     const Utf8String&       string,
     const TextLayoutInputs& inputs,

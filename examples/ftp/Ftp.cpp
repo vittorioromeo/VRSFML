@@ -2,10 +2,8 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Network/Ftp.hpp"
-
 #include "Zancle/Network/IpAddress.hpp"
 #include "Zancle/Network/IpAddressUtils.hpp"
-
 #include "ZancleBase/Fmt/Fmt.hpp"
 #include "ZancleBase/Fmt/FmtNumeric.hpp"
 #include "ZancleBase/Optional.hpp"
@@ -94,10 +92,7 @@ int main()
             {
                 // Print the current server directory
                 const za::Ftp::DirectoryResponse response = server.getWorkingDirectory();
-                zb::printLn("{}{}Current directory is {}",
-                                  response,
-                                  '\n',
-                                  response.getDirectory().to<zb::String>());
+                zb::printLn("{}{}Current directory is {}", response, '\n', response.getDirectory().to<zb::String>());
                 break;
             }
 

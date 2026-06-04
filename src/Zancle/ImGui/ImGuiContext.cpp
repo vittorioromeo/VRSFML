@@ -5,11 +5,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/ImGui/ImGuiContext.hpp"
-
-#include "Zancle/ImGui/Backend.hpp"
-#include "Zancle/ImGui/IncludeImGui.hpp"
-
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/GraphicsContext.hpp"
 #include "Zancle/Graphics/RenderTarget.hpp"
@@ -17,7 +12,14 @@
 #include "Zancle/Graphics/RenderWindow.hpp"
 #include "Zancle/Graphics/Sprite.hpp"
 #include "Zancle/Graphics/Texture.hpp"
-
+#include "Zancle/ImGui/Backend.hpp"
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
+#include "Zancle/System/Err.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Rect2.hpp"
+#include "Zancle/System/Time.hpp"
+#include "Zancle/System/Utf8String.hpp"
 #include "Zancle/Window/Clipboard.hpp"
 #include "Zancle/Window/Cursor.hpp"
 #include "Zancle/Window/Event.hpp"
@@ -25,13 +27,6 @@
 #include "Zancle/Window/Keyboard.hpp"
 #include "Zancle/Window/Mouse.hpp"
 #include "Zancle/Window/Window.hpp"
-
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
-#include "Zancle/System/Time.hpp"
-#include "Zancle/System/Utf8String.hpp"
-
 #include "ZancleBase/Abort.hpp"
 #include "ZancleBase/Array.hpp"
 #include "ZancleBase/Assert.hpp"
@@ -931,10 +926,10 @@ const char* getClipboardTextFn(void* /* userData */)
 ////////////////////////////////////////////////////////////
 ImGuiContext::ImGuiContext(const bool loadDefaultFont) :
     m_impl{zb::makeUnique<Impl>(loadDefaultFont,
-                                  /* sharedFontAtlas */ nullptr,
-                                  /* claimSharedAtlasOwnership */ false,
-                                  &setClipboardTextFn,
-                                  &getClipboardTextFn)}
+                                /* sharedFontAtlas */ nullptr,
+                                /* claimSharedAtlasOwnership */ false,
+                                &setClipboardTextFn,
+                                &getClipboardTextFn)}
 {
     initDefaultJoystickMapping();
 }
@@ -952,8 +947,8 @@ ImGuiContext::ImGuiContext(ImFontAtlas& sharedFontAtlas, const bool claimOwnersh
 ImGuiContext ImGuiContext::createOwningAtlas(ImFontAtlas& atlas)
 {
     ZB_ASSERT(atlas.OwnerContext == nullptr &&
-                     "ImGuiContext::createOwningAtlas: another context already drives this atlas. "
-                     "Use ImGuiContext::createSharingAtlas for additional contexts on the same atlas.");
+              "ImGuiContext::createOwningAtlas: another context already drives this atlas. "
+              "Use ImGuiContext::createSharingAtlas for additional contexts on the same atlas.");
 
     return ImGuiContext{atlas, /* claimOwnership */ true};
 }
@@ -963,8 +958,8 @@ ImGuiContext ImGuiContext::createOwningAtlas(ImFontAtlas& atlas)
 ImGuiContext ImGuiContext::createSharingAtlas(ImFontAtlas& atlas)
 {
     ZB_ASSERT(atlas.OwnerContext != nullptr &&
-                     "ImGuiContext::createSharingAtlas: this atlas has no driver yet. "
-                     "Construct one via ImGuiContext::createOwningAtlas first.");
+              "ImGuiContext::createSharingAtlas: this atlas has no driver yet. "
+              "Construct one via ImGuiContext::createOwningAtlas first.");
 
     return ImGuiContext{atlas, /* claimOwnership */ false};
 }

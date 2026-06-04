@@ -1,5 +1,4 @@
 #include "Tst/Tst.hpp"
-
 #include "ZancleBase/Math/Frexp.hpp"
 #include "ZancleBase/Math/Ldexp.hpp"
 

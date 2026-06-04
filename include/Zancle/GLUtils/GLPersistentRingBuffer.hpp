@@ -7,11 +7,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Config.hpp" // IWYU pragma: keep
-
 #include "Zancle/GLUtils/FenceUtils.hpp"
 #include "Zancle/GLUtils/GLFenceSync.hpp"
 #include "Zancle/GLUtils/GLPersistentBuffer.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/SmallVector.hpp"
@@ -110,15 +108,15 @@ private:
     ////////////////////////////////////////////////////////////
     struct Marker // NOLINT(cppcoreguidelines-pro-type-member-init)
     {
-        zb::SizeT       offset; //!< writeCursor position captured at commit time
+        zb::SizeT         offset; //!< writeCursor position captured at commit time
         priv::GLFenceSync fence;  //!< fence that signals when the GPU has processed up to `offset`
     };
 
 
     ////////////////////////////////////////////////////////////
     GLPersistentBuffer<TBufferObject> m_persistentBuffer;
-    zb::SizeT                       m_writeCursor{0u};      //!< next bump-allocation position
-    zb::SizeT                       m_lastCommitCursor{0u}; //!< writeCursor at the last `commit()`
+    zb::SizeT                         m_writeCursor{0u};      //!< next bump-allocation position
+    zb::SizeT                         m_lastCommitCursor{0u}; //!< writeCursor at the last `commit()`
 
 
     ////////////////////////////////////////////////////////////
@@ -290,9 +288,7 @@ public:
     /// \brief Flush a mapped byte range so the GPU can see the writes
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void flushBytesToGPU(const TBufferObject& obj,
-                                                const zb::SizeT    byteOffset,
-                                                const zb::SizeT    byteCount) const
+    [[gnu::always_inline]] void flushBytesToGPU(const TBufferObject& obj, const zb::SizeT byteOffset, const zb::SizeT byteCount) const
     {
         m_persistentBuffer.flushBytesToGPU(obj, byteOffset, byteCount);
     }

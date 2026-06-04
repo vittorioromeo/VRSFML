@@ -1,12 +1,9 @@
 #include "StringifyStringViewUtil.hpp"
 #include "TemporaryFile.hpp"
 #include "Tst/Tst.hpp"
-
 #include "Zancle/Graphics/ShaderUtils.hpp"
-
 #include "Zancle/System/IO.hpp"
 #include "Zancle/System/Path.hpp"
-
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/PtrDiffT.hpp"
 #include "ZancleBase/String.hpp"
@@ -267,15 +264,15 @@ TEST_CASE("[Graphics] za::ShaderUtils::preprocessGlslIncludes")
         const auto pathB = za::Path::getTempDirectory().value() / za::Path("sfml_circular_b.glsl");
 
         {
-            constexpr zb::StringView contentA = "#include \"sfml_circular_b.glsl\"\n";
-            auto                           optFile  = za::OutFile::open(pathA);
-            [[maybe_unused]] const bool    ok       = optFile->write(contentA.data(), contentA.size());
+            constexpr zb::StringView    contentA = "#include \"sfml_circular_b.glsl\"\n";
+            auto                        optFile  = za::OutFile::open(pathA);
+            [[maybe_unused]] const bool ok       = optFile->write(contentA.data(), contentA.size());
         }
 
         {
-            constexpr zb::StringView contentB = "#include \"sfml_circular_a.glsl\"\n";
-            auto                           optFile  = za::OutFile::open(pathB);
-            [[maybe_unused]] const bool    ok       = optFile->write(contentB.data(), contentB.size());
+            constexpr zb::StringView    contentB = "#include \"sfml_circular_a.glsl\"\n";
+            auto                        optFile  = za::OutFile::open(pathB);
+            [[maybe_unused]] const bool ok       = optFile->write(contentB.data(), contentB.size());
         }
 
         const zb::StringView source = "#include \"sfml_circular_b.glsl\"\n";
@@ -324,7 +321,7 @@ TEST_CASE("[Graphics] za::ShaderUtils::preprocessGlslIncludes")
 
     SECTION("Source with trailing null is handled")
     {
-        const char                 sourceWithNull[] = "uniform float x;\n\0";
+        const char           sourceWithNull[] = "uniform float x;\n\0";
         const zb::StringView source{sourceWithNull, sizeof(sourceWithNull) - 1}; // includes the \0
 
         TemporaryFile mainFile(source);

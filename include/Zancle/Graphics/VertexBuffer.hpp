@@ -7,9 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Export.hpp"
-
 #include "Zancle/Graphics/PrimitiveType.hpp"
-
 #include "ZancleBase/SizeT.hpp"
 
 
@@ -323,7 +321,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     unsigned int  m_buffer{};                             //!< Internal buffer identifier
-    zb::SizeT   m_size{};                               //!< Size in Vertices of the currently allocated buffer
+    zb::SizeT     m_size{};                               //!< Size in Vertices of the currently allocated buffer
     PrimitiveType m_primitiveType{PrimitiveType::Points}; //!< Type of primitives to draw
     Usage         m_usage{Usage::Stream};                 //!< How this vertex buffer is to be used
 };

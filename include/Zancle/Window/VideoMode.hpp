@@ -6,10 +6,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Window/Export.hpp"
-
 #include "Zancle/System/Priv/Vec2Base.hpp"
-
+#include "Zancle/Window/Export.hpp"
 #include "ZancleBase/RequireDesignatedInitializers.hpp"
 
 

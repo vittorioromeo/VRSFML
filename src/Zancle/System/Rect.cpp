@@ -6,7 +6,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/System/Rect2.hpp"
-
 #include "ZancleBase/SizeT.hpp"
 
 

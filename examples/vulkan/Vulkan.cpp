@@ -10,14 +10,6 @@
 
 // Include graphics because we use za::Image for loading images
 #include "Zancle/Graphics/Image.hpp"
-
-#include "Zancle/Window/Event.hpp"
-#include "Zancle/Window/EventUtils.hpp"
-#include "Zancle/Window/Vulkan.hpp"
-#include "Zancle/Window/WindowBase.hpp"
-#include "Zancle/Window/WindowContext.hpp"
-#include "Zancle/Window/WindowSettings.hpp" // IWYU pragma: keep
-
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/FileInputStream.hpp"
@@ -26,7 +18,12 @@
 #include "Zancle/System/Time.hpp"
 #include "Zancle/System/Vec2.hpp"
 #include "Zancle/System/Vec3.hpp"
-
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/Vulkan.hpp"
+#include "Zancle/Window/WindowBase.hpp"
+#include "Zancle/Window/WindowContext.hpp"
+#include "Zancle/Window/WindowSettings.hpp" // IWYU pragma: keep
 #include "ZancleBase/Array.hpp"
 #include "ZancleBase/Builtin/Memcpy.hpp"
 #include "ZancleBase/Clamp.hpp"
@@ -785,12 +782,12 @@ public:
             return failStep();
 
         swapchainExtent.width = zb::clamp(window.getSize().x,
-                                                surfaceCapabilities.minImageExtent.width,
-                                                surfaceCapabilities.maxImageExtent.width);
+                                          surfaceCapabilities.minImageExtent.width,
+                                          surfaceCapabilities.maxImageExtent.width);
 
         swapchainExtent.height = zb::clamp(window.getSize().y,
-                                                 surfaceCapabilities.minImageExtent.height,
-                                                 surfaceCapabilities.maxImageExtent.height);
+                                           surfaceCapabilities.minImageExtent.height,
+                                           surfaceCapabilities.maxImageExtent.height);
 
         const auto imageCount = zb::clamp(2u, surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
 
@@ -866,7 +863,7 @@ public:
             if (!file.hasValue())
                 return failStep();
 
-            const auto                      fileSize = file->getSize().value();
+            const auto          fileSize = file->getSize().value();
             zb::Vector<zb::U32> buffer(fileSize / sizeof(zb::U32));
 
             if (file->read(buffer.data(), fileSize) != file->getSize())
@@ -885,7 +882,7 @@ public:
             if (!file.hasValue())
                 return failStep();
 
-            const auto                      fileSize = file->getSize().value();
+            const auto          fileSize = file->getSize().value();
             zb::Vector<zb::U32> buffer(fileSize / sizeof(zb::U32));
 
             if (file->read(buffer.data(), fileSize) != file->getSize())
@@ -1490,8 +1487,8 @@ public:
     }
 
     // Helper to create a generic image with the specified size, format, usage and memory flags
-    bool createImage(zb::U32         width,
-                     zb::U32         height,
+    bool createImage(zb::U32               width,
+                     zb::U32               height,
                      VkFormat              format,
                      VkImageTiling         tiling,
                      VkImageUsageFlags     usage,
@@ -2401,47 +2398,47 @@ private:
     unsigned int       currentFrame{};
     bool               swapchainOutOfDate{};
 
-    VkInstance                        instance{};
-    VkDebugReportCallbackEXT          debugReportCallback{};
-    VkSurfaceKHR                      surface{};
-    VkPhysicalDevice                  gpu{};
-    zb::Optional<zb::U32> queueFamilyIndex;
-    VkDevice                          device{};
-    VkQueue                           queue{};
-    VkSurfaceFormatKHR                swapchainFormat{};
-    VkExtent2D                        swapchainExtent{};
-    VkSwapchainKHR                    swapchain{};
-    zb::Vector<VkImage>         swapchainImages;
-    zb::Vector<VkImageView>     swapchainImageViews;
-    VkFormat                          depthFormat{VK_FORMAT_UNDEFINED};
-    VkImage                           depthImage{};
-    VkDeviceMemory                    depthImageMemory{};
-    VkImageView                       depthImageView{};
-    VkShaderModule                    vertexShaderModule{};
-    VkShaderModule                    fragmentShaderModule{};
-    VkPipelineShaderStageCreateInfo   shaderStages[2]{};
-    VkDescriptorSetLayout             descriptorSetLayout{};
-    VkPipelineLayout                  pipelineLayout{};
-    VkRenderPass                      renderPass{};
-    VkPipeline                        graphicsPipeline{};
-    zb::Vector<VkFramebuffer>   swapchainFramebuffers;
-    VkCommandPool                     commandPool{};
-    VkBuffer                          vertexBuffer{};
-    VkDeviceMemory                    vertexBufferMemory{};
-    VkBuffer                          indexBuffer{};
-    VkDeviceMemory                    indexBufferMemory{};
-    zb::Vector<VkBuffer>        uniformBuffers;
-    zb::Vector<VkDeviceMemory>  uniformBuffersMemory;
-    VkImage                           textureImage{};
-    VkDeviceMemory                    textureImageMemory{};
-    VkImageView                       textureImageView{};
-    VkSampler                         textureSampler{};
-    VkDescriptorPool                  descriptorPool{};
-    zb::Vector<VkDescriptorSet> descriptorSets;
-    zb::Vector<VkCommandBuffer> commandBuffers;
-    zb::Vector<VkSemaphore>     imageAvailableSemaphores;
-    zb::Vector<VkSemaphore>     renderFinishedSemaphores;
-    zb::Vector<VkFence>         fences;
+    VkInstance                      instance{};
+    VkDebugReportCallbackEXT        debugReportCallback{};
+    VkSurfaceKHR                    surface{};
+    VkPhysicalDevice                gpu{};
+    zb::Optional<zb::U32>           queueFamilyIndex;
+    VkDevice                        device{};
+    VkQueue                         queue{};
+    VkSurfaceFormatKHR              swapchainFormat{};
+    VkExtent2D                      swapchainExtent{};
+    VkSwapchainKHR                  swapchain{};
+    zb::Vector<VkImage>             swapchainImages;
+    zb::Vector<VkImageView>         swapchainImageViews;
+    VkFormat                        depthFormat{VK_FORMAT_UNDEFINED};
+    VkImage                         depthImage{};
+    VkDeviceMemory                  depthImageMemory{};
+    VkImageView                     depthImageView{};
+    VkShaderModule                  vertexShaderModule{};
+    VkShaderModule                  fragmentShaderModule{};
+    VkPipelineShaderStageCreateInfo shaderStages[2]{};
+    VkDescriptorSetLayout           descriptorSetLayout{};
+    VkPipelineLayout                pipelineLayout{};
+    VkRenderPass                    renderPass{};
+    VkPipeline                      graphicsPipeline{};
+    zb::Vector<VkFramebuffer>       swapchainFramebuffers;
+    VkCommandPool                   commandPool{};
+    VkBuffer                        vertexBuffer{};
+    VkDeviceMemory                  vertexBufferMemory{};
+    VkBuffer                        indexBuffer{};
+    VkDeviceMemory                  indexBufferMemory{};
+    zb::Vector<VkBuffer>            uniformBuffers;
+    zb::Vector<VkDeviceMemory>      uniformBuffersMemory;
+    VkImage                         textureImage{};
+    VkDeviceMemory                  textureImageMemory{};
+    VkImageView                     textureImageView{};
+    VkSampler                       textureSampler{};
+    VkDescriptorPool                descriptorPool{};
+    zb::Vector<VkDescriptorSet>     descriptorSets;
+    zb::Vector<VkCommandBuffer>     commandBuffers;
+    zb::Vector<VkSemaphore>         imageAvailableSemaphores;
+    zb::Vector<VkSemaphore>         renderFinishedSemaphores;
+    zb::Vector<VkFence>             fences;
     // NOLINTEND(readability-identifier-naming)
 };
 

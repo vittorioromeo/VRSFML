@@ -5,13 +5,10 @@
 ////////////////////////////////////////////////////////////
 // Headers (project)
 ////////////////////////////////////////////////////////////
-#include "Zancle/System/Thread.hpp"
-
 #include "Zancle/Config.hpp"
-
 #include "Zancle/System/Atomic.hpp"
+#include "Zancle/System/Thread.hpp"
 #include "Zancle/System/Time.hpp"
-
 #include "ZancleBase/Abort.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Memcpy.hpp"
@@ -23,9 +20,9 @@
 ////////////////////////////////////////////////////////////
 // Platform backend selection
 ////////////////////////////////////////////////////////////
-#if defined(ZA_SYSTEM_LINUX) || defined(ZA_SYSTEM_ANDROID) || defined(ZA_SYSTEM_MACOS) || \
-    defined(ZA_SYSTEM_IOS) || defined(ZA_SYSTEM_FREEBSD) || defined(ZA_SYSTEM_OPENBSD) || \
-    defined(ZA_SYSTEM_NETBSD) || defined(ZA_SYSTEM_EMSCRIPTEN)
+#if defined(ZA_SYSTEM_LINUX) || defined(ZA_SYSTEM_ANDROID) || defined(ZA_SYSTEM_MACOS) || defined(ZA_SYSTEM_IOS) || \
+    defined(ZA_SYSTEM_FREEBSD) || defined(ZA_SYSTEM_OPENBSD) || defined(ZA_SYSTEM_NETBSD) ||                        \
+    defined(ZA_SYSTEM_EMSCRIPTEN)
     #define ZA_THREAD_POSIX 1
 #elif defined(ZA_SYSTEM_WINDOWS)
     #define ZA_THREAD_WIN32 1

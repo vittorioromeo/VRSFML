@@ -5,16 +5,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/System/Err.hpp"
 #include "Zancle/Window/Joystick.hpp"
-
 #include "Zancle/Window/JoystickCapabilities.hpp"
 #include "Zancle/Window/JoystickIdentification.hpp"
 #include "Zancle/Window/JoystickManager.hpp"
 #include "Zancle/Window/JoystickState.hpp"
 #include "Zancle/Window/WindowContext.hpp"
-
-#include "Zancle/System/Err.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Optional.hpp"
 

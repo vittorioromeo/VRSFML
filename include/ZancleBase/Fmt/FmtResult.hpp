@@ -18,14 +18,14 @@ enum class [[nodiscard]] FmtResult : unsigned char
 
 
 ////////////////////////////////////////////////////////////
-#define ZB_FMT_TRY(...)                                        \
-    do                                                                \
-    {                                                                 \
+#define ZB_FMT_TRY(...)                                           \
+    do                                                            \
+    {                                                             \
         const ::zb::FmtResult zancleFmtTryResult = (__VA_ARGS__); \
-                                                                      \
+                                                                  \
         if (zancleFmtTryResult != ::zb::FmtResult::Ok)            \
-            return zancleFmtTryResult;                                  \
-                                                                      \
+            return zancleFmtTryResult;                            \
+                                                                  \
     } while (false)
 
 } // namespace zb

@@ -7,12 +7,10 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Network/Export.hpp"
-
 #include "Zancle/Network/IpAddress.hpp"
 #include "Zancle/Network/Socket.hpp"
 #include "Zancle/Network/SocketHandle.hpp"
 #include "Zancle/Network/TcpSocket.hpp"
-
 #include "ZancleBase/Optional.hpp"
 
 
@@ -34,7 +32,7 @@ public:
     ////////////////////////////////////////////////////////////
     struct AcceptResult
     {
-        Status                    status; //!< Operation status
+        Status                  status; //!< Operation status
         zb::Optional<TcpSocket> socket; //!< Accepted connection (only when `status == Done`)
     };
 
@@ -59,8 +57,8 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static zb::Optional<TcpListener> create(unsigned short port,
-                                                            bool           isBlocking,
-                                                            IpAddress      address = IpAddress::Any);
+                                                          bool           isBlocking,
+                                                          IpAddress      address = IpAddress::Any);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the port to which the socket is bound locally

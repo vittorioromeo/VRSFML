@@ -5,21 +5,18 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Audio/Music.hpp"
-
 #include "Zancle/Audio/AudioSettings.hpp"
+#include "Zancle/Audio/Music.hpp"
 #include "Zancle/Audio/MusicReader.hpp"
 #include "Zancle/Audio/Priv/MiniaudioSoundSource.hpp"
 #include "Zancle/Audio/Priv/MiniaudioUtils.hpp"
 #include "Zancle/Audio/Priv/SoundBase.hpp"
 #include "Zancle/Audio/SoundStreamState.hpp"
-
 #include "Zancle/System/AtomicMutex.hpp"
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/LifetimeDependant.hpp"
 #include "Zancle/System/LockGuard.hpp"
 #include "Zancle/System/Time.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/MinMax.hpp"
@@ -32,9 +29,9 @@ namespace
 {
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::const]] inline constexpr za::Time samplesToTime(
-    const unsigned int  sampleRate,
-    const unsigned int  channelCount,
-    const zb::U64 samples)
+    const unsigned int sampleRate,
+    const unsigned int channelCount,
+    const zb::U64      samples)
 {
     ZB_ASSERT(sampleRate > 0u);
     ZB_ASSERT(channelCount > 0u);
@@ -77,10 +74,10 @@ struct Music::Impl
     {
         ////////////////////////////////////////////////////////////
         mutable AtomicMutex               loopMutex;      //!< Protects `loopSpan` and `sampleOffset`
-        Music::Span<zb::U64>            loopSpan;       //!< Loop range Specifier
+        Music::Span<zb::U64>              loopSpan;       //!< Loop range Specifier
         MusicReader&                      musicReader;    //!< The music reader
         const priv::MiniaudioSoundSource& source;         //!< Back-ref to the owning `Music` for `isLooping()`
-        zb::U64                         sampleOffset{}; //!< Current offset in the stream
+        zb::U64                           sampleOffset{}; //!< Current offset in the stream
 
         ////////////////////////////////////////////////////////////
         explicit MusicState(MusicReader& theMusicReader, const priv::MiniaudioSoundSource& theSource, zb::U64 sampleCount) :
@@ -229,7 +226,7 @@ void Music::setLoopPoints(const TimeSpan timePoints)
     const auto fileSampleCount = state.musicReader.getSampleCount();
 
     Span<zb::U64> samplePoints{timeToSamples(sampleRate, channelCount, timePoints.offset),
-                                 timeToSamples(sampleRate, channelCount, timePoints.length)};
+                               timeToSamples(sampleRate, channelCount, timePoints.length)};
 
     if (fileSampleCount == 0u)
     {

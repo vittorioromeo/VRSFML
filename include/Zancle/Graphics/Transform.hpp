@@ -9,7 +9,6 @@
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-
 #include "ZancleBase/AssertAndAssume.hpp"
 #include "ZancleBase/Math/Fabs.hpp"
 #include "ZancleBase/SinCosLookup.hpp"
@@ -276,9 +275,7 @@ struct [[nodiscard]] Transform
         const float minY = p0.y + (e0y < 0.f ? e0y : 0.f) + (e1y < 0.f ? e1y : 0.f);
 
         // The size is the sum of the absolute edge contributions
-        return Rect2f{{minX, minY},
-                      {ZB_MATH_FABSF(e0x) + ZB_MATH_FABSF(e1x),
-                       ZB_MATH_FABSF(e0y) + ZB_MATH_FABSF(e1y)}};
+        return Rect2f{{minX, minY}, {ZB_MATH_FABSF(e0x) + ZB_MATH_FABSF(e1x), ZB_MATH_FABSF(e0y) + ZB_MATH_FABSF(e1y)}};
     }
 
 

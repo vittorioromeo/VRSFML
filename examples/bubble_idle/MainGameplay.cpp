@@ -23,14 +23,8 @@
 #include "Shrine.hpp"
 #include "ShrineType.hpp"
 #include "SweepAndPrune.hpp"
-
-#include "ExampleUtils/ControlFlow.hpp"
-#include "ExampleUtils/Easing.hpp"
-#include "ExampleUtils/HueColor.hpp"
-#include "ExampleUtils/MathUtils.hpp"
-#include "ExampleUtils/Progress.hpp"
-#include "ExampleUtils/SoundManager.hpp"
-
+#include "Zancle/Audio/Listener.hpp"
+#include "Zancle/Audio/PlaybackDevice.hpp"
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/RenderTexture.hpp"
 #include "Zancle/Graphics/RenderWindow.hpp"
@@ -38,15 +32,10 @@
 #include "Zancle/Graphics/TextData.hpp"
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/View.hpp"
-
-#include "Zancle/Audio/Listener.hpp"
-#include "Zancle/Audio/PlaybackDevice.hpp"
-
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/IO.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-
 #include "ZancleBase/Algorithm/AnyOf.hpp"
 #include "ZancleBase/Algorithm/Count.hpp"
 #include "ZancleBase/Algorithm/Erase.hpp"
@@ -66,13 +55,20 @@
 #include "ZancleBase/ToString.hpp"
 #include "ZancleBase/Vector.hpp"
 
+#include "ExampleUtils/ControlFlow.hpp"
+#include "ExampleUtils/Easing.hpp"
+#include "ExampleUtils/HueColor.hpp"
+#include "ExampleUtils/MathUtils.hpp"
+#include "ExampleUtils/Progress.hpp"
+#include "ExampleUtils/SoundManager.hpp"
+
 #include <climits>
 #include <cstdio>
 
 ////////////////////////////////////////////////////////////
-void Main::gameLoopUpdateCombo(const float                         deltaTimeMs,
-                               const bool                          anyBubblePoppedByClicking,
-                               const za::Vec2f                     mousePos,
+void Main::gameLoopUpdateCombo(const float                   deltaTimeMs,
+                               const bool                    anyBubblePoppedByClicking,
+                               const za::Vec2f               mousePos,
                                const zb::Optional<za::Vec2f> clickPosition)
 {
     SFEX_PROFILE_SCOPE_AUTOLABEL();
@@ -379,7 +375,7 @@ void Main::gameLoopUpdateParticlesAndTextParticles(const float deltaTimeMs)
     updateParticleLike(textParticles);
 
     zb::vectorEraseIf(spentCoinParticles,
-                            [&](const auto& p)
+                      [&](const auto& p)
     {
         return p.type == ParticleType::Coin &&
                (p.position.x > (gameView.viewport.size.x * resolution.x) || p.position.x < 0.f);
@@ -400,9 +396,7 @@ void Main::gameLoopUpdateSounds(const float deltaTimeMs, const za::Vec2f mousePo
 #ifndef BUBBLEBYTE_NO_AUDIO
     const float volumeMult = profile.playAudioInBackground || window.hasFocus() ? 1.f : 0.f;
 
-    listener.position = {zb::clamp(mousePos.x, 0.f, pt->getMapLimit()),
-                         zb::clamp(mousePos.y, 0.f, boundaries.y),
-                         0.f};
+    listener.position = {zb::clamp(mousePos.x, 0.f, pt->getMapLimit()), zb::clamp(mousePos.y, 0.f, boundaries.y), 0.f};
 
     listener.volume = profile.masterVolume / 100.f * volumeMult;
 
@@ -517,8 +511,7 @@ void Main::gameLoopUpdateAndDrawBackground(const float deltaTimeMs, const za::Vi
 
     rtBackground.clear(outlineHueColor);
 
-    const auto getAlpha = [&](const float mult)
-    { return static_cast<zb::U8>(profile.backgroundOpacity / 100.f * mult); };
+    const auto getAlpha = [&](const float mult) { return static_cast<zb::U8>(profile.backgroundOpacity / 100.f * mult); };
 
     ////////////////////////////////////////////////////////////
     const za::Texture* const chunkTx[] = {

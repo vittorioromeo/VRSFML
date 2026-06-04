@@ -3,7 +3,6 @@
 #include "MainAtlasRects.hpp"
 #include "Playthrough.hpp"
 #include "UIState.hpp"
-
 #include "Zancle/ImGui/IncludeImGui.hpp"
 
 #include <climits>

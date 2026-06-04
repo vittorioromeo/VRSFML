@@ -1,13 +1,10 @@
 #include "ShowcaseAudio.hpp"
 #include "ShowcaseExample.hpp"
-
-#include "Zancle/ImGui/IncludeImGui.hpp"
-
 #include "Zancle/Audio/AudioContext.hpp"
 #include "Zancle/Audio/Music.hpp"
 #include "Zancle/Audio/PlaybackDevice.hpp"
 #include "Zancle/Audio/Sound.hpp"
-
+#include "Zancle/ImGui/IncludeImGui.hpp"
 #include "ZancleBase/Algorithm/Find.hpp"
 #include "ZancleBase/SizeT.hpp"
 

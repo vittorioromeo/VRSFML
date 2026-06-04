@@ -1,25 +1,20 @@
+#include "Zancle/Audio/AudioContext.hpp"
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/GraphicsContext.hpp"
 #include "Zancle/Graphics/RectangleShape.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
-
-#include "Zancle/Audio/AudioContext.hpp"
-
 #include "Zancle/Network/Ftp.hpp"
 #include "Zancle/Network/Http.hpp"
 #include "Zancle/Network/Packet.hpp"
 #include "Zancle/Network/UdpSocket.hpp"
-
-#include "Zancle/Window/VideoMode.hpp"
-#include "Zancle/Window/Window.hpp"
-#include "Zancle/Window/WindowContext.hpp"
-#include "Zancle/Window/WindowSettings.hpp" // IWYU pragma: keep
-
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Rect2.hpp"
 #include "Zancle/System/Time.hpp"
 #include "Zancle/System/Utf8String.hpp"
-
+#include "Zancle/Window/VideoMode.hpp"
+#include "Zancle/Window/Window.hpp"
+#include "Zancle/Window/WindowContext.hpp"
+#include "Zancle/Window/WindowSettings.hpp" // IWYU pragma: keep
 #include "ZancleBase/Optional.hpp"
 
 
@@ -38,9 +33,9 @@ int main()
     [[maybe_unused]] const za::Vertex         vertex{};
 
     // Network
-    [[maybe_unused]] const za::Ftp                           ftp;
-    [[maybe_unused]] const za::Http                          http;
-    [[maybe_unused]] const za::Packet                        packet;
+    [[maybe_unused]] const za::Ftp                     ftp;
+    [[maybe_unused]] const za::Http                    http;
+    [[maybe_unused]] const za::Packet                  packet;
     [[maybe_unused]] const zb::Optional<za::UdpSocket> udpSocket = za::UdpSocket::create(/* isBlocking */ true);
 
     // System

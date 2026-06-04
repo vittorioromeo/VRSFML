@@ -19,10 +19,10 @@
     #include "ZancleBase/Assert.hpp"
 
     ////////////////////////////////////////////////////////////
-    #define ZB_UNREACHABLE() \
-        do                          \
-        {                           \
-            ZA_ASSERT(false);     \
+    #define ZB_UNREACHABLE()  \
+        do                    \
+        {                     \
+            ZA_ASSERT(false); \
             ::zb::abort();    \
         } while (false)
 

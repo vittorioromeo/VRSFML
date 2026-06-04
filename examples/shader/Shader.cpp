@@ -1,11 +1,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Graphics/Shader.hpp"
-
-#include "ExampleUtils/RNGFast.hpp"
-#include "ExampleUtils/Scaling.hpp"
-
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/Font.hpp"
 #include "Zancle/Graphics/GraphicsContext.hpp"
@@ -14,23 +9,21 @@
 #include "Zancle/Graphics/RenderTarget.hpp"
 #include "Zancle/Graphics/RenderTexture.hpp"
 #include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/Shader.hpp"
 #include "Zancle/Graphics/Sprite.hpp"
 #include "Zancle/Graphics/Text.hpp"
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
-
-#include "Zancle/Window/Event.hpp"
-#include "Zancle/Window/EventUtils.hpp"
-#include "Zancle/Window/Keyboard.hpp"
-#include "Zancle/Window/Mouse.hpp"
-
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Time.hpp"
 #include "Zancle/System/Utf8String.hpp"
-
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/Keyboard.hpp"
+#include "Zancle/Window/Mouse.hpp"
 #include "ZancleBase/Array.hpp"
 #include "ZancleBase/Clamp.hpp"
 #include "ZancleBase/IntTypes.hpp"
@@ -42,6 +35,9 @@
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/String.hpp"
 #include "ZancleBase/Vector.hpp"
+
+#include "ExampleUtils/RNGFast.hpp"
+#include "ExampleUtils/Scaling.hpp"
 
 
 namespace
@@ -199,12 +195,12 @@ public:
     }
 
 private:
-    zb::Vector<za::Vertex> m_points;
-    za::Shader                   m_shader;
-    za::Shader::UniformLocation  m_ulStormPosition;
-    za::Shader::UniformLocation  m_ulStormInnerRadius;
-    za::Shader::UniformLocation  m_ulStormTotalRadius;
-    za::Shader::UniformLocation  m_ulBlinkAlpha;
+    zb::Vector<za::Vertex>      m_points;
+    za::Shader                  m_shader;
+    za::Shader::UniformLocation m_ulStormPosition;
+    za::Shader::UniformLocation m_ulStormInnerRadius;
+    za::Shader::UniformLocation m_ulStormTotalRadius;
+    za::Shader::UniformLocation m_ulBlinkAlpha;
 };
 
 
@@ -315,11 +311,11 @@ public:
     }
 
 private:
-    za::Texture                  m_logoTexture;
-    za::Transform                m_transform;
-    za::Shader                   m_shader;
-    za::Shader::UniformLocation  m_ulSize;
-    zb::Vector<za::Vertex> m_pointCloud;
+    za::Texture                 m_logoTexture;
+    za::Transform               m_transform;
+    za::Shader                  m_shader;
+    za::Shader::UniformLocation m_ulSize;
+    zb::Vector<za::Vertex>      m_pointCloud;
 };
 
 
@@ -383,10 +379,7 @@ zb::Optional<Edge> tryLoadEdge()
 
     shader->setUniform(shader->getUniformLocation("za_u_texture").value(), za::Shader::CurrentTexture);
 
-    return zb::makeOptional<Edge>(ZB_MOVE(*surface),
-                                        ZB_MOVE(*backgroundTexture),
-                                        ZB_MOVE(*entityTexture),
-                                        ZB_MOVE(*shader));
+    return zb::makeOptional<Edge>(ZB_MOVE(*surface), ZB_MOVE(*backgroundTexture), ZB_MOVE(*entityTexture), ZB_MOVE(*shader));
 }
 
 zb::Optional<Geometry> tryLoadGeometry()
@@ -440,10 +433,10 @@ int main()
     zb::Optional geometryEffect   = tryLoadGeometry();
 
     const zb::Array<Effect*, 5> effects{pixelateEffect.asPtr(),
-                                              waveBlurEffect.asPtr(),
-                                              stormBlinkEffect.asPtr(),
-                                              edgeEffect.asPtr(),
-                                              geometryEffect.asPtr()};
+                                        waveBlurEffect.asPtr(),
+                                        stormBlinkEffect.asPtr(),
+                                        edgeEffect.asPtr(),
+                                        geometryEffect.asPtr()};
 
     const zb::Array<zb::String, 5>
         effectNames{"Pixelate", "Wave + Blur", "Storm + Blink", "Edge Post-effect", "Geometry Shader Billboards"};

@@ -5,16 +5,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Audio/SoundFileWriterFlac.hpp"
-
 #include "Zancle/Audio/ChannelMap.hpp"
 #include "Zancle/Audio/SoundChannel.hpp"
-
+#include "Zancle/Audio/SoundFileWriterFlac.hpp"
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/FileUtils.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/PathUtils.hpp"
-
 #include "ZancleBase/Algorithm/Find.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/MinMax.hpp"
@@ -44,10 +41,10 @@ struct SoundFileWriterFlac::Impl
         }
     };
 
-    std::FILE*                                                     file{};
+    std::FILE*                                                   file{};
     zb::UniquePtr<FLAC__StreamEncoder, FlacStreamEncoderDeleter> encoder;        //!< FLAC stream encoder
-    unsigned int                                                   channelCount{}; //!< Number of channels
-    zb::SizeT             remapTable[8]{}; //!< Table we use to remap source to target channel order
+    unsigned int                                                 channelCount{}; //!< Number of channels
+    zb::SizeT           remapTable[8]{}; //!< Table we use to remap source to target channel order
     zb::Vector<zb::I32> samples32;       //!< Conversion buffer
 };
 

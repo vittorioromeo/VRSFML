@@ -1,8 +1,6 @@
 #include "StringifyStringViewUtil.hpp" // IWYU pragma: keep
 #include "Tst/Tst.hpp"
-
 #include "ZancleBase/MiniPFR.hpp"
-
 #include "ZancleBase/Trait/IsSame.hpp"
 
 
@@ -208,7 +206,7 @@ TEST_CASE("[Base] Base/MiniPFR.hpp")
         {
             S3 obj{1, 2.f, 'a'};
             zb::minipfr::forEachField(obj,
-                                            [](auto& v)
+                                      [](auto& v)
             {
                 if constexpr (zb::isSame<decltype(v), int&>)
                     v = 100;
@@ -226,7 +224,7 @@ TEST_CASE("[Base] Base/MiniPFR.hpp")
             const S2 obj{7, 1.5f};
             int      sum = 0;
             zb::minipfr::forEachField(obj,
-                                            [&](const auto& v)
+                                      [&](const auto& v)
             {
                 if constexpr (zb::isSame<decltype(v), const int&>)
                     sum += v;

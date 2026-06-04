@@ -4,18 +4,14 @@
 #include "PlayerInput.hpp"
 #include "Playthrough.hpp"
 #include "SweepAndPrune.hpp"
-
-#include "ExampleUtils/Progress.hpp"
-
+#include "Zancle/Graphics/DrawableBatch.hpp"
 #include "Zancle/ImGui/ImGuiContext.hpp"
 #include "Zancle/ImGui/IncludeImGui.hpp"
-
-#include "Zancle/Graphics/DrawableBatch.hpp"
-
 #include "Zancle/System/Time.hpp"
-
 #include "ZancleBase/Algorithm/Erase.hpp"
 #include "ZancleBase/Clamp.hpp"
+
+#include "ExampleUtils/Progress.hpp"
 
 ////////////////////////////////////////////////////////////
 void Main::gameLoopUpdateFrameWorld(const float realDeltaTimeMs, FrameInput& frameInput, FrameUpdateState& frameUpdate)
@@ -67,9 +63,7 @@ void Main::gameLoopUpdateFrameWorld(const float realDeltaTimeMs, FrameInput& fra
         if (delayCountdown.tick(deltaTimeMs) == TickResult::JustFinished)
             func();
 
-    zb::vectorEraseIf(delayedActions, [](const auto& delayedAction) {
-        return delayedAction.delayCountdown.isDone();
-    });
+    zb::vectorEraseIf(delayedActions, [](const auto& delayedAction) { return delayedAction.delayCountdown.isDone(); });
 
     // Reap ephemeral bubbles (e.g. from Bubblefall) that fell off the bottom
     // this frame. Must run after all bubble collision passes so that the

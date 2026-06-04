@@ -7,10 +7,8 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Vertex.hpp"
-
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-
 #include "ZancleBase/AssertAndAssume.hpp"
 #include "ZancleBase/MinMaxMacros.hpp"
 #include "ZancleBase/SizeT.hpp"
@@ -185,9 +183,8 @@ namespace za::VertexUtils
 /// \return The (max x, min y) of a range of vertices.
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2f getTopRight(
-    const Vertex* const data,
-    const zb::SizeT   nVertices) noexcept
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2f getTopRight(const Vertex* const data,
+                                                                                              const zb::SizeT nVertices) noexcept
 {
     ZB_ASSERT_AND_ASSUME(data != nullptr);
     ZB_ASSERT_AND_ASSUME(nVertices > 0u);
@@ -215,7 +212,7 @@ namespace za::VertexUtils
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2f getBottomLeft(
     const Vertex* const data,
-    const zb::SizeT   nVertices) noexcept
+    const zb::SizeT     nVertices) noexcept
 {
     ZB_ASSERT_AND_ASSUME(data != nullptr);
     ZB_ASSERT_AND_ASSUME(nVertices > 0u);
@@ -243,7 +240,7 @@ namespace za::VertexUtils
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2f getBottomRight(
     const Vertex* const data,
-    const zb::SizeT   nVertices) noexcept
+    const zb::SizeT     nVertices) noexcept
 {
     ZB_ASSERT_AND_ASSUME(data != nullptr);
     ZB_ASSERT_AND_ASSUME(nVertices > 0u);

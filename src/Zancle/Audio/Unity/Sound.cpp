@@ -5,18 +5,15 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Audio/Sound.hpp"
-
 #include "Zancle/Audio/AudioSettings.hpp"
 #include "Zancle/Audio/PlaybackDevice.hpp"
 #include "Zancle/Audio/Priv/MiniaudioUtils.hpp"
 #include "Zancle/Audio/Priv/SoundBase.hpp"
+#include "Zancle/Audio/Sound.hpp"
 #include "Zancle/Audio/SoundBuffer.hpp"
-
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/LifetimeDependant.hpp"
 #include "Zancle/System/Time.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Memcpy.hpp"
 #include "ZancleBase/IntTypes.hpp"
@@ -84,8 +81,8 @@ struct Sound::Impl
         const auto sampleCount = *framesRead * impl.buffer.getChannelCount();
 
         ZB_MEMCPY(framesOut,
-                         impl.buffer.getSamples() + impl.cursor * impl.buffer.getChannelCount(),
-                         static_cast<zb::SizeT>(sampleCount) * sizeof(impl.buffer.getSamples()[0]));
+                  impl.buffer.getSamples() + impl.cursor * impl.buffer.getChannelCount(),
+                  static_cast<zb::SizeT>(sampleCount) * sizeof(impl.buffer.getSamples()[0]));
 
         impl.cursor += *framesRead;
 
@@ -152,7 +149,7 @@ struct Sound::Impl
     priv::MiniaudioUtils::SoundBase soundBase; //!< Sound base, needs to be first member
 
     Sound&             owner;    //!< Owning `Sound` object
-    zb::U64          cursor{}; //!< The current playing position (in frames)
+    zb::U64            cursor{}; //!< The current playing position (in frames)
     const SoundBuffer& buffer;   //!< Sound buffer bound to the source
 };
 

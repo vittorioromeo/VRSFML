@@ -1,7 +1,4 @@
 #include "Tst/Tst.hpp"
-
-#include "ZancleBase/UniquePtr.hpp"
-
 #include "ZancleBase/Trait/IsAggregate.hpp"
 #include "ZancleBase/Trait/IsStandardLayout.hpp"
 #include "ZancleBase/Trait/IsTrivial.hpp"
@@ -13,6 +10,7 @@
 #include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
 #include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
 #include "ZancleBase/Trait/IsTriviallyRelocatable.hpp"
+#include "ZancleBase/UniquePtr.hpp"
 
 
 TEST_CASE("[Base] Base/UniquePtr.hpp")

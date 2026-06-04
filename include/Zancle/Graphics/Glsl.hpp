@@ -7,11 +7,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Priv/GlslFwd.hpp" // IWYU pragma: export
-
-#include "Zancle/System/Priv/Vec2Base.hpp" // IWYU pragma: export
-#include "Zancle/System/Vec3.hpp"          // IWYU pragma: export
-
-#include "ZancleBase/SizeT.hpp" // IWYU pragma: export
+#include "Zancle/System/Priv/Vec2Base.hpp"  // IWYU pragma: export
+#include "Zancle/System/Vec3.hpp"           // IWYU pragma: export
+#include "ZancleBase/SizeT.hpp"             // IWYU pragma: export
 
 // Implementation (must be after the forward declarations)
 #include "Zancle/Graphics/Glsl.inl" // IWYU pragma: export

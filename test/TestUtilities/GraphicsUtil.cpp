@@ -1,15 +1,12 @@
 #include "GraphicsViewUtil.hpp"
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
-
 #include "Zancle/Graphics/BlendMode.hpp"
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/StencilMode.hpp"
 #include "Zancle/Graphics/Transform.hpp"
 #include "Zancle/Graphics/View.hpp"
-
 #include "Zancle/System/Rect2.hpp"
-
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Math/Fabs.hpp"
 #include "ZancleBase/SizeT.hpp"
@@ -110,8 +107,7 @@ zb::String stencilUpdateOperationToString(const za::StencilUpdateOperation updat
 ////////////////////////////////////////////////////////////
 zb::String vec2ToString(const za::Vec2<float> v)
 {
-    return zb::String{"("} + gfxFloatToString(v.x) + zb::String{", "} + gfxFloatToString(v.y) +
-           zb::String{")"};
+    return zb::String{"("} + gfxFloatToString(v.x) + zb::String{", "} + gfxFloatToString(v.y) + zb::String{")"};
 }
 
 
@@ -133,9 +129,9 @@ zb::String rectToString(const za::Rect2<T>& rect)
 ////////////////////////////////////////////////////////////
 zb::String blendModeToString(const za::BlendMode& blendMode)
 {
-    return zb::String{"( "} + gfxIntToString(static_cast<int>(blendMode.colorSrcFactor)) +
-           zb::String{", "} + gfxIntToString(static_cast<int>(blendMode.colorDstFactor)) +
-           zb::String{", "} + gfxIntToString(static_cast<int>(blendMode.colorEquation)) + zb::String{", "} +
+    return zb::String{"( "} + gfxIntToString(static_cast<int>(blendMode.colorSrcFactor)) + zb::String{", "} +
+           gfxIntToString(static_cast<int>(blendMode.colorDstFactor)) + zb::String{", "} +
+           gfxIntToString(static_cast<int>(blendMode.colorEquation)) + zb::String{", "} +
            gfxIntToString(static_cast<int>(blendMode.alphaSrcFactor)) + zb::String{", "} +
            gfxIntToString(static_cast<int>(blendMode.alphaDstFactor)) + zb::String{", "} +
            gfxIntToString(static_cast<int>(blendMode.alphaEquation)) + zb::String{" )"};
@@ -156,10 +152,9 @@ zb::String stencilModeToString(const za::StencilMode& stencilMode)
 ////////////////////////////////////////////////////////////
 zb::String colorToString(const za::Color color)
 {
-    return hexToString(color.toInteger()) + zb::String{" (r="} + gfxIntToString(int{color.r}) +
-           zb::String{", g="} + gfxIntToString(int{color.g}) + zb::String{", b="} +
-           gfxIntToString(int{color.b}) + zb::String{", a="} + gfxIntToString(int{color.a}) +
-           zb::String{")"};
+    return hexToString(color.toInteger()) + zb::String{" (r="} + gfxIntToString(int{color.r}) + zb::String{", g="} +
+           gfxIntToString(int{color.g}) + zb::String{", b="} + gfxIntToString(int{color.b}) + zb::String{", a="} +
+           gfxIntToString(int{color.a}) + zb::String{")"};
 }
 
 
@@ -176,20 +171,20 @@ zb::String transformToString(const za::Transform& transform)
     transform.writeTo4x4Matrix(matrix);
 
     return gfxFloatToString(matrix[0]) + zb::String{", "} + gfxFloatToString(matrix[4]) + zb::String{", "} +
-           gfxFloatToString(matrix[12]) + zb::String{", "} + gfxFloatToString(matrix[1]) +
-           zb::String{", "} + gfxFloatToString(matrix[5]) + zb::String{", "} +
-           gfxFloatToString(matrix[13]) + zb::String{", "} + gfxFloatToString(matrix[3]) +
-           zb::String{", "} + gfxFloatToString(matrix[7]) + zb::String{", "} + gfxFloatToString(matrix[15]);
+           gfxFloatToString(matrix[12]) + zb::String{", "} + gfxFloatToString(matrix[1]) + zb::String{", "} +
+           gfxFloatToString(matrix[5]) + zb::String{", "} + gfxFloatToString(matrix[13]) + zb::String{", "} +
+           gfxFloatToString(matrix[3]) + zb::String{", "} + gfxFloatToString(matrix[7]) + zb::String{", "} +
+           gfxFloatToString(matrix[15]);
 }
 
 
 ////////////////////////////////////////////////////////////
 zb::String viewToString(const za::View& view)
 {
-    return zb::String{"( center="} + vec2ToString(view.center) + zb::String{", size="} +
-           vec2ToString(view.size) + zb::String{", rotation="} + gfxFloatToString(view.rotation.asDegrees()) +
-           zb::String{" deg"} + zb::String{", viewport="} + rectToString(view.viewport) +
-           zb::String{", scissor="} + rectToString(view.scissor) + zb::String{" )"};
+    return zb::String{"( center="} + vec2ToString(view.center) + zb::String{", size="} + vec2ToString(view.size) +
+           zb::String{", rotation="} + gfxFloatToString(view.rotation.asDegrees()) + zb::String{" deg"} +
+           zb::String{", viewport="} + rectToString(view.viewport) + zb::String{", scissor="} +
+           rectToString(view.scissor) + zb::String{" )"};
 }
 
 } // namespace

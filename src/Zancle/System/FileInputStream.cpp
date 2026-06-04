@@ -6,7 +6,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/System/FileInputStream.hpp"
-
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/PassKey.hpp"
 #include "ZancleBase/UniquePtr.hpp"
@@ -18,7 +17,6 @@
 
 #include "Zancle/System/FileUtils.hpp"
 #include "Zancle/System/Path.hpp"
-
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Macros.hpp"
 #include "ZancleBase/SizeT.hpp"

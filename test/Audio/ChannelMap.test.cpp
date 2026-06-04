@@ -1,10 +1,7 @@
 #include "AudioUtil.hpp"
 #include "Tst/Tst.hpp"
-
 #include "Zancle/Audio/ChannelMap.hpp"
-
 #include "Zancle/Audio/SoundChannel.hpp"
-
 #include "ZancleBase/Trait/HasVirtualDestructor.hpp"
 #include "ZancleBase/Trait/IsCopyAssignable.hpp"
 #include "ZancleBase/Trait/IsCopyConstructible.hpp"

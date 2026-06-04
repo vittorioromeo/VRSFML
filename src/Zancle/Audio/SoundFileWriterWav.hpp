@@ -8,7 +8,6 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Audio/ChannelMap.hpp"
 #include "Zancle/Audio/SoundFileWriter.hpp"
-
 #include "ZancleBase/InPlacePImpl.hpp"
 #include "ZancleBase/IntTypes.hpp"
 

@@ -1,17 +1,14 @@
 #include "AudioUtil.hpp"
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
-
 #include "Zancle/Audio/AudioContext.hpp"
 #include "Zancle/Audio/PlaybackDevice.hpp"
 #include "Zancle/Audio/Priv/MiniaudioSoundSource.hpp"
 #include "Zancle/Audio/Sound.hpp"
 #include "Zancle/Audio/SoundBuffer.hpp"
-
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Vec3.hpp"
-
 #include "ZancleBase/FloatMax.hpp"
 #include "ZancleBase/Trait/HasVirtualDestructor.hpp"
 #include "ZancleBase/Trait/IsConstructible.hpp"
@@ -22,7 +19,7 @@
 #include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
 
 
-#define ZA_TEST_CHECK_DEFAULT_VALUES(xSoundSource)                   \
+#define ZA_TEST_CHECK_DEFAULT_VALUES(xSoundSource)                     \
     CHECK((xSoundSource).getPitch() == 1.f);                           \
     CHECK((xSoundSource).getPan() == 0.f);                             \
     CHECK((xSoundSource).getVolume() == 1.f);                          \
@@ -37,7 +34,7 @@
     CHECK((xSoundSource).getDirectionalAttenuationFactor() == 1.f);    \
     CHECK(!(xSoundSource).isRelativeToListener());                     \
     CHECK((xSoundSource).getMinDistance() == 1.f);                     \
-    CHECK((xSoundSource).getMaxDistance() == ZB_FLOAT_MAX);     \
+    CHECK((xSoundSource).getMaxDistance() == ZB_FLOAT_MAX);            \
     CHECK((xSoundSource).getMinGain() == 0);                           \
     CHECK((xSoundSource).getMaxGain() == 1.f);                         \
     CHECK((xSoundSource).getAttenuation() == 1.f);                     \
