@@ -41,6 +41,6 @@ template <typename T>
 ////////////////////////////////////////////////////////////
 /// \file
 /// Built-in `fmtArg` for string-like types: anything exposing byte
-/// `.data()` and `.size()` (e.g. `base::String`, `base::StringView`).
+/// `.data()` and `.size()` (e.g. `zb::String`, `zb::StringView`).
 ///
 ////////////////////////////////////////////////////////////

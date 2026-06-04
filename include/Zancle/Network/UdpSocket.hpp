@@ -31,7 +31,7 @@ public:
     ////////////////////////////////////////////////////////////
     // Constants
     ////////////////////////////////////////////////////////////
-    enum : base::SizeT
+    enum : zb::SizeT
     {
         MaxDatagramSize = 65'507ul //!< The maximum number of bytes that can be sent in a single UDP datagram
     };
@@ -46,10 +46,10 @@ public:
     ///
     /// \param isBlocking Desired blocking state
     ///
-    /// \return `UdpSocket` on success, `base::nullOpt` on failure
+    /// \return `UdpSocket` on success, `zb::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<UdpSocket> create(bool isBlocking);
+    [[nodiscard]] static zb::Optional<UdpSocket> create(bool isBlocking);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the port to which the socket is bound locally
@@ -107,7 +107,7 @@ public:
     /// \see `receive`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Status send(const void* data, base::SizeT size, IpAddress remoteAddress, unsigned short remotePort);
+    [[nodiscard]] Status send(const void* data, zb::SizeT size, IpAddress remoteAddress, unsigned short remotePort);
 
     ////////////////////////////////////////////////////////////
     /// \brief Receive raw data from a remote peer
@@ -131,9 +131,9 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Status receive(void*                      data,
-                                 base::SizeT                size,
-                                 base::SizeT&               received,
-                                 base::Optional<IpAddress>& remoteAddress,
+                                 zb::SizeT                size,
+                                 zb::SizeT&               received,
+                                 zb::Optional<IpAddress>& remoteAddress,
                                  unsigned short&            remotePort);
 
     ////////////////////////////////////////////////////////////
@@ -169,7 +169,7 @@ public:
     /// \see `send`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Status receive(Packet& packet, base::Optional<IpAddress>& remoteAddress, unsigned short& remotePort);
+    [[nodiscard]] Status receive(Packet& packet, zb::Optional<IpAddress>& remoteAddress, unsigned short& remotePort);
 
 private:
     ////////////////////////////////////////////////////////////
@@ -181,7 +181,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    base::Vector<unsigned char> m_buffer; //!< Temporary buffer holding the received data in Receive(Packet)
+    zb::Vector<unsigned char> m_buffer; //!< Temporary buffer holding the received data in Receive(Packet)
 };
 
 } // namespace za
@@ -243,7 +243,7 @@ private:
 ///
 /// // Receive an answer (most likely from 192.168.1.50, but could be anyone else)
 /// char buffer[1024];
-/// base::SizeT received = 0;
+/// zb::SizeT received = 0;
 /// zb::Optional<za::IpAddress> sender;
 /// unsigned short port;
 /// if (socket.receive(buffer, sizeof(buffer), received, sender, port) == za::Socket::Status::Done)
@@ -257,7 +257,7 @@ private:
 ///
 /// // Receive a message from anyone
 /// char buffer[1024];
-/// base::SizeT received = 0;
+/// zb::SizeT received = 0;
 /// zb::Optional<za::IpAddress> sender;
 /// unsigned short port;
 /// if (socket.receive(buffer, sizeof(buffer), received, sender, port) == za::Socket::Status::Done)

@@ -25,7 +25,7 @@ namespace
 namespace FmtTest // for unity builds
 {
 ////////////////////////////////////////////////////////////
-/// Helper: capture the result of `fmtIntoBuffer` as a `base::StringView`
+/// Helper: capture the result of `fmtIntoBuffer` as a `zb::StringView`
 /// over `buffer`, returning a zero-length view on failure.
 ////////////////////////////////////////////////////////////
 template <typename... Args>
@@ -507,7 +507,7 @@ TEST_CASE("[System] Fmt.hpp - fmtIntoBuffer raw API")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[System] Fmt.hpp - fmtTo() into base::String")
+TEST_CASE("[System] Fmt.hpp - fmtTo() into zb::String")
 {
     SECTION("Appends to non-empty sink")
     {

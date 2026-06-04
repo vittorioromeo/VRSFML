@@ -45,7 +45,7 @@ template <ScnSource S, typename T>
                       "No matching `scnArg` overload for this target type. Include the body header that "
                       "provides it (e.g. <ZancleBase/Scn/ScnNumeric.hpp> for int/float/bool, "
                       "<ZancleBase/Scn/ScnChar.hpp> for char, <ZancleBase/Scn/ScnString.hpp> for "
-                      "base::String) -- or provide your own `scnArg(MySource&, MyType&)` in MyType's or "
+                      "zb::String) -- or provide your own `scnArg(MySource&, MyType&)` in MyType's or "
                       "MySource's namespace.");
 
         return false;

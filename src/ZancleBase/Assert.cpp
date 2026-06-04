@@ -22,10 +22,10 @@ namespace zb::priv
 ////////////////////////////////////////////////////////////
 void assertFailure(const char* code, const char* file, const int line)
 {
-    std::printf("\n[[SFML ASSERTION FAILURE]]\n- %s:%d\n- ZB_ASSERT(%s);\n", file, line, code);
+    std::printf("\n[[ZANCLE ASSERTION FAILURE]]\n- %s:%d\n- ZB_ASSERT(%s);\n", file, line, code);
     printStackTrace();
 
-    base::abort();
+    zb::abort();
 }
 
 } // namespace zb::priv

@@ -28,7 +28,7 @@ struct [[nodiscard]] DrawQuadsSettings // NOLINT(cppcoreguidelines-pro-type-memb
 {
     ZB_REQUIRE_DESIGNATED_INITIALIZERS;
 
-    base::Span<const Vertex> vertexSpan;    //!< Range of vertices laid out as groups of 4 corners
+    zb::Span<const Vertex> vertexSpan;    //!< Range of vertices laid out as groups of 4 corners
     PrimitiveType            primitiveType; //!< Primitive type used for the expanded triangles
 };
 

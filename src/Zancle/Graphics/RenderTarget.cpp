@@ -222,7 +222,7 @@ struct [[nodiscard]] StatesCache
 
     BlendMode   lastBlendMode{BlendAlpha}; //!< Cached blending mode
     StencilMode lastStencilMode{};         //!< Cached stencil
-    base::U64   lastTextureId{0u};         //!< Cached texture
+    zb::U64   lastTextureId{0u};         //!< Cached texture
 
     GLuint lastProgramId{0u}; //!< GL id of the last used shader program
 };
@@ -401,7 +401,7 @@ RenderTarget::AutoBatchMode RenderTarget::getAutoBatchMode() const
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::setAutoBatchVertexThreshold(const base::SizeT threshold)
+void RenderTarget::setAutoBatchVertexThreshold(const zb::SizeT threshold)
 {
     if (m_autoBatchVertexThreshold == threshold)
         return;
@@ -412,14 +412,14 @@ void RenderTarget::setAutoBatchVertexThreshold(const base::SizeT threshold)
 
 
 ////////////////////////////////////////////////////////////
-base::SizeT RenderTarget::getAutoBatchVertexThreshold() const
+zb::SizeT RenderTarget::getAutoBatchVertexThreshold() const
 {
     return m_autoBatchVertexThreshold;
 }
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::reserveAutoBatchTriangles(const base::SizeT triangleCount)
+void RenderTarget::reserveAutoBatchTriangles(const zb::SizeT triangleCount)
 {
     if (triangleCount == 0u || m_autoBatchMode == AutoBatchMode::Disabled)
         return;
@@ -429,7 +429,7 @@ void RenderTarget::reserveAutoBatchTriangles(const base::SizeT triangleCount)
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::reserveAutoBatchQuads(const base::SizeT quadCount)
+void RenderTarget::reserveAutoBatchQuads(const zb::SizeT quadCount)
 {
     if (quadCount == 0u || m_autoBatchMode == AutoBatchMode::Disabled)
         return;
@@ -635,7 +635,7 @@ void RenderTarget::immediateDrawPersistentMappedIndexedVertices(
 {
 #ifdef ZA_OPENGL_ES
     priv::errMsg("FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES");
-    base::abort();
+    zb::abort();
 #else
     // Nothing to draw or inactive target
     if (settings.indexCount == 0u || !setActive(true))
@@ -669,7 +669,7 @@ void RenderTarget::immediateDrawDrawableBatch(const CPUDrawableBatch& drawableBa
 
 ////////////////////////////////////////////////////////////
 void RenderTarget::immediateDrawInstancedVertices(const DrawInstancedVerticesSettings&              settings,
-                                                  base::FunctionRef<void(InstanceAttributeBinder&)> setupFn,
+                                                  zb::FunctionRef<void(InstanceAttributeBinder&)> setupFn,
                                                   const RenderStates&                               states)
 {
     // Nothing to draw or inactive target
@@ -691,7 +691,7 @@ void RenderTarget::immediateDrawInstancedVertices(const DrawInstancedVerticesSet
 
 ////////////////////////////////////////////////////////////
 void RenderTarget::immediateDrawInstancedIndexedVertices(const DrawInstancedIndexedVerticesSettings&       settings,
-                                                         base::FunctionRef<void(InstanceAttributeBinder&)> setupFn,
+                                                         zb::FunctionRef<void(InstanceAttributeBinder&)> setupFn,
                                                          const RenderStates&                               states)
 {
     // Nothing to draw or inactive target
@@ -760,8 +760,8 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, const RenderStates& st
 
 ////////////////////////////////////////////////////////////
 void RenderTarget::draw(const VertexBuffer& vertexBuffer,
-                        const base::SizeT   firstVertex,
-                        base::SizeT         vertexCount,
+                        const zb::SizeT   firstVertex,
+                        zb::SizeT         vertexCount,
                         const RenderStates& states)
 {
     if (m_autoBatchMode != AutoBatchMode::Disabled)
@@ -772,7 +772,7 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer,
         return;
 
     // Clamp vertexCount to something that makes sense
-    vertexCount = base::min(vertexCount, vertexBuffer.getVertexCount() - firstVertex);
+    vertexCount = zb::min(vertexCount, vertexBuffer.getVertexCount() - firstVertex);
 
     // Nothing to draw or inactive target
 
@@ -906,7 +906,7 @@ void RenderTarget::drawIndexedVertices(const DrawIndexedVerticesSettings& settin
 void RenderTarget::drawQuads(const DrawQuadsSettings& settings, const RenderStates& states)
 {
     // Keep the public per-call constants in sync with the precomputed index array.
-    static_assert(drawQuadsMaxQuadsPerCall * 6u == base::getArraySize(RenderTargetImpl::precomputedQuadIndices));
+    static_assert(drawQuadsMaxQuadsPerCall * 6u == zb::getArraySize(RenderTargetImpl::precomputedQuadIndices));
     static_assert(drawQuadsMaxVerticesPerCall == drawQuadsMaxQuadsPerCall * 4u);
 
     const auto vertexCount = settings.vertexSpan.size();
@@ -935,7 +935,7 @@ void RenderTarget::drawPersistentMappedIndexedVertices(const DrawPersistentMappe
 
 ////////////////////////////////////////////////////////////
 void RenderTarget::drawInstancedVertices(const DrawInstancedVerticesSettings&              settings,
-                                         base::FunctionRef<void(InstanceAttributeBinder&)> setupFn,
+                                         zb::FunctionRef<void(InstanceAttributeBinder&)> setupFn,
                                          const RenderStates&                               states)
 {
     flush();
@@ -945,7 +945,7 @@ void RenderTarget::drawInstancedVertices(const DrawInstancedVerticesSettings&   
 
 ////////////////////////////////////////////////////////////
 void RenderTarget::drawInstancedIndexedVertices(const DrawInstancedIndexedVerticesSettings&       settings,
-                                                base::FunctionRef<void(InstanceAttributeBinder&)> setupFn,
+                                                zb::FunctionRef<void(InstanceAttributeBinder&)> setupFn,
                                                 const RenderStates&                               states)
 {
     flush();
@@ -1513,7 +1513,7 @@ void RenderTarget::cleanupDraw(const RenderStates& states)
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::invokePrimitiveDrawCall(const PrimitiveType type, const base::SizeT firstVertex, const base::SizeT vertexCount)
+void RenderTarget::invokePrimitiveDrawCall(const PrimitiveType type, const zb::SizeT firstVertex, const zb::SizeT vertexCount)
 {
     m_currentDrawStats.drawCalls += 1u;
     m_currentDrawStats.drawnVertices += vertexCount;
@@ -1525,7 +1525,7 @@ void RenderTarget::invokePrimitiveDrawCall(const PrimitiveType type, const base:
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::invokePrimitiveDrawCallIndexed(const PrimitiveType type, const base::SizeT indexCount, const base::SizeT indexOffset)
+void RenderTarget::invokePrimitiveDrawCallIndexed(const PrimitiveType type, const zb::SizeT indexCount, const zb::SizeT indexOffset)
 {
     m_currentDrawStats.drawCalls += 1u;
     m_currentDrawStats.drawnVertices += indexCount;
@@ -1540,13 +1540,13 @@ void RenderTarget::invokePrimitiveDrawCallIndexed(const PrimitiveType type, cons
 ////////////////////////////////////////////////////////////
 void RenderTarget::invokePrimitiveDrawCallIndexedBaseVertex(
     [[maybe_unused]] const PrimitiveType type,
-    [[maybe_unused]] const base::SizeT   indexCount,
-    [[maybe_unused]] const base::SizeT   indexOffset,
-    [[maybe_unused]] const base::SizeT   vertexOffset)
+    [[maybe_unused]] const zb::SizeT   indexCount,
+    [[maybe_unused]] const zb::SizeT   indexOffset,
+    [[maybe_unused]] const zb::SizeT   vertexOffset)
 {
 #ifdef ZA_OPENGL_ES
     priv::errMsg("FATAL ERROR: `glDrawElementsBaseVertex` only available in OpenGL ES 3.2+ (unsupported)");
-    base::abort();
+    zb::abort();
 #else
     m_currentDrawStats.drawCalls += 1u;
     m_currentDrawStats.drawnVertices += indexCount;
@@ -1562,9 +1562,9 @@ void RenderTarget::invokePrimitiveDrawCallIndexedBaseVertex(
 
 ////////////////////////////////////////////////////////////
 void RenderTarget::invokeInstancedPrimitiveDrawCall(const PrimitiveType type,
-                                                    const base::SizeT   vertexOffset,
-                                                    const base::SizeT   vertexCount,
-                                                    const base::SizeT   instanceCount)
+                                                    const zb::SizeT   vertexOffset,
+                                                    const zb::SizeT   vertexCount,
+                                                    const zb::SizeT   instanceCount)
 {
     m_currentDrawStats.drawCalls += 1u;
     m_currentDrawStats.drawnVertices += vertexCount * instanceCount;
@@ -1579,9 +1579,9 @@ void RenderTarget::invokeInstancedPrimitiveDrawCall(const PrimitiveType type,
 ////////////////////////////////////////////////////////////
 void RenderTarget::invokeInstancedPrimitiveDrawCallIndexed(
     const PrimitiveType type,
-    const base::SizeT   indexOffset,
-    const base::SizeT   indexCount,
-    const base::SizeT   instanceCount)
+    const zb::SizeT   indexOffset,
+    const zb::SizeT   indexCount,
+    const zb::SizeT   instanceCount)
 {
     m_currentDrawStats.drawCalls += 1u;
     m_currentDrawStats.drawnVertices += indexCount * instanceCount;

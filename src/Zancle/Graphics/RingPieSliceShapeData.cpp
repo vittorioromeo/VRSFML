@@ -90,7 +90,7 @@ Vec2f RingPieSliceShapeData::getCentroid() const noexcept
     const float absSweep = ZB_MATH_FABSF(sweepRad);
     const float halfSwp  = absSweep * 0.5f;
 
-    const auto [sinHalf, cosHalf] = base::sinCosLookup(base::positiveRemainder(halfSwp, base::tau));
+    const auto [sinHalf, cosHalf] = zb::sinCosLookup(zb::positiveRemainder(halfSwp, zb::tau));
 
     const float d = priv::annulusSectorCentroidDistance(outerRadius, innerRadius, absSweep, sinHalf);
 
@@ -101,7 +101,7 @@ Vec2f RingPieSliceShapeData::getCentroid() const noexcept
     // (Works for negative sweep too: the bisector is always the angular midpoint of the sector.)
     const float bisector = startAngle.asRadians() + sweepRad * 0.5f;
 
-    const auto [sinB, cosB] = base::sinCosLookup(base::positiveRemainder(bisector, base::tau));
+    const auto [sinB, cosB] = zb::sinCosLookup(zb::positiveRemainder(bisector, zb::tau));
 
     return {center.x + d * cosB, center.y + d * sinB};
 }

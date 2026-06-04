@@ -121,7 +121,7 @@ void SensorImpl::setEnabled(bool enabled)
 const ASensor* SensorImpl::getDefaultSensor(Sensor::Type sensor)
 {
     // Find the Android sensor type
-    static constexpr base::EnumArray<Sensor::Type, int, Sensor::Count> types =
+    static constexpr zb::EnumArray<Sensor::Type, int, Sensor::Count> types =
         {ASENSOR_TYPE_ACCELEROMETER,
          ASENSOR_TYPE_GYROSCOPE,
          ASENSOR_TYPE_MAGNETIC_FIELD,
@@ -143,7 +143,7 @@ int SensorImpl::processSensorEvents(int /* fd */, int /* events */, void* /* sen
 
     while (ASensorEventQueue_getEvents(sensorEventQueue, &event, 1) > 0)
     {
-        base::Optional<Sensor::Type> type;
+        zb::Optional<Sensor::Type> type;
         Vec3f                        data;
 
         switch (event.type)

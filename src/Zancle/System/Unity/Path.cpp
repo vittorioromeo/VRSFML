@@ -53,40 +53,40 @@ struct Path::Impl
     Impl() = default;
 
     template <typename T>
-        requires(!base::isSame<base::RemoveCVRefIndirect<T>, Impl>)
+        requires(!zb::isSame<zb::RemoveCVRefIndirect<T>, Impl>)
     explicit Impl(T&& source) : fsPath{ZB_FORWARD(source)}
     {
     }
 
-    explicit Impl(const base::String& source) : fsPath{std::string_view{source.data(), source.size()}}
+    explicit Impl(const zb::String& source) : fsPath{std::string_view{source.data(), source.size()}}
     {
     }
 };
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Path> Path::getTempDirectory()
+zb::Optional<Path> Path::getTempDirectory()
 {
     std::error_code ec;
     auto            tmp = std::filesystem::temp_directory_path(ec);
 
     if (ec)
-        return base::nullOpt;
+        return zb::nullOpt;
 
-    return base::makeOptional(Path{0, &tmp});
+    return zb::makeOptional(Path{0, &tmp});
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Path> Path::getCurrentDirectory()
+zb::Optional<Path> Path::getCurrentDirectory()
 {
     std::error_code ec;
     auto            cwd = std::filesystem::current_path(ec);
 
     if (ec)
-        return base::nullOpt;
+        return zb::nullOpt;
 
-    return base::makeOptional(Path{0, &cwd});
+    return zb::makeOptional(Path{0, &cwd});
 }
 
 
@@ -100,17 +100,17 @@ bool Path::setCurrentDirectory(const Path& path)
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Path> Path::getHomeDirectory()
+zb::Optional<Path> Path::getHomeDirectory()
 {
 #ifdef ZA_SYSTEM_WINDOWS
     if (const char* const userProfile = std::getenv("USERPROFILE"))
-        return base::makeOptional(Path{userProfile});
+        return zb::makeOptional(Path{userProfile});
 #else
     if (const char* const home = std::getenv("HOME"))
-        return base::makeOptional(Path{home});
+        return zb::makeOptional(Path{home});
 #endif
 
-    return base::nullOpt;
+    return zb::nullOpt;
 }
 
 
@@ -124,7 +124,7 @@ Path::Path(const T& source) : m_impl(source)
 {
 }
 
-template Path::Path(const base::String&);
+template Path::Path(const zb::String&);
 template Path::Path(const std::string&);
 template Path::Path(const std::basic_string<wchar_t>&);
 template Path::Path(const std::u32string&);
@@ -179,15 +179,15 @@ Path Path::getExtension() const
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Path> Path::getAbsolute() const
+zb::Optional<Path> Path::getAbsolute() const
 {
     std::error_code ec;
     const auto      abs = std::filesystem::absolute(m_impl->fsPath, ec);
 
     if (ec)
-        return base::nullOpt;
+        return zb::nullOpt;
 
-    return base::makeOptional(Path{0, &abs});
+    return zb::makeOptional(Path{0, &abs});
 }
 
 
@@ -246,35 +246,35 @@ bool Path::isSymlink() const
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<base::U64> Path::getFileSize() const
+zb::Optional<zb::U64> Path::getFileSize() const
 {
     std::error_code ec;
     const auto      size = std::filesystem::file_size(m_impl->fsPath, ec);
 
     if (ec)
-        return base::nullOpt;
+        return zb::nullOpt;
 
-    return base::makeOptional(static_cast<base::U64>(size));
+    return zb::makeOptional(static_cast<zb::U64>(size));
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<base::I64> Path::getLastWriteTimeSecondsSinceEpoch() const
+zb::Optional<zb::I64> Path::getLastWriteTimeSecondsSinceEpoch() const
 {
     std::error_code ec;
     const auto      ftime = std::filesystem::last_write_time(m_impl->fsPath, ec);
 
     if (ec)
-        return base::nullOpt;
+        return zb::nullOpt;
 
     const auto sysTime = std::chrono::file_clock::to_sys(ftime);
     const auto seconds = std::chrono::duration_cast<std::chrono::seconds>(sysTime.time_since_epoch()).count();
-    return base::makeOptional(static_cast<base::I64>(seconds));
+    return zb::makeOptional(static_cast<zb::I64>(seconds));
 }
 
 
 ////////////////////////////////////////////////////////////
-bool Path::extensionIs(const base::StringView str) const
+bool Path::extensionIs(const zb::StringView str) const
 {
     // Delegate the "what is the extension substring" decision to
     // `std::filesystem::path::extension()` so we always match its
@@ -288,7 +288,7 @@ bool Path::extensionIs(const base::StringView str) const
     if (nativeExt.size() != str.size())
         return false;
 
-    for (base::SizeT i = 0u; i < nativeExt.size(); ++i)
+    for (zb::SizeT i = 0u; i < nativeExt.size(); ++i)
         if (asciiToLower(static_cast<char>(nativeExt[i])) != asciiToLower(str[i]))
             return false;
 
@@ -348,7 +348,7 @@ bool Path::renameTo(const Path& target) const
 
 
 ////////////////////////////////////////////////////////////
-bool Path::forEachEntry(base::FunctionRef<void(const Path&)> callback) const
+bool Path::forEachEntry(zb::FunctionRef<void(const Path&)> callback) const
 {
     std::error_code                     ec;
     std::filesystem::directory_iterator it(m_impl->fsPath, ec);
@@ -418,12 +418,12 @@ T Path::to() const
 {
     if constexpr (ZB_IS_SAME(T, std::filesystem::path))
         return m_impl->fsPath;
-    else if constexpr (ZB_IS_SAME(T, base::String))
+    else if constexpr (ZB_IS_SAME(T, zb::String))
     {
         // `u8string()` is locale-independent; `string()` throws on MinGW/Clang64 when the
         // path contains characters outside the current codepage.
         const auto res = m_impl->fsPath.u8string();
-        return base::String{reinterpret_cast<const char*>(res.data()), res.size()};
+        return zb::String{reinterpret_cast<const char*>(res.data()), res.size()};
     }
     else if constexpr (ZB_IS_SAME(T, std::string))
     {
@@ -461,7 +461,7 @@ bool Path::operator==(const T* str) const
 ////////////////////////////////////////////////////////////
 template std::filesystem::path Path::to<std::filesystem::path>() const;
 template std::string           Path::to<std::string>() const;
-template base::String          Path::to<base::String>() const;
+template zb::String          Path::to<zb::String>() const;
 template std::u8string         Path::to<std::u8string>() const;
 template std::u32string        Path::to<std::u32string>() const;
 template std::wstring          Path::to<std::wstring>() const;
@@ -472,12 +472,12 @@ template std::wstring          Path::to<std::wstring>() const;
 
 
 ////////////////////////////////////////////////////////////
-base::FmtResult fmtArg(base::FmtSink& sink, const Path& path, const base::FmtSpec&)
+zb::FmtResult fmtArg(zb::FmtSink& sink, const Path& path, const zb::FmtSpec&)
 {
     // Same rationale as the stream-insertion operator above: emit UTF-8 to avoid
     // locale-dependent encoding of `std::filesystem::path` on Windows.
     const auto u8 = path.to<std::string>();
-    return sink.append(u8.data(), static_cast<base::SizeT>(u8.size()));
+    return sink.append(u8.data(), static_cast<zb::SizeT>(u8.size()));
 }
 
 } // namespace za
@@ -487,17 +487,17 @@ base::FmtResult fmtArg(base::FmtSink& sink, const Path& path, const base::FmtSpe
 namespace za::priv
 {
 ////////////////////////////////////////////////////////////
-base::FmtResult fmtArg(base::FmtSink& sink, const PathDebugFormatter& dbg, const base::FmtSpec&)
+zb::FmtResult fmtArg(zb::FmtSink& sink, const PathDebugFormatter& dbg, const zb::FmtSpec&)
 {
     // Two debug lines: input path + resolved absolute path (or sentinel).
     ZB_FMT_TRY(sink.append("    Provided path: ", 19u));
-    ZB_FMT_TRY(fmtArg(sink, dbg.path, base::FmtSpec{}));
+    ZB_FMT_TRY(fmtArg(sink, dbg.path, zb::FmtSpec{}));
     ZB_FMT_TRY(sink.appendChar('\n'));
 
     ZB_FMT_TRY(sink.append("    Absolute path: ", 19u));
 
     if (const auto abs = dbg.path.getAbsolute(); abs.hasValue())
-        return fmtArg(sink, *abs, base::FmtSpec{});
+        return fmtArg(sink, *abs, zb::FmtSpec{});
 
     return sink.append("<unavailable>", 13u);
 }

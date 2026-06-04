@@ -60,9 +60,9 @@ namespace za::priv
 ////////////////////////////////////////////////////////////
 struct SoundFileWriterWav::Impl
 {
-    base::Optional<za::OutFile> file;             //!< Output file handle (empty before `open()`)
+    zb::Optional<za::OutFile> file;             //!< Output file handle (empty before `open()`)
     unsigned int                channelCount{};   //!< Channel count of the sound being written
-    base::SizeT                 remapTable[18]{}; //!< Table we use to remap source to target channel order
+    zb::SizeT                 remapTable[18]{}; //!< Table we use to remap source to target channel order
 };
 
 
@@ -93,11 +93,11 @@ SoundFileWriterWav::~SoundFileWriterWav()
     if (!file.flush())
         reportFailure("flush");
 
-    base::PtrDiffT fileSizeRaw = 0;
+    zb::PtrDiffT fileSizeRaw = 0;
     if (!file.tellPos(fileSizeRaw))
         reportFailure("tellPos");
 
-    const auto fileSize = static_cast<base::U32>(fileSizeRaw);
+    const auto fileSize = static_cast<zb::U32>(fileSizeRaw);
 
     if (!file.seekPos(4) || !encode(file, fileSize - 8)) // 8 bytes RIFF header
         reportFailure("RIFF chunk-size patch");
@@ -155,11 +155,11 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
 
         struct SupportedChannel
         {
-            base::U32    bit;
+            zb::U32    bit;
             SoundChannel channel;
         };
 
-        base::Vector<SupportedChannel>
+        zb::Vector<SupportedChannel>
             targetChannelMap{{speakerFrontLeft, SoundChannel::FrontLeft},
                              SupportedChannel{speakerFrontRight, SoundChannel::FrontRight},
                              SupportedChannel{speakerFrontCenter, SoundChannel::FrontCenter},
@@ -195,7 +195,7 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
         // Construct the target channel map by removing unused channels
         for (auto* iter = targetChannelMap.begin(); iter != targetChannelMap.end();)
         {
-            if (base::find(channelMap.begin(), channelMap.end(), iter->channel) == channelMap.end())
+            if (zb::find(channelMap.begin(), channelMap.end(), iter->channel) == channelMap.end())
                 iter = targetChannelMap.erase(iter);
             else
                 ++iter;
@@ -204,7 +204,7 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
         // Verify that all the input channels exist in the target channel map
         for (const SoundChannel channel : channelMap)
         {
-            if (base::findIf(targetChannelMap.begin(), targetChannelMap.end(), [channel](const SupportedChannel& c) {
+            if (zb::findIf(targetChannelMap.begin(), targetChannelMap.end(), [channel](const SupportedChannel& c) {
                 return c.channel == channel;
             }) == targetChannelMap.end())
             {
@@ -215,8 +215,8 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
 
         // Build the remap table
         for (auto i = 0u; i < channelCount; ++i)
-            m_impl->remapTable[i] = static_cast<base::SizeT>(
-                base::find(channelMap.begin(), channelMap.end(), targetChannelMap[i].channel) - channelMap.begin());
+            m_impl->remapTable[i] = static_cast<zb::SizeT>(
+                zb::find(channelMap.begin(), channelMap.end(), targetChannelMap[i].channel) - channelMap.begin());
 
         // Generate the channel mask
         for (const auto& channel : targetChannelMap)
@@ -242,7 +242,7 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
 
 
 ////////////////////////////////////////////////////////////
-void SoundFileWriterWav::write(const base::I16* samples, base::U64 count)
+void SoundFileWriterWav::write(const zb::I16* samples, zb::U64 count)
 {
     ZB_ASSERT(count % m_impl->channelCount == 0);
     ZB_ASSERT(m_impl->file.hasValue() && "WAV writer: `write` called before `open`");
@@ -284,21 +284,21 @@ void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int chann
     };
 
     constexpr const char mainChunkId[]{'R', 'I', 'F', 'F'};
-    if (!file.write(mainChunkId, base::getArraySize(mainChunkId)))
+    if (!file.write(mainChunkId, zb::getArraySize(mainChunkId)))
     {
         (void)fail();
         return;
     }
 
     // Placeholder; main chunk size will be patched in the destructor.
-    if (!encode(file, base::U32{0}))
+    if (!encode(file, zb::U32{0}))
     {
         (void)fail();
         return;
     }
 
     constexpr const char mainChunkFormat[]{'W', 'A', 'V', 'E'};
-    if (!file.write(mainChunkFormat, base::getArraySize(mainChunkFormat)))
+    if (!file.write(mainChunkFormat, zb::getArraySize(mainChunkFormat)))
     {
         (void)fail();
         return;
@@ -306,7 +306,7 @@ void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int chann
 
     // Sub-chunk 1 ("format") id and size
     constexpr const char fmtChunkId[]{'f', 'm', 't', ' '};
-    if (!file.write(fmtChunkId, base::getArraySize(fmtChunkId)))
+    if (!file.write(fmtChunkId, zb::getArraySize(fmtChunkId)))
     {
         (void)fail();
         return;
@@ -314,12 +314,12 @@ void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int chann
 
     if (channelCount > 2)
     {
-        if (!encode(file, base::U32{40}))
+        if (!encode(file, zb::U32{40}))
         {
             (void)fail();
             return;
         }
-        if (!encode(file, base::U16{65'534}))
+        if (!encode(file, zb::U16{65'534}))
         {
             (void)fail();
             return;
@@ -327,12 +327,12 @@ void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int chann
     }
     else
     {
-        if (!encode(file, base::U32{16}))
+        if (!encode(file, zb::U32{16}))
         {
             (void)fail();
             return;
         }
-        if (!encode(file, base::U16{1}))
+        if (!encode(file, zb::U16{1}))
         {
             (void)fail();
             return;
@@ -340,7 +340,7 @@ void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int chann
     }
 
     // Sound attributes
-    if (!encode(file, static_cast<base::U16>(channelCount)))
+    if (!encode(file, static_cast<zb::U16>(channelCount)))
     {
         (void)fail();
         return;
@@ -350,18 +350,18 @@ void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int chann
         (void)fail();
         return;
     }
-    if (!encode(file, base::U32{sampleRate * channelCount * 2}))
+    if (!encode(file, zb::U32{sampleRate * channelCount * 2}))
     {
         (void)fail();
         return;
     } // byteRate
-    if (!encode(file, static_cast<base::U16>(channelCount * 2)))
+    if (!encode(file, static_cast<zb::U16>(channelCount * 2)))
     {
         (void)fail();
         return;
     } // blockAlign
 
-    constexpr base::U16 bitsPerSample = 16;
+    constexpr zb::U16 bitsPerSample = 16;
     if (!encode(file, bitsPerSample))
     {
         (void)fail();
@@ -370,7 +370,7 @@ void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int chann
 
     if (channelCount > 2)
     {
-        if (!encode(file, base::U16{16}))
+        if (!encode(file, zb::U16{16}))
         {
             (void)fail();
             return;
@@ -389,7 +389,7 @@ void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int chann
         // PCM subformat
         constexpr char subformat[] =
             {'\x01', '\x00', '\x00', '\x00', '\x00', '\x00', '\x10', '\x00', '\x80', '\x00', '\x00', '\xAA', '\x00', '\x38', '\x9B', '\x71'};
-        if (!file.write(subformat, base::getArraySize(subformat)))
+        if (!file.write(subformat, zb::getArraySize(subformat)))
         {
             (void)fail();
             return;
@@ -398,12 +398,12 @@ void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int chann
 
     // Sub-chunk 2 ("data") id and placeholder size (patched in the destructor)
     constexpr const char dataChunkId[]{'d', 'a', 't', 'a'};
-    if (!file.write(dataChunkId, base::getArraySize(dataChunkId)))
+    if (!file.write(dataChunkId, zb::getArraySize(dataChunkId)))
     {
         (void)fail();
         return;
     }
-    if (!encode(file, base::U32{0}))
+    if (!encode(file, zb::U32{0}))
     {
         (void)fail();
         return;

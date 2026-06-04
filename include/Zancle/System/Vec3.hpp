@@ -35,7 +35,7 @@ struct [[nodiscard]] Vec3
         static_assert(ZB_IS_FLOATING_POINT(T), "only supported for floating point types");
 
         // don't use `std::hypot` because of slow performance
-        return base::sqrt(x * x + y * y + z * z);
+        return zb::sqrt(x * x + y * y + z * z);
     }
 
 
@@ -263,7 +263,7 @@ struct [[nodiscard]] Vec3
 using Vec3i  = Vec3<int>;
 using Vec3u  = Vec3<unsigned int>;
 using Vec3f  = Vec3<float>;
-using Vec3uz = Vec3<base::SizeT>;
+using Vec3uz = Vec3<zb::SizeT>;
 
 } // namespace za
 

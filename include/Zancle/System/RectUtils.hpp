@@ -18,11 +18,11 @@ namespace za
 ////////////////////////////////////////////////////////////
 /// \brief Compute the intersection of two rectangles, handling negative sizes correctly
 ///
-/// \return Intersection rectangle if they overlap, `base::nullOpt` otherwise
+/// \return Intersection rectangle if they overlap, `zb::nullOpt` otherwise
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::pure]] constexpr base::Optional<Rect2<T>> findIntersection(const Rect2<T>& rect0, const Rect2<T>& rect1)
+[[nodiscard, gnu::pure]] constexpr zb::Optional<Rect2<T>> findIntersection(const Rect2<T>& rect0, const Rect2<T>& rect1)
 {
     // Rectangles with negative dimensions are allowed, so we must handle them correctly
 
@@ -50,7 +50,7 @@ template <typename T>
 
     // Early exit if no overlap on X axis
     if (interLeft >= interRight)
-        return base::nullOpt;
+        return zb::nullOpt;
 
     // Compute the intersection boundaries for the Y axis
     const T interTop    = ZB_MAX(r0MinY, r1MinY);
@@ -58,10 +58,10 @@ template <typename T>
 
     // Check for overlap on Y axis
     if (interTop >= interBottom)
-        return base::nullOpt;
+        return zb::nullOpt;
 
     // Intersection found
-    return base::makeOptional<Rect2<T>>(Vec2<T>{interLeft, interTop},
+    return zb::makeOptional<Rect2<T>>(Vec2<T>{interLeft, interTop},
                                         Vec2<T>{interRight - interLeft, interBottom - interTop});
 }
 

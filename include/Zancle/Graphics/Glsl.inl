@@ -36,7 +36,7 @@ ZA_GRAPHICS_API void copyMatrix(const Transform& source, Matrix<4, 4>& dest);
 /// \brief Copy array-based matrix with given number of elements
 ///
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] ZA_GRAPHICS_API inline void copyMatrix(const float* source, base::SizeT elements, float* dest)
+[[gnu::always_inline]] ZA_GRAPHICS_API inline void copyMatrix(const float* source, zb::SizeT elements, float* dest)
 {
     ZB_MEMCPY(dest, source, elements * sizeof(float));
 }
@@ -46,7 +46,7 @@ ZA_GRAPHICS_API void copyMatrix(const Transform& source, Matrix<4, 4>& dest);
 /// \brief Matrix type, used to set uniforms in GLSL
 ///
 ////////////////////////////////////////////////////////////
-template <base::SizeT Columns, base::SizeT Rows>
+template <zb::SizeT Columns, zb::SizeT Rows>
 struct [[nodiscard]] Matrix
 {
     ////////////////////////////////////////////////////////////

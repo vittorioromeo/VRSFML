@@ -66,10 +66,10 @@ public:
     /// \param channelCount Number of channels in the sound
     /// \param channelMap   Map of position in sample frame to sound channel
     ///
-    /// \return Output sound file on success, `base::nullOpt` otherwise
+    /// \return Output sound file on success, `zb::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<OutputSoundFile> openFromFile(
+    [[nodiscard]] static zb::Optional<OutputSoundFile> openFromFile(
         const Path&       filename,
         unsigned int      sampleRate,
         unsigned int      channelCount,
@@ -86,7 +86,7 @@ public:
     /// \param count       Number of samples to write
     ///
     ////////////////////////////////////////////////////////////
-    void write(const base::I16* samples, base::U64 count);
+    void write(const zb::I16* samples, zb::U64 count);
 
     ////////////////////////////////////////////////////////////
     /// \private
@@ -94,13 +94,13 @@ public:
     /// \brief Constructor from writer
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit OutputSoundFile(base::PassKey<OutputSoundFile>&&, base::UniquePtr<SoundFileWriter>&& writer);
+    [[nodiscard]] explicit OutputSoundFile(zb::PassKey<OutputSoundFile>&&, zb::UniquePtr<SoundFileWriter>&& writer);
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    base::UniquePtr<SoundFileWriter> m_writer; //!< Writer that handles I/O on the file's format
+    zb::UniquePtr<SoundFileWriter> m_writer; //!< Writer that handles I/O on the file's format
 };
 
 } // namespace za

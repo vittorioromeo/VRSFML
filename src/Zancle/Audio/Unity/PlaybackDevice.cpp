@@ -132,7 +132,7 @@ struct PlaybackDevice::Impl
 
 
 ////////////////////////////////////////////////////////////
-// TODO P1: change to a factory returning `base::Optional<PlaybackDevice>` so a
+// TODO P1: change to a factory returning `zb::Optional<PlaybackDevice>` so a
 //          failed device can never be observed by the caller.
 PlaybackDevice::PlaybackDevice(const PlaybackDeviceHandle& playbackDeviceHandle) : m_impl(playbackDeviceHandle)
 {
@@ -170,8 +170,8 @@ PlaybackDevice::~PlaybackDevice() = default;
 
     ma_engine_listener_set_cone(engine,
                                 0,
-                                base::clamp(listener.cone.innerAngle, Angle::Zero, Angle::Full).asRadians(),
-                                base::clamp(listener.cone.outerAngle, Angle::Zero, Angle::Full).asRadians(),
+                                zb::clamp(listener.cone.innerAngle, Angle::Zero, Angle::Full).asRadians(),
+                                zb::clamp(listener.cone.outerAngle, Angle::Zero, Angle::Full).asRadians(),
                                 listener.cone.outerGain);
 
     ma_engine_listener_set_world_up(engine, 0, listener.upVec.x, listener.upVec.y, listener.upVec.z);

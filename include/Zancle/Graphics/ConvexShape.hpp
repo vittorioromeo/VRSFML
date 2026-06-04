@@ -57,7 +57,7 @@ public:
         ZA_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
         ZA_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;
 
-        base::SizeT pointCount{0u}; //!< Initial number of points of the polygon
+        zb::SizeT pointCount{0u}; //!< Initial number of points of the polygon
     };
 
     ////////////////////////////////////////////////////////////
@@ -83,7 +83,7 @@ public:
     /// \see `getPointCount`
     ///
     ////////////////////////////////////////////////////////////
-    void setPointCount(base::SizeT count);
+    void setPointCount(zb::SizeT count);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the number of points of the polygon
@@ -93,7 +93,7 @@ public:
     /// \see `setPointCount`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::SizeT getPointCount() const;
+    [[nodiscard]] zb::SizeT getPointCount() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the position of a point
@@ -113,7 +113,7 @@ public:
     /// \see `getPoint`
     ///
     ////////////////////////////////////////////////////////////
-    void setPoint(base::SizeT index, Vec2f point);
+    void setPoint(zb::SizeT index, Vec2f point);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the position of a point
@@ -130,7 +130,7 @@ public:
     /// \see `setPoint`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vec2f getPoint(base::SizeT index) const;
+    [[nodiscard]] Vec2f getPoint(zb::SizeT index) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the geometric center of the convex shape
@@ -148,7 +148,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    base::Vector<Vec2f> m_points; //!< Points composing the convex polygon
+    zb::Vector<Vec2f> m_points; //!< Points composing the convex polygon
 };
 
 } // namespace za

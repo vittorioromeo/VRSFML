@@ -40,14 +40,14 @@ namespace za::ShapeUtils
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeEllipsePointFromAngleStep(
-    const base::SizeT index,
+    const zb::SizeT index,
     const float       startRadians,
     const float       angleStep,
     const float       hRadius,
     const float       vRadius) noexcept
 {
-    const float wrappedAngle = base::positiveRemainder(startRadians + static_cast<float>(index) * angleStep, base::tau);
-    const auto [sine, cosine] = base::sinCosLookup(wrappedAngle);
+    const float wrappedAngle = zb::positiveRemainder(startRadians + static_cast<float>(index) * angleStep, zb::tau);
+    const auto [sine, cosine] = zb::sinCosLookup(wrappedAngle);
 
     ZB_ASSERT_AND_ASSUME(sine >= -1.f && sine <= 1.f);
     ZB_ASSERT_AND_ASSUME(cosine >= -1.f && cosine <= 1.f);
@@ -72,13 +72,13 @@ namespace za::ShapeUtils
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeEllipsePoint(
-    const base::SizeT  index,
+    const zb::SizeT  index,
     const float        startRadians,
     const unsigned int pointCount,
     const float        hRadius,
     const float        vRadius) noexcept
 {
-    return computeEllipsePointFromAngleStep(index, startRadians, base::tau / static_cast<float>(pointCount), hRadius, vRadius);
+    return computeEllipsePointFromAngleStep(index, startRadians, zb::tau / static_cast<float>(pointCount), hRadius, vRadius);
 }
 
 ////////////////////////////////////////////////////////////
@@ -95,7 +95,7 @@ namespace za::ShapeUtils
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeCirclePointFromAngleStep(
-    const base::SizeT index,
+    const zb::SizeT index,
     const float       startRadians,
     const float       angleStep,
     const float       radius) noexcept
@@ -117,12 +117,12 @@ namespace za::ShapeUtils
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeCirclePoint(
-    const base::SizeT  index,
+    const zb::SizeT  index,
     const float        startRadians,
     const unsigned int pointCount,
     const float        radius) noexcept
 {
-    return computeCirclePointFromAngleStep(index, startRadians, base::tau / static_cast<float>(pointCount), radius);
+    return computeCirclePointFromAngleStep(index, startRadians, zb::tau / static_cast<float>(pointCount), radius);
 }
 
 ////////////////////////////////////////////////////////////
@@ -140,7 +140,7 @@ namespace za::ShapeUtils
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeRectanglePoint(
-    const base::SizeT index,
+    const zb::SizeT index,
     const Vec2f       size) noexcept
 {
     ZB_ASSERT_AND_ASSUME(index <= 4u);
@@ -167,7 +167,7 @@ namespace za::ShapeUtils
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeRoundedRectanglePoint(
-    const base::SizeT  index,
+    const zb::SizeT  index,
     const Vec2f        size,
     const float        cornerRadius,
     const unsigned int cornerPointCount) noexcept
@@ -175,10 +175,10 @@ namespace za::ShapeUtils
     [[maybe_unused]] const auto totalNumPoints = cornerPointCount * 4u;
     ZB_ASSERT_AND_ASSUME(index < totalNumPoints);
 
-    const base::SizeT centerIndex = index / cornerPointCount;
+    const zb::SizeT centerIndex = index / cornerPointCount;
     ZB_ASSERT_AND_ASSUME(centerIndex <= 3u);
 
-    const float deltaAngle = (base::halfPi) / static_cast<float>(cornerPointCount - 1u);
+    const float deltaAngle = (zb::halfPi) / static_cast<float>(cornerPointCount - 1u);
 
     // Corner order: TL (0), TR (1), BR (2), BL (3). This traces the perimeter CW-visually in screen
     // space (y-down) so that outline normals point inward -- keeps `outlineThickness > 0` on top of
@@ -188,11 +188,11 @@ namespace za::ShapeUtils
 
     // Base angle per corner: TL starts at `pi` (west), TR at `3*pi/2` (north), BR at `0` (east),
     // BL at `pi/2` (south) -- measured in the (cos, sin) screen convention used below.
-    const float baseAngle = base::pi + static_cast<float>(centerIndex) * base::halfPi;
+    const float baseAngle = zb::pi + static_cast<float>(centerIndex) * zb::halfPi;
 
-    const base::SizeT localIndex = index - centerIndex * cornerPointCount;
-    const float angle = base::positiveRemainder(baseAngle + deltaAngle * static_cast<float>(localIndex), base::tau);
-    const auto [sine, cosine] = base::sinCosLookup(angle);
+    const zb::SizeT localIndex = index - centerIndex * cornerPointCount;
+    const float angle = zb::positiveRemainder(baseAngle + deltaAngle * static_cast<float>(localIndex), zb::tau);
+    const auto [sine, cosine] = zb::sinCosLookup(angle);
     return center + Vec2f{cornerRadius * cosine, cornerRadius * sine};
 }
 
@@ -221,7 +221,7 @@ namespace za::ShapeUtils
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeArrowPoint(
-    const base::SizeT index,
+    const zb::SizeT index,
     const float       shaftLength,
     const float       shaftWidth,
     const float       headLength,
@@ -308,7 +308,7 @@ namespace za::ShapeUtils
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computePieSlicePointFromArcAngleStep(
-    const base::SizeT index,
+    const zb::SizeT index,
     const float       radius,
     const float       arcAngleStep,
     const float       startAngle) noexcept
@@ -326,8 +326,8 @@ namespace za::ShapeUtils
     // These points span `(pointCount - 2)` segments along the arc.
 
     const auto  arcPointStep  = static_cast<float>(index - 1u);
-    const float wrappedAngle  = base::positiveRemainder(startAngle + arcPointStep * arcAngleStep, base::tau);
-    const auto [sine, cosine] = base::sinCosLookup(wrappedAngle);
+    const float wrappedAngle  = zb::positiveRemainder(startAngle + arcPointStep * arcAngleStep, zb::tau);
+    const auto [sine, cosine] = zb::sinCosLookup(wrappedAngle);
 
     ZB_ASSERT_AND_ASSUME(sine >= -1.f && sine <= 1.f);
     ZB_ASSERT_AND_ASSUME(cosine >= -1.f && cosine <= 1.f);
@@ -375,7 +375,7 @@ namespace za::ShapeUtils
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computePieSlicePoint(
-    const base::SizeT  index,
+    const zb::SizeT  index,
     const float        radius,
     const float        startAngle,
     const float        sweepAngle,
@@ -393,7 +393,7 @@ namespace za::ShapeUtils
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeStarPointFromAngleStep(
-    const base::SizeT index,
+    const zb::SizeT index,
     const float       angleStep,
     const float       outerRadius,
     const float       innerRadius) noexcept
@@ -401,14 +401,14 @@ namespace za::ShapeUtils
     ZB_ASSERT_AND_ASSUME(outerRadius >= 0.f);
     ZB_ASSERT_AND_ASSUME(innerRadius >= 0.f);
 
-    float angle = static_cast<float>(index) * angleStep - base::halfPi; // Start from top (-pi/2)
+    float angle = static_cast<float>(index) * angleStep - zb::halfPi; // Start from top (-pi/2)
 
     if (angle < 0.f)
-        angle += base::tau;
+        angle += zb::tau;
 
     const float radius = (index % 2u == 0u) ? outerRadius : innerRadius;
 
-    const auto [sine, cosine] = base::sinCosLookup(angle);
+    const auto [sine, cosine] = zb::sinCosLookup(angle);
 
     ZB_ASSERT_AND_ASSUME(sine >= -1.f && sine <= 1.f);
     ZB_ASSERT_AND_ASSUME(cosine >= -1.f && cosine <= 1.f);
@@ -437,7 +437,7 @@ namespace za::ShapeUtils
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeStarPoint(
-    const base::SizeT  index,
+    const zb::SizeT  index,
     const unsigned int pointCount,
     const float        outerRadius,
     const float        innerRadius) noexcept
@@ -445,7 +445,7 @@ namespace za::ShapeUtils
     ZB_ASSERT_AND_ASSUME(pointCount >= 2u);
     ZB_ASSERT_AND_ASSUME(index < 2u * pointCount);
 
-    const float angleStep = base::tau / static_cast<float>(2u * pointCount);
+    const float angleStep = zb::tau / static_cast<float>(2u * pointCount);
 
     return computeStarPointFromAngleStep(index, angleStep, outerRadius, innerRadius);
 }
@@ -455,7 +455,7 @@ namespace za::ShapeUtils
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr auto computeRingPointsFromAngleStep(
-    const base::SizeT index,
+    const zb::SizeT index,
     const float       startRadians,
     const float       angleStep,
     const float       outerRadius,
@@ -464,8 +464,8 @@ namespace za::ShapeUtils
     ZB_ASSERT_AND_ASSUME(outerRadius >= 0.f);
     ZB_ASSERT_AND_ASSUME(innerRadius >= 0.f);
 
-    const float wrappedAngle = base::positiveRemainder(startRadians + static_cast<float>(index) * angleStep, base::tau);
-    const auto [sine, cosine] = base::sinCosLookup(wrappedAngle);
+    const float wrappedAngle = zb::positiveRemainder(startRadians + static_cast<float>(index) * angleStep, zb::tau);
+    const auto [sine, cosine] = zb::sinCosLookup(wrappedAngle);
 
     ZB_ASSERT_AND_ASSUME(sine >= -1.f && sine <= 1.f);
     ZB_ASSERT_AND_ASSUME(cosine >= -1.f && cosine <= 1.f);
@@ -504,7 +504,7 @@ namespace za::ShapeUtils
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeCrossPoint(
-    const base::SizeT index,
+    const zb::SizeT index,
     const Vec2f       size,
     const float       armThickness) noexcept
 {
@@ -550,7 +550,7 @@ namespace za::ShapeUtils
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeTrapezoidPoint(
-    const base::SizeT index,
+    const zb::SizeT index,
     const float       topWidth,
     const float       bottomWidth,
     const float       height) noexcept
@@ -602,7 +602,7 @@ namespace za::ShapeUtils
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeChevronPoint(
-    const base::SizeT index,
+    const zb::SizeT index,
     const Vec2f       size,
     const float       thickness) noexcept
 {
@@ -661,7 +661,7 @@ namespace za::ShapeUtils
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeHeartPoint(
-    const base::SizeT  index,
+    const zb::SizeT  index,
     const unsigned int pointCount,
     const Vec2f        size) noexcept
 {
@@ -676,9 +676,9 @@ namespace za::ShapeUtils
     constexpr float kYMax  = 12.f; // analytic y_max ~= 11.93; 12 gives a tiny safety margin
     constexpr float kYMin  = -17.f;
 
-    const float t = base::tau * static_cast<float>(index) / static_cast<float>(pointCount);
+    const float t = zb::tau * static_cast<float>(index) / static_cast<float>(pointCount);
 
-    const auto [sinT, cosT] = base::sinCosLookup(t);
+    const auto [sinT, cosT] = zb::sinCosLookup(t);
 
     const float sin2  = sinT * sinT;
     const float cos2t = cosT * cosT - sin2;
@@ -715,7 +715,7 @@ namespace za::ShapeUtils
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeCogPoint(
-    const base::SizeT  index,
+    const zb::SizeT  index,
     const unsigned int toothCount,
     const float        outerRadius,
     const float        innerRadius,
@@ -727,13 +727,13 @@ namespace za::ShapeUtils
     ZB_ASSERT_AND_ASSUME(innerRadius >= 0.f);
     ZB_ASSERT_AND_ASSUME(toothWidthRatio > 0.f && toothWidthRatio < 1.f);
 
-    const float sector     = base::tau / static_cast<float>(toothCount);
+    const float sector     = zb::tau / static_cast<float>(toothCount);
     const float toothHalfA = sector * toothWidthRatio * 0.5f;
     const float sectorHalf = sector * 0.5f;
 
-    const base::SizeT toothIdx   = index / 4u;
-    const base::SizeT vertexKind = index % 4u; // 0: root start, 1: tip left, 2: tip right, 3: root end
-    const float       center     = sector * static_cast<float>(toothIdx) - base::halfPi; // start from top
+    const zb::SizeT toothIdx   = index / 4u;
+    const zb::SizeT vertexKind = index % 4u; // 0: root start, 1: tip left, 2: tip right, 3: root end
+    const float       center     = sector * static_cast<float>(toothIdx) - zb::halfPi; // start from top
 
     const float offsets[4u] = {-sectorHalf, -toothHalfA, toothHalfA, sectorHalf};
     const float radii[4u]   = {innerRadius, outerRadius, outerRadius, innerRadius};
@@ -742,9 +742,9 @@ namespace za::ShapeUtils
     const float radius = radii[vertexKind];
 
     if (angle < 0.f)
-        angle += base::tau;
+        angle += zb::tau;
 
-    const auto [sine, cosine] = base::sinCosLookup(base::positiveRemainder(angle, base::tau));
+    const auto [sine, cosine] = zb::sinCosLookup(zb::positiveRemainder(angle, zb::tau));
 
     // Center at (outerRadius, outerRadius) for consistency with star/circle
     return {outerRadius + radius * cosine, outerRadius + radius * sine};
@@ -809,7 +809,7 @@ namespace za::ShapeUtils
 inline constexpr void updateOutlineImpl(const float                      outlineThickness,
                                         auto&&                           fillPositionFn,
                                         Vertex* const ZB_RESTRICT outlineVertices,
-                                        const base::SizeT                pointCount,
+                                        const zb::SizeT                pointCount,
                                         const float                      miterLimit) noexcept
 {
     ZB_ASSERT_AND_ASSUME(outlineVertices != nullptr);
@@ -818,7 +818,7 @@ inline constexpr void updateOutlineImpl(const float                      outline
 
     const float miterLimitSq = miterLimit * miterLimit; // Precompute squared limit
 
-    for (base::SizeT i = 0u; i < pointCount; ++i)
+    for (zb::SizeT i = 0u; i < pointCount; ++i)
     {
         const Vec2f& p1 = fillPositionFn(i);
         const Vec2f& p0 = fillPositionFn((i == 0u) ? (pointCount - 1u) : (i - 1u)); // Previous point
@@ -845,14 +845,14 @@ inline constexpr void updateOutlineImpl(const float                      outline
         const auto offsetVec2 = outlineNormal * outlineThickness;
 
         // Store the outline vertex positions
-        const base::SizeT outIdx = i << 1u; // i * 2
+        const zb::SizeT outIdx = i << 1u; // i * 2
 
         outlineVertices[outIdx + 0u].position = p1;              // Inner vertex
         outlineVertices[outIdx + 1u].position = p1 + offsetVec2; // Outer vertex
     }
 
     // Duplicate the first outline vertex pair at the end to close the outline loop.
-    const base::SizeT dupIndex = pointCount << 1u; // pointCount * 2
+    const zb::SizeT dupIndex = pointCount << 1u; // pointCount * 2
 
     outlineVertices[dupIndex + 0u].position = outlineVertices[0].position;
     outlineVertices[dupIndex + 1u].position = outlineVertices[1].position;
@@ -888,12 +888,12 @@ inline constexpr void updateOutlineFromTriangleFanFill(
     const float                            outlineThickness,
     const Vertex* const ZB_RESTRICT fillVertices,
     Vertex* const ZB_RESTRICT       outlineVertices,
-    const base::SizeT                      pointCount,
+    const zb::SizeT                      pointCount,
     const float                            miterLimit) noexcept
 {
     ZB_ASSERT_AND_ASSUME(fillVertices != nullptr);
 
-    updateOutlineImpl(outlineThickness, [&] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i) {
+    updateOutlineImpl(outlineThickness, [&] [[gnu::always_inline, gnu::flatten]] (const zb::SizeT i) {
         return fillVertices[i].position;
     }, outlineVertices, pointCount, miterLimit);
 }
@@ -924,7 +924,7 @@ inline constexpr void updateOutlineFromTriangleFanFill(
 /// \return `Vec2f` representing the coordinates of the geometric center.
 ///
 ////////////////////////////////////////////////////////////
-inline constexpr Vec2f computeConvexShapeGeometricCenter(const Vec2f* points, const base::SizeT pointCount)
+inline constexpr Vec2f computeConvexShapeGeometricCenter(const Vec2f* points, const zb::SizeT pointCount)
 {
     ZB_ASSERT(pointCount > 0u && "Cannot calculate geometric center of shape with no points");
 
@@ -938,7 +938,7 @@ inline constexpr Vec2f computeConvexShapeGeometricCenter(const Vec2f* points, co
     float twiceArea = 0;
 
     auto previousPoint = points[pointCount - 1];
-    for (base::SizeT i = 0; i < pointCount; ++i)
+    for (zb::SizeT i = 0; i < pointCount; ++i)
     {
         const auto  currentPoint = points[i];
         const float product      = previousPoint.cross(currentPoint);
@@ -955,7 +955,7 @@ inline constexpr Vec2f computeConvexShapeGeometricCenter(const Vec2f* points, co
     Vec2f minPoint = points[0];
     Vec2f maxPoint = minPoint;
 
-    for (base::SizeT i = 1; i < pointCount; ++i)
+    for (zb::SizeT i = 1; i < pointCount; ++i)
     {
         const auto currentPoint = points[i];
 

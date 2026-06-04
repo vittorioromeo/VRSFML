@@ -14,7 +14,7 @@ struct ZB_TRIVIAL_ABI UniquePtrSDLGamepadClose
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-using SDLGamepadUPtr = base::UniquePtr<T, UniquePtrSDLGamepadClose>;
+using SDLGamepadUPtr = zb::UniquePtr<T, UniquePtrSDLGamepadClose>;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] SDLAllocatedArray<SDL_JoystickID> getGamepadIDs()
@@ -28,5 +28,5 @@ using SDLGamepadUPtr = base::UniquePtr<T, UniquePtrSDLGamepadClose>;
             return nullptr;
         }
 
-        return SDLAllocatedArray<SDL_JoystickID>{SDLUPtr<SDL_JoystickID>{gamepads}, static_cast<base::SizeT>(gamepadCount)};
+        return SDLAllocatedArray<SDL_JoystickID>{SDLUPtr<SDL_JoystickID>{gamepads}, static_cast<zb::SizeT>(gamepadCount)};
     }

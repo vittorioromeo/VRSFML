@@ -41,9 +41,9 @@ namespace za
 /// expose:
 ///
 /// \code
-/// bool                      onGetData(base::Vector<base::I16>& outBuffer);
+/// bool                      onGetData(zb::Vector<zb::I16>& outBuffer);
 /// void                      onSeek(Time timeOffset);  // optional -- omit for generators that can't seek
-/// base::Optional<base::U64> onLoop();                 // optional -- omit if the source never loops
+/// zb::Optional<zb::U64> onLoop();                 // optional -- omit if the source never loops
 /// \endcode
 ///
 /// `onSeek` and `onLoop` are detected via `requires` and
@@ -220,7 +220,7 @@ private:
     [[nodiscard]] static priv::SoundStreamStateImplCallbacks makeCallbacks()
     {
         return {
-            .onGetData = [](void* const s, base::Vector<base::I16>& outBuffer) -> bool
+            .onGetData = [](void* const s, zb::Vector<zb::I16>& outBuffer) -> bool
         { return static_cast<State*>(s)->onGetData(outBuffer); },
 
             .onSeek = [](void* const s, const Time t) -> void
@@ -229,12 +229,12 @@ private:
                 static_cast<State*>(s)->onSeek(t);
         },
 
-            .onLoop = [](void* const s) -> base::Optional<base::U64>
+            .onLoop = [](void* const s) -> zb::Optional<zb::U64>
         {
             if constexpr (requires { static_cast<State*>(s)->onLoop(); })
                 return static_cast<State*>(s)->onLoop();
             else
-                return base::nullOpt;
+                return zb::nullOpt;
         },
         };
     }

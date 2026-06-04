@@ -30,7 +30,7 @@ namespace za::VertexUtils
 /// \return A rect representing the bounding rectangle.
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::pure]] inline constexpr Rect2f getVertexRangeBounds(const Vertex* const data, const base::SizeT nVertices) noexcept
+[[nodiscard, gnu::pure]] inline constexpr Rect2f getVertexRangeBounds(const Vertex* const data, const zb::SizeT nVertices) noexcept
 {
     ZB_ASSERT_AND_ASSUME(data != nullptr);
     ZB_ASSERT_AND_ASSUME(nVertices > 0u);
@@ -62,7 +62,7 @@ namespace za::VertexUtils
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getLeft(const Vertex* const data,
-                                                                                          const base::SizeT nVertices) noexcept
+                                                                                          const zb::SizeT nVertices) noexcept
 {
     ZB_ASSERT_AND_ASSUME(data != nullptr);
     ZB_ASSERT_AND_ASSUME(nVertices > 0u);
@@ -86,7 +86,7 @@ namespace za::VertexUtils
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getRight(const Vertex* const data,
-                                                                                           const base::SizeT nVertices) noexcept
+                                                                                           const zb::SizeT nVertices) noexcept
 {
     ZB_ASSERT_AND_ASSUME(data != nullptr);
     ZB_ASSERT_AND_ASSUME(nVertices > 0u);
@@ -110,7 +110,7 @@ namespace za::VertexUtils
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getTop(const Vertex* const data,
-                                                                                         const base::SizeT nVertices) noexcept
+                                                                                         const zb::SizeT nVertices) noexcept
 {
     ZB_ASSERT_AND_ASSUME(data != nullptr);
     ZB_ASSERT_AND_ASSUME(nVertices > 0u);
@@ -135,7 +135,7 @@ namespace za::VertexUtils
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getBottom(const Vertex* const data,
-                                                                                            const base::SizeT nVertices) noexcept
+                                                                                            const zb::SizeT nVertices) noexcept
 {
     ZB_ASSERT_AND_ASSUME(data != nullptr);
     ZB_ASSERT_AND_ASSUME(nVertices > 0u);
@@ -159,7 +159,7 @@ namespace za::VertexUtils
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2f getTopLeft(const Vertex* const data,
-                                                                                             const base::SizeT nVertices) noexcept
+                                                                                             const zb::SizeT nVertices) noexcept
 {
     ZB_ASSERT_AND_ASSUME(data != nullptr);
     ZB_ASSERT_AND_ASSUME(nVertices > 0u);
@@ -187,7 +187,7 @@ namespace za::VertexUtils
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2f getTopRight(
     const Vertex* const data,
-    const base::SizeT   nVertices) noexcept
+    const zb::SizeT   nVertices) noexcept
 {
     ZB_ASSERT_AND_ASSUME(data != nullptr);
     ZB_ASSERT_AND_ASSUME(nVertices > 0u);
@@ -215,7 +215,7 @@ namespace za::VertexUtils
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2f getBottomLeft(
     const Vertex* const data,
-    const base::SizeT   nVertices) noexcept
+    const zb::SizeT   nVertices) noexcept
 {
     ZB_ASSERT_AND_ASSUME(data != nullptr);
     ZB_ASSERT_AND_ASSUME(nVertices > 0u);
@@ -243,7 +243,7 @@ namespace za::VertexUtils
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2f getBottomRight(
     const Vertex* const data,
-    const base::SizeT   nVertices) noexcept
+    const zb::SizeT   nVertices) noexcept
 {
     ZB_ASSERT_AND_ASSUME(data != nullptr);
     ZB_ASSERT_AND_ASSUME(nVertices > 0u);

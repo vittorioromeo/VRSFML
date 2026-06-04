@@ -122,7 +122,7 @@ private:
 struct ThreadPool::Impl
 {
     TaskQueue            queue;
-    base::Vector<Worker> workers;
+    zb::Vector<Worker> workers;
     za::Atomic<SizeT>    remainingInits;
 };
 

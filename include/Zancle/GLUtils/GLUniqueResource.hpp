@@ -91,7 +91,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] GLUniqueResource(GLUniqueResource&& rhs) noexcept :
-        m_id{base::exchange(rhs.m_id, 0u)}
+        m_id{zb::exchange(rhs.m_id, 0u)}
     {
         ZB_ASSERT(m_id != 0u);
     }
@@ -113,7 +113,7 @@ public:
         if (m_id != 0u)
             TFuncs::destroy(m_id);
 
-        m_id = base::exchange(rhs.m_id, 0u);
+        m_id = zb::exchange(rhs.m_id, 0u);
         ZB_ASSERT(m_id != 0u);
 
         return *this;
@@ -227,7 +227,7 @@ private:
 ///
 /// Calls the policy's `create` function and, if it returns a valid
 /// non-zero ID, wraps the result in a `T` instance and returns it
-/// inside an `Optional`. Returns `base::nullOpt` if the GL allocation
+/// inside an `Optional`. Returns `zb::nullOpt` if the GL allocation
 /// failed (e.g. when no GL context is currently active).
 ///
 /// Use this in place of the default constructor when you need to
@@ -241,15 +241,15 @@ private:
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten]] static inline base::Optional<T> tryCreateGLUniqueResource()
+[[nodiscard, gnu::always_inline, gnu::flatten]] static inline zb::Optional<T> tryCreateGLUniqueResource()
 {
     unsigned int id{};
     T::FuncsType::create(id);
 
     if (id == 0u)
-        return base::nullOpt;
+        return zb::nullOpt;
 
-    return base::makeOptional<T>(id);
+    return zb::makeOptional<T>(id);
 }
 
 } // namespace za

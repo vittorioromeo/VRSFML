@@ -73,7 +73,7 @@ TEST_CASE("[Network] za::IpAddress")
             CHECK(ipAddress.toInteger() == 0xC6'33'64'EA);
         }
 
-        SECTION("_sf::base::U32 constructor")
+        SECTION("_sf::zb::U32 constructor")
         {
             const za::IpAddress ipAddress(0xCB'00'71'9A);
             CHECK(za::IpAddressUtils::toString(ipAddress) == "203.0.113.154"_s);

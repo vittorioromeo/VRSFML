@@ -73,7 +73,7 @@ TEST_CASE("[System] za::Utf8String - construction and basic accessors")
         CHECK(s.codepointCount() == 2u);
     }
 
-    SECTION("Construct from base::StringView")
+    SECTION("Construct from zb::StringView")
     {
         const zb::StringView view = "view";
         const za::Utf8String       s    = view;
@@ -81,7 +81,7 @@ TEST_CASE("[System] za::Utf8String - construction and basic accessors")
         CHECK(s.codepointCount() == 4u);
     }
 
-    SECTION("Construct from base::String (move)")
+    SECTION("Construct from zb::String (move)")
     {
         zb::String     owning = "moved";
         const za::Utf8String s      = static_cast<zb::String&&>(owning);
@@ -407,7 +407,7 @@ TEST_CASE("[System] za::Utf8String - equality and conversion")
         CHECK("world" != s);
     }
 
-    SECTION("Equality with base::StringView")
+    SECTION("Equality with zb::StringView")
     {
         const za::Utf8String       s    = "hello";
         const zb::StringView view = "hello";
@@ -418,7 +418,7 @@ TEST_CASE("[System] za::Utf8String - equality and conversion")
         CHECK(static_cast<bool>(s != other));
     }
 
-    SECTION("Implicit conversion to base::StringView")
+    SECTION("Implicit conversion to zb::StringView")
     {
         const za::Utf8String       s = "hello";
         const zb::StringView v = s;
@@ -435,7 +435,7 @@ TEST_CASE("[System] za::Utf8String - equality and conversion")
         CHECK(s.cStr()[3] == '\0');
     }
 
-    SECTION("asBytes exposes the underlying base::String")
+    SECTION("asBytes exposes the underlying zb::String")
     {
         const za::Utf8String s = "abc";
         CHECK(s.asBytes().size() == 3u);
@@ -446,7 +446,7 @@ TEST_CASE("[System] za::Utf8String - equality and conversion")
     {
         // Use a string longer than the small-string-optimization threshold so
         // that the bytes live on the heap and the move-out can be observed via
-        // pointer identity. `base::String::maxSsoSize` is 23 on a 64-bit build.
+        // pointer identity. `zb::String::maxSsoSize` is 23 on a 64-bit build.
         za::Utf8String    s            = "this string is intentionally longer than SSO so it goes to the heap";
         const char* const originalData = s.data();
 
@@ -730,7 +730,7 @@ TEST_CASE("[System] za::Utf8String - swap")
         CHECK(b == "alpha");
     }
 
-    SECTION("base::genericSwap dispatches to the member swap")
+    SECTION("zb::genericSwap dispatches to the member swap")
     {
         za::Utf8String a = "one";
         za::Utf8String b = "two";

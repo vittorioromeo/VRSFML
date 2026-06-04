@@ -54,10 +54,10 @@ public:
     ///
     /// \param stream Stream to open
     ///
-    /// \return Properties of the loaded sound on success, `base::nullOpt` otherwise
+    /// \return Properties of the loaded sound on success, `zb::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<Info> open(InputStream& stream) override;
+    [[nodiscard]] zb::Optional<Info> open(InputStream& stream) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current read position to the given sample offset
@@ -72,7 +72,7 @@ public:
     /// \param sampleOffset Index of the sample to jump to, relative to the beginning
     ///
     ////////////////////////////////////////////////////////////
-    void seek(base::U64 sampleOffset) override;
+    void seek(zb::U64 sampleOffset) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Read audio samples from the open file
@@ -83,14 +83,14 @@ public:
     /// \return Number of samples actually read (may be less than \a maxCount)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::U64 read(base::I16* samples, base::U64 maxCount) override;
+    [[nodiscard]] zb::U64 read(zb::I16* samples, zb::U64 maxCount) override;
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
+    zb::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
 };
 
 } // namespace za::priv

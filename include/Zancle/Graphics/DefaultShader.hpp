@@ -144,7 +144,7 @@ void main()
     ///
     /// \see za::Shader::loadFromMemory
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Shader> create();
+    [[nodiscard]] static zb::Optional<Shader> create();
 };
 
 } // namespace za

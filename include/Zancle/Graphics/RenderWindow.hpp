@@ -55,10 +55,10 @@ public:
     ///
     /// \param windowSettings Window creation parameters
     ///
-    /// \return Render window on success, `base::nullOpt` on failure
+    /// \return Render window on success, `zb::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<RenderWindow> create(const Settings& windowSettings);
+    [[nodiscard]] static zb::Optional<RenderWindow> create(const Settings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control
@@ -76,7 +76,7 @@ public:
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<RenderWindow> create(WindowHandle           handle,
+    [[nodiscard]] static zb::Optional<RenderWindow> create(WindowHandle           handle,
                                                              const ContextSettings& contextSettings = {});
 
     ////////////////////////////////////////////////////////////
@@ -174,7 +174,7 @@ public:
     /// \brief Construct a new window
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit RenderWindow(base::PassKey<RenderWindow>&&, Window&& window);
+    [[nodiscard]] explicit RenderWindow(zb::PassKey<RenderWindow>&&, Window&& window);
 
 private:
     ////////////////////////////////////////////////////////////

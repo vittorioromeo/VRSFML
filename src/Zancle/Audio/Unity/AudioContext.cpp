@@ -173,12 +173,12 @@ AudioContextImpl& ensureInstalled()
 namespace za
 {
 ////////////////////////////////////////////////////////////
-base::Optional<AudioContext> AudioContext::create()
+zb::Optional<AudioContext> AudioContext::create()
 {
     const auto fail = [](const char* what)
     {
         priv::errMsg("Error creating `za::AudioContext`: {}", what);
-        return base::nullOpt;
+        return zb::nullOpt;
     };
 
     //
@@ -191,7 +191,7 @@ base::Optional<AudioContext> AudioContext::create()
     if (!tryCreateMALog(ac.maLog))
     {
         installedAudioContext.reset();
-        return base::nullOpt; // Error message generated in called function.
+        return zb::nullOpt; // Error message generated in called function.
     }
 
     ac.maLogInitialized = true;
@@ -199,12 +199,12 @@ base::Optional<AudioContext> AudioContext::create()
     if (!tryCreateMAContext(ac.maLog, ac.maContext))
     {
         installedAudioContext.reset();
-        return base::nullOpt; // Error message generated in called function.
+        return zb::nullOpt; // Error message generated in called function.
     }
 
     ac.maContextInitialized = true;
 
-    return base::makeOptional<AudioContext>(base::PassKey<AudioContext>{});
+    return zb::makeOptional<AudioContext>(zb::PassKey<AudioContext>{});
 }
 
 
@@ -216,14 +216,14 @@ void* AudioContext::getMAContext()
 
 
 ////////////////////////////////////////////////////////////
-AudioContext::AudioContext(base::PassKey<AudioContext>&&)
+AudioContext::AudioContext(zb::PassKey<AudioContext>&&)
 {
     audioContextRC.fetchAddRelaxed(1u);
 }
 
 
 ////////////////////////////////////////////////////////////
-AudioContext::AudioContext(AudioContext&&) noexcept : AudioContext(base::PassKey<AudioContext>{})
+AudioContext::AudioContext(AudioContext&&) noexcept : AudioContext(zb::PassKey<AudioContext>{})
 {
 }
 
@@ -246,12 +246,12 @@ bool AudioContext::isInstalled()
 
 
 ////////////////////////////////////////////////////////////
-base::Vector<PlaybackDeviceHandle> AudioContext::getAvailablePlaybackDeviceHandles()
+zb::Vector<PlaybackDeviceHandle> AudioContext::getAvailablePlaybackDeviceHandles()
 {
     ensureInstalled();
 
     return getAvailableDeviceHandles<PlaybackDeviceHandle> //
-        (base::PassKey<AudioContext>{},
+        (zb::PassKey<AudioContext>{},
          *static_cast<ma_context*>(AudioContext::getMAContext()),
          "playback",
          [](ma_context* maContext, ma_device_info** maDeviceInfosPtr, ma_uint32* maDeviceInfoCount)
@@ -260,25 +260,25 @@ base::Vector<PlaybackDeviceHandle> AudioContext::getAvailablePlaybackDeviceHandl
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<PlaybackDeviceHandle> AudioContext::getDefaultPlaybackDeviceHandle()
+zb::Optional<PlaybackDeviceHandle> AudioContext::getDefaultPlaybackDeviceHandle()
 {
     ensureInstalled();
 
     for (const PlaybackDeviceHandle& deviceHandle : getAvailablePlaybackDeviceHandles())
         if (deviceHandle.isDefault())
-            return base::makeOptional(deviceHandle);
+            return zb::makeOptional(deviceHandle);
 
-    return base::nullOpt;
+    return zb::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Vector<CaptureDeviceHandle> AudioContext::getAvailableCaptureDeviceHandles()
+zb::Vector<CaptureDeviceHandle> AudioContext::getAvailableCaptureDeviceHandles()
 {
     ensureInstalled();
 
     return getAvailableDeviceHandles<CaptureDeviceHandle> //
-        (base::PassKey<AudioContext>{},
+        (zb::PassKey<AudioContext>{},
          *static_cast<ma_context*>(AudioContext::getMAContext()),
          "capture",
          [](ma_context* maContext, ma_device_info** maDeviceInfosPtr, ma_uint32* maDeviceInfoCount)
@@ -287,15 +287,15 @@ base::Vector<CaptureDeviceHandle> AudioContext::getAvailableCaptureDeviceHandles
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<CaptureDeviceHandle> AudioContext::getDefaultCaptureDeviceHandle()
+zb::Optional<CaptureDeviceHandle> AudioContext::getDefaultCaptureDeviceHandle()
 {
     ensureInstalled();
 
     for (const CaptureDeviceHandle& deviceHandle : getAvailableCaptureDeviceHandles())
         if (deviceHandle.isDefault())
-            return base::makeOptional(deviceHandle);
+            return zb::makeOptional(deviceHandle);
 
-    return base::nullOpt;
+    return zb::nullOpt;
 }
 
 } // namespace za

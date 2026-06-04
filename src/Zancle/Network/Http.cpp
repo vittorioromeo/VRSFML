@@ -150,10 +150,10 @@ struct Http::Request::Impl
 {
     FieldTable   fields;          //!< Fields of the header associated to their value
     Method       method;          //!< Method to use for the request
-    base::String uri;             //!< Target URI of the request
+    zb::String uri;             //!< Target URI of the request
     unsigned int majorVersion{1}; //!< Major HTTP version
     unsigned int minorVersion{};  //!< Minor HTTP version
-    base::String body;            //!< Body of the request
+    zb::String body;            //!< Body of the request
 
     explicit Impl(Method theMethod) : method(theMethod)
     {
@@ -162,7 +162,7 @@ struct Http::Request::Impl
 
 
 ////////////////////////////////////////////////////////////
-Http::Request::Request(const base::String& uri, Method method, const base::String& body) : m_impl(method)
+Http::Request::Request(const zb::String& uri, Method method, const zb::String& body) : m_impl(method)
 {
     setUri(uri);
     setBody(body);
@@ -170,13 +170,13 @@ Http::Request::Request(const base::String& uri, Method method, const base::Strin
 
 
 ////////////////////////////////////////////////////////////
-Http::Request::Request(const base::String& uri, Method method) : Http::Request::Request(uri, method, "")
+Http::Request::Request(const zb::String& uri, Method method) : Http::Request::Request(uri, method, "")
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-Http::Request::Request(const base::String& uri) : Http::Request::Request(uri, Method::Get, "")
+Http::Request::Request(const zb::String& uri) : Http::Request::Request(uri, Method::Get, "")
 {
 }
 
@@ -192,7 +192,7 @@ Http::Request::~Request() = default;
 
 
 ////////////////////////////////////////////////////////////
-void Http::Request::setField(const base::String& field, const base::String& value)
+void Http::Request::setField(const zb::String& field, const zb::String& value)
 {
     m_impl->fields[toLower(field)] = value;
 }
@@ -206,7 +206,7 @@ void Http::Request::setMethod(Http::Request::Method method)
 
 
 ////////////////////////////////////////////////////////////
-void Http::Request::setUri(const base::String& uri)
+void Http::Request::setUri(const zb::String& uri)
 {
     m_impl->uri = uri;
 
@@ -225,14 +225,14 @@ void Http::Request::setHttpVersion(unsigned int major, unsigned int minor)
 
 
 ////////////////////////////////////////////////////////////
-void Http::Request::setBody(const base::String& body)
+void Http::Request::setBody(const zb::String& body)
 {
     m_impl->body = body;
 }
 
 
 ////////////////////////////////////////////////////////////
-bool Http::Request::hasField(const base::String& field) const
+bool Http::Request::hasField(const zb::String& field) const
 {
     return m_impl->fields.contains(toLower(field));
 }
@@ -245,7 +245,7 @@ struct Http::Response::Impl
     Status       status{Status::ConnectionFailed}; //!< Status code
     unsigned int majorVersion{};                   //!< Major HTTP version
     unsigned int minorVersion{};                   //!< Minor HTTP version
-    base::String body;                             //!< Body of the response
+    zb::String body;                             //!< Body of the response
 };
 
 
@@ -258,12 +258,12 @@ Http::Response::~Response() = default;
 
 
 ////////////////////////////////////////////////////////////
-const base::String& Http::Response::getField(const base::String& field) const
+const zb::String& Http::Response::getField(const zb::String& field) const
 {
     if (const auto it = m_impl->fields.find(toLower(field)); it != m_impl->fields.end())
         return it->second;
 
-    static const base::String empty;
+    static const zb::String empty;
     return empty;
 }
 
@@ -290,20 +290,20 @@ unsigned int Http::Response::getMinorHttpVersion() const
 
 
 ////////////////////////////////////////////////////////////
-const base::String& Http::Response::getBody() const
+const zb::String& Http::Response::getBody() const
 {
     return m_impl->body;
 }
 
 
 ////////////////////////////////////////////////////////////
-void Http::Response::parse(const base::String& data)
+void Http::Response::parse(const zb::String& data)
 {
-    base::ScnStringSource scanner{data.toStringView()};
+    zb::ScnStringSource scanner{data.toStringView()};
 
     // Extract the HTTP version from the first line
-    base::String version;
-    if (base::scnInto(scanner, version))
+    zb::String version;
+    if (zb::scnInto(scanner, version))
     {
         const auto prefix = version.substrByPosLen(0u, 5u);
 
@@ -323,7 +323,7 @@ void Http::Response::parse(const base::String& data)
 
     // Extract the status code from the first line
     int status = 0;
-    if (!base::scnInto(scanner, status))
+    if (!zb::scnInto(scanner, status))
     {
         // Invalid status code
         m_impl->status = Status::InvalidResponse;
@@ -333,7 +333,7 @@ void Http::Response::parse(const base::String& data)
     m_impl->status = static_cast<Status>(status);
 
     // Ignore the end of the first line
-    base::scnSkipPast(scanner, '\n');
+    zb::scnSkipPast(scanner, '\n');
 
     // Parse the other lines, which contain fields, one by one
     parseFields(scanner, m_impl->fields);
@@ -353,16 +353,16 @@ void Http::Response::parse(const base::String& data)
     else
     {
         // Chunked - have to read chunk by chunk
-        base::SizeT length = 0;
+        zb::SizeT length = 0;
 
         // Read all chunks, identified by a chunk-size not being 0
-        while (base::scnRadix(scanner, length, base::Radix::Hex) && length != 0u)
+        while (zb::scnRadix(scanner, length, zb::Radix::Hex) && length != 0u)
         {
             // Drop the rest of the line (chunk-extension)
-            base::scnSkipPast(scanner, '\n');
+            zb::scnSkipPast(scanner, '\n');
 
             // Copy the actual content data
-            for (base::SizeT i = 0u; i < length; ++i)
+            for (zb::SizeT i = 0u; i < length; ++i)
             {
                 auto c = scanner.peek();
                 if (!c)
@@ -373,7 +373,7 @@ void Http::Response::parse(const base::String& data)
         }
 
         // Drop the rest of the line (chunk-extension)
-        base::scnSkipPast(scanner, '\n');
+        zb::scnSkipPast(scanner, '\n');
 
         // Read all trailers (if present)
         parseFields(scanner, m_impl->fields);
@@ -384,8 +384,8 @@ void Http::Response::parse(const base::String& data)
 ////////////////////////////////////////////////////////////
 struct Http::Impl
 {
-    base::Optional<IpAddress> host;         //!< Web host address
-    base::String              hostName;     //!< Web host name
+    zb::Optional<IpAddress> host;         //!< Web host address
+    zb::String              hostName;     //!< Web host name
     unsigned short            port{0u};     //!< Port used for connection with host
     bool                      https{false}; //!< Use HTTPS
 };
@@ -400,14 +400,14 @@ Http::~Http() = default;
 
 
 ////////////////////////////////////////////////////////////
-Http::Http(const base::String& host, unsigned short port)
+Http::Http(const zb::String& host, unsigned short port)
 {
     setHost(host, port);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool Http::setHost(const base::String& host, unsigned short port)
+bool Http::setHost(const zb::String& host, unsigned short port)
 {
     // Check the protocol
     if (stringViewLowercaseEq(host.substrByPosLen(0u, 7u), "http://"))
@@ -455,7 +455,7 @@ Http::Response Http::sendRequest(const Http::Request& request, Time timeout, con
         toSend.setField("Host", m_impl->hostName);
 
     if (!toSend.hasField("Content-Length"))
-        toSend.setField("Content-Length", base::fmtToString("{}", toSend.m_impl->body.size()));
+        toSend.setField("Content-Length", zb::fmtToString("{}", toSend.m_impl->body.size()));
 
     if ((toSend.m_impl->method == Request::Method::Post) && !toSend.hasField("Content-Type"))
         toSend.setField("Content-Type", "application/x-www-form-urlencoded");
@@ -488,7 +488,7 @@ Http::Response Http::sendRequest(const Http::Request& request, Time timeout, con
     }
 
     // Convert the request to string and send it through the connected socket
-    const base::String requestStr = prepareRequest(toSend.m_impl->fields,
+    const zb::String requestStr = prepareRequest(toSend.m_impl->fields,
                                                    toSend.m_impl->method,
                                                    toSend.m_impl->uri,
                                                    toSend.m_impl->majorVersion,
@@ -501,8 +501,8 @@ Http::Response Http::sendRequest(const Http::Request& request, Time timeout, con
         if (connection.send(requestStr.cStr(), requestStr.size()) == Socket::Status::Done)
         {
             // Wait for the server's response
-            base::String receivedStr;
-            base::SizeT  size = 0;
+            zb::String receivedStr;
+            zb::SizeT  size = 0;
             char         buffer[1024];
 
             // When the HTTPS connection makes use of TLS 1.3 new session ticket

@@ -43,30 +43,30 @@ FileInputStream& FileInputStream::operator=(FileInputStream&&) noexcept = defaul
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<FileInputStream> FileInputStream::open(const Path& filename)
+zb::Optional<FileInputStream> FileInputStream::open(const Path& filename)
 {
 #ifdef ZA_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
     {
-        auto androidFile = base::makeUnique<priv::ResourceStream>();
+        auto androidFile = zb::makeUnique<priv::ResourceStream>();
         if (!androidFile->open(filename))
-            return base::nullOpt;
+            return zb::nullOpt;
 
         return androidFile->tell().hasValue()
-                   ? base::makeOptional<FileInputStream>(base::PassKey<FileInputStream>{}, ZB_MOVE(androidFile))
-                   : base::nullOpt;
+                   ? zb::makeOptional<FileInputStream>(zb::PassKey<FileInputStream>{}, ZB_MOVE(androidFile))
+                   : zb::nullOpt;
     }
 #endif
 
-    if (auto file = base::UniquePtr<std::FILE, FileCloser>(openFile(filename, "rb")))
-        return base::makeOptional<FileInputStream>(base::PassKey<FileInputStream>{}, ZB_MOVE(file));
+    if (auto file = zb::UniquePtr<std::FILE, FileCloser>(openFile(filename, "rb")))
+        return zb::makeOptional<FileInputStream>(zb::PassKey<FileInputStream>{}, ZB_MOVE(file));
 
-    return base::nullOpt;
+    return zb::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<base::SizeT> FileInputStream::read(void* data, base::SizeT size)
+zb::Optional<zb::SizeT> FileInputStream::read(void* data, zb::SizeT size)
 {
 #ifdef ZA_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
@@ -77,12 +77,12 @@ base::Optional<base::SizeT> FileInputStream::read(void* data, base::SizeT size)
 #endif
 
     ZB_ASSERT(m_file != nullptr);
-    return base::makeOptional(std::fread(data, 1, size, m_file.get()));
+    return zb::makeOptional(std::fread(data, 1, size, m_file.get()));
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<base::SizeT> FileInputStream::seek(base::SizeT position)
+zb::Optional<zb::SizeT> FileInputStream::seek(zb::SizeT position)
 {
 #ifdef ZA_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
@@ -95,14 +95,14 @@ base::Optional<base::SizeT> FileInputStream::seek(base::SizeT position)
     ZB_ASSERT(m_file != nullptr);
 
     if (std::fseek(m_file.get(), static_cast<long>(position), SEEK_SET))
-        return base::nullOpt;
+        return zb::nullOpt;
 
     return tell();
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<base::SizeT> FileInputStream::tell()
+zb::Optional<zb::SizeT> FileInputStream::tell()
 {
 #ifdef ZA_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
@@ -115,12 +115,12 @@ base::Optional<base::SizeT> FileInputStream::tell()
     ZB_ASSERT(m_file != nullptr);
 
     const auto position = std::ftell(m_file.get());
-    return position < 0 ? base::nullOpt : base::makeOptional(static_cast<base::SizeT>(position));
+    return position < 0 ? zb::nullOpt : zb::makeOptional(static_cast<zb::SizeT>(position));
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<base::SizeT> FileInputStream::getSize()
+zb::Optional<zb::SizeT> FileInputStream::getSize()
 {
 #ifdef ZA_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
@@ -135,7 +135,7 @@ base::Optional<base::SizeT> FileInputStream::getSize()
     const auto position = tell().value();
     std::fseek(m_file.get(), 0, SEEK_END);
 
-    base::Optional<base::SizeT> size = tell(); // Use a single local variable for NRVO
+    zb::Optional<zb::SizeT> size = tell(); // Use a single local variable for NRVO
 
     if (!seek(position).hasValue())
     {
@@ -148,7 +148,7 @@ base::Optional<base::SizeT> FileInputStream::getSize()
 
 
 ////////////////////////////////////////////////////////////
-FileInputStream::FileInputStream(base::PassKey<FileInputStream>&&, base::UniquePtr<std::FILE, FileCloser>&& file) :
+FileInputStream::FileInputStream(zb::PassKey<FileInputStream>&&, zb::UniquePtr<std::FILE, FileCloser>&& file) :
     m_file(ZB_MOVE(file))
 {
 }
@@ -156,7 +156,7 @@ FileInputStream::FileInputStream(base::PassKey<FileInputStream>&&, base::UniqueP
 
 ////////////////////////////////////////////////////////////
 #ifdef ZA_SYSTEM_ANDROID
-FileInputStream::FileInputStream(base::PassKey<FileInputStream>&&, base::UniquePtr<priv::ResourceStream>&& androidFile) :
+FileInputStream::FileInputStream(zb::PassKey<FileInputStream>&&, zb::UniquePtr<priv::ResourceStream>&& androidFile) :
     m_androidFile(ZB_MOVE(androidFile))
 {
 }

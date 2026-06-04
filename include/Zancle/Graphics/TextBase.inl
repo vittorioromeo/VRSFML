@@ -26,7 +26,7 @@ namespace za
 {
 ////////////////////////////////////////////////////////////
 template <typename Self>
-Vec2f TextBase::findCharacterPos(this const Self& self, base::SizeT index)
+Vec2f TextBase::findCharacterPos(this const Self& self, zb::SizeT index)
 {
     const auto& fontSource = self.getFontSource();
     const auto  charSize   = self.getCharacterSize();
@@ -38,7 +38,7 @@ Vec2f TextBase::findCharacterPos(this const Self& self, base::SizeT index)
 
     Vec2f       characterPos;
     char32_t    prevChar = 0;
-    base::SizeT i        = 0u;
+    zb::SizeT i        = 0u;
 
     for (const char32_t curChar : self.m_string.codepoints())
     {
@@ -145,8 +145,8 @@ void TextBase::ensureGeometryUpdate(this const Self& self)
     const auto fillQuadCount = TextUtils::precomputeTextQuadCount(self.m_string, self.m_underlined, self.m_strikeThrough);
     const auto outlineQuadCount = outlineThickness == 0.f ? 0u : fillQuadCount;
 
-    const base::SizeT outlineVertexCount = outlineQuadCount * 4u;
-    const base::SizeT fillVertexCount    = fillQuadCount * 4u;
+    const zb::SizeT outlineVertexCount = outlineQuadCount * 4u;
+    const zb::SizeT fillVertexCount    = fillQuadCount * 4u;
 
     self.m_vertices.resize(outlineVertexCount + fillVertexCount);
     self.m_fillVerticesStartIndex = outlineVertexCount;
@@ -168,7 +168,7 @@ void TextBase::ensureGeometryUpdate(this const Self& self)
               self.m_string,
               layoutInputs,
               [&self] [[gnu::always_inline,
-                        gnu::flatten]] (base::SizeT & idx,
+                        gnu::flatten]] (zb::SizeT & idx,
                                         const float lineLength,
                                         const float lineTop,
                                         const float offset,
@@ -186,7 +186,7 @@ void TextBase::ensureGeometryUpdate(this const Self& self)
                                   outlineT);
     },
               [&self] [[gnu::always_inline,
-                        gnu::flatten]] (base::SizeT & idx, const Vec2f pos, const Glyph& glyph, const float shear, const bool isOutline)
+                        gnu::flatten]] (zb::SizeT & idx, const Vec2f pos, const Glyph& glyph, const float shear, const bool isOutline)
     {
         return TextUtils::addGlyphQuad(self.m_vertices.data(),
                                        idx,

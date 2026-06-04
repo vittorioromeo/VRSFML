@@ -36,9 +36,9 @@ struct [[nodiscard]] DrawPersistentMappedIndexedVerticesSettings // NOLINT(cppco
     ZB_REQUIRE_DESIGNATED_INITIALIZERS;
 
     const PersistentGPUDrawableBatch& gpuDrawableBatch; //!< Source of the persistent vertex/index buffers
-    base::SizeT                       indexCount;       //!< Number of indices to consume from `indexOffset`
-    base::SizeT                       indexOffset;      //!< Offset (in indices) into the persistent index buffer
-    base::SizeT                       vertexOffset;     //!< Base vertex offset added to each fetched index
+    zb::SizeT                       indexCount;       //!< Number of indices to consume from `indexOffset`
+    zb::SizeT                       indexOffset;      //!< Offset (in indices) into the persistent index buffer
+    zb::SizeT                       vertexOffset;     //!< Base vertex offset added to each fetched index
     PrimitiveType                     primitiveType;    //!< How to interpret the indexed primitives
 };
 

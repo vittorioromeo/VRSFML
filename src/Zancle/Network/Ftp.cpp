@@ -69,7 +69,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     Ftp&                      m_ftp;        //!< Reference to the owner Ftp instance
-    base::Optional<TcpSocket> m_dataSocket; //!< Socket used for data transfers (created in `open`)
+    zb::Optional<TcpSocket> m_dataSocket; //!< Socket used for data transfers (created in `open`)
 };
 
 
@@ -77,12 +77,12 @@ private:
 struct Ftp::Response::Impl
 {
     Status       status;  //!< Status code returned from the server
-    base::String message; //!< Last message received from the server
+    zb::String message; //!< Last message received from the server
 };
 
 
 ////////////////////////////////////////////////////////////
-Ftp::Response::Response(Status code, base::StringView message) : m_impl{code, message.toString<base::String>()}
+Ftp::Response::Response(Status code, zb::StringView message) : m_impl{code, message.toString<zb::String>()}
 {
 }
 
@@ -110,7 +110,7 @@ Ftp::Response::Status Ftp::Response::getStatus() const
 
 
 ////////////////////////////////////////////////////////////
-base::StringView Ftp::Response::getMessage() const
+zb::StringView Ftp::Response::getMessage() const
 {
     return m_impl->message;
 }
@@ -122,10 +122,10 @@ Ftp::DirectoryResponse::DirectoryResponse(const Ftp::Response& response) : Ftp::
     if (isOk())
     {
         // Extract the directory from the server response
-        const base::SizeT begin = getMessage().find('"', 0);
-        const base::SizeT end   = getMessage().find('"', begin + 1);
+        const zb::SizeT begin = getMessage().find('"', 0);
+        const zb::SizeT end   = getMessage().find('"', begin + 1);
 
-        m_directory = getMessage().substrByPosLen(begin + 1, end - begin - 1).toString<base::String>();
+        m_directory = getMessage().substrByPosLen(begin + 1, end - begin - 1).toString<zb::String>();
     }
 }
 
@@ -155,20 +155,20 @@ const Path& Ftp::DirectoryResponse::getDirectory() const
 ////////////////////////////////////////////////////////////
 struct Ftp::ListingResponse::Impl
 {
-    base::Vector<base::String> listing; //!< Directory/file names extracted from the data
+    zb::Vector<zb::String> listing; //!< Directory/file names extracted from the data
 };
 
 
 ////////////////////////////////////////////////////////////
-Ftp::ListingResponse::ListingResponse(const Ftp::Response& response, base::StringView data) : Ftp::Response(response)
+Ftp::ListingResponse::ListingResponse(const Ftp::Response& response, zb::StringView data) : Ftp::Response(response)
 {
     if (isOk())
     {
         // Fill the array of strings
-        base::SizeT lastPos = 0;
-        for (base::SizeT pos = data.find("\r\n"); pos != base::String::nPos; pos = data.find("\r\n", lastPos))
+        zb::SizeT lastPos = 0;
+        for (zb::SizeT pos = data.find("\r\n"); pos != zb::String::nPos; pos = data.find("\r\n", lastPos))
         {
-            m_impl->listing.pushBack(data.substrByPosLen(lastPos, pos - lastPos).toString<base::String>());
+            m_impl->listing.pushBack(data.substrByPosLen(lastPos, pos - lastPos).toString<zb::String>());
             lastPos = pos + 2;
         }
     }
@@ -190,7 +190,7 @@ Ftp::ListingResponse& Ftp::ListingResponse::operator=(ListingResponse&&) noexcep
 
 
 ////////////////////////////////////////////////////////////
-base::Span<const base::String> Ftp::ListingResponse::getListing() const
+zb::Span<const zb::String> Ftp::ListingResponse::getListing() const
 {
     return {m_impl->listing.data(), m_impl->listing.size()};
 }
@@ -199,8 +199,8 @@ base::Span<const base::String> Ftp::ListingResponse::getListing() const
 ////////////////////////////////////////////////////////////
 struct Ftp::Impl
 {
-    base::Optional<TcpSocket> commandSocket; //!< Socket holding the control connection with the server
-    base::String              receiveBuffer; //!< Received command data that is yet to be processed
+    zb::Optional<TcpSocket> commandSocket; //!< Socket holding the control connection with the server
+    zb::String              receiveBuffer; //!< Received command data that is yet to be processed
 };
 
 
@@ -241,7 +241,7 @@ Ftp::Response Ftp::login()
 
 
 ////////////////////////////////////////////////////////////
-Ftp::Response Ftp::login(base::StringView name, base::StringView password)
+Ftp::Response Ftp::login(zb::StringView name, zb::StringView password)
 {
     Response response = sendCommand("USER", name);
     if (response.isOk())
@@ -290,10 +290,10 @@ Ftp::DirectoryResponse Ftp::getWorkingDirectory()
 
 
 ////////////////////////////////////////////////////////////
-Ftp::ListingResponse Ftp::getDirectoryListing(base::StringView directory)
+Ftp::ListingResponse Ftp::getDirectoryListing(zb::StringView directory)
 {
     // Open a data channel on default port (20) using ASCII transfer mode
-    base::String listing;
+    zb::String listing;
     DataChannel  data(*this);
     Response     response = data.open(TransferMode::Ascii);
     if (response.isOk())
@@ -315,7 +315,7 @@ Ftp::ListingResponse Ftp::getDirectoryListing(base::StringView directory)
 
 
 ////////////////////////////////////////////////////////////
-Ftp::Response Ftp::changeDirectory(base::StringView directory)
+Ftp::Response Ftp::changeDirectory(zb::StringView directory)
 {
     return sendCommand("CWD", directory);
 }
@@ -329,14 +329,14 @@ Ftp::Response Ftp::parentDirectory()
 
 
 ////////////////////////////////////////////////////////////
-Ftp::Response Ftp::createDirectory(base::StringView name)
+Ftp::Response Ftp::createDirectory(zb::StringView name)
 {
     return sendCommand("MKD", name);
 }
 
 
 ////////////////////////////////////////////////////////////
-Ftp::Response Ftp::deleteDirectory(base::StringView name)
+Ftp::Response Ftp::deleteDirectory(zb::StringView name)
 {
     return sendCommand("RMD", name);
 }
@@ -345,9 +345,9 @@ Ftp::Response Ftp::deleteDirectory(base::StringView name)
 ////////////////////////////////////////////////////////////
 Ftp::Response Ftp::renameFile(const Path& file, const Path& newName)
 {
-    Response response = sendCommand("RNFR", file.to<base::String>());
+    Response response = sendCommand("RNFR", file.to<zb::String>());
     if (response.isOk())
-        response = sendCommand("RNTO", newName.to<base::String>());
+        response = sendCommand("RNTO", newName.to<zb::String>());
 
     return response;
 }
@@ -356,7 +356,7 @@ Ftp::Response Ftp::renameFile(const Path& file, const Path& newName)
 ////////////////////////////////////////////////////////////
 Ftp::Response Ftp::deleteFile(const Path& name)
 {
-    return sendCommand("DELE", name.to<base::String>());
+    return sendCommand("DELE", name.to<zb::String>());
 }
 
 
@@ -371,7 +371,7 @@ Ftp::Response Ftp::download(const Path& remoteFile, const Path& localPath, Trans
         return response;
 
     // Tell the server to start the transfer
-    response = sendCommand("RETR", remoteFile.to<base::String>());
+    response = sendCommand("RETR", remoteFile.to<zb::String>());
 
     if (!response.isOk())
         return response;
@@ -379,7 +379,7 @@ Ftp::Response Ftp::download(const Path& remoteFile, const Path& localPath, Trans
     // Create the file and truncate it if necessary
     const Path filepath = localPath / remoteFile.getFilename();
 
-    auto optFile = OutFile::open(filepath.to<base::String>(), FileOpenMode::bin | FileOpenMode::trunc);
+    auto optFile = OutFile::open(filepath.to<zb::String>(), FileOpenMode::bin | FileOpenMode::trunc);
     if (!optFile.hasValue())
     {
         response = Response(Response::Status::InvalidFile);
@@ -409,7 +409,7 @@ Ftp::Response Ftp::upload(const Path& localFile, const Path& remotePath, Transfe
     Response response; //  Use a single local variable for NRVO
 
     // Get the contents of the file to send
-    auto optFile = InFile::open(localFile.to<base::String>(), FileOpenMode::bin);
+    auto optFile = InFile::open(localFile.to<zb::String>(), FileOpenMode::bin);
     if (!optFile.hasValue())
     {
         response = Response(Response::Status::InvalidFile);
@@ -425,7 +425,7 @@ Ftp::Response Ftp::upload(const Path& localFile, const Path& remotePath, Transfe
         return response;
 
     // Tell the server to start the transfer
-    response = sendCommand(append ? "APPE" : "STOR", (remotePath / localFile.getFilename()).to<base::String>());
+    response = sendCommand(append ? "APPE" : "STOR", (remotePath / localFile.getFilename()).to<zb::String>());
 
     if (!response.isOk())
         return response;
@@ -441,10 +441,10 @@ Ftp::Response Ftp::upload(const Path& localFile, const Path& remotePath, Transfe
 
 
 ////////////////////////////////////////////////////////////
-Ftp::Response Ftp::sendCommand(base::StringView command, base::StringView parameter)
+Ftp::Response Ftp::sendCommand(zb::StringView command, zb::StringView parameter)
 {
     // Build the command string
-    auto commandStr = command.toString<base::String>();
+    auto commandStr = command.toString<zb::String>();
 
     if (parameter.empty())
         commandStr += "\r\n";
@@ -452,7 +452,7 @@ Ftp::Response Ftp::sendCommand(base::StringView command, base::StringView parame
     {
         // TODO P2: concat utility from Open Hexagon?
         commandStr += ' ';
-        commandStr += parameter.toString<base::String>();
+        commandStr += parameter.toString<zb::String>();
         commandStr += "\r\n";
     }
 
@@ -476,13 +476,13 @@ Ftp::Response Ftp::getResponse()
     // will start by the same code
     unsigned int lastCode          = 0;
     bool         isInsideMultiline = false;
-    base::String message;
+    zb::String message;
 
     for (;;)
     {
         // Receive the response from the server
         char        buffer[1024];
-        base::SizeT length = 0;
+        zb::SizeT length = 0;
 
         if (m_impl->receiveBuffer.empty())
         {
@@ -492,18 +492,18 @@ Ftp::Response Ftp::getResponse()
         }
         else
         {
-            base::copy(m_impl->receiveBuffer.begin(), m_impl->receiveBuffer.end(), buffer);
+            zb::copy(m_impl->receiveBuffer.begin(), m_impl->receiveBuffer.end(), buffer);
             length = m_impl->receiveBuffer.size();
             m_impl->receiveBuffer.clear();
         }
 
         // There can be several lines inside the received buffer, extract them all
-        base::ScnStringSource scanner{base::StringView{buffer, length}};
-        while (!base::scnAtEnd(scanner))
+        zb::ScnStringSource scanner{zb::StringView{buffer, length}};
+        while (!zb::scnAtEnd(scanner))
         {
             // Try to extract the code
             unsigned int code = 0;
-            if (base::scnInto(scanner, code))
+            if (zb::scnInto(scanner, code))
             {
                 // Extract the separator (next byte verbatim, no whitespace skip).
                 // Failure here means the buffer ended right after the code -- the
@@ -526,7 +526,7 @@ Ftp::Response Ftp::getResponse()
 
                     // Extract the line. Failure leaves `message` indeterminate;
                     // the subsequent `erase(size - 1)` would underflow, so bail.
-                    if (!base::scnReadLine(scanner, message))
+                    if (!zb::scnReadLine(scanner, message))
                         return Response(Response::Status::InvalidResponse);
 
                     // Remove the ending '\r' (all lines are terminated by "\r\n")
@@ -540,8 +540,8 @@ Ftp::Response Ftp::getResponse()
                     if ((separator != '-') && ((code == lastCode) || (lastCode == 0)))
                     {
                         // Extract the line; same rationale as above for failing on EOF.
-                        base::String line;
-                        if (!base::scnReadLine(scanner, line))
+                        zb::String line;
+                        if (!zb::scnReadLine(scanner, line))
                             return Response(Response::Status::InvalidResponse);
 
                         // Remove the ending '\r' (all lines are terminated by "\r\n")
@@ -550,7 +550,7 @@ Ftp::Response Ftp::getResponse()
                         // Append it to the message
                         if (code == lastCode)
                         {
-                            message += base::fmtToString("{}{}{}", code, base::StringView{&separator, 1u}, line);
+                            message += zb::fmtToString("{}{}{}", code, zb::StringView{&separator, 1u}, line);
                         }
                         else
                         {
@@ -566,8 +566,8 @@ Ftp::Response Ftp::getResponse()
 
                     // The line we just read was actually not a response,
                     // only a new part of the current multiline response
-                    base::String line;
-                    if (!base::scnReadLine(scanner, line))
+                    zb::String line;
+                    if (!zb::scnReadLine(scanner, line))
                         return Response(Response::Status::InvalidResponse);
 
                     if (!line.empty())
@@ -576,7 +576,7 @@ Ftp::Response Ftp::getResponse()
                         line.erase(line.size() - 1);
 
                         // Append it to the current message
-                        message += base::fmtToString("{}{}{}\n", code, base::StringView{&separator, 1u}, line);
+                        message += zb::fmtToString("{}{}{}\n", code, zb::StringView{&separator, 1u}, line);
                     }
                 }
             }
@@ -586,8 +586,8 @@ Ftp::Response Ftp::getResponse()
                 // didn't start with a numeric code. `scnInto` for the int failed
                 // without consuming any bytes (after the initial whitespace skip),
                 // so the rest of the line is intact below.
-                base::String line;
-                if (!base::scnReadLine(scanner, line))
+                zb::String line;
+                if (!zb::scnReadLine(scanner, line))
                     return Response(Response::Status::InvalidResponse);
 
                 if (!line.empty())
@@ -627,22 +627,22 @@ Ftp::Response Ftp::DataChannel::open(Ftp::TransferMode mode)
         return response;
 
     // Extract the connection address and port from the response
-    const base::SizeT begin = response.getMessage().findFirstOf("0123456789");
-    if (begin == base::String::nPos)
+    const zb::SizeT begin = response.getMessage().findFirstOf("0123456789");
+    if (begin == zb::String::nPos)
         return response;
 
-    const auto        str     = response.getMessage().substrByPosLen(begin).toString<base::String>();
-    const base::SizeT strSize = str.size();
+    const auto        str     = response.getMessage().substrByPosLen(begin).toString<zb::String>();
+    const zb::SizeT strSize = str.size();
 
-    base::SizeT index   = 0;
-    base::U8    data[6] = {0, 0, 0, 0, 0, 0};
+    zb::SizeT index   = 0;
+    zb::U8    data[6] = {0, 0, 0, 0, 0, 0};
 
     for (unsigned char& datum : data)
     {
         // Extract the current number
         while (index < strSize && std::isdigit(static_cast<unsigned char>(str[index])))
         {
-            datum = static_cast<base::U8>(static_cast<base::U8>(datum * 10) + static_cast<base::U8>(str[index] - '0'));
+            datum = static_cast<zb::U8>(static_cast<zb::U8>(datum * 10) + static_cast<zb::U8>(str[index] - '0'));
             ++index;
         }
 
@@ -651,7 +651,7 @@ Ftp::Response Ftp::DataChannel::open(Ftp::TransferMode mode)
     }
 
     // Reconstruct connection port and address
-    const auto      port = static_cast<base::U16>(data[4] * 256 + data[5]);
+    const auto      port = static_cast<zb::U16>(data[4] * 256 + data[5]);
     const IpAddress address(data[0], data[1], data[2], data[3]);
 
     // Create and connect the data channel socket
@@ -671,7 +671,7 @@ Ftp::Response Ftp::DataChannel::open(Ftp::TransferMode mode)
     }
 
     // Translate the transfer mode to the corresponding FTP parameter
-    base::String modeStr;
+    zb::String modeStr;
     switch (mode)
     {
         case Ftp::TransferMode::Binary:
@@ -697,9 +697,9 @@ void Ftp::DataChannel::receive(auto& stream)
     ZB_ASSERT(m_dataSocket.hasValue() && "DataChannel::receive called without open()");
 
     // For sinks that report errors (`OutFile`), `write` returns `[[nodiscard]] bool`
-    // and we propagate. For pure-memory sinks (`base::String`), `write` isn't
+    // and we propagate. For pure-memory sinks (`zb::String`), `write` isn't
     // available -- fall back to `append`, which always succeeds.
-    const auto sinkAccepts = [&stream](const char* data, base::SizeT n) -> bool
+    const auto sinkAccepts = [&stream](const char* data, zb::SizeT n) -> bool
     {
         if constexpr (requires { stream.write(data, n); })
             return stream.write(data, n);
@@ -712,7 +712,7 @@ void Ftp::DataChannel::receive(auto& stream)
 
     // Receive data
     char        buffer[1024];
-    base::SizeT received = 0;
+    zb::SizeT received = 0;
     while (m_dataSocket->receive(buffer, sizeof(buffer), received) == Socket::Status::Done)
     {
         if (!sinkAccepts(buffer, received))
@@ -737,7 +737,7 @@ void Ftp::DataChannel::send(auto& stream)
 
     for (;;)
     {
-        base::SizeT count = 0;
+        zb::SizeT count = 0;
         if (!stream.read(buffer, sizeof(buffer), count))
         {
             priv::errMsg("FTP Error: Reading from the file has failed");

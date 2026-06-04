@@ -319,7 +319,7 @@ protected:
     /// getPointCount or getPoint is different).
     ///
     ////////////////////////////////////////////////////////////
-    void update(const za::Vec2f* points, base::SizeT pointCount); // TODO P1: make public?
+    void update(const za::Vec2f* points, zb::SizeT pointCount); // TODO P1: make public?
 
     ////////////////////////////////////////////////////////////
     /// \brief Recompute the internal geometry of the shape
@@ -329,7 +329,7 @@ protected:
     /// getPointCount or getPoint is different).
     ///
     ////////////////////////////////////////////////////////////
-    void updateFromFunc(auto&& getPointFunc, const base::SizeT pointCount) // TODO P1: make public?
+    void updateFromFunc(auto&& getPointFunc, const zb::SizeT pointCount) // TODO P1: make public?
     {
         if (pointCount < 3u)
         {
@@ -345,7 +345,7 @@ protected:
         m_vertices.resize(pointCount + 2u); // +2 for center and repeated first point
         m_verticesEndIndex = pointCount + 2u;
 
-        for (base::SizeT i = 0u; i < pointCount; ++i)
+        for (zb::SizeT i = 0u; i < pointCount; ++i)
             m_vertices[i + 1u].position = getPointFunc(i);
 
         m_vertices[pointCount + 1u].position = m_vertices[1].position; // repeated first point
@@ -403,8 +403,8 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     /* Ordered to minimize padding */
-    base::Vector<Vertex> m_vertices;              //!< Vertex array containing the fill and outline geometry
-    base::SizeT          m_verticesEndIndex = 0u; //!< Index where the fill vertices end and outline vertices begin
+    zb::Vector<Vertex> m_vertices;              //!< Vertex array containing the fill and outline geometry
+    zb::SizeT          m_verticesEndIndex = 0u; //!< Index where the fill vertices end and outline vertices begin
 
     Rect2f m_textureRect{};        //!< Area of the source texture to display for the fill
     Rect2f m_outlineTextureRect{}; //!< Area of the source texture to display for the outline

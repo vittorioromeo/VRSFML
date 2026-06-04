@@ -76,10 +76,10 @@ namespace za::priv
 [[nodiscard, gnu::pure]] SDL_WindowFlags makeSDLWindowFlagsFromWindowSettings(const WindowSettings& windowSettings) noexcept;
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] Mouse::Button getButtonFromSDLButton(base::U8 sdlButton) noexcept;
+[[nodiscard, gnu::const]] Mouse::Button getButtonFromSDLButton(zb::U8 sdlButton) noexcept;
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] base::U8 getSDLButtonFromSFMLButton(Mouse::Button button) noexcept;
+[[nodiscard, gnu::const]] zb::U8 getSDLButtonFromSFMLButton(Mouse::Button button) noexcept;
 
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::const]] DisplayOrientation mapSDLDisplayOrientationToSFML(SDL_DisplayOrientation displayOrientation);
@@ -101,7 +101,7 @@ struct ZB_TRIVIAL_ABI UniquePtrSDLDeleter
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-using SDLUPtr = base::UniquePtr<T, UniquePtrSDLDeleter>;
+using SDLUPtr = zb::UniquePtr<T, UniquePtrSDLDeleter>;
 
 ////////////////////////////////////////////////////////////
 struct ZB_TRIVIAL_ABI UniquePtrSDLSurfaceDeleter
@@ -113,7 +113,7 @@ struct ZB_TRIVIAL_ABI UniquePtrSDLSurfaceDeleter
 };
 
 ////////////////////////////////////////////////////////////
-using SDLSurfaceUPtr = base::UniquePtr<SDL_Surface, UniquePtrSDLSurfaceDeleter>;
+using SDLSurfaceUPtr = zb::UniquePtr<SDL_Surface, UniquePtrSDLSurfaceDeleter>;
 
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -121,11 +121,11 @@ struct SDLAllocatedArray
 {
     ////////////////////////////////////////////////////////////
     SDLUPtr<T>  ptr;
-    base::SizeT count;
+    zb::SizeT count;
 
 
     ////////////////////////////////////////////////////////////
-    explicit SDLAllocatedArray(SDLUPtr<T>&& thePtr, const base::SizeT theCount) :
+    explicit SDLAllocatedArray(SDLUPtr<T>&& thePtr, const zb::SizeT theCount) :
         ptr{ZB_MOVE(thePtr)},
         count{theCount}
     {
@@ -153,7 +153,7 @@ struct SDLAllocatedArray
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] T& operator[](const base::SizeT index) noexcept
+    [[nodiscard]] T& operator[](const zb::SizeT index) noexcept
     {
         ZB_ASSERT(ptr != nullptr);
         ZB_ASSERT(index < count);
@@ -163,7 +163,7 @@ struct SDLAllocatedArray
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const T& operator[](const base::SizeT index) const noexcept
+    [[nodiscard]] const T& operator[](const zb::SizeT index) const noexcept
     {
         ZB_ASSERT(ptr != nullptr);
         ZB_ASSERT(index < count);
@@ -180,7 +180,7 @@ struct SDLAllocatedArray
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::SizeT size() const noexcept
+    [[nodiscard]] zb::SizeT size() const noexcept
     {
         return count;
     }
@@ -311,7 +311,7 @@ public:
     [[nodiscard]] float getDisplayScale(SDL_Window& window) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SDLSurfaceUPtr createSurfaceFromPixels(const base::U8* pixels, Vec2u size) const;
+    [[nodiscard]] SDLSurfaceUPtr createSurfaceFromPixels(const zb::U8* pixels, Vec2u size) const;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] unsigned int getJoystickButtonCount(SDL_Joystick& handle);

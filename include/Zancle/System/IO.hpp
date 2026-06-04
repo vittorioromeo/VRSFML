@@ -41,43 +41,43 @@ namespace za
 /// \brief Helper function to write to a file.
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool writeToFile(base::StringView filename, base::StringView contents);
-[[nodiscard]] bool writeToFile(const Path& filename, base::StringView contents);
+[[nodiscard]] bool writeToFile(zb::StringView filename, zb::StringView contents);
+[[nodiscard]] bool writeToFile(const Path& filename, zb::StringView contents);
 
 
 ////////////////////////////////////////////////////////////
 /// \brief Helper function to read the contents of a file
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool readFromFile(base::StringView filename, std::string& target);
-[[nodiscard]] bool readFromFile(base::StringView filename, base::String& target);
-[[nodiscard]] bool readFromFile(base::StringView filename, base::Vector<char>& target);
+[[nodiscard]] bool readFromFile(zb::StringView filename, std::string& target);
+[[nodiscard]] bool readFromFile(zb::StringView filename, zb::String& target);
+[[nodiscard]] bool readFromFile(zb::StringView filename, zb::Vector<char>& target);
 [[nodiscard]] bool readFromFile(const Path& filename, std::string& target);
-[[nodiscard]] bool readFromFile(const Path& filename, base::String& target);
-[[nodiscard]] bool readFromFile(const Path& filename, base::Vector<char>& target);
+[[nodiscard]] bool readFromFile(const Path& filename, zb::String& target);
+[[nodiscard]] bool readFromFile(const Path& filename, zb::Vector<char>& target);
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Append the contents of a file to a `base::Vector<char>`.
+/// \brief Append the contents of a file to a `zb::Vector<char>`.
 ///
-/// Like `readFromFile(..., base::Vector<char>&)` but preserves the existing
+/// Like `readFromFile(..., zb::Vector<char>&)` but preserves the existing
 /// content of `target` and writes the file's bytes after it. The new range
 /// after a successful call is `target.data()[oldSize, oldSize + fileSize)`.
 /// Skips zero-init via `unsafeSetSize`. On failure, `target` may be in a
 /// partially-grown state; existing content up to `oldSize` is unchanged.
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool appendFromFile(base::StringView filename, base::Vector<char>& target);
-[[nodiscard]] bool appendFromFile(const Path& filename, base::Vector<char>& target);
+[[nodiscard]] bool appendFromFile(zb::StringView filename, zb::Vector<char>& target);
+[[nodiscard]] bool appendFromFile(const Path& filename, zb::Vector<char>& target);
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Returns a thread-local scratch `base::Vector<char>` for transient file I/O.
+/// \brief Returns a thread-local scratch `zb::Vector<char>` for transient file I/O.
 ///
 /// The buffer is recycled across calls on the same thread so its capacity
 /// grows monotonically toward the largest file ever loaded; subsequent loads
 /// of the same or smaller size do not allocate. Intended primarily as the
-/// destination passed to `readFromFile(StringView, base::Vector<char>&)` in
+/// destination passed to `readFromFile(StringView, zb::Vector<char>&)` in
 /// resource-loading code paths.
 ///
 /// \warning This API is **NOT re-entrant**. The returned reference must be
@@ -91,7 +91,7 @@ namespace za
 ///          that themselves call `readFromFile` are not.
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] base::Vector<char>& getThreadLocalScratchCharBuffer();
+[[nodiscard]] zb::Vector<char>& getThreadLocalScratchCharBuffer();
 
 
 ////////////////////////////////////////////////////////////
@@ -161,7 +161,7 @@ public:
     /// \return `OutFile` on success, `zb::nullOpt` on open failure.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<OutFile> open(const Path& filename, FileOpenMode mode = FileOpenMode::out);
+    [[nodiscard]] static zb::Optional<OutFile> open(const Path& filename, FileOpenMode mode = FileOpenMode::out);
 
     ~OutFile();
 
@@ -171,28 +171,28 @@ public:
     OutFile(OutFile&&) noexcept;
     OutFile& operator=(OutFile&&) noexcept;
 
-    [[nodiscard]] bool write(const char* data, base::SizeT size);
+    [[nodiscard]] bool write(const char* data, zb::SizeT size);
     [[nodiscard]] bool flush();
 
-    [[nodiscard]] bool seekPos(base::PtrDiffT absolutePos);
-    [[nodiscard]] bool tellPos(base::PtrDiffT& out);
+    [[nodiscard]] bool seekPos(zb::PtrDiffT absolutePos);
+    [[nodiscard]] bool tellPos(zb::PtrDiffT& out);
 
     ////////////////////////////////////////////////////////////
     /// \brief `AppendSink` adapter for `fmtTo` / `print` / `printLn`.
     /// Errors are lost in this path -- use `write()` for explicit
     /// error handling.
     ////////////////////////////////////////////////////////////
-    void append(const char* data, base::SizeT n);
+    void append(const char* data, zb::SizeT n);
 
     ////////////////////////////////////////////////////////////
     /// \private Constructor for internal use by `open`. The
     /// `PassKey` parameter restricts who can call it.
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit OutFile(base::PassKey<OutFile>&&, void* file) noexcept;
+    [[nodiscard]] explicit OutFile(zb::PassKey<OutFile>&&, void* file) noexcept;
 
 private:
     struct Impl;
-    base::InPlacePImpl<Impl, sizeof(void*)> m_impl; //!< Holds a `FILE*`.
+    zb::InPlacePImpl<Impl, sizeof(void*)> m_impl; //!< Holds a `FILE*`.
 };
 
 
@@ -231,7 +231,7 @@ public:
     /// \return `InFile` on success, `zb::nullOpt` on open failure.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<InFile> open(const Path& filename, FileOpenMode mode = FileOpenMode::in);
+    [[nodiscard]] static zb::Optional<InFile> open(const Path& filename, FileOpenMode mode = FileOpenMode::in);
 
     ~InFile();
 
@@ -252,21 +252,21 @@ public:
     /// `consume()`) is delivered as the first byte of the output and
     /// the cache is cleared.
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool read(char* data, base::SizeT size, base::SizeT& bytesRead);
+    [[nodiscard]] bool read(char* data, zb::SizeT size, zb::SizeT& bytesRead);
 
-    [[nodiscard]] bool seekPos(base::PtrDiffT absolutePos);
-    [[nodiscard]] bool seekPos(base::PtrDiffT offset, SeekDir dir);
+    [[nodiscard]] bool seekPos(zb::PtrDiffT absolutePos);
+    [[nodiscard]] bool seekPos(zb::PtrDiffT offset, SeekDir dir);
 
-    [[nodiscard]] bool tellPos(base::PtrDiffT& out);
+    [[nodiscard]] bool tellPos(zb::PtrDiffT& out);
 
     [[nodiscard]] bool isEOF() const noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief `ScnSource`: return the next byte without consuming it,
-    /// or `base::nullOpt` at EOF / on I/O error. Holds a 1-byte
+    /// or `zb::nullOpt` at EOF / on I/O error. Holds a 1-byte
     /// read-ahead cache internally so repeated `peek()` is idempotent.
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<char> peek();
+    [[nodiscard]] zb::Optional<char> peek();
 
     ////////////////////////////////////////////////////////////
     /// \brief `ScnSource`: drop the byte most recently returned by
@@ -279,11 +279,11 @@ public:
     /// \private Constructor for internal use by `open`. The
     /// `PassKey` parameter restricts who can call it.
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit InFile(base::PassKey<InFile>&&, void* file) noexcept;
+    [[nodiscard]] explicit InFile(zb::PassKey<InFile>&&, void* file) noexcept;
 
 private:
     struct Impl;
-    base::InPlacePImpl<Impl, sizeof(void*) * 2> m_impl; //!< `FILE*` + 1-byte peek cache (int-sized).
+    zb::InPlacePImpl<Impl, sizeof(void*) * 2> m_impl; //!< `FILE*` + 1-byte peek cache (int-sized).
 };
 
 

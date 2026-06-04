@@ -53,7 +53,7 @@ template <typename In, typename Out>
     // 4294967273 which is not a valid Unicode codepoint. What we actually wanted was a char32_t
     // with the byte representation 0x000000E9.
     while (begin != end)
-        *output++ = static_cast<OutputType>(static_cast<base::MakeUnsigned<InputType>>(*begin++));
+        *output++ = static_cast<OutputType>(static_cast<zb::MakeUnsigned<InputType>>(*begin++));
 
     return output;
 }
@@ -65,7 +65,7 @@ template <typename In, typename Out>
 /// (`0x80`-`0xBF`) map to `0`; lead bytes `0xC0`-`0xDF` map to
 /// `1`, `0xE0`-`0xEF` to `2`, etc.
 ////////////////////////////////////////////////////////////
-inline constexpr base::U8 utf8TrailingBytes[256] =
+inline constexpr zb::U8 utf8TrailingBytes[256] =
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -81,7 +81,7 @@ inline constexpr base::U8 utf8TrailingBytes[256] =
 /// folded into a single 32-bit accumulator. Derived from the standard
 /// CVTUTF algorithm.
 ////////////////////////////////////////////////////////////
-inline constexpr base::U32 utf8DecodeOffsets[6] =
+inline constexpr zb::U32 utf8DecodeOffsets[6] =
     {0x00'00'00'00, 0x00'00'30'80, 0x00'0E'20'80, 0x03'C8'20'80, 0xFA'08'20'80, 0x82'08'20'80};
 
 
@@ -89,7 +89,7 @@ inline constexpr base::U32 utf8DecodeOffsets[6] =
 /// First-byte prefix for an n-byte UTF-8 sequence (indexed by
 /// the byte count, 1-4 in practice).
 ////////////////////////////////////////////////////////////
-inline constexpr base::U8 utf8FirstBytes[7] = {0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC};
+inline constexpr zb::U8 utf8FirstBytes[7] = {0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC};
 
 
 ////////////////////////////////////////////////////////////
@@ -156,13 +156,13 @@ template <typename Out>
 /// knows the destination is a contiguous byte buffer.
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline base::SizeT encodeCodepointToBuffer(char32_t input, char out[4]) noexcept
+[[nodiscard, gnu::always_inline]] inline zb::SizeT encodeCodepointToBuffer(char32_t input, char out[4]) noexcept
 {
     if ((input > 0x00'10'FF'FF) || ((input >= 0xD8'00) && (input <= 0xDB'FF))) [[unlikely]]
         return 0u; // Invalid codepoint: outside Unicode range or a high surrogate.
 
     // Compute byte count from codepoint magnitude.
-    base::SizeT bytestoWrite = 1;
+    zb::SizeT bytestoWrite = 1;
     if (input < 0x80)
         bytestoWrite = 1;
     else if (input < 0x8'00)
@@ -205,7 +205,7 @@ template <typename Out>
 ///
 ////////////////////////////////////////////////////////////
 template <typename Out>
-[[gnu::always_inline]] inline Out encodeUtf8Impl(char32_t input, Out output, base::U8 replacement)
+[[gnu::always_inline]] inline Out encodeUtf8Impl(char32_t input, Out output, zb::U8 replacement)
 {
     char       buf[4];
     const auto bytestoWrite = encodeCodepointToBuffer(input, buf);
@@ -306,7 +306,7 @@ public:
         // ASCII fast path: a leading byte with the high bit clear is a
         // single-byte codepoint that equals the byte value (U+0000..U+007F).
         // No table touch, no truncation check (none possible for 1 byte).
-        const auto firstByte = static_cast<base::U8>(*begin);
+        const auto firstByte = static_cast<zb::U8>(*begin);
         if (firstByte < 0x80u) [[likely]]
         {
             output = firstByte;
@@ -337,12 +337,12 @@ public:
             // clang-format off
             switch (trailingBytes)
             {
-                case 5: output += static_cast<base::U8>(*begin++); output <<= 6; [[fallthrough]];
-                case 4: output += static_cast<base::U8>(*begin++); output <<= 6; [[fallthrough]];
-                case 3: output += static_cast<base::U8>(*begin++); output <<= 6; [[fallthrough]];
-                case 2: output += static_cast<base::U8>(*begin++); output <<= 6; [[fallthrough]];
-                case 1: output += static_cast<base::U8>(*begin++); output <<= 6; [[fallthrough]];
-                case 0: output += static_cast<base::U8>(*begin++);
+                case 5: output += static_cast<zb::U8>(*begin++); output <<= 6; [[fallthrough]];
+                case 4: output += static_cast<zb::U8>(*begin++); output <<= 6; [[fallthrough]];
+                case 3: output += static_cast<zb::U8>(*begin++); output <<= 6; [[fallthrough]];
+                case 2: output += static_cast<zb::U8>(*begin++); output <<= 6; [[fallthrough]];
+                case 1: output += static_cast<zb::U8>(*begin++); output <<= 6; [[fallthrough]];
+                case 0: output += static_cast<zb::U8>(*begin++);
             }
             // clang-format on
 
@@ -368,7 +368,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename Out>
-    [[gnu::always_inline]] static Out encode(char32_t input, Out output, base::U8 replacement)
+    [[gnu::always_inline]] static Out encode(char32_t input, Out output, zb::U8 replacement)
     {
         return priv::encodeUtf8Impl(input, output, replacement);
     }
@@ -396,11 +396,11 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
-    [[nodiscard, gnu::flatten]] static base::SizeT count(In begin, In end)
+    [[nodiscard, gnu::flatten]] static zb::SizeT count(In begin, In end)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(char));
 
-        base::SizeT length = 0;
+        zb::SizeT length = 0;
         while (begin != end)
         {
             begin = next(begin, end);
@@ -461,7 +461,7 @@ public:
         // Latin-1 is directly compatible with Unicode encodings,
         // and can thus be treated as (a sub-range of) UTF-32
         while (begin != end)
-            output = encode(static_cast<base::U8>(*begin++), output, 0);
+            output = encode(static_cast<zb::U8>(*begin++), output, 0);
 
         return output;
     }
@@ -618,7 +618,7 @@ public:
         {
             if (begin != end)
             {
-                const base::U32 second = *begin++;
+                const zb::U32 second = *begin++;
                 if ((second >= 0xDC'00) && (second <= 0xDF'FF))
                 {
                     // The second element is valid: convert the two elements to a UTF-32 character
@@ -686,11 +686,11 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
-    [[nodiscard, gnu::flatten]] static base::SizeT count(In begin, In end)
+    [[nodiscard, gnu::flatten]] static zb::SizeT count(In begin, In end)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(char16_t));
 
-        base::SizeT length = 0;
+        zb::SizeT length = 0;
         while (begin != end)
         {
             begin = next(begin, end);
@@ -939,11 +939,11 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
-    [[nodiscard, gnu::always_inline]] static base::SizeT count(In begin, In end)
+    [[nodiscard, gnu::always_inline]] static zb::SizeT count(In begin, In end)
     {
         static_assert(sizeof(decltype(*begin)) == sizeof(char32_t));
 
-        return static_cast<base::SizeT>(end - begin);
+        return static_cast<zb::SizeT>(end - begin);
     }
 
     ////////////////////////////////////////////////////////////

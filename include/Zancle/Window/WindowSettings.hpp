@@ -43,10 +43,10 @@ struct [[nodiscard]] WindowSettings
 {
     ZB_REQUIRE_DESIGNATED_INITIALIZERS;
 
-    base::Optional<Vec2i> position{base::nullOpt};    //!< Initial window position (`base::nullOpt` lets the OS pick)
+    zb::Optional<Vec2i> position{zb::nullOpt};    //!< Initial window position (`zb::nullOpt` lets the OS pick)
     Vec2u                 size;                       //!< Window inner size in pixels (width, height)
-    base::Optional<Vec2u> minimumSize{base::nullOpt}; //!< Initial minimum size enforced on user resizes
-    base::Optional<Vec2u> maximumSize{base::nullOpt}; //!< Initial maximum size enforced on user resizes
+    zb::Optional<Vec2u> minimumSize{zb::nullOpt}; //!< Initial minimum size enforced on user resizes
+    zb::Optional<Vec2u> maximumSize{zb::nullOpt}; //!< Initial maximum size enforced on user resizes
     unsigned int          bitsPerPixel{32u};          //!< Pixel depth, in bits per pixel
     Utf8String            title{"Untitled Window"};   //!< Title displayed in the window's title bar
     bool                  fullscreen{false};          //!< Whether the window is created in fullscreen mode

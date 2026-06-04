@@ -26,7 +26,7 @@ namespace za
 ////////////////////////////////////////////////////////////
 struct RectPacker::Impl
 {
-    base::Vector<stbrp_node> nodes;
+    zb::Vector<stbrp_node> nodes;
     stbrp_context            context{};
 
     explicit Impl(const Vec2u size) : nodes(size.x)
@@ -51,12 +51,12 @@ RectPacker::~RectPacker() = default;
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Vec2u> RectPacker::pack(const Vec2u rectSize)
+zb::Optional<Vec2u> RectPacker::pack(const Vec2u rectSize)
 {
     const auto fail = [&](const char* what)
     {
         priv::errMsg("Failure packing rectangle with size {{{}, {}}}: {}", rectSize.x, rectSize.y, what);
-        return base::nullOpt;
+        return zb::nullOpt;
     };
 
     if (rectSize.x == 0u || rectSize.y == 0u)
@@ -77,12 +77,12 @@ base::Optional<Vec2u> RectPacker::pack(const Vec2u rectSize)
     ZB_ASSERT(rc == /* success */ 1);
     ZB_ASSERT(toPack.was_packed != 0);
 
-    return base::makeOptional<Vec2u>(static_cast<unsigned int>(toPack.x), static_cast<unsigned int>(toPack.y));
+    return zb::makeOptional<Vec2u>(static_cast<unsigned int>(toPack.x), static_cast<unsigned int>(toPack.y));
 }
 
 
 ////////////////////////////////////////////////////////////
-bool RectPacker::packMultiple(const base::Span<Vec2u> outPositions, const base::Span<const Vec2u> rectSizes)
+bool RectPacker::packMultiple(const zb::Span<Vec2u> outPositions, const zb::Span<const Vec2u> rectSizes)
 {
     const auto fail = [&](const char* what)
     {
@@ -98,7 +98,7 @@ bool RectPacker::packMultiple(const base::Span<Vec2u> outPositions, const base::
 
     stbrp_rect toPack[512];
 
-    for (base::SizeT i = 0u; i < rectSizes.size(); ++i)
+    for (zb::SizeT i = 0u; i < rectSizes.size(); ++i)
     {
         const auto& size = rectSizes[i];
 
@@ -120,7 +120,7 @@ bool RectPacker::packMultiple(const base::Span<Vec2u> outPositions, const base::
 
     ZB_ASSERT(rc == /* success */ 1);
 
-    for (base::SizeT i = 0u; i < rectSizes.size(); ++i)
+    for (zb::SizeT i = 0u; i < rectSizes.size(); ++i)
     {
         const auto& packed = toPack[i];
         ZB_ASSERT(packed.was_packed);

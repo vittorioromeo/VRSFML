@@ -34,8 +34,8 @@ public:
 
     ////////////////////////////////////////////////////////////
     GLFenceSync(GLFenceSync&& rhs) noexcept :
-        m_handle{base::exchange(rhs.m_handle, nullptr)},
-        m_needsClientFlush{base::exchange(rhs.m_needsClientFlush, true)}
+        m_handle{zb::exchange(rhs.m_handle, nullptr)},
+        m_needsClientFlush{zb::exchange(rhs.m_needsClientFlush, true)}
     {
     }
 
@@ -48,8 +48,8 @@ public:
 
         reset();
 
-        m_handle           = base::exchange(rhs.m_handle, nullptr);
-        m_needsClientFlush = base::exchange(rhs.m_needsClientFlush, true);
+        m_handle           = zb::exchange(rhs.m_handle, nullptr);
+        m_needsClientFlush = zb::exchange(rhs.m_needsClientFlush, true);
 
         return *this;
     }

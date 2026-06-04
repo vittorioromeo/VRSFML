@@ -658,7 +658,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::UniquePtr<Impl> m_impl; //!< Implementation details
+    zb::UniquePtr<Impl> m_impl; //!< Implementation details
 };
 
 } // namespace za

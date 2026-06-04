@@ -180,7 +180,7 @@ constexpr void scnSkipPast(S& src, const char delim)
 /// overload, parallel to `fmtArg`. Built-in `scnArg` overloads live in
 /// dedicated headers:
 ///   - `<ZancleBase/Scn/ScnChar.hpp>`       -- `char`
-///   - `<ZancleBase/Scn/ScnString.hpp>`     -- `base::String` + `scnReadLine`
+///   - `<ZancleBase/Scn/ScnString.hpp>`     -- `zb::String` + `scnReadLine`
 ///   - `<ZancleBase/Scn/ScnNumeric.hpp>`    -- int / float / bool + `scnRadix`
 ///
 /// Whitespace policy follows scnlib:

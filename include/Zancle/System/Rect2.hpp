@@ -93,10 +93,10 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert to `Rect2<base::SizeT>`
+    /// \brief Convert to `Rect2<zb::SizeT>`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Rect2<base::SizeT> toRect2uz() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Rect2<zb::SizeT> toRect2uz() const
     {
         return {position.toVec2uz(), size.toVec2uz()};
     }
@@ -372,7 +372,7 @@ public:
 using Rect2i  = Rect2<int>;
 using Rect2f  = Rect2<float>;
 using Rect2u  = Rect2<unsigned int>;
-using Rect2uz = Rect2<base::SizeT>;
+using Rect2uz = Rect2<zb::SizeT>;
 
 } // namespace za
 

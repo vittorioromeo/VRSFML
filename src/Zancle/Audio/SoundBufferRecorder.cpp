@@ -24,8 +24,8 @@ namespace za
 ////////////////////////////////////////////////////////////
 struct SoundBufferRecorder::Impl
 {
-    base::Vector<base::I16>     samples; //!< Temporary sample buffer to hold the recorded data
-    base::Optional<SoundBuffer> buffer;  //!< Sound buffer that will contain the recorded data
+    zb::Vector<zb::I16>     samples; //!< Temporary sample buffer to hold the recorded data
+    zb::Optional<SoundBuffer> buffer;  //!< Sound buffer that will contain the recorded data
 };
 
 
@@ -52,12 +52,12 @@ bool SoundBufferRecorder::onStart(CaptureDevice&)
 
 
 ////////////////////////////////////////////////////////////
-bool SoundBufferRecorder::onProcessSamples(const base::I16* samples, base::SizeT sampleCount)
+bool SoundBufferRecorder::onProcessSamples(const zb::I16* samples, zb::SizeT sampleCount)
 {
-    const base::SizeT oldSize = m_impl->samples.size();
+    const zb::SizeT oldSize = m_impl->samples.size();
     m_impl->samples.resize(oldSize + sampleCount);
 
-    ZB_MEMCPY(m_impl->samples.data() + oldSize, samples, sampleCount * sizeof(base::I16));
+    ZB_MEMCPY(m_impl->samples.data() + oldSize, samples, sampleCount * sizeof(zb::I16));
 
     return true;
 }

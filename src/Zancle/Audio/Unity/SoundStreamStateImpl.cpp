@@ -50,9 +50,9 @@ struct SoundStreamStateImpl::Internals
     ////////////////////////////////////////////////////////////
     ChannelMap              channelMap;
     unsigned int            sampleRate{};
-    base::Vector<base::I16> sampleBuffer;
-    base::SizeT             sampleBufferCursor{};
-    base::U64               samplesProcessed{};
+    zb::Vector<zb::I16> sampleBuffer;
+    zb::SizeT             sampleBufferCursor{};
+    zb::U64               samplesProcessed{};
     za::Atomic<bool>        streaming{true};
 
     ////////////////////////////////////////////////////////////
@@ -128,7 +128,7 @@ struct SoundStreamStateImpl::Internals
 
         const auto channelCount = internals.channelMap.getSize();
 
-        *framesRead = base::min(frameCount,
+        *framesRead = zb::min(frameCount,
                                 static_cast<ma_uint64>(
                                     (internals.sampleBuffer.size() - internals.sampleBufferCursor) / channelCount));
 
@@ -136,9 +136,9 @@ struct SoundStreamStateImpl::Internals
 
         ZB_MEMCPY(framesOut,
                          internals.sampleBuffer.data() + internals.sampleBufferCursor,
-                         static_cast<base::SizeT>(sampleCount) * sizeof(internals.sampleBuffer[0]));
+                         static_cast<zb::SizeT>(sampleCount) * sizeof(internals.sampleBuffer[0]));
 
-        internals.sampleBufferCursor += static_cast<base::SizeT>(sampleCount);
+        internals.sampleBufferCursor += static_cast<zb::SizeT>(sampleCount);
         internals.samplesProcessed += sampleCount;
 
         if (internals.sampleBufferCursor >= internals.sampleBuffer.size())
@@ -151,7 +151,7 @@ struct SoundStreamStateImpl::Internals
             // position resumes from there.
             if (!internals.streaming.loadAcquire())
             {
-                if (const base::Optional seekPositionAfterLoop = internals.callbacks.onLoop(internals.statePtr))
+                if (const zb::Optional seekPositionAfterLoop = internals.callbacks.onLoop(internals.statePtr))
                 {
                     internals.streaming.storeRelease(true);
                     internals.samplesProcessed = *seekPositionAfterLoop;
@@ -191,7 +191,7 @@ struct SoundStreamStateImpl::Internals
         ma_uint32* const      outChannels,
         ma_uint32* const      outSampleRate,
         ma_channel* const,
-        const base::SizeT)
+        const zb::SizeT)
     {
         const auto& internals = *static_cast<const Internals*>(dataSource);
         ZB_ASSERT(internals.sampleRate > 0u);

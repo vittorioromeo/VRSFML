@@ -15,7 +15,7 @@
 namespace zb
 {
 ////////////////////////////////////////////////////////////
-/// \brief `scnArg` for `base::String`: skips leading whitespace, then
+/// \brief `scnArg` for `zb::String`: skips leading whitespace, then
 /// reads the next whitespace-delimited token into `out` (overwriting
 /// any prior contents).
 ///
@@ -125,7 +125,7 @@ template <ScnSource S>
 
 ////////////////////////////////////////////////////////////
 /// \file
-/// Built-in `scnArg` for `base::String` (skip-whitespace + read-token),
+/// Built-in `scnArg` for `zb::String` (skip-whitespace + read-token),
 /// plus the `scnReadLine` helper.
 ///
 ////////////////////////////////////////////////////////////

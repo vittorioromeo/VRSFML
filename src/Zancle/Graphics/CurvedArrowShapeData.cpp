@@ -38,7 +38,7 @@ template <typename MapFn>
     const float endAngle   = sd.startAngle.asRadians() + sweepRad;
     const float pathRadius = (sd.outerRadius + sd.innerRadius) * 0.5f;
 
-    const auto [endSin, endCos] = base::sinCosLookup(base::positiveRemainder(endAngle, base::tau));
+    const auto [endSin, endCos] = zb::sinCosLookup(zb::positiveRemainder(endAngle, zb::tau));
 
     const Vec2f attach    = {sd.outerRadius + pathRadius * endCos, sd.outerRadius + pathRadius * endSin};
     const Vec2f tangent   = {-endSin, endCos};
@@ -153,12 +153,12 @@ Vec2f CurvedArrowShapeData::getCentroid() const noexcept
 
     if (diffSq > 0.f && absSweep > 0.f)
     {
-        const auto [sinHalf, cosHalf] = base::sinCosLookup(base::positiveRemainder(halfSwpAbs, base::tau));
+        const auto [sinHalf, cosHalf] = zb::sinCosLookup(zb::positiveRemainder(halfSwpAbs, zb::tau));
 
         const float d        = priv::annulusSectorCentroidDistance(outerRadius, innerRadius, absSweep, sinHalf);
         const float bisector = startRad + sweepRad * 0.5f;
 
-        const auto [sinB, cosB] = base::sinCosLookup(base::positiveRemainder(bisector, base::tau));
+        const auto [sinB, cosB] = zb::sinCosLookup(zb::positiveRemainder(bisector, zb::tau));
 
         bodyCentroid = {center.x + d * cosB, center.y + d * sinB};
         bodyArea     = 0.5f * diffSq * absSweep;
@@ -168,7 +168,7 @@ Vec2f CurvedArrowShapeData::getCentroid() const noexcept
     const float endAngle   = startRad + sweepRad;
     const float pathRadius = (outerRadius + innerRadius) * 0.5f;
 
-    const auto [endSin, endCos] = base::sinCosLookup(base::positiveRemainder(endAngle, base::tau));
+    const auto [endSin, endCos] = zb::sinCosLookup(zb::positiveRemainder(endAngle, zb::tau));
 
     const Vec2f attach    = {center.x + pathRadius * endCos, center.y + pathRadius * endSin};
     const Vec2f tangent   = {-endSin, endCos};

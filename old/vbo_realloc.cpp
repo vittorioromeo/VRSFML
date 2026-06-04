@@ -1,7 +1,7 @@
-base::SizeT vboCapacity{0u}; //!< Currently allocated capacity of the VBO
-base::SizeT eboCapacity{0u}; //!< Currently allocated capacity of the EBO
+zb::SizeT vboCapacity{0u}; //!< Currently allocated capacity of the VBO
+zb::SizeT eboCapacity{0u}; //!< Currently allocated capacity of the EBO
 
-[[gnu::always_inline]] void reallocObjectIfNeeded(GLenum type, auto& object, base::SizeT& capacity, base::SizeT byteCount)
+[[gnu::always_inline]] void reallocObjectIfNeeded(GLenum type, auto& object, zb::SizeT& capacity, zb::SizeT byteCount)
 {
     if (byteCount <= capacity) [[likely]]
         return;
@@ -17,7 +17,7 @@ base::SizeT eboCapacity{0u}; //!< Currently allocated capacity of the EBO
 [[gnu::always_inline]] void objectReallocAndMemcpy(
     GLenum          type,
     auto&           object,
-    base::SizeT&    capacity,
+    zb::SizeT&    capacity,
     const void*     data,
     zb::SizeT byteCount)
 {

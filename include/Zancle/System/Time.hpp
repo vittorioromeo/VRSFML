@@ -44,9 +44,9 @@ public:
     /// \see `asSeconds`, `asMicroseconds`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr base::I32 asMilliseconds() const
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr zb::I32 asMilliseconds() const
     {
-        return static_cast<base::I32>(m_microseconds / 1000);
+        return static_cast<zb::I32>(m_microseconds / 1000);
     }
 
 
@@ -56,7 +56,7 @@ public:
     /// \see `asSeconds`, `asMilliseconds`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr base::I64 asMicroseconds() const
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr zb::I64 asMicroseconds() const
     {
         return m_microseconds;
     }
@@ -167,7 +167,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr Time operator*(const Time lhs, const float rhs)
     {
-        return Time(static_cast<base::I64>(static_cast<float>(lhs.m_microseconds) * rhs));
+        return Time(static_cast<zb::I64>(static_cast<float>(lhs.m_microseconds) * rhs));
     }
 
 
@@ -175,7 +175,7 @@ public:
     /// \brief Scale a time by an integer factor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr Time operator*(const Time lhs, const base::I64 rhs)
+    [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr Time operator*(const Time lhs, const zb::I64 rhs)
     {
         return Time(lhs.m_microseconds * rhs);
     }
@@ -195,7 +195,7 @@ public:
     /// \brief Scale a time by an integer factor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr Time operator*(const base::I64 lhs, const Time rhs)
+    [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr Time operator*(const zb::I64 lhs, const Time rhs)
     {
         return rhs * lhs;
     }
@@ -215,7 +215,7 @@ public:
     /// \brief Compound scale of a time by an integer factor
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] friend constexpr Time& operator*=(Time& lhs, const base::I64 rhs)
+    [[gnu::always_inline]] friend constexpr Time& operator*=(Time& lhs, const zb::I64 rhs)
     {
         return lhs = lhs * rhs;
     }
@@ -228,7 +228,7 @@ public:
     [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr Time operator/(const Time lhs, const float rhs)
     {
         ZB_ASSERT(rhs != 0 && "Time::operator/ cannot divide by 0");
-        return Time(static_cast<base::I64>(static_cast<float>(lhs.m_microseconds) / rhs));
+        return Time(static_cast<zb::I64>(static_cast<float>(lhs.m_microseconds) / rhs));
     }
 
 
@@ -236,7 +236,7 @@ public:
     /// \brief Divide a time by an integer divisor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr Time operator/(const Time lhs, const base::I64 rhs)
+    [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr Time operator/(const Time lhs, const zb::I64 rhs)
     {
         ZB_ASSERT(rhs != 0 && "Time::operator/ cannot divide by 0");
         return Time(lhs.m_microseconds / rhs);
@@ -258,7 +258,7 @@ public:
     /// \brief Compound divide of a time by an integer divisor
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] friend constexpr Time& operator/=(Time& lhs, const base::I64 rhs)
+    [[gnu::always_inline]] friend constexpr Time& operator/=(Time& lhs, const zb::I64 rhs)
     {
         ZB_ASSERT(rhs != 0 && "Time::operator/= cannot divide by 0");
         return lhs = lhs / rhs;
@@ -300,8 +300,8 @@ public:
 
     ////////////////////////////////////////////////////////////
     friend constexpr Time seconds(float amount);
-    friend constexpr Time milliseconds(base::I32 amount);
-    friend constexpr Time microseconds(base::I64 amount);
+    friend constexpr Time milliseconds(zb::I32 amount);
+    friend constexpr Time microseconds(zb::I64 amount);
 
 private:
     ////////////////////////////////////////////////////////////
@@ -311,7 +311,7 @@ private:
     /// `za::seconds` factory functions for clarity at call sites.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr explicit Time(const base::I64 microseconds) :
+    [[nodiscard, gnu::always_inline]] constexpr explicit Time(const zb::I64 microseconds) :
         m_microseconds(microseconds)
     {
     }
@@ -320,7 +320,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    base::I64 m_microseconds{}; //!< Time value stored as microseconds
+    zb::I64 m_microseconds{}; //!< Time value stored as microseconds
 };
 
 
@@ -332,7 +332,7 @@ private:
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time seconds(const float amount)
 {
-    return Time(static_cast<base::I64>(amount * 1'000'000.f));
+    return Time(static_cast<zb::I64>(amount * 1'000'000.f));
 }
 
 ////////////////////////////////////////////////////////////
@@ -341,7 +341,7 @@ private:
 /// \see `seconds`, `microseconds`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time milliseconds(const base::I32 amount)
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time milliseconds(const zb::I32 amount)
 {
     return Time(amount * 1000);
 }
@@ -353,7 +353,7 @@ private:
 /// \see `seconds`, `milliseconds`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time microseconds(const base::I64 amount)
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time microseconds(const zb::I64 amount)
 {
     return Time(amount);
 }
@@ -381,10 +381,10 @@ private:
 /// Usage example:
 /// \code
 /// za::Time t1 = za::seconds(0.1f);
-/// base::I32 milli = t1.asMilliseconds(); // 100
+/// zb::I32 milli = t1.asMilliseconds(); // 100
 ///
 /// za::Time t2 = za::milliseconds(30);
-/// base::I64 micro = t2.asMicroseconds(); // 30'000
+/// zb::I64 micro = t2.asMicroseconds(); // 30'000
 ///
 /// za::Time t3 = za::microseconds(-800'000);
 /// float sec = t3.asSeconds(); // -0.8

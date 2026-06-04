@@ -78,14 +78,14 @@ struct Sound::Impl
         }
 
         // Determine how many frames we can read
-        *framesRead = base::min(frameCount, static_cast<ma_uint64>(totalBufferFrames - impl.cursor));
+        *framesRead = zb::min(frameCount, static_cast<ma_uint64>(totalBufferFrames - impl.cursor));
 
         // Copy the samples to the output
         const auto sampleCount = *framesRead * impl.buffer.getChannelCount();
 
         ZB_MEMCPY(framesOut,
                          impl.buffer.getSamples() + impl.cursor * impl.buffer.getChannelCount(),
-                         static_cast<base::SizeT>(sampleCount) * sizeof(impl.buffer.getSamples()[0]));
+                         static_cast<zb::SizeT>(sampleCount) * sizeof(impl.buffer.getSamples()[0]));
 
         impl.cursor += *framesRead;
 
@@ -99,7 +99,7 @@ struct Sound::Impl
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static ma_result seek(ma_data_source* const dataSource, const ma_uint64 frameIndex)
     {
-        static_cast<Impl*>(dataSource)->cursor = static_cast<base::SizeT>(frameIndex);
+        static_cast<Impl*>(dataSource)->cursor = static_cast<zb::SizeT>(frameIndex);
         return MA_SUCCESS;
     }
 
@@ -110,7 +110,7 @@ struct Sound::Impl
         ma_uint32* const      channels,
         ma_uint32* const      sampleRate,
         ma_channel* const,
-        const base::SizeT)
+        const zb::SizeT)
     {
         const auto& impl = *static_cast<const Impl*>(dataSource);
 
@@ -152,7 +152,7 @@ struct Sound::Impl
     priv::MiniaudioUtils::SoundBase soundBase; //!< Sound base, needs to be first member
 
     Sound&             owner;    //!< Owning `Sound` object
-    base::U64          cursor{}; //!< The current playing position (in frames)
+    zb::U64          cursor{}; //!< The current playing position (in frames)
     const SoundBuffer& buffer;   //!< Sound buffer bound to the source
 };
 

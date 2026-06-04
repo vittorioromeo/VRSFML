@@ -42,7 +42,7 @@ namespace za::priv
     const Vec2f origin,
     const Angle rotation) noexcept
 {
-    const auto [sine, cosine] = base::sinCosLookup(base::positiveRemainder(rotation.asRadians(), base::tau));
+    const auto [sine, cosine] = zb::sinCosLookup(zb::positiveRemainder(rotation.asRadians(), zb::tau));
 
     const float a = localSemiAxes.x * ZB_MATH_FABSF(scale.x);
     const float b = localSemiAxes.y * ZB_MATH_FABSF(scale.y);

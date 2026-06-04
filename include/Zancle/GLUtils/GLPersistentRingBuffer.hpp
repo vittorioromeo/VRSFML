@@ -110,19 +110,19 @@ private:
     ////////////////////////////////////////////////////////////
     struct Marker // NOLINT(cppcoreguidelines-pro-type-member-init)
     {
-        base::SizeT       offset; //!< writeCursor position captured at commit time
+        zb::SizeT       offset; //!< writeCursor position captured at commit time
         priv::GLFenceSync fence;  //!< fence that signals when the GPU has processed up to `offset`
     };
 
 
     ////////////////////////////////////////////////////////////
     GLPersistentBuffer<TBufferObject> m_persistentBuffer;
-    base::SizeT                       m_writeCursor{0u};      //!< next bump-allocation position
-    base::SizeT                       m_lastCommitCursor{0u}; //!< writeCursor at the last `commit()`
+    zb::SizeT                       m_writeCursor{0u};      //!< next bump-allocation position
+    zb::SizeT                       m_lastCommitCursor{0u}; //!< writeCursor at the last `commit()`
 
 
     ////////////////////////////////////////////////////////////
-    base::SmallVector<Marker, 8> m_markers;
+    zb::SmallVector<Marker, 8> m_markers;
 
 
     ////////////////////////////////////////////////////////////
@@ -183,7 +183,7 @@ private:
     ///                  the grow.
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::cold, gnu::noinline]] void growInternalStorage(TBufferObject& obj, const base::SizeT byteCount)
+    [[gnu::cold, gnu::noinline]] void growInternalStorage(TBufferObject& obj, const zb::SizeT byteCount)
     {
         const auto currentCapacity = m_persistentBuffer.capacity();
         const auto targetCapacity  = currentCapacity == 0u ? byteCount : m_writeCursor + byteCount;
@@ -280,7 +280,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] base::SizeT capacity() const
+    [[nodiscard, gnu::always_inline]] zb::SizeT capacity() const
     {
         return m_persistentBuffer.capacity();
     }
@@ -291,8 +291,8 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void flushBytesToGPU(const TBufferObject& obj,
-                                                const base::SizeT    byteOffset,
-                                                const base::SizeT    byteCount) const
+                                                const zb::SizeT    byteOffset,
+                                                const zb::SizeT    byteCount) const
     {
         m_persistentBuffer.flushBytesToGPU(obj, byteOffset, byteCount);
     }
@@ -307,7 +307,7 @@ public:
     /// re-flushed so previously staged data stays visible to the GPU.
     ///
     ////////////////////////////////////////////////////////////
-    void reserveCapacity(TBufferObject& obj, const base::SizeT byteCount)
+    void reserveCapacity(TBufferObject& obj, const zb::SizeT byteCount)
     {
         reclaim();
 
@@ -334,7 +334,7 @@ public:
     /// and `commit()` after the writes are done.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] base::SizeT beginWrite(TBufferObject& obj, const base::SizeT byteCount)
+    [[nodiscard, gnu::always_inline]] zb::SizeT beginWrite(TBufferObject& obj, const zb::SizeT byteCount)
     {
         if (m_writeCursor + byteCount > m_persistentBuffer.capacity()) [[unlikely]]
             handleOverflow(obj, byteCount);
@@ -374,7 +374,7 @@ public:
     ///                  about to bump-allocate.
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::cold, gnu::noinline]] void handleOverflow(TBufferObject& obj, const base::SizeT byteCount)
+    [[gnu::cold, gnu::noinline]] void handleOverflow(TBufferObject& obj, const zb::SizeT byteCount)
     {
         reclaim(); // free signaled markers
 

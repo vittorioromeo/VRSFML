@@ -98,7 +98,7 @@ private:
     [[nodiscard, gnu::pure, gnu::flatten]]
     static Transform buildTransform(const Vec2f position, const Vec2f scale, const Vec2f origin, const float radians)
     {
-        const auto [sine, cosine] = base::sinCosLookup(radians);
+        const auto [sine, cosine] = zb::sinCosLookup(radians);
 
         ZB_ASSERT_AND_ASSUME(sine >= -1.f && sine <= 1.f);
         ZB_ASSERT_AND_ASSUME(cosine >= -1.f && cosine <= 1.f);

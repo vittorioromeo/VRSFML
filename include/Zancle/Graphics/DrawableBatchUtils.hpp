@@ -181,7 +181,7 @@ namespace za::DrawableBatchUtils
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendTransformedVertices(
     const Transform&                 transform,
     const Vertex* ZB_RESTRICT data,
-    const base::SizeT                size,
+    const zb::SizeT                size,
     Vertex* ZB_RESTRICT       vertexPtr)
 {
     for (const auto* const target = data + size; data != target; ++data)

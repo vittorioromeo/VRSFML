@@ -120,7 +120,7 @@ public:
     /// \return `true` if creation was successful
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool create(base::SizeT vertexCount);
+    [[nodiscard]] bool create(zb::SizeT vertexCount);
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the vertex count
@@ -128,7 +128,7 @@ public:
     /// \return Number of vertices in the vertex buffer
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::SizeT getVertexCount() const;
+    [[nodiscard]] zb::SizeT getVertexCount() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the whole buffer from an array of vertices
@@ -181,7 +181,7 @@ public:
     /// \return `true` if the update was successful
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool update(const Vertex* vertices, base::SizeT vertexCount, unsigned int offset);
+    [[nodiscard]] bool update(const Vertex* vertices, zb::SizeT vertexCount, unsigned int offset);
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy the contents of another buffer into this buffer
@@ -323,7 +323,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     unsigned int  m_buffer{};                             //!< Internal buffer identifier
-    base::SizeT   m_size{};                               //!< Size in Vertices of the currently allocated buffer
+    zb::SizeT   m_size{};                               //!< Size in Vertices of the currently allocated buffer
     PrimitiveType m_primitiveType{PrimitiveType::Points}; //!< Type of primitives to draw
     Usage         m_usage{Usage::Stream};                 //!< How this vertex buffer is to be used
 };

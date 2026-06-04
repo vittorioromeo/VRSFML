@@ -56,7 +56,7 @@ void WindowBase::pollAndHandleEvents(Handlers&&... handlers)
     // complains about it even though the code would become incorrect
 
     // NOLINTNEXTLINE(misc-const-correctness)
-    while (base::Optional event = (this->*PollEventFn)())
+    while (zb::Optional event = (this->*PollEventFn)())
         event->visit(visitor);
 }
 

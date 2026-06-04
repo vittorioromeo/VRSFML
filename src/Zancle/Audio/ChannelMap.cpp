@@ -26,7 +26,7 @@ ChannelMap::ChannelMap(std::initializer_list<SoundChannel> channels)
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] base::SizeT ChannelMap::getSize() const
+[[nodiscard]] zb::SizeT ChannelMap::getSize() const
 {
     return m_channels.size();
 }
@@ -68,7 +68,7 @@ ChannelMap::ChannelMap(std::initializer_list<SoundChannel> channels)
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] const SoundChannel& ChannelMap::operator[](base::SizeT index) const
+[[nodiscard]] const SoundChannel& ChannelMap::operator[](zb::SizeT index) const
 {
     return m_channels[index];
 }
@@ -84,8 +84,8 @@ void ChannelMap::append(SoundChannel channel)
 ////////////////////////////////////////////////////////////
 bool ChannelMap::isPermutationOf(const ChannelMap& rhs) const
 {
-    const base::SizeT lhsSize = m_channels.size();
-    const base::SizeT rhsSize = rhs.m_channels.size();
+    const zb::SizeT lhsSize = m_channels.size();
+    const zb::SizeT rhsSize = rhs.m_channels.size();
 
     if (lhsSize != rhsSize)
         return false;
@@ -96,11 +96,11 @@ bool ChannelMap::isPermutationOf(const ChannelMap& rhs) const
     ZB_ASSERT(lhsSize <= SoundChannelCount);
     bool rhsMatched[SoundChannelCount] = {};
 
-    for (base::SizeT i = 0u; i < lhsSize; ++i)
+    for (zb::SizeT i = 0u; i < lhsSize; ++i)
     {
         bool foundMatchForIInLhs = false;
 
-        for (base::SizeT j = 0u; j < rhsSize; ++j)
+        for (zb::SizeT j = 0u; j < rhsSize; ++j)
         {
             // Check if rhs[j] is not already used AND if it matches lhs[i]
             if (!rhsMatched[j] && m_channels[i] == rhs.m_channels[j])

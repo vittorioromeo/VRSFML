@@ -32,30 +32,30 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Read up to `size` bytes into `data`, advancing the reading position
     ///
-    /// \return Number of bytes actually read, or `base::nullOpt` on error
+    /// \return Number of bytes actually read, or `zb::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual base::Optional<base::SizeT> read(void* data, base::SizeT size) = 0;
+    [[nodiscard]] virtual zb::Optional<zb::SizeT> read(void* data, zb::SizeT size) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move the reading position to `position` (offset from the beginning)
     ///
-    /// \return Position actually sought to, or `base::nullOpt` on error
+    /// \return Position actually sought to, or `zb::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual base::Optional<base::SizeT> seek(base::SizeT position) = 0;
+    [[nodiscard]] virtual zb::Optional<zb::SizeT> seek(zb::SizeT position) = 0;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Current reading position, or `base::nullOpt` on error
+    /// \brief Current reading position, or `zb::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual base::Optional<base::SizeT> tell() = 0;
+    [[nodiscard]] virtual zb::Optional<zb::SizeT> tell() = 0;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Total number of bytes in the stream, or `base::nullOpt` on error
+    /// \brief Total number of bytes in the stream, or `zb::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual base::Optional<base::SizeT> getSize() = 0;
+    [[nodiscard]] virtual zb::Optional<zb::SizeT> getSize() = 0;
 };
 
 } // namespace za
@@ -87,13 +87,13 @@ public:
 ///
 ///     [[nodiscard]] bool open(const Path& filename);
 ///
-///     [[nodiscard]] zb::Optional<base::SizeT> read(void* data, base::SizeT size);
+///     [[nodiscard]] zb::Optional<zb::SizeT> read(void* data, zb::SizeT size);
 ///
-///     [[nodiscard]] zb::Optional<base::SizeT> seek(base::SizeT position);
+///     [[nodiscard]] zb::Optional<zb::SizeT> seek(zb::SizeT position);
 ///
-///     [[nodiscard]] zb::Optional<base::SizeT> tell();
+///     [[nodiscard]] zb::Optional<zb::SizeT> tell();
 ///
-///     zb::Optional<base::SizeT> getSize();
+///     zb::Optional<zb::SizeT> getSize();
 ///
 /// private:
 ///

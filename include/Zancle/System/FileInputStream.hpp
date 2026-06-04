@@ -72,38 +72,38 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Open the file at `filename` for reading
     ///
-    /// \return Stream on success, `base::nullOpt` on error
+    /// \return Stream on success, `zb::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<FileInputStream> open(const Path& filename);
+    [[nodiscard]] static zb::Optional<FileInputStream> open(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Read up to `size` bytes into `data`, advancing the reading position
     ///
-    /// \return Number of bytes actually read, or `base::nullOpt` on error
+    /// \return Number of bytes actually read, or `zb::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<base::SizeT> read(void* data, base::SizeT size) override;
+    [[nodiscard]] zb::Optional<zb::SizeT> read(void* data, zb::SizeT size) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move the reading position to `position` (offset from the beginning)
     ///
-    /// \return Position actually sought to, or `base::nullOpt` on error
+    /// \return Position actually sought to, or `zb::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<base::SizeT> seek(base::SizeT position) override;
+    [[nodiscard]] zb::Optional<zb::SizeT> seek(zb::SizeT position) override;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Current reading position, or `base::nullOpt` on error
+    /// \brief Current reading position, or `zb::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<base::SizeT> tell() override;
+    [[nodiscard]] zb::Optional<zb::SizeT> tell() override;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Total number of bytes in the stream, or `base::nullOpt` on error
+    /// \brief Total number of bytes in the stream, or `zb::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<base::SizeT> getSize() override;
+    [[nodiscard]] zb::Optional<zb::SizeT> getSize() override;
 
 private:
     ////////////////////////////////////////////////////////////
@@ -119,13 +119,13 @@ public:
     ////////////////////////////////////////////////////////////
     /// \private
     ////////////////////////////////////////////////////////////
-    explicit FileInputStream(base::PassKey<FileInputStream>&&, base::UniquePtr<std::FILE, FileCloser>&& file);
+    explicit FileInputStream(zb::PassKey<FileInputStream>&&, zb::UniquePtr<std::FILE, FileCloser>&& file);
 
 #ifdef ZA_SYSTEM_ANDROID
     ////////////////////////////////////////////////////////////
     /// \private
     ////////////////////////////////////////////////////////////
-    explicit FileInputStream(base::PassKey<FileInputStream>&&, base::UniquePtr<priv::ResourceStream>&& androidFile);
+    explicit FileInputStream(zb::PassKey<FileInputStream>&&, zb::UniquePtr<priv::ResourceStream>&& androidFile);
 #endif
 
 private:
@@ -133,10 +133,10 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
 #ifdef ZA_SYSTEM_ANDROID
-    base::UniquePtr<priv::ResourceStream> m_androidFile;
+    zb::UniquePtr<priv::ResourceStream> m_androidFile;
 #endif
 
-    base::UniquePtr<std::FILE, FileCloser> m_file; //!< stdio file stream
+    zb::UniquePtr<std::FILE, FileCloser> m_file; //!< stdio file stream
 };
 
 } // namespace za

@@ -28,8 +28,8 @@ struct [[nodiscard]] DrawIndexedVerticesSettings // NOLINT(cppcoreguidelines-pro
 {
     ZB_REQUIRE_DESIGNATED_INITIALIZERS;
 
-    base::Span<const Vertex>    vertexSpan;    //!< Range of unique vertices that will be referenced by the indices
-    base::Span<const IndexType> indexSpan;     //!< Range of indices into `vertexSpan` defining the primitives
+    zb::Span<const Vertex>    vertexSpan;    //!< Range of unique vertices that will be referenced by the indices
+    zb::Span<const IndexType> indexSpan;     //!< Range of indices into `vertexSpan` defining the primitives
     PrimitiveType               primitiveType; //!< How to interpret the indexed primitives
 };
 

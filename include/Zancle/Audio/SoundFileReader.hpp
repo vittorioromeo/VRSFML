@@ -38,7 +38,7 @@ public:
     ////////////////////////////////////////////////////////////
     struct Info
     {
-        base::U64    sampleCount{}; //!< Total number of samples in the file
+        zb::U64    sampleCount{}; //!< Total number of samples in the file
         unsigned int sampleRate{};  //!< Samples rate of the sound, in samples per second
         ChannelMap   channelMap;    //!< Map of position in sample frame to sound channel
     };
@@ -58,10 +58,10 @@ public:
     ///
     /// \param stream Source stream to read from
     ///
-    /// \return Properties of the loaded sound on success, `base::nullOpt` otherwise
+    /// \return Properties of the loaded sound on success, `zb::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual base::Optional<Info> open(InputStream& stream) = 0;
+    [[nodiscard]] virtual zb::Optional<Info> open(InputStream& stream) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current read position to the given sample offset
@@ -76,7 +76,7 @@ public:
     /// \param sampleOffset Index of the sample to jump to, relative to the beginning
     ///
     ////////////////////////////////////////////////////////////
-    virtual void seek(base::U64 sampleOffset) = 0;
+    virtual void seek(zb::U64 sampleOffset) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Read audio samples from the open file
@@ -87,7 +87,7 @@ public:
     /// \return Number of samples actually read (may be less than \a maxCount)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual base::U64 read(base::I16* samples, base::U64 maxCount) = 0;
+    [[nodiscard]] virtual zb::U64 read(zb::I16* samples, zb::U64 maxCount) = 0;
 };
 
 } // namespace za
@@ -133,13 +133,13 @@ public:
 ///         // return true on success
 ///     }
 ///
-///     void seek(base::U64 sampleOffset) override
+///     void seek(zb::U64 sampleOffset) override
 ///     {
 ///         // advance to the sampleOffset-th sample from the beginning of the
 ///         sound
 ///     }
 ///
-///     base::U64 read(base::I16* samples, base::U64 maxCount) override
+///     zb::U64 read(zb::I16* samples, zb::U64 maxCount) override
 ///     {
 ///         // read up to 'maxCount' samples into the 'samples' array,
 ///         // convert them (for example from normalized float) if they are not stored

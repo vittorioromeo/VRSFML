@@ -37,7 +37,7 @@ struct CaptureDevice::Impl
 
         // Copy the new samples into our temporary buffer
         impl.samples.resize(frameCount * channelCount);
-        ZB_MEMCPY(impl.samples.data(), input, frameCount * channelCount * sizeof(base::I16));
+        ZB_MEMCPY(impl.samples.data(), input, frameCount * channelCount * sizeof(zb::I16));
 
         // Notify the derived class of the availability of new samples
         ZB_ASSERT(impl.processSamplesFunc != nullptr &&
@@ -99,7 +99,7 @@ struct CaptureDevice::Impl
     ////////////////////////////////////////////////////////////
     CaptureDeviceHandle     captureDeviceHandle;            //!< Capture device handle
     ma_uint32               sampleRate{44'100u};            //!< Sample rate
-    base::Vector<base::I16> samples;                        //!< Buffer to store captured samples
+    zb::Vector<zb::I16> samples;                        //!< Buffer to store captured samples
     ChannelMap              channelMap{SoundChannel::Mono}; //!< The map of position in sample frame to sound channel
 
     SoundRecorder*     soundRecorder{nullptr}; //!< Used in the miniaudio device callback
@@ -111,7 +111,7 @@ struct CaptureDevice::Impl
 
 
 ////////////////////////////////////////////////////////////
-// TODO P1: change to a factory returning `base::Optional<CaptureDevice>` so a
+// TODO P1: change to a factory returning `zb::Optional<CaptureDevice>` so a
 //          failed device can never be observed by the caller.
 CaptureDevice::CaptureDevice(const CaptureDeviceHandle& playbackDeviceHandle) : m_impl(playbackDeviceHandle)
 {

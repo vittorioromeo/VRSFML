@@ -32,21 +32,21 @@ TextureAtlas::TextureAtlas(Texture&& atlasTexture) :
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Rect2f> TextureAtlas::add(const base::U8* pixels, Vec2u size, Vec2u padding)
+zb::Optional<Rect2f> TextureAtlas::add(const zb::U8* pixels, Vec2u size, Vec2u padding)
 {
     return TextureAtlasUtils::add(m_atlasTexture, m_rectPacker, padding, pixels, size);
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Rect2f> TextureAtlas::add(const Image& image, Vec2u padding)
+zb::Optional<Rect2f> TextureAtlas::add(const Image& image, Vec2u padding)
 {
     return TextureAtlasUtils::add(m_atlasTexture, m_rectPacker, padding, image);
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Rect2f> TextureAtlas::add(const Texture& texture, Vec2u padding)
+zb::Optional<Rect2f> TextureAtlas::add(const Texture& texture, Vec2u padding)
 {
     return TextureAtlasUtils::add(m_atlasTexture, m_rectPacker, padding, texture);
 }

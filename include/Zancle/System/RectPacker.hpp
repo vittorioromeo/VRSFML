@@ -66,7 +66,7 @@ public:
     /// \return Top-left position of the packed rectangle, or `nullOpt` if it doesn't fit
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<Vec2u> pack(Vec2u rectSize);
+    [[nodiscard]] zb::Optional<Vec2u> pack(Vec2u rectSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Try to pack many rectangles at once; `outPositions` must have the same size as `rectSizes`
@@ -77,7 +77,7 @@ public:
     /// \return `true` if all rectangles fit, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool packMultiple(base::Span<Vec2u> outPositions, base::Span<const Vec2u> rectSizes);
+    [[nodiscard]] bool packMultiple(zb::Span<Vec2u> outPositions, zb::Span<const Vec2u> rectSizes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Size of the bin
@@ -90,7 +90,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
+    zb::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
 };
 
 } // namespace za

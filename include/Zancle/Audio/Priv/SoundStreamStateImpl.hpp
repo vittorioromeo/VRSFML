@@ -42,9 +42,9 @@ namespace za::priv
 ////////////////////////////////////////////////////////////
 struct SoundStreamStateImplCallbacks
 {
-    bool (*onGetData)(void* state, base::Vector<base::I16>& outBuffer);
+    bool (*onGetData)(void* state, zb::Vector<zb::I16>& outBuffer);
     void (*onSeek)(void* state, Time t);
-    base::Optional<base::U64> (*onLoop)(void* state);
+    zb::Optional<zb::U64> (*onLoop)(void* state);
 };
 
 
@@ -107,7 +107,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Internals;
-    base::InPlacePImpl<Internals, 2048> m_internals; //!< Holds miniaudio state (ma_sound etc.), hidden from this header
+    zb::InPlacePImpl<Internals, 2048> m_internals; //!< Holds miniaudio state (ma_sound etc.), hidden from this header
 };
 
 } // namespace za::priv

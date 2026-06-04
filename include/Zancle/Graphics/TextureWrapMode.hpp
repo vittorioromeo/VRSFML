@@ -15,7 +15,7 @@ namespace za
 /// \brief How a texture handles coordinates outside the `[0, 1]` range
 ///
 ////////////////////////////////////////////////////////////
-enum class [[nodiscard]] TextureWrapMode : base::U8
+enum class [[nodiscard]] TextureWrapMode : zb::U8
 {
     Clamp,         //!< Clamp texture coordinates to the range `[0, 1]` (out-of-range samples reuse the edge texel)
     Repeat,        //!< Repeat the texture by wrapping coordinates (the integer part is discarded)

@@ -102,7 +102,7 @@ namespace
 namespace za
 {
 ////////////////////////////////////////////////////////////
-InstanceAttributeBinder::InstanceAttributeBinder(const base::SizeT instanceCount) : m_instanceCount(instanceCount)
+InstanceAttributeBinder::InstanceAttributeBinder(const zb::SizeT instanceCount) : m_instanceCount(instanceCount)
 {
     ZB_ASSERT(instanceCount > 0u);
 }
@@ -124,7 +124,7 @@ InstanceAttributeBinder::~InstanceAttributeBinder()
 
 
 ////////////////////////////////////////////////////////////
-void InstanceAttributeBinder::uploadData(VBOHandle& vboHandle, const void* const data, const base::SizeT stride)
+void InstanceAttributeBinder::uploadData(VBOHandle& vboHandle, const void* const data, const zb::SizeT stride)
 {
     ZB_ASSERT(data != nullptr);
     ZB_ASSERT(stride > 0u);
@@ -154,8 +154,8 @@ void InstanceAttributeBinder::setup(
     const unsigned int size,
     const GlDataType   type,
     const bool         normalized,
-    const base::SizeT  stride,
-    const base::SizeT  fieldOffset)
+    const zb::SizeT  stride,
+    const zb::SizeT  fieldOffset)
 {
     ZB_ASSERT(size >= 1u && size <= 4u);
     ZB_ASSERT(stride > 0u);

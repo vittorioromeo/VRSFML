@@ -78,10 +78,10 @@ public:
     ///
     /// \param size Width and height of the render texture, in pixels
     ///
-    /// \return Render texture on success, `base::nullOpt` on failure
+    /// \return Render texture on success, `zb::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<RenderTexture> create(Vec2u size);
+    [[nodiscard]] static zb::Optional<RenderTexture> create(Vec2u size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a render texture of the given size with custom framebuffer settings
@@ -97,10 +97,10 @@ public:
     /// \param size             Width and height of the render texture, in pixels
     /// \param rtCreateSettings Framebuffer object creation parameters
     ///
-    /// \return Render texture on success, `base::nullOpt` on failure
+    /// \return Render texture on success, `zb::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<RenderTexture> create(Vec2u size, const RenderTextureCreateSettings& rtCreateSettings);
+    [[nodiscard]] static zb::Optional<RenderTexture> create(Vec2u size, const RenderTextureCreateSettings& rtCreateSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the maximum anti-aliasing level supported by the system
@@ -231,14 +231,14 @@ public:
     /// \brief Construct from texture
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit RenderTexture(base::PassKey<RenderTexture>&&, Texture&& texture);
+    [[nodiscard]] explicit RenderTexture(zb::PassKey<RenderTexture>&&, Texture&& texture);
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 384> m_impl; //!< Implementation details
+    zb::InPlacePImpl<Impl, 384> m_impl; //!< Implementation details
 };
 
 } // namespace za

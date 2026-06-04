@@ -72,8 +72,8 @@ struct FrameState
 struct PersistentGPUStorage::Impl
 {
     ////////////////////////////////////////////////////////////
-    base::Array<FrameState, 3> frameStates;
-    base::SizeT                currentFrameIndex{0u};
+    zb::Array<FrameState, 3> frameStates;
+    zb::SizeT                currentFrameIndex{0u};
 
 
     ////////////////////////////////////////////////////////////
@@ -145,7 +145,7 @@ void PersistentGPUStorage::clear()
 
 
 ////////////////////////////////////////////////////////////
-Vertex* PersistentGPUStorage::reserveMoreVertices(const base::SizeT count)
+Vertex* PersistentGPUStorage::reserveMoreVertices(const zb::SizeT count)
 {
     auto& fs = impl->current();
 
@@ -157,7 +157,7 @@ Vertex* PersistentGPUStorage::reserveMoreVertices(const base::SizeT count)
 
 
 ////////////////////////////////////////////////////////////
-IndexType* PersistentGPUStorage::reserveMoreIndices(const base::SizeT count)
+IndexType* PersistentGPUStorage::reserveMoreIndices(const zb::SizeT count)
 {
     auto& fs = impl->current();
 
@@ -169,7 +169,7 @@ IndexType* PersistentGPUStorage::reserveMoreIndices(const base::SizeT count)
 
 
 ////////////////////////////////////////////////////////////
-void PersistentGPUStorage::reserveVertexCapacity(const base::SizeT count)
+void PersistentGPUStorage::reserveVertexCapacity(const zb::SizeT count)
 {
     for (auto& fs : impl->frameStates)
         fs.vboRingBuffer.reserveCapacity(fs.persistentVaoGroup.vbo, sizeof(Vertex) * count);
@@ -177,7 +177,7 @@ void PersistentGPUStorage::reserveVertexCapacity(const base::SizeT count)
 
 
 ////////////////////////////////////////////////////////////
-void PersistentGPUStorage::reserveIndexCapacity(const base::SizeT count)
+void PersistentGPUStorage::reserveIndexCapacity(const zb::SizeT count)
 {
     for (auto& fs : impl->frameStates)
         fs.eboRingBuffer.reserveCapacity(fs.persistentVaoGroup.ebo, sizeof(IndexType) * count);
@@ -192,7 +192,7 @@ void PersistentGPUStorage::reserveIndexCapacity(const base::SizeT count)
 
 
 ////////////////////////////////////////////////////////////
-void PersistentGPUStorage::flushVertexWritesToGPU(const base::SizeT count, const base::SizeT offset) const
+void PersistentGPUStorage::flushVertexWritesToGPU(const zb::SizeT count, const zb::SizeT offset) const
 {
     const auto& fs = impl->current();
     fs.vboRingBuffer.flushBytesToGPU(fs.persistentVaoGroup.vbo, sizeof(Vertex) * offset, sizeof(Vertex) * count);
@@ -200,7 +200,7 @@ void PersistentGPUStorage::flushVertexWritesToGPU(const base::SizeT count, const
 
 
 ////////////////////////////////////////////////////////////
-void PersistentGPUStorage::flushIndexWritesToGPU(const base::SizeT count, const base::SizeT offset) const
+void PersistentGPUStorage::flushIndexWritesToGPU(const zb::SizeT count, const zb::SizeT offset) const
 {
     const auto& fs = impl->current();
     fs.eboRingBuffer.flushBytesToGPU(fs.persistentVaoGroup.ebo, sizeof(IndexType) * offset, sizeof(IndexType) * count);

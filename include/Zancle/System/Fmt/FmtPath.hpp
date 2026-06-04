@@ -38,7 +38,7 @@ namespace za
 ////////////////////////////////////////////////////////////
 /// \brief `Fmt` ADL hook for `za::Path`. Emits the path as UTF-8.
 ////////////////////////////////////////////////////////////
-[[nodiscard]] ZA_SYSTEM_API base::FmtResult fmtArg(base::FmtSink& sink, const Path& path, const base::FmtSpec& spec);
+[[nodiscard]] ZA_SYSTEM_API zb::FmtResult fmtArg(zb::FmtSink& sink, const Path& path, const zb::FmtSpec& spec);
 
 } // namespace za
 
@@ -52,8 +52,8 @@ namespace za::priv
 ///     Provided path: <input>
 ///     Absolute path: <canonical or "<unavailable>">
 ////////////////////////////////////////////////////////////
-[[nodiscard]] ZA_SYSTEM_API base::FmtResult fmtArg(base::FmtSink&            sink,
+[[nodiscard]] ZA_SYSTEM_API zb::FmtResult fmtArg(zb::FmtSink&            sink,
                                                      const PathDebugFormatter& dbg,
-                                                     const base::FmtSpec&      spec);
+                                                     const zb::FmtSpec&      spec);
 
 } // namespace za::priv

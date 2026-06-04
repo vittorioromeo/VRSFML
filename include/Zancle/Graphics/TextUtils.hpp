@@ -109,13 +109,13 @@ template <typename TFontSource>
 /// (underline / strikethrough).
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] inline base::SizeT precomputeTextQuadCount(const Utf8String& string, const bool isUnderlined, const bool isStrikeThrough)
+[[nodiscard]] inline zb::SizeT precomputeTextQuadCount(const Utf8String& string, const bool isUnderlined, const bool isStrikeThrough)
 {
     ZB_ASSERT(!string.empty());
 
-    const base::SizeT linesPerNewline = base::SizeT{isUnderlined} + base::SizeT{isStrikeThrough};
+    const zb::SizeT linesPerNewline = zb::SizeT{isUnderlined} + zb::SizeT{isStrikeThrough};
 
-    base::SizeT result          = 0u;
+    zb::SizeT result          = 0u;
     char32_t    prevChar        = 0;
     bool        lineHasContents = false;
 
@@ -158,7 +158,7 @@ template <typename TFontSource>
 /// \brief Convenience overload that reads styling from a `TextData`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] inline base::SizeT precomputeTextQuadCount(const TextData& textData)
+[[nodiscard]] inline zb::SizeT precomputeTextQuadCount(const TextData& textData)
 {
     if (textData.string.empty())
         return 0u;
@@ -173,7 +173,7 @@ template <typename F>
 [[gnu::always_inline]] inline void addLineImpl(
     F&&                              fTransform,
     Vertex* const ZB_RESTRICT vertices,
-    base::SizeT&                     index,
+    zb::SizeT&                     index,
     const float                      lineLength,
     const float                      lineTop,
     const Color                      color,
@@ -201,7 +201,7 @@ template <typename F>
 [[gnu::always_inline]] inline void addGlyphQuadImpl(
     F&&                              fTransform,
     Vertex* const ZB_RESTRICT vertices,
-    base::SizeT&                     index,
+    zb::SizeT&                     index,
     const Vec2f                      position,
     const Color                      color,
     const Glyph&                     glyph,
@@ -235,7 +235,7 @@ template <typename F>
 
 ////////////////////////////////////////////////////////////
 inline void addLine(Vertex* const ZB_RESTRICT vertices,
-                    base::SizeT&                     index,
+                    zb::SizeT&                     index,
                     const float                      lineLength,
                     const float                      lineTop,
                     const Color                      color,
@@ -251,7 +251,7 @@ inline void addLine(Vertex* const ZB_RESTRICT vertices,
 inline void addLinePreTransformed(
     const Transform&                 transform,
     Vertex* const ZB_RESTRICT vertices,
-    base::SizeT&                     index,
+    zb::SizeT&                     index,
     const float                      lineLength,
     const float                      lineTop,
     const Color                      color,
@@ -267,7 +267,7 @@ inline void addLinePreTransformed(
 
 ////////////////////////////////////////////////////////////
 inline void addGlyphQuad(Vertex* const ZB_RESTRICT vertices,
-                         base::SizeT&                     index,
+                         zb::SizeT&                     index,
                          const Vec2f                      position,
                          const Color                      color,
                          const Glyph&                     glyph,
@@ -281,7 +281,7 @@ inline void addGlyphQuad(Vertex* const ZB_RESTRICT vertices,
 inline void addGlyphQuadPreTransformed(
     const Transform&                 transform,
     Vertex* const ZB_RESTRICT vertices,
-    base::SizeT&                     index,
+    zb::SizeT&                     index,
     const Vec2f                      position,
     const Color                      color,
     const Glyph&                     glyph,
@@ -308,7 +308,7 @@ inline void addGlyphQuadPreTransformed(
 ////////////////////////////////////////////////////////////
 template <bool CalculateBounds, typename TFontSource>
 inline auto createTextGeometryAndGetBounds(
-    const base::SizeT       outlineVertexCount,
+    const zb::SizeT       outlineVertexCount,
     const TFontSource&      font,
     const Utf8String&       string,
     const TextLayoutInputs& inputs,
@@ -346,8 +346,8 @@ inline auto createTextGeometryAndGetBounds(
                                                                inputs.letterSpacing,
                                                                inputs.lineSpacing);
 
-    base::SizeT currFillIndex    = outlineVertexCount;
-    base::SizeT currOutlineIndex = 0u;
+    zb::SizeT currFillIndex    = outlineVertexCount;
+    zb::SizeT currOutlineIndex = 0u;
 
     float x = 0.f;
     auto  y = static_cast<float>(inputs.characterSize);

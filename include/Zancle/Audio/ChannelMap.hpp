@@ -68,7 +68,7 @@ public:
     /// \return The total number of sound channels in this map
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::SizeT getSize() const;
+    [[nodiscard]] zb::SizeT getSize() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Check if the channel map is empty
@@ -126,7 +126,7 @@ public:
     /// \return A const reference to the `za::SoundChannel` at the specified index
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const SoundChannel& operator[](base::SizeT index) const;
+    [[nodiscard]] const SoundChannel& operator[](zb::SizeT index) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Append a sound channel to the map
@@ -163,7 +163,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    base::InPlaceVector<SoundChannel, SoundChannelCount> m_channels;
+    zb::InPlaceVector<SoundChannel, SoundChannelCount> m_channels;
 };
 
 } // namespace za

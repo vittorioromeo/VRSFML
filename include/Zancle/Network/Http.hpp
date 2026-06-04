@@ -62,9 +62,9 @@ public:
         /// \param body   Content of the request's body
         ///
         ////////////////////////////////////////////////////////////
-        [[nodiscard]] Request(const base::String& uri, Method method, const base::String& body);
-        [[nodiscard]] Request(const base::String& uri, Method method);
-        [[nodiscard]] Request(const base::String& uri);
+        [[nodiscard]] Request(const zb::String& uri, Method method, const zb::String& body);
+        [[nodiscard]] Request(const zb::String& uri, Method method);
+        [[nodiscard]] Request(const zb::String& uri);
         [[nodiscard]] Request();
 
         ////////////////////////////////////////////////////////////
@@ -110,7 +110,7 @@ public:
         /// \param value Value of the field
         ///
         ////////////////////////////////////////////////////////////
-        void setField(const base::String& field, const base::String& value);
+        void setField(const zb::String& field, const zb::String& value);
 
         ////////////////////////////////////////////////////////////
         /// \brief Set the request method
@@ -134,7 +134,7 @@ public:
         /// \param uri URI to request, relative to the host
         ///
         ////////////////////////////////////////////////////////////
-        void setUri(const base::String& uri);
+        void setUri(const zb::String& uri);
 
         ////////////////////////////////////////////////////////////
         /// \brief Set the HTTP version for the request
@@ -157,7 +157,7 @@ public:
         /// \param body Content of the body
         ///
         ////////////////////////////////////////////////////////////
-        void setBody(const base::String& body);
+        void setBody(const zb::String& body);
 
     private:
         friend class Http;
@@ -172,13 +172,13 @@ public:
         /// \return `true` if the field exists, `false` otherwise
         ///
         ////////////////////////////////////////////////////////////
-        [[nodiscard]] bool hasField(const base::String& field) const;
+        [[nodiscard]] bool hasField(const zb::String& field) const;
 
         ////////////////////////////////////////////////////////////
         // Member data
         ////////////////////////////////////////////////////////////
         struct Impl;
-        base::InPlacePImpl<Impl, 192> m_impl; //!< Implementation details
+        zb::InPlacePImpl<Impl, 192> m_impl; //!< Implementation details
     };
 
     ////////////////////////////////////////////////////////////
@@ -276,7 +276,7 @@ public:
         /// \return Value of the field, or empty string if not found
         ///
         ////////////////////////////////////////////////////////////
-        [[nodiscard]] const base::String& getField(const base::String& field) const;
+        [[nodiscard]] const zb::String& getField(const zb::String& field) const;
 
         ////////////////////////////////////////////////////////////
         /// \brief Get the response status code
@@ -323,7 +323,7 @@ public:
         /// \return The response body
         ///
         ////////////////////////////////////////////////////////////
-        [[nodiscard]] const base::String& getBody() const;
+        [[nodiscard]] const zb::String& getBody() const;
 
     private:
         friend class Http;
@@ -337,13 +337,13 @@ public:
         /// \param data Content of the response to parse
         ///
         ////////////////////////////////////////////////////////////
-        void parse(const base::String& data);
+        void parse(const zb::String& data);
 
         ////////////////////////////////////////////////////////////
         // Member data
         ////////////////////////////////////////////////////////////
         struct Impl;
-        base::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
+        zb::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
     };
 
     ////////////////////////////////////////////////////////////
@@ -372,7 +372,7 @@ public:
     /// \param port Port to use for connection
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Http(const base::String& host, unsigned short port = 0);
+    [[nodiscard]] Http(const zb::String& host, unsigned short port = 0);
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy constructor
@@ -404,7 +404,7 @@ public:
     /// \return `true` if the host has been resolved and is valid, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    bool setHost(const base::String& host, unsigned short port = 0);
+    bool setHost(const zb::String& host, unsigned short port = 0);
 
     ////////////////////////////////////////////////////////////
     /// \brief Send a HTTP request and return the server's response.
@@ -432,7 +432,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 256> m_impl; //!< Implementation details
+    zb::InPlacePImpl<Impl, 256> m_impl; //!< Implementation details
 };
 
 } // namespace za

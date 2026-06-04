@@ -135,7 +135,7 @@ public:
     /// \brief Create a device handle from miniaudio device info (passkey)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit AudioDeviceHandle(base::PassKey<AudioContext>&&, const void* maDeviceInfo);
+    [[nodiscard]] explicit AudioDeviceHandle(zb::PassKey<AudioContext>&&, const void* maDeviceInfo);
 
     ////////////////////////////////////////////////////////////
     /// \private
@@ -143,7 +143,7 @@ public:
     /// \brief Create a device handle from miniaudio device info (passkey)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit AudioDeviceHandle(base::PassKey<PlaybackDevice>&&, const void* maDeviceInfo);
+    [[nodiscard]] explicit AudioDeviceHandle(zb::PassKey<PlaybackDevice>&&, const void* maDeviceInfo);
 
     ////////////////////////////////////////////////////////////
     /// \private
@@ -151,11 +151,11 @@ public:
     /// \brief Create a device handle from miniaudio device info (passkey)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit AudioDeviceHandle(base::PassKey<CaptureDevice>&&, const void* maDeviceInfo);
+    [[nodiscard]] explicit AudioDeviceHandle(zb::PassKey<CaptureDevice>&&, const void* maDeviceInfo);
 
 private:
     struct Impl;
-    base::InPlacePImpl<Impl, 1792> m_impl; //!< Implementation details
+    zb::InPlacePImpl<Impl, 1792> m_impl; //!< Implementation details
 };
 
 ////////////////////////////////////////////////////////////

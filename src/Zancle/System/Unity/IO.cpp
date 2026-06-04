@@ -402,7 +402,7 @@ void dispatchReadFileContentsIntoBufferImpl(T& target, const zb::SizeT size, con
 // resolve to a matching `nativeOpenAndStat` overload above. The Path-taking
 // version skips the UTF-8 → UTF-16 conversion on Windows and skips the
 // `to<std::string>()` allocation on Linux/BSD/Emscripten.
-// `isAppend` is meaningful only when `T == base::Vector<char>`: when true, the
+// `isAppend` is meaningful only when `T == zb::Vector<char>`: when true, the
 // file's bytes are appended to `target` (preserving existing content); when
 // false, `target` is replaced. For string types it must be `false` and the
 // behavior is replace.
@@ -467,7 +467,7 @@ bool readFromFileImpl(const Filename& filename, T& target, const bool isAppend)
 namespace za
 {
 ////////////////////////////////////////////////////////////
-bool writeToFile(base::StringView filename, base::StringView contents)
+bool writeToFile(zb::StringView filename, zb::StringView contents)
 {
     // `Path{StringView}` is unavailable; route via `std::string` (matches the
     // pre-migration behavior, which constructed `std::ofstream` the same way).
@@ -485,7 +485,7 @@ bool writeToFile(base::StringView filename, base::StringView contents)
 
 
 ////////////////////////////////////////////////////////////
-bool writeToFile(const Path& filename, base::StringView contents)
+bool writeToFile(const Path& filename, zb::StringView contents)
 {
     auto optFile = OutFile::open(filename, FileOpenMode::bin);
     if (!optFile.hasValue())
@@ -499,21 +499,21 @@ bool writeToFile(const Path& filename, base::StringView contents)
 
 
 ////////////////////////////////////////////////////////////
-bool readFromFile(base::StringView filename, std::string& target)
+bool readFromFile(zb::StringView filename, std::string& target)
 {
     return readFromFileImpl(filename, target, /* isAppend */ false);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool readFromFile(base::StringView filename, base::String& target)
+bool readFromFile(zb::StringView filename, zb::String& target)
 {
     return readFromFileImpl(filename, target, /* isAppend */ false);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool readFromFile(base::StringView filename, base::Vector<char>& target)
+bool readFromFile(zb::StringView filename, zb::Vector<char>& target)
 {
     return readFromFileImpl(filename, target, /* isAppend */ false);
 }
@@ -527,37 +527,37 @@ bool readFromFile(const Path& filename, std::string& target)
 
 
 ////////////////////////////////////////////////////////////
-bool readFromFile(const Path& filename, base::String& target)
+bool readFromFile(const Path& filename, zb::String& target)
 {
     return readFromFileImpl(filename, target, /* isAppend */ false);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool readFromFile(const Path& filename, base::Vector<char>& target)
+bool readFromFile(const Path& filename, zb::Vector<char>& target)
 {
     return readFromFileImpl(filename, target, /* isAppend */ false);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool appendFromFile(base::StringView filename, base::Vector<char>& target)
+bool appendFromFile(zb::StringView filename, zb::Vector<char>& target)
 {
     return readFromFileImpl(filename, target, /* isAppend */ true);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool appendFromFile(const Path& filename, base::Vector<char>& target)
+bool appendFromFile(const Path& filename, zb::Vector<char>& target)
 {
     return readFromFileImpl(filename, target, /* isAppend */ true);
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Vector<char>& getThreadLocalScratchCharBuffer()
+zb::Vector<char>& getThreadLocalScratchCharBuffer()
 {
-    static thread_local base::Vector<char> buffer;
+    static thread_local zb::Vector<char> buffer;
     return buffer;
 }
 
@@ -610,7 +610,7 @@ struct OutFile::Impl
 
 
 ////////////////////////////////////////////////////////////
-OutFile::OutFile(base::PassKey<OutFile>&&, void* file) noexcept : m_impl{static_cast<std::FILE*>(file)}
+OutFile::OutFile(zb::PassKey<OutFile>&&, void* file) noexcept : m_impl{static_cast<std::FILE*>(file)}
 {
 }
 
@@ -645,18 +645,18 @@ OutFile& OutFile::operator=(OutFile&& rhs) noexcept
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<OutFile> OutFile::open(const Path& filename, FileOpenMode mode)
+zb::Optional<OutFile> OutFile::open(const Path& filename, FileOpenMode mode)
 {
     std::FILE* const file = openFile(filename, mapOutFileOpenMode(mode));
     if (file == nullptr)
-        return base::nullOpt;
+        return zb::nullOpt;
 
-    return base::makeOptional<OutFile>(base::PassKey<OutFile>{}, file);
+    return zb::makeOptional<OutFile>(zb::PassKey<OutFile>{}, file);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool OutFile::write(const char* data, base::SizeT size)
+bool OutFile::write(const char* data, zb::SizeT size)
 {
     if (m_impl->file == nullptr)
         return false;
@@ -676,7 +676,7 @@ bool OutFile::flush()
 
 
 ////////////////////////////////////////////////////////////
-bool OutFile::seekPos(base::PtrDiffT absolutePos)
+bool OutFile::seekPos(zb::PtrDiffT absolutePos)
 {
     if (m_impl->file == nullptr)
         return false;
@@ -686,7 +686,7 @@ bool OutFile::seekPos(base::PtrDiffT absolutePos)
 
 
 ////////////////////////////////////////////////////////////
-bool OutFile::tellPos(base::PtrDiffT& out)
+bool OutFile::tellPos(zb::PtrDiffT& out)
 {
     if (m_impl->file == nullptr)
         return false;
@@ -695,13 +695,13 @@ bool OutFile::tellPos(base::PtrDiffT& out)
     if (pos < 0)
         return false;
 
-    out = static_cast<base::PtrDiffT>(pos);
+    out = static_cast<zb::PtrDiffT>(pos);
     return true;
 }
 
 
 ////////////////////////////////////////////////////////////
-void OutFile::append(const char* data, base::SizeT n)
+void OutFile::append(const char* data, zb::SizeT n)
 {
     // `AppendSink` adapter: best-effort, return value lost. The Fmt
     // pipeline buffers internally and only calls `append` once at the
@@ -765,7 +765,7 @@ constexpr int peekCacheEmpty = -2;
 
 
 ////////////////////////////////////////////////////////////
-InFile::InFile(base::PassKey<InFile>&&, void* file) noexcept : m_impl{static_cast<std::FILE*>(file), peekCacheEmpty}
+InFile::InFile(zb::PassKey<InFile>&&, void* file) noexcept : m_impl{static_cast<std::FILE*>(file), peekCacheEmpty}
 {
 }
 
@@ -803,11 +803,11 @@ InFile& InFile::operator=(InFile&& rhs) noexcept
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<InFile> InFile::open(const Path& filename, FileOpenMode mode)
+zb::Optional<InFile> InFile::open(const Path& filename, FileOpenMode mode)
 {
     std::FILE* const file = openFile(filename, mapInFileOpenMode(mode));
     if (file == nullptr)
-        return base::nullOpt;
+        return zb::nullOpt;
 
     // `FileOpenMode::ate`: seek to end on open, matching `std::ios::ate`.
     // Callers query `tellPos()` immediately afterward to learn the file size.
@@ -818,16 +818,16 @@ base::Optional<InFile> InFile::open(const Path& filename, FileOpenMode mode)
             // Open succeeded but ate-seek failed; close out and report failure
             // so the caller doesn't see a half-initialized handle.
             (void)std::fclose(file);
-            return base::nullOpt;
+            return zb::nullOpt;
         }
     }
 
-    return base::makeOptional<InFile>(base::PassKey<InFile>{}, file);
+    return zb::makeOptional<InFile>(zb::PassKey<InFile>{}, file);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool InFile::read(char* data, base::SizeT size, base::SizeT& bytesRead)
+bool InFile::read(char* data, zb::SizeT size, zb::SizeT& bytesRead)
 {
     if (m_impl->file == nullptr)
         return false;
@@ -838,7 +838,7 @@ bool InFile::read(char* data, base::SizeT size, base::SizeT& bytesRead)
         return true;
     }
 
-    base::SizeT prefix = 0u;
+    zb::SizeT prefix = 0u;
 
     // Deliver the peek-cached byte (if any) as the first byte of the read.
     if (m_impl->peeked != peekCacheEmpty && m_impl->peeked != EOF)
@@ -855,7 +855,7 @@ bool InFile::read(char* data, base::SizeT size, base::SizeT& bytesRead)
         return true;
     }
 
-    const base::SizeT got = std::fread(data, 1u, size, m_impl->file);
+    const zb::SizeT got = std::fread(data, 1u, size, m_impl->file);
 
     // Short read = either EOF (`feof`) or true I/O error (`ferror`). The
     // first is normal -- the caller distinguishes via `isEOF()` after a
@@ -869,7 +869,7 @@ bool InFile::read(char* data, base::SizeT size, base::SizeT& bytesRead)
 
 
 ////////////////////////////////////////////////////////////
-bool InFile::seekPos(base::PtrDiffT absolutePos)
+bool InFile::seekPos(zb::PtrDiffT absolutePos)
 {
     if (m_impl->file == nullptr)
         return false;
@@ -883,7 +883,7 @@ bool InFile::seekPos(base::PtrDiffT absolutePos)
 
 
 ////////////////////////////////////////////////////////////
-bool InFile::seekPos(base::PtrDiffT offset, SeekDir dir)
+bool InFile::seekPos(zb::PtrDiffT offset, SeekDir dir)
 {
     if (m_impl->file == nullptr)
         return false;
@@ -903,7 +903,7 @@ bool InFile::seekPos(base::PtrDiffT offset, SeekDir dir)
 
 
 ////////////////////////////////////////////////////////////
-bool InFile::tellPos(base::PtrDiffT& out)
+bool InFile::tellPos(zb::PtrDiffT& out)
 {
     if (m_impl->file == nullptr)
         return false;
@@ -917,7 +917,7 @@ bool InFile::tellPos(base::PtrDiffT& out)
     // see a stable cursor across peek calls.
     const long adj = (m_impl->peeked != peekCacheEmpty && m_impl->peeked != EOF) ? 1 : 0;
 
-    out = static_cast<base::PtrDiffT>(pos - adj);
+    out = static_cast<zb::PtrDiffT>(pos - adj);
     return true;
 }
 
@@ -936,18 +936,18 @@ bool InFile::isEOF() const noexcept
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<char> InFile::peek()
+zb::Optional<char> InFile::peek()
 {
     if (m_impl->file == nullptr)
-        return base::nullOpt;
+        return zb::nullOpt;
 
     if (m_impl->peeked == peekCacheEmpty)
         m_impl->peeked = std::fgetc(m_impl->file);
 
     if (m_impl->peeked == EOF)
-        return base::nullOpt;
+        return zb::nullOpt;
 
-    return base::makeOptional(static_cast<char>(static_cast<unsigned char>(m_impl->peeked)));
+    return zb::makeOptional(static_cast<char>(static_cast<unsigned char>(m_impl->peeked)));
 }
 
 

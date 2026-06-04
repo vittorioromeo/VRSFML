@@ -74,7 +74,7 @@ public:
     /// \return Span containing all the supported fullscreen modes
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Span<const VideoMode> getFullscreenModes();
+    [[nodiscard]] static zb::Span<const VideoMode> getFullscreenModes();
 };
 
 } // namespace za

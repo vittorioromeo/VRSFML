@@ -39,9 +39,9 @@ struct [[nodiscard]] DrawInstancedIndexedVerticesSettings // NOLINT(cppcoreguide
     ZB_REQUIRE_DESIGNATED_INITIALIZERS;
 
     VAOHandle&                  vaoHandle;     //!< VAO holding per-instance attribute streams
-    base::Span<const Vertex>    vertexSpan;    //!< Pool of vertices referenced by `indexSpan`
-    base::Span<const IndexType> indexSpan;     //!< Indices defining the primitives of a single instance
-    base::SizeT                 instanceCount; //!< Number of instances to draw
+    zb::Span<const Vertex>    vertexSpan;    //!< Pool of vertices referenced by `indexSpan`
+    zb::Span<const IndexType> indexSpan;     //!< Indices defining the primitives of a single instance
+    zb::SizeT                 instanceCount; //!< Number of instances to draw
     PrimitiveType               primitiveType; //!< How to interpret the indexed primitives of a single instance
 };
 

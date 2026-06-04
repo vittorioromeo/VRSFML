@@ -77,13 +77,13 @@ struct Music::Impl
     {
         ////////////////////////////////////////////////////////////
         mutable AtomicMutex               loopMutex;      //!< Protects `loopSpan` and `sampleOffset`
-        Music::Span<base::U64>            loopSpan;       //!< Loop range Specifier
+        Music::Span<zb::U64>            loopSpan;       //!< Loop range Specifier
         MusicReader&                      musicReader;    //!< The music reader
         const priv::MiniaudioSoundSource& source;         //!< Back-ref to the owning `Music` for `isLooping()`
-        base::U64                         sampleOffset{}; //!< Current offset in the stream
+        zb::U64                         sampleOffset{}; //!< Current offset in the stream
 
         ////////////////////////////////////////////////////////////
-        explicit MusicState(MusicReader& theMusicReader, const priv::MiniaudioSoundSource& theSource, base::U64 sampleCount) :
+        explicit MusicState(MusicReader& theMusicReader, const priv::MiniaudioSoundSource& theSource, zb::U64 sampleCount) :
             loopSpan{0u, sampleCount},
             musicReader(theMusicReader),
             source(theSource)
@@ -91,25 +91,25 @@ struct Music::Impl
         }
 
         ////////////////////////////////////////////////////////////
-        bool onGetData(base::Vector<base::I16>& outBuffer)
+        bool onGetData(zb::Vector<zb::I16>& outBuffer)
         {
             const LockGuard lock(loopMutex);
 
             // Size the output buffer to hold up to 1 second of audio samples
             outBuffer.resize(musicReader.getSampleRate() * musicReader.getChannelCount());
 
-            base::SizeT     toFill  = outBuffer.size();
-            const base::U64 loopEnd = loopSpan.offset + loopSpan.length;
+            zb::SizeT     toFill  = outBuffer.size();
+            const zb::U64 loopEnd = loopSpan.offset + loopSpan.length;
 
             // If the loop end is enabled and imminent, request less data so we trip an `onLoop()`.
             if (source.isLooping() && (loopSpan.length != 0) && (sampleOffset <= loopEnd) &&
                 (sampleOffset + toFill > loopEnd))
-                toFill = static_cast<base::SizeT>(loopEnd - sampleOffset);
+                toFill = static_cast<zb::SizeT>(loopEnd - sampleOffset);
 
             // `seekAndRead` is thread-safe
             const auto [sampleOffsetAfter, samplesRead] = musicReader.seekAndRead(sampleOffset, outBuffer.data(), toFill);
 
-            outBuffer.resize(static_cast<base::SizeT>(samplesRead));
+            outBuffer.resize(static_cast<zb::SizeT>(samplesRead));
             sampleOffset = sampleOffsetAfter + samplesRead;
 
             return (samplesRead != 0) && (sampleOffset < musicReader.getSampleCount()) &&
@@ -124,26 +124,26 @@ struct Music::Impl
         }
 
         ////////////////////////////////////////////////////////////
-        base::Optional<base::U64> onLoop()
+        zb::Optional<zb::U64> onLoop()
         {
             const LockGuard lock(loopMutex);
 
             if (!source.isLooping())
-                return base::nullOpt;
+                return zb::nullOpt;
 
             if ((loopSpan.length != 0) && (sampleOffset == loopSpan.offset + loopSpan.length))
             {
                 sampleOffset = loopSpan.offset;
-                return base::makeOptional(sampleOffset);
+                return zb::makeOptional(sampleOffset);
             }
 
             if (sampleOffset >= musicReader.getSampleCount())
             {
                 sampleOffset = 0u;
-                return base::makeOptional(sampleOffset);
+                return zb::makeOptional(sampleOffset);
             }
 
-            return base::nullOpt;
+            return zb::nullOpt;
         }
     };
 
@@ -228,7 +228,7 @@ void Music::setLoopPoints(const TimeSpan timePoints)
 
     const auto fileSampleCount = state.musicReader.getSampleCount();
 
-    Span<base::U64> samplePoints{timeToSamples(sampleRate, channelCount, timePoints.offset),
+    Span<zb::U64> samplePoints{timeToSamples(sampleRate, channelCount, timePoints.offset),
                                  timeToSamples(sampleRate, channelCount, timePoints.length)};
 
     if (fileSampleCount == 0u)
@@ -257,7 +257,7 @@ void Music::setLoopPoints(const TimeSpan timePoints)
         return;
     }
 
-    samplePoints.length = base::min(samplePoints.length, fileSampleCount - samplePoints.offset);
+    samplePoints.length = zb::min(samplePoints.length, fileSampleCount - samplePoints.offset);
 
     if (samplePoints.offset == state.loopSpan.offset && samplePoints.length == state.loopSpan.length)
         return;

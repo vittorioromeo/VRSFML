@@ -27,17 +27,17 @@ TcpListener::TcpListener(SocketHandle handle, bool isBlocking) : Socket(Type::Tc
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<TcpListener> TcpListener::create(unsigned short port, bool isBlocking, IpAddress address)
+zb::Optional<TcpListener> TcpListener::create(unsigned short port, bool isBlocking, IpAddress address)
 {
     if (address == IpAddress::Broadcast)
     {
         priv::errMsg("Cannot create TCP listener bound to broadcast address");
-        return base::nullOpt;
+        return zb::nullOpt;
     }
 
     const SocketHandle handle = createTcpHandle(isBlocking);
     if (handle == priv::SocketImpl::invalidSocket())
-        return base::nullOpt;
+        return zb::nullOpt;
 
     priv::SockAddrIn addr = priv::SocketImpl::createAddress(address.toInteger(), port);
 
@@ -45,17 +45,17 @@ base::Optional<TcpListener> TcpListener::create(unsigned short port, bool isBloc
     {
         priv::errMsg("Failed to bind listener socket to port {}", port);
         priv::SocketImpl::close(handle);
-        return base::nullOpt;
+        return zb::nullOpt;
     }
 
     if (!priv::SocketImpl::listen(handle))
     {
         priv::errMsg("Failed to listen on port {}", port);
         priv::SocketImpl::close(handle);
-        return base::nullOpt;
+        return zb::nullOpt;
     }
 
-    return base::makeOptionalFromFunc([&] { return TcpListener(handle, isBlocking); });
+    return zb::makeOptionalFromFunc([&] { return TcpListener(handle, isBlocking); });
 }
 
 
@@ -74,14 +74,14 @@ TcpListener::AcceptResult TcpListener::accept()
     const SocketHandle remote = priv::SocketImpl::accept(getNativeHandle(), address, length);
 
     if (remote == priv::SocketImpl::invalidSocket())
-        return {priv::SocketImpl::getErrorStatus(), base::nullOpt};
+        return {priv::SocketImpl::getErrorStatus(), zb::nullOpt};
 
     // Apply the same configuration as `Socket::createTcpHandle` to the
     // freshly-accepted handle: blocking mode, TCP_NODELAY, SO_NOSIGPIPE (macOS).
     const bool blocking = isBlocking();
     configureTcpHandle(remote, blocking);
 
-    return {Status::Done, base::makeOptionalFromFunc([&] { return TcpSocket(remote, blocking); })};
+    return {Status::Done, zb::makeOptionalFromFunc([&] { return TcpSocket(remote, blocking); })};
 }
 
 } // namespace za

@@ -28,7 +28,7 @@ namespace za::testing
     return static_cast<unsigned int>(::getpid());
 #else
     static const int fallbackProcessToken = 0;
-    return static_cast<unsigned int>(reinterpret_cast<base::UIntPtrT>(&fallbackProcessToken));
+    return static_cast<unsigned int>(reinterpret_cast<zb::UIntPtrT>(&fallbackProcessToken));
 #endif
 }
 
@@ -46,7 +46,7 @@ inline Path getTemporaryFilePath()
     const auto tmp = Path::getTempDirectory();
     ZB_ASSERT(tmp && "Failed to obtain temp directory");
 
-    return *tmp / Path(base::fmtToString("sfmltemp_{}_{}.tmp", getProcessUniqueId(), counter++));
+    return *tmp / Path(zb::fmtToString("sfmltemp_{}_{}.tmp", getProcessUniqueId(), counter++));
 }
 
 
@@ -66,7 +66,7 @@ public:
     }
 
     /// Create a temporary file containing \a contents.
-    explicit TemporaryFile(base::StringView contents) : m_path(getTemporaryFilePath())
+    explicit TemporaryFile(zb::StringView contents) : m_path(getTemporaryFilePath())
     {
         auto optFile = OutFile::open(m_path);
         ZB_ASSERT(optFile.hasValue() && "Failed to open temporary file for writing");

@@ -30,7 +30,7 @@
 namespace za
 {
 ////////////////////////////////////////////////////////////
-RenderWindow::RenderWindow(base::PassKey<RenderWindow>&&, Window&& window) : Window(ZB_MOVE(window))
+RenderWindow::RenderWindow(zb::PassKey<RenderWindow>&&, Window&& window) : Window(ZB_MOVE(window))
 {
     // Retrieve the framebuffer ID we have to bind when targeting the window for rendering
     // We assume that this window's context is still active at this point
@@ -39,24 +39,24 @@ RenderWindow::RenderWindow(base::PassKey<RenderWindow>&&, Window&& window) : Win
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<RenderWindow> RenderWindow::create(const WindowSettings& windowSettings)
+zb::Optional<RenderWindow> RenderWindow::create(const WindowSettings& windowSettings)
 {
     auto window = Window::create(windowSettings);
 
     return window.hasValue()
-               ? base::Optional<RenderWindow>(base::inPlace, base::PassKey<RenderWindow>{}, ZB_MOVE(*window))
-               : base::nullOpt;
+               ? zb::Optional<RenderWindow>(zb::inPlace, zb::PassKey<RenderWindow>{}, ZB_MOVE(*window))
+               : zb::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<RenderWindow> RenderWindow::create(const WindowHandle handle, const ContextSettings& contextSettings)
+zb::Optional<RenderWindow> RenderWindow::create(const WindowHandle handle, const ContextSettings& contextSettings)
 {
     auto window = Window::create(handle, contextSettings);
 
     return window.hasValue()
-               ? base::Optional<RenderWindow>(base::inPlace, base::PassKey<RenderWindow>{}, ZB_MOVE(*window))
-               : base::nullOpt;
+               ? zb::Optional<RenderWindow>(zb::inPlace, zb::PassKey<RenderWindow>{}, ZB_MOVE(*window))
+               : zb::nullOpt;
 }
 
 

@@ -47,11 +47,11 @@ VideoMode VideoModeUtils::getDesktopMode()
 
 
 ////////////////////////////////////////////////////////////
-base::Span<const VideoMode> VideoModeUtils::getFullscreenModes()
+zb::Span<const VideoMode> VideoModeUtils::getFullscreenModes()
 {
     static const auto cachedModes = []
     {
-        base::Vector<VideoMode> result;
+        zb::Vector<VideoMode> result;
 
         auto& sdlLayer = WindowContext::getSDLLayer();
 
@@ -71,11 +71,11 @@ base::Span<const VideoMode> VideoModeUtils::getFullscreenModes()
 
             const za::VideoMode res = sdlLayer.getVideoModeFromSDLDisplayMode(*mode);
 
-            if (base::find(result.begin(), result.end(), res) == result.end())
+            if (zb::find(result.begin(), result.end(), res) == result.end())
                 result.pushBack(res);
         }
 
-        base::quickSort(result.begin(), result.end(), [](const auto& lhs, const auto& rhs) { return lhs > rhs; });
+        zb::quickSort(result.begin(), result.end(), [](const auto& lhs, const auto& rhs) { return lhs > rhs; });
         return result;
     }();
 

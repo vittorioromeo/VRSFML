@@ -27,7 +27,7 @@ struct [[nodiscard]] DrawVerticesSettings // NOLINT(cppcoreguidelines-pro-type-m
 {
     ZB_REQUIRE_DESIGNATED_INITIALIZERS;
 
-    base::Span<const Vertex> vertexSpan;    //!< Range of vertices to draw
+    zb::Span<const Vertex> vertexSpan;    //!< Range of vertices to draw
     PrimitiveType            primitiveType; //!< How to interpret the vertices (triangles, lines, ...)
 };
 

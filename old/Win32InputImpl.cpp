@@ -612,7 +612,7 @@ Keyboard::Scancode delocalize(Keyboard::Key key)
 String getDescription(Keyboard::Scancode code)
 {
     // Try to translate the scan code to a consumer key
-    if (const base::Optional consumerKeyName = sfScanToConsumerKeyName(code))
+    if (const zb::Optional consumerKeyName = sfScanToConsumerKeyName(code))
         return *consumerKeyName;
 
     WORD      winCode = sfScanToWinScanExtended(code);

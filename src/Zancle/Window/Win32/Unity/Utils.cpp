@@ -20,7 +20,7 @@
 namespace za::priv
 {
 ////////////////////////////////////////////////////////////
-base::String getErrorString(DWORD error)
+zb::String getErrorString(DWORD error)
 {
     PTCHAR buffer = nullptr;
     if (FormatMessage(FORMAT_MESSAGE_MAX_WIDTH_MASK | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
@@ -36,10 +36,10 @@ base::String getErrorString(DWORD error)
 
     const auto srcLen = std::wcslen(buffer);
 
-    base::String message;
+    zb::String message;
     message.reserve(srcLen * 3u);
 
-    Utf<16>::toUtf8(buffer, buffer + srcLen, base::BackInserter{message});
+    Utf<16>::toUtf8(buffer, buffer + srcLen, zb::BackInserter{message});
 
     LocalFree(buffer);
     return message;

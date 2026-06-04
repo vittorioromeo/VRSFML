@@ -118,7 +118,7 @@ struct VulkanSurfaceData
 /// \return Vulkan instance extensions required for graphics
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] ZA_WINDOW_API base::Span<const char* const> getGraphicsRequiredInstanceExtensions();
+[[nodiscard]] ZA_WINDOW_API zb::Span<const char* const> getGraphicsRequiredInstanceExtensions();
 
 ////////////////////////////////////////////////////////////
 /// \brief Create a Vulkan rendering surface

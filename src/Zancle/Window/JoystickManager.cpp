@@ -143,7 +143,7 @@ struct JoystickImpl
 ////////////////////////////////////////////////////////////
 struct JoystickManager::Impl
 {
-    base::Optional<JoystickImpl> impls[Joystick::MaxCount];           //!< Joystick implementations
+    zb::Optional<JoystickImpl> impls[Joystick::MaxCount];           //!< Joystick implementations
     JoystickState                states[Joystick::MaxCount];          //!< Joystick states
     JoystickCapabilities         capabilities[Joystick::MaxCount];    //!< Joystick capabilities
     JoystickIdentification       identifications[Joystick::MaxCount]; //!< Joystick identifications
@@ -197,8 +197,8 @@ void JoystickManager::update()
         SDL_GUID       guid;
     };
 
-    base::Optional<JoystickInfo> connectedJoystickInfos[Joystick::MaxCount];
-    base::SizeT                  nextInfoIdx = 0u;
+    zb::Optional<JoystickInfo> connectedJoystickInfos[Joystick::MaxCount];
+    zb::SizeT                  nextInfoIdx = 0u;
 
     ////////////////////////////////////////////////////////////
     SDL_LockJoysticks();
@@ -229,16 +229,16 @@ void JoystickManager::update()
 
     ////////////////////////////////////////////////////////////
     // Find newly disconnected joysticks
-    for (base::SizeT i = 0u; i < Joystick::MaxCount; ++i)
+    for (zb::SizeT i = 0u; i < Joystick::MaxCount; ++i)
     {
         auto& joyImpl = m_impl->impls[i];
 
         if (!joyImpl.hasValue())
             continue; // Empty slot
 
-        if (base::anyOf(connectedJoystickInfos,
+        if (zb::anyOf(connectedJoystickInfos,
                         connectedJoystickInfos + nextInfoIdx,
-                        [&](const base::Optional<JoystickInfo>& info)
+                        [&](const zb::Optional<JoystickInfo>& info)
         {
             ZB_ASSERT(info.hasValue());
             return info->id == joyImpl->id;
@@ -260,18 +260,18 @@ void JoystickManager::update()
 
     ////////////////////////////////////////////////////////////
     // Find newly connected joysticks
-    for (base::SizeT iInfo = 0u; iInfo < nextInfoIdx; ++iInfo)
+    for (zb::SizeT iInfo = 0u; iInfo < nextInfoIdx; ++iInfo)
     {
         ZB_ASSERT(connectedJoystickInfos[iInfo].hasValue());
         const auto& [id, guid] = *connectedJoystickInfos[iInfo];
 
-        if (base::anyOf(m_impl->impls, m_impl->impls + Joystick::MaxCount, [&](const base::Optional<JoystickImpl>& impl) {
+        if (zb::anyOf(m_impl->impls, m_impl->impls + Joystick::MaxCount, [&](const zb::Optional<JoystickImpl>& impl) {
             return impl.hasValue() && impl->id == id;
         }))
             continue; // Not newly connected
 
         // Find an empty slot
-        for (base::SizeT iImpl = 0u; iImpl < Joystick::MaxCount; ++iImpl)
+        for (zb::SizeT iImpl = 0u; iImpl < Joystick::MaxCount; ++iImpl)
         {
             auto& joyImpl = m_impl->impls[iImpl];
 

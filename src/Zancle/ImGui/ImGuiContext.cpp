@@ -298,7 +298,7 @@ struct [[nodiscard]] ImGuiContext::Impl
     TriggerInfo  lTriggerInfo;
     TriggerInfo  rTriggerInfo;
 
-    base::Array<base::Optional<Cursor>, ImGuiMouseCursor_COUNT> mouseCursors;
+    zb::Array<zb::Optional<Cursor>, ImGuiMouseCursor_COUNT> mouseCursors;
 
     bool wantTextInput{false};
 
@@ -343,7 +343,7 @@ struct [[nodiscard]] ImGuiContext::Impl
         {
             // Owned mode: optionally seed the freshly-allocated atlas with the default font.
             priv::errMsg("Failed to load default ImGui font");
-            base::abort();
+            zb::abort();
         }
 
         // tell ImGui which features we support
@@ -413,7 +413,7 @@ struct [[nodiscard]] ImGuiContext::Impl
         const bool passedThreshold            = (pos > threshold) == (maxThreshold > threshold);
         const bool passedThresholdAndHasFocus = passedThreshold && windowHasFocus;
 
-        io.AddKeyAnalogEvent(key, passedThresholdAndHasFocus, passedThresholdAndHasFocus ? base::fabs(pos / 100.f) : 0.f);
+        io.AddKeyAnalogEvent(key, passedThresholdAndHasFocus, passedThresholdAndHasFocus ? zb::fabs(pos / 100.f) : 0.f);
     }
 
     ////////////////////////////////////////////////////////////
@@ -479,7 +479,7 @@ struct [[nodiscard]] ImGuiContext::Impl
     ////////////////////////////////////////////////////////////
     void loadMouseCursor(ImGuiMouseCursor imguiCursorType, Cursor::Type zancleCursorType)
     {
-        mouseCursors[static_cast<base::SizeT>(imguiCursorType)] = Cursor::loadFromSystem(zancleCursorType);
+        mouseCursors[static_cast<zb::SizeT>(imguiCursorType)] = Cursor::loadFromSystem(zancleCursorType);
     }
 
     ////////////////////////////////////////////////////////////
@@ -636,7 +636,7 @@ struct [[nodiscard]] ImGuiContext::Impl
             return;
         }
 
-        const auto& cursorDesired = mouseCursors[static_cast<base::SizeT>(cursor)];
+        const auto& cursorDesired = mouseCursors[static_cast<zb::SizeT>(cursor)];
 
         theWindow.setMouseCursorVisible(true);
         theWindow.setMouseCursor(cursorDesired.hasValue() ? *cursorDesired : *cursorArrow);
@@ -930,7 +930,7 @@ const char* getClipboardTextFn(void* /* userData */)
 
 ////////////////////////////////////////////////////////////
 ImGuiContext::ImGuiContext(const bool loadDefaultFont) :
-    m_impl{base::makeUnique<Impl>(loadDefaultFont,
+    m_impl{zb::makeUnique<Impl>(loadDefaultFont,
                                   /* sharedFontAtlas */ nullptr,
                                   /* claimSharedAtlasOwnership */ false,
                                   &setClipboardTextFn,
@@ -942,7 +942,7 @@ ImGuiContext::ImGuiContext(const bool loadDefaultFont) :
 
 ////////////////////////////////////////////////////////////
 ImGuiContext::ImGuiContext(ImFontAtlas& sharedFontAtlas, const bool claimOwnership) :
-    m_impl{base::makeUnique<Impl>(/* loadDefaultFont */ false, &sharedFontAtlas, claimOwnership, &setClipboardTextFn, &getClipboardTextFn)}
+    m_impl{zb::makeUnique<Impl>(/* loadDefaultFont */ false, &sharedFontAtlas, claimOwnership, &setClipboardTextFn, &getClipboardTextFn)}
 {
     initDefaultJoystickMapping();
 }

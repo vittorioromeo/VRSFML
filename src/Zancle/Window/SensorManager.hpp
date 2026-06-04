@@ -106,7 +106,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    base::EnumArray<Sensor::Type, Item, Sensor::Count> m_sensors; //!< Sensors information and state
+    zb::EnumArray<Sensor::Type, Item, Sensor::Count> m_sensors; //!< Sensors information and state
 };
 
 } // namespace za::priv

@@ -83,7 +83,7 @@ TEST_CASE("[System] za::Path")
         CHECK(p.to<std::u32string>() == s);
     }
 
-    SECTION("Construction from base::String")
+    SECTION("Construction from zb::String")
     {
         const zb::String s("hello.txt");
         const za::Path         p(s);
@@ -514,7 +514,7 @@ TEST_CASE("[System] za::Path")
         CHECK(static_cast<unsigned char>(s[1]) == 0xB1);
     }
 
-    SECTION("to<base::String>() with non-ASCII paths does not throw")
+    SECTION("to<zb::String>() with non-ASCII paths does not throw")
     {
         CHECK_NOTHROW((void)za::Path(U"hello-ñ.txt").to<zb::String>());
         CHECK_NOTHROW((void)za::Path(U"hello-日.txt").to<zb::String>());

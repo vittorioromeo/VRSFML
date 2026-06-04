@@ -26,7 +26,7 @@ ConvexShape::ConvexShape(const Data& data) : Shape(priv::toShapeData(data))
 
 
 ////////////////////////////////////////////////////////////
-void ConvexShape::setPointCount(const base::SizeT count)
+void ConvexShape::setPointCount(const zb::SizeT count)
 {
     m_points.resize(count);
     update(m_points.data(), m_points.size());
@@ -34,14 +34,14 @@ void ConvexShape::setPointCount(const base::SizeT count)
 
 
 ////////////////////////////////////////////////////////////
-base::SizeT ConvexShape::getPointCount() const
+zb::SizeT ConvexShape::getPointCount() const
 {
     return m_points.size();
 }
 
 
 ////////////////////////////////////////////////////////////
-void ConvexShape::setPoint(const base::SizeT index, const Vec2f point)
+void ConvexShape::setPoint(const zb::SizeT index, const Vec2f point)
 {
     ZB_ASSERT(index < m_points.size() && "Index is out of bounds");
     m_points[index] = point;
@@ -50,7 +50,7 @@ void ConvexShape::setPoint(const base::SizeT index, const Vec2f point)
 
 
 ////////////////////////////////////////////////////////////
-Vec2f ConvexShape::getPoint(const base::SizeT index) const
+Vec2f ConvexShape::getPoint(const zb::SizeT index) const
 {
     ZB_ASSERT(index < m_points.size() && "Index is out of bounds");
     return m_points[index];

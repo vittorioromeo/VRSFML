@@ -150,7 +150,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 1896> m_impl; //!< Implementation details
+    zb::InPlacePImpl<Impl, 1896> m_impl; //!< Implementation details
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking

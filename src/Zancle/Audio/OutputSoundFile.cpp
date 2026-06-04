@@ -31,7 +31,7 @@ OutputSoundFile& OutputSoundFile::operator=(OutputSoundFile&&) noexcept = defaul
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<OutputSoundFile> OutputSoundFile::openFromFile(
+zb::Optional<OutputSoundFile> OutputSoundFile::openFromFile(
     const Path&       filename,
     unsigned int      sampleRate,
     unsigned int      channelCount,
@@ -43,7 +43,7 @@ base::Optional<OutputSoundFile> OutputSoundFile::openFromFile(
     {
         priv::errMsg("Channel count ({}) does not match channel map size ({})", channelCount, channelMap.getSize());
 
-        return base::nullOpt;
+        return zb::nullOpt;
     }
 
     // Find a suitable writer for the file type
@@ -51,22 +51,22 @@ base::Optional<OutputSoundFile> OutputSoundFile::openFromFile(
     if (!writer)
     {
         // Error message generated in called function.
-        return base::nullOpt;
+        return zb::nullOpt;
     }
 
     // Pass the stream to the reader
     if (!writer->open(filename, sampleRate, channelCount, channelMap))
     {
         priv::errMsg("Failed to open output sound file from file (writer open failure)");
-        return base::nullOpt;
+        return zb::nullOpt;
     }
 
-    return base::makeOptional<OutputSoundFile>(base::PassKey<OutputSoundFile>{}, ZB_MOVE(writer));
+    return zb::makeOptional<OutputSoundFile>(zb::PassKey<OutputSoundFile>{}, ZB_MOVE(writer));
 }
 
 
 ////////////////////////////////////////////////////////////
-void OutputSoundFile::write(const base::I16* samples, base::U64 count)
+void OutputSoundFile::write(const zb::I16* samples, zb::U64 count)
 {
     ZB_ASSERT(m_writer != nullptr);
 
@@ -76,7 +76,7 @@ void OutputSoundFile::write(const base::I16* samples, base::U64 count)
 
 
 ////////////////////////////////////////////////////////////
-OutputSoundFile::OutputSoundFile(base::PassKey<OutputSoundFile>&&, base::UniquePtr<SoundFileWriter>&& writer) :
+OutputSoundFile::OutputSoundFile(zb::PassKey<OutputSoundFile>&&, zb::UniquePtr<SoundFileWriter>&& writer) :
     m_writer(ZB_MOVE(writer))
 {
 }

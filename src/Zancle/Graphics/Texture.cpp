@@ -72,7 +72,7 @@ constinit za::Atomic<unsigned int> nextUniqueId{1u}; // start at 1, zero is "no 
 namespace za
 {
 ////////////////////////////////////////////////////////////
-Texture::Texture(base::PassKey<Texture>&&, Vec2u size, unsigned int texture, bool sRgb) :
+Texture::Texture(zb::PassKey<Texture>&&, Vec2u size, unsigned int texture, bool sRgb) :
     m_size(size),
     m_texture(texture),
     m_sRgb(sRgb),
@@ -88,7 +88,7 @@ Texture::Texture(const Texture& rhs) :
     m_wrapMode(rhs.m_wrapMode),
     m_cacheId(TextureImpl::getUniqueId())
 {
-    base::Optional texture = create(rhs.getSize(), {.sRgb = rhs.isSrgb(), .smooth = rhs.isSmooth()});
+    zb::Optional texture = create(rhs.getSize(), {.sRgb = rhs.isSrgb(), .smooth = rhs.isSmooth()});
 
     if (!texture.hasValue())
     {
@@ -130,14 +130,14 @@ Texture::~Texture()
 
 ////////////////////////////////////////////////////////////
 Texture::Texture(Texture&& rhs) noexcept :
-    m_size(base::exchange(rhs.m_size, {})),
-    m_texture(base::exchange(rhs.m_texture, 0u)),
-    m_isSmooth(base::exchange(rhs.m_isSmooth, false)),
-    m_sRgb(base::exchange(rhs.m_sRgb, false)),
-    m_wrapMode(base::exchange(rhs.m_wrapMode, TextureWrapMode::Clamp)),
-    m_fboAttachment(base::exchange(rhs.m_fboAttachment, false)),
-    m_hasMipmap(base::exchange(rhs.m_hasMipmap, false)),
-    m_cacheId(base::exchange(rhs.m_cacheId, 0u))
+    m_size(zb::exchange(rhs.m_size, {})),
+    m_texture(zb::exchange(rhs.m_texture, 0u)),
+    m_isSmooth(zb::exchange(rhs.m_isSmooth, false)),
+    m_sRgb(zb::exchange(rhs.m_sRgb, false)),
+    m_wrapMode(zb::exchange(rhs.m_wrapMode, TextureWrapMode::Clamp)),
+    m_fboAttachment(zb::exchange(rhs.m_fboAttachment, false)),
+    m_hasMipmap(zb::exchange(rhs.m_hasMipmap, false)),
+    m_cacheId(zb::exchange(rhs.m_cacheId, 0u))
 {
 }
 
@@ -158,23 +158,23 @@ Texture& Texture::operator=(Texture&& rhs) noexcept
     }
 
     // Move old to new.
-    m_size          = base::exchange(rhs.m_size, {});
-    m_texture       = base::exchange(rhs.m_texture, 0u);
-    m_isSmooth      = base::exchange(rhs.m_isSmooth, false);
-    m_sRgb          = base::exchange(rhs.m_sRgb, false);
-    m_wrapMode      = base::exchange(rhs.m_wrapMode, TextureWrapMode::Clamp);
-    m_fboAttachment = base::exchange(rhs.m_fboAttachment, false);
-    m_hasMipmap     = base::exchange(rhs.m_hasMipmap, false);
-    m_cacheId       = base::exchange(rhs.m_cacheId, 0u);
+    m_size          = zb::exchange(rhs.m_size, {});
+    m_texture       = zb::exchange(rhs.m_texture, 0u);
+    m_isSmooth      = zb::exchange(rhs.m_isSmooth, false);
+    m_sRgb          = zb::exchange(rhs.m_sRgb, false);
+    m_wrapMode      = zb::exchange(rhs.m_wrapMode, TextureWrapMode::Clamp);
+    m_fboAttachment = zb::exchange(rhs.m_fboAttachment, false);
+    m_hasMipmap     = zb::exchange(rhs.m_hasMipmap, false);
+    m_cacheId       = zb::exchange(rhs.m_cacheId, 0u);
 
     return *this;
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Texture> Texture::create(Vec2u size, const TextureCreateSettings& settings)
+zb::Optional<Texture> Texture::create(Vec2u size, const TextureCreateSettings& settings)
 {
-    base::Optional<Texture> result; // Use a single local variable for NRVO
+    zb::Optional<Texture> result; // Use a single local variable for NRVO
 
     // Check if texture parameters are valid before creating it
     if ((size.x == 0) || (size.y == 0))
@@ -210,7 +210,7 @@ base::Optional<Texture> Texture::create(Vec2u size, const TextureCreateSettings&
     }
 
     // All the validity checks passed, we can store the new texture settings
-    result.emplace(base::PassKey<Texture>{}, size, glTexture, settings.sRgb);
+    result.emplace(zb::PassKey<Texture>{}, size, glTexture, settings.sRgb);
 
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
@@ -228,42 +228,42 @@ base::Optional<Texture> Texture::create(Vec2u size, const TextureCreateSettings&
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Texture> Texture::loadFromFile(const Path& filename, const TextureLoadSettings& settings)
+zb::Optional<Texture> Texture::loadFromFile(const Path& filename, const TextureLoadSettings& settings)
 {
-    if (const base::Optional image = za::Image::loadFromFile(filename))
+    if (const zb::Optional image = za::Image::loadFromFile(filename))
         return loadFromImage(*image, settings);
 
     priv::errMsg("Failed to load texture from file");
-    return base::nullOpt;
+    return zb::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Texture> Texture::loadFromMemory(const void* data, base::SizeT size, const TextureLoadSettings& settings)
+zb::Optional<Texture> Texture::loadFromMemory(const void* data, zb::SizeT size, const TextureLoadSettings& settings)
 {
-    if (const base::Optional image = za::Image::loadFromMemory(data, size))
+    if (const zb::Optional image = za::Image::loadFromMemory(data, size))
         return loadFromImage(*image, settings);
 
     priv::errMsg("Failed to load texture from memory");
-    return base::nullOpt;
+    return zb::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Texture> Texture::loadFromStream(InputStream& stream, const TextureLoadSettings& settings)
+zb::Optional<Texture> Texture::loadFromStream(InputStream& stream, const TextureLoadSettings& settings)
 {
-    if (const base::Optional image = za::Image::loadFromStream(stream))
+    if (const zb::Optional image = za::Image::loadFromStream(stream))
         return loadFromImage(*image, settings);
 
     priv::errMsg("Failed to load texture from stream");
-    return base::nullOpt;
+    return zb::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Texture> Texture::loadFromImage(const Image& image, const TextureLoadSettings& settings)
+zb::Optional<Texture> Texture::loadFromImage(const Image& image, const TextureLoadSettings& settings)
 {
-    base::Optional<Texture> result; // Use a single local variable for NRVO
+    zb::Optional<Texture> result; // Use a single local variable for NRVO
 
     // Retrieve the image size
     const auto size = image.getSize().toVec2i();
@@ -293,10 +293,10 @@ base::Optional<Texture> Texture::loadFromImage(const Image& image, const Texture
 
     // Adjust the rectangle to the size of the image
     Rect2i rectangle     = settings.area;
-    rectangle.position.x = base::max(rectangle.position.x, 0);
-    rectangle.position.y = base::max(rectangle.position.y, 0);
-    rectangle.size.x     = base::min(rectangle.size.x, size.x - rectangle.position.x);
-    rectangle.size.y     = base::min(rectangle.size.y, size.y - rectangle.position.y);
+    rectangle.position.x = zb::max(rectangle.position.x, 0);
+    rectangle.position.y = zb::max(rectangle.position.y, 0);
+    rectangle.size.x     = zb::min(rectangle.size.x, size.x - rectangle.position.x);
+    rectangle.size.y     = zb::min(rectangle.size.y, size.y - rectangle.position.y);
 
     // Create the texture and upload the pixels
     if ((result = za::Texture::create(rectangle.size.toVec2u(),
@@ -308,7 +308,7 @@ base::Optional<Texture> Texture::loadFromImage(const Image& image, const Texture
         const priv::TextureSaver save;
 
         // Copy the pixels to the texture
-        const base::U8* pixels = image.getPixelsPtr() + 4 * (rectangle.position.x + (size.x * rectangle.position.y));
+        const zb::U8* pixels = image.getPixelsPtr() + 4 * (rectangle.position.x + (size.x * rectangle.position.y));
         glCheck(glBindTexture(GL_TEXTURE_2D, result->m_texture));
 
         glCheck(glPixelStorei(GL_UNPACK_ROW_LENGTH, size.x)); // restore after
@@ -348,7 +348,7 @@ Image Texture::copyToImage() const
     const priv::TextureSaver save;
 
     // Create an array of pixels
-    base::Vector<base::U8> pixels(m_size.x * m_size.y * 4);
+    zb::Vector<zb::U8> pixels(m_size.x * m_size.y * 4);
 
     // OpenGL ES doesn't have the glGetTexImage function, the only way to read
     // from a texture is to bind it to a FBO and use glReadPixels
@@ -370,7 +370,7 @@ Image Texture::copyToImage() const
     else
     {
         priv::errMsg("Failed to copy texture to image, failed to create frame buffer object");
-        base::abort();
+        zb::abort();
     }
 
     auto result = za::Image::create(m_size, pixels.data());
@@ -380,7 +380,7 @@ Image Texture::copyToImage() const
 
 
 ////////////////////////////////////////////////////////////
-void Texture::update(const base::U8* pixels)
+void Texture::update(const zb::U8* pixels)
 {
     // Update the whole texture
     update(pixels, m_size, {0, 0});
@@ -392,7 +392,7 @@ void Texture::update(const base::U8* pixels)
 
 
 ////////////////////////////////////////////////////////////
-void Texture::update(const base::U8* pixels, Vec2u size, Vec2u dest)
+void Texture::update(const zb::U8* pixels, Vec2u size, Vec2u dest)
 {
     ZB_ASSERT(dest.x + size.x <= m_size.x && "Destination x coordinate is outside of texture");
     ZB_ASSERT(dest.y + size.y <= m_size.y && "Destination y coordinate is outside of texture");
@@ -750,14 +750,14 @@ Texture& Texture::operator=(const Texture& rhs)
 ////////////////////////////////////////////////////////////
 void Texture::swap(Texture& rhs) noexcept
 {
-    base::genericSwap(m_size, rhs.m_size);
-    base::genericSwap(m_texture, rhs.m_texture);
-    base::genericSwap(m_isSmooth, rhs.m_isSmooth);
-    base::genericSwap(m_sRgb, rhs.m_sRgb);
-    base::genericSwap(m_wrapMode, rhs.m_wrapMode);
-    base::genericSwap(m_fboAttachment, rhs.m_fboAttachment);
-    base::genericSwap(m_hasMipmap, rhs.m_hasMipmap);
-    base::genericSwap(m_cacheId, rhs.m_cacheId);
+    zb::genericSwap(m_size, rhs.m_size);
+    zb::genericSwap(m_texture, rhs.m_texture);
+    zb::genericSwap(m_isSmooth, rhs.m_isSmooth);
+    zb::genericSwap(m_sRgb, rhs.m_sRgb);
+    zb::genericSwap(m_wrapMode, rhs.m_wrapMode);
+    zb::genericSwap(m_fboAttachment, rhs.m_fboAttachment);
+    zb::genericSwap(m_hasMipmap, rhs.m_hasMipmap);
+    zb::genericSwap(m_cacheId, rhs.m_cacheId);
 
     // Both textures' content/state was just replaced wholesale; bump on each.
     ++m_destructiveGeneration;

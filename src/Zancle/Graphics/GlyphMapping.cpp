@@ -90,7 +90,7 @@ const Glyph& GlyphMapping::getGlyph(const char32_t                      codePoin
         return it->second;
 
     priv::errMsg("Glyph not found in mapping for code point: {}", static_cast<unsigned int>(codePoint));
-    base::abort();
+    zb::abort();
 }
 
 
@@ -110,7 +110,7 @@ GlyphMapping::GlyphPair GlyphMapping::getFillAndOutlineGlyph(
     if (fillIt == fillGlyphs.end()) [[unlikely]]
     {
         priv::errMsg("Fill glyph not found in mapping for code point: {}", static_cast<unsigned int>(codePoint));
-        base::abort();
+        zb::abort();
     }
 
     const auto* outlineIt = outlineGlyphs.find(codePoint);
@@ -118,7 +118,7 @@ GlyphMapping::GlyphPair GlyphMapping::getFillAndOutlineGlyph(
     if (outlineIt == outlineGlyphs.end()) [[unlikely]]
     {
         priv::errMsg("Outline glyph not found in mapping for code point: {}", static_cast<unsigned int>(codePoint));
-        base::abort();
+        zb::abort();
     }
 
     return {

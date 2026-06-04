@@ -81,7 +81,7 @@ AddrLength SockAddrIn::size() const
 
 
 ////////////////////////////////////////////////////////////
-SockAddrIn SocketImpl::createAddress(base::U32 address, unsigned short port)
+SockAddrIn SocketImpl::createAddress(zb::U32 address, unsigned short port)
 {
     auto addr            = sockaddr_in();
     addr.sin_addr.s_addr = priv::SocketImpl::hostToNetwork(address);
@@ -97,14 +97,14 @@ SockAddrIn SocketImpl::createAddress(base::U32 address, unsigned short port)
 
 
 ////////////////////////////////////////////////////////////
-base::U32 SocketImpl::inaddrAny()
+zb::U32 SocketImpl::inaddrAny()
 {
     return INADDR_ANY;
 }
 
 
 ////////////////////////////////////////////////////////////
-base::U32 SocketImpl::inaddrLoopback()
+zb::U32 SocketImpl::inaddrLoopback()
 {
     return INADDR_LOOPBACK;
 }
@@ -232,18 +232,18 @@ Socket::Status SocketImpl::getErrorStatus()
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<base::U32> SocketImpl::parseIpv4(const char* data)
+zb::Optional<zb::U32> SocketImpl::parseIpv4(const char* data)
 {
     in_addr address{};
     if (::inet_pton(AF_INET, data, &address) != 1)
-        return base::nullOpt;
+        return zb::nullOpt;
 
-    return base::makeOptional<base::U32>(address.s_addr);
+    return zb::makeOptional<zb::U32>(address.s_addr);
 }
 
 
 ////////////////////////////////////////////////////////////
-SocketImpl::Ipv4StringBuffer SocketImpl::addrToString(base::U32 netLong)
+SocketImpl::Ipv4StringBuffer SocketImpl::addrToString(zb::U32 netLong)
 {
     in_addr address{};
     address.s_addr = netLong;
@@ -299,7 +299,7 @@ bool SocketImpl::enableBroadcast(SocketHandle handle)
 ////////////////////////////////////////////////////////////
 NetworkSSizeT SocketImpl::send(SocketHandle handle, const char* buf, SocketImpl::Size len, int flags)
 {
-    return ::send(handle, buf, static_cast<base::SizeT>(len), flags);
+    return ::send(handle, buf, static_cast<zb::SizeT>(len), flags);
 }
 
 
@@ -308,7 +308,7 @@ NetworkSSizeT SocketImpl::sendTo(SocketHandle handle, const char* buf, SocketImp
 {
     return ::sendto(handle,
                     buf,
-                    static_cast<base::SizeT>(len),
+                    static_cast<zb::SizeT>(len),
                     flags,
                     reinterpret_cast<sockaddr*>(&*address.m_impl),
                     address.size());
@@ -318,19 +318,19 @@ NetworkSSizeT SocketImpl::sendTo(SocketHandle handle, const char* buf, SocketImp
 ////////////////////////////////////////////////////////////
 NetworkSSizeT SocketImpl::recv(SocketHandle handle, char* buf, SocketImpl::Size len, int flags)
 {
-    return ::recv(handle, buf, static_cast<base::SizeT>(len), flags);
+    return ::recv(handle, buf, static_cast<zb::SizeT>(len), flags);
 }
 
 
 ////////////////////////////////////////////////////////////
 NetworkSSizeT SocketImpl::recvFrom(SocketHandle handle, char* buf, SocketImpl::Size len, int flags, SockAddrIn& address, AddrLength& length)
 {
-    return ::recvfrom(handle, buf, static_cast<base::SizeT>(len), flags, reinterpret_cast<sockaddr*>(&*address.m_impl), &length);
+    return ::recvfrom(handle, buf, static_cast<zb::SizeT>(len), flags, reinterpret_cast<sockaddr*>(&*address.m_impl), &length);
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<NetworkLong> SocketImpl::convertToHostname(const char* address)
+zb::Optional<NetworkLong> SocketImpl::convertToHostname(const char* address)
 {
     addrinfo hints{}; // Zero-initialize
     hints.ai_family = AF_INET;
@@ -341,13 +341,13 @@ base::Optional<NetworkLong> SocketImpl::convertToHostname(const char* address)
         sockaddr_in sin{};
         ZB_MEMCPY(&sin, result->ai_addr, sizeof(*result->ai_addr));
 
-        const base::U32 ip = sin.sin_addr.s_addr;
+        const zb::U32 ip = sin.sin_addr.s_addr;
         freeaddrinfo(result);
 
-        return base::makeOptional<NetworkLong>(ip);
+        return zb::makeOptional<NetworkLong>(ip);
     }
 
-    return base::nullOpt;
+    return zb::nullOpt;
 }
 
 

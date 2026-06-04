@@ -45,7 +45,7 @@ public:
     /// \param byte3 Fourth byte of the address
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] IpAddress(base::U8 byte0, base::U8 byte1, base::U8 byte2, base::U8 byte3);
+    [[nodiscard]] IpAddress(zb::U8 byte0, zb::U8 byte1, zb::U8 byte2, zb::U8 byte3);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the address from a 32-bits integer
@@ -60,7 +60,7 @@ public:
     /// \see `toInteger`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit IpAddress(base::U32 address);
+    [[nodiscard]] explicit IpAddress(zb::U32 address);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get an integer representation of the address
@@ -76,7 +76,7 @@ public:
     /// \see `toString`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::U32 toInteger() const;
+    [[nodiscard]] zb::U32 toInteger() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the computer's local address
@@ -87,12 +87,12 @@ public:
     /// Unlike getPublicAddress, this function is fast and may be
     /// used safely anywhere.
     ///
-    /// \return Local IP address of the computer on success, `base::nullOpt` otherwise
+    /// \return Local IP address of the computer on success, `zb::nullOpt` otherwise
     ///
     /// \see `getPublicAddress`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<IpAddress> getLocalAddress();
+    [[nodiscard]] static zb::Optional<IpAddress> getLocalAddress();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the computer's public address
@@ -111,12 +111,12 @@ public:
     ///
     /// \param timeout Maximum time to wait
     ///
-    /// \return Public IP address of the computer on success, `base::nullOpt` otherwise
+    /// \return Public IP address of the computer on success, `zb::nullOpt` otherwise
     ///
     /// \see `getLocalAddress`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<IpAddress> getPublicAddress(Time timeout = {});
+    [[nodiscard]] static zb::Optional<IpAddress> getPublicAddress(Time timeout = {});
 
 
     ////////////////////////////////////////////////////////////
@@ -210,7 +210,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    base::U32 m_address; //!< Address stored as an unsigned 32 bit integer
+    zb::U32 m_address; //!< Address stored as an unsigned 32 bit integer
 };
 
 } // namespace za

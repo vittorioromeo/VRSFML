@@ -362,8 +362,8 @@ struct Shader::Impl
     }
 
     explicit Impl(Impl&& rhs) noexcept :
-        shaderProgram(base::exchange(rhs.shaderProgram, 0u)),
-        currentTexture(base::exchange(rhs.currentTexture, -1)),
+        shaderProgram(zb::exchange(rhs.shaderProgram, 0u)),
+        currentTexture(zb::exchange(rhs.currentTexture, -1)),
         textures(ZB_MOVE(rhs.textures))
     {
     }
@@ -375,8 +375,8 @@ struct Shader::Impl
 
         destroyProgramIfNeeded(shaderProgram);
 
-        shaderProgram  = base::exchange(rhs.shaderProgram, 0u);
-        currentTexture = base::exchange(rhs.currentTexture, -1);
+        shaderProgram  = zb::exchange(rhs.shaderProgram, 0u);
+        currentTexture = zb::exchange(rhs.currentTexture, -1);
         textures       = ZB_MOVE(rhs.textures);
 
         return *this;
@@ -442,15 +442,15 @@ Shader& Shader::operator=(Shader&& rhs) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::loadFromFile(const LoadFromFileSettings& settings)
+zb::Optional<Shader> Shader::loadFromFile(const LoadFromFileSettings& settings)
 {
     // Prepare thread-local buffer
-    base::Vector<char>& buffer = getThreadLocalShaderConcatBuffer();
+    zb::Vector<char>& buffer = getThreadLocalShaderConcatBuffer();
     buffer.clear();
 
     // Helper function
     const auto readIntoBufferSlice =
-        [&](const char* typeStr, const Path& optPath, base::Optional<BufferSlice>& optBufferSlice)
+        [&](const char* typeStr, const Path& optPath, zb::Optional<BufferSlice>& optBufferSlice)
     {
         if (optPath.empty())
             return true;
@@ -466,33 +466,33 @@ base::Optional<Shader> Shader::loadFromFile(const LoadFromFileSettings& settings
     };
 
     // Read the vertex shader file (if path provided)
-    base::Optional<BufferSlice> vertexShaderSlice;
+    zb::Optional<BufferSlice> vertexShaderSlice;
     if (!readIntoBufferSlice("vertex", settings.vertexPath, vertexShaderSlice))
-        return base::nullOpt;
+        return zb::nullOpt;
 
     // Read the geometry shader file (if path provided)
-    base::Optional<BufferSlice> geometryShaderSlice;
+    zb::Optional<BufferSlice> geometryShaderSlice;
     if (!readIntoBufferSlice("geometry", settings.geometryPath, geometryShaderSlice))
-        return base::nullOpt;
+        return zb::nullOpt;
 
     // Read the fragment shader file (if path provided)
-    base::Optional<BufferSlice> fragmentShaderSlice;
+    zb::Optional<BufferSlice> fragmentShaderSlice;
     if (!readIntoBufferSlice("fragment", settings.fragmentPath, fragmentShaderSlice))
-        return base::nullOpt;
+        return zb::nullOpt;
 
     // Get source views
-    auto vertexView   = vertexShaderSlice.hasValue() ? vertexShaderSlice->toView(buffer) : base::StringView{};
-    auto geometryView = geometryShaderSlice.hasValue() ? geometryShaderSlice->toView(buffer) : base::StringView{};
-    auto fragmentView = fragmentShaderSlice.hasValue() ? fragmentShaderSlice->toView(buffer) : base::StringView{};
+    auto vertexView   = vertexShaderSlice.hasValue() ? vertexShaderSlice->toView(buffer) : zb::StringView{};
+    auto geometryView = geometryShaderSlice.hasValue() ? geometryShaderSlice->toView(buffer) : zb::StringView{};
+    auto fragmentView = fragmentShaderSlice.hasValue() ? fragmentShaderSlice->toView(buffer) : zb::StringView{};
 
     // Preprocess #include directives if present
-    base::Vector<char> ppVertexBuf;
-    base::Vector<char> ppGeometryBuf;
-    base::Vector<char> ppFragmentBuf;
+    zb::Vector<char> ppVertexBuf;
+    zb::Vector<char> ppGeometryBuf;
+    zb::Vector<char> ppFragmentBuf;
 
-    const auto preprocessIfNeeded = [](base::StringView& source, const Path& shaderPath, base::Vector<char>& ppBuf) -> bool
+    const auto preprocessIfNeeded = [](zb::StringView& source, const Path& shaderPath, zb::Vector<char>& ppBuf) -> bool
     {
-        if (source.data() == nullptr || source.find("#include") == base::StringView::nPos)
+        if (source.data() == nullptr || source.find("#include") == zb::StringView::nPos)
             return true;
 
         if (!ShaderUtils::preprocessGlslIncludes(source, shaderPath, ppBuf))
@@ -503,35 +503,35 @@ base::Optional<Shader> Shader::loadFromFile(const LoadFromFileSettings& settings
     };
 
     if (!preprocessIfNeeded(vertexView, settings.vertexPath, ppVertexBuf))
-        return base::nullOpt;
+        return zb::nullOpt;
 
     if (!preprocessIfNeeded(geometryView, settings.geometryPath, ppGeometryBuf))
-        return base::nullOpt;
+        return zb::nullOpt;
 
     if (!preprocessIfNeeded(fragmentView, settings.fragmentPath, ppFragmentBuf))
-        return base::nullOpt;
+        return zb::nullOpt;
 
     return compile(vertexView, geometryView, fragmentView);
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::loadFromMemory(const LoadFromMemorySettings& settings)
+zb::Optional<Shader> Shader::loadFromMemory(const LoadFromMemorySettings& settings)
 {
     return compile(settings.vertexCode, settings.geometryCode, settings.fragmentCode);
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::loadFromStream(const LoadFromStreamSettings& settings)
+zb::Optional<Shader> Shader::loadFromStream(const LoadFromStreamSettings& settings)
 {
     // Prepare thread-local buffer
-    base::Vector<char>& buffer = getThreadLocalShaderConcatBuffer();
+    zb::Vector<char>& buffer = getThreadLocalShaderConcatBuffer();
     buffer.clear();
 
     // Helper function
     const auto readIntoBufferSlice =
-        [&](const char* typeStr, InputStream* optStream, base::Optional<BufferSlice>& optBufferSlice)
+        [&](const char* typeStr, InputStream* optStream, zb::Optional<BufferSlice>& optBufferSlice)
     {
         if (optStream == nullptr)
             return true;
@@ -547,30 +547,30 @@ base::Optional<Shader> Shader::loadFromStream(const LoadFromStreamSettings& sett
     };
 
     // Read the vertex shader code from the stream
-    base::Optional<BufferSlice> vertexShaderSlice;
+    zb::Optional<BufferSlice> vertexShaderSlice;
     if (!readIntoBufferSlice("vertex", settings.vertexStream, vertexShaderSlice))
-        return base::nullOpt;
+        return zb::nullOpt;
 
     // Read the geometry shader code from the stream
-    base::Optional<BufferSlice> geometryShaderSlice;
+    zb::Optional<BufferSlice> geometryShaderSlice;
     if (!readIntoBufferSlice("geometry", settings.geometryStream, geometryShaderSlice))
-        return base::nullOpt;
+        return zb::nullOpt;
 
     // Read the fragment shader code from the stream
-    base::Optional<BufferSlice> fragmentShaderSlice;
+    zb::Optional<BufferSlice> fragmentShaderSlice;
     if (!readIntoBufferSlice("fragment", settings.fragmentStream, fragmentShaderSlice))
-        return base::nullOpt;
+        return zb::nullOpt;
 
-    return compile(vertexShaderSlice.hasValue() ? vertexShaderSlice->toView(buffer) : base::StringView{},
-                   geometryShaderSlice.hasValue() ? geometryShaderSlice->toView(buffer) : base::StringView{},
-                   fragmentShaderSlice.hasValue() ? fragmentShaderSlice->toView(buffer) : base::StringView{});
+    return compile(vertexShaderSlice.hasValue() ? vertexShaderSlice->toView(buffer) : zb::StringView{},
+                   geometryShaderSlice.hasValue() ? geometryShaderSlice->toView(buffer) : zb::StringView{},
+                   fragmentShaderSlice.hasValue() ? fragmentShaderSlice->toView(buffer) : zb::StringView{});
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Shader::UniformLocation> Shader::getUniformLocation(base::StringView uniformName) const
+zb::Optional<Shader::UniformLocation> Shader::getUniformLocation(zb::StringView uniformName) const
 {
-    enum : base::SizeT
+    enum : zb::SizeT
     {
         maxUniformNameLength = 256
     };
@@ -584,7 +584,7 @@ base::Optional<Shader::UniformLocation> Shader::getUniformLocation(base::StringV
 
     // Request the location from OpenGL
     const int location = glCheck(glGetUniformLocation(castToGlHandle(m_impl->shaderProgram), uniformNameBuffer));
-    return location == -1 ? base::nullOpt : base::makeOptional(UniformLocation{location});
+    return location == -1 ? zb::nullOpt : zb::makeOptional(UniformLocation{location});
 }
 
 
@@ -762,7 +762,7 @@ void Shader::setUniform(UniformLocation location, CurrentTextureType)
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniformArray(UniformLocation location, const float* scalarArray, base::SizeT length)
+void Shader::setUniformArray(UniformLocation location, const float* scalarArray, zb::SizeT length)
 {
     ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
@@ -771,7 +771,7 @@ void Shader::setUniformArray(UniformLocation location, const float* scalarArray,
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniformArray(UniformLocation location, const Glsl::Vec2* vecArray, base::SizeT length)
+void Shader::setUniformArray(UniformLocation location, const Glsl::Vec2* vecArray, zb::SizeT length)
 {
     ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
@@ -780,7 +780,7 @@ void Shader::setUniformArray(UniformLocation location, const Glsl::Vec2* vecArra
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniformArray(UniformLocation location, const Glsl::Vec3* vecArray, base::SizeT length)
+void Shader::setUniformArray(UniformLocation location, const Glsl::Vec3* vecArray, zb::SizeT length)
 {
     ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
@@ -789,7 +789,7 @@ void Shader::setUniformArray(UniformLocation location, const Glsl::Vec3* vecArra
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniformArray(UniformLocation location, const Glsl::Vec4* vecArray, base::SizeT length)
+void Shader::setUniformArray(UniformLocation location, const Glsl::Vec4* vecArray, zb::SizeT length)
 {
     ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
@@ -798,7 +798,7 @@ void Shader::setUniformArray(UniformLocation location, const Glsl::Vec4* vecArra
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniformArray(UniformLocation location, const Glsl::Mat3* matrixArray, base::SizeT length)
+void Shader::setUniformArray(UniformLocation location, const Glsl::Mat3* matrixArray, zb::SizeT length)
 {
     ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
@@ -810,7 +810,7 @@ void Shader::setUniformArray(UniformLocation location, const Glsl::Mat3* matrixA
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniformArray(UniformLocation location, const Glsl::Mat4* matrixArray, base::SizeT length)
+void Shader::setUniformArray(UniformLocation location, const Glsl::Mat4* matrixArray, zb::SizeT length)
 {
     ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
@@ -870,7 +870,7 @@ bool Shader::isGeometryAvailable()
 
 
 ////////////////////////////////////////////////////////////
-Shader::Shader(base::PassKey<Shader>&&, unsigned int shaderProgram) :
+Shader::Shader(zb::PassKey<Shader>&&, unsigned int shaderProgram) :
     m_impl(
         [&]
 {
@@ -885,9 +885,9 @@ Shader::Shader(base::PassKey<Shader>&&, unsigned int shaderProgram) :
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
-                                       base::StringView geometryShaderCode,
-                                       base::StringView fragmentShaderCode)
+zb::Optional<Shader> Shader::compile(zb::StringView vertexShaderCode,
+                                       zb::StringView geometryShaderCode,
+                                       zb::StringView fragmentShaderCode)
 {
     ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
@@ -898,7 +898,7 @@ base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
             "Failed to create a shader: your system doesn't support geometry shaders (you should test "
             "Shader::isGeometryAvailable() before trying to use geometry shaders)");
 
-        return base::nullOpt;
+        return zb::nullOpt;
     }
 
     // Always create programs and shaders on the shared context
@@ -908,12 +908,12 @@ base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
     const GLhandle shaderProgram = glCheck(glCreateProgram());
     ZB_ASSERT(glCheck(glIsProgram(shaderProgram)));
 
-    const auto makeShader = [&](GLenum type, const char* typeStr, base::StringView shaderCode)
+    const auto makeShader = [&](GLenum type, const char* typeStr, zb::StringView shaderCode)
     {
         // Pass `#version` (+ precision + `#line 1`) and the user source as two
         // separate source strings -- the preamble is build-time constant, no
         // per-compile concatenation needed.
-        constexpr base::StringView preamble = getShaderPreamble();
+        constexpr zb::StringView preamble = getShaderPreamble();
 
         const GLhandle shader = glCheck(glCreateShader(type));
 
@@ -955,14 +955,14 @@ base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
         vertexShaderCode = DefaultShader::srcVertex;
 
     if (!makeShader(GL_VERTEX_SHADER, "vertex", vertexShaderCode))
-        return base::nullOpt;
+        return zb::nullOpt;
 
 
     // Create the geometry shader if needed
     if (geometryShaderCode.data())
     {
         if (!makeShader(GL_GEOMETRY_SHADER, "geometry", geometryShaderCode))
-            return base::nullOpt;
+            return zb::nullOpt;
     }
 
     if (fragmentShaderCode.data() == nullptr)
@@ -970,7 +970,7 @@ base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
 
     // Create the fragment shader
     if (!makeShader(GL_FRAGMENT_SHADER, "fragment", fragmentShaderCode))
-        return base::nullOpt;
+        return zb::nullOpt;
 
     // Link the program
     glCheck(glLinkProgram(shaderProgram));
@@ -991,7 +991,7 @@ base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
                      geometryShaderCode);
 
         glCheck(glDeleteProgram(shaderProgram));
-        return base::nullOpt;
+        return zb::nullOpt;
     }
 
     // Force an OpenGL flush, so that the shader will appear updated
@@ -1012,7 +1012,7 @@ base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
     glCheck(glGetUniformLocation(castToGlHandle(shaderProgram), "za_u_mvpRow1"));
 #endif
 
-    return base::makeOptional<Shader>(base::PassKey<Shader>{}, castFromGlHandle(shaderProgram));
+    return zb::makeOptional<Shader>(zb::PassKey<Shader>{}, castFromGlHandle(shaderProgram));
 }
 
 
@@ -1022,7 +1022,7 @@ void Shader::bindTextures() const
 {
     auto* it = m_impl->textures.begin();
 
-    for (base::SizeT i = 0u; i < m_impl->textures.size(); ++i)
+    for (zb::SizeT i = 0u; i < m_impl->textures.size(); ++i)
     {
         const auto index = static_cast<GLsizei>(i + 1);
 

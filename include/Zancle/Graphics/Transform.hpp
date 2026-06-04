@@ -144,7 +144,7 @@ struct [[nodiscard]] Transform
         const Vec2f origin,
         const Angle rotation)
     {
-        const auto [sine, cosine] = base::sinCosLookup(rotation.wrapUnsigned().asRadians());
+        const auto [sine, cosine] = zb::sinCosLookup(rotation.wrapUnsigned().asRadians());
         return fromPositionScaleOriginSinCos(position, scale, origin, sine, cosine);
     }
 
@@ -413,7 +413,7 @@ struct [[nodiscard]] Transform
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] constexpr Transform& rotate(const Angle angle)
     {
-        const auto [sine, cosine] = base::sinCosLookup(angle.wrapUnsigned().asRadians());
+        const auto [sine, cosine] = zb::sinCosLookup(angle.wrapUnsigned().asRadians());
 
         const float m00 = a00;
         const float m01 = a01;
@@ -454,7 +454,7 @@ struct [[nodiscard]] Transform
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] constexpr Transform& rotate(const Angle angle, const Vec2f center)
     {
-        const auto [sine, cosine] = base::sinCosLookup(angle.wrapUnsigned().asRadians());
+        const auto [sine, cosine] = zb::sinCosLookup(angle.wrapUnsigned().asRadians());
 
         // Precompute the translation components of the rotation matrix
         const float tx = center.x * (1.f - cosine) + center.y * sine;

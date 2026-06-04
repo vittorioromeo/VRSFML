@@ -151,7 +151,7 @@ public:
     ///         existing storage was already large enough
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] bool reserve(TBufferObject& obj, const base::SizeT byteCount, const bool preserveExistingData)
+    [[gnu::always_inline]] bool reserve(TBufferObject& obj, const zb::SizeT byteCount, const bool preserveExistingData)
     {
         if (m_capacity >= byteCount) [[likely]]
             return false;
@@ -191,7 +191,7 @@ public:
     /// \brief Get the currently allocated capacity in bytes
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] base::SizeT capacity() const
+    [[nodiscard, gnu::always_inline, gnu::pure]] zb::SizeT capacity() const
     {
         return m_capacity;
     }
@@ -213,7 +213,7 @@ public:
     {
 #ifdef ZA_OPENGL_ES
         priv::errMsg("FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES");
-        base::abort();
+        zb::abort();
 #else
         if (m_mappedPtr == nullptr)
             return;
@@ -248,12 +248,12 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void flushBytesToGPU([[maybe_unused]] const TBufferObject& obj,
-                                                [[maybe_unused]] const base::SizeT    byteOffset,
-                                                [[maybe_unused]] const base::SizeT    byteCount) const
+                                                [[maybe_unused]] const zb::SizeT    byteOffset,
+                                                [[maybe_unused]] const zb::SizeT    byteCount) const
     {
 #ifdef ZA_OPENGL_ES
         priv::errMsg("FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES");
-        base::abort();
+        zb::abort();
 #else
         const auto objId = obj.getId();
 
@@ -268,12 +268,12 @@ public:
 private:
     ////////////////////////////////////////////////////////////
     [[gnu::cold, gnu::noinline]] void reserveImpl([[maybe_unused]] TBufferObject&    obj,
-                                                  [[maybe_unused]] const base::SizeT byteCount,
+                                                  [[maybe_unused]] const zb::SizeT byteCount,
                                                   [[maybe_unused]] const bool        preserveExistingData)
     {
 #ifdef ZA_OPENGL_ES
         priv::errMsg("FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES");
-        base::abort();
+        zb::abort();
 #else
         ZB_ASSERT(m_capacity < byteCount);
 
@@ -321,7 +321,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     void*       m_mappedPtr{nullptr}; //!< Write-only mapped pointer
-    base::SizeT m_capacity{0u};       //!< Currently allocated capacity of the buffer
+    zb::SizeT m_capacity{0u};       //!< Currently allocated capacity of the buffer
 };
 
 

@@ -60,7 +60,7 @@ bool SoundRecorder::start(CaptureDevice& captureDevice, unsigned int sampleRate)
 
     // Register callback before starting the device to prevent a race where
     // the audio thread invokes the callback before it has been set.
-    captureDevice.setProcessSamplesFunc(this, [](void* userData, const base::I16* samples, base::SizeT sampleCount) {
+    captureDevice.setProcessSamplesFunc(this, [](void* userData, const zb::I16* samples, zb::SizeT sampleCount) {
         return static_cast<SoundRecorder*>(userData)->onProcessSamples(samples, sampleCount);
     });
 

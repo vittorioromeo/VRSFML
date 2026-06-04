@@ -116,7 +116,7 @@ struct SDLWindowBase::Impl
         SDL_SetWindowPosition(sdlWindow, position.x, position.y);
     }
 
-    void setMinimumSize(const base::Optional<Vector2u> minimumSize) const
+    void setMinimumSize(const zb::Optional<Vector2u> minimumSize) const
     {
         if (minimumSize.hasValue())
             SDL_SetWindowMinimumSize(sdlWindow, static_cast<int>(minimumSize->x), static_cast<int>(minimumSize->y));
@@ -124,7 +124,7 @@ struct SDLWindowBase::Impl
             SDL_SetWindowMinimumSize(sdlWindow, 0, 0);
     }
 
-    void setMaximumSize(const base::Optional<Vector2u> maximumSize) const
+    void setMaximumSize(const zb::Optional<Vector2u> maximumSize) const
     {
         if (maximumSize.hasValue())
             SDL_SetWindowMaximumSize(sdlWindow, static_cast<int>(maximumSize->x), static_cast<int>(maximumSize->y));
@@ -140,20 +140,20 @@ struct SDLWindowBase::Impl
         return {x, y};
     }
 
-    [[nodiscard]] base::Optional<Vector2u> getMinimumSize() const
+    [[nodiscard]] zb::Optional<Vector2u> getMinimumSize() const
     {
         int w{};
         int h{};
         SDL_GetWindowMinimumSize(sdlWindow, &w, &h);
-        return base::makeOptional<Vector2u>(static_cast<unsigned int>(w), static_cast<unsigned int>(h));
+        return zb::makeOptional<Vector2u>(static_cast<unsigned int>(w), static_cast<unsigned int>(h));
     }
 
-    [[nodiscard]] base::Optional<Vector2u> getMaximumSize() const
+    [[nodiscard]] zb::Optional<Vector2u> getMaximumSize() const
     {
         int w{};
         int h{};
         SDL_GetWindowMaximumSize(sdlWindow, &w, &h);
-        return base::makeOptional<Vector2u>(static_cast<unsigned int>(w), static_cast<unsigned int>(h));
+        return zb::makeOptional<Vector2u>(static_cast<unsigned int>(w), static_cast<unsigned int>(h));
     }
 
     void setSize(const Vector2u size) const
@@ -233,7 +233,7 @@ struct SDLWindowBase::Impl
         SDL_SetWindowTitle(sdlWindow, title.toAnsiString<std::string>().data());
     }
 
-    void setIcon(const Vector2u size, const base::U8* pixels) const
+    void setIcon(const Vector2u size, const zb::U8* pixels) const
     {
         SDL_Surface* iconSurface = SDL_CreateSurfaceFrom(static_cast<int>(size.x),
                                                          static_cast<int>(size.y),
@@ -249,7 +249,7 @@ struct SDLWindowBase::Impl
 
 
 ////////////////////////////////////////////////////////////
-SDLWindowBase::SDLWindowBase(base::UniquePtr<Impl>&& impl) : m_impl(ZB_MOVE(impl))
+SDLWindowBase::SDLWindowBase(zb::UniquePtr<Impl>&& impl) : m_impl(ZB_MOVE(impl))
 {
     // Setup default behaviors (to get a consistent behavior across different implementations)
     setVisible(true);
@@ -263,13 +263,13 @@ SDLWindowBase::SDLWindowBase(base::UniquePtr<Impl>&& impl) : m_impl(ZB_MOVE(impl
 
 ////////////////////////////////////////////////////////////
 SDLWindowBase::SDLWindowBase(const Settings& windowSettings) :
-SDLWindowBase(base::makeUnique<Impl>(nullifyContextSettings(windowSettings)))
+SDLWindowBase(zb::makeUnique<Impl>(nullifyContextSettings(windowSettings)))
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-SDLWindowBase::SDLWindowBase(WindowHandle handle) : SDLWindowBase(base::makeUnique<Impl>(handle))
+SDLWindowBase::SDLWindowBase(WindowHandle handle) : SDLWindowBase(zb::makeUnique<Impl>(handle))
 {
 }
 
@@ -279,14 +279,14 @@ SDLWindowBase::~SDLWindowBase() = default;
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Event> SDLWindowBase::pollEvent()
+zb::Optional<Event> SDLWindowBase::pollEvent()
 {
     return filterEvent(m_impl->pollEvent());
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Event> SDLWindowBase::waitEvent(Time timeout)
+zb::Optional<Event> SDLWindowBase::waitEvent(Time timeout)
 {
     return filterEvent(m_impl->waitEvent(timeout));
 }
@@ -345,19 +345,19 @@ void SDLWindowBase::setMinimumSize(const Vector2u& minimumSize)
 
     ZB_ASSERT(validateMinimumSize() && "Minimum size cannot be bigger than the maximum size along either axis");
 
-    m_impl->setMinimumSize(base::makeOptional(minimumSize));
+    m_impl->setMinimumSize(zb::makeOptional(minimumSize));
     setSize(getSize());
 }
 
 
 ////////////////////////////////////////////////////////////
-void SDLWindowBase::setMinimumSize(const base::Optional<Vector2u>& minimumSize)
+void SDLWindowBase::setMinimumSize(const zb::Optional<Vector2u>& minimumSize)
 {
     if (minimumSize.hasValue())
         setMinimumSize(*minimumSize);
     else
     {
-        m_impl->setMinimumSize(base::nullOpt);
+        m_impl->setMinimumSize(zb::nullOpt);
         setSize(getSize());
     }
 }
@@ -376,19 +376,19 @@ void SDLWindowBase::setMaximumSize(const Vector2u& maximumSize)
 
     ZB_ASSERT(validateMaximumSize() && "Maximum size cannot be smaller than the minimum size along either axis");
 
-    m_impl->setMaximumSize(base::makeOptional(maximumSize));
+    m_impl->setMaximumSize(zb::makeOptional(maximumSize));
     setSize(getSize());
 }
 
 
 ////////////////////////////////////////////////////////////
-void SDLWindowBase::setMaximumSize(const base::Optional<Vector2u>& maximumSize)
+void SDLWindowBase::setMaximumSize(const zb::Optional<Vector2u>& maximumSize)
 {
     if (maximumSize.hasValue())
         setMinimumSize(*maximumSize);
     else
     {
-        m_impl->setMaximumSize(base::nullOpt);
+        m_impl->setMaximumSize(zb::nullOpt);
         setSize(getSize());
     }
 }
@@ -402,7 +402,7 @@ void SDLWindowBase::setTitle(const String& title)
 
 
 ////////////////////////////////////////////////////////////
-void SDLWindowBase::setIcon(Vector2u size, const base::U8* pixels)
+void SDLWindowBase::setIcon(Vector2u size, const zb::U8* pixels)
 {
     m_impl->setIcon(size, pixels);
 }
@@ -487,7 +487,7 @@ bool SDLWindowBase::createVulkanSurface(const Vulkan::VulkanSurfaceData& vulkanS
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Event> SDLWindowBase::filterEvent(base::Optional<Event> event)
+zb::Optional<Event> SDLWindowBase::filterEvent(zb::Optional<Event> event)
 {
     // Cache the new size if needed
     if (event.hasValue() && event->getIf<Event::Resized>())

@@ -23,28 +23,28 @@ void installSignalErrHandler() noexcept
                 [](int)
     {
         priv::errMsg("FATAL SIGNAL: SIGSEGV");
-        base::abort();
+        zb::abort();
     });
 
     std::signal(SIGILL,
                 [](int)
     {
         priv::errMsg("FATAL SIGNAL: SIGILL");
-        base::abort();
+        zb::abort();
     });
 
     std::signal(SIGABRT,
                 [](int)
     {
         priv::errMsg("FATAL SIGNAL: SIGABRT");
-        base::abort();
+        zb::abort();
     });
 
     std::signal(SIGFPE,
                 [](int)
     {
         priv::errMsg("FATAL SIGNAL: SIGFPE");
-        base::abort();
+        zb::abort();
     });
 }
 

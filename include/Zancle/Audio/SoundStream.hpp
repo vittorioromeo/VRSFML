@@ -39,9 +39,9 @@ namespace za
 /// `State` is expected to expose:
 ///
 /// \code
-/// bool                      onGetData(base::Vector<base::I16>& outBuffer);
+/// bool                      onGetData(zb::Vector<zb::I16>& outBuffer);
 /// void                      onSeek(Time timeOffset);  // optional -- omit for generators that can't seek
-/// base::Optional<base::U64> onLoop();                 // optional -- omit if the source never loops
+/// zb::Optional<zb::U64> onLoop();                 // optional -- omit if the source never loops
 /// \endcode
 ///
 /// The destructor drains the audio thread before `State` is

@@ -325,7 +325,7 @@ template <typename T>
 
         // `value` is non-negative here (signbit branch already negated it),
         // so the unsigned cast is well-defined.
-        const auto roundedAsInt = static_cast<unsigned long long>(base::rint(value));
+        const auto roundedAsInt = static_cast<unsigned long long>(zb::rint(value));
         return priv::unsignedToChars(p, last, roundedAsInt);
     }
 
@@ -337,7 +337,7 @@ template <typename T>
 
     // `value` is non-negative at this point (signbit branch already negated it)
     // and `scaled <= 9e18 < LLONG_MAX`, so the unsigned cast is well-defined.
-    const auto roundedScaledValue = static_cast<unsigned long long>(base::rint(scaled));
+    const auto roundedScaledValue = static_cast<unsigned long long>(zb::rint(scaled));
     const auto finalIntPart       = roundedScaledValue / static_cast<unsigned long long>(multiplier);
     auto       finalFracPart      = roundedScaledValue % static_cast<unsigned long long>(multiplier);
 

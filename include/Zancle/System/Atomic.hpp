@@ -71,7 +71,7 @@ inline constexpr bool isAtomicSupported = (ZB_IS_INTEGRAL(T) || ZB_IS_FLOATING_P
 /// compares bit-patterns (which is also what the user sees).
 ///
 ////////////////////////////////////////////////////////////
-template <typename T, bool IsEnum = base::isEnum<T>>
+template <typename T, bool IsEnum = zb::isEnum<T>>
 struct AtomicStorage
 {
     using type = T;
@@ -86,15 +86,15 @@ struct AtomicStorage<T, /* IsEnum */ true>
 template <>
 struct AtomicStorage<float, /* IsEnum */ false>
 {
-    static_assert(sizeof(float) == sizeof(base::U32));
-    using type = base::U32;
+    static_assert(sizeof(float) == sizeof(zb::U32));
+    using type = zb::U32;
 };
 
 template <>
 struct AtomicStorage<double, /* IsEnum */ false>
 {
-    static_assert(sizeof(double) == sizeof(base::U64));
-    using type = base::U64;
+    static_assert(sizeof(double) == sizeof(zb::U64));
+    using type = zb::U64;
 };
 
 
@@ -183,8 +183,8 @@ template <typename T>
 /// wake call targets the same address. Spurious wakeups are allowed.
 ///
 ////////////////////////////////////////////////////////////
-ZA_SYSTEM_API void atomicWait32(const base::U32* addr, base::U32 expected) noexcept;
-ZA_SYSTEM_API void atomicWait64(const base::U64* addr, base::U64 expected) noexcept;
+ZA_SYSTEM_API void atomicWait32(const zb::U32* addr, zb::U32 expected) noexcept;
+ZA_SYSTEM_API void atomicWait64(const zb::U64* addr, zb::U64 expected) noexcept;
 ZA_SYSTEM_API void atomicNotifyOne(const void* addr) noexcept;
 ZA_SYSTEM_API void atomicNotifyAll(const void* addr) noexcept;
 
@@ -237,14 +237,14 @@ ZA_SYSTEM_API void atomicNotifyAll(const void* addr) noexcept;
 
 #define ZA_PRIV_ATOMIC_FETCH_INT_ALIAS(Op, Suffix)                        \
     [[gnu::always_inline, gnu::flatten]] T Op##Suffix(const T arg) noexcept \
-        requires(base::isIntegral<T> && !base::isSame<T, bool>)             \
+        requires(zb::isIntegral<T> && !zb::isSame<T, bool>)             \
     {                                                                       \
         return Op<MemoryOrder::Suffix>(arg);                                \
     }
 
 #define ZA_PRIV_ATOMIC_FETCH_PTR_ALIAS(Op, Suffix)                                     \
-    [[gnu::always_inline, gnu::flatten]] T Op##Suffix(const base::PtrDiffT arg) noexcept \
-        requires(base::isPointer<T>)                                                     \
+    [[gnu::always_inline, gnu::flatten]] T Op##Suffix(const zb::PtrDiffT arg) noexcept \
+        requires(zb::isPointer<T>)                                                     \
     {                                                                                    \
         return Op<MemoryOrder::Suffix>(arg);                                             \
     }
@@ -453,7 +453,7 @@ public:
     ////////////////////////////////////////////////////////////
     template <MemoryOrder MO>
     [[gnu::always_inline]] T fetchAdd(const T arg) noexcept
-        requires(base::isIntegral<T> && !base::isSame<T, bool>)
+        requires(zb::isIntegral<T> && !zb::isSame<T, bool>)
     {
         return __atomic_fetch_add(&m_value, arg, static_cast<int>(MO));
     }
@@ -462,7 +462,7 @@ public:
     ////////////////////////////////////////////////////////////
     template <MemoryOrder MO>
     [[gnu::always_inline]] T fetchSub(const T arg) noexcept
-        requires(base::isIntegral<T> && !base::isSame<T, bool>)
+        requires(zb::isIntegral<T> && !zb::isSame<T, bool>)
     {
         return __atomic_fetch_sub(&m_value, arg, static_cast<int>(MO));
     }
@@ -475,21 +475,21 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <MemoryOrder MO>
-    [[gnu::always_inline]] T fetchAdd(const base::PtrDiffT arg) noexcept
-        requires(base::isPointer<T>)
+    [[gnu::always_inline]] T fetchAdd(const zb::PtrDiffT arg) noexcept
+        requires(zb::isPointer<T>)
     {
         using Pointee = typename priv::AtomicPointee<T>::type;
-        return __atomic_fetch_add(&m_value, arg * static_cast<base::PtrDiffT>(sizeof(Pointee)), static_cast<int>(MO));
+        return __atomic_fetch_add(&m_value, arg * static_cast<zb::PtrDiffT>(sizeof(Pointee)), static_cast<int>(MO));
     }
 
 
     ////////////////////////////////////////////////////////////
     template <MemoryOrder MO>
-    [[gnu::always_inline]] T fetchSub(const base::PtrDiffT arg) noexcept
-        requires(base::isPointer<T>)
+    [[gnu::always_inline]] T fetchSub(const zb::PtrDiffT arg) noexcept
+        requires(zb::isPointer<T>)
     {
         using Pointee = typename priv::AtomicPointee<T>::type;
-        return __atomic_fetch_sub(&m_value, arg * static_cast<base::PtrDiffT>(sizeof(Pointee)), static_cast<int>(MO));
+        return __atomic_fetch_sub(&m_value, arg * static_cast<zb::PtrDiffT>(sizeof(Pointee)), static_cast<int>(MO));
     }
 
     ////////////////////////////////////////////////////////////
@@ -509,7 +509,7 @@ public:
     ////////////////////////////////////////////////////////////
     template <MemoryOrder MO>
     [[gnu::always_inline]] T fetchAnd(const T arg) noexcept
-        requires(base::isIntegral<T> && !base::isSame<T, bool>)
+        requires(zb::isIntegral<T> && !zb::isSame<T, bool>)
     {
         return __atomic_fetch_and(&m_value, arg, static_cast<int>(MO));
     }
@@ -518,7 +518,7 @@ public:
     ////////////////////////////////////////////////////////////
     template <MemoryOrder MO>
     [[gnu::always_inline]] T fetchOr(const T arg) noexcept
-        requires(base::isIntegral<T> && !base::isSame<T, bool>)
+        requires(zb::isIntegral<T> && !zb::isSame<T, bool>)
     {
         return __atomic_fetch_or(&m_value, arg, static_cast<int>(MO));
     }
@@ -527,7 +527,7 @@ public:
     ////////////////////////////////////////////////////////////
     template <MemoryOrder MO>
     [[gnu::always_inline]] T fetchXor(const T arg) noexcept
-        requires(base::isIntegral<T> && !base::isSame<T, bool>)
+        requires(zb::isIntegral<T> && !zb::isSame<T, bool>)
     {
         return __atomic_fetch_xor(&m_value, arg, static_cast<int>(MO));
     }
@@ -578,11 +578,11 @@ public:
         //      `static_cast` would be ill-formed).
         //
         if constexpr (sizeof(T) == 4u)
-            priv::atomicWait32(reinterpret_cast<const base::U32*>(&m_value),
-                               ZB_BIT_CAST(base::U32, priv::toAtomicStorage<T>(expected)));
+            priv::atomicWait32(reinterpret_cast<const zb::U32*>(&m_value),
+                               ZB_BIT_CAST(zb::U32, priv::toAtomicStorage<T>(expected)));
         else
-            priv::atomicWait64(reinterpret_cast<const base::U64*>(&m_value),
-                               ZB_BIT_CAST(base::U64, priv::toAtomicStorage<T>(expected)));
+            priv::atomicWait64(reinterpret_cast<const zb::U64*>(&m_value),
+                               ZB_BIT_CAST(zb::U64, priv::toAtomicStorage<T>(expected)));
     }
 
     ////////////////////////////////////////////////////////////

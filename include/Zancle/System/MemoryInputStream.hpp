@@ -28,43 +28,43 @@ public:
     /// \brief Construct from a pointer to `sizeInBytes` bytes of data
     ///
     ////////////////////////////////////////////////////////////
-    MemoryInputStream(const void* data, base::SizeT sizeInBytes);
+    MemoryInputStream(const void* data, zb::SizeT sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Read up to `size` bytes into `data`, advancing the reading position
     ///
-    /// \return Number of bytes actually read, or `base::nullOpt` on error
+    /// \return Number of bytes actually read, or `zb::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<base::SizeT> read(void* data, base::SizeT size) override;
+    [[nodiscard]] zb::Optional<zb::SizeT> read(void* data, zb::SizeT size) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move the reading position to `position` (offset from the beginning)
     ///
-    /// \return Position actually sought to, or `base::nullOpt` on error
+    /// \return Position actually sought to, or `zb::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<base::SizeT> seek(base::SizeT position) override;
+    [[nodiscard]] zb::Optional<zb::SizeT> seek(zb::SizeT position) override;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Current reading position, or `base::nullOpt` on error
+    /// \brief Current reading position, or `zb::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<base::SizeT> tell() override;
+    [[nodiscard]] zb::Optional<zb::SizeT> tell() override;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Total number of bytes in the stream, or `base::nullOpt` on error
+    /// \brief Total number of bytes in the stream, or `zb::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<base::SizeT> getSize() override;
+    [[nodiscard]] zb::Optional<zb::SizeT> getSize() override;
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     const unsigned char* m_data{};   //!< Pointer to the data in memory
-    base::SizeT          m_size{};   //!< Total size of the data
-    base::SizeT          m_offset{}; //!< Current reading position
+    zb::SizeT          m_size{};   //!< Total size of the data
+    zb::SizeT          m_offset{}; //!< Current reading position
 };
 
 } // namespace za

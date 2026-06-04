@@ -71,7 +71,7 @@ struct Font::Impl
 
 
     ////////////////////////////////////////////////////////////
-    using GlyphTable = MapType</* character size */ unsigned int, MapType</* combined key */ base::U64, Glyph>>;
+    using GlyphTable = MapType</* character size */ unsigned int, MapType</* combined key */ zb::U64, Glyph>>;
 
 
     ////////////////////////////////////////////////////////////
@@ -80,8 +80,8 @@ struct Font::Impl
         textureAtlasPtr{theTextureAtlasPtr},
         fallbackTextureAtlas{
             theTextureAtlasPtr == nullptr
-                ? base::makeOptional<TextureAtlas>(Texture::create({1024u, 1024u}, {.smooth = true}).value())
-                : base::nullOpt}
+                ? zb::makeOptional<TextureAtlas>(Texture::create({1024u, 1024u}, {.smooth = true}).value())
+                : zb::nullOpt}
     {
     }
 
@@ -95,7 +95,7 @@ struct Font::Impl
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] auto loadGlyphImpl(auto&              glyphsByCharacterSize,
-                                     const base::U64    key,
+                                     const zb::U64    key,
                                      const char32_t     codePoint,
                                      const unsigned int characterSize,
                                      const bool         bold,
@@ -111,7 +111,7 @@ struct Font::Impl
                          bold,
                          outlineThickness);
 
-            base::abort();
+            zb::abort();
         }
 
         return glyphsByCharacterSize.try_emplace(key, *optGlyph);
@@ -121,7 +121,7 @@ struct Font::Impl
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] const Glyph& getGlyphImpl(
         auto&              glyphsByCharacterSize,
-        const base::U64    key,
+        const zb::U64    key,
         const char32_t     codePoint,
         const unsigned int characterSize,
         const bool         bold,
@@ -137,14 +137,14 @@ struct Font::Impl
     ////////////////////////////////////////////////////////////
     mutable FontFace                     fontFace;
     TextureAtlas*                        textureAtlasPtr;
-    mutable base::Optional<TextureAtlas> fallbackTextureAtlas;
+    mutable zb::Optional<TextureAtlas> fallbackTextureAtlas;
     mutable GlyphTable                   glyphs;
 };
 
 
 ////////////////////////////////////////////////////////////
-Font::Font(base::PassKey<Font>&&, FontFace&& fontFace, TextureAtlas* textureAtlas) :
-    m_impl{base::makeUnique<Impl>(ZB_MOVE(fontFace), textureAtlas)}
+Font::Font(zb::PassKey<Font>&&, FontFace&& fontFace, TextureAtlas* textureAtlas) :
+    m_impl{zb::makeUnique<Impl>(ZB_MOVE(fontFace), textureAtlas)}
 {
     // m_impl is set by the factory methods after construction
 }
@@ -157,45 +157,45 @@ Font& Font::operator=(Font&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Font> Font::openFromFile(const Path& filename, TextureAtlas* textureAtlas)
+zb::Optional<Font> Font::openFromFile(const Path& filename, TextureAtlas* textureAtlas)
 {
     auto optFontFace = FontFace::openFromFile(filename);
     if (!optFontFace.hasValue())
-        return base::nullOpt;
+        return zb::nullOpt;
 
-    return base::makeOptional<Font>(base::PassKey<Font>{}, ZB_MOVE(*optFontFace), textureAtlas);
+    return zb::makeOptional<Font>(zb::PassKey<Font>{}, ZB_MOVE(*optFontFace), textureAtlas);
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Font> Font::openFromMemory(const void* data, base::SizeT sizeInBytes, TextureAtlas* textureAtlas)
+zb::Optional<Font> Font::openFromMemory(const void* data, zb::SizeT sizeInBytes, TextureAtlas* textureAtlas)
 {
     auto optFontFace = FontFace::openFromMemory(data, sizeInBytes);
     if (!optFontFace.hasValue())
-        return base::nullOpt;
+        return zb::nullOpt;
 
-    return base::makeOptional<Font>(base::PassKey<Font>{}, ZB_MOVE(*optFontFace), textureAtlas);
+    return zb::makeOptional<Font>(zb::PassKey<Font>{}, ZB_MOVE(*optFontFace), textureAtlas);
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Font> Font::openFromStreamImpl(InputStream& stream, TextureAtlas* textureAtlas, const char* /* type */)
+zb::Optional<Font> Font::openFromStreamImpl(InputStream& stream, TextureAtlas* textureAtlas, const char* /* type */)
 {
     auto optFontFace = FontFace::openFromStream(stream);
     if (!optFontFace.hasValue())
-        return base::nullOpt;
+        return zb::nullOpt;
 
-    return base::makeOptional<Font>(base::PassKey<Font>{}, ZB_MOVE(*optFontFace), textureAtlas);
+    return zb::makeOptional<Font>(zb::PassKey<Font>{}, ZB_MOVE(*optFontFace), textureAtlas);
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Font> Font::openFromStream(InputStream& stream, TextureAtlas* textureAtlas)
+zb::Optional<Font> Font::openFromStream(InputStream& stream, TextureAtlas* textureAtlas)
 {
     if (!stream.seek(0).hasValue())
     {
         priv::errMsg("Failed to seek font stream");
-        return base::nullOpt;
+        return zb::nullOpt;
     }
 
     return openFromStreamImpl(stream, textureAtlas, "stream");

@@ -46,9 +46,9 @@ struct ZA_WINDOW_API Touch
     ////////////////////////////////////////////////////////////
     struct Device // NOLINT(cppcoreguidelines-pro-type-member-init)
     {
-        base::U64        id;   //!< OS-assigned identifier of the touch device
+        zb::U64        id;   //!< OS-assigned identifier of the touch device
         DeviceType       type; //!< Kind of touch device (direct / indirect)
-        base::StringView name; //!< Human-readable name of the touch device
+        zb::StringView name; //!< Human-readable name of the touch device
     };
 
     ////////////////////////////////////////////////////////////
@@ -61,7 +61,7 @@ struct ZA_WINDOW_API Touch
     /// \return Span over the currently connected touch devices
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Span<Device> getDevices();
+    [[nodiscard]] static zb::Span<Device> getDevices();
 };
 
 } // namespace za

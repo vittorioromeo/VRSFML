@@ -1,7 +1,7 @@
     [[gnu::always_inline]] void objectReallocAndMemcpy(
         GLenum          type,
         auto&           object,
-        base::SizeT&    capacity,
+        zb::SizeT&    capacity,
         const void*     data,
         zb::SizeT byteCount)
     {

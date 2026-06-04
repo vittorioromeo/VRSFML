@@ -90,7 +90,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename TFFwd>
-        requires(!base::isSame<base::RemoveCVRefIndirect<TFFwd>, FixedFunction>)
+        requires(!zb::isSame<zb::RemoveCVRefIndirect<TFFwd>, FixedFunction>)
     [[nodiscard]] FixedFunction(TFFwd&& f) : FixedFunction()
     {
         using UnrefType = ZB_REMOVE_REFERENCE(TFFwd);

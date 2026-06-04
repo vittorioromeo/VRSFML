@@ -38,7 +38,7 @@ GLFenceSync makeFence()
     if (fenceToCreate == nullptr) [[unlikely]]
     {
         priv::errMsg("FATAL ERROR: Error creating fence sync object");
-        base::abort();
+        zb::abort();
     }
 
     return GLFenceSync{static_cast<void*>(fenceToCreate)};

@@ -43,7 +43,7 @@ namespace za
 struct [[nodiscard]] GlyphLoadSettings
 {
     const char32_t* codePoints{};     //!< Pointer to the array of code points to rasterize
-    base::SizeT     codePointCount{}; //!< Number of code points in `codePoints` // TODO P1: span?
+    zb::SizeT     codePointCount{}; //!< Number of code points in `codePoints` // TODO P1: span?
 
     unsigned int characterSize{30u};    //!< Character size, in pixels (baked into the resulting `GlyphMapping`)
     bool         bold{false};           //!< Whether to load the bold variant

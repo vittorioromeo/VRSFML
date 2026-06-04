@@ -17,7 +17,7 @@
 namespace za
 {
 ////////////////////////////////////////////////////////////
-MemoryInputStream::MemoryInputStream(const void* data, base::SizeT sizeInBytes) :
+MemoryInputStream::MemoryInputStream(const void* data, zb::SizeT sizeInBytes) :
     m_data(static_cast<const unsigned char*>(data)),
     m_size(sizeInBytes)
 {
@@ -26,39 +26,39 @@ MemoryInputStream::MemoryInputStream(const void* data, base::SizeT sizeInBytes) 
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<base::SizeT> MemoryInputStream::read(void* data, base::SizeT size)
+zb::Optional<zb::SizeT> MemoryInputStream::read(void* data, zb::SizeT size)
 {
-    const base::SizeT count = base::min(size, m_size - m_offset);
+    const zb::SizeT count = zb::min(size, m_size - m_offset);
 
     if (count > 0)
     {
-        ZB_MEMCPY(data, m_data + m_offset, static_cast<base::SizeT>(count));
+        ZB_MEMCPY(data, m_data + m_offset, static_cast<zb::SizeT>(count));
         m_offset += count;
     }
 
-    return base::makeOptional(count);
+    return zb::makeOptional(count);
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<base::SizeT> MemoryInputStream::seek(base::SizeT position)
+zb::Optional<zb::SizeT> MemoryInputStream::seek(zb::SizeT position)
 {
     m_offset = position < m_size ? position : m_size;
-    return base::makeOptional(m_offset);
+    return zb::makeOptional(m_offset);
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<base::SizeT> MemoryInputStream::tell()
+zb::Optional<zb::SizeT> MemoryInputStream::tell()
 {
-    return base::makeOptional(m_offset);
+    return zb::makeOptional(m_offset);
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<base::SizeT> MemoryInputStream::getSize()
+zb::Optional<zb::SizeT> MemoryInputStream::getSize()
 {
-    return base::makeOptional(m_size);
+    return zb::makeOptional(m_size);
 }
 
 } // namespace za

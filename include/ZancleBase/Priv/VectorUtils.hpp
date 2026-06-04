@@ -254,14 +254,14 @@ template <typename T>
     const SizeT commonSize = s2 < s1 ? s2 : s1;
 
     for (SizeT i = 0u; i < commonSize; ++i)
-        base::genericSwap(lhsData[i], rhsData[i]); // Swap elements in the common part
+        zb::genericSwap(lhsData[i], rhsData[i]); // Swap elements in the common part
 
     if (s1 > s2) // `lhs` is larger; its tail elements move to `rhs`
         relocateRange(rhsData + commonSize, lhsData + commonSize, lhsData + s1);
     else if (s2 > s1) // `rhs` is larger; its tail elements move to `lhs`
         relocateRange(lhsData + commonSize, rhsData + commonSize, rhsData + s2);
 
-    base::genericSwap(lhsSize, rhsSize);
+    zb::genericSwap(lhsSize, rhsSize);
 }
 
 

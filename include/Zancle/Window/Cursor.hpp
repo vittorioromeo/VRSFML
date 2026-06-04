@@ -152,10 +152,10 @@ public:
     /// \param size     Width and height of the image
     /// \param hotspot  (x,y) location of the hotspot
     /// \return Cursor if the cursor was successfully loaded;
-    ///         `base::nullOpt` otherwise
+    ///         `zb::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Cursor> loadFromPixels(const base::U8*    pixels,
+    [[nodiscard]] static zb::Optional<Cursor> loadFromPixels(const zb::U8*    pixels,
                                                                Vec2<unsigned int> size,
                                                                Vec2<unsigned int> hotspot);
 
@@ -170,10 +170,10 @@ public:
     /// \param type Native system cursor type
     /// \return Cursor if and only if the corresponding cursor is
     ///         natively supported by the operating system;
-    ///         `base::nullOpt` otherwise
+    ///         `zb::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Cursor> loadFromSystem(Type type);
+    [[nodiscard]] static zb::Optional<Cursor> loadFromSystem(Type type);
 
 private:
     friend class WindowBase;
@@ -185,7 +185,7 @@ public:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Cursor(base::PassKey<Cursor>&&);
+    [[nodiscard]] Cursor(zb::PassKey<Cursor>&&);
 
 private:
     ////////////////////////////////////////////////////////////
@@ -213,7 +213,7 @@ private:
     /// \return `true` on success, `false` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool reloadFromPixels(const base::U8* pixels, Vec2<unsigned int> size, Vec2<unsigned int> hotspot);
+    [[nodiscard]] bool reloadFromPixels(const zb::U8* pixels, Vec2<unsigned int> size, Vec2<unsigned int> hotspot);
 
     ////////////////////////////////////////////////////////////
     /// \brief Re-create the underlying SDL cursor from a system cursor

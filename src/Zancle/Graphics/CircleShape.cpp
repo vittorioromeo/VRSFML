@@ -66,7 +66,7 @@ unsigned int CircleShape::getPointCount() const
 
 
 ////////////////////////////////////////////////////////////
-Vec2f CircleShape::getPoint(base::SizeT index) const
+Vec2f CircleShape::getPoint(zb::SizeT index) const
 {
     ZB_ASSERT(index < m_pointCount && "Index is out of bounds");
     return ShapeUtils::computeCirclePoint(index, /* startAngle */ 0.f, m_pointCount, m_radius);
@@ -85,7 +85,7 @@ void CircleShape::updateCircleGeometry()
 {
     const float angleStep = zb::tau / static_cast<float>(m_pointCount);
 
-    updateFromFunc([&] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i) {
+    updateFromFunc([&] [[gnu::always_inline, gnu::flatten]] (const zb::SizeT i) {
         return ShapeUtils::computeCirclePointFromAngleStep(i, /* startAngle */ 0.f, angleStep, m_radius);
     }, m_pointCount);
 }

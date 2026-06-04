@@ -94,8 +94,8 @@ void MiniaudioSoundSource::setCone(const Cone& cone)
     m_impl->audioSettings.cone = cone;
 
     ma_sound_set_cone(&getSoundBase().getSound(),
-                      base::clamp(cone.innerAngle, Angle::Zero, Angle::Full).asRadians(),
-                      base::clamp(cone.outerAngle, Angle::Zero, Angle::Full).asRadians(),
+                      zb::clamp(cone.innerAngle, Angle::Zero, Angle::Full).asRadians(),
+                      zb::clamp(cone.outerAngle, Angle::Zero, Angle::Full).asRadians(),
                       cone.outerGain);
 }
 

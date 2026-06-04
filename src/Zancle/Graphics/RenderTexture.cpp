@@ -105,13 +105,13 @@ struct RenderTexture::Impl
     using FramebufferIdMap = ankerl::unordered_dense::map<unsigned int, unsigned int>;
 
     Texture                 texture;    //!< Target texture to draw on
-    base::Optional<Texture> tmpTexture; //!< Temporary texture used for Y-axis flipping fallback or non multisample FBOs
+    zb::Optional<Texture> tmpTexture; //!< Temporary texture used for Y-axis flipping fallback or non multisample FBOs
 
     FramebufferIdMap framebuffers;    //!< Per-context OpenGL FBOs
     FramebufferIdMap auxFramebuffers; //!< Per-context auxiliary OpenGL FBOs (either multisample or temp for Y-flipping)
 
-    base::Optional<GLRenderBufferObject> stencilDepthBuffer; //!< Optional depth/stencil buffer attached to the framebuffer
-    base::Optional<GLRenderBufferObject> colorBuffer; //!< Optional multisample color buffer attached to the framebuffer
+    zb::Optional<GLRenderBufferObject> stencilDepthBuffer; //!< Optional depth/stencil buffer attached to the framebuffer
+    zb::Optional<GLRenderBufferObject> colorBuffer; //!< Optional multisample color buffer attached to the framebuffer
 
     bool multisample{}; //!< Must create a multisample framebuffer as well
     bool stencil{};     //!< Has stencil attachment
@@ -459,16 +459,16 @@ RenderTexture& RenderTexture::operator=(RenderTexture&& rhs) noexcept
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<RenderTexture> RenderTexture::create(const Vec2u size)
+zb::Optional<RenderTexture> RenderTexture::create(const Vec2u size)
 {
     return create(size, {});
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<RenderTexture> RenderTexture::create(const Vec2u size, const RenderTextureCreateSettings& rtCreateSettings)
+zb::Optional<RenderTexture> RenderTexture::create(const Vec2u size, const RenderTextureCreateSettings& rtCreateSettings)
 {
-    base::Optional<RenderTexture> result; // Use a single local variable for NRVO
+    zb::Optional<RenderTexture> result; // Use a single local variable for NRVO
 
     // Create the texture
     auto texture = za::Texture::create(size, {.sRgb = rtCreateSettings.sRgbCapable});
@@ -479,7 +479,7 @@ base::Optional<RenderTexture> RenderTexture::create(const Vec2u size, const Rend
     }
 
     // Use frame-buffer object (FBO)
-    result.emplace(base::PassKey<RenderTexture>{}, ZB_MOVE(*texture));
+    result.emplace(zb::PassKey<RenderTexture>{}, ZB_MOVE(*texture));
 
     // Mark the texture as being a framebuffer object attachment
     result->m_impl->texture.m_fboAttachment = true;
@@ -595,7 +595,7 @@ const Texture& RenderTexture::getTexture() const
 
 
 ////////////////////////////////////////////////////////////
-RenderTexture::RenderTexture(base::PassKey<RenderTexture>&&, Texture&& texture) :
+RenderTexture::RenderTexture(zb::PassKey<RenderTexture>&&, Texture&& texture) :
     RenderTarget{texture.isSrgb()},
     m_impl(ZB_MOVE(texture))
 {

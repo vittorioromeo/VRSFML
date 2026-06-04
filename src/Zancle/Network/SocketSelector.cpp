@@ -61,9 +61,9 @@ struct SocketSelector::Impl
 
     int maxSocket{};
 
-    base::Vector<SocketEntry>                entries;
-    base::Vector<SocketSelector::ReadyEntry> readyReceiveList;
-    base::Vector<SocketSelector::ReadyEntry> readySendList;
+    zb::Vector<SocketEntry>                entries;
+    zb::Vector<SocketSelector::ReadyEntry> readyReceiveList;
+    zb::Vector<SocketSelector::ReadyEntry> readySendList;
 };
 
 
@@ -86,7 +86,7 @@ namespace
 {
 ////////////////////////////////////////////////////////////
 // Find an existing entry by Socket identity (pointer).
-[[nodiscard]] SocketEntry* findEntry(base::Vector<SocketEntry>& entries, const Socket* socket)
+[[nodiscard]] SocketEntry* findEntry(zb::Vector<SocketEntry>& entries, const Socket* socket)
 {
     for (SocketEntry& e : entries)
         if (e.socket == socket)
@@ -98,9 +98,9 @@ namespace
 
 ////////////////////////////////////////////////////////////
 // Remove an element from a Vector<ReadyEntry> by socket-pointer-equality, if present.
-void eraseFromList(base::Vector<SocketSelector::ReadyEntry>& list, const Socket* socket)
+void eraseFromList(zb::Vector<SocketSelector::ReadyEntry>& list, const Socket* socket)
 {
-    for (base::SizeT i = 0; i < list.size(); ++i)
+    for (zb::SizeT i = 0; i < list.size(); ++i)
         if (list[i].socket == socket)
         {
             list.erase(list.begin() + static_cast<decltype(list.end() - list.begin())>(i));
@@ -143,7 +143,7 @@ bool SocketSelector::addWith(Impl& impl, Socket& socket, void* const userData, c
             return false;
         }
 
-        impl.maxSocket = base::max(impl.maxSocket, handle);
+        impl.maxSocket = zb::max(impl.maxSocket, handle);
 #endif
 
         impl.entries.emplaceBack(SocketEntry{&socket, handle, userData, forReceive, forSend});
@@ -211,7 +211,7 @@ bool SocketSelector::remove(const Socket& socket)
     priv::SocketImpl::fdClear(handle, m_impl->socketsWritable);
 
     // Drop the entry if we have one.
-    for (base::SizeT i = 0; i < m_impl->entries.size(); ++i)
+    for (zb::SizeT i = 0; i < m_impl->entries.size(); ++i)
         if (m_impl->entries[i].socket == &socket)
         {
             m_impl->entries.eraseAt(i);
@@ -276,14 +276,14 @@ bool SocketSelector::wait(const Time timeout)
 
 
 ////////////////////////////////////////////////////////////
-base::Span<const SocketSelector::ReadyEntry> SocketSelector::getReadyToReceive() const
+zb::Span<const SocketSelector::ReadyEntry> SocketSelector::getReadyToReceive() const
 {
     return {m_impl->readyReceiveList.data(), m_impl->readyReceiveList.size()};
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Span<const SocketSelector::ReadyEntry> SocketSelector::getReadyToSend() const
+zb::Span<const SocketSelector::ReadyEntry> SocketSelector::getReadyToSend() const
 {
     return {m_impl->readySendList.data(), m_impl->readySendList.size()};
 }

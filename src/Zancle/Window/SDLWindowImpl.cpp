@@ -167,15 +167,15 @@ struct SDLWindowImpl::Impl
     JoystickState joystickStates[Joystick::MaxCount]{};    //!< Previous state of the joysticks
     bool          joystickConnected[Joystick::MaxCount]{}; //!< Previous connection state of the joysticks
 
-    base::EnumArray<Sensor::Type, Vec3f, Sensor::Count> sensorValue; //!< Previous value of the sensors
+    zb::EnumArray<Sensor::Type, Vec3f, Sensor::Count> sensorValue; //!< Previous value of the sensors
 
     float joystickThreshold{0.1f}; //!< Joystick threshold (minimum motion for "move" event to be generated)
 
-    base::EnumArray<Joystick::Axis, float, Joystick::AxisCount>
+    zb::EnumArray<Joystick::Axis, float, Joystick::AxisCount>
         previousAxes[Joystick::MaxCount]{}; //!< Position of each axis last time a move event triggered, in range [-100, 100]
 
-    base::Optional<Vec2u> minimumSize; //!< Minimum window size
-    base::Optional<Vec2u> maximumSize; //!< Maximum window size
+    zb::Optional<Vec2u> minimumSize; //!< Minimum window size
+    zb::Optional<Vec2u> maximumSize; //!< Maximum window size
 
     SDL_Window* sdlWindow; //!< SDL window handle
 
@@ -520,7 +520,7 @@ void SDLWindowImpl::processSDLEvent(const SDL_Event& e)
 
 
 ////////////////////////////////////////////////////////////
-base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(WindowSettings windowSettings)
+zb::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(WindowSettings windowSettings)
 {
     if (!WindowContext::getSDLLayer().applyGLContextSettings(windowSettings.contextSettings))
         errMsg("Failed to apply SDL GL context settings for SDL window");
@@ -629,12 +629,12 @@ base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(WindowSettings windowSettin
     windowImplPtr->setKeyRepeatEnabled(windowSettings.keyRepeatEnabled);
     windowImplPtr->setJoystickThreshold(windowSettings.joystickThreshold);
 
-    return base::UniquePtr<SDLWindowImpl>{windowImplPtr};
+    return zb::UniquePtr<SDLWindowImpl>{windowImplPtr};
 }
 
 
 ////////////////////////////////////////////////////////////
-base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(const WindowHandle handle)
+zb::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(const WindowHandle handle)
 {
     const SDL_PropertiesID props = makeSDLWindowPropertiesFromHandle(WindowContext::getSDLLayer().getCurrentVideoDriver(),
                                                                      handle);
@@ -660,7 +660,7 @@ base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(const WindowHandle handle)
         return nullptr;
     }
 
-    return base::UniquePtr<SDLWindowImpl>{new SDLWindowImpl{"handle",
+    return zb::UniquePtr<SDLWindowImpl>{new SDLWindowImpl{"handle",
                                                             static_cast<void*>(sdlWindowPtr),
                                                             /* isExternal */ true}};
 }
@@ -680,14 +680,14 @@ SDLWindowImpl::~SDLWindowImpl()
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Vec2u> SDLWindowImpl::getMinimumSize() const
+zb::Optional<Vec2u> SDLWindowImpl::getMinimumSize() const
 {
     return m_impl->minimumSize;
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Vec2u> SDLWindowImpl::getMaximumSize() const
+zb::Optional<Vec2u> SDLWindowImpl::getMaximumSize() const
 {
     return m_impl->maximumSize;
 }
@@ -701,21 +701,21 @@ void SDLWindowImpl::setJoystickThreshold(const float threshold)
 
 
 ////////////////////////////////////////////////////////////
-void SDLWindowImpl::setMinimumSize(const base::Optional<Vec2u>& minimumSize)
+void SDLWindowImpl::setMinimumSize(const zb::Optional<Vec2u>& minimumSize)
 {
     m_impl->minimumSize = minimumSize;
 }
 
 
 ////////////////////////////////////////////////////////////
-void SDLWindowImpl::setMaximumSize(const base::Optional<Vec2u>& maximumSize)
+void SDLWindowImpl::setMaximumSize(const zb::Optional<Vec2u>& maximumSize)
 {
     m_impl->maximumSize = maximumSize;
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Event> SDLWindowImpl::waitEvent(const Time timeout)
+zb::Optional<Event> SDLWindowImpl::waitEvent(const Time timeout)
 {
     za::Clock clock;
 
@@ -742,7 +742,7 @@ base::Optional<Event> SDLWindowImpl::waitEvent(const Time timeout)
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Event> SDLWindowImpl::pollEvent()
+zb::Optional<Event> SDLWindowImpl::pollEvent()
 {
     // If the event queue is empty, let's first check if new events are available from the OS
     if (m_impl->events.empty())
@@ -753,9 +753,9 @@ base::Optional<Event> SDLWindowImpl::pollEvent()
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Event> SDLWindowImpl::popEvent()
+zb::Optional<Event> SDLWindowImpl::popEvent()
 {
-    base::Optional<Event> event; // Use a single local variable for NRVO
+    zb::Optional<Event> event; // Use a single local variable for NRVO
 
     if (!m_impl->events.empty())
     {
@@ -846,7 +846,7 @@ void SDLWindowImpl::processJoystickEvents()
 
             const float prevPos = m_impl->previousAxes[i][axis];
             const float currPos = m_impl->joystickStates[i].axes[axis];
-            if (base::fabs(currPos - prevPos) >= m_impl->joystickThreshold)
+            if (zb::fabs(currPos - prevPos) >= m_impl->joystickThreshold)
             {
                 pushEvent(Event::JoystickMoved{i, axis, currPos});
                 m_impl->previousAxes[i][axis] = currPos;
@@ -968,7 +968,7 @@ void SDLWindowImpl::setTitle(const Utf8String& title)
 
 
 ////////////////////////////////////////////////////////////
-void SDLWindowImpl::setIcon(const base::U8* pixels, const Vec2u size)
+void SDLWindowImpl::setIcon(const zb::U8* pixels, const Vec2u size)
 {
     auto surface = WindowContext::getSDLLayer().createSurfaceFromPixels(pixels, size);
     if (surface == nullptr)

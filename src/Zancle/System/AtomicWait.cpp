@@ -69,14 +69,14 @@ namespace
 /// happen to hash to neighbouring entries.
 ///
 ////////////////////////////////////////////////////////////
-struct alignas(base::hardwareDestructiveInterferenceSize) ContentionSlot
+struct alignas(zb::hardwareDestructiveInterferenceSize) ContentionSlot
 {
-    Atomic<base::U32> waiters{0u};
+    Atomic<zb::U32> waiters{0u};
 };
 
 
 ////////////////////////////////////////////////////////////
-constexpr base::SizeT slotCount = 256u;
+constexpr zb::SizeT slotCount = 256u;
 
 
 ////////////////////////////////////////////////////////////
@@ -97,7 +97,7 @@ constinit ContentionSlot slots[slotCount];
 {
     // Murmur3 64-bit finalizer -- gives good entropy even when most of
     // the input bits are predictable (heap addresses share a prefix).
-    auto h = static_cast<base::U64>(reinterpret_cast<base::UIntPtrT>(addr));
+    auto h = static_cast<zb::U64>(reinterpret_cast<zb::UIntPtrT>(addr));
     h ^= h >> 33;
     h *= 0xff'51'af'd7'ed'55'8c'cdULL;
     h ^= h >> 33;
@@ -158,7 +158,7 @@ inline void spinWait(const T* const addr, const T expected) noexcept
 /// every 2 seconds (defensive timeout -- see comment below).
 ///
 ////////////////////////////////////////////////////////////
-void platformWait32(const base::U32* const addr, const base::U32 expected) noexcept
+void platformWait32(const zb::U32* const addr, const zb::U32 expected) noexcept
 {
 #if defined(ZA_SYSTEM_LINUX) || defined(ZA_SYSTEM_ANDROID)
     // 2-second timeout copied from libc++. The kernel cancels the
@@ -171,7 +171,7 @@ void platformWait32(const base::U32* const addr, const base::U32 expected) noexc
     const struct timespec timeout{2, 0};
 
     syscall(SYS_futex,
-            const_cast<base::U32*>(addr),
+            const_cast<zb::U32*>(addr),
             FUTEX_WAIT_PRIVATE,
             static_cast<int>(expected),
             &timeout,
@@ -179,11 +179,11 @@ void platformWait32(const base::U32* const addr, const base::U32 expected) noexc
             /* val3   */ 0);
 
 #elif defined(ZA_SYSTEM_WINDOWS)
-    base::U32 compare = expected;
-    WaitOnAddress(const_cast<base::U32*>(addr), &compare, sizeof(compare), INFINITE);
+    zb::U32 compare = expected;
+    WaitOnAddress(const_cast<zb::U32*>(addr), &compare, sizeof(compare), INFINITE);
 
 #elif defined(ZA_SYSTEM_EMSCRIPTEN)
-    emscripten_atomic_wait_u32(const_cast<base::U32*>(addr), expected, /* maxWaitNanoseconds */ -1);
+    emscripten_atomic_wait_u32(const_cast<zb::U32*>(addr), expected, /* maxWaitNanoseconds */ -1);
 
 #else
     spinWait(addr, expected);
@@ -192,7 +192,7 @@ void platformWait32(const base::U32* const addr, const base::U32 expected) noexc
 
 
 ////////////////////////////////////////////////////////////
-void platformWait64(const base::U64* const addr, const base::U64 expected) noexcept
+void platformWait64(const zb::U64* const addr, const zb::U64 expected) noexcept
 {
 #if defined(ZA_SYSTEM_LINUX) || defined(ZA_SYSTEM_ANDROID)
     // Linux futex is 32-bit only. On little-endian targets we wait on
@@ -204,11 +204,11 @@ void platformWait64(const base::U64* const addr, const base::U64 expected) noexc
     // by the caller's predicate loop.
     static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__, "platformWait64 fallback assumes little-endian");
 
-    const auto            lower = static_cast<base::U32>(expected & 0xFF'FF'FF'FFu);
+    const auto            lower = static_cast<zb::U32>(expected & 0xFF'FF'FF'FFu);
     const struct timespec timeout{2, 0};
 
     syscall(SYS_futex,
-            reinterpret_cast<int*>(const_cast<base::U64*>(addr)),
+            reinterpret_cast<int*>(const_cast<zb::U64*>(addr)),
             FUTEX_WAIT_PRIVATE,
             static_cast<int>(lower),
             &timeout,
@@ -216,11 +216,11 @@ void platformWait64(const base::U64* const addr, const base::U64 expected) noexc
             /* val3   */ 0);
 
 #elif defined(ZA_SYSTEM_WINDOWS)
-    base::U64 compare = expected;
-    WaitOnAddress(const_cast<base::U64*>(addr), &compare, sizeof(compare), INFINITE);
+    zb::U64 compare = expected;
+    WaitOnAddress(const_cast<zb::U64*>(addr), &compare, sizeof(compare), INFINITE);
 
 #elif defined(ZA_SYSTEM_EMSCRIPTEN)
-    emscripten_atomic_wait_u64(const_cast<base::U64*>(addr), expected, /* maxWaitNanoseconds */ -1);
+    emscripten_atomic_wait_u64(const_cast<zb::U64*>(addr), expected, /* maxWaitNanoseconds */ -1);
 
 #else
     spinWait(addr, expected);
@@ -259,7 +259,7 @@ void platformWake(const void* const addr, const bool wakeOne) noexcept
 
 
 ////////////////////////////////////////////////////////////
-void atomicWait32(const base::U32* const addr, const base::U32 expected) noexcept
+void atomicWait32(const zb::U32* const addr, const zb::U32 expected) noexcept
 {
     auto& slot = slotFor(addr);
 
@@ -280,7 +280,7 @@ void atomicWait32(const base::U32* const addr, const base::U32 expected) noexcep
 
 
 ////////////////////////////////////////////////////////////
-void atomicWait64(const base::U64* const addr, const base::U64 expected) noexcept
+void atomicWait64(const zb::U64* const addr, const zb::U64 expected) noexcept
 {
     auto& slot = slotFor(addr);
 

@@ -483,14 +483,14 @@ struct [[nodiscard]] Vec2
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert `*this` to a `Vec2<base::SizeT>`
+    /// \brief Convert `*this` to a `Vec2<zb::SizeT>`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2<base::SizeT> toVec2uz() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2<zb::SizeT> toVec2uz() const
     {
         ZB_ASSERT_AND_ASSUME(x >= 0 && y >= 0 && "cannot convert negative values to unsigned type");
 
-        return {static_cast<base::SizeT>(x), static_cast<base::SizeT>(y)};
+        return {static_cast<zb::SizeT>(x), static_cast<zb::SizeT>(y)};
     }
 
 
@@ -721,7 +721,7 @@ struct [[nodiscard]] Vec2
 using Vec2i  = Vec2<int>;
 using Vec2u  = Vec2<unsigned int>;
 using Vec2f  = Vec2<float>;
-using Vec2uz = Vec2<base::SizeT>;
+using Vec2uz = Vec2<zb::SizeT>;
 
 } // namespace za
 

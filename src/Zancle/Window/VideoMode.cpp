@@ -18,9 +18,9 @@ namespace za
 ////////////////////////////////////////////////////////////
 bool VideoMode::isValid() const
 {
-    const base::Span<const VideoMode> modes = VideoModeUtils::getFullscreenModes();
+    const zb::Span<const VideoMode> modes = VideoModeUtils::getFullscreenModes();
 
-    return base::find(modes.begin(), modes.end(), *this) != modes.end();
+    return zb::find(modes.begin(), modes.end(), *this) != modes.end();
 }
 
 

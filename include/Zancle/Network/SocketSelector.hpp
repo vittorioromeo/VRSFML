@@ -201,7 +201,7 @@ public:
     /// \see `wait`, `getReadyToSend`, `ReadyEntry`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Span<const ReadyEntry> getReadyToReceive() const;
+    [[nodiscard]] zb::Span<const ReadyEntry> getReadyToReceive() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Sockets that became ready to send on the last `wait`
@@ -219,7 +219,7 @@ public:
     /// \see `wait`, `getReadyToReceive`, `ReadyEntry`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Span<const ReadyEntry> getReadyToSend() const;
+    [[nodiscard]] zb::Span<const ReadyEntry> getReadyToSend() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Test whether a specific socket is ready to receive
@@ -276,7 +276,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    base::InPlacePImpl<Impl, 4096> m_impl; //!< Implementation details
+    zb::InPlacePImpl<Impl, 4096> m_impl; //!< Implementation details
 };
 
 } // namespace za

@@ -26,13 +26,13 @@ namespace zb::priv
 ////////////////////////////////////////////////////////////
 void throwIfNotEngaged()
 {
-    std::puts("\n[[SFML OPTIONAL FAILURE]]: not engaged!");
+    std::puts("\n[[ZANCLE OPTIONAL FAILURE]]: not engaged!");
     printStackTrace();
 
 #ifdef ZB_OPTIONAL_USE_EXCEPTIONS
     throw BadOptionalAccess{};
 #else
-    base::abort();
+    zb::abort();
 #endif
 }
 

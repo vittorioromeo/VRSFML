@@ -1,5 +1,5 @@
-set(BASE_INCROOT ${PROJECT_SOURCE_DIR}/include/Zancle/Base)
-set(BASE_SRCROOT ${PROJECT_SOURCE_DIR}/src/Zancle/Base)
+set(BASE_INCROOT ${PROJECT_SOURCE_DIR}/include/ZancleBase)
+set(BASE_SRCROOT ${PROJECT_SOURCE_DIR}/src/ZancleBase)
 
 file(GLOB_RECURSE SRC_BASE CONFIGURE_DEPENDS "${BASE_INCROOT}/*.hpp"  "${BASE_SRCROOT}/*.hpp" "${BASE_SRCROOT}/*.cpp")
 

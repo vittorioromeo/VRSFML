@@ -48,7 +48,7 @@ GraphicsContextImpl& ensureInstalled()
     if (!installedGraphicsContext.hasValue()) [[unlikely]]
     {
         priv::errMsg("`za::GraphicsContext` not installed -- did you forget to create one in `main`?");
-        base::abort();
+        zb::abort();
     }
 
     return *installedGraphicsContext;
@@ -67,12 +67,12 @@ struct GraphicsContext::Impl
 };
 
 ////////////////////////////////////////////////////////////
-base::Optional<GraphicsContext> GraphicsContext::create()
+zb::Optional<GraphicsContext> GraphicsContext::create()
 {
     const auto fail = [](const char* what)
     {
         priv::errMsg("Error creating `za::GraphicsContext`: {}", what);
-        return base::nullOpt;
+        return zb::nullOpt;
     };
 
     //
@@ -82,7 +82,7 @@ base::Optional<GraphicsContext> GraphicsContext::create()
 
     //
     // Install window context if necessary
-    auto windowContext = WindowContext::isInstalled() ? WindowContext{base::PassKey<GraphicsContext>{}}
+    auto windowContext = WindowContext::isInstalled() ? WindowContext{zb::PassKey<GraphicsContext>{}}
                                                       : WindowContext::create().value(); // TODO P1: propagate failure
 
     //
@@ -101,12 +101,12 @@ base::Optional<GraphicsContext> GraphicsContext::create()
     // Install graphics context
     installedGraphicsContext.emplace(*ZB_MOVE(shader), *ZB_MOVE(texture));
 
-    return base::makeOptional<GraphicsContext>(base::PassKey<GraphicsContext>{}, ZB_MOVE(windowContext));
+    return zb::makeOptional<GraphicsContext>(zb::PassKey<GraphicsContext>{}, ZB_MOVE(windowContext));
 }
 
 
 ////////////////////////////////////////////////////////////
-GraphicsContext::GraphicsContext(base::PassKey<GraphicsContext>&&, WindowContext&& windowContext) :
+GraphicsContext::GraphicsContext(zb::PassKey<GraphicsContext>&&, WindowContext&& windowContext) :
     m_impl(ZB_MOVE(windowContext))
 {
     graphicsContextRC.fetchAddRelaxed(1u);

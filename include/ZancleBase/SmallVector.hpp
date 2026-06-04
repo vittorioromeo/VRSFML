@@ -607,9 +607,9 @@ public:
         if (lhsHeap && rhsHeap)
         {
             // Both are heap allocated: standard pointer swap
-            base::genericSwap(m_heapData, rhs.m_heapData);
-            base::genericSwap(m_size, rhs.m_size);
-            base::genericSwap(m_capacity, rhs.m_capacity);
+            zb::genericSwap(m_heapData, rhs.m_heapData);
+            zb::genericSwap(m_size, rhs.m_size);
+            zb::genericSwap(m_capacity, rhs.m_capacity);
 
             return;
         }

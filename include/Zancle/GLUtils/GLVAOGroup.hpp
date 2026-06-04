@@ -132,7 +132,7 @@ struct GLVAOGroup
             if (id == 0u)
             {
                 priv::errMsg("Failed to create a vertex array object");
-                base::abort();
+                zb::abort();
             }
 
             auto res = perContextVAOIds.try_emplace(glContextId, id);

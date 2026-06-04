@@ -29,33 +29,33 @@ bool ResourceStream::open(const Path& filename)
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<base::SizeT> ResourceStream::read(void* data, base::SizeT size)
+zb::Optional<zb::SizeT> ResourceStream::read(void* data, zb::SizeT size)
 {
     ZB_ASSERT(m_file && "ResourceStream::read() cannot be called when file is not initialized");
     const auto numBytesRead = AAsset_read(m_file.get(), data, size);
-    return numBytesRead < 0 ? base::nullOpt : base::makeOptional<base::SizeT>(numBytesRead);
+    return numBytesRead < 0 ? zb::nullOpt : zb::makeOptional<zb::SizeT>(numBytesRead);
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<base::SizeT> ResourceStream::seek(base::SizeT position)
+zb::Optional<zb::SizeT> ResourceStream::seek(zb::SizeT position)
 {
     ZB_ASSERT(m_file && "ResourceStream::seek() cannot be called when file is not initialized");
     const auto newPosition = AAsset_seek(m_file.get(), static_cast<off_t>(position), SEEK_SET);
-    return newPosition < 0 ? base::nullOpt : base::makeOptional<base::SizeT>(newPosition);
+    return newPosition < 0 ? zb::nullOpt : zb::makeOptional<zb::SizeT>(newPosition);
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<base::SizeT> ResourceStream::tell()
+zb::Optional<zb::SizeT> ResourceStream::tell()
 {
     ZB_ASSERT(m_file && "ResourceStream::tell() cannot be called when file is not initialized");
-    return getSize().value() - static_cast<base::SizeT>(AAsset_getRemainingLength(m_file.get()));
+    return getSize().value() - static_cast<zb::SizeT>(AAsset_getRemainingLength(m_file.get()));
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<base::SizeT> ResourceStream::getSize()
+zb::Optional<zb::SizeT> ResourceStream::getSize()
 {
     ZB_ASSERT(m_file && "ResourceStream::getSize() cannot be called when file is not initialized");
     return AAsset_getLength(m_file.get());

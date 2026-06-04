@@ -25,7 +25,7 @@
 namespace za
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool Cursor::reloadFromPixels(const base::U8* pixels, const Vec2u size, const Vec2u hotspot)
+[[nodiscard]] bool Cursor::reloadFromPixels(const zb::U8* pixels, const Vec2u size, const Vec2u hotspot)
 {
     auto surface = WindowContext::getSDLLayer().createSurfaceFromPixels(pixels, size);
     if (surface == nullptr)
@@ -68,7 +68,7 @@ namespace za
 
 
 ////////////////////////////////////////////////////////////
-Cursor::Cursor(base::PassKey<Cursor>&&) : m_sdlCursor{nullptr}
+Cursor::Cursor(zb::PassKey<Cursor>&&) : m_sdlCursor{nullptr}
 {
 }
 
@@ -105,14 +105,14 @@ Cursor& Cursor::operator=(Cursor&& rhs) noexcept
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Cursor> Cursor::loadFromPixels(const base::U8* pixels, Vec2u size, Vec2u hotspot)
+zb::Optional<Cursor> Cursor::loadFromPixels(const zb::U8* pixels, Vec2u size, Vec2u hotspot)
 {
-    base::Optional<Cursor> cursor; // Use a single local variable for NRVO
+    zb::Optional<Cursor> cursor; // Use a single local variable for NRVO
 
     if ((pixels == nullptr) || (size.x == 0) || (size.y == 0))
         return cursor; // Empty optional
 
-    cursor.emplace(base::PassKey<Cursor>{});
+    cursor.emplace(zb::PassKey<Cursor>{});
 
     if (!cursor->reloadFromPixels(pixels, size, hotspot))
     {
@@ -127,9 +127,9 @@ base::Optional<Cursor> Cursor::loadFromPixels(const base::U8* pixels, Vec2u size
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Cursor> Cursor::loadFromSystem(Type type)
+zb::Optional<Cursor> Cursor::loadFromSystem(Type type)
 {
-    auto cursor = base::makeOptional<Cursor>(base::PassKey<Cursor>{}); // Use a single local variable for NRVO
+    auto cursor = zb::makeOptional<Cursor>(zb::PassKey<Cursor>{}); // Use a single local variable for NRVO
 
     if (!cursor->reloadFromSystem(type))
     {

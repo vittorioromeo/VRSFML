@@ -54,36 +54,36 @@ public:
     /// \param data Buffer where the asset data is copied
     /// \param size Number of bytes read
     ///
-    /// \return The number of bytes actually read, or `base::nullOpt` on error
+    /// \return The number of bytes actually read, or `zb::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    base::Optional<base::SizeT> read(void* data, base::SizeT size) override;
+    zb::Optional<zb::SizeT> read(void* data, zb::SizeT size) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current reading position in the asset file
     ///
     /// \param position The position to seek to, from the beginning
     ///
-    /// \return The position actually sought to, or `base::nullOpt` on error
+    /// \return The position actually sought to, or `zb::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    base::Optional<base::SizeT> seek(base::SizeT position) override;
+    zb::Optional<zb::SizeT> seek(zb::SizeT position) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current reading position in the asset file
     ///
-    /// \return The current position, or `base::nullOpt` on error.
+    /// \return The current position, or `zb::nullOpt` on error.
     ///
     ////////////////////////////////////////////////////////////
-    base::Optional<base::SizeT> tell() override;
+    zb::Optional<zb::SizeT> tell() override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the asset file
     ///
-    /// \return The total number of bytes available in the asset, or `base::nullOpt` on error
+    /// \return The total number of bytes available in the asset, or `zb::nullOpt` on error
     ///
     ////////////////////////////////////////////////////////////
-    base::Optional<base::SizeT> getSize() override;
+    zb::Optional<zb::SizeT> getSize() override;
 
 private:
     ////////////////////////////////////////////////////////////
@@ -97,7 +97,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    base::UniquePtr<AAsset, AAssetDeleter> m_file; ///< The asset file to read
+    zb::UniquePtr<AAsset, AAssetDeleter> m_file; ///< The asset file to read
 };
 
 } // namespace za::priv

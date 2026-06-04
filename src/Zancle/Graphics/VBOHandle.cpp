@@ -81,7 +81,7 @@ void VBOHandle::bind()
 
 
 ////////////////////////////////////////////////////////////
-base::SizeT VBOHandle::uploadStreamingData(const void* const data, const base::SizeT byteCount)
+zb::SizeT VBOHandle::uploadStreamingData(const void* const data, const zb::SizeT byteCount)
 {
     ZB_ASSERT(data != nullptr);
     ZB_ASSERT(byteCount > 0u);

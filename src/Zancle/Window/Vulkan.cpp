@@ -85,7 +85,7 @@ VulkanFunctionPointer getFunction(const char* name, const VkInstance instance)
 
 
 ////////////////////////////////////////////////////////////
-base::Span<const char* const> getGraphicsRequiredInstanceExtensions()
+zb::Span<const char* const> getGraphicsRequiredInstanceExtensions()
 {
     if (!isAvailable(/* requireGraphics */ true))
     {
@@ -102,7 +102,7 @@ base::Span<const char* const> getGraphicsRequiredInstanceExtensions()
         return {};
     }
 
-    return {extensions, static_cast<base::SizeT>(count)};
+    return {extensions, static_cast<zb::SizeT>(count)};
 }
 
 ////////////////////////////////////////////////////////////

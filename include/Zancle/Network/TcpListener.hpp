@@ -35,7 +35,7 @@ public:
     struct AcceptResult
     {
         Status                    status; //!< Operation status
-        base::Optional<TcpSocket> socket; //!< Accepted connection (only when `status == Done`)
+        zb::Optional<TcpSocket> socket; //!< Accepted connection (only when `status == Done`)
     };
 
     ////////////////////////////////////////////////////////////
@@ -55,10 +55,10 @@ public:
     /// \param isBlocking Desired blocking state
     /// \param address    Interface address to bind to
     ///
-    /// \return `TcpListener` on success, `base::nullOpt` on failure
+    /// \return `TcpListener` on success, `zb::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<TcpListener> create(unsigned short port,
+    [[nodiscard]] static zb::Optional<TcpListener> create(unsigned short port,
                                                             bool           isBlocking,
                                                             IpAddress      address = IpAddress::Any);
 

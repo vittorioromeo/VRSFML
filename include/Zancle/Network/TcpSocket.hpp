@@ -74,10 +74,10 @@ public:
     ///
     /// \param isBlocking Desired blocking state
     ///
-    /// \return `TcpSocket` on success, `base::nullOpt` on failure
+    /// \return `TcpSocket` on success, `zb::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<TcpSocket> create(bool isBlocking);
+    [[nodiscard]] static zb::Optional<TcpSocket> create(bool isBlocking);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -132,7 +132,7 @@ public:
     /// \see `getRemotePort`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<IpAddress> getRemoteAddress() const;
+    [[nodiscard]] zb::Optional<IpAddress> getRemoteAddress() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the port of the connected peer to which
@@ -282,7 +282,7 @@ public:
     ///
     /// This overload is provided to prevent a const char* argument
     /// resulting in the `bool verifyPeer` overload being called
-    /// instead of the `base::StringView` overload.
+    /// instead of the `zb::StringView` overload.
     ///
     /// \param hostname             Hostname of the remote peer, used for verification
     /// \param certificateChainData Null terminated string containing certificate chain data in PEM encoding
@@ -349,7 +349,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] TlsStatus setupTlsClient(const za::Utf8String& hostname,
                                            const Byte*           certificateChainData,
-                                           base::SizeT           certificateChainSize);
+                                           zb::SizeT           certificateChainSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set up transport layer security as a client
@@ -403,7 +403,7 @@ public:
     /// \see `setupTlsServer`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] TlsStatus setupTlsClient(const za::Utf8String& hostname, base::StringView certificateChainData);
+    [[nodiscard]] TlsStatus setupTlsClient(const za::Utf8String& hostname, zb::StringView certificateChainData);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set up transport layer security as a server
@@ -454,11 +454,11 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] TlsStatus setupTlsServer(
         const Byte* certificateChainData,
-        base::SizeT certificateChainSize,
+        zb::SizeT certificateChainSize,
         const Byte* privateKeyData,
-        base::SizeT privateKeySize,
+        zb::SizeT privateKeySize,
         const Byte* privateKeyPasswordData,
-        base::SizeT privateKeyPasswordSize);
+        zb::SizeT privateKeyPasswordSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set up transport layer security as a server
@@ -504,9 +504,9 @@ public:
     /// \see `setupTlsClient`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] TlsStatus setupTlsServer(base::StringView certificateChainData,
-                                           base::StringView privateKeyData,
-                                           base::StringView privateKeyPasswordData = "");
+    [[nodiscard]] TlsStatus setupTlsServer(zb::StringView certificateChainData,
+                                           zb::StringView privateKeyData,
+                                           zb::StringView privateKeyPasswordData = "");
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the name of the TLS ciphersuite currently in use
@@ -516,13 +516,13 @@ public:
     /// \see `setupTlsClient`, `setupTlsServer`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<base::String> getCurrentCiphersuiteName() const;
+    [[nodiscard]] zb::Optional<zb::String> getCurrentCiphersuiteName() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Send raw data to the remote peer
     ///
     /// To be able to handle partial sends over non-blocking
-    /// sockets, use the `send(const void*, base::SizeT, base::SizeT&)`
+    /// sockets, use the `send(const void*, zb::SizeT, zb::SizeT&)`
     /// overload instead.
     /// This function will fail if the socket is not connected.
     ///
@@ -534,7 +534,7 @@ public:
     /// \see `receive`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Status send(const void* data, base::SizeT size);
+    [[nodiscard]] Status send(const void* data, zb::SizeT size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Send raw data to the remote peer
@@ -550,7 +550,7 @@ public:
     /// \see `receive`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Status send(const void* data, base::SizeT size, base::SizeT& sent);
+    [[nodiscard]] Status send(const void* data, zb::SizeT size, zb::SizeT& sent);
 
     ////////////////////////////////////////////////////////////
     /// \brief Receive raw data from the remote peer
@@ -568,7 +568,7 @@ public:
     /// \see `send`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Status receive(void* data, base::SizeT size, base::SizeT& received);
+    [[nodiscard]] Status receive(void* data, zb::SizeT size, zb::SizeT& received);
 
     ////////////////////////////////////////////////////////////
     /// \brief Send a formatted packet of data to the remote peer
@@ -623,9 +623,9 @@ private:
     ////////////////////////////////////////////////////////////
     struct PendingPacket
     {
-        base::U32          size{};         //!< Data of packet size
-        base::SizeT        sizeReceived{}; //!< Number of size bytes received so far
-        base::Vector<Byte> data;           //!< Data of the packet
+        zb::U32          size{};         //!< Data of packet size
+        zb::SizeT        sizeReceived{}; //!< Number of size bytes received so far
+        zb::Vector<Byte> data;           //!< Data of the packet
     };
 
     ////////////////////////////////////////////////////////////
@@ -635,7 +635,7 @@ private:
     zb::UniquePtr<Impl> m_impl; //!< Implementation details
 
     PendingPacket      m_pendingPacket;     //!< Temporary data of the packet currently being received
-    base::Vector<Byte> m_blockToSendBuffer; //!< Buffer used to prepare data being sent from the socket
+    zb::Vector<Byte> m_blockToSendBuffer; //!< Buffer used to prepare data being sent from the socket
 };
 
 } // namespace za
@@ -689,7 +689,7 @@ private:
 ///
 /// // Receive an answer from the server
 /// char buffer[1024];
-/// base::SizeT received = 0;
+/// zb::SizeT received = 0;
 /// socket.receive(buffer, sizeof(buffer), received);
 /// std::cout << "The server said: " << buffer << '\n';
 ///
@@ -706,7 +706,7 @@ private:
 ///
 /// // Receive a message from the client
 /// char buffer[1024];
-/// base::SizeT received = 0;
+/// zb::SizeT received = 0;
 /// socket.receive(buffer, sizeof(buffer), received);
 /// std::cout << "The client said: " << buffer << '\n';
 ///

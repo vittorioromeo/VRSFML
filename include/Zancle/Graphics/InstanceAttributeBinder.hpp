@@ -90,7 +90,7 @@ namespace za
 struct [[nodiscard]] InstanceAttributeBinder
 {
     ////////////////////////////////////////////////////////////
-    explicit InstanceAttributeBinder(base::SizeT instanceCount);
+    explicit InstanceAttributeBinder(zb::SizeT instanceCount);
     ~InstanceAttributeBinder();
 
     ////////////////////////////////////////////////////////////
@@ -113,7 +113,7 @@ struct [[nodiscard]] InstanceAttributeBinder
     /// \param stride    Size, in bytes, of one per-instance record
     ///
     ////////////////////////////////////////////////////////////
-    void uploadData(VBOHandle& vboHandle, const void* data, base::SizeT stride);
+    void uploadData(VBOHandle& vboHandle, const void* data, zb::SizeT stride);
 
     ////////////////////////////////////////////////////////////
     /// \brief Type-safe wrapper around `uploadData` for contiguous arrays
@@ -171,7 +171,7 @@ struct [[nodiscard]] InstanceAttributeBinder
     /// \param fieldOffset Byte offset of this attribute within a single instance record
     ///
     ////////////////////////////////////////////////////////////
-    void setup(unsigned int location, unsigned int size, GlDataType type, bool normalized, base::SizeT stride, base::SizeT fieldOffset);
+    void setup(unsigned int location, unsigned int size, GlDataType type, bool normalized, zb::SizeT stride, zb::SizeT fieldOffset);
 
     ////////////////////////////////////////////////////////////
     /// \brief Configure a per-instance attribute from a pointer-to-member
@@ -264,14 +264,14 @@ private:
     // Offset of a member within its struct
     ////////////////////////////////////////////////////////////
     template <auto MPtr>
-    [[nodiscard, gnu::const]] static base::SizeT memberOffset()
+    [[nodiscard, gnu::const]] static zb::SizeT memberOffset()
     {
         using S = MemberPtrStructType<decltype(MPtr)>;
 
         alignas(S) char storage[sizeof(S)];
 
         auto* const obj = reinterpret_cast<S*>(storage);
-        return static_cast<base::SizeT>(reinterpret_cast<const char*>(&(obj->*MPtr)) - reinterpret_cast<const char*>(obj));
+        return static_cast<zb::SizeT>(reinterpret_cast<const char*>(&(obj->*MPtr)) - reinterpret_cast<const char*>(obj));
     }
 
     ////////////////////////////////////////////////////////////
@@ -282,18 +282,18 @@ private:
         unsigned int size;
         GlDataType   type;
         bool         normalized;
-        base::SizeT  stride;
-        base::SizeT  byteOffset;
+        zb::SizeT  stride;
+        zb::SizeT  byteOffset;
     };
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    base::SizeT                             m_instanceCount;
-    base::InPlaceVector<VBOHandle*, 8u>     m_touchedVBOHandles;
-    base::InPlaceVector<DeferredSetup, 16u> m_deferredSetups;
+    zb::SizeT                             m_instanceCount;
+    zb::InPlaceVector<VBOHandle*, 8u>     m_touchedVBOHandles;
+    zb::InPlaceVector<DeferredSetup, 16u> m_deferredSetups;
     VBOHandle*                              m_currentVBOHandle{nullptr};
-    base::SizeT                             m_currentUploadByteOffset{0u};
+    zb::SizeT                             m_currentUploadByteOffset{0u};
     bool                                    m_drawSubmitted{false};
 };
 

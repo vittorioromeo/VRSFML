@@ -23,12 +23,12 @@ namespace za::priv
 namespace
 {
 ////////////////////////////////////////////////////////////
-constexpr const char  errPrefix[]   = "[[SFML ERROR]]: ";
-constexpr base::SizeT errPrefixSize = sizeof(errPrefix) - 1u; // exclude trailing '\0'
+constexpr const char  errPrefix[]   = "[[ZANCLE ERROR]]: ";
+constexpr zb::SizeT errPrefixSize = sizeof(errPrefix) - 1u; // exclude trailing '\0'
 
 
 ////////////////////////////////////////////////////////////
-void defaultErrSink(void* /*ctx*/, const char* const data, const base::SizeT size)
+void defaultErrSink(void* /*ctx*/, const char* const data, const zb::SizeT size)
 {
     std::fwrite(data, 1u, size, stderr);
 }
@@ -59,11 +59,11 @@ void setErrSink(const ErrSinkFn fn, void* const ctx)
 
 
 ////////////////////////////////////////////////////////////
-void emitErr(const char* const data, const base::SizeT size, const bool trailing)
+void emitErr(const char* const data, const zb::SizeT size, const bool trailing)
 {
     // Assemble prefix + content + (optional first '\n') into a single buffer so
     // the sink sees one write covering the whole logical message.
-    base::String msg;
+    zb::String msg;
     msg.reserve(errPrefixSize + size + 2u);
     msg.append(errPrefix, errPrefixSize);
     msg.append(data, size);
@@ -81,7 +81,7 @@ void emitErr(const char* const data, const base::SizeT size, const bool trailing
         // Stack-trace output goes directly to `stderr` regardless of the
         // installed sink -- matches historical behavior and avoids re-plumbing
         // libbacktrace through a callback.
-        base::priv::printStackTrace();
+        zb::priv::printStackTrace();
 #endif
 
         const char nl = '\n';
@@ -117,7 +117,7 @@ void ErrMsgScope::append(const char* const text)
 
 
 ////////////////////////////////////////////////////////////
-void ErrMsgScope::append(const char* const data, const base::SizeT size)
+void ErrMsgScope::append(const char* const data, const zb::SizeT size)
 {
     m_buf->append(data, size);
 }

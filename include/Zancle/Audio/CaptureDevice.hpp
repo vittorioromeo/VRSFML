@@ -254,14 +254,14 @@ private:
     /// hook into the device's data callback.
     ///
     ////////////////////////////////////////////////////////////
-    using ProcessSamplesFunc = bool (*)(void* userData, const base::I16* samples, base::SizeT sampleCount);
+    using ProcessSamplesFunc = bool (*)(void* userData, const zb::I16* samples, zb::SizeT sampleCount);
     void setProcessSamplesFunc(SoundRecorder* soundRecorder, ProcessSamplesFunc processSamplesFunc);
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 5728> m_impl; //!< Implementation details
+    zb::InPlacePImpl<Impl, 5728> m_impl; //!< Implementation details
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking

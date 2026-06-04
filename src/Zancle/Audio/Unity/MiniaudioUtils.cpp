@@ -54,9 +54,9 @@ void MiniaudioUtils::SoundBase::nodeOnProcess(
 
 ////////////////////////////////////////////////////////////
 void MiniaudioUtils::SoundBase::processEffect(const float** const framesIn,
-                                              base::U32&          frameCountIn,
+                                              zb::U32&          frameCountIn,
                                               float** const       framesOut,
-                                              base::U32&          frameCountOut)
+                                              zb::U32&          frameCountOut)
 {
     // If a processor is set, call it
     if (effectProcessor)
@@ -76,7 +76,7 @@ void MiniaudioUtils::SoundBase::processEffect(const float** const framesIn,
         return;
     }
 
-    const auto toProcess = base::min(frameCountIn, frameCountOut);
+    const auto toProcess = zb::min(frameCountIn, frameCountOut);
     ZB_MEMCPY(framesOut[0], framesIn[0], toProcess * effectNode.channelCount * sizeof(float));
     frameCountIn  = toProcess;
     frameCountOut = toProcess;
@@ -274,41 +274,41 @@ void MiniaudioUtils::SoundBase::applyAudioSettings(const AudioSettings& audioSet
 
 
 ////////////////////////////////////////////////////////////
-base::U8 MiniaudioUtils::soundChannelToMiniaudioChannel(const SoundChannel soundChannel)
+zb::U8 MiniaudioUtils::soundChannelToMiniaudioChannel(const SoundChannel soundChannel)
 {
     switch (soundChannel)
     {
             // clang-format off
-        case SoundChannel::Unspecified:         return base::U8{MA_CHANNEL_NONE};
-        case SoundChannel::Mono:                return base::U8{MA_CHANNEL_MONO};
-        case SoundChannel::FrontLeft:           return base::U8{MA_CHANNEL_FRONT_LEFT};
-        case SoundChannel::FrontRight:          return base::U8{MA_CHANNEL_FRONT_RIGHT};
-        case SoundChannel::FrontCenter:         return base::U8{MA_CHANNEL_FRONT_CENTER};
-        case SoundChannel::FrontLeftOfCenter:   return base::U8{MA_CHANNEL_FRONT_LEFT_CENTER};
-        case SoundChannel::FrontRightOfCenter:  return base::U8{MA_CHANNEL_FRONT_RIGHT_CENTER};
-        case SoundChannel::LowFrequencyEffects: return base::U8{MA_CHANNEL_LFE};
-        case SoundChannel::BackLeft:            return base::U8{MA_CHANNEL_BACK_LEFT};
-        case SoundChannel::BackRight:           return base::U8{MA_CHANNEL_BACK_RIGHT};
-        case SoundChannel::BackCenter:          return base::U8{MA_CHANNEL_BACK_CENTER};
-        case SoundChannel::SideLeft:            return base::U8{MA_CHANNEL_SIDE_LEFT};
-        case SoundChannel::SideRight:           return base::U8{MA_CHANNEL_SIDE_RIGHT};
-        case SoundChannel::TopCenter:           return base::U8{MA_CHANNEL_TOP_CENTER};
-        case SoundChannel::TopFrontLeft:        return base::U8{MA_CHANNEL_TOP_FRONT_LEFT};
-        case SoundChannel::TopFrontRight:       return base::U8{MA_CHANNEL_TOP_FRONT_RIGHT};
-        case SoundChannel::TopFrontCenter:      return base::U8{MA_CHANNEL_TOP_FRONT_CENTER};
-        case SoundChannel::TopBackLeft:         return base::U8{MA_CHANNEL_TOP_BACK_LEFT};
-        case SoundChannel::TopBackRight:        return base::U8{MA_CHANNEL_TOP_BACK_RIGHT};
+        case SoundChannel::Unspecified:         return zb::U8{MA_CHANNEL_NONE};
+        case SoundChannel::Mono:                return zb::U8{MA_CHANNEL_MONO};
+        case SoundChannel::FrontLeft:           return zb::U8{MA_CHANNEL_FRONT_LEFT};
+        case SoundChannel::FrontRight:          return zb::U8{MA_CHANNEL_FRONT_RIGHT};
+        case SoundChannel::FrontCenter:         return zb::U8{MA_CHANNEL_FRONT_CENTER};
+        case SoundChannel::FrontLeftOfCenter:   return zb::U8{MA_CHANNEL_FRONT_LEFT_CENTER};
+        case SoundChannel::FrontRightOfCenter:  return zb::U8{MA_CHANNEL_FRONT_RIGHT_CENTER};
+        case SoundChannel::LowFrequencyEffects: return zb::U8{MA_CHANNEL_LFE};
+        case SoundChannel::BackLeft:            return zb::U8{MA_CHANNEL_BACK_LEFT};
+        case SoundChannel::BackRight:           return zb::U8{MA_CHANNEL_BACK_RIGHT};
+        case SoundChannel::BackCenter:          return zb::U8{MA_CHANNEL_BACK_CENTER};
+        case SoundChannel::SideLeft:            return zb::U8{MA_CHANNEL_SIDE_LEFT};
+        case SoundChannel::SideRight:           return zb::U8{MA_CHANNEL_SIDE_RIGHT};
+        case SoundChannel::TopCenter:           return zb::U8{MA_CHANNEL_TOP_CENTER};
+        case SoundChannel::TopFrontLeft:        return zb::U8{MA_CHANNEL_TOP_FRONT_LEFT};
+        case SoundChannel::TopFrontRight:       return zb::U8{MA_CHANNEL_TOP_FRONT_RIGHT};
+        case SoundChannel::TopFrontCenter:      return zb::U8{MA_CHANNEL_TOP_FRONT_CENTER};
+        case SoundChannel::TopBackLeft:         return zb::U8{MA_CHANNEL_TOP_BACK_LEFT};
+        case SoundChannel::TopBackRight:        return zb::U8{MA_CHANNEL_TOP_BACK_RIGHT};
             // clang-format on
 
         default:
             ZB_ASSERT(soundChannel == SoundChannel::TopBackCenter);
-            return base::U8{MA_CHANNEL_TOP_BACK_CENTER};
+            return zb::U8{MA_CHANNEL_TOP_BACK_CENTER};
     }
 }
 
 
 ////////////////////////////////////////////////////////////
-SoundChannel MiniaudioUtils::miniaudioChannelToSoundChannel(const base::U8 soundChannel)
+SoundChannel MiniaudioUtils::miniaudioChannelToSoundChannel(const zb::U8 soundChannel)
 {
     const ma_channel maChannel{soundChannel};
 
@@ -344,39 +344,39 @@ SoundChannel MiniaudioUtils::miniaudioChannelToSoundChannel(const base::U8 sound
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Time> MiniaudioUtils::getPlayingOffset(ma_sound& sound)
+zb::Optional<Time> MiniaudioUtils::getPlayingOffset(ma_sound& sound)
 {
     float cursor = 0.f;
 
     if (const ma_result result = ma_sound_get_cursor_in_seconds(&sound, &cursor); result != MA_SUCCESS)
     {
         fail("get sound cursor", result);
-        return base::nullOpt;
+        return zb::nullOpt;
     }
 
-    return base::makeOptional<Time>(seconds(cursor));
+    return zb::makeOptional<Time>(seconds(cursor));
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<base::U64> MiniaudioUtils::getFrameIndex(ma_sound& sound, const Time timeOffset)
+zb::Optional<zb::U64> MiniaudioUtils::getFrameIndex(ma_sound& sound, const Time timeOffset)
 {
     ma_uint32 sampleRate{};
     if (const ma_result result = ma_sound_get_data_format(&sound, nullptr, nullptr, &sampleRate, nullptr, 0);
         result != MA_SUCCESS)
     {
         fail("get sound data format", result);
-        return base::nullOpt;
+        return zb::nullOpt;
     }
 
-    const auto frameIndex = static_cast<base::U64>(timeOffset.asSeconds() * static_cast<float>(sampleRate));
+    const auto frameIndex = static_cast<zb::U64>(timeOffset.asSeconds() * static_cast<float>(sampleRate));
     if (const ma_result result = ma_sound_seek_to_pcm_frame(&sound, frameIndex); result != MA_SUCCESS)
     {
         fail("seek sound to pcm frame", result);
-        return base::nullOpt;
+        return zb::nullOpt;
     }
 
-    return base::makeOptional<base::U64>(frameIndex);
+    return zb::makeOptional<zb::U64>(frameIndex);
 }
 
 

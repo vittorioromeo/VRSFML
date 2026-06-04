@@ -14,7 +14,7 @@
 namespace za::priv
 {
 ////////////////////////////////////////////////////////////
-using EffectProcessorImpl = base::FixedFunction<
+using EffectProcessorImpl = zb::FixedFunction<
     void(const float* inputFrames, unsigned int& inputFrameCount, float* outputFrames, unsigned int& outputFrameCount, unsigned int frameChannelCount),
     128>;
 

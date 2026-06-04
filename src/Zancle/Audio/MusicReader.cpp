@@ -37,8 +37,8 @@ struct MusicReader::Impl
 
 
 ////////////////////////////////////////////////////////////
-MusicReader::MusicReader(base::PassKey<MusicReader>&&, InputSoundFile&& file) :
-    m_impl(base::makeUnique<Impl>(ZB_MOVE(file)))
+MusicReader::MusicReader(zb::PassKey<MusicReader>&&, InputSoundFile&& file) :
+    m_impl(zb::makeUnique<Impl>(ZB_MOVE(file)))
 {
 }
 
@@ -50,35 +50,35 @@ MusicReader& MusicReader::operator=(MusicReader&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<MusicReader> MusicReader::tryOpenFromInputSoundFile(base::Optional<InputSoundFile>&& optFile,
+zb::Optional<MusicReader> MusicReader::tryOpenFromInputSoundFile(zb::Optional<InputSoundFile>&& optFile,
                                                                    const char* const                errorContext)
 {
     if (!optFile.hasValue())
     {
         priv::errMsg("Failed to open music from {}", errorContext);
-        return base::nullOpt;
+        return zb::nullOpt;
     }
 
-    return base::makeOptional<MusicReader>(base::PassKey<MusicReader>{}, ZB_MOVE(*optFile));
+    return zb::makeOptional<MusicReader>(zb::PassKey<MusicReader>{}, ZB_MOVE(*optFile));
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<MusicReader> MusicReader::openFromFile(const Path& filename)
+zb::Optional<MusicReader> MusicReader::openFromFile(const Path& filename)
 {
     return tryOpenFromInputSoundFile(InputSoundFile::openFromFile(filename), "file");
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<MusicReader> MusicReader::openFromMemory(const void* const data, const base::SizeT sizeInBytes)
+zb::Optional<MusicReader> MusicReader::openFromMemory(const void* const data, const zb::SizeT sizeInBytes)
 {
     return tryOpenFromInputSoundFile(InputSoundFile::openFromMemory(data, sizeInBytes), "memory");
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<MusicReader> MusicReader::openFromStream(InputStream& stream)
+zb::Optional<MusicReader> MusicReader::openFromStream(InputStream& stream)
 {
     return tryOpenFromInputSoundFile(InputSoundFile::openFromStream(stream), "stream");
 }
@@ -113,16 +113,16 @@ const ChannelMap& MusicReader::getChannelMap() const
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] base::U64 MusicReader::getSampleCount() const
+[[nodiscard]] zb::U64 MusicReader::getSampleCount() const
 {
     return m_impl->file.getSampleCount();
 }
 
 
 ////////////////////////////////////////////////////////////
-MusicReader::SeekAndReadResult MusicReader::seekAndRead(const base::U64  sampleOffset,
-                                                        base::I16* const samples,
-                                                        const base::U64  maxCount)
+MusicReader::SeekAndReadResult MusicReader::seekAndRead(const zb::U64  sampleOffset,
+                                                        zb::I16* const samples,
+                                                        const zb::U64  maxCount)
 {
     const LockGuard lock(m_impl->mutex);
 

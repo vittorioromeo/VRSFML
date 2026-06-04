@@ -114,7 +114,7 @@ public:
     /// \brief Pop the next event from the front of the FIFO event queue, if any, and return it
     ///
     /// This function is not blocking: if there's no pending event then
-    /// it will return a `base::nullOpt`. Note that more than one event
+    /// it will return a `zb::nullOpt`. Note that more than one event
     /// may be present in the event queue, thus you should always call
     /// this function in a loop to make sure that you process every
     /// pending event.
@@ -125,12 +125,12 @@ public:
     /// }
     /// \endcode
     ///
-    /// \return The potentially pending event, `base::nullOpt` otherwise
+    /// \return The potentially pending event, `zb::nullOpt` otherwise
     ///
     /// \see `waitEvent`, `pollAndHandleEvents`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<Event> pollEvent();
+    [[nodiscard]] zb::Optional<Event> pollEvent();
 
     ////////////////////////////////////////////////////////////
     /// \brief Wait for an event and return it
@@ -138,7 +138,7 @@ public:
     /// This function is blocking: if there's no pending event then
     /// it will wait until an event is received or until the provided
     /// timeout elapses. Only if an error or a timeout occurs the
-    /// returned event will be `base::nullOpt`.
+    /// returned event will be `zb::nullOpt`.
     /// This function is typically used when you have a thread that is
     /// dedicated to events handling: you want to make this thread sleep
     /// as long as no new event is received.
@@ -151,12 +151,12 @@ public:
     ///
     /// \param timeout Maximum time to wait (`Time::Zero` for infinite)
     ///
-    /// \return The event on success, `base::nullOpt` on timeout or if window was closed
+    /// \return The event on success, `zb::nullOpt` on timeout or if window was closed
     ///
     /// \see `pollEvent`, `pollAndHandleEvents`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<Event> waitEvent(Time timeout = Time::Zero);
+    [[nodiscard]] zb::Optional<Event> waitEvent(Time timeout = Time::Zero);
 
     ////////////////////////////////////////////////////////////
     /// \brief Handle all pending events
@@ -286,24 +286,24 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Set the minimum window rendering region size
     ///
-    /// Pass `base::nullOpt` to unset the minimum size
+    /// Pass `zb::nullOpt` to unset the minimum size
     ///
     /// \param minimumSize New minimum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
     void setMinimumSize(const Vector2u& minimumSize);
-    void setMinimumSize(const base::Optional<Vector2u>& minimumSize);
+    void setMinimumSize(const zb::Optional<Vector2u>& minimumSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the maximum window rendering region size
     ///
-    /// Pass `base::nullOpt` to unset the maximum size
+    /// Pass `zb::nullOpt` to unset the maximum size
     ///
     /// \param maximumSize New maximum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
     void setMaximumSize(const Vector2u& maximumSize);
-    void setMaximumSize(const base::Optional<Vector2u>& maximumSize);
+    void setMaximumSize(const zb::Optional<Vector2u>& maximumSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the title of the window
@@ -331,7 +331,7 @@ public:
     /// \see `setTitle`
     ///
     ////////////////////////////////////////////////////////////
-    void setIcon(Vector2u size, const base::U8* pixels);
+    void setIcon(Vector2u size, const zb::U8* pixels);
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window
@@ -486,7 +486,7 @@ private:
     /// \brief Construct a window base from the inner implementation
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit SDLWindowBase(base::UniquePtr<Impl>&& impl);
+    [[nodiscard]] explicit SDLWindowBase(zb::UniquePtr<Impl>&& impl);
 
     ////////////////////////////////////////////////////////////
     /// \brief Processes an event before it is sent to the user
@@ -500,12 +500,12 @@ private:
     /// \param event Event to filter
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<Event> filterEvent(base::Optional<Event> event);
+    [[nodiscard]] zb::Optional<Event> filterEvent(zb::Optional<Event> event);
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    base::UniquePtr<Impl> m_impl; //!< Platform-specific implementation of the window
+    zb::UniquePtr<Impl> m_impl; //!< Platform-specific implementation of the window
     Vector2u              m_size; //!< Current size of the window
 };
 

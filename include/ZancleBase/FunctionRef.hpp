@@ -75,8 +75,8 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename TFFwd>
-        requires(!base::isSame<base::RemoveCVRefIndirect<TFFwd>, FunctionRef> &&
-                 !base::isSame<base::RemoveCVRefIndirect<TFFwd>, FnPtrType>)
+        requires(!zb::isSame<zb::RemoveCVRefIndirect<TFFwd>, FunctionRef> &&
+                 !zb::isSame<zb::RemoveCVRefIndirect<TFFwd>, FnPtrType>)
     [[nodiscard, gnu::always_inline]] FunctionRef(TFFwd&& f) noexcept :
         m_obj{const_cast<void*>(static_cast<const void*>(&f))},
         m_thunk{[](void* o, Ts&&... args) -> TReturn

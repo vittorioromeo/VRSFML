@@ -17,7 +17,7 @@ using DWORD = unsigned long;
 namespace za::priv
 {
 ////////////////////////////////////////////////////////////
-base::String getErrorString(DWORD error);
+zb::String getErrorString(DWORD error);
 
 ////////////////////////////////////////////////////////////
 void setWindowBorderless(void* hwnd, unsigned int width, unsigned int height);

@@ -31,11 +31,11 @@ namespace za::priv
 /// \brief Callback installed via `setErrSink` to redirect error output.
 ///
 /// Receives the fully-assembled error text (already prefixed with
-/// "[[SFML ERROR]]: " for the first chunk of an emission). May be
+/// "[[ZANCLE ERROR]]: " for the first chunk of an emission). May be
 /// invoked once or twice per error -- once for the message body, once
 /// for the trailing newline that follows an optional stack trace.
 ////////////////////////////////////////////////////////////
-using ErrSinkFn = void (*)(void* ctx, const char* data, base::SizeT size);
+using ErrSinkFn = void (*)(void* ctx, const char* data, zb::SizeT size);
 
 
 ////////////////////////////////////////////////////////////
@@ -48,13 +48,13 @@ ZA_SYSTEM_API void setErrSink(ErrSinkFn fn, void* ctx);
 ////////////////////////////////////////////////////////////
 /// \brief Out-of-line emission helper. Called by `errMsg` / `~ErrMsgScope`.
 ///
-/// Acquires the err mutex, prepends the "[[SFML ERROR]]: " prefix, and
+/// Acquires the err mutex, prepends the "[[ZANCLE ERROR]]: " prefix, and
 /// writes through the installed sink. When `trailing == true` it also
 /// emits a stack trace + trailing newline. Stderr is always flushed at
 /// the end of the call so partial messages remain visible if the process
 /// crashes before the next emission.
 ////////////////////////////////////////////////////////////
-ZA_SYSTEM_API void emitErr(const char* data, base::SizeT size, bool trailing);
+ZA_SYSTEM_API void emitErr(const char* data, zb::SizeT size, bool trailing);
 
 
 ////////////////////////////////////////////////////////////
@@ -68,7 +68,7 @@ ZA_SYSTEM_API void emitErr(const char* data, base::SizeT size, bool trailing);
 /// Buffering avoids holding the err lock across user formatting work --
 /// the lock is taken only once, during the final emission.
 ///
-/// `base::String` is intentionally not exposed in this header. The
+/// `zb::String` is intentionally not exposed in this header. The
 /// member buffer is stored opaquely via `InPlacePImpl`; format and
 /// append operations route through `fmtImpl` / `append`, both
 /// defined in `Err.cpp` where the full `String` type is available.
@@ -94,20 +94,20 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Append `size` bytes from `data` to the buffered message.
     ////////////////////////////////////////////////////////////
-    void append(const char* data, base::SizeT size);
+    void append(const char* data, zb::SizeT size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Append formatted content to the buffered message.
     ///
-    /// Routes through `base::fmtTo`, which uses `*this` as an `AppendSink`
+    /// Routes through `zb::fmtTo`, which uses `*this` as an `AppendSink`
     /// (via the two-argument `append` overload above). Stack-scratched on
     /// the fast path, heap-fallback on overflow -- both end in a single
     /// `append(scratch, size)` call to this scope.
     ////////////////////////////////////////////////////////////
     template <typename... Args>
-    void fmt(typename base::NonDeduced<const base::FmtString<Args...>>::type fmtStr, const Args&... args)
+    void fmt(typename zb::NonDeduced<const zb::FmtString<Args...>>::type fmtStr, const Args&... args)
     {
-        (void)base::fmtTo(*this, fmtStr, args...);
+        (void)zb::fmtTo(*this, fmtStr, args...);
     }
 
     ////////////////////////////////////////////////////////////
@@ -118,9 +118,9 @@ public:
     void disableTrailing() noexcept;
 
 private:
-    // Buffer-sized for the layout of `base::String` (3 pointers/sizes on
+    // Buffer-sized for the layout of `zb::String` (3 pointers/sizes on
     // x86_64 = 24 bytes; rounded up for headroom and 32-bit safety).
-    base::InPlacePImpl<base::String, 32> m_buf;
+    zb::InPlacePImpl<zb::String, 32> m_buf;
     bool                                 m_trailing{true};
 };
 
@@ -129,10 +129,10 @@ private:
 /// \brief Atomic single-emission error. Equivalent to a scoped
 /// `ErrMsgScope` that lives just long enough to format `fmt` / `args`.
 ///
-/// Output shape: `"[[SFML ERROR]]: " + content + "\n" + stack_trace + "\n"`.
+/// Output shape: `"[[ZANCLE ERROR]]: " + content + "\n" + stack_trace + "\n"`.
 ////////////////////////////////////////////////////////////
 template <typename... Args>
-void errMsg(typename base::NonDeduced<const base::FmtString<Args...>>::type fmtStr, const Args&... args)
+void errMsg(typename zb::NonDeduced<const zb::FmtString<Args...>>::type fmtStr, const Args&... args)
 {
     ErrMsgScope scope;
     scope.fmt(fmtStr, args...);
@@ -145,7 +145,7 @@ void errMsg(typename base::NonDeduced<const base::FmtString<Args...>>::type fmtS
 /// when emitting a logical line of a larger composed message.
 ////////////////////////////////////////////////////////////
 template <typename... Args>
-void errMsgMulti(typename base::NonDeduced<const base::FmtString<Args...>>::type fmtStr, const Args&... args)
+void errMsgMulti(typename zb::NonDeduced<const zb::FmtString<Args...>>::type fmtStr, const Args&... args)
 {
     ErrMsgScope scope;
     scope.disableTrailing();

@@ -73,7 +73,7 @@ public:
     /// \param count   Number of samples to write
     ///
     ////////////////////////////////////////////////////////////
-    void write(const base::I16* samples, base::U64 count) override;
+    void write(const zb::I16* samples, zb::U64 count) override;
 
 private:
     ////////////////////////////////////////////////////////////
@@ -92,7 +92,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 2048> m_impl; //!< Implementation details
+    zb::InPlacePImpl<Impl, 2048> m_impl; //!< Implementation details
 };
 
 } // namespace za::priv

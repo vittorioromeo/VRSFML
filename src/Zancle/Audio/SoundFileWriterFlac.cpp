@@ -45,10 +45,10 @@ struct SoundFileWriterFlac::Impl
     };
 
     std::FILE*                                                     file{};
-    base::UniquePtr<FLAC__StreamEncoder, FlacStreamEncoderDeleter> encoder;        //!< FLAC stream encoder
+    zb::UniquePtr<FLAC__StreamEncoder, FlacStreamEncoderDeleter> encoder;        //!< FLAC stream encoder
     unsigned int                                                   channelCount{}; //!< Number of channels
-    base::SizeT             remapTable[8]{}; //!< Table we use to remap source to target channel order
-    base::Vector<base::I32> samples32;       //!< Conversion buffer
+    zb::SizeT             remapTable[8]{}; //!< Table we use to remap source to target channel order
+    zb::Vector<zb::I32> samples32;       //!< Conversion buffer
 };
 
 
@@ -138,8 +138,8 @@ bool SoundFileWriterFlac::open(const Path& filename, unsigned int sampleRate, un
 
     // Build the remap rable
     for (auto i = 0u; i < channelCount; ++i)
-        m_impl->remapTable[i] = static_cast<base::SizeT>(
-            base::find(channelMap.begin(), channelMap.end(), targetChannelMap[i]) - channelMap.begin());
+        m_impl->remapTable[i] = static_cast<zb::SizeT>(
+            zb::find(channelMap.begin(), channelMap.end(), targetChannelMap[i]) - channelMap.begin());
 
     // Create the encoder
     m_impl->encoder.reset(FLAC__stream_encoder_new());
@@ -174,12 +174,12 @@ bool SoundFileWriterFlac::open(const Path& filename, unsigned int sampleRate, un
 
 
 ////////////////////////////////////////////////////////////
-void SoundFileWriterFlac::write(const base::I16* samples, base::U64 count)
+void SoundFileWriterFlac::write(const zb::I16* samples, zb::U64 count)
 {
     while (count > 0)
     {
         // Make sure that we don't process too many samples at once
-        const unsigned int frames = base::min(static_cast<unsigned int>(count / m_impl->channelCount), 10'000u);
+        const unsigned int frames = zb::min(static_cast<unsigned int>(count / m_impl->channelCount), 10'000u);
 
         // Convert the samples to 32-bits and remap the channels
         m_impl->samples32.clear();

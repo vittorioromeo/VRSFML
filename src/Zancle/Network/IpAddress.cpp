@@ -29,27 +29,27 @@ const IpAddress IpAddress::Broadcast(255, 255, 255, 255);
 
 
 ////////////////////////////////////////////////////////////
-IpAddress::IpAddress(base::U8 byte0, base::U8 byte1, base::U8 byte2, base::U8 byte3) :
-    m_address(static_cast<base::U32>((byte0 << 24) | (byte1 << 16) | (byte2 << 8) | byte3))
+IpAddress::IpAddress(zb::U8 byte0, zb::U8 byte1, zb::U8 byte2, zb::U8 byte3) :
+    m_address(static_cast<zb::U32>((byte0 << 24) | (byte1 << 16) | (byte2 << 8) | byte3))
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-IpAddress::IpAddress(base::U32 address) : m_address(address)
+IpAddress::IpAddress(zb::U32 address) : m_address(address)
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-base::U32 IpAddress::toInteger() const
+zb::U32 IpAddress::toInteger() const
 {
     return m_address;
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<IpAddress> IpAddress::getLocalAddress()
+zb::Optional<IpAddress> IpAddress::getLocalAddress()
 {
     // The method here is to connect a UDP socket to a public ip,
     // and get the local socket address with the getsockname function.
@@ -60,7 +60,7 @@ base::Optional<IpAddress> IpAddress::getLocalAddress()
     if (sock == priv::SocketImpl::invalidSocket())
     {
         priv::errMsg("Failed to retrieve local address (invalid socket)");
-        return base::nullOpt;
+        return zb::nullOpt;
     }
 
     // Connect the socket to a public ip (here 1.1.1.1) on any
@@ -72,7 +72,7 @@ base::Optional<IpAddress> IpAddress::getLocalAddress()
         priv::SocketImpl::close(sock);
 
         priv::errMsg("Failed to retrieve local address (socket connection failure)");
-        return base::nullOpt;
+        return zb::nullOpt;
     }
 
     // Get the local address of the socket connection
@@ -82,19 +82,19 @@ base::Optional<IpAddress> IpAddress::getLocalAddress()
         priv::SocketImpl::close(sock);
 
         priv::errMsg("Failed to retrieve local address (socket local address retrieval failure)");
-        return base::nullOpt;
+        return zb::nullOpt;
     }
 
     // Close the socket
     priv::SocketImpl::close(sock);
 
     // Finally build the IP address
-    return base::makeOptional<IpAddress>(priv::SocketImpl::networkToHost(address.sAddr()));
+    return zb::makeOptional<IpAddress>(priv::SocketImpl::networkToHost(address.sAddr()));
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<IpAddress> IpAddress::getPublicAddress(Time timeout)
+zb::Optional<IpAddress> IpAddress::getPublicAddress(Time timeout)
 {
     // The trick here is more complicated, because the only way
     // to get our public IP address is to get it from a distant computer.
@@ -115,7 +115,7 @@ base::Optional<IpAddress> IpAddress::getPublicAddress(Time timeout)
     priv::errMsg("Failed to retrieve public address from external IP resolution server (HTTP response status {})",
                  static_cast<int>(status));
 
-    return base::nullOpt;
+    return zb::nullOpt;
 }
 
 

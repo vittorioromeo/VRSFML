@@ -42,7 +42,7 @@ struct SoundBuffer::Impl
     /// from a `SoundFileReader` or by `memcpy`'ing caller-provided samples in.
     /// `duration` is computed from the requested count.
     // NOLINTNEXTLINE(modernize-pass-by-value)
-    explicit Impl(base::SizeT theSampleCount, const ChannelMap& theChannelMap, const unsigned int theSampleRate) :
+    explicit Impl(zb::SizeT theSampleCount, const ChannelMap& theChannelMap, const unsigned int theSampleRate) :
         channelMap(theChannelMap),
         sampleRate(theSampleRate)
     {
@@ -57,7 +57,7 @@ struct SoundBuffer::Impl
     }
 
     ////////////////////////////////////////////////////////////
-    base::Vector<base::I16> samples;                        //!< Samples buffer
+    zb::Vector<zb::I16> samples;                        //!< Samples buffer
     ChannelMap              channelMap{SoundChannel::Mono}; //!< The map of position in sample frame to sound channel
     unsigned int            sampleRate{44'100};             //!< Number of samples per second
     Time                    duration;                       //!< Sound duration
@@ -73,18 +73,18 @@ SoundBuffer::~SoundBuffer()                                     = default;
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<SoundBuffer> SoundBuffer::loadFromFile(const Path& filename)
+zb::Optional<SoundBuffer> SoundBuffer::loadFromFile(const Path& filename)
 {
     // `SoundBuffer` decodes the entire file into PCM up front, so we don't need
     // `InputSoundFile`'s streaming machinery (which exists for `MusicReader`).
     // Read the encoded bytes through the native fast path, then delegate to the
     // memory-based loader which picks a codec and decodes in-place.
-    base::Vector<char>& scratch = getThreadLocalScratchCharBuffer();
+    zb::Vector<char>& scratch = getThreadLocalScratchCharBuffer();
 
     if (!readFromFile(filename, scratch))
     {
         priv::errMsg("Failed to open sound buffer from file");
-        return base::nullOpt;
+        return zb::nullOpt;
     }
 
     return loadFromMemory(scratch.data(), scratch.size());
@@ -92,7 +92,7 @@ base::Optional<SoundBuffer> SoundBuffer::loadFromFile(const Path& filename)
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<SoundBuffer> SoundBuffer::loadFromMemory(const void* data, base::SizeT sizeInBytes)
+zb::Optional<SoundBuffer> SoundBuffer::loadFromMemory(const void* data, zb::SizeT sizeInBytes)
 {
     MemoryInputStream stream{data, sizeInBytes};
     return loadFromStream(stream);
@@ -100,11 +100,11 @@ base::Optional<SoundBuffer> SoundBuffer::loadFromMemory(const void* data, base::
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<SoundBuffer> SoundBuffer::loadFromStream(InputStream& stream)
+zb::Optional<SoundBuffer> SoundBuffer::loadFromStream(InputStream& stream)
 {
     // Single named return so NRVO can apply -- failure paths return the
     // already-empty `buf`, success path emplaces into it.
-    base::Optional<SoundBuffer> buf;
+    zb::Optional<SoundBuffer> buf;
 
     auto reader = SoundFileFactory::createReaderFromStream(stream);
     if (reader == nullptr)
@@ -114,13 +114,13 @@ base::Optional<SoundBuffer> SoundBuffer::loadFromStream(InputStream& stream)
     }
 
     // `createReaderFromStream` advances the read position while sniffing the codec; rewind before handing the stream to `open`.
-    if (const base::Optional seekResult = stream.seek(0); !seekResult.hasValue() || *seekResult != 0)
+    if (const zb::Optional seekResult = stream.seek(0); !seekResult.hasValue() || *seekResult != 0)
     {
         priv::errMsg("Failed to open sound buffer (rewind after codec detection failed)");
         return buf;
     }
 
-    const base::Optional info = reader->open(stream);
+    const zb::Optional info = reader->open(stream);
     if (!info.hasValue())
     {
         priv::errMsg("Failed to open sound buffer (codec rejected the data)");
@@ -134,16 +134,16 @@ base::Optional<SoundBuffer> SoundBuffer::loadFromStream(InputStream& stream)
     }
 
     // On 32-bit targets (e.g. Emscripten) `SizeT` is narrower than `U64`; reject files we can't address.
-    if (info->sampleCount > static_cast<base::U64>(static_cast<base::SizeT>(-1)))
+    if (info->sampleCount > static_cast<zb::U64>(static_cast<zb::SizeT>(-1)))
     {
         priv::errMsg("Failed to load sound buffer (sample count exceeds addressable range on this platform)");
         return buf;
     }
 
-    const auto sampleCount = static_cast<base::SizeT>(info->sampleCount);
+    const auto sampleCount = static_cast<zb::SizeT>(info->sampleCount);
 
     // Construct the `SoundBuffer` with `m_impl->samples` already pre-sized and read directly into it.
-    buf.emplace(base::PassKey<SoundBuffer>{}, sampleCount, info->channelMap, info->sampleRate);
+    buf.emplace(zb::PassKey<SoundBuffer>{}, sampleCount, info->channelMap, info->sampleRate);
 
     if (reader->read(buf->m_impl->samples.data(), sampleCount) != info->sampleCount)
         buf.reset();
@@ -153,12 +153,12 @@ base::Optional<SoundBuffer> SoundBuffer::loadFromStream(InputStream& stream)
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<SoundBuffer> SoundBuffer::loadFromSamples(const base::I16*   samples,
-                                                         const base::SizeT  sampleCount,
+zb::Optional<SoundBuffer> SoundBuffer::loadFromSamples(const zb::I16*   samples,
+                                                         const zb::SizeT  sampleCount,
                                                          const ChannelMap&  channelMap,
                                                          const unsigned int sampleRate)
 {
-    base::Optional<SoundBuffer> buf;
+    zb::Optional<SoundBuffer> buf;
 
     if (channelMap.isEmpty() || sampleRate == 0u)
     {
@@ -170,8 +170,8 @@ base::Optional<SoundBuffer> SoundBuffer::loadFromSamples(const base::I16*   samp
         return buf;
     }
 
-    buf.emplace(base::PassKey<SoundBuffer>{}, sampleCount, channelMap, sampleRate);
-    ZB_MEMCPY(buf->m_impl->samples.data(), samples, sampleCount * sizeof(base::I16));
+    buf.emplace(zb::PassKey<SoundBuffer>{}, sampleCount, channelMap, sampleRate);
+    ZB_MEMCPY(buf->m_impl->samples.data(), samples, sampleCount * sizeof(zb::I16));
     return buf;
 }
 
@@ -180,7 +180,7 @@ base::Optional<SoundBuffer> SoundBuffer::loadFromSamples(const base::I16*   samp
 bool SoundBuffer::saveToFile(const Path& filename) const
 {
     // Create the sound file in write mode
-    if (base::Optional file = OutputSoundFile::openFromFile(filename, getSampleRate(), getChannelCount(), getChannelMap()))
+    if (zb::Optional file = OutputSoundFile::openFromFile(filename, getSampleRate(), getChannelCount(), getChannelMap()))
     {
         // Write the samples to the opened file
         file->write(m_impl->samples.data(), m_impl->samples.size());
@@ -192,14 +192,14 @@ bool SoundBuffer::saveToFile(const Path& filename) const
 
 
 ////////////////////////////////////////////////////////////
-const base::I16* SoundBuffer::getSamples() const
+const zb::I16* SoundBuffer::getSamples() const
 {
     return m_impl->samples.empty() ? nullptr : m_impl->samples.data();
 }
 
 
 ////////////////////////////////////////////////////////////
-base::U64 SoundBuffer::getSampleCount() const
+zb::U64 SoundBuffer::getSampleCount() const
 {
     return m_impl->samples.size();
 }
@@ -234,8 +234,8 @@ Time SoundBuffer::getDuration() const
 
 
 ////////////////////////////////////////////////////////////
-SoundBuffer::SoundBuffer(base::PassKey<SoundBuffer>&&,
-                         base::SizeT       sampleCount,
+SoundBuffer::SoundBuffer(zb::PassKey<SoundBuffer>&&,
+                         zb::SizeT       sampleCount,
                          const ChannelMap& channelMap,
                          unsigned int      sampleRate) :
     m_impl(sampleCount, channelMap, sampleRate)

@@ -40,7 +40,7 @@
 // `WindowContext` already declares `friend TestContext;` (a forward-decl in
 // the global namespace) for `createGlContext` access.
 #define protected public
-#include "../src/SFML/GLUtils/GlContext.hpp"
+#include "../src/Zancle/GLUtils/GlContext.hpp"
 #undef protected
 
 

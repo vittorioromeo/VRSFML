@@ -157,7 +157,7 @@ protected:
     /// \return `true` to continue the capture, or `false` to stop it
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual bool onProcessSamples(const base::I16* samples, base::SizeT sampleCount) = 0;
+    [[nodiscard]] virtual bool onProcessSamples(const zb::I16* samples, zb::SizeT sampleCount) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Hook called once when the capture stops

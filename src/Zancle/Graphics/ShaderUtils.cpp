@@ -195,49 +195,49 @@ constexpr unsigned int maxIncludeFilenameLength = 256;
 namespace za
 {
 ////////////////////////////////////////////////////////////
-void ShaderUtils::emitLineDirective(base::Vector<char>& buffer, unsigned int lineNumber)
+void ShaderUtils::emitLineDirective(zb::Vector<char>& buffer, unsigned int lineNumber)
 {
-    constexpr base::StringView prefix{"#line "};
+    constexpr zb::StringView prefix{"#line "};
 
     char        tmp[16];
-    char* const end = base::toChars(tmp, tmp + sizeof(tmp), lineNumber);
+    char* const end = zb::toChars(tmp, tmp + sizeof(tmp), lineNumber);
     ZB_ASSERT(end != nullptr);
 
     buffer.emplaceRange(prefix.data(), prefix.size());
-    buffer.emplaceRange(tmp, static_cast<base::SizeT>(end - tmp));
+    buffer.emplaceRange(tmp, static_cast<zb::SizeT>(end - tmp));
     buffer.pushBack('\n');
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<base::StringView> ShaderUtils::parseIncludeDirective(base::StringView line)
+zb::Optional<zb::StringView> ShaderUtils::parseIncludeDirective(zb::StringView line)
 {
     const auto fail = [&](const char* what)
     {
         priv::errMsg("Malformed GLSL #include directive ({}): {}", what, line);
-        return base::nullOpt;
+        return zb::nullOpt;
     };
 
-    base::SizeT pos = 0;
+    zb::SizeT pos = 0;
 
     // Skip leading whitespace
     while (pos < line.size() && (line[pos] == ' ' || line[pos] == '\t'))
         ++pos;
 
     // Check for #include
-    constexpr base::StringView includeKeyword{"#include"};
+    constexpr zb::StringView includeKeyword{"#include"};
 
     if (line.size() - pos < includeKeyword.size())
-        return base::makeOptional<base::StringView>(); // not an include
+        return zb::makeOptional<zb::StringView>(); // not an include
 
     if (line.substrByPosLen(pos, includeKeyword.size()) != includeKeyword)
-        return base::makeOptional<base::StringView>(); // not an include
+        return zb::makeOptional<zb::StringView>(); // not an include
 
     pos += includeKeyword.size();
 
     // Must be followed by whitespace or quote (not e.g. #includeFoo)
     if (pos < line.size() && line[pos] != ' ' && line[pos] != '\t' && line[pos] != '"')
-        return base::makeOptional<base::StringView>(); // not an include
+        return zb::makeOptional<zb::StringView>(); // not an include
 
     // At this point we know it's an #include directive -- any further issue is a hard error
 
@@ -252,7 +252,7 @@ base::Optional<base::StringView> ShaderUtils::parseIncludeDirective(base::String
     ++pos;
 
     // Find closing double quote
-    const base::SizeT filenameStart = pos;
+    const zb::SizeT filenameStart = pos;
     while (pos < line.size() && line[pos] != '"')
         ++pos;
 
@@ -262,12 +262,12 @@ base::Optional<base::StringView> ShaderUtils::parseIncludeDirective(base::String
     if (pos == filenameStart)
         return fail("empty filename");
 
-    return base::makeOptional<base::StringView>(line.substrByPosLen(filenameStart, pos - filenameStart));
+    return zb::makeOptional<zb::StringView>(line.substrByPosLen(filenameStart, pos - filenameStart));
 }
 
 
 ////////////////////////////////////////////////////////////
-bool ShaderUtils::preprocessGlslIncludes(base::StringView source, const Path& shaderPath, base::Vector<char>& output)
+bool ShaderUtils::preprocessGlslIncludes(zb::StringView source, const Path& shaderPath, zb::Vector<char>& output)
 {
     output.clear();
 
@@ -283,7 +283,7 @@ bool ShaderUtils::preprocessGlslIncludes(base::StringView source, const Path& sh
     }
     const Path& absoluteShaderPath = *absMaybe;
 
-    base::Vector<Path> includeStack;
+    zb::Vector<Path> includeStack;
     includeStack.pushBack(absoluteShaderPath);
 
     return preprocessGlslIncludesImpl(source, absoluteShaderPath.getParent(), output, includeStack, 0);

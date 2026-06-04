@@ -161,7 +161,7 @@ struct [[nodiscard]] ZA_GRAPHICS_API View
         const float a = 2.f / size.x;
         const float b = -2.f / size.y;
 
-        const auto [sine, cosine] = base::sinCosLookup(rotation.asRadians());
+        const auto [sine, cosine] = zb::sinCosLookup(rotation.asRadians());
 
         // Analytically derived matrix: Scale_proj * Rot_-theta * Trans_-center
         return {a * cosine,
@@ -185,7 +185,7 @@ struct [[nodiscard]] ZA_GRAPHICS_API View
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::pure]] constexpr Transform getInverseTransform() const
     {
-        const auto [sine, cosine] = base::sinCosLookup(rotation.asRadians());
+        const auto [sine, cosine] = zb::sinCosLookup(rotation.asRadians());
 
         const float hw = size.x * 0.5f;
         const float hh = size.y * 0.5f;

@@ -36,7 +36,7 @@ priv::SDLWindowImpl& WindowBase::getWindowImpl()
 
 
 ////////////////////////////////////////////////////////////
-WindowBase::WindowBase(base::PassKey<WindowBase>&&, base::UniquePtr<priv::SDLWindowImpl>&& impl) :
+WindowBase::WindowBase(zb::PassKey<WindowBase>&&, zb::UniquePtr<priv::SDLWindowImpl>&& impl) :
     m_impl(ZB_MOVE(impl))
 {
     ZB_ASSERT(m_impl != nullptr);
@@ -47,22 +47,22 @@ WindowBase::WindowBase(base::PassKey<WindowBase>&&, base::UniquePtr<priv::SDLWin
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<WindowBase> WindowBase::create(const WindowSettings& windowSettings)
+zb::Optional<WindowBase> WindowBase::create(const WindowSettings& windowSettings)
 {
     auto impl = priv::SDLWindowImpl::create(windowSettings);
 
-    return impl ? base::Optional<WindowBase>(base::inPlace, base::PassKey<WindowBase>{}, ZB_MOVE(impl))
-                : base::nullOpt;
+    return impl ? zb::Optional<WindowBase>(zb::inPlace, zb::PassKey<WindowBase>{}, ZB_MOVE(impl))
+                : zb::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<WindowBase> WindowBase::create(const WindowHandle handle)
+zb::Optional<WindowBase> WindowBase::create(const WindowHandle handle)
 {
     auto impl = priv::SDLWindowImpl::create(handle);
 
-    return impl ? base::Optional<WindowBase>(base::inPlace, base::PassKey<WindowBase>{}, ZB_MOVE(impl))
-                : base::nullOpt;
+    return impl ? zb::Optional<WindowBase>(zb::inPlace, zb::PassKey<WindowBase>{}, ZB_MOVE(impl))
+                : zb::nullOpt;
 }
 
 
@@ -79,21 +79,21 @@ WindowBase& WindowBase::operator=(WindowBase&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Event> WindowBase::pollEvent()
+zb::Optional<Event> WindowBase::pollEvent()
 {
     return filterEvent(m_impl->pollEvent());
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Event> WindowBase::waitEvent()
+zb::Optional<Event> WindowBase::waitEvent()
 {
     return filterEvent(m_impl->waitEvent(Time{}));
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Event> WindowBase::waitEvent(const Time timeout)
+zb::Optional<Event> WindowBase::waitEvent(const Time timeout)
 {
     return filterEvent(m_impl->waitEvent(timeout));
 }
@@ -157,7 +157,7 @@ void WindowBase::setMinimumSize(const Vec2u& minimumSize)
 
     ZB_ASSERT(validateMinimumSize() && "Minimum size cannot be bigger than the maximum size along either axis");
 
-    m_impl->setMinimumSize(base::makeOptional(minimumSize));
+    m_impl->setMinimumSize(zb::makeOptional(minimumSize));
     setSize(getSize());
 }
 
@@ -166,13 +166,13 @@ void WindowBase::setMinimumSize(const Vec2u& minimumSize)
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::setMinimumSize(const base::Optional<Vec2u>& minimumSize)
+void WindowBase::setMinimumSize(const zb::Optional<Vec2u>& minimumSize)
 {
     if (minimumSize.hasValue())
         setMinimumSize(*minimumSize);
     else
     {
-        m_impl->setMinimumSize(base::nullOpt);
+        m_impl->setMinimumSize(zb::nullOpt);
         setSize(getSize());
     }
 }
@@ -191,19 +191,19 @@ void WindowBase::setMaximumSize(const Vec2u& maximumSize)
 
     ZB_ASSERT(validateMaximumSize() && "Maximum size cannot be smaller than the minimum size along either axis");
 
-    m_impl->setMaximumSize(base::makeOptional(maximumSize));
+    m_impl->setMaximumSize(zb::makeOptional(maximumSize));
     setSize(getSize());
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::setMaximumSize(const base::Optional<Vec2u>& maximumSize)
+void WindowBase::setMaximumSize(const zb::Optional<Vec2u>& maximumSize)
 {
     if (maximumSize.hasValue())
         setMaximumSize(*maximumSize);
     else
     {
-        m_impl->setMaximumSize(base::nullOpt);
+        m_impl->setMaximumSize(zb::nullOpt);
         setSize(getSize());
     }
 }
@@ -217,7 +217,7 @@ void WindowBase::setTitle(const Utf8String& title)
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::setIcon(const base::U8* const pixels, const Vec2u size)
+void WindowBase::setIcon(const zb::U8* const pixels, const Vec2u size)
 {
     m_impl->setIcon(pixels, size);
 }
@@ -308,7 +308,7 @@ bool WindowBase::createVulkanSurface(const Vulkan::VulkanSurfaceData& vulkanSurf
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Event> WindowBase::filterEvent(const base::Optional<Event> event)
+zb::Optional<Event> WindowBase::filterEvent(const zb::Optional<Event> event)
 {
     // Cache the new size if needed
     if (event.hasValue() && event->getIf<Event::Resized>())

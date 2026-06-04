@@ -363,7 +363,7 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 /// \brief Heap-fallback for `fmtTo` / `print`. Allocates a doubling
-/// `base::String` until the format succeeds, then flushes once
+/// `zb::String` until the format succeeds, then flushes once
 /// through `userSink`.
 ////////////////////////////////////////////////////////////
 [[nodiscard]] ZA_SYSTEM_API FmtResult fmtToHeapFallback(

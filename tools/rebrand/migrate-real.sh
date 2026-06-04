@@ -226,6 +226,76 @@ if [[ -f src/Zancle/Network/Http.cpp ]]; then
 fi
 echo "  done."
 
+echo "  done."
+
+# -- 2g. Build-tested cleanups (discovered while making the rebrand compile) -
+# These patterns were uncovered during the first real-repo build cycle and
+# are mechanical enough to belong here. See README.md for the full story.
+echo "[Phase 2g] Build-tested cleanups..."
+
+# (i) `SFML<Upper>` glued-prefix identifiers: function names like
+#     `mapSFMLScancodeToSDL`, `getSDLButtonFromSFMLButton`, and CMake EXPORT
+#     names like `SFMLImGuiStaticTargets`. The bare `\bSFML\b` rule misses
+#     these because there is no word boundary between `L` and the next upper
+#     letter.
+sub 's/\bSFML([A-Z])/Zancle$1/g'
+
+# (ii) Sub-namespace shorthand: code used to write `base::Foo` inside
+#      `namespace sf { ... }`, relying on the nested `sf::base` namespace
+#      being visible. After promoting Base to the sibling top-level `zb::`,
+#      bare `base::` no longer resolves and must become `zb::`.
+#      Scoped to C++ source so we don't rewrite documentation prose that
+#      mentions an unrelated "base::" by coincidence.
+mapfile -t CPP_FILES < <(
+    find . -type d \( \
+           -name 'build' -o -name 'build_*' \
+        -o -name 'CMakeFiles' -o -name 'Testing' \
+        -o -path './extlibs'    -o -path './.git' \
+        -o -path './tools/rebrand' -o -path './webpage' \
+    \) -prune -o -type f \( \
+        -name '*.hpp' -o -name '*.cpp' -o -name '*.h' -o -name '*.c' \
+     -o -name '*.inl' -o -name '*.mm' -o -name '*.m' \
+    \) -print
+)
+if (( ${#CPP_FILES[@]} > 0 )); then
+    printf '%s\0' "${CPP_FILES[@]}" | xargs -0 perl -i -pe 's/\bbase::/zb::/g'
+fi
+
+# (iii) Relative include paths peeking into private headers: tests use
+#       `#include "../src/SFML/GLUtils/GlContext.hpp"` to access internals.
+#       My `<SFML/...>` and `"SFML/..."` rules don't match the `../src/`
+#       prefix.
+sub 's{"\.\./src/SFML/}{"../src/Zancle/}g'
+
+# (iv) BASE_INCROOT / BASE_SRCROOT in src/Zancle/System/CMakeLists.txt.
+#      File moves promoted Base/ to top-level sibling (include/ZancleBase/,
+#      src/ZancleBase/), but the CMake substitution `s/SFML/Zancle/g`
+#      naively kept the nested path. Re-point to the sibling.
+if [[ -f src/Zancle/System/CMakeLists.txt ]]; then
+    perl -i -pe 's{(?<=include/)Zancle/Base\b}{ZancleBase}g; s{(?<=src/)Zancle/Base\b}{ZancleBase}g' \
+        src/Zancle/System/CMakeLists.txt
+fi
+
+# (v) Test version vars: test/System/CMakeLists.txt set
+#     `EXPECTED_ZA_VERSION_MAJOR=${ZA_VERSION_MAJOR}` after the rename, but
+#     `ZA_VERSION_MAJOR` is not a CMake variable -- the CMake-magic one
+#     follows the `project()` name (`Zancle_VERSION_MAJOR`) or use
+#     `PROJECT_VERSION_MAJOR`.
+if [[ -f test/System/CMakeLists.txt ]]; then
+    perl -i -pe 's/\$\{ZA_VERSION_MAJOR\}/\${PROJECT_VERSION_MAJOR}/g;
+                 s/\$\{ZA_VERSION_MINOR\}/\${PROJECT_VERSION_MINOR}/g;
+                 s/\$\{ZA_VERSION_PATCH\}/\${PROJECT_VERSION_PATCH}/g' \
+        test/System/CMakeLists.txt
+fi
+
+# (vi) Brand strings inside error-message prefixes: `[[SFML ERROR]]`,
+#      `[[SFML ASSERTION FAILURE]]`, `[[SFML OPTIONAL FAILURE]]` are
+#      user-visible at runtime and should follow the rebrand.
+sub 's/\[\[SFML ERROR\]\]/[[ZANCLE ERROR]]/g'
+sub 's/\[\[SFML ASSERTION FAILURE\]\]/[[ZANCLE ASSERTION FAILURE]]/g'
+sub 's/\[\[SFML OPTIONAL FAILURE\]\]/[[ZANCLE OPTIONAL FAILURE]]/g'
+echo "  done."
+
 echo
 echo "migrate-real.sh complete."
 echo "Next: git status / git diff --stat, then build, then commit."

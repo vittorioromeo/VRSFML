@@ -45,7 +45,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float asDegrees() const
     {
-        return radians * (180.f / base::pi);
+        return radians * (180.f / zb::pi);
     }
 
 
@@ -92,7 +92,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle wrapSigned() const
     {
-        return Angle(base::positiveRemainder(radians + base::pi, base::tau) - base::pi);
+        return Angle(zb::positiveRemainder(radians + zb::pi, zb::tau) - zb::pi);
     }
 
 
@@ -127,7 +127,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle wrapUnsigned() const
     {
-        return Angle(base::positiveRemainder(radians, base::tau));
+        return Angle(zb::positiveRemainder(radians, zb::tau));
     }
 
 
@@ -145,12 +145,12 @@ public:
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle rotatedTowards(const Angle other,
                                                                                                      const float speed) const
     {
-        float diff = base::remainder(other.radians - radians, base::tau);
+        float diff = zb::remainder(other.radians - radians, zb::tau);
 
-        if (diff > base::pi)
-            diff -= base::tau;
-        else if (diff < -base::pi)
-            diff += base::tau;
+        if (diff > zb::pi)
+            diff -= zb::tau;
+        else if (diff < -zb::pi)
+            diff += zb::tau;
 
         if (ZB_MATH_FABSF(diff) <= speed)
             return Angle{other.radians};
@@ -162,11 +162,11 @@ public:
         else
             result -= speed;
 
-        // Normalize to [0, base::tau)
-        result = base::remainder(result, base::tau);
+        // Normalize to [0, zb::tau)
+        result = zb::remainder(result, zb::tau);
 
         if (result < 0.f)
-            result += base::tau;
+            result += zb::tau;
 
         return Angle{result};
     }
@@ -369,7 +369,7 @@ public:
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr Angle operator%(const Angle lhs, const Angle rhs)
     {
         ZB_ASSERT(rhs.radians != 0.f && "Angle::operator% cannot modulus by 0");
-        return Angle(base::positiveRemainder(lhs.radians, rhs.radians));
+        return Angle(zb::positiveRemainder(lhs.radians, rhs.radians));
     }
 
 
@@ -380,7 +380,7 @@ public:
     [[gnu::always_inline, gnu::flatten]] friend constexpr Angle& operator%=(Angle& lhs, const Angle rhs)
     {
         ZB_ASSERT(rhs.radians != 0.f && "Angle::operator%= cannot modulus by 0");
-        lhs.radians = base::positiveRemainder(lhs.radians, rhs.radians);
+        lhs.radians = zb::positiveRemainder(lhs.radians, rhs.radians);
         return lhs;
     }
 
@@ -418,17 +418,17 @@ inline constexpr Angle Angle::Zero{}; //!< Predefined 0 degree angle valuep
 
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(readability-identifier-naming)
-inline constexpr Angle Angle::Quarter{base::halfPi}; //!< Predefined 90 degree angle value
+inline constexpr Angle Angle::Quarter{zb::halfPi}; //!< Predefined 90 degree angle value
 
 
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(readability-identifier-naming)
-inline constexpr Angle Angle::Half{base::pi}; //!< Predefined 180 degree angle value
+inline constexpr Angle Angle::Half{zb::pi}; //!< Predefined 180 degree angle value
 
 
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(readability-identifier-naming)
-inline constexpr Angle Angle::Full{base::tau}; //!< Predefined 360 degree angle value
+inline constexpr Angle Angle::Full{zb::tau}; //!< Predefined 360 degree angle value
 
 
 ////////////////////////////////////////////////////////////
@@ -439,7 +439,7 @@ inline constexpr Angle Angle::Full{base::tau}; //!< Predefined 360 degree angle 
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr Angle degrees(const float angle)
 {
-    return Angle(angle * (base::pi / 180.f));
+    return Angle(angle * (zb::pi / 180.f));
 }
 
 

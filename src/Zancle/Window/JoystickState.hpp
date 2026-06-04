@@ -21,7 +21,7 @@ namespace za::priv
 ////////////////////////////////////////////////////////////
 struct JoystickState
 {
-    base::EnumArray<Joystick::Axis, float, Joystick::AxisCount> axes{}; //!< Position of each axis, in range [-100, 100]
+    zb::EnumArray<Joystick::Axis, float, Joystick::AxisCount> axes{}; //!< Position of each axis, in range [-100, 100]
     bool buttons[Joystick::ButtonCount]{};                              //!< Status of each button (true = pressed)
 };
 

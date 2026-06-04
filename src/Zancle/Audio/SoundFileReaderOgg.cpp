@@ -116,9 +116,9 @@ SoundFileReaderOgg::~SoundFileReaderOgg()
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<SoundFileReader::Info> SoundFileReaderOgg::open(InputStream& stream)
+zb::Optional<SoundFileReader::Info> SoundFileReaderOgg::open(InputStream& stream)
 {
-    base::Optional<Info> result; // Use a single local variable for NRVO
+    zb::Optional<Info> result; // Use a single local variable for NRVO
 
     // Open the Vorbis stream
     const int status = ov_open_callbacks(&stream, &m_impl->vorbis, nullptr, 0, callbacks);
@@ -147,7 +147,7 @@ base::Optional<SoundFileReader::Info> SoundFileReaderOgg::open(InputStream& stre
 
     Info& info       = result.emplace();
     info.sampleRate  = static_cast<unsigned int>(vorbisInfo->rate);
-    info.sampleCount = static_cast<base::SizeT>(ov_pcm_total(&m_impl->vorbis, -1) * vorbisInfo->channels);
+    info.sampleCount = static_cast<zb::SizeT>(ov_pcm_total(&m_impl->vorbis, -1) * vorbisInfo->channels);
 
     // For Vorbis channel mapping refer to: https://xiph.org/vorbis/doc/Vorbis_I_spec.html#x1-810004.3.9
     switch (static_cast<unsigned int>(vorbisInfo->channels))
@@ -215,7 +215,7 @@ base::Optional<SoundFileReader::Info> SoundFileReaderOgg::open(InputStream& stre
 
 
 ////////////////////////////////////////////////////////////
-void SoundFileReaderOgg::seek(base::U64 sampleOffset)
+void SoundFileReaderOgg::seek(zb::U64 sampleOffset)
 {
     ZB_ASSERT(m_impl->vorbis.datasource != nullptr &&
                      "Vorbis datasource is missing. Call SoundFileReaderOgg::open() to initialize it.");
@@ -225,21 +225,21 @@ void SoundFileReaderOgg::seek(base::U64 sampleOffset)
 
 
 ////////////////////////////////////////////////////////////
-base::U64 SoundFileReaderOgg::read(base::I16* samples, base::U64 maxCount)
+zb::U64 SoundFileReaderOgg::read(zb::I16* samples, zb::U64 maxCount)
 {
     ZB_ASSERT(m_impl->vorbis.datasource != nullptr &&
                      "Vorbis datasource is missing. Call SoundFileReaderOgg::open() to initialize it.");
 
     // Try to read the requested number of samples, stop only on error or end of file
-    base::U64 count = 0;
+    zb::U64 count = 0;
     while (count < maxCount)
     {
-        const int bytesToRead = static_cast<int>(maxCount - count) * static_cast<int>(sizeof(base::I16));
+        const int bytesToRead = static_cast<int>(maxCount - count) * static_cast<int>(sizeof(zb::I16));
         const long bytesRead = ov_read(&m_impl->vorbis, reinterpret_cast<char*>(samples), bytesToRead, ZA_IS_BIG_ENDIAN, 2, 1, nullptr);
         if (bytesRead > 0)
         {
-            const long samplesRead = bytesRead / static_cast<long>(sizeof(base::I16));
-            count += static_cast<base::U64>(samplesRead);
+            const long samplesRead = bytesRead / static_cast<long>(sizeof(zb::I16));
+            count += static_cast<zb::U64>(samplesRead);
             samples += samplesRead;
         }
         else

@@ -189,7 +189,7 @@ struct FontFace::Impl
 
 
     ////////////////////////////////////////////////////////////
-    void setOwnedStream(base::UniquePtr<InputStream>&& ownedStream)
+    void setOwnedStream(zb::UniquePtr<InputStream>&& ownedStream)
     {
         m_stream = ZB_MOVE(ownedStream);
     }
@@ -485,7 +485,7 @@ struct FontFace::Impl
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::U8* getPixelBufferData()
+    [[nodiscard]] zb::U8* getPixelBufferData()
     {
         return m_pixelBuffer.data();
     }
@@ -534,14 +534,14 @@ private:
     mutable ankerl::unordered_dense::map<KerningKey, float, KerningKeyHash> m_kerningCache;
     mutable ankerl::unordered_dense::map<char32_t, unsigned int>            m_charIndexCache;
 
-    base::UniquePtr<InputStream> m_stream;
+    zb::UniquePtr<InputStream> m_stream;
 
-    mutable base::Vector<base::U8> m_pixelBuffer;
+    mutable zb::Vector<zb::U8> m_pixelBuffer;
 };
 
 
 ////////////////////////////////////////////////////////////
-FontFace::FontFace(base::PassKey<FontFace>&&) : m_impl(base::makeUnique<Impl>())
+FontFace::FontFace(zb::PassKey<FontFace>&&) : m_impl(zb::makeUnique<Impl>())
 {
 }
 
@@ -553,9 +553,9 @@ FontFace& FontFace::operator=(FontFace&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<FontFace> FontFace::openFromFile(const Path& filename)
+zb::Optional<FontFace> FontFace::openFromFile(const Path& filename)
 {
-    base::Optional<FontFace> result;
+    zb::Optional<FontFace> result;
 
 #ifndef ZA_SYSTEM_ANDROID
     auto optStream = FileInputStream::open(filename);
@@ -565,7 +565,7 @@ base::Optional<FontFace> FontFace::openFromFile(const Path& filename)
         return result;
     }
 
-    auto                  stream = base::makeUnique<FileInputStream>(ZB_MOVE(*optStream));
+    auto                  stream = zb::makeUnique<FileInputStream>(ZB_MOVE(*optStream));
     constexpr const char* type   = "file";
 #else
     auto optStream = ResourceStream::open(filename);
@@ -575,7 +575,7 @@ base::Optional<FontFace> FontFace::openFromFile(const Path& filename)
         return result;
     }
 
-    auto                  stream = base::makeUnique<priv::ResourceStream>(ZB_MOVE(*optStream));
+    auto                  stream = zb::makeUnique<priv::ResourceStream>(ZB_MOVE(*optStream));
     constexpr const char* type   = "Android resource stream";
 #endif
 
@@ -590,9 +590,9 @@ base::Optional<FontFace> FontFace::openFromFile(const Path& filename)
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<FontFace> FontFace::openFromMemory(const void* data, base::SizeT sizeInBytes)
+zb::Optional<FontFace> FontFace::openFromMemory(const void* data, zb::SizeT sizeInBytes)
 {
-    base::Optional<FontFace> result;
+    zb::Optional<FontFace> result;
 
     if (!data)
     {
@@ -600,7 +600,7 @@ base::Optional<FontFace> FontFace::openFromMemory(const void* data, base::SizeT 
         return result;
     }
 
-    auto memoryStream = base::makeUnique<MemoryInputStream>(data, sizeInBytes);
+    auto memoryStream = zb::makeUnique<MemoryInputStream>(data, sizeInBytes);
     result            = openFromStreamImpl(*memoryStream, "memory");
 
     if (result.hasValue())
@@ -611,10 +611,10 @@ base::Optional<FontFace> FontFace::openFromMemory(const void* data, base::SizeT 
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<FontFace> FontFace::openFromStreamImpl(InputStream& stream, const char* const type)
+zb::Optional<FontFace> FontFace::openFromStreamImpl(InputStream& stream, const char* const type)
 {
-    base::Optional<FontFace> result;
-    result.emplace(base::PassKey<FontFace>{});
+    zb::Optional<FontFace> result;
+    result.emplace(zb::PassKey<FontFace>{});
 
     if (!result->m_impl->openFromStream(stream, type))
         result.reset();
@@ -624,12 +624,12 @@ base::Optional<FontFace> FontFace::openFromStreamImpl(InputStream& stream, const
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<FontFace> FontFace::openFromStream(InputStream& stream)
+zb::Optional<FontFace> FontFace::openFromStream(InputStream& stream)
 {
     if (!stream.seek(0).hasValue())
     {
         priv::errMsg("Failed to seek font face stream");
-        return base::nullOpt;
+        return zb::nullOpt;
     }
 
     return openFromStreamImpl(stream, "stream");
@@ -693,7 +693,7 @@ float FontFace::getUnderlineThickness(const unsigned int characterSize) const
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Glyph> FontFace::rasterizeAndPackGlyph(
+zb::Optional<Glyph> FontFace::rasterizeAndPackGlyph(
     TextureAtlas&      atlas,
     const char32_t     codePoint,
     const unsigned int characterSize,
@@ -709,18 +709,18 @@ base::Optional<Glyph> FontFace::rasterizeAndPackGlyph(
         if (!optRect.hasValue())
         {
             priv::errMsg("Failed to add glyph to the atlas (code point: {})", static_cast<unsigned int>(codePoint));
-            return base::nullOpt;
+            return zb::nullOpt;
         }
 
         result.glyph.textureRect.position += optRect->position;
     }
 
-    return base::makeOptional<Glyph>(result.glyph);
+    return zb::makeOptional<Glyph>(result.glyph);
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<GlyphMapping> FontFace::loadGlyphs(TextureAtlas& atlas, const GlyphLoadSettings& settings) const
+zb::Optional<GlyphMapping> FontFace::loadGlyphs(TextureAtlas& atlas, const GlyphLoadSettings& settings) const
 {
     GlyphMapping result{
         .fillGlyphs{},
@@ -737,14 +737,14 @@ base::Optional<GlyphMapping> FontFace::loadGlyphs(TextureAtlas& atlas, const Gly
         .cachedUnderlineThickness = m_impl->getUnderlineThickness(settings.characterSize),
     };
 
-    for (base::SizeT i = 0u; i < settings.codePointCount; ++i)
+    for (zb::SizeT i = 0u; i < settings.codePointCount; ++i)
     {
         const char32_t codePoint = settings.codePoints[i];
 
         const auto optFillGlyph = rasterizeAndPackGlyph(atlas, codePoint, settings.characterSize, settings.bold, 0.f);
 
         if (!optFillGlyph.hasValue())
-            return base::nullOpt; // Error already logged in `rasterizeAndPackGlyph`
+            return zb::nullOpt; // Error already logged in `rasterizeAndPackGlyph`
 
         result.fillGlyphs[codePoint] = *optFillGlyph;
 
@@ -758,12 +758,12 @@ base::Optional<GlyphMapping> FontFace::loadGlyphs(TextureAtlas& atlas, const Gly
                                                            settings.outlineThickness);
 
         if (!optOutlineGlyph.hasValue())
-            return base::nullOpt; // Error already logged in `rasterizeAndPackGlyph`
+            return zb::nullOpt; // Error already logged in `rasterizeAndPackGlyph`
 
         result.outlineGlyphs[codePoint] = *optOutlineGlyph;
     }
 
-    return base::makeOptional(ZB_MOVE(result));
+    return zb::makeOptional(ZB_MOVE(result));
 }
 
 } // namespace za

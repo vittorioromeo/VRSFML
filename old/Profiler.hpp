@@ -21,12 +21,12 @@ namespace za::profiler
 ////////////////////////////////////////////////////////////
 struct ScopeInfo
 {
-    base::StringView label;
-    base::StringView file;
-    base::StringView func;
-    base::StringView line;
+    zb::StringView label;
+    zb::StringView file;
+    zb::StringView func;
+    zb::StringView line;
 
-    base::I64 timeUs;
+    zb::I64 timeUs;
 };
 
 } // namespace za::profiler
@@ -35,7 +35,7 @@ struct ScopeInfo
 namespace za::profiler::priv
 {
 ////////////////////////////////////////////////////////////
-inline constexpr base::SizeT maxNodes = 128u;
+inline constexpr zb::SizeT maxNodes = 128u;
 
 
 ////////////////////////////////////////////////////////////
@@ -43,15 +43,15 @@ struct [[nodiscard]] Database
 {
     ////////////////////////////////////////////////////////////
     ScopeInfo   nodes[priv::maxNodes]{};
-    base::SizeT nextNodeId = 0u;
+    zb::SizeT nextNodeId = 0u;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] ScopeInfo& initNode(const base::StringView label,
-                                      const base::StringView file,
-                                      const base::StringView func,
-                                      const base::StringView line)
+    [[nodiscard]] ScopeInfo& initNode(const zb::StringView label,
+                                      const zb::StringView file,
+                                      const zb::StringView func,
+                                      const zb::StringView line)
     {
-        const base::SizeT id = nextNodeId++;
+        const zb::SizeT id = nextNodeId++;
         ZB_ASSERT(id < priv::maxNodes);
 
         nodes[id] = ScopeInfo{
@@ -101,9 +101,9 @@ struct [[nodiscard]] ScopeGuard
 namespace za::profiler
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline base::Span<const ScopeInfo> getScopeInfos()
+[[nodiscard, gnu::always_inline]] inline zb::Span<const ScopeInfo> getScopeInfos()
 {
-    return base::Span<const ScopeInfo>{priv::tlDatabase.nodes, priv::tlDatabase.nextNodeId};
+    return zb::Span<const ScopeInfo>{priv::tlDatabase.nodes, priv::tlDatabase.nextNodeId};
 }
 
 } // namespace za::profiler

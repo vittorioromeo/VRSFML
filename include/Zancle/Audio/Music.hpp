@@ -217,7 +217,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 2176> m_impl; //!< Holds the templated `SoundStream<MusicState>` (hidden from this header)
+    zb::InPlacePImpl<Impl, 2176> m_impl; //!< Holds the templated `SoundStream<MusicState>` (hidden from this header)
 };
 
 } // namespace za

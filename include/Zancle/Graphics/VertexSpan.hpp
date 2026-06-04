@@ -22,9 +22,9 @@ namespace za::priv
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-struct VertexSpanImpl : base::Span<T>
+struct VertexSpanImpl : zb::Span<T>
 {
-    using base::Span<T>::Span;
+    using zb::Span<T>::Span;
 
     ////////////////////////////////////////////////////////////
     /// \brief Converts a mutable vertex span to an immutable vertex span
@@ -161,13 +161,13 @@ using ConstVertexSpan = priv::VertexSpanImpl<const Vertex>;
 /// \struct za::VertexSpan
 /// \ingroup graphics
 ///
-/// `za::VertexSpan` is a thin refinement of `base::Span<Vertex>`
+/// `za::VertexSpan` is a thin refinement of `zb::Span<Vertex>`
 /// that adds vertex-specific helpers such as bounding box and
 /// extrema queries (`getGlobalBounds`, `getTopLeft`,
 /// `getBottomRight`, ...).
 ///
 /// `za::ConstVertexSpan` is the immutable equivalent
-/// (`base::Span<const Vertex>`) and exposes the same query API.
+/// (`zb::Span<const Vertex>`) and exposes the same query API.
 /// A mutable `VertexSpan` implicitly converts to a
 /// `ConstVertexSpan`.
 ///

@@ -503,7 +503,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
         CHECK(vEmpty[0].value == 10);
         // 3 elements moved from v1 to vEmpty, 3 moved-from in v1 destroyed
         CHECK(moveCtorCount == 3);
-        CHECK(moveAssignCount == 0); // No common part for base::swap
+        CHECK(moveAssignCount == 0); // No common part for zb::swap
         CHECK(dtorCount == 3);
     }
 

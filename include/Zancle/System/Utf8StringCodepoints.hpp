@@ -33,7 +33,7 @@ public:
     using value_type      = char32_t;
     using reference       = char32_t; //!< Dereference returns by value (proxy iterator)
     using pointer         = const char32_t*;
-    using difference_type = base::PtrDiffT;
+    using difference_type = zb::PtrDiffT;
 
 
 private:
@@ -41,7 +41,7 @@ private:
     const char* m_ptr;          //!< Start of current codepoint
     const char* m_end;          //!< One past the last byte
     char32_t    m_current{};    //!< Cached decoded codepoint
-    base::SizeT m_currentLen{}; //!< Byte width of current codepoint
+    zb::SizeT m_currentLen{}; //!< Byte width of current codepoint
 
 
     ////////////////////////////////////////////////////////////
@@ -54,7 +54,7 @@ private:
         }
 
         const char* const next = Utf<8>::decode(m_ptr, m_end, m_current, replacementCodepoint);
-        m_currentLen           = static_cast<base::SizeT>(next - m_ptr);
+        m_currentLen           = static_cast<zb::SizeT>(next - m_ptr);
     }
 
 
@@ -146,7 +146,7 @@ public:
 
 
 ////////////////////////////////////////////////////////////
-inline base::SizeT Utf8String::codepointCount() const
+inline zb::SizeT Utf8String::codepointCount() const
 {
     return Utf<8>::count(m_bytes.data(), m_bytes.data() + m_bytes.size());
 }

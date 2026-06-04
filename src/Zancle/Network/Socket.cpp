@@ -39,7 +39,7 @@ Socket::~Socket()
 ////////////////////////////////////////////////////////////
 Socket::Socket(Socket&& rhs) noexcept :
     m_type(rhs.m_type),
-    m_socket(base::exchange(rhs.m_socket, priv::SocketImpl::invalidSocket())),
+    m_socket(zb::exchange(rhs.m_socket, priv::SocketImpl::invalidSocket())),
     m_isBlocking(rhs.m_isBlocking)
 {
 }
@@ -55,7 +55,7 @@ Socket& Socket::operator=(Socket&& rhs) noexcept
         priv::SocketImpl::close(m_socket);
 
     m_type       = rhs.m_type;
-    m_socket     = base::exchange(rhs.m_socket, priv::SocketImpl::invalidSocket());
+    m_socket     = zb::exchange(rhs.m_socket, priv::SocketImpl::invalidSocket());
     m_isBlocking = rhs.m_isBlocking;
 
     return *this;

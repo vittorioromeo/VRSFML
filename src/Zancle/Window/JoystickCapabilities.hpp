@@ -22,7 +22,7 @@ namespace za::priv
 struct JoystickCapabilities
 {
     unsigned int buttonCount{};                                        //!< Number of buttons supported by the joystick
-    base::EnumArray<Joystick::Axis, bool, Joystick::AxisCount> axes{}; //!< Support for each axis
+    zb::EnumArray<Joystick::Axis, bool, Joystick::AxisCount> axes{}; //!< Support for each axis
 };
 
 } // namespace za::priv

@@ -932,7 +932,7 @@ void WindowImplSDL::setTitle(const String& title)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplSDL::setIcon(Vector2u size, const base::U8* pixels)
+void WindowImplSDL::setIcon(Vector2u size, const zb::U8* pixels)
 {
     SDL_Surface* iconSurface = SDL_CreateSurfaceFrom(static_cast<int>(size.x),
                                                      static_cast<int>(size.y),

@@ -60,7 +60,7 @@ public:
     /// \param count   Number of samples to write
     ///
     ////////////////////////////////////////////////////////////
-    virtual void write(const base::I16* samples, base::U64 count) = 0;
+    virtual void write(const zb::I16* samples, zb::U64 count) = 0;
 };
 
 } // namespace za
@@ -107,7 +107,7 @@ public:
 ///         // return true on success
 ///     }
 ///
-///     void write(const base::I16* samples, base::U64 count) override
+///     void write(const zb::I16* samples, zb::U64 count) override
 ///     {
 ///         // write 'count' samples stored at address 'samples',
 ///         // convert them (for example to normalized float) if the format requires it

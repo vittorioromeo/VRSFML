@@ -669,7 +669,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 288> m_impl; //!< Implementation details
+    zb::InPlacePImpl<Impl, 288> m_impl; //!< Implementation details
 };
 
 } // namespace za::priv

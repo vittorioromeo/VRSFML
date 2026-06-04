@@ -83,22 +83,22 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Set the minimum window rendering region size
     ///
-    /// Pass `base::nullOpt` to unset the minimum size
+    /// Pass `zb::nullOpt` to unset the minimum size
     ///
     /// \param minimumSize New minimum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    void setMinimumSize(const base::Optional<Vec2u>& minimumSize) override;
+    void setMinimumSize(const zb::Optional<Vec2u>& minimumSize) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the maximum window rendering region size
     ///
-    /// Pass `base::nullOpt` to unset the maximum size
+    /// Pass `zb::nullOpt` to unset the maximum size
     ///
     /// \param maximumSize New maximum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    void setMaximumSize(const base::Optional<Vec2u>& maximumSize) override;
+    void setMaximumSize(const zb::Optional<Vec2u>& maximumSize) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the title of the window
@@ -115,7 +115,7 @@ public:
     /// \param size   Icon's width and height, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    void setIcon(const base::U8* pixels, Vec2u size) override;
+    void setIcon(const zb::U8* pixels, Vec2u size) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window

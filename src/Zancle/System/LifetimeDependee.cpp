@@ -134,7 +134,7 @@ LifetimeDependee::~LifetimeDependee()
     if (finalCount == 0u)
         return;
 
-    const auto toLowerStr = [](base::String s)
+    const auto toLowerStr = [](zb::String s)
     {
         for (char& c : s)
             c = static_cast<char>(std::tolower(c));
@@ -142,7 +142,7 @@ LifetimeDependee::~LifetimeDependee()
         return s;
     };
 
-    const auto toTildes = [](base::String s)
+    const auto toTildes = [](zb::String s)
     {
         for (char& c : s)
             c = '~';
@@ -209,8 +209,8 @@ LifetimeDependee::~LifetimeDependee()
 
     priv::errMsg("{}", '\n');
 
-    base::priv::printStackTrace();
-    base::abort();
+    zb::priv::printStackTrace();
+    zb::abort();
 }
 
 

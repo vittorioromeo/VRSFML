@@ -77,17 +77,17 @@ struct SoundFileReaderMp3::Impl
 {
     mp3dec_io_t io{};
     mp3dec_ex_t decoder{};
-    base::U64   numSamples{}; // Decompressed audio storage size
-    base::U64   position{};   // Position in decompressed audio buffer
+    zb::U64   numSamples{}; // Decompressed audio storage size
+    zb::U64   position{};   // Position in decompressed audio buffer
 };
 
 
 ////////////////////////////////////////////////////////////
 bool SoundFileReaderMp3::check(InputStream& stream)
 {
-    base::U8 header[10];
+    zb::U8 header[10];
 
-    if (base::Optional readResult = stream.read(header, sizeof(header));
+    if (zb::Optional readResult = stream.read(header, sizeof(header));
         !readResult.hasValue() || *readResult != sizeof(header))
         return false;
 
@@ -111,13 +111,13 @@ SoundFileReaderMp3::~SoundFileReaderMp3()
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<SoundFileReader::Info> SoundFileReaderMp3::open(InputStream& stream)
+zb::Optional<SoundFileReader::Info> SoundFileReaderMp3::open(InputStream& stream)
 {
     // Init IO callbacks
     m_impl->io.read_data = &stream;
     m_impl->io.seek_data = &stream;
 
-    base::Optional<Info> result; // Use a single local variable for NRVO
+    zb::Optional<Info> result; // Use a single local variable for NRVO
 
     // Init mp3 decoder
     mp3dec_ex_open_cb(&m_impl->decoder, &m_impl->io, MP3D_SEEK_TO_SAMPLE);
@@ -153,18 +153,18 @@ base::Optional<SoundFileReader::Info> SoundFileReaderMp3::open(InputStream& stre
 
 
 ////////////////////////////////////////////////////////////
-void SoundFileReaderMp3::seek(base::U64 sampleOffset)
+void SoundFileReaderMp3::seek(zb::U64 sampleOffset)
 {
-    m_impl->position = base::min(sampleOffset, m_impl->numSamples);
+    m_impl->position = zb::min(sampleOffset, m_impl->numSamples);
     mp3dec_ex_seek(&m_impl->decoder, m_impl->position);
 }
 
 
 ////////////////////////////////////////////////////////////
-base::U64 SoundFileReaderMp3::read(base::I16* samples, base::U64 maxCount)
+zb::U64 SoundFileReaderMp3::read(zb::I16* samples, zb::U64 maxCount)
 {
-    base::U64 toRead = base::min(maxCount, m_impl->numSamples - m_impl->position);
-    toRead           = base::U64{mp3dec_ex_read(&m_impl->decoder, samples, static_cast<base::SizeT>(toRead))};
+    zb::U64 toRead = zb::min(maxCount, m_impl->numSamples - m_impl->position);
+    toRead           = zb::U64{mp3dec_ex_read(&m_impl->decoder, samples, static_cast<zb::SizeT>(toRead))};
     m_impl->position += toRead;
     return toRead;
 }

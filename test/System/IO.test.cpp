@@ -459,19 +459,19 @@ TEST_CASE("[System] za::writeToFile and za::readFromFile")
         CHECK(contents == "short");
     }
 
-    SECTION("Round-trip into base::String")
+    SECTION("Round-trip into zb::String")
     {
         const TemporaryFile temporaryFile;
         const za::Path&     path = temporaryFile.getPath();
 
-        CHECK(za::writeToFile(path, "Hello base::String"_sv));
+        CHECK(za::writeToFile(path, "Hello zb::String"_sv));
 
         zb::String contents;
         CHECK(za::readFromFile(path, contents));
-        CHECK(contents == zb::String{"Hello base::String"});
+        CHECK(contents == zb::String{"Hello zb::String"});
     }
 
-    SECTION("Read empty file into base::String")
+    SECTION("Read empty file into zb::String")
     {
         const TemporaryFile temporaryFile;
         const za::Path&     path = temporaryFile.getPath();
@@ -483,7 +483,7 @@ TEST_CASE("[System] za::writeToFile and za::readFromFile")
         CHECK(contents.empty());
     }
 
-    SECTION("Read missing file into base::String fails")
+    SECTION("Read missing file into zb::String fails")
     {
         const TemporaryFile temporaryFile;
         // File never created.
@@ -493,7 +493,7 @@ TEST_CASE("[System] za::writeToFile and za::readFromFile")
         CHECK(!za::readFromFile(path, contents));
     }
 
-    SECTION("Round-trip into base::Vector<char>")
+    SECTION("Round-trip into zb::Vector<char>")
     {
         const TemporaryFile temporaryFile;
         const za::Path&     path = temporaryFile.getPath();
@@ -506,7 +506,7 @@ TEST_CASE("[System] za::writeToFile and za::readFromFile")
         CHECK(zb::StringView(contents.data(), contents.size()) == "Hello vector"_sv);
     }
 
-    SECTION("Read empty file into base::Vector<char>")
+    SECTION("Read empty file into zb::Vector<char>")
     {
         const TemporaryFile temporaryFile;
         const za::Path&     path = temporaryFile.getPath();
@@ -521,7 +521,7 @@ TEST_CASE("[System] za::writeToFile and za::readFromFile")
         CHECK(contents.empty());
     }
 
-    SECTION("Read missing file into base::Vector<char> fails")
+    SECTION("Read missing file into zb::Vector<char> fails")
     {
         const TemporaryFile temporaryFile;
         const za::Path&     path = temporaryFile.getPath();
@@ -530,7 +530,7 @@ TEST_CASE("[System] za::writeToFile and za::readFromFile")
         CHECK(!za::readFromFile(path, contents));
     }
 
-    SECTION("Read into base::Vector<char> reuses capacity across calls")
+    SECTION("Read into zb::Vector<char> reuses capacity across calls")
     {
         // Two reads into the same Vector: the second (smaller) read should not
         // grow capacity, and the first's allocation should already be amortized.
@@ -556,7 +556,7 @@ TEST_CASE("[System] za::writeToFile and za::readFromFile")
         CHECK(buffer.capacity() == capacityAfterFirst);
     }
 
-    SECTION("Read into base::Vector<char> overwrites pre-existing content")
+    SECTION("Read into zb::Vector<char> overwrites pre-existing content")
     {
         const TemporaryFile temporaryFile;
         const za::Path&     path = temporaryFile.getPath();
@@ -572,7 +572,7 @@ TEST_CASE("[System] za::writeToFile and za::readFromFile")
         CHECK(zb::StringView(buffer.data(), buffer.size()) == "abc"_sv);
     }
 
-    SECTION("Binary content with embedded NULs round-trips through base::Vector<char>")
+    SECTION("Binary content with embedded NULs round-trips through zb::Vector<char>")
     {
         const char                 raw[] = {'a', '\0', 'b', '\xff', '\x01', '\x80', 'z'};
         const zb::StringView payload(raw, sizeof(raw));
@@ -590,7 +590,7 @@ TEST_CASE("[System] za::writeToFile and za::readFromFile")
 
     SECTION("StringView overloads")
     {
-        // Exercise the `base::StringView` filename overloads: the rest of the
+        // Exercise the `zb::StringView` filename overloads: the rest of the
         // suite uses the `Path` overloads; these tests cover the alternate API.
         const TemporaryFile        temporaryFile;
         const auto                 pathOwning = temporaryFile.getPath().to<std::string>();
@@ -605,14 +605,14 @@ TEST_CASE("[System] za::writeToFile and za::readFromFile")
             CHECK(contents == "Hello via StringView");
         }
 
-        SECTION("Read into base::String via StringView")
+        SECTION("Read into zb::String via StringView")
         {
             zb::String contents;
             CHECK(za::readFromFile(pathView, contents));
             CHECK(contents == zb::String{"Hello via StringView"});
         }
 
-        SECTION("Read into base::Vector<char> via StringView")
+        SECTION("Read into zb::Vector<char> via StringView")
         {
             zb::Vector<char> contents;
             CHECK(za::readFromFile(pathView, contents));

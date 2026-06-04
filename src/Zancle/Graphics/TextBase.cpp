@@ -99,7 +99,7 @@ void TextBase::setFillColor(const Color color)
     m_fillColor = color;
 
     if (!m_geometryNeedUpdate)
-        for (base::SizeT i = m_fillVerticesStartIndex; i < m_vertices.size(); ++i)
+        for (zb::SizeT i = m_fillVerticesStartIndex; i < m_vertices.size(); ++i)
             m_vertices[i].color = m_fillColor;
 }
 
@@ -113,13 +113,13 @@ void TextBase::setOutlineColor(const Color color)
     m_outlineColor = color;
 
     if (!m_geometryNeedUpdate)
-        for (base::SizeT i = 0; i < m_fillVerticesStartIndex; ++i)
+        for (zb::SizeT i = 0; i < m_fillVerticesStartIndex; ++i)
             m_vertices[i].color = m_outlineColor;
 }
 
 
 ////////////////////////////////////////////////////////////
-void TextBase::setFillColorAlpha(const base::U8 alpha)
+void TextBase::setFillColorAlpha(const zb::U8 alpha)
 {
     if (m_fillColor.a == alpha)
         return;
@@ -127,13 +127,13 @@ void TextBase::setFillColorAlpha(const base::U8 alpha)
     m_fillColor.a = alpha;
 
     if (!m_geometryNeedUpdate)
-        for (base::SizeT i = m_fillVerticesStartIndex; i < m_vertices.size(); ++i)
+        for (zb::SizeT i = m_fillVerticesStartIndex; i < m_vertices.size(); ++i)
             m_vertices[i].color.a = m_fillColor.a;
 }
 
 
 ////////////////////////////////////////////////////////////
-void TextBase::setOutlineColorAlpha(const base::U8 alpha)
+void TextBase::setOutlineColorAlpha(const zb::U8 alpha)
 {
     if (m_outlineColor.a == alpha)
         return;
@@ -141,7 +141,7 @@ void TextBase::setOutlineColorAlpha(const base::U8 alpha)
     m_outlineColor.a = alpha;
 
     if (!m_geometryNeedUpdate)
-        for (base::SizeT i = 0; i < m_fillVerticesStartIndex; ++i)
+        for (zb::SizeT i = 0; i < m_fillVerticesStartIndex; ++i)
             m_vertices[i].color.a = m_outlineColor.a;
 }
 
@@ -203,14 +203,14 @@ Color TextBase::getOutlineColor() const
 
 
 ////////////////////////////////////////////////////////////
-base::U8 TextBase::getFillColorAlpha() const
+zb::U8 TextBase::getFillColorAlpha() const
 {
     return m_fillColor.a;
 }
 
 
 ////////////////////////////////////////////////////////////
-base::U8 TextBase::getOutlineColorAlpha() const
+zb::U8 TextBase::getOutlineColorAlpha() const
 {
     return m_outlineColor.a;
 }

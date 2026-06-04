@@ -31,13 +31,13 @@ UdpSocket::UdpSocket(SocketHandle handle, bool isBlocking) :
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<UdpSocket> UdpSocket::create(bool isBlocking)
+zb::Optional<UdpSocket> UdpSocket::create(bool isBlocking)
 {
     const SocketHandle handle = createUdpHandle(isBlocking);
     if (handle == priv::SocketImpl::invalidSocket())
-        return base::nullOpt;
+        return zb::nullOpt;
 
-    return base::makeOptionalFromFunc([&] { return UdpSocket(handle, isBlocking); });
+    return zb::makeOptionalFromFunc([&] { return UdpSocket(handle, isBlocking); });
 }
 
 
@@ -72,7 +72,7 @@ Socket::Status UdpSocket::bind(unsigned short port, IpAddress address)
 
 
 ////////////////////////////////////////////////////////////
-Socket::Status UdpSocket::send(const void* data, base::SizeT size, IpAddress remoteAddress, unsigned short remotePort)
+Socket::Status UdpSocket::send(const void* data, zb::SizeT size, IpAddress remoteAddress, unsigned short remotePort)
 {
     ZB_ASSERT(getNativeHandle() != priv::SocketImpl::invalidSocket() &&
                      "UdpSocket handle must be valid (constructed via factory)");
@@ -111,9 +111,9 @@ Socket::Status UdpSocket::send(const void* data, base::SizeT size, IpAddress rem
 
 ////////////////////////////////////////////////////////////
 Socket::Status UdpSocket::receive(void*                      data,
-                                  base::SizeT                size,
-                                  base::SizeT&               received,
-                                  base::Optional<IpAddress>& remoteAddress,
+                                  zb::SizeT                size,
+                                  zb::SizeT&               received,
+                                  zb::Optional<IpAddress>& remoteAddress,
                                   unsigned short&            remotePort)
 {
     ZB_ASSERT(getNativeHandle() != priv::SocketImpl::invalidSocket() &&
@@ -121,7 +121,7 @@ Socket::Status UdpSocket::receive(void*                      data,
 
     // First clear the variables to fill
     received      = 0;
-    remoteAddress = base::nullOpt;
+    remoteAddress = zb::nullOpt;
     remotePort    = 0;
 
     // Check the destination buffer
@@ -152,7 +152,7 @@ Socket::Status UdpSocket::receive(void*                      data,
         return priv::SocketImpl::getErrorStatus();
 
     // Fill the sender information
-    received = static_cast<base::SizeT>(sizeReceived);
+    received = static_cast<zb::SizeT>(sizeReceived);
     remoteAddress.emplace(priv::SocketImpl::networkToHost(address.sAddr()));
     remotePort = priv::SocketImpl::networkToHost(address.sinPort());
 
@@ -172,7 +172,7 @@ Socket::Status UdpSocket::send(Packet& packet, IpAddress remoteAddress, unsigned
     // to the packet's data.
 
     // Get the data to send from the packet
-    base::SizeT size = 0;
+    zb::SizeT size = 0;
     const void* data = packet.onSend(size);
 
     // Send it
@@ -181,12 +181,12 @@ Socket::Status UdpSocket::send(Packet& packet, IpAddress remoteAddress, unsigned
 
 
 ////////////////////////////////////////////////////////////
-Socket::Status UdpSocket::receive(Packet& packet, base::Optional<IpAddress>& remoteAddress, unsigned short& remotePort)
+Socket::Status UdpSocket::receive(Packet& packet, zb::Optional<IpAddress>& remoteAddress, unsigned short& remotePort)
 {
     // See the detailed comment in send(Packet) above.
 
     // Receive the datagram
-    base::SizeT  received = 0;
+    zb::SizeT  received = 0;
     const Status status   = receive(m_buffer.data(), m_buffer.size(), received, remoteAddress, remotePort);
 
     // If we received valid data, we can copy it to the user packet

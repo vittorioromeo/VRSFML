@@ -44,7 +44,7 @@ namespace za::priv
 ////////////////////////////////////////////////////////////
 struct ThreadEntry
 {
-    base::U64 id;
+    zb::U64 id;
     void (*deinit)(ThreadEntry*, bool runFirst) noexcept;
 };
 
@@ -70,13 +70,13 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr explicit ThreadId(base::U64 value) noexcept : m_value{value}
+    [[nodiscard]] constexpr explicit ThreadId(zb::U64 value) noexcept : m_value{value}
     {
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr base::U64 value() const noexcept
+    [[nodiscard]] constexpr zb::U64 value() const noexcept
     {
         return m_value;
     }
@@ -86,7 +86,7 @@ public:
     [[nodiscard]] constexpr bool operator==(const ThreadId&) const noexcept = default;
 
 private:
-    base::U64 m_value{0u};
+    zb::U64 m_value{0u};
 };
 
 
@@ -128,9 +128,9 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename F>
-        requires(!base::isSame<base::RemoveCVRef<F>, Thread>)
+        requires(!zb::isSame<zb::RemoveCVRef<F>, Thread>)
     [[nodiscard]] explicit Thread(F&& callable) :
-        Thread(/* opaque tag */ int{}, allocateEntry<base::RemoveCVRef<F>>(static_cast<F&&>(callable)))
+        Thread(/* opaque tag */ int{}, allocateEntry<zb::RemoveCVRef<F>>(static_cast<F&&>(callable)))
     {
     }
 
@@ -224,12 +224,12 @@ private:
     template <typename FT, typename FFwd>
     [[nodiscard]] static priv::ThreadEntry* allocateEntry(FFwd&& callable)
     {
-        constexpr base::SizeT alignment = alignof(FT) > alignof(priv::ThreadEntry) ? alignof(FT) : alignof(priv::ThreadEntry);
+        constexpr zb::SizeT alignment = alignof(FT) > alignof(priv::ThreadEntry) ? alignof(FT) : alignof(priv::ThreadEntry);
 
         // Round `sizeof(ThreadEntry)` up to `alignof(FT)` so the payload that follows starts at a properly-aligned offset.
-        constexpr base::SizeT fOffset = (sizeof(priv::ThreadEntry) + alignof(FT) - 1u) / alignof(FT) * alignof(FT);
+        constexpr zb::SizeT fOffset = (sizeof(priv::ThreadEntry) + alignof(FT) - 1u) / alignof(FT) * alignof(FT);
 
-        constexpr base::SizeT totalSize = fOffset + sizeof(FT);
+        constexpr zb::SizeT totalSize = fOffset + sizeof(FT);
 
         void* const mem = ::operator new(totalSize, std::align_val_t{alignment});
 
@@ -275,8 +275,8 @@ private:
     // platform type, so an ABI mismatch is a compile-time error.
     //
     ////////////////////////////////////////////////////////////
-    alignas(base::U64) unsigned char m_native[16]{};
-    base::U64 m_id{0u};
+    alignas(zb::U64) unsigned char m_native[16]{};
+    zb::U64 m_id{0u};
     bool      m_joinable{false};
 };
 

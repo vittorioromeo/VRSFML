@@ -23,7 +23,7 @@ struct Vec3;
 
 namespace za::priv
 {
-template <base::SizeT Columns, base::SizeT Rows>
+template <zb::SizeT Columns, zb::SizeT Rows>
 struct [[nodiscard]] Matrix;
 
 template <typename T>

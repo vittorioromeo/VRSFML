@@ -19,21 +19,21 @@ namespace za
 ////////////////////////////////////////////////////////////
 /// \brief Owning UTF-8 string with codepoint iteration
 ///
-/// Wraps a `base::String` (raw UTF-8 byte storage) and exposes a
+/// Wraps a `zb::String` (raw UTF-8 byte storage) and exposes a
 /// `codepoints()` range that decodes one Unicode codepoint per
 /// step. Use this type wherever the API contract is explicitly
 /// "human-readable text encoded as UTF-8".
 ///
-/// For arbitrary byte data, use `base::String` directly. For
+/// For arbitrary byte data, use `zb::String` directly. For
 /// per-codepoint random access, decode once into a contiguous
 /// `char32_t` buffer.
 ///
-/// Inherits `base::FmtAppendMixin`, which exposes `.appendFmt(fmt, args...)`
+/// Inherits `zb::FmtAppendMixin`, which exposes `.appendFmt(fmt, args...)`
 /// for formatted append. Include `<ZancleBase/Fmt/FmtAppendMixin.hpp>`
 /// at the call site to bring in the template body.
 ///
 ////////////////////////////////////////////////////////////
-class [[nodiscard]] Utf8String : public base::FmtAppendMixin
+class [[nodiscard]] Utf8String : public zb::FmtAppendMixin
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -94,7 +94,7 @@ public:
     /// fixed-size buffers, slices).
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Utf8String(const char* utf8Bytes, base::SizeT byteCount) : m_bytes{utf8Bytes, byteCount}
+    [[nodiscard]] explicit Utf8String(const char* utf8Bytes, zb::SizeT byteCount) : m_bytes{utf8Bytes, byteCount}
     {
     }
 
@@ -119,7 +119,7 @@ public:
     /// \brief Construct from a `u8` pointer + byte count
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Utf8String(const char8_t* utf8Bytes, base::SizeT byteCount) :
+    [[nodiscard]] explicit Utf8String(const char8_t* utf8Bytes, zb::SizeT byteCount) :
         m_bytes{reinterpret_cast<const char*>(utf8Bytes), byteCount}
     {
     }
@@ -129,7 +129,7 @@ public:
     /// \brief Construct from a UTF-8 byte view
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] /* implicit */ Utf8String(base::StringView utf8View) : m_bytes{utf8View}
+    [[nodiscard]] /* implicit */ Utf8String(zb::StringView utf8View) : m_bytes{utf8View}
     {
     }
 
@@ -141,16 +141,16 @@ public:
     /// validation is performed.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] /* implicit */ Utf8String(base::String utf8Bytes) noexcept : m_bytes{ZB_MOVE(utf8Bytes)}
+    [[nodiscard]] /* implicit */ Utf8String(zb::String utf8Bytes) noexcept : m_bytes{ZB_MOVE(utf8Bytes)}
     {
     }
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Implicit conversion to a `base::StringView` over the UTF-8 bytes
+    /// \brief Implicit conversion to a `zb::StringView` over the UTF-8 bytes
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] /* implicit */ operator base::StringView() const noexcept
+    [[nodiscard]] /* implicit */ operator zb::StringView() const noexcept
     {
         return m_bytes;
     }
@@ -160,7 +160,7 @@ public:
     /// \brief Number of bytes in the underlying UTF-8 buffer
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::SizeT byteSize() const noexcept
+    [[nodiscard]] zb::SizeT byteSize() const noexcept
     {
         return m_bytes.size();
     }
@@ -204,7 +204,7 @@ public:
     /// \note Defined in `Utf8StringCodepoints.hpp`.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::SizeT codepointCount() const;
+    [[nodiscard]] zb::SizeT codepointCount() const;
 
 
     ////////////////////////////////////////////////////////////
@@ -239,7 +239,7 @@ public:
     /// upper bound, reserve `4 * expectedCodepointCount`.
     ///
     ////////////////////////////////////////////////////////////
-    void reserve(base::SizeT byteCapacity)
+    void reserve(zb::SizeT byteCapacity)
     {
         m_bytes.reserve(byteCapacity);
     }
@@ -267,7 +267,7 @@ public:
     ///
     /// `pushBack` is **byte-oriented**, primarily provided so
     /// `Utf8String` can act as a sink for `Utf<X>::toUtf8(...)` via
-    /// `base::BackInserter`. Pushing only the leading byte of a
+    /// `zb::BackInserter`. Pushing only the leading byte of a
     /// multi-byte sequence (or, conversely, a continuation byte
     /// without its leader) leaves the buffer in an invariant-
     /// violating state that the codepoint iterator will treat as
@@ -291,7 +291,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    Utf8String& append(base::StringView utf8View)
+    Utf8String& append(zb::StringView utf8View)
     {
         m_bytes.append(utf8View);
         return *this;
@@ -307,7 +307,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    Utf8String& append(const char* utf8CStr, base::SizeT byteCount)
+    Utf8String& append(const char* utf8CStr, zb::SizeT byteCount)
     {
         m_bytes.append(utf8CStr, byteCount);
         return *this;
@@ -323,7 +323,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    Utf8String& operator+=(base::StringView utf8View)
+    Utf8String& operator+=(zb::StringView utf8View)
     {
         m_bytes += utf8View;
         return *this;
@@ -366,32 +366,32 @@ public:
     /// substring of another, so byte-level search returns
     /// codepoint-aligned matches.
     ///
-    /// \return Byte offset of the match, or `base::StringView::nPos`
+    /// \return Byte offset of the match, or `zb::StringView::nPos`
     ///         if not found.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::SizeT find(base::StringView needle, base::SizeT startByte = 0u) const noexcept
+    [[nodiscard]] zb::SizeT find(zb::StringView needle, zb::SizeT startByte = 0u) const noexcept
     {
         return m_bytes.find(needle, startByte);
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool startsWith(base::StringView prefix) const noexcept
+    [[nodiscard]] bool startsWith(zb::StringView prefix) const noexcept
     {
         return m_bytes.startsWith(prefix);
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool endsWith(base::StringView suffix) const noexcept
+    [[nodiscard]] bool endsWith(zb::StringView suffix) const noexcept
     {
         return m_bytes.endsWith(suffix);
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool contains(base::StringView needle) const noexcept
+    [[nodiscard]] bool contains(zb::StringView needle) const noexcept
     {
         return m_bytes.contains(needle);
     }
@@ -407,7 +407,7 @@ public:
     ///         was not found or was empty.
     ///
     ////////////////////////////////////////////////////////////
-    bool replaceFirstOccurrence(base::StringView needle, base::StringView replacement)
+    bool replaceFirstOccurrence(zb::StringView needle, zb::StringView replacement)
     {
         return m_bytes.replaceFirstOccurrence(needle, replacement);
     }
@@ -425,7 +425,7 @@ public:
     /// \return Number of replacements performed.
     ///
     ////////////////////////////////////////////////////////////
-    base::SizeT replaceAllOccurrences(base::StringView needle, base::StringView replacement)
+    zb::SizeT replaceAllOccurrences(zb::StringView needle, zb::StringView replacement)
     {
         return m_bytes.replaceAllOccurrences(needle, replacement);
     }
@@ -435,7 +435,7 @@ public:
     /// \brief Read-only access to the underlying byte storage
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const base::String& asBytes() const& noexcept
+    [[nodiscard]] const zb::String& asBytes() const& noexcept
     {
         return m_bytes;
     }
@@ -445,7 +445,7 @@ public:
     /// \brief Move the underlying byte storage out of an rvalue `Utf8String`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::String asBytes() && noexcept
+    [[nodiscard]] zb::String asBytes() && noexcept
     {
         return ZB_MOVE(m_bytes);
     }
@@ -457,12 +457,12 @@ public:
     ////////////////////////////////////////////////////////////
     void swap(Utf8String& other) noexcept
     {
-        base::genericSwap(m_bytes, other.m_bytes);
+        zb::genericSwap(m_bytes, other.m_bytes);
     }
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief ADL hook so `base::genericSwap` (and `std::swap`-style
+    /// \brief ADL hook so `zb::genericSwap` (and `std::swap`-style
     ///        generic code) finds the optimized swap.
     ///
     ////////////////////////////////////////////////////////////
@@ -480,7 +480,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] friend bool operator==(const Utf8String& lhs, base::StringView rhs) noexcept
+    [[nodiscard]] friend bool operator==(const Utf8String& lhs, zb::StringView rhs) noexcept
     {
         return lhs.m_bytes == rhs;
     }
@@ -543,7 +543,7 @@ public:
 
 private:
     ////////////////////////////////////////////////////////////
-    base::String m_bytes; //!< UTF-8 encoded byte storage
+    zb::String m_bytes; //!< UTF-8 encoded byte storage
 };
 
 
@@ -584,14 +584,14 @@ private:
 ///   codepoint, decoded on the fly. ASCII iterates at near
 ///   pointer-walk speed; multi-byte sequences cost a few extra
 ///   cycles per step.
-/// - Construction from `const char*`, `base::StringView`, and
-///   `base::String` -- the source bytes are taken to already be
+/// - Construction from `const char*`, `zb::StringView`, and
+///   `zb::String` -- the source bytes are taken to already be
 ///   UTF-8.
-/// - An implicit conversion to `base::StringView` so that any
+/// - An implicit conversion to `zb::StringView` so that any
 ///   byte-oriented sink (`SDL_*`, file I/O, network) accepts a
 ///   `Utf8String` directly.
 ///
-/// Use `base::String` if your bytes are not UTF-8 (binary data,
+/// Use `zb::String` if your bytes are not UTF-8 (binary data,
 /// HTTP body, certificate, etc.). Use `Utf8String` when the
 /// bytes are *meant* to be human-readable text.
 ///

@@ -15,13 +15,13 @@
 namespace za
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] base::Optional<Shader> DefaultShader::create()
+[[nodiscard]] zb::Optional<Shader> DefaultShader::create()
 {
     auto result = Shader::loadFromMemory({.vertexCode = srcVertex, .fragmentCode = srcFragment});
 
     if (result)
     {
-        if (const base::Optional ulTexture = result->getUniformLocation("za_u_texture"))
+        if (const zb::Optional ulTexture = result->getUniformLocation("za_u_texture"))
             result->setUniform(*ulTexture, Shader::CurrentTexture);
     }
 

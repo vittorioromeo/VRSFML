@@ -59,10 +59,10 @@ public:
     /// and the built-in 2x2 white texture. Only one
     /// `GraphicsContext` may be alive at a time.
     ///
-    /// \return `GraphicsContext` on success, `base::nullOpt` on failure
+    /// \return `GraphicsContext` on success, `zb::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<GraphicsContext> create();
+    [[nodiscard]] static zb::Optional<GraphicsContext> create();
 
     ////////////////////////////////////////////////////////////
     /// \private
@@ -70,7 +70,7 @@ public:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit GraphicsContext(base::PassKey<GraphicsContext>&&, WindowContext&& windowContext);
+    [[nodiscard]] explicit GraphicsContext(zb::PassKey<GraphicsContext>&&, WindowContext&& windowContext);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -196,7 +196,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 64> m_impl; //!< Implementation details
+    zb::InPlacePImpl<Impl, 64> m_impl; //!< Implementation details
 };
 
 } // namespace za

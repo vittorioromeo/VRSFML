@@ -78,7 +78,7 @@ struct SoundBase
                               ma_uint32*    frameCountOut);
 
     ////////////////////////////////////////////////////////////
-    void processEffect(const float** framesIn, base::U32& frameCountIn, float** framesOut, base::U32& frameCountOut);
+    void processEffect(const float** framesIn, zb::U32& frameCountIn, float** framesOut, zb::U32& frameCountOut);
 
     ////////////////////////////////////////////////////////////
     void setChannelMap(const ChannelMap& channelMap);
@@ -108,7 +108,7 @@ struct SoundBase
 
     EffectNode effectNode; //!< The engine node that performs effect processing
 
-    base::InPlaceVector<ma_channel, MA_CHANNEL_POSITION_COUNT> soundChannelMap; //!< The map of position in sample frame to sound channel
+    zb::InPlaceVector<ma_channel, MA_CHANNEL_POSITION_COUNT> soundChannelMap; //!< The map of position in sample frame to sound channel
 
     ma_sound        sound{};         //!< The sound
     EffectProcessor effectProcessor; //!< The effect processor

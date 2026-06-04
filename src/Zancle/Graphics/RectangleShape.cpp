@@ -43,7 +43,7 @@ Vec2f RectangleShape::getSize() const
 
 
 ////////////////////////////////////////////////////////////
-Vec2f RectangleShape::getPoint(base::SizeT index) const
+Vec2f RectangleShape::getPoint(zb::SizeT index) const
 {
     ZB_ASSERT(index < 4u && "Index is out of bounds");
     return ShapeUtils::computeRectanglePoint(index, m_size);

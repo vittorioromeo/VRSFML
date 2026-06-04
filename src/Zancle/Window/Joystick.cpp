@@ -114,21 +114,21 @@ bool Joystick::Query::isConnected() const
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Joystick::Query> Joystick::query(const unsigned int joystickId)
+zb::Optional<Joystick::Query> Joystick::query(const unsigned int joystickId)
 {
     if (joystickId >= Joystick::MaxCount)
     {
         priv::errMsg("Invalid joystick index: {}, valid range is [0 .. {}]", joystickId, (Joystick::MaxCount - 1));
 
-        return base::nullOpt;
+        return zb::nullOpt;
     }
 
     const auto& joystickManager = WindowContext::getJoystickManager();
 
     if (!joystickManager.isConnected(joystickId))
-        return base::nullOpt;
+        return zb::nullOpt;
 
-    return base::makeOptionalFromFunc([&] { return Query{joystickManager, joystickId}; });
+    return zb::makeOptionalFromFunc([&] { return Query{joystickManager, joystickId}; });
 }
 
 } // namespace za

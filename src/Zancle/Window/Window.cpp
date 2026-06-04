@@ -62,18 +62,18 @@ EM_ASYNC_JS(void, sfml_yield_to_raf, (), {
 ////////////////////////////////////////////////////////////
 struct Window::Window::Impl
 {
-    base::UniquePtr<priv::GlContext> glContext;      //!< Platform-specific implementation of the OpenGL context
+    zb::UniquePtr<priv::GlContext> glContext;      //!< Platform-specific implementation of the OpenGL context
     Clock                            clock;          //!< Clock for measuring the elapsed time between frames
     Time                             frameTimeLimit; //!< Current framerate limit
 
-    explicit Impl(base::UniquePtr<priv::GlContext>&& theContext) : glContext(ZB_MOVE(theContext))
+    explicit Impl(zb::UniquePtr<priv::GlContext>&& theContext) : glContext(ZB_MOVE(theContext))
     {
     }
 };
 
 
 ////////////////////////////////////////////////////////////
-Window::Window(base::PassKey<Window>&&, WindowBase&& windowBase, const WindowSettings& windowSettings, unsigned int bitsPerPixel) :
+Window::Window(zb::PassKey<Window>&&, WindowBase&& windowBase, const WindowSettings& windowSettings, unsigned int bitsPerPixel) :
     WindowBase(ZB_MOVE(windowBase)),
     m_impl(WindowContext::createGlContext(windowSettings.contextSettings, getWindowImpl(), bitsPerPixel))
 {
@@ -90,30 +90,30 @@ Window::Window(base::PassKey<Window>&&, WindowBase&& windowBase, const WindowSet
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Window> Window::create(const WindowSettings& windowSettings)
+zb::Optional<Window> Window::create(const WindowSettings& windowSettings)
 {
     auto windowBase = WindowBase::create(windowSettings);
 
     return windowBase.hasValue()
-               ? base::Optional<Window>(base::inPlace,
-                                        base::PassKey<Window>{},
+               ? zb::Optional<Window>(zb::inPlace,
+                                        zb::PassKey<Window>{},
                                         ZB_MOVE(*windowBase),
                                         windowSettings,
                                         windowSettings.bitsPerPixel)
-               : base::nullOpt;
+               : zb::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Window> Window::create(const WindowHandle handle, const ContextSettings& contextSettings)
+zb::Optional<Window> Window::create(const WindowHandle handle, const ContextSettings& contextSettings)
 {
     auto windowBase = WindowBase::create(handle);
 
     if (!windowBase.hasValue())
-        return base::nullOpt;
+        return zb::nullOpt;
 
-    return base::Optional<Window>(base::inPlace,
-                                  base::PassKey<Window>{},
+    return zb::Optional<Window>(zb::inPlace,
+                                  zb::PassKey<Window>{},
                                   ZB_MOVE(*windowBase),
                                   WindowSettings{.size{}, .contextSettings = contextSettings},
                                   VideoModeUtils::getDesktopMode().bitsPerPixel);

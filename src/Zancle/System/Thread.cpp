@@ -76,7 +76,7 @@ namespace za
 // anonymous namespace) so the trampoline can refer to a single
 // shared TLS symbol across this TU.
 ////////////////////////////////////////////////////////////
-thread_local base::U64 tlCurrentThreadId{0u};
+thread_local zb::U64 tlCurrentThreadId{0u};
 
 
 namespace
@@ -91,7 +91,7 @@ namespace
 using NativeHandle = pthread_t;
 
 static_assert(sizeof(NativeHandle) <= 16u);
-static_assert(alignof(NativeHandle) <= alignof(base::U64));
+static_assert(alignof(NativeHandle) <= alignof(zb::U64));
 
 #elif ZA_THREAD_WIN32
 
@@ -102,7 +102,7 @@ struct NativeHandle
 };
 
 static_assert(sizeof(NativeHandle) <= 16u);
-static_assert(alignof(NativeHandle) <= alignof(base::U64));
+static_assert(alignof(NativeHandle) <= alignof(zb::U64));
 
 #endif
 
@@ -122,7 +122,7 @@ static_assert(alignof(NativeHandle) <= alignof(base::U64));
 // Monotonic counter for `ThreadId`. The first time a given
 // thread asks for its id, it grabs the next value here.
 ////////////////////////////////////////////////////////////
-constinit Atomic<base::U64> gNextThreadId{1u};
+constinit Atomic<zb::U64> gNextThreadId{1u};
 
 
 ////////////////////////////////////////////////////////////
@@ -187,7 +187,7 @@ Thread::Thread(int, priv::ThreadEntry* entry)
         // Destroys the user callable and frees the single-block entry
         // (without running the callable, since spawn never happened).
         entry->deinit(entry, /* runFirst */ false);
-        base::abort();
+        zb::abort();
     }
 
 #elif ZA_THREAD_WIN32
@@ -205,7 +205,7 @@ Thread::Thread(int, priv::ThreadEntry* entry)
     {
         // Same single-block cleanup as the POSIX failure path above.
         entry->deinit(entry, /* runFirst */ false);
-        base::abort();
+        zb::abort();
     }
 
 #endif
@@ -362,7 +362,7 @@ void ThisThread::sleepFor(Time duration)
 
 #if ZA_THREAD_POSIX
 
-    const base::I64 usecs = duration.asMicroseconds();
+    const zb::I64 usecs = duration.asMicroseconds();
 
     timespec ts{};
     ts.tv_sec  = static_cast<time_t>(usecs / 1'000'000);

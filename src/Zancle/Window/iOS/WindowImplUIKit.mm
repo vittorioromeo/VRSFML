@@ -124,14 +124,14 @@ void WindowImplUIKit::setSize(Vec2u /* size */)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplUIKit::setMinimumSize(const base::Optional<Vec2u>& /* minimumSize */)
+void WindowImplUIKit::setMinimumSize(const zb::Optional<Vec2u>& /* minimumSize */)
 {
     // Not applicable
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplUIKit::setMaximumSize(const base::Optional<Vec2u>& /* maximumSize */)
+void WindowImplUIKit::setMaximumSize(const zb::Optional<Vec2u>& /* maximumSize */)
 {
     // Not applicable
 }
@@ -145,7 +145,7 @@ void WindowImplUIKit::setTitle(const Utf8String& /* title */)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplUIKit::setIcon(const base::U8* /* pixels */, Vec2u /* size */)
+void WindowImplUIKit::setIcon(const zb::U8* /* pixels */, Vec2u /* size */)
 {
     // Not applicable
 }

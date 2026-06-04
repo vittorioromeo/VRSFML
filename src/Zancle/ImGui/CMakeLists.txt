@@ -87,7 +87,7 @@ function(zancle_add_imgui_dependencies)
     add_library(ImGui::ImGui ALIAS imgui)
 
     # TODO P0: this is hardcoded, should follow same pattern as Macros.cmake
-    install(TARGETS imgui EXPORT SFMLImGuiStaticTargets FILE_SET public_headers)
+    install(TARGETS imgui EXPORT ZancleImGuiStaticTargets FILE_SET public_headers)
 endfunction()
 
 zancle_add_imgui_dependencies()

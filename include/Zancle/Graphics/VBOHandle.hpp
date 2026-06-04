@@ -75,7 +75,7 @@ private:
     /// \brief Internal helper for per-frame streaming uploads
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::SizeT uploadStreamingData(const void* data, base::SizeT byteCount);
+    [[nodiscard]] zb::SizeT uploadStreamingData(const void* data, zb::SizeT byteCount);
 
     ////////////////////////////////////////////////////////////
     /// \brief Commit the staged uploads associated with the current draw
@@ -93,7 +93,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 320> m_impl; //!< Implementation details (PImpl)
+    zb::InPlacePImpl<Impl, 320> m_impl; //!< Implementation details (PImpl)
 };
 
 } // namespace za

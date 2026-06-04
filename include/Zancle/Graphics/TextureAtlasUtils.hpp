@@ -57,14 +57,14 @@ struct ZA_GRAPHICS_API TextureAtlasUtils
     /// \param pixels        Pointer to `size.x * size.y` RGBA pixels
     /// \param size          Width and height of the source pixel block
     ///
-    /// \return Texture rectangle of the inserted image, or `base::nullOpt` if no free region was found
+    /// \return Texture rectangle of the inserted image, or `zb::nullOpt` if no free region was found
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Rect2f> add(
+    [[nodiscard]] static zb::Optional<Rect2f> add(
         Texture&        targetTexture,
         RectPacker&     rectPacker,
         Vec2u           padding,
-        const base::U8* pixels,
+        const zb::U8* pixels,
         Vec2u           size);
 
     ////////////////////////////////////////////////////////////
@@ -75,10 +75,10 @@ struct ZA_GRAPHICS_API TextureAtlasUtils
     /// \param padding       Padding to leave around the image (each side)
     /// \param image         Source image (RGBA)
     ///
-    /// \return Texture rectangle of the inserted image, or `base::nullOpt` if no free region was found
+    /// \return Texture rectangle of the inserted image, or `zb::nullOpt` if no free region was found
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Rect2f> add(Texture& targetTexture, RectPacker& rectPacker, Vec2u padding, const Image& image);
+    [[nodiscard]] static zb::Optional<Rect2f> add(Texture& targetTexture, RectPacker& rectPacker, Vec2u padding, const Image& image);
 
     ////////////////////////////////////////////////////////////
     /// \brief Pack the pixels of another `za::Texture` into the target texture
@@ -92,10 +92,10 @@ struct ZA_GRAPHICS_API TextureAtlasUtils
     /// \param padding       Padding to leave around the image (each side)
     /// \param texture       Source texture (will be downloaded first)
     ///
-    /// \return Texture rectangle of the inserted image, or `base::nullOpt` if no free region was found
+    /// \return Texture rectangle of the inserted image, or `zb::nullOpt` if no free region was found
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Rect2f> add(Texture&       targetTexture,
+    [[nodiscard]] static zb::Optional<Rect2f> add(Texture&       targetTexture,
                                                     RectPacker&    rectPacker,
                                                     Vec2u          padding,
                                                     const Texture& texture);

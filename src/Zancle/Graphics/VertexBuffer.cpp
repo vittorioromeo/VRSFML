@@ -99,7 +99,7 @@ VertexBuffer::~VertexBuffer()
 
 
 ////////////////////////////////////////////////////////////
-bool VertexBuffer::create(base::SizeT vertexCount)
+bool VertexBuffer::create(zb::SizeT vertexCount)
 {
     ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
     ZB_ASSERT(GraphicsContext::isInstalled());
@@ -127,7 +127,7 @@ bool VertexBuffer::create(base::SizeT vertexCount)
 
 
 ////////////////////////////////////////////////////////////
-base::SizeT VertexBuffer::getVertexCount() const
+zb::SizeT VertexBuffer::getVertexCount() const
 {
     return m_size;
 }
@@ -141,7 +141,7 @@ bool VertexBuffer::update(const Vertex* vertices)
 
 
 ////////////////////////////////////////////////////////////
-bool VertexBuffer::update(const Vertex* vertices, base::SizeT vertexCount, unsigned int offset)
+bool VertexBuffer::update(const Vertex* vertices, zb::SizeT vertexCount, unsigned int offset)
 {
     // Sanity checks
     if (!m_buffer)
@@ -219,10 +219,10 @@ VertexBuffer& VertexBuffer::operator=(const VertexBuffer& rhs)
 ////////////////////////////////////////////////////////////
 void VertexBuffer::swap(VertexBuffer& rhs) noexcept
 {
-    base::genericSwap(m_size, rhs.m_size);
-    base::genericSwap(m_buffer, rhs.m_buffer);
-    base::genericSwap(m_primitiveType, rhs.m_primitiveType);
-    base::genericSwap(m_usage, rhs.m_usage);
+    zb::genericSwap(m_size, rhs.m_size);
+    zb::genericSwap(m_buffer, rhs.m_buffer);
+    zb::genericSwap(m_primitiveType, rhs.m_primitiveType);
+    zb::genericSwap(m_usage, rhs.m_usage);
 }
 
 

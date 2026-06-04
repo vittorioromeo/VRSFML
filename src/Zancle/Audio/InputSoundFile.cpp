@@ -44,7 +44,7 @@ InputSoundFile::StreamDeleter::StreamDeleter(bool theOwned) : owned(theOwned)
 
 
 ////////////////////////////////////////////////////////////
-InputSoundFile::StreamDeleter::StreamDeleter(const base::UniquePtrDefaultDeleter&)
+InputSoundFile::StreamDeleter::StreamDeleter(const zb::UniquePtrDefaultDeleter&)
 {
 }
 
@@ -58,14 +58,14 @@ void InputSoundFile::StreamDeleter::operator()(InputStream* ptr) const
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<InputSoundFile> InputSoundFile::openFromFile(const Path& filename)
+zb::Optional<InputSoundFile> InputSoundFile::openFromFile(const Path& filename)
 {
     // Find a suitable reader for the file type
     auto reader = SoundFileFactory::createReaderFromFilename(filename);
     if (!reader)
     {
         // Error message generated in called function.
-        return base::nullOpt;
+        return zb::nullOpt;
     }
 
     // Open the file
@@ -75,11 +75,11 @@ base::Optional<InputSoundFile> InputSoundFile::openFromFile(const Path& filename
         priv::errMsg("Failed to open input sound file from file (couldn't open file input stream)\n{}",
                      priv::PathDebugFormatter{filename});
 
-        return base::nullOpt;
+        return zb::nullOpt;
     }
 
     // Wrap the file into a stream
-    auto file = base::makeUnique<FileInputStream>(ZB_MOVE(*fileInputStream));
+    auto file = zb::makeUnique<FileInputStream>(ZB_MOVE(*fileInputStream));
 
     // Pass the stream to the reader
     auto info = reader->open(*file);
@@ -88,10 +88,10 @@ base::Optional<InputSoundFile> InputSoundFile::openFromFile(const Path& filename
         priv::errMsg("Failed to open input sound file from file (reader open failure)\n{}",
                      priv::PathDebugFormatter{filename});
 
-        return base::nullOpt;
+        return zb::nullOpt;
     }
 
-    return base::makeOptional<InputSoundFile>(base::PassKey<InputSoundFile>{},
+    return zb::makeOptional<InputSoundFile>(zb::PassKey<InputSoundFile>{},
                                               ZB_MOVE(reader),
                                               ZB_MOVE(file),
                                               info->sampleCount,
@@ -101,28 +101,28 @@ base::Optional<InputSoundFile> InputSoundFile::openFromFile(const Path& filename
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<InputSoundFile> InputSoundFile::openFromMemory(const void* data, base::SizeT sizeInBytes)
+zb::Optional<InputSoundFile> InputSoundFile::openFromMemory(const void* data, zb::SizeT sizeInBytes)
 {
     // Find a suitable reader for the file type
     auto reader = SoundFileFactory::createReaderFromMemory(data, sizeInBytes);
     if (!reader)
     {
         // Error message generated in called function.
-        return base::nullOpt;
+        return zb::nullOpt;
     }
 
     // Wrap the memory file into a stream
-    auto memory = base::makeUnique<MemoryInputStream>(data, sizeInBytes);
+    auto memory = zb::makeUnique<MemoryInputStream>(data, sizeInBytes);
 
     // Pass the stream to the reader
-    base::Optional info = reader->open(*memory);
+    zb::Optional info = reader->open(*memory);
     if (!info.hasValue())
     {
         priv::errMsg("Failed to open input sound file from memory (reader open failure)");
-        return base::nullOpt;
+        return zb::nullOpt;
     }
 
-    return base::makeOptional<InputSoundFile>(base::PassKey<InputSoundFile>{},
+    return zb::makeOptional<InputSoundFile>(zb::PassKey<InputSoundFile>{},
                                               ZB_MOVE(reader),
                                               ZB_MOVE(memory),
                                               info->sampleCount,
@@ -132,34 +132,34 @@ base::Optional<InputSoundFile> InputSoundFile::openFromMemory(const void* data, 
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<InputSoundFile> InputSoundFile::openFromStream(InputStream& stream)
+zb::Optional<InputSoundFile> InputSoundFile::openFromStream(InputStream& stream)
 {
     // Find a suitable reader for the file type
     auto reader = SoundFileFactory::createReaderFromStream(stream);
     if (!reader)
     {
         // Error message generated in called function.
-        return base::nullOpt;
+        return zb::nullOpt;
     }
 
     // Don't forget to reset the stream to its beginning before re-opening it
-    if (const base::Optional seekResult = stream.seek(0); !seekResult.hasValue() || *seekResult != 0)
+    if (const zb::Optional seekResult = stream.seek(0); !seekResult.hasValue() || *seekResult != 0)
     {
         priv::errMsg("Failed to open sound file from stream (cannot restart stream)");
-        return base::nullOpt;
+        return zb::nullOpt;
     }
 
     // Pass the stream to the reader
-    base::Optional info = reader->open(stream);
+    zb::Optional info = reader->open(stream);
     if (!info.hasValue())
     {
         priv::errMsg("Failed to open input sound file from stream (reader open failure)");
-        return base::nullOpt;
+        return zb::nullOpt;
     }
 
-    return base::makeOptional<InputSoundFile>(base::PassKey<InputSoundFile>{},
+    return zb::makeOptional<InputSoundFile>(zb::PassKey<InputSoundFile>{},
                                               ZB_MOVE(reader),
-                                              base::UniquePtr<InputStream, StreamDeleter>{&stream, false},
+                                              zb::UniquePtr<InputStream, StreamDeleter>{&stream, false},
                                               info->sampleCount,
                                               info->sampleRate,
                                               ZB_MOVE(info->channelMap));
@@ -167,7 +167,7 @@ base::Optional<InputSoundFile> InputSoundFile::openFromStream(InputStream& strea
 
 
 ////////////////////////////////////////////////////////////
-base::U64 InputSoundFile::getSampleCount() const
+zb::U64 InputSoundFile::getSampleCount() const
 {
     return m_sampleCount;
 }
@@ -204,12 +204,12 @@ Time InputSoundFile::getDuration() const
     ZB_ASSERT(m_sampleCount % m_channelMap.getSize() == 0u);
     const auto samplesPerChannel = m_sampleCount / m_channelMap.getSize();
 
-    return microseconds(static_cast<base::I64>(samplesPerChannel * 1'000'000 / m_sampleRate));
+    return microseconds(static_cast<zb::I64>(samplesPerChannel * 1'000'000 / m_sampleRate));
 }
 
 
 ////////////////////////////////////////////////////////////
-Time InputSoundFile::getTimeOffset(const base::U64 sampleOffset) const
+Time InputSoundFile::getTimeOffset(const zb::U64 sampleOffset) const
 {
     // Make sure we don't divide by 0
     if (m_channelMap.isEmpty() || m_sampleRate == 0u)
@@ -218,12 +218,12 @@ Time InputSoundFile::getTimeOffset(const base::U64 sampleOffset) const
     ZB_ASSERT(sampleOffset % m_channelMap.getSize() == 0u);
     const auto sampleOffsetPerChannel = sampleOffset / m_channelMap.getSize();
 
-    return microseconds(static_cast<base::I64>(sampleOffsetPerChannel * 1'000'000 / m_sampleRate));
+    return microseconds(static_cast<zb::I64>(sampleOffsetPerChannel * 1'000'000 / m_sampleRate));
 }
 
 
 ////////////////////////////////////////////////////////////
-base::U64 InputSoundFile::seek(base::U64 sampleOffset)
+zb::U64 InputSoundFile::seek(zb::U64 sampleOffset)
 {
     ZB_ASSERT(m_reader != nullptr);
 
@@ -232,26 +232,26 @@ base::U64 InputSoundFile::seek(base::U64 sampleOffset)
 
     // The reader handles an overrun gracefully, but we
     // pre-check to keep our known position consistent
-    const auto clampedSampleOffset = base::min(sampleOffset / m_channelMap.getSize() * m_channelMap.getSize(), m_sampleCount);
+    const auto clampedSampleOffset = zb::min(sampleOffset / m_channelMap.getSize() * m_channelMap.getSize(), m_sampleCount);
     m_reader->seek(clampedSampleOffset);
     return clampedSampleOffset;
 }
 
 
 ////////////////////////////////////////////////////////////
-base::U64 InputSoundFile::seek(Time timeOffset)
+zb::U64 InputSoundFile::seek(Time timeOffset)
 {
     return seek(
-        static_cast<base::SizeT>(timeOffset.asSeconds() * static_cast<float>(m_sampleRate)) * m_channelMap.getSize());
+        static_cast<zb::SizeT>(timeOffset.asSeconds() * static_cast<float>(m_sampleRate)) * m_channelMap.getSize());
 }
 
 
 ////////////////////////////////////////////////////////////
-base::U64 InputSoundFile::read(base::I16* samples, base::U64 maxCount)
+zb::U64 InputSoundFile::read(zb::I16* samples, zb::U64 maxCount)
 {
     ZB_ASSERT(m_reader != nullptr);
 
-    base::U64 readSamples = 0u;
+    zb::U64 readSamples = 0u;
 
     if (samples && maxCount)
         readSamples = m_reader->read(samples, maxCount);
@@ -261,10 +261,10 @@ base::U64 InputSoundFile::read(base::I16* samples, base::U64 maxCount)
 
 
 ////////////////////////////////////////////////////////////
-InputSoundFile::InputSoundFile(base::PassKey<InputSoundFile>&&,
-                               base::UniquePtr<SoundFileReader>&&            reader,
-                               base::UniquePtr<InputStream, StreamDeleter>&& stream,
-                               base::U64                                     sampleCount,
+InputSoundFile::InputSoundFile(zb::PassKey<InputSoundFile>&&,
+                               zb::UniquePtr<SoundFileReader>&&            reader,
+                               zb::UniquePtr<InputStream, StreamDeleter>&& stream,
+                               zb::U64                                     sampleCount,
                                unsigned int                                  sampleRate,
                                ChannelMap&&                                  channelMap) :
     m_reader(ZB_MOVE(reader)),

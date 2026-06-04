@@ -73,10 +73,10 @@ public:
     /// \param size    Width and height of the source pixel block
     /// \param padding Padding to leave around the image (each side)
     ///
-    /// \return Texture rectangle of the inserted image, or `base::nullOpt` if the atlas is full
+    /// \return Texture rectangle of the inserted image, or `zb::nullOpt` if the atlas is full
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<Rect2f> add(const base::U8* pixels, Vec2u size, Vec2u padding = {});
+    [[nodiscard]] zb::Optional<Rect2f> add(const zb::U8* pixels, Vec2u size, Vec2u padding = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Add an `za::Image` to the atlas
@@ -84,10 +84,10 @@ public:
     /// \param image   Source image (RGBA)
     /// \param padding Padding to leave around the image (each side)
     ///
-    /// \return Texture rectangle of the inserted image, or `base::nullOpt` if the atlas is full
+    /// \return Texture rectangle of the inserted image, or `zb::nullOpt` if the atlas is full
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<Rect2f> add(const Image& image, Vec2u padding = {});
+    [[nodiscard]] zb::Optional<Rect2f> add(const Image& image, Vec2u padding = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Add the contents of another `za::Texture` to the atlas
@@ -99,10 +99,10 @@ public:
     /// \param texture Source texture (will be downloaded first)
     /// \param padding Padding to leave around the image (each side)
     ///
-    /// \return Texture rectangle of the inserted image, or `base::nullOpt` if the atlas is full
+    /// \return Texture rectangle of the inserted image, or `zb::nullOpt` if the atlas is full
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<Rect2f> add(const Texture& texture, Vec2u padding = {});
+    [[nodiscard]] zb::Optional<Rect2f> add(const Texture& texture, Vec2u padding = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Access the underlying atlas texture (mutable)

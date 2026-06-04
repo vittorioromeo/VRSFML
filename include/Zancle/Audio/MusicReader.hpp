@@ -105,12 +105,12 @@ public:
     ///
     /// \param filename Path of the music file to open
     ///
-    /// \return Music source if loading succeeded, `base::nullOpt` if it failed
+    /// \return Music source if loading succeeded, `zb::nullOpt` if it failed
     ///
     /// \see `openFromMemory`, `openFromStream`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<MusicReader> openFromFile(const Path& filename);
+    [[nodiscard]] static zb::Optional<MusicReader> openFromFile(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a music source from an audio file in memory
@@ -129,12 +129,12 @@ public:
     /// \param data        Pointer to the file data in memory
     /// \param sizeInBytes Size of the data to load, in bytes
     ///
-    /// \return Music source if loading succeeded, `base::nullOpt` if it failed
+    /// \return Music source if loading succeeded, `zb::nullOpt` if it failed
     ///
     /// \see `openFromFile`, `openFromStream`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<MusicReader> openFromMemory(const void* data, base::SizeT sizeInBytes);
+    [[nodiscard]] static zb::Optional<MusicReader> openFromMemory(const void* data, zb::SizeT sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a music source from an audio file in a custom stream
@@ -151,12 +151,12 @@ public:
     ///
     /// \param stream Source stream to read from
     ///
-    /// \return Music source if loading succeeded, `base::nullOpt` if it failed
+    /// \return Music source if loading succeeded, `zb::nullOpt` if it failed
     ///
     /// \see `openFromFile`, `openFromMemory`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<MusicReader> openFromStream(InputStream& stream);
+    [[nodiscard]] static zb::Optional<MusicReader> openFromStream(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the total duration of the music source
@@ -204,7 +204,7 @@ public:
     /// \return Number of samples
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::U64 getSampleCount() const;
+    [[nodiscard]] zb::U64 getSampleCount() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Result of a combined `seekAndRead` operation
@@ -212,8 +212,8 @@ public:
     ////////////////////////////////////////////////////////////
     struct [[nodiscard]] SeekAndReadResult
     {
-        base::U64 sampleOffset; //!< Sample offset of the underlying file after the seek
-        base::U64 samplesRead;  //!< Number of samples actually read into the output buffer
+        zb::U64 sampleOffset; //!< Sample offset of the underlying file after the seek
+        zb::U64 samplesRead;  //!< Number of samples actually read into the output buffer
     };
 
     ////////////////////////////////////////////////////////////
@@ -236,7 +236,7 @@ public:
     /// \see `InputSoundFile::seek`, `InputSoundFile::read`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SeekAndReadResult seekAndRead(base::U64 sampleOffset, base::I16* samples, base::U64 maxCount);
+    [[nodiscard]] SeekAndReadResult seekAndRead(zb::U64 sampleOffset, zb::I16* samples, zb::U64 maxCount);
 
     ////////////////////////////////////////////////////////////
     /// \private
@@ -244,7 +244,7 @@ public:
     /// \brief Initialize the internal state after loading a new music
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit MusicReader(base::PassKey<MusicReader>&&, InputSoundFile&& file);
+    [[nodiscard]] explicit MusicReader(zb::PassKey<MusicReader>&&, InputSoundFile&& file);
 
 private:
     ////////////////////////////////////////////////////////////
@@ -254,7 +254,7 @@ private:
     /// \brief Try opening the music source from an optional input sound file
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<MusicReader> tryOpenFromInputSoundFile(base::Optional<InputSoundFile>&& optFile,
+    [[nodiscard]] static zb::Optional<MusicReader> tryOpenFromInputSoundFile(zb::Optional<InputSoundFile>&& optFile,
                                                                                const char* errorContext);
 
 
@@ -262,7 +262,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::UniquePtr<Impl> m_impl; //!< Implementation details
+    zb::UniquePtr<Impl> m_impl; //!< Implementation details
     // TODO P0: can the uptr be avoided here? the problem is the mutex
 
     ////////////////////////////////////////////////////////////

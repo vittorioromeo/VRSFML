@@ -82,7 +82,7 @@ struct Joystick
     /// \brief Open a query handle on a specific joystick slot
     ///
     /// Returns a `Query` object bound to the joystick at the
-    /// given index, or `base::nullOpt` if no joystick is
+    /// given index, or `zb::nullOpt` if no joystick is
     /// currently connected at that slot.
     ///
     /// The returned `Query` only stays valid as long as the
@@ -92,10 +92,10 @@ struct Joystick
     ///
     /// \param joystickId Index of the joystick to query, in `[0, MaxCount - 1]`
     ///
-    /// \return `Query` for the joystick on success, `base::nullOpt` if it is not connected
+    /// \return `Query` for the joystick on success, `zb::nullOpt` if it is not connected
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Query> query(unsigned int joystickId);
+    [[nodiscard]] static zb::Optional<Query> query(unsigned int joystickId);
 };
 
 ////////////////////////////////////////////////////////////
@@ -183,7 +183,7 @@ public:
     [[nodiscard]] float getAxisPosition(Axis axis) const;
 
 private:
-    friend base::Optional<Query> Joystick::query(unsigned int joystickId);
+    friend zb::Optional<Query> Joystick::query(unsigned int joystickId);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a joystick state query

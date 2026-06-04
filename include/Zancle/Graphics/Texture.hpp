@@ -113,10 +113,10 @@ public:
     /// \param size     Width and height of the texture
     /// \param settings Texture create settings (sRGB, smoothing, wrap mode)
     ///
-    /// \return Texture on success, `base::nullOpt` on failure
+    /// \return Texture on success, `zb::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Texture> create(Vec2u size, const TextureCreateSettings& settings = {});
+    [[nodiscard]] static zb::Optional<Texture> create(Vec2u size, const TextureCreateSettings& settings = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Load a texture from an image file on disk
@@ -132,12 +132,12 @@ public:
     /// \param filename Path of the image file to load
     /// \param settings Texture load settings (sRGB, smoothing, wrap mode, sub-area)
     ///
-    /// \return Texture on success, `base::nullOpt` on failure
+    /// \return Texture on success, `zb::nullOpt` on failure
     ///
     /// \see `loadFromMemory`, `loadFromStream`, `loadFromImage`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Texture> loadFromFile(const Path& filename, const TextureLoadSettings& settings = {});
+    [[nodiscard]] static zb::Optional<Texture> loadFromFile(const Path& filename, const TextureLoadSettings& settings = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Load a texture from an image file held in memory
@@ -150,13 +150,13 @@ public:
     /// \param size     Size of the data, in bytes
     /// \param settings Texture load settings (sRGB, smoothing, wrap mode, sub-area)
     ///
-    /// \return Texture on success, `base::nullOpt` on failure
+    /// \return Texture on success, `zb::nullOpt` on failure
     ///
     /// \see `loadFromFile`, `loadFromStream`, `loadFromImage`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Texture> loadFromMemory(const void*                data,
-                                                                base::SizeT                size,
+    [[nodiscard]] static zb::Optional<Texture> loadFromMemory(const void*                data,
+                                                                zb::SizeT                size,
                                                                 const TextureLoadSettings& settings = {});
 
     ////////////////////////////////////////////////////////////
@@ -169,12 +169,12 @@ public:
     /// \param stream   Source stream to read encoded image data from
     /// \param settings Texture load settings (sRGB, smoothing, wrap mode, sub-area)
     ///
-    /// \return Texture on success, `base::nullOpt` on failure
+    /// \return Texture on success, `zb::nullOpt` on failure
     ///
     /// \see `loadFromFile`, `loadFromMemory`, `loadFromImage`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Texture> loadFromStream(InputStream&               stream,
+    [[nodiscard]] static zb::Optional<Texture> loadFromStream(InputStream&               stream,
                                                                 const TextureLoadSettings& settings = {});
 
     ////////////////////////////////////////////////////////////
@@ -188,12 +188,12 @@ public:
     /// \param image    Image whose pixels will be uploaded
     /// \param settings Texture load settings (sRGB, smoothing, wrap mode, sub-area)
     ///
-    /// \return Texture on success, `base::nullOpt` on failure
+    /// \return Texture on success, `zb::nullOpt` on failure
     ///
     /// \see `loadFromFile`, `loadFromMemory`, `loadFromStream`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Texture> loadFromImage(const Image& image, const TextureLoadSettings& settings = {});
+    [[nodiscard]] static zb::Optional<Texture> loadFromImage(const Image& image, const TextureLoadSettings& settings = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the texture
@@ -234,7 +234,7 @@ public:
     /// \param pixels Array of pixels to copy to the texture
     ///
     ////////////////////////////////////////////////////////////
-    void update(const base::U8* pixels);
+    void update(const zb::U8* pixels);
 
     ////////////////////////////////////////////////////////////
     /// \brief Update a part of the texture from an array of pixels
@@ -254,7 +254,7 @@ public:
     /// \param dest   Coordinates of the destination position
     ///
     ////////////////////////////////////////////////////////////
-    void update(const base::U8* pixels, Vec2u size, Vec2u dest);
+    void update(const zb::U8* pixels, Vec2u size, Vec2u dest);
 
     ////////////////////////////////////////////////////////////
     /// \brief Update a part of this texture from another texture
@@ -476,7 +476,7 @@ public:
     /// Creates an empty texture.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Texture(base::PassKey<Texture>&&, Vec2u size, unsigned int texture, bool sRgb);
+    [[nodiscard]] Texture(zb::PassKey<Texture>&&, Vec2u size, unsigned int texture, bool sRgb);
 
 private:
     ////////////////////////////////////////////////////////////
@@ -500,7 +500,7 @@ private:
     bool            m_hasMipmap{};     //!< Has the mipmap been generated?
     unsigned int    m_cacheId;         //!< Unique number that identifies the texture to the render target's cache
 
-    base::U32 m_destructiveGeneration{0}; //!< Bumped on every non-additive mutation (autobatch invalidation)
+    zb::U32 m_destructiveGeneration{0}; //!< Bumped on every non-additive mutation (autobatch invalidation)
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking

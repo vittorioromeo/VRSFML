@@ -40,10 +40,10 @@ public:
     ///
     /// \param address IP address or network name
     ///
-    /// \return Address on success, `base::nullOpt` otherwise
+    /// \return Address on success, `zb::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<IpAddress> resolve(base::StringView address);
+    [[nodiscard]] static zb::Optional<IpAddress> resolve(zb::StringView address);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a string representation of the address
@@ -57,7 +57,7 @@ public:
     /// \see toInteger
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::String toString(IpAddress ipAddress);
+    [[nodiscard]] static zb::String toString(IpAddress ipAddress);
 };
 
 } // namespace za

@@ -724,10 +724,10 @@ public:
         if (this == &rhs)
             return;
 
-        base::genericSwap(m_directory, rhs.m_directory);
-        base::genericSwap(m_size, rhs.m_size);
-        base::genericSwap(m_numBlocks, rhs.m_numBlocks);
-        base::genericSwap(m_directoryCapacity, rhs.m_directoryCapacity);
+        zb::genericSwap(m_directory, rhs.m_directory);
+        zb::genericSwap(m_size, rhs.m_size);
+        zb::genericSwap(m_numBlocks, rhs.m_numBlocks);
+        zb::genericSwap(m_directoryCapacity, rhs.m_directoryCapacity);
     }
 
 

@@ -19,9 +19,9 @@
 namespace za
 {
 ////////////////////////////////////////////////////////////
-base::Span<Touch::Device> Touch::getDevices()
+zb::Span<Touch::Device> Touch::getDevices()
 {
-    static thread_local base::Vector<Device> devices;
+    static thread_local zb::Vector<Device> devices;
     devices.clear();
 
     {

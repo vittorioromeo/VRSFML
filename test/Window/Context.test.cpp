@@ -24,7 +24,7 @@
 
 ////////////////////////////////////////////////////////////
 #define protected public
-#include "../src/SFML/GLUtils/GlContext.hpp"
+#include "../src/Zancle/GLUtils/GlContext.hpp"
 #undef protected
 
 

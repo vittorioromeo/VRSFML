@@ -38,8 +38,8 @@ struct [[nodiscard]] DrawInstancedVerticesSettings // NOLINT(cppcoreguidelines-p
     ZB_REQUIRE_DESIGNATED_INITIALIZERS;
 
     VAOHandle&               vaoHandle;     //!< VAO holding per-instance attribute streams
-    base::Span<const Vertex> vertexSpan;    //!< Range of vertices defining a single instance
-    base::SizeT              instanceCount; //!< Number of instances to draw
+    zb::Span<const Vertex> vertexSpan;    //!< Range of vertices defining a single instance
+    zb::SizeT              instanceCount; //!< Number of instances to draw
     PrimitiveType            primitiveType; //!< How to interpret the vertices of a single instance
 };
 

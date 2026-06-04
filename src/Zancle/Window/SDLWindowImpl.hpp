@@ -53,7 +53,7 @@ public:
     /// \return Pointer to the created window
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::UniquePtr<SDLWindowImpl> create(WindowSettings windowSettings);
+    [[nodiscard]] static zb::UniquePtr<SDLWindowImpl> create(WindowSettings windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new window depending on to the current OS
@@ -63,7 +63,7 @@ public:
     /// \return Pointer to the created window
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::UniquePtr<SDLWindowImpl> create(WindowHandle handle);
+    [[nodiscard]] static zb::UniquePtr<SDLWindowImpl> create(WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -112,10 +112,10 @@ public:
     ///
     /// \param timeout Maximum time to wait (`Time{}` for infinite)
     ///
-    /// \return The event on success, `base::nullOpt` otherwise
+    /// \return The event on success, `zb::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<Event> waitEvent(Time timeout);
+    [[nodiscard]] zb::Optional<Event> waitEvent(Time timeout);
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the next window event, if available
@@ -123,10 +123,10 @@ public:
     /// If there's no event available, this function calls the
     /// window's internal event processing function.
     ///
-    /// \return The event if available, `base::nullOpt` otherwise
+    /// \return The event if available, `zb::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<Event> pollEvent();
+    [[nodiscard]] zb::Optional<Event> pollEvent();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the OS-specific handle of the window
@@ -158,7 +158,7 @@ public:
     /// \return Minimum size
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<Vec2u> getMinimumSize() const;
+    [[nodiscard]] zb::Optional<Vec2u> getMinimumSize() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the maximum window rendering region size
@@ -166,7 +166,7 @@ public:
     /// \return Maximum size
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<Vec2u> getMaximumSize() const;
+    [[nodiscard]] zb::Optional<Vec2u> getMaximumSize() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the position of the window on screen
@@ -195,22 +195,22 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Set the minimum window rendering region size
     ///
-    /// Pass `base::nullOpt` to unset the minimum size
+    /// Pass `zb::nullOpt` to unset the minimum size
     ///
     /// \param minimumSize New minimum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    void setMinimumSize(const base::Optional<Vec2u>& minimumSize);
+    void setMinimumSize(const zb::Optional<Vec2u>& minimumSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the maximum window rendering region size
     ///
-    /// Pass `base::nullOpt` to unset the maximum size
+    /// Pass `zb::nullOpt` to unset the maximum size
     ///
     /// \param maximumSize New maximum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    void setMaximumSize(const base::Optional<Vec2u>& maximumSize);
+    void setMaximumSize(const zb::Optional<Vec2u>& maximumSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the title of the window
@@ -227,7 +227,7 @@ public:
     /// \param size   Icon's width and height, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    void setIcon(const base::U8* pixels, Vec2u size);
+    void setIcon(const zb::U8* pixels, Vec2u size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window
@@ -365,10 +365,10 @@ private:
     [[nodiscard]] explicit SDLWindowImpl(const char* context, void* sdlWindow, bool isExternal);
 
     ////////////////////////////////////////////////////////////
-    /// \return First event of the queue if available, `base::nullOpt` otherwise
+    /// \return First event of the queue if available, `zb::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<Event> popEvent();
+    [[nodiscard]] zb::Optional<Event> popEvent();
 
     ////////////////////////////////////////////////////////////
     /// \brief Read the joysticks state and generate the appropriate events
@@ -400,7 +400,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 1024> m_impl; //!< Implementation details
+    zb::InPlacePImpl<Impl, 1024> m_impl; //!< Implementation details
 };
 
 } // namespace priv

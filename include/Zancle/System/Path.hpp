@@ -27,7 +27,7 @@ namespace za
 ///
 /// All filesystem operations are non-throwing: `bool` results signal success or
 /// failure, and operations that produce a new `Path` (`absolute`, `tempDirectoryPath`)
-/// return `base::Optional<Path>` so OS errors can be propagated without exceptions.
+/// return `zb::Optional<Path>` so OS errors can be propagated without exceptions.
 ///
 /// For stream insertion (`std::ostream << Path`), include `SFML/System/PathStreamOp.hpp`.
 ///
@@ -45,13 +45,13 @@ public:
     /// \brief Path to the system's temporary directory; empty `Optional` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Path> getTempDirectory();
+    [[nodiscard]] static zb::Optional<Path> getTempDirectory();
 
     ////////////////////////////////////////////////////////////
     /// \brief Process current working directory; empty `Optional` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Path> getCurrentDirectory();
+    [[nodiscard]] static zb::Optional<Path> getCurrentDirectory();
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the process current working directory
@@ -67,7 +67,7 @@ public:
     /// Returns empty `Optional` if the environment variable is unset.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Path> getHomeDirectory();
+    [[nodiscard]] static zb::Optional<Path> getHomeDirectory();
 
     ////////////////////////////////////////////////////////////
     /// \brief Default-construct an empty path
@@ -153,7 +153,7 @@ public:
     /// \brief Absolute version of this path; empty `Optional` on OS failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<Path> getAbsolute() const;
+    [[nodiscard]] zb::Optional<Path> getAbsolute() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Parent directory component (e.g. `/foo/bar.txt` -> `/foo`)
@@ -219,13 +219,13 @@ public:
     /// \brief Size of the regular file at this path, in bytes; empty `Optional` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<base::U64> getFileSize() const;
+    [[nodiscard]] zb::Optional<zb::U64> getFileSize() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Last write time, as seconds since the Unix epoch; empty `Optional` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<base::I64> getLastWriteTimeSecondsSinceEpoch() const;
+    [[nodiscard]] zb::Optional<zb::I64> getLastWriteTimeSecondsSinceEpoch() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief `true` if the path's extension matches `str` (ASCII case-insensitive)
@@ -236,7 +236,7 @@ public:
     /// An empty `str` matches paths with no extension.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool extensionIs(base::StringView str) const;
+    [[nodiscard]] bool extensionIs(zb::StringView str) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief `true` if this path has a parent directory component
@@ -307,7 +307,7 @@ public:
     ///         `false` on OS error (including: this path is not a directory).
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool forEachEntry(base::FunctionRef<void(const Path&)> callback) const;
+    [[nodiscard]] bool forEachEntry(zb::FunctionRef<void(const Path&)> callback) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Append `rhs` to this path, inserting a directory separator if needed
@@ -368,7 +368,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 64> m_impl;
+    zb::InPlacePImpl<Impl, 64> m_impl;
 };
 
 

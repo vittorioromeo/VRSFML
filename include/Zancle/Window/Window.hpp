@@ -39,14 +39,14 @@ public:
     /// Creates a new top-level window described by
     /// `windowSettings` and attaches an OpenGL context to it.
     /// On failure (invalid settings, OS error, ...) returns
-    /// `base::nullOpt`.
+    /// `zb::nullOpt`.
     ///
     /// \param windowSettings Window creation parameters
     ///
-    /// \return The newly created window on success, `base::nullOpt` on failure
+    /// \return The newly created window on success, `zb::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Window> create(const Settings& windowSettings);
+    [[nodiscard]] static zb::Optional<Window> create(const Settings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a window wrapping an existing native control
@@ -63,10 +63,10 @@ public:
     /// \param handle          Platform-specific handle of the control to attach to
     /// \param contextSettings Additional settings for the underlying OpenGL context
     ///
-    /// \return The newly wrapped window on success, `base::nullOpt` on failure
+    /// \return The newly wrapped window on success, `zb::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Window> create(WindowHandle handle, const ContextSettings& contextSettings = {});
+    [[nodiscard]] static zb::Optional<Window> create(WindowHandle handle, const ContextSettings& contextSettings = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -189,7 +189,7 @@ public:
     ///        impl
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Window(base::PassKey<Window>&&,
+    [[nodiscard]] explicit Window(zb::PassKey<Window>&&,
                                   WindowBase&&    windowBase,
                                   const Settings& windowSettings,
                                   unsigned int    bitsPerPixel);
@@ -202,7 +202,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
+    zb::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
 };
 
 } // namespace za

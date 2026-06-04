@@ -178,7 +178,7 @@ void DrawableBatchImpl<TStorage>::add(const DrawVerticesSettings& settings)
     const auto  vertexCount = vertexSpan.size();
 
     IndexType   numTrianglesInStripOrFan = 0u; // Only used for triangle strips and triangle fans
-    base::SizeT numIndicesToGenerate     = 0u;
+    zb::SizeT numIndicesToGenerate     = 0u;
 
     switch (type)
     {
@@ -194,7 +194,7 @@ void DrawableBatchImpl<TStorage>::add(const DrawVerticesSettings& settings)
         {
             ZB_ASSERT(vertexCount >= 3u);
             numTrianglesInStripOrFan = static_cast<IndexType>(vertexCount - 2u);
-            numIndicesToGenerate     = static_cast<base::SizeT>(numTrianglesInStripOrFan) * 3u;
+            numIndicesToGenerate     = static_cast<zb::SizeT>(numTrianglesInStripOrFan) * 3u;
             break;
         }
 
@@ -217,7 +217,7 @@ void DrawableBatchImpl<TStorage>::add(const DrawVerticesSettings& settings)
     {
         ZB_ASSERT(numIndicesToGenerate == vertexCount);
 
-        for (base::SizeT i = 0u; i < numIndicesToGenerate; ++i)
+        for (zb::SizeT i = 0u; i < numIndicesToGenerate; ++i)
             *dstIndices++ = firstNewVertexIndex + static_cast<IndexType>(i);
     }
     else if (type == PrimitiveType::TriangleStrip)
@@ -257,7 +257,7 @@ void DrawableBatchImpl<TStorage>::add(const DrawIndexedVerticesSettings& setting
     const auto  indexCount = indexSpan.size();
 
     IndexType   numTrianglesInStripOrFan = 0u; // Only used for triangle strips and triangle fans
-    base::SizeT numIndicesToGenerate     = 0u;
+    zb::SizeT numIndicesToGenerate     = 0u;
 
     // Type-specific assertions. The core logic of copying indices is type-agnostic.
     switch (type)
@@ -274,7 +274,7 @@ void DrawableBatchImpl<TStorage>::add(const DrawIndexedVerticesSettings& setting
         {
             ZB_ASSERT(indexCount == 0u || indexCount >= 3u);
             numTrianglesInStripOrFan = static_cast<IndexType>(indexCount - 2u);
-            numIndicesToGenerate     = static_cast<base::SizeT>(numTrianglesInStripOrFan) * 3u;
+            numIndicesToGenerate     = static_cast<zb::SizeT>(numTrianglesInStripOrFan) * 3u;
             break;
         }
 
@@ -287,7 +287,7 @@ void DrawableBatchImpl<TStorage>::add(const DrawIndexedVerticesSettings& setting
         return;
 
 #ifdef ZA_DEBUG
-    for (base::SizeT i = 0u; i < indexCount; ++i)
+    for (zb::SizeT i = 0u; i < indexCount; ++i)
         ZB_ASSERT(indexData[i] < static_cast<IndexType>(vertexCount));
 #endif
 
@@ -300,7 +300,7 @@ void DrawableBatchImpl<TStorage>::add(const DrawIndexedVerticesSettings& setting
 
     if (type == PrimitiveType::Triangles)
     {
-        for (base::SizeT i = 0u; i < indexCount; ++i)
+        for (zb::SizeT i = 0u; i < indexCount; ++i)
             *dstIndices++ = firstNewVertexIndex + indexData[i];
     }
     else if (type == PrimitiveType::TriangleStrip)
@@ -401,12 +401,12 @@ void DrawableBatchImpl<TStorage>::add(const Sprite& sprite)
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-void DrawableBatchImpl<TStorage>::addShapeFill(const Transform& transform, const Vertex* data, const base::SizeT size)
+void DrawableBatchImpl<TStorage>::addShapeFill(const Transform& transform, const Vertex* data, const zb::SizeT size)
 {
     if (size < 3u) [[unlikely]]
         return;
 
-    const base::SizeT indexCount = 3u * (size - 2u);
+    const zb::SizeT indexCount = 3u * (size - 2u);
 
     DrawableBatchUtils::appendShapeFillIndicesAndVertices(transform,
                                                           data,
@@ -422,12 +422,12 @@ void DrawableBatchImpl<TStorage>::addShapeFill(const Transform& transform, const
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-void DrawableBatchImpl<TStorage>::addShapeOutline(const Transform& transform, const Vertex* data, const base::SizeT size)
+void DrawableBatchImpl<TStorage>::addShapeOutline(const Transform& transform, const Vertex* data, const zb::SizeT size)
 {
     if (size < 3u) [[unlikely]]
         return;
 
-    const base::SizeT indexCount = 3u * (size - 2u);
+    const zb::SizeT indexCount = 3u * (size - 2u);
 
     DrawableBatchUtils::appendShapeOutlineIndicesAndVertices(transform,
                                                              data,
@@ -458,7 +458,7 @@ void DrawableBatchImpl<TStorage>::add(const Shape& shape)
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
 BatchedGeometry DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
-    const base::SizeT  nPoints,
+    const zb::SizeT  nPoints,
     const auto&        descriptor,
     auto&&             pointFn,
     const Vec2f* const localApex)
@@ -473,7 +473,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
 
     // TODO P1: improve, also add to RenderTarget
 
-    const base::SizeT fillVertexCount = nPoints + 2u;                  // +2 for center and repeated first point
+    const zb::SizeT fillVertexCount = nPoints + 2u;                  // +2 for center and repeated first point
     const IndexType firstFillVertexIndex = m_storage.getNumVertices(); // index of 1st fill vertex (center of the triangle fan)
 
     Vertex* const fillVertexPtr = m_storage.reserveMoreVertices(fillVertexCount);
@@ -525,7 +525,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
         }
     }
 
-    const base::SizeT fillIndexCount = 3u * (fillVertexCount - 2u);
+    const zb::SizeT fillIndexCount = 3u * (fillVertexCount - 2u);
 
     IndexType* indexPtr = m_storage.reserveMoreIndices(fillIndexCount);
 
@@ -539,7 +539,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
     if (descriptor.outlineThickness == 0.f)
         return {.fill = {fillVertexPtr, fillVertexCount}, .outline = {}};
 
-    const base::SizeT outlineVertexCount = (nPoints + 1u) * 2u;
+    const zb::SizeT outlineVertexCount = (nPoints + 1u) * 2u;
 
     const IndexType firstOutlineVertexIndex = m_storage.getNumVertices();
 
@@ -557,7 +557,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
     // Update outline colors and outline tex coords
     updateOutlineVerticesColorAndTextureRect(descriptor, outlineVertexPtr, outlineVertexCount);
 
-    const base::SizeT outlineIndexCount = 3u * (outlineVertexCount - 2u);
+    const zb::SizeT outlineIndexCount = 3u * (outlineVertexCount - 2u);
 
     auto* outlineIndexPtr = m_storage.reserveMoreIndices(outlineIndexCount);
 
@@ -593,7 +593,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const ArrowShapeData& sdArrow)
 
     return drawTriangleFanShapeFromPoints(7u,
                                           sdArrow,
-                                          [&] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i)
+                                          [&] [[gnu::always_inline, gnu::flatten]] (const zb::SizeT i)
     {
         return ShapeUtils::computeArrowPoint(i, sdArrow.shaftLength, sdArrow.shaftWidth, sdArrow.headLength, sdArrow.headWidth);
     },
@@ -608,11 +608,11 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const CircleShapeData& sdCircle
     if (!sdCircle.hasVisibleGeometry()) [[unlikely]]
         return {};
 
-    const float angleStep = base::tau / static_cast<float>(sdCircle.pointCount);
+    const float angleStep = zb::tau / static_cast<float>(sdCircle.pointCount);
 
     return drawTriangleFanShapeFromPoints(sdCircle.pointCount,
                                           sdCircle,
-                                          [&] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i)
+                                          [&] [[gnu::always_inline, gnu::flatten]] (const zb::SizeT i)
     {
         return ShapeUtils::computeCirclePointFromAngleStep(i, sdCircle.startAngle.asRadians(), angleStep, sdCircle.radius);
     });
@@ -631,21 +631,21 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const CurvedArrowShapeData& sd)
     const auto transform = Transform::fromPositionScaleOriginRotation(sd.position, sd.scale, adjustedOrigin, sd.rotation);
 
     const float sweepAngleRadians    = sd.sweepAngle.asRadians();
-    const float absSweepAngleRadians = base::fabs(sweepAngleRadians);
+    const float absSweepAngleRadians = zb::fabs(sweepAngleRadians);
     const float sweepSign            = (sweepAngleRadians < 0.f) ? -1.f : 1.f;
 
     // Adjust `pointCount` based on sweep angle for consistent smoothness
-    const unsigned int numArcPoints = base::max(2u,
+    const unsigned int numArcPoints = zb::max(2u,
                                                 static_cast<unsigned int>(ZB_MATH_CEILF(
                                                     static_cast<float>(sd.pointCount) *
                                                     (absSweepAngleRadians / zb::halfPi))));
 
     // Reserve memory upfront to avoid pointer invalidation
-    const base::SizeT bodyFillVertexCount = 2u * numArcPoints;
+    const zb::SizeT bodyFillVertexCount = 2u * numArcPoints;
 
-    const base::SizeT outlinePerimeterPointCount = numArcPoints + 3u + numArcPoints;
+    const zb::SizeT outlinePerimeterPointCount = numArcPoints + 3u + numArcPoints;
 
-    const base::SizeT outlineVertexCount = sd.outlineThickness != 0.f
+    const zb::SizeT outlineVertexCount = sd.outlineThickness != 0.f
                                                ? (outlinePerimeterPointCount + 1u) * 2u // For closed triangle strip
                                                : 0u;
 
@@ -683,8 +683,8 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const CurvedArrowShapeData& sd)
 
     m_storage.commitMoreVertices(bodyFillVertexCount);
 
-    const base::SizeT numBodySegments    = numArcPoints - 1u;
-    const base::SizeT bodyFillIndexCount = numBodySegments * 6u; // 2 triangles per segment, 3 indices per triangle
+    const zb::SizeT numBodySegments    = numArcPoints - 1u;
+    const zb::SizeT bodyFillIndexCount = numBodySegments * 6u; // 2 triangles per segment, 3 indices per triangle
 
     IndexType* bodyFillIndexPtr = m_storage.reserveMoreIndices(bodyFillIndexCount);
     for (IndexType i = 0u; i < numBodySegments; ++i)
@@ -711,9 +711,9 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const CurvedArrowShapeData& sd)
     const IndexType firstHeadFillVertexIndex = m_storage.getNumVertices();
     Vertex* const   headFillVertexPtr        = reservedVertexPtr + bodyFillVertexCount; // After body
 
-    const float endAngleRad = base::positiveRemainder(startRadians + static_cast<float>(numArcPoints - 1u) * angleStep,
-                                                      base::tau);
-    const auto [endAngleRadSin, endAngleRadCos] = base::sinCosLookup(endAngleRad);
+    const float endAngleRad = zb::positiveRemainder(startRadians + static_cast<float>(numArcPoints - 1u) * angleStep,
+                                                      zb::tau);
+    const auto [endAngleRadSin, endAngleRadCos] = zb::sinCosLookup(endAngleRad);
 
     // Centerline point at the end of the body's curve (local, untransformed)
     // This uses the ringLocalCenter from `computeRingPointsFromAngleStep` as the reference.
@@ -797,7 +797,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const CurvedArrowShapeData& sd)
         //
         // Order: outer arc (start -> end) -> head (outer barb, tip, inner barb) -> inner arc (end -> start).
         ShapeUtils::updateOutlineImpl(sd.outlineThickness,
-                                      [&](const base::SizeT i)
+                                      [&](const zb::SizeT i)
         {
             // 1. Outer edge of the body (start to end).
             if (i < numArcPoints)
@@ -811,7 +811,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const CurvedArrowShapeData& sd)
             }
 
             // 3. Inner edge of the body (end back to start).
-            const auto innerIdx = 2u * numArcPoints + 2u - static_cast<base::SizeT>(i);
+            const auto innerIdx = 2u * numArcPoints + 2u - static_cast<zb::SizeT>(i);
             return bodyFillVertexPtr[2 * innerIdx + 1u].position;
         },
                                       outlineVertexPtr,
@@ -821,7 +821,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const CurvedArrowShapeData& sd)
         updateOutlineVerticesColorAndTextureRect(sd, outlineVertexPtr, outlineVertexCount);
         m_storage.commitMoreVertices(outlineVertexCount);
 
-        const base::SizeT outlineIndexCount = 3u * (outlineVertexCount - 2u); // Triangle strip indices
+        const zb::SizeT outlineIndexCount = 3u * (outlineVertexCount - 2u); // Triangle strip indices
         IndexType*        outlineIndexPtr   = m_storage.reserveMoreIndices(outlineIndexCount);
 
         for (IndexType i = 0u; i < outlineVertexCount - 2u; ++i)
@@ -850,11 +850,11 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const EllipseShapeData& sdEllip
     if (!sdEllipse.hasVisibleGeometry()) [[unlikely]]
         return {};
 
-    const float angleStep = base::tau / static_cast<float>(sdEllipse.pointCount);
+    const float angleStep = zb::tau / static_cast<float>(sdEllipse.pointCount);
 
     return drawTriangleFanShapeFromPoints(sdEllipse.pointCount,
                                           sdEllipse,
-                                          [&] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i)
+                                          [&] [[gnu::always_inline, gnu::flatten]] (const zb::SizeT i)
     {
         return ShapeUtils::computeEllipsePointFromAngleStep(i,
                                                             sdEllipse.startAngle.asRadians(),
@@ -872,7 +872,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const PieSliceShapeData& sdPieS
     if (!sdPieSlice.hasVisibleGeometry()) [[unlikely]]
         return {};
 
-    if (ZB_MATH_FABSF(sdPieSlice.sweepAngle.asRadians()) >= base::tau - ZB_FLOAT_EPSILON)
+    if (ZB_MATH_FABSF(sdPieSlice.sweepAngle.asRadians()) >= zb::tau - ZB_FLOAT_EPSILON)
         return add(CircleShapeData{
             .position           = sdPieSlice.position,
             .scale              = sdPieSlice.scale,
@@ -892,7 +892,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const PieSliceShapeData& sdPieS
 
     return drawTriangleFanShapeFromPoints(sdPieSlice.pointCount,
                                           sdPieSlice,
-                                          [&] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i)
+                                          [&] [[gnu::always_inline, gnu::flatten]] (const zb::SizeT i)
     {
         return ShapeUtils::computePieSlicePointFromArcAngleStep(i,
                                                                 sdPieSlice.radius,
@@ -909,7 +909,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const RectangleShapeData& sdRec
     if (!sdRectangle.hasVisibleGeometry()) [[unlikely]]
         return {};
 
-    return drawTriangleFanShapeFromPoints(4u, sdRectangle, [&] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i) {
+    return drawTriangleFanShapeFromPoints(4u, sdRectangle, [&] [[gnu::always_inline, gnu::flatten]] (const zb::SizeT i) {
         return ShapeUtils::computeRectanglePoint(i, sdRectangle.size);
     });
 }
@@ -924,7 +924,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const RoundedRectangleShapeData
 
     return drawTriangleFanShapeFromPoints(sdRoundedRectangle.cornerPointCount * 4u,
                                           sdRoundedRectangle,
-                                          [&] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i)
+                                          [&] [[gnu::always_inline, gnu::flatten]] (const zb::SizeT i)
     {
         return ShapeUtils::computeRoundedRectanglePoint(i,
                                                         sdRoundedRectangle.size,
@@ -945,7 +945,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const RingShapeData& sdRing)
         transform = Transform::fromPositionScaleOriginRotation(sdRing.position, sdRing.scale, sdRing.origin, sdRing.rotation);
 
     const unsigned int nPoints   = sdRing.pointCount;
-    const float        angleStep = base::tau / static_cast<float>(nPoints);
+    const float        angleStep = zb::tau / static_cast<float>(nPoints);
 
     //
     // Local origin `(0, 0)` is top-left of the bounding box
@@ -956,11 +956,11 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const RingShapeData& sdRing)
 
     //
     // Generate fill geometry (triangle strip)
-    const base::SizeT fillVertexCount = 2u * nPoints + 2u; // `nPoints` pairs + repeated start pair
+    const zb::SizeT fillVertexCount = 2u * nPoints + 2u; // `nPoints` pairs + repeated start pair
 
-    const base::SizeT outlineVerticesPerLoop = nPoints * 2u + 2u; // nPoints original points -> nPoints inner/outer
+    const zb::SizeT outlineVerticesPerLoop = nPoints * 2u + 2u; // nPoints original points -> nPoints inner/outer
                                                                   // pairs + duplicated start pair for closed loop
-    const base::SizeT totalOutlineVertices = sdRing.outlineThickness != 0.f ? outlineVerticesPerLoop * 2u
+    const zb::SizeT totalOutlineVertices = sdRing.outlineThickness != 0.f ? outlineVerticesPerLoop * 2u
                                                                             : 0u; // Outer + Inner loop
 
     const IndexType firstFillVertexIndex = m_storage.getNumVertices();
@@ -988,8 +988,8 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const RingShapeData& sdRing)
     //
     // Generate fill indices
     {
-        const base::SizeT numFillTriangles = (fillVertexCount - 2u); // A strip of `V` vertices has `V - 2` triangles
-        const base::SizeT fillIndexCount   = numFillTriangles * 3u;
+        const zb::SizeT numFillTriangles = (fillVertexCount - 2u); // A strip of `V` vertices has `V - 2` triangles
+        const zb::SizeT fillIndexCount   = numFillTriangles * 3u;
 
         IndexType* fillIndexPtr = m_storage.reserveMoreIndices(fillIndexCount);
         for (IndexType i = 0u; i < numFillTriangles; ++i)
@@ -1003,8 +1003,8 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const RingShapeData& sdRing)
     if (sdRing.outlineThickness == 0.f)
         return {.fill = {fillVertexPtr, fillVertexCount}, .outline = {}};
 
-    const base::SizeT outlineIndicesPerLoop = 3u * (outlineVerticesPerLoop - 2u); // Indices for triangles from the strip
-    const base::SizeT totalOutlineIndices = outlineIndicesPerLoop * 2u;
+    const zb::SizeT outlineIndicesPerLoop = 3u * (outlineVerticesPerLoop - 2u); // Indices for triangles from the strip
+    const zb::SizeT totalOutlineIndices = outlineIndicesPerLoop * 2u;
 
     const IndexType  firstOutlineVertexIndex = m_storage.getNumVertices();
     Vertex* const    outlineVertexPtr        = reservedVertexPtr + fillVertexCount;
@@ -1025,10 +1025,10 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const RingShapeData& sdRing)
         // The inner outline walks the inner ring in reverse so its normals point away from the
         // hole (into the annulus), matching the outer outline's inward normals. This keeps
         // `outlineThickness > 0` drawing on top of the fill for both loops.
-        const auto getBoundaryPoint = [&] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i)
+        const auto getBoundaryPoint = [&] [[gnu::always_inline, gnu::flatten]] (const zb::SizeT i)
         {
             ZB_ASSERT_AND_ASSUME(i < nPoints);
-            const base::SizeT walked = reverseWalk ? (nPoints - 1u - i) : i;
+            const zb::SizeT walked = reverseWalk ? (nPoints - 1u - i) : i;
             return fillVertexPtr[2 * walked + fillVertexIndexOffset].position;
         };
 
@@ -1081,7 +1081,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const RingPieSliceShapeData& sd
     if (!sdRingPieSlice.hasVisibleGeometry()) [[unlikely]]
         return {};
 
-    if (ZB_MATH_FABSF(sdRingPieSlice.sweepAngle.asRadians()) >= base::tau - ZB_FLOAT_EPSILON)
+    if (ZB_MATH_FABSF(sdRingPieSlice.sweepAngle.asRadians()) >= zb::tau - ZB_FLOAT_EPSILON)
         return add(RingShapeData{
             .position           = sdRingPieSlice.position,
             .scale              = sdRingPieSlice.scale,
@@ -1107,10 +1107,10 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const RingPieSliceShapeData& sd
     const float sweepRadians  = sdRingPieSlice.sweepAngle.asRadians();
     const float startRadians  = sdRingPieSlice.startAngle.asRadians();
 
-    const unsigned int numArcPoints = base::max(3u,
+    const unsigned int numArcPoints = zb::max(3u,
                                                 static_cast<unsigned int>(ZB_MATH_CEILF(
                                                     static_cast<float>(sdRingPieSlice.pointCount) *
-                                                    (absSweepAngle / base::tau))));
+                                                    (absSweepAngle / zb::tau))));
 
     const float angleStep = sweepRadians / static_cast<float>(numArcPoints - 1u);
 
@@ -1123,10 +1123,10 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const RingPieSliceShapeData& sd
 
     //
     // Generate fill geometry (triangle strip)
-    const base::SizeT fillVertexCount = 2u * numArcPoints;
+    const zb::SizeT fillVertexCount = 2u * numArcPoints;
 
-    const base::SizeT numBoundaryPoints    = 2u * numArcPoints;
-    const base::SizeT totalOutlineVertices = (sdRingPieSlice.outlineThickness != 0.f && numArcPoints >= 3u)
+    const zb::SizeT numBoundaryPoints    = 2u * numArcPoints;
+    const zb::SizeT totalOutlineVertices = (sdRingPieSlice.outlineThickness != 0.f && numArcPoints >= 3u)
                                                  ? (numBoundaryPoints + 1u) * 2u
                                                  : 0u;
 
@@ -1151,8 +1151,8 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const RingPieSliceShapeData& sd
     // Generate fill indices
     if (numArcPoints >= 3)
     {
-        const base::SizeT numFillTriangles = (fillVertexCount - 2u); // A strip of `V` vertices has `V - 2` triangles
-        const base::SizeT fillIndexCount   = numFillTriangles * 3u;
+        const zb::SizeT numFillTriangles = (fillVertexCount - 2u); // A strip of `V` vertices has `V - 2` triangles
+        const zb::SizeT fillIndexCount   = numFillTriangles * 3u;
 
         IndexType* fillIndexPtr = m_storage.reserveMoreIndices(fillIndexCount);
         for (IndexType i = 0u; i < numFillTriangles; ++i)
@@ -1166,15 +1166,15 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const RingPieSliceShapeData& sd
     if (sdRingPieSlice.outlineThickness == 0.f || numArcPoints < 3)
         return {.fill = {fillVertexPtr, fillVertexCount}, .outline = {}};
 
-    const base::SizeT numOutlineTriangles = totalOutlineVertices - 2u;
-    const base::SizeT totalOutlineIndices = numOutlineTriangles * 3u;
+    const zb::SizeT numOutlineTriangles = totalOutlineVertices - 2u;
+    const zb::SizeT totalOutlineIndices = numOutlineTriangles * 3u;
 
     const IndexType firstOutlineVertexIndex = m_storage.getNumVertices();
     Vertex* const   outlineVertexPtr        = reservedVertexPtr + fillVertexCount;
 
     //
     // Generate outline vertices
-    const auto getBoundaryPoint = [&] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i)
+    const auto getBoundaryPoint = [&] [[gnu::always_inline, gnu::flatten]] (const zb::SizeT i)
     {
         ZB_ASSERT_AND_ASSUME(i < numBoundaryPoints);
         const auto fillVertexIdx = i < numArcPoints ? 2 * i : 2 * (2 * numArcPoints - 1 - i) + 1;
@@ -1217,9 +1217,9 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const StarShapeData& sdStar)
     const auto nPoints = sdStar.pointCount * 2u;
 
     ZB_ASSERT(nPoints != 0u);
-    const float angleStep = base::tau / static_cast<float>(nPoints);
+    const float angleStep = zb::tau / static_cast<float>(nPoints);
 
-    return drawTriangleFanShapeFromPoints(nPoints, sdStar, [&] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i) {
+    return drawTriangleFanShapeFromPoints(nPoints, sdStar, [&] [[gnu::always_inline, gnu::flatten]] (const zb::SizeT i) {
         return ShapeUtils::computeStarPointFromAngleStep(i, angleStep, sdStar.outerRadius, sdStar.innerRadius);
     });
 }
@@ -1232,7 +1232,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const CrossShapeData& sdCross)
     if (!sdCross.hasVisibleGeometry()) [[unlikely]]
         return {};
 
-    return drawTriangleFanShapeFromPoints(12u, sdCross, [&] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i) {
+    return drawTriangleFanShapeFromPoints(12u, sdCross, [&] [[gnu::always_inline, gnu::flatten]] (const zb::SizeT i) {
         return ShapeUtils::computeCrossPoint(i, sdCross.size, sdCross.armThickness);
     });
 }
@@ -1245,7 +1245,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const TrapezoidShapeData& sdTra
     if (!sdTrapezoid.hasVisibleGeometry()) [[unlikely]]
         return {};
 
-    return drawTriangleFanShapeFromPoints(4u, sdTrapezoid, [&] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i) {
+    return drawTriangleFanShapeFromPoints(4u, sdTrapezoid, [&] [[gnu::always_inline, gnu::flatten]] (const zb::SizeT i) {
         return ShapeUtils::computeTrapezoidPoint(i, sdTrapezoid.topWidth, sdTrapezoid.bottomWidth, sdTrapezoid.height);
     });
 }
@@ -1271,7 +1271,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const ChevronShapeData& sdChevr
     // symmetry. Inside the non-convex chevron for every valid `thickness`.
     const Vec2f localApex{(w + innerTipX) * 0.5f, h * 0.5f};
 
-    return drawTriangleFanShapeFromPoints(6u, sdChevron, [&] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i) {
+    return drawTriangleFanShapeFromPoints(6u, sdChevron, [&] [[gnu::always_inline, gnu::flatten]] (const zb::SizeT i) {
         return ShapeUtils::computeChevronPoint(i, sdChevron.size, sdChevron.thickness);
     }, &localApex);
 }
@@ -1286,7 +1286,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const HeartShapeData& sdHeart)
 
     return drawTriangleFanShapeFromPoints(sdHeart.pointCount,
                                           sdHeart,
-                                          [&] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i)
+                                          [&] [[gnu::always_inline, gnu::flatten]] (const zb::SizeT i)
     { return ShapeUtils::computeHeartPoint(i, sdHeart.pointCount, sdHeart.size); });
 }
 
@@ -1300,7 +1300,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::add(const CogShapeData& sdCog)
 
     return drawTriangleFanShapeFromPoints(4u * sdCog.toothCount,
                                           sdCog,
-                                          [&] [[gnu::always_inline, gnu::flatten]] (const base::SizeT i)
+                                          [&] [[gnu::always_inline, gnu::flatten]] (const zb::SizeT i)
     {
         return ShapeUtils::computeCogPoint(i, sdCog.toothCount, sdCog.outerRadius, sdCog.innerRadius, sdCog.toothWidthRatio);
     });
@@ -1353,7 +1353,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::addTextDataImpl(
                                      glyphSource,
                                      textData.string,
                                      layoutInputs,
-                                     [&] [[gnu::always_inline, gnu::flatten]] (base::SizeT & idx,
+                                     [&] [[gnu::always_inline, gnu::flatten]] (zb::SizeT & idx,
                                                                                const float lineLength,
                                                                                const float lineTop,
                                                                                const float offset,
@@ -1371,7 +1371,7 @@ BatchedGeometry DrawableBatchImpl<TStorage>::addTextDataImpl(
                                                 thickness,
                                                 outlineT);
     },
-                                     [&] [[gnu::always_inline, gnu::flatten]] (base::SizeT & idx,
+                                     [&] [[gnu::always_inline, gnu::flatten]] (zb::SizeT & idx,
                                                                                const Vec2f  pos,
                                                                                const Glyph& glyph,
                                                                                const float  shear,

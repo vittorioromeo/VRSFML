@@ -550,11 +550,11 @@ struct WindowContextImpl
     AtomicMutex        sharedGlContextMutex;
 
     ////////////////////////////////////////////////////////////
-    base::Vector<zb::StringView> extensions; //!< Supported OpenGL extensions
+    zb::Vector<zb::StringView> extensions; //!< Supported OpenGL extensions
 
     ////////////////////////////////////////////////////////////
-    base::Optional<priv::JoystickManager> joystickManager;
-    base::Optional<priv::SensorManager>   sensorManager;
+    zb::Optional<priv::JoystickManager> joystickManager;
+    zb::Optional<priv::SensorManager>   sensorManager;
 
     ////////////////////////////////////////////////////////////
     template <typename... SharedGlContextArgs>
@@ -566,7 +566,7 @@ struct WindowContextImpl
 namespace
 {
 ////////////////////////////////////////////////////////////
-constinit base::Optional<WindowContextImpl> installedWindowContext;
+constinit zb::Optional<WindowContextImpl> installedWindowContext;
 constinit za::Atomic<unsigned int>          windowContextRC{0u};
 
 
@@ -576,7 +576,7 @@ WindowContextImpl& ensureInstalled()
     if (!installedWindowContext.hasValue()) [[unlikely]]
     {
         priv::errMsg("`za::WindowContext` not installed -- did you forget to create one in `main`?");
-        base::abort();
+        zb::abort();
     }
 
     return *installedWindowContext;
@@ -585,12 +585,12 @@ WindowContextImpl& ensureInstalled()
 } // namespace
 
 ////////////////////////////////////////////////////////////
-base::Optional<WindowContext> WindowContext::create()
+zb::Optional<WindowContext> WindowContext::create()
 {
     const auto fail = [](const char* what)
     {
         priv::errMsg("Error creating `za::WindowContext`: {}", what);
-        return base::nullOpt;
+        return zb::nullOpt;
     };
 
     //
@@ -657,25 +657,25 @@ base::Optional<WindowContext> WindowContext::create()
 
     ZB_ASSERT(glGetError() == GL_NO_ERROR);
 
-    return base::makeOptional<WindowContext>(base::PassKey<WindowContext>{});
+    return zb::makeOptional<WindowContext>(zb::PassKey<WindowContext>{});
 }
 
 
 ////////////////////////////////////////////////////////////
-WindowContext::WindowContext(base::PassKey<WindowContext>&&)
+WindowContext::WindowContext(zb::PassKey<WindowContext>&&)
 {
     windowContextRC.fetchAddRelaxed(1u);
 }
 
 
 ////////////////////////////////////////////////////////////
-WindowContext::WindowContext(base::PassKey<GraphicsContext>&&) : WindowContext(base::PassKey<WindowContext>{})
+WindowContext::WindowContext(zb::PassKey<GraphicsContext>&&) : WindowContext(zb::PassKey<WindowContext>{})
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-WindowContext::WindowContext(WindowContext&&) noexcept : WindowContext(base::PassKey<WindowContext>{})
+WindowContext::WindowContext(WindowContext&&) noexcept : WindowContext(zb::PassKey<WindowContext>{})
 {
 }
 
@@ -961,7 +961,7 @@ void WindowContext::loadGLEntryPointsViaGLAD()
 
 ////////////////////////////////////////////////////////////
 template <typename... GLContextArgs>
-base::UniquePtr<priv::GlContext> WindowContext::createGlContextImpl(const ContextSettings& contextSettings,
+zb::UniquePtr<priv::GlContext> WindowContext::createGlContextImpl(const ContextSettings& contextSettings,
                                                                     GLContextArgs&&... args)
 {
     auto& wc = ensureInstalled();
@@ -971,7 +971,7 @@ base::UniquePtr<priv::GlContext> WindowContext::createGlContextImpl(const Contex
     if (!setActiveThreadLocalGlContextToSharedContext())
         priv::errMsg("Error enabling shared GL context in WindowContext::createGlContext()");
 
-    auto glContext = base::makeUnique<priv::SDLGlContext>(wc.nextThreadLocalGlContextId.fetchAddSeqCst(1u),
+    auto glContext = zb::makeUnique<priv::SDLGlContext>(wc.nextThreadLocalGlContextId.fetchAddSeqCst(1u),
                                                           &wc.sharedGlContext,
                                                           contextSettings,
                                                           ZB_FORWARD(args)...);
@@ -997,14 +997,14 @@ base::UniquePtr<priv::GlContext> WindowContext::createGlContextImpl(const Contex
 
 
 ////////////////////////////////////////////////////////////
-base::UniquePtr<priv::GlContext> WindowContext::createGlContext(const ContextSettings& contextSettings)
+zb::UniquePtr<priv::GlContext> WindowContext::createGlContext(const ContextSettings& contextSettings)
 {
     return createGlContextImpl(contextSettings);
 }
 
 
 ////////////////////////////////////////////////////////////
-base::UniquePtr<priv::GlContext> WindowContext::createGlContext(const ContextSettings&     contextSettings,
+zb::UniquePtr<priv::GlContext> WindowContext::createGlContext(const ContextSettings&     contextSettings,
                                                                 const priv::SDLWindowImpl& owner,
                                                                 const unsigned int         bitsPerPixel)
 {
@@ -1016,7 +1016,7 @@ base::UniquePtr<priv::GlContext> WindowContext::createGlContext(const ContextSet
 bool WindowContext::isExtensionAvailable(const char* const name)
 {
     auto& wc = ensureInstalled();
-    return base::find(wc.extensions.begin(), wc.extensions.end(), name) != wc.extensions.end();
+    return zb::find(wc.extensions.begin(), wc.extensions.end(), name) != wc.extensions.end();
 }
 
 

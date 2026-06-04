@@ -86,7 +86,7 @@ protected:
     /// \return Always `true` (capture continues)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool onProcessSamples(const base::I16* samples, base::SizeT sampleCount) override;
+    [[nodiscard]] bool onProcessSamples(const zb::I16* samples, zb::SizeT sampleCount) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Finalize the captured sound buffer
@@ -106,7 +106,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 384> m_impl; //!< Implementation details
+    zb::InPlacePImpl<Impl, 384> m_impl; //!< Implementation details
 };
 
 } // namespace za

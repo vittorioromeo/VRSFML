@@ -452,7 +452,7 @@ void onConfigurationChanged(ANativeActivity* /* activity */)
 
 
 ////////////////////////////////////////////////////////////
-void* onSaveInstanceState(ANativeActivity* /* activity */, base::SizeT* outLen)
+void* onSaveInstanceState(ANativeActivity* /* activity */, zb::SizeT* outLen)
 {
     *outLen = 0;
     return nullptr;
@@ -490,7 +490,7 @@ void* main(ActivityStates* states)
 } // namespace za::priv
 
 ////////////////////////////////////////////////////////////
-JNIEXPORT void ANativeActivity_onCreate(ANativeActivity* activity, void* savedState, base::SizeT savedStateSize)
+JNIEXPORT void ANativeActivity_onCreate(ANativeActivity* activity, void* savedState, zb::SizeT savedStateSize)
 {
     // Create an activity states (will keep us in the know, about events we care)
     auto* states = new za::priv::ActivityStates();

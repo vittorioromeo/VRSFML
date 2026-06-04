@@ -71,9 +71,9 @@ using WriterFactoryMap = ankerl::unordered_dense::map<CreateFnPtr<za::SoundFileW
 namespace za
 {
 ////////////////////////////////////////////////////////////
-base::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromFilename(const Path& filename)
+zb::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromFilename(const Path& filename)
 {
-    base::UniquePtr<SoundFileReader> result; // Use a single local variable for NRVO
+    zb::UniquePtr<SoundFileReader> result; // Use a single local variable for NRVO
 
     auto stream = FileInputStream::open(filename);
     if (!stream.hasValue())
@@ -91,7 +91,7 @@ base::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromFilename(cons
 
 
 ////////////////////////////////////////////////////////////
-base::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromMemory(const void* data, base::SizeT sizeInBytes)
+zb::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromMemory(const void* data, zb::SizeT sizeInBytes)
 {
     MemoryInputStream stream(data, sizeInBytes);
     return createReaderFromStream(stream);
@@ -99,7 +99,7 @@ base::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromMemory(const 
 
 
 ////////////////////////////////////////////////////////////
-base::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromStream(InputStream& stream)
+zb::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromStream(InputStream& stream)
 {
     // Test the stream for all the registered factories
     for (const auto& [fpCreate, fpCheck] : getReaderFactoryMap())
@@ -121,7 +121,7 @@ base::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromStream(InputS
 
 
 ////////////////////////////////////////////////////////////
-base::UniquePtr<SoundFileWriter> SoundFileFactory::createWriterFromFilename(const Path& filename)
+zb::UniquePtr<SoundFileWriter> SoundFileFactory::createWriterFromFilename(const Path& filename)
 {
     // Test the filename in all the registered factories
     for (const auto& [fpCreate, fpCheck] : getWriterFactoryMap())

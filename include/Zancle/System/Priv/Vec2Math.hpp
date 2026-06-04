@@ -26,7 +26,7 @@ constexpr Vec2<T> Vec2<T>::fromAngle(const T r, const Angle phi)
 {
     static_assert(ZB_IS_FLOATING_POINT(T));
 
-    return {r * static_cast<T>(base::cos(phi.asRadians())), r * static_cast<T>(base::sin(phi.asRadians()))};
+    return {r * static_cast<T>(zb::cos(phi.asRadians())), r * static_cast<T>(zb::sin(phi.asRadians()))};
 }
 
 
@@ -37,7 +37,7 @@ constexpr T Vec2<T>::length() const
     static_assert(ZB_IS_FLOATING_POINT(T));
 
     // don't use `std::hypot` because of slow performance
-    return base::sqrt(x * x + y * y);
+    return zb::sqrt(x * x + y * y);
 }
 
 
@@ -65,7 +65,7 @@ constexpr Angle Vec2<T>::angleTo(const Vec2 rhs) const
     ZB_ASSERT_AND_ASSUME((x != T{0} || y != T{0}) && "cannot calculate angle to a zero vec2");
     ZB_ASSERT_AND_ASSUME((rhs.x != T{0} || rhs.y != T{0}) && "cannot calculate angle to a zero vec2");
 
-    return radians(static_cast<float>(base::atan2(cross(rhs), dot(rhs))));
+    return radians(static_cast<float>(zb::atan2(cross(rhs), dot(rhs))));
 }
 
 
@@ -77,7 +77,7 @@ constexpr Angle Vec2<T>::angle() const
 
     ZB_ASSERT_AND_ASSUME((x != T{0} || y != T{0}) && "cannot calculate angle from a zero vec2");
 
-    return radians(static_cast<float>(base::atan2(y, x)));
+    return radians(static_cast<float>(zb::atan2(y, x)));
 }
 
 
@@ -88,8 +88,8 @@ constexpr Vec2<T> Vec2<T>::rotatedBy(const Angle phi) const
     static_assert(ZB_IS_FLOATING_POINT(T));
 
     // No zero vec2 assert, because rotating a zero vec2 is well-defined (yields always itself)
-    const T cos = base::cos(static_cast<T>(phi.asRadians()));
-    const T sin = base::sin(static_cast<T>(phi.asRadians()));
+    const T cos = zb::cos(static_cast<T>(phi.asRadians()));
+    const T sin = zb::sin(static_cast<T>(phi.asRadians()));
 
     // Don't manipulate x and y separately, otherwise they're overwritten too early
     return Vec2<T>(cos * x - sin * y, sin * x + cos * y);
@@ -131,7 +131,7 @@ constexpr Vec2<T> Vec2<T>::clampMaxLength(const T maxLength) const
     if (currentLengthSquared <= maxLength * maxLength)
         return *this;
 
-    return *this * (maxLength / base::sqrt(currentLengthSquared));
+    return *this * (maxLength / zb::sqrt(currentLengthSquared));
 }
 
 
@@ -148,7 +148,7 @@ constexpr Vec2<T> Vec2<T>::clampMaxLengthSquared(const T maxLengthSquared) const
     if (currentLengthSquared <= maxLengthSquared)
         return *this;
 
-    return *this * base::sqrt(maxLengthSquared / currentLengthSquared);
+    return *this * zb::sqrt(maxLengthSquared / currentLengthSquared);
 }
 
 
@@ -168,7 +168,7 @@ constexpr Vec2<T> Vec2<T>::clampMinLength(const T minLength) const
     if (currentLengthSquared >= minLength * minLength)
         return *this;
 
-    return *this * (minLength / base::sqrt(currentLengthSquared));
+    return *this * (minLength / zb::sqrt(currentLengthSquared));
 }
 
 
@@ -188,7 +188,7 @@ constexpr Vec2<T> Vec2<T>::clampMinLengthSquared(const T minLengthSquared) const
     if (currentLengthSquared >= minLengthSquared)
         return *this;
 
-    return *this * base::sqrt(minLengthSquared / currentLengthSquared);
+    return *this * zb::sqrt(minLengthSquared / currentLengthSquared);
 }
 
 
@@ -216,7 +216,7 @@ constexpr Vec2<T> Vec2<T>::clampLength(const T minLength, const T maxLength) con
     if (currentLengthSquared == T{0})
         return *this;
 
-    const T currentLength = base::sqrt(currentLengthSquared);
+    const T currentLength = zb::sqrt(currentLengthSquared);
 
     if (currentLength < minLength) // We know currentLength > 0 here
         return *this * (minLength / currentLength);
@@ -249,10 +249,10 @@ constexpr Vec2<T> Vec2<T>::clampLengthSquared(const T minLengthSquared, const T 
         return *this;
 
     if (currentLengthSquared < minLengthSquared) // We know currentLengthSquared > 0 here
-        return *this * base::sqrt(minLengthSquared / currentLengthSquared);
+        return *this * zb::sqrt(minLengthSquared / currentLengthSquared);
 
     // Must be currentLengthSquared > maxLengthSquared
-    return *this * base::sqrt(maxLengthSquared / currentLengthSquared);
+    return *this * zb::sqrt(maxLengthSquared / currentLengthSquared);
 }
 
 
@@ -260,7 +260,7 @@ constexpr Vec2<T> Vec2<T>::clampLengthSquared(const T minLengthSquared, const T 
 template <typename T>
 constexpr Vec2<T> Vec2<T>::componentWiseFloor() const
 {
-    return {base::floor(x), base::floor(y)};
+    return {zb::floor(x), zb::floor(y)};
 }
 
 } // namespace za

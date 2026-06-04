@@ -31,7 +31,7 @@ namespace za::priv
     const float radius,
     const float radians) noexcept
 {
-    const auto [sine, cosine] = base::sinCosLookup(base::positiveRemainder(radians, base::tau));
+    const auto [sine, cosine] = zb::sinCosLookup(zb::positiveRemainder(radians, zb::tau));
     return {outerRadius + radius * cosine, outerRadius + radius * sine};
 }
 
@@ -125,23 +125,23 @@ template <typename PointAtAngleFn, typename MapFn>
     // on the caller's `pointAt` convention -- the helper doesn't need to know).
     const auto inSweep = [startRad, sweepRad](const float theta) noexcept
     {
-        if (sweepRad >= base::tau)
+        if (sweepRad >= zb::tau)
             return true;
 
-        return base::positiveRemainder(theta - startRad, base::tau) <= sweepRad;
+        return zb::positiveRemainder(theta - startRad, zb::tau) <= sweepRad;
     };
 
     if (inSweep(0.f))
         fold(mapFn(pointAt(0.f)));
 
-    if (inSweep(base::halfPi))
-        fold(mapFn(pointAt(base::halfPi)));
+    if (inSweep(zb::halfPi))
+        fold(mapFn(pointAt(zb::halfPi)));
 
-    if (inSweep(base::pi))
-        fold(mapFn(pointAt(base::pi)));
+    if (inSweep(zb::pi))
+        fold(mapFn(pointAt(zb::pi)));
 
-    if (inSweep(3.f * base::halfPi))
-        fold(mapFn(pointAt(3.f * base::halfPi)));
+    if (inSweep(3.f * zb::halfPi))
+        fold(mapFn(pointAt(3.f * zb::halfPi)));
 
     return {{minX, minY}, {maxX - minX, maxY - minY}};
 }

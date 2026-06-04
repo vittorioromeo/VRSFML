@@ -28,10 +28,10 @@ class Time;
 namespace za::priv::MiniaudioUtils
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] base::U8                  soundChannelToMiniaudioChannel(SoundChannel soundChannel);
-[[nodiscard]] SoundChannel              miniaudioChannelToSoundChannel(base::U8 soundChannel);
-[[nodiscard]] base::Optional<Time>      getPlayingOffset(ma_sound& sound);
-[[nodiscard]] base::Optional<base::U64> getFrameIndex(ma_sound& sound, Time timeOffset);
+[[nodiscard]] zb::U8                  soundChannelToMiniaudioChannel(SoundChannel soundChannel);
+[[nodiscard]] SoundChannel              miniaudioChannelToSoundChannel(zb::U8 soundChannel);
+[[nodiscard]] zb::Optional<Time>      getPlayingOffset(ma_sound& sound);
+[[nodiscard]] zb::Optional<zb::U64> getFrameIndex(ma_sound& sound, Time timeOffset);
 [[gnu::cold]] bool                      fail(const char* what, int maResult);
 
 } // namespace za::priv::MiniaudioUtils

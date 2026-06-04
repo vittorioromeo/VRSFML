@@ -537,7 +537,7 @@ namespace za::priv
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] Mouse::Button getButtonFromSDLButton(const base::U8 sdlButton) noexcept
+[[nodiscard, gnu::const]] Mouse::Button getButtonFromSDLButton(const zb::U8 sdlButton) noexcept
 {
     // clang-format off
     switch (sdlButton)
@@ -556,7 +556,7 @@ namespace za::priv
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] base::U8 getSDLButtonFromSFMLButton(const Mouse::Button button) noexcept
+[[nodiscard, gnu::const]] zb::U8 getSDLButtonFromSFMLButton(const Mouse::Button button) noexcept
 {
     // clang-format off
     switch (button)
@@ -603,7 +603,7 @@ SDLLayer::SDLLayer()
     if (!SDL_InitSubSystem(SDL_INIT_VIDEO))
     {
         errMsg("`SDL_Init` failed: {}", SDL_GetError());
-        base::abort();
+        zb::abort();
     }
 }
 
@@ -627,7 +627,7 @@ SDLAllocatedArray<SDL_DisplayID> SDLLayer::getDisplays() const
         return nullptr;
     }
 
-    return SDLAllocatedArray<SDL_DisplayID>{SDLUPtr<SDL_DisplayID>{displays}, static_cast<base::SizeT>(displayCount)};
+    return SDLAllocatedArray<SDL_DisplayID>{SDLUPtr<SDL_DisplayID>{displays}, static_cast<zb::SizeT>(displayCount)};
 }
 
 
@@ -645,7 +645,7 @@ SDLAllocatedArray<SDL_DisplayMode*> SDLLayer::getFullscreenDisplayModesForDispla
         return nullptr;
     }
 
-    return SDLAllocatedArray<SDL_DisplayMode*>{SDLUPtr<SDL_DisplayMode*>(modes), static_cast<base::SizeT>(modeCount)};
+    return SDLAllocatedArray<SDL_DisplayMode*>{SDLUPtr<SDL_DisplayMode*>(modes), static_cast<zb::SizeT>(modeCount)};
 }
 
 
@@ -716,7 +716,7 @@ SDLAllocatedArray<SDL_TouchID> SDLLayer::getTouchDevices()
         return nullptr;
     }
 
-    return SDLAllocatedArray<SDL_TouchID>{SDLUPtr<SDL_TouchID>(ids), static_cast<base::SizeT>(idCount)};
+    return SDLAllocatedArray<SDL_TouchID>{SDLUPtr<SDL_TouchID>(ids), static_cast<zb::SizeT>(idCount)};
 }
 
 
@@ -734,7 +734,7 @@ SDLAllocatedArray<SDL_Finger*> SDLLayer::getTouchFingers(const SDL_TouchID touch
         return nullptr;
     }
 
-    return SDLAllocatedArray<SDL_Finger*>{SDLUPtr<SDL_Finger*>(fingers), static_cast<base::SizeT>(fingerCount)};
+    return SDLAllocatedArray<SDL_Finger*>{SDLUPtr<SDL_Finger*>(fingers), static_cast<zb::SizeT>(fingerCount)};
 }
 
 
@@ -985,7 +985,7 @@ float SDLLayer::getDisplayScale(SDL_Window& window) const
 
 
 ////////////////////////////////////////////////////////////
-SDLSurfaceUPtr SDLLayer::createSurfaceFromPixels(const base::U8* pixels, Vec2u size) const
+SDLSurfaceUPtr SDLLayer::createSurfaceFromPixels(const zb::U8* pixels, Vec2u size) const
 {
     ZB_ASSERT(pixels != nullptr);
 
